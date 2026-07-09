@@ -33,13 +33,46 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.7 2×2 tridiagonal pivot determinant lower bound | `bunch_tridiagonal_twoByTwo_absdet_lower_of_sigma_bound`, `bunch_tridiagonal_twoByTwo_det_ne_zero_of_sigma_bound`, `higham11_7_tridiagonal_twoByTwo_absdet_lower_of_sigma_bound`, `higham11_7_tridiagonal_twoByTwo_det_ne_zero_of_sigma_bound` | " | **new this session**; Algorithm 11.6's two-pivot branch plus `|a22| ≤ σ` gives `|a11*a22-a21^2| ≥ (1-α)a21^2` and hence nonsingularity of the accepted `2×2` tridiagonal pivot block |
 | Thm 11.7 2×2 tridiagonal pivot inverse-entry bounds | `bunch_tridiagonal_twoByTwo_inverse_entry_bounds_of_sigma_bound`, `higham11_7_tridiagonal_twoByTwo_inverse_entry_bounds_of_sigma_bound` | " | **new this session**; with `|a11|,|a22| ≤ σ`, bounds the inverse entries `a22/det`, `-a21/det`, and `a11/det` using the determinant lower bound, preparing the one-step fl backward-error estimate |
 | Thm 11.7 atomic fl update for a 2×2 tridiagonal pivot | `fl_tridiagonal_twoByTwo_schur_step_error`, `higham11_7_fl_tridiagonal_twoByTwo_schur_step_error`, `fl_tridiagonal_twoByTwo_schur_step_error_of_sigma_bound`, `higham11_7_fl_tridiagonal_twoByTwo_schur_step_error_of_sigma_bound`, `fl_tridiagonal_twoByTwo_schur_step_backward_error_of_sigma_bound`, `higham11_7_fl_tridiagonal_twoByTwo_schur_step_backward_error_of_sigma_bound`, `fl_tridiagonal_twoByTwo_schur_step_backward_error_uniform_bound`, `higham11_7_fl_tridiagonal_twoByTwo_schur_step_backward_error_uniform_bound`, `fl_tridiagonal_twoByTwo_trailing_one_stage_bound`, `higham11_7_fl_tridiagonal_twoByTwo_trailing_one_stage_bound`, `fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound`, `higham11_7_fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound`, `fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed_three`, `higham11_7_fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed_three`, `tridiagonalTwoByTwoFirstTrailingIndex`, `higham11_7_tridiagonalTwoByTwoFirstTrailingIndex`, `tridiagonalTwoByTwoTrailingSubproblemIndex`, `higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex`, `tridiagonalTwoByTwoTrailingSubproblemIndex_zero`, `higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex_zero`, `tridiagonalTwoByTwoTrailingSubproblemIndex_injective`, `higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex_injective`, `TridiagonalTwoByTwoTrailingBlockSupport`, `higham11_7_TridiagonalTwoByTwoTrailingBlockSupport`, `TridiagonalLeadingBlockSupport`, `higham11_7_TridiagonalLeadingBlockSupport`, `tridiagonalLeadingBlockSupport_of_le_offset`, `higham11_7_tridiagonalLeadingBlockSupport_of_le_offset`, `tridiagonalLeadingBlockSupport_zero_bound`, `higham11_7_tridiagonalLeadingBlockSupport_zero_bound`, `tridiagonalLeadingBlockSupport_zero_printed_bound`, `higham11_7_tridiagonalLeadingBlockSupport_zero_printed_bound`, `tridiagonalLeadingBlockSupport_add_bound`, `higham11_7_tridiagonalLeadingBlockSupport_add_bound`, `tridiagonalLeadingBlockSupport_add_bound_of_le_offset`, `higham11_7_tridiagonalLeadingBlockSupport_add_bound_of_le_offset`, `tridiagonalLeadingBlockSupport_add_bound_printed`, `higham11_7_tridiagonalLeadingBlockSupport_add_bound_printed`, `tridiagonalLeadingBlockSupport_add_bound_printed_of_le_offset`, `higham11_7_tridiagonalLeadingBlockSupport_add_bound_printed_of_le_offset`, `tridiagonalTwoByTwoTrailingBlockSupport_iff_leadingBlockSupport`, `higham11_7_tridiagonalTwoByTwoTrailingBlockSupport_iff_leadingBlockSupport`, `tridiagonalTwoByTwoTrailingBlockSupport_add_bound`, `higham11_7_tridiagonalTwoByTwoTrailingBlockSupport_add_bound`, `tridiagonalTwoByTwoLiftTrailingPerturbation`, `higham11_7_tridiagonalTwoByTwoLiftTrailingPerturbation`, `tridiagonalTwoByTwoLiftTrailingPerturbation_bound_support`, `higham11_7_tridiagonalTwoByTwoLiftTrailingPerturbation_bound_support`, `tridiagonalTwoByTwoLiftTrailingPerturbation_leadingBlockSupport`, `higham11_7_tridiagonalTwoByTwoLiftTrailingPerturbation_leadingBlockSupport`, `tridiagonalTwoByTwoLiftTrailingPerturbation_bound_leadingBlockSupport`, `higham11_7_tridiagonalTwoByTwoLiftTrailingPerturbation_bound_leadingBlockSupport`, `fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed`, `higham11_7_fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed`, `fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed_support`, `higham11_7_fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_embed_support`, `fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_accumulate`, `higham11_7_fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_accumulate`, `fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_accumulate_printed`, `higham11_7_fl_tridiagonal_twoByTwo_trailing_one_stage_printed_bound_accumulate_printed`, `fl_tridiagonal_twoByTwo_trailing_subproblem_printed_bound_accumulate`, `higham11_7_fl_tridiagonal_twoByTwo_trailing_subproblem_printed_bound_accumulate`, `fl_tridiagonal_twoByTwo_trailing_subproblem_printed_bound_accumulate_leadingBlockSupport`, `higham11_7_fl_tridiagonal_twoByTwo_trailing_subproblem_printed_bound_accumulate_leadingBlockSupport`, `fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate`, `higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate`, `fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport`, `higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport` | " | **new this session**; proves `fl(b - fl(fl(c*f)*c)) = (b-c*f*c)+Δ` with `|Δ| ≤ γ₃(|b|+|c*f*c|)` from the standard model and `prod_error_bound`, specializes `f = a11/(a11*a22-a21^2)` using Algorithm 11.6 inverse-entry bounds, repackages the result as an exact Schur update of a perturbed trailing scalar `b+Δb`, converts it to a uniform `γ₃(Amax+Amax·κ·Amax)` budget when `|b|,|c|≤Amax` and the inverse-entry scalar is bounded by `κ`, lifts the scalar residual to the `Fin 1 × Fin 1` trailing Schur block touched by a tridiagonal `2×2` pivot, hands it to the printed componentwise budget `c·u·Amax` when the local scalar comparison is supplied, embeds that perturbation into the ambient `Fin 3 × Fin 3` first-stage tridiagonal block-LDLᵀ shell with zeros outside the trailing entry, generalizes the same zero-outside embedding to an arbitrary local block `Fin (n+3)` at the first trailing index of the shrinking recursion, adds the offset/injectivity bookkeeping for embedding the recursive trailing subproblem `Fin (n+1)` into that ambient block, packages the local perturbation as supported in the trailing block after the leading two rows/columns, proves the zero-base package, printed zero-base package, zero-prefix depth monotonicity, offset-generic and mixed-depth add/bound combiners, printed coefficient add/bound combiners, and offset-two bridge for zero-prefix supported perturbations, proves the trailing-block support-preserving add/bound combiner for accumulating local and recursive perturbations, applies that combiner to accumulate the local printed-budget residual with an already-supported recursive trailing perturbation, exposes the printed coefficient update `(c_bound+c_rec)·u·Amax` when the recursive side has coefficient `c_rec`, lifts a recursive `Fin (n+1)` trailing-subproblem perturbation into the ambient block with bounds/support and embedded-entry identity, shifts zero-prefix support by two when such a recursive perturbation is lifted into the ambient block and packages that shifted support together with the componentwise bound and embedded-entry identity, feeds that lifted residual into the local accumulator so the recursive residual appears as `ΔRtail 0 0`, composes a recursive scalar certificate `tail_fl = tail_exact + ΔRtail 0 0` with the local rounded Schur update as `outer_fl + tail_fl = outer_exact + tail_exact + ΔA`, and exposes both the subproblem and recursive-residual accumulated perturbations through the generic offset-two zero-prefix support predicate |
+| Thm 11.7 finite support-sum aggregation | `higham11_7_tridiagonalLeadingBlockSupport_sum_bound`, `higham11_7_tridiagonalLeadingBlockSupport_sum_uniform_bound`, `higham11_7_tridiagonalLeadingBlockSupport_sum_bound_with_norm`, `higham11_7_tridiagonalLeadingBlockSupport_sum_uniform_bound_with_norm`, `higham11_7_tridiagonalLeadingBlockSupport_sum_bound_of_le_offsets`, `higham11_7_tridiagonalLeadingBlockSupport_sum_bound_with_norm_of_le_offsets`, `higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm`, `higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with_norm`, `higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm_nonneg`, `higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with_norm_nonneg`, `higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm_of_le_offsets`, `higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with_norm_of_le_offsets`, `higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm_of_le_offsets_nonneg`, `higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with_norm_of_le_offsets_nonneg` | Ch11 | **new this session**; finite same-ambient families of zero-prefix supported perturbations can now be summed while preserving zero-prefix support and summing their componentwise budgets; the uniform form packages the common-bound case as `k*β`, the norm variants carry the induced row-sum `∞`-norm bound `m*Σβ` or `m*(k*β)`, mixed-offset variants first lower deeper zero-prefix support to a common shallower offset, the printed-coefficient forms specialize this to `(Σc)uAmax` and `kc u Amax`, mixed-offset printed forms combine those two adaptations, and the nonnegative forms derive product-budget nonnegativity from separate `c`, `u`, and `Amax` nonnegativity. This is the first finite-family aggregation layer needed after extracting per-branch witnesses. |
 | Thm 11.7 recursive residual norm aggregation | `higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_with_norm_bound`, `higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_with_norm_bound_nonneg` | Ch11 | **new this session**; extends the zero-prefix supported local+recursive `2×2` tridiagonal residual accumulator with the induced row-sum bound `‖ΔA‖∞ ≤ (n+3)(c_bound+c_rec)uAmax`, preserving the scalar residual equation and support package; the nonnegative form derives the combined printed-budget side condition from separate nonnegativity of the local/recursive coefficients, unit roundoff, and `Amax` |
 | Thm 11.7 local `2×2` matrix-entry norm bridge | `higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries`, `higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_exact_inverse_ratio`, `higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_exact_inverse_ratio_of_pivot_bounds`, `higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_infNorm_choice` | Ch11 | **new this session**; specializes the local+recursive `2×2` accumulator to the actual trailing diagonal and coupling entries in an ambient `Fin (n+3)` matrix, deriving the local `|b|≤Amax` and `|c|≤Amax` hypotheses from `Amax=‖A‖∞`. The exact-inverse-ratio variants choose `κ = σ/((1-α)a₂₁²)` directly, derive its nonnegativity from the accepted `2×2` branch, and in the pivot-bound form derive `σ≥0` from `|a11|≤σ`; the `σ=‖A‖∞` endpoint ties the pivot scalars to the leading matrix entries and derives the pivot-entry bounds from `‖A‖∞`, removing another scalar handoff before the remaining full tridiagonal recursion theorem. |
 | Thm 11.7 local `1×1` matrix-entry norm bridge | `higham11_7_tridiagonalOneByOneFirstTrailingIndex`, `higham11_7_tridiagonalOneByOneTrailingSubproblemIndex`, `higham11_7_tridiagonalOneByOneLiftTrailingPerturbation`, `higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_bound_leadingBlockSupport`, `higham11_7_tridiagonal_oneByOne_correction_le_of_choice`, `higham11_7_fl_tridiagonal_oneByOne_schur_step_printed_bound_of_choice`, `higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_with_norm_bound`, `higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries`, `higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_of_subdiagonal_ne_zero`, `higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_infNorm_choice_of_subdiagonal_ne_zero` | Ch11 | **new this session**; adds the offset-one trailing-subproblem embedding for Algorithm 11.6's `1×1` branch, packages the lifted recursive tail with bound/support/embedded-entry identity, derives the local correction bound `|a21*a21/a11|≤Amax/α` from the printed one-pivot threshold plus `σ≤Amax`, packages the rounded first trailing Schur scalar with a recursive tail residual in a dimension-generic `Amax` theorem, specializes it to `Amax=‖A‖∞` with the resulting componentwise and `∞`-norm perturbation bounds, adds a branch-derived wrapper that obtains the required nonzero leading pivot from the accepted `1×1` branch plus nonzero subdiagonal coupling, and exposes a direct `σ=‖A‖∞` choice wrapper for the recursive branch. This is the `1×1` companion to the existing `2×2` local accumulator, not the full mixed-pivot recursion theorem. |
+| Thm 11.7 mixed local-branch adapter | `higham11_7_tridiagonalBranchAmbientDim`, `higham11_7_TridiagonalBranchMatrix`, `higham11_7_tridiagonalBranchLeadingIndex`, `higham11_7_tridiagonalBranchFirstTrailingIndex`, `higham11_7_tridiagonalTwoByTwoSecondPivotIndex`, `higham11_7_tridiagonalBranchSupportOffset`, `higham11_7_TridiagonalBranchLocalAssumptions`, `higham11_7_TridiagonalBranchLocalResidual`, `higham11_7_tridiagonalBranchLocalResidual_of_localAssumptions` | Ch11 | **new this session**; packages the accepted local `1×1` or `2×2` tridiagonal branch into a common `PivotSize`-indexed residual interface, deriving it from the existing branch-specific local-recursive theorems while keeping the recursive tail certificate explicit. This is the adapter the future mixed-pivot path induction can consume; it does not assume or close the full recursive theorem. |
+| Thm 11.7 branch residual equation witnesses | `higham11_7_TridiagonalBranchLocalResidualWitness`, `higham11_7_tridiagonalBranchLocalResidual_exists_residual_witness`, `higham11_7_tridiagonalBranchLocalResidualWitness_supported` | Ch11 | **new this session**; opens a branch-local residual to a specific perturbation matrix that retains not only bounds/support/norm data but also the branch scalar residual equation, and then strips the equation-bearing witness back to the supported perturbation package consumed by path aggregation. |
+| Thm 11.7 terminal-tail branch adapter | `higham11_7_tridiagonalRecursiveTailZeroResidual`, `higham11_7_tridiagonalRecursiveTailZeroResidual_infNorm`, `higham11_7_TridiagonalBranchTerminalAssumptions`, `higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions` | Ch11 | **new this session**; supplies the zero recursive-tail certificate for the terminal local branch and packages either accepted branch into the common branch residual when `tail_fl = tail_exact`. This gives the future mixed-pivot path induction a base case companion to the branch-indexed local step adapter. |
+| Thm 11.7 finite mixed-pivot path interface | `higham11_7_TridiagonalBranchPathLocalAssumptions`, `higham11_7_TridiagonalBranchPathLocalResiduals`, `higham11_7_tridiagonalBranchPathLocalResiduals_of_localAssumptions`, `higham11_7_TridiagonalBranchPathTerminalAssumptions`, `higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumptions`, `higham11_7_tridiagonalBranchPathLocalResiduals_empty`, `higham11_7_tridiagonalBranchPathLocalResiduals_singleton_of_localAssumptions`, `higham11_7_tridiagonalBranchPathLocalResiduals_singleton_of_terminalTailAssumptions`, `higham11_7_tridiagonalBranchPathLocalAssumptions_head`, `higham11_7_tridiagonalBranchPathLocalAssumptions_tail`, `higham11_7_tridiagonalBranchPathTerminalAssumptions_head`, `higham11_7_tridiagonalBranchPathTerminalAssumptions_tail`, `higham11_7_tridiagonalBranchPathLocalResiduals_head`, `higham11_7_tridiagonalBranchPathLocalResiduals_tail` | Ch11 | **new this session**; lifts the branch-local and terminal-tail adapters pointwise over a finite family of `1×1`/`2×2` tridiagonal branch choices with per-step dimensions, matrices, budgets, and tail scalars. The empty and singleton adapters expose the induction base and one-step entry points; the head/tail projections expose the elimination side for future induction. This is path-level scaffolding for the remaining mixed-pivot induction; it still leaves the global accumulation of those pointwise residuals open. |
+| Thm 11.7 finite mixed-pivot last-terminal path assembly | `higham11_7_tridiagonalBranchPathLocalAssumptions_of_init_localAssumptions_last_terminalTailAssumptions`, `higham11_7_tridiagonalBranchPathLocalResiduals_of_init_localAssumptions_last_terminalTailAssumptions` | Ch11 | **new this session**; packages the concrete recursion shape where all initial branches carry ordinary local recursive assumptions and the final branch is discharged by the terminal-tail adapter, yielding both path-local assumptions and path-local residuals. |
+| Thm 11.7 finite mixed-pivot path witness extraction | `higham11_7_tridiagonalBranchLocalResidual_exists_supported_witness`, `higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses`, `higham11_7_tridiagonalBranchPathLocalAssumptions_exists_supported_witnesses`, `higham11_7_tridiagonalBranchPathTerminalAssumptions_exists_supported_witnesses`, `higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses_of_uniform_budgets`, `higham11_7_tridiagonalBranchPathLocalAssumptions_exists_supported_witnesses_of_uniform_budgets`, `higham11_7_tridiagonalBranchPathTerminalAssumptions_exists_supported_witnesses_of_uniform_budgets` | Ch11 | **new this session**; extracts explicit per-branch perturbation matrices from branch-local, finite-path residual, path-local-assumption, and terminal-tail-assumption packages, retaining the componentwise budget, leading-block support, and `∞`-norm bound needed by the later global accumulation theorem. Uniform-budget variants package supplied per-branch scalar comparisons into the extracted witnesses directly. |
+| Thm 11.7 finite mixed-pivot residual equation witnesses | `higham11_7_TridiagonalBranchPathResidualWitnesses`, `higham11_7_tridiagonalBranchPathLocalResiduals_exists_residual_witnesses`, `higham11_7_tridiagonalBranchPathResidualWitnesses_supported` | Ch11 | **new this session**; lifts the richer branch residual-witness predicate over finite paths and extracts witnesses that preserve each branch's scalar residual equation, not only the bound/support/norm data. The support bridge lets those equation-bearing witnesses feed the existing supported-witness lifted-sum aggregation theorems without re-extraction. |
+| Thm 11.7 branch residual-equation accessors | `higham11_7_tridiagonalBranchLocalResidualWitness_one_equation`, `higham11_7_tridiagonalBranchLocalResidualWitness_two_equation`, `higham11_7_tridiagonalBranchLocalResidualWitness_one_equation_lifted`, `higham11_7_tridiagonalBranchLocalResidualWitness_two_equation_lifted` | Ch11 | **new this session**; exposes the scalar first-trailing residual equations carried by the 1×1 and 2×2 branch witnesses, and the corresponding equations after the local perturbation is lifted into a shared ambient matrix at the embedded first-trailing index. This gives the remaining path solve-equation induction named access to the local residual equalities without unfolding the witness predicate. |
+| Thm 11.7 concrete path residual-witness branch accessors | `higham11_7_tridiagonalPathFirstTrailingIndex_one_lt_pivotSpan_succ`, `higham11_7_tridiagonalPathFirstTrailingIndex_two_lt_pivotSpan_succ`, `higham11_7_tridiagonalConcretePathResidualWitnesses_one`, `higham11_7_tridiagonalConcretePathResidualWitnesses_two` | Ch11 | **new this session**; proves that a concrete prefix-span branch's first trailing scalar embeds into the full `pathSpan+1` ambient for both accepted pivot sizes, and gives cast-safe branch accessors from an equation-bearing concrete path witness to the corresponding `1×1` or `2×2` branch-local witness. This is the path-level handoff needed to apply the lifted residual-equation accessors in the final solve-equation induction without unfolding dependent path predicates. |
+| Thm 11.7 last-terminal residual-witness extraction | `higham11_7_tridiagonalBranchPathResidualWitnesses_exists_of_init_localAssumptions_last_terminalTailAssumptions`, `higham11_7_tridiagonalConcretePathResidualWitnesses_exists_of_init_localAssumptions_last_terminalTailAssumptions` | Ch11 | **new this session**; extracts equation-bearing residual witnesses directly from the initial-local/last-terminal path shape, including the concrete prefix-span full-ambient specialization. This is the witness data needed for the remaining lifted solve-equation induction and does **not** close the Theorem 11.7 row by itself. |
 | Thm 11.7 solve-side interface bridge | `higham11_7_tridiagonal_backward_error_interface_of_solve_delta`, `higham11_7_tridiagonal_backward_error_interface_of_solve_delta_nonneg`, `higham11_7_tridiagonal_backward_error_interface_of_solve_delta_infNorm` | Ch11 | **new this session**; if the recursive tridiagonal analysis constructs the solve-side perturbation `ΔA₂` with the printed componentwise budget, the factorization-side perturbation `ΔA₁` can be filled by zero to produce the source-facing Theorem 11.7 interface shape; the `_nonneg` form derives `0 ≤ c*u*Amax` from separate nonnegativity of `c`, `u`, and `Amax`, and the `_infNorm` form specializes the budget to `c*u*‖A‖∞` |
 | Thm 11.7 entrywise infinity-norm bridge | `higham11_7_abs_entry_le_infNorm` | Ch11 | **new this session**; row-sum bridge showing every entry satisfies `|Aᵢⱼ| ≤ ‖A‖∞`, used to discharge local scalar `Amax` hypotheses from a norm budget |
 | Thm 11.7 componentwise-to-infinity-norm bridge | `higham11_7_infNorm_le_card_mul_of_uniform_componentwise_bound`, `higham11_7_infNorm_le_card_mul_of_printed_componentwise_bound` | Ch11 | **new this session**; aggregates a uniform componentwise perturbation budget to an infinity-norm bound by row sums, with the printed `c*u*Amax` form exposed for the final normwise theorem |
-| Thm 11.7 solve-side norm-bound packaging | `higham11_7_tridiagonal_backward_error_interface_of_solve_delta_with_norm_bounds`, `higham11_7_tridiagonal_backward_error_interface_of_solve_delta_infNorm_with_norm_bounds` | Ch11 | **new this session**; carries the recursive solve perturbation through the source-facing interface while also recording `‖ΔA₁‖∞` and `‖ΔA₂‖∞` bounds obtained from the componentwise budget, including the direct `Amax = ‖A‖∞` specialization |
+| Thm 11.7 solve-side norm-bound packaging | `higham11_7_tridiagonal_backward_error_interface_of_solve_delta_with_norm_bounds`, `higham11_7_tridiagonal_backward_error_interface_of_solve_delta_infNorm_with_norm_bounds`, `higham11_7_tridiagonal_backward_error_interface_of_sum_solve_delta_infNorm`, `higham11_7_tridiagonal_backward_error_interface_of_sum_solve_delta_infNorm_of_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_uniform_sum_solve_delta_infNorm`, `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm`, `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_supported_uniform_sum_solve_delta_infNorm`, `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets`, `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets_of_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_supported_uniform_sum_solve_delta_infNorm_of_le_offsets` | Ch11 | **new this session**; carries the recursive solve perturbation through the source-facing interface while also recording `‖ΔA₁‖∞` and `‖ΔA₂‖∞` bounds obtained from the componentwise budget, including the direct `Amax = ‖A‖∞` specialization; the finite sum bridges collapse already-embedded residual matrices without support hypotheses, including coefficient-majorant and uniform-coefficient variants, while the finite supported-sum bridges additionally preserve same-ambient support, including mixed-offset families, under printed coefficient budgets and then feed the result into the solve-side interface, with coefficient-majorant variants replacing `Σc_t` by a supplied printed constant `C` and uniform-coefficient variants exposing the common `k*c*u‖A‖∞` budget |
+| Thm 11.7 embedded path solve-side aggregation | `higham11_7_TridiagonalBranchPathSupportedWitnesses`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_embedded_sum`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_embedded_sum_of_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_embedded_sum_of_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_embedded_sum_of_coeff_sum_le` | Ch11 | **new this session**; extracts the finite path-local residual witnesses, accepts an explicit same-ambient embedding with support/budget preservation plus the final summed solve equation, and feeds that data into the supported solve-delta source interface. The local-assumption and terminal-tail wrappers compose the branch/path adapters before extraction. This does not close Theorem 11.7 yet; the concrete full pivot path still has to provide the embedding data and summed solve equation. |
+| Thm 11.7 local-to-ambient path lift | `higham11_7_tridiagonalLocalBlockIndex`, `higham11_7_tridiagonalLocalBlockIndex_val`, `higham11_7_tridiagonalLiftLocalBlockPerturbation`, `higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_embedded`, `higham11_7_tridiagonalLiftLocalBlockPerturbation_bound`, `higham11_7_tridiagonalLiftLocalBlockPerturbation_leadingBlockSupport`, `higham11_7_tridiagonalLiftLocalBlockPerturbation_bound_leadingBlockSupport`, `higham11_7_tridiagonalBranchPathSupportedWitnesses_lift_to_ambient`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_of_coeff_sum_le` | Ch11 | **new this session**; gives the concrete same-ambient lift used by the embedded path bridge: a local branch perturbation is placed at a supplied row/column start offset, zero-filled elsewhere, retains its componentwise bound, shifts zero-prefix support by the start offset, and agrees on embedded local entries. The lifted-sum source wrapper now uses this explicit lift directly, leaving only the scalar budget comparisons and final lifted solve equation for the concrete mixed pivot path. |
+| Thm 11.7 local-to-global path budget comparisons | `higham11_7_tridiagonal_local_budget_le_global_of_coeff_roundoff_norm`, `higham11_7_tridiagonalBranchPath_local_budgets_le_global_of_coeff_roundoff_norm` | Ch11 | **new this session**; converts pointwise coefficient, roundoff, and local matrix norm comparisons into the exact budget hypothesis required by the lifted path solve aggregation theorem, i.e. `(c_bound+c_rec)u_loc‖A_loc‖∞ ≤ c_t u ‖A‖∞` for every branch. |
+| Thm 11.7 path coefficient majorants | `higham11_7_tridiagonalBranchPath_uniform_coeff_majorant_of_component_bounds`, `higham11_7_tridiagonalBranchPath_uniform_coeff_add_majorant_of_component_bounds` | Ch11 | **new this session**; derives the endpoint's pointwise coefficient domination `c_bound t + c_rec t ≤ c` from uniform caps on the local-step and recursive-tail coefficient components, including the direct additive cap case. |
+| Thm 11.7 lifted zero-offset path endpoints | `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_residual_witnesses_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_lifted_sum_zero_offset_of_residual_witnesses_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_lifted_sum_zero_offset_of_residual_witnesses_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_lifted_sum_zero_offset_of_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_lifted_sum_zero_offset_of_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_scheduled_lifted_sum_zero_offset_of_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_scheduled_lifted_sum_zero_offset_of_residual_witnesses_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_scheduled_lifted_sum_zero_offset_of_residual_witnesses_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_scheduled_lifted_sum_zero_offset_of_residual_witnesses_coeff_sum_le` | Ch11 | **new this session**; specializes the lifted path solve aggregation to common support offset `0`, removing the routine offset-lowering proof, and exposes local-assumption and terminal-tail entry points that match the concrete mixed-pivot path construction. The residual-witness variants extract equation-bearing branch witnesses and ask the final solve equation only for those witnesses, while using their supported projection for aggregation. The scheduled variants choose an existing zero-based start-offset schedule internally, including equation-bearing scheduled variants, leaving the lifted solve equation as the path-specific handoff. |
+| Thm 11.7 lifted zero-offset scalar-budget endpoints | `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_lifted_sum_zero_offset_of_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_lifted_sum_zero_offset_of_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_scheduled_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_scheduled_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_scheduled_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm` | Ch11 | **new this session**; composes the zero-offset lifted source endpoints with the path budget-comparison lemma, so a concrete pivot path can discharge budgets by supplying nonnegativity, coefficient domination, roundoff domination, and local-to-global matrix norm domination. The residual-witness variants keep the final solve-equation handoff equation-bearing while absorbing those scalar budget comparisons. The scheduled variants use the proved start-offset existence theorem, so callers provide the lifted solve equation only for scheduled starts; the scheduled residual-witness variants combine that schedule choice with the scalar budget comparisons. |
+| Thm 11.7 mixed-path start-offset schedule | `higham11_7_tridiagonalBranchSupportOffset_pos`, `higham11_7_tridiagonalBranchSupportOffset_le_two`, `higham11_7_tridiagonalPathPivotSpan`, `higham11_7_tridiagonalPathPivotSpan_zero`, `higham11_7_tridiagonalPathPivotSpan_cons`, `higham11_7_tridiagonalPathPivotSpan_pos`, `higham11_7_tridiagonalPathPivotSpan_ge_length`, `higham11_7_tridiagonalPathPivotSpan_le_two_mul`, `higham11_7_TridiagonalPathStartOffsetsFrom`, `higham11_7_TridiagonalPathStartOffsets`, `higham11_7_tridiagonalPathStartOffsetsFrom_head`, `higham11_7_tridiagonalPathStartOffsetsFrom_succ`, `higham11_7_tridiagonalPathStartOffsetsFrom_succ_lt`, `higham11_7_tridiagonalPathStartOffsetsFrom_cons`, `higham11_7_tridiagonalPathStartOffsetsFrom_tail`, `higham11_7_tridiagonalPathStartOffsetsFrom_iff_head_tail`, `higham11_7_tridiagonalPathStartOffsetsFrom_exists`, `higham11_7_tridiagonalPathStartOffsetsFrom_base_le`, `higham11_7_tridiagonalPathStartOffsetsFrom_lt_base_add_pivotSpan`, `higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_base_add_pivotSpan`, `higham11_7_tridiagonalPathStartOffsetsFrom_last_branch_end_eq`, `higham11_7_tridiagonalPathStartOffsets_head`, `higham11_7_tridiagonalPathStartOffsets_succ`, `higham11_7_tridiagonalPathStartOffsets_succ_lt`, `higham11_7_tridiagonalPathStartOffsets_tail`, `higham11_7_tridiagonalPathStartOffsets_iff_head_tail`, `higham11_7_tridiagonalPathStartOffsets_exists`, `higham11_7_tridiagonalPathStartOffsets_lt_pivotSpan`, `higham11_7_tridiagonalPathStartOffsets_branch_end_le_pivotSpan`, `higham11_7_tridiagonalPathStartOffsets_last_branch_end_eq` | Ch11 | **new this session**; defines the concrete offset recurrence for a mixed `1×1`/`2×2` tridiagonal pivot path, with branch span bounds, zero/cons/positive/lower/upper pivot-span lemmas, a base-offset variant, zero-based specialization, existence theorems, head/successor/tail projections, strict successor growth from positive branch spans, start-offset total-span bounds, branch-end containment bounds, last-branch endpoint equalities, cons constructors, and head-tail iff lemmas that make nonempty schedules composable by induction. |
+| Thm 11.7 mixed-path schedule ordering | `higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_of_lt`, `higham11_7_tridiagonalPathStartOffsetsFrom_lt_of_lt`, `higham11_7_tridiagonalPathStartOffsets_branch_end_le_of_lt`, `higham11_7_tridiagonalPathStartOffsets_lt_of_lt` | Ch11 | **new this session**; proves any earlier scheduled branch consumes its pivot block before any later branch starts, and that scheduled starts are strictly ordered by path index. |
+| Thm 11.7 mixed-path schedule monotonicity | `higham11_7_tridiagonalPathStartOffsetsFrom_le_of_le`, `higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_branch_end_of_le`, `higham11_7_tridiagonalPathStartOffsets_le_of_le`, `higham11_7_tridiagonalPathStartOffsets_branch_end_le_branch_end_of_le` | Ch11 | **new this session**; packages monotonicity of scheduled starts and consumed-branch endpoints for base-offset and zero-based mixed tridiagonal paths. |
+| Thm 11.7 mixed-path schedule uniqueness | `higham11_7_tridiagonalPathStartOffsetsFrom_unique`, `higham11_7_tridiagonalPathStartOffsetsFrom_exists_unique`, `higham11_7_tridiagonalPathStartOffsets_unique`, `higham11_7_tridiagonalPathStartOffsets_exists_unique` | Ch11 | **new this session**; proves the base-offset and zero-based mixed-path start schedules are unique, and packages existence plus uniqueness for canonical schedule handoffs. |
+| Thm 11.7 mixed-path schedule prefix spans | `higham11_7_tridiagonalPathPrefixSpan`, `higham11_7_tridiagonalPathPrefixSpan_zero`, `higham11_7_tridiagonalPathPrefixSpan_succ`, `higham11_7_tridiagonalPathStartOffsetsFrom_eq_base_add_prefixSpan`, `higham11_7_tridiagonalPathStartOffsets_eq_prefixSpan`, `higham11_7_tridiagonalPathPrefixSpan_last_add_branch_eq_pivotSpan` | Ch11 | **new this session**; identifies each scheduled branch start with the base plus the sum of earlier consumed pivot spans, and identifies the last explicit prefix endpoint with the full path span. |
+| Thm 11.7 mixed-path prefix-span bounds and ordering | `higham11_7_tridiagonalPathPrefixSpan_lt_pivotSpan`, `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_pivotSpan`, `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_of_lt`, `higham11_7_tridiagonalPathPrefixSpan_lt_of_lt`, `higham11_7_tridiagonalPathPrefixSpan_le_of_le`, `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_branch_end_of_le` | Ch11 | **new this session**; transfers containment, strict ordering, and monotone endpoint facts from canonical schedules to explicit prefix spans, so later lifted-entry arguments can avoid carrying a separate `starts` witness. |
+| Thm 11.7 concrete mixed-path tail dimensions | `higham11_7_tridiagonalPathTailDim`, `higham11_7_tridiagonalBranchAmbientDim_eq_tail_add_offset_succ`, `higham11_7_tridiagonalPathPrefixSpan_add_branchAmbientDim_tailDim_eq_pivotSpan_succ`, `higham11_7_tridiagonalPath_local_index_lt_pivotSpan_succ`, `higham11_7_tridiagonalPathLocalBlockIndex`, `higham11_7_tridiagonalPathLocalBlockIndex_val`, `higham11_7_tridiagonalPathTailDim_last_eq_zero`, `higham11_7_tridiagonalPathTailDim_head`, `higham11_7_tridiagonalPathTailDim_succ` | Ch11 | **new this session**; defines the remaining tail dimension after each concrete mixed-path branch, proves the branch-local block fits in the full `pathSpan+1` ambient at the prefix offset, exposes a path-local index embedding, proves the terminal branch has zero remaining tail, and gives the head/successor recurrence needed by path induction. |
+| Thm 11.7 concrete mixed-path branch matrix view | `higham11_7_tridiagonalPathBranchMatrix`, `higham11_7_tridiagonalPathBranchMatrix_apply`, `higham11_7_tridiagonalPathLocalBlockIndex_injective`, `higham11_7_tridiagonalPathBranchMatrix_abs_entry_le_infNorm`, `higham11_7_tridiagonalPathBranchMatrix_infNorm_le_card_mul_global_infNorm`, `higham11_7_tridiagonalPathBranchMatrix_infNorm_le_global_infNorm` | Ch11 | **new this session**; restricts a full `pathSpan+1` ambient tridiagonal matrix to each branch-local block at its explicit prefix offset, proves local entries are bounded by the global `∞` norm, gives a coarse local-row-length norm bound for coefficient-absorbing budget routes, and proves the sharper principal-block `∞`-norm comparison needed by the concrete path endpoint. |
+| Thm 11.7 concrete scheduled mixed-path endpoint | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm` | Ch11 | **new this session**; specializes the scheduled lifted path source endpoint to the canonical `pathSpan+1` ambient matrix, concrete tail dimensions, and prefix-offset branch matrices, discharging the local matrix-norm comparison via the principal-block bound while keeping the genuine path-local assumptions, coefficient/roundoff comparisons, and lifted solve equation explicit. |
+| Thm 11.7 concrete prefix-span mixed-path endpoint | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_prefix_lifted_sum_zero_offset_of_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_prefix_lifted_sum_zero_offset_of_coeff_roundoff_norm` | Ch11 | **new this session**; replaces the arbitrary valid start schedule in the concrete full-ambient endpoint by the canonical prefix-span starts, using schedule uniqueness so the remaining solve equation is stated directly over the concrete path offsets. |
+| Thm 11.7 concrete residual-witness mixed-path endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_scheduled_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_scheduled_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm` | Ch11 | **new this session**; specializes the residual-witness scheduled scalar-budget endpoints to the concrete `pathSpan+1` ambient matrix and then to canonical prefix-span starts, so the final lifted solve equation can be stated over equation-bearing path residual witnesses rather than arbitrary supported witnesses. |
+| Thm 11.7 concrete residual-witness uniform endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm` | Ch11 | **new this session**; specializes the concrete residual-witness prefix endpoints to common roundoff, common coefficient budget `(k : ℝ) * c * u * ‖A‖∞`, and the initial-local/last-terminal path assembly interface. |
+| Thm 11.7 concrete last-terminal residual-witness nonuniform endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm` | Ch11 | **new this session**; composes the initial-local/last-terminal path assembly with the residual-witness prefix endpoint while preserving either per-branch roundoff and coefficient vectors or common roundoff with per-branch coefficients. |
+| Thm 11.7 concrete prefix-span uniform-roundoff endpoint | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_prefix_lifted_sum_zero_offset_of_coeff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_prefix_lifted_sum_zero_offset_of_coeff_norm` | Ch11 | **new this session**; specializes the concrete prefix-span endpoint to the common unit roundoff `u`, removing the pointwise `u_loc` nonnegativity and domination handoff from both the local-assumption and terminal-tail routes. |
+| Thm 11.7 concrete prefix-span uniform-coefficient endpoint | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_prefix_lifted_sum_zero_offset_of_uniform_coeff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_prefix_lifted_sum_zero_offset_of_uniform_coeff_norm` | Ch11 | **new this session**; specializes the concrete prefix-span endpoint to a common per-branch coefficient `c`, replacing the finite coefficient-sum handoff by the direct budget `(k : ℝ) * c * u * ‖A‖∞`. |
+| Thm 11.7 concrete prefix-span last-terminal endpoint | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_uniform_coeff_norm` | Ch11 | **new this session**; composes the last-terminal path assembly theorem with the concrete prefix-span uniform-roundoff/uniform-coefficient endpoint, so callers supply local assumptions for the initial branches and one terminal-tail assumption for the final branch instead of a pre-built path-local assumption. |
 | §11.1.1 1×1 multiplier bound `|c/e| ≤ 1/α` | `oneByOne_multiplier_bound`, `higham11_1_oneByOne_multiplier_bound` | " | **new this session**; derived from pivot test `α·ω ≤ |e|`; the honest content behind the `bunch_parlett_L_bound`/`bunch_kaufman` `‖L‖`-interfaces |
 | §11.1.1 / §11.1.2 1×1 Schur step growth `|b−c₁c₂/e| ≤ (1+1/α)μ₀` | `oneByOne_schur_growth`, `higham11_1_oneByOne_schur_growth` | " | **new this session**; printed bound `|ã_ij| ≤ μ₀+μ₀²/μ₁ ≤ (1+1/α)μ₀`; mechanism behind ρₙ ≤ (1+α⁻¹)^{n−1} |
 | §11.1.1 2×2 pivot det bound `det E ≤ (α²−1)μ₀²` | `twoByTwo_completePivot_det_bound`, `higham11_4_twoByTwo_det_bound` | " | **new this session**; printed `det(E) ≤ μ₁²−μ₀² ≤ (α²−1)μ₀²` |
@@ -67,7 +100,19 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.4 constant, Higham [608,1997] (A.3): `(3+α²)/(1−α²) ≤ 6` (`\|E\|\|E⁻¹\|\|E\| ≤ 6\|E\|`) | `bunch_kaufman_pivot_norm_const_le_six`, `higham11_4_pivot_norm_const_le_six` | " | **new this session** |
 | §11.1.2 1×1-pivot growth constant `1/α < 2` (Higham [608,1997]) | `bunch_kaufman_recip_alpha_lt_two`, `higham11_4_recip_alpha_lt_two` | " | **new this session**; `g_ij ≤ α⁻¹·max < 2·max` |
 | Thm 11.4 max-entry product bridge, Higham [608,1997] eq (4.14) | `higham11_4_bunch_kaufman_stability_of_max_entry_product_bound`, `higham11_4_bunch_kaufman_solve_backward_error_of_max_entry_product_bound`, `higham11_4_bunch_kaufman_stability_of_higham_const_absLDLTProduct_entries`, `higham11_4_bunch_kaufman_stability_of_higham_const_product_entries`, `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_absLDLTProduct_entries`, `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_product_entries` | Ch11 | **new this session**; turns a scalar max-entry certificate for `\||L̂||D̂||L̂ᵀ|\|_M` into the existing pointwise stability surface, and transports a solve perturbation budget proportional to that product into the advertised `36nρₙ` normwise budget; the exact-coefficient direct wrappers combine the eq-(4.13) constant handoff with the stability and solve consumers, in both matrix-product and expanded double-sum entry notation. This does **not** prove eq (4.14); it makes eq (4.14) the exact next scalar target instead of a pointwise interface hypothesis. |
-| Thm 11.4 finite max-entry product norm | `higham11_4_bunchKaufmanProductEntry`, `higham11_4_absLDLTProduct`, `higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct`, `higham11_4_bunchKaufmanProductEntry_nonneg`, `higham11_4_bunchKaufmanProductMax`, `higham11_4_bunchKaufmanProductEntry_le_productMax`, `higham11_4_absLDLTProduct_entry_le_productMax`, `higham11_4_bunchKaufmanProductMax_nonneg`, `higham11_4_bunchKaufmanProductMax_le_iff`, `higham11_4_bunchKaufmanProductMax_le_iff_absLDLTProduct`, `higham11_4_bunchKaufmanProductMax_eq_maxEntryNorm_absLDLTProduct`, `higham11_4_absLDLTProduct_entry_le_maxEntryNorm`, `higham11_4_maxEntryNorm_absLDLTProduct_le_iff`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_product_entries`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_absLDLTProduct_entries`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_maxEntryNorm_absLDLTProduct`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_absLDLTProduct_entries`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_product_entries`, `higham11_4_bunch_kaufman_stability_of_productMax_le`, `higham11_4_bunch_kaufman_stability_of_maxEntryNorm_absLDLTProduct_le`, `higham11_4_bunch_kaufman_solve_backward_error_of_productMax_le`, `higham11_4_bunch_kaufman_solve_backward_error_of_maxEntryNorm_absLDLTProduct_le` | Ch11 | **new this session**; defines the project matrix product `|L̂||D̂||L̂ᵀ|`, proves it is exactly the expanded double-sum entry form, defines the positive-dimension finite maximum `maxᵢⱼ (|L̂||D̂||L̂ᵀ|)ᵢⱼ`, identifies that finite maximum with the repository `maxEntryNorm` of `|L̂||D̂||L̂ᵀ|`, proves nonnegativity, the least-scalar property, and the direct equivalence between a `maxEntryNorm` bound and pointwise bounds in both expanded and matrix-product notation, packages pointwise/max-entry estimates into the scalar product-bound predicate including the exact Higham-coefficient handoff in both notations, and connects the source eq-(4.14) statement for this finite maximum directly to both the pointwise stability and solve-budget consumers. |
+| Thm 11.4 row-sum stability consumers | `higham11_4_bunch_kaufman_stability_of_higham_const_uniform_row_sum_bound`, `higham11_4_bunch_kaufman_stability_of_higham_const_uniform_entry_bounds`, `higham11_4_bunch_kaufman_stability_of_higham_const_row_sum_bounds` | Ch11 | **new this session**; exact-coefficient row-sum and uniform-entry product caps now feed the pointwise Bunch-Kaufman stability surface directly through the max-entry norm route, while deriving `0≤Dmax` from the nonempty absolute `D̂` entry cap. |
+| Thm 11.4 row-sum solve consumers | `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_uniform_row_sum_bound`, `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_uniform_entry_bounds`, `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_row_sum_bounds` | Ch11 | **new this session**; the same exact-coefficient row-sum and uniform-entry product caps feed the solve-side Bunch-Kaufman normwise perturbation wrapper, converting a solve residual proportional to `‖|L̂||D̂||L̂ᵀ|‖_M` into the advertised `36nρₙ` budget. |
+| Thm 11.4 loose row-sum/uniform-entry consumers | `higham11_4_bunch_kaufman_stability_of_uniform_row_sum_bound`, `higham11_4_bunch_kaufman_stability_of_uniform_entry_bounds`, `higham11_4_bunch_kaufman_solve_backward_error_of_uniform_row_sum_bound`, `higham11_4_bunch_kaufman_solve_backward_error_of_uniform_entry_bounds` | Ch11 | **new this session**; when row-sum or uniform-entry caps are already compared directly to the printed `36nρₙ‖A‖_M` budget, the loose routes now feed both the stability surface and solve-side normwise perturbation wrapper without first exposing an intermediate max-entry proof. |
+| Thm 11.4 finite max-entry product norm | `higham11_4_bunchKaufmanProductEntry`, `higham11_4_absLDLTProduct`, `higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct`, `higham11_4_bunchKaufmanProductEntry_nonneg`, `higham11_4_bunchKaufmanProductMax`, `higham11_4_bunchKaufmanProductEntry_le_productMax`, `higham11_4_absLDLTProduct_entry_le_productMax`, `higham11_4_bunchKaufmanProductMax_nonneg`, `higham11_4_bunchKaufmanProductMax_le_iff`, `higham11_4_bunchKaufmanProductMax_le_iff_absLDLTProduct`, `higham11_4_bunchKaufmanProductMax_eq_maxEntryNorm_absLDLTProduct`, `higham11_4_absLDLTProduct_entry_le_maxEntryNorm`, `higham11_4_maxEntryNorm_absLDLTProduct_le_iff`, `higham11_4_maxEntryNorm_absLDLTProduct_le_iff_product_entries`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_product_entries`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_absLDLTProduct_entries`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_maxEntryNorm_absLDLTProduct`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_absLDLTProduct_entries`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_product_entries`, `higham11_4_bunch_kaufman_stability_of_productMax_le`, `higham11_4_bunch_kaufman_stability_of_maxEntryNorm_absLDLTProduct_le`, `higham11_4_bunch_kaufman_solve_backward_error_of_productMax_le`, `higham11_4_bunch_kaufman_solve_backward_error_of_maxEntryNorm_absLDLTProduct_le` | Ch11 | **new this session**; defines the project matrix product `|L̂||D̂||L̂ᵀ|`, proves it is exactly the expanded double-sum entry form, defines the positive-dimension finite maximum `maxᵢⱼ (|L̂||D̂||L̂ᵀ|)ᵢⱼ`, identifies that finite maximum with the repository `maxEntryNorm` of `|L̂||D̂||L̂ᵀ|`, proves nonnegativity, the least-scalar property, and the direct equivalence between a `maxEntryNorm` bound and pointwise bounds in both expanded and matrix-product notation, packages pointwise/max-entry estimates into the scalar product-bound predicate including the exact Higham-coefficient handoff in both notations, and connects the source eq-(4.14) statement for this finite maximum directly to both the pointwise stability and solve-budget consumers. |
+| Thm 11.4 row-sum/product majorant bridge | `higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds`, `higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound`, `higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound`, `higham11_4_bunchKaufmanProductEntry_le_uniform_entry_bounds`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_entry_bounds`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_uniform_row_sum_bound`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_uniform_entry_bounds`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_row_sum_bound`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_entry_bounds`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_row_sum_bounds` | Ch11 | **new this session**; proves the algebraic step from absolute-entry bounds on `D̂` plus row-sum bounds on `|L̂|` to the source product entries of `|L̂||D̂||L̂ᵀ|`, and packages the uniform-row, uniform-entry, and per-row versions into the `maxEntryNorm` target and scalar product certificate consumed by the existing 11.4 stability/solve wrappers, including the exact-coefficient route before the proved `≤36` handoff. Uniform `|L̂|≤Lmax` facts now automatically supply the row sums as `n*Lmax`. This still leaves the pivot-path proof of the required `|L̂|` and `D̂` caps open. |
+| Thm 11.4 row-sum first-stage split bridge | `higham11_4_first_stage_recursive_product_split_of_row_sum_bounds`, `higham11_4_product_entries_of_first_stage_recursive_row_sum_bounds`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_row_sum_bounds`, `higham11_4_product_entries_of_first_stage_recursive_higham_const_row_sum_bounds`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_higham_const_row_sum_bounds` | Ch11 | **new this session**; region-specific row-sum caps for `|L̂|`, a uniform absolute-entry cap for `D̂`, and first-stage/trailing scalar budget comparisons now produce the exact first-stage/trailing product-entry split consumed by the Higham [608] eqs. (4.11)--(4.14) aggregation, including loose `36` and exact-coefficient max-entry norm endpoints. This narrows the remaining concrete proof to row-sum, `D̂`, and regional scalar estimates along the pivot path. |
+| Thm 11.4 row-sum first-stage scalar/consumer bridge | `higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_row_sum_bounds`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_row_sum_bounds`, `higham11_4_bunch_kaufman_stability_of_first_stage_recursive_row_sum_bounds`, `higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_row_sum_bounds`, `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_row_sum_bounds`, `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_row_sum_bounds`, `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_row_sum_maxEntryNorm_bounds`, `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_row_sum_maxEntryNorm_bounds` | Ch11 | **new this session**; the row-sum/`D̂` first-stage/trailing split now packages directly into the scalar finite-product certificate and into both Bunch-Kaufman stability and solve consumers, for loose `36` shares and Higham's exact coefficient. This removes a caller-side max-entry detour; it does **not** prove the concrete pivot-path row-sum or `D̂` caps. |
+| Thm 11.4 product-entry nonnegativity adapters | `higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds_entry_nonneg`, `higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound_entry_nonneg`, `higham11_4_bunchKaufmanProductEntry_le_uniform_entry_bounds_entry_nonneg` | Ch11 | **new this session**; lower-level row-sum, uniform-row, and uniform-entry product-entry adapters now derive `0≤Dmax` from the nonempty absolute `D̂` entry cap, matching the existing scalar and max-entry norm wrappers. |
+| Thm 11.4 loose max-entry product cap nonnegativity wrappers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound_entry_nonneg`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_entry_bounds_entry_nonneg` | Ch11 | **new this session**; the loose `maxEntryNorm` row-sum and uniform-entry routes now derive `0≤Dmax` from the nonempty uniform absolute `D̂` entry cap, matching the loose scalar product-certificate wrappers. |
+| Thm 11.4 max-entry product cap nonnegativity wrappers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound_entry_nonneg`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds_entry_nonneg`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds_entry_nonneg` | Ch11 | **new this session**; the exact-coefficient max-entry norm routes now derive `0≤Dmax` from the nonempty uniform absolute `D̂` entry cap, matching the scalar product-certificate wrappers and removing a separate positivity handoff for uniform-row, uniform-entry, and per-row row-sum paths. |
+| Thm 11.4 first-stage/recursive product aggregation | `higham11_4_first_stage_recursive_product_bound`, `higham11_4_product_entries_of_first_stage_recursive_bounds`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_bounds`, `higham11_4_first_stage_recursive_product_bound_of_higham_const`, `higham11_4_product_entries_of_first_stage_recursive_higham_const_bounds`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_bounds` | Ch11 | **new this session**; formalizes the scalar handoff implicit in Higham [608, 1997], eqs. (4.11)--(4.14): one local first-stage product share plus a recursive Schur-complement product share bounded by `36(n-s)ρₙ‖A‖_M` fits inside the printed `36nρₙ‖A‖_M` budget, and the resulting entrywise split packages directly into the scalar max-entry product certificate. The exact-coefficient variants let callers supply Higham's `(3+α²)(3+α)/(1−α²)^2` bound first and use the proved eq-(4.13) `≤36` handoff only at the final source-facing step. This does not prove the concrete first-stage or recursive split hypotheses; it removes the remaining scalar aggregation once those pivot-path bounds are supplied. |
+| Thm 11.4 first-stage/recursive max-entry norm bridge | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_bounds`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_higham_const_bounds` | Ch11 | **new this session**; the loose and exact-coefficient first-stage/trailing product splits now also package directly into the source-shaped `maxEntryNorm` target for `|L̂||D̂||L̂ᵀ|`, not just the scalar finite-product certificate. |
+| Thm 11.4 first-stage/recursive stability/solve consumers | `higham11_4_bunch_kaufman_stability_of_first_stage_recursive_bounds`, `higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_bounds`, `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_bounds`, `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_bounds`, `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_maxEntryNorm_bounds`, `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_maxEntryNorm_bounds` | Ch11 | **new this session**; the loose and exact-coefficient first-stage/trailing product split now feeds both the pointwise Bunch-Kaufman stability surface and the solve-side normwise perturbation wrapper directly, including solve hypotheses stated against the repository `maxEntryNorm` of `|L̂||D̂||L̂ᵀ|`, so the remaining pivot-path proof can target the concrete local/trailing split hypotheses. |
 | α bounds `1/2 < α ≤ 5/7`, `α² = (α+1)/4` | `bunch_parlett_alpha_gt_half`, `bunch_parlett_alpha_le_5_7`, `bunch_parlett_alpha_sq` | " | **new this session**; supporting the Thm 11.4 constants |
 | Eq (11.6) example factorization A = LDLᵀ (partial pivoting) | `higham11_6_partialPivotExample_factorization` | Ch11 | exact `fin_cases` algebra, ε≠0 |
 | §11.3 skew-symmetric diag zero | `skewSymmetric_diag_zero`, `higham11_16_skew_diag_zero` | " | Aᵀ=−A ⇒ Aᵢᵢ=0 |
@@ -84,18 +129,36 @@ assumptions remain open in the not-proved ledger below.
 | §11.2 Aasen solve chain eq (11.15), rounded component package | `higham11_15_fl_aasen_solve_chain_backward_error_components` | Ch11 | **new this session**; composes the outer triangular-solve and middle tridiagonal-solve bridges into a single computed chain `ẑ,q̂,ŷ,ŵ,x̂` exposing all three perturbed equations |
 | §11.2 Aasen solve chain eq (11.15), algebraic source collapse | `higham11_15_aasenChainDeltaA`, `higham11_15_aasenTripleTerm_abs_bound`, `higham11_15_aasenTripleTerm_abs_bound_gamma`, `higham11_15_aasenChainDeltaA_abs_bound_of_entrywise`, `higham11_15_aasenChainDeltaABound`, `higham11_15_aasenChainDeltaA_abs_bound_gamma`, `higham11_15_aasen_chain_source_backward_error_of_components` | Ch11 | **new this session**; collapses `(L+ΔL)(T+ΔT)(U+ΔU)` against `LTU=A` to obtain a single source equation `(A+ΔA)w=rhs`; also proves the scalar seven-term triple-product bound, its collected outer-`γ`/middle-budget specialization, the summation bridge, and the closed componentwise `higham11_15_aasenChainDeltaABound` for the collapsed perturbation |
 | §11.2 Aasen solve chain eq (11.15), closed-budget norm aggregation | `higham11_15_aasenChainDeltaABound_nonneg`, `higham11_15_aasenMiddleSolveBudget_nonneg`, `higham11_15_aasenMiddleSolveBudget_infNorm_le`, `higham11_15_aasenMiddleSolveBudget_infNorm_le_absLU`, `higham11_15_aasenMiddleSolveBudget_infNorm_le_of_factor_product_bound`, `higham11_15_aasenMiddleSolveBudget_infNorm_le_of_absLU_norm_bound`, `higham11_15_absLU_infNorm_le_of_componentwise_T_bound`, `higham11_15_aasenMiddleSolveBudget_infNorm_le_of_absLU_componentwise_T_bound`, `higham11_15_aasenMiddleSolveBudget_infNorm_le_of_colDiagDom_LUFactSpec`, `higham11_15_aasenMiddleSolveBudget_infNorm_le_of_rowDiagDom_LUFactSpec`, `higham11_15_aasenChainDeltaABound_infNorm_le`, `higham11_15_infNorm_le_of_aasenChainDeltaABound` | Ch11 | **new this session**; proves the closed chain and middle tridiagonal-solve budgets are nonnegative, aggregates the middle budget both to `f(γ_n)‖L_T‖∞‖U_T‖∞` and directly to `f(γ_n)‖|L_T||U_T|‖∞`, provides relative factor-product and abs-LU norm forms, converts componentwise `|L_T||U_T|≤κ|T̂|` into the corresponding norm bound, and instantiates the concrete column- and row-dominant tridiagonal LUFactSpec `3|T̂|` Chapter 9 bounds; the closed chain's two scalar triple-product sums are aggregated into the normwise bound `(2γ+γ²)‖L‖∞‖T‖∞‖U‖∞ + (1+2γ+γ²)‖L‖∞‖BT‖∞‖U‖∞`, then transferred to any perturbation dominated componentwise by `higham11_15_aasenChainDeltaABound` |
+| Thm 11.8 checkerboard middle determinant-inequality adapter | `higham11_15_absLU_componentwise_T_bound_of_checkerboard_principalBlock_inequalities`, `higham11_15_aasenMiddleSolveBudget_infNorm_le_of_checkerboard_principalBlock_inequalities`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_norm_caps_of_zero_relative_T_hat_checkerboard_principalBlock_inequalities`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_zero_relative_T_hat_checkerboard_principalBlock_inequalities_entry_bound_nonneg` | Ch11 | **new this session**; exposes the Chapter 9 checkerboard total-nonnegative coefficient-one `|L_T||U_T|=|T̂|` route with determinant-inequality hypotheses rather than pre-proved positive leading principal blocks, packages it directly into the Aasen middle-solve norm budget `f(γ_n)‖T̂‖∞`, and lifts that source-facing middle handoff into both the generic zero-relative source-norm-cap endpoint and the inverse-scale Aasen-entry source-prefix exact-radius endpoint. This is still a dependency bridge; the concrete Aasen `T̂` checkerboard certificate remains open. |
 | Thm 11.8 summed Aasen budget norm aggregation | `higham11_8_infNorm_le_of_sum_aasenChainDeltaABounds`, `higham11_8_aasenNormwiseBackwardBound_of_sum_aasenChainDeltaABounds` | Ch11 | **new this session**; if a source perturbation is bounded componentwise by the sum of two closed Aasen chain budgets, its `∞`-norm is bounded by the sum of the corresponding two-term normwise budgets; the new predicate bridge turns that scalar norm budget directly into the printed Theorem 11.8 normwise target, avoiding an entrywise `η|T̂|` comparison when a normwise scalar comparison is available |
 | Thm 11.8 scalar norm-budget reducer | `higham11_8_aasen_factor_solve_coeff_le_of_parts`, `higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts`, `higham11_8_aasen_factor_solve_norm_budget_of_factor_norm_bounds`, `higham11_8_aasen_factor_solve_norm_budget_of_relative_factor_norm_bounds`, `higham11_8_aasen_factor_solve_norm_budget_of_relative_factor_norm_bounds_gamma_parts`, `higham11_8_aasen_factor_solve_norm_budget_of_middle_factor_product_coeff_parts`, `higham11_8_aasen_factor_solve_norm_budget_of_absLU_norm_coeff_parts`, `higham11_8_aasen_factor_solve_norm_budget_of_absLU_componentwise_T_coeff_parts`, `higham11_8_aasen_factor_solve_norm_budget_of_colDiagDom_middle_coeff_parts`, `higham11_8_aasen_factor_solve_norm_budget_of_colDiagDom_middle_coeff`, `higham11_8_aasen_factor_solve_norm_budget_of_rowDiagDom_middle_coeff_parts`, `higham11_8_aasen_factor_solve_norm_budget_of_rowDiagDom_middle_coeff` | Ch11 | **new this session**; reduces the scalar norm-budget hypothesis for the factorization+solve wrapper to primitive `∞`-norm factor bounds for `L`, `Lᵀ`, `L̂`, `L̂ᵀ`, `T`, the factor `BT`, and the middle solve budget, plus one printed-coefficient inequality; the relative-factor reducers derive the `L̂` and `L̂ᵀ` norm constants as `(1+γ_factor)` times the source-factor constants from `|L̂-L|≤γ_factor|L|`, with either a monolithic coefficient inequality or four gamma-share obligations; the coefficient splitters let later work prove the four factorization/solve contributions separately, either as raw scalar pieces or as shares of the printed `(n−1)^2γ_{15n+25}` coefficient; the direct column/row-dominant variants accept the same four terms as one scalar sum; the middle-route reducers discharge the middle budget either from a separate factor product, the more concrete abs-LU norm or componentwise `|T̂|` bound, or directly from the column- or row-dominant tridiagonal LUFactSpec `3f(γ_n)` specializations |
 | Thm 11.8 relative `T_hat` fallback scalar norm-budget reducers | `higham11_8_aasen_factor_solve_norm_budget_of_relative_T_hat_error`, `higham11_8_aasen_factor_solve_norm_budget_of_relative_factor_norm_bounds_relative_T_hat_error` | Ch11 | **new this session**; a supplied relative middle-factor error `|T_hat-T|≤κBT|T_hat|` now directly instantiates the concrete factorization-side budget `κBT|T_hat|` and feeds the scalar norm-budget route, including the generated relative-`L_hat` outer-factor variant. This fallback uses the proved `‖T‖∞≤(1+κBT)‖T_hat‖∞` cap, so it is useful for non-exact-radius norm budgeting but does **not** close the sharper source route requiring `κT=1` or a direct `‖T‖∞≤‖T_hat‖∞`/entrywise `|T|≤|T_hat|` fact. |
-| Thm 11.8 Aasen outer-factor `(n-1)` majorant | `higham11_8_sum_abs_le_card_pred_mul_of_one_zero`, `higham11_8_aasen_outer_factor_row_col_sum_majorants_of_entry_bound`, `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound`, `higham11_8_aasen_outer_factor_scaled_entry_cap`, `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_componentwise_T_checkerboard_middle`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_T_norm_cap_checkerboard_middle`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_componentwise_T_checkerboard_middle`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_T_norm_cap_checkerboard_middle`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_componentwise_T`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_T_norm_cap` | Ch11 | **new this session**; proves that Aasen's exact outer factor structure (strict upper-zero entries plus first-column zeros below the first row) turns a uniform exact-factor entry bound into row and column sum majorants with `(n-1)` entries, then feeds those majorants to the relative outer-factor norm caps required by the exact-radius route. The normalized scalar helper now reduces the row/column scale comparison to `(1+γ)κ≤1`; the source-prefix endpoints consume the sharper cap directly in both the entrywise `|T|≤|T̂|` middle route and the direct `‖T‖∞≤‖T̂‖∞` route, either with a supplied middle product estimate or with the checkerboard LU specialization, replacing the crude `n`-entry fallback once the concrete source entry bound and normalized scalar comparison are supplied. |
+| Thm 11.8 Aasen outer-factor `(n-1)` majorant | `higham11_8_sum_abs_le_card_pred_mul_of_one_zero`, `higham11_8_aasen_outer_factor_row_col_sum_majorants_of_entry_bound`, `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound`, `higham11_8_aasen_outer_factor_scaled_entry_cap`, `higham11_8_one_plus_mul_le_one_of_le_inv_one_plus`, `higham11_8_aasen_outer_factor_scaled_entry_cap_of_le_inv_one_plus`, `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit`, `higham11_8_nonneg_of_uniform_abs_entry_bound`, `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus`, `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus_of_entry_bound`, `higham11_8_outer_factor_caps_of_aasen_entry_bound_inv_one_plus`, `higham11_8_outer_factor_caps_of_aasen_entry_bound_inv_one_plus_of_entry_bound`, `higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus`, `higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus_of_entry_bound`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_componentwise_T_checkerboard_middle`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_T_norm_cap_checkerboard_middle`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_componentwise_T_checkerboard_middle_entry_bound_nonneg`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_T_norm_cap_checkerboard_middle_entry_bound_nonneg`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_componentwise_T`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_T_norm_cap`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_componentwise_T_entry_bound_nonneg`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_T_norm_cap_entry_bound_nonneg`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_componentwise_T_checkerboard_middle`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_T_norm_cap_checkerboard_middle`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_componentwise_T_checkerboard_middle`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_T_norm_cap_checkerboard_middle`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_componentwise_T`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_T_norm_cap`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_componentwise_T`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_T_norm_cap` | Ch11 | **new this session**; proves that Aasen's exact outer factor structure (strict upper-zero entries plus first-column zeros below the first row) turns a uniform exact-factor entry bound into row and column sum majorants with `(n-1)` entries, then feeds those majorants to the relative outer-factor norm caps required by the exact-radius route. The normalized scalar helper reduces the row/column scale comparison to `(1+γ)κ≤1`, and the inverse-scale wrapper discharges that normalized cap from the source-style hypothesis `κ≤1/(1+γ)`; the unscaled and base-square wrappers derive the exact outer-factor caps and `(n-1)^2` product caps consumed by exact-radius routes. The source-prefix endpoints consume the sharper cap directly in both the entrywise `|T|≤|T̂|` middle route and the direct `‖T‖∞≤‖T̂‖∞` route, either with a supplied middle product estimate or with the checkerboard LU specialization, replacing the crude `n`-entry fallback once the concrete source entry bound and scalar comparison are supplied; both the checkerboard and direct-middle endpoints now accept the source-style inverse-scale entry estimate directly, and the matching normalized endpoint wrappers derive their own `0≤κ` side condition from the entry bound. The lower-level inverse-scale and normalized cap/base-square helpers can also derive `0≤κ` from the same nonempty uniform absolute entry bound. |
 | Thm 11.8 scalar coefficient product-cap helpers | `higham9_14_f_mono_nonneg`, `higham11_gamma_add_le`, `higham11_8_two_gamma_plus_sq_mul_le_of_le`, `higham11_8_one_plus_two_gamma_plus_sq_mul_le_of_le`, `higham11_8_two_gamma_plus_sq_mul_le_of_majorants`, `higham11_8_one_plus_two_gamma_plus_sq_mul_le_of_majorants`, `higham11_8_higham9_14_f_gamma_le_gamma_4n`, `higham11_8_three_higham9_14_f_gamma_le_gamma_12n`, `higham11_8_two_gamma_plus_sq_le_gamma_2n`, `higham11_8_one_plus_two_gamma_plus_sq_mul_gamma_le_gamma_3n`, `higham11_8_one_plus_two_gamma_plus_sq_mul_higham9_14_f_gamma_le_gamma_6n`, `higham11_8_one_plus_two_gamma_plus_sq_mul_three_higham9_14_f_gamma_le_gamma_14n`, `higham11_8_gamma_2n_plus_3n_plus_2n_plus_6n_le_gamma_15n25`, `higham11_8_triple_product_square_bound_of_middle_le_one`, `higham11_8_aasen_product_square_bounds_of_base_le_one`, `higham11_8_aasen_factor_solve_coeff_le_of_product_square_bounds`, `higham11_8_aasen_relative_coeff_le_of_gamma_product_square_bounds`, `higham11_8_aasen_relative_coeff_le_of_gamma_base_square_bounds`, `higham11_8_aasen_relative_coeff_le_of_gamma_base_square_exact_radius`, `higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts_product_bounds`, `higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts_product_majorants`, `higham11_8_aasen_factor_solve_coeff_le_of_product_majorants`, `higham11_8_aasen_factor_solve_coeff_le_of_concrete_product_majorants`, `higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts_concrete_product_majorants` | Ch9/Ch11 | **new this session**; factors the four gamma-share coefficient comparisons through reusable product caps, larger gamma/product majorants, exact product-square caps for the printed `(n−1)^2` prefactor, and monotonicity/absorption of Chapter 9's tridiagonal LU polynomial `f(u)=4u+3u²+u³`, including direct absorptions for `2γ_n+γ_n²`, `(1+2γ_n+γ_n²)γ_n`, `f(γ_n)`, `(1+2γ_n+γ_n²)f(γ_n)`, `3f(γ_n)`, and `(1+2γ_n+γ_n²)3f(γ_n)`; the exact-product discharge now allocates the concrete `T_hat` route to `γ_{2n}+γ_{3n}+γ_{2n}+γ_{6n}≤γ_{15n+25}` from square bounds and `κBT≤γ_n`, the reduced base-square interface derives the four exact-product caps from the two base square caps plus `κT≤1` and `κmidLU≤1`, and the exact-radius specialization uses the printed `γ_{15n+25}` directly, so later work can prove product-size bounds and scaled gamma-share bounds separately before invoking the existing four-share splitter, discharge the same product-majorant route with one aggregate printed-coefficient inequality, or instantiate the product caps with the exact products from the relative Aasen norm budget in either aggregate or reduced aggregate form; the product-majorant reducers also transport the concrete middle term `f(γ_solve)κmidLU` through a larger `γ_mid_cap` |
+| Thm 11.8 printed gamma-validity guard | `higham11_8_gammaValid_15n25_of_unit_roundoff_bound`, `higham11_8_gammaValid_15n25_of_u_le_cap`, `higham11_8_gammaValid_n_two_prefix_of_u_le_cap` | Ch11 | **new this session**; turns the source smallness condition `(15n+25)u<1`, or a displayed cap `u≤Ucap` with `(15n+25)Ucap<1`, into the repository `gammaValid fp (15*n+25)` hypothesis and the local `gammaValid n`, `gammaValid 2`, and prefix-dot validity side conditions used by the Aasen wrappers. This discharges only the gamma-validity guard plumbing; the concrete Aasen product-size and `T_hat` comparison facts remain open. |
 | Thm 11.8 Aasen factorization product residual budget | `higham11_8_aasenFactorizationProductBudget`, `higham11_8_aasen_factorization_product_abs_bound_of_entrywise_factor_bounds`, `higham11_8_aasen_factorization_product_abs_bound_gamma`, `higham11_8_aasen_factorization_product_abs_bound_of_source_prefix_updates` | Ch11 | **new this session**; from exact `A=LTLᵀ` and entrywise factor budgets `|L̂−L|≤BL`, `|T̂−T|≤BT`, proves the product residual `|L̂T̂L̂ᵀ−A|` is bounded by an explicit seven-term double-sum budget; specializes relative `|L̂−L|≤γ|L|` and middle `|T̂−T|≤BT` budgets to the closed `higham11_15_aasenChainDeltaABound`; now also instantiates the relative `L_hat` factor hypothesis from the source-prefix rounded recurrence bridge, so the factorization-product residual can be consumed from the modeled next-column updates plus the remaining concrete `T_hat` budget |
 | §11.2 Aasen solve chain eq (11.15), rounded source backward-error wrapper | `higham11_15_aasenMiddleSolveBudget`, `higham11_15_fl_aasen_solve_chain_source_backward_error_of_delta_bound`, `higham11_15_fl_aasen_solve_chain_source_backward_error` | Ch11 | **new this session**; instantiates the rounded component package and algebraic collapse, first under an explicit componentwise budget and then with the closed `higham11_15_aasenChainDeltaABound` generated from the outer `γ_n` solve bounds and the middle `f(γ_n)|L_T||U_T|` budget |
 | Thm 11.8 factorization + solve-chain source wrapper | `higham11_8_aasen_source_backward_error_of_factor_and_solve_residuals`, `higham11_8_fl_aasen_factor_solve_source_backward_error` | Ch11 | **new this session**; combines a factorization residual `A_fact−A` with a solve-chain residual `ΔS` into one source perturbation `ΔA`, then instantiates this for rounded Aasen solves with computed factors `L̂,T̂`, yielding `(A+ΔA)ŵ=Pᵀb` with componentwise budget `B_factor+B_solve` |
 | §11.2 Aasen solve chain eq (11.15), exact unpermuted algebra | `higham11_15_aasenSolveChain_identity_solve_of_product` | Ch11 | **new this session**; if `A = L T Lᵀ` and the exact chain `Lz=b`, `Ty=z`, `Lᵀw=y`, `x=w` holds (identity permutation), then `A x = b`; this is the algebraic base for later rounded solve-chain perturbation |
-| Thm 11.8 norm bridge: componentwise perturbation ⇒ `∞`-norm bound | `higham11_8_infNorm_le_card_mul_of_uniform_componentwise_bound`, `higham11_8_aasenNormwiseBackwardBound_of_uniform_componentwise_bound`, `higham11_8_infNorm_le_mul_of_componentwise_T_bound`, `higham11_8_infNorm_T_hat_sub_T_le_mul_of_relative_error`, `higham11_8_infNorm_scaled_abs_T_hat_le`, `higham11_8_infNorm_T_le_one_plus_gamma_T_hat_of_relative_error`, `higham11_8_infNorm_factor_le_of_relative_entry_bound`, `higham11_8_infNorm_factorTranspose_le_of_relative_entry_bound`, `higham11_8_aasenNormwiseBackwardBound_of_componentwise_T_bound`, `higham11_8_componentwise_T_bound_add_of_parts`, `higham11_8_aasenNormwiseBackwardBound_of_aasenChainDeltaABound`, `higham11_8_aasenNormwiseBackwardBound_of_aasenChainDeltaABound_coeff_le` | Ch11 | **new this session**; if `|ΔAᵢⱼ| ≤ β`, then `‖ΔA‖∞ ≤ nβ`; if `|ΔAᵢⱼ| ≤ η|T̂ᵢⱼ|`, then `‖ΔA‖∞ ≤ η‖T̂‖∞`; a supplied source-style `|T̂−T|≤γ|T̂|` now directly yields both `‖T̂−T‖∞≤γ‖T̂‖∞` and the concrete envelope norm `‖γ|T̂|‖∞≤γ‖T̂‖∞`, while the exact factor itself gets only the weaker consequence `‖T‖∞≤(1+γ)‖T̂‖∞`; relative factor perturbations `|L_hat-L|≤γ|L|` give `(1+γ)` bounds for `L_hat` and its transpose; all bridge into the printed `(n−1)^2γ_{15n+25}‖T̂‖∞` target once the scalar budget is available; the closed solve-chain budget `higham11_15_aasenChainDeltaABound` now feeds the same printed normwise predicate under an entrywise comparison to `η|T̂|`; the splitter combines separate factorization and solve-chain entrywise comparisons `η_factor|T̂|` and `η_solve|T̂|` when `η_factor+η_solve≤η`; the coefficient adapter accepts `η ≤ (n−1)^2γ_{15n+25}` and multiplies by `‖T̂‖∞` internally |
+| Thm 11.8 norm bridge: componentwise perturbation ⇒ `∞`-norm bound | `higham11_8_infNorm_le_card_mul_of_uniform_componentwise_bound`, `higham11_8_aasenNormwiseBackwardBound_of_uniform_componentwise_bound`, `higham11_8_infNorm_le_mul_of_componentwise_T_bound`, `higham11_8_infNorm_T_hat_sub_T_le_mul_of_relative_error`, `higham11_8_infNorm_scaled_abs_T_hat_le`, `higham11_8_abs_T_le_one_plus_gamma_T_hat_of_relative_error`, `higham11_8_infNorm_T_le_one_plus_gamma_T_hat_of_relative_error`, `higham11_8_infNorm_factor_le_of_relative_entry_bound`, `higham11_8_infNorm_factorTranspose_le_of_relative_entry_bound`, `higham11_8_aasenNormwiseBackwardBound_of_componentwise_T_bound`, `higham11_8_componentwise_T_bound_add_of_parts`, `higham11_8_aasenNormwiseBackwardBound_of_aasenChainDeltaABound`, `higham11_8_aasenNormwiseBackwardBound_of_aasenChainDeltaABound_coeff_le` | Ch11 | **new this session**; if `|ΔAᵢⱼ| ≤ β`, then `‖ΔA‖∞ ≤ nβ`; if `|ΔAᵢⱼ| ≤ η|T̂ᵢⱼ|`, then `‖ΔA‖∞ ≤ η‖T̂‖∞`; a supplied source-style `|T̂−T|≤γ|T̂|` now directly yields both `‖T̂−T‖∞≤γ‖T̂‖∞` and the concrete envelope norm `‖γ|T̂|‖∞≤γ‖T̂‖∞`, while the exact factor itself gets only the weaker entrywise/norm consequences `|Tᵢⱼ|≤(1+γ)|T̂ᵢⱼ|` and `‖T‖∞≤(1+γ)‖T̂‖∞`; relative factor perturbations `|L_hat-L|≤γ|L|` give `(1+γ)` bounds for `L_hat` and its transpose; all bridge into the printed `(n−1)^2γ_{15n+25}‖T̂‖∞` target once the scalar budget is available; the closed solve-chain budget `higham11_15_aasenChainDeltaABound` now feeds the same printed normwise predicate under an entrywise comparison to `η|T̂|`; the splitter combines separate factorization and solve-chain entrywise comparisons `η_factor|T̂|` and `η_solve|T̂|` when `η_factor+η_solve≤η`; the coefficient adapter accepts `η ≤ (n−1)^2γ_{15n+25}` and multiplies by `‖T̂‖∞` internally |
+| Thm 11.8 zero-relative `T_hat` cap | `higham11_8_abs_T_le_T_hat_of_zero_relative_error`, `higham11_8_infNorm_T_le_T_hat_of_zero_relative_error` | Ch11 | **new this session**; specializes the relative `|T̂−T|≤γ|T̂|` diagnostics at `γ=0`, recovering the coefficient-one entrywise and `∞`-norm exact-`T` caps required by exact middle-matrix routes when the computed and exact tridiagonal factors coincide componentwise. |
+| Thm 11.8 zero-relative `T_hat` source-constant endpoint | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_constants_of_zero_relative_T_hat` | Ch11 | **new this session**; specializes the supplied exact-radius source-constant route so a zero relative `T_hat - T` comparison supplies both the `γ_n` factorization budget and the direct `‖T‖∞≤‖T_hat‖∞` cap, removing two separate middle-factor handoffs from that endpoint. |
+| Thm 11.8 zero-relative `T_hat` supplied checkerboard endpoint | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_zero_relative_T_hat_checkerboard_middle` | Ch11 | **new this session**; specializes the supplied checkerboard-middle route with relative exact outer-factor caps so the zero relative `T_hat - T` comparison supplies both the concrete `γ_n` middle-factor budget and the direct exact-`T` norm cap. |
+| Thm 11.8 zero-relative `T_hat` source-prefix checkerboard endpoint | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_zero_relative_T_hat_checkerboard_middle` | Ch11 | **new this session**; specializes the source-prefix checkerboard-middle route with relative exact outer-factor caps so the zero relative `T_hat - T` comparison supplies the middle-factor budget and exact-`T` norm cap while the relative `L_hat` hypothesis is generated from the rounded Aasen recurrence model. |
+| Thm 11.8 zero-relative `T_hat` source-prefix direct norm-cap endpoint | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_norm_caps_of_zero_relative_T_hat` | Ch11 | **new this session**; generic direct-middle source-prefix wrapper turning zero relative `T_hat - T` into the `γ_n` factorization-side middle budget and exact `T`-norm cap under supplied outer factor norm caps and a supplied `|L_T||U_T|≤|T_hat|` product estimate. |
+| Thm 11.8 zero-relative `T_hat` source-prefix row-sum endpoint | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_row_sum_caps_of_zero_relative_T_hat_checkerboard_middle` | Ch11 | **new this session**; combines scaled exact outer-factor row/column sum caps with the zero-relative `T_hat - T` comparison, feeding the source-prefix checkerboard-middle exact-radius route without separate `T` norm or `γ_n` middle-budget hypotheses. |
+| Thm 11.8 source-prefix direct row-sum endpoints | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_row_sum_caps_of_componentwise_T`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_row_sum_caps_of_T_norm_cap` | Ch11 | **new this session**; direct-middle counterparts of the row-sum exact-radius routes, deriving exact and relative outer-factor norm caps from scaled row/column sums while keeping a supplied `|L_T||U_T|≤|T_hat|` middle-product estimate. |
+| Thm 11.8 source-prefix direct entrywise-majorant endpoints | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_componentwise_T`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_T_norm_cap` | Ch11 | **new this session**; direct-middle counterparts of the generic entrywise-majorant exact-radius routes, deriving exact and relative outer-factor norm caps from a uniform exact-factor entry bound while keeping a supplied `|L_T||U_T|≤|T_hat|` middle-product estimate. |
+| Thm 11.8 direct entrywise-majorant endpoint nonnegativity wrappers | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_componentwise_T_entry_bound_nonneg`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_T_norm_cap_entry_bound_nonneg` | Ch11 | **new this session**; direct-middle nonnegativity-discharge variants for the generic entrywise-majorant routes, deriving `0≤κ` from the nonempty uniform absolute entry bound for both componentwise-`T` and direct-`T`-norm endpoints. |
+| Thm 11.8 zero-relative `T_hat` source-prefix entrywise-majorant endpoint | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_zero_relative_T_hat_checkerboard_middle` | Ch11 | **new this session**; combines a uniform exact outer-factor entrywise majorant with the zero-relative `T_hat - T` comparison, feeding the source-prefix checkerboard-middle exact-radius route through the entrywise-majorant outer-factor cap adapter. |
+| Thm 11.8 zero-relative `T_hat` source-prefix direct row-sum/entrywise endpoints | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_row_sum_caps_of_zero_relative_T_hat`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_zero_relative_T_hat` | Ch11 | **new this session**; direct-middle variants of the row-sum and entrywise-majorant exact-radius routes, keeping a supplied `|L_T||U_T|≤|T_hat|` product estimate while the zero-relative comparison supplies the `γ_n` factor budget and exact `T` norm cap. |
+| Thm 11.8 generic entrywise-majorant endpoint nonnegativity wrappers | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_componentwise_T_checkerboard_middle_entry_bound_nonneg`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_T_norm_cap_checkerboard_middle_entry_bound_nonneg`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_zero_relative_T_hat_checkerboard_middle_entry_bound_nonneg`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_zero_relative_T_hat_entry_bound_nonneg` | Ch11 | **new this session**; lifts the existing nonempty absolute-entry-bound nonnegativity helper to the generic `n`-entry majorant endpoints, so source callers no longer provide `0≤κ` separately for checkerboard componentwise-`T`, checkerboard direct-`T`-norm, checkerboard zero-relative, or direct-middle zero-relative routes. |
+| Thm 11.8 zero-relative `T_hat` source-prefix Aasen-entry endpoint | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_zero_relative_T_hat_checkerboard_middle`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_zero_relative_T_hat_checkerboard_middle_entry_bound_nonneg` | Ch11 | **new this session**; specializes the sharper Aasen-structure outer-factor entry-bound route, using strict-upper and first-column zero structure plus a uniform entry cap for `L`, while the zero-relative `T_hat - T` comparison supplies the exact-radius middle-factor handoffs; the nonnegativity companion derives `0≤κLentry` from the same uniform absolute entry bound. |
+| Thm 11.8 zero-relative `T_hat` normalized/source-style Aasen endpoints | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_zero_relative_T_hat_checkerboard_middle`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_zero_relative_T_hat_checkerboard_middle_entry_bound_nonneg`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_zero_relative_T_hat_checkerboard_middle`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_zero_relative_T_hat_checkerboard_middle_entry_bound_nonneg` | Ch11 | **new this session**; zero-relative checkerboard wrappers for the normalized `(1+γ_n)κ≤1` and source-style `κ≤1/(1+γ_n)` Aasen entry-cap routes, including variants that derive `0≤κ` from the nonempty uniform absolute entry bound. |
+| Thm 11.8 zero-relative `T_hat` direct-middle normalized/source-style Aasen endpoints | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_zero_relative_T_hat`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_zero_relative_T_hat_entry_bound_nonneg`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_zero_relative_T_hat`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_zero_relative_T_hat_entry_bound_nonneg` | Ch11 | **new this session**; direct-middle zero-relative wrappers for the same normalized and source-style Aasen entry-cap routes, keeping a supplied `|L_T||U_T|≤|T_hat|` middle-product estimate while deriving the exact-`T` norm handoff and optional `0≤κ` side condition. |
 | Thm 11.8 Aasen outer-factor row/column and entrywise majorant bridge | `higham11_8_relative_infNorm_cap_of_row_sum_majorant`, `higham11_8_relative_outer_factor_caps_of_row_col_sum_majorants`, `higham11_8_relative_outer_factor_caps_of_entrywise_majorant`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_componentwise_T_checkerboard_middle`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_T_norm_cap_checkerboard_middle` | Ch11 | **new this session**; unscaled row and column sum majorants for the exact Aasen outer factor `L`, together with scalar comparisons `(1+γ)κ≤cap`, now feed the relative `∞`-norm caps for both `L` and `Lᵀ` required by the exact-radius source-prefix wrappers. A uniform entrywise majorant now automatically supplies both row and column majorants via row/column sums, and the source-prefix checkerboard-middle endpoints consume that entrywise majorant directly for either entrywise `|T|≤|T̂|` or supplied `‖T‖∞≤‖T̂‖∞`. This reduces the remaining source/product-size work to proving the actual row/column or entrywise majorants and scalar scale comparisons for the concrete Aasen factor. |
 | Thm 11.8 solve-chain source + normwise wrapper | `higham11_8_fl_aasen_solve_chain_source_normwise_backward_error` | Ch11 | **new this session**; packages the rounded Aasen solve-chain source equation `(A+ΔA)ŵ=Pᵀb` with the printed normwise predicate once the closed chain budget is compared entrywise to `η|T̂|` and the scalar `(n−1)^2γ_{15n+25}` budget is supplied |
+| Thm 11.8 printed split-entry normwise endpoints | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_coeff`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_coeff`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_gamma`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_gamma`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_gamma_validity`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_gamma_validity` | Ch11 | **new this session**; instantiates the split-entry `η_factor+η_solve` routes with the final printed coefficient `(n−1)^2γ_{15n+25}`, deriving the intermediate nonnegativity from `0≤γ_{15n+25}` and removing the redundant `η`/`η≤...` handoff for supplied-relative and source-prefix callers. The printed-gamma variants specialize `γ_{15n+25}` to `gamma fp (15*n+25)` and derive nonnegativity from `gammaValid fp (15*n+25)`; the validity variants also derive the local `gammaValid n`, `gammaValid 2`, and source-prefix dot-product validity side conditions from the same printed validity guard. |
 | Thm 11.8 primitive relative gamma-share source wrappers | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_factor_norm_bounds_gamma_parts`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_factor_norm_bounds_gamma_parts` | Ch11 | **new this session**; lifts the four-share `(n−1)^2γ_{15n+25}` coefficient interface from the scalar relative-factor reducer to the rounded source wrappers, both when the relative `L_hat` perturbation is supplied and when it is generated from the source-prefix rounded recurrence model |
 | Thm 11.8 factorization+solve source + normwise wrapper | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_norm_budget`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_factor_norm_bounds`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_factor_norm_bounds`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_factor_norm_bounds_componentwise_BT`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_middle_factor_product_bound`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_absLU_norm_coeff_parts`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_absLU_componentwise_T_coeff_parts`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_componentwise_BT_absLU_componentwise_T_coeff_parts`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_colDiagDom_middle_coeff_parts`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_colDiagDom_middle_coeff`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_colDiagDom_middle_coeff_parts`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_colDiagDom_middle_coeff`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_rowDiagDom_middle_coeff_parts`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_rowDiagDom_middle_coeff`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_rowDiagDom_middle_coeff_parts`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_rowDiagDom_middle_coeff`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_factor_norm_bounds`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_factor_norm_bounds`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_colDiagDom_middle_coeff`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_rowDiagDom_middle_coeff`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_colDiagDom_middle_coeff_componentwise_BT`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_rowDiagDom_middle_coeff_componentwise_BT`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_factor_norm_bounds_componentwise_BT`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_middle_factor_product_bound`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_absLU_norm_coeff_parts`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_absLU_componentwise_T_coeff_parts`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_componentwise_BT_absLU_componentwise_T_coeff_parts`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets` | Ch11 | **new this session**; packages the rounded Aasen factorization and solve-chain source equation `(A+ΔA)ŵ=Pᵀb` together with the printed normwise predicate. The original wrapper uses an explicit entrywise comparison from the summed factorization+solve budgets to `η|T̂|`; the scalar norm wrapper accepts one normwise comparison from the summed closed budgets to `(n−1)^2γ_{15n+25}‖T̂‖∞`, and the factor-norm wrappers discharge that comparison from primitive `∞`-norm factor bounds plus one coefficient inequality, including variants where the computed `L̂`/`L̂ᵀ` norm bounds are derived from the relative entrywise factor perturbation, where the factorization-side `BT_factor` norm is derived from a componentwise `BT_factor≤κ|T̂|` bound, and source-prefix variants that generate the relative `L̂` factor hypothesis from the modeled rounded recurrence updates; the middle-factor-product and abs-LU wrappers replace the hand-supplied middle-budget norm with either a relative `‖L_T‖∞‖U_T‖∞` bound, the sharper `‖|L_T||U_T|‖∞` bound, or its componentwise `|T̂|` source; the combined wrappers consume componentwise bounds for both `BT_factor` and `|L_T||U_T|`; the column- and row-dominant wrappers use the concrete Chapter 9 `3f(γ_n)` middle coefficient, either as four scalar pieces or as one direct scalar sum, including source-prefix variants that also derive the computed `L̂`/`L̂ᵀ` norm bounds from the generated relative factor hypothesis and can derive the `BT_factor` norm from a componentwise `T_hat` comparison; the split-entry wrappers accept separate factorization and solve-chain entrywise comparisons and combine their coefficients |
 | Thm 11.8 supplied-relative column/row middle wrappers | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_colDiagDom_middle_coeff`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_rowDiagDom_middle_coeff`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_colDiagDom_middle_coeff_componentwise_BT`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_rowDiagDom_middle_coeff_componentwise_BT` | Ch11 | **new this session**; specialize the non-source factorization+solve source wrapper for the case where a relative `L_hat` perturbation hypothesis is already available, derive the computed `L_hat`/`L_hatᵀ` norms from it, use the concrete Chapter 9 column- or row-dominant `3f(γ_n)` middle coefficient, and optionally derive the `BT_factor` norm from a componentwise `T_hat` comparison |
@@ -131,8 +194,8 @@ this session proved the exact base case and the key constants.
 | Source label | Exact claim | Current Lean status | Missing foundation | Smallest next Lean theorem |
 |---|---|---|---|---|
 | Theorem 11.3 | block LDLᵀ backward error: `P(A+ΔA₁)Pᵀ = L̂D̂L̂ᵀ`, `(A+ΔA₂)x̂=b`, `|ΔAᵢ| ≤ p(n)u(|A|+Pᵀ|L̂||D̂||L̂ᵀ|P)+O(u²)` (eq 11.5) | `higham11_3_block_ldlt_backward_error_interface` (assumes the whole conclusion) | **substantially advanced (all-1×1 case)**: proved the exact recursion (`exact_blockLDLT_all_oneByOne`), the component stage bounds, packaged all-index one-stage envelope with nonnegativity, raw-Schur recursive all-1×1 envelope, stored-symmetric rounded Schur bridge, storage-defect one-stage bridge, recursive stored-symmetric all-1×1 envelope (`fl_blockLDLT_stored_all_oneByOne_bound`, `higham11_3_fl_blockLDLT_stored_all_oneByOne_bound`), source-facing all-1×1 perturbation packages (`higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne`, `higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne`), and norm-bound variants for both all-1×1 packages (`..._with_norm_bounds`). NOTE: (11.5) for 2×2 pivots = **Problem 11.5 (benchmark-reserved)** → stays a hypothesis. | extend the induction to mixed 1×1/2×2 pivots while keeping the 2×2 solve bound as a hypothesis, then relate the accumulated envelope to the printed `p(n)u(|A|+Pᵀ|L̂||D̂||L̂ᵀ|P)+O(u²)` form |
-| Theorem 11.4 | Bunch–Kaufman normwise stability `(A+ΔA)x̂=b`, `‖ΔA‖_M ≤ p(n)ρₙu‖A‖_M+O(u²)` via `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36nρₙ‖A‖_M` | `higham11_4_bunch_kaufman_stability` / `..._solve_backward_error_interface` (assume); scalar max-product bridges `higham11_4_bunch_kaufman_stability_of_max_entry_product_bound`, `higham11_4_bunch_kaufman_solve_backward_error_of_max_entry_product_bound`, and the finite-max routes `..._of_productMax_le` now reduce those consumers to the source-style eq-(4.14) scalar certificate; `higham11_4_absLDLTProduct`/`..._eq_absLDLTProduct` connect the expanded Lean entry to the project `matMul` notation for `|L̂||D̂||L̂ᵀ|`, `..._eq_maxEntryNorm_absLDLTProduct` identifies the specialized finite maximum with the existing max-entry norm, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_absLDLTProduct_entries`/`..._of_product_entries` package pointwise source estimates directly into that max-entry norm, and the `..._maxEntryNorm_absLDLTProduct_le` bridges feed that notation directly to both stability and solve endpoints | proof now available (Higham [608,1997] §4.3, eqs 4.11–4.14, appendix A). The **constants** are proved (`bunch_kaufman_bound_const_le_36` = eq 4.13's `36`, `..._pivot_norm_const_le_six` = A.3, `..._recip_alpha_lt_two`), the finite max-entry product norm is defined, its matrix-product/max-entry-norm notation bridges, nonnegativity, least-bound property, pointwise-to-scalar packaging, direct pointwise-to-max-entry-norm packaging, and consumer bridges are proved, and the all-stage, finite-prefix, printed-alpha, and normalized final-stage growth recursions are formalized, and exact-coefficient pointwise estimates now hand off to the `36nρₙ` max-entry norm target and directly feed both stability and solve endpoints. Remaining: the entrywise `|L||D||Lᵀ|` block bound (4.11)–(4.12) plus instantiation of the concrete pivot-path stage hypotheses into the exact-coefficient (4.14) estimate. | prove the source max-entry estimate `maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤ 36nρₙ‖A‖_M` from the per-pivot `\|E\|\|E⁻¹\|\|E\|`/`CE⁻¹` bounds and the Schur-recursion `‖S‖_M ≤ ρₙ‖A‖_M`; the direct max-entry and exact-coefficient bridges then feed stability and solve endpoints |
-| Theorem 11.7 | Bunch tridiagonal normwise stability, `(A+ΔA₂)x̂=b`, `|ΔAᵢ| ≤ c·u·‖A‖` | `higham11_7_tridiagonal_backward_error_interface` (assumes); Algorithm 11.6 branch tests, the accepted `2×2` pivot determinant lower bound/nonsingularity, inverse-entry bounds, the atomic rounded scalar Schur update, a `Fin 1` trailing-block one-stage printed-budget handoff, the ambient `Fin 3` first-stage embedding, the dimension-generic `Fin (n+3)` local-recursion embedding, trailing-block support packaging, support-preserving perturbation addition, offset-generic zero-prefix base/add packaging including printed-coefficient variants, mixed-depth accumulation, and the offset-two bridge, first local+recursive residual accumulation with printed coefficient addition, the recursive trailing-subproblem perturbation lift, recursive scalar residual composition, zero-prefix support shifting under recursive lifts, leading-support versions of the subproblem and recursive-residual accumulators, the norm-bound version of the leading-support recursive-residual accumulator, the solve-side `ΔA₂` bridge into the source-facing interface with separate nonnegative and direct inf-norm budget forms, the entrywise `|Aᵢⱼ|≤‖A‖∞` bridge for local `Amax` hypotheses, componentwise-to-∞-norm aggregation and source-side norm-bound packaging, the trailing-subproblem offset/injectivity bookkeeping for the `2×2` tridiagonal step, and matching offset-one lift/support plus scalar and matrix-entry local-recursive norm-bound packages for the `1×1` tridiagonal step are now proved | tridiagonal block-LDLᵀ fl analysis | turn the subproblem-lifted local+recursive perturbations into a recursive theorem over the full mixed `1×1`/`2×2` tridiagonal block-LDLᵀ path, then aggregate it to the normwise theorem |
+| Theorem 11.4 | Bunch–Kaufman normwise stability `(A+ΔA)x̂=b`, `‖ΔA‖_M ≤ p(n)ρₙu‖A‖_M+O(u²)` via `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36nρₙ‖A‖_M` | `higham11_4_bunch_kaufman_stability` / `..._solve_backward_error_interface` (assume); scalar max-product bridges `higham11_4_bunch_kaufman_stability_of_max_entry_product_bound`, `higham11_4_bunch_kaufman_solve_backward_error_of_max_entry_product_bound`, and the finite-max routes `..._of_productMax_le` now reduce those consumers to the source-style eq-(4.14) scalar certificate; `higham11_4_absLDLTProduct`/`..._eq_absLDLTProduct` connect the expanded Lean entry to the project `matMul` notation for `|L̂||D̂||L̂ᵀ|`, `..._eq_maxEntryNorm_absLDLTProduct` identifies the specialized finite maximum with the existing max-entry norm, `..._maxEntryNorm_absLDLTProduct_le` bridges feed that notation directly to both stability and solve endpoints, the row-sum/product majorant bridges package uniform or per-row `|L̂|` row-sum caps plus a uniform `|D̂|` cap into that target, including the exact Higham coefficient before the `≤36` handoff, and the first-stage/recursive aggregation bridges package Higham [608] eq. (4.11)'s local-plus-recursive product split, with either loose `36` shares or the exact eq-(4.13) coefficient, into the same scalar certificate, including direct row-sum first-stage scalar/stability/solve consumers | proof now available (Higham [608,1997] §4.3, eqs 4.11–4.14, appendix A). The **constants** are proved (`bunch_kaufman_bound_const_le_36` = eq 4.13's `36`, `..._pivot_norm_const_le_six` = A.3, `..._recip_alpha_lt_two`), the finite max-entry product norm is defined, its matrix-product/max-entry-norm notation bridges, nonnegativity, least-bound property, pointwise-to-scalar packaging, direct pointwise-to-max-entry-norm packaging, row-sum/product majorant packaging, loose and exact-coefficient first-stage/recursive scalar aggregation, row-sum first-stage scalar/stability/solve consumers, and generic consumer bridges are proved, and the all-stage, finite-prefix, printed-alpha, and normalized final-stage growth recursions are formalized. Remaining: prove the concrete pivot-path first-stage/trailing split, row-sum and `D̂` entry caps (or a sharper direct product-entry proof) from the paper's block bounds (4.11)–(4.12), then instantiate them into the exact-coefficient (4.14) estimate. | prove per-row or uniform `|D̂|` and `|L̂|` row-sum caps from the per-pivot `\|E\|\|E⁻¹\|\|E\|`/`CE⁻¹` bounds and the Schur-recursion `‖S‖_M ≤ ρₙ‖A‖_M`, then feed `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_row_sum_bounds`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_row_sum_bound`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_row_sum_bounds`, or `higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_row_sum_bounds` (or an equivalent direct entry proof) to obtain the source max-entry estimate |
+| Theorem 11.7 | Bunch tridiagonal normwise stability, `(A+ΔA₂)x̂=b`, `|ΔAᵢ| ≤ c·u·‖A‖` | `higham11_7_tridiagonal_backward_error_interface` (assumes); Algorithm 11.6 branch tests, the accepted `2×2` pivot determinant lower bound/nonsingularity, inverse-entry bounds, the atomic rounded scalar Schur update, a `Fin 1` trailing-block one-stage printed-budget handoff, the ambient `Fin 3` first-stage embedding, the dimension-generic `Fin (n+3)` local-recursion embedding, trailing-block support packaging, support-preserving perturbation addition, offset-generic zero-prefix base/add packaging including printed-coefficient variants, mixed-depth accumulation, and the offset-two bridge, first local+recursive residual accumulation with printed coefficient addition, the recursive trailing-subproblem perturbation lift, recursive scalar residual composition, zero-prefix support shifting under recursive lifts, leading-support versions of the subproblem and recursive-residual accumulators, the norm-bound version of the leading-support recursive-residual accumulator, the solve-side `ΔA₂` bridge into the source-facing interface with separate nonnegative and direct inf-norm budget forms, the entrywise `|Aᵢⱼ|≤‖A‖∞` bridge for local `Amax` hypotheses, componentwise-to-∞-norm aggregation, source-side norm-bound packaging, finite support-sum aggregation including mixed-offset printed variants, finite supported solve-delta aggregation into the source interface, the trailing-subproblem offset/injectivity bookkeeping for the `2×2` tridiagonal step, matching offset-one lift/support plus scalar and matrix-entry local-recursive norm-bound packages for the `1×1` tridiagonal step, the branch-indexed local assumptions/residual adapter, the terminal-tail branch adapter, finite mixed-pivot path-local adapter, embedded path solve-delta aggregation adapters, the concrete local-to-ambient lift package, branch residual-equation accessors at local and lifted first-trailing entries, concrete path first-trailing embedding bounds and branch-size residual-witness accessors, generic local-to-global budget comparison lemmas, zero-offset lifted source endpoints, zero-offset scalar-budget source endpoints, mixed-path start-offset schedule interface, concrete scheduled/prefix path endpoints, uniform-roundoff prefix endpoints, uniform-coefficient prefix endpoints, and the concrete last-terminal prefix endpoint are now proved | tridiagonal block-LDLᵀ fl analysis | instantiate the finite path-local assumption interface along a concrete full mixed `1×1`/`2×2` tridiagonal block-LDLᵀ pivot path, using the terminal-tail adapter as its base case, then prove the remaining concrete coefficient majorants and final lifted solve equation |
 
 2026-07-09 update: `higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries`
 specializes the leading `2×2` local+recursive residual accumulator to ambient matrix
@@ -149,10 +212,361 @@ The latest 2026-07-09 increment adds direct `σ=‖A‖∞` wrappers for both th
 local `1×1` and `2×2` tridiagonal branches, so the later mixed recursion can
 invoke the branch packages without separate pivot-scale or pivot-entry norm
 handoffs.
-The remaining Theorem 11.7 work is still the full mixed-pivot recursive theorem
-over all tridiagonal pivot steps and the final solve equation.
+A later 2026-07-09 increment adds the branch-indexed local assumptions/residual
+adapter `higham11_7_tridiagonalBranchLocalResidual_of_localAssumptions`, giving
+the future mixed-pivot path induction one common local target for either pivot
+size while leaving the recursive tail certificate explicit.
+The branch residual witness increment adds
+`higham11_7_TridiagonalBranchLocalResidualWitness` and
+`higham11_7_tridiagonalBranchLocalResidual_exists_residual_witness`, preserving
+the local scalar residual equation together with the perturbation bounds for a
+specific branch witness.
+A follow-up 2026-07-09 increment adds
+`higham11_7_tridiagonalBranchLocalResidualWitness_supported` and
+`higham11_7_tridiagonalBranchPathResidualWitnesses_supported`, so
+equation-bearing residual witnesses can be fed back into the existing
+supported-witness aggregation route without losing the equation data.
+A later 2026-07-09 increment adds
+`higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_residual_witnesses_coeff_sum_le`,
+so the zero-offset lifted endpoint can consume the residual-equation witnesses
+directly and no longer asks the final solve equation for arbitrary supported
+witnesses.
+The follow-up local/terminal wrapper increment adds
+`higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_lifted_sum_zero_offset_of_residual_witnesses_coeff_sum_le`
+and
+`higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_lifted_sum_zero_offset_of_residual_witnesses_coeff_sum_le`,
+so the residual-witness handoff is available from both main path assumption
+interfaces.
+A later 2026-07-09 increment adds the corresponding scalar-budget comparison
+endpoints ending in `_residual_witnesses_coeff_roundoff_norm`, so the
+equation-bearing solve handoff can also consume the coefficient, roundoff, and
+local matrix-norm majorants directly.
+A further 2026-07-09 increment adds scheduled coefficient-majorant
+residual-witness endpoints, so callers can use any valid start-offset schedule
+and still state the solve-equation handoff on equation-bearing residual
+witnesses.
+A subsequent 2026-07-09 increment adds scheduled scalar-budget
+residual-witness endpoints, combining that schedule choice with the coefficient,
+roundoff, and local matrix-norm comparisons needed by the concrete mixed path.
+The latest 2026-07-09 increment adds the terminal-tail zero residual and
+`higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions`, so the
+future mixed-pivot path induction has a base-case package in the same common
+branch-local result shape.
+A follow-up 2026-07-09 increment adds
+`higham11_7_tridiagonalBranchLocalAssumptions_of_terminalTailAssumptions` and
+`higham11_7_tridiagonalBranchPathLocalAssumptions_of_terminalTailAssumptions`,
+so terminal branches and terminal paths can also be consumed through the
+ordinary local-assumption interface with `tail_fl = tail_exact`.
+The latest 2026-07-09 increment adds the finite path predicates
+`higham11_7_TridiagonalBranchPathLocalAssumptions`,
+`higham11_7_TridiagonalBranchPathLocalResiduals`, and terminal path variants,
+plus pointwise adapters from branch assumptions to branch residuals. The global
+Theorem 11.7 row still needs the actual mixed-pivot path instantiation and
+accumulation into one perturbation.
+The follow-up 2026-07-09 increment adds
+`higham11_7_tridiagonalBranchPathLocalResiduals_empty`,
+`higham11_7_tridiagonalBranchPathLocalResiduals_singleton_of_localAssumptions`,
+and
+`higham11_7_tridiagonalBranchPathLocalResiduals_singleton_of_terminalTailAssumptions`,
+providing explicit finite-path base and one-step adapters.
+A later 2026-07-09 increment adds head/tail projection lemmas for local
+assumptions, terminal assumptions, and residuals, giving the future finite-path
+induction its elimination helpers.
+The latest 2026-07-09 increment adds the matching cons constructors
+`higham11_7_tridiagonalBranchPathLocalAssumptions_cons`,
+`higham11_7_tridiagonalBranchPathTerminalAssumptions_cons`, and
+`higham11_7_tridiagonalBranchPathLocalResiduals_cons`, so the future finite-path
+induction can rebuild nonempty path predicates from a head certificate and a
+tail path certificate.
+The follow-up 2026-07-09 increment packages those projections and constructors
+as nonempty-path iff lemmas for local assumptions, terminal assumptions, and
+local residuals, exposing the standard head/tail induction split directly.
+A later 2026-07-09 increment adds head-step residual handoffs
+`higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_localAssumptions`
+and
+`higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTailAssumptions`,
+so an induction step can rebuild a full path residual from a proved head branch
+and an already packaged tail residual.
+The latest 2026-07-09 increment adds head-plus-tail assumption handoffs
+`higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_tail_localAssumptions`
+and
+`higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_tail_terminalTailAssumptions`,
+so the finite-path induction can consume a head branch certificate and tail path
+assumptions directly.
+The follow-up 2026-07-09 increment adds the mixed terminal-tail handoff
+`higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_localAssumptions_tail_terminalTailAssumptions`,
+which covers a local head branch followed by terminal tail assumptions, with the
+tail `tail_fl = tail_exact` equalities stated explicitly.
+The latest 2026-07-09 increment adds the complementary mixed handoff
+`higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTailAssumptions_tail_localAssumptions`,
+which covers a terminal head branch followed by a tail path of local branch
+assumptions, with the head `tail_fl = tail_exact` equality stated explicitly.
+The latest 2026-07-09 path assembly increment adds
+`higham11_7_tridiagonalBranchPathLocalAssumptions_of_init_localAssumptions_last_terminalTailAssumptions`
+and
+`higham11_7_tridiagonalBranchPathLocalResiduals_of_init_localAssumptions_last_terminalTailAssumptions`,
+packaging the concrete recursion shape where every initial branch is local and
+only the final branch uses the terminal-tail adapter.
+The path witness extraction increment adds
+`higham11_7_tridiagonalBranchLocalResidual_exists_supported_witness` and
+`higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses`, so
+the next aggregation proof can consume explicit per-branch perturbation matrices
+with their componentwise, support, and norm budgets.
+A residual equation-witness extraction increment adds
+`higham11_7_TridiagonalBranchPathResidualWitnesses` and
+`higham11_7_tridiagonalBranchPathLocalResiduals_exists_residual_witnesses`, so
+future solve-equation assembly can keep each extracted perturbation tied to its
+local scalar residual equation.
+A follow-up 2026-07-09 increment composes that extractor with the path-local and
+terminal-tail assumption surfaces via
+`higham11_7_tridiagonalBranchPathLocalAssumptions_exists_supported_witnesses`
+and
+`higham11_7_tridiagonalBranchPathTerminalAssumptions_exists_supported_witnesses`.
+The latest witness increment adds
+`higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses_of_uniform_budgets`,
+which lets the later aggregation proof replace each branch-local scalar budget
+by supplied uniform entry and norm budgets at extraction time.
+A companion 2026-07-09 increment exposes the same uniform-budget extraction
+directly from path-local and terminal-tail assumptions through
+`higham11_7_tridiagonalBranchPathLocalAssumptions_exists_supported_witnesses_of_uniform_budgets`
+and
+`higham11_7_tridiagonalBranchPathTerminalAssumptions_exists_supported_witnesses_of_uniform_budgets`.
+The support-sum aggregation increment adds
+`higham11_7_tridiagonalLeadingBlockSupport_sum_bound` and
+`higham11_7_tridiagonalLeadingBlockSupport_sum_uniform_bound`, so a finite
+same-ambient family of supported branch perturbations can be collapsed into one
+supported perturbation with summed or uniform componentwise budget.
+A follow-up support-sum norm increment adds
+`higham11_7_tridiagonalLeadingBlockSupport_sum_bound_with_norm` and
+`higham11_7_tridiagonalLeadingBlockSupport_sum_uniform_bound_with_norm`, carrying
+the corresponding row-sum `∞`-norm bounds for the collapsed perturbation.
+A mixed-offset support-sum increment adds
+`higham11_7_tridiagonalLeadingBlockSupport_sum_bound_of_le_offsets` and
+`higham11_7_tridiagonalLeadingBlockSupport_sum_bound_with_norm_of_le_offsets`,
+so perturbations supported at deeper recursion offsets can be lowered to a
+common shallower zero-prefix support before summing.
+The printed-budget finite-sum increment adds
+`higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm` and
+`higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with_norm`,
+specializing the same aggregation to per-branch budgets `c_t*u*Amax` and the
+uniform coefficient budget `c*u*Amax`.
+A nonnegative printed-budget increment adds
+`higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm_nonneg`
+and
+`higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with_norm_nonneg`,
+deriving the required product-budget nonnegativity from separate nonnegativity
+of the coefficients, `u`, and `Amax`.
+A mixed-offset printed-budget increment adds
+`higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm_of_le_offsets`,
+`higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with_norm_of_le_offsets`,
+`higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm_of_le_offsets_nonneg`,
+and
+`higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with_norm_of_le_offsets_nonneg`,
+combining support-depth lowering with the printed coefficient budgets.
+A finite solve-delta sum increment adds
+`higham11_7_tridiagonal_backward_error_interface_of_sum_solve_delta_infNorm`,
+which aggregates already-embedded residual matrices directly into the
+source-facing solve perturbation interface once the final summed solve equation
+is available.
+A support-free scalar-budget solve-delta increment adds
+`higham11_7_tridiagonal_backward_error_interface_of_sum_solve_delta_infNorm_of_coeff_sum_le`
+and
+`higham11_7_tridiagonal_backward_error_interface_of_uniform_sum_solve_delta_infNorm`,
+giving the same already-embedded residual aggregation with a supplied
+coefficient majorant or a common per-residual coefficient.
+A finite supported solve-delta increment adds
+`higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm`
+and
+`higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets`,
+which collapse same-ambient residual families and feed the resulting summed
+solve equation into the source-facing perturbation interface with norm bounds.
+A coefficient-majorant solve-delta increment adds
+`higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_coeff_sum_le`
+and
+`higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets_of_coeff_sum_le`,
+so the summed coefficient can be replaced by a supplied printed constant once
+`Σc_t ≤ C` is available.
+A uniform-coefficient solve-delta increment adds
+`higham11_7_tridiagonal_backward_error_interface_of_supported_uniform_sum_solve_delta_infNorm`
+and
+`higham11_7_tridiagonal_backward_error_interface_of_supported_uniform_sum_solve_delta_infNorm_of_le_offsets`,
+packaging the common per-branch coefficient case with budget `k*c*u*‖A‖∞`.
+An embedded path solve-delta increment adds
+`higham11_7_TridiagonalBranchPathSupportedWitnesses`,
+`higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_embedded_sum`,
+`higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_embedded_sum_of_coeff_sum_le`,
+`higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_embedded_sum_of_coeff_sum_le`,
+and
+`higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_embedded_sum_of_coeff_sum_le`,
+so path-local or terminal-tail residual packages now feed the source-facing
+solve perturbation interface after a concrete same-ambient embedding and summed
+solve equation are supplied.
+A local-to-ambient lift increment adds
+`higham11_7_tridiagonalLocalBlockIndex`,
+`higham11_7_tridiagonalLiftLocalBlockPerturbation`,
+`higham11_7_tridiagonalLiftLocalBlockPerturbation_bound_leadingBlockSupport`,
+`higham11_7_tridiagonalBranchPathSupportedWitnesses_lift_to_ambient`, and
+`higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_of_coeff_sum_le`,
+so branch-local witnesses can now be placed into one ambient matrix at supplied
+start offsets, with bounds/support preserved and embedded local entries
+identified.
+A local-to-global budget comparison increment adds
+`higham11_7_tridiagonal_local_budget_le_global_of_coeff_roundoff_norm` and
+`higham11_7_tridiagonalBranchPath_local_budgets_le_global_of_coeff_roundoff_norm`,
+reducing the lifted path theorem's branch-budget side condition to pointwise
+coefficient, roundoff, and local norm comparisons.
+A path coefficient-majorant increment adds
+`higham11_7_tridiagonalBranchPath_uniform_coeff_majorant_of_component_bounds`
+and
+`higham11_7_tridiagonalBranchPath_uniform_coeff_add_majorant_of_component_bounds`,
+so the remaining concrete coefficient handoff can be reduced to uniform caps on
+the local-step and recursive-tail coefficient components.
+A lifted zero-offset endpoint increment adds
+`higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_coeff_sum_le`,
+`higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_lifted_sum_zero_offset_of_coeff_sum_le`,
+and
+`higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_lifted_sum_zero_offset_of_coeff_sum_le`,
+matching the concrete path proof's expected entry points without a separate
+offset-lowering side condition.
+A scheduled coefficient-majorant endpoint increment adds
+`higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_scheduled_lifted_sum_zero_offset_of_coeff_sum_le`,
+`higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_sum_le`,
+and
+`higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_sum_le`,
+choosing an existing zero-based start schedule internally for the coefficient
+majorant route.
+A scalar-budget zero-offset endpoint increment adds
+`higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_coeff_roundoff_norm`,
+`higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_lifted_sum_zero_offset_of_coeff_roundoff_norm`,
+and
+`higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_lifted_sum_zero_offset_of_coeff_roundoff_norm`,
+composing those entry points with the coefficient/roundoff/local-norm budget
+comparison lemma.
+The scheduled zero-offset endpoint increment adds
+`higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm`,
+`higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm`,
+and
+`higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm`,
+choosing an existing zero-based start schedule internally and leaving only the
+scheduled lifted solve equation as the path-specific obligation.
+A start-offset schedule increment adds
+`higham11_7_tridiagonalPathPivotSpan`,
+its zero/cons/positive/range lemmas,
+`higham11_7_TridiagonalPathStartOffsetsFrom`,
+`higham11_7_TridiagonalPathStartOffsets`, and their head/successor/strict-growth
+projection lemmas, plus existence, cons, tail, head-tail iff, start-span,
+branch-end containment, and last-branch endpoint lemmas, making the mixed
+path's concrete offset recurrence explicit and composable by head/tail
+induction.
+The follow-up schedule-ordering increment adds
+`higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_of_lt`,
+`higham11_7_tridiagonalPathStartOffsetsFrom_lt_of_lt`,
+`higham11_7_tridiagonalPathStartOffsets_branch_end_le_of_lt`, and
+`higham11_7_tridiagonalPathStartOffsets_lt_of_lt`, proving that every earlier
+scheduled pivot block is consumed before any later branch starts.
+The schedule-monotonicity increment adds
+`higham11_7_tridiagonalPathStartOffsetsFrom_le_of_le`,
+`higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_branch_end_of_le`,
+`higham11_7_tridiagonalPathStartOffsets_le_of_le`, and
+`higham11_7_tridiagonalPathStartOffsets_branch_end_le_branch_end_of_le`,
+exposing non-strict start and endpoint ordering for later lifted-entry
+arguments.
+The schedule-uniqueness increment adds
+`higham11_7_tridiagonalPathStartOffsetsFrom_unique`,
+`higham11_7_tridiagonalPathStartOffsetsFrom_exists_unique`,
+`higham11_7_tridiagonalPathStartOffsets_unique`, and
+`higham11_7_tridiagonalPathStartOffsets_exists_unique`, so later concrete path
+proofs can identify any supplied schedule with the canonical recurrence.
+The schedule-prefix increment adds `higham11_7_tridiagonalPathPrefixSpan`, its
+zero and successor split lemmas, the base-offset and zero-based start equality
+theorems, and
+`higham11_7_tridiagonalPathPrefixSpan_last_add_branch_eq_pivotSpan`, exposing
+the explicit prefix-sum form of the canonical mixed-path schedule.
+The prefix-span bounds increment adds the corresponding direct prefix-span
+containment, branch-end containment, strict ordering, and monotone endpoint
+facts, so downstream concrete path proofs can reason from prefix spans without
+first materializing a start-offset schedule.
+The concrete tail-dimension increment adds
+`higham11_7_tridiagonalPathTailDim`,
+`higham11_7_tridiagonalPathPrefixSpan_add_branchAmbientDim_tailDim_eq_pivotSpan_succ`,
+`higham11_7_tridiagonalPathLocalBlockIndex`, and the terminal
+`higham11_7_tridiagonalPathTailDim_last_eq_zero` fact, tying each prefix branch
+to the full `pathSpan+1` tridiagonal ambient expected by the lifted local-block
+proofs.
+The tail-dimension recurrence increment adds
+`higham11_7_tridiagonalPathTailDim_head` and
+`higham11_7_tridiagonalPathTailDim_succ`, aligning the concrete full-path
+tail-dimension function with the head/tail split used by path induction.
+The concrete branch-matrix increment adds
+`higham11_7_tridiagonalPathBranchMatrix` and its entry/norm bounds, giving the
+path-local assumption interface a canonical local matrix extracted from a full
+`pathSpan+1` ambient matrix.
+The concrete scheduled endpoint increment adds
+`higham11_7_tridiagonalPathLocalBlockIndex_injective`,
+`higham11_7_tridiagonalPathBranchMatrix_infNorm_le_global_infNorm`, and the two
+`...concrete_path_...scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm`
+source endpoints, so the finite path theorem now uses the canonical branch
+matrices directly and no longer requires a separate local-norm hypothesis.
+The prefix-span endpoint increment adds the matching
+`...concrete_path_...prefix_lifted_sum_zero_offset_of_coeff_roundoff_norm`
+endpoints, eliminating the arbitrary schedule quantifier from the remaining
+lifted solve equation by rewriting every valid schedule to the concrete prefix
+span.
+A residual-witness concrete endpoint increment adds scheduled and prefix-span
+variants ending in `_residual_witnesses_coeff_roundoff_norm`, so the concrete
+mixed path can keep the final lifted solve equation attached to the branch
+residual equations instead of arbitrary supported witnesses.
+A follow-up residual-witness uniform endpoint increment adds
+`_residual_witnesses_coeff_norm`, `_residual_witnesses_uniform_coeff_norm`, and
+the initial-local/last-terminal uniform-coefficient variant, matching the
+existing supported-witness concrete specialization stack while preserving the
+residual equations.
+A nonuniform last-terminal residual-witness increment adds
+`_residual_witnesses_coeff_roundoff_norm` and
+`_residual_witnesses_coeff_norm` variants for the initial-local/terminal-last
+path, so callers do not have to collapse coefficients to a common scalar before
+using that assembly theorem.
+The uniform-roundoff endpoint increment adds the corresponding
+`...concrete_path_...prefix_lifted_sum_zero_offset_of_coeff_norm` endpoints,
+specializing every local branch budget to the global unit roundoff `u`.
+The uniform-coefficient endpoint increment adds the direct
+`...concrete_path_...prefix_lifted_sum_zero_offset_of_uniform_coeff_norm`
+endpoints, using `(k : ℝ) * c` as the final coefficient budget when every
+branch has the same printed coefficient majorant.
+A concrete last-terminal endpoint increment adds
+`higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_uniform_coeff_norm`,
+combining the last-terminal path assembly theorem with the concrete prefix-span
+uniform coefficient endpoint.
+A residual-witness extraction increment adds
+`higham11_7_tridiagonalBranchPathResidualWitnesses_exists_of_init_localAssumptions_last_terminalTailAssumptions`
+and
+`higham11_7_tridiagonalConcretePathResidualWitnesses_exists_of_init_localAssumptions_last_terminalTailAssumptions`,
+so the remaining path induction can obtain equation-bearing perturbation
+witnesses directly from the initial-local/terminal-last branch hypotheses.
+The remaining Theorem 11.7 work is still instantiating those adapters over the
+full mixed pivot path, proving the concrete coefficient majorants, and proving
+the final lifted solve equation.
 
-| Theorem 11.8 | Aasen componentwise backward error + `‖ΔA‖_∞ ≤ (n−1)²γ_{15n+25}‖T̂‖_∞` | `higham11_8_aasen_backward_error_interface` (assumes) | remaining: **fl** analysis of the Aasen recurrences + solve chain (11.15). The **exact-arithmetic** recurrence identities (11.12), (11.13), (11.14) are proved; scalar and finite-sum fl additive error forms of (11.14), including the exact-recurrence bridge to `L k next`, are proved; rounded prefix-dot formation residuals in both ambient `γ_n` and source-length `γ_{i+1}` forms are proved; source-prefix formed-update componentwise and column-lift bounds are proved; the source-prefix column budget is packaged into the relative `L_hat` factor hypothesis for one next-column update and then dispatched to the global relative-factor hypothesis; that source-prefix global bridge now feeds the factorization-product residual directly, leaving the concrete `T_hat` budget as the factorization side's remaining modeled input; the factorization-product residual is bounded by an explicit seven-term budget from entrywise `L̂`/`T̂` factor budgets and by the closed `higham11_15_aasenChainDeltaABound` under relative outer-factor bounds; the exact unpermuted solve-chain algebra is proved; the two outer triangular solves in (11.15) are connected to existing backward-error theorems; the middle tridiagonal solve is connected to Chapter 9's equation-(9.20)--(9.22) source perturbation model; the middle budget is now proved nonnegative and norm-aggregated both to `f(γ_n)‖L_T‖∞‖U_T‖∞` and to the more concrete `f(γ_n)‖|L_T||U_T|‖∞`, with a column-dominant LUFactSpec specialization giving `3f(γ_n)‖T̂‖∞`; the rounded solve-chain components are packaged together; the algebraic collapse to `(A+ΔA)w=rhs` is proved and instantiated with the closed `higham11_15_aasenChainDeltaABound`; factorization and solve-chain residuals are combined into a single `(A+ΔA)ŵ=Pᵀb` source equation with summed componentwise budget; the closed chain budget is aggregated into a two-term normwise triple-product bound; a perturbation dominated by the sum of the factorization and solve-chain closed budgets now receives both the summed normwise budget and the printed normwise predicate when a scalar norm budget is supplied; the scalar norm-budget comparison can now be reduced to primitive factor norm bounds and split into four scalar coefficient pieces, and the rounded/source-prefix source wrappers consume that reduced form directly, including variants where the middle budget is discharged from a relative tridiagonal LU factor-product or abs-LU norm bound; the componentwise/closed-chain ⇒ printed `∞`-norm bridges are proved; the rounded solve-chain source equation is packaged with the printed normwise predicate, and the rounded factorization+solve source equation is packaged with that predicate under an explicit entrywise `η|T̂|` comparison, the scalar norm-budget comparison, separate factor/solve entrywise comparisons whose coefficients add to `η`, or a concrete `T_hat` abs-LU/product-majorant route with exact product majorants, square-product gamma discharge, reduced supplied/source-prefix base-square interfaces, exact-radius endpoints for the source-prefix generated `L_hat` case, `γ_n` exact-radius endpoints (`..._gamma_base_square_exact_radius_gamma_n`) that derive the local `gammaValid n`, `gammaValid 2`, and source-prefix `gammaValid next.val` side conditions from the printed `gammaValid (15n+25)` hypothesis, source-constant endpoints (`..._gamma_base_square_exact_radius_source_constants`) that substitute `κT=1`, `κBT=γ_n`, and `κmidLU=1` directly, factor-cap square helpers (`higham11_8_product_square_bound_of_factor_caps`, `higham11_8_aasen_base_square_bounds_of_factor_caps`), the supplied direct-`T` relative-cap checkerboard endpoint `..._relative_norm_caps_of_T_norm_cap_checkerboard_middle`, the source-prefix factor-cap endpoint `..._gamma_base_square_exact_radius_source_factor_caps`, the direct matrix-norm cap endpoint `..._gamma_base_square_exact_radius_source_norm_caps`, the componentwise-`T` variant `..._source_norm_caps_of_componentwise_T` using `higham11_8_infNorm_le_of_componentwise_abs_bound`, the checkerboard-middle variant `..._source_norm_caps_of_componentwise_T_checkerboard_middle` using `higham11_15_absLU_componentwise_T_bound_of_checkerboard_LUFactSpec`, the source-prefix relative-norm-caps variants `..._relative_norm_caps_of_componentwise_T_checkerboard_middle` and `..._relative_norm_caps_of_T_norm_cap_checkerboard_middle` deriving unscaled exact outer-factor caps from relative caps, the row-sum-caps variants `..._row_sum_caps_of_componentwise_T_checkerboard_middle` and `..._row_sum_caps_of_T_norm_cap_checkerboard_middle` deriving those relative caps from scaled row/column sums, the row/column majorant bridge (`higham11_8_relative_outer_factor_caps_of_row_col_sum_majorants`) deriving relative caps from unscaled sum majorants plus scalar scale comparisons, the entrywise-majorant adapter (`higham11_8_relative_outer_factor_caps_of_entrywise_majorant`) deriving both row and column majorants from a uniform exact-factor entry bound, the Aasen-structure adapter (`higham11_8_relative_outer_factor_caps_of_aasen_entry_bound`) deriving the sharper `(n-1)` row/column majorants from strict-upper and first-column zeros plus that uniform entry bound, the normalized scale bridge (`higham11_8_aasen_outer_factor_scaled_entry_cap`, `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit`) reducing the Aasen cap side condition to `(1+γ)κ≤1`, source-prefix Aasen-structure checkerboard endpoints consuming either that sharper cap or the normalized `(1+γ_n)κ≤1` condition directly, source-prefix entrywise-majorant checkerboard endpoints deriving the exact-radius route's outer-factor caps directly from the uniform exact-factor entry bound, and relative `T_hat` comparison norm bridges that turn a supplied `|T̂−T|≤γ|T̂|` into both the `BT_factor` norm budget and a diagnostic `(1+γ)` exact-`T` norm cap. | prove the remaining source/product-size facts feeding the exact-product `T_hat` route: the concrete uniform exact outer-factor entry bound, plus either entrywise `|T|≤|T̂|` or direct `‖T‖∞≤‖T̂‖∞` (the relative error bridge gives only `(1+γ)` for `‖T‖∞`), a checkerboard total-nonnegative LU certificate for the coefficient-one middle product `|L_T||U_T|≤|T̂|` (or a direct entrywise proof), the concrete source fact `|T̂−T|≤γ_n|T̂|`, and the printed `gammaValid (15n+25)`; the scalar `κT`, `κmidLU`, `κBT` side conditions, relative and unscaled exact outer-factor caps, direct `T`-norm replacement plumbing, local prefix/update/solve gamma-validity conditions, normalized Aasen entry-cap handoff, entrywise outer-factor majorant handoff, and norm consequences of a supplied relative `T_hat` perturbation are now discharged by wrappers |
+| Theorem 11.8 | Aasen componentwise backward error + `‖ΔA‖_∞ ≤ (n−1)²γ_{15n+25}‖T̂‖_∞` | `higham11_8_aasen_backward_error_interface` (assumes) | remaining: **fl** analysis of the Aasen recurrences + solve chain (11.15). The **exact-arithmetic** recurrence identities (11.12), (11.13), (11.14) are proved; scalar and finite-sum fl additive error forms of (11.14), including the exact-recurrence bridge to `L k next`, are proved; rounded prefix-dot formation residuals in both ambient `γ_n` and source-length `γ_{i+1}` forms are proved; source-prefix formed-update componentwise and column-lift bounds are proved; the source-prefix column budget is packaged into the relative `L_hat` factor hypothesis for one next-column update and then dispatched to the global relative-factor hypothesis; that source-prefix global bridge now feeds the factorization-product residual directly, leaving the concrete `T_hat` budget as the factorization side's remaining modeled input; the factorization-product residual is bounded by an explicit seven-term budget from entrywise `L̂`/`T̂` factor budgets and by the closed `higham11_15_aasenChainDeltaABound` under relative outer-factor bounds; the exact unpermuted solve-chain algebra is proved; the two outer triangular solves in (11.15) are connected to existing backward-error theorems; the middle tridiagonal solve is connected to Chapter 9's equation-(9.20)--(9.22) source perturbation model; the middle budget is now proved nonnegative and norm-aggregated both to `f(γ_n)‖L_T‖∞‖U_T‖∞` and to the more concrete `f(γ_n)‖|L_T||U_T|‖∞`, with a column-dominant LUFactSpec specialization giving `3f(γ_n)‖T̂‖∞`; the rounded solve-chain components are packaged together; the algebraic collapse to `(A+ΔA)w=rhs` is proved and instantiated with the closed `higham11_15_aasenChainDeltaABound`; factorization and solve-chain residuals are combined into a single `(A+ΔA)ŵ=Pᵀb` source equation with summed componentwise budget; the closed chain budget is aggregated into a two-term normwise triple-product bound; a perturbation dominated by the sum of the factorization and solve-chain closed budgets now receives both the summed normwise budget and the printed normwise predicate when a scalar norm budget is supplied; the scalar norm-budget comparison can now be reduced to primitive factor norm bounds and split into four scalar coefficient pieces, and the rounded/source-prefix source wrappers consume that reduced form directly, including variants where the middle budget is discharged from a relative tridiagonal LU factor-product or abs-LU norm bound; the componentwise/closed-chain ⇒ printed `∞`-norm bridges are proved; the rounded solve-chain source equation is packaged with the printed normwise predicate, and the rounded factorization+solve source equation is packaged with that predicate under an explicit entrywise `η|T̂|` comparison, the scalar norm-budget comparison, separate factor/solve entrywise comparisons whose coefficients add to `η`, or a concrete `T_hat` abs-LU/product-majorant route with exact product majorants, square-product gamma discharge, reduced supplied/source-prefix base-square interfaces, exact-radius endpoints for the source-prefix generated `L_hat` case, `γ_n` exact-radius endpoints (`..._gamma_base_square_exact_radius_gamma_n`) that derive the local `gammaValid n`, `gammaValid 2`, and source-prefix `gammaValid next.val` side conditions from the printed `gammaValid (15n+25)` hypothesis, source-constant endpoints (`..._gamma_base_square_exact_radius_source_constants`) that substitute `κT=1`, `κBT=γ_n`, and `κmidLU=1` directly, factor-cap square helpers (`higham11_8_product_square_bound_of_factor_caps`, `higham11_8_aasen_base_square_bounds_of_factor_caps`), the supplied direct-`T` relative-cap checkerboard endpoint `..._relative_norm_caps_of_T_norm_cap_checkerboard_middle`, the source-prefix factor-cap endpoint `..._gamma_base_square_exact_radius_source_factor_caps`, the direct matrix-norm cap endpoint `..._gamma_base_square_exact_radius_source_norm_caps`, the componentwise-`T` variant `..._source_norm_caps_of_componentwise_T` using `higham11_8_infNorm_le_of_componentwise_abs_bound`, the checkerboard-middle variant `..._source_norm_caps_of_componentwise_T_checkerboard_middle` using `higham11_15_absLU_componentwise_T_bound_of_checkerboard_LUFactSpec`, the source-prefix relative-norm-caps variants `..._relative_norm_caps_of_componentwise_T_checkerboard_middle` and `..._relative_norm_caps_of_T_norm_cap_checkerboard_middle` deriving unscaled exact outer-factor caps from relative caps, the row-sum-caps variants `..._row_sum_caps_of_componentwise_T_checkerboard_middle` and `..._row_sum_caps_of_T_norm_cap_checkerboard_middle` deriving those relative caps from scaled row/column sums, the row/column majorant bridge (`higham11_8_relative_outer_factor_caps_of_row_col_sum_majorants`) deriving relative caps from unscaled sum majorants plus scalar scale comparisons, the entrywise-majorant adapter (`higham11_8_relative_outer_factor_caps_of_entrywise_majorant`) deriving both row and column majorants from a uniform exact-factor entry bound, the Aasen-structure adapter (`higham11_8_relative_outer_factor_caps_of_aasen_entry_bound`) deriving the sharper `(n-1)` row/column majorants from strict-upper and first-column zeros plus that uniform entry bound, the normalized scale bridge (`higham11_8_aasen_outer_factor_scaled_entry_cap`, `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit`) and inverse-scale bridge (`higham11_8_one_plus_mul_le_one_of_le_inv_one_plus`, `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus`) reduce the Aasen cap side condition to the source-style `κ≤1/(1+γ)`, source-prefix Aasen-structure checkerboard endpoints consuming either that sharper cap or the normalized `(1+γ_n)κ≤1` condition directly, source-prefix entrywise-majorant checkerboard endpoints deriving the exact-radius route's outer-factor caps directly from the uniform exact-factor entry bound, and relative `T_hat` comparison bridges that turn a supplied `|T̂−T|≤γ|T̂|` into the `BT_factor` norm budget plus diagnostic `(1+γ)` exact-`T` entrywise and norm caps. | prove the remaining source/product-size facts feeding the exact-product `T_hat` route: the concrete uniform exact outer-factor entry bound, plus either entrywise `|T|≤|T̂|` or direct `‖T‖∞≤‖T̂‖∞` (the relative error bridge gives only `|Tᵢⱼ|≤(1+γ)|T̂ᵢⱼ|` and `‖T‖∞≤(1+γ)‖T̂‖∞`), a checkerboard total-nonnegative LU certificate for the coefficient-one middle product `|L_T||U_T|≤|T̂|` (or a direct entrywise proof), the concrete source fact `|T̂−T|≤γ_n|T̂|`, and the printed `gammaValid (15n+25)`; the scalar `κT`, `κmidLU`, `κBT` side conditions, relative and unscaled exact outer-factor caps, direct `T`-norm replacement plumbing, local prefix/update/solve gamma-validity conditions, normalized/source-style inverse Aasen entry-cap and base-square handoffs, entrywise outer-factor majorant handoff, and norm/entrywise consequences of a supplied relative `T_hat` perturbation are now discharged by wrappers |
+
+2026-07-09 update: the printed split-entry endpoints
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_coeff`
+and
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_coeff`
+instantiate the intermediate `η` in the supplied-relative and source-prefix
+split-entry routes with the final printed coefficient `(n−1)^2γ_{15n+25}`.
+The follow-up printed-gamma variants
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_gamma`
+and
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_gamma`
+specialize that radius to `gamma fp (15*n+25)` and derive its nonnegativity
+from `gammaValid fp (15*n+25)`.
+A second follow-up adds
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_gamma_validity`
+and
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_gamma_validity`,
+which also derive the local `gammaValid n`, `gammaValid 2`, and source-prefix
+validity hypotheses from the printed guard.
 
 2026-07-09 update: `higham11_8_aasen_factor_solve_norm_budget_of_relative_T_hat_error`
 and
@@ -160,6 +574,82 @@ and
 turn the supplied relative `T_hat` comparison into a concrete fallback scalar norm-budget
 route. The route uses `κT = 1 + κBT`, so the exact-radius source endpoints still need a
 direct `‖T‖∞≤‖T_hat‖∞` or entrywise `|T|≤|T_hat|` fact.
+Equivalently, the relative comparison alone gives only the new diagnostic
+`|Tᵢⱼ|≤(1+κBT)|T_hatᵢⱼ|` entrywise cap and its `(1+κBT)` norm consequence,
+not the coefficient-one exact middle-factor cap.
+A later 2026-07-09 increment adds the zero-radius specializations
+`higham11_8_abs_T_le_T_hat_of_zero_relative_error` and
+`higham11_8_infNorm_T_le_T_hat_of_zero_relative_error`, so if the relative
+`T_hat` comparison is supplied with radius `0`, the coefficient-one exact
+middle-factor entrywise and norm caps are recovered directly.
+The follow-up 2026-07-09 increment adds the supplied exact-radius endpoint
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_constants_of_zero_relative_T_hat`,
+which turns the same zero-relative comparison into both the `γ_n` middle
+factorization budget and the direct exact-`T` norm cap required by the
+source-constant route.
+A later 2026-07-09 increment adds the supplied checkerboard endpoint
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_zero_relative_T_hat_checkerboard_middle`,
+so the same zero-relative handoff now plugs into the route that derives the
+middle product from the checkerboard total-nonnegative LU certificate and the
+outer products from relative factor caps.
+The follow-up 2026-07-09 increment adds the matching source-prefix endpoint
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_zero_relative_T_hat_checkerboard_middle`,
+so the rounded Aasen recurrence model can generate the relative `L_hat`
+hypothesis while the zero-relative `T_hat` comparison supplies the exact-radius
+middle-factor handoffs.
+A later 2026-07-09 increment adds the row-sum-cap version
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_row_sum_caps_of_zero_relative_T_hat_checkerboard_middle`,
+so callers can provide scaled exact outer-factor row and column sums directly,
+with the zero-relative `T_hat` comparison discharging the remaining
+middle-factor obligations.
+A follow-up 2026-07-09 increment adds the direct-middle row-sum counterparts
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_row_sum_caps_of_componentwise_T`
+and
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_row_sum_caps_of_T_norm_cap`,
+so the same scaled row/column sums can feed routes with a supplied middle
+product estimate instead of the checkerboard LU certificate.
+The follow-up 2026-07-09 increment adds the entrywise-majorant version
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_zero_relative_T_hat_checkerboard_middle`,
+so a uniform exact outer-factor entry cap can feed the same source-prefix
+checkerboard route when the zero-relative `T_hat` comparison is available.
+A later 2026-07-09 increment adds the direct-middle entrywise-majorant
+counterparts
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_componentwise_T`
+and
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_T_norm_cap`,
+so the same uniform entry cap can feed routes with a supplied middle product
+estimate instead of the checkerboard LU certificate.
+A follow-up 2026-07-09 increment adds direct-middle `_entry_bound_nonneg`
+variants for those two endpoints, so the uniform absolute entry bound also
+supplies the nonnegativity of `κLentry`.
+A later 2026-07-09 increment adds the sharper Aasen-structure version
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_zero_relative_T_hat_checkerboard_middle`,
+so the strict-upper and first-column-zero structure can reduce the outer-factor
+entry-count side while the zero-relative `T_hat` comparison handles the middle
+factor.
+A follow-up 2026-07-09 increment adds the direct-middle arbitrary-cap
+Aasen-structure counterparts
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_componentwise_T`
+and
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_T_norm_cap`,
+so the same strict-upper/first-column-zero outer-factor entry bound can feed
+routes with a supplied `|L_T||U_T|≤|T_hat|` middle-product estimate instead of
+the checkerboard LU certificate.
+A companion 2026-07-09 increment adds direct-middle `_entry_bound_nonneg`
+variants
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_componentwise_T_entry_bound_nonneg`
+and
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_T_norm_cap_entry_bound_nonneg`,
+so the same uniform absolute entry bound supplies the `0≤κLentry` side
+condition for those arbitrary-cap direct-middle Aasen endpoints.
+A further 2026-07-09 increment adds the matching arbitrary-cap checkerboard
+and zero-relative checkerboard `_entry_bound_nonneg` wrappers
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_componentwise_T_checkerboard_middle_entry_bound_nonneg`,
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_T_norm_cap_checkerboard_middle_entry_bound_nonneg`,
+and
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_zero_relative_T_hat_checkerboard_middle_entry_bound_nonneg`,
+so every arbitrary-cap Aasen checkerboard route now gets `0≤κLentry` from
+the same uniform absolute entry bound.
 The latest 2026-07-09 increment adds the normalized Aasen-structure source-prefix
 checkerboard endpoints
 `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_componentwise_T_checkerboard_middle`
@@ -174,6 +664,117 @@ and
 so the same normalized Aasen factor bound can also be used when the
 `|L_T||U_T|≤|T_hat|` middle product estimate is proved directly rather than via
 the checkerboard LU certificate.
+A later 2026-07-09 increment adds the gamma-validity cap wrappers
+`higham11_8_gammaValid_15n25_of_unit_roundoff_bound`,
+`higham11_8_gammaValid_15n25_of_u_le_cap`, and
+`higham11_8_gammaValid_n_two_prefix_of_u_le_cap`, so the printed
+`gammaValid fp (15*n+25)` guard can be discharged from either the direct
+smallness statement `(15n+25)u<1` or a displayed cap `u≤Ucap`. This does not
+settle the remaining exact-product route; it only removes the local gamma
+guard plumbing once a source smallness cap is supplied.
+A further 2026-07-09 increment adds the determinant-inequality checkerboard
+middle adapters
+`higham11_15_absLU_componentwise_T_bound_of_checkerboard_principalBlock_inequalities`
+and
+`higham11_15_aasenMiddleSolveBudget_infNorm_le_of_checkerboard_principalBlock_inequalities`,
+so the coefficient-one `|L_T||U_T|≤|T̂|` middle route can consume the same
+source-facing determinant-inequality hypotheses exposed by Chapter 9, without a
+separate positive-leading-minor handoff.
+A follow-up endpoint increment adds
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_zero_relative_T_hat_checkerboard_principalBlock_inequalities_entry_bound_nonneg`,
+so the zero-relative, source-prefix exact-radius route can use those
+determinant-inequality hypotheses directly instead of asking callers for a
+separate `|L_T||U_T|≤|T_hat|` middle-product estimate.
+A companion increment adds
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_norm_caps_of_zero_relative_T_hat_checkerboard_principalBlock_inequalities`,
+the same determinant-inequality handoff for the lower-level route where the
+outer-factor norm caps are supplied directly.
+The latest 2026-07-09 increment adds
+`higham11_8_one_plus_mul_le_one_of_le_inv_one_plus`,
+`higham11_8_aasen_outer_factor_scaled_entry_cap_of_le_inv_one_plus`, and
+`higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus`, so
+the Aasen `(n-1)` outer-factor cap can consume a source-style entry estimate
+`κ≤1/(1+γ)` directly instead of requiring a separate normalized
+`(1+γ)κ≤1` handoff.
+A follow-up 2026-07-09 increment adds
+`higham11_8_outer_factor_caps_of_aasen_entry_bound_inv_one_plus` and
+`higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus`, deriving the
+unscaled exact outer-factor caps and the two base square product caps directly
+from the same source-style inverse-scale entry estimate.
+A later 2026-07-09 increment adds the direct-middle source-prefix endpoints
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_componentwise_T`
+and
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_T_norm_cap`,
+so the exact-radius route can consume `κ≤1/(1+γ_n)` directly when the middle
+product estimate is supplied without going through checkerboard LU.
+A follow-up 2026-07-09 increment adds the checkerboard-middle inverse-scale
+companions
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_componentwise_T_checkerboard_middle`
+and
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_T_norm_cap_checkerboard_middle`,
+so the same source-style entry estimate also feeds the checkerboard LU route
+without a normalized-cap handoff.
+A later 2026-07-09 increment adds
+`higham11_8_nonneg_of_uniform_abs_entry_bound`,
+`higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus_of_entry_bound`,
+`higham11_8_outer_factor_caps_of_aasen_entry_bound_inv_one_plus_of_entry_bound`,
+and
+`higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus_of_entry_bound`,
+so the lower-level inverse-scale route no longer needs `0≤κ` as a separate
+source handoff once the nonempty uniform absolute entry bound is available.
+Another 2026-07-09 increment adds the matching normalized-entry helpers
+`higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound`,
+`higham11_8_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound`,
+and
+`higham11_8_aasen_base_square_bounds_of_entry_bound_scaled_unit_of_entry_bound`,
+so the older `(1+γ)κ≤1` route also derives `0≤κ` from the uniform absolute
+entry bound.
+A follow-up 2026-07-09 increment adds
+`higham11_8_relative_outer_factor_caps_of_entrywise_majorant_of_entry_bound`
+and
+`higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_of_entry_bound`,
+so both the generic `n`-entry majorant route and the arbitrary-cap Aasen
+`(n-1)` route can derive `0≤κ` from a nonempty uniform absolute entry bound.
+A later 2026-07-09 increment lifts that generic `n`-entry nonnegativity
+discharge to the source-prefix entrywise-majorant endpoints themselves, adding
+`_entry_bound_nonneg` variants for the checkerboard componentwise-`T`,
+checkerboard direct-`T`-norm, checkerboard zero-relative, and direct-middle
+zero-relative routes.
+The follow-up 2026-07-09 endpoint increment lifts that nonnegativity discharge
+to the inverse-scale source-prefix exact-radius endpoints themselves, adding
+direct-middle and checkerboard-middle `_entry_bound_nonneg` variants for both
+the componentwise-`T` and direct-`T`-norm routes.
+The latest 2026-07-09 increment adds the matching normalized
+`(1+γ_n)κ≤1` source-prefix endpoint wrappers, so the direct-middle and
+checkerboard-middle scaled-unit routes now also derive `0≤κ` from the uniform
+absolute entry bound.
+A further 2026-07-09 increment adds zero-relative `T_hat` checkerboard wrappers
+for both the normalized `(1+γ_n)κ≤1` route and the source-style
+`κ≤1/(1+γ_n)` route, including `_entry_bound_nonneg` variants. These wrappers
+turn the zero relative `T_hat - T` comparison into the `γ_n` middle budget and
+the direct exact-`T` norm cap, so the scaled-unit and inverse-scale Aasen
+entry-cap endpoints no longer need a separate `T`-norm handoff in the
+zero-radius case.
+A companion 2026-07-09 increment adds the same zero-relative handoff for the
+direct-middle normalized and inverse-scale endpoints
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_zero_relative_T_hat`
+and
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_zero_relative_T_hat`,
+plus their `_entry_bound_nonneg` variants. These keep the supplied
+`|L_T||U_T|≤|T_hat|` product estimate and remove only the exact-`T` norm
+handoff.
+A later 2026-07-09 increment factors out the generic direct-middle source-norm
+version
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_norm_caps_of_zero_relative_T_hat`,
+so future direct product routes with supplied outer norm caps can use the same
+zero-relative handoff without passing a separate exact-`T` norm cap.
+A follow-up 2026-07-09 increment instantiates that direct source-norm wrapper
+for the row/column sum-cap and entrywise-majorant outer-factor routes, adding
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_row_sum_caps_of_zero_relative_T_hat`
+and
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_zero_relative_T_hat`;
+these are the direct-product counterparts of the checkerboard zero-relative
+endpoints.
 
 Both single-step §11.1.1 element-growth bounds are now proved: the 1×1 step
 `(1+1/α)μ₀` (`oneByOne_schur_growth`) and the 2×2 step `(1+2/(1−α))μ₀`
@@ -183,17 +784,90 @@ inverse-block entries. The finite-prefix and printed-alpha recursion helpers now
 match concrete pivot paths whose one-step bounds are available only through the
 final active Schur complement and whose initial maximum is normalized. What remains
 for Theorem 11.4 is proving those concrete path hypotheses over the whole
-factorization, plus the `36nρₙ` product bound and the floating-point solve error.
-The new finite-max and matrix-product bridges mean the
+factorization, plus the concrete pivot-path first-stage/trailing split and the
+floating-point solve error.
+The new finite-max, matrix-product, and row-sum/product majorant bridges mean the
 remaining 11.4 consumer
 can target the source-shaped scalar eq-(4.14) product certificate directly as a
 `maxEntryNorm` bound on `|L̂||D̂||L̂ᵀ|`, rather than restating the pointwise
-expanded-sum interface.
+expanded-sum interface; the latest per-row and uniform-entry variants let the
+pivot-path proof either postpone final uniformization of the `|L̂|` row-sum caps
+or feed plain entry caps directly. The first-stage
+plus recursive Schur-complement aggregation bridges now package Higham [608],
+eq. (4.11)'s local-plus-recursive product split directly into the same scalar
+max-entry certificate once the concrete block bounds are proved, either from
+loose `36` shares or from the exact eq-(4.13) coefficient before the final
+`≤36` handoff.
+A later 2026-07-09 increment adds
+`higham11_4_nonneg_of_uniform_abs_entry_bound` plus loose and exact-coefficient
+uniform row-sum/entry product wrappers with `_entry_nonneg` suffixes, so a
+concrete `|D_hat|≤Dmax` cap no longer needs a separate `0≤Dmax` handoff.
+A companion 2026-07-09 increment adds
+`higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound_entry_nonneg`
+and
+`higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_entry_bounds_entry_nonneg`,
+so the loose source-shaped `maxEntryNorm` row-sum and uniform-entry routes have
+the same discharge.
+The follow-up 2026-07-09 increment adds the same `0≤Dmax` discharge for the
+per-row exact-coefficient product route
+`higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_row_sum_bounds_entry_nonneg`.
+Another 2026-07-09 increment adds the corresponding max-entry norm wrappers
+`higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound_entry_nonneg`,
+`higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds_entry_nonneg`,
+and
+`higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds_entry_nonneg`,
+so the source-shaped `maxEntryNorm` route and the scalar product-certificate
+route now have the same `Dmax` nonnegativity discharge.
+The latest product-entry nonnegativity increment adds the same discharge for the
+lower-level row-sum, uniform-row, and uniform-entry product-entry adapters
+`higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds_entry_nonneg`,
+`higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound_entry_nonneg`, and
+`higham11_4_bunchKaufmanProductEntry_le_uniform_entry_bounds_entry_nonneg`.
+A further 2026-07-09 increment composes those exact-coefficient row-sum and
+uniform-entry routes into direct Bunch-Kaufman stability consumers
+`higham11_4_bunch_kaufman_stability_of_higham_const_uniform_row_sum_bound`,
+`higham11_4_bunch_kaufman_stability_of_higham_const_uniform_entry_bounds`, and
+`higham11_4_bunch_kaufman_stability_of_higham_const_row_sum_bounds`.
+The companion solve-side increment adds
+`higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_uniform_row_sum_bound`,
+`higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_uniform_entry_bounds`, and
+`higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_row_sum_bounds`.
+The latest loose-consumer increment adds
+`higham11_4_bunch_kaufman_stability_of_uniform_row_sum_bound`,
+`higham11_4_bunch_kaufman_stability_of_uniform_entry_bounds`,
+`higham11_4_bunch_kaufman_solve_backward_error_of_uniform_row_sum_bound`, and
+`higham11_4_bunch_kaufman_solve_backward_error_of_uniform_entry_bounds` for
+routes where the row-sum or uniform-entry cap is already compared to the
+printed `36nρₙ‖A‖_M` budget.
+Another 2026-07-09 increment composes the first-stage/recursive split
+certificates into the source-shaped max-entry norm target through
+`higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_bounds`
+and
+`higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_higham_const_bounds`,
+then directly into the stability and solve consumers via
+`higham11_4_bunch_kaufman_stability_of_first_stage_recursive_bounds`,
+`higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_bounds`,
+`higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_bounds`,
+and
+`higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_bounds`.
+A follow-up 2026-07-09 increment adds the matching direct max-entry-norm solve
+forms
+`higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_maxEntryNorm_bounds`
+and
+`higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_maxEntryNorm_bounds`,
+so a downstream triangular-solve analysis can state its perturbation budget
+against `maxEntryNorm hn (|L̂||D̂||L̂ᵀ|)` without first rewriting through the
+finite product certificate.
+A further 2026-07-09 increment adds
+`higham11_4_first_stage_recursive_product_split_of_row_sum_bounds` and its
+loose/exact product-entry and max-entry-norm endpoints, so regional row-sum
+caps for `|L̂|` plus a uniform `D̂` entry cap can be fed directly into the
+first-stage/trailing split used by the eq-(4.11)--(4.14) aggregation.
 
 ## External proof sources
 | Selected claim | Source and exact location | Role | Local Lean closure | Status |
 |---|---|---|---|---|
-| Theorems 11.3, 11.4 (proofs not in book ch.11) | N. J. Higham, *Stability of the diagonal pivoting method with partial pivoting*, SIAM J. Matrix Anal. Appl. 18(1) (1997) 52–65 = book ref **[608]**. Free: `nhigham.com/wp-content/uploads/2022/11/high97d.pdf`, MIMS EPrints 344. Obtained 2026-07-05 (Max authorized web pull). | full proof: paper Thm 4.1 = book 11.3 (componentwise induction §4.2, eqs 4.6–4.10), paper Thm 4.2 = book 11.4 (norm bound §4.3, eqs 4.11–4.14, appendix A.1–A.3) | constants formalized (`bunch_kaufman_bound_const_le_36` eq 4.13, `..._pivot_norm_const_le_six` A.3, `..._recip_alpha_lt_two`); exact base `oneByOne_step_factorization`; per-step fl `fl_oneByOne_schur_step_error`/`_solve_backward_error`; 11.4 finite max-entry product norm, matrix-product/max-entry-norm notation bridge, and consumer bridges | **partially formalized**; block-matrix induction and the scalar eq-(4.14) product certificate remain (unblocked, large). Paper's (4.5) 2×2-solve backward error = book **Problem 11.5 (benchmark-reserved)** → stays a hypothesis. |
+| Theorems 11.3, 11.4 (proofs not in book ch.11) | N. J. Higham, *Stability of the diagonal pivoting method with partial pivoting*, SIAM J. Matrix Anal. Appl. 18(1) (1997) 52–65 = book ref **[608]**. Free: `nhigham.com/wp-content/uploads/2022/11/high97d.pdf`, MIMS EPrints 344. Obtained 2026-07-05 (Max authorized web pull). | full proof: paper Thm 4.1 = book 11.3 (componentwise induction §4.2, eqs 4.6–4.10), paper Thm 4.2 = book 11.4 (norm bound §4.3, eqs 4.11–4.14, appendix A.1–A.3) | constants formalized (`bunch_kaufman_bound_const_le_36` eq 4.13, `..._pivot_norm_const_le_six` A.3, `..._recip_alpha_lt_two`); exact base `oneByOne_step_factorization`; per-step fl `fl_oneByOne_schur_step_error`/`_solve_backward_error`; 11.4 finite max-entry product norm, matrix-product/max-entry-norm notation bridge, row-sum/product majorant bridge, loose and exact-coefficient first-stage/recursive aggregation bridges, and consumer bridges | **partially formalized**; concrete block-matrix induction and pivot-path product split remain (unblocked, large). Paper's (4.5) 2×2-solve backward error = book **Problem 11.5 (benchmark-reserved)** → stays a hypothesis. |
 | Theorem 11.7 | N. J. Higham, *Stability of block LDLᵀ factorization of a symmetric tridiagonal matrix*, Linear Algebra Appl. 287 (1999) 181–189 = ref **[613]**. Free (NA report): `maths.manchester.ac.uk/~higham/narep/narep308.pdf`. Located 2026-07-05, not yet formalized. | tridiagonal block-LDLᵀ stability proof | — | located; formalization is later multi-session fl work |
 | Theorem 11.8 | Higham **[612, 1999]** (Aasen backward error) — precise ref identified, free PDF not yet located | Aasen backward-error proof | exact recurrences (11.12)–(11.14) proved | to locate |
 
@@ -870,6 +1544,613 @@ Problem transcription.
     `higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_infNorm_choice` and
     `higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_infNorm_choice_of_subdiagonal_ne_zero`
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 tridiagonal branch-indexed local residual increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_TridiagonalBranchLocalAssumptions`,
+    `higham11_7_TridiagonalBranchLocalResidual`, and
+    `higham11_7_tridiagonalBranchLocalResidual_of_localAssumptions`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 tridiagonal branch residual witness increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_TridiagonalBranchLocalResidualWitness` and
+    `higham11_7_tridiagonalBranchLocalResidual_exists_residual_witness`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 tridiagonal terminal-tail branch increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalRecursiveTailZeroResidual`,
+    `higham11_7_tridiagonalRecursiveTailZeroResidual_infNorm`,
+    `higham11_7_TridiagonalBranchTerminalAssumptions`, and
+    `higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 terminal-tail local-assumption adapter increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchLocalAssumptions_of_terminalTailAssumptions`
+    and
+    `higham11_7_tridiagonalBranchPathLocalAssumptions_of_terminalTailAssumptions`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot path interface increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_TridiagonalBranchPathLocalAssumptions`,
+    `higham11_7_TridiagonalBranchPathLocalResiduals`,
+    `higham11_7_tridiagonalBranchPathLocalResiduals_of_localAssumptions`, and
+    `higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumptions`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot path base/singleton increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchPathLocalResiduals_empty`,
+    `higham11_7_tridiagonalBranchPathLocalResiduals_singleton_of_localAssumptions`, and
+    `higham11_7_tridiagonalBranchPathLocalResiduals_singleton_of_terminalTailAssumptions`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot path head/tail projection increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchPathLocalAssumptions_tail`,
+    `higham11_7_tridiagonalBranchPathTerminalAssumptions_tail`, and
+    `higham11_7_tridiagonalBranchPathLocalResiduals_tail`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot path cons constructor increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchPathLocalAssumptions_cons`,
+    `higham11_7_tridiagonalBranchPathTerminalAssumptions_cons`, and
+    `higham11_7_tridiagonalBranchPathLocalResiduals_cons`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot path head/tail iff increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchPathLocalAssumptions_iff_head_tail`,
+    `higham11_7_tridiagonalBranchPathTerminalAssumptions_iff_head_tail`, and
+    `higham11_7_tridiagonalBranchPathLocalResiduals_iff_head_tail`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot head residual handoff increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_localAssumptions`
+    and
+    `higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTailAssumptions`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot head/tail assumption handoff increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_tail_localAssumptions`
+    and
+    `higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_tail_terminalTailAssumptions`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot local-head terminal-tail handoff increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_localAssumptions_tail_terminalTailAssumptions`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot terminal-head local-tail handoff increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTailAssumptions_tail_localAssumptions`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot last-terminal path assembly increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchPathLocalAssumptions_of_init_localAssumptions_last_terminalTailAssumptions` and
+    `higham11_7_tridiagonalBranchPathLocalResiduals_of_init_localAssumptions_last_terminalTailAssumptions`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot path witness extraction increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchLocalResidual_exists_supported_witness` and
+    `higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot residual equation-witness increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_TridiagonalBranchPathResidualWitnesses` and
+    `higham11_7_tridiagonalBranchPathLocalResiduals_exists_residual_witnesses`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 residual witness support bridge increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchLocalResidualWitness_supported` and
+    `higham11_7_tridiagonalBranchPathResidualWitnesses_supported`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot assumption-to-witness increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchPathLocalAssumptions_exists_supported_witnesses`
+    and
+    `higham11_7_tridiagonalBranchPathTerminalAssumptions_exists_supported_witnesses`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot uniform-budget witness increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses_of_uniform_budgets`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-pivot assumption uniform-budget witness increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchPathLocalAssumptions_exists_supported_witnesses_of_uniform_budgets`
+    and
+    `higham11_7_tridiagonalBranchPathTerminalAssumptions_exists_supported_witnesses_of_uniform_budgets`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite support-sum aggregation increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalLeadingBlockSupport_sum_bound` and
+    `higham11_7_tridiagonalLeadingBlockSupport_sum_uniform_bound`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite support-sum norm aggregation increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalLeadingBlockSupport_sum_bound_with_norm` and
+    `higham11_7_tridiagonalLeadingBlockSupport_sum_uniform_bound_with_norm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-offset support-sum aggregation increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalLeadingBlockSupport_sum_bound_of_le_offsets` and
+    `higham11_7_tridiagonalLeadingBlockSupport_sum_bound_with_norm_of_le_offsets`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite mixed-offset printed support-sum aggregation increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm_of_le_offsets`,
+    `higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with_norm_of_le_offsets`,
+    `higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm_of_le_offsets_nonneg`,
+    and
+    `higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with_norm_of_le_offsets_nonneg`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite solve-delta sum aggregation increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_sum_solve_delta_infNorm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite solve-delta scalar-budget aggregation increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_sum_solve_delta_infNorm_of_coeff_sum_le`
+    and
+    `higham11_7_tridiagonal_backward_error_interface_of_uniform_sum_solve_delta_infNorm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite supported solve-delta aggregation increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm`
+    and
+    `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite supported solve-delta coefficient-majorant increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_coeff_sum_le`
+    and
+    `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets_of_coeff_sum_le`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite supported solve-delta uniform-coefficient increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_supported_uniform_sum_solve_delta_infNorm`
+    and
+    `higham11_7_tridiagonal_backward_error_interface_of_supported_uniform_sum_solve_delta_infNorm_of_le_offsets`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite support-sum printed-budget aggregation increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm` and
+    `higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with_norm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite support-sum printed-budget nonnegative increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalLeadingBlockSupport_sum_printed_bound_with_norm_nonneg`
+    and
+    `higham11_7_tridiagonalLeadingBlockSupport_sum_printed_uniform_bound_with_norm_nonneg`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 embedded path solve-delta aggregation increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_embedded_sum_of_coeff_sum_le`,
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_embedded_sum_of_coeff_sum_le`, and
+    `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_embedded_sum_of_coeff_sum_le`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 local-to-ambient path lift increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalLiftLocalBlockPerturbation_bound_leadingBlockSupport`,
+    `higham11_7_tridiagonalBranchPathSupportedWitnesses_lift_to_ambient`, and
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_of_coeff_sum_le`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 local-to-global path budget comparison increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_local_budget_le_global_of_coeff_roundoff_norm` and
+    `higham11_7_tridiagonalBranchPath_local_budgets_le_global_of_coeff_roundoff_norm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 path coefficient majorant increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchPath_uniform_coeff_majorant_of_component_bounds` and
+    `higham11_7_tridiagonalBranchPath_uniform_coeff_add_majorant_of_component_bounds`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 lifted zero-offset path endpoints increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_coeff_sum_le`,
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_lifted_sum_zero_offset_of_coeff_sum_le`, and
+    `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_lifted_sum_zero_offset_of_coeff_sum_le`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 residual-witness lifted zero-offset endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_residual_witnesses_coeff_sum_le`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 residual-witness local/terminal endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_lifted_sum_zero_offset_of_residual_witnesses_coeff_sum_le`
+    and
+    `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_lifted_sum_zero_offset_of_residual_witnesses_coeff_sum_le`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 lifted zero-offset scalar-budget endpoints increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_coeff_roundoff_norm`,
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_lifted_sum_zero_offset_of_coeff_roundoff_norm`, and
+    `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_lifted_sum_zero_offset_of_coeff_roundoff_norm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 residual-witness scalar-budget endpoints increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`,
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`, and
+    `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 printed split-entry normwise endpoints increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_coeff`,
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_coeff`,
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_gamma`, and
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_gamma`,
+    plus the validity-discharge variants
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_gamma_validity` and
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_gamma_validity`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 scheduled lifted zero-offset endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_scheduled_lifted_sum_zero_offset_of_coeff_sum_le`,
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_sum_le`,
+    `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_sum_le`,
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm`,
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm`, and
+    `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 scheduled residual-witness zero-offset endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_scheduled_lifted_sum_zero_offset_of_residual_witnesses_coeff_sum_le`,
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_scheduled_lifted_sum_zero_offset_of_residual_witnesses_coeff_sum_le`, and
+    `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_scheduled_lifted_sum_zero_offset_of_residual_witnesses_coeff_sum_le`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 scheduled residual-witness scalar-budget endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_scheduled_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`,
+    `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_scheduled_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`, and
+    `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_scheduled_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 mixed-path start-offset schedule increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchSupportOffset_pos`,
+    `higham11_7_tridiagonalBranchSupportOffset_le_two`,
+    `higham11_7_tridiagonalPathPivotSpan`,
+    `higham11_7_tridiagonalPathPivotSpan_zero`,
+    `higham11_7_tridiagonalPathPivotSpan_cons`,
+    `higham11_7_tridiagonalPathPivotSpan_pos`,
+    `higham11_7_tridiagonalPathPivotSpan_ge_length`,
+    `higham11_7_tridiagonalPathPivotSpan_le_two_mul`,
+    `higham11_7_TridiagonalPathStartOffsetsFrom`,
+    `higham11_7_TridiagonalPathStartOffsets`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_head`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_succ`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_succ_lt`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_cons`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_tail`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_iff_head_tail`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_exists`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_base_le`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_lt_base_add_pivotSpan`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_base_add_pivotSpan`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_last_branch_end_eq`,
+    `higham11_7_tridiagonalPathStartOffsets_head`,
+    `higham11_7_tridiagonalPathStartOffsets_succ`,
+    `higham11_7_tridiagonalPathStartOffsets_succ_lt`,
+    `higham11_7_tridiagonalPathStartOffsets_tail`,
+    `higham11_7_tridiagonalPathStartOffsets_iff_head_tail`,
+    `higham11_7_tridiagonalPathStartOffsets_exists`,
+    `higham11_7_tridiagonalPathStartOffsets_lt_pivotSpan`,
+    `higham11_7_tridiagonalPathStartOffsets_branch_end_le_pivotSpan`, and
+    `higham11_7_tridiagonalPathStartOffsets_last_branch_end_eq`
+    → elaborate; projection lemmas axiom-free, branch/span/strict-growth/positivity/existence/cons/tail/iff/containment/endpoint lemmas axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 mixed-path schedule ordering increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_of_lt`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_lt_of_lt`,
+    `higham11_7_tridiagonalPathStartOffsets_branch_end_le_of_lt`, and
+    `higham11_7_tridiagonalPathStartOffsets_lt_of_lt`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 mixed-path schedule monotonicity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalPathStartOffsetsFrom_le_of_le`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_branch_end_of_le`,
+    `higham11_7_tridiagonalPathStartOffsets_le_of_le`, and
+    `higham11_7_tridiagonalPathStartOffsets_branch_end_le_branch_end_of_le`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 mixed-path schedule prefix-span increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalPathPrefixSpan`,
+    `higham11_7_tridiagonalPathPrefixSpan_zero`,
+    `higham11_7_tridiagonalPathPrefixSpan_succ`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_eq_base_add_prefixSpan`,
+    `higham11_7_tridiagonalPathStartOffsets_eq_prefixSpan`, and
+    `higham11_7_tridiagonalPathPrefixSpan_last_add_branch_eq_pivotSpan`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 mixed-path prefix-span bounds/order increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalPathPrefixSpan_lt_pivotSpan`,
+    `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_pivotSpan`,
+    `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_of_lt`,
+    `higham11_7_tridiagonalPathPrefixSpan_lt_of_lt`,
+    `higham11_7_tridiagonalPathPrefixSpan_le_of_le`, and
+    `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_branch_end_of_le`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 concrete mixed-path tail-dimension increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalPathTailDim`,
+    `higham11_7_tridiagonalBranchAmbientDim_eq_tail_add_offset_succ`,
+    `higham11_7_tridiagonalPathPrefixSpan_add_branchAmbientDim_tailDim_eq_pivotSpan_succ`,
+    `higham11_7_tridiagonalPath_local_index_lt_pivotSpan_succ`,
+    `higham11_7_tridiagonalPathLocalBlockIndex`,
+    `higham11_7_tridiagonalPathLocalBlockIndex_val`, and
+    `higham11_7_tridiagonalPathTailDim_last_eq_zero`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`
+    except `higham11_7_tridiagonalBranchAmbientDim_eq_tail_add_offset_succ`,
+    which reports `[propext]`.
+  - 2026-07-09 Theorem 11.7 concrete mixed-path tail-dimension recurrence increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalPathTailDim_head` and
+    `higham11_7_tridiagonalPathTailDim_succ`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 concrete mixed-path branch-matrix view increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalPathBranchMatrix`,
+    `higham11_7_tridiagonalPathBranchMatrix_apply`,
+    `higham11_7_tridiagonalPathBranchMatrix_abs_entry_le_infNorm`, and
+    `higham11_7_tridiagonalPathBranchMatrix_infNorm_le_card_mul_global_infNorm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 concrete scheduled mixed-path endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalPathLocalBlockIndex_injective`,
+    `higham11_7_tridiagonalPathBranchMatrix_infNorm_le_global_infNorm`,
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm`, and
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 concrete prefix-span mixed-path endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_prefix_lifted_sum_zero_offset_of_coeff_roundoff_norm` and
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_prefix_lifted_sum_zero_offset_of_coeff_roundoff_norm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 concrete residual-witness scheduled/prefix endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_scheduled_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`,
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_scheduled_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`,
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`, and
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 concrete residual-witness uniform endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm`,
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm`,
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm`,
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm`, and
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 concrete last-terminal residual-witness nonuniform endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm` and
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 concrete prefix-span uniform-roundoff endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_prefix_lifted_sum_zero_offset_of_coeff_norm` and
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_prefix_lifted_sum_zero_offset_of_coeff_norm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 concrete prefix-span uniform-coefficient endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_prefix_lifted_sum_zero_offset_of_uniform_coeff_norm` and
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_prefix_lifted_sum_zero_offset_of_uniform_coeff_norm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 concrete prefix-span last-terminal endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_uniform_coeff_norm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 last-terminal residual-witness extraction increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchPathResidualWitnesses_exists_of_init_localAssumptions_last_terminalTailAssumptions` and
+    `higham11_7_tridiagonalConcretePathResidualWitnesses_exists_of_init_localAssumptions_last_terminalTailAssumptions`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 branch residual-equation accessor increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchLocalResidualWitness_one_equation`,
+    `higham11_7_tridiagonalBranchLocalResidualWitness_two_equation`,
+    `higham11_7_tridiagonalBranchLocalResidualWitness_one_equation_lifted`, and
+    `higham11_7_tridiagonalBranchLocalResidualWitness_two_equation_lifted`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 concrete path branch residual-witness accessor increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalPathFirstTrailingIndex_one_lt_pivotSpan_succ`,
+    `higham11_7_tridiagonalPathFirstTrailingIndex_two_lt_pivotSpan_succ`,
+    `higham11_7_tridiagonalConcretePathResidualWitnesses_one`, and
+    `higham11_7_tridiagonalConcretePathResidualWitnesses_two`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 mixed-path schedule uniqueness increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalPathStartOffsetsFrom_unique`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_exists_unique`,
+    `higham11_7_tridiagonalPathStartOffsets_unique`, and
+    `higham11_7_tridiagonalPathStartOffsets_exists_unique`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-08 Theorem 11.3 all-1×1 source-facing package increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
     `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
@@ -921,6 +2202,23 @@ Problem transcription.
     `higham11_8_aasen_outer_factor_scaled_entry_cap` and
     `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit`
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 Aasen outer-factor inverse-scale cap increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_one_plus_mul_le_one_of_le_inv_one_plus`,
+    `higham11_8_aasen_outer_factor_scaled_entry_cap_of_le_inv_one_plus`, and
+    `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 Aasen outer-factor inverse-scale square-cap increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_outer_factor_caps_of_aasen_entry_bound_inv_one_plus` and
+    `higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.8 Aasen outer-factor `(n-1)` source-prefix endpoint increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
     `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
@@ -937,6 +2235,16 @@ Problem transcription.
     `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_componentwise_T_checkerboard_middle` and
     `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_T_norm_cap_checkerboard_middle`
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 generic entrywise-majorant endpoint nonnegativity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_componentwise_T_checkerboard_middle_entry_bound_nonneg`,
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_T_norm_cap_checkerboard_middle_entry_bound_nonneg`,
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_zero_relative_T_hat_checkerboard_middle_entry_bound_nonneg`, and
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_zero_relative_T_hat_entry_bound_nonneg`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.8 relative `T_hat` norm bridge increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
     `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
@@ -946,6 +2254,148 @@ Problem transcription.
     `higham11_8_infNorm_scaled_abs_T_hat_le`, and
     `higham11_8_infNorm_T_le_one_plus_gamma_T_hat_of_relative_error`
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 relative `T_hat` entrywise bridge increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_abs_T_le_one_plus_gamma_T_hat_of_relative_error` and
+    `higham11_8_infNorm_T_le_one_plus_gamma_T_hat_of_relative_error`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 zero-relative `T_hat` cap increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_abs_T_le_T_hat_of_zero_relative_error` and
+    `higham11_8_infNorm_T_le_T_hat_of_zero_relative_error`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 zero-relative `T_hat` source-constant endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_constants_of_zero_relative_T_hat`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 zero-relative `T_hat` supplied checkerboard endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_zero_relative_T_hat_checkerboard_middle`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 zero-relative `T_hat` source-prefix checkerboard endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_zero_relative_T_hat_checkerboard_middle`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 zero-relative `T_hat` source-prefix direct norm-cap endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_norm_caps_of_zero_relative_T_hat`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 zero-relative `T_hat` direct row-sum/entrywise endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_row_sum_caps_of_zero_relative_T_hat` and
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_zero_relative_T_hat`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 zero-relative `T_hat` source-prefix row-sum endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_row_sum_caps_of_zero_relative_T_hat_checkerboard_middle`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 source-prefix direct row-sum endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_row_sum_caps_of_componentwise_T` and
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_row_sum_caps_of_T_norm_cap`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 source-prefix direct entrywise-majorant endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_componentwise_T` and
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_T_norm_cap`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 direct entrywise-majorant endpoint nonnegativity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_componentwise_T_entry_bound_nonneg` and
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_T_norm_cap_entry_bound_nonneg`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 direct Aasen-entry arbitrary-cap endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_componentwise_T` and
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_T_norm_cap`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 direct Aasen-entry arbitrary-cap nonnegativity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_componentwise_T_entry_bound_nonneg` and
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_T_norm_cap_entry_bound_nonneg`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 checkerboard Aasen-entry arbitrary-cap nonnegativity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_componentwise_T_checkerboard_middle_entry_bound_nonneg`,
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_T_norm_cap_checkerboard_middle_entry_bound_nonneg`, and
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_zero_relative_T_hat_checkerboard_middle_entry_bound_nonneg`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 zero-relative `T_hat` source-prefix entrywise-majorant endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_zero_relative_T_hat_checkerboard_middle`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 zero-relative `T_hat` source-prefix Aasen-entry endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_zero_relative_T_hat_checkerboard_middle`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 zero-relative `T_hat` normalized/source-style Aasen endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_zero_relative_T_hat_checkerboard_middle`,
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_zero_relative_T_hat_checkerboard_middle_entry_bound_nonneg`,
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_zero_relative_T_hat_checkerboard_middle`, and
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_zero_relative_T_hat_checkerboard_middle_entry_bound_nonneg`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 zero-relative `T_hat` direct-middle normalized/source-style Aasen endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_zero_relative_T_hat`,
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_zero_relative_T_hat_entry_bound_nonneg`,
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_zero_relative_T_hat`, and
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_zero_relative_T_hat_entry_bound_nonneg`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.8 relative `T_hat` scalar budget reducer increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
     `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
@@ -953,6 +2403,24 @@ Problem transcription.
     focused lookup/axiom check of fully-qualified
     `higham11_8_aasen_factor_solve_norm_budget_of_relative_T_hat_error` and
     `higham11_8_aasen_factor_solve_norm_budget_of_relative_factor_norm_bounds_relative_T_hat_error`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 printed gamma-validity guard increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_gammaValid_15n25_of_unit_roundoff_bound`,
+    `higham11_8_gammaValid_15n25_of_u_le_cap`, and
+    `higham11_8_gammaValid_n_two_prefix_of_u_le_cap`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 checkerboard determinant-inequality middle adapter increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_15_absLU_componentwise_T_bound_of_checkerboard_principalBlock_inequalities`
+    and
+    `higham11_15_aasenMiddleSolveBudget_infNorm_le_of_checkerboard_principalBlock_inequalities`
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.8 normalized Aasen outer-factor source-prefix endpoint increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
@@ -970,6 +2438,72 @@ Problem transcription.
     `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_componentwise_T` and
     `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_T_norm_cap`
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 inverse-scale Aasen direct-middle source-prefix endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_componentwise_T` and
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_T_norm_cap`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 inverse-scale Aasen checkerboard source-prefix endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_componentwise_T_checkerboard_middle` and
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_T_norm_cap_checkerboard_middle`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 inverse-scale entry-bound nonnegativity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_nonneg_of_uniform_abs_entry_bound`,
+    `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus_of_entry_bound`, and
+    `higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus_of_entry_bound`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 normalized entry-bound nonnegativity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound`,
+    `higham11_8_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound`, and
+    `higham11_8_aasen_base_square_bounds_of_entry_bound_scaled_unit_of_entry_bound`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 arbitrary-cap entry-bound nonnegativity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_relative_outer_factor_caps_of_entrywise_majorant_of_entry_bound`
+    and
+    `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_of_entry_bound`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 source-prefix endpoint nonnegativity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified direct-middle and checkerboard-middle
+    `_entry_bound_nonneg` inverse-scale source-prefix endpoints → elaborate;
+    axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 normalized source-prefix endpoint nonnegativity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified direct-middle and checkerboard-middle
+    scaled-unit `_entry_bound_nonneg` source-prefix endpoints → elaborate;
+    axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 source-prefix determinant-inequality zero-relative endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_norm_caps_of_zero_relative_T_hat_checkerboard_principalBlock_inequalities`
+    and
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_zero_relative_T_hat_checkerboard_principalBlock_inequalities_entry_bound_nonneg`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.4 max-entry norm iff increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
     `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
@@ -977,6 +2511,192 @@ Problem transcription.
     focused lookup/axiom check of fully-qualified
     `higham11_4_absLDLTProduct_entry_le_maxEntryNorm` and
     `higham11_4_maxEntryNorm_absLDLTProduct_le_iff`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 expanded max-entry norm iff increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_maxEntryNorm_absLDLTProduct_le_iff_product_entries`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 row-sum/product majorant increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds`,
+    `higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound`,
+    `higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound`, and
+    `higham11_4_bunchKaufmanMaxEntryProductBound_of_uniform_row_sum_bound`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 loose max-entry product cap nonnegativity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound_entry_nonneg`
+    and
+    `higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_entry_bounds_entry_nonneg`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 exact-coefficient row-sum/product majorant increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound`
+    and
+    `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_row_sum_bound`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 uniform-entry product majorant increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_bunchKaufmanProductEntry_le_uniform_entry_bounds`,
+    `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds`, and
+    `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_entry_bounds`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 uniform product cap nonnegativity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_nonneg_of_uniform_abs_entry_bound`,
+    `higham11_4_bunchKaufmanMaxEntryProductBound_of_uniform_entry_bounds_entry_nonneg`, and
+    `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_entry_bounds_entry_nonneg`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 per-row product cap nonnegativity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_row_sum_bounds_entry_nonneg`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 max-entry norm product cap nonnegativity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound_entry_nonneg`,
+    `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds_entry_nonneg`, and
+    `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds_entry_nonneg`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 product-entry nonnegativity adapter increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds_entry_nonneg`,
+    `higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound_entry_nonneg`, and
+    `higham11_4_bunchKaufmanProductEntry_le_uniform_entry_bounds_entry_nonneg`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 row-sum stability consumer increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_bunch_kaufman_stability_of_higham_const_uniform_row_sum_bound`,
+    `higham11_4_bunch_kaufman_stability_of_higham_const_uniform_entry_bounds`, and
+    `higham11_4_bunch_kaufman_stability_of_higham_const_row_sum_bounds`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 row-sum solve consumer increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_uniform_row_sum_bound`,
+    `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_uniform_entry_bounds`, and
+    `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_row_sum_bounds`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 loose row-sum/uniform-entry consumer increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_bunch_kaufman_stability_of_uniform_row_sum_bound`,
+    `higham11_4_bunch_kaufman_stability_of_uniform_entry_bounds`,
+    `higham11_4_bunch_kaufman_solve_backward_error_of_uniform_row_sum_bound`, and
+    `higham11_4_bunch_kaufman_solve_backward_error_of_uniform_entry_bounds`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 per-row exact-coefficient row-sum/product majorant increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds`
+    and
+    `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_row_sum_bounds`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 first-stage/recursive product aggregation increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_first_stage_recursive_product_bound`,
+    `higham11_4_product_entries_of_first_stage_recursive_bounds`, and
+    `higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_bounds`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 exact-coefficient first-stage/recursive product aggregation increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_first_stage_recursive_product_bound_of_higham_const`,
+    `higham11_4_product_entries_of_first_stage_recursive_higham_const_bounds`, and
+    `higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_bounds`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 first-stage/recursive max-entry norm increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_bounds`
+    and
+    `higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_higham_const_bounds`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 first-stage/recursive consumer increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_bunch_kaufman_stability_of_first_stage_recursive_bounds`,
+    `higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_bounds`,
+    `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_bounds`, and
+    `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_bounds`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 first-stage/recursive max-entry solve consumer increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_maxEntryNorm_bounds`
+    and
+    `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_maxEntryNorm_bounds`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 row-sum first-stage split bridge increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_first_stage_recursive_product_split_of_row_sum_bounds`,
+    `higham11_4_product_entries_of_first_stage_recursive_row_sum_bounds`,
+    `higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_row_sum_bounds`,
+    `higham11_4_product_entries_of_first_stage_recursive_higham_const_row_sum_bounds`, and
+    `higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_higham_const_row_sum_bounds`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 row-sum first-stage scalar/consumer increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_row_sum_bounds`,
+    `higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_row_sum_bounds`,
+    `higham11_4_bunch_kaufman_stability_of_first_stage_recursive_row_sum_bounds`,
+    `higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_row_sum_bounds`,
+    `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_row_sum_bounds`,
+    `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_row_sum_bounds`,
+    `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_row_sum_maxEntryNorm_bounds`, and
+    `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_row_sum_maxEntryNorm_bounds`
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-08 Theorem 11.4 max-entry product bridge increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
@@ -1085,9 +2805,10 @@ Problem transcription.
     (no `sorryAx`, no custom axioms).
   - Placeholder scan `grep -nE 'sorry|admit|^\s*axiom |native_decide|unsafe '` over ch11 +
     CholeskyIndefinite → clean.
-- New vs pre-existing warnings: **no new warnings** from the two edited files. The only build
-  warnings are pre-existing in `HighamChapter10.lean` (an unused-simp-arg hint, one unused
-  variable `hm`, and `Fin.coe_castAdd`/`Fin.coe_natAdd` deprecations).
+- New vs pre-existing warnings: **no new warnings** from the edited Chapter 11 file. The target
+  build warnings are pre-existing in `HighamChapter9.lean`, `CholeskyFl.lean`, and
+  `HighamChapter10.lean` (deprecated `Fin` coercions, unused simp arguments, one `ring`
+  linter note, unnecessary `simpa`, and unused variables).
 
 ## Documentation
 - Inventory + report: `docs/source_coverage/higham_ch11.md` (this file).
