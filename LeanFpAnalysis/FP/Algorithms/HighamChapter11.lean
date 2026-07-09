@@ -1014,6 +1014,40 @@ theorem higham11_4_bound_const_le_36 :
       / (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2 ≤ 36 :=
   bunch_kaufman_bound_const_le_36
 
+/-- **Theorem 11.4 constant handoff**: pointwise eq-(4.14) estimates with
+Higham's exact coefficient `(3+α²)(3+α)/(1−α²)²` imply the source-facing
+`36 n ρₙ ‖A‖_M` max-entry norm bound for `|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_entries
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (ρ_n Amax : ℝ) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hentries : ∀ i j : Fin n,
+      higham11_4_absLDLTProduct n L_hat D_hat i j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax := by
+  let C : ℝ :=
+    (3 + higham11_1_bunchParlettAlpha ^ 2) *
+      (3 + higham11_1_bunchParlettAlpha) /
+      (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2
+  have hC : C ≤ 36 := by
+    simpa [C] using higham11_4_bound_const_le_36
+  have htail_nonneg : 0 ≤ (n : ℝ) * ρ_n * Amax :=
+    mul_nonneg (mul_nonneg (Nat.cast_nonneg n) hρ) hAmax
+  calc
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)
+        ≤ C * (n : ℝ) * ρ_n * Amax :=
+      higham11_4_maxEntryNorm_absLDLTProduct_le_of_absLDLTProduct_entries
+        n hn L_hat D_hat (C * (n : ℝ) * ρ_n * Amax) (by
+          intro i j
+          simpa [C] using hentries i j)
+    _ = C * ((n : ℝ) * ρ_n * Amax) := by ring
+    _ ≤ 36 * ((n : ℝ) * ρ_n * Amax) :=
+      mul_le_mul_of_nonneg_right hC htail_nonneg
+    _ = 36 * (n : ℝ) * ρ_n * Amax := by ring
+
 /-- **Theorem 11.4 constant (Higham [608, 1997], appendix (A.3))**:
 `(3+α²)/(1−α²) ≤ 6`, bounding `|E||E⁻¹||E| ≤ 6|E|` for a 2×2 pivot. -/
 theorem higham11_4_pivot_norm_const_le_six :
