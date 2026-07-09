@@ -5192,6 +5192,29 @@ theorem higham11_7_tridiagonalPathStartOffsetsFrom_iff_head_tail
       higham11_7_tridiagonalPathStartOffsetsFrom_cons
         base k step starts h.1 h.2
 
+/-- Every finite branch-choice path has a base-offset start schedule. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_exists
+    (base k : ℕ) (step : Fin k → PivotSize) :
+    ∃ starts : Fin k → ℕ,
+      higham11_7_TridiagonalPathStartOffsetsFrom base k step starts := by
+  induction k generalizing base with
+  | zero =>
+      refine ⟨fun t => Fin.elim0 t, ?_⟩
+      refine ⟨?_, ?_⟩
+      · intro hk
+        omega
+      · intro t
+        exact Fin.elim0 t
+  | succ k ih =>
+      obtain ⟨tailStarts, htail⟩ := ih
+        (base + higham11_7_tridiagonalBranchSupportOffset (step 0))
+        (fun t : Fin k => step t.succ)
+      let starts : Fin (k + 1) → ℕ := fun t => Fin.cases base tailStarts t
+      refine ⟨starts, ?_⟩
+      exact
+        higham11_7_tridiagonalPathStartOffsetsFrom_cons
+          base k step starts (by simp [starts]) (by simpa [starts] using htail)
+
 /-- Every start offset in a base-offset mixed path is at or after the base. -/
 theorem higham11_7_tridiagonalPathStartOffsetsFrom_base_le
     (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
@@ -5369,6 +5392,14 @@ theorem higham11_7_tridiagonalPathStartOffsets_iff_head_tail
           (fun t : Fin k => starts t.succ) := by
   simpa [higham11_7_TridiagonalPathStartOffsets, zero_add] using
     higham11_7_tridiagonalPathStartOffsetsFrom_iff_head_tail 0 k step starts
+
+/-- Every finite branch-choice path has a zero-based start schedule. -/
+theorem higham11_7_tridiagonalPathStartOffsets_exists
+    (k : ℕ) (step : Fin k → PivotSize) :
+    ∃ starts : Fin k → ℕ,
+      higham11_7_TridiagonalPathStartOffsets k step starts := by
+  simpa [higham11_7_TridiagonalPathStartOffsets] using
+    higham11_7_tridiagonalPathStartOffsetsFrom_exists 0 k step
 
 /-- Every zero-based start offset lies strictly before the full path span. -/
 theorem higham11_7_tridiagonalPathStartOffsets_lt_pivotSpan
