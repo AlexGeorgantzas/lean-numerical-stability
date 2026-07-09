@@ -4005,6 +4005,53 @@ theorem higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumption
       (tailDim t) fp (step t) (A t) (c_bound t) (c_rec t) (u t)
       (tail_exact t) (hpath t)
 
+/-- **Theorem 11.7 empty mixed-pivot path residuals**.  The pointwise residual
+predicate is vacuous for the empty path, giving the induction base for the
+finite path interface. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_empty
+    (fp : FPModel) (tailDim : Fin 0 → ℕ) (step : Fin 0 → PivotSize)
+    (A : ∀ t : Fin 0, higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin 0 → ℝ) :
+    higham11_7_TridiagonalBranchPathLocalResiduals 0 fp tailDim step A
+      c_bound c_rec u tail_fl tail_exact := by
+  intro t
+  exact Fin.elim0 t
+
+/-- **Theorem 11.7 singleton mixed-pivot path adapter**.  A single local branch
+assumption can be viewed as a length-one finite mixed-pivot path residual. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_singleton_of_localAssumptions
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hlocal : higham11_7_TridiagonalBranchLocalAssumptions n fp s A
+      c_bound c_rec u tail_fl tail_exact) :
+    higham11_7_TridiagonalBranchPathLocalResiduals 1 fp
+      (fun _ => n) (fun _ => s) (fun _ => A)
+      (fun _ => c_bound) (fun _ => c_rec) (fun _ => u)
+      (fun _ => tail_fl) (fun _ => tail_exact) := by
+  intro t
+  exact
+    higham11_7_tridiagonalBranchLocalResidual_of_localAssumptions
+      n fp s A c_bound c_rec u tail_fl tail_exact hlocal
+
+/-- **Theorem 11.7 singleton terminal mixed-pivot path adapter**.  A single
+terminal-tail branch can be viewed as a length-one finite path residual with
+`tail_fl = tail_exact`. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_singleton_of_terminalTailAssumptions
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_exact : ℝ)
+    (hterminal : higham11_7_TridiagonalBranchTerminalAssumptions n fp s A
+      c_bound c_rec u) :
+    higham11_7_TridiagonalBranchPathLocalResiduals 1 fp
+      (fun _ => n) (fun _ => s) (fun _ => A)
+      (fun _ => c_bound) (fun _ => c_rec) (fun _ => u)
+      (fun _ => tail_exact) (fun _ => tail_exact) := by
+  intro t
+  exact
+    higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions
+      n fp s A c_bound c_rec u tail_exact hterminal
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
