@@ -1136,6 +1136,28 @@ theorem higham11_4_bunch_kaufman_stability_of_maxEntryNorm_absLDLTProduct_le
       simpa [higham11_4_bunchKaufmanProductMax_eq_maxEntryNorm_absLDLTProduct
         n hn L_hat D_hat] using hproduct)
 
+/-- **Theorem 11.4 direct exact-coefficient stability bridge**.  Pointwise
+eq-(4.14) estimates with Higham's exact coefficient feed the Bunch-Kaufman
+stability consumer after the proved `(3+α²)(3+α)/(1−α²)² ≤ 36` handoff. -/
+theorem higham11_4_bunch_kaufman_stability_of_higham_const_absLDLTProduct_entries
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ)
+    (ρ_n maxNorm_A : ℝ) (hρ : 0 ≤ ρ_n) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hentries : ∀ i j : Fin n,
+      higham11_4_absLDLTProduct n L_hat D_hat i j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * maxNorm_A) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_maxEntryNorm_absLDLTProduct_le
+    n hn A L_hat D_hat ρ_n maxNorm_A hmA hA_norm
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_entries
+      n hn L_hat D_hat ρ_n maxNorm_A hρ hmA hentries)
+
 /-- **Theorem 11.4** solve backward-error target shape for Bunch-Kaufman
 partial pivoting. -/
 theorem higham11_4_bunch_kaufman_solve_backward_error_interface (n : ℕ)
@@ -1218,6 +1240,32 @@ theorem higham11_4_bunch_kaufman_solve_backward_error_of_maxEntryNorm_absLDLTPro
     (by
       simpa [higham11_4_bunchKaufmanProductMax_eq_maxEntryNorm_absLDLTProduct
         n hn L_hat D_hat] using hsolve)
+
+/-- **Theorem 11.4 direct exact-coefficient solve bridge**.  The exact
+Higham-coefficient eq-(4.14) estimate supplies the max-entry product bound
+needed to convert a solve perturbation proportional to `|L̂||D̂||L̂ᵀ|` into
+the advertised `36nρₙ` budget. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_absLDLTProduct_entries
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (p u ρ_n Amax : ℝ) (hpu : 0 ≤ p * u) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hentries : ∀ i j : Fin n,
+      higham11_4_absLDLTProduct n L_hat D_hat i j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_maxEntryNorm_absLDLTProduct_le
+    n hn A L_hat D_hat b x_hat p u ρ_n Amax hpu
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_entries
+      n hn L_hat D_hat ρ_n Amax hρ hAmax hentries)
+    hsolve
 
 /-! ## §11.1.3 Rook pivoting -/
 
