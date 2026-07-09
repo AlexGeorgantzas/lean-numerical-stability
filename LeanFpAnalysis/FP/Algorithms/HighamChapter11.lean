@@ -1049,6 +1049,34 @@ theorem higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds_entry_nonneg
     (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
     hD hrow_i hrow_j
 
+/-- Region-specific row-sum and `D̂` entry caps produce the first-stage/trailing
+product-entry split consumed by the Higham [608, 1997] eqs. (4.11)--(4.14)
+aggregation. -/
+theorem higham11_4_first_stage_recursive_product_split_of_row_sum_bounds
+    (n s : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax : ℝ) (Lrow : Fin n → ℝ) (localB recB : ℝ)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow r)
+    (hfirst_budget : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      Lrow i * Dmax * Lrow j ≤ localB)
+    (htrail_budget : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      Lrow i * Dmax * Lrow j ≤ localB + recB) :
+    (∀ i j : Fin n, i.val < s ∨ j.val < s →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB) ∧
+    (∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB + recB) := by
+  refine ⟨?_, ?_⟩
+  · intro i j hij
+    exact
+      (higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds_entry_nonneg
+        n hn L_hat D_hat i j Dmax (Lrow i) (Lrow j) hD (hrows i) (hrows j)).trans
+        (hfirst_budget i j hij)
+  · intro i j hi hj
+    exact
+      (higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds_entry_nonneg
+        n hn L_hat D_hat i j Dmax (Lrow i) (Lrow j) hD (hrows i) (hrows j)).trans
+        (htrail_budget i j hi hj)
+
 /-- Uniform row-sum product-entry bridge deriving `0≤Dmax` from the nonempty
 absolute `D̂` entry cap. -/
 theorem higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound_entry_nonneg
@@ -2032,6 +2060,125 @@ theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_hig
       n s hs_pos hs_le L_hat D_hat ρ_n Amax localB recB hρ hAmax
       hlocal_budget hrec_budget hfirst htrail)
 
+/-- Row-sum and `D̂` entry caps over the first-stage/trailing split imply the
+printed loose `36nρₙ‖A‖_M` estimate for every source product entry. -/
+theorem higham11_4_product_entries_of_first_stage_recursive_row_sum_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax : ℝ) (Lrow : Fin n → ℝ)
+    (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget : localB ≤ 36 * ρ_n * Amax)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow r)
+    (hfirst_budget : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      Lrow i * Dmax * Lrow j ≤ localB)
+    (htrail_budget : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      Lrow i * Dmax * Lrow j ≤ localB + recB) :
+    ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) * ρ_n * Amax := by
+  rcases higham11_4_first_stage_recursive_product_split_of_row_sum_bounds
+      n s hn L_hat D_hat Dmax Lrow localB recB hD hrows hfirst_budget htrail_budget with
+    ⟨hfirst, htrail⟩
+  exact higham11_4_product_entries_of_first_stage_recursive_bounds
+    n s hs_pos hs_le L_hat D_hat ρ_n Amax localB recB hρ hAmax
+    hlocal_budget hrec_budget hfirst htrail
+
+/-- Row-sum and `D̂` entry caps over the first-stage/trailing split package
+directly into the source-shaped max-entry norm target for `|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_row_sum_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax : ℝ) (Lrow : Fin n → ℝ)
+    (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget : localB ≤ 36 * ρ_n * Amax)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow r)
+    (hfirst_budget : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      Lrow i * Dmax * Lrow j ≤ localB)
+    (htrail_budget : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      Lrow i * Dmax * Lrow j ≤ localB + recB) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_product_entries
+    n hn L_hat D_hat (36 * (n : ℝ) * ρ_n * Amax)
+    (higham11_4_product_entries_of_first_stage_recursive_row_sum_bounds
+      n s hn hs_pos hs_le L_hat D_hat Dmax Lrow ρ_n Amax localB recB hρ hAmax
+      hlocal_budget hrec_budget hD hrows hfirst_budget htrail_budget)
+
+/-- Row-sum and `D̂` entry caps over the first-stage/trailing split imply the
+printed pointwise `36nρₙ‖A‖_M` estimate when the local and recursive budgets are
+first supplied with Higham's exact eq-(4.13) coefficient. -/
+theorem higham11_4_product_entries_of_first_stage_recursive_higham_const_row_sum_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax : ℝ) (Lrow : Fin n → ℝ)
+    (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow r)
+    (hfirst_budget : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      Lrow i * Dmax * Lrow j ≤ localB)
+    (htrail_budget : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      Lrow i * Dmax * Lrow j ≤ localB + recB) :
+    ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) * ρ_n * Amax := by
+  rcases higham11_4_first_stage_recursive_product_split_of_row_sum_bounds
+      n s hn L_hat D_hat Dmax Lrow localB recB hD hrows hfirst_budget htrail_budget with
+    ⟨hfirst, htrail⟩
+  exact higham11_4_product_entries_of_first_stage_recursive_higham_const_bounds
+    n s hs_pos hs_le L_hat D_hat ρ_n Amax localB recB hρ hAmax
+    hlocal_budget hrec_budget hfirst htrail
+
+/-- Row-sum and `D̂` entry caps over the first-stage/trailing split package into
+the source-shaped max-entry norm target after the exact Higham-coefficient
+handoff. -/
+theorem
+    higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_higham_const_row_sum_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax : ℝ) (Lrow : Fin n → ℝ)
+    (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow r)
+    (hfirst_budget : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      Lrow i * Dmax * Lrow j ≤ localB)
+    (htrail_budget : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      Lrow i * Dmax * Lrow j ≤ localB + recB) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_product_entries
+    n hn L_hat D_hat (36 * (n : ℝ) * ρ_n * Amax)
+    (higham11_4_product_entries_of_first_stage_recursive_higham_const_row_sum_bounds
+      n s hn hs_pos hs_le L_hat D_hat Dmax Lrow ρ_n Amax localB recB hρ hAmax
+      hlocal_budget hrec_budget hD hrows hfirst_budget htrail_budget)
+
 /-- **Theorem 11.4 constant (Higham [608, 1997], appendix (A.3))**:
 `(3+α²)/(1−α²) ≤ 6`, bounding `|E||E⁻¹||E| ≤ 6|E|` for a 2×2 pivot. -/
 theorem higham11_4_pivot_norm_const_le_six :
@@ -2664,6 +2811,76 @@ theorem higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_h
   higham11_4_bunch_kaufman_solve_backward_error_of_productMax_le
     n hn A L_hat D_hat b x_hat p u ρ_n Amax hpu
     (higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_bounds
+      n s hn hs_pos hs_le L_hat D_hat ρ_n Amax localB recB hρ hAmax
+      hlocal_budget hrec_budget hfirst htrail)
+    hsolve
+
+/-- **Theorem 11.4 direct first-stage/recursive solve bridge, max-entry norm
+form**.  A concrete Higham [608, 1997] first-stage/trailing split with loose
+`36` shares feeds the solve-budget consumer when the solve perturbation is
+already stated against `‖|L̂||D̂||L̂ᵀ|‖_M`. -/
+theorem
+    higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_maxEntryNorm_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (p u ρ_n Amax localB recB : ℝ) (hpu : 0 ≤ p * u)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget : localB ≤ 36 * ρ_n * Amax)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB)
+    (htrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB + recB)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_maxEntryNorm_absLDLTProduct_le
+    n hn A L_hat D_hat b x_hat p u ρ_n Amax hpu
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_bounds
+      n s hn hs_pos hs_le L_hat D_hat ρ_n Amax localB recB hρ hAmax
+      hlocal_budget hrec_budget hfirst htrail)
+    hsolve
+
+/-- **Theorem 11.4 direct exact-coefficient first-stage/recursive solve bridge,
+max-entry norm form**.  A concrete first-stage/trailing split with Higham's
+exact coefficient feeds the solve-budget consumer when the solve perturbation
+is already stated against `‖|L̂||D̂||L̂ᵀ|‖_M`. -/
+theorem
+    higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_maxEntryNorm_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (p u ρ_n Amax localB recB : ℝ) (hpu : 0 ≤ p * u)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB)
+    (htrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB + recB)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_maxEntryNorm_absLDLTProduct_le
+    n hn A L_hat D_hat b x_hat p u ρ_n Amax hpu
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_higham_const_bounds
       n s hn hs_pos hs_le L_hat D_hat ρ_n Amax localB recB hρ hAmax
       hlocal_budget hrec_budget hfirst htrail)
     hsolve
@@ -12220,6 +12437,81 @@ theorem higham11_15_absLU_componentwise_T_bound_of_checkerboard_LUFactSpec
     simpa [matMul, absMatrix] using
       higham9_8_checkerboard_totalNonnegative_LUFactSpec_abs_product_eq_abs_of_pos
         T_hat L_T_hat U_T_hat hTNJ hdetJ hleadJ hLU i j
+
+/-- Checkerboard total-nonnegative tridiagonal LU product route with the
+Appendix-style determinant inequality exposed instead of positive leading
+principal blocks. -/
+theorem
+    higham11_15_absLU_componentwise_T_bound_of_checkerboard_principalBlock_inequalities
+    (n : ℕ) (T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+                  Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat) :
+    ∀ i j : Fin n,
+      matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤
+        |T_hat i j| := by
+  intro i j
+  exact le_of_eq <| by
+    simpa [matMul, absMatrix] using
+      higham9_8_checkerboard_totalNonnegative_LUFactSpec_abs_product_eq_abs_of_principalBlock_inequalities
+        T_hat L_T_hat U_T_hat hTNJ hdetJ hineqJ hLU i j
+
+/-- Middle-solve budget bound from the checkerboard total-nonnegative route
+with the source-facing determinant inequality hypotheses. -/
+theorem higham11_15_aasenMiddleSolveBudget_infNorm_le_of_checkerboard_principalBlock_inequalities
+    (fp : FPModel) (n : ℕ)
+    (T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+                  Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat) :
+    infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) ≤
+      higham9_14_f (gamma fp n) * infNorm T_hat := by
+  have hentry :
+      ∀ i j : Fin n,
+        matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤
+          1 * |T_hat i j| := by
+    intro i j
+    simpa [one_mul] using
+      higham11_15_absLU_componentwise_T_bound_of_checkerboard_principalBlock_inequalities
+        n T_hat L_T_hat U_T_hat hTNJ hdetJ hineqJ hLU i j
+  simpa [one_mul, mul_assoc] using
+    higham11_15_aasenMiddleSolveBudget_infNorm_le_of_absLU_componentwise_T_bound
+      fp n L_T_hat U_T_hat T_hat 1 (by norm_num) hn hentry
 
 /-- **Equation (11.15) source backward-error algebra**.  If the three rounded
 solve-chain components satisfy perturbed equations and the unperturbed product
