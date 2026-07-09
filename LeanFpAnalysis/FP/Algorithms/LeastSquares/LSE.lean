@@ -32442,6 +32442,17 @@ theorem theorem20_8_wedinResidualRHS_scaled_residual_le_of_scalar_op2_le
   simpa [mul_assoc, mul_left_comm, mul_comm, div_eq_mul_inv] using hmul
 
 /-- Higham, 2nd ed., Chapter 20, Theorems 20.1 and 20.8:
+    Wedin's printed residual RHS `(1+2κ)ε` dominates the direct `ε` residual
+    radius under the natural nonnegativity assumptions. -/
+theorem theorem20_8_eps_le_wedinResidualRHS_of_nonneg {kappa eps : ℝ}
+    (hkappa_nonneg : 0 ≤ kappa) (heps_nonneg : 0 ≤ eps) :
+    eps ≤ wedinTheorem20_1ResidualRelativeRHS kappa eps := by
+  unfold wedinTheorem20_1ResidualRelativeRHS
+  have hterm : 0 ≤ 2 * kappa * eps := by
+    nlinarith [mul_nonneg hkappa_nonneg heps_nonneg]
+  nlinarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorems 20.1 and 20.8:
     expanding Wedin's residual RHS `(1 + 2*kappa)*eps` turns the scalar
     residual-amplifier comparison into an `eps`-free coefficient comparison. -/
 theorem theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
@@ -50194,6 +50205,87 @@ theorem
       (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
         h.liftedReducedGramAPplus)
       hApos rfl hbracket)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    Gram-projector lifted reduced-Gram handoff with the residual estimate
+    stated as the direct source-radius bound `||r-r_high||₂ <= eps ||r||₂`.
+
+    Since Wedin's printed residual RHS is `(1+2κ)eps` and
+    `kappa_B(A) >= 0`, the direct residual-radius estimate is sufficient for
+    the Wedin residual-relative hypothesis used by the Gram-projector
+    lifted-table route. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_source_residual_norm_bracket
+    {r p q : ℕ}
+    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (b Deltab : Fin (r + q) → ℝ)
+    {B : Fin p → Fin (p + q) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + q) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p q A B)
+    (x y : Fin (p + q) → ℝ)
+    (res resHigh : Fin (r + q) → ℝ)
+    {eps : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 res)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres_source : lsResidualHigham A b x = res)
+    (hres_pert :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = resHigh)
+    (hres_norm :
+      vecNorm2 (fun i : Fin (r + q) => res i - resHigh i) ≤
+        eps * vecNorm2 res)
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A h.liftedReducedGramAPplus ≤
+        theorem20_8KappaB A h.liftedReducedGramAPplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                      h.liftedReducedGramAPplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin (p + q) => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x res h.liftedReducedGramAPplus
+          (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+            h.liftedReducedGramAPplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x res h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
+              frobNormRect A) := by
+  have hrelative_eps :
+      vecNorm2 (fun i : Fin (r + q) => res i - resHigh i) / vecNorm2 res ≤
+        eps :=
+    (div_le_iff₀ hrpos).2 hres_norm
+  have hrelative :
+      vecNorm2 (fun i : Fin (r + q) => res i - resHigh i) / vecNorm2 res ≤
+        wedinTheorem20_1ResidualRelativeRHS
+          (theorem20_8KappaB A h.liftedReducedGramAPplus) eps :=
+    hrelative_eps.trans
+      (theorem20_8_eps_le_wedinResidualRHS_of_nonneg
+        (theorem20_8KappaB_nonneg A h.liftedReducedGramAPplus) heps_nonneg)
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_wedinResidualRHS_bracket
+      A DeltaA b Deltab hB DeltaB d Deltad x y res resHigh heps_nonneg
+      hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack hx hy
+      hres_source hres_pert hrelative hbracket
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     for supplied GQR data, `B` has full row rank iff the displayed
