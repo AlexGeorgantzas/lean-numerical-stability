@@ -64362,6 +64362,61 @@ theorem theorem20_10_constructed_returned_vector_with_computed_B_transpose_Q_com
     theorem20_10_partB_backward_error_of_householder_components_computed_B_transpose_Q_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
       fp A B b d xhat hp hq hB hStack hu
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    a named constructed returned vector for the rounded Householder GQR route.
+
+    This is a noncomputable choice from the proved existential bridge above.
+    It is useful for downstream theorem statements that should not keep an
+    explicit free `xhat` argument.  It is not an executable identity for an
+    external implementation of GQR. -/
+noncomputable def theorem20_10_constructed_householder_returned_xhat
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hB hStack) :
+    Fin (p + q) → ℝ :=
+  Classical.choose
+    (theorem20_10_constructed_returned_vector_with_computed_B_transpose_Q_component_partB_route_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
+      fp A B b d hp hq hB hStack hu)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    specification of the named constructed returned vector.
+
+    The chosen vector satisfies both the constructed rounded Householder
+    returned-vector route and the concrete component Part B route with `Q`
+    fixed to the computed `Bᵀ` Householder panel. -/
+theorem theorem20_10_constructed_householder_returned_xhat_spec
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hB hStack) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    Theorem20_10ConstructedHouseholderReturnedVectorPartBRoute
+        fp A B b d
+        (theorem20_10_constructed_householder_returned_xhat
+          fp A B b d hp hq hB hStack hu) ∧
+      Theorem20_10HouseholderComponentPartBRoute
+        fp A B Qb b d
+        (theorem20_10_constructed_householder_returned_xhat
+          fp A B b d hp hq hB hStack hu) := by
+  simpa [theorem20_10_constructed_householder_returned_xhat] using
+    Classical.choose_spec
+      (theorem20_10_constructed_returned_vector_with_computed_B_transpose_Q_component_partB_route_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
+        fp A B b d hp hq hB hStack hu)
+
 /-- Theorem 20.10(a) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
 theorem theorem20_10_partA_mixed_stability_of_householder_gamma_certificate
