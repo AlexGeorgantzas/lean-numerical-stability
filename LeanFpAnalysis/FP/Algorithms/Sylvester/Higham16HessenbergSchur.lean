@@ -65,4 +65,25 @@ theorem exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_sylvesterTriangula
       (by simpa [Matrix.of_apply] using hdet)
       hmax
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6), Hessenberg-Schur handoff:
+    nonsingularity of the shifted singleton column coefficient also supplies
+    the positive max-entry denominator needed for the Chapter 9 upper-Hessenberg
+    growth-factor package. -/
+theorem exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_sylvesterTriangularShiftedCoeff_of_det_ne_zero_exists_hmax
+    (m : Nat) (hm : 0 < m) (R : RMatFn m m) (t : Real)
+    (hR : IsUpperHessenberg m R)
+    (hdet : Matrix.det (sylvesterTriangularShiftedCoeff m R t) ≠ 0) :
+    exists hmax : 0 < maxEntryNorm hm (sylvesterTriangularShiftedCoeff m R t),
+    exists U : Fin m -> Fin m -> Real,
+      higham9_10_HessenbergGEPPUTrace
+        (maxEntryNorm hm (sylvesterTriangularShiftedCoeff m R t))
+        1 m (sylvesterTriangularShiftedCoeff m R t) U /\
+      growthFactorEntry hm (sylvesterTriangularShiftedCoeff m R t) U hmax <=
+        (m : Real) := by
+  exact
+    higham9_10_exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_of_det_ne_zero_exists_hAmax
+      hm (sylvesterTriangularShiftedCoeff m R t)
+      (sylvesterTriangularShiftedCoeff_isUpperHessenberg m R t hR)
+      (by simpa [Matrix.of_apply] using hdet)
+
 end LeanFpAnalysis.FP
