@@ -1073,6 +1073,21 @@ theorem higham11_4_maxEntryNorm_absLDLTProduct_le_iff (n : ℕ) (hn : 0 < n)
       higham11_4_maxEntryNorm_absLDLTProduct_le_of_absLDLTProduct_entries
         n hn L_hat D_hat B hentries
 
+/-- Expanded double-sum form of
+`higham11_4_maxEntryNorm_absLDLTProduct_le_iff`. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_iff_product_entries
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ) (B : ℝ) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤ B ↔
+      ∀ i j : Fin n, higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ B := by
+  rw [higham11_4_maxEntryNorm_absLDLTProduct_le_iff n hn L_hat D_hat B]
+  constructor
+  · intro hentries i j
+    simpa [higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
+      using hentries i j
+  · intro hentries i j
+    simpa [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
+      using hentries i j
+
 /-- Pointwise expanded double-sum estimates package directly into the
 source-style max-entry norm estimate for `|L̂||D̂||L̂ᵀ|`. -/
 theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_product_entries
