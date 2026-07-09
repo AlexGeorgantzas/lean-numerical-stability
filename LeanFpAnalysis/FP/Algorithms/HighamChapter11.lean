@@ -5452,6 +5452,72 @@ theorem higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesse
   exact ⟨fun i j => (hbound i j).trans (hentry t), hsupp,
     hnorm_local.trans (hnorm t)⟩
 
+/-- **Theorem 11.7 path-local assumptions with supplied uniform budgets**.
+This is the assumption-facing version of
+`higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses_of_uniform_budgets`. -/
+theorem higham11_7_tridiagonalBranchPathLocalAssumptions_exists_supported_witnesses_of_uniform_budgets
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (Bentry Bnorm : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalAssumptions k fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact)
+    (hentry : ∀ t : Fin k,
+      (c_bound t + c_rec t) * u t * infNorm (A t) ≤ Bentry)
+    (hnorm : ∀ t : Fin k,
+      ((higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t) : ℕ) : ℝ) *
+        (c_bound t + c_rec t) * u t * infNorm (A t) ≤ Bnorm) :
+    ∃ ΔA : ∀ t : Fin k,
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+      ∀ t : Fin k,
+        (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+          |ΔA t i j| ≤ Bentry) ∧
+        higham11_7_TridiagonalLeadingBlockSupport
+          (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+          (higham11_7_tridiagonalBranchSupportOffset (step t)) (ΔA t) ∧
+        infNorm (ΔA t) ≤ Bnorm :=
+  higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses_of_uniform_budgets
+    k fp tailDim step A c_bound c_rec u tail_fl tail_exact Bentry Bnorm
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_localAssumptions
+      k fp tailDim step A c_bound c_rec u tail_fl tail_exact hpath)
+    hentry hnorm
+
+/-- **Theorem 11.7 terminal path assumptions with supplied uniform budgets**.
+Terminal-tail path assumptions also produce explicit per-branch perturbations
+bounded by supplied uniform entry and norm budgets. -/
+theorem higham11_7_tridiagonalBranchPathTerminalAssumptions_exists_supported_witnesses_of_uniform_budgets
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_exact : Fin k → ℝ)
+    (Bentry Bnorm : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathTerminalAssumptions k fp
+      tailDim step A c_bound c_rec u)
+    (hentry : ∀ t : Fin k,
+      (c_bound t + c_rec t) * u t * infNorm (A t) ≤ Bentry)
+    (hnorm : ∀ t : Fin k,
+      ((higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t) : ℕ) : ℝ) *
+        (c_bound t + c_rec t) * u t * infNorm (A t) ≤ Bnorm) :
+    ∃ ΔA : ∀ t : Fin k,
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+      ∀ t : Fin k,
+        (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+          |ΔA t i j| ≤ Bentry) ∧
+        higham11_7_TridiagonalLeadingBlockSupport
+          (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+          (higham11_7_tridiagonalBranchSupportOffset (step t)) (ΔA t) ∧
+        infNorm (ΔA t) ≤ Bnorm :=
+  higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses_of_uniform_budgets
+    k fp tailDim step A c_bound c_rec u tail_exact tail_exact Bentry Bnorm
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumptions
+      k fp tailDim step A c_bound c_rec u tail_exact hpath)
+    hentry hnorm
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
