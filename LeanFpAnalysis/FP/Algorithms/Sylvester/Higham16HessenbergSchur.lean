@@ -87,6 +87,30 @@ theorem exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_sylvesterTriangula
       (sylvesterTriangularShiftedCoeff_isUpperHessenberg m R t hR)
       (by simpa [Matrix.of_apply] using hdet)
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
+    source-numbered alias for preservation of upper-Hessenberg structure by the
+    shifted singleton Schur-column coefficient. -/
+alias H16_eq16_6_sylvesterTriangularShiftedCoeff_isUpperHessenberg :=
+  sylvesterTriangularShiftedCoeff_isUpperHessenberg
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
+    source-numbered alias for the exact Hessenberg GEPP trace handoff for a
+    nonsingular shifted singleton Schur-column coefficient. -/
+alias H16_eq16_6_exists_HessenbergGEPPUTrace_sylvesterTriangularShiftedCoeff_of_det_ne_zero :=
+  exists_HessenbergGEPPUTrace_sylvesterTriangularShiftedCoeff_of_det_ne_zero
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
+    source-numbered alias for the exact Hessenberg GEPP trace and growth bound
+    for a nonsingular shifted singleton Schur-column coefficient. -/
+alias H16_eq16_6_exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_sylvesterTriangularShiftedCoeff_of_det_ne_zero :=
+  exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_sylvesterTriangularShiftedCoeff_of_det_ne_zero
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
+    source-numbered alias for the denominator-free exact Hessenberg GEPP trace
+    and growth-bound package for a nonsingular shifted singleton coefficient. -/
+alias H16_eq16_6_exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_sylvesterTriangularShiftedCoeff_of_det_ne_zero_exists_hmax :=
+  exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_sylvesterTriangularShiftedCoeff_of_det_ne_zero_exists_hmax
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8),
     Hessenberg-Schur handoff for the supplied triangular solve: if the left
     Schur factor is upper Hessenberg, the right factor is upper triangular, and
