@@ -55478,6 +55478,124 @@ theorem theorem20_10_gqr_xhat_supplied_perturbed_factor_zero_deltaX_certificate
       fp h hpert b d bpert dpert DeltaS DeltaL22 gammaB hQ hS hL21 hL22 hd
       hb_tail hSdiag_pert hL22diag_pert hSeq hL22eq hgammaB_nonneg hx
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, transformed-tail computed
+    GQR method: bounded triangular-solve witnesses plus supplied-factor
+    rank/minimizer handoff.
+
+    This is the transformed-RHS analogue of
+    `theorem20_10_gqr_xhat_supplied_perturbed_factor_rank_minimizer_certificate`.
+    It packages the actual `fl_forwardSub` perturbation witnesses for a supplied
+    trailing transformed vector `beta`, then exposes the exact perturbed
+    rank/minimizer conclusion for any matching perturbed GQR factorization. -/
+theorem theorem20_10_gqr_xhat_of_transformed_tail_supplied_perturbed_factor_rank_minimizer_certificate
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (beta : Fin q → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (∀ {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+          {Bpert : Fin p → Fin (p + q) → ℝ}
+          (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+          (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ),
+        hpert.Q = h.Q →
+        hpert.S = (fun i j => h.S i j + DeltaS i j) →
+        hpert.L21 = h.L21 →
+        hpert.L22 = (fun i j => h.L22 i j + DeltaL22 i j) →
+        dpert = d →
+        (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+            beta i) →
+        (∀ i : Fin p, hpert.S i i ≠ 0) →
+        (∀ i : Fin q, hpert.L22 i i ≠ 0) →
+        LSEFullRowRank Bpert ∧
+          LSEStackedFullColumnRank Apert Bpert ∧
+            IsLSEMinimizer Apert bpert Bpert dpert
+              (theorem20_10_gqr_xhat_of_transformed_tail fp h beta d)) := by
+  rcases theorem20_10_gqr_xhat_of_transformed_tail_triangular_solve_frob_perturbation_bound
+      fp h beta d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hSeq, hL22eq, _hxhat⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  intro Apert Bpert hpert bpert dpert hQ hS hL21 hL22 hd hb_tail
+    hSdiag_pert hL22diag_pert
+  exact
+    theorem20_10_gqr_xhat_of_transformed_tail_rank_and_minimizer_of_supplied_perturbed_triangular_factors
+      fp h hpert beta d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
+      hb_tail hSdiag_pert hL22diag_pert hSeq hL22eq
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), transformed-tail computed
+    GQR method: bounded triangular-solve witnesses plus zero-`DeltaX` handoff.
+
+    This mirrors
+    `theorem20_10_gqr_xhat_supplied_perturbed_factor_zero_deltaX_certificate`
+    for the rounded/supplied transformed-tail path.  Once a matching perturbed
+    GQR factorization is supplied and its triangular blocks have nonzero
+    diagonals, uniqueness of the perturbed LSE minimizer again lets the mixed
+    stability witness be `DeltaX = 0`. -/
+theorem theorem20_10_gqr_xhat_of_transformed_tail_supplied_perturbed_factor_zero_deltaX_certificate
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (beta : Fin q → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (∀ {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+          {Bpert : Fin p → Fin (p + q) → ℝ}
+          (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+          (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ)
+          (gammaB : ℝ),
+        hpert.Q = h.Q →
+        hpert.S = (fun i j => h.S i j + DeltaS i j) →
+        hpert.L21 = h.L21 →
+        hpert.L22 = (fun i j => h.L22 i j + DeltaL22 i j) →
+        dpert = d →
+        (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+            beta i) →
+        (∀ i : Fin p, hpert.S i i ≠ 0) →
+        (∀ i : Fin q, hpert.L22 i i ≠ 0) →
+        0 ≤ gammaB →
+        ∀ x : Fin (p + q) → ℝ,
+          IsLSEMinimizer Apert bpert Bpert dpert x →
+            ∃ DeltaX : Fin (p + q) → ℝ,
+              (∀ j : Fin (p + q),
+                theorem20_10_gqr_xhat_of_transformed_tail fp h beta d j =
+                  x j + DeltaX j) ∧
+              vecNorm2 DeltaX ≤ gammaB * vecNorm2 x) := by
+  rcases theorem20_10_gqr_xhat_of_transformed_tail_triangular_solve_frob_perturbation_bound
+      fp h beta d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hSeq, hL22eq, _hxhat⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  intro Apert Bpert hpert bpert dpert gammaB hQ hS hL21 hL22 hd
+    hb_tail hSdiag_pert hL22diag_pert hgammaB_nonneg x hx
+  exact
+    theorem20_10_gqr_xhat_of_transformed_tail_zero_deltaX_of_supplied_perturbed_triangular_factors
+      fp h hpert beta d bpert dpert DeltaS DeltaL22 gammaB hQ hS hL21
+      hL22 hd hb_tail hSdiag_pert hL22diag_pert hSeq hL22eq
+      hgammaB_nonneg hx
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), finite-precision
     perturbation certificate for the mixed-stability branch.
 
