@@ -111,6 +111,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.8 zero-relative `T_hat` source-constant endpoint | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_constants_of_zero_relative_T_hat` | Ch11 | **new this session**; specializes the supplied exact-radius source-constant route so a zero relative `T_hat - T` comparison supplies both the `γ_n` factorization budget and the direct `‖T‖∞≤‖T_hat‖∞` cap, removing two separate middle-factor handoffs from that endpoint. |
 | Thm 11.8 zero-relative `T_hat` supplied checkerboard endpoint | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_zero_relative_T_hat_checkerboard_middle` | Ch11 | **new this session**; specializes the supplied checkerboard-middle route with relative exact outer-factor caps so the zero relative `T_hat - T` comparison supplies both the concrete `γ_n` middle-factor budget and the direct exact-`T` norm cap. |
 | Thm 11.8 zero-relative `T_hat` source-prefix checkerboard endpoint | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_zero_relative_T_hat_checkerboard_middle` | Ch11 | **new this session**; specializes the source-prefix checkerboard-middle route with relative exact outer-factor caps so the zero relative `T_hat - T` comparison supplies the middle-factor budget and exact-`T` norm cap while the relative `L_hat` hypothesis is generated from the rounded Aasen recurrence model. |
+| Thm 11.8 zero-relative `T_hat` source-prefix direct norm-cap endpoint | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_norm_caps_of_zero_relative_T_hat` | Ch11 | **new this session**; generic direct-middle source-prefix wrapper turning zero relative `T_hat - T` into the `γ_n` factorization-side middle budget and exact `T`-norm cap under supplied outer factor norm caps and a supplied `|L_T||U_T|≤|T_hat|` product estimate. |
 | Thm 11.8 zero-relative `T_hat` source-prefix row-sum endpoint | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_row_sum_caps_of_zero_relative_T_hat_checkerboard_middle` | Ch11 | **new this session**; combines scaled exact outer-factor row/column sum caps with the zero-relative `T_hat - T` comparison, feeding the source-prefix checkerboard-middle exact-radius route without separate `T` norm or `γ_n` middle-budget hypotheses. |
 | Thm 11.8 zero-relative `T_hat` source-prefix entrywise-majorant endpoint | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_zero_relative_T_hat_checkerboard_middle` | Ch11 | **new this session**; combines a uniform exact outer-factor entrywise majorant with the zero-relative `T_hat - T` comparison, feeding the source-prefix checkerboard-middle exact-radius route through the entrywise-majorant outer-factor cap adapter. |
 | Thm 11.8 zero-relative `T_hat` source-prefix Aasen-entry endpoint | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_zero_relative_T_hat_checkerboard_middle` | Ch11 | **new this session**; specializes the sharper Aasen-structure outer-factor entry-bound route, using strict-upper and first-column zero structure plus a uniform entry cap for `L`, while the zero-relative `T_hat - T` comparison supplies the exact-radius middle-factor handoffs. |
@@ -367,6 +368,11 @@ and
 plus their `_entry_bound_nonneg` variants. These keep the supplied
 `|L_T||U_T|≤|T_hat|` product estimate and remove only the exact-`T` norm
 handoff.
+A later 2026-07-09 increment factors out the generic direct-middle source-norm
+version
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_norm_caps_of_zero_relative_T_hat`,
+so future direct product routes with supplied outer norm caps can use the same
+zero-relative handoff without passing a separate exact-`T` norm cap.
 
 Both single-step §11.1.1 element-growth bounds are now proved: the 1×1 step
 `(1+1/α)μ₀` (`oneByOne_schur_growth`) and the 2×2 step `(1+2/(1−α))μ₀`
@@ -1353,6 +1359,13 @@ Problem transcription.
     `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
     focused lookup/axiom check of fully-qualified
     `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_zero_relative_T_hat_checkerboard_middle`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 zero-relative `T_hat` source-prefix direct norm-cap endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_norm_caps_of_zero_relative_T_hat`
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.8 zero-relative `T_hat` source-prefix row-sum endpoint increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
