@@ -4052,6 +4052,99 @@ theorem higham11_7_tridiagonalBranchPathLocalResiduals_singleton_of_terminalTail
     higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions
       n fp s A c_bound c_rec u tail_exact hterminal
 
+/-- **Theorem 11.7 path-local assumptions, head projection**.  The first step
+of a nonempty finite mixed-pivot path satisfies the corresponding branch-local
+assumption. -/
+theorem higham11_7_tridiagonalBranchPathLocalAssumptions_head
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalAssumptions (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact) :
+    higham11_7_TridiagonalBranchLocalAssumptions (tailDim 0) fp (step 0)
+      (A 0) (c_bound 0) (c_rec 0) (u 0) (tail_fl 0) (tail_exact 0) :=
+  hpath 0
+
+/-- **Theorem 11.7 path-local assumptions, tail projection**.  Dropping the
+first branch of a nonempty finite mixed-pivot path preserves the pointwise local
+assumption interface for the remaining path. -/
+theorem higham11_7_tridiagonalBranchPathLocalAssumptions_tail
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalAssumptions (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact) :
+    higham11_7_TridiagonalBranchPathLocalAssumptions k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ) (fun t => tail_fl t.succ)
+      (fun t => tail_exact t.succ) := by
+  intro t
+  exact hpath t.succ
+
+/-- **Theorem 11.7 terminal path assumptions, head projection**. -/
+theorem higham11_7_tridiagonalBranchPathTerminalAssumptions_head
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u : Fin (k + 1) → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathTerminalAssumptions (k + 1)
+      fp tailDim step A c_bound c_rec u) :
+    higham11_7_TridiagonalBranchTerminalAssumptions (tailDim 0) fp (step 0)
+      (A 0) (c_bound 0) (c_rec 0) (u 0) :=
+  hpath 0
+
+/-- **Theorem 11.7 terminal path assumptions, tail projection**. -/
+theorem higham11_7_tridiagonalBranchPathTerminalAssumptions_tail
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u : Fin (k + 1) → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathTerminalAssumptions (k + 1)
+      fp tailDim step A c_bound c_rec u) :
+    higham11_7_TridiagonalBranchPathTerminalAssumptions k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ) := by
+  intro t
+  exact hpath t.succ
+
+/-- **Theorem 11.7 path-local residuals, head projection**. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_head
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact) :
+    higham11_7_TridiagonalBranchLocalResidual (tailDim 0) fp (step 0)
+      (A 0) (c_bound 0) (c_rec 0) (u 0) (tail_fl 0) (tail_exact 0) :=
+  hpath 0
+
+/-- **Theorem 11.7 path-local residuals, tail projection**. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_tail
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact) :
+    higham11_7_TridiagonalBranchPathLocalResiduals k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ) (fun t => tail_fl t.succ)
+      (fun t => tail_exact t.succ) := by
+  intro t
+  exact hpath t.succ
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
