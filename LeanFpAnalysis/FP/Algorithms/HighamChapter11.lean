@@ -12438,6 +12438,81 @@ theorem higham11_15_absLU_componentwise_T_bound_of_checkerboard_LUFactSpec
       higham9_8_checkerboard_totalNonnegative_LUFactSpec_abs_product_eq_abs_of_pos
         T_hat L_T_hat U_T_hat hTNJ hdetJ hleadJ hLU i j
 
+/-- Checkerboard total-nonnegative tridiagonal LU product route with the
+Appendix-style determinant inequality exposed instead of positive leading
+principal blocks. -/
+theorem
+    higham11_15_absLU_componentwise_T_bound_of_checkerboard_principalBlock_inequalities
+    (n : ℕ) (T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+                  Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat) :
+    ∀ i j : Fin n,
+      matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤
+        |T_hat i j| := by
+  intro i j
+  exact le_of_eq <| by
+    simpa [matMul, absMatrix] using
+      higham9_8_checkerboard_totalNonnegative_LUFactSpec_abs_product_eq_abs_of_principalBlock_inequalities
+        T_hat L_T_hat U_T_hat hTNJ hdetJ hineqJ hLU i j
+
+/-- Middle-solve budget bound from the checkerboard total-nonnegative route
+with the source-facing determinant inequality hypotheses. -/
+theorem higham11_15_aasenMiddleSolveBudget_infNorm_le_of_checkerboard_principalBlock_inequalities
+    (fp : FPModel) (n : ℕ)
+    (T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+                  Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat) :
+    infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) ≤
+      higham9_14_f (gamma fp n) * infNorm T_hat := by
+  have hentry :
+      ∀ i j : Fin n,
+        matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤
+          1 * |T_hat i j| := by
+    intro i j
+    simpa [one_mul] using
+      higham11_15_absLU_componentwise_T_bound_of_checkerboard_principalBlock_inequalities
+        n T_hat L_T_hat U_T_hat hTNJ hdetJ hineqJ hLU i j
+  simpa [one_mul, mul_assoc] using
+    higham11_15_aasenMiddleSolveBudget_infNorm_le_of_absLU_componentwise_T_bound
+      fp n L_T_hat U_T_hat T_hat 1 (by norm_num) hn hentry
+
 /-- **Equation (11.15) source backward-error algebra**.  If the three rounded
 solve-chain components satisfy perturbed equations and the unperturbed product
 is `A = L T U`, then the collapsed product perturbation gives a single source
