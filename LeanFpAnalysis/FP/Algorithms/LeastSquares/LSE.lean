@@ -51935,6 +51935,502 @@ theorem
       hxpos hyx hrpos hmax hstack hx hy hrelative hbracket
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    lifted reduced-Gram Gram-projector handoff whose Wedin residual-relative
+    estimate is supplied by the concrete source and perturbed GQR `Q₂` reduced
+    problems.
+
+    This wrapper composes the reduced-nullspace Wedin theorem with the
+    minimizer-facing lifted residual-factor surface.  The remaining analytical
+    obligations are the reduced trailing-block perturbation budget, the source
+    residual-relative budget, the source smallness condition
+    `eps < 1/kappa_B(A)`, and the residual-amplifier lower-bound factor. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_gqrQ2_reduced_wedinResidualRHS_residualFactor_of_eps_lt_inv_kappaB
+    {r p k : ℕ}
+    (A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ)
+    (b Deltab : Fin (r + (k + 1)) → ℝ)
+    {B : Fin p → Fin (p + (k + 1)) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + (k + 1)) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p (k + 1) A B)
+    (hpert : GeneralizedQRFactorization r p (k + 1)
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (x y : Fin (p + (k + 1)) → ℝ)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hstackPert : LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hepsSmall : eps < 1 / theorem20_8KappaB A h.liftedReducedGramAPplus)
+    (hDeltaGQR :
+      rectOpNorm2Le
+        (fun i j =>
+          gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q i j -
+            gqrAQ2Block A h.Q i j)
+        (eps * frobNormRect A))
+    (hres_relative :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) /
+          vecNorm2 (lsResidualHigham A b x) ≤
+        eps)
+    (hresidualFactor :
+      1 + (theorem20_8KappaB A h.liftedReducedGramAPplus)⁻¹ ≤
+        (frobNormRect B / frobNormRect A) *
+          complexMatrixOp2
+            (realRectToCMatrix
+              (rectMatMul A
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)))) :
+    vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) / vecNorm2 x ≤
+      eps *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
+              frobNormRect A) := by
+  have hm : 0 < r + (k + 1) := by omega
+  have heps_nonneg : 0 ≤ eps :=
+    (theorem20_8MaxRelativePerturbation_nonneg A DeltaA b Deltab B DeltaB d
+      Deltad hApos).trans hmax
+  have hkappa_pos :
+      0 < theorem20_8KappaB A h.liftedReducedGramAPplus :=
+    h.theorem20_8KappaB_liftedReducedGramAPplus_pos hstack hApos
+  have hsmall :
+      theorem20_8KappaB A h.liftedReducedGramAPplus * eps < 1 :=
+    theorem20_8KappaB_mul_eps_lt_one_of_eps_lt_inv
+      A h.liftedReducedGramAPplus hkappa_pos hepsSmall
+  have hredA := h.A_Q2_reduced_gram_left_inverse_and_projection_symmetric hstack
+  have hredB := hpert.A_Q2_reduced_gram_left_inverse_and_projection_symmetric
+    hstackPert
+  have hleftA :
+      rectMatMul (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
+          (rectMatMul A h.Q2Basis) =
+        idMatrix (k + 1) := by
+    simpa [GeneralizedQRFactorization.A_mul_Q2Basis] using hredA.1
+  have hleftB :
+      rectMatMul
+          (lsAplusOfGramNonsingInv
+            (gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q))
+          (rectMatMul (fun i j => A i j + DeltaA i j) hpert.Q2Basis) =
+        idMatrix (k + 1) := by
+    simpa [GeneralizedQRFactorization.A_mul_Q2Basis] using hredB.1
+  have hSymA :
+      IsSymmetricFiniteMatrix
+        (rectMatMul (rectMatMul A h.Q2Basis)
+          (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))) := by
+    simpa [GeneralizedQRFactorization.A_mul_Q2Basis] using hredA.2
+  have hSymB :
+      IsSymmetricFiniteMatrix
+        (rectMatMul
+          (rectMatMul (fun i j => A i j + DeltaA i j) hpert.Q2Basis)
+          (lsAplusOfGramNonsingInv
+            (gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q))) := by
+    simpa [GeneralizedQRFactorization.A_mul_Q2Basis] using hredB.2
+  have hAredPlus :
+      rectOpNorm2Le (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
+        (complexMatrixOp2
+          (realRectToCMatrix (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q)))) :=
+    rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+      (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q)) le_rfl
+  have hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) hpert.Q2Basis i j -
+            rectMatMul A h.Q2Basis i j)
+        (eps * frobNormRect A) :=
+    h.rectOpNorm2Le_reduced_delta_of_gqrAQ2Block hpert hDeltaGQR
+  have hDeltabred :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) ≤
+        eps * vecNorm2 (lsResidualHigham A b x) :=
+    (div_le_iff₀ hrpos).1 hres_relative
+  have hrelative :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham A b x i -
+              lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i) /
+          vecNorm2 (lsResidualHigham A b x) ≤
+        wedinTheorem20_1ResidualRelativeRHS
+          (theorem20_8KappaB A h.liftedReducedGramAPplus) eps :=
+    theorem20_8_nullspace_reduced_wedinResidualRHS_le_of_lse_minimizers
+      (delta := eps * frobNormRect A)
+      (AredPlus_norm := complexMatrixOp2
+        (realRectToCMatrix (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))))
+      (DeltaAred_norm := eps * frobNormRect A)
+      (Deltabred_norm := eps * vecNorm2 (lsResidualHigham A b x))
+      (kappa := theorem20_8KappaB A h.liftedReducedGramAPplus)
+      (eps := eps) (Ared_norm := frobNormRect A)
+      hm A DeltaA b Deltab B DeltaB d Deltad h.Q2Basis hpert.Q2Basis
+      (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
+      (lsAplusOfGramNonsingInv
+        (gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q))
+      x y (lsResidualHigham A b x)
+      (lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y)
+      hx hy h.Q2Basis_nullspace hpert.Q2Basis_nullspace rfl rfl hrpos
+      (h.A_Q2_reduced_gram_pseudoinverse_op2_pos hstack) hApos.le
+      heps_nonneg h.theorem20_8KappaB_liftedReducedGramAPplus_eq rfl hsmall
+      hAredPlus hDelta hDelta hDeltabred le_rfl le_rfl hleftA hleftB
+      hSymA hSymB
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_wedinResidualRHS_residualFactor_of_minimizers
+      A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
+      hxpos hyx hrpos hmax hstack hx hy hrelative hresidualFactor
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    same-`Q` source-radius specialization of the lifted Gram-projector
+    reduced-Wedin residual-factor wrapper, with the residual gap supplied in
+    divided relative form.
+
+    This is the same reduced trailing-block handoff as the norm-form wrapper
+    below, but it lets callers reuse a source-relative residual estimate
+    directly. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_gqrQ2_reduced_wedinResidualRHS_residualFactor_sourceA_frob_sameQ_relative_of_eps_lt_inv_kappaB
+    {r p k : ℕ}
+    (A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ)
+    (b Deltab : Fin (r + (k + 1)) → ℝ)
+    {B : Fin p → Fin (p + (k + 1)) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + (k + 1)) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p (k + 1) A B)
+    (hpert : GeneralizedQRFactorization r p (k + 1)
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (x y : Fin (p + (k + 1)) → ℝ)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hstackPert : LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hepsSmall : eps < 1 / theorem20_8KappaB A h.liftedReducedGramAPplus)
+    (hQsame : hpert.Q = h.Q)
+    (hres_relative :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) /
+          vecNorm2 (lsResidualHigham A b x) ≤
+        eps)
+    (hresidualFactor :
+      1 + (theorem20_8KappaB A h.liftedReducedGramAPplus)⁻¹ ≤
+        (frobNormRect B / frobNormRect A) *
+          complexMatrixOp2
+            (realRectToCMatrix
+              (rectMatMul A
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)))) :
+    vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) / vecNorm2 x ≤
+      eps *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
+              frobNormRect A) := by
+  have hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps :=
+    theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+      A DeltaA b Deltab B DeltaB d Deltad hApos hbpos hBpos hdpos hmax
+  have hDeltaGQRFrob :
+      frobNormRect
+        (fun i j =>
+          gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q i j -
+            gqrAQ2Block A h.Q i j)
+        ≤ eps * frobNormRect A :=
+    h.gqrAQ2Block_delta_frobNorm_le_of_same_Q hpert hQsame hbudget.1
+  have hDeltaGQR :
+      rectOpNorm2Le
+        (fun i j =>
+          gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q i j -
+            gqrAQ2Block A h.Q i j)
+        (eps * frobNormRect A) :=
+    rectOpNorm2Le_of_frobNormRect_le _ hDeltaGQRFrob
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_gqrQ2_reduced_wedinResidualRHS_residualFactor_of_eps_lt_inv_kappaB
+      A DeltaA b Deltab hB DeltaB d Deltad hpert x y hApos hbpos hBpos
+      hdpos hxpos hyx hrpos hmax hstack hstackPert hx hy hepsSmall
+      hDeltaGQR hres_relative hresidualFactor
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    same-`Q` source-radius specialization of the lifted Gram-projector
+    reduced-Wedin residual-factor wrapper, with the divided residual gap stated
+    in the source-minus-perturbed order.
+
+    The immediately preceding wrapper uses the perturbed-minus-source residual
+    convention.  This version is mathematically identical but matches the
+    source-facing residual order used by the lower-level Wedin handoff. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_gqrQ2_reduced_wedinResidualRHS_residualFactor_sourceA_frob_sameQ_relative_source_minus_of_eps_lt_inv_kappaB
+    {r p k : ℕ}
+    (A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ)
+    (b Deltab : Fin (r + (k + 1)) → ℝ)
+    {B : Fin p → Fin (p + (k + 1)) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + (k + 1)) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p (k + 1) A B)
+    (hpert : GeneralizedQRFactorization r p (k + 1)
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (x y : Fin (p + (k + 1)) → ℝ)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hstackPert : LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hepsSmall : eps < 1 / theorem20_8KappaB A h.liftedReducedGramAPplus)
+    (hQsame : hpert.Q = h.Q)
+    (hres_relative :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham A b x i -
+              lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i) /
+          vecNorm2 (lsResidualHigham A b x) ≤
+        eps)
+    (hresidualFactor :
+      1 + (theorem20_8KappaB A h.liftedReducedGramAPplus)⁻¹ ≤
+        (frobNormRect B / frobNormRect A) *
+          complexMatrixOp2
+            (realRectToCMatrix
+              (rectMatMul A
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)))) :
+    vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) / vecNorm2 x ≤
+      eps *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
+              frobNormRect A) := by
+  have hres_relative' :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) /
+          vecNorm2 (lsResidualHigham A b x) ≤
+        eps := by
+    have hnorm :
+        vecNorm2
+            (fun i =>
+              lsResidualHigham (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i -
+                lsResidualHigham A b x i) =
+          vecNorm2
+            (fun i =>
+              lsResidualHigham A b x i -
+                lsResidualHigham (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i) := by
+      have hfun :
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) =
+          fun i =>
+            - (lsResidualHigham A b x i -
+              lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i) := by
+        funext i
+        ring
+      rw [hfun, vecNorm2_neg]
+    rwa [hnorm]
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_gqrQ2_reduced_wedinResidualRHS_residualFactor_sourceA_frob_sameQ_relative_of_eps_lt_inv_kappaB
+      A DeltaA b Deltab hB DeltaB d Deltad hpert x y hApos hbpos hBpos
+      hdpos hxpos hyx hrpos hmax hstack hstackPert hx hy hepsSmall hQsame
+      hres_relative' hresidualFactor
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    same-`Q` source-radius specialization of the lifted Gram-projector
+    reduced-Wedin residual-factor wrapper.
+
+    The displayed max-relative perturbation budget supplies the reduced
+    trailing-block perturbation bound when the perturbed GQR factorization
+    reuses the source `Q`, and the source residual gap is accepted in norm
+    form. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_gqrQ2_reduced_wedinResidualRHS_residualFactor_sourceA_frob_sameQ_of_eps_lt_inv_kappaB
+    {r p k : ℕ}
+    (A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ)
+    (b Deltab : Fin (r + (k + 1)) → ℝ)
+    {B : Fin p → Fin (p + (k + 1)) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + (k + 1)) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p (k + 1) A B)
+    (hpert : GeneralizedQRFactorization r p (k + 1)
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (x y : Fin (p + (k + 1)) → ℝ)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hstackPert : LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hepsSmall : eps < 1 / theorem20_8KappaB A h.liftedReducedGramAPplus)
+    (hQsame : hpert.Q = h.Q)
+    (hres_norm :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) ≤
+        eps * vecNorm2 (lsResidualHigham A b x))
+    (hresidualFactor :
+      1 + (theorem20_8KappaB A h.liftedReducedGramAPplus)⁻¹ ≤
+        (frobNormRect B / frobNormRect A) *
+          complexMatrixOp2
+            (realRectToCMatrix
+              (rectMatMul A
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)))) :
+    vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) / vecNorm2 x ≤
+      eps *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
+              frobNormRect A) := by
+  have hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps :=
+    theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+      A DeltaA b Deltab B DeltaB d Deltad hApos hbpos hBpos hdpos hmax
+  have hDeltaGQRFrob :
+      frobNormRect
+        (fun i j =>
+          gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q i j -
+            gqrAQ2Block A h.Q i j)
+        ≤ eps * frobNormRect A :=
+    h.gqrAQ2Block_delta_frobNorm_le_of_same_Q hpert hQsame hbudget.1
+  have hDeltaGQR :
+      rectOpNorm2Le
+        (fun i j =>
+          gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q i j -
+            gqrAQ2Block A h.Q i j)
+        (eps * frobNormRect A) :=
+    rectOpNorm2Le_of_frobNormRect_le _ hDeltaGQRFrob
+  have hres_relative :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) /
+          vecNorm2 (lsResidualHigham A b x) ≤
+        eps :=
+    (div_le_iff₀ hrpos).2 hres_norm
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_gqrQ2_reduced_wedinResidualRHS_residualFactor_of_eps_lt_inv_kappaB
+      A DeltaA b Deltab hB DeltaB d Deltad hpert x y hApos hbpos hBpos
+      hdpos hxpos hyx hrpos hmax hstack hstackPert hx hy hepsSmall
+      hDeltaGQR hres_relative hresidualFactor
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     Gram-projector lifted reduced-Gram handoff with the residual estimate
     stated as the direct source-radius bound `||r-r_high||₂ <= eps ||r||₂`.
 
@@ -66778,6 +67274,59 @@ theorem theorem20_10_constructed_householder_returned_xhat_exact_perturbed_minim
     · simpa [hDeltad] using hx
     · intro y hy
       exact huniq y (by simpa [hDeltad] using hy)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    combined source-rank/unit-roundoff surface for the named constructed
+    returned vector.
+
+    The same proof-level `xhat` both satisfies the concrete computed-`B^T`
+    Householder component route and has a source-facing exact perturbed LSE
+    minimizer package with the original constraint right-hand side `d`. -/
+theorem theorem20_10_constructed_householder_returned_xhat_component_route_and_unperturbed_constraint_rhs_of_source_ranks_unit_roundoff_smallnessThreshold_composed_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hB hStack) :
+    let xhat : Fin (p + q) → ℝ :=
+      theorem20_10_constructed_householder_returned_xhat
+        fp A B b d hp hq hB hStack hu
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let gammaA : ℝ :=
+      theorem20_10_householder_composed_partA_gammaA fp r p q
+    let gammaB : ℝ :=
+      theorem20_10_householder_composed_partA_gammaB fp r p q
+    Theorem20_10HouseholderComponentPartBRoute fp A B Qb b d xhat ∧
+      ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+      ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+      ∃ Deltab : Fin (r + q) → ℝ,
+        frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+        frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+        vecNorm2 Deltab ≤
+          gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+        IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j) d xhat ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d x) := by
+  have hspec :=
+    theorem20_10_constructed_householder_returned_xhat_spec
+      fp A B b d hp hq hB hStack hu
+  have hclean :=
+    theorem20_10_constructed_householder_returned_xhat_exact_perturbed_minimizer_unperturbed_constraint_rhs_of_source_ranks_unit_roundoff_smallnessThreshold_composed_conservative_gamma
+      fp A B b d hp hq hB hStack hu
+  dsimp at hspec hclean ⊢
+  exact ⟨hspec.2, hclean⟩
 
 /-- Theorem 20.10(a) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
