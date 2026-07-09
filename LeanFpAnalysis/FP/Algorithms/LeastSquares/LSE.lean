@@ -51765,6 +51765,86 @@ theorem
       hApos rfl hbracket)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    minimizer-facing Gram-projector lifted reduced-Gram Wedin-residual handoff.
+
+    The exact LSE minimizer hypotheses supply feasibility, the displayed
+    maximum-relative perturbation bound supplies `eps >= 0`, and the residual
+    vectors are specialized to the actual source and perturbed Higham
+    residuals. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_wedinResidualRHS_bracket_of_minimizers
+    {r p k : ℕ}
+    (A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ)
+    (b Deltab : Fin (r + (k + 1)) → ℝ)
+    {B : Fin p → Fin (p + (k + 1)) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + (k + 1)) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p (k + 1) A B)
+    (x y : Fin (p + (k + 1)) → ℝ)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hrelative :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham A b x i -
+              lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i) /
+          vecNorm2 (lsResidualHigham A b x) ≤
+        wedinTheorem20_1ResidualRelativeRHS
+          (theorem20_8KappaB A h.liftedReducedGramAPplus) eps)
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A h.liftedReducedGramAPplus ≤
+        theorem20_8KappaB A h.liftedReducedGramAPplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                      h.liftedReducedGramAPplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) / vecNorm2 x ≤
+      eps *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
+              frobNormRect A) := by
+  have heps_nonneg : 0 ≤ eps :=
+    (theorem20_8MaxRelativePerturbation_nonneg A DeltaA b Deltab B DeltaB d
+      Deltad hApos).trans hmax
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_wedinResidualRHS_bracket
+      A DeltaA b Deltab hB DeltaB d Deltad x y (lsResidualHigham A b x)
+      (lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y)
+      heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack
+      hx.1 hy.1 rfl rfl hrelative hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     Gram-projector lifted reduced-Gram handoff with the residual estimate
     stated as the direct source-radius bound `||r-r_high||₂ <= eps ||r||₂`.
 
