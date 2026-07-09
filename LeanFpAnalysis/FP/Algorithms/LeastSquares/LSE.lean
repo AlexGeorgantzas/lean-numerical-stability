@@ -51064,6 +51064,93 @@ theorem
       hres_source hres_pert hrelative hbracket
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    Gram-projector lifted reduced-Gram handoff with a direct source residual
+    radius and the scalar bracket replaced by the residual-amplifier lower
+    bound.
+
+    This is the residual-factor counterpart of
+    `..._source_residual_norm_bracket`: the GQR rank assumptions still discharge
+    the concrete lifted-table Moore--Penrose certificate, and positivity of
+    `kappa_B(A)` is derived internally. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_source_residual_norm_residualFactor
+    {r p k : ℕ}
+    (A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ)
+    (b Deltab : Fin (r + (k + 1)) → ℝ)
+    {B : Fin p → Fin (p + (k + 1)) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + (k + 1)) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p (k + 1) A B)
+    (x y : Fin (p + (k + 1)) → ℝ)
+    (res resHigh : Fin (r + (k + 1)) → ℝ)
+    {eps : ℝ}
+    (heps_nonneg : 0 ≤ eps)
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 res)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hres_source : lsResidualHigham A b x = res)
+    (hres_pert :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = resHigh)
+    (hres_norm :
+      vecNorm2 (fun i : Fin (r + (k + 1)) => res i - resHigh i) ≤
+        eps * vecNorm2 res)
+    (hresidualFactor :
+      1 + (theorem20_8KappaB A h.liftedReducedGramAPplus)⁻¹ ≤
+        (frobNormRect B / frobNormRect A) *
+          complexMatrixOp2
+            (realRectToCMatrix
+              (rectMatMul A
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)))) :
+    vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x res h.liftedReducedGramAPplus
+          (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+            h.liftedReducedGramAPplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x res h.liftedReducedGramAPplus
+            (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+              h.liftedReducedGramAPplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  h.liftedReducedGramAPplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
+              frobNormRect A) := by
+  have hkappa_pos :
+      0 < theorem20_8KappaB A h.liftedReducedGramAPplus :=
+    h.theorem20_8KappaB_liftedReducedGramAPplus_pos hstack hApos
+  have hbracket :
+      1 + 2 * theorem20_8KappaB A h.liftedReducedGramAPplus ≤
+        theorem20_8KappaB A h.liftedReducedGramAPplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                      h.liftedReducedGramAPplus))) +
+            1) :=
+    theorem20_8_kappaB_bracket_of_residual_amplifier_factor_ge_one_add_inv
+      A B h.liftedReducedGramAPplus
+      (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+        h.liftedReducedGramAPplus)
+      hkappa_pos hresidualFactor
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_source_residual_norm_bracket
+      A DeltaA b Deltab hB DeltaB d Deltad x y res resHigh heps_nonneg
+      hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack hx hy
+      hres_source hres_pert hres_norm hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     Gram-projector lifted reduced-Gram handoff where the direct residual-radius
     premise is supplied by the existing `B_A^+` split residual-gap estimate.
 
