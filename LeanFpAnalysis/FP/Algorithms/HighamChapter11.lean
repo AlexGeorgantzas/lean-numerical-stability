@@ -6346,6 +6346,26 @@ theorem higham11_8_aasen_outer_factor_scaled_entry_cap (n : ℕ) (γ κ : ℝ)
       mul_le_mul_of_nonneg_left hκunit hcard
     _ = ((n - 1 : ℕ) : ℝ) := by ring
 
+/-- Scalar bridge from the common source-style inverse scale hypothesis to the
+normalized Aasen exact-factor entry cap. -/
+theorem higham11_8_one_plus_mul_le_one_of_le_inv_one_plus (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκ : κ ≤ 1 / (1 + γ)) :
+    (1 + γ) * κ ≤ 1 := by
+  have hpos : 0 < 1 + γ := by linarith
+  calc
+    (1 + γ) * κ ≤ (1 + γ) * (1 / (1 + γ)) :=
+      mul_le_mul_of_nonneg_left hκ (le_of_lt hpos)
+    _ = 1 := by field_simp [ne_of_gt hpos]
+
+/-- Aasen `(n-1)` outer-factor scale cap from the source-style bound
+`κ≤1/(1+γ)`. -/
+theorem higham11_8_aasen_outer_factor_scaled_entry_cap_of_le_inv_one_plus
+    (n : ℕ) (γ κ : ℝ) (hγ : 0 ≤ γ)
+    (hκ : κ ≤ 1 / (1 + γ)) :
+    (1 + γ) * (((n - 1 : ℕ) : ℝ) * κ) ≤ ((n - 1 : ℕ) : ℝ) :=
+  higham11_8_aasen_outer_factor_scaled_entry_cap n γ κ
+    (higham11_8_one_plus_mul_le_one_of_le_inv_one_plus γ κ hγ hκ)
+
 /-- Aasen outer-factor relative caps from a normalized uniform entry bound.
 This factors the remaining source scalar comparison for the exact-radius route:
 after proving `(1+γ)κ≤1` for the concrete Aasen factor entries, the strict
@@ -6367,6 +6387,24 @@ theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit
       n hn L γ κ ((n - 1 : ℕ) : ℝ) hγ hκ
       (higham11_8_aasen_outer_factor_scaled_entry_cap n γ κ hκunit)
       hentry hstrictUpperZero hfirstColZero
+
+/-- Aasen outer-factor relative caps from a source-style inverse-scale uniform
+entry bound.  This is the same result as the normalized route, with
+`κ≤1/(1+γ)` supplying the normalized scalar cap. -/
+theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκnonneg : 0 ≤ κ) (hκ : κ ≤ 1 / (1 + γ))
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (1 + γ) * infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) :=
+  higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit
+    n hn L γ κ hγ hκnonneg
+    (higham11_8_one_plus_mul_le_one_of_le_inv_one_plus γ κ hγ hκ)
+    hentry hstrictUpperZero hfirstColZero
 
 /-- A relative entrywise factor perturbation controls the perturbed factor's
 infinity norm by `(1+γ)` times the source factor norm. -/
