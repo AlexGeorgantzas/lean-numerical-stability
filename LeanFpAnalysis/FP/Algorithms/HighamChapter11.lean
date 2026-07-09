@@ -4604,6 +4604,39 @@ theorem higham11_8_relative_infNorm_cap_of_row_sum_caps (n : ℕ)
     _ = cap := by
       field_simp [ne_of_gt hscale_pos]
 
+/-- Unscaled row-sum majorants plus a scalar scale comparison imply the
+relative `(1+γ)` infinity-norm cap used by the Aasen exact-radius route. -/
+theorem higham11_8_relative_infNorm_cap_of_row_sum_majorant (n : ℕ)
+    (M : Fin n → Fin n → ℝ) (γ κ cap : ℝ)
+    (hγ : 0 ≤ γ) (hcap : 0 ≤ cap)
+    (hκcap : (1 + γ) * κ ≤ cap)
+    (hrows : ∀ i : Fin n, (∑ j : Fin n, |M i j|) ≤ κ) :
+    (1 + γ) * infNorm M ≤ cap := by
+  have hscale_nonneg : 0 ≤ 1 + γ := by linarith
+  apply higham11_8_relative_infNorm_cap_of_row_sum_caps n M γ cap hγ hcap
+  intro i
+  exact (mul_le_mul_of_nonneg_left (hrows i) hscale_nonneg).trans hκcap
+
+/-- Row and column sum majorants for the exact Aasen outer factor feed the two
+relative norm caps required for the source-prefix exact-radius wrappers. -/
+theorem higham11_8_relative_outer_factor_caps_of_row_col_sum_majorants (n : ℕ)
+    (L : Fin n → Fin n → ℝ) (γ κrow κcol cap : ℝ)
+    (hγ : 0 ≤ γ) (hcap : 0 ≤ cap)
+    (hκrow : (1 + γ) * κrow ≤ cap)
+    (hκcol : (1 + γ) * κcol ≤ cap)
+    (hrows : ∀ i : Fin n, (∑ j : Fin n, |L i j|) ≤ κrow)
+    (hcols : ∀ j : Fin n, (∑ i : Fin n, |L i j|) ≤ κcol) :
+    (1 + γ) * infNorm L ≤ cap ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤ cap := by
+  constructor
+  · exact
+      higham11_8_relative_infNorm_cap_of_row_sum_majorant
+        n L γ κrow cap hγ hcap hκrow hrows
+  · exact
+      higham11_8_relative_infNorm_cap_of_row_sum_majorant
+        n (fun r c => L c r) γ κcol cap hγ hcap hκcol
+        (fun r => by simpa using hcols r)
+
 /-- A relative entrywise factor perturbation controls the perturbed factor's
 infinity norm by `(1+γ)` times the source factor norm. -/
 theorem higham11_8_infNorm_factor_le_of_relative_entry_bound (n : ℕ)
