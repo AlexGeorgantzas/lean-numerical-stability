@@ -8406,6 +8406,142 @@ theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_pathFirstTrailing_two_c
         k step t hstep)
       (x := x_hat)
 
+/-- A row dot product of a lifted perturbation at any path-local embedded row
+is exactly the corresponding branch-local row dot product. -/
+theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_pathLocalBlockIndex_rows_dot_eq_local
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (E : Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t)) →
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t)) → ℝ)
+    (i : Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t)))
+    (x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ) :
+    (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      higham11_7_tridiagonalLiftLocalBlockPerturbation
+        (higham11_7_tridiagonalPathPivotSpan k step + 1)
+        (higham11_7_tridiagonalPathPrefixSpan k step t)
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)) E
+        (higham11_7_tridiagonalPathLocalBlockIndex k step t i) j *
+        x_hat j) =
+      ∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)),
+        E i j * x_hat (higham11_7_tridiagonalPathLocalBlockIndex k step t j) := by
+  simpa [higham11_7_tridiagonalPathLocalBlockIndex] using
+    higham11_7_tridiagonalLiftLocalBlockPerturbation_embedded_row_dot_eq_local
+      (n := higham11_7_tridiagonalPathPivotSpan k step + 1)
+      (start := higham11_7_tridiagonalPathPrefixSpan k step t)
+      (m := higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t))
+      (E := E)
+      (hcol := higham11_7_tridiagonalPath_local_index_lt_pivotSpan_succ k step t)
+      (i := i)
+      (hi := higham11_7_tridiagonalPath_local_index_lt_pivotSpan_succ k step t i)
+      (x := x_hat)
+
+/-- The pivot-specific `1 × 1` path first-trailing index is the generic
+path-local embedding of the branch-local first-trailing row. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_one_eq_pathLocalBlockIndex_cast
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.one) :
+    higham11_7_tridiagonalPathFirstTrailingIndex_one k step t hstep =
+      higham11_7_tridiagonalPathLocalBlockIndex k step t
+        (Fin.cast (by rw [hstep])
+          (higham11_7_tridiagonalBranchFirstTrailingIndex
+            (higham11_7_tridiagonalPathTailDim k step t) PivotSize.one)) := by
+  apply Fin.ext
+  simp [higham11_7_tridiagonalPathFirstTrailingIndex_one,
+    higham11_7_tridiagonalPathLocalBlockIndex,
+    higham11_7_tridiagonalLocalBlockIndex, Fin.val_cast]
+
+/-- The pivot-specific `2 × 2` path first-trailing index is the generic
+path-local embedding of the branch-local first-trailing row. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_two_eq_pathLocalBlockIndex_cast
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.two) :
+    higham11_7_tridiagonalPathFirstTrailingIndex_two k step t hstep =
+      higham11_7_tridiagonalPathLocalBlockIndex k step t
+        (Fin.cast (by rw [hstep])
+          (higham11_7_tridiagonalBranchFirstTrailingIndex
+            (higham11_7_tridiagonalPathTailDim k step t) PivotSize.two)) := by
+  apply Fin.ext
+  simp [higham11_7_tridiagonalPathFirstTrailingIndex_two,
+    higham11_7_tridiagonalPathLocalBlockIndex,
+    higham11_7_tridiagonalLocalBlockIndex, Fin.val_cast]
+
+/-- On the first-trailing row of the current `1 × 1` branch, a path-family
+lifted dot product reindexes to the branch-local row dot product without
+casting the perturbation family away from `step t`. -/
+theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_pathFirstTrailing_one_current_family_rows_dot_eq_pathLocal
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.one)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ) :
+    (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      higham11_7_tridiagonalLiftLocalBlockPerturbation
+        (higham11_7_tridiagonalPathPivotSpan k step + 1)
+        (higham11_7_tridiagonalPathPrefixSpan k step t)
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)) (ΔA t)
+        (higham11_7_tridiagonalPathFirstTrailingIndex_one k step t hstep) j *
+        x_hat j) =
+      ∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)),
+        ΔA t
+          (Fin.cast (by rw [hstep])
+            (higham11_7_tridiagonalBranchFirstTrailingIndex
+              (higham11_7_tridiagonalPathTailDim k step t) PivotSize.one)) j *
+          x_hat (higham11_7_tridiagonalPathLocalBlockIndex k step t j) := by
+  rw [higham11_7_tridiagonalPathFirstTrailingIndex_one_eq_pathLocalBlockIndex_cast
+    k step t hstep]
+  exact
+    higham11_7_tridiagonalLiftLocalBlockPerturbation_pathLocalBlockIndex_rows_dot_eq_local
+      k step t (ΔA t)
+      (Fin.cast (by rw [hstep])
+        (higham11_7_tridiagonalBranchFirstTrailingIndex
+          (higham11_7_tridiagonalPathTailDim k step t) PivotSize.one)) x_hat
+
+/-- On the first-trailing row of the current `2 × 2` branch, a path-family
+lifted dot product reindexes to the branch-local row dot product without
+casting the perturbation family away from `step t`. -/
+theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_pathFirstTrailing_two_current_family_rows_dot_eq_pathLocal
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.two)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ) :
+    (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      higham11_7_tridiagonalLiftLocalBlockPerturbation
+        (higham11_7_tridiagonalPathPivotSpan k step + 1)
+        (higham11_7_tridiagonalPathPrefixSpan k step t)
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)) (ΔA t)
+        (higham11_7_tridiagonalPathFirstTrailingIndex_two k step t hstep) j *
+        x_hat j) =
+      ∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)),
+        ΔA t
+          (Fin.cast (by rw [hstep])
+            (higham11_7_tridiagonalBranchFirstTrailingIndex
+              (higham11_7_tridiagonalPathTailDim k step t) PivotSize.two)) j *
+          x_hat (higham11_7_tridiagonalPathLocalBlockIndex k step t j) := by
+  rw [higham11_7_tridiagonalPathFirstTrailingIndex_two_eq_pathLocalBlockIndex_cast
+    k step t hstep]
+  exact
+    higham11_7_tridiagonalLiftLocalBlockPerturbation_pathLocalBlockIndex_rows_dot_eq_local
+      k step t (ΔA t)
+      (Fin.cast (by rw [hstep])
+        (higham11_7_tridiagonalBranchFirstTrailingIndex
+          (higham11_7_tridiagonalPathTailDim k step t) PivotSize.two)) x_hat
+
 /-- **Theorem 11.7 lifted 1×1 branch residual equation**.  The scalar residual
 equation from a 1×1 branch witness can be read at the embedded first-trailing
 index after lifting the local perturbation into a shared ambient matrix. -/
