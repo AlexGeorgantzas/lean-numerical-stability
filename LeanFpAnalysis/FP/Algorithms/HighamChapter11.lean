@@ -5866,6 +5866,269 @@ theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTail
       (fun t => c_rec t.succ) (fun t => u t.succ)
       (fun t => tail_fl t.succ) (fun t => tail_exact t.succ) htail)
 
+/-- **Theorem 11.7 path supported witnesses**.  This predicate records the
+explicit per-branch perturbation matrices extracted from a finite mixed-pivot
+path residual package, together with their componentwise budget, zero-prefix
+support, and induced `∞`-norm bound. -/
+def higham11_7_TridiagonalBranchPathSupportedWitnesses
+    (k : ℕ) (_fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u _tail_fl _tail_exact : Fin k → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ) :
+    Prop :=
+  ∀ t : Fin k,
+    (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+      |ΔA t i j| ≤ (c_bound t + c_rec t) * u t * infNorm (A t)) ∧
+    higham11_7_TridiagonalLeadingBlockSupport
+      (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+      (higham11_7_tridiagonalBranchSupportOffset (step t)) (ΔA t) ∧
+    infNorm (ΔA t) ≤
+      ((higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t) : ℕ) : ℝ) *
+        (c_bound t + c_rec t) * u t * infNorm (A t)
+
+/-- Index embedding for placing a local tridiagonal branch block into a larger
+ambient matrix starting at row/column `start`. -/
+def higham11_7_tridiagonalLocalBlockIndex
+    (n start m : ℕ) (i : Fin m) (hi : start + i.val < n) : Fin n :=
+  ⟨start + i.val, hi⟩
+
+@[simp] theorem higham11_7_tridiagonalLocalBlockIndex_val
+    (n start m : ℕ) (i : Fin m) (hi : start + i.val < n) :
+    (higham11_7_tridiagonalLocalBlockIndex n start m i hi).val =
+      start + i.val :=
+  rfl
+
+/-- Lift a local branch perturbation into a shared ambient matrix by placing it
+at offset `start` and filling all non-embedded entries with zero. -/
+noncomputable def higham11_7_tridiagonalLiftLocalBlockPerturbation
+    (n start m : ℕ) (E : Fin m → Fin m → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j =>
+    if hi : ∃ a : Fin m, start + a.val = i.val then
+      if hj : ∃ b : Fin m, start + b.val = j.val then
+        E (Classical.choose hi) (Classical.choose hj)
+      else 0
+    else 0
+
+/-- The ambient lift agrees with the local perturbation on embedded local
+indices. -/
+@[simp] theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_embedded
+    (n start m : ℕ) (E : Fin m → Fin m → ℝ)
+    (i j : Fin m) (hi : start + i.val < n) (hj : start + j.val < n) :
+    higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E
+        (higham11_7_tridiagonalLocalBlockIndex n start m i hi)
+        (higham11_7_tridiagonalLocalBlockIndex n start m j hj) =
+      E i j := by
+  classical
+  have hi_ex : ∃ a : Fin m,
+      start + a.val =
+        (higham11_7_tridiagonalLocalBlockIndex n start m i hi).val :=
+    ⟨i, rfl⟩
+  have hj_ex : ∃ b : Fin m,
+      start + b.val =
+        (higham11_7_tridiagonalLocalBlockIndex n start m j hj).val :=
+    ⟨j, rfl⟩
+  have hci : Classical.choose hi_ex = i := by
+    apply Fin.ext
+    have hval := Classical.choose_spec hi_ex
+    simpa using Nat.add_left_cancel hval
+  have hcj : Classical.choose hj_ex = j := by
+    apply Fin.ext
+    have hval := Classical.choose_spec hj_ex
+    simpa using Nat.add_left_cancel hval
+  rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_pos hi_ex,
+    dif_pos hj_ex, hci, hcj]
+
+/-- Componentwise bounds are preserved when a local branch perturbation is
+lifted into a shared ambient matrix. -/
+theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_bound
+    (n start m : ℕ) (E : Fin m → Fin m → ℝ) (β : ℝ)
+    (hβ : 0 ≤ β) (hEbound : ∀ i j : Fin m, |E i j| ≤ β) :
+    ∀ i j : Fin n,
+      |higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E i j| ≤ β := by
+  classical
+  intro i j
+  by_cases hi : ∃ a : Fin m, start + a.val = i.val
+  · by_cases hj : ∃ b : Fin m, start + b.val = j.val
+    · rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_pos hi,
+        dif_pos hj]
+      exact hEbound (Classical.choose hi) (Classical.choose hj)
+    · rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_pos hi,
+        dif_neg hj]
+      simpa using hβ
+  · rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_neg hi]
+    simpa using hβ
+
+/-- Zero-prefix support is shifted by `start` when a local branch perturbation
+is lifted into a shared ambient matrix. -/
+theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_leadingBlockSupport
+    (n start m localOffset : ℕ) (E : Fin m → Fin m → ℝ)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport m localOffset E) :
+    higham11_7_TridiagonalLeadingBlockSupport n (start + localOffset)
+      (higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E) := by
+  classical
+  intro i j hlead
+  by_cases hi : ∃ a : Fin m, start + a.val = i.val
+  · by_cases hj : ∃ b : Fin m, start + b.val = j.val
+    · rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_pos hi,
+        dif_pos hj]
+      apply hEsupp
+      rcases hlead with hilt | hjlt
+      · left
+        have hval := Classical.choose_spec hi
+        omega
+      · right
+        have hval := Classical.choose_spec hj
+        omega
+    · rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_pos hi,
+        dif_neg hj]
+  · rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_neg hi]
+
+/-- **Theorem 11.7 local-to-ambient branch lift package**.  A local branch
+perturbation with a componentwise bound and zero-prefix support can be embedded
+into a shared ambient matrix at offset `start`, preserving the bound, shifting
+support, and agreeing on all embedded local entries. -/
+theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_bound_leadingBlockSupport
+    (n start m localOffset : ℕ) (E : Fin m → Fin m → ℝ) (β : ℝ)
+    (hβ : 0 ≤ β) (hEbound : ∀ i j : Fin m, |E i j| ≤ β)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport m localOffset E) :
+    (∀ i j : Fin n,
+      |higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E i j| ≤ β) ∧
+    higham11_7_TridiagonalLeadingBlockSupport n (start + localOffset)
+      (higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E) ∧
+    (∀ i j : Fin m, ∀ hi : start + i.val < n, ∀ hj : start + j.val < n,
+      higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E
+        (higham11_7_tridiagonalLocalBlockIndex n start m i hi)
+        (higham11_7_tridiagonalLocalBlockIndex n start m j hj) =
+          E i j) := by
+  exact
+    ⟨higham11_7_tridiagonalLiftLocalBlockPerturbation_bound n start m E β
+        hβ hEbound,
+      higham11_7_tridiagonalLiftLocalBlockPerturbation_leadingBlockSupport
+        n start m localOffset E hEsupp,
+      fun i j hi hj =>
+        higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_embedded
+          n start m E i j hi hj⟩
+
+/-- **Theorem 11.7 path witness ambient lift**.  Pointwise local residual
+witnesses for a finite mixed-pivot path can be lifted into one ambient matrix
+family at supplied start offsets, preserving the requested global componentwise
+budget and shifting each branch's zero-prefix support. -/
+theorem higham11_7_tridiagonalBranchPathSupportedWitnesses_lift_to_ambient
+    (n k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (starts : Fin k → ℕ)
+    (c : Fin k → ℝ) (u : ℝ)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hbudget : ∀ t : Fin k,
+      (c_bound t + c_rec t) * u_loc t * infNorm (Aloc t) ≤
+        c t * u * infNorm A)
+    (Δloc : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ)
+    (hΔloc : higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim
+      step Aloc c_bound c_rec u_loc tail_fl tail_exact Δloc) :
+    ∃ E : Fin k → Fin n → Fin n → ℝ,
+      (∀ t : Fin k, ∀ i j : Fin n, |E t i j| ≤ c t * u * infNorm A) ∧
+      (∀ t : Fin k,
+        higham11_7_TridiagonalLeadingBlockSupport n
+          (starts t + higham11_7_tridiagonalBranchSupportOffset (step t)) (E t)) ∧
+      (∀ t : Fin k,
+        ∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+        ∀ hi : starts t + i.val < n, ∀ hj : starts t + j.val < n,
+          E t
+            (higham11_7_tridiagonalLocalBlockIndex n (starts t)
+              (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) i hi)
+            (higham11_7_tridiagonalLocalBlockIndex n (starts t)
+              (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) j hj) =
+            Δloc t i j) := by
+  let E : Fin k → Fin n → Fin n → ℝ := fun t =>
+    higham11_7_tridiagonalLiftLocalBlockPerturbation n (starts t)
+      (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) (Δloc t)
+  refine ⟨E, ?_, ?_, ?_⟩
+  · intro t i j
+    have hβ : 0 ≤ c t * u * infNorm A :=
+      mul_nonneg (mul_nonneg (hc t) hu) (infNorm_nonneg A)
+    have hlocal : ∀ a b :
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+        |Δloc t a b| ≤ c t * u * infNorm A := by
+      intro a b
+      exact (hΔloc t).1 a b |>.trans (hbudget t)
+    exact
+      higham11_7_tridiagonalLiftLocalBlockPerturbation_bound n (starts t)
+        (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+        (Δloc t) (c t * u * infNorm A) hβ hlocal i j
+  · intro t
+    exact
+      higham11_7_tridiagonalLiftLocalBlockPerturbation_leadingBlockSupport
+        n (starts t)
+        (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+        (higham11_7_tridiagonalBranchSupportOffset (step t)) (Δloc t)
+        (hΔloc t).2.1
+  · intro t i j hi hj
+    exact
+      higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_embedded
+        n (starts t)
+        (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+        (Δloc t) i j hi hj
+
+/-- **Theorem 11.7 scalar local-to-global budget comparison**.  A local
+branch budget `(c_bound+c_rec) u_loc ‖A_loc‖∞` is dominated by the global
+budget `c u ‖A‖∞` when the coefficient, roundoff, and matrix-norm factors are
+separately dominated. -/
+theorem higham11_7_tridiagonal_local_budget_le_global_of_coeff_roundoff_norm
+    (m n : ℕ) (Aloc : Fin m → Fin m → ℝ) (A : Fin n → Fin n → ℝ)
+    (c_bound c_rec c u_loc u : ℝ)
+    (_hc_bound : 0 ≤ c_bound) (_hc_rec : 0 ≤ c_rec) (hc : 0 ≤ c)
+    (hu_loc : 0 ≤ u_loc) (hu_le : u_loc ≤ u)
+    (hcoeff : c_bound + c_rec ≤ c)
+    (hAnorm : infNorm Aloc ≤ infNorm A) :
+    (c_bound + c_rec) * u_loc * infNorm Aloc ≤ c * u * infNorm A := by
+  have hcu : (c_bound + c_rec) * u_loc ≤ c * u := by
+    exact mul_le_mul hcoeff hu_le hu_loc hc
+  have hcu_nonneg : 0 ≤ c * u :=
+    mul_nonneg hc (hu_loc.trans hu_le)
+  calc
+    (c_bound + c_rec) * u_loc * infNorm Aloc
+        ≤ c * u * infNorm Aloc :=
+          mul_le_mul_of_nonneg_right hcu (infNorm_nonneg Aloc)
+    _ ≤ c * u * infNorm A :=
+          mul_le_mul_of_nonneg_left hAnorm hcu_nonneg
+
+/-- **Theorem 11.7 path local-to-global budget comparisons**.  Pointwise
+coefficient, roundoff, and local norm comparisons supply the budget hypothesis
+required by the lifted finite-path solve aggregation theorem. -/
+theorem higham11_7_tridiagonalBranchPath_local_budgets_le_global_of_coeff_roundoff_norm
+    (n k : ℕ) (tailDim : Fin k → ℕ) (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (A : Fin n → Fin n → ℝ)
+    (c_bound c_rec u_loc c : Fin k → ℝ) (u : ℝ)
+    (hc_bound : ∀ t : Fin k, 0 ≤ c_bound t)
+    (hc_rec : ∀ t : Fin k, 0 ≤ c_rec t)
+    (hc : ∀ t : Fin k, 0 ≤ c t)
+    (hu_loc : ∀ t : Fin k, 0 ≤ u_loc t)
+    (hu_le : ∀ t : Fin k, u_loc t ≤ u)
+    (hcoeff : ∀ t : Fin k, c_bound t + c_rec t ≤ c t)
+    (hAnorm : ∀ t : Fin k, infNorm (Aloc t) ≤ infNorm A) :
+    ∀ t : Fin k,
+      (c_bound t + c_rec t) * u_loc t * infNorm (Aloc t) ≤
+        c t * u * infNorm A := by
+  intro t
+  exact
+    higham11_7_tridiagonal_local_budget_le_global_of_coeff_roundoff_norm
+      (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) n
+      (Aloc t) A (c_bound t) (c_rec t) (c t) (u_loc t) u
+      (hc_bound t) (hc_rec t) (hc t) (hu_loc t) (hu_le t)
+      (hcoeff t) (hAnorm t)
+
 /-- **Theorem 11.7 branch residual witness extraction**.  A single branch-local
 residual package supplies an explicit perturbation matrix with the componentwise
 budget, leading-block support, and `∞`-norm bound needed by later aggregation. -/
@@ -6102,6 +6365,538 @@ theorem higham11_7_tridiagonalBranchPathTerminalAssumptions_exists_supported_wit
     (higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumptions
       k fp tailDim step A c_bound c_rec u tail_exact hpath)
     hentry hnorm
+
+/-- **Theorem 11.7 embedded path solve-delta aggregation**.  A finite
+mixed-pivot path residual package can be fed into the source-facing tridiagonal
+backward-error interface once the path-local perturbation witnesses have been
+embedded into one ambient system and the final summed solve equation is
+available. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_embedded_sum
+    (n offset k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (offsets : Fin k → ℕ) (c : Fin k → ℝ) (u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals k fp tailDim
+      step Aloc c_bound c_rec u_loc tail_fl tail_exact)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hoff : ∀ t : Fin k, offset ≤ offsets t)
+    (hembed :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+          Aloc c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∃ E : Fin k → Fin n → Fin n → ℝ,
+          (∀ t : Fin k, ∀ i j : Fin n,
+            |E t i j| ≤ c t * u * infNorm A) ∧
+          (∀ t : Fin k,
+            higham11_7_TridiagonalLeadingBlockSupport n (offsets t) (E t)) ∧
+          (∀ i : Fin n,
+            ∑ j : Fin n, (A i j + (∑ t : Fin k, E t i j)) * x_hat j = b i)) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ (∑ t : Fin k, c t) * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ (∑ t : Fin k, c t) * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * (∑ t : Fin k, c t) * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * (∑ t : Fin k, c t) * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) := by
+  obtain ⟨Δloc, hΔloc⟩ :=
+    higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses
+      k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact hpath
+  obtain ⟨E, hEbound, hEsupp, hEsolve⟩ := hembed Δloc hΔloc
+  exact
+    higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets
+      n offset k offsets A b x_hat E c u hc hu hoff hEbound hEsupp hEsolve
+
+/-- **Theorem 11.7 embedded path solve-delta aggregation, coefficient
+majorant form**.  This is the printed-constant endpoint for the path-local
+residual extraction plus same-ambient embedding bridge. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_embedded_sum_of_coeff_sum_le
+    (n offset k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (offsets : Fin k → ℕ) (c : Fin k → ℝ) (C u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals k fp tailDim
+      step Aloc c_bound c_rec u_loc tail_fl tail_exact)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hoff : ∀ t : Fin k, offset ≤ offsets t)
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hembed :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+          Aloc c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∃ E : Fin k → Fin n → Fin n → ℝ,
+          (∀ t : Fin k, ∀ i j : Fin n,
+            |E t i j| ≤ c t * u * infNorm A) ∧
+          (∀ t : Fin k,
+            higham11_7_TridiagonalLeadingBlockSupport n (offsets t) (E t)) ∧
+          (∀ i : Fin n,
+            ∑ j : Fin n, (A i j + (∑ t : Fin k, E t i j)) * x_hat j = b i)) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) := by
+  obtain ⟨Δloc, hΔloc⟩ :=
+    higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses
+      k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact hpath
+  obtain ⟨E, hEbound, hEsupp, hEsolve⟩ := hembed Δloc hΔloc
+  exact
+    higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets_of_coeff_sum_le
+      n offset k offsets A b x_hat E c C u hc hu hoff hC hEbound hEsupp hEsolve
+
+/-- **Theorem 11.7 lifted path solve-delta aggregation, coefficient majorant
+form**.  This specializes the embedded path bridge to the concrete ambient lift
+at supplied start offsets.  The remaining path proof has to provide the scalar
+budget comparisons and the final solve equation for this explicit lifted sum. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_of_coeff_sum_le
+    (n offset k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (starts : Fin k → ℕ) (c : Fin k → ℝ) (C u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals k fp tailDim
+      step Aloc c_bound c_rec u_loc tail_fl tail_exact)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hoff : ∀ t : Fin k,
+      offset ≤ starts t + higham11_7_tridiagonalBranchSupportOffset (step t))
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hbudget : ∀ t : Fin k,
+      (c_bound t + c_rec t) * u_loc t * infNorm (Aloc t) ≤
+        c t * u * infNorm A)
+    (hsolve :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+          Aloc c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∀ i : Fin n,
+          ∑ j : Fin n,
+              (A i j +
+                (∑ t : Fin k,
+                  higham11_7_tridiagonalLiftLocalBlockPerturbation n (starts t)
+                    (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+                    (Δloc t) i j)) *
+                x_hat j =
+            b i) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) := by
+  refine
+    higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_embedded_sum_of_coeff_sum_le
+      n offset k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact
+      A b x_hat
+      (fun t => starts t + higham11_7_tridiagonalBranchSupportOffset (step t))
+      c C u hpath hc hu hoff hC ?_
+  intro Δloc hΔloc
+  refine ⟨fun t =>
+      higham11_7_tridiagonalLiftLocalBlockPerturbation n (starts t)
+        (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+        (Δloc t), ?_, ?_, ?_⟩
+  · intro t i j
+    have hβ : 0 ≤ c t * u * infNorm A :=
+      mul_nonneg (mul_nonneg (hc t) hu) (infNorm_nonneg A)
+    have hlocal : ∀ a b :
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+        |Δloc t a b| ≤ c t * u * infNorm A := by
+      intro a b
+      exact (hΔloc t).1 a b |>.trans (hbudget t)
+    exact
+      higham11_7_tridiagonalLiftLocalBlockPerturbation_bound n (starts t)
+        (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+        (Δloc t) (c t * u * infNorm A) hβ hlocal i j
+  · intro t
+    exact
+      higham11_7_tridiagonalLiftLocalBlockPerturbation_leadingBlockSupport
+        n (starts t)
+        (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+        (higham11_7_tridiagonalBranchSupportOffset (step t)) (Δloc t)
+        (hΔloc t).2.1
+  · exact hsolve Δloc hΔloc
+
+/-- **Theorem 11.7 lifted path solve-delta aggregation, zero common offset**.
+The explicit local-to-ambient lift always supplies enough support for the
+common zero-prefix offset `0`, removing the routine offset-lowering hypothesis
+from the source-facing path endpoint. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_coeff_sum_le
+    (n k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (starts : Fin k → ℕ) (c : Fin k → ℝ) (C u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals k fp tailDim
+      step Aloc c_bound c_rec u_loc tail_fl tail_exact)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hbudget : ∀ t : Fin k,
+      (c_bound t + c_rec t) * u_loc t * infNorm (Aloc t) ≤
+        c t * u * infNorm A)
+    (hsolve :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+          Aloc c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∀ i : Fin n,
+          ∑ j : Fin n,
+              (A i j +
+                (∑ t : Fin k,
+                  higham11_7_tridiagonalLiftLocalBlockPerturbation n (starts t)
+                    (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+                    (Δloc t) i j)) *
+                x_hat j =
+            b i) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) := by
+  exact
+    higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_of_coeff_sum_le
+      n 0 k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact
+      A b x_hat starts c C u hpath hc hu
+      (fun _ => Nat.zero_le _) hC hbudget hsolve
+
+/-- **Theorem 11.7 lifted path solve-delta aggregation from local
+assumptions**, zero common offset.  This is the local-assumption-facing endpoint
+for a concrete mixed-pivot path once the lifted summed solve equation is known. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_lifted_sum_zero_offset_of_coeff_sum_le
+    (n k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (starts : Fin k → ℕ) (c : Fin k → ℝ) (C u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalAssumptions k fp tailDim
+      step Aloc c_bound c_rec u_loc tail_fl tail_exact)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hbudget : ∀ t : Fin k,
+      (c_bound t + c_rec t) * u_loc t * infNorm (Aloc t) ≤
+        c t * u * infNorm A)
+    (hsolve :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+          Aloc c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∀ i : Fin n,
+          ∑ j : Fin n,
+              (A i j +
+                (∑ t : Fin k,
+                  higham11_7_tridiagonalLiftLocalBlockPerturbation n (starts t)
+                    (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+                    (Δloc t) i j)) *
+                x_hat j =
+            b i) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_coeff_sum_le
+    n k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact
+    A b x_hat starts c C u
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_localAssumptions
+      k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact hpath)
+    hc hu hC hbudget hsolve
+
+/-- **Theorem 11.7 lifted path solve-delta aggregation from terminal-tail
+assumptions**, zero common offset.  This packages the terminal-tail base case
+for a concrete mixed-pivot path before the final lifted solve equation is
+discharged. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_lifted_sum_zero_offset_of_coeff_sum_le
+    (n k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (starts : Fin k → ℕ) (c : Fin k → ℝ) (C u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathTerminalAssumptions k fp tailDim
+      step Aloc c_bound c_rec u_loc)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hbudget : ∀ t : Fin k,
+      (c_bound t + c_rec t) * u_loc t * infNorm (Aloc t) ≤
+        c t * u * infNorm A)
+    (hsolve :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+          Aloc c_bound c_rec u_loc tail_exact tail_exact Δloc →
+        ∀ i : Fin n,
+          ∑ j : Fin n,
+              (A i j +
+                (∑ t : Fin k,
+                  higham11_7_tridiagonalLiftLocalBlockPerturbation n (starts t)
+                    (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+                    (Δloc t) i j)) *
+                x_hat j =
+            b i) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_coeff_sum_le
+    n k fp tailDim step Aloc c_bound c_rec u_loc tail_exact tail_exact
+    A b x_hat starts c C u
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumptions
+      k fp tailDim step Aloc c_bound c_rec u_loc tail_exact hpath)
+    hc hu hC hbudget hsolve
+
+/-- **Theorem 11.7 lifted path solve-delta aggregation from scalar budget
+comparisons**, zero common offset.  This replaces the branch-budget hypothesis
+by the coefficient, roundoff, and local matrix-norm comparisons produced by a
+concrete mixed-pivot path. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_coeff_roundoff_norm
+    (n k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (starts : Fin k → ℕ) (c : Fin k → ℝ) (C u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals k fp tailDim
+      step Aloc c_bound c_rec u_loc tail_fl tail_exact)
+    (hc_bound : ∀ t : Fin k, 0 ≤ c_bound t)
+    (hc_rec : ∀ t : Fin k, 0 ≤ c_rec t)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hu_loc : ∀ t : Fin k, 0 ≤ u_loc t)
+    (hu_le : ∀ t : Fin k, u_loc t ≤ u)
+    (hcoeff : ∀ t : Fin k, c_bound t + c_rec t ≤ c t)
+    (hAnorm : ∀ t : Fin k, infNorm (Aloc t) ≤ infNorm A)
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hsolve :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+          Aloc c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∀ i : Fin n,
+          ∑ j : Fin n,
+              (A i j +
+                (∑ t : Fin k,
+                  higham11_7_tridiagonalLiftLocalBlockPerturbation n (starts t)
+                    (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+                    (Δloc t) i j)) *
+                x_hat j =
+            b i) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_coeff_sum_le
+    n k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact
+    A b x_hat starts c C u hpath hc hu hC
+    (higham11_7_tridiagonalBranchPath_local_budgets_le_global_of_coeff_roundoff_norm
+      n k tailDim step Aloc A c_bound c_rec u_loc c u
+      hc_bound hc_rec hc hu_loc hu_le hcoeff hAnorm)
+    hsolve
+
+/-- **Theorem 11.7 lifted path solve-delta aggregation from local assumptions
+and scalar budget comparisons**, zero common offset. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_lifted_sum_zero_offset_of_coeff_roundoff_norm
+    (n k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (starts : Fin k → ℕ) (c : Fin k → ℝ) (C u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalAssumptions k fp tailDim
+      step Aloc c_bound c_rec u_loc tail_fl tail_exact)
+    (hc_bound : ∀ t : Fin k, 0 ≤ c_bound t)
+    (hc_rec : ∀ t : Fin k, 0 ≤ c_rec t)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hu_loc : ∀ t : Fin k, 0 ≤ u_loc t)
+    (hu_le : ∀ t : Fin k, u_loc t ≤ u)
+    (hcoeff : ∀ t : Fin k, c_bound t + c_rec t ≤ c t)
+    (hAnorm : ∀ t : Fin k, infNorm (Aloc t) ≤ infNorm A)
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hsolve :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+          Aloc c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∀ i : Fin n,
+          ∑ j : Fin n,
+              (A i j +
+                (∑ t : Fin k,
+                  higham11_7_tridiagonalLiftLocalBlockPerturbation n (starts t)
+                    (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+                    (Δloc t) i j)) *
+                x_hat j =
+            b i) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_coeff_roundoff_norm
+    n k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact
+    A b x_hat starts c C u
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_localAssumptions
+      k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact hpath)
+    hc_bound hc_rec hc hu hu_loc hu_le hcoeff hAnorm hC hsolve
+
+/-- **Theorem 11.7 lifted path solve-delta aggregation from terminal-tail
+assumptions and scalar budget comparisons**, zero common offset. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_lifted_sum_zero_offset_of_coeff_roundoff_norm
+    (n k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (starts : Fin k → ℕ) (c : Fin k → ℝ) (C u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathTerminalAssumptions k fp tailDim
+      step Aloc c_bound c_rec u_loc)
+    (hc_bound : ∀ t : Fin k, 0 ≤ c_bound t)
+    (hc_rec : ∀ t : Fin k, 0 ≤ c_rec t)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hu_loc : ∀ t : Fin k, 0 ≤ u_loc t)
+    (hu_le : ∀ t : Fin k, u_loc t ≤ u)
+    (hcoeff : ∀ t : Fin k, c_bound t + c_rec t ≤ c t)
+    (hAnorm : ∀ t : Fin k, infNorm (Aloc t) ≤ infNorm A)
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hsolve :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+          Aloc c_bound c_rec u_loc tail_exact tail_exact Δloc →
+        ∀ i : Fin n,
+          ∑ j : Fin n,
+              (A i j +
+                (∑ t : Fin k,
+                  higham11_7_tridiagonalLiftLocalBlockPerturbation n (starts t)
+                    (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+                    (Δloc t) i j)) *
+                x_hat j =
+            b i) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_coeff_roundoff_norm
+    n k fp tailDim step Aloc c_bound c_rec u_loc tail_exact tail_exact
+    A b x_hat starts c C u
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumptions
+      k fp tailDim step Aloc c_bound c_rec u_loc tail_exact hpath)
+    hc_bound hc_rec hc hu hu_loc hu_le hcoeff hAnorm hC hsolve
+
+/-- **Theorem 11.7 embedded path solve-delta aggregation from local
+assumptions**.  This composes the finite path-local branch adapter, witness
+extraction, same-ambient embedding, and supported solve-delta aggregation. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_embedded_sum_of_coeff_sum_le
+    (n offset k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (offsets : Fin k → ℕ) (c : Fin k → ℝ) (C u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalAssumptions k fp tailDim
+      step Aloc c_bound c_rec u_loc tail_fl tail_exact)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hoff : ∀ t : Fin k, offset ≤ offsets t)
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hembed :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+          Aloc c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∃ E : Fin k → Fin n → Fin n → ℝ,
+          (∀ t : Fin k, ∀ i j : Fin n,
+            |E t i j| ≤ c t * u * infNorm A) ∧
+          (∀ t : Fin k,
+            higham11_7_TridiagonalLeadingBlockSupport n (offsets t) (E t)) ∧
+          (∀ i : Fin n,
+            ∑ j : Fin n, (A i j + (∑ t : Fin k, E t i j)) * x_hat j = b i)) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_embedded_sum_of_coeff_sum_le
+    n offset k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact
+    A b x_hat offsets c C u
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_localAssumptions
+      k fp tailDim step Aloc c_bound c_rec u_loc tail_fl tail_exact hpath)
+    hc hu hoff hC hembed
+
+/-- **Theorem 11.7 embedded path solve-delta aggregation from terminal-tail
+assumptions**.  Terminal path assumptions first generate zero recursive-tail
+local residuals, then use the same same-ambient embedding bridge as the general
+path-local case. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_embedded_sum_of_coeff_sum_le
+    (n offset k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u_loc tail_exact : Fin k → ℝ)
+    (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (offsets : Fin k → ℕ) (c : Fin k → ℝ) (C u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathTerminalAssumptions k fp tailDim
+      step Aloc c_bound c_rec u_loc)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hoff : ∀ t : Fin k, offset ≤ offsets t)
+    (hC : (∑ t : Fin k, c t) ≤ C)
+    (hembed :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step
+          Aloc c_bound c_rec u_loc tail_exact tail_exact Δloc →
+        ∃ E : Fin k → Fin n → Fin n → ℝ,
+          (∀ t : Fin k, ∀ i j : Fin n,
+            |E t i j| ≤ c t * u * infNorm A) ∧
+          (∀ t : Fin k,
+            higham11_7_TridiagonalLeadingBlockSupport n (offsets t) (E t)) ∧
+          (∀ i : Fin n,
+            ∑ j : Fin n, (A i j + (∑ t : Fin k, E t i j)) * x_hat j = b i)) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * C * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * C * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_embedded_sum_of_coeff_sum_le
+    n offset k fp tailDim step Aloc c_bound c_rec u_loc tail_exact tail_exact
+    A b x_hat offsets c C u
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumptions
+      k fp tailDim step Aloc c_bound c_rec u_loc tail_exact hpath)
+    hc hu hoff hC hembed
 
 /-! ## §11.2 Aasen's method -/
 
@@ -22301,6 +23096,126 @@ theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split
         T_hat η_factor η_solve η hbudget_factor hbudget_solve hη_parts
   · exact hη_le
 
+/-- Rounded Aasen factorization-plus-solve source backward error with the
+printed Theorem 11.8 normwise predicate, where the separate factorization and
+solve-chain entry budgets are compared directly to the final printed
+coefficient. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_coeff
+    (fp : FPModel) (n : ℕ)
+    (A Pmat L T L_hat T_hat L_T_hat U_T_hat BT_factor : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (γ_factor η_factor η_solve γ15n25 : ℝ)
+    (hγ_factor : 0 ≤ γ_factor) (hγ15n25 : 0 ≤ γ15n25)
+    (hBT_factor : ∀ i j : Fin n, 0 ≤ BT_factor i j)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hn : gammaValid fp n)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hLhat : ∀ i j : Fin n, |L_hat i j - L i j| ≤ γ_factor * |L i j|)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ BT_factor i j)
+    (hbudget_factor : ∀ i j : Fin n,
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T
+          (fun r c => L c r) i j ≤
+        η_factor * |T_hat i j|)
+    (hbudget_solve : ∀ i j : Fin n,
+      higham11_15_aasenChainDeltaABound n (gamma fp n)
+          (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat)
+          L_hat T_hat (fun r c => L_hat c r) i j ≤
+        η_solve * |T_hat i j|)
+    (hη_parts : η_factor + η_solve ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA) γ15n25
+        (infNorm T_hat) := by
+  have hη : 0 ≤ ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 :=
+    mul_nonneg (sq_nonneg (((n - 1 : ℕ) : ℝ))) hγ15n25
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets
+      fp n A Pmat L T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+      γ_factor η_factor η_solve (((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25)
+      γ15n25 hγ_factor hη hBT_factor h20 hLhat_diag hLhat_lower
+      hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hprod hLhat hThat
+      hbudget_factor hbudget_solve hη_parts le_rfl
+
+/-- Rounded Aasen factorization-plus-solve split-entry endpoint specialized
+to the actual printed radius `γ_{15n+25}`.  The printed gamma-validity
+hypothesis supplies the nonnegativity side condition required by
+`..._printed_coeff`. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_gamma
+    (fp : FPModel) (n : ℕ)
+    (A Pmat L T L_hat T_hat L_T_hat U_T_hat BT_factor : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (γ_factor η_factor η_solve : ℝ)
+    (hγ_factor : 0 ≤ γ_factor)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hBT_factor : ∀ i j : Fin n, 0 ≤ BT_factor i j)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hn : gammaValid fp n)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hLhat : ∀ i j : Fin n, |L_hat i j - L i j| ≤ γ_factor * |L i j|)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ BT_factor i j)
+    (hbudget_factor : ∀ i j : Fin n,
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T
+          (fun r c => L c r) i j ≤
+        η_factor * |T_hat i j|)
+    (hbudget_solve : ∀ i j : Fin n,
+      higham11_15_aasenChainDeltaABound n (gamma fp n)
+          (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat)
+          L_hat T_hat (fun r c => L_hat c r) i j ≤
+        η_solve * |T_hat i j|)
+    (hη_parts : η_factor + η_solve ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * gamma fp (15 * n + 25)) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) :=
+  higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_coeff
+    fp n A Pmat L T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+    γ_factor η_factor η_solve (gamma fp (15 * n + 25)) hγ_factor
+    (gamma_nonneg fp hcoeff_valid) hBT_factor h20 hLhat_diag hLhat_lower
+    hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hprod hLhat hThat
+    hbudget_factor hbudget_solve hη_parts
+
 /-- Rounded Aasen source-prefix recurrence wrapper plus the printed Theorem
 11.8 normwise predicate.  This is the normwise sibling of
 `higham11_8_fl_aasen_factor_solve_source_backward_error_of_source_prefix_updates`:
@@ -22485,6 +23400,178 @@ theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_sourc
           L_hat T_hat (fun r c => L_hat c r))
         T_hat η_factor η_solve η hbudget_factor hbudget_solve hη_parts
   · exact hη_le
+
+/-- Source-prefix rounded Aasen wrapper with the printed Theorem 11.8 normwise
+predicate, where the separate factorization and solve-chain entry budgets are
+compared directly to the final printed coefficient. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_coeff
+    (fp : FPModel) (n : ℕ)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor :
+      Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (γ_factor η_factor η_solve γ15n25 : ℝ)
+    (hγ_factor : 0 ≤ γ_factor) (hγ15n25 : 0 ≤ γ15n25)
+    (hBT_factor : ∀ i j : Fin n, 0 ≤ BT_factor i j)
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hvalSum : ∀ i next : Fin n, next.val = i.val + 1 →
+      gammaValid fp next.val)
+    (hvalUpdate : gammaValid fp 2)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ γ_factor * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hn : gammaValid fp n)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ BT_factor i j)
+    (hbudget_factor : ∀ i j : Fin n,
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T
+          (fun r c => L c r) i j ≤
+        η_factor * |T_hat i j|)
+    (hbudget_solve : ∀ i j : Fin n,
+      higham11_15_aasenChainDeltaABound n (gamma fp n)
+          (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat)
+          L_hat T_hat (fun r c => L_hat c r) i j ≤
+        η_solve * |T_hat i j|)
+    (hη_parts : η_factor + η_solve ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA) γ15n25
+        (infNorm T_hat) := by
+  have hη : 0 ≤ ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 :=
+    mul_nonneg (sq_nonneg (((n - 1 : ℕ) : ℝ))) hγ15n25
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets
+      fp n A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+      γ_factor η_factor η_solve (((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25)
+      γ15n25 hγ_factor hη hBT_factor hrec hHnz hvalSum hvalUpdate
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hn hprod hThat hbudget_factor hbudget_solve hη_parts le_rfl
+
+/-- Source-prefix rounded Aasen split-entry endpoint specialized to the actual
+printed radius `γ_{15n+25}`.  The printed gamma-validity hypothesis supplies
+the nonnegativity side condition required by `..._printed_coeff`. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_gamma
+    (fp : FPModel) (n : ℕ)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor :
+      Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (γ_factor η_factor η_solve : ℝ)
+    (hγ_factor : 0 ≤ γ_factor)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hBT_factor : ∀ i j : Fin n, 0 ≤ BT_factor i j)
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hvalSum : ∀ i next : Fin n, next.val = i.val + 1 →
+      gammaValid fp next.val)
+    (hvalUpdate : gammaValid fp 2)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ γ_factor * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hn : gammaValid fp n)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ BT_factor i j)
+    (hbudget_factor : ∀ i j : Fin n,
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T
+          (fun r c => L c r) i j ≤
+        η_factor * |T_hat i j|)
+    (hbudget_solve : ∀ i j : Fin n,
+      higham11_15_aasenChainDeltaABound n (gamma fp n)
+          (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat)
+          L_hat T_hat (fun r c => L_hat c r) i j ≤
+        η_solve * |T_hat i j|)
+    (hη_parts : η_factor + η_solve ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * gamma fp (15 * n + 25)) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) :=
+  higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_coeff
+    fp n A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+    γ_factor η_factor η_solve (gamma fp (15 * n + 25)) hγ_factor
+    (gamma_nonneg fp hcoeff_valid) hBT_factor hrec hHnz hvalSum hvalUpdate
+    hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+    hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn
+    hprod hThat hbudget_factor hbudget_solve hη_parts
 
 /-- Aasen growth factor `rho_n = max_ij |t_ij| / max_ij |a_ij|`. -/
 noncomputable def higham11_8_aasenGrowthFactor
