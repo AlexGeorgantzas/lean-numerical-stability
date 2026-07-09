@@ -7197,6 +7197,30 @@ theorem higham11_7_tridiagonalBranchPath_local_budgets_le_global_of_coeff_roundo
       (hc_bound t) (hc_rec t) (hc t) (hu_loc t) (hu_le t)
       (hcoeff t) (hAnorm t)
 
+/-- **Theorem 11.7 uniform path coefficient majorant**.  Uniform caps for the
+local step coefficient and recursive-tail coefficient give the pointwise
+coefficient domination required by the concrete prefix-path endpoints. -/
+theorem higham11_7_tridiagonalBranchPath_uniform_coeff_majorant_of_component_bounds
+    (k : ℕ) (c_bound c_rec : Fin k → ℝ) (c_bound_cap c_rec_cap c : ℝ)
+    (hbound : ∀ t : Fin k, c_bound t ≤ c_bound_cap)
+    (hrec : ∀ t : Fin k, c_rec t ≤ c_rec_cap)
+    (hcap : c_bound_cap + c_rec_cap ≤ c) :
+    ∀ t : Fin k, c_bound t + c_rec t ≤ c := by
+  intro t
+  exact (add_le_add (hbound t) (hrec t)).trans hcap
+
+/-- **Theorem 11.7 additive path coefficient majorant**.  The direct version
+where the final per-branch coefficient is the sum of the two uniform component
+caps. -/
+theorem higham11_7_tridiagonalBranchPath_uniform_coeff_add_majorant_of_component_bounds
+    (k : ℕ) (c_bound c_rec : Fin k → ℝ) (c_bound_cap c_rec_cap : ℝ)
+    (hbound : ∀ t : Fin k, c_bound t ≤ c_bound_cap)
+    (hrec : ∀ t : Fin k, c_rec t ≤ c_rec_cap) :
+    ∀ t : Fin k, c_bound t + c_rec t ≤ c_bound_cap + c_rec_cap :=
+  higham11_7_tridiagonalBranchPath_uniform_coeff_majorant_of_component_bounds
+    k c_bound c_rec c_bound_cap c_rec_cap (c_bound_cap + c_rec_cap)
+    hbound hrec le_rfl
+
 /-- **Theorem 11.7 branch residual witness extraction**.  A single branch-local
 residual package supplies an explicit perturbation matrix with the componentwise
 budget, leading-block support, and `∞`-norm bound needed by later aggregation. -/
