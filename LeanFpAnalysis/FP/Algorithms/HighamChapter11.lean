@@ -7456,6 +7456,76 @@ theorem higham11_7_tridiagonalBranchPathResidualWitnesses_supported
       (tailDim t) fp (step t) (A t) (c_bound t) (c_rec t) (u t)
       (tail_fl t) (tail_exact t) (ΔA t) (hwit t)
 
+/-- **Theorem 11.7 last-terminal path residual-witness extraction**.  For a
+finite mixed tridiagonal path whose initial branches carry recursive local
+assumptions and whose last branch is terminal, extract the concrete
+equation-bearing residual witnesses branch by branch. -/
+theorem higham11_7_tridiagonalBranchPathResidualWitnesses_exists_of_init_localAssumptions_last_terminalTailAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hinit : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchLocalAssumptions
+        (tailDim (Fin.castSucc t)) fp (step (Fin.castSucc t))
+        (A (Fin.castSucc t)) (c_bound (Fin.castSucc t))
+        (c_rec (Fin.castSucc t)) (u (Fin.castSucc t))
+        (tail_fl (Fin.castSucc t)) (tail_exact (Fin.castSucc t)))
+    (hlast_eq : tail_fl (Fin.last k) = tail_exact (Fin.last k))
+    (hlast : higham11_7_TridiagonalBranchTerminalAssumptions
+      (tailDim (Fin.last k)) fp (step (Fin.last k)) (A (Fin.last k))
+      (c_bound (Fin.last k)) (c_rec (Fin.last k)) (u (Fin.last k))) :
+    ∃ ΔA : ∀ t : Fin (k + 1),
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+      higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+        tailDim step A c_bound c_rec u tail_fl tail_exact ΔA :=
+  higham11_7_tridiagonalBranchPathLocalResiduals_exists_residual_witnesses
+    (k + 1) fp tailDim step A c_bound c_rec u tail_fl tail_exact
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_init_localAssumptions_last_terminalTailAssumptions
+      k fp tailDim step A c_bound c_rec u tail_fl tail_exact
+      hinit hlast_eq hlast)
+
+/-- **Theorem 11.7 concrete last-terminal path residual-witness extraction**.
+This specializes the previous witness extraction to the prefix-span full
+ambient path used by the source-facing tridiagonal endpoint. -/
+theorem higham11_7_tridiagonalConcretePathResidualWitnesses_exists_of_init_localAssumptions_last_terminalTailAssumptions
+    (k : ℕ) (fp : FPModel) (step : Fin (k + 1) → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ)
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hinit : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchLocalAssumptions
+        (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.castSucc t))
+        fp (step (Fin.castSucc t))
+        (higham11_7_tridiagonalPathBranchMatrix (k + 1) step A
+          (Fin.castSucc t))
+        (c_bound (Fin.castSucc t)) (c_rec (Fin.castSucc t))
+        (u (Fin.castSucc t))
+        (tail_fl (Fin.castSucc t)) (tail_exact (Fin.castSucc t)))
+    (hlast_eq : tail_fl (Fin.last k) = tail_exact (Fin.last k))
+    (hlast : higham11_7_TridiagonalBranchTerminalAssumptions
+      (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+      fp (step (Fin.last k))
+      (higham11_7_tridiagonalPathBranchMatrix (k + 1) step A
+        (Fin.last k))
+      (c_bound (Fin.last k)) (c_rec (Fin.last k)) (u (Fin.last k))) :
+    ∃ ΔA : ∀ t : Fin (k + 1),
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+      higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+        (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t)
+        step
+        (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+        c_bound c_rec u tail_fl tail_exact ΔA :=
+  higham11_7_tridiagonalBranchPathResidualWitnesses_exists_of_init_localAssumptions_last_terminalTailAssumptions
+    k fp (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t)
+    step (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+    c_bound c_rec u tail_fl tail_exact hinit hlast_eq hlast
+
 /-- Index embedding for placing a local tridiagonal branch block into a larger
 ambient matrix starting at row/column `start`. -/
 def higham11_7_tridiagonalLocalBlockIndex

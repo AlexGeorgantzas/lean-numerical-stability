@@ -44,6 +44,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.7 finite mixed-pivot last-terminal path assembly | `higham11_7_tridiagonalBranchPathLocalAssumptions_of_init_localAssumptions_last_terminalTailAssumptions`, `higham11_7_tridiagonalBranchPathLocalResiduals_of_init_localAssumptions_last_terminalTailAssumptions` | Ch11 | **new this session**; packages the concrete recursion shape where all initial branches carry ordinary local recursive assumptions and the final branch is discharged by the terminal-tail adapter, yielding both path-local assumptions and path-local residuals. |
 | Thm 11.7 finite mixed-pivot path witness extraction | `higham11_7_tridiagonalBranchLocalResidual_exists_supported_witness`, `higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses`, `higham11_7_tridiagonalBranchPathLocalAssumptions_exists_supported_witnesses`, `higham11_7_tridiagonalBranchPathTerminalAssumptions_exists_supported_witnesses`, `higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses_of_uniform_budgets`, `higham11_7_tridiagonalBranchPathLocalAssumptions_exists_supported_witnesses_of_uniform_budgets`, `higham11_7_tridiagonalBranchPathTerminalAssumptions_exists_supported_witnesses_of_uniform_budgets` | Ch11 | **new this session**; extracts explicit per-branch perturbation matrices from branch-local, finite-path residual, path-local-assumption, and terminal-tail-assumption packages, retaining the componentwise budget, leading-block support, and `∞`-norm bound needed by the later global accumulation theorem. Uniform-budget variants package supplied per-branch scalar comparisons into the extracted witnesses directly. |
 | Thm 11.7 finite mixed-pivot residual equation witnesses | `higham11_7_TridiagonalBranchPathResidualWitnesses`, `higham11_7_tridiagonalBranchPathLocalResiduals_exists_residual_witnesses`, `higham11_7_tridiagonalBranchPathResidualWitnesses_supported` | Ch11 | **new this session**; lifts the richer branch residual-witness predicate over finite paths and extracts witnesses that preserve each branch's scalar residual equation, not only the bound/support/norm data. The support bridge lets those equation-bearing witnesses feed the existing supported-witness lifted-sum aggregation theorems without re-extraction. |
+| Thm 11.7 last-terminal residual-witness extraction | `higham11_7_tridiagonalBranchPathResidualWitnesses_exists_of_init_localAssumptions_last_terminalTailAssumptions`, `higham11_7_tridiagonalConcretePathResidualWitnesses_exists_of_init_localAssumptions_last_terminalTailAssumptions` | Ch11 | **new this session**; extracts equation-bearing residual witnesses directly from the initial-local/last-terminal path shape, including the concrete prefix-span full-ambient specialization. This is the witness data needed for the remaining lifted solve-equation induction and does **not** close the Theorem 11.7 row by itself. |
 | Thm 11.7 solve-side interface bridge | `higham11_7_tridiagonal_backward_error_interface_of_solve_delta`, `higham11_7_tridiagonal_backward_error_interface_of_solve_delta_nonneg`, `higham11_7_tridiagonal_backward_error_interface_of_solve_delta_infNorm` | Ch11 | **new this session**; if the recursive tridiagonal analysis constructs the solve-side perturbation `ΔA₂` with the printed componentwise budget, the factorization-side perturbation `ΔA₁` can be filled by zero to produce the source-facing Theorem 11.7 interface shape; the `_nonneg` form derives `0 ≤ c*u*Amax` from separate nonnegativity of `c`, `u`, and `Amax`, and the `_infNorm` form specializes the budget to `c*u*‖A‖∞` |
 | Thm 11.7 entrywise infinity-norm bridge | `higham11_7_abs_entry_le_infNorm` | Ch11 | **new this session**; row-sum bridge showing every entry satisfies `|Aᵢⱼ| ≤ ‖A‖∞`, used to discharge local scalar `Amax` hypotheses from a norm budget |
 | Thm 11.7 componentwise-to-infinity-norm bridge | `higham11_7_infNorm_le_card_mul_of_uniform_componentwise_bound`, `higham11_7_infNorm_le_card_mul_of_printed_componentwise_bound` | Ch11 | **new this session**; aggregates a uniform componentwise perturbation budget to an infinity-norm bound by row sums, with the printed `c*u*Amax` form exposed for the final normwise theorem |
@@ -533,6 +534,12 @@ A concrete last-terminal endpoint increment adds
 `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_uniform_coeff_norm`,
 combining the last-terminal path assembly theorem with the concrete prefix-span
 uniform coefficient endpoint.
+A residual-witness extraction increment adds
+`higham11_7_tridiagonalBranchPathResidualWitnesses_exists_of_init_localAssumptions_last_terminalTailAssumptions`
+and
+`higham11_7_tridiagonalConcretePathResidualWitnesses_exists_of_init_localAssumptions_last_terminalTailAssumptions`,
+so the remaining path induction can obtain equation-bearing perturbation
+witnesses directly from the initial-local/terminal-last branch hypotheses.
 The remaining Theorem 11.7 work is still instantiating those adapters over the
 full mixed pivot path, proving the concrete coefficient majorants, and proving
 the final lifted solve equation.
@@ -2093,6 +2100,14 @@ Problem transcription.
     `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
     focused lookup/axiom check of fully-qualified
     `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_uniform_coeff_norm`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 last-terminal residual-witness extraction increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalBranchPathResidualWitnesses_exists_of_init_localAssumptions_last_terminalTailAssumptions` and
+    `higham11_7_tridiagonalConcretePathResidualWitnesses_exists_of_init_localAssumptions_last_terminalTailAssumptions`
     → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.7 mixed-path schedule uniqueness increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
