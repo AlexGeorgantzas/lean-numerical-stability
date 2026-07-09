@@ -8085,6 +8085,53 @@ indices. -/
   rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_pos hi_ex,
     dif_pos hj_ex, hci, hcj]
 
+/-- Reindexing an embedded row dot product of a lifted local perturbation gives
+the corresponding local row dot product. -/
+theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_embedded_row_dot_eq_local
+    (n start m : ℕ) (E : Fin m → Fin m → ℝ)
+    (hcol : ∀ j : Fin m, start + j.val < n)
+    (i : Fin m) (hi : start + i.val < n) (x : Fin n → ℝ) :
+    (∑ j : Fin n,
+      higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E
+        (higham11_7_tridiagonalLocalBlockIndex n start m i hi) j * x j) =
+      ∑ j : Fin m, E i j *
+        x (higham11_7_tridiagonalLocalBlockIndex n start m j (hcol j)) := by
+  classical
+  let emb : Fin m → Fin n := fun j =>
+    higham11_7_tridiagonalLocalBlockIndex n start m j (hcol j)
+  let f : Fin n → ℝ := fun j =>
+    higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E
+      (higham11_7_tridiagonalLocalBlockIndex n start m i hi) j * x j
+  have hemb : Function.Injective emb :=
+    higham11_7_tridiagonalLocalBlockIndex_injective n start m hcol
+  have hsum_image :
+      (∑ j ∈ Finset.univ.image emb, f j) = ∑ j : Fin n, f j := by
+    refine Finset.sum_subset (Finset.subset_univ _) ?_
+    intro j _hj hnot
+    have hj_not : ¬ ∃ b : Fin m, start + b.val = j.val := by
+      intro hj_ex
+      rcases hj_ex with ⟨b, hb⟩
+      apply hnot
+      refine Finset.mem_image.mpr ⟨b, Finset.mem_univ b, ?_⟩
+      apply Fin.ext
+      simpa [emb, higham11_7_tridiagonalLocalBlockIndex_val] using hb
+    simp [f, higham11_7_tridiagonalLiftLocalBlockPerturbation, hj_not]
+  calc
+    (∑ j : Fin n,
+      higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E
+        (higham11_7_tridiagonalLocalBlockIndex n start m i hi) j * x j)
+        = ∑ j : Fin n, f j := rfl
+    _ = ∑ j ∈ Finset.univ.image emb, f j := hsum_image.symm
+    _ = ∑ j : Fin m, f (emb j) := by
+      rw [Finset.sum_image]
+      intro a _ha b _hb hab
+      exact hemb hab
+    _ = ∑ j : Fin m, E i j *
+        x (higham11_7_tridiagonalLocalBlockIndex n start m j (hcol j)) := by
+      apply Finset.sum_congr rfl
+      intro j _hj
+      simp [f, emb]
+
 /-- A lifted local perturbation is zero on rows strictly before the embedded
 block start. -/
 @[simp] theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_of_row_lt_start
