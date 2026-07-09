@@ -5920,6 +5920,28 @@ theorem higham11_7_tridiagonalPathTailDim_last_eq_zero
     higham11_7_tridiagonalPathPrefixSpan_last_add_branch_eq_pivotSpan k step
   simp [higham11_7_tridiagonalPathTailDim, hlast]
 
+/-- The head branch's remaining tail dimension is the pivot span of the tail
+path. -/
+theorem higham11_7_tridiagonalPathTailDim_head
+    (k : ℕ) (step : Fin (k + 1) → PivotSize) :
+    higham11_7_tridiagonalPathTailDim (k + 1) step 0 =
+      higham11_7_tridiagonalPathPivotSpan k
+        (fun t : Fin k => step t.succ) := by
+  simp [higham11_7_tridiagonalPathTailDim,
+    higham11_7_tridiagonalPathPrefixSpan_zero,
+    higham11_7_tridiagonalPathPivotSpan_cons]
+
+/-- Dropping the head branch preserves the remaining-tail dimension of each
+successor branch. -/
+theorem higham11_7_tridiagonalPathTailDim_succ
+    (k : ℕ) (step : Fin (k + 1) → PivotSize) (t : Fin k) :
+    higham11_7_tridiagonalPathTailDim (k + 1) step t.succ =
+      higham11_7_tridiagonalPathTailDim k (fun r : Fin k => step r.succ) t := by
+  simp [higham11_7_tridiagonalPathTailDim,
+    higham11_7_tridiagonalPathPivotSpan_cons,
+    higham11_7_tridiagonalPathPrefixSpan_succ]
+  omega
+
 /-- **Theorem 11.7 mixed-recursion local assumptions**.  This branch-indexed
 predicate records exactly the local pivot choice, scalar budget, recursive tail
 certificate, and nonnegativity hypotheses needed by the already proved `1 × 1`
