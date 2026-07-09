@@ -30487,6 +30487,36 @@ theorem rectMatMul_eq_of_forall_rectMatMulVec_eq {m n : ℕ}
   have hNcol := congrFun (rectMatMulVec_finiteBasisVec_gsColumn N j) i
   simpa [gsColumn] using hMcol.symm.trans (hv.trans hNcol)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the reduced source product `AP = A(I - B^+B)` is fixed on the right by
+    the source projector `P = I - B^+B` whenever `B^+` is a right inverse. -/
+theorem theorem20_8AP_mul_projection_eq_self {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (Bplus : Fin n → Fin p → ℝ)
+    (hright : rectMatMul B Bplus = idMatrix p) :
+    rectMatMul (theorem20_8AP A B Bplus)
+        (theorem20_8Projection B Bplus) =
+      theorem20_8AP A B Bplus := by
+  apply rectMatMul_eq_of_forall_rectMatMulVec_eq
+  intro x
+  calc
+    rectMatMulVec
+        (rectMatMul (theorem20_8AP A B Bplus)
+          (theorem20_8Projection B Bplus)) x =
+        rectMatMulVec (theorem20_8AP A B Bplus)
+          (rectMatMulVec (theorem20_8Projection B Bplus) x) := by
+          exact rectMatMulVec_rectMatMul
+            (theorem20_8AP A B Bplus) (theorem20_8Projection B Bplus) x
+    _ = rectMatMulVec A
+          (rectMatMulVec (theorem20_8Projection B Bplus)
+            (rectMatMulVec (theorem20_8Projection B Bplus) x)) := by
+          rw [theorem20_8AP, rectMatMulVec_rectMatMul]
+    _ = rectMatMulVec A
+          (rectMatMulVec (theorem20_8Projection B Bplus) x) := by
+          rw [theorem20_8Projection_vec_idempotent B Bplus hright x]
+    _ = rectMatMulVec (theorem20_8AP A B Bplus) x := by
+          rw [theorem20_8AP, rectMatMulVec_rectMatMul]
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.24):
     matrix form of the projected action `(AP)^+ AP = P` from the reduced
     operator left-inverse condition on the homogeneous constraint nullspace. -/
@@ -49141,6 +49171,74 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_AP_eq_projection
     A B hB.rightInverse h.liftedReducedGramAPplus hB.rightInverse_spec
     (fun z hz =>
       h.liftedReducedGramAPplus_AP_left_inverse_on_nullspace hB hstack z hz)
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
+    the lifted reduced-Gram candidate satisfies the first Penrose reproduction
+    equation for the reduced source product `AP`.
+
+    This proves only the reproduction identity.  The symmetry fields needed for
+    a full Moore--Penrose certificate remain separate obligations. -/
+theorem GeneralizedQRFactorization.liftedReducedGramAPplus_reproduces_matrix
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    rectMatMul
+        (rectMatMul (theorem20_8AP A B hB.rightInverse)
+          h.liftedReducedGramAPplus)
+        (theorem20_8AP A B hB.rightInverse) =
+      theorem20_8AP A B hB.rightInverse := by
+  calc
+    rectMatMul
+        (rectMatMul (theorem20_8AP A B hB.rightInverse)
+          h.liftedReducedGramAPplus)
+        (theorem20_8AP A B hB.rightInverse) =
+        rectMatMul (theorem20_8AP A B hB.rightInverse)
+          (rectMatMul h.liftedReducedGramAPplus
+            (theorem20_8AP A B hB.rightInverse)) := by
+          rw [rectMatMul_assoc]
+    _ = rectMatMul (theorem20_8AP A B hB.rightInverse)
+          (theorem20_8Projection B hB.rightInverse) := by
+          rw [h.liftedReducedGramAPplus_AP_eq_projection hB hstack]
+    _ = theorem20_8AP A B hB.rightInverse :=
+          theorem20_8AP_mul_projection_eq_self
+            A B hB.rightInverse hB.rightInverse_spec
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
+    the lifted reduced-Gram candidate satisfies the second Penrose reproduction
+    equation for the reduced source product `AP`.
+
+    This follows from `(AP)^+ AP = P` and the fact that the lifted candidate's
+    columns lie in `null(B)`, so the source projector fixes them. -/
+theorem GeneralizedQRFactorization.liftedReducedGramAPplus_reproduces_pseudoinverse
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    rectMatMul
+        (rectMatMul h.liftedReducedGramAPplus
+          (theorem20_8AP A B hB.rightInverse))
+        h.liftedReducedGramAPplus =
+      h.liftedReducedGramAPplus := by
+  have hProjFix :
+      rectMatMul (theorem20_8Projection B hB.rightInverse)
+          h.liftedReducedGramAPplus =
+        h.liftedReducedGramAPplus :=
+    LSEFullRowRank.theorem20_8_APplus_projection_range_of_constraint_annihilates
+      hB h.liftedReducedGramAPplus h.liftedReducedGramAPplus_constraint_annihilates
+  calc
+    rectMatMul
+        (rectMatMul h.liftedReducedGramAPplus
+          (theorem20_8AP A B hB.rightInverse))
+        h.liftedReducedGramAPplus =
+        rectMatMul (theorem20_8Projection B hB.rightInverse)
+          h.liftedReducedGramAPplus := by
+          rw [h.liftedReducedGramAPplus_AP_eq_projection hB hstack]
+    _ = h.liftedReducedGramAPplus := hProjFix
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-shaped first-order handoff for the concrete lifted reduced-Gram
