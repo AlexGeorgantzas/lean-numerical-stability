@@ -3895,6 +3895,26 @@ theorem existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff
     n A B C sigma
     (SepLowerBound_of_vecCoeff_sigmaMin n A B sigma hsigma hCoeff)
 
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete vec-coefficient
+    sigma-min route to the internally chosen real-Schur active-block
+    determinant package. -/
+alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_sigmaMin :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete vec-coefficient
+    sigma-min route to a real-Schur generated-step original solution witness. -/
+alias H16_eq16_4_8_exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_sigmaMin :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete vec-coefficient
+    sigma-min route to original-coordinate unique solvability via the generated
+    real-Schur witness. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_sigmaMin :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_sigmaMin_generated_step_formula_witness
+
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
     in positive dimension, a positive lower bound for the concrete vectorized
     Sylvester coefficient lower-bounds the exact `sep` infimum. -/
@@ -4024,6 +4044,26 @@ theorem existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff
   existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_sepLowerBound_generated_step_formula_witness
     n A B C (Real.sqrt lam)
     (SepLowerBound_of_vecCoeff_gram_eigenvalues n A B hlam hEig)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete Gram-eigenvalue
+    route to the internally chosen real-Schur active-block determinant
+    package. -/
+alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_gram_eigenvalues :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_gram_eigenvalues
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete Gram-eigenvalue
+    route to a real-Schur generated-step original solution witness. -/
+alias H16_eq16_4_8_exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_gram_eigenvalues :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_gram_eigenvalues
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete Gram-eigenvalue
+    route to original-coordinate unique solvability via the generated
+    real-Schur witness. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_gram_eigenvalues :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_gram_eigenvalues_generated_step_formula_witness
 
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
     in positive dimension, a positive Gram-eigenvalue lower bound for the
@@ -4166,6 +4206,27 @@ theorem existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff
     n A B C (1 / M)
     (SepLowerBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
       n A B Pinv hM hLeft hPinv)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete left-inverse
+    finite-op-norm route to the internally chosen real-Schur active-block
+    determinant package. -/
+alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete left-inverse
+    finite-op-norm route to a real-Schur generated-step original solution
+    witness. -/
+alias H16_eq16_4_8_exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the concrete left-inverse
+    finite-op-norm route to original-coordinate unique solvability via the
+    generated real-Schur witness. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_left_inverse_finiteOpNorm2Le_generated_step_formula_witness
 
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
     in positive dimension, a supplied concrete left inverse for the printed
