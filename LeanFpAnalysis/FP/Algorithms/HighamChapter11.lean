@@ -6411,6 +6411,46 @@ theorem higham11_7_tridiagonalPathLocalBlockIndex_injective
     simpa using congrArg Fin.val hij
   omega
 
+/-- **Theorem 11.7 path first-trailing embedding bound, `1 × 1` branch**.
+For a concrete mixed tridiagonal path, the first trailing scalar of a branch
+accepted as `1 × 1` embeds into the full `pathSpan+1` ambient matrix at the
+branch prefix span. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_one_lt_pivotSpan_succ
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.one) :
+    higham11_7_tridiagonalPathPrefixSpan k step t +
+        (higham11_7_tridiagonalBranchFirstTrailingIndex
+          (higham11_7_tridiagonalPathTailDim k step t) PivotSize.one).val <
+      higham11_7_tridiagonalPathPivotSpan k step + 1 := by
+  have hend := higham11_7_tridiagonalPathPrefixSpan_branch_end_le_pivotSpan k step t
+  have hoff : higham11_7_tridiagonalBranchSupportOffset (step t) = 1 := by
+    simp [hstep, higham11_7_tridiagonalBranchSupportOffset]
+  have hfirst :
+      (higham11_7_tridiagonalBranchFirstTrailingIndex
+        (higham11_7_tridiagonalPathTailDim k step t) PivotSize.one).val = 1 := by
+    simp [higham11_7_tridiagonalBranchFirstTrailingIndex]
+  omega
+
+/-- **Theorem 11.7 path first-trailing embedding bound, `2 × 2` branch**.
+For a concrete mixed tridiagonal path, the first trailing scalar of a branch
+accepted as `2 × 2` embeds into the full `pathSpan+1` ambient matrix at the
+branch prefix span. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_two_lt_pivotSpan_succ
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.two) :
+    higham11_7_tridiagonalPathPrefixSpan k step t +
+        (higham11_7_tridiagonalBranchFirstTrailingIndex
+          (higham11_7_tridiagonalPathTailDim k step t) PivotSize.two).val <
+      higham11_7_tridiagonalPathPivotSpan k step + 1 := by
+  have hend := higham11_7_tridiagonalPathPrefixSpan_branch_end_le_pivotSpan k step t
+  have hoff : higham11_7_tridiagonalBranchSupportOffset (step t) = 2 := by
+    simp [hstep, higham11_7_tridiagonalBranchSupportOffset]
+  have hfirst :
+      (higham11_7_tridiagonalBranchFirstTrailingIndex
+        (higham11_7_tridiagonalPathTailDim k step t) PivotSize.two).val = 2 := by
+    simp [higham11_7_tridiagonalBranchFirstTrailingIndex]
+  omega
+
 /-- The final branch in a nonempty path has no remaining recursive tail after
 its consumed pivot block. -/
 theorem higham11_7_tridiagonalPathTailDim_last_eq_zero
@@ -7809,6 +7849,73 @@ theorem higham11_7_tridiagonalBranchPathResidualWitnesses_supported
     higham11_7_tridiagonalBranchLocalResidualWitness_supported
       (tailDim t) fp (step t) (A t) (c_bound t) (c_rec t) (u t)
       (tail_fl t) (tail_exact t) (ΔA t) (hwit t)
+
+/-- **Theorem 11.7 concrete path residual witness accessor, `1 × 1` branch**.
+At a concrete prefix-span branch whose pivot choice is `1 × 1`, the
+equation-bearing path witness can be read as the corresponding branch-local
+residual witness without unfolding the path predicate.  The casts reconcile the
+dependent branch type `step t` with the known pivot size. -/
+theorem higham11_7_tridiagonalConcretePathResidualWitnesses_one
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathResidualWitnesses k fp
+      (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+      (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+      c_bound c_rec u tail_fl tail_exact ΔA)
+    (t : Fin k) (hstep : step t = PivotSize.one) :
+    let Aone : higham11_7_TridiagonalBranchMatrix
+        (higham11_7_tridiagonalPathTailDim k step t) PivotSize.one :=
+      hstep ▸ higham11_7_tridiagonalPathBranchMatrix k step A t
+    let ΔAone : Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) PivotSize.one) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) PivotSize.one) → ℝ :=
+      hstep ▸ ΔA t
+    higham11_7_TridiagonalBranchLocalResidualWitness
+      (higham11_7_tridiagonalPathTailDim k step t) fp PivotSize.one Aone
+      (c_bound t) (c_rec t) (u t) (tail_fl t) (tail_exact t) ΔAone := by
+  exact hstep.rec (by
+    simpa [higham11_7_TridiagonalBranchPathResidualWitnesses] using hwit t)
+
+/-- **Theorem 11.7 concrete path residual witness accessor, `2 × 2` branch**.
+At a concrete prefix-span branch whose pivot choice is `2 × 2`, the
+equation-bearing path witness can be read as the corresponding branch-local
+residual witness without unfolding the path predicate. -/
+theorem higham11_7_tridiagonalConcretePathResidualWitnesses_two
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathResidualWitnesses k fp
+      (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+      (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+      c_bound c_rec u tail_fl tail_exact ΔA)
+    (t : Fin k) (hstep : step t = PivotSize.two) :
+    let Atwo : higham11_7_TridiagonalBranchMatrix
+        (higham11_7_tridiagonalPathTailDim k step t) PivotSize.two :=
+      hstep ▸ higham11_7_tridiagonalPathBranchMatrix k step A t
+    let ΔAtwo : Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) PivotSize.two) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) PivotSize.two) → ℝ :=
+      hstep ▸ ΔA t
+    higham11_7_TridiagonalBranchLocalResidualWitness
+      (higham11_7_tridiagonalPathTailDim k step t) fp PivotSize.two Atwo
+      (c_bound t) (c_rec t) (u t) (tail_fl t) (tail_exact t) ΔAtwo := by
+  exact hstep.rec (by
+    simpa [higham11_7_TridiagonalBranchPathResidualWitnesses] using hwit t)
 
 /-- **Theorem 11.7 last-terminal path residual-witness extraction**.  For a
 finite mixed tridiagonal path whose initial branches carry recursive local
