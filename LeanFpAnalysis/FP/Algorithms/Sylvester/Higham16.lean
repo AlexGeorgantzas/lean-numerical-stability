@@ -6538,6 +6538,28 @@ theorem sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_computed_r
 -- ============================================================
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the rectangular determinant-nonzero practical certificate
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_rect :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_rect
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the rectangular determinant-nonzero denominator-free absolute
+    practical certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_rect :=
+  sylvester_practical_abs_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_rect
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the rectangular determinant-nonzero raw residual-budget endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_rect :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_rect
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the rectangular determinant-nonzero residual error-model endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_rect :=
+  sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_rect
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
     alias for the determinant-nonzero practical certificate endpoint. -/
 alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate :=
   sylvester_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate
