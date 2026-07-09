@@ -2756,6 +2756,16 @@ theorem sylvesterVecCoeff_mulVec_eq_zero_iff_of_pos_le_sylvesterSepInf
         n A B sigma hsigma hle)
       x
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.26): source-numbered
+    alias for the source `SepLowerBound` trivial-kernel route. -/
+alias H16_eq16_26_sylvesterVecCoeff_mulVec_eq_zero_iff_of_sepLowerBound :=
+  sylvesterVecCoeff_mulVec_eq_zero_iff_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.26): source-numbered
+    alias for the positive exact-infimum trivial-kernel route. -/
+alias H16_eq16_26_sylvesterVecCoeff_mulVec_eq_zero_iff_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_mulVec_eq_zero_iff_of_pos_le_sylvesterSepInf
+
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
     a supplied `SepLowerBound` certificate makes the exact vectorized
     Sylvester coefficient solve bijective.  This is a determinant consequence
