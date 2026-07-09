@@ -2848,6 +2848,58 @@ theorem higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_b
       c_bound c_rec u tail_fl tail_exact hchoice ha11 hσA
       (infNorm_nonneg A) hb hbudget hval hrec hc_bound hc_rec hu
 
+/-- **Theorem 11.7 one-by-one recursive residual aggregation, branch-derived
+pivot nonzero form**.  For the accepted Algorithm 11.6 `1 × 1` tridiagonal
+branch, a nonzero subdiagonal coupling supplies the nonzero leading pivot
+required by the rounded Schur update. -/
+theorem higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_of_subdiagonal_ne_zero
+    (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 2) → Fin (n + 2) → ℝ)
+    (σ c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ (A 0 0)
+      (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) PivotSize.one)
+    (ha21 : A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0 ≠ 0)
+    (hσA : σ ≤ infNorm A)
+    (hbudget :
+      gamma fp 3 *
+          (infNorm A + infNorm A / higham11_6_bunchTridiagonalAlpha) ≤
+        c_bound * u * infNorm A)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 2) → Fin (n + 2) → ℝ,
+      (∀ i j : Fin (n + 2), |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 2) 1 ΔA ∧
+      infNorm ΔA ≤ ((n + 2 : ℕ) : ℝ) * (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n))
+          (fp.fl_mul
+            (fp.fl_div
+              (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0)
+              (A 0 0))
+            (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0)) +
+          tail_fl
+        =
+        ((A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)) -
+          (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) *
+            (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) /
+            (A 0 0)) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) := by
+  have ha11 : A 0 0 ≠ 0 :=
+    higham11_6_tridiagonal_pivot_choice_one_a11_ne_zero_of_a21_ne_zero
+      σ (A 0 0) (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0)
+      hchoice ha21
+  exact
+    higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries
+      n fp A σ c_bound c_rec u tail_fl tail_exact hchoice ha11 hσA
+      hbudget hval hrec hc_bound hc_rec hu
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
