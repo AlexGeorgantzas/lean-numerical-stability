@@ -4619,6 +4619,41 @@ theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_tail_termina
       (fun t => c_rec t.succ) (fun t => u t.succ)
       (fun t => tail_exact t.succ) htail)
 
+/-- **Theorem 11.7 path residual cons from a local head and terminal tail**.
+This mixed handoff covers the last recursive step: the head is proved by the
+local branch adapter, while every remaining tail branch is terminal and hence
+has exact tail residual scalars. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_localAssumptions_tail_terminalTailAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hhead : higham11_7_TridiagonalBranchLocalAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+      (tail_fl 0) (tail_exact 0))
+    (htail_eq : ∀ t : Fin k, tail_fl t.succ = tail_exact t.succ)
+    (htail : higham11_7_TridiagonalBranchPathTerminalAssumptions k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ)) :
+    higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact :=
+  higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_localAssumptions
+    k fp tailDim step A c_bound c_rec u tail_fl tail_exact hhead
+    (by
+      intro t
+      have hres :
+          higham11_7_TridiagonalBranchLocalResidual
+            (tailDim t.succ) fp (step t.succ) (A t.succ)
+            (c_bound t.succ) (c_rec t.succ) (u t.succ)
+            (tail_exact t.succ) (tail_exact t.succ) :=
+        higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions
+          (tailDim t.succ) fp (step t.succ) (A t.succ)
+          (c_bound t.succ) (c_rec t.succ) (u t.succ)
+          (tail_exact t.succ) (htail t)
+      simpa [htail_eq t] using hres)
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
