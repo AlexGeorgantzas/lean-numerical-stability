@@ -157,6 +157,53 @@ theorem higham11_1_growth_factor_recursion_prefix (α ρ0 : ℝ) (r : ℕ → �
           mul_le_mul_of_nonneg_left (ih hk_le) hfactor_nonneg
         _ = (1 + 1 / α) ^ (k + 1) * ρ0 := by ring
 
+/-- **§11.1.1 printed-alpha finite-prefix growth recursion**: specialization
+of `higham11_1_growth_factor_recursion_prefix` to the Bunch-Parlett value of
+`α` and the final active stage `n-1`. -/
+theorem higham11_1_growth_factor_bound_of_prefix_steps
+    (n : ℕ) (ρ0 : ℝ) (r : ℕ → ℝ)
+    (h0 : r 0 = ρ0)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k) :
+    r (n - 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * ρ0 := by
+  have hα : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  have hstep' : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + 1 / higham11_1_bunchParlettAlpha) * r k := by
+    intro k hk
+    simpa [one_div] using hstep k hk
+  have h :=
+    higham11_1_growth_factor_recursion_prefix
+      higham11_1_bunchParlettAlpha ρ0 r (n - 1) hα h0 hstep' (n - 1)
+      (le_refl _)
+  simpa [one_div] using h
+
+/-- **§11.1.1 normalized growth-factor bound**: if a concrete active pivot
+path has normalized initial maximum `ρ₀ ≤ 1`, each prefix stage grows by at
+most `1+α⁻¹`, and the advertised growth factor `ρₙ` is bounded by the final
+stage maximum, then `ρₙ ≤ (1+α⁻¹)^(n-1)`. -/
+theorem higham11_1_bunch_parlett_growth_bound_of_prefix_steps
+    (n : ℕ) (ρ_n ρ0 : ℝ) (r : ℕ → ℝ)
+    (h0 : r 0 = ρ0) (hρ0 : ρ0 ≤ 1)
+    (hρn : ρ_n ≤ r (n - 1))
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k) :
+    ρ_n ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) := by
+  have hα : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  have hfactor_nonneg :
+      0 ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) := by
+    have hinv_nonneg : 0 ≤ higham11_1_bunchParlettAlpha⁻¹ :=
+      inv_nonneg.mpr (le_of_lt hα)
+    exact pow_nonneg (by linarith) _
+  calc
+    ρ_n ≤ r (n - 1) := hρn
+    _ ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * ρ0 :=
+      higham11_1_growth_factor_bound_of_prefix_steps n ρ0 r h0 hstep
+    _ ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * 1 :=
+      mul_le_mul_of_nonneg_left hρ0 hfactor_nonneg
+    _ = (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) := by ring
+
 /-- **Equation (11.4)**, the scalar entry of the 2 by 2 Schur complement
 `b_ij - [c_i1 c_i2] E^{-1} [c_j1, c_j2]^T`. -/
 noncomputable def higham11_4_twoByTwoSchurEntry
