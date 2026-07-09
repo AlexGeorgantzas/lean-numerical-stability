@@ -7999,6 +7999,51 @@ def higham11_7_tridiagonalLocalBlockIndex
       start + i.val :=
   rfl
 
+/-- The generic local block index embedding is injective. -/
+theorem higham11_7_tridiagonalLocalBlockIndex_injective
+    (n start m : ℕ) (h : ∀ i : Fin m, start + i.val < n) :
+    Function.Injective
+      (fun i : Fin m => higham11_7_tridiagonalLocalBlockIndex n start m i (h i)) := by
+  intro i j hij
+  apply Fin.ext
+  have hval : start + i.val = start + j.val := by
+    simpa using congrArg Fin.val hij
+  omega
+
+/-- A natural number is the value of a local block index exactly when it lies in
+the half-open interval `[start, start + m)`. -/
+theorem higham11_7_tridiagonalLocalBlockIndex_val_exists_iff
+    (start m j : ℕ) :
+    (∃ a : Fin m, start + a.val = j) ↔ start ≤ j ∧ j < start + m := by
+  constructor
+  · rintro ⟨a, ha⟩
+    constructor <;> omega
+  · rintro ⟨hjlo, hjhi⟩
+    refine ⟨⟨j - start, by omega⟩, ?_⟩
+    change start + (j - start) = j
+    omega
+
+/-- The ambient range of the local block embedding is exactly the half-open
+interval `[start, start + m)`. -/
+theorem higham11_7_tridiagonalLocalBlockIndex_mem_range_iff
+    (n start m : ℕ) (h : ∀ i : Fin m, start + i.val < n)
+    (j : Fin n) :
+    (∃ a : Fin m,
+      higham11_7_tridiagonalLocalBlockIndex n start m a (h a) = j) ↔
+      start ≤ j.val ∧ j.val < start + m := by
+  constructor
+  · rintro ⟨a, ha⟩
+    have hval : start + a.val = j.val := by
+      simpa using congrArg Fin.val ha
+    constructor <;> omega
+  · rintro ⟨hjlo, hjhi⟩
+    obtain ⟨a, ha⟩ :=
+      (higham11_7_tridiagonalLocalBlockIndex_val_exists_iff start m j.val).2
+        ⟨hjlo, hjhi⟩
+    refine ⟨a, ?_⟩
+    apply Fin.ext
+    simpa [higham11_7_tridiagonalLocalBlockIndex_val] using ha
+
 /-- Lift a local branch perturbation into a shared ambient matrix by placing it
 at offset `start` and filling all non-embedded entries with zero. -/
 noncomputable def higham11_7_tridiagonalLiftLocalBlockPerturbation
