@@ -2823,6 +2823,30 @@ theorem existsUnique_sylvesterVecCoeff_mulVec_of_pos_le_sylvesterSepInf
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
       c
 
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for `SepLowerBound` vectorized
+    coefficient bijectivity. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_mulVec_bijective_of_sepLowerBound :=
+  sylvesterVecCoeff_mulVec_bijective_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for `SepLowerBound` vectorized unique
+    solvability. -/
+alias H16_eq16_2_26_existsUnique_sylvesterVecCoeff_mulVec_of_sepLowerBound :=
+  existsUnique_sylvesterVecCoeff_mulVec_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for positive exact-infimum vectorized
+    coefficient bijectivity. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_mulVec_bijective_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_mulVec_bijective_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for positive exact-infimum vectorized
+    unique solvability. -/
+alias H16_eq16_2_26_existsUnique_sylvesterVecCoeff_mulVec_of_pos_le_sylvesterSepInf :=
+  existsUnique_sylvesterVecCoeff_mulVec_of_pos_le_sylvesterSepInf
+
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
     a supplied `SepLowerBound` certificate instantiates the determinant-based
     left nonsingular-inverse action for the vectorized Sylvester coefficient. -/
@@ -2918,6 +2942,40 @@ theorem sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_pos_le_sylvesterS
       (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
         n A B sigma hsigma hle)
       hz
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the `SepLowerBound` left inverse action. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_sepLowerBound :=
+  sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the `SepLowerBound` right inverse action. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_sepLowerBound :=
+  sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias identifying exact solutions with the
+    `SepLowerBound` nonsingular-inverse vector. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_sepLowerBound :=
+  sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the positive exact-infimum left inverse
+    action. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the positive exact-infimum right inverse
+    action. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias identifying exact solutions with the
+    positive exact-infimum nonsingular-inverse vector. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_pos_le_sylvesterSepInf
 
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
     with a supplied `SepLowerBound` certificate, Mathlib's nonsingular inverse
@@ -3143,6 +3201,18 @@ theorem sylvesterVecCoeff_mulVec_surjective_of_operator_sigmaMin
       (sylvesterVecCoeff n n A B)
       (sylvesterVecCoeff_det_ne_zero_of_operator_sigmaMin
         n A B sigma hsigma hSigmaMin)
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    source-numbered alias for operator-sigma-min vectorized coefficient
+    injectivity. -/
+alias H16_eq16_26_sylvesterVecCoeff_mulVec_injective_of_operator_sigmaMin :=
+  sylvesterVecCoeff_mulVec_injective_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    source-numbered alias for operator-sigma-min vectorized coefficient
+    surjectivity. -/
+alias H16_eq16_26_sylvesterVecCoeff_mulVec_surjective_of_operator_sigmaMin :=
+  sylvesterVecCoeff_mulVec_surjective_of_operator_sigmaMin
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
     a Sylvester operator sigma-min certificate makes the vectorized
