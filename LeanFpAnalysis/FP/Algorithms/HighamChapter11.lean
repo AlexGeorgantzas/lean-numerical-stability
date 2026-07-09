@@ -7438,6 +7438,26 @@ theorem higham11_8_infNorm_T_le_one_plus_gamma_T_hat_of_relative_error (n : ℕ)
     (higham11_8_abs_T_le_one_plus_gamma_T_hat_of_relative_error
       n T T_hat γ hγ hThat)
 
+/-- Zero relative `T_hat - T` error recovers the coefficient-one componentwise
+domination of the exact middle factor by the computed one. -/
+theorem higham11_8_abs_T_le_T_hat_of_zero_relative_error (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ 0 * |T_hat i j|) :
+    ∀ i j : Fin n, |T i j| ≤ |T_hat i j| := by
+  simpa using
+    higham11_8_abs_T_le_one_plus_gamma_T_hat_of_relative_error
+      n T T_hat 0 (by norm_num) hThat
+
+/-- Zero relative `T_hat - T` error also gives the coefficient-one infinity-norm
+cap `‖T‖∞ ≤ ‖T_hat‖∞`. -/
+theorem higham11_8_infNorm_T_le_T_hat_of_zero_relative_error (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ 0 * |T_hat i j|) :
+    infNorm T ≤ infNorm T_hat := by
+  simpa using
+    higham11_8_infNorm_T_le_one_plus_gamma_T_hat_of_relative_error
+      n T T_hat 0 (by norm_num) hThat
+
 /-- Componentwise absolute domination transfers directly to the matrix
 infinity norm. -/
 theorem higham11_8_infNorm_le_of_componentwise_abs_bound (n : ℕ)
