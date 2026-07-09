@@ -594,6 +594,21 @@ theorem isLeast_sylvesterBackwardErrorValues_of_svdOptimalPerturbations (n : ℕ
       A B C Y U V sigma alpha beta gamma hSVD hpos)
 
 /-- Higham, 2nd ed., Chapter 16, Section 16.2, equation (16.15):
+    source-numbered alias for SVD-discharge backward-error minimizer existence. -/
+alias H16_eq16_15_exists_sylvesterBackwardError_minimizer_of_svdOptimalPerturbations :=
+  exists_sylvesterBackwardError_minimizer_of_svdOptimalPerturbations
+
+/-- Higham, 2nd ed., Chapter 16, Section 16.2, equation (16.15):
+    source-numbered alias for SVD-discharge feasible infimum membership. -/
+alias H16_eq16_15_sylvesterBackwardErrorInf_mem_sylvesterBackwardErrorValues_of_svdOptimalPerturbations :=
+  sylvesterBackwardErrorInf_mem_sylvesterBackwardErrorValues_of_svdOptimalPerturbations
+
+/-- Higham, 2nd ed., Chapter 16, Section 16.2, equation (16.15):
+    source-numbered alias for SVD-discharge least feasible backward error. -/
+alias H16_eq16_15_isLeast_sylvesterBackwardErrorValues_of_svdOptimalPerturbations :=
+  isLeast_sylvesterBackwardErrorValues_of_svdOptimalPerturbations
+
+/-- Higham, 2nd ed., Chapter 16, Section 16.2, equation (16.15):
     source-facing two-sided Sylvester eta/xi infimum bound from SVD data. -/
 theorem sylvesterBackwardErrorInf_two_sided_sqrt_xiSq_of_svdOptimalPerturbations
     (n : Nat)
