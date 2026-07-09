@@ -5810,6 +5810,22 @@ theorem higham11_7_tridiagonalPathStartOffsetsFrom_eq_base_add_prefixSpan
           rw [htail_eq]
           simp [higham11_7_tridiagonalPathPrefixSpan_succ, add_assoc]
 
+/-- The explicit prefix-span starts form the canonical base-offset schedule. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_base_add_prefixSpan
+    (base k : ℕ) (step : Fin k → PivotSize) :
+    higham11_7_TridiagonalPathStartOffsetsFrom base k step
+      (fun t => base + higham11_7_tridiagonalPathPrefixSpan k step t) := by
+  obtain ⟨starts, hstarts⟩ :=
+    higham11_7_tridiagonalPathStartOffsetsFrom_exists base k step
+  have hstarts_eq :
+      starts = fun t : Fin k =>
+        base + higham11_7_tridiagonalPathPrefixSpan k step t := by
+    funext t
+    exact
+      higham11_7_tridiagonalPathStartOffsetsFrom_eq_base_add_prefixSpan
+        base k step starts hstarts t
+  simpa [hstarts_eq] using hstarts
+
 /-- Every start offset in a base-offset mixed path is at or after the base. -/
 theorem higham11_7_tridiagonalPathStartOffsetsFrom_base_le
     (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
@@ -6125,6 +6141,14 @@ theorem higham11_7_tridiagonalPathStartOffsets_eq_prefixSpan
   simpa [higham11_7_TridiagonalPathStartOffsets] using
     higham11_7_tridiagonalPathStartOffsetsFrom_eq_base_add_prefixSpan
       0 k step starts hstarts t
+
+/-- The explicit prefix-span starts form the canonical zero-based schedule. -/
+theorem higham11_7_tridiagonalPathStartOffsets_prefixSpan
+    (k : ℕ) (step : Fin k → PivotSize) :
+    higham11_7_TridiagonalPathStartOffsets k step
+      (fun t => higham11_7_tridiagonalPathPrefixSpan k step t) := by
+  simpa [higham11_7_TridiagonalPathStartOffsets] using
+    higham11_7_tridiagonalPathStartOffsetsFrom_base_add_prefixSpan 0 k step
 
 /-- Every zero-based start offset lies strictly before the full path span. -/
 theorem higham11_7_tridiagonalPathStartOffsets_lt_pivotSpan
