@@ -45644,6 +45644,28 @@ noncomputable def gqrAQ2Block {r p q : ℕ}
     Fin (r + q) → Fin q → ℝ :=
   fun i j => matMulRect (r + q) (p + q) (p + q) A Q i (Fin.natAdd p j)
 
+/-- Linearity bridge for the trailing `A Q₂` block: perturbing `A` by
+    `DeltaA` changes the reduced GQR block by `DeltaA Q₂`. -/
+theorem gqrAQ2Block_add_sub_eq {r p q : ℕ}
+    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ) :
+    (fun i j =>
+      gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j -
+        gqrAQ2Block A Q i j) =
+      gqrAQ2Block DeltaA Q := by
+  ext i j
+  unfold gqrAQ2Block matMulRect
+  have hsum :
+      (∑ k, (A i k + DeltaA i k) * Q k (Fin.natAdd p j)) =
+        (∑ k, A i k * Q k (Fin.natAdd p j)) +
+          ∑ k, DeltaA i k * Q k (Fin.natAdd p j) := by
+    rw [← Finset.sum_add_distrib]
+    apply Finset.sum_congr rfl
+    intro k _
+    ring
+  rw [hsum]
+  ring
+
 /-- Vector-action form of the `A Q₂` block. -/
 theorem gqrAQ2Block_mulVec {r p q : ℕ}
     (A : Fin (r + q) → Fin (p + q) → ℝ)
@@ -46170,6 +46192,28 @@ theorem frobNormRect_gqrAQ2Block_le
     _ ≤ frobNormRect AQ := frobNormRect_trailingCols_le AQ
     _ = frobNormRect A := by
           simpa [AQ] using frobNormRect_orthogonal_right A Q hQ
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    if the perturbed GQR record uses the same `Q` as the source record, a
+    full-source Frobenius perturbation bound for `DeltaA` supplies the reduced
+    trailing-block Frobenius budget. -/
+theorem GeneralizedQRFactorization.gqrAQ2Block_delta_frobNorm_le_of_same_Q
+    {r p q : ℕ}
+    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {Bpert : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hpert : GeneralizedQRFactorization r p q
+      (fun i j => A i j + DeltaA i j) Bpert)
+    {c : ℝ}
+    (hQsame : hpert.Q = h.Q)
+    (hDeltaA : frobNormRect DeltaA ≤ c) :
+    frobNormRect
+      (fun i j =>
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q i j -
+          gqrAQ2Block A h.Q i j) ≤ c := by
+  rw [hQsame, gqrAQ2Block_add_sub_eq]
+  exact le_trans (frobNormRect_gqrAQ2Block_le DeltaA h.Q h.orthQ) hDeltaA
 
 /-- The bottom-right `L22` block in the displayed GQR `UᵀAQ` matrix has
     Frobenius norm no larger than the full displayed block. -/
@@ -47926,6 +47970,110 @@ theorem
       A DeltaA b Deltab hB DeltaB APplus d Deltad hpert x y hApos
       hbpos hBpos hdpos hxpos hyx hrpos hmax hMP hBAPt hstack hstackPert
       hx hy hkappa hsmall hDeltaGQRFrob hgapScale hbracket
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    same-`Q` full-source-perturbation version of the concrete GQR/BAplus
+    handoff.
+
+    When the supplied perturbed GQR factorization uses the same right factor
+    `Q` as the source factorization, the full `DeltaA` Frobenius bound is
+    transported to the reduced trailing-block budget internally.  The theorem
+    keeps the genuinely remaining obligations explicit: the concrete
+    `kappa_B(A)` identity, source smallness, BAplus residual-radius comparison,
+    and scalar bracket inequality. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_gqrQ2_reducedGram_BAplus_residual_gap_concreteAredNorms_of_sameQ_deltaA_frob_autoAredPlusPos_of_eps_lt_inv_kappaB_eps_nonneg
+    {r p k : ℕ}
+    (A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ)
+    (b Deltab : Fin (r + (k + 1)) → ℝ)
+    {B : Fin p → Fin (p + (k + 1)) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + (k + 1)) → ℝ)
+    (APplus : Fin (p + (k + 1)) → Fin (r + (k + 1)) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p (k + 1) A B)
+    (hpert : GeneralizedQRFactorization r p (k + 1)
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (x y : Fin (p + (k + 1)) → ℝ)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hstackPert : LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hkappa :
+      theorem20_8KappaB A APplus =
+        complexMatrixOp2
+            (realRectToCMatrix (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))) *
+          complexMatrixOp2 (realRectToCMatrix (gqrAQ2Block A h.Q)))
+    (hepsSmall : eps < 1 / theorem20_8KappaB A APplus)
+    (hQsame : hpert.Q = h.Q)
+    (hDeltaAFrob :
+      frobNormRect DeltaA ≤
+        eps * complexMatrixOp2 (realRectToCMatrix (gqrAQ2Block A h.Q)))
+    (hgapScale :
+      complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B hB.rightInverse)) *
+          vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) +
+        ((theorem20_8KappaB A APplus *
+              (complexMatrixOp2
+                  (realRectToCMatrix (rectMatMul A hB.rightInverse)) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+            complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B hB.rightInverse APplus))) *
+              (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+          (eps * frobNormRect A) * vecNorm2 y +
+          eps * vecNorm2 b) ≤
+        eps * vecNorm2 (lsResidualHigham A b x))
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A APplus ≤
+        theorem20_8KappaB A APplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          APplus (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            APplus (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hDeltaGQRFrob :
+      frobNormRect
+        (fun i j =>
+          gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q i j -
+            gqrAQ2Block A h.Q i j)
+        ≤ eps * complexMatrixOp2 (realRectToCMatrix (gqrAQ2Block A h.Q)) :=
+    h.gqrAQ2Block_delta_frobNorm_le_of_same_Q hpert hQsame hDeltaAFrob
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_gqrQ2_reducedGram_BAplus_residual_gap_concreteAredNorms_of_reduced_frob_delta_autoAredPlusPos_of_eps_lt_inv_kappaB_eps_nonneg
+      A DeltaA b Deltab hB DeltaB APplus d Deltad hpert x y hApos
+      hbpos hBpos hdpos hxpos hyx hrpos hmax hMP hBAPt hstack hstackPert
+      hx hy hkappa hepsSmall hDeltaGQRFrob hgapScale hbracket
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact-MGS A-side bridge:
     the source null-intersection condition supplies every nonzero-stage
