@@ -46930,6 +46930,134 @@ theorem GeneralizedQRFactorization.A_Q2_reduced_gram_left_inverse_and_projection
     (gqrAQ2Block A h.Q)
     (h.A_Q2_rectMatMulVec_injective_of_stackedFullColumnRank hstack)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    GQR-specialized nullspace-Wedin handoff.  Choosing the nullspace bases as
+    the concrete trailing `Q₂` columns of supplied source and perturbed GQR
+    factorizations discharges the raw nullspace-basis and reduced
+    Gram-pseudoinverse fields in the source-facing `kappa_B(A)` wrapper.
+
+    The residual-relative estimate, reduced GQR trailing-block perturbation
+    budget, `kappa_B` identity, smallness condition, and scalar bracket
+    inequality remain explicit source obligations. -/
+theorem
+    GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_gqrQ2_reducedGram_source_residual_relative_kappaB_eps_nonneg
+    {r p k : ℕ}
+    (A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ)
+    (b Deltab : Fin (r + (k + 1)) → ℝ)
+    {B : Fin p → Fin (p + (k + 1)) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + (k + 1)) → ℝ)
+    (APplus : Fin (p + (k + 1)) → Fin (r + (k + 1)) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (h : GeneralizedQRFactorization r p (k + 1) A B)
+    (hpert : GeneralizedQRFactorization r p (k + 1)
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (x y : Fin (p + (k + 1)) → ℝ)
+    {AredPlus_norm eps Ared_norm : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hyx : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hMP :
+      RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
+        (theorem20_8AP A B hB.rightInverse) APplus)
+    (hBAPt :
+      rectMatMul B (finiteTranspose (theorem20_8AP A B hB.rightInverse)) =
+        (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0))
+    (hstack : LSEStackedFullColumnRank A B)
+    (hstackPert : LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j))
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hAredPlus_pos : 0 < AredPlus_norm)
+    (hkappa : theorem20_8KappaB A APplus = AredPlus_norm * Ared_norm)
+    (hsmall : theorem20_8KappaB A APplus * eps < 1)
+    (hAredPlus :
+      rectOpNorm2Le (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
+        AredPlus_norm)
+    (hDeltaGQR :
+      rectOpNorm2Le
+        (fun i j =>
+          gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q i j -
+            gqrAQ2Block A h.Q i j) (eps * Ared_norm))
+    (hres_relative :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) /
+          vecNorm2 (lsResidualHigham A b x) ≤
+        eps)
+    (hbracket :
+      1 + 2 * theorem20_8KappaB A APplus ≤
+        theorem20_8KappaB A APplus *
+          ((frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B hB.rightInverse APplus))) +
+            1)) :
+    vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) / vecNorm2 x ≤
+      eps * theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+          APplus (theorem20_8BAplus A B hB.rightInverse APplus) +
+        eps ^ 2 *
+          theorem20_8FirstOrderRHS A b B d x (lsResidualHigham A b x)
+            APplus (theorem20_8BAplus A B hB.rightInverse APplus) *
+          (complexMatrixOp2
+              (realRectToCMatrix (theorem20_8BAplus A B hB.rightInverse APplus)) *
+              frobNormRect B +
+            complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
+  have hm : 0 < r + (k + 1) := by omega
+  have hredA := h.A_Q2_reduced_gram_left_inverse_and_projection_symmetric hstack
+  have hredB := hpert.A_Q2_reduced_gram_left_inverse_and_projection_symmetric hstackPert
+  have hleftA :
+      rectMatMul (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
+          (rectMatMul A h.Q2Basis) =
+        idMatrix (k + 1) := by
+    simpa [GeneralizedQRFactorization.A_mul_Q2Basis] using hredA.1
+  have hleftB :
+      rectMatMul
+          (lsAplusOfGramNonsingInv
+            (gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q))
+          (rectMatMul (fun i j => A i j + DeltaA i j) hpert.Q2Basis) =
+        idMatrix (k + 1) := by
+    simpa [GeneralizedQRFactorization.A_mul_Q2Basis] using hredB.1
+  have hSymA :
+      IsSymmetricFiniteMatrix
+        (rectMatMul (rectMatMul A h.Q2Basis)
+          (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))) := by
+    simpa [GeneralizedQRFactorization.A_mul_Q2Basis] using hredA.2
+  have hSymB :
+      IsSymmetricFiniteMatrix
+        (rectMatMul
+          (rectMatMul (fun i j => A i j + DeltaA i j) hpert.Q2Basis)
+          (lsAplusOfGramNonsingInv
+            (gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q))) := by
+    simpa [GeneralizedQRFactorization.A_mul_Q2Basis] using hredB.2
+  have hDelta :
+      rectOpNorm2Le
+        (fun i j =>
+          rectMatMul (fun i j => A i j + DeltaA i j) hpert.Q2Basis i j -
+            rectMatMul A h.Q2Basis i j) (eps * Ared_norm) :=
+    h.rectOpNorm2Le_reduced_delta_of_gqrAQ2Block hpert hDeltaGQR
+  exact
+    LSEFullRowRank.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_nullspace_reduced_wedinResidualRHS_kappaB_bracket_MP_transpose_range_lseStackedFullColumnRank_source_residual_relative_kappaB_eps_nonneg
+      hm A DeltaA b Deltab hB DeltaB APplus d Deltad h.Q2Basis
+      hpert.Q2Basis (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
+      (lsAplusOfGramNonsingInv
+        (gqrAQ2Block (fun i j => A i j + DeltaA i j) hpert.Q))
+      x y hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hMP hBAPt hstack
+      hx hy h.Q2Basis_nullspace hpert.Q2Basis_nullspace hAredPlus_pos
+      hkappa hsmall hAredPlus hDelta hres_relative hleftA hleftB hSymA
+      hSymB hbracket
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact-MGS A-side bridge:
     the source null-intersection condition supplies every nonzero-stage
     normalizer needed for exact MGS applied to the smaller `A Q₂` block. -/
