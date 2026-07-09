@@ -8909,6 +8909,126 @@ theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_pathFirstTrailing_two_l
       k step t hstep ΔA hEsupp j
   rw [hrow, zero_mul]
 
+/-- A finite path sum splits into branches up to `t` and branches strictly
+after `t`. -/
+theorem higham11_7_fin_sum_eq_prefix_add_later
+    (k : ℕ) (t : Fin k) (F : Fin k → ℝ) :
+    (∑ u : Fin k, F u) =
+      (∑ u ∈ Finset.univ.filter (fun u : Fin k => u.val ≤ t.val), F u) +
+        (∑ u ∈ Finset.univ.filter (fun u : Fin k => t.val < u.val), F u) := by
+  classical
+  have hsplit := Finset.sum_filter_add_sum_filter_not
+    (Finset.univ : Finset (Fin k)) (fun u : Fin k => u.val ≤ t.val) F
+  rw [← hsplit]
+  congr 1
+  apply Finset.sum_congr
+  · ext u
+    simp [not_le]
+  · intro u _hu
+    rfl
+
+/-- On the first-trailing row of a `1 × 1` branch, the all-branch lifted
+dot product equals the prefix-only lifted dot product. -/
+theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_pathFirstTrailing_one_full_rows_dot_eq_prefix_sum
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.one)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hEsupp : ∀ u : Fin k,
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u))
+        (higham11_7_tridiagonalBranchSupportOffset (step u)) (ΔA u))
+    (x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ) :
+    (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      ((∑ u : Fin k,
+        higham11_7_tridiagonalLiftLocalBlockPerturbation
+          (higham11_7_tridiagonalPathPivotSpan k step + 1)
+          (higham11_7_tridiagonalPathPrefixSpan k step u)
+          (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step u) (step u)) (ΔA u)
+          (higham11_7_tridiagonalPathFirstTrailingIndex_one k step t hstep) j) *
+        x_hat j)) =
+      (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        ((∑ u ∈ Finset.univ.filter (fun u : Fin k => u.val ≤ t.val),
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step u)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step u) (step u)) (ΔA u)
+            (higham11_7_tridiagonalPathFirstTrailingIndex_one k step t hstep) j) *
+          x_hat j)) := by
+  classical
+  apply Finset.sum_congr rfl
+  intro j _hj
+  have hsplit :=
+    higham11_7_fin_sum_eq_prefix_add_later k t
+      (fun u : Fin k =>
+        higham11_7_tridiagonalLiftLocalBlockPerturbation
+          (higham11_7_tridiagonalPathPivotSpan k step + 1)
+          (higham11_7_tridiagonalPathPrefixSpan k step u)
+          (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step u) (step u)) (ΔA u)
+          (higham11_7_tridiagonalPathFirstTrailingIndex_one k step t hstep) j)
+  have hlater :=
+    higham11_7_tridiagonalLiftLocalBlockPerturbation_pathFirstTrailing_one_later_rows_sum_zero
+      k step t hstep ΔA hEsupp j
+  rw [hsplit, hlater, add_zero]
+
+/-- On the first-trailing row of a `2 × 2` branch, the all-branch lifted
+dot product equals the prefix-only lifted dot product. -/
+theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_pathFirstTrailing_two_full_rows_dot_eq_prefix_sum
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.two)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hEsupp : ∀ u : Fin k,
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u))
+        (higham11_7_tridiagonalBranchSupportOffset (step u)) (ΔA u))
+    (x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ) :
+    (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      ((∑ u : Fin k,
+        higham11_7_tridiagonalLiftLocalBlockPerturbation
+          (higham11_7_tridiagonalPathPivotSpan k step + 1)
+          (higham11_7_tridiagonalPathPrefixSpan k step u)
+          (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step u) (step u)) (ΔA u)
+          (higham11_7_tridiagonalPathFirstTrailingIndex_two k step t hstep) j) *
+        x_hat j)) =
+      (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        ((∑ u ∈ Finset.univ.filter (fun u : Fin k => u.val ≤ t.val),
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step u)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step u) (step u)) (ΔA u)
+            (higham11_7_tridiagonalPathFirstTrailingIndex_two k step t hstep) j) *
+          x_hat j)) := by
+  classical
+  apply Finset.sum_congr rfl
+  intro j _hj
+  have hsplit :=
+    higham11_7_fin_sum_eq_prefix_add_later k t
+      (fun u : Fin k =>
+        higham11_7_tridiagonalLiftLocalBlockPerturbation
+          (higham11_7_tridiagonalPathPivotSpan k step + 1)
+          (higham11_7_tridiagonalPathPrefixSpan k step u)
+          (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step u) (step u)) (ΔA u)
+          (higham11_7_tridiagonalPathFirstTrailingIndex_two k step t hstep) j)
+  have hlater :=
+    higham11_7_tridiagonalLiftLocalBlockPerturbation_pathFirstTrailing_two_later_rows_sum_zero
+      k step t hstep ΔA hEsupp j
+  rw [hsplit, hlater, add_zero]
+
 /-- **Theorem 11.7 local-to-ambient branch lift package**.  A local branch
 perturbation with a componentwise bound and zero-prefix support can be embedded
 into a shared ambient matrix at offset `start`, preserving the bound, shifting
