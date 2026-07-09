@@ -107,6 +107,9 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.8 factorization + solve-chain source wrapper | `higham11_8_aasen_source_backward_error_of_factor_and_solve_residuals`, `higham11_8_fl_aasen_factor_solve_source_backward_error` | Ch11 | **new this session**; combines a factorization residual `A_fact−A` with a solve-chain residual `ΔS` into one source perturbation `ΔA`, then instantiates this for rounded Aasen solves with computed factors `L̂,T̂`, yielding `(A+ΔA)ŵ=Pᵀb` with componentwise budget `B_factor+B_solve` |
 | §11.2 Aasen solve chain eq (11.15), exact unpermuted algebra | `higham11_15_aasenSolveChain_identity_solve_of_product` | Ch11 | **new this session**; if `A = L T Lᵀ` and the exact chain `Lz=b`, `Ty=z`, `Lᵀw=y`, `x=w` holds (identity permutation), then `A x = b`; this is the algebraic base for later rounded solve-chain perturbation |
 | Thm 11.8 norm bridge: componentwise perturbation ⇒ `∞`-norm bound | `higham11_8_infNorm_le_card_mul_of_uniform_componentwise_bound`, `higham11_8_aasenNormwiseBackwardBound_of_uniform_componentwise_bound`, `higham11_8_infNorm_le_mul_of_componentwise_T_bound`, `higham11_8_infNorm_T_hat_sub_T_le_mul_of_relative_error`, `higham11_8_infNorm_scaled_abs_T_hat_le`, `higham11_8_abs_T_le_one_plus_gamma_T_hat_of_relative_error`, `higham11_8_infNorm_T_le_one_plus_gamma_T_hat_of_relative_error`, `higham11_8_infNorm_factor_le_of_relative_entry_bound`, `higham11_8_infNorm_factorTranspose_le_of_relative_entry_bound`, `higham11_8_aasenNormwiseBackwardBound_of_componentwise_T_bound`, `higham11_8_componentwise_T_bound_add_of_parts`, `higham11_8_aasenNormwiseBackwardBound_of_aasenChainDeltaABound`, `higham11_8_aasenNormwiseBackwardBound_of_aasenChainDeltaABound_coeff_le` | Ch11 | **new this session**; if `|ΔAᵢⱼ| ≤ β`, then `‖ΔA‖∞ ≤ nβ`; if `|ΔAᵢⱼ| ≤ η|T̂ᵢⱼ|`, then `‖ΔA‖∞ ≤ η‖T̂‖∞`; a supplied source-style `|T̂−T|≤γ|T̂|` now directly yields both `‖T̂−T‖∞≤γ‖T̂‖∞` and the concrete envelope norm `‖γ|T̂|‖∞≤γ‖T̂‖∞`, while the exact factor itself gets only the weaker entrywise/norm consequences `|Tᵢⱼ|≤(1+γ)|T̂ᵢⱼ|` and `‖T‖∞≤(1+γ)‖T̂‖∞`; relative factor perturbations `|L_hat-L|≤γ|L|` give `(1+γ)` bounds for `L_hat` and its transpose; all bridge into the printed `(n−1)^2γ_{15n+25}‖T̂‖∞` target once the scalar budget is available; the closed solve-chain budget `higham11_15_aasenChainDeltaABound` now feeds the same printed normwise predicate under an entrywise comparison to `η|T̂|`; the splitter combines separate factorization and solve-chain entrywise comparisons `η_factor|T̂|` and `η_solve|T̂|` when `η_factor+η_solve≤η`; the coefficient adapter accepts `η ≤ (n−1)^2γ_{15n+25}` and multiplies by `‖T̂‖∞` internally |
+| Thm 11.8 zero-relative `T_hat` cap | `higham11_8_abs_T_le_T_hat_of_zero_relative_error`, `higham11_8_infNorm_T_le_T_hat_of_zero_relative_error` | Ch11 | **new this session**; specializes the relative `|T̂−T|≤γ|T̂|` diagnostics at `γ=0`, recovering the coefficient-one entrywise and `∞`-norm exact-`T` caps required by exact middle-matrix routes when the computed and exact tridiagonal factors coincide componentwise. |
+| Thm 11.8 zero-relative `T_hat` source-constant endpoint | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_constants_of_zero_relative_T_hat` | Ch11 | **new this session**; specializes the supplied exact-radius source-constant route so a zero relative `T_hat - T` comparison supplies both the `γ_n` factorization budget and the direct `‖T‖∞≤‖T_hat‖∞` cap, removing two separate middle-factor handoffs from that endpoint. |
+| Thm 11.8 zero-relative `T_hat` supplied checkerboard endpoint | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_zero_relative_T_hat_checkerboard_middle` | Ch11 | **new this session**; specializes the supplied checkerboard-middle route with relative exact outer-factor caps so the zero relative `T_hat - T` comparison supplies both the concrete `γ_n` middle-factor budget and the direct exact-`T` norm cap. |
 | Thm 11.8 Aasen outer-factor row/column and entrywise majorant bridge | `higham11_8_relative_infNorm_cap_of_row_sum_majorant`, `higham11_8_relative_outer_factor_caps_of_row_col_sum_majorants`, `higham11_8_relative_outer_factor_caps_of_entrywise_majorant`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_componentwise_T_checkerboard_middle`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_T_norm_cap_checkerboard_middle` | Ch11 | **new this session**; unscaled row and column sum majorants for the exact Aasen outer factor `L`, together with scalar comparisons `(1+γ)κ≤cap`, now feed the relative `∞`-norm caps for both `L` and `Lᵀ` required by the exact-radius source-prefix wrappers. A uniform entrywise majorant now automatically supplies both row and column majorants via row/column sums, and the source-prefix checkerboard-middle endpoints consume that entrywise majorant directly for either entrywise `|T|≤|T̂|` or supplied `‖T‖∞≤‖T̂‖∞`. This reduces the remaining source/product-size work to proving the actual row/column or entrywise majorants and scalar scale comparisons for the concrete Aasen factor. |
 | Thm 11.8 solve-chain source + normwise wrapper | `higham11_8_fl_aasen_solve_chain_source_normwise_backward_error` | Ch11 | **new this session**; packages the rounded Aasen solve-chain source equation `(A+ΔA)ŵ=Pᵀb` with the printed normwise predicate once the closed chain budget is compared entrywise to `η|T̂|` and the scalar `(n−1)^2γ_{15n+25}` budget is supplied |
 | Thm 11.8 primitive relative gamma-share source wrappers | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_factor_norm_bounds_gamma_parts`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_factor_norm_bounds_gamma_parts` | Ch11 | **new this session**; lifts the four-share `(n−1)^2γ_{15n+25}` coefficient interface from the scalar relative-factor reducer to the rounded source wrappers, both when the relative `L_hat` perturbation is supplied and when it is generated from the source-prefix rounded recurrence model |
@@ -233,6 +236,21 @@ direct `‖T‖∞≤‖T_hat‖∞` or entrywise `|T|≤|T_hat|` fact.
 Equivalently, the relative comparison alone gives only the new diagnostic
 `|Tᵢⱼ|≤(1+κBT)|T_hatᵢⱼ|` entrywise cap and its `(1+κBT)` norm consequence,
 not the coefficient-one exact middle-factor cap.
+A later 2026-07-09 increment adds the zero-radius specializations
+`higham11_8_abs_T_le_T_hat_of_zero_relative_error` and
+`higham11_8_infNorm_T_le_T_hat_of_zero_relative_error`, so if the relative
+`T_hat` comparison is supplied with radius `0`, the coefficient-one exact
+middle-factor entrywise and norm caps are recovered directly.
+The follow-up 2026-07-09 increment adds the supplied exact-radius endpoint
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_constants_of_zero_relative_T_hat`,
+which turns the same zero-relative comparison into both the `γ_n` middle
+factorization budget and the direct exact-`T` norm cap required by the
+source-constant route.
+A later 2026-07-09 increment adds the supplied checkerboard endpoint
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_zero_relative_T_hat_checkerboard_middle`,
+so the same zero-relative handoff now plugs into the route that derives the
+middle product from the checkerboard total-nonnegative LU certificate and the
+outer products from relative factor caps.
 The latest 2026-07-09 increment adds the normalized Aasen-structure source-prefix
 checkerboard endpoints
 `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_componentwise_T_checkerboard_middle`
@@ -1266,6 +1284,28 @@ Problem transcription.
     focused lookup/axiom check of fully-qualified
     `higham11_8_abs_T_le_one_plus_gamma_T_hat_of_relative_error` and
     `higham11_8_infNorm_T_le_one_plus_gamma_T_hat_of_relative_error`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 zero-relative `T_hat` cap increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_abs_T_le_T_hat_of_zero_relative_error` and
+    `higham11_8_infNorm_T_le_T_hat_of_zero_relative_error`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 zero-relative `T_hat` source-constant endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_constants_of_zero_relative_T_hat`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 zero-relative `T_hat` supplied checkerboard endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_zero_relative_T_hat_checkerboard_middle`
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.8 relative `T_hat` scalar budget reducer increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
