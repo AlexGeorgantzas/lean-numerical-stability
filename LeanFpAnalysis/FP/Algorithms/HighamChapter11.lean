@@ -934,6 +934,106 @@ theorem higham11_4_bunchKaufmanProductEntry_nonneg (n : ℕ)
     Finset.sum_nonneg (fun k₂ _ =>
       mul_nonneg (mul_nonneg (abs_nonneg _) (abs_nonneg _)) (abs_nonneg _)))
 
+/-- Entrywise row-sum majorants for `|L̂|`, together with a uniform entry bound
+for `|D̂|`, bound one source product entry of `|L̂||D̂||L̂ᵀ|`.  This is the
+algebraic handoff used when the remaining Theorem 11.4 proof turns pivot-local
+bounds into eq. (4.14)'s product-entry estimate. -/
+theorem higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds (n : ℕ)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n)
+    (Dmax Lrow_i Lrow_j : ℝ) (hDmax : 0 ≤ Dmax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrow_i : (∑ k : Fin n, |L_hat i k|) ≤ Lrow_i)
+    (hrow_j : (∑ k : Fin n, |L_hat j k|) ≤ Lrow_j) :
+    higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+      Lrow_i * Dmax * Lrow_j := by
+  have hLrow_j : 0 ≤ Lrow_j :=
+    (Finset.sum_nonneg (fun k _ => abs_nonneg (L_hat j k))).trans hrow_j
+  unfold higham11_4_bunchKaufmanProductEntry
+  calc
+    ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂|
+        ≤ ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+            |L_hat i k₁| * Dmax * |L_hat j k₂| := by
+          apply Finset.sum_le_sum
+          intro k₁ _
+          apply Finset.sum_le_sum
+          intro k₂ _
+          have hleft :
+              |L_hat i k₁| * |D_hat k₁ k₂| ≤ |L_hat i k₁| * Dmax :=
+            mul_le_mul_of_nonneg_left (hD k₁ k₂) (abs_nonneg (L_hat i k₁))
+          exact mul_le_mul_of_nonneg_right hleft (abs_nonneg (L_hat j k₂))
+    _ ≤ ∑ k₁ : Fin n, |L_hat i k₁| * Dmax * Lrow_j := by
+          apply Finset.sum_le_sum
+          intro k₁ _
+          have hscale : 0 ≤ |L_hat i k₁| * Dmax :=
+            mul_nonneg (abs_nonneg _) hDmax
+          calc
+            ∑ k₂ : Fin n, |L_hat i k₁| * Dmax * |L_hat j k₂|
+                = (|L_hat i k₁| * Dmax) * ∑ k₂ : Fin n, |L_hat j k₂| := by
+                  rw [Finset.mul_sum]
+            _ ≤ (|L_hat i k₁| * Dmax) * Lrow_j :=
+                mul_le_mul_of_nonneg_left hrow_j hscale
+            _ = |L_hat i k₁| * Dmax * Lrow_j := by ring
+    _ = (∑ k₁ : Fin n, |L_hat i k₁|) * Dmax * Lrow_j := by
+          rw [← Finset.sum_mul]
+          rw [← Finset.sum_mul]
+    _ ≤ Lrow_i * Dmax * Lrow_j := by
+          have hscale : 0 ≤ Dmax * Lrow_j := mul_nonneg hDmax hLrow_j
+          calc
+            (∑ k₁ : Fin n, |L_hat i k₁|) * Dmax * Lrow_j
+                = (∑ k₁ : Fin n, |L_hat i k₁|) * (Dmax * Lrow_j) := by ring
+            _ ≤ Lrow_i * (Dmax * Lrow_j) :=
+                mul_le_mul_of_nonneg_right hrow_i hscale
+            _ = Lrow_i * Dmax * Lrow_j := by ring
+
+/-- Uniform row-sum specialization of
+`higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds`. -/
+theorem higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound (n : ℕ)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n)
+    (Dmax Lrow : ℝ) (hDmax : 0 ≤ Dmax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow) :
+    higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+      Lrow * Dmax * Lrow :=
+  higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds n L_hat D_hat i j
+    Dmax Lrow Lrow hDmax hD (hrows i) (hrows j)
+
+/-- Uniform entry bounds for `|L̂|` imply the row-sum caps consumed by the
+Theorem 11.4 product-entry bridge. -/
+theorem higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound (n : ℕ)
+    (L_hat : Fin n → Fin n → ℝ) (Lmax : ℝ)
+    (hL : ∀ i k : Fin n, |L_hat i k| ≤ Lmax) (i : Fin n) :
+    (∑ k : Fin n, |L_hat i k|) ≤ (n : ℝ) * Lmax := by
+  calc
+    (∑ k : Fin n, |L_hat i k|)
+        ≤ ∑ _k : Fin n, Lmax := by
+          exact Finset.sum_le_sum (fun k _ => hL i k)
+    _ = (n : ℝ) * Lmax := by
+          simp
+
+/-- A uniform absolute entry bound over a nonempty matrix supplies
+nonnegativity of the bound. -/
+theorem higham11_4_nonneg_of_uniform_abs_entry_bound (n : ℕ) (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (κ : ℝ)
+    (hentry : ∀ i j : Fin n, |M i j| ≤ κ) :
+    0 ≤ κ :=
+  (abs_nonneg (M ⟨0, hn⟩ ⟨0, hn⟩)).trans
+    (hentry ⟨0, hn⟩ ⟨0, hn⟩)
+
+/-- Uniform entry caps for `|L̂|` and `|D̂|` bound a source product entry of
+`|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_bunchKaufmanProductEntry_le_uniform_entry_bounds (n : ℕ)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n)
+    (Dmax Lmax : ℝ) (hDmax : 0 ≤ Dmax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax) :
+    higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+      ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) :=
+  higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound n L_hat D_hat i j
+    Dmax ((n : ℝ) * Lmax) hDmax hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+
 /-- **Theorem 11.4 max-entry norm target**: the finite max-entry norm of
 `|L̂||D̂||L̂ᵀ|`, written as a finite supremum over entry pairs.  The positive
 dimension hypothesis supplies the nonempty finite set for `Finset.sup'`. -/
@@ -1042,6 +1142,52 @@ theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_absLDLTProduct_entries
         = higham11_4_absLDLTProduct n L_hat D_hat i j := abs_of_nonneg hnonneg
     _ ≤ B := hentries i j
 
+/-- Each matrix-product entry of `|L̂||D̂||L̂ᵀ|` is bounded by the specialized
+source max-entry norm. -/
+theorem higham11_4_absLDLTProduct_entry_le_maxEntryNorm (n : ℕ) (hn : 0 < n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n) :
+    higham11_4_absLDLTProduct n L_hat D_hat i j ≤
+      maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) := by
+  have hnonneg : 0 ≤ higham11_4_absLDLTProduct n L_hat D_hat i j := by
+    rw [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
+    exact higham11_4_bunchKaufmanProductEntry_nonneg n L_hat D_hat i j
+  calc
+    higham11_4_absLDLTProduct n L_hat D_hat i j
+        = |higham11_4_absLDLTProduct n L_hat D_hat i j| := by
+          rw [abs_of_nonneg hnonneg]
+    _ ≤ maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) :=
+        entry_le_maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) i j
+
+/-- For the nonnegative product matrix `|L̂||D̂||L̂ᵀ|`, the max-entry norm
+bound is equivalent to the pointwise source product-entry bounds. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_iff (n : ℕ) (hn : 0 < n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (B : ℝ) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤ B ↔
+      ∀ i j : Fin n, higham11_4_absLDLTProduct n L_hat D_hat i j ≤ B := by
+  constructor
+  · intro hB i j
+    exact
+      (higham11_4_absLDLTProduct_entry_le_maxEntryNorm n hn L_hat D_hat i j).trans hB
+  · intro hentries
+    exact
+      higham11_4_maxEntryNorm_absLDLTProduct_le_of_absLDLTProduct_entries
+        n hn L_hat D_hat B hentries
+
+/-- Expanded double-sum form of
+`higham11_4_maxEntryNorm_absLDLTProduct_le_iff`. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_iff_product_entries
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ) (B : ℝ) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤ B ↔
+      ∀ i j : Fin n, higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ B := by
+  rw [higham11_4_maxEntryNorm_absLDLTProduct_le_iff n hn L_hat D_hat B]
+  constructor
+  · intro hentries i j
+    simpa [higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
+      using hentries i j
+  · intro hentries i j
+    simpa [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
+      using hentries i j
+
 /-- Pointwise expanded double-sum estimates package directly into the
 source-style max-entry norm estimate for `|L̂||D̂||L̂ᵀ|`. -/
 theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_product_entries
@@ -1053,6 +1199,35 @@ theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_product_entries
     n hn L_hat D_hat B (fun i j => by
       simpa [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct n L_hat D_hat i j]
         using hentries i j)
+
+/-- Uniform row-sum and `D̂` entry caps package into the source max-entry norm
+target for `|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lrow B : ℝ) (hDmax : 0 ≤ Dmax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow)
+    (hB : Lrow * Dmax * Lrow ≤ B) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤ B :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_product_entries
+    n hn L_hat D_hat B (fun i j =>
+      (higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound
+        n L_hat D_hat i j Dmax Lrow hDmax hD hrows).trans hB)
+
+/-- Uniform entry caps for `|L̂|` and `|D̂|` package into the source max-entry
+norm target for `|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_entry_bounds
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lmax B : ℝ) (hDmax : 0 ≤ Dmax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hB : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ B) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤ B :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound
+    n hn L_hat D_hat Dmax ((n : ℝ) * Lmax) B hDmax hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+    hB
 
 /-- Pointwise product-entry estimates package into the scalar max-entry product
 certificate used in Theorem 11.4. -/
@@ -1092,6 +1267,74 @@ theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_maxEntryNorm_absLDLTProdu
   simpa [higham11_4_bunchKaufmanMaxEntryProductBound,
     higham11_4_bunchKaufmanProductMax_eq_maxEntryNorm_absLDLTProduct n hn L_hat D_hat]
     using hproduct
+
+/-- Uniform row-sum and `D̂` entry caps package directly into the scalar
+max-entry product certificate used by the Theorem 11.4 stability and solve
+consumers. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_uniform_row_sum_bound
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lrow ρ_n Amax : ℝ) (hDmax : 0 ≤ Dmax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow)
+    (hbudget : Lrow * Dmax * Lrow ≤ 36 * (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_maxEntryNorm_absLDLTProduct
+    n hn L_hat D_hat ρ_n Amax
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound
+      n hn L_hat D_hat Dmax Lrow (36 * (n : ℝ) * ρ_n * Amax)
+      hDmax hD hrows hbudget)
+
+/-- Uniform entry caps for `|L̂|` and `|D̂|` package directly into the scalar
+max-entry product certificate used by the Theorem 11.4 stability and solve
+consumers. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_uniform_entry_bounds
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lmax ρ_n Amax : ℝ) (hDmax : 0 ≤ Dmax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hbudget :
+      ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤
+        36 * (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_maxEntryNorm_absLDLTProduct
+    n hn L_hat D_hat ρ_n Amax
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_entry_bounds
+      n hn L_hat D_hat Dmax Lmax (36 * (n : ℝ) * ρ_n * Amax)
+      hDmax hD hL hbudget)
+
+/-- Uniform row-sum and `D̂` entry caps package into the scalar product
+certificate, deriving `0≤Dmax` from the absolute entry cap itself. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_uniform_row_sum_bound_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lrow ρ_n Amax : ℝ)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow)
+    (hbudget : Lrow * Dmax * Lrow ≤ 36 * (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_uniform_row_sum_bound
+    n hn L_hat D_hat Dmax Lrow ρ_n Amax
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hD hrows hbudget
+
+/-- Uniform entry caps for `|L̂|` and `|D̂|` package into the scalar product
+certificate, deriving `0≤Dmax` from the `D̂` entry cap itself. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_uniform_entry_bounds_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lmax ρ_n Amax : ℝ)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hbudget :
+      ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤
+        36 * (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_uniform_entry_bounds
+    n hn L_hat D_hat Dmax Lmax ρ_n Amax
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hD hL hbudget
 
 /-- **Theorem 11.4 constant (Higham [608, 1997], eq (4.13))**: the `36` in the
 bound `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36 n ρₙ ‖A‖_M` comes from
@@ -1135,6 +1378,142 @@ theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_entries
       mul_le_mul_of_nonneg_right hC htail_nonneg
     _ = 36 * (n : ℝ) * ρ_n * Amax := by ring
 
+/-- Uniform row-sum and `D̂` entry caps that reach Higham's exact coefficient
+feed the source-facing `36nρₙ` max-entry norm target for `|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lrow ρ_n Amax : ℝ) (hDmax : 0 ≤ Dmax)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow)
+    (hbudget :
+      Lrow * Dmax * Lrow ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_entries
+    n hn L_hat D_hat ρ_n Amax hρ hAmax (fun i j => by
+      rw [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct]
+      exact
+        (higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound
+          n L_hat D_hat i j Dmax Lrow hDmax hD hrows).trans hbudget)
+
+/-- Uniform entry caps for `|L̂|` and `|D̂|` that reach Higham's exact
+coefficient feed the source-facing `36nρₙ` max-entry norm target for
+`|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lmax ρ_n Amax : ℝ) (hDmax : 0 ≤ Dmax)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hbudget :
+      ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound
+    n hn L_hat D_hat Dmax ((n : ℝ) * Lmax) ρ_n Amax hDmax hρ
+    hAmax hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+    hbudget
+
+/-- Per-row row-sum caps for `|L̂|`, rather than a single uniform row cap, are
+enough to feed Higham [608, 1997], eq. (4.14)'s exact-coefficient max-entry
+target for `|L̂||D̂||L̂ᵀ|`.  This keeps the remaining pivot-path proof free to
+derive row-dependent majorants before any final uniformization. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax : ℝ) (Lrow : Fin n → ℝ) (ρ_n Amax : ℝ) (hDmax : 0 ≤ Dmax)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow r)
+    (hbudget : ∀ i j : Fin n,
+      Lrow i * Dmax * Lrow j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_entries
+    n hn L_hat D_hat ρ_n Amax hρ hAmax (fun i j => by
+      rw [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct]
+      exact
+        (higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds
+          n L_hat D_hat i j Dmax (Lrow i) (Lrow j) hDmax hD
+          (hrows i) (hrows j)).trans (hbudget i j))
+
+/-- Exact-coefficient uniform row-sum and `D̂` entry caps feed the max-entry
+norm target, deriving `0≤Dmax` from the absolute `D̂` entry cap. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lrow ρ_n Amax : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow)
+    (hbudget :
+      Lrow * Dmax * Lrow ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound
+    n hn L_hat D_hat Dmax Lrow ρ_n Amax
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hρ hAmax hD hrows hbudget
+
+/-- Exact-coefficient uniform entry caps feed the max-entry norm target,
+deriving `0≤Dmax` from the absolute `D̂` entry cap. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lmax ρ_n Amax : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hbudget :
+      ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds
+    n hn L_hat D_hat Dmax Lmax ρ_n Amax
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hρ hAmax hD hL hbudget
+
+/-- Exact-coefficient per-row row-sum caps feed the max-entry norm target,
+deriving `0≤Dmax` from the absolute `D̂` entry cap. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax : ℝ) (Lrow : Fin n → ℝ) (ρ_n Amax : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow r)
+    (hbudget : ∀ i j : Fin n,
+      Lrow i * Dmax * Lrow j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds
+    n hn L_hat D_hat Dmax Lrow ρ_n Amax
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hρ hAmax hD hrows hbudget
+
 /-- Exact-coefficient pointwise estimates package directly into the scalar
 max-entry product certificate used by the Bunch-Kaufman consumers. -/
 theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_absLDLTProduct_entries
@@ -1170,6 +1549,366 @@ theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_product_entr
     n hn L_hat D_hat ρ_n Amax hρ hAmax (fun i j => by
       rw [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct]
       exact hentries i j)
+
+/-- Uniform row-sum and `D̂` entry caps that reach Higham's exact coefficient
+package directly into the scalar product certificate consumed by the 11.4
+stability and solve wrappers. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_row_sum_bound
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lrow ρ_n Amax : ℝ) (hDmax : 0 ≤ Dmax)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow)
+    (hbudget :
+      Lrow * Dmax * Lrow ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_maxEntryNorm_absLDLTProduct
+    n hn L_hat D_hat ρ_n Amax
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound
+      n hn L_hat D_hat Dmax Lrow ρ_n Amax hDmax hρ hAmax hD hrows hbudget)
+
+/-- Uniform entry caps for `|L̂|` and `|D̂|` that reach Higham's exact
+coefficient package directly into the scalar product certificate consumed by
+the 11.4 stability and solve wrappers. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_entry_bounds
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lmax ρ_n Amax : ℝ) (hDmax : 0 ≤ Dmax)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hbudget :
+      ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_maxEntryNorm_absLDLTProduct
+    n hn L_hat D_hat ρ_n Amax
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds
+      n hn L_hat D_hat Dmax Lmax ρ_n Amax hDmax hρ hAmax hD hL hbudget)
+
+/-- Per-row row-sum caps package directly into the scalar product certificate
+consumed by the Theorem 11.4 stability and solve wrappers. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_row_sum_bounds
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax : ℝ) (Lrow : Fin n → ℝ) (ρ_n Amax : ℝ) (hDmax : 0 ≤ Dmax)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow r)
+    (hbudget : ∀ i j : Fin n,
+      Lrow i * Dmax * Lrow j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_maxEntryNorm_absLDLTProduct
+    n hn L_hat D_hat ρ_n Amax
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds
+      n hn L_hat D_hat Dmax Lrow ρ_n Amax hDmax hρ hAmax hD hrows hbudget)
+
+/-- Exact-coefficient uniform row-sum and `D̂` entry caps package directly into
+the scalar product certificate, deriving `0≤Dmax` from the absolute entry cap. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_row_sum_bound_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lrow ρ_n Amax : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow)
+    (hbudget :
+      Lrow * Dmax * Lrow ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_row_sum_bound
+    n hn L_hat D_hat Dmax Lrow ρ_n Amax
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hρ hAmax hD hrows hbudget
+
+/-- Exact-coefficient uniform entry caps for `|L̂|` and `|D̂|` package directly
+into the scalar product certificate, deriving `0≤Dmax` from the `D̂` cap. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_entry_bounds_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lmax ρ_n Amax : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hbudget :
+      ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_entry_bounds
+    n hn L_hat D_hat Dmax Lmax ρ_n Amax
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hρ hAmax hD hL hbudget
+
+/-- Exact-coefficient per-row row-sum caps package directly into the scalar
+product certificate, deriving `0≤Dmax` from the `D̂` entry cap. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_row_sum_bounds_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax : ℝ) (Lrow : Fin n → ℝ) (ρ_n Amax : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow r)
+    (hbudget : ∀ i j : Fin n,
+      Lrow i * Dmax * Lrow j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_row_sum_bounds
+    n hn L_hat D_hat Dmax Lrow ρ_n Amax
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hρ hAmax hD hrows hbudget
+
+/-- **Theorem 11.4 block-recursion scalar handoff** (Higham [608, 1997],
+eqs. (4.11)--(4.14)): a first-stage contribution bounded by one
+`36ρₙ‖A‖_M` share, plus a recursive Schur-complement contribution bounded by
+`36(n-s)ρₙ‖A‖_M`, fits inside the printed `36nρₙ‖A‖_M` product budget. -/
+theorem higham11_4_first_stage_recursive_product_bound
+    (n s : ℕ) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (ρ_n Amax localB recB : ℝ) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal : localB ≤ 36 * ρ_n * Amax)
+    (hrec : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax) :
+    localB + recB ≤ 36 * (n : ℝ) * ρ_n * Amax := by
+  let q : ℝ := 36 * ρ_n * Amax
+  have hq : 0 ≤ q := by
+    dsimp [q]
+    exact mul_nonneg (mul_nonneg (by norm_num : (0 : ℝ) ≤ 36) hρ) hAmax
+  have hrec' : recB ≤ ((n - s : ℕ) : ℝ) * q := by
+    calc
+      recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax := hrec
+      _ = ((n - s : ℕ) : ℝ) * q := by ring
+  have hcoef_nat : 1 + (n - s) ≤ n := by omega
+  have hcoef : (1 : ℝ) + ((n - s : ℕ) : ℝ) ≤ (n : ℝ) := by
+    exact_mod_cast hcoef_nat
+  calc
+    localB + recB
+        ≤ q + ((n - s : ℕ) : ℝ) * q := by
+          exact add_le_add (by simpa [q] using hlocal) hrec'
+    _ = (1 + ((n - s : ℕ) : ℝ)) * q := by ring
+    _ ≤ (n : ℝ) * q := mul_le_mul_of_nonneg_right hcoef hq
+    _ = 36 * (n : ℝ) * ρ_n * Amax := by ring
+
+/-- **Theorem 11.4 block-recursion entry handoff**: if entries touching the
+first pivot block are bounded by the local Higham [608, 1997] first-stage
+budget, while trailing entries split into the same local share plus a recursive
+Schur-complement share, then all source product entries satisfy the printed
+`36nρₙ‖A‖_M` estimate. -/
+theorem higham11_4_product_entries_of_first_stage_recursive_bounds
+    (n s : ℕ) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget : localB ≤ 36 * ρ_n * Amax)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB)
+    (htrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB + recB) :
+    ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) * ρ_n * Amax := by
+  have hzero_rec :
+      (0 : ℝ) ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax := by
+    have h36n : 0 ≤ 36 * ((n - s : ℕ) : ℝ) :=
+      mul_nonneg (by norm_num : (0 : ℝ) ≤ 36) (Nat.cast_nonneg _)
+    exact mul_nonneg (mul_nonneg h36n hρ) hAmax
+  have hlocal_final :
+      localB ≤ 36 * (n : ℝ) * ρ_n * Amax := by
+    simpa using
+      higham11_4_first_stage_recursive_product_bound n s hs_pos hs_le
+        ρ_n Amax localB 0 hρ hAmax hlocal_budget hzero_rec
+  have htrail_final :
+      localB + recB ≤ 36 * (n : ℝ) * ρ_n * Amax :=
+    higham11_4_first_stage_recursive_product_bound n s hs_pos hs_le
+      ρ_n Amax localB recB hρ hAmax hlocal_budget hrec_budget
+  intro i j
+  by_cases hi : i.val < s
+  · exact (hfirst i j (Or.inl hi)).trans hlocal_final
+  · by_cases hj : j.val < s
+    · exact (hfirst i j (Or.inr hj)).trans hlocal_final
+    · have hi_ge : s ≤ i.val := by omega
+      have hj_ge : s ≤ j.val := by omega
+      exact (htrail i j hi_ge hj_ge).trans htrail_final
+
+/-- First-stage plus recursive Schur-complement product-entry bounds package
+directly into the scalar max-entry product certificate consumed by the 11.4
+stability and solve wrappers. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget : localB ≤ 36 * ρ_n * Amax)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB)
+    (htrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB + recB) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_product_entries n hn L_hat D_hat
+    ρ_n Amax
+    (higham11_4_product_entries_of_first_stage_recursive_bounds
+      n s hs_pos hs_le L_hat D_hat ρ_n Amax localB recB hρ hAmax
+      hlocal_budget hrec_budget hfirst htrail)
+
+/-- **Theorem 11.4 block-recursion exact-constant handoff**
+(Higham [608, 1997], eqs. (4.11)--(4.14)): if the local first-stage and
+recursive Schur-complement contributions are bounded with Higham's exact
+coefficient `(3+α²)(3+α)/(1−α²)^2`, the proved eq-(4.13) inequality still
+places their sum inside the printed `36nρₙ‖A‖_M` product budget. -/
+theorem higham11_4_first_stage_recursive_product_bound_of_higham_const
+    (n s : ℕ) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (ρ_n Amax localB recB : ℝ) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax) :
+    localB + recB ≤ 36 * (n : ℝ) * ρ_n * Amax := by
+  let C : ℝ :=
+    (3 + higham11_1_bunchParlettAlpha ^ 2) *
+      (3 + higham11_1_bunchParlettAlpha) /
+      (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2
+  have hC : C ≤ 36 := by
+    simpa [C] using higham11_4_bound_const_le_36
+  have hρA : 0 ≤ ρ_n * Amax := mul_nonneg hρ hAmax
+  have hlocal36 : localB ≤ 36 * ρ_n * Amax := by
+    calc
+      localB ≤ C * ρ_n * Amax := by simpa [C] using hlocal
+      _ = C * (ρ_n * Amax) := by ring
+      _ ≤ 36 * (ρ_n * Amax) := mul_le_mul_of_nonneg_right hC hρA
+      _ = 36 * ρ_n * Amax := by ring
+  have htail :
+      0 ≤ ((n - s : ℕ) : ℝ) * ρ_n * Amax :=
+    mul_nonneg (mul_nonneg (Nat.cast_nonneg _) hρ) hAmax
+  have hrec36 : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax := by
+    calc
+      recB ≤ C * ((n - s : ℕ) : ℝ) * ρ_n * Amax := by
+        simpa [C] using hrec
+      _ = C * (((n - s : ℕ) : ℝ) * ρ_n * Amax) := by ring
+      _ ≤ 36 * (((n - s : ℕ) : ℝ) * ρ_n * Amax) :=
+        mul_le_mul_of_nonneg_right hC htail
+      _ = 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax := by ring
+  exact
+    higham11_4_first_stage_recursive_product_bound n s hs_pos hs_le
+      ρ_n Amax localB recB hρ hAmax hlocal36 hrec36
+
+/-- Exact-coefficient first-stage plus recursive Schur-complement product-entry
+bounds imply the printed pointwise `36nρₙ‖A‖_M` estimate for every entry of
+`|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_product_entries_of_first_stage_recursive_higham_const_bounds
+    (n s : ℕ) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB)
+    (htrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB + recB) :
+    ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) * ρ_n * Amax := by
+  let C : ℝ :=
+    (3 + higham11_1_bunchParlettAlpha ^ 2) *
+      (3 + higham11_1_bunchParlettAlpha) /
+      (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2
+  have hC : C ≤ 36 := by
+    simpa [C] using higham11_4_bound_const_le_36
+  have hρA : 0 ≤ ρ_n * Amax := mul_nonneg hρ hAmax
+  have hn_one : (1 : ℝ) ≤ (n : ℝ) := by
+    have hs_one : 1 ≤ s := Nat.succ_le_of_lt hs_pos
+    exact_mod_cast hs_one.trans hs_le
+  have hlocal_final :
+      localB ≤ 36 * (n : ℝ) * ρ_n * Amax := by
+    calc
+      localB ≤ C * ρ_n * Amax := by simpa [C] using hlocal_budget
+      _ = C * (ρ_n * Amax) := by ring
+      _ ≤ 36 * (ρ_n * Amax) := mul_le_mul_of_nonneg_right hC hρA
+      _ = (1 : ℝ) * (36 * ρ_n * Amax) := by ring
+      _ ≤ (n : ℝ) * (36 * ρ_n * Amax) := by
+        have hscale : 0 ≤ 36 * ρ_n * Amax :=
+          mul_nonneg (mul_nonneg (by norm_num : (0 : ℝ) ≤ 36) hρ) hAmax
+        exact mul_le_mul_of_nonneg_right hn_one hscale
+      _ = 36 * (n : ℝ) * ρ_n * Amax := by ring
+  have htrail_final :
+      localB + recB ≤ 36 * (n : ℝ) * ρ_n * Amax :=
+    higham11_4_first_stage_recursive_product_bound_of_higham_const
+      n s hs_pos hs_le ρ_n Amax localB recB hρ hAmax hlocal_budget hrec_budget
+  intro i j
+  by_cases hi : i.val < s
+  · exact (hfirst i j (Or.inl hi)).trans hlocal_final
+  · by_cases hj : j.val < s
+    · exact (hfirst i j (Or.inr hj)).trans hlocal_final
+    · have hi_ge : s ≤ i.val := by omega
+      have hj_ge : s ≤ j.val := by omega
+      exact (htrail i j hi_ge hj_ge).trans htrail_final
+
+/-- Exact-coefficient first-stage plus recursive Schur-complement product-entry
+bounds package directly into the scalar max-entry product certificate consumed
+by the Theorem 11.4 stability and solve wrappers. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB)
+    (htrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB + recB) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_product_entries n hn L_hat D_hat
+    ρ_n Amax
+    (higham11_4_product_entries_of_first_stage_recursive_higham_const_bounds
+      n s hs_pos hs_le L_hat D_hat ρ_n Amax localB recB hρ hAmax
+      hlocal_budget hrec_budget hfirst htrail)
 
 /-- **Theorem 11.4 constant (Higham [608, 1997], appendix (A.3))**:
 `(3+α²)/(1−α²) ≤ 6`, bounding `|E||E⁻¹||E| ≤ 6|E|` for a 2×2 pivot. -/
@@ -2408,6 +3147,1645 @@ theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_b
     n fp σ a11 a21 a22 b c Amax κ c_bound c_rec u tail_fl tail_exact
     hchoice hσa11 hσa22 hAmax hκ hb hc hratio hbudget hval hrec
     (mul_nonneg (mul_nonneg (add_nonneg hc_bound hc_rec) hu) hAmax)
+
+/-- **Theorem 11.7 recursive residual norm aggregation, matrix-entry form**.
+For a leading `2 × 2` tridiagonal step inside an ambient `Fin (n+3)` matrix,
+the local trailing diagonal and coupling entries are bounded by `‖A‖∞`.  This
+removes the separate scalar `|b|≤Amax` and `|c|≤Amax` hypotheses from the
+local+recursive accumulator when the printed budget is expressed using the
+ambient infinity norm. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries
+    (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 3) → Fin (n + 3) → ℝ)
+    (σ a11 a21 a22 κ c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hκ : 0 ≤ κ)
+    (hratio : σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (infNorm A + infNorm A * κ * infNorm A) ≤
+        c_bound * u * infNorm A)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 3) 2 ΔA ∧
+      infNorm ΔA ≤ ((n + 3 : ℕ) : ℝ) * (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+          (fp.fl_mul
+            (fp.fl_mul
+              (A ⟨1, by omega⟩
+                (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+              (a11 / (a11 * a22 - a21 ^ 2)))
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_fl
+        =
+        ((A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) -
+          (A ⟨1, by omega⟩
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) *
+            (a11 / (a11 * a22 - a21 ^ 2)) *
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  let tail : Fin (n + 3) :=
+    higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n
+  let pivot₂ : Fin (n + 3) := ⟨1, by omega⟩
+  have hb : |A tail tail| ≤ infNorm A :=
+    higham11_7_abs_entry_le_infNorm (n + 3) A tail tail
+  have hc : |A pivot₂ tail| ≤ infNorm A :=
+    higham11_7_abs_entry_le_infNorm (n + 3) A pivot₂ tail
+  simpa [tail, pivot₂] using
+    higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_with_norm_bound_nonneg
+      n fp σ a11 a21 a22 (A tail tail) (A pivot₂ tail) (infNorm A) κ
+      c_bound c_rec u tail_fl tail_exact hchoice hσa11 hσa22
+      (infNorm_nonneg A) hκ hb hc hratio hbudget hval hrec hc_bound
+      hc_rec hu
+
+/-- **Theorem 11.7 recursive residual norm aggregation, exact inverse-ratio
+form**.  For the accepted Algorithm 11.6 `2 × 2` tridiagonal branch, choosing
+`κ` to be the exact inverse-entry ratio discharges the generic `κ ≥ 0` and
+`ratio ≤ κ` side conditions from the branch predicate and `σ ≥ 0`. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_exact_inverse_ratio
+    (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 3) → Fin (n + 3) → ℝ)
+    (σ a11 a21 a22 c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσ : 0 ≤ σ)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hbudget :
+      gamma fp 3 *
+          (infNorm A +
+            infNorm A *
+              (σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2)) *
+                infNorm A) ≤
+        c_bound * u * infNorm A)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 3) 2 ΔA ∧
+      infNorm ΔA ≤ ((n + 3 : ℕ) : ℝ) * (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+          (fp.fl_mul
+            (fp.fl_mul
+              (A ⟨1, by omega⟩
+                (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+              (a11 / (a11 * a22 - a21 ^ 2)))
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_fl
+        =
+        ((A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) -
+          (A ⟨1, by omega⟩
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) *
+            (a11 / (a11 * a22 - a21 ^ 2)) *
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  let κ : ℝ := σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2)
+  have ha21 : a21 ≠ 0 :=
+    higham11_6_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg
+      σ a11 a21 hchoice hσ
+  have hαgap : 0 < 1 - higham11_6_bunchTridiagonalAlpha := by
+    have hlt := higham11_6_bunch_tridiagonal_alpha_lt_one
+    linarith
+  have ha21sq : 0 < a21 ^ 2 := sq_pos_of_ne_zero ha21
+  have hden_pos :
+      0 < (1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2 :=
+    mul_pos hαgap ha21sq
+  have hκ : 0 ≤ κ := by
+    dsimp [κ]
+    exact div_nonneg hσ (le_of_lt hden_pos)
+  simpa [κ] using
+    higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries
+      n fp A σ a11 a21 a22 κ c_bound c_rec u tail_fl tail_exact
+      hchoice hσa11 hσa22 hκ le_rfl hbudget hval hrec hc_bound hc_rec hu
+
+/-- **Theorem 11.7 recursive residual norm aggregation, exact inverse-ratio
+form from pivot-entry bounds**.  The displayed bound `|a11| ≤ σ` already
+implies `σ ≥ 0`, so this wrapper removes that separate side condition from the
+exact-ratio `2 × 2` local-recursive branch. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_exact_inverse_ratio_of_pivot_bounds
+    (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 3) → Fin (n + 3) → ℝ)
+    (σ a11 a21 a22 c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hbudget :
+      gamma fp 3 *
+          (infNorm A +
+            infNorm A *
+              (σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2)) *
+                infNorm A) ≤
+        c_bound * u * infNorm A)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 3) 2 ΔA ∧
+      infNorm ΔA ≤ ((n + 3 : ℕ) : ℝ) * (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+          (fp.fl_mul
+            (fp.fl_mul
+              (A ⟨1, by omega⟩
+                (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+              (a11 / (a11 * a22 - a21 ^ 2)))
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_fl
+        =
+        ((A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) -
+          (A ⟨1, by omega⟩
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) *
+            (a11 / (a11 * a22 - a21 ^ 2)) *
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  have hσ : 0 ≤ σ := (abs_nonneg a11).trans hσa11
+  exact
+    higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_exact_inverse_ratio
+      n fp A σ a11 a21 a22 c_bound c_rec u tail_fl tail_exact
+      hchoice hσ hσa11 hσa22 hbudget hval hrec hc_bound hc_rec hu
+
+/-- **Theorem 11.7 recursive residual norm aggregation, infinity-norm pivot
+scale**.  This matrix-entry endpoint fixes Algorithm 11.6's local `2 × 2`
+pivot scalars to the leading tridiagonal entries and uses `σ = ‖A‖∞`, deriving
+the pivot-entry bounds from the matrix infinity norm. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_infNorm_choice
+    (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 3) → Fin (n + 3) → ℝ)
+    (c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice (infNorm A) (A 0 0)
+      (A ⟨1, by omega⟩ 0) PivotSize.two)
+    (hbudget :
+      gamma fp 3 *
+          (infNorm A +
+            infNorm A *
+              (infNorm A /
+                ((1 - higham11_6_bunchTridiagonalAlpha) *
+                  (A ⟨1, by omega⟩ 0) ^ 2)) *
+                infNorm A) ≤
+        c_bound * u * infNorm A)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 3) 2 ΔA ∧
+      infNorm ΔA ≤ ((n + 3 : ℕ) : ℝ) * (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+          (fp.fl_mul
+            (fp.fl_mul
+              (A ⟨1, by omega⟩
+                (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+              ((A 0 0) /
+                ((A 0 0) * (A ⟨1, by omega⟩ ⟨1, by omega⟩) -
+                  (A ⟨1, by omega⟩ 0) ^ 2)))
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_fl
+        =
+        ((A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) -
+          (A ⟨1, by omega⟩
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) *
+            ((A 0 0) /
+              ((A 0 0) * (A ⟨1, by omega⟩ ⟨1, by omega⟩) -
+                (A ⟨1, by omega⟩ 0) ^ 2)) *
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  let pivot₂ : Fin (n + 3) := ⟨1, by omega⟩
+  have hσa11 : |A 0 0| ≤ infNorm A :=
+    higham11_7_abs_entry_le_infNorm (n + 3) A 0 0
+  have hσa22 : |A pivot₂ pivot₂| ≤ infNorm A :=
+    higham11_7_abs_entry_le_infNorm (n + 3) A pivot₂ pivot₂
+  simpa [pivot₂] using
+    higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_exact_inverse_ratio_of_pivot_bounds
+      n fp A (infNorm A) (A 0 0) (A pivot₂ 0) (A pivot₂ pivot₂)
+      c_bound c_rec u tail_fl tail_exact hchoice hσa11 hσa22 hbudget hval
+      hrec hc_bound hc_rec hu
+
+/-- Local index of the first trailing scalar after a leading `1 × 1`
+tridiagonal pivot inside a block of size `n+2`. -/
+abbrev higham11_7_tridiagonalOneByOneFirstTrailingIndex (n : ℕ) :
+    Fin (n + 2) :=
+  ⟨1, by omega⟩
+
+@[simp] theorem higham11_7_tridiagonalOneByOneFirstTrailingIndex_val (n : ℕ) :
+    (higham11_7_tridiagonalOneByOneFirstTrailingIndex n).val = 1 :=
+  rfl
+
+/-- Offset embedding of the recursive trailing subproblem after a leading
+`1 × 1` tridiagonal pivot.  Local trailing index `0` maps to ambient index `1`. -/
+abbrev higham11_7_tridiagonalOneByOneTrailingSubproblemIndex (n : ℕ)
+    (i : Fin (n + 1)) : Fin (n + 2) :=
+  ⟨i.val + 1, by omega⟩
+
+@[simp] theorem higham11_7_tridiagonalOneByOneTrailingSubproblemIndex_val
+    (n : ℕ) (i : Fin (n + 1)) :
+    (higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n i).val =
+      i.val + 1 :=
+  rfl
+
+@[simp] theorem higham11_7_tridiagonalOneByOneTrailingSubproblemIndex_zero
+    (n : ℕ) :
+    higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n 0 =
+      higham11_7_tridiagonalOneByOneFirstTrailingIndex n := by
+  apply Fin.ext
+  rfl
+
+/-- The recursive trailing-subproblem embedding after a leading tridiagonal
+`1 × 1` pivot is injective. -/
+theorem higham11_7_tridiagonalOneByOneTrailingSubproblemIndex_injective
+    (n : ℕ) :
+    Function.Injective
+      (higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n) := by
+  intro i j hij
+  apply Fin.ext
+  have hval := congrArg Fin.val hij
+  exact Nat.add_right_cancel hval
+
+/-- Lift a perturbation on the recursive trailing subproblem after a leading
+`1 × 1` tridiagonal pivot into the ambient local block. -/
+noncomputable def higham11_7_tridiagonalOneByOneLiftTrailingPerturbation
+    (n : ℕ) (E : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    Fin (n + 2) → Fin (n + 2) → ℝ :=
+  fun i j =>
+    if hi : ∃ a : Fin (n + 1),
+        higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n a = i then
+      if hj : ∃ b : Fin (n + 1),
+          higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n b = j then
+        E (Classical.choose hi) (Classical.choose hj)
+      else 0
+    else 0
+
+/-- A leading index is not in the embedded recursive trailing subproblem after
+a leading `1 × 1` tridiagonal pivot. -/
+theorem higham11_7_not_exists_tridiagonalOneByOneTrailingSubproblemIndex_of_val_lt_one
+    {n : ℕ} {i : Fin (n + 2)} (hi : i.val < 1) :
+    ¬ ∃ a : Fin (n + 1),
+      higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n a = i := by
+  intro h
+  rcases h with ⟨a, ha⟩
+  have hval := congrArg Fin.val ha
+  have hge : 1 ≤ i.val := by
+    rw [← hval]
+    change 1 ≤ a.val + 1
+    omega
+  exact (not_lt_of_ge hge) hi
+
+/-- The lifted recursive trailing perturbation agrees with the source
+perturbation on embedded trailing-subproblem entries. -/
+@[simp] theorem higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_apply_embedded
+    (n : ℕ) (E : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (i j : Fin (n + 1)) :
+    higham11_7_tridiagonalOneByOneLiftTrailingPerturbation n E
+        (higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n i)
+        (higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n j) =
+      E i j := by
+  classical
+  have hi : ∃ a : Fin (n + 1),
+      higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n a =
+        higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n i := ⟨i, rfl⟩
+  have hj : ∃ b : Fin (n + 1),
+      higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n b =
+        higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n j := ⟨j, rfl⟩
+  have hci : Classical.choose hi = i := by
+    exact (higham11_7_tridiagonalOneByOneTrailingSubproblemIndex_injective n)
+      (Classical.choose_spec hi)
+  have hcj : Classical.choose hj = j := by
+    exact (higham11_7_tridiagonalOneByOneTrailingSubproblemIndex_injective n)
+      (Classical.choose_spec hj)
+  rw [higham11_7_tridiagonalOneByOneLiftTrailingPerturbation,
+    dif_pos hi, dif_pos hj, hci, hcj]
+
+/-- Componentwise bounds lift from the recursive trailing subproblem to the
+ambient perturbation after a leading `1 × 1` tridiagonal pivot. -/
+theorem higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_bound
+    (n : ℕ) (E : Fin (n + 1) → Fin (n + 1) → ℝ) (β : ℝ)
+    (hEbound : ∀ i j : Fin (n + 1), |E i j| ≤ β) :
+    ∀ i j : Fin (n + 2),
+      |higham11_7_tridiagonalOneByOneLiftTrailingPerturbation n E i j| ≤ β := by
+  classical
+  have hβ : 0 ≤ β := (abs_nonneg (E 0 0)).trans (hEbound 0 0)
+  intro i j
+  by_cases hi : ∃ a : Fin (n + 1),
+      higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n a = i
+  · by_cases hj : ∃ b : Fin (n + 1),
+        higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n b = j
+    · rw [higham11_7_tridiagonalOneByOneLiftTrailingPerturbation,
+        dif_pos hi, dif_pos hj]
+      exact hEbound (Classical.choose hi) (Classical.choose hj)
+    · rw [higham11_7_tridiagonalOneByOneLiftTrailingPerturbation,
+        dif_pos hi, dif_neg hj]
+      simpa using hβ
+  · rw [higham11_7_tridiagonalOneByOneLiftTrailingPerturbation, dif_neg hi]
+    simpa using hβ
+
+/-- Lifting a recursive trailing-subproblem perturbation through a leading
+`1 × 1` tridiagonal pivot shifts any existing zero-prefix support by one
+ambient index. -/
+theorem higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_leadingBlockSupport
+    (n offset : ℕ) (E : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport (n + 1) offset E) :
+    higham11_7_TridiagonalLeadingBlockSupport (n + 2) (offset + 1)
+      (higham11_7_tridiagonalOneByOneLiftTrailingPerturbation n E) := by
+  classical
+  intro i j hlead
+  by_cases hi : ∃ a : Fin (n + 1),
+      higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n a = i
+  · by_cases hj : ∃ b : Fin (n + 1),
+        higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n b = j
+    · rw [higham11_7_tridiagonalOneByOneLiftTrailingPerturbation,
+        dif_pos hi, dif_pos hj]
+      apply hEsupp
+      rcases hlead with hilt | hjlt
+      · left
+        have hval : (Classical.choose hi).val + 1 = i.val := by
+          simpa [higham11_7_tridiagonalOneByOneTrailingSubproblemIndex] using
+            congrArg Fin.val (Classical.choose_spec hi)
+        have hsum : (Classical.choose hi).val + 1 < offset + 1 := by
+          rwa [hval]
+        exact (Nat.add_lt_add_iff_right (k := 1)).1 hsum
+      · right
+        have hval : (Classical.choose hj).val + 1 = j.val := by
+          simpa [higham11_7_tridiagonalOneByOneTrailingSubproblemIndex] using
+            congrArg Fin.val (Classical.choose_spec hj)
+        have hsum : (Classical.choose hj).val + 1 < offset + 1 := by
+          rwa [hval]
+        exact (Nat.add_lt_add_iff_right (k := 1)).1 hsum
+    · rw [higham11_7_tridiagonalOneByOneLiftTrailingPerturbation,
+        dif_pos hi, dif_neg hj]
+  · rw [higham11_7_tridiagonalOneByOneLiftTrailingPerturbation, dif_neg hi]
+
+/-- **Theorem 11.7 one-by-one recursive support-shift package**, lifting a
+recursive trailing perturbation while preserving its componentwise bound,
+shifting zero-prefix support by one, and preserving embedded entries. -/
+theorem higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_bound_leadingBlockSupport
+    (n offset : ℕ) (E : Fin (n + 1) → Fin (n + 1) → ℝ) (β : ℝ)
+    (hEbound : ∀ i j : Fin (n + 1), |E i j| ≤ β)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport (n + 1) offset E) :
+    ∃ ΔR : Fin (n + 2) → Fin (n + 2) → ℝ,
+      (∀ i j : Fin (n + 2), |ΔR i j| ≤ β) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 2) (offset + 1) ΔR ∧
+      (∀ i j : Fin (n + 1),
+        ΔR (higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n i)
+          (higham11_7_tridiagonalOneByOneTrailingSubproblemIndex n j) =
+            E i j) := by
+  refine ⟨higham11_7_tridiagonalOneByOneLiftTrailingPerturbation n E, ?_, ?_, ?_⟩
+  · exact higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_bound
+      n E β hEbound
+  · exact higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_leadingBlockSupport
+      n offset E hEsupp
+  · intro i j
+    exact higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_apply_embedded
+      n E i j
+
+/-- **Theorem 11.7 one-by-one pivot correction bound**.  Algorithm 11.6's
+one-pivot threshold bounds the exact local correction
+`a21*a21/a11` by `Amax/α` once `σ ≤ Amax`. -/
+theorem higham11_7_tridiagonal_oneByOne_correction_le_of_choice
+    (σ a11 a21 Amax : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.one)
+    (ha11 : a11 ≠ 0) (hσA : σ ≤ Amax) :
+    |a21 * a21 / a11| ≤ Amax / higham11_6_bunchTridiagonalAlpha := by
+  have hthreshold_ge :=
+    higham11_6_tridiagonal_pivot_choice_one_threshold σ a11 a21 hchoice
+  have hthreshold :
+      higham11_6_bunchTridiagonalAlpha * a21 ^ 2 ≤ σ * |a11| :=
+    hthreshold_ge
+  have hαpos : 0 < higham11_6_bunchTridiagonalAlpha :=
+    higham11_6_bunch_tridiagonal_alpha_pos
+  have ha11pos : 0 < |a11| := abs_pos.mpr ha11
+  have hprod :
+      higham11_6_bunchTridiagonalAlpha * a21 ^ 2 ≤ Amax * |a11| := by
+    exact hthreshold.trans (mul_le_mul_of_nonneg_right hσA (abs_nonneg a11))
+  have hmul :
+      higham11_6_bunchTridiagonalAlpha * (a21 ^ 2 / |a11|) ≤ Amax := by
+    have := (div_le_iff₀ ha11pos).mpr hprod
+    simpa [mul_div_assoc] using this
+  have hsq :
+      a21 ^ 2 / |a11| ≤ Amax / higham11_6_bunchTridiagonalAlpha := by
+    rw [le_div_iff₀ hαpos]
+    simpa [mul_comm, mul_left_comm, mul_assoc] using hmul
+  have habs : |a21 * a21 / a11| = a21 ^ 2 / |a11| := by
+    rw [abs_div, abs_mul]
+    have hs : |a21| * |a21| = a21 ^ 2 := by
+      rw [← pow_two]
+      exact sq_abs a21
+    rw [hs]
+  rw [habs]
+  exact hsq
+
+/-- **Theorem 11.7 one-by-one tridiagonal scalar fl update**.  For an accepted
+`1 × 1` tridiagonal pivot, the rounded first trailing Schur scalar equals the
+exact update plus a printed-budget perturbation. -/
+theorem higham11_7_fl_tridiagonal_oneByOne_schur_step_printed_bound_of_choice
+    (fp : FPModel) (σ a11 a21 b Amax c_bound u : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.one)
+    (ha11 : a11 ≠ 0) (hσA : σ ≤ Amax) (hb : |b| ≤ Amax)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax / higham11_6_bunchTridiagonalAlpha) ≤
+        c_bound * u * Amax)
+    (hval : gammaValid fp 3) :
+    ∃ Δ : ℝ,
+      |Δ| ≤ c_bound * u * Amax ∧
+      fp.fl_sub b (fp.fl_mul (fp.fl_div a21 a11) a21) =
+        (b - a21 * a21 / a11) + Δ := by
+  obtain ⟨Δ, hΔ, hstep⟩ :=
+    fl_oneByOne_schur_step_error fp b a11 a21 a21 ha11 hval
+  refine ⟨Δ, ?_, hstep⟩
+  have hγ0 : 0 ≤ gamma fp 3 := gamma_nonneg fp hval
+  have hinside :
+      |b| + |a21 * a21 / a11| ≤
+        Amax + Amax / higham11_6_bunchTridiagonalAlpha :=
+    add_le_add hb
+      (higham11_7_tridiagonal_oneByOne_correction_le_of_choice
+        σ a11 a21 Amax hchoice ha11 hσA)
+  exact hΔ.trans ((mul_le_mul_of_nonneg_left hinside hγ0).trans hbudget)
+
+/-- **Theorem 11.7 one-by-one recursive residual aggregation**.  This
+dimension-generic scalar form is the `1 × 1` companion to the `2 × 2` local
+recursive accumulator: it embeds a recursive trailing perturbation at offset
+one, adds the local rounded Schur residual at the first trailing diagonal, and
+records the induced infinity-norm budget. -/
+theorem higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_with_norm_bound
+    (n : ℕ) (fp : FPModel)
+    (σ a11 a21 b Amax c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.one)
+    (ha11 : a11 ≠ 0) (hσA : σ ≤ Amax) (hAmax : 0 ≤ Amax)
+    (hb : |b| ≤ Amax)
+    (hbudget :
+      gamma fp 3 *
+          (Amax + Amax / higham11_6_bunchTridiagonalAlpha) ≤
+        c_bound * u * Amax)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * Amax) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 2) → Fin (n + 2) → ℝ,
+      (∀ i j : Fin (n + 2), |ΔA i j| ≤ (c_bound + c_rec) * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 2) 1 ΔA ∧
+      infNorm ΔA ≤ ((n + 2 : ℕ) : ℝ) * (c_bound + c_rec) * u * Amax ∧
+      fp.fl_sub b (fp.fl_mul (fp.fl_div a21 a11) a21) + tail_fl =
+        (b - a21 * a21 / a11) + tail_exact +
+          ΔA (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) := by
+  let tail : Fin (n + 2) := higham11_7_tridiagonalOneByOneFirstTrailingIndex n
+  obtain ⟨ΔS, hΔS, hstep⟩ :=
+    higham11_7_fl_tridiagonal_oneByOne_schur_step_printed_bound_of_choice
+      fp σ a11 a21 b Amax c_bound u hchoice ha11 hσA hb hbudget hval
+  obtain ⟨ΔRtail, hRtail_bound, htail⟩ := hrec
+  let ΔSmat : Fin (n + 2) → Fin (n + 2) → ℝ :=
+    fun i j => if i = tail ∧ j = tail then ΔS else 0
+  have hΔSmat_bound :
+      ∀ i j : Fin (n + 2), |ΔSmat i j| ≤ c_bound * u * Amax := by
+    intro i j
+    have hzero_bound : |(0 : ℝ)| ≤ c_bound * u * Amax := by
+      simpa using (abs_nonneg ΔS).trans hΔS
+    by_cases h : i = tail ∧ j = tail
+    · simpa [ΔSmat, h] using hΔS
+    · simpa [ΔSmat, h] using hzero_bound
+  have hΔSmat_supp :
+      higham11_7_TridiagonalLeadingBlockSupport (n + 2) 1 ΔSmat := by
+    intro i j hlead
+    have hnot : ¬(i = tail ∧ j = tail) := by
+      intro h
+      rcases hlead with hi | hj
+      · have : tail.val < 1 := by simpa [h.1] using hi
+        simp [tail] at this
+      · have : tail.val < 1 := by simpa [h.2] using hj
+        simp [tail] at this
+    simp [ΔSmat, hnot]
+  have hRtail_supp :
+      higham11_7_TridiagonalLeadingBlockSupport (n + 1) 0 ΔRtail := by
+    intro i j hlead
+    rcases hlead with hi | hj <;> omega
+  obtain ⟨ΔR, hRbound, hRsupp, hRembed⟩ :=
+    higham11_7_tridiagonalOneByOneLiftTrailingPerturbation_bound_leadingBlockSupport
+      n 0 ΔRtail (c_rec * u * Amax) hRtail_bound hRtail_supp
+  obtain ⟨ΔA, hΔA, hΔAsupp, hsum⟩ :=
+    higham11_7_tridiagonalLeadingBlockSupport_add_bound_printed (n + 2) 1
+      ΔSmat ΔR c_bound c_rec u Amax
+      hΔSmat_bound hRbound hΔSmat_supp hRsupp
+  refine ⟨ΔA, hΔA, hΔAsupp, ?_, ?_⟩
+  · exact
+      higham11_7_infNorm_le_card_mul_of_printed_componentwise_bound
+        (n + 2) ΔA (c_bound + c_rec) u Amax
+        (mul_nonneg (mul_nonneg (add_nonneg hc_bound hc_rec) hu) hAmax) hΔA
+  · rw [htail]
+    have hRtail : ΔR tail tail = ΔRtail 0 0 := by
+      change ΔR
+          (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+          (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) =
+        ΔRtail 0 0
+      rw [← higham11_7_tridiagonalOneByOneTrailingSubproblemIndex_zero n]
+      exact hRembed 0 0
+    have hsum_tail : ΔA tail tail = ΔS + ΔRtail 0 0 := by
+      rw [hsum tail tail]
+      have hSm : ΔSmat tail tail = ΔS := by
+        simp [ΔSmat]
+      rw [hSm, hRtail]
+    rw [hstep, hsum_tail]
+    ring
+
+/-- **Theorem 11.7 one-by-one recursive residual aggregation, matrix-entry
+form**.  This is the `1 × 1`-pivot companion to the `2 × 2` local-recursive
+accumulator above: it embeds a recursive trailing perturbation at offset one,
+adds the local rounded Schur residual at the first trailing diagonal, and records
+the induced infinity-norm budget. -/
+theorem higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries
+    (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 2) → Fin (n + 2) → ℝ)
+    (σ c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ (A 0 0)
+      (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) PivotSize.one)
+    (ha11 : A 0 0 ≠ 0) (hσA : σ ≤ infNorm A)
+    (hbudget :
+      gamma fp 3 *
+          (infNorm A + infNorm A / higham11_6_bunchTridiagonalAlpha) ≤
+        c_bound * u * infNorm A)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 2) → Fin (n + 2) → ℝ,
+      (∀ i j : Fin (n + 2), |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 2) 1 ΔA ∧
+      infNorm ΔA ≤ ((n + 2 : ℕ) : ℝ) * (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n))
+          (fp.fl_mul
+            (fp.fl_div
+              (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0)
+              (A 0 0))
+            (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0)) +
+          tail_fl
+        =
+        ((A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)) -
+          (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) *
+            (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) /
+            (A 0 0)) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) := by
+  let tail : Fin (n + 2) := higham11_7_tridiagonalOneByOneFirstTrailingIndex n
+  have hb : |A tail tail| ≤ infNorm A :=
+    higham11_7_abs_entry_le_infNorm (n + 2) A tail tail
+  simpa [tail] using
+    higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_with_norm_bound
+      n fp σ (A 0 0) (A tail 0) (A tail tail) (infNorm A)
+      c_bound c_rec u tail_fl tail_exact hchoice ha11 hσA
+      (infNorm_nonneg A) hb hbudget hval hrec hc_bound hc_rec hu
+
+/-- **Theorem 11.7 one-by-one recursive residual aggregation, branch-derived
+pivot nonzero form**.  For the accepted Algorithm 11.6 `1 × 1` tridiagonal
+branch, a nonzero subdiagonal coupling supplies the nonzero leading pivot
+required by the rounded Schur update. -/
+theorem higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_of_subdiagonal_ne_zero
+    (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 2) → Fin (n + 2) → ℝ)
+    (σ c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ (A 0 0)
+      (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) PivotSize.one)
+    (ha21 : A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0 ≠ 0)
+    (hσA : σ ≤ infNorm A)
+    (hbudget :
+      gamma fp 3 *
+          (infNorm A + infNorm A / higham11_6_bunchTridiagonalAlpha) ≤
+        c_bound * u * infNorm A)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 2) → Fin (n + 2) → ℝ,
+      (∀ i j : Fin (n + 2), |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 2) 1 ΔA ∧
+      infNorm ΔA ≤ ((n + 2 : ℕ) : ℝ) * (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n))
+          (fp.fl_mul
+            (fp.fl_div
+              (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0)
+              (A 0 0))
+            (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0)) +
+          tail_fl
+        =
+        ((A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)) -
+          (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) *
+            (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) /
+            (A 0 0)) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) := by
+  have ha11 : A 0 0 ≠ 0 :=
+    higham11_6_tridiagonal_pivot_choice_one_a11_ne_zero_of_a21_ne_zero
+      σ (A 0 0) (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0)
+      hchoice ha21
+  exact
+    higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries
+      n fp A σ c_bound c_rec u tail_fl tail_exact hchoice ha11 hσA
+      hbudget hval hrec hc_bound hc_rec hu
+
+/-- **Theorem 11.7 one-by-one recursive residual aggregation, infinity-norm
+pivot scale**.  When the tridiagonal pivot test uses `σ = ‖A‖∞`, the
+matrix-entry branch wrapper no longer needs a separate `σ ≤ ‖A‖∞` handoff. -/
+theorem higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_infNorm_choice_of_subdiagonal_ne_zero
+    (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 2) → Fin (n + 2) → ℝ)
+    (c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice (infNorm A) (A 0 0)
+      (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) PivotSize.one)
+    (ha21 : A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0 ≠ 0)
+    (hbudget :
+      gamma fp 3 *
+          (infNorm A + infNorm A / higham11_6_bunchTridiagonalAlpha) ≤
+        c_bound * u * infNorm A)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 2) → Fin (n + 2) → ℝ,
+      (∀ i j : Fin (n + 2), |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 2) 1 ΔA ∧
+      infNorm ΔA ≤ ((n + 2 : ℕ) : ℝ) * (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n))
+          (fp.fl_mul
+            (fp.fl_div
+              (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0)
+              (A 0 0))
+            (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0)) +
+          tail_fl
+        =
+        ((A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)) -
+          (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) *
+            (A (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) 0) /
+            (A 0 0)) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalOneByOneFirstTrailingIndex n)
+            (higham11_7_tridiagonalOneByOneFirstTrailingIndex n) := by
+  exact
+    higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_of_subdiagonal_ne_zero
+      n fp A (infNorm A) c_bound c_rec u tail_fl tail_exact hchoice ha21
+      le_rfl hbudget hval hrec hc_bound hc_rec hu
+
+/-- Ambient dimension for one local step of the mixed tridiagonal recursion in
+Theorem 11.7: a leading `1 × 1` pivot has a local block of size `n+2`, while a
+leading `2 × 2` pivot has a local block of size `n+3`. -/
+def higham11_7_tridiagonalBranchAmbientDim (n : ℕ) : PivotSize → ℕ
+  | PivotSize.one => n + 2
+  | PivotSize.two => n + 3
+
+/-- Matrix type for one branch of the mixed tridiagonal recursion. -/
+abbrev higham11_7_TridiagonalBranchMatrix (n : ℕ) (s : PivotSize) :=
+  Fin (higham11_7_tridiagonalBranchAmbientDim n s) →
+    Fin (higham11_7_tridiagonalBranchAmbientDim n s) → ℝ
+
+/-- Leading pivot index for the branch-uniform local tridiagonal recursion
+interface. -/
+def higham11_7_tridiagonalBranchLeadingIndex (n : ℕ) :
+    (s : PivotSize) → Fin (higham11_7_tridiagonalBranchAmbientDim n s)
+  | PivotSize.one => ⟨0, by change 0 < n + 2; omega⟩
+  | PivotSize.two => ⟨0, by change 0 < n + 3; omega⟩
+
+/-- First trailing diagonal index after the current tridiagonal pivot branch. -/
+def higham11_7_tridiagonalBranchFirstTrailingIndex (n : ℕ) :
+    (s : PivotSize) → Fin (higham11_7_tridiagonalBranchAmbientDim n s)
+  | PivotSize.one => higham11_7_tridiagonalOneByOneFirstTrailingIndex n
+  | PivotSize.two => higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n
+
+/-- The second pivot index in the `2 × 2` branch of the tridiagonal recursion. -/
+def higham11_7_tridiagonalTwoByTwoSecondPivotIndex (n : ℕ) :
+    Fin (higham11_7_tridiagonalBranchAmbientDim n PivotSize.two) :=
+  ⟨1, by change 1 < n + 3; omega⟩
+
+/-- Zero-prefix support offset after one local tridiagonal pivot branch. -/
+def higham11_7_tridiagonalBranchSupportOffset : PivotSize → ℕ
+  | PivotSize.one => 1
+  | PivotSize.two => 2
+
+/-- **Theorem 11.7 mixed-recursion local assumptions**.  This branch-indexed
+predicate records exactly the local pivot choice, scalar budget, recursive tail
+certificate, and nonnegativity hypotheses needed by the already proved `1 × 1`
+and `2 × 2` local-recursive tridiagonal packages. -/
+def higham11_7_TridiagonalBranchLocalAssumptions
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_fl tail_exact : ℝ) : Prop :=
+  match s with
+  | PivotSize.one =>
+      higham11_6_BunchTridiagonalPivotChoice (infNorm A)
+          (A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)
+            (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one))
+          (A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+            (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one))
+          PivotSize.one ∧
+      A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+          (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one) ≠ 0 ∧
+      gamma fp 3 *
+          (infNorm A + infNorm A / higham11_6_bunchTridiagonalAlpha) ≤
+        c_bound * u * infNorm A ∧
+      gammaValid fp 3 ∧
+      (∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+        (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+        tail_fl = tail_exact + ΔRtail 0 0) ∧
+      0 ≤ c_bound ∧ 0 ≤ c_rec ∧ 0 ≤ u
+  | PivotSize.two =>
+      higham11_6_BunchTridiagonalPivotChoice (infNorm A)
+          (A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)
+            (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two))
+          (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+            (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two))
+          PivotSize.two ∧
+      gamma fp 3 *
+          (infNorm A +
+            infNorm A *
+              (infNorm A /
+                ((1 - higham11_6_bunchTridiagonalAlpha) *
+                  (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                    (higham11_7_tridiagonalBranchLeadingIndex n
+                      PivotSize.two)) ^ 2)) *
+                infNorm A) ≤
+        c_bound * u * infNorm A ∧
+      gammaValid fp 3 ∧
+      (∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+        (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+        tail_fl = tail_exact + ΔRtail 0 0) ∧
+      0 ≤ c_bound ∧ 0 ≤ c_rec ∧ 0 ≤ u
+
+/-- **Theorem 11.7 mixed-recursion local residual**, a common branch-indexed
+result shape for the local `1 × 1` or `2 × 2` tridiagonal step composed with a
+recursive trailing scalar residual.  This is the local target consumed by the
+remaining full mixed-pivot path induction. -/
+def higham11_7_TridiagonalBranchLocalResidual
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_fl tail_exact : ℝ) : Prop :=
+  match s with
+  | PivotSize.one =>
+      ∃ ΔA : Fin (higham11_7_tridiagonalBranchAmbientDim n PivotSize.one) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim n PivotSize.one) → ℝ,
+        (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim n PivotSize.one),
+          |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+        higham11_7_TridiagonalLeadingBlockSupport
+          (higham11_7_tridiagonalBranchAmbientDim n PivotSize.one)
+          (higham11_7_tridiagonalBranchSupportOffset PivotSize.one) ΔA ∧
+        infNorm ΔA ≤
+          ((higham11_7_tridiagonalBranchAmbientDim n PivotSize.one : ℕ) : ℝ) *
+            (c_bound + c_rec) * u * infNorm A ∧
+        fp.fl_sub
+            (A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+              (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one))
+            (fp.fl_mul
+              (fp.fl_div
+                (A (higham11_7_tridiagonalBranchFirstTrailingIndex n
+                    PivotSize.one)
+                  (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one))
+                (A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)
+                  (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)))
+              (A (higham11_7_tridiagonalBranchFirstTrailingIndex n
+                  PivotSize.one)
+                (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one))) +
+            tail_fl =
+          ((A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+              (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)) -
+            (A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+              (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)) *
+              (A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+                (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)) /
+              (A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)
+                (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one))) +
+            tail_exact +
+            ΔA (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+              (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+  | PivotSize.two =>
+      ∃ ΔA : Fin (higham11_7_tridiagonalBranchAmbientDim n PivotSize.two) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim n PivotSize.two) → ℝ,
+        (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim n PivotSize.two),
+          |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+        higham11_7_TridiagonalLeadingBlockSupport
+          (higham11_7_tridiagonalBranchAmbientDim n PivotSize.two)
+          (higham11_7_tridiagonalBranchSupportOffset PivotSize.two) ΔA ∧
+        infNorm ΔA ≤
+          ((higham11_7_tridiagonalBranchAmbientDim n PivotSize.two : ℕ) : ℝ) *
+            (c_bound + c_rec) * u * infNorm A ∧
+        fp.fl_sub
+            (A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)
+              (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two))
+            (fp.fl_mul
+              (fp.fl_mul
+                (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                  (higham11_7_tridiagonalBranchFirstTrailingIndex n
+                    PivotSize.two))
+                ((A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)
+                    (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)) /
+                  ((A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)
+                      (higham11_7_tridiagonalBranchLeadingIndex n
+                        PivotSize.two)) *
+                    (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                      (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)) -
+                    (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                      (higham11_7_tridiagonalBranchLeadingIndex n
+                        PivotSize.two)) ^ 2)))
+              (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                (higham11_7_tridiagonalBranchFirstTrailingIndex n
+                  PivotSize.two))) +
+            tail_fl =
+          ((A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)
+              (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)) -
+            (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+              (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)) *
+              ((A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)
+                  (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)) /
+                ((A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)
+                    (higham11_7_tridiagonalBranchLeadingIndex n
+                      PivotSize.two)) *
+                  (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                    (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)) -
+                  (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                    (higham11_7_tridiagonalBranchLeadingIndex n
+                      PivotSize.two)) ^ 2)) *
+              (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                (higham11_7_tridiagonalBranchFirstTrailingIndex n
+                  PivotSize.two))) +
+            tail_exact +
+            ΔA (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)
+              (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.two)
+
+/-- **Theorem 11.7 mixed-recursion branch adapter**.  Either accepted local
+tridiagonal pivot branch, with its explicit local budget and recursive tail
+certificate, produces the common branch-indexed local residual package. -/
+theorem higham11_7_tridiagonalBranchLocalResidual_of_localAssumptions
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hlocal : higham11_7_TridiagonalBranchLocalAssumptions n fp s A
+      c_bound c_rec u tail_fl tail_exact) :
+    higham11_7_TridiagonalBranchLocalResidual n fp s A
+      c_bound c_rec u tail_fl tail_exact := by
+  cases s with
+  | one =>
+      rcases hlocal with
+        ⟨hchoice, ha21, hbudget, hval, hrec, hc_bound, hc_rec, hu⟩
+      exact
+        (by
+          simpa [higham11_7_TridiagonalBranchLocalResidual,
+            higham11_7_TridiagonalBranchLocalAssumptions,
+            higham11_7_tridiagonalBranchAmbientDim,
+            higham11_7_tridiagonalBranchSupportOffset,
+            higham11_7_tridiagonalBranchLeadingIndex,
+            higham11_7_tridiagonalBranchFirstTrailingIndex] using
+              higham11_7_fl_tridiagonal_oneByOne_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_infNorm_choice_of_subdiagonal_ne_zero
+                n fp A c_bound c_rec u tail_fl tail_exact
+                (by
+                  simpa [higham11_7_tridiagonalBranchLeadingIndex,
+                    higham11_7_tridiagonalBranchFirstTrailingIndex] using
+                    hchoice)
+                (by
+                  simpa [higham11_7_tridiagonalBranchLeadingIndex,
+                    higham11_7_tridiagonalBranchFirstTrailingIndex] using ha21)
+                hbudget hval hrec hc_bound hc_rec hu)
+  | two =>
+      rcases hlocal with
+        ⟨hchoice, hbudget, hval, hrec, hc_bound, hc_rec, hu⟩
+      exact
+        (by
+          simpa [higham11_7_TridiagonalBranchLocalResidual,
+            higham11_7_TridiagonalBranchLocalAssumptions,
+            higham11_7_tridiagonalBranchAmbientDim,
+            higham11_7_tridiagonalBranchSupportOffset,
+            higham11_7_tridiagonalBranchLeadingIndex,
+            higham11_7_tridiagonalBranchFirstTrailingIndex,
+            higham11_7_tridiagonalTwoByTwoSecondPivotIndex] using
+              higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries_infNorm_choice
+                n fp A c_bound c_rec u tail_fl tail_exact
+                (by
+                  simpa [higham11_7_tridiagonalBranchLeadingIndex,
+                    higham11_7_tridiagonalTwoByTwoSecondPivotIndex] using
+                    hchoice)
+                (by
+                  simpa [higham11_7_tridiagonalBranchLeadingIndex,
+                    higham11_7_tridiagonalTwoByTwoSecondPivotIndex] using
+                    hbudget)
+                hval hrec hc_bound hc_rec hu)
+
+/-- **Theorem 11.7 recursive base certificate**.  A zero perturbation supplies
+the recursive scalar residual certificate for a terminal tail. -/
+theorem higham11_7_tridiagonalRecursiveTailZeroResidual
+    (m : ℕ) (β tail_exact : ℝ) (hβ : 0 ≤ β) :
+    ∃ ΔRtail : Fin (m + 1) → Fin (m + 1) → ℝ,
+      (∀ i j : Fin (m + 1), |ΔRtail i j| ≤ β) ∧
+      tail_exact = tail_exact + ΔRtail 0 0 := by
+  refine ⟨fun _ _ => 0, ?_, ?_⟩
+  · intro i j
+    simpa using hβ
+  · simp
+
+/-- **Theorem 11.7 recursive base certificate, infinity-norm form**.  This is
+the zero-tail package in the same printed coefficient shape used by the local
+tridiagonal branch adapters. -/
+theorem higham11_7_tridiagonalRecursiveTailZeroResidual_infNorm
+    (m p : ℕ) (A : Fin p → Fin p → ℝ)
+    (c_rec u tail_exact : ℝ) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔRtail : Fin (m + 1) → Fin (m + 1) → ℝ,
+      (∀ i j : Fin (m + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_exact = tail_exact + ΔRtail 0 0 :=
+  higham11_7_tridiagonalRecursiveTailZeroResidual m
+    (c_rec * u * infNorm A) tail_exact
+    (mul_nonneg (mul_nonneg hc_rec hu) (infNorm_nonneg A))
+
+/-- **Theorem 11.7 terminal branch assumptions**.  These are the local
+assumptions needed when the current `1 × 1` or `2 × 2` tridiagonal branch is
+followed by a zero recursive tail. -/
+def higham11_7_TridiagonalBranchTerminalAssumptions
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u : ℝ) : Prop :=
+  match s with
+  | PivotSize.one =>
+      higham11_6_BunchTridiagonalPivotChoice (infNorm A)
+          (A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one)
+            (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one))
+          (A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+            (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one))
+          PivotSize.one ∧
+      A (higham11_7_tridiagonalBranchFirstTrailingIndex n PivotSize.one)
+          (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.one) ≠ 0 ∧
+      gamma fp 3 *
+          (infNorm A + infNorm A / higham11_6_bunchTridiagonalAlpha) ≤
+        c_bound * u * infNorm A ∧
+      gammaValid fp 3 ∧
+      0 ≤ c_bound ∧ 0 ≤ c_rec ∧ 0 ≤ u
+  | PivotSize.two =>
+      higham11_6_BunchTridiagonalPivotChoice (infNorm A)
+          (A (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two)
+            (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two))
+          (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+            (higham11_7_tridiagonalBranchLeadingIndex n PivotSize.two))
+          PivotSize.two ∧
+      gamma fp 3 *
+          (infNorm A +
+            infNorm A *
+              (infNorm A /
+                ((1 - higham11_6_bunchTridiagonalAlpha) *
+                  (A (higham11_7_tridiagonalTwoByTwoSecondPivotIndex n)
+                    (higham11_7_tridiagonalBranchLeadingIndex n
+                      PivotSize.two)) ^ 2)) *
+                infNorm A) ≤
+        c_bound * u * infNorm A ∧
+      gammaValid fp 3 ∧
+      0 ≤ c_bound ∧ 0 ≤ c_rec ∧ 0 ≤ u
+
+/-- **Theorem 11.7 terminal branch local-assumption adapter**.  A terminal-tail
+branch is a local branch with zero recursive tail residual, hence with
+`tail_fl = tail_exact`. -/
+theorem higham11_7_tridiagonalBranchLocalAssumptions_of_terminalTailAssumptions
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_exact : ℝ)
+    (hterminal : higham11_7_TridiagonalBranchTerminalAssumptions n fp s A
+      c_bound c_rec u) :
+    higham11_7_TridiagonalBranchLocalAssumptions n fp s A
+      c_bound c_rec u tail_exact tail_exact := by
+  cases s with
+  | one =>
+      rcases hterminal with
+        ⟨hchoice, ha21, hbudget, hval, hc_bound, hc_rec, hu⟩
+      exact ⟨hchoice, ha21, hbudget, hval,
+        higham11_7_tridiagonalRecursiveTailZeroResidual_infNorm n (n + 2)
+          A c_rec u tail_exact hc_rec hu,
+        hc_bound, hc_rec, hu⟩
+  | two =>
+      rcases hterminal with
+        ⟨hchoice, hbudget, hval, hc_bound, hc_rec, hu⟩
+      exact ⟨hchoice, hbudget, hval,
+        higham11_7_tridiagonalRecursiveTailZeroResidual_infNorm n (n + 3)
+          A c_rec u tail_exact hc_rec hu,
+        hc_bound, hc_rec, hu⟩
+
+/-- **Theorem 11.7 terminal branch adapter**.  A local branch satisfying the
+terminal-tail assumptions produces the common branch residual with
+`tail_fl = tail_exact`. -/
+theorem higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_exact : ℝ)
+    (hterminal : higham11_7_TridiagonalBranchTerminalAssumptions n fp s A
+      c_bound c_rec u) :
+    higham11_7_TridiagonalBranchLocalResidual n fp s A
+      c_bound c_rec u tail_exact tail_exact := by
+  exact
+    higham11_7_tridiagonalBranchLocalResidual_of_localAssumptions n fp s A
+      c_bound c_rec u tail_exact tail_exact
+      (higham11_7_tridiagonalBranchLocalAssumptions_of_terminalTailAssumptions
+        n fp s A c_bound c_rec u tail_exact hterminal)
+
+/-- **Theorem 11.7 mixed-pivot path assumptions**.  A finite path is represented
+as a family of local tridiagonal branch choices, local ambient tail dimensions,
+local matrices, budgets, and scalar tail residuals.  This is the path-level
+interface that the remaining mixed recursion will instantiate branch by branch. -/
+def higham11_7_TridiagonalBranchPathLocalAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k, higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ) : Prop :=
+  ∀ t : Fin k,
+    higham11_7_TridiagonalBranchLocalAssumptions (tailDim t) fp (step t)
+      (A t) (c_bound t) (c_rec t) (u t) (tail_fl t) (tail_exact t)
+
+/-- **Theorem 11.7 mixed-pivot path residuals**.  Pointwise residual packages
+for all branches of a finite tridiagonal mixed-pivot path.  The global
+composition theorem still has to accumulate these local packages. -/
+def higham11_7_TridiagonalBranchPathLocalResiduals
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k, higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ) : Prop :=
+  ∀ t : Fin k,
+    higham11_7_TridiagonalBranchLocalResidual (tailDim t) fp (step t)
+      (A t) (c_bound t) (c_rec t) (u t) (tail_fl t) (tail_exact t)
+
+/-- **Theorem 11.7 mixed-pivot path local adapter**.  Applying the branch-local
+adapter at every finite path step turns pointwise local assumptions into
+pointwise local residual packages. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_of_localAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k, higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalAssumptions k fp tailDim
+      step A c_bound c_rec u tail_fl tail_exact) :
+    higham11_7_TridiagonalBranchPathLocalResiduals k fp tailDim
+      step A c_bound c_rec u tail_fl tail_exact := by
+  intro t
+  exact
+    higham11_7_tridiagonalBranchLocalResidual_of_localAssumptions
+      (tailDim t) fp (step t) (A t) (c_bound t) (c_rec t) (u t)
+      (tail_fl t) (tail_exact t) (hpath t)
+
+/-- **Theorem 11.7 terminal mixed-pivot path assumptions**.  Pointwise
+terminal-tail assumptions for a finite family of local tridiagonal branches. -/
+def higham11_7_TridiagonalBranchPathTerminalAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k, higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u : Fin k → ℝ) : Prop :=
+  ∀ t : Fin k,
+    higham11_7_TridiagonalBranchTerminalAssumptions (tailDim t) fp (step t)
+      (A t) (c_bound t) (c_rec t) (u t)
+
+/-- **Theorem 11.7 terminal path local-assumption adapter**.  Pointwise
+terminal-tail assumptions form a local-assumption path with exact tail
+residual scalars. -/
+theorem higham11_7_tridiagonalBranchPathLocalAssumptions_of_terminalTailAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k, higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_exact : Fin k → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathTerminalAssumptions k fp tailDim
+      step A c_bound c_rec u) :
+    higham11_7_TridiagonalBranchPathLocalAssumptions k fp tailDim
+      step A c_bound c_rec u tail_exact tail_exact := by
+  intro t
+  exact
+    higham11_7_tridiagonalBranchLocalAssumptions_of_terminalTailAssumptions
+      (tailDim t) fp (step t) (A t) (c_bound t) (c_rec t) (u t)
+      (tail_exact t) (hpath t)
+
+/-- **Theorem 11.7 terminal mixed-pivot path adapter**.  Applying the terminal
+branch adapter at every finite path step gives pointwise residual packages with
+`tail_fl = tail_exact`. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k, higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_exact : Fin k → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathTerminalAssumptions k fp tailDim
+      step A c_bound c_rec u) :
+    higham11_7_TridiagonalBranchPathLocalResiduals k fp tailDim
+      step A c_bound c_rec u tail_exact tail_exact := by
+  intro t
+  exact
+    higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions
+      (tailDim t) fp (step t) (A t) (c_bound t) (c_rec t) (u t)
+      (tail_exact t) (hpath t)
+
+/-- **Theorem 11.7 empty mixed-pivot path residuals**.  The pointwise residual
+predicate is vacuous for the empty path, giving the induction base for the
+finite path interface. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_empty
+    (fp : FPModel) (tailDim : Fin 0 → ℕ) (step : Fin 0 → PivotSize)
+    (A : ∀ t : Fin 0, higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin 0 → ℝ) :
+    higham11_7_TridiagonalBranchPathLocalResiduals 0 fp tailDim step A
+      c_bound c_rec u tail_fl tail_exact := by
+  intro t
+  exact Fin.elim0 t
+
+/-- **Theorem 11.7 singleton mixed-pivot path adapter**.  A single local branch
+assumption can be viewed as a length-one finite mixed-pivot path residual. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_singleton_of_localAssumptions
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hlocal : higham11_7_TridiagonalBranchLocalAssumptions n fp s A
+      c_bound c_rec u tail_fl tail_exact) :
+    higham11_7_TridiagonalBranchPathLocalResiduals 1 fp
+      (fun _ => n) (fun _ => s) (fun _ => A)
+      (fun _ => c_bound) (fun _ => c_rec) (fun _ => u)
+      (fun _ => tail_fl) (fun _ => tail_exact) := by
+  intro t
+  exact
+    higham11_7_tridiagonalBranchLocalResidual_of_localAssumptions
+      n fp s A c_bound c_rec u tail_fl tail_exact hlocal
+
+/-- **Theorem 11.7 singleton terminal mixed-pivot path adapter**.  A single
+terminal-tail branch can be viewed as a length-one finite path residual with
+`tail_fl = tail_exact`. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_singleton_of_terminalTailAssumptions
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_exact : ℝ)
+    (hterminal : higham11_7_TridiagonalBranchTerminalAssumptions n fp s A
+      c_bound c_rec u) :
+    higham11_7_TridiagonalBranchPathLocalResiduals 1 fp
+      (fun _ => n) (fun _ => s) (fun _ => A)
+      (fun _ => c_bound) (fun _ => c_rec) (fun _ => u)
+      (fun _ => tail_exact) (fun _ => tail_exact) := by
+  intro t
+  exact
+    higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions
+      n fp s A c_bound c_rec u tail_exact hterminal
+
+/-- **Theorem 11.7 path-local assumptions, head projection**.  The first step
+of a nonempty finite mixed-pivot path satisfies the corresponding branch-local
+assumption. -/
+theorem higham11_7_tridiagonalBranchPathLocalAssumptions_head
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalAssumptions (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact) :
+    higham11_7_TridiagonalBranchLocalAssumptions (tailDim 0) fp (step 0)
+      (A 0) (c_bound 0) (c_rec 0) (u 0) (tail_fl 0) (tail_exact 0) :=
+  hpath 0
+
+/-- **Theorem 11.7 path-local assumptions, tail projection**.  Dropping the
+first branch of a nonempty finite mixed-pivot path preserves the pointwise local
+assumption interface for the remaining path. -/
+theorem higham11_7_tridiagonalBranchPathLocalAssumptions_tail
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalAssumptions (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact) :
+    higham11_7_TridiagonalBranchPathLocalAssumptions k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ) (fun t => tail_fl t.succ)
+      (fun t => tail_exact t.succ) := by
+  intro t
+  exact hpath t.succ
+
+/-- **Theorem 11.7 terminal path assumptions, head projection**. -/
+theorem higham11_7_tridiagonalBranchPathTerminalAssumptions_head
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u : Fin (k + 1) → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathTerminalAssumptions (k + 1)
+      fp tailDim step A c_bound c_rec u) :
+    higham11_7_TridiagonalBranchTerminalAssumptions (tailDim 0) fp (step 0)
+      (A 0) (c_bound 0) (c_rec 0) (u 0) :=
+  hpath 0
+
+/-- **Theorem 11.7 terminal path assumptions, tail projection**. -/
+theorem higham11_7_tridiagonalBranchPathTerminalAssumptions_tail
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u : Fin (k + 1) → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathTerminalAssumptions (k + 1)
+      fp tailDim step A c_bound c_rec u) :
+    higham11_7_TridiagonalBranchPathTerminalAssumptions k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ) := by
+  intro t
+  exact hpath t.succ
+
+/-- **Theorem 11.7 path-local residuals, head projection**. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_head
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact) :
+    higham11_7_TridiagonalBranchLocalResidual (tailDim 0) fp (step 0)
+      (A 0) (c_bound 0) (c_rec 0) (u 0) (tail_fl 0) (tail_exact 0) :=
+  hpath 0
+
+/-- **Theorem 11.7 path-local residuals, tail projection**. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_tail
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact) :
+    higham11_7_TridiagonalBranchPathLocalResiduals k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ) (fun t => tail_fl t.succ)
+      (fun t => tail_exact t.succ) := by
+  intro t
+  exact hpath t.succ
+
+/-- **Theorem 11.7 path-local assumptions, cons constructor**.  A head
+branch-local assumption plus a tail path gives the corresponding nonempty
+finite path assumption. -/
+theorem higham11_7_tridiagonalBranchPathLocalAssumptions_cons
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hhead : higham11_7_TridiagonalBranchLocalAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+      (tail_fl 0) (tail_exact 0))
+    (htail : higham11_7_TridiagonalBranchPathLocalAssumptions k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ) (fun t => tail_fl t.succ)
+      (fun t => tail_exact t.succ)) :
+    higham11_7_TridiagonalBranchPathLocalAssumptions (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact := by
+  intro t
+  cases t using Fin.cases with
+  | zero =>
+      simpa using hhead
+  | succ t =>
+      exact htail t
+
+/-- **Theorem 11.7 terminal path assumptions, cons constructor**. -/
+theorem higham11_7_tridiagonalBranchPathTerminalAssumptions_cons
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u : Fin (k + 1) → ℝ)
+    (hhead : higham11_7_TridiagonalBranchTerminalAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0))
+    (htail : higham11_7_TridiagonalBranchPathTerminalAssumptions k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ)) :
+    higham11_7_TridiagonalBranchPathTerminalAssumptions (k + 1) fp
+      tailDim step A c_bound c_rec u := by
+  intro t
+  cases t using Fin.cases with
+  | zero =>
+      simpa using hhead
+  | succ t =>
+      exact htail t
+
+/-- **Theorem 11.7 path-local residuals, cons constructor**.  This is the
+introduction-side companion to the head/tail residual projections. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hhead : higham11_7_TridiagonalBranchLocalResidual
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+      (tail_fl 0) (tail_exact 0))
+    (htail : higham11_7_TridiagonalBranchPathLocalResiduals k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ) (fun t => tail_fl t.succ)
+      (fun t => tail_exact t.succ)) :
+    higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact := by
+  intro t
+  cases t using Fin.cases with
+  | zero =>
+      simpa using hhead
+  | succ t =>
+      exact htail t
+
+/-- **Theorem 11.7 path-local assumptions, nonempty iff**.  A nonempty finite
+path assumption is equivalent to its head branch-local assumption and tail path. -/
+theorem higham11_7_tridiagonalBranchPathLocalAssumptions_iff_head_tail
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ) :
+    higham11_7_TridiagonalBranchPathLocalAssumptions (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact ↔
+      higham11_7_TridiagonalBranchLocalAssumptions
+        (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+        (tail_fl 0) (tail_exact 0) ∧
+      higham11_7_TridiagonalBranchPathLocalAssumptions k fp
+        (fun t => tailDim t.succ) (fun t => step t.succ)
+        (fun t => A t.succ) (fun t => c_bound t.succ)
+        (fun t => c_rec t.succ) (fun t => u t.succ)
+        (fun t => tail_fl t.succ) (fun t => tail_exact t.succ) := by
+  constructor
+  · intro hpath
+    exact
+      ⟨higham11_7_tridiagonalBranchPathLocalAssumptions_head
+          k fp tailDim step A c_bound c_rec u tail_fl tail_exact hpath,
+        higham11_7_tridiagonalBranchPathLocalAssumptions_tail
+          k fp tailDim step A c_bound c_rec u tail_fl tail_exact hpath⟩
+  · intro h
+    exact
+      higham11_7_tridiagonalBranchPathLocalAssumptions_cons
+        k fp tailDim step A c_bound c_rec u tail_fl tail_exact h.1 h.2
+
+/-- **Theorem 11.7 terminal path assumptions, nonempty iff**. -/
+theorem higham11_7_tridiagonalBranchPathTerminalAssumptions_iff_head_tail
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u : Fin (k + 1) → ℝ) :
+    higham11_7_TridiagonalBranchPathTerminalAssumptions (k + 1) fp
+      tailDim step A c_bound c_rec u ↔
+      higham11_7_TridiagonalBranchTerminalAssumptions
+        (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0) ∧
+      higham11_7_TridiagonalBranchPathTerminalAssumptions k fp
+        (fun t => tailDim t.succ) (fun t => step t.succ)
+        (fun t => A t.succ) (fun t => c_bound t.succ)
+        (fun t => c_rec t.succ) (fun t => u t.succ) := by
+  constructor
+  · intro hpath
+    exact
+      ⟨higham11_7_tridiagonalBranchPathTerminalAssumptions_head
+          k fp tailDim step A c_bound c_rec u hpath,
+        higham11_7_tridiagonalBranchPathTerminalAssumptions_tail
+          k fp tailDim step A c_bound c_rec u hpath⟩
+  · intro h
+    exact
+      higham11_7_tridiagonalBranchPathTerminalAssumptions_cons
+        k fp tailDim step A c_bound c_rec u h.1 h.2
+
+/-- **Theorem 11.7 path-local residuals, nonempty iff**.  This packages the
+head/tail projections and cons constructor as the standard induction split. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_iff_head_tail
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ) :
+    higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact ↔
+      higham11_7_TridiagonalBranchLocalResidual
+        (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+        (tail_fl 0) (tail_exact 0) ∧
+      higham11_7_TridiagonalBranchPathLocalResiduals k fp
+        (fun t => tailDim t.succ) (fun t => step t.succ)
+        (fun t => A t.succ) (fun t => c_bound t.succ)
+        (fun t => c_rec t.succ) (fun t => u t.succ)
+        (fun t => tail_fl t.succ) (fun t => tail_exact t.succ) := by
+  constructor
+  · intro hpath
+    exact
+      ⟨higham11_7_tridiagonalBranchPathLocalResiduals_head
+          k fp tailDim step A c_bound c_rec u tail_fl tail_exact hpath,
+        higham11_7_tridiagonalBranchPathLocalResiduals_tail
+          k fp tailDim step A c_bound c_rec u tail_fl tail_exact hpath⟩
+  · intro h
+    exact
+      higham11_7_tridiagonalBranchPathLocalResiduals_cons
+        k fp tailDim step A c_bound c_rec u tail_fl tail_exact h.1 h.2
+
+/-- **Theorem 11.7 path residual cons from a head local assumption**.  A
+branch-local head proof and an already packaged tail residual rebuild the
+nonempty path residual predicate. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_localAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hhead : higham11_7_TridiagonalBranchLocalAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+      (tail_fl 0) (tail_exact 0))
+    (htail : higham11_7_TridiagonalBranchPathLocalResiduals k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ) (fun t => tail_fl t.succ)
+      (fun t => tail_exact t.succ)) :
+    higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact :=
+  higham11_7_tridiagonalBranchPathLocalResiduals_cons
+    k fp tailDim step A c_bound c_rec u tail_fl tail_exact
+    (higham11_7_tridiagonalBranchLocalResidual_of_localAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+      (tail_fl 0) (tail_exact 0) hhead)
+    htail
+
+/-- **Theorem 11.7 path residual cons from a terminal head**.  This is the
+terminal-head companion to
+`higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_localAssumptions`. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTailAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_exact : Fin (k + 1) → ℝ)
+    (hhead : higham11_7_TridiagonalBranchTerminalAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0))
+    (htail : higham11_7_TridiagonalBranchPathLocalResiduals k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ) (fun t => tail_exact t.succ)
+      (fun t => tail_exact t.succ)) :
+    higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_exact tail_exact :=
+  higham11_7_tridiagonalBranchPathLocalResiduals_cons
+    k fp tailDim step A c_bound c_rec u tail_exact tail_exact
+    (higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+      (tail_exact 0) hhead)
+    htail
+
+/-- **Theorem 11.7 path residual cons from head and tail local assumptions**.
+This packages the common induction step when both the head branch and the tail
+path are still represented by local assumptions. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_tail_localAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hhead : higham11_7_TridiagonalBranchLocalAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+      (tail_fl 0) (tail_exact 0))
+    (htail : higham11_7_TridiagonalBranchPathLocalAssumptions k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ) (fun t => tail_fl t.succ)
+      (fun t => tail_exact t.succ)) :
+    higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact :=
+  higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_localAssumptions
+    k fp tailDim step A c_bound c_rec u tail_fl tail_exact hhead
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_localAssumptions
+      k fp (fun t => tailDim t.succ) (fun t => step t.succ)
+      (fun t => A t.succ) (fun t => c_bound t.succ)
+      (fun t => c_rec t.succ) (fun t => u t.succ)
+      (fun t => tail_fl t.succ) (fun t => tail_exact t.succ) htail)
+
+/-- **Theorem 11.7 path residual cons from terminal head and tail
+assumptions**.  This packages the terminal-tail induction step when every
+remaining branch has `tail_fl = tail_exact`. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_tail_terminalTailAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_exact : Fin (k + 1) → ℝ)
+    (hhead : higham11_7_TridiagonalBranchTerminalAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0))
+    (htail : higham11_7_TridiagonalBranchPathTerminalAssumptions k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ)) :
+    higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_exact tail_exact :=
+  higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTailAssumptions
+    k fp tailDim step A c_bound c_rec u tail_exact hhead
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumptions
+      k fp (fun t => tailDim t.succ) (fun t => step t.succ)
+      (fun t => A t.succ) (fun t => c_bound t.succ)
+      (fun t => c_rec t.succ) (fun t => u t.succ)
+      (fun t => tail_exact t.succ) htail)
+
+/-- **Theorem 11.7 path residual cons from a local head and terminal tail**.
+This mixed handoff covers the last recursive step: the head is proved by the
+local branch adapter, while every remaining tail branch is terminal and hence
+has exact tail residual scalars. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_localAssumptions_tail_terminalTailAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hhead : higham11_7_TridiagonalBranchLocalAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+      (tail_fl 0) (tail_exact 0))
+    (htail_eq : ∀ t : Fin k, tail_fl t.succ = tail_exact t.succ)
+    (htail : higham11_7_TridiagonalBranchPathTerminalAssumptions k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ)) :
+    higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact :=
+  higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_localAssumptions
+    k fp tailDim step A c_bound c_rec u tail_fl tail_exact hhead
+    (by
+      intro t
+      have hres :
+          higham11_7_TridiagonalBranchLocalResidual
+            (tailDim t.succ) fp (step t.succ) (A t.succ)
+            (c_bound t.succ) (c_rec t.succ) (u t.succ)
+            (tail_exact t.succ) (tail_exact t.succ) :=
+        higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions
+          (tailDim t.succ) fp (step t.succ) (A t.succ)
+          (c_bound t.succ) (c_rec t.succ) (u t.succ)
+          (tail_exact t.succ) (htail t)
+      simpa [htail_eq t] using hres)
+
+/-- **Theorem 11.7 path residual cons from a terminal head and local tail**.
+This mixed handoff covers the complementary induction step: the head branch is
+terminal, while the remaining tail is still represented by local assumptions. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTailAssumptions_tail_localAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hhead : higham11_7_TridiagonalBranchTerminalAssumptions
+      (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0))
+    (hhead_eq : tail_fl 0 = tail_exact 0)
+    (htail : higham11_7_TridiagonalBranchPathLocalAssumptions k fp
+      (fun t => tailDim t.succ) (fun t => step t.succ) (fun t => A t.succ)
+      (fun t => c_bound t.succ) (fun t => c_rec t.succ)
+      (fun t => u t.succ) (fun t => tail_fl t.succ)
+      (fun t => tail_exact t.succ)) :
+    higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact :=
+  higham11_7_tridiagonalBranchPathLocalResiduals_cons
+    k fp tailDim step A c_bound c_rec u tail_fl tail_exact
+    (by
+      have hres :
+          higham11_7_TridiagonalBranchLocalResidual
+            (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+            (tail_exact 0) (tail_exact 0) :=
+        higham11_7_tridiagonalBranchLocalResidual_of_terminalTailAssumptions
+          (tailDim 0) fp (step 0) (A 0) (c_bound 0) (c_rec 0) (u 0)
+          (tail_exact 0) hhead
+      simpa [hhead_eq] using hres)
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_localAssumptions
+      k fp (fun t => tailDim t.succ) (fun t => step t.succ)
+      (fun t => A t.succ) (fun t => c_bound t.succ)
+      (fun t => c_rec t.succ) (fun t => u t.succ)
+      (fun t => tail_fl t.succ) (fun t => tail_exact t.succ) htail)
 
 /-! ## §11.2 Aasen's method -/
 
@@ -4558,6 +6936,57 @@ theorem higham11_8_infNorm_le_mul_of_componentwise_T_bound (n : ℕ)
             mul_le_mul_of_nonneg_left (row_sum_le_infNorm T_hat i) hη
     · exact mul_nonneg hη (infNorm_nonneg T_hat)
 
+/-- The source-style relative `T_hat - T` comparison gives the corresponding
+infinity-norm perturbation budget for the actual middle-factor difference. -/
+theorem higham11_8_infNorm_T_hat_sub_T_le_mul_of_relative_error (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ) (γ : ℝ) (hγ : 0 ≤ γ)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ γ * |T_hat i j|) :
+    infNorm (fun i j : Fin n => T_hat i j - T i j) ≤ γ * infNorm T_hat :=
+  higham11_8_infNorm_le_mul_of_componentwise_T_bound n
+    (fun i j : Fin n => T_hat i j - T i j) T_hat γ hγ hThat
+
+/-- A relative componentwise `T_hat - T` comparison gives the entrywise
+`(1+γ)` domination of the exact middle factor by the computed one.  This is the
+entrywise diagnostic behind the weaker norm cap below. -/
+theorem higham11_8_abs_T_le_one_plus_gamma_T_hat_of_relative_error (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ) (γ : ℝ) (_hγ : 0 ≤ γ)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ γ * |T_hat i j|) :
+    ∀ i j : Fin n, |T i j| ≤ (1 + γ) * |T_hat i j| := by
+  intro i j
+  have hrewrite : T i j = T_hat i j + (-(T_hat i j - T i j)) := by ring
+  calc
+    |T i j| = |T_hat i j + (-(T_hat i j - T i j))| :=
+      congrArg (fun x : ℝ => |x|) hrewrite
+    _ ≤ |T_hat i j| + |-(T_hat i j - T i j)| := abs_add_le _ _
+    _ = |T_hat i j| + |T_hat i j - T i j| := by rw [abs_neg]
+    _ ≤ |T_hat i j| + γ * |T_hat i j| := by linarith [hThat i j]
+    _ = (1 + γ) * |T_hat i j| := by ring
+
+/-- The concrete envelope `γ |T_hat|` used as a middle-factor budget has
+infinity norm at most `γ ‖T_hat‖∞` when `γ` is nonnegative. -/
+theorem higham11_8_infNorm_scaled_abs_T_hat_le (n : ℕ)
+    (T_hat : Fin n → Fin n → ℝ) (γ : ℝ) (hγ : 0 ≤ γ) :
+    infNorm (fun i j : Fin n => γ * |T_hat i j|) ≤ γ * infNorm T_hat := by
+  apply higham11_8_infNorm_le_mul_of_componentwise_T_bound n
+    (fun i j : Fin n => γ * |T_hat i j|) T_hat γ hγ
+  intro i j
+  have hnonneg : 0 ≤ γ * |T_hat i j| := mul_nonneg hγ (abs_nonneg _)
+  rw [abs_of_nonneg hnonneg]
+
+/-- A relative componentwise `T_hat - T` comparison also bounds the exact
+middle-factor norm by `(1+γ) ‖T_hat‖∞`.  This is weaker than the direct
+`‖T‖∞ ≤ ‖T_hat‖∞` cap needed by the exact-radius source endpoint, but records
+the norm consequence available from the relative error statement alone. -/
+theorem higham11_8_infNorm_T_le_one_plus_gamma_T_hat_of_relative_error (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ) (γ : ℝ) (hγ : 0 ≤ γ)
+    (hThat : ∀ i j : Fin n, |T_hat i j - T i j| ≤ γ * |T_hat i j|) :
+    infNorm T ≤ (1 + γ) * infNorm T_hat := by
+  have hscale : 0 ≤ 1 + γ := by linarith
+  exact higham11_8_infNorm_le_mul_of_componentwise_T_bound n T T_hat
+    (1 + γ) hscale
+    (higham11_8_abs_T_le_one_plus_gamma_T_hat_of_relative_error
+      n T T_hat γ hγ hThat)
+
 /-- Componentwise absolute domination transfers directly to the matrix
 infinity norm. -/
 theorem higham11_8_infNorm_le_of_componentwise_abs_bound (n : ℕ)
@@ -4668,6 +7097,304 @@ theorem higham11_8_relative_outer_factor_caps_of_entrywise_majorant (n : ℕ)
     higham11_8_relative_outer_factor_caps_of_row_col_sum_majorants
       n L γ ((n : ℝ) * κ) ((n : ℝ) * κ) cap
       hγ hcap hκcap hκcap hrows hcols
+
+/-- If one entry of a uniformly bounded `Fin n` family is known to vanish, the
+full absolute sum is bounded by `(n-1)` copies of the uniform entry bound. -/
+theorem higham11_8_sum_abs_le_card_pred_mul_of_one_zero {n : ℕ}
+    (v : Fin n → ℝ) (κ : ℝ)
+    (hentry : ∀ k : Fin n, |v k| ≤ κ) (z : Fin n) (hz : v z = 0) :
+    (∑ k : Fin n, |v k|) ≤ ((n - 1 : ℕ) : ℝ) * κ := by
+  calc
+    (∑ k : Fin n, |v k|) =
+        Finset.sum (Finset.univ.erase z) (fun k => |v k|) := by
+      rw [← Finset.sum_erase_add (s := (Finset.univ : Finset (Fin n)))
+        (a := z) (f := fun k => |v k|) (Finset.mem_univ z)]
+      simp [hz]
+    _ ≤ Finset.sum (Finset.univ.erase z) (fun _k : Fin n => κ) := by
+      apply Finset.sum_le_sum
+      intro k _hk
+      exact hentry k
+    _ = ((Finset.univ.erase z).card : ℝ) * κ := by
+      simp [Finset.sum_const, nsmul_eq_mul]
+    _ = ((n - 1 : ℕ) : ℝ) * κ := by
+      rw [Finset.card_erase_of_mem (Finset.mem_univ z), Finset.card_univ,
+        Fintype.card_fin]
+
+/-- Aasen's exact outer factor structure upgrades a uniform entry majorant to
+`(n-1)` row and column sum majorants: every row and every column has at least
+one forced zero entry. -/
+theorem higham11_8_aasen_outer_factor_row_col_sum_majorants_of_entry_bound
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (κ : ℝ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (∀ i : Fin n, (∑ j : Fin n, |L i j|) ≤
+        ((n - 1 : ℕ) : ℝ) * κ) ∧
+      (∀ j : Fin n, (∑ i : Fin n, |L i j|) ≤
+        ((n - 1 : ℕ) : ℝ) * κ) := by
+  constructor
+  · intro i
+    by_cases hi0 : i.val = 0
+    · let z : Fin n := ⟨1, hn⟩
+      exact
+        higham11_8_sum_abs_le_card_pred_mul_of_one_zero
+          (v := fun j => L i j) κ (fun j => hentry i j) z
+          (hstrictUpperZero i z (by dsimp [z]; omega))
+    · let z : Fin n := ⟨0, by omega⟩
+      exact
+        higham11_8_sum_abs_le_card_pred_mul_of_one_zero
+          (v := fun j => L i j) κ (fun j => hentry i j) z
+          (hfirstColZero i z (by dsimp [z]) hi0)
+  · intro j
+    by_cases hj0 : j.val = 0
+    · let z : Fin n := ⟨1, hn⟩
+      exact
+        higham11_8_sum_abs_le_card_pred_mul_of_one_zero
+          (v := fun i => L i j) κ (fun i => hentry i j) z
+          (hfirstColZero z j hj0 (by dsimp [z]; omega))
+    · let z : Fin n := ⟨0, by omega⟩
+      exact
+        higham11_8_sum_abs_le_card_pred_mul_of_one_zero
+          (v := fun i => L i j) κ (fun i => hentry i j) z
+          (hstrictUpperZero z j (by dsimp [z]; omega))
+
+/-- Source-specific Aasen outer-factor structure feeds the exact-radius relative
+factor norm caps with `(n-1)` copies of a uniform exact-factor entry bound,
+rather than the fallback `n` copies. -/
+theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound (n : ℕ)
+    (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ cap : ℝ)
+    (hγ : 0 ≤ γ) (hκ : 0 ≤ κ)
+    (hκcap : (1 + γ) * (((n - 1 : ℕ) : ℝ) * κ) ≤ cap)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (1 + γ) * infNorm L ≤ cap ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤ cap := by
+  have hscale_nonneg : 0 ≤ 1 + γ := by linarith
+  have hmajor_nonneg : 0 ≤ ((n - 1 : ℕ) : ℝ) * κ :=
+    mul_nonneg (Nat.cast_nonneg (n - 1)) hκ
+  have hcap : 0 ≤ cap :=
+    (mul_nonneg hscale_nonneg hmajor_nonneg).trans hκcap
+  rcases
+    higham11_8_aasen_outer_factor_row_col_sum_majorants_of_entry_bound
+      n hn L κ hentry hstrictUpperZero hfirstColZero with
+    ⟨hrows, hcols⟩
+  exact
+    higham11_8_relative_outer_factor_caps_of_row_col_sum_majorants
+      n L γ (((n - 1 : ℕ) : ℝ) * κ) (((n - 1 : ℕ) : ℝ) * κ) cap
+      hγ hcap hκcap hκcap hrows hcols
+
+/-- Scalar scale comparison for the Aasen `(n-1)` outer-factor route.  A
+normalized entry bound `(1+γ)κ≤1` implies the row/column cap
+`(1+γ)((n-1)κ)≤n-1` consumed by the exact-radius wrappers. -/
+theorem higham11_8_aasen_outer_factor_scaled_entry_cap (n : ℕ) (γ κ : ℝ)
+    (hκunit : (1 + γ) * κ ≤ 1) :
+    (1 + γ) * (((n - 1 : ℕ) : ℝ) * κ) ≤ ((n - 1 : ℕ) : ℝ) := by
+  have hcard : 0 ≤ ((n - 1 : ℕ) : ℝ) := Nat.cast_nonneg (n - 1)
+  calc
+    (1 + γ) * (((n - 1 : ℕ) : ℝ) * κ)
+        = ((n - 1 : ℕ) : ℝ) * ((1 + γ) * κ) := by ring
+    _ ≤ ((n - 1 : ℕ) : ℝ) * 1 :=
+      mul_le_mul_of_nonneg_left hκunit hcard
+    _ = ((n - 1 : ℕ) : ℝ) := by ring
+
+/-- Scalar bridge from the common source-style inverse scale hypothesis to the
+normalized Aasen exact-factor entry cap. -/
+theorem higham11_8_one_plus_mul_le_one_of_le_inv_one_plus (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκ : κ ≤ 1 / (1 + γ)) :
+    (1 + γ) * κ ≤ 1 := by
+  have hpos : 0 < 1 + γ := by linarith
+  calc
+    (1 + γ) * κ ≤ (1 + γ) * (1 / (1 + γ)) :=
+      mul_le_mul_of_nonneg_left hκ (le_of_lt hpos)
+    _ = 1 := by field_simp [ne_of_gt hpos]
+
+/-- Aasen `(n-1)` outer-factor scale cap from the source-style bound
+`κ≤1/(1+γ)`. -/
+theorem higham11_8_aasen_outer_factor_scaled_entry_cap_of_le_inv_one_plus
+    (n : ℕ) (γ κ : ℝ) (hγ : 0 ≤ γ)
+    (hκ : κ ≤ 1 / (1 + γ)) :
+    (1 + γ) * (((n - 1 : ℕ) : ℝ) * κ) ≤ ((n - 1 : ℕ) : ℝ) :=
+  higham11_8_aasen_outer_factor_scaled_entry_cap n γ κ
+    (higham11_8_one_plus_mul_le_one_of_le_inv_one_plus γ κ hγ hκ)
+
+/-- Aasen outer-factor relative caps from a normalized uniform entry bound.
+This factors the remaining source scalar comparison for the exact-radius route:
+after proving `(1+γ)κ≤1` for the concrete Aasen factor entries, the strict
+upper-zero and first-column-zero structure supplies both relative norm caps with
+the printed `(n-1)` radius. -/
+theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκ : 0 ≤ κ)
+    (hκunit : (1 + γ) * κ ≤ 1)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (1 + γ) * infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) := by
+  exact
+    higham11_8_relative_outer_factor_caps_of_aasen_entry_bound
+      n hn L γ κ ((n - 1 : ℕ) : ℝ) hγ hκ
+      (higham11_8_aasen_outer_factor_scaled_entry_cap n γ κ hκunit)
+      hentry hstrictUpperZero hfirstColZero
+
+/-- Aasen outer-factor relative caps from a source-style inverse-scale uniform
+entry bound.  This is the same result as the normalized route, with
+`κ≤1/(1+γ)` supplying the normalized scalar cap. -/
+theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκnonneg : 0 ≤ κ) (hκ : κ ≤ 1 / (1 + γ))
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (1 + γ) * infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) :=
+  higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit
+    n hn L γ κ hγ hκnonneg
+    (higham11_8_one_plus_mul_le_one_of_le_inv_one_plus γ κ hγ hκ)
+    hentry hstrictUpperZero hfirstColZero
+
+/-- A uniform absolute entry bound over a nonempty matrix supplies
+nonnegativity of the bound. -/
+theorem higham11_8_nonneg_of_uniform_abs_entry_bound (n : ℕ) (hn : 0 < n)
+    (L : Fin n → Fin n → ℝ) (κ : ℝ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    0 ≤ κ :=
+  (abs_nonneg (L ⟨0, hn⟩ ⟨0, hn⟩)).trans
+    (hentry ⟨0, hn⟩ ⟨0, hn⟩)
+
+/-- Generic entrywise-majorant outer-factor caps, deriving `0≤κ` from the
+nonempty uniform absolute entry bound itself. -/
+theorem higham11_8_relative_outer_factor_caps_of_entrywise_majorant_of_entry_bound
+    (n : ℕ) (hn : 0 < n) (L : Fin n → Fin n → ℝ) (γ κ cap : ℝ)
+    (hγ : 0 ≤ γ)
+    (hκcap : (1 + γ) * ((n : ℝ) * κ) ≤ cap)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    (1 + γ) * infNorm L ≤ cap ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤ cap :=
+  higham11_8_relative_outer_factor_caps_of_entrywise_majorant
+    n L γ κ cap hγ
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n hn L κ hentry)
+    hκcap hentry
+
+/-- Aasen-structure outer-factor caps with an arbitrary scalar cap, deriving
+`0≤κ` from the nonempty uniform absolute entry bound itself. -/
+theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_of_entry_bound
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ cap : ℝ)
+    (hγ : 0 ≤ γ)
+    (hκcap : (1 + γ) * (((n - 1 : ℕ) : ℝ) * κ) ≤ cap)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (1 + γ) * infNorm L ≤ cap ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤ cap :=
+  higham11_8_relative_outer_factor_caps_of_aasen_entry_bound
+    n hn L γ κ cap hγ
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n
+      (Nat.lt_trans Nat.zero_lt_one hn) L κ hentry)
+    hκcap hentry hstrictUpperZero hfirstColZero
+
+/-- Aasen outer-factor relative caps from a normalized uniform entry bound,
+deriving `0≤κ` from the absolute entry bound itself. -/
+theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκunit : (1 + γ) * κ ≤ 1)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (1 + γ) * infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) :=
+  higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit
+    n hn L γ κ hγ
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n
+      (Nat.lt_trans Nat.zero_lt_one hn) L κ hentry)
+    hκunit hentry hstrictUpperZero hfirstColZero
+
+/-- Unscaled exact outer-factor norm caps from a normalized uniform entry bound,
+deriving `0≤κ` from the absolute entry bound itself. -/
+theorem higham11_8_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκunit : (1 + γ) * κ ≤ 1)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      infNorm (fun r c => L c r) ≤ ((n - 1 : ℕ) : ℝ) := by
+  rcases
+      higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound
+        n hn L γ κ hγ hκunit hentry hstrictUpperZero hfirstColZero with
+    ⟨hrelL, hrelLT⟩
+  exact
+    ⟨higham11_8_infNorm_cap_of_relative_infNorm_cap n L γ
+        ((n - 1 : ℕ) : ℝ) hγ hrelL,
+      higham11_8_infNorm_cap_of_relative_infNorm_cap n (fun r c => L c r) γ
+        ((n - 1 : ℕ) : ℝ) hγ hrelLT⟩
+
+/-- Aasen outer-factor relative caps from a source-style inverse-scale uniform
+entry bound, deriving `0≤κ` from the absolute entry bound itself. -/
+theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus_of_entry_bound
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκ : κ ≤ 1 / (1 + γ))
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (1 + γ) * infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) :=
+  higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus
+    n hn L γ κ hγ
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n
+      (Nat.lt_trans Nat.zero_lt_one hn) L κ hentry)
+    hκ hentry hstrictUpperZero hfirstColZero
+
+/-- Unscaled exact outer-factor norm caps from Aasen zero structure and the
+source-style inverse-scale uniform entry bound. -/
+theorem higham11_8_outer_factor_caps_of_aasen_entry_bound_inv_one_plus
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκnonneg : 0 ≤ κ) (hκ : κ ≤ 1 / (1 + γ))
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      infNorm (fun r c => L c r) ≤ ((n - 1 : ℕ) : ℝ) := by
+  rcases
+      higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus
+        n hn L γ κ hγ hκnonneg hκ hentry hstrictUpperZero hfirstColZero with
+    ⟨hrelL, hrelLT⟩
+  exact
+    ⟨higham11_8_infNorm_cap_of_relative_infNorm_cap n L γ
+        ((n - 1 : ℕ) : ℝ) hγ hrelL,
+      higham11_8_infNorm_cap_of_relative_infNorm_cap n (fun r c => L c r) γ
+        ((n - 1 : ℕ) : ℝ) hγ hrelLT⟩
+
+/-- Unscaled exact outer-factor norm caps from a source-style inverse-scale
+uniform entry bound, deriving `0≤κ` from the entry bound itself. -/
+theorem higham11_8_outer_factor_caps_of_aasen_entry_bound_inv_one_plus_of_entry_bound
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκ : κ ≤ 1 / (1 + γ))
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      infNorm (fun r c => L c r) ≤ ((n - 1 : ℕ) : ℝ) :=
+  higham11_8_outer_factor_caps_of_aasen_entry_bound_inv_one_plus
+    n hn L γ κ hγ
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n
+      (Nat.lt_trans Nat.zero_lt_one hn) L κ hentry)
+    hκ hentry hstrictUpperZero hfirstColZero
 
 /-- A relative entrywise factor perturbation controls the perturbed factor's
 infinity norm by `(1+γ)` times the source factor norm. -/
@@ -4976,6 +7703,89 @@ theorem higham11_8_aasen_base_square_bounds_of_factor_caps
       higham11_8_product_square_bound_of_factor_caps m
         ((1 + γ_factor) * κL) ((1 + γ_factor) * κLT) hm hrelLT_nonneg
         (by simpa [m] using hrelL_cap) (by simpa [m] using hrelLT_cap)
+
+/-- Product-size base square bounds for the exact Aasen outer factor, derived
+directly from the source-style inverse-scale uniform entry bound and Aasen zero
+structure. -/
+theorem higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκnonneg : 0 ≤ κ) (hκ : κ ≤ 1 / (1 + γ))
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (infNorm L * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ) * infNorm L) *
+          ((1 + γ) * infNorm (fun r c => L c r)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) := by
+  rcases
+      higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus
+        n hn L γ κ hγ hκnonneg hκ hentry hstrictUpperZero hfirstColZero with
+    ⟨hrelL, hrelLT⟩
+  have hLcap :
+      infNorm L ≤ ((n - 1 : ℕ) : ℝ) :=
+    higham11_8_infNorm_cap_of_relative_infNorm_cap n L γ
+      ((n - 1 : ℕ) : ℝ) hγ hrelL
+  have hLTcap :
+      infNorm (fun r c => L c r) ≤ ((n - 1 : ℕ) : ℝ) :=
+    higham11_8_infNorm_cap_of_relative_infNorm_cap n (fun r c => L c r) γ
+      ((n - 1 : ℕ) : ℝ) hγ hrelLT
+  exact
+    higham11_8_aasen_base_square_bounds_of_factor_caps n γ
+      (infNorm L) (infNorm (fun r c => L c r)) hγ (infNorm_nonneg L)
+      (infNorm_nonneg (fun r c => L c r)) hLcap hLTcap hrelL hrelLT
+
+/-- Product-size base square bounds for the exact Aasen outer factor from the
+source-style inverse-scale entry bound, deriving `0≤κ` from the entry bound. -/
+theorem higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus_of_entry_bound
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκ : κ ≤ 1 / (1 + γ))
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (infNorm L * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ) * infNorm L) *
+          ((1 + γ) * infNorm (fun r c => L c r)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) :=
+  higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus
+    n hn L γ κ hγ
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n
+      (Nat.lt_trans Nat.zero_lt_one hn) L κ hentry)
+    hκ hentry hstrictUpperZero hfirstColZero
+
+/-- Product-size base square bounds for the exact Aasen outer factor from the
+normalized entry cap `(1+γ)κ≤1`, deriving `0≤κ` from the entry bound. -/
+theorem higham11_8_aasen_base_square_bounds_of_entry_bound_scaled_unit_of_entry_bound
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκunit : (1 + γ) * κ ≤ 1)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (infNorm L * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ) * infNorm L) *
+          ((1 + γ) * infNorm (fun r c => L c r)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) := by
+  rcases
+      higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound
+        n hn L γ κ hγ hκunit hentry hstrictUpperZero hfirstColZero with
+    ⟨hrelL, hrelLT⟩
+  have hLcap :
+      infNorm L ≤ ((n - 1 : ℕ) : ℝ) :=
+    higham11_8_infNorm_cap_of_relative_infNorm_cap n L γ
+      ((n - 1 : ℕ) : ℝ) hγ hrelL
+  have hLTcap :
+      infNorm (fun r c => L c r) ≤ ((n - 1 : ℕ) : ℝ) :=
+    higham11_8_infNorm_cap_of_relative_infNorm_cap n (fun r c => L c r) γ
+      ((n - 1 : ℕ) : ℝ) hγ hrelLT
+  exact
+    higham11_8_aasen_base_square_bounds_of_factor_caps n γ
+      (infNorm L) (infNorm (fun r c => L c r)) hγ (infNorm_nonneg L)
+      (infNorm_nonneg (fun r c => L c r)) hLcap hLTcap hrelL hrelLT
 
 /-- Insert a nonnegative middle factor bounded by `1` into a product already
 bounded by the printed Aasen `(n-1)^2` square. -/
@@ -5497,6 +8307,37 @@ theorem higham11_8_gammaValid_n_two_prefix_of_15n25
   intro _ next _
   exact gammaValid_mono fp (by omega) hval
 
+/-- **Theorem 11.8 printed gamma-validity guard**: the source-side smallness
+condition `(15n+25)u < 1` is exactly the repository `gammaValid` hypothesis for
+the displayed radius `γ_{15n+25}`. -/
+theorem higham11_8_gammaValid_15n25_of_unit_roundoff_bound
+    (fp : FPModel) (n : ℕ)
+    (hcap : (((15 * n + 25 : ℕ) : ℝ) * fp.u) < 1) :
+    gammaValid fp (15 * n + 25) := by
+  simpa [gammaValid] using hcap
+
+/-- Displayed-cap version of the Theorem 11.8 gamma-validity guard: if the
+model unit roundoff is bounded by a source cap `Ucap`, and the cap satisfies
+`(15n+25)Ucap < 1`, then the printed `γ_{15n+25}` radius is valid. -/
+theorem higham11_8_gammaValid_15n25_of_u_le_cap
+    (fp : FPModel) (n : ℕ) (Ucap : ℝ)
+    (hu : fp.u ≤ Ucap)
+    (hcap : (((15 * n + 25 : ℕ) : ℝ) * Ucap) < 1) :
+    gammaValid fp (15 * n + 25) :=
+  gammaValid_of_u_le_cap fp (15 * n + 25) Ucap hu hcap
+
+/-- A displayed unit-roundoff cap for Theorem 11.8 supplies the local
+`gammaValid n`, `gammaValid 2`, and source-prefix dot-product validity
+conditions used by the Aasen recurrence wrappers. -/
+theorem higham11_8_gammaValid_n_two_prefix_of_u_le_cap
+    (fp : FPModel) (n : ℕ) (Ucap : ℝ)
+    (hu : fp.u ≤ Ucap)
+    (hcap : (((15 * n + 25 : ℕ) : ℝ) * Ucap) < 1) :
+    gammaValid fp n ∧ gammaValid fp 2 ∧
+      (∀ i next : Fin n, next.val = i.val + 1 → gammaValid fp next.val) :=
+  higham11_8_gammaValid_n_two_prefix_of_15n25 fp n
+    (higham11_8_gammaValid_15n25_of_u_le_cap fp n Ucap hu hcap)
+
 /-- Product-cap version of
 `higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts`.  Each of the four
 coefficient pieces may first be bounded by a simpler product cap, and the cap
@@ -5969,6 +8810,63 @@ theorem higham11_8_aasen_factor_solve_norm_budget_of_factor_norm_bounds
         simpa [τ, mul_assoc] using
           mul_le_mul_of_nonneg_right hcoeff' hτ
 
+/-- Scalar reducer variant where the factorization-side middle perturbation is
+the concrete envelope `κBT |T_hat|` and the exact middle-factor norm is derived
+from the relative componentwise comparison `|T_hat - T| ≤ κBT |T_hat|`.  This
+is a fallback route: it gives `‖T‖∞ ≤ (1+κBT) ‖T_hat‖∞`, not the sharper
+source-constant cap `‖T‖∞ ≤ ‖T_hat‖∞`. -/
+theorem higham11_8_aasen_factor_solve_norm_budget_of_relative_T_hat_error
+    (fp : FPModel) (n : ℕ)
+    (L T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (γ_factor γ15n25 κL κLT κLhat κLhatT κBT κmid : ℝ)
+    (hγ_factor : 0 ≤ γ_factor) (hn : gammaValid fp n)
+    (hκL : 0 ≤ κL) (hκLhat : 0 ≤ κLhat)
+    (hκBT : 0 ≤ κBT) (hκmid : 0 ≤ κmid)
+    (hL : infNorm L ≤ κL)
+    (hLT : infNorm (fun r c => L c r) ≤ κLT)
+    (hLhat : infNorm L_hat ≤ κLhat)
+    (hLhatT : infNorm (fun r c => L_hat c r) ≤ κLhatT)
+    (hThat_component : ∀ i j : Fin n, |T_hat i j - T i j| ≤ κBT * |T_hat i j|)
+    (hmiddle :
+      infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) ≤
+        κmid * infNorm T_hat)
+    (hcoeff :
+      (2 * γ_factor + γ_factor ^ 2) * (κL * (1 + κBT) * κLT) +
+        (1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT) +
+        (2 * gamma fp n + (gamma fp n) ^ 2) * (κLhat * κLhatT) +
+        (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+          (κLhat * κmid * κLhatT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25) :
+    ((2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L * infNorm T * infNorm (fun r c => L c r)) +
+      (1 + 2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L *
+          infNorm (fun i j : Fin n => κBT * |T_hat i j|) *
+          infNorm (fun r c => L c r))) +
+    ((2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat * infNorm T_hat * infNorm (fun r c => L_hat c r)) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat *
+          infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) *
+          infNorm (fun r c => L_hat c r))) ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 * infNorm T_hat := by
+  have hκT : 0 ≤ 1 + κBT := by linarith
+  have hT :
+      infNorm T ≤ (1 + κBT) * infNorm T_hat :=
+    higham11_8_infNorm_T_le_one_plus_gamma_T_hat_of_relative_error
+      n T T_hat κBT hκBT hThat_component
+  have hBT :
+      infNorm (fun i j : Fin n => κBT * |T_hat i j|) ≤
+        κBT * infNorm T_hat :=
+    higham11_8_infNorm_scaled_abs_T_hat_le n T_hat κBT hκBT
+  exact
+    higham11_8_aasen_factor_solve_norm_budget_of_factor_norm_bounds
+      fp n L T L_hat T_hat L_T_hat U_T_hat
+      (fun i j : Fin n => κBT * |T_hat i j|)
+      γ_factor γ15n25 κL κLT κLhat κLhatT (1 + κBT) κBT κmid
+      hγ_factor hn hκL hκLhat hκT hκBT hκmid hL hLT hLhat hLhatT
+      hT hBT hmiddle hcoeff
+
 /-- Scalar reducer variant where the computed-factor norm bounds are derived
 from the relative entrywise `L_hat` perturbation and the source-factor norm
 bounds. -/
@@ -6028,6 +8926,66 @@ theorem higham11_8_aasen_factor_solve_norm_budget_of_relative_factor_norm_bounds
       κL κLT ((1 + γ_factor) * κL) ((1 + γ_factor) * κLT) κT κBT κmid
       hγ_factor hn hκL (mul_nonneg hγ1 hκL) hκT hκBT hκmid
       hL hLT hLhat_norm hLhatT_norm hT hBT hmiddle hcoeff
+
+/-- Scalar reducer variant combining generated relative outer-factor bounds
+with the fallback relative-`T_hat` middle-factor norm route. -/
+theorem higham11_8_aasen_factor_solve_norm_budget_of_relative_factor_norm_bounds_relative_T_hat_error
+    (fp : FPModel) (n : ℕ)
+    (L T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (γ_factor γ15n25 κL κLT κBT κmid : ℝ)
+    (hγ_factor : 0 ≤ γ_factor) (hn : gammaValid fp n)
+    (hκL : 0 ≤ κL)
+    (hκBT : 0 ≤ κBT) (hκmid : 0 ≤ κmid)
+    (hLhat_entry : ∀ i j : Fin n, |L_hat i j - L i j| ≤ γ_factor * |L i j|)
+    (hL : infNorm L ≤ κL)
+    (hLT : infNorm (fun r c => L c r) ≤ κLT)
+    (hThat_component : ∀ i j : Fin n, |T_hat i j - T i j| ≤ κBT * |T_hat i j|)
+    (hmiddle :
+      infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) ≤
+        κmid * infNorm T_hat)
+    (hcoeff :
+      (2 * γ_factor + γ_factor ^ 2) * (κL * (1 + κBT) * κLT) +
+        (1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT) +
+        (2 * gamma fp n + (gamma fp n) ^ 2) *
+          (((1 + γ_factor) * κL) * ((1 + γ_factor) * κLT)) +
+        (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+          (((1 + γ_factor) * κL) * κmid * ((1 + γ_factor) * κLT)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25) :
+    ((2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L * infNorm T * infNorm (fun r c => L c r)) +
+      (1 + 2 * γ_factor + γ_factor ^ 2) *
+        (infNorm L *
+          infNorm (fun i j : Fin n => κBT * |T_hat i j|) *
+          infNorm (fun r c => L c r))) +
+    ((2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat * infNorm T_hat * infNorm (fun r c => L_hat c r)) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L_hat *
+          infNorm (higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat) *
+          infNorm (fun r c => L_hat c r))) ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 * infNorm T_hat := by
+  have hγ1 : 0 ≤ 1 + γ_factor := by linarith
+  have hLhat_norm : infNorm L_hat ≤ (1 + γ_factor) * κL := by
+    calc
+      infNorm L_hat ≤ (1 + γ_factor) * infNorm L :=
+        higham11_8_infNorm_factor_le_of_relative_entry_bound n L L_hat
+          γ_factor hγ_factor hLhat_entry
+      _ ≤ (1 + γ_factor) * κL := mul_le_mul_of_nonneg_left hL hγ1
+  have hLhatT_norm :
+      infNorm (fun r c => L_hat c r) ≤
+        (1 + γ_factor) * κLT := by
+    calc
+      infNorm (fun r c => L_hat c r) ≤
+          (1 + γ_factor) * infNorm (fun r c => L c r) :=
+        higham11_8_infNorm_factorTranspose_le_of_relative_entry_bound n
+          L L_hat γ_factor hγ_factor hLhat_entry
+      _ ≤ (1 + γ_factor) * κLT := mul_le_mul_of_nonneg_left hLT hγ1
+  exact
+    higham11_8_aasen_factor_solve_norm_budget_of_relative_T_hat_error
+      fp n L T L_hat T_hat L_T_hat U_T_hat γ_factor γ15n25
+      κL κLT ((1 + γ_factor) * κL) ((1 + γ_factor) * κLT) κBT κmid
+      hγ_factor hn hκL (mul_nonneg hγ1 hκL) hκBT hκmid
+      hL hLT hLhat_norm hLhatT_norm hThat_component hmiddle hcoeff
 
 /-- Relative-factor scalar reducer with the final printed coefficient supplied
 as four shares of the printed `(n-1)^2 γ_{15n+25}` budget. -/
@@ -12242,6 +15200,1610 @@ theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_sourc
       hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
       hT_U_diag hT_L_lower hT_U_upper hprod hThat_component hT_norm
       hTNJ hdetJ hleadJ hLU hrelL_cap hrelLT_cap
+
+/-- Source-prefix checkerboard-middle endpoint where Aasen's exact outer-factor
+zero structure turns a uniform entrywise majorant into the relative outer-factor
+caps with the sharper `(n-1)` count, and `‖T‖∞≤‖T̂‖∞` follows from entrywise
+`|T|≤|T̂|`. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_componentwise_T_checkerboard_middle
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_component : ∀ i j : Fin n, |T i j| ≤ |T_hat i j|)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hleadJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        0 < Matrix.det
+          (higham9_2_leadingPrincipalBlock
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hκLentry : 0 ≤ κLentry)
+    (hκLentry_cap :
+      (1 + gamma fp n) * (((n - 1 : ℕ) : ℝ) * κLentry) ≤
+        ((n - 1 : ℕ) : ℝ))
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) := by
+  have hn : gammaValid fp n :=
+    (higham11_8_gammaValid_n_two_prefix_of_15n25 fp n hcoeff_valid).1
+  have hγn : 0 ≤ gamma fp n := gamma_nonneg fp hn
+  rcases
+      higham11_8_relative_outer_factor_caps_of_aasen_entry_bound
+        n hn_dim L (gamma fp n) κLentry ((n - 1 : ℕ) : ℝ)
+        hγn hκLentry hκLentry_cap hL_entry hL_strictUpperZero
+        hL_firstColZero with
+    ⟨hrelL_cap, hrelLT_cap⟩
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_componentwise_T_checkerboard_middle
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      hcoeff_valid hrec hHnz hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hprod hThat_component hT_component
+      hTNJ hdetJ hleadJ hLU hrelL_cap hrelLT_cap
+
+/-- Source-prefix checkerboard-middle endpoint where Aasen's exact outer-factor
+zero structure turns a uniform entrywise majorant into the relative outer-factor
+caps with the sharper `(n-1)` count, while the exact middle factor is related to
+`T_hat` by a direct norm cap. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_T_norm_cap_checkerboard_middle
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_norm : infNorm T ≤ infNorm T_hat)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hleadJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        0 < Matrix.det
+          (higham9_2_leadingPrincipalBlock
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hκLentry : 0 ≤ κLentry)
+    (hκLentry_cap :
+      (1 + gamma fp n) * (((n - 1 : ℕ) : ℝ) * κLentry) ≤
+        ((n - 1 : ℕ) : ℝ))
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) := by
+  have hn : gammaValid fp n :=
+    (higham11_8_gammaValid_n_two_prefix_of_15n25 fp n hcoeff_valid).1
+  have hγn : 0 ≤ gamma fp n := gamma_nonneg fp hn
+  rcases
+      higham11_8_relative_outer_factor_caps_of_aasen_entry_bound
+        n hn_dim L (gamma fp n) κLentry ((n - 1 : ℕ) : ℝ)
+        hγn hκLentry hκLentry_cap hL_entry hL_strictUpperZero
+        hL_firstColZero with
+    ⟨hrelL_cap, hrelLT_cap⟩
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_relative_norm_caps_of_T_norm_cap_checkerboard_middle
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      hcoeff_valid hrec hHnz hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hprod hThat_component hT_norm
+      hTNJ hdetJ hleadJ hLU hrelL_cap hrelLT_cap
+
+/-- Source-prefix checkerboard-middle endpoint where Aasen's zero pattern and
+a normalized exact outer-factor entry bound `(1+γ_n)κ≤1` supply the sharper
+`(n-1)` relative outer-factor caps, and `‖T‖∞≤‖T̂‖∞` follows from entrywise
+`|T|≤|T̂|`. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_componentwise_T_checkerboard_middle
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_component : ∀ i j : Fin n, |T i j| ≤ |T_hat i j|)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hleadJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        0 < Matrix.det
+          (higham9_2_leadingPrincipalBlock
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hκLentry : 0 ≤ κLentry)
+    (hκLentry_unit : (1 + gamma fp n) * κLentry ≤ 1)
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) := by
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_componentwise_T_checkerboard_middle
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κLentry hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hprod
+      hThat_component hT_component hTNJ hdetJ hleadJ hLU hκLentry
+      (higham11_8_aasen_outer_factor_scaled_entry_cap n (gamma fp n)
+        κLentry hκLentry_unit)
+      hL_entry hL_strictUpperZero hL_firstColZero
+
+/-- Source-prefix checkerboard-middle endpoint where Aasen's zero pattern and
+a normalized exact outer-factor entry bound `(1+γ_n)κ≤1` supply the sharper
+`(n-1)` relative outer-factor caps, while the exact middle factor is related to
+`T_hat` by a direct norm cap. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_T_norm_cap_checkerboard_middle
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_norm : infNorm T ≤ infNorm T_hat)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hleadJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        0 < Matrix.det
+          (higham9_2_leadingPrincipalBlock
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hκLentry : 0 ≤ κLentry)
+    (hκLentry_unit : (1 + gamma fp n) * κLentry ≤ 1)
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) := by
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_T_norm_cap_checkerboard_middle
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κLentry hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hprod
+      hThat_component hT_norm hTNJ hdetJ hleadJ hLU hκLentry
+      (higham11_8_aasen_outer_factor_scaled_entry_cap n (gamma fp n)
+        κLentry hκLentry_unit)
+      hL_entry hL_strictUpperZero hL_firstColZero
+
+/-- Source-prefix checkerboard-middle endpoint where the normalized exact
+outer-factor entry bound supplies the Aasen caps, deriving `0≤κ` from the
+uniform absolute entry bound itself. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_componentwise_T_checkerboard_middle_entry_bound_nonneg
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_component : ∀ i j : Fin n, |T i j| ≤ |T_hat i j|)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hleadJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        0 < Matrix.det
+          (higham9_2_leadingPrincipalBlock
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hκLentry_unit : (1 + gamma fp n) * κLentry ≤ 1)
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) :=
+  higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_componentwise_T_checkerboard_middle
+    fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+    DeltaT_LU κLentry hcoeff_valid hrec hHnz hLhat_update
+    hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+    hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hprod
+    hThat_component hT_component hTNJ hdetJ hleadJ hLU
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n hn_pos L κLentry
+      hL_entry)
+    hκLentry_unit hL_entry hL_strictUpperZero hL_firstColZero
+
+/-- Source-prefix checkerboard-middle endpoint with a supplied `T` norm cap,
+deriving `0≤κ` from the uniform exact outer-factor entry bound. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_T_norm_cap_checkerboard_middle_entry_bound_nonneg
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_norm : infNorm T ≤ infNorm T_hat)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hleadJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        0 < Matrix.det
+          (higham9_2_leadingPrincipalBlock
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hκLentry_unit : (1 + gamma fp n) * κLentry ≤ 1)
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) :=
+  higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_T_norm_cap_checkerboard_middle
+    fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+    DeltaT_LU κLentry hcoeff_valid hrec hHnz hLhat_update
+    hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+    hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hprod
+    hThat_component hT_norm hTNJ hdetJ hleadJ hLU
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n hn_pos L κLentry
+      hL_entry)
+    hκLentry_unit hL_entry hL_strictUpperZero hL_firstColZero
+
+/-- Source-prefix checkerboard-middle endpoint where Aasen's zero pattern and
+the source-style inverse exact outer-factor entry bound `κ≤1/(1+γ_n)` supply
+the sharper `(n-1)` relative outer-factor caps, and `‖T‖∞≤‖T̂‖∞` follows from
+entrywise `|T|≤|T̂|`. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_componentwise_T_checkerboard_middle
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_component : ∀ i j : Fin n, |T i j| ≤ |T_hat i j|)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hleadJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        0 < Matrix.det
+          (higham9_2_leadingPrincipalBlock
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hκLentry : 0 ≤ κLentry)
+    (hκLentry_inv : κLentry ≤ 1 / (1 + gamma fp n))
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) := by
+  have hn : gammaValid fp n :=
+    (higham11_8_gammaValid_n_two_prefix_of_15n25 fp n hcoeff_valid).1
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_componentwise_T_checkerboard_middle
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κLentry hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hprod
+      hThat_component hT_component hTNJ hdetJ hleadJ hLU hκLentry
+      (higham11_8_one_plus_mul_le_one_of_le_inv_one_plus
+        (gamma fp n) κLentry (gamma_nonneg fp hn) hκLentry_inv)
+      hL_entry hL_strictUpperZero hL_firstColZero
+
+/-- Source-prefix checkerboard-middle endpoint where Aasen's zero pattern and
+the source-style inverse exact outer-factor entry bound `κ≤1/(1+γ_n)` supply
+the sharper `(n-1)` relative outer-factor caps, while the exact middle factor
+is related to `T_hat` by a direct norm cap. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_T_norm_cap_checkerboard_middle
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_norm : infNorm T ≤ infNorm T_hat)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hleadJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        0 < Matrix.det
+          (higham9_2_leadingPrincipalBlock
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hκLentry : 0 ≤ κLentry)
+    (hκLentry_inv : κLentry ≤ 1 / (1 + gamma fp n))
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) := by
+  have hn : gammaValid fp n :=
+    (higham11_8_gammaValid_n_two_prefix_of_15n25 fp n hcoeff_valid).1
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_T_norm_cap_checkerboard_middle
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κLentry hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hprod
+      hThat_component hT_norm hTNJ hdetJ hleadJ hLU hκLentry
+      (higham11_8_one_plus_mul_le_one_of_le_inv_one_plus
+        (gamma fp n) κLentry (gamma_nonneg fp hn) hκLentry_inv)
+      hL_entry hL_strictUpperZero hL_firstColZero
+
+/-- Source-prefix checkerboard-middle endpoint where the source-style inverse
+exact outer-factor entry bound supplies the Aasen caps, deriving `0≤κ` from
+the uniform absolute entry bound itself. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_componentwise_T_checkerboard_middle_entry_bound_nonneg
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_component : ∀ i j : Fin n, |T i j| ≤ |T_hat i j|)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hleadJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        0 < Matrix.det
+          (higham9_2_leadingPrincipalBlock
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hκLentry_inv : κLentry ≤ 1 / (1 + gamma fp n))
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) :=
+  higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_componentwise_T_checkerboard_middle
+    fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+    DeltaT_LU κLentry hcoeff_valid hrec hHnz hLhat_update
+    hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+    hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hprod
+    hThat_component hT_component hTNJ hdetJ hleadJ hLU
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n hn_pos L κLentry
+      hL_entry)
+    hκLentry_inv hL_entry hL_strictUpperZero hL_firstColZero
+
+/-- Source-prefix checkerboard-middle endpoint with a supplied `T` norm cap,
+deriving `0≤κ` from the uniform exact outer-factor entry bound. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_T_norm_cap_checkerboard_middle_entry_bound_nonneg
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_norm : infNorm T ≤ infNorm T_hat)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hleadJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        0 < Matrix.det
+          (higham9_2_leadingPrincipalBlock
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hκLentry_inv : κLentry ≤ 1 / (1 + gamma fp n))
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) :=
+  higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_T_norm_cap_checkerboard_middle
+    fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+    DeltaT_LU κLentry hcoeff_valid hrec hHnz hLhat_update
+    hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+    hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hprod
+    hThat_component hT_norm hTNJ hdetJ hleadJ hLU
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n hn_pos L κLentry
+      hL_entry)
+    hκLentry_inv hL_entry hL_strictUpperZero hL_firstColZero
+
+/-- Source-prefix endpoint where Aasen's zero pattern and a normalized exact
+outer-factor entry bound `(1+γ_n)κ≤1` supply the outer-factor caps, while the
+middle product estimate `|L_T||U_T|≤|T̂|` is supplied directly and
+`‖T‖∞≤‖T̂‖∞` follows from entrywise `|T|≤|T̂|`. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_componentwise_T
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_component : ∀ i j : Fin n, |T i j| ≤ |T_hat i j|)
+    (hmiddle_entry : ∀ i j : Fin n,
+      matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤ |T_hat i j|)
+    (hκLentry : 0 ≤ κLentry)
+    (hκLentry_unit : (1 + gamma fp n) * κLentry ≤ 1)
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) := by
+  have hn : gammaValid fp n :=
+    (higham11_8_gammaValid_n_two_prefix_of_15n25 fp n hcoeff_valid).1
+  have hγn : 0 ≤ gamma fp n := gamma_nonneg fp hn
+  rcases
+      higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit
+        n hn_dim L (gamma fp n) κLentry hγn hκLentry hκLentry_unit
+        hL_entry hL_strictUpperZero hL_firstColZero with
+    ⟨hrelL_cap, hrelLT_cap⟩
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_norm_caps_of_componentwise_T
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      hcoeff_valid hrec hHnz hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hprod hThat_component hT_component
+      hmiddle_entry
+      (higham11_8_infNorm_cap_of_relative_infNorm_cap
+        n L (gamma fp n) ((n - 1 : ℕ) : ℝ) hγn hrelL_cap)
+      (higham11_8_infNorm_cap_of_relative_infNorm_cap
+        n (fun r c => L c r) (gamma fp n) ((n - 1 : ℕ) : ℝ) hγn
+        hrelLT_cap)
+      hrelL_cap hrelLT_cap
+
+/-- Source-prefix endpoint where Aasen's zero pattern and a normalized exact
+outer-factor entry bound `(1+γ_n)κ≤1` supply the outer-factor caps, while both
+the middle product estimate `|L_T||U_T|≤|T̂|` and `‖T‖∞≤‖T̂‖∞` are supplied
+directly. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_T_norm_cap
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_norm : infNorm T ≤ infNorm T_hat)
+    (hmiddle_entry : ∀ i j : Fin n,
+      matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤ |T_hat i j|)
+    (hκLentry : 0 ≤ κLentry)
+    (hκLentry_unit : (1 + gamma fp n) * κLentry ≤ 1)
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) := by
+  have hn : gammaValid fp n :=
+    (higham11_8_gammaValid_n_two_prefix_of_15n25 fp n hcoeff_valid).1
+  have hγn : 0 ≤ gamma fp n := gamma_nonneg fp hn
+  rcases
+      higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit
+        n hn_dim L (gamma fp n) κLentry hγn hκLentry hκLentry_unit
+        hL_entry hL_strictUpperZero hL_firstColZero with
+    ⟨hrelL_cap, hrelLT_cap⟩
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_norm_caps
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      hcoeff_valid hrec hHnz hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hprod hThat_component hT_norm
+      hmiddle_entry
+      (higham11_8_infNorm_cap_of_relative_infNorm_cap
+        n L (gamma fp n) ((n - 1 : ℕ) : ℝ) hγn hrelL_cap)
+      (higham11_8_infNorm_cap_of_relative_infNorm_cap
+        n (fun r c => L c r) (gamma fp n) ((n - 1 : ℕ) : ℝ) hγn
+        hrelLT_cap)
+      hrelL_cap hrelLT_cap
+
+/-- Source-prefix direct-middle endpoint where the normalized exact
+outer-factor entry bound supplies the Aasen caps, deriving `0≤κ` from the
+uniform absolute entry bound itself. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_componentwise_T_entry_bound_nonneg
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_component : ∀ i j : Fin n, |T i j| ≤ |T_hat i j|)
+    (hmiddle_entry : ∀ i j : Fin n,
+      matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤ |T_hat i j|)
+    (hκLentry_unit : (1 + gamma fp n) * κLentry ≤ 1)
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) :=
+  higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_componentwise_T
+    fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+    DeltaT_LU κLentry hcoeff_valid hrec hHnz hLhat_update
+    hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+    hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hprod
+    hThat_component hT_component hmiddle_entry
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n hn_pos L κLentry
+      hL_entry)
+    hκLentry_unit hL_entry hL_strictUpperZero hL_firstColZero
+
+/-- Source-prefix direct-middle endpoint with a supplied `T` norm cap, deriving
+`0≤κ` from the uniform exact outer-factor entry bound. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_T_norm_cap_entry_bound_nonneg
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_norm : infNorm T ≤ infNorm T_hat)
+    (hmiddle_entry : ∀ i j : Fin n,
+      matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤ |T_hat i j|)
+    (hκLentry_unit : (1 + gamma fp n) * κLentry ≤ 1)
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) :=
+  higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_T_norm_cap
+    fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+    DeltaT_LU κLentry hcoeff_valid hrec hHnz hLhat_update
+    hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+    hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hprod
+    hThat_component hT_norm hmiddle_entry
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n hn_pos L κLentry
+      hL_entry)
+    hκLentry_unit hL_entry hL_strictUpperZero hL_firstColZero
+
+/-- Source-prefix endpoint where Aasen's zero pattern and the source-style
+inverse exact outer-factor entry bound `κ≤1/(1+γ_n)` supply the outer-factor
+caps, while the middle product estimate `|L_T||U_T|≤|T̂|` is supplied directly
+and `‖T‖∞≤‖T̂‖∞` follows from entrywise `|T|≤|T̂|`. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_componentwise_T
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_component : ∀ i j : Fin n, |T i j| ≤ |T_hat i j|)
+    (hmiddle_entry : ∀ i j : Fin n,
+      matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤ |T_hat i j|)
+    (hκLentry : 0 ≤ κLentry)
+    (hκLentry_inv : κLentry ≤ 1 / (1 + gamma fp n))
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) := by
+  have hn : gammaValid fp n :=
+    (higham11_8_gammaValid_n_two_prefix_of_15n25 fp n hcoeff_valid).1
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_componentwise_T
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κLentry hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hprod
+      hThat_component hT_component hmiddle_entry hκLentry
+      (higham11_8_one_plus_mul_le_one_of_le_inv_one_plus
+        (gamma fp n) κLentry (gamma_nonneg fp hn) hκLentry_inv)
+      hL_entry hL_strictUpperZero hL_firstColZero
+
+/-- Source-prefix endpoint where Aasen's zero pattern and the source-style
+inverse exact outer-factor entry bound `κ≤1/(1+γ_n)` supply the outer-factor
+caps, while both the middle product estimate `|L_T||U_T|≤|T̂|` and
+`‖T‖∞≤‖T̂‖∞` are supplied directly. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_T_norm_cap
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_norm : infNorm T ≤ infNorm T_hat)
+    (hmiddle_entry : ∀ i j : Fin n,
+      matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤ |T_hat i j|)
+    (hκLentry : 0 ≤ κLentry)
+    (hκLentry_inv : κLentry ≤ 1 / (1 + gamma fp n))
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) := by
+  have hn : gammaValid fp n :=
+    (higham11_8_gammaValid_n_two_prefix_of_15n25 fp n hcoeff_valid).1
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_T_norm_cap
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κLentry hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hprod
+      hThat_component hT_norm hmiddle_entry hκLentry
+      (higham11_8_one_plus_mul_le_one_of_le_inv_one_plus
+        (gamma fp n) κLentry (gamma_nonneg fp hn) hκLentry_inv)
+      hL_entry hL_strictUpperZero hL_firstColZero
+
+/-- Source-prefix direct-middle endpoint where the source-style inverse exact
+outer-factor entry bound supplies the Aasen caps, deriving `0≤κ` from the
+uniform absolute entry bound itself. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_componentwise_T_entry_bound_nonneg
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_component : ∀ i j : Fin n, |T i j| ≤ |T_hat i j|)
+    (hmiddle_entry : ∀ i j : Fin n,
+      matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤ |T_hat i j|)
+    (hκLentry_inv : κLentry ≤ 1 / (1 + gamma fp n))
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) :=
+  higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_componentwise_T
+    fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+    DeltaT_LU κLentry hcoeff_valid hrec hHnz hLhat_update
+    hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+    hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hprod
+    hThat_component hT_component hmiddle_entry
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n hn_pos L κLentry
+      hL_entry)
+    hκLentry_inv hL_entry hL_strictUpperZero hL_firstColZero
+
+/-- Source-prefix direct-middle endpoint with a supplied `T` norm cap, deriving
+`0≤κ` from the uniform exact outer-factor entry bound. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_T_norm_cap_entry_bound_nonneg
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (κLentry : ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_norm : infNorm T ≤ infNorm T_hat)
+    (hmiddle_entry : ∀ i j : Fin n,
+      matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤ |T_hat i j|)
+    (hκLentry_inv : κLentry ≤ 1 / (1 + gamma fp n))
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κLentry)
+    (hL_strictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_firstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) :=
+  higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_T_norm_cap
+    fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+    DeltaT_LU κLentry hcoeff_valid hrec hHnz hLhat_update
+    hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+    hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hprod
+    hThat_component hT_norm hmiddle_entry
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n hn_pos L κLentry
+      hL_entry)
+    hκLentry_inv hL_entry hL_strictUpperZero hL_firstColZero
 
 /-- Source-prefix relative abs-LU componentwise-middle wrapper with the
 concrete factorization-side `T_hat` budget and exact product majorants, using
