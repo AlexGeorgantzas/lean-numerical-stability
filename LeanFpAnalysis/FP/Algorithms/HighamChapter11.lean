@@ -4986,6 +4986,90 @@ def higham11_7_tridiagonalBranchSupportOffset : PivotSize → ℕ
   | PivotSize.one => 1
   | PivotSize.two => 2
 
+/-- Every tridiagonal branch consumes at least one pivot index. -/
+theorem higham11_7_tridiagonalBranchSupportOffset_pos (s : PivotSize) :
+    0 < higham11_7_tridiagonalBranchSupportOffset s := by
+  cases s <;> simp [higham11_7_tridiagonalBranchSupportOffset]
+
+/-- Total number of rows/columns consumed by a finite mixed tridiagonal
+pivot path.  A `1 × 1` branch consumes one index and a `2 × 2` branch consumes
+two. -/
+def higham11_7_tridiagonalPathPivotSpan (k : ℕ)
+    (step : Fin k → PivotSize) : ℕ :=
+  ∑ t : Fin k, higham11_7_tridiagonalBranchSupportOffset (step t)
+
+/-- Start offsets for a finite mixed tridiagonal pivot path, relative to an
+ambient base offset.  The head starts at `base`; each successor starts after
+the current branch's consumed `1 × 1` or `2 × 2` pivot block. -/
+def higham11_7_TridiagonalPathStartOffsetsFrom
+    (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ) : Prop :=
+  (∀ hk : 0 < k, starts ⟨0, hk⟩ = base) ∧
+  ∀ t : Fin k, ∀ hnext : t.val + 1 < k,
+    starts ⟨t.val + 1, hnext⟩ =
+      starts t + higham11_7_tridiagonalBranchSupportOffset (step t)
+
+/-- Start offsets for a mixed tridiagonal pivot path beginning at the first
+ambient row/column. -/
+abbrev higham11_7_TridiagonalPathStartOffsets
+    (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ) : Prop :=
+  higham11_7_TridiagonalPathStartOffsetsFrom 0 k step starts
+
+/-- The head offset of a path schedule is its supplied base offset. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_head
+    (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsetsFrom base k step starts)
+    (hk : 0 < k) :
+    starts ⟨0, hk⟩ = base :=
+  hstarts.1 hk
+
+/-- Successor offsets advance by the local pivot span of the current branch. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_succ
+    (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsetsFrom base k step starts)
+    (t : Fin k) (hnext : t.val + 1 < k) :
+    starts ⟨t.val + 1, hnext⟩ =
+      starts t + higham11_7_tridiagonalBranchSupportOffset (step t) :=
+  hstarts.2 t hnext
+
+/-- Successor starts strictly increase along any scheduled mixed tridiagonal
+path. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_succ_lt
+    (base k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsetsFrom base k step starts)
+    (t : Fin k) (hnext : t.val + 1 < k) :
+    starts t < starts ⟨t.val + 1, hnext⟩ := by
+  rw [higham11_7_tridiagonalPathStartOffsetsFrom_succ
+    base k step starts hstarts t hnext]
+  exact Nat.lt_add_of_pos_right
+    (higham11_7_tridiagonalBranchSupportOffset_pos (step t))
+
+/-- A zero-based path schedule starts at offset `0`. -/
+theorem higham11_7_tridiagonalPathStartOffsets_head
+    (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsets k step starts)
+    (hk : 0 < k) :
+    starts ⟨0, hk⟩ = 0 :=
+  hstarts.1 hk
+
+/-- A zero-based path schedule advances by each branch's pivot span. -/
+theorem higham11_7_tridiagonalPathStartOffsets_succ
+    (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsets k step starts)
+    (t : Fin k) (hnext : t.val + 1 < k) :
+    starts ⟨t.val + 1, hnext⟩ =
+      starts t + higham11_7_tridiagonalBranchSupportOffset (step t) :=
+  hstarts.2 t hnext
+
+/-- Successor starts strictly increase along any zero-based scheduled mixed
+tridiagonal path. -/
+theorem higham11_7_tridiagonalPathStartOffsets_succ_lt
+    (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsets k step starts)
+    (t : Fin k) (hnext : t.val + 1 < k) :
+    starts t < starts ⟨t.val + 1, hnext⟩ :=
+  higham11_7_tridiagonalPathStartOffsetsFrom_succ_lt
+    0 k step starts hstarts t hnext
+
 /-- **Theorem 11.7 mixed-recursion local assumptions**.  This branch-indexed
 predicate records exactly the local pivot choice, scalar budget, recursive tail
 certificate, and nonnegativity hypotheses needed by the already proved `1 × 1`
