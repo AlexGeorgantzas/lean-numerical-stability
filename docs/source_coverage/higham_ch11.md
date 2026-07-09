@@ -56,6 +56,8 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.7 mixed-path schedule uniqueness | `higham11_7_tridiagonalPathStartOffsetsFrom_unique`, `higham11_7_tridiagonalPathStartOffsetsFrom_exists_unique`, `higham11_7_tridiagonalPathStartOffsets_unique`, `higham11_7_tridiagonalPathStartOffsets_exists_unique` | Ch11 | **new this session**; proves the base-offset and zero-based mixed-path start schedules are unique, and packages existence plus uniqueness for canonical schedule handoffs. |
 | Thm 11.7 mixed-path schedule prefix spans | `higham11_7_tridiagonalPathPrefixSpan`, `higham11_7_tridiagonalPathPrefixSpan_zero`, `higham11_7_tridiagonalPathPrefixSpan_succ`, `higham11_7_tridiagonalPathStartOffsetsFrom_eq_base_add_prefixSpan`, `higham11_7_tridiagonalPathStartOffsets_eq_prefixSpan`, `higham11_7_tridiagonalPathPrefixSpan_last_add_branch_eq_pivotSpan` | Ch11 | **new this session**; identifies each scheduled branch start with the base plus the sum of earlier consumed pivot spans, and identifies the last explicit prefix endpoint with the full path span. |
 | Thm 11.7 mixed-path prefix-span bounds and ordering | `higham11_7_tridiagonalPathPrefixSpan_lt_pivotSpan`, `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_pivotSpan`, `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_of_lt`, `higham11_7_tridiagonalPathPrefixSpan_lt_of_lt`, `higham11_7_tridiagonalPathPrefixSpan_le_of_le`, `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_branch_end_of_le` | Ch11 | **new this session**; transfers containment, strict ordering, and monotone endpoint facts from canonical schedules to explicit prefix spans, so later lifted-entry arguments can avoid carrying a separate `starts` witness. |
+| Thm 11.7 concrete mixed-path tail dimensions | `higham11_7_tridiagonalPathTailDim`, `higham11_7_tridiagonalBranchAmbientDim_eq_tail_add_offset_succ`, `higham11_7_tridiagonalPathPrefixSpan_add_branchAmbientDim_tailDim_eq_pivotSpan_succ`, `higham11_7_tridiagonalPath_local_index_lt_pivotSpan_succ`, `higham11_7_tridiagonalPathLocalBlockIndex`, `higham11_7_tridiagonalPathLocalBlockIndex_val`, `higham11_7_tridiagonalPathTailDim_last_eq_zero`, `higham11_7_tridiagonalPathTailDim_head`, `higham11_7_tridiagonalPathTailDim_succ` | Ch11 | **new this session**; defines the remaining tail dimension after each concrete mixed-path branch, proves the branch-local block fits in the full `pathSpan+1` ambient at the prefix offset, exposes a path-local index embedding, proves the terminal branch has zero remaining tail, and gives the head/successor recurrence needed by path induction. |
+| Thm 11.7 concrete mixed-path branch matrix view | `higham11_7_tridiagonalPathBranchMatrix`, `higham11_7_tridiagonalPathBranchMatrix_apply`, `higham11_7_tridiagonalPathBranchMatrix_abs_entry_le_infNorm`, `higham11_7_tridiagonalPathBranchMatrix_infNorm_le_card_mul_global_infNorm` | Ch11 | **new this session**; restricts a full `pathSpan+1` ambient tridiagonal matrix to each branch-local block at its explicit prefix offset, proves local entries are bounded by the global `∞` norm, and gives a coarse local-row-length norm bound for coefficient-absorbing budget routes. |
 | §11.1.1 1×1 multiplier bound `|c/e| ≤ 1/α` | `oneByOne_multiplier_bound`, `higham11_1_oneByOne_multiplier_bound` | " | **new this session**; derived from pivot test `α·ω ≤ |e|`; the honest content behind the `bunch_parlett_L_bound`/`bunch_kaufman` `‖L‖`-interfaces |
 | §11.1.1 / §11.1.2 1×1 Schur step growth `|b−c₁c₂/e| ≤ (1+1/α)μ₀` | `oneByOne_schur_growth`, `higham11_1_oneByOne_schur_growth` | " | **new this session**; printed bound `|ã_ij| ≤ μ₀+μ₀²/μ₁ ≤ (1+1/α)μ₀`; mechanism behind ρₙ ≤ (1+α⁻¹)^{n−1} |
 | §11.1.1 2×2 pivot det bound `det E ≤ (α²−1)μ₀²` | `twoByTwo_completePivot_det_bound`, `higham11_4_twoByTwo_det_bound` | " | **new this session**; printed `det(E) ≤ μ₁²−μ₀² ≤ (α²−1)μ₀²` |
@@ -417,6 +419,21 @@ The prefix-span bounds increment adds the corresponding direct prefix-span
 containment, branch-end containment, strict ordering, and monotone endpoint
 facts, so downstream concrete path proofs can reason from prefix spans without
 first materializing a start-offset schedule.
+The concrete tail-dimension increment adds
+`higham11_7_tridiagonalPathTailDim`,
+`higham11_7_tridiagonalPathPrefixSpan_add_branchAmbientDim_tailDim_eq_pivotSpan_succ`,
+`higham11_7_tridiagonalPathLocalBlockIndex`, and the terminal
+`higham11_7_tridiagonalPathTailDim_last_eq_zero` fact, tying each prefix branch
+to the full `pathSpan+1` tridiagonal ambient expected by the lifted local-block
+proofs.
+The tail-dimension recurrence increment adds
+`higham11_7_tridiagonalPathTailDim_head` and
+`higham11_7_tridiagonalPathTailDim_succ`, aligning the concrete full-path
+tail-dimension function with the head/tail split used by path induction.
+The concrete branch-matrix increment adds
+`higham11_7_tridiagonalPathBranchMatrix` and its entry/norm bounds, giving the
+path-local assumption interface a canonical local matrix extracted from a full
+`pathSpan+1` ambient matrix.
 The remaining Theorem 11.7 work is still instantiating those adapters over the
 full mixed pivot path and instantiating this start-offset schedule,
 coefficient/roundoff/local-norm comparisons, and final lifted solve equation.
@@ -1770,6 +1787,39 @@ Problem transcription.
     `higham11_7_tridiagonalPathPrefixSpan_lt_of_lt`,
     `higham11_7_tridiagonalPathPrefixSpan_le_of_le`, and
     `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_branch_end_of_le`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 concrete mixed-path tail-dimension increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalPathTailDim`,
+    `higham11_7_tridiagonalBranchAmbientDim_eq_tail_add_offset_succ`,
+    `higham11_7_tridiagonalPathPrefixSpan_add_branchAmbientDim_tailDim_eq_pivotSpan_succ`,
+    `higham11_7_tridiagonalPath_local_index_lt_pivotSpan_succ`,
+    `higham11_7_tridiagonalPathLocalBlockIndex`,
+    `higham11_7_tridiagonalPathLocalBlockIndex_val`, and
+    `higham11_7_tridiagonalPathTailDim_last_eq_zero`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`
+    except `higham11_7_tridiagonalBranchAmbientDim_eq_tail_add_offset_succ`,
+    which reports `[propext]`.
+  - 2026-07-09 Theorem 11.7 concrete mixed-path tail-dimension recurrence increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalPathTailDim_head` and
+    `higham11_7_tridiagonalPathTailDim_succ`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 concrete mixed-path branch-matrix view increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonalPathBranchMatrix`,
+    `higham11_7_tridiagonalPathBranchMatrix_apply`,
+    `higham11_7_tridiagonalPathBranchMatrix_abs_entry_le_infNorm`, and
+    `higham11_7_tridiagonalPathBranchMatrix_infNorm_le_card_mul_global_infNorm`
     → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.7 mixed-path schedule uniqueness increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
