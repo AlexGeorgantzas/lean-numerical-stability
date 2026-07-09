@@ -2489,6 +2489,79 @@ theorem sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf (n : Nat)
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
 
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26):
+    source `SepLowerBound` data supplies the internally chosen real-Schur
+    active-block determinant package by way of the square vec/Kronecker
+    determinant route. -/
+theorem sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_sepLowerBound
+    (n : Nat)
+    (A B : RMatFn n n) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+      (pA : Fin n -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      (forall p q : Fin n, q.val = p.val + 1 -> pB p = pB q ->
+        IsAdjacentQuasiTriangularBlockFn n S p q /\
+          Not (Matrix.det (sylvesterTwoColumnBlockCoeff n n R S p q) = 0)) := by
+  exact
+    sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_det_ne_zero
+      n n A B
+      (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26),
+    source-numbered alias for the exact real-Schur active-block determinant
+    package from source `SepLowerBound` data. -/
+alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_sepLowerBound :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26):
+    a positive lower bound on the exact `sylvesterSepInf` model supplies the
+    internally chosen real-Schur active-block determinant package through the
+    source `SepLowerBound` bridge. -/
+theorem sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_pos_le_sylvesterSepInf
+    (n : Nat)
+    (A B : RMatFn n n) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+      (pA : Fin n -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      (forall p q : Fin n, q.val = p.val + 1 -> pB p = pB q ->
+        IsAdjacentQuasiTriangularBlockFn n S p q /\
+          Not (Matrix.det (sylvesterTwoColumnBlockCoeff n n R S p q) = 0)) := by
+  exact
+    sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_sepLowerBound
+      n A B sigma
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26),
+    source-numbered alias for the exact real-Schur active-block determinant
+    package from a positive lower bound on `sylvesterSepInf`. -/
+alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_pos_le_sylvesterSepInf :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26):
     a source `SepLowerBound` certificate feeds the exact real-Schur generated
     recursive-candidate route by first making the square vec/Kronecker
     Sylvester coefficient nonsingular.  This is an exact arithmetic bridge, not
