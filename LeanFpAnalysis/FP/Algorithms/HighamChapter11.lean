@@ -4405,6 +4405,154 @@ theorem higham11_8_three_higham9_14_f_gamma_le_gamma_12n
     _ ≤ gamma fp (12 * n) := by
       simpa [show 3 * (4 * n) = 12 * n by omega] using htriple
 
+/-- Absorb `2γ_n+γ_n^2` into `γ_{2n}`. -/
+theorem higham11_8_two_gamma_plus_sq_le_gamma_2n
+    (fp : FPModel) (n : ℕ) (hval : gammaValid fp (2 * n)) :
+    2 * gamma fp n + (gamma fp n) ^ 2 ≤ gamma fp (2 * n) := by
+  have hsum :
+      gamma fp n + gamma fp n + gamma fp n * gamma fp n ≤
+        gamma fp (n + n) :=
+    gamma_sum_le fp n n (by
+      simpa [show n + n = 2 * n by omega] using hval)
+  rw [show n + n = 2 * n by omega] at hsum
+  nlinarith
+
+/-- Absorb `(1+2γ_n+γ_n^2)γ_n` into `γ_{3n}`. -/
+theorem higham11_8_one_plus_two_gamma_plus_sq_mul_gamma_le_gamma_3n
+    (fp : FPModel) (n : ℕ) (hval : gammaValid fp (3 * n)) :
+    (1 + 2 * gamma fp n + (gamma fp n) ^ 2) * gamma fp n ≤
+      gamma fp (3 * n) := by
+  let γn : ℝ := gamma fp n
+  let γ2n : ℝ := gamma fp (2 * n)
+  have hn : gammaValid fp n := gammaValid_mono fp (by omega) hval
+  have h2n : gammaValid fp (2 * n) := gammaValid_mono fp (by omega) hval
+  have hγn : 0 ≤ γn := by
+    dsimp [γn]
+    exact gamma_nonneg fp hn
+  have hγ2n : 0 ≤ γ2n := by
+    dsimp [γ2n]
+    exact gamma_nonneg fp h2n
+  have h2 :
+      2 * γn + γn ^ 2 ≤ γ2n := by
+    simpa [γn, γ2n] using
+      higham11_8_two_gamma_plus_sq_le_gamma_2n fp n h2n
+  have h2mul :
+      (2 * γn + γn ^ 2) * γn ≤ γ2n * γn :=
+    mul_le_mul_of_nonneg_right h2 hγn
+  have hpoly :
+      (1 + 2 * γn + γn ^ 2) * γn ≤ γ2n + γn + γ2n * γn := by
+    nlinarith
+  have h3 :
+      γ2n + γn + γ2n * γn ≤ gamma fp (3 * n) := by
+    have hsum :
+        gamma fp (2 * n) + gamma fp n +
+            gamma fp (2 * n) * gamma fp n ≤ gamma fp (2 * n + n) :=
+      gamma_sum_le fp (2 * n) n (by
+        simpa [show 2 * n + n = 3 * n by omega] using hval)
+    simpa [γn, γ2n, show 2 * n + n = 3 * n by omega] using hsum
+  exact hpoly.trans h3
+
+/-- Absorb `(1+2γ_n+γ_n^2)f(γ_n)` into `γ_{6n}`. -/
+theorem higham11_8_one_plus_two_gamma_plus_sq_mul_higham9_14_f_gamma_le_gamma_6n
+    (fp : FPModel) (n : ℕ) (hval : gammaValid fp (6 * n)) :
+    (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        higham9_14_f (gamma fp n) ≤
+      gamma fp (6 * n) := by
+  let γn : ℝ := gamma fp n
+  let γ2n : ℝ := gamma fp (2 * n)
+  let γ4n : ℝ := gamma fp (4 * n)
+  let fγ : ℝ := higham9_14_f γn
+  have hn : gammaValid fp n := gammaValid_mono fp (by omega) hval
+  have h2n : gammaValid fp (2 * n) := gammaValid_mono fp (by omega) hval
+  have h4n : gammaValid fp (4 * n) := gammaValid_mono fp (by omega) hval
+  have hγn : 0 ≤ γn := by
+    dsimp [γn]
+    exact gamma_nonneg fp hn
+  have hγ2n : 0 ≤ γ2n := by
+    dsimp [γ2n]
+    exact gamma_nonneg fp h2n
+  have hγ4n : 0 ≤ γ4n := by
+    dsimp [γ4n]
+    exact gamma_nonneg fp h4n
+  have hf_nonneg : 0 ≤ fγ := by
+    dsimp [fγ]
+    exact higham9_14_f_nonneg hγn
+  have h2 :
+      2 * γn + γn ^ 2 ≤ γ2n := by
+    simpa [γn, γ2n] using
+      higham11_8_two_gamma_plus_sq_le_gamma_2n fp n h2n
+  have hf :
+      fγ ≤ γ4n := by
+    simpa [γn, γ4n, fγ] using
+      higham11_8_higham9_14_f_gamma_le_gamma_4n fp n h4n
+  have hmul :
+      (2 * γn + γn ^ 2) * fγ ≤ γ2n * γ4n :=
+    mul_le_mul h2 hf hf_nonneg hγ2n
+  have hpoly :
+      (1 + 2 * γn + γn ^ 2) * fγ ≤ γ4n + γ2n + γ4n * γ2n := by
+    nlinarith
+  have h6 :
+      γ4n + γ2n + γ4n * γ2n ≤ gamma fp (6 * n) := by
+    have hsum :
+        gamma fp (4 * n) + gamma fp (2 * n) +
+            gamma fp (4 * n) * gamma fp (2 * n) ≤
+          gamma fp (4 * n + 2 * n) :=
+      gamma_sum_le fp (4 * n) (2 * n) (by
+        simpa [show 4 * n + 2 * n = 6 * n by omega] using hval)
+    simpa [γ2n, γ4n, show 4 * n + 2 * n = 6 * n by omega] using hsum
+  exact hpoly.trans h6
+
+/-- Absorb `(1+2γ_n+γ_n^2) * 3f(γ_n)` into `γ_{14n}` for the
+column/row-dominant Aasen middle-solve specializations. -/
+theorem higham11_8_one_plus_two_gamma_plus_sq_mul_three_higham9_14_f_gamma_le_gamma_14n
+    (fp : FPModel) (n : ℕ) (hval : gammaValid fp (14 * n)) :
+    (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (3 * higham9_14_f (gamma fp n)) ≤
+      gamma fp (14 * n) := by
+  let γn : ℝ := gamma fp n
+  let γ2n : ℝ := gamma fp (2 * n)
+  let γ12n : ℝ := gamma fp (12 * n)
+  let f3γ : ℝ := 3 * higham9_14_f γn
+  have hn : gammaValid fp n := gammaValid_mono fp (by omega) hval
+  have h2n : gammaValid fp (2 * n) := gammaValid_mono fp (by omega) hval
+  have h12n : gammaValid fp (12 * n) := gammaValid_mono fp (by omega) hval
+  have hγn : 0 ≤ γn := by
+    dsimp [γn]
+    exact gamma_nonneg fp hn
+  have hγ2n : 0 ≤ γ2n := by
+    dsimp [γ2n]
+    exact gamma_nonneg fp h2n
+  have hγ12n : 0 ≤ γ12n := by
+    dsimp [γ12n]
+    exact gamma_nonneg fp h12n
+  have hf3_nonneg : 0 ≤ f3γ := by
+    dsimp [f3γ]
+    exact mul_nonneg (by norm_num) (higham9_14_f_nonneg hγn)
+  have h2 :
+      2 * γn + γn ^ 2 ≤ γ2n := by
+    simpa [γn, γ2n] using
+      higham11_8_two_gamma_plus_sq_le_gamma_2n fp n h2n
+  have hf3 :
+      f3γ ≤ γ12n := by
+    simpa [γn, γ12n, f3γ] using
+      higham11_8_three_higham9_14_f_gamma_le_gamma_12n fp n h12n
+  have hmul :
+      (2 * γn + γn ^ 2) * f3γ ≤ γ2n * γ12n :=
+    mul_le_mul h2 hf3 hf3_nonneg hγ2n
+  have hpoly :
+      (1 + 2 * γn + γn ^ 2) * f3γ ≤ γ12n + γ2n + γ12n * γ2n := by
+    nlinarith
+  have h14 :
+      γ12n + γ2n + γ12n * γ2n ≤ gamma fp (14 * n) := by
+    have hsum :
+        gamma fp (12 * n) + gamma fp (2 * n) +
+            gamma fp (12 * n) * gamma fp (2 * n) ≤
+          gamma fp (12 * n + 2 * n) :=
+      gamma_sum_le fp (12 * n) (2 * n) (by
+        simpa [show 12 * n + 2 * n = 14 * n by omega] using hval)
+    simpa [γ2n, γ12n, show 12 * n + 2 * n = 14 * n by omega] using hsum
+  exact hpoly.trans h14
+
 /-- Product-cap version of
 `higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts`.  Each of the four
 coefficient pieces may first be bounded by a simpler product cap, and the cap
