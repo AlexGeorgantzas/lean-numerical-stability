@@ -1984,6 +1984,44 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_solve_delta_infNorm_w
     n A b x_hat c u (infNorm A)
     (mul_nonneg (mul_nonneg hc hu) (infNorm_nonneg A)) hsolve
 
+/-- **Theorem 11.7 recursive residual accumulation with norm aggregation**.
+This records the infinity-norm budget induced by the componentwise printed
+bound in the zero-prefix supported local+recursive `2 × 2` tridiagonal step. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_with_norm_bound
+    (n : ℕ) (fp : FPModel)
+    (σ a11 a21 a22 b c Amax κ c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * Amax) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hβ : 0 ≤ (c_bound + c_rec) * u * Amax) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 3) 2 ΔA ∧
+      infNorm ΔA ≤ ((n + 3 : ℕ) : ℝ) * (c_bound + c_rec) * u * Amax ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c) +
+          tail_fl
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  obtain ⟨ΔA, hΔA, hΔAsupp, hres⟩ :=
+    higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport
+      n fp σ a11 a21 a22 b c Amax κ c_bound c_rec u tail_fl tail_exact
+      hchoice hσa11 hσa22 hAmax hκ hb hc hratio hbudget hval hrec
+  refine ⟨ΔA, hΔA, hΔAsupp, ?_, hres⟩
+  exact
+    higham11_7_infNorm_le_card_mul_of_printed_componentwise_bound
+      (n + 3) ΔA (c_bound + c_rec) u Amax hβ hΔA
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
