@@ -247,6 +247,10 @@ and
 `higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus_of_entry_bound`,
 so the lower-level inverse-scale route no longer needs `0≤κ` as a separate
 source handoff once the nonempty uniform absolute entry bound is available.
+The latest 2026-07-09 increment lifts that nonnegativity discharge to the
+source-prefix exact-radius endpoints themselves, adding direct-middle and
+checkerboard-middle `_entry_bound_nonneg` variants for both the componentwise-`T`
+and direct-`T`-norm routes.
 
 Both single-step §11.1.1 element-growth bounds are now proved: the 1×1 step
 `(1+1/α)μ₀` (`oneByOne_schur_growth`) and the 2×2 step `(1+2/(1−α))μ₀`
@@ -1157,6 +1161,13 @@ Problem transcription.
     `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus_of_entry_bound`, and
     `higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus_of_entry_bound`
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 source-prefix endpoint nonnegativity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified direct-middle and checkerboard-middle
+    `_entry_bound_nonneg` inverse-scale source-prefix endpoints → elaborate;
+    axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.4 max-entry norm iff increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
     `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
