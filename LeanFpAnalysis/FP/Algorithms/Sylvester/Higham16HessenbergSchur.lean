@@ -295,6 +295,45 @@ theorem existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_
 alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_sepLowerBound :=
   existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_sepLowerBound
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26):
+    original-coordinate Hessenberg-Schur handoff with shifted singleton
+    determinant certificates discharged from a positive lower bound on the
+    exact `sep(A,B)` infimum model.  This is an exact certificate bridge only;
+    it does not assert rounded Bartels-Stewart arithmetic or estimator
+    production. -/
+theorem existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_pos_le_sylvesterSepInf
+    (n : Nat) (hn : 0 < n)
+    (U R A : RMatFn n n) (V S B : RMatFn n n) (C : RMatFn n n)
+    (sigma : Real)
+    (hSigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hR : IsUpperHessenberg n R)
+    (hS : IsUpperTriangularFn n S) :
+    ExistsUnique (IsSylvesterSolutionRect n n A B C) /\
+      (forall k : Fin n,
+        exists hmax : 0 < maxEntryNorm hn
+            (sylvesterTriangularShiftedCoeff n R (S k k)),
+        exists Ugepp : Fin n -> Fin n -> Real,
+          higham9_10_HessenbergGEPPUTrace
+            (maxEntryNorm hn (sylvesterTriangularShiftedCoeff n R (S k k)))
+            1 n (sylvesterTriangularShiftedCoeff n R (S k k)) Ugepp /\
+          growthFactorEntry hn (sylvesterTriangularShiftedCoeff n R (S k k))
+              Ugepp hmax <= (n : Real)) := by
+  exact
+    existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_vecCoeff_det_ne_zero
+      n n hn U R A V S B C hU hV hA hB hR hS
+      (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf
+        n A B sigma hSigma hle)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26):
+    source-numbered alias for the original-coordinate Hessenberg-Schur
+    solve/trace-growth package from a positive exact `sep(A,B)` lower bound. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_pos_le_sylvesterSepInf :=
+  existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_pos_le_sylvesterSepInf
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.3)-(16.8),
     original-coordinate Hessenberg-Schur handoff with shifted singleton
     determinant certificates discharged from original no-common-complex-spectrum
