@@ -262,6 +262,13 @@ and
 `higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus_of_entry_bound`,
 so the lower-level inverse-scale route no longer needs `0≤κ` as a separate
 source handoff once the nonempty uniform absolute entry bound is available.
+Another 2026-07-09 increment adds the matching normalized-entry helpers
+`higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound`,
+`higham11_8_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound`,
+and
+`higham11_8_aasen_base_square_bounds_of_entry_bound_scaled_unit_of_entry_bound`,
+so the older `(1+γ)κ≤1` route also derives `0≤κ` from the uniform absolute
+entry bound.
 The latest 2026-07-09 increment lifts that nonnegativity discharge to the
 source-prefix exact-radius endpoints themselves, adding direct-middle and
 checkerboard-middle `_entry_bound_nonneg` variants for both the componentwise-`T`
@@ -1209,6 +1216,15 @@ Problem transcription.
     `higham11_8_nonneg_of_uniform_abs_entry_bound`,
     `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus_of_entry_bound`, and
     `higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus_of_entry_bound`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 normalized entry-bound nonnegativity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound`,
+    `higham11_8_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound`, and
+    `higham11_8_aasen_base_square_bounds_of_entry_bound_scaled_unit_of_entry_bound`
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.8 source-prefix endpoint nonnegativity increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;

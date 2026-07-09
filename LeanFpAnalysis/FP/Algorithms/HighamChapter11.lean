@@ -7049,6 +7049,45 @@ theorem higham11_8_nonneg_of_uniform_abs_entry_bound (n : ℕ) (hn : 0 < n)
   (abs_nonneg (L ⟨0, hn⟩ ⟨0, hn⟩)).trans
     (hentry ⟨0, hn⟩ ⟨0, hn⟩)
 
+/-- Aasen outer-factor relative caps from a normalized uniform entry bound,
+deriving `0≤κ` from the absolute entry bound itself. -/
+theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκunit : (1 + γ) * κ ≤ 1)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (1 + γ) * infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) :=
+  higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit
+    n hn L γ κ hγ
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n
+      (Nat.lt_trans Nat.zero_lt_one hn) L κ hentry)
+    hκunit hentry hstrictUpperZero hfirstColZero
+
+/-- Unscaled exact outer-factor norm caps from a normalized uniform entry bound,
+deriving `0≤κ` from the absolute entry bound itself. -/
+theorem higham11_8_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκunit : (1 + γ) * κ ≤ 1)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      infNorm (fun r c => L c r) ≤ ((n - 1 : ℕ) : ℝ) := by
+  rcases
+      higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound
+        n hn L γ κ hγ hκunit hentry hstrictUpperZero hfirstColZero with
+    ⟨hrelL, hrelLT⟩
+  exact
+    ⟨higham11_8_infNorm_cap_of_relative_infNorm_cap n L γ
+        ((n - 1 : ℕ) : ℝ) hγ hrelL,
+      higham11_8_infNorm_cap_of_relative_infNorm_cap n (fun r c => L c r) γ
+        ((n - 1 : ℕ) : ℝ) hγ hrelLT⟩
+
 /-- Aasen outer-factor relative caps from a source-style inverse-scale uniform
 entry bound, deriving `0≤κ` from the absolute entry bound itself. -/
 theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus_of_entry_bound
@@ -7464,6 +7503,37 @@ theorem higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus_of_entry
     (higham11_8_nonneg_of_uniform_abs_entry_bound n
       (Nat.lt_trans Nat.zero_lt_one hn) L κ hentry)
     hκ hentry hstrictUpperZero hfirstColZero
+
+/-- Product-size base square bounds for the exact Aasen outer factor from the
+normalized entry cap `(1+γ)κ≤1`, deriving `0≤κ` from the entry bound. -/
+theorem higham11_8_aasen_base_square_bounds_of_entry_bound_scaled_unit_of_entry_bound
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκunit : (1 + γ) * κ ≤ 1)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (infNorm L * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ) * infNorm L) *
+          ((1 + γ) * infNorm (fun r c => L c r)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) := by
+  rcases
+      higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound
+        n hn L γ κ hγ hκunit hentry hstrictUpperZero hfirstColZero with
+    ⟨hrelL, hrelLT⟩
+  have hLcap :
+      infNorm L ≤ ((n - 1 : ℕ) : ℝ) :=
+    higham11_8_infNorm_cap_of_relative_infNorm_cap n L γ
+      ((n - 1 : ℕ) : ℝ) hγ hrelL
+  have hLTcap :
+      infNorm (fun r c => L c r) ≤ ((n - 1 : ℕ) : ℝ) :=
+    higham11_8_infNorm_cap_of_relative_infNorm_cap n (fun r c => L c r) γ
+      ((n - 1 : ℕ) : ℝ) hγ hrelLT
+  exact
+    higham11_8_aasen_base_square_bounds_of_factor_caps n γ
+      (infNorm L) (infNorm (fun r c => L c r)) hγ (infNorm_nonneg L)
+      (infNorm_nonneg (fun r c => L c r)) hLcap hLTcap hrelL hrelLT
 
 /-- Insert a nonnegative middle factor bounded by `1` into a product already
 bounded by the printed Aasen `(n-1)^2` square. -/
