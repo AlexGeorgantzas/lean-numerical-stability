@@ -6319,6 +6319,31 @@ theorem higham11_7_tridiagonalBranchLocalResidual_exists_residual_witness
       simpa [higham11_7_TridiagonalBranchLocalResidual,
         higham11_7_TridiagonalBranchLocalResidualWitness] using hres
 
+/-- **Theorem 11.7 branch residual-witness support bridge**.  The richer
+branch residual witness, which keeps the scalar residual equation, also supplies
+the supported perturbation package used by finite path aggregation. -/
+theorem higham11_7_tridiagonalBranchLocalResidualWitness_supported
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_fl tail_exact : ℝ)
+    (ΔA : Fin (higham11_7_tridiagonalBranchAmbientDim n s) →
+      Fin (higham11_7_tridiagonalBranchAmbientDim n s) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchLocalResidualWitness n fp s A
+      c_bound c_rec u tail_fl tail_exact ΔA) :
+    (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim n s),
+      |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+    higham11_7_TridiagonalLeadingBlockSupport
+      (higham11_7_tridiagonalBranchAmbientDim n s)
+      (higham11_7_tridiagonalBranchSupportOffset s) ΔA ∧
+    infNorm ΔA ≤
+      ((higham11_7_tridiagonalBranchAmbientDim n s : ℕ) : ℝ) *
+        (c_bound + c_rec) * u * infNorm A := by
+  cases s with
+  | one =>
+      exact ⟨hwit.1, hwit.2.1, hwit.2.2.1⟩
+  | two =>
+      exact ⟨hwit.1, hwit.2.1, hwit.2.2.1⟩
+
 /-- **Theorem 11.7 mixed-recursion branch adapter**.  Either accepted local
 tridiagonal pivot branch, with its explicit local budget and recursive tail
 certificate, produces the common branch-indexed local residual package. -/
@@ -7190,6 +7215,29 @@ theorem higham11_7_tridiagonalBranchPathLocalResiduals_exists_residual_witnesses
       (tailDim t) fp (step t) (A t) (c_bound t) (c_rec t) (u t)
       (tail_fl t) (tail_exact t) (hpath t)
   exact ⟨ΔA, hΔA⟩
+
+/-- **Theorem 11.7 path residual-witness support bridge**.  A path of
+residual witnesses that preserves each branch's scalar residual equation also
+provides the supported-witness predicate consumed by the existing lifted-sum
+aggregation theorems. -/
+theorem higham11_7_tridiagonalBranchPathResidualWitnesses_supported
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathResidualWitnesses k fp tailDim
+      step A c_bound c_rec u tail_fl tail_exact ΔA) :
+    higham11_7_TridiagonalBranchPathSupportedWitnesses k fp tailDim step A
+      c_bound c_rec u tail_fl tail_exact ΔA := by
+  intro t
+  exact
+    higham11_7_tridiagonalBranchLocalResidualWitness_supported
+      (tailDim t) fp (step t) (A t) (c_bound t) (c_rec t) (u t)
+      (tail_fl t) (tail_exact t) (ΔA t) (hwit t)
 
 /-- Index embedding for placing a local tridiagonal branch block into a larger
 ambient matrix starting at row/column `start`. -/
