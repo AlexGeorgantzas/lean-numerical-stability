@@ -1777,6 +1777,26 @@ theorem higham11_4_product_entries_of_first_stage_recursive_bounds
       exact (htrail i j hi_ge hj_ge).trans htrail_final
 
 /-- First-stage plus recursive Schur-complement product-entry bounds package
+directly into the source-shaped max-entry norm target for `|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget : localB ≤ 36 * ρ_n * Amax)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB)
+    (htrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB + recB) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_product_entries
+    n hn L_hat D_hat (36 * (n : ℝ) * ρ_n * Amax)
+    (higham11_4_product_entries_of_first_stage_recursive_bounds
+      n s hs_pos hs_le L_hat D_hat ρ_n Amax localB recB hρ hAmax
+      hlocal_budget hrec_budget hfirst htrail)
+
+/-- First-stage plus recursive Schur-complement product-entry bounds package
 directly into the scalar max-entry product certificate consumed by the 11.4
 stability and solve wrappers. -/
 theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_bounds
@@ -1906,6 +1926,37 @@ theorem higham11_4_product_entries_of_first_stage_recursive_higham_const_bounds
     · have hi_ge : s ≤ i.val := by omega
       have hj_ge : s ≤ j.val := by omega
       exact (htrail i j hi_ge hj_ge).trans htrail_final
+
+/-- Exact-coefficient first-stage plus recursive Schur-complement product-entry
+bounds package directly into the source-shaped max-entry norm target for
+`|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_higham_const_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB)
+    (htrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB + recB) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_product_entries
+    n hn L_hat D_hat (36 * (n : ℝ) * ρ_n * Amax)
+    (higham11_4_product_entries_of_first_stage_recursive_higham_const_bounds
+      n s hs_pos hs_le L_hat D_hat ρ_n Amax localB recB hρ hAmax
+      hlocal_budget hrec_budget hfirst htrail)
 
 /-- Exact-coefficient first-stage plus recursive Schur-complement product-entry
 bounds package directly into the scalar max-entry product certificate consumed
@@ -2357,6 +2408,221 @@ theorem higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_row_sum_bo
     n hn A L_hat D_hat b x_hat p u ρ_n Amax hpu
     (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds_entry_nonneg
       n hn L_hat D_hat Dmax Lrow ρ_n Amax hρ hAmax hD hrows hbudget)
+    hsolve
+
+/-- **Theorem 11.4 direct loose row-sum stability bridge**.  Uniform row-sum
+caps for `|L̂|` and a uniform absolute-entry cap for `D̂`, already compared to
+the printed `36nρₙ‖A‖_M` budget, feed the Bunch-Kaufman stability consumer
+directly. -/
+theorem higham11_4_bunch_kaufman_stability_of_uniform_row_sum_bound
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lrow ρ_n maxNorm_A : ℝ) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow)
+    (hbudget : Lrow * Dmax * Lrow ≤ 36 * (n : ℝ) * ρ_n * maxNorm_A) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_maxEntryNorm_absLDLTProduct_le
+    n hn A L_hat D_hat ρ_n maxNorm_A hmA hA_norm
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound_entry_nonneg
+      n hn L_hat D_hat Dmax Lrow (36 * (n : ℝ) * ρ_n * maxNorm_A)
+      hD hrows hbudget)
+
+/-- **Theorem 11.4 direct loose uniform-entry stability bridge**.  Uniform entry
+caps for `|L̂|` and `D̂`, already compared to the printed `36nρₙ‖A‖_M` budget,
+feed the Bunch-Kaufman stability consumer directly. -/
+theorem higham11_4_bunch_kaufman_stability_of_uniform_entry_bounds
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lmax ρ_n maxNorm_A : ℝ) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hbudget :
+      ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤
+        36 * (n : ℝ) * ρ_n * maxNorm_A) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_maxEntryNorm_absLDLTProduct_le
+    n hn A L_hat D_hat ρ_n maxNorm_A hmA hA_norm
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_entry_bounds_entry_nonneg
+      n hn L_hat D_hat Dmax Lmax (36 * (n : ℝ) * ρ_n * maxNorm_A)
+      hD hL hbudget)
+
+/-- **Theorem 11.4 direct loose row-sum solve bridge**.  Uniform row-sum caps
+for `|L̂|` and a uniform absolute-entry cap for `D̂`, already compared to the
+printed `36nρₙ‖A‖_M` budget, feed the solve-budget consumer directly. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_uniform_row_sum_bound
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (Dmax Lrow p u ρ_n Amax : ℝ) (hpu : 0 ≤ p * u)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow)
+    (hbudget : Lrow * Dmax * Lrow ≤ 36 * (n : ℝ) * ρ_n * Amax)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_maxEntryNorm_absLDLTProduct_le
+    n hn A L_hat D_hat b x_hat p u ρ_n Amax hpu
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound_entry_nonneg
+      n hn L_hat D_hat Dmax Lrow (36 * (n : ℝ) * ρ_n * Amax)
+      hD hrows hbudget)
+    hsolve
+
+/-- **Theorem 11.4 direct loose uniform-entry solve bridge**.  Uniform entry
+caps for `|L̂|` and `D̂`, already compared to the printed `36nρₙ‖A‖_M` budget,
+feed the solve-budget consumer directly. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_uniform_entry_bounds
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (Dmax Lmax p u ρ_n Amax : ℝ) (hpu : 0 ≤ p * u)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hbudget :
+      ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤
+        36 * (n : ℝ) * ρ_n * Amax)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_maxEntryNorm_absLDLTProduct_le
+    n hn A L_hat D_hat b x_hat p u ρ_n Amax hpu
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_entry_bounds_entry_nonneg
+      n hn L_hat D_hat Dmax Lmax (36 * (n : ℝ) * ρ_n * Amax)
+      hD hL hbudget)
+    hsolve
+
+/-- **Theorem 11.4 direct first-stage/recursive stability bridge**.  A concrete
+Higham [608, 1997] first-stage/trailing split with loose `36` shares feeds the
+Bunch-Kaufman stability consumer directly. -/
+theorem higham11_4_bunch_kaufman_stability_of_first_stage_recursive_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n maxNorm_A localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hlocal_budget : localB ≤ 36 * ρ_n * maxNorm_A)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * maxNorm_A)
+    (hfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB)
+    (htrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB + recB) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_productMax_le
+    n hn A L_hat D_hat ρ_n maxNorm_A hmA hA_norm
+    (higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_bounds
+      n s hn hs_pos hs_le L_hat D_hat ρ_n maxNorm_A localB recB hρ hmA
+      hlocal_budget hrec_budget hfirst htrail)
+
+/-- **Theorem 11.4 direct exact-coefficient first-stage/recursive stability
+bridge**.  A concrete first-stage/trailing split with Higham's exact coefficient
+feeds the Bunch-Kaufman stability consumer directly. -/
+theorem higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n maxNorm_A localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * maxNorm_A)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * maxNorm_A)
+    (hfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB)
+    (htrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB + recB) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_productMax_le
+    n hn A L_hat D_hat ρ_n maxNorm_A hmA hA_norm
+    (higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_bounds
+      n s hn hs_pos hs_le L_hat D_hat ρ_n maxNorm_A localB recB hρ hmA
+      hlocal_budget hrec_budget hfirst htrail)
+
+/-- **Theorem 11.4 direct first-stage/recursive solve bridge**.  A concrete
+Higham [608, 1997] first-stage/trailing split with loose `36` shares feeds the
+solve-budget consumer directly. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (p u ρ_n Amax localB recB : ℝ) (hpu : 0 ≤ p * u)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget : localB ≤ 36 * ρ_n * Amax)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB)
+    (htrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB + recB)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_productMax_le
+    n hn A L_hat D_hat b x_hat p u ρ_n Amax hpu
+    (higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_bounds
+      n s hn hs_pos hs_le L_hat D_hat ρ_n Amax localB recB hρ hAmax
+      hlocal_budget hrec_budget hfirst htrail)
+    hsolve
+
+/-- **Theorem 11.4 direct exact-coefficient first-stage/recursive solve bridge**.
+A concrete first-stage/trailing split with Higham's exact coefficient feeds the
+solve-budget consumer directly. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (p u ρ_n Amax localB recB : ℝ) (hpu : 0 ≤ p * u)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB)
+    (htrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ localB + recB)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_productMax_le
+    n hn A L_hat D_hat b x_hat p u ρ_n Amax hpu
+    (higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_bounds
+      n s hn hs_pos hs_le L_hat D_hat ρ_n Amax localB recB hρ hAmax
+      hlocal_budget hrec_budget hfirst htrail)
     hsolve
 
 /-! ## §11.1.3 Rook pivoting -/

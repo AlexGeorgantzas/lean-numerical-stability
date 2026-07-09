@@ -72,11 +72,14 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.4 max-entry product bridge, Higham [608,1997] eq (4.14) | `higham11_4_bunch_kaufman_stability_of_max_entry_product_bound`, `higham11_4_bunch_kaufman_solve_backward_error_of_max_entry_product_bound`, `higham11_4_bunch_kaufman_stability_of_higham_const_absLDLTProduct_entries`, `higham11_4_bunch_kaufman_stability_of_higham_const_product_entries`, `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_absLDLTProduct_entries`, `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_product_entries` | Ch11 | **new this session**; turns a scalar max-entry certificate for `\||L̂||D̂||L̂ᵀ|\|_M` into the existing pointwise stability surface, and transports a solve perturbation budget proportional to that product into the advertised `36nρₙ` normwise budget; the exact-coefficient direct wrappers combine the eq-(4.13) constant handoff with the stability and solve consumers, in both matrix-product and expanded double-sum entry notation. This does **not** prove eq (4.14); it makes eq (4.14) the exact next scalar target instead of a pointwise interface hypothesis. |
 | Thm 11.4 row-sum stability consumers | `higham11_4_bunch_kaufman_stability_of_higham_const_uniform_row_sum_bound`, `higham11_4_bunch_kaufman_stability_of_higham_const_uniform_entry_bounds`, `higham11_4_bunch_kaufman_stability_of_higham_const_row_sum_bounds` | Ch11 | **new this session**; exact-coefficient row-sum and uniform-entry product caps now feed the pointwise Bunch-Kaufman stability surface directly through the max-entry norm route, while deriving `0≤Dmax` from the nonempty absolute `D̂` entry cap. |
 | Thm 11.4 row-sum solve consumers | `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_uniform_row_sum_bound`, `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_uniform_entry_bounds`, `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_row_sum_bounds` | Ch11 | **new this session**; the same exact-coefficient row-sum and uniform-entry product caps feed the solve-side Bunch-Kaufman normwise perturbation wrapper, converting a solve residual proportional to `‖|L̂||D̂||L̂ᵀ|‖_M` into the advertised `36nρₙ` budget. |
+| Thm 11.4 loose row-sum/uniform-entry consumers | `higham11_4_bunch_kaufman_stability_of_uniform_row_sum_bound`, `higham11_4_bunch_kaufman_stability_of_uniform_entry_bounds`, `higham11_4_bunch_kaufman_solve_backward_error_of_uniform_row_sum_bound`, `higham11_4_bunch_kaufman_solve_backward_error_of_uniform_entry_bounds` | Ch11 | **new this session**; when row-sum or uniform-entry caps are already compared directly to the printed `36nρₙ‖A‖_M` budget, the loose routes now feed both the stability surface and solve-side normwise perturbation wrapper without first exposing an intermediate max-entry proof. |
 | Thm 11.4 finite max-entry product norm | `higham11_4_bunchKaufmanProductEntry`, `higham11_4_absLDLTProduct`, `higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct`, `higham11_4_bunchKaufmanProductEntry_nonneg`, `higham11_4_bunchKaufmanProductMax`, `higham11_4_bunchKaufmanProductEntry_le_productMax`, `higham11_4_absLDLTProduct_entry_le_productMax`, `higham11_4_bunchKaufmanProductMax_nonneg`, `higham11_4_bunchKaufmanProductMax_le_iff`, `higham11_4_bunchKaufmanProductMax_le_iff_absLDLTProduct`, `higham11_4_bunchKaufmanProductMax_eq_maxEntryNorm_absLDLTProduct`, `higham11_4_absLDLTProduct_entry_le_maxEntryNorm`, `higham11_4_maxEntryNorm_absLDLTProduct_le_iff`, `higham11_4_maxEntryNorm_absLDLTProduct_le_iff_product_entries`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_product_entries`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_absLDLTProduct_entries`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_maxEntryNorm_absLDLTProduct`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_absLDLTProduct_entries`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_product_entries`, `higham11_4_bunch_kaufman_stability_of_productMax_le`, `higham11_4_bunch_kaufman_stability_of_maxEntryNorm_absLDLTProduct_le`, `higham11_4_bunch_kaufman_solve_backward_error_of_productMax_le`, `higham11_4_bunch_kaufman_solve_backward_error_of_maxEntryNorm_absLDLTProduct_le` | Ch11 | **new this session**; defines the project matrix product `|L̂||D̂||L̂ᵀ|`, proves it is exactly the expanded double-sum entry form, defines the positive-dimension finite maximum `maxᵢⱼ (|L̂||D̂||L̂ᵀ|)ᵢⱼ`, identifies that finite maximum with the repository `maxEntryNorm` of `|L̂||D̂||L̂ᵀ|`, proves nonnegativity, the least-scalar property, and the direct equivalence between a `maxEntryNorm` bound and pointwise bounds in both expanded and matrix-product notation, packages pointwise/max-entry estimates into the scalar product-bound predicate including the exact Higham-coefficient handoff in both notations, and connects the source eq-(4.14) statement for this finite maximum directly to both the pointwise stability and solve-budget consumers. |
 | Thm 11.4 row-sum/product majorant bridge | `higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds`, `higham11_4_bunchKaufmanProductEntry_le_uniform_row_sum_bound`, `higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound`, `higham11_4_bunchKaufmanProductEntry_le_uniform_entry_bounds`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_entry_bounds`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_uniform_row_sum_bound`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_uniform_entry_bounds`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_row_sum_bound`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_entry_bounds`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_row_sum_bounds` | Ch11 | **new this session**; proves the algebraic step from absolute-entry bounds on `D̂` plus row-sum bounds on `|L̂|` to the source product entries of `|L̂||D̂||L̂ᵀ|`, and packages the uniform-row, uniform-entry, and per-row versions into the `maxEntryNorm` target and scalar product certificate consumed by the existing 11.4 stability/solve wrappers, including the exact-coefficient route before the proved `≤36` handoff. Uniform `|L̂|≤Lmax` facts now automatically supply the row sums as `n*Lmax`. This still leaves the pivot-path proof of the required `|L̂|` and `D̂` caps open. |
 | Thm 11.4 loose max-entry product cap nonnegativity wrappers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound_entry_nonneg`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_entry_bounds_entry_nonneg` | Ch11 | **new this session**; the loose `maxEntryNorm` row-sum and uniform-entry routes now derive `0≤Dmax` from the nonempty uniform absolute `D̂` entry cap, matching the loose scalar product-certificate wrappers. |
 | Thm 11.4 max-entry product cap nonnegativity wrappers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound_entry_nonneg`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds_entry_nonneg`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds_entry_nonneg` | Ch11 | **new this session**; the exact-coefficient max-entry norm routes now derive `0≤Dmax` from the nonempty uniform absolute `D̂` entry cap, matching the scalar product-certificate wrappers and removing a separate positivity handoff for uniform-row, uniform-entry, and per-row row-sum paths. |
 | Thm 11.4 first-stage/recursive product aggregation | `higham11_4_first_stage_recursive_product_bound`, `higham11_4_product_entries_of_first_stage_recursive_bounds`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_bounds`, `higham11_4_first_stage_recursive_product_bound_of_higham_const`, `higham11_4_product_entries_of_first_stage_recursive_higham_const_bounds`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_bounds` | Ch11 | **new this session**; formalizes the scalar handoff implicit in Higham [608, 1997], eqs. (4.11)--(4.14): one local first-stage product share plus a recursive Schur-complement product share bounded by `36(n-s)ρₙ‖A‖_M` fits inside the printed `36nρₙ‖A‖_M` budget, and the resulting entrywise split packages directly into the scalar max-entry product certificate. The exact-coefficient variants let callers supply Higham's `(3+α²)(3+α)/(1−α²)^2` bound first and use the proved eq-(4.13) `≤36` handoff only at the final source-facing step. This does not prove the concrete first-stage or recursive split hypotheses; it removes the remaining scalar aggregation once those pivot-path bounds are supplied. |
+| Thm 11.4 first-stage/recursive max-entry norm bridge | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_bounds`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_higham_const_bounds` | Ch11 | **new this session**; the loose and exact-coefficient first-stage/trailing product splits now also package directly into the source-shaped `maxEntryNorm` target for `|L̂||D̂||L̂ᵀ|`, not just the scalar finite-product certificate. |
+| Thm 11.4 first-stage/recursive stability/solve consumers | `higham11_4_bunch_kaufman_stability_of_first_stage_recursive_bounds`, `higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_bounds`, `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_bounds`, `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_bounds` | Ch11 | **new this session**; the loose and exact-coefficient first-stage/trailing product split now feeds both the pointwise Bunch-Kaufman stability surface and the solve-side normwise perturbation wrapper directly, so the remaining pivot-path proof can target the concrete local/trailing split hypotheses. |
 | α bounds `1/2 < α ≤ 5/7`, `α² = (α+1)/4` | `bunch_parlett_alpha_gt_half`, `bunch_parlett_alpha_le_5_7`, `bunch_parlett_alpha_sq` | " | **new this session**; supporting the Thm 11.4 constants |
 | Eq (11.6) example factorization A = LDLᵀ (partial pivoting) | `higham11_6_partialPivotExample_factorization` | Ch11 | exact `fin_cases` algebra, ε≠0 |
 | §11.3 skew-symmetric diag zero | `skewSymmetric_diag_zero`, `higham11_16_skew_diag_zero` | " | Aᵀ=−A ⇒ Aᵢᵢ=0 |
@@ -358,6 +361,24 @@ The companion solve-side increment adds
 `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_uniform_row_sum_bound`,
 `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_uniform_entry_bounds`, and
 `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_row_sum_bounds`.
+The latest loose-consumer increment adds
+`higham11_4_bunch_kaufman_stability_of_uniform_row_sum_bound`,
+`higham11_4_bunch_kaufman_stability_of_uniform_entry_bounds`,
+`higham11_4_bunch_kaufman_solve_backward_error_of_uniform_row_sum_bound`, and
+`higham11_4_bunch_kaufman_solve_backward_error_of_uniform_entry_bounds` for
+routes where the row-sum or uniform-entry cap is already compared to the
+printed `36nρₙ‖A‖_M` budget.
+Another 2026-07-09 increment composes the first-stage/recursive split
+certificates into the source-shaped max-entry norm target through
+`higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_bounds`
+and
+`higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_higham_const_bounds`,
+then directly into the stability and solve consumers via
+`higham11_4_bunch_kaufman_stability_of_first_stage_recursive_bounds`,
+`higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_bounds`,
+`higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_bounds`,
+and
+`higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_bounds`.
 
 ## External proof sources
 | Selected claim | Source and exact location | Role | Local Lean closure | Status |
@@ -1431,6 +1452,16 @@ Problem transcription.
     `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_uniform_entry_bounds`, and
     `higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_row_sum_bounds`
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 loose row-sum/uniform-entry consumer increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_bunch_kaufman_stability_of_uniform_row_sum_bound`,
+    `higham11_4_bunch_kaufman_stability_of_uniform_entry_bounds`,
+    `higham11_4_bunch_kaufman_solve_backward_error_of_uniform_row_sum_bound`, and
+    `higham11_4_bunch_kaufman_solve_backward_error_of_uniform_entry_bounds`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.4 per-row exact-coefficient row-sum/product majorant increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
     `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
@@ -1457,6 +1488,25 @@ Problem transcription.
     `higham11_4_first_stage_recursive_product_bound_of_higham_const`,
     `higham11_4_product_entries_of_first_stage_recursive_higham_const_bounds`, and
     `higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_bounds`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 first-stage/recursive max-entry norm increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_bounds`
+    and
+    `higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_higham_const_bounds`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 first-stage/recursive consumer increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_bunch_kaufman_stability_of_first_stage_recursive_bounds`,
+    `higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_bounds`,
+    `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_bounds`, and
+    `higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_bounds`
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-08 Theorem 11.4 max-entry product bridge increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
