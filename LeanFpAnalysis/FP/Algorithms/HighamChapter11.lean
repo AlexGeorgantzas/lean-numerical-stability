@@ -5846,6 +5846,80 @@ theorem higham11_7_tridiagonalPathPrefixSpan_branch_end_le_branch_end_of_le
       k step starts hstarts htu
   simpa [hpref_t, hpref_u] using hle
 
+/-- Remaining recursive tail dimension after a branch in an explicit mixed
+tridiagonal pivot path.  The full path span is the current prefix, the current
+branch's consumed pivot block, and this remaining tail. -/
+def higham11_7_tridiagonalPathTailDim (k : ℕ)
+    (step : Fin k → PivotSize) (t : Fin k) : ℕ :=
+  higham11_7_tridiagonalPathPivotSpan k step -
+    (higham11_7_tridiagonalPathPrefixSpan k step t +
+      higham11_7_tridiagonalBranchSupportOffset (step t))
+
+/-- A branch local ambient consists of the remaining tail, the consumed pivot
+block, and the first trailing scalar. -/
+theorem higham11_7_tridiagonalBranchAmbientDim_eq_tail_add_offset_succ
+    (n : ℕ) (s : PivotSize) :
+    higham11_7_tridiagonalBranchAmbientDim n s =
+      n + higham11_7_tridiagonalBranchSupportOffset s + 1 := by
+  cases s <;> simp [higham11_7_tridiagonalBranchAmbientDim,
+    higham11_7_tridiagonalBranchSupportOffset]
+
+/-- The explicit prefix plus the concrete branch-local ambient dimension is the
+full path span plus the first trailing scalar. -/
+theorem higham11_7_tridiagonalPathPrefixSpan_add_branchAmbientDim_tailDim_eq_pivotSpan_succ
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k) :
+    higham11_7_tridiagonalPathPrefixSpan k step t +
+        higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t) =
+      higham11_7_tridiagonalPathPivotSpan k step + 1 := by
+  have hend :=
+    higham11_7_tridiagonalPathPrefixSpan_branch_end_le_pivotSpan k step t
+  cases hstep : step t <;>
+    simp [higham11_7_tridiagonalPathTailDim,
+      higham11_7_tridiagonalBranchAmbientDim,
+      higham11_7_tridiagonalBranchSupportOffset, hstep] at * <;>
+    omega
+
+/-- Any local index in a branch-local block embeds into the full
+`pathSpan+1` tridiagonal ambient at the branch prefix span. -/
+theorem higham11_7_tridiagonalPath_local_index_lt_pivotSpan_succ
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (i : Fin (higham11_7_tridiagonalBranchAmbientDim
+      (higham11_7_tridiagonalPathTailDim k step t) (step t))) :
+    higham11_7_tridiagonalPathPrefixSpan k step t + i.val <
+      higham11_7_tridiagonalPathPivotSpan k step + 1 := by
+  have hEq :=
+    higham11_7_tridiagonalPathPrefixSpan_add_branchAmbientDim_tailDim_eq_pivotSpan_succ
+      k step t
+  have hi := i.isLt
+  omega
+
+/-- Path-local index embedding into the full `pathSpan+1` tridiagonal ambient. -/
+def higham11_7_tridiagonalPathLocalBlockIndex
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (i : Fin (higham11_7_tridiagonalBranchAmbientDim
+      (higham11_7_tridiagonalPathTailDim k step t) (step t))) :
+    Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) :=
+  ⟨higham11_7_tridiagonalPathPrefixSpan k step t + i.val,
+    higham11_7_tridiagonalPath_local_index_lt_pivotSpan_succ k step t i⟩
+
+@[simp] theorem higham11_7_tridiagonalPathLocalBlockIndex_val
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (i : Fin (higham11_7_tridiagonalBranchAmbientDim
+      (higham11_7_tridiagonalPathTailDim k step t) (step t))) :
+    (higham11_7_tridiagonalPathLocalBlockIndex k step t i).val =
+      higham11_7_tridiagonalPathPrefixSpan k step t + i.val :=
+  rfl
+
+/-- The final branch in a nonempty path has no remaining recursive tail after
+its consumed pivot block. -/
+theorem higham11_7_tridiagonalPathTailDim_last_eq_zero
+    (k : ℕ) (step : Fin (k + 1) → PivotSize) :
+    higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k) = 0 := by
+  have hlast :=
+    higham11_7_tridiagonalPathPrefixSpan_last_add_branch_eq_pivotSpan k step
+  simp [higham11_7_tridiagonalPathTailDim, hlast]
+
 /-- **Theorem 11.7 mixed-recursion local assumptions**.  This branch-indexed
 predicate records exactly the local pivot choice, scalar budget, recursive tail
 certificate, and nonnegativity hypotheses needed by the already proved `1 × 1`
