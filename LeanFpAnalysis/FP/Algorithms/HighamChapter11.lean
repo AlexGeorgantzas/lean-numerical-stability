@@ -5287,6 +5287,37 @@ theorem higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_base_add_pivotS
           simpa [Nat.add_assoc, add_comm, add_left_comm, add_assoc] using
             htail_le
 
+/-- The end of the last branch in a nonempty scheduled path is exactly the
+base plus the total pivot span. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_last_branch_end_eq
+    (base k : ℕ) (step : Fin (k + 1) → PivotSize)
+    (starts : Fin (k + 1) → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsetsFrom base (k + 1)
+      step starts) :
+    starts (Fin.last k) +
+        higham11_7_tridiagonalBranchSupportOffset (step (Fin.last k)) =
+      base + higham11_7_tridiagonalPathPivotSpan (k + 1) step := by
+  induction k generalizing base with
+  | zero =>
+      have hhead :=
+        higham11_7_tridiagonalPathStartOffsetsFrom_head
+          base 1 step starts hstarts (by omega)
+      have hzero : starts (0 : Fin 1) = base := by
+        simpa using hhead
+      simp [Fin.last, hzero, higham11_7_tridiagonalPathPivotSpan_cons,
+        higham11_7_tridiagonalPathPivotSpan_zero]
+  | succ k ih =>
+      have htail :=
+        higham11_7_tridiagonalPathStartOffsetsFrom_tail
+          base (k + 1) step starts hstarts
+      have htail_last := ih
+        (base + higham11_7_tridiagonalBranchSupportOffset (step 0))
+        (fun t : Fin (k + 1) => step t.succ)
+        (fun t : Fin (k + 1) => starts t.succ) htail
+      rw [higham11_7_tridiagonalPathPivotSpan_cons]
+      simpa [Fin.last, Nat.add_assoc, add_comm, add_left_comm, add_assoc] using
+        htail_last
+
 /-- A zero-based path schedule starts at offset `0`. -/
 theorem higham11_7_tridiagonalPathStartOffsets_head
     (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
@@ -5359,6 +5390,19 @@ theorem higham11_7_tridiagonalPathStartOffsets_branch_end_le_pivotSpan
   simpa [higham11_7_TridiagonalPathStartOffsets] using
     higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_base_add_pivotSpan
       0 k step starts hstarts t
+
+/-- The end of the last branch in a nonempty zero-based scheduled path is the
+total pivot span. -/
+theorem higham11_7_tridiagonalPathStartOffsets_last_branch_end_eq
+    (k : ℕ) (step : Fin (k + 1) → PivotSize)
+    (starts : Fin (k + 1) → ℕ)
+    (hstarts : higham11_7_TridiagonalPathStartOffsets (k + 1) step starts) :
+    starts (Fin.last k) +
+        higham11_7_tridiagonalBranchSupportOffset (step (Fin.last k)) =
+      higham11_7_tridiagonalPathPivotSpan (k + 1) step := by
+  simpa [higham11_7_TridiagonalPathStartOffsets] using
+    higham11_7_tridiagonalPathStartOffsetsFrom_last_branch_end_eq
+      0 k step starts hstarts
 
 /-- **Theorem 11.7 mixed-recursion local assumptions**.  This branch-indexed
 predicate records exactly the local pivot choice, scalar budget, recursive tail
