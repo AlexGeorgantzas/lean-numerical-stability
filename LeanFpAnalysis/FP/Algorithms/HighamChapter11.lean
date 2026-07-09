@@ -5043,6 +5043,41 @@ theorem higham11_7_tridiagonalPathStartOffsetsFrom_succ_lt
   exact Nat.lt_add_of_pos_right
     (higham11_7_tridiagonalBranchSupportOffset_pos (step t))
 
+/-- Cons constructor for mixed-path start schedules.  A nonempty path starts
+at `base`; its tail is scheduled from the offset reached after the head pivot
+block. -/
+theorem higham11_7_tridiagonalPathStartOffsetsFrom_cons
+    (base k : ℕ) (step : Fin (k + 1) → PivotSize)
+    (starts : Fin (k + 1) → ℕ)
+    (hhead : starts 0 = base)
+    (htail : higham11_7_TridiagonalPathStartOffsetsFrom
+      (base + higham11_7_tridiagonalBranchSupportOffset (step 0)) k
+      (fun t : Fin k => step t.succ) (fun t : Fin k => starts t.succ)) :
+    higham11_7_TridiagonalPathStartOffsetsFrom base (k + 1) step starts := by
+  refine ⟨?_, ?_⟩
+  · intro hk
+    simpa using hhead
+  · intro t hnext
+    cases t using Fin.cases with
+    | zero =>
+        have hk : 0 < k := by omega
+        have htail_head :=
+          higham11_7_tridiagonalPathStartOffsetsFrom_head
+            (base + higham11_7_tridiagonalBranchSupportOffset (step 0)) k
+            (fun t : Fin k => step t.succ) (fun t : Fin k => starts t.succ)
+            htail hk
+        simpa [hhead, add_comm, add_left_comm, add_assoc] using htail_head
+    | succ t =>
+        have hnext' : t.val + 2 < k + 1 := by
+          simpa [Fin.val_succ, Nat.add_assoc] using hnext
+        have hnext_tail : t.val + 1 < k := by omega
+        have htail_succ :=
+          higham11_7_tridiagonalPathStartOffsetsFrom_succ
+            (base + higham11_7_tridiagonalBranchSupportOffset (step 0)) k
+            (fun t : Fin k => step t.succ) (fun t : Fin k => starts t.succ)
+            htail t hnext_tail
+        simpa using htail_succ
+
 /-- A zero-based path schedule starts at offset `0`. -/
 theorem higham11_7_tridiagonalPathStartOffsets_head
     (k : ℕ) (step : Fin k → PivotSize) (starts : Fin k → ℕ)
