@@ -10485,6 +10485,126 @@ theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_pathFirstTrailing_two_f
   (higham11_7_tridiagonalLiftLocalBlockPerturbation_pathFirstTrailing_two_full_solve_row_eq_A_dot_add_before_dot_add_current_pathLocal_dot
     k step t hstep A ΔA hEsupp x_hat).trans hrow
 
+/-- The `1 × 1` first-trailing solve-row lift can use the support carried by a
+concrete equation-bearing path residual witness directly. -/
+theorem higham11_7_tridiagonalConcretePathResidualWitnesses_pathFirstTrailing_one_full_solve_row_of_A_dot_add_before_dot_add_current_pathLocal_dot_eq
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.one)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathResidualWitnesses k fp
+      (fun u => higham11_7_tridiagonalPathTailDim k step u) step
+      (fun u => higham11_7_tridiagonalPathBranchMatrix k step A u)
+      c_bound c_rec u_loc tail_fl tail_exact ΔA)
+    (x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (rhs : ℝ)
+    (hrow :
+      (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        A (higham11_7_tridiagonalPathFirstTrailingIndex_one k step t hstep) j *
+          x_hat j) +
+      ((∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        (∑ u ∈ Finset.univ.filter (fun u : Fin k => u.val < t.val),
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step u)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step u) (step u)) (ΔA u)
+            (higham11_7_tridiagonalPathFirstTrailingIndex_one k step t hstep) j) *
+          x_hat j) +
+      (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)),
+        ΔA t
+          (Fin.cast (by rw [hstep])
+            (higham11_7_tridiagonalBranchFirstTrailingIndex
+              (higham11_7_tridiagonalPathTailDim k step t) PivotSize.one)) j *
+          x_hat (higham11_7_tridiagonalPathLocalBlockIndex k step t j))) = rhs) :
+    (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      (A (higham11_7_tridiagonalPathFirstTrailingIndex_one k step t hstep) j +
+        (∑ u : Fin k,
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step u)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step u) (step u)) (ΔA u)
+            (higham11_7_tridiagonalPathFirstTrailingIndex_one k step t hstep) j)) *
+        x_hat j) = rhs := by
+  have hEsupp : ∀ u : Fin k,
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u))
+        (higham11_7_tridiagonalBranchSupportOffset (step u)) (ΔA u) :=
+    higham11_7_tridiagonalConcretePathResidualWitnesses_leadingBlockSupport_family
+      k fp step A c_bound c_rec u_loc tail_fl tail_exact ΔA hwit
+  exact
+    higham11_7_tridiagonalLiftLocalBlockPerturbation_pathFirstTrailing_one_full_solve_row_of_A_dot_add_before_dot_add_current_pathLocal_dot_eq
+      k step t hstep A ΔA hEsupp x_hat rhs hrow
+
+/-- The `2 × 2` first-trailing solve-row lift can use the support carried by a
+concrete equation-bearing path residual witness directly. -/
+theorem higham11_7_tridiagonalConcretePathResidualWitnesses_pathFirstTrailing_two_full_solve_row_of_A_dot_add_before_dot_add_current_pathLocal_dot_eq
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.two)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathResidualWitnesses k fp
+      (fun u => higham11_7_tridiagonalPathTailDim k step u) step
+      (fun u => higham11_7_tridiagonalPathBranchMatrix k step A u)
+      c_bound c_rec u_loc tail_fl tail_exact ΔA)
+    (x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (rhs : ℝ)
+    (hrow :
+      (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        A (higham11_7_tridiagonalPathFirstTrailingIndex_two k step t hstep) j *
+          x_hat j) +
+      ((∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        (∑ u ∈ Finset.univ.filter (fun u : Fin k => u.val < t.val),
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step u)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step u) (step u)) (ΔA u)
+            (higham11_7_tridiagonalPathFirstTrailingIndex_two k step t hstep) j) *
+          x_hat j) +
+      (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)),
+        ΔA t
+          (Fin.cast (by rw [hstep])
+            (higham11_7_tridiagonalBranchFirstTrailingIndex
+              (higham11_7_tridiagonalPathTailDim k step t) PivotSize.two)) j *
+          x_hat (higham11_7_tridiagonalPathLocalBlockIndex k step t j))) = rhs) :
+    (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      (A (higham11_7_tridiagonalPathFirstTrailingIndex_two k step t hstep) j +
+        (∑ u : Fin k,
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step u)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step u) (step u)) (ΔA u)
+            (higham11_7_tridiagonalPathFirstTrailingIndex_two k step t hstep) j)) *
+        x_hat j) = rhs := by
+  have hEsupp : ∀ u : Fin k,
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u))
+        (higham11_7_tridiagonalBranchSupportOffset (step u)) (ΔA u) :=
+    higham11_7_tridiagonalConcretePathResidualWitnesses_leadingBlockSupport_family
+      k fp step A c_bound c_rec u_loc tail_fl tail_exact ΔA hwit
+  exact
+    higham11_7_tridiagonalLiftLocalBlockPerturbation_pathFirstTrailing_two_full_solve_row_of_A_dot_add_before_dot_add_current_pathLocal_dot_eq
+      k step t hstep A ΔA hEsupp x_hat rhs hrow
+
 /-- **Theorem 11.7 local-to-ambient branch lift package**.  A local branch
 perturbation with a componentwise bound and zero-prefix support can be embedded
 into a shared ambient matrix at offset `start`, preserving the bound, shifting
