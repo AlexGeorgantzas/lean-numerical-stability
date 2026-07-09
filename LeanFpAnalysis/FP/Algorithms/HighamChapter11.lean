@@ -7969,6 +7969,63 @@ theorem higham11_7_tridiagonalBranchPathResidualWitnesses_infNorm_bound
     (higham11_7_tridiagonalBranchPathResidualWitnesses_supported
       k fp tailDim step A c_bound c_rec u tail_fl tail_exact ΔA hwit) t
 
+/-- A concrete prefix-span supported-witness path supplies exactly the
+zero-prefix support family required by the lifted first-trailing dot and
+solve-row decomposition lemmas. -/
+theorem higham11_7_tridiagonalConcretePathSupportedWitnesses_leadingBlockSupport_family
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathSupportedWitnesses k fp
+      (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+      (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+      c_bound c_rec u tail_fl tail_exact ΔA) :
+    ∀ t : Fin k,
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t))
+        (higham11_7_tridiagonalBranchSupportOffset (step t)) (ΔA t) := by
+  intro t
+  exact
+    higham11_7_tridiagonalBranchPathSupportedWitnesses_leadingBlockSupport
+      k fp (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+      (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+      c_bound c_rec u tail_fl tail_exact ΔA hwit t
+
+/-- A concrete prefix-span residual-witness path supplies the zero-prefix
+support family required by lifted first-trailing solve-row decompositions. -/
+theorem higham11_7_tridiagonalConcretePathResidualWitnesses_leadingBlockSupport_family
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathResidualWitnesses k fp
+      (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+      (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+      c_bound c_rec u tail_fl tail_exact ΔA) :
+    ∀ t : Fin k,
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t))
+        (higham11_7_tridiagonalBranchSupportOffset (step t)) (ΔA t) := by
+  intro t
+  exact
+    higham11_7_tridiagonalBranchPathResidualWitnesses_leadingBlockSupport
+      k fp (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+      (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+      c_bound c_rec u tail_fl tail_exact ΔA hwit t
+
 /-- **Theorem 11.7 concrete path residual witness accessor, `1 × 1` branch**.
 At a concrete prefix-span branch whose pivot choice is `1 × 1`, the
 equation-bearing path witness can be read as the corresponding branch-local
