@@ -1229,6 +1229,34 @@ theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_entry_bounds
       L_hat Lmax hL r)
     hB
 
+/-- Uniform row-sum and `D̂` entry caps package into the source max-entry norm
+target, deriving `0≤Dmax` from the absolute `D̂` entry cap. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lrow B : ℝ)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow)
+    (hB : Lrow * Dmax * Lrow ≤ B) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤ B :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_row_sum_bound
+    n hn L_hat D_hat Dmax Lrow B
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hD hrows hB
+
+/-- Uniform entry caps for `|L̂|` and `|D̂|` package into the source max-entry
+norm target, deriving `0≤Dmax` from the absolute `D̂` entry cap. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_entry_bounds_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lmax B : ℝ)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hB : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ B) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤ B :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_uniform_entry_bounds
+    n hn L_hat D_hat Dmax Lmax B
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hD hL hB
+
 /-- Pointwise product-entry estimates package into the scalar max-entry product
 certificate used in Theorem 11.4. -/
 theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_product_entries (n : ℕ)
@@ -2041,6 +2069,79 @@ theorem higham11_4_bunch_kaufman_stability_of_higham_const_product_entries
       rw [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct]
       exact hentries i j)
 
+/-- **Theorem 11.4 direct row-sum stability bridge**.  Uniform row-sum caps for
+`|L̂|` and a uniform absolute-entry cap for `D̂`, reaching Higham's exact
+coefficient, feed the Bunch-Kaufman stability consumer directly. -/
+theorem higham11_4_bunch_kaufman_stability_of_higham_const_uniform_row_sum_bound
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lrow ρ_n maxNorm_A : ℝ) (hρ : 0 ≤ ρ_n) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow)
+    (hbudget :
+      Lrow * Dmax * Lrow ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * maxNorm_A) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_maxEntryNorm_absLDLTProduct_le
+    n hn A L_hat D_hat ρ_n maxNorm_A hmA hA_norm
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound_entry_nonneg
+      n hn L_hat D_hat Dmax Lrow ρ_n maxNorm_A hρ hmA hD hrows hbudget)
+
+/-- **Theorem 11.4 direct uniform-entry stability bridge**.  Uniform entry caps
+for `|L̂|` and `D̂`, reaching Higham's exact coefficient, feed the
+Bunch-Kaufman stability consumer directly. -/
+theorem higham11_4_bunch_kaufman_stability_of_higham_const_uniform_entry_bounds
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax Lmax ρ_n maxNorm_A : ℝ) (hρ : 0 ≤ ρ_n) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hbudget :
+      ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * maxNorm_A) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_maxEntryNorm_absLDLTProduct_le
+    n hn A L_hat D_hat ρ_n maxNorm_A hmA hA_norm
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds_entry_nonneg
+      n hn L_hat D_hat Dmax Lmax ρ_n maxNorm_A hρ hmA hD hL hbudget)
+
+/-- **Theorem 11.4 direct per-row stability bridge**.  Row-dependent row-sum
+caps for `|L̂|` and a uniform absolute-entry cap for `D̂`, reaching Higham's
+exact coefficient, feed the Bunch-Kaufman stability consumer directly. -/
+theorem higham11_4_bunch_kaufman_stability_of_higham_const_row_sum_bounds
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax : ℝ) (Lrow : Fin n → ℝ) (ρ_n maxNorm_A : ℝ)
+    (hρ : 0 ≤ ρ_n) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow r)
+    (hbudget : ∀ i j : Fin n,
+      Lrow i * Dmax * Lrow j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * maxNorm_A) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_maxEntryNorm_absLDLTProduct_le
+    n hn A L_hat D_hat ρ_n maxNorm_A hmA hA_norm
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds_entry_nonneg
+      n hn L_hat D_hat Dmax Lrow ρ_n maxNorm_A hρ hmA hD hrows hbudget)
+
 /-- **Theorem 11.4** solve backward-error target shape for Bunch-Kaufman
 partial pivoting. -/
 theorem higham11_4_bunch_kaufman_solve_backward_error_interface (n : ℕ)
@@ -2173,6 +2274,90 @@ theorem higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_product_en
     n hn A L_hat D_hat b x_hat p u ρ_n Amax hpu hρ hAmax (fun i j => by
       rw [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct]
       exact hentries i j) hsolve
+
+/-- **Theorem 11.4 direct row-sum solve bridge**.  Uniform row-sum caps for
+`|L̂|` and a uniform absolute-entry cap for `D̂`, reaching Higham's exact
+coefficient, feed the Bunch-Kaufman solve-budget consumer directly. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_uniform_row_sum_bound
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (Dmax Lrow p u ρ_n Amax : ℝ) (hpu : 0 ≤ p * u)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow)
+    (hbudget :
+      Lrow * Dmax * Lrow ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_maxEntryNorm_absLDLTProduct_le
+    n hn A L_hat D_hat b x_hat p u ρ_n Amax hpu
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_row_sum_bound_entry_nonneg
+      n hn L_hat D_hat Dmax Lrow ρ_n Amax hρ hAmax hD hrows hbudget)
+    hsolve
+
+/-- **Theorem 11.4 direct uniform-entry solve bridge**.  Uniform entry caps for
+`|L̂|` and `D̂`, reaching Higham's exact coefficient, feed the Bunch-Kaufman
+solve-budget consumer directly. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_uniform_entry_bounds
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (Dmax Lmax p u ρ_n Amax : ℝ) (hpu : 0 ≤ p * u)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hbudget :
+      ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_maxEntryNorm_absLDLTProduct_le
+    n hn A L_hat D_hat b x_hat p u ρ_n Amax hpu
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds_entry_nonneg
+      n hn L_hat D_hat Dmax Lmax ρ_n Amax hρ hAmax hD hL hbudget)
+    hsolve
+
+/-- **Theorem 11.4 direct per-row solve bridge**.  Row-dependent row-sum caps
+for `|L̂|` and a uniform absolute-entry cap for `D̂`, reaching Higham's exact
+coefficient, feed the Bunch-Kaufman solve-budget consumer directly. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_row_sum_bounds
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (Dmax : ℝ) (Lrow : Fin n → ℝ) (p u ρ_n Amax : ℝ) (hpu : 0 ≤ p * u)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow r)
+    (hbudget : ∀ i j : Fin n,
+      Lrow i * Dmax * Lrow j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_maxEntryNorm_absLDLTProduct_le
+    n hn A L_hat D_hat b x_hat p u ρ_n Amax hpu
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_row_sum_bounds_entry_nonneg
+      n hn L_hat D_hat Dmax Lrow ρ_n Amax hρ hAmax hD hrows hbudget)
+    hsolve
 
 /-! ## §11.1.3 Rook pivoting -/
 
