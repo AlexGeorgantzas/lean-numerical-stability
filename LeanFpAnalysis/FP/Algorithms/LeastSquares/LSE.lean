@@ -26863,6 +26863,151 @@ theorem theorem20_8_vecNorm2_perturbed_residual_correction_BAplus_split_le_of_re
     hbudget.2.2.2
     hbudget.2.1
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    residual-gap estimate obtained directly from the perturbed residual
+    decomposition after splitting the constraint correction through
+    `B_A^+ = (I - (AP)^+ A) B^+`.
+
+    The first term is the reduced `AP` action on the solution difference; the
+    remaining terms are the already-proved source-relative BAplus split
+    correction budget. -/
+theorem theorem20_8_source_residual_gap_norm_le_of_solution_difference_relativeBudget_BAplus_split
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ) {eps : ℝ}
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    vecNorm2 (fun i : Fin m => rHigh i - r i) ≤
+      complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B Bplus)) *
+          vecNorm2 (fun j : Fin n => y j - x j) +
+        ((theorem20_8KappaB A APplus *
+              (complexMatrixOp2 (realRectToCMatrix (rectMatMul A Bplus)) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+            complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B Bplus APplus))) *
+              (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+          (eps * frobNormRect A) * vecNorm2 y +
+          eps * vecNorm2 b) := by
+  let apAction : Fin m → ℝ :=
+    rectMatMulVec (theorem20_8AP A B Bplus) (fun j => y j - x j)
+  let correction : Fin m → ℝ :=
+    fun i =>
+      (rectMatMulVec A
+          (rectMatMulVec APplus
+            (rectMatMulVec A
+              (rectMatMulVec Bplus
+                (fun l : Fin p => Deltad l - rectMatMulVec DeltaB y l)))) i +
+        rectMatMulVec A
+          (rectMatMulVec (theorem20_8BAplus A B Bplus APplus)
+            (fun l : Fin p => Deltad l - rectMatMulVec DeltaB y l)) i) +
+        rectMatMulVec DeltaA y i -
+      Deltab i
+  have hgap_eq :
+      (fun i : Fin m => rHigh i - r i) =
+        fun i : Fin m => -(apAction i + correction i) := by
+    have hdecomp :=
+      theorem20_8_perturbed_feasible_residual_decomp_BAplus
+        A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y hx hy
+    ext i
+    have hdecomp_i := congrFun hdecomp i
+    have hr_i := congrFun hr i
+    have hres_i := congrFun hres i
+    unfold lsResidual at hdecomp_i
+    unfold lsResidualHigham at hr_i hres_i
+    dsimp [apAction, correction] at hdecomp_i ⊢
+    linarith
+  have hap :
+      vecNorm2 apAction ≤
+        complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B Bplus)) *
+          vecNorm2 (fun j : Fin n => y j - x j) :=
+    rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+      (theorem20_8AP A B Bplus) le_rfl (fun j => y j - x j)
+  have hcorr :
+      vecNorm2 correction ≤
+        (theorem20_8KappaB A APplus *
+              (complexMatrixOp2 (realRectToCMatrix (rectMatMul A Bplus)) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+            complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B Bplus APplus))) *
+              (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+          (eps * frobNormRect A) * vecNorm2 y +
+          eps * vecNorm2 b := by
+    exact
+      theorem20_8_vecNorm2_perturbed_residual_correction_BAplus_split_le_of_relativeBudget_op2
+        A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y hbudget
+  calc
+    vecNorm2 (fun i : Fin m => rHigh i - r i)
+        = vecNorm2 (fun i : Fin m => -(apAction i + correction i)) := by
+            rw [hgap_eq]
+    _ = vecNorm2 (fun i : Fin m => apAction i + correction i) := by
+            simpa using vecNorm2_neg (fun i : Fin m => apAction i + correction i)
+    _ ≤ vecNorm2 apAction + vecNorm2 correction :=
+            vecNorm2_add_le apAction correction
+    _ ≤ complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B Bplus)) *
+          vecNorm2 (fun j : Fin n => y j - x j) +
+        ((theorem20_8KappaB A APplus *
+              (complexMatrixOp2 (realRectToCMatrix (rectMatMul A Bplus)) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+            complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B Bplus APplus))) *
+              (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+          (eps * frobNormRect A) * vecNorm2 y +
+          eps * vecNorm2 b) :=
+            add_le_add hap hcorr
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-max-relative perturbation version of the BAplus split residual-gap
+    estimate.  The displayed maximum bound supplies the four multiplicative
+    data perturbation bounds consumed by the residual-correction estimate. -/
+theorem theorem20_8_source_residual_gap_norm_le_of_solution_difference_maxRelativePerturbation_BAplus_split
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ) {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh) :
+    vecNorm2 (fun i : Fin m => rHigh i - r i) ≤
+      complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B Bplus)) *
+          vecNorm2 (fun j : Fin n => y j - x j) +
+        ((theorem20_8KappaB A APplus *
+              (complexMatrixOp2 (realRectToCMatrix (rectMatMul A Bplus)) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+            complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A (theorem20_8BAplus A B Bplus APplus))) *
+              (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+          (eps * frobNormRect A) * vecNorm2 y +
+          eps * vecNorm2 b) :=
+  theorem20_8_source_residual_gap_norm_le_of_solution_difference_relativeBudget_BAplus_split
+    A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh hx hy hr
+    hres
+    (theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+      A DeltaA b Deltab B DeltaB d Deltad hApos hbpos hBpos hdpos hmax)
+
 /-- The source quantity `kappa_A(B)` in Theorem 20.8 is nonnegative. -/
 theorem theorem20_8KappaA_nonneg {n p : ℕ}
     (B : Fin p → Fin n → ℝ) (BAplus : Fin n → Fin p → ℝ) :
@@ -45433,6 +45578,25 @@ theorem GeneralizedQRFactorization.A_mul_Q2Basis
           hblock.symm
     _ = gqrAQ2Block A h.Q i j := by
           simpa [gsColumn] using hcol
+
+/-- Reduced-operator perturbation bridge for Theorem 20.8:
+    a bound stated on the GQR reduced blocks `A Q₂` transfers to the
+    nullspace-basis form `A*N` with `N` chosen as the concrete GQR `Q₂` basis. -/
+theorem GeneralizedQRFactorization.rectOpNorm2Le_reduced_delta_of_gqrAQ2Block
+    {r p q : ℕ}
+    {A Apert : Fin (r + q) → Fin (p + q) → ℝ}
+    {B Bpert : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+    {c : ℝ}
+    (hDelta :
+      rectOpNorm2Le
+        (fun i j => gqrAQ2Block Apert hpert.Q i j -
+          gqrAQ2Block A h.Q i j) c) :
+    rectOpNorm2Le
+      (fun i j => rectMatMul Apert hpert.Q2Basis i j -
+        rectMatMul A h.Q2Basis i j) c := by
+  simpa [h.A_mul_Q2Basis, hpert.A_mul_Q2Basis] using hDelta
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10 transport algebra:
     any perturbation of the trailing `A Q₂` block can be represented by a
