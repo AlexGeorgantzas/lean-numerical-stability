@@ -289,6 +289,10 @@ eq. (4.11)'s local-plus-recursive product split directly into the same scalar
 max-entry certificate once the concrete block bounds are proved, either from
 loose `36` shares or from the exact eq-(4.13) coefficient before the final
 `≤36` handoff.
+A later 2026-07-09 increment adds
+`higham11_4_nonneg_of_uniform_abs_entry_bound` plus loose and exact-coefficient
+uniform row-sum/entry product wrappers with `_entry_nonneg` suffixes, so a
+concrete `|D_hat|≤Dmax` cap no longer needs a separate `0≤Dmax` handoff.
 
 ## External proof sources
 | Selected claim | Source and exact location | Role | Local Lean closure | Status |
@@ -1252,6 +1256,15 @@ Problem transcription.
     `higham11_4_bunchKaufmanProductEntry_le_uniform_entry_bounds`,
     `higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_uniform_entry_bounds`, and
     `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_entry_bounds`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.4 uniform product cap nonnegativity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_4_nonneg_of_uniform_abs_entry_bound`,
+    `higham11_4_bunchKaufmanMaxEntryProductBound_of_uniform_entry_bounds_entry_nonneg`, and
+    `higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_entry_bounds_entry_nonneg`
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.4 per-row exact-coefficient row-sum/product majorant increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
