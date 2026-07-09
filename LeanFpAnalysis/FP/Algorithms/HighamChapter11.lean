@@ -4372,6 +4372,50 @@ theorem higham11_8_aasen_factor_solve_coeff_le_of_product_square_bounds
       (by simpa [α] using hSB)
       hparts
 
+/-- Insert a nonnegative middle factor bounded by `1` into a product already
+bounded by the printed Aasen `(n-1)^2` square. -/
+theorem higham11_8_triple_product_square_bound_of_middle_le_one
+    (n : ℕ) (κLeft κMid κRight : ℝ)
+    (hκMid : 0 ≤ κMid) (hκMid_le_one : κMid ≤ 1)
+    (hprod : κLeft * κRight ≤ ((n - 1 : ℕ) : ℝ) ^ 2) :
+    κLeft * κMid * κRight ≤ ((n - 1 : ℕ) : ℝ) ^ 2 := by
+  let α : ℝ := ((n - 1 : ℕ) : ℝ) ^ 2
+  have hα : 0 ≤ α := by
+    dsimp [α]
+    exact sq_nonneg _
+  have hmul : (κLeft * κRight) * κMid ≤ α * 1 :=
+    mul_le_mul (by simpa [α] using hprod) hκMid_le_one hκMid hα
+  calc
+    κLeft * κMid * κRight = (κLeft * κRight) * κMid := by ring
+    _ ≤ α * 1 := hmul
+    _ = ((n - 1 : ℕ) : ℝ) ^ 2 := by simp [α]
+
+/-- Reduce the four exact-product square caps for the concrete Aasen `T_hat`
+route to two square caps, when the middle factors `κT` and `κmidLU` are each
+bounded by `1`. -/
+theorem higham11_8_aasen_product_square_bounds_of_base_le_one
+    (n : ℕ) (γ_factor κL κLT κT κmidLU : ℝ)
+    (hκT : 0 ≤ κT) (hκT_le_one : κT ≤ 1)
+    (hκmidLU : 0 ≤ κmidLU) (hκmidLU_le_one : κmidLU ≤ 1)
+    (hprod_base : κL * κLT ≤ ((n - 1 : ℕ) : ℝ) ^ 2)
+    (hprod_rel :
+      ((1 + γ_factor) * κL) * ((1 + γ_factor) * κLT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) :
+    (κL * κT * κLT ≤ ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (κL * κLT ≤ ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ_factor) * κL) * ((1 + γ_factor) * κLT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ_factor) * κL) * κmidLU * ((1 + γ_factor) * κLT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) := by
+  refine ⟨?_, hprod_base, hprod_rel, ?_⟩
+  · exact
+      higham11_8_triple_product_square_bound_of_middle_le_one
+        n κL κT κLT hκT hκT_le_one hprod_base
+  · exact
+      higham11_8_triple_product_square_bound_of_middle_le_one
+        n ((1 + γ_factor) * κL) κmidLU ((1 + γ_factor) * κLT)
+        hκmidLU hκmidLU_le_one hprod_rel
+
 /-- Monotonicity helper for coefficient terms with multiplier `2γ+γ^2`. -/
 theorem higham11_8_two_gamma_plus_sq_mul_le_of_le
     (γ x y η : ℝ) (hγ : 0 ≤ γ) (hxy : x ≤ y)
@@ -4772,6 +4816,40 @@ theorem higham11_8_aasen_relative_coeff_le_of_gamma_product_square_bounds
         (((1 + γ_factor) * κL) * (fγ * κmidLU) * ((1 + γ_factor) * κLT))
         (α * fγ) (α * γ6n) hSBprod hSBcap)
       (by simpa [α] using hparts)
+
+/-- Concrete gamma/product-square discharge for the exact-product Aasen
+coefficient route, with the four product caps reduced to source/computed
+two-factor square caps plus `κT≤1` and `κmidLU≤1`. -/
+theorem higham11_8_aasen_relative_coeff_le_of_gamma_base_square_bounds
+    (fp : FPModel) (n : ℕ)
+    (γ_factor γ15n25 κL κLT κT κBT κmidLU : ℝ)
+    (hval : gammaValid fp (15 * n + 25))
+    (hγ15 : gamma fp (15 * n + 25) ≤ γ15n25)
+    (hκT : 0 ≤ κT) (hκT_le_one : κT ≤ 1)
+    (hκBT : 0 ≤ κBT) (hκBT_le : κBT ≤ gamma fp n)
+    (hκmidLU : 0 ≤ κmidLU) (hκmidLU_le_one : κmidLU ≤ 1)
+    (hprod_base : κL * κLT ≤ ((n - 1 : ℕ) : ℝ) ^ 2)
+    (hprod_rel :
+      ((1 + γ_factor) * κL) * ((1 + γ_factor) * κLT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) :
+    (2 * gamma fp n + (gamma fp n) ^ 2) * (κL * κT * κLT) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) * (κL * κBT * κLT) +
+      (2 * gamma fp n + (gamma fp n) ^ 2) *
+        (((1 + γ_factor) * κL) * ((1 + γ_factor) * κLT)) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (((1 + γ_factor) * κL) *
+          (higham9_14_f (gamma fp n) * κmidLU) *
+          ((1 + γ_factor) * κLT)) ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 := by
+  rcases
+      higham11_8_aasen_product_square_bounds_of_base_le_one
+        n γ_factor κL κLT κT κmidLU hκT hκT_le_one hκmidLU
+        hκmidLU_le_one hprod_base hprod_rel with
+    ⟨hprodFT, hprodFB_base, hprodST, hprodSB⟩
+  exact
+    higham11_8_aasen_relative_coeff_le_of_gamma_product_square_bounds
+      fp n γ_factor γ15n25 κL κLT κT κBT κmidLU hval hγ15
+      hκBT hκBT_le hprodFT hprodFB_base hprodST hprodSB
 
 /-- Product-cap version of
 `higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts`.  Each of the four
@@ -6972,6 +7050,78 @@ theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relat
       (higham11_8_aasen_relative_coeff_le_of_gamma_product_square_bounds
         fp n γ_factor γ15n25 κL κLT κT κBT κmidLU hcoeff_valid hγ15
         hκBT hκBT_le hprodFT hprodFB_base hprodST hprodSB)
+
+/-- Relative abs-LU componentwise-middle wrapper with the concrete
+factorization-side `T_hat` budget and the reduced exact-product square
+interface.  The `κT` and abs-LU middle factors are bounded by `1`, so the two
+source/computed two-factor square caps imply the four exact-product caps used
+by the standard gamma-square wrapper. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_gamma_base_square_products
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n)
+    (A Pmat L T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (γ_factor γ15n25 κL κLT κT κBT κmidLU : ℝ)
+    (hγ_factor : 0 ≤ γ_factor)
+    (hγ_factor_le : γ_factor ≤ gamma fp n)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hγ15 : gamma fp (15 * n + 25) ≤ γ15n25)
+    (hκL : 0 ≤ κL)
+    (hκT : 0 ≤ κT) (hκBT : 0 ≤ κBT) (hκmidLU : 0 ≤ κmidLU)
+    (hκT_le_one : κT ≤ 1) (hκBT_le : κBT ≤ gamma fp n)
+    (hκmidLU_le_one : κmidLU ≤ 1)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hn : gammaValid fp n)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hLhat_entry : ∀ i j : Fin n, |L_hat i j - L i j| ≤ γ_factor * |L i j|)
+    (hThat_component : ∀ i j : Fin n, |T_hat i j - T i j| ≤ κBT * |T_hat i j|)
+    (hL_norm : infNorm L ≤ κL)
+    (hLT_norm : infNorm (fun r c => L c r) ≤ κLT)
+    (hT_norm : infNorm T ≤ κT * infNorm T_hat)
+    (hmiddle_entry : ∀ i j : Fin n,
+      matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤
+        κmidLU * |T_hat i j|)
+    (hprod_base : κL * κLT ≤ ((n - 1 : ℕ) : ℝ) ^ 2)
+    (hprod_rel :
+      ((1 + γ_factor) * κL) * ((1 + γ_factor) * κLT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => κBT * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA) γ15n25
+        (infNorm T_hat) := by
+  rcases
+      higham11_8_aasen_product_square_bounds_of_base_le_one
+        n γ_factor κL κLT κT κmidLU hκT hκT_le_one hκmidLU
+        hκmidLU_le_one hprod_base hprod_rel with
+    ⟨hprodFT, hprodFB_base, hprodST, hprodSB⟩
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_relative_absLU_componentwise_T_factor_gamma_square_products
+      fp n hn_pos A Pmat L T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      γ_factor γ15n25 κL κLT κT κBT κmidLU hγ_factor hγ_factor_le
+      hcoeff_valid hγ15 hκL hκT hκBT hκmidLU hκBT_le h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hprod
+      hLhat_entry hThat_component hL_norm hLT_norm hT_norm hmiddle_entry
+      hprodFT hprodFB_base hprodST hprodSB
 
 /-- Relative abs-LU componentwise-middle wrapper with the concrete
 factorization-side `T_hat` budget and exact product majorants, using four
@@ -9905,6 +10055,104 @@ theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_sourc
       (higham11_8_aasen_relative_coeff_le_of_gamma_product_square_bounds
         fp n γ_factor γ15n25 κL κLT κT κBT κmidLU hcoeff_valid hγ15
         hκBT hκBT_le hprodFT hprodFB_base hprodST hprodSB)
+
+/-- Source-prefix relative abs-LU componentwise-middle wrapper with the
+concrete factorization-side `T_hat` budget and the reduced exact-product
+square interface.  The source-prefix recurrence supplies the relative
+`L_hat` hypothesis, while the product-size side only needs the two base square
+caps plus `κT≤1` and `κmidLU≤1`. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_products
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (γ_factor γ15n25 κL κLT κT κBT κmidLU : ℝ)
+    (hγ_factor : 0 ≤ γ_factor)
+    (hγ_factor_le : γ_factor ≤ gamma fp n)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hγ15 : gamma fp (15 * n + 25) ≤ γ15n25)
+    (hκL : 0 ≤ κL)
+    (hκT : 0 ≤ κT) (hκBT : 0 ≤ κBT) (hκmidLU : 0 ≤ κmidLU)
+    (hκT_le_one : κT ≤ 1) (hκBT_le : κBT ≤ gamma fp n)
+    (hκmidLU_le_one : κmidLU ≤ 1)
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hvalSum : ∀ i next : Fin n, next.val = i.val + 1 →
+      gammaValid fp next.val)
+    (hvalUpdate : gammaValid fp 2)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ γ_factor * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hn : gammaValid fp n)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hThat_component : ∀ i j : Fin n, |T_hat i j - T i j| ≤ κBT * |T_hat i j|)
+    (hL_norm : infNorm L ≤ κL)
+    (hLT_norm : infNorm (fun r c => L c r) ≤ κLT)
+    (hT_norm : infNorm T ≤ κT * infNorm T_hat)
+    (hmiddle_entry : ∀ i j : Fin n,
+      matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤
+        κmidLU * |T_hat i j|)
+    (hprod_base : κL * κLT ≤ ((n - 1 : ℕ) : ℝ) ^ 2)
+    (hprod_rel :
+      ((1 + γ_factor) * κL) * ((1 + γ_factor) * κLT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => κBT * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA) γ15n25
+        (infNorm T_hat) := by
+  rcases
+      higham11_8_aasen_product_square_bounds_of_base_le_one
+        n γ_factor κL κLT κT κmidLU hκT hκT_le_one hκmidLU
+        hκmidLU_le_one hprod_base hprod_rel with
+    ⟨hprodFT, hprodFB_base, hprodST, hprodSB⟩
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_square_products
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      γ_factor γ15n25 κL κLT κT κBT κmidLU hγ_factor hγ_factor_le
+      hcoeff_valid hγ15 hκL hκT hκBT hκmidLU hκBT_le hrec hHnz hvalSum
+      hvalUpdate hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower
+      hT_U_upper hn hprod hThat_component hL_norm hLT_norm hT_norm
+      hmiddle_entry hprodFT hprodFB_base hprodST hprodSB
 
 /-- Source-prefix relative abs-LU componentwise-middle wrapper with the
 concrete factorization-side `T_hat` budget and exact product majorants, using
