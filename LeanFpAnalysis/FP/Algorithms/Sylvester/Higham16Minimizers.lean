@@ -1073,6 +1073,11 @@ theorem lyapunov_relative_residual_le_backwardErrorInf_of_symmetric_spectral
       (lyapunovBackwardErrorValues_nonempty_of_symmetric_spectral n
         A C Y U lam alpha gamma hY hU hC hYsym hpos)
 
+/-- Higham, 2nd ed., Chapter 16, Section 16.2.1, equation (16.21):
+    source-numbered alias for the Lyapunov residual-ratio lower bound. -/
+alias H16_eq16_21_lyapunov_relative_residual_le_backwardErrorInf_of_symmetric_spectral :=
+  lyapunov_relative_residual_le_backwardErrorInf_of_symmetric_spectral
+
 -- ============================================================
 -- (16.29): floating-point computed-residual dR model
 -- ============================================================
