@@ -4296,6 +4296,82 @@ theorem higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts
       (by simpa [α] using hSB)
       (by simpa [α] using hparts')
 
+/-- Product-square form of the Aasen four-share coefficient reducer.  Once
+each factor product is bounded by the printed `(n-1)^2` prefactor and each
+scalar coefficient is bounded by its gamma share, the full coefficient budget
+follows from the existing four-share splitter. -/
+theorem higham11_8_aasen_factor_solve_coeff_le_of_product_square_bounds
+    (n : ℕ)
+    (γ_factor γ_solve γ15n25 κL κLT κLhat κLhatT κT κBT κmid
+      γFT γFB γST γSB : ℝ)
+    (hγFT : 0 ≤ γFT) (hγFB : 0 ≤ γFB)
+    (hγST : 0 ≤ γST) (hγSB : 0 ≤ γSB)
+    (hκL : 0 ≤ κL) (hκLT : 0 ≤ κLT)
+    (hκLhat : 0 ≤ κLhat) (hκLhatT : 0 ≤ κLhatT)
+    (hκT : 0 ≤ κT) (hκBT : 0 ≤ κBT) (hκmid : 0 ≤ κmid)
+    (hprodFT :
+      κL * κT * κLT ≤ ((n - 1 : ℕ) : ℝ) ^ 2)
+    (hprodFB :
+      κL * κBT * κLT ≤ ((n - 1 : ℕ) : ℝ) ^ 2)
+    (hprodST :
+      κLhat * κLhatT ≤ ((n - 1 : ℕ) : ℝ) ^ 2)
+    (hprodSB :
+      κLhat * κmid * κLhatT ≤ ((n - 1 : ℕ) : ℝ) ^ 2)
+    (hcFT : 2 * γ_factor + γ_factor ^ 2 ≤ γFT)
+    (hcFB : 1 + 2 * γ_factor + γ_factor ^ 2 ≤ γFB)
+    (hcST : 2 * γ_solve + γ_solve ^ 2 ≤ γST)
+    (hcSB : 1 + 2 * γ_solve + γ_solve ^ 2 ≤ γSB)
+    (hparts : γFT + γFB + γST + γSB ≤ γ15n25) :
+    (2 * γ_factor + γ_factor ^ 2) * (κL * κT * κLT) +
+      (1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT) +
+      (2 * γ_solve + γ_solve ^ 2) * (κLhat * κLhatT) +
+      (1 + 2 * γ_solve + γ_solve ^ 2) *
+        (κLhat * κmid * κLhatT) ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * γ15n25 := by
+  let α : ℝ := ((n - 1 : ℕ) : ℝ) ^ 2
+  have hFT :
+      (2 * γ_factor + γ_factor ^ 2) * (κL * κT * κLT) ≤
+        α * γFT := by
+    have hprod_nonneg : 0 ≤ κL * κT * κLT :=
+      mul_nonneg (mul_nonneg hκL hκT) hκLT
+    have hmul :=
+      mul_le_mul hcFT (by simpa [α] using hprodFT) hprod_nonneg hγFT
+    simpa [α, mul_comm, mul_left_comm, mul_assoc] using hmul
+  have hFB :
+      (1 + 2 * γ_factor + γ_factor ^ 2) * (κL * κBT * κLT) ≤
+        α * γFB := by
+    have hprod_nonneg : 0 ≤ κL * κBT * κLT :=
+      mul_nonneg (mul_nonneg hκL hκBT) hκLT
+    have hmul :=
+      mul_le_mul hcFB (by simpa [α] using hprodFB) hprod_nonneg hγFB
+    simpa [α, mul_comm, mul_left_comm, mul_assoc] using hmul
+  have hST :
+      (2 * γ_solve + γ_solve ^ 2) * (κLhat * κLhatT) ≤
+        α * γST := by
+    have hprod_nonneg : 0 ≤ κLhat * κLhatT :=
+      mul_nonneg hκLhat hκLhatT
+    have hmul :=
+      mul_le_mul hcST (by simpa [α] using hprodST) hprod_nonneg hγST
+    simpa [α, mul_comm, mul_left_comm, mul_assoc] using hmul
+  have hSB :
+      (1 + 2 * γ_solve + γ_solve ^ 2) *
+          (κLhat * κmid * κLhatT) ≤
+        α * γSB := by
+    have hprod_nonneg : 0 ≤ κLhat * κmid * κLhatT :=
+      mul_nonneg (mul_nonneg hκLhat hκmid) hκLhatT
+    have hmul :=
+      mul_le_mul hcSB (by simpa [α] using hprodSB) hprod_nonneg hγSB
+    simpa [α, mul_comm, mul_left_comm, mul_assoc] using hmul
+  exact
+    higham11_8_aasen_factor_solve_coeff_le_of_gamma_parts
+      n γ_factor γ_solve γ15n25 κL κLT κLhat κLhatT κT κBT κmid
+      γFT γFB γST γSB
+      (by simpa [α] using hFT)
+      (by simpa [α] using hFB)
+      (by simpa [α] using hST)
+      (by simpa [α] using hSB)
+      hparts
+
 /-- Monotonicity helper for coefficient terms with multiplier `2γ+γ^2`. -/
 theorem higham11_8_two_gamma_plus_sq_mul_le_of_le
     (γ x y η : ℝ) (hγ : 0 ≤ γ) (hxy : x ≤ y)
