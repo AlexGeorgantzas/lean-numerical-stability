@@ -762,6 +762,93 @@ theorem higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne
   · intro i j
     simp [ΔA1]
 
+/-- **Theorem 11.3 row-sum bridge**: a nonnegative entrywise perturbation
+envelope bounds the corresponding infinity norm. -/
+theorem higham11_3_infNorm_le_of_componentwise_bound_nonneg (n : ℕ)
+    (ΔA B : Fin n → Fin n → ℝ)
+    (hB_nonneg : ∀ i j : Fin n, 0 ≤ B i j)
+    (hΔ : ∀ i j : Fin n, |ΔA i j| ≤ B i j) :
+    infNorm ΔA ≤ infNorm B := by
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    calc
+      (∑ j : Fin n, |ΔA i j|)
+          ≤ ∑ j : Fin n, B i j := Finset.sum_le_sum (fun j _ => hΔ i j)
+      _ = ∑ j : Fin n, |B i j| := by
+          apply Finset.sum_congr rfl
+          intro j _
+          rw [abs_of_nonneg (hB_nonneg i j)]
+      _ ≤ infNorm B := row_sum_le_infNorm B i
+  · exact infNorm_nonneg B
+
+/-- **Theorem 11.3 all-`1 × 1` source-facing package with norm aggregation**,
+stored-symmetric path: the explicit perturbation witnesses also satisfy
+infinity-norm bounds induced by their recursive entrywise envelope. -/
+theorem higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne_with_norm_bounds
+    (fp : FPModel) (hval : gammaValid fp 3) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hsym : ∀ i j, A i j = A j i)
+    (hp : higham11_3_FlStoredAllOnePivots fp n A) :
+    ∃ L_hat D_hat : Fin n → Fin n → ℝ,
+      ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+        (∀ i j : Fin n,
+          |ΔA1 i j| ≤ higham11_3_fl_storedAllOneByOneBound fp n A i j) ∧
+        (∀ i j : Fin n,
+          |ΔA2 i j| ≤ higham11_3_fl_storedAllOneByOneBound fp n A i j) ∧
+        infNorm ΔA1 ≤ infNorm (higham11_3_fl_storedAllOneByOneBound fp n A) ∧
+        infNorm ΔA2 ≤ infNorm (higham11_3_fl_storedAllOneByOneBound fp n A) ∧
+        (∀ i j : Fin n,
+          ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+            L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂ =
+          A i j + ΔA1 i j) := by
+  obtain ⟨L_hat, D_hat, ΔA1, ΔA2, hΔA1, hΔA2, hLD⟩ :=
+    higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne
+      fp hval n A hsym hp
+  refine ⟨L_hat, D_hat, ΔA1, ΔA2, hΔA1, hΔA2, ?_, ?_, hLD⟩
+  · exact
+      higham11_3_infNorm_le_of_componentwise_bound_nonneg n ΔA1
+        (higham11_3_fl_storedAllOneByOneBound fp n A)
+        (fun i j => higham11_3_fl_storedAllOneByOneBound_nonneg fp hval n A i j)
+        hΔA1
+  · exact
+      higham11_3_infNorm_le_of_componentwise_bound_nonneg n ΔA2
+        (higham11_3_fl_storedAllOneByOneBound fp n A)
+        (fun i j => higham11_3_fl_storedAllOneByOneBound_nonneg fp hval n A i j)
+        hΔA2
+
+/-- **Theorem 11.3 all-`1 × 1` source-facing package with norm aggregation**,
+raw-Schur path: the explicit perturbation witnesses also satisfy infinity-norm
+bounds induced by their recursive entrywise envelope. -/
+theorem higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne_with_norm_bounds
+    (fp : FPModel) (hval : gammaValid fp 3) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (hp : higham11_3_FlAllOneSymmetricPivots fp n A) :
+    ∃ L_hat D_hat : Fin n → Fin n → ℝ,
+      ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+        (∀ i j : Fin n,
+          |ΔA1 i j| ≤ higham11_3_fl_allOneByOneBound fp n A i j) ∧
+        (∀ i j : Fin n,
+          |ΔA2 i j| ≤ higham11_3_fl_allOneByOneBound fp n A i j) ∧
+        infNorm ΔA1 ≤ infNorm (higham11_3_fl_allOneByOneBound fp n A) ∧
+        infNorm ΔA2 ≤ infNorm (higham11_3_fl_allOneByOneBound fp n A) ∧
+        (∀ i j : Fin n,
+          ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+            L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂ =
+          A i j + ΔA1 i j) := by
+  obtain ⟨L_hat, D_hat, ΔA1, ΔA2, hΔA1, hΔA2, hLD⟩ :=
+    higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne
+      fp hval n A hp
+  refine ⟨L_hat, D_hat, ΔA1, ΔA2, hΔA1, hΔA2, ?_, ?_, hLD⟩
+  · exact
+      higham11_3_infNorm_le_of_componentwise_bound_nonneg n ΔA1
+        (higham11_3_fl_allOneByOneBound fp n A)
+        (fun i j => higham11_3_fl_allOneByOneBound_nonneg fp hval n A i j)
+        hΔA1
+  · exact
+      higham11_3_infNorm_le_of_componentwise_bound_nonneg n ΔA2
+        (higham11_3_fl_allOneByOneBound fp n A)
+        (fun i j => higham11_3_fl_allOneByOneBound_nonneg fp hval n A i j)
+        hΔA2
+
 /-- **Equation (11.6)**, the partial-pivoting example matrix. -/
 noncomputable def higham11_6_partialPivotExampleA
     (ε : ℝ) : Fin 3 → Fin 3 → ℝ :=
@@ -1048,6 +1135,42 @@ theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_entries
       mul_le_mul_of_nonneg_right hC htail_nonneg
     _ = 36 * (n : ℝ) * ρ_n * Amax := by ring
 
+/-- Exact-coefficient pointwise estimates package directly into the scalar
+max-entry product certificate used by the Bunch-Kaufman consumers. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_absLDLTProduct_entries
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (ρ_n Amax : ℝ) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hentries : ∀ i j : Fin n,
+      higham11_4_absLDLTProduct n L_hat D_hat i j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_maxEntryNorm_absLDLTProduct
+    n hn L_hat D_hat ρ_n Amax
+    (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_entries
+      n hn L_hat D_hat ρ_n Amax hρ hAmax hentries)
+
+/-- Expanded double-sum exact-coefficient estimates package directly into the
+scalar max-entry product certificate used by the Bunch-Kaufman consumers. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_product_entries
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (ρ_n Amax : ℝ) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hentries : ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_absLDLTProduct_entries
+    n hn L_hat D_hat ρ_n Amax hρ hAmax (fun i j => by
+      rw [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct]
+      exact hentries i j)
+
 /-- **Theorem 11.4 constant (Higham [608, 1997], appendix (A.3))**:
 `(3+α²)/(1−α²) ≤ 6`, bounding `|E||E⁻¹||E| ≤ 6|E|` for a 2×2 pivot. -/
 theorem higham11_4_pivot_norm_const_le_six :
@@ -1158,6 +1281,27 @@ theorem higham11_4_bunch_kaufman_stability_of_higham_const_absLDLTProduct_entrie
     (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_entries
       n hn L_hat D_hat ρ_n maxNorm_A hρ hmA hentries)
 
+/-- Expanded double-sum eq-(4.14) estimates with Higham's exact coefficient
+feed the Bunch-Kaufman stability consumer. -/
+theorem higham11_4_bunch_kaufman_stability_of_higham_const_product_entries
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ)
+    (ρ_n maxNorm_A : ℝ) (hρ : 0 ≤ ρ_n) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hentries : ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * maxNorm_A) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_higham_const_absLDLTProduct_entries
+    n hn A L_hat D_hat ρ_n maxNorm_A hρ hmA hA_norm (fun i j => by
+      rw [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct]
+      exact hentries i j)
+
 /-- **Theorem 11.4** solve backward-error target shape for Bunch-Kaufman
 partial pivoting. -/
 theorem higham11_4_bunch_kaufman_solve_backward_error_interface (n : ℕ)
@@ -1266,6 +1410,30 @@ theorem higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_absLDLTPro
     (higham11_4_maxEntryNorm_absLDLTProduct_le_of_higham_const_entries
       n hn L_hat D_hat ρ_n Amax hρ hAmax hentries)
     hsolve
+
+/-- Expanded double-sum eq-(4.14) estimates with Higham's exact coefficient
+convert a solve perturbation proportional to `|L̂||D̂||L̂ᵀ|` into the advertised
+`36nρₙ` budget. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_product_entries
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (p u ρ_n Amax : ℝ) (hpu : 0 ≤ p * u) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hentries : ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_higham_const_absLDLTProduct_entries
+    n hn A L_hat D_hat b x_hat p u ρ_n Amax hpu hρ hAmax (fun i j => by
+      rw [← higham11_4_bunchKaufmanProductEntry_eq_absLDLTProduct]
+      exact hentries i j) hsolve
 
 /-! ## §11.1.3 Rook pivoting -/
 
