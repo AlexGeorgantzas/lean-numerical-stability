@@ -3203,6 +3203,18 @@ theorem sylvesterVecCoeff_mulVec_surjective_of_operator_sigmaMin
         n A B sigma hsigma hSigmaMin)
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    source-numbered alias for operator-sigma-min vectorized coefficient
+    injectivity. -/
+alias H16_eq16_26_sylvesterVecCoeff_mulVec_injective_of_operator_sigmaMin :=
+  sylvesterVecCoeff_mulVec_injective_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    source-numbered alias for operator-sigma-min vectorized coefficient
+    surjectivity. -/
+alias H16_eq16_26_sylvesterVecCoeff_mulVec_surjective_of_operator_sigmaMin :=
+  sylvesterVecCoeff_mulVec_surjective_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
     a Sylvester operator sigma-min certificate makes the vectorized
     coefficient solve bijective. -/
 theorem sylvesterVecCoeff_mulVec_bijective_of_operator_sigmaMin
