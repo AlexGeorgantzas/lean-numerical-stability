@@ -8498,6 +8498,66 @@ theorem higham11_7_tridiagonalPathFirstTrailingIndex_two_val_eq_branch_end
   simp [higham11_7_tridiagonalBranchFirstTrailingIndex,
     higham11_7_tridiagonalBranchSupportOffset, hstep]
 
+/-- First-trailing rows of earlier `1 × 1` branches occur before those of
+later `1 × 1` branches. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_one_val_lt_one_val_of_lt
+    (k : ℕ) (step : Fin k → PivotSize) {t u : Fin k}
+    (htu : t.val < u.val) (hstep_t : step t = PivotSize.one)
+    (hstep_u : step u = PivotSize.one) :
+    (higham11_7_tridiagonalPathFirstTrailingIndex_one k step t hstep_t).val <
+      (higham11_7_tridiagonalPathFirstTrailingIndex_one k step u hstep_u).val := by
+  rw [higham11_7_tridiagonalPathFirstTrailingIndex_one_val_eq_branch_end
+      k step t hstep_t,
+    higham11_7_tridiagonalPathFirstTrailingIndex_one_val_eq_branch_end
+      k step u hstep_u]
+  exact higham11_7_tridiagonalPathPrefixSpan_branch_end_lt_branch_end_of_lt
+    k step htu
+
+/-- First-trailing rows of earlier `1 × 1` branches occur before those of
+later `2 × 2` branches. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_one_val_lt_two_val_of_lt
+    (k : ℕ) (step : Fin k → PivotSize) {t u : Fin k}
+    (htu : t.val < u.val) (hstep_t : step t = PivotSize.one)
+    (hstep_u : step u = PivotSize.two) :
+    (higham11_7_tridiagonalPathFirstTrailingIndex_one k step t hstep_t).val <
+      (higham11_7_tridiagonalPathFirstTrailingIndex_two k step u hstep_u).val := by
+  rw [higham11_7_tridiagonalPathFirstTrailingIndex_one_val_eq_branch_end
+      k step t hstep_t,
+    higham11_7_tridiagonalPathFirstTrailingIndex_two_val_eq_branch_end
+      k step u hstep_u]
+  exact higham11_7_tridiagonalPathPrefixSpan_branch_end_lt_branch_end_of_lt
+    k step htu
+
+/-- First-trailing rows of earlier `2 × 2` branches occur before those of
+later `1 × 1` branches. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_two_val_lt_one_val_of_lt
+    (k : ℕ) (step : Fin k → PivotSize) {t u : Fin k}
+    (htu : t.val < u.val) (hstep_t : step t = PivotSize.two)
+    (hstep_u : step u = PivotSize.one) :
+    (higham11_7_tridiagonalPathFirstTrailingIndex_two k step t hstep_t).val <
+      (higham11_7_tridiagonalPathFirstTrailingIndex_one k step u hstep_u).val := by
+  rw [higham11_7_tridiagonalPathFirstTrailingIndex_two_val_eq_branch_end
+      k step t hstep_t,
+    higham11_7_tridiagonalPathFirstTrailingIndex_one_val_eq_branch_end
+      k step u hstep_u]
+  exact higham11_7_tridiagonalPathPrefixSpan_branch_end_lt_branch_end_of_lt
+    k step htu
+
+/-- First-trailing rows of earlier `2 × 2` branches occur before those of
+later `2 × 2` branches. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_two_val_lt_two_val_of_lt
+    (k : ℕ) (step : Fin k → PivotSize) {t u : Fin k}
+    (htu : t.val < u.val) (hstep_t : step t = PivotSize.two)
+    (hstep_u : step u = PivotSize.two) :
+    (higham11_7_tridiagonalPathFirstTrailingIndex_two k step t hstep_t).val <
+      (higham11_7_tridiagonalPathFirstTrailingIndex_two k step u hstep_u).val := by
+  rw [higham11_7_tridiagonalPathFirstTrailingIndex_two_val_eq_branch_end
+      k step t hstep_t,
+    higham11_7_tridiagonalPathFirstTrailingIndex_two_val_eq_branch_end
+      k step u hstep_u]
+  exact higham11_7_tridiagonalPathPrefixSpan_branch_end_lt_branch_end_of_lt
+    k step htu
+
 @[simp] theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_pathFirstTrailing_two
     (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
     (hstep : step t = PivotSize.two)
