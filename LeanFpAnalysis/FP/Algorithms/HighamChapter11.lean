@@ -6725,6 +6725,33 @@ theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus
     (higham11_8_one_plus_mul_le_one_of_le_inv_one_plus γ κ hγ hκ)
     hentry hstrictUpperZero hfirstColZero
 
+/-- A uniform absolute entry bound over a nonempty matrix supplies
+nonnegativity of the bound. -/
+theorem higham11_8_nonneg_of_uniform_abs_entry_bound (n : ℕ) (hn : 0 < n)
+    (L : Fin n → Fin n → ℝ) (κ : ℝ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    0 ≤ κ :=
+  (abs_nonneg (L ⟨0, hn⟩ ⟨0, hn⟩)).trans
+    (hentry ⟨0, hn⟩ ⟨0, hn⟩)
+
+/-- Aasen outer-factor relative caps from a source-style inverse-scale uniform
+entry bound, deriving `0≤κ` from the absolute entry bound itself. -/
+theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus_of_entry_bound
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκ : κ ≤ 1 / (1 + γ))
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (1 + γ) * infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) :=
+  higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus
+    n hn L γ κ hγ
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n
+      (Nat.lt_trans Nat.zero_lt_one hn) L κ hentry)
+    hκ hentry hstrictUpperZero hfirstColZero
+
 /-- Unscaled exact outer-factor norm caps from Aasen zero structure and the
 source-style inverse-scale uniform entry bound. -/
 theorem higham11_8_outer_factor_caps_of_aasen_entry_bound_inv_one_plus
@@ -6745,6 +6772,23 @@ theorem higham11_8_outer_factor_caps_of_aasen_entry_bound_inv_one_plus
         ((n - 1 : ℕ) : ℝ) hγ hrelL,
       higham11_8_infNorm_cap_of_relative_infNorm_cap n (fun r c => L c r) γ
         ((n - 1 : ℕ) : ℝ) hγ hrelLT⟩
+
+/-- Unscaled exact outer-factor norm caps from a source-style inverse-scale
+uniform entry bound, deriving `0≤κ` from the entry bound itself. -/
+theorem higham11_8_outer_factor_caps_of_aasen_entry_bound_inv_one_plus_of_entry_bound
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκ : κ ≤ 1 / (1 + γ))
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      infNorm (fun r c => L c r) ≤ ((n - 1 : ℕ) : ℝ) :=
+  higham11_8_outer_factor_caps_of_aasen_entry_bound_inv_one_plus
+    n hn L γ κ hγ
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n
+      (Nat.lt_trans Nat.zero_lt_one hn) L κ hentry)
+    hκ hentry hstrictUpperZero hfirstColZero
 
 /-- A relative entrywise factor perturbation controls the perturbed factor's
 infinity norm by `(1+γ)` times the source factor norm. -/
@@ -7085,6 +7129,26 @@ theorem higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus
     higham11_8_aasen_base_square_bounds_of_factor_caps n γ
       (infNorm L) (infNorm (fun r c => L c r)) hγ (infNorm_nonneg L)
       (infNorm_nonneg (fun r c => L c r)) hLcap hLTcap hrelL hrelLT
+
+/-- Product-size base square bounds for the exact Aasen outer factor from the
+source-style inverse-scale entry bound, deriving `0≤κ` from the entry bound. -/
+theorem higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus_of_entry_bound
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκ : κ ≤ 1 / (1 + γ))
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (infNorm L * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ) * infNorm L) *
+          ((1 + γ) * infNorm (fun r c => L c r)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) :=
+  higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus
+    n hn L γ κ hγ
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n
+      (Nat.lt_trans Nat.zero_lt_one hn) L κ hentry)
+    hκ hentry hstrictUpperZero hfirstColZero
 
 /-- Insert a nonnegative middle factor bounded by `1` into a product already
 bounded by the printed Aasen `(n-1)^2` square. -/
