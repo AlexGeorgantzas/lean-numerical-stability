@@ -3178,6 +3178,45 @@ theorem higham11_7_tridiagonalLeadingBlockSupport_sum_uniform_bound_with_norm
     higham11_7_tridiagonalLeadingBlockSupport_sum_bound_with_norm m offset k
       E (fun _ => β) (fun _ => hβ) hbound hsupp
 
+/-- **Theorem 11.7 finite mixed-offset support-sum combiner**.  A finite family
+of same-ambient perturbations supported at possibly deeper zero-prefix offsets
+can be summed at any common shallower offset, with componentwise budgets summed. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_sum_bound_of_le_offsets
+    (m offset k : ℕ) (offsets : Fin k → ℕ)
+    (E : Fin k → Fin m → Fin m → ℝ) (β : Fin k → ℝ)
+    (hoff : ∀ t : Fin k, offset ≤ offsets t)
+    (hbound : ∀ t : Fin k, ∀ i j : Fin m, |E t i j| ≤ β t)
+    (hsupp : ∀ t : Fin k, higham11_7_TridiagonalLeadingBlockSupport m (offsets t) (E t)) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ ∑ t : Fin k, β t) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      (∀ i j : Fin m, G i j = ∑ t : Fin k, E t i j) :=
+  higham11_7_tridiagonalLeadingBlockSupport_sum_bound m offset k E β hbound
+    (fun t =>
+      higham11_7_tridiagonalLeadingBlockSupport_of_le_offset m offset
+        (offsets t) (E t) (hoff t) (hsupp t))
+
+/-- **Theorem 11.7 finite mixed-offset support-sum combiner with norm bound**.
+This is the norm-bearing version of
+`higham11_7_tridiagonalLeadingBlockSupport_sum_bound_of_le_offsets`. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_sum_bound_with_norm_of_le_offsets
+    (m offset k : ℕ) (offsets : Fin k → ℕ)
+    (E : Fin k → Fin m → Fin m → ℝ) (β : Fin k → ℝ)
+    (hβ : ∀ t : Fin k, 0 ≤ β t)
+    (hoff : ∀ t : Fin k, offset ≤ offsets t)
+    (hbound : ∀ t : Fin k, ∀ i j : Fin m, |E t i j| ≤ β t)
+    (hsupp : ∀ t : Fin k, higham11_7_TridiagonalLeadingBlockSupport m (offsets t) (E t)) :
+    ∃ G : Fin m → Fin m → ℝ,
+      (∀ i j : Fin m, |G i j| ≤ ∑ t : Fin k, β t) ∧
+      higham11_7_TridiagonalLeadingBlockSupport m offset G ∧
+      infNorm G ≤ (m : ℝ) * (∑ t : Fin k, β t) ∧
+      (∀ i j : Fin m, G i j = ∑ t : Fin k, E t i j) :=
+  higham11_7_tridiagonalLeadingBlockSupport_sum_bound_with_norm m offset k
+    E β hβ hbound
+    (fun t =>
+      higham11_7_tridiagonalLeadingBlockSupport_of_le_offset m offset
+        (offsets t) (E t) (hoff t) (hsupp t))
+
 /-- **Theorem 11.7 finite support-sum combiner, printed coefficient form**.
 For same-ambient supported perturbations with componentwise budgets
 `c t * u * Amax`, the summed perturbation is bounded by
