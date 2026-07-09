@@ -45632,6 +45632,48 @@ theorem GeneralizedQRFactorization.Q2Basis_nullspace
   simpa [GeneralizedQRFactorization.Q2Basis, rectMatMul, rectMatMulVec]
     using hc
 
+/-- A vector padded by zero leading coordinates has the same Euclidean norm as
+    its trailing block. -/
+theorem vecNorm2_zeroLeft_append {p q : ℕ}
+    (y : Fin q → ℝ) :
+    vecNorm2 (Fin.append (0 : Fin p → ℝ) y) = vecNorm2 y := by
+  unfold vecNorm2 vecNorm2Sq
+  rw [Fin.sum_univ_add]
+  simp [Fin.append_left, Fin.append_right]
+
+/-- The concrete GQR `Q₂` basis acts by applying the full orthogonal `Q` to a
+    vector with zero leading coordinates. -/
+theorem GeneralizedQRFactorization.Q2Basis_mulVec
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (y : Fin q → ℝ) :
+    rectMatMulVec h.Q2Basis y =
+      matMulVec (p + q) h.Q (Fin.append (0 : Fin p → ℝ) y) := by
+  ext i
+  unfold GeneralizedQRFactorization.Q2Basis rectMatMulVec matMulVec
+  have hinner : ∀ x : Fin q,
+      (∑ j : Fin (p + q), h.Q i j * Fin.append 0 (finiteBasisVec x) j) =
+        h.Q i (Fin.natAdd p x) := by
+    intro x
+    rw [Fin.sum_univ_add]
+    simp [Fin.append_left, Fin.append_right, finiteBasisVec]
+  rw [Fin.sum_univ_add]
+  simp [Fin.append_left, Fin.append_right, hinner]
+
+/-- The concrete GQR `Q₂` basis is an isometry on coefficient vectors. -/
+theorem GeneralizedQRFactorization.Q2Basis_vecNorm2
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (y : Fin q → ℝ) :
+    vecNorm2 (rectMatMulVec h.Q2Basis y) = vecNorm2 y := by
+  rw [h.Q2Basis_mulVec y]
+  rw [vecNorm2_orthogonal h.Q (Fin.append (0 : Fin p → ℝ) y) h.orthQ]
+  exact vecNorm2_zeroLeft_append y
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     the trailing `Q₂` coordinate block of the transformed data matrix `A Q`.
 
