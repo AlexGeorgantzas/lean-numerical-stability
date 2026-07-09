@@ -45839,6 +45839,81 @@ theorem GeneralizedQRFactorization.A_mul_Q2Basis
     _ = gqrAQ2Block A h.Q i j := by
           simpa [gsColumn] using hcol
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
+    the lifted reduced-Gram pseudoinverse candidate obtained by applying the
+    concrete GQR `Q₂` basis to the Gram pseudoinverse of the trailing `A Q₂`
+    block. -/
+noncomputable def GeneralizedQRFactorization.liftedReducedGramAPplus
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    Fin (p + q) → Fin (r + q) → ℝ :=
+  rectMatMul h.Q2Basis
+    (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
+    lifting the reduced-Gram pseudoinverse through the concrete GQR `Q₂` basis
+    preserves its exact complexified rectangular operator 2-norm. -/
+theorem GeneralizedQRFactorization.liftedReducedGramAPplus_op2_eq
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    complexMatrixOp2
+        (realRectToCMatrix h.liftedReducedGramAPplus) =
+      complexMatrixOp2
+        (realRectToCMatrix
+          (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))) := by
+  simpa [GeneralizedQRFactorization.liftedReducedGramAPplus] using
+    h.complexMatrixOp2_realRectToCMatrix_rectMatMul_Q2Basis_eq
+      (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
+    the lifted reduced-Gram `APplus` candidate has all columns in the
+    constraint nullspace, because its range is contained in the concrete GQR
+    `Q₂` range and `B Q₂ = 0`. -/
+theorem GeneralizedQRFactorization.liftedReducedGramAPplus_constraint_annihilates
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    rectMatMul B h.liftedReducedGramAPplus =
+      (fun _i : Fin p => fun _j : Fin (r + q) => 0) := by
+  calc
+    rectMatMul B h.liftedReducedGramAPplus =
+        rectMatMul B
+          (rectMatMul h.Q2Basis
+            (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))) := by
+          rfl
+    _ =
+        rectMatMul (rectMatMul B h.Q2Basis)
+          (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q)) := by
+          rw [rectMatMul_assoc]
+    _ =
+        rectMatMul (fun _i : Fin p => fun _j : Fin q => 0)
+          (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q)) := by
+          rw [h.Q2Basis_nullspace]
+    _ = (fun _i : Fin p => fun _j : Fin (r + q) => 0) := by
+          ext i j
+          unfold rectMatMul
+          simp
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
+    vector-action form of the lifted reduced-Gram `APplus` range-null
+    certificate. -/
+theorem GeneralizedQRFactorization.liftedReducedGramAPplus_range_null
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (w : Fin (r + q) → ℝ) :
+    rectMatMulVec B (rectMatMulVec h.liftedReducedGramAPplus w) =
+      (fun _i : Fin p => 0) :=
+  theorem20_8_APplus_range_null_of_constraint_annihilates B
+    h.liftedReducedGramAPplus
+    h.liftedReducedGramAPplus_constraint_annihilates w
+
 /-- Reduced-operator perturbation bridge for Theorem 20.8:
     a bound stated on the GQR reduced blocks `A Q₂` transfers to the
     nullspace-basis form `A*N` with `N` chosen as the concrete GQR `Q₂` basis. -/
