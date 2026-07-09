@@ -3859,6 +3859,45 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_solve_delta_infNorm_w
     n A b x_hat c u (infNorm A)
     (mul_nonneg (mul_nonneg hc hu) (infNorm_nonneg A)) hsolve
 
+/-- **Theorem 11.7 finite solve-delta sum aggregation**.  A finite family of
+solve-side residual matrices with printed per-term coefficients can be summed
+directly into the source-facing perturbation interface once the final summed
+solve equation is available.  This support-free form is useful after all
+path-local residuals have already been embedded into one ambient system. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_sum_solve_delta_infNorm
+    (n k : ℕ) (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (E : Fin k → Fin n → Fin n → ℝ) (c : Fin k → ℝ) (u : ℝ)
+    (hc : ∀ t : Fin k, 0 ≤ c t) (hu : 0 ≤ u)
+    (hbound : ∀ t : Fin k, ∀ i j : Fin n,
+      |E t i j| ≤ c t * u * infNorm A)
+    (hsolve : ∀ i : Fin n,
+      ∑ j : Fin n, (A i j + (∑ t : Fin k, E t i j)) * x_hat j = b i) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ (∑ t : Fin k, c t) * u * infNorm A) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ (∑ t : Fin k, c t) * u * infNorm A) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * (∑ t : Fin k, c t) * u * infNorm A ∧
+      infNorm ΔA2 ≤ (n : ℝ) * (∑ t : Fin k, c t) * u * infNorm A ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) := by
+  let ΔA2 : Fin n → Fin n → ℝ := fun i j => ∑ t : Fin k, E t i j
+  have hsum :
+      (∑ t : Fin k, c t * u * infNorm A) =
+        (∑ t : Fin k, c t) * u * infNorm A := by
+    simp [Finset.sum_mul, mul_assoc]
+  have hΔA2bound : ∀ i j : Fin n,
+      |ΔA2 i j| ≤ (∑ t : Fin k, c t) * u * infNorm A := by
+    intro i j
+    calc
+      |ΔA2 i j| = |∑ t : Fin k, E t i j| := rfl
+      _ ≤ ∑ t : Fin k, |E t i j| := Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ t : Fin k, c t * u * infNorm A :=
+        Finset.sum_le_sum (fun t _ => hbound t i j)
+      _ = (∑ t : Fin k, c t) * u * infNorm A := hsum
+  exact
+    higham11_7_tridiagonal_backward_error_interface_of_solve_delta_infNorm_with_norm_bounds
+      n A b x_hat (∑ t : Fin k, c t) u
+      (Finset.sum_nonneg (fun t _ => hc t)) hu
+      ⟨ΔA2, hΔA2bound, hsolve⟩
+
 /-- **Theorem 11.7 finite supported solve-delta aggregation**.  A same-ambient
 family of supported residual matrices with printed coefficients can be summed
 and fed directly into the source-facing solve perturbation interface. -/
