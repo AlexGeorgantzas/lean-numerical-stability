@@ -27183,6 +27183,105 @@ theorem theorem20_8_source_residual_gap_op2_le_of_solution_difference_maxRelativ
     complexMatrixOp2_nonneg (realRectToCMatrix APplus)
   exact (mul_le_mul_of_nonneg_left hgap hop_nonneg).trans hscale
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    additive-scale variant of the BAplus split residual-gap handoff.
+
+    The main handoff asks for one large scaled inequality.  This wrapper lets
+    callers bound the reduced `AP*(y-x)` contribution and the remaining
+    BAplus/data-correction contribution separately, then combine the two scalar
+    budgets. -/
+theorem theorem20_8_source_residual_gap_op2_le_of_solution_difference_maxRelativePerturbation_BAplus_split_additive_scale
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ)
+    (APplus : Fin n → Fin m → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (r rHigh : Fin m → ℝ)
+    {eps gapAP gapCorr : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hx : LSEFeasible B d x)
+    (hy : LSEFeasible (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hr : lsResidualHigham A b x = r)
+    (hres :
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y = rHigh)
+    (hscaleAP :
+      complexMatrixOp2 (realRectToCMatrix APplus) *
+          (complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B Bplus)) *
+            vecNorm2 (fun j : Fin n => y j - x j)) ≤
+        gapAP)
+    (hscaleCorr :
+      complexMatrixOp2 (realRectToCMatrix APplus) *
+          ((theorem20_8KappaB A APplus *
+                (complexMatrixOp2 (realRectToCMatrix (rectMatMul A Bplus)) *
+                  (eps * vecNorm2 d + (eps * frobNormRect B) *
+                    vecNorm2 y)) +
+              complexMatrixOp2
+                  (realRectToCMatrix
+                    (rectMatMul A
+                      (theorem20_8BAplus A B Bplus APplus))) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) *
+                  vecNorm2 y)) +
+            (eps * frobNormRect A) * vecNorm2 y +
+            eps * vecNorm2 b) ≤
+        gapCorr)
+    (hscale :
+      gapAP + gapCorr ≤
+        eps * theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B Bplus APplus) *
+          (vecNorm2 r / frobNormRect A)) :
+    complexMatrixOp2 (realRectToCMatrix APplus) *
+        vecNorm2 (fun i : Fin m => r i - rHigh i) ≤
+      eps * theorem20_8ResidualAmplifier A B APplus
+          (theorem20_8BAplus A B Bplus APplus) *
+        (vecNorm2 r / frobNormRect A) := by
+  apply
+    theorem20_8_source_residual_gap_op2_le_of_solution_difference_maxRelativePerturbation_BAplus_split
+      A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
+      hApos hbpos hBpos hdpos hmax hx hy hr hres
+  calc
+    complexMatrixOp2 (realRectToCMatrix APplus) *
+        (complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B Bplus)) *
+            vecNorm2 (fun j : Fin n => y j - x j) +
+          ((theorem20_8KappaB A APplus *
+                (complexMatrixOp2 (realRectToCMatrix (rectMatMul A Bplus)) *
+                  (eps * vecNorm2 d + (eps * frobNormRect B) *
+                    vecNorm2 y)) +
+              complexMatrixOp2
+                  (realRectToCMatrix
+                    (rectMatMul A
+                      (theorem20_8BAplus A B Bplus APplus))) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) *
+                  vecNorm2 y)) +
+            (eps * frobNormRect A) * vecNorm2 y +
+            eps * vecNorm2 b))
+        =
+      complexMatrixOp2 (realRectToCMatrix APplus) *
+          (complexMatrixOp2 (realRectToCMatrix (theorem20_8AP A B Bplus)) *
+            vecNorm2 (fun j : Fin n => y j - x j)) +
+        complexMatrixOp2 (realRectToCMatrix APplus) *
+          ((theorem20_8KappaB A APplus *
+                (complexMatrixOp2 (realRectToCMatrix (rectMatMul A Bplus)) *
+                  (eps * vecNorm2 d + (eps * frobNormRect B) *
+                    vecNorm2 y)) +
+              complexMatrixOp2
+                  (realRectToCMatrix
+                    (rectMatMul A
+                      (theorem20_8BAplus A B Bplus APplus))) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) *
+                  vecNorm2 y)) +
+            (eps * frobNormRect A) * vecNorm2 y +
+            eps * vecNorm2 b) := by
+            ring
+    _ ≤ gapAP + gapCorr := add_le_add hscaleAP hscaleCorr
+    _ ≤ eps * theorem20_8ResidualAmplifier A B APplus
+            (theorem20_8BAplus A B Bplus APplus) *
+          (vecNorm2 r / frobNormRect A) := hscale
+
 /-- The source quantity `kappa_A(B)` in Theorem 20.8 is nonnegative. -/
 theorem theorem20_8KappaA_nonneg {n p : ℕ}
     (B : Fin p → Fin n → ℝ) (BAplus : Fin n → Fin p → ℝ) :
@@ -64559,6 +64658,62 @@ theorem theorem20_10_constructed_householder_returned_xhat_exact_perturbed_minim
       htail⟩
   dsimp at htail
   exact htail
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    source-facing exact perturbed minimizer package for the named constructed
+    returned vector.
+
+    This is the previous theorem with the zero constraint perturbation removed
+    from the statement: the exact perturbed LSE problem uses the original
+    constraint right-hand side `d`. -/
+theorem theorem20_10_constructed_householder_returned_xhat_exact_perturbed_minimizer_unperturbed_constraint_rhs_of_source_ranks_unit_roundoff_smallnessThreshold_composed_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hB hStack) :
+    let xhat : Fin (p + q) → ℝ :=
+      theorem20_10_constructed_householder_returned_xhat
+        fp A B b d hp hq hB hStack hu
+    let gammaA : ℝ :=
+      theorem20_10_householder_composed_partA_gammaA fp r p q
+    let gammaB : ℝ :=
+      theorem20_10_householder_composed_partA_gammaB fp r p q
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      IsLSEMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j) d xhat ∧
+      (∃! x : Fin (p + q) → ℝ,
+        IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j) d x) := by
+  have hraw :=
+    theorem20_10_constructed_householder_returned_xhat_exact_perturbed_minimizer_of_source_ranks_unit_roundoff_smallnessThreshold_composed_conservative_gamma
+      fp A B b d hp hq hB hStack hu
+  dsimp at hraw ⊢
+  rcases hraw with
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltad, hDeltaA, hDeltaB,
+      hDeltab, _hDeltad, hxhat, hunique⟩
+  refine ⟨DeltaA, DeltaB, Deltab, hDeltaA, hDeltaB, hDeltab, ?_, ?_⟩
+  · simpa [hDeltad] using hxhat
+  · rcases hunique with ⟨x, hx, huniq⟩
+    refine ⟨x, ?_, ?_⟩
+    · simpa [hDeltad] using hx
+    · intro y hy
+      exact huniq y (by simpa [hDeltad] using hy)
 
 /-- Theorem 20.10(a) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
