@@ -2022,6 +2022,41 @@ theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_b
     higham11_7_infNorm_le_card_mul_of_printed_componentwise_bound
       (n + 3) ΔA (c_bound + c_rec) u Amax hβ hΔA
 
+/-- **Theorem 11.7 recursive residual norm aggregation, nonnegative form**.
+This derives the printed-budget nonnegativity side condition from separate
+nonnegativity of the local coefficient, recursive coefficient, unit roundoff,
+and `Amax`. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_with_norm_bound_nonneg
+    (n : ℕ) (fp : FPModel)
+    (σ a11 a21 a22 b c Amax κ c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hAmax : 0 ≤ Amax) (hκ : 0 ≤ κ)
+    (hb : |b| ≤ Amax) (hc : |c| ≤ Amax)
+    (hratio : σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (Amax + Amax * κ * Amax) ≤ c_bound * u * Amax)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * Amax) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * Amax) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 3) 2 ΔA ∧
+      infNorm ΔA ≤ ((n + 3 : ℕ) : ℝ) * (c_bound + c_rec) * u * Amax ∧
+      fp.fl_sub b
+          (fp.fl_mul (fp.fl_mul c (a11 / (a11 * a22 - a21 ^ 2))) c) +
+          tail_fl
+        = (b - c * (a11 / (a11 * a22 - a21 ^ 2)) * c) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) :=
+  higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_with_norm_bound
+    n fp σ a11 a21 a22 b c Amax κ c_bound c_rec u tail_fl tail_exact
+    hchoice hσa11 hσa22 hAmax hκ hb hc hratio hbudget hval hrec
+    (mul_nonneg (mul_nonneg (add_nonneg hc_bound hc_rec) hu) hAmax)
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
