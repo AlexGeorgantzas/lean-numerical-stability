@@ -6079,6 +6079,56 @@ theorem higham11_7_tridiagonalBranchPathSupportedWitnesses_lift_to_ambient
         (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
         (Δloc t) i j hi hj
 
+/-- **Theorem 11.7 scalar local-to-global budget comparison**.  A local
+branch budget `(c_bound+c_rec) u_loc ‖A_loc‖∞` is dominated by the global
+budget `c u ‖A‖∞` when the coefficient, roundoff, and matrix-norm factors are
+separately dominated. -/
+theorem higham11_7_tridiagonal_local_budget_le_global_of_coeff_roundoff_norm
+    (m n : ℕ) (Aloc : Fin m → Fin m → ℝ) (A : Fin n → Fin n → ℝ)
+    (c_bound c_rec c u_loc u : ℝ)
+    (_hc_bound : 0 ≤ c_bound) (_hc_rec : 0 ≤ c_rec) (hc : 0 ≤ c)
+    (hu_loc : 0 ≤ u_loc) (hu_le : u_loc ≤ u)
+    (hcoeff : c_bound + c_rec ≤ c)
+    (hAnorm : infNorm Aloc ≤ infNorm A) :
+    (c_bound + c_rec) * u_loc * infNorm Aloc ≤ c * u * infNorm A := by
+  have hcu : (c_bound + c_rec) * u_loc ≤ c * u := by
+    exact mul_le_mul hcoeff hu_le hu_loc hc
+  have hcu_nonneg : 0 ≤ c * u :=
+    mul_nonneg hc (hu_loc.trans hu_le)
+  calc
+    (c_bound + c_rec) * u_loc * infNorm Aloc
+        ≤ c * u * infNorm Aloc :=
+          mul_le_mul_of_nonneg_right hcu (infNorm_nonneg Aloc)
+    _ ≤ c * u * infNorm A :=
+          mul_le_mul_of_nonneg_left hAnorm hcu_nonneg
+
+/-- **Theorem 11.7 path local-to-global budget comparisons**.  Pointwise
+coefficient, roundoff, and local norm comparisons supply the budget hypothesis
+required by the lifted finite-path solve aggregation theorem. -/
+theorem higham11_7_tridiagonalBranchPath_local_budgets_le_global_of_coeff_roundoff_norm
+    (n k : ℕ) (tailDim : Fin k → ℕ) (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (A : Fin n → Fin n → ℝ)
+    (c_bound c_rec u_loc c : Fin k → ℝ) (u : ℝ)
+    (hc_bound : ∀ t : Fin k, 0 ≤ c_bound t)
+    (hc_rec : ∀ t : Fin k, 0 ≤ c_rec t)
+    (hc : ∀ t : Fin k, 0 ≤ c t)
+    (hu_loc : ∀ t : Fin k, 0 ≤ u_loc t)
+    (hu_le : ∀ t : Fin k, u_loc t ≤ u)
+    (hcoeff : ∀ t : Fin k, c_bound t + c_rec t ≤ c t)
+    (hAnorm : ∀ t : Fin k, infNorm (Aloc t) ≤ infNorm A) :
+    ∀ t : Fin k,
+      (c_bound t + c_rec t) * u_loc t * infNorm (Aloc t) ≤
+        c t * u * infNorm A := by
+  intro t
+  exact
+    higham11_7_tridiagonal_local_budget_le_global_of_coeff_roundoff_norm
+      (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) n
+      (Aloc t) A (c_bound t) (c_rec t) (c t) (u_loc t) u
+      (hc_bound t) (hc_rec t) (hc t) (hu_loc t) (hu_le t)
+      (hcoeff t) (hAnorm t)
+
 /-- **Theorem 11.7 branch residual witness extraction**.  A single branch-local
 residual package supplies an explicit perturbation matrix with the componentwise
 budget, leading-block support, and `∞`-norm bound needed by later aggregation. -/
