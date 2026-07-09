@@ -139,6 +139,24 @@ theorem lyapunov_solution_eq_of_residual_norm_zero_sigmaMin (n : Nat)
     lyapunov_unique_solution_of_sigmaMin n A sigma hsigma hSigmaMin
       C X Xhat hExact hXhat
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the supplied Lyapunov operator sigma-min
+    exact-kernel theorem. -/
+alias H16_eq16_27_lyapunovOp_eq_zero_iff_of_sigmaMin :=
+  lyapunovOp_eq_zero_iff_of_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for exact Lyapunov uniqueness from a supplied
+    operator sigma-min certificate. -/
+alias H16_eq16_27_lyapunov_unique_solution_of_sigmaMin :=
+  lyapunov_unique_solution_of_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.2.1 and 16.3, equations (16.26)-(16.27):
+    source-numbered alias for residual-zero exact Lyapunov uniqueness from a
+    supplied operator sigma-min certificate. -/
+alias H16_eq16_27_lyapunov_solution_eq_of_residual_norm_zero_sigmaMin :=
+  lyapunov_solution_eq_of_residual_norm_zero_sigmaMin
+
 /-- Higham, 2nd ed., Chapter 16.3-16.4, equations (16.26)-(16.27):
     in positive dimension, a supplied positive singular-value lower-bound
     certificate for the Lyapunov operator lower-bounds the exact infimum model
