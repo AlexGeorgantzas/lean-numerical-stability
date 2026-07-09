@@ -4062,6 +4062,92 @@ theorem SepLowerBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
     sepLowerBound_of_sylvesterOp_sigmaMin n A B (1 / M)
       (one_div_pos.mpr hM) hOp
 
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): a supplied concrete left inverse and finite operator norm
+    bound for the vectorized Sylvester coefficient supplies the internally
+    chosen real-Schur active-block determinant package through the source
+    `SepLowerBound` bridge. -/
+theorem sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (A B : RMatFn n n)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+      (pA : Fin n -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      (forall p q : Fin n, q.val = p.val + 1 -> pB p = pB q ->
+        IsAdjacentQuasiTriangularBlockFn n S p q /\
+          Not (Matrix.det (sylvesterTwoColumnBlockCoeff n n R S p q) = 0)) := by
+  exact
+    sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_sepLowerBound
+      n A B (1 / M)
+      (SepLowerBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+        n A B Pinv hM hLeft hPinv)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): a supplied concrete left inverse and finite operator norm
+    bound for the vectorized Sylvester coefficient supplies a real-Schur
+    generated-step formula witness and transfers it back to the original
+    Sylvester equation. -/
+theorem exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+        (pA : Fin n -> Nat) (pB : Fin n -> Nat) (X : RMatFn n n),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      IsSylvesterQuasiSchurGeneratedStepFormula n n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pB /\
+      IsSylvesterSolutionRect n n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_sepLowerBound
+    n A B C (1 / M)
+    (SepLowerBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+      n A B Pinv hM hLeft hPinv)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.23)-(16.26): the concrete left-inverse finite-op-norm certificate
+    yields uniqueness of the original Sylvester solution via the generated
+    real-Schur witness. -/
+theorem existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_left_inverse_finiteOpNorm2Le_generated_step_formula_witness
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M) :
+    ExistsUnique (IsSylvesterSolutionRect n n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_sepLowerBound_generated_step_formula_witness
+    n A B C (1 / M)
+    (SepLowerBound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+      n A B Pinv hM hLeft hPinv)
+
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.23)-(16.26):
     in positive dimension, a supplied concrete left inverse for the printed
     vec/Kronecker Sylvester coefficient lower-bounds the exact `sep` infimum. -/
