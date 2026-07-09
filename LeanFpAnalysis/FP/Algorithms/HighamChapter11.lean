@@ -5281,6 +5281,177 @@ theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTail
       (fun t => c_rec t.succ) (fun t => u t.succ)
       (fun t => tail_fl t.succ) (fun t => tail_exact t.succ) htail)
 
+/-- **Theorem 11.7 branch residual witness extraction**.  A single branch-local
+residual package supplies an explicit perturbation matrix with the componentwise
+budget, leading-block support, and `∞`-norm bound needed by later aggregation. -/
+theorem higham11_7_tridiagonalBranchLocalResidual_exists_supported_witness
+    (n : ℕ) (fp : FPModel) (s : PivotSize)
+    (A : higham11_7_TridiagonalBranchMatrix n s)
+    (c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hres : higham11_7_TridiagonalBranchLocalResidual n fp s A
+      c_bound c_rec u tail_fl tail_exact) :
+    ∃ ΔA : Fin (higham11_7_tridiagonalBranchAmbientDim n s) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim n s) → ℝ,
+      (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim n s),
+        |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim n s)
+        (higham11_7_tridiagonalBranchSupportOffset s) ΔA ∧
+      infNorm ΔA ≤
+        ((higham11_7_tridiagonalBranchAmbientDim n s : ℕ) : ℝ) *
+          (c_bound + c_rec) * u * infNorm A := by
+  cases s with
+  | one =>
+      simp [higham11_7_TridiagonalBranchLocalResidual,
+        higham11_7_tridiagonalBranchAmbientDim,
+        higham11_7_tridiagonalBranchSupportOffset] at hres ⊢
+      rcases hres with ⟨ΔA, hbound, hsupp, hnorm, _heq⟩
+      exact ⟨ΔA, hbound, hsupp, hnorm⟩
+  | two =>
+      simp [higham11_7_TridiagonalBranchLocalResidual,
+        higham11_7_tridiagonalBranchAmbientDim,
+        higham11_7_tridiagonalBranchSupportOffset] at hres ⊢
+      rcases hres with ⟨ΔA, hbound, hsupp, hnorm, _heq⟩
+      exact ⟨ΔA, hbound, hsupp, hnorm⟩
+
+/-- **Theorem 11.7 path residual witness extraction**.  A pointwise mixed-pivot
+path residual package supplies an explicit perturbation matrix at every branch,
+with the componentwise budget, leading-block support, and `∞`-norm bound needed
+by the later global accumulation theorem. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals k fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact) :
+    ∃ ΔA : ∀ t : Fin k,
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+      ∀ t : Fin k,
+        (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+          |ΔA t i j| ≤ (c_bound t + c_rec t) * u t * infNorm (A t)) ∧
+        higham11_7_TridiagonalLeadingBlockSupport
+          (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+          (higham11_7_tridiagonalBranchSupportOffset (step t)) (ΔA t) ∧
+        infNorm (ΔA t) ≤
+          ((higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t) : ℕ) : ℝ) *
+            (c_bound t + c_rec t) * u t * infNorm (A t) := by
+  classical
+  have hlocal : ∀ t : Fin k,
+      ∃ Δ : Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+        (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+          |Δ i j| ≤ (c_bound t + c_rec t) * u t * infNorm (A t)) ∧
+        higham11_7_TridiagonalLeadingBlockSupport
+          (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+          (higham11_7_tridiagonalBranchSupportOffset (step t)) Δ ∧
+        infNorm Δ ≤
+          ((higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t) : ℕ) : ℝ) *
+            (c_bound t + c_rec t) * u t * infNorm (A t) := by
+    intro t
+    exact
+      higham11_7_tridiagonalBranchLocalResidual_exists_supported_witness
+        (tailDim t) fp (step t) (A t) (c_bound t) (c_rec t) (u t)
+        (tail_fl t) (tail_exact t) (hpath t)
+  choose ΔA hΔA using hlocal
+  exact ⟨ΔA, hΔA⟩
+
+/-- **Theorem 11.7 path-local assumptions to supported witnesses**.  Combining
+the path-local residual adapter with witness extraction produces the explicit
+per-branch perturbation matrices needed by the later global accumulation step. -/
+theorem higham11_7_tridiagonalBranchPathLocalAssumptions_exists_supported_witnesses
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalAssumptions k fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact) :
+    ∃ ΔA : ∀ t : Fin k,
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+      ∀ t : Fin k,
+        (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+          |ΔA t i j| ≤ (c_bound t + c_rec t) * u t * infNorm (A t)) ∧
+        higham11_7_TridiagonalLeadingBlockSupport
+          (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+          (higham11_7_tridiagonalBranchSupportOffset (step t)) (ΔA t) ∧
+        infNorm (ΔA t) ≤
+          ((higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t) : ℕ) : ℝ) *
+            (c_bound t + c_rec t) * u t * infNorm (A t) :=
+  higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses
+    k fp tailDim step A c_bound c_rec u tail_fl tail_exact
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_localAssumptions
+      k fp tailDim step A c_bound c_rec u tail_fl tail_exact hpath)
+
+/-- **Theorem 11.7 terminal path assumptions to supported witnesses**.  A finite
+terminal-tail path supplies explicit per-branch perturbation matrices with the
+same componentwise, support, and norm budgets, using `tail_fl = tail_exact` at
+every terminal branch. -/
+theorem higham11_7_tridiagonalBranchPathTerminalAssumptions_exists_supported_witnesses
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_exact : Fin k → ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathTerminalAssumptions k fp
+      tailDim step A c_bound c_rec u) :
+    ∃ ΔA : ∀ t : Fin k,
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+      ∀ t : Fin k,
+        (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+          |ΔA t i j| ≤ (c_bound t + c_rec t) * u t * infNorm (A t)) ∧
+        higham11_7_TridiagonalLeadingBlockSupport
+          (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+          (higham11_7_tridiagonalBranchSupportOffset (step t)) (ΔA t) ∧
+        infNorm (ΔA t) ≤
+          ((higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t) : ℕ) : ℝ) *
+            (c_bound t + c_rec t) * u t * infNorm (A t) :=
+  higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses
+    k fp tailDim step A c_bound c_rec u tail_exact tail_exact
+    (higham11_7_tridiagonalBranchPathLocalResiduals_of_terminalTailAssumptions
+      k fp tailDim step A c_bound c_rec u tail_exact hpath)
+
+/-- **Theorem 11.7 path residual witnesses with supplied uniform budgets**.
+Once later work proves uniform entry and norm budgets for each local branch,
+the path residual package yields explicit perturbation matrices already bounded
+by those uniform budgets. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses_of_uniform_budgets
+    (k : ℕ) (fp : FPModel) (tailDim : Fin k → ℕ)
+    (step : Fin k → PivotSize)
+    (A : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (Bentry Bnorm : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalResiduals k fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact)
+    (hentry : ∀ t : Fin k,
+      (c_bound t + c_rec t) * u t * infNorm (A t) ≤ Bentry)
+    (hnorm : ∀ t : Fin k,
+      ((higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t) : ℕ) : ℝ) *
+        (c_bound t + c_rec t) * u t * infNorm (A t) ≤ Bnorm) :
+    ∃ ΔA : ∀ t : Fin k,
+        Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)) → ℝ,
+      ∀ t : Fin k,
+        (∀ i j : Fin (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t)),
+          |ΔA t i j| ≤ Bentry) ∧
+        higham11_7_TridiagonalLeadingBlockSupport
+          (higham11_7_tridiagonalBranchAmbientDim (tailDim t) (step t))
+          (higham11_7_tridiagonalBranchSupportOffset (step t)) (ΔA t) ∧
+        infNorm (ΔA t) ≤ Bnorm := by
+  obtain ⟨ΔA, hΔA⟩ :=
+    higham11_7_tridiagonalBranchPathLocalResiduals_exists_supported_witnesses
+      k fp tailDim step A c_bound c_rec u tail_fl tail_exact hpath
+  refine ⟨ΔA, ?_⟩
+  intro t
+  rcases hΔA t with ⟨hbound, hsupp, hnorm_local⟩
+  exact ⟨fun i j => (hbound i j).trans (hentry t), hsupp,
+    hnorm_local.trans (hnorm t)⟩
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
