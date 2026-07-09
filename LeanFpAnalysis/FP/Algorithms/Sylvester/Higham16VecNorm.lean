@@ -1481,6 +1481,30 @@ theorem existsUnique_lyapunovVecCoeff_mulVec_of_pos_le_sylvesterSepInf
         (fun i j => -matTranspose A i j) sigma hsigma hle)
       c
 
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for `SepLowerBound(A,-A^T)` Lyapunov
+    vectorized coefficient bijectivity. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_mulVec_bijective_of_sepLowerBound :=
+  lyapunovVecCoeff_mulVec_bijective_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the `SepLowerBound(A,-A^T)` unique
+    vectorized Lyapunov coefficient solve witness. -/
+alias H16_eq16_2_27_existsUnique_lyapunovVecCoeff_mulVec_of_sepLowerBound :=
+  existsUnique_lyapunovVecCoeff_mulVec_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for positive exact-`sep(A,-A^T)` Lyapunov
+    vectorized coefficient bijectivity. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_mulVec_bijective_of_pos_le_sylvesterSepInf :=
+  lyapunovVecCoeff_mulVec_bijective_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the positive exact-`sep(A,-A^T)` unique
+    vectorized Lyapunov coefficient solve witness. -/
+alias H16_eq16_2_27_existsUnique_lyapunovVecCoeff_mulVec_of_pos_le_sylvesterSepInf :=
+  existsUnique_lyapunovVecCoeff_mulVec_of_pos_le_sylvesterSepInf
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
     with a supplied `SepLowerBound` certificate for `sep(A,-A^T)`, Mathlib's
     nonsingular inverse gives an explicit exact vectorized Lyapunov coefficient
