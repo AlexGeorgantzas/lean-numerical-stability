@@ -2409,6 +2409,68 @@ theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_b
     hchoice hσa11 hσa22 hAmax hκ hb hc hratio hbudget hval hrec
     (mul_nonneg (mul_nonneg (add_nonneg hc_bound hc_rec) hu) hAmax)
 
+/-- **Theorem 11.7 recursive residual norm aggregation, matrix-entry form**.
+For a leading `2 × 2` tridiagonal step inside an ambient `Fin (n+3)` matrix,
+the local trailing diagonal and coupling entries are bounded by `‖A‖∞`.  This
+removes the separate scalar `|b|≤Amax` and `|c|≤Amax` hypotheses from the
+local+recursive accumulator when the printed budget is expressed using the
+ambient infinity norm. -/
+theorem higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries
+    (n : ℕ) (fp : FPModel)
+    (A : Fin (n + 3) → Fin (n + 3) → ℝ)
+    (σ a11 a21 a22 κ c_bound c_rec u tail_fl tail_exact : ℝ)
+    (hchoice : higham11_6_BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσa11 : |a11| ≤ σ) (hσa22 : |a22| ≤ σ)
+    (hκ : 0 ≤ κ)
+    (hratio : σ / ((1 - higham11_6_bunchTridiagonalAlpha) * a21 ^ 2) ≤ κ)
+    (hbudget :
+      gamma fp 3 * (infNorm A + infNorm A * κ * infNorm A) ≤
+        c_bound * u * infNorm A)
+    (hval : gammaValid fp 3)
+    (hrec : ∃ ΔRtail : Fin (n + 1) → Fin (n + 1) → ℝ,
+      (∀ i j : Fin (n + 1), |ΔRtail i j| ≤ c_rec * u * infNorm A) ∧
+      tail_fl = tail_exact + ΔRtail 0 0)
+    (hc_bound : 0 ≤ c_bound) (hc_rec : 0 ≤ c_rec) (hu : 0 ≤ u) :
+    ∃ ΔA : Fin (n + 3) → Fin (n + 3) → ℝ,
+      (∀ i j : Fin (n + 3), |ΔA i j| ≤ (c_bound + c_rec) * u * infNorm A) ∧
+      higham11_7_TridiagonalLeadingBlockSupport (n + 3) 2 ΔA ∧
+      infNorm ΔA ≤ ((n + 3 : ℕ) : ℝ) * (c_bound + c_rec) * u * infNorm A ∧
+      fp.fl_sub
+          (A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+          (fp.fl_mul
+            (fp.fl_mul
+              (A ⟨1, by omega⟩
+                (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))
+              (a11 / (a11 * a22 - a21 ^ 2)))
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_fl
+        =
+        ((A (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) -
+          (A ⟨1, by omega⟩
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)) *
+            (a11 / (a11 * a22 - a21 ^ 2)) *
+            (A ⟨1, by omega⟩
+              (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n))) +
+          tail_exact +
+          ΔA (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n)
+            (higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n) := by
+  let tail : Fin (n + 3) :=
+    higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n
+  let pivot₂ : Fin (n + 3) := ⟨1, by omega⟩
+  have hb : |A tail tail| ≤ infNorm A :=
+    higham11_7_abs_entry_le_infNorm (n + 3) A tail tail
+  have hc : |A pivot₂ tail| ≤ infNorm A :=
+    higham11_7_abs_entry_le_infNorm (n + 3) A pivot₂ tail
+  simpa [tail, pivot₂] using
+    higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_with_norm_bound_nonneg
+      n fp σ a11 a21 a22 (A tail tail) (A pivot₂ tail) (infNorm A) κ
+      c_bound c_rec u tail_fl tail_exact hchoice hσa11 hσa22
+      (infNorm_nonneg A) hκ hb hc hratio hbudget hval hrec hc_bound
+      hc_rec hu
+
 /-! ## §11.2 Aasen's method -/
 
 /-- Source predicate for symmetric tridiagonal matrices. -/
