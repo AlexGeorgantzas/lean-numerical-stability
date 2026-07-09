@@ -67162,6 +67162,59 @@ theorem theorem20_10_constructed_householder_returned_xhat_exact_perturbed_minim
     · intro y hy
       exact huniq y (by simpa [hDeltad] using hy)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    combined source-rank/unit-roundoff surface for the named constructed
+    returned vector.
+
+    The same proof-level `xhat` both satisfies the concrete computed-`B^T`
+    Householder component route and has a source-facing exact perturbed LSE
+    minimizer package with the original constraint right-hand side `d`. -/
+theorem theorem20_10_constructed_householder_returned_xhat_component_route_and_unperturbed_constraint_rhs_of_source_ranks_unit_roundoff_smallnessThreshold_composed_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hB hStack) :
+    let xhat : Fin (p + q) → ℝ :=
+      theorem20_10_constructed_householder_returned_xhat
+        fp A B b d hp hq hB hStack hu
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let gammaA : ℝ :=
+      theorem20_10_householder_composed_partA_gammaA fp r p q
+    let gammaB : ℝ :=
+      theorem20_10_householder_composed_partA_gammaB fp r p q
+    Theorem20_10HouseholderComponentPartBRoute fp A B Qb b d xhat ∧
+      ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+      ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+      ∃ Deltab : Fin (r + q) → ℝ,
+        frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+        frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+        vecNorm2 Deltab ≤
+          gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+        IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j) d xhat ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d x) := by
+  have hspec :=
+    theorem20_10_constructed_householder_returned_xhat_spec
+      fp A B b d hp hq hB hStack hu
+  have hclean :=
+    theorem20_10_constructed_householder_returned_xhat_exact_perturbed_minimizer_unperturbed_constraint_rhs_of_source_ranks_unit_roundoff_smallnessThreshold_composed_conservative_gamma
+      fp A B b d hp hq hB hStack hu
+  dsimp at hspec hclean ⊢
+  exact ⟨hspec.2, hclean⟩
+
 /-- Theorem 20.10(a) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
 theorem theorem20_10_partA_mixed_stability_of_householder_gamma_certificate
