@@ -1594,6 +1594,27 @@ theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_uniform_entr
     (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
     hρ hAmax hD hL hbudget
 
+/-- Exact-coefficient per-row row-sum caps package directly into the scalar
+product certificate, deriving `0≤Dmax` from the `D̂` entry cap. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_row_sum_bounds_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (Dmax : ℝ) (Lrow : Fin n → ℝ) (ρ_n Amax : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lrow r)
+    (hbudget : ∀ i j : Fin n,
+      Lrow i * Dmax * Lrow j ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          (n : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_higham_const_row_sum_bounds
+    n hn L_hat D_hat Dmax Lrow ρ_n Amax
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hρ hAmax hD hrows hbudget
+
 /-- **Theorem 11.4 block-recursion scalar handoff** (Higham [608, 1997],
 eqs. (4.11)--(4.14)): a first-stage contribution bounded by one
 `36ρₙ‖A‖_M` share, plus a recursive Schur-complement contribution bounded by
