@@ -44,7 +44,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.7 solve-side interface bridge | `higham11_7_tridiagonal_backward_error_interface_of_solve_delta`, `higham11_7_tridiagonal_backward_error_interface_of_solve_delta_nonneg`, `higham11_7_tridiagonal_backward_error_interface_of_solve_delta_infNorm` | Ch11 | **new this session**; if the recursive tridiagonal analysis constructs the solve-side perturbation `ΔA₂` with the printed componentwise budget, the factorization-side perturbation `ΔA₁` can be filled by zero to produce the source-facing Theorem 11.7 interface shape; the `_nonneg` form derives `0 ≤ c*u*Amax` from separate nonnegativity of `c`, `u`, and `Amax`, and the `_infNorm` form specializes the budget to `c*u*‖A‖∞` |
 | Thm 11.7 entrywise infinity-norm bridge | `higham11_7_abs_entry_le_infNorm` | Ch11 | **new this session**; row-sum bridge showing every entry satisfies `|Aᵢⱼ| ≤ ‖A‖∞`, used to discharge local scalar `Amax` hypotheses from a norm budget |
 | Thm 11.7 componentwise-to-infinity-norm bridge | `higham11_7_infNorm_le_card_mul_of_uniform_componentwise_bound`, `higham11_7_infNorm_le_card_mul_of_printed_componentwise_bound` | Ch11 | **new this session**; aggregates a uniform componentwise perturbation budget to an infinity-norm bound by row sums, with the printed `c*u*Amax` form exposed for the final normwise theorem |
-| Thm 11.7 solve-side norm-bound packaging | `higham11_7_tridiagonal_backward_error_interface_of_solve_delta_with_norm_bounds`, `higham11_7_tridiagonal_backward_error_interface_of_solve_delta_infNorm_with_norm_bounds`, `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm`, `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets` | Ch11 | **new this session**; carries the recursive solve perturbation through the source-facing interface while also recording `‖ΔA₁‖∞` and `‖ΔA₂‖∞` bounds obtained from the componentwise budget, including the direct `Amax = ‖A‖∞` specialization; the finite supported-sum bridges first collapse same-ambient supported residual matrices, including mixed-offset families, under printed coefficient budgets and then feed the result into the solve-side interface |
+| Thm 11.7 solve-side norm-bound packaging | `higham11_7_tridiagonal_backward_error_interface_of_solve_delta_with_norm_bounds`, `higham11_7_tridiagonal_backward_error_interface_of_solve_delta_infNorm_with_norm_bounds`, `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm`, `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets`, `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets_of_coeff_sum_le` | Ch11 | **new this session**; carries the recursive solve perturbation through the source-facing interface while also recording `‖ΔA₁‖∞` and `‖ΔA₂‖∞` bounds obtained from the componentwise budget, including the direct `Amax = ‖A‖∞` specialization; the finite supported-sum bridges first collapse same-ambient supported residual matrices, including mixed-offset families, under printed coefficient budgets and then feed the result into the solve-side interface, with coefficient-majorant variants replacing `Σc_t` by a supplied printed constant `C` |
 | §11.1.1 1×1 multiplier bound `|c/e| ≤ 1/α` | `oneByOne_multiplier_bound`, `higham11_1_oneByOne_multiplier_bound` | " | **new this session**; derived from pivot test `α·ω ≤ |e|`; the honest content behind the `bunch_parlett_L_bound`/`bunch_kaufman` `‖L‖`-interfaces |
 | §11.1.1 / §11.1.2 1×1 Schur step growth `|b−c₁c₂/e| ≤ (1+1/α)μ₀` | `oneByOne_schur_growth`, `higham11_1_oneByOne_schur_growth` | " | **new this session**; printed bound `|ã_ij| ≤ μ₀+μ₀²/μ₁ ≤ (1+1/α)μ₀`; mechanism behind ρₙ ≤ (1+α⁻¹)^{n−1} |
 | §11.1.1 2×2 pivot det bound `det E ≤ (α²−1)μ₀²` | `twoByTwo_completePivot_det_bound`, `higham11_4_twoByTwo_det_bound` | " | **new this session**; printed `det(E) ≤ μ₁²−μ₀² ≤ (α²−1)μ₀²` |
@@ -294,6 +294,12 @@ and
 `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets`,
 which collapse same-ambient residual families and feed the resulting summed
 solve equation into the source-facing perturbation interface with norm bounds.
+A coefficient-majorant solve-delta increment adds
+`higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_coeff_sum_le`
+and
+`higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets_of_coeff_sum_le`,
+so the summed coefficient can be replaced by a supplied printed constant once
+`Σc_t ≤ C` is available.
 The remaining Theorem 11.7 work is still instantiating those adapters over the
 full mixed pivot path and proving the final solve equation.
 
@@ -1427,6 +1433,15 @@ Problem transcription.
     `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm`
     and
     `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets`
+    → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.7 finite supported solve-delta coefficient-majorant increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_coeff_sum_le`
+    and
+    `higham11_7_tridiagonal_backward_error_interface_of_supported_sum_solve_delta_infNorm_of_le_offsets_of_coeff_sum_le`
     → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.7 finite support-sum printed-budget aggregation increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
