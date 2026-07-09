@@ -4725,6 +4725,47 @@ theorem sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_det_
     sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_no_real_eigenvector_det_separation
       m n A T pmap p q hmono hcard hzero hpq_adj hsame hno hdetA
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), bundled
+    real-quasi-Schur separation producer from constructed two-block spectral
+    data plus exclusion of the matching complex root for `A`. -/
+theorem sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_complex_root_separation
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of T) pmap)
+    (hnoA :
+      Not (exists y : Fin m -> Complex,
+        y ≠ 0 ∧
+          Matrix.mulVec (realMatrixToComplex (Matrix.of A)) y =
+            fun i =>
+              sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+                (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p))) *
+                  y i)) :
+    IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n A T pmap p q := by
+  let mu : Complex :=
+    sylvesterTwoColumnRealSchurBlockComplexRoot n T p q
+      (Real.sqrt (-((T p p - T q q) ^ 2 + 4 * T p q * T q p)))
+  have hdetA :
+      Not
+        ((Matrix.det
+          (realMatrixToComplex (Matrix.of A) -
+            Matrix.scalar (Fin m) mu)) = 0) :=
+    finiteComplexMatrix_det_sub_scalar_ne_zero_of_no_eigenpair
+      (realMatrixToComplex (Matrix.of A)) mu
+      (by
+        simpa [mu] using hnoA)
+  exact
+    sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_det_separation
+      m n A T pmap p q hmono hcard hzero hpq_adj hsame hspectral
+      (by
+        simpa [mu] using hdetA)
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), constructed
     two-block spectral data plus exclusion of the matching complex root for
     `A` gives the active two-column no-block-action certificate. -/
