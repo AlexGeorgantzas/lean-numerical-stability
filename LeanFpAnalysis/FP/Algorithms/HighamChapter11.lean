@@ -5148,6 +5148,94 @@ theorem higham11_8_relative_outer_factor_caps_of_entrywise_majorant (n : ℕ)
       n L γ ((n : ℝ) * κ) ((n : ℝ) * κ) cap
       hγ hcap hκcap hκcap hrows hcols
 
+/-- If one entry of a uniformly bounded `Fin n` family is known to vanish, the
+full absolute sum is bounded by `(n-1)` copies of the uniform entry bound. -/
+theorem higham11_8_sum_abs_le_card_pred_mul_of_one_zero {n : ℕ}
+    (v : Fin n → ℝ) (κ : ℝ)
+    (hentry : ∀ k : Fin n, |v k| ≤ κ) (z : Fin n) (hz : v z = 0) :
+    (∑ k : Fin n, |v k|) ≤ ((n - 1 : ℕ) : ℝ) * κ := by
+  calc
+    (∑ k : Fin n, |v k|) =
+        Finset.sum (Finset.univ.erase z) (fun k => |v k|) := by
+      rw [← Finset.sum_erase_add (s := (Finset.univ : Finset (Fin n)))
+        (a := z) (f := fun k => |v k|) (Finset.mem_univ z)]
+      simp [hz]
+    _ ≤ Finset.sum (Finset.univ.erase z) (fun _k : Fin n => κ) := by
+      apply Finset.sum_le_sum
+      intro k _hk
+      exact hentry k
+    _ = ((Finset.univ.erase z).card : ℝ) * κ := by
+      simp [Finset.sum_const, nsmul_eq_mul]
+    _ = ((n - 1 : ℕ) : ℝ) * κ := by
+      rw [Finset.card_erase_of_mem (Finset.mem_univ z), Finset.card_univ,
+        Fintype.card_fin]
+
+/-- Aasen's exact outer factor structure upgrades a uniform entry majorant to
+`(n-1)` row and column sum majorants: every row and every column has at least
+one forced zero entry. -/
+theorem higham11_8_aasen_outer_factor_row_col_sum_majorants_of_entry_bound
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (κ : ℝ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (∀ i : Fin n, (∑ j : Fin n, |L i j|) ≤
+        ((n - 1 : ℕ) : ℝ) * κ) ∧
+      (∀ j : Fin n, (∑ i : Fin n, |L i j|) ≤
+        ((n - 1 : ℕ) : ℝ) * κ) := by
+  constructor
+  · intro i
+    by_cases hi0 : i.val = 0
+    · let z : Fin n := ⟨1, hn⟩
+      exact
+        higham11_8_sum_abs_le_card_pred_mul_of_one_zero
+          (v := fun j => L i j) κ (fun j => hentry i j) z
+          (hstrictUpperZero i z (by dsimp [z]; omega))
+    · let z : Fin n := ⟨0, by omega⟩
+      exact
+        higham11_8_sum_abs_le_card_pred_mul_of_one_zero
+          (v := fun j => L i j) κ (fun j => hentry i j) z
+          (hfirstColZero i z (by dsimp [z]) hi0)
+  · intro j
+    by_cases hj0 : j.val = 0
+    · let z : Fin n := ⟨1, hn⟩
+      exact
+        higham11_8_sum_abs_le_card_pred_mul_of_one_zero
+          (v := fun i => L i j) κ (fun i => hentry i j) z
+          (hfirstColZero z j hj0 (by dsimp [z]; omega))
+    · let z : Fin n := ⟨0, by omega⟩
+      exact
+        higham11_8_sum_abs_le_card_pred_mul_of_one_zero
+          (v := fun i => L i j) κ (fun i => hentry i j) z
+          (hstrictUpperZero z j (by dsimp [z]; omega))
+
+/-- Source-specific Aasen outer-factor structure feeds the exact-radius relative
+factor norm caps with `(n-1)` copies of a uniform exact-factor entry bound,
+rather than the fallback `n` copies. -/
+theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound (n : ℕ)
+    (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ cap : ℝ)
+    (hγ : 0 ≤ γ) (hκ : 0 ≤ κ)
+    (hκcap : (1 + γ) * (((n - 1 : ℕ) : ℝ) * κ) ≤ cap)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (1 + γ) * infNorm L ≤ cap ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤ cap := by
+  have hscale_nonneg : 0 ≤ 1 + γ := by linarith
+  have hmajor_nonneg : 0 ≤ ((n - 1 : ℕ) : ℝ) * κ :=
+    mul_nonneg (Nat.cast_nonneg (n - 1)) hκ
+  have hcap : 0 ≤ cap :=
+    (mul_nonneg hscale_nonneg hmajor_nonneg).trans hκcap
+  rcases
+    higham11_8_aasen_outer_factor_row_col_sum_majorants_of_entry_bound
+      n hn L κ hentry hstrictUpperZero hfirstColZero with
+    ⟨hrows, hcols⟩
+  exact
+    higham11_8_relative_outer_factor_caps_of_row_col_sum_majorants
+      n L γ (((n - 1 : ℕ) : ℝ) * κ) (((n - 1 : ℕ) : ℝ) * κ) cap
+      hγ hcap hκcap hκcap hrows hcols
+
 /-- A relative entrywise factor perturbation controls the perturbed factor's
 infinity norm by `(1+γ)` times the source factor norm. -/
 theorem higham11_8_infNorm_factor_le_of_relative_entry_bound (n : ℕ)
