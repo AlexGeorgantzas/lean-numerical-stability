@@ -7206,6 +7206,38 @@ theorem higham11_8_nonneg_of_uniform_abs_entry_bound (n : ℕ) (hn : 0 < n)
   (abs_nonneg (L ⟨0, hn⟩ ⟨0, hn⟩)).trans
     (hentry ⟨0, hn⟩ ⟨0, hn⟩)
 
+/-- Generic entrywise-majorant outer-factor caps, deriving `0≤κ` from the
+nonempty uniform absolute entry bound itself. -/
+theorem higham11_8_relative_outer_factor_caps_of_entrywise_majorant_of_entry_bound
+    (n : ℕ) (hn : 0 < n) (L : Fin n → Fin n → ℝ) (γ κ cap : ℝ)
+    (hγ : 0 ≤ γ)
+    (hκcap : (1 + γ) * ((n : ℝ) * κ) ≤ cap)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    (1 + γ) * infNorm L ≤ cap ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤ cap :=
+  higham11_8_relative_outer_factor_caps_of_entrywise_majorant
+    n L γ κ cap hγ
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n hn L κ hentry)
+    hκcap hentry
+
+/-- Aasen-structure outer-factor caps with an arbitrary scalar cap, deriving
+`0≤κ` from the nonempty uniform absolute entry bound itself. -/
+theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_of_entry_bound
+    (n : ℕ) (hn : 1 < n) (L : Fin n → Fin n → ℝ) (γ κ cap : ℝ)
+    (hγ : 0 ≤ γ)
+    (hκcap : (1 + γ) * (((n - 1 : ℕ) : ℝ) * κ) ≤ cap)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ)
+    (hstrictUpperZero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hfirstColZero : ∀ i j : Fin n,
+      j.val = 0 → i.val ≠ 0 → L i j = 0) :
+    (1 + γ) * infNorm L ≤ cap ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤ cap :=
+  higham11_8_relative_outer_factor_caps_of_aasen_entry_bound
+    n hn L γ κ cap hγ
+    (higham11_8_nonneg_of_uniform_abs_entry_bound n
+      (Nat.lt_trans Nat.zero_lt_one hn) L κ hentry)
+    hκcap hentry hstrictUpperZero hfirstColZero
+
 /-- Aasen outer-factor relative caps from a normalized uniform entry bound,
 deriving `0≤κ` from the absolute entry bound itself. -/
 theorem higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound

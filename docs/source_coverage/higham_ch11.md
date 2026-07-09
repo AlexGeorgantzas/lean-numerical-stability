@@ -288,6 +288,12 @@ and
 `higham11_8_aasen_base_square_bounds_of_entry_bound_scaled_unit_of_entry_bound`,
 so the older `(1+γ)κ≤1` route also derives `0≤κ` from the uniform absolute
 entry bound.
+A follow-up 2026-07-09 increment adds
+`higham11_8_relative_outer_factor_caps_of_entrywise_majorant_of_entry_bound`
+and
+`higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_of_entry_bound`,
+so both the generic `n`-entry majorant route and the arbitrary-cap Aasen
+`(n-1)` route can derive `0≤κ` from a nonempty uniform absolute entry bound.
 The follow-up 2026-07-09 endpoint increment lifts that nonnegativity discharge
 to the inverse-scale source-prefix exact-radius endpoints themselves, adding
 direct-middle and checkerboard-middle `_entry_bound_nonneg` variants for both
@@ -1280,6 +1286,15 @@ Problem transcription.
     `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound`,
     `higham11_8_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound`, and
     `higham11_8_aasen_base_square_bounds_of_entry_bound_scaled_unit_of_entry_bound`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-09 Theorem 11.8 arbitrary-cap entry-bound nonnegativity increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass;
+    `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of fully-qualified
+    `higham11_8_relative_outer_factor_caps_of_entrywise_majorant_of_entry_bound`
+    and
+    `higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_of_entry_bound`
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.8 source-prefix endpoint nonnegativity increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
