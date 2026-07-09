@@ -8040,6 +8040,64 @@ indices. -/
   rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_pos hi_ex,
     dif_pos hj_ex, hci, hcj]
 
+/-- A lifted local perturbation is zero on rows strictly before the embedded
+block start. -/
+@[simp] theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_of_row_lt_start
+    (n start m : ℕ) (E : Fin m → Fin m → ℝ) (i j : Fin n)
+    (hi : i.val < start) :
+    higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E i j = 0 := by
+  classical
+  rw [higham11_7_tridiagonalLiftLocalBlockPerturbation]
+  apply dif_neg
+  intro hrow
+  rcases hrow with ⟨a, ha⟩
+  omega
+
+/-- A lifted local perturbation is zero on columns strictly before the embedded
+block start. -/
+@[simp] theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_of_col_lt_start
+    (n start m : ℕ) (E : Fin m → Fin m → ℝ) (i j : Fin n)
+    (hj : j.val < start) :
+    higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E i j = 0 := by
+  classical
+  by_cases hi : ∃ a : Fin m, start + a.val = i.val
+  · rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_pos hi]
+    apply dif_neg
+    intro hcol
+    rcases hcol with ⟨b, hb⟩
+    omega
+  · rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_neg hi]
+
+/-- A lifted local perturbation is zero on rows at or after the embedded block
+end `start + m`. -/
+@[simp] theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_of_start_add_dim_le_row
+    (n start m : ℕ) (E : Fin m → Fin m → ℝ) (i j : Fin n)
+    (hi : start + m ≤ i.val) :
+    higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E i j = 0 := by
+  classical
+  rw [higham11_7_tridiagonalLiftLocalBlockPerturbation]
+  apply dif_neg
+  intro hrow
+  rcases hrow with ⟨a, ha⟩
+  have ha_lt := a.isLt
+  omega
+
+/-- A lifted local perturbation is zero on columns at or after the embedded block
+end `start + m`. -/
+@[simp] theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_of_start_add_dim_le_col
+    (n start m : ℕ) (E : Fin m → Fin m → ℝ) (i j : Fin n)
+    (hj : start + m ≤ j.val) :
+    higham11_7_tridiagonalLiftLocalBlockPerturbation n start m E i j = 0 := by
+  classical
+  by_cases hi : ∃ a : Fin m, start + a.val = i.val
+  · rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_pos hi]
+    apply dif_neg
+    intro hcol
+    rcases hcol with ⟨b, hb⟩
+    have hb_lt := b.isLt
+    omega
+  · rw [higham11_7_tridiagonalLiftLocalBlockPerturbation, dif_neg hi]
+
 /-- Full-ambient first-trailing index for a concrete path branch accepted as
 `1 × 1`. -/
 def higham11_7_tridiagonalPathFirstTrailingIndex_one
