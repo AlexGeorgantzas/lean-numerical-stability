@@ -50,7 +50,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.7 local-to-global path budget comparisons | `higham11_7_tridiagonal_local_budget_le_global_of_coeff_roundoff_norm`, `higham11_7_tridiagonalBranchPath_local_budgets_le_global_of_coeff_roundoff_norm` | Ch11 | **new this session**; converts pointwise coefficient, roundoff, and local matrix norm comparisons into the exact budget hypothesis required by the lifted path solve aggregation theorem, i.e. `(c_bound+c_rec)u_loc‖A_loc‖∞ ≤ c_t u ‖A‖∞` for every branch. |
 | Thm 11.7 lifted zero-offset path endpoints | `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_lifted_sum_zero_offset_of_coeff_sum_le`, `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_lifted_sum_zero_offset_of_coeff_sum_le` | Ch11 | **new this session**; specializes the lifted path solve aggregation to common support offset `0`, removing the routine offset-lowering proof, and exposes local-assumption and terminal-tail entry points that match the concrete mixed-pivot path construction. |
 | Thm 11.7 lifted zero-offset scalar-budget endpoints | `higham11_7_tridiagonal_backward_error_interface_of_path_local_residuals_lifted_sum_zero_offset_of_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_path_local_assumptions_lifted_sum_zero_offset_of_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_path_terminal_assumptions_lifted_sum_zero_offset_of_coeff_roundoff_norm` | Ch11 | **new this session**; composes the zero-offset lifted source endpoints with the path budget-comparison lemma, so a concrete pivot path can discharge budgets by supplying nonnegativity, coefficient domination, roundoff domination, and local-to-global matrix norm domination. |
-| Thm 11.7 mixed-path start-offset schedule | `higham11_7_tridiagonalBranchSupportOffset_pos`, `higham11_7_tridiagonalPathPivotSpan`, `higham11_7_TridiagonalPathStartOffsetsFrom`, `higham11_7_TridiagonalPathStartOffsets`, `higham11_7_tridiagonalPathStartOffsetsFrom_head`, `higham11_7_tridiagonalPathStartOffsetsFrom_succ`, `higham11_7_tridiagonalPathStartOffsetsFrom_succ_lt`, `higham11_7_tridiagonalPathStartOffsetsFrom_cons`, `higham11_7_tridiagonalPathStartOffsets_head`, `higham11_7_tridiagonalPathStartOffsets_succ`, `higham11_7_tridiagonalPathStartOffsets_succ_lt` | Ch11 | **new this session**; defines the concrete offset recurrence for a mixed `1×1`/`2×2` tridiagonal pivot path, with a base-offset variant, zero-based specialization, pivot-span sum, head/successor projections, strict successor growth from positive branch spans, and a cons constructor that builds a nonempty schedule from a head offset and scheduled tail. |
+| Thm 11.7 mixed-path start-offset schedule | `higham11_7_tridiagonalBranchSupportOffset_pos`, `higham11_7_tridiagonalBranchSupportOffset_le_two`, `higham11_7_tridiagonalPathPivotSpan`, `higham11_7_tridiagonalPathPivotSpan_zero`, `higham11_7_tridiagonalPathPivotSpan_cons`, `higham11_7_tridiagonalPathPivotSpan_pos`, `higham11_7_tridiagonalPathPivotSpan_ge_length`, `higham11_7_tridiagonalPathPivotSpan_le_two_mul`, `higham11_7_TridiagonalPathStartOffsetsFrom`, `higham11_7_TridiagonalPathStartOffsets`, `higham11_7_tridiagonalPathStartOffsetsFrom_head`, `higham11_7_tridiagonalPathStartOffsetsFrom_succ`, `higham11_7_tridiagonalPathStartOffsetsFrom_succ_lt`, `higham11_7_tridiagonalPathStartOffsetsFrom_cons`, `higham11_7_tridiagonalPathStartOffsetsFrom_tail`, `higham11_7_tridiagonalPathStartOffsetsFrom_iff_head_tail`, `higham11_7_tridiagonalPathStartOffsetsFrom_base_le`, `higham11_7_tridiagonalPathStartOffsetsFrom_lt_base_add_pivotSpan`, `higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_base_add_pivotSpan`, `higham11_7_tridiagonalPathStartOffsets_head`, `higham11_7_tridiagonalPathStartOffsets_succ`, `higham11_7_tridiagonalPathStartOffsets_succ_lt`, `higham11_7_tridiagonalPathStartOffsets_tail`, `higham11_7_tridiagonalPathStartOffsets_iff_head_tail`, `higham11_7_tridiagonalPathStartOffsets_lt_pivotSpan`, `higham11_7_tridiagonalPathStartOffsets_branch_end_le_pivotSpan` | Ch11 | **new this session**; defines the concrete offset recurrence for a mixed `1×1`/`2×2` tridiagonal pivot path, with branch span bounds, zero/cons/positive/lower/upper pivot-span lemmas, a base-offset variant, zero-based specialization, head/successor/tail projections, strict successor growth from positive branch spans, start-offset total-span bounds, branch-end containment bounds, cons constructors, and head-tail iff lemmas that make nonempty schedules composable by induction. |
 | §11.1.1 1×1 multiplier bound `|c/e| ≤ 1/α` | `oneByOne_multiplier_bound`, `higham11_1_oneByOne_multiplier_bound` | " | **new this session**; derived from pivot test `α·ω ≤ |e|`; the honest content behind the `bunch_parlett_L_bound`/`bunch_kaufman` `‖L‖`-interfaces |
 | §11.1.1 / §11.1.2 1×1 Schur step growth `|b−c₁c₂/e| ≤ (1+1/α)μ₀` | `oneByOne_schur_growth`, `higham11_1_oneByOne_schur_growth` | " | **new this session**; printed bound `|ã_ij| ≤ μ₀+μ₀²/μ₁ ≤ (1+1/α)μ₀`; mechanism behind ρₙ ≤ (1+α⁻¹)^{n−1} |
 | §11.1.1 2×2 pivot det bound `det E ≤ (α²−1)μ₀²` | `twoByTwo_completePivot_det_bound`, `higham11_4_twoByTwo_det_bound` | " | **new this session**; printed `det(E) ≤ μ₁²−μ₀² ≤ (α²−1)μ₀²` |
@@ -363,11 +363,12 @@ composing those entry points with the coefficient/roundoff/local-norm budget
 comparison lemma.
 A start-offset schedule increment adds
 `higham11_7_tridiagonalPathPivotSpan`,
+its zero/cons/positive/range lemmas,
 `higham11_7_TridiagonalPathStartOffsetsFrom`,
 `higham11_7_TridiagonalPathStartOffsets`, and their head/successor/strict-growth
-projection lemmas, plus `higham11_7_tridiagonalPathStartOffsetsFrom_cons`,
-making the mixed path's concrete offset recurrence explicit and composable by
-head/tail induction.
+projection lemmas, plus cons, tail, head-tail iff, start-span, and branch-end
+containment lemmas, making the mixed path's concrete offset recurrence explicit
+and composable by head/tail induction.
 The remaining Theorem 11.7 work is still instantiating those adapters over the
 full mixed pivot path and instantiating this start-offset schedule,
 coefficient/roundoff/local-norm comparisons, and final lifted solve equation.
@@ -1636,17 +1637,32 @@ Problem transcription.
     `git diff --check` → pass; placeholder scan of `HighamChapter11.lean` → clean;
     focused lookup/axiom check of fully-qualified
     `higham11_7_tridiagonalBranchSupportOffset_pos`,
+    `higham11_7_tridiagonalBranchSupportOffset_le_two`,
     `higham11_7_tridiagonalPathPivotSpan`,
+    `higham11_7_tridiagonalPathPivotSpan_zero`,
+    `higham11_7_tridiagonalPathPivotSpan_cons`,
+    `higham11_7_tridiagonalPathPivotSpan_pos`,
+    `higham11_7_tridiagonalPathPivotSpan_ge_length`,
+    `higham11_7_tridiagonalPathPivotSpan_le_two_mul`,
     `higham11_7_TridiagonalPathStartOffsetsFrom`,
     `higham11_7_TridiagonalPathStartOffsets`,
     `higham11_7_tridiagonalPathStartOffsetsFrom_head`,
     `higham11_7_tridiagonalPathStartOffsetsFrom_succ`,
     `higham11_7_tridiagonalPathStartOffsetsFrom_succ_lt`,
     `higham11_7_tridiagonalPathStartOffsetsFrom_cons`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_tail`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_iff_head_tail`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_base_le`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_lt_base_add_pivotSpan`,
+    `higham11_7_tridiagonalPathStartOffsetsFrom_branch_end_le_base_add_pivotSpan`,
     `higham11_7_tridiagonalPathStartOffsets_head`,
-    `higham11_7_tridiagonalPathStartOffsets_succ`, and
-    `higham11_7_tridiagonalPathStartOffsets_succ_lt`
-    → elaborate; projection lemmas axiom-free, strict-growth/positivity/cons lemmas axioms `[propext, Classical.choice, Quot.sound]`.
+    `higham11_7_tridiagonalPathStartOffsets_succ`,
+    `higham11_7_tridiagonalPathStartOffsets_succ_lt`,
+    `higham11_7_tridiagonalPathStartOffsets_tail`,
+    `higham11_7_tridiagonalPathStartOffsets_iff_head_tail`,
+    `higham11_7_tridiagonalPathStartOffsets_lt_pivotSpan`, and
+    `higham11_7_tridiagonalPathStartOffsets_branch_end_le_pivotSpan`
+    → elaborate; projection lemmas axiom-free, branch/span/strict-growth/positivity/cons/tail/iff/containment lemmas axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-08 Theorem 11.3 all-1×1 source-facing package increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
     `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
