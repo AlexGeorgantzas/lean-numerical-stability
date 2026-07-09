@@ -2978,6 +2978,83 @@ theorem sylvesterVecCoeff_det_ne_zero_of_operator_sigmaMin
   have hSep := SepLowerBound_sylvester_of_sigmaMin n A B sigma hsigma hSigmaMin
   exact sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep
 
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.25)-(16.26): a Sylvester operator sigma-min certificate supplies the
+    internally chosen real-Schur active-block determinant package through the
+    source `SepLowerBound` bridge. -/
+theorem sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_operator_sigmaMin
+    (n : Nat) (A B : RMatFn n n) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : RMatFn n n,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y)) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+      (pA : Fin n -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      (forall p q : Fin n, q.val = p.val + 1 -> pB p = pB q ->
+        IsAdjacentQuasiTriangularBlockFn n S p q /\
+          Not (Matrix.det (sylvesterTwoColumnBlockCoeff n n R S p q) = 0)) := by
+  exact
+    sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_sepLowerBound
+      n A B sigma
+      (SepLowerBound_sylvester_of_sigmaMin n A B sigma hsigma hSigmaMin)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.25)-(16.26): an operator sigma-min certificate supplies a real-Schur
+    generated-step formula witness and transfers it back to the original
+    Sylvester equation. -/
+theorem exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_operator_sigmaMin
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : RMatFn n n,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y)) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+        (pA : Fin n -> Nat) (pB : Fin n -> Nat) (X : RMatFn n n),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      IsSylvesterQuasiSchurGeneratedStepFormula n n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pB /\
+      IsSylvesterSolutionRect n n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_sepLowerBound
+    n A B C sigma
+    (SepLowerBound_sylvester_of_sigmaMin n A B sigma hsigma hSigmaMin)
+
+/-- Higham, 2nd ed., Chapter 16.2-16.3, equations (16.4)-(16.8),
+    (16.25)-(16.26): the operator sigma-min certificate yields uniqueness of
+    the original Sylvester solution via the generated real-Schur witness. -/
+theorem existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_operator_sigmaMin_generated_step_formula_witness
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hsigma : 0 < sigma)
+    (hSigmaMin : forall Y : RMatFn n n,
+      sigma * frobNorm Y <= frobNorm (sylvesterOp n A B Y)) :
+    ExistsUnique (IsSylvesterSolutionRect n n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_sepLowerBound_generated_step_formula_witness
+    n A B C sigma
+    (SepLowerBound_sylvester_of_sigmaMin n A B sigma hsigma hSigmaMin)
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
     a Sylvester operator sigma-min certificate gives the exact trivial-kernel
     statement for the vectorized coefficient. -/
