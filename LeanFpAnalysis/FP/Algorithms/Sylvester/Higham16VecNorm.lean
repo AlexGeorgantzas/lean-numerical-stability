@@ -2488,6 +2488,88 @@ theorem sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf (n : Nat)
     sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26):
+    a source `SepLowerBound` certificate feeds the exact real-Schur generated
+    recursive-candidate route by first making the square vec/Kronecker
+    Sylvester coefficient nonsingular.  This is an exact arithmetic bridge, not
+    rounded Bartels-Stewart arithmetic or estimator production. -/
+theorem exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_sepLowerBound
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+        (pA : Fin n -> Nat) (pB : Fin n -> Nat) (X : RMatFn n n),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      IsSylvesterQuasiSchurGeneratedStepFormula n n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pB /\
+      IsSylvesterSolutionRect n n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_vecCoeff_det_ne_zero
+    n n A B C
+    (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26):
+    original-coordinate unique solvability from a source `SepLowerBound`
+    certificate and the exact real-Schur generated recursive-candidate route. -/
+theorem existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_sepLowerBound_generated_step_formula_witness
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma) :
+    ExistsUnique (IsSylvesterSolutionRect n n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_vecCoeff_det_ne_zero_generated_step_formula_witness
+    n n A B C
+    (sylvesterVecCoeff_det_ne_zero_of_sepLowerBound n A B sigma hSep)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26),
+    source-numbered alias for the exact real-Schur generated-step witness from
+    a source `SepLowerBound` certificate. -/
+theorem H16_eq16_4_8_exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_sepLowerBound
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma) :
+    exists (U R : RMatFn n n) (V S : RMatFn n n)
+        (pA : Fin n -> Nat) (pB : Fin n -> Nat) (X : RMatFn n n),
+      IsOrthogonal n U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin n => pA i = c)).card <= 2) /\
+      (forall i j : Fin n, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      IsSylvesterQuasiSchurGeneratedStepFormula n n R S
+        (rectMatMul (matTranspose U) (rectMatMul C V)) X pB /\
+      IsSylvesterSolutionRect n n A B C
+        (rectMatMul U (rectMatMul X (matTranspose V))) :=
+  exists_realQuasiSchur_schedule_original_solution_and_generated_step_formula_of_sepLowerBound
+    n A B C sigma hSep
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8), (16.26),
+    source-numbered alias for original-coordinate unique solvability from a
+    source `SepLowerBound` certificate. -/
+theorem H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_sepLowerBound
+    (n : Nat)
+    (A B : RMatFn n n) (C : RMatFn n n) (sigma : Real)
+    (hSep : SepLowerBound n A B sigma) :
+    ExistsUnique (IsSylvesterSolutionRect n n A B C) :=
+  existsUnique_isSylvesterSolutionRect_of_realQuasiSchur_schedule_sepLowerBound_generated_step_formula_witness
+    n A B C sigma hSep
+
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
     a supplied `SepLowerBound` certificate gives the exact trivial-kernel
     statement for the vectorized Sylvester coefficient. -/
