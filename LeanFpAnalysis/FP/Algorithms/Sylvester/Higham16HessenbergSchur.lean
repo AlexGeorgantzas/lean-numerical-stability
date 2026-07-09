@@ -166,4 +166,114 @@ theorem existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_
 alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_vecCoeff_det_ne_zero :=
   existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_vecCoeff_det_ne_zero
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8),
+    original-coordinate Hessenberg-Schur handoff with shifted singleton
+    determinant certificates discharged from nonsingularity of the original
+    vec/Kronecker Sylvester coefficient.  The conclusion combines exact
+    original-coordinate unique solvability with per-column Chapter 9
+    upper-Hessenberg GEPP trace-growth certificates for the supplied
+    Schur-coordinate column systems. -/
+theorem existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_vecCoeff_det_ne_zero
+    (m n : Nat) (hm : 0 < m)
+    (U R A : RMatFn m m) (V S B : RMatFn n n) (C : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hR : IsUpperHessenberg m R)
+    (hS : IsUpperTriangularFn n S)
+    (hdetOrig : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) /\
+      (forall k : Fin n,
+        exists hmax : 0 < maxEntryNorm hm
+            (sylvesterTriangularShiftedCoeff m R (S k k)),
+        exists Ugepp : Fin m -> Fin m -> Real,
+          higham9_10_HessenbergGEPPUTrace
+            (maxEntryNorm hm (sylvesterTriangularShiftedCoeff m R (S k k)))
+            1 m (sylvesterTriangularShiftedCoeff m R (S k k)) Ugepp /\
+          growthFactorEntry hm (sylvesterTriangularShiftedCoeff m R (S k k))
+              Ugepp hmax <= (m : Real)) := by
+  have hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0) := by
+    intro k
+    exact
+      sylvesterTriangularShiftedCoeff_det_ne_zero_of_realQuasiSchur_factors_singleton_vecCoeff_det_ne_zero
+        m n U R A V S B (fun i : Fin n => i.val) k hU hV hA hB
+        (by
+          intro i j hij
+          exact hS i j (Fin.lt_def.mpr hij))
+        (by
+          intro i hi
+          exact Fin.ext hi)
+        hdetOrig
+  constructor
+  · exact
+      existsUnique_isSylvesterSolutionRect_schurTriangular
+        m n U R A V S B C hU hV hA hB hS hshift
+  · intro k
+    exact
+      exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_sylvesterTriangularShiftedCoeff_of_det_ne_zero_exists_hmax
+        m hm R (S k k) hR (hshift k)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the original-coordinate Hessenberg-Schur
+    solve/trace-growth package from an original vec/Kronecker determinant
+    certificate. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_vecCoeff_det_ne_zero :=
+  existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_vecCoeff_det_ne_zero
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.3)-(16.8),
+    original-coordinate Hessenberg-Schur handoff with shifted singleton
+    determinant certificates discharged from original no-common-complex-spectrum
+    data.  This is an exact supplied-factor triangular Hessenberg-Schur bridge;
+    it does not model rounded Bartels-Stewart arithmetic or LAPACK estimators. -/
+theorem existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_no_common_complex_right_eigenvalue
+    (m n : Nat) (hm : 0 < m)
+    (U R A : RMatFn m m) (V S B : RMatFn n n) (C : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hR : IsUpperHessenberg m R)
+    (hS : IsUpperTriangularFn n S)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A)
+        (realMatrixToComplex B)) :
+    ExistsUnique (IsSylvesterSolutionRect m n A B C) /\
+      (forall k : Fin n,
+        exists hmax : 0 < maxEntryNorm hm
+            (sylvesterTriangularShiftedCoeff m R (S k k)),
+        exists Ugepp : Fin m -> Fin m -> Real,
+          higham9_10_HessenbergGEPPUTrace
+            (maxEntryNorm hm (sylvesterTriangularShiftedCoeff m R (S k k)))
+            1 m (sylvesterTriangularShiftedCoeff m R (S k k)) Ugepp /\
+          growthFactorEntry hm (sylvesterTriangularShiftedCoeff m R (S k k))
+              Ugepp hmax <= (m : Real)) := by
+  have hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0) := by
+    intro k
+    exact
+      sylvesterTriangularShiftedCoeff_det_ne_zero_of_realQuasiSchur_factors_singleton_no_common_complex_right_eigenvalue
+        m n U R A V S B (fun i : Fin n => i.val) k hU hV hA hB
+        (by
+          intro i j hij
+          exact hS i j (Fin.lt_def.mpr hij))
+        (by
+          intro i hi
+          exact Fin.ext hi)
+        hnoOrig
+  constructor
+  · exact
+      existsUnique_isSylvesterSolutionRect_schurTriangular
+        m n U R A V S B C hU hV hA hB hS hshift
+  · intro k
+    exact
+      exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_sylvesterTriangularShiftedCoeff_of_det_ne_zero_exists_hmax
+        m hm R (S k k) hR (hshift k)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.3)-(16.8):
+    source-numbered alias for the original-coordinate Hessenberg-Schur
+    solve/trace-growth package from no-common-complex-spectrum data. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_no_common_complex_right_eigenvalue :=
+  existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_no_common_complex_right_eigenvalue
+
 end LeanFpAnalysis.FP
