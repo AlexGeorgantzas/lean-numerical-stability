@@ -6934,6 +6934,81 @@ theorem higham11_7_tridiagonalBranchPathLocalResiduals_cons_of_head_terminalTail
       (fun t => c_rec t.succ) (fun t => u t.succ)
       (fun t => tail_fl t.succ) (fun t => tail_exact t.succ) htail)
 
+/-- **Theorem 11.7 path-local assumptions from initial local branches and a
+terminal last branch**.  This packages the natural finite mixed-pivot path
+shape: all branches before the last carry recursive local assumptions, while
+the final branch is discharged by the terminal-tail adapter. -/
+theorem higham11_7_tridiagonalBranchPathLocalAssumptions_of_init_localAssumptions_last_terminalTailAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hinit : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchLocalAssumptions
+        (tailDim (Fin.castSucc t)) fp (step (Fin.castSucc t))
+        (A (Fin.castSucc t)) (c_bound (Fin.castSucc t))
+        (c_rec (Fin.castSucc t)) (u (Fin.castSucc t))
+        (tail_fl (Fin.castSucc t)) (tail_exact (Fin.castSucc t)))
+    (hlast_eq : tail_fl (Fin.last k) = tail_exact (Fin.last k))
+    (hlast : higham11_7_TridiagonalBranchTerminalAssumptions
+      (tailDim (Fin.last k)) fp (step (Fin.last k)) (A (Fin.last k))
+      (c_bound (Fin.last k)) (c_rec (Fin.last k)) (u (Fin.last k))) :
+    higham11_7_TridiagonalBranchPathLocalAssumptions (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact := by
+  intro t
+  by_cases ht : t = Fin.last k
+  · subst t
+    have hlocal :
+        higham11_7_TridiagonalBranchLocalAssumptions
+          (tailDim (Fin.last k)) fp (step (Fin.last k)) (A (Fin.last k))
+          (c_bound (Fin.last k)) (c_rec (Fin.last k)) (u (Fin.last k))
+          (tail_exact (Fin.last k)) (tail_exact (Fin.last k)) :=
+      higham11_7_tridiagonalBranchLocalAssumptions_of_terminalTailAssumptions
+        (tailDim (Fin.last k)) fp (step (Fin.last k)) (A (Fin.last k))
+        (c_bound (Fin.last k)) (c_rec (Fin.last k)) (u (Fin.last k))
+        (tail_exact (Fin.last k)) hlast
+    simpa [hlast_eq] using hlocal
+  · let q : Fin k := ⟨t.val, by
+        have hle : t.val ≤ k := Nat.lt_succ_iff.mp t.isLt
+        have hne : t.val ≠ k := by
+          intro hv
+          apply ht
+          ext
+          simp [Fin.last, hv]
+        exact lt_of_le_of_ne hle hne⟩
+    have hqt : Fin.castSucc q = t := by
+      ext
+      simp [q]
+    simpa [hqt] using hinit q
+
+/-- **Theorem 11.7 path residuals from initial local branches and a terminal
+last branch**.  This is the residual-package version of
+`higham11_7_tridiagonalBranchPathLocalAssumptions_of_init_localAssumptions_last_terminalTailAssumptions`. -/
+theorem higham11_7_tridiagonalBranchPathLocalResiduals_of_init_localAssumptions_last_terminalTailAssumptions
+    (k : ℕ) (fp : FPModel) (tailDim : Fin (k + 1) → ℕ)
+    (step : Fin (k + 1) → PivotSize)
+    (A : ∀ t : Fin (k + 1),
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (c_bound c_rec u tail_fl tail_exact : Fin (k + 1) → ℝ)
+    (hinit : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchLocalAssumptions
+        (tailDim (Fin.castSucc t)) fp (step (Fin.castSucc t))
+        (A (Fin.castSucc t)) (c_bound (Fin.castSucc t))
+        (c_rec (Fin.castSucc t)) (u (Fin.castSucc t))
+        (tail_fl (Fin.castSucc t)) (tail_exact (Fin.castSucc t)))
+    (hlast_eq : tail_fl (Fin.last k) = tail_exact (Fin.last k))
+    (hlast : higham11_7_TridiagonalBranchTerminalAssumptions
+      (tailDim (Fin.last k)) fp (step (Fin.last k)) (A (Fin.last k))
+      (c_bound (Fin.last k)) (c_rec (Fin.last k)) (u (Fin.last k))) :
+    higham11_7_TridiagonalBranchPathLocalResiduals (k + 1) fp
+      tailDim step A c_bound c_rec u tail_fl tail_exact :=
+  higham11_7_tridiagonalBranchPathLocalResiduals_of_localAssumptions
+    (k + 1) fp tailDim step A c_bound c_rec u tail_fl tail_exact
+    (higham11_7_tridiagonalBranchPathLocalAssumptions_of_init_localAssumptions_last_terminalTailAssumptions
+      k fp tailDim step A c_bound c_rec u tail_fl tail_exact
+      hinit hlast_eq hlast)
+
 /-- **Theorem 11.7 path supported witnesses**.  This predicate records the
 explicit per-branch perturbation matrices extracted from a finite mixed-pivot
 path residual package, together with their componentwise budget, zero-prefix
@@ -7196,6 +7271,30 @@ theorem higham11_7_tridiagonalBranchPath_local_budgets_le_global_of_coeff_roundo
       (Aloc t) A (c_bound t) (c_rec t) (c t) (u_loc t) u
       (hc_bound t) (hc_rec t) (hc t) (hu_loc t) (hu_le t)
       (hcoeff t) (hAnorm t)
+
+/-- **Theorem 11.7 uniform path coefficient majorant**.  Uniform caps for the
+local step coefficient and recursive-tail coefficient give the pointwise
+coefficient domination required by the concrete prefix-path endpoints. -/
+theorem higham11_7_tridiagonalBranchPath_uniform_coeff_majorant_of_component_bounds
+    (k : ℕ) (c_bound c_rec : Fin k → ℝ) (c_bound_cap c_rec_cap c : ℝ)
+    (hbound : ∀ t : Fin k, c_bound t ≤ c_bound_cap)
+    (hrec : ∀ t : Fin k, c_rec t ≤ c_rec_cap)
+    (hcap : c_bound_cap + c_rec_cap ≤ c) :
+    ∀ t : Fin k, c_bound t + c_rec t ≤ c := by
+  intro t
+  exact (add_le_add (hbound t) (hrec t)).trans hcap
+
+/-- **Theorem 11.7 additive path coefficient majorant**.  The direct version
+where the final per-branch coefficient is the sum of the two uniform component
+caps. -/
+theorem higham11_7_tridiagonalBranchPath_uniform_coeff_add_majorant_of_component_bounds
+    (k : ℕ) (c_bound c_rec : Fin k → ℝ) (c_bound_cap c_rec_cap : ℝ)
+    (hbound : ∀ t : Fin k, c_bound t ≤ c_bound_cap)
+    (hrec : ∀ t : Fin k, c_rec t ≤ c_rec_cap) :
+    ∀ t : Fin k, c_bound t + c_rec t ≤ c_bound_cap + c_rec_cap :=
+  higham11_7_tridiagonalBranchPath_uniform_coeff_majorant_of_component_bounds
+    k c_bound c_rec c_bound_cap c_rec_cap (c_bound_cap + c_rec_cap)
+    hbound hrec le_rfl
 
 /-- **Theorem 11.7 branch residual witness extraction**.  A single branch-local
 residual package supplies an explicit perturbation matrix with the componentwise
@@ -8567,6 +8666,128 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_termina
     k fp step A b x_hat c_bound c_rec (fun _ : Fin k => u)
     tail_exact c C u hpath hc_bound hc_rec hc hu (fun _ => hu)
     (fun _ => le_rfl) hcoeff hC hsolve
+
+/-- **Theorem 11.7 concrete prefix-span mixed path endpoint with uniform
+roundoff and coefficient from local assumptions**, zero common offset.  A
+single per-step coefficient `c` gives the printed finite-path budget
+`k*c*u*‖A‖∞`. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_prefix_lifted_sum_zero_offset_of_uniform_coeff_norm
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec tail_fl tail_exact : Fin k → ℝ) (c u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathLocalAssumptions k fp
+      (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+      (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+      c_bound c_rec (fun _ : Fin k => u) tail_fl tail_exact)
+    (hc_bound : ∀ t : Fin k, 0 ≤ c_bound t)
+    (hc_rec : ∀ t : Fin k, 0 ≤ c_rec t)
+    (hc : 0 ≤ c) (hu : 0 ≤ u)
+    (hcoeff : ∀ t : Fin k, c_bound t + c_rec t ≤ c)
+    (hsolve :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp
+          (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+          c_bound c_rec (fun _ : Fin k => u) tail_fl tail_exact Δloc →
+        ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+          ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+              (A i j +
+                (∑ t : Fin k,
+                  higham11_7_tridiagonalLiftLocalBlockPerturbation
+                    (higham11_7_tridiagonalPathPivotSpan k step + 1)
+                    (higham11_7_tridiagonalPathPrefixSpan k step t)
+                    (higham11_7_tridiagonalBranchAmbientDim
+                      (higham11_7_tridiagonalPathTailDim k step t) (step t))
+                    (Δloc t) i j)) *
+                x_hat j =
+            b i) :
+    ∃ ΔA1 ΔA2 :
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+        Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ,
+      (∀ i j, |ΔA1 i j| ≤ (k : ℝ) * c * u * infNorm A) ∧
+      (∀ i j, |ΔA2 i j| ≤ (k : ℝ) * c * u * infNorm A) ∧
+      infNorm ΔA1 ≤
+        ((higham11_7_tridiagonalPathPivotSpan k step + 1 : ℕ) : ℝ) *
+          ((k : ℝ) * c) * u * infNorm A ∧
+      infNorm ΔA2 ≤
+        ((higham11_7_tridiagonalPathPivotSpan k step + 1 : ℕ) : ℝ) *
+          ((k : ℝ) * c) * u * infNorm A ∧
+      (∀ i,
+        ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+          (A i j + ΔA2 i j) * x_hat j = b i) := by
+  have hC : (∑ _t : Fin k, c) ≤ (k : ℝ) * c := by
+    simp [Finset.sum_const, nsmul_eq_mul]
+  simpa [Finset.sum_const, nsmul_eq_mul, mul_assoc] using
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_prefix_lifted_sum_zero_offset_of_coeff_norm
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact
+      (fun _ : Fin k => c) ((k : ℝ) * c) u hpath
+      hc_bound hc_rec (fun _ => hc) hu (fun t => hcoeff t) hC hsolve
+
+/-- **Theorem 11.7 concrete prefix-span mixed path endpoint with uniform
+roundoff and coefficient from terminal-tail assumptions**, zero common offset. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_prefix_lifted_sum_zero_offset_of_uniform_coeff_norm
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec tail_exact : Fin k → ℝ) (c u : ℝ)
+    (hpath : higham11_7_TridiagonalBranchPathTerminalAssumptions k fp
+      (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+      (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+      c_bound c_rec (fun _ : Fin k => u))
+    (hc_bound : ∀ t : Fin k, 0 ≤ c_bound t)
+    (hc_rec : ∀ t : Fin k, 0 ≤ c_rec t)
+    (hc : 0 ≤ c) (hu : 0 ≤ u)
+    (hcoeff : ∀ t : Fin k, c_bound t + c_rec t ≤ c)
+    (hsolve :
+      ∀ Δloc : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp
+          (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+          c_bound c_rec (fun _ : Fin k => u) tail_exact tail_exact Δloc →
+        ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+          ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+              (A i j +
+                (∑ t : Fin k,
+                  higham11_7_tridiagonalLiftLocalBlockPerturbation
+                    (higham11_7_tridiagonalPathPivotSpan k step + 1)
+                    (higham11_7_tridiagonalPathPrefixSpan k step t)
+                    (higham11_7_tridiagonalBranchAmbientDim
+                      (higham11_7_tridiagonalPathTailDim k step t) (step t))
+                    (Δloc t) i j)) *
+                x_hat j =
+            b i) :
+    ∃ ΔA1 ΔA2 :
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+        Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ,
+      (∀ i j, |ΔA1 i j| ≤ (k : ℝ) * c * u * infNorm A) ∧
+      (∀ i j, |ΔA2 i j| ≤ (k : ℝ) * c * u * infNorm A) ∧
+      infNorm ΔA1 ≤
+        ((higham11_7_tridiagonalPathPivotSpan k step + 1 : ℕ) : ℝ) *
+          ((k : ℝ) * c) * u * infNorm A ∧
+      infNorm ΔA2 ≤
+        ((higham11_7_tridiagonalPathPivotSpan k step + 1 : ℕ) : ℝ) *
+          ((k : ℝ) * c) * u * infNorm A ∧
+      (∀ i,
+        ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+          (A i j + ΔA2 i j) * x_hat j = b i) := by
+  have hC : (∑ _t : Fin k, c) ≤ (k : ℝ) * c := by
+    simp [Finset.sum_const, nsmul_eq_mul]
+  simpa [Finset.sum_const, nsmul_eq_mul, mul_assoc] using
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_prefix_lifted_sum_zero_offset_of_coeff_norm
+      k fp step A b x_hat c_bound c_rec tail_exact
+      (fun _ : Fin k => c) ((k : ℝ) * c) u hpath
+      hc_bound hc_rec (fun _ => hc) hu (fun t => hcoeff t) hC hsolve
 
 /-- **Theorem 11.7 embedded path solve-delta aggregation from local
 assumptions**.  This composes the finite path-local branch adapter, witness
