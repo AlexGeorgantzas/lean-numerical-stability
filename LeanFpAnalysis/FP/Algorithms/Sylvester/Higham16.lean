@@ -181,6 +181,22 @@ theorem vecTransposePermutation_mulVec_vec (n : Nat)
   ext p
   simp [vecTransposePermutation, Matrix.mulVec, dotProduct, Matrix.vec]
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the Lyapunov vec/Kronecker coefficient identity. -/
+alias H16_eq16_27_lyapunovVecCoeff_mulVec_vec :=
+  lyapunovVecCoeff_mulVec_vec
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the vectorized first-order Lyapunov perturbation
+    equation. -/
+alias H16_eq16_27_lyapunov_perturbation_first_order_vec :=
+  lyapunov_perturbation_first_order_vec
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the vec-transpose permutation identity. -/
+alias H16_eq16_27_vecTransposePermutation_mulVec_vec :=
+  vecTransposePermutation_mulVec_vec
+
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.2):
     applying `I_n kron A - B^T kron I_m` to `vec(X)` gives
     `vec(AX - XB)`. -/
