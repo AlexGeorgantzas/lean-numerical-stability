@@ -25112,6 +25112,52 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
       (higham11_7_ConcretePathSecondPivotFullBaseRows_of_global_base_solve
         (k + 1) step A b x_hat hsolve)
 
+/-- **Theorem 11.7 global base-solve/pointwise-prefix second-pivot endpoint,
+coefficient-sum form**, zero common offset.  This wrapper combines a single
+global base solve with pointwise zero facts for each strictly earlier lifted
+perturbation, then applies the full-base-row pointwise-prefix endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_each_earlier_zero :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal
+      (hearlierPrefixEach :
+        ∀ Δloc : ∀ t : Fin (k + 1),
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+              Fin (higham11_7_tridiagonalBranchAmbientDim
+                (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+          higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+            (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+            (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+            c_bound c_rec (fun _ : Fin (k + 1) => u) tail_fl tail_exact Δloc →
+          ∀ t : Fin (k + 1), ∀ hstep : step t = PivotSize.two,
+            ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              j.val < higham11_7_tridiagonalPathPrefixSpan (k + 1) step t →
+              ∀ s : Fin (k + 1), s.val < t.val →
+                higham11_7_tridiagonalLiftLocalBlockPerturbation
+                  (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                  (higham11_7_tridiagonalPathPrefixSpan (k + 1) step s)
+                  (higham11_7_tridiagonalBranchAmbientDim
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step s) (step s))
+                  (Δloc s)
+                  (higham11_7_tridiagonalPathSecondPivotIndex_two
+                    (k + 1) step t hstep)
+                  j = 0)
+      hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA hearlierLocal
+      (fun Δloc hwit =>
+        higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_each
+          (k + 1) step Δloc (hearlierPrefixEach Δloc hwit))
+      (higham11_7_ConcretePathSecondPivotFullBaseRows_of_global_base_solve
+        (k + 1) step A b x_hat hsolve)
+
 /-- **Theorem 11.7 full-row second-pivot endpoint, pointwise-prefix form**.
 This coefficient-sum wrapper lets callers supply pointwise zero facts for each
 strictly earlier lifted perturbation before the current branch prefix; the
@@ -26874,6 +26920,49 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
       hlast_eq hlast hc_bound hc_rec hc hu hcoeff hrow_one_local
       hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
       hA hearlierLocal hearlierPrefix
+      (higham11_7_ConcretePathSecondPivotFullBaseRows_of_global_base_solve
+        (k + 1) step A b x_hat hsolve)
+
+/-- **Theorem 11.7 global base-solve/pointwise-prefix second-pivot endpoint,
+uniform coefficient form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_each_earlier_zero :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal
+      (hearlierPrefixEach :
+        ∀ Δloc : ∀ t : Fin (k + 1),
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+              Fin (higham11_7_tridiagonalBranchAmbientDim
+                (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+          higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+            (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+            (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+            c_bound c_rec (fun _ : Fin (k + 1) => u) tail_fl tail_exact Δloc →
+          ∀ t : Fin (k + 1), ∀ hstep : step t = PivotSize.two,
+            ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              j.val < higham11_7_tridiagonalPathPrefixSpan (k + 1) step t →
+              ∀ s : Fin (k + 1), s.val < t.val →
+                higham11_7_tridiagonalLiftLocalBlockPerturbation
+                  (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                  (higham11_7_tridiagonalPathPrefixSpan (k + 1) step s)
+                  (higham11_7_tridiagonalBranchAmbientDim
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step s) (step s))
+                  (Δloc s)
+                  (higham11_7_tridiagonalPathSecondPivotIndex_two
+                    (k + 1) step t hstep)
+                  j = 0)
+      hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base hA hearlierLocal
+      (fun Δloc hwit =>
+        higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_each
+          (k + 1) step Δloc (hearlierPrefixEach Δloc hwit))
       (higham11_7_ConcretePathSecondPivotFullBaseRows_of_global_base_solve
         (k + 1) step A b x_hat hsolve)
 
@@ -28644,6 +28733,51 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
       hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
       hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
       hrow_zero_base hA hearlierLocal hearlierPrefix
+      (higham11_7_ConcretePathSecondPivotFullBaseRows_of_global_base_solve
+        (k + 1) step A b x_hat hsolve)
+
+/-- **Theorem 11.7 global base-solve/pointwise-prefix second-pivot endpoint,
+scalar-budget form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_each_earlier_zero :=
+  fun k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal
+      (hearlierPrefixEach :
+        ∀ Δloc : ∀ t : Fin (k + 1),
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+              Fin (higham11_7_tridiagonalBranchAmbientDim
+                (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+          higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+            (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+            (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+            c_bound c_rec u_loc tail_fl tail_exact Δloc →
+          ∀ t : Fin (k + 1), ∀ hstep : step t = PivotSize.two,
+            ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              j.val < higham11_7_tridiagonalPathPrefixSpan (k + 1) step t →
+              ∀ s : Fin (k + 1), s.val < t.val →
+                higham11_7_tridiagonalLiftLocalBlockPerturbation
+                  (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                  (higham11_7_tridiagonalPathPrefixSpan (k + 1) step s)
+                  (higham11_7_tridiagonalBranchAmbientDim
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step s) (step s))
+                  (Δloc s)
+                  (higham11_7_tridiagonalPathSecondPivotIndex_two
+                    (k + 1) step t hstep)
+                  j = 0)
+      hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows
+      k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA hearlierLocal
+      (fun Δloc hwit =>
+        higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_each
+          (k + 1) step Δloc (hearlierPrefixEach Δloc hwit))
       (higham11_7_ConcretePathSecondPivotFullBaseRows_of_global_base_solve
         (k + 1) step A b x_hat hsolve)
 
