@@ -14739,6 +14739,22 @@ theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_
   have ht0 := htwo_zero t hstep
   omega
 
+/-- If every accepted `2 × 2` branch is the initial branch, then the stronger
+full-row earlier-lift zero side condition is vacuous. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_two_only_at_zero
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (htwo_zero : ∀ t : Fin k, step t = PivotSize.two → t.val = 0) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+        k step ΔA := by
+  intro t hstep j s hst
+  have ht0 := htwo_zero t hstep
+  omega
+
 /-- Separate prefix-zero facts for the base row and the earlier lifted
 perturbation sum combine into the full combined-row prefix-zero condition. -/
 theorem higham11_7_ConcretePathSecondPivotCombinedRowsZeroBeforePrefix_of_base_and_earlier_sum_zero
@@ -15659,10 +15675,11 @@ theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of
         b (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)) :
     higham11_7_ConcretePathSecondPivotCombinedSolveRows
         k step A b x_hat ΔA :=
-  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isTridiagonal_and_two_only_at_zero
-    k step A b x_hat ΔA hA htwo_zero
-    (higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_full_base_rows_of_isTridiagonal
-      k step A b x_hat hA hrows)
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of_isTridiagonal_and_earlier_full_row_zero
+    k step A b x_hat ΔA hA
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_two_only_at_zero
+      k step ΔA htwo_zero)
+    hrows
 
 /-- Symmetric-tridiagonal source form of the full-base-row initial-only
 second-pivot handoff. -/
