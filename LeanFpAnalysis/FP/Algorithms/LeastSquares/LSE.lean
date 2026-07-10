@@ -67112,6 +67112,166 @@ theorem IsLSEMinimizer.exists_lagrange_kkt_difference_source_system_of_fullRowRa
     ⟨lambda, mu, htop, hstat, hconstr⟩
   exact ⟨lambda, mu, htop, hstat, hconstr⟩
 
+/-- Homogeneous uniqueness for the source equality-constrained KKT augmented
+    system under Higham's conditions (20.24).
+
+    This is the nonsingularity kernel for the Cox--Higham block-inverse route:
+    with zero data, stationarity, and constraint right-hand sides, the residual,
+    solution, and multiplier components are all zero. -/
+theorem LSEKKTSystem.eq_zero_of_homogeneous {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {dr : Fin m → ℝ} {dx : Fin n → ℝ} {dlambda : Fin p → ℝ}
+    (hsys : LSEKKTSystem A B (0 : Fin m → ℝ) (0 : Fin n → ℝ)
+      (0 : Fin p → ℝ) dr dx dlambda) :
+    dr = 0 ∧ dx = 0 ∧ dlambda = 0 := by
+  rcases hsys with ⟨htop, hstat, hconstr⟩
+  have hA_dot :
+      (∑ j : Fin n, dx j * (∑ i : Fin m, A i j * dr i)) =
+        ∑ i : Fin m, rectMatMulVec A dx i * dr i := by
+    calc
+      (∑ j : Fin n, dx j * (∑ i : Fin m, A i j * dr i))
+          = ∑ j : Fin n, ∑ i : Fin m, dx j * (A i j * dr i) := by
+              apply Finset.sum_congr rfl
+              intro j _
+              rw [Finset.mul_sum]
+      _ = ∑ i : Fin m, ∑ j : Fin n, dx j * (A i j * dr i) := by
+              rw [Finset.sum_comm]
+      _ = ∑ i : Fin m, rectMatMulVec A dx i * dr i := by
+              apply Finset.sum_congr rfl
+              intro i _
+              calc
+                (∑ j : Fin n, dx j * (A i j * dr i))
+                    = ∑ j : Fin n, (A i j * dx j) * dr i := by
+                        apply Finset.sum_congr rfl
+                        intro j _
+                        ring
+                _ = (∑ j : Fin n, A i j * dx j) * dr i := by
+                        rw [Finset.sum_mul]
+                _ = rectMatMulVec A dx i * dr i := rfl
+  have hB_dot :
+      (∑ j : Fin n, dx j * (∑ r : Fin p, B r j * dlambda r)) =
+        ∑ r : Fin p, rectMatMulVec B dx r * dlambda r := by
+    calc
+      (∑ j : Fin n, dx j * (∑ r : Fin p, B r j * dlambda r))
+          = ∑ j : Fin n, ∑ r : Fin p, dx j * (B r j * dlambda r) := by
+              apply Finset.sum_congr rfl
+              intro j _
+              rw [Finset.mul_sum]
+      _ = ∑ r : Fin p, ∑ j : Fin n, dx j * (B r j * dlambda r) := by
+              rw [Finset.sum_comm]
+      _ = ∑ r : Fin p, rectMatMulVec B dx r * dlambda r := by
+              apply Finset.sum_congr rfl
+              intro r _
+              calc
+                (∑ j : Fin n, dx j * (B r j * dlambda r))
+                    = ∑ j : Fin n, (B r j * dx j) * dlambda r := by
+                        apply Finset.sum_congr rfl
+                        intro j _
+                        ring
+                _ = (∑ j : Fin n, B r j * dx j) * dlambda r := by
+                        rw [Finset.sum_mul]
+                _ = rectMatMulVec B dx r * dlambda r := rfl
+  have hstation_sum :
+      (∑ j : Fin n,
+        dx j *
+          ((∑ i : Fin m, A i j * dr i) -
+            (∑ r : Fin p, B r j * dlambda r))) = 0 := by
+    apply Finset.sum_eq_zero
+    intro j _
+    have hj : (∑ i : Fin m, A i j * dr i) -
+        (∑ r : Fin p, B r j * dlambda r) = 0 := by
+      simpa using hstat j
+    rw [hj]
+    ring
+  have hstation_split :
+      (∑ j : Fin n,
+        dx j *
+          ((∑ i : Fin m, A i j * dr i) -
+            (∑ r : Fin p, B r j * dlambda r))) =
+        (∑ j : Fin n, dx j * (∑ i : Fin m, A i j * dr i)) -
+          (∑ j : Fin n, dx j * (∑ r : Fin p, B r j * dlambda r)) := by
+    rw [← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  have hstation_source :
+      (∑ i : Fin m, rectMatMulVec A dx i * dr i) -
+          (∑ r : Fin p, rectMatMulVec B dx r * dlambda r) = 0 := by
+    calc
+      (∑ i : Fin m, rectMatMulVec A dx i * dr i) -
+          (∑ r : Fin p, rectMatMulVec B dx r * dlambda r)
+          = (∑ j : Fin n, dx j * (∑ i : Fin m, A i j * dr i)) -
+              (∑ j : Fin n, dx j * (∑ r : Fin p, B r j * dlambda r)) := by
+              rw [hA_dot, hB_dot]
+      _ = (∑ j : Fin n,
+            dx j *
+              ((∑ i : Fin m, A i j * dr i) -
+                (∑ r : Fin p, B r j * dlambda r))) := by
+              rw [hstation_split]
+      _ = 0 := hstation_sum
+  have hBdot_zero :
+      (∑ r : Fin p, rectMatMulVec B dx r * dlambda r) = 0 := by
+    apply Finset.sum_eq_zero
+    intro r _
+    have hr : rectMatMulVec B dx r = 0 := by
+      simpa using hconstr r
+    rw [hr]
+    ring
+  have hAdot_zero :
+      (∑ i : Fin m, rectMatMulVec A dx i * dr i) = 0 := by
+    linarith
+  have hAdx_neg : ∀ i : Fin m, rectMatMulVec A dx i = -dr i := by
+    intro i
+    have hi : dr i + rectMatMulVec A dx i = 0 := by
+      simpa using htop i
+    linarith
+  have hAdot_eq_neg_sq :
+      (∑ i : Fin m, rectMatMulVec A dx i * dr i) = -vecNorm2Sq dr := by
+    unfold vecNorm2Sq
+    rw [← Finset.sum_neg_distrib]
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [hAdx_neg i]
+    ring
+  have hdrsq : vecNorm2Sq dr = 0 := by
+    linarith
+  have hdrnorm : vecNorm2 dr = 0 := by
+    unfold vecNorm2
+    rw [Real.sqrt_eq_zero (vecNorm2Sq_nonneg dr)]
+    exact hdrsq
+  have hdr_zero : dr = 0 := by
+    ext i
+    exact (vecNorm2_eq_zero_iff dr).mp hdrnorm i
+  have hAdx_zero : rectMatMulVec A dx = 0 := by
+    ext i
+    change rectMatMulVec A dx i = 0
+    have hi : dr i + rectMatMulVec A dx i = 0 := by
+      simpa using htop i
+    have hdri : dr i = 0 := by
+      simpa using congrFun hdr_zero i
+    linarith
+  have hBdx_zero : rectMatMulVec B dx = 0 := by
+    ext r
+    change rectMatMulVec B dx r = 0
+    simpa using hconstr r
+  have hdx_zero : dx = 0 := hnull dx hAdx_zero hBdx_zero
+  have hBt_zero :
+      rectMatMulVec (fun j : Fin n => fun r : Fin p => B r j) dlambda = 0 := by
+    ext j
+    change (∑ r : Fin p, B r j * dlambda r) = 0
+    have hj : (∑ i : Fin m, A i j * dr i) -
+        (∑ r : Fin p, B r j * dlambda r) = 0 := by
+      simpa using hstat j
+    have hArow_zero : (∑ i : Fin m, A i j * dr i) = 0 := by
+      rw [hdr_zero]
+      simp
+    linarith
+  have hdlambda_zero : dlambda = 0 := by
+    apply hB.transpose_rectMatMulVec_injective
+    rw [hBt_zero, rectMatMulVec_zero]
+  exact ⟨hdr_zero, hdx_zero, hdlambda_zero⟩
+
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
     uniqueness of an equality-constrained least-squares minimizer once
