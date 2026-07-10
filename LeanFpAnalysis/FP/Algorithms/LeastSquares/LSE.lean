@@ -37343,6 +37343,59 @@ theorem theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
   exact rectOpNorm2Le_of_frobNormRect_le DeltaB hbudget.2.2.1
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the data-row right-hand side `Deltab - DeltaA*y` in the Cox--Higham KKT
+    system is bounded by the source relative perturbation budget. -/
+theorem theorem20_8_vecNorm2_higham_data_forcing_le_of_relativeBudget
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (y : Fin n → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    vecNorm2 (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i) ≤
+      eps * vecNorm2 b + (eps * frobNormRect A) * vecNorm2 y := by
+  have hDeltaA :
+      rectOpNorm2Le DeltaA (eps * frobNormRect A) :=
+    theorem20_8_rectOpNorm2Le_DeltaA_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget
+  have hDeltaAy :
+      vecNorm2 (rectMatMulVec DeltaA y) ≤
+        (eps * frobNormRect A) * vecNorm2 y :=
+    hDeltaA y
+  have hdata :
+      vecNorm2 Deltab ≤ eps * vecNorm2 b := hbudget.2.1
+  calc
+    vecNorm2 (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i)
+        ≤ vecNorm2 Deltab +
+            vecNorm2 (fun i : Fin m => -rectMatMulVec DeltaA y i) := by
+            simpa [sub_eq_add_neg] using
+              vecNorm2_add_le Deltab
+                (fun i : Fin m => -rectMatMulVec DeltaA y i)
+    _ = vecNorm2 Deltab + vecNorm2 (rectMatMulVec DeltaA y) := by
+            rw [vecNorm2_neg]
+    _ ≤ eps * vecNorm2 b + (eps * frobNormRect A) * vecNorm2 y :=
+            add_le_add hdata hDeltaAy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the constraint-row right-hand side `Deltad - DeltaB*y` in the Cox--Higham
+    KKT system is bounded by the source relative perturbation budget. -/
+theorem theorem20_8_vecNorm2_constraint_defect_le_of_relativeBudget
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (y : Fin n → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    vecNorm2 (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) ≤
+      eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y := by
+  exact theorem20_8_vecNorm2_constraint_defect_le DeltaB Deltad y
+    (theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget)
+    hbudget.2.2.2
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     specialization of the explicit residual-correction bound to the source
     relative perturbation budget. -/
 theorem theorem20_8_vecNorm2_perturbed_residual_correction_le_of_relativeBudget
