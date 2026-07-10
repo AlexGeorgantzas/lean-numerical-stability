@@ -67694,6 +67694,26 @@ theorem LSEKKTInverseSolutionLinearMap_apply_split {m n p : ℕ}
   rw [hsplit]
   rw [map_add, map_add]
 
+/-- Triangle-inequality bound for the split solution block row of the inverse
+    source KKT operator. -/
+theorem LSEKKTInverseSolutionLinearMap_vecNorm2_le_split {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (f : Fin m → ℝ) (g : Fin n → ℝ) (c : Fin p → ℝ) :
+    vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull (f, g, c)) ≤
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull (f, 0, 0)) +
+        vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull (0, g, 0)) +
+          vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull (0, 0, c)) := by
+  rw [LSEKKTInverseSolutionLinearMap_apply_split]
+  let u := LSEKKTInverseSolutionLinearMap hB hnull (f, 0, 0)
+  let v := LSEKKTInverseSolutionLinearMap hB hnull (0, g, 0)
+  let w := LSEKKTInverseSolutionLinearMap hB hnull (0, 0, c)
+  have htri1 : vecNorm2 (u + v + w) ≤ vecNorm2 (u + v) + vecNorm2 w :=
+    vecNorm2_add_le _ _
+  have htri2 : vecNorm2 (u + v) ≤ vecNorm2 u + vecNorm2 v :=
+    vecNorm2_add_le u v
+  nlinarith
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the actual residual, solution, and multiplier differences between source
     and perturbed LSE minimizers equal the canonical source KKT inverse action
@@ -67827,6 +67847,45 @@ theorem IsLSEMinimizer.exists_lagrange_kkt_solution_difference_eq_inverseSolutio
   refine ⟨mu, ?_⟩
   rw [hdx]
   rw [LSEKKTInverseSolutionLinearMap_apply_split]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    triangle-inequality norm bound for the three source KKT inverse block
+    responses that make up the Cox--Higham solution difference. -/
+theorem IsLSEMinimizer.exists_lagrange_kkt_solution_difference_vecNorm2_le_inverseSolutionLinearMap_split
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∃ mu : Fin p → ℝ,
+      vecNorm2 (fun j => y j - x j) ≤
+        vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i, 0, 0)) +
+          vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+            (0,
+             fun j =>
+              (∑ r : Fin p, DeltaB r j * mu r) -
+                (∑ i : Fin m,
+                  DeltaA i j *
+                    lsResidualHigham (fun i j => A i j + DeltaA i j)
+                      (fun i => b i + Deltab i) y i),
+             0)) +
+            vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+              (0, 0, fun r => Deltad r - rectMatMulVec DeltaB y r)) := by
+  rcases hx.exists_lagrange_kkt_solution_difference_eq_inverseSolutionLinearMap
+      hy hB hBpert hnull with
+    ⟨mu, hdx⟩
+  refine ⟨mu, ?_⟩
+  rw [hdx]
+  exact LSEKKTInverseSolutionLinearMap_vecNorm2_le_split hB hnull _ _ _
 
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
