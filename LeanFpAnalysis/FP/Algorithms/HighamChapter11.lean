@@ -5683,6 +5683,35 @@ theorem higham11_4_final_growth_D_bound_of_first_stage_recursive_split
     (higham11_4_stage_growth_D_bound_of_first_stage_recursive_split
       n s D_hat ρ_first ρ_rec ρ_stage Amax hρ_first hρ_rec hAmax hfirst htrail)
 
+/-- **Theorem 11.4 global `|L̂|` row-sum split**.  First-stage and recursive
+trailing row-sum caps cover every row of `|L̂|`, using the same leading/trailing
+index split as the `D̂` and product-entry handoffs. -/
+theorem higham11_4_L_row_sum_bound_of_first_stage_recursive_split
+    (n s : ℕ) (L_hat : Fin n → Fin n → ℝ) (Lmax localL recL : ℝ)
+    (hlocal_le : localL ≤ Lmax) (hrec_le : recL ≤ Lmax)
+    (hfirst : ∀ r : Fin n, r.val < s →
+      (∑ k : Fin n, |L_hat r k|) ≤ localL)
+    (htrail : ∀ r : Fin n, s ≤ r.val →
+      (∑ k : Fin n, |L_hat r k|) ≤ recL) :
+    ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lmax := by
+  intro r
+  by_cases hr : r.val < s
+  · exact (hfirst r hr).trans hlocal_le
+  · exact (htrail r (Nat.le_of_not_gt hr)).trans hrec_le
+
+/-- **Theorem 11.4 source-six `|L̂|` row-sum split**.  The regional row-sum caps
+`≤6` package into the uniform row-sum premise consumed by the existing
+first-stage/recursive product wrappers. -/
+theorem higham11_4_uniform_six_L_row_sum_bound_of_first_stage_recursive_split
+    (n s : ℕ) (L_hat : Fin n → Fin n → ℝ)
+    (hfirst : ∀ r : Fin n, r.val < s →
+      (∑ k : Fin n, |L_hat r k|) ≤ 6)
+    (htrail : ∀ r : Fin n, s ≤ r.val →
+      (∑ k : Fin n, |L_hat r k|) ≤ 6) :
+    ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ 6 :=
+  higham11_4_L_row_sum_bound_of_first_stage_recursive_split n s L_hat 6 6 6
+    le_rfl le_rfl hfirst htrail
+
 /-- **Theorem 11.4 stage-growth `D` cap product bridge**.  A uniform
 `∑ |L̂ᵢₖ| ≤ 6` row-sum cap plus a `D̂` cap stated with a stage growth factor
 feeds the printed final-`ρₙ` product estimate once `ρ_stage ≤ ρₙ`. -/
