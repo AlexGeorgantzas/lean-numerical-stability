@@ -15913,6 +15913,9 @@ small enough to serve as a smoke check for representative public declarations.
 #check Wave14.H16_eq16_8_sylvesterResidualRect_schurTriangular_backSub_componentwise_le
 #check Wave14.H16_eq16_9_frobNormRect_sylvesterResidualRect_le_gamma_dataScale_of_rounded_schur_factors_residual
 #check Wave14.H16_eq16_9_frobNormRect_sylvesterResidualRect_le_computedScale_of_schur_residual_with_transform_budgets
+-- (16.9) END-TO-END: hres discharged from the proved (16.7)/(16.8) rounded solve
+#check Wave14.bartels_stewart_end_to_end_residual
+#check Wave14.H16_eq16_9_end_to_end_bartels_stewart_residual
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved
