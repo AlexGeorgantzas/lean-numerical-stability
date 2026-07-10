@@ -303,3 +303,9 @@ the exact Barrlund (9.27) normwise form (Thm 9.15), and the rigorous
 quadratic-form variant are all CLOSED. No `sorry`, `admit`, or new `axiom` is
 used anywhere in the chapter; open rows are kept honest as partial/conditional
 surfaces rather than closed by assuming their conclusions.
+
+- **M24 (Split 2, session claude-ch09-split2-20260708181608)**: (9.16) Foster Theorem 3 head numerics, part 1 of 2.
+  Added the rational bracket criterion `higham9_16_fosterS_le_of_sq_cert` (squared, denominator-free, `norm_num`-decidable)
+  plus machine-generated certified brackets `higham9_16_fosterS_le_3..30` (4-decimal rationals) and the chained
+  product bounds `higham9_16_fosterT_le_2..30`. Worst certified margin vs `1.5·e^{(3/4)ln²n}` is 2.96% at `n = 3`
+  (exact-rational verification in the generator). Axiom-clean; full chapter rebuild green (3045 jobs).

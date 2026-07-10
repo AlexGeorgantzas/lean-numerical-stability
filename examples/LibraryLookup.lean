@@ -15891,3 +15891,9 @@ small enough to serve as a smoke check for representative public declarations.
 #check fl_classicalGramSchmidt_roundedState
 #check Wave13.H19_Theorem19_6_pivoted_qr_rowwise_backward_error
 #check Wave13.pivoted_qr_backward_error_of_perm
+-- Split-2 M24: (9.16) Foster T3c part 1 — rational stage-root brackets + T-chain
+#check LeanFpAnalysis.FP.higham9_16_fosterS_le_of_sq_cert
+#check LeanFpAnalysis.FP.higham9_16_fosterS_le_3
+#check LeanFpAnalysis.FP.higham9_16_fosterS_le_30
+#check LeanFpAnalysis.FP.higham9_16_fosterT_le_2
+#check LeanFpAnalysis.FP.higham9_16_fosterT_le_30

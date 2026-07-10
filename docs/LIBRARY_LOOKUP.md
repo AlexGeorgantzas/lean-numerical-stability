@@ -2133,6 +2133,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_log_one_add_ge` / `higham9_16_log_one_add_le` (`x - x²/2 <= ln(1+x) <= x`)
 - `higham9_16_t3_step` (**Theorem 3 telescoping step**: `(3/2)ln(n+1)/(n+1) <= (3/4)(ln²(n+1) − ln²n)` for `n >= 30`)
 - `higham9_16_fosterT_le_exp_of_base` (**Theorem 3 telescoping induction**: `t_n <= (3/2)e^((3/4)ln²n)` propagates from the `n = 30` base)
+- `higham9_16_fosterS_le_of_sq_cert` (**rational bracket criterion**: `(k−1)^(k−1)·(u(1+u)^(k−1))² >= k^k` implies `s_k <= u` — makes stage-root bounds `norm_num`-decidable)
+- `higham9_16_fosterS_le_3` … `higham9_16_fosterS_le_30` (certified 4-decimal rational upper brackets on the stage roots `s_3..s_30`)
+- `higham9_16_fosterT_le_2` … `higham9_16_fosterT_le_30` (chained rational upper bounds `T_n` on Foster's `t_n` for `n <= 30`)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
