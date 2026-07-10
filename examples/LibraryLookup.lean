@@ -15905,6 +15905,12 @@ small enough to serve as a smoke check for representative public declarations.
 #check LeanFpAnalysis.FP.higham9_16_t3_head_30
 #check LeanFpAnalysis.FP.higham9_16_fosterT_le_exp
 #check LeanFpAnalysis.FP.higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterBound
+-- Split-3B Wave-14 (ch16 rounded chain, user-authorized): (16.7)/(16.8) rounded Bartels-Stewart triangular solve + (16.9) residual assembly
+#check Wave14.sylvesterVecCoeff_triangular_backSub_backward_error
+#check Wave14.H16_eq16_7_sylvesterVecCoeff_schurTriangular_backSub_backward_error
+#check Wave14.H16_eq16_8_sylvesterResidualRect_schurTriangular_backSub_componentwise_le
+#check Wave14.H16_eq16_9_frobNormRect_sylvesterResidualRect_le_gamma_dataScale_of_rounded_schur_factors_residual
+#check Wave14.H16_eq16_9_frobNormRect_sylvesterResidualRect_le_computedScale_of_schur_residual_with_transform_budgets
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved
