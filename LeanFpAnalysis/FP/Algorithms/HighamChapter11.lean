@@ -29707,6 +29707,106 @@ theorem higham11_14_aasen_next_column_of_product (n : ℕ)
   rw [eq_div_iff (hHnz i next hnext)]
   linarith [hsum]
 
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 exact-recurrence dependency:
+an identity-permutation `AasenSpec`, with `H = T L^T`, gives `A = L H`.
+This is the product bridge used to derive the exact Aasen recurrences
+(11.12)--(11.14) from the factorization specification. -/
+theorem higham11_8_AasenSpec_identity_aasenH_product_eq
+    (n : ℕ) (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hσ : ∀ i : Fin n, σ i = i) :
+    ∀ i k : Fin n,
+      (∑ j : Fin n, L i j * higham11_10_aasenH n T L j k) = A i k := by
+  intro i k
+  have hprod := higham11_8_AasenSpec_product_eq_of_identity_perm
+    n A L T σ hspec hσ i k
+  calc
+    (∑ j : Fin n, L i j * higham11_10_aasenH n T L j k)
+        = ∑ j : Fin n, L i j * (∑ q : Fin n, T j q * L k q) := by
+            rfl
+    _ = ∑ j : Fin n, ∑ q : Fin n, L i j * (T j q * L k q) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [Finset.mul_sum]
+    _ = ∑ j : Fin n, ∑ q : Fin n, L i j * T j q * L k q := by
+            apply Finset.sum_congr rfl
+            intro j _
+            apply Finset.sum_congr rfl
+            intro q _
+            ring
+    _ = A i k := hprod
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 exact-recurrence dependency:
+the `AasenSpec` tridiagonal `T` and lower-triangular `L` make
+`H = T L^T` banded in the form required by (11.14). -/
+theorem higham11_8_AasenSpec_identity_aasenH_band
+    (n : ℕ) (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (hspec : higham11_8_AasenSpec n A L T σ) :
+    ∀ i j : Fin n, i.val + 1 < j.val →
+      higham11_10_aasenH n T L j i = 0 := by
+  intro i j hji
+  exact higham11_10_aasenH_band n T L hspec.T_tridiag.2
+    hspec.L_upper_zero i j hji
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 exact-recurrence dependency:
+from an identity-permutation `AasenSpec`, the canonical
+`H = T L^T` satisfies the exact Aasen equations (11.12), (11.13), and (11.14),
+assuming the subdiagonal `H next i` pivots used by (11.14) are nonzero. -/
+theorem higham11_8_AasenSpec_identity_aasenH_exact_recurrences
+    (n : ℕ) (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hσ : ∀ i : Fin n, σ i = i)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 →
+      higham11_10_aasenH n T L next i ≠ 0) :
+    higham11_12_aasenDiagonalEquation n A L (higham11_10_aasenH n T L) ∧
+      higham11_13_aasenSubdiagonalEquation n A L (higham11_10_aasenH n T L) ∧
+      higham11_14_aasenNextColumnEquation n A L (higham11_10_aasenH n T L) := by
+  have hprod :=
+    higham11_8_AasenSpec_identity_aasenH_product_eq n A L T σ hspec hσ
+  have hband :=
+    higham11_8_AasenSpec_identity_aasenH_band n A L T σ hspec
+  exact ⟨
+    higham11_12_aasen_diagonal_equation_of_product n A L
+      (higham11_10_aasenH n T L) hspec.L_diag hspec.L_upper_zero hprod,
+    higham11_13_aasen_subdiagonal_equation_of_product n A L
+      (higham11_10_aasenH n T L) hspec.L_diag hspec.L_upper_zero hprod,
+    higham11_14_aasen_next_column_of_product n A L
+      (higham11_10_aasenH n T L) hband hprod hHnz⟩
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 exact-recurrence dependency:
+same as `higham11_8_AasenSpec_identity_aasenH_exact_recurrences`, but for a
+named matrix `H` supplied with the pointwise identity `H = T L^T`.  This is the
+form consumed by the rounded source-prefix Aasen endpoints. -/
+theorem higham11_8_AasenSpec_identity_exact_recurrences_of_H_eq
+    (n : ℕ) (A L H T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hσ : ∀ i : Fin n, σ i = i)
+    (hH_eq : ∀ i j : Fin n, H i j = higham11_10_aasenH n T L i j)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0) :
+    higham11_12_aasenDiagonalEquation n A L H ∧
+      higham11_13_aasenSubdiagonalEquation n A L H ∧
+      higham11_14_aasenNextColumnEquation n A L H := by
+  have hprod : ∀ i k : Fin n, (∑ j : Fin n, L i j * H j k) = A i k := by
+    intro i k
+    calc
+      (∑ j : Fin n, L i j * H j k)
+          = ∑ j : Fin n, L i j * higham11_10_aasenH n T L j k := by
+              apply Finset.sum_congr rfl
+              intro j _
+              rw [hH_eq j k]
+      _ = A i k :=
+          higham11_8_AasenSpec_identity_aasenH_product_eq n A L T σ hspec hσ i k
+  have hband : ∀ i j : Fin n, i.val + 1 < j.val → H j i = 0 := by
+    intro i j hji
+    rw [hH_eq j i]
+    exact higham11_8_AasenSpec_identity_aasenH_band n A L T σ hspec i j hji
+  exact ⟨
+    higham11_12_aasen_diagonal_equation_of_product n A L H
+      hspec.L_diag hspec.L_upper_zero hprod,
+    higham11_13_aasen_subdiagonal_equation_of_product n A L H
+      hspec.L_diag hspec.L_upper_zero hprod,
+    higham11_14_aasen_next_column_of_product n A L H hband hprod hHnz⟩
+
 /-- **Equation (11.14) floating-point scalar update**, relative-error form.
 The computed scalar update `fl(fl(a - s) / h)` equals the exact update
 `(a - s) / h` multiplied by a two-operation relative error bounded by `γ₂`.
