@@ -36190,6 +36190,27 @@ def IsLSEMinimizer {m n p : ℕ} (A : Fin m → Fin n → ℝ)
   LSEFeasible B d x ∧
   ∀ y : Fin n → ℝ, LSEFeasible B d y → lsObjective A b x ≤ lsObjective A b y
 
+/-- Feasibility `Bx=d` gives the elementary Frobenius bound
+    `||d||₂ <= ||B||_F ||x||₂`. -/
+theorem LSEFeasible.vecNorm2_rhs_le_frobNormRect_mul {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} {d : Fin p → ℝ} {x : Fin n → ℝ}
+    (hx : LSEFeasible B d x) :
+    vecNorm2 d ≤ frobNormRect B * vecNorm2 x := by
+  have hd_eq : d = rectMatMulVec B x := by
+    ext i
+    exact (hx i).symm
+  rw [hd_eq]
+  exact vecNorm2_rectMatMulVec_le_frobNormRect_mul B x
+
+/-- An exact LSE minimizer's constraint right-hand side is bounded by the
+    source constraint matrix acting on the minimizer. -/
+theorem IsLSEMinimizer.vecNorm2_constraint_rhs_le_frobNormRect_mul {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {d : Fin p → ℝ} {x : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x) :
+    vecNorm2 d ≤ frobNormRect B * vecNorm2 x :=
+  hx.1.vecNorm2_rhs_le_frobNormRect_mul
+
 -- ------------------------------------------------------------
 -- §20.9.1  Perturbation-theory scalar budget support
 -- ------------------------------------------------------------
@@ -69015,6 +69036,59 @@ theorem
       (LSEKKTInverseSolutionDataLinearMap_vecNorm2_le_coeff hB hnull)
       (LSEKKTInverseSolutionStatLinearMap_vecNorm2_le_coeff hB hnull)
       (LSEKKTInverseSolutionConstrLinearMap_vecNorm2_le_coeff hB hnull)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    canonical-response KKT relative-budget handoff with the source constraint
+    right-hand-side scale discharged from feasibility, `B x = d`. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_sourceConstraint_scales
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps bScale yScale muScale : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hb : vecNorm2 b ≤ bScale * vecNorm2 x)
+    (hyScale : vecNorm2 y ≤ yScale * vecNorm2 x)
+    (hmuScale : ∀ mu : Fin p → ℝ,
+      (fun j => y j - x j) =
+        LSEKKTInverseSolutionLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i,
+           fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i),
+           fun r => Deltad r - rectMatMulVec DeltaB y r) →
+      vecNorm2 mu ≤ muScale * vecNorm2 x) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      LSEKKTInverseSolutionDataCoeff hB hnull *
+          (eps * bScale + (eps * frobNormRect A) * yScale) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect B) * muScale +
+            (eps * frobNormRect A) *
+              ((1 + eps) * bScale +
+                ((1 + eps) * frobNormRect A) * yScale)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull *
+          (eps * frobNormRect B + (eps * frobNormRect B) * yScale) := by
+  exact
+    hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_scales
+      hy hB hBpert hnull hxnorm hbudget heps_nonneg hb
+      hx.vecNorm2_constraint_rhs_le_frobNormRect_mul hyScale hmuScale
 
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
