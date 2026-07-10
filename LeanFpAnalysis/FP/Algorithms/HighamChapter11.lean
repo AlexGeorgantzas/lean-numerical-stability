@@ -1011,6 +1011,20 @@ theorem higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound (n : ℕ)
     _ = (n : ℝ) * Lmax := by
           simp
 
+/-- Row-dependent entry bounds for `|L̂|` imply the row-sum caps consumed by
+the Theorem 11.4 product-entry bridge.  This keeps the remaining pivot-path
+proof free to derive row-local entry estimates before any uniformization. -/
+theorem higham11_4_abs_row_sum_le_card_mul_of_row_entry_bound (n : ℕ)
+    (L_hat : Fin n → Fin n → ℝ) (Lcap : Fin n → ℝ)
+    (hL : ∀ i k : Fin n, |L_hat i k| ≤ Lcap i) (i : Fin n) :
+    (∑ k : Fin n, |L_hat i k|) ≤ (n : ℝ) * Lcap i := by
+  calc
+    (∑ k : Fin n, |L_hat i k|)
+        ≤ ∑ _k : Fin n, Lcap i := by
+          exact Finset.sum_le_sum (fun k _ => hL i k)
+    _ = (n : ℝ) * Lcap i := by
+          simp
+
 /-- A uniform absolute entry bound over a nonempty matrix supplies
 nonnegativity of the bound. -/
 theorem higham11_4_nonneg_of_uniform_abs_entry_bound (n : ℕ) (hn : 0 < n)
@@ -1033,6 +1047,20 @@ theorem higham11_4_bunchKaufmanProductEntry_le_uniform_entry_bounds (n : ℕ)
     Dmax ((n : ℝ) * Lmax) hDmax hD
     (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
       L_hat Lmax hL r)
+
+/-- Row-dependent entry caps for `|L̂|` and a uniform `D̂` entry cap bound a
+source product entry of `|L̂||D̂||L̂ᵀ|`. -/
+theorem higham11_4_bunchKaufmanProductEntry_le_row_entry_bounds (n : ℕ)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n)
+    (Dmax : ℝ) (Lcap : Fin n → ℝ) (hDmax : 0 ≤ Dmax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lcap r) :
+    higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) :=
+  higham11_4_bunchKaufmanProductEntry_le_row_sum_bounds n L_hat D_hat i j
+    Dmax ((n : ℝ) * Lcap i) ((n : ℝ) * Lcap j) hDmax hD
+    (higham11_4_abs_row_sum_le_card_mul_of_row_entry_bound n L_hat Lcap hL i)
+    (higham11_4_abs_row_sum_le_card_mul_of_row_entry_bound n L_hat Lcap hL j)
 
 /-- Row-sum product-entry bridge deriving `0≤Dmax` from the nonempty absolute
 `D̂` entry cap. -/
@@ -1102,6 +1130,20 @@ theorem higham11_4_bunchKaufmanProductEntry_le_uniform_entry_bounds_entry_nonneg
       ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) :=
   higham11_4_bunchKaufmanProductEntry_le_uniform_entry_bounds n L_hat D_hat i j
     Dmax Lmax
+    (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
+    hD hL
+
+/-- Row-dependent entry product-entry bridge deriving `0≤Dmax` from the
+nonempty absolute `D̂` entry cap. -/
+theorem higham11_4_bunchKaufmanProductEntry_le_row_entry_bounds_entry_nonneg
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ) (i j : Fin n)
+    (Dmax : ℝ) (Lcap : Fin n → ℝ)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lcap r) :
+    higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) :=
+  higham11_4_bunchKaufmanProductEntry_le_row_entry_bounds n L_hat D_hat i j
+    Dmax Lcap
     (higham11_4_nonneg_of_uniform_abs_entry_bound n hn D_hat Dmax hD)
     hD hL
 
@@ -3522,6 +3564,189 @@ theorem
     (fun _i _j _hij => by simpa using hfirst_budget)
     (fun _i _j _hi _hj => by simpa using htrail_budget)
     hsolve
+
+/-- **Theorem 11.4 row-entry first-stage/recursive product bridge**.
+Row-dependent entry caps for `|L̂|` supply row-sum caps
+`n * Lcap r` consumed by the first-stage/trailing split. -/
+theorem higham11_4_product_entries_of_first_stage_recursive_row_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax : ℝ) (Lcap : Fin n → ℝ)
+    (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget : localB ≤ 36 * ρ_n * Amax)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lcap r)
+    (hfirst_budget : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB)
+    (htrail_budget : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB + recB) :
+    ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_product_entries_of_first_stage_recursive_row_sum_bounds
+    n s hn hs_pos hs_le L_hat D_hat Dmax (fun r : Fin n => (n : ℝ) * Lcap r)
+    ρ_n Amax localB recB hρ hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_row_entry_bound n
+      L_hat Lcap hL r)
+    (fun i j hij => by simpa using hfirst_budget i j hij)
+    (fun i j hi hj => by simpa using htrail_budget i j hi hj)
+
+/-- **Theorem 11.4 row-entry first-stage/recursive max-entry bridge**. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_row_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax : ℝ) (Lcap : Fin n → ℝ)
+    (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget : localB ≤ 36 * ρ_n * Amax)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lcap r)
+    (hfirst_budget : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB)
+    (htrail_budget : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB + recB) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_row_sum_bounds
+    n s hn hs_pos hs_le L_hat D_hat Dmax (fun r : Fin n => (n : ℝ) * Lcap r)
+    ρ_n Amax localB recB hρ hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_row_entry_bound n
+      L_hat Lcap hL r)
+    (fun i j hij => by simpa using hfirst_budget i j hij)
+    (fun i j hi hj => by simpa using htrail_budget i j hi hj)
+
+/-- **Theorem 11.4 row-entry first-stage/recursive scalar certificate**. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_row_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax : ℝ) (Lcap : Fin n → ℝ)
+    (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget : localB ≤ 36 * ρ_n * Amax)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lcap r)
+    (hfirst_budget : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB)
+    (htrail_budget : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB + recB) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_row_sum_bounds
+    n s hn hs_pos hs_le L_hat D_hat Dmax (fun r : Fin n => (n : ℝ) * Lcap r)
+    ρ_n Amax localB recB hρ hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_row_entry_bound n
+      L_hat Lcap hL r)
+    (fun i j hij => by simpa using hfirst_budget i j hij)
+    (fun i j hi hj => by simpa using htrail_budget i j hi hj)
+
+/-- **Theorem 11.4 exact-coefficient row-entry first-stage/recursive product
+bridge**. -/
+theorem higham11_4_product_entries_of_first_stage_recursive_higham_const_row_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax : ℝ) (Lcap : Fin n → ℝ)
+    (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lcap r)
+    (hfirst_budget : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB)
+    (htrail_budget : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB + recB) :
+    ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_product_entries_of_first_stage_recursive_higham_const_row_sum_bounds
+    n s hn hs_pos hs_le L_hat D_hat Dmax (fun r : Fin n => (n : ℝ) * Lcap r)
+    ρ_n Amax localB recB hρ hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_row_entry_bound n
+      L_hat Lcap hL r)
+    (fun i j hij => by simpa using hfirst_budget i j hij)
+    (fun i j hi hj => by simpa using htrail_budget i j hi hj)
+
+/-- **Theorem 11.4 exact-coefficient row-entry first-stage/recursive max-entry
+bridge**. -/
+theorem
+    higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_higham_const_row_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax : ℝ) (Lcap : Fin n → ℝ)
+    (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lcap r)
+    (hfirst_budget : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB)
+    (htrail_budget : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB + recB) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_higham_const_row_sum_bounds
+    n s hn hs_pos hs_le L_hat D_hat Dmax (fun r : Fin n => (n : ℝ) * Lcap r)
+    ρ_n Amax localB recB hρ hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_row_entry_bound n
+      L_hat Lcap hL r)
+    (fun i j hij => by simpa using hfirst_budget i j hij)
+    (fun i j hi hj => by simpa using htrail_budget i j hi hj)
+
+/-- **Theorem 11.4 exact-coefficient row-entry first-stage/recursive scalar
+certificate**. -/
+theorem
+    higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_row_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax : ℝ) (Lcap : Fin n → ℝ)
+    (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lcap r)
+    (hfirst_budget : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB)
+    (htrail_budget : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB + recB) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_row_sum_bounds
+    n s hn hs_pos hs_le L_hat D_hat Dmax (fun r : Fin n => (n : ℝ) * Lcap r)
+    ρ_n Amax localB recB hρ hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_row_entry_bound n
+      L_hat Lcap hL r)
+    (fun i j hij => by simpa using hfirst_budget i j hij)
+    (fun i j hi hj => by simpa using htrail_budget i j hi hj)
 
 /-- **Theorem 11.4 uniform-entry first-stage/recursive product bridge**.
 A uniform entry cap for `|L̂|` supplies the row-sum cap `n * Lmax` consumed by
