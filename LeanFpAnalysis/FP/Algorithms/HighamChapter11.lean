@@ -3748,6 +3748,226 @@ theorem
     (fun i j hij => by simpa using hfirst_budget i j hij)
     (fun i j hi hj => by simpa using htrail_budget i j hi hj)
 
+/-- **Theorem 11.4 row-entry first-stage/recursive stability bridge**.
+Row-dependent entry caps for `|L_hat|` supply the row-sum caps used by the
+first-stage/trailing stability consumer. -/
+theorem higham11_4_bunch_kaufman_stability_of_first_stage_recursive_row_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (Dmax : ℝ) (Lcap : Fin n → ℝ)
+    (ρ_n maxNorm_A localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hlocal_budget : localB ≤ 36 * ρ_n * maxNorm_A)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * maxNorm_A)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lcap r)
+    (hfirst_budget : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB)
+    (htrail_budget : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB + recB) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_first_stage_recursive_row_sum_bounds
+    n s hn hs_pos hs_le A L_hat D_hat Dmax
+    (fun r : Fin n => (n : ℝ) * Lcap r) ρ_n maxNorm_A localB recB hρ
+    hmA hA_norm hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_row_entry_bound n
+      L_hat Lcap hL r)
+    (fun i j hij => by simpa using hfirst_budget i j hij)
+    (fun i j hi hj => by simpa using htrail_budget i j hi hj)
+
+/-- **Theorem 11.4 exact-coefficient row-entry first-stage/recursive stability
+bridge**. -/
+theorem
+    higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_row_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (Dmax : ℝ) (Lcap : Fin n → ℝ)
+    (ρ_n maxNorm_A localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * maxNorm_A)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * maxNorm_A)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lcap r)
+    (hfirst_budget : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB)
+    (htrail_budget : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB + recB) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_row_sum_bounds
+    n s hn hs_pos hs_le A L_hat D_hat Dmax
+    (fun r : Fin n => (n : ℝ) * Lcap r) ρ_n maxNorm_A localB recB hρ
+    hmA hA_norm hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_row_entry_bound n
+      L_hat Lcap hL r)
+    (fun i j hij => by simpa using hfirst_budget i j hij)
+    (fun i j hi hj => by simpa using htrail_budget i j hi hj)
+
+/-- **Theorem 11.4 row-entry first-stage/recursive solve bridge**. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_row_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (Dmax : ℝ) (Lcap : Fin n → ℝ) (p u ρ_n Amax localB recB : ℝ)
+    (hpu : 0 ≤ p * u) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget : localB ≤ 36 * ρ_n * Amax)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lcap r)
+    (hfirst_budget : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB)
+    (htrail_budget : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB + recB)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_row_sum_bounds
+    n s hn hs_pos hs_le A L_hat D_hat b x_hat Dmax
+    (fun r : Fin n => (n : ℝ) * Lcap r) p u ρ_n Amax localB recB hpu hρ
+    hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_row_entry_bound n
+      L_hat Lcap hL r)
+    (fun i j hij => by simpa using hfirst_budget i j hij)
+    (fun i j hi hj => by simpa using htrail_budget i j hi hj)
+    hsolve
+
+/-- **Theorem 11.4 exact-coefficient row-entry first-stage/recursive solve
+bridge**. -/
+theorem
+    higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_row_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (Dmax : ℝ) (Lcap : Fin n → ℝ) (p u ρ_n Amax localB recB : ℝ)
+    (hpu : 0 ≤ p * u) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lcap r)
+    (hfirst_budget : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB)
+    (htrail_budget : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB + recB)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_row_sum_bounds
+    n s hn hs_pos hs_le A L_hat D_hat b x_hat Dmax
+    (fun r : Fin n => (n : ℝ) * Lcap r) p u ρ_n Amax localB recB hpu hρ
+    hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_row_entry_bound n
+      L_hat Lcap hL r)
+    (fun i j hij => by simpa using hfirst_budget i j hij)
+    (fun i j hi hj => by simpa using htrail_budget i j hi hj)
+    hsolve
+
+/-- **Theorem 11.4 row-entry first-stage/recursive solve bridge,
+max-entry norm form**. -/
+theorem
+    higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_row_entry_maxEntryNorm_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (Dmax : ℝ) (Lcap : Fin n → ℝ) (p u ρ_n Amax localB recB : ℝ)
+    (hpu : 0 ≤ p * u) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget : localB ≤ 36 * ρ_n * Amax)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lcap r)
+    (hfirst_budget : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB)
+    (htrail_budget : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB + recB)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_row_sum_maxEntryNorm_bounds
+    n s hn hs_pos hs_le A L_hat D_hat b x_hat Dmax
+    (fun r : Fin n => (n : ℝ) * Lcap r) p u ρ_n Amax localB recB hpu hρ
+    hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_row_entry_bound n
+      L_hat Lcap hL r)
+    (fun i j hij => by simpa using hfirst_budget i j hij)
+    (fun i j hi hj => by simpa using htrail_budget i j hi hj)
+    hsolve
+
+/-- **Theorem 11.4 exact-coefficient row-entry first-stage/recursive solve
+bridge, max-entry norm form**. -/
+theorem
+    higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_row_entry_maxEntryNorm_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (Dmax : ℝ) (Lcap : Fin n → ℝ) (p u ρ_n Amax localB recB : ℝ)
+    (hpu : 0 ≤ p * u) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lcap r)
+    (hfirst_budget : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB)
+    (htrail_budget : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      ((n : ℝ) * Lcap i) * Dmax * ((n : ℝ) * Lcap j) ≤ localB + recB)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_row_sum_maxEntryNorm_bounds
+    n s hn hs_pos hs_le A L_hat D_hat b x_hat Dmax
+    (fun r : Fin n => (n : ℝ) * Lcap r) p u ρ_n Amax localB recB hpu hρ
+    hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_row_entry_bound n
+      L_hat Lcap hL r)
+    (fun i j hij => by simpa using hfirst_budget i j hij)
+    (fun i j hi hj => by simpa using htrail_budget i j hi hj)
+    hsolve
+
 /-- **Theorem 11.4 uniform-entry first-stage/recursive product bridge**.
 A uniform entry cap for `|L̂|` supplies the row-sum cap `n * Lmax` consumed by
 the first-stage/trailing split. -/
