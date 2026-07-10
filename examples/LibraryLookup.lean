@@ -13778,6 +13778,10 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_16_one_sub_inv_le_log
 #check higham9_16_t3_endpoint
 #check higham9_16_fosterS_le_tail
+#check higham9_16_log_one_add_ge
+#check higham9_16_log_one_add_le
+#check higham9_16_t3_step
+#check higham9_16_fosterT_le_exp_of_base
 #check higham9_10_HessenbergGEPPUTrace_to_PartialPivotGEPPUTrace
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowth_le
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowthValue_le

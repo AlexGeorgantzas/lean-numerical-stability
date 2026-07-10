@@ -2130,6 +2130,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_log31_bounds` (`3.43 <= ln 31 <= 3.435`) / `higham9_16_one_sub_inv_le_log` (`1 - 1/x <= ln x`)
 - `higham9_16_t3_endpoint` (the single numeric endpoint of Theorem 3's tail)
 - `higham9_16_fosterS_le_tail` (**Foster Theorem 3, tail bound**: `s_n <= (3/2)·ln n/n` for `n >= 31` — fully derivative-free)
+- `higham9_16_log_one_add_ge` / `higham9_16_log_one_add_le` (`x - x²/2 <= ln(1+x) <= x`)
+- `higham9_16_t3_step` (**Theorem 3 telescoping step**: `(3/2)ln(n+1)/(n+1) <= (3/4)(ln²(n+1) − ln²n)` for `n >= 30`)
+- `higham9_16_fosterT_le_exp_of_base` (**Theorem 3 telescoping induction**: `t_n <= (3/2)e^((3/4)ln²n)` propagates from the `n = 30` base)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
