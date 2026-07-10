@@ -71246,6 +71246,118 @@ theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivo
       fp hmn hn A b κ K stageBudget huSmall hDD hK hκ hκbudget
       hbudgetDual hinitBlock hglobalBudget hcomparison hpivotChoice hsmall
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, concrete stored-loop
+    scalar-comparison/dual-budget wrapper using the canonical Frobenius stage
+    budget.
+
+This specializes the determinant-derived Frobenius-initial scalar-comparison
+route to `storedHouseholderQRFrobStageBudget`, removing the public
+Frobenius-initial and compact-stage recurrence hypotheses.  The remaining
+visible obligations are the conditioning/dual-budget data, active-pivot
+policy, scalar comparison defect for the canonical budget, local diagonal
+dominance, and finite-max smallness. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_diagDominant_stageRowMaxComparison_dualBudget_concreteStored_frobStageBudget_finiteMaxSmallness_actualUnitRoundoff_of_nonempty
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m) (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (κ K : ℕ → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hK : ∀ k (_hk : k < n), 0 < K k)
+    (hκ : ∀ k (hk : k < n),
+      kappaInf (k + 1) (Nat.succ_pos k)
+          (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+          (nonsingInv (k + 1)
+            (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ≤
+        κ k)
+    (hκbudget : ∀ k (hk : k < n),
+      ((k + 1 : ℕ) : ℝ) *
+          (κ k /
+            infNorm
+              (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+                (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ^ 2 ≤
+        K k)
+    (hbudgetDual : ∀ k (hk : k < n),
+      (m : ℝ) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a =>
+                storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hmn A k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                ⟨k, lt_of_lt_of_le hk hmn⟩
+                (fun a =>
+                  storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+                (storedHouseholderQRAlphaSeq fp hmn A k)))
+            (fun a =>
+              storedHouseholderQRMatrixSeq fp hmn A k a ⟨k, hk⟩)
+            ⟨k, lt_of_lt_of_le hk hmn⟩) ^ 2 <
+        1 / K k)
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn
+        (storedHouseholderQRMatrixSeq fp hmn A)
+        (storedHouseholderQRFrobStageBudget fp hmn A) ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩
+          (storedHouseholderQRMatrixSeq fp hmn A t))
+    (hsmall :
+      2 * storedQRDiagDominantInvFactorBudget hmn
+            (storedHouseholderQRMatrixSeq fp hmn A) *
+          ((m : ℝ) *
+            (storedQRCompactSequenceRelativeBudget hmn fp
+                (storedHouseholderQRMatrixSeq fp hmn A)
+                (storedHouseholderQRRhsSeq fp hmn A b)
+                (storedHouseholderQRAlphaSeq fp hmn A) *
+              storedQRPivotColumnNormBudget hmn
+                (storedHouseholderQRMatrixSeq fp hmn A)) ^ 2) <
+        1) :
+    let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+    let b_hat := storedHouseholderQRRhsSeq fp hmn A b
+    let alpha := storedHouseholderQRAlphaSeq fp hmn A
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  let stageBudget : ℕ → ℝ := storedHouseholderQRFrobStageBudget fp hmn A
+  have hinitFrob : frobNormRect A ≤ stageBudget 0 := by
+    simp [stageBudget]
+  have hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht ≤
+        stageBudget (t + 1) := by
+    intro t ht
+    change
+      coxHighamActiveRowGrowthFactor m *
+            storedHouseholderQRFrobStageBudget fp hmn A t +
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht ≤
+        storedHouseholderQRFrobStageBudget fp hmn A (t + 1)
+    rw [storedHouseholderQRFrobStageBudget_succ_of_lt fp hmn A t ht]
+  exact
+    theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_diagDominant_stageRowMaxComparison_dualBudget_concreteStored_horizonBudget_finiteMaxSmallness_actualUnitRoundoff_of_nonempty_det_from_diagDominant_frobInitial
+      fp hmn hn A b κ K stageBudget huSmall hDD hK hκ hκbudget
+      hbudgetDual hinitFrob hglobalBudget hcomparison hpivotChoice hsmall
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.3, active-pivot
     horizon-budget compact wrapper with scalar comparison and finite-max
     product smallness.
