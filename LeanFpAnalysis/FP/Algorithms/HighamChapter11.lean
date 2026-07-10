@@ -23779,6 +23779,56 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
       hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
       hA.2 hearlierLocal hearlierPrefixEach hrow_second_base
 
+/-- **Theorem 11.7 full-row earlier-lift source endpoint, coefficient-sum
+form**, zero common offset.  This composes the full-base-row second-pivot
+endpoint with the single full-row earlier-lift zero bridge. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_earlier_full_row_zero :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      (hearlier :
+        ∀ Δloc : ∀ t : Fin (k + 1),
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+              Fin (higham11_7_tridiagonalBranchAmbientDim
+                (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+          higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+            (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+            (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+            c_bound c_rec (fun _ : Fin (k + 1) => u) tail_fl tail_exact Δloc →
+          higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+            (k + 1) step Δloc)
+      hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA
+      (fun Δloc hwit =>
+        higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock_of_fullSecondPivotRow
+          (k + 1) step Δloc (hearlier Δloc hwit))
+      (fun Δloc hwit =>
+        higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_fullSecondPivotRow
+          (k + 1) step Δloc (hearlier Δloc hwit))
+      hrow_second_base
+
+/-- **Theorem 11.7 symmetric full-row earlier-lift source endpoint,
+coefficient-sum form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_isSymTridiagonal_and_earlier_full_row_zero :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlier hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_earlier_full_row_zero
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hearlier hrow_second_base
+
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint when every
 accepted `2 × 2` branch is initial, coefficient-sum form**, zero common
 offset.  Base `A` row equations at the second-pivot rows discharge the reduced
