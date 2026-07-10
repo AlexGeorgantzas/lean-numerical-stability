@@ -9335,6 +9335,43 @@ def higham11_7_tridiagonalPathSecondPivotIndex_two
   simp [higham11_7_tridiagonalPathSecondPivotIndex_two,
     higham11_7_tridiagonalTwoByTwoSecondPivotIndex]
 
+/-- In a `2 × 2` branch, the second pivot row is immediately before the
+branch-uniform first-trailing row. -/
+theorem higham11_7_tridiagonalPathSecondPivotIndex_two_val_succ_eq_firstTrailingIndex
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.two) :
+    (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep).val + 1 =
+      (higham11_7_tridiagonalPathFirstTrailingIndex k step t).val := by
+  simp [higham11_7_tridiagonalPathSecondPivotIndex_two_val,
+    higham11_7_tridiagonalPathFirstTrailingIndex,
+    higham11_7_tridiagonalBranchSupportOffset, hstep]
+
+/-- In a `2 × 2` branch, the second pivot row is strictly before the
+branch-uniform first-trailing row. -/
+theorem higham11_7_tridiagonalPathSecondPivotIndex_two_val_lt_firstTrailingIndex
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.two) :
+    (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep).val <
+      (higham11_7_tridiagonalPathFirstTrailingIndex k step t).val := by
+  have hsucc :=
+    higham11_7_tridiagonalPathSecondPivotIndex_two_val_succ_eq_firstTrailingIndex
+      k step t hstep
+  omega
+
+/-- In a `2 × 2` branch, the second pivot row is not the
+branch-uniform first-trailing row. -/
+theorem higham11_7_tridiagonalPathSecondPivotIndex_two_ne_firstTrailingIndex
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.two) :
+    higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep ≠
+      higham11_7_tridiagonalPathFirstTrailingIndex k step t := by
+  intro h
+  have hlt :=
+    higham11_7_tridiagonalPathSecondPivotIndex_two_val_lt_firstTrailingIndex
+      k step t hstep
+  rw [h] at hlt
+  exact Nat.lt_irrefl _ hlt
+
 /-- Branch-uniform first-trailing indices are strictly ordered by branch
 position in the concrete mixed tridiagonal path. -/
 theorem higham11_7_tridiagonalPathFirstTrailingIndex_val_lt_of_lt
