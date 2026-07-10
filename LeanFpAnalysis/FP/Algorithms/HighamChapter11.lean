@@ -307,6 +307,132 @@ theorem higham11_4_twoByTwo_inverse_entry_bounds (e11 e22 e21 μ0 μ1 α K : ℝ
   twoByTwo_inverse_entry_bounds e11 e22 e21 μ0 μ1 α K
     hμ1 hα0 hα1 hμ he11 he22 he21 hμ1α hK
 
+/-- **Theorem 11.4 local 2×2 multiplier row cap**, inverse-entry form:
+if `|E⁻¹| ≤ K[[α,1],[1,α]]`, `K=1/((1−α²)μ₀)`, and the two entries of a
+trailing row `C` are bounded by `μ₀`, then each component of `C E⁻¹` is bounded
+by `1/(1−α)`.  This is the local 2×2 branch companion to the case-(1)/(3)
+scalar multiplier caps from Algorithm 11.2. -/
+theorem higham11_4_twoByTwo_multiplier_row_bound_of_inverse_entries
+    (c1 c2 f11 f12 f21 f22 μ0 α K : ℝ)
+    (hα0 : 0 ≤ α) (hα1 : α < 1) (hμ : 0 < μ0)
+    (hK : (1 - α ^ 2) * μ0 * K = 1)
+    (hc1 : |c1| ≤ μ0) (hc2 : |c2| ≤ μ0)
+    (hf11 : |f11| ≤ α * K) (hf12 : |f12| ≤ K)
+    (hf21 : |f21| ≤ K) (hf22 : |f22| ≤ α * K) :
+    |c1 * f11 + c2 * f21| ≤ 1 / (1 - α) ∧
+      |c1 * f12 + c2 * f22| ≤ 1 / (1 - α) := by
+  have hμ0 : 0 ≤ μ0 := le_of_lt hμ
+  have hα2 : α ^ 2 < 1 := by nlinarith [hα0, hα1]
+  have hden : 0 < (1 - α ^ 2) * μ0 := mul_pos (by linarith [hα2]) hμ
+  have hK0 : 0 ≤ K := by nlinarith [hK, hden]
+  have hαK : 0 ≤ α * K := mul_nonneg hα0 hK0
+  have h1α : (0 : ℝ) < 1 - α := by linarith
+  have hdiag :
+      μ0 * (α * K) + μ0 * K = 1 / (1 - α) := by
+    rw [eq_div_iff (ne_of_gt h1α)]
+    nlinarith [hK]
+  have hoff :
+      μ0 * K + μ0 * (α * K) = 1 / (1 - α) := by
+    rw [eq_div_iff (ne_of_gt h1α)]
+    nlinarith [hK]
+  have hc1f11 : |c1 * f11| ≤ μ0 * (α * K) := by
+    rw [abs_mul]
+    exact mul_le_mul hc1 hf11 (abs_nonneg _) hμ0
+  have hc2f21 : |c2 * f21| ≤ μ0 * K := by
+    rw [abs_mul]
+    exact mul_le_mul hc2 hf21 (abs_nonneg _) hμ0
+  have hc1f12 : |c1 * f12| ≤ μ0 * K := by
+    rw [abs_mul]
+    exact mul_le_mul hc1 hf12 (abs_nonneg _) hμ0
+  have hc2f22 : |c2 * f22| ≤ μ0 * (α * K) := by
+    rw [abs_mul]
+    exact mul_le_mul hc2 hf22 (abs_nonneg _) hμ0
+  refine ⟨?_, ?_⟩
+  · calc
+      |c1 * f11 + c2 * f21| ≤ |c1 * f11| + |c2 * f21| := abs_add_le _ _
+      _ ≤ μ0 * (α * K) + μ0 * K := add_le_add hc1f11 hc2f21
+      _ = 1 / (1 - α) := hdiag
+  · calc
+      |c1 * f12 + c2 * f22| ≤ |c1 * f12| + |c2 * f22| := abs_add_le _ _
+      _ ≤ μ0 * K + μ0 * (α * K) := add_le_add hc1f12 hc2f22
+      _ = 1 / (1 - α) := hoff
+
+/-- **Theorem 11.4 local 2×2 multiplier row-sum cap**, inverse-entry form:
+the two-component absolute row sum of `C E⁻¹` is bounded by `2/(1−α)`. -/
+theorem higham11_4_twoByTwo_multiplier_row_sum_bound_of_inverse_entries
+    (c1 c2 f11 f12 f21 f22 μ0 α K : ℝ)
+    (hα0 : 0 ≤ α) (hα1 : α < 1) (hμ : 0 < μ0)
+    (hK : (1 - α ^ 2) * μ0 * K = 1)
+    (hc1 : |c1| ≤ μ0) (hc2 : |c2| ≤ μ0)
+    (hf11 : |f11| ≤ α * K) (hf12 : |f12| ≤ K)
+    (hf21 : |f21| ≤ K) (hf22 : |f22| ≤ α * K) :
+    |c1 * f11 + c2 * f21| + |c1 * f12 + c2 * f22| ≤
+      2 / (1 - α) := by
+  obtain ⟨hcol1, hcol2⟩ :=
+    higham11_4_twoByTwo_multiplier_row_bound_of_inverse_entries
+      c1 c2 f11 f12 f21 f22 μ0 α K hα0 hα1 hμ hK
+      hc1 hc2 hf11 hf12 hf21 hf22
+  have h1α : (0 : ℝ) < 1 - α := by linarith
+  calc
+    |c1 * f11 + c2 * f21| + |c1 * f12 + c2 * f22|
+        ≤ 1 / (1 - α) + 1 / (1 - α) := add_le_add hcol1 hcol2
+    _ = 2 / (1 - α) := by
+          field_simp [ne_of_gt h1α]
+          ring
+
+/-- **Theorem 11.4 local 2×2 multiplier row cap**, pivot-block form:
+instantiates the inverse-entry row cap with the actual inverse of
+`E = [[e₁₁,e₂₁],[e₂₁,e₂₂]]`. -/
+theorem higham11_4_twoByTwo_multiplier_row_bound_of_block
+    (c1 c2 e11 e22 e21 μ0 μ1 α K : ℝ)
+    (hμ1 : 0 ≤ μ1) (hα0 : 0 ≤ α) (hα1 : α < 1) (hμ : 0 < μ0)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0)
+    (hK : (1 - α ^ 2) * μ0 * K = 1)
+    (hc1 : |c1| ≤ μ0) (hc2 : |c2| ≤ μ0) :
+    |c1 * (e22 / (e11 * e22 - e21 ^ 2)) +
+        c2 * (-(e21 / (e11 * e22 - e21 ^ 2)))| ≤ 1 / (1 - α) ∧
+      |c1 * (-(e21 / (e11 * e22 - e21 ^ 2))) +
+        c2 * (e11 / (e11 * e22 - e21 ^ 2))| ≤ 1 / (1 - α) := by
+  obtain ⟨hInv22, hInv11, hInv21⟩ :=
+    higham11_4_twoByTwo_inverse_entry_bounds e11 e22 e21 μ0 μ1 α K
+      hμ1 hα0 hα1 hμ he11 he22 he21 hμ1α hK
+  exact
+    higham11_4_twoByTwo_multiplier_row_bound_of_inverse_entries c1 c2
+      (e22 / (e11 * e22 - e21 ^ 2))
+      (-(e21 / (e11 * e22 - e21 ^ 2)))
+      (-(e21 / (e11 * e22 - e21 ^ 2)))
+      (e11 / (e11 * e22 - e21 ^ 2)) μ0 α K
+      hα0 hα1 hμ hK hc1 hc2 hInv22
+      (by rw [abs_neg]; exact hInv21)
+      (by rw [abs_neg]; exact hInv21) hInv11
+
+/-- **Theorem 11.4 local 2×2 multiplier row-sum cap**, pivot-block form. -/
+theorem higham11_4_twoByTwo_multiplier_row_sum_bound_of_block
+    (c1 c2 e11 e22 e21 μ0 μ1 α K : ℝ)
+    (hμ1 : 0 ≤ μ1) (hα0 : 0 ≤ α) (hα1 : α < 1) (hμ : 0 < μ0)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2) (hμ1α : μ1 ≤ α * μ0)
+    (hK : (1 - α ^ 2) * μ0 * K = 1)
+    (hc1 : |c1| ≤ μ0) (hc2 : |c2| ≤ μ0) :
+    |c1 * (e22 / (e11 * e22 - e21 ^ 2)) +
+        c2 * (-(e21 / (e11 * e22 - e21 ^ 2)))| +
+      |c1 * (-(e21 / (e11 * e22 - e21 ^ 2))) +
+        c2 * (e11 / (e11 * e22 - e21 ^ 2))| ≤ 2 / (1 - α) := by
+  obtain ⟨hcol1, hcol2⟩ :=
+    higham11_4_twoByTwo_multiplier_row_bound_of_block c1 c2 e11 e22 e21
+      μ0 μ1 α K hμ1 hα0 hα1 hμ he11 he22 he21 hμ1α hK hc1 hc2
+  have h1α : (0 : ℝ) < 1 - α := by linarith
+  calc
+    |c1 * (e22 / (e11 * e22 - e21 ^ 2)) +
+        c2 * (-(e21 / (e11 * e22 - e21 ^ 2)))| +
+      |c1 * (-(e21 / (e11 * e22 - e21 ^ 2))) +
+        c2 * (e11 / (e11 * e22 - e21 ^ 2))|
+        ≤ 1 / (1 - α) + 1 / (1 - α) := add_le_add hcol1 hcol2
+    _ = 2 / (1 - α) := by
+          field_simp [ne_of_gt h1α]
+          ring
+
 /-- **§11.1.1 self-contained 2×2 growth**: substituting the actual inverse block
 `E⁻¹` into the eq-(11.4) Schur entry, `|ã| ≤ (1 + 2/(1−α))μ₀` holds using only the
 pivot-block data (no assumed inverse-entry bounds). -/
