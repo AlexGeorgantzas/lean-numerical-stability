@@ -15911,3 +15911,9 @@ small enough to serve as a smoke check for representative public declarations.
 #check LeanFpAnalysis.FP.higham9_11_banded_GEPPUTrace_growthFactorEntry_le_two_pow
 #check LeanFpAnalysis.FP.higham9_11_bohteBound_le_two_pow
 #check LeanFpAnalysis.FP.higham9_11_banded_GEPPUTrace_growthFactorEntry_le_bohteBound_one
+-- Split-2 M27: Thm 9.11 near-attainability — Higham's 9x9 p=4 Bohte example, growth >= 115
+#check LeanFpAnalysis.FP.higham9_11_bohteExample
+#check LeanFpAnalysis.FP.higham9_11_bohteExample_trace_explicit
+#check LeanFpAnalysis.FP.growthFactorEntry_ge_of_entry_ge
+#check LeanFpAnalysis.FP.higham9_11_bohte_example_growthFactorEntry_ge
+#check LeanFpAnalysis.FP.higham9_11_bohte_example_growth_ge_bohteBound_sub_one

@@ -329,3 +329,12 @@ surfaces rather than closed by assuming their conclusions.
   a column cannot grow it (the pivot window meets that column in at most one nonzero). At `p = 1` this recovers the
   sharp tridiagonal constant `2` (`..._le_bohteBound_one`). Residual for the printed sharp constant: only the
   correction term `-(p-1)·2^(p-2)`, precisely recorded by `higham9_11_bohteBound_le_two_pow`.
+
+- **M27 (Split 2, session claude-ch09-split2-20260708181608)**: Theorem 9.11 "almost attainable when n = 2p+1" —
+  Higham's explicit 9x9, p = 4 example formalized at the concrete perturbation `eps = 1/1024`: exact machine-generated
+  stage tables for all 8 Schur complements, per-stage pivot-choice certificates (rows 1/5 interchange at stage 1 only,
+  matching the text), the explicit trace `higham9_11_bohteExample_trace_explicit`, trailing `U` entry exactly
+  `118792/1025` (the printed `116 + O(eps)`), and the growth lower bound `>= 115 = bohteBound 4 - 1`
+  (`higham9_11_bohte_example_growth_ge_bohteBound_sub_one`). Together with M26's unconditional upper bound
+  `2^(2p-1) = 128`, the example brackets the sharp constant: `115 <= rho_max(9,4) <= 128`, with Bohte's printed
+  `116` inside the bracket. Axiom-clean.
