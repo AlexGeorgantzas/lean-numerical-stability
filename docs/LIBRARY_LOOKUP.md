@@ -2124,6 +2124,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_RookPivotGEUTrace_row_max` (the trace factor has the rook row-max property `|u_ij| <= |u_ii|`)
 - `higham9_16_RookPivotGEUTrace_exists_spec_rook` (enriched rook certificate: `PAQ = LU` with `|L| <= 1`, row-max `Uc`, and trace-diagonal agreement)
 - `higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterT` (**eq. (9.16), Foster Theorem 1 growth form**: rook-pivoting max-entry growth factor `<= t_n` — fully assembled from Lemma 2)
+- `higham9_16_one_add_pow_le_exp` / `higham9_16_exp_le_one_add_pow` (Theorem 3 toolkit: `e^(m·x/(1+x)) <= (1+x)^m <= e^(mx)`)
+- `higham9_16_fosterStageConst_le_sqrt_mul_exp` (`C_k <= sqrt(k)·e^(1/2)`)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
