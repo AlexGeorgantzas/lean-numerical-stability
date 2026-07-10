@@ -1046,6 +1046,96 @@ theorem theorem20_7_initialWeightedRowMax_ratio_of_permuteRows_activeRatioMax_le
       hmax k hk r hkr
   simpa [theorem20_7_initialWeightedRowMax_permuteRows] using h
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting policy:
+    a row-max sorting permutation also supplies the raw and permuted `|b|`
+    sorted fields, weighted sorted field, and finite active-ratio pointwise
+    handoffs, provided `|b|` is monotone with the source row maximum.
+
+This packages the common row-permutation bookkeeping needed by the
+row-permuted active-ratio QR wrappers.  It does not prove the active-ratio
+maxima themselves are at most `sqrt(m)`; those remain explicit scalar
+obligations. -/
+theorem theorem20_7_exists_common_sorted_permuteRows_activeRatioMax_fields_of_abs_b_mono_initialRowMax_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) {phi : ℝ}
+    (hphi : 0 ≤ phi)
+    (hcompat :
+      ∀ i j : Fin m,
+        theorem20_7_initialRowMax hn A i ≤
+          theorem20_7_initialRowMax hn A j →
+        |b i| ≤ |b j|) :
+    ∃ σ : Fin m ≃ Fin m,
+      (∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A (σ s) ≤
+          theorem20_7_initialRowMax hn A
+            (σ ⟨k, lt_of_lt_of_le hk hnm⟩)) ∧
+      (∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b (σ s)| ≤ |b (σ ⟨k, lt_of_lt_of_le hk hnm⟩)|) ∧
+      (∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn (fun r j => A (σ r) j) s ≤
+          theorem20_7_initialRowMax hn (fun r j => A (σ r) j)
+            ⟨k, lt_of_lt_of_le hk hnm⟩) ∧
+      (∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |(fun r => b (σ r)) s| ≤
+          |(fun r => b (σ r)) ⟨k, lt_of_lt_of_le hk hnm⟩|) ∧
+      (∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn
+            (fun r j => A (σ r) j) (fun r => b (σ r)) phi s ≤
+          theorem20_7_initialWeightedRowMax hn
+            (fun r j => A (σ r) j) (fun r => b (σ r)) phi
+              ⟨k, lt_of_lt_of_le hk hnm⟩) ∧
+      (theorem20_7_activeInitialRowMaxRatioMax hm hn hnm
+          (fun r j => A (σ r) j) ≤ Real.sqrt (m : ℝ) →
+        ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+          theorem20_7_initialRowMax hn A
+              (σ ⟨k, lt_of_lt_of_le hk hnm⟩) /
+            theorem20_7_initialRowMax hn A (σ r) ≤ Real.sqrt (m : ℝ)) ∧
+      (theorem20_7_activeInitialWeightedRowMaxRatioMax hm hn hnm
+          (fun r j => A (σ r) j) (fun r => b (σ r)) phi ≤
+            Real.sqrt (m : ℝ) →
+        ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+          theorem20_7_initialWeightedRowMax hn A b phi
+              (σ ⟨k, lt_of_lt_of_le hk hnm⟩) /
+            theorem20_7_initialWeightedRowMax hn A b phi (σ r) ≤
+              Real.sqrt (m : ℝ)) := by
+  rcases theorem20_7_exists_descending_key_permutation_nat hnm
+      (fun i : Fin m => theorem20_7_initialRowMax hn A i) with
+    ⟨σ, hσA⟩
+  have hσb :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b (σ s)| ≤ |b (σ ⟨k, lt_of_lt_of_le hk hnm⟩)| :=
+    theorem20_7_abs_b_sorted_of_permuteRows_initialRowMax_sorted_compat_nat
+      hn hnm A b σ hcompat hσA
+  have hAperm :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn (fun r j => A (σ r) j) s ≤
+          theorem20_7_initialRowMax hn (fun r j => A (σ r) j)
+            ⟨k, lt_of_lt_of_le hk hnm⟩ :=
+    theorem20_7_initialRowMax_sorted_of_permuteRows_sorted_nat
+      hn hnm A σ hσA
+  have hbperm :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |(fun r => b (σ r)) s| ≤
+          |(fun r => b (σ r)) ⟨k, lt_of_lt_of_le hk hnm⟩| :=
+    theorem20_7_abs_b_sorted_of_permuteRows_sorted_nat hnm b σ hσb
+  have hwperm :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialWeightedRowMax hn
+            (fun r j => A (σ r) j) (fun r => b (σ r)) phi s ≤
+          theorem20_7_initialWeightedRowMax hn
+            (fun r j => A (σ r) j) (fun r => b (σ r)) phi
+              ⟨k, lt_of_lt_of_le hk hnm⟩ :=
+    theorem20_7_initialWeightedRowMax_sorted_of_permuteRows_initialRowMax_abs_b_sorted_nat
+      hn hnm A b σ hphi hσA hσb
+  refine ⟨σ, hσA, hσb, hAperm, hbperm, hwperm, ?_, ?_⟩
+  · intro hmax
+    exact theorem20_7_initialRowMax_ratio_of_permuteRows_activeRatioMax_le_nat
+      hm hn hnm A σ hmax
+  · intro hmax
+    exact
+      theorem20_7_initialWeightedRowMax_ratio_of_permuteRows_activeRatioMax_le_nat
+        hm hn hnm A b phi σ hmax
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     finite version of `max_i {α_i, β_i}`. -/
 noncomputable def theorem20_7_alphaBetaMax {m n : ℕ} (hm : 0 < m)
