@@ -965,6 +965,72 @@ theorem higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne_with_norm
         (fun i j => higham11_3_fl_allOneByOneBound_nonneg fp hval n A i j)
         hΔA2
 
+/-- **Theorem 11.3 stored all-`1 × 1` scalar-budget consumer**: once the
+recursive stored-symmetric envelope is bounded by a scalar budget `β`, the
+source-facing perturbation witnesses and their infinity norms are bounded by
+`β` and `nβ`. -/
+theorem higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne_of_uniform_envelope_bound
+    (fp : FPModel) (hval : gammaValid fp 3) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hsym : ∀ i j, A i j = A j i)
+    (hp : higham11_3_FlStoredAllOnePivots fp n A) (β : ℝ) (hβ : 0 ≤ β)
+    (hbound : ∀ i j : Fin n,
+      higham11_3_fl_storedAllOneByOneBound fp n A i j ≤ β) :
+    ∃ L_hat D_hat : Fin n → Fin n → ℝ,
+      ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+        (∀ i j : Fin n, |ΔA1 i j| ≤ β) ∧
+        (∀ i j : Fin n, |ΔA2 i j| ≤ β) ∧
+        infNorm ΔA1 ≤ (n : ℝ) * β ∧
+        infNorm ΔA2 ≤ (n : ℝ) * β ∧
+        (∀ i j : Fin n,
+          ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+            L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂ =
+          A i j + ΔA1 i j) := by
+  obtain ⟨L_hat, D_hat, ΔA1, ΔA2, hΔA1, hΔA2, hLD⟩ :=
+    higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne
+      fp hval n A hsym hp
+  have hΔA1β : ∀ i j : Fin n, |ΔA1 i j| ≤ β := fun i j =>
+    (hΔA1 i j).trans (hbound i j)
+  have hΔA2β : ∀ i j : Fin n, |ΔA2 i j| ≤ β := fun i j =>
+    (hΔA2 i j).trans (hbound i j)
+  refine ⟨L_hat, D_hat, ΔA1, ΔA2, hΔA1β, hΔA2β, ?_, ?_, hLD⟩
+  · exact higham11_3_infNorm_le_card_mul_of_uniform_componentwise_bound
+      n ΔA1 β hβ hΔA1β
+  · exact higham11_3_infNorm_le_card_mul_of_uniform_componentwise_bound
+      n ΔA2 β hβ hΔA2β
+
+/-- **Theorem 11.3 raw-Schur all-`1 × 1` scalar-budget consumer**: once the
+recursive raw-Schur envelope is bounded by a scalar budget `β`, the
+source-facing perturbation witnesses and their infinity norms are bounded by
+`β` and `nβ`. -/
+theorem higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne_of_uniform_envelope_bound
+    (fp : FPModel) (hval : gammaValid fp 3) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (hp : higham11_3_FlAllOneSymmetricPivots fp n A) (β : ℝ) (hβ : 0 ≤ β)
+    (hbound : ∀ i j : Fin n,
+      higham11_3_fl_allOneByOneBound fp n A i j ≤ β) :
+    ∃ L_hat D_hat : Fin n → Fin n → ℝ,
+      ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+        (∀ i j : Fin n, |ΔA1 i j| ≤ β) ∧
+        (∀ i j : Fin n, |ΔA2 i j| ≤ β) ∧
+        infNorm ΔA1 ≤ (n : ℝ) * β ∧
+        infNorm ΔA2 ≤ (n : ℝ) * β ∧
+        (∀ i j : Fin n,
+          ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+            L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂ =
+          A i j + ΔA1 i j) := by
+  obtain ⟨L_hat, D_hat, ΔA1, ΔA2, hΔA1, hΔA2, hLD⟩ :=
+    higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne
+      fp hval n A hp
+  have hΔA1β : ∀ i j : Fin n, |ΔA1 i j| ≤ β := fun i j =>
+    (hΔA1 i j).trans (hbound i j)
+  have hΔA2β : ∀ i j : Fin n, |ΔA2 i j| ≤ β := fun i j =>
+    (hΔA2 i j).trans (hbound i j)
+  refine ⟨L_hat, D_hat, ΔA1, ΔA2, hΔA1β, hΔA2β, ?_, ?_, hLD⟩
+  · exact higham11_3_infNorm_le_card_mul_of_uniform_componentwise_bound
+      n ΔA1 β hβ hΔA1β
+  · exact higham11_3_infNorm_le_card_mul_of_uniform_componentwise_bound
+      n ΔA2 β hβ hΔA2β
+
 /-- **Equation (11.6)**, the partial-pivoting example matrix. -/
 noncomputable def higham11_6_partialPivotExampleA
     (ε : ℝ) : Fin 3 → Fin 3 → ℝ :=
