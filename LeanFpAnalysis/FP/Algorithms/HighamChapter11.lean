@@ -1629,6 +1629,34 @@ theorem higham11_4_bunch_kaufman_case4_twoByTwo_pivot_entries_le_Amax
   exact ⟨ha11_le.trans hω1_Amax, ha1r_le.trans hω1_Amax,
     harr_le.trans hωr_Amax⟩
 
+/-- The symmetric `2 × 2` pivot block used by Algorithm 11.2 case-(4),
+written as a concrete `Fin 2` matrix. -/
+def higham11_4_twoByTwoPivotBlock (a11 a1r arr : ℝ) :
+    Fin 2 → Fin 2 → ℝ :=
+  fun i j =>
+    if i = 0 then
+      if j = 0 then a11 else a1r
+    else
+      if j = 0 then a1r else arr
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(4) local pivot-block `D̂` cap**:
+the scalar pivot-entry caps bound every entry of the concrete `2 × 2` pivot
+block. -/
+theorem higham11_4_bunch_kaufman_case4_twoByTwo_pivotBlock_entries_le_Amax
+    (a11 a1r arr ω1 ωr Amax : ℝ)
+    (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case4)
+    (ha1r : |a1r| = ω1)
+    (hω1_Amax : ω1 ≤ Amax) (hωr_Amax : ωr ≤ Amax) :
+    ∀ i j : Fin 2, |higham11_4_twoByTwoPivotBlock a11 a1r arr i j| ≤ Amax := by
+  rcases higham11_4_bunch_kaufman_case4_twoByTwo_pivot_entries_le_Amax
+      a11 a1r arr ω1 ωr Amax hω1 hcase ha1r hω1_Amax hωr_Amax with
+    ⟨ha11_le, ha1r_le, harr_le⟩
+  intro i j
+  fin_cases i <;> fin_cases j <;>
+    simp [higham11_4_twoByTwoPivotBlock, ha11_le, ha1r_le, harr_le]
+
 /-- **Theorem 11.4 / Algorithm 11.2 case-(4) determinant bridge**: with the
 same explicit row-maximum dominance needed by the local case-(4) `2 × 2`
 bridges, the accepted pivot block has the standard determinant lower bound. -/
