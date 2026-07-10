@@ -24766,6 +24766,23 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_lo
       hrow_last_one_local hrow_last_two_local hrow_zero_base hA
       hearlierLocal hearlierPrefix hrow_second_base
 
+/-- **Theorem 11.7 concrete prefix-span residual-witness endpoint from full
+ambient second-pivot base rows, uniform coefficient form**, zero common
+offset.  This full-row variant composes the uniform branch-matrix endpoint
+with the tridiagonal full-row-to-branch-matrix base-row bridge. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base hA hearlierLocal
+      hearlierPrefix hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA hearlierLocal hearlierPrefix
+      (higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_full_base_rows_of_isTridiagonal
+        (k + 1) step A b x_hat hA hrow_second_base)
+
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint when every
 accepted `2 × 2` branch is initial, uniform-coefficient form**, zero common
 offset.  This is the constant-coefficient specialization of the initial
@@ -26233,6 +26250,24 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_lo
       higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isTridiagonal_and_earlier_local_zero_and_earlier_sum_zero
         (k + 1) step A b x_hat Δloc hA (hearlierLocal Δloc hwit)
         (hearlierPrefix Δloc hwit) hrow_second_base)
+
+/-- **Theorem 11.7 concrete prefix-span residual-witness endpoint from full
+ambient second-pivot base rows, scalar-budget form**, zero common offset.  The
+per-branch roundoff-budget wrapper feeds full ambient second-pivot equations
+through the tridiagonal branch-matrix base-row restriction before applying the
+scalar branch-matrix endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows :=
+  fun k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA hearlierLocal hearlierPrefix hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows
+      k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA hearlierLocal hearlierPrefix
+      (higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_full_base_rows_of_isTridiagonal
+        (k + 1) step A b x_hat hA hrow_second_base)
 
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint when every
 accepted `2 × 2` branch is initial, scalar-budget form**, zero common offset.
