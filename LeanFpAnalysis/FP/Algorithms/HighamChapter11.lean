@@ -16395,6 +16395,62 @@ theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base
   higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isTridiagonal_and_earlier_local_zero_and_each_earlier_zero
     k step A b x_hat ΔA hA.2 hearlierLocal hearlierPrefix hrows
 
+/-- Bare branch-matrix second-pivot rows, tridiagonal base support, and one
+strong earlier-lift full-row zero condition give the full ambient combined
+second-pivot handoff.  This is the branch-local analogue of the full-base-row
+full-row-zero bridge. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isTridiagonal_and_earlier_full_row_zero
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hA : IsTridiagonal (higham11_7_tridiagonalPathPivotSpan k step + 1) A)
+    (hearlier :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+        k step ΔA)
+    (hrows :
+      higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows
+        k step A b x_hat) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows
+        k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isTridiagonal_and_earlier_local_zero_and_earlier_sum_zero
+    k step A b x_hat ΔA hA
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock_of_fullSecondPivotRow
+      k step ΔA hearlier)
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_fullSecondPivotRow
+      k step ΔA hearlier)
+    hrows
+
+/-- Symmetric-tridiagonal source form of the branch-matrix base-row,
+full-row earlier-lift second-pivot handoff. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isSymTridiagonal_and_earlier_full_row_zero
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hA : IsSymTridiagonal
+      (higham11_7_tridiagonalPathPivotSpan k step + 1) A)
+    (hearlier :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+        k step ΔA)
+    (hrows :
+      higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows
+        k step A b x_hat) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows
+        k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isTridiagonal_and_earlier_full_row_zero
+    k step A b x_hat ΔA hA.2 hearlier hrows
+
 /-- Initial-only accepted `2 × 2` branches have vacuous earlier-lift side
 conditions, so branch-matrix base rows and tridiagonal base support give the
 combined second-pivot handoff directly. -/
