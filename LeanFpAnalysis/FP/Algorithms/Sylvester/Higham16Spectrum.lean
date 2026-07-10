@@ -14795,6 +14795,30 @@ theorem existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_
         m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
         hpBmono hpBcard hpBstrict hSstrict hshift hy.1
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias for the strict real-quasi-Schur nonsingular-inverse
+    vectorized Sylvester coefficient solution. -/
+alias H16_eq16_2_6_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_mulVec_solution :=
+  sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_mulVec_solution
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias for the strict real-quasi-Schur nonsingular-inverse
+    left action on the vectorized Sylvester coefficient. -/
+alias H16_eq16_2_6_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_mulVec_mulVec :=
+  sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_mulVec_mulVec
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias identifying any exact strict real-quasi-Schur
+    vectorized solution with the nonsingular-inverse solution. -/
+alias H16_eq16_2_6_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_eq_nonsingInv_mulVec_of_mulVec_eq :=
+  sylvesterVecCoeff_realQuasiSchur_strictBlockMap_eq_nonsingInv_mulVec_of_mulVec_eq
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias for unique strict real-quasi-Schur vectorized
+    nonsingular-inverse solves. -/
+alias H16_eq16_2_6_existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_mulVec_solution :=
+  existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_mulVec_solution
+
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equation (16.3), strict
     real-quasi-Schur singleton-block nonsingularity excludes a supplied common
     real right/transpose eigenpair of `A` and `B`. -/
