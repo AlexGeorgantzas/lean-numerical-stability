@@ -36458,6 +36458,118 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_active_row_geometric_e
       hm hn Astage A bstage b gammaTilde err hcert.DeltaA hcert.Deltab
       hphi hgamma herr hrows hA hb hcert.deltaA_bound hcert.deltab_bound
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
+    a row-permuted active-row geometric certificate transports back to the
+    original source order with the same source-row perturbation budgets. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuteRows_active_row_geometric_entry_growth_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (σ : Fin m ≃ Fin m) {phi : ℝ}
+    (gammaTilde : ℝ) (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k (σ i) j| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialRowMax hn A (σ i))
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k (σ i)| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialWeightedRowMax hn A b phi (σ i))
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn
+        (fun r j => A (σ r) j) (fun r => b (σ r))
+        (fun k r j => Astage k (σ r) j)
+        (fun k r => bstage k (σ r)) phi gammaTilde xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j =>
+          A i j +
+            (Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert).DeltaA
+              i j)
+        (fun i =>
+          b i +
+            (Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert).Deltab
+              i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |(Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert).DeltaA i
+            j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1))
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |(Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert).Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1))
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  let hcertOrig := Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert
+  exact
+    Theorem20_7RowwiseBackwardError.uniform_bounds_of_active_row_geometric_entry_growth_rows_nonzero_nat
+      hm hn Astage A bstage b gammaTilde xhat hphi hgamma hrows
+      (by
+        intro i k hk j
+        simpa using hA (σ.symm i) k hk j)
+      (by
+        intro i k hk
+        simpa using hb (σ.symm i) k hk)
+      hcertOrig
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
+    a row-permuted active-row accumulated-error certificate transports back to
+    the original source order with the same source-row perturbation budgets. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuteRows_active_row_geometric_entry_growth_with_relative_error_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (σ : Fin m ≃ Fin m) {phi : ℝ}
+    (gammaTilde err : ℝ) (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k (σ i) j| ≤
+        (H19.Theorem19_6.active_row_growth_factor m ^ k + err) *
+          theorem20_7_initialRowMax hn A (σ i))
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k (σ i)| ≤
+        (H19.Theorem19_6.active_row_growth_factor m ^ k + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi (σ i))
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn
+        (fun r j => A (σ r) j) (fun r => b (σ r))
+        (fun k r j => Astage k (σ r) j)
+        (fun k r => bstage k (σ r)) phi gammaTilde xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j =>
+          A i j +
+            (Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert).DeltaA
+              i j)
+        (fun i =>
+          b i +
+            (Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert).Deltab
+              i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |(Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert).DeltaA i
+            j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1) + err)
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |(Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert).Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1) + err)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  let hcertOrig := Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert
+  exact
+    Theorem20_7RowwiseBackwardError.uniform_bounds_of_active_row_geometric_entry_growth_with_relative_error_rows_nonzero_nat
+      hm hn Astage A bstage b gammaTilde err xhat hphi hgamma herr hrows
+      (by
+        intro i k hk j
+        simpa using hA (σ.symm i) k hk j)
+      (by
+        intro i k hk
+        simpa using hb (σ.symm i) k hk)
+      hcertOrig
+
 -- ============================================================
 -- §20.9  Equality-constrained least squares
 -- ============================================================
