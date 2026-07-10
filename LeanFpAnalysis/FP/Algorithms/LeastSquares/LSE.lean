@@ -70946,6 +70946,111 @@ theorem
       hsolGain hcoupledGain
   simpa [residualScale] using h
 
+/-- Combined self coefficient for the coupled KKT Theorem 20.8 route after the
+    multiplier-row and solution-row small-gain absorptions. -/
+noncomputable def theorem20_8KKTCoupledSelfCoeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (eps : ℝ) : ℝ :=
+  (LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+      theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps) /
+    (1 -
+      (LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull *
+          (eps * frobNormRect B)))
+
+/-- The scalar right-hand side of the current source-residual-ratio KKT bound
+    for Higham Theorem 20.8.  This keeps the public theorem below readable
+    while preserving all inverse-block coefficients and gain hypotheses
+    explicitly. -/
+noncomputable def theorem20_8KKTSourceResidualRatioCoupledBound {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (b : Fin m → ℝ) (x : Fin n → ℝ) (eps : ℝ) : ℝ :=
+  let residualScale : ℝ :=
+    vecNorm2 (lsResidualHigham A b x) / vecNorm2 x
+  let lambdaScale : ℝ :=
+    LSEKKTInverseMultiplierDataCoeff hB hnull * residualScale
+  let muBase : ℝ :=
+    theorem20_8KKTMultiplierSmallGainScale hB hnull eps
+      (frobNormRect A + residualScale) (frobNormRect B) 1 lambdaScale
+  let muSelf : ℝ :=
+    theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps
+  let solDenom : ℝ :=
+    1 -
+      (LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull *
+          (eps * frobNormRect B))
+  let solMuCoeff : ℝ :=
+    LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B)
+  let solBase : ℝ :=
+    (LSEKKTInverseSolutionDataCoeff hB hnull *
+        (eps * (frobNormRect A + residualScale) + eps * frobNormRect A) +
+      solMuCoeff * muBase +
+      LSEKKTInverseSolutionStatCoeff hB hnull *
+        ((eps * frobNormRect A) *
+            ((1 + eps) * (frobNormRect A + residualScale) +
+              (1 + eps) * frobNormRect A)) +
+      LSEKKTInverseSolutionConstrCoeff hB hnull *
+        (eps * frobNormRect B + eps * frobNormRect B)) / solDenom
+  let solSelf : ℝ := solMuCoeff * muSelf / solDenom
+  solBase / (1 - solSelf)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    named-bound version of the source-residual-ratio coupled KKT estimate. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hmultGain :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) <
+        1)
+    (hsolGain :
+      LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull * (eps * frobNormRect B) <
+          1)
+    (hcoupledGain : theorem20_8KKTCoupledSelfCoeff hB hnull eps < 1) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      theorem20_8KKTSourceResidualRatioCoupledBound hB hnull b x eps := by
+  have hcoupledGain' :
+      (LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+          theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps) /
+        (1 -
+          (LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+            LSEKKTInverseSolutionStatCoeff hB hnull *
+              ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+            LSEKKTInverseSolutionConstrCoeff hB hnull *
+              (eps * frobNormRect B))) < 1 := by
+    simpa [theorem20_8KKTCoupledSelfCoeff] using hcoupledGain
+  have h :=
+    hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_sourceResidualRatio_multiplierSmallGain_coupled
+      hy hB hBpert hnull hxnorm hbudget heps_nonneg hmultGain hsolGain
+      hcoupledGain'
+  simpa [theorem20_8KKTSourceResidualRatioCoupledBound] using h
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     canonical KKT response bound with the perturbed-solution scale absorbed by
     a scalar small-gain condition.  The remaining scale assumptions are the
