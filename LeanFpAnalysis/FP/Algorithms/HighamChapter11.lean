@@ -615,6 +615,46 @@ theorem higham11_2_bunch_kaufman_case1_multiplier_bound
     ⟨_, hpivot⟩
   exact higham11_1_oneByOne_multiplier_bound c a11 ω1 α hα hω1 hc hpivot
 
+/-- **Theorem 11.4 / Algorithm 11.2 case-(1) correction bound**: the accepted
+`a11` pivot bounds one 1×1 Schur correction by `ω1/α`. -/
+theorem higham11_4_bunch_kaufman_case1_schur_correction_bound
+    (α a11 arr ω1 ωr ci cj : ℝ) (hα : 0 < α) (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case1)
+    (hci : |ci| ≤ ω1) (hcj : |cj| ≤ ω1) :
+    |ci * cj / a11| ≤ ω1 / α := by
+  have hmult : |cj / a11| ≤ 1 / α :=
+    higham11_2_bunch_kaufman_case1_multiplier_bound
+      α a11 arr ω1 ωr cj hα hω1 hcase hcj
+  rw [mul_div_assoc, abs_mul]
+  calc
+    |ci| * |cj / a11| ≤ ω1 * (1 / α) :=
+      mul_le_mul hci hmult (abs_nonneg _) (le_of_lt hω1)
+    _ = ω1 / α := by ring
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(1) Schur growth bridge**: the
+source case-(1) one-step growth estimate under an active-entry majorant. -/
+theorem higham11_4_bunch_kaufman_case1_schur_growth
+    (α b ci cj a11 arr ω1 ωr Amax : ℝ) (hα : 0 < α) (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case1)
+    (hb : |b| ≤ Amax) (hci : |ci| ≤ ω1) (hcj : |cj| ≤ ω1)
+    (hω1_Amax : ω1 ≤ Amax) :
+    |b - ci * cj / a11| ≤ (1 + 1 / α) * Amax := by
+  have hcorr :
+      |ci * cj / a11| ≤ ω1 / α :=
+    higham11_4_bunch_kaufman_case1_schur_correction_bound
+      α a11 arr ω1 ωr ci cj hα hω1 hcase hci hcj
+  have hcorr_Amax : |ci * cj / a11| ≤ Amax / α :=
+    hcorr.trans (div_le_div_of_nonneg_right hω1_Amax (le_of_lt hα))
+  have htri : |b - ci * cj / a11| ≤ |b| + |ci * cj / a11| := by
+    have h := abs_add_le b (-(ci * cj / a11))
+    simpa [sub_eq_add_neg, abs_neg] using h
+  calc
+    |b - ci * cj / a11| ≤ |b| + |ci * cj / a11| := htri
+    _ ≤ Amax + Amax / α := add_le_add hb hcorr_Amax
+    _ = (1 + 1 / α) * Amax := by ring
+
 /-- **Algorithm 11.2**, case-(2) pivot lower bound under a concrete row-maximum
 dominance side condition.  The branch predicate gives
 `αω1² ≤ |a11|ωr`; if the pivot path also supplies `ωr≤ω1`, then the accepted
@@ -786,6 +826,46 @@ theorem higham11_2_bunch_kaufman_case3_multiplier_bound
   rcases higham11_2_bunch_kaufman_case3_tests α a11 arr ω1 ωr hcase with
     ⟨_, _, _, hpivot⟩
   exact higham11_1_oneByOne_multiplier_bound c arr ωr α hα hωr hc hpivot
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(3) correction bound**: after the
+swap, the accepted `arr` pivot bounds one 1×1 Schur correction by `ωr/α`. -/
+theorem higham11_4_bunch_kaufman_case3_schur_correction_bound
+    (α a11 arr ω1 ωr ci cj : ℝ) (hα : 0 < α) (hωr : 0 < ωr)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case3)
+    (hci : |ci| ≤ ωr) (hcj : |cj| ≤ ωr) :
+    |ci * cj / arr| ≤ ωr / α := by
+  have hmult : |cj / arr| ≤ 1 / α :=
+    higham11_2_bunch_kaufman_case3_multiplier_bound
+      α a11 arr ω1 ωr cj hα hωr hcase hcj
+  rw [mul_div_assoc, abs_mul]
+  calc
+    |ci| * |cj / arr| ≤ ωr * (1 / α) :=
+      mul_le_mul hci hmult (abs_nonneg _) (le_of_lt hωr)
+    _ = ωr / α := by ring
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(3) Schur growth bridge**: the
+source case-(3) one-step growth estimate after the symmetric swap. -/
+theorem higham11_4_bunch_kaufman_case3_schur_growth
+    (α b ci cj a11 arr ω1 ωr Amax : ℝ) (hα : 0 < α) (hωr : 0 < ωr)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case3)
+    (hb : |b| ≤ Amax) (hci : |ci| ≤ ωr) (hcj : |cj| ≤ ωr)
+    (hωr_Amax : ωr ≤ Amax) :
+    |b - ci * cj / arr| ≤ (1 + 1 / α) * Amax := by
+  have hcorr :
+      |ci * cj / arr| ≤ ωr / α :=
+    higham11_4_bunch_kaufman_case3_schur_correction_bound
+      α a11 arr ω1 ωr ci cj hα hωr hcase hci hcj
+  have hcorr_Amax : |ci * cj / arr| ≤ Amax / α :=
+    hcorr.trans (div_le_div_of_nonneg_right hωr_Amax (le_of_lt hα))
+  have htri : |b - ci * cj / arr| ≤ |b| + |ci * cj / arr| := by
+    have h := abs_add_le b (-(ci * cj / arr))
+    simpa [sub_eq_add_neg, abs_neg] using h
+  calc
+    |b - ci * cj / arr| ≤ |b| + |ci * cj / arr| := htri
+    _ ≤ Amax + Amax / α := add_le_add hb hcorr_Amax
+    _ = (1 + 1 / α) * Amax := by ring
 
 /-- **Theorem 11.4 / Algorithm 11.2 case-(4) growth bridge**: when the
 case-(4) `2 × 2` pivot also carries the concrete source-side row-maximum
