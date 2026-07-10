@@ -8693,6 +8693,22 @@ theorem higham11_7_tridiagonalPathFirstTrailingIndex_last_eq_finLast
   rw [higham11_7_tridiagonalPathFirstTrailingIndex_last_val_eq_pivotSpan]
   simp
 
+/-- The ambient last row of a nonempty concrete path is not the leading row. -/
+theorem higham11_7_tridiagonalPath_finLast_ne_zero
+    (k : ℕ) (step : Fin (k + 1) → PivotSize) :
+    Fin.last (higham11_7_tridiagonalPathPivotSpan (k + 1) step) ≠
+      (0 : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)) := by
+  rw [← higham11_7_tridiagonalPathFirstTrailingIndex_last_eq_finLast k step]
+  exact higham11_7_tridiagonalPathFirstTrailingIndex_ne_zero
+    (k + 1) step (Fin.last k)
+
+/-- The leading row of a nonempty concrete path is not the ambient last row. -/
+theorem higham11_7_tridiagonalPath_zero_ne_finLast
+    (k : ℕ) (step : Fin (k + 1) → PivotSize) :
+    (0 : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)) ≠
+      Fin.last (higham11_7_tridiagonalPathPivotSpan (k + 1) step) :=
+  (higham11_7_tridiagonalPath_finLast_ne_zero k step).symm
+
 /-- Along a nonempty concrete path, the canonical first-trailing endpoint is the
 ambient last row exactly at the final branch. -/
 theorem higham11_7_tridiagonalPathFirstTrailingIndex_eq_finLast_iff
