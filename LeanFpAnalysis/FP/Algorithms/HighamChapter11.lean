@@ -14644,6 +14644,66 @@ theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_
   intro s hs
   exact hzero t hstep j hj s (Finset.mem_filter.mp hs).2
 
+/-- Strong pointwise row-zero condition for strictly earlier lifted
+perturbations at an accepted `2 × 2` second-pivot row.  Unlike ordinary
+zero-prefix support, this explicitly states zero on the full ambient
+second-pivot row, so it can be projected to both local-block and prefix-zero
+side conditions. -/
+abbrev higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ) :
+    Prop :=
+  ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+    ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      ∀ s : Fin k, s.val < t.val →
+        higham11_7_tridiagonalLiftLocalBlockPerturbation
+          (higham11_7_tridiagonalPathPivotSpan k step + 1)
+          (higham11_7_tridiagonalPathPrefixSpan k step s)
+          (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step s) (step s))
+          (ΔA s)
+          (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+          j = 0
+
+/-- Full-row earlier-lift zero implies the local-block earlier-lift zero
+condition at an accepted `2 × 2` second-pivot row. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock_of_fullSecondPivotRow
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hzero :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+        k step ΔA) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock
+        k step ΔA := by
+  intro t hstep s hst j
+  exact hzero t hstep
+    (higham11_7_tridiagonalPathLocalBlockIndex k step t j) s hst
+
+/-- Full-row earlier-lift zero implies the summed prefix-zero side condition at
+an accepted `2 × 2` second-pivot row. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_fullSecondPivotRow
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hzero :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+        k step ΔA) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix
+        k step ΔA :=
+  higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_each
+    k step ΔA (fun t hstep j _hj s hs => hzero t hstep j s hs)
+
 /-- If every accepted `2 × 2` branch is the initial branch, then a second-pivot
 row has no strictly earlier branch lifts on its current local block. -/
 theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock_of_two_only_at_zero
@@ -15516,6 +15576,66 @@ theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of
         k step A b x_hat ΔA :=
   higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of_isTridiagonal_and_earlier_local_zero_and_each_earlier_zero
     k step A b x_hat ΔA hA.2 hearlierLocal hearlierPrefix hrows
+
+/-- Full ambient second-pivot base rows, tridiagonal support, and one strong
+earlier-lift full-row zero condition give the combined second-pivot handoff.
+This packages the two separate earlier-lift side conditions used by the
+decomposed full-base-row endpoint. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of_isTridiagonal_and_earlier_full_row_zero
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hA : IsTridiagonal (higham11_7_tridiagonalPathPivotSpan k step + 1) A)
+    (hearlier :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+        k step ΔA)
+    (hrows : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        A (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) j *
+          x_hat j) =
+        b (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows
+        k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of_isTridiagonal_and_earlier_local_zero_and_earlier_sum_zero
+    k step A b x_hat ΔA hA
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock_of_fullSecondPivotRow
+      k step ΔA hearlier)
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_fullSecondPivotRow
+      k step ΔA hearlier)
+    hrows
+
+/-- Symmetric-tridiagonal source form of the full-row earlier-lift second-pivot
+handoff. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of_isSymTridiagonal_and_earlier_full_row_zero
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hA : IsSymTridiagonal
+      (higham11_7_tridiagonalPathPivotSpan k step + 1) A)
+    (hearlier :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+        k step ΔA)
+    (hrows : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        A (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) j *
+          x_hat j) =
+        b (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows
+        k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of_isTridiagonal_and_earlier_full_row_zero
+    k step A b x_hat ΔA hA.2 hearlier hrows
 
 /-- Full ambient second-pivot base rows, tridiagonal support, and an
 initial-only `2 × 2` branch shape feed the combined second-pivot handoff through
