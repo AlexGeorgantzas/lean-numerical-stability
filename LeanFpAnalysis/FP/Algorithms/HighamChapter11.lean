@@ -22659,6 +22659,29 @@ abbrev higham11_8_AasenSpec (n : ℕ)
     (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) : Prop :=
   AasenSpec n A L T σ
 
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 exact-product dependency:
+an `AasenSpec` exposes the permuted exact Aasen product
+`P A P^T = L T L^T`. -/
+theorem higham11_8_AasenSpec_permuted_product_eq
+    (n : ℕ) (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (hspec : higham11_8_AasenSpec n A L T σ) :
+    ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) =
+        A (σ i) (σ j) :=
+  hspec.product_eq
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 exact-product dependency:
+when the Aasen permutation is the identity, the `AasenSpec` product is in the
+unpermuted form consumed by the source-prefix backward-error wrappers. -/
+theorem higham11_8_AasenSpec_product_eq_of_identity_perm
+    (n : ℕ) (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hσ : ∀ i : Fin n, σ i = i) :
+    ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j := by
+  intro i j
+  simpa [hσ i, hσ j] using hspec.product_eq i j
+
 /-- **Equation (11.10)**, `H = T L^T`. -/
 noncomputable def higham11_10_aasenH (n : ℕ)
     (T L : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
