@@ -3523,6 +3523,355 @@ theorem
     (fun _i _j _hi _hj => by simpa using htrail_budget)
     hsolve
 
+/-- **Theorem 11.4 uniform-entry first-stage/recursive product bridge**.
+A uniform entry cap for `|L̂|` supplies the row-sum cap `n * Lmax` consumed by
+the first-stage/trailing split. -/
+theorem higham11_4_product_entries_of_first_stage_recursive_uniform_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax Lmax : ℝ)
+    (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget : localB ≤ 36 * ρ_n * Amax)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hfirst_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB)
+    (htrail_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB + recB) :
+    ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_product_entries_of_first_stage_recursive_uniform_row_sum_bound
+    n s hn hs_pos hs_le L_hat D_hat Dmax ((n : ℝ) * Lmax)
+    ρ_n Amax localB recB hρ hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+    hfirst_budget htrail_budget
+
+/-- **Theorem 11.4 uniform-entry first-stage/recursive max-entry bridge**. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_uniform_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax Lmax : ℝ)
+    (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget : localB ≤ 36 * ρ_n * Amax)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hfirst_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB)
+    (htrail_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB + recB) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_uniform_row_sum_bound
+    n s hn hs_pos hs_le L_hat D_hat Dmax ((n : ℝ) * Lmax)
+    ρ_n Amax localB recB hρ hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+    hfirst_budget htrail_budget
+
+/-- **Theorem 11.4 uniform-entry first-stage/recursive scalar certificate**. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_uniform_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax Lmax : ℝ)
+    (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget : localB ≤ 36 * ρ_n * Amax)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hfirst_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB)
+    (htrail_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB + recB) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_uniform_row_sum_bound
+    n s hn hs_pos hs_le L_hat D_hat Dmax ((n : ℝ) * Lmax)
+    ρ_n Amax localB recB hρ hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+    hfirst_budget htrail_budget
+
+/-- **Theorem 11.4 exact-coefficient uniform-entry first-stage/recursive
+product bridge**. -/
+theorem higham11_4_product_entries_of_first_stage_recursive_higham_const_uniform_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax Lmax : ℝ)
+    (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hfirst_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB)
+    (htrail_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB + recB) :
+    ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_product_entries_of_first_stage_recursive_higham_const_uniform_row_sum_bound
+    n s hn hs_pos hs_le L_hat D_hat Dmax ((n : ℝ) * Lmax)
+    ρ_n Amax localB recB hρ hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+    hfirst_budget htrail_budget
+
+/-- **Theorem 11.4 exact-coefficient uniform-entry first-stage/recursive
+max-entry bridge**. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_higham_const_uniform_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax Lmax : ℝ)
+    (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hfirst_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB)
+    (htrail_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB + recB) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_higham_const_uniform_row_sum_bound
+    n s hn hs_pos hs_le L_hat D_hat Dmax ((n : ℝ) * Lmax)
+    ρ_n Amax localB recB hρ hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+    hfirst_budget htrail_budget
+
+/-- **Theorem 11.4 exact-coefficient uniform-entry first-stage/recursive scalar
+certificate**. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_uniform_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax Lmax : ℝ)
+    (ρ_n Amax localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hfirst_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB)
+    (htrail_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB + recB) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_uniform_row_sum_bound
+    n s hn hs_pos hs_le L_hat D_hat Dmax ((n : ℝ) * Lmax)
+    ρ_n Amax localB recB hρ hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+    hfirst_budget htrail_budget
+
+/-- **Theorem 11.4 uniform-entry first-stage/recursive stability bridge**. -/
+theorem higham11_4_bunch_kaufman_stability_of_first_stage_recursive_uniform_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (Dmax Lmax : ℝ)
+    (ρ_n maxNorm_A localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hlocal_budget : localB ≤ 36 * ρ_n * maxNorm_A)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * maxNorm_A)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hfirst_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB)
+    (htrail_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB + recB) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_first_stage_recursive_uniform_row_sum_bound
+    n s hn hs_pos hs_le A L_hat D_hat Dmax ((n : ℝ) * Lmax)
+    ρ_n maxNorm_A localB recB hρ hmA hA_norm hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+    hfirst_budget htrail_budget
+
+/-- **Theorem 11.4 exact-coefficient uniform-entry first-stage/recursive
+stability bridge**. -/
+theorem higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_uniform_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (Dmax Lmax : ℝ)
+    (ρ_n maxNorm_A localB recB : ℝ)
+    (hρ : 0 ≤ ρ_n) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * maxNorm_A)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * maxNorm_A)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hfirst_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB)
+    (htrail_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB + recB) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_uniform_row_sum_bound
+    n s hn hs_pos hs_le A L_hat D_hat Dmax ((n : ℝ) * Lmax)
+    ρ_n maxNorm_A localB recB hρ hmA hA_norm hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+    hfirst_budget htrail_budget
+
+/-- **Theorem 11.4 uniform-entry first-stage/recursive solve bridge**. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_uniform_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (Dmax Lmax p u ρ_n Amax localB recB : ℝ)
+    (hpu : 0 ≤ p * u) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget : localB ≤ 36 * ρ_n * Amax)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hfirst_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB)
+    (htrail_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB + recB)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_uniform_row_sum_bound
+    n s hn hs_pos hs_le A L_hat D_hat b x_hat Dmax ((n : ℝ) * Lmax)
+    p u ρ_n Amax localB recB hpu hρ hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+    hfirst_budget htrail_budget hsolve
+
+/-- **Theorem 11.4 exact-coefficient uniform-entry first-stage/recursive solve
+bridge**. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_uniform_entry_bounds
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (Dmax Lmax p u ρ_n Amax localB recB : ℝ)
+    (hpu : 0 ≤ p * u) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hfirst_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB)
+    (htrail_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB + recB)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_uniform_row_sum_bound
+    n s hn hs_pos hs_le A L_hat D_hat b x_hat Dmax ((n : ℝ) * Lmax)
+    p u ρ_n Amax localB recB hpu hρ hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+    hfirst_budget htrail_budget hsolve
+
+/-- **Theorem 11.4 uniform-entry first-stage/recursive solve bridge,
+max-entry norm form**. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_uniform_entry_maxEntryNorm_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (Dmax Lmax p u ρ_n Amax localB recB : ℝ)
+    (hpu : 0 ≤ p * u) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget : localB ≤ 36 * ρ_n * Amax)
+    (hrec_budget : recB ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hfirst_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB)
+    (htrail_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB + recB)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_uniform_row_sum_maxEntryNorm_bound
+    n s hn hs_pos hs_le A L_hat D_hat b x_hat Dmax ((n : ℝ) * Lmax)
+    p u ρ_n Amax localB recB hpu hρ hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+    hfirst_budget htrail_budget hsolve
+
+/-- **Theorem 11.4 exact-coefficient uniform-entry first-stage/recursive solve
+bridge, max-entry norm form**. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_uniform_entry_maxEntryNorm_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (Dmax Lmax p u ρ_n Amax localB recB : ℝ)
+    (hpu : 0 ≤ p * u) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hlocal_budget :
+      localB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (hrec_budget :
+      recB ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ Dmax)
+    (hL : ∀ r k : Fin n, |L_hat r k| ≤ Lmax)
+    (hfirst_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB)
+    (htrail_budget : ((n : ℝ) * Lmax) * Dmax * ((n : ℝ) * Lmax) ≤ localB + recB)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_uniform_row_sum_maxEntryNorm_bound
+    n s hn hs_pos hs_le A L_hat D_hat b x_hat Dmax ((n : ℝ) * Lmax)
+    p u ρ_n Amax localB recB hpu hρ hAmax hlocal_budget hrec_budget hD
+    (fun r => higham11_4_abs_row_sum_le_card_mul_of_uniform_entry_bound n
+      L_hat Lmax hL r)
+    hfirst_budget htrail_budget hsolve
+
 /-! ## §11.1.3 Rook pivoting -/
 
 /-- **Algorithm 11.5** source decision predicate for symmetric rook pivoting. -/
@@ -12938,6 +13287,26 @@ theorem higham11_7_tridiagonalPath_no_secondPivot_of_all_one
   have hbad : PivotSize.one = PivotSize.two := (hone t).symm.trans htwo
   cases hbad
 
+/-- If a concrete path has no accepted `2 × 2` branch, every branch is a
+`1 × 1` branch. -/
+theorem higham11_7_tridiagonalPath_all_one_of_no_secondPivot
+    (k : ℕ) (step : Fin k → PivotSize)
+    (hno : ∀ t : Fin k, step t ≠ PivotSize.two) :
+    ∀ t : Fin k, step t = PivotSize.one := by
+  intro t
+  cases hstep : step t with
+  | one => rfl
+  | two => exact False.elim (hno t hstep)
+
+/-- For a concrete tridiagonal path, having no accepted `2 × 2` branch is
+equivalent to being an all-`1 × 1` path. -/
+theorem higham11_7_tridiagonalPath_no_secondPivot_iff_all_one
+    (k : ℕ) (step : Fin k → PivotSize) :
+    (∀ t : Fin k, step t ≠ PivotSize.two) ↔
+      (∀ t : Fin k, step t = PivotSize.one) :=
+  ⟨higham11_7_tridiagonalPath_all_one_of_no_secondPivot k step,
+    higham11_7_tridiagonalPath_no_secondPivot_of_all_one k step⟩
+
 /-- At an initial accepted `2 × 2` branch, the reduced second-pivot row
 equation has no earlier-branch contribution. -/
 theorem higham11_7_ConcretePathSecondPivotReducedSolveRow_of_val_zero
@@ -13101,6 +13470,34 @@ theorem higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_local_ro
       k fp step t hstep A c_bound c_rec u_loc tail_fl tail_exact ΔA hwit x_hat
   simpa [hzero, add_assoc] using hrow_second t hstep
 
+/-- Full second-pivot local row equations reduce to the base-plus-earlier
+handoff for a residual-witness path, since the current `2 × 2` branch
+perturbation is supported strictly after the two pivot rows. -/
+theorem higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_reduced_rows_of_local_rows
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathResidualWitnesses k fp
+      (fun u => higham11_7_tridiagonalPathTailDim k step u) step
+      (fun u => higham11_7_tridiagonalPathBranchMatrix k step A u)
+      c_bound c_rec u_loc tail_fl tail_exact ΔA)
+    (hrow_second :
+      higham11_7_ConcretePathSecondPivotLocalSolveRows k step A b x_hat ΔA) :
+    higham11_7_ConcretePathSecondPivotReducedSolveRows k step A b x_hat ΔA := by
+  intro t hstep
+  have hzero :=
+    higham11_7_tridiagonalConcretePathResidualWitnesses_pathSecondPivot_two_current_local_dot_zero
+      k fp step t hstep A c_bound c_rec u_loc tail_fl tail_exact ΔA hwit x_hat
+  have hrow := hrow_second t hstep
+  simpa [hzero, add_assoc] using hrow
+
 /-- In a supported-witness path, the current local perturbation has zero dot
 product on a `2 × 2` branch's second-pivot row. -/
 theorem higham11_7_tridiagonalConcretePathSupportedWitnesses_pathSecondPivot_two_current_local_dot_zero
@@ -13182,6 +13579,34 @@ theorem higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_local_r
     higham11_7_tridiagonalConcretePathSupportedWitnesses_pathSecondPivot_two_current_local_dot_zero
       k fp step t hstep A c_bound c_rec u_loc tail_fl tail_exact ΔA hwit x_hat
   simpa [hzero, add_assoc] using hrow_second t hstep
+
+/-- Full second-pivot local row equations reduce to the base-plus-earlier
+handoff for a supported-witness path, since the current local `2 × 2`
+perturbation contributes zero on the second pivot row. -/
+theorem higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_reduced_rows_of_local_rows
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathSupportedWitnesses k fp
+      (fun u => higham11_7_tridiagonalPathTailDim k step u) step
+      (fun u => higham11_7_tridiagonalPathBranchMatrix k step A u)
+      c_bound c_rec u_loc tail_fl tail_exact ΔA)
+    (hrow_second :
+      higham11_7_ConcretePathSecondPivotLocalSolveRows k step A b x_hat ΔA) :
+    higham11_7_ConcretePathSecondPivotReducedSolveRows k step A b x_hat ΔA := by
+  intro t hstep
+  have hzero :=
+    higham11_7_tridiagonalConcretePathSupportedWitnesses_pathSecondPivot_two_current_local_dot_zero
+      k fp step t hstep A c_bound c_rec u_loc tail_fl tail_exact ΔA hwit x_hat
+  have hrow := hrow_second t hstep
+  simpa [hzero, add_assoc] using hrow
 
 /-- Concrete second-pivot local row equations discharge the older arbitrary
 non-leading/non-endpoint complement-row solve obligation for a residual-witness
@@ -20040,6 +20465,142 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_lo
       higham11_7_ConcretePathSecondPivotReducedSolveRows_of_no_two
         (k + 1) step A b x_hat Δloc hno)
 
+/-- **Theorem 11.7 concrete prefix-span residual-witness endpoint for all-`1 × 1`
+paths, coefficient-sum form**, zero common offset.  This is the source-facing
+all-one specialization of the no-second-pivot endpoint. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_all_one
+    (k : ℕ) (fp : FPModel) (step : Fin (k + 1) → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ)
+    (b x_hat :
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ)
+    (c_bound c_rec tail_fl tail_exact c : Fin (k + 1) → ℝ) (C u : ℝ)
+    (hone : ∀ t : Fin (k + 1), step t = PivotSize.one)
+    (hinit : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchLocalAssumptions
+        (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.castSucc t))
+        fp (step (Fin.castSucc t))
+        (higham11_7_tridiagonalPathBranchMatrix (k + 1) step A
+          (Fin.castSucc t))
+        (c_bound (Fin.castSucc t)) (c_rec (Fin.castSucc t)) u
+        (tail_fl (Fin.castSucc t)) (tail_exact (Fin.castSucc t)))
+    (hlast_eq : tail_fl (Fin.last k) = tail_exact (Fin.last k))
+    (hlast : higham11_7_TridiagonalBranchTerminalAssumptions
+      (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+      fp (step (Fin.last k))
+      (higham11_7_tridiagonalPathBranchMatrix (k + 1) step A
+        (Fin.last k))
+      (c_bound (Fin.last k)) (c_rec (Fin.last k)) u)
+    (hc_bound : ∀ t : Fin (k + 1), 0 ≤ c_bound t)
+    (hc_rec : ∀ t : Fin (k + 1), 0 ≤ c_rec t)
+    (hc : ∀ t : Fin (k + 1), 0 ≤ c t) (hu : 0 ≤ u)
+    (hcoeff : ∀ t : Fin (k + 1), c_bound t + c_rec t ≤ c t)
+    (hC : (∑ t : Fin (k + 1), c t) ≤ C)
+    (hrow_one_local :
+      ∀ Δloc : ∀ t : Fin (k + 1),
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+          (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+          c_bound c_rec (fun _ : Fin (k + 1) => u) tail_fl tail_exact Δloc →
+        ∀ t : Fin (k + 1), t ≠ Fin.last k →
+          ∀ hstep : step t = PivotSize.one,
+            (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              A (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                  (k + 1) step t hstep) j * x_hat j) +
+            ((∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              (∑ s ∈ Finset.univ.filter
+                  (fun s : Fin (k + 1) => s.val < t.val),
+                higham11_7_tridiagonalLiftLocalBlockPerturbation
+                  (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                  (higham11_7_tridiagonalPathPrefixSpan (k + 1) step s)
+                  (higham11_7_tridiagonalBranchAmbientDim
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step s)
+                    (step s))
+                  (Δloc s)
+                  (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                    (k + 1) step t hstep) j) *
+                x_hat j) +
+              (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim (k + 1) step t)
+                  (step t)),
+                Δloc t
+                  (Fin.cast (by rw [hstep])
+                    (higham11_7_tridiagonalBranchFirstTrailingIndex
+                      (higham11_7_tridiagonalPathTailDim (k + 1) step t)
+                      PivotSize.one)) j *
+                  x_hat
+                    (higham11_7_tridiagonalPathLocalBlockIndex
+                      (k + 1) step t j))) =
+              b (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                (k + 1) step t hstep))
+    (hrow_last_one_local :
+      ∀ Δloc : ∀ t : Fin (k + 1),
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+          (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+          c_bound c_rec (fun _ : Fin (k + 1) => u) tail_fl tail_exact Δloc →
+        ∀ hstep : step (Fin.last k) = PivotSize.one,
+          (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+            A (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                (k + 1) step (Fin.last k) hstep) j * x_hat j) +
+          ((∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+            (∑ s ∈ Finset.univ.filter
+                (fun s : Fin (k + 1) => s.val < (Fin.last k).val),
+              higham11_7_tridiagonalLiftLocalBlockPerturbation
+                (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                (higham11_7_tridiagonalPathPrefixSpan (k + 1) step s)
+                (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim (k + 1) step s)
+                  (step s))
+                (Δloc s)
+                (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                  (k + 1) step (Fin.last k) hstep) j) *
+              x_hat j) +
+            (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+                (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+                (step (Fin.last k))),
+              Δloc (Fin.last k)
+                (Fin.cast (by rw [hstep])
+                  (higham11_7_tridiagonalBranchFirstTrailingIndex
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+                    PivotSize.one)) j *
+                x_hat
+                  (higham11_7_tridiagonalPathLocalBlockIndex
+                    (k + 1) step (Fin.last k) j))) =
+            b (higham11_7_tridiagonalPathFirstTrailingIndex_one
+              (k + 1) step (Fin.last k) hstep))
+    (hrow_zero_base :
+      ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+          A 0 j * x_hat j =
+        b 0) :
+    ∃ ΔA1 ΔA2 :
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) →
+        Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ,
+      (∀ i j, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤
+        ((higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1 : ℕ) : ℝ) *
+          C * u * infNorm A ∧
+      infNorm ΔA2 ≤
+        ((higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1 : ℕ) : ℝ) *
+          C * u * infNorm A ∧
+      (∀ i,
+        ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+          (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_no_secondPivot
+    k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u
+    (higham11_7_tridiagonalPath_no_secondPivot_of_all_one (k + 1) step hone)
+    hinit hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+    hrow_last_one_local hrow_zero_base
+
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint from
 endpoint, terminal, leading, and second-pivot solve bridges, uniform
 coefficient form**, zero common offset.  This is the constant-coefficient
@@ -20505,6 +21066,235 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_lo
       hrow_last_one_local hrow_last_two_local hrow_zero_base
       hrow_second_reduced
 
+/-- **Theorem 11.7 concrete prefix-span residual-witness endpoint when every
+accepted `2 × 2` branch is initial, uniform-coefficient form**, zero common
+offset.  This is the constant-coefficient specialization of the initial
+second-pivot coefficient endpoint. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_initial_secondPivot_base_rows
+    (k : ℕ) (fp : FPModel) (step : Fin (k + 1) → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ)
+    (b x_hat :
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ)
+    (c_bound c_rec tail_fl tail_exact : Fin (k + 1) → ℝ) (c u : ℝ)
+    (hinit : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchLocalAssumptions
+        (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.castSucc t))
+        fp (step (Fin.castSucc t))
+        (higham11_7_tridiagonalPathBranchMatrix (k + 1) step A
+          (Fin.castSucc t))
+        (c_bound (Fin.castSucc t)) (c_rec (Fin.castSucc t)) u
+        (tail_fl (Fin.castSucc t)) (tail_exact (Fin.castSucc t)))
+    (hlast_eq : tail_fl (Fin.last k) = tail_exact (Fin.last k))
+    (hlast : higham11_7_TridiagonalBranchTerminalAssumptions
+      (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+      fp (step (Fin.last k))
+      (higham11_7_tridiagonalPathBranchMatrix (k + 1) step A
+        (Fin.last k))
+      (c_bound (Fin.last k)) (c_rec (Fin.last k)) u)
+    (hc_bound : ∀ t : Fin (k + 1), 0 ≤ c_bound t)
+    (hc_rec : ∀ t : Fin (k + 1), 0 ≤ c_rec t)
+    (hc : 0 ≤ c) (hu : 0 ≤ u)
+    (hcoeff : ∀ t : Fin (k + 1), c_bound t + c_rec t ≤ c)
+    (hrow_one_local :
+      ∀ Δloc : ∀ t : Fin (k + 1),
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+          (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+          c_bound c_rec (fun _ : Fin (k + 1) => u) tail_fl tail_exact Δloc →
+        ∀ t : Fin (k + 1), t ≠ Fin.last k →
+          ∀ hstep : step t = PivotSize.one,
+            (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              A (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                  (k + 1) step t hstep) j * x_hat j) +
+            ((∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              (∑ s ∈ Finset.univ.filter
+                  (fun s : Fin (k + 1) => s.val < t.val),
+                higham11_7_tridiagonalLiftLocalBlockPerturbation
+                  (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                  (higham11_7_tridiagonalPathPrefixSpan (k + 1) step s)
+                  (higham11_7_tridiagonalBranchAmbientDim
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step s)
+                    (step s))
+                  (Δloc s)
+                  (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                    (k + 1) step t hstep) j) *
+                x_hat j) +
+              (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim (k + 1) step t)
+                  (step t)),
+                Δloc t
+                  (Fin.cast (by rw [hstep])
+                    (higham11_7_tridiagonalBranchFirstTrailingIndex
+                      (higham11_7_tridiagonalPathTailDim (k + 1) step t)
+                      PivotSize.one)) j *
+                  x_hat
+                    (higham11_7_tridiagonalPathLocalBlockIndex
+                      (k + 1) step t j))) =
+              b (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                (k + 1) step t hstep))
+    (hrow_two_local :
+      ∀ Δloc : ∀ t : Fin (k + 1),
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+          (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+          c_bound c_rec (fun _ : Fin (k + 1) => u) tail_fl tail_exact Δloc →
+        ∀ t : Fin (k + 1), t ≠ Fin.last k →
+          ∀ hstep : step t = PivotSize.two,
+            (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              A (higham11_7_tridiagonalPathFirstTrailingIndex_two
+                  (k + 1) step t hstep) j * x_hat j) +
+            ((∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              (∑ s ∈ Finset.univ.filter
+                  (fun s : Fin (k + 1) => s.val < t.val),
+                higham11_7_tridiagonalLiftLocalBlockPerturbation
+                  (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                  (higham11_7_tridiagonalPathPrefixSpan (k + 1) step s)
+                  (higham11_7_tridiagonalBranchAmbientDim
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step s)
+                    (step s))
+                  (Δloc s)
+                  (higham11_7_tridiagonalPathFirstTrailingIndex_two
+                    (k + 1) step t hstep) j) *
+                x_hat j) +
+              (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim (k + 1) step t)
+                  (step t)),
+                Δloc t
+                  (Fin.cast (by rw [hstep])
+                    (higham11_7_tridiagonalBranchFirstTrailingIndex
+                      (higham11_7_tridiagonalPathTailDim (k + 1) step t)
+                      PivotSize.two)) j *
+                  x_hat
+                    (higham11_7_tridiagonalPathLocalBlockIndex
+                      (k + 1) step t j))) =
+              b (higham11_7_tridiagonalPathFirstTrailingIndex_two
+                (k + 1) step t hstep))
+    (hrow_last_one_local :
+      ∀ Δloc : ∀ t : Fin (k + 1),
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+          (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+          c_bound c_rec (fun _ : Fin (k + 1) => u) tail_fl tail_exact Δloc →
+        ∀ hstep : step (Fin.last k) = PivotSize.one,
+          (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+            A (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                (k + 1) step (Fin.last k) hstep) j * x_hat j) +
+          ((∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+            (∑ s ∈ Finset.univ.filter
+                (fun s : Fin (k + 1) => s.val < (Fin.last k).val),
+              higham11_7_tridiagonalLiftLocalBlockPerturbation
+                (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                (higham11_7_tridiagonalPathPrefixSpan (k + 1) step s)
+                (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim (k + 1) step s)
+                  (step s))
+                (Δloc s)
+                (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                  (k + 1) step (Fin.last k) hstep) j) *
+              x_hat j) +
+            (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+                (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+                (step (Fin.last k))),
+              Δloc (Fin.last k)
+                (Fin.cast (by rw [hstep])
+                  (higham11_7_tridiagonalBranchFirstTrailingIndex
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+                    PivotSize.one)) j *
+                x_hat
+                  (higham11_7_tridiagonalPathLocalBlockIndex
+                    (k + 1) step (Fin.last k) j))) =
+            b (higham11_7_tridiagonalPathFirstTrailingIndex_one
+              (k + 1) step (Fin.last k) hstep))
+    (hrow_last_two_local :
+      ∀ Δloc : ∀ t : Fin (k + 1),
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+          (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+          c_bound c_rec (fun _ : Fin (k + 1) => u) tail_fl tail_exact Δloc →
+        ∀ hstep : step (Fin.last k) = PivotSize.two,
+          (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+            A (higham11_7_tridiagonalPathFirstTrailingIndex_two
+                (k + 1) step (Fin.last k) hstep) j * x_hat j) +
+          ((∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+            (∑ s ∈ Finset.univ.filter
+                (fun s : Fin (k + 1) => s.val < (Fin.last k).val),
+              higham11_7_tridiagonalLiftLocalBlockPerturbation
+                (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                (higham11_7_tridiagonalPathPrefixSpan (k + 1) step s)
+                (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim (k + 1) step s)
+                  (step s))
+                (Δloc s)
+                (higham11_7_tridiagonalPathFirstTrailingIndex_two
+                  (k + 1) step (Fin.last k) hstep) j) *
+              x_hat j) +
+            (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+                (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+                (step (Fin.last k))),
+              Δloc (Fin.last k)
+                (Fin.cast (by rw [hstep])
+                  (higham11_7_tridiagonalBranchFirstTrailingIndex
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+                    PivotSize.two)) j *
+                x_hat
+                  (higham11_7_tridiagonalPathLocalBlockIndex
+                    (k + 1) step (Fin.last k) j))) =
+            b (higham11_7_tridiagonalPathFirstTrailingIndex_two
+              (k + 1) step (Fin.last k) hstep))
+    (hrow_zero_base :
+      ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+          A 0 j * x_hat j =
+        b 0)
+    (htwo_zero : ∀ t : Fin (k + 1), step t = PivotSize.two → t.val = 0)
+    (hrow_second_base :
+      ∀ t : Fin (k + 1), ∀ hstep : step t = PivotSize.two,
+        (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+          A (higham11_7_tridiagonalPathSecondPivotIndex_two
+              (k + 1) step t hstep) j * x_hat j) =
+        b (higham11_7_tridiagonalPathSecondPivotIndex_two
+          (k + 1) step t hstep)) :
+    ∃ ΔA1 ΔA2 :
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) →
+        Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ,
+      (∀ i j, |ΔA1 i j| ≤ ((k + 1 : ℕ) : ℝ) * c * u * infNorm A) ∧
+      (∀ i j, |ΔA2 i j| ≤ ((k + 1 : ℕ) : ℝ) * c * u * infNorm A) ∧
+      infNorm ΔA1 ≤
+        ((higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1 : ℕ) : ℝ) *
+          (((k + 1 : ℕ) : ℝ) * c) * u * infNorm A ∧
+      infNorm ΔA2 ≤
+        ((higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1 : ℕ) : ℝ) *
+          (((k + 1 : ℕ) : ℝ) * c) * u * infNorm A ∧
+      (∀ i,
+        ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+          (A i j + ΔA2 i j) * x_hat j = b i) := by
+  have hC : (∑ _t : Fin (k + 1), c) ≤ ((k + 1 : ℕ) : ℝ) * c := by
+    simp [Finset.sum_const, nsmul_eq_mul]
+  simpa [Finset.sum_const, nsmul_eq_mul, mul_assoc] using
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_initial_secondPivot_base_rows
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact
+      (fun _ : Fin (k + 1) => c) (((k + 1 : ℕ) : ℝ) * c) u hinit
+      hlast_eq hlast hc_bound hc_rec (fun _ => hc) hu
+      (fun t => hcoeff t) hC hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base htwo_zero
+      hrow_second_base
+
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint for paths
 with no accepted `2 × 2` branch, uniform-coefficient form**, zero common
 offset.  This is the uniform-budget specialization of the no-second-pivot
@@ -20644,6 +21434,141 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_lo
       hlast_eq hlast hc_bound hc_rec (fun _ => hc) hu
       (fun t => hcoeff t) hC hrow_one_local hrow_last_one_local
       hrow_zero_base
+
+/-- **Theorem 11.7 concrete prefix-span residual-witness endpoint for all-`1 × 1`
+paths, uniform-coefficient form**, zero common offset.  This is the uniform
+specialization of the all-one coefficient-sum endpoint. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_all_one
+    (k : ℕ) (fp : FPModel) (step : Fin (k + 1) → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ)
+    (b x_hat :
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ)
+    (c_bound c_rec tail_fl tail_exact : Fin (k + 1) → ℝ) (c u : ℝ)
+    (hone : ∀ t : Fin (k + 1), step t = PivotSize.one)
+    (hinit : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchLocalAssumptions
+        (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.castSucc t))
+        fp (step (Fin.castSucc t))
+        (higham11_7_tridiagonalPathBranchMatrix (k + 1) step A
+          (Fin.castSucc t))
+        (c_bound (Fin.castSucc t)) (c_rec (Fin.castSucc t)) u
+        (tail_fl (Fin.castSucc t)) (tail_exact (Fin.castSucc t)))
+    (hlast_eq : tail_fl (Fin.last k) = tail_exact (Fin.last k))
+    (hlast : higham11_7_TridiagonalBranchTerminalAssumptions
+      (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+      fp (step (Fin.last k))
+      (higham11_7_tridiagonalPathBranchMatrix (k + 1) step A
+        (Fin.last k))
+      (c_bound (Fin.last k)) (c_rec (Fin.last k)) u)
+    (hc_bound : ∀ t : Fin (k + 1), 0 ≤ c_bound t)
+    (hc_rec : ∀ t : Fin (k + 1), 0 ≤ c_rec t)
+    (hc : 0 ≤ c) (hu : 0 ≤ u)
+    (hcoeff : ∀ t : Fin (k + 1), c_bound t + c_rec t ≤ c)
+    (hrow_one_local :
+      ∀ Δloc : ∀ t : Fin (k + 1),
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+          (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+          c_bound c_rec (fun _ : Fin (k + 1) => u) tail_fl tail_exact Δloc →
+        ∀ t : Fin (k + 1), t ≠ Fin.last k →
+          ∀ hstep : step t = PivotSize.one,
+            (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              A (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                  (k + 1) step t hstep) j * x_hat j) +
+            ((∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              (∑ s ∈ Finset.univ.filter
+                  (fun s : Fin (k + 1) => s.val < t.val),
+                higham11_7_tridiagonalLiftLocalBlockPerturbation
+                  (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                  (higham11_7_tridiagonalPathPrefixSpan (k + 1) step s)
+                  (higham11_7_tridiagonalBranchAmbientDim
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step s)
+                    (step s))
+                  (Δloc s)
+                  (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                    (k + 1) step t hstep) j) *
+                x_hat j) +
+              (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim (k + 1) step t)
+                  (step t)),
+                Δloc t
+                  (Fin.cast (by rw [hstep])
+                    (higham11_7_tridiagonalBranchFirstTrailingIndex
+                      (higham11_7_tridiagonalPathTailDim (k + 1) step t)
+                      PivotSize.one)) j *
+                  x_hat
+                    (higham11_7_tridiagonalPathLocalBlockIndex
+                      (k + 1) step t j))) =
+              b (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                (k + 1) step t hstep))
+    (hrow_last_one_local :
+      ∀ Δloc : ∀ t : Fin (k + 1),
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+          (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+          c_bound c_rec (fun _ : Fin (k + 1) => u) tail_fl tail_exact Δloc →
+        ∀ hstep : step (Fin.last k) = PivotSize.one,
+          (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+            A (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                (k + 1) step (Fin.last k) hstep) j * x_hat j) +
+          ((∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+            (∑ s ∈ Finset.univ.filter
+                (fun s : Fin (k + 1) => s.val < (Fin.last k).val),
+              higham11_7_tridiagonalLiftLocalBlockPerturbation
+                (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                (higham11_7_tridiagonalPathPrefixSpan (k + 1) step s)
+                (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim (k + 1) step s)
+                  (step s))
+                (Δloc s)
+                (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                  (k + 1) step (Fin.last k) hstep) j) *
+              x_hat j) +
+            (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+                (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+                (step (Fin.last k))),
+              Δloc (Fin.last k)
+                (Fin.cast (by rw [hstep])
+                  (higham11_7_tridiagonalBranchFirstTrailingIndex
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+                    PivotSize.one)) j *
+                x_hat
+                  (higham11_7_tridiagonalPathLocalBlockIndex
+                    (k + 1) step (Fin.last k) j))) =
+            b (higham11_7_tridiagonalPathFirstTrailingIndex_one
+              (k + 1) step (Fin.last k) hstep))
+    (hrow_zero_base :
+      ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+          A 0 j * x_hat j =
+        b 0) :
+    ∃ ΔA1 ΔA2 :
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) →
+        Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ,
+      (∀ i j, |ΔA1 i j| ≤ ((k + 1 : ℕ) : ℝ) * c * u * infNorm A) ∧
+      (∀ i j, |ΔA2 i j| ≤ ((k + 1 : ℕ) : ℝ) * c * u * infNorm A) ∧
+      infNorm ΔA1 ≤
+        ((higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1 : ℕ) : ℝ) *
+          (((k + 1 : ℕ) : ℝ) * c) * u * infNorm A ∧
+      infNorm ΔA2 ≤
+        ((higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1 : ℕ) : ℝ) *
+          (((k + 1 : ℕ) : ℝ) * c) * u * infNorm A ∧
+      (∀ i,
+        ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+          (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_no_secondPivot
+    k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u
+    (higham11_7_tridiagonalPath_no_secondPivot_of_all_one (k + 1) step hone)
+    hinit hlast_eq hlast hc_bound hc_rec hc hu hcoeff hrow_one_local
+    hrow_last_one_local hrow_zero_base
 
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint from
 endpoint, terminal, leading, and second-pivot solve bridges, scalar-budget
@@ -21119,6 +22044,237 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_lo
         (k + 1) fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact
         Δloc hwit (hrow_second_reduced Δloc hwit))
 
+/-- **Theorem 11.7 concrete prefix-span residual-witness endpoint when every
+accepted `2 × 2` branch is initial, scalar-budget form**, zero common offset.
+This is the per-branch-roundoff analogue of the initial second-pivot
+coefficient endpoint. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_initial_secondPivot_base_rows
+    (k : ℕ) (fp : FPModel) (step : Fin (k + 1) → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ)
+    (b x_hat :
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ)
+    (c_bound c_rec u_loc tail_fl tail_exact c : Fin (k + 1) → ℝ) (C u : ℝ)
+    (hinit : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchLocalAssumptions
+        (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.castSucc t))
+        fp (step (Fin.castSucc t))
+        (higham11_7_tridiagonalPathBranchMatrix (k + 1) step A
+          (Fin.castSucc t))
+        (c_bound (Fin.castSucc t)) (c_rec (Fin.castSucc t))
+        (u_loc (Fin.castSucc t))
+        (tail_fl (Fin.castSucc t)) (tail_exact (Fin.castSucc t)))
+    (hlast_eq : tail_fl (Fin.last k) = tail_exact (Fin.last k))
+    (hlast : higham11_7_TridiagonalBranchTerminalAssumptions
+      (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+      fp (step (Fin.last k))
+      (higham11_7_tridiagonalPathBranchMatrix (k + 1) step A
+        (Fin.last k))
+      (c_bound (Fin.last k)) (c_rec (Fin.last k)) (u_loc (Fin.last k)))
+    (hc_bound : ∀ t : Fin (k + 1), 0 ≤ c_bound t)
+    (hc_rec : ∀ t : Fin (k + 1), 0 ≤ c_rec t)
+    (hc : ∀ t : Fin (k + 1), 0 ≤ c t) (hu : 0 ≤ u)
+    (hu_loc : ∀ t : Fin (k + 1), 0 ≤ u_loc t)
+    (hu_le : ∀ t : Fin (k + 1), u_loc t ≤ u)
+    (hcoeff : ∀ t : Fin (k + 1), c_bound t + c_rec t ≤ c t)
+    (hC : (∑ t : Fin (k + 1), c t) ≤ C)
+    (hrow_one_local :
+      ∀ Δloc : ∀ t : Fin (k + 1),
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+          (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+          c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∀ t : Fin (k + 1), t ≠ Fin.last k →
+          ∀ hstep : step t = PivotSize.one,
+            (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              A (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                  (k + 1) step t hstep) j * x_hat j) +
+            ((∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              (∑ s ∈ Finset.univ.filter
+                  (fun s : Fin (k + 1) => s.val < t.val),
+                higham11_7_tridiagonalLiftLocalBlockPerturbation
+                  (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                  (higham11_7_tridiagonalPathPrefixSpan (k + 1) step s)
+                  (higham11_7_tridiagonalBranchAmbientDim
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step s)
+                    (step s))
+                  (Δloc s)
+                  (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                    (k + 1) step t hstep) j) *
+                x_hat j) +
+              (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim (k + 1) step t)
+                  (step t)),
+                Δloc t
+                  (Fin.cast (by rw [hstep])
+                    (higham11_7_tridiagonalBranchFirstTrailingIndex
+                      (higham11_7_tridiagonalPathTailDim (k + 1) step t)
+                      PivotSize.one)) j *
+                  x_hat
+                    (higham11_7_tridiagonalPathLocalBlockIndex
+                      (k + 1) step t j))) =
+              b (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                (k + 1) step t hstep))
+    (hrow_two_local :
+      ∀ Δloc : ∀ t : Fin (k + 1),
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+          (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+          c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∀ t : Fin (k + 1), t ≠ Fin.last k →
+          ∀ hstep : step t = PivotSize.two,
+            (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              A (higham11_7_tridiagonalPathFirstTrailingIndex_two
+                  (k + 1) step t hstep) j * x_hat j) +
+            ((∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              (∑ s ∈ Finset.univ.filter
+                  (fun s : Fin (k + 1) => s.val < t.val),
+                higham11_7_tridiagonalLiftLocalBlockPerturbation
+                  (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                  (higham11_7_tridiagonalPathPrefixSpan (k + 1) step s)
+                  (higham11_7_tridiagonalBranchAmbientDim
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step s)
+                    (step s))
+                  (Δloc s)
+                  (higham11_7_tridiagonalPathFirstTrailingIndex_two
+                    (k + 1) step t hstep) j) *
+                x_hat j) +
+              (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim (k + 1) step t)
+                  (step t)),
+                Δloc t
+                  (Fin.cast (by rw [hstep])
+                    (higham11_7_tridiagonalBranchFirstTrailingIndex
+                      (higham11_7_tridiagonalPathTailDim (k + 1) step t)
+                      PivotSize.two)) j *
+                  x_hat
+                    (higham11_7_tridiagonalPathLocalBlockIndex
+                      (k + 1) step t j))) =
+              b (higham11_7_tridiagonalPathFirstTrailingIndex_two
+                (k + 1) step t hstep))
+    (hrow_last_one_local :
+      ∀ Δloc : ∀ t : Fin (k + 1),
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+          (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+          c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∀ hstep : step (Fin.last k) = PivotSize.one,
+          (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+            A (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                (k + 1) step (Fin.last k) hstep) j * x_hat j) +
+          ((∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+            (∑ s ∈ Finset.univ.filter
+                (fun s : Fin (k + 1) => s.val < (Fin.last k).val),
+              higham11_7_tridiagonalLiftLocalBlockPerturbation
+                (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                (higham11_7_tridiagonalPathPrefixSpan (k + 1) step s)
+                (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim (k + 1) step s)
+                  (step s))
+                (Δloc s)
+                (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                  (k + 1) step (Fin.last k) hstep) j) *
+              x_hat j) +
+            (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+                (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+                (step (Fin.last k))),
+              Δloc (Fin.last k)
+                (Fin.cast (by rw [hstep])
+                  (higham11_7_tridiagonalBranchFirstTrailingIndex
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+                    PivotSize.one)) j *
+                x_hat
+                  (higham11_7_tridiagonalPathLocalBlockIndex
+                    (k + 1) step (Fin.last k) j))) =
+            b (higham11_7_tridiagonalPathFirstTrailingIndex_one
+              (k + 1) step (Fin.last k) hstep))
+    (hrow_last_two_local :
+      ∀ Δloc : ∀ t : Fin (k + 1),
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+          (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+          c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∀ hstep : step (Fin.last k) = PivotSize.two,
+          (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+            A (higham11_7_tridiagonalPathFirstTrailingIndex_two
+                (k + 1) step (Fin.last k) hstep) j * x_hat j) +
+          ((∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+            (∑ s ∈ Finset.univ.filter
+                (fun s : Fin (k + 1) => s.val < (Fin.last k).val),
+              higham11_7_tridiagonalLiftLocalBlockPerturbation
+                (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                (higham11_7_tridiagonalPathPrefixSpan (k + 1) step s)
+                (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim (k + 1) step s)
+                  (step s))
+                (Δloc s)
+                (higham11_7_tridiagonalPathFirstTrailingIndex_two
+                  (k + 1) step (Fin.last k) hstep) j) *
+              x_hat j) +
+            (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+                (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+                (step (Fin.last k))),
+              Δloc (Fin.last k)
+                (Fin.cast (by rw [hstep])
+                  (higham11_7_tridiagonalBranchFirstTrailingIndex
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+                    PivotSize.two)) j *
+                x_hat
+                  (higham11_7_tridiagonalPathLocalBlockIndex
+                    (k + 1) step (Fin.last k) j))) =
+            b (higham11_7_tridiagonalPathFirstTrailingIndex_two
+              (k + 1) step (Fin.last k) hstep))
+    (hrow_zero_base :
+      ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+          A 0 j * x_hat j =
+        b 0)
+    (htwo_zero : ∀ t : Fin (k + 1), step t = PivotSize.two → t.val = 0)
+    (hrow_second_base :
+      ∀ t : Fin (k + 1), ∀ hstep : step t = PivotSize.two,
+        (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+          A (higham11_7_tridiagonalPathSecondPivotIndex_two
+              (k + 1) step t hstep) j * x_hat j) =
+        b (higham11_7_tridiagonalPathSecondPivotIndex_two
+          (k + 1) step t hstep)) :
+    ∃ ΔA1 ΔA2 :
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) →
+        Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ,
+      (∀ i j, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤
+        ((higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1 : ℕ) : ℝ) *
+          C * u * infNorm A ∧
+      infNorm ΔA2 ≤
+        ((higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1 : ℕ) : ℝ) *
+          C * u * infNorm A ∧
+      (∀ i,
+        ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+          (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_reduced_solve_rows
+    k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+    hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+    hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+    hrow_zero_base
+    (fun Δloc _hwit =>
+      higham11_7_ConcretePathSecondPivotReducedSolveRows_of_base_rows_of_two_only_at_zero
+        (k + 1) step A b x_hat Δloc htwo_zero hrow_second_base)
+
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint for paths
 with no accepted `2 × 2` branch, scalar-budget form**, zero common offset.
 This is the per-branch-roundoff analogue of the no-second-pivot
@@ -21264,6 +22420,145 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_lo
     (fun Δloc _hwit =>
       higham11_7_ConcretePathSecondPivotReducedSolveRows_of_no_two
         (k + 1) step A b x_hat Δloc hno)
+
+/-- **Theorem 11.7 concrete prefix-span residual-witness endpoint for all-`1 × 1`
+paths, scalar-budget form**, zero common offset.  This is the per-branch
+roundoff analogue of the all-one coefficient-sum endpoint. -/
+theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_all_one
+    (k : ℕ) (fp : FPModel) (step : Fin (k + 1) → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ)
+    (b x_hat :
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ)
+    (c_bound c_rec u_loc tail_fl tail_exact c : Fin (k + 1) → ℝ) (C u : ℝ)
+    (hone : ∀ t : Fin (k + 1), step t = PivotSize.one)
+    (hinit : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchLocalAssumptions
+        (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.castSucc t))
+        fp (step (Fin.castSucc t))
+        (higham11_7_tridiagonalPathBranchMatrix (k + 1) step A
+          (Fin.castSucc t))
+        (c_bound (Fin.castSucc t)) (c_rec (Fin.castSucc t))
+        (u_loc (Fin.castSucc t))
+        (tail_fl (Fin.castSucc t)) (tail_exact (Fin.castSucc t)))
+    (hlast_eq : tail_fl (Fin.last k) = tail_exact (Fin.last k))
+    (hlast : higham11_7_TridiagonalBranchTerminalAssumptions
+      (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+      fp (step (Fin.last k))
+      (higham11_7_tridiagonalPathBranchMatrix (k + 1) step A
+        (Fin.last k))
+      (c_bound (Fin.last k)) (c_rec (Fin.last k)) (u_loc (Fin.last k)))
+    (hc_bound : ∀ t : Fin (k + 1), 0 ≤ c_bound t)
+    (hc_rec : ∀ t : Fin (k + 1), 0 ≤ c_rec t)
+    (hc : ∀ t : Fin (k + 1), 0 ≤ c t) (hu : 0 ≤ u)
+    (hu_loc : ∀ t : Fin (k + 1), 0 ≤ u_loc t)
+    (hu_le : ∀ t : Fin (k + 1), u_loc t ≤ u)
+    (hcoeff : ∀ t : Fin (k + 1), c_bound t + c_rec t ≤ c t)
+    (hC : (∑ t : Fin (k + 1), c t) ≤ C)
+    (hrow_one_local :
+      ∀ Δloc : ∀ t : Fin (k + 1),
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+          (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+          c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∀ t : Fin (k + 1), t ≠ Fin.last k →
+          ∀ hstep : step t = PivotSize.one,
+            (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              A (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                  (k + 1) step t hstep) j * x_hat j) +
+            ((∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              (∑ s ∈ Finset.univ.filter
+                  (fun s : Fin (k + 1) => s.val < t.val),
+                higham11_7_tridiagonalLiftLocalBlockPerturbation
+                  (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                  (higham11_7_tridiagonalPathPrefixSpan (k + 1) step s)
+                  (higham11_7_tridiagonalBranchAmbientDim
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step s)
+                    (step s))
+                  (Δloc s)
+                  (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                    (k + 1) step t hstep) j) *
+                x_hat j) +
+              (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim (k + 1) step t)
+                  (step t)),
+                Δloc t
+                  (Fin.cast (by rw [hstep])
+                    (higham11_7_tridiagonalBranchFirstTrailingIndex
+                      (higham11_7_tridiagonalPathTailDim (k + 1) step t)
+                      PivotSize.one)) j *
+                  x_hat
+                    (higham11_7_tridiagonalPathLocalBlockIndex
+                      (k + 1) step t j))) =
+              b (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                (k + 1) step t hstep))
+    (hrow_last_one_local :
+      ∀ Δloc : ∀ t : Fin (k + 1),
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+          (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+          c_bound c_rec u_loc tail_fl tail_exact Δloc →
+        ∀ hstep : step (Fin.last k) = PivotSize.one,
+          (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+            A (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                (k + 1) step (Fin.last k) hstep) j * x_hat j) +
+          ((∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+            (∑ s ∈ Finset.univ.filter
+                (fun s : Fin (k + 1) => s.val < (Fin.last k).val),
+              higham11_7_tridiagonalLiftLocalBlockPerturbation
+                (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                (higham11_7_tridiagonalPathPrefixSpan (k + 1) step s)
+                (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim (k + 1) step s)
+                  (step s))
+                (Δloc s)
+                (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                  (k + 1) step (Fin.last k) hstep) j) *
+              x_hat j) +
+            (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+                (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+                (step (Fin.last k))),
+              Δloc (Fin.last k)
+                (Fin.cast (by rw [hstep])
+                  (higham11_7_tridiagonalBranchFirstTrailingIndex
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step (Fin.last k))
+                    PivotSize.one)) j *
+                x_hat
+                  (higham11_7_tridiagonalPathLocalBlockIndex
+                    (k + 1) step (Fin.last k) j))) =
+            b (higham11_7_tridiagonalPathFirstTrailingIndex_one
+              (k + 1) step (Fin.last k) hstep))
+    (hrow_zero_base :
+      ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+          A 0 j * x_hat j =
+        b 0) :
+    ∃ ΔA1 ΔA2 :
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) →
+        Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ,
+      (∀ i j, |ΔA1 i j| ≤ C * u * infNorm A) ∧
+      (∀ i j, |ΔA2 i j| ≤ C * u * infNorm A) ∧
+      infNorm ΔA1 ≤
+        ((higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1 : ℕ) : ℝ) *
+          C * u * infNorm A ∧
+      infNorm ΔA2 ≤
+        ((higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1 : ℕ) : ℝ) *
+          C * u * infNorm A ∧
+      (∀ i,
+        ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+          (A i j + ΔA2 i j) * x_hat j = b i) :=
+  higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_no_secondPivot
+    k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u
+    (higham11_7_tridiagonalPath_no_secondPivot_of_all_one (k + 1) step hone)
+    hinit hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+    hrow_one_local hrow_last_one_local hrow_zero_base
 
 /-- **Theorem 11.7 embedded path solve-delta aggregation from local
 assumptions**.  This composes the finite path-local branch adapter, witness
@@ -23645,6 +24940,34 @@ theorem higham11_8_infNorm_T_le_T_hat_of_zero_relative_error (n : ℕ)
     higham11_8_infNorm_T_le_one_plus_gamma_T_hat_of_relative_error
       n T T_hat 0 (by norm_num) hThat
 
+/-- Pointwise equality `T_hat = T` supplies the zero relative middle-factor
+budget used by exact-radius Aasen routes. -/
+theorem higham11_8_zero_relative_T_hat_error_of_eq (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ)
+    (hEq : ∀ i j : Fin n, T_hat i j = T i j) :
+    ∀ i j : Fin n, |T_hat i j - T i j| ≤ 0 * |T_hat i j| := by
+  intro i j
+  rw [hEq i j]
+  simp
+
+/-- Pointwise equality of the exact and computed Aasen middle factors gives
+the coefficient-one componentwise exact-factor cap. -/
+theorem higham11_8_abs_T_le_T_hat_of_eq (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ)
+    (hEq : ∀ i j : Fin n, T_hat i j = T i j) :
+    ∀ i j : Fin n, |T i j| ≤ |T_hat i j| :=
+  higham11_8_abs_T_le_T_hat_of_zero_relative_error n T T_hat
+    (higham11_8_zero_relative_T_hat_error_of_eq n T T_hat hEq)
+
+/-- Pointwise equality of the exact and computed Aasen middle factors gives
+the coefficient-one infinity-norm exact-factor cap. -/
+theorem higham11_8_infNorm_T_le_T_hat_of_eq (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ)
+    (hEq : ∀ i j : Fin n, T_hat i j = T i j) :
+    infNorm T ≤ infNorm T_hat :=
+  higham11_8_infNorm_T_le_T_hat_of_zero_relative_error n T T_hat
+    (higham11_8_zero_relative_T_hat_error_of_eq n T T_hat hEq)
+
 /-- Componentwise absolute domination transfers directly to the matrix
 infinity norm. -/
 theorem higham11_8_infNorm_le_of_componentwise_abs_bound (n : ℕ)
@@ -24444,6 +25767,85 @@ theorem higham11_8_aasen_base_square_bounds_of_entry_bound_scaled_unit_of_entry_
     higham11_8_aasen_base_square_bounds_of_factor_caps n γ
       (infNorm L) (infNorm (fun r c => L c r)) hγ (infNorm_nonneg L)
       (infNorm_nonneg (fun r c => L c r)) hLcap hLTcap hrelL hrelLT
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency:
+an `AasenSpec` supplies the structural zeros needed to turn a uniform exact
+outer-factor entry cap into `(n-1)` row and column sum majorants. -/
+theorem higham11_8_aasen_outer_factor_row_col_sum_majorants_of_AasenSpec_entry_bound
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (κ : ℝ)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    (∀ i : Fin n, (∑ j : Fin n, |L i j|) ≤
+        ((n - 1 : ℕ) : ℝ) * κ) ∧
+      (∀ j : Fin n, (∑ i : Fin n, |L i j|) ≤
+        ((n - 1 : ℕ) : ℝ) * κ) :=
+  higham11_8_aasen_outer_factor_row_col_sum_majorants_of_entry_bound
+    n hn L κ hentry hspec.L_upper_zero hspec.L_first_col
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency:
+an `AasenSpec` plus the normalized source-scale entry cap gives the relative
+outer-factor norm caps used by exact-radius Aasen wrappers. -/
+theorem higham11_8_relative_outer_factor_caps_of_AasenSpec_entry_bound_scaled_unit
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκunit : (1 + γ) * κ ≤ 1)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    (1 + γ) * infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) :=
+  higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound
+    n hn L γ κ hγ hκunit hentry hspec.L_upper_zero hspec.L_first_col
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency:
+an `AasenSpec` plus the source-style inverse-scale entry cap gives the relative
+outer-factor norm caps used by exact-radius Aasen wrappers. -/
+theorem higham11_8_relative_outer_factor_caps_of_AasenSpec_entry_bound_inv_one_plus
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκ : κ ≤ 1 / (1 + γ))
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    (1 + γ) * infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) :=
+  higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus_of_entry_bound
+    n hn L γ κ hγ hκ hentry hspec.L_upper_zero hspec.L_first_col
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency:
+an `AasenSpec` plus the normalized entry cap gives the two base square product
+caps consumed by the exact-product `T_hat` route. -/
+theorem higham11_8_aasen_base_square_bounds_of_AasenSpec_entry_bound_scaled_unit
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκunit : (1 + γ) * κ ≤ 1)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    (infNorm L * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ) * infNorm L) *
+          ((1 + γ) * infNorm (fun r c => L c r)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) :=
+  higham11_8_aasen_base_square_bounds_of_entry_bound_scaled_unit_of_entry_bound
+    n hn L γ κ hγ hκunit hentry hspec.L_upper_zero hspec.L_first_col
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency:
+an `AasenSpec` plus the inverse-scale entry cap gives the two base square
+product caps consumed by the exact-product `T_hat` route. -/
+theorem higham11_8_aasen_base_square_bounds_of_AasenSpec_entry_bound_inv_one_plus
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκ : κ ≤ 1 / (1 + γ))
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    (infNorm L * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ) * infNorm L) *
+          ((1 + γ) * infNorm (fun r c => L c r)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) :=
+  higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus_of_entry_bound
+    n hn L γ κ hγ hκ hentry hspec.L_upper_zero hspec.L_first_col
 
 /-- Insert a nonnegative middle factor bounded by `1` into a product already
 bounded by the printed Aasen `(n-1)^2` square. -/
@@ -31341,6 +32743,80 @@ theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_sourc
       (higham11_8_infNorm_T_le_T_hat_of_zero_relative_error n T T_hat
         hThat_zero)
       hmiddle_entry hL_cap hLT_cap hrelL_cap hrelLT_cap
+
+/-- Source-prefix direct-middle exact-radius endpoint where pointwise equality
+`T_hat = T` supplies both the zero relative middle-factor budget and the exact
+`T`-norm cap. -/
+theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_norm_caps_of_T_hat_eq_T
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hprod : ∀ i j : Fin n,
+      (∑ p : Fin n, ∑ q : Fin n, L i p * T p q * L j q) = A i j)
+    (hEq : ∀ i j : Fin n, T_hat i j = T i j)
+    (hmiddle_entry : ∀ i j : Fin n,
+      matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤ |T_hat i j|)
+    (hL_cap : infNorm L ≤ ((n - 1 : ℕ) : ℝ))
+    (hLT_cap : infNorm (fun r c => L c r) ≤ ((n - 1 : ℕ) : ℝ))
+    (hrelL_cap : (1 + gamma fp n) * infNorm L ≤ ((n - 1 : ℕ) : ℝ))
+    (hrelLT_cap :
+      (1 + gamma fp n) * infNorm (fun r c => L c r) ≤ ((n - 1 : ℕ) : ℝ)) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) :=
+  higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_source_norm_caps_of_zero_relative_T_hat
+    fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+    hcoeff_valid hrec hHnz hLhat_update hLhat_fixed_successor
+    hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+    hT_U_diag hT_L_lower hT_U_upper hprod
+    (higham11_8_zero_relative_T_hat_error_of_eq n T T_hat hEq)
+    hmiddle_entry hL_cap hLT_cap hrelL_cap hrelLT_cap
 
 /-- Source-prefix exact-radius endpoint with direct outer norm caps, where the
 zero-relative `T_hat - T` comparison supplies the exact middle-factor norm cap
