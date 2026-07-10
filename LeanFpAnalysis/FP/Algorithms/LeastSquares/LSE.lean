@@ -37484,6 +37484,58 @@ theorem theorem20_8_vecNorm2_stationarity_forcing_le_of_relativeBudget
       A DeltaA b Deltab B DeltaB d Deltad hbudget)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    scale handoff for the Cox--Higham stationarity-row right-hand side.  Once
+    the perturbed multiplier and perturbed residual are bounded relative to the
+    source solution norm, the relative perturbation budget gives the stationarity
+    row scale needed by the KKT response-coefficient theorem. -/
+theorem theorem20_8_vecNorm2_stationarity_forcing_le_of_relativeBudget_scales
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (x : Fin n → ℝ) (mu : Fin p → ℝ) (s : Fin m → ℝ)
+    {eps muScale sScale : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (hmu : vecNorm2 mu ≤ muScale * vecNorm2 x)
+    (hs : vecNorm2 s ≤ sScale * vecNorm2 x) :
+    vecNorm2
+        (fun j : Fin n =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m, DeltaA i j * s i)) ≤
+      ((eps * frobNormRect B) * muScale +
+          (eps * frobNormRect A) * sScale) *
+        vecNorm2 x := by
+  have hDeltaB_radius_nonneg : 0 ≤ eps * frobNormRect B :=
+    (frobNormRect_nonneg DeltaB).trans hbudget.2.2.1
+  have hDeltaA_radius_nonneg : 0 ≤ eps * frobNormRect A :=
+    (frobNormRect_nonneg DeltaA).trans hbudget.1
+  have hbase :=
+    theorem20_8_vecNorm2_stationarity_forcing_le_of_relativeBudget
+      A DeltaA b Deltab B DeltaB d Deltad mu s hbudget
+  have hBterm :
+      (eps * frobNormRect B) * vecNorm2 mu ≤
+        (eps * frobNormRect B) * (muScale * vecNorm2 x) :=
+    mul_le_mul_of_nonneg_left hmu hDeltaB_radius_nonneg
+  have hAterm :
+      (eps * frobNormRect A) * vecNorm2 s ≤
+        (eps * frobNormRect A) * (sScale * vecNorm2 x) :=
+    mul_le_mul_of_nonneg_left hs hDeltaA_radius_nonneg
+  calc
+    vecNorm2
+        (fun j : Fin n =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m, DeltaA i j * s i))
+        ≤ (eps * frobNormRect B) * vecNorm2 mu +
+            (eps * frobNormRect A) * vecNorm2 s := hbase
+    _ ≤ (eps * frobNormRect B) * (muScale * vecNorm2 x) +
+          (eps * frobNormRect A) * (sScale * vecNorm2 x) :=
+            add_le_add hBterm hAterm
+    _ = ((eps * frobNormRect B) * muScale +
+          (eps * frobNormRect A) * sScale) * vecNorm2 x := by
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     specialization of the explicit residual-correction bound to the source
     relative perturbation budget. -/
 theorem theorem20_8_vecNorm2_perturbed_residual_correction_le_of_relativeBudget
