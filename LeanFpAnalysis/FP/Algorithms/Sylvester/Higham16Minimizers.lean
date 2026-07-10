@@ -5838,6 +5838,30 @@ theorem lyapunov_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_
       Pinv PinvAbs' hM eta hXSylv hLeft hPinv hRu hRhatSylv hPinvAbs_le
       hRhat hRu_le heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the concrete-left-inverse Lyapunov raw computed-residual
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_budget :=
+  lyapunov_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap concrete-left-inverse Lyapunov raw
+    computed-residual practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_budget_scalar :=
+  lyapunov_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone concrete-left-inverse Lyapunov raw
+    computed-residual practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_budget_mono :=
+  lyapunov_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap concrete-left-inverse Lyapunov raw
+    computed-residual practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_budget_mono_scalar :=
+  lyapunov_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_budget_mono_scalar
+
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, equation (16.29), Lyapunov-specialized raw residual-budget endpoint:
     positive eigenvalue certificates for the finite Gram matrix of the concrete
