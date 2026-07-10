@@ -3931,6 +3931,127 @@ theorem higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_u
       (36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
       hpu hρ hAmax le_rfl le_rfl hD hrows hfirst_budget htrail_budget hsolve
 
+/-- A growth-scaled `D̂` entry cap can be relaxed from a stage growth factor to
+a larger final growth factor. -/
+theorem higham11_4_growth_scaled_D_bound_of_le
+    (n : ℕ) (D_hat : Fin n → Fin n → ℝ) (ρ_stage ρ_n Amax : ℝ)
+    (hρ_le : ρ_stage ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ ρ_stage * Amax) :
+    ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ ρ_n * Amax := by
+  intro k₁ k₂
+  exact (hD k₁ k₂).trans (mul_le_mul_of_nonneg_right hρ_le hAmax)
+
+/-- **Theorem 11.4 stage-growth `D` cap product bridge**.  A uniform
+`∑ |L̂ᵢₖ| ≤ 6` row-sum cap plus a `D̂` cap stated with a stage growth factor
+feeds the printed final-`ρₙ` product estimate once `ρ_stage ≤ ρₙ`. -/
+theorem higham11_4_product_entries_of_first_stage_recursive_uniform_six_row_sum_stage_growth_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_stage ρ_n Amax : ℝ)
+    (hρ_stage : 0 ≤ ρ_stage) (hρ_le : ρ_stage ≤ ρ_n)
+    (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ ρ_stage * Amax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ 6) :
+    ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_product_entries_of_first_stage_recursive_uniform_six_row_sum_growth_D_bound
+    n s hn hs_pos hs_le L_hat D_hat ρ_n Amax (hρ_stage.trans hρ_le) hAmax
+    (higham11_4_growth_scaled_D_bound_of_le n D_hat ρ_stage ρ_n Amax hρ_le hAmax hD)
+    hrows
+
+/-- **Theorem 11.4 stage-growth `D` cap max-entry bridge**. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_uniform_six_row_sum_stage_growth_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_stage ρ_n Amax : ℝ)
+    (hρ_stage : 0 ≤ ρ_stage) (hρ_le : ρ_stage ≤ ρ_n)
+    (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ ρ_stage * Amax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ 6) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_uniform_six_row_sum_growth_D_bound
+    n s hn hs_pos hs_le L_hat D_hat ρ_n Amax (hρ_stage.trans hρ_le) hAmax
+    (higham11_4_growth_scaled_D_bound_of_le n D_hat ρ_stage ρ_n Amax hρ_le hAmax hD)
+    hrows
+
+/-- **Theorem 11.4 stage-growth `D` cap scalar certificate**. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_uniform_six_row_sum_stage_growth_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_stage ρ_n Amax : ℝ)
+    (hρ_stage : 0 ≤ ρ_stage) (hρ_le : ρ_stage ≤ ρ_n)
+    (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ ρ_stage * Amax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ 6) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_uniform_six_row_sum_growth_D_bound
+    n s hn hs_pos hs_le L_hat D_hat ρ_n Amax (hρ_stage.trans hρ_le) hAmax
+    (higham11_4_growth_scaled_D_bound_of_le n D_hat ρ_stage ρ_n Amax hρ_le hAmax hD)
+    hrows
+
+/-- **Theorem 11.4 stage-growth `D` cap stability bridge**. -/
+theorem higham11_4_bunch_kaufman_stability_of_first_stage_recursive_uniform_six_row_sum_stage_growth_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (ρ_stage ρ_n maxNorm_A : ℝ)
+    (hρ_stage : 0 ≤ ρ_stage) (hρ_le : ρ_stage ≤ ρ_n)
+    (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ ρ_stage * maxNorm_A)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ 6) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_first_stage_recursive_uniform_six_row_sum_growth_D_bound
+    n s hn hs_pos hs_le A L_hat D_hat ρ_n maxNorm_A (hρ_stage.trans hρ_le)
+    hmA hA_norm
+    (higham11_4_growth_scaled_D_bound_of_le n D_hat ρ_stage ρ_n maxNorm_A hρ_le hmA hD)
+    hrows
+
+/-- **Theorem 11.4 stage-growth `D` cap solve bridge**. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_uniform_six_row_sum_stage_growth_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (p u ρ_stage ρ_n Amax : ℝ)
+    (hpu : 0 ≤ p * u) (hρ_stage : 0 ≤ ρ_stage)
+    (hρ_le : ρ_stage ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ ρ_stage * Amax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ 6)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_uniform_six_row_sum_growth_D_bound
+    n s hn hs_pos hs_le A L_hat D_hat b x_hat p u ρ_n Amax hpu
+    (hρ_stage.trans hρ_le) hAmax
+    (higham11_4_growth_scaled_D_bound_of_le n D_hat ρ_stage ρ_n Amax hρ_le hAmax hD)
+    hrows hsolve
+
+/-- **Theorem 11.4 stage-growth `D` cap solve bridge, max-entry norm form**. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_uniform_six_row_sum_stage_growth_D_maxEntryNorm_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (p u ρ_stage ρ_n Amax : ℝ)
+    (hpu : 0 ≤ p * u) (hρ_stage : 0 ≤ ρ_stage)
+    (hρ_le : ρ_stage ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ ρ_stage * Amax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ 6)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_uniform_six_row_sum_growth_D_maxEntryNorm_bound
+    n s hn hs_pos hs_le A L_hat D_hat b x_hat p u ρ_n Amax hpu
+    (hρ_stage.trans hρ_le) hAmax
+    (higham11_4_growth_scaled_D_bound_of_le n D_hat ρ_stage ρ_n Amax hρ_le hAmax hD)
+    hrows hsolve
+
 /-- **Theorem 11.4 exact-coefficient uniform row-sum first-stage/recursive
 solve bridge, max-entry norm form**. -/
 theorem
