@@ -1122,6 +1122,51 @@ theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitial
   theorem20_7_activeInitialWeightedRowMaxRatioMax_le_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
     hm hn hnm A b (Real.sqrt_nonneg _) hphi hrows hdom hmax
 
+/-- Source nonzero-row witnesses are preserved by a common row permutation. -/
+theorem theorem20_7_rows_nonzero_permuteRows
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (σ : Fin m ≃ Fin m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0) :
+    ∀ i : Fin m, ∃ j : Fin n, (fun r j => A (σ r) j) i j ≠ 0 := by
+  intro i
+  exact hrows (σ i)
+
+/-- Source domination of `|b_i|` by `phi * rowMax_i` is preserved by a
+    common row permutation. -/
+theorem theorem20_7_abs_b_le_phi_initialRowMax_permuteRows
+    {m n : ℕ} (hn : 0 < n) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (σ : Fin m ≃ Fin m) {phi : ℝ}
+    (hdom : ∀ i : Fin m,
+      |b i| ≤ phi * theorem20_7_initialRowMax hn A i) :
+    ∀ i : Fin m,
+      |(fun r => b (σ r)) i| ≤
+        phi * theorem20_7_initialRowMax hn
+          (fun r j => A (σ r) j) i := by
+  intro i
+  simpa [theorem20_7_initialRowMax_permuteRows] using hdom (σ i)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
+    on a common row-permuted source, the weighted finite active-ratio
+    `sqrt(m)` obligation follows from the unweighted one when each permuted
+    right-hand-side entry is source-dominated by `phi * rowMax_i`. -/
+theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_permuteRows_activeInitialRowMaxRatioMax_le_abs_b_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (σ : Fin m ≃ Fin m)
+    {phi : ℝ} (hphi : 0 < phi)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hdom : ∀ i : Fin m,
+      |b i| ≤ phi * theorem20_7_initialRowMax hn A i)
+    (hmax :
+      theorem20_7_activeInitialRowMaxRatioMax hm hn hnm
+        (fun r j => A (σ r) j) ≤ Real.sqrt (m : ℝ)) :
+    theorem20_7_activeInitialWeightedRowMaxRatioMax hm hn hnm
+        (fun r j => A (σ r) j) (fun r => b (σ r)) phi ≤
+      Real.sqrt (m : ℝ) :=
+  theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
+    hm hn hnm (fun r j => A (σ r) j) (fun r => b (σ r)) hphi
+    (theorem20_7_rows_nonzero_permuteRows A σ hrows)
+    (theorem20_7_abs_b_le_phi_initialRowMax_permuteRows hn A b σ hdom)
+    hmax
+
 /-- Active-suffix source-row ratio maxima for a row-permuted matrix supply the
     source-ratio hypothesis stated in the original row labels. -/
 theorem theorem20_7_initialRowMax_ratio_of_permuteRows_activeRatioMax_le_nat
