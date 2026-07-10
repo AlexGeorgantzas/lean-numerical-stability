@@ -2196,6 +2196,42 @@ theorem lyapunovVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_pos_le_sylvesterSe
         n A sigma hsigma hle)
       hz
 
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the `SepLowerBound(A,-A^T)` left
+    inverse action. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_sepLowerBound :=
+  lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the `SepLowerBound(A,-A^T)` right
+    inverse action. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_mulVec_nonsingInv_mulVec_of_sepLowerBound :=
+  lyapunovVecCoeff_mulVec_nonsingInv_mulVec_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias identifying exact Lyapunov coefficient
+    solutions with the `SepLowerBound(A,-A^T)` nonsingular-inverse vector. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_sepLowerBound :=
+  lyapunovVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the positive exact-`sep(A,-A^T)` left
+    inverse action. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_pos_le_sylvesterSepInf :=
+  lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the positive exact-`sep(A,-A^T)` right
+    inverse action. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_mulVec_nonsingInv_mulVec_of_pos_le_sylvesterSepInf :=
+  lyapunovVecCoeff_mulVec_nonsingInv_mulVec_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias identifying exact Lyapunov coefficient
+    solutions with the positive exact-infimum nonsingular-inverse vector. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_pos_le_sylvesterSepInf :=
+  lyapunovVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_pos_le_sylvesterSepInf
+
 /-- Higham, 2nd ed., Chapter 16.1 and (16.23)-(16.26):
     a positive sigma-min certificate identifies any exact vectorized Sylvester
     coefficient solution with the nonsingular-inverse solution. -/

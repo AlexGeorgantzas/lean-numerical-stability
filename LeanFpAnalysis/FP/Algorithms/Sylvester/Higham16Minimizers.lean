@@ -2644,6 +2644,54 @@ theorem lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_error_
       n A C X Xhat Rhat Rhat' Ru Ru' dR PinvAbs' eta hdet hX
       hPinvAbs_le hRhat_eq hRu hdR hRhat_le hRu_le heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the Lyapunov raw residual-budget practical endpoint from a
+    source `SepLowerBound(A,-A^T)` certificate. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_budget :=
+  lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar Lyapunov raw residual-budget practical endpoint from
+    a source `SepLowerBound(A,-A^T)` certificate. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_budget_scalar :=
+  lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone Lyapunov raw residual-budget practical endpoint
+    from a source `SepLowerBound(A,-A^T)` certificate. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_budget_mono :=
+  lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar Lyapunov raw residual-budget practical
+    endpoint from a source `SepLowerBound(A,-A^T)` certificate. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_budget_mono_scalar :=
+  lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_budget_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the Lyapunov explicit residual-error-model practical endpoint
+    from a source `SepLowerBound(A,-A^T)` certificate. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_error_model :=
+  lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar Lyapunov explicit residual-error-model practical
+    endpoint from a source `SepLowerBound(A,-A^T)` certificate. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_error_model_scalar :=
+  lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone Lyapunov explicit residual-error-model practical
+    endpoint from a source `SepLowerBound(A,-A^T)` certificate. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_error_model_mono :=
+  lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar Lyapunov explicit residual-error-model
+    practical endpoint from a source `SepLowerBound(A,-A^T)` certificate. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_error_model_mono_scalar :=
+  lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_error_model_mono_scalar
+
 /-- Higham, 2nd ed., Chapter 16, equation (16.29), Lyapunov practical
     computed-residual certificate from a supplied operator sigma-min lower
     bound. -/
@@ -3588,6 +3636,54 @@ theorem lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residu
     lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono_scalar
       n A C X Xhat Rhat Rhat' Ru Ru' dR PinvAbs' eta hdet hX
       hPinvAbs_le hRhat_eq hRu hdR hRhat_le hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the Lyapunov raw residual-budget practical endpoint from a
+    positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget :=
+  lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar Lyapunov raw residual-budget practical endpoint from
+    a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_scalar :=
+  lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone Lyapunov raw residual-budget practical endpoint
+    from a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_mono :=
+  lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar Lyapunov raw residual-budget practical
+    endpoint from a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_mono_scalar :=
+  lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_budget_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the Lyapunov explicit residual-error-model practical endpoint
+    from a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model :=
+  lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar Lyapunov explicit residual-error-model practical
+    endpoint from a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_scalar :=
+  lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone Lyapunov explicit residual-error-model practical
+    endpoint from a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_mono :=
+  lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar Lyapunov explicit residual-error-model
+    practical endpoint from a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_mono_scalar :=
+  lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_error_model_mono_scalar
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), square
     arbitrary-coefficient endpoint: a concrete left-inverse finite-op-norm
