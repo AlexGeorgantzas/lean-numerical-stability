@@ -8706,6 +8706,69 @@ theorem higham11_7_tridiagonalPathFirstTrailingIndex_ne_finLast_of_ne_last
     ((higham11_7_tridiagonalPathFirstTrailingIndex_eq_finLast_iff
       k step t).1 h)
 
+/-- A concrete path solve-row proof splits into rows at canonical first-trailing
+endpoints and rows outside that endpoint set.  This is the row-coverage
+combinator for the remaining Theorem 11.7 lifted summed solve equation. -/
+theorem higham11_7_tridiagonalPath_solve_rows_of_firstTrailingIndex_rows_and_complement
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (hend :
+      ∀ t : Fin k,
+        ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+            (A (higham11_7_tridiagonalPathFirstTrailingIndex k step t) j +
+              (∑ u : Fin k,
+                higham11_7_tridiagonalLiftLocalBlockPerturbation
+                  (higham11_7_tridiagonalPathPivotSpan k step + 1)
+                  (higham11_7_tridiagonalPathPrefixSpan k step u)
+                  (higham11_7_tridiagonalBranchAmbientDim
+                    (higham11_7_tridiagonalPathTailDim k step u) (step u))
+                  (ΔA u)
+                  (higham11_7_tridiagonalPathFirstTrailingIndex k step t) j)) *
+              x_hat j =
+          b (higham11_7_tridiagonalPathFirstTrailingIndex k step t))
+    (hcomp :
+      ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        (∀ t : Fin k,
+          i ≠ higham11_7_tridiagonalPathFirstTrailingIndex k step t) →
+        ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+            (A i j +
+              (∑ u : Fin k,
+                higham11_7_tridiagonalLiftLocalBlockPerturbation
+                  (higham11_7_tridiagonalPathPivotSpan k step + 1)
+                  (higham11_7_tridiagonalPathPrefixSpan k step u)
+                  (higham11_7_tridiagonalBranchAmbientDim
+                    (higham11_7_tridiagonalPathTailDim k step u) (step u))
+                  (ΔA u) i j)) *
+              x_hat j =
+          b i) :
+    ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+          (A i j +
+            (∑ u : Fin k,
+              higham11_7_tridiagonalLiftLocalBlockPerturbation
+                (higham11_7_tridiagonalPathPivotSpan k step + 1)
+                (higham11_7_tridiagonalPathPrefixSpan k step u)
+                (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim k step u) (step u))
+                (ΔA u) i j)) *
+            x_hat j =
+        b i := by
+  intro i
+  by_cases hmem :
+      ∃ t : Fin k, i = higham11_7_tridiagonalPathFirstTrailingIndex k step t
+  · rcases hmem with ⟨t, rfl⟩
+    exact hend t
+  · exact hcomp i (by
+      intro t hit
+      exact hmem ⟨t, hit⟩)
+
 @[simp] theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_pathFirstTrailing_two
     (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
     (hstep : step t = PivotSize.two)
