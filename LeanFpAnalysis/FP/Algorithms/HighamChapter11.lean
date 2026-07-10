@@ -240,6 +240,29 @@ theorem higham11_1_oneByOne_multiplier_bound (c e ω α : ℝ)
     |c / e| ≤ 1 / α :=
   oneByOne_multiplier_bound c e ω α hα hω hc he
 
+/-- For the Bunch-Parlett/Bunch-Kaufman value `α=(1+√17)/8`, the scalar
+one-pivot multiplier-row constant `1/α` is bounded by the source row-sum
+constant `6`. -/
+theorem higham11_4_oneByOne_multiplier_row_sum_const_le_six :
+    1 / higham11_1_bunchParlettAlpha ≤ 6 := by
+  have hlt : 1 / higham11_1_bunchParlettAlpha < 2 := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_kaufman_recip_alpha_lt_two
+  linarith
+
+/-- **Theorem 11.4 local 1×1 multiplier row-sum cap**: a scalar accepted pivot
+with `αω≤|e|` gives the source-shaped one-entry row-sum cap `≤6`. -/
+theorem higham11_4_oneByOne_multiplier_row_sum_le_six
+    (c e ω : ℝ) (hω : 0 < ω)
+    (he : higham11_1_bunchParlettAlpha * ω ≤ |e|)
+    (hc : |c| ≤ ω) :
+    |c / e| ≤ 6 := by
+  have hα : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  exact
+    (higham11_1_oneByOne_multiplier_bound
+      c e ω higham11_1_bunchParlettAlpha hα hω hc he).trans
+      higham11_4_oneByOne_multiplier_row_sum_const_le_six
+
 /-- **§11.1.1 single-step element growth for a 1×1 pivot**:
 `|b − c₁c₂/e| ≤ (1 + 1/α)·μ₀` when `α·μ₀ ≤ |e|` and all active entries are
 bounded by `μ₀`.  This is the printed bound `|ã_ij| ≤ μ₀ + μ₀²/μ₁ ≤ (1+1/α)μ₀`
@@ -832,6 +855,26 @@ theorem higham11_2_bunch_kaufman_case1_or_case2_multiplier_bound_of_row_max_le
   · exact higham11_2_bunch_kaufman_case2_multiplier_bound_of_row_max_le
       α a11 arr ω1 ωr c hα hω1 hωr_le hcase2 hc
 
+/-- **Theorem 11.4 / Algorithm 11.2 cases-(1)/(2) scalar multiplier row cap**:
+for the source value of `α`, the accepted scalar `a₁₁` pivot has one-entry
+row-sum cap `≤6`; case-(2) keeps the explicit row-maximum side condition needed
+for its multiplier lower bound. -/
+theorem higham11_4_bunch_kaufman_case1_or_case2_multiplier_row_sum_le_six_of_row_max_le
+    (a11 arr ω1 ωr c : ℝ) (hω1 : 0 < ω1) (hωr_le : ωr ≤ ω1)
+    (hcase :
+      higham11_2_BunchKaufmanPartialPivotCase
+        higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case1 ∨
+      higham11_2_BunchKaufmanPartialPivotCase
+        higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case2)
+    (hc : |c| ≤ ω1) :
+    |c / a11| ≤ 6 := by
+  have hα : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  exact
+    (higham11_2_bunch_kaufman_case1_or_case2_multiplier_bound_of_row_max_le
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr c hα hω1 hωr_le hcase hc).trans
+      higham11_4_oneByOne_multiplier_row_sum_const_le_six
+
 /-- **Algorithm 11.2**, case-(3) nonsingularity after the symmetric swap: the
 accepted scalar pivot `arr` is nonzero when its row/column maximum is positive. -/
 theorem higham11_2_bunch_kaufman_case3_pivot_ne_zero
@@ -857,6 +900,22 @@ theorem higham11_2_bunch_kaufman_case3_multiplier_bound
   rcases higham11_2_bunch_kaufman_case3_tests α a11 arr ω1 ωr hcase with
     ⟨_, _, _, hpivot⟩
   exact higham11_1_oneByOne_multiplier_bound c arr ωr α hα hωr hc hpivot
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(3) scalar multiplier row cap**:
+after the symmetric swap, the accepted scalar `arr` pivot has the one-entry
+row-sum cap `≤6` for the source value of `α`. -/
+theorem higham11_4_bunch_kaufman_case3_multiplier_row_sum_le_six
+    (a11 arr ω1 ωr c : ℝ) (hωr : 0 < ωr)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case3)
+    (hc : |c| ≤ ωr) :
+    |c / arr| ≤ 6 := by
+  have hα : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  exact
+    (higham11_2_bunch_kaufman_case3_multiplier_bound
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr c hα hωr hcase hc).trans
+      higham11_4_oneByOne_multiplier_row_sum_const_le_six
 
 /-- **Theorem 11.4 / Algorithm 11.2 case-(3) correction bound**: after the
 swap, the accepted `arr` pivot bounds one 1×1 Schur correction by `ωr/α`. -/
