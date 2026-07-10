@@ -68727,6 +68727,25 @@ theorem
                 (fun i => b i + Deltab i) y i))
       (fun r => Deltad r - rectMatMulVec DeltaB y r)
 
+/-- Scalar multiplier scale produced by the canonical multiplier-row
+    small-gain estimate.  The inputs `bScale`, `dScale`, and `yScale` are
+    relative scales against `||x||₂` for `b`, `d`, and the perturbed solution. -/
+noncomputable def theorem20_8KKTMultiplierSmallGainScale {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (eps bScale dScale yScale lambdaScale : ℝ) : ℝ :=
+  (lambdaScale +
+    LSEKKTInverseMultiplierDataCoeff hB hnull *
+      (eps * bScale + (eps * frobNormRect A) * yScale) +
+    LSEKKTInverseMultiplierStatCoeff hB hnull *
+      ((eps * frobNormRect A) *
+        ((1 + eps) * bScale +
+          ((1 + eps) * frobNormRect A) * yScale)) +
+    LSEKKTInverseMultiplierConstrCoeff hB hnull *
+      (eps * dScale + (eps * frobNormRect B) * yScale)) /
+    (1 - LSEKKTInverseMultiplierStatCoeff hB hnull *
+      (eps * frobNormRect B))
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     canonical multiplier-row response bound with the perturbed multiplier
     self term absorbed.  Given a source multiplier scale and the actual
@@ -70091,6 +70110,124 @@ theorem
     simpa [yCoeff] using hgain
   have habs := real_le_div_one_sub_of_le_mul_add hgain' hlin
   simpa [E, yCoeff, base] using habs
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    composition of the actual-multiplier solution small-gain theorem with the
+    canonical multiplier-row small-gain scale.  The perturbed multiplier scale
+    is no longer a premise; it is derived for the same multiplier selected by
+    the full Cox--Higham KKT inverse-action bridge. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_sourceResidual_multiplierSmallGain
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps residualScale yScale lambdaScale : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hresidual :
+      vecNorm2 (lsResidualHigham A b x) ≤ residualScale * vecNorm2 x)
+    (hyScale : vecNorm2 y ≤ yScale * vecNorm2 x)
+    (hlambdaScale : ∀ lambda mu : Fin p → ℝ,
+      (fun r => mu r - lambda r) =
+        LSEKKTInverseMultiplierLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i,
+           fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i),
+           fun r => Deltad r - rectMatMulVec DeltaB y r) →
+      vecNorm2 lambda ≤ lambdaScale * vecNorm2 x)
+    (hmultGain :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) <
+        1)
+    (hsolGain :
+      LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull * (eps * frobNormRect B) <
+          1) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      (LSEKKTInverseSolutionDataCoeff hB hnull *
+          (eps * (frobNormRect A + residualScale) + eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect B) *
+              theorem20_8KKTMultiplierSmallGainScale hB hnull eps
+                (frobNormRect A + residualScale) (frobNormRect B) yScale
+                lambdaScale +
+            (eps * frobNormRect A) *
+              ((1 + eps) * (frobNormRect A + residualScale) +
+                (1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull *
+          (eps * frobNormRect B + eps * frobNormRect B)) /
+        (1 -
+          (LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+            LSEKKTInverseSolutionStatCoeff hB hnull *
+              ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+            LSEKKTInverseSolutionConstrCoeff hB hnull *
+              (eps * frobNormRect B))) := by
+  let muScale : ℝ :=
+    theorem20_8KKTMultiplierSmallGainScale hB hnull eps
+      (frobNormRect A + residualScale) (frobNormRect B) yScale lambdaScale
+  rcases hx.exists_lagrange_kkt_difference_eq_inverseTriple hy hB hBpert hnull with
+    ⟨lambda, mu, _hdr, hdxTriple, hdlambdaTriple⟩
+  have hdx :
+      (fun j => y j - x j) =
+        LSEKKTInverseSolutionLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i,
+           fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i),
+           fun r => Deltad r - rectMatMulVec DeltaB y r) := by
+    rw [hdxTriple]
+    rw [LSEKKTInverseSolutionLinearMap_apply]
+  have hdlambda :
+      (fun r => mu r - lambda r) =
+        LSEKKTInverseMultiplierLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i,
+           fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i),
+           fun r => Deltad r - rectMatMulVec DeltaB y r) := by
+    rw [hdlambdaTriple]
+    rw [LSEKKTInverseMultiplierLinearMap_apply]
+  have hb : vecNorm2 b ≤ (frobNormRect A + residualScale) * vecNorm2 x :=
+    theorem20_8_vecNorm2_b_le_of_sourceResidualScale A b x hresidual
+  have hd : vecNorm2 d ≤ frobNormRect B * vecNorm2 x :=
+    hx.vecNorm2_constraint_rhs_le_frobNormRect_mul
+  have hmuRel : vecNorm2 mu / vecNorm2 x ≤ muScale := by
+    dsimp [muScale]
+    simpa [theorem20_8KKTMultiplierSmallGainScale] using
+      theorem20_8_perturbed_multiplier_relative_le_of_inverseMultiplierLinearMap_canonical_response_coeffs_relativeBudget_scales
+        hB hnull hxnorm hbudget heps_nonneg hb hd hyScale
+        (hlambdaScale lambda mu hdlambda) hdlambda hmultGain
+  have hmuScale : vecNorm2 mu ≤ muScale * vecNorm2 x :=
+    (div_le_iff₀ hxnorm).mp hmuRel
+  have hsol :=
+    hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_sourceResidual_smallGain_of_multiplier
+      hB hnull hxnorm hbudget heps_nonneg hresidual mu hdx hmuScale
+      hsolGain
+  simpa [muScale] using hsol
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     canonical KKT response bound with the perturbed-solution scale absorbed by
