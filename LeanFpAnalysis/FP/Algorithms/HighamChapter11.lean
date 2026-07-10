@@ -12866,6 +12866,42 @@ abbrev higham11_7_ConcretePathSecondPivotReducedSolveRows
         x_hat j) =
       b (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
 
+/-- If a concrete path has no accepted `2 × 2` branch, the reduced
+second-pivot row handoff is vacuous. -/
+theorem higham11_7_ConcretePathSecondPivotReducedSolveRows_of_no_two
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hno : ∀ t : Fin k, step t ≠ PivotSize.two) :
+    higham11_7_ConcretePathSecondPivotReducedSolveRows k step A b x_hat ΔA := by
+  intro t hstep
+  exact False.elim (hno t hstep)
+
+/-- If every concrete path branch is a `1 × 1` branch, the reduced
+second-pivot row handoff is vacuous. -/
+theorem higham11_7_ConcretePathSecondPivotReducedSolveRows_of_all_one
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hone : ∀ t : Fin k, step t = PivotSize.one) :
+    higham11_7_ConcretePathSecondPivotReducedSolveRows k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotReducedSolveRows_of_no_two k step A b
+    x_hat ΔA (fun t htwo => by
+      have hbad : PivotSize.one = PivotSize.two := (hone t).symm.trans htwo
+      cases hbad)
+
 /-- In a residual-witness path, the current local perturbation has zero dot
 product on a `2 × 2` branch's second-pivot row. -/
 theorem higham11_7_tridiagonalConcretePathResidualWitnesses_pathSecondPivot_two_current_local_dot_zero
@@ -13249,6 +13285,41 @@ theorem higham11_7_tridiagonalConcretePathSupportedWitnesses_complement_full_sol
     (higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_local_rows_of_reduced_rows
       k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact ΔA hwit
       hrow_second)
+
+/-- If a concrete path has no `2 × 2` branch, every non-leading,
+non-first-trailing complement row is impossible, so the complement solve-row
+obligation is vacuous. -/
+theorem higham11_7_tridiagonalPath_complement_full_solve_rows_of_no_secondPivot
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hno : ∀ t : Fin k, step t ≠ PivotSize.two) :
+    ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      i ≠ 0 →
+      (∀ t : Fin k,
+        i ≠ higham11_7_tridiagonalPathFirstTrailingIndex k step t) →
+      ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+          (A i j +
+            (∑ s : Fin k,
+              higham11_7_tridiagonalLiftLocalBlockPerturbation
+                (higham11_7_tridiagonalPathPivotSpan k step + 1)
+                (higham11_7_tridiagonalPathPrefixSpan k step s)
+                (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim k step s) (step s))
+                (ΔA s) i j)) *
+            x_hat j =
+        b i := by
+  intro i hi0 hnotFirst
+  rcases higham11_7_tridiagonalPath_complement_eq_secondPivot k step i hi0
+      hnotFirst with
+    ⟨t, hstep, _hi⟩
+  exact False.elim (hno t hstep)
 
 /-- The `1 × 1` first-trailing solve-row lift can use the support carried by a
 concrete equation-bearing path residual witness directly. -/
