@@ -2859,6 +2859,26 @@ theorem sylvesterVecCoeff_diagonal_det_eq_zero_of_common_entry (n : Nat)
   have hsep := (sylvesterVecCoeff_diagonal_det_ne_zero_iff n n a b).mp hdet
   exact hsep i j (by rw [hij, sub_self])
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3):
+    source-numbered alias for the diagonal vec/Kronecker Sylvester coefficient. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal :=
+  sylvesterVecCoeff_diagonal
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3):
+    source-numbered alias for the diagonal-basis determinant product. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal_det :=
+  sylvesterVecCoeff_diagonal_det
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3):
+    source-numbered alias for diagonal nonsingularity by separated entries. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal_det_ne_zero_iff :=
+  sylvesterVecCoeff_diagonal_det_ne_zero_iff
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3):
+    source-numbered alias for singularity from a common diagonal entry. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal_det_eq_zero_of_common_entry :=
+  sylvesterVecCoeff_diagonal_det_eq_zero_of_common_entry
+
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
     explicit inverse for the diagonal-basis vec/Kronecker coefficient with
     diagonal entries `(a_i - b_j)^{-1}`. -/
