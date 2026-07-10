@@ -8934,6 +8934,67 @@ theorem higham11_7_tridiagonalPath_nonfinal_firstTrailingIndex_rows_of_one_two
       simpa [higham11_7_tridiagonalPathFirstTrailingIndex_of_two
         (k + 1) step t hstep] using htwo t ht hstep
 
+/-- Combined non-final endpoint dispatch and row coverage for a nonempty path:
+prove the predicate at pivot-specific non-final `1 × 1`/`2 × 2` endpoints, at
+the terminal last row, and on non-endpoint rows. -/
+theorem higham11_7_tridiagonalPath_forall_of_one_two_nonfinal_firstTrailingIndex_last_and_complement
+    (k : ℕ) (step : Fin (k + 1) → PivotSize)
+    (P : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → Prop)
+    (hone :
+      ∀ t : Fin (k + 1), t ≠ Fin.last k →
+        ∀ hstep : step t = PivotSize.one,
+          P (higham11_7_tridiagonalPathFirstTrailingIndex_one
+            (k + 1) step t hstep))
+    (htwo :
+      ∀ t : Fin (k + 1), t ≠ Fin.last k →
+        ∀ hstep : step t = PivotSize.two,
+          P (higham11_7_tridiagonalPathFirstTrailingIndex_two
+            (k + 1) step t hstep))
+    (hlast :
+      P (Fin.last (higham11_7_tridiagonalPathPivotSpan (k + 1) step)))
+    (hcomp :
+      ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+        (∀ t : Fin (k + 1),
+          i ≠ higham11_7_tridiagonalPathFirstTrailingIndex (k + 1) step t) →
+        P i) :
+    ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1), P i :=
+  higham11_7_tridiagonalPath_forall_of_nonfinal_firstTrailingIndex_last_and_complement
+    k step P
+    (higham11_7_tridiagonalPath_nonfinal_firstTrailingIndex_rows_of_one_two
+      k step P hone htwo)
+    hlast hcomp
+
+/-- Combined non-final endpoint dispatch and row coverage for a nonempty path,
+with the leading row handled separately before the endpoint-complement case. -/
+theorem higham11_7_tridiagonalPath_forall_of_one_two_nonfinal_firstTrailingIndex_last_zero_and_complement
+    (k : ℕ) (step : Fin (k + 1) → PivotSize)
+    (P : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → Prop)
+    (hone :
+      ∀ t : Fin (k + 1), t ≠ Fin.last k →
+        ∀ hstep : step t = PivotSize.one,
+          P (higham11_7_tridiagonalPathFirstTrailingIndex_one
+            (k + 1) step t hstep))
+    (htwo :
+      ∀ t : Fin (k + 1), t ≠ Fin.last k →
+        ∀ hstep : step t = PivotSize.two,
+          P (higham11_7_tridiagonalPathFirstTrailingIndex_two
+            (k + 1) step t hstep))
+    (hlast :
+      P (Fin.last (higham11_7_tridiagonalPathPivotSpan (k + 1) step)))
+    (hzero : P 0)
+    (hcomp :
+      ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+        i ≠ 0 →
+        (∀ t : Fin (k + 1),
+          i ≠ higham11_7_tridiagonalPathFirstTrailingIndex (k + 1) step t) →
+        P i) :
+    ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1), P i :=
+  higham11_7_tridiagonalPath_forall_of_nonfinal_firstTrailingIndex_last_zero_and_complement
+    k step P
+    (higham11_7_tridiagonalPath_nonfinal_firstTrailingIndex_rows_of_one_two
+      k step P hone htwo)
+    hlast hzero hcomp
+
 /-- A concrete path solve-row proof splits into rows at canonical first-trailing
 endpoints and rows outside that endpoint set.  This is the row-coverage
 combinator for the remaining Theorem 11.7 lifted summed solve equation. -/
