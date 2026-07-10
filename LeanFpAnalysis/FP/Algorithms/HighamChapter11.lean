@@ -583,6 +583,56 @@ theorem higham11_2_bunch_kaufman_case1_multiplier_bound
     ⟨_, hpivot⟩
   exact higham11_1_oneByOne_multiplier_bound c a11 ω1 α hα hω1 hc hpivot
 
+/-- **Algorithm 11.2**, case-(2) pivot lower bound under a concrete row-maximum
+dominance side condition.  The branch predicate gives
+`αω1² ≤ |a11|ωr`; if the pivot path also supplies `ωr≤ω1`, then the accepted
+scalar pivot satisfies the same lower bound `αω1≤|a11|` used in case-(1). -/
+theorem higham11_2_bunch_kaufman_case2_pivot_bound_of_row_max_le
+    (α a11 arr ω1 ωr : ℝ) (hω1 : 0 < ω1) (hωr_le : ωr ≤ ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case2) :
+    α * ω1 ≤ |a11| := by
+  rcases higham11_2_bunch_kaufman_case2_tests α a11 arr ω1 ωr hcase with
+    ⟨_, _, hprod_ge⟩
+  have hpivot_cross : α * ω1 ^ 2 ≤ |a11| * ωr := hprod_ge
+  have hprod_le : |a11| * ωr ≤ |a11| * ω1 :=
+    mul_le_mul_of_nonneg_left hωr_le (abs_nonneg a11)
+  have hpivot_sq : α * ω1 ^ 2 ≤ |a11| * ω1 :=
+    hpivot_cross.trans hprod_le
+  nlinarith [hpivot_sq, hω1]
+
+/-- **Algorithm 11.2**, case-(2) nonsingularity under the same row-maximum
+dominance side condition. -/
+theorem higham11_2_bunch_kaufman_case2_pivot_ne_zero_of_row_max_le
+    (α a11 arr ω1 ωr : ℝ) (hα : 0 < α) (hω1 : 0 < ω1)
+    (hωr_le : ωr ≤ ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case2) :
+    a11 ≠ 0 := by
+  have hpivot :
+      α * ω1 ≤ |a11| :=
+    higham11_2_bunch_kaufman_case2_pivot_bound_of_row_max_le
+      α a11 arr ω1 ωr hω1 hωr_le hcase
+  have hpivot_pos : 0 < |a11| := by
+    nlinarith [hα, hω1, hpivot]
+  exact abs_pos.mp hpivot_pos
+
+/-- **Algorithm 11.2**, case-(2) multiplier cap.  The row-maximum side
+condition is explicit because it is path data, not part of the bare branch
+predicate. -/
+theorem higham11_2_bunch_kaufman_case2_multiplier_bound_of_row_max_le
+    (α a11 arr ω1 ωr c : ℝ) (hα : 0 < α) (hω1 : 0 < ω1)
+    (hωr_le : ωr ≤ ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case2)
+    (hc : |c| ≤ ω1) :
+    |c / a11| ≤ 1 / α := by
+  have hpivot :
+      α * ω1 ≤ |a11| :=
+    higham11_2_bunch_kaufman_case2_pivot_bound_of_row_max_le
+      α a11 arr ω1 ωr hω1 hωr_le hcase
+  exact higham11_1_oneByOne_multiplier_bound c a11 ω1 α hα hω1 hc hpivot
+
 /-- **Algorithm 11.2**, case-(3) multiplier cap after the symmetric swap.  The
 accepted scalar pivot `arr` and row/column bound `ωr` imply `|c/arr|≤1/α` for
 entries bounded by `ωr`. -/
