@@ -743,6 +743,16 @@ theorem lyapunov_first_order_bound_of_pos_le_sylvesterSepInf (n : Nat)
       A X alpha gamma sigma halpha hgamma hsigma hX hle)
       DeltaA DeltaC DeltaX hLin
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the raw sep-based first-order Lyapunov bound. -/
+alias H16_eq16_27_lyapunov_first_order_bound_of_sepLowerBound :=
+  lyapunov_first_order_bound_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the raw exact-infimum first-order Lyapunov bound. -/
+alias H16_eq16_27_lyapunov_first_order_bound_of_pos_le_sylvesterSepInf :=
+  lyapunov_first_order_bound_of_pos_le_sylvesterSepInf
+
 /-- Higham, 2nd ed., §16.3, eq (16.27) (p. 317):
     sep-based Lyapunov first-order perturbation bound. If
     `SepLowerBound A (-A^T) sigma` holds, then the printed relative bound

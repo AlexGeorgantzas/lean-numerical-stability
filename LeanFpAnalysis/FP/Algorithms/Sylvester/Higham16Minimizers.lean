@@ -594,6 +594,21 @@ theorem isLeast_sylvesterBackwardErrorValues_of_svdOptimalPerturbations (n : ℕ
       A B C Y U V sigma alpha beta gamma hSVD hpos)
 
 /-- Higham, 2nd ed., Chapter 16, Section 16.2, equation (16.15):
+    source-numbered alias for SVD-discharge backward-error minimizer existence. -/
+alias H16_eq16_15_exists_sylvesterBackwardError_minimizer_of_svdOptimalPerturbations :=
+  exists_sylvesterBackwardError_minimizer_of_svdOptimalPerturbations
+
+/-- Higham, 2nd ed., Chapter 16, Section 16.2, equation (16.15):
+    source-numbered alias for SVD-discharge feasible infimum membership. -/
+alias H16_eq16_15_sylvesterBackwardErrorInf_mem_sylvesterBackwardErrorValues_of_svdOptimalPerturbations :=
+  sylvesterBackwardErrorInf_mem_sylvesterBackwardErrorValues_of_svdOptimalPerturbations
+
+/-- Higham, 2nd ed., Chapter 16, Section 16.2, equation (16.15):
+    source-numbered alias for SVD-discharge least feasible backward error. -/
+alias H16_eq16_15_isLeast_sylvesterBackwardErrorValues_of_svdOptimalPerturbations :=
+  isLeast_sylvesterBackwardErrorValues_of_svdOptimalPerturbations
+
+/-- Higham, 2nd ed., Chapter 16, Section 16.2, equation (16.15):
     source-facing two-sided Sylvester eta/xi infimum bound from SVD data. -/
 theorem sylvesterBackwardErrorInf_two_sided_sqrt_xiSq_of_svdOptimalPerturbations
     (n : Nat)
@@ -942,6 +957,34 @@ theorem isLeast_lyapunovBackwardErrorValues_of_symmetric_spectral (n : ℕ)
     (lyapunovBackwardErrorValues_nonempty_of_symmetric_spectral n
       A C Y U lam alpha gamma hY hU hC hYsym hpos)
 
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered alias for attained structured Lyapunov eta infimum. -/
+alias H16_eq16_21_exists_lyapunovBackwardError_minimizer :=
+  exists_lyapunovBackwardError_minimizer
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered alias for eta-infimum membership in the feasible value set. -/
+alias H16_eq16_21_lyapunovBackwardErrorInf_mem_lyapunovBackwardErrorValues :=
+  lyapunovBackwardErrorInf_mem_lyapunovBackwardErrorValues
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered alias for least-value attainment of the structured
+    Lyapunov eta feasible set. -/
+alias H16_eq16_21_isLeast_lyapunovBackwardErrorValues :=
+  isLeast_lyapunovBackwardErrorValues
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered alias for attained structured Lyapunov eta infimum under
+    symmetric spectral data. -/
+alias H16_eq16_21_exists_lyapunovBackwardError_minimizer_of_symmetric_spectral :=
+  exists_lyapunovBackwardError_minimizer_of_symmetric_spectral
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered alias for least-value attainment under symmetric spectral
+    data. -/
+alias H16_eq16_21_isLeast_lyapunovBackwardErrorValues_of_symmetric_spectral :=
+  isLeast_lyapunovBackwardErrorValues_of_symmetric_spectral
+
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
     Chapter 16, Section 16.2.1, equation (16.21): exact-arithmetic
     source-facing two-sided Lyapunov eta/xi infimum bound. This wrapper
@@ -1072,6 +1115,11 @@ theorem lyapunov_relative_residual_le_backwardErrorInf_of_symmetric_spectral
       halpha hgamma hscale
       (lyapunovBackwardErrorValues_nonempty_of_symmetric_spectral n
         A C Y U lam alpha gamma hY hU hC hYsym hpos)
+
+/-- Higham, 2nd ed., Chapter 16, Section 16.2.1, equation (16.21):
+    source-numbered alias for the Lyapunov residual-ratio lower bound. -/
+alias H16_eq16_21_lyapunov_relative_residual_le_backwardErrorInf_of_symmetric_spectral :=
+  lyapunov_relative_residual_le_backwardErrorInf_of_symmetric_spectral
 
 -- ============================================================
 -- (16.29): floating-point computed-residual dR model

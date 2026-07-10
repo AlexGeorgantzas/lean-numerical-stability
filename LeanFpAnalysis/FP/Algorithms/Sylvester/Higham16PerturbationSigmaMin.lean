@@ -358,6 +358,107 @@ theorem sylvester_relative_error_le_of_sepLowerBound_residual_budget (n : Nat)
       _ = eta * frobNorm X * sigma := by ring
   exact le_trans hRel hScaled
 
+/-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.28):
+    a Schur-coordinate Frobenius residual budget transfers through the exact
+    orthogonal Schur reconstruction and gives the source-shaped relative
+    Frobenius forward-error bound for the original Sylvester equation.  This is
+    exact residual transport only; it does not model rounded Bartels-Stewart
+    arithmetic or estimator production. -/
+theorem sylvester_relative_error_le_of_sepLowerBound_schur_transform_residual_budget
+    (n : Nat)
+    (U R A : RMatFn n n) (V S B : RMatFn n n)
+    (C X Y : RMatFn n n) (sigma eta : Real)
+    (hSep : SepLowerBound n A B sigma)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidual :
+      frobNormRect
+        (sylvesterResidualRect n n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <=
+        eta * sigma * frobNorm X) :
+    frobNorm
+        (fun i j => X i j -
+          rectMatMul U (rectMatMul Y (matTranspose V)) i j) /
+        frobNorm X <= eta := by
+  let Xhat : RMatFn n n := rectMatMul U (rectMatMul Y (matTranspose V))
+  have hResidualOrigRect :
+      frobNormRect (sylvesterResidualRect n n A B C Xhat) <=
+        eta * sigma * frobNorm X :=
+    frobNormRect_sylvesterResidualRect_le_of_schur_transform
+      n n U R A V S B C Y (eta * sigma * frobNorm X)
+      hU hV hA hB hResidual
+  have hResidualOrig :
+      frobNorm (sylvesterResidual n A B C Xhat) <=
+        eta * sigma * frobNorm X := by
+    rw [<- frobNormRect_eq_frobNormFn]
+    simpa [Xhat, sylvesterResidual, sylvesterResidualRect,
+      sylvesterOp, sylvesterOpRect, matMul, matMulRect] using hResidualOrigRect
+  exact
+    sylvester_relative_error_le_of_sepLowerBound_residual_budget n
+      A B C X Xhat sigma eta hSep hExact hX_pos hResidualOrig
+
+/-- Higham, 2nd ed., Chapter 16.3-16.4, equations (16.26) and (16.28):
+    a supplied Sylvester operator sigma-min certificate feeds the exact
+    Schur-coordinate residual-budget relative Frobenius forward-error bridge. -/
+theorem sylvester_relative_error_le_of_sigmaMin_schur_transform_residual_budget
+    (n : Nat)
+    (U R A : RMatFn n n) (V S B : RMatFn n n)
+    (C X Y : RMatFn n n) (sigma eta : Real)
+    (hSigma : 0 < sigma)
+    (hSigmaMin : forall Z : RMatFn n n,
+      sigma * frobNorm Z <= frobNorm (sylvesterOp n A B Z))
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidual :
+      frobNormRect
+        (sylvesterResidualRect n n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <=
+        eta * sigma * frobNorm X) :
+    frobNorm
+        (fun i j => X i j -
+          rectMatMul U (rectMatMul Y (matTranspose V)) i j) /
+        frobNorm X <= eta := by
+  exact
+    sylvester_relative_error_le_of_sepLowerBound_schur_transform_residual_budget
+      n U R A V S B C X Y sigma eta
+      (SepLowerBound_sylvester_of_sigmaMin n A B sigma hSigma hSigmaMin)
+      hU hV hA hB hExact hX_pos hResidual
+
+/-- Higham, 2nd ed., Chapter 16.3-16.4, equations (16.26) and (16.28):
+    a positive exact `sep(A,B)` lower bound feeds the exact Schur-coordinate
+    residual-budget relative Frobenius forward-error bridge. -/
+theorem sylvester_relative_error_le_of_pos_le_sylvesterSepInf_schur_transform_residual_budget
+    (n : Nat)
+    (U R A : RMatFn n n) (V S B : RMatFn n n)
+    (C X Y : RMatFn n n) (sigma eta : Real)
+    (hSigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidual :
+      frobNormRect
+        (sylvesterResidualRect n n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <=
+        eta * sigma * frobNorm X) :
+    frobNorm
+        (fun i j => X i j -
+          rectMatMul U (rectMatMul Y (matTranspose V)) i j) /
+        frobNorm X <= eta := by
+  exact
+    sylvester_relative_error_le_of_sepLowerBound_schur_transform_residual_budget
+      n U R A V S B C X Y sigma eta
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
+      hU hV hA hB hExact hX_pos hResidual
+
 /-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
     a sigma-min lower bound plus an exact residual budget gives a clean
     relative Frobenius forward-error budget for an approximate Sylvester
@@ -470,6 +571,90 @@ theorem H16_eq16_28_sylvester_relative_error_le_of_sepLowerBound_residual_budget
   exact
     sylvester_relative_error_le_of_sepLowerBound_residual_budget n
       A B C X Xhat sigma eta hSep hExact hX_pos hResidual
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the Schur-coordinate residual-budget relative
+    Frobenius forward-error bound. -/
+theorem H16_eq16_28_sylvester_relative_error_le_of_sepLowerBound_schur_transform_residual_budget
+    (n : Nat)
+    (U R A : RMatFn n n) (V S B : RMatFn n n)
+    (C X Y : RMatFn n n) (sigma eta : Real)
+    (hSep : SepLowerBound n A B sigma)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidual :
+      frobNormRect
+        (sylvesterResidualRect n n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <=
+        eta * sigma * frobNorm X) :
+    frobNorm
+        (fun i j => X i j -
+          rectMatMul U (rectMatMul Y (matTranspose V)) i j) /
+        frobNorm X <= eta := by
+  exact
+    sylvester_relative_error_le_of_sepLowerBound_schur_transform_residual_budget
+      n U R A V S B C X Y sigma eta hSep hU hV hA hB hExact hX_pos
+      hResidual
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the supplied-operator-sigma-min Schur-coordinate
+    residual-budget relative Frobenius forward-error bound. -/
+theorem H16_eq16_28_sylvester_relative_error_le_of_sigmaMin_schur_transform_residual_budget
+    (n : Nat)
+    (U R A : RMatFn n n) (V S B : RMatFn n n)
+    (C X Y : RMatFn n n) (sigma eta : Real)
+    (hSigma : 0 < sigma)
+    (hSigmaMin : forall Z : RMatFn n n,
+      sigma * frobNorm Z <= frobNorm (sylvesterOp n A B Z))
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidual :
+      frobNormRect
+        (sylvesterResidualRect n n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <=
+        eta * sigma * frobNorm X) :
+    frobNorm
+        (fun i j => X i j -
+          rectMatMul U (rectMatMul Y (matTranspose V)) i j) /
+        frobNorm X <= eta := by
+  exact
+    sylvester_relative_error_le_of_sigmaMin_schur_transform_residual_budget
+      n U R A V S B C X Y sigma eta hSigma hSigmaMin hU hV hA hB
+      hExact hX_pos hResidual
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the exact-`sep(A,B)` Schur-coordinate
+    residual-budget relative Frobenius forward-error bound. -/
+theorem H16_eq16_28_sylvester_relative_error_le_of_pos_le_sylvesterSepInf_schur_transform_residual_budget
+    (n : Nat)
+    (U R A : RMatFn n n) (V S B : RMatFn n n)
+    (C X Y : RMatFn n n) (sigma eta : Real)
+    (hSigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A B)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hExact : forall i j, sylvesterOp n A B X i j = C i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidual :
+      frobNormRect
+        (sylvesterResidualRect n n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <=
+        eta * sigma * frobNorm X) :
+    frobNorm
+        (fun i j => X i j -
+          rectMatMul U (rectMatMul Y (matTranspose V)) i j) /
+        frobNorm X <= eta := by
+  exact
+    sylvester_relative_error_le_of_pos_le_sylvesterSepInf_schur_transform_residual_budget
+      n U R A V S B C X Y sigma eta hSigma hle hU hV hA hB
+      hExact hX_pos hResidual
 
 /-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
     source-numbered alias for the supplied-operator-sigma-min residual-budget

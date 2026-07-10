@@ -94,6 +94,7 @@ import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16LyapunovSigmaMin
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16PsiSigmaMin
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16PerturbationSigmaMin
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16VecNorm
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16HessenbergSchur
 import LeanFpAnalysis.FP.Analysis.NumericalRadius
 import LeanFpAnalysis.FP.Analysis.SchurTriangulation
 import LeanFpAnalysis.FP.Analysis.MatrixPowersHenrici
@@ -119,6 +120,7 @@ import LeanFpAnalysis.FP.Analysis.SemiconvergentExistenceFull
 import LeanFpAnalysis.FP.Analysis.SemiconvergentExistenceComplete
 import LeanFpAnalysis.FP.Analysis.SemiconvergentRealSpectrumComplete
 import LeanFpAnalysis.FP.Analysis.SemiconvergentLimitGeneral
+import LeanFpAnalysis.FP.Analysis.MatrixPowersLp185Primary
 import LeanFpAnalysis.FP.Analysis.HenriciSharpConstant
 import LeanFpAnalysis.FP.Analysis.HenriciSharpConstantExact
 import LeanFpAnalysis.FP.Analysis.PseudospectralLowerBound
@@ -143,6 +145,10 @@ import LeanFpAnalysis.FP.Algorithms.QR.Higham19FormedQ
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19StoredLoop
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19StoredLoopStrongModel
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19StoredLoopAllPivots
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Lemma7Gamma4
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Lemma9DisjointSweep
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Alg11CGSRounded
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6Pivoted
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Labels
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
