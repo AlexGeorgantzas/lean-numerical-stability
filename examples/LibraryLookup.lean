@@ -15897,3 +15897,11 @@ small enough to serve as a smoke check for representative public declarations.
 #check LeanFpAnalysis.FP.higham9_16_fosterS_le_30
 #check LeanFpAnalysis.FP.higham9_16_fosterT_le_2
 #check LeanFpAnalysis.FP.higham9_16_fosterT_le_30
+-- Split-2 M25: (9.16) CLOSED — Foster T3c part 2: ln certificates, head comparisons, final bound
+#check LeanFpAnalysis.FP.higham9_16_log_ratio_ge
+#check LeanFpAnalysis.FP.higham9_16_log5_ge
+#check LeanFpAnalysis.FP.higham9_16_log_lb_30
+#check LeanFpAnalysis.FP.higham9_16_expPartialSum_le_8
+#check LeanFpAnalysis.FP.higham9_16_t3_head_30
+#check LeanFpAnalysis.FP.higham9_16_fosterT_le_exp
+#check LeanFpAnalysis.FP.higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterBound
