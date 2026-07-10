@@ -596,6 +596,92 @@ theorem higham11_2_bunch_kaufman_case3_multiplier_bound
     ⟨_, _, _, hpivot⟩
   exact higham11_1_oneByOne_multiplier_bound c arr ωr α hα hωr hc hpivot
 
+/-- **Theorem 11.4 / Algorithm 11.2 case-(4) growth bridge**: when the
+case-(4) `2 × 2` pivot also carries the concrete source-side row-maximum
+dominance `ωr≤ω1`, its pivot block satisfies the hypotheses of the local
+`2 × 2` Schur-growth theorem.  The row-maximum side condition is explicit
+because it is a pivot-path fact, not a consequence of the branch predicate
+alone. -/
+theorem higham11_4_bunch_kaufman_case4_twoByTwo_schur_growth_of_row_max_le
+    (bij ci1 ci2 cj1 cj2 a11 a1r arr ω1 ωr K : ℝ)
+    (hω1 : 0 < ω1) (hωr_le : ωr ≤ ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case4)
+    (ha1r : |a1r| = ω1)
+    (hK : (1 - higham11_1_bunchParlettAlpha ^ 2) * ω1 * K = 1)
+    (hb : |bij| ≤ ω1) (hci1 : |ci1| ≤ ω1) (hci2 : |ci2| ≤ ω1)
+    (hcj1 : |cj1| ≤ ω1) (hcj2 : |cj2| ≤ ω1) :
+    |higham11_4_twoByTwoSchurEntry bij ci1 ci2 cj1 cj2
+        (arr / (a11 * arr - a1r ^ 2)) (-(a1r / (a11 * arr - a1r ^ 2)))
+        (-(a1r / (a11 * arr - a1r ^ 2))) (a11 / (a11 * arr - a1r ^ 2))| ≤
+      (1 + 2 / (1 - higham11_1_bunchParlettAlpha)) * ω1 := by
+  rcases higham11_2_bunch_kaufman_case4_tests
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr hcase with
+    ⟨_, ha11_lt, _, harr_lt⟩
+  have hα_pos : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  have hα_nonneg : 0 ≤ higham11_1_bunchParlettAlpha := le_of_lt hα_pos
+  have hα_lt_one : higham11_1_bunchParlettAlpha < 1 := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_lt_one
+  have hμ1_nonneg : 0 ≤ higham11_1_bunchParlettAlpha * ω1 :=
+    mul_nonneg hα_nonneg (le_of_lt hω1)
+  have he11 : |a11| ≤ higham11_1_bunchParlettAlpha * ω1 :=
+    le_of_lt ha11_lt
+  have he22 : |arr| ≤ higham11_1_bunchParlettAlpha * ω1 := by
+    have harr_le : |arr| ≤ higham11_1_bunchParlettAlpha * ωr :=
+      le_of_lt harr_lt
+    exact harr_le.trans (mul_le_mul_of_nonneg_left hωr_le hα_nonneg)
+  have he21 : a1r ^ 2 = ω1 ^ 2 := by
+    calc
+      a1r ^ 2 = |a1r| ^ 2 := by rw [sq_abs]
+      _ = ω1 ^ 2 := by rw [ha1r]
+  exact
+    higham11_4_twoByTwo_schur_growth_of_block
+      bij ci1 ci2 cj1 cj2 a11 arr a1r ω1
+      (higham11_1_bunchParlettAlpha * ω1) higham11_1_bunchParlettAlpha K
+      hμ1_nonneg hα_nonneg hα_lt_one hω1 he11 he22 he21 le_rfl hK hb hci1 hci2
+      hcj1 hcj2
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(4) multiplier row cap**: under the
+same concrete row-maximum dominance needed for the case-(4) `2 × 2` pivot block,
+one row of `CE⁻¹` has source row sum at most `6`. -/
+theorem higham11_4_bunch_kaufman_case4_twoByTwo_multiplier_row_sum_le_six_of_row_max_le
+    (c1 c2 a11 a1r arr ω1 ωr K : ℝ)
+    (hω1 : 0 < ω1) (hωr_le : ωr ≤ ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case4)
+    (ha1r : |a1r| = ω1)
+    (hK : (1 - higham11_1_bunchParlettAlpha ^ 2) * ω1 * K = 1)
+    (hc1 : |c1| ≤ ω1) (hc2 : |c2| ≤ ω1) :
+    |c1 * (arr / (a11 * arr - a1r ^ 2)) +
+        c2 * (-(a1r / (a11 * arr - a1r ^ 2)))| +
+      |c1 * (-(a1r / (a11 * arr - a1r ^ 2))) +
+        c2 * (a11 / (a11 * arr - a1r ^ 2))| ≤ 6 := by
+  rcases higham11_2_bunch_kaufman_case4_tests
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr hcase with
+    ⟨_, ha11_lt, _, harr_lt⟩
+  have hα_pos : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  have hα_nonneg : 0 ≤ higham11_1_bunchParlettAlpha := le_of_lt hα_pos
+  have hα_lt_one : higham11_1_bunchParlettAlpha < 1 := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_lt_one
+  have hμ1_nonneg : 0 ≤ higham11_1_bunchParlettAlpha * ω1 :=
+    mul_nonneg hα_nonneg (le_of_lt hω1)
+  have he11 : |a11| ≤ higham11_1_bunchParlettAlpha * ω1 :=
+    le_of_lt ha11_lt
+  have he22 : |arr| ≤ higham11_1_bunchParlettAlpha * ω1 := by
+    have harr_le : |arr| ≤ higham11_1_bunchParlettAlpha * ωr :=
+      le_of_lt harr_lt
+    exact harr_le.trans (mul_le_mul_of_nonneg_left hωr_le hα_nonneg)
+  have he21 : a1r ^ 2 = ω1 ^ 2 := by
+    calc
+      a1r ^ 2 = |a1r| ^ 2 := by rw [sq_abs]
+      _ = ω1 ^ 2 := by rw [ha1r]
+  exact
+    higham11_4_twoByTwo_multiplier_row_sum_le_six_of_block
+      c1 c2 a11 arr a1r ω1 (higham11_1_bunchParlettAlpha * ω1) K
+      hμ1_nonneg hω1 he11 he22 he21 le_rfl hK hc1 hc2
+
 /-- **Equation (11.5)** first-order 2 by 2 pivot solve certificate.  The
 source theorem also includes `O(u^2)` terms, recorded in the ledger as a
 deferred asymptotic refinement. -/
