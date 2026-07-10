@@ -23868,6 +23868,22 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
       hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
       hA.2 hearlier hrow_second_base
 
+/-- **Theorem 11.7 symmetric initial-only full-base-row source endpoint,
+coefficient-sum form**, zero common offset.  This is the symmetric-tridiagonal
+source wrapper for the initial-only full ambient second-pivot route. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_isSymTridiagonal_and_two_only_at_zero :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      htwo_zero hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_two_only_at_zero
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 htwo_zero hrow_second_base
+
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint when every
 accepted `2 × 2` branch is initial, coefficient-sum form**, zero common
 offset.  Base `A` row equations at the second-pivot rows discharge the reduced
@@ -25505,6 +25521,21 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
       hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
       hrow_last_one_local hrow_last_two_local hrow_zero_base
       hA.2 hearlier hrow_second_base
+
+/-- **Theorem 11.7 symmetric initial-only full-base-row source endpoint,
+uniform coefficient form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_isSymTridiagonal_and_two_only_at_zero :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      htwo_zero hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_two_only_at_zero
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 htwo_zero hrow_second_base
 
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint when every
 accepted `2 × 2` branch is initial, uniform-coefficient form**, zero common
@@ -27170,6 +27201,22 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
       hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
       hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
       hrow_zero_base hA.2 hearlier hrow_second_base
+
+/-- **Theorem 11.7 symmetric initial-only full-base-row source endpoint,
+scalar-budget form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_isSymTridiagonal_and_two_only_at_zero :=
+  fun k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      htwo_zero hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_two_only_at_zero
+      k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA.2 htwo_zero hrow_second_base
 
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint when every
 accepted `2 × 2` branch is initial, scalar-budget form**, zero common offset.
