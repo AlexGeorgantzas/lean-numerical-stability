@@ -197,6 +197,22 @@ theorem lyapunov_first_order_rhs_frobNorm_le (n : ℕ)
             rw [hneg] at htri2; linarith [htri2]
     _ ≤ (2 * α * frobNorm X + γ) * T := hbudget
 
+/-- Higham, 2nd ed., Section 16.3, equation (16.27):
+    source-numbered alias for the `dA / alpha` Lyapunov pair-norm block bound. -/
+alias H16_eq16_27_frobNorm_le_alpha_mul_lyapunovPairNorm :=
+  frobNorm_le_alpha_mul_lyapunovPairNorm
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.27):
+    source-numbered alias for the `dC / gamma` Lyapunov pair-norm block bound. -/
+alias H16_eq16_27_frobNorm_le_gamma_mul_lyapunovPairNorm :=
+  frobNorm_le_gamma_mul_lyapunovPairNorm
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.27):
+    source-numbered alias for the Lyapunov first-order right-hand-side
+    Frobenius bound. -/
+alias H16_eq16_27_lyapunov_first_order_rhs_frobNorm_le :=
+  lyapunov_first_order_rhs_frobNorm_le
+
 -- ============================================================
 -- General certificate instantiation from a supplied inverse-operator bound
 -- (eq (16.27), the `||P^{-1}||`-structured condition number taken as data)
@@ -346,6 +362,30 @@ theorem lyapunovCond_of_pos_le_sylvesterSepInf_isLyapunovConditionFirstOrderBoun
       A X alpha gamma sigma halpha hgamma hsigma hX
       (SepLowerBound_of_pos_le_sylvesterSepInf n A
         (fun i j => -matTranspose A i j) sigma hsigma hle)
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.27):
+    source-numbered alias for turning a positive `SepLowerBound(A,-A^T)` into
+    supplied Lyapunov inverse-operator data. -/
+alias H16_eq16_27_lyapunovInverseOpBound_of_sepLowerBound :=
+  lyapunovInverseOpBound_of_sepLowerBound
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.27):
+    source-numbered alias for the supplied-inverse-bound Lyapunov
+    condition-certificate constructor. -/
+alias H16_eq16_27_lyapunovCond_of_inverseOpBound_isLyapunovConditionFirstOrderBound :=
+  lyapunovCond_of_inverseOpBound_isLyapunovConditionFirstOrderBound
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.27):
+    source-numbered alias for the sep-lower-bound Lyapunov
+    condition-certificate constructor. -/
+alias H16_eq16_27_lyapunovCond_of_sepLowerBound_isLyapunovConditionFirstOrderBound :=
+  lyapunovCond_of_sepLowerBound_isLyapunovConditionFirstOrderBound
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.27):
+    source-numbered alias for the exact-infimum Lyapunov
+    condition-certificate constructor. -/
+alias H16_eq16_27_lyapunovCond_of_pos_le_sylvesterSepInf_isLyapunovConditionFirstOrderBound :=
+  lyapunovCond_of_pos_le_sylvesterSepInf_isLyapunovConditionFirstOrderBound
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
     Frobenius Lyapunov perturbation bound from a supplied positive
