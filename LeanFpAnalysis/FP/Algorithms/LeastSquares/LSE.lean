@@ -67538,6 +67538,86 @@ theorem LSEKKTInverseTriple_eq_of_system {m n p : ℕ}
     LSEKKTSystem.solution_unique_of_conditions hB hnull hsys
       (LSEKKTInverseTriple_system hB hnull f g c)
 
+/-- The source KKT operator is a linear equivalence under Higham's conditions
+    (20.24).  This is the coordinate-free form of the inverse augmented matrix
+    used in the Cox--Higham proof of Theorem 20.8. -/
+noncomputable def LSEKKTLinearEquiv {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    ((Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ)) ≃ₗ[ℝ]
+      ((Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ)) :=
+  LinearEquiv.ofBijective (LSEKKTLinearMap A B)
+    ⟨LSEKKTLinearMap.injective_of_conditions hB hnull,
+      (LinearMap.injective_iff_surjective).mp
+        (LSEKKTLinearMap.injective_of_conditions hB hnull)⟩
+
+/-- The inverse linear map associated with the source KKT augmented system. -/
+noncomputable def LSEKKTInverseLinearMap {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    ((Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ)) →ₗ[ℝ]
+      ((Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ)) :=
+  (LSEKKTLinearEquiv hB hnull).symm.toLinearMap
+
+/-- The inverse linear map is a right inverse of the source KKT operator. -/
+theorem LSEKKTInverseLinearMap_right_inverse {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (z : (Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ)) :
+    LSEKKTLinearMap A B (LSEKKTInverseLinearMap hB hnull z) = z := by
+  simp [LSEKKTInverseLinearMap, LSEKKTLinearEquiv]
+
+/-- The inverse linear map is a left inverse of the source KKT operator. -/
+theorem LSEKKTInverseLinearMap_left_inverse {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (z : (Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ)) :
+    LSEKKTInverseLinearMap hB hnull (LSEKKTLinearMap A B z) = z := by
+  simp [LSEKKTInverseLinearMap, LSEKKTLinearEquiv]
+
+/-- The inverse linear map agrees with the canonical inverse triple selected by
+    `LSEKKTInverseTriple`. -/
+theorem LSEKKTInverseLinearMap_apply_eq_inverseTriple {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (f : Fin m → ℝ) (g : Fin n → ℝ) (c : Fin p → ℝ) :
+    LSEKKTInverseLinearMap hB hnull (f, g, c) =
+      LSEKKTInverseTriple hB hnull f g c := by
+  apply LSEKKTLinearMap.injective_of_conditions hB hnull
+  rw [LSEKKTInverseLinearMap_right_inverse,
+    LSEKKTInverseTriple_linearMap_eq]
+
+/-- Additivity of the source KKT inverse action. -/
+theorem LSEKKTInverseTriple_add {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (f₁ f₂ : Fin m → ℝ) (g₁ g₂ : Fin n → ℝ) (c₁ c₂ : Fin p → ℝ) :
+    LSEKKTInverseTriple hB hnull (f₁ + f₂) (g₁ + g₂) (c₁ + c₂) =
+      LSEKKTInverseTriple hB hnull f₁ g₁ c₁ +
+        LSEKKTInverseTriple hB hnull f₂ g₂ c₂ := by
+  rw [← LSEKKTInverseLinearMap_apply_eq_inverseTriple hB hnull
+    (f₁ + f₂) (g₁ + g₂) (c₁ + c₂)]
+  rw [← LSEKKTInverseLinearMap_apply_eq_inverseTriple hB hnull f₁ g₁ c₁]
+  rw [← LSEKKTInverseLinearMap_apply_eq_inverseTriple hB hnull f₂ g₂ c₂]
+  change LSEKKTInverseLinearMap hB hnull ((f₁, g₁, c₁) + (f₂, g₂, c₂)) =
+    LSEKKTInverseLinearMap hB hnull (f₁, g₁, c₁) +
+      LSEKKTInverseLinearMap hB hnull (f₂, g₂, c₂)
+  exact map_add (LSEKKTInverseLinearMap hB hnull) (f₁, g₁, c₁) (f₂, g₂, c₂)
+
+/-- Homogeneity of the source KKT inverse action. -/
+theorem LSEKKTInverseTriple_smul {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (a : ℝ) (f : Fin m → ℝ) (g : Fin n → ℝ) (c : Fin p → ℝ) :
+    LSEKKTInverseTriple hB hnull (a • f) (a • g) (a • c) =
+      a • LSEKKTInverseTriple hB hnull f g c := by
+  rw [← LSEKKTInverseLinearMap_apply_eq_inverseTriple hB hnull
+    (a • f) (a • g) (a • c)]
+  rw [← LSEKKTInverseLinearMap_apply_eq_inverseTriple hB hnull f g c]
+  change LSEKKTInverseLinearMap hB hnull (a • (f, g, c)) =
+    a • LSEKKTInverseLinearMap hB hnull (f, g, c)
+  exact map_smul (LSEKKTInverseLinearMap hB hnull) a (f, g, c)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the actual residual, solution, and multiplier differences between source
     and perturbed LSE minimizers equal the canonical source KKT inverse action
