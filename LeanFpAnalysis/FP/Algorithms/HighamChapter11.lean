@@ -12184,6 +12184,25 @@ theorem higham11_7_row_dot_add_family_sum_split
         (∑ j : Fin n, (∑ t : Fin k, E t i j) * x j) := by
           rw [Finset.sum_add_distrib]
 
+/-- A row dot product with `A` plus a filtered finite family of perturbations
+splits into the base row dot product and the filtered perturbation row dot
+product. -/
+theorem higham11_7_row_dot_add_filtered_family_sum_split
+    (n k : ℕ) (S : Finset (Fin k)) (A : Fin n → Fin n → ℝ)
+    (E : Fin k → Fin n → Fin n → ℝ) (x : Fin n → ℝ) (i : Fin n) :
+    (∑ j : Fin n, (A i j + (∑ t ∈ S, E t i j)) * x j) =
+      (∑ j : Fin n, A i j * x j) +
+        (∑ j : Fin n, (∑ t ∈ S, E t i j) * x j) := by
+  calc
+    (∑ j : Fin n, (A i j + (∑ t ∈ S, E t i j)) * x j)
+        = ∑ j : Fin n, (A i j * x j + (∑ t ∈ S, E t i j) * x j) := by
+          apply Finset.sum_congr rfl
+          intro j _hj
+          ring
+    _ = (∑ j : Fin n, A i j * x j) +
+        (∑ j : Fin n, (∑ t ∈ S, E t i j) * x j) := by
+          rw [Finset.sum_add_distrib]
+
 /-- On the first-trailing row of a `1 × 1` branch, a solve-row dot product
 with `A + ∑ ΔA_lift` splits into the base `A` row dot product, earlier lifted
 branch perturbations, and the current branch-local dot product. -/
@@ -13278,6 +13297,121 @@ abbrev higham11_7_ConcretePathSecondPivotReducedSolveRows
           (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) j) *
         x_hat j) =
       b (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+
+/-- Concrete path-local solve equations at the second pivot row, with the
+strictly earlier branch perturbations combined into the matrix row.  This is
+definitionally equivalent to the split reduced handoff above, but is easier for
+callers that already have a row equation for `A +` the earlier lifted sum. -/
+abbrev higham11_7_ConcretePathSecondPivotCombinedSolveRows
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ) :
+    Prop :=
+  ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+    (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      (A (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) j +
+        (∑ s ∈ Finset.univ.filter (fun s : Fin k => s.val < t.val),
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s)
+            (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+            j)) *
+        x_hat j) =
+      b (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+
+/-- The combined-row second-pivot handoff implies the split reduced handoff. -/
+theorem higham11_7_ConcretePathSecondPivotReducedSolveRows_of_combined_rows
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hrows :
+      higham11_7_ConcretePathSecondPivotCombinedSolveRows
+        k step A b x_hat ΔA) :
+    higham11_7_ConcretePathSecondPivotReducedSolveRows k step A b x_hat ΔA := by
+  intro t hstep
+  let row := higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep
+  let earlier := Finset.univ.filter (fun s : Fin k => s.val < t.val)
+  let E : Fin k →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+        Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ :=
+    fun s i j =>
+      higham11_7_tridiagonalLiftLocalBlockPerturbation
+        (higham11_7_tridiagonalPathPivotSpan k step + 1)
+        (higham11_7_tridiagonalPathPrefixSpan k step s)
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step s) (step s))
+        (ΔA s) i j
+  have hsplit :=
+    higham11_7_row_dot_add_filtered_family_sum_split
+      (higham11_7_tridiagonalPathPivotSpan k step + 1) k earlier A E x_hat row
+  exact hsplit.symm.trans (hrows t hstep)
+
+/-- The split reduced second-pivot handoff implies the combined-row form. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_reduced_rows
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hrows :
+      higham11_7_ConcretePathSecondPivotReducedSolveRows k step A b x_hat ΔA) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows
+        k step A b x_hat ΔA := by
+  intro t hstep
+  let row := higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep
+  let earlier := Finset.univ.filter (fun s : Fin k => s.val < t.val)
+  let E : Fin k →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+        Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ :=
+    fun s i j =>
+      higham11_7_tridiagonalLiftLocalBlockPerturbation
+        (higham11_7_tridiagonalPathPivotSpan k step + 1)
+        (higham11_7_tridiagonalPathPrefixSpan k step s)
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step s) (step s))
+        (ΔA s) i j
+  have hsplit :=
+    higham11_7_row_dot_add_filtered_family_sum_split
+      (higham11_7_tridiagonalPathPivotSpan k step + 1) k earlier A E x_hat row
+  exact hsplit.trans (hrows t hstep)
+
+/-- The split and combined forms of the reduced second-pivot handoff are
+equivalent. -/
+theorem higham11_7_ConcretePathSecondPivotReducedSolveRows_iff_combined_rows
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ) :
+    higham11_7_ConcretePathSecondPivotReducedSolveRows k step A b x_hat ΔA ↔
+      higham11_7_ConcretePathSecondPivotCombinedSolveRows k step A b x_hat ΔA :=
+  ⟨higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_reduced_rows
+      k step A b x_hat ΔA,
+    higham11_7_ConcretePathSecondPivotReducedSolveRows_of_combined_rows
+      k step A b x_hat ΔA⟩
 
 /-- If a concrete path has no accepted `2 × 2` branch, the reduced
 second-pivot row handoff is vacuous. -/
