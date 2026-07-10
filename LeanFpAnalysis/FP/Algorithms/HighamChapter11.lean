@@ -1172,6 +1172,228 @@ theorem higham11_4_bunch_kaufman_case4_twoByTwo_inverse_scaled_bounds
             field_simp [ne_of_gt hden_pos, ne_of_gt hωsq_pos]
   exact ⟨hfirst, hsecond, hthird⟩
 
+/-- **Theorem 11.4 / Algorithm 11.2 case-(4) Schur correction bound**:
+the direct scaled inverse-entry estimates for the accepted `2 × 2` pivot bound
+one source Schur correction by `2ωr/(1−α)`, without assuming `ωr≤ω1`. -/
+theorem higham11_4_bunch_kaufman_case4_twoByTwo_schur_correction_bound
+    (ci1 ci2 cj1 cj2 a11 a1r arr ω1 ωr : ℝ)
+    (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case4)
+    (ha1r : |a1r| = ω1)
+    (hci1 : |ci1| ≤ ω1) (hci2 : |ci2| ≤ ωr)
+    (hcj1 : |cj1| ≤ ω1) (hcj2 : |cj2| ≤ ωr) :
+    |ci1 * ((arr / (a11 * arr - a1r ^ 2)) * cj1 +
+          (-(a1r / (a11 * arr - a1r ^ 2))) * cj2) +
+        ci2 * ((-(a1r / (a11 * arr - a1r ^ 2))) * cj1 +
+          (a11 / (a11 * arr - a1r ^ 2)) * cj2)| ≤
+      2 * ωr / (1 - higham11_1_bunchParlettAlpha) := by
+  obtain ⟨hf11_scaled, hf12_scaled, hf22_scaled⟩ :=
+    higham11_4_bunch_kaufman_case4_twoByTwo_inverse_scaled_bounds
+      a11 a1r arr ω1 ωr hω1 hcase ha1r
+  have hα_pos : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  have hα_nonneg : 0 ≤ higham11_1_bunchParlettAlpha := le_of_lt hα_pos
+  have hα_lt_one : higham11_1_bunchParlettAlpha < 1 := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_lt_one
+  have hα_sq_lt_one : higham11_1_bunchParlettAlpha ^ 2 < 1 := by
+    nlinarith [hα_nonneg, hα_lt_one]
+  have hden_pos : 0 < 1 - higham11_1_bunchParlettAlpha ^ 2 := by
+    linarith [hα_sq_lt_one]
+  have h1α_pos : 0 < 1 - higham11_1_bunchParlettAlpha := by
+    linarith [hα_lt_one]
+  have hω1_nonneg : 0 ≤ ω1 := le_of_lt hω1
+  have hωr_nonneg : 0 ≤ ωr := by
+    exact le_trans (abs_nonneg ci2) hci2
+  have hf12_scaled_neg :
+      |-(a1r / (a11 * arr - a1r ^ 2))| * (ω1 * ωr) ≤
+        ωr / (1 - higham11_1_bunchParlettAlpha ^ 2) := by
+    simpa [abs_neg] using hf12_scaled
+  have ht1 :
+      |ci1 * (arr / (a11 * arr - a1r ^ 2)) * cj1| ≤
+        higham11_1_bunchParlettAlpha * ωr /
+          (1 - higham11_1_bunchParlettAlpha ^ 2) := by
+    have hraw :=
+      abs_triple_mul_le ci1 (arr / (a11 * arr - a1r ^ 2)) cj1
+        ω1 |arr / (a11 * arr - a1r ^ 2)| ω1
+        hω1_nonneg (abs_nonneg _) hci1 le_rfl hcj1
+    calc
+      |ci1 * (arr / (a11 * arr - a1r ^ 2)) * cj1|
+          ≤ ω1 * |arr / (a11 * arr - a1r ^ 2)| * ω1 := hraw
+      _ = |arr / (a11 * arr - a1r ^ 2)| * ω1 ^ 2 := by ring
+      _ ≤ higham11_1_bunchParlettAlpha * ωr /
+          (1 - higham11_1_bunchParlettAlpha ^ 2) := hf11_scaled
+  have ht2 :
+      |ci1 * (-(a1r / (a11 * arr - a1r ^ 2))) * cj2| ≤
+        ωr / (1 - higham11_1_bunchParlettAlpha ^ 2) := by
+    have hraw :=
+      abs_triple_mul_le ci1 (-(a1r / (a11 * arr - a1r ^ 2))) cj2
+        ω1 |-(a1r / (a11 * arr - a1r ^ 2))| ωr
+        hω1_nonneg (abs_nonneg _) hci1 le_rfl hcj2
+    calc
+      |ci1 * (-(a1r / (a11 * arr - a1r ^ 2))) * cj2|
+          ≤ ω1 * |-(a1r / (a11 * arr - a1r ^ 2))| * ωr := hraw
+      _ = |-(a1r / (a11 * arr - a1r ^ 2))| * (ω1 * ωr) := by ring
+      _ ≤ ωr / (1 - higham11_1_bunchParlettAlpha ^ 2) := hf12_scaled_neg
+  have ht3 :
+      |ci2 * (-(a1r / (a11 * arr - a1r ^ 2))) * cj1| ≤
+        ωr / (1 - higham11_1_bunchParlettAlpha ^ 2) := by
+    have hraw :=
+      abs_triple_mul_le ci2 (-(a1r / (a11 * arr - a1r ^ 2))) cj1
+        ωr |-(a1r / (a11 * arr - a1r ^ 2))| ω1
+        hωr_nonneg (abs_nonneg _) hci2 le_rfl hcj1
+    calc
+      |ci2 * (-(a1r / (a11 * arr - a1r ^ 2))) * cj1|
+          ≤ ωr * |-(a1r / (a11 * arr - a1r ^ 2))| * ω1 := hraw
+      _ = |-(a1r / (a11 * arr - a1r ^ 2))| * (ω1 * ωr) := by ring
+      _ ≤ ωr / (1 - higham11_1_bunchParlettAlpha ^ 2) := hf12_scaled_neg
+  have ht4 :
+      |ci2 * (a11 / (a11 * arr - a1r ^ 2)) * cj2| ≤
+        higham11_1_bunchParlettAlpha * ωr /
+          (1 - higham11_1_bunchParlettAlpha ^ 2) := by
+    have hraw :=
+      abs_triple_mul_le ci2 (a11 / (a11 * arr - a1r ^ 2)) cj2
+        ωr |a11 / (a11 * arr - a1r ^ 2)| ωr
+        hωr_nonneg (abs_nonneg _) hci2 le_rfl hcj2
+    calc
+      |ci2 * (a11 / (a11 * arr - a1r ^ 2)) * cj2|
+          ≤ ωr * |a11 / (a11 * arr - a1r ^ 2)| * ωr := hraw
+      _ = |a11 / (a11 * arr - a1r ^ 2)| * ωr ^ 2 := by ring
+      _ ≤ higham11_1_bunchParlettAlpha * ωr /
+          (1 - higham11_1_bunchParlettAlpha ^ 2) := hf22_scaled
+  have hexpand :
+      ci1 * ((arr / (a11 * arr - a1r ^ 2)) * cj1 +
+            (-(a1r / (a11 * arr - a1r ^ 2))) * cj2) +
+          ci2 * ((-(a1r / (a11 * arr - a1r ^ 2))) * cj1 +
+            (a11 / (a11 * arr - a1r ^ 2)) * cj2)
+        =
+      ci1 * (arr / (a11 * arr - a1r ^ 2)) * cj1 +
+        ci1 * (-(a1r / (a11 * arr - a1r ^ 2))) * cj2 +
+        ci2 * (-(a1r / (a11 * arr - a1r ^ 2))) * cj1 +
+        ci2 * (a11 / (a11 * arr - a1r ^ 2)) * cj2 := by
+    ring
+  have htri :
+      |ci1 * (arr / (a11 * arr - a1r ^ 2)) * cj1 +
+          ci1 * (-(a1r / (a11 * arr - a1r ^ 2))) * cj2 +
+          ci2 * (-(a1r / (a11 * arr - a1r ^ 2))) * cj1 +
+          ci2 * (a11 / (a11 * arr - a1r ^ 2)) * cj2|
+        ≤
+      |ci1 * (arr / (a11 * arr - a1r ^ 2)) * cj1| +
+        |ci1 * (-(a1r / (a11 * arr - a1r ^ 2))) * cj2| +
+        |ci2 * (-(a1r / (a11 * arr - a1r ^ 2))) * cj1| +
+        |ci2 * (a11 / (a11 * arr - a1r ^ 2)) * cj2| := by
+    refine le_trans (abs_add_le _ _) ?_
+    refine add_le_add (le_trans (abs_add_le _ _) ?_) (le_refl _)
+    exact add_le_add (abs_add_le _ _) (le_refl _)
+  calc
+    |ci1 * ((arr / (a11 * arr - a1r ^ 2)) * cj1 +
+          (-(a1r / (a11 * arr - a1r ^ 2))) * cj2) +
+        ci2 * ((-(a1r / (a11 * arr - a1r ^ 2))) * cj1 +
+          (a11 / (a11 * arr - a1r ^ 2)) * cj2)|
+        =
+      |ci1 * (arr / (a11 * arr - a1r ^ 2)) * cj1 +
+        ci1 * (-(a1r / (a11 * arr - a1r ^ 2))) * cj2 +
+        ci2 * (-(a1r / (a11 * arr - a1r ^ 2))) * cj1 +
+        ci2 * (a11 / (a11 * arr - a1r ^ 2)) * cj2| := by
+          rw [hexpand]
+    _ ≤
+      |ci1 * (arr / (a11 * arr - a1r ^ 2)) * cj1| +
+        |ci1 * (-(a1r / (a11 * arr - a1r ^ 2))) * cj2| +
+        |ci2 * (-(a1r / (a11 * arr - a1r ^ 2))) * cj1| +
+        |ci2 * (a11 / (a11 * arr - a1r ^ 2)) * cj2| := htri
+    _ ≤
+      higham11_1_bunchParlettAlpha * ωr /
+          (1 - higham11_1_bunchParlettAlpha ^ 2) +
+        ωr / (1 - higham11_1_bunchParlettAlpha ^ 2) +
+        ωr / (1 - higham11_1_bunchParlettAlpha ^ 2) +
+        higham11_1_bunchParlettAlpha * ωr /
+          (1 - higham11_1_bunchParlettAlpha ^ 2) := by
+          exact add_le_add (add_le_add (add_le_add ht1 ht2) ht3) ht4
+    _ = 2 * ωr / (1 - higham11_1_bunchParlettAlpha) := by
+          field_simp [ne_of_gt hden_pos, ne_of_gt h1α_pos]
+          ring
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(4) Schur growth bridge**: the
+source case-(4) one-step growth estimate follows directly from the printed
+case-(4) tests and active-entry bounds, with no `ωr≤ω1` side condition. -/
+theorem higham11_4_bunch_kaufman_case4_twoByTwo_schur_growth
+    (bij ci1 ci2 cj1 cj2 a11 a1r arr ω1 ωr Amax : ℝ)
+    (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case4)
+    (ha1r : |a1r| = ω1)
+    (hb : |bij| ≤ Amax)
+    (hci1 : |ci1| ≤ ω1) (hci2 : |ci2| ≤ ωr)
+    (hcj1 : |cj1| ≤ ω1) (hcj2 : |cj2| ≤ ωr)
+    (hωr_Amax : ωr ≤ Amax) :
+    |higham11_4_twoByTwoSchurEntry bij ci1 ci2 cj1 cj2
+        (arr / (a11 * arr - a1r ^ 2)) (-(a1r / (a11 * arr - a1r ^ 2)))
+        (-(a1r / (a11 * arr - a1r ^ 2))) (a11 / (a11 * arr - a1r ^ 2))| ≤
+      (1 + 2 / (1 - higham11_1_bunchParlettAlpha)) * Amax := by
+  have hα_lt_one : higham11_1_bunchParlettAlpha < 1 := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_lt_one
+  have h1α_pos : 0 < 1 - higham11_1_bunchParlettAlpha := by
+    linarith [hα_lt_one]
+  have hcorr :
+      |ci1 * ((arr / (a11 * arr - a1r ^ 2)) * cj1 +
+            (-(a1r / (a11 * arr - a1r ^ 2))) * cj2) +
+          ci2 * ((-(a1r / (a11 * arr - a1r ^ 2))) * cj1 +
+            (a11 / (a11 * arr - a1r ^ 2)) * cj2)| ≤
+        2 * ωr / (1 - higham11_1_bunchParlettAlpha) :=
+    higham11_4_bunch_kaufman_case4_twoByTwo_schur_correction_bound
+      ci1 ci2 cj1 cj2 a11 a1r arr ω1 ωr hω1 hcase ha1r hci1 hci2 hcj1 hcj2
+  have hcoeff_nonneg :
+      0 ≤ 2 / (1 - higham11_1_bunchParlettAlpha) :=
+    div_nonneg (by norm_num) (le_of_lt h1α_pos)
+  have hcorr_Amax :
+      2 * ωr / (1 - higham11_1_bunchParlettAlpha) ≤
+        2 * Amax / (1 - higham11_1_bunchParlettAlpha) := by
+    calc
+      2 * ωr / (1 - higham11_1_bunchParlettAlpha)
+          = (2 / (1 - higham11_1_bunchParlettAlpha)) * ωr := by ring
+      _ ≤ (2 / (1 - higham11_1_bunchParlettAlpha)) * Amax :=
+          mul_le_mul_of_nonneg_left hωr_Amax hcoeff_nonneg
+      _ = 2 * Amax / (1 - higham11_1_bunchParlettAlpha) := by ring
+  unfold higham11_4_twoByTwoSchurEntry
+  have htri :
+      |bij -
+          (ci1 * ((arr / (a11 * arr - a1r ^ 2)) * cj1 +
+              (-(a1r / (a11 * arr - a1r ^ 2))) * cj2) +
+            ci2 * ((-(a1r / (a11 * arr - a1r ^ 2))) * cj1 +
+              (a11 / (a11 * arr - a1r ^ 2)) * cj2))|
+        ≤
+      |bij| +
+        |ci1 * ((arr / (a11 * arr - a1r ^ 2)) * cj1 +
+            (-(a1r / (a11 * arr - a1r ^ 2))) * cj2) +
+          ci2 * ((-(a1r / (a11 * arr - a1r ^ 2))) * cj1 +
+            (a11 / (a11 * arr - a1r ^ 2)) * cj2)| := by
+    set corr :=
+      ci1 * ((arr / (a11 * arr - a1r ^ 2)) * cj1 +
+          (-(a1r / (a11 * arr - a1r ^ 2))) * cj2) +
+        ci2 * ((-(a1r / (a11 * arr - a1r ^ 2))) * cj1 +
+          (a11 / (a11 * arr - a1r ^ 2)) * cj2)
+    have h := abs_add_le bij (-corr)
+    calc
+      |bij - corr| = |bij + -corr| := by rw [sub_eq_add_neg]
+      _ ≤ |bij| + |-corr| := h
+      _ = |bij| + |corr| := by rw [abs_neg]
+  calc
+    |bij -
+        (ci1 * ((arr / (a11 * arr - a1r ^ 2)) * cj1 +
+            (-(a1r / (a11 * arr - a1r ^ 2))) * cj2) +
+          ci2 * ((-(a1r / (a11 * arr - a1r ^ 2))) * cj1 +
+            (a11 / (a11 * arr - a1r ^ 2)) * cj2))|
+        ≤
+      |bij| +
+        |ci1 * ((arr / (a11 * arr - a1r ^ 2)) * cj1 +
+            (-(a1r / (a11 * arr - a1r ^ 2))) * cj2) +
+          ci2 * ((-(a1r / (a11 * arr - a1r ^ 2))) * cj1 +
+            (a11 / (a11 * arr - a1r ^ 2)) * cj2)| := htri
+    _ ≤ Amax + 2 * Amax / (1 - higham11_1_bunchParlettAlpha) :=
+        add_le_add hb (hcorr.trans hcorr_Amax)
+    _ = (1 + 2 / (1 - higham11_1_bunchParlettAlpha)) * Amax := by
+        ring
+
 /-- **Theorem 11.4 / Algorithm 11.2 case-(4) determinant bridge**: with the
 same explicit row-maximum dominance needed by the local case-(4) `2 × 2`
 bridges, the accepted pivot block has the standard determinant lower bound. -/
