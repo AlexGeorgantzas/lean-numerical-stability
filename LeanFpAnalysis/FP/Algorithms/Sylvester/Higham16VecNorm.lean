@@ -1481,6 +1481,30 @@ theorem existsUnique_lyapunovVecCoeff_mulVec_of_pos_le_sylvesterSepInf
         (fun i j => -matTranspose A i j) sigma hsigma hle)
       c
 
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for `SepLowerBound(A,-A^T)` Lyapunov
+    vectorized coefficient bijectivity. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_mulVec_bijective_of_sepLowerBound :=
+  lyapunovVecCoeff_mulVec_bijective_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the `SepLowerBound(A,-A^T)` unique
+    vectorized Lyapunov coefficient solve witness. -/
+alias H16_eq16_2_27_existsUnique_lyapunovVecCoeff_mulVec_of_sepLowerBound :=
+  existsUnique_lyapunovVecCoeff_mulVec_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for positive exact-`sep(A,-A^T)` Lyapunov
+    vectorized coefficient bijectivity. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_mulVec_bijective_of_pos_le_sylvesterSepInf :=
+  lyapunovVecCoeff_mulVec_bijective_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the positive exact-`sep(A,-A^T)` unique
+    vectorized Lyapunov coefficient solve witness. -/
+alias H16_eq16_2_27_existsUnique_lyapunovVecCoeff_mulVec_of_pos_le_sylvesterSepInf :=
+  existsUnique_lyapunovVecCoeff_mulVec_of_pos_le_sylvesterSepInf
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
     with a supplied `SepLowerBound` certificate for `sep(A,-A^T)`, Mathlib's
     nonsingular inverse gives an explicit exact vectorized Lyapunov coefficient
@@ -1561,6 +1585,30 @@ theorem existsUnique_lyapunovVecCoeff_nonsingInv_mulVec_solution_of_pos_le_sylve
       (SepLowerBound_of_pos_le_sylvesterSepInf n A
         (fun i j => -matTranspose A i j) sigma hsigma hle)
       c
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the `SepLowerBound(A,-A^T)`
+    nonsingular-inverse vectorized Lyapunov coefficient solution. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_nonsingInv_mulVec_solution_of_sepLowerBound :=
+  lyapunovVecCoeff_nonsingInv_mulVec_solution_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the `SepLowerBound(A,-A^T)` unique
+    nonsingular-inverse vectorized Lyapunov coefficient solve witness. -/
+alias H16_eq16_2_27_existsUnique_lyapunovVecCoeff_nonsingInv_mulVec_solution_of_sepLowerBound :=
+  existsUnique_lyapunovVecCoeff_nonsingInv_mulVec_solution_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the positive exact-`sep(A,-A^T)`
+    nonsingular-inverse vectorized Lyapunov coefficient solution. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_nonsingInv_mulVec_solution_of_pos_le_sylvesterSepInf :=
+  lyapunovVecCoeff_nonsingInv_mulVec_solution_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the positive exact-`sep(A,-A^T)` unique
+    nonsingular-inverse vectorized Lyapunov coefficient solve witness. -/
+alias H16_eq16_2_27_existsUnique_lyapunovVecCoeff_nonsingInv_mulVec_solution_of_pos_le_sylvesterSepInf :=
+  existsUnique_lyapunovVecCoeff_nonsingInv_mulVec_solution_of_pos_le_sylvesterSepInf
 
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5):
     determinant nonsingularity exposes the exact nonsingular-inverse action for
@@ -2756,6 +2804,16 @@ theorem sylvesterVecCoeff_mulVec_eq_zero_iff_of_pos_le_sylvesterSepInf
         n A B sigma hsigma hle)
       x
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.26): source-numbered
+    alias for the source `SepLowerBound` trivial-kernel route. -/
+alias H16_eq16_26_sylvesterVecCoeff_mulVec_eq_zero_iff_of_sepLowerBound :=
+  sylvesterVecCoeff_mulVec_eq_zero_iff_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.26): source-numbered
+    alias for the positive exact-infimum trivial-kernel route. -/
+alias H16_eq16_26_sylvesterVecCoeff_mulVec_eq_zero_iff_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_mulVec_eq_zero_iff_of_pos_le_sylvesterSepInf
+
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
     a supplied `SepLowerBound` certificate makes the exact vectorized
     Sylvester coefficient solve bijective.  This is a determinant consequence
@@ -2812,6 +2870,30 @@ theorem existsUnique_sylvesterVecCoeff_mulVec_of_pos_le_sylvesterSepInf
     existsUnique_sylvesterVecCoeff_mulVec_of_sepLowerBound n A B sigma
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
       c
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for `SepLowerBound` vectorized
+    coefficient bijectivity. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_mulVec_bijective_of_sepLowerBound :=
+  sylvesterVecCoeff_mulVec_bijective_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for `SepLowerBound` vectorized unique
+    solvability. -/
+alias H16_eq16_2_26_existsUnique_sylvesterVecCoeff_mulVec_of_sepLowerBound :=
+  existsUnique_sylvesterVecCoeff_mulVec_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for positive exact-infimum vectorized
+    coefficient bijectivity. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_mulVec_bijective_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_mulVec_bijective_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for positive exact-infimum vectorized
+    unique solvability. -/
+alias H16_eq16_2_26_existsUnique_sylvesterVecCoeff_mulVec_of_pos_le_sylvesterSepInf :=
+  existsUnique_sylvesterVecCoeff_mulVec_of_pos_le_sylvesterSepInf
 
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
     a supplied `SepLowerBound` certificate instantiates the determinant-based
@@ -2909,6 +2991,40 @@ theorem sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_pos_le_sylvesterS
         n A B sigma hsigma hle)
       hz
 
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the `SepLowerBound` left inverse action. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_sepLowerBound :=
+  sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the `SepLowerBound` right inverse action. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_sepLowerBound :=
+  sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias identifying exact solutions with the
+    `SepLowerBound` nonsingular-inverse vector. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_sepLowerBound :=
+  sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the positive exact-infimum left inverse
+    action. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_nonsingInv_mulVec_mulVec_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the positive exact-infimum right inverse
+    action. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_mulVec_nonsingInv_mulVec_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias identifying exact solutions with the
+    positive exact-infimum nonsingular-inverse vector. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_pos_le_sylvesterSepInf
+
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
     with a supplied `SepLowerBound` certificate, Mathlib's nonsingular inverse
     gives an explicit exact vectorized Sylvester coefficient solution. -/
@@ -2951,6 +3067,18 @@ theorem existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_sepLowerBou
           Matrix.one_mulVec]
     _ = Matrix.mulVec (Inv.inv (sylvesterVecCoeff n n A B)) c := by
         rw [hy]
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the `SepLowerBound` nonsingular-inverse
+    vectorized Sylvester coefficient solution. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_sepLowerBound :=
+  sylvesterVecCoeff_nonsingInv_mulVec_solution_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the `SepLowerBound` unique exact
+    vectorized Sylvester coefficient solve witness. -/
+alias H16_eq16_2_26_existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_sepLowerBound :=
+  existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_sepLowerBound
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
     a Sylvester operator sigma-min certificate transfers to the concrete
@@ -3133,6 +3261,18 @@ theorem sylvesterVecCoeff_mulVec_surjective_of_operator_sigmaMin
       (sylvesterVecCoeff n n A B)
       (sylvesterVecCoeff_det_ne_zero_of_operator_sigmaMin
         n A B sigma hsigma hSigmaMin)
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    source-numbered alias for operator-sigma-min vectorized coefficient
+    injectivity. -/
+alias H16_eq16_26_sylvesterVecCoeff_mulVec_injective_of_operator_sigmaMin :=
+  sylvesterVecCoeff_mulVec_injective_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    source-numbered alias for operator-sigma-min vectorized coefficient
+    surjectivity. -/
+alias H16_eq16_26_sylvesterVecCoeff_mulVec_surjective_of_operator_sigmaMin :=
+  sylvesterVecCoeff_mulVec_surjective_of_operator_sigmaMin
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
     a Sylvester operator sigma-min certificate makes the vectorized
@@ -3764,6 +3904,18 @@ theorem existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_pos_le_sylv
       n A B sigma
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hsigma hle)
       c
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the positive exact-infimum
+    nonsingular-inverse vectorized Sylvester coefficient solution. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_nonsingInv_mulVec_solution_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.26): source-numbered alias for the positive exact-infimum unique exact
+    vectorized Sylvester coefficient solve witness. -/
+alias H16_eq16_2_26_existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_pos_le_sylvesterSepInf :=
+  existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_pos_le_sylvesterSepInf
 
 /-- A concrete left inverse and operator-2 radius for the printed Sylvester
     vec/Kronecker coefficient gives the inverse-operator bound used by the
@@ -8031,6 +8183,66 @@ theorem lyapunov_relative_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywi
         U A a sigma hU hA hSigma hgap)
       hExact hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total concrete Lyapunov coefficient sigma-min a posteriori
+    error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_of_vecCoeff_sigmaMin_total :=
+  lyapunov_aposteriori_bound_of_vecCoeff_sigmaMin_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total relative concrete Lyapunov coefficient sigma-min
+    a posteriori error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_of_vecCoeff_sigmaMin_total :=
+  lyapunov_relative_aposteriori_bound_of_vecCoeff_sigmaMin_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total concrete-left-inverse Lyapunov a posteriori
+    error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total :=
+  lyapunov_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total relative concrete-left-inverse Lyapunov a posteriori
+    error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total :=
+  lyapunov_relative_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total finite-Gram Lyapunov a posteriori error-residual
+    endpoint. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_of_vecCoeff_gram_eigenvalues_total :=
+  lyapunov_aposteriori_bound_of_vecCoeff_gram_eigenvalues_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total relative finite-Gram Lyapunov a posteriori
+    error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_of_vecCoeff_gram_eigenvalues_total :=
+  lyapunov_relative_aposteriori_bound_of_vecCoeff_gram_eigenvalues_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total diagonal concrete-coefficient Lyapunov a posteriori
+    error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total :=
+  lyapunov_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total relative diagonal concrete-coefficient Lyapunov
+    a posteriori error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total :=
+  lyapunov_relative_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total supplied spectral-coordinate Lyapunov a posteriori
+    error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total :=
+  lyapunov_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total relative supplied spectral-coordinate Lyapunov
+    a posteriori error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total :=
+  lyapunov_relative_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total
+
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     the Lyapunov condition-number certificate follows from a positive lower
     bound on the printed vectorized Lyapunov coefficient. -/
@@ -8850,6 +9062,18 @@ theorem lyapunov_relative_perturbation_spectralDiagonal_of_vecCoeff_entrywise_ab
         U A a sigma hU hA hsigma hgap)
       alpha gamma eps halpha hgamma heps
       hDeltaA hDeltaC hLin hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total supplied spectral-coordinate
+    Lyapunov perturbation endpoint. -/
+alias H16_eq16_27_lyapunov_perturbation_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total :=
+  lyapunov_perturbation_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total relative supplied spectral-coordinate
+    Lyapunov perturbation endpoint. -/
+alias H16_eq16_27_lyapunov_relative_perturbation_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total :=
+  lyapunov_relative_perturbation_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     source-shaped Lyapunov first-order perturbation bound from a finite

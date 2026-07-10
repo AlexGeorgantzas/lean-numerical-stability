@@ -13061,6 +13061,24 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_loca
       m n U R A V S B C Cschur X pmap hU hV hA hB hCschur hmono hcard
       hzero hspectral hsingle_det hXsingle hblock_noCommon hXblock
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the local no-common generated-step Schur
+    solution wrapper. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_local_no_common_generated_step_formula :=
+  sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_local_no_common_generated_step_formula
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the local no-common generated-step original
+    reconstruction wrapper. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_local_no_common_generated_step_formula :=
+  sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_local_no_common_generated_step_formula
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the local no-common generated-step original
+    unique-solvability wrapper. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_local_no_common_generated_step_formula :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_local_no_common_generated_step_formula
+
 /-- Predicate-packaged version of
     `sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_vecCoeff_det_ne_zero_generated_frontier_step_oracle`. -/
 theorem sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_vecCoeff_det_ne_zero_generated_step_formula
@@ -13475,6 +13493,24 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_schedule_twoBlockSpec
       (rectMatMul (matTranspose U) (rectMatMul C V)) X pmap
       hU hV hA hB rfl hmono hcard hzero hspectral hsingle_det
       hblock_noCommon hXformula
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the local no-common recursive Schur-coordinate
+    generated-step witness. -/
+alias H16_eq16_4_8_exists_isSylvesterSolutionRect_and_generatedStepFormula_of_quasiSchur_schedule_twoBlockSpectral_local_no_common :=
+  exists_isSylvesterSolutionRect_and_generatedStepFormula_of_quasiSchur_schedule_twoBlockSpectral_local_no_common
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the local no-common recursive original-coordinate
+    generated-step witness. -/
+alias H16_eq16_4_8_exists_original_solution_and_generated_step_formula_of_quasiSchur_schedule_twoBlockSpectral_local_no_common :=
+  exists_original_solution_and_generated_step_formula_of_quasiSchur_schedule_twoBlockSpectral_local_no_common
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for local no-common recursive generated-step
+    unique solvability. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_schedule_twoBlockSpectral_local_no_common_generated_step_formula_witness :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_schedule_twoBlockSpectral_local_no_common_generated_step_formula_witness
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-facing
     recursive-candidate witness with the real quasi-Schur factors chosen
@@ -13894,6 +13930,30 @@ theorem existsUnique_isSylvesterSolutionRect_of_twoBlockSpectral_no_common_gener
       m n U R A V S B C
       (rectMatMul (matTranspose U) (rectMatMul C V)) X pmap
       hU hV hA hB rfl hmono hcard hzero hspectral hnoOrig hXformula
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for generated-step characterization of exact
+    Schur-coordinate solutions. -/
+alias H16_eq16_4_8_isSylvesterQuasiSchurGeneratedStepFormula_of_solution_twoBlockSpectral_no_common :=
+  isSylvesterQuasiSchurGeneratedStepFormula_of_solution_twoBlockSpectral_no_common
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for exact Schur-coordinate generated-step witness
+    existence. -/
+alias H16_eq16_4_8_exists_isSylvesterSolutionRect_and_generatedStepFormula_of_twoBlockSpectral_no_common :=
+  exists_isSylvesterSolutionRect_and_generatedStepFormula_of_twoBlockSpectral_no_common
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for original-coordinate generated-step witness
+    existence. -/
+alias H16_eq16_4_8_exists_original_solution_and_generated_step_formula_of_twoBlockSpectral_no_common :=
+  exists_original_solution_and_generated_step_formula_of_twoBlockSpectral_no_common
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for original-coordinate unique solvability from an
+    exact generated-step witness. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_twoBlockSpectral_no_common_generated_step_formula_witness :=
+  existsUnique_isSylvesterSolutionRect_of_twoBlockSpectral_no_common_generated_step_formula_witness
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.5)-(16.6), uniqueness half:
     with upper-triangular `T` and every shifted column coefficient
@@ -14625,6 +14685,30 @@ theorem existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec
 alias H16_eq16_2_6_existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec :=
   existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias for the strict real-quasi-Schur vectorized
+    coefficient trivial-kernel characterization. -/
+alias H16_eq16_2_6_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_eq_zero_iff :=
+  sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_eq_zero_iff
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias for strict real-quasi-Schur vectorized coefficient
+    injectivity. -/
+alias H16_eq16_2_6_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_injective :=
+  sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_injective
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias for strict real-quasi-Schur vectorized coefficient
+    surjectivity. -/
+alias H16_eq16_2_6_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_surjective :=
+  sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_surjective
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias for strict real-quasi-Schur vectorized coefficient
+    bijectivity. -/
+alias H16_eq16_2_6_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_bijective :=
+  sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_bijective
+
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
     real-quasi-Schur singleton-block case: Mathlib's nonsingular inverse gives
     an explicit exact vectorized Sylvester coefficient solution for any right-
@@ -14770,6 +14854,30 @@ theorem existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_
       sylvesterVecCoeff_realQuasiSchur_strictBlockMap_eq_nonsingInv_mulVec_of_mulVec_eq
         m n U R A V S B pA pB hU hV hA hB hpAmono hpAcard hRstrict
         hpBmono hpBcard hpBstrict hSstrict hshift hy.1
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias for the strict real-quasi-Schur nonsingular-inverse
+    vectorized Sylvester coefficient solution. -/
+alias H16_eq16_2_6_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_mulVec_solution :=
+  sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_mulVec_solution
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias for the strict real-quasi-Schur nonsingular-inverse
+    left action on the vectorized Sylvester coefficient. -/
+alias H16_eq16_2_6_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_mulVec_mulVec :=
+  sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_mulVec_mulVec
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias identifying any exact strict real-quasi-Schur
+    vectorized solution with the nonsingular-inverse solution. -/
+alias H16_eq16_2_6_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_eq_nonsingInv_mulVec_of_mulVec_eq :=
+  sylvesterVecCoeff_realQuasiSchur_strictBlockMap_eq_nonsingInv_mulVec_of_mulVec_eq
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias for unique strict real-quasi-Schur vectorized
+    nonsingular-inverse solves. -/
+alias H16_eq16_2_6_existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_mulVec_solution :=
+  existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_nonsingInv_mulVec_solution
 
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equation (16.3), strict
     real-quasi-Schur singleton-block nonsingularity excludes a supplied common
@@ -16920,6 +17028,150 @@ theorem H16_eq16_29_realQuasiSchur_strictBlockMap_computed_residual_error_model_
         sylvesterMaxEntryNormRect m n Xhat <=
       eta / sylvesterMaxEntryNormRect m n Xhat := by
   apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_computed_residual_error_model_mono_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the strict real-quasi-Schur shifted determinant-discharge
+    practical residual endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_shifted_computed_residual_certificate
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_shifted_computed_residual_certificate
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar strict real-quasi-Schur shifted
+    determinant-discharge practical residual endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_shifted_computed_residual_certificate_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hBudget : IsSylvesterComputedResidualBudget m n A B C Xhat Rhat Ru)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_shifted_computed_residual_certificate_scalar
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the strict real-quasi-Schur shifted determinant-discharge
+    practical residual-error-model endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_shifted_computed_residual_error_model
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru dR : RMatFn m n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru) /
+        sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_shifted_computed_residual_error_model
+  all_goals assumption
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar strict real-quasi-Schur shifted
+    determinant-discharge practical residual-error-model endpoint. -/
+theorem H16_eq16_29_realQuasiSchur_strictBlockMap_shifted_computed_residual_error_model_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (pA : Fin m -> Nat) (pB : Fin n -> Nat)
+    (C X Xhat Rhat Ru dR : RMatFn m n) (eta : Real)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hpAmono : Monotone pA)
+    (hpAcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2)
+    (hRstrict : forall i j : Fin m, pA j < pA i -> R i j = 0)
+    (hpBmono : Monotone pB)
+    (hpBcard :
+      forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2)
+    (hpBstrict : forall {i j : Fin n}, j < i -> pB j < pB i)
+    (hSstrict : forall i j : Fin n, pB j < pB i -> S i j = 0)
+    (hshift : forall k : Fin n,
+      Not (Matrix.det (sylvesterTriangularShiftedCoeff m R (S k k)) = 0))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hRhat : forall i j,
+      Rhat i j = sylvesterResidualRect m n A B C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (heta : 0 <= eta)
+    (hcomponent : forall p,
+      sylvesterPracticalBudgetVec m n
+          (sylvesterVecCoeffNonsingInvAbs m n A B) Rhat Ru p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n Xhat) :
+    sylvesterMaxEntryNormRect m n (fun i j => X i j - Xhat i j) /
+        sylvesterMaxEntryNormRect m n Xhat <=
+      eta / sylvesterMaxEntryNormRect m n Xhat := by
+  apply sylvester_practical_error_bound_of_realQuasiSchur_strictBlockMap_shifted_computed_residual_error_model_scalar
   all_goals assumption
 
 end LeanFpAnalysis.FP

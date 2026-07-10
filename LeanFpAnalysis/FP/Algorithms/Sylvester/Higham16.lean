@@ -36,6 +36,16 @@ theorem sylvesterOpRect_square_eq_sylvesterOp (n : Nat)
     sylvesterOpRect n n A B X = sylvesterOp n A B X := by
   rfl
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.1):
+    source-numbered alias for square/rectangular product compatibility. -/
+alias H16_eq16_1_matMulRect_square_eq_matMul := matMulRect_square_eq_matMul
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.1):
+    source-numbered alias for square/rectangular Sylvester-operator
+    compatibility. -/
+alias H16_eq16_1_sylvesterOpRect_square_eq_sylvesterOp :=
+  sylvesterOpRect_square_eq_sylvesterOp
+
 /-- Higham, 2nd ed., Chapter 16, equation (16.1):
     the rectangular Sylvester equation predicate `AX - XB = C`. -/
 def IsSylvesterSolutionRect (m n : Nat)
@@ -110,6 +120,18 @@ theorem vec_right_mul_rect (m n p : Nat)
     (Matrix.kronecker_mulVec_vec (1 : Matrix (Fin m) (Fin m) Real)
       X (Matrix.transpose B)).symm
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered alias
+    for the rectangular `vec(A * X * B)` Kronecker identity. -/
+alias H16_eq16_2_vec_triple_product_rect := vec_triple_product_rect
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered alias
+    for the left-multiplication half of the rectangular vec/Kronecker system. -/
+alias H16_eq16_2_vec_left_mul_rect := vec_left_mul_rect
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered alias
+    for the right-multiplication half of the rectangular vec/Kronecker system. -/
+alias H16_eq16_2_vec_right_mul_rect := vec_right_mul_rect
+
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     the product-index Lyapunov coefficient `I_n kron A + A kron I_n`
     for vectorized Lyapunov systems `A X + X A^T = C`. -/
@@ -169,6 +191,22 @@ theorem vecTransposePermutation_mulVec_vec (n : Nat)
   ext p
   simp [vecTransposePermutation, Matrix.mulVec, dotProduct, Matrix.vec]
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the Lyapunov vec/Kronecker coefficient identity. -/
+alias H16_eq16_27_lyapunovVecCoeff_mulVec_vec :=
+  lyapunovVecCoeff_mulVec_vec
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the vectorized first-order Lyapunov perturbation
+    equation. -/
+alias H16_eq16_27_lyapunov_perturbation_first_order_vec :=
+  lyapunov_perturbation_first_order_vec
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the vec-transpose permutation identity. -/
+alias H16_eq16_27_vecTransposePermutation_mulVec_vec :=
+  vecTransposePermutation_mulVec_vec
+
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.2):
     applying `I_n kron A - B^T kron I_m` to `vec(X)` gives
     `vec(AX - XB)`. -/
@@ -201,6 +239,16 @@ theorem sylvester_vec_system_iff_solution (m n : Nat)
     rw [sylvesterVecCoeff_mulVec_vec]
     ext p
     exact h p.2 p.1
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered alias
+    for applying the rectangular Sylvester vec/Kronecker coefficient to
+    `vec(X)`. -/
+alias H16_eq16_2_sylvesterVecCoeff_mulVec_vec := sylvesterVecCoeff_mulVec_vec
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered alias
+    for equivalence between the rectangular vec/Kronecker linear system and
+    the Sylvester equation. -/
+alias H16_eq16_2_sylvester_vec_system_iff_solution := sylvester_vec_system_iff_solution
 
 /-- Higham, 2nd ed., Chapter 16, equation (16.22):
     vectorized/Kronecker form of the full perturbation identity, including the
@@ -236,6 +284,17 @@ theorem sylvester_perturbation_first_order_vec (n : Nat)
   ext p
   simpa [sylvesterOpRect] using
     sylvester_perturbation_first_order n A B X dA dB dC dX hLin p.2 p.1
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.22):
+    source-numbered alias for the vectorized full perturbation identity. -/
+alias H16_eq16_22_sylvester_perturbation_equation_vec :=
+  sylvester_perturbation_equation_vec
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.22):
+    source-numbered alias for the vectorized first-order perturbation
+    identity. -/
+alias H16_eq16_22_sylvester_perturbation_first_order_vec :=
+  sylvester_perturbation_first_order_vec
 
 -- ============================================================
 -- Practical max-entry error bounds from Chapter 16.4
@@ -2820,6 +2879,26 @@ theorem sylvesterVecCoeff_diagonal_det_eq_zero_of_common_entry (n : Nat)
   by_contra hdet
   have hsep := (sylvesterVecCoeff_diagonal_det_ne_zero_iff n n a b).mp hdet
   exact hsep i j (by rw [hij, sub_self])
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3):
+    source-numbered alias for the diagonal vec/Kronecker Sylvester coefficient. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal :=
+  sylvesterVecCoeff_diagonal
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3):
+    source-numbered alias for the diagonal-basis determinant product. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal_det :=
+  sylvesterVecCoeff_diagonal_det
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3):
+    source-numbered alias for diagonal nonsingularity by separated entries. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal_det_ne_zero_iff :=
+  sylvesterVecCoeff_diagonal_det_ne_zero_iff
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3):
+    source-numbered alias for singularity from a common diagonal entry. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal_det_eq_zero_of_common_entry :=
+  sylvesterVecCoeff_diagonal_det_eq_zero_of_common_entry
 
 /-- Higham, 2nd ed., Chapter 16.1, equation (16.3), diagonal case:
     explicit inverse for the diagonal-basis vec/Kronecker coefficient with
@@ -7405,6 +7484,26 @@ theorem sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf_total
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
       hExact hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total `SepLowerBound` a posteriori residual-error endpoint. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_of_sepLowerBound_total :=
+  sylvester_aposteriori_bound_of_sepLowerBound_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total relative `SepLowerBound` a posteriori residual-error endpoint. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_of_sepLowerBound_total :=
+  sylvester_relative_aposteriori_bound_of_sepLowerBound_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the total exact-infimum a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_of_pos_le_sylvesterSepInf_total :=
+  sylvester_aposteriori_bound_of_pos_le_sylvesterSepInf_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the total relative exact-infimum a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf_total :=
+  sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf_total
+
 /-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
     diagonal case: a uniform diagonal-difference gap instantiates the
     Frobenius a posteriori error-residual bound. -/
@@ -7489,6 +7588,16 @@ theorem sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge_total
       (Matrix.diagonal a) (Matrix.diagonal b) C X Xhat sigma
       (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
       hExact hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total diagonal entrywise-gap a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_diagonal_of_entrywise_abs_ge_total :=
+  sylvester_aposteriori_bound_diagonal_of_entrywise_abs_ge_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total relative diagonal entrywise-gap a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge_total :=
+  sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge_total
 
 -- ============================================================
 -- Generalized equations from Chapter 16.5

@@ -2109,7 +2109,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_fosterQ_le_iff` / `higham9_16_fosterPStar_le_iff` (mirrored root/stage comparisons)
 - `higham9_16_fosterPStar_le_tail_iff` (mirrored in-band characterization `p*(P) <= P ↔ q^(j+1) <= P`)
 - `higham9_16_fosterBandIdx_mono` (band index monotone in the tail)
-- `higham9_16_fosterPStar_at_edge` (**band-edge value**: at `e = q^(j+1)` the band-(j+1) shifted root is `s_(K-j-1)·(1+(j+1)e)` — the gluing input, via the σ-substitution and `fosterS` uniqueness)
+- `higham9_16_fosterPStar_at_edge` (**band-edge value**: at `e = q^(j+1)` the band-(j+1) shifted root is `s_(K-j-1)·(1+(j+1)e)` — the gluing input, via the σ-substitution and `fosterS` uniqueness; valid for all `j ≥ 0`)
+- `higham9_16_fosterQ_mono_stage` (band roots monotone in the stage, from A.3)
+- `higham9_16_fosterPStar_eq_at_edge` (`p*_j(q^(j+1)) = q^(j+1)` — the shifted root degenerates at its band's right edge)
+- `higham9_16_band_formula_glue` (**band gluing, if-if edges**: adjacent band formulas agree at the shared edge, via `fosterT_succ`)
+- `higham9_16_band_formula_glue_last` (**band gluing, last edge**: the band-(K-2) formula equals `C/e^(K-1)` at `e = q^(K-1)`)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
