@@ -8637,6 +8637,45 @@ theorem higham11_7_tridiagonalPathFirstTrailingIndex_injective
     rw [hv.symm] at hstrict
     exact (False.elim (Nat.lt_irrefl _ hstrict))
 
+/-- Every concrete path first-trailing row lies after the leading ambient row. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_pos
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k) :
+    0 < (higham11_7_tridiagonalPathFirstTrailingIndex k step t).val := by
+  have hpos := higham11_7_tridiagonalBranchSupportOffset_pos (step t)
+  rw [higham11_7_tridiagonalPathFirstTrailingIndex_val]
+  omega
+
+/-- Every concrete path first-trailing row is at or before the final pivot-span
+row of the full ambient `pathSpan+1` matrix. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_val_le_pivotSpan
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k) :
+    (higham11_7_tridiagonalPathFirstTrailingIndex k step t).val ≤
+      higham11_7_tridiagonalPathPivotSpan k step := by
+  rw [higham11_7_tridiagonalPathFirstTrailingIndex_val]
+  exact higham11_7_tridiagonalPathPrefixSpan_branch_end_le_pivotSpan
+    k step t
+
+/-- The final branch's concrete first-trailing row has value equal to the full
+pivot span. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_last_val_eq_pivotSpan
+    (k : ℕ) (step : Fin (k + 1) → PivotSize) :
+    (higham11_7_tridiagonalPathFirstTrailingIndex (k + 1) step
+      (Fin.last k)).val =
+      higham11_7_tridiagonalPathPivotSpan (k + 1) step := by
+  rw [higham11_7_tridiagonalPathFirstTrailingIndex_val]
+  exact higham11_7_tridiagonalPathPrefixSpan_last_add_branch_eq_pivotSpan
+    k step
+
+/-- The final branch's concrete first-trailing row is the last row of the full
+ambient `pathSpan+1` matrix. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_last_eq_finLast
+    (k : ℕ) (step : Fin (k + 1) → PivotSize) :
+    higham11_7_tridiagonalPathFirstTrailingIndex (k + 1) step (Fin.last k) =
+      Fin.last (higham11_7_tridiagonalPathPivotSpan (k + 1) step) := by
+  apply Fin.ext
+  rw [higham11_7_tridiagonalPathFirstTrailingIndex_last_val_eq_pivotSpan]
+  simp
+
 @[simp] theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_pathFirstTrailing_two
     (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
     (hstep : step t = PivotSize.two)
