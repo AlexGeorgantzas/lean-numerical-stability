@@ -67735,6 +67735,42 @@ theorem IsLSEMinimizer.exists_lagrange_kkt_difference_eq_inverseTriple
   refine ⟨lambda, mu, ?_⟩
   exact LSEKKTInverseTriple_eq_of_system hB hnull hsys
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the solution difference `y - x` is the solution block row of the inverse
+    source KKT operator applied to the Cox--Higham perturbation right-hand
+    side.  This is the component of the inverse-action bridge used by the
+    final solution norm estimate. -/
+theorem IsLSEMinimizer.exists_lagrange_kkt_solution_difference_eq_inverseSolutionLinearMap
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∃ mu : Fin p → ℝ,
+      (fun j => y j - x j) =
+        LSEKKTInverseSolutionLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i,
+           fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i),
+           fun r => Deltad r - rectMatMulVec DeltaB y r) := by
+  rcases hx.exists_lagrange_kkt_difference_eq_inverseTriple hy hB hBpert hnull with
+    ⟨_lambda, mu, _hdr, hdx, _hdlambda⟩
+  refine ⟨mu, ?_⟩
+  rw [hdx]
+  rw [LSEKKTInverseSolutionLinearMap_apply]
+
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
     uniqueness of an equality-constrained least-squares minimizer once
