@@ -27,6 +27,8 @@ import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Minimizers
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Spectrum
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Psi
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Lyapunov
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16RoundedTriangular
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Eq9Assembly
 
 set_option pp.maxSteps 100
 
