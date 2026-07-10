@@ -13061,6 +13061,24 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_loca
       m n U R A V S B C Cschur X pmap hU hV hA hB hCschur hmono hcard
       hzero hspectral hsingle_det hXsingle hblock_noCommon hXblock
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the local no-common generated-step Schur
+    solution wrapper. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_local_no_common_generated_step_formula :=
+  sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_local_no_common_generated_step_formula
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the local no-common generated-step original
+    reconstruction wrapper. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_local_no_common_generated_step_formula :=
+  sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_local_no_common_generated_step_formula
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the local no-common generated-step original
+    unique-solvability wrapper. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_local_no_common_generated_step_formula :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_local_no_common_generated_step_formula
+
 /-- Predicate-packaged version of
     `sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_vecCoeff_det_ne_zero_generated_frontier_step_oracle`. -/
 theorem sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_vecCoeff_det_ne_zero_generated_step_formula
