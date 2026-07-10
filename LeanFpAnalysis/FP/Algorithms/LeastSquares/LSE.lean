@@ -37396,6 +37396,94 @@ theorem theorem20_8_vecNorm2_constraint_defect_le_of_relativeBudget
     hbudget.2.2.2
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the stationarity-row right-hand side `DeltaB^T*mu - DeltaA^T*s` in the
+    Cox--Higham KKT system is bounded by supplied operator-2 radii. -/
+theorem theorem20_8_vecNorm2_stationarity_forcing_le {m n p : ℕ}
+    (DeltaA : Fin m → Fin n → ℝ) (DeltaB : Fin p → Fin n → ℝ)
+    (mu : Fin p → ℝ) (s : Fin m → ℝ)
+    {DeltaB_norm DeltaA_norm : ℝ}
+    (hDeltaB_norm_nonneg : 0 ≤ DeltaB_norm)
+    (hDeltaA_norm_nonneg : 0 ≤ DeltaA_norm)
+    (hDeltaB : rectOpNorm2Le DeltaB DeltaB_norm)
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm) :
+    vecNorm2
+        (fun j : Fin n =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m, DeltaA i j * s i)) ≤
+      DeltaB_norm * vecNorm2 mu + DeltaA_norm * vecNorm2 s := by
+  have hDeltaBT :
+      rectOpNorm2Le (finiteTranspose DeltaB) DeltaB_norm :=
+    rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le
+      DeltaB hDeltaB_norm_nonneg hDeltaB
+  have hDeltaAT :
+      rectOpNorm2Le (finiteTranspose DeltaA) DeltaA_norm :=
+    rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le
+      DeltaA hDeltaA_norm_nonneg hDeltaA
+  have hB :
+      vecNorm2 (rectMatMulVec (finiteTranspose DeltaB) mu) ≤
+        DeltaB_norm * vecNorm2 mu := hDeltaBT mu
+  have hA :
+      vecNorm2 (rectMatMulVec (finiteTranspose DeltaA) s) ≤
+        DeltaA_norm * vecNorm2 s := hDeltaAT s
+  have hrepr :
+      (fun j : Fin n =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m, DeltaA i j * s i)) =
+        fun j : Fin n =>
+          rectMatMulVec (finiteTranspose DeltaB) mu j -
+            rectMatMulVec (finiteTranspose DeltaA) s j := by
+    ext j
+    simp [rectMatMulVec, finiteTranspose]
+  rw [hrepr]
+  calc
+    vecNorm2
+        (fun j : Fin n =>
+          rectMatMulVec (finiteTranspose DeltaB) mu j -
+            rectMatMulVec (finiteTranspose DeltaA) s j)
+        ≤ vecNorm2 (rectMatMulVec (finiteTranspose DeltaB) mu) +
+            vecNorm2
+              (fun j : Fin n =>
+                -rectMatMulVec (finiteTranspose DeltaA) s j) := by
+            simpa [sub_eq_add_neg] using
+              vecNorm2_add_le (rectMatMulVec (finiteTranspose DeltaB) mu)
+                (fun j : Fin n =>
+                  -rectMatMulVec (finiteTranspose DeltaA) s j)
+    _ = vecNorm2 (rectMatMulVec (finiteTranspose DeltaB) mu) +
+          vecNorm2 (rectMatMulVec (finiteTranspose DeltaA) s) := by
+            rw [vecNorm2_neg]
+    _ ≤ DeltaB_norm * vecNorm2 mu + DeltaA_norm * vecNorm2 s :=
+            add_le_add hB hA
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the stationarity-row right-hand side `DeltaB^T*mu - DeltaA^T*s` in the
+    Cox--Higham KKT system is bounded by the source relative perturbation
+    budget. -/
+theorem theorem20_8_vecNorm2_stationarity_forcing_le_of_relativeBudget
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (mu : Fin p → ℝ) (s : Fin m → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    vecNorm2
+        (fun j : Fin n =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m, DeltaA i j * s i)) ≤
+      (eps * frobNormRect B) * vecNorm2 mu +
+        (eps * frobNormRect A) * vecNorm2 s := by
+  have hDeltaB_radius_nonneg : 0 ≤ eps * frobNormRect B :=
+    (frobNormRect_nonneg DeltaB).trans hbudget.2.2.1
+  have hDeltaA_radius_nonneg : 0 ≤ eps * frobNormRect A :=
+    (frobNormRect_nonneg DeltaA).trans hbudget.1
+  exact theorem20_8_vecNorm2_stationarity_forcing_le DeltaA DeltaB mu s
+    hDeltaB_radius_nonneg hDeltaA_radius_nonneg
+    (theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget)
+    (theorem20_8_rectOpNorm2Le_DeltaA_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     specialization of the explicit residual-correction bound to the source
     relative perturbation budget. -/
 theorem theorem20_8_vecNorm2_perturbed_residual_correction_le_of_relativeBudget
