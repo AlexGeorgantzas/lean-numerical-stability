@@ -570,6 +570,19 @@ theorem higham11_2_bunch_kaufman_case4_tests
       |arr| < α * ωr :=
   hcase
 
+/-- **Algorithm 11.2**, case-(1) nonsingularity: the accepted scalar pivot
+`a11` is nonzero when the local column maximum is positive. -/
+theorem higham11_2_bunch_kaufman_case1_pivot_ne_zero
+    (α a11 arr ω1 ωr : ℝ) (hα : 0 < α) (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case1) :
+    a11 ≠ 0 := by
+  rcases higham11_2_bunch_kaufman_case1_tests α a11 arr ω1 ωr hcase with
+    ⟨_, hpivot⟩
+  have hpivot_pos : 0 < |a11| := by
+    nlinarith [hα, hω1, hpivot]
+  exact abs_pos.mp hpivot_pos
+
 /-- **Algorithm 11.2**, case-(1) multiplier cap.  The accepted scalar pivot
 `a11` and a column bound `ω1` imply `|c/a11|≤1/α` for any off-pivot entry
 bounded by `ω1`. -/
@@ -632,6 +645,19 @@ theorem higham11_2_bunch_kaufman_case2_multiplier_bound_of_row_max_le
     higham11_2_bunch_kaufman_case2_pivot_bound_of_row_max_le
       α a11 arr ω1 ωr hω1 hωr_le hcase
   exact higham11_1_oneByOne_multiplier_bound c a11 ω1 α hα hω1 hc hpivot
+
+/-- **Algorithm 11.2**, case-(3) nonsingularity after the symmetric swap: the
+accepted scalar pivot `arr` is nonzero when its row/column maximum is positive. -/
+theorem higham11_2_bunch_kaufman_case3_pivot_ne_zero
+    (α a11 arr ω1 ωr : ℝ) (hα : 0 < α) (hωr : 0 < ωr)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case3) :
+    arr ≠ 0 := by
+  rcases higham11_2_bunch_kaufman_case3_tests α a11 arr ω1 ωr hcase with
+    ⟨_, _, _, hpivot⟩
+  have hpivot_pos : 0 < |arr| := by
+    nlinarith [hα, hωr, hpivot]
+  exact abs_pos.mp hpivot_pos
 
 /-- **Algorithm 11.2**, case-(3) multiplier cap after the symmetric swap.  The
 accepted scalar pivot `arr` and row/column bound `ωr` imply `|c/arr|≤1/α` for
