@@ -8676,6 +8676,36 @@ theorem higham11_7_tridiagonalPathFirstTrailingIndex_last_eq_finLast
   rw [higham11_7_tridiagonalPathFirstTrailingIndex_last_val_eq_pivotSpan]
   simp
 
+/-- Along a nonempty concrete path, the canonical first-trailing endpoint is the
+ambient last row exactly at the final branch. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_eq_finLast_iff
+    (k : ℕ) (step : Fin (k + 1) → PivotSize) (t : Fin (k + 1)) :
+    higham11_7_tridiagonalPathFirstTrailingIndex (k + 1) step t =
+      Fin.last (higham11_7_tridiagonalPathPivotSpan (k + 1) step) ↔
+      t = Fin.last k := by
+  constructor
+  · intro h
+    have hinj :=
+      higham11_7_tridiagonalPathFirstTrailingIndex_injective (k + 1) step
+    apply hinj
+    change higham11_7_tridiagonalPathFirstTrailingIndex (k + 1) step t =
+      higham11_7_tridiagonalPathFirstTrailingIndex (k + 1) step (Fin.last k)
+    rw [h, higham11_7_tridiagonalPathFirstTrailingIndex_last_eq_finLast]
+  · intro ht
+    subst t
+    exact higham11_7_tridiagonalPathFirstTrailingIndex_last_eq_finLast k step
+
+/-- Every non-final branch endpoint is strictly before the ambient last row. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_ne_finLast_of_ne_last
+    (k : ℕ) (step : Fin (k + 1) → PivotSize) (t : Fin (k + 1))
+    (ht : t ≠ Fin.last k) :
+    higham11_7_tridiagonalPathFirstTrailingIndex (k + 1) step t ≠
+      Fin.last (higham11_7_tridiagonalPathPivotSpan (k + 1) step) := by
+  intro h
+  exact ht
+    ((higham11_7_tridiagonalPathFirstTrailingIndex_eq_finLast_iff
+      k step t).1 h)
+
 @[simp] theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_pathFirstTrailing_two
     (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
     (hstep : step t = PivotSize.two)
