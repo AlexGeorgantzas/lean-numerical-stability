@@ -1543,6 +1543,61 @@ theorem higham11_4_bunch_kaufman_case4_twoByTwo_multiplier_row_sum_asymmetric_sc
           field_simp [ne_of_gt hden_pos, ne_of_gt h1α_pos]
           ring
 
+/-- **Theorem 11.4 / Algorithm 11.2 case-(4) pivot-entry caps**: the printed
+case-(4) tests bound the accepted `2 × 2` pivot entries in their natural
+`ω1`/`ωr` source scales. -/
+theorem higham11_4_bunch_kaufman_case4_twoByTwo_pivot_entry_bounds
+    (a11 a1r arr ω1 ωr : ℝ)
+    (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case4)
+    (ha1r : |a1r| = ω1) :
+    |a11| ≤ ω1 ∧ |a1r| ≤ ω1 ∧ |arr| ≤ ωr := by
+  rcases higham11_2_bunch_kaufman_case4_tests
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr hcase with
+    ⟨_, ha11_lt, _, harr_lt⟩
+  have hα_pos : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  have hα_lt_one : higham11_1_bunchParlettAlpha < 1 := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_lt_one
+  have hα_le_one : higham11_1_bunchParlettAlpha ≤ 1 := le_of_lt hα_lt_one
+  have hω1_nonneg : 0 ≤ ω1 := le_of_lt hω1
+  have hωr_pos : 0 < ωr := by
+    have hαωr_pos : 0 < higham11_1_bunchParlettAlpha * ωr :=
+      lt_of_le_of_lt (abs_nonneg arr) harr_lt
+    nlinarith [hα_pos, hαωr_pos]
+  have hωr_nonneg : 0 ≤ ωr := le_of_lt hωr_pos
+  have ha11_le : |a11| ≤ ω1 := by
+    calc
+      |a11| ≤ higham11_1_bunchParlettAlpha * ω1 := le_of_lt ha11_lt
+      _ ≤ 1 * ω1 := mul_le_mul_of_nonneg_right hα_le_one hω1_nonneg
+      _ = ω1 := by ring
+  have ha1r_le : |a1r| ≤ ω1 := by
+    rw [ha1r]
+  have harr_le : |arr| ≤ ωr := by
+    calc
+      |arr| ≤ higham11_1_bunchParlettAlpha * ωr := le_of_lt harr_lt
+      _ ≤ 1 * ωr := mul_le_mul_of_nonneg_right hα_le_one hωr_nonneg
+      _ = ωr := by ring
+  exact ⟨ha11_le, ha1r_le, harr_le⟩
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(4) local `D̂` cap**: if the
+current stage majorant bounds both source maxima `ω1` and `ωr`, then every
+entry of the accepted `2 × 2` pivot block is bounded by that majorant. -/
+theorem higham11_4_bunch_kaufman_case4_twoByTwo_pivot_entries_le_Amax
+    (a11 a1r arr ω1 ωr Amax : ℝ)
+    (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case4)
+    (ha1r : |a1r| = ω1)
+    (hω1_Amax : ω1 ≤ Amax) (hωr_Amax : ωr ≤ Amax) :
+    |a11| ≤ Amax ∧ |a1r| ≤ Amax ∧ |arr| ≤ Amax := by
+  rcases higham11_4_bunch_kaufman_case4_twoByTwo_pivot_entry_bounds
+      a11 a1r arr ω1 ωr hω1 hcase ha1r with
+    ⟨ha11_le, ha1r_le, harr_le⟩
+  exact ⟨ha11_le.trans hω1_Amax, ha1r_le.trans hω1_Amax,
+    harr_le.trans hωr_Amax⟩
+
 /-- **Theorem 11.4 / Algorithm 11.2 case-(4) determinant bridge**: with the
 same explicit row-maximum dominance needed by the local case-(4) `2 × 2`
 bridges, the accepted pivot block has the standard determinant lower bound. -/
