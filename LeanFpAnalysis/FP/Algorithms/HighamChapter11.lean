@@ -646,6 +646,43 @@ theorem higham11_2_bunch_kaufman_case2_multiplier_bound_of_row_max_le
       α a11 arr ω1 ωr hω1 hωr_le hcase
   exact higham11_1_oneByOne_multiplier_bound c a11 ω1 α hα hω1 hc hpivot
 
+/-- **Algorithm 11.2**, first-pivot scalar branch nonsingularity: cases (1)
+and (2) both accept `a11`; case-(2) needs the explicit row-maximum side
+condition used to turn its product test into `αω1≤|a11|`. -/
+theorem higham11_2_bunch_kaufman_case1_or_case2_pivot_ne_zero_of_row_max_le
+    (α a11 arr ω1 ωr : ℝ) (hα : 0 < α) (hω1 : 0 < ω1)
+    (hωr_le : ωr ≤ ω1)
+    (hcase :
+      higham11_2_BunchKaufmanPartialPivotCase
+        α a11 arr ω1 ωr BunchKaufmanCase.case1 ∨
+      higham11_2_BunchKaufmanPartialPivotCase
+        α a11 arr ω1 ωr BunchKaufmanCase.case2) :
+    a11 ≠ 0 := by
+  rcases hcase with hcase1 | hcase2
+  · exact higham11_2_bunch_kaufman_case1_pivot_ne_zero
+      α a11 arr ω1 ωr hα hω1 hcase1
+  · exact higham11_2_bunch_kaufman_case2_pivot_ne_zero_of_row_max_le
+      α a11 arr ω1 ωr hα hω1 hωr_le hcase2
+
+/-- **Algorithm 11.2**, first-pivot scalar multiplier dispatch: cases (1) and
+(2) both use `a11` as the accepted scalar pivot, with case-(2) consuming the
+explicit row-maximum side condition. -/
+theorem higham11_2_bunch_kaufman_case1_or_case2_multiplier_bound_of_row_max_le
+    (α a11 arr ω1 ωr c : ℝ) (hα : 0 < α) (hω1 : 0 < ω1)
+    (hωr_le : ωr ≤ ω1)
+    (hcase :
+      higham11_2_BunchKaufmanPartialPivotCase
+        α a11 arr ω1 ωr BunchKaufmanCase.case1 ∨
+      higham11_2_BunchKaufmanPartialPivotCase
+        α a11 arr ω1 ωr BunchKaufmanCase.case2)
+    (hc : |c| ≤ ω1) :
+    |c / a11| ≤ 1 / α := by
+  rcases hcase with hcase1 | hcase2
+  · exact higham11_2_bunch_kaufman_case1_multiplier_bound
+      α a11 arr ω1 ωr c hα hω1 hcase1 hc
+  · exact higham11_2_bunch_kaufman_case2_multiplier_bound_of_row_max_le
+      α a11 arr ω1 ωr c hα hω1 hωr_le hcase2 hc
+
 /-- **Algorithm 11.2**, case-(3) nonsingularity after the symmetric swap: the
 accepted scalar pivot `arr` is nonzero when its row/column maximum is positive. -/
 theorem higham11_2_bunch_kaufman_case3_pivot_ne_zero
