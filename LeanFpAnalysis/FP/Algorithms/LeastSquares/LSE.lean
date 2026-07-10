@@ -37696,6 +37696,53 @@ theorem theorem20_8_vecNorm2_stationarity_forcing_le_of_relativeBudget_scales
             ring
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    stationarity-row scale with the perturbed residual scale discharged from
+    source-sized `b` and `y`.  The remaining caller obligation is a scale bound
+    for the perturbed Lagrange multiplier. -/
+theorem
+    theorem20_8_vecNorm2_stationarity_forcing_perturbed_residual_le_of_relativeBudget_scales
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (mu : Fin p → ℝ)
+    {eps bScale yScale muScale : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hb : vecNorm2 b ≤ bScale * vecNorm2 x)
+    (hy : vecNorm2 y ≤ yScale * vecNorm2 x)
+    (hmu : vecNorm2 mu ≤ muScale * vecNorm2 x) :
+    vecNorm2
+        (fun j : Fin n =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m,
+              DeltaA i j *
+                lsResidualHigham
+                  (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i)) ≤
+      ((eps * frobNormRect B) * muScale +
+          (eps * frobNormRect A) *
+            ((1 + eps) * bScale +
+              ((1 + eps) * frobNormRect A) * yScale)) *
+        vecNorm2 x := by
+  let s : Fin m → ℝ :=
+    lsResidualHigham
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i) y
+  have hs :
+      vecNorm2 s ≤
+        (((1 + eps) * bScale +
+            ((1 + eps) * frobNormRect A) * yScale) *
+          vecNorm2 x) := by
+    exact
+      theorem20_8_vecNorm2_perturbed_higham_residual_le_of_relativeBudget_scales
+        A DeltaA b Deltab B DeltaB d Deltad x y hbudget heps_nonneg hb hy
+  exact
+    theorem20_8_vecNorm2_stationarity_forcing_le_of_relativeBudget_scales
+      A DeltaA b Deltab B DeltaB d Deltad x mu s hbudget hmu hs
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     specialization of the explicit residual-correction bound to the source
     relative perturbation budget. -/
 theorem theorem20_8_vecNorm2_perturbed_residual_correction_le_of_relativeBudget
