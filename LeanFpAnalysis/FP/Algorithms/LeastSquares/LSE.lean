@@ -68470,6 +68470,101 @@ theorem LSEKKTInverseMultiplierConstrLinearMap_vecNorm2_le_coeff {m n p : ℕ}
     linearMap_vecNorm2_le_complexMatrixOp2_basisMatrix
       (LSEKKTInverseMultiplierConstrLinearMap hB hnull) c
 
+/-- A source LSE Lagrange multiplier satisfying the normal equations solves the
+    source KKT system with right-hand side `(r,0,0)`, where
+    `r = b - A*x` is Higham's signed residual. -/
+theorem LSEKKTSystem.sourceResidual_of_lagrange_normal_equations {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {x : Fin n → ℝ}
+    {lambda : Fin p → ℝ}
+    (hnormal : ∀ j : Fin n,
+      ∑ i : Fin m, A i j * lsResidualHigham A b x i =
+        ∑ r : Fin p, B r j * lambda r) :
+    LSEKKTSystem A B (lsResidualHigham A b x) 0 0
+      (lsResidualHigham A b x) 0 lambda := by
+  constructor
+  · intro i
+    rw [congrFun (rectMatMulVec_zero A) i]
+    simp
+  · constructor
+    · intro j
+      rw [hnormal j]
+      simp
+    · intro r
+      rw [congrFun (rectMatMulVec_zero B) r]
+
+/-- Under Higham's source KKT nonsingularity hypotheses, a source LSE
+    Lagrange multiplier satisfying the normal equations is exactly the
+    multiplier row of the inverse source KKT operator applied to `(r,0,0)`. -/
+theorem theorem20_8_source_lagrange_multiplier_eq_inverseMultiplierLinearMap
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {x : Fin n → ℝ}
+    {lambda : Fin p → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (hnormal : ∀ j : Fin n,
+      ∑ i : Fin m, A i j * lsResidualHigham A b x i =
+        ∑ r : Fin p, B r j * lambda r) :
+    lambda =
+      LSEKKTInverseMultiplierLinearMap hB hnull
+        (lsResidualHigham A b x, 0, 0) := by
+  have hsys :
+      LSEKKTSystem A B (lsResidualHigham A b x) 0 0
+        (lsResidualHigham A b x) 0 lambda :=
+    LSEKKTSystem.sourceResidual_of_lagrange_normal_equations hnormal
+  have huniq := LSEKKTInverseTriple_eq_of_system hB hnull hsys
+  rw [LSEKKTInverseMultiplierLinearMap_apply]
+  exact huniq.2.2
+
+/-- The source LSE multiplier is bounded by the canonical data-row coefficient
+    of the source KKT multiplier block times the source residual norm. -/
+theorem theorem20_8_source_lagrange_multiplier_vecNorm2_le_sourceResidual
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {x : Fin n → ℝ}
+    {lambda : Fin p → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (hnormal : ∀ j : Fin n,
+      ∑ i : Fin m, A i j * lsResidualHigham A b x i =
+        ∑ r : Fin p, B r j * lambda r) :
+    vecNorm2 lambda ≤
+      LSEKKTInverseMultiplierDataCoeff hB hnull *
+        vecNorm2 (lsResidualHigham A b x) := by
+  rw [theorem20_8_source_lagrange_multiplier_eq_inverseMultiplierLinearMap
+    hB hnull hnormal]
+  exact LSEKKTInverseMultiplierDataLinearMap_vecNorm2_le_coeff hB hnull
+    (lsResidualHigham A b x)
+
+/-- Source residual-scale form of the source LSE multiplier bound. -/
+theorem theorem20_8_source_lagrange_multiplier_vecNorm2_le_sourceResidualScale
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {x : Fin n → ℝ}
+    {lambda : Fin p → ℝ} {residualScale : ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (hnormal : ∀ j : Fin n,
+      ∑ i : Fin m, A i j * lsResidualHigham A b x i =
+        ∑ r : Fin p, B r j * lambda r)
+    (hresidual :
+      vecNorm2 (lsResidualHigham A b x) ≤ residualScale * vecNorm2 x) :
+    vecNorm2 lambda ≤
+      (LSEKKTInverseMultiplierDataCoeff hB hnull * residualScale) *
+        vecNorm2 x := by
+  have hbase :=
+    theorem20_8_source_lagrange_multiplier_vecNorm2_le_sourceResidual
+      hB hnull hnormal
+  have hscale :=
+    mul_le_mul_of_nonneg_left hresidual
+      (LSEKKTInverseMultiplierDataCoeff_nonneg hB hnull)
+  calc
+    vecNorm2 lambda ≤
+        LSEKKTInverseMultiplierDataCoeff hB hnull *
+          vecNorm2 (lsResidualHigham A b x) := hbase
+    _ ≤ LSEKKTInverseMultiplierDataCoeff hB hnull *
+          (residualScale * vecNorm2 x) := hscale
+    _ = (LSEKKTInverseMultiplierDataCoeff hB hnull * residualScale) *
+          vecNorm2 x := by ring
+
 /-- Split the multiplier block row of the inverse source KKT operator across
     the data, stationarity, and constraint right-hand-side rows. -/
 theorem LSEKKTInverseMultiplierLinearMap_apply_split {m n p : ℕ}
