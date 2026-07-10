@@ -203,6 +203,20 @@ theorem theorem20_7_initialWeightedRowMax_abs_b_le {m n : ℕ}
   dsimp [theorem20_7_initialWeightedRowMax]
   exact le_max_right _ _
 
+/-- If the source right-hand side is dominated by the scaled row maximum, then
+    the weighted row scale collapses to that scaled row maximum. -/
+theorem theorem20_7_initialWeightedRowMax_eq_phi_mul_initialRowMax_of_abs_b_le
+    {m n : ℕ} (hn : 0 < n) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) {phi : ℝ}
+    (hdom : ∀ i : Fin m,
+      |b i| ≤ phi * theorem20_7_initialRowMax hn A i) :
+    ∀ i : Fin m,
+      theorem20_7_initialWeightedRowMax hn A b phi i =
+        phi * theorem20_7_initialRowMax hn A i := by
+  intro i
+  dsimp [theorem20_7_initialWeightedRowMax]
+  exact max_eq_left (hdom i)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     weighted source-row sorting follows from sorting both the source row
     maximum and the source right-hand-side magnitude.
@@ -935,6 +949,50 @@ theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_forall_nat
   theorem20_7_activeInitialWeightedRowMaxRatioMax_le_of_forall_nat
     hm hn hnm A b phi (Real.sqrt_nonneg _) hpoint
 
+/-- If `|b_i|` is dominated by `phi` times the source row maximum, then the
+    weighted active-suffix source-row ratios are bounded by the corresponding
+    unweighted ratios. -/
+theorem theorem20_7_initialWeightedRowMax_ratio_le_of_initialRowMax_ratio_le_abs_b_le_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) {phi C : ℝ}
+    (hphi : 0 < phi)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hdom : ∀ i : Fin m,
+      |b i| ≤ phi * theorem20_7_initialRowMax hn A i)
+    (hratio :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A
+            ⟨k, lt_of_lt_of_le hk hnm⟩ /
+          theorem20_7_initialRowMax hn A r ≤ C) :
+    ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+      theorem20_7_initialWeightedRowMax hn A b phi
+          ⟨k, lt_of_lt_of_le hk hnm⟩ /
+        theorem20_7_initialWeightedRowMax hn A b phi r ≤ C := by
+  intro k hk r hkr
+  have hW :=
+    theorem20_7_initialWeightedRowMax_eq_phi_mul_initialRowMax_of_abs_b_le
+      hn A b hdom
+  have hphi_ne : phi ≠ 0 := ne_of_gt hphi
+  have hrpos : 0 < theorem20_7_initialRowMax hn A r :=
+    theorem20_7_initialRowMax_pos_of_exists_entry_ne_zero hn A r (hrows r)
+  have hr_ne : theorem20_7_initialRowMax hn A r ≠ 0 := ne_of_gt hrpos
+  calc
+    theorem20_7_initialWeightedRowMax hn A b phi
+        ⟨k, lt_of_lt_of_le hk hnm⟩ /
+      theorem20_7_initialWeightedRowMax hn A b phi r
+        =
+      (phi *
+          theorem20_7_initialRowMax hn A
+            ⟨k, lt_of_lt_of_le hk hnm⟩) /
+        (phi * theorem20_7_initialRowMax hn A r) := by
+          rw [hW ⟨k, lt_of_lt_of_le hk hnm⟩, hW r]
+    _ =
+      theorem20_7_initialRowMax hn A
+          ⟨k, lt_of_lt_of_le hk hnm⟩ /
+        theorem20_7_initialRowMax hn A r := by
+          field_simp [hphi_ne, hr_ne]
+    _ ≤ C := hratio k hk r hkr
+
 /-- A finite active-suffix source-row ratio maximum gives every pointwise
     active-suffix source-row ratio. -/
 theorem theorem20_7_initialRowMax_ratio_le_of_activeRatioMax_le_nat
@@ -1006,6 +1064,42 @@ theorem theorem20_7_initialWeightedRowMax_ratio_le_of_activeRatioMax_le_nat
           theorem20_7_activeInitialWeightedRowMaxRatioMax hm hn hnm A b phi := by
     simpa [p, hkr] using hp
   exact hentry.trans hmax
+
+/-- A finite unweighted active-ratio maximum bounds the finite weighted
+    active-ratio maximum when `|b_i| <= phi * rowMax_i`. -/
+theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) {phi C : ℝ}
+    (hC : 0 ≤ C) (hphi : 0 < phi)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hdom : ∀ i : Fin m,
+      |b i| ≤ phi * theorem20_7_initialRowMax hn A i)
+    (hmax :
+      theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A ≤ C) :
+    theorem20_7_activeInitialWeightedRowMaxRatioMax hm hn hnm A b phi ≤ C :=
+  theorem20_7_activeInitialWeightedRowMaxRatioMax_le_of_forall_nat
+    hm hn hnm A b phi hC
+    (theorem20_7_initialWeightedRowMax_ratio_le_of_initialRowMax_ratio_le_abs_b_le_nat
+      hn hnm A b hphi hrows hdom
+      (theorem20_7_initialRowMax_ratio_le_of_activeRatioMax_le_nat
+        hm hn hnm A hmax))
+
+/-- Source-scale domination of `b` reduces the weighted `sqrt(m)` active-ratio
+    obligation to the unweighted active-ratio obligation. -/
+theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) {phi : ℝ}
+    (hphi : 0 < phi)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hdom : ∀ i : Fin m,
+      |b i| ≤ phi * theorem20_7_initialRowMax hn A i)
+    (hmax :
+      theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A ≤
+        Real.sqrt (m : ℝ)) :
+    theorem20_7_activeInitialWeightedRowMaxRatioMax hm hn hnm A b phi ≤
+      Real.sqrt (m : ℝ) :=
+  theorem20_7_activeInitialWeightedRowMaxRatioMax_le_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
+    hm hn hnm A b (Real.sqrt_nonneg _) hphi hrows hdom hmax
 
 /-- Active-suffix source-row ratio maxima for a row-permuted matrix supply the
     source-ratio hypothesis stated in the original row labels. -/
