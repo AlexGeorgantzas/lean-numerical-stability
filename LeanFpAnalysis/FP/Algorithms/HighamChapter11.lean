@@ -764,6 +764,37 @@ theorem higham11_4_bunch_kaufman_case2_schur_growth
     _ ≤ Amax + Amax / α := add_le_add hb hcorr_Amax
     _ = (1 + 1 / α) * Amax := by ring
 
+/-- **Theorem 11.4 / Algorithm 11.2 case-(2) pivot-entry cap**: for the
+source value of `α`, the printed case-(2) test `|a₁₁|<αω₁` bounds the accepted
+scalar pivot by the current column maximum. -/
+theorem higham11_4_bunch_kaufman_case2_pivot_entry_bound
+    (a11 arr ω1 ωr : ℝ) (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case2) :
+    |a11| ≤ ω1 := by
+  rcases higham11_2_bunch_kaufman_case2_tests
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr hcase with
+    ⟨_, ha11_lt, _⟩
+  have hα_lt_one : higham11_1_bunchParlettAlpha < 1 := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_lt_one
+  have hα_le_one : higham11_1_bunchParlettAlpha ≤ 1 := le_of_lt hα_lt_one
+  calc
+    |a11| ≤ higham11_1_bunchParlettAlpha * ω1 := le_of_lt ha11_lt
+    _ ≤ 1 * ω1 := mul_le_mul_of_nonneg_right hα_le_one (le_of_lt hω1)
+    _ = ω1 := by ring
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(2) local `D̂` cap**: if the current
+stage majorant bounds the active column maximum `ω1`, then the accepted scalar
+pivot in case-(2) is bounded by that majorant. -/
+theorem higham11_4_bunch_kaufman_case2_pivot_entry_le_Amax
+    (a11 arr ω1 ωr Amax : ℝ) (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case2)
+    (hω1_Amax : ω1 ≤ Amax) :
+    |a11| ≤ Amax :=
+  (higham11_4_bunch_kaufman_case2_pivot_entry_bound
+    a11 arr ω1 ωr hω1 hcase).trans hω1_Amax
+
 /-- **Algorithm 11.2**, first-pivot scalar branch nonsingularity: cases (1)
 and (2) both accept `a11`; case-(2) needs the explicit row-maximum side
 condition used to turn its product test into `αω1≤|a11|`. -/
