@@ -13765,6 +13765,9 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_16_fosterBandValue_chapter_le
 #check higham9_16_fosterA2
 #check higham9_16_foster_lemma2
+#check higham9_16_RookPivotGEUTrace_row_max
+#check higham9_16_RookPivotGEUTrace_exists_spec_rook
+#check higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterT
 #check higham9_10_HessenbergGEPPUTrace_to_PartialPivotGEPPUTrace
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowth_le
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowthValue_le
