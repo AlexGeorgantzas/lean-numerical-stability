@@ -47692,6 +47692,36 @@ theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split
       (higham11_8_gammaValid_n_two_prefix_of_15n25 fp n hcoeff_valid).1
       hprod hLhat hThat hbudget_factor hbudget_solve hη_parts
 
+/-- Unit-roundoff-smallness source form of
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_gamma_validity`. -/
+def higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_gamma_validity_of_unit_roundoff_bound :=
+  fun fp n A Pmat L T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+      γ_factor η_factor η_solve hγ_factor hcap hBT_factor h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hprod hLhat
+      hThat hbudget_factor hbudget_solve hη_parts =>
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_gamma_validity
+      fp n A Pmat L T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+      γ_factor η_factor η_solve hγ_factor
+      (higham11_8_gammaValid_15n25_of_unit_roundoff_bound fp n hcap)
+      hBT_factor h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hprod hLhat hThat hbudget_factor hbudget_solve
+      hη_parts
+
+/-- Displayed-cap source form of
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_gamma_validity`. -/
+def higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_gamma_validity_of_u_le_cap :=
+  fun fp n Ucap A Pmat L T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+      γ_factor η_factor η_solve hγ_factor hu hcap hBT_factor h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hprod hLhat
+      hThat hbudget_factor hbudget_solve hη_parts =>
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_gamma_validity
+      fp n A Pmat L T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+      γ_factor η_factor η_solve hγ_factor
+      (higham11_8_gammaValid_15n25_of_u_le_cap fp n Ucap hu hcap)
+      hBT_factor h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hprod hLhat hThat hbudget_factor hbudget_solve
+      hη_parts
+
 /-- Rounded Aasen source-prefix recurrence wrapper plus the printed Theorem
 11.8 normwise predicate.  This is the normwise sibling of
 `higham11_8_fl_aasen_factor_solve_source_backward_error_of_source_prefix_updates`:
@@ -48132,6 +48162,38 @@ theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_sourc
       hvalSum hvalUpdate hLhat_update hLhat_fixed_successor hLhat_fixed_other
       hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower
       hT_U_upper hn hprod hThat hbudget_factor hbudget_solve hη_parts
+
+/-- Unit-roundoff-smallness source form of the source-prefix printed-radius
+split-entry endpoint. -/
+def higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_gamma_validity_of_unit_roundoff_bound :=
+  fun fp n A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+      γ_factor η_factor η_solve hγ_factor hcap hBT_factor hrec hHnz
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hprod hThat hbudget_factor hbudget_solve hη_parts =>
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_gamma_validity
+      fp n A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+      γ_factor η_factor η_solve hγ_factor
+      (higham11_8_gammaValid_15n25_of_unit_roundoff_bound fp n hcap)
+      hBT_factor hrec hHnz hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower
+      hT_U_upper hprod hThat hbudget_factor hbudget_solve hη_parts
+
+/-- Displayed-cap source form of the source-prefix printed-radius split-entry
+endpoint. -/
+def higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_gamma_validity_of_u_le_cap :=
+  fun fp n Ucap A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+      γ_factor η_factor η_solve hγ_factor hu hcap hBT_factor hrec hHnz
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hprod hThat hbudget_factor hbudget_solve hη_parts =>
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_split_entry_budgets_printed_gamma_validity
+      fp n A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+      γ_factor η_factor η_solve hγ_factor
+      (higham11_8_gammaValid_15n25_of_u_le_cap fp n Ucap hu hcap)
+      hBT_factor hrec hHnz hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower
+      hT_U_upper hprod hThat hbudget_factor hbudget_solve hη_parts
 
 /-- Aasen growth factor `rho_n = max_ij |t_ij| / max_ij |a_ij|`. -/
 noncomputable def higham11_8_aasenGrowthFactor
