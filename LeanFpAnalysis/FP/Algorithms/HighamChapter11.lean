@@ -29749,6 +29749,33 @@ theorem higham11_8_AasenSpec_identity_aasenH_band
     hspec.L_upper_zero i j hji
 
 /-- Higham, 2nd ed., Chapter 11, Theorem 11.8 exact-recurrence dependency:
+for `H = T L^T` in an `AasenSpec`, the subdiagonal Aasen pivot is the
+corresponding tridiagonal entry, `H next i = T next i` when `next=i+1`. -/
+theorem higham11_8_AasenSpec_identity_aasenH_subdiagonal_eq_T
+    (n : ℕ) (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (hspec : higham11_8_AasenSpec n A L T σ) :
+    ∀ i next : Fin n, next.val = i.val + 1 →
+      higham11_10_aasenH n T L next i = T next i := by
+  intro i next hnext
+  unfold higham11_10_aasenH
+  rw [Finset.sum_eq_single i]
+  · simp [hspec.L_diag i]
+  · intro k _ hki
+    by_cases hlt : k.val < i.val
+    · have hTzero : T next k = 0 :=
+        hspec.T_tridiag.2 next k (Or.inr (by omega))
+      simp [hTzero]
+    · have hgt : i.val < k.val := by
+        have hne : k.val ≠ i.val := by
+          intro hval
+          exact hki (Fin.ext hval)
+        omega
+      have hLzero : L i k = 0 := hspec.L_upper_zero i k hgt
+      simp [hLzero]
+  · intro hi
+    exact absurd (Finset.mem_univ i) hi
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 exact-recurrence dependency:
 from an identity-permutation `AasenSpec`, the canonical
 `H = T L^T` satisfies the exact Aasen equations (11.12), (11.13), and (11.14),
 assuming the subdiagonal `H next i` pivots used by (11.14) are nonzero. -/
@@ -29772,6 +29799,25 @@ theorem higham11_8_AasenSpec_identity_aasenH_exact_recurrences
       (higham11_10_aasenH n T L) hspec.L_diag hspec.L_upper_zero hprod,
     higham11_14_aasen_next_column_of_product n A L
       (higham11_10_aasenH n T L) hband hprod hHnz⟩
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 exact-recurrence dependency:
+the exact recurrences from an identity-permutation `AasenSpec`, with the
+nonzero pivot condition stated on the concrete tridiagonal subdiagonal
+`T next i` rather than on `H next i`. -/
+theorem higham11_8_AasenSpec_identity_aasenH_exact_recurrences_of_T_subdiagonal_ne_zero
+    (n : ℕ) (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hσ : ∀ i : Fin n, σ i = i)
+    (hTnz : ∀ i next : Fin n, next.val = i.val + 1 → T next i ≠ 0) :
+    higham11_12_aasenDiagonalEquation n A L (higham11_10_aasenH n T L) ∧
+      higham11_13_aasenSubdiagonalEquation n A L (higham11_10_aasenH n T L) ∧
+      higham11_14_aasenNextColumnEquation n A L (higham11_10_aasenH n T L) := by
+  apply higham11_8_AasenSpec_identity_aasenH_exact_recurrences n A L T σ hspec hσ
+  intro i next hnext hzero
+  have hH_eq_T :=
+    higham11_8_AasenSpec_identity_aasenH_subdiagonal_eq_T n A L T σ hspec
+      i next hnext
+  exact hTnz i next hnext (hH_eq_T ▸ hzero)
 
 /-- Higham, 2nd ed., Chapter 11, Theorem 11.8 exact-recurrence dependency:
 same as `higham11_8_AasenSpec_identity_aasenH_exact_recurrences`, but for a
@@ -29806,6 +29852,39 @@ theorem higham11_8_AasenSpec_identity_exact_recurrences_of_H_eq
     higham11_13_aasen_subdiagonal_equation_of_product n A L H
       hspec.L_diag hspec.L_upper_zero hprod,
     higham11_14_aasen_next_column_of_product n A L H hband hprod hHnz⟩
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 exact-recurrence dependency:
+if a named `H` is pointwise `T L^T`, its subdiagonal Aasen pivot is the
+corresponding tridiagonal entry. -/
+theorem higham11_8_AasenSpec_identity_H_subdiagonal_eq_T_of_H_eq
+    (n : ℕ) (A L H T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hH_eq : ∀ i j : Fin n, H i j = higham11_10_aasenH n T L i j) :
+    ∀ i next : Fin n, next.val = i.val + 1 → H next i = T next i := by
+  intro i next hnext
+  rw [hH_eq next i]
+  exact higham11_8_AasenSpec_identity_aasenH_subdiagonal_eq_T
+    n A L T σ hspec i next hnext
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 exact-recurrence dependency:
+named-`H` recurrence wrapper whose nonzero pivot hypothesis is stated on the
+concrete tridiagonal subdiagonal `T next i`. -/
+theorem higham11_8_AasenSpec_identity_exact_recurrences_of_H_eq_T_subdiagonal_ne_zero
+    (n : ℕ) (A L H T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hσ : ∀ i : Fin n, σ i = i)
+    (hH_eq : ∀ i j : Fin n, H i j = higham11_10_aasenH n T L i j)
+    (hTnz : ∀ i next : Fin n, next.val = i.val + 1 → T next i ≠ 0) :
+    higham11_12_aasenDiagonalEquation n A L H ∧
+      higham11_13_aasenSubdiagonalEquation n A L H ∧
+      higham11_14_aasenNextColumnEquation n A L H := by
+  apply higham11_8_AasenSpec_identity_exact_recurrences_of_H_eq
+    n A L H T σ hspec hσ hH_eq
+  intro i next hnext hzero
+  have hH_eq_T :=
+    higham11_8_AasenSpec_identity_H_subdiagonal_eq_T_of_H_eq
+      n A L H T σ hspec hH_eq i next hnext
+  exact hTnz i next hnext (hH_eq_T ▸ hzero)
 
 /-- **Equation (11.14) floating-point scalar update**, relative-error form.
 The computed scalar update `fl(fl(a - s) / h)` equals the exact update
