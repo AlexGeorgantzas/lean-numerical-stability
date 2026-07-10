@@ -682,6 +682,69 @@ theorem higham11_4_bunch_kaufman_case4_twoByTwo_multiplier_row_sum_le_six_of_row
       c1 c2 a11 arr a1r ω1 (higham11_1_bunchParlettAlpha * ω1) K
       hμ1_nonneg hω1 he11 he22 he21 le_rfl hK hc1 hc2
 
+/-- **Theorem 11.4 / Algorithm 11.2 case-(4) determinant bridge**: with the
+same explicit row-maximum dominance needed by the local case-(4) `2 × 2`
+bridges, the accepted pivot block has the standard determinant lower bound. -/
+theorem higham11_4_bunch_kaufman_case4_twoByTwo_absdet_lower_of_row_max_le
+    (a11 a1r arr ω1 ωr : ℝ)
+    (hω1 : 0 < ω1) (hωr_le : ωr ≤ ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case4)
+    (ha1r : |a1r| = ω1) :
+    (1 - higham11_1_bunchParlettAlpha ^ 2) * ω1 ^ 2 ≤
+      |a11 * arr - a1r ^ 2| := by
+  rcases higham11_2_bunch_kaufman_case4_tests
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr hcase with
+    ⟨_, ha11_lt, _, harr_lt⟩
+  have hα_pos : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  have hα_nonneg : 0 ≤ higham11_1_bunchParlettAlpha := le_of_lt hα_pos
+  have hα_lt_one : higham11_1_bunchParlettAlpha < 1 := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_lt_one
+  have hμ1_nonneg : 0 ≤ higham11_1_bunchParlettAlpha * ω1 :=
+    mul_nonneg hα_nonneg (le_of_lt hω1)
+  have he11 : |a11| ≤ higham11_1_bunchParlettAlpha * ω1 :=
+    le_of_lt ha11_lt
+  have he22 : |arr| ≤ higham11_1_bunchParlettAlpha * ω1 := by
+    have harr_le : |arr| ≤ higham11_1_bunchParlettAlpha * ωr :=
+      le_of_lt harr_lt
+    exact harr_le.trans (mul_le_mul_of_nonneg_left hωr_le hα_nonneg)
+  have he21 : a1r ^ 2 = ω1 ^ 2 := by
+    calc
+      a1r ^ 2 = |a1r| ^ 2 := by rw [sq_abs]
+      _ = ω1 ^ 2 := by rw [ha1r]
+  exact
+    higham11_4_twoByTwo_absdet_lower
+      a11 arr a1r ω1 (higham11_1_bunchParlettAlpha * ω1)
+      higham11_1_bunchParlettAlpha hμ1_nonneg hα_nonneg hα_lt_one
+      he11 he22 he21 le_rfl
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(4) nonsingularity bridge**: the
+case-(4) pivot block is nonsingular once the concrete pivot path supplies the
+row-maximum dominance used in the determinant bound. -/
+theorem higham11_4_bunch_kaufman_case4_twoByTwo_det_ne_zero_of_row_max_le
+    (a11 a1r arr ω1 ωr : ℝ)
+    (hω1 : 0 < ω1) (hωr_le : ωr ≤ ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case4)
+    (ha1r : |a1r| = ω1) :
+    a11 * arr - a1r ^ 2 ≠ 0 := by
+  have hα_nonneg : 0 ≤ higham11_1_bunchParlettAlpha := by
+    exact le_of_lt (by simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos)
+  have hα_lt_one : higham11_1_bunchParlettAlpha < 1 := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_lt_one
+  have hα_sq_lt_one : higham11_1_bunchParlettAlpha ^ 2 < 1 := by
+    nlinarith [hα_nonneg, hα_lt_one]
+  have hωsq_pos : 0 < ω1 ^ 2 := sq_pos_of_ne_zero (ne_of_gt hω1)
+  have hscale_pos : 0 < (1 - higham11_1_bunchParlettAlpha ^ 2) * ω1 ^ 2 :=
+    mul_pos (by linarith [hα_sq_lt_one]) hωsq_pos
+  have hlower :=
+    higham11_4_bunch_kaufman_case4_twoByTwo_absdet_lower_of_row_max_le
+      a11 a1r arr ω1 ωr hω1 hωr_le hcase ha1r
+  have hdet_abs_pos : 0 < |a11 * arr - a1r ^ 2| :=
+    lt_of_lt_of_le hscale_pos hlower
+  exact abs_pos.mp hdet_abs_pos
+
 /-- **Equation (11.5)** first-order 2 by 2 pivot solve certificate.  The
 source theorem also includes `O(u^2)` terms, recorded in the ledger as a
 deferred asymptotic refinement. -/
