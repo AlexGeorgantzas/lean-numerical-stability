@@ -8404,6 +8404,12 @@ theorem isLyapunovComputedResidualBudget_fl (fp : FPModel) (n : Nat)
     isSylvesterComputedResidualBudget_fl fp n n A
       (fun i j => -matTranspose A i j) C Xhat hn2 hn1
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    source-numbered alias for the Lyapunov floating-point computed-residual
+    budget certificate. -/
+alias H16_eq16_29_isLyapunovComputedResidualBudget_fl :=
+  isLyapunovComputedResidualBudget_fl
+
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, equation (16.29), Lyapunov determinant endpoint: nonsingularity of
     the `(A,-A^T)` vec coefficient and the floating-point computed residual
