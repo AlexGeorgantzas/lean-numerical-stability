@@ -67618,6 +67618,65 @@ theorem LSEKKTInverseTriple_smul {m n p : ℕ}
     a • LSEKKTInverseLinearMap hB hnull (f, g, c)
   exact map_smul (LSEKKTInverseLinearMap hB hnull) a (f, g, c)
 
+/-- Residual block row of the inverse source KKT operator. -/
+noncomputable def LSEKKTInverseResidualLinearMap {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    ((Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ)) →ₗ[ℝ] (Fin m → ℝ) :=
+  (LinearMap.fst ℝ (Fin m → ℝ) ((Fin n → ℝ) × (Fin p → ℝ))).comp
+    (LSEKKTInverseLinearMap hB hnull)
+
+/-- Solution block row of the inverse source KKT operator. -/
+noncomputable def LSEKKTInverseSolutionLinearMap {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    ((Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ)) →ₗ[ℝ] (Fin n → ℝ) :=
+  (LinearMap.fst ℝ (Fin n → ℝ) (Fin p → ℝ)).comp
+    ((LinearMap.snd ℝ (Fin m → ℝ) ((Fin n → ℝ) × (Fin p → ℝ))).comp
+      (LSEKKTInverseLinearMap hB hnull))
+
+/-- Multiplier block row of the inverse source KKT operator. -/
+noncomputable def LSEKKTInverseMultiplierLinearMap {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    ((Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ)) →ₗ[ℝ] (Fin p → ℝ) :=
+  (LinearMap.snd ℝ (Fin n → ℝ) (Fin p → ℝ)).comp
+    ((LinearMap.snd ℝ (Fin m → ℝ) ((Fin n → ℝ) × (Fin p → ℝ))).comp
+      (LSEKKTInverseLinearMap hB hnull))
+
+/-- The residual block row returns the first component of the canonical KKT
+    inverse triple. -/
+theorem LSEKKTInverseResidualLinearMap_apply {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (f : Fin m → ℝ) (g : Fin n → ℝ) (c : Fin p → ℝ) :
+    LSEKKTInverseResidualLinearMap hB hnull (f, g, c) =
+      (LSEKKTInverseTriple hB hnull f g c).1 := by
+  simp [LSEKKTInverseResidualLinearMap,
+    LSEKKTInverseLinearMap_apply_eq_inverseTriple]
+
+/-- The solution block row returns the second component of the canonical KKT
+    inverse triple. -/
+theorem LSEKKTInverseSolutionLinearMap_apply {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (f : Fin m → ℝ) (g : Fin n → ℝ) (c : Fin p → ℝ) :
+    LSEKKTInverseSolutionLinearMap hB hnull (f, g, c) =
+      (LSEKKTInverseTriple hB hnull f g c).2.1 := by
+  simp [LSEKKTInverseSolutionLinearMap,
+    LSEKKTInverseLinearMap_apply_eq_inverseTriple]
+
+/-- The multiplier block row returns the third component of the canonical KKT
+    inverse triple. -/
+theorem LSEKKTInverseMultiplierLinearMap_apply {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (f : Fin m → ℝ) (g : Fin n → ℝ) (c : Fin p → ℝ) :
+    LSEKKTInverseMultiplierLinearMap hB hnull (f, g, c) =
+      (LSEKKTInverseTriple hB hnull f g c).2.2 := by
+  simp [LSEKKTInverseMultiplierLinearMap,
+    LSEKKTInverseLinearMap_apply_eq_inverseTriple]
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the actual residual, solution, and multiplier differences between source
     and perturbed LSE minimizers equal the canonical source KKT inverse action
