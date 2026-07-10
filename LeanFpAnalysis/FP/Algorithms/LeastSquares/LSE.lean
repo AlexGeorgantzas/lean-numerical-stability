@@ -68326,6 +68326,208 @@ theorem LSEKKTInverseSolutionConstrLinearMap_vecNorm2_le_coeff {m n p : ℕ}
     linearMap_vecNorm2_le_complexMatrixOp2_basisMatrix
       (LSEKKTInverseSolutionConstrLinearMap hB hnull) c
 
+/-- Data-row block of the inverse source KKT multiplier map. -/
+noncomputable def LSEKKTInverseMultiplierDataLinearMap {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    (Fin m → ℝ) →ₗ[ℝ] (Fin p → ℝ) where
+  toFun f := LSEKKTInverseMultiplierLinearMap hB hnull (f, 0, 0)
+  map_add' f g := by
+    change LSEKKTInverseMultiplierLinearMap hB hnull (f + g, 0, 0) =
+      LSEKKTInverseMultiplierLinearMap hB hnull (f, 0, 0) +
+        LSEKKTInverseMultiplierLinearMap hB hnull (g, 0, 0)
+    have hpair : (f + g, (0 : Fin n → ℝ), (0 : Fin p → ℝ)) =
+        (f, (0 : Fin n → ℝ), (0 : Fin p → ℝ)) +
+          (g, (0 : Fin n → ℝ), (0 : Fin p → ℝ)) := by
+      ext <;> simp
+    rw [hpair, map_add]
+  map_smul' a f := by
+    change LSEKKTInverseMultiplierLinearMap hB hnull (a • f, 0, 0) =
+      a • LSEKKTInverseMultiplierLinearMap hB hnull (f, 0, 0)
+    have hpair : (a • f, (0 : Fin n → ℝ), (0 : Fin p → ℝ)) =
+        a • (f, (0 : Fin n → ℝ), (0 : Fin p → ℝ)) := by
+      ext <;> simp
+    rw [hpair, map_smul]
+
+/-- Stationarity-row block of the inverse source KKT multiplier map. -/
+noncomputable def LSEKKTInverseMultiplierStatLinearMap {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    (Fin n → ℝ) →ₗ[ℝ] (Fin p → ℝ) where
+  toFun g := LSEKKTInverseMultiplierLinearMap hB hnull (0, g, 0)
+  map_add' g h := by
+    change LSEKKTInverseMultiplierLinearMap hB hnull (0, g + h, 0) =
+      LSEKKTInverseMultiplierLinearMap hB hnull (0, g, 0) +
+        LSEKKTInverseMultiplierLinearMap hB hnull (0, h, 0)
+    have hpair : ((0 : Fin m → ℝ), g + h, (0 : Fin p → ℝ)) =
+        ((0 : Fin m → ℝ), g, (0 : Fin p → ℝ)) +
+          ((0 : Fin m → ℝ), h, (0 : Fin p → ℝ)) := by
+      ext <;> simp
+    rw [hpair, map_add]
+  map_smul' a g := by
+    change LSEKKTInverseMultiplierLinearMap hB hnull (0, a • g, 0) =
+      a • LSEKKTInverseMultiplierLinearMap hB hnull (0, g, 0)
+    have hpair : ((0 : Fin m → ℝ), a • g, (0 : Fin p → ℝ)) =
+        a • ((0 : Fin m → ℝ), g, (0 : Fin p → ℝ)) := by
+      ext <;> simp
+    rw [hpair, map_smul]
+
+/-- Constraint-row block of the inverse source KKT multiplier map. -/
+noncomputable def LSEKKTInverseMultiplierConstrLinearMap {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    (Fin p → ℝ) →ₗ[ℝ] (Fin p → ℝ) where
+  toFun c := LSEKKTInverseMultiplierLinearMap hB hnull (0, 0, c)
+  map_add' c d := by
+    change LSEKKTInverseMultiplierLinearMap hB hnull (0, 0, c + d) =
+      LSEKKTInverseMultiplierLinearMap hB hnull (0, 0, c) +
+        LSEKKTInverseMultiplierLinearMap hB hnull (0, 0, d)
+    have hpair : ((0 : Fin m → ℝ), (0 : Fin n → ℝ), c + d) =
+        ((0 : Fin m → ℝ), (0 : Fin n → ℝ), c) +
+          ((0 : Fin m → ℝ), (0 : Fin n → ℝ), d) := by
+      ext <;> simp
+    rw [hpair, map_add]
+  map_smul' a c := by
+    change LSEKKTInverseMultiplierLinearMap hB hnull (0, 0, a • c) =
+      a • LSEKKTInverseMultiplierLinearMap hB hnull (0, 0, c)
+    have hpair : ((0 : Fin m → ℝ), (0 : Fin n → ℝ), a • c) =
+        a • ((0 : Fin m → ℝ), (0 : Fin n → ℝ), c) := by
+      ext <;> simp
+    rw [hpair, map_smul]
+
+/-- Canonical Euclidean operator coefficient for the data-row response of the
+    inverse source KKT multiplier block. -/
+noncomputable def LSEKKTInverseMultiplierDataCoeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
+  complexMatrixOp2 (realRectToCMatrix
+    (linearMapBasisMatrix (LSEKKTInverseMultiplierDataLinearMap hB hnull)))
+
+/-- Canonical Euclidean operator coefficient for the stationarity-row response
+    of the inverse source KKT multiplier block. -/
+noncomputable def LSEKKTInverseMultiplierStatCoeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
+  complexMatrixOp2 (realRectToCMatrix
+    (linearMapBasisMatrix (LSEKKTInverseMultiplierStatLinearMap hB hnull)))
+
+/-- Canonical Euclidean operator coefficient for the constraint-row response of
+    the inverse source KKT multiplier block. -/
+noncomputable def LSEKKTInverseMultiplierConstrCoeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
+  complexMatrixOp2 (realRectToCMatrix
+    (linearMapBasisMatrix (LSEKKTInverseMultiplierConstrLinearMap hB hnull)))
+
+theorem LSEKKTInverseMultiplierDataCoeff_nonneg {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    0 ≤ LSEKKTInverseMultiplierDataCoeff hB hnull := by
+  exact complexMatrixOp2_nonneg _
+
+theorem LSEKKTInverseMultiplierStatCoeff_nonneg {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    0 ≤ LSEKKTInverseMultiplierStatCoeff hB hnull := by
+  exact complexMatrixOp2_nonneg _
+
+theorem LSEKKTInverseMultiplierConstrCoeff_nonneg {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    0 ≤ LSEKKTInverseMultiplierConstrCoeff hB hnull := by
+  exact complexMatrixOp2_nonneg _
+
+theorem LSEKKTInverseMultiplierDataLinearMap_vecNorm2_le_coeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (f : Fin m → ℝ) :
+    vecNorm2 (LSEKKTInverseMultiplierLinearMap hB hnull (f, 0, 0)) ≤
+      LSEKKTInverseMultiplierDataCoeff hB hnull * vecNorm2 f := by
+  simpa [LSEKKTInverseMultiplierDataCoeff,
+    LSEKKTInverseMultiplierDataLinearMap] using
+    linearMap_vecNorm2_le_complexMatrixOp2_basisMatrix
+      (LSEKKTInverseMultiplierDataLinearMap hB hnull) f
+
+theorem LSEKKTInverseMultiplierStatLinearMap_vecNorm2_le_coeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (g : Fin n → ℝ) :
+    vecNorm2 (LSEKKTInverseMultiplierLinearMap hB hnull (0, g, 0)) ≤
+      LSEKKTInverseMultiplierStatCoeff hB hnull * vecNorm2 g := by
+  simpa [LSEKKTInverseMultiplierStatCoeff,
+    LSEKKTInverseMultiplierStatLinearMap] using
+    linearMap_vecNorm2_le_complexMatrixOp2_basisMatrix
+      (LSEKKTInverseMultiplierStatLinearMap hB hnull) g
+
+theorem LSEKKTInverseMultiplierConstrLinearMap_vecNorm2_le_coeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (c : Fin p → ℝ) :
+    vecNorm2 (LSEKKTInverseMultiplierLinearMap hB hnull (0, 0, c)) ≤
+      LSEKKTInverseMultiplierConstrCoeff hB hnull * vecNorm2 c := by
+  simpa [LSEKKTInverseMultiplierConstrCoeff,
+    LSEKKTInverseMultiplierConstrLinearMap] using
+    linearMap_vecNorm2_le_complexMatrixOp2_basisMatrix
+      (LSEKKTInverseMultiplierConstrLinearMap hB hnull) c
+
+/-- Split the multiplier block row of the inverse source KKT operator across
+    the data, stationarity, and constraint right-hand-side rows. -/
+theorem LSEKKTInverseMultiplierLinearMap_apply_split {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (f : Fin m → ℝ) (g : Fin n → ℝ) (c : Fin p → ℝ) :
+    LSEKKTInverseMultiplierLinearMap hB hnull (f, g, c) =
+      LSEKKTInverseMultiplierLinearMap hB hnull (f, 0, 0) +
+        LSEKKTInverseMultiplierLinearMap hB hnull (0, g, 0) +
+          LSEKKTInverseMultiplierLinearMap hB hnull (0, 0, c) := by
+  have hsplit :
+      (f, g, c) =
+        ((f, 0, 0) + (0, g, 0)) + (0, 0, c) := by
+    ext <;> simp
+  rw [hsplit]
+  rw [map_add, map_add]
+
+/-- Triangle-inequality bound for the split multiplier block row of the
+    inverse source KKT operator. -/
+theorem LSEKKTInverseMultiplierLinearMap_vecNorm2_le_split {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (f : Fin m → ℝ) (g : Fin n → ℝ) (c : Fin p → ℝ) :
+    vecNorm2 (LSEKKTInverseMultiplierLinearMap hB hnull (f, g, c)) ≤
+      vecNorm2 (LSEKKTInverseMultiplierLinearMap hB hnull (f, 0, 0)) +
+        vecNorm2 (LSEKKTInverseMultiplierLinearMap hB hnull (0, g, 0)) +
+          vecNorm2 (LSEKKTInverseMultiplierLinearMap hB hnull (0, 0, c)) := by
+  rw [LSEKKTInverseMultiplierLinearMap_apply_split]
+  let u := LSEKKTInverseMultiplierLinearMap hB hnull (f, 0, 0)
+  let v := LSEKKTInverseMultiplierLinearMap hB hnull (0, g, 0)
+  let w := LSEKKTInverseMultiplierLinearMap hB hnull (0, 0, c)
+  have htri1 : vecNorm2 (u + v + w) ≤ vecNorm2 (u + v) + vecNorm2 w :=
+    vecNorm2_add_le _ _
+  have htri2 : vecNorm2 (u + v) ≤ vecNorm2 u + vecNorm2 v :=
+    vecNorm2_add_le u v
+  nlinarith
+
+/-- Scalar handoff for the split multiplier block row: bounds for the three
+    source KKT inverse responses imply a bound for the whole multiplier block
+    action. -/
+theorem LSEKKTInverseMultiplierLinearMap_vecNorm2_le_of_split_bounds
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (f : Fin m → ℝ) (g : Fin n → ℝ) (c : Fin p → ℝ)
+    (dataBound statBound constrBound : ℝ)
+    (hdata : vecNorm2 (LSEKKTInverseMultiplierLinearMap hB hnull
+      (f, 0, 0)) ≤ dataBound)
+    (hstat : vecNorm2 (LSEKKTInverseMultiplierLinearMap hB hnull
+      (0, g, 0)) ≤ statBound)
+    (hconstr : vecNorm2 (LSEKKTInverseMultiplierLinearMap hB hnull
+      (0, 0, c)) ≤ constrBound) :
+    vecNorm2 (LSEKKTInverseMultiplierLinearMap hB hnull (f, g, c)) ≤
+      dataBound + statBound + constrBound := by
+  have hsplit :=
+    LSEKKTInverseMultiplierLinearMap_vecNorm2_le_split hB hnull f g c
+  nlinarith
+
 /-- Split the solution block row of the inverse source KKT operator across
     the data, stationarity, and constraint right-hand-side rows. -/
 theorem LSEKKTInverseSolutionLinearMap_apply_split {m n p : ℕ}
@@ -68440,6 +68642,90 @@ theorem IsLSEMinimizer.exists_lagrange_kkt_difference_eq_inverseTriple
     ⟨lambda, mu, hsys⟩
   refine ⟨lambda, mu, ?_⟩
   exact LSEKKTInverseTriple_eq_of_system hB hnull hsys
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the actual multiplier difference between source and perturbed LSE
+    minimizers is the multiplier block row of the inverse source KKT operator
+    applied to the Cox--Higham perturbation right-hand side. -/
+theorem IsLSEMinimizer.exists_lagrange_kkt_multiplier_difference_eq_inverseMultiplierLinearMap
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∃ lambda mu : Fin p → ℝ,
+      (fun r => mu r - lambda r) =
+        LSEKKTInverseMultiplierLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i,
+           fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i),
+           fun r => Deltad r - rectMatMulVec DeltaB y r) := by
+  rcases hx.exists_lagrange_kkt_difference_eq_inverseTriple hy hB hBpert hnull with
+    ⟨lambda, mu, _hdr, _hdx, hdlambda⟩
+  refine ⟨lambda, mu, ?_⟩
+  rw [hdlambda]
+  rw [LSEKKTInverseMultiplierLinearMap_apply]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    triangle-inequality split bound for the actual multiplier difference in
+    the Cox--Higham KKT inverse action. -/
+theorem
+    IsLSEMinimizer.exists_lagrange_kkt_multiplier_difference_vecNorm2_le_inverseMultiplierLinearMap_split
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∃ lambda mu : Fin p → ℝ,
+      vecNorm2 (fun r => mu r - lambda r) ≤
+        vecNorm2 (LSEKKTInverseMultiplierLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i, 0, 0)) +
+          vecNorm2 (LSEKKTInverseMultiplierLinearMap hB hnull
+            (0,
+             fun j =>
+              (∑ r : Fin p, DeltaB r j * mu r) -
+                (∑ i : Fin m,
+                  DeltaA i j *
+                    lsResidualHigham (fun i j => A i j + DeltaA i j)
+                      (fun i => b i + Deltab i) y i),
+             0)) +
+            vecNorm2 (LSEKKTInverseMultiplierLinearMap hB hnull
+              (0, 0, fun r => Deltad r - rectMatMulVec DeltaB y r)) := by
+  rcases hx.exists_lagrange_kkt_multiplier_difference_eq_inverseMultiplierLinearMap
+      hy hB hBpert hnull with
+    ⟨lambda, mu, hdlambda⟩
+  refine ⟨lambda, mu, ?_⟩
+  rw [hdlambda]
+  exact
+    LSEKKTInverseMultiplierLinearMap_vecNorm2_le_split hB hnull
+      (fun i => Deltab i - rectMatMulVec DeltaA y i)
+      (fun j =>
+        (∑ r : Fin p, DeltaB r j * mu r) -
+          (∑ i : Fin m,
+            DeltaA i j *
+              lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i))
+      (fun r => Deltad r - rectMatMulVec DeltaB y r)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the solution difference `y - x` is the solution block row of the inverse
