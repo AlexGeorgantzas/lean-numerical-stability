@@ -8645,6 +8645,23 @@ theorem higham11_7_tridiagonalPathFirstTrailingIndex_pos
   rw [higham11_7_tridiagonalPathFirstTrailingIndex_val]
   omega
 
+/-- No concrete path first-trailing endpoint is the leading ambient row. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_ne_zero
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k) :
+    higham11_7_tridiagonalPathFirstTrailingIndex k step t ≠ 0 := by
+  intro h
+  have hpos := higham11_7_tridiagonalPathFirstTrailingIndex_pos k step t
+  rw [h] at hpos
+  simp at hpos
+
+/-- The leading ambient row is outside the concrete path first-trailing endpoint
+set. -/
+theorem higham11_7_tridiagonalPath_zero_ne_firstTrailingIndex
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k) :
+    (0 : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1)) ≠
+      higham11_7_tridiagonalPathFirstTrailingIndex k step t :=
+  (higham11_7_tridiagonalPathFirstTrailingIndex_ne_zero k step t).symm
+
 /-- Every concrete path first-trailing row is at or before the final pivot-span
 row of the full ambient `pathSpan+1` matrix. -/
 theorem higham11_7_tridiagonalPathFirstTrailingIndex_val_le_pivotSpan
