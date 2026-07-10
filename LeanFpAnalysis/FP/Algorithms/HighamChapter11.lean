@@ -8558,6 +8558,85 @@ theorem higham11_7_tridiagonalPathFirstTrailingIndex_two_val_lt_two_val_of_lt
   exact higham11_7_tridiagonalPathPrefixSpan_branch_end_lt_branch_end_of_lt
     k step htu
 
+/-- Branch-uniform full-ambient first-trailing index for a concrete mixed
+tridiagonal pivot path.  This packages the pivot-size case split around the
+existing `1 × 1` and `2 × 2` first-trailing index definitions. -/
+def higham11_7_tridiagonalPathFirstTrailingIndex
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k) :
+    Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) :=
+  ⟨higham11_7_tridiagonalPathPrefixSpan k step t +
+      higham11_7_tridiagonalBranchSupportOffset (step t), by
+    have hle :=
+      higham11_7_tridiagonalPathPrefixSpan_branch_end_le_pivotSpan
+        k step t
+    omega⟩
+
+@[simp] theorem higham11_7_tridiagonalPathFirstTrailingIndex_of_one
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.one) :
+    higham11_7_tridiagonalPathFirstTrailingIndex k step t =
+      higham11_7_tridiagonalPathFirstTrailingIndex_one k step t hstep := by
+  apply Fin.ext
+  simp [higham11_7_tridiagonalPathFirstTrailingIndex,
+    higham11_7_tridiagonalBranchFirstTrailingIndex,
+    higham11_7_tridiagonalBranchSupportOffset, hstep]
+
+@[simp] theorem higham11_7_tridiagonalPathFirstTrailingIndex_of_two
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.two) :
+    higham11_7_tridiagonalPathFirstTrailingIndex k step t =
+      higham11_7_tridiagonalPathFirstTrailingIndex_two k step t hstep := by
+  apply Fin.ext
+  simp [higham11_7_tridiagonalPathFirstTrailingIndex,
+    higham11_7_tridiagonalBranchFirstTrailingIndex,
+    higham11_7_tridiagonalBranchSupportOffset, hstep]
+
+@[simp] theorem higham11_7_tridiagonalPathFirstTrailingIndex_val
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k) :
+    (higham11_7_tridiagonalPathFirstTrailingIndex k step t).val =
+      higham11_7_tridiagonalPathPrefixSpan k step t +
+        higham11_7_tridiagonalBranchSupportOffset (step t) :=
+  rfl
+
+/-- Branch-uniform first-trailing indices are strictly ordered by branch
+position in the concrete mixed tridiagonal path. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_val_lt_of_lt
+    (k : ℕ) (step : Fin k → PivotSize) {t u : Fin k}
+    (htu : t.val < u.val) :
+    (higham11_7_tridiagonalPathFirstTrailingIndex k step t).val <
+      (higham11_7_tridiagonalPathFirstTrailingIndex k step u).val := by
+  simpa using
+    higham11_7_tridiagonalPathPrefixSpan_branch_end_lt_branch_end_of_lt
+      k step htu
+
+/-- The branch-uniform first-trailing index map is injective over the finite
+mixed tridiagonal path. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_injective
+    (k : ℕ) (step : Fin k → PivotSize) :
+    Function.Injective
+      (fun t : Fin k => higham11_7_tridiagonalPathFirstTrailingIndex k step t) := by
+  intro t u hidx
+  apply Fin.ext
+  have hv :
+      (higham11_7_tridiagonalPathFirstTrailingIndex k step t).val =
+        (higham11_7_tridiagonalPathFirstTrailingIndex k step u).val :=
+    congrArg Fin.val hidx
+  by_cases hle : t.val ≤ u.val
+  · by_cases hEq : t.val = u.val
+    · exact hEq
+    · have hlt : t.val < u.val := lt_of_le_of_ne hle hEq
+      have hstrict :=
+        higham11_7_tridiagonalPathFirstTrailingIndex_val_lt_of_lt
+          k step hlt
+      rw [hv] at hstrict
+      exact (False.elim (Nat.lt_irrefl _ hstrict))
+  · have hlt : u.val < t.val := Nat.lt_of_not_ge hle
+    have hstrict :=
+      higham11_7_tridiagonalPathFirstTrailingIndex_val_lt_of_lt
+        k step hlt
+    rw [hv.symm] at hstrict
+    exact (False.elim (Nat.lt_irrefl _ hstrict))
+
 @[simp] theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_apply_pathFirstTrailing_two
     (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
     (hstep : step t = PivotSize.two)
