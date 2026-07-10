@@ -12938,6 +12938,26 @@ theorem higham11_7_tridiagonalPath_no_secondPivot_of_all_one
   have hbad : PivotSize.one = PivotSize.two := (hone t).symm.trans htwo
   cases hbad
 
+/-- If a concrete path has no accepted `2 × 2` branch, every branch is a
+`1 × 1` branch. -/
+theorem higham11_7_tridiagonalPath_all_one_of_no_secondPivot
+    (k : ℕ) (step : Fin k → PivotSize)
+    (hno : ∀ t : Fin k, step t ≠ PivotSize.two) :
+    ∀ t : Fin k, step t = PivotSize.one := by
+  intro t
+  cases hstep : step t with
+  | one => rfl
+  | two => exact False.elim (hno t hstep)
+
+/-- For a concrete tridiagonal path, having no accepted `2 × 2` branch is
+equivalent to being an all-`1 × 1` path. -/
+theorem higham11_7_tridiagonalPath_no_secondPivot_iff_all_one
+    (k : ℕ) (step : Fin k → PivotSize) :
+    (∀ t : Fin k, step t ≠ PivotSize.two) ↔
+      (∀ t : Fin k, step t = PivotSize.one) :=
+  ⟨higham11_7_tridiagonalPath_all_one_of_no_secondPivot k step,
+    higham11_7_tridiagonalPath_no_secondPivot_of_all_one k step⟩
+
 /-- At an initial accepted `2 × 2` branch, the reduced second-pivot row
 equation has no earlier-branch contribution. -/
 theorem higham11_7_ConcretePathSecondPivotReducedSolveRow_of_val_zero
