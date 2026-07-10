@@ -25768,6 +25768,85 @@ theorem higham11_8_aasen_base_square_bounds_of_entry_bound_scaled_unit_of_entry_
       (infNorm L) (infNorm (fun r c => L c r)) hγ (infNorm_nonneg L)
       (infNorm_nonneg (fun r c => L c r)) hLcap hLTcap hrelL hrelLT
 
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency:
+an `AasenSpec` supplies the structural zeros needed to turn a uniform exact
+outer-factor entry cap into `(n-1)` row and column sum majorants. -/
+theorem higham11_8_aasen_outer_factor_row_col_sum_majorants_of_AasenSpec_entry_bound
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (κ : ℝ)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    (∀ i : Fin n, (∑ j : Fin n, |L i j|) ≤
+        ((n - 1 : ℕ) : ℝ) * κ) ∧
+      (∀ j : Fin n, (∑ i : Fin n, |L i j|) ≤
+        ((n - 1 : ℕ) : ℝ) * κ) :=
+  higham11_8_aasen_outer_factor_row_col_sum_majorants_of_entry_bound
+    n hn L κ hentry hspec.L_upper_zero hspec.L_first_col
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency:
+an `AasenSpec` plus the normalized source-scale entry cap gives the relative
+outer-factor norm caps used by exact-radius Aasen wrappers. -/
+theorem higham11_8_relative_outer_factor_caps_of_AasenSpec_entry_bound_scaled_unit
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκunit : (1 + γ) * κ ≤ 1)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    (1 + γ) * infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) :=
+  higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound
+    n hn L γ κ hγ hκunit hentry hspec.L_upper_zero hspec.L_first_col
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency:
+an `AasenSpec` plus the source-style inverse-scale entry cap gives the relative
+outer-factor norm caps used by exact-radius Aasen wrappers. -/
+theorem higham11_8_relative_outer_factor_caps_of_AasenSpec_entry_bound_inv_one_plus
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκ : κ ≤ 1 / (1 + γ))
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    (1 + γ) * infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      (1 + γ) * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) :=
+  higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus_of_entry_bound
+    n hn L γ κ hγ hκ hentry hspec.L_upper_zero hspec.L_first_col
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency:
+an `AasenSpec` plus the normalized entry cap gives the two base square product
+caps consumed by the exact-product `T_hat` route. -/
+theorem higham11_8_aasen_base_square_bounds_of_AasenSpec_entry_bound_scaled_unit
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκunit : (1 + γ) * κ ≤ 1)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    (infNorm L * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ) * infNorm L) *
+          ((1 + γ) * infNorm (fun r c => L c r)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) :=
+  higham11_8_aasen_base_square_bounds_of_entry_bound_scaled_unit_of_entry_bound
+    n hn L γ κ hγ hκunit hentry hspec.L_upper_zero hspec.L_first_col
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency:
+an `AasenSpec` plus the inverse-scale entry cap gives the two base square
+product caps consumed by the exact-product `T_hat` route. -/
+theorem higham11_8_aasen_base_square_bounds_of_AasenSpec_entry_bound_inv_one_plus
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκ : κ ≤ 1 / (1 + γ))
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    (infNorm L * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ) * infNorm L) *
+          ((1 + γ) * infNorm (fun r c => L c r)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) :=
+  higham11_8_aasen_base_square_bounds_of_entry_bound_inv_one_plus_of_entry_bound
+    n hn L γ κ hγ hκ hentry hspec.L_upper_zero hspec.L_first_col
+
 /-- Insert a nonnegative middle factor bounded by `1` into a product already
 bounded by the printed Aasen `(n-1)^2` square. -/
 theorem higham11_8_triple_product_square_bound_of_middle_le_one
