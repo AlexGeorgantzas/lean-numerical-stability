@@ -67438,6 +67438,52 @@ theorem LSEKKTSystem.exists_solution_of_conditions {m n p : ℕ}
     ⟨z.1, z.2.1, z.2.2,
       (LSEKKTSystem.iff_linearMap_eq A B f g c z.1 z.2.1 z.2.2).2 hz⟩
 
+/-- Uniqueness for the source KKT augmented system under Higham's conditions
+    (20.24).  Any two triples solving the same source data, stationarity, and
+    constraint right-hand sides agree componentwise. -/
+theorem LSEKKTSystem.solution_unique_of_conditions {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {f : Fin m → ℝ} {g : Fin n → ℝ} {c : Fin p → ℝ}
+    {dr₁ dr₂ : Fin m → ℝ} {dx₁ dx₂ : Fin n → ℝ}
+    {dlambda₁ dlambda₂ : Fin p → ℝ}
+    (h₁ : LSEKKTSystem A B f g c dr₁ dx₁ dlambda₁)
+    (h₂ : LSEKKTSystem A B f g c dr₂ dx₂ dlambda₂) :
+    dr₁ = dr₂ ∧ dx₁ = dx₂ ∧ dlambda₁ = dlambda₂ := by
+  have hmap₁ :
+      LSEKKTLinearMap A B (dr₁, dx₁, dlambda₁) = (f, g, c) :=
+    (LSEKKTSystem.iff_linearMap_eq A B f g c dr₁ dx₁ dlambda₁).1 h₁
+  have hmap₂ :
+      LSEKKTLinearMap A B (dr₂, dx₂, dlambda₂) = (f, g, c) :=
+    (LSEKKTSystem.iff_linearMap_eq A B f g c dr₂ dx₂ dlambda₂).1 h₂
+  have htriple :
+      (dr₁, dx₁, dlambda₁) = (dr₂, dx₂, dlambda₂) :=
+    LSEKKTLinearMap.injective_of_conditions hB hnull (hmap₁.trans hmap₂.symm)
+  exact
+    ⟨congrArg Prod.fst htriple,
+      congrArg Prod.fst (congrArg Prod.snd htriple),
+      congrArg Prod.snd (congrArg Prod.snd htriple)⟩
+
+/-- Unique solvability for the source KKT augmented system under Higham's
+    conditions (20.24).  This packages finite-dimensional solvability and the
+    homogeneous uniqueness kernel into a single inverse-existence statement. -/
+theorem LSEKKTSystem.exists_unique_solution_of_conditions {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (f : Fin m → ℝ) (g : Fin n → ℝ) (c : Fin p → ℝ) :
+    ∃ dr dx dlambda,
+      LSEKKTSystem A B f g c dr dx dlambda ∧
+        ∀ dr' dx' dlambda',
+          LSEKKTSystem A B f g c dr' dx' dlambda' →
+            dr' = dr ∧ dx' = dx ∧ dlambda' = dlambda := by
+  rcases LSEKKTSystem.exists_solution_of_conditions hB hnull f g c with
+    ⟨dr, dx, dlambda, hsys⟩
+  refine ⟨dr, dx, dlambda, hsys, ?_⟩
+  intro dr' dx' dlambda' hsys'
+  have huniq :=
+    LSEKKTSystem.solution_unique_of_conditions hB hnull hsys' hsys
+  exact huniq
+
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
     uniqueness of an equality-constrained least-squares minimizer once
