@@ -7167,6 +7167,47 @@ theorem higham11_7_tridiagonalPathLocalBlockIndex_injective
     simpa using congrArg Fin.val hij
   omega
 
+/-- The branch-local block in a concrete mixed path is exactly the suffix
+starting at the branch prefix.  Thus an ambient index is outside that block iff
+it lies strictly before the prefix. -/
+theorem higham11_7_tridiagonalPathLocalBlockIndex_not_exists_iff_lt_prefixSpan
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1)) :
+    (¬ ∃ a : Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t)),
+      higham11_7_tridiagonalPathLocalBlockIndex k step t a = j) ↔
+      j.val < higham11_7_tridiagonalPathPrefixSpan k step t := by
+  constructor
+  · intro hnot
+    by_contra hnot_lt
+    have hjlo : higham11_7_tridiagonalPathPrefixSpan k step t ≤ j.val :=
+      Nat.le_of_not_gt hnot_lt
+    have hEq :=
+      higham11_7_tridiagonalPathPrefixSpan_add_branchAmbientDim_tailDim_eq_pivotSpan_succ
+        k step t
+    have hjhi :
+        j.val <
+          higham11_7_tridiagonalPathPrefixSpan k step t +
+            higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step t) (step t) := by
+      simpa [hEq] using j.isLt
+    let a : Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t)) :=
+      ⟨j.val - higham11_7_tridiagonalPathPrefixSpan k step t, by
+        omega⟩
+    apply hnot
+    refine ⟨a, ?_⟩
+    apply Fin.ext
+    simp [a, higham11_7_tridiagonalPathLocalBlockIndex]
+    omega
+  · intro hjlt hmem
+    rcases hmem with ⟨a, ha⟩
+    have hval :
+        higham11_7_tridiagonalPathPrefixSpan k step t + a.val = j.val := by
+      simpa [higham11_7_tridiagonalPathLocalBlockIndex] using
+        congrArg Fin.val ha
+    omega
+
 /-- **Theorem 11.7 path first-trailing embedding bound, `1 × 1` branch**.
 For a concrete mixed tridiagonal path, the first trailing scalar of a branch
 accepted as `1 × 1` embeds into the full `pathSpan+1` ambient matrix at the
@@ -13442,6 +13483,54 @@ abbrev higham11_7_ConcretePathSecondPivotCombinedRowsZeroOutsideLocalBlock
             (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
             j) = 0
 
+/-- Prefix-zero form of the outside-block condition for a combined second-pivot
+row.  Since the branch-local block is the suffix beginning at the prefix, this
+is the concrete condition callers usually have to prove. -/
+abbrev higham11_7_ConcretePathSecondPivotCombinedRowsZeroBeforePrefix
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ) :
+    Prop :=
+  ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+    ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+      A (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) j +
+        (∑ s ∈ Finset.univ.filter (fun s : Fin k => s.val < t.val),
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s)
+            (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+            j) = 0
+
+/-- Zero before the branch prefix is exactly the outside-block zero condition
+for a concrete path-local second-pivot row. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedRowsZeroOutsideLocalBlock_of_zeroBeforePrefix
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hzero :
+      higham11_7_ConcretePathSecondPivotCombinedRowsZeroBeforePrefix
+        k step A ΔA) :
+    higham11_7_ConcretePathSecondPivotCombinedRowsZeroOutsideLocalBlock
+        k step A ΔA := by
+  intro t hstep j hj
+  exact hzero t hstep j
+    ((higham11_7_tridiagonalPathLocalBlockIndex_not_exists_iff_lt_prefixSpan
+      k step t j).1 hj)
+
 /-- A local-block combined second-pivot row equation lifts to the full ambient
 combined second-pivot handoff when the combined row is zero outside the current
 branch-local block. -/
@@ -13541,6 +13630,34 @@ theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_o
             x_hat (higham11_7_tridiagonalPathLocalBlockIndex k step t j) := hdot
     _ = b row := by
       simpa [B, earlier, row, N, m] using hrows t hstep
+
+/-- A local-block combined second-pivot row equation lifts to the full ambient
+combined handoff when the combined row is zero before the current branch prefix.
+This is the suffix-specialized form of
+`higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_of_zero_outside`. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_of_zeroBeforePrefix
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hzero :
+      higham11_7_ConcretePathSecondPivotCombinedRowsZeroBeforePrefix
+        k step A ΔA)
+    (hrows :
+      higham11_7_ConcretePathSecondPivotCombinedLocalBlockSolveRows
+        k step A b x_hat ΔA) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows
+        k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_of_zero_outside
+    k step A b x_hat ΔA
+    (higham11_7_ConcretePathSecondPivotCombinedRowsZeroOutsideLocalBlock_of_zeroBeforePrefix
+      k step A ΔA hzero)
+    hrows
 
 /-- The combined-row second-pivot handoff implies the split reduced handoff. -/
 theorem higham11_7_ConcretePathSecondPivotReducedSolveRows_of_combined_rows
