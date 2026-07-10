@@ -841,6 +841,46 @@ theorem higham11_3_infNorm_le_of_componentwise_bound_nonneg (n : ℕ)
       _ ≤ infNorm B := row_sum_le_infNorm B i
   · exact infNorm_nonneg B
 
+/-- **Theorem 11.3 structured backward-error bridge with norm aggregation**:
+a shared `BlockLDLTBackwardError` certificate supplies source-facing
+perturbation witnesses whose infinity norms are bounded by the structured
+factorization envelope. -/
+theorem higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_with_norm_bounds
+    (n : ℕ) (A L_hat D_hat : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n) (ε : ℝ) (hε : 0 ≤ ε)
+    (hbe : BlockLDLTBackwardError n A L_hat D_hat σ ε) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n,
+        |ΔA1 i j| ≤
+          higham11_3_blockLDLTBackwardErrorBound n L_hat D_hat ε i j) ∧
+      (∀ i j : Fin n,
+        |ΔA2 i j| ≤
+          higham11_3_blockLDLTBackwardErrorBound n L_hat D_hat ε i j) ∧
+      infNorm ΔA1 ≤
+        infNorm (higham11_3_blockLDLTBackwardErrorBound n L_hat D_hat ε) ∧
+      infNorm ΔA2 ≤
+        infNorm (higham11_3_blockLDLTBackwardErrorBound n L_hat D_hat ε) ∧
+      (∀ i j : Fin n,
+        ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+          L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂ =
+        A (σ i) (σ j) + ΔA1 i j) := by
+  obtain ⟨ΔA1, ΔA2, hΔA1, hΔA2, hLD⟩ :=
+    higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError
+      n A L_hat D_hat σ ε hε hbe
+  refine ⟨ΔA1, ΔA2, hΔA1, hΔA2, ?_, ?_, hLD⟩
+  · exact
+      higham11_3_infNorm_le_of_componentwise_bound_nonneg n ΔA1
+        (higham11_3_blockLDLTBackwardErrorBound n L_hat D_hat ε)
+        (fun i j =>
+          higham11_3_blockLDLTBackwardErrorBound_nonneg n L_hat D_hat ε hε i j)
+        hΔA1
+  · exact
+      higham11_3_infNorm_le_of_componentwise_bound_nonneg n ΔA2
+        (higham11_3_blockLDLTBackwardErrorBound n L_hat D_hat ε)
+        (fun i j =>
+          higham11_3_blockLDLTBackwardErrorBound_nonneg n L_hat D_hat ε hε i j)
+        hΔA2
+
 /-- **Theorem 11.3 all-`1 × 1` source-facing package with norm aggregation**,
 stored-symmetric path: the explicit perturbation witnesses also satisfy
 infinity-norm bounds induced by their recursive entrywise envelope. -/
