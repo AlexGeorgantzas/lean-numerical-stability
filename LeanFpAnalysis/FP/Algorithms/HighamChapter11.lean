@@ -841,6 +841,22 @@ theorem higham11_3_infNorm_le_of_componentwise_bound_nonneg (n : ℕ)
       _ ≤ infNorm B := row_sum_le_infNorm B i
   · exact infNorm_nonneg B
 
+/-- **Theorem 11.3 uniform scalar norm bridge**: a uniform componentwise
+perturbation bound implies the corresponding infinity-norm bound by summing
+rows. -/
+theorem higham11_3_infNorm_le_card_mul_of_uniform_componentwise_bound (n : ℕ)
+    (ΔA : Fin n → Fin n → ℝ) (β : ℝ) (hβ : 0 ≤ β)
+    (hΔ : ∀ i j : Fin n, |ΔA i j| ≤ β) :
+    infNorm ΔA ≤ (n : ℝ) * β := by
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    calc
+      (∑ j : Fin n, |ΔA i j|)
+          ≤ ∑ _j : Fin n, β := Finset.sum_le_sum (fun j _ => hΔ i j)
+      _ = (n : ℝ) * β := by
+          simp [Finset.sum_const, nsmul_eq_mul]
+  · exact mul_nonneg (Nat.cast_nonneg n) hβ
+
 /-- **Theorem 11.3 structured backward-error bridge with norm aggregation**:
 a shared `BlockLDLTBackwardError` certificate supplies source-facing
 perturbation witnesses whose infinity norms are bounded by the structured
@@ -1428,6 +1444,43 @@ theorem higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError
     exact (hΔA2 i j).trans
       (higham11_3_blockLDLTBackwardErrorBound_le_epsilon_mul_higham_product_bound
         n hn L_hat D_hat ε ρ_n Amax i j hε hBK)
+
+/-- Norm-bound version of
+`higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_higham_product_bound`:
+the same scalar product budget also controls the infinity norms of both
+perturbation witnesses. -/
+theorem higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_higham_product_bound_with_norm_bounds
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n) (ε ρ_n Amax : ℝ) (hε : 0 ≤ ε)
+    (hbe : BlockLDLTBackwardError n A L_hat D_hat σ ε)
+    (hBK : higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ ε * (36 * (n : ℝ) * ρ_n * Amax)) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ ε * (36 * (n : ℝ) * ρ_n * Amax)) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * (ε * (36 * (n : ℝ) * ρ_n * Amax)) ∧
+      infNorm ΔA2 ≤ (n : ℝ) * (ε * (36 * (n : ℝ) * ρ_n * Amax)) ∧
+      (∀ i j : Fin n,
+        ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+          L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂ =
+        A (σ i) (σ j) + ΔA1 i j) := by
+  obtain ⟨ΔA1, ΔA2, hΔA1, hΔA2, hLD⟩ :=
+    higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_higham_product_bound
+      n hn A L_hat D_hat σ ε ρ_n Amax hε hbe hBK
+  have hproductMax :
+      higham11_4_bunchKaufmanProductMax n hn L_hat D_hat ≤
+        36 * (n : ℝ) * ρ_n * Amax := hBK
+  have hscalar_nonneg : 0 ≤ 36 * (n : ℝ) * ρ_n * Amax :=
+    (higham11_4_bunchKaufmanProductMax_nonneg n hn L_hat D_hat).trans hproductMax
+  have hβ : 0 ≤ ε * (36 * (n : ℝ) * ρ_n * Amax) :=
+    mul_nonneg hε hscalar_nonneg
+  refine ⟨ΔA1, ΔA2, hΔA1, hΔA2, ?_, ?_, hLD⟩
+  · exact
+      higham11_3_infNorm_le_card_mul_of_uniform_componentwise_bound n ΔA1
+        (ε * (36 * (n : ℝ) * ρ_n * Amax)) hβ hΔA1
+  · exact
+      higham11_3_infNorm_le_card_mul_of_uniform_componentwise_bound n ΔA2
+        (ε * (36 * (n : ℝ) * ρ_n * Amax)) hβ hΔA2
 
 /-- Pointwise matrix-product estimates package directly into the source-style
 max-entry norm estimate for `|L̂||D̂||L̂ᵀ|`. -/
