@@ -957,6 +957,34 @@ theorem isLeast_lyapunovBackwardErrorValues_of_symmetric_spectral (n : ℕ)
     (lyapunovBackwardErrorValues_nonempty_of_symmetric_spectral n
       A C Y U lam alpha gamma hY hU hC hYsym hpos)
 
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered alias for attained structured Lyapunov eta infimum. -/
+alias H16_eq16_21_exists_lyapunovBackwardError_minimizer :=
+  exists_lyapunovBackwardError_minimizer
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered alias for eta-infimum membership in the feasible value set. -/
+alias H16_eq16_21_lyapunovBackwardErrorInf_mem_lyapunovBackwardErrorValues :=
+  lyapunovBackwardErrorInf_mem_lyapunovBackwardErrorValues
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered alias for least-value attainment of the structured
+    Lyapunov eta feasible set. -/
+alias H16_eq16_21_isLeast_lyapunovBackwardErrorValues :=
+  isLeast_lyapunovBackwardErrorValues
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered alias for attained structured Lyapunov eta infimum under
+    symmetric spectral data. -/
+alias H16_eq16_21_exists_lyapunovBackwardError_minimizer_of_symmetric_spectral :=
+  exists_lyapunovBackwardError_minimizer_of_symmetric_spectral
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered alias for least-value attainment under symmetric spectral
+    data. -/
+alias H16_eq16_21_isLeast_lyapunovBackwardErrorValues_of_symmetric_spectral :=
+  isLeast_lyapunovBackwardErrorValues_of_symmetric_spectral
+
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
     Chapter 16, Section 16.2.1, equation (16.21): exact-arithmetic
     source-facing two-sided Lyapunov eta/xi infimum bound. This wrapper
@@ -9222,6 +9250,54 @@ theorem lyapunov_practical_error_bound_fl_of_pos_le_sylvesterSepInf_mono_scalar
       (sylvesterVecCoeff_det_ne_zero_of_pos_le_sylvesterSepInf n A
         (fun i j => -matTranspose A i j) sigma hsigma hle)
       hX hn2 hn1 hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    source-numbered alias for the Lyapunov floating-point practical endpoint
+    from a source `SepLowerBound(A,-A^T)` certificate. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_sepLowerBound :=
+  lyapunov_practical_error_bound_fl_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    source-numbered alias for the scalar Lyapunov floating-point practical
+    endpoint from a source `SepLowerBound(A,-A^T)` certificate. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_sepLowerBound_scalar :=
+  lyapunov_practical_error_bound_fl_of_sepLowerBound_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    source-numbered alias for the monotone Lyapunov floating-point practical
+    endpoint from a source `SepLowerBound(A,-A^T)` certificate. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_sepLowerBound_mono :=
+  lyapunov_practical_error_bound_fl_of_sepLowerBound_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    source-numbered alias for the monotone scalar Lyapunov floating-point
+    practical endpoint from a source `SepLowerBound(A,-A^T)` certificate. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_sepLowerBound_mono_scalar :=
+  lyapunov_practical_error_bound_fl_of_sepLowerBound_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    source-numbered alias for the Lyapunov floating-point practical endpoint
+    from a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_pos_le_sylvesterSepInf :=
+  lyapunov_practical_error_bound_fl_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    source-numbered alias for the scalar Lyapunov floating-point practical
+    endpoint from a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_pos_le_sylvesterSepInf_scalar :=
+  lyapunov_practical_error_bound_fl_of_pos_le_sylvesterSepInf_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    source-numbered alias for the monotone Lyapunov floating-point practical
+    endpoint from a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_pos_le_sylvesterSepInf_mono :=
+  lyapunov_practical_error_bound_fl_of_pos_le_sylvesterSepInf_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    source-numbered alias for the monotone scalar Lyapunov floating-point
+    practical endpoint from a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_pos_le_sylvesterSepInf_mono_scalar :=
+  lyapunov_practical_error_bound_fl_of_pos_le_sylvesterSepInf_mono_scalar
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, equation (16.29), Lyapunov floating-point endpoint from a supplied

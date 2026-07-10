@@ -8184,6 +8184,54 @@ theorem lyapunov_relative_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywi
       hExact hX_pos
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total concrete Lyapunov coefficient sigma-min a posteriori
+    error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_of_vecCoeff_sigmaMin_total :=
+  lyapunov_aposteriori_bound_of_vecCoeff_sigmaMin_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total relative concrete Lyapunov coefficient sigma-min
+    a posteriori error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_of_vecCoeff_sigmaMin_total :=
+  lyapunov_relative_aposteriori_bound_of_vecCoeff_sigmaMin_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total concrete-left-inverse Lyapunov a posteriori
+    error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total :=
+  lyapunov_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total relative concrete-left-inverse Lyapunov a posteriori
+    error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total :=
+  lyapunov_relative_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total finite-Gram Lyapunov a posteriori error-residual
+    endpoint. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_of_vecCoeff_gram_eigenvalues_total :=
+  lyapunov_aposteriori_bound_of_vecCoeff_gram_eigenvalues_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total relative finite-Gram Lyapunov a posteriori
+    error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_of_vecCoeff_gram_eigenvalues_total :=
+  lyapunov_relative_aposteriori_bound_of_vecCoeff_gram_eigenvalues_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total diagonal concrete-coefficient Lyapunov a posteriori
+    error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total :=
+  lyapunov_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
+    alias for the total relative diagonal concrete-coefficient Lyapunov
+    a posteriori error-residual endpoint. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total :=
+  lyapunov_relative_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered
     alias for the total supplied spectral-coordinate Lyapunov a posteriori
     error-residual endpoint. -/
 alias H16_eq16_28_lyapunov_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge_total :=
