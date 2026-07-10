@@ -13771,6 +13771,13 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_16_one_add_pow_le_exp
 #check higham9_16_exp_le_one_add_pow
 #check higham9_16_fosterStageConst_le_sqrt_mul_exp
+#check higham9_16_fosterG
+#check higham9_16_fosterG_succ_le
+#check higham9_16_fosterG_le_31
+#check higham9_16_log31_bounds
+#check higham9_16_one_sub_inv_le_log
+#check higham9_16_t3_endpoint
+#check higham9_16_fosterS_le_tail
 #check higham9_10_HessenbergGEPPUTrace_to_PartialPivotGEPPUTrace
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowth_le
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowthValue_le
