@@ -319,3 +319,13 @@ surfaces rather than closed by assuming their conclusions.
   `higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterBound`:
   `growthFactorEntry <= higham9_16_rookPivotFosterBound n = (3/2)·n^((3/4)·ln n)` — Foster [435, 1997] Theorems 1+3
   formalized end-to-end, fully derivative-free. Axiom-clean.
+
+- **M26 (Split 2, session claude-ch09-split2-20260708181608)**: Theorem 9.11 general bandwidth `p` — the leading term
+  `rho <= 2^(2p-1)` of Bohte's growth bound proved unconditionally (Bohte [146, 1975] remains paywalled; PDF requested).
+  New band-tracked active-stage invariant `higham9_11_BandActiveBound` (5 clauses: preserved lower band, window
+  support `<= 2p`, per-column fill profile `M·2^(2p-1-j)`, at-most-one-nonzero extreme window column, untouched
+  original rows below the pivot window); one-step preservation `higham9_11_bandActive_schur_preserved`; trace
+  induction to `higham9_11_banded_GEPPUTrace_growthFactorEntry_le_two_pow`. Key observation: the first stage touching
+  a column cannot grow it (the pivot window meets that column in at most one nonzero). At `p = 1` this recovers the
+  sharp tridiagonal constant `2` (`..._le_bohteBound_one`). Residual for the printed sharp constant: only the
+  correction term `-(p-1)·2^(p-2)`, precisely recorded by `higham9_11_bohteBound_le_two_pow`.
