@@ -66949,6 +66949,116 @@ theorem isLSEMinimizer_iff_exists_lagrange_normal_equations_of_fullRowRank
     exact IsLSEMinimizer.of_lagrange_normal_equations
       (lambda := lambda) hfeas hnormal
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    KKT difference equations for the Cox--Higham augmented-system route.
+
+    Source and perturbed LSE minimizers have Lagrange multipliers whose
+    difference satisfies the source augmented-system equations.  The right-hand
+    sides are exactly the data, constraint, and stationarity perturbation terms
+    that the block inverse in the Cox--Higham proof acts on. -/
+theorem IsLSEMinimizer.exists_lagrange_kkt_difference_system_of_fullRowRank
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j)) :
+    ∃ lambda mu : Fin p → ℝ,
+      (∀ i : Fin m,
+        lsResidualHigham (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i) y i -
+            lsResidualHigham A b x i +
+          rectMatMulVec A (fun j => y j - x j) i =
+        Deltab i - rectMatMulVec DeltaA y i) ∧
+      (∀ j : Fin n,
+        (∑ i : Fin m,
+            A i j *
+              (lsResidualHigham (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i -
+                lsResidualHigham A b x i)) -
+          (∑ r : Fin p, B r j * (mu r - lambda r)) =
+        (∑ r : Fin p, DeltaB r j * mu r) -
+          (∑ i : Fin m,
+            DeltaA i j *
+              lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i)) ∧
+      (∀ r : Fin p,
+        rectMatMulVec B (fun j => y j - x j) r =
+          Deltad r - rectMatMulVec DeltaB y r) := by
+  rcases hx.exists_lagrange_normal_equations_of_fullRowRank hB with
+    ⟨lambda, hxfeas, hlambda⟩
+  rcases hy.exists_lagrange_normal_equations_of_fullRowRank hBpert with
+    ⟨mu, hyfeas, hmu⟩
+  refine ⟨lambda, mu, ?_, ?_, ?_⟩
+  · intro i
+    unfold lsResidualHigham
+    rw [congrFun (rectMatMulVec_mat_add A DeltaA y) i]
+    rw [congrFun (rectMatMulVec_sub A y x) i]
+    ring
+  · intro j
+    let s : Fin m → ℝ :=
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y
+    let rsrc : Fin m → ℝ := lsResidualHigham A b x
+    have hmu_expand :
+        (∑ i : Fin m, A i j * s i) +
+            (∑ i : Fin m, DeltaA i j * s i) =
+          (∑ r : Fin p, B r j * mu r) +
+            (∑ r : Fin p, DeltaB r j * mu r) := by
+      calc
+        (∑ i : Fin m, A i j * s i) +
+            (∑ i : Fin m, DeltaA i j * s i)
+            = ∑ i : Fin m, (A i j + DeltaA i j) * s i := by
+                rw [← Finset.sum_add_distrib]
+                apply Finset.sum_congr rfl
+                intro i _
+                ring
+        _ = ∑ r : Fin p, (B r j + DeltaB r j) * mu r := hmu j
+        _ = (∑ r : Fin p, B r j * mu r) +
+              (∑ r : Fin p, DeltaB r j * mu r) := by
+                rw [← Finset.sum_add_distrib]
+                apply Finset.sum_congr rfl
+                intro r _
+                ring
+    have hlambda_j :
+        (∑ i : Fin m, A i j * rsrc i) =
+          ∑ r : Fin p, B r j * lambda r := hlambda j
+    have hsumA :
+        (∑ i : Fin m, A i j * (s i - rsrc i)) =
+          (∑ i : Fin m, A i j * s i) -
+            (∑ i : Fin m, A i j * rsrc i) := by
+      rw [← Finset.sum_sub_distrib]
+      apply Finset.sum_congr rfl
+      intro i _
+      ring
+    have hsumB :
+        (∑ r : Fin p, B r j * (mu r - lambda r)) =
+          (∑ r : Fin p, B r j * mu r) -
+            (∑ r : Fin p, B r j * lambda r) := by
+      rw [← Finset.sum_sub_distrib]
+      apply Finset.sum_congr rfl
+      intro r _
+      ring
+    change
+      (∑ i : Fin m, A i j * (s i - rsrc i)) -
+          (∑ r : Fin p, B r j * (mu r - lambda r)) =
+        (∑ r : Fin p, DeltaB r j * mu r) -
+          (∑ i : Fin m, DeltaA i j * s i)
+    rw [hsumA, hsumB]
+    linarith
+  · intro r
+    have hpert_r := hyfeas r
+    have hsrc_r := hxfeas r
+    rw [congrFun (rectMatMulVec_mat_add B DeltaB y) r] at hpert_r
+    rw [congrFun (rectMatMulVec_sub B y x) r]
+    linarith
+
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
     uniqueness of an equality-constrained least-squares minimizer once
