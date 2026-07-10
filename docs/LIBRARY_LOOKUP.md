@@ -2113,7 +2113,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_fosterQ_mono_stage` (band roots monotone in the stage, from A.3)
 - `higham9_16_fosterPStar_eq_at_edge` (`p*_j(q^(j+1)) = q^(j+1)` — the shifted root degenerates at its band's right edge)
 - `higham9_16_band_formula_glue` (**band gluing, if-if edges**: adjacent band formulas agree at the shared edge, via `fosterT_succ`)
-- `higham9_16_band_formula_glue_last` (**band gluing, last edge**: the band-(K-2) formula equals `C/e^(K-1)` at `e = q^(K-1)`)
+- `higham9_16_band_formula_glue_last` (**band gluing, last edge**: the band-(K-2) formula equals `C/e^(K-1)` at `e = q^(K-1)`; valid for `K >= 2`)
+- `higham9_16_fosterBandIdx_filter_eq` / `higham9_16_fosterBandIdx_spec` (the band filter is the initial segment `Icc 1 j`; `q^(j) < P <= q^(j+1)` characterization)
+- `higham9_16_fosterBandIdx_at_root` (`bandIdx` at `q^(j+1)` is `j`)
+- `higham9_16_fosterBandValue_at_root` (the band value at an if-band edge is `fosterT(K-j-1)·(1+j·e+e)`)
+- `higham9_16_fosterBandValue_antitone` (**global tail antitonicity**: `M(K,C,t) <= M(K,C,P)` for `P <= t` — band descent through edges, completing the (A.17) program)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
