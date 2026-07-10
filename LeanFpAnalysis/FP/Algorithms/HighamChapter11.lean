@@ -1134,6 +1134,108 @@ theorem higham11_4_bunchKaufmanProductEntry_nonneg (n : ℕ)
     Finset.sum_nonneg (fun k₂ _ =>
       mul_nonneg (mul_nonneg (abs_nonneg _) (abs_nonneg _)) (abs_nonneg _)))
 
+/-- **Theorem 11.3 printed first-order envelope**:
+`p u (|A| + |L̂||D̂||L̂ᵀ|)`, indexed in the permuted coordinates used by the
+factorization interface.  This is the source first-order part of (11.5), with
+the higher-order `O(u^2)` term intentionally not modeled here. -/
+noncomputable def higham11_3_printedFirstOrderBound (n : ℕ)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (p u : ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j =>
+    p * u *
+      (|A (σ i) (σ j)| + higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j)
+
+/-- The printed first-order Theorem 11.3 envelope is nonnegative when
+`p u ≥ 0`. -/
+theorem higham11_3_printedFirstOrderBound_nonneg (n : ℕ)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (p u : ℝ)
+    (hpu : 0 ≤ p * u) :
+    ∀ i j : Fin n,
+      0 ≤ higham11_3_printedFirstOrderBound n A L_hat D_hat σ p u i j := by
+  intro i j
+  exact mul_nonneg hpu
+    (add_nonneg (abs_nonneg _) (higham11_4_bunchKaufmanProductEntry_nonneg
+      n L_hat D_hat i j))
+
+/-- The structured `ε |L̂||D̂||L̂ᵀ|` factorization envelope is dominated by the
+printed first-order source envelope whenever `ε ≤ p u`. -/
+theorem higham11_3_blockLDLTBackwardErrorBound_le_printedFirstOrderBound
+    (n : ℕ) (A L_hat D_hat : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (ε p u : ℝ) (i j : Fin n)
+    (hscale : ε ≤ p * u) (hpu : 0 ≤ p * u) :
+    higham11_3_blockLDLTBackwardErrorBound n L_hat D_hat ε i j ≤
+      higham11_3_printedFirstOrderBound n A L_hat D_hat σ p u i j := by
+  rw [higham11_3_blockLDLTBackwardErrorBound_eq_epsilon_mul_productEntry]
+  have hprod_nonneg :
+      0 ≤ higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j :=
+    higham11_4_bunchKaufmanProductEntry_nonneg n L_hat D_hat i j
+  have hprod_le_source :
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        |A (σ i) (σ j)| +
+          higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j :=
+    le_add_of_nonneg_left (abs_nonneg _)
+  calc
+    ε * higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j
+        ≤ (p * u) * higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j :=
+          mul_le_mul_of_nonneg_right hscale hprod_nonneg
+    _ ≤ (p * u) *
+          (|A (σ i) (σ j)| +
+            higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j) :=
+          mul_le_mul_of_nonneg_left hprod_le_source hpu
+    _ = higham11_3_printedFirstOrderBound n A L_hat D_hat σ p u i j := by
+          rfl
+
+/-- **Theorem 11.3 printed first-order bridge with norm aggregation**: a
+structured `BlockLDLTBackwardError` certificate whose coefficient is bounded by
+`p u` supplies source-facing perturbation witnesses bounded componentwise and
+in `∞`-norm by the printed first-order envelope. -/
+theorem higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_printed_first_order_bound_with_norm_bounds
+    (n : ℕ) (A L_hat D_hat : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n) (ε p u : ℝ) (hε : 0 ≤ ε)
+    (hscale : ε ≤ p * u) (hpu : 0 ≤ p * u)
+    (hbe : BlockLDLTBackwardError n A L_hat D_hat σ ε) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n,
+        |ΔA1 i j| ≤
+          higham11_3_printedFirstOrderBound n A L_hat D_hat σ p u i j) ∧
+      (∀ i j : Fin n,
+        |ΔA2 i j| ≤
+          higham11_3_printedFirstOrderBound n A L_hat D_hat σ p u i j) ∧
+      infNorm ΔA1 ≤
+        infNorm (higham11_3_printedFirstOrderBound n A L_hat D_hat σ p u) ∧
+      infNorm ΔA2 ≤
+        infNorm (higham11_3_printedFirstOrderBound n A L_hat D_hat σ p u) ∧
+      (∀ i j : Fin n,
+        ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+          L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂ =
+        A (σ i) (σ j) + ΔA1 i j) := by
+  obtain ⟨ΔA1, ΔA2, hΔA1, hΔA2, hLD⟩ :=
+    higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError
+      n A L_hat D_hat σ ε hε hbe
+  have hΔA1_printed : ∀ i j : Fin n,
+      |ΔA1 i j| ≤
+        higham11_3_printedFirstOrderBound n A L_hat D_hat σ p u i j := fun i j =>
+    (hΔA1 i j).trans
+      (higham11_3_blockLDLTBackwardErrorBound_le_printedFirstOrderBound
+        n A L_hat D_hat σ ε p u i j hscale hpu)
+  have hΔA2_printed : ∀ i j : Fin n,
+      |ΔA2 i j| ≤
+        higham11_3_printedFirstOrderBound n A L_hat D_hat σ p u i j := fun i j =>
+    (hΔA2 i j).trans
+      (higham11_3_blockLDLTBackwardErrorBound_le_printedFirstOrderBound
+        n A L_hat D_hat σ ε p u i j hscale hpu)
+  refine ⟨ΔA1, ΔA2, hΔA1_printed, hΔA2_printed, ?_, ?_, hLD⟩
+  · exact
+      higham11_3_infNorm_le_of_componentwise_bound_nonneg n ΔA1
+        (higham11_3_printedFirstOrderBound n A L_hat D_hat σ p u)
+        (higham11_3_printedFirstOrderBound_nonneg n A L_hat D_hat σ p u hpu)
+        hΔA1_printed
+  · exact
+      higham11_3_infNorm_le_of_componentwise_bound_nonneg n ΔA2
+        (higham11_3_printedFirstOrderBound n A L_hat D_hat σ p u)
+        (higham11_3_printedFirstOrderBound_nonneg n A L_hat D_hat σ p u hpu)
+        hΔA2_printed
+
 /-- Entrywise row-sum majorants for `|L̂|`, together with a uniform entry bound
 for `|D̂|`, bound one source product entry of `|L̂||D̂||L̂ᵀ|`.  This is the
 algebraic handoff used when the remaining Theorem 11.4 proof turns pivot-local
