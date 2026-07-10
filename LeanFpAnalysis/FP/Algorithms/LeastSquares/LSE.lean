@@ -67949,6 +67949,102 @@ theorem IsLSEMinimizer.kkt_solution_difference_vecNorm2_le_of_inverseSolutionLin
   have hstat_mu := hstat mu
   nlinarith
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    relative-error handoff from separate scalar bounds on the three
+    Cox--Higham inverse block responses.  This is the relative form of
+    `kkt_solution_difference_vecNorm2_le_of_inverseSolutionLinearMap_split_bounds`,
+    divided by the source solution norm. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_split_bounds
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    (dataBound statBound constrBound : ℝ)
+    (hdata : vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+      (fun i => Deltab i - rectMatMulVec DeltaA y i, 0, 0)) ≤ dataBound)
+    (hstat : ∀ mu : Fin p → ℝ,
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+        (0,
+         fun j =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m,
+              DeltaA i j *
+                lsResidualHigham (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i),
+         0)) ≤ statBound)
+    (hconstr : vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+      (0, 0, fun r => Deltad r - rectMatMulVec DeltaB y r)) ≤ constrBound) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      (dataBound + statBound + constrBound) / vecNorm2 x := by
+  have habs :=
+    hx.kkt_solution_difference_vecNorm2_le_of_inverseSolutionLinearMap_split_bounds
+      hy hB hBpert hnull dataBound statBound constrBound hdata hstat hconstr
+  exact div_le_div_of_nonneg_right habs (le_of_lt hxnorm)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    coefficient-form relative handoff for the Cox--Higham split inverse block
+    responses.  If each inverse response is bounded by its coefficient times
+    `||x||₂`, then the relative solution difference is bounded by the sum of
+    the three coefficients. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_split_coeff_bounds
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    (dataCoeff statCoeff constrCoeff : ℝ)
+    (hdata : vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+      (fun i => Deltab i - rectMatMulVec DeltaA y i, 0, 0)) ≤
+        dataCoeff * vecNorm2 x)
+    (hstat : ∀ mu : Fin p → ℝ,
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+        (0,
+         fun j =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m,
+              DeltaA i j *
+                lsResidualHigham (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i),
+         0)) ≤ statCoeff * vecNorm2 x)
+    (hconstr : vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+      (0, 0, fun r => Deltad r - rectMatMulVec DeltaB y r)) ≤
+        constrCoeff * vecNorm2 x) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      dataCoeff + statCoeff + constrCoeff := by
+  have hrel :=
+    hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_split_bounds
+      hy hB hBpert hnull hxnorm
+      (dataCoeff * vecNorm2 x) (statCoeff * vecNorm2 x)
+      (constrCoeff * vecNorm2 x) hdata hstat hconstr
+  have hxne : vecNorm2 x ≠ 0 := ne_of_gt hxnorm
+  calc
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x
+        ≤ ((dataCoeff * vecNorm2 x) + (statCoeff * vecNorm2 x) +
+            (constrCoeff * vecNorm2 x)) / vecNorm2 x := hrel
+    _ = dataCoeff + statCoeff + constrCoeff := by
+        field_simp [hxne]
+
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
     uniqueness of an equality-constrained least-squares minimizer once
