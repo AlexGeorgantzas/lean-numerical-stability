@@ -2375,6 +2375,30 @@ theorem lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_certif
       n A C X Xhat Rhat Rhat' Ru Ru' PinvAbs' eta hdet hX hBudget
       hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the Lyapunov computed-residual certificate practical endpoint
+    from a source `SepLowerBound(A,-A^T)` certificate. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_certificate :=
+  lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar Lyapunov computed-residual certificate practical
+    endpoint from a source `SepLowerBound(A,-A^T)` certificate. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_certificate_scalar :=
+  lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone Lyapunov computed-residual certificate practical
+    endpoint from a source `SepLowerBound(A,-A^T)` certificate. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_certificate_mono :=
+  lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar Lyapunov computed-residual certificate
+    practical endpoint from a source `SepLowerBound(A,-A^T)` certificate. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_certificate_mono_scalar :=
+  lyapunov_practical_error_bound_of_sepLowerBound_computed_residual_certificate_mono_scalar
+
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, equation (16.29), Lyapunov raw residual-budget endpoint from
     `SepLowerBound(A,-A^T)`: the separation certificate gives determinant
@@ -3636,6 +3660,30 @@ theorem lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residu
     lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono_scalar
       n A C X Xhat Rhat Rhat' Ru Ru' dR PinvAbs' eta hdet hX
       hPinvAbs_le hRhat_eq hRu hdR hRhat_le hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the Lyapunov computed-residual certificate practical endpoint
+    from a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate :=
+  lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar Lyapunov computed-residual certificate practical
+    endpoint from a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_scalar :=
+  lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone Lyapunov computed-residual certificate practical
+    endpoint from a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono :=
+  lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar Lyapunov computed-residual certificate
+    practical endpoint from a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono_scalar :=
+  lyapunov_practical_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono_scalar
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
     alias for the Lyapunov raw residual-budget practical endpoint from a
