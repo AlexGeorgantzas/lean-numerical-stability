@@ -460,6 +460,27 @@ theorem theorem20_7_exists_initialWeightedRowMax_sorted_permuteRows_nat
   simpa [theorem20_7_initialWeightedRowMax_permuteRows] using hσ k hk s hks
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting policy:
+    if source right-hand-side magnitudes are monotone with the source row
+    maxima, a source row-max sorting hypothesis also sorts the source `|b|`
+    key. -/
+theorem theorem20_7_abs_b_sorted_of_initialRowMax_sorted_compat_nat
+    {m n : ℕ} (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (hcompat :
+      ∀ i j : Fin m,
+        theorem20_7_initialRowMax hn A i ≤
+          theorem20_7_initialRowMax hn A j →
+        |b i| ≤ |b j|)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩) :
+    ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+      |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩| := by
+  intro k hk s hks
+  exact hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting policy:
     if the source right-hand-side magnitudes are monotone with the source row
     maxima, any row-max sorting permutation also sorts the `|b|` key. -/
 theorem theorem20_7_abs_b_sorted_of_permuteRows_initialRowMax_sorted_compat_nat
