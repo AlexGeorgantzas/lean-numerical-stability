@@ -34157,6 +34157,28 @@ theorem higham11_8_zero_relative_T_hat_error_of_eq (n : ℕ)
   rw [hEq i j]
   simp
 
+/-- A zero relative `T_hat - T` comparison can be used wherever a nonnegative
+relative radius `γ` is expected. -/
+theorem higham11_8_relative_T_hat_error_of_zero_relative_error (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ) (γ : ℝ) (hγ : 0 ≤ γ)
+    (hzero : ∀ i j : Fin n, |T_hat i j - T i j| ≤ 0 * |T_hat i j|) :
+    ∀ i j : Fin n, |T_hat i j - T i j| ≤ γ * |T_hat i j| := by
+  intro i j
+  exact (hzero i j).trans
+    (by
+      have hnonneg : 0 ≤ |T_hat i j| := abs_nonneg _
+      simpa using mul_le_mul_of_nonneg_right hγ hnonneg)
+
+/-- Pointwise equality of exact and computed Aasen middle factors supplies the
+ordinary source-style `γ |T_hat|` componentwise perturbation hypothesis for any
+nonnegative `γ`. -/
+theorem higham11_8_relative_T_hat_error_of_eq (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ) (γ : ℝ) (hγ : 0 ≤ γ)
+    (hEq : ∀ i j : Fin n, T_hat i j = T i j) :
+    ∀ i j : Fin n, |T_hat i j - T i j| ≤ γ * |T_hat i j| :=
+  higham11_8_relative_T_hat_error_of_zero_relative_error n T T_hat γ hγ
+    (higham11_8_zero_relative_T_hat_error_of_eq n T T_hat hEq)
+
 /-- Pointwise equality of the exact and computed Aasen middle factors gives
 the coefficient-one componentwise exact-factor cap. -/
 theorem higham11_8_abs_T_le_T_hat_of_eq (n : ℕ)
