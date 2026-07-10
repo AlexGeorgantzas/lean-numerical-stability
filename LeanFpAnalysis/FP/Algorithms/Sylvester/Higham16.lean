@@ -69,6 +69,10 @@ theorem sylvesterResidualRect_eq (m n : Nat)
   unfold sylvesterResidualRect sylvesterOpRect
   ring
 
+/-- Higham, 2nd ed., Chapter 16, equation (16.9):
+    source-numbered alias for the expanded rectangular residual. -/
+alias H16_eq16_9_sylvesterResidualRect_eq := sylvesterResidualRect_eq
+
 -- ============================================================
 -- Vec/Kronecker formulation from Chapter 16.1
 -- ============================================================
@@ -614,6 +618,12 @@ theorem sylvesterResidualRect_eq_sylvesterOpRect_error (m n : Nat)
   simp only [sub_mul, mul_sub, Finset.sum_sub_distrib]
   ring
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    source-numbered alias for the exact residual/error identity underlying the
+    practical componentwise bound. -/
+alias H16_eq16_29_sylvesterResidualRect_eq_sylvesterOpRect_error :=
+  sylvesterResidualRect_eq_sylvesterOpRect_error
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), inverse-residual bridge:
     if `Pinv` is a left inverse for the vec/Kronecker Sylvester coefficient,
     then the vectorized forward error is `Pinv` applied to the exact residual. -/
@@ -648,6 +658,11 @@ theorem sylvester_vec_error_eq_inverse_residual_of_left_inverse (m n : Nat)
           rw [Matrix.mulVec_mulVec]
     _ = Matrix.mulVec Pinv (Matrix.vec (sylvesterResidualRect m n A B C Xhat)) := by
           rw [hres]
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    source-numbered alias for the left-inverse residual-to-error bridge. -/
+alias H16_eq16_29_sylvester_vec_error_eq_inverse_residual_of_left_inverse :=
+  sylvester_vec_error_eq_inverse_residual_of_left_inverse
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
     if a computed residual `Rhat` differs from the exact residual `R` by
@@ -706,6 +721,12 @@ theorem sylvesterComputedResidualBudget_of_error_model (m n : Nat)
     exact hdR i j
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    source-numbered alias for deriving a computed-residual budget from an
+    explicit residual error model. -/
+alias H16_eq16_29_sylvesterComputedResidualBudget_of_error_model :=
+  sylvesterComputedResidualBudget_of_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
     a Frobenius residual-arithmetic certificate `||dR||_F <= rho` supplies
     the componentwise computed-residual budget with the uniform budget
     `Ru i j = rho`. -/
@@ -722,6 +743,12 @@ theorem sylvesterComputedResidualBudget_of_frobenius_error_model (m n : Nat)
       A B C Xhat Rhat (fun _ _ => rho) dR hRhat
       (fun _ _ => hrho)
       (fun i j => (abs_entry_le_frobNorm dR i j).trans hdR)
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29):
+    source-numbered alias for turning a Frobenius residual-error certificate
+    into a uniform computed-residual budget. -/
+alias H16_eq16_29_sylvesterComputedResidualBudget_of_frobenius_error_model :=
+  sylvesterComputedResidualBudget_of_frobenius_error_model
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), computed-residual
     certificate form: a left inverse for the vec/Kronecker coefficient,
