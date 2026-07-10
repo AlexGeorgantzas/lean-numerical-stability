@@ -11069,6 +11069,33 @@ theorem higham11_7_fin_prefix_dot_eq_before_add_current
   rw [higham11_7_fin_sum_prefix_eq_before_add_current k t (fun u => F u j)]
   ring
 
+/-- A finite path has an empty strict-before prefix at a branch whose value is
+zero. -/
+theorem higham11_7_fin_sum_before_eq_zero_of_val_zero
+    (k : ℕ) (t : Fin k) (F : Fin k → ℝ) (ht0 : t.val = 0) :
+    (∑ u ∈ Finset.univ.filter (fun u : Fin k => u.val < t.val), F u) = 0 := by
+  classical
+  refine Finset.sum_eq_zero ?_
+  intro u hu
+  have hlt : u.val < t.val := by
+    exact (Finset.mem_filter.mp hu).2
+  omega
+
+/-- The strict-before lifted dot contribution is zero at a branch whose value
+is zero. -/
+theorem higham11_7_fin_before_dot_eq_zero_of_val_zero
+    (k n : ℕ) (t : Fin k) (F : Fin k → Fin n → ℝ)
+    (x : Fin n → ℝ) (ht0 : t.val = 0) :
+    (∑ j : Fin n,
+      ((∑ u ∈ Finset.univ.filter (fun u : Fin k => u.val < t.val), F u j) *
+        x j)) = 0 := by
+  classical
+  refine Finset.sum_eq_zero ?_
+  intro j _hj
+  have hsum :=
+    higham11_7_fin_sum_before_eq_zero_of_val_zero k t (fun u => F u j) ht0
+  rw [hsum, zero_mul]
+
 /-- On the first-trailing row of a `1 × 1` branch, the all-branch lifted
 dot product equals the prefix-only lifted dot product. -/
 theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_pathFirstTrailing_one_full_rows_dot_eq_prefix_sum
@@ -12910,6 +12937,87 @@ theorem higham11_7_tridiagonalPath_no_secondPivot_of_all_one
   intro t htwo
   have hbad : PivotSize.one = PivotSize.two := (hone t).symm.trans htwo
   cases hbad
+
+/-- At an initial accepted `2 × 2` branch, the reduced second-pivot row
+equation has no earlier-branch contribution. -/
+theorem higham11_7_ConcretePathSecondPivotReducedSolveRow_of_val_zero
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (t : Fin k) (hstep : step t = PivotSize.two) (ht0 : t.val = 0)
+    (hbase :
+      (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        A (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) j *
+          x_hat j) =
+        b (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)) :
+    (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      A (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) j *
+        x_hat j) +
+    (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      (∑ s ∈ Finset.univ.filter (fun s : Fin k => s.val < t.val),
+        higham11_7_tridiagonalLiftLocalBlockPerturbation
+          (higham11_7_tridiagonalPathPivotSpan k step + 1)
+          (higham11_7_tridiagonalPathPrefixSpan k step s)
+          (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step s) (step s))
+          (ΔA s)
+          (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) j) *
+        x_hat j) =
+      b (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) := by
+  have hbefore :
+      (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        ((∑ s ∈ Finset.univ.filter (fun s : Fin k => s.val < t.val),
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s)
+            (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) j) *
+          x_hat j)) = 0 :=
+    higham11_7_fin_before_dot_eq_zero_of_val_zero k
+      (higham11_7_tridiagonalPathPivotSpan k step + 1) t
+      (fun s j =>
+        higham11_7_tridiagonalLiftLocalBlockPerturbation
+          (higham11_7_tridiagonalPathPivotSpan k step + 1)
+          (higham11_7_tridiagonalPathPrefixSpan k step s)
+          (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step s) (step s))
+          (ΔA s)
+          (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) j)
+      x_hat ht0
+  rw [hbefore, add_zero]
+  exact hbase
+
+/-- If every accepted `2 × 2` branch is the initial branch, base row equations
+at those second-pivot rows supply the reduced second-pivot handoff. -/
+theorem higham11_7_ConcretePathSecondPivotReducedSolveRows_of_base_rows_of_two_only_at_zero
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (htwo_zero : ∀ t : Fin k, step t = PivotSize.two → t.val = 0)
+    (hbase : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        A (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) j *
+          x_hat j) =
+        b (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)) :
+    higham11_7_ConcretePathSecondPivotReducedSolveRows k step A b x_hat ΔA := by
+  intro t hstep
+  exact
+    higham11_7_ConcretePathSecondPivotReducedSolveRow_of_val_zero
+      k step A b x_hat ΔA t hstep (htwo_zero t hstep) (hbase t hstep)
 
 /-- In a residual-witness path, the current local perturbation has zero dot
 product on a `2 × 2` branch's second-pivot row. -/
