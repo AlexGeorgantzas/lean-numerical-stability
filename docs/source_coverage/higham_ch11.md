@@ -183,6 +183,7 @@ assumptions remain open in the not-proved ledger below.
 | §11.2 Aasen recurrence eq (11.14) next-column update from `A=LH` | `higham11_14_aasen_next_column_of_product` | Ch11 | **new this session**; `L k next = (A k i − ∑_{j≤i} L k j·H j i)/H next i` (`next=i+1`, `k≥i+2`, `H next i≠0`) — completes the exact Aasen recurrence trio (11.12)–(11.14) |
 | §11.2 Aasen exact recurrences from `AasenSpec` | `higham11_8_AasenSpec_identity_aasenH_product_eq`, `higham11_8_AasenSpec_identity_aasenH_band`, `higham11_8_AasenSpec_identity_aasenH_exact_recurrences`, `higham11_8_AasenSpec_identity_exact_recurrences_of_H_eq` | Ch11 | **new this session**; an identity-permutation `AasenSpec` now supplies `A=L(TLᵀ)`, the bandedness of `H=T Lᵀ`, and the exact recurrence predicates (11.12), (11.13), and (11.14), with only the nonzero subdiagonal `H next i` pivots left explicit. The `H_eq` wrapper feeds source-prefix endpoints that carry a named `H` matrix. |
 | §11.2 Aasen subdiagonal pivot bridge | `higham11_8_AasenSpec_identity_aasenH_subdiagonal_eq_T`, `higham11_8_AasenSpec_identity_aasenH_exact_recurrences_of_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_identity_H_subdiagonal_eq_T_of_H_eq`, `higham11_8_AasenSpec_identity_exact_recurrences_of_H_eq_T_subdiagonal_ne_zero` | Ch11 | **new this session**; for `H=T Lᵀ` under `AasenSpec`, proves `H next i = T next i` on the source subdiagonal (`next=i+1`), so exact-recurrence wrappers can ask for the concrete tridiagonal subdiagonal nonzero hypothesis `T next i≠0` instead of a separate `H` pivot nonzero handoff. |
+| §11.2 AasenSpec source-prefix split-entry endpoint | `higham11_8_AasenSpec_identity_source_prefix_split_entry_budgets_printed_gamma_validity` | Ch11 | **new this session**; feeds identity-permutation `AasenSpec` plus `H=T Lᵀ` into the source-prefix split-entry printed normwise endpoint, deriving `A=LTLᵀ`, the exact Aasen next-column recurrence, and the required nonzero `H` subdiagonal pivots from the concrete `T next i≠0` hypothesis. The concrete `T_hat` comparison and factor/solve split-budget inequalities remain explicit, so this is dependency progress and does not close Theorem 11.8. |
 | §11.2 Aasen recurrence eq (11.14) scalar fl update | `higham11_14_fl_aasen_next_column_update_rel_error`, `higham11_14_fl_aasen_next_column_update_abs_error`, `higham11_14_fl_aasen_next_column_update_sum_abs_error`, `higham11_14_fl_aasen_next_column_update_abs_error_of_exact_recurrence` | Ch11 | **new this session**; proves `fl(fl(a-s)/h) = ((a-s)/h)(1+θ)`, `|θ| ≤ γ₂`, additive form `exact + Δ`, finite-sum specialization for `Aki − ∑_{j≤i}LkjHji`, and the exact-recurrence bridge `fl update = L k next + Δ`, `|Δ| ≤ γ₂|L k next|`; first local fl ingredient for the Aasen next-column update |
 | §11.2 Aasen recurrence eq (11.14) rounded prefix-sum formation | `higham11_14_fl_aasenPrefixDot`, `higham11_14_fl_aasen_prefix_dot_abs_error`, `higham11_14_fl_aasenSourcePrefixDot`, `higham11_14_fl_aasen_source_prefix_dot_abs_error`, `higham11_14_fl_aasen_next_column_update_formed_sum_abs_error_of_exact_recurrence`, `higham11_14_fl_aasen_next_column_update_formed_sum_single_abs_error_of_exact_recurrence`, `higham11_14_fl_aasen_next_column_update_formed_sum_abs_sub_bound_of_exact_recurrence`, `higham11_14_fl_aasen_next_column_update_source_prefix_abs_sub_bound_of_exact_recurrence`, `higham11_14_fl_aasen_next_column_update_source_prefix_column_component_bound_of_exact_recurrence`, `higham11_14_fl_aasen_next_column_source_prefix_Lhat_column_relative_bound_of_exact_recurrence`, `higham11_14_fl_aasen_source_prefix_Lhat_global_relative_bound_of_exact_recurrence` | Ch11 | **new this session**; masks the prefix `j≤i` into a fixed-length rounded dot product and proves its `γ_n` additive residual, also proves the tighter source-length prefix-dot residual with `γ_{i+1}` (`next.val = i.val+1`), combines source-prefix formation with the exact-recurrence update bridge, packages the formed-sum update as `L k next + Δ`, exposes direct componentwise inequalities, lifts the source-prefix scalar budget over the updated entries of the next column, packages one updated column as a relative `L_hat` factor bound, and dispatches those per-successor-column bounds to a global relative-factor hypothesis consumed by the Aasen factorization-product theorem |
 | §11.2 Aasen solve chain eq (11.15), outer triangular solves | `higham11_15_fl_aasen_outer_triangular_solves_backward_error` | Ch11 | **new this session**; packages existing Chapter 8 forward/back substitution backward-error theorems for the two outer solves `Lz=Pb` and `Lᵀw=y` |
@@ -642,6 +643,12 @@ A follow-up 2026-07-10 increment proves `H next i = T next i` for
 pivot hypothesis is the concrete `T next i≠0` condition. This removes the
 separate `H`-pivot handoff but still does not prove the `T_hat` comparison or
 middle-product certificate.
+The latest 2026-07-10 increment feeds those `AasenSpec` recurrence/product/pivot
+bridges into the source-prefix split-entry printed endpoint through
+`higham11_8_AasenSpec_identity_source_prefix_split_entry_budgets_printed_gamma_validity`.
+The remaining Theorem 11.8 work is still the concrete `T_hat` comparison,
+outer-factor entry cap, middle-product certificate, and split-budget
+inequalities.
 
 2026-07-09 update: the printed split-entry endpoints
 `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_coeff`
@@ -3798,6 +3805,15 @@ Problem transcription.
     `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_aasenH_exact_recurrences_of_T_subdiagonal_ne_zero`,
     `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_H_subdiagonal_eq_T_of_H_eq`,
     and `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_exact_recurrences_of_H_eq_T_subdiagonal_ne_zero`
+    → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-10 Theorem 11.8 `AasenSpec` source-prefix split-entry endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → pass;
+    placeholder scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_split_entry_budgets_printed_gamma_validity`
     → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-09 Theorem 11.4 max-entry norm iff increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
