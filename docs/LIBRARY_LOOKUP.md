@@ -2126,6 +2126,23 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterT` (**eq. (9.16), Foster Theorem 1 growth form**: rook-pivoting max-entry growth factor `<= t_n` — fully assembled from Lemma 2)
 - `higham9_16_one_add_pow_le_exp` / `higham9_16_exp_le_one_add_pow` (Theorem 3 toolkit: `e^(m·x/(1+x)) <= (1+x)^m <= e^(mx)`)
 - `higham9_16_fosterStageConst_le_sqrt_mul_exp` (`C_k <= sqrt(k)·e^(1/2)`)
+- `higham9_16_fosterG` (the Theorem-3 drift term `(3 ln n + 4.5 ln²n)/(2n)`) with `higham9_16_fosterG_succ_le` / `higham9_16_fosterG_le_31` (discretely nonincreasing)
+- `higham9_16_log31_bounds` (`3.43 <= ln 31 <= 3.435`) / `higham9_16_one_sub_inv_le_log` (`1 - 1/x <= ln x`)
+- `higham9_16_t3_endpoint` (the single numeric endpoint of Theorem 3's tail)
+- `higham9_16_fosterS_le_tail` (**Foster Theorem 3, tail bound**: `s_n <= (3/2)·ln n/n` for `n >= 31` — fully derivative-free)
+- `higham9_16_log_one_add_ge` / `higham9_16_log_one_add_le` (`x - x²/2 <= ln(1+x) <= x`)
+- `higham9_16_t3_step` (**Theorem 3 telescoping step**: `(3/2)ln(n+1)/(n+1) <= (3/4)(ln²(n+1) − ln²n)` for `n >= 30`)
+- `higham9_16_fosterT_le_exp_of_base` (**Theorem 3 telescoping induction**: `t_n <= (3/2)e^((3/4)ln²n)` propagates from the `n = 30` base)
+- `higham9_16_fosterS_le_of_sq_cert` (**rational bracket criterion**: `(k−1)^(k−1)·(u(1+u)^(k−1))² >= k^k` implies `s_k <= u` — makes stage-root bounds `norm_num`-decidable)
+- `higham9_16_fosterS_le_3` … `higham9_16_fosterS_le_30` (certified 4-decimal rational upper brackets on the stage roots `s_3..s_30`)
+- `higham9_16_fosterT_le_2` … `higham9_16_fosterT_le_30` (chained rational upper bounds `T_n` on Foster's `t_n` for `n <= 30`)
+- `higham9_16_log_ratio_ge` (`(N−D)/N <= ln(N/D)` for `0 < D <= N`)
+- `higham9_16_log3_ge` … `higham9_16_log29_ge` (certified rational lower bounds on `ln p` for primes `p <= 29`, via near-powers-of-2, e.g. `5³ ≈ 2⁷`, `7² ≈ 2⁴·3`)
+- `higham9_16_log_lb_2` … `higham9_16_log_lb_30` (6-decimal rational lower bounds on `ln n`, `n <= 30`)
+- `higham9_16_expPartialSum_le_3` … `_8` (symbolic Taylor partial sums `<= e^y` for `y >= 0` — avoids `Finset.sum` instance-path issues in `norm_num`)
+- `higham9_16_t3_head_1` … `higham9_16_t3_head_30` (per-`n` head comparisons `t_n <= (3/2)e^((3/4)ln²n)`)
+- `higham9_16_fosterT_le_exp` (**Foster Theorem 3, exponential form, complete**: all `n >= 1`)
+- `higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterBound` (**Higham eq. (9.16), CLOSED**: `ρ_rook <= (3/2)·n^((3/4)·ln n)` = `higham9_16_rookPivotFosterBound`)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`

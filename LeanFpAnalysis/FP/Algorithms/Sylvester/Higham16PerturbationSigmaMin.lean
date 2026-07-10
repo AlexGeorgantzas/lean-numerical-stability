@@ -103,6 +103,12 @@ theorem sylvester_perturbation_bound_of_sigmaMin (n : Nat)
       alpha beta gamma eps hAlpha hBeta hGamma hEps
       hdA hdB hdC hLin hdX_ne
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.25):
+    source-numbered alias for the direct sigma-min Sylvester perturbation
+    bound retaining the nonzero perturbation side condition. -/
+alias H16_eq16_25_sylvester_perturbation_bound_of_sigmaMin :=
+  sylvester_perturbation_bound_of_sigmaMin
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
     the relative Sylvester perturbation bound follows from a positive
     singular-value lower bound on the Sylvester operator. -/
@@ -129,6 +135,12 @@ theorem sylvester_relative_perturbation_of_sigmaMin (n : Nat)
       (sepLowerBound_of_sylvesterOp_sigmaMin n A B sigma hSigma hSigmaMin)
       alpha beta gamma eps hAlpha hBeta hGamma hEps
       hdA hdB hdC hLin hdX_ne hX_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.25):
+    source-numbered alias for the direct relative sigma-min Sylvester
+    perturbation bound retaining the nonzero perturbation side conditions. -/
+alias H16_eq16_25_sylvester_relative_perturbation_of_sigmaMin :=
+  sylvester_relative_perturbation_of_sigmaMin
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25) and (16.26):
     total Sylvester perturbation bound from a supplied positive singular-value
@@ -245,6 +257,12 @@ theorem sylvester_aposteriori_bound_of_sigmaMin (n : Nat)
       (sepLowerBound_of_sylvesterOp_sigmaMin n A B sigma hSigma hSigmaMin)
       hExact hE_ne
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the direct sigma-min a posteriori bound retaining
+    the nonzero error side condition. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_of_sigmaMin :=
+  sylvester_aposteriori_bound_of_sigmaMin
+
 /-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
     total a posteriori Sylvester residual-error bound from a supplied positive
     singular-value lower bound on the Sylvester operator.
@@ -307,6 +325,12 @@ theorem sylvester_relative_aposteriori_bound_of_sigmaMin (n : Nat)
     sylvester_relative_aposteriori_bound n A B C X Xhat sigma hSigma
       (sepLowerBound_of_sylvesterOp_sigmaMin n A B sigma hSigma hSigmaMin)
       hExact hE_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the direct relative sigma-min a posteriori bound
+    retaining the nonzero error side condition. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_of_sigmaMin :=
+  sylvester_relative_aposteriori_bound_of_sigmaMin
 
 /-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
     total relative a posteriori Sylvester residual-error bound from a supplied
