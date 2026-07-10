@@ -3510,6 +3510,93 @@ theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_uni
     (fun _i _j _hij => by simpa using hfirst_budget)
     (fun _i _j _hi _hj => by simpa using htrail_budget)
 
+/-- **Theorem 11.4 printed-constant row-sum budget arithmetic**.  If the
+paper's pivot-path analysis supplies `∑ |L̂ᵢₖ| ≤ 6` and
+`|D̂ₖₗ| ≤ ρₙ‖A‖`, then the local and trailing uniform row-sum products fit the
+loose `36` first-stage/recursive split used in the max-entry estimate. -/
+theorem higham11_4_first_stage_recursive_uniform_six_rho_budget
+    (n s : ℕ) (ρ_n Amax : ℝ) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax) :
+    (6 : ℝ) * (ρ_n * Amax) * 6 ≤ 36 * ρ_n * Amax ∧
+      (6 : ℝ) * (ρ_n * Amax) * 6 ≤
+        36 * ρ_n * Amax + 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax := by
+  have hrec_nonneg :
+      0 ≤ 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax := by
+    exact mul_nonneg
+      (mul_nonneg
+        (mul_nonneg (by norm_num : (0 : ℝ) ≤ 36) (Nat.cast_nonneg _)) hρ)
+      hAmax
+  constructor
+  · calc
+      (6 : ℝ) * (ρ_n * Amax) * 6 = 36 * ρ_n * Amax := by ring
+      _ ≤ 36 * ρ_n * Amax := le_rfl
+  · have h :
+        36 * ρ_n * Amax ≤
+          36 * ρ_n * Amax + 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax :=
+      le_add_of_nonneg_right hrec_nonneg
+    calc
+      (6 : ℝ) * (ρ_n * Amax) * 6 = 36 * ρ_n * Amax := by ring
+      _ ≤ 36 * ρ_n * Amax + 36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax := h
+
+/-- **Theorem 11.4 uniform six-row-sum/growth-`D` product bridge**.  The
+source-shaped caps `∑ |L̂ᵢₖ| ≤ 6` and `|D̂ₖₗ| ≤ ρₙ‖A‖` feed the loose
+first-stage/recursive product-entry estimate directly. -/
+theorem higham11_4_product_entries_of_first_stage_recursive_uniform_six_row_sum_growth_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n Amax : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ ρ_n * Amax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ 6) :
+    ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) * ρ_n * Amax := by
+  rcases higham11_4_first_stage_recursive_uniform_six_rho_budget
+      n s ρ_n Amax hρ hAmax with
+    ⟨hfirst_budget, htrail_budget⟩
+  exact
+    higham11_4_product_entries_of_first_stage_recursive_uniform_row_sum_bound
+      n s hn hs_pos hs_le L_hat D_hat (ρ_n * Amax) 6 ρ_n Amax
+      (36 * ρ_n * Amax)
+      (36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+      hρ hAmax le_rfl le_rfl hD hrows hfirst_budget htrail_budget
+
+/-- **Theorem 11.4 uniform six-row-sum/growth-`D` max-entry bridge**. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_uniform_six_row_sum_growth_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n Amax : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ ρ_n * Amax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ 6) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax := by
+  rcases higham11_4_first_stage_recursive_uniform_six_rho_budget
+      n s ρ_n Amax hρ hAmax with
+    ⟨hfirst_budget, htrail_budget⟩
+  exact
+    higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_uniform_row_sum_bound
+      n s hn hs_pos hs_le L_hat D_hat (ρ_n * Amax) 6 ρ_n Amax
+      (36 * ρ_n * Amax)
+      (36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+      hρ hAmax le_rfl le_rfl hD hrows hfirst_budget htrail_budget
+
+/-- **Theorem 11.4 uniform six-row-sum/growth-`D` scalar certificate**. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_uniform_six_row_sum_growth_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n Amax : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ ρ_n * Amax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ 6) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax := by
+  rcases higham11_4_first_stage_recursive_uniform_six_rho_budget
+      n s ρ_n Amax hρ hAmax with
+    ⟨hfirst_budget, htrail_budget⟩
+  exact
+    higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_uniform_row_sum_bound
+      n s hn hs_pos hs_le L_hat D_hat (ρ_n * Amax) 6 ρ_n Amax
+      (36 * ρ_n * Amax)
+      (36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+      hρ hAmax le_rfl le_rfl hD hrows hfirst_budget htrail_budget
+
 /-- **Theorem 11.4 exact-coefficient uniform row-sum first-stage/recursive
 product bridge**.  This is the uniform-row counterpart of the Higham-coefficient
 row-sum split. -/
@@ -3768,6 +3855,81 @@ theorem
     (fun _i _j _hij => by simpa using hfirst_budget)
     (fun _i _j _hi _hj => by simpa using htrail_budget)
     hsolve
+
+/-- **Theorem 11.4 uniform six-row-sum/growth-`D` stability bridge**.  This is
+the source-shaped consumer for the paper's remaining `|L̂|` row-sum and `D̂`
+growth caps, producing the printed `36 n ρₙ‖A‖` product-entry estimate. -/
+theorem higham11_4_bunch_kaufman_stability_of_first_stage_recursive_uniform_six_row_sum_growth_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (ρ_n maxNorm_A : ℝ)
+    (hρ : 0 ≤ ρ_n) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ ρ_n * maxNorm_A)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ 6) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A := by
+  rcases higham11_4_first_stage_recursive_uniform_six_rho_budget
+      n s ρ_n maxNorm_A hρ hmA with
+    ⟨hfirst_budget, htrail_budget⟩
+  exact
+    higham11_4_bunch_kaufman_stability_of_first_stage_recursive_uniform_row_sum_bound
+      n s hn hs_pos hs_le A L_hat D_hat (ρ_n * maxNorm_A) 6 ρ_n
+      maxNorm_A (36 * ρ_n * maxNorm_A)
+      (36 * ((n - s : ℕ) : ℝ) * ρ_n * maxNorm_A)
+      hρ hmA hA_norm le_rfl le_rfl hD hrows hfirst_budget htrail_budget
+
+/-- **Theorem 11.4 uniform six-row-sum/growth-`D` solve bridge**. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_uniform_six_row_sum_growth_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (p u ρ_n Amax : ℝ)
+    (hpu : 0 ≤ p * u) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ ρ_n * Amax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ 6)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  rcases higham11_4_first_stage_recursive_uniform_six_rho_budget
+      n s ρ_n Amax hρ hAmax with
+    ⟨hfirst_budget, htrail_budget⟩
+  exact
+    higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_uniform_row_sum_bound
+      n s hn hs_pos hs_le A L_hat D_hat b x_hat (ρ_n * Amax) 6 p u
+      ρ_n Amax (36 * ρ_n * Amax)
+      (36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+      hpu hρ hAmax le_rfl le_rfl hD hrows hfirst_budget htrail_budget hsolve
+
+/-- **Theorem 11.4 uniform six-row-sum/growth-`D` solve bridge, max-entry norm
+form**. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_uniform_six_row_sum_growth_D_maxEntryNorm_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (p u ρ_n Amax : ℝ)
+    (hpu : 0 ≤ p * u) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ ρ_n * Amax)
+    (hrows : ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ 6)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  rcases higham11_4_first_stage_recursive_uniform_six_rho_budget
+      n s ρ_n Amax hρ hAmax with
+    ⟨hfirst_budget, htrail_budget⟩
+  exact
+    higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_uniform_row_sum_maxEntryNorm_bound
+      n s hn hs_pos hs_le A L_hat D_hat b x_hat (ρ_n * Amax) 6 p u
+      ρ_n Amax (36 * ρ_n * Amax)
+      (36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+      hpu hρ hAmax le_rfl le_rfl hD hrows hfirst_budget htrail_budget hsolve
 
 /-- **Theorem 11.4 exact-coefficient uniform row-sum first-stage/recursive
 solve bridge, max-entry norm form**. -/
