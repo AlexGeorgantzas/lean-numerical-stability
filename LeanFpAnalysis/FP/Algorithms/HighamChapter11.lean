@@ -8779,6 +8779,112 @@ theorem higham11_7_tridiagonalPathFirstTrailingIndex_val_lt_pivotSpan_iff_ne_las
       higham11_7_tridiagonalPathFirstTrailingIndex_val_lt_pivotSpan_of_ne_last
         k step t ht
 
+/-- A predicate over concrete path rows is proved everywhere once it is proved
+on every canonical first-trailing endpoint and on every row outside that
+endpoint set. -/
+theorem higham11_7_tridiagonalPath_forall_of_firstTrailingIndex_and_complement
+    (k : ℕ) (step : Fin k → PivotSize)
+    (P : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → Prop)
+    (hend :
+      ∀ t : Fin k,
+        P (higham11_7_tridiagonalPathFirstTrailingIndex k step t))
+    (hcomp :
+      ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        (∀ t : Fin k,
+          i ≠ higham11_7_tridiagonalPathFirstTrailingIndex k step t) →
+        P i) :
+    ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1), P i := by
+  intro i
+  by_cases hmem :
+      ∃ t : Fin k, i = higham11_7_tridiagonalPathFirstTrailingIndex k step t
+  · rcases hmem with ⟨t, rfl⟩
+    exact hend t
+  · exact hcomp i (by
+      intro t hit
+      exact hmem ⟨t, hit⟩)
+
+/-- A predicate over concrete path rows is proved everywhere once it is proved
+on the first-trailing endpoints, separately at the leading row, and on all
+non-leading rows outside the endpoint set. -/
+theorem higham11_7_tridiagonalPath_forall_of_firstTrailingIndex_zero_and_complement
+    (k : ℕ) (step : Fin k → PivotSize)
+    (P : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → Prop)
+    (hend :
+      ∀ t : Fin k,
+        P (higham11_7_tridiagonalPathFirstTrailingIndex k step t))
+    (hzero : P 0)
+    (hcomp :
+      ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        i ≠ 0 →
+        (∀ t : Fin k,
+          i ≠ higham11_7_tridiagonalPathFirstTrailingIndex k step t) →
+        P i) :
+    ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1), P i := by
+  exact
+    higham11_7_tridiagonalPath_forall_of_firstTrailingIndex_and_complement
+      k step P hend (by
+        intro i hnotEndpoint
+        by_cases hi : i = 0
+        · subst i
+          exact hzero
+        · exact hcomp i hi hnotEndpoint)
+
+/-- On a nonempty concrete path, a predicate over rows is proved everywhere once
+it is proved on non-final first-trailing endpoints, at the ambient last row, and
+on rows outside the endpoint set. -/
+theorem higham11_7_tridiagonalPath_forall_of_nonfinal_firstTrailingIndex_last_and_complement
+    (k : ℕ) (step : Fin (k + 1) → PivotSize)
+    (P : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → Prop)
+    (hend :
+      ∀ t : Fin (k + 1), t ≠ Fin.last k →
+        P (higham11_7_tridiagonalPathFirstTrailingIndex (k + 1) step t))
+    (hlast :
+      P (Fin.last (higham11_7_tridiagonalPathPivotSpan (k + 1) step)))
+    (hcomp :
+      ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+        (∀ t : Fin (k + 1),
+          i ≠ higham11_7_tridiagonalPathFirstTrailingIndex (k + 1) step t) →
+        P i) :
+    ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1), P i := by
+  exact
+    higham11_7_tridiagonalPath_forall_of_firstTrailingIndex_and_complement
+      (k + 1) step P (by
+        intro t
+        by_cases ht : t = Fin.last k
+        · subst t
+          simpa [higham11_7_tridiagonalPathFirstTrailingIndex_last_eq_finLast]
+            using hlast
+        · exact hend t ht) hcomp
+
+/-- On a nonempty concrete path, a predicate over rows is proved everywhere once
+it is proved on non-final first-trailing endpoints, at the ambient last row,
+separately at the leading row, and on non-leading rows outside the endpoint set.
+-/
+theorem higham11_7_tridiagonalPath_forall_of_nonfinal_firstTrailingIndex_last_zero_and_complement
+    (k : ℕ) (step : Fin (k + 1) → PivotSize)
+    (P : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → Prop)
+    (hend :
+      ∀ t : Fin (k + 1), t ≠ Fin.last k →
+        P (higham11_7_tridiagonalPathFirstTrailingIndex (k + 1) step t))
+    (hlast :
+      P (Fin.last (higham11_7_tridiagonalPathPivotSpan (k + 1) step)))
+    (hzero : P 0)
+    (hcomp :
+      ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+        i ≠ 0 →
+        (∀ t : Fin (k + 1),
+          i ≠ higham11_7_tridiagonalPathFirstTrailingIndex (k + 1) step t) →
+        P i) :
+    ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1), P i := by
+  exact
+    higham11_7_tridiagonalPath_forall_of_nonfinal_firstTrailingIndex_last_and_complement
+      k step P hend hlast (by
+        intro i hnotEndpoint
+        by_cases hi : i = 0
+        · subst i
+          exact hzero
+        · exact hcomp i hi hnotEndpoint)
+
 /-- A concrete path solve-row proof splits into rows at canonical first-trailing
 endpoints and rows outside that endpoint set.  This is the row-coverage
 combinator for the remaining Theorem 11.7 lifted summed solve equation. -/
