@@ -66965,6 +66965,125 @@ def LSEKKTSystem {m n p : ℕ}
       (∑ r : Fin p, B r j * dlambda r) = g j) ∧
   (∀ r : Fin p, rectMatMulVec B dx r = c r)
 
+/-- The square linear operator behind `LSEKKTSystem`.
+
+    It maps `(dr, dx, dlambda)` to the three source augmented KKT rows:
+    `dr + A*dx`, `A^T*dr - B^T*dlambda`, and `B*dx`. -/
+noncomputable def LSEKKTLinearMap {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ) :
+    ((Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ)) →ₗ[ℝ]
+      ((Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ)) where
+  toFun z :=
+    (fun i : Fin m => z.1 i + rectMatMulVec A z.2.1 i,
+      fun j : Fin n =>
+        (∑ i : Fin m, A i j * z.1 i) -
+          (∑ r : Fin p, B r j * z.2.2 r),
+      fun r : Fin p => rectMatMulVec B z.2.1 r)
+  map_add' := by
+    intro u v
+    apply Prod.ext
+    · ext i
+      dsimp
+      have hmul :
+          rectMatMulVec A (u.2.1 + v.2.1) i =
+            rectMatMulVec A u.2.1 i + rectMatMulVec A v.2.1 i := by
+        simpa using congrFun (rectMatMulVec_add A u.2.1 v.2.1) i
+      rw [hmul]
+      ring
+    · apply Prod.ext
+      · ext j
+        dsimp
+        have hAadd :
+            (∑ i : Fin m, A i j * (u.1 i + v.1 i)) =
+              (∑ i : Fin m, A i j * u.1 i) +
+                (∑ i : Fin m, A i j * v.1 i) := by
+          rw [← Finset.sum_add_distrib]
+          apply Finset.sum_congr rfl
+          intro i _
+          ring
+        have hBadd :
+            (∑ r : Fin p, B r j * (u.2.2 r + v.2.2 r)) =
+              (∑ r : Fin p, B r j * u.2.2 r) +
+                (∑ r : Fin p, B r j * v.2.2 r) := by
+          rw [← Finset.sum_add_distrib]
+          apply Finset.sum_congr rfl
+          intro r _
+          ring
+        rw [hAadd, hBadd]
+        ring
+      · ext r
+        dsimp
+        have hmul :
+            rectMatMulVec B (u.2.1 + v.2.1) r =
+              rectMatMulVec B u.2.1 r + rectMatMulVec B v.2.1 r := by
+          simpa using congrFun (rectMatMulVec_add B u.2.1 v.2.1) r
+        exact hmul
+  map_smul' := by
+    intro a u
+    apply Prod.ext
+    · ext i
+      dsimp
+      have hmul :
+          rectMatMulVec A (a • u.2.1) i =
+            a * rectMatMulVec A u.2.1 i := by
+        simpa using congrFun (rectMatMulVec_smul A a u.2.1) i
+      rw [hmul]
+      ring
+    · apply Prod.ext
+      · ext j
+        dsimp
+        have hAsmul :
+            (∑ i : Fin m, A i j * (a * u.1 i)) =
+              a * (∑ i : Fin m, A i j * u.1 i) := by
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro i _
+          ring
+        have hBsmul :
+            (∑ r : Fin p, B r j * (a * u.2.2 r)) =
+              a * (∑ r : Fin p, B r j * u.2.2 r) := by
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro r _
+          ring
+        rw [hAsmul, hBsmul]
+        ring
+      · ext r
+        dsimp
+        have hmul :
+            rectMatMulVec B (a • u.2.1) r =
+              a * rectMatMulVec B u.2.1 r := by
+          simpa using congrFun (rectMatMulVec_smul B a u.2.1) r
+        exact hmul
+
+/-- Component form of the source KKT linear-map equation. -/
+theorem LSEKKTSystem.iff_linearMap_eq {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (f : Fin m → ℝ) (g : Fin n → ℝ) (c : Fin p → ℝ)
+    (dr : Fin m → ℝ) (dx : Fin n → ℝ) (dlambda : Fin p → ℝ) :
+    LSEKKTSystem A B f g c dr dx dlambda ↔
+      LSEKKTLinearMap A B (dr, dx, dlambda) = (f, g, c) := by
+  constructor
+  · intro hsys
+    rcases hsys with ⟨htop, hstat, hconstr⟩
+    apply Prod.ext
+    · ext i
+      exact htop i
+    · apply Prod.ext
+      · ext j
+        exact hstat j
+      · ext r
+        exact hconstr r
+  · intro hmap
+    constructor
+    · intro i
+      exact congrFun (congrArg Prod.fst hmap) i
+    · constructor
+      · intro j
+        exact congrFun (congrArg Prod.fst (congrArg Prod.snd hmap)) j
+      · intro r
+        exact congrFun (congrArg Prod.snd (congrArg Prod.snd hmap)) r
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     KKT difference equations for the Cox--Higham augmented-system route.
 
@@ -67271,6 +67390,53 @@ theorem LSEKKTSystem.eq_zero_of_homogeneous {m n p : ℕ}
     apply hB.transpose_rectMatMulVec_injective
     rw [hBt_zero, rectMatMulVec_zero]
   exact ⟨hdr_zero, hdx_zero, hdlambda_zero⟩
+
+/-- The source KKT linear map is injective under Higham's conditions (20.24). -/
+theorem LSEKKTLinearMap.injective_of_conditions {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    Function.Injective (LSEKKTLinearMap A B) := by
+  intro z w hzw
+  have hdiff :
+      LSEKKTLinearMap A B (z - w) =
+        (0 : (Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ)) := by
+    rw [map_sub, hzw, sub_self]
+  have hsys :
+      LSEKKTSystem A B (0 : Fin m → ℝ) (0 : Fin n → ℝ) (0 : Fin p → ℝ)
+        (z - w).1 (z - w).2.1 (z - w).2.2 := by
+    exact
+      (LSEKKTSystem.iff_linearMap_eq A B
+        (0 : Fin m → ℝ) (0 : Fin n → ℝ) (0 : Fin p → ℝ)
+        (z - w).1 (z - w).2.1 (z - w).2.2).2 hdiff
+  rcases LSEKKTSystem.eq_zero_of_homogeneous hB hnull hsys with
+    ⟨hdr_zero, hdx_zero, hdlambda_zero⟩
+  have hsub_zero : z - w = 0 := by
+    apply Prod.ext
+    · exact hdr_zero
+    · apply Prod.ext
+      · exact hdx_zero
+      · exact hdlambda_zero
+  exact sub_eq_zero.mp hsub_zero
+
+/-- Existence for the source KKT augmented system under Higham's conditions
+    (20.24).  This is the finite-dimensional solvability bridge behind the
+    Cox--Higham inverse step; it proves existence of a triple for arbitrary
+    data, stationarity, and constraint right-hand sides without yet identifying
+    the explicit inverse blocks. -/
+theorem LSEKKTSystem.exists_solution_of_conditions {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (f : Fin m → ℝ) (g : Fin n → ℝ) (c : Fin p → ℝ) :
+    ∃ dr dx dlambda,
+      LSEKKTSystem A B f g c dr dx dlambda := by
+  have hinj : Function.Injective (LSEKKTLinearMap A B) :=
+    LSEKKTLinearMap.injective_of_conditions hB hnull
+  have hsurj : Function.Surjective (LSEKKTLinearMap A B) :=
+    (LinearMap.injective_iff_surjective).mp hinj
+  rcases hsurj (f, g, c) with ⟨z, hz⟩
+  exact
+    ⟨z.1, z.2.1, z.2.2,
+      (LSEKKTSystem.iff_linearMap_eq A B f g c z.1 z.2.1 z.2.2).2 hz⟩
 
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
