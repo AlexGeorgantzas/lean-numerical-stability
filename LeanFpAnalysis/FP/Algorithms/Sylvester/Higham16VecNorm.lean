@@ -971,6 +971,42 @@ theorem lyapunovVecCoeff_det_ne_zero_of_left_inverse_finiteOpNorm2Le
     finiteMatrix_det_ne_zero_of_left_inverse_finiteOpNorm2Le
       (lyapunovVecCoeff n A) Pinv hM hLeft hPinv
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.6):
+    source-numbered alias for the Sylvester concrete sigma-min determinant
+    certificate. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin :=
+  sylvesterVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.6):
+    source-numbered alias for the Sylvester finite-Gram determinant
+    certificate. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues :=
+  sylvesterVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.6):
+    source-numbered alias for the Sylvester concrete-left-inverse determinant
+    certificate. -/
+alias H16_eq16_2_26_sylvesterVecCoeff_det_ne_zero_of_left_inverse_finiteOpNorm2Le :=
+  sylvesterVecCoeff_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.27):
+    source-numbered alias for the Lyapunov concrete sigma-min determinant
+    certificate. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin :=
+  lyapunovVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.27):
+    source-numbered alias for the Lyapunov finite-Gram determinant
+    certificate. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues :=
+  lyapunovVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.27):
+    source-numbered alias for the Lyapunov concrete-left-inverse determinant
+    certificate. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_det_ne_zero_of_left_inverse_finiteOpNorm2Le :=
+  lyapunovVecCoeff_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.5):
     determinant nonsingularity gives the exact trivial-kernel statement for the
     vectorized Sylvester coefficient. -/
