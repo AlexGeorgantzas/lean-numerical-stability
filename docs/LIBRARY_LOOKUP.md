@@ -2136,6 +2136,13 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_fosterS_le_of_sq_cert` (**rational bracket criterion**: `(k−1)^(k−1)·(u(1+u)^(k−1))² >= k^k` implies `s_k <= u` — makes stage-root bounds `norm_num`-decidable)
 - `higham9_16_fosterS_le_3` … `higham9_16_fosterS_le_30` (certified 4-decimal rational upper brackets on the stage roots `s_3..s_30`)
 - `higham9_16_fosterT_le_2` … `higham9_16_fosterT_le_30` (chained rational upper bounds `T_n` on Foster's `t_n` for `n <= 30`)
+- `higham9_16_log_ratio_ge` (`(N−D)/N <= ln(N/D)` for `0 < D <= N`)
+- `higham9_16_log3_ge` … `higham9_16_log29_ge` (certified rational lower bounds on `ln p` for primes `p <= 29`, via near-powers-of-2, e.g. `5³ ≈ 2⁷`, `7² ≈ 2⁴·3`)
+- `higham9_16_log_lb_2` … `higham9_16_log_lb_30` (6-decimal rational lower bounds on `ln n`, `n <= 30`)
+- `higham9_16_expPartialSum_le_3` … `_8` (symbolic Taylor partial sums `<= e^y` for `y >= 0` — avoids `Finset.sum` instance-path issues in `norm_num`)
+- `higham9_16_t3_head_1` … `higham9_16_t3_head_30` (per-`n` head comparisons `t_n <= (3/2)e^((3/4)ln²n)`)
+- `higham9_16_fosterT_le_exp` (**Foster Theorem 3, exponential form, complete**: all `n >= 1`)
+- `higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterBound` (**Higham eq. (9.16), CLOSED**: `ρ_rook <= (3/2)·n^((3/4)·ln n)` = `higham9_16_rookPivotFosterBound`)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`

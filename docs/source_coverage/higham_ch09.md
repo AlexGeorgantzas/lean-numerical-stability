@@ -309,3 +309,13 @@ surfaces rather than closed by assuming their conclusions.
   plus machine-generated certified brackets `higham9_16_fosterS_le_3..30` (4-decimal rationals) and the chained
   product bounds `higham9_16_fosterT_le_2..30`. Worst certified margin vs `1.5·e^{(3/4)ln²n}` is 2.96% at `n = 3`
   (exact-rational verification in the generator). Axiom-clean; full chapter rebuild green (3045 jobs).
+
+- **M25 (Split 2, session claude-ch09-split2-20260708181608)**: **(9.16) CLOSED.** Foster Theorem 3 head numerics part 2:
+  certified rational lower bounds on `ln p` for the ten primes `p <= 29` (near-powers-of-2 with the `[x/(1+x), x]`
+  log bracket, e.g. `3ln5 = 7ln2 − ln(128/125)`), composite bounds `ln n` for `n <= 30`, symbolic Taylor partial-sum
+  lemmas (degrees 3–8), and the 30 per-`n` comparisons `t_n <= (3/2)e^((3/4)ln²n)` (machine-generated; all margins
+  verified exactly in the generator, worst 1.02% at `n = 3`). Assembled `higham9_16_fosterT_le_exp` (all `n >= 1`,
+  telescoping induction from the discharged `n = 30` base) and the final theorem
+  `higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterBound`:
+  `growthFactorEntry <= higham9_16_rookPivotFosterBound n = (3/2)·n^((3/4)·ln n)` — Foster [435, 1997] Theorems 1+3
+  formalized end-to-end, fully derivative-free. Axiom-clean.
