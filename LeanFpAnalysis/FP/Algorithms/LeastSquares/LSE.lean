@@ -37343,6 +37343,271 @@ theorem theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
   exact rectOpNorm2Le_of_frobNormRect_le DeltaB hbudget.2.2.1
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the data-row right-hand side `Deltab - DeltaA*y` in the Cox--Higham KKT
+    system is bounded by the source relative perturbation budget. -/
+theorem theorem20_8_vecNorm2_higham_data_forcing_le_of_relativeBudget
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (y : Fin n → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    vecNorm2 (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i) ≤
+      eps * vecNorm2 b + (eps * frobNormRect A) * vecNorm2 y := by
+  have hDeltaA :
+      rectOpNorm2Le DeltaA (eps * frobNormRect A) :=
+    theorem20_8_rectOpNorm2Le_DeltaA_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget
+  have hDeltaAy :
+      vecNorm2 (rectMatMulVec DeltaA y) ≤
+        (eps * frobNormRect A) * vecNorm2 y :=
+    hDeltaA y
+  have hdata :
+      vecNorm2 Deltab ≤ eps * vecNorm2 b := hbudget.2.1
+  calc
+    vecNorm2 (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i)
+        ≤ vecNorm2 Deltab +
+            vecNorm2 (fun i : Fin m => -rectMatMulVec DeltaA y i) := by
+            simpa [sub_eq_add_neg] using
+              vecNorm2_add_le Deltab
+                (fun i : Fin m => -rectMatMulVec DeltaA y i)
+    _ = vecNorm2 Deltab + vecNorm2 (rectMatMulVec DeltaA y) := by
+            rw [vecNorm2_neg]
+    _ ≤ eps * vecNorm2 b + (eps * frobNormRect A) * vecNorm2 y :=
+            add_le_add hdata hDeltaAy
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the constraint-row right-hand side `Deltad - DeltaB*y` in the Cox--Higham
+    KKT system is bounded by the source relative perturbation budget. -/
+theorem theorem20_8_vecNorm2_constraint_defect_le_of_relativeBudget
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (y : Fin n → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    vecNorm2 (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) ≤
+      eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y := by
+  exact theorem20_8_vecNorm2_constraint_defect_le DeltaB Deltad y
+    (theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget)
+    hbudget.2.2.2
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    scale handoff for the Cox--Higham data-row right-hand side. -/
+theorem theorem20_8_vecNorm2_higham_data_forcing_le_of_relativeBudget_scales
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) {eps bScale yScale : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hb : vecNorm2 b ≤ bScale * vecNorm2 x)
+    (hy : vecNorm2 y ≤ yScale * vecNorm2 x) :
+    vecNorm2 (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i) ≤
+      (eps * bScale + (eps * frobNormRect A) * yScale) * vecNorm2 x := by
+  have hA_radius_nonneg : 0 ≤ eps * frobNormRect A :=
+    mul_nonneg heps_nonneg (frobNormRect_nonneg A)
+  have hbase :=
+    theorem20_8_vecNorm2_higham_data_forcing_le_of_relativeBudget
+      A DeltaA b Deltab B DeltaB d Deltad y hbudget
+  have hbterm : eps * vecNorm2 b ≤ eps * (bScale * vecNorm2 x) :=
+    mul_le_mul_of_nonneg_left hb heps_nonneg
+  have hyterm :
+      (eps * frobNormRect A) * vecNorm2 y ≤
+        (eps * frobNormRect A) * (yScale * vecNorm2 x) :=
+    mul_le_mul_of_nonneg_left hy hA_radius_nonneg
+  calc
+    vecNorm2 (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i)
+        ≤ eps * vecNorm2 b + (eps * frobNormRect A) * vecNorm2 y := hbase
+    _ ≤ eps * (bScale * vecNorm2 x) +
+          (eps * frobNormRect A) * (yScale * vecNorm2 x) :=
+            add_le_add hbterm hyterm
+    _ = (eps * bScale + (eps * frobNormRect A) * yScale) *
+          vecNorm2 x := by
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    scale handoff for the Cox--Higham constraint-row right-hand side. -/
+theorem theorem20_8_vecNorm2_constraint_defect_le_of_relativeBudget_scales
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) {eps dScale yScale : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hd : vecNorm2 d ≤ dScale * vecNorm2 x)
+    (hy : vecNorm2 y ≤ yScale * vecNorm2 x) :
+    vecNorm2 (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) ≤
+      (eps * dScale + (eps * frobNormRect B) * yScale) * vecNorm2 x := by
+  have hB_radius_nonneg : 0 ≤ eps * frobNormRect B :=
+    mul_nonneg heps_nonneg (frobNormRect_nonneg B)
+  have hbase :=
+    theorem20_8_vecNorm2_constraint_defect_le_of_relativeBudget
+      A DeltaA b Deltab B DeltaB d Deltad y hbudget
+  have hdterm : eps * vecNorm2 d ≤ eps * (dScale * vecNorm2 x) :=
+    mul_le_mul_of_nonneg_left hd heps_nonneg
+  have hyterm :
+      (eps * frobNormRect B) * vecNorm2 y ≤
+        (eps * frobNormRect B) * (yScale * vecNorm2 x) :=
+    mul_le_mul_of_nonneg_left hy hB_radius_nonneg
+  calc
+    vecNorm2 (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)
+        ≤ eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y := hbase
+    _ ≤ eps * (dScale * vecNorm2 x) +
+          (eps * frobNormRect B) * (yScale * vecNorm2 x) :=
+            add_le_add hdterm hyterm
+    _ = (eps * dScale + (eps * frobNormRect B) * yScale) *
+          vecNorm2 x := by
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the stationarity-row right-hand side `DeltaB^T*mu - DeltaA^T*s` in the
+    Cox--Higham KKT system is bounded by supplied operator-2 radii. -/
+theorem theorem20_8_vecNorm2_stationarity_forcing_le {m n p : ℕ}
+    (DeltaA : Fin m → Fin n → ℝ) (DeltaB : Fin p → Fin n → ℝ)
+    (mu : Fin p → ℝ) (s : Fin m → ℝ)
+    {DeltaB_norm DeltaA_norm : ℝ}
+    (hDeltaB_norm_nonneg : 0 ≤ DeltaB_norm)
+    (hDeltaA_norm_nonneg : 0 ≤ DeltaA_norm)
+    (hDeltaB : rectOpNorm2Le DeltaB DeltaB_norm)
+    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm) :
+    vecNorm2
+        (fun j : Fin n =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m, DeltaA i j * s i)) ≤
+      DeltaB_norm * vecNorm2 mu + DeltaA_norm * vecNorm2 s := by
+  have hDeltaBT :
+      rectOpNorm2Le (finiteTranspose DeltaB) DeltaB_norm :=
+    rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le
+      DeltaB hDeltaB_norm_nonneg hDeltaB
+  have hDeltaAT :
+      rectOpNorm2Le (finiteTranspose DeltaA) DeltaA_norm :=
+    rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le
+      DeltaA hDeltaA_norm_nonneg hDeltaA
+  have hB :
+      vecNorm2 (rectMatMulVec (finiteTranspose DeltaB) mu) ≤
+        DeltaB_norm * vecNorm2 mu := hDeltaBT mu
+  have hA :
+      vecNorm2 (rectMatMulVec (finiteTranspose DeltaA) s) ≤
+        DeltaA_norm * vecNorm2 s := hDeltaAT s
+  have hrepr :
+      (fun j : Fin n =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m, DeltaA i j * s i)) =
+        fun j : Fin n =>
+          rectMatMulVec (finiteTranspose DeltaB) mu j -
+            rectMatMulVec (finiteTranspose DeltaA) s j := by
+    ext j
+    simp [rectMatMulVec, finiteTranspose]
+  rw [hrepr]
+  calc
+    vecNorm2
+        (fun j : Fin n =>
+          rectMatMulVec (finiteTranspose DeltaB) mu j -
+            rectMatMulVec (finiteTranspose DeltaA) s j)
+        ≤ vecNorm2 (rectMatMulVec (finiteTranspose DeltaB) mu) +
+            vecNorm2
+              (fun j : Fin n =>
+                -rectMatMulVec (finiteTranspose DeltaA) s j) := by
+            simpa [sub_eq_add_neg] using
+              vecNorm2_add_le (rectMatMulVec (finiteTranspose DeltaB) mu)
+                (fun j : Fin n =>
+                  -rectMatMulVec (finiteTranspose DeltaA) s j)
+    _ = vecNorm2 (rectMatMulVec (finiteTranspose DeltaB) mu) +
+          vecNorm2 (rectMatMulVec (finiteTranspose DeltaA) s) := by
+            rw [vecNorm2_neg]
+    _ ≤ DeltaB_norm * vecNorm2 mu + DeltaA_norm * vecNorm2 s :=
+            add_le_add hB hA
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the stationarity-row right-hand side `DeltaB^T*mu - DeltaA^T*s` in the
+    Cox--Higham KKT system is bounded by the source relative perturbation
+    budget. -/
+theorem theorem20_8_vecNorm2_stationarity_forcing_le_of_relativeBudget
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (mu : Fin p → ℝ) (s : Fin m → ℝ) {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps) :
+    vecNorm2
+        (fun j : Fin n =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m, DeltaA i j * s i)) ≤
+      (eps * frobNormRect B) * vecNorm2 mu +
+        (eps * frobNormRect A) * vecNorm2 s := by
+  have hDeltaB_radius_nonneg : 0 ≤ eps * frobNormRect B :=
+    (frobNormRect_nonneg DeltaB).trans hbudget.2.2.1
+  have hDeltaA_radius_nonneg : 0 ≤ eps * frobNormRect A :=
+    (frobNormRect_nonneg DeltaA).trans hbudget.1
+  exact theorem20_8_vecNorm2_stationarity_forcing_le DeltaA DeltaB mu s
+    hDeltaB_radius_nonneg hDeltaA_radius_nonneg
+    (theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget)
+    (theorem20_8_rectOpNorm2Le_DeltaA_of_relativePerturbationBudget
+      A DeltaA b Deltab B DeltaB d Deltad hbudget)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    scale handoff for the Cox--Higham stationarity-row right-hand side.  Once
+    the perturbed multiplier and perturbed residual are bounded relative to the
+    source solution norm, the relative perturbation budget gives the stationarity
+    row scale needed by the KKT response-coefficient theorem. -/
+theorem theorem20_8_vecNorm2_stationarity_forcing_le_of_relativeBudget_scales
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (x : Fin n → ℝ) (mu : Fin p → ℝ) (s : Fin m → ℝ)
+    {eps muScale sScale : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (hmu : vecNorm2 mu ≤ muScale * vecNorm2 x)
+    (hs : vecNorm2 s ≤ sScale * vecNorm2 x) :
+    vecNorm2
+        (fun j : Fin n =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m, DeltaA i j * s i)) ≤
+      ((eps * frobNormRect B) * muScale +
+          (eps * frobNormRect A) * sScale) *
+        vecNorm2 x := by
+  have hDeltaB_radius_nonneg : 0 ≤ eps * frobNormRect B :=
+    (frobNormRect_nonneg DeltaB).trans hbudget.2.2.1
+  have hDeltaA_radius_nonneg : 0 ≤ eps * frobNormRect A :=
+    (frobNormRect_nonneg DeltaA).trans hbudget.1
+  have hbase :=
+    theorem20_8_vecNorm2_stationarity_forcing_le_of_relativeBudget
+      A DeltaA b Deltab B DeltaB d Deltad mu s hbudget
+  have hBterm :
+      (eps * frobNormRect B) * vecNorm2 mu ≤
+        (eps * frobNormRect B) * (muScale * vecNorm2 x) :=
+    mul_le_mul_of_nonneg_left hmu hDeltaB_radius_nonneg
+  have hAterm :
+      (eps * frobNormRect A) * vecNorm2 s ≤
+        (eps * frobNormRect A) * (sScale * vecNorm2 x) :=
+    mul_le_mul_of_nonneg_left hs hDeltaA_radius_nonneg
+  calc
+    vecNorm2
+        (fun j : Fin n =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m, DeltaA i j * s i))
+        ≤ (eps * frobNormRect B) * vecNorm2 mu +
+            (eps * frobNormRect A) * vecNorm2 s := hbase
+    _ ≤ (eps * frobNormRect B) * (muScale * vecNorm2 x) +
+          (eps * frobNormRect A) * (sScale * vecNorm2 x) :=
+            add_le_add hBterm hAterm
+    _ = ((eps * frobNormRect B) * muScale +
+          (eps * frobNormRect A) * sScale) * vecNorm2 x := by
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     specialization of the explicit residual-correction bound to the source
     relative perturbation budget. -/
 theorem theorem20_8_vecNorm2_perturbed_residual_correction_le_of_relativeBudget
@@ -67948,6 +68213,235 @@ theorem IsLSEMinimizer.kkt_solution_difference_vecNorm2_le_of_inverseSolutionLin
     ⟨mu, hsplit⟩
   have hstat_mu := hstat mu
   nlinarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    relative-error handoff from separate scalar bounds on the three
+    Cox--Higham inverse block responses.  This is the relative form of
+    `kkt_solution_difference_vecNorm2_le_of_inverseSolutionLinearMap_split_bounds`,
+    divided by the source solution norm. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_split_bounds
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    (dataBound statBound constrBound : ℝ)
+    (hdata : vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+      (fun i => Deltab i - rectMatMulVec DeltaA y i, 0, 0)) ≤ dataBound)
+    (hstat : ∀ mu : Fin p → ℝ,
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+        (0,
+         fun j =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m,
+              DeltaA i j *
+                lsResidualHigham (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i),
+         0)) ≤ statBound)
+    (hconstr : vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+      (0, 0, fun r => Deltad r - rectMatMulVec DeltaB y r)) ≤ constrBound) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      (dataBound + statBound + constrBound) / vecNorm2 x := by
+  have habs :=
+    hx.kkt_solution_difference_vecNorm2_le_of_inverseSolutionLinearMap_split_bounds
+      hy hB hBpert hnull dataBound statBound constrBound hdata hstat hconstr
+  exact div_le_div_of_nonneg_right habs (le_of_lt hxnorm)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    coefficient-form relative handoff for the Cox--Higham split inverse block
+    responses.  If each inverse response is bounded by its coefficient times
+    `||x||₂`, then the relative solution difference is bounded by the sum of
+    the three coefficients. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_split_coeff_bounds
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    (dataCoeff statCoeff constrCoeff : ℝ)
+    (hdata : vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+      (fun i => Deltab i - rectMatMulVec DeltaA y i, 0, 0)) ≤
+        dataCoeff * vecNorm2 x)
+    (hstat : ∀ mu : Fin p → ℝ,
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+        (0,
+         fun j =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m,
+              DeltaA i j *
+                lsResidualHigham (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i),
+         0)) ≤ statCoeff * vecNorm2 x)
+    (hconstr : vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+      (0, 0, fun r => Deltad r - rectMatMulVec DeltaB y r)) ≤
+        constrCoeff * vecNorm2 x) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      dataCoeff + statCoeff + constrCoeff := by
+  have hrel :=
+    hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_split_bounds
+      hy hB hBpert hnull hxnorm
+      (dataCoeff * vecNorm2 x) (statCoeff * vecNorm2 x)
+      (constrCoeff * vecNorm2 x) hdata hstat hconstr
+  have hxne : vecNorm2 x ≠ 0 := ne_of_gt hxnorm
+  calc
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x
+        ≤ ((dataCoeff * vecNorm2 x) + (statCoeff * vecNorm2 x) +
+            (constrCoeff * vecNorm2 x)) / vecNorm2 x := hrel
+    _ = dataCoeff + statCoeff + constrCoeff := by
+        field_simp [hxne]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    compose source-row size estimates with operator-response coefficients for
+    the Cox--Higham KKT inverse solution block.
+
+    The hypotheses separate the two remaining mathematical jobs in the printed
+    (20.25) estimate: bound each inverse block row as an operator, and bound
+    each perturbation right-hand side relative to `||x||₂`. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_response_coeffs
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    (dataCoeff dataScale statCoeff statScale constrCoeff constrScale : ℝ)
+    (hdataCoeff_nonneg : 0 ≤ dataCoeff)
+    (hstatCoeff_nonneg : 0 ≤ statCoeff)
+    (hconstrCoeff_nonneg : 0 ≤ constrCoeff)
+    (hdataOp : ∀ f : Fin m → ℝ,
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull (f, 0, 0)) ≤
+        dataCoeff * vecNorm2 f)
+    (hdataRhs :
+      vecNorm2 (fun i => Deltab i - rectMatMulVec DeltaA y i) ≤
+        dataScale * vecNorm2 x)
+    (hstatOp : ∀ g : Fin n → ℝ,
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull (0, g, 0)) ≤
+        statCoeff * vecNorm2 g)
+    (hstatRhs : ∀ mu : Fin p → ℝ,
+      vecNorm2
+        (fun j =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m,
+              DeltaA i j *
+                lsResidualHigham (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i)) ≤
+        statScale * vecNorm2 x)
+    (hconstrOp : ∀ c : Fin p → ℝ,
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull (0, 0, c)) ≤
+        constrCoeff * vecNorm2 c)
+    (hconstrRhs :
+      vecNorm2 (fun r => Deltad r - rectMatMulVec DeltaB y r) ≤
+        constrScale * vecNorm2 x) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      dataCoeff * dataScale + statCoeff * statScale +
+        constrCoeff * constrScale := by
+  have hdataBound :
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+        (fun i => Deltab i - rectMatMulVec DeltaA y i, 0, 0)) ≤
+        (dataCoeff * dataScale) * vecNorm2 x := by
+    have hop :=
+      hdataOp (fun i => Deltab i - rectMatMulVec DeltaA y i)
+    have hrhs :=
+      mul_le_mul_of_nonneg_left hdataRhs hdataCoeff_nonneg
+    calc
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i, 0, 0))
+          ≤ dataCoeff *
+              vecNorm2 (fun i => Deltab i - rectMatMulVec DeltaA y i) := hop
+      _ ≤ dataCoeff * (dataScale * vecNorm2 x) := hrhs
+      _ = (dataCoeff * dataScale) * vecNorm2 x := by ring
+  have hstatBound : ∀ mu : Fin p → ℝ,
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+        (0,
+         fun j =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m,
+              DeltaA i j *
+                lsResidualHigham (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i),
+         0)) ≤
+        (statCoeff * statScale) * vecNorm2 x := by
+    intro mu
+    have hop :=
+      hstatOp
+        (fun j =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m,
+              DeltaA i j *
+                lsResidualHigham (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i))
+    have hrhs :=
+      mul_le_mul_of_nonneg_left (hstatRhs mu) hstatCoeff_nonneg
+    calc
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+          (0,
+           fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i),
+           0))
+          ≤ statCoeff *
+              vecNorm2
+                (fun j =>
+                  (∑ r : Fin p, DeltaB r j * mu r) -
+                    (∑ i : Fin m,
+                      DeltaA i j *
+                        lsResidualHigham
+                          (fun i j => A i j + DeltaA i j)
+                          (fun i => b i + Deltab i) y i)) := hop
+      _ ≤ statCoeff * (statScale * vecNorm2 x) := hrhs
+      _ = (statCoeff * statScale) * vecNorm2 x := by ring
+  have hconstrBound :
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+        (0, 0, fun r => Deltad r - rectMatMulVec DeltaB y r)) ≤
+        (constrCoeff * constrScale) * vecNorm2 x := by
+    have hop :=
+      hconstrOp (fun r => Deltad r - rectMatMulVec DeltaB y r)
+    have hrhs :=
+      mul_le_mul_of_nonneg_left hconstrRhs hconstrCoeff_nonneg
+    calc
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+          (0, 0, fun r => Deltad r - rectMatMulVec DeltaB y r))
+          ≤ constrCoeff *
+              vecNorm2 (fun r => Deltad r - rectMatMulVec DeltaB y r) := hop
+      _ ≤ constrCoeff * (constrScale * vecNorm2 x) := hrhs
+      _ = (constrCoeff * constrScale) * vecNorm2 x := by ring
+  exact
+    hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_split_coeff_bounds
+      hy hB hBpert hnull hxnorm (dataCoeff * dataScale)
+      (statCoeff * statScale) (constrCoeff * constrScale)
+      hdataBound hstatBound hconstrBound
 
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
