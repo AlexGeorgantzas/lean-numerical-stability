@@ -1005,6 +1005,24 @@ noncomputable def higham11_4_bunchKaufmanProductEntry (n : ℕ)
   ∑ k₁ : Fin n, ∑ k₂ : Fin n,
     |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂|
 
+/-- The structured Theorem 11.3 envelope is `ε` times the named
+`|L̂||D̂||L̂ᵀ|` product entry used by the Theorem 11.4 infrastructure. -/
+theorem higham11_3_blockLDLTBackwardErrorBound_eq_epsilon_mul_productEntry
+    (n : ℕ) (L_hat D_hat : Fin n → Fin n → ℝ) (ε : ℝ) (i j : Fin n) :
+    higham11_3_blockLDLTBackwardErrorBound n L_hat D_hat ε i j =
+      ε * higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j := by
+  rfl
+
+/-- A pointwise bound on the named `|L̂||D̂||L̂ᵀ|` product entry bounds the
+structured Theorem 11.3 envelope. -/
+theorem higham11_3_blockLDLTBackwardErrorBound_le_of_productEntry_le
+    (n : ℕ) (L_hat D_hat : Fin n → Fin n → ℝ) (ε B : ℝ)
+    (i j : Fin n) (hε : 0 ≤ ε)
+    (hB : higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤ B) :
+    higham11_3_blockLDLTBackwardErrorBound n L_hat D_hat ε i j ≤ ε * B := by
+  rw [higham11_3_blockLDLTBackwardErrorBound_eq_epsilon_mul_productEntry]
+  exact mul_le_mul_of_nonneg_left hB hε
+
 /-- The matrix product `|L̂||D̂||L̂ᵀ|` from Higham [608, 1997], eq. (4.14),
 written with the project matrix product primitives. -/
 noncomputable def higham11_4_absLDLTProduct (n : ℕ)
@@ -1266,6 +1284,17 @@ theorem higham11_4_bunchKaufmanProductEntry_le_productMax (n : ℕ) (hn : 0 < n)
     (fun p : Fin n × Fin n => higham11_4_bunchKaufmanProductEntry n L_hat D_hat p.1 p.2)
     (Finset.mem_univ (i, j))
 
+/-- The finite max-entry product for `|L̂||D̂||L̂ᵀ|` bounds every structured
+Theorem 11.3 envelope entry. -/
+theorem higham11_3_blockLDLTBackwardErrorBound_le_epsilon_mul_productMax
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (ε : ℝ) (i j : Fin n) (hε : 0 ≤ ε) :
+    higham11_3_blockLDLTBackwardErrorBound n L_hat D_hat ε i j ≤
+      ε * higham11_4_bunchKaufmanProductMax n hn L_hat D_hat :=
+  higham11_3_blockLDLTBackwardErrorBound_le_of_productEntry_le n L_hat D_hat ε
+    (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) i j hε
+    (higham11_4_bunchKaufmanProductEntry_le_productMax n hn L_hat D_hat i j)
+
 /-- Every matrix-product entry of `|L̂||D̂||L̂ᵀ|` is bounded by the same finite
 max-entry norm. -/
 theorem higham11_4_absLDLTProduct_entry_le_productMax (n : ℕ) (hn : 0 < n)
@@ -1338,6 +1367,37 @@ theorem higham11_4_bunchKaufmanProductMax_eq_maxEntryNorm_absLDLTProduct
           = higham11_4_absLDLTProduct n L_hat D_hat i j := abs_of_nonneg hnonneg
       _ ≤ higham11_4_bunchKaufmanProductMax n hn L_hat D_hat :=
           higham11_4_absLDLTProduct_entry_le_productMax n hn L_hat D_hat i j
+
+/-- The repository max-entry norm of `|L̂||D̂||L̂ᵀ|` bounds every structured
+Theorem 11.3 envelope entry. -/
+theorem higham11_3_blockLDLTBackwardErrorBound_le_epsilon_mul_maxEntryNorm_absLDLTProduct
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (ε : ℝ) (i j : Fin n) (hε : 0 ≤ ε) :
+    higham11_3_blockLDLTBackwardErrorBound n L_hat D_hat ε i j ≤
+      ε * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) := by
+  rw [← higham11_4_bunchKaufmanProductMax_eq_maxEntryNorm_absLDLTProduct
+    n hn L_hat D_hat]
+  exact
+    higham11_3_blockLDLTBackwardErrorBound_le_epsilon_mul_productMax
+      n hn L_hat D_hat ε i j hε
+
+/-- A source-style Bunch-Kaufman product-max bound packages into a structured
+Theorem 11.3 envelope bound. -/
+theorem higham11_3_blockLDLTBackwardErrorBound_le_epsilon_mul_higham_product_bound
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (ε ρ_n Amax : ℝ) (i j : Fin n) (hε : 0 ≤ ε)
+    (hBK : higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax) :
+    higham11_3_blockLDLTBackwardErrorBound n L_hat D_hat ε i j ≤
+      ε * (36 * (n : ℝ) * ρ_n * Amax) := by
+  have hproductMax :
+      higham11_4_bunchKaufmanProductMax n hn L_hat D_hat ≤
+        36 * (n : ℝ) * ρ_n * Amax := hBK
+  exact
+    higham11_3_blockLDLTBackwardErrorBound_le_of_productEntry_le n L_hat D_hat ε
+      (36 * (n : ℝ) * ρ_n * Amax) i j hε
+      ((higham11_4_bunchKaufmanProductEntry_le_productMax n hn L_hat D_hat i j).trans
+        hproductMax)
 
 /-- Pointwise matrix-product estimates package directly into the source-style
 max-entry norm estimate for `|L̂||D̂||L̂ᵀ|`. -/
