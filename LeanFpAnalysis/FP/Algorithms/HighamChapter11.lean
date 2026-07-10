@@ -13430,6 +13430,25 @@ theorem higham11_7_ConcretePathSecondPivotReducedSolveRows_of_no_two
   intro t hstep
   exact False.elim (hno t hstep)
 
+/-- If a concrete path has no accepted `2 × 2` branch, the combined
+second-pivot row handoff is vacuous. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_no_two
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hno : ∀ t : Fin k, step t ≠ PivotSize.two) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_reduced_rows
+    k step A b x_hat ΔA
+    (higham11_7_ConcretePathSecondPivotReducedSolveRows_of_no_two
+      k step A b x_hat ΔA hno)
+
 /-- If every concrete path branch is a `1 × 1` branch, the reduced
 second-pivot row handoff is vacuous. -/
 theorem higham11_7_ConcretePathSecondPivotReducedSolveRows_of_all_one
@@ -13448,6 +13467,25 @@ theorem higham11_7_ConcretePathSecondPivotReducedSolveRows_of_all_one
     x_hat ΔA (fun t htwo => by
       have hbad : PivotSize.one = PivotSize.two := (hone t).symm.trans htwo
       cases hbad)
+
+/-- If every concrete path branch is a `1 × 1` branch, the combined
+second-pivot row handoff is vacuous. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_all_one
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hone : ∀ t : Fin k, step t = PivotSize.one) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_reduced_rows
+    k step A b x_hat ΔA
+    (higham11_7_ConcretePathSecondPivotReducedSolveRows_of_all_one
+      k step A b x_hat ΔA hone)
 
 /-- An all-`1 × 1` concrete path has no accepted `2 × 2` branch. -/
 theorem higham11_7_tridiagonalPath_no_secondPivot_of_all_one
@@ -13558,6 +13596,30 @@ theorem higham11_7_ConcretePathSecondPivotReducedSolveRows_of_base_rows_of_two_o
   exact
     higham11_7_ConcretePathSecondPivotReducedSolveRow_of_val_zero
       k step A b x_hat ΔA t hstep (htwo_zero t hstep) (hbase t hstep)
+
+/-- If every accepted `2 × 2` branch is the initial branch, base row equations
+at those second-pivot rows supply the combined second-pivot handoff. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_base_rows_of_two_only_at_zero
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (htwo_zero : ∀ t : Fin k, step t = PivotSize.two → t.val = 0)
+    (hbase : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        A (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) j *
+          x_hat j) =
+        b (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_reduced_rows
+    k step A b x_hat ΔA
+    (higham11_7_ConcretePathSecondPivotReducedSolveRows_of_base_rows_of_two_only_at_zero
+      k step A b x_hat ΔA htwo_zero hbase)
 
 /-- In a residual-witness path, the current local perturbation has zero dot
 product on a `2 × 2` branch's second-pivot row. -/
