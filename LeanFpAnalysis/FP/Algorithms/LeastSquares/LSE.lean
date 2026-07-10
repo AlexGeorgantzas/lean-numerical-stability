@@ -68045,6 +68045,139 @@ theorem
     _ = dataCoeff + statCoeff + constrCoeff := by
         field_simp [hxne]
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    compose source-row size estimates with operator-response coefficients for
+    the Cox--Higham KKT inverse solution block.
+
+    The hypotheses separate the two remaining mathematical jobs in the printed
+    (20.25) estimate: bound each inverse block row as an operator, and bound
+    each perturbation right-hand side relative to `||x||₂`. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_response_coeffs
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    (dataCoeff dataScale statCoeff statScale constrCoeff constrScale : ℝ)
+    (hdataCoeff_nonneg : 0 ≤ dataCoeff)
+    (hstatCoeff_nonneg : 0 ≤ statCoeff)
+    (hconstrCoeff_nonneg : 0 ≤ constrCoeff)
+    (hdataOp : ∀ f : Fin m → ℝ,
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull (f, 0, 0)) ≤
+        dataCoeff * vecNorm2 f)
+    (hdataRhs :
+      vecNorm2 (fun i => Deltab i - rectMatMulVec DeltaA y i) ≤
+        dataScale * vecNorm2 x)
+    (hstatOp : ∀ g : Fin n → ℝ,
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull (0, g, 0)) ≤
+        statCoeff * vecNorm2 g)
+    (hstatRhs : ∀ mu : Fin p → ℝ,
+      vecNorm2
+        (fun j =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m,
+              DeltaA i j *
+                lsResidualHigham (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i)) ≤
+        statScale * vecNorm2 x)
+    (hconstrOp : ∀ c : Fin p → ℝ,
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull (0, 0, c)) ≤
+        constrCoeff * vecNorm2 c)
+    (hconstrRhs :
+      vecNorm2 (fun r => Deltad r - rectMatMulVec DeltaB y r) ≤
+        constrScale * vecNorm2 x) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      dataCoeff * dataScale + statCoeff * statScale +
+        constrCoeff * constrScale := by
+  have hdataBound :
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+        (fun i => Deltab i - rectMatMulVec DeltaA y i, 0, 0)) ≤
+        (dataCoeff * dataScale) * vecNorm2 x := by
+    have hop :=
+      hdataOp (fun i => Deltab i - rectMatMulVec DeltaA y i)
+    have hrhs :=
+      mul_le_mul_of_nonneg_left hdataRhs hdataCoeff_nonneg
+    calc
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i, 0, 0))
+          ≤ dataCoeff *
+              vecNorm2 (fun i => Deltab i - rectMatMulVec DeltaA y i) := hop
+      _ ≤ dataCoeff * (dataScale * vecNorm2 x) := hrhs
+      _ = (dataCoeff * dataScale) * vecNorm2 x := by ring
+  have hstatBound : ∀ mu : Fin p → ℝ,
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+        (0,
+         fun j =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m,
+              DeltaA i j *
+                lsResidualHigham (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i),
+         0)) ≤
+        (statCoeff * statScale) * vecNorm2 x := by
+    intro mu
+    have hop :=
+      hstatOp
+        (fun j =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m,
+              DeltaA i j *
+                lsResidualHigham (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i))
+    have hrhs :=
+      mul_le_mul_of_nonneg_left (hstatRhs mu) hstatCoeff_nonneg
+    calc
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+          (0,
+           fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i),
+           0))
+          ≤ statCoeff *
+              vecNorm2
+                (fun j =>
+                  (∑ r : Fin p, DeltaB r j * mu r) -
+                    (∑ i : Fin m,
+                      DeltaA i j *
+                        lsResidualHigham
+                          (fun i j => A i j + DeltaA i j)
+                          (fun i => b i + Deltab i) y i)) := hop
+      _ ≤ statCoeff * (statScale * vecNorm2 x) := hrhs
+      _ = (statCoeff * statScale) * vecNorm2 x := by ring
+  have hconstrBound :
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+        (0, 0, fun r => Deltad r - rectMatMulVec DeltaB y r)) ≤
+        (constrCoeff * constrScale) * vecNorm2 x := by
+    have hop :=
+      hconstrOp (fun r => Deltad r - rectMatMulVec DeltaB y r)
+    have hrhs :=
+      mul_le_mul_of_nonneg_left hconstrRhs hconstrCoeff_nonneg
+    calc
+      vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull
+          (0, 0, fun r => Deltad r - rectMatMulVec DeltaB y r))
+          ≤ constrCoeff *
+              vecNorm2 (fun r => Deltad r - rectMatMulVec DeltaB y r) := hop
+      _ ≤ constrCoeff * (constrScale * vecNorm2 x) := hrhs
+      _ = (constrCoeff * constrScale) * vecNorm2 x := by ring
+  exact
+    hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_split_coeff_bounds
+      hy hB hBpert hnull hxnorm (dataCoeff * dataScale)
+      (statCoeff * statScale) (constrCoeff * constrScale)
+      hdataBound hstatBound hconstrBound
+
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
     uniqueness of an equality-constrained least-squares minimizer once
