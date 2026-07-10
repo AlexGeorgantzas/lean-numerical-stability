@@ -37396,6 +37396,78 @@ theorem theorem20_8_vecNorm2_constraint_defect_le_of_relativeBudget
     hbudget.2.2.2
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    scale handoff for the Cox--Higham data-row right-hand side. -/
+theorem theorem20_8_vecNorm2_higham_data_forcing_le_of_relativeBudget_scales
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) {eps bScale yScale : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hb : vecNorm2 b ≤ bScale * vecNorm2 x)
+    (hy : vecNorm2 y ≤ yScale * vecNorm2 x) :
+    vecNorm2 (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i) ≤
+      (eps * bScale + (eps * frobNormRect A) * yScale) * vecNorm2 x := by
+  have hA_radius_nonneg : 0 ≤ eps * frobNormRect A :=
+    mul_nonneg heps_nonneg (frobNormRect_nonneg A)
+  have hbase :=
+    theorem20_8_vecNorm2_higham_data_forcing_le_of_relativeBudget
+      A DeltaA b Deltab B DeltaB d Deltad y hbudget
+  have hbterm : eps * vecNorm2 b ≤ eps * (bScale * vecNorm2 x) :=
+    mul_le_mul_of_nonneg_left hb heps_nonneg
+  have hyterm :
+      (eps * frobNormRect A) * vecNorm2 y ≤
+        (eps * frobNormRect A) * (yScale * vecNorm2 x) :=
+    mul_le_mul_of_nonneg_left hy hA_radius_nonneg
+  calc
+    vecNorm2 (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i)
+        ≤ eps * vecNorm2 b + (eps * frobNormRect A) * vecNorm2 y := hbase
+    _ ≤ eps * (bScale * vecNorm2 x) +
+          (eps * frobNormRect A) * (yScale * vecNorm2 x) :=
+            add_le_add hbterm hyterm
+    _ = (eps * bScale + (eps * frobNormRect A) * yScale) *
+          vecNorm2 x := by
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    scale handoff for the Cox--Higham constraint-row right-hand side. -/
+theorem theorem20_8_vecNorm2_constraint_defect_le_of_relativeBudget_scales
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) {eps dScale yScale : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hd : vecNorm2 d ≤ dScale * vecNorm2 x)
+    (hy : vecNorm2 y ≤ yScale * vecNorm2 x) :
+    vecNorm2 (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i) ≤
+      (eps * dScale + (eps * frobNormRect B) * yScale) * vecNorm2 x := by
+  have hB_radius_nonneg : 0 ≤ eps * frobNormRect B :=
+    mul_nonneg heps_nonneg (frobNormRect_nonneg B)
+  have hbase :=
+    theorem20_8_vecNorm2_constraint_defect_le_of_relativeBudget
+      A DeltaA b Deltab B DeltaB d Deltad y hbudget
+  have hdterm : eps * vecNorm2 d ≤ eps * (dScale * vecNorm2 x) :=
+    mul_le_mul_of_nonneg_left hd heps_nonneg
+  have hyterm :
+      (eps * frobNormRect B) * vecNorm2 y ≤
+        (eps * frobNormRect B) * (yScale * vecNorm2 x) :=
+    mul_le_mul_of_nonneg_left hy hB_radius_nonneg
+  calc
+    vecNorm2 (fun i : Fin p => Deltad i - rectMatMulVec DeltaB y i)
+        ≤ eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y := hbase
+    _ ≤ eps * (dScale * vecNorm2 x) +
+          (eps * frobNormRect B) * (yScale * vecNorm2 x) :=
+            add_le_add hdterm hyterm
+    _ = (eps * dScale + (eps * frobNormRect B) * yScale) *
+          vecNorm2 x := by
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the stationarity-row right-hand side `DeltaB^T*mu - DeltaA^T*s` in the
     Cox--Higham KKT system is bounded by supplied operator-2 radii. -/
 theorem theorem20_8_vecNorm2_stationarity_forcing_le {m n p : ℕ}
