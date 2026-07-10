@@ -5572,6 +5572,58 @@ theorem higham11_4_growth_scaled_D_bound_of_le
   intro k₁ k₂
   exact (hD k₁ k₂).trans (mul_le_mul_of_nonneg_right hρ_le hAmax)
 
+/-- **Theorem 11.4 global `D̂` cap split**.  First-stage and recursive trailing
+absolute-entry caps cover every entry of `D̂`, using the same leading/trailing
+index split as the product-entry aggregation. -/
+theorem higham11_4_D_bound_of_first_stage_recursive_split
+    (n s : ℕ) (D_hat : Fin n → Fin n → ℝ) (Dmax localD recD : ℝ)
+    (hlocal_le : localD ≤ Dmax) (hrec_le : recD ≤ Dmax)
+    (hfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      |D_hat i j| ≤ localD)
+    (htrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      |D_hat i j| ≤ recD) :
+    ∀ i j : Fin n, |D_hat i j| ≤ Dmax := by
+  intro i j
+  by_cases hi : i.val < s
+  · exact (hfirst i j (Or.inl hi)).trans hlocal_le
+  · by_cases hj : j.val < s
+    · exact (hfirst i j (Or.inr hj)).trans hlocal_le
+    · exact (htrail i j (Nat.le_of_not_gt hi) (Nat.le_of_not_gt hj)).trans hrec_le
+
+/-- **Theorem 11.4 stage-growth `D̂` split**.  A first-stage/trailing `D̂`
+split whose two regional caps are both controlled by `ρ_stage*Amax` supplies the
+uniform stage-growth `D̂` cap consumed by the existing product wrappers. -/
+theorem higham11_4_stage_growth_D_bound_of_first_stage_recursive_split
+    (n s : ℕ) (D_hat : Fin n → Fin n → ℝ)
+    (ρ_first ρ_rec ρ_stage Amax : ℝ)
+    (hρ_first : ρ_first ≤ ρ_stage) (hρ_rec : ρ_rec ≤ ρ_stage)
+    (hAmax : 0 ≤ Amax)
+    (hfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      |D_hat i j| ≤ ρ_first * Amax)
+    (htrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      |D_hat i j| ≤ ρ_rec * Amax) :
+    ∀ i j : Fin n, |D_hat i j| ≤ ρ_stage * Amax :=
+  higham11_4_D_bound_of_first_stage_recursive_split n s D_hat (ρ_stage * Amax)
+    (ρ_first * Amax) (ρ_rec * Amax)
+    (mul_le_mul_of_nonneg_right hρ_first hAmax)
+    (mul_le_mul_of_nonneg_right hρ_rec hAmax) hfirst htrail
+
+/-- **Theorem 11.4 final-growth `D̂` split**.  Regional first-stage/trailing
+stage caps can be lifted directly to the final growth factor `ρₙ`. -/
+theorem higham11_4_final_growth_D_bound_of_first_stage_recursive_split
+    (n s : ℕ) (D_hat : Fin n → Fin n → ℝ)
+    (ρ_first ρ_rec ρ_stage ρ_n Amax : ℝ)
+    (hρ_first : ρ_first ≤ ρ_stage) (hρ_rec : ρ_rec ≤ ρ_stage)
+    (hρ_stage : ρ_stage ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      |D_hat i j| ≤ ρ_first * Amax)
+    (htrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      |D_hat i j| ≤ ρ_rec * Amax) :
+    ∀ i j : Fin n, |D_hat i j| ≤ ρ_n * Amax :=
+  higham11_4_growth_scaled_D_bound_of_le n D_hat ρ_stage ρ_n Amax hρ_stage hAmax
+    (higham11_4_stage_growth_D_bound_of_first_stage_recursive_split
+      n s D_hat ρ_first ρ_rec ρ_stage Amax hρ_first hρ_rec hAmax hfirst htrail)
+
 /-- **Theorem 11.4 stage-growth `D` cap product bridge**.  A uniform
 `∑ |L̂ᵢₖ| ≤ 6` row-sum cap plus a `D̂` cap stated with a stage growth factor
 feeds the printed final-`ρₙ` product estimate once `ρ_stage ≤ ρₙ`. -/
