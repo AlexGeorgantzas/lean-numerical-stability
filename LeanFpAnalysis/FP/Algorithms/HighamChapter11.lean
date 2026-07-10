@@ -13775,6 +13775,73 @@ theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_o
       k step A ΔA hzero)
     hrows
 
+/-- A local-block combined second-pivot row equation, a base-row prefix-zero
+fact, and a summed earlier-lift prefix-zero fact give the full ambient combined
+second-pivot handoff. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_of_base_and_earlier_sum_zero
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hbase :
+      higham11_7_ConcretePathSecondPivotBaseRowsZeroBeforePrefix k step A)
+    (hearlier :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix
+        k step ΔA)
+    (hrows :
+      higham11_7_ConcretePathSecondPivotCombinedLocalBlockSolveRows
+        k step A b x_hat ΔA) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows
+        k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_of_zeroBeforePrefix
+    k step A b x_hat ΔA
+    (higham11_7_ConcretePathSecondPivotCombinedRowsZeroBeforePrefix_of_base_and_earlier_sum_zero
+      k step A ΔA hbase hearlier)
+    hrows
+
+/-- A local-block combined second-pivot row equation, base-row prefix-zero, and
+pointwise zero for every earlier lifted perturbation give the full ambient
+combined second-pivot handoff. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_of_base_and_each_earlier_zero
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hbase :
+      higham11_7_ConcretePathSecondPivotBaseRowsZeroBeforePrefix k step A)
+    (hearlier : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+        ∀ s : Fin k, s.val < t.val →
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s)
+            (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+            j = 0)
+    (hrows :
+      higham11_7_ConcretePathSecondPivotCombinedLocalBlockSolveRows
+        k step A b x_hat ΔA) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows
+        k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_of_zeroBeforePrefix
+    k step A b x_hat ΔA
+    (higham11_7_ConcretePathSecondPivotCombinedRowsZeroBeforePrefix_of_base_and_each_earlier_zero
+      k step A ΔA hbase hearlier)
+    hrows
+
 /-- The combined-row second-pivot handoff implies the split reduced handoff. -/
 theorem higham11_7_ConcretePathSecondPivotReducedSolveRows_of_combined_rows
     (k : ℕ) (step : Fin k → PivotSize)
