@@ -13510,6 +13510,122 @@ abbrev higham11_7_ConcretePathSecondPivotCombinedRowsZeroBeforePrefix
             (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
             j) = 0
 
+/-- Base-matrix part of the prefix-zero condition for a combined second-pivot
+row. -/
+abbrev higham11_7_ConcretePathSecondPivotBaseRowsZeroBeforePrefix
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ) :
+    Prop :=
+  ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+    ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+      A (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) j = 0
+
+/-- Earlier-lift part of the prefix-zero condition for a combined second-pivot
+row, with the earlier lifted perturbations already summed. -/
+abbrev higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ) :
+    Prop :=
+  ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+    ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+      (∑ s ∈ Finset.univ.filter (fun s : Fin k => s.val < t.val),
+        higham11_7_tridiagonalLiftLocalBlockPerturbation
+          (higham11_7_tridiagonalPathPivotSpan k step + 1)
+          (higham11_7_tridiagonalPathPrefixSpan k step s)
+          (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step s) (step s))
+          (ΔA s)
+          (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+          j) = 0
+
+/-- Pointwise zero of every earlier lifted perturbation gives the summed
+earlier-lift prefix-zero condition. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_each
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hzero : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+        ∀ s : Fin k, s.val < t.val →
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s)
+            (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+            j = 0) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix
+        k step ΔA := by
+  intro t hstep j hj
+  refine Finset.sum_eq_zero ?_
+  intro s hs
+  exact hzero t hstep j hj s (Finset.mem_filter.mp hs).2
+
+/-- Separate prefix-zero facts for the base row and the earlier lifted
+perturbation sum combine into the full combined-row prefix-zero condition. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedRowsZeroBeforePrefix_of_base_and_earlier_sum_zero
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hbase :
+      higham11_7_ConcretePathSecondPivotBaseRowsZeroBeforePrefix k step A)
+    (hearlier :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix
+        k step ΔA) :
+    higham11_7_ConcretePathSecondPivotCombinedRowsZeroBeforePrefix
+        k step A ΔA := by
+  intro t hstep j hj
+  rw [hbase t hstep j hj, hearlier t hstep j hj, zero_add]
+
+/-- Base-row prefix-zero plus pointwise zero of each earlier lifted
+perturbation gives the full combined-row prefix-zero condition. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedRowsZeroBeforePrefix_of_base_and_each_earlier_zero
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hbase :
+      higham11_7_ConcretePathSecondPivotBaseRowsZeroBeforePrefix k step A)
+    (hearlier : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+        ∀ s : Fin k, s.val < t.val →
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s)
+            (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+            j = 0) :
+    higham11_7_ConcretePathSecondPivotCombinedRowsZeroBeforePrefix
+        k step A ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedRowsZeroBeforePrefix_of_base_and_earlier_sum_zero
+    k step A ΔA hbase
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_each
+      k step ΔA hearlier)
+
 /-- Zero before the branch prefix is exactly the outside-block zero condition
 for a concrete path-local second-pivot row. -/
 theorem higham11_7_ConcretePathSecondPivotCombinedRowsZeroOutsideLocalBlock_of_zeroBeforePrefix
