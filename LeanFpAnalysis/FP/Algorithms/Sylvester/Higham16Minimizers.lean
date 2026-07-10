@@ -9141,6 +9141,100 @@ theorem lyapunov_practical_error_bound_fl_of_vecCoeff_sigmaMin_mono_scalar
         n A (fun i j => -matTranspose A i j) hsigma hCoeff)
       hX hn2 hn1 hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the Lyapunov determinant floating-point practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_vecCoeff_det_ne_zero :=
+  lyapunov_practical_error_bound_fl_of_vecCoeff_det_ne_zero
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap Lyapunov determinant floating-point practical
+    endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_vecCoeff_det_ne_zero_scalar :=
+  lyapunov_practical_error_bound_fl_of_vecCoeff_det_ne_zero_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone Lyapunov determinant floating-point practical
+    endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_vecCoeff_det_ne_zero_mono :=
+  lyapunov_practical_error_bound_fl_of_vecCoeff_det_ne_zero_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap Lyapunov determinant floating-point
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_vecCoeff_det_ne_zero_mono_scalar :=
+  lyapunov_practical_error_bound_fl_of_vecCoeff_det_ne_zero_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the concrete-left-inverse Lyapunov floating-point practical
+    endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  lyapunov_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap concrete-left-inverse Lyapunov floating-point
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_scalar :=
+  lyapunov_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone concrete-left-inverse Lyapunov floating-point
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_mono :=
+  lyapunov_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap concrete-left-inverse Lyapunov
+    floating-point practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_mono_scalar :=
+  lyapunov_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the finite-Gram Lyapunov floating-point practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues :=
+  lyapunov_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap finite-Gram Lyapunov floating-point practical
+    endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_scalar :=
+  lyapunov_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone finite-Gram Lyapunov floating-point practical
+    endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_mono :=
+  lyapunov_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap finite-Gram Lyapunov floating-point
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_mono_scalar :=
+  lyapunov_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the concrete sigma-min Lyapunov floating-point practical
+    endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_vecCoeff_sigmaMin :=
+  lyapunov_practical_error_bound_fl_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap concrete sigma-min Lyapunov floating-point
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_vecCoeff_sigmaMin_scalar :=
+  lyapunov_practical_error_bound_fl_of_vecCoeff_sigmaMin_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone concrete sigma-min Lyapunov floating-point
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_vecCoeff_sigmaMin_mono :=
+  lyapunov_practical_error_bound_fl_of_vecCoeff_sigmaMin_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap concrete sigma-min Lyapunov
+    floating-point practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_vecCoeff_sigmaMin_mono_scalar :=
+  lyapunov_practical_error_bound_fl_of_vecCoeff_sigmaMin_mono_scalar
+
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, equation (16.29), Lyapunov floating-point endpoint from a
     `SepLowerBound(A,-A^T)` source certificate. -/
