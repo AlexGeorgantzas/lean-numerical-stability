@@ -43152,6 +43152,22 @@ theorem higham11_8_AasenSpec_identity_source_prefix_zero_relative_checkerboard_e
     hThat_zero hTNJ hdetJ hineqJ hLU hκLentry_inv hL_entry
     hspec.L_upper_zero hspec.L_first_col
 
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 exact-product route:
+the checkerboard zero-relative endpoint specialized to the source-style inverse
+exact outer-factor entry bound. -/
+def higham11_8_AasenSpec_identity_source_prefix_zero_relative_checkerboard_endpoint_of_inverse_entry_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU hspec hσ hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat_zero
+      hTNJ hdetJ hineqJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_zero_relative_checkerboard_endpoint
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU (1 / (1 + gamma fp n)) hspec hσ hcoeff_valid hrec hHnz
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_zero hTNJ hdetJ hineqJ hLU le_rfl hL_entry_inv
+
 /-- Higham, 2nd ed., Chapter 11, Theorem 11.8 source-prefix exact-product
 route: an identity-permutation `AasenSpec` and pointwise exact middle equality
 `T_hat=T` feed the zero-relative checkerboard endpoint. -/
@@ -43336,6 +43352,22 @@ theorem higham11_8_AasenSpec_identity_source_prefix_zero_relative_direct_middle_
     (higham11_8_AasenSpec_product_eq_of_identity_perm n A L T σ hspec hσ)
     hThat_zero hmiddle_entry hκLentry_inv hL_entry
     hspec.L_upper_zero hspec.L_first_col
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 exact-product route:
+the direct-middle zero-relative endpoint specialized to the source-style inverse
+exact outer-factor entry bound. -/
+def higham11_8_AasenSpec_identity_source_prefix_zero_relative_direct_middle_endpoint_of_inverse_entry_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU hspec hσ hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat_zero
+      hmiddle_entry hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_zero_relative_direct_middle_endpoint
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU (1 / (1 + gamma fp n)) hspec hσ hcoeff_valid hrec hHnz
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_zero hmiddle_entry le_rfl hL_entry_inv
 
 /-- Higham, 2nd ed., Chapter 11, Theorem 11.8 source-prefix exact-product
 route: an identity-permutation `AasenSpec` and pointwise exact middle equality
