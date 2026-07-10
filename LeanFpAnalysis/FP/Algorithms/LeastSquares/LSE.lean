@@ -61984,6 +61984,66 @@ theorem
     (theorem20_8Projection_symmetric_of_gram_pseudoinverse B)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    determinant-free existence of a rank-tolerant `(AP)^+` candidate.
+
+    Source full row rank of `B` and stacked full column rank of `[A;B]`
+    construct exact GQR data.  The lifted reduced-Gram table supplied by that
+    data is a Moore--Penrose pseudoinverse of `AP = A(I-B^+B)` and has columns
+    in `null(B)`.  This packages the viable rank-tolerant route after the
+    concrete `det(rectGram(AP))` shortcut has been ruled out. -/
+theorem LSEFullRowRank.exists_theorem20_8_rank_tolerant_APplus_MP_gram_projection
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ APplus : Fin (p + q) → Fin (r + q) → ℝ,
+      RectMoorePenrosePseudoinverse (r + q) (p + q)
+          (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus ∧
+        rectMatMul B APplus =
+          (fun _i : Fin p => fun _j : Fin (r + q) => 0) := by
+  rcases GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨h⟩
+  exact
+    ⟨h.liftedReducedGramAPplus,
+      h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
+        hB hstack,
+      h.liftedReducedGramAPplus_constraint_annihilates⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    determinant-free existence of a rank-tolerant `(AP)^+` candidate with
+    positive source `kappa_B(A)`.
+
+    This is the nonzero-nullspace version used by the existing residual-factor
+    wrappers: exact GQR data supplies the lifted reduced-Gram Moore--Penrose
+    pseudoinverse and the stacked-rank condition plus `||A||_F > 0` supplies
+    `kappa_B(A) > 0`. -/
+theorem
+    LSEFullRowRank.exists_theorem20_8_rank_tolerant_APplus_MP_gram_projection_kappa_pos
+    {r p k : ℕ}
+    {A : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ}
+    {B : Fin p → Fin (p + (k + 1)) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hApos : 0 < frobNormRect A) :
+    ∃ APplus : Fin (p + (k + 1)) → Fin (r + (k + 1)) → ℝ,
+      RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
+          (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus ∧
+        rectMatMul B APplus =
+          (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0) ∧
+        0 < theorem20_8KappaB A APplus := by
+  rcases GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨h⟩
+  exact
+    ⟨h.liftedReducedGramAPplus,
+      h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
+        hB hstack,
+      h.liftedReducedGramAPplus_constraint_annihilates,
+      h.theorem20_8KappaB_liftedReducedGramAPplus_pos hstack hApos⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-shaped first-order handoff for the concrete lifted reduced-Gram
     `APplus` candidate.
 
