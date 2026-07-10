@@ -6050,6 +6050,30 @@ theorem lyapunov_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_res
       hlam hEig PinvAbs' eta hXSylv hRu hRhatSylv hPinvAbs_le hRhat hRu_le
       heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the finite-Gram Lyapunov raw computed-residual practical
+    endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_budget :=
+  lyapunov_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap finite-Gram Lyapunov raw computed-residual
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_budget_scalar :=
+  lyapunov_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone finite-Gram Lyapunov raw computed-residual
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_budget_mono :=
+  lyapunov_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap finite-Gram Lyapunov raw
+    computed-residual practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_budget_mono_scalar :=
+  lyapunov_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_budget_mono_scalar
+
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, equation (16.29), Lyapunov-specialized raw residual-budget endpoint:
     a concrete sigma-min lower bound for the vec coefficient gives the
@@ -6233,6 +6257,30 @@ theorem lyapunov_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_bu
       n A (fun i j => -matTranspose A i j) C X Xhat Rhat Rhat' Ru Ru'
       hsigma hCoeff PinvAbs' eta hXSylv hRu hRhatSylv hPinvAbs_le hRhat hRu_le
       heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the concrete sigma-min Lyapunov raw computed-residual
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_budget :=
+  lyapunov_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap concrete sigma-min Lyapunov raw
+    computed-residual practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_budget_scalar :=
+  lyapunov_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone concrete sigma-min Lyapunov raw
+    computed-residual practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_budget_mono :=
+  lyapunov_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap concrete sigma-min Lyapunov raw
+    computed-residual practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_budget_mono_scalar :=
+  lyapunov_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_budget_mono_scalar
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, equation (16.29), Lyapunov-specialized residual-error-model
