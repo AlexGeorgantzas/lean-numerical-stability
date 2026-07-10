@@ -37396,6 +37396,27 @@ theorem theorem20_8_vecNorm2_constraint_defect_le_of_relativeBudget
     hbudget.2.2.2
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    elementary Euclidean bound for Higham's signed residual `b - A*y`. -/
+theorem theorem20_8_vecNorm2_higham_residual_le {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    vecNorm2 (lsResidualHigham A b y) ≤
+      vecNorm2 b + frobNormRect A * vecNorm2 y := by
+  calc
+    vecNorm2 (lsResidualHigham A b y)
+        = vecNorm2 (fun i : Fin m => b i - rectMatMulVec A y i) := by
+            rfl
+    _ ≤ vecNorm2 b +
+          vecNorm2 (fun i : Fin m => -rectMatMulVec A y i) := by
+            simpa [sub_eq_add_neg] using
+              vecNorm2_add_le b
+                (fun i : Fin m => -rectMatMulVec A y i)
+    _ = vecNorm2 b + vecNorm2 (rectMatMulVec A y) := by
+            rw [vecNorm2_neg]
+    _ ≤ vecNorm2 b + frobNormRect A * vecNorm2 y :=
+            add_le_add (le_refl (vecNorm2 b))
+              (vecNorm2_rectMatMulVec_le_frobNormRect_mul A y)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     scale handoff for the Cox--Higham data-row right-hand side. -/
 theorem theorem20_8_vecNorm2_higham_data_forcing_le_of_relativeBudget_scales
     {m n p : ℕ}
@@ -37464,6 +37485,73 @@ theorem theorem20_8_vecNorm2_constraint_defect_le_of_relativeBudget_scales
           (eps * frobNormRect B) * (yScale * vecNorm2 x) :=
             add_le_add hdterm hyterm
     _ = (eps * dScale + (eps * frobNormRect B) * yScale) *
+          vecNorm2 x := by
+            ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    relative-scale bound for the perturbed Higham residual
+    `(b+Deltab) - (A+DeltaA)y`. -/
+theorem
+    theorem20_8_vecNorm2_perturbed_higham_residual_le_of_relativeBudget_scales
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) {eps bScale yScale : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hb : vecNorm2 b ≤ bScale * vecNorm2 x)
+    (hy : vecNorm2 y ≤ yScale * vecNorm2 x) :
+    vecNorm2
+        (lsResidualHigham
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i) y) ≤
+      ((1 + eps) * bScale + ((1 + eps) * frobNormRect A) * yScale) *
+        vecNorm2 x := by
+  let base : Fin m → ℝ := lsResidualHigham A b y
+  let forcing : Fin m → ℝ :=
+    fun i => Deltab i - rectMatMulVec DeltaA y i
+  have hpert :
+      lsResidualHigham
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i) y =
+        fun i : Fin m => base i + forcing i := by
+    ext i
+    simp [base, forcing, lsResidualHigham_perturbed_eq]
+    ring
+  have hA_nonneg : 0 ≤ frobNormRect A := frobNormRect_nonneg A
+  have hbase :
+      vecNorm2 base ≤
+        (bScale + frobNormRect A * yScale) * vecNorm2 x := by
+    have hsource := theorem20_8_vecNorm2_higham_residual_le A b y
+    have hAy :
+        frobNormRect A * vecNorm2 y ≤
+          frobNormRect A * (yScale * vecNorm2 x) :=
+      mul_le_mul_of_nonneg_left hy hA_nonneg
+    calc
+      vecNorm2 base
+          ≤ vecNorm2 b + frobNormRect A * vecNorm2 y := hsource
+      _ ≤ bScale * vecNorm2 x +
+            frobNormRect A * (yScale * vecNorm2 x) :=
+              add_le_add hb hAy
+      _ = (bScale + frobNormRect A * yScale) * vecNorm2 x := by
+              ring
+  have hforcing :
+      vecNorm2 forcing ≤
+        (eps * bScale + (eps * frobNormRect A) * yScale) * vecNorm2 x := by
+    exact
+      theorem20_8_vecNorm2_higham_data_forcing_le_of_relativeBudget_scales
+        A DeltaA b Deltab B DeltaB d Deltad x y hbudget heps_nonneg hb hy
+  rw [hpert]
+  calc
+    vecNorm2 (fun i : Fin m => base i + forcing i)
+        ≤ vecNorm2 base + vecNorm2 forcing :=
+            vecNorm2_add_le base forcing
+    _ ≤ (bScale + frobNormRect A * yScale) * vecNorm2 x +
+          (eps * bScale + (eps * frobNormRect A) * yScale) * vecNorm2 x :=
+            add_le_add hbase hforcing
+    _ = ((1 + eps) * bScale + ((1 + eps) * frobNormRect A) * yScale) *
           vecNorm2 x := by
             ring
 
@@ -37606,6 +37694,53 @@ theorem theorem20_8_vecNorm2_stationarity_forcing_le_of_relativeBudget_scales
     _ = ((eps * frobNormRect B) * muScale +
           (eps * frobNormRect A) * sScale) * vecNorm2 x := by
             ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    stationarity-row scale with the perturbed residual scale discharged from
+    source-sized `b` and `y`.  The remaining caller obligation is a scale bound
+    for the perturbed Lagrange multiplier. -/
+theorem
+    theorem20_8_vecNorm2_stationarity_forcing_perturbed_residual_le_of_relativeBudget_scales
+    {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) (d Deltad : Fin p → ℝ)
+    (x y : Fin n → ℝ) (mu : Fin p → ℝ)
+    {eps bScale yScale muScale : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hb : vecNorm2 b ≤ bScale * vecNorm2 x)
+    (hy : vecNorm2 y ≤ yScale * vecNorm2 x)
+    (hmu : vecNorm2 mu ≤ muScale * vecNorm2 x) :
+    vecNorm2
+        (fun j : Fin n =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m,
+              DeltaA i j *
+                lsResidualHigham
+                  (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i)) ≤
+      ((eps * frobNormRect B) * muScale +
+          (eps * frobNormRect A) *
+            ((1 + eps) * bScale +
+              ((1 + eps) * frobNormRect A) * yScale)) *
+        vecNorm2 x := by
+  let s : Fin m → ℝ :=
+    lsResidualHigham
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i) y
+  have hs :
+      vecNorm2 s ≤
+        (((1 + eps) * bScale +
+            ((1 + eps) * frobNormRect A) * yScale) *
+          vecNorm2 x) := by
+    exact
+      theorem20_8_vecNorm2_perturbed_higham_residual_le_of_relativeBudget_scales
+        A DeltaA b Deltab B DeltaB d Deltad x y hbudget heps_nonneg hb hy
+  exact
+    theorem20_8_vecNorm2_stationarity_forcing_le_of_relativeBudget_scales
+      A DeltaA b Deltab B DeltaB d Deltad x mu s hbudget hmu hs
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     specialization of the explicit residual-correction bound to the source
