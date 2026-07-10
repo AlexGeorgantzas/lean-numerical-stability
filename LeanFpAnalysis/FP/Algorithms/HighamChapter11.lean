@@ -13621,6 +13621,129 @@ theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_base_rows_of_two_
     (higham11_7_ConcretePathSecondPivotReducedSolveRows_of_base_rows_of_two_only_at_zero
       k step A b x_hat ΔA htwo_zero hbase)
 
+/-- A zero-prefix supported local `2 × 2` branch perturbation has zero dot
+product on the branch's second pivot row. -/
+theorem higham11_7_tridiagonalLeadingBlockSupport_pathSecondPivot_two_current_local_dot_zero
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.two)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport
+      (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t))
+      (higham11_7_tridiagonalBranchSupportOffset (step t)) (ΔA t))
+    (x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ) :
+    (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t)),
+      ΔA t
+        (Fin.cast (by rw [hstep])
+          (higham11_7_tridiagonalTwoByTwoSecondPivotIndex
+            (higham11_7_tridiagonalPathTailDim k step t))) j *
+        x_hat (higham11_7_tridiagonalPathLocalBlockIndex k step t j)) = 0 := by
+  let irow : Fin (higham11_7_tridiagonalBranchAmbientDim
+      (higham11_7_tridiagonalPathTailDim k step t) (step t)) :=
+    Fin.cast (by rw [hstep])
+      (higham11_7_tridiagonalTwoByTwoSecondPivotIndex
+        (higham11_7_tridiagonalPathTailDim k step t))
+  have hrow :
+      irow.val <
+        higham11_7_tridiagonalBranchSupportOffset (step t) := by
+    simp [irow, higham11_7_tridiagonalTwoByTwoSecondPivotIndex,
+      higham11_7_tridiagonalBranchSupportOffset, hstep]
+  change (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+      (higham11_7_tridiagonalPathTailDim k step t) (step t)),
+      ΔA t irow j *
+        x_hat (higham11_7_tridiagonalPathLocalBlockIndex k step t j)) = 0
+  exact
+    higham11_7_tridiagonalLeadingBlockSupport_row_dot_zero_of_lt
+      (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t))
+      (higham11_7_tridiagonalBranchSupportOffset (step t)) (ΔA t)
+      (fun j =>
+        x_hat (higham11_7_tridiagonalPathLocalBlockIndex k step t j))
+      irow hrow hEsupp
+
+/-- Reduced second-pivot row equations imply the full local-row handoff under
+the standard zero-prefix support condition on each branch perturbation. -/
+theorem higham11_7_ConcretePathSecondPivotLocalSolveRows_of_reduced_rows_of_leadingBlockSupport
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hEsupp : ∀ u : Fin k,
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u))
+        (higham11_7_tridiagonalBranchSupportOffset (step u)) (ΔA u))
+    (hrow_second :
+      higham11_7_ConcretePathSecondPivotReducedSolveRows k step A b x_hat ΔA) :
+    higham11_7_ConcretePathSecondPivotLocalSolveRows k step A b x_hat ΔA := by
+  intro t hstep
+  have hzero :=
+    higham11_7_tridiagonalLeadingBlockSupport_pathSecondPivot_two_current_local_dot_zero
+      k step t hstep ΔA (hEsupp t) x_hat
+  simpa [hzero, add_assoc] using hrow_second t hstep
+
+/-- Full second-pivot local row equations reduce to the base-plus-earlier
+handoff under the standard zero-prefix support condition on each branch
+perturbation. -/
+theorem higham11_7_ConcretePathSecondPivotReducedSolveRows_of_local_rows_of_leadingBlockSupport
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hEsupp : ∀ u : Fin k,
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u))
+        (higham11_7_tridiagonalBranchSupportOffset (step u)) (ΔA u))
+    (hrow_second :
+      higham11_7_ConcretePathSecondPivotLocalSolveRows k step A b x_hat ΔA) :
+    higham11_7_ConcretePathSecondPivotReducedSolveRows k step A b x_hat ΔA := by
+  intro t hstep
+  have hzero :=
+    higham11_7_tridiagonalLeadingBlockSupport_pathSecondPivot_two_current_local_dot_zero
+      k step t hstep ΔA (hEsupp t) x_hat
+  have hrow := hrow_second t hstep
+  simpa [hzero, add_assoc] using hrow
+
+/-- Under branch zero-prefix support, the reduced and full local second-pivot
+row handoffs are equivalent. -/
+theorem higham11_7_ConcretePathSecondPivotReducedSolveRows_iff_local_rows_of_leadingBlockSupport
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hEsupp : ∀ u : Fin k,
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u))
+        (higham11_7_tridiagonalBranchSupportOffset (step u)) (ΔA u)) :
+    higham11_7_ConcretePathSecondPivotReducedSolveRows k step A b x_hat ΔA ↔
+      higham11_7_ConcretePathSecondPivotLocalSolveRows k step A b x_hat ΔA :=
+  ⟨higham11_7_ConcretePathSecondPivotLocalSolveRows_of_reduced_rows_of_leadingBlockSupport
+      k step A b x_hat ΔA hEsupp,
+    higham11_7_ConcretePathSecondPivotReducedSolveRows_of_local_rows_of_leadingBlockSupport
+      k step A b x_hat ΔA hEsupp⟩
+
 /-- In a residual-witness path, the current local perturbation has zero dot
 product on a `2 × 2` branch's second-pivot row. -/
 theorem higham11_7_tridiagonalConcretePathResidualWitnesses_pathSecondPivot_two_current_local_dot_zero
