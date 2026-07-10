@@ -68077,6 +68077,194 @@ theorem LSEKKTInverseMultiplierLinearMap_apply {m n p : ℕ}
   simp [LSEKKTInverseMultiplierLinearMap,
     LSEKKTInverseLinearMap_apply_eq_inverseTriple]
 
+/-- Matrix of a finite-dimensional real linear map in the standard coordinate
+    basis.  The row index is the output coordinate and the column index is the
+    input coordinate. -/
+noncomputable def linearMapBasisMatrix {m n : ℕ}
+    (L : (Fin n → ℝ) →ₗ[ℝ] (Fin m → ℝ)) : Fin m → Fin n → ℝ :=
+  fun i j => L (finiteBasisVec j) i
+
+/-- A finite-dimensional real linear map acts as multiplication by its
+    standard-basis matrix. -/
+theorem linearMap_apply_eq_rectMatMulVec_basisMatrix {m n : ℕ}
+    (L : (Fin n → ℝ) →ₗ[ℝ] (Fin m → ℝ)) (v : Fin n → ℝ) :
+    L v = rectMatMulVec (linearMapBasisMatrix L) v := by
+  have hv : v = ∑ j : Fin n, v j • finiteBasisVec j := by
+    ext k
+    simp [finiteBasisVec]
+  ext i
+  calc
+    L v i = L (∑ j : Fin n, v j • finiteBasisVec j) i :=
+      congrArg (fun z => L z i) hv
+    _ = (∑ j : Fin n, L (v j • finiteBasisVec j)) i := by
+        rw [map_sum]
+    _ = ∑ j : Fin n, (L (v j • finiteBasisVec j)) i := by
+        simp
+    _ = ∑ j : Fin n, v j * L (finiteBasisVec j) i := by
+        simp [map_smul]
+    _ = ∑ j : Fin n, L (finiteBasisVec j) i * v j := by
+        apply Finset.sum_congr rfl
+        intro j _
+        ring
+    _ = rectMatMulVec (linearMapBasisMatrix L) v i := by
+        simp [rectMatMulVec, linearMapBasisMatrix]
+
+/-- Euclidean operator-2 bound for a finite-dimensional real linear map,
+    using the repository's `complexMatrixOp2` model on its standard-basis
+    matrix. -/
+theorem linearMap_vecNorm2_le_complexMatrixOp2_basisMatrix {m n : ℕ}
+    (L : (Fin n → ℝ) →ₗ[ℝ] (Fin m → ℝ)) (v : Fin n → ℝ) :
+    vecNorm2 (L v) ≤
+      complexMatrixOp2 (realRectToCMatrix (linearMapBasisMatrix L)) *
+        vecNorm2 v := by
+  rw [linearMap_apply_eq_rectMatMulVec_basisMatrix L v]
+  exact rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+    (linearMapBasisMatrix L) le_rfl v
+
+/-- Data-row block of the inverse source KKT solution map. -/
+noncomputable def LSEKKTInverseSolutionDataLinearMap {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    (Fin m → ℝ) →ₗ[ℝ] (Fin n → ℝ) where
+  toFun f := LSEKKTInverseSolutionLinearMap hB hnull (f, 0, 0)
+  map_add' f g := by
+    change LSEKKTInverseSolutionLinearMap hB hnull (f + g, 0, 0) =
+      LSEKKTInverseSolutionLinearMap hB hnull (f, 0, 0) +
+        LSEKKTInverseSolutionLinearMap hB hnull (g, 0, 0)
+    have h : (f + g, (0 : Fin n → ℝ), (0 : Fin p → ℝ)) =
+        (f, (0 : Fin n → ℝ), (0 : Fin p → ℝ)) +
+          (g, (0 : Fin n → ℝ), (0 : Fin p → ℝ)) := by
+      ext <;> simp
+    rw [h, map_add]
+  map_smul' a f := by
+    change LSEKKTInverseSolutionLinearMap hB hnull (a • f, 0, 0) =
+      a • LSEKKTInverseSolutionLinearMap hB hnull (f, 0, 0)
+    have h : (a • f, (0 : Fin n → ℝ), (0 : Fin p → ℝ)) =
+        a • (f, (0 : Fin n → ℝ), (0 : Fin p → ℝ)) := by
+      ext <;> simp
+    rw [h, map_smul]
+
+/-- Stationarity-row block of the inverse source KKT solution map. -/
+noncomputable def LSEKKTInverseSolutionStatLinearMap {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    (Fin n → ℝ) →ₗ[ℝ] (Fin n → ℝ) where
+  toFun g := LSEKKTInverseSolutionLinearMap hB hnull (0, g, 0)
+  map_add' g h := by
+    change LSEKKTInverseSolutionLinearMap hB hnull (0, g + h, 0) =
+      LSEKKTInverseSolutionLinearMap hB hnull (0, g, 0) +
+        LSEKKTInverseSolutionLinearMap hB hnull (0, h, 0)
+    have hpair : ((0 : Fin m → ℝ), g + h, (0 : Fin p → ℝ)) =
+        ((0 : Fin m → ℝ), g, (0 : Fin p → ℝ)) +
+          ((0 : Fin m → ℝ), h, (0 : Fin p → ℝ)) := by
+      ext <;> simp
+    rw [hpair, map_add]
+  map_smul' a g := by
+    change LSEKKTInverseSolutionLinearMap hB hnull (0, a • g, 0) =
+      a • LSEKKTInverseSolutionLinearMap hB hnull (0, g, 0)
+    have hpair : ((0 : Fin m → ℝ), a • g, (0 : Fin p → ℝ)) =
+        a • ((0 : Fin m → ℝ), g, (0 : Fin p → ℝ)) := by
+      ext <;> simp
+    rw [hpair, map_smul]
+
+/-- Constraint-row block of the inverse source KKT solution map. -/
+noncomputable def LSEKKTInverseSolutionConstrLinearMap {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    (Fin p → ℝ) →ₗ[ℝ] (Fin n → ℝ) where
+  toFun c := LSEKKTInverseSolutionLinearMap hB hnull (0, 0, c)
+  map_add' c d := by
+    change LSEKKTInverseSolutionLinearMap hB hnull (0, 0, c + d) =
+      LSEKKTInverseSolutionLinearMap hB hnull (0, 0, c) +
+        LSEKKTInverseSolutionLinearMap hB hnull (0, 0, d)
+    have hpair : ((0 : Fin m → ℝ), (0 : Fin n → ℝ), c + d) =
+        ((0 : Fin m → ℝ), (0 : Fin n → ℝ), c) +
+          ((0 : Fin m → ℝ), (0 : Fin n → ℝ), d) := by
+      ext <;> simp
+    rw [hpair, map_add]
+  map_smul' a c := by
+    change LSEKKTInverseSolutionLinearMap hB hnull (0, 0, a • c) =
+      a • LSEKKTInverseSolutionLinearMap hB hnull (0, 0, c)
+    have hpair : ((0 : Fin m → ℝ), (0 : Fin n → ℝ), a • c) =
+        a • ((0 : Fin m → ℝ), (0 : Fin n → ℝ), c) := by
+      ext <;> simp
+    rw [hpair, map_smul]
+
+/-- Canonical Euclidean operator coefficient for the data-row response of the
+    inverse source KKT solution block. -/
+noncomputable def LSEKKTInverseSolutionDataCoeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
+  complexMatrixOp2 (realRectToCMatrix
+    (linearMapBasisMatrix (LSEKKTInverseSolutionDataLinearMap hB hnull)))
+
+/-- Canonical Euclidean operator coefficient for the stationarity-row response
+    of the inverse source KKT solution block. -/
+noncomputable def LSEKKTInverseSolutionStatCoeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
+  complexMatrixOp2 (realRectToCMatrix
+    (linearMapBasisMatrix (LSEKKTInverseSolutionStatLinearMap hB hnull)))
+
+/-- Canonical Euclidean operator coefficient for the constraint-row response of
+    the inverse source KKT solution block. -/
+noncomputable def LSEKKTInverseSolutionConstrCoeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
+  complexMatrixOp2 (realRectToCMatrix
+    (linearMapBasisMatrix (LSEKKTInverseSolutionConstrLinearMap hB hnull)))
+
+theorem LSEKKTInverseSolutionDataCoeff_nonneg {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    0 ≤ LSEKKTInverseSolutionDataCoeff hB hnull := by
+  exact complexMatrixOp2_nonneg _
+
+theorem LSEKKTInverseSolutionStatCoeff_nonneg {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    0 ≤ LSEKKTInverseSolutionStatCoeff hB hnull := by
+  exact complexMatrixOp2_nonneg _
+
+theorem LSEKKTInverseSolutionConstrCoeff_nonneg {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    0 ≤ LSEKKTInverseSolutionConstrCoeff hB hnull := by
+  exact complexMatrixOp2_nonneg _
+
+theorem LSEKKTInverseSolutionDataLinearMap_vecNorm2_le_coeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (f : Fin m → ℝ) :
+    vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull (f, 0, 0)) ≤
+      LSEKKTInverseSolutionDataCoeff hB hnull * vecNorm2 f := by
+  simpa [LSEKKTInverseSolutionDataCoeff,
+    LSEKKTInverseSolutionDataLinearMap] using
+    linearMap_vecNorm2_le_complexMatrixOp2_basisMatrix
+      (LSEKKTInverseSolutionDataLinearMap hB hnull) f
+
+theorem LSEKKTInverseSolutionStatLinearMap_vecNorm2_le_coeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (g : Fin n → ℝ) :
+    vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull (0, g, 0)) ≤
+      LSEKKTInverseSolutionStatCoeff hB hnull * vecNorm2 g := by
+  simpa [LSEKKTInverseSolutionStatCoeff,
+    LSEKKTInverseSolutionStatLinearMap] using
+    linearMap_vecNorm2_le_complexMatrixOp2_basisMatrix
+      (LSEKKTInverseSolutionStatLinearMap hB hnull) g
+
+theorem LSEKKTInverseSolutionConstrLinearMap_vecNorm2_le_coeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (c : Fin p → ℝ) :
+    vecNorm2 (LSEKKTInverseSolutionLinearMap hB hnull (0, 0, c)) ≤
+      LSEKKTInverseSolutionConstrCoeff hB hnull * vecNorm2 c := by
+  simpa [LSEKKTInverseSolutionConstrCoeff,
+    LSEKKTInverseSolutionConstrLinearMap] using
+    linearMap_vecNorm2_le_complexMatrixOp2_basisMatrix
+      (LSEKKTInverseSolutionConstrLinearMap hB hnull) c
+
 /-- Split the solution block row of the inverse source KKT operator across
     the data, stationarity, and constraint right-hand-side rows. -/
 theorem LSEKKTInverseSolutionLinearMap_apply_split {m n p : ℕ}
@@ -68762,6 +68950,71 @@ theorem
         constrCoeff * (eps * dScale + (eps * frobNormRect B) * yScale) := by
         field_simp [hxne, dataScale, statScale, constrScale]
         ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    specialization of the relative-budget KKT response handoff to the
+    canonical Euclidean operator coefficients of the inverse source KKT
+    solution block rows.  This removes the abstract inverse-block operator
+    hypotheses, while still leaving source-size estimates and the actual
+    perturbed multiplier scale explicit. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_scales
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps bScale dScale yScale muScale : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hb : vecNorm2 b ≤ bScale * vecNorm2 x)
+    (hd : vecNorm2 d ≤ dScale * vecNorm2 x)
+    (hyScale : vecNorm2 y ≤ yScale * vecNorm2 x)
+    (hmuScale : ∀ mu : Fin p → ℝ,
+      (fun j => y j - x j) =
+        LSEKKTInverseSolutionLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i,
+           fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i),
+           fun r => Deltad r - rectMatMulVec DeltaB y r) →
+      vecNorm2 mu ≤ muScale * vecNorm2 x) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      LSEKKTInverseSolutionDataCoeff hB hnull *
+          (eps * bScale + (eps * frobNormRect A) * yScale) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect B) * muScale +
+            (eps * frobNormRect A) *
+              ((1 + eps) * bScale +
+                ((1 + eps) * frobNormRect A) * yScale)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull *
+          (eps * dScale + (eps * frobNormRect B) * yScale) := by
+  exact
+    hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_response_coeffs_relativeBudget_scales
+      hy hB hBpert hnull hxnorm hbudget heps_nonneg hb hd hyScale hmuScale
+      (LSEKKTInverseSolutionDataCoeff hB hnull)
+      (LSEKKTInverseSolutionStatCoeff hB hnull)
+      (LSEKKTInverseSolutionConstrCoeff hB hnull)
+      (LSEKKTInverseSolutionDataCoeff_nonneg hB hnull)
+      (LSEKKTInverseSolutionStatCoeff_nonneg hB hnull)
+      (LSEKKTInverseSolutionConstrCoeff_nonneg hB hnull)
+      (LSEKKTInverseSolutionDataLinearMap_vecNorm2_le_coeff hB hnull)
+      (LSEKKTInverseSolutionStatLinearMap_vecNorm2_le_coeff hB hnull)
+      (LSEKKTInverseSolutionConstrLinearMap_vecNorm2_le_coeff hB hnull)
 
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
