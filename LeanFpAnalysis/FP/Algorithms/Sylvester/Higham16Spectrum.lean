@@ -14649,6 +14649,30 @@ theorem existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec
 alias H16_eq16_2_6_existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec :=
   existsUnique_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias for the strict real-quasi-Schur vectorized
+    coefficient trivial-kernel characterization. -/
+alias H16_eq16_2_6_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_eq_zero_iff :=
+  sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_eq_zero_iff
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias for strict real-quasi-Schur vectorized coefficient
+    injectivity. -/
+alias H16_eq16_2_6_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_injective :=
+  sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_injective
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias for strict real-quasi-Schur vectorized coefficient
+    surjectivity. -/
+alias H16_eq16_2_6_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_surjective :=
+  sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_surjective
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6):
+    source-numbered alias for strict real-quasi-Schur vectorized coefficient
+    bijectivity. -/
+alias H16_eq16_2_6_sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_bijective :=
+  sylvesterVecCoeff_realQuasiSchur_strictBlockMap_mulVec_bijective
+
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.6), strict
     real-quasi-Schur singleton-block case: Mathlib's nonsingular inverse gives
     an explicit exact vectorized Sylvester coefficient solution for any right-
