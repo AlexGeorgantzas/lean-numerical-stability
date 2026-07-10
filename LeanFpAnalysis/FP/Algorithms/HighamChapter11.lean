@@ -8712,6 +8712,25 @@ theorem higham11_7_tridiagonalPathFirstTrailingIndex_eq_finLast_iff
     subst t
     exact higham11_7_tridiagonalPathFirstTrailingIndex_last_eq_finLast k step
 
+/-- Along a nonempty concrete path, the canonical first-trailing endpoint has
+last-row value exactly at the final branch. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_val_eq_pivotSpan_iff
+    (k : ℕ) (step : Fin (k + 1) → PivotSize) (t : Fin (k + 1)) :
+    (higham11_7_tridiagonalPathFirstTrailingIndex (k + 1) step t).val =
+      higham11_7_tridiagonalPathPivotSpan (k + 1) step ↔
+      t = Fin.last k := by
+  constructor
+  · intro h
+    exact
+      (higham11_7_tridiagonalPathFirstTrailingIndex_eq_finLast_iff
+        k step t).1 (by
+          apply Fin.ext
+          simpa using h)
+  · intro ht
+    subst t
+    exact higham11_7_tridiagonalPathFirstTrailingIndex_last_val_eq_pivotSpan
+      k step
+
 /-- Every non-final branch endpoint is strictly before the ambient last row. -/
 theorem higham11_7_tridiagonalPathFirstTrailingIndex_ne_finLast_of_ne_last
     (k : ℕ) (step : Fin (k + 1) → PivotSize) (t : Fin (k + 1))
@@ -8722,6 +8741,43 @@ theorem higham11_7_tridiagonalPathFirstTrailingIndex_ne_finLast_of_ne_last
   exact ht
     ((higham11_7_tridiagonalPathFirstTrailingIndex_eq_finLast_iff
       k step t).1 h)
+
+/-- The endpoint of every non-final branch lies strictly before the full path
+pivot span. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_val_lt_pivotSpan_of_ne_last
+    (k : ℕ) (step : Fin (k + 1) → PivotSize) (t : Fin (k + 1))
+    (ht : t ≠ Fin.last k) :
+    (higham11_7_tridiagonalPathFirstTrailingIndex (k + 1) step t).val <
+      higham11_7_tridiagonalPathPivotSpan (k + 1) step := by
+  have hle :=
+    higham11_7_tridiagonalPathFirstTrailingIndex_val_le_pivotSpan
+      (k + 1) step t
+  have hne :
+      (higham11_7_tridiagonalPathFirstTrailingIndex (k + 1) step t).val ≠
+        higham11_7_tridiagonalPathPivotSpan (k + 1) step := by
+    intro hEq
+    exact ht
+      ((higham11_7_tridiagonalPathFirstTrailingIndex_val_eq_pivotSpan_iff
+        k step t).1 hEq)
+  exact Nat.lt_of_le_of_ne hle hne
+
+/-- A branch endpoint is strictly before the full path pivot span exactly when
+the branch is not final. -/
+theorem higham11_7_tridiagonalPathFirstTrailingIndex_val_lt_pivotSpan_iff_ne_last
+    (k : ℕ) (step : Fin (k + 1) → PivotSize) (t : Fin (k + 1)) :
+    (higham11_7_tridiagonalPathFirstTrailingIndex (k + 1) step t).val <
+      higham11_7_tridiagonalPathPivotSpan (k + 1) step ↔
+      t ≠ Fin.last k := by
+  constructor
+  · intro hlt ht
+    subst t
+    rw [higham11_7_tridiagonalPathFirstTrailingIndex_last_val_eq_pivotSpan]
+      at hlt
+    exact (Nat.lt_irrefl _ hlt)
+  · intro ht
+    exact
+      higham11_7_tridiagonalPathFirstTrailingIndex_val_lt_pivotSpan_of_ne_last
+        k step t ht
 
 /-- A concrete path solve-row proof splits into rows at canonical first-trailing
 endpoints and rows outside that endpoint set.  This is the row-coverage
