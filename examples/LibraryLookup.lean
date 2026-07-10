@@ -19,6 +19,7 @@ import LeanFpAnalysis.FP.Algorithms.MatrixPowersSpectral
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderConstruction2
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Labels
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6Pivoted
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
 import LeanFpAnalysis.FP.Algorithms.StationaryIterationDrazin
 import LeanFpAnalysis.FP.Algorithms.StationaryIterationSeries
@@ -13760,6 +13761,10 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_16_fosterBandIdx_at_root
 #check higham9_16_fosterBandValue_at_root
 #check higham9_16_fosterBandValue_antitone
+#check higham9_16_fosterBandValue_chapter_zero
+#check higham9_16_fosterBandValue_chapter_le
+#check higham9_16_fosterA2
+#check higham9_16_foster_lemma2
 #check higham9_10_HessenbergGEPPUTrace_to_PartialPivotGEPPUTrace
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowth_le
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowthValue_le

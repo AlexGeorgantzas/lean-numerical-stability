@@ -2118,6 +2118,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_fosterBandIdx_at_root` (`bandIdx` at `q^(j+1)` is `j`)
 - `higham9_16_fosterBandValue_at_root` (the band value at an if-band edge is `fosterT(K-j-1)·(1+j·e+e)`)
 - `higham9_16_fosterBandValue_antitone` (**global tail antitonicity**: `M(K,C,t) <= M(K,C,P)` for `P <= t` — band descent through edges, completing the (A.17) program)
+- `higham9_16_fosterBandValue_chapter_zero` / `higham9_16_fosterBandValue_chapter_le` (`M(k, sqrt(k^k), 0) = t_k`; `<= t_k` for any tail)
+- `higham9_16_fosterA2` (**Foster Lemma A.2**: the head of any feasible tuple is at most the band value at its tail — the master strong induction)
+- `higham9_16_foster_lemma2` (**Foster Lemma 2**: `p_1 <= t_n` at the chapter constant with zero tail — the constrained-optimization heart of eq. (9.16))
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
