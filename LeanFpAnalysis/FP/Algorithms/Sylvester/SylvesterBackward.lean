@@ -75,6 +75,29 @@ lemma xiSq_nonneg {n : ℕ} (R_tilde : Fin n → Fin n → ℝ) (σ : Fin n → 
   apply Finset.sum_nonneg; intro j _
   exact div_nonneg (sq_nonneg _) (le_of_lt (hpos i j))
 
+/-- Higham, 2nd ed., Section 16.2, equation (16.13):
+    source-numbered abbreviation for the SVD-coordinate representation. -/
+abbrev H16_eq16_13_IsSVD := IsSVD
+
+/-- Higham, 2nd ed., Section 16.2, equation (16.13):
+    source-numbered abbreviation for the transformed SVD residual. -/
+noncomputable abbrev H16_eq16_13_svdResidual := svdResidual
+
+/-- Higham, 2nd ed., Section 16.2, equation (16.13):
+    source-numbered alias for Frobenius-norm preservation of the transformed
+    SVD residual. -/
+alias H16_eq16_13_svdResidual_frobNormSq :=
+  svdResidual_frobNormSq
+
+/-- Higham, 2nd ed., Section 16.2, equation (16.16):
+    source-numbered abbreviation for the squared `xi` functional. -/
+noncomputable abbrev H16_eq16_16_xiSq := xiSq
+
+/-- Higham, 2nd ed., Section 16.2, equation (16.16):
+    source-numbered alias for nonnegativity of the squared `xi` functional. -/
+alias H16_eq16_16_xiSq_nonneg :=
+  xiSq_nonneg
+
 -- ============================================================
 -- Backward error lower bound (§16.2, eq 16.15 lower)
 -- ============================================================
