@@ -13771,6 +13771,17 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_16_one_add_pow_le_exp
 #check higham9_16_exp_le_one_add_pow
 #check higham9_16_fosterStageConst_le_sqrt_mul_exp
+#check higham9_16_fosterG
+#check higham9_16_fosterG_succ_le
+#check higham9_16_fosterG_le_31
+#check higham9_16_log31_bounds
+#check higham9_16_one_sub_inv_le_log
+#check higham9_16_t3_endpoint
+#check higham9_16_fosterS_le_tail
+#check higham9_16_log_one_add_ge
+#check higham9_16_log_one_add_le
+#check higham9_16_t3_step
+#check higham9_16_fosterT_le_exp_of_base
 #check higham9_10_HessenbergGEPPUTrace_to_PartialPivotGEPPUTrace
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowth_le
 #check higham9_10_HessenbergGEPPUTrace_exists_certificateGrowthValue_le
@@ -15880,3 +15891,9 @@ small enough to serve as a smoke check for representative public declarations.
 #check fl_classicalGramSchmidt_roundedState
 #check Wave13.H19_Theorem19_6_pivoted_qr_rowwise_backward_error
 #check Wave13.pivoted_qr_backward_error_of_perm
+-- Split-2 M24: (9.16) Foster T3c part 1 — rational stage-root brackets + T-chain
+#check LeanFpAnalysis.FP.higham9_16_fosterS_le_of_sq_cert
+#check LeanFpAnalysis.FP.higham9_16_fosterS_le_3
+#check LeanFpAnalysis.FP.higham9_16_fosterS_le_30
+#check LeanFpAnalysis.FP.higham9_16_fosterT_le_2
+#check LeanFpAnalysis.FP.higham9_16_fosterT_le_30
