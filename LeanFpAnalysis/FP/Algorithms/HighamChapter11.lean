@@ -1399,6 +1399,36 @@ theorem higham11_3_blockLDLTBackwardErrorBound_le_epsilon_mul_higham_product_bou
       ((higham11_4_bunchKaufmanProductEntry_le_productMax n hn L_hat D_hat i j).trans
         hproductMax)
 
+/-- A `BlockLDLTBackwardError` certificate plus a source-style product-max
+bound gives the Chapter 11 perturbation witnesses with the corresponding scalar
+product budget.  This is only the factorization-envelope part of Theorem 11.3;
+the mixed-pivot induction and solve-side equation remain separate. -/
+theorem higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_higham_product_bound
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n) (ε ρ_n Amax : ℝ) (hε : 0 ≤ ε)
+    (hbe : BlockLDLTBackwardError n A L_hat D_hat σ ε)
+    (hBK : higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ ε * (36 * (n : ℝ) * ρ_n * Amax)) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ ε * (36 * (n : ℝ) * ρ_n * Amax)) ∧
+      (∀ i j : Fin n,
+        ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+          L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂ =
+        A (σ i) (σ j) + ΔA1 i j) := by
+  obtain ⟨ΔA1, ΔA2, hΔA1, hΔA2, hLD⟩ :=
+    higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError
+      n A L_hat D_hat σ ε hε hbe
+  refine ⟨ΔA1, ΔA2, ?_, ?_, hLD⟩
+  · intro i j
+    exact (hΔA1 i j).trans
+      (higham11_3_blockLDLTBackwardErrorBound_le_epsilon_mul_higham_product_bound
+        n hn L_hat D_hat ε ρ_n Amax i j hε hBK)
+  · intro i j
+    exact (hΔA2 i j).trans
+      (higham11_3_blockLDLTBackwardErrorBound_le_epsilon_mul_higham_product_bound
+        n hn L_hat D_hat ε ρ_n Amax i j hε hBK)
+
 /-- Pointwise matrix-product estimates package directly into the source-style
 max-entry norm estimate for `|L̂||D̂||L̂ᵀ|`. -/
 theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_absLDLTProduct_entries
