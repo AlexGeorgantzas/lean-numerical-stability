@@ -13101,6 +13101,34 @@ theorem higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_local_ro
       k fp step t hstep A c_bound c_rec u_loc tail_fl tail_exact ΔA hwit x_hat
   simpa [hzero, add_assoc] using hrow_second t hstep
 
+/-- Full second-pivot local row equations reduce to the base-plus-earlier
+handoff for a residual-witness path, since the current `2 × 2` branch
+perturbation is supported strictly after the two pivot rows. -/
+theorem higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_reduced_rows_of_local_rows
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathResidualWitnesses k fp
+      (fun u => higham11_7_tridiagonalPathTailDim k step u) step
+      (fun u => higham11_7_tridiagonalPathBranchMatrix k step A u)
+      c_bound c_rec u_loc tail_fl tail_exact ΔA)
+    (hrow_second :
+      higham11_7_ConcretePathSecondPivotLocalSolveRows k step A b x_hat ΔA) :
+    higham11_7_ConcretePathSecondPivotReducedSolveRows k step A b x_hat ΔA := by
+  intro t hstep
+  have hzero :=
+    higham11_7_tridiagonalConcretePathResidualWitnesses_pathSecondPivot_two_current_local_dot_zero
+      k fp step t hstep A c_bound c_rec u_loc tail_fl tail_exact ΔA hwit x_hat
+  have hrow := hrow_second t hstep
+  simpa [hzero, add_assoc] using hrow
+
 /-- In a supported-witness path, the current local perturbation has zero dot
 product on a `2 × 2` branch's second-pivot row. -/
 theorem higham11_7_tridiagonalConcretePathSupportedWitnesses_pathSecondPivot_two_current_local_dot_zero
@@ -13182,6 +13210,34 @@ theorem higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_local_r
     higham11_7_tridiagonalConcretePathSupportedWitnesses_pathSecondPivot_two_current_local_dot_zero
       k fp step t hstep A c_bound c_rec u_loc tail_fl tail_exact ΔA hwit x_hat
   simpa [hzero, add_assoc] using hrow_second t hstep
+
+/-- Full second-pivot local row equations reduce to the base-plus-earlier
+handoff for a supported-witness path, since the current local `2 × 2`
+perturbation contributes zero on the second pivot row. -/
+theorem higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_reduced_rows_of_local_rows
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathSupportedWitnesses k fp
+      (fun u => higham11_7_tridiagonalPathTailDim k step u) step
+      (fun u => higham11_7_tridiagonalPathBranchMatrix k step A u)
+      c_bound c_rec u_loc tail_fl tail_exact ΔA)
+    (hrow_second :
+      higham11_7_ConcretePathSecondPivotLocalSolveRows k step A b x_hat ΔA) :
+    higham11_7_ConcretePathSecondPivotReducedSolveRows k step A b x_hat ΔA := by
+  intro t hstep
+  have hzero :=
+    higham11_7_tridiagonalConcretePathSupportedWitnesses_pathSecondPivot_two_current_local_dot_zero
+      k fp step t hstep A c_bound c_rec u_loc tail_fl tail_exact ΔA hwit x_hat
+  have hrow := hrow_second t hstep
+  simpa [hzero, add_assoc] using hrow
 
 /-- Concrete second-pivot local row equations discharge the older arbitrary
 non-leading/non-endpoint complement-row solve obligation for a residual-witness
