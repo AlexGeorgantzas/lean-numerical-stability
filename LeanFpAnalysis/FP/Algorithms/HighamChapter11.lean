@@ -364,6 +364,66 @@ theorem higham11_3_block_ldlt_backward_error_interface (n : ℕ)
         A (σ i) (σ j) + ΔA1 i j) :=
   h
 
+/-- **Theorem 11.3 structured componentwise bound**, the printed leading
+first-order factorization envelope `ε · |L̂| · |D̂| · |L̂ᵀ|` induced by a
+`BlockLDLTBackwardError` certificate. -/
+noncomputable abbrev higham11_3_blockLDLTBackwardErrorBound (n : ℕ)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ε : ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j =>
+    ε * ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+      |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂|
+
+/-- The structured Theorem 11.3 factorization envelope is nonnegative when
+`ε ≥ 0`. -/
+theorem higham11_3_blockLDLTBackwardErrorBound_nonneg (n : ℕ)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ε : ℝ) (hε : 0 ≤ ε) :
+    ∀ i j : Fin n,
+      0 ≤ higham11_3_blockLDLTBackwardErrorBound n L_hat D_hat ε i j := by
+  intro i j
+  apply mul_nonneg hε
+  refine Finset.sum_nonneg ?_
+  intro k₁ _hk₁
+  refine Finset.sum_nonneg ?_
+  intro k₂ _hk₂
+  exact mul_nonneg
+    (mul_nonneg (abs_nonneg _) (abs_nonneg _)) (abs_nonneg _)
+
+/-- **Theorem 11.3 structured backward-error bridge**: a shared
+`BlockLDLTBackwardError` certificate directly supplies the perturbation
+witnesses expected by the Chapter 11 factorization interface, with
+`ΔA₂ = 0` for this factorization-only part of the source theorem. -/
+theorem higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError
+    (n : ℕ) (A L_hat D_hat : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n) (ε : ℝ) (hε : 0 ≤ ε)
+    (hbe : BlockLDLTBackwardError n A L_hat D_hat σ ε) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n,
+        |ΔA1 i j| ≤
+          higham11_3_blockLDLTBackwardErrorBound n L_hat D_hat ε i j) ∧
+      (∀ i j : Fin n,
+        |ΔA2 i j| ≤
+          higham11_3_blockLDLTBackwardErrorBound n L_hat D_hat ε i j) ∧
+      (∀ i j : Fin n,
+        ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+          L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂ =
+        A (σ i) (σ j) + ΔA1 i j) :=
+  higham11_3_block_ldlt_backward_error_interface n A L_hat D_hat σ
+    (higham11_3_blockLDLTBackwardErrorBound n L_hat D_hat ε) (by
+      let ΔA1 : Fin n → Fin n → ℝ := fun i j =>
+        (∑ k₁ : Fin n, ∑ k₂ : Fin n,
+          L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂) - A (σ i) (σ j)
+      let ΔA2 : Fin n → Fin n → ℝ := fun _ _ => 0
+      refine ⟨ΔA1, ΔA2, ?_, ?_, ?_⟩
+      · intro i j
+        simpa [ΔA1, higham11_3_blockLDLTBackwardErrorBound] using
+          hbe.backward_bound i j
+      · intro i j
+        simpa [ΔA2] using
+          higham11_3_blockLDLTBackwardErrorBound_nonneg n L_hat D_hat ε hε i j
+      · intro i j
+        simp [ΔA1])
+
 /-- **Theorem 11.3 per-step floating-point building block**: the fl backward
 error of one 1×1 Schur-complement update `s = fl(a − fl(fl(c₁/e)·c₂))` equals the
 exact entry `a − c₁c₂/e` plus a derived error `≤ γ₃·(|a| + |c₁c₂/e|)`.  This is a
