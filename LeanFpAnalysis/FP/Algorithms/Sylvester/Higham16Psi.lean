@@ -204,6 +204,27 @@ theorem sylvester_first_order_rhs_frobNorm_le (n : ℕ)
             linarith [htri2]
     _ ≤ ((α + β) * frobNorm X + γ) * T := hbudget
 
+/-- Higham, 2nd ed., Section 16.3, equation (16.23):
+    source-numbered alias for the `dA / alpha` block bound. -/
+alias H16_eq16_23_frobNorm_le_alpha_mul_tripleNorm :=
+  frobNorm_le_alpha_mul_tripleNorm
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.23):
+    source-numbered alias for the `dB / beta` block bound. -/
+alias H16_eq16_23_frobNorm_le_beta_mul_tripleNorm :=
+  frobNorm_le_beta_mul_tripleNorm
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.23):
+    source-numbered alias for the `dC / gamma` block bound. -/
+alias H16_eq16_23_frobNorm_le_gamma_mul_tripleNorm :=
+  frobNorm_le_gamma_mul_tripleNorm
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.23):
+    source-numbered alias for the first-order Sylvester right-hand-side
+    Frobenius bound. -/
+alias H16_eq16_23_sylvester_first_order_rhs_frobNorm_le :=
+  sylvester_first_order_rhs_frobNorm_le
+
 -- ============================================================
 -- General certificate instantiation from a supplied inverse-operator bound
 -- (eq (16.24), the `||P^{-1}||`-structured Psi taken as data)
@@ -381,6 +402,30 @@ theorem sylvester_first_order_bound_of_pos_le_sylvesterSepInf (n : Nat)
     sylvesterPsi_of_pos_le_sylvesterSepInf_isPsiFirstOrderBound n
       A B X alpha beta gamma sigma halpha hbeta hgamma hsigma hX hle
       DeltaA DeltaB DeltaC DeltaX hLin
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.24):
+    source-numbered alias for turning a positive separation lower bound into
+    supplied inverse-operator data. -/
+alias H16_eq16_24_sylvesterInverseOpBound_of_sepLowerBound :=
+  sylvesterInverseOpBound_of_sepLowerBound
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.24):
+    source-numbered alias for the supplied-inverse-bound structured
+    condition-certificate constructor. -/
+alias H16_eq16_24_sylvesterPsi_of_inverseOpBound_isPsiFirstOrderBound :=
+  sylvesterPsi_of_inverseOpBound_isPsiFirstOrderBound
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.24):
+    source-numbered alias for the sep-lower-bound structured
+    condition-certificate constructor. -/
+alias H16_eq16_24_sylvesterPsi_of_sepLowerBound_isPsiFirstOrderBound :=
+  sylvesterPsi_of_sepLowerBound_isPsiFirstOrderBound
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.24):
+    source-numbered alias for the exact-infimum structured
+    condition-certificate constructor. -/
+alias H16_eq16_24_sylvesterPsi_of_pos_le_sylvesterSepInf_isPsiFirstOrderBound :=
+  sylvesterPsi_of_pos_le_sylvesterSepInf_isPsiFirstOrderBound
 
 /-- Higham, 2nd ed., Section 16.3, equation (16.23):
     source-numbered alias for the sep-lower-bound first-order Sylvester endpoint. -/
