@@ -8885,6 +8885,55 @@ theorem higham11_7_tridiagonalPath_forall_of_nonfinal_firstTrailingIndex_last_ze
           exact hzero
         · exact hcomp i hi hnotEndpoint)
 
+/-- To prove a row predicate at every generic first-trailing endpoint, it
+suffices to prove it at the pivot-specific `1 × 1` and `2 × 2` endpoint forms.
+-/
+theorem higham11_7_tridiagonalPath_firstTrailingIndex_rows_of_one_two
+    (k : ℕ) (step : Fin k → PivotSize)
+    (P : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → Prop)
+    (hone :
+      ∀ t : Fin k, ∀ hstep : step t = PivotSize.one,
+        P (higham11_7_tridiagonalPathFirstTrailingIndex_one k step t hstep))
+    (htwo :
+      ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+        P (higham11_7_tridiagonalPathFirstTrailingIndex_two k step t hstep)) :
+    ∀ t : Fin k,
+      P (higham11_7_tridiagonalPathFirstTrailingIndex k step t) := by
+  intro t
+  cases hstep : step t with
+  | one =>
+      simpa [higham11_7_tridiagonalPathFirstTrailingIndex_of_one
+        k step t hstep] using hone t hstep
+  | two =>
+      simpa [higham11_7_tridiagonalPathFirstTrailingIndex_of_two
+        k step t hstep] using htwo t hstep
+
+/-- Non-final version of the branch-uniform first-trailing endpoint dispatcher.
+It leaves the final branch available for a separate terminal-tail row proof. -/
+theorem higham11_7_tridiagonalPath_nonfinal_firstTrailingIndex_rows_of_one_two
+    (k : ℕ) (step : Fin (k + 1) → PivotSize)
+    (P : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → Prop)
+    (hone :
+      ∀ t : Fin (k + 1), t ≠ Fin.last k →
+        ∀ hstep : step t = PivotSize.one,
+          P (higham11_7_tridiagonalPathFirstTrailingIndex_one
+            (k + 1) step t hstep))
+    (htwo :
+      ∀ t : Fin (k + 1), t ≠ Fin.last k →
+        ∀ hstep : step t = PivotSize.two,
+          P (higham11_7_tridiagonalPathFirstTrailingIndex_two
+            (k + 1) step t hstep)) :
+    ∀ t : Fin (k + 1), t ≠ Fin.last k →
+      P (higham11_7_tridiagonalPathFirstTrailingIndex (k + 1) step t) := by
+  intro t ht
+  cases hstep : step t with
+  | one =>
+      simpa [higham11_7_tridiagonalPathFirstTrailingIndex_of_one
+        (k + 1) step t hstep] using hone t ht hstep
+  | two =>
+      simpa [higham11_7_tridiagonalPathFirstTrailingIndex_of_two
+        (k + 1) step t hstep] using htwo t ht hstep
+
 /-- A concrete path solve-row proof splits into rows at canonical first-trailing
 endpoints and rows outside that endpoint set.  This is the row-coverage
 combinator for the remaining Theorem 11.7 lifted summed solve equation. -/
