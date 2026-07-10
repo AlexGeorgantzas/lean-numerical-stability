@@ -41824,6 +41824,319 @@ theorem higham11_8_AasenSpec_identity_source_prefix_componentwise_T_checkerboard
     hThat_component hT_component hTNJ hdetJ hleadJ hLU hκLentry
     hκLentry_cap hL_entry hspec.L_upper_zero hspec.L_first_col
 
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 source-prefix exact-product
+route: the direct-middle componentwise-`T` endpoint specialized to the
+source-style inverse exact outer-factor entry bound, avoiding an auxiliary
+`κ` parameter on the source-facing surface. -/
+theorem higham11_8_AasenSpec_identity_source_prefix_componentwise_T_direct_middle_endpoint_of_inverse_entry_bound
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hσ : ∀ i : Fin n, σ i = i)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_component : ∀ i j : Fin n, |T i j| ≤ |T_hat i j|)
+    (hmiddle_entry : ∀ i j : Fin n,
+      matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤ |T_hat i j|)
+    (hL_entry_inv : ∀ i j : Fin n, |L i j| ≤ 1 / (1 + gamma fp n)) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) :=
+  higham11_8_AasenSpec_identity_source_prefix_componentwise_T_direct_middle_endpoint
+    fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+    DeltaT_LU (1 / (1 + gamma fp n)) hspec hσ hcoeff_valid hrec hHnz
+    hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+    hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+    hThat_component hT_component hmiddle_entry le_rfl hL_entry_inv
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 source-prefix exact-product
+route: the direct-middle `T`-norm endpoint specialized to the source-style
+inverse exact outer-factor entry bound. -/
+theorem higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_direct_middle_endpoint_of_inverse_entry_bound
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hσ : ∀ i : Fin n, σ i = i)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_norm : infNorm T ≤ infNorm T_hat)
+    (hmiddle_entry : ∀ i j : Fin n,
+      matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤ |T_hat i j|)
+    (hL_entry_inv : ∀ i j : Fin n, |L i j| ≤ 1 / (1 + gamma fp n)) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) :=
+  higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_direct_middle_endpoint
+    fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+    DeltaT_LU (1 / (1 + gamma fp n)) hspec hσ hcoeff_valid hrec hHnz
+    hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+    hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+    hThat_component hT_norm hmiddle_entry le_rfl hL_entry_inv
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 source-prefix exact-product
+route: the checkerboard-middle `T`-norm endpoint specialized to the
+source-style inverse exact outer-factor entry bound. -/
+theorem higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_checkerboard_endpoint_of_inverse_entry_bound
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hσ : ∀ i : Fin n, σ i = i)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_norm : infNorm T ≤ infNorm T_hat)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hleadJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        0 < Matrix.det
+          (higham9_2_leadingPrincipalBlock
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hL_entry_inv : ∀ i j : Fin n, |L i j| ≤ 1 / (1 + gamma fp n)) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) :=
+  higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_checkerboard_endpoint
+    fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+    DeltaT_LU (1 / (1 + gamma fp n)) hspec hσ hcoeff_valid hrec hHnz
+    hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+    hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+    hThat_component hT_norm hTNJ hdetJ hleadJ hLU le_rfl hL_entry_inv
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 source-prefix exact-product
+route: the checkerboard-middle componentwise-`T` endpoint specialized to the
+source-style inverse exact outer-factor entry bound. -/
+theorem higham11_8_AasenSpec_identity_source_prefix_componentwise_T_checkerboard_endpoint_of_inverse_entry_bound
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hσ : ∀ i : Fin n, σ i = i)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hrec : higham11_14_aasenNextColumnEquation n A L H)
+    (hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ gamma fp n * |T_hat i j|)
+    (hT_component : ∀ i j : Fin n, |T i j| ≤ |T_hat i j|)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hleadJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        0 < Matrix.det
+          (higham9_2_leadingPrincipalBlock
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hL_entry_inv : ∀ i j : Fin n, |L i j| ≤ 1 / (1 + gamma fp n)) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => gamma fp n * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) :=
+  higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_componentwise_T_checkerboard_middle_entry_bound_nonneg
+    fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+    DeltaT_LU (1 / (1 + gamma fp n)) hcoeff_valid hrec hHnz
+    hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+    hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+    (higham11_8_AasenSpec_product_eq_of_identity_perm n A L T σ hspec hσ)
+    hThat_component hT_component hTNJ hdetJ hleadJ hLU le_rfl
+    hL_entry_inv hspec.L_upper_zero hspec.L_first_col
+
 /-- Source-prefix relative abs-LU componentwise-middle wrapper with the
 concrete factorization-side `T_hat` budget and exact product majorants, using
 four shares of the printed coefficient. -/
