@@ -1040,6 +1040,138 @@ theorem higham11_4_bunch_kaufman_case4_twoByTwo_det_ne_zero
     lt_of_lt_of_le hscale_pos hlower
   exact abs_pos.mp hdet_abs_pos
 
+/-- **Theorem 11.4 / Algorithm 11.2 case-(4) scaled inverse-entry bounds**:
+the printed case-(4) determinant estimate gives the three scaled inverse
+quantities consumed by the source Schur-growth calculation.  These bounds avoid
+the stronger complete-pivot-style diagonal entry cap. -/
+theorem higham11_4_bunch_kaufman_case4_twoByTwo_inverse_scaled_bounds
+    (a11 a1r arr ω1 ωr : ℝ)
+    (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case4)
+    (ha1r : |a1r| = ω1) :
+    |arr / (a11 * arr - a1r ^ 2)| * ω1 ^ 2 ≤
+        higham11_1_bunchParlettAlpha * ωr /
+          (1 - higham11_1_bunchParlettAlpha ^ 2) ∧
+      |a1r / (a11 * arr - a1r ^ 2)| * (ω1 * ωr) ≤
+        ωr / (1 - higham11_1_bunchParlettAlpha ^ 2) ∧
+      |a11 / (a11 * arr - a1r ^ 2)| * ωr ^ 2 ≤
+        higham11_1_bunchParlettAlpha * ωr /
+          (1 - higham11_1_bunchParlettAlpha ^ 2) := by
+  rcases higham11_2_bunch_kaufman_case4_tests
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr hcase with
+    ⟨_, _, hprod_lt, harr_lt⟩
+  have hα_pos : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  have hα_nonneg : 0 ≤ higham11_1_bunchParlettAlpha := le_of_lt hα_pos
+  have hα_lt_one : higham11_1_bunchParlettAlpha < 1 := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_lt_one
+  have hα_sq_lt_one : higham11_1_bunchParlettAlpha ^ 2 < 1 := by
+    nlinarith [hα_nonneg, hα_lt_one]
+  have hden_pos : 0 < 1 - higham11_1_bunchParlettAlpha ^ 2 := by
+    linarith [hα_sq_lt_one]
+  have hωsq_pos : 0 < ω1 ^ 2 := sq_pos_of_ne_zero (ne_of_gt hω1)
+  have hD_pos : 0 < (1 - higham11_1_bunchParlettAlpha ^ 2) * ω1 ^ 2 :=
+    mul_pos hden_pos hωsq_pos
+  have hD_nonneg : 0 ≤ (1 - higham11_1_bunchParlettAlpha ^ 2) * ω1 ^ 2 :=
+    le_of_lt hD_pos
+  have hlower :=
+    higham11_4_bunch_kaufman_case4_twoByTwo_absdet_lower
+      a11 a1r arr ω1 ωr hcase ha1r
+  have hdet_abs_pos : 0 < |a11 * arr - a1r ^ 2| :=
+    lt_of_lt_of_le hD_pos hlower
+  have hαωr_pos : 0 < higham11_1_bunchParlettAlpha * ωr :=
+    lt_of_le_of_lt (abs_nonneg arr) harr_lt
+  have hωr_pos : 0 < ωr := by nlinarith [hα_pos, hαωr_pos]
+  have hωr_nonneg : 0 ≤ ωr := le_of_lt hωr_pos
+  have harr_le : |arr| ≤ higham11_1_bunchParlettAlpha * ωr :=
+    le_of_lt harr_lt
+  have hprod_le : |a11| * ωr ≤ higham11_1_bunchParlettAlpha * ω1 ^ 2 :=
+    le_of_lt hprod_lt
+  have hfirst_num_le :
+      |arr| * ω1 ^ 2 ≤
+        (higham11_1_bunchParlettAlpha * ωr) * ω1 ^ 2 :=
+    mul_le_mul_of_nonneg_right harr_le (sq_nonneg ω1)
+  have hfirst_num_nonneg :
+      0 ≤ (higham11_1_bunchParlettAlpha * ωr) * ω1 ^ 2 :=
+    mul_nonneg (mul_nonneg hα_nonneg hωr_nonneg) (sq_nonneg ω1)
+  have hfirst_div :
+      |arr| * ω1 ^ 2 / |a11 * arr - a1r ^ 2| ≤
+        (higham11_1_bunchParlettAlpha * ωr) * ω1 ^ 2 /
+          ((1 - higham11_1_bunchParlettAlpha ^ 2) * ω1 ^ 2) :=
+    (div_le_div_of_nonneg_right hfirst_num_le (le_of_lt hdet_abs_pos)).trans
+      (div_le_div_of_nonneg_left hfirst_num_nonneg hD_pos hlower)
+  have hfirst :
+      |arr / (a11 * arr - a1r ^ 2)| * ω1 ^ 2 ≤
+        higham11_1_bunchParlettAlpha * ωr /
+          (1 - higham11_1_bunchParlettAlpha ^ 2) := by
+    calc
+      |arr / (a11 * arr - a1r ^ 2)| * ω1 ^ 2
+          = |arr| * ω1 ^ 2 / |a11 * arr - a1r ^ 2| := by
+            rw [abs_div]
+            field_simp [ne_of_gt hdet_abs_pos]
+      _ ≤ (higham11_1_bunchParlettAlpha * ωr) * ω1 ^ 2 /
+          ((1 - higham11_1_bunchParlettAlpha ^ 2) * ω1 ^ 2) := hfirst_div
+      _ = higham11_1_bunchParlettAlpha * ωr /
+          (1 - higham11_1_bunchParlettAlpha ^ 2) := by
+            field_simp [ne_of_gt hden_pos, ne_of_gt hωsq_pos]
+  have ha1r_abs : |a1r| = ω1 := ha1r
+  have hsecond_num_le : |a1r| * (ω1 * ωr) ≤ ω1 ^ 2 * ωr := by
+    rw [ha1r_abs]
+    ring_nf
+    exact le_rfl
+  have hsecond_num_nonneg : 0 ≤ ω1 ^ 2 * ωr :=
+    mul_nonneg (sq_nonneg ω1) hωr_nonneg
+  have hsecond_div :
+      |a1r| * (ω1 * ωr) / |a11 * arr - a1r ^ 2| ≤
+        ω1 ^ 2 * ωr /
+          ((1 - higham11_1_bunchParlettAlpha ^ 2) * ω1 ^ 2) :=
+    (div_le_div_of_nonneg_right hsecond_num_le (le_of_lt hdet_abs_pos)).trans
+      (div_le_div_of_nonneg_left hsecond_num_nonneg hD_pos hlower)
+  have hsecond :
+      |a1r / (a11 * arr - a1r ^ 2)| * (ω1 * ωr) ≤
+        ωr / (1 - higham11_1_bunchParlettAlpha ^ 2) := by
+    calc
+      |a1r / (a11 * arr - a1r ^ 2)| * (ω1 * ωr)
+          = |a1r| * (ω1 * ωr) / |a11 * arr - a1r ^ 2| := by
+            rw [abs_div]
+            field_simp [ne_of_gt hdet_abs_pos]
+      _ ≤ ω1 ^ 2 * ωr /
+          ((1 - higham11_1_bunchParlettAlpha ^ 2) * ω1 ^ 2) := hsecond_div
+      _ = ωr / (1 - higham11_1_bunchParlettAlpha ^ 2) := by
+            field_simp [ne_of_gt hden_pos, ne_of_gt hωsq_pos]
+  have hthird_num_le :
+      |a11| * ωr ^ 2 ≤
+        (higham11_1_bunchParlettAlpha * ω1 ^ 2) * ωr := by
+    calc
+      |a11| * ωr ^ 2 = (|a11| * ωr) * ωr := by ring
+      _ ≤ (higham11_1_bunchParlettAlpha * ω1 ^ 2) * ωr :=
+        mul_le_mul_of_nonneg_right hprod_le hωr_nonneg
+  have hthird_num_nonneg :
+      0 ≤ (higham11_1_bunchParlettAlpha * ω1 ^ 2) * ωr :=
+    mul_nonneg (mul_nonneg hα_nonneg (sq_nonneg ω1)) hωr_nonneg
+  have hthird_div :
+      |a11| * ωr ^ 2 / |a11 * arr - a1r ^ 2| ≤
+        (higham11_1_bunchParlettAlpha * ω1 ^ 2) * ωr /
+          ((1 - higham11_1_bunchParlettAlpha ^ 2) * ω1 ^ 2) :=
+    (div_le_div_of_nonneg_right hthird_num_le (le_of_lt hdet_abs_pos)).trans
+      (div_le_div_of_nonneg_left hthird_num_nonneg hD_pos hlower)
+  have hthird :
+      |a11 / (a11 * arr - a1r ^ 2)| * ωr ^ 2 ≤
+        higham11_1_bunchParlettAlpha * ωr /
+          (1 - higham11_1_bunchParlettAlpha ^ 2) := by
+    calc
+      |a11 / (a11 * arr - a1r ^ 2)| * ωr ^ 2
+          = |a11| * ωr ^ 2 / |a11 * arr - a1r ^ 2| := by
+            rw [abs_div]
+            field_simp [ne_of_gt hdet_abs_pos]
+      _ ≤ (higham11_1_bunchParlettAlpha * ω1 ^ 2) * ωr /
+          ((1 - higham11_1_bunchParlettAlpha ^ 2) * ω1 ^ 2) := hthird_div
+      _ = higham11_1_bunchParlettAlpha * ωr /
+          (1 - higham11_1_bunchParlettAlpha ^ 2) := by
+            field_simp [ne_of_gt hden_pos, ne_of_gt hωsq_pos]
+  exact ⟨hfirst, hsecond, hthird⟩
+
 /-- **Theorem 11.4 / Algorithm 11.2 case-(4) determinant bridge**: with the
 same explicit row-maximum dominance needed by the local case-(4) `2 × 2`
 bridges, the accepted pivot block has the standard determinant lower bound. -/
