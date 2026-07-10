@@ -338,3 +338,17 @@ surfaces rather than closed by assuming their conclusions.
   (`higham9_11_bohte_example_growth_ge_bohteBound_sub_one`). Together with M26's unconditional upper bound
   `2^(2p-1) = 128`, the example brackets the sharp constant: `115 <= rho_max(9,4) <= 128`, with Bohte's printed
   `116` inside the bracket. Axiom-clean.
+
+- **M28 (Split 2, session claude-ch09-split2-20260708181608)**: **Theorem 9.11 CLOSED** (source obtained: Bohte
+  [146, 1975], IMA J. Appl. Math. 16(2):133-142, provided by Max via institutional access). Formalized Bohte's §5
+  sharp growth analysis end-to-end: the comparison matrix `B` (eq. (9)) as `higham9_11_bohteBaux` (recursing on
+  distance from the last column), all of Lemma 7 (entries >= 1, first-row domination via row-antitonicity, corner
+  maximality, regime-1 doubling, diagonal unfolding into first-row sums, regime-2 closed form
+  `c(p+u) = 2^(p+u) - u·2^(u-1)` via a two-regime strong induction with geometric-sum identities), the corner value
+  `b(1,1) = 2^(2p-1) - (p-1)·2^(p-2) = higham9_11_bohteBound p`, the sharp per-entry invariant
+  `higham9_11_BandActiveBoundSharp` with its one-step preservation (the journal paper defers this induction to
+  Bohte's 1974 report; reconstructed here — the displaced-row swap case closes against the `B`-recurrence with
+  equality, all other window rows via first-row domination), and the final theorem
+  `higham9_11_banded_GEPPUTrace_growthFactorEntry_le_bohteBound`: banded GEPP growth
+  `<= 2^(2p-1) - (p-1)·2^(p-2)`, independent of `n`. With M27's near-attainability witness (>= 115 at `n = 9`,
+  `p = 4` vs bound 116), both claims of the printed theorem are discharged. Axiom-clean.
