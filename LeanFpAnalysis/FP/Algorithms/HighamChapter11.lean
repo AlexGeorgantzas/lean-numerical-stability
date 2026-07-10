@@ -8966,6 +8966,26 @@ def higham11_7_tridiagonalPathFirstTrailingIndex
         higham11_7_tridiagonalBranchSupportOffset (step t) :=
   rfl
 
+/-- Full-ambient second pivot row for a concrete path branch accepted as
+`2 × 2`.  This is the one remaining non-leading, non-endpoint row inside a
+two-pivot branch. -/
+def higham11_7_tridiagonalPathSecondPivotIndex_two
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.two) :
+    Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) :=
+  higham11_7_tridiagonalPathLocalBlockIndex k step t
+    (Fin.cast (by rw [hstep])
+      (higham11_7_tridiagonalTwoByTwoSecondPivotIndex
+        (higham11_7_tridiagonalPathTailDim k step t)))
+
+@[simp] theorem higham11_7_tridiagonalPathSecondPivotIndex_two_val
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.two) :
+    (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep).val =
+      higham11_7_tridiagonalPathPrefixSpan k step t + 1 := by
+  simp [higham11_7_tridiagonalPathSecondPivotIndex_two,
+    higham11_7_tridiagonalTwoByTwoSecondPivotIndex]
+
 /-- Branch-uniform first-trailing indices are strictly ordered by branch
 position in the concrete mixed tridiagonal path. -/
 theorem higham11_7_tridiagonalPathFirstTrailingIndex_val_lt_of_lt
@@ -9029,6 +9049,27 @@ theorem higham11_7_tridiagonalPath_zero_ne_firstTrailingIndex
     (0 : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1)) ≠
       higham11_7_tridiagonalPathFirstTrailingIndex k step t :=
   (higham11_7_tridiagonalPathFirstTrailingIndex_ne_zero k step t).symm
+
+/-- A full-ambient second pivot row of a `2 × 2` branch is not the leading
+row. -/
+theorem higham11_7_tridiagonalPathSecondPivotIndex_two_ne_zero
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.two) :
+    higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep ≠
+      (0 : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1)) := by
+  intro h
+  have hval :=
+    congrArg Fin.val h
+  simp [higham11_7_tridiagonalPathSecondPivotIndex_two_val] at hval
+
+/-- The leading row is not a full-ambient second pivot row. -/
+theorem higham11_7_tridiagonalPath_zero_ne_secondPivotIndex_two
+    (k : ℕ) (step : Fin k → PivotSize) (t : Fin k)
+    (hstep : step t = PivotSize.two) :
+    (0 : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1)) ≠
+      higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep :=
+  (higham11_7_tridiagonalPathSecondPivotIndex_two_ne_zero
+    k step t hstep).symm
 
 /-- Every concrete path first-trailing row is at or before the final pivot-span
 row of the full ambient `pathSpan+1` matrix. -/
@@ -9162,6 +9203,237 @@ theorem higham11_7_tridiagonalPathFirstTrailingIndex_val_lt_pivotSpan_iff_ne_las
     exact
       higham11_7_tridiagonalPathFirstTrailingIndex_val_lt_pivotSpan_of_ne_last
         k step t ht
+
+/-- Row classification for a concrete mixed tridiagonal pivot path.  Every
+ambient row is either the leading row, a branch first-trailing endpoint, or the
+second pivot row of a `2 × 2` branch.  This is the structural split needed for
+the remaining complement-row solve equation in Theorem 11.7. -/
+theorem higham11_7_tridiagonalPath_row_eq_zero_or_firstTrailingIndex_or_secondPivot
+    (k : ℕ) (step : Fin k → PivotSize)
+    (i : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1)) :
+    i = 0 ∨
+      (∃ t : Fin k,
+        i = higham11_7_tridiagonalPathFirstTrailingIndex k step t) ∨
+      (∃ t : Fin k, ∃ hstep : step t = PivotSize.two,
+        i = higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) := by
+  induction k with
+  | zero =>
+      left
+      apply Fin.ext
+      have hi := i.isLt
+      simp [higham11_7_tridiagonalPathPivotSpan_zero] at hi ⊢
+  | succ k ih =>
+      let tailStep : Fin k → PivotSize := fun t => step t.succ
+      have hspan_cons :
+          higham11_7_tridiagonalPathPivotSpan (k + 1) step =
+            higham11_7_tridiagonalBranchSupportOffset (step 0) +
+              higham11_7_tridiagonalPathPivotSpan k tailStep := by
+        simpa [tailStep] using
+          higham11_7_tridiagonalPathPivotSpan_cons k step
+      cases hhead : step 0 with
+      | one =>
+          by_cases hi0 : i.val = 0
+          · left
+            exact Fin.ext hi0
+          · have hi_ge : 1 ≤ i.val := Nat.succ_le_of_lt (Nat.pos_of_ne_zero hi0)
+            have hspan :
+                higham11_7_tridiagonalPathPivotSpan (k + 1) step =
+                  1 + higham11_7_tridiagonalPathPivotSpan k tailStep := by
+              simpa [hhead, higham11_7_tridiagonalBranchSupportOffset] using
+                hspan_cons
+            let j : Fin (higham11_7_tridiagonalPathPivotSpan k tailStep + 1) :=
+              ⟨i.val - 1, by
+                have hi := i.isLt
+                omega⟩
+            have hij : i.val = 1 + j.val := by
+              dsimp [j]
+              omega
+            rcases ih tailStep j with hj_zero | hj_rest
+            · right
+              left
+              refine ⟨0, ?_⟩
+              apply Fin.ext
+              have hjv := congrArg Fin.val hj_zero
+              simp [j] at hjv ⊢
+              simp [higham11_7_tridiagonalPathFirstTrailingIndex,
+                higham11_7_tridiagonalPathPrefixSpan_zero,
+                higham11_7_tridiagonalBranchSupportOffset, hhead] at *
+              omega
+            · rcases hj_rest with hj_end | hj_second
+              · rcases hj_end with ⟨t, ht⟩
+                right
+                left
+                refine ⟨t.succ, ?_⟩
+                apply Fin.ext
+                have hjv := congrArg Fin.val ht
+                have hfull :
+                    (higham11_7_tridiagonalPathFirstTrailingIndex
+                      (k + 1) step t.succ).val =
+                      1 +
+                        (higham11_7_tridiagonalPathFirstTrailingIndex
+                          k tailStep t).val := by
+                  simp [tailStep, higham11_7_tridiagonalPathPrefixSpan_succ,
+                    higham11_7_tridiagonalBranchSupportOffset, hhead,
+                    Nat.add_assoc]
+                calc
+                  i.val = 1 + j.val := hij
+                  _ = 1 +
+                      (higham11_7_tridiagonalPathFirstTrailingIndex
+                        k tailStep t).val := by rw [hjv]
+                  _ =
+                      (higham11_7_tridiagonalPathFirstTrailingIndex
+                        (k + 1) step t.succ).val := hfull.symm
+              · rcases hj_second with ⟨t, hstep_t, ht⟩
+                right
+                right
+                refine ⟨t.succ, hstep_t, ?_⟩
+                apply Fin.ext
+                have hjv := congrArg Fin.val ht
+                have hfull :
+                    (higham11_7_tridiagonalPathSecondPivotIndex_two
+                      (k + 1) step t.succ hstep_t).val =
+                      1 +
+                        (higham11_7_tridiagonalPathSecondPivotIndex_two
+                          k tailStep t hstep_t).val := by
+                  simp [tailStep, higham11_7_tridiagonalPathPrefixSpan_succ,
+                    higham11_7_tridiagonalBranchSupportOffset, hhead,
+                    Nat.add_assoc]
+                calc
+                  i.val = 1 + j.val := hij
+                  _ = 1 +
+                      (higham11_7_tridiagonalPathSecondPivotIndex_two
+                        k tailStep t hstep_t).val := by rw [hjv]
+                  _ =
+                      (higham11_7_tridiagonalPathSecondPivotIndex_two
+                        (k + 1) step t.succ hstep_t).val := hfull.symm
+      | two =>
+          by_cases hi0 : i.val = 0
+          · left
+            exact Fin.ext hi0
+          · by_cases hi1 : i.val = 1
+            · right
+              right
+              refine ⟨0, hhead, ?_⟩
+              exact Fin.ext (by
+                simp [higham11_7_tridiagonalPathSecondPivotIndex_two_val,
+                  higham11_7_tridiagonalPathPrefixSpan_zero, hi1])
+            · have hi_ge : 2 ≤ i.val := by omega
+              have hspan :
+                  higham11_7_tridiagonalPathPivotSpan (k + 1) step =
+                    2 + higham11_7_tridiagonalPathPivotSpan k tailStep := by
+                simpa [hhead, higham11_7_tridiagonalBranchSupportOffset] using
+                  hspan_cons
+              let j : Fin (higham11_7_tridiagonalPathPivotSpan k tailStep + 1) :=
+                ⟨i.val - 2, by
+                  have hi := i.isLt
+                  omega⟩
+              have hij : i.val = 2 + j.val := by
+                dsimp [j]
+                omega
+              rcases ih tailStep j with hj_zero | hj_rest
+              · right
+                left
+                refine ⟨0, ?_⟩
+                apply Fin.ext
+                have hjv := congrArg Fin.val hj_zero
+                simp [j] at hjv ⊢
+                simp [higham11_7_tridiagonalPathFirstTrailingIndex,
+                  higham11_7_tridiagonalPathPrefixSpan_zero,
+                  higham11_7_tridiagonalBranchSupportOffset, hhead] at *
+                omega
+              · rcases hj_rest with hj_end | hj_second
+                · rcases hj_end with ⟨t, ht⟩
+                  right
+                  left
+                  refine ⟨t.succ, ?_⟩
+                  apply Fin.ext
+                  have hjv := congrArg Fin.val ht
+                  have hfull :
+                      (higham11_7_tridiagonalPathFirstTrailingIndex
+                        (k + 1) step t.succ).val =
+                        2 +
+                          (higham11_7_tridiagonalPathFirstTrailingIndex
+                            k tailStep t).val := by
+                    simp [tailStep, higham11_7_tridiagonalPathPrefixSpan_succ,
+                      higham11_7_tridiagonalBranchSupportOffset, hhead,
+                      Nat.add_assoc]
+                  calc
+                    i.val = 2 + j.val := hij
+                    _ = 2 +
+                        (higham11_7_tridiagonalPathFirstTrailingIndex
+                          k tailStep t).val := by rw [hjv]
+                    _ =
+                        (higham11_7_tridiagonalPathFirstTrailingIndex
+                          (k + 1) step t.succ).val := hfull.symm
+                · rcases hj_second with ⟨t, hstep_t, ht⟩
+                  right
+                  right
+                  refine ⟨t.succ, hstep_t, ?_⟩
+                  apply Fin.ext
+                  have hjv := congrArg Fin.val ht
+                  have hfull :
+                      (higham11_7_tridiagonalPathSecondPivotIndex_two
+                        (k + 1) step t.succ hstep_t).val =
+                        2 +
+                          (higham11_7_tridiagonalPathSecondPivotIndex_two
+                            k tailStep t hstep_t).val := by
+                    simp [tailStep, higham11_7_tridiagonalPathPrefixSpan_succ,
+                      higham11_7_tridiagonalBranchSupportOffset, hhead,
+                      Nat.add_assoc]
+                  calc
+                    i.val = 2 + j.val := hij
+                    _ = 2 +
+                        (higham11_7_tridiagonalPathSecondPivotIndex_two
+                          k tailStep t hstep_t).val := by rw [hjv]
+                    _ =
+                        (higham11_7_tridiagonalPathSecondPivotIndex_two
+                          (k + 1) step t.succ hstep_t).val := hfull.symm
+
+/-- Complement rows for the first-trailing endpoint split are precisely second
+pivot rows of `2 × 2` branches. -/
+theorem higham11_7_tridiagonalPath_complement_eq_secondPivot
+    (k : ℕ) (step : Fin k → PivotSize)
+    (i : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1))
+    (hi0 : i ≠ 0)
+    (hnotEndpoint :
+      ∀ t : Fin k,
+        i ≠ higham11_7_tridiagonalPathFirstTrailingIndex k step t) :
+    ∃ t : Fin k, ∃ hstep : step t = PivotSize.two,
+      i = higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep := by
+  rcases
+      higham11_7_tridiagonalPath_row_eq_zero_or_firstTrailingIndex_or_secondPivot
+        k step i with hzero | hrest
+  · exact (False.elim (hi0 hzero))
+  · rcases hrest with hend | hsecond
+    · rcases hend with ⟨t, ht⟩
+      exact (False.elim (hnotEndpoint t ht))
+    · exact hsecond
+
+/-- A predicate over concrete path rows is proved everywhere once it is proved
+at the leading row, every first-trailing endpoint, and every `2 × 2` second
+pivot row. -/
+theorem higham11_7_tridiagonalPath_forall_of_zero_firstTrailingIndex_secondPivot
+    (k : ℕ) (step : Fin k → PivotSize)
+    (P : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → Prop)
+    (hzero : P 0)
+    (hend :
+      ∀ t : Fin k,
+        P (higham11_7_tridiagonalPathFirstTrailingIndex k step t))
+    (hsecond :
+      ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+        P (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)) :
+    ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1), P i := by
+  intro i
+  rcases
+      higham11_7_tridiagonalPath_row_eq_zero_or_firstTrailingIndex_or_secondPivot
+        k step i with hzero_i | hrest
+  · subst i
+    exact hzero
+  · rcases hrest with hend_i | hsecond_i
+    · rcases hend_i with ⟨t, rfl⟩
+      exact hend t
+    · rcases hsecond_i with ⟨t, hstep, rfl⟩
+      exact hsecond t hstep
 
 /-- A predicate over concrete path rows is proved everywhere once it is proved
 on every canonical first-trailing endpoint and on every row outside that
@@ -9379,6 +9651,39 @@ theorem higham11_7_tridiagonalPath_forall_of_one_two_nonfinal_firstTrailingIndex
       k step P hone htwo)
     hlast hzero hcomp
 
+/-- Combined non-final endpoint dispatch and row coverage for a nonempty path,
+with complement rows reduced to the concrete second-pivot rows of `2 × 2`
+branches. -/
+theorem higham11_7_tridiagonalPath_forall_of_one_two_nonfinal_firstTrailingIndex_last_zero_secondPivot
+    (k : ℕ) (step : Fin (k + 1) → PivotSize)
+    (P : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → Prop)
+    (hone :
+      ∀ t : Fin (k + 1), t ≠ Fin.last k →
+        ∀ hstep : step t = PivotSize.one,
+          P (higham11_7_tridiagonalPathFirstTrailingIndex_one
+            (k + 1) step t hstep))
+    (htwo :
+      ∀ t : Fin (k + 1), t ≠ Fin.last k →
+        ∀ hstep : step t = PivotSize.two,
+          P (higham11_7_tridiagonalPathFirstTrailingIndex_two
+            (k + 1) step t hstep))
+    (hlast :
+      P (Fin.last (higham11_7_tridiagonalPathPivotSpan (k + 1) step)))
+    (hzero : P 0)
+    (hsecond :
+      ∀ t : Fin (k + 1), ∀ hstep : step t = PivotSize.two,
+        P (higham11_7_tridiagonalPathSecondPivotIndex_two
+          (k + 1) step t hstep)) :
+    ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1), P i :=
+  higham11_7_tridiagonalPath_forall_of_one_two_nonfinal_firstTrailingIndex_last_zero_and_complement
+    k step P hone htwo hlast hzero (by
+      intro i hi0 hnotEndpoint
+      rcases
+          higham11_7_tridiagonalPath_complement_eq_secondPivot
+            (k + 1) step i hi0 hnotEndpoint with
+        ⟨t, hstep, rfl⟩
+      exact hsecond t hstep)
+
 /-- Concrete solve-row splitter for a nonempty mixed path.  It turns separate
 non-final `1 × 1`/`2 × 2` endpoint rows, the terminal last row, the leading row,
 and non-leading/non-endpoint complement rows into the full lifted solve
@@ -9506,6 +9811,126 @@ theorem higham11_7_tridiagonalPath_solve_rows_of_one_two_nonfinal_firstTrailingI
             x_hat j =
         b i)
     hone htwo hlast hzero hcomp
+
+/-- Concrete solve-row splitter for a nonempty mixed path with complement rows
+identified as `2 × 2` second-pivot rows.  This reduces the remaining Theorem
+11.7 complement-row handoff to a branch-local second-pivot solve-row proof. -/
+theorem higham11_7_tridiagonalPath_solve_rows_of_one_two_nonfinal_firstTrailingIndex_last_zero_secondPivot
+    (k : ℕ) (step : Fin (k + 1) → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ)
+    (ΔA : ∀ t : Fin (k + 1),
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ)
+    (b x_hat :
+      Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) → ℝ)
+    (hone :
+      ∀ t : Fin (k + 1), t ≠ Fin.last k →
+        ∀ hstep : step t = PivotSize.one,
+          ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              (A (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                    (k + 1) step t hstep) j +
+                (∑ u : Fin (k + 1),
+                  higham11_7_tridiagonalLiftLocalBlockPerturbation
+                    (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                    (higham11_7_tridiagonalPathPrefixSpan (k + 1) step u)
+                    (higham11_7_tridiagonalBranchAmbientDim
+                      (higham11_7_tridiagonalPathTailDim (k + 1) step u)
+                      (step u))
+                    (ΔA u)
+                    (higham11_7_tridiagonalPathFirstTrailingIndex_one
+                      (k + 1) step t hstep) j)) *
+                x_hat j =
+            b (higham11_7_tridiagonalPathFirstTrailingIndex_one
+              (k + 1) step t hstep))
+    (htwo :
+      ∀ t : Fin (k + 1), t ≠ Fin.last k →
+        ∀ hstep : step t = PivotSize.two,
+          ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+              (A (higham11_7_tridiagonalPathFirstTrailingIndex_two
+                    (k + 1) step t hstep) j +
+                (∑ u : Fin (k + 1),
+                  higham11_7_tridiagonalLiftLocalBlockPerturbation
+                    (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                    (higham11_7_tridiagonalPathPrefixSpan (k + 1) step u)
+                    (higham11_7_tridiagonalBranchAmbientDim
+                      (higham11_7_tridiagonalPathTailDim (k + 1) step u)
+                      (step u))
+                    (ΔA u)
+                    (higham11_7_tridiagonalPathFirstTrailingIndex_two
+                      (k + 1) step t hstep) j)) *
+                x_hat j =
+            b (higham11_7_tridiagonalPathFirstTrailingIndex_two
+              (k + 1) step t hstep))
+    (hlast :
+      ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+          (A (Fin.last (higham11_7_tridiagonalPathPivotSpan (k + 1) step)) j +
+            (∑ u : Fin (k + 1),
+              higham11_7_tridiagonalLiftLocalBlockPerturbation
+                (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                (higham11_7_tridiagonalPathPrefixSpan (k + 1) step u)
+                (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim (k + 1) step u)
+                  (step u))
+                (ΔA u)
+                (Fin.last (higham11_7_tridiagonalPathPivotSpan (k + 1) step))
+                j)) *
+            x_hat j =
+        b (Fin.last (higham11_7_tridiagonalPathPivotSpan (k + 1) step)))
+    (hzero :
+      ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+          (A 0 j +
+            (∑ u : Fin (k + 1),
+              higham11_7_tridiagonalLiftLocalBlockPerturbation
+                (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                (higham11_7_tridiagonalPathPrefixSpan (k + 1) step u)
+                (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim (k + 1) step u)
+                  (step u))
+                (ΔA u) 0 j)) *
+            x_hat j =
+        b 0)
+    (hsecond :
+      ∀ t : Fin (k + 1), ∀ hstep : step t = PivotSize.two,
+        ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+            (A (higham11_7_tridiagonalPathSecondPivotIndex_two
+                  (k + 1) step t hstep) j +
+              (∑ u : Fin (k + 1),
+                higham11_7_tridiagonalLiftLocalBlockPerturbation
+                  (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                  (higham11_7_tridiagonalPathPrefixSpan (k + 1) step u)
+                  (higham11_7_tridiagonalBranchAmbientDim
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step u)
+                    (step u))
+                  (ΔA u)
+                  (higham11_7_tridiagonalPathSecondPivotIndex_two
+                    (k + 1) step t hstep) j)) *
+              x_hat j =
+          b (higham11_7_tridiagonalPathSecondPivotIndex_two
+            (k + 1) step t hstep)) :
+    ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+      ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1),
+          (A i j +
+            (∑ u : Fin (k + 1),
+              higham11_7_tridiagonalLiftLocalBlockPerturbation
+                (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1)
+                (higham11_7_tridiagonalPathPrefixSpan (k + 1) step u)
+                (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim (k + 1) step u)
+                  (step u))
+                (ΔA u) i j)) *
+            x_hat j =
+        b i :=
+  higham11_7_tridiagonalPath_solve_rows_of_one_two_nonfinal_firstTrailingIndex_last_zero_and_complement
+    k step A ΔA b x_hat hone htwo hlast hzero (by
+      intro i hi0 hnotEndpoint
+      rcases
+          higham11_7_tridiagonalPath_complement_eq_secondPivot
+            (k + 1) step i hi0 hnotEndpoint with
+        ⟨t, hstep, rfl⟩
+      exact hsecond t hstep)
 
 /-- A concrete path solve-row proof splits into rows at canonical first-trailing
 endpoints and rows outside that endpoint set.  This is the row-coverage
