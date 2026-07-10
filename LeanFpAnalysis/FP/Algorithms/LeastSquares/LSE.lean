@@ -66949,6 +66949,22 @@ theorem isLSEMinimizer_iff_exists_lagrange_normal_equations_of_fullRowRank
     exact IsLSEMinimizer.of_lagrange_normal_equations
       (lambda := lambda) hfeas hnormal
 
+/-- Source augmented KKT system for the equality-constrained least-squares
+    operator in Higham, 2nd ed., Chapter 20, equations (20.23)-(20.25).
+
+    The unknowns are a residual-like vector `dr`, a solution difference `dx`,
+    and a multiplier difference `dlambda`; the right-hand sides are the data,
+    stationarity, and constraint rows of the source augmented system. -/
+def LSEKKTSystem {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
+    (f : Fin m → ℝ) (g : Fin n → ℝ) (c : Fin p → ℝ)
+    (dr : Fin m → ℝ) (dx : Fin n → ℝ) (dlambda : Fin p → ℝ) : Prop :=
+  (∀ i : Fin m, dr i + rectMatMulVec A dx i = f i) ∧
+  (∀ j : Fin n,
+    (∑ i : Fin m, A i j * dr i) -
+      (∑ r : Fin p, B r j * dlambda r) = g j) ∧
+  (∀ r : Fin p, rectMatMulVec B dx r = c r)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     KKT difference equations for the Cox--Higham augmented-system route.
 
@@ -67058,6 +67074,43 @@ theorem IsLSEMinimizer.exists_lagrange_kkt_difference_system_of_fullRowRank
     rw [congrFun (rectMatMulVec_mat_add B DeltaB y) r] at hpert_r
     rw [congrFun (rectMatMulVec_sub B y x) r]
     linarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    package the Cox--Higham KKT difference equations as one source augmented
+    KKT system.  This is the system to which the later block inverse/norm bound
+    is applied. -/
+theorem IsLSEMinimizer.exists_lagrange_kkt_difference_source_system_of_fullRowRank
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j)) :
+    ∃ lambda mu : Fin p → ℝ,
+      LSEKKTSystem A B
+        (fun i => Deltab i - rectMatMulVec DeltaA y i)
+        (fun j =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m,
+              DeltaA i j *
+                lsResidualHigham (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i))
+        (fun r => Deltad r - rectMatMulVec DeltaB y r)
+        (fun i =>
+          lsResidualHigham (fun i j => A i j + DeltaA i j)
+              (fun i => b i + Deltab i) y i -
+            lsResidualHigham A b x i)
+        (fun j => y j - x j)
+        (fun r => mu r - lambda r) := by
+  rcases hx.exists_lagrange_kkt_difference_system_of_fullRowRank hy hB hBpert with
+    ⟨lambda, mu, htop, hstat, hconstr⟩
+  exact ⟨lambda, mu, htop, hstat, hconstr⟩
 
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
