@@ -67484,6 +67484,118 @@ theorem LSEKKTSystem.exists_unique_solution_of_conditions {m n p : ℕ}
     LSEKKTSystem.solution_unique_of_conditions hB hnull hsys' hsys
   exact huniq
 
+/-- Canonical noncomputable inverse action for the source KKT augmented system
+    under Higham's conditions (20.24).  It is the unique triple mapped to the
+    right-hand side `(f,g,c)` by `LSEKKTLinearMap`. -/
+noncomputable def LSEKKTInverseTriple {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (f : Fin m → ℝ) (g : Fin n → ℝ) (c : Fin p → ℝ) :
+    (Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ) :=
+  Classical.choose
+    (((LinearMap.injective_iff_surjective).mp
+      (LSEKKTLinearMap.injective_of_conditions hB hnull)) (f, g, c))
+
+/-- The canonical KKT inverse triple maps to the requested right-hand side. -/
+theorem LSEKKTInverseTriple_linearMap_eq {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (f : Fin m → ℝ) (g : Fin n → ℝ) (c : Fin p → ℝ) :
+    LSEKKTLinearMap A B (LSEKKTInverseTriple hB hnull f g c) = (f, g, c) := by
+  dsimp [LSEKKTInverseTriple]
+  exact
+    Classical.choose_spec
+      (((LinearMap.injective_iff_surjective).mp
+        (LSEKKTLinearMap.injective_of_conditions hB hnull)) (f, g, c))
+
+/-- Component form of the canonical KKT inverse triple. -/
+theorem LSEKKTInverseTriple_system {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (f : Fin m → ℝ) (g : Fin n → ℝ) (c : Fin p → ℝ) :
+    LSEKKTSystem A B f g c
+      (LSEKKTInverseTriple hB hnull f g c).1
+      (LSEKKTInverseTriple hB hnull f g c).2.1
+      (LSEKKTInverseTriple hB hnull f g c).2.2 := by
+  exact
+    (LSEKKTSystem.iff_linearMap_eq A B f g c
+      (LSEKKTInverseTriple hB hnull f g c).1
+      (LSEKKTInverseTriple hB hnull f g c).2.1
+      (LSEKKTInverseTriple hB hnull f g c).2.2).2
+      (LSEKKTInverseTriple_linearMap_eq hB hnull f g c)
+
+/-- Any solution of the source KKT system is the canonical inverse triple. -/
+theorem LSEKKTInverseTriple_eq_of_system {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {f : Fin m → ℝ} {g : Fin n → ℝ} {c : Fin p → ℝ}
+    {dr : Fin m → ℝ} {dx : Fin n → ℝ} {dlambda : Fin p → ℝ}
+    (hsys : LSEKKTSystem A B f g c dr dx dlambda) :
+    dr = (LSEKKTInverseTriple hB hnull f g c).1 ∧
+      dx = (LSEKKTInverseTriple hB hnull f g c).2.1 ∧
+      dlambda = (LSEKKTInverseTriple hB hnull f g c).2.2 := by
+  exact
+    LSEKKTSystem.solution_unique_of_conditions hB hnull hsys
+      (LSEKKTInverseTriple_system hB hnull f g c)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the actual residual, solution, and multiplier differences between source
+    and perturbed LSE minimizers equal the canonical source KKT inverse action
+    applied to the Cox--Higham perturbation right-hand side. -/
+theorem IsLSEMinimizer.exists_lagrange_kkt_difference_eq_inverseTriple
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∃ lambda mu : Fin p → ℝ,
+      (fun i =>
+        lsResidualHigham (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i) y i -
+          lsResidualHigham A b x i) =
+        (LSEKKTInverseTriple hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i)
+          (fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i))
+          (fun r => Deltad r - rectMatMulVec DeltaB y r)).1 ∧
+      (fun j => y j - x j) =
+        (LSEKKTInverseTriple hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i)
+          (fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i))
+          (fun r => Deltad r - rectMatMulVec DeltaB y r)).2.1 ∧
+      (fun r => mu r - lambda r) =
+        (LSEKKTInverseTriple hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i)
+          (fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i))
+          (fun r => Deltad r - rectMatMulVec DeltaB y r)).2.2 := by
+  rcases hx.exists_lagrange_kkt_difference_source_system_of_fullRowRank
+      hy hB hBpert with
+    ⟨lambda, mu, hsys⟩
+  refine ⟨lambda, mu, ?_⟩
+  exact LSEKKTInverseTriple_eq_of_system hB hnull hsys
+
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
     uniqueness of an equality-constrained least-squares minimizer once
