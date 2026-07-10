@@ -15905,3 +15905,9 @@ small enough to serve as a smoke check for representative public declarations.
 #check LeanFpAnalysis.FP.higham9_16_t3_head_30
 #check LeanFpAnalysis.FP.higham9_16_fosterT_le_exp
 #check LeanFpAnalysis.FP.higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterBound
+-- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
+#check LeanFpAnalysis.FP.higham9_11_BandActiveBound
+#check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved
+#check LeanFpAnalysis.FP.higham9_11_banded_GEPPUTrace_growthFactorEntry_le_two_pow
+#check LeanFpAnalysis.FP.higham9_11_bohteBound_le_two_pow
+#check LeanFpAnalysis.FP.higham9_11_banded_GEPPUTrace_growthFactorEntry_le_bohteBound_one
