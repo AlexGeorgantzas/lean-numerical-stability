@@ -24754,6 +24754,25 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_lo
     (higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_full_base_rows_of_isTridiagonal
       (k + 1) step A b x_hat hA hrow_second_base)
 
+/-- **Theorem 11.7 global base-solve second-pivot endpoint, coefficient-sum
+form**, zero common offset.  This source-facing wrapper derives the full
+accepted-`2 × 2` second-pivot base-row family from a single global base solve
+equation before applying the full-base-row endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefix hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA hearlierLocal hearlierPrefix
+      (higham11_7_ConcretePathSecondPivotFullBaseRows_of_global_base_solve
+        (k + 1) step A b x_hat hsolve)
+
 /-- **Theorem 11.7 full-row second-pivot endpoint, pointwise-prefix form**.
 This coefficient-sum wrapper lets callers supply pointwise zero facts for each
 strictly earlier lifted perturbation before the current branch prefix; the
@@ -26416,6 +26435,23 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
       hA hearlierLocal hearlierPrefix
       (higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_full_base_rows_of_isTridiagonal
         (k + 1) step A b x_hat hA hrow_second_base)
+
+/-- **Theorem 11.7 global base-solve second-pivot endpoint, uniform coefficient
+form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefix hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA hearlierLocal hearlierPrefix
+      (higham11_7_ConcretePathSecondPivotFullBaseRows_of_global_base_solve
+        (k + 1) step A b x_hat hsolve)
 
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint from full
 ambient second-pivot base rows, uniform pointwise-prefix form**, zero common
@@ -28086,6 +28122,24 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
       hrow_zero_base hA hearlierLocal hearlierPrefix
       (higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_full_base_rows_of_isTridiagonal
         (k + 1) step A b x_hat hA hrow_second_base)
+
+/-- **Theorem 11.7 global base-solve second-pivot endpoint, scalar-budget form**,
+zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve :=
+  fun k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefix hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows
+      k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA hearlierLocal hearlierPrefix
+      (higham11_7_ConcretePathSecondPivotFullBaseRows_of_global_base_solve
+        (k + 1) step A b x_hat hsolve)
 
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint from full
 ambient second-pivot base rows, scalar-budget pointwise-prefix form**, zero
