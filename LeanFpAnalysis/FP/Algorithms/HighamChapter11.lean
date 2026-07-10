@@ -13779,6 +13779,56 @@ theorem higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_reduced
   have hrow := hrow_second t hstep
   simpa [hzero, add_assoc] using hrow
 
+/-- Combined second-pivot row equations imply the full local-row handoff for a
+residual-witness path. -/
+theorem higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_local_rows_of_combined_rows
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathResidualWitnesses k fp
+      (fun u => higham11_7_tridiagonalPathTailDim k step u) step
+      (fun u => higham11_7_tridiagonalPathBranchMatrix k step A u)
+      c_bound c_rec u_loc tail_fl tail_exact ΔA)
+    (hrow_second :
+      higham11_7_ConcretePathSecondPivotCombinedSolveRows k step A b x_hat ΔA) :
+    higham11_7_ConcretePathSecondPivotLocalSolveRows k step A b x_hat ΔA :=
+  higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_local_rows_of_reduced_rows
+    k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact ΔA hwit
+    (higham11_7_ConcretePathSecondPivotReducedSolveRows_of_combined_rows
+      k step A b x_hat ΔA hrow_second)
+
+/-- Combined second-pivot row equations imply the full local-row handoff for a
+supported-witness path. -/
+theorem higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_local_rows_of_combined_rows
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathSupportedWitnesses k fp
+      (fun u => higham11_7_tridiagonalPathTailDim k step u) step
+      (fun u => higham11_7_tridiagonalPathBranchMatrix k step A u)
+      c_bound c_rec u_loc tail_fl tail_exact ΔA)
+    (hrow_second :
+      higham11_7_ConcretePathSecondPivotCombinedSolveRows k step A b x_hat ΔA) :
+    higham11_7_ConcretePathSecondPivotLocalSolveRows k step A b x_hat ΔA :=
+  higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_local_rows_of_reduced_rows
+    k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact ΔA hwit
+    (higham11_7_ConcretePathSecondPivotReducedSolveRows_of_combined_rows
+      k step A b x_hat ΔA hrow_second)
+
 /-- Concrete second-pivot local row equations discharge the older arbitrary
 non-leading/non-endpoint complement-row solve obligation for a residual-witness
 path. -/
@@ -13998,6 +14048,86 @@ theorem higham11_7_tridiagonalConcretePathSupportedWitnesses_complement_full_sol
     (higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_local_rows_of_reduced_rows
       k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact ΔA hwit
       hrow_second)
+
+/-- Combined concrete second-pivot row equations discharge the older arbitrary
+non-leading/non-endpoint complement-row solve obligation for a residual-witness
+path. -/
+theorem higham11_7_tridiagonalConcretePathResidualWitnesses_complement_full_solve_rows_of_pathSecondPivot_combined_rows
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathResidualWitnesses k fp
+      (fun u => higham11_7_tridiagonalPathTailDim k step u) step
+      (fun u => higham11_7_tridiagonalPathBranchMatrix k step A u)
+      c_bound c_rec u_loc tail_fl tail_exact ΔA)
+    (hrow_second :
+      higham11_7_ConcretePathSecondPivotCombinedSolveRows k step A b x_hat ΔA) :
+    ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      i ≠ 0 →
+      (∀ t : Fin k,
+        i ≠ higham11_7_tridiagonalPathFirstTrailingIndex k step t) →
+      ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+          (A i j +
+            (∑ s : Fin k,
+              higham11_7_tridiagonalLiftLocalBlockPerturbation
+                (higham11_7_tridiagonalPathPivotSpan k step + 1)
+                (higham11_7_tridiagonalPathPrefixSpan k step s)
+                (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim k step s) (step s))
+                (ΔA s) i j)) *
+            x_hat j =
+        b i :=
+  higham11_7_tridiagonalConcretePathResidualWitnesses_complement_full_solve_rows_of_pathSecondPivot_reduced_rows
+    k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact ΔA hwit
+    (higham11_7_ConcretePathSecondPivotReducedSolveRows_of_combined_rows
+      k step A b x_hat ΔA hrow_second)
+
+/-- Combined concrete second-pivot row equations discharge the older arbitrary
+non-leading/non-endpoint complement-row solve obligation for a supported-witness
+path. -/
+theorem higham11_7_tridiagonalConcretePathSupportedWitnesses_complement_full_solve_rows_of_pathSecondPivot_combined_rows
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathSupportedWitnesses k fp
+      (fun u => higham11_7_tridiagonalPathTailDim k step u) step
+      (fun u => higham11_7_tridiagonalPathBranchMatrix k step A u)
+      c_bound c_rec u_loc tail_fl tail_exact ΔA)
+    (hrow_second :
+      higham11_7_ConcretePathSecondPivotCombinedSolveRows k step A b x_hat ΔA) :
+    ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      i ≠ 0 →
+      (∀ t : Fin k,
+        i ≠ higham11_7_tridiagonalPathFirstTrailingIndex k step t) →
+      ∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+          (A i j +
+            (∑ s : Fin k,
+              higham11_7_tridiagonalLiftLocalBlockPerturbation
+                (higham11_7_tridiagonalPathPivotSpan k step + 1)
+                (higham11_7_tridiagonalPathPrefixSpan k step s)
+                (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim k step s) (step s))
+                (ΔA s) i j)) *
+            x_hat j =
+        b i :=
+  higham11_7_tridiagonalConcretePathSupportedWitnesses_complement_full_solve_rows_of_pathSecondPivot_reduced_rows
+    k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact ΔA hwit
+    (higham11_7_ConcretePathSecondPivotReducedSolveRows_of_combined_rows
+      k step A b x_hat ΔA hrow_second)
 
 /-- If a concrete path has no `2 × 2` branch, every non-leading,
 non-first-trailing complement row is impossible, so the complement solve-row
