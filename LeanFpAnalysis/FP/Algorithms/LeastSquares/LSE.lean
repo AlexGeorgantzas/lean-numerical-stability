@@ -6977,6 +6977,76 @@ theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_with_re
       hm hn Astage A bstage b phi err (le_of_lt hphi) herr
       hden.1 hden.2 hA hb
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
+    a common source row permutation transports the active-row geometric
+    alpha/beta maximum bound to the permuted source problem. -/
+theorem theorem20_7_alphaBetaMax_le_of_permuteRows_active_row_geometric_entry_growth_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (σ : Fin m ≃ Fin m) {phi : ℝ}
+    (hphi : 0 < phi)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k (σ i) j| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialRowMax hn A (σ i))
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k (σ i)| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialWeightedRowMax hn A b phi (σ i)) :
+    theorem20_7_alphaBetaMax hm hn
+        (fun k r j => Astage k (σ r) j) (fun r j => A (σ r) j)
+        (fun k r => bstage k (σ r)) (fun r => b (σ r)) phi ≤
+      H19.Theorem19_6.active_row_growth_factor m ^ (n - 1) := by
+  exact
+    theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_rows_nonzero_nat
+      hm hn
+      (fun k r j => Astage k (σ r) j) (fun r j => A (σ r) j)
+      (fun k r => bstage k (σ r)) (fun r => b (σ r)) hphi
+      (theorem20_7_rows_nonzero_permuteRows A σ hrows)
+      (by
+        intro i k hk j
+        simpa [theorem20_7_initialRowMax_permuteRows] using hA i k hk j)
+      (by
+        intro i k hk
+        simpa [theorem20_7_initialWeightedRowMax_permuteRows] using hb i k hk)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
+    a common source row permutation transports the active-row accumulated-error
+    alpha/beta maximum bound to the permuted source problem. -/
+theorem theorem20_7_alphaBetaMax_le_of_permuteRows_active_row_geometric_entry_growth_with_relative_error_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (σ : Fin m ≃ Fin m) {phi : ℝ} (err : ℝ)
+    (hphi : 0 < phi) (herr : 0 ≤ err)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k (σ i) j| ≤
+        (H19.Theorem19_6.active_row_growth_factor m ^ k + err) *
+          theorem20_7_initialRowMax hn A (σ i))
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k (σ i)| ≤
+        (H19.Theorem19_6.active_row_growth_factor m ^ k + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi (σ i)) :
+    theorem20_7_alphaBetaMax hm hn
+        (fun k r j => Astage k (σ r) j) (fun r j => A (σ r) j)
+        (fun k r => bstage k (σ r)) (fun r => b (σ r)) phi ≤
+      H19.Theorem19_6.active_row_growth_factor m ^ (n - 1) + err := by
+  exact
+    theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_with_relative_error_rows_nonzero_nat
+      hm hn
+      (fun k r j => Astage k (σ r) j) (fun r j => A (σ r) j)
+      (fun k r => bstage k (σ r)) (fun r => b (σ r)) err hphi herr
+      (theorem20_7_rows_nonzero_permuteRows A σ hrows)
+      (by
+        intro i k hk j
+        simpa [theorem20_7_initialRowMax_permuteRows] using hA i k hk j)
+      (by
+        intro i k hk
+        simpa [theorem20_7_initialWeightedRowMax_permuteRows] using hb i k hk)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     one-based source column factor `j^2` in the perturbation bound for
     `Delta a_ij`.  Lean's `Fin` index `j` represents source column `j+1`. -/
