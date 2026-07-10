@@ -37438,6 +37438,46 @@ theorem theorem20_8_vecNorm2_higham_residual_le {m n : ℕ}
               (vecNorm2_rectMatMulVec_le_frobNormRect_mul A y)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source right-hand side bounded by the model action plus the source signed
+    residual. -/
+theorem theorem20_8_vecNorm2_b_le_frobNormRect_mul_x_add_sourceResidual
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (x : Fin n → ℝ) :
+    vecNorm2 b ≤
+      frobNormRect A * vecNorm2 x + vecNorm2 (lsResidualHigham A b x) := by
+  have hb_eq :
+      b = fun i : Fin m => rectMatMulVec A x i + lsResidualHigham A b x i := by
+    ext i
+    simp [lsResidualHigham]
+  calc
+    vecNorm2 b =
+        vecNorm2
+          (fun i : Fin m => rectMatMulVec A x i + lsResidualHigham A b x i) :=
+          congrArg vecNorm2 hb_eq
+    _ ≤ vecNorm2 (rectMatMulVec A x) + vecNorm2 (lsResidualHigham A b x) :=
+          vecNorm2_add_le (rectMatMulVec A x) (lsResidualHigham A b x)
+    _ ≤ frobNormRect A * vecNorm2 x + vecNorm2 (lsResidualHigham A b x) :=
+          add_le_add (vecNorm2_rectMatMulVec_le_frobNormRect_mul A x) le_rfl
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source right-hand-side scale from a source residual scale. -/
+theorem theorem20_8_vecNorm2_b_le_of_sourceResidualScale {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (x : Fin n → ℝ)
+    {residualScale : ℝ}
+    (hresidual :
+      vecNorm2 (lsResidualHigham A b x) ≤ residualScale * vecNorm2 x) :
+    vecNorm2 b ≤ (frobNormRect A + residualScale) * vecNorm2 x := by
+  have hbase :=
+    theorem20_8_vecNorm2_b_le_frobNormRect_mul_x_add_sourceResidual A b x
+  calc
+    vecNorm2 b ≤
+        frobNormRect A * vecNorm2 x +
+          vecNorm2 (lsResidualHigham A b x) := hbase
+    _ ≤ frobNormRect A * vecNorm2 x + residualScale * vecNorm2 x :=
+        add_le_add le_rfl hresidual
+    _ = (frobNormRect A + residualScale) * vecNorm2 x := by
+        ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     scale handoff for the Cox--Higham data-row right-hand side. -/
 theorem theorem20_8_vecNorm2_higham_data_forcing_le_of_relativeBudget_scales
     {m n p : ℕ}
@@ -69089,6 +69129,63 @@ theorem
     hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_scales
       hy hB hBpert hnull hxnorm hbudget heps_nonneg hb
       hx.vecNorm2_constraint_rhs_le_frobNormRect_mul hyScale hmuScale
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    canonical-response KKT relative-budget handoff with both the source
+    constraint right-hand-side scale and the source `b` scale discharged from
+    feasibility and a source residual scale. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_sourceResidual_scales
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps residualScale yScale muScale : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hresidual :
+      vecNorm2 (lsResidualHigham A b x) ≤ residualScale * vecNorm2 x)
+    (hyScale : vecNorm2 y ≤ yScale * vecNorm2 x)
+    (hmuScale : ∀ mu : Fin p → ℝ,
+      (fun j => y j - x j) =
+        LSEKKTInverseSolutionLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i,
+           fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i),
+           fun r => Deltad r - rectMatMulVec DeltaB y r) →
+      vecNorm2 mu ≤ muScale * vecNorm2 x) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      LSEKKTInverseSolutionDataCoeff hB hnull *
+          (eps * (frobNormRect A + residualScale) +
+            (eps * frobNormRect A) * yScale) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect B) * muScale +
+            (eps * frobNormRect A) *
+              ((1 + eps) * (frobNormRect A + residualScale) +
+                ((1 + eps) * frobNormRect A) * yScale)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull *
+          (eps * frobNormRect B + (eps * frobNormRect B) * yScale) := by
+  exact
+    hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_sourceConstraint_scales
+      hy hB hBpert hnull hxnorm hbudget heps_nonneg
+      (theorem20_8_vecNorm2_b_le_of_sourceResidualScale A b x hresidual)
+      hyScale hmuScale
 
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
