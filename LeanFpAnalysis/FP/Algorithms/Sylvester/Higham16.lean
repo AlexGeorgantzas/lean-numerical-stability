@@ -36,6 +36,16 @@ theorem sylvesterOpRect_square_eq_sylvesterOp (n : Nat)
     sylvesterOpRect n n A B X = sylvesterOp n A B X := by
   rfl
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.1):
+    source-numbered alias for square/rectangular product compatibility. -/
+alias H16_eq16_1_matMulRect_square_eq_matMul := matMulRect_square_eq_matMul
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.1):
+    source-numbered alias for square/rectangular Sylvester-operator
+    compatibility. -/
+alias H16_eq16_1_sylvesterOpRect_square_eq_sylvesterOp :=
+  sylvesterOpRect_square_eq_sylvesterOp
+
 /-- Higham, 2nd ed., Chapter 16, equation (16.1):
     the rectangular Sylvester equation predicate `AX - XB = C`. -/
 def IsSylvesterSolutionRect (m n : Nat)
@@ -274,6 +284,17 @@ theorem sylvester_perturbation_first_order_vec (n : Nat)
   ext p
   simpa [sylvesterOpRect] using
     sylvester_perturbation_first_order n A B X dA dB dC dX hLin p.2 p.1
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.22):
+    source-numbered alias for the vectorized full perturbation identity. -/
+alias H16_eq16_22_sylvester_perturbation_equation_vec :=
+  sylvester_perturbation_equation_vec
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.22):
+    source-numbered alias for the vectorized first-order perturbation
+    identity. -/
+alias H16_eq16_22_sylvester_perturbation_first_order_vec :=
+  sylvester_perturbation_first_order_vec
 
 -- ============================================================
 -- Practical max-entry error bounds from Chapter 16.4
