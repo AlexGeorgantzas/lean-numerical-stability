@@ -25158,6 +25158,21 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
       (higham11_7_ConcretePathSecondPivotFullBaseRows_of_global_base_solve
         (k + 1) step A b x_hat hsolve)
 
+/-- Symmetric-tridiagonal source form of the global base-solve/pointwise-prefix
+coefficient endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_isSymTridiagonal_and_each_earlier_zero :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixEach hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_each_earlier_zero
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hearlierLocal hearlierPrefixEach hsolve
+
 /-- **Theorem 11.7 full-row second-pivot endpoint, pointwise-prefix form**.
 This coefficient-sum wrapper lets callers supply pointwise zero facts for each
 strictly earlier lifted perturbation before the current branch prefix; the
@@ -26965,6 +26980,21 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
           (k + 1) step Δloc (hearlierPrefixEach Δloc hwit))
       (higham11_7_ConcretePathSecondPivotFullBaseRows_of_global_base_solve
         (k + 1) step A b x_hat hsolve)
+
+/-- Symmetric-tridiagonal source form of the global base-solve/pointwise-prefix
+uniform coefficient endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_isSymTridiagonal_and_each_earlier_zero :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixEach hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_each_earlier_zero
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base hA.2
+      hearlierLocal hearlierPrefixEach hsolve
 
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint from full
 ambient second-pivot base rows, uniform pointwise-prefix form**, zero common
@@ -28780,6 +28810,22 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
           (k + 1) step Δloc (hearlierPrefixEach Δloc hwit))
       (higham11_7_ConcretePathSecondPivotFullBaseRows_of_global_base_solve
         (k + 1) step A b x_hat hsolve)
+
+/-- Symmetric-tridiagonal source form of the global base-solve/pointwise-prefix
+scalar-budget endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_isSymTridiagonal_and_each_earlier_zero :=
+  fun k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixEach hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_each_earlier_zero
+      k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA.2 hearlierLocal hearlierPrefixEach hsolve
 
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint from full
 ambient second-pivot base rows, scalar-budget pointwise-prefix form**, zero
