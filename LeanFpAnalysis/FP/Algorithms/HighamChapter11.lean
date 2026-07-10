@@ -433,6 +433,73 @@ theorem higham11_4_twoByTwo_multiplier_row_sum_bound_of_block
           field_simp [ne_of_gt h1α]
           ring
 
+/-- The local 2×2 multiplier row-sum constant `2/(1−α)` is at most `6` when
+`α≤2/3`. -/
+theorem higham11_4_twoByTwo_multiplier_row_sum_const_le_six_of_alpha_le_two_thirds
+    (α : ℝ) (hα : α ≤ 2 / 3) :
+    2 / (1 - α) ≤ 6 := by
+  have hden : (0 : ℝ) < 1 - α := by nlinarith
+  rw [div_le_iff₀ hden]
+  nlinarith
+
+/-- For the Bunch-Parlett/Bunch-Kaufman value `α=(1+√17)/8`, the local 2×2
+multiplier row-sum constant satisfies `2/(1−α)≤6`. -/
+theorem higham11_4_twoByTwo_multiplier_row_sum_const_le_six :
+    2 / (1 - higham11_1_bunchParlettAlpha) ≤ 6 := by
+  have hα : higham11_1_bunchParlettAlpha ≤ 2 / 3 := by
+    unfold higham11_1_bunchParlettAlpha bunchParlettAlpha
+    have hsqrt : Real.sqrt 17 ≤ 13 / 3 := by
+      rw [show (13 : ℝ) / 3 = Real.sqrt ((13 / 3) ^ 2) from
+        (Real.sqrt_sq (by norm_num : (0 : ℝ) ≤ 13 / 3)).symm]
+      exact Real.sqrt_le_sqrt (by norm_num : (17 : ℝ) ≤ (13 / 3) ^ 2)
+    linarith
+  exact higham11_4_twoByTwo_multiplier_row_sum_const_le_six_of_alpha_le_two_thirds
+    higham11_1_bunchParlettAlpha hα
+
+/-- **Theorem 11.4 local 2×2 multiplier row-sum cap**, source-alpha form:
+with `α=(1+√17)/8`, the row sum of `C E⁻¹` is bounded by the source-shaped
+constant `6`. -/
+theorem higham11_4_twoByTwo_multiplier_row_sum_le_six_of_inverse_entries
+    (c1 c2 f11 f12 f21 f22 μ0 K : ℝ)
+    (hμ : 0 < μ0)
+    (hK : (1 - higham11_1_bunchParlettAlpha ^ 2) * μ0 * K = 1)
+    (hc1 : |c1| ≤ μ0) (hc2 : |c2| ≤ μ0)
+    (hf11 : |f11| ≤ higham11_1_bunchParlettAlpha * K) (hf12 : |f12| ≤ K)
+    (hf21 : |f21| ≤ K) (hf22 : |f22| ≤ higham11_1_bunchParlettAlpha * K) :
+    |c1 * f11 + c2 * f21| + |c1 * f12 + c2 * f22| ≤ 6 := by
+  have hα0 : 0 ≤ higham11_1_bunchParlettAlpha := by
+    exact le_of_lt (by simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos)
+  have hα1 : higham11_1_bunchParlettAlpha < 1 := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_lt_one
+  exact
+    (higham11_4_twoByTwo_multiplier_row_sum_bound_of_inverse_entries
+      c1 c2 f11 f12 f21 f22 μ0 higham11_1_bunchParlettAlpha K
+      hα0 hα1 hμ hK hc1 hc2 hf11 hf12 hf21 hf22).trans
+      higham11_4_twoByTwo_multiplier_row_sum_const_le_six
+
+/-- **Theorem 11.4 local 2×2 multiplier row-sum cap**, source-alpha pivot-block
+form: the actual symmetric pivot block inverse gives row sum at most `6`. -/
+theorem higham11_4_twoByTwo_multiplier_row_sum_le_six_of_block
+    (c1 c2 e11 e22 e21 μ0 μ1 K : ℝ)
+    (hμ1 : 0 ≤ μ1) (hμ : 0 < μ0)
+    (he11 : |e11| ≤ μ1) (he22 : |e22| ≤ μ1)
+    (he21 : e21 ^ 2 = μ0 ^ 2)
+    (hμ1α : μ1 ≤ higham11_1_bunchParlettAlpha * μ0)
+    (hK : (1 - higham11_1_bunchParlettAlpha ^ 2) * μ0 * K = 1)
+    (hc1 : |c1| ≤ μ0) (hc2 : |c2| ≤ μ0) :
+    |c1 * (e22 / (e11 * e22 - e21 ^ 2)) +
+        c2 * (-(e21 / (e11 * e22 - e21 ^ 2)))| +
+      |c1 * (-(e21 / (e11 * e22 - e21 ^ 2))) +
+        c2 * (e11 / (e11 * e22 - e21 ^ 2))| ≤ 6 := by
+  have hα0 : 0 ≤ higham11_1_bunchParlettAlpha := by
+    exact le_of_lt (by simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos)
+  have hα1 : higham11_1_bunchParlettAlpha < 1 := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_lt_one
+  exact
+    (higham11_4_twoByTwo_multiplier_row_sum_bound_of_block c1 c2 e11 e22 e21
+      μ0 μ1 higham11_1_bunchParlettAlpha K hμ1 hα0 hα1 hμ he11 he22 he21
+      hμ1α hK hc1 hc2).trans higham11_4_twoByTwo_multiplier_row_sum_const_le_six
+
 /-- **§11.1.1 self-contained 2×2 growth**: substituting the actual inverse block
 `E⁻¹` into the eq-(11.4) Schur entry, `|ã| ≤ (1 + 2/(1−α))μ₀` holds using only the
 pivot-block data (no assumed inverse-entry bounds). -/
