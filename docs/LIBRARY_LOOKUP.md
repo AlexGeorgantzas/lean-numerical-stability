@@ -2143,6 +2143,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_t3_head_1` … `higham9_16_t3_head_30` (per-`n` head comparisons `t_n <= (3/2)e^((3/4)ln²n)`)
 - `higham9_16_fosterT_le_exp` (**Foster Theorem 3, exponential form, complete**: all `n >= 1`)
 - `higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterBound` (**Higham eq. (9.16), CLOSED**: `ρ_rook <= (3/2)·n^((3/4)·ln n)` = `higham9_16_rookPivotFosterBound`)
+- `higham9_11_BandActiveBound` (band-tracked GEPP active-stage invariant: lower band `p`, window support `<= 2p`, per-column fill bounds `M·2^(2p-1-j)`, single-nonzero extreme column, untouched originals below the window)
+- `higham9_11_bandActive_schur_preserved` (**one GEPP step preserves the band invariant** — general-`p` analogue of the tridiagonal bookkeeping)
+- `higham9_11_banded_GEPPUTrace_growthFactorEntry_le_two_pow` (**Theorem 9.11, leading term, unconditional**: banded GEPP growth `rho <= 2^(2p-1)`, independent of `n`; recovers the sharp `2` at `p = 1`)
+- `higham9_11_bohteBound_le_two_pow` (`bohteBound p <= 2^(2p-1)`: records that only the correction `-(p-1)·2^(p-2)` remains citation-blocked)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
