@@ -1583,6 +1583,36 @@ theorem higham11_3_blockLDLTBackwardErrorBound_le_epsilon_mul_higham_product_bou
       ((higham11_4_bunchKaufmanProductEntry_le_productMax n hn L_hat D_hat i j).trans
         hproductMax)
 
+/-- A source-style Bunch-Kaufman product-max bound plus the printed first-order
+scale comparison `ε ≤ p u` packages the structured Theorem 11.3 envelope into
+the scalar `p u * 36 n ρₙ‖A‖` budget. -/
+theorem higham11_3_blockLDLTBackwardErrorBound_le_pu_higham_product_bound
+    (n : ℕ) (hn : 0 < n) (L_hat D_hat : Fin n → Fin n → ℝ)
+    (ε p u ρ_n Amax : ℝ) (i j : Fin n)
+    (hscale : ε ≤ p * u) (hpu : 0 ≤ p * u)
+    (hBK : higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax) :
+    higham11_3_blockLDLTBackwardErrorBound n L_hat D_hat ε i j ≤
+      (p * u) * (36 * (n : ℝ) * ρ_n * Amax) := by
+  rw [higham11_3_blockLDLTBackwardErrorBound_eq_epsilon_mul_productEntry]
+  have hproductMax :
+      higham11_4_bunchKaufmanProductMax n hn L_hat D_hat ≤
+        36 * (n : ℝ) * ρ_n * Amax := hBK
+  have hentry_nonneg :
+      0 ≤ higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j :=
+    higham11_4_bunchKaufmanProductEntry_nonneg n L_hat D_hat i j
+  have hentry_le :
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) * ρ_n * Amax :=
+    (higham11_4_bunchKaufmanProductEntry_le_productMax n hn L_hat D_hat i j).trans
+      hproductMax
+  calc
+    ε * higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j
+        ≤ (p * u) * higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j :=
+          mul_le_mul_of_nonneg_right hscale hentry_nonneg
+    _ ≤ (p * u) * (36 * (n : ℝ) * ρ_n * Amax) :=
+          mul_le_mul_of_nonneg_left hentry_le hpu
+
 /-- A `BlockLDLTBackwardError` certificate plus a source-style product-max
 bound gives the Chapter 11 perturbation witnesses with the corresponding scalar
 product budget.  This is only the factorization-envelope part of Theorem 11.3;
@@ -1649,6 +1679,54 @@ theorem higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError
   · exact
       higham11_3_infNorm_le_card_mul_of_uniform_componentwise_bound n ΔA2
         (ε * (36 * (n : ℝ) * ρ_n * Amax)) hβ hΔA2
+
+/-- Source-scale norm-bound version of
+`higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_higham_product_bound`:
+the structured coefficient is first dominated by the printed `p u` scale before
+the Higham product-max budget is aggregated. -/
+theorem higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_higham_product_bound_with_norm_bounds
+    (n : ℕ) (hn : 0 < n) (A L_hat D_hat : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n) (ε p u ρ_n Amax : ℝ) (hε : 0 ≤ ε)
+    (hscale : ε ≤ p * u) (hpu : 0 ≤ p * u)
+    (hbe : BlockLDLTBackwardError n A L_hat D_hat σ ε)
+    (hBK : higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ (p * u) * (36 * (n : ℝ) * ρ_n * Amax)) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ (p * u) * (36 * (n : ℝ) * ρ_n * Amax)) ∧
+      infNorm ΔA1 ≤ (n : ℝ) * ((p * u) * (36 * (n : ℝ) * ρ_n * Amax)) ∧
+      infNorm ΔA2 ≤ (n : ℝ) * ((p * u) * (36 * (n : ℝ) * ρ_n * Amax)) ∧
+      (∀ i j : Fin n,
+        ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+          L_hat i k₁ * D_hat k₁ k₂ * L_hat j k₂ =
+        A (σ i) (σ j) + ΔA1 i j) := by
+  obtain ⟨ΔA1, ΔA2, hΔA1, hΔA2, hLD⟩ :=
+    higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError
+      n A L_hat D_hat σ ε hε hbe
+  have hproductMax :
+      higham11_4_bunchKaufmanProductMax n hn L_hat D_hat ≤
+        36 * (n : ℝ) * ρ_n * Amax := hBK
+  have hscalar_nonneg : 0 ≤ 36 * (n : ℝ) * ρ_n * Amax :=
+    (higham11_4_bunchKaufmanProductMax_nonneg n hn L_hat D_hat).trans hproductMax
+  have hβ : 0 ≤ (p * u) * (36 * (n : ℝ) * ρ_n * Amax) :=
+    mul_nonneg hpu hscalar_nonneg
+  have hΔA1_pu : ∀ i j : Fin n,
+      |ΔA1 i j| ≤ (p * u) * (36 * (n : ℝ) * ρ_n * Amax) := fun i j =>
+    (hΔA1 i j).trans
+      (higham11_3_blockLDLTBackwardErrorBound_le_pu_higham_product_bound
+        n hn L_hat D_hat ε p u ρ_n Amax i j hscale hpu hBK)
+  have hΔA2_pu : ∀ i j : Fin n,
+      |ΔA2 i j| ≤ (p * u) * (36 * (n : ℝ) * ρ_n * Amax) := fun i j =>
+    (hΔA2 i j).trans
+      (higham11_3_blockLDLTBackwardErrorBound_le_pu_higham_product_bound
+        n hn L_hat D_hat ε p u ρ_n Amax i j hscale hpu hBK)
+  refine ⟨ΔA1, ΔA2, hΔA1_pu, hΔA2_pu, ?_, ?_, hLD⟩
+  · exact
+      higham11_3_infNorm_le_card_mul_of_uniform_componentwise_bound n ΔA1
+        ((p * u) * (36 * (n : ℝ) * ρ_n * Amax)) hβ hΔA1_pu
+  · exact
+      higham11_3_infNorm_le_card_mul_of_uniform_componentwise_bound n ΔA2
+        ((p * u) * (36 * (n : ℝ) * ρ_n * Amax)) hβ hΔA2_pu
 
 /-- Pointwise matrix-product estimates package directly into the source-style
 max-entry norm estimate for `|L̂||D̂||L̂ᵀ|`. -/
