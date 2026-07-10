@@ -2147,6 +2147,16 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bandActive_schur_preserved` (**one GEPP step preserves the band invariant** — general-`p` analogue of the tridiagonal bookkeeping)
 - `higham9_11_banded_GEPPUTrace_growthFactorEntry_le_two_pow` (**Theorem 9.11, leading term, unconditional**: banded GEPP growth `rho <= 2^(2p-1)`, independent of `n`; recovers the sharp `2` at `p = 1`)
 - `higham9_11_bohteBound_le_two_pow` (`bohteBound p <= 2^(2p-1)`: records that only the correction `-(p-1)·2^(p-2)` remains citation-blocked)
+- `higham9_11_bohteExample` / `higham9_11_bohteExampleU` (Higham's explicit `n = 9`, `p = 4` near-attainability example at `eps = 1/1024`, with its exact GEPP upper factor through 8 machine-verified stage tables)
+- `higham9_11_bohteExample_trace_explicit` (the example's full partial-pivoting trace: rows 1/5 interchange once, no other interchange)
+- `growthFactorEntry_ge_of_entry_ge` (generic growth-factor lower bound from one witnessed `U` entry)
+- `higham9_11_bohte_example_growthFactorEntry_ge` / `..._ge_bohteBound_sub_one` (**Theorem 9.11 "almost attainable"**: witnessed growth `>= 115 = bohteBound 4 - 1`; trailing `U` entry exactly `118792/1025 ~ 116`)
+- `higham9_11_bohteBaux` (**Bohte [146, 1975] eq. (9)**: the `(p+1) x 2p` comparison matrix `B`, `b(i,k) = b(i+1,k+1) + b(1,k+1)` with unit last row/column, indexed by distance from the last column)
+- `higham9_11_bohteBaux_one_le` / `_antitone_row` / `_le_row_one` / `_le_top` / `_pow` / `_eq_one_add_sum` / `_row_one_regime2` (Bohte Lemma 7: entries `>= 1`, first-row domination, corner maximality, regime-1 doubling `2^d`, diagonal unfolding, regime-2 closed form `2^(p+u) - u·2^(u-1)`)
+- `higham9_11_bohteBaux_top_eq_bohteBound` (`b(1,1) = 2^(2p-1) - (p-1)·2^(p-2)` — the printed constant)
+- `higham9_11_BandActiveBoundSharp` / `higham9_11_bandActiveSharp_schur_preserved` (**Bohte's sharp induction**: per-entry `B`-domination of every GEPP active window; the displaced-row swap case closes on the recurrence with equality)
+- `higham9_11_banded_GEPPUTrace_growthFactorEntry_le_bohteBound` (**Theorem 9.11, CLOSED**: banded GEPP growth `<= 2^(2p-1) - (p-1)·2^(p-2)`, independent of `n`)
+- `higham9_11_pentadiagonal_GEPPUTrace_growthFactorEntry_le_seven` (`p = 2` corollary: growth `<= 7`)
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
