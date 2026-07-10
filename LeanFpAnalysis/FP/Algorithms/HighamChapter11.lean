@@ -335,6 +335,74 @@ abbrev higham11_2_BunchKaufmanPartialPivotCase
     (α a11 arr ω1 ωr : ℝ) (branch : BunchKaufmanCase) : Prop :=
   BunchKaufmanPartialPivotCase α a11 arr ω1 ωr branch
 
+/-- **Algorithm 11.2**, no-action branch test extraction. -/
+theorem higham11_2_bunch_kaufman_noAction_eq_zero
+    (α a11 arr ω1 ωr : ℝ)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.noAction) :
+    ω1 = 0 :=
+  hcase
+
+/-- **Algorithm 11.2**, case-(1) branch test extraction. -/
+theorem higham11_2_bunch_kaufman_case1_tests
+    (α a11 arr ω1 ωr : ℝ)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case1) :
+    ω1 ≠ 0 ∧ |a11| ≥ α * ω1 :=
+  hcase
+
+/-- **Algorithm 11.2**, case-(2) branch test extraction. -/
+theorem higham11_2_bunch_kaufman_case2_tests
+    (α a11 arr ω1 ωr : ℝ)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case2) :
+    ω1 ≠ 0 ∧ |a11| < α * ω1 ∧ |a11| * ωr ≥ α * ω1 ^ 2 :=
+  hcase
+
+/-- **Algorithm 11.2**, case-(3) branch test extraction. -/
+theorem higham11_2_bunch_kaufman_case3_tests
+    (α a11 arr ω1 ωr : ℝ)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case3) :
+    ω1 ≠ 0 ∧ |a11| < α * ω1 ∧ |a11| * ωr < α * ω1 ^ 2 ∧
+      |arr| ≥ α * ωr :=
+  hcase
+
+/-- **Algorithm 11.2**, case-(4) branch test extraction. -/
+theorem higham11_2_bunch_kaufman_case4_tests
+    (α a11 arr ω1 ωr : ℝ)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case4) :
+    ω1 ≠ 0 ∧ |a11| < α * ω1 ∧ |a11| * ωr < α * ω1 ^ 2 ∧
+      |arr| < α * ωr :=
+  hcase
+
+/-- **Algorithm 11.2**, case-(1) multiplier cap.  The accepted scalar pivot
+`a11` and a column bound `ω1` imply `|c/a11|≤1/α` for any off-pivot entry
+bounded by `ω1`. -/
+theorem higham11_2_bunch_kaufman_case1_multiplier_bound
+    (α a11 arr ω1 ωr c : ℝ) (hα : 0 < α) (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case1)
+    (hc : |c| ≤ ω1) :
+    |c / a11| ≤ 1 / α := by
+  rcases higham11_2_bunch_kaufman_case1_tests α a11 arr ω1 ωr hcase with
+    ⟨_, hpivot⟩
+  exact higham11_1_oneByOne_multiplier_bound c a11 ω1 α hα hω1 hc hpivot
+
+/-- **Algorithm 11.2**, case-(3) multiplier cap after the symmetric swap.  The
+accepted scalar pivot `arr` and row/column bound `ωr` imply `|c/arr|≤1/α` for
+entries bounded by `ωr`. -/
+theorem higham11_2_bunch_kaufman_case3_multiplier_bound
+    (α a11 arr ω1 ωr c : ℝ) (hα : 0 < α) (hωr : 0 < ωr)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case3)
+    (hc : |c| ≤ ωr) :
+    |c / arr| ≤ 1 / α := by
+  rcases higham11_2_bunch_kaufman_case3_tests α a11 arr ω1 ωr hcase with
+    ⟨_, _, _, hpivot⟩
+  exact higham11_1_oneByOne_multiplier_bound c arr ωr α hα hωr hc hpivot
+
 /-- **Equation (11.5)** first-order 2 by 2 pivot solve certificate.  The
 source theorem also includes `O(u^2)` terms, recorded in the ledger as a
 deferred asymptotic refinement. -/
