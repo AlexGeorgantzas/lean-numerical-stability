@@ -24940,6 +24940,34 @@ theorem higham11_8_infNorm_T_le_T_hat_of_zero_relative_error (n : ℕ)
     higham11_8_infNorm_T_le_one_plus_gamma_T_hat_of_relative_error
       n T T_hat 0 (by norm_num) hThat
 
+/-- Pointwise equality `T_hat = T` supplies the zero relative middle-factor
+budget used by exact-radius Aasen routes. -/
+theorem higham11_8_zero_relative_T_hat_error_of_eq (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ)
+    (hEq : ∀ i j : Fin n, T_hat i j = T i j) :
+    ∀ i j : Fin n, |T_hat i j - T i j| ≤ 0 * |T_hat i j| := by
+  intro i j
+  rw [hEq i j]
+  simp
+
+/-- Pointwise equality of the exact and computed Aasen middle factors gives
+the coefficient-one componentwise exact-factor cap. -/
+theorem higham11_8_abs_T_le_T_hat_of_eq (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ)
+    (hEq : ∀ i j : Fin n, T_hat i j = T i j) :
+    ∀ i j : Fin n, |T i j| ≤ |T_hat i j| :=
+  higham11_8_abs_T_le_T_hat_of_zero_relative_error n T T_hat
+    (higham11_8_zero_relative_T_hat_error_of_eq n T T_hat hEq)
+
+/-- Pointwise equality of the exact and computed Aasen middle factors gives
+the coefficient-one infinity-norm exact-factor cap. -/
+theorem higham11_8_infNorm_T_le_T_hat_of_eq (n : ℕ)
+    (T T_hat : Fin n → Fin n → ℝ)
+    (hEq : ∀ i j : Fin n, T_hat i j = T i j) :
+    infNorm T ≤ infNorm T_hat :=
+  higham11_8_infNorm_T_le_T_hat_of_zero_relative_error n T T_hat
+    (higham11_8_zero_relative_T_hat_error_of_eq n T T_hat hEq)
+
 /-- Componentwise absolute domination transfers directly to the matrix
 infinity norm. -/
 theorem higham11_8_infNorm_le_of_componentwise_abs_bound (n : ℕ)
