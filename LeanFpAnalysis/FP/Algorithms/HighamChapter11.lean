@@ -552,6 +552,25 @@ theorem higham11_2_bunch_kaufman_case2_tests
     ω1 ≠ 0 ∧ |a11| < α * ω1 ∧ |a11| * ωr ≥ α * ω1 ^ 2 :=
   hcase
 
+/-- **Algorithm 11.2**, case-(2) nonsingularity from the printed product
+test.  Unlike the later multiplier cap, this does not require a row-maximum
+dominance side condition: `αω1² ≤ |a11|ωr` and `0<α,ω1` already force
+`a11 ≠ 0`. -/
+theorem higham11_2_bunch_kaufman_case2_pivot_ne_zero
+    (α a11 arr ω1 ωr : ℝ) (hα : 0 < α) (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case2) :
+    a11 ≠ 0 := by
+  rcases higham11_2_bunch_kaufman_case2_tests α a11 arr ω1 ωr hcase with
+    ⟨_, _, hprod_ge⟩
+  have hωsq_pos : 0 < ω1 ^ 2 := sq_pos_of_ne_zero (ne_of_gt hω1)
+  have hprod_pos : 0 < |a11| * ωr := lt_of_lt_of_le (mul_pos hα hωsq_pos) hprod_ge
+  have ha_abs_ne : |a11| ≠ 0 := by
+    intro hzero
+    rw [hzero, zero_mul] at hprod_pos
+    exact (lt_irrefl (0 : ℝ)) hprod_pos
+  exact abs_ne_zero.mp ha_abs_ne
+
 /-- **Algorithm 11.2**, case-(3) branch test extraction. -/
 theorem higham11_2_bunch_kaufman_case3_tests
     (α a11 arr ω1 ωr : ℝ)
@@ -645,6 +664,65 @@ theorem higham11_2_bunch_kaufman_case2_multiplier_bound_of_row_max_le
     higham11_2_bunch_kaufman_case2_pivot_bound_of_row_max_le
       α a11 arr ω1 ωr hω1 hωr_le hcase
   exact higham11_1_oneByOne_multiplier_bound c a11 ω1 α hα hω1 hc hpivot
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(2) correction bound**: the printed
+case-(2) product test controls the 1×1 Schur correction by `ωr/α`, matching the
+source growth argument without assuming `ωr≤ω1`. -/
+theorem higham11_4_bunch_kaufman_case2_schur_correction_bound
+    (α a11 arr ω1 ωr ci cj : ℝ) (hα : 0 < α) (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case2)
+    (hci : |ci| ≤ ω1) (hcj : |cj| ≤ ω1) :
+    |ci * cj / a11| ≤ ωr / α := by
+  rcases higham11_2_bunch_kaufman_case2_tests α a11 arr ω1 ωr hcase with
+    ⟨_, _, hprod_ge⟩
+  have ha_ne : a11 ≠ 0 :=
+    higham11_2_bunch_kaufman_case2_pivot_ne_zero α a11 arr ω1 ωr hα hω1 hcase
+  have ha_abs_pos : 0 < |a11| := abs_pos.mpr ha_ne
+  have hnum : |ci| * |cj| ≤ ω1 ^ 2 := by
+    calc
+      |ci| * |cj| ≤ ω1 * ω1 :=
+        mul_le_mul hci hcj (abs_nonneg _) (le_of_lt hω1)
+      _ = ω1 ^ 2 := by ring
+  have hsq_div : ω1 ^ 2 / |a11| ≤ ωr / α := by
+    rw [div_le_iff₀ ha_abs_pos]
+    have hscaled : α * (ω1 ^ 2) ≤ α * (ωr / α * |a11|) := by
+      calc
+        α * (ω1 ^ 2) ≤ |a11| * ωr := by nlinarith [hprod_ge]
+        _ = α * (ωr / α * |a11|) := by
+          field_simp [ne_of_gt hα]
+    nlinarith [hscaled, hα]
+  calc
+    |ci * cj / a11| = |ci| * |cj| / |a11| := by
+      rw [abs_div, abs_mul]
+    _ ≤ ω1 ^ 2 / |a11| :=
+      div_le_div_of_nonneg_right hnum (le_of_lt ha_abs_pos)
+    _ ≤ ωr / α := hsq_div
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(2) Schur growth bridge**: case-(2)
+uses the product test to bound the correction by `ωr/α`; a concrete active-entry
+majorant `Amax` then gives the same `(1+1/α)Amax` one-step growth form as the
+source proof. -/
+theorem higham11_4_bunch_kaufman_case2_schur_growth
+    (α b ci cj a11 arr ω1 ωr Amax : ℝ) (hα : 0 < α) (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      α a11 arr ω1 ωr BunchKaufmanCase.case2)
+    (hb : |b| ≤ Amax) (hci : |ci| ≤ ω1) (hcj : |cj| ≤ ω1)
+    (hωr_Amax : ωr ≤ Amax) :
+    |b - ci * cj / a11| ≤ (1 + 1 / α) * Amax := by
+  have hcorr :
+      |ci * cj / a11| ≤ ωr / α :=
+    higham11_4_bunch_kaufman_case2_schur_correction_bound
+      α a11 arr ω1 ωr ci cj hα hω1 hcase hci hcj
+  have hcorr_Amax : |ci * cj / a11| ≤ Amax / α :=
+    hcorr.trans (div_le_div_of_nonneg_right hωr_Amax (le_of_lt hα))
+  have htri : |b - ci * cj / a11| ≤ |b| + |ci * cj / a11| := by
+    have h := abs_add_le b (-(ci * cj / a11))
+    simpa [sub_eq_add_neg, abs_neg] using h
+  calc
+    |b - ci * cj / a11| ≤ |b| + |ci * cj / a11| := htri
+    _ ≤ Amax + Amax / α := add_le_add hb hcorr_Amax
+    _ = (1 + 1 / α) * Amax := by ring
 
 /-- **Algorithm 11.2**, first-pivot scalar branch nonsingularity: cases (1)
 and (2) both accept `a11`; case-(2) needs the explicit row-maximum side
