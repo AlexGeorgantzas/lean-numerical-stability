@@ -24564,6 +24564,64 @@ theorem higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_combine
     higham11_7_ConcretePathSecondPivotCombinedLocalBlockSolveRows_of_combined_rows_of_zeroBeforePrefix
       k step A b x_hat ΔA hzero hcombined
 
+/-- Symmetric-tridiagonal residual-witness version of the local-row to
+local-block combined second-pivot handoff. -/
+theorem higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isSymTridiagonal_and_liftedSupportAfterBranchEnd
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hA : IsSymTridiagonal (higham11_7_tridiagonalPathPivotSpan k step + 1) A)
+    (hwit : higham11_7_TridiagonalBranchPathResidualWitnesses k fp
+      (fun u => higham11_7_tridiagonalPathTailDim k step u) step
+      (fun u => higham11_7_tridiagonalPathBranchMatrix k step A u)
+      c_bound c_rec u_loc tail_fl tail_exact ΔA)
+    (hsupp :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsLiftedSupportAfterBranchEnd
+        k step ΔA)
+    (hrow_second :
+      higham11_7_ConcretePathSecondPivotLocalSolveRows k step A b x_hat ΔA) :
+    higham11_7_ConcretePathSecondPivotCombinedLocalBlockSolveRows
+        k step A b x_hat ΔA :=
+  higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isTridiagonal_and_liftedSupportAfterBranchEnd
+    k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact ΔA hA.2 hwit
+    hsupp hrow_second
+
+/-- Symmetric-tridiagonal supported-witness version of the local-row to
+local-block combined second-pivot handoff. -/
+theorem higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isSymTridiagonal_and_liftedSupportAfterBranchEnd
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u_loc tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hA : IsSymTridiagonal (higham11_7_tridiagonalPathPivotSpan k step + 1) A)
+    (hwit : higham11_7_TridiagonalBranchPathSupportedWitnesses k fp
+      (fun u => higham11_7_tridiagonalPathTailDim k step u) step
+      (fun u => higham11_7_tridiagonalPathBranchMatrix k step A u)
+      c_bound c_rec u_loc tail_fl tail_exact ΔA)
+    (hsupp :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsLiftedSupportAfterBranchEnd
+        k step ΔA)
+    (hrow_second :
+      higham11_7_ConcretePathSecondPivotLocalSolveRows k step A b x_hat ΔA) :
+    higham11_7_ConcretePathSecondPivotCombinedLocalBlockSolveRows
+        k step A b x_hat ΔA :=
+  higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isTridiagonal_and_liftedSupportAfterBranchEnd
+    k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact ΔA hA.2 hwit
+    hsupp hrow_second
+
 /-- Combined second-pivot row equations imply the full local-row handoff for a
 residual-witness path. -/
 theorem higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_local_rows_of_combined_rows
