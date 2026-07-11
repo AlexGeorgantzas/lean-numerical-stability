@@ -455,6 +455,55 @@ theorem sylvesterResidualRect_quasiTriangular_blockBackSub_componentwise_le
 -- Source-numbered aliases
 -- ============================================================
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.7),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    induced product-index adjacent-pair marking used by the rounded
+    quasi-triangular block substitution. -/
+alias H16_eq16_6_quasi_sylvesterQuasiPairing_isQuasiBlockPairing :=
+  sylvesterQuasiPairing_isQuasiBlockPairing
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    below-subdiagonal zero pattern of the reordered vec/Kronecker coefficient
+    used by the rounded block substitution. -/
+alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_below_subdiag_zero :=
+  sylvesterQuasiSchurBackSubCoeff_below_subdiag_zero
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    off-block first-subdiagonal zero pattern of the reordered vec/Kronecker
+    coefficient used by the rounded block substitution. -/
+alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_subdiag_zero :=
+  sylvesterQuasiSchurBackSubCoeff_subdiag_zero
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6),
+    quasi-triangular (real Schur) variant: source-numbered alias for transport
+    of the scalar and first-block-pivot separation certificate to the reordered
+    coefficient. -/
+alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_pivot_ne_zero :=
+  sylvesterQuasiSchurBackSubCoeff_pivot_ne_zero
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6),
+    quasi-triangular (real Schur) variant: source-numbered alias for transport
+    of the computed second-pivot certificate for each marked shifted `2 x 2`
+    block. -/
+alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_secondPivot_ne_zero :=
+  sylvesterQuasiSchurBackSubCoeff_secondPivot_ne_zero
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6), with Chapter 9.3 growth
+    control: source-numbered alias for transport of the marked-block growth
+    certificate that collapses the explicit GE fill-in into the componentwise
+    `(1 + rho)` budget. -/
+alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_growth :=
+  sylvesterQuasiSchurBackSubCoeff_growth
+
+/-- Higham, 2nd ed., Chapter 16.2, p. 308, equation (16.6),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    vectorized/matrix bookkeeping of the computed rounded quasi-triangular
+    Schur solve. -/
+alias H16_eq16_6_quasi_vec_flSylvesterQuasiSchurBlockBackSubSolve :=
+  vec_flSylvesterQuasiSchurBlockBackSubSolve
+
 /-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equation (16.7),
     quasi-triangular (real Schur) variant: source-numbered alias for the
     unconditional backward-error model with the explicit Theorem 9.3
