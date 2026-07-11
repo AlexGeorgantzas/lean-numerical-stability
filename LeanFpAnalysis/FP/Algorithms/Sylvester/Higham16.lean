@@ -7803,12 +7803,25 @@ noncomputable def generalizedSylvesterAXB_CXD_residual (m n : Nat)
       matMulRect m n n (matMulRect m m n C X) D i j - E i j
 
 /-- Higham, 2nd ed., Chapter 16.5, equation (16.30):
+    source-numbered abbreviation for the generalized Sylvester residual
+    `A X B + C X D - E`. The local API groups the left matrices as `(A,C)`
+    and the right matrices as `(B,D)`. -/
+noncomputable abbrev H16_eq16_30_generalizedSylvesterAXB_CXD_residual :=
+  generalizedSylvesterAXB_CXD_residual
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.30):
     source equation predicate for `A X B + C X D = E`. -/
 def IsGeneralizedSylvesterAXB_CXD_Solution (m n : Nat)
     (A C : RMatFn m m) (B D : RMatFn n n) (E X : RMatFn m n) : Prop :=
   forall i j,
     matMulRect m n n (matMulRect m m n A X) B i j +
       matMulRect m n n (matMulRect m m n C X) D i j = E i j
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.30):
+    source-numbered abbreviation for the generalized Sylvester equation
+    predicate `A X B + C X D = E`. -/
+abbrev H16_eq16_30_IsGeneralizedSylvesterAXB_CXD_Solution :=
+  IsGeneralizedSylvesterAXB_CXD_Solution
 
 /-- The residual for equation (16.30) is zero exactly when the generalized
     Sylvester equation holds. -/
@@ -7845,6 +7858,12 @@ def IsGeneralizedSylvesterPairSolution (m n : Nat)
     (forall i j, matMulRect m m n D X i j - matMulRect m n n Y E i j = F0 i j)
 
 /-- Higham, 2nd ed., Chapter 16.5, equation (16.31):
+    source-numbered abbreviation for the coupled generalized Sylvester
+    equation predicate `AX - YB = C` and `DX - YE = F`. -/
+abbrev H16_eq16_31_IsGeneralizedSylvesterPairSolution :=
+  IsGeneralizedSylvesterPairSolution
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.31):
     first residual for the coupled generalized Sylvester equations
     `AX - YB = C` and `DX - YE = F`. -/
 noncomputable def generalizedSylvesterPairResidualLeft (m n : Nat)
@@ -7853,12 +7872,22 @@ noncomputable def generalizedSylvesterPairResidualLeft (m n : Nat)
   fun i j => matMulRect m m n A X i j - matMulRect m n n Y B i j - C i j
 
 /-- Higham, 2nd ed., Chapter 16.5, equation (16.31):
+    source-numbered abbreviation for the left residual `AX - YB - C`. -/
+noncomputable abbrev H16_eq16_31_generalizedSylvesterPairResidualLeft :=
+  generalizedSylvesterPairResidualLeft
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.31):
     second residual for the coupled generalized Sylvester equations
     `AX - YB = C` and `DX - YE = F`. -/
 noncomputable def generalizedSylvesterPairResidualRight (m n : Nat)
     (D : RMatFn m m) (E : RMatFn n n)
     (F0 X Y : RMatFn m n) : RMatFn m n :=
   fun i j => matMulRect m m n D X i j - matMulRect m n n Y E i j - F0 i j
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.31):
+    source-numbered abbreviation for the right residual `DX - YE - F`. -/
+noncomputable abbrev H16_eq16_31_generalizedSylvesterPairResidualRight :=
+  generalizedSylvesterPairResidualRight
 
 /-- Higham, 2nd ed., Chapter 16.5, equation (16.31): the two residuals vanish
     exactly when the coupled generalized Sylvester equations hold. -/
@@ -7910,6 +7939,12 @@ noncomputable def riccatiResidual (m n : Nat)
       G i j
 
 /-- Higham, 2nd ed., Chapter 16.5, equation (16.32):
+    source-numbered abbreviation for the rectangular-compatible Riccati
+    residual `AX + XB - XFX + G`. -/
+noncomputable abbrev H16_eq16_32_riccatiResidual :=
+  riccatiResidual
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.32):
     source equation predicate for `A X + X B - X F X + G = 0`. -/
 def IsRiccatiSolution (m n : Nat)
     (A : RMatFn m m) (B : RMatFn n n) (F : RMatFn n m)
@@ -7919,6 +7954,12 @@ def IsRiccatiSolution (m n : Nat)
       matMulRect m n n X B i j -
       matMulRect m m n (matMulRect m n m X F) X i j +
       G i j = 0
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.32):
+    source-numbered abbreviation for the rectangular-compatible Riccati
+    equation predicate `AX + XB - XFX + G = 0`. -/
+abbrev H16_eq16_32_IsRiccatiSolution :=
+  IsRiccatiSolution
 
 /-- The residual for equation (16.32) is zero exactly when the Riccati source
     equation holds. -/
