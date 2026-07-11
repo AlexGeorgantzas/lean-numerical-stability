@@ -1756,6 +1756,21 @@ theorem sylvester_practical_error_bound_fl_of_vecCoeff_det_ne_zero_mono_scalar
       (isSylvesterComputedResidualBudget_fl fp n n A B C Xhat hn2 hn1)
       hRhat hRu_le heta hcomponent hXhat
 
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equation (16.29): source-numbered aliases for square
+    determinant-certified floating-point practical residual endpoints. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_det_ne_zero :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_det_ne_zero
+
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_det_ne_zero_scalar :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_det_ne_zero_scalar
+
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_det_ne_zero_mono :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_det_ne_zero_mono
+
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_det_ne_zero_mono_scalar :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_det_ne_zero_mono_scalar
+
 /-- Higham, 2nd ed., Chapter 16, equation (16.29), Lyapunov specialization
     of the determinant practical computed-residual certificate. -/
 theorem lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate
