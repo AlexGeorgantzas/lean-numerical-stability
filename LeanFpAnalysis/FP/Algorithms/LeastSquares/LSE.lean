@@ -84961,6 +84961,257 @@ theorem theorem20_10_partB_certificate_of_householder_components_source_ranks_co
       hDeltabrep, hDeltadrep, hDeltaA, hDeltaB, hDeltab, hDeltad,
       hcert hcond.1 hcond.2⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    named proposition for the concrete Householder component certificate route.
+
+This is the certificate-boundary analogue of
+`Theorem20_10HouseholderComponentPartBRoute`: it records the concrete `A Q₂`,
+`Bᵀ`, transformed RHS, and constraint-RHS perturbation identities together with
+the conservative source-shaped norm bounds, but stops at the reusable
+`Theorem20_10PartBPerturbationCertificate` rather than immediately unpacking the
+exact GQR/minimizer method conclusion. -/
+def Theorem20_10HouseholderComponentPartBCertificateRoute
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ) : Prop :=
+  let gammaA : ℝ := theorem20_10_householder_gammaA_conservativeRhs fp r p q
+  let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+  ∃ (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (DeltaB : Fin p → Fin (p + q) → ℝ)
+    (Deltab : Fin (r + q) → ℝ)
+    (Deltad : Fin p → ℝ),
+    (∀ i j,
+      gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+        matMulRect (r + q) (r + q) q
+          (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+          (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j) ∧
+    (∀ i j,
+      B i j + DeltaB i j =
+        matMulRect (p + q) (p + q) p
+          (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+          (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+    (∀ i,
+      fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+        matMulVec (r + q)
+          (matTranspose
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+          (fun k => b k + Deltab k) i) ∧
+    (∀ i,
+      rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+        rectMatMulVec B xhat i + Deltad i) ∧
+    frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+    frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+    vecNorm2 Deltab ≤
+      gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+    vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+    Nonempty (Theorem20_10PartBPerturbationCertificate A B b d xhat gammaA gammaB)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    explicit-margin wrapper for the named component certificate route. -/
+theorem theorem20_10_householder_component_partB_certificate_route_of_source_ranks_margins_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hBMargin :
+      theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hBsrc.transposeVecNorm2LowerMargin)
+    (hStackMargin :
+      theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hStack.vecNorm2LowerMargin) :
+    Theorem20_10HouseholderComponentPartBCertificateRoute fp A B Q b d xhat := by
+  dsimp [Theorem20_10HouseholderComponentPartBCertificateRoute]
+  exact
+    theorem20_10_partB_certificate_of_householder_components_source_ranks_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
+      hBMargin hStackMargin
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    source-rank radius wrapper for the component certificate route. -/
+theorem theorem20_10_householder_component_partB_certificate_route_of_source_ranks_rank_radius_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hMargin :
+      theorem20_10_householder_componentSourceRankBudget fp A B <
+        theorem20_10_householder_sourceRankRadius hBsrc hStack) :
+    Theorem20_10HouseholderComponentPartBCertificateRoute fp A B Q b d xhat := by
+  rcases
+    theorem20_10_householder_componentSourceRankMargins_of_budget_lt_sourceRankRadius
+      fp A B hBsrc hStack hvalidA hMargin with
+    ⟨hBMargin, hStackMargin⟩
+  exact
+    theorem20_10_householder_component_partB_certificate_route_of_source_ranks_margins_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
+      hBMargin hStackMargin
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    max-gamma source-rank radius wrapper for the component certificate route. -/
+theorem theorem20_10_householder_component_partB_certificate_route_of_source_ranks_max_gamma_sum_bound_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hsmall :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) *
+          (frobNormRect A + frobNormRect B) <
+        theorem20_10_householder_sourceRankRadius hBsrc hStack) :
+    Theorem20_10HouseholderComponentPartBCertificateRoute fp A B Q b d xhat := by
+  exact
+    theorem20_10_householder_component_partB_certificate_route_of_source_ranks_rank_radius_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
+      (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
+        fp A B hBsrc hStack hsmall)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    conservative source-rank gamma-threshold wrapper for the component
+    certificate route. -/
+theorem theorem20_10_householder_component_partB_certificate_route_of_source_ranks_gamma_threshold_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hsmall :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) <
+        theorem20_10_householder_sourceRankGammaThreshold hBsrc hStack) :
+    Theorem20_10HouseholderComponentPartBCertificateRoute fp A B Q b d xhat := by
+  exact
+    theorem20_10_householder_component_partB_certificate_route_of_source_ranks_rank_radius_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
+      (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_lt_sourceRankGammaThreshold
+        fp A B hBsrc hStack hvalidA hvalidB hsmall)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    linear unit-roundoff threshold wrapper for the component certificate route. -/
+theorem theorem20_10_householder_component_partB_certificate_route_of_source_ranks_unit_roundoff_threshold_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hsmallA :
+      ((((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hsmallB :
+      ((((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ) *
+        fp.u) ≤ 1 / 2))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hunit :
+      theorem20_10_householder_componentUnitRoundoffCoefficient r p q *
+          fp.u <
+        theorem20_10_householder_sourceRankGammaThreshold hBsrc hStack) :
+    Theorem20_10HouseholderComponentPartBCertificateRoute fp A B Q b d xhat := by
+  have hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)) := by
+    unfold gammaValid
+    exact lt_of_le_of_lt hsmallA (by norm_num)
+  have hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)) := by
+    unfold gammaValid
+    exact lt_of_le_of_lt hsmallB (by norm_num)
+  have hsmall :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) <
+        theorem20_10_householder_sourceRankGammaThreshold hBsrc hStack :=
+    theorem20_10_householder_component_max_gamma_lt_sourceRankGammaThreshold_of_unit_roundoff_bound
+      fp hBsrc hStack (by omega) hsmallA hsmallB hhalf hunit
+  exact
+    theorem20_10_householder_component_partB_certificate_route_of_source_ranks_gamma_threshold_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack hsmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    combined unit-roundoff smallness-threshold wrapper for the component
+    certificate route. -/
+theorem theorem20_10_householder_component_partB_certificate_route_of_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hBsrc hStack) :
+    Theorem20_10HouseholderComponentPartBCertificateRoute fp A B Q b d xhat := by
+  rcases
+    theorem20_10_householder_component_unit_roundoff_conditions_of_lt_smallnessThreshold
+      fp hBsrc hStack hp hq hu with
+    ⟨hsmallA, hsmallB, hhalf, hunit⟩
+  exact
+    theorem20_10_householder_component_partB_certificate_route_of_source_ranks_unit_roundoff_threshold_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hsmallA hsmallB hhalf hBsrc hStack hunit
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
     component package with source-rank margin preservation.
 
