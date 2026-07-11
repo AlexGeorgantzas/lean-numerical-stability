@@ -85212,6 +85212,49 @@ theorem theorem20_10_householder_component_partB_certificate_route_of_source_ran
     theorem20_10_householder_component_partB_certificate_route_of_source_ranks_unit_roundoff_threshold_conservative_gamma
       fp A B Q b d xhat hQ hp hq hsmallA hsmallB hhalf hBsrc hStack hunit
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    computed-`Bᵀ` specialization of the component certificate route.
+
+This is the certificate-boundary analogue of
+`theorem20_10_partB_backward_error_of_householder_components_computed_B_transpose_Q_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma`.
+It fixes the abstract orthogonal factor in the component route to the rounded
+Householder panel actually computed from `Bᵀ`, deriving its orthogonality from
+the concrete `Bᵀ` block theorem. -/
+theorem theorem20_10_householder_component_partB_certificate_route_of_computed_B_transpose_Q_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hBsrc hStack) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    Theorem20_10HouseholderComponentPartBCertificateRoute fp A B Qb b d xhat := by
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  rcases
+    theorem20_10_householder_component_unit_roundoff_conditions_of_lt_smallnessThreshold
+      fp hBsrc hStack hp hq hu with
+    ⟨_hsmallA, hsmallB, _hhalf, _hunit⟩
+  have hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)) := by
+    unfold gammaValid
+    exact lt_of_le_of_lt hsmallB (by norm_num)
+  have hQb : IsOrthogonal (p + q) Qb := by
+    rcases
+      theorem20_10_householder_B_transpose_perturbed_constraint_block
+        (r := r) fp B hp hvalidB with
+      ⟨_DeltaB, _hDeltaBrep, hQb, _hS, _hblock, _hDeltaB⟩
+    simpa [Qb] using hQb
+  exact
+    theorem20_10_householder_component_partB_certificate_route_of_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
+      fp A B Qb b d xhat hQb hp hq hBsrc hStack hu
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
     component package with source-rank margin preservation.
 
