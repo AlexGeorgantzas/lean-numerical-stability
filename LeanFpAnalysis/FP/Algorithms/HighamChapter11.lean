@@ -56640,6 +56640,127 @@ theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_sourc
       hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hprod hThat
       hLU hdetT hT_tridiag hRowDom hL_norm hLT_norm hT_norm hBT_norm hcoeff
 
+/-- `AasenSpec` identity-permutation wrapper for the source-prefix relative
+column-dominant middle-solve route.  The exact recurrence, nonzero `H`
+subdiagonal pivots, and exact product are discharged from the identity
+`AasenSpec` plus `H = T L^T`; the relative update and scalar coefficient
+budgets remain explicit. -/
+def higham11_8_AasenSpec_identity_source_prefix_relative_colDiagDom_middle_coeff :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      σ b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT
+      hspec hσ hH_eq hTnz hγ_factor hκL hκT hκBT hBT_factor
+      hvalSum hvalUpdate hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower
+      hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hThat hLU hdetT
+      hT_tridiag hColDom hL_norm hLT_norm hT_norm hBT_norm hcoeff =>
+    let hrecPack :=
+      higham11_8_AasenSpec_identity_exact_recurrences_of_H_eq_T_subdiagonal_ne_zero
+        n A L H T σ hspec hσ hH_eq hTnz
+    let hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0 := by
+      intro i next hnext hzero
+      have hH_eq_T :=
+        higham11_8_AasenSpec_identity_H_subdiagonal_eq_T_of_H_eq
+          n A L H T σ hspec hH_eq i next hnext
+      exact hTnz i next hnext (hH_eq_T ▸ hzero)
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_colDiagDom_middle_coeff
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT hγ_factor hκL
+      hκT hκBT hBT_factor hrecPack.2.2 hHnz hvalSum hvalUpdate
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn
+      (higham11_8_AasenSpec_product_eq_of_identity_perm n A L T σ hspec hσ)
+      hThat hLU hdetT hT_tridiag hColDom hL_norm hLT_norm hT_norm hBT_norm
+      hcoeff
+
+/-- `AasenSpec` identity-permutation wrapper for the source-prefix relative
+row-dominant middle-solve route. -/
+def higham11_8_AasenSpec_identity_source_prefix_relative_rowDiagDom_middle_coeff :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      σ b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT
+      hspec hσ hH_eq hTnz hγ_factor hκL hκT hκBT hBT_factor
+      hvalSum hvalUpdate hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower
+      hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hThat hLU hdetT
+      hT_tridiag hRowDom hL_norm hLT_norm hT_norm hBT_norm hcoeff =>
+    let hrecPack :=
+      higham11_8_AasenSpec_identity_exact_recurrences_of_H_eq_T_subdiagonal_ne_zero
+        n A L H T σ hspec hσ hH_eq hTnz
+    let hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0 := by
+      intro i next hnext hzero
+      have hH_eq_T :=
+        higham11_8_AasenSpec_identity_H_subdiagonal_eq_T_of_H_eq
+          n A L H T σ hspec hH_eq i next hnext
+      exact hTnz i next hnext (hH_eq_T ▸ hzero)
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_rowDiagDom_middle_coeff
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT hγ_factor hκL
+      hκT hκBT hBT_factor hrecPack.2.2 hHnz hvalSum hvalUpdate
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn
+      (higham11_8_AasenSpec_product_eq_of_identity_perm n A L T σ hspec hσ)
+      hThat hLU hdetT hT_tridiag hRowDom hL_norm hLT_norm hT_norm hBT_norm
+      hcoeff
+
+/-- `AasenSpec` identity-permutation wrapper for the source-prefix relative
+column-dominant middle-solve route, with the factorization-side `BT_factor`
+norm derived from a componentwise `T_hat` comparison. -/
+def higham11_8_AasenSpec_identity_source_prefix_relative_colDiagDom_middle_coeff_componentwise_BT :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      σ b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT
+      hspec hσ hH_eq hTnz hγ_factor hκL hκT hκBT hBT_factor
+      hvalSum hvalUpdate hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower
+      hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hThat hLU hdetT
+      hT_tridiag hColDom hL_norm hLT_norm hT_norm hBT_component hcoeff =>
+    let hrecPack :=
+      higham11_8_AasenSpec_identity_exact_recurrences_of_H_eq_T_subdiagonal_ne_zero
+        n A L H T σ hspec hσ hH_eq hTnz
+    let hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0 := by
+      intro i next hnext hzero
+      have hH_eq_T :=
+        higham11_8_AasenSpec_identity_H_subdiagonal_eq_T_of_H_eq
+          n A L H T σ hspec hH_eq i next hnext
+      exact hTnz i next hnext (hH_eq_T ▸ hzero)
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_colDiagDom_middle_coeff_componentwise_BT
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT hγ_factor hκL
+      hκT hκBT hBT_factor hrecPack.2.2 hHnz hvalSum hvalUpdate
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn
+      (higham11_8_AasenSpec_product_eq_of_identity_perm n A L T σ hspec hσ)
+      hThat hLU hdetT hT_tridiag hColDom hL_norm hLT_norm hT_norm
+      hBT_component hcoeff
+
+/-- `AasenSpec` identity-permutation wrapper for the source-prefix relative
+row-dominant middle-solve route, with the factorization-side `BT_factor` norm
+derived from a componentwise `T_hat` comparison. -/
+def higham11_8_AasenSpec_identity_source_prefix_relative_rowDiagDom_middle_coeff_componentwise_BT :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      σ b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT
+      hspec hσ hH_eq hTnz hγ_factor hκL hκT hκBT hBT_factor
+      hvalSum hvalUpdate hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower
+      hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hThat hLU hdetT
+      hT_tridiag hRowDom hL_norm hLT_norm hT_norm hBT_component hcoeff =>
+    let hrecPack :=
+      higham11_8_AasenSpec_identity_exact_recurrences_of_H_eq_T_subdiagonal_ne_zero
+        n A L H T σ hspec hσ hH_eq hTnz
+    let hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0 := by
+      intro i next hnext hzero
+      have hH_eq_T :=
+        higham11_8_AasenSpec_identity_H_subdiagonal_eq_T_of_H_eq
+          n A L H T σ hspec hH_eq i next hnext
+      exact hTnz i next hnext (hH_eq_T ▸ hzero)
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_rowDiagDom_middle_coeff_componentwise_BT
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT hγ_factor hκL
+      hκT hκBT hBT_factor hrecPack.2.2 hHnz hvalSum hvalUpdate
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn
+      (higham11_8_AasenSpec_product_eq_of_identity_perm n A L T σ hspec hσ)
+      hThat hLU hdetT hT_tridiag hRowDom hL_norm hLT_norm hT_norm
+      hBT_component hcoeff
+
 /-- Source-prefix factor-norm wrapper variant where the relative `L_hat`
 factor hypothesis is generated from modeled rounded recurrence updates and the
 factorization-side `BT_factor` norm bound is derived from a componentwise bound
