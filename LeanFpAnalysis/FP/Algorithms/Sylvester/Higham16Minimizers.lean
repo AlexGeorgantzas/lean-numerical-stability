@@ -8076,6 +8076,77 @@ theorem sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin_mono_scalar
       (isSylvesterComputedResidualBudget_fl fp n n A B C Xhat hn2 hn1)
       hRhat hRu_le heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the concrete-left-inverse Sylvester floating-point practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap concrete-left-inverse Sylvester floating-point
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_scalar :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone concrete-left-inverse Sylvester floating-point
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_mono :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap concrete-left-inverse Sylvester
+    floating-point practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_mono_scalar :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the finite-Gram Sylvester floating-point practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap finite-Gram Sylvester floating-point practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_scalar :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone finite-Gram Sylvester floating-point practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_mono :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap finite-Gram Sylvester floating-point
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_mono_scalar :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the concrete sigma-min Sylvester floating-point practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap concrete sigma-min Sylvester floating-point
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin_scalar :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone concrete sigma-min Sylvester floating-point
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin_mono :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap concrete sigma-min Sylvester
+    floating-point practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin_mono_scalar :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin_mono_scalar
+
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, eq (16.29), square arbitrary-coefficient endpoint: a supplied
     positive `SepLowerBound` certificate for `sep(A,B)` makes the
