@@ -59005,6 +59005,54 @@ def higham11_8_AasenSpec_identity_source_prefix_split_entry_budgets_printed_gamm
       h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
       hThat hbudget_factor hbudget_solve hη_parts
 
+/-- Source-prefix split-entry endpoint with the identity permutation
+specialized as `σ := id`, removing the separate `σ i = i` caller obligation. -/
+def higham11_8_AasenSpec_id_source_prefix_split_entry_budgets_printed_gamma_validity :=
+  fun fp n A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+      γ_factor η_factor η_solve hspec hH_eq hTnz hγ_factor hcoeff_valid
+      hBT_factor hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hThat hbudget_factor hbudget_solve hη_parts =>
+    higham11_8_AasenSpec_identity_source_prefix_split_entry_budgets_printed_gamma_validity
+      fp n A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      (fun i : Fin n => i) b DeltaT_LU γ_factor η_factor η_solve
+      hspec (by intro i; rfl) hH_eq hTnz hγ_factor hcoeff_valid
+      hBT_factor hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hThat hbudget_factor hbudget_solve hη_parts
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_split_entry_budgets_printed_gamma_validity`. -/
+def higham11_8_AasenSpec_id_source_prefix_split_entry_budgets_printed_gamma_validity_of_unit_roundoff_bound :=
+  fun fp n A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor b DeltaT_LU
+      γ_factor η_factor η_solve hspec hH_eq hTnz hγ_factor hcap
+      hBT_factor hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel
+      h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat hbudget_factor hbudget_solve hη_parts =>
+    higham11_8_AasenSpec_identity_source_prefix_split_entry_budgets_printed_gamma_validity_of_unit_roundoff_bound
+      fp n A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      (fun i : Fin n => i) b DeltaT_LU γ_factor η_factor η_solve
+      hspec (by intro i; rfl) hH_eq hTnz hγ_factor hcap hBT_factor
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat hbudget_factor hbudget_solve hη_parts
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_split_entry_budgets_printed_gamma_validity`. -/
+def higham11_8_AasenSpec_id_source_prefix_split_entry_budgets_printed_gamma_validity_of_u_le_cap :=
+  fun fp n Ucap A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor b
+      DeltaT_LU γ_factor η_factor η_solve hspec hH_eq hTnz hγ_factor
+      hu hcap hBT_factor hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hThat hbudget_factor hbudget_solve hη_parts =>
+    higham11_8_AasenSpec_identity_source_prefix_split_entry_budgets_printed_gamma_validity_of_u_le_cap
+      fp n Ucap A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      (fun i : Fin n => i) b DeltaT_LU γ_factor η_factor η_solve
+      hspec (by intro i; rfl) hH_eq hTnz hγ_factor hu hcap hBT_factor
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat hbudget_factor hbudget_solve hη_parts
+
 /-- Exact-`T_hat` form of the `AasenSpec` source-prefix split-entry endpoint.
 If `T_hat = T` entrywise, the middle-factor comparison in the split-entry
 route is discharged with the zero budget; the factorization and solve split
