@@ -678,6 +678,34 @@ theorem higham11_4_bunch_kaufman_case1_schur_growth
     _ ≤ Amax + Amax / α := add_le_add hb hcorr_Amax
     _ = (1 + 1 / α) * Amax := by ring
 
+/-- **Theorem 11.4 / Algorithm 11.2 case-(1) scalar row cap**: the accepted
+`a11` pivot has the source one-entry multiplier row-sum cap `≤6`. -/
+theorem higham11_4_bunch_kaufman_case1_multiplier_row_sum_le_six
+    (a11 arr ω1 ωr c : ℝ) (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case1)
+    (hc : |c| ≤ ω1) :
+    |c / a11| ≤ 6 := by
+  have hα : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  exact
+    (higham11_2_bunch_kaufman_case1_multiplier_bound
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr c hα hω1 hcase hc).trans
+      higham11_4_oneByOne_multiplier_row_sum_const_le_six
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(1) local scalar cap package**.
+The row cap from the case-(1) branch is paired with a path-supplied accepted
+pivot `D̂` cap, giving the same local producer shape as case-(2). -/
+theorem higham11_4_bunch_kaufman_case1_scalar_row_sum_and_D_cap
+    (a11 arr ω1 ωr c Amax : ℝ) (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case1)
+    (hc : |c| ≤ ω1) (ha11_Amax : |a11| ≤ Amax) :
+    |c / a11| ≤ 6 ∧ |a11| ≤ Amax :=
+  ⟨higham11_4_bunch_kaufman_case1_multiplier_row_sum_le_six
+      a11 arr ω1 ωr c hω1 hcase hc,
+    ha11_Amax⟩
+
 /-- **Algorithm 11.2**, case-(2) pivot lower bound under a concrete row-maximum
 dominance side condition.  The branch predicate gives
 `αω1² ≤ |a11|ωr`; if the pivot path also supplies `ωr≤ω1`, then the accepted
@@ -986,6 +1014,19 @@ theorem higham11_4_bunch_kaufman_case3_schur_growth
     |b - ci * cj / arr| ≤ |b| + |ci * cj / arr| := htri
     _ ≤ Amax + Amax / α := add_le_add hb hcorr_Amax
     _ = (1 + 1 / α) * Amax := by ring
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(3) local scalar cap package**.
+After the symmetric swap, the existing source-six row cap for the accepted
+`arr` pivot is paired with a path-supplied local `D̂` pivot-entry cap. -/
+theorem higham11_4_bunch_kaufman_case3_scalar_row_sum_and_D_cap
+    (a11 arr ω1 ωr c Amax : ℝ) (hωr : 0 < ωr)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case3)
+    (hc : |c| ≤ ωr) (harr_Amax : |arr| ≤ Amax) :
+    |c / arr| ≤ 6 ∧ |arr| ≤ Amax :=
+  ⟨higham11_4_bunch_kaufman_case3_multiplier_row_sum_le_six
+      a11 arr ω1 ωr c hωr hcase hc,
+    harr_Amax⟩
 
 /-- **Theorem 11.4 / Algorithm 11.2 case-(4) growth bridge**: when the
 case-(4) `2 × 2` pivot also carries the concrete source-side row-maximum
