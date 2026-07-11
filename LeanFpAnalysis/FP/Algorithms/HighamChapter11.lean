@@ -54328,6 +54328,168 @@ def higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_pr
       hprod hThat_component hL_norm hLT_norm hT_norm hmiddle_entry hFT
       hFB hST hSB hparts
 
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8: identity-permutation
+`AasenSpec` wrapper for the source-prefix concrete product-majorant endpoint.
+The exact product `A = L*T*L^T`, Aasen next-column recurrence, and nonzero
+`H` subdiagonal pivots are derived from the source factorization
+specification plus `H = T*L^T`. The concrete `T_hat` comparison, exact
+outer-factor norm/product majorants, middle-product majorant, and gamma-share
+coefficient inequalities remain explicit. -/
+theorem higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (γ_factor γ_factor_cap γ_solve_cap γ_mid_cap
+      κL κLT κT κBT κmidLU γFT γFB γST γSB : ℝ)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hσ : ∀ i : Fin n, σ i = i)
+    (hH_eq : ∀ i j : Fin n, H i j = higham11_10_aasenH n T L i j)
+    (hTnz : ∀ i next : Fin n, next.val = i.val + 1 → T next i ≠ 0)
+    (hγ_factor : 0 ≤ γ_factor)
+    (hγ_factor_le : γ_factor ≤ γ_factor_cap)
+    (hγ_solve_le : gamma fp n ≤ γ_solve_cap)
+    (hγ_mid_le : gamma fp n ≤ γ_mid_cap)
+    (hκL : 0 ≤ κL)
+    (hκT : 0 ≤ κT) (hκBT : 0 ≤ κBT) (hκmidLU : 0 ≤ κmidLU)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ γ_factor * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hThat_component : ∀ i j : Fin n,
+      |T_hat i j - T i j| ≤ κBT * |T_hat i j|)
+    (hL_norm : infNorm L ≤ κL)
+    (hLT_norm : infNorm (fun r c => L c r) ≤ κLT)
+    (hT_norm : infNorm T ≤ κT * infNorm T_hat)
+    (hmiddle_entry : ∀ i j : Fin n,
+      matMul n (absMatrix n L_T_hat) (absMatrix n U_T_hat) i j ≤
+        κmidLU * |T_hat i j|)
+    (hFT :
+      (2 * γ_factor_cap + γ_factor_cap ^ 2) * (κL * κT * κLT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γFT)
+    (hFB :
+      (1 + 2 * γ_factor_cap + γ_factor_cap ^ 2) * (κL * κBT * κLT) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γFB)
+    (hST :
+      (2 * γ_solve_cap + γ_solve_cap ^ 2) *
+        (((1 + γ_factor) * κL) * ((1 + γ_factor) * κLT)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γST)
+    (hSB :
+      (1 + 2 * γ_solve_cap + γ_solve_cap ^ 2) *
+        (((1 + γ_factor) * κL) *
+          (higham9_14_f γ_mid_cap * κmidLU) *
+          ((1 + γ_factor) * κLT)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2 * γSB)
+    (hparts : γFT + γFB + γST + γSB ≤ gamma fp (15 * n + 25)) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => κBT * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n γ_factor BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) := by
+  have hrecPack :=
+    higham11_8_AasenSpec_identity_exact_recurrences_of_H_eq_T_subdiagonal_ne_zero
+      n A L H T σ hspec hσ hH_eq hTnz
+  have hHnz : ∀ i next : Fin n, next.val = i.val + 1 → H next i ≠ 0 := by
+    intro i next hnext hzero
+    have hH_eq_T :=
+      higham11_8_AasenSpec_identity_H_subdiagonal_eq_T_of_H_eq
+        n A L H T σ hspec hH_eq i next hnext
+    exact hTnz i next hnext (hH_eq_T ▸ hzero)
+  exact
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_concrete_product_majorants_gamma_parts_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      γ_factor γ_factor_cap γ_solve_cap γ_mid_cap κL κLT κT κBT κmidLU
+      γFT γFB γST γSB hγ_factor hγ_factor_le hγ_solve_le hγ_mid_le
+      hκL hκT hκBT hκmidLU hrecPack.2.2 hHnz hcoeff_valid
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      (higham11_8_AasenSpec_product_eq_of_identity_perm n A L T σ hspec hσ)
+      hThat_component hL_norm hLT_norm hT_norm hmiddle_entry hFT hFB hST
+      hSB hparts
+
+/-- Unit-roundoff-smallness source form of the `AasenSpec` product-majorant
+source-prefix endpoint. -/
+def higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity_of_unit_roundoff_bound :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b DeltaT_LU
+      γ_factor γ_factor_cap γ_solve_cap γ_mid_cap
+      κL κLT κT κBT κmidLU γFT γFB γST γSB
+      hspec hσ hH_eq hTnz hγ_factor hγ_factor_le hγ_solve_le hγ_mid_le
+      hκL hκT hκBT hκmidLU hcap hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hThat_component hL_norm hLT_norm
+      hT_norm hmiddle_entry hFT hFB hST hSB hparts =>
+    higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b DeltaT_LU
+      γ_factor γ_factor_cap γ_solve_cap γ_mid_cap κL κLT κT κBT κmidLU
+      γFT γFB γST γSB hspec hσ hH_eq hTnz hγ_factor hγ_factor_le
+      hγ_solve_le hγ_mid_le hκL hκT hκBT hκmidLU
+      (higham11_8_gammaValid_15n25_of_unit_roundoff_bound fp n hcap)
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hL_norm hLT_norm hT_norm hmiddle_entry hFT hFB hST
+      hSB hparts
+
+/-- Displayed-cap source form of the `AasenSpec` product-majorant
+source-prefix endpoint. -/
+def higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity_of_u_le_cap :=
+  fun fp n Ucap hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU γ_factor γ_factor_cap γ_solve_cap γ_mid_cap
+      κL κLT κT κBT κmidLU γFT γFB γST γSB
+      hspec hσ hH_eq hTnz hγ_factor hγ_factor_le hγ_solve_le hγ_mid_le
+      hκL hκT hκBT hκmidLU hu hcap hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hL_norm hLT_norm hT_norm hmiddle_entry hFT hFB hST
+      hSB hparts =>
+    higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b DeltaT_LU
+      γ_factor γ_factor_cap γ_solve_cap γ_mid_cap κL κLT κT κBT κmidLU
+      γFT γFB γST γSB hspec hσ hH_eq hTnz hγ_factor hγ_factor_le
+      hγ_solve_le hγ_mid_le hκL hκT hκBT hκmidLU
+      (higham11_8_gammaValid_15n25_of_u_le_cap fp n Ucap hu hcap)
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hL_norm hLT_norm hT_norm hmiddle_entry hFT hFB hST
+      hSB hparts
+
 /-- Source-prefix rounded Aasen wrapper with the printed Theorem 11.8 normwise
 predicate, deriving the computed-factor norm bounds from the generated
 relative `L_hat` hypothesis and discharging the middle tridiagonal-solve norm
