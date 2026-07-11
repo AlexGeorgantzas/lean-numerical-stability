@@ -53260,6 +53260,33 @@ theorem higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_sourc
       hT_U_upper hn hprod hLhat_entry hThat_component hL_norm hLT_norm
       hT_norm hmiddle_entry hFT hFB hST hSB hparts
 
+/-- Printed-radius source-prefix form of
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_concrete_product_majorants_gamma_parts`.
+The printed `gammaValid (15*n+25)` hypothesis supplies the local solve,
+two-operation update, and source-prefix gamma-validity side conditions. -/
+def higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_concrete_product_majorants_gamma_parts_gamma_validity :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      γ_factor γ_factor_cap γ_solve_cap γ_mid_cap
+      κL κLT κT κBT κmidLU γFT γFB γST γSB
+      hγ_factor hγ_factor_le hγ_solve_le hγ_mid_le hκL hκT hκBT
+      hκmidLU hrec hHnz hcoeff_valid hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hprod
+      hThat_component hL_norm hLT_norm hT_norm hmiddle_entry hFT hFB hST
+      hSB hparts =>
+    let hgammas :=
+      higham11_8_gammaValid_n_two_prefix_of_15n25 fp n hcoeff_valid
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_concrete_product_majorants_gamma_parts
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      γ_factor γ_factor_cap γ_solve_cap γ_mid_cap
+      (gamma fp (15 * n + 25)) κL κLT κT κBT κmidLU γFT γFB γST
+      γSB hγ_factor hγ_factor_le hγ_solve_le hγ_mid_le hκL hκT
+      hκBT hκmidLU hrec hHnz hgammas.2.2 hgammas.2.1 hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hgammas.1
+      hprod hThat_component hL_norm hLT_norm hT_norm hmiddle_entry hFT
+      hFB hST hSB hparts
+
 /-- Source-prefix rounded Aasen wrapper with the printed Theorem 11.8 normwise
 predicate, deriving the computed-factor norm bounds from the generated
 relative `L_hat` hypothesis and discharging the middle tridiagonal-solve norm
