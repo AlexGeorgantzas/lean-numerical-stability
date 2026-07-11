@@ -818,6 +818,36 @@ theorem higham11_4_bunch_kaufman_case2_pivot_entry_le_Amax
   (higham11_4_bunch_kaufman_case2_pivot_entry_bound
     a11 arr ω1 ωr hω1 hcase).trans hω1_Amax
 
+/-- **Theorem 11.4 / Algorithm 11.2 case-(2) scalar row cap**: with the
+row-maximum side condition used by the product-test route, the accepted scalar
+pivot has the source one-entry multiplier row-sum cap `≤6`. -/
+theorem higham11_4_bunch_kaufman_case2_multiplier_row_sum_le_six_of_row_max_le
+    (a11 arr ω1 ωr c : ℝ) (hω1 : 0 < ω1) (hωr_le : ωr ≤ ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case2)
+    (hc : |c| ≤ ω1) :
+    |c / a11| ≤ 6 := by
+  have hα : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  exact
+    (higham11_2_bunch_kaufman_case2_multiplier_bound_of_row_max_le
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr c hα hω1 hωr_le hcase hc).trans
+      higham11_4_oneByOne_multiplier_row_sum_const_le_six
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(2) local scalar cap package**.
+The same case-(2) path data supplies the source-six `|L̂|` row cap and the
+local accepted-pivot `D̂` entry cap needed by the first-stage split route. -/
+theorem higham11_4_bunch_kaufman_case2_scalar_row_sum_and_D_cap_of_row_max_le
+    (a11 arr ω1 ωr c Amax : ℝ) (hω1 : 0 < ω1) (hωr_le : ωr ≤ ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case2)
+    (hc : |c| ≤ ω1) (hω1_Amax : ω1 ≤ Amax) :
+    |c / a11| ≤ 6 ∧ |a11| ≤ Amax :=
+  ⟨higham11_4_bunch_kaufman_case2_multiplier_row_sum_le_six_of_row_max_le
+      a11 arr ω1 ωr c hω1 hωr_le hcase hc,
+    higham11_4_bunch_kaufman_case2_pivot_entry_le_Amax
+      a11 arr ω1 ωr Amax hω1 hcase hω1_Amax⟩
+
 /-- **Algorithm 11.2**, first-pivot scalar branch nonsingularity: cases (1)
 and (2) both accept `a11`; case-(2) needs the explicit row-maximum side
 condition used to turn its product test into `αω1≤|a11|`. -/
