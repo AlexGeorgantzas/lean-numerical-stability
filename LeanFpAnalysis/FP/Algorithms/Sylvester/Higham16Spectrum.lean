@@ -4937,6 +4937,45 @@ theorem sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_no_c
       m n A T pmap p q hmono hcard hzero hpq_adj hsame hspectral
       hnoA
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): global
+    vec/Kronecker determinant nonsingularity supplies the bundled real
+    quasi-Schur block-separation predicate for an adjacent same-block `2 x 2`
+    active Bartels-Stewart block. -/
+theorem sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_global_vecCoeff_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of T) pmap)
+    (hdetGlobal : Not (Matrix.det (sylvesterVecCoeff m n A T) = 0)) :
+    IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n A T pmap p q := by
+  have hBT : (realMatrixToComplex (Matrix.of T)).BlockTriangular pmap := by
+    intro i j hij
+    simp [realMatrixToComplex, Matrix.of_apply, hzero i j hij]
+  have hnoGlobal :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex (Matrix.of A))
+        (realMatrixToComplex (Matrix.of T)) := by
+    simpa [Matrix.of_apply] using
+      no_common_complex_right_eigenvalue_of_sylvesterVecCoeff_det_ne_zero
+        m n A T hdetGlobal
+  exact
+    sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_no_common_complex_right_eigenvalue_left
+      m n A T pmap p q hmono hcard hzero hpq_adj hsame hspectral
+      (noCommonComplexRightEigenvalue_of_sameBlock_twoBlock_quasiSchur
+        m n A T pmap p q hcard hBT hpq_adj hsame hnoGlobal)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): source-numbered
+    alias for producing the bundled real-quasi-Schur block-separation
+    predicate from global vec/Kronecker determinant nonsingularity. -/
+alias H16_eq16_4_8_sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_global_vecCoeff_det_ne_zero :=
+  sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_global_vecCoeff_det_ne_zero
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), constructed
     two-block spectral data plus exclusion of the matching complex root for
     `A` gives the active two-column no-block-action certificate. -/
@@ -5534,6 +5573,155 @@ theorem sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_
     coefficient nonsingularity. -/
 alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_det_ne_zero :=
   sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_vecCoeff_det_ne_zero
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): supplied real
+    orthogonal Schur factorizations transport original-coordinate
+    no-common-complex-right-eigenvalue data to the Schur-coordinate factors,
+    then derive the bundled real-quasi-Schur separation predicate for an
+    adjacent active `2 x 2` Bartels-Stewart block. -/
+theorem sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_realQuasiSchur_factors_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left
+    (m n : Nat)
+    (U R Aorig : RMatFn m m) (V S Borig : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : Aorig = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : Borig = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hnoOrig :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex Aorig)
+        (realMatrixToComplex Borig)) :
+    IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n R S pmap p q := by
+  have hnoRS :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex R)
+        (realMatrixToComplex S) :=
+    noCommonComplexRightEigenvalue_realQuasiSchur_factors
+      m n U R Aorig V S Borig hU hV hA hB hnoOrig
+  have hBT : (realMatrixToComplex (Matrix.of S)).BlockTriangular pmap := by
+    intro i j hij
+    simp [realMatrixToComplex, Matrix.of_apply, hzero i j hij]
+  exact
+    sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_no_common_complex_right_eigenvalue_left
+      m n R S pmap p q hmono hcard hzero hpq_adj hsame hspectral
+      (noCommonComplexRightEigenvalue_of_sameBlock_twoBlock_quasiSchur
+        m n R S pmap p q hcard hBT hpq_adj hsame
+        (by simpa [Matrix.of_apply] using hnoRS))
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): supplied real
+    orthogonal Schur factorizations plus original-coordinate vec/Kronecker
+    determinant nonsingularity give the bundled active same-block
+    real-quasi-Schur separation predicate. -/
+theorem sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_realQuasiSchur_factors_twoBlockSpectral_global_vecCoeff_det_ne_zero
+    (m n : Nat)
+    (U R Aorig : RMatFn m m) (V S Borig : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : Aorig = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : Borig = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> S i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pmap)
+    (hdetOrig :
+      Not (Matrix.det (sylvesterVecCoeff m n Aorig Borig) = 0)) :
+    IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n R S pmap p q := by
+  exact
+    sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_realQuasiSchur_factors_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left
+      m n U R Aorig V S Borig pmap p q hU hV hA hB hmono hcard hzero
+      hpq_adj hsame hspectral
+      (no_common_complex_right_eigenvalue_of_sylvesterVecCoeff_det_ne_zero
+        m n Aorig Borig hdetOrig)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): automatic
+    real-quasi-Schur factor package for the bundled active-block separation
+    predicate under original-coordinate no-common-complex-right-eigenvalue
+    separation. -/
+theorem sylvester_realQuasiSchur_factors_twoBlockSpectral_block_separation_of_no_common_complex_right_eigenvalue
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (hno :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex A) (realMatrixToComplex B)) :
+    exists (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) /\
+      (forall i j : Fin m, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      (forall p q : Fin n, q.val = p.val + 1 -> pB p = pB q ->
+        IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n R S pB p q) := by
+  obtain ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero, hAspectral,
+    hpBmono, hpBcard, hSzero, hBspectral, _hiff⟩ :=
+    sylvester_realQuasiSchur_transform_solution_iff_twoBlockSpectral
+      m n A B (0 : RMatFn m n) (0 : RMatFn m n)
+  refine ⟨U, R, V, S, pA, pB,
+    hU, hV, hA, hB, hpAmono, hpAcard, hRzero, hAspectral,
+    hpBmono, hpBcard, hSzero, hBspectral, ?_⟩
+  intro p q hpq hsame
+  exact
+    sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_realQuasiSchur_factors_twoBlockSpectral_global_no_common_complex_right_eigenvalue_left
+      m n U R A V S B pB p q hU hV hA hB hpBmono hpBcard hSzero
+      hpq hsame hBspectral hno
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-numbered
+    alias for the automatic real-quasi-Schur active-block separation package
+    under no-common complex spectrum. -/
+alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_separation_of_no_common_complex_right_eigenvalue :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral_block_separation_of_no_common_complex_right_eigenvalue
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): automatic
+    real-quasi-Schur active-block separation package from nonsingularity of
+    the original vec/Kronecker Sylvester coefficient. -/
+theorem sylvester_realQuasiSchur_factors_twoBlockSpectral_block_separation_of_vecCoeff_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (B : RMatFn n n)
+    (hdet : Not (Matrix.det (sylvesterVecCoeff m n A B) = 0)) :
+    exists (U R : RMatFn m m) (V S : RMatFn n n)
+      (pA : Fin m -> Nat) (pB : Fin n -> Nat),
+      IsOrthogonal m U /\
+      IsOrthogonal n V /\
+      A = rectMatMul U (rectMatMul R (matTranspose U)) /\
+      B = rectMatMul V (rectMatMul S (matTranspose V)) /\
+      Monotone pA /\
+      (forall c : Nat, (Finset.univ.filter (fun i : Fin m => pA i = c)).card <= 2) /\
+      (forall i j : Fin m, pA j < pA i -> R i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of R) pA /\
+      Monotone pB /\
+      (forall c : Nat, (Finset.univ.filter (fun j : Fin n => pB j = c)).card <= 2) /\
+      (forall i j : Fin n, pB j < pB i -> S i j = 0) /\
+      HasRealQuasiSchurTwoBlockSpectral (Matrix.of S) pB /\
+      (forall p q : Fin n, q.val = p.val + 1 -> pB p = pB q ->
+        IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n R S pB p q) := by
+  exact
+    sylvester_realQuasiSchur_factors_twoBlockSpectral_block_separation_of_no_common_complex_right_eigenvalue
+      m n A B
+      (no_common_complex_right_eigenvalue_of_sylvesterVecCoeff_det_ne_zero
+        m n A B hdet)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), source-numbered
+    alias for the automatic active-block separation package from vec
+    coefficient nonsingularity. -/
+alias H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_separation_of_vecCoeff_det_ne_zero :=
+  sylvester_realQuasiSchur_factors_twoBlockSpectral_block_separation_of_vecCoeff_det_ne_zero
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.8), direct
     determinant-shaped complex-separation route from a negative real

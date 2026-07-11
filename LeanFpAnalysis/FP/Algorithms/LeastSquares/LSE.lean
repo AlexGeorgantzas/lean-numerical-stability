@@ -74337,6 +74337,84 @@ theorem theorem20_8_exists_unique_perturbed_lse_minimizer_of_maxRelativePerturba
       hApos hbpos hBpos hdpos hmax)
     hBsmall hStackSmall
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    GQR-shaped source-rank existence-plus-bound version of the KKT route.
+    Source full row rank of `B`, full column rank of `[A; B]`, the displayed
+    maximum relative perturbation hypothesis, and strict source-margin
+    smallness give a unique perturbed LSE minimizer; every such minimizer
+    satisfies the named source-residual-ratio KKT error bound under the
+    remaining scalar gain assumptions. -/
+theorem
+    IsLSEMinimizer.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank
+    {r p q : ℕ}
+    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
+    {b Deltab : Fin (r + q) → ℝ}
+    {B DeltaB : Fin p → Fin (p + q) → ℝ}
+    {d Deltad : Fin p → ℝ} {x : Fin (p + q) → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hB.transposeVecNorm2LowerMargin)
+    (hStackSmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hStack.vecNorm2LowerMargin)
+    (hmultGain :
+      LSEKKTInverseMultiplierStatCoeff hB
+          ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+            hStack) *
+          (eps * frobNormRect B) < 1)
+    (hsolGain :
+      LSEKKTInverseSolutionDataCoeff hB
+          ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+            hStack) *
+          (eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) *
+          (eps * frobNormRect B) < 1)
+    (hcoupledGain :
+      theorem20_8KKTCoupledSelfCoeff hB
+          ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+            hStack) eps < 1) :
+    ∃! y : Fin (p + q) → ℝ,
+      IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) y ∧
+        vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+          theorem20_8KKTSourceResidualRatioCoupledBound hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) b x eps := by
+  rcases theorem20_8_exists_unique_perturbed_lse_minimizer_of_maxRelativePerturbation_lt_margins
+      (A := A) (DeltaA := DeltaA) (b := b) (Deltab := Deltab)
+      (B := B) (DeltaB := DeltaB) (d := d) (Deltad := Deltad)
+      hB hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall with
+    ⟨y, hy, hyuniq⟩
+  have hbound :
+      vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+        theorem20_8KKTSourceResidualRatioCoupledBound hB
+          ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+            hStack) b x eps :=
+    hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank
+      hy hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hmultGain
+      hsolGain hcoupledGain
+  refine ⟨y, ⟨hy, hbound⟩, ?_⟩
+  intro z hz
+  exact hyuniq z hz.1
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     perturbed-rank witness package for the reduced `AP` problem.
 
