@@ -326,6 +326,116 @@ theorem existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_
 alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_no_common_complex_right_eigenvalue :=
   existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_no_common_complex_right_eigenvalue
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8),
+    (16.23)-(16.26): Schur-coordinate Hessenberg-Schur handoff with shifted
+    singleton determinant certificates discharged from a positive lower bound
+    for the concrete vectorized Sylvester coefficient. -/
+theorem existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_vecCoeff_sigmaMin
+    (n : Nat) (hn : 0 < n)
+    (R S C : RMatFn n n) {sigma : Real}
+    (hSigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n R S) x))
+    (hR : IsUpperHessenberg n R)
+    (hS : IsUpperTriangularFn n S) :
+    ExistsUnique (IsSylvesterSolutionRect n n R S C) /\
+      (forall k : Fin n,
+        exists hmax : 0 < maxEntryNorm hn
+            (sylvesterTriangularShiftedCoeff n R (S k k)),
+        exists U : Fin n -> Fin n -> Real,
+          higham9_10_HessenbergGEPPUTrace
+            (maxEntryNorm hn (sylvesterTriangularShiftedCoeff n R (S k k)))
+            1 n (sylvesterTriangularShiftedCoeff n R (S k k)) U /\
+          growthFactorEntry hn (sylvesterTriangularShiftedCoeff n R (S k k))
+              U hmax <= (n : Real)) := by
+  exact
+    existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_vecCoeff_det_ne_zero
+      n n hn R S C hR hS
+      (sylvesterVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin
+        n R S hSigma hCoeff)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the Schur-coordinate
+    Hessenberg-Schur solve/trace-growth package from a concrete
+    vec-coefficient sigma-min certificate. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_vecCoeff_sigmaMin :=
+  existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8),
+    (16.23)-(16.26): Schur-coordinate Hessenberg-Schur handoff with shifted
+    singleton determinant certificates discharged from a finite Gram-eigenvalue
+    lower bound for the concrete vectorized Sylvester coefficient. -/
+theorem existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_vecCoeff_gram_eigenvalues
+    (n : Nat) (hn : 0 < n)
+    (R S C : RMatFn n n) {lam : Real}
+    (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n R S))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n R S)) p)
+    (hR : IsUpperHessenberg n R)
+    (hS : IsUpperTriangularFn n S) :
+    ExistsUnique (IsSylvesterSolutionRect n n R S C) /\
+      (forall k : Fin n,
+        exists hmax : 0 < maxEntryNorm hn
+            (sylvesterTriangularShiftedCoeff n R (S k k)),
+        exists U : Fin n -> Fin n -> Real,
+          higham9_10_HessenbergGEPPUTrace
+            (maxEntryNorm hn (sylvesterTriangularShiftedCoeff n R (S k k)))
+            1 n (sylvesterTriangularShiftedCoeff n R (S k k)) U /\
+          growthFactorEntry hn (sylvesterTriangularShiftedCoeff n R (S k k))
+              U hmax <= (n : Real)) := by
+  exact
+    existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_vecCoeff_det_ne_zero
+      n n hn R S C hR hS
+      (sylvesterVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues
+        n R S hlam hEig)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the Schur-coordinate
+    Hessenberg-Schur solve/trace-growth package from a concrete finite-Gram
+    eigenvalue certificate. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_vecCoeff_gram_eigenvalues :=
+  existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_vecCoeff_gram_eigenvalues
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8),
+    (16.23)-(16.26): Schur-coordinate Hessenberg-Schur handoff with shifted
+    singleton determinant certificates discharged from a concrete left inverse
+    and finite operator-norm bound for the vectorized Sylvester coefficient. -/
+theorem existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (hn : 0 < n)
+    (R S C : RMatFn n n)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n R S = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (hR : IsUpperHessenberg n R)
+    (hS : IsUpperTriangularFn n S) :
+    ExistsUnique (IsSylvesterSolutionRect n n R S C) /\
+      (forall k : Fin n,
+        exists hmax : 0 < maxEntryNorm hn
+            (sylvesterTriangularShiftedCoeff n R (S k k)),
+        exists U : Fin n -> Fin n -> Real,
+          higham9_10_HessenbergGEPPUTrace
+            (maxEntryNorm hn (sylvesterTriangularShiftedCoeff n R (S k k)))
+            1 n (sylvesterTriangularShiftedCoeff n R (S k k)) U /\
+          growthFactorEntry hn (sylvesterTriangularShiftedCoeff n R (S k k))
+              U hmax <= (n : Real)) := by
+  exact
+    existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_vecCoeff_det_ne_zero
+      n n hn R S C hR hS
+      (sylvesterVecCoeff_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+        n R S Pinv hM hLeft hPinv)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the Schur-coordinate
+    Hessenberg-Schur solve/trace-growth package from a concrete left inverse
+    and finite operator-norm certificate. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_upperHessenberg_triangular_vecCoeff_left_inverse_finiteOpNorm2Le
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8),
     original-coordinate Hessenberg-Schur handoff with shifted singleton
     determinant certificates discharged from nonsingularity of the original
@@ -551,5 +661,126 @@ theorem existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_
     solve/trace-growth package from no-common-complex-spectrum data. -/
 alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_no_common_complex_right_eigenvalue :=
   existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_no_common_complex_right_eigenvalue
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8),
+    (16.23)-(16.26): original-coordinate Hessenberg-Schur handoff with shifted
+    singleton determinant certificates discharged from a positive lower bound
+    for the concrete original vec/Kronecker Sylvester coefficient. -/
+theorem existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_vecCoeff_sigmaMin
+    (n : Nat) (hn : 0 < n)
+    (U R A : RMatFn n n) (V S B : RMatFn n n) (C : RMatFn n n)
+    {sigma : Real}
+    (hSigma : 0 < sigma)
+    (hCoeff : forall x : Prod (Fin n) (Fin n) -> Real,
+      sigma * finiteVecNorm2 x <=
+        finiteVecNorm2 (Matrix.mulVec (sylvesterVecCoeff n n A B) x))
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hR : IsUpperHessenberg n R)
+    (hS : IsUpperTriangularFn n S) :
+    ExistsUnique (IsSylvesterSolutionRect n n A B C) /\
+      (forall k : Fin n,
+        exists hmax : 0 < maxEntryNorm hn
+            (sylvesterTriangularShiftedCoeff n R (S k k)),
+        exists Ugepp : Fin n -> Fin n -> Real,
+          higham9_10_HessenbergGEPPUTrace
+            (maxEntryNorm hn (sylvesterTriangularShiftedCoeff n R (S k k)))
+            1 n (sylvesterTriangularShiftedCoeff n R (S k k)) Ugepp /\
+          growthFactorEntry hn (sylvesterTriangularShiftedCoeff n R (S k k))
+              Ugepp hmax <= (n : Real)) := by
+  exact
+    existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_vecCoeff_det_ne_zero
+      n n hn U R A V S B C hU hV hA hB hR hS
+      (sylvesterVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin
+        n A B hSigma hCoeff)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the original-coordinate
+    Hessenberg-Schur solve/trace-growth package from a concrete
+    vec-coefficient sigma-min certificate. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_vecCoeff_sigmaMin :=
+  existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8),
+    (16.23)-(16.26): original-coordinate Hessenberg-Schur handoff with shifted
+    singleton determinant certificates discharged from a finite Gram-eigenvalue
+    lower bound for the concrete original vec/Kronecker coefficient. -/
+theorem existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_vecCoeff_gram_eigenvalues
+    (n : Nat) (hn : 0 < n)
+    (U R A : RMatFn n n) (V S B : RMatFn n n) (C : RMatFn n n)
+    {lam : Real}
+    (hlam : 0 < lam)
+    (hEig : forall p : Prod (Fin n) (Fin n),
+      lam <= finiteHermitianEigenvalues
+        (finiteMatrixGram (sylvesterVecCoeff n n A B))
+        (isSymmetricFiniteMatrix_finiteMatrixGram
+          (sylvesterVecCoeff n n A B)) p)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hR : IsUpperHessenberg n R)
+    (hS : IsUpperTriangularFn n S) :
+    ExistsUnique (IsSylvesterSolutionRect n n A B C) /\
+      (forall k : Fin n,
+        exists hmax : 0 < maxEntryNorm hn
+            (sylvesterTriangularShiftedCoeff n R (S k k)),
+        exists Ugepp : Fin n -> Fin n -> Real,
+          higham9_10_HessenbergGEPPUTrace
+            (maxEntryNorm hn (sylvesterTriangularShiftedCoeff n R (S k k)))
+            1 n (sylvesterTriangularShiftedCoeff n R (S k k)) Ugepp /\
+          growthFactorEntry hn (sylvesterTriangularShiftedCoeff n R (S k k))
+              Ugepp hmax <= (n : Real)) := by
+  exact
+    existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_vecCoeff_det_ne_zero
+      n n hn U R A V S B C hU hV hA hB hR hS
+      (sylvesterVecCoeff_det_ne_zero_of_vecCoeff_gram_eigenvalues
+        n A B hlam hEig)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the original-coordinate
+    Hessenberg-Schur solve/trace-growth package from a concrete finite-Gram
+    eigenvalue certificate. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_vecCoeff_gram_eigenvalues :=
+  existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_vecCoeff_gram_eigenvalues
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8),
+    (16.23)-(16.26): original-coordinate Hessenberg-Schur handoff with shifted
+    singleton determinant certificates discharged from a concrete left inverse
+    and finite operator-norm bound for the original vec/Kronecker coefficient. -/
+theorem existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_vecCoeff_left_inverse_finiteOpNorm2Le
+    (n : Nat) (hn : 0 < n)
+    (U R A : RMatFn n n) (V S B : RMatFn n n) (C : RMatFn n n)
+    (Pinv : Matrix (Prod (Fin n) (Fin n)) (Prod (Fin n) (Fin n)) Real)
+    {M : Real} (hM : 0 < M)
+    (hLeft : Pinv * sylvesterVecCoeff n n A B = 1)
+    (hPinv : finiteOpNorm2Le Pinv M)
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hR : IsUpperHessenberg n R)
+    (hS : IsUpperTriangularFn n S) :
+    ExistsUnique (IsSylvesterSolutionRect n n A B C) /\
+      (forall k : Fin n,
+        exists hmax : 0 < maxEntryNorm hn
+            (sylvesterTriangularShiftedCoeff n R (S k k)),
+        exists Ugepp : Fin n -> Fin n -> Real,
+          higham9_10_HessenbergGEPPUTrace
+            (maxEntryNorm hn (sylvesterTriangularShiftedCoeff n R (S k k)))
+            1 n (sylvesterTriangularShiftedCoeff n R (S k k)) Ugepp /\
+          growthFactorEntry hn (sylvesterTriangularShiftedCoeff n R (S k k))
+              Ugepp hmax <= (n : Real)) := by
+  exact
+    existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_vecCoeff_det_ne_zero
+      n n hn U R A V S B C hU hV hA hB hR hS
+      (sylvesterVecCoeff_det_ne_zero_of_left_inverse_finiteOpNorm2Le
+        n A B Pinv hM hLeft hPinv)
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.4)-(16.8),
+    (16.23)-(16.26): source-numbered alias for the original-coordinate
+    Hessenberg-Schur solve/trace-growth package from a concrete left inverse
+    and finite operator-norm certificate. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_vecCoeff_left_inverse_finiteOpNorm2Le
 
 end LeanFpAnalysis.FP

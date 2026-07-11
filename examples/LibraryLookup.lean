@@ -15924,6 +15924,11 @@ small enough to serve as a smoke check for representative public declarations.
 #check Wave15.flQuasiBlockBackSub_componentwise_residual
 #check Wave15.sylvesterQuasiPairing_isQuasiBlockPairing
 #check Wave15.flSylvesterQuasiSchurBlockBackSubSolve
+-- Wave-15 companion: the (16.7)/(16.8) QUASI-triangular Sylvester-level instantiation (printed strength)
+#check Wave15.H16_eq16_7_quasi_sylvesterVecCoeff_blockBackSub_backward_error
+#check Wave15.H16_eq16_7_quasi_sylvesterVecCoeff_blockBackSub_backward_error_componentwise
+#check Wave15.H16_eq16_8_quasi_sylvesterVecCoeff_blockBackSub_componentwise_residual
+#check Wave15.H16_eq16_8_quasi_sylvesterResidualRect_blockBackSub_componentwise_le
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved
