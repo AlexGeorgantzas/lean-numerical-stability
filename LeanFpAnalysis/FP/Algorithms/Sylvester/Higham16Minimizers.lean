@@ -10681,4 +10681,75 @@ theorem lyapunov_practical_error_bound_fl_of_spectralDiagonal_mono_scalar
         U A a sigma hU hA hsigma hgap)
       PinvAbs' eta hX hn2 hn1 hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied operator sigma-min Lyapunov floating-point
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_operator_sigmaMin :=
+  lyapunov_practical_error_bound_fl_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap supplied operator sigma-min Lyapunov
+    floating-point practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_operator_sigmaMin_scalar :=
+  lyapunov_practical_error_bound_fl_of_operator_sigmaMin_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone supplied operator sigma-min Lyapunov floating-point
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_operator_sigmaMin_mono :=
+  lyapunov_practical_error_bound_fl_of_operator_sigmaMin_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap supplied operator sigma-min Lyapunov
+    floating-point practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_operator_sigmaMin_mono_scalar :=
+  lyapunov_practical_error_bound_fl_of_operator_sigmaMin_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal Lyapunov floating-point practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_diagonal :=
+  lyapunov_practical_error_bound_fl_of_diagonal
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap diagonal Lyapunov floating-point practical
+    endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_diagonal_scalar :=
+  lyapunov_practical_error_bound_fl_of_diagonal_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone diagonal Lyapunov floating-point practical
+    endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_diagonal_mono :=
+  lyapunov_practical_error_bound_fl_of_diagonal_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap diagonal Lyapunov floating-point
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_diagonal_mono_scalar :=
+  lyapunov_practical_error_bound_fl_of_diagonal_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied spectral-coordinate Lyapunov floating-point
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_spectralDiagonal :=
+  lyapunov_practical_error_bound_fl_of_spectralDiagonal
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap supplied spectral-coordinate Lyapunov
+    floating-point practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_spectralDiagonal_scalar :=
+  lyapunov_practical_error_bound_fl_of_spectralDiagonal_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone supplied spectral-coordinate Lyapunov
+    floating-point practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_spectralDiagonal_mono :=
+  lyapunov_practical_error_bound_fl_of_spectralDiagonal_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap supplied spectral-coordinate Lyapunov
+    floating-point practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_spectralDiagonal_mono_scalar :=
+  lyapunov_practical_error_bound_fl_of_spectralDiagonal_mono_scalar
+
 end LeanFpAnalysis.FP
