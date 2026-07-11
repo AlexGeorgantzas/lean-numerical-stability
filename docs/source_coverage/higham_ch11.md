@@ -27,6 +27,7 @@ assumptions remain open in the not-proved ledger below.
 
 | Source item | Lean declaration(s) | File | Notes |
 |---|---|---|---|
+| Thm 11.8 componentwise/`T`-norm sigma-id `H=T Lᵀ` inverse-entry aliases | `higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_componentwise_T_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_componentwise_T_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the componentwise-`T` and direct-`T`-norm inverse-entry endpoints whose Aasen recurrences are derived from `H=T Lᵀ` and concrete `T` subdiagonal nonzeros to `σ := id`, discharging the identity-permutation proof by reflexivity for normalized principal-block and ordinary direct/checkerboard routes. The concrete `T_hat` comparison, componentwise/`T`-norm cap, middle-product certificate, inverse-entry cap, and rounded source-prefix update/budget facts remain explicit. |
 | Thm 11.8 exact-`T_hat` sigma-id `H=T Lᵀ` inverse-entry aliases | `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the exact-`T_hat` direct-middle and checkerboard inverse-entry endpoints whose Aasen recurrences are derived from `H=T Lᵀ` and concrete `T` subdiagonal nonzeros to `σ := id`, discharging the identity-permutation proof by reflexivity in both ordinary and normalized scaled-unit source-smallness forms. The exact middle equality, inverse-entry cap, middle-product/checkerboard certificate, and rounded source-prefix update/budget facts remain explicit. |
 | Thm 11.8 exact-`T_hat` sigma-id relative-middle aliases | `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity`, their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases, the column/row `..._of_simplified_coeff` aliases, and the column/row inverse-entry simplified-coefficient aliases with source-smallness forms | Ch11 | **new this session**; specializes the exact-`T_hat` column- and row-dominant relative middle routes to `σ := id`, discharging the identity-permutation proof by reflexivity for the printed-validity, source-smallness, simplified-coefficient, and inverse-entry endpoint surfaces. The exact `T_hat=T` equality, LU dominance certificate, inverse-entry cap where applicable, rounded source-prefix update/budget facts, and scalar coefficient obligations remain explicit. |
 | Thm 11.7 coefficient current-local/earlier-branch branch/full/global source endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_currentLocalBlock_and_after_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_currentLocalBlock_and_after_earlier_branch_end`, and `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_currentLocalBlock_and_after_earlier_branch_end`, plus their symmetric-tridiagonal wrappers | Ch11 | **new this session**; the coefficient-sum branch-matrix, full-base-row, and global-base-solve source endpoints now consume the support-reduced current-local-block plus after-earlier-branch-end route directly, deriving the full-row earlier-lift zero certificate internally while leaving the accepted-`2×2` base row equation explicit. |
@@ -1066,6 +1067,11 @@ source-facing forms for the four direct/checkerboard componentwise-`T` and
 `T`-norm inverse-entry endpoints, again deriving the exact recurrence and
 nonzero `H` pivots from `AasenSpec`, `H=T Lᵀ`, and concrete `T` subdiagonal
 nonzeros while retaining the concrete `T_hat` and middle-product hypotheses.
+A follow-up 2026-07-11 increment specializes those six principal-block,
+direct-middle, and checkerboard `H=T Lᵀ` inverse-entry endpoint families to
+`σ := id`, including unit-roundoff and displayed-cap source-smallness aliases.
+The concrete `T_hat` comparison, componentwise/`T`-norm cap, middle-product
+certificate, inverse-entry cap, and rounded update/budget facts remain explicit.
 
 2026-07-09 update: the printed split-entry endpoints
 `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_split_entry_budgets_printed_coeff`
@@ -4340,6 +4346,20 @@ Problem transcription.
     `Build completed successfully (3054 jobs)`;
     focused theorem-dependency checks of the twelve
     `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_*_of_H_eq_T_subdiagonal_ne_zero*`
+    inverse-entry endpoint aliases → elaborate; theorem dependencies
+    `[propext, Classical.choice, Quot.sound]`.
+    Hygiene checks `git diff --check`, placeholder scans for the changed Lean
+    file and added report lines, and tab scans over the touched files were
+    clean. Target-build warnings are pre-existing upstream warnings from
+    Chapter 9, Chapter 10, and `CholeskyFl`; no new Chapter 11 warning was
+    emitted.
+  - 2026-07-11 Theorem 11.8 componentwise/`T`-norm `H=T Lᵀ` sigma-id
+    inverse-entry alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused theorem-dependency checks of the eighteen
+    `higham11_8_AasenSpec_id_source_prefix_(componentwise_T|T_norm_cap)*_of_H_eq_T_subdiagonal_ne_zero*`
     inverse-entry endpoint aliases → elaborate; theorem dependencies
     `[propext, Classical.choice, Quot.sound]`.
     Hygiene checks `git diff --check`, placeholder scans for the changed Lean
