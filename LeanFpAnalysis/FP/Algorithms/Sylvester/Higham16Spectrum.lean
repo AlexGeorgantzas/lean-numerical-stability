@@ -11158,6 +11158,24 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_det_
       ⟨p, q, hpval, hqval, hfront, hsame,
         hblock_det p q hpq hsame, hXp, hXq⟩
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for generated-frontier Schur-coordinate traversal
+    from explicit determinant-separation certificates. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_det_separation_generated_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_det_separation_generated_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for generated-frontier original-coordinate
+    reconstruction from explicit determinant-separation certificates. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_det_separation_generated_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_det_separation_generated_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for generated-frontier original-coordinate unique
+    solvability from explicit determinant-separation certificates. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_det_separation_generated_frontier_step_oracle :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_det_separation_generated_frontier_step_oracle
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
     Schur-coordinate solvability from the generated quasi-Schur frontier
     schedule when same-block two-column steps supply the bundled real-quasi-Schur
