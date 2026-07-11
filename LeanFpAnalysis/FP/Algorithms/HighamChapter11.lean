@@ -33775,6 +33775,72 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
           (k + 1) step Δloc (hearlierPrefixEach Δloc hwit))
       hrow_second_base
 
+/-- **Theorem 11.7 branch-matrix deep-support source endpoint,
+coefficient-sum form**, zero common offset.  Local deep leading-support
+certificates supply both the current-local-block and summed prefix-zero
+earlier-lift side conditions needed by the decomposed branch-matrix
+second-pivot endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_deepLeadingBlockSupport :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      (hdeep :
+        ∀ Δloc : ∀ t : Fin (k + 1),
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+              Fin (higham11_7_tridiagonalBranchAmbientDim
+                (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+          higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+            (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+            (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+            c_bound c_rec (fun _ : Fin (k + 1) => u) tail_fl tail_exact Δloc →
+          ∀ t : Fin (k + 1), ∀ _hstep : step t = PivotSize.two,
+            ∀ s : Fin (k + 1), s.val < t.val →
+              ∃ localOffset : ℕ,
+                higham11_7_TridiagonalLeadingBlockSupport
+                  (higham11_7_tridiagonalBranchAmbientDim
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step s)
+                    (step s))
+                  localOffset (Δloc s) ∧
+                higham11_7_tridiagonalPathPrefixSpan (k + 1) step t +
+                    higham11_7_tridiagonalBranchSupportOffset (step t) ≤
+                  higham11_7_tridiagonalPathPrefixSpan (k + 1) step s +
+                    localOffset)
+      hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA
+      (fun Δloc hwit =>
+        higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock_of_deepLeadingBlockSupport
+          (k + 1) step Δloc (hdeep Δloc hwit))
+      (fun Δloc hwit =>
+        higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_zeroBeforePrefix
+          (k + 1) step Δloc
+          (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_liftedSupportAfterBranchEnd
+            (k + 1) step Δloc
+            (higham11_7_ConcretePathSecondPivotEarlierLiftRowsLiftedSupportAfterBranchEnd_of_deepLeadingBlockSupport
+              (k + 1) step Δloc (hdeep Δloc hwit))))
+      hrow_second_base
+
+/-- Symmetric-tridiagonal source form of the branch-matrix deep-support
+coefficient endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_isSymTridiagonal_and_deepLeadingBlockSupport :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hdeep hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_deepLeadingBlockSupport
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hdeep hrow_second_base
+
 /-- **Theorem 11.7 branch-matrix support-reduced prefix source endpoint,
 coefficient-sum form**, zero common offset.  This version only asks for
 pointwise earlier-lift zeros on the intermediate columns after each strictly
