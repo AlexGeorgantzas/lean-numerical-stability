@@ -11702,6 +11702,24 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_loca
           (hblock_noCommon p q hpq hsame))
       hXblock
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for generated-frontier Schur-coordinate traversal
+    from per-block local no-common certificates. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_local_no_common_generated_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_local_no_common_generated_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for generated-frontier original-coordinate
+    reconstruction from per-block local no-common certificates. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_local_no_common_generated_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_local_no_common_generated_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for generated-frontier original-coordinate unique
+    solvability from per-block local no-common certificates. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_local_no_common_generated_frontier_step_oracle :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_local_no_common_generated_frontier_step_oracle
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
     Schur-coordinate solvability from the generated quasi-Schur frontier
     schedule.  A single global vec/Kronecker determinant nonsingularity
@@ -12694,6 +12712,26 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_c
     have hpq : q.val = p.val + 1 := by omega
     rcases hXblock p q hpq hsame with ⟨hXp, hXq⟩
     exact Or.inr ⟨p, q, hpval, hqval, hfront, hsame, hXp, hXq⟩
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for generated-frontier Schur-coordinate traversal
+    under real-Schur two-block spectral data and original no-common spectrum. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_generated_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_generated_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for generated-frontier original-coordinate
+    reconstruction under real-Schur two-block spectral data and no-common
+    spectrum. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_no_common_generated_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_no_common_generated_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for generated-frontier original-coordinate unique
+    solvability under real-Schur two-block spectral data and no-common
+    spectrum. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_common_generated_frontier_step_oracle :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_common_generated_frontier_step_oracle
 
 /-- Generated-frontier Bartels-Stewart candidate formula oracle for a real
     quasi-Schur block map.  Singleton columns are supplied by the shifted

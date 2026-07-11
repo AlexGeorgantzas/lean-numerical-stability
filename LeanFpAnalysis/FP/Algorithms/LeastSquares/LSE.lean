@@ -70141,6 +70141,171 @@ noncomputable def theorem20_8KKTMultiplierSmallGainSelfCoeff {m n p : ℕ}
     (1 - LSEKKTInverseMultiplierStatCoeff hB hnull *
       (eps * frobNormRect B))
 
+/-- Linear-in-`eps` numerator majorant for the multiplier-row self coefficient
+    when `0 <= eps <= 1`. -/
+noncomputable def theorem20_8KKTMultiplierSelfLinearCoeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
+  LSEKKTInverseMultiplierDataCoeff hB hnull * frobNormRect A +
+    2 * LSEKKTInverseMultiplierStatCoeff hB hnull *
+      frobNormRect A * frobNormRect A +
+    LSEKKTInverseMultiplierConstrCoeff hB hnull * frobNormRect B
+
+theorem theorem20_8KKTMultiplierSelfLinearCoeff_nonneg {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    0 ≤ theorem20_8KKTMultiplierSelfLinearCoeff hB hnull := by
+  have hA_nonneg : 0 ≤ frobNormRect A := frobNormRect_nonneg A
+  have hB_nonneg : 0 ≤ frobNormRect B := frobNormRect_nonneg B
+  have hdata_nonneg : 0 ≤ LSEKKTInverseMultiplierDataCoeff hB hnull :=
+    LSEKKTInverseMultiplierDataCoeff_nonneg hB hnull
+  have hstat_nonneg : 0 ≤ LSEKKTInverseMultiplierStatCoeff hB hnull :=
+    LSEKKTInverseMultiplierStatCoeff_nonneg hB hnull
+  have hconstr_nonneg : 0 ≤ LSEKKTInverseMultiplierConstrCoeff hB hnull :=
+    LSEKKTInverseMultiplierConstrCoeff_nonneg hB hnull
+  have hdata :
+      0 ≤ LSEKKTInverseMultiplierDataCoeff hB hnull * frobNormRect A :=
+    mul_nonneg hdata_nonneg hA_nonneg
+  have hstat :
+      0 ≤ 2 * LSEKKTInverseMultiplierStatCoeff hB hnull *
+          frobNormRect A * frobNormRect A :=
+    mul_nonneg
+      (mul_nonneg (mul_nonneg (by norm_num) hstat_nonneg) hA_nonneg)
+      hA_nonneg
+  have hconstr :
+      0 ≤ LSEKKTInverseMultiplierConstrCoeff hB hnull * frobNormRect B :=
+    mul_nonneg hconstr_nonneg hB_nonneg
+  simpa [theorem20_8KKTMultiplierSelfLinearCoeff] using
+    add_nonneg (add_nonneg hdata hstat) hconstr
+
+/-- The multiplier-row self numerator is bounded by its linear-in-`eps`
+    majorant for `0 <= eps <= 1`. -/
+theorem theorem20_8KKTMultiplierSelfNumerator_le_linear_of_eps_le_one
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ} (heps_nonneg : 0 ≤ eps) (heps_le_one : eps ≤ 1) :
+    LSEKKTInverseMultiplierDataCoeff hB hnull * (eps * frobNormRect A) +
+        LSEKKTInverseMultiplierStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseMultiplierConstrCoeff hB hnull * (eps * frobNormRect B) ≤
+      eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull := by
+  have hA_nonneg : 0 ≤ frobNormRect A := frobNormRect_nonneg A
+  have hstat_nonneg : 0 ≤ LSEKKTInverseMultiplierStatCoeff hB hnull :=
+    LSEKKTInverseMultiplierStatCoeff_nonneg hB hnull
+  have hone_eps_le_two : 1 + eps ≤ 2 := by linarith
+  have hfactor :
+      (1 + eps) * frobNormRect A ≤ 2 * frobNormRect A :=
+    mul_le_mul_of_nonneg_right hone_eps_le_two hA_nonneg
+  have hepsA_nonneg : 0 ≤ eps * frobNormRect A :=
+    mul_nonneg heps_nonneg hA_nonneg
+  have hprod :
+      (eps * frobNormRect A) * ((1 + eps) * frobNormRect A) ≤
+        (eps * frobNormRect A) * (2 * frobNormRect A) :=
+    mul_le_mul_of_nonneg_left hfactor hepsA_nonneg
+  have hstat :
+      LSEKKTInverseMultiplierStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) ≤
+        LSEKKTInverseMultiplierStatCoeff hB hnull *
+          ((eps * frobNormRect A) * (2 * frobNormRect A)) :=
+    mul_le_mul_of_nonneg_left hprod hstat_nonneg
+  calc
+    LSEKKTInverseMultiplierDataCoeff hB hnull * (eps * frobNormRect A) +
+          LSEKKTInverseMultiplierStatCoeff hB hnull *
+            ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+          LSEKKTInverseMultiplierConstrCoeff hB hnull *
+            (eps * frobNormRect B)
+        ≤ LSEKKTInverseMultiplierDataCoeff hB hnull * (eps * frobNormRect A) +
+          LSEKKTInverseMultiplierStatCoeff hB hnull *
+            ((eps * frobNormRect A) * (2 * frobNormRect A)) +
+          LSEKKTInverseMultiplierConstrCoeff hB hnull *
+            (eps * frobNormRect B) := by
+        linarith
+    _ = eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull := by
+        simp [theorem20_8KKTMultiplierSelfLinearCoeff]
+        ring
+
+/-- A half-denominator margin converts the multiplier-row self quotient into
+    twice the linear-in-`eps` numerator majorant. -/
+theorem theorem20_8KKTMultiplierSmallGainSelfCoeff_le_two_mul_linear_of_eps_le_one_of_gain_le_half
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ} (heps_nonneg : 0 ≤ eps) (heps_le_one : eps ≤ 1)
+    (hgain_half :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) ≤
+        (1 : ℝ) / 2) :
+    theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps ≤
+      2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull := by
+  have hdenpos :
+      0 < 1 -
+        LSEKKTInverseMultiplierStatCoeff hB hnull *
+          (eps * frobNormRect B) := by
+    linarith
+  have hnum_le :=
+    theorem20_8KKTMultiplierSelfNumerator_le_linear_of_eps_le_one
+      hB hnull heps_nonneg heps_le_one
+  have hlin_nonneg :
+      0 ≤ eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull :=
+    mul_nonneg heps_nonneg
+      (theorem20_8KKTMultiplierSelfLinearCoeff_nonneg hB hnull)
+  have hfactor :
+      1 ≤ 2 *
+        (1 -
+          LSEKKTInverseMultiplierStatCoeff hB hnull *
+            (eps * frobNormRect B)) := by
+    linarith
+  have hscaled :
+      eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull ≤
+        (2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull) *
+          (1 -
+            LSEKKTInverseMultiplierStatCoeff hB hnull *
+              (eps * frobNormRect B)) := by
+    calc
+      eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull
+          = eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull * 1 := by
+            ring
+      _ ≤ eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull *
+            (2 *
+              (1 -
+                LSEKKTInverseMultiplierStatCoeff hB hnull *
+                  (eps * frobNormRect B))) :=
+            mul_le_mul_of_nonneg_left hfactor hlin_nonneg
+      _ = (2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull) *
+            (1 -
+              LSEKKTInverseMultiplierStatCoeff hB hnull *
+                (eps * frobNormRect B)) := by
+            ring
+  have hquot :
+      (LSEKKTInverseMultiplierDataCoeff hB hnull * (eps * frobNormRect A) +
+          LSEKKTInverseMultiplierStatCoeff hB hnull *
+            ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+          LSEKKTInverseMultiplierConstrCoeff hB hnull *
+            (eps * frobNormRect B)) /
+        (1 -
+          LSEKKTInverseMultiplierStatCoeff hB hnull *
+            (eps * frobNormRect B)) ≤
+          2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull := by
+    rw [div_le_iff₀ hdenpos]
+    exact hnum_le.trans hscaled
+  simpa [theorem20_8KKTMultiplierSmallGainSelfCoeff] using hquot
+
+/-- A source-facing linear smallness condition discharges the multiplier-row
+    self coefficient under the half-denominator margin. -/
+theorem theorem20_8KKTMultiplierSmallGainSelfCoeff_lt_one_of_two_mul_eps_mul_linearCoeff_lt_one
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ} (heps_nonneg : 0 ≤ eps) (heps_le_one : eps ≤ 1)
+    (hgain_half :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) ≤
+        (1 : ℝ) / 2)
+    (hsmall :
+      2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull < 1) :
+    theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps < 1 :=
+  (theorem20_8KKTMultiplierSmallGainSelfCoeff_le_two_mul_linear_of_eps_le_one_of_gain_le_half
+    hB hnull heps_nonneg heps_le_one hgain_half).trans_lt hsmall
+
 /-- The multiplier-row small-gain scale is affine in the supplied
     perturbed-solution scale.  This is the scalar bridge used to remove the
     explicit `yScale` assumption in the coupled KKT route. -/
