@@ -72614,6 +72614,51 @@ theorem theorem20_8KKTLinearizedGainSmallnessCoeff_ge_one
   dsimp [theorem20_8KKTLinearizedGainSmallnessCoeff]
   linarith
 
+/-- Reciprocal source-facing threshold for the single linearized KKT smallness
+    coefficient in the current Theorem 20.8 route. -/
+noncomputable def theorem20_8KKTLinearizedGainSmallnessThreshold
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
+  (theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull)⁻¹
+
+/-- The source-facing KKT smallness threshold is positive. -/
+theorem theorem20_8KKTLinearizedGainSmallnessThreshold_pos
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    0 < theorem20_8KKTLinearizedGainSmallnessThreshold hB hnull := by
+  have hcoeff_pos :
+      0 < theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull := by
+    have hcoeff_ge_one :
+        1 ≤ theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull :=
+      theorem20_8KKTLinearizedGainSmallnessCoeff_ge_one hB hnull
+    linarith
+  simpa [theorem20_8KKTLinearizedGainSmallnessThreshold] using
+    inv_pos.mpr hcoeff_pos
+
+/-- Source-facing threshold form of the linearized KKT smallness comparison:
+    `eps < 1/C` implies `eps*C < 1`. -/
+theorem theorem20_8KKTLinearizedGainSmallnessCoeff_eps_mul_lt_one_of_eps_lt_threshold
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ}
+    (heps_lt :
+      eps < theorem20_8KKTLinearizedGainSmallnessThreshold hB hnull) :
+    eps * theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull < 1 := by
+  let C : ℝ := theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull
+  have hC_pos : 0 < C := by
+    have hC_ge_one : 1 ≤ C := by
+      dsimp [C]
+      exact theorem20_8KKTLinearizedGainSmallnessCoeff_ge_one hB hnull
+    linarith
+  have heps_lt_inv : eps < C⁻¹ := by
+    simpa [theorem20_8KKTLinearizedGainSmallnessThreshold, C] using heps_lt
+  have hmul : eps * C < C⁻¹ * C :=
+    mul_lt_mul_of_pos_right heps_lt_inv hC_pos
+  simpa [C, inv_mul_cancel₀ (ne_of_gt hC_pos)] using hmul
+
 /-- Bundled scalar small-gain hypotheses for the current source-residual-ratio
     KKT route for Higham Theorem 20.8. -/
 def theorem20_8KKTSourceResidualRatioGainConditions {m n p : ℕ}
@@ -72831,6 +72876,24 @@ theorem theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessC
       hB hnull heps_nonneg heps_le_one hmultGainHalf hsolSmall
       hcoupledLinearMargin
 
+/-- Threshold form of
+    `theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessCoeff`.
+    The public hypothesis is the source-facing `eps < 1/C` comparison. -/
+theorem theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessThreshold
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ} (heps_nonneg : 0 ≤ eps)
+    (hsmall :
+      eps < theorem20_8KKTLinearizedGainSmallnessThreshold hB hnull) :
+    theorem20_8KKTSourceResidualRatioGainConditions hB hnull eps := by
+  have hsmall_prod :
+      eps * theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull < 1 :=
+    theorem20_8KKTLinearizedGainSmallnessCoeff_eps_mul_lt_one_of_eps_lt_threshold
+      hB hnull hsmall
+  exact theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessCoeff
+    hB hnull heps_nonneg hsmall_prod
+
 /-- The scalar right-hand side of the current source-residual-ratio KKT bound
     for Higham Theorem 20.8.  This keeps the public theorem below readable
     while preserving all inverse-block coefficients and gain hypotheses
@@ -73029,6 +73092,42 @@ theorem
   have hgain :
       theorem20_8KKTSourceResidualRatioGainConditions hB hnull eps :=
     theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessCoeff
+      hB hnull heps_nonneg hsmall
+  exact
+    hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_gainConditions
+      hy hB hBpert hnull hxnorm hbudget heps_nonneg hgain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    named-bound KKT estimate with the bundled scalar gain predicate discharged
+    by the reciprocal linearized smallness threshold. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_linearized_smallnessThreshold
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hsmall :
+      eps < theorem20_8KKTLinearizedGainSmallnessThreshold hB hnull) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      theorem20_8KKTSourceResidualRatioCoupledBound hB hnull b x eps := by
+  have hgain :
+      theorem20_8KKTSourceResidualRatioGainConditions hB hnull eps :=
+    theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessThreshold
       hB hnull heps_nonneg hsmall
   exact
     hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_gainConditions
@@ -73265,6 +73364,55 @@ theorem
         ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
           hStack) eps :=
     theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessCoeff
+      hB ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+        hStack) heps_nonneg hsmall
+  exact
+    hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
+      hy hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hgain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-ranked maximum-relative-perturbation KKT estimate with the bundled
+    gain predicate discharged by the reciprocal linearized smallness threshold. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank_linearized_smallnessThreshold
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hB.transposeVecNorm2LowerMargin)
+    (hsmall :
+      eps <
+          theorem20_8KKTLinearizedGainSmallnessThreshold hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack)) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      theorem20_8KKTSourceResidualRatioCoupledBound hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) b x eps := by
+  have heps_nonneg : 0 ≤ eps :=
+    (theorem20_8MaxRelativePerturbation_nonneg A DeltaA b Deltab B DeltaB d
+      Deltad hApos).trans hmax
+  have hgain :
+      theorem20_8KKTSourceResidualRatioGainConditions hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) eps :=
+    theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessThreshold
       hB ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
         hStack) heps_nonneg hsmall
   exact
@@ -75615,6 +75763,60 @@ theorem
         ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
           hStack) eps :=
     theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessCoeff
+      hB ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+        hStack) heps_nonneg hsmall
+  exact
+    hx.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
+      hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hStackSmall hgain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    GQR-shaped source-rank existence-plus-bound KKT route with the bundled
+    gain predicate discharged by the reciprocal linearized smallness threshold. -/
+theorem
+    IsLSEMinimizer.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_linearized_smallnessThreshold
+    {r p q : ℕ}
+    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
+    {b Deltab : Fin (r + q) → ℝ}
+    {B DeltaB : Fin p → Fin (p + q) → ℝ}
+    {d Deltad : Fin p → ℝ} {x : Fin (p + q) → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hB.transposeVecNorm2LowerMargin)
+    (hStackSmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hStack.vecNorm2LowerMargin)
+    (hsmall :
+      eps <
+          theorem20_8KKTLinearizedGainSmallnessThreshold hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack)) :
+    ∃! y : Fin (p + q) → ℝ,
+      IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) y ∧
+        vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+          theorem20_8KKTSourceResidualRatioCoupledBound hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) b x eps := by
+  have heps_nonneg : 0 ≤ eps :=
+    (theorem20_8MaxRelativePerturbation_nonneg A DeltaA b Deltab B DeltaB d
+      Deltad hApos).trans hmax
+  have hgain :
+      theorem20_8KKTSourceResidualRatioGainConditions hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) eps :=
+    theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessThreshold
       hB ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
         hStack) heps_nonneg hsmall
   exact
