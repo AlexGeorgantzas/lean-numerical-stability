@@ -9698,6 +9698,32 @@ theorem lyapunov_relative_first_order_bound_spectralDiagonal_of_vecCoeff_entrywi
       hU hA halpha hgamma hsigma heps hX hgap
       hDeltaA hDeltaC hLin
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
+    source-numbered alias for the concrete Lyapunov vec/Kronecker
+    entrywise-gap first-order bound. -/
+alias H16_eq16_27_lyapunov_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge :=
+  lyapunov_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
+    source-numbered alias for the relative concrete Lyapunov vec/Kronecker
+    entrywise-gap first-order bound. -/
+alias H16_eq16_27_lyapunov_relative_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge :=
+  lyapunov_relative_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal
+    spectral-coordinate case:
+    source-numbered alias for the concrete Lyapunov vec/Kronecker
+    entrywise-gap first-order bound. -/
+alias H16_eq16_27_lyapunov_first_order_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge :=
+  lyapunov_first_order_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal
+    spectral-coordinate case:
+    source-numbered alias for the relative concrete Lyapunov vec/Kronecker
+    entrywise-gap first-order bound. -/
+alias H16_eq16_27_lyapunov_relative_first_order_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge :=
+  lyapunov_relative_first_order_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge
+
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal
     spectral-coordinate case:
     source-shaped Lyapunov first-order perturbation bound from the
