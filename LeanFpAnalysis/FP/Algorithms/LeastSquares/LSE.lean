@@ -73220,6 +73220,58 @@ theorem
       hy hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hgain
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-ranked maximum-relative-perturbation KKT estimate with the bundled
+    gain predicate discharged by one linearized smallness comparison.  This is
+    the existing-perturbed-minimizer companion to the corresponding
+    existence-plus-bound wrapper below. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank_linearized_smallnessCoeff
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hB.transposeVecNorm2LowerMargin)
+    (hsmall :
+      eps *
+          theorem20_8KKTLinearizedGainSmallnessCoeff hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) <
+        1) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      theorem20_8KKTSourceResidualRatioCoupledBound hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) b x eps := by
+  have heps_nonneg : 0 ≤ eps :=
+    (theorem20_8MaxRelativePerturbation_nonneg A DeltaA b Deltab B DeltaB d
+      Deltad hApos).trans hmax
+  have hgain :
+      theorem20_8KKTSourceResidualRatioGainConditions hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) eps :=
+    theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessCoeff
+      hB ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+        hStack) heps_nonneg hsmall
+  exact
+    hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
+      hy hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hgain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     canonical KKT response bound with the perturbed-solution scale absorbed by
     a scalar small-gain condition.  The remaining scale assumptions are the
     source residual scale and the actual perturbed multiplier scale. -/
