@@ -619,6 +619,42 @@ theorem existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_c
       (sylvesterVecCoeff_det_ne_zero_of_no_common_complex_eigenpair m n A B hno)
       c
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.3):
+    source-numbered alias for injectivity from supplied no-common complex
+    right eigenpairs. -/
+alias H16_eq16_3_sylvesterVecCoeff_mulVec_injective_of_no_common_complex_eigenpair :=
+  sylvesterVecCoeff_mulVec_injective_of_no_common_complex_eigenpair
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.3):
+    source-numbered alias for the zero-kernel characterization from supplied
+    no-common complex right eigenpairs. -/
+alias H16_eq16_3_sylvesterVecCoeff_mulVec_eq_zero_iff_of_no_common_complex_eigenpair :=
+  sylvesterVecCoeff_mulVec_eq_zero_iff_of_no_common_complex_eigenpair
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.3):
+    source-numbered alias for surjectivity from supplied no-common complex
+    right eigenpairs. -/
+alias H16_eq16_3_sylvesterVecCoeff_mulVec_surjective_of_no_common_complex_eigenpair :=
+  sylvesterVecCoeff_mulVec_surjective_of_no_common_complex_eigenpair
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.3):
+    source-numbered alias for bijectivity from supplied no-common complex
+    right eigenpairs. -/
+alias H16_eq16_3_sylvesterVecCoeff_mulVec_bijective_of_no_common_complex_eigenpair :=
+  sylvesterVecCoeff_mulVec_bijective_of_no_common_complex_eigenpair
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.3):
+    source-numbered alias for the unique vectorized coefficient solve from
+    supplied no-common complex right eigenpairs. -/
+alias H16_eq16_3_existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_eigenpair :=
+  existsUnique_sylvesterVecCoeff_mulVec_of_no_common_complex_eigenpair
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.2)-(16.3):
+    source-numbered alias for the nonsingular-inverse vectorized solve witness
+    from supplied no-common complex right eigenpairs. -/
+alias H16_eq16_3_existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_eigenpair :=
+  existsUnique_sylvesterVecCoeff_nonsingInv_mulVec_solution_of_no_common_complex_eigenpair
+
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), named
     spectral-separation form: no common complex right eigenvalue for the
     complexified real factors makes the real Sylvester vec coefficient action
@@ -757,6 +793,12 @@ theorem existsUnique_isSylvesterSolutionRect_of_no_common_complex_eigenpair
           Matrix.vec C :=
       (sylvester_vec_system_iff_solution m n A B C Y).mpr hY
     rw [huniq (Matrix.vec Y) hYvec, hXvec]
+
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.1)-(16.6):
+    source-numbered alias for the exact matrix-equation unique-solve route
+    from supplied no-common complex right eigenpairs. -/
+alias H16_eq16_3_existsUnique_isSylvesterSolutionRect_of_no_common_complex_eigenpair :=
+  existsUnique_isSylvesterSolutionRect_of_no_common_complex_eigenpair
 
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.1)-(16.6), named
     spectral-separation form: no common complex right eigenvalue for the
