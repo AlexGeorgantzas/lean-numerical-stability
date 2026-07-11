@@ -19097,6 +19097,30 @@ abbrev higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix
           (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
           j) = 0
 
+/-- Pointwise earlier-lift zero before the current branch prefix, at an
+accepted `2 × 2` branch's second-pivot row.  This is the unsummed version of
+`higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix`. -/
+abbrev higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ) :
+    Prop :=
+  ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+    ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+      ∀ s : Fin k, s.val < t.val →
+        higham11_7_tridiagonalLiftLocalBlockPerturbation
+          (higham11_7_tridiagonalPathPivotSpan k step + 1)
+          (higham11_7_tridiagonalPathPrefixSpan k step s)
+          (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step s) (step s))
+          (ΔA s)
+          (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+          j = 0
+
 /-- Pointwise zero of every earlier lifted perturbation gives the summed
 earlier-lift prefix-zero condition. -/
 theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_each
@@ -19124,6 +19148,23 @@ theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_
   refine Finset.sum_eq_zero ?_
   intro s hs
   exact hzero t hstep j hj s (Finset.mem_filter.mp hs).2
+
+/-- Pointwise prefix-zero earlier-lift facts imply the summed prefix-zero
+side condition. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_zeroBeforePrefix
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hzero :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix
+        k step ΔA) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix
+        k step ΔA :=
+  higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_each
+    k step ΔA hzero
 
 /-- Strong pointwise row-zero condition for strictly earlier lifted
 perturbations at an accepted `2 × 2` second-pivot row.  Unlike ordinary
@@ -19168,6 +19209,23 @@ theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock
   exact hzero t hstep
     (higham11_7_tridiagonalPathLocalBlockIndex k step t j) s hst
 
+/-- Full-row earlier-lift zero implies the pointwise prefix-zero side condition
+at an accepted `2 × 2` second-pivot row. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_fullSecondPivotRow
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hzero :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+        k step ΔA) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix
+        k step ΔA := by
+  intro t hstep j _hj s hst
+  exact hzero t hstep j s hst
+
 /-- Full-row earlier-lift zero implies the summed prefix-zero side condition at
 an accepted `2 × 2` second-pivot row. -/
 theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_fullSecondPivotRow
@@ -19184,6 +19242,41 @@ theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_
         k step ΔA :=
   higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_each
     k step ΔA (fun t hstep j _hj s hs => hzero t hstep j s hs)
+
+/-- Local-block earlier-lift zero plus pointwise prefix-zero reconstruct the
+single full-row earlier-lift zero condition.  The current branch-local block is
+the suffix beginning at the branch prefix, so every ambient column is either
+before that prefix or in the local block. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_currentLocalBlock_and_zeroBeforePrefix
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hlocal :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock
+        k step ΔA)
+    (hprefix :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix
+        k step ΔA) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+        k step ΔA := by
+  intro t hstep j s hst
+  by_cases hj_prefix : j.val < higham11_7_tridiagonalPathPrefixSpan k step t
+  · exact hprefix t hstep j hj_prefix s hst
+  · have hj_mem :
+        ∃ a : Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step t) (step t)),
+          higham11_7_tridiagonalPathLocalBlockIndex k step t a = j := by
+      by_contra hnot
+      have hj_lt :=
+        (higham11_7_tridiagonalPathLocalBlockIndex_not_exists_iff_lt_prefixSpan
+          k step t j).1 hnot
+      exact hj_prefix hj_lt
+    rcases hj_mem with ⟨a, ha⟩
+    rw [← ha]
+    exact hlocal t hstep s hst a
 
 /-- If every accepted `2 × 2` branch is the initial branch, then a second-pivot
 row has no strictly earlier branch lifts on its current local block. -/
