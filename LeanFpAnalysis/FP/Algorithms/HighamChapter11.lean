@@ -23400,6 +23400,74 @@ theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base
   higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isTridiagonal_and_liftedSupportAfterBranchEnd
     k step A b x_hat ΔA hA.2 hsupp hrows
 
+/-- Source-facing branch-matrix second-pivot handoff for Higham, Theorem 11.7
+(2nd ed., §11.1.4): local deep leading-support certificates are packaged into
+the ambient support-after-branch-end family before applying the combined-row
+handoff. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isTridiagonal_and_deepLeadingBlockSupport
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hA : IsTridiagonal (higham11_7_tridiagonalPathPivotSpan k step + 1) A)
+    (hdeep : ∀ t : Fin k, ∀ _hstep : step t = PivotSize.two,
+      ∀ s : Fin k, s.val < t.val →
+        ∃ localOffset : ℕ,
+          higham11_7_TridiagonalLeadingBlockSupport
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            localOffset (ΔA s) ∧
+          higham11_7_tridiagonalPathPrefixSpan k step t +
+              higham11_7_tridiagonalBranchSupportOffset (step t) ≤
+            higham11_7_tridiagonalPathPrefixSpan k step s + localOffset)
+    (hrows :
+      higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows
+        k step A b x_hat) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows
+        k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isTridiagonal_and_liftedSupportAfterBranchEnd
+    k step A b x_hat ΔA hA
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsLiftedSupportAfterBranchEnd_of_deepLeadingBlockSupport
+      k step ΔA hdeep)
+    hrows
+
+/-- Symmetric-tridiagonal source-facing form of the deep-support branch-matrix
+second-pivot handoff for Higham, Theorem 11.7 (2nd ed., §11.1.4). -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isSymTridiagonal_and_deepLeadingBlockSupport
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hA : IsSymTridiagonal
+      (higham11_7_tridiagonalPathPivotSpan k step + 1) A)
+    (hdeep : ∀ t : Fin k, ∀ _hstep : step t = PivotSize.two,
+      ∀ s : Fin k, s.val < t.val →
+        ∃ localOffset : ℕ,
+          higham11_7_TridiagonalLeadingBlockSupport
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            localOffset (ΔA s) ∧
+          higham11_7_tridiagonalPathPrefixSpan k step t +
+              higham11_7_tridiagonalBranchSupportOffset (step t) ≤
+            higham11_7_tridiagonalPathPrefixSpan k step s + localOffset)
+    (hrows :
+      higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows
+        k step A b x_hat) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows
+        k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isTridiagonal_and_deepLeadingBlockSupport
+    k step A b x_hat ΔA hA.2 hdeep hrows
+
 /-- Initial-only accepted `2 × 2` branches have vacuous earlier-lift side
 conditions, so branch-matrix base rows and tridiagonal base support give the
 combined second-pivot handoff directly. -/
