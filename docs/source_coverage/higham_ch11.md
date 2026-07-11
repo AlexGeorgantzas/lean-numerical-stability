@@ -292,6 +292,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.8 `AasenSpec` product-majorant source-prefix endpoint | `higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity`, `higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity_of_unit_roundoff_bound`, `higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity_of_u_le_cap` | Ch11 | **new this session**; lifts the source-prefix concrete product-majorant printed-radius route through identity-permutation `AasenSpec`, deriving the exact product, Aasen recurrence, and nonzero `H` subdiagonal pivots from `H=T Lᵀ` plus concrete `T` subdiagonal nonzeros. The smallness aliases derive the printed `gammaValid (15n+25)` guard from source-style conditions. The concrete `T_hat` comparison, outer-factor product/norm majorants, middle abs-LU bound, and gamma-share inequalities remain explicit. |
 | Thm 11.8 exact-`T_hat` `AasenSpec` product-majorant endpoint | `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_gamma_parts_gamma_validity`, `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_gamma_parts_gamma_validity_of_unit_roundoff_bound`, `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_gamma_parts_gamma_validity_of_u_le_cap` | Ch11 | **new this session**; specializes the `AasenSpec` product-majorant source-prefix route to the exact middle case `T_hat=T`, deriving the `κT=1` norm cap and zero `κBT` factorization budget internally and dropping the zero coefficient share from the caller. The remaining outer-factor product majorants, middle abs-LU bound, and nonzero gamma-share inequalities stay explicit. |
 | Thm 11.8 exact-`T_hat` checkerboard principal-block product endpoint | `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint`, `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_of_unit_roundoff_bound`, `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_of_u_le_cap` | Ch11 | **new this session**; further specializes the exact-middle `AasenSpec` product-majorant route by deriving the coefficient-one middle product bound `|L_T||U_T|≤|T_hat|` from the checkerboard total-nonnegative principal-block determinant certificate and `LUFactSpec`. The remaining obligations are now the exact outer-factor product majorants and the nonzero gamma-share inequalities. |
+| Thm 11.8 exact-`T_hat` checkerboard inverse-entry product endpoint | `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_of_inverse_entry_bound_of_unit_roundoff_bound`, `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_of_inverse_entry_bound_of_u_le_cap` | Ch11 | **new this session**; specializes the exact-middle checkerboard product-majorant route to the source-style inverse exact outer-factor entry bound `|Lᵢⱼ|≤1/(1+γ_n)`, deriving the exact and relative `(n−1)^2` outer-factor square caps plus the `γ_{2n}`, `γ_{2n}`, and `γ_{6n}` share allocation internally. The remaining obligations are the exact `T_hat=T` equality, checkerboard principal-block certificate, and rounded source-prefix update/budget facts. |
 | Problem-support algebra 11.1/11.2/11.4/11.7/11.8/11.9 | `higham11_problem_11_*` (see file) | Ch11 | reusable symmetric/SPD/quasidefinite algebra; not exercise transcriptions |
 
 ## Source predicates / definitions (honest models, no assumed conclusions)
@@ -821,6 +822,14 @@ derives the exact route's coefficient-one middle abs-LU product bound from the
 checkerboard total-nonnegative principal-block determinant certificate and
 `LUFactSpec`, so the remaining exact-middle product-majorant caller obligations
 are the outer-factor product majorants and nonzero gamma-share inequalities.
+
+2026-07-11 update:
+`higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_of_inverse_entry_bound`
+adds the source inverse-entry form of that checkerboard product-majorant route.
+The direct `|Lᵢⱼ|≤1/(1+γ_n)` hypothesis plus `AasenSpec` now supply the exact
+and relative `(n-1)^2` square caps, and the endpoint allocates the nonzero
+gamma shares as `γ_{2n}`, `γ_{2n}`, and `γ_{6n}` under the printed
+`gammaValid (15n+25)` guard.
 
 2026-07-11 update:
 `higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint`
@@ -4402,6 +4411,20 @@ Problem transcription.
     `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_of_unit_roundoff_bound`,
     and
     `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_of_u_le_cap`
+    → axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-11 Theorem 11.8 exact-`T_hat` checkerboard inverse-entry product endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → pass;
+    Lean forbidden-token scan → clean;
+    docs diff forbidden-token scan → clean;
+    tab scan of the touched Lean/doc files → clean;
+    focused axiom checks of
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_of_inverse_entry_bound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_of_inverse_entry_bound_of_unit_roundoff_bound`,
+    and
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_of_inverse_entry_bound_of_u_le_cap`
     → axioms `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-11 Theorem 11.8 exact-`T_hat` checkerboard `H=T Lᵀ` inverse-entry endpoint increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
