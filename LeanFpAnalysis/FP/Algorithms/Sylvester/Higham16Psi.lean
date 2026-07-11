@@ -241,6 +241,12 @@ def SylvesterInverseOpBound (n : ℕ) (A B : Fin n → Fin n → ℝ) (M : ℝ) 
   ∀ Y : Fin n → Fin n → ℝ,
     frobNorm Y ≤ M * frobNorm (sylvesterOp n A B Y)
 
+/-- Higham, 2nd ed., Section 16.3, equation (16.24):
+    source-numbered abbreviation for the supplied inverse-operator bound
+    underlying the structured condition number `Psi`. -/
+abbrev H16_eq16_24_SylvesterInverseOpBound :=
+  SylvesterInverseOpBound
+
 /-- Higham, 2nd ed., §16.3, eq (16.24) (p. 313):
     a `SepLowerBound` supplies an inverse-operator bound with `M = 1 / sigma`.
     This records that `SylvesterInverseOpBound` is exactly the `||P^{-1}||`
@@ -278,6 +284,12 @@ theorem sylvesterInverseOpBound_of_sepLowerBound (n : ℕ)
 noncomputable def sylvesterPsi_of_inverseOpBound (n : ℕ)
     (X : Fin n → Fin n → ℝ) (α β γ M : ℝ) : ℝ :=
   M * ((α + β) * frobNorm X + γ) / frobNorm X
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.24):
+    source-numbered abbreviation for the supplied-inverse-bound structured
+    condition number value. -/
+noncomputable abbrev H16_eq16_24_sylvesterPsi_of_inverseOpBound :=
+  sylvesterPsi_of_inverseOpBound
 
 /-- Higham, 2nd ed., §16.3, eq (16.24) (p. 313):
     the supplied-`M` structured condition number satisfies the certificate
@@ -698,6 +710,12 @@ noncomputable def sylvesterPsiDiagonal (n : ℕ)
     (X : Fin n → Fin n → ℝ) (α β γ s : ℝ) : ℝ :=
   sylvesterPsi_of_inverseOpBound n X α β γ (1 / s)
 
+/-- Higham, 2nd ed., Section 16.3, equation (16.24), diagonal case:
+    source-numbered abbreviation for the explicit diagonal structured
+    condition number value. -/
+noncomputable abbrev H16_eq16_24_sylvesterPsiDiagonal :=
+  sylvesterPsiDiagonal
+
 /-- Higham, 2nd ed., §16.3, eq (16.24), diagonal case (p. 313):
     the diagonal structured condition number `sylvesterPsiDiagonal` satisfies the
     certificate predicate `SylvesterPsiFirstOrderBound` for the separated
@@ -717,6 +735,11 @@ theorem sylvesterPsiDiagonal_isPsiFirstOrderBound (n : ℕ)
   exact sylvesterPsi_of_inverseOpBound_isPsiFirstOrderBound n
     (Matrix.diagonal a) (Matrix.diagonal b) X α β γ (1 / s)
     hα hβ hγ hMnn hX hInv
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.24), diagonal case:
+    source-numbered alias for the diagonal structured-condition certificate. -/
+alias H16_eq16_24_sylvesterPsiDiagonal_isPsiFirstOrderBound :=
+  sylvesterPsiDiagonal_isPsiFirstOrderBound
 
 -- ============================================================
 -- Labeled (16.24)/(16.23) wrapper for the diagonal case
