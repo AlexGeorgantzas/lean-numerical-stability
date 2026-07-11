@@ -468,6 +468,65 @@ theorem sylvesterResidualRect_quasiTriangular_blockBackSub_componentwise_le
     intro l _
     exact mul_comm _ _
 
+/-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equations (16.7)-(16.8),
+    quasi-triangular (real Schur) variant: bundled endpoint exposing the
+    componentwise backward-error model, its vectorized residual consequence,
+    and the printed matrix residual form under one shared hypothesis list. -/
+theorem sylvesterVecCoeff_quasiTriangular_blockBackSub_componentwise_error_and_residual
+    (fp : FPModel) (m n : Nat) (dblR : Fin m → Bool)
+    (R : RMatFn m m) (S : RMatFn n n) (Ct : RMatFn m n) (ρ : Real)
+    (hRp : IsQuasiBlockPairing m dblR)
+    (hR : IsQuasiUpperTriangularFn m R dblR) (hS : IsUpperTriangularFn n S)
+    (hsep : ∀ (i : Fin m) (k : Fin n),
+      ¬(0 < i.val ∧ dblR ⟨i.val - 1, by omega⟩ = true) → R i i ≠ S k k)
+    (hpiv : ∀ (i i' : Fin m) (k : Fin n), i'.val = i.val + 1 →
+      dblR i = true →
+      flSolve2x2SecondPivot fp (R i i - S k k) (R i i') (R i' i)
+        (R i' i' - S k k) ≠ 0)
+    (hρ : 0 ≤ ρ)
+    (hgrow : ∀ (i i' : Fin m) (k : Fin n), i'.val = i.val + 1 →
+      dblR i = true →
+      |R i i'| * |R i' i| ≤ ρ * (|R i i - S k k| * |R i' i' - S k k|))
+    (hgv : gammaValid fp (n * m + 9)) :
+    (∃ ΔP : Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real,
+      (∀ p q, |ΔP p q| ≤ (1 + ρ) * gamma fp (n * m + 9) *
+        |sylvesterVecCoeff m n R S p q|) ∧
+      Matrix.mulVec (sylvesterVecCoeff m n R S + ΔP)
+          (flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct) =
+        Matrix.vec Ct) ∧
+    (∀ p : Prod (Fin n) (Fin m),
+      |Matrix.vec Ct p -
+          Matrix.mulVec (sylvesterVecCoeff m n R S)
+            (flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct) p| ≤
+        (1 + ρ) * gamma fp (n * m + 9) *
+          ∑ q, |sylvesterVecCoeff m n R S p q| *
+            |flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct q|) ∧
+    (∀ (i : Fin m) (k : Fin n),
+      |sylvesterResidualRect m n R S Ct
+          (flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct) i k| ≤
+        (1 + ρ) * gamma fp (n * m + 9) *
+          (matMulRect m m n (fun a b => |R a b|)
+              (fun a b =>
+                |flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct a b|)
+              i k +
+            matMulRect m n n
+              (fun a b =>
+                |flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct a b|)
+              (fun a b => |S a b|) i k)) := by
+  constructor
+  · exact
+      sylvesterVecCoeff_quasiTriangular_blockBackSub_backward_error_componentwise
+        fp m n dblR R S Ct ρ hRp hR hS hsep hpiv hρ hgrow hgv
+  constructor
+  · intro p
+    exact
+      sylvesterVecCoeff_quasiTriangular_blockBackSub_componentwise_residual
+        fp m n dblR R S Ct ρ hRp hR hS hsep hpiv hρ hgrow hgv p
+  · intro i k
+    exact
+      sylvesterResidualRect_quasiTriangular_blockBackSub_componentwise_le
+        fp m n dblR R S Ct ρ hRp hR hS hsep hpiv hρ hgrow hgv i k
+
 -- ============================================================
 -- Source-numbered aliases
 -- ============================================================
@@ -563,6 +622,12 @@ alias H16_eq16_8_quasi_sylvesterVecCoeff_blockBackSub_componentwise_residual :=
     `|C~ - R Z^ + Z^ S| <= (1+rho) gamma_{nm+9} (|R||Z^| + |Z^||S|)`. -/
 alias H16_eq16_8_quasi_sylvesterResidualRect_blockBackSub_componentwise_le :=
   sylvesterResidualRect_quasiTriangular_blockBackSub_componentwise_le
+
+/-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equations (16.7)-(16.8),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    bundled componentwise backward-error and residual endpoint package. -/
+alias H16_eq16_7_8_quasi_sylvesterVecCoeff_blockBackSub_componentwise_error_and_residual :=
+  sylvesterVecCoeff_quasiTriangular_blockBackSub_componentwise_error_and_residual
 
 end Wave15
 
