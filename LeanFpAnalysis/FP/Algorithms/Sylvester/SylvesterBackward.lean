@@ -616,6 +616,24 @@ theorem xiSq_le_mu_relative_residual_sq (n : ℕ)
           field_simp [hScale_ne, hSqrt_ne]
         rw [hmul, div_pow, hSqrt_sq, frobNorm_sq]
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.17)-(16.18):
+    source-numbered alias for the SVD-coordinate xi-squared amplification
+    bound from a uniform lower bound on the singular-value slots. -/
+alias H16_eq16_17_18_xiSq_amplification_bound :=
+  xiSq_amplification_bound
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.19):
+    source-numbered alias for the square orthogonal-invariance form of the
+    xi-squared amplification bound. -/
+alias H16_eq16_17_19_amplification_factor_bound :=
+  amplification_factor_bound
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.17)-(16.19):
+    source-numbered alias for the xi-squared bound written with the square
+    amplification factor and the relative residual. -/
+alias H16_eq16_17_19_xiSq_le_mu_relative_residual_sq :=
+  xiSq_le_mu_relative_residual_sq
+
 -- ============================================================
 -- Backward error η bound via cost (§16.2)
 -- ============================================================
