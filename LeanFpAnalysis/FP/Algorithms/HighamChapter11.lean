@@ -39327,6 +39327,25 @@ theorem higham11_8_relative_outer_factor_caps_of_AasenSpec_inverse_entry_bound
   higham11_8_relative_outer_factor_caps_of_AasenSpec_entry_bound_inv_one_plus
     n hn A L T σ γ (1 / (1 + γ)) hγ (le_rfl) hspec hentry
 
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency,
+source inverse-entry form: the direct entrywise cap `|Lᵢⱼ|≤1/(1+γ)` also
+supplies the unscaled exact outer-factor norm caps. -/
+theorem higham11_8_outer_factor_caps_of_AasenSpec_inverse_entry_bound
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (γ : ℝ)
+    (hγ : 0 ≤ γ)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ 1 / (1 + γ)) :
+    infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      infNorm (fun r c => L c r) ≤ ((n - 1 : ℕ) : ℝ) := by
+  have hκnonneg : 0 ≤ 1 / (1 + γ) := by
+    have hpos : 0 < 1 + γ := by linarith
+    exact le_of_lt (one_div_pos.mpr hpos)
+  exact
+    higham11_8_outer_factor_caps_of_aasen_entry_bound_inv_one_plus
+      n hn L γ (1 / (1 + γ)) hγ hκnonneg le_rfl hentry
+      hspec.L_upper_zero hspec.L_first_col
+
 /-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency:
 an `AasenSpec` plus the normalized entry cap gives the two base square product
 caps consumed by the exact-product `T_hat` route. -/
@@ -57175,6 +57194,78 @@ def higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_m
       (by
         simpa [one_mul, mul_one, zero_mul, mul_zero, add_assoc, add_left_comm,
           add_comm] using hcoeff)
+
+/-- Exact-`T_hat = T` column-dominant relative-middle endpoint in source
+inverse-entry form.  The exact Aasen outer-factor entry bound supplies
+`κL = κLᵀ = n-1`, while `γ_factor` is the printed local `γ_n`. -/
+def higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff :=
+  fun fp n (hn_pos : 0 < n) (hn_dim : 1 < n) A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU hspec hσ hH_eq hTnz
+      (hcoeff_valid : gammaValid fp (15 * n + 25)) hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hLU
+      hdetT hT_tridiag hColDom
+      (hL_entry_inv : ∀ i j : Fin n, |L i j| ≤ 1 / (1 + gamma fp n))
+      hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_simplified_coeff
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU (gamma fp n) ((n - 1 : ℕ) : ℝ)
+      ((n - 1 : ℕ) : ℝ) hspec hσ hH_eq hTnz
+      (by
+        exact gamma_nonneg fp (gammaValid_mono fp (by omega) hcoeff_valid))
+      (by exact Nat.cast_nonneg (n - 1)) hcoeff_valid hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hLU
+      hdetT hT_tridiag hColDom
+      (by
+        exact
+          (higham11_8_outer_factor_caps_of_AasenSpec_inverse_entry_bound
+            n hn_dim A L T σ (gamma fp n)
+            (gamma_nonneg fp (gammaValid_mono fp (by omega) hcoeff_valid))
+            hspec hL_entry_inv).1)
+      (by
+        exact
+          (higham11_8_outer_factor_caps_of_AasenSpec_inverse_entry_bound
+            n hn_dim A L T σ (gamma fp n)
+            (gamma_nonneg fp (gammaValid_mono fp (by omega) hcoeff_valid))
+            hspec hL_entry_inv).2)
+      hcoeff
+
+/-- Exact-`T_hat = T` row-dominant relative-middle endpoint in source
+inverse-entry form.  The exact Aasen outer-factor entry bound supplies
+`κL = κLᵀ = n-1`, while `γ_factor` is the printed local `γ_n`. -/
+def higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff :=
+  fun fp n (hn_pos : 0 < n) (hn_dim : 1 < n) A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU hspec hσ hH_eq hTnz
+      (hcoeff_valid : gammaValid fp (15 * n + 25)) hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hLU
+      hdetT hT_tridiag hRowDom
+      (hL_entry_inv : ∀ i j : Fin n, |L i j| ≤ 1 / (1 + gamma fp n))
+      hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_simplified_coeff
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU (gamma fp n) ((n - 1 : ℕ) : ℝ)
+      ((n - 1 : ℕ) : ℝ) hspec hσ hH_eq hTnz
+      (by
+        exact gamma_nonneg fp (gammaValid_mono fp (by omega) hcoeff_valid))
+      (by exact Nat.cast_nonneg (n - 1)) hcoeff_valid hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hLU
+      hdetT hT_tridiag hRowDom
+      (by
+        exact
+          (higham11_8_outer_factor_caps_of_AasenSpec_inverse_entry_bound
+            n hn_dim A L T σ (gamma fp n)
+            (gamma_nonneg fp (gammaValid_mono fp (by omega) hcoeff_valid))
+            hspec hL_entry_inv).1)
+      (by
+        exact
+          (higham11_8_outer_factor_caps_of_AasenSpec_inverse_entry_bound
+            n hn_dim A L T σ (gamma fp n)
+            (gamma_nonneg fp (gammaValid_mono fp (by omega) hcoeff_valid))
+            hspec hL_entry_inv).2)
+      hcoeff
 
 /-- Source-prefix factor-norm wrapper variant where the relative `L_hat`
 factor hypothesis is generated from modeled rounded recurrence updates and the
