@@ -72364,6 +72364,67 @@ theorem theorem20_8KKTSourceResidualRatioGainConditions_of_coupledNumerator_lt_s
     simpa [theorem20_8KKTCoupledSelfCoeff, theorem20_8KKTSolutionSelfCoeff]
       using hcoupled
 
+/-- Source-facing scalar discharge for the bundled source-residual-ratio KKT
+    small-gain hypotheses: a half-denominator multiplier margin, the
+    solution-row linear smallness condition, and a linearized coupled margin
+    imply the exact bundled gain conditions. -/
+theorem theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_margins
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ} (heps_nonneg : 0 ≤ eps) (heps_le_one : eps ≤ 1)
+    (hmultGainHalf :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) ≤
+        (1 : ℝ) / 2)
+    (hsolSmall :
+      eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull < 1)
+    (hcoupledLinearMargin :
+      LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+          (2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull) <
+        1 - eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull) :
+    theorem20_8KKTSourceResidualRatioGainConditions hB hnull eps := by
+  have hmultGain :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) <
+        1 := by
+    linarith
+  have hsolGain :
+      theorem20_8KKTSolutionSelfCoeff hB hnull eps < 1 :=
+    theorem20_8KKTSolutionSelfCoeff_lt_one_of_eps_mul_linearCoeff_lt_one
+      hB hnull heps_nonneg heps_le_one hsolSmall
+  have hsolSelf_le :
+      theorem20_8KKTSolutionSelfCoeff hB hnull eps ≤
+        eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull :=
+    theorem20_8KKTSolutionSelfCoeff_le_linear_of_eps_le_one
+      hB hnull heps_nonneg heps_le_one
+  have hmargin_le :
+      1 - eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull ≤
+        1 - theorem20_8KKTSolutionSelfCoeff hB hnull eps := by
+    linarith
+  have hmultSelf_le :
+      theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps ≤
+        2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull :=
+    theorem20_8KKTMultiplierSmallGainSelfCoeff_le_two_mul_linear_of_eps_le_one_of_gain_le_half
+      hB hnull heps_nonneg heps_le_one hmultGainHalf
+  have hsolMuCoeff_nonneg :
+      0 ≤ LSEKKTInverseSolutionStatCoeff hB hnull *
+        (eps * frobNormRect B) :=
+    mul_nonneg (LSEKKTInverseSolutionStatCoeff_nonneg hB hnull)
+      (mul_nonneg heps_nonneg (frobNormRect_nonneg B))
+  have hcoupled_le :
+      LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+          theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps ≤
+        LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+          (2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull) :=
+    mul_le_mul_of_nonneg_left hmultSelf_le hsolMuCoeff_nonneg
+  have hcoupledMargin :
+      LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+          theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps <
+        1 - theorem20_8KKTSolutionSelfCoeff hB hnull eps :=
+    hcoupled_le.trans_lt (hcoupledLinearMargin.trans_le hmargin_le)
+  exact
+    theorem20_8KKTSourceResidualRatioGainConditions_of_coupledNumerator_lt_solutionMargin
+      hB hnull hmultGain hsolGain hcoupledMargin
+
 /-- The scalar right-hand side of the current source-residual-ratio KKT bound
     for Higham Theorem 20.8.  This keeps the public theorem below readable
     while preserving all inverse-block coefficients and gain hypotheses
