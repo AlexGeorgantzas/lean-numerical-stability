@@ -7002,6 +7002,220 @@ theorem higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_s
       (hDtrail i j hi hj).trans (mul_le_mul_of_nonneg_right hρ_rec hAmax))
     hLfirst hLtrail hsolve
 
+/-- **Theorem 11.4 split normalized-prefix regional `|L̂|` entry / `D̂`
+product bridge**.  Regional entry caps for `|L̂|` whose `n`-scaled values are
+at most six can be fed directly to the regional `D̂` product consumer. -/
+theorem higham11_4_product_entries_of_first_stage_recursive_split_L_entry_normalized_prefix_regional_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ)
+    (ρ0 ρ_first ρ_rec L_first L_rec Amax : ℝ) (r : ℕ → ℝ)
+    (hAmax : 0 ≤ Amax)
+    (h0 : r 0 = ρ0) (hρ0 : ρ0 ≤ 1)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hρ_first : ρ_first ≤ r (n - 1))
+    (hρ_rec : ρ_rec ≤ r (n - 1))
+    (hL_first : (n : ℝ) * L_first ≤ 6)
+    (hL_rec : (n : ℝ) * L_rec ≤ 6)
+    (hDfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      |D_hat i j| ≤ ρ_first * Amax)
+    (hDtrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      |D_hat i j| ≤ ρ_rec * Amax)
+    (hLfirst : ∀ row k : Fin n, row.val < s → |L_hat row k| ≤ L_first)
+    (hLtrail : ∀ row k : Fin n, s ≤ row.val → |L_hat row k| ≤ L_rec) :
+    ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) *
+          (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * Amax := by
+  let hrows :
+      ∀ row : Fin n, (∑ k : Fin n, |L_hat row k|) ≤ 6 :=
+    higham11_4_uniform_six_L_row_sum_bound_of_first_stage_recursive_split_entry_bounds
+      n s L_hat L_first L_rec hL_first hL_rec hLfirst hLtrail
+  exact
+    higham11_4_product_entries_of_first_stage_recursive_split_six_row_sum_normalized_prefix_regional_D_bound
+      n s hn hs_pos hs_le L_hat D_hat ρ0 ρ_first ρ_rec Amax r hAmax
+      h0 hρ0 hstep hρ_first hρ_rec hDfirst hDtrail
+      (fun row _ => hrows row) (fun row _ => hrows row)
+
+/-- **Theorem 11.4 split normalized-prefix regional `|L̂|` entry / `D̂`
+max-entry bridge**. -/
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_split_L_entry_normalized_prefix_regional_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ)
+    (ρ0 ρ_first ρ_rec L_first L_rec Amax : ℝ) (r : ℕ → ℝ)
+    (hAmax : 0 ≤ Amax)
+    (h0 : r 0 = ρ0) (hρ0 : ρ0 ≤ 1)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hρ_first : ρ_first ≤ r (n - 1))
+    (hρ_rec : ρ_rec ≤ r (n - 1))
+    (hL_first : (n : ℝ) * L_first ≤ 6)
+    (hL_rec : (n : ℝ) * L_rec ≤ 6)
+    (hDfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      |D_hat i j| ≤ ρ_first * Amax)
+    (hDtrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      |D_hat i j| ≤ ρ_rec * Amax)
+    (hLfirst : ∀ row k : Fin n, row.val < s → |L_hat row k| ≤ L_first)
+    (hLtrail : ∀ row k : Fin n, s ≤ row.val → |L_hat row k| ≤ L_rec) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) *
+        (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * Amax := by
+  let hrows :
+      ∀ row : Fin n, (∑ k : Fin n, |L_hat row k|) ≤ 6 :=
+    higham11_4_uniform_six_L_row_sum_bound_of_first_stage_recursive_split_entry_bounds
+      n s L_hat L_first L_rec hL_first hL_rec hLfirst hLtrail
+  exact
+    higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_split_six_row_sum_normalized_prefix_regional_D_bound
+      n s hn hs_pos hs_le L_hat D_hat ρ0 ρ_first ρ_rec Amax r hAmax
+      h0 hρ0 hstep hρ_first hρ_rec hDfirst hDtrail
+      (fun row _ => hrows row) (fun row _ => hrows row)
+
+/-- **Theorem 11.4 split normalized-prefix regional `|L̂|` entry / `D̂`
+scalar certificate**. -/
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_split_L_entry_normalized_prefix_regional_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ)
+    (ρ0 ρ_first ρ_rec L_first L_rec Amax : ℝ) (r : ℕ → ℝ)
+    (hAmax : 0 ≤ Amax)
+    (h0 : r 0 = ρ0) (hρ0 : ρ0 ≤ 1)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hρ_first : ρ_first ≤ r (n - 1))
+    (hρ_rec : ρ_rec ≤ r (n - 1))
+    (hL_first : (n : ℝ) * L_first ≤ 6)
+    (hL_rec : (n : ℝ) * L_rec ≤ 6)
+    (hDfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      |D_hat i j| ≤ ρ_first * Amax)
+    (hDtrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      |D_hat i j| ≤ ρ_rec * Amax)
+    (hLfirst : ∀ row k : Fin n, row.val < s → |L_hat row k| ≤ L_first)
+    (hLtrail : ∀ row k : Fin n, s ≤ row.val → |L_hat row k| ≤ L_rec) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat)
+      ((1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1)) Amax := by
+  let hrows :
+      ∀ row : Fin n, (∑ k : Fin n, |L_hat row k|) ≤ 6 :=
+    higham11_4_uniform_six_L_row_sum_bound_of_first_stage_recursive_split_entry_bounds
+      n s L_hat L_first L_rec hL_first hL_rec hLfirst hLtrail
+  exact
+    higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_split_six_row_sum_normalized_prefix_regional_D_bound
+      n s hn hs_pos hs_le L_hat D_hat ρ0 ρ_first ρ_rec Amax r hAmax
+      h0 hρ0 hstep hρ_first hρ_rec hDfirst hDtrail
+      (fun row _ => hrows row) (fun row _ => hrows row)
+
+/-- **Theorem 11.4 split normalized-prefix regional `|L̂|` entry / `D̂`
+stability bridge**. -/
+theorem higham11_4_bunch_kaufman_stability_of_first_stage_recursive_split_L_entry_normalized_prefix_regional_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ)
+    (ρ0 ρ_first ρ_rec L_first L_rec maxNorm_A : ℝ) (r : ℕ → ℝ)
+    (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (h0 : r 0 = ρ0) (hρ0 : ρ0 ≤ 1)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hρ_first : ρ_first ≤ r (n - 1))
+    (hρ_rec : ρ_rec ≤ r (n - 1))
+    (hL_first : (n : ℝ) * L_first ≤ 6)
+    (hL_rec : (n : ℝ) * L_rec ≤ 6)
+    (hDfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      |D_hat i j| ≤ ρ_first * maxNorm_A)
+    (hDtrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      |D_hat i j| ≤ ρ_rec * maxNorm_A)
+    (hLfirst : ∀ row k : Fin n, row.val < s → |L_hat row k| ≤ L_first)
+    (hLtrail : ∀ row k : Fin n, s ≤ row.val → |L_hat row k| ≤ L_rec) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * maxNorm_A := by
+  let hrows :
+      ∀ row : Fin n, (∑ k : Fin n, |L_hat row k|) ≤ 6 :=
+    higham11_4_uniform_six_L_row_sum_bound_of_first_stage_recursive_split_entry_bounds
+      n s L_hat L_first L_rec hL_first hL_rec hLfirst hLtrail
+  exact
+    higham11_4_bunch_kaufman_stability_of_first_stage_recursive_split_six_row_sum_normalized_prefix_regional_D_bound
+      n s hn hs_pos hs_le A L_hat D_hat ρ0 ρ_first ρ_rec maxNorm_A r
+      hmA hA_norm h0 hρ0 hstep hρ_first hρ_rec hDfirst hDtrail
+      (fun row _ => hrows row) (fun row _ => hrows row)
+
+/-- **Theorem 11.4 split normalized-prefix regional `|L̂|` entry / `D̂`
+solve bridge**. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_split_L_entry_normalized_prefix_regional_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (ρ0 ρ_first ρ_rec L_first L_rec p u Amax : ℝ) (r : ℕ → ℝ)
+    (hpu : 0 ≤ p * u) (hAmax : 0 ≤ Amax)
+    (h0 : r 0 = ρ0) (hρ0 : ρ0 ≤ 1)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hρ_first : ρ_first ≤ r (n - 1))
+    (hρ_rec : ρ_rec ≤ r (n - 1))
+    (hL_first : (n : ℝ) * L_first ≤ 6)
+    (hL_rec : (n : ℝ) * L_rec ≤ 6)
+    (hDfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      |D_hat i j| ≤ ρ_first * Amax)
+    (hDtrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      |D_hat i j| ≤ ρ_rec * Amax)
+    (hLfirst : ∀ row k : Fin n, row.val < s → |L_hat row k| ≤ L_first)
+    (hLtrail : ∀ row k : Fin n, s ≤ row.val → |L_hat row k| ≤ L_rec)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        (p * 36 * (n : ℝ)) *
+          (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  let hrows :
+      ∀ row : Fin n, (∑ k : Fin n, |L_hat row k|) ≤ 6 :=
+    higham11_4_uniform_six_L_row_sum_bound_of_first_stage_recursive_split_entry_bounds
+      n s L_hat L_first L_rec hL_first hL_rec hLfirst hLtrail
+  exact
+    higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_split_six_row_sum_normalized_prefix_regional_D_bound
+      n s hn hs_pos hs_le A L_hat D_hat b x_hat ρ0 ρ_first ρ_rec p u Amax r
+      hpu hAmax h0 hρ0 hstep hρ_first hρ_rec hDfirst hDtrail
+      (fun row _ => hrows row) (fun row _ => hrows row) hsolve
+
+/-- **Theorem 11.4 split normalized-prefix regional `|L̂|` entry / `D̂`
+solve bridge, max-entry norm form**. -/
+theorem higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_split_L_entry_normalized_prefix_regional_D_maxEntryNorm_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (ρ0 ρ_first ρ_rec L_first L_rec p u Amax : ℝ) (r : ℕ → ℝ)
+    (hpu : 0 ≤ p * u) (hAmax : 0 ≤ Amax)
+    (h0 : r 0 = ρ0) (hρ0 : ρ0 ≤ 1)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hρ_first : ρ_first ≤ r (n - 1))
+    (hρ_rec : ρ_rec ≤ r (n - 1))
+    (hL_first : (n : ℝ) * L_first ≤ 6)
+    (hL_rec : (n : ℝ) * L_rec ≤ 6)
+    (hDfirst : ∀ i j : Fin n, i.val < s ∨ j.val < s →
+      |D_hat i j| ≤ ρ_first * Amax)
+    (hDtrail : ∀ i j : Fin n, s ≤ i.val → s ≤ j.val →
+      |D_hat i j| ≤ ρ_rec * Amax)
+    (hLfirst : ∀ row k : Fin n, row.val < s → |L_hat row k| ≤ L_first)
+    (hLtrail : ∀ row k : Fin n, s ≤ row.val → |L_hat row k| ≤ L_rec)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        (p * 36 * (n : ℝ)) *
+          (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  let hrows :
+      ∀ row : Fin n, (∑ k : Fin n, |L_hat row k|) ≤ 6 :=
+    higham11_4_uniform_six_L_row_sum_bound_of_first_stage_recursive_split_entry_bounds
+      n s L_hat L_first L_rec hL_first hL_rec hLfirst hLtrail
+  exact
+    higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_split_six_row_sum_normalized_prefix_regional_D_maxEntryNorm_bound
+      n s hn hs_pos hs_le A L_hat D_hat b x_hat ρ0 ρ_first ρ_rec p u Amax r
+      hpu hAmax h0 hρ0 hstep hρ_first hρ_rec hDfirst hDtrail
+      (fun row _ => hrows row) (fun row _ => hrows row) hsolve
+
 /-- **Theorem 11.4 split normalized-prefix regional `|L̂|`/`D̂` product
 bridge**.  Regional row-sum caps for `|L̂|` may be proved with separate
 first-stage and trailing bounds, as long as both relax to the source-six cap,
