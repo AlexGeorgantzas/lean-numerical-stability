@@ -6319,6 +6319,15 @@ theorem sylvester_relative_first_order_bound_of_vecCoeff_gram_eigenvalues
       halpha hbeta hgamma hlam heps hX hEig
       hDeltaA hDeltaB hDeltaC hLin
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24):
+    source-numbered aliases for finite Gram-eigenvalue Sylvester
+    first-order condition wrappers. -/
+alias H16_eq16_23_sylvester_first_order_bound_of_vecCoeff_gram_eigenvalues :=
+  sylvester_first_order_bound_of_vecCoeff_gram_eigenvalues
+
+alias H16_eq16_24_sylvester_relative_first_order_bound_of_vecCoeff_gram_eigenvalues :=
+  sylvester_relative_first_order_bound_of_vecCoeff_gram_eigenvalues
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24),
     diagonal case: source-shaped first-order relative perturbation bound from
     the concrete diagonal vec/Kronecker coefficient lower-bound certificate. -/
@@ -8935,6 +8944,15 @@ theorem lyapunov_relative_first_order_bound_of_vecCoeff_gram_eigenvalues
         (1 / Real.sqrt lam)) eps
       hCond hX hCond_nonneg halpha hgamma heps
       hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered aliases for finite Gram-eigenvalue Lyapunov
+    first-order condition wrappers. -/
+alias H16_eq16_27_lyapunov_first_order_bound_of_vecCoeff_gram_eigenvalues :=
+  lyapunov_first_order_bound_of_vecCoeff_gram_eigenvalues
+
+alias H16_eq16_27_lyapunov_relative_first_order_bound_of_vecCoeff_gram_eigenvalues :=
+  lyapunov_relative_first_order_bound_of_vecCoeff_gram_eigenvalues
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     source-shaped Lyapunov first-order perturbation bound from a concrete
