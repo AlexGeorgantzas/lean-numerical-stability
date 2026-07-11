@@ -6025,6 +6025,24 @@ theorem sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_no_block_ac
       m n A T p q u v).mp haction
   exact hno (Sum.elim u v) hz_ne hblock
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for converting a product-shift kernel witness into
+    a coupled real two-column block-action witness. -/
+alias H16_eq16_4_8_sylvesterTwoColumnBlock_product_shift_kernel_to_coupled_block_action :=
+  sylvesterTwoColumnBlock_product_shift_kernel_to_coupled_block_action
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the no-coupled-action route to the product-shift
+    no-eigenvector certificate. -/
+alias H16_eq16_4_8_sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_no_coupled_block_action :=
+  sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_no_coupled_block_action
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the block-action route to the product-shift
+    no-eigenvector certificate. -/
+alias H16_eq16_4_8_sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_no_block_action :=
+  sylvesterTwoColumnBlockCoeff_product_shift_no_eigenvector_of_no_block_action
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), real-Schur
     same-block spectral certificate: an adjacent same-labelled block in the
     exported quasi-Schur block map supplies the two-column zero pattern, and a
