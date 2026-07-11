@@ -15929,6 +15929,13 @@ small enough to serve as a smoke check for representative public declarations.
 #check Wave15.H16_eq16_7_quasi_sylvesterVecCoeff_blockBackSub_backward_error_componentwise
 #check Wave15.H16_eq16_8_quasi_sylvesterVecCoeff_blockBackSub_componentwise_residual
 #check Wave15.H16_eq16_8_quasi_sylvesterResidualRect_blockBackSub_componentwise_le
+-- Wave-16: quasi-quasi engine — parametric rounded GE + partition back-substitution + interleaved structural layer
+#check Wave16.flGESolve_backward_error
+#check Wave16.flPartitionBackSub_backward_error_componentwise
+#check Wave16.flPartitionBackSub_componentwise_residual
+#check Wave16.sylvesterQQPartition_valid
+#check Wave16.sylvesterQQBlockCoeff_entry
+#check Wave16.sylvesterQQBackSubCoeff_zero
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved
