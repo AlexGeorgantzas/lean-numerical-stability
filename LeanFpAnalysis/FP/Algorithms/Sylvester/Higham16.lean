@@ -5310,6 +5310,38 @@ theorem sylvesterSepRatios_nonempty_of_pos_dim (n : Nat)
   rw [hzero] at hrect
   norm_num at hrect
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    source-numbered abbreviation for the feasible Frobenius-ratio set in the
+    exact `sep(A,B)` infimum model. -/
+abbrev H16_eq16_26_sylvesterSepRatios := sylvesterSepRatios
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    source-numbered abbreviation for the exact `sep(A,B)` infimum model. -/
+noncomputable abbrev H16_eq16_26_sylvesterSepInf := sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    source-numbered alias for lower-boundedness of the feasible ratio set. -/
+alias H16_eq16_26_sylvesterSepRatios_bddBelow :=
+  sylvesterSepRatios_bddBelow
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    source-numbered alias for nonnegativity of the exact `sep(A,B)` infimum
+    model. -/
+alias H16_eq16_26_sylvesterSepInf_nonneg :=
+  sylvesterSepInf_nonneg
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    source-numbered alias saying the exact `sep(A,B)` infimum is below every
+    feasible nonzero Frobenius ratio. -/
+alias H16_eq16_26_sylvesterSepInf_le_ratio :=
+  sylvesterSepInf_le_ratio
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    source-numbered alias for nonemptiness of the feasible ratio set in
+    positive dimension. -/
+alias H16_eq16_26_sylvesterSepRatios_nonempty_of_pos_dim :=
+  sylvesterSepRatios_nonempty_of_pos_dim
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.26), diagonal case:
     a uniform lower bound on all diagonal differences gives a Frobenius
     `SepLowerBound` certificate for the diagonal Sylvester operator. -/
