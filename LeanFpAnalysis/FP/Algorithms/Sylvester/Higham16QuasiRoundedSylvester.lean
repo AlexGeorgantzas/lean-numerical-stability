@@ -455,6 +455,13 @@ theorem sylvesterResidualRect_quasiTriangular_blockBackSub_componentwise_le
 -- Source-numbered aliases
 -- ============================================================
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.7),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    induced product-index adjacent-pair marking used by the rounded
+    quasi-triangular block substitution. -/
+alias H16_eq16_6_quasi_sylvesterQuasiPairing_isQuasiBlockPairing :=
+  sylvesterQuasiPairing_isQuasiBlockPairing
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7),
     quasi-triangular (real Schur) variant: source-numbered alias for the
     below-subdiagonal zero pattern of the reordered vec/Kronecker coefficient
