@@ -266,6 +266,30 @@ theorem exists_sylvesterSep_ratio_minimizer (n : ℕ)
     exact ⟨Y, hYne, rfl⟩
   simpa [hXval] using hleast.2 hYmem
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    source-numbered alias for existence of a unit-Frobenius minimizer
+    attaining the exact `sep(A,B)` infimum in positive dimension. -/
+alias H16_eq16_26_exists_sylvesterSep_minimizer :=
+  exists_sylvesterSep_minimizer
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    source-numbered alias saying the exact `sep(A,B)` infimum belongs to its
+    feasible ratio set in positive dimension. -/
+alias H16_eq16_26_sylvesterSepInf_mem_sylvesterSepRatios :=
+  sylvesterSepInf_mem_sylvesterSepRatios
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    source-numbered alias for the least-element realization of the exact
+    `sep(A,B)` feasible ratio set in positive dimension. -/
+alias H16_eq16_26_isLeast_sylvesterSepRatios :=
+  isLeast_sylvesterSepRatios
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    source-numbered alias for the source-facing nonzero-ratio minimizer form of
+    the attained exact `sep(A,B)` minimum. -/
+alias H16_eq16_26_exists_sylvesterSep_ratio_minimizer :=
+  exists_sylvesterSep_ratio_minimizer
+
 -- ============================================================
 -- (16.15): the backward-error infimum is an attained minimum
 -- ============================================================
