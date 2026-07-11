@@ -6397,6 +6397,33 @@ theorem higham11_4_L_row_sum_bound_of_first_stage_recursive_split
   · exact (hfirst r hr).trans hlocal_le
   · exact (htrail r (Nat.le_of_not_gt hr)).trans hrec_le
 
+/-- **Theorem 11.4 regional `|L̂|` entry-to-row-sum split**.  If the
+first-stage and recursive trailing regions provide entry caps, their
+cardinality-scaled versions supply the row-sum split used by the product
+pipeline. -/
+theorem higham11_4_L_row_sum_bound_of_first_stage_recursive_split_entry_bounds
+    (n s : ℕ) (L_hat : Fin n → Fin n → ℝ) (Lmax localL recL : ℝ)
+    (hlocal_le : (n : ℝ) * localL ≤ Lmax)
+    (hrec_le : (n : ℝ) * recL ≤ Lmax)
+    (hfirst : ∀ r k : Fin n, r.val < s → |L_hat r k| ≤ localL)
+    (htrail : ∀ r k : Fin n, s ≤ r.val → |L_hat r k| ≤ recL) :
+    ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ Lmax := by
+  intro r
+  by_cases hr : r.val < s
+  · calc
+      (∑ k : Fin n, |L_hat r k|) ≤ ∑ _k : Fin n, localL := by
+        exact Finset.sum_le_sum (fun k _ => hfirst r k hr)
+      _ = (n : ℝ) * localL := by
+        simp
+      _ ≤ Lmax := hlocal_le
+  · calc
+      (∑ k : Fin n, |L_hat r k|) ≤ ∑ _k : Fin n, recL := by
+        exact Finset.sum_le_sum (fun k _ =>
+          htrail r k (Nat.le_of_not_gt hr))
+      _ = (n : ℝ) * recL := by
+        simp
+      _ ≤ Lmax := hrec_le
+
 /-- **Theorem 11.4 source-six `|L̂|` row-sum split**.  The regional row-sum caps
 `≤6` package into the uniform row-sum premise consumed by the existing
 first-stage/recursive product wrappers. -/
@@ -6409,6 +6436,19 @@ theorem higham11_4_uniform_six_L_row_sum_bound_of_first_stage_recursive_split
     ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ 6 :=
   higham11_4_L_row_sum_bound_of_first_stage_recursive_split n s L_hat 6 6 6
     le_rfl le_rfl hfirst htrail
+
+/-- **Theorem 11.4 source-six regional `|L̂|` entry-to-row-sum split**.  Regional
+entry caps whose `n`-scaled values are at most six produce the source-six
+row-sum premise for every row. -/
+theorem higham11_4_uniform_six_L_row_sum_bound_of_first_stage_recursive_split_entry_bounds
+    (n s : ℕ) (L_hat : Fin n → Fin n → ℝ) (localL recL : ℝ)
+    (hlocal_le : (n : ℝ) * localL ≤ 6)
+    (hrec_le : (n : ℝ) * recL ≤ 6)
+    (hfirst : ∀ r k : Fin n, r.val < s → |L_hat r k| ≤ localL)
+    (htrail : ∀ r k : Fin n, s ≤ r.val → |L_hat r k| ≤ recL) :
+    ∀ r : Fin n, (∑ k : Fin n, |L_hat r k|) ≤ 6 :=
+  higham11_4_L_row_sum_bound_of_first_stage_recursive_split_entry_bounds
+    n s L_hat 6 localL recL hlocal_le hrec_le hfirst htrail
 
 /-- **Theorem 11.4 split normalized-prefix product bridge**.  Regional
 first-stage/trailing `D̂` caps at the final prefix-growth stage, together with
