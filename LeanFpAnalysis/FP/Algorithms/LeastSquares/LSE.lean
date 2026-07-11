@@ -72088,6 +72088,73 @@ noncomputable def theorem20_8KKTSolutionSelfCoeff {m n p : ℕ}
       ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
     LSEKKTInverseSolutionConstrCoeff hB hnull * (eps * frobNormRect B)
 
+/-- Linear-in-`eps` majorant coefficient for the solution-row self coefficient
+    when `0 <= eps <= 1`. -/
+noncomputable def theorem20_8KKTSolutionSelfLinearCoeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
+  LSEKKTInverseSolutionDataCoeff hB hnull * frobNormRect A +
+    2 * LSEKKTInverseSolutionStatCoeff hB hnull *
+      frobNormRect A * frobNormRect A +
+    LSEKKTInverseSolutionConstrCoeff hB hnull * frobNormRect B
+
+/-- The solution-row self coefficient is bounded by its linear-in-`eps`
+    majorant for `0 <= eps <= 1`. -/
+theorem theorem20_8KKTSolutionSelfCoeff_le_linear_of_eps_le_one
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ} (heps_nonneg : 0 ≤ eps) (heps_le_one : eps ≤ 1) :
+    theorem20_8KKTSolutionSelfCoeff hB hnull eps ≤
+      eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull := by
+  have hA_nonneg : 0 ≤ frobNormRect A := frobNormRect_nonneg A
+  have hstat_nonneg : 0 ≤ LSEKKTInverseSolutionStatCoeff hB hnull :=
+    LSEKKTInverseSolutionStatCoeff_nonneg hB hnull
+  have hone_eps_le_two : 1 + eps ≤ 2 := by linarith
+  have hfactor :
+      (1 + eps) * frobNormRect A ≤ 2 * frobNormRect A :=
+    mul_le_mul_of_nonneg_right hone_eps_le_two hA_nonneg
+  have hepsA_nonneg : 0 ≤ eps * frobNormRect A :=
+    mul_nonneg heps_nonneg hA_nonneg
+  have hprod :
+      (eps * frobNormRect A) * ((1 + eps) * frobNormRect A) ≤
+        (eps * frobNormRect A) * (2 * frobNormRect A) :=
+    mul_le_mul_of_nonneg_left hfactor hepsA_nonneg
+  have hstat :
+      LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) ≤
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) * (2 * frobNormRect A)) :=
+    mul_le_mul_of_nonneg_left hprod hstat_nonneg
+  calc
+    theorem20_8KKTSolutionSelfCoeff hB hnull eps
+        = LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+            LSEKKTInverseSolutionStatCoeff hB hnull *
+              ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+            LSEKKTInverseSolutionConstrCoeff hB hnull *
+              (eps * frobNormRect B) := rfl
+    _ ≤ LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+          LSEKKTInverseSolutionStatCoeff hB hnull *
+            ((eps * frobNormRect A) * (2 * frobNormRect A)) +
+          LSEKKTInverseSolutionConstrCoeff hB hnull *
+            (eps * frobNormRect B) := by
+        linarith
+    _ = eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull := by
+        simp [theorem20_8KKTSolutionSelfLinearCoeff]
+        ring
+
+/-- A source-facing linear smallness condition discharges the solution-row
+    small-gain inequality for `0 <= eps <= 1`. -/
+theorem theorem20_8KKTSolutionSelfCoeff_lt_one_of_eps_mul_linearCoeff_lt_one
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ} (heps_nonneg : 0 ≤ eps) (heps_le_one : eps ≤ 1)
+    (hsmall : eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull < 1) :
+    theorem20_8KKTSolutionSelfCoeff hB hnull eps < 1 :=
+  (theorem20_8KKTSolutionSelfCoeff_le_linear_of_eps_le_one
+    hB hnull heps_nonneg heps_le_one).trans_lt hsmall
+
 /-- Bundled scalar small-gain hypotheses for the current source-residual-ratio
     KKT route for Higham Theorem 20.8. -/
 def theorem20_8KKTSourceResidualRatioGainConditions {m n p : ℕ}
