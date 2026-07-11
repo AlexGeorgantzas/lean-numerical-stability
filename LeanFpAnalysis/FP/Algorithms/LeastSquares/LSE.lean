@@ -72077,6 +72077,17 @@ noncomputable def theorem20_8KKTCoupledSelfCoeff {m n p : ℕ}
         LSEKKTInverseSolutionConstrCoeff hB hnull *
           (eps * frobNormRect B)))
 
+/-- The solution-row self coefficient that must remain below one in the
+    source-residual-ratio KKT route for Higham Theorem 20.8. -/
+noncomputable def theorem20_8KKTSolutionSelfCoeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (eps : ℝ) : ℝ :=
+  LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+    LSEKKTInverseSolutionStatCoeff hB hnull *
+      ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+    LSEKKTInverseSolutionConstrCoeff hB hnull * (eps * frobNormRect B)
+
 /-- Bundled scalar small-gain hypotheses for the current source-residual-ratio
     KKT route for Higham Theorem 20.8. -/
 def theorem20_8KKTSourceResidualRatioGainConditions {m n p : ℕ}
@@ -72090,6 +72101,36 @@ def theorem20_8KKTSourceResidualRatioGainConditions {m n p : ℕ}
         LSEKKTInverseSolutionConstrCoeff hB hnull * (eps * frobNormRect B) <
           1 ∧
       theorem20_8KKTCoupledSelfCoeff hB hnull eps < 1
+
+/-- Scalar margin discharge for the bundled source-residual-ratio KKT
+    small-gain hypotheses.  The coupled quotient is replaced by the source-side
+    inequality that its numerator is below the remaining solution-row margin. -/
+theorem theorem20_8KKTSourceResidualRatioGainConditions_of_coupledNumerator_lt_solutionMargin
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ}
+    (hmultGain :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) <
+        1)
+    (hsolGain : theorem20_8KKTSolutionSelfCoeff hB hnull eps < 1)
+    (hcoupledMargin :
+      LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+          theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps <
+        1 - theorem20_8KKTSolutionSelfCoeff hB hnull eps) :
+    theorem20_8KKTSourceResidualRatioGainConditions hB hnull eps := by
+  refine ⟨hmultGain, ?_, ?_⟩
+  · simpa [theorem20_8KKTSolutionSelfCoeff] using hsolGain
+  · have hdenpos : 0 < 1 - theorem20_8KKTSolutionSelfCoeff hB hnull eps := by
+      linarith
+    have hcoupled :
+        (LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+            theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps) /
+          (1 - theorem20_8KKTSolutionSelfCoeff hB hnull eps) < 1 := by
+      rw [div_lt_iff₀ hdenpos]
+      simpa using hcoupledMargin
+    simpa [theorem20_8KKTCoupledSelfCoeff, theorem20_8KKTSolutionSelfCoeff]
+      using hcoupled
 
 /-- The scalar right-hand side of the current source-residual-ratio KKT bound
     for Higham Theorem 20.8.  This keeps the public theorem below readable
