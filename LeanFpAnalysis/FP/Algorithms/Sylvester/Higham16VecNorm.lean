@@ -6507,6 +6507,56 @@ theorem sylvester_relative_first_order_bound_schurDiagonal_of_vecCoeff_entrywise
       hU hV hA hB halpha hbeta hgamma hsigma heps hX hgap
       hDeltaA hDeltaB hDeltaC hLin
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.23):
+    source-numbered alias for the concrete Sylvester vec/Kronecker sigma-min
+    first-order bound. -/
+alias H16_eq16_23_sylvester_first_order_bound_of_vecCoeff_sigmaMin :=
+  sylvester_first_order_bound_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.23):
+    source-numbered alias for the concrete Sylvester vec/Kronecker
+    left-inverse first-order bound. -/
+alias H16_eq16_23_sylvester_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  sylvester_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.24):
+    source-numbered alias for the relative concrete Sylvester vec/Kronecker
+    sigma-min first-order bound. -/
+alias H16_eq16_24_sylvester_relative_first_order_bound_of_vecCoeff_sigmaMin :=
+  sylvester_relative_first_order_bound_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.24):
+    source-numbered alias for the relative concrete Sylvester vec/Kronecker
+    left-inverse first-order bound. -/
+alias H16_eq16_24_sylvester_relative_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  sylvester_relative_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.23), diagonal case:
+    source-numbered alias for the concrete Sylvester vec/Kronecker
+    entrywise-gap first-order bound. -/
+alias H16_eq16_23_sylvester_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge :=
+  sylvester_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.24), diagonal case:
+    source-numbered alias for the relative concrete Sylvester vec/Kronecker
+    entrywise-gap first-order bound. -/
+alias H16_eq16_24_sylvester_relative_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge :=
+  sylvester_relative_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.23), supplied orthogonal
+    Schur-diagonal case:
+    source-numbered alias for the concrete Sylvester vec/Kronecker
+    entrywise-gap first-order bound. -/
+alias H16_eq16_23_sylvester_first_order_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge :=
+  sylvester_first_order_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.24), supplied orthogonal
+    Schur-diagonal case:
+    source-numbered alias for the relative concrete Sylvester vec/Kronecker
+    entrywise-gap first-order bound. -/
+alias H16_eq16_24_sylvester_relative_first_order_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge :=
+  sylvester_relative_first_order_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
     Frobenius first-order Sylvester perturbation bound from a positive lower
     bound on the concrete Kronecker/vectorized Sylvester coefficient. -/
