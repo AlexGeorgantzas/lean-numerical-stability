@@ -19972,6 +19972,108 @@ abbrev higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix
           (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
           j = 0
 
+/-- Ambient zero-prefix support on the already lifted earlier perturbation
+discharges a single second-pivot prefix column. -/
+theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_pathSecondPivot_two_zeroBeforePrefix_of_lifted_support_at_current_prefix
+    (k : ℕ) (step : Fin k → PivotSize) (s t : Fin k)
+    (hstep : step t = PivotSize.two)
+    (E : Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step s) (step s)) →
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step s) (step s)) → ℝ)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport
+      (higham11_7_tridiagonalPathPivotSpan k step + 1)
+      (higham11_7_tridiagonalPathPrefixSpan k step t)
+      (higham11_7_tridiagonalLiftLocalBlockPerturbation
+        (higham11_7_tridiagonalPathPivotSpan k step + 1)
+        (higham11_7_tridiagonalPathPrefixSpan k step s)
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step s) (step s))
+        E))
+    (j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1))
+    (hj : j.val < higham11_7_tridiagonalPathPrefixSpan k step t) :
+    higham11_7_tridiagonalLiftLocalBlockPerturbation
+      (higham11_7_tridiagonalPathPivotSpan k step + 1)
+      (higham11_7_tridiagonalPathPrefixSpan k step s)
+      (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step s) (step s))
+      E
+      (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+      j = 0 :=
+  hEsupp
+    (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) j
+    (Or.inr hj)
+
+/-- Ambient leading-support certificates reaching to the current branch prefix
+discharge the pointwise earlier-lift prefix-zero condition. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_lifted_support_at_current_prefix
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hdeep : ∀ t : Fin k, ∀ _hstep : step t = PivotSize.two,
+      ∀ s : Fin k, s.val < t.val →
+        higham11_7_TridiagonalLeadingBlockSupport
+          (higham11_7_tridiagonalPathPivotSpan k step + 1)
+          (higham11_7_tridiagonalPathPrefixSpan k step t)
+          (higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s))) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix
+        k step ΔA := by
+  intro t hstep j hj s hst
+  exact
+    higham11_7_tridiagonalLiftLocalBlockPerturbation_pathSecondPivot_two_zeroBeforePrefix_of_lifted_support_at_current_prefix
+      k step s t hstep (ΔA s) (hdeep t hstep s hst) j hj
+
+/-- A single ambient support certificate reaching past the current accepted
+branch's consumed pivot block also discharges the prefix-zero condition before
+that branch. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_lifted_support_after_branch_end
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hdeep : ∀ t : Fin k, ∀ _hstep : step t = PivotSize.two,
+      ∀ s : Fin k, s.val < t.val →
+        higham11_7_TridiagonalLeadingBlockSupport
+          (higham11_7_tridiagonalPathPivotSpan k step + 1)
+          (higham11_7_tridiagonalPathPrefixSpan k step t +
+            higham11_7_tridiagonalBranchSupportOffset (step t))
+          (higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s))) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix
+        k step ΔA := by
+  refine
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_lifted_support_at_current_prefix
+      k step ΔA ?_
+  intro t hstep s hst
+  exact
+    higham11_7_tridiagonalLeadingBlockSupport_of_le_offset
+      (higham11_7_tridiagonalPathPivotSpan k step + 1)
+      (higham11_7_tridiagonalPathPrefixSpan k step t)
+      (higham11_7_tridiagonalPathPrefixSpan k step t +
+        higham11_7_tridiagonalBranchSupportOffset (step t))
+      (higham11_7_tridiagonalLiftLocalBlockPerturbation
+        (higham11_7_tridiagonalPathPivotSpan k step + 1)
+        (higham11_7_tridiagonalPathPrefixSpan k step s)
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step s) (step s))
+        (ΔA s))
+      (Nat.le_add_right _ _)
+      (hdeep t hstep s hst)
+
 /-- Pointwise zero of every earlier lifted perturbation gives the summed
 earlier-lift prefix-zero condition. -/
 theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_each
