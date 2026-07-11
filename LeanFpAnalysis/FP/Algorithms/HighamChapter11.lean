@@ -36370,6 +36370,111 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
       hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
       hA.2 hearlier hsolve
 
+/-- **Theorem 11.7 branch-matrix current-local/earlier-branch source endpoint,
+coefficient-sum form**, zero common offset.  This packages current-local-block
+earlier-lift zero plus the support-reduced after-branch-end prefix condition
+into the single full-row earlier-lift certificate consumed by the branch-matrix
+endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_earlier_full_row_zero
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA
+      (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_family_of_residualWitnesses_currentLocalBlock_and_after_earlier_branch_end
+        (k + 1) fp step A c_bound c_rec (fun _ : Fin (k + 1) => u)
+        tail_fl tail_exact hlocal hafter)
+      hrow_second_base
+
+/-- Symmetric-tridiagonal source form of the branch-matrix current-local/
+earlier-branch coefficient endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_isSymTridiagonal_and_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_currentLocalBlock_and_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hlocal hafter hrow_second_base
+
+/-- **Theorem 11.7 full-base-row current-local/earlier-branch source endpoint,
+coefficient-sum form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_earlier_full_row_zero
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA
+      (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_family_of_residualWitnesses_currentLocalBlock_and_after_earlier_branch_end
+        (k + 1) fp step A c_bound c_rec (fun _ : Fin (k + 1) => u)
+        tail_fl tail_exact hlocal hafter)
+      hrow_second_base
+
+/-- Symmetric-tridiagonal source form of the full-base-row current-local/
+earlier-branch coefficient endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_isSymTridiagonal_and_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_currentLocalBlock_and_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hlocal hafter hrow_second_base
+
+/-- **Theorem 11.7 global base-solve current-local/earlier-branch source
+endpoint, coefficient-sum form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_earlier_full_row_zero
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA
+      (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_family_of_residualWitnesses_currentLocalBlock_and_after_earlier_branch_end
+        (k + 1) fp step A c_bound c_rec (fun _ : Fin (k + 1) => u)
+        tail_fl tail_exact hlocal hafter)
+      hsolve
+
+/-- Symmetric-tridiagonal source form of the global base-solve current-local/
+earlier-branch coefficient endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_isSymTridiagonal_and_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_currentLocalBlock_and_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hlocal hafter hsolve
+
 /-- **Theorem 11.7 branch-matrix current-local/non-adjacent source endpoint,
 coefficient-sum form**, zero common offset.  This packages current-local-block
 earlier-lift zero plus the strictly non-adjacent prefix-zero condition into the
@@ -39372,6 +39477,105 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
       hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
       hrow_last_one_local hrow_last_two_local hrow_zero_base
       hA.2 hearlier hsolve
+
+/-- **Theorem 11.7 branch-matrix current-local/earlier-branch source endpoint,
+uniform coefficient form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_earlier_full_row_zero
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base hA
+      (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_family_of_residualWitnesses_currentLocalBlock_and_after_earlier_branch_end
+        (k + 1) fp step A c_bound c_rec (fun _ : Fin (k + 1) => u)
+        tail_fl tail_exact hlocal hafter)
+      hrow_second_base
+
+/-- Symmetric-tridiagonal source form of the branch-matrix current-local/
+earlier-branch uniform coefficient endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_isSymTridiagonal_and_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_currentLocalBlock_and_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hlocal hafter hrow_second_base
+
+/-- **Theorem 11.7 full-base-row current-local/earlier-branch source endpoint,
+uniform coefficient form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_earlier_full_row_zero
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base hA
+      (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_family_of_residualWitnesses_currentLocalBlock_and_after_earlier_branch_end
+        (k + 1) fp step A c_bound c_rec (fun _ : Fin (k + 1) => u)
+        tail_fl tail_exact hlocal hafter)
+      hrow_second_base
+
+/-- Symmetric-tridiagonal source form of the full-base-row current-local/
+earlier-branch uniform coefficient endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_isSymTridiagonal_and_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_currentLocalBlock_and_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hlocal hafter hrow_second_base
+
+/-- **Theorem 11.7 global base-solve current-local/earlier-branch source
+endpoint, uniform coefficient form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_earlier_full_row_zero
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base hA
+      (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_family_of_residualWitnesses_currentLocalBlock_and_after_earlier_branch_end
+        (k + 1) fp step A c_bound c_rec (fun _ : Fin (k + 1) => u)
+        tail_fl tail_exact hlocal hafter)
+      hsolve
+
+/-- Symmetric-tridiagonal source form of the global base-solve current-local/
+earlier-branch uniform coefficient endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_isSymTridiagonal_and_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_currentLocalBlock_and_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hlocal hafter hsolve
 
 /-- **Theorem 11.7 branch-matrix current-local/non-adjacent source endpoint,
 uniform coefficient form**, zero common offset. -/
@@ -42456,6 +42660,111 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
       hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
       hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
       hrow_zero_base hA.2 hearlier hsolve
+
+/-- **Theorem 11.7 branch-matrix current-local/earlier-branch source endpoint,
+scalar-budget form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_earlier_full_row_zero
+      k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA
+      (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_family_of_residualWitnesses_currentLocalBlock_and_after_earlier_branch_end
+        (k + 1) fp step A c_bound c_rec u_loc tail_fl tail_exact hlocal hafter)
+      hrow_second_base
+
+/-- Symmetric-tridiagonal source form of the branch-matrix current-local/
+earlier-branch scalar-budget endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_isSymTridiagonal_and_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_currentLocalBlock_and_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA.2 hlocal hafter hrow_second_base
+
+/-- **Theorem 11.7 full-base-row current-local/earlier-branch source endpoint,
+scalar-budget form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_earlier_full_row_zero
+      k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA
+      (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_family_of_residualWitnesses_currentLocalBlock_and_after_earlier_branch_end
+        (k + 1) fp step A c_bound c_rec u_loc tail_fl tail_exact hlocal hafter)
+      hrow_second_base
+
+/-- Symmetric-tridiagonal source form of the full-base-row current-local/
+earlier-branch scalar-budget endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_isSymTridiagonal_and_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_currentLocalBlock_and_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA.2 hlocal hafter hrow_second_base
+
+/-- **Theorem 11.7 global base-solve current-local/earlier-branch source
+endpoint, scalar-budget form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_earlier_full_row_zero
+      k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA
+      (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_family_of_residualWitnesses_currentLocalBlock_and_after_earlier_branch_end
+        (k + 1) fp step A c_bound c_rec u_loc tail_fl tail_exact hlocal hafter)
+      hsolve
+
+/-- Symmetric-tridiagonal source form of the global base-solve current-local/
+earlier-branch scalar-budget endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_isSymTridiagonal_and_currentLocalBlock_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hlocal hafter hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_currentLocalBlock_and_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA.2 hlocal hafter hsolve
 
 /-- **Theorem 11.7 branch-matrix current-local/non-adjacent source endpoint,
 scalar-budget form**, zero common offset. -/
@@ -60109,6 +60418,188 @@ def higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_scaled_unit_direct_mi
       hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
       hT_L_lower hT_U_upper hEq hmiddle_entry hL_entry_inv
 
+/-- Exact-`T_hat = T` checkerboard `H=T L^T` inverse-entry endpoint with
+`sigma := id`, removing the separate identity-permutation proof. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcoeff_valid hH_eq hTnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hTNJ
+      hdetJ hineqJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl)
+      hcoeff_valid hH_eq hTnz hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hEq hTNJ hdetJ hineqJ hLU
+      hL_entry_inv
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero_of_unit_roundoff_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcap hH_eq hTnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hTNJ
+      hdetJ hineqJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero_of_unit_roundoff_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl) hcap
+      hH_eq hTnz hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hTNJ hdetJ hineqJ hLU hL_entry_inv
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero_of_u_le_cap :=
+  fun fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hu hcap hH_eq hTnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hTNJ
+      hdetJ hineqJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero_of_u_le_cap
+      fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl) hu hcap
+      hH_eq hTnz hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hTNJ hdetJ hineqJ hLU hL_entry_inv
+
+/-- Exact-`T_hat = T` direct-middle `H=T L^T` inverse-entry endpoint with
+`sigma := id`, removing the separate identity-permutation proof. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcoeff_valid hH_eq hTnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq
+      hmiddle_entry hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl)
+      hcoeff_valid hH_eq hTnz hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hEq hmiddle_entry hL_entry_inv
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero_of_unit_roundoff_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcap hH_eq hTnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq
+      hmiddle_entry hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero_of_unit_roundoff_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl) hcap
+      hH_eq hTnz hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hmiddle_entry hL_entry_inv
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero_of_u_le_cap :=
+  fun fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hu hcap hH_eq hTnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq
+      hmiddle_entry hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero_of_u_le_cap
+      fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl) hu hcap
+      hH_eq hTnz hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hmiddle_entry hL_entry_inv
+
+/-- Normalized exact-`T_hat = T` checkerboard `H=T L^T` inverse-entry
+endpoint with `sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcoeff_valid hH_eq hTnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hTNJ
+      hdetJ hleadJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl)
+      hcoeff_valid hH_eq hTnz hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hEq hTNJ hdetJ hleadJ hLU
+      hL_entry_inv
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero_of_unit_roundoff_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcap hH_eq hTnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hTNJ
+      hdetJ hleadJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero_of_unit_roundoff_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl) hcap
+      hH_eq hTnz hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hTNJ hdetJ hleadJ hLU hL_entry_inv
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero_of_u_le_cap :=
+  fun fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hu hcap hH_eq hTnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hTNJ
+      hdetJ hleadJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero_of_u_le_cap
+      fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl) hu hcap
+      hH_eq hTnz hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hTNJ hdetJ hleadJ hLU hL_entry_inv
+
+/-- Normalized exact-`T_hat = T` direct-middle `H=T L^T` inverse-entry
+endpoint with `sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcoeff_valid hH_eq hTnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq
+      hmiddle_entry hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl)
+      hcoeff_valid hH_eq hTnz hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hEq hmiddle_entry hL_entry_inv
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero_of_unit_roundoff_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcap hH_eq hTnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq
+      hmiddle_entry hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero_of_unit_roundoff_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl) hcap
+      hH_eq hTnz hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hmiddle_entry hL_entry_inv
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero_of_u_le_cap :=
+  fun fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hu hcap hH_eq hTnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq
+      hmiddle_entry hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero_of_u_le_cap
+      fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl) hu hcap
+      hH_eq hTnz hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hmiddle_entry hL_entry_inv
+
 /-- Source-smallness form of the zero-relative checkerboard endpoint. -/
 def higham11_8_AasenSpec_identity_source_prefix_zero_relative_checkerboard_endpoint_of_inverse_entry_bound_of_unit_roundoff_bound :=
   fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
@@ -64841,6 +65332,245 @@ def higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_m
       hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
       hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
       hEq hLU hdetT hT_tridiag hRowDom hL_entry_inv hcoeff
+
+/-- Exact-`T_hat = T` column-dominant relative-middle endpoint with the
+identity permutation specialized as `σ := id`, removing the separate
+`σ i = i` caller obligation. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU γ_factor κL κLT hspec hH_eq hTnz hγ_factor hκL
+      hcoeff_valid hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hLU hdetT hT_tridiag hColDom hL_norm
+      hLT_norm hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU γ_factor κL κLT hspec
+      (by intro i; rfl) hH_eq hTnz hγ_factor hκL hcoeff_valid
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hEq hLU hdetT hT_tridiag hColDom hL_norm hLT_norm hcoeff
+
+/-- Exact-`T_hat = T` row-dominant relative-middle endpoint with the identity
+permutation specialized as `σ := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU γ_factor κL κLT hspec hH_eq hTnz hγ_factor hκL
+      hcoeff_valid hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hLU hdetT hT_tridiag hRowDom hL_norm
+      hLT_norm hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU γ_factor κL κLT hspec
+      (by intro i; rfl) hH_eq hTnz hγ_factor hκL hcoeff_valid
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hEq hLU hdetT hT_tridiag hRowDom hL_norm hLT_norm hcoeff
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_unit_roundoff_bound :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU γ_factor κL κLT hspec hH_eq hTnz hγ_factor hκL
+      hcap hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel
+      h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower
+      hT_U_upper hEq hLU hdetT hT_tridiag hColDom hL_norm hLT_norm
+      hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_unit_roundoff_bound
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU γ_factor κL κLT hspec
+      (by intro i; rfl) hH_eq hTnz hγ_factor hκL hcap hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hLU
+      hdetT hT_tridiag hColDom hL_norm hLT_norm hcoeff
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_unit_roundoff_bound :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU γ_factor κL κLT hspec hH_eq hTnz hγ_factor hκL
+      hcap hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel
+      h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower
+      hT_U_upper hEq hLU hdetT hT_tridiag hRowDom hL_norm hLT_norm
+      hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_unit_roundoff_bound
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU γ_factor κL κLT hspec
+      (by intro i; rfl) hH_eq hTnz hγ_factor hκL hcap hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hLU
+      hdetT hT_tridiag hRowDom hL_norm hLT_norm hcoeff
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_u_le_cap :=
+  fun fp n Ucap hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU γ_factor κL κLT hspec hH_eq hTnz hγ_factor hκL
+      hu hcap hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hLU hdetT hT_tridiag hColDom hL_norm
+      hLT_norm hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_u_le_cap
+      fp n Ucap hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU γ_factor κL κLT hspec
+      (by intro i; rfl) hH_eq hTnz hγ_factor hκL hu hcap
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hEq hLU hdetT hT_tridiag hColDom hL_norm hLT_norm hcoeff
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_u_le_cap :=
+  fun fp n Ucap hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU γ_factor κL κLT hspec hH_eq hTnz hγ_factor hκL
+      hu hcap hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hLU hdetT hT_tridiag hRowDom hL_norm
+      hLT_norm hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_u_le_cap
+      fp n Ucap hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU γ_factor κL κLT hspec
+      (by intro i; rfl) hH_eq hTnz hγ_factor hκL hu hcap
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hEq hLU hdetT hT_tridiag hRowDom hL_norm hLT_norm hcoeff
+
+/-- Simplified-coefficient exact-`T_hat` column-dominant relative-middle
+endpoint with `σ := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_simplified_coeff :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU γ_factor κL κLT hspec hH_eq hTnz hγ_factor hκL
+      hcoeff_valid hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hLU hdetT hT_tridiag hColDom hL_norm
+      hLT_norm hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_simplified_coeff
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU γ_factor κL κLT hspec
+      (by intro i; rfl) hH_eq hTnz hγ_factor hκL hcoeff_valid
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hEq hLU hdetT hT_tridiag hColDom hL_norm hLT_norm hcoeff
+
+/-- Simplified-coefficient exact-`T_hat` row-dominant relative-middle endpoint
+with `σ := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_simplified_coeff :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU γ_factor κL κLT hspec hH_eq hTnz hγ_factor hκL
+      hcoeff_valid hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hLU hdetT hT_tridiag hRowDom hL_norm
+      hLT_norm hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_simplified_coeff
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU γ_factor κL κLT hspec
+      (by intro i; rfl) hH_eq hTnz hγ_factor hκL hcoeff_valid
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hEq hLU hdetT hT_tridiag hRowDom hL_norm hLT_norm hcoeff
+
+/-- Inverse-entry exact-`T_hat` column-dominant relative-middle endpoint with
+`σ := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff :=
+  fun fp n (hn_pos : 0 < n) (hn_dim : 1 < n) A Pmat L H T L_hat
+      T_hat L_T_hat U_T_hat b DeltaT_LU hspec hH_eq hTnz
+      (hcoeff_valid : gammaValid fp (15 * n + 25)) hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hLU
+      hdetT hT_tridiag hColDom
+      (hL_entry_inv : ∀ i j : Fin n, |L i j| ≤ 1 / (1 + gamma fp n))
+      hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl)
+      hH_eq hTnz hcoeff_valid hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hEq hLU hdetT hT_tridiag hColDom
+      hL_entry_inv hcoeff
+
+/-- Inverse-entry exact-`T_hat` row-dominant relative-middle endpoint with
+`σ := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff :=
+  fun fp n (hn_pos : 0 < n) (hn_dim : 1 < n) A Pmat L H T L_hat
+      T_hat L_T_hat U_T_hat b DeltaT_LU hspec hH_eq hTnz
+      (hcoeff_valid : gammaValid fp (15 * n + 25)) hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hLU
+      hdetT hT_tridiag hRowDom
+      (hL_entry_inv : ∀ i j : Fin n, |L i j| ≤ 1 / (1 + gamma fp n))
+      hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl)
+      hH_eq hTnz hcoeff_valid hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hEq hLU hdetT hT_tridiag hRowDom
+      hL_entry_inv hcoeff
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff_of_unit_roundoff_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hH_eq hTnz hcap hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hLU
+      hdetT hT_tridiag hColDom hL_entry_inv hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff_of_unit_roundoff_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl)
+      hH_eq hTnz hcap hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hEq hLU hdetT hT_tridiag hColDom
+      hL_entry_inv hcoeff
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff_of_unit_roundoff_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hH_eq hTnz hcap hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hLU
+      hdetT hT_tridiag hRowDom hL_entry_inv hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff_of_unit_roundoff_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl)
+      hH_eq hTnz hcap hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hEq hLU hdetT hT_tridiag hRowDom
+      hL_entry_inv hcoeff
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff_of_u_le_cap :=
+  fun fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hH_eq hTnz hu hcap hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hLU
+      hdetT hT_tridiag hColDom hL_entry_inv hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff_of_u_le_cap
+      fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl)
+      hH_eq hTnz hu hcap hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hEq hLU hdetT hT_tridiag hColDom
+      hL_entry_inv hcoeff
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff_of_u_le_cap :=
+  fun fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hH_eq hTnz hu hcap hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hLU
+      hdetT hT_tridiag hRowDom hL_entry_inv hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_inverse_entry_bound_simplified_coeff_of_u_le_cap
+      fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl)
+      hH_eq hTnz hu hcap hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hEq hLU hdetT hT_tridiag hRowDom
+      hL_entry_inv hcoeff
 
 /-- Source-prefix factor-norm wrapper variant where the relative `L_hat`
 factor hypothesis is generated from modeled rounded recurrence updates and the
