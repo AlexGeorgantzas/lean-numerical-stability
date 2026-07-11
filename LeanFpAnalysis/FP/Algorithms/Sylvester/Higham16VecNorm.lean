@@ -2180,6 +2180,61 @@ theorem lyapunovVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_operator_sigmaMin
     lyapunovVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_sepLowerBound
       n A sigma hSep hz
 
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the Lyapunov coefficient sigma-min
+    route from a supplied operator sigma-min certificate. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_sigmaMin_of_operator_sigmaMin :=
+  lyapunovVecCoeff_sigmaMin_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for Lyapunov coefficient nonsingularity
+    from a supplied operator sigma-min certificate. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_det_ne_zero_of_operator_sigmaMin :=
+  lyapunovVecCoeff_det_ne_zero_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for Lyapunov coefficient bijectivity from a
+    supplied operator sigma-min certificate. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_mulVec_bijective_of_operator_sigmaMin :=
+  lyapunovVecCoeff_mulVec_bijective_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for unique Lyapunov coefficient solves
+    from a supplied operator sigma-min certificate. -/
+alias H16_eq16_2_27_existsUnique_lyapunovVecCoeff_mulVec_of_operator_sigmaMin :=
+  existsUnique_lyapunovVecCoeff_mulVec_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the nonsingular-inverse Lyapunov
+    coefficient solution from a supplied operator sigma-min certificate. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_nonsingInv_mulVec_solution_of_operator_sigmaMin :=
+  lyapunovVecCoeff_nonsingInv_mulVec_solution_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the unique nonsingular-inverse
+    Lyapunov coefficient solve from a supplied operator sigma-min certificate. -/
+alias H16_eq16_2_27_existsUnique_lyapunovVecCoeff_nonsingInv_mulVec_solution_of_operator_sigmaMin :=
+  existsUnique_lyapunovVecCoeff_nonsingInv_mulVec_solution_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the right inverse action from a
+    supplied operator sigma-min certificate. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_mulVec_nonsingInv_mulVec_of_operator_sigmaMin :=
+  lyapunovVecCoeff_mulVec_nonsingInv_mulVec_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the left inverse action from a
+    supplied operator sigma-min certificate. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_operator_sigmaMin :=
+  lyapunovVecCoeff_nonsingInv_mulVec_mulVec_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias identifying exact Lyapunov coefficient
+    solutions with the nonsingular-inverse vector under a supplied operator
+    sigma-min certificate. -/
+alias H16_eq16_2_27_lyapunovVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_operator_sigmaMin :=
+  lyapunovVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_operator_sigmaMin
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
     a positive exact-`sylvesterSepInf` lower bound for `sep(A,-A^T)`
     instantiates the determinant-based left nonsingular-inverse action. -/
