@@ -174,6 +174,21 @@ theorem sylvester_relative_first_order_bound_of_psi (n : ℕ)
     frobNorm ΔX ≤ Ψ * frobNorm X * (Real.sqrt 3 * ε) := hbound
     _ = (Real.sqrt 3 * Ψ * ε) * frobNorm X := by ring
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.23)-(16.24):
+    source-numbered aliases for the primitive structured Sylvester first-order
+    condition-number surface. -/
+noncomputable abbrev H16_eq16_23_sylvesterScaledPerturbationTripleNorm :=
+  sylvesterScaledPerturbationTripleNorm
+
+alias H16_eq16_23_sylvesterScaledPerturbationTripleNorm_le_sqrt_three_mul :=
+  sylvesterScaledPerturbationTripleNorm_le_sqrt_three_mul
+
+abbrev H16_eq16_24_SylvesterPsiFirstOrderBound :=
+  SylvesterPsiFirstOrderBound
+
+alias H16_eq16_23_sylvester_relative_first_order_bound_of_psi :=
+  sylvester_relative_first_order_bound_of_psi
+
 -- ============================================================
 -- Lyapunov first-order condition-number surface (§16.3, eq 16.27)
 -- ============================================================
@@ -265,6 +280,21 @@ theorem lyapunov_relative_first_order_bound_of_condition (n : ℕ)
   calc
     frobNorm ΔX ≤ Ψ * frobNorm X * (Real.sqrt 2 * ε) := hbound
     _ = (Real.sqrt 2 * Ψ * ε) * frobNorm X := by ring
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered aliases for the primitive structured Lyapunov first-order
+    condition-number surface. -/
+noncomputable abbrev H16_eq16_27_lyapunovScaledPerturbationPairNorm :=
+  lyapunovScaledPerturbationPairNorm
+
+alias H16_eq16_27_lyapunovScaledPerturbationPairNorm_le_sqrt_two_mul :=
+  lyapunovScaledPerturbationPairNorm_le_sqrt_two_mul
+
+abbrev H16_eq16_27_LyapunovConditionFirstOrderBound :=
+  LyapunovConditionFirstOrderBound
+
+alias H16_eq16_27_lyapunov_relative_first_order_bound_of_condition :=
+  lyapunov_relative_first_order_bound_of_condition
 
 -- ============================================================
 -- First-order perturbation bound (§15.3, eq 15.25)
