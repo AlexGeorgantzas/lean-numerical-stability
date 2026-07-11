@@ -19494,6 +19494,42 @@ theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_pathSecondPivot_two_cur
   simp [higham11_7_tridiagonalPathSecondPivotIndex_two_val]
   omega
 
+/-- Ambient zero-prefix support on the already lifted earlier perturbation also
+discharges the later accepted-`2 × 2` second-pivot local-block row. -/
+theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_pathSecondPivot_two_currentLocalBlock_zero_of_lifted_support_after_branch_end
+    (k : ℕ) (step : Fin k → PivotSize) (s t : Fin k)
+    (hstep : step t = PivotSize.two)
+    (E : Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step s) (step s)) →
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step s) (step s)) → ℝ)
+    (hEsupp : higham11_7_TridiagonalLeadingBlockSupport
+      (higham11_7_tridiagonalPathPivotSpan k step + 1)
+      (higham11_7_tridiagonalPathPrefixSpan k step t +
+        higham11_7_tridiagonalBranchSupportOffset (step t))
+      (higham11_7_tridiagonalLiftLocalBlockPerturbation
+        (higham11_7_tridiagonalPathPivotSpan k step + 1)
+        (higham11_7_tridiagonalPathPrefixSpan k step s)
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step s) (step s))
+        E))
+    (j : Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t))) :
+    higham11_7_tridiagonalLiftLocalBlockPerturbation
+      (higham11_7_tridiagonalPathPivotSpan k step + 1)
+      (higham11_7_tridiagonalPathPrefixSpan k step s)
+      (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step s) (step s))
+      E
+      (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+      (higham11_7_tridiagonalPathLocalBlockIndex k step t j) = 0 := by
+  exact hEsupp
+    (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+    (higham11_7_tridiagonalPathLocalBlockIndex k step t j)
+    (Or.inl (by
+      simp [higham11_7_tridiagonalPathSecondPivotIndex_two_val,
+        higham11_7_tridiagonalBranchSupportOffset, hstep]))
+
 /-- Deep leading-support certificates for every strictly earlier perturbation
 discharge the named current-local-block zero condition. -/
 theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock_of_deepLeadingBlockSupport
@@ -19520,6 +19556,34 @@ theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock
   exact
     higham11_7_tridiagonalLiftLocalBlockPerturbation_pathSecondPivot_two_currentLocalBlock_zero_of_support_after_branch_end
       k step s t hstep localOffset (ΔA s) hEsupp hend j
+
+/-- Ambient leading-support certificates for every strictly earlier lifted
+perturbation discharge the named current-local-block zero condition. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock_of_lifted_deepLeadingBlockSupport
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hdeep : ∀ t : Fin k, ∀ _hstep : step t = PivotSize.two,
+      ∀ s : Fin k, s.val < t.val →
+        higham11_7_TridiagonalLeadingBlockSupport
+          (higham11_7_tridiagonalPathPivotSpan k step + 1)
+          (higham11_7_tridiagonalPathPrefixSpan k step t +
+            higham11_7_tridiagonalBranchSupportOffset (step t))
+          (higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s))) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock
+        k step ΔA := by
+  intro t hstep s hst j
+  exact
+    higham11_7_tridiagonalLiftLocalBlockPerturbation_pathSecondPivot_two_currentLocalBlock_zero_of_lifted_support_after_branch_end
+      k step s t hstep (ΔA s) (hdeep t hstep s hst) j
 
 /-- A bare branch-matrix second-pivot row equation becomes the combined
 local-block row equation when every strictly earlier lifted perturbation
