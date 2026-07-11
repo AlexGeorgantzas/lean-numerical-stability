@@ -1077,6 +1077,32 @@ theorem lyapunov_relative_aposteriori_bound_of_pos_le_sylvesterSepInf
       hExact hE_ne hX_pos
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the sep-certificate Lyapunov a posteriori
+    residual-error bound, preserving the explicit nonzero-error side condition. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_of_sepLowerBound :=
+  lyapunov_aposteriori_bound_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the relative sep-certificate Lyapunov
+    a posteriori residual-error bound, preserving the explicit nonzero-error
+    and positive-solution-norm side conditions. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_of_sepLowerBound :=
+  lyapunov_relative_aposteriori_bound_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the exact-infimum Lyapunov a posteriori
+    residual-error bound, preserving the explicit nonzero-error side condition. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_of_pos_le_sylvesterSepInf :=
+  lyapunov_aposteriori_bound_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the relative exact-infimum Lyapunov a posteriori
+    residual-error bound, preserving the explicit nonzero-error and
+    positive-solution-norm side conditions. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_of_pos_le_sylvesterSepInf :=
+  lyapunov_relative_aposteriori_bound_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
     total source-facing Lyapunov a posteriori error-residual bound from a
     supplied exact `SepLowerBound` certificate for `sep(A,-A^T)`.
 
@@ -1560,6 +1586,19 @@ theorem lyapunov_relative_aposteriori_bound_diagonal (n : Nat)
   exact
     lyapunov_relative_aposteriori_bound_of_sepLowerBound n
       (Matrix.diagonal a) C X Xhat s hSep hExact hE_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal case:
+    source-numbered alias for the direct diagonal Lyapunov a posteriori
+    residual-error bound, preserving the explicit nonzero-error side condition. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_diagonal :=
+  lyapunov_aposteriori_bound_diagonal
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal case:
+    source-numbered alias for the relative direct diagonal Lyapunov a posteriori
+    residual-error bound, preserving the explicit nonzero-error and
+    positive-solution-norm side conditions. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_diagonal :=
+  lyapunov_relative_aposteriori_bound_diagonal
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal Lyapunov case:
     total residual-error bound from an entrywise lower bound on `|a_i + a_j|`.
