@@ -72168,6 +72168,80 @@ theorem
   simpa [theorem20_8KKTSourceResidualRatioCoupledBound] using h
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-stacked-rank and displayed maximum-relative-perturbation version of
+    the named source-residual-ratio KKT estimate.  This derives the internal
+    null-intersection hypothesis from full column rank of `[A; B]`, derives
+    the relative perturbation budget from the displayed maximum, and preserves
+    perturbed full row rank of `B + DeltaB` from the source transpose margin. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hB.transposeVecNorm2LowerMargin)
+    (hmultGain :
+      LSEKKTInverseMultiplierStatCoeff hB
+          ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+            hStack) *
+          (eps * frobNormRect B) < 1)
+    (hsolGain :
+      LSEKKTInverseSolutionDataCoeff hB
+          ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+            hStack) *
+          (eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) *
+          (eps * frobNormRect B) < 1)
+    (hcoupledGain :
+      theorem20_8KKTCoupledSelfCoeff hB
+          ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+            hStack) eps < 1) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      theorem20_8KKTSourceResidualRatioCoupledBound hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) b x eps := by
+  let hnull : LSENullIntersectionTrivial A B :=
+    (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hStack
+  have hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps :=
+    theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+      A DeltaA b Deltab B DeltaB d Deltad
+      hApos hbpos hBpos hdpos hmax
+  have heps_nonneg : 0 ≤ eps :=
+    (theorem20_8MaxRelativePerturbation_nonneg A DeltaA b Deltab B DeltaB d
+      Deltad hApos).trans hmax
+  have hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j) :=
+    LSEFullRowRank.of_maxRelativePerturbation_lt_transposeLowerMargin
+      hB hApos hbpos hBpos hdpos hmax hBsmall
+  exact
+    hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound
+      hy hB hBpert hnull hxnorm hbudget heps_nonneg hmultGain hsolGain
+      hcoupledGain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     canonical KKT response bound with the perturbed-solution scale absorbed by
     a scalar small-gain condition.  The remaining scale assumptions are the
     source residual scale and the actual perturbed multiplier scale. -/
