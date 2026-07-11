@@ -6132,6 +6132,42 @@ theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted
   · exact sylvesterTwoColumnBlockCoeff_det_ne_zero_of_shifted_det_product_zero
       m n A T p q hpdet hqdet hcouple
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the complex-discriminant determinant-separation
+    route to active two-column block nonsingularity. -/
+alias H16_eq16_4_8_sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_disc_det_separation :=
+  sylvesterTwoColumnBlockCoeff_det_ne_zero_of_complex_disc_det_separation
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the quasi-Schur complex-delta same-block
+    determinant certificate. -/
+alias H16_eq16_4_8_sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_complex_delta_root_det_separation :=
+  sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_complex_delta_root_det_separation
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the quasi-Schur negative-discriminant same-block
+    determinant certificate. -/
+alias H16_eq16_4_8_sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_complex_disc_det_separation :=
+  sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_complex_disc_det_separation
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the quasi-Schur no-coupled-action same-block
+    determinant certificate. -/
+alias H16_eq16_4_8_sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_no_coupled_block_action :=
+  sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_no_coupled_block_action
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the zero-coupling product shifted-determinant
+    route to active two-column block nonsingularity. -/
+alias H16_eq16_4_8_sylvesterTwoColumnBlockCoeff_det_ne_zero_of_shifted_det_product_zero :=
+  sylvesterTwoColumnBlockCoeff_det_ne_zero_of_shifted_det_product_zero
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the quasi-Schur zero-coupling same-block
+    determinant certificate. -/
+alias H16_eq16_4_8_sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero :=
+  sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_quasiSchur_shifted_det_product_zero
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6), right-hand side for
     the supplied adjacent two-column block recurrence.  It collects the
     two active column equations into the same `Sum`-indexed vector space as
@@ -13567,6 +13603,24 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_comp
       m n U R A V S B C Cschur X pmap
       hU hV hA hB hCschur hmono hcard hzero hspectral hsingle_det
       hXsingle hblock_noR hXblock
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the complex-root-exclusion generated-step Schur
+    traversal solution wrapper. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_complex_root_separation_generated_step_formula :=
+  sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_complex_root_separation_generated_step_formula
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the complex-root-exclusion generated-step
+    original-coordinate reconstruction wrapper. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_complex_root_separation_generated_step_formula :=
+  sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_complex_root_separation_generated_step_formula
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the complex-root-exclusion generated-step
+    original-coordinate unique-solvability wrapper. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_complex_root_separation_generated_step_formula :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_complex_root_separation_generated_step_formula
 
 /-- Predicate-packaged version of
     `sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_local_no_common_generated_frontier_step_oracle`. -/
