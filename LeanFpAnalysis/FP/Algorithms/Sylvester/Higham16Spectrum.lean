@@ -2535,6 +2535,94 @@ theorem sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_sc
       heta hcomponent hXhat
 
 /-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.29):
+    monotone no-common-spectrum practical endpoint from a supplied
+    Schur-coordinate Frobenius residual bound and enlarged estimator data. -/
+theorem sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound_mono
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Y Rhat' Ru' : RMatFn m n) (rho : Real)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hres :
+      frobNormRect
+        (sylvesterResidualRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <= rho)
+    (hRhat : forall i j, |(0 : Real)| <= |Rhat' i j|)
+    (hRu_le : forall i j, rho <= Ru' i j)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n
+      (rectMatMul U (rectMatMul Y (matTranspose V)))) :
+    sylvesterMaxEntryNormRect m n
+        (fun i j =>
+          X i j - rectMatMul U (rectMatMul Y (matTranspose V)) i j) /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) <=
+      sylvesterVecMaxNorm m n
+        (sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru') /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) := by
+  exact
+    sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_mono
+      m n A B C X (rectMatMul U (rectMatMul Y (matTranspose V)))
+      (fun _ _ => 0) Rhat' (fun _ _ => rho) Ru' PinvAbs'
+      hno hX
+      (sylvesterComputedResidualBudget_zero_of_schur_transform_residual_bound
+        m n U R A V S B C Y rho hU hV hA hB hres)
+      hPinvAbs_le hRhat hRu_le hXhat
+
+/-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.29):
+    monotone scalar-cap no-common-spectrum practical endpoint from a supplied
+    Schur-coordinate Frobenius residual bound and enlarged estimator data. -/
+theorem sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound_mono_scalar
+    (m n : Nat)
+    (U R A : RMatFn m m) (V S B : RMatFn n n)
+    (C X Y Rhat' Ru' : RMatFn m n) (rho eta : Real)
+    (PinvAbs' :
+      Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real)
+    (hno : NoCommonComplexRightEigenvalue (realMatrixToComplex A)
+      (realMatrixToComplex B))
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V)
+    (hA : A = rectMatMul U (rectMatMul R (matTranspose U)))
+    (hB : B = rectMatMul V (rectMatMul S (matTranspose V)))
+    (hX : IsSylvesterSolutionRect m n A B C X)
+    (hPinvAbs_le : forall p q,
+      sylvesterVecCoeffNonsingInvAbs m n A B p q <= PinvAbs' p q)
+    (hres :
+      frobNormRect
+        (sylvesterResidualRect m n R S
+          (rectMatMul (matTranspose U) (rectMatMul C V)) Y) <= rho)
+    (hRhat : forall i j, |(0 : Real)| <= |Rhat' i j|)
+    (hRu_le : forall i j, rho <= Ru' i j)
+    (heta : 0 <= eta)
+    (hcomponent :
+      forall p, sylvesterPracticalBudgetVec m n PinvAbs' Rhat' Ru' p <= eta)
+    (hXhat : 0 < sylvesterMaxEntryNormRect m n
+      (rectMatMul U (rectMatMul Y (matTranspose V)))) :
+    sylvesterMaxEntryNormRect m n
+        (fun i j =>
+          X i j - rectMatMul U (rectMatMul Y (matTranspose V)) i j) /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) <=
+      eta /
+        sylvesterMaxEntryNormRect m n
+          (rectMatMul U (rectMatMul Y (matTranspose V))) := by
+  exact
+    sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_computed_residual_certificate_mono_scalar
+      m n A B C X (rectMatMul U (rectMatMul Y (matTranspose V)))
+      (fun _ _ => 0) Rhat' (fun _ _ => rho) Ru' PinvAbs' eta
+      hno hX
+      (sylvesterComputedResidualBudget_zero_of_schur_transform_residual_bound
+        m n U R A V S B C Y rho hU hV hA hB hres)
+      hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.2 and 16.4, equations (16.9) and (16.29):
     denominator-free no-common-spectrum practical endpoint from a supplied
     Schur-coordinate Frobenius residual bound. -/
 theorem sylvester_practical_abs_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound
@@ -2665,6 +2753,18 @@ alias H16_eq16_29_sylvester_practical_error_bound_of_no_common_complex_right_eig
     residual bound. -/
 alias H16_eq16_29_sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound_scalar :=
   sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), source-numbered alias
+    for the monotone no-common-spectrum practical endpoint from a supplied
+    Schur residual bound. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound_mono :=
+  sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29), source-numbered alias
+    for the monotone scalar no-common-spectrum practical endpoint from a
+    supplied Schur residual bound. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound_mono_scalar :=
+  sylvester_practical_error_bound_of_no_common_complex_right_eigenvalue_schur_transform_residual_bound_mono_scalar
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), source-numbered alias
     for the denominator-free no-common-spectrum practical endpoint from a
@@ -10153,6 +10253,42 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_product_shift_det_fro
       sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_det_ne_zero
         m n R S p q hprod
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for scheduled quasi-Schur Schur-coordinate
+    solvability from explicit singleton and two-column determinant steps. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_solution_of_det_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_solution_of_det_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for original-coordinate reconstruction from a
+    scheduled determinant-certified quasi-Schur traversal. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_original_solution_eq_of_det_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_original_solution_eq_of_det_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for original-coordinate unique solvability from a
+    scheduled determinant-certified quasi-Schur traversal. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_det_frontier_step_oracle :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_det_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for scheduled quasi-Schur Schur-coordinate
+    solvability from product-shift two-column determinant steps. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_solution_of_product_shift_det_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_solution_of_product_shift_det_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for original-coordinate reconstruction from a
+    product-shift determinant scheduled quasi-Schur traversal. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_original_solution_eq_of_product_shift_det_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_original_solution_eq_of_product_shift_det_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for original-coordinate unique solvability from a
+    product-shift determinant scheduled quasi-Schur traversal. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_product_shift_det_frontier_step_oracle :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_product_shift_det_frontier_step_oracle
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
     Schur-coordinate solvability from a scheduled quasi-Schur traversal whose
     same-block two-column steps use the real-Schur two-block spectral
@@ -13041,6 +13177,12 @@ theorem isSylvesterQuasiSchurGeneratedStepFormula_of_column_family_generated_pre
   · intro p q hpq hsame
     exact hblock p q p.isLt q.isLt hpq hsame
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for turning a complete recursive column-family
+    generated-prefix certificate into the packaged generated-step formula. -/
+alias H16_eq16_4_8_isSylvesterQuasiSchurGeneratedStepFormula_of_column_family_generated_prefix :=
+  isSylvesterQuasiSchurGeneratedStepFormula_of_column_family_generated_prefix
+
 /-- A singleton recursive update extends the generated-prefix certificate by
     one frontier column, provided that the current frontier column is separated
     from its immediate predecessor in the quasi-Schur block map. -/
@@ -13456,6 +13598,12 @@ theorem isSylvesterQuasiSchurGeneratedStepFormula_of_column_family
     exact hsingle p hprev hnext i
   · intro p q hpq hsame
     exact hblock p q hpq hsame
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for packaging recursive column-family singleton and
+    adjacent-block formulas as an `RMatFn` generated-step formula. -/
+alias H16_eq16_4_8_isSylvesterQuasiSchurGeneratedStepFormula_of_column_family :=
+  isSylvesterQuasiSchurGeneratedStepFormula_of_column_family
 
 /-- Predicate-packaged version of
     `sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_generated_frontier_step_oracle`. -/
