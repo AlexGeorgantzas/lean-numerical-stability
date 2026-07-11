@@ -855,6 +855,18 @@ theorem sylvesterVecCoeff_one_det_eq_sylvesterTriangularShiftedCoeff_det
   rw [← hdet_reindex,
     sylvesterVecCoeff_one_reindex_eq_sylvesterTriangularShiftedCoeff]
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
+    source-numbered alias for the one-column vec/Kronecker reindexing bridge
+    to the singleton shifted column coefficient. -/
+alias H16_eq16_6_sylvesterVecCoeff_one_reindex_eq_sylvesterTriangularShiftedCoeff :=
+  sylvesterVecCoeff_one_reindex_eq_sylvesterTriangularShiftedCoeff
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
+    source-numbered alias for the determinant form of the one-column
+    vec/Kronecker bridge to the singleton shifted column coefficient. -/
+alias H16_eq16_6_sylvesterVecCoeff_one_det_eq_sylvesterTriangularShiftedCoeff_det :=
+  sylvesterVecCoeff_one_det_eq_sylvesterTriangularShiftedCoeff_det
+
 private theorem triangular_column_sum_split (m n : Nat) (T : RMatFn n n)
     (hT : IsUpperTriangularFn n T) (X : RMatFn m n) (i : Fin m) (k : Fin n) :
     (Finset.sum Finset.univ fun j : Fin n => X i j * T j k) =
@@ -11365,6 +11377,24 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_realQuasiSchur_block_
     exact Or.inr
       ⟨p, q, hpval, hqval, hfront, hsame,
         hblock_sep p q hpq hsame, hXp, hXq⟩
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for generated-frontier Schur-coordinate traversal
+    from bundled real-quasi-Schur block-separation certificates. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_solution_of_realQuasiSchur_block_separation_generated_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_solution_of_realQuasiSchur_block_separation_generated_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for generated-frontier original-coordinate
+    reconstruction from bundled real-quasi-Schur block-separation certificates. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_original_solution_eq_of_realQuasiSchur_block_separation_generated_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_original_solution_eq_of_realQuasiSchur_block_separation_generated_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for generated-frontier original-coordinate unique
+    solvability from bundled real-quasi-Schur block-separation certificates. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_realQuasiSchur_block_separation_generated_frontier_step_oracle :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_realQuasiSchur_block_separation_generated_frontier_step_oracle
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
     Schur-coordinate solvability from the generated quasi-Schur frontier
