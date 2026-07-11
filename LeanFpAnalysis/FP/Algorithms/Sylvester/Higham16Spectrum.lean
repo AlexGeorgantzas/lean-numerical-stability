@@ -13151,6 +13151,18 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_realQuasiSchur_factor
       m n U R A V S B C Cschur X pmap hU hV hA hB hCschur hmono hcard hzero
       hspectral hdetOrig hXsingle hXblock
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered aliases for the global vec-determinant generated-step
+    formula route through supplied real quasi-Schur factors. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_vecCoeff_det_ne_zero_generated_step_formula :=
+  sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_vecCoeff_det_ne_zero_generated_step_formula
+
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_original_solution_eq_of_realQuasiSchur_factors_vecCoeff_det_ne_zero_generated_step_formula :=
+  sylvester_quasiSchur_blockTraversal_original_solution_eq_of_realQuasiSchur_factors_vecCoeff_det_ne_zero_generated_step_formula
+
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_realQuasiSchur_factors_vecCoeff_det_ne_zero_generated_step_formula :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_realQuasiSchur_factors_vecCoeff_det_ne_zero_generated_step_formula
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
     recursive-candidate witness: the automatically generated quasi-Schur
     frontier schedule constructs a Schur-coordinate candidate satisfying the
