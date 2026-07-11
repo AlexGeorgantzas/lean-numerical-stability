@@ -151,6 +151,11 @@ theorem backward_error_lower_sq (n : ℕ)
              sq_nonneg (α * σ j * DC i j * α * β - (-γ) * DA i j * β * γ),
              sq_nonneg ((-β * σ i) * DC i j * α * β - (-γ) * DB i j * α * γ)]
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.14)-(16.15):
+    source-numbered alias for the Cauchy-Schwarz lower-cost consequence of
+    the uncoupled SVD-coordinate scalar equations. -/
+alias H16_eq16_14_15_backward_error_lower_sq := backward_error_lower_sq
+
 -- ============================================================
 -- Backward error upper bound (§16.2, eq 16.15 upper)
 -- ============================================================
@@ -395,6 +400,39 @@ theorem svdOptimalPerturbations_frobNormSq_bounds (n : ℕ)
     svdOptimalDeltaB_frobNormSq_le_xiSq n R_tilde σ α β γ hpos,
     svdOptimalDeltaC_frobNormSq_le_xiSq n R_tilde σ α β γ hpos⟩
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15):
+    source-numbered aliases for the SVD-coordinate optimizer construction and
+    its component squared-Frobenius bounds. -/
+alias H16_eq16_15_backward_error_upper_component :=
+  backward_error_upper_component
+
+noncomputable abbrev H16_eq16_15_svdOptimalDeltaA := svdOptimalDeltaA
+
+noncomputable abbrev H16_eq16_15_svdOptimalDeltaB := svdOptimalDeltaB
+
+noncomputable abbrev H16_eq16_15_svdOptimalDeltaC := svdOptimalDeltaC
+
+alias H16_eq16_15_svdOptimalPerturbations_scalar_eq :=
+  svdOptimalPerturbations_scalar_eq
+
+alias H16_eq16_15_svdOptimalPerturbations_cost_eq_xiSq :=
+  svdOptimalPerturbations_cost_eq_xiSq
+
+alias H16_eq16_15_exists_svdOptimalPerturbations :=
+  exists_svdOptimalPerturbations
+
+alias H16_eq16_15_svdOptimalDeltaA_frobNormSq_le_xiSq :=
+  svdOptimalDeltaA_frobNormSq_le_xiSq
+
+alias H16_eq16_15_svdOptimalDeltaB_frobNormSq_le_xiSq :=
+  svdOptimalDeltaB_frobNormSq_le_xiSq
+
+alias H16_eq16_15_svdOptimalDeltaC_frobNormSq_le_xiSq :=
+  svdOptimalDeltaC_frobNormSq_le_xiSq
+
+alias H16_eq16_15_svdOptimalPerturbations_frobNormSq_bounds :=
+  svdOptimalPerturbations_frobNormSq_bounds
+
 -- ============================================================
 -- Amplification factor (§16.2, eqs 16.17-16.19)
 -- ============================================================
@@ -409,12 +447,22 @@ noncomputable def sylvesterAmplificationMu
   ((α + β) * yNorm + γ) /
     Real.sqrt (α ^ 2 * σn ^ 2 + β ^ 2 * σm ^ 2 + γ ^ 2)
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.18):
+    source-numbered abbreviation for the scalar amplification factor. -/
+noncomputable abbrev H16_eq16_18_sylvesterAmplificationMu :=
+  sylvesterAmplificationMu
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.19):
     square-case specialization of the amplification factor. -/
 noncomputable def sylvesterAmplificationMuSquare
     (α β γ yNorm σmin : ℝ) : ℝ :=
   ((α + β) * yNorm + γ) /
     Real.sqrt ((α ^ 2 + β ^ 2) * σmin ^ 2 + γ ^ 2)
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.19):
+    source-numbered abbreviation for the square-case amplification factor. -/
+noncomputable abbrev H16_eq16_19_sylvesterAmplificationMuSquare :=
+  sylvesterAmplificationMuSquare
 
 /-- In the square case, the two singular-value slots in (16.18) coincide,
     giving the source formula (16.19). -/
@@ -425,6 +473,11 @@ theorem sylvesterAmplificationMu_square_eq
   unfold sylvesterAmplificationMu sylvesterAmplificationMuSquare
   rw [show α ^ 2 * σmin ^ 2 + β ^ 2 * σmin ^ 2 + γ ^ 2 =
       (α ^ 2 + β ^ 2) * σmin ^ 2 + γ ^ 2 by ring]
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.19): source-numbered
+    alias for the square-case reduction of the amplification factor. -/
+alias H16_eq16_19_sylvesterAmplificationMu_square_eq :=
+  sylvesterAmplificationMu_square_eq
 
 /-- Higham, 2nd ed., Chapter 16.2, prose after equation (16.18):
     in the square case the amplification factor is at least one, provided the
@@ -460,6 +513,11 @@ theorem one_le_sylvesterAmplificationMuSquare
     rw [Real.sq_sqrt (le_of_lt hDenom)]
     exact hD_le
   exact (one_le_div hsqrt_pos).mpr hsqrt_le
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.19) and following prose:
+    source-numbered alias for the square-case lower bound `1 <= mu`. -/
+alias H16_eq16_19_one_le_sylvesterAmplificationMuSquare :=
+  one_le_sylvesterAmplificationMuSquare
 
 /-- **Amplification factor bound** (eqs 16.17-16.18):
     ξ² ≤ ‖R̃‖²_F / ((α²+β²)σ²_min + γ²)
@@ -1404,6 +1462,12 @@ noncomputable def lyapunovBackwardResidual (n : ℕ)
     (DA DC Y : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
   fun i j => matMul n DA Y i j + matMul n Y (matTranspose DA) i j - DC i j
 
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered abbreviation for the structured Lyapunov backward
+    residual. -/
+noncomputable abbrev H16_eq16_21_lyapunovBackwardResidual :=
+  lyapunovBackwardResidual
+
 /-- Higham, 2nd ed., Chapter 16.2.1:
     nonnegative feasible values for the structured Lyapunov backward error
     `eta(Y)`, with a tied `DeltaA`/`DeltaA^T` perturbation and symmetric
@@ -1419,6 +1483,16 @@ def lyapunovBackwardErrorValues (n : Nat)
 noncomputable def lyapunovBackwardErrorInf (n : Nat)
     (A C Y : Fin n -> Fin n -> Real) (alpha gamma : Real) : Real :=
   sInf (lyapunovBackwardErrorValues n A C Y alpha gamma)
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered abbreviation for the structured Lyapunov eta feasible set. -/
+abbrev H16_eq16_21_lyapunovBackwardErrorValues :=
+  lyapunovBackwardErrorValues
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered abbreviation for the structured Lyapunov eta infimum. -/
+noncomputable abbrev H16_eq16_21_lyapunovBackwardErrorInf :=
+  lyapunovBackwardErrorInf
 
 /-- The nonnegative feasible-value set for the structured Lyapunov eta model
     is bounded below by zero. -/
@@ -1450,6 +1524,17 @@ theorem lyapunovBackwardErrorInf_le_of_backwardError (n : Nat)
   exact csInf_le
     (lyapunovBackwardErrorValues_bddBelow n A C Y alpha gamma)
     ⟨heta_nonneg, hBack⟩
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered aliases for basic structured Lyapunov eta-infimum facts. -/
+alias H16_eq16_21_lyapunovBackwardErrorValues_bddBelow :=
+  lyapunovBackwardErrorValues_bddBelow
+
+alias H16_eq16_21_lyapunovBackwardErrorInf_nonneg :=
+  lyapunovBackwardErrorInf_nonneg
+
+alias H16_eq16_21_lyapunovBackwardErrorInf_le_of_backwardError :=
+  lyapunovBackwardErrorInf_le_of_backwardError
 
 /-- Higham, 2nd ed., Chapter 16.2.1:
     from the perturbed Lyapunov equation, the residual decomposes as
@@ -1614,6 +1699,18 @@ theorem lyapunov_relative_residual_le_backwardErrorInf (n : Nat)
       halpha hgamma heta.1 heta.2
   rw [div_le_iff₀ hscale]
   simpa [mul_comm, mul_left_comm, mul_assoc] using hbound
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered aliases for the structured Lyapunov residual decomposition
+    and eta/residual bounds. -/
+alias H16_eq16_21_lyapunovResidual_decomposition :=
+  lyapunovResidual_decomposition
+
+alias H16_eq16_21_lyapunov_residual_bound_of_backward_error :=
+  lyapunov_residual_bound_of_backward_error
+
+alias H16_eq16_21_lyapunov_relative_residual_le_backwardErrorInf :=
+  lyapunov_relative_residual_le_backwardErrorInf
 
 /-- If `Y = U * Lambda * U^T`, the left perturbation product transforms to
     `DeltaA_tilde * Lambda`. -/
@@ -2790,5 +2887,110 @@ theorem sqrt_lyapunovXiSq_le_mu_relative_residual (n : ℕ)
   have hsqrt := Real.sqrt_le_sqrt hxi
   rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hkappa_nonneg] at hsqrt
   simpa [kappa] using hsqrt
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered aliases for the Lyapunov scalar equation, xi/optimizer
+    layer, and residual-amplification consequences. -/
+abbrev H16_eq16_21_lyapunovBackwardScalarEq := lyapunovBackwardScalarEq
+
+alias H16_eq16_21_lyapunovBackwardScalarEq_iff_unscaled :=
+  lyapunovBackwardScalarEq_iff_unscaled
+
+alias H16_eq16_21_lyapunovBackwardScalarEq_iff_residual_eq :=
+  lyapunovBackwardScalarEq_iff_residual_eq
+
+alias H16_eq16_21_lyapunovBackwardScalarEq_of_spectral_decomposition :=
+  lyapunovBackwardScalarEq_of_spectral_decomposition
+
+alias H16_eq16_21_lyapunovBackwardScalarEq_of_isLyapunovBackwardError_spectral_decomposition :=
+  lyapunovBackwardScalarEq_of_isLyapunovBackwardError_spectral_decomposition
+
+alias H16_eq16_21_lyapunovBackwardScalarEq_of_isLyapunovBackwardError_spectral_decomposition_symm :=
+  lyapunovBackwardScalarEq_of_isLyapunovBackwardError_spectral_decomposition_symm
+
+alias H16_eq16_21_lyapunovBackwardScalarEq_iff_diagMatrix_eq :=
+  lyapunovBackwardScalarEq_iff_diagMatrix_eq
+
+noncomputable abbrev H16_eq16_21_lyapunovXiSq := lyapunovXiSq
+
+noncomputable abbrev H16_eq16_21_lyapunovXiSqSimpleBound :=
+  lyapunovXiSqSimpleBound
+
+noncomputable abbrev H16_eq16_21_lyapunovOptimalDeltaA :=
+  lyapunovOptimalDeltaA
+
+noncomputable abbrev H16_eq16_21_lyapunovOptimalDeltaC :=
+  lyapunovOptimalDeltaC
+
+alias H16_eq16_21_lyapunovXiSq_nonneg := lyapunovXiSq_nonneg
+
+alias H16_eq16_21_lyapunovOptimalPerturbations_scalar_eq :=
+  lyapunovOptimalPerturbations_scalar_eq
+
+alias H16_eq16_21_lyapunovOptimalDeltaC_symmetric :=
+  lyapunovOptimalDeltaC_symmetric
+
+alias H16_eq16_21_lyapunovOptimalDeltaA_frobNormSq_le_xiSq :=
+  lyapunovOptimalDeltaA_frobNormSq_le_xiSq
+
+alias H16_eq16_21_lyapunovOptimalDeltaC_frobNormSq_le_xiSq :=
+  lyapunovOptimalDeltaC_frobNormSq_le_xiSq
+
+alias H16_eq16_21_exists_lyapunovOptimalPerturbations :=
+  exists_lyapunovOptimalPerturbations
+
+alias H16_eq16_21_isLyapunovBackwardError_sqrt_lyapunovXiSq_of_spectral_optimalPerturbations :=
+  isLyapunovBackwardError_sqrt_lyapunovXiSq_of_spectral_optimalPerturbations
+
+alias H16_eq16_21_isLyapunovBackwardError_sqrt_lyapunovXiSq_of_symmetric_spectral :=
+  isLyapunovBackwardError_sqrt_lyapunovXiSq_of_symmetric_spectral
+
+alias H16_eq16_21_lyapunovBackwardErrorValues_nonempty_of_symmetric_spectral :=
+  lyapunovBackwardErrorValues_nonempty_of_symmetric_spectral
+
+alias H16_eq16_21_lyapunovBackwardErrorInf_le_sqrt_lyapunovXiSq_of_symmetric_spectral :=
+  lyapunovBackwardErrorInf_le_sqrt_lyapunovXiSq_of_symmetric_spectral
+
+alias H16_eq16_21_two_mul_lyapunovXiSq_eq_simple_bound_of_symmetric :=
+  two_mul_lyapunovXiSq_eq_simple_bound_of_symmetric
+
+alias H16_eq16_21_lyapunovXiSqSimpleBound_le_scaled_perturbation_cost :=
+  lyapunovXiSqSimpleBound_le_scaled_perturbation_cost
+
+alias H16_eq16_21_lyapunovXiSq_le_two_eta_sq_of_scalar_eq :=
+  lyapunovXiSq_le_two_eta_sq_of_scalar_eq
+
+alias H16_eq16_21_lyapunovXiSq_le_two_eta_sq_of_backward_error_spectral :=
+  lyapunovXiSq_le_two_eta_sq_of_backward_error_spectral
+
+alias H16_eq16_21_sqrt_lyapunovXiSq_div_two_le_lyapunovBackwardErrorInf_of_symmetric_spectral :=
+  sqrt_lyapunovXiSq_div_two_le_lyapunovBackwardErrorInf_of_symmetric_spectral
+
+alias H16_eq16_21_lyapunovXiSq_le_simple_bound :=
+  lyapunovXiSq_le_simple_bound
+
+noncomputable abbrev H16_eq16_21_lyapunovAmplificationMu :=
+  lyapunovAmplificationMu
+
+alias H16_eq16_21_lyapunovXiSqSimpleBound_le_min_eigen_bound :=
+  lyapunovXiSqSimpleBound_le_min_eigen_bound
+
+alias H16_eq16_21_lyapunovXiSq_le_min_eigen_bound :=
+  lyapunovXiSq_le_min_eigen_bound
+
+alias H16_eq16_21_lyapunovXiSq_symmetric_le_min_eigen_bound :=
+  lyapunovXiSq_symmetric_le_min_eigen_bound
+
+alias H16_eq16_21_lyapunovXiSq_spectral_le_min_eigen_bound :=
+  lyapunovXiSq_spectral_le_min_eigen_bound
+
+alias H16_eq16_21_lyapunovXiSq_spectral_symmetric_le_min_eigen_bound :=
+  lyapunovXiSq_spectral_symmetric_le_min_eigen_bound
+
+alias H16_eq16_21_lyapunovXiSq_le_mu_relative_residual_sq :=
+  lyapunovXiSq_le_mu_relative_residual_sq
+
+alias H16_eq16_21_sqrt_lyapunovXiSq_le_mu_relative_residual :=
+  sqrt_lyapunovXiSq_le_mu_relative_residual
 
 end LeanFpAnalysis.FP

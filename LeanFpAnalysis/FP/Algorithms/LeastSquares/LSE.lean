@@ -1122,6 +1122,51 @@ theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitial
   theorem20_7_activeInitialWeightedRowMaxRatioMax_le_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
     hm hn hnm A b (Real.sqrt_nonneg _) hphi hrows hdom hmax
 
+/-- Source nonzero-row witnesses are preserved by a common row permutation. -/
+theorem theorem20_7_rows_nonzero_permuteRows
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (σ : Fin m ≃ Fin m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0) :
+    ∀ i : Fin m, ∃ j : Fin n, (fun r j => A (σ r) j) i j ≠ 0 := by
+  intro i
+  exact hrows (σ i)
+
+/-- Source domination of `|b_i|` by `phi * rowMax_i` is preserved by a
+    common row permutation. -/
+theorem theorem20_7_abs_b_le_phi_initialRowMax_permuteRows
+    {m n : ℕ} (hn : 0 < n) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (σ : Fin m ≃ Fin m) {phi : ℝ}
+    (hdom : ∀ i : Fin m,
+      |b i| ≤ phi * theorem20_7_initialRowMax hn A i) :
+    ∀ i : Fin m,
+      |(fun r => b (σ r)) i| ≤
+        phi * theorem20_7_initialRowMax hn
+          (fun r j => A (σ r) j) i := by
+  intro i
+  simpa [theorem20_7_initialRowMax_permuteRows] using hdom (σ i)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
+    on a common row-permuted source, the weighted finite active-ratio
+    `sqrt(m)` obligation follows from the unweighted one when each permuted
+    right-hand-side entry is source-dominated by `phi * rowMax_i`. -/
+theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_permuteRows_activeInitialRowMaxRatioMax_le_abs_b_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (σ : Fin m ≃ Fin m)
+    {phi : ℝ} (hphi : 0 < phi)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hdom : ∀ i : Fin m,
+      |b i| ≤ phi * theorem20_7_initialRowMax hn A i)
+    (hmax :
+      theorem20_7_activeInitialRowMaxRatioMax hm hn hnm
+        (fun r j => A (σ r) j) ≤ Real.sqrt (m : ℝ)) :
+    theorem20_7_activeInitialWeightedRowMaxRatioMax hm hn hnm
+        (fun r j => A (σ r) j) (fun r => b (σ r)) phi ≤
+      Real.sqrt (m : ℝ) :=
+  theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
+    hm hn hnm (fun r j => A (σ r) j) (fun r => b (σ r)) hphi
+    (theorem20_7_rows_nonzero_permuteRows A σ hrows)
+    (theorem20_7_abs_b_le_phi_initialRowMax_permuteRows hn A b σ hdom)
+    hmax
+
 /-- Active-suffix source-row ratio maxima for a row-permuted matrix supply the
     source-ratio hypothesis stated in the original row labels. -/
 theorem theorem20_7_initialRowMax_ratio_of_permuteRows_activeRatioMax_le_nat
@@ -6932,6 +6977,76 @@ theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_with_re
       hm hn Astage A bstage b phi err (le_of_lt hphi) herr
       hden.1 hden.2 hA hb
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
+    a common source row permutation transports the active-row geometric
+    alpha/beta maximum bound to the permuted source problem. -/
+theorem theorem20_7_alphaBetaMax_le_of_permuteRows_active_row_geometric_entry_growth_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (σ : Fin m ≃ Fin m) {phi : ℝ}
+    (hphi : 0 < phi)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k (σ i) j| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialRowMax hn A (σ i))
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k (σ i)| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialWeightedRowMax hn A b phi (σ i)) :
+    theorem20_7_alphaBetaMax hm hn
+        (fun k r j => Astage k (σ r) j) (fun r j => A (σ r) j)
+        (fun k r => bstage k (σ r)) (fun r => b (σ r)) phi ≤
+      H19.Theorem19_6.active_row_growth_factor m ^ (n - 1) := by
+  exact
+    theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_rows_nonzero_nat
+      hm hn
+      (fun k r j => Astage k (σ r) j) (fun r j => A (σ r) j)
+      (fun k r => bstage k (σ r)) (fun r => b (σ r)) hphi
+      (theorem20_7_rows_nonzero_permuteRows A σ hrows)
+      (by
+        intro i k hk j
+        simpa [theorem20_7_initialRowMax_permuteRows] using hA i k hk j)
+      (by
+        intro i k hk
+        simpa [theorem20_7_initialWeightedRowMax_permuteRows] using hb i k hk)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
+    a common source row permutation transports the active-row accumulated-error
+    alpha/beta maximum bound to the permuted source problem. -/
+theorem theorem20_7_alphaBetaMax_le_of_permuteRows_active_row_geometric_entry_growth_with_relative_error_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (σ : Fin m ≃ Fin m) {phi : ℝ} (err : ℝ)
+    (hphi : 0 < phi) (herr : 0 ≤ err)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k (σ i) j| ≤
+        (H19.Theorem19_6.active_row_growth_factor m ^ k + err) *
+          theorem20_7_initialRowMax hn A (σ i))
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k (σ i)| ≤
+        (H19.Theorem19_6.active_row_growth_factor m ^ k + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi (σ i)) :
+    theorem20_7_alphaBetaMax hm hn
+        (fun k r j => Astage k (σ r) j) (fun r j => A (σ r) j)
+        (fun k r => bstage k (σ r)) (fun r => b (σ r)) phi ≤
+      H19.Theorem19_6.active_row_growth_factor m ^ (n - 1) + err := by
+  exact
+    theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_with_relative_error_rows_nonzero_nat
+      hm hn
+      (fun k r j => Astage k (σ r) j) (fun r j => A (σ r) j)
+      (fun k r => bstage k (σ r)) (fun r => b (σ r)) err hphi herr
+      (theorem20_7_rows_nonzero_permuteRows A σ hrows)
+      (by
+        intro i k hk j
+        simpa [theorem20_7_initialRowMax_permuteRows] using hA i k hk j)
+      (by
+        intro i k hk
+        simpa [theorem20_7_initialWeightedRowMax_permuteRows] using hb i k hk)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     one-based source column factor `j^2` in the perturbation bound for
     `Delta a_ij`.  Lean's `Fin` index `j` represents source column `j+1`. -/
@@ -10529,6 +10644,180 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
         hbsortedWeighted hbstepExact hbstepErr hbrow0 hbacc)
       hbbudgetCompletion hAsorted hbAbsSorted hAstepExact hAstepErr hArow0
       hAacc hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
+    zero-start specialization of the active-tail source-initial active-bound
+    discharge wrapper.
+
+The rounded and exact stage-zero data are both the source data, so the initial
+computed/exact discrepancy terms in the accumulated-error hypotheses collapse
+to zero.  The active-tail stage bounds are still discharged internally from the
+Chapter 19 row-sorting accumulated-error estimates. -/
+theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_row_sorted_completion_preservation_accumulated_error_rows_nonzero_source_initial_zero_start_active_bounds_of_initialRowMax_abs_b_sorted_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel)
+    (Ahat Aexact : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bhat bexact : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (alpha : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (AstepBudget bstepBudget : ℕ → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hAhat0 : ∀ r : Fin m, ∀ j : Fin n, Ahat 0 r j = A r j)
+    (hAexact0 : ∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A r j)
+    (hbhat0 : ∀ r : Fin m, bhat 0 r = b r)
+    (hbexact0 : ∀ r : Fin m, bexact 0 r = b r)
+    (hStepA : ∀ k, k < n →
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (Ahat k))
+    (hStepB : ∀ k, k < n →
+      bhat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (storedQRSignedStageVector hnm Ahat alpha k)
+          (storedQRSignedStageBeta hnm Ahat alpha k)
+          (bhat k))
+    (hAlphaDef : ∀ t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hnm))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)))
+    (htrailingPos : ∀ t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hnm))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hpivotMax : ∀ t (ht : t < n), ∀ l : Fin n, t ≤ l.val →
+      householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) l ≤
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n)
+          (Fin.mk t (lt_of_lt_of_le ht hnm)) (Ahat t) (Fin.mk t ht))
+    (hAbudgetCompletion :
+      ∀ i : Fin m, i.val + 1 < n → ∀ j : Fin n, i.val ≤ j.val →
+        H19.Theorem19_6.active_row_growth_factor m *
+              ((Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+                theorem20_7_initialRowMax hn A i) +
+            householderCompactComponentBudget fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val)
+              (fun r => Ahat i.val r j) i ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialRowMax hn A i)
+    (hbbudgetCompletion :
+      ∀ i : Fin m, i.val + 1 < n →
+        H19.Theorem19_6.active_row_growth_factor m *
+              ((Real.sqrt (m : ℝ) *
+                    H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
+                theorem20_7_initialWeightedRowMax hn A b phi i) +
+            householderCompactComponentBudget fp m
+              (storedQRSignedStageVector hnm Ahat alpha i.val)
+              (storedQRSignedStageBeta hnm Ahat alpha i.val)
+              (bhat i.val) i ≤
+          (Real.sqrt (m : ℝ) *
+              H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) +
+            err) *
+            theorem20_7_initialWeightedRowMax hn A b phi i)
+    (hAsorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        theorem20_7_initialRowMax hn A s ≤
+          theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩)
+    (hbAbsSorted :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ s : Fin m, k ≤ s.val →
+        |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩|)
+    (hAstepExact :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|)
+    (hAstepErr :
+      ∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |Ahat t r j - Aexact t r j| +
+            AstepBudget t)
+    (hArow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r)
+    (hAaccBudget :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val → ∀ _ : Fin n,
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            AstepBudget k ≤
+          err * theorem20_7_initialRowMax hn A r)
+    (hbstepExact :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|)
+    (hbstepErr :
+      ∀ r : Fin m, ∀ t : ℕ,
+        |bhat (t + 1) r - bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+              |bhat t r - bexact t r| +
+            bstepBudget t)
+    (hbrow0 :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialWeightedRowMax hn A b phi
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) *
+            theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hbaccBudget :
+      ∀ k : ℕ, ∀ r : Fin m, k ≤ r.val →
+          scalarAffineGrowthBudget H19.Theorem19_6.rowwise_step_growth_factor
+            bstepBudget k ≤
+          err * theorem20_7_initialWeightedRowMax hn A b phi r)
+    (hDeltaA :
+      ∀ i : Fin m, ∀ j : Fin n,
+        |DeltaA i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn Ahat A i)
+            (theorem20_7_initialRowMax hn A i) j)
+    (hDeltab :
+      ∀ i : Fin m,
+        |Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn Ahat A bhat b phi i)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) :
+    (∀ i : Fin m, ∀ j : Fin n,
+      |DeltaA i j| ≤
+        theorem20_7_deltaAEntryBudget gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialRowMax hn A i) j) ∧
+    (∀ i : Fin m,
+      |Deltab i| ≤
+        theorem20_7_deltaBEntryBudget n gammaTilde
+          (Real.sqrt (m : ℝ) *
+            H19.Theorem19_6.rowwise_step_growth_factor ^ (n - 1) + err)
+          (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  exact
+    theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_row_sorted_completion_preservation_accumulated_error_rows_nonzero_source_initial_active_bounds_of_initialRowMax_abs_b_sorted_nat
+      hm hn hnm fp Ahat Aexact A bhat bexact b alpha gammaTilde err
+      AstepBudget bstepBudget DeltaA Deltab hphi hgamma herr hmfp hrows
+      hAexact0 hbexact0 hStepA hStepB hAlphaDef htrailingPos hcopy
+      hpivotMax hAbudgetCompletion hbbudgetCompletion hAsorted hbAbsSorted
+      hAstepExact hAstepErr hArow0
+      (fun k r hkr j => by
+        have hzero : |Ahat 0 r j - Aexact 0 r j| = 0 := by
+          rw [hAhat0 r j, hAexact0 r j, sub_self, abs_zero]
+        simpa [hzero] using hAaccBudget k r hkr j)
+      hbstepExact hbstepErr hbrow0
+      (fun k r hkr => by
+        have hzero : |bhat 0 r - bexact 0 r| = 0 := by
+          rw [hbhat0 r, hbexact0 r, sub_self, abs_zero]
+        simpa [hzero] using hbaccBudget k r hkr)
+      hDeltaA hDeltab
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     active-tail, source-initial all-entry perturbation wrapper with compact
@@ -21769,6 +22058,138 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stor
         hn hnm A b σ hcompat hσA)
       hAstepExact hAstepErr hσArowRatioMax hbdom hbstepExact hbstepErr
       hcert
+
+/-- Theorem 20.7 row-sorting policy: existential common-sort wrapper for the
+    direct compact-budget active-ratio concrete stored-Householder QR route.
+
+The source-side monotonicity of `|b|` with the initial row maximum supplies a
+common row permutation and the sorted `|b|` premise internally.  The genuine QR
+obligations for that chosen permutation, including active-pivot choice,
+compact-budget domination, leading-block nonbreakdown, stage recurrences, and
+the row-ratio bound, remain explicit. -/
+theorem Theorem20_7RowwiseBackwardError.exists_common_sorted_permuteRows_uniform_bounds_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_activeMaxPivotColumn_prefix_lower_signed_alpha_budget_leading_block_det_ne_zero_abs_b_mono_activeRatioMax_le_of_abs_b_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (diagBudget : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hcompat :
+      ∀ i j : Fin m,
+        theorem20_7_initialRowMax hn A i ≤
+          theorem20_7_initialRowMax hn A j →
+        |b i| ≤ |b j|) :
+    ∃ σ : Fin m ≃ Fin m,
+      ∀ (Aexact : ℕ → Fin m → Fin n → ℝ)
+        (bexact : ℕ → Fin m → ℝ),
+      (∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A (σ r) j) →
+      (∀ r : Fin m, bexact 0 r = b (σ r)) →
+      (∀ k (hk : k < n),
+        householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hnm⟩
+              (fun a =>
+                storedHouseholderQRMatrixSeq fp hnm
+                  (fun r j => A (σ r) j) k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hnm
+                (fun r j => A (σ r) j) k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                ⟨k, lt_of_lt_of_le hk hnm⟩
+                (fun a =>
+                  storedHouseholderQRMatrixSeq fp hnm
+                    (fun r j => A (σ r) j) k a ⟨k, hk⟩)
+                (storedHouseholderQRAlphaSeq fp hnm
+                  (fun r j => A (σ r) j) k)))
+            (fun a =>
+              storedHouseholderQRMatrixSeq fp hnm
+                (fun r j => A (σ r) j) k a ⟨k, hk⟩)
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤ diagBudget k) →
+      (∀ k (hk : k < n),
+        diagBudget k <
+          Real.sqrt
+            (householderTrailingNorm2Sq m
+              ⟨k, lt_of_lt_of_le hk hnm⟩
+              (fun i =>
+                storedHouseholderQRMatrixSeq fp hnm
+                  (fun r j => A (σ r) j) k i ⟨k, hk⟩))) →
+      (∀ k (hk : k < n),
+        Matrix.det
+          (qrLeadingBlock
+            (storedHouseholderQRMatrixSeq fp hnm
+              (fun r j => A (σ r) j) k)
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hnm)) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0) →
+      (∀ t (ht : t < n),
+        Fin.mk t ht =
+          householderActiveMaxPivotColumn
+            (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)
+            (storedHouseholderQRMatrixSeq fp hnm
+              (fun r j => A (σ r) j) t)) →
+      (∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|) →
+      (∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |storedHouseholderQRMatrixSeq fp hnm
+            (fun s j => A (σ s) j) (t + 1) r j -
+            Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |storedHouseholderQRMatrixSeq fp hnm
+                (fun s j => A (σ s) j) t r j - Aexact t r j|) →
+      (theorem20_7_activeInitialRowMaxRatioMax hm hn hnm
+        (fun r j => A (σ r) j) ≤ Real.sqrt (m : ℝ)) →
+      (∀ i : Fin m,
+        |b i| ≤ phi * theorem20_7_initialRowMax hn A i) →
+      (∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|) →
+      (∀ r : Fin m, ∀ t : ℕ,
+        |storedHouseholderQRRhsSeq fp hnm
+            (fun s j => A (σ s) j) (fun s => b (σ s))
+            (t + 1) r -
+            bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |storedHouseholderQRRhsSeq fp hnm
+                (fun s j => A (σ s) j) (fun s => b (σ s))
+                t r - bexact t r|) →
+      (hcert :
+        Theorem20_7RowwiseBackwardError hn
+          (fun r j => A (σ r) j) (fun r => b (σ r))
+          (storedHouseholderQRMatrixSeq fp hnm
+            (fun r j => A (σ r) j))
+          (storedHouseholderQRRhsSeq fp hnm
+            (fun r j => A (σ r) j) (fun r => b (σ r)))
+          phi gammaTilde xhat) →
+      IsLeastSquaresMinimizer
+          (fun i j => A i j + hcert.DeltaA (σ.symm i) j)
+          (fun i => b i + hcert.Deltab (σ.symm i)) xhat ∧
+        (∀ i : Fin m, ∀ j : Fin n,
+          |hcert.DeltaA (σ.symm i) j| ≤
+            theorem20_7_deltaAEntryBudget gammaTilde
+              (theorem20_7_compactActiveHorizon fp m err (n - 1))
+              (theorem20_7_initialRowMax hn A i) j) ∧
+        (∀ i : Fin m,
+          |hcert.Deltab (σ.symm i)| ≤
+            theorem20_7_deltaBEntryBudget n gammaTilde
+              (theorem20_7_compactActiveHorizon fp m err (n - 1))
+              (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  rcases theorem20_7_exists_common_sorted_permuteRows_activeRatioMax_fields_of_abs_b_mono_initialRowMax_nat
+      hm hn hnm A b (le_of_lt hphi) hcompat with
+    ⟨σ, hσA, _, _, _, _, _, _⟩
+  refine ⟨σ, ?_⟩
+  intro Aexact bexact hAexact0 hbexact0 hbudgetBound hbudgetLt hdetLead
+    hpivotChoice hAstepExact hAstepErr hσArowRatioMax hbdom
+    hbstepExact hbstepErr hcert
+  exact
+    Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_mono_of_activeMaxPivotColumn_prefix_lower_signed_alpha_budget_leading_block_det_ne_zero_activeRatioMax_le_of_abs_b_le_nat
+      hm hn hnm fp σ Aexact A bexact b diagBudget gammaTilde err xhat
+      hphi hgamma herr hmfp hrows hAexact0 hbexact0 hbudgetBound
+      hbudgetLt hdetLead hcopy hpivotChoice hσA hcompat hAstepExact
+      hAstepErr hσArowRatioMax hbdom hbstepExact hbstepErr hcert
 
 /-- Theorem 20.7 row-sorting policy: pointwise-row-ratio permuted concrete
     stored-Householder QR wrapper where the `|b|` sorted premise is derived
@@ -36168,6 +36589,118 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_active_row_geometric_e
     theorem20_7_deltaEntries_bound_all_of_active_row_geometric_entry_growth_with_relative_error_rows_nonzero_nat
       hm hn Astage A bstage b gammaTilde err hcert.DeltaA hcert.Deltab
       hphi hgamma herr hrows hA hb hcert.deltaA_bound hcert.deltab_bound
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
+    a row-permuted active-row geometric certificate transports back to the
+    original source order with the same source-row perturbation budgets. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuteRows_active_row_geometric_entry_growth_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (σ : Fin m ≃ Fin m) {phi : ℝ}
+    (gammaTilde : ℝ) (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k (σ i) j| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialRowMax hn A (σ i))
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k (σ i)| ≤
+        H19.Theorem19_6.active_row_growth_factor m ^ k *
+          theorem20_7_initialWeightedRowMax hn A b phi (σ i))
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn
+        (fun r j => A (σ r) j) (fun r => b (σ r))
+        (fun k r j => Astage k (σ r) j)
+        (fun k r => bstage k (σ r)) phi gammaTilde xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j =>
+          A i j +
+            (Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert).DeltaA
+              i j)
+        (fun i =>
+          b i +
+            (Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert).Deltab
+              i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |(Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert).DeltaA i
+            j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1))
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |(Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert).Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1))
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  let hcertOrig := Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert
+  exact
+    Theorem20_7RowwiseBackwardError.uniform_bounds_of_active_row_geometric_entry_growth_rows_nonzero_nat
+      hm hn Astage A bstage b gammaTilde xhat hphi hgamma hrows
+      (by
+        intro i k hk j
+        simpa using hA (σ.symm i) k hk j)
+      (by
+        intro i k hk
+        simpa using hb (σ.symm i) k hk)
+      hcertOrig
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
+    a row-permuted active-row accumulated-error certificate transports back to
+    the original source order with the same source-row perturbation budgets. -/
+theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuteRows_active_row_geometric_entry_growth_with_relative_error_rows_nonzero_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (Astage : ℕ → Fin m → Fin n → ℝ) (A : Fin m → Fin n → ℝ)
+    (bstage : ℕ → Fin m → ℝ) (b : Fin m → ℝ)
+    (σ : Fin m ≃ Fin m) {phi : ℝ}
+    (gammaTilde err : ℝ) (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hA : ∀ i : Fin m, ∀ k : ℕ, k < n → ∀ j : Fin n,
+      |Astage k (σ i) j| ≤
+        (H19.Theorem19_6.active_row_growth_factor m ^ k + err) *
+          theorem20_7_initialRowMax hn A (σ i))
+    (hb : ∀ i : Fin m, ∀ k : ℕ, k < n →
+      |bstage k (σ i)| ≤
+        (H19.Theorem19_6.active_row_growth_factor m ^ k + err) *
+          theorem20_7_initialWeightedRowMax hn A b phi (σ i))
+    (hcert :
+      Theorem20_7RowwiseBackwardError hn
+        (fun r j => A (σ r) j) (fun r => b (σ r))
+        (fun k r j => Astage k (σ r) j)
+        (fun k r => bstage k (σ r)) phi gammaTilde xhat) :
+    IsLeastSquaresMinimizer
+        (fun i j =>
+          A i j +
+            (Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert).DeltaA
+              i j)
+        (fun i =>
+          b i +
+            (Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert).Deltab
+              i) xhat ∧
+      (∀ i : Fin m, ∀ j : Fin n,
+        |(Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert).DeltaA i
+            j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1) + err)
+            (theorem20_7_initialRowMax hn A i) j) ∧
+      (∀ i : Fin m,
+        |(Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert).Deltab i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (H19.Theorem19_6.active_row_growth_factor m ^ (n - 1) + err)
+            (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  let hcertOrig := Theorem20_7RowwiseBackwardError.of_permuteRows σ hcert
+  exact
+    Theorem20_7RowwiseBackwardError.uniform_bounds_of_active_row_geometric_entry_growth_with_relative_error_rows_nonzero_nat
+      hm hn Astage A bstage b gammaTilde err xhat hphi hgamma herr hrows
+      (by
+        intro i k hk j
+        simpa using hA (σ.symm i) k hk j)
+      (by
+        intro i k hk
+        simpa using hb (σ.symm i) k hk)
+      hcertOrig
 
 -- ============================================================
 -- §20.9  Equality-constrained least squares
@@ -67692,6 +68225,113 @@ theorem IsLSEMinimizer.exists_lagrange_kkt_difference_source_system_of_fullRowRa
     ⟨lambda, mu, htop, hstat, hconstr⟩
   exact ⟨lambda, mu, htop, hstat, hconstr⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    the Cox--Higham KKT difference system together with the source normal
+    equations for the same source Lagrange multiplier.  This exposes the
+    certificate needed to bound the source multiplier from the source residual
+    rather than postulating its scale separately. -/
+theorem
+    IsLSEMinimizer.exists_lagrange_kkt_difference_source_system_of_fullRowRank_sourceNormal
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j)) :
+    ∃ lambda mu : Fin p → ℝ,
+      (∀ j : Fin n,
+        ∑ i : Fin m, A i j * lsResidualHigham A b x i =
+          ∑ r : Fin p, B r j * lambda r) ∧
+      LSEKKTSystem A B
+        (fun i => Deltab i - rectMatMulVec DeltaA y i)
+        (fun j =>
+          (∑ r : Fin p, DeltaB r j * mu r) -
+            (∑ i : Fin m,
+              DeltaA i j *
+                lsResidualHigham (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i))
+        (fun r => Deltad r - rectMatMulVec DeltaB y r)
+        (fun i =>
+          lsResidualHigham (fun i j => A i j + DeltaA i j)
+              (fun i => b i + Deltab i) y i -
+            lsResidualHigham A b x i)
+        (fun j => y j - x j)
+        (fun r => mu r - lambda r) := by
+  rcases hx.exists_lagrange_normal_equations_of_fullRowRank hB with
+    ⟨lambda, hxfeas, hlambda⟩
+  rcases hy.exists_lagrange_normal_equations_of_fullRowRank hBpert with
+    ⟨mu, hyfeas, hmu⟩
+  refine ⟨lambda, mu, hlambda, ?_, ?_, ?_⟩
+  · intro i
+    unfold lsResidualHigham
+    dsimp
+    rw [congrFun (rectMatMulVec_mat_add A DeltaA y) i]
+    rw [congrFun (rectMatMulVec_sub A y x) i]
+    ring
+  · intro j
+    let s : Fin m → ℝ :=
+      lsResidualHigham (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y
+    let rsrc : Fin m → ℝ := lsResidualHigham A b x
+    have hmu_expand :
+        (∑ i : Fin m, A i j * s i) +
+            (∑ i : Fin m, DeltaA i j * s i) =
+          (∑ r : Fin p, B r j * mu r) +
+            (∑ r : Fin p, DeltaB r j * mu r) := by
+      calc
+        (∑ i : Fin m, A i j * s i) +
+            (∑ i : Fin m, DeltaA i j * s i)
+            = ∑ i : Fin m, (A i j + DeltaA i j) * s i := by
+                rw [← Finset.sum_add_distrib]
+                apply Finset.sum_congr rfl
+                intro i _
+                ring
+        _ = ∑ r : Fin p, (B r j + DeltaB r j) * mu r := hmu j
+        _ = (∑ r : Fin p, B r j * mu r) +
+              (∑ r : Fin p, DeltaB r j * mu r) := by
+                rw [← Finset.sum_add_distrib]
+                apply Finset.sum_congr rfl
+                intro r _
+                ring
+    have hlambda_j :
+        (∑ i : Fin m, A i j * rsrc i) =
+          ∑ r : Fin p, B r j * lambda r := hlambda j
+    have hsumA :
+        (∑ i : Fin m, A i j * (s i - rsrc i)) =
+          (∑ i : Fin m, A i j * s i) -
+            (∑ i : Fin m, A i j * rsrc i) := by
+      rw [← Finset.sum_sub_distrib]
+      apply Finset.sum_congr rfl
+      intro i _
+      ring
+    have hsumB :
+        (∑ r : Fin p, B r j * (mu r - lambda r)) =
+          (∑ r : Fin p, B r j * mu r) -
+            (∑ r : Fin p, B r j * lambda r) := by
+      rw [← Finset.sum_sub_distrib]
+      apply Finset.sum_congr rfl
+      intro r _
+      ring
+    change
+      (∑ i : Fin m, A i j * (s i - rsrc i)) -
+          (∑ r : Fin p, B r j * (mu r - lambda r)) =
+        (∑ r : Fin p, DeltaB r j * mu r) -
+          (∑ i : Fin m, DeltaA i j * s i)
+    rw [hsumA, hsumB]
+    linarith
+  · intro r
+    have hpert_r := hyfeas r
+    have hsrc_r := hxfeas r
+    rw [congrFun (rectMatMulVec_mat_add B DeltaB y) r] at hpert_r
+    rw [congrFun (rectMatMulVec_sub B y x) r]
+    linarith
+
 /-- Homogeneous uniqueness for the source equality-constrained KKT augmented
     system under Higham's conditions (20.24).
 
@@ -68470,6 +69110,101 @@ theorem LSEKKTInverseMultiplierConstrLinearMap_vecNorm2_le_coeff {m n p : ℕ}
     linearMap_vecNorm2_le_complexMatrixOp2_basisMatrix
       (LSEKKTInverseMultiplierConstrLinearMap hB hnull) c
 
+/-- A source LSE Lagrange multiplier satisfying the normal equations solves the
+    source KKT system with right-hand side `(r,0,0)`, where
+    `r = b - A*x` is Higham's signed residual. -/
+theorem LSEKKTSystem.sourceResidual_of_lagrange_normal_equations {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {x : Fin n → ℝ}
+    {lambda : Fin p → ℝ}
+    (hnormal : ∀ j : Fin n,
+      ∑ i : Fin m, A i j * lsResidualHigham A b x i =
+        ∑ r : Fin p, B r j * lambda r) :
+    LSEKKTSystem A B (lsResidualHigham A b x) 0 0
+      (lsResidualHigham A b x) 0 lambda := by
+  constructor
+  · intro i
+    rw [congrFun (rectMatMulVec_zero A) i]
+    simp
+  · constructor
+    · intro j
+      rw [hnormal j]
+      simp
+    · intro r
+      rw [congrFun (rectMatMulVec_zero B) r]
+
+/-- Under Higham's source KKT nonsingularity hypotheses, a source LSE
+    Lagrange multiplier satisfying the normal equations is exactly the
+    multiplier row of the inverse source KKT operator applied to `(r,0,0)`. -/
+theorem theorem20_8_source_lagrange_multiplier_eq_inverseMultiplierLinearMap
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {x : Fin n → ℝ}
+    {lambda : Fin p → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (hnormal : ∀ j : Fin n,
+      ∑ i : Fin m, A i j * lsResidualHigham A b x i =
+        ∑ r : Fin p, B r j * lambda r) :
+    lambda =
+      LSEKKTInverseMultiplierLinearMap hB hnull
+        (lsResidualHigham A b x, 0, 0) := by
+  have hsys :
+      LSEKKTSystem A B (lsResidualHigham A b x) 0 0
+        (lsResidualHigham A b x) 0 lambda :=
+    LSEKKTSystem.sourceResidual_of_lagrange_normal_equations hnormal
+  have huniq := LSEKKTInverseTriple_eq_of_system hB hnull hsys
+  rw [LSEKKTInverseMultiplierLinearMap_apply]
+  exact huniq.2.2
+
+/-- The source LSE multiplier is bounded by the canonical data-row coefficient
+    of the source KKT multiplier block times the source residual norm. -/
+theorem theorem20_8_source_lagrange_multiplier_vecNorm2_le_sourceResidual
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {x : Fin n → ℝ}
+    {lambda : Fin p → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (hnormal : ∀ j : Fin n,
+      ∑ i : Fin m, A i j * lsResidualHigham A b x i =
+        ∑ r : Fin p, B r j * lambda r) :
+    vecNorm2 lambda ≤
+      LSEKKTInverseMultiplierDataCoeff hB hnull *
+        vecNorm2 (lsResidualHigham A b x) := by
+  rw [theorem20_8_source_lagrange_multiplier_eq_inverseMultiplierLinearMap
+    hB hnull hnormal]
+  exact LSEKKTInverseMultiplierDataLinearMap_vecNorm2_le_coeff hB hnull
+    (lsResidualHigham A b x)
+
+/-- Source residual-scale form of the source LSE multiplier bound. -/
+theorem theorem20_8_source_lagrange_multiplier_vecNorm2_le_sourceResidualScale
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {x : Fin n → ℝ}
+    {lambda : Fin p → ℝ} {residualScale : ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (hnormal : ∀ j : Fin n,
+      ∑ i : Fin m, A i j * lsResidualHigham A b x i =
+        ∑ r : Fin p, B r j * lambda r)
+    (hresidual :
+      vecNorm2 (lsResidualHigham A b x) ≤ residualScale * vecNorm2 x) :
+    vecNorm2 lambda ≤
+      (LSEKKTInverseMultiplierDataCoeff hB hnull * residualScale) *
+        vecNorm2 x := by
+  have hbase :=
+    theorem20_8_source_lagrange_multiplier_vecNorm2_le_sourceResidual
+      hB hnull hnormal
+  have hscale :=
+    mul_le_mul_of_nonneg_left hresidual
+      (LSEKKTInverseMultiplierDataCoeff_nonneg hB hnull)
+  calc
+    vecNorm2 lambda ≤
+        LSEKKTInverseMultiplierDataCoeff hB hnull *
+          vecNorm2 (lsResidualHigham A b x) := hbase
+    _ ≤ LSEKKTInverseMultiplierDataCoeff hB hnull *
+          (residualScale * vecNorm2 x) := hscale
+    _ = (LSEKKTInverseMultiplierDataCoeff hB hnull * residualScale) *
+          vecNorm2 x := by ring
+
 /-- Split the multiplier block row of the inverse source KKT operator across
     the data, stationarity, and constraint right-hand-side rows. -/
 theorem LSEKKTInverseMultiplierLinearMap_apply_split {m n p : ℕ}
@@ -68644,6 +69379,67 @@ theorem IsLSEMinimizer.exists_lagrange_kkt_difference_eq_inverseTriple
   exact LSEKKTInverseTriple_eq_of_system hB hnull hsys
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    inverse-action form of the Cox--Higham KKT bridge, retaining the source
+    normal-equation certificate for the same source multiplier. -/
+theorem IsLSEMinimizer.exists_lagrange_kkt_difference_eq_inverseTriple_sourceNormal
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∃ lambda mu : Fin p → ℝ,
+      (∀ j : Fin n,
+        ∑ i : Fin m, A i j * lsResidualHigham A b x i =
+          ∑ r : Fin p, B r j * lambda r) ∧
+      (fun i =>
+        lsResidualHigham (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i) y i -
+          lsResidualHigham A b x i) =
+        (LSEKKTInverseTriple hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i)
+          (fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i))
+          (fun r => Deltad r - rectMatMulVec DeltaB y r)).1 ∧
+      (fun j => y j - x j) =
+        (LSEKKTInverseTriple hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i)
+          (fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i))
+          (fun r => Deltad r - rectMatMulVec DeltaB y r)).2.1 ∧
+      (fun r => mu r - lambda r) =
+        (LSEKKTInverseTriple hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i)
+          (fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i))
+          (fun r => Deltad r - rectMatMulVec DeltaB y r)).2.2 := by
+  rcases
+      hx.exists_lagrange_kkt_difference_source_system_of_fullRowRank_sourceNormal
+        hy hB hBpert with
+    ⟨lambda, mu, hnormal, hsys⟩
+  refine ⟨lambda, mu, hnormal, ?_⟩
+  exact LSEKKTInverseTriple_eq_of_system hB hnull hsys
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the actual multiplier difference between source and perturbed LSE
     minimizers is the multiplier block row of the inverse source KKT operator
     applied to the Cox--Higham perturbation right-hand side. -/
@@ -68726,6 +69522,66 @@ theorem
               lsResidualHigham (fun i j => A i j + DeltaA i j)
                 (fun i => b i + Deltab i) y i))
       (fun r => Deltad r - rectMatMulVec DeltaB y r)
+
+/-- Scalar multiplier scale produced by the canonical multiplier-row
+    small-gain estimate.  The inputs `bScale`, `dScale`, and `yScale` are
+    relative scales against `||x||₂` for `b`, `d`, and the perturbed solution. -/
+noncomputable def theorem20_8KKTMultiplierSmallGainScale {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (eps bScale dScale yScale lambdaScale : ℝ) : ℝ :=
+  (lambdaScale +
+    LSEKKTInverseMultiplierDataCoeff hB hnull *
+      (eps * bScale + (eps * frobNormRect A) * yScale) +
+    LSEKKTInverseMultiplierStatCoeff hB hnull *
+      ((eps * frobNormRect A) *
+        ((1 + eps) * bScale +
+          ((1 + eps) * frobNormRect A) * yScale)) +
+    LSEKKTInverseMultiplierConstrCoeff hB hnull *
+      (eps * dScale + (eps * frobNormRect B) * yScale)) /
+    (1 - LSEKKTInverseMultiplierStatCoeff hB hnull *
+      (eps * frobNormRect B))
+
+/-- The coefficient of the perturbed-solution scale in the canonical
+    multiplier-row small-gain bound.  It is separated out so the later coupled
+    KKT wrapper can substitute `||y||₂ <= (1 + ||y-x||₂/||x||₂)||x||₂` and
+    absorb the resulting self term. -/
+noncomputable def theorem20_8KKTMultiplierSmallGainSelfCoeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (eps : ℝ) : ℝ :=
+  (LSEKKTInverseMultiplierDataCoeff hB hnull * (eps * frobNormRect A) +
+    LSEKKTInverseMultiplierStatCoeff hB hnull *
+      ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+    LSEKKTInverseMultiplierConstrCoeff hB hnull *
+      (eps * frobNormRect B)) /
+    (1 - LSEKKTInverseMultiplierStatCoeff hB hnull *
+      (eps * frobNormRect B))
+
+/-- The multiplier-row small-gain scale is affine in the supplied
+    perturbed-solution scale.  This is the scalar bridge used to remove the
+    explicit `yScale` assumption in the coupled KKT route. -/
+theorem theorem20_8KKTMultiplierSmallGainScale_one_add_eq
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps bScale dScale lambdaScale E : ℝ}
+    (hgain :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) <
+        1) :
+    theorem20_8KKTMultiplierSmallGainScale hB hnull eps bScale dScale
+        (1 + E) lambdaScale =
+      theorem20_8KKTMultiplierSmallGainScale hB hnull eps bScale dScale 1
+        lambdaScale +
+        theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps * E := by
+  have hden :
+      1 - LSEKKTInverseMultiplierStatCoeff hB hnull *
+          (eps * frobNormRect B) ≠ 0 := by
+    linarith
+  unfold theorem20_8KKTMultiplierSmallGainScale
+    theorem20_8KKTMultiplierSmallGainSelfCoeff
+  field_simp [hden]
+  ring
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     canonical multiplier-row response bound with the perturbed multiplier
@@ -70091,6 +70947,642 @@ theorem
     simpa [yCoeff] using hgain
   have habs := real_le_div_one_sub_of_le_mul_add hgain' hlin
   simpa [E, yCoeff, base] using habs
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    composition of the actual-multiplier solution small-gain theorem with the
+    canonical multiplier-row small-gain scale.  The perturbed multiplier scale
+    is no longer a premise; it is derived for the same multiplier selected by
+    the full Cox--Higham KKT inverse-action bridge. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_sourceResidual_multiplierSmallGain
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps residualScale yScale lambdaScale : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hresidual :
+      vecNorm2 (lsResidualHigham A b x) ≤ residualScale * vecNorm2 x)
+    (hyScale : vecNorm2 y ≤ yScale * vecNorm2 x)
+    (hlambdaScale : ∀ lambda mu : Fin p → ℝ,
+      (fun r => mu r - lambda r) =
+        LSEKKTInverseMultiplierLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i,
+           fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i),
+           fun r => Deltad r - rectMatMulVec DeltaB y r) →
+      vecNorm2 lambda ≤ lambdaScale * vecNorm2 x)
+    (hmultGain :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) <
+        1)
+    (hsolGain :
+      LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull * (eps * frobNormRect B) <
+          1) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      (LSEKKTInverseSolutionDataCoeff hB hnull *
+          (eps * (frobNormRect A + residualScale) + eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect B) *
+              theorem20_8KKTMultiplierSmallGainScale hB hnull eps
+                (frobNormRect A + residualScale) (frobNormRect B) yScale
+                lambdaScale +
+            (eps * frobNormRect A) *
+              ((1 + eps) * (frobNormRect A + residualScale) +
+                (1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull *
+          (eps * frobNormRect B + eps * frobNormRect B)) /
+        (1 -
+          (LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+            LSEKKTInverseSolutionStatCoeff hB hnull *
+              ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+            LSEKKTInverseSolutionConstrCoeff hB hnull *
+              (eps * frobNormRect B))) := by
+  let muScale : ℝ :=
+    theorem20_8KKTMultiplierSmallGainScale hB hnull eps
+      (frobNormRect A + residualScale) (frobNormRect B) yScale lambdaScale
+  rcases hx.exists_lagrange_kkt_difference_eq_inverseTriple hy hB hBpert hnull with
+    ⟨lambda, mu, _hdr, hdxTriple, hdlambdaTriple⟩
+  have hdx :
+      (fun j => y j - x j) =
+        LSEKKTInverseSolutionLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i,
+           fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i),
+           fun r => Deltad r - rectMatMulVec DeltaB y r) := by
+    rw [hdxTriple]
+    rw [LSEKKTInverseSolutionLinearMap_apply]
+  have hdlambda :
+      (fun r => mu r - lambda r) =
+        LSEKKTInverseMultiplierLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i,
+           fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i),
+           fun r => Deltad r - rectMatMulVec DeltaB y r) := by
+    rw [hdlambdaTriple]
+    rw [LSEKKTInverseMultiplierLinearMap_apply]
+  have hb : vecNorm2 b ≤ (frobNormRect A + residualScale) * vecNorm2 x :=
+    theorem20_8_vecNorm2_b_le_of_sourceResidualScale A b x hresidual
+  have hd : vecNorm2 d ≤ frobNormRect B * vecNorm2 x :=
+    hx.vecNorm2_constraint_rhs_le_frobNormRect_mul
+  have hmuRel : vecNorm2 mu / vecNorm2 x ≤ muScale := by
+    dsimp [muScale]
+    simpa [theorem20_8KKTMultiplierSmallGainScale] using
+      theorem20_8_perturbed_multiplier_relative_le_of_inverseMultiplierLinearMap_canonical_response_coeffs_relativeBudget_scales
+        hB hnull hxnorm hbudget heps_nonneg hb hd hyScale
+        (hlambdaScale lambda mu hdlambda) hdlambda hmultGain
+  have hmuScale : vecNorm2 mu ≤ muScale * vecNorm2 x :=
+    (div_le_iff₀ hxnorm).mp hmuRel
+  have hsol :=
+    hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_sourceResidual_smallGain_of_multiplier
+      hB hnull hxnorm hbudget heps_nonneg hresidual mu hdx hmuScale
+      hsolGain
+  simpa [muScale] using hsol
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    composed KKT multiplier/solution small-gain bound with the source
+    multiplier scale discharged from the source residual.  The remaining scale
+    inputs are the source residual scale and the perturbed-solution scale used
+    in the multiplier-row estimate. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_sourceResidual_multiplierSmallGain_sourceResidualScale
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps residualScale yScale : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hresidual :
+      vecNorm2 (lsResidualHigham A b x) ≤ residualScale * vecNorm2 x)
+    (hyScale : vecNorm2 y ≤ yScale * vecNorm2 x)
+    (hmultGain :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) <
+        1)
+    (hsolGain :
+      LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull * (eps * frobNormRect B) <
+          1) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      (LSEKKTInverseSolutionDataCoeff hB hnull *
+          (eps * (frobNormRect A + residualScale) + eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect B) *
+              theorem20_8KKTMultiplierSmallGainScale hB hnull eps
+                (frobNormRect A + residualScale) (frobNormRect B) yScale
+                (LSEKKTInverseMultiplierDataCoeff hB hnull * residualScale) +
+            (eps * frobNormRect A) *
+              ((1 + eps) * (frobNormRect A + residualScale) +
+                (1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull *
+          (eps * frobNormRect B + eps * frobNormRect B)) /
+        (1 -
+          (LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+            LSEKKTInverseSolutionStatCoeff hB hnull *
+              ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+            LSEKKTInverseSolutionConstrCoeff hB hnull *
+              (eps * frobNormRect B))) := by
+  let lambdaScale : ℝ := LSEKKTInverseMultiplierDataCoeff hB hnull *
+    residualScale
+  let muScale : ℝ :=
+    theorem20_8KKTMultiplierSmallGainScale hB hnull eps
+      (frobNormRect A + residualScale) (frobNormRect B) yScale lambdaScale
+  rcases
+      hx.exists_lagrange_kkt_difference_eq_inverseTriple_sourceNormal
+        hy hB hBpert hnull with
+    ⟨lambda, mu, hnormal, _hdr, hdxTriple, hdlambdaTriple⟩
+  have hdx :
+      (fun j => y j - x j) =
+        LSEKKTInverseSolutionLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i,
+           fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i),
+           fun r => Deltad r - rectMatMulVec DeltaB y r) := by
+    rw [hdxTriple]
+    rw [LSEKKTInverseSolutionLinearMap_apply]
+  have hdlambda :
+      (fun r => mu r - lambda r) =
+        LSEKKTInverseMultiplierLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i,
+           fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i),
+           fun r => Deltad r - rectMatMulVec DeltaB y r) := by
+    rw [hdlambdaTriple]
+    rw [LSEKKTInverseMultiplierLinearMap_apply]
+  have hb : vecNorm2 b ≤ (frobNormRect A + residualScale) * vecNorm2 x :=
+    theorem20_8_vecNorm2_b_le_of_sourceResidualScale A b x hresidual
+  have hd : vecNorm2 d ≤ frobNormRect B * vecNorm2 x :=
+    hx.vecNorm2_constraint_rhs_le_frobNormRect_mul
+  have hlambdaBound : vecNorm2 lambda ≤ lambdaScale * vecNorm2 x := by
+    dsimp [lambdaScale]
+    exact
+      theorem20_8_source_lagrange_multiplier_vecNorm2_le_sourceResidualScale
+        hB hnull hnormal hresidual
+  have hmuRel : vecNorm2 mu / vecNorm2 x ≤ muScale := by
+    dsimp [muScale]
+    simpa [theorem20_8KKTMultiplierSmallGainScale] using
+      theorem20_8_perturbed_multiplier_relative_le_of_inverseMultiplierLinearMap_canonical_response_coeffs_relativeBudget_scales
+        hB hnull hxnorm hbudget heps_nonneg hb hd hyScale
+        hlambdaBound hdlambda hmultGain
+  have hmuScale : vecNorm2 mu ≤ muScale * vecNorm2 x :=
+    (div_le_iff₀ hxnorm).mp hmuRel
+  have hsol :=
+    hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_sourceResidual_smallGain_of_multiplier
+      hB hnull hxnorm hbudget heps_nonneg hresidual mu hdx hmuScale
+      hsolGain
+  simpa [muScale, lambdaScale] using hsol
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    coupled KKT multiplier/solution small-gain bound with the source
+    multiplier scale discharged from the source residual and the
+    perturbed-solution scale replaced by
+    `1 + ||y - x||₂ / ||x||₂`.  The new scalar coupled-gain premise absorbs
+    the remaining self term propagated through the multiplier row. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_sourceResidual_multiplierSmallGain_sourceResidualScale_coupled
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps residualScale : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hresidual :
+      vecNorm2 (lsResidualHigham A b x) ≤ residualScale * vecNorm2 x)
+    (hmultGain :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) <
+        1)
+    (hsolGain :
+      LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull * (eps * frobNormRect B) <
+          1)
+    (hcoupledGain :
+      (LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+          theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps) /
+        (1 -
+          (LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+            LSEKKTInverseSolutionStatCoeff hB hnull *
+              ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+            LSEKKTInverseSolutionConstrCoeff hB hnull *
+              (eps * frobNormRect B))) < 1) :
+    let lambdaScale : ℝ :=
+      LSEKKTInverseMultiplierDataCoeff hB hnull * residualScale
+    let muBase : ℝ :=
+      theorem20_8KKTMultiplierSmallGainScale hB hnull eps
+        (frobNormRect A + residualScale) (frobNormRect B) 1 lambdaScale
+    let muSelf : ℝ :=
+      theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps
+    let solDenom : ℝ :=
+      1 -
+        (LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+          LSEKKTInverseSolutionStatCoeff hB hnull *
+            ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+          LSEKKTInverseSolutionConstrCoeff hB hnull *
+            (eps * frobNormRect B))
+    let solMuCoeff : ℝ :=
+      LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B)
+    let solBase : ℝ :=
+      (LSEKKTInverseSolutionDataCoeff hB hnull *
+          (eps * (frobNormRect A + residualScale) + eps * frobNormRect A) +
+        solMuCoeff * muBase +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) *
+              ((1 + eps) * (frobNormRect A + residualScale) +
+                (1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull *
+          (eps * frobNormRect B + eps * frobNormRect B)) / solDenom
+    let solSelf : ℝ := solMuCoeff * muSelf / solDenom
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      solBase / (1 - solSelf) := by
+  let E : ℝ := vecNorm2 (fun j => y j - x j) / vecNorm2 x
+  let lambdaScale : ℝ :=
+    LSEKKTInverseMultiplierDataCoeff hB hnull * residualScale
+  let muBase : ℝ :=
+    theorem20_8KKTMultiplierSmallGainScale hB hnull eps
+      (frobNormRect A + residualScale) (frobNormRect B) 1 lambdaScale
+  let muSelf : ℝ :=
+    theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps
+  let muScale : ℝ :=
+    theorem20_8KKTMultiplierSmallGainScale hB hnull eps
+      (frobNormRect A + residualScale) (frobNormRect B) (1 + E)
+      lambdaScale
+  let solYCoeff : ℝ :=
+    LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+      LSEKKTInverseSolutionStatCoeff hB hnull *
+        ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+      LSEKKTInverseSolutionConstrCoeff hB hnull * (eps * frobNormRect B)
+  let solDenom : ℝ := 1 - solYCoeff
+  let solMuCoeff : ℝ :=
+    LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B)
+  let solBase : ℝ :=
+    (LSEKKTInverseSolutionDataCoeff hB hnull *
+        (eps * (frobNormRect A + residualScale) + eps * frobNormRect A) +
+      solMuCoeff * muBase +
+      LSEKKTInverseSolutionStatCoeff hB hnull *
+        ((eps * frobNormRect A) *
+            ((1 + eps) * (frobNormRect A + residualScale) +
+              (1 + eps) * frobNormRect A)) +
+      LSEKKTInverseSolutionConstrCoeff hB hnull *
+        (eps * frobNormRect B + eps * frobNormRect B)) / solDenom
+  let solSelf : ℝ := solMuCoeff * muSelf / solDenom
+  have hxne : vecNorm2 x ≠ 0 := ne_of_gt hxnorm
+  have hyScale : vecNorm2 y ≤ (1 + E) * vecNorm2 x := by
+    have hy_eq : y = fun j : Fin n => x j + (y j - x j) := by
+      ext j
+      ring
+    have hdiff_eq :
+        vecNorm2 (fun j : Fin n => y j - x j) = E * vecNorm2 x := by
+      dsimp [E]
+      field_simp [hxne]
+    calc
+      vecNorm2 y = vecNorm2 (fun j : Fin n => x j + (y j - x j)) :=
+          congrArg vecNorm2 hy_eq
+      _ ≤ vecNorm2 x + vecNorm2 (fun j : Fin n => y j - x j) :=
+          vecNorm2_add_le x (fun j : Fin n => y j - x j)
+      _ = vecNorm2 x + E * vecNorm2 x := by
+          rw [hdiff_eq]
+      _ = (1 + E) * vecNorm2 x := by
+          ring
+  rcases
+      hx.exists_lagrange_kkt_difference_eq_inverseTriple_sourceNormal
+        hy hB hBpert hnull with
+    ⟨lambda, mu, hnormal, _hdr, hdxTriple, hdlambdaTriple⟩
+  have hdx :
+      (fun j => y j - x j) =
+        LSEKKTInverseSolutionLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i,
+           fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i),
+           fun r => Deltad r - rectMatMulVec DeltaB y r) := by
+    rw [hdxTriple]
+    rw [LSEKKTInverseSolutionLinearMap_apply]
+  have hdlambda :
+      (fun r => mu r - lambda r) =
+        LSEKKTInverseMultiplierLinearMap hB hnull
+          (fun i => Deltab i - rectMatMulVec DeltaA y i,
+           fun j =>
+            (∑ r : Fin p, DeltaB r j * mu r) -
+              (∑ i : Fin m,
+                DeltaA i j *
+                  lsResidualHigham (fun i j => A i j + DeltaA i j)
+                    (fun i => b i + Deltab i) y i),
+           fun r => Deltad r - rectMatMulVec DeltaB y r) := by
+    rw [hdlambdaTriple]
+    rw [LSEKKTInverseMultiplierLinearMap_apply]
+  have hb : vecNorm2 b ≤ (frobNormRect A + residualScale) * vecNorm2 x :=
+    theorem20_8_vecNorm2_b_le_of_sourceResidualScale A b x hresidual
+  have hd : vecNorm2 d ≤ frobNormRect B * vecNorm2 x :=
+    hx.vecNorm2_constraint_rhs_le_frobNormRect_mul
+  have hlambdaBound : vecNorm2 lambda ≤ lambdaScale * vecNorm2 x := by
+    dsimp [lambdaScale]
+    exact
+      theorem20_8_source_lagrange_multiplier_vecNorm2_le_sourceResidualScale
+        hB hnull hnormal hresidual
+  have hmuRel : vecNorm2 mu / vecNorm2 x ≤ muScale := by
+    dsimp [muScale]
+    simpa [theorem20_8KKTMultiplierSmallGainScale, lambdaScale] using
+      theorem20_8_perturbed_multiplier_relative_le_of_inverseMultiplierLinearMap_canonical_response_coeffs_relativeBudget_scales
+        hB hnull hxnorm hbudget heps_nonneg hb hd hyScale
+        hlambdaBound hdlambda hmultGain
+  have hmuScale : vecNorm2 mu ≤ muScale * vecNorm2 x :=
+    (div_le_iff₀ hxnorm).mp hmuRel
+  have hsol :=
+    hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_sourceResidual_smallGain_of_multiplier
+      hB hnull hxnorm hbudget heps_nonneg hresidual mu hdx hmuScale
+      hsolGain
+  have hmuAffine : muScale = muBase + muSelf * E := by
+    dsimp [muScale, muBase, muSelf]
+    simpa [lambdaScale] using
+      theorem20_8KKTMultiplierSmallGainScale_one_add_eq hB hnull hmultGain
+  have hsolDenom_pos : 0 < solDenom := by
+    dsimp [solDenom, solYCoeff]
+    linarith
+  have hsolDenom_ne : solDenom ≠ 0 := ne_of_gt hsolDenom_pos
+  have hlin : E ≤ solSelf * E + solBase := by
+    calc
+      E ≤
+          (LSEKKTInverseSolutionDataCoeff hB hnull *
+              (eps * (frobNormRect A + residualScale) +
+                eps * frobNormRect A) +
+            LSEKKTInverseSolutionStatCoeff hB hnull *
+              ((eps * frobNormRect B) * muScale +
+                (eps * frobNormRect A) *
+                  ((1 + eps) * (frobNormRect A + residualScale) +
+                    (1 + eps) * frobNormRect A)) +
+            LSEKKTInverseSolutionConstrCoeff hB hnull *
+              (eps * frobNormRect B + eps * frobNormRect B)) /
+            (1 - solYCoeff) := by
+              simpa [E, solYCoeff] using hsol
+      _ = solSelf * E + solBase := by
+          rw [hmuAffine]
+          dsimp [solSelf, solBase, solMuCoeff, solDenom]
+          field_simp [hsolDenom_ne]
+          ring
+  have hcoupled' : solSelf < 1 := by
+    simpa [solSelf, solMuCoeff, solDenom, muSelf, solYCoeff] using
+      hcoupledGain
+  have habs := real_le_div_one_sub_of_le_mul_add hcoupled' hlin
+  simpa [E, lambdaScale, muBase, muSelf, solDenom, solMuCoeff, solBase,
+    solSelf, solYCoeff] using habs
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-residual-ratio version of the coupled KKT small-gain bound.  This
+    instantiates the residual scale with the actual source ratio
+    `||b - A*x||₂ / ||x||₂`, eliminating another caller-side scale premise. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_sourceResidualRatio_multiplierSmallGain_coupled
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hmultGain :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) <
+        1)
+    (hsolGain :
+      LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull * (eps * frobNormRect B) <
+          1)
+    (hcoupledGain :
+      (LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+          theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps) /
+        (1 -
+          (LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+            LSEKKTInverseSolutionStatCoeff hB hnull *
+              ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+            LSEKKTInverseSolutionConstrCoeff hB hnull *
+              (eps * frobNormRect B))) < 1) :
+    let residualScale : ℝ :=
+      vecNorm2 (lsResidualHigham A b x) / vecNorm2 x
+    let lambdaScale : ℝ :=
+      LSEKKTInverseMultiplierDataCoeff hB hnull * residualScale
+    let muBase : ℝ :=
+      theorem20_8KKTMultiplierSmallGainScale hB hnull eps
+        (frobNormRect A + residualScale) (frobNormRect B) 1 lambdaScale
+    let muSelf : ℝ :=
+      theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps
+    let solDenom : ℝ :=
+      1 -
+        (LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+          LSEKKTInverseSolutionStatCoeff hB hnull *
+            ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+          LSEKKTInverseSolutionConstrCoeff hB hnull *
+            (eps * frobNormRect B))
+    let solMuCoeff : ℝ :=
+      LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B)
+    let solBase : ℝ :=
+      (LSEKKTInverseSolutionDataCoeff hB hnull *
+          (eps * (frobNormRect A + residualScale) + eps * frobNormRect A) +
+        solMuCoeff * muBase +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) *
+              ((1 + eps) * (frobNormRect A + residualScale) +
+                (1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull *
+          (eps * frobNormRect B + eps * frobNormRect B)) / solDenom
+    let solSelf : ℝ := solMuCoeff * muSelf / solDenom
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      solBase / (1 - solSelf) := by
+  let residualScale : ℝ :=
+    vecNorm2 (lsResidualHigham A b x) / vecNorm2 x
+  have hxne : vecNorm2 x ≠ 0 := ne_of_gt hxnorm
+  have hresidual :
+      vecNorm2 (lsResidualHigham A b x) ≤ residualScale * vecNorm2 x := by
+    dsimp [residualScale]
+    rw [div_mul_cancel₀ _ hxne]
+  have h :=
+    hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_sourceResidual_multiplierSmallGain_sourceResidualScale_coupled
+      hy hB hBpert hnull hxnorm hbudget heps_nonneg hresidual hmultGain
+      hsolGain hcoupledGain
+  simpa [residualScale] using h
+
+/-- Combined self coefficient for the coupled KKT Theorem 20.8 route after the
+    multiplier-row and solution-row small-gain absorptions. -/
+noncomputable def theorem20_8KKTCoupledSelfCoeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (eps : ℝ) : ℝ :=
+  (LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+      theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps) /
+    (1 -
+      (LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull *
+          (eps * frobNormRect B)))
+
+/-- The scalar right-hand side of the current source-residual-ratio KKT bound
+    for Higham Theorem 20.8.  This keeps the public theorem below readable
+    while preserving all inverse-block coefficients and gain hypotheses
+    explicitly. -/
+noncomputable def theorem20_8KKTSourceResidualRatioCoupledBound {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (b : Fin m → ℝ) (x : Fin n → ℝ) (eps : ℝ) : ℝ :=
+  let residualScale : ℝ :=
+    vecNorm2 (lsResidualHigham A b x) / vecNorm2 x
+  let lambdaScale : ℝ :=
+    LSEKKTInverseMultiplierDataCoeff hB hnull * residualScale
+  let muBase : ℝ :=
+    theorem20_8KKTMultiplierSmallGainScale hB hnull eps
+      (frobNormRect A + residualScale) (frobNormRect B) 1 lambdaScale
+  let muSelf : ℝ :=
+    theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps
+  let solDenom : ℝ :=
+    1 -
+      (LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull *
+          (eps * frobNormRect B))
+  let solMuCoeff : ℝ :=
+    LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B)
+  let solBase : ℝ :=
+    (LSEKKTInverseSolutionDataCoeff hB hnull *
+        (eps * (frobNormRect A + residualScale) + eps * frobNormRect A) +
+      solMuCoeff * muBase +
+      LSEKKTInverseSolutionStatCoeff hB hnull *
+        ((eps * frobNormRect A) *
+            ((1 + eps) * (frobNormRect A + residualScale) +
+              (1 + eps) * frobNormRect A)) +
+      LSEKKTInverseSolutionConstrCoeff hB hnull *
+        (eps * frobNormRect B + eps * frobNormRect B)) / solDenom
+  let solSelf : ℝ := solMuCoeff * muSelf / solDenom
+  solBase / (1 - solSelf)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    named-bound version of the source-residual-ratio coupled KKT estimate. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hmultGain :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) <
+        1)
+    (hsolGain :
+      LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull * (eps * frobNormRect B) <
+          1)
+    (hcoupledGain : theorem20_8KKTCoupledSelfCoeff hB hnull eps < 1) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      theorem20_8KKTSourceResidualRatioCoupledBound hB hnull b x eps := by
+  have hcoupledGain' :
+      (LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+          theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps) /
+        (1 -
+          (LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+            LSEKKTInverseSolutionStatCoeff hB hnull *
+              ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+            LSEKKTInverseSolutionConstrCoeff hB hnull *
+              (eps * frobNormRect B))) < 1 := by
+    simpa [theorem20_8KKTCoupledSelfCoeff] using hcoupledGain
+  have h :=
+    hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_sourceResidualRatio_multiplierSmallGain_coupled
+      hy hB hBpert hnull hxnorm hbudget heps_nonneg hmultGain hsolGain
+      hcoupledGain'
+  simpa [theorem20_8KKTSourceResidualRatioCoupledBound] using h
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     canonical KKT response bound with the perturbed-solution scale absorbed by

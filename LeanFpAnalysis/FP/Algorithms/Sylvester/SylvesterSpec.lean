@@ -121,6 +121,10 @@ noncomputable def lyapunovResidual (n : Nat) (A C Y : Fin n -> Fin n -> Real) :
     Fin n -> Fin n -> Real :=
   fun i j => C i j - lyapunovOp n A Y i j
 
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered abbreviation for the Lyapunov residual. -/
+noncomputable abbrev H16_eq16_21_lyapunovResidual := lyapunovResidual
+
 /-- Lyapunov operator is Sylvester operator with B = -Aᵀ:
     L(X) = AX + XAᵀ = AX - X(-Aᵀ). -/
 theorem lyapunovOp_eq_sylvesterOp (n : ℕ) (A X : Fin n → Fin n → ℝ) :
@@ -128,6 +132,16 @@ theorem lyapunovOp_eq_sylvesterOp (n : ℕ) (A X : Fin n → Fin n → ℝ) :
     sylvesterOp n A (fun i j => -matTranspose A i j) X := by
   ext i j; unfold lyapunovOp sylvesterOp matMul matTranspose
   simp [mul_neg, Finset.sum_neg_distrib]
+
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    source-facing abbreviation for the Lyapunov operator `X |-> AX + XA^T`. -/
+noncomputable abbrev H16_LyapunovDefinition_lyapunovOp := lyapunovOp
+
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    source-facing alias identifying the Lyapunov operator with the Sylvester
+    operator at `B = -A^T`. -/
+alias H16_LyapunovDefinition_lyapunovOp_eq_sylvesterOp :=
+  lyapunovOp_eq_sylvesterOp
 
 -- ============================================================
 -- Normwise backward error definition (§15.2, eq 15.10)
@@ -149,6 +163,10 @@ def IsBackwardError (n : ℕ) (A B C Y : Fin n → Fin n → ℝ)
     frobNormSq ΔB ≤ (η * β) ^ 2 ∧
     frobNormSq ΔC ≤ (η * γ) ^ 2
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.10): source-numbered
+    abbreviation for the normwise backward-error feasibility predicate. -/
+abbrev H16_eq16_10_IsBackwardError := IsBackwardError
+
 /-- Higham, 2nd ed., Chapter 16.2.1:
     structured Lyapunov normwise backward-error certificate.  The perturbation
     of `A` is tied on both sides as `DeltaA` and `DeltaA^T`, and the right-hand
@@ -162,6 +180,11 @@ def IsLyapunovBackwardError (n : Nat) (A C Y : Fin n -> Fin n -> Real)
       C i j + DeltaC i j) ∧
     frobNormSq DeltaA ≤ (eta * alpha) ^ 2 ∧
     frobNormSq DeltaC ≤ (eta * gamma) ^ 2
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered abbreviation for the structured Lyapunov backward-error
+    certificate. -/
+abbrev H16_eq16_21_IsLyapunovBackwardError := IsLyapunovBackwardError
 
 -- ============================================================
 -- Residual bound (§15.2, eq 15.12)
@@ -184,6 +207,10 @@ theorem residual_decomposition (n : ℕ)
   unfold matMul at h ⊢
   simp only [add_mul, mul_add, Finset.sum_add_distrib] at h
   linarith
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.11): source-numbered
+    alias for the residual decomposition induced by backward perturbations. -/
+alias H16_eq16_11_residual_decomposition := residual_decomposition
 
 /-- **Residual bound** (Higham §15.2, eq 15.12).
 
@@ -252,5 +279,9 @@ theorem residual_bound (n : ℕ)
         frobNorm Y * (η * β)) + η * γ =
       ((α + β) * frobNorm Y + γ) * η := by ring
   linarith
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.12): source-numbered
+    alias for the normwise residual bound from a backward-error certificate. -/
+alias H16_eq16_12_residual_bound := residual_bound
 
 end LeanFpAnalysis.FP
