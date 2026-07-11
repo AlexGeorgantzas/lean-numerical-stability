@@ -414,12 +414,22 @@ noncomputable def sylvesterAmplificationMu
   ((α + β) * yNorm + γ) /
     Real.sqrt (α ^ 2 * σn ^ 2 + β ^ 2 * σm ^ 2 + γ ^ 2)
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.18):
+    source-numbered abbreviation for the scalar amplification factor. -/
+noncomputable abbrev H16_eq16_18_sylvesterAmplificationMu :=
+  sylvesterAmplificationMu
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.19):
     square-case specialization of the amplification factor. -/
 noncomputable def sylvesterAmplificationMuSquare
     (α β γ yNorm σmin : ℝ) : ℝ :=
   ((α + β) * yNorm + γ) /
     Real.sqrt ((α ^ 2 + β ^ 2) * σmin ^ 2 + γ ^ 2)
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.19):
+    source-numbered abbreviation for the square-case amplification factor. -/
+noncomputable abbrev H16_eq16_19_sylvesterAmplificationMuSquare :=
+  sylvesterAmplificationMuSquare
 
 /-- In the square case, the two singular-value slots in (16.18) coincide,
     giving the source formula (16.19). -/
@@ -430,6 +440,11 @@ theorem sylvesterAmplificationMu_square_eq
   unfold sylvesterAmplificationMu sylvesterAmplificationMuSquare
   rw [show α ^ 2 * σmin ^ 2 + β ^ 2 * σmin ^ 2 + γ ^ 2 =
       (α ^ 2 + β ^ 2) * σmin ^ 2 + γ ^ 2 by ring]
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.19): source-numbered
+    alias for the square-case reduction of the amplification factor. -/
+alias H16_eq16_19_sylvesterAmplificationMu_square_eq :=
+  sylvesterAmplificationMu_square_eq
 
 /-- Higham, 2nd ed., Chapter 16.2, prose after equation (16.18):
     in the square case the amplification factor is at least one, provided the
@@ -465,6 +480,11 @@ theorem one_le_sylvesterAmplificationMuSquare
     rw [Real.sq_sqrt (le_of_lt hDenom)]
     exact hD_le
   exact (one_le_div hsqrt_pos).mpr hsqrt_le
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.19) and following prose:
+    source-numbered alias for the square-case lower bound `1 <= mu`. -/
+alias H16_eq16_19_one_le_sylvesterAmplificationMuSquare :=
+  one_le_sylvesterAmplificationMuSquare
 
 /-- **Amplification factor bound** (eqs 16.17-16.18):
     ξ² ≤ ‖R̃‖²_F / ((α²+β²)σ²_min + γ²)
