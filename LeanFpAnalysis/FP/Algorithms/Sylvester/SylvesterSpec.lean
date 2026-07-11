@@ -129,6 +129,16 @@ theorem lyapunovOp_eq_sylvesterOp (n : ℕ) (A X : Fin n → Fin n → ℝ) :
   ext i j; unfold lyapunovOp sylvesterOp matMul matTranspose
   simp [mul_neg, Finset.sum_neg_distrib]
 
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    source-facing abbreviation for the Lyapunov operator `X |-> AX + XA^T`. -/
+noncomputable abbrev H16_LyapunovDefinition_lyapunovOp := lyapunovOp
+
+/-- Higham, 2nd ed., Chapter 16.2.1:
+    source-facing alias identifying the Lyapunov operator with the Sylvester
+    operator at `B = -A^T`. -/
+alias H16_LyapunovDefinition_lyapunovOp_eq_sylvesterOp :=
+  lyapunovOp_eq_sylvesterOp
+
 -- ============================================================
 -- Normwise backward error definition (§15.2, eq 15.10)
 -- ============================================================
