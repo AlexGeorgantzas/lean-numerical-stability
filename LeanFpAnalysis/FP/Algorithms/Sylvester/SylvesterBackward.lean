@@ -400,6 +400,39 @@ theorem svdOptimalPerturbations_frobNormSq_bounds (n : ℕ)
     svdOptimalDeltaB_frobNormSq_le_xiSq n R_tilde σ α β γ hpos,
     svdOptimalDeltaC_frobNormSq_le_xiSq n R_tilde σ α β γ hpos⟩
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.15):
+    source-numbered aliases for the SVD-coordinate optimizer construction and
+    its component squared-Frobenius bounds. -/
+alias H16_eq16_15_backward_error_upper_component :=
+  backward_error_upper_component
+
+noncomputable abbrev H16_eq16_15_svdOptimalDeltaA := svdOptimalDeltaA
+
+noncomputable abbrev H16_eq16_15_svdOptimalDeltaB := svdOptimalDeltaB
+
+noncomputable abbrev H16_eq16_15_svdOptimalDeltaC := svdOptimalDeltaC
+
+alias H16_eq16_15_svdOptimalPerturbations_scalar_eq :=
+  svdOptimalPerturbations_scalar_eq
+
+alias H16_eq16_15_svdOptimalPerturbations_cost_eq_xiSq :=
+  svdOptimalPerturbations_cost_eq_xiSq
+
+alias H16_eq16_15_exists_svdOptimalPerturbations :=
+  exists_svdOptimalPerturbations
+
+alias H16_eq16_15_svdOptimalDeltaA_frobNormSq_le_xiSq :=
+  svdOptimalDeltaA_frobNormSq_le_xiSq
+
+alias H16_eq16_15_svdOptimalDeltaB_frobNormSq_le_xiSq :=
+  svdOptimalDeltaB_frobNormSq_le_xiSq
+
+alias H16_eq16_15_svdOptimalDeltaC_frobNormSq_le_xiSq :=
+  svdOptimalDeltaC_frobNormSq_le_xiSq
+
+alias H16_eq16_15_svdOptimalPerturbations_frobNormSq_bounds :=
+  svdOptimalPerturbations_frobNormSq_bounds
+
 -- ============================================================
 -- Amplification factor (§16.2, eqs 16.17-16.19)
 -- ============================================================
