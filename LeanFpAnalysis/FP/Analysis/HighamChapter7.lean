@@ -25739,4 +25739,27 @@ theorem stochasticMatrix_mul_ones (n : ℕ) (P : Fin n → Fin n → ℝ)
   unfold matMulVec
   simpa using hP.2 i
 
+
+/-! ## Theorem 7.8 (Bauer) — source-labeled aliases
+
+Higham 2nd ed., Chapter 7, §7.3, Theorem 7.8 (p. 127, eq. (7.24)): for
+nonsingular `A` with `|A||A⁻¹|` and `|A⁻¹||A|` irreducible,
+`min_{D₁,D₂ ∈ 𝒟ₙ} κ_∞(D₁AD₂) = ρ(|A||A⁻¹|)`. The book's proof is delegated
+to Problem 7.10, so the full formalization lives in the `problem7_10*`
+family (with `B = |A|`, `C = |A⁻¹|`); these thin aliases give the primary
+source label its own traceable surface. -/
+
+/-- **Theorem 7.8 (Bauer), eq. (7.24)** — infinity-norm scaled-condition form:
+the infimum of the two-sided diagonally scaled condition numbers equals the
+Perron/spectral radius of the nonnegative product. Alias of
+`problem7_10a_irreducible_products_scaledInfCondSet_sInf_eq_spectralRadius`. -/
+alias theorem7_8_bauer_scaledInfCondSet_sInf_eq_spectralRadius :=
+  problem7_10a_irreducible_products_scaledInfCondSet_sInf_eq_spectralRadius
+
+/-- **Theorem 7.8 (Bauer), eq. (7.24)** — kappa form of the same equality.
+Alias of
+`problem7_10b_irreducible_products_scaledInfKappaSet_sInf_eq_spectralRadius`. -/
+alias theorem7_8_bauer_scaledInfKappaSet_sInf_eq_spectralRadius :=
+  problem7_10b_irreducible_products_scaledInfKappaSet_sInf_eq_spectralRadius
+
 end LeanFpAnalysis.FP
