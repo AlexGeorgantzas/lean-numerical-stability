@@ -855,6 +855,18 @@ theorem sylvesterVecCoeff_one_det_eq_sylvesterTriangularShiftedCoeff_det
   rw [← hdet_reindex,
     sylvesterVecCoeff_one_reindex_eq_sylvesterTriangularShiftedCoeff]
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
+    source-numbered alias for the one-column vec/Kronecker reindexing bridge
+    to the singleton shifted column coefficient. -/
+alias H16_eq16_6_sylvesterVecCoeff_one_reindex_eq_sylvesterTriangularShiftedCoeff :=
+  sylvesterVecCoeff_one_reindex_eq_sylvesterTriangularShiftedCoeff
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
+    source-numbered alias for the determinant form of the one-column
+    vec/Kronecker bridge to the singleton shifted column coefficient. -/
+alias H16_eq16_6_sylvesterVecCoeff_one_det_eq_sylvesterTriangularShiftedCoeff_det :=
+  sylvesterVecCoeff_one_det_eq_sylvesterTriangularShiftedCoeff_det
+
 private theorem triangular_column_sum_split (m n : Nat) (T : RMatFn n n)
     (hT : IsUpperTriangularFn n T) (X : RMatFn m n) (i : Fin m) (k : Fin n) :
     (Finset.sum Finset.univ fun j : Fin n => X i j * T j k) =
