@@ -691,6 +691,27 @@ alias H16_eq16_6_quasi_sylvesterQuasiPairing_isQuasiBlockPairing :=
 alias H16_eq16_6_quasi_sylvesterQuasiPairing_block_decode :=
   sylvesterQuasiPairing_block_decode
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    same-column off-diagonal entries of the vec/Kronecker Sylvester
+    coefficient used when decoding marked `2 x 2` product-index blocks. -/
+alias H16_eq16_2_quasi_sylvesterVecCoeff_same_col_apply :=
+  sylvesterVecCoeff_same_col_apply
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.7),
+    quasi-triangular (real Schur) variant: source-numbered alias for
+    transporting the non-bottom-row condition through the Bartels-Stewart
+    product-index order. -/
+alias H16_eq16_6_quasi_sylvesterQuasiPairing_notSecond_decode :=
+  sylvesterQuasiPairing_notSecond_decode
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    generic zero theorem of the reordered vec/Kronecker coefficient below the
+    marked block diagonal. -/
+alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_eq_zero :=
+  sylvesterQuasiSchurBackSubCoeff_eq_zero
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7),
     quasi-triangular (real Schur) variant: source-numbered alias for the
     below-subdiagonal zero pattern of the reordered vec/Kronecker coefficient
