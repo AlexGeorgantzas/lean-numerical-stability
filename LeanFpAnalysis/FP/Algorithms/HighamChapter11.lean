@@ -19719,6 +19719,33 @@ theorem higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of
     _ = b (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) := by
       simpa [irow] using hrows t hstep
 
+/-- A standard local-block combined second-pivot row equation reduces back to
+the bare branch-matrix row equation when every strictly earlier lifted
+perturbation vanishes on the current local block. -/
+theorem higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_localBlock_combined_rows_and_earlier_local_zero
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hrows :
+      higham11_7_ConcretePathSecondPivotCombinedLocalBlockSolveRows
+        k step A b x_hat ΔA)
+    (hearlier :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock
+        k step ΔA) :
+    higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows
+        k step A b x_hat :=
+  higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_combined_rows_and_earlier_local_zero
+    k step A b x_hat ΔA
+    (higham11_7_ConcretePathSecondPivotBranchMatrixCombinedLocalBlockSolveRows_of_localBlock_rows
+      k step A b x_hat ΔA hrows)
+    hearlier
+
 /-- Outside-block zero condition for a combined second-pivot row.  Together
 with the local-block row equation this gives the full ambient combined
 second-pivot handoff. -/
@@ -20198,6 +20225,56 @@ theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_lif
         k step ΔA :=
   higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_lifted_support_after_branch_end
     k step ΔA hsupp
+
+/-- A branch-matrix combined local-block second-pivot row equation reduces to
+the bare branch-matrix row equation under the named lifted-support family. -/
+theorem higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_branchMatrix_combined_rows_and_liftedSupportAfterBranchEnd
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hrows :
+      higham11_7_ConcretePathSecondPivotBranchMatrixCombinedLocalBlockSolveRows
+        k step A b x_hat ΔA)
+    (hsupp :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsLiftedSupportAfterBranchEnd
+        k step ΔA) :
+    higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows
+        k step A b x_hat :=
+  higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_combined_rows_and_earlier_local_zero
+    k step A b x_hat ΔA hrows
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock_of_liftedSupportAfterBranchEnd
+      k step ΔA hsupp)
+
+/-- A standard local-block combined second-pivot row equation reduces to the
+bare branch-matrix row equation under the named lifted-support family. -/
+theorem higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_localBlock_combined_rows_and_liftedSupportAfterBranchEnd
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hrows :
+      higham11_7_ConcretePathSecondPivotCombinedLocalBlockSolveRows
+        k step A b x_hat ΔA)
+    (hsupp :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsLiftedSupportAfterBranchEnd
+        k step ΔA) :
+    higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows
+        k step A b x_hat :=
+  higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_localBlock_combined_rows_and_earlier_local_zero
+    k step A b x_hat ΔA hrows
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock_of_liftedSupportAfterBranchEnd
+      k step ΔA hsupp)
 
 /-- Pointwise zero of every earlier lifted perturbation gives the summed
 earlier-lift prefix-zero condition. -/
@@ -21925,6 +22002,59 @@ theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_o
         k step A b x_hat ΔA :=
   higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_of_isTridiagonal_and_each_earlier_zero
     k step A b x_hat ΔA hA.2 hearlier hrows
+
+/-- Local-block combined second-pivot rows, tridiagonal base support, and the
+named lifted-support-after-branch-end family give the full ambient combined
+second-pivot handoff. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_of_isTridiagonal_and_liftedSupportAfterBranchEnd
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hA : IsTridiagonal (higham11_7_tridiagonalPathPivotSpan k step + 1) A)
+    (hsupp :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsLiftedSupportAfterBranchEnd
+        k step ΔA)
+    (hrows :
+      higham11_7_ConcretePathSecondPivotCombinedLocalBlockSolveRows
+        k step A b x_hat ΔA) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows
+        k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_of_isTridiagonal_and_each_earlier_zero
+    k step A b x_hat ΔA hA
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_liftedSupportAfterBranchEnd
+      k step ΔA hsupp)
+    hrows
+
+/-- Symmetric-tridiagonal source form of the local-block lifted-support
+second-pivot handoff. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_of_isSymTridiagonal_and_liftedSupportAfterBranchEnd
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hA : IsSymTridiagonal
+      (higham11_7_tridiagonalPathPivotSpan k step + 1) A)
+    (hsupp :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsLiftedSupportAfterBranchEnd
+        k step ΔA)
+    (hrows :
+      higham11_7_ConcretePathSecondPivotCombinedLocalBlockSolveRows
+        k step A b x_hat ΔA) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows
+        k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_of_isTridiagonal_and_liftedSupportAfterBranchEnd
+    k step A b x_hat ΔA hA.2 hsupp hrows
 
 /-- Local-block combined second-pivot rows, tridiagonal base support, and the
 support-reduced after-earlier-branch-end condition give the full ambient
