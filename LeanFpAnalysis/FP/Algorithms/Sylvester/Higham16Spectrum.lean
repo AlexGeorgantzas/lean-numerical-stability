@@ -12071,6 +12071,27 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_realQuasiSchur_factor
           hpq hsame hspectral hdetOrig)
       hXblock
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for Schur-coordinate generated-frontier solvability
+    through the bundled block-separation route from a vec/Kronecker determinant
+    certificate. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_solution_of_realQuasiSchur_block_separation_vecCoeff_det_ne_zero_generated_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_solution_of_realQuasiSchur_block_separation_vecCoeff_det_ne_zero_generated_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for original-coordinate generated-frontier
+    reconstruction through the bundled block-separation route from an original
+    vec/Kronecker determinant certificate. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_original_solution_eq_of_realQuasiSchur_factors_block_separation_vecCoeff_det_ne_zero_generated_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_original_solution_eq_of_realQuasiSchur_factors_block_separation_vecCoeff_det_ne_zero_generated_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for original-coordinate unique solvability through
+    the bundled block-separation generated-frontier route from an original
+    vec/Kronecker determinant certificate. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_realQuasiSchur_factors_block_separation_vecCoeff_det_ne_zero_generated_frontier_step_oracle :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_realQuasiSchur_factors_block_separation_vecCoeff_det_ne_zero_generated_frontier_step_oracle
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
     Schur-coordinate solvability from a scheduled quasi-Schur traversal whose
     singleton steps supply true singleton-fiber data and whose same-block
@@ -12267,6 +12288,25 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_c
         sylvesterTriangularShiftedCoeff_det_ne_zero_of_realQuasiSchur_factors_singleton_no_common_complex_right_eigenvalue
           m n U R A V S B pmap p hU hV hA hB hzero hsingle hnoOrig
   · exact Or.inr hblock
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for scheduled Schur-coordinate traversal whose
+    singleton steps derive shifted determinants from singleton-fiber data and
+    the original-coordinate no-common-spectrum hypothesis. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_singleton_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_singleton_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for scheduled original-coordinate reconstruction
+    with singleton-fiber determinant discharge from no-common spectrum. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_no_common_singleton_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_no_common_singleton_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for scheduled original-coordinate unique solvability
+    with singleton-fiber determinant discharge from no-common spectrum. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_common_singleton_frontier_step_oracle :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_common_singleton_frontier_step_oracle
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
     Schur-coordinate solvability from a scheduled quasi-Schur traversal whose
