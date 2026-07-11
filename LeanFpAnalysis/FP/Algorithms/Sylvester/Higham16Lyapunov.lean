@@ -1357,6 +1357,16 @@ theorem sylvesterSepInf_lyapunov_diagonal_ge_of_entrywise_abs_ge (n : Nat)
       (SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge n a s hs hsep)
       hn
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26): source-numbered
+    alias for the diagonal Lyapunov `sep(A,-A^T)` lower-bound certificate. -/
+alias H16_eq16_26_SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge :=
+  SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26): source-numbered
+    alias for the diagonal Lyapunov exact-infimum lower-bound route. -/
+alias H16_eq16_26_sylvesterSepInf_lyapunov_diagonal_ge_of_entrywise_abs_ge :=
+  sylvesterSepInf_lyapunov_diagonal_ge_of_entrywise_abs_ge
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27), diagonal
     Lyapunov case: Frobenius perturbation bound from the entrywise certificate
     `s <= |a_i + a_j|`. -/
