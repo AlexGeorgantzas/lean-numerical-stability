@@ -1898,6 +1898,102 @@ theorem higham11_4_bunch_kaufman_case4_twoByTwo_row_sum_and_D_cap_of_row_max_le
       higham11_4_bunch_kaufman_case4_twoByTwo_pivotBlock_entries_le_Amax
         a11 a1r arr ω1 ωr Amax hω1 hcase ha1r hω1_Amax hωr_Amax
 
+/-- **Theorem 11.4 / Algorithm 11.2 case-(1) local producer package**:
+the scalar `a₁₁` branch simultaneously supplies the normalized Schur-growth
+step, the source-six multiplier row cap, and the accepted scalar `D̂` cap. -/
+theorem higham11_4_bunch_kaufman_case1_local_growth_row_sum_and_D_cap
+    (b ci cj a11 arr ω1 ωr c Amax : ℝ) (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case1)
+    (hb : |b| ≤ Amax) (hci : |ci| ≤ ω1) (hcj : |cj| ≤ ω1)
+    (hω1_Amax : ω1 ≤ Amax) (hc : |c| ≤ ω1) (ha11_Amax : |a11| ≤ Amax) :
+    |b - ci * cj / a11| ≤
+        (1 + higham11_1_bunchParlettAlpha⁻¹) * Amax ∧
+      |c / a11| ≤ 6 ∧ |a11| ≤ Amax := by
+  refine ⟨?_, ?_⟩
+  · exact
+      higham11_4_bunch_kaufman_case1_schur_growth_source_factor
+        b ci cj a11 arr ω1 ωr Amax hω1 hcase hb hci hcj hω1_Amax
+  · exact
+      higham11_4_bunch_kaufman_case1_scalar_row_sum_and_D_cap
+        a11 arr ω1 ωr c Amax hω1 hcase hc ha11_Amax
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(2) local producer package**:
+with the concrete row-maximum side condition, the `a₁₁` branch supplies the
+Schur-growth step, source-six multiplier row cap, and local scalar `D̂` cap. -/
+theorem higham11_4_bunch_kaufman_case2_local_growth_row_sum_and_D_cap_of_row_max_le
+    (b ci cj a11 arr ω1 ωr c Amax : ℝ) (hω1 : 0 < ω1) (hωr_le : ωr ≤ ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case2)
+    (hb : |b| ≤ Amax) (hci : |ci| ≤ ω1) (hcj : |cj| ≤ ω1)
+    (hω1_Amax : ω1 ≤ Amax) (hc : |c| ≤ ω1) :
+    |b - ci * cj / a11| ≤
+        (1 + higham11_1_bunchParlettAlpha⁻¹) * Amax ∧
+      |c / a11| ≤ 6 ∧ |a11| ≤ Amax := by
+  refine ⟨?_, ?_⟩
+  · exact
+      higham11_4_bunch_kaufman_case2_schur_growth_source_factor
+        b ci cj a11 arr ω1 ωr Amax hω1 hcase hb hci hcj
+        (hωr_le.trans hω1_Amax)
+  · exact
+      higham11_4_bunch_kaufman_case2_scalar_row_sum_and_D_cap_of_row_max_le
+        a11 arr ω1 ωr c Amax hω1 hωr_le hcase hc hω1_Amax
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(3) local producer package**:
+after the symmetric swap, the accepted `aᵣᵣ` scalar branch supplies the
+Schur-growth step, source-six multiplier row cap, and local scalar `D̂` cap. -/
+theorem higham11_4_bunch_kaufman_case3_local_growth_row_sum_and_D_cap
+    (b ci cj a11 arr ω1 ωr c Amax : ℝ) (hωr : 0 < ωr)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case3)
+    (hb : |b| ≤ Amax) (hci : |ci| ≤ ωr) (hcj : |cj| ≤ ωr)
+    (hωr_Amax : ωr ≤ Amax) (hc : |c| ≤ ωr) (harr_Amax : |arr| ≤ Amax) :
+    |b - ci * cj / arr| ≤
+        (1 + higham11_1_bunchParlettAlpha⁻¹) * Amax ∧
+      |c / arr| ≤ 6 ∧ |arr| ≤ Amax := by
+  refine ⟨?_, ?_⟩
+  · exact
+      higham11_4_bunch_kaufman_case3_schur_growth_source_factor
+        b ci cj a11 arr ω1 ωr Amax hωr hcase hb hci hcj hωr_Amax
+  · exact
+      higham11_4_bunch_kaufman_case3_scalar_row_sum_and_D_cap
+        a11 arr ω1 ωr c Amax hωr hcase hc harr_Amax
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(4) local producer package**:
+under the concrete row-maximum dominance used by the source-six `CE⁻¹` row
+cap, the accepted `2 × 2` branch supplies the two-step normalized growth
+bound, the source-six multiplier row cap for one multiplier row, and the local
+`D̂` pivot-block entry cap. -/
+theorem higham11_4_bunch_kaufman_case4_twoByTwo_local_growth_row_sum_and_D_cap_of_row_max_le
+    (bij ci1 ci2 cj1 cj2 a11 a1r arr ω1 ωr K Amax : ℝ)
+    (hω1 : 0 < ω1) (hωr_le : ωr ≤ ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case4)
+    (ha1r : |a1r| = ω1)
+    (hK : (1 - higham11_1_bunchParlettAlpha ^ 2) * ω1 * K = 1)
+    (hb : |bij| ≤ Amax)
+    (hci1 : |ci1| ≤ ω1) (hci2 : |ci2| ≤ ωr)
+    (hcj1 : |cj1| ≤ ω1) (hcj2 : |cj2| ≤ ωr)
+    (hωr_Amax : ωr ≤ Amax) (hω1_Amax : ω1 ≤ Amax) :
+    |higham11_4_twoByTwoSchurEntry bij ci1 ci2 cj1 cj2
+        (arr / (a11 * arr - a1r ^ 2)) (-(a1r / (a11 * arr - a1r ^ 2)))
+        (-(a1r / (a11 * arr - a1r ^ 2))) (a11 / (a11 * arr - a1r ^ 2))| ≤
+        (1 + higham11_1_bunchParlettAlpha⁻¹) ^ 2 * Amax ∧
+      (|ci1 * (arr / (a11 * arr - a1r ^ 2)) +
+          ci2 * (-(a1r / (a11 * arr - a1r ^ 2)))| +
+        |ci1 * (-(a1r / (a11 * arr - a1r ^ 2))) +
+          ci2 * (a11 / (a11 * arr - a1r ^ 2))| ≤ 6) ∧
+      (∀ i j : Fin 2, |higham11_4_twoByTwoPivotBlock a11 a1r arr i j| ≤ Amax) := by
+  refine ⟨?_, ?_⟩
+  · exact
+      higham11_4_bunch_kaufman_case4_twoByTwo_schur_growth_source_factor_sq
+        bij ci1 ci2 cj1 cj2 a11 a1r arr ω1 ωr Amax hω1 hcase ha1r
+        hb hci1 hci2 hcj1 hcj2 hωr_Amax
+  · exact
+      higham11_4_bunch_kaufman_case4_twoByTwo_row_sum_and_D_cap_of_row_max_le
+        ci1 ci2 a11 a1r arr ω1 ωr K Amax hω1 hωr_le hcase ha1r hK
+        hci1 (hci2.trans hωr_le) hω1_Amax hωr_Amax
+
 /-- **Theorem 11.4 / Algorithm 11.2 case-(4) determinant bridge**: with the
 same explicit row-maximum dominance needed by the local case-(4) `2 × 2`
 bridges, the accepted pivot block has the standard determinant lower bound. -/
