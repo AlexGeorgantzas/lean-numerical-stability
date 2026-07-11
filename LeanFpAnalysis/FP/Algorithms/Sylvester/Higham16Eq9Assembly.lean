@@ -71,6 +71,12 @@ theorem frobNormRect_orthogonal_conjugation_eq {m n : Nat}
           simpa [matMulRectRight] using
             frobNormRect_orthogonal_right M (matTranspose V) hV.transpose
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.5) and (16.9), p. 308:
+    source-numbered alias for Frobenius invariance under the Schur
+    two-sided orthogonal reconstruction map. -/
+alias H16_eq16_5_9_frobNormRect_orthogonal_conjugation_eq :=
+  frobNormRect_orthogonal_conjugation_eq
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.9), p. 308: the Frobenius
     norm of a matrix presented by an exact orthogonal Schur similarity
     `A = U R U^T` equals the Frobenius norm of its quasi-triangular factor.
@@ -82,6 +88,12 @@ theorem frobNormRect_eq_of_orthogonal_similarity {m : Nat}
     frobNormRect A = frobNormRect R := by
   rw [hA]
   exact frobNormRect_orthogonal_conjugation_eq U R U hU hU
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.9), p. 308:
+    source-numbered alias for equality of a supplied exact Schur factor and
+    original matrix Frobenius scale. -/
+alias H16_eq16_9_frobNormRect_eq_of_orthogonal_similarity :=
+  frobNormRect_eq_of_orthogonal_similarity
 
 -- ============================================================
 -- (16.9) assembly: supplied exact orthogonal Schur factors
