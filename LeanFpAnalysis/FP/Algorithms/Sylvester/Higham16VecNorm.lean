@@ -5511,6 +5511,24 @@ theorem sylvesterSepInf_lyapunovSpectralDiagonal_ge_of_entrywise_abs_ge_of_pos_d
         U A a sigma hU hA hsigma hgap)
       hn
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26): source-numbered
+    alias for the supplied spectral-coordinate Lyapunov `sep(A,-A^T)`
+    lower-bound certificate. -/
+alias H16_eq16_26_SepLowerBound_lyapunovSpectralDiagonal_of_entrywise_abs_ge :=
+  SepLowerBound_lyapunovSpectralDiagonal_of_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26): source-numbered
+    alias for the supplied spectral-coordinate Lyapunov exact-infimum
+    lower-bound route from a nonempty feasible ratio set. -/
+alias H16_eq16_26_sylvesterSepInf_lyapunovSpectralDiagonal_ge_of_entrywise_abs_ge :=
+  sylvesterSepInf_lyapunovSpectralDiagonal_ge_of_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26): source-numbered
+    alias for the positive-dimensional supplied spectral-coordinate Lyapunov
+    exact-infimum lower-bound route. -/
+alias H16_eq16_26_sylvesterSepInf_lyapunovSpectralDiagonal_ge_of_entrywise_abs_ge_of_pos_dim :=
+  sylvesterSepInf_lyapunovSpectralDiagonal_ge_of_entrywise_abs_ge_of_pos_dim
+
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     a positive lower bound for the concrete vectorized Lyapunov coefficient
     gives the Lyapunov operator lower bound consumed by the sigma-min
