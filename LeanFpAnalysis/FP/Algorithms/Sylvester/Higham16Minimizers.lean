@@ -4241,6 +4241,78 @@ theorem sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_c
         n A B hsigma hCoeff)
       hX hBudget hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the concrete-left-inverse computed-residual certificate
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_certificate :=
+  sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar concrete-left-inverse computed-residual certificate
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_certificate_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone concrete-left-inverse computed-residual certificate
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_certificate_mono :=
+  sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar concrete-left-inverse computed-residual
+    certificate practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_certificate_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the finite-Gram computed-residual certificate practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_certificate :=
+  sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar finite-Gram computed-residual certificate practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_certificate_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone finite-Gram computed-residual certificate practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_certificate_mono :=
+  sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar finite-Gram computed-residual certificate
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_certificate_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the concrete sigma-min computed-residual certificate practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_certificate :=
+  sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar concrete sigma-min computed-residual certificate
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_certificate_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone concrete sigma-min computed-residual certificate
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_certificate_mono :=
+  sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar concrete sigma-min computed-residual
+    certificate practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_certificate_mono_scalar
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), square
     arbitrary-coefficient endpoint: an operator sigma-min lower-bound
     certificate discharges nonsingularity of the vec/Kronecker Sylvester
@@ -5020,6 +5092,78 @@ theorem sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_e
         n A B hsigma hCoeff)
       hX hPinvAbs_le hRhat_eq hRu hdR hRhat_le hRu_le heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the concrete-left-inverse explicit residual-error-model
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_error_model :=
+  sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar concrete-left-inverse explicit residual-error-model
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_error_model_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone concrete-left-inverse explicit residual-error-model
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_error_model_mono :=
+  sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar concrete-left-inverse explicit
+    residual-error-model practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_error_model_mono_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_error_model_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the finite-Gram explicit residual-error-model practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_error_model :=
+  sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar finite-Gram explicit residual-error-model practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_error_model_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone finite-Gram explicit residual-error-model practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_error_model_mono :=
+  sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar finite-Gram explicit residual-error-model
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_error_model_mono_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_error_model_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the concrete sigma-min explicit residual-error-model practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_error_model :=
+  sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar concrete sigma-min explicit residual-error-model
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_error_model_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone concrete sigma-min explicit residual-error-model
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_error_model_mono :=
+  sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar concrete sigma-min explicit
+    residual-error-model practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_error_model_mono_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_error_model_mono_scalar
+
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, eq (16.29), square arbitrary-coefficient raw residual-budget scalar
     endpoint: a concrete finite-op-norm left-inverse certificate supplies
@@ -5674,6 +5818,56 @@ theorem H16_eq16_29_lyapunov_relative_error_le_of_sepLowerBound_computed_residua
       n A C X Xhat Rhat Ru dR hSep hX hRhat hRu hdR hX_pos hResidualCap
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equation (16.29), Lyapunov Frobenius residual-error-model endpoint:
+    a positive lower bound on the exact `sep(A,-A^T)` infimum supplies the
+    separation certificate for the explicit computed-residual model. -/
+theorem lyapunov_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_error_model
+    (n : Nat)
+    (A C X Xhat Rhat Ru dR : RMatFn n n) {sigma eta : Real}
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hRhat : forall i j,
+      Rhat i j = lyapunovResidual n A C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    lyapunov_relative_error_le_of_sepLowerBound_computed_residual_error_model
+      n A C X Xhat Rhat Ru dR
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A
+        (fun i j => -matTranspose A i j) sigma hsigma hle)
+      hX hRhat hRu hdR hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered alias for the Lyapunov
+    Frobenius relative-error endpoint from an explicit residual-error model
+    and a positive lower bound on the exact `sep(A,-A^T)` infimum. -/
+theorem H16_eq16_29_lyapunov_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_error_model
+    (n : Nat)
+    (A C X Xhat Rhat Ru dR : RMatFn n n) {sigma eta : Real}
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hRhat : forall i j,
+      Rhat i j = lyapunovResidual n A C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    lyapunov_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_error_model
+      n A C X Xhat Rhat Ru dR hsigma hle hX hRhat hRu hdR hX_pos
+      hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, eq (16.29), square arbitrary-coefficient raw residual-budget
     monotone endpoint: an operator sigma-min lower-bound certificate supplies
     determinant nonsingularity, while componentwise larger practical estimates
@@ -5744,6 +5938,78 @@ theorem sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_b
       (sylvesterVecCoeff_det_ne_zero_of_operator_sigmaMin
         n A B sigma hsigma hSigmaMin)
       hX hRu hRhat_budget hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the Sylvester operator-sigma-min practical computed-residual
+    certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar Sylvester operator-sigma-min practical
+    computed-residual certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate_scalar :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone Sylvester operator-sigma-min practical
+    computed-residual certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate_mono :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar Sylvester operator-sigma-min practical
+    computed-residual certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the Sylvester operator-sigma-min explicit residual-error-model
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar Sylvester operator-sigma-min explicit
+    residual-error-model practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_scalar :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone Sylvester operator-sigma-min explicit
+    residual-error-model practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_mono :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar Sylvester operator-sigma-min explicit
+    residual-error-model practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_mono_scalar :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the Sylvester operator-sigma-min raw residual-budget practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_budget :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar Sylvester operator-sigma-min raw residual-budget
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_scalar :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone Sylvester operator-sigma-min raw residual-budget
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_mono :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar Sylvester operator-sigma-min raw
+    residual-budget practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_mono_scalar :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_mono_scalar
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, eq (16.29), square arbitrary-coefficient raw residual-budget scalar
@@ -5958,6 +6224,74 @@ theorem sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_b
       (sylvesterVecCoeff_det_ne_zero_of_vecCoeff_sigmaMin
         n A B hsigma hCoeff)
       hX hRu hRhat_budget hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the concrete-left-inverse raw residual-budget practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_budget :=
+  sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar concrete-left-inverse raw residual-budget practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_budget_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone concrete-left-inverse raw residual-budget practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_budget_mono :=
+  sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar concrete-left-inverse raw residual-budget
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_budget_mono_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_computed_residual_budget_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the finite-Gram raw residual-budget practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_budget :=
+  sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar finite-Gram raw residual-budget practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_budget_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone finite-Gram raw residual-budget practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_budget_mono :=
+  sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar finite-Gram raw residual-budget practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_budget_mono_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_gram_eigenvalues_computed_residual_budget_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the concrete sigma-min raw residual-budget practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_budget :=
+  sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar concrete sigma-min raw residual-budget practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_budget_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone concrete sigma-min raw residual-budget practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_budget_mono :=
+  sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar concrete sigma-min raw residual-budget
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_budget_mono_scalar :=
+  sylvester_practical_error_bound_of_vecCoeff_sigmaMin_computed_residual_budget_mono_scalar
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, equation (16.29), Lyapunov-specialized raw residual-budget endpoint:
@@ -7741,6 +8075,77 @@ theorem sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin_mono_scalar
       hPinvAbs_le
       (isSylvesterComputedResidualBudget_fl fp n n A B C Xhat hn2 hn1)
       hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the concrete-left-inverse Sylvester floating-point practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap concrete-left-inverse Sylvester floating-point
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_scalar :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone concrete-left-inverse Sylvester floating-point
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_mono :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap concrete-left-inverse Sylvester
+    floating-point practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_mono_scalar :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_left_inverse_finiteOpNorm2Le_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the finite-Gram Sylvester floating-point practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap finite-Gram Sylvester floating-point practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_scalar :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone finite-Gram Sylvester floating-point practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_mono :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap finite-Gram Sylvester floating-point
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_mono_scalar :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_gram_eigenvalues_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the concrete sigma-min Sylvester floating-point practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap concrete sigma-min Sylvester floating-point
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin_scalar :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone concrete sigma-min Sylvester floating-point
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin_mono :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap concrete sigma-min Sylvester
+    floating-point practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin_mono_scalar :=
+  sylvester_practical_error_bound_fl_of_vecCoeff_sigmaMin_mono_scalar
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, eq (16.29), square arbitrary-coefficient endpoint: a supplied
@@ -10275,5 +10680,76 @@ theorem lyapunov_practical_error_bound_fl_of_spectralDiagonal_mono_scalar
       (SepLowerBound_lyapunovSpectralDiagonal_of_entrywise_abs_ge n
         U A a sigma hU hA hsigma hgap)
       PinvAbs' eta hX hn2 hn1 hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied operator sigma-min Lyapunov floating-point
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_operator_sigmaMin :=
+  lyapunov_practical_error_bound_fl_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap supplied operator sigma-min Lyapunov
+    floating-point practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_operator_sigmaMin_scalar :=
+  lyapunov_practical_error_bound_fl_of_operator_sigmaMin_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone supplied operator sigma-min Lyapunov floating-point
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_operator_sigmaMin_mono :=
+  lyapunov_practical_error_bound_fl_of_operator_sigmaMin_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap supplied operator sigma-min Lyapunov
+    floating-point practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_operator_sigmaMin_mono_scalar :=
+  lyapunov_practical_error_bound_fl_of_operator_sigmaMin_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the diagonal Lyapunov floating-point practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_diagonal :=
+  lyapunov_practical_error_bound_fl_of_diagonal
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap diagonal Lyapunov floating-point practical
+    endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_diagonal_scalar :=
+  lyapunov_practical_error_bound_fl_of_diagonal_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone diagonal Lyapunov floating-point practical
+    endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_diagonal_mono :=
+  lyapunov_practical_error_bound_fl_of_diagonal_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap diagonal Lyapunov floating-point
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_diagonal_mono_scalar :=
+  lyapunov_practical_error_bound_fl_of_diagonal_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the supplied spectral-coordinate Lyapunov floating-point
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_spectralDiagonal :=
+  lyapunov_practical_error_bound_fl_of_spectralDiagonal
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar-cap supplied spectral-coordinate Lyapunov
+    floating-point practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_spectralDiagonal_scalar :=
+  lyapunov_practical_error_bound_fl_of_spectralDiagonal_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone supplied spectral-coordinate Lyapunov
+    floating-point practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_spectralDiagonal_mono :=
+  lyapunov_practical_error_bound_fl_of_spectralDiagonal_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar-cap supplied spectral-coordinate Lyapunov
+    floating-point practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_fl_of_spectralDiagonal_mono_scalar :=
+  lyapunov_practical_error_bound_fl_of_spectralDiagonal_mono_scalar
 
 end LeanFpAnalysis.FP

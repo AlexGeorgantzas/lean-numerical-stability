@@ -3197,6 +3197,91 @@ theorem existsUnique_sylvesterVecCoeff_diagonal_mulVec (m n : Nat)
   intro y hy
   exact hinj (by rw [hy, hx])
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered
+    abbreviation for the separated diagonal vec/Kronecker inverse. -/
+noncomputable abbrev H16_eq16_3_sylvesterDiagonalVecCoeffInv :=
+  sylvesterDiagonalVecCoeffInv
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered
+    alias for the left-inverse property of the separated diagonal coefficient. -/
+alias H16_eq16_3_sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal :=
+  sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered
+    alias for the right-inverse property of the separated diagonal coefficient. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal_mul_sylvesterDiagonalVecCoeffInv :=
+  sylvesterVecCoeff_diagonal_mul_sylvesterDiagonalVecCoeffInv
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3): source-numbered
+    alias for the entrywise diagonal Sylvester operator action. -/
+alias H16_eq16_3_sylvesterOpRect_diagonal_apply :=
+  sylvesterOpRect_diagonal_apply
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered
+    abbreviation for the explicit separated diagonal Sylvester solution. -/
+noncomputable abbrev H16_eq16_3_sylvesterDiagonalSolution :=
+  sylvesterDiagonalSolution
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered
+    alias for the homogeneous explicit diagonal solution. -/
+alias H16_eq16_3_sylvesterDiagonalSolution_zero :=
+  sylvesterDiagonalSolution_zero
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): source-numbered
+    alias identifying the vectorized explicit solution with the inverse action. -/
+alias H16_eq16_3_vec_sylvesterDiagonalSolution_eq_mulVec_inv :=
+  vec_sylvesterDiagonalSolution_eq_mulVec_inv
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): source-numbered
+    alias for the vectorized diagonal solve. -/
+alias H16_eq16_3_sylvesterVecCoeff_mulVec_vec_sylvesterDiagonalSolution :=
+  sylvesterVecCoeff_mulVec_vec_sylvesterDiagonalSolution
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3): source-numbered
+    alias for the componentwise exact diagonal solve. -/
+alias H16_eq16_3_sylvesterOpRect_diagonal_sylvesterDiagonalSolution :=
+  sylvesterOpRect_diagonal_sylvesterDiagonalSolution
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered
+    alias for the explicit diagonal Sylvester solution predicate. -/
+alias H16_eq16_3_isSylvesterSolutionRect_sylvesterDiagonalSolution :=
+  isSylvesterSolutionRect_sylvesterDiagonalSolution
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered
+    alias for uniqueness of the explicit diagonal Sylvester solution. -/
+alias H16_eq16_3_sylvesterDiagonalSolution_unique :=
+  sylvesterDiagonalSolution_unique
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered
+    alias for unique solvability of separated diagonal Sylvester equations. -/
+alias H16_eq16_3_existsUnique_isSylvesterSolutionRect_diagonal :=
+  existsUnique_isSylvesterSolutionRect_diagonal
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): source-numbered
+    alias for the trivial-kernel form of the separated diagonal coefficient. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal_mulVec_eq_zero_iff :=
+  sylvesterVecCoeff_diagonal_mulVec_eq_zero_iff
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): source-numbered
+    alias for injectivity of the separated diagonal vec/Kronecker coefficient. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal_mulVec_injective :=
+  sylvesterVecCoeff_diagonal_mulVec_injective
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): source-numbered
+    alias for surjectivity of the separated diagonal vec/Kronecker coefficient. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal_mulVec_surjective :=
+  sylvesterVecCoeff_diagonal_mulVec_surjective
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): source-numbered
+    alias for bijectivity of the separated diagonal vec/Kronecker coefficient. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal_mulVec_bijective :=
+  sylvesterVecCoeff_diagonal_mulVec_bijective
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): source-numbered
+    alias for unique vectorized solves by the separated diagonal coefficient. -/
+alias H16_eq16_3_existsUnique_sylvesterVecCoeff_diagonal_mulVec :=
+  existsUnique_sylvesterVecCoeff_diagonal_mulVec
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal case:
     the absolute-value matrix exactly bounds the explicit diagonal inverse
     componentwise. -/
@@ -5240,6 +5325,26 @@ theorem lyapunov_solution_symmetric_of_symmetric_rhs (n : Nat)
     lyapunov_unique_solution_of_sep n A sigma hSep C X (matTranspose X) hX hXT
   intro i j
   exact huniq i j
+
+/-- Higham, 2nd ed., Chapter 16.3: source-facing alias for the Lyapunov
+    equation as the Sylvester special case `B = -A^T`. -/
+alias H16_Lyapunov_solution_iff_sylvester_special :=
+  lyapunov_solution_iff_sylvester_special
+
+/-- Higham, 2nd ed., Chapter 16.3: source-facing alias for uniqueness of the
+    Lyapunov equation from a `sep(A,-A^T)` lower-bound certificate. -/
+alias H16_Lyapunov_unique_solution_of_sep :=
+  lyapunov_unique_solution_of_sep
+
+/-- Higham, 2nd ed., Chapter 16.3: source-facing alias for transposing a
+    Lyapunov solution when the right-hand side is symmetric. -/
+alias H16_Lyapunov_transpose_solution_of_symmetric_rhs :=
+  lyapunov_transpose_solution_of_symmetric_rhs
+
+/-- Higham, 2nd ed., Chapter 16.3: source-facing alias for symmetry of the
+    unique Lyapunov solution with symmetric right-hand side. -/
+alias H16_Lyapunov_solution_symmetric_of_symmetric_rhs :=
+  lyapunov_solution_symmetric_of_symmetric_rhs
 
 -- ============================================================
 -- Separation infimum from Chapter 16.4
@@ -7558,6 +7663,26 @@ theorem sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
       hExact hE_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered alias
+    for the supplied `SepLowerBound` a posteriori residual-error endpoint. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_of_sepLowerBound :=
+  sylvester_aposteriori_bound_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered alias
+    for the relative supplied `SepLowerBound` a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_of_sepLowerBound :=
+  sylvester_relative_aposteriori_bound_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the exact-infimum a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_of_pos_le_sylvesterSepInf :=
+  sylvester_aposteriori_bound_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the relative exact-infimum a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf :=
+  sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
     total source-facing Sylvester a posteriori error-residual bound from a
     supplied exact `SepLowerBound` certificate.
@@ -7708,6 +7833,16 @@ theorem sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge
       (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
       hExact hE_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered alias
+    for the diagonal entrywise-gap a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_diagonal_of_entrywise_abs_ge :=
+  sylvester_aposteriori_bound_diagonal_of_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered alias
+    for the relative diagonal entrywise-gap a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge :=
+  sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge
+
 /-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
     diagonal case: the total Frobenius a posteriori error-residual bound
     follows from a uniform lower bound on all diagonal differences. -/
@@ -7773,12 +7908,25 @@ noncomputable def generalizedSylvesterAXB_CXD_residual (m n : Nat)
       matMulRect m n n (matMulRect m m n C X) D i j - E i j
 
 /-- Higham, 2nd ed., Chapter 16.5, equation (16.30):
+    source-numbered abbreviation for the generalized Sylvester residual
+    `A X B + C X D - E`. The local API groups the left matrices as `(A,C)`
+    and the right matrices as `(B,D)`. -/
+noncomputable abbrev H16_eq16_30_generalizedSylvesterAXB_CXD_residual :=
+  generalizedSylvesterAXB_CXD_residual
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.30):
     source equation predicate for `A X B + C X D = E`. -/
 def IsGeneralizedSylvesterAXB_CXD_Solution (m n : Nat)
     (A C : RMatFn m m) (B D : RMatFn n n) (E X : RMatFn m n) : Prop :=
   forall i j,
     matMulRect m n n (matMulRect m m n A X) B i j +
       matMulRect m n n (matMulRect m m n C X) D i j = E i j
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.30):
+    source-numbered abbreviation for the generalized Sylvester equation
+    predicate `A X B + C X D = E`. -/
+abbrev H16_eq16_30_IsGeneralizedSylvesterAXB_CXD_Solution :=
+  IsGeneralizedSylvesterAXB_CXD_Solution
 
 /-- The residual for equation (16.30) is zero exactly when the generalized
     Sylvester equation holds. -/
@@ -7815,6 +7963,12 @@ def IsGeneralizedSylvesterPairSolution (m n : Nat)
     (forall i j, matMulRect m m n D X i j - matMulRect m n n Y E i j = F0 i j)
 
 /-- Higham, 2nd ed., Chapter 16.5, equation (16.31):
+    source-numbered abbreviation for the coupled generalized Sylvester
+    equation predicate `AX - YB = C` and `DX - YE = F`. -/
+abbrev H16_eq16_31_IsGeneralizedSylvesterPairSolution :=
+  IsGeneralizedSylvesterPairSolution
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.31):
     first residual for the coupled generalized Sylvester equations
     `AX - YB = C` and `DX - YE = F`. -/
 noncomputable def generalizedSylvesterPairResidualLeft (m n : Nat)
@@ -7823,12 +7977,22 @@ noncomputable def generalizedSylvesterPairResidualLeft (m n : Nat)
   fun i j => matMulRect m m n A X i j - matMulRect m n n Y B i j - C i j
 
 /-- Higham, 2nd ed., Chapter 16.5, equation (16.31):
+    source-numbered abbreviation for the left residual `AX - YB - C`. -/
+noncomputable abbrev H16_eq16_31_generalizedSylvesterPairResidualLeft :=
+  generalizedSylvesterPairResidualLeft
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.31):
     second residual for the coupled generalized Sylvester equations
     `AX - YB = C` and `DX - YE = F`. -/
 noncomputable def generalizedSylvesterPairResidualRight (m n : Nat)
     (D : RMatFn m m) (E : RMatFn n n)
     (F0 X Y : RMatFn m n) : RMatFn m n :=
   fun i j => matMulRect m m n D X i j - matMulRect m n n Y E i j - F0 i j
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.31):
+    source-numbered abbreviation for the right residual `DX - YE - F`. -/
+noncomputable abbrev H16_eq16_31_generalizedSylvesterPairResidualRight :=
+  generalizedSylvesterPairResidualRight
 
 /-- Higham, 2nd ed., Chapter 16.5, equation (16.31): the two residuals vanish
     exactly when the coupled generalized Sylvester equations hold. -/
@@ -7880,6 +8044,12 @@ noncomputable def riccatiResidual (m n : Nat)
       G i j
 
 /-- Higham, 2nd ed., Chapter 16.5, equation (16.32):
+    source-numbered abbreviation for the rectangular-compatible Riccati
+    residual `AX + XB - XFX + G`. -/
+noncomputable abbrev H16_eq16_32_riccatiResidual :=
+  riccatiResidual
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.32):
     source equation predicate for `A X + X B - X F X + G = 0`. -/
 def IsRiccatiSolution (m n : Nat)
     (A : RMatFn m m) (B : RMatFn n n) (F : RMatFn n m)
@@ -7889,6 +8059,12 @@ def IsRiccatiSolution (m n : Nat)
       matMulRect m n n X B i j -
       matMulRect m m n (matMulRect m n m X F) X i j +
       G i j = 0
+
+/-- Higham, 2nd ed., Chapter 16.5, equation (16.32):
+    source-numbered abbreviation for the rectangular-compatible Riccati
+    equation predicate `AX + XB - XFX + G = 0`. -/
+abbrev H16_eq16_32_IsRiccatiSolution :=
+  IsRiccatiSolution
 
 /-- The residual for equation (16.32) is zero exactly when the Riccati source
     equation holds. -/
