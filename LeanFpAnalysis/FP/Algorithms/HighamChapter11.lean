@@ -21881,6 +21881,100 @@ theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of
   higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of_isTridiagonal_and_earlier_local_zero_and_each_earlier_zero
     k step A b x_hat ΔA hA.2 hearlierLocal hearlierPrefix hrows
 
+/-- Full ambient second-pivot base rows, local earlier-lift zeros, tridiagonal
+base support, and support-reduced after-earlier-branch-end facts give the full
+ambient combined second-pivot handoff. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of_isTridiagonal_and_earlier_local_zero_and_leadingBlockSupport_after_earlier_branch_end
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hA : IsTridiagonal (higham11_7_tridiagonalPathPivotSpan k step + 1) A)
+    (hearlierLocal :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock
+        k step ΔA)
+    (hEsupp : ∀ s : Fin k,
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step s) (step s))
+        (higham11_7_tridiagonalBranchSupportOffset (step s)) (ΔA s))
+    (hafter : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+        ∀ s : Fin k, s.val < t.val →
+          higham11_7_tridiagonalPathPrefixSpan k step s +
+              higham11_7_tridiagonalBranchSupportOffset (step s) ≤ j.val →
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s)
+            (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+            j = 0)
+    (hrows : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        A (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) j *
+          x_hat j) =
+        b (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows
+        k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isTridiagonal_and_earlier_local_zero_and_leadingBlockSupport_after_earlier_branch_end
+    k step A b x_hat ΔA hA hearlierLocal hEsupp hafter
+    (higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_full_base_rows_of_isTridiagonal
+      k step A b x_hat hA hrows)
+
+/-- Symmetric-tridiagonal source form of the full-base-row support-reduced
+second-pivot handoff. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of_isSymTridiagonal_and_earlier_local_zero_and_leadingBlockSupport_after_earlier_branch_end
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hA : IsSymTridiagonal
+      (higham11_7_tridiagonalPathPivotSpan k step + 1) A)
+    (hearlierLocal :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock
+        k step ΔA)
+    (hEsupp : ∀ s : Fin k,
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step s) (step s))
+        (higham11_7_tridiagonalBranchSupportOffset (step s)) (ΔA s))
+    (hafter : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+        ∀ s : Fin k, s.val < t.val →
+          higham11_7_tridiagonalPathPrefixSpan k step s +
+              higham11_7_tridiagonalBranchSupportOffset (step s) ≤ j.val →
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s)
+            (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+            j = 0)
+    (hrows : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        A (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) j *
+          x_hat j) =
+        b (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows
+        k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of_isTridiagonal_and_earlier_local_zero_and_leadingBlockSupport_after_earlier_branch_end
+    k step A b x_hat ΔA hA.2 hearlierLocal hEsupp hafter hrows
+
 /-- Full ambient second-pivot base rows, tridiagonal support, and one strong
 earlier-lift full-row zero condition give the combined second-pivot handoff.
 This packages the two separate earlier-lift side conditions used by the
@@ -22190,6 +22284,95 @@ theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_global_base_solve
         k step A b x_hat ΔA :=
   higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_global_base_solve_of_isTridiagonal_and_earlier_local_zero_and_each_earlier_zero
     k step A b x_hat ΔA hA.2 hearlierLocal hearlierPrefix hsolve
+
+/-- Global base solve source form of the support-reduced full-base-row
+second-pivot handoff. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_global_base_solve_of_isTridiagonal_and_earlier_local_zero_and_leadingBlockSupport_after_earlier_branch_end
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hA : IsTridiagonal (higham11_7_tridiagonalPathPivotSpan k step + 1) A)
+    (hearlierLocal :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock
+        k step ΔA)
+    (hEsupp : ∀ s : Fin k,
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step s) (step s))
+        (higham11_7_tridiagonalBranchSupportOffset (step s)) (ΔA s))
+    (hafter : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+        ∀ s : Fin k, s.val < t.val →
+          higham11_7_tridiagonalPathPrefixSpan k step s +
+              higham11_7_tridiagonalBranchSupportOffset (step s) ≤ j.val →
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s)
+            (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+            j = 0)
+    (hsolve : ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        A i j * x_hat j) = b i) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows
+        k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of_isTridiagonal_and_earlier_local_zero_and_leadingBlockSupport_after_earlier_branch_end
+    k step A b x_hat ΔA hA hearlierLocal hEsupp hafter
+    (higham11_7_ConcretePathSecondPivotFullBaseRows_of_global_base_solve
+      k step A b x_hat hsolve)
+
+/-- Symmetric-tridiagonal source form of the global base-solve
+support-reduced second-pivot handoff. -/
+theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_global_base_solve_of_isSymTridiagonal_and_earlier_local_zero_and_leadingBlockSupport_after_earlier_branch_end
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hA : IsSymTridiagonal
+      (higham11_7_tridiagonalPathPivotSpan k step + 1) A)
+    (hearlierLocal :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock
+        k step ΔA)
+    (hEsupp : ∀ s : Fin k,
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step s) (step s))
+        (higham11_7_tridiagonalBranchSupportOffset (step s)) (ΔA s))
+    (hafter : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+        ∀ s : Fin k, s.val < t.val →
+          higham11_7_tridiagonalPathPrefixSpan k step s +
+              higham11_7_tridiagonalBranchSupportOffset (step s) ≤ j.val →
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s)
+            (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+            j = 0)
+    (hsolve : ∀ i : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+      (∑ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        A i j * x_hat j) = b i) :
+    higham11_7_ConcretePathSecondPivotCombinedSolveRows
+        k step A b x_hat ΔA :=
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_global_base_solve_of_isTridiagonal_and_earlier_local_zero_and_leadingBlockSupport_after_earlier_branch_end
+    k step A b x_hat ΔA hA.2 hearlierLocal hEsupp hafter hsolve
 
 /-- Global base solve source form of the full-row earlier-lift zero
 second-pivot handoff. -/
