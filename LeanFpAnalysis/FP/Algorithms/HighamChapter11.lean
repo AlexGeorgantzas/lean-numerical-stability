@@ -57134,6 +57134,48 @@ def higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_m
       hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
       hEq hLU hdetT hT_tridiag hRowDom hL_norm hLT_norm hcoeff
 
+/-- Exact-`T_hat = T` column-dominant relative-middle endpoint with the
+syntactic zero middle-factor perturbation share removed from the scalar
+coefficient hypothesis. -/
+def higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_simplified_coeff :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU γ_factor κL κLT hspec hσ hH_eq hTnz hγ_factor hκL
+      hcoeff_valid hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hLU hdetT hT_tridiag hColDom hL_norm
+      hLT_norm hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU γ_factor κL κLT hspec hσ hH_eq hTnz hγ_factor hκL
+      hcoeff_valid hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hLU hdetT hT_tridiag hColDom hL_norm
+      hLT_norm
+      (by
+        simpa [one_mul, mul_one, zero_mul, mul_zero, add_assoc, add_left_comm,
+          add_comm] using hcoeff)
+
+/-- Exact-`T_hat = T` row-dominant relative-middle endpoint with the
+syntactic zero middle-factor perturbation share removed from the scalar
+coefficient hypothesis. -/
+def higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_simplified_coeff :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU γ_factor κL κLT hspec hσ hH_eq hTnz hγ_factor hκL
+      hcoeff_valid hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hLU hdetT hT_tridiag hRowDom hL_norm
+      hLT_norm hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU γ_factor κL κLT hspec hσ hH_eq hTnz hγ_factor hκL
+      hcoeff_valid hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hLU hdetT hT_tridiag hRowDom hL_norm
+      hLT_norm
+      (by
+        simpa [one_mul, mul_one, zero_mul, mul_zero, add_assoc, add_left_comm,
+          add_comm] using hcoeff)
+
 /-- Source-prefix factor-norm wrapper variant where the relative `L_hat`
 factor hypothesis is generated from modeled rounded recurrence updates and the
 factorization-side `BT_factor` norm bound is derived from a componentwise bound
