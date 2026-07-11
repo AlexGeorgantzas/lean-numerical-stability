@@ -846,6 +846,12 @@ theorem frobNormRect_sylvesterResidualRect_le_of_schur_residual_with_transform_b
     linarith
   linarith
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.9), p. 308:
+    source-numbered alias for the transform-budget residual bound that keeps
+    the exact Schur-coordinate `||Y||_F` scale. -/
+alias H16_eq16_9_frobNormRect_sylvesterResidualRect_le_of_schur_residual_with_transform_budgets :=
+  frobNormRect_sylvesterResidualRect_le_of_schur_residual_with_transform_budgets
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.9), p. 308: printed
     computed-solution-scale display of the transform-budget residual
     bound.  The exact-arithmetic scale `||Y||_F` of
