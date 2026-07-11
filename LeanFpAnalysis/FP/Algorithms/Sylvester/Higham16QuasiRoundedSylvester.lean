@@ -119,6 +119,23 @@ theorem sylvesterQuasiSchurBackSubCoeff_subdiag_zero (m n : Nat)
   exact sylvesterQuasiSchurBackSubCoeff_eq_zero m n R S dblR hR hS a c
     (by omega) (fun _ => hdbl)
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7): combined
+    marked-block zero pattern for the reordered vec/Kronecker coefficient.
+    Entries strictly below the marked `1 x 1`/`2 x 2` block diagonal vanish. -/
+theorem sylvesterQuasiSchurBackSubCoeff_below_markedBlock_zero (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n) (dblR : Fin m → Bool)
+    (hR : IsQuasiUpperTriangularFn m R dblR) (hS : IsUpperTriangularFn n S) :
+    ∀ a c : Fin (n * m),
+      c.val + 1 < a.val ∨
+        (c.val + 1 = a.val ∧ sylvesterQuasiPairing m n dblR c = false) →
+      Wave14.sylvesterSchurBackSubCoeff m n R S a c = 0 := by
+  intro a c h
+  rcases h with hfar | ⟨hadj, hpair⟩
+  · exact sylvesterQuasiSchurBackSubCoeff_below_subdiag_zero
+      m n R S dblR hR hS a c hfar
+  · exact sylvesterQuasiSchurBackSubCoeff_subdiag_zero
+      m n R S dblR hR hS a c hadj hpair
+
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3), (16.6)-(16.7):
     transport of the diagonal-separation certificate.  If `R_ii ≠ S_kk` on
     every row `i` of `R` that is not the bottom row of a marked 2 x 2 block
@@ -482,6 +499,13 @@ alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_below_subdiag_zero :=
     coefficient used by the rounded block substitution. -/
 alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_subdiag_zero :=
   sylvesterQuasiSchurBackSubCoeff_subdiag_zero
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    combined zero pattern below the marked block diagonal of the reordered
+    vec/Kronecker coefficient. -/
+alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_below_markedBlock_zero :=
+  sylvesterQuasiSchurBackSubCoeff_below_markedBlock_zero
 
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6),
     quasi-triangular (real Schur) variant: source-numbered alias for transport
