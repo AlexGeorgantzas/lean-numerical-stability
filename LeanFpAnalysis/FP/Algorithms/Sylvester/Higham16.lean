@@ -5326,6 +5326,26 @@ theorem lyapunov_solution_symmetric_of_symmetric_rhs (n : Nat)
   intro i j
   exact huniq i j
 
+/-- Higham, 2nd ed., Chapter 16.3: source-facing alias for the Lyapunov
+    equation as the Sylvester special case `B = -A^T`. -/
+alias H16_Lyapunov_solution_iff_sylvester_special :=
+  lyapunov_solution_iff_sylvester_special
+
+/-- Higham, 2nd ed., Chapter 16.3: source-facing alias for uniqueness of the
+    Lyapunov equation from a `sep(A,-A^T)` lower-bound certificate. -/
+alias H16_Lyapunov_unique_solution_of_sep :=
+  lyapunov_unique_solution_of_sep
+
+/-- Higham, 2nd ed., Chapter 16.3: source-facing alias for transposing a
+    Lyapunov solution when the right-hand side is symmetric. -/
+alias H16_Lyapunov_transpose_solution_of_symmetric_rhs :=
+  lyapunov_transpose_solution_of_symmetric_rhs
+
+/-- Higham, 2nd ed., Chapter 16.3: source-facing alias for symmetry of the
+    unique Lyapunov solution with symmetric right-hand side. -/
+alias H16_Lyapunov_solution_symmetric_of_symmetric_rhs :=
+  lyapunov_solution_symmetric_of_symmetric_rhs
+
 -- ============================================================
 -- Separation infimum from Chapter 16.4
 -- ============================================================
