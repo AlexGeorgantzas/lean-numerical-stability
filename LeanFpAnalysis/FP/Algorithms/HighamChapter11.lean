@@ -51110,6 +51110,50 @@ theorem higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_check
     hκLentry_unit hL_entry
 
 /-- Higham, 2nd ed., Chapter 11, Theorem 11.8 source-prefix exact-product
+route: the normalized checkerboard principal-block componentwise-`T` endpoint
+specialized to the source-style inverse exact outer-factor entry bound. -/
+def higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU hspec hσ hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hTNJ hdetJ hineqJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU (1 / (1 + gamma fp n)) hspec hσ hcoeff_valid hrec hHnz
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hTNJ hdetJ hineqJ hLU
+      (higham11_8_one_plus_mul_le_one_of_le_inv_one_plus
+        (gamma fp n) (1 / (1 + gamma fp n))
+        (gamma_nonneg fp
+          ((higham11_8_gammaValid_n_two_prefix_of_15n25 fp n hcoeff_valid).1))
+        le_rfl)
+      hL_entry_inv
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 source-prefix exact-product
+route: the normalized checkerboard principal-block `T`-norm endpoint
+specialized to the source-style inverse exact outer-factor entry bound. -/
+def higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU hspec hσ hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hTNJ hdetJ hineqJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_checkerboard_principalBlock_endpoint
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU (1 / (1 + gamma fp n)) hspec hσ hcoeff_valid hrec hHnz
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hTNJ hdetJ hineqJ hLU
+      (higham11_8_one_plus_mul_le_one_of_le_inv_one_plus
+        (gamma fp n) (1 / (1 + gamma fp n))
+        (gamma_nonneg fp
+          ((higham11_8_gammaValid_n_two_prefix_of_15n25 fp n hcoeff_valid).1))
+        le_rfl)
+      hL_entry_inv
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 source-prefix exact-product
 route: the normalized direct-middle componentwise-`T` endpoint specialized to
 the source-style inverse exact outer-factor entry bound. -/
 def higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound :=
