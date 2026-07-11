@@ -13293,6 +13293,24 @@ theorem exists_isSylvesterQuasiSchurGeneratedStepFormula_of_quasiSchur_schedule
     exists_isSylvesterQuasiSchurGeneratedStepFormula_of_frontier_schedule
       m n r R S C pmap frontier hstart hend hcard hstep
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for constructing a terminal recursive column-family
+    generated-prefix witness from a supplied frontier schedule. -/
+alias H16_eq16_4_8_exists_isSylvesterColumnFamilyGeneratedPrefix_of_frontier_schedule :=
+  exists_isSylvesterColumnFamilyGeneratedPrefix_of_frontier_schedule
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for constructing a packaged generated-step formula
+    witness from a supplied frontier schedule. -/
+alias H16_eq16_4_8_exists_isSylvesterQuasiSchurGeneratedStepFormula_of_frontier_schedule :=
+  exists_isSylvesterQuasiSchurGeneratedStepFormula_of_frontier_schedule
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for constructing a packaged generated-step formula
+    witness from the generated quasi-Schur frontier schedule. -/
+alias H16_eq16_4_8_exists_isSylvesterQuasiSchurGeneratedStepFormula_of_quasiSchur_schedule :=
+  exists_isSylvesterQuasiSchurGeneratedStepFormula_of_quasiSchur_schedule
+
 /-- Column-family packaging for
     `IsSylvesterQuasiSchurGeneratedStepFormula`.  A recursive construction often
     maintains state as `Fin n -> Fin m -> Real`; this wrapper turns singleton
