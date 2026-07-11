@@ -13568,6 +13568,24 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_comp
       hU hV hA hB hCschur hmono hcard hzero hspectral hsingle_det
       hXsingle hblock_noR hXblock
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the complex-root-exclusion generated-step Schur
+    traversal solution wrapper. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_complex_root_separation_generated_step_formula :=
+  sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_complex_root_separation_generated_step_formula
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the complex-root-exclusion generated-step
+    original-coordinate reconstruction wrapper. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_complex_root_separation_generated_step_formula :=
+  sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_complex_root_separation_generated_step_formula
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the complex-root-exclusion generated-step
+    original-coordinate unique-solvability wrapper. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_complex_root_separation_generated_step_formula :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_complex_root_separation_generated_step_formula
+
 /-- Predicate-packaged version of
     `sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_local_no_common_generated_frontier_step_oracle`. -/
 theorem sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_local_no_common_generated_step_formula
