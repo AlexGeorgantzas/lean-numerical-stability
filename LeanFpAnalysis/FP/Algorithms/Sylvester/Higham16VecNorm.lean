@@ -9306,6 +9306,42 @@ theorem lyapunov_relative_perturbation_of_vecCoeff_gram_eigenvalues_total
       alpha gamma eps halpha hgamma heps
       hDeltaA hDeltaC hLin hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total Lyapunov perturbation endpoint from a
+    concrete vec-coefficient sigma-min lower bound. -/
+alias H16_eq16_27_lyapunov_perturbation_bound_of_vecCoeff_sigmaMin_total :=
+  lyapunov_perturbation_bound_of_vecCoeff_sigmaMin_total
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total relative Lyapunov perturbation endpoint
+    from a concrete vec-coefficient sigma-min lower bound. -/
+alias H16_eq16_27_lyapunov_relative_perturbation_of_vecCoeff_sigmaMin_total :=
+  lyapunov_relative_perturbation_of_vecCoeff_sigmaMin_total
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total Lyapunov perturbation endpoint from a
+    concrete left inverse and finite operator-2 bound. -/
+alias H16_eq16_27_lyapunov_perturbation_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total :=
+  lyapunov_perturbation_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total relative Lyapunov perturbation endpoint
+    from a concrete left inverse and finite operator-2 bound. -/
+alias H16_eq16_27_lyapunov_relative_perturbation_of_vecCoeff_left_inverse_finiteOpNorm2Le_total :=
+  lyapunov_relative_perturbation_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total Lyapunov perturbation endpoint from a
+    finite Gram-eigenvalue lower-bound certificate. -/
+alias H16_eq16_27_lyapunov_perturbation_bound_of_vecCoeff_gram_eigenvalues_total :=
+  lyapunov_perturbation_bound_of_vecCoeff_gram_eigenvalues_total
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total relative Lyapunov perturbation endpoint
+    from a finite Gram-eigenvalue lower-bound certificate. -/
+alias H16_eq16_27_lyapunov_relative_perturbation_of_vecCoeff_gram_eigenvalues_total :=
+  lyapunov_relative_perturbation_of_vecCoeff_gram_eigenvalues_total
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27),
     total diagonal case: Frobenius Lyapunov perturbation bound from the concrete
     diagonal Lyapunov vec/Kronecker coefficient lower-bound certificate. -/
@@ -9364,6 +9400,18 @@ theorem lyapunov_relative_perturbation_diagonal_of_vecCoeff_entrywise_abs_ge_tot
         a sigma (le_of_lt hsigma) hgap)
       alpha gamma eps halpha hgamma heps
       hDeltaA hDeltaC hLin hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total diagonal Lyapunov perturbation endpoint
+    from concrete pair-sum gap data. -/
+alias H16_eq16_27_lyapunov_perturbation_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total :=
+  lyapunov_perturbation_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total relative diagonal Lyapunov perturbation
+    endpoint from concrete pair-sum gap data. -/
+alias H16_eq16_27_lyapunov_relative_perturbation_diagonal_of_vecCoeff_entrywise_abs_ge_total :=
+  lyapunov_relative_perturbation_diagonal_of_vecCoeff_entrywise_abs_ge_total
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27),
     total supplied orthogonal spectral-coordinate case:
