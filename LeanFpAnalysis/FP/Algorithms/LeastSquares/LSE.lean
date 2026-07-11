@@ -84866,6 +84866,102 @@ theorem theorem20_10_partB_backward_error_of_householder_components_conservative
       A DeltaA B DeltaB b Deltab d Deltad hB hstack
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
+    component package promoted to the certificate boundary with source-rank
+    margin preservation.
+
+This is the certificate-level companion to
+`theorem20_10_partB_backward_error_of_householder_components_source_ranks_conservative_gamma`:
+the concrete Householder perturbation components are packaged into a reusable
+`Theorem20_10PartBPerturbationCertificate` after the source rank margins prove
+that the perturbed matrices keep full row rank and stacked full column rank. -/
+theorem theorem20_10_partB_certificate_of_householder_components_source_ranks_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hBMargin :
+      theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hBsrc.transposeVecNorm2LowerMargin)
+    (hStackMargin :
+      theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hStack.vecNorm2LowerMargin) :
+    ∃ (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+      (DeltaB : Fin p → Fin (p + q) → ℝ)
+      (Deltab : Fin (r + q) → ℝ)
+      (Deltad : Fin p → ℝ),
+      (∀ i j,
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+          matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+            (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j) ∧
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p
+            (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+            (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+            vecNorm2 b +
+          theorem20_10_householder_gammaB fp r p q *
+            frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤
+        theorem20_10_householder_gammaB fp r p q *
+          frobNormRect B * vecNorm2 xhat ∧
+      Nonempty
+        (Theorem20_10PartBPerturbationCertificate A B b d xhat
+          (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q)) := by
+  rcases theorem20_10_partB_certificate_of_householder_components_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf with
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaArep, hDeltaBrep,
+      hDeltabrep, hDeltadrep, hDeltaA, hDeltaB, hDeltab, hDeltad,
+      hcert⟩
+  have hcond :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+        LSEStackedFullColumnRank
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) :=
+    theorem20_8_conditions20_24_of_frobNormRect_bounds_lt_margins
+      (A := A) (DeltaA := DeltaA) (B := B) (DeltaB := DeltaB)
+      (cA := theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+        frobNormRect A)
+      (cB := theorem20_10_householder_gammaB fp r p q * frobNormRect B)
+      hBsrc hStack hDeltaA hDeltaB hBMargin hStackMargin
+  exact
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaArep, hDeltaBrep,
+      hDeltabrep, hDeltadrep, hDeltaA, hDeltaB, hDeltab, hDeltad,
+      hcert hcond.1 hcond.2⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
     component package with source-rank margin preservation.
 
     This strengthens
