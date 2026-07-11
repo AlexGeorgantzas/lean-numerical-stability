@@ -63699,6 +63699,100 @@ theorem
       hresidualFactor
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    relative-residual version of the existential residual-factor handoff.
+
+    This keeps the determinant-free `(AP)^+` table existential, but accepts the
+    printed source-minus divided residual gap `||r-r_high||₂/||r||₂ <= eps`
+    instead of requiring callers to multiply by `||r||₂` first. -/
+theorem
+    LSEFullRowRank.exists_theorem20_8_rank_tolerant_APplus_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_source_residual_relative_residualFactor_source_minus_of_minimizers
+    {r p k : ℕ}
+    (A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ)
+    (b Deltab : Fin (r + (k + 1)) → ℝ)
+    {B : Fin p → Fin (p + (k + 1)) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + (k + 1)) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (x y : Fin (p + (k + 1)) → ℝ) {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hy_norm : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    ∃ APplus : Fin (p + (k + 1)) → Fin (r + (k + 1)) → ℝ,
+      RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
+          (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus ∧
+        rectMatMul B APplus =
+          (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0) ∧
+        0 < theorem20_8KappaB A APplus ∧
+        ((vecNorm2
+            (fun i =>
+              lsResidualHigham A b x i -
+                lsResidualHigham (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i) /
+              vecNorm2 (lsResidualHigham A b x) ≤ eps) →
+          (1 + (theorem20_8KappaB A APplus)⁻¹ ≤
+            (frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                      APplus)))) →
+          vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) / vecNorm2 x ≤
+            eps * theorem20_8FirstOrderRHS A b B d x
+                (lsResidualHigham A b x) APplus
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  APplus) +
+              eps ^ 2 *
+                theorem20_8FirstOrderRHS A b B d x
+                  (lsResidualHigham A b x) APplus
+                  (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                    APplus) *
+                (complexMatrixOp2
+                    (realRectToCMatrix
+                      (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                        APplus)) *
+                    frobNormRect B +
+                  complexMatrixOp2 (realRectToCMatrix APplus) *
+                    frobNormRect A)) := by
+  rcases
+      LSEFullRowRank.exists_theorem20_8_rank_tolerant_APplus_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_source_residual_norm_residualFactor_source_minus_of_minimizers
+        A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
+        hxpos hy_norm hrpos hmax hstack hx hy with
+    ⟨APplus, hMP, hBAPplus, hkappa_pos, hcore⟩
+  refine ⟨APplus, hMP, hBAPplus, hkappa_pos, ?_⟩
+  intro hres_relative hresidualFactor
+  have hres_norm_source_minus :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham A b x i -
+              lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i) ≤
+        eps * vecNorm2 (lsResidualHigham A b x) :=
+    (div_le_iff₀ hrpos).1 hres_relative
+  have hres_norm :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) ≤
+        eps * vecNorm2 (lsResidualHigham A b x) := by
+    rwa [vecNorm2_sub_comm
+      (fun i =>
+        lsResidualHigham (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i) y i)
+      (lsResidualHigham A b x)]
+  exact hcore hres_norm hresidualFactor
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-shaped first-order handoff for the concrete lifted reduced-Gram
     `APplus` candidate.
 
