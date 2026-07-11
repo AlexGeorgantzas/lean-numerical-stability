@@ -47075,6 +47075,94 @@ theorem higham11_8_aasen_product_square_bounds_of_base_le_one
         n ((1 + γ_factor) * κL) κmidLU ((1 + γ_factor) * κLT)
         hκmidLU hκmidLU_le_one hprod_rel
 
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency:
+an `AasenSpec` plus the normalized exact outer-factor entry cap gives the four
+square product caps used by the exact-product `T_hat` route. -/
+theorem higham11_8_aasen_product_square_bounds_of_AasenSpec_entry_bound_scaled_unit
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (γ κ κT κmidLU : ℝ)
+    (hγ : 0 ≤ γ) (hκunit : (1 + γ) * κ ≤ 1)
+    (hκT : 0 ≤ κT) (hκT_le_one : κT ≤ 1)
+    (hκmidLU : 0 ≤ κmidLU) (hκmidLU_le_one : κmidLU ≤ 1)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    (infNorm L * κT * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (infNorm L * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ) * infNorm L) *
+          ((1 + γ) * infNorm (fun r c => L c r)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ) * infNorm L) * κmidLU *
+          ((1 + γ) * infNorm (fun r c => L c r)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) := by
+  rcases
+      higham11_8_aasen_base_square_bounds_of_AasenSpec_entry_bound_scaled_unit
+        n hn A L T σ γ κ hγ hκunit hspec hentry with
+    ⟨hbase, hrel⟩
+  exact
+    higham11_8_aasen_product_square_bounds_of_base_le_one
+      n γ (infNorm L) (infNorm (fun r c => L c r)) κT κmidLU
+      hκT hκT_le_one hκmidLU hκmidLU_le_one hbase hrel
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency:
+an `AasenSpec` plus the source-style inverse-scale entry cap gives the four
+square product caps used by the exact-product `T_hat` route. -/
+theorem higham11_8_aasen_product_square_bounds_of_AasenSpec_entry_bound_inv_one_plus
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (γ κ κT κmidLU : ℝ)
+    (hγ : 0 ≤ γ) (hκ : κ ≤ 1 / (1 + γ))
+    (hκT : 0 ≤ κT) (hκT_le_one : κT ≤ 1)
+    (hκmidLU : 0 ≤ κmidLU) (hκmidLU_le_one : κmidLU ≤ 1)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    (infNorm L * κT * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (infNorm L * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ) * infNorm L) *
+          ((1 + γ) * infNorm (fun r c => L c r)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ) * infNorm L) * κmidLU *
+          ((1 + γ) * infNorm (fun r c => L c r)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) := by
+  rcases
+      higham11_8_aasen_base_square_bounds_of_AasenSpec_entry_bound_inv_one_plus
+        n hn A L T σ γ κ hγ hκ hspec hentry with
+    ⟨hbase, hrel⟩
+  exact
+    higham11_8_aasen_product_square_bounds_of_base_le_one
+      n γ (infNorm L) (infNorm (fun r c => L c r)) κT κmidLU
+      hκT hκT_le_one hκmidLU hκmidLU_le_one hbase hrel
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency,
+source inverse-entry form: the direct entry cap `|Lᵢⱼ|≤1/(1+γ)` gives the four
+square product caps used by the exact-product `T_hat` route. -/
+theorem higham11_8_aasen_product_square_bounds_of_AasenSpec_inverse_entry_bound
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (γ κT κmidLU : ℝ)
+    (hγ : 0 ≤ γ)
+    (hκT : 0 ≤ κT) (hκT_le_one : κT ≤ 1)
+    (hκmidLU : 0 ≤ κmidLU) (hκmidLU_le_one : κmidLU ≤ 1)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ 1 / (1 + γ)) :
+    (infNorm L * κT * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (infNorm L * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ) * infNorm L) *
+          ((1 + γ) * infNorm (fun r c => L c r)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ) * infNorm L) * κmidLU *
+          ((1 + γ) * infNorm (fun r c => L c r)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) :=
+  higham11_8_aasen_product_square_bounds_of_AasenSpec_entry_bound_inv_one_plus
+    n hn A L T σ γ (1 / (1 + γ)) κT κmidLU hγ le_rfl
+    hκT hκT_le_one hκmidLU hκmidLU_le_one hspec hentry
+
 /-- Monotonicity helper for coefficient terms with multiplier `2γ+γ^2`. -/
 theorem higham11_8_two_gamma_plus_sq_mul_le_of_le
     (γ x y η : ℝ) (hγ : 0 ≤ γ) (hxy : x ≤ y)
