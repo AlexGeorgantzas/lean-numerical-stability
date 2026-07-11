@@ -65905,6 +65905,74 @@ def higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_che
       hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
       hEq hTNJ hdetJ hineqJ hLU hL_entry_inv
 
+/-- Product-majorant endpoint with the identity permutation specialized as
+`σ := id`, removing the separate `σ i = i` caller obligation. -/
+def higham11_8_AasenSpec_id_source_prefix_product_majorants_gamma_parts_gamma_validity :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      γ_factor γ_factor_cap γ_solve_cap γ_mid_cap
+      κL κLT κT κBT κmidLU γFT γFB γST γSB
+      hspec hH_eq hTnz hγ_factor hγ_factor_le hγ_solve_le hγ_mid_le
+      hκL hκT hκBT hκmidLU hcoeff_valid hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hL_norm hLT_norm hT_norm hmiddle_entry hFT hFB hST
+      hSB hparts =>
+    higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU γ_factor γ_factor_cap
+      γ_solve_cap γ_mid_cap κL κLT κT κBT κmidLU γFT γFB γST γSB
+      hspec (by intro i; rfl) hH_eq hTnz hγ_factor hγ_factor_le
+      hγ_solve_le hγ_mid_le hκL hκT hκBT hκmidLU hcoeff_valid
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hL_norm hLT_norm hT_norm hmiddle_entry hFT hFB hST
+      hSB hparts
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_product_majorants_gamma_parts_gamma_validity`. -/
+def higham11_8_AasenSpec_id_source_prefix_product_majorants_gamma_parts_gamma_validity_of_unit_roundoff_bound :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      γ_factor γ_factor_cap γ_solve_cap γ_mid_cap
+      κL κLT κT κBT κmidLU γFT γFB γST γSB
+      hspec hH_eq hTnz hγ_factor hγ_factor_le hγ_solve_le hγ_mid_le
+      hκL hκT hκBT hκmidLU hcap hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hThat_component hL_norm hLT_norm
+      hT_norm hmiddle_entry hFT hFB hST hSB hparts =>
+    higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity_of_unit_roundoff_bound
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU γ_factor γ_factor_cap
+      γ_solve_cap γ_mid_cap κL κLT κT κBT κmidLU γFT γFB γST γSB
+      hspec (by intro i; rfl) hH_eq hTnz hγ_factor hγ_factor_le
+      hγ_solve_le hγ_mid_le hκL hκT hκBT hκmidLU hcap
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hL_norm hLT_norm hT_norm hmiddle_entry hFT hFB hST
+      hSB hparts
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_product_majorants_gamma_parts_gamma_validity`. -/
+def higham11_8_AasenSpec_id_source_prefix_product_majorants_gamma_parts_gamma_validity_of_u_le_cap :=
+  fun fp n Ucap hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU γ_factor γ_factor_cap γ_solve_cap γ_mid_cap
+      κL κLT κT κBT κmidLU γFT γFB γST γSB
+      hspec hH_eq hTnz hγ_factor hγ_factor_le hγ_solve_le hγ_mid_le
+      hκL hκT hκBT hκmidLU hu hcap hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hL_norm hLT_norm hT_norm hmiddle_entry hFT hFB hST
+      hSB hparts =>
+    higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity_of_u_le_cap
+      fp n Ucap hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU γ_factor γ_factor_cap
+      γ_solve_cap γ_mid_cap κL κLT κT κBT κmidLU γFT γFB γST γSB
+      hspec (by intro i; rfl) hH_eq hTnz hγ_factor hγ_factor_le
+      hγ_solve_le hγ_mid_le hκL hκT hκBT hκmidLU hu hcap
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hL_norm hLT_norm hT_norm hmiddle_entry hFT hFB hST
+      hSB hparts
+
 /-- Exact-`T_hat` product-majorant endpoint with the identity permutation
 specialized as `σ := id`, removing the separate `σ i = i` caller obligation. -/
 def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_gamma_parts_gamma_validity :=
