@@ -53287,6 +53287,50 @@ def higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_pr
       hprod hThat_component hL_norm hLT_norm hT_norm hmiddle_entry hFT
       hFB hST hSB hparts
 
+/-- Unit-roundoff-smallness source form of
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_concrete_product_majorants_gamma_parts_gamma_validity`. -/
+def higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_concrete_product_majorants_gamma_parts_gamma_validity_of_unit_roundoff_bound :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      γ_factor γ_factor_cap γ_solve_cap γ_mid_cap
+      κL κLT κT κBT κmidLU γFT γFB γST γSB
+      hγ_factor hγ_factor_le hγ_solve_le hγ_mid_le hκL hκT hκBT
+      hκmidLU hrec hHnz hcap hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hprod hThat_component hL_norm
+      hLT_norm hT_norm hmiddle_entry hFT hFB hST hSB hparts =>
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_concrete_product_majorants_gamma_parts_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      γ_factor γ_factor_cap γ_solve_cap γ_mid_cap κL κLT κT κBT κmidLU
+      γFT γFB γST γSB hγ_factor hγ_factor_le hγ_solve_le hγ_mid_le
+      hκL hκT hκBT hκmidLU hrec hHnz
+      (higham11_8_gammaValid_15n25_of_unit_roundoff_bound fp n hcap)
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hprod hThat_component hL_norm hLT_norm hT_norm hmiddle_entry hFT
+      hFB hST hSB hparts
+
+/-- Displayed-cap source form of
+`higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_concrete_product_majorants_gamma_parts_gamma_validity`. -/
+def higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_concrete_product_majorants_gamma_parts_gamma_validity_of_u_le_cap :=
+  fun fp n Ucap hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU γ_factor γ_factor_cap γ_solve_cap γ_mid_cap
+      κL κLT κT κBT κmidLU γFT γFB γST γSB
+      hγ_factor hγ_factor_le hγ_solve_le hγ_mid_le hκL hκT hκBT
+      hκmidLU hrec hHnz hu hcap hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hprod hThat_component hL_norm
+      hLT_norm hT_norm hmiddle_entry hFT hFB hST hSB hparts =>
+    higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_absLU_componentwise_T_factor_concrete_product_majorants_gamma_parts_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat b DeltaT_LU
+      γ_factor γ_factor_cap γ_solve_cap γ_mid_cap κL κLT κT κBT κmidLU
+      γFT γFB γST γSB hγ_factor hγ_factor_le hγ_solve_le hγ_mid_le
+      hκL hκT hκBT hκmidLU hrec hHnz
+      (higham11_8_gammaValid_15n25_of_u_le_cap fp n Ucap hu hcap)
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hprod hThat_component hL_norm hLT_norm hT_norm hmiddle_entry hFT
+      hFB hST hSB hparts
+
 /-- Source-prefix rounded Aasen wrapper with the printed Theorem 11.8 normwise
 predicate, deriving the computed-factor norm bounds from the generated
 relative `L_hat` hypothesis and discharging the middle tridiagonal-solve norm
