@@ -19294,6 +19294,22 @@ theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock
   have ht0 := htwo_zero t hstep
   omega
 
+/-- If every accepted `2 × 2` branch is the initial branch, then the named
+pointwise earlier-lift prefix-zero side condition is vacuous. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_two_only_at_zero
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (htwo_zero : ∀ t : Fin k, step t = PivotSize.two → t.val = 0) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix
+        k step ΔA := by
+  intro t hstep j _hj s hst
+  have ht0 := htwo_zero t hstep
+  omega
+
 /-- If every accepted `2 × 2` branch is the initial branch, then its earlier
 lift prefix-zero sum is vacuous. -/
 theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_two_only_at_zero
@@ -19305,13 +19321,11 @@ theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_
           (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
     (htwo_zero : ∀ t : Fin k, step t = PivotSize.two → t.val = 0) :
     higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix
-        k step ΔA := by
-  intro t hstep j _hj
-  refine Finset.sum_eq_zero ?_
-  intro s hs
-  have hst : s.val < t.val := (Finset.mem_filter.mp hs).2
-  have ht0 := htwo_zero t hstep
-  omega
+        k step ΔA :=
+  higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_zeroBeforePrefix
+    k step ΔA
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_two_only_at_zero
+      k step ΔA htwo_zero)
 
 /-- If every accepted `2 × 2` branch is the initial branch, then the stronger
 full-row earlier-lift zero side condition is vacuous. -/
@@ -20110,11 +20124,11 @@ theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base
         k step A b x_hat) :
     higham11_7_ConcretePathSecondPivotCombinedSolveRows
         k step A b x_hat ΔA :=
-  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isTridiagonal_and_earlier_local_zero_and_earlier_sum_zero
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isTridiagonal_and_earlier_local_zero_and_zeroBeforePrefix
     k step A b x_hat ΔA hA
     (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock_of_two_only_at_zero
       k step ΔA htwo_zero)
-    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_two_only_at_zero
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_two_only_at_zero
       k step ΔA htwo_zero)
     hrows
 
@@ -20427,9 +20441,11 @@ theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of
         b (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)) :
     higham11_7_ConcretePathSecondPivotCombinedSolveRows
         k step A b x_hat ΔA :=
-  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of_isTridiagonal_and_earlier_full_row_zero
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of_isTridiagonal_and_earlier_local_zero_and_zeroBeforePrefix
     k step A b x_hat ΔA hA
-    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_two_only_at_zero
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock_of_two_only_at_zero
+      k step ΔA htwo_zero)
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_two_only_at_zero
       k step ΔA htwo_zero)
     hrows
 
