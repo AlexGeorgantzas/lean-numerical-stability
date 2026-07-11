@@ -46917,6 +46917,34 @@ theorem higham11_8_relative_outer_factor_caps_of_AasenSpec_entry_bound_inv_one_p
   higham11_8_relative_outer_factor_caps_of_aasen_entry_bound_inv_one_plus_of_entry_bound
     n hn L γ κ hγ hκ hentry hspec.L_upper_zero hspec.L_first_col
 
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency:
+an `AasenSpec` plus the normalized source-scale entry cap also gives the
+unscaled exact outer-factor norm caps consumed by exact-radius wrappers. -/
+theorem higham11_8_outer_factor_caps_of_AasenSpec_entry_bound_scaled_unit
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκunit : (1 + γ) * κ ≤ 1)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      infNorm (fun r c => L c r) ≤ ((n - 1 : ℕ) : ℝ) :=
+  higham11_8_outer_factor_caps_of_aasen_entry_bound_scaled_unit_of_entry_bound
+    n hn L γ κ hγ hκunit hentry hspec.L_upper_zero hspec.L_first_col
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency:
+an `AasenSpec` plus the source-style inverse-scale entry cap gives the
+unscaled exact outer-factor norm caps consumed by exact-radius wrappers. -/
+theorem higham11_8_outer_factor_caps_of_AasenSpec_entry_bound_inv_one_plus
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (γ κ : ℝ)
+    (hγ : 0 ≤ γ) (hκ : κ ≤ 1 / (1 + γ))
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    infNorm L ≤ ((n - 1 : ℕ) : ℝ) ∧
+      infNorm (fun r c => L c r) ≤ ((n - 1 : ℕ) : ℝ) :=
+  higham11_8_outer_factor_caps_of_aasen_entry_bound_inv_one_plus_of_entry_bound
+    n hn L γ κ hγ hκ hentry hspec.L_upper_zero hspec.L_first_col
+
 /-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency,
 source inverse-entry form: if the exact Aasen outer factor is already bounded
 entrywise by `1/(1+γ)`, the relative outer-factor norm caps follow without a
