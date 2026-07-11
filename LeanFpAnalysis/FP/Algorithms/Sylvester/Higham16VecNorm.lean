@@ -3879,6 +3879,126 @@ theorem sylvesterVecCoeff_lyapunovSpecial_eq_nonsingInv_mulVec_of_mulVec_eq_of_p
         (fun i j => -matTranspose A i j) sigma hsigma hle)
       hz
 
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the Lyapunov-specialized Sylvester
+    coefficient sigma-min route from a source `SepLowerBound(A,-A^T)`. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_sigmaMin_of_sepLowerBound :=
+  sylvesterVecCoeff_lyapunovSpecial_sigmaMin_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for Lyapunov-specialized Sylvester
+    coefficient nonsingularity from a source `SepLowerBound(A,-A^T)`. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_det_ne_zero_of_sepLowerBound :=
+  sylvesterVecCoeff_lyapunovSpecial_det_ne_zero_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for Lyapunov-specialized Sylvester
+    coefficient bijectivity from a source `SepLowerBound(A,-A^T)`. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_mulVec_bijective_of_sepLowerBound :=
+  sylvesterVecCoeff_lyapunovSpecial_mulVec_bijective_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for unique Lyapunov-specialized Sylvester
+    coefficient solves from a source `SepLowerBound(A,-A^T)`. -/
+alias H16_eq16_2_27_existsUnique_sylvesterVecCoeff_lyapunovSpecial_mulVec_of_sepLowerBound :=
+  existsUnique_sylvesterVecCoeff_lyapunovSpecial_mulVec_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the nonsingular-inverse
+    Lyapunov-specialized Sylvester coefficient solution from a source
+    `SepLowerBound(A,-A^T)`. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_solution_of_sepLowerBound :=
+  sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_solution_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the unique nonsingular-inverse
+    Lyapunov-specialized Sylvester coefficient solve from a source
+    `SepLowerBound(A,-A^T)`. -/
+alias H16_eq16_2_27_existsUnique_sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_solution_of_sepLowerBound :=
+  existsUnique_sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_solution_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the right inverse action of the
+    Lyapunov-specialized Sylvester coefficient from a source
+    `SepLowerBound(A,-A^T)`. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_mulVec_nonsingInv_mulVec_of_sepLowerBound :=
+  sylvesterVecCoeff_lyapunovSpecial_mulVec_nonsingInv_mulVec_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the left inverse action of the
+    Lyapunov-specialized Sylvester coefficient from a source
+    `SepLowerBound(A,-A^T)`. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_mulVec_of_sepLowerBound :=
+  sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_mulVec_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias identifying exact Lyapunov-specialized
+    Sylvester coefficient solutions with the nonsingular-inverse vector under
+    a source `SepLowerBound(A,-A^T)`. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_eq_nonsingInv_mulVec_of_mulVec_eq_of_sepLowerBound :=
+  sylvesterVecCoeff_lyapunovSpecial_eq_nonsingInv_mulVec_of_mulVec_eq_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the Lyapunov-specialized Sylvester
+    coefficient sigma-min route from a positive exact `sep(A,-A^T)` lower
+    bound. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_sigmaMin_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_lyapunovSpecial_sigmaMin_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for Lyapunov-specialized Sylvester
+    coefficient nonsingularity from a positive exact `sep(A,-A^T)` lower
+    bound. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_det_ne_zero_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_lyapunovSpecial_det_ne_zero_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for Lyapunov-specialized Sylvester
+    coefficient bijectivity from a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_mulVec_bijective_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_lyapunovSpecial_mulVec_bijective_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for unique Lyapunov-specialized Sylvester
+    coefficient solves from a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_2_27_existsUnique_sylvesterVecCoeff_lyapunovSpecial_mulVec_of_pos_le_sylvesterSepInf :=
+  existsUnique_sylvesterVecCoeff_lyapunovSpecial_mulVec_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the nonsingular-inverse
+    Lyapunov-specialized Sylvester coefficient solution from a positive exact
+    `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_solution_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_solution_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the unique nonsingular-inverse
+    Lyapunov-specialized Sylvester coefficient solve from a positive exact
+    `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_2_27_existsUnique_sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_solution_of_pos_le_sylvesterSepInf :=
+  existsUnique_sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_solution_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the right inverse action of the
+    Lyapunov-specialized Sylvester coefficient from a positive exact
+    `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_mulVec_nonsingInv_mulVec_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_lyapunovSpecial_mulVec_nonsingInv_mulVec_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the left inverse action of the
+    Lyapunov-specialized Sylvester coefficient from a positive exact
+    `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_mulVec_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_mulVec_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias identifying exact Lyapunov-specialized
+    Sylvester coefficient solutions with the nonsingular-inverse vector under
+    a positive exact `sep(A,-A^T)` lower bound. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_eq_nonsingInv_mulVec_of_mulVec_eq_of_pos_le_sylvesterSepInf :=
+  sylvesterVecCoeff_lyapunovSpecial_eq_nonsingInv_mulVec_of_mulVec_eq_of_pos_le_sylvesterSepInf
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
     a Lyapunov operator sigma-min certificate transfers to the concrete
     Sylvester vectorized coefficient specialized as `B = -A^T`. -/
@@ -4040,6 +4160,65 @@ theorem sylvesterVecCoeff_lyapunovSpecial_eq_nonsingInv_mulVec_of_mulVec_eq_of_o
   exact
     sylvesterVecCoeff_eq_nonsingInv_mulVec_of_mulVec_eq_of_sepLowerBound n A
       (fun i j => -matTranspose A i j) sigma hSep hz
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the Lyapunov-specialized Sylvester
+    coefficient sigma-min route from a supplied operator sigma-min certificate. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_sigmaMin_of_operator_sigmaMin :=
+  sylvesterVecCoeff_lyapunovSpecial_sigmaMin_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for Lyapunov-specialized Sylvester
+    coefficient nonsingularity from a supplied operator sigma-min certificate. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_det_ne_zero_of_operator_sigmaMin :=
+  sylvesterVecCoeff_lyapunovSpecial_det_ne_zero_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for Lyapunov-specialized Sylvester
+    coefficient bijectivity from a supplied operator sigma-min certificate. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_mulVec_bijective_of_operator_sigmaMin :=
+  sylvesterVecCoeff_lyapunovSpecial_mulVec_bijective_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for unique Lyapunov-specialized Sylvester
+    coefficient solves from a supplied operator sigma-min certificate. -/
+alias H16_eq16_2_27_existsUnique_sylvesterVecCoeff_lyapunovSpecial_mulVec_of_operator_sigmaMin :=
+  existsUnique_sylvesterVecCoeff_lyapunovSpecial_mulVec_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the nonsingular-inverse
+    Lyapunov-specialized Sylvester coefficient solution from a supplied
+    operator sigma-min certificate. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_solution_of_operator_sigmaMin :=
+  sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_solution_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the unique nonsingular-inverse
+    Lyapunov-specialized Sylvester coefficient solve from a supplied operator
+    sigma-min certificate. -/
+alias H16_eq16_2_27_existsUnique_sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_solution_of_operator_sigmaMin :=
+  existsUnique_sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_solution_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the right inverse action of the
+    Lyapunov-specialized Sylvester coefficient from a supplied operator
+    sigma-min certificate. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_mulVec_nonsingInv_mulVec_of_operator_sigmaMin :=
+  sylvesterVecCoeff_lyapunovSpecial_mulVec_nonsingInv_mulVec_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias for the left inverse action of the
+    Lyapunov-specialized Sylvester coefficient from a supplied operator
+    sigma-min certificate. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_mulVec_of_operator_sigmaMin :=
+  sylvesterVecCoeff_lyapunovSpecial_nonsingInv_mulVec_mulVec_of_operator_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.1 and 16.3, equations (16.2) and
+    (16.27): source-numbered alias identifying exact Lyapunov-specialized
+    Sylvester coefficient solutions with the nonsingular-inverse vector under
+    a supplied operator sigma-min certificate. -/
+alias H16_eq16_2_27_sylvesterVecCoeff_lyapunovSpecial_eq_nonsingInv_mulVec_of_mulVec_eq_of_operator_sigmaMin :=
+  sylvesterVecCoeff_lyapunovSpecial_eq_nonsingInv_mulVec_of_mulVec_eq_of_operator_sigmaMin
 
 /-- Higham, 2nd ed., Chapter 16.1 and equations (16.2)-(16.5), (16.26):
     with a positive lower bound on `sylvesterSepInf`, Mathlib's nonsingular

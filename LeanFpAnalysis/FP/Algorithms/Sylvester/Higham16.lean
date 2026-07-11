@@ -6887,6 +6887,17 @@ alias H16_eq16_29_sylvester_practical_abs_error_bound_of_sepLowerBound_computed_
   sylvester_practical_abs_error_bound_of_sepLowerBound_computed_residual_certificate_scalar
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` absolute monotone certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_abs_error_bound_of_sepLowerBound_computed_residual_certificate_mono :=
+  sylvester_practical_abs_error_bound_of_sepLowerBound_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the `SepLowerBound` absolute monotone scalar certificate
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_abs_error_bound_of_sepLowerBound_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_abs_error_bound_of_sepLowerBound_computed_residual_certificate_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
     alias for the `SepLowerBound` monotone certificate endpoint. -/
 alias H16_eq16_29_sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate_mono :=
   sylvester_practical_error_bound_of_sepLowerBound_computed_residual_certificate_mono
@@ -6957,6 +6968,18 @@ alias H16_eq16_29_sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_
     endpoint. -/
 alias H16_eq16_29_sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_scalar :=
   sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` absolute monotone
+    certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono :=
+  sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the positive exact-`sylvesterSepInf` absolute monotone scalar
+    certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_abs_error_bound_of_pos_le_sylvesterSepInf_computed_residual_certificate_mono_scalar
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
     alias for the positive exact-`sylvesterSepInf` monotone certificate endpoint. -/
