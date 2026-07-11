@@ -5619,6 +5619,34 @@ theorem sylvesterSepInf_diagonal_ge_of_entrywise_abs_ge_of_pos_dim (n : Nat)
       (Matrix.diagonal a) (Matrix.diagonal b) sigma
       (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hsigma hgap) hn
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26): source-numbered
+    alias for the diagonal uniform-gap `SepLowerBound` certificate. -/
+alias H16_eq16_26_SepLowerBound_diagonal_of_entrywise_abs_ge :=
+  SepLowerBound_diagonal_of_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26): source-numbered
+    alias for a common diagonal entry giving a nonzero diagonal-operator
+    kernel witness. -/
+alias H16_eq16_26_exists_nonzero_sylvesterOp_diagonal_kernel_of_common_entry :=
+  exists_nonzero_sylvesterOp_diagonal_kernel_of_common_entry
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26): source-numbered
+    alias for common diagonal entries forcing exact `sep` to vanish. -/
+alias H16_eq16_26_sylvesterSepInf_diagonal_eq_zero_of_common_entry :=
+  sylvesterSepInf_diagonal_eq_zero_of_common_entry
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26): source-numbered
+    alias for the diagonal uniform-gap exact-infimum lower-bound route from
+    nonempty feasible ratios. -/
+alias H16_eq16_26_sylvesterSepInf_diagonal_ge_of_entrywise_abs_ge :=
+  sylvesterSepInf_diagonal_ge_of_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26): source-numbered
+    alias for the positive-dimensional diagonal uniform-gap exact-infimum
+    lower-bound route. -/
+alias H16_eq16_26_sylvesterSepInf_diagonal_ge_of_entrywise_abs_ge_of_pos_dim :=
+  sylvesterSepInf_diagonal_ge_of_entrywise_abs_ge_of_pos_dim
+
 /-- Any positive number below the exact infimum model of `sep(A,B)` is a valid
     `SepLowerBound` certificate for the existing perturbation infrastructure. -/
 theorem SepLowerBound_of_pos_le_sylvesterSepInf (n : Nat)
