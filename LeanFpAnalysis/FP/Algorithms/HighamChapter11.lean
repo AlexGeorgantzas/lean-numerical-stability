@@ -12821,6 +12821,34 @@ theorem higham11_7_tridiagonalPathPrefixSpan_branch_end_le_of_lt
       k step starts hstarts htu
   simpa [hpref_t, hpref_u] using hle
 
+/-- If `u` is the immediate successor of `t` in a mixed tridiagonal pivot
+path, then the end of branch `t` is exactly the prefix of branch `u`. -/
+theorem higham11_7_tridiagonalPathPrefixSpan_branch_end_eq_of_succ
+    (k : ℕ) (step : Fin k → PivotSize) {t u : Fin k}
+    (htu : t.val + 1 = u.val) :
+    higham11_7_tridiagonalPathPrefixSpan k step t +
+        higham11_7_tridiagonalBranchSupportOffset (step t) =
+      higham11_7_tridiagonalPathPrefixSpan k step u := by
+  obtain ⟨starts, hstarts⟩ :=
+    higham11_7_tridiagonalPathStartOffsets_exists k step
+  have hnext : t.val + 1 < k := by
+    rw [htu]
+    exact u.isLt
+  have hsucc :=
+    higham11_7_tridiagonalPathStartOffsets_succ k step starts hstarts t hnext
+  have hidx : (⟨t.val + 1, hnext⟩ : Fin k) = u := by
+    apply Fin.ext
+    simp [htu]
+  rw [hidx] at hsucc
+  have hpref_t :=
+    higham11_7_tridiagonalPathStartOffsets_eq_prefixSpan
+      k step starts hstarts t
+  have hpref_u :=
+    higham11_7_tridiagonalPathStartOffsets_eq_prefixSpan
+      k step starts hstarts u
+  rw [hpref_t, hpref_u] at hsucc
+  exact hsucc.symm
+
 /-- Explicit prefix spans are strictly ordered by path index. -/
 theorem higham11_7_tridiagonalPathPrefixSpan_lt_of_lt
     (k : ℕ) (step : Fin k → PivotSize) {t u : Fin k}
@@ -20042,6 +20070,97 @@ theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_
   higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_zeroBeforePrefix
     k step ΔA
     (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_leadingBlockSupport_and_after_earlier_branch_end
+      k step ΔA hEsupp hafter)
+
+/-- The second-pivot prefix-zero obligation can ignore the immediately
+preceding branch: for an adjacent predecessor, its support end is exactly the
+current prefix, so zero-prefix support already discharges every column
+`j < prefix(t)`.  The explicit residual obligation is needed only for
+non-adjacent earlier branches. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_leadingBlockSupport_and_after_nonadjacent_earlier_branch_end
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hEsupp : ∀ s : Fin k,
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step s) (step s))
+        (higham11_7_tridiagonalBranchSupportOffset (step s)) (ΔA s))
+    (hafter : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+        ∀ s : Fin k, s.val + 1 < t.val →
+          higham11_7_tridiagonalPathPrefixSpan k step s +
+              higham11_7_tridiagonalBranchSupportOffset (step s) ≤ j.val →
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s)
+            (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+            j = 0) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix
+        k step ΔA := by
+  intro t hstep j hj s hst
+  by_cases hsucc : s.val + 1 = t.val
+  · have hend_eq :=
+      higham11_7_tridiagonalPathPrefixSpan_branch_end_eq_of_succ
+        k step (t := s) (u := t) hsucc
+    have hcol :
+        j.val <
+          higham11_7_tridiagonalPathPrefixSpan k step s +
+            higham11_7_tridiagonalBranchSupportOffset (step s) := by
+      rwa [hend_eq]
+    exact
+      higham11_7_tridiagonalLiftLocalBlockPerturbation_pathSecondPivot_two_col_lt_branch_end
+        k step s t hstep (ΔA s) (hEsupp s) j hcol
+  · have hnonadj : s.val + 1 < t.val := by
+      omega
+    by_cases hcol :
+        j.val <
+          higham11_7_tridiagonalPathPrefixSpan k step s +
+            higham11_7_tridiagonalBranchSupportOffset (step s)
+    · exact
+        higham11_7_tridiagonalLiftLocalBlockPerturbation_pathSecondPivot_two_col_lt_branch_end
+          k step s t hstep (ΔA s) (hEsupp s) j hcol
+    · exact hafter t hstep j hj s hnonadj (Nat.le_of_not_gt hcol)
+
+/-- Summed version of the non-adjacent earlier-branch prefix-zero reducer. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_leadingBlockSupport_and_after_nonadjacent_earlier_branch_end
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hEsupp : ∀ s : Fin k,
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step s) (step s))
+        (higham11_7_tridiagonalBranchSupportOffset (step s)) (ΔA s))
+    (hafter : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+        ∀ s : Fin k, s.val + 1 < t.val →
+          higham11_7_tridiagonalPathPrefixSpan k step s +
+              higham11_7_tridiagonalBranchSupportOffset (step s) ≤ j.val →
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s)
+            (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+            j = 0) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix
+        k step ΔA :=
+  higham11_7_ConcretePathSecondPivotEarlierLiftRowsSumZeroBeforePrefix_of_zeroBeforePrefix
+    k step ΔA
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_leadingBlockSupport_and_after_nonadjacent_earlier_branch_end
       k step ΔA hEsupp hafter)
 
 /-- Supported-witness summed version of the second-pivot prefix-zero support
