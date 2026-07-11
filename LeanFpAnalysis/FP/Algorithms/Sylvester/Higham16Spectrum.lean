@@ -10253,6 +10253,42 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_product_shift_det_fro
       sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_det_ne_zero
         m n R S p q hprod
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for scheduled quasi-Schur Schur-coordinate
+    solvability from explicit singleton and two-column determinant steps. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_solution_of_det_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_solution_of_det_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for original-coordinate reconstruction from a
+    scheduled determinant-certified quasi-Schur traversal. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_original_solution_eq_of_det_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_original_solution_eq_of_det_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for original-coordinate unique solvability from a
+    scheduled determinant-certified quasi-Schur traversal. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_det_frontier_step_oracle :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_det_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for scheduled quasi-Schur Schur-coordinate
+    solvability from product-shift two-column determinant steps. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_solution_of_product_shift_det_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_solution_of_product_shift_det_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for original-coordinate reconstruction from a
+    product-shift determinant scheduled quasi-Schur traversal. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_original_solution_eq_of_product_shift_det_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_original_solution_eq_of_product_shift_det_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for original-coordinate unique solvability from a
+    product-shift determinant scheduled quasi-Schur traversal. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_product_shift_det_frontier_step_oracle :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_product_shift_det_frontier_step_oracle
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
     Schur-coordinate solvability from a scheduled quasi-Schur traversal whose
     same-block two-column steps use the real-Schur two-block spectral
