@@ -8996,6 +8996,30 @@ theorem lyapunov_relative_first_order_bound_of_vecCoeff_gram_eigenvalues
       hDeltaA hDeltaC hLin
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the concrete Lyapunov vec/Kronecker sigma-min
+    first-order bound. -/
+alias H16_eq16_27_lyapunov_first_order_bound_of_vecCoeff_sigmaMin :=
+  lyapunov_first_order_bound_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the relative concrete Lyapunov vec/Kronecker
+    sigma-min first-order bound. -/
+alias H16_eq16_27_lyapunov_relative_first_order_bound_of_vecCoeff_sigmaMin :=
+  lyapunov_relative_first_order_bound_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the concrete Lyapunov vec/Kronecker left-inverse
+    first-order bound. -/
+alias H16_eq16_27_lyapunov_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  lyapunov_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the relative concrete Lyapunov vec/Kronecker
+    left-inverse first-order bound. -/
+alias H16_eq16_27_lyapunov_relative_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  lyapunov_relative_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     source-numbered aliases for finite Gram-eigenvalue Lyapunov
     first-order condition wrappers. -/
 alias H16_eq16_27_lyapunov_first_order_bound_of_vecCoeff_gram_eigenvalues :=
