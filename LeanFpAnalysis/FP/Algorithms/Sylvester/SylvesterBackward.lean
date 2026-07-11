@@ -151,6 +151,11 @@ theorem backward_error_lower_sq (n : ℕ)
              sq_nonneg (α * σ j * DC i j * α * β - (-γ) * DA i j * β * γ),
              sq_nonneg ((-β * σ i) * DC i j * α * β - (-γ) * DB i j * α * γ)]
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.14)-(16.15):
+    source-numbered alias for the Cauchy-Schwarz lower-cost consequence of
+    the uncoupled SVD-coordinate scalar equations. -/
+alias H16_eq16_14_15_backward_error_lower_sq := backward_error_lower_sq
+
 -- ============================================================
 -- Backward error upper bound (§16.2, eq 16.15 upper)
 -- ============================================================
