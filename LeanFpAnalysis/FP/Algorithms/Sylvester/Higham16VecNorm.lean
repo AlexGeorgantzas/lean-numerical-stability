@@ -5397,6 +5397,24 @@ theorem sylvesterSepInf_schurDiagonal_ge_of_entrywise_abs_ge_of_pos_dim
         U A V B a b sigma hU hV hA hB hsigma hgap)
       hn
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26): source-numbered
+    alias for the supplied Schur-diagonal uniform-gap `SepLowerBound`
+    certificate. -/
+alias H16_eq16_26_SepLowerBound_schurDiagonal_of_entrywise_abs_ge :=
+  SepLowerBound_schurDiagonal_of_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26): source-numbered
+    alias for the supplied Schur-diagonal exact-infimum lower-bound route from
+    nonempty feasible ratios. -/
+alias H16_eq16_26_sylvesterSepInf_schurDiagonal_ge_of_entrywise_abs_ge :=
+  sylvesterSepInf_schurDiagonal_ge_of_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26): source-numbered
+    alias for the positive-dimensional supplied Schur-diagonal exact-infimum
+    lower-bound route. -/
+alias H16_eq16_26_sylvesterSepInf_schurDiagonal_ge_of_entrywise_abs_ge_of_pos_dim :=
+  sylvesterSepInf_schurDiagonal_ge_of_entrywise_abs_ge_of_pos_dim
+
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), and equation
     (16.26): for supplied orthogonal diagonal Schur coordinates, pairwise
     spectral-coordinate exclusion gives some positive `SepLowerBound`
