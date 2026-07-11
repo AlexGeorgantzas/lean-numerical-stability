@@ -86633,6 +86633,74 @@ theorem theorem20_10_constructed_householder_returned_xhat_partB_certificate_of_
         fp A B b d hp hq hB hStack hu).2
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    concise backward-error package for the named constructed rounded
+    Householder returned vector.
+
+This is the certificate-free companion to
+`theorem20_10_constructed_householder_returned_xhat_partB_certificate_of_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma`.
+It hides the reusable Part B certificate object and exposes directly the
+source-shaped perturbation bounds and exact perturbed GQR/minimizer core for the
+chosen proof-level returned vector. -/
+theorem theorem20_10_partB_backward_error_of_constructed_householder_returned_xhat_certificate_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hB hStack) :
+    let xhat : Fin (p + q) → ℝ :=
+      theorem20_10_constructed_householder_returned_xhat
+        fp A B b d hp hq hB hStack hu
+    let gammaA : ℝ := theorem20_10_householder_gammaA_conservativeRhs fp r p q
+    let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ Deltad : Fin p → ℝ,
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  dsimp
+  rcases
+    theorem20_10_constructed_householder_returned_xhat_partB_certificate_of_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
+      fp A B b d hp hq hB hStack hu with
+    ⟨cert⟩
+  exact
+    ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, cert.Deltad, cert.hDeltaA,
+      cert.hDeltaB, cert.hDeltab, cert.hDeltad,
+      GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10_perturbed_d
+        A cert.DeltaA B cert.DeltaB b cert.Deltab d cert.Deltad
+        cert.hB cert.hstack⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     computed-`Bᵀ` concrete component Part B route for the named constructed
     returned vector.
 
