@@ -149,6 +149,10 @@ def IsBackwardError (n : ℕ) (A B C Y : Fin n → Fin n → ℝ)
     frobNormSq ΔB ≤ (η * β) ^ 2 ∧
     frobNormSq ΔC ≤ (η * γ) ^ 2
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.10): source-numbered
+    abbreviation for the normwise backward-error feasibility predicate. -/
+abbrev H16_eq16_10_IsBackwardError := IsBackwardError
+
 /-- Higham, 2nd ed., Chapter 16.2.1:
     structured Lyapunov normwise backward-error certificate.  The perturbation
     of `A` is tied on both sides as `DeltaA` and `DeltaA^T`, and the right-hand
@@ -184,6 +188,10 @@ theorem residual_decomposition (n : ℕ)
   unfold matMul at h ⊢
   simp only [add_mul, mul_add, Finset.sum_add_distrib] at h
   linarith
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.11): source-numbered
+    alias for the residual decomposition induced by backward perturbations. -/
+alias H16_eq16_11_residual_decomposition := residual_decomposition
 
 /-- **Residual bound** (Higham §15.2, eq 15.12).
 
@@ -252,5 +260,9 @@ theorem residual_bound (n : ℕ)
         frobNorm Y * (η * β)) + η * γ =
       ((α + β) * frobNorm Y + γ) * η := by ring
   linarith
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.12): source-numbered
+    alias for the normwise residual bound from a backward-error certificate. -/
+alias H16_eq16_12_residual_bound := residual_bound
 
 end LeanFpAnalysis.FP
