@@ -423,6 +423,12 @@ theorem frobNormRect_sylvesterResidualRect_le_dataScale_of_perturbed_schur_facto
           frobNormRect (rectMatMul U (rectMatMul Y (matTranspose V))) := by
         nlinarith [t1, t2, t3]
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.9), p. 308: source-numbered
+    alias for the explicit-coefficient perturbed-Schur-factor residual
+    guarantee. -/
+alias H16_eq16_9_frobNormRect_sylvesterResidualRect_le_dataScale_of_perturbed_schur_factors_residual :=
+  frobNormRect_sylvesterResidualRect_le_dataScale_of_perturbed_schur_factors_residual
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.9), p. 308: gamma-class
     fully-rounded-factor form of the overall Schur-method residual
     guarantee.
