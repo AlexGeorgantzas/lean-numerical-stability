@@ -5315,6 +5315,12 @@ theorem sylvesterTriangularShiftedCoeff_det_ne_zero_of_singleton_global_vecCoeff
           no_common_complex_right_eigenvalue_of_sylvesterVecCoeff_det_ne_zero
             m n A T hdetGlobal)
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6): source-numbered alias for
+    singleton shifted determinant nonsingularity from a global vec/Kronecker
+    determinant certificate. -/
+alias H16_eq16_6_sylvesterTriangularShiftedCoeff_det_ne_zero_of_singleton_global_vecCoeff_det_ne_zero :=
+  sylvesterTriangularShiftedCoeff_det_ne_zero_of_singleton_global_vecCoeff_det_ne_zero
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.6): supplied real orthogonal
     Schur factorizations transport original-coordinate no-common-complex-right
     eigenvalue data to the Schur-coordinate singleton shifted determinant. -/
@@ -5364,6 +5370,12 @@ theorem sylvesterTriangularShiftedCoeff_det_ne_zero_of_realQuasiSchur_factors_si
       m n U R Aorig V S Borig pmap k hU hV hA hB hzero hsingle
       (no_common_complex_right_eigenvalue_of_sylvesterVecCoeff_det_ne_zero
         m n Aorig Borig hdetOrig)
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6): source-numbered alias for
+    real-Schur supplied-factor singleton shifted determinant nonsingularity
+    from an original vec/Kronecker determinant certificate. -/
+alias H16_eq16_6_sylvesterTriangularShiftedCoeff_det_ne_zero_of_realQuasiSchur_factors_singleton_vecCoeff_det_ne_zero :=
+  sylvesterTriangularShiftedCoeff_det_ne_zero_of_realQuasiSchur_factors_singleton_vecCoeff_det_ne_zero
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): full Schur-factor
     no-common-complex-right-eigenvalue version of the constructed
@@ -5421,6 +5433,12 @@ theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_g
         simpa [Matrix.of_apply] using
           no_common_complex_right_eigenvalue_of_sylvesterVecCoeff_det_ne_zero
             m n A T hdetGlobal)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the same-block two-column determinant package
+    from a global vec/Kronecker determinant certificate. -/
+alias H16_eq16_4_8_sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_global_vecCoeff_det_ne_zero :=
+  sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_twoBlockSpectral_global_vecCoeff_det_ne_zero
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): supplied real
     orthogonal Schur factorizations transport original-coordinate
@@ -5486,6 +5504,13 @@ theorem sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_fac
       hpq_adj hsame hspectral
       (no_common_complex_right_eigenvalue_of_sylvesterVecCoeff_det_ne_zero
         m n Aorig Borig hdetOrig)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the real-Schur supplied-factor same-block
+    two-column determinant package from an original vec/Kronecker determinant
+    certificate. -/
+alias H16_eq16_4_8_sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_factors_twoBlockSpectral_global_vecCoeff_det_ne_zero :=
+  sylvesterTwoColumnBlockCoeff_block_and_det_ne_zero_of_realQuasiSchur_factors_twoBlockSpectral_global_vecCoeff_det_ne_zero
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): automatic
     real-quasi-Schur factor package for active `B`-side two-column blocks.
@@ -13579,6 +13604,42 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_schedule_twoBlockSpec
       (rectMatMul (matTranspose U) (rectMatMul C V)) X pmap
       hU hV hA hB rfl hmono hcard hzero hspectral hsingle_det
       hblock_noR hXformula
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the no-common recursive Schur-coordinate
+    generated-step witness. -/
+alias H16_eq16_4_8_exists_isSylvesterSolutionRect_and_generatedStepFormula_of_quasiSchur_schedule_twoBlockSpectral_no_common :=
+  exists_isSylvesterSolutionRect_and_generatedStepFormula_of_quasiSchur_schedule_twoBlockSpectral_no_common
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the no-common recursive original-coordinate
+    generated-step witness. -/
+alias H16_eq16_4_8_exists_original_solution_and_generated_step_formula_of_quasiSchur_schedule_twoBlockSpectral_no_common :=
+  exists_original_solution_and_generated_step_formula_of_quasiSchur_schedule_twoBlockSpectral_no_common
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for no-common recursive generated-step unique
+    solvability. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_schedule_twoBlockSpectral_no_common_generated_step_formula_witness :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_schedule_twoBlockSpectral_no_common_generated_step_formula_witness
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the complex-root-separation recursive
+    Schur-coordinate generated-step witness. -/
+alias H16_eq16_4_8_exists_isSylvesterSolutionRect_and_generatedStepFormula_of_quasiSchur_schedule_twoBlockSpectral_complex_root_separation :=
+  exists_isSylvesterSolutionRect_and_generatedStepFormula_of_quasiSchur_schedule_twoBlockSpectral_complex_root_separation
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the complex-root-separation recursive
+    original-coordinate generated-step witness. -/
+alias H16_eq16_4_8_exists_original_solution_and_generated_step_formula_of_quasiSchur_schedule_twoBlockSpectral_complex_root_separation :=
+  exists_original_solution_and_generated_step_formula_of_quasiSchur_schedule_twoBlockSpectral_complex_root_separation
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for complex-root-separation recursive generated-step
+    unique solvability. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_schedule_twoBlockSpectral_complex_root_separation_generated_step_formula_witness :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_schedule_twoBlockSpectral_complex_root_separation_generated_step_formula_witness
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
     recursive-candidate witness from generated frontier schedules, two-block
