@@ -66944,6 +66944,309 @@ def higham11_8_AasenSpec_identity_source_prefix_relative_rowDiagDom_middle_coeff
       hT_L_lower hT_U_upper hThat hLU hdetT hT_tridiag hRowDom hL_norm
       hLT_norm hT_norm hBT_component hcoeff
 
+/-- Relative column-dominant middle route with `sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_relative_colDiagDom_middle_coeff :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT hspec hH_eq hTnz
+      hγ_factor hκL hκT hκBT hBT_factor hvalSum hvalUpdate
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hn hThat hLU hdetT hT_tridiag hColDom hL_norm hLT_norm hT_norm
+      hBT_norm hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_relative_colDiagDom_middle_coeff
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      (fun i : Fin n => i) b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT
+      hspec (by intro i; rfl) hH_eq hTnz hγ_factor hκL hκT hκBT
+      hBT_factor hvalSum hvalUpdate hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower
+      hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hThat hLU hdetT
+      hT_tridiag hColDom hL_norm hLT_norm hT_norm hBT_norm hcoeff
+
+/-- Relative row-dominant middle route with `sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_relative_rowDiagDom_middle_coeff :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT hspec hH_eq hTnz
+      hγ_factor hκL hκT hκBT hBT_factor hvalSum hvalUpdate
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hn hThat hLU hdetT hT_tridiag hRowDom hL_norm hLT_norm hT_norm
+      hBT_norm hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_relative_rowDiagDom_middle_coeff
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      (fun i : Fin n => i) b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT
+      hspec (by intro i; rfl) hH_eq hTnz hγ_factor hκL hκT hκBT
+      hBT_factor hvalSum hvalUpdate hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower
+      hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hThat hLU hdetT
+      hT_tridiag hRowDom hL_norm hLT_norm hT_norm hBT_norm hcoeff
+
+/-- Relative column-dominant componentwise-`BT_factor` middle route with
+`sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_relative_colDiagDom_middle_coeff_componentwise_BT :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT hspec hH_eq hTnz
+      hγ_factor hκL hκT hκBT hBT_factor hvalSum hvalUpdate
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hn hThat hLU hdetT hT_tridiag hColDom hL_norm hLT_norm hT_norm
+      hBT_component hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_relative_colDiagDom_middle_coeff_componentwise_BT
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      (fun i : Fin n => i) b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT
+      hspec (by intro i; rfl) hH_eq hTnz hγ_factor hκL hκT hκBT
+      hBT_factor hvalSum hvalUpdate hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower
+      hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hThat hLU hdetT
+      hT_tridiag hColDom hL_norm hLT_norm hT_norm hBT_component hcoeff
+
+/-- Relative row-dominant componentwise-`BT_factor` middle route with
+`sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_relative_rowDiagDom_middle_coeff_componentwise_BT :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT hspec hH_eq hTnz
+      hγ_factor hκL hκT hκBT hBT_factor hvalSum hvalUpdate
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hn hThat hLU hdetT hT_tridiag hRowDom hL_norm hLT_norm hT_norm
+      hBT_component hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_relative_rowDiagDom_middle_coeff_componentwise_BT
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      (fun i : Fin n => i) b DeltaT_LU γ_factor γ15n25 κL κLT κT κBT
+      hspec (by intro i; rfl) hH_eq hTnz hγ_factor hκL hκT hκBT
+      hBT_factor hvalSum hvalUpdate hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower
+      hT_L_diag hT_U_diag hT_L_lower hT_U_upper hn hThat hLU hdetT
+      hT_tridiag hRowDom hL_norm hLT_norm hT_norm hBT_component hcoeff
+
+/-- Printed-radius relative column-dominant middle route with
+`sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_relative_colDiagDom_middle_coeff_printed_gamma_validity :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz hγ_factor
+      hκL hκT hκBT hcoeff_valid hBT_factor hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat hLU
+      hdetT hT_tridiag hColDom hL_norm hLT_norm hT_norm hBT_norm hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_relative_colDiagDom_middle_coeff_printed_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      (fun i : Fin n => i) b DeltaT_LU γ_factor κL κLT κT κBT hspec
+      (by intro i; rfl) hH_eq hTnz hγ_factor hκL hκT hκBT
+      hcoeff_valid hBT_factor hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower
+      hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat hLU hdetT
+      hT_tridiag hColDom hL_norm hLT_norm hT_norm hBT_norm hcoeff
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_relative_colDiagDom_middle_coeff_printed_gamma_validity`. -/
+def higham11_8_AasenSpec_id_source_prefix_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_unit_roundoff_bound :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz hγ_factor
+      hκL hκT hκBT hcap hBT_factor hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat hLU
+      hdetT hT_tridiag hColDom hL_norm hLT_norm hT_norm hBT_norm hcoeff =>
+    higham11_8_AasenSpec_id_source_prefix_relative_colDiagDom_middle_coeff_printed_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz hγ_factor
+      hκL hκT hκBT
+      (higham11_8_gammaValid_15n25_of_unit_roundoff_bound fp n hcap)
+      hBT_factor hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hThat hLU hdetT hT_tridiag hColDom hL_norm
+      hLT_norm hT_norm hBT_norm hcoeff
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_relative_colDiagDom_middle_coeff_printed_gamma_validity`. -/
+def higham11_8_AasenSpec_id_source_prefix_relative_colDiagDom_middle_coeff_printed_gamma_validity_of_u_le_cap :=
+  fun fp n Ucap hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      BT_factor b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz
+      hγ_factor hκL hκT hκBT hu hcap hBT_factor hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat hLU
+      hdetT hT_tridiag hColDom hL_norm hLT_norm hT_norm hBT_norm hcoeff =>
+    higham11_8_AasenSpec_id_source_prefix_relative_colDiagDom_middle_coeff_printed_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz hγ_factor
+      hκL hκT hκBT
+      (higham11_8_gammaValid_15n25_of_u_le_cap fp n Ucap hu hcap)
+      hBT_factor hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hThat hLU hdetT hT_tridiag hColDom hL_norm
+      hLT_norm hT_norm hBT_norm hcoeff
+
+/-- Printed-radius relative row-dominant middle route with `sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_relative_rowDiagDom_middle_coeff_printed_gamma_validity :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz hγ_factor
+      hκL hκT hκBT hcoeff_valid hBT_factor hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat hLU
+      hdetT hT_tridiag hRowDom hL_norm hLT_norm hT_norm hBT_norm hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_relative_rowDiagDom_middle_coeff_printed_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      (fun i : Fin n => i) b DeltaT_LU γ_factor κL κLT κT κBT hspec
+      (by intro i; rfl) hH_eq hTnz hγ_factor hκL hκT hκBT
+      hcoeff_valid hBT_factor hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower
+      hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat hLU hdetT
+      hT_tridiag hRowDom hL_norm hLT_norm hT_norm hBT_norm hcoeff
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_relative_rowDiagDom_middle_coeff_printed_gamma_validity`. -/
+def higham11_8_AasenSpec_id_source_prefix_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_unit_roundoff_bound :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz hγ_factor
+      hκL hκT hκBT hcap hBT_factor hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat hLU
+      hdetT hT_tridiag hRowDom hL_norm hLT_norm hT_norm hBT_norm hcoeff =>
+    higham11_8_AasenSpec_id_source_prefix_relative_rowDiagDom_middle_coeff_printed_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz hγ_factor
+      hκL hκT hκBT
+      (higham11_8_gammaValid_15n25_of_unit_roundoff_bound fp n hcap)
+      hBT_factor hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hThat hLU hdetT hT_tridiag hRowDom hL_norm
+      hLT_norm hT_norm hBT_norm hcoeff
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_relative_rowDiagDom_middle_coeff_printed_gamma_validity`. -/
+def higham11_8_AasenSpec_id_source_prefix_relative_rowDiagDom_middle_coeff_printed_gamma_validity_of_u_le_cap :=
+  fun fp n Ucap hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      BT_factor b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz
+      hγ_factor hκL hκT hκBT hu hcap hBT_factor hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat hLU
+      hdetT hT_tridiag hRowDom hL_norm hLT_norm hT_norm hBT_norm hcoeff =>
+    higham11_8_AasenSpec_id_source_prefix_relative_rowDiagDom_middle_coeff_printed_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz hγ_factor
+      hκL hκT hκBT
+      (higham11_8_gammaValid_15n25_of_u_le_cap fp n Ucap hu hcap)
+      hBT_factor hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hThat hLU hdetT hT_tridiag hRowDom hL_norm
+      hLT_norm hT_norm hBT_norm hcoeff
+
+/-- Printed-radius relative column-dominant componentwise-`BT_factor`
+middle route with `sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_relative_colDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz hγ_factor
+      hκL hκT hκBT hcoeff_valid hBT_factor hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat hLU
+      hdetT hT_tridiag hColDom hL_norm hLT_norm hT_norm hBT_component
+      hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_relative_colDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      (fun i : Fin n => i) b DeltaT_LU γ_factor κL κLT κT κBT hspec
+      (by intro i; rfl) hH_eq hTnz hγ_factor hκL hκT hκBT
+      hcoeff_valid hBT_factor hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower
+      hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat hLU hdetT
+      hT_tridiag hColDom hL_norm hLT_norm hT_norm hBT_component hcoeff
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_relative_colDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity`. -/
+def higham11_8_AasenSpec_id_source_prefix_relative_colDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity_of_unit_roundoff_bound :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz hγ_factor
+      hκL hκT hκBT hcap hBT_factor hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat hLU
+      hdetT hT_tridiag hColDom hL_norm hLT_norm hT_norm hBT_component
+      hcoeff =>
+    higham11_8_AasenSpec_id_source_prefix_relative_colDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz hγ_factor
+      hκL hκT hκBT
+      (higham11_8_gammaValid_15n25_of_unit_roundoff_bound fp n hcap)
+      hBT_factor hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hThat hLU hdetT hT_tridiag hColDom hL_norm
+      hLT_norm hT_norm hBT_component hcoeff
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_relative_colDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity`. -/
+def higham11_8_AasenSpec_id_source_prefix_relative_colDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity_of_u_le_cap :=
+  fun fp n Ucap hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      BT_factor b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz
+      hγ_factor hκL hκT hκBT hu hcap hBT_factor hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat hLU
+      hdetT hT_tridiag hColDom hL_norm hLT_norm hT_norm hBT_component
+      hcoeff =>
+    higham11_8_AasenSpec_id_source_prefix_relative_colDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz hγ_factor
+      hκL hκT hκBT
+      (higham11_8_gammaValid_15n25_of_u_le_cap fp n Ucap hu hcap)
+      hBT_factor hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hThat hLU hdetT hT_tridiag hColDom hL_norm
+      hLT_norm hT_norm hBT_component hcoeff
+
+/-- Printed-radius relative row-dominant componentwise-`BT_factor` middle
+route with `sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_relative_rowDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz hγ_factor
+      hκL hκT hκBT hcoeff_valid hBT_factor hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat hLU
+      hdetT hT_tridiag hRowDom hL_norm hLT_norm hT_norm hBT_component
+      hcoeff =>
+    higham11_8_AasenSpec_identity_source_prefix_relative_rowDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      (fun i : Fin n => i) b DeltaT_LU γ_factor κL κLT κT κBT hspec
+      (by intro i; rfl) hH_eq hTnz hγ_factor hκL hκT hκBT
+      hcoeff_valid hBT_factor hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower
+      hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat hLU hdetT
+      hT_tridiag hRowDom hL_norm hLT_norm hT_norm hBT_component hcoeff
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_relative_rowDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity`. -/
+def higham11_8_AasenSpec_id_source_prefix_relative_rowDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity_of_unit_roundoff_bound :=
+  fun fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz hγ_factor
+      hκL hκT hκBT hcap hBT_factor hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat hLU
+      hdetT hT_tridiag hRowDom hL_norm hLT_norm hT_norm hBT_component
+      hcoeff =>
+    higham11_8_AasenSpec_id_source_prefix_relative_rowDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz hγ_factor
+      hκL hκT hκBT
+      (higham11_8_gammaValid_15n25_of_unit_roundoff_bound fp n hcap)
+      hBT_factor hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hThat hLU hdetT hT_tridiag hRowDom hL_norm
+      hLT_norm hT_norm hBT_component hcoeff
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_relative_rowDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity`. -/
+def higham11_8_AasenSpec_id_source_prefix_relative_rowDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity_of_u_le_cap :=
+  fun fp n Ucap hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      BT_factor b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz
+      hγ_factor hκL hκT hκBT hu hcap hBT_factor hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hThat hLU
+      hdetT hT_tridiag hRowDom hL_norm hLT_norm hT_norm hBT_component
+      hcoeff =>
+    higham11_8_AasenSpec_id_source_prefix_relative_rowDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity
+      fp n hn_pos A Pmat L H T L_hat T_hat L_T_hat U_T_hat BT_factor
+      b DeltaT_LU γ_factor κL κLT κT κBT hspec hH_eq hTnz hγ_factor
+      hκL hκT hκBT
+      (higham11_8_gammaValid_15n25_of_u_le_cap fp n Ucap hu hcap)
+      hBT_factor hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hThat hLU hdetT hT_tridiag hRowDom hL_norm
+      hLT_norm hT_norm hBT_component hcoeff
+
 /-- Exact-`T_hat = T` source form of the `AasenSpec` source-prefix relative
 column-dominant middle-solve route.  Equality supplies the zero middle-factor
 perturbation budget and the coefficient-one exact-`T` norm cap. -/
