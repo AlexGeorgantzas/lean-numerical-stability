@@ -9674,6 +9674,24 @@ theorem sylvester_quasiSchur_blockTraversal_columns_eq_of_solution_product_shift
       sylvesterTwoColumnBlockCoeff_det_ne_zero_of_product_shift_det_ne_zero
         m n R S p q hprod
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the global real-Schur traversal uniqueness
+    step-oracle skeleton. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_columns_eq_of_solution_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_columns_eq_of_solution_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the determinant-certified scheduled traversal
+    uniqueness skeleton. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_columns_eq_of_solution_det_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_columns_eq_of_solution_det_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the product-shift determinant scheduled
+    traversal uniqueness skeleton. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_columns_eq_of_solution_product_shift_det_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_columns_eq_of_solution_product_shift_det_frontier_step_oracle
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), scheduled
     quasi-Schur traversal existence skeleton with determinant certificates:
     if a frontier schedule starts at column `0`, ends at `n`, and each step is
