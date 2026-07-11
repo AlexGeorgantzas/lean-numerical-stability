@@ -3197,6 +3197,91 @@ theorem existsUnique_sylvesterVecCoeff_diagonal_mulVec (m n : Nat)
   intro y hy
   exact hinj (by rw [hy, hx])
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered
+    abbreviation for the separated diagonal vec/Kronecker inverse. -/
+noncomputable abbrev H16_eq16_3_sylvesterDiagonalVecCoeffInv :=
+  sylvesterDiagonalVecCoeffInv
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered
+    alias for the left-inverse property of the separated diagonal coefficient. -/
+alias H16_eq16_3_sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal :=
+  sylvesterDiagonalVecCoeffInv_mul_sylvesterVecCoeff_diagonal
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered
+    alias for the right-inverse property of the separated diagonal coefficient. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal_mul_sylvesterDiagonalVecCoeffInv :=
+  sylvesterVecCoeff_diagonal_mul_sylvesterDiagonalVecCoeffInv
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3): source-numbered
+    alias for the entrywise diagonal Sylvester operator action. -/
+alias H16_eq16_3_sylvesterOpRect_diagonal_apply :=
+  sylvesterOpRect_diagonal_apply
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered
+    abbreviation for the explicit separated diagonal Sylvester solution. -/
+noncomputable abbrev H16_eq16_3_sylvesterDiagonalSolution :=
+  sylvesterDiagonalSolution
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered
+    alias for the homogeneous explicit diagonal solution. -/
+alias H16_eq16_3_sylvesterDiagonalSolution_zero :=
+  sylvesterDiagonalSolution_zero
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): source-numbered
+    alias identifying the vectorized explicit solution with the inverse action. -/
+alias H16_eq16_3_vec_sylvesterDiagonalSolution_eq_mulVec_inv :=
+  vec_sylvesterDiagonalSolution_eq_mulVec_inv
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): source-numbered
+    alias for the vectorized diagonal solve. -/
+alias H16_eq16_3_sylvesterVecCoeff_mulVec_vec_sylvesterDiagonalSolution :=
+  sylvesterVecCoeff_mulVec_vec_sylvesterDiagonalSolution
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.1)-(16.3): source-numbered
+    alias for the componentwise exact diagonal solve. -/
+alias H16_eq16_3_sylvesterOpRect_diagonal_sylvesterDiagonalSolution :=
+  sylvesterOpRect_diagonal_sylvesterDiagonalSolution
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered
+    alias for the explicit diagonal Sylvester solution predicate. -/
+alias H16_eq16_3_isSylvesterSolutionRect_sylvesterDiagonalSolution :=
+  isSylvesterSolutionRect_sylvesterDiagonalSolution
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered
+    alias for uniqueness of the explicit diagonal Sylvester solution. -/
+alias H16_eq16_3_sylvesterDiagonalSolution_unique :=
+  sylvesterDiagonalSolution_unique
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.3): source-numbered
+    alias for unique solvability of separated diagonal Sylvester equations. -/
+alias H16_eq16_3_existsUnique_isSylvesterSolutionRect_diagonal :=
+  existsUnique_isSylvesterSolutionRect_diagonal
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): source-numbered
+    alias for the trivial-kernel form of the separated diagonal coefficient. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal_mulVec_eq_zero_iff :=
+  sylvesterVecCoeff_diagonal_mulVec_eq_zero_iff
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): source-numbered
+    alias for injectivity of the separated diagonal vec/Kronecker coefficient. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal_mulVec_injective :=
+  sylvesterVecCoeff_diagonal_mulVec_injective
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): source-numbered
+    alias for surjectivity of the separated diagonal vec/Kronecker coefficient. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal_mulVec_surjective :=
+  sylvesterVecCoeff_diagonal_mulVec_surjective
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): source-numbered
+    alias for bijectivity of the separated diagonal vec/Kronecker coefficient. -/
+alias H16_eq16_3_sylvesterVecCoeff_diagonal_mulVec_bijective :=
+  sylvesterVecCoeff_diagonal_mulVec_bijective
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3): source-numbered
+    alias for unique vectorized solves by the separated diagonal coefficient. -/
+alias H16_eq16_3_existsUnique_sylvesterVecCoeff_diagonal_mulVec :=
+  existsUnique_sylvesterVecCoeff_diagonal_mulVec
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.29), diagonal case:
     the absolute-value matrix exactly bounds the explicit diagonal inverse
     componentwise. -/
