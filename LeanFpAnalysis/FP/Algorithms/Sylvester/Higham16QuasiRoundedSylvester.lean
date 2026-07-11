@@ -119,6 +119,23 @@ theorem sylvesterQuasiSchurBackSubCoeff_subdiag_zero (m n : Nat)
   exact sylvesterQuasiSchurBackSubCoeff_eq_zero m n R S dblR hR hS a c
     (by omega) (fun _ => hdbl)
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7): combined
+    marked-block zero pattern for the reordered vec/Kronecker coefficient.
+    Entries strictly below the marked `1 x 1`/`2 x 2` block diagonal vanish. -/
+theorem sylvesterQuasiSchurBackSubCoeff_below_markedBlock_zero (m n : Nat)
+    (R : RMatFn m m) (S : RMatFn n n) (dblR : Fin m → Bool)
+    (hR : IsQuasiUpperTriangularFn m R dblR) (hS : IsUpperTriangularFn n S) :
+    ∀ a c : Fin (n * m),
+      c.val + 1 < a.val ∨
+        (c.val + 1 = a.val ∧ sylvesterQuasiPairing m n dblR c = false) →
+      Wave14.sylvesterSchurBackSubCoeff m n R S a c = 0 := by
+  intro a c h
+  rcases h with hfar | ⟨hadj, hpair⟩
+  · exact sylvesterQuasiSchurBackSubCoeff_below_subdiag_zero
+      m n R S dblR hR hS a c hfar
+  · exact sylvesterQuasiSchurBackSubCoeff_subdiag_zero
+      m n R S dblR hR hS a c hadj hpair
+
 /-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3), (16.6)-(16.7):
     transport of the diagonal-separation certificate.  If `R_ii ≠ S_kk` on
     every row `i` of `R` that is not the bottom row of a marked 2 x 2 block
@@ -342,6 +359,152 @@ theorem sylvesterVecCoeff_quasiTriangular_blockBackSub_backward_error_componentw
 -- ============================================================
 
 /-- **Higham, 2nd ed., Chapter 16.2, pp. 307-308, equation (16.8),
+    quasi-triangular (real Schur) variant, vectorized fill-in-budget form**
+    (supplied quasi-triangular `R`, triangular `S`).  The computed
+    vectorized solution of the Schur-form Sylvester system satisfies a
+    componentwise residual bound from the unconditional (16.7) model, keeping
+    the explicit Theorem 9.3 elimination fill-in budget visible instead of
+    assuming growth certificates that collapse it to `(1 + rho) |P|`. -/
+theorem sylvesterVecCoeff_quasiTriangular_blockBackSub_componentwise_residual_with_growthTerm
+    (fp : FPModel) (m n : Nat) (dblR : Fin m → Bool)
+    (R : RMatFn m m) (S : RMatFn n n) (Ct : RMatFn m n)
+    (hRp : IsQuasiBlockPairing m dblR)
+    (hR : IsQuasiUpperTriangularFn m R dblR) (hS : IsUpperTriangularFn n S)
+    (hsep : ∀ (i : Fin m) (k : Fin n),
+      ¬(0 < i.val ∧ dblR ⟨i.val - 1, by omega⟩ = true) → R i i ≠ S k k)
+    (hpiv : ∀ (i i' : Fin m) (k : Fin n), i'.val = i.val + 1 →
+      dblR i = true →
+      flSolve2x2SecondPivot fp (R i i - S k k) (R i i') (R i' i)
+        (R i' i' - S k k) ≠ 0)
+    (hgv : gammaValid fp (n * m + 9)) (p : Prod (Fin n) (Fin m)) :
+    |Matrix.vec Ct p -
+        Matrix.mulVec (sylvesterVecCoeff m n R S)
+          (flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct) p| ≤
+      gamma fp (n * m + 9) *
+        ∑ q, (|sylvesterVecCoeff m n R S p q| +
+          sylvesterQuasiGrowthTerm m n dblR R S p q) *
+          |flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct q| := by
+  obtain ⟨ΔP, hbound, heq⟩ :=
+    sylvesterVecCoeff_quasiTriangular_blockBackSub_backward_error
+      fp m n dblR R S Ct hRp hR hS hsep hpiv hgv
+  have hdiff :
+      Matrix.vec Ct p -
+          Matrix.mulVec (sylvesterVecCoeff m n R S)
+            (flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct) p =
+        ∑ q, ΔP p q *
+          flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct q := by
+    have h1 := congrFun heq p
+    simp only [Matrix.mulVec, dotProduct, Matrix.add_apply] at h1
+    simp only [Matrix.mulVec, dotProduct]
+    rw [← h1, ← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intro q _
+    ring
+  rw [hdiff]
+  refine le_trans (Finset.abs_sum_le_sum_abs _ _) ?_
+  rw [Finset.mul_sum]
+  apply Finset.sum_le_sum
+  intro q _
+  rw [abs_mul]
+  calc
+    |ΔP p q| *
+        |flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct q| ≤
+        (gamma fp (n * m + 9) *
+          (|sylvesterVecCoeff m n R S p q| +
+            sylvesterQuasiGrowthTerm m n dblR R S p q)) *
+          |flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct q| :=
+      mul_le_mul_of_nonneg_right (hbound p q) (abs_nonneg _)
+    _ = gamma fp (n * m + 9) *
+        ((|sylvesterVecCoeff m n R S p q| +
+            sylvesterQuasiGrowthTerm m n dblR R S p q) *
+          |flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct q|) := by
+      ring
+
+/-- **Higham, 2nd ed., Chapter 16.2, pp. 307-308, equation (16.8),
+    quasi-triangular (real Schur) variant, printed matrix fill-in-budget
+    form** (supplied quasi-triangular `R`, triangular `S`).  This is the
+    matrix-entry companion to the vectorized fill-in residual bound, keeping
+    the explicit GE fill-in row budget instead of assuming growth certificates
+    that collapse it into `(1 + rho) |P|`. -/
+theorem sylvesterResidualRect_quasiTriangular_blockBackSub_componentwise_le_with_growthTerm
+    (fp : FPModel) (m n : Nat) (dblR : Fin m → Bool)
+    (R : RMatFn m m) (S : RMatFn n n) (Ct : RMatFn m n)
+    (hRp : IsQuasiBlockPairing m dblR)
+    (hR : IsQuasiUpperTriangularFn m R dblR) (hS : IsUpperTriangularFn n S)
+    (hsep : ∀ (i : Fin m) (k : Fin n),
+      ¬(0 < i.val ∧ dblR ⟨i.val - 1, by omega⟩ = true) → R i i ≠ S k k)
+    (hpiv : ∀ (i i' : Fin m) (k : Fin n), i'.val = i.val + 1 →
+      dblR i = true →
+      flSolve2x2SecondPivot fp (R i i - S k k) (R i i') (R i' i)
+        (R i' i' - S k k) ≠ 0)
+    (hgv : gammaValid fp (n * m + 9)) (i : Fin m) (k : Fin n) :
+    |sylvesterResidualRect m n R S Ct
+        (flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct) i k| ≤
+      gamma fp (n * m + 9) *
+        (matMulRect m m n (fun a b => |R a b|)
+            (fun a b =>
+              |flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct a b|)
+            i k +
+          matMulRect m n n
+            (fun a b =>
+              |flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct a b|)
+            (fun a b => |S a b|) i k +
+          ∑ q : Prod (Fin n) (Fin m),
+            sylvesterQuasiGrowthTerm m n dblR R S (k, i) q *
+              |flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct q|) := by
+  have hvec :=
+    sylvesterVecCoeff_quasiTriangular_blockBackSub_componentwise_residual_with_growthTerm
+      fp m n dblR R S Ct hRp hR hS hsep hpiv hgv (k, i)
+  rw [← vec_flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct] at hvec
+  rw [sylvesterVecCoeff_mulVec_vec m n R S
+    (flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct)] at hvec
+  refine le_trans hvec ?_
+  refine mul_le_mul_of_nonneg_left ?_ (gamma_nonneg fp hgv)
+  have hsplit :
+      (∑ q : Prod (Fin n) (Fin m),
+          (|sylvesterVecCoeff m n R S (k, i) q| +
+              sylvesterQuasiGrowthTerm m n dblR R S (k, i) q) *
+            |Matrix.vec (flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct)
+              q|) =
+        (∑ q : Prod (Fin n) (Fin m),
+          |sylvesterVecCoeff m n R S (k, i) q| *
+            |Matrix.vec (flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct)
+              q|) +
+        ∑ q : Prod (Fin n) (Fin m),
+          sylvesterQuasiGrowthTerm m n dblR R S (k, i) q *
+            |Matrix.vec (flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct)
+              q| := by
+    rw [← Finset.sum_add_distrib]
+    apply Finset.sum_congr rfl
+    intro q _
+    ring
+  rw [hsplit]
+  apply add_le_add
+  · refine le_trans (Wave14.sylvesterVecCoeff_abs_row_action_le m n R S
+      (Matrix.vec (flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct))
+      (k, i)) ?_
+    refine add_le_add (le_of_eq ?_) (le_of_eq ?_)
+    · show (∑ j : Fin m, |R i j| *
+          |Matrix.vec (flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct)
+            (k, j)|) =
+        ∑ j : Fin m, |R i j| *
+          |flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct j k|
+      rfl
+    · show (∑ l : Fin n, |S l k| *
+          |Matrix.vec (flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct)
+            (l, i)|) =
+        ∑ l : Fin n,
+          |flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct i l| *
+            |S l k|
+      apply Finset.sum_congr rfl
+      intro l _
+      exact mul_comm _ _
+  · apply le_of_eq
+    apply Finset.sum_congr rfl
+    intro q _
+    rw [vec_flSylvesterQuasiSchurBlockBackSubSolve]
+
+/-- **Higham, 2nd ed., Chapter 16.2, pp. 307-308, equation (16.8),
     quasi-triangular (real Schur) variant, vectorized componentwise form**
     (supplied quasi-triangular `R`, triangular `S`).  The computed
     vectorized solution of the Schur-form Sylvester system satisfies
@@ -451,9 +614,213 @@ theorem sylvesterResidualRect_quasiTriangular_blockBackSub_componentwise_le
     intro l _
     exact mul_comm _ _
 
+/-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equations (16.7)-(16.8),
+    quasi-triangular (real Schur) variant: bundled endpoint exposing the
+    componentwise backward-error model, its vectorized residual consequence,
+    and the printed matrix residual form under one shared hypothesis list. -/
+theorem sylvesterVecCoeff_quasiTriangular_blockBackSub_componentwise_error_and_residual
+    (fp : FPModel) (m n : Nat) (dblR : Fin m → Bool)
+    (R : RMatFn m m) (S : RMatFn n n) (Ct : RMatFn m n) (ρ : Real)
+    (hRp : IsQuasiBlockPairing m dblR)
+    (hR : IsQuasiUpperTriangularFn m R dblR) (hS : IsUpperTriangularFn n S)
+    (hsep : ∀ (i : Fin m) (k : Fin n),
+      ¬(0 < i.val ∧ dblR ⟨i.val - 1, by omega⟩ = true) → R i i ≠ S k k)
+    (hpiv : ∀ (i i' : Fin m) (k : Fin n), i'.val = i.val + 1 →
+      dblR i = true →
+      flSolve2x2SecondPivot fp (R i i - S k k) (R i i') (R i' i)
+        (R i' i' - S k k) ≠ 0)
+    (hρ : 0 ≤ ρ)
+    (hgrow : ∀ (i i' : Fin m) (k : Fin n), i'.val = i.val + 1 →
+      dblR i = true →
+      |R i i'| * |R i' i| ≤ ρ * (|R i i - S k k| * |R i' i' - S k k|))
+    (hgv : gammaValid fp (n * m + 9)) :
+    (∃ ΔP : Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real,
+      (∀ p q, |ΔP p q| ≤ (1 + ρ) * gamma fp (n * m + 9) *
+        |sylvesterVecCoeff m n R S p q|) ∧
+      Matrix.mulVec (sylvesterVecCoeff m n R S + ΔP)
+          (flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct) =
+        Matrix.vec Ct) ∧
+    (∀ p : Prod (Fin n) (Fin m),
+      |Matrix.vec Ct p -
+          Matrix.mulVec (sylvesterVecCoeff m n R S)
+            (flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct) p| ≤
+        (1 + ρ) * gamma fp (n * m + 9) *
+          ∑ q, |sylvesterVecCoeff m n R S p q| *
+            |flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct q|) ∧
+    (∀ (i : Fin m) (k : Fin n),
+      |sylvesterResidualRect m n R S Ct
+          (flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct) i k| ≤
+        (1 + ρ) * gamma fp (n * m + 9) *
+          (matMulRect m m n (fun a b => |R a b|)
+              (fun a b =>
+                |flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct a b|)
+              i k +
+            matMulRect m n n
+              (fun a b =>
+                |flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct a b|)
+              (fun a b => |S a b|) i k)) := by
+  constructor
+  · exact
+      sylvesterVecCoeff_quasiTriangular_blockBackSub_backward_error_componentwise
+        fp m n dblR R S Ct ρ hRp hR hS hsep hpiv hρ hgrow hgv
+  constructor
+  · intro p
+    exact
+      sylvesterVecCoeff_quasiTriangular_blockBackSub_componentwise_residual
+        fp m n dblR R S Ct ρ hRp hR hS hsep hpiv hρ hgrow hgv p
+  · intro i k
+    exact
+      sylvesterResidualRect_quasiTriangular_blockBackSub_componentwise_le
+        fp m n dblR R S Ct ρ hRp hR hS hsep hpiv hρ hgrow hgv i k
+
+/-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equations (16.7)-(16.8),
+    quasi-triangular (real Schur) variant: bundled endpoint exposing the
+    unconditional fill-in-budget backward-error model, its vectorized residual
+    consequence, and the printed matrix residual form under one shared
+    hypothesis list. -/
+theorem sylvesterVecCoeff_quasiTriangular_blockBackSub_componentwise_error_and_residual_with_growthTerm
+    (fp : FPModel) (m n : Nat) (dblR : Fin m → Bool)
+    (R : RMatFn m m) (S : RMatFn n n) (Ct : RMatFn m n)
+    (hRp : IsQuasiBlockPairing m dblR)
+    (hR : IsQuasiUpperTriangularFn m R dblR) (hS : IsUpperTriangularFn n S)
+    (hsep : ∀ (i : Fin m) (k : Fin n),
+      ¬(0 < i.val ∧ dblR ⟨i.val - 1, by omega⟩ = true) → R i i ≠ S k k)
+    (hpiv : ∀ (i i' : Fin m) (k : Fin n), i'.val = i.val + 1 →
+      dblR i = true →
+      flSolve2x2SecondPivot fp (R i i - S k k) (R i i') (R i' i)
+        (R i' i' - S k k) ≠ 0)
+    (hgv : gammaValid fp (n * m + 9)) :
+    (∃ ΔP : Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real,
+      (∀ p q, |ΔP p q| ≤ gamma fp (n * m + 9) *
+        (|sylvesterVecCoeff m n R S p q| +
+          sylvesterQuasiGrowthTerm m n dblR R S p q)) ∧
+      Matrix.mulVec (sylvesterVecCoeff m n R S + ΔP)
+          (flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct) =
+        Matrix.vec Ct) ∧
+    (∀ p : Prod (Fin n) (Fin m),
+      |Matrix.vec Ct p -
+          Matrix.mulVec (sylvesterVecCoeff m n R S)
+            (flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct) p| ≤
+        gamma fp (n * m + 9) *
+          ∑ q, (|sylvesterVecCoeff m n R S p q| +
+            sylvesterQuasiGrowthTerm m n dblR R S p q) *
+            |flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct q|) ∧
+    (∀ (i : Fin m) (k : Fin n),
+      |sylvesterResidualRect m n R S Ct
+          (flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct) i k| ≤
+        gamma fp (n * m + 9) *
+          (matMulRect m m n (fun a b => |R a b|)
+              (fun a b =>
+                |flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct a b|)
+              i k +
+            matMulRect m n n
+              (fun a b =>
+                |flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct a b|)
+              (fun a b => |S a b|) i k +
+            ∑ q : Prod (Fin n) (Fin m),
+              sylvesterQuasiGrowthTerm m n dblR R S (k, i) q *
+                |flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct q|)) := by
+  constructor
+  · exact
+      sylvesterVecCoeff_quasiTriangular_blockBackSub_backward_error
+        fp m n dblR R S Ct hRp hR hS hsep hpiv hgv
+  constructor
+  · intro p
+    exact
+      sylvesterVecCoeff_quasiTriangular_blockBackSub_componentwise_residual_with_growthTerm
+        fp m n dblR R S Ct hRp hR hS hsep hpiv hgv p
+  · intro i k
+    exact
+      sylvesterResidualRect_quasiTriangular_blockBackSub_componentwise_le_with_growthTerm
+        fp m n dblR R S Ct hRp hR hS hsep hpiv hgv i k
+
 -- ============================================================
 -- Source-numbered aliases
 -- ============================================================
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.7),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    induced product-index adjacent-pair marking used by the rounded
+    quasi-triangular block substitution. -/
+alias H16_eq16_6_quasi_sylvesterQuasiPairing_isQuasiBlockPairing :=
+  sylvesterQuasiPairing_isQuasiBlockPairing
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.7),
+    quasi-triangular (real Schur) variant: source-numbered alias for decoding
+    a marked product-index block into the corresponding `2 x 2` diagonal block
+    of the reordered vec/Kronecker coefficient. -/
+alias H16_eq16_6_quasi_sylvesterQuasiPairing_block_decode :=
+  sylvesterQuasiPairing_block_decode
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    same-column off-diagonal entries of the vec/Kronecker Sylvester
+    coefficient used when decoding marked `2 x 2` product-index blocks. -/
+alias H16_eq16_2_quasi_sylvesterVecCoeff_same_col_apply :=
+  sylvesterVecCoeff_same_col_apply
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.7),
+    quasi-triangular (real Schur) variant: source-numbered alias for
+    transporting the non-bottom-row condition through the Bartels-Stewart
+    product-index order. -/
+alias H16_eq16_6_quasi_sylvesterQuasiPairing_notSecond_decode :=
+  sylvesterQuasiPairing_notSecond_decode
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    generic zero theorem of the reordered vec/Kronecker coefficient below the
+    marked block diagonal. -/
+alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_eq_zero :=
+  sylvesterQuasiSchurBackSubCoeff_eq_zero
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    below-subdiagonal zero pattern of the reordered vec/Kronecker coefficient
+    used by the rounded block substitution. -/
+alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_below_subdiag_zero :=
+  sylvesterQuasiSchurBackSubCoeff_below_subdiag_zero
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    off-block first-subdiagonal zero pattern of the reordered vec/Kronecker
+    coefficient used by the rounded block substitution. -/
+alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_subdiag_zero :=
+  sylvesterQuasiSchurBackSubCoeff_subdiag_zero
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    combined zero pattern below the marked block diagonal of the reordered
+    vec/Kronecker coefficient. -/
+alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_below_markedBlock_zero :=
+  sylvesterQuasiSchurBackSubCoeff_below_markedBlock_zero
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6),
+    quasi-triangular (real Schur) variant: source-numbered alias for transport
+    of the scalar and first-block-pivot separation certificate to the reordered
+    coefficient. -/
+alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_pivot_ne_zero :=
+  sylvesterQuasiSchurBackSubCoeff_pivot_ne_zero
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6),
+    quasi-triangular (real Schur) variant: source-numbered alias for transport
+    of the computed second-pivot certificate for each marked shifted `2 x 2`
+    block. -/
+alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_secondPivot_ne_zero :=
+  sylvesterQuasiSchurBackSubCoeff_secondPivot_ne_zero
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6), with Chapter 9.3 growth
+    control: source-numbered alias for transport of the marked-block growth
+    certificate that collapses the explicit GE fill-in into the componentwise
+    `(1 + rho)` budget. -/
+alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_growth :=
+  sylvesterQuasiSchurBackSubCoeff_growth
+
+/-- Higham, 2nd ed., Chapter 16.2, p. 308, equation (16.6),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    vectorized/matrix bookkeeping of the computed rounded quasi-triangular
+    Schur solve. -/
+alias H16_eq16_6_quasi_vec_flSylvesterQuasiSchurBlockBackSubSolve :=
+  vec_flSylvesterQuasiSchurBlockBackSubSolve
 
 /-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equation (16.7),
     quasi-triangular (real Schur) variant: source-numbered alias for the
@@ -472,6 +839,27 @@ alias H16_eq16_7_quasi_sylvesterVecCoeff_blockBackSub_backward_error_componentwi
 
 /-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equation (16.8),
     quasi-triangular (real Schur) variant: source-numbered alias for the
+    vectorized componentwise residual consequence with the explicit GE fill-in
+    budget from the unconditional (16.7) model. -/
+alias H16_eq16_8_quasi_sylvesterVecCoeff_blockBackSub_componentwise_residual_with_growthTerm :=
+  sylvesterVecCoeff_quasiTriangular_blockBackSub_componentwise_residual_with_growthTerm
+
+/-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equation (16.8),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    printed matrix residual consequence with the explicit GE fill-in row
+    budget from the unconditional (16.7) model. -/
+alias H16_eq16_8_quasi_sylvesterResidualRect_blockBackSub_componentwise_le_with_growthTerm :=
+  sylvesterResidualRect_quasiTriangular_blockBackSub_componentwise_le_with_growthTerm
+
+/-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equations (16.7)-(16.8),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    bundled unconditional fill-in-budget backward-error and residual endpoint
+    package. -/
+alias H16_eq16_7_8_quasi_sylvesterVecCoeff_blockBackSub_componentwise_error_and_residual_with_growthTerm :=
+  sylvesterVecCoeff_quasiTriangular_blockBackSub_componentwise_error_and_residual_with_growthTerm
+
+/-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equation (16.8),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
     vectorized componentwise residual consequence
     `|vec(C~) - P x^| <= (1+rho) gamma_{nm+9} (|P| |x^|)`. -/
 alias H16_eq16_8_quasi_sylvesterVecCoeff_blockBackSub_componentwise_residual :=
@@ -483,6 +871,12 @@ alias H16_eq16_8_quasi_sylvesterVecCoeff_blockBackSub_componentwise_residual :=
     `|C~ - R Z^ + Z^ S| <= (1+rho) gamma_{nm+9} (|R||Z^| + |Z^||S|)`. -/
 alias H16_eq16_8_quasi_sylvesterResidualRect_blockBackSub_componentwise_le :=
   sylvesterResidualRect_quasiTriangular_blockBackSub_componentwise_le
+
+/-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equations (16.7)-(16.8),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    bundled componentwise backward-error and residual endpoint package. -/
+alias H16_eq16_7_8_quasi_sylvesterVecCoeff_blockBackSub_componentwise_error_and_residual :=
+  sylvesterVecCoeff_quasiTriangular_blockBackSub_componentwise_error_and_residual
 
 end Wave15
 

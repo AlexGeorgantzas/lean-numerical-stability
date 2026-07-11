@@ -308,6 +308,20 @@ theorem lyapunov_relative_aposteriori_bound_of_sigmaMin (n : Nat)
   exact div_le_div_of_nonneg_right hAbs (le_of_lt hX_pos)
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the supplied sigma-min Lyapunov a posteriori
+    residual-error bound. The underlying endpoint already handles zero error
+    internally. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_of_sigmaMin :=
+  lyapunov_aposteriori_bound_of_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the relative supplied sigma-min Lyapunov
+    a posteriori residual-error bound. The absolute endpoint already handles
+    zero error internally; the relative form still assumes `0 < ||X||_F`. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_of_sigmaMin :=
+  lyapunov_relative_aposteriori_bound_of_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
     total relative alias for the supplied sigma-min Lyapunov a posteriori
     residual-error bound.
 

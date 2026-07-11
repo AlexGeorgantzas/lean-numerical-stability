@@ -71,6 +71,12 @@ theorem frobNormRect_orthogonal_conjugation_eq {m n : Nat}
           simpa [matMulRectRight] using
             frobNormRect_orthogonal_right M (matTranspose V) hV.transpose
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.5) and (16.9), p. 308:
+    source-numbered alias for Frobenius invariance under the Schur
+    two-sided orthogonal reconstruction map. -/
+alias H16_eq16_5_9_frobNormRect_orthogonal_conjugation_eq :=
+  frobNormRect_orthogonal_conjugation_eq
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.9), p. 308: the Frobenius
     norm of a matrix presented by an exact orthogonal Schur similarity
     `A = U R U^T` equals the Frobenius norm of its quasi-triangular factor.
@@ -82,6 +88,12 @@ theorem frobNormRect_eq_of_orthogonal_similarity {m : Nat}
     frobNormRect A = frobNormRect R := by
   rw [hA]
   exact frobNormRect_orthogonal_conjugation_eq U R U hU hU
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.9), p. 308:
+    source-numbered alias for equality of a supplied exact Schur factor and
+    original matrix Frobenius scale. -/
+alias H16_eq16_9_frobNormRect_eq_of_orthogonal_similarity :=
+  frobNormRect_eq_of_orthogonal_similarity
 
 -- ============================================================
 -- (16.9) assembly: supplied exact orthogonal Schur factors
@@ -623,6 +635,12 @@ theorem frobNormRect_sylvesterResidualRect_le_gamma_dataScale_of_theorem19_4_fac
         (n * householderConstructApplyGammaIndex n))
       m n U R A dA V S B dB C Y hU hV hA hB hdA' hdB' hvalid hres
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.9), p. 308:
+    source-numbered alias for the fully-rounded-factor residual guarantee
+    with Chapter 19 Theorem 19.4 factor-perturbation coefficients. -/
+alias H16_eq16_9_frobNormRect_sylvesterResidualRect_le_gamma_dataScale_of_theorem19_4_factor_coefficients :=
+  frobNormRect_sylvesterResidualRect_le_gamma_dataScale_of_theorem19_4_factor_coefficients
+
 -- ============================================================
 -- (16.9) assembly: rounded RHS transform and reconstruction budgets
 -- ============================================================
@@ -845,6 +863,12 @@ theorem frobNormRect_sylvesterResidualRect_le_of_schur_residual_with_transform_b
           B)
     linarith
   linarith
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.9), p. 308:
+    source-numbered alias for the transform-budget residual bound that keeps
+    the exact Schur-coordinate `||Y||_F` scale. -/
+alias H16_eq16_9_frobNormRect_sylvesterResidualRect_le_of_schur_residual_with_transform_budgets :=
+  frobNormRect_sylvesterResidualRect_le_of_schur_residual_with_transform_budgets
 
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.9), p. 308: printed
     computed-solution-scale display of the transform-budget residual

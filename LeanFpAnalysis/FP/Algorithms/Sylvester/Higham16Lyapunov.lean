@@ -229,6 +229,12 @@ def LyapunovInverseOpBound (n : ℕ) (A : Fin n → Fin n → ℝ) (M : ℝ) : P
   ∀ Y : Fin n → Fin n → ℝ,
     frobNorm Y ≤ M * frobNorm (lyapunovOp n A Y)
 
+/-- Higham, 2nd ed., Section 16.3, equation (16.27):
+    source-numbered abbreviation for the supplied Lyapunov inverse-operator
+    bound underlying the structured condition number. -/
+abbrev H16_eq16_27_LyapunovInverseOpBound :=
+  LyapunovInverseOpBound
+
 /-- Higham, 2nd ed., §16.3, eq (16.27) (p. 317):
     a `SepLowerBound` for `(A, -A^T)` supplies a Lyapunov inverse-operator bound
     with `M = 1 / sigma`.  This records that `LyapunovInverseOpBound` is exactly
@@ -277,6 +283,12 @@ theorem lyapunovInverseOpBound_of_sepLowerBound (n : ℕ)
 noncomputable def lyapunovCond_of_inverseOpBound (n : ℕ)
     (X : Fin n → Fin n → ℝ) (α γ M : ℝ) : ℝ :=
   M * (2 * α * frobNorm X + γ) / frobNorm X
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.27):
+    source-numbered abbreviation for the supplied-inverse-bound Lyapunov
+    condition number value. -/
+noncomputable abbrev H16_eq16_27_lyapunovCond_of_inverseOpBound :=
+  lyapunovCond_of_inverseOpBound
 
 /-- Higham, 2nd ed., §16.3, eq (16.27) (p. 317):
     the supplied-`M` structured condition number satisfies the certificate
@@ -1065,6 +1077,32 @@ theorem lyapunov_relative_aposteriori_bound_of_pos_le_sylvesterSepInf
       hExact hE_ne hX_pos
 
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the sep-certificate Lyapunov a posteriori
+    residual-error bound, preserving the explicit nonzero-error side condition. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_of_sepLowerBound :=
+  lyapunov_aposteriori_bound_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the relative sep-certificate Lyapunov
+    a posteriori residual-error bound, preserving the explicit nonzero-error
+    and positive-solution-norm side conditions. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_of_sepLowerBound :=
+  lyapunov_relative_aposteriori_bound_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the exact-infimum Lyapunov a posteriori
+    residual-error bound, preserving the explicit nonzero-error side condition. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_of_pos_le_sylvesterSepInf :=
+  lyapunov_aposteriori_bound_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the relative exact-infimum Lyapunov a posteriori
+    residual-error bound, preserving the explicit nonzero-error and
+    positive-solution-norm side conditions. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_of_pos_le_sylvesterSepInf :=
+  lyapunov_relative_aposteriori_bound_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
     total source-facing Lyapunov a posteriori error-residual bound from a
     supplied exact `SepLowerBound` certificate for `sep(A,-A^T)`.
 
@@ -1549,6 +1587,19 @@ theorem lyapunov_relative_aposteriori_bound_diagonal (n : Nat)
     lyapunov_relative_aposteriori_bound_of_sepLowerBound n
       (Matrix.diagonal a) C X Xhat s hSep hExact hE_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal case:
+    source-numbered alias for the direct diagonal Lyapunov a posteriori
+    residual-error bound, preserving the explicit nonzero-error side condition. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_diagonal :=
+  lyapunov_aposteriori_bound_diagonal
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal case:
+    source-numbered alias for the relative direct diagonal Lyapunov a posteriori
+    residual-error bound, preserving the explicit nonzero-error and
+    positive-solution-norm side conditions. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_diagonal :=
+  lyapunov_relative_aposteriori_bound_diagonal
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal Lyapunov case:
     total residual-error bound from an entrywise lower bound on `|a_i + a_j|`.
 
@@ -1634,6 +1685,12 @@ noncomputable def lyapunovCondDiagonal (n : ℕ)
     (X : Fin n → Fin n → ℝ) (α γ s : ℝ) : ℝ :=
   lyapunovCond_of_inverseOpBound n X α γ (1 / s)
 
+/-- Higham, 2nd ed., Section 16.3, equation (16.27), diagonal case:
+    source-numbered abbreviation for the explicit diagonal Lyapunov condition
+    number value. -/
+noncomputable abbrev H16_eq16_27_lyapunovCondDiagonal :=
+  lyapunovCondDiagonal
+
 /-- Higham, 2nd ed., §16.3, eq (16.27), diagonal case (p. 317):
     the diagonal structured condition number `lyapunovCondDiagonal` satisfies the
     certificate predicate `LyapunovConditionFirstOrderBound` for the separated
@@ -1653,6 +1710,11 @@ theorem lyapunovCondDiagonal_isLyapunovConditionFirstOrderBound (n : ℕ)
   exact lyapunovCond_of_inverseOpBound_isLyapunovConditionFirstOrderBound n
     (Matrix.diagonal a) X α γ (1 / s)
     hα hγ hMnn hX hInv
+
+/-- Higham, 2nd ed., Section 16.3, equation (16.27), diagonal case:
+    source-numbered alias for the diagonal Lyapunov condition certificate. -/
+alias H16_eq16_27_lyapunovCondDiagonal_isLyapunovConditionFirstOrderBound :=
+  lyapunovCondDiagonal_isLyapunovConditionFirstOrderBound
 
 -- ============================================================
 -- Labeled (16.27) wrapper for the diagonal case

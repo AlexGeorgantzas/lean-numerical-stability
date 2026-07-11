@@ -149,6 +149,13 @@ theorem frobNormRect_le_gamma_dataScale_of_componentwise_product_budget
         exact add_le_add h4 h5
     _ = g * (frobNormRect R + frobNormRect S) * frobNormRect Z := by ring
 
+/-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equations (16.8)-(16.9):
+    source-numbered alias for the entrywise componentwise-product residual
+    budget to Frobenius data-scale bridge used by the end-to-end residual
+    assembly. -/
+alias H16_eq16_8_9_frobNormRect_le_gamma_dataScale_of_componentwise_product_budget :=
+  frobNormRect_le_gamma_dataScale_of_componentwise_product_budget
+
 -- ============================================================
 -- (16.8) in Frobenius form: the discharged Schur-coordinate residual
 -- ============================================================
@@ -219,6 +226,13 @@ theorem frobNormRect_sylvesterResidualRect_schurTriangular_backSub_le
     hgv
 
 /-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equations (16.8)-(16.9):
+    source-numbered alias for the raw triangular Schur-coordinate
+    Frobenius residual bound discharged from the componentwise (16.8)
+    theorem. -/
+alias H16_eq16_8_frobNormRect_sylvesterResidualRect_triangular_backSub_le :=
+  frobNormRect_sylvesterResidualRect_triangular_backSub_le
+
+/-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equations (16.8)-(16.9):
     source-numbered alias for the Frobenius form of the (16.8) rounded
     triangular-solve residual bound, i.e. the discharged residual hypothesis
     of the (16.9) assembly. -/
@@ -257,6 +271,12 @@ theorem flBartelsStewartSchurSolve_eq (fp : FPModel) (m n : Nat)
           (flSylvesterSchurBackSubSolve fp m n R S
             (rectMatMul (matTranspose U) (rectMatMul C V)))
           (matTranspose V)) := rfl
+
+/-- Higham, 2nd ed., Chapter 16.2, p. 308, equation (16.9):
+    source-numbered alias for the definitional reconstruction of the computed
+    Bartels-Stewart solution from the rounded Schur-coordinate solve. -/
+alias H16_eq16_9_flBartelsStewartSchurSolve_eq :=
+  flBartelsStewartSchurSolve_eq
 
 -- ============================================================
 -- (16.9) end to end: no residual hypothesis

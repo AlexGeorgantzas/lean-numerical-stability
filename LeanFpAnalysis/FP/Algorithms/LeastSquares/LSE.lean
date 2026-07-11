@@ -23535,6 +23535,155 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
         hm hn hnm Aperm bperm hphi hrowsPerm hbdomPerm hσArowRatioMax)
       DeltaAperm Deltabperm hExact hDeltaA hDeltab
 
+/-- Theorem 20.7 row-sorting policy: existential common-sort wrapper for the
+    certificate-free exact-perturbation square-margin route.
+
+This chooses the common row permutation from monotonicity of `|b|` with respect
+to the source initial row maximum, then applies the direct perturbation-witness
+route.  The QR-specific active-pivot, compact-budget, stage-recurrence, exact
+perturbed least-squares, and perturbation-entry obligations remain explicit for
+the chosen permutation. -/
+theorem Theorem20_7RowwiseBackwardError.exists_common_sorted_permuteRows_uniform_bounds_of_exact_perturbations_permuted_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_activeMaxPivotColumn_prefix_lower_signed_alpha_budget_sq_leading_block_det_ne_zero_abs_b_mono_activeRatioMax_le_of_abs_b_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (diagBudget : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hcompat :
+      ∀ i j : Fin m,
+        theorem20_7_initialRowMax hn A i ≤
+          theorem20_7_initialRowMax hn A j →
+        |b i| ≤ |b j|) :
+    ∃ σ : Fin m ≃ Fin m,
+      ∀ (Aexact : ℕ → Fin m → Fin n → ℝ)
+        (bexact : ℕ → Fin m → ℝ),
+      (∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A (σ r) j) →
+      (∀ r : Fin m, bexact 0 r = b (σ r)) →
+      (∀ k (hk : k < n),
+        householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hnm⟩
+              (fun a =>
+                storedHouseholderQRMatrixSeq fp hnm
+                  (fun r j => A (σ r) j) k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hnm
+                (fun r j => A (σ r) j) k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                ⟨k, lt_of_lt_of_le hk hnm⟩
+                (fun a =>
+                  storedHouseholderQRMatrixSeq fp hnm
+                    (fun r j => A (σ r) j) k a ⟨k, hk⟩)
+                (storedHouseholderQRAlphaSeq fp hnm
+                  (fun r j => A (σ r) j) k)))
+            (fun a =>
+              storedHouseholderQRMatrixSeq fp hnm
+                (fun r j => A (σ r) j) k a ⟨k, hk⟩)
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤ diagBudget k) →
+      (∀ k (hk : k < n),
+        (m : ℝ) * (diagBudget k) ^ 2 <
+          householderTrailingNorm2Sq m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun i =>
+              storedHouseholderQRMatrixSeq fp hnm
+                (fun r j => A (σ r) j) k i ⟨k, hk⟩)) →
+      (∀ k (hk : k < n),
+        Matrix.det
+          (qrLeadingBlock
+            (storedHouseholderQRMatrixSeq fp hnm
+              (fun r j => A (σ r) j) k)
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hnm)) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0) →
+      (∀ t (ht : t < n),
+        Fin.mk t ht =
+          householderActiveMaxPivotColumn
+            (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)
+            (storedHouseholderQRMatrixSeq fp hnm
+              (fun r j => A (σ r) j) t)) →
+      (∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|) →
+      (∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |storedHouseholderQRMatrixSeq fp hnm
+            (fun s j => A (σ s) j) (t + 1) r j -
+            Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |storedHouseholderQRMatrixSeq fp hnm
+                (fun s j => A (σ s) j) t r j - Aexact t r j|) →
+      (theorem20_7_activeInitialRowMaxRatioMax hm hn hnm
+        (fun r j => A (σ r) j) ≤ Real.sqrt (m : ℝ)) →
+      (∀ i : Fin m,
+        |b i| ≤ phi * theorem20_7_initialRowMax hn A i) →
+      (∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|) →
+      (∀ r : Fin m, ∀ t : ℕ,
+        |storedHouseholderQRRhsSeq fp hnm
+            (fun s j => A (σ s) j) (fun s => b (σ s))
+            (t + 1) r -
+            bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |storedHouseholderQRRhsSeq fp hnm
+                (fun s j => A (σ s) j) (fun s => b (σ s))
+                t r - bexact t r|) →
+      ∀ (DeltaAperm : Fin m → Fin n → ℝ) (Deltabperm : Fin m → ℝ),
+      IsLeastSquaresMinimizer
+        (fun i j => A (σ i) j + DeltaAperm i j)
+        (fun i => b (σ i) + Deltabperm i) xhat →
+      (∀ i : Fin m, ∀ j : Fin n,
+        |DeltaAperm i j| ≤
+          theorem20_7_deltaAEntryBudget gammaTilde
+            (theorem20_7_alpha hn
+              (storedHouseholderQRMatrixSeq fp hnm
+                (fun r j => A (σ r) j))
+              (fun r j => A (σ r) j) i)
+            (theorem20_7_initialRowMax hn
+              (fun r j => A (σ r) j) i) j) →
+      (∀ i : Fin m,
+        |Deltabperm i| ≤
+          theorem20_7_deltaBEntryBudget n gammaTilde
+            (theorem20_7_beta hn
+              (storedHouseholderQRMatrixSeq fp hnm
+                (fun r j => A (σ r) j))
+              (fun r j => A (σ r) j)
+              (storedHouseholderQRRhsSeq fp hnm
+                (fun r j => A (σ r) j) (fun r => b (σ r)))
+              (fun r => b (σ r)) phi i)
+            (theorem20_7_initialWeightedRowMax hn
+              (fun r j => A (σ r) j) (fun r => b (σ r)) phi i)) →
+      IsLeastSquaresMinimizer
+          (fun i j => A i j + DeltaAperm (σ.symm i) j)
+          (fun i => b i + Deltabperm (σ.symm i)) xhat ∧
+        (∀ i : Fin m, ∀ j : Fin n,
+          |DeltaAperm (σ.symm i) j| ≤
+            theorem20_7_deltaAEntryBudget gammaTilde
+              (theorem20_7_compactActiveHorizon fp m err (n - 1))
+              (theorem20_7_initialRowMax hn A i) j) ∧
+        (∀ i : Fin m,
+          |Deltabperm (σ.symm i)| ≤
+            theorem20_7_deltaBEntryBudget n gammaTilde
+              (theorem20_7_compactActiveHorizon fp m err (n - 1))
+              (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  rcases theorem20_7_exists_common_sorted_permuteRows_activeRatioMax_fields_of_abs_b_mono_initialRowMax_nat
+      hm hn hnm A b (le_of_lt hphi) hcompat with
+    ⟨σ, hσA, _, _, _, _, _, _⟩
+  refine ⟨σ, ?_⟩
+  intro Aexact bexact hAexact0 hbexact0 hbudgetBound hmargin hdetLead
+    hpivotChoice hAstepExact hAstepErr hσArowRatioMax hbdom
+    hbstepExact hbstepErr DeltaAperm Deltabperm hExact hDeltaA hDeltab
+  exact
+    Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_permuted_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_mono_of_activeMaxPivotColumn_prefix_lower_signed_alpha_budget_sq_leading_block_det_ne_zero_activeRatioMax_le_of_abs_b_le_nat
+      hm hn hnm fp σ Aexact A bexact b diagBudget gammaTilde err xhat
+      hphi hgamma herr hmfp hrows hAexact0 hbexact0 hbudgetBound hmargin
+      hdetLead hcopy hpivotChoice hσA hcompat hAstepExact hAstepErr
+      hσArowRatioMax hbdom hbstepExact hbstepErr DeltaAperm Deltabperm
+      hExact hDeltaA hDeltab
+
 /-- Theorem 20.7 support: active-max pivot stage-swap wrapper for the
     compact-active, source-initial, zero-start, zero-step-budget all-entry
     perturbation budgets.
@@ -63550,6 +63699,100 @@ theorem
       hresidualFactor
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    relative-residual version of the existential residual-factor handoff.
+
+    This keeps the determinant-free `(AP)^+` table existential, but accepts the
+    printed source-minus divided residual gap `||r-r_high||₂/||r||₂ <= eps`
+    instead of requiring callers to multiply by `||r||₂` first. -/
+theorem
+    LSEFullRowRank.exists_theorem20_8_rank_tolerant_APplus_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_source_residual_relative_residualFactor_source_minus_of_minimizers
+    {r p k : ℕ}
+    (A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ)
+    (b Deltab : Fin (r + (k + 1)) → ℝ)
+    {B : Fin p → Fin (p + (k + 1)) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + (k + 1)) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (x y : Fin (p + (k + 1)) → ℝ) {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hy_norm : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    ∃ APplus : Fin (p + (k + 1)) → Fin (r + (k + 1)) → ℝ,
+      RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
+          (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus ∧
+        rectMatMul B APplus =
+          (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0) ∧
+        0 < theorem20_8KappaB A APplus ∧
+        ((vecNorm2
+            (fun i =>
+              lsResidualHigham A b x i -
+                lsResidualHigham (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i) y i) /
+              vecNorm2 (lsResidualHigham A b x) ≤ eps) →
+          (1 + (theorem20_8KappaB A APplus)⁻¹ ≤
+            (frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                      APplus)))) →
+          vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) / vecNorm2 x ≤
+            eps * theorem20_8FirstOrderRHS A b B d x
+                (lsResidualHigham A b x) APplus
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  APplus) +
+              eps ^ 2 *
+                theorem20_8FirstOrderRHS A b B d x
+                  (lsResidualHigham A b x) APplus
+                  (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                    APplus) *
+                (complexMatrixOp2
+                    (realRectToCMatrix
+                      (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                        APplus)) *
+                    frobNormRect B +
+                  complexMatrixOp2 (realRectToCMatrix APplus) *
+                    frobNormRect A)) := by
+  rcases
+      LSEFullRowRank.exists_theorem20_8_rank_tolerant_APplus_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_source_residual_norm_residualFactor_source_minus_of_minimizers
+        A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
+        hxpos hy_norm hrpos hmax hstack hx hy with
+    ⟨APplus, hMP, hBAPplus, hkappa_pos, hcore⟩
+  refine ⟨APplus, hMP, hBAPplus, hkappa_pos, ?_⟩
+  intro hres_relative hresidualFactor
+  have hres_norm_source_minus :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham A b x i -
+              lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i) ≤
+        eps * vecNorm2 (lsResidualHigham A b x) :=
+    (div_le_iff₀ hrpos).1 hres_relative
+  have hres_norm :
+      vecNorm2
+          (fun i =>
+            lsResidualHigham (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i -
+              lsResidualHigham A b x i) ≤
+        eps * vecNorm2 (lsResidualHigham A b x) := by
+    rwa [vecNorm2_sub_comm
+      (fun i =>
+        lsResidualHigham (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i) y i)
+      (lsResidualHigham A b x)]
+  exact hcore hres_norm hresidualFactor
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-shaped first-order handoff for the concrete lifted reduced-Gram
     `APplus` candidate.
 
@@ -66168,6 +66411,110 @@ theorem
       hxpos hyx hrpos hmax hstack hx hy hgapScale hbracket
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    existential rank-tolerant `(AP)^+` handoff for the monolithic `B_A^+`
+    residual-gap residual-factor route.
+
+    This packages the supplied-GQR theorem behind source full row rank of `B`
+    and stacked full column rank of `[A;B]`.  The selected lifted reduced-Gram
+    table supplies the Moore--Penrose, `null(B)`, and positive-`kappa_B(A)`
+    certificates; callers supply the single unscaled residual-gap comparison
+    and the residual-factor lower bound for that selected table. -/
+theorem
+    LSEFullRowRank.exists_theorem20_8_rank_tolerant_APplus_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_BAplus_residual_gap_residualFactor_of_minimizers
+    {r p k : ℕ}
+    (A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ)
+    (b Deltab : Fin (r + (k + 1)) → ℝ)
+    {B : Fin p → Fin (p + (k + 1)) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + (k + 1)) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (x y : Fin (p + (k + 1)) → ℝ) {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hy_norm : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    ∃ APplus : Fin (p + (k + 1)) → Fin (r + (k + 1)) → ℝ,
+      RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
+          (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus ∧
+        rectMatMul B APplus =
+          (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0) ∧
+        0 < theorem20_8KappaB A APplus ∧
+        ((complexMatrixOp2
+              (realRectToCMatrix
+                (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) *
+              vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) +
+            ((theorem20_8KappaB A APplus *
+                  (complexMatrixOp2
+                      (realRectToCMatrix
+                        (rectMatMul A (undetAplusOfGramNonsingInv B))) *
+                    (eps * vecNorm2 d + (eps * frobNormRect B) *
+                      vecNorm2 y)) +
+                complexMatrixOp2
+                    (realRectToCMatrix
+                      (rectMatMul A
+                        (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                          APplus))) *
+                  (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
+              (eps * frobNormRect A) * vecNorm2 y +
+              eps * vecNorm2 b) ≤
+            eps * vecNorm2 (lsResidualHigham A b x)) →
+          (1 + (theorem20_8KappaB A APplus)⁻¹ ≤
+            (frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                      APplus)))) →
+          vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) / vecNorm2 x ≤
+            eps * theorem20_8FirstOrderRHS A b B d x
+                (lsResidualHigham A b x) APplus
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  APplus) +
+              eps ^ 2 *
+                theorem20_8FirstOrderRHS A b B d x
+                  (lsResidualHigham A b x) APplus
+                  (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                    APplus) *
+                (complexMatrixOp2
+                    (realRectToCMatrix
+                      (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                        APplus)) *
+                    frobNormRect B +
+                  complexMatrixOp2 (realRectToCMatrix APplus) *
+                    frobNormRect A)) := by
+  rcases GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨h⟩
+  have hMP :
+      RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B))
+        h.liftedReducedGramAPplus :=
+    h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
+      hB hstack
+  have hnull :
+      rectMatMul B h.liftedReducedGramAPplus =
+        (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0) :=
+    h.liftedReducedGramAPplus_constraint_annihilates
+  have hkappa_pos :
+      0 < theorem20_8KappaB A h.liftedReducedGramAPplus :=
+    h.theorem20_8KappaB_liftedReducedGramAPplus_pos hstack hApos
+  refine ⟨h.liftedReducedGramAPplus, hMP, hnull, hkappa_pos, ?_⟩
+  intro hgapScale hresidualFactor
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_residualFactor_of_minimizers
+      A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
+      hxpos hy_norm hrpos hmax hstack hx hy hgapScale hresidualFactor
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     additive unscaled residual-gap variant of the residual-factor handoff.
 
     The wrapper splits the unscaled BAplus residual-gap comparison into a
@@ -66270,6 +66617,116 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_residualFactor_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hyx hrpos hmax hstack hx hy hgapCombined hresidualFactor
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    existential rank-tolerant `(AP)^+` handoff for the additive unscaled
+    residual-factor route.
+
+    This packages the supplied-GQR additive residual-factor theorem behind the
+    source full-row-rank and stacked-full-column-rank hypotheses.  The selected
+    lifted reduced-Gram table supplies the Moore--Penrose, `null(B)`, and
+    positive-`kappa_B(A)` certificates; callers supply the two unscaled
+    residual-gap component budgets, their source residual budget, and the
+    residual-factor lower bound for that selected table. -/
+theorem
+    LSEFullRowRank.exists_theorem20_8_rank_tolerant_APplus_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_BAplus_residual_gap_additive_residualFactor_of_minimizers
+    {r p k : ℕ}
+    (A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ)
+    (b Deltab : Fin (r + (k + 1)) → ℝ)
+    {B : Fin p → Fin (p + (k + 1)) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + (k + 1)) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (x y : Fin (p + (k + 1)) → ℝ) {eps gapAP gapCorr : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hy_norm : vecNorm2 y ≤ vecNorm2 x)
+    (hrpos : 0 < vecNorm2 (lsResidualHigham A b x))
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    ∃ APplus : Fin (p + (k + 1)) → Fin (r + (k + 1)) → ℝ,
+      RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
+          (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus ∧
+        rectMatMul B APplus =
+          (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0) ∧
+        0 < theorem20_8KappaB A APplus ∧
+        ((complexMatrixOp2
+            (realRectToCMatrix
+              (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) *
+            vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) ≤
+            gapAP) →
+          (((theorem20_8KappaB A APplus *
+                (complexMatrixOp2
+                    (realRectToCMatrix
+                      (rectMatMul A (undetAplusOfGramNonsingInv B))) *
+                  (eps * vecNorm2 d + (eps * frobNormRect B) *
+                    vecNorm2 y)) +
+              complexMatrixOp2
+                  (realRectToCMatrix
+                    (rectMatMul A
+                      (theorem20_8BAplus A B
+                        (undetAplusOfGramNonsingInv B) APplus))) *
+                (eps * vecNorm2 d + (eps * frobNormRect B) *
+                  vecNorm2 y)) +
+            (eps * frobNormRect A) * vecNorm2 y +
+            eps * vecNorm2 b) ≤
+            gapCorr) →
+          (gapAP + gapCorr ≤ eps * vecNorm2 (lsResidualHigham A b x)) →
+          (1 + (theorem20_8KappaB A APplus)⁻¹ ≤
+            (frobNormRect B / frobNormRect A) *
+              complexMatrixOp2
+                (realRectToCMatrix
+                  (rectMatMul A
+                    (theorem20_8BAplus A B
+                      (undetAplusOfGramNonsingInv B) APplus)))) →
+          vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) /
+              vecNorm2 x ≤
+            eps * theorem20_8FirstOrderRHS A b B d x
+                (lsResidualHigham A b x) APplus
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  APplus) +
+              eps ^ 2 *
+                theorem20_8FirstOrderRHS A b B d x
+                  (lsResidualHigham A b x) APplus
+                  (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                    APplus) *
+                (complexMatrixOp2
+                    (realRectToCMatrix
+                      (theorem20_8BAplus A B
+                        (undetAplusOfGramNonsingInv B) APplus)) *
+                    frobNormRect B +
+                  complexMatrixOp2 (realRectToCMatrix APplus) *
+                    frobNormRect A)) := by
+  rcases GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨h⟩
+  have hMP :
+      RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B))
+        h.liftedReducedGramAPplus :=
+    h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
+      hB hstack
+  have hnull :
+      rectMatMul B h.liftedReducedGramAPplus =
+        (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0) :=
+    h.liftedReducedGramAPplus_constraint_annihilates
+  have hkappa_pos :
+      0 < theorem20_8KappaB A h.liftedReducedGramAPplus :=
+    h.theorem20_8KappaB_liftedReducedGramAPplus_pos hstack hApos
+  refine ⟨h.liftedReducedGramAPplus, hMP, hnull, hkappa_pos, ?_⟩
+  intro hgapAP hgapCorr hgapScale hresidualFactor
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_additive_residualFactor_of_minimizers
+      A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
+      hxpos hy_norm hrpos hmax hstack hx hy hgapAP hgapCorr hgapScale
+      hresidualFactor
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     minimizer-facing Gram-projector lifted reduced-Gram handoff using the
@@ -66377,6 +66834,103 @@ theorem
       (h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
         hB hstack)
       hstack rfl rfl hgap
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    existential rank-tolerant `(AP)^+` handoff for the monolithic scaled
+    `B_A^+` residual-gap route.
+
+    This is the non-additive companion to the existing additive scaled
+    existential wrapper: the source rank hypotheses choose the lifted
+    reduced-Gram table and discharge its Moore--Penrose/nullspace
+    certificates, while callers supply the single scaled residual-amplifier
+    comparison for that selected table. -/
+theorem
+    LSEFullRowRank.exists_theorem20_8_rank_tolerant_APplus_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_BAplus_residual_gap_scaled_of_minimizers
+    {r p q : ℕ}
+    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (b Deltab : Fin (r + q) → ℝ)
+    {B : Fin p → Fin (p + q) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + q) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (x y : Fin (p + q) → ℝ) {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hy_norm : vecNorm2 y ≤ vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    ∃ APplus : Fin (p + q) → Fin (r + q) → ℝ,
+      RectMoorePenrosePseudoinverse (r + q) (p + q)
+          (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus ∧
+        rectMatMul B APplus =
+          (fun _i : Fin p => fun _j : Fin (r + q) => 0) ∧
+        ((complexMatrixOp2 (realRectToCMatrix APplus) *
+            (complexMatrixOp2
+                (realRectToCMatrix
+                  (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) *
+                vecNorm2 (fun j : Fin (p + q) => y j - x j) +
+              ((theorem20_8KappaB A APplus *
+                    (complexMatrixOp2
+                        (realRectToCMatrix
+                          (rectMatMul A (undetAplusOfGramNonsingInv B))) *
+                      (eps * vecNorm2 d + (eps * frobNormRect B) *
+                        vecNorm2 y)) +
+                  complexMatrixOp2
+                      (realRectToCMatrix
+                        (rectMatMul A
+                          (theorem20_8BAplus A B
+                            (undetAplusOfGramNonsingInv B) APplus))) *
+                    (eps * vecNorm2 d + (eps * frobNormRect B) *
+                      vecNorm2 y)) +
+                (eps * frobNormRect A) * vecNorm2 y +
+                eps * vecNorm2 b)) ≤
+            eps * theorem20_8ResidualAmplifier A B APplus
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  APplus) *
+              (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) →
+          vecNorm2 (fun j : Fin (p + q) => y j - x j) / vecNorm2 x ≤
+            eps * theorem20_8FirstOrderRHS A b B d x
+                (lsResidualHigham A b x) APplus
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  APplus) +
+              eps ^ 2 *
+                theorem20_8FirstOrderRHS A b B d x
+                  (lsResidualHigham A b x) APplus
+                  (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                    APplus) *
+                (complexMatrixOp2
+                    (realRectToCMatrix
+                      (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                        APplus)) *
+                    frobNormRect B +
+                  complexMatrixOp2 (realRectToCMatrix APplus) *
+                    frobNormRect A)) := by
+  rcases GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨h⟩
+  have hMP :
+      RectMoorePenrosePseudoinverse (r + q) (p + q)
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B))
+        h.liftedReducedGramAPplus :=
+    h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
+      hB hstack
+  have hnull :
+      rectMatMul B h.liftedReducedGramAPplus =
+        (fun _i : Fin p => fun _j : Fin (r + q) => 0) :=
+    h.liftedReducedGramAPplus_constraint_annihilates
+  refine ⟨h.liftedReducedGramAPplus, hMP, hnull, ?_⟩
+  intro hgapScale
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_scaled_of_minimizers
+      A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
+      hxpos hy_norm hmax hstack hx hy hgapScale
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     minimizer-facing Gram-projector lifted reduced-Gram handoff using the
@@ -66997,6 +67551,107 @@ theorem
       (h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
         hB hstack)
       hstack rfl rfl hgap
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    existential rank-tolerant `(AP)^+` handoff for the additive scaled
+    residual-gap route.
+
+    This packages the supplied-GQR additive scaled theorem behind the source
+    full-row-rank and stacked-full-column-rank hypotheses.  The chosen lifted
+    reduced-Gram table supplies the Moore--Penrose and `null(B)` certificates;
+    callers supply only the two scaled residual-gap component bounds and their
+    combined residual-amplifier comparison for that chosen table. -/
+theorem
+    LSEFullRowRank.exists_theorem20_8_rank_tolerant_APplus_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_BAplus_residual_gap_additive_scaled_of_minimizers
+    {r p q : ℕ}
+    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (b Deltab : Fin (r + q) → ℝ)
+    {B : Fin p → Fin (p + q) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + q) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (x y : Fin (p + q) → ℝ) {eps gapAP gapCorr : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hy_norm : vecNorm2 y ≤ vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    ∃ APplus : Fin (p + q) → Fin (r + q) → ℝ,
+      RectMoorePenrosePseudoinverse (r + q) (p + q)
+          (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus ∧
+        rectMatMul B APplus =
+          (fun _i : Fin p => fun _j : Fin (r + q) => 0) ∧
+        ((complexMatrixOp2 (realRectToCMatrix APplus) *
+            (complexMatrixOp2
+                (realRectToCMatrix
+                  (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) *
+                vecNorm2 (fun j : Fin (p + q) => y j - x j)) ≤
+            gapAP) →
+          (complexMatrixOp2 (realRectToCMatrix APplus) *
+              ((theorem20_8KappaB A APplus *
+                    (complexMatrixOp2
+                        (realRectToCMatrix
+                          (rectMatMul A (undetAplusOfGramNonsingInv B))) *
+                      (eps * vecNorm2 d + (eps * frobNormRect B) *
+                        vecNorm2 y)) +
+                  complexMatrixOp2
+                      (realRectToCMatrix
+                        (rectMatMul A
+                          (theorem20_8BAplus A B
+                            (undetAplusOfGramNonsingInv B) APplus))) *
+                    (eps * vecNorm2 d + (eps * frobNormRect B) *
+                      vecNorm2 y)) +
+                (eps * frobNormRect A) * vecNorm2 y +
+                eps * vecNorm2 b) ≤
+              gapCorr) →
+          (gapAP + gapCorr ≤
+            eps * theorem20_8ResidualAmplifier A B APplus
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  APplus) *
+              (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) →
+          vecNorm2 (fun j : Fin (p + q) => y j - x j) / vecNorm2 x ≤
+            eps * theorem20_8FirstOrderRHS A b B d x
+                (lsResidualHigham A b x) APplus
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  APplus) +
+              eps ^ 2 *
+                theorem20_8FirstOrderRHS A b B d x
+                  (lsResidualHigham A b x) APplus
+                  (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                    APplus) *
+                (complexMatrixOp2
+                    (realRectToCMatrix
+                      (theorem20_8BAplus A B
+                        (undetAplusOfGramNonsingInv B) APplus)) *
+                    frobNormRect B +
+                  complexMatrixOp2 (realRectToCMatrix APplus) *
+                    frobNormRect A)) := by
+  rcases GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨h⟩
+  have hMP :
+      RectMoorePenrosePseudoinverse (r + q) (p + q)
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B))
+        h.liftedReducedGramAPplus :=
+    h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
+      hB hstack
+  have hnull :
+      rectMatMul B h.liftedReducedGramAPplus =
+        (fun _i : Fin p => fun _j : Fin (r + q) => 0) :=
+    h.liftedReducedGramAPplus_constraint_annihilates
+  refine ⟨h.liftedReducedGramAPplus, hMP, hnull, ?_⟩
+  intro hgapScaleAP hgapScaleCorr hgapScale
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_additive_scaled_of_minimizers
+      A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
+      hxpos hy_norm hmax hstack hx hy hgapScaleAP hgapScaleCorr hgapScale
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     for supplied GQR data, `B` has full row rank iff the displayed
@@ -69992,6 +70647,171 @@ noncomputable def theorem20_8KKTMultiplierSmallGainSelfCoeff {m n p : ℕ}
     (1 - LSEKKTInverseMultiplierStatCoeff hB hnull *
       (eps * frobNormRect B))
 
+/-- Linear-in-`eps` numerator majorant for the multiplier-row self coefficient
+    when `0 <= eps <= 1`. -/
+noncomputable def theorem20_8KKTMultiplierSelfLinearCoeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
+  LSEKKTInverseMultiplierDataCoeff hB hnull * frobNormRect A +
+    2 * LSEKKTInverseMultiplierStatCoeff hB hnull *
+      frobNormRect A * frobNormRect A +
+    LSEKKTInverseMultiplierConstrCoeff hB hnull * frobNormRect B
+
+theorem theorem20_8KKTMultiplierSelfLinearCoeff_nonneg {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    0 ≤ theorem20_8KKTMultiplierSelfLinearCoeff hB hnull := by
+  have hA_nonneg : 0 ≤ frobNormRect A := frobNormRect_nonneg A
+  have hB_nonneg : 0 ≤ frobNormRect B := frobNormRect_nonneg B
+  have hdata_nonneg : 0 ≤ LSEKKTInverseMultiplierDataCoeff hB hnull :=
+    LSEKKTInverseMultiplierDataCoeff_nonneg hB hnull
+  have hstat_nonneg : 0 ≤ LSEKKTInverseMultiplierStatCoeff hB hnull :=
+    LSEKKTInverseMultiplierStatCoeff_nonneg hB hnull
+  have hconstr_nonneg : 0 ≤ LSEKKTInverseMultiplierConstrCoeff hB hnull :=
+    LSEKKTInverseMultiplierConstrCoeff_nonneg hB hnull
+  have hdata :
+      0 ≤ LSEKKTInverseMultiplierDataCoeff hB hnull * frobNormRect A :=
+    mul_nonneg hdata_nonneg hA_nonneg
+  have hstat :
+      0 ≤ 2 * LSEKKTInverseMultiplierStatCoeff hB hnull *
+          frobNormRect A * frobNormRect A :=
+    mul_nonneg
+      (mul_nonneg (mul_nonneg (by norm_num) hstat_nonneg) hA_nonneg)
+      hA_nonneg
+  have hconstr :
+      0 ≤ LSEKKTInverseMultiplierConstrCoeff hB hnull * frobNormRect B :=
+    mul_nonneg hconstr_nonneg hB_nonneg
+  simpa [theorem20_8KKTMultiplierSelfLinearCoeff] using
+    add_nonneg (add_nonneg hdata hstat) hconstr
+
+/-- The multiplier-row self numerator is bounded by its linear-in-`eps`
+    majorant for `0 <= eps <= 1`. -/
+theorem theorem20_8KKTMultiplierSelfNumerator_le_linear_of_eps_le_one
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ} (heps_nonneg : 0 ≤ eps) (heps_le_one : eps ≤ 1) :
+    LSEKKTInverseMultiplierDataCoeff hB hnull * (eps * frobNormRect A) +
+        LSEKKTInverseMultiplierStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseMultiplierConstrCoeff hB hnull * (eps * frobNormRect B) ≤
+      eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull := by
+  have hA_nonneg : 0 ≤ frobNormRect A := frobNormRect_nonneg A
+  have hstat_nonneg : 0 ≤ LSEKKTInverseMultiplierStatCoeff hB hnull :=
+    LSEKKTInverseMultiplierStatCoeff_nonneg hB hnull
+  have hone_eps_le_two : 1 + eps ≤ 2 := by linarith
+  have hfactor :
+      (1 + eps) * frobNormRect A ≤ 2 * frobNormRect A :=
+    mul_le_mul_of_nonneg_right hone_eps_le_two hA_nonneg
+  have hepsA_nonneg : 0 ≤ eps * frobNormRect A :=
+    mul_nonneg heps_nonneg hA_nonneg
+  have hprod :
+      (eps * frobNormRect A) * ((1 + eps) * frobNormRect A) ≤
+        (eps * frobNormRect A) * (2 * frobNormRect A) :=
+    mul_le_mul_of_nonneg_left hfactor hepsA_nonneg
+  have hstat :
+      LSEKKTInverseMultiplierStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) ≤
+        LSEKKTInverseMultiplierStatCoeff hB hnull *
+          ((eps * frobNormRect A) * (2 * frobNormRect A)) :=
+    mul_le_mul_of_nonneg_left hprod hstat_nonneg
+  calc
+    LSEKKTInverseMultiplierDataCoeff hB hnull * (eps * frobNormRect A) +
+          LSEKKTInverseMultiplierStatCoeff hB hnull *
+            ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+          LSEKKTInverseMultiplierConstrCoeff hB hnull *
+            (eps * frobNormRect B)
+        ≤ LSEKKTInverseMultiplierDataCoeff hB hnull * (eps * frobNormRect A) +
+          LSEKKTInverseMultiplierStatCoeff hB hnull *
+            ((eps * frobNormRect A) * (2 * frobNormRect A)) +
+          LSEKKTInverseMultiplierConstrCoeff hB hnull *
+            (eps * frobNormRect B) := by
+        linarith
+    _ = eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull := by
+        simp [theorem20_8KKTMultiplierSelfLinearCoeff]
+        ring
+
+/-- A half-denominator margin converts the multiplier-row self quotient into
+    twice the linear-in-`eps` numerator majorant. -/
+theorem theorem20_8KKTMultiplierSmallGainSelfCoeff_le_two_mul_linear_of_eps_le_one_of_gain_le_half
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ} (heps_nonneg : 0 ≤ eps) (heps_le_one : eps ≤ 1)
+    (hgain_half :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) ≤
+        (1 : ℝ) / 2) :
+    theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps ≤
+      2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull := by
+  have hdenpos :
+      0 < 1 -
+        LSEKKTInverseMultiplierStatCoeff hB hnull *
+          (eps * frobNormRect B) := by
+    linarith
+  have hnum_le :=
+    theorem20_8KKTMultiplierSelfNumerator_le_linear_of_eps_le_one
+      hB hnull heps_nonneg heps_le_one
+  have hlin_nonneg :
+      0 ≤ eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull :=
+    mul_nonneg heps_nonneg
+      (theorem20_8KKTMultiplierSelfLinearCoeff_nonneg hB hnull)
+  have hfactor :
+      1 ≤ 2 *
+        (1 -
+          LSEKKTInverseMultiplierStatCoeff hB hnull *
+            (eps * frobNormRect B)) := by
+    linarith
+  have hscaled :
+      eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull ≤
+        (2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull) *
+          (1 -
+            LSEKKTInverseMultiplierStatCoeff hB hnull *
+              (eps * frobNormRect B)) := by
+    calc
+      eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull
+          = eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull * 1 := by
+            ring
+      _ ≤ eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull *
+            (2 *
+              (1 -
+                LSEKKTInverseMultiplierStatCoeff hB hnull *
+                  (eps * frobNormRect B))) :=
+            mul_le_mul_of_nonneg_left hfactor hlin_nonneg
+      _ = (2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull) *
+            (1 -
+              LSEKKTInverseMultiplierStatCoeff hB hnull *
+                (eps * frobNormRect B)) := by
+            ring
+  have hquot :
+      (LSEKKTInverseMultiplierDataCoeff hB hnull * (eps * frobNormRect A) +
+          LSEKKTInverseMultiplierStatCoeff hB hnull *
+            ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+          LSEKKTInverseMultiplierConstrCoeff hB hnull *
+            (eps * frobNormRect B)) /
+        (1 -
+          LSEKKTInverseMultiplierStatCoeff hB hnull *
+            (eps * frobNormRect B)) ≤
+          2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull := by
+    rw [div_le_iff₀ hdenpos]
+    exact hnum_le.trans hscaled
+  simpa [theorem20_8KKTMultiplierSmallGainSelfCoeff] using hquot
+
+/-- A source-facing linear smallness condition discharges the multiplier-row
+    self coefficient under the half-denominator margin. -/
+theorem theorem20_8KKTMultiplierSmallGainSelfCoeff_lt_one_of_two_mul_eps_mul_linearCoeff_lt_one
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ} (heps_nonneg : 0 ≤ eps) (heps_le_one : eps ≤ 1)
+    (hgain_half :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) ≤
+        (1 : ℝ) / 2)
+    (hsmall :
+      2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull < 1) :
+    theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps < 1 :=
+  (theorem20_8KKTMultiplierSmallGainSelfCoeff_le_two_mul_linear_of_eps_le_one_of_gain_le_half
+    hB hnull heps_nonneg heps_le_one hgain_half).trans_lt hsmall
+
 /-- The multiplier-row small-gain scale is affine in the supplied
     perturbed-solution scale.  This is the scalar bridge used to remove the
     explicit `yScale` assumption in the coupled KKT route. -/
@@ -71928,6 +72748,447 @@ noncomputable def theorem20_8KKTCoupledSelfCoeff {m n p : ℕ}
         LSEKKTInverseSolutionConstrCoeff hB hnull *
           (eps * frobNormRect B)))
 
+/-- The solution-row self coefficient that must remain below one in the
+    source-residual-ratio KKT route for Higham Theorem 20.8. -/
+noncomputable def theorem20_8KKTSolutionSelfCoeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (eps : ℝ) : ℝ :=
+  LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+    LSEKKTInverseSolutionStatCoeff hB hnull *
+      ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+    LSEKKTInverseSolutionConstrCoeff hB hnull * (eps * frobNormRect B)
+
+/-- Linear-in-`eps` majorant coefficient for the solution-row self coefficient
+    when `0 <= eps <= 1`. -/
+noncomputable def theorem20_8KKTSolutionSelfLinearCoeff {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
+  LSEKKTInverseSolutionDataCoeff hB hnull * frobNormRect A +
+    2 * LSEKKTInverseSolutionStatCoeff hB hnull *
+      frobNormRect A * frobNormRect A +
+    LSEKKTInverseSolutionConstrCoeff hB hnull * frobNormRect B
+
+/-- The solution-row self coefficient is bounded by its linear-in-`eps`
+    majorant for `0 <= eps <= 1`. -/
+theorem theorem20_8KKTSolutionSelfCoeff_le_linear_of_eps_le_one
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ} (heps_nonneg : 0 ≤ eps) (heps_le_one : eps ≤ 1) :
+    theorem20_8KKTSolutionSelfCoeff hB hnull eps ≤
+      eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull := by
+  have hA_nonneg : 0 ≤ frobNormRect A := frobNormRect_nonneg A
+  have hstat_nonneg : 0 ≤ LSEKKTInverseSolutionStatCoeff hB hnull :=
+    LSEKKTInverseSolutionStatCoeff_nonneg hB hnull
+  have hone_eps_le_two : 1 + eps ≤ 2 := by linarith
+  have hfactor :
+      (1 + eps) * frobNormRect A ≤ 2 * frobNormRect A :=
+    mul_le_mul_of_nonneg_right hone_eps_le_two hA_nonneg
+  have hepsA_nonneg : 0 ≤ eps * frobNormRect A :=
+    mul_nonneg heps_nonneg hA_nonneg
+  have hprod :
+      (eps * frobNormRect A) * ((1 + eps) * frobNormRect A) ≤
+        (eps * frobNormRect A) * (2 * frobNormRect A) :=
+    mul_le_mul_of_nonneg_left hfactor hepsA_nonneg
+  have hstat :
+      LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) ≤
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) * (2 * frobNormRect A)) :=
+    mul_le_mul_of_nonneg_left hprod hstat_nonneg
+  calc
+    theorem20_8KKTSolutionSelfCoeff hB hnull eps
+        = LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+            LSEKKTInverseSolutionStatCoeff hB hnull *
+              ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+            LSEKKTInverseSolutionConstrCoeff hB hnull *
+              (eps * frobNormRect B) := rfl
+    _ ≤ LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+          LSEKKTInverseSolutionStatCoeff hB hnull *
+            ((eps * frobNormRect A) * (2 * frobNormRect A)) +
+          LSEKKTInverseSolutionConstrCoeff hB hnull *
+            (eps * frobNormRect B) := by
+        linarith
+    _ = eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull := by
+        simp [theorem20_8KKTSolutionSelfLinearCoeff]
+        ring
+
+/-- A source-facing linear smallness condition discharges the solution-row
+    small-gain inequality for `0 <= eps <= 1`. -/
+theorem theorem20_8KKTSolutionSelfCoeff_lt_one_of_eps_mul_linearCoeff_lt_one
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ} (heps_nonneg : 0 ≤ eps) (heps_le_one : eps ≤ 1)
+    (hsmall : eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull < 1) :
+    theorem20_8KKTSolutionSelfCoeff hB hnull eps < 1 :=
+  (theorem20_8KKTSolutionSelfCoeff_le_linear_of_eps_le_one
+    hB hnull heps_nonneg heps_le_one).trans_lt hsmall
+
+/-- The linearized solution-row self coefficient is nonnegative. -/
+theorem theorem20_8KKTSolutionSelfLinearCoeff_nonneg
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    0 ≤ theorem20_8KKTSolutionSelfLinearCoeff hB hnull := by
+  have hdata : 0 ≤ LSEKKTInverseSolutionDataCoeff hB hnull :=
+    LSEKKTInverseSolutionDataCoeff_nonneg hB hnull
+  have hstat : 0 ≤ LSEKKTInverseSolutionStatCoeff hB hnull :=
+    LSEKKTInverseSolutionStatCoeff_nonneg hB hnull
+  have hconstr : 0 ≤ LSEKKTInverseSolutionConstrCoeff hB hnull :=
+    LSEKKTInverseSolutionConstrCoeff_nonneg hB hnull
+  have hA : 0 ≤ frobNormRect A := frobNormRect_nonneg A
+  have hBnorm : 0 ≤ frobNormRect B := frobNormRect_nonneg B
+  have hdataTerm :
+      0 ≤ LSEKKTInverseSolutionDataCoeff hB hnull * frobNormRect A :=
+    mul_nonneg hdata hA
+  have hstatTerm :
+      0 ≤
+        2 * LSEKKTInverseSolutionStatCoeff hB hnull *
+          frobNormRect A * frobNormRect A :=
+    mul_nonneg
+      (mul_nonneg (mul_nonneg (by norm_num) hstat) hA) hA
+  have hconstrTerm :
+      0 ≤ LSEKKTInverseSolutionConstrCoeff hB hnull * frobNormRect B :=
+    mul_nonneg hconstr hBnorm
+  dsimp [theorem20_8KKTSolutionSelfLinearCoeff]
+  exact add_nonneg (add_nonneg hdataTerm hstatTerm) hconstrTerm
+
+/-- Single source-facing linearized KKT smallness coefficient for the current
+    Theorem 20.8 source-residual-ratio route.
+
+    The coefficient dominates the three scalar margins used by
+    `theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_margins`:
+    the multiplier half-gain, the solution-row linear gain, and the coupled
+    linear margin. -/
+noncomputable def theorem20_8KKTLinearizedGainSmallnessCoeff
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
+  1 +
+    2 * LSEKKTInverseMultiplierStatCoeff hB hnull * frobNormRect B +
+    2 * theorem20_8KKTSolutionSelfLinearCoeff hB hnull +
+    4 * LSEKKTInverseSolutionStatCoeff hB hnull * frobNormRect B *
+      theorem20_8KKTMultiplierSelfLinearCoeff hB hnull
+
+/-- The single linearized KKT smallness coefficient is at least one. -/
+theorem theorem20_8KKTLinearizedGainSmallnessCoeff_ge_one
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    1 ≤ theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull := by
+  have hmult : 0 ≤ LSEKKTInverseMultiplierStatCoeff hB hnull :=
+    LSEKKTInverseMultiplierStatCoeff_nonneg hB hnull
+  have hsol : 0 ≤ theorem20_8KKTSolutionSelfLinearCoeff hB hnull :=
+    theorem20_8KKTSolutionSelfLinearCoeff_nonneg hB hnull
+  have hstat : 0 ≤ LSEKKTInverseSolutionStatCoeff hB hnull :=
+    LSEKKTInverseSolutionStatCoeff_nonneg hB hnull
+  have hmulSelf : 0 ≤ theorem20_8KKTMultiplierSelfLinearCoeff hB hnull :=
+    theorem20_8KKTMultiplierSelfLinearCoeff_nonneg hB hnull
+  have hBnorm : 0 ≤ frobNormRect B := frobNormRect_nonneg B
+  have hmultTerm :
+      0 ≤ 2 * LSEKKTInverseMultiplierStatCoeff hB hnull * frobNormRect B :=
+    mul_nonneg (mul_nonneg (by norm_num) hmult) hBnorm
+  have hsolTerm :
+      0 ≤ 2 * theorem20_8KKTSolutionSelfLinearCoeff hB hnull :=
+    mul_nonneg (by norm_num) hsol
+  have hcoupledTerm :
+      0 ≤
+        4 * LSEKKTInverseSolutionStatCoeff hB hnull * frobNormRect B *
+          theorem20_8KKTMultiplierSelfLinearCoeff hB hnull :=
+    mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) hstat) hBnorm)
+      hmulSelf
+  have htail :
+      0 ≤
+        2 * LSEKKTInverseMultiplierStatCoeff hB hnull * frobNormRect B +
+          2 * theorem20_8KKTSolutionSelfLinearCoeff hB hnull +
+            4 * LSEKKTInverseSolutionStatCoeff hB hnull * frobNormRect B *
+              theorem20_8KKTMultiplierSelfLinearCoeff hB hnull :=
+    add_nonneg (add_nonneg hmultTerm hsolTerm) hcoupledTerm
+  dsimp [theorem20_8KKTLinearizedGainSmallnessCoeff]
+  linarith
+
+/-- Reciprocal source-facing threshold for the single linearized KKT smallness
+    coefficient in the current Theorem 20.8 route. -/
+noncomputable def theorem20_8KKTLinearizedGainSmallnessThreshold
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
+  (theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull)⁻¹
+
+/-- The source-facing KKT smallness threshold is positive. -/
+theorem theorem20_8KKTLinearizedGainSmallnessThreshold_pos
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    0 < theorem20_8KKTLinearizedGainSmallnessThreshold hB hnull := by
+  have hcoeff_pos :
+      0 < theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull := by
+    have hcoeff_ge_one :
+        1 ≤ theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull :=
+      theorem20_8KKTLinearizedGainSmallnessCoeff_ge_one hB hnull
+    linarith
+  simpa [theorem20_8KKTLinearizedGainSmallnessThreshold] using
+    inv_pos.mpr hcoeff_pos
+
+/-- Source-facing threshold form of the linearized KKT smallness comparison:
+    `eps < 1/C` implies `eps*C < 1`. -/
+theorem theorem20_8KKTLinearizedGainSmallnessCoeff_eps_mul_lt_one_of_eps_lt_threshold
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ}
+    (heps_lt :
+      eps < theorem20_8KKTLinearizedGainSmallnessThreshold hB hnull) :
+    eps * theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull < 1 := by
+  let C : ℝ := theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull
+  have hC_pos : 0 < C := by
+    have hC_ge_one : 1 ≤ C := by
+      dsimp [C]
+      exact theorem20_8KKTLinearizedGainSmallnessCoeff_ge_one hB hnull
+    linarith
+  have heps_lt_inv : eps < C⁻¹ := by
+    simpa [theorem20_8KKTLinearizedGainSmallnessThreshold, C] using heps_lt
+  have hmul : eps * C < C⁻¹ * C :=
+    mul_lt_mul_of_pos_right heps_lt_inv hC_pos
+  simpa [C, inv_mul_cancel₀ (ne_of_gt hC_pos)] using hmul
+
+/-- Bundled scalar small-gain hypotheses for the current source-residual-ratio
+    KKT route for Higham Theorem 20.8. -/
+def theorem20_8KKTSourceResidualRatioGainConditions {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    (eps : ℝ) : Prop :=
+  LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) < 1 ∧
+    LSEKKTInverseSolutionDataCoeff hB hnull * (eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB hnull *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB hnull * (eps * frobNormRect B) <
+          1 ∧
+      theorem20_8KKTCoupledSelfCoeff hB hnull eps < 1
+
+/-- Scalar margin discharge for the bundled source-residual-ratio KKT
+    small-gain hypotheses.  The coupled quotient is replaced by the source-side
+    inequality that its numerator is below the remaining solution-row margin. -/
+theorem theorem20_8KKTSourceResidualRatioGainConditions_of_coupledNumerator_lt_solutionMargin
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ}
+    (hmultGain :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) <
+        1)
+    (hsolGain : theorem20_8KKTSolutionSelfCoeff hB hnull eps < 1)
+    (hcoupledMargin :
+      LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+          theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps <
+        1 - theorem20_8KKTSolutionSelfCoeff hB hnull eps) :
+    theorem20_8KKTSourceResidualRatioGainConditions hB hnull eps := by
+  refine ⟨hmultGain, ?_, ?_⟩
+  · simpa [theorem20_8KKTSolutionSelfCoeff] using hsolGain
+  · have hdenpos : 0 < 1 - theorem20_8KKTSolutionSelfCoeff hB hnull eps := by
+      linarith
+    have hcoupled :
+        (LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+            theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps) /
+          (1 - theorem20_8KKTSolutionSelfCoeff hB hnull eps) < 1 := by
+      rw [div_lt_iff₀ hdenpos]
+      simpa using hcoupledMargin
+    simpa [theorem20_8KKTCoupledSelfCoeff, theorem20_8KKTSolutionSelfCoeff]
+      using hcoupled
+
+/-- Source-facing scalar discharge for the bundled source-residual-ratio KKT
+    small-gain hypotheses: a half-denominator multiplier margin, the
+    solution-row linear smallness condition, and a linearized coupled margin
+    imply the exact bundled gain conditions. -/
+theorem theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_margins
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ} (heps_nonneg : 0 ≤ eps) (heps_le_one : eps ≤ 1)
+    (hmultGainHalf :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) ≤
+        (1 : ℝ) / 2)
+    (hsolSmall :
+      eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull < 1)
+    (hcoupledLinearMargin :
+      LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+          (2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull) <
+        1 - eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull) :
+    theorem20_8KKTSourceResidualRatioGainConditions hB hnull eps := by
+  have hmultGain :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) <
+        1 := by
+    linarith
+  have hsolGain :
+      theorem20_8KKTSolutionSelfCoeff hB hnull eps < 1 :=
+    theorem20_8KKTSolutionSelfCoeff_lt_one_of_eps_mul_linearCoeff_lt_one
+      hB hnull heps_nonneg heps_le_one hsolSmall
+  have hsolSelf_le :
+      theorem20_8KKTSolutionSelfCoeff hB hnull eps ≤
+        eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull :=
+    theorem20_8KKTSolutionSelfCoeff_le_linear_of_eps_le_one
+      hB hnull heps_nonneg heps_le_one
+  have hmargin_le :
+      1 - eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull ≤
+        1 - theorem20_8KKTSolutionSelfCoeff hB hnull eps := by
+    linarith
+  have hmultSelf_le :
+      theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps ≤
+        2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull :=
+    theorem20_8KKTMultiplierSmallGainSelfCoeff_le_two_mul_linear_of_eps_le_one_of_gain_le_half
+      hB hnull heps_nonneg heps_le_one hmultGainHalf
+  have hsolMuCoeff_nonneg :
+      0 ≤ LSEKKTInverseSolutionStatCoeff hB hnull *
+        (eps * frobNormRect B) :=
+    mul_nonneg (LSEKKTInverseSolutionStatCoeff_nonneg hB hnull)
+      (mul_nonneg heps_nonneg (frobNormRect_nonneg B))
+  have hcoupled_le :
+      LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+          theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps ≤
+        LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+          (2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull) :=
+    mul_le_mul_of_nonneg_left hmultSelf_le hsolMuCoeff_nonneg
+  have hcoupledMargin :
+      LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+          theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps <
+        1 - theorem20_8KKTSolutionSelfCoeff hB hnull eps :=
+    hcoupled_le.trans_lt (hcoupledLinearMargin.trans_le hmargin_le)
+  exact
+    theorem20_8KKTSourceResidualRatioGainConditions_of_coupledNumerator_lt_solutionMargin
+      hB hnull hmultGain hsolGain hcoupledMargin
+
+/-- A single smallness comparison against
+    `theorem20_8KKTLinearizedGainSmallnessCoeff` discharges the bundled
+    source-residual-ratio KKT gain predicate. -/
+theorem theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessCoeff
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ} (heps_nonneg : 0 ≤ eps)
+    (hsmall :
+      eps * theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull < 1) :
+    theorem20_8KKTSourceResidualRatioGainConditions hB hnull eps := by
+  let C : ℝ := theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull
+  let mCoeff : ℝ :=
+    LSEKKTInverseMultiplierStatCoeff hB hnull * frobNormRect B
+  let sCoeff : ℝ := theorem20_8KKTSolutionSelfLinearCoeff hB hnull
+  let cCoeff : ℝ :=
+    LSEKKTInverseSolutionStatCoeff hB hnull * frobNormRect B *
+      theorem20_8KKTMultiplierSelfLinearCoeff hB hnull
+  have hmultCoeff_nonneg : 0 ≤ mCoeff := by
+    dsimp [mCoeff]
+    exact mul_nonneg (LSEKKTInverseMultiplierStatCoeff_nonneg hB hnull)
+      (frobNormRect_nonneg B)
+  have hsolCoeff_nonneg : 0 ≤ sCoeff := by
+    dsimp [sCoeff]
+    exact theorem20_8KKTSolutionSelfLinearCoeff_nonneg hB hnull
+  have hcCoeff_nonneg : 0 ≤ cCoeff := by
+    dsimp [cCoeff]
+    exact mul_nonneg
+      (mul_nonneg (LSEKKTInverseSolutionStatCoeff_nonneg hB hnull)
+        (frobNormRect_nonneg B))
+      (theorem20_8KKTMultiplierSelfLinearCoeff_nonneg hB hnull)
+  have hC_ge_one : 1 ≤ C := by
+    dsimp [C]
+    exact theorem20_8KKTLinearizedGainSmallnessCoeff_ge_one hB hnull
+  have heps_le_one : eps ≤ 1 := by
+    have heps_lt_one : eps < 1 := by
+      calc
+        eps = eps * 1 := by ring
+        _ ≤ eps * C := mul_le_mul_of_nonneg_left hC_ge_one heps_nonneg
+        _ < 1 := by simpa [C] using hsmall
+    exact heps_lt_one.le
+  have hC_m : 2 * mCoeff ≤ C := by
+    dsimp [C, mCoeff, sCoeff, cCoeff,
+      theorem20_8KKTLinearizedGainSmallnessCoeff]
+    nlinarith [hsolCoeff_nonneg, hcCoeff_nonneg]
+  have hC_s : 2 * sCoeff ≤ C := by
+    dsimp [C, mCoeff, sCoeff, cCoeff,
+      theorem20_8KKTLinearizedGainSmallnessCoeff]
+    nlinarith [hmultCoeff_nonneg, hcCoeff_nonneg]
+  have hC_c : 4 * cCoeff ≤ C := by
+    dsimp [C, mCoeff, sCoeff, cCoeff,
+      theorem20_8KKTLinearizedGainSmallnessCoeff]
+    nlinarith [hmultCoeff_nonneg, hsolCoeff_nonneg]
+  have hmult_small : eps * (2 * mCoeff) < 1 :=
+    (mul_le_mul_of_nonneg_left hC_m heps_nonneg).trans_lt
+      (by simpa [C] using hsmall)
+  have hsol_small_half : eps * sCoeff < (1 : ℝ) / 2 := by
+    have htwo : 2 * (eps * sCoeff) < 1 := by
+      have hs : eps * (2 * sCoeff) < 1 :=
+        (mul_le_mul_of_nonneg_left hC_s heps_nonneg).trans_lt
+          (by simpa [C] using hsmall)
+      nlinarith
+    nlinarith
+  have hcoupled_coeff_small : 2 * eps * cCoeff < (1 : ℝ) / 2 := by
+    have hc : eps * (4 * cCoeff) < 1 :=
+      (mul_le_mul_of_nonneg_left hC_c heps_nonneg).trans_lt
+        (by simpa [C] using hsmall)
+    nlinarith
+  have hmultGainHalf :
+      LSEKKTInverseMultiplierStatCoeff hB hnull *
+          (eps * frobNormRect B) ≤
+        (1 : ℝ) / 2 := by
+    have htwo : 2 *
+        (LSEKKTInverseMultiplierStatCoeff hB hnull *
+          (eps * frobNormRect B)) < 1 := by
+      have hm : eps * (2 * mCoeff) =
+          2 * (LSEKKTInverseMultiplierStatCoeff hB hnull *
+            (eps * frobNormRect B)) := by
+        dsimp [mCoeff]
+        ring
+      rwa [hm] at hmult_small
+    nlinarith
+  have hsolSmall :
+      eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull < 1 := by
+    dsimp [sCoeff] at hsol_small_half
+    nlinarith
+  have hcoupledLinearMargin :
+      LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+          (2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull) <
+        1 - eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull := by
+    have heps_sq_le_eps : eps ^ 2 ≤ eps := by
+      nlinarith [heps_nonneg, heps_le_one]
+    have hterm_le :
+        LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+            (2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull) ≤
+          2 * eps * cCoeff := by
+      have hscale_nonneg : 0 ≤ 2 * cCoeff := by nlinarith [hcCoeff_nonneg]
+      have hsq_scaled : eps ^ 2 * (2 * cCoeff) ≤ eps * (2 * cCoeff) :=
+        mul_le_mul_of_nonneg_right heps_sq_le_eps hscale_nonneg
+      dsimp [cCoeff]
+      nlinarith
+    have hmargin_half :
+        (1 : ℝ) / 2 <
+          1 - eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull := by
+      dsimp [sCoeff] at hsol_small_half
+      nlinarith
+    exact hterm_le.trans_lt (hcoupled_coeff_small.trans hmargin_half)
+  exact
+    theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_margins
+      hB hnull heps_nonneg heps_le_one hmultGainHalf hsolSmall
+      hcoupledLinearMargin
+
+/-- Threshold form of
+    `theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessCoeff`.
+    The public hypothesis is the source-facing `eps < 1/C` comparison. -/
+theorem theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessThreshold
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ} (heps_nonneg : 0 ≤ eps)
+    (hsmall :
+      eps < theorem20_8KKTLinearizedGainSmallnessThreshold hB hnull) :
+    theorem20_8KKTSourceResidualRatioGainConditions hB hnull eps := by
+  have hsmall_prod :
+      eps * theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull < 1 :=
+    theorem20_8KKTLinearizedGainSmallnessCoeff_eps_mul_lt_one_of_eps_lt_threshold
+      hB hnull hsmall
+  exact theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessCoeff
+    hB hnull heps_nonneg hsmall_prod
+
 /-- The scalar right-hand side of the current source-residual-ratio KKT bound
     for Higham Theorem 20.8.  This keeps the public theorem below readable
     while preserving all inverse-block coefficients and gain hypotheses
@@ -72017,6 +73278,441 @@ theorem
       hy hB hBpert hnull hxnorm hbudget heps_nonneg hmultGain hsolGain
       hcoupledGain'
   simpa [theorem20_8KKTSourceResidualRatioCoupledBound] using h
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    named-bound KKT estimate with the three scalar small-gain hypotheses
+    bundled into one source-facing predicate. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_gainConditions
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hgain : theorem20_8KKTSourceResidualRatioGainConditions hB hnull eps) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      theorem20_8KKTSourceResidualRatioCoupledBound hB hnull b x eps := by
+  rcases hgain with ⟨hmultGain, hsolGain, hcoupledGain⟩
+  exact
+    hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound
+      hy hB hBpert hnull hxnorm hbudget heps_nonneg hmultGain hsolGain
+      hcoupledGain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    named-bound KKT estimate with the bundled scalar gain predicate discharged
+    from source-facing linearized margins. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_linearized_margins
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps) (heps_le_one : eps ≤ 1)
+    (hmultGainHalf :
+      LSEKKTInverseMultiplierStatCoeff hB hnull * (eps * frobNormRect B) ≤
+        (1 : ℝ) / 2)
+    (hsolSmall :
+      eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull < 1)
+    (hcoupledLinearMargin :
+      LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+          (2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull) <
+        1 - eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      theorem20_8KKTSourceResidualRatioCoupledBound hB hnull b x eps := by
+  have hgain :
+      theorem20_8KKTSourceResidualRatioGainConditions hB hnull eps :=
+    theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_margins
+      hB hnull heps_nonneg heps_le_one hmultGainHalf hsolSmall
+      hcoupledLinearMargin
+  exact
+    hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_gainConditions
+      hy hB hBpert hnull hxnorm hbudget heps_nonneg hgain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    named-bound KKT estimate with the bundled scalar gain predicate discharged
+    by one linearized smallness comparison. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_linearized_smallnessCoeff
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hsmall :
+      eps * theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull < 1) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      theorem20_8KKTSourceResidualRatioCoupledBound hB hnull b x eps := by
+  have hgain :
+      theorem20_8KKTSourceResidualRatioGainConditions hB hnull eps :=
+    theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessCoeff
+      hB hnull heps_nonneg hsmall
+  exact
+    hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_gainConditions
+      hy hB hBpert hnull hxnorm hbudget heps_nonneg hgain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    named-bound KKT estimate with the bundled scalar gain predicate discharged
+    by the reciprocal linearized smallness threshold. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_linearized_smallnessThreshold
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hsmall :
+      eps < theorem20_8KKTLinearizedGainSmallnessThreshold hB hnull) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      theorem20_8KKTSourceResidualRatioCoupledBound hB hnull b x eps := by
+  have hgain :
+      theorem20_8KKTSourceResidualRatioGainConditions hB hnull eps :=
+    theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessThreshold
+      hB hnull heps_nonneg hsmall
+  exact
+    hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_gainConditions
+      hy hB hBpert hnull hxnorm hbudget heps_nonneg hgain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-stacked-rank and displayed maximum-relative-perturbation version of
+    the named source-residual-ratio KKT estimate.  This derives the internal
+    null-intersection hypothesis from full column rank of `[A; B]`, derives
+    the relative perturbation budget from the displayed maximum, and preserves
+    perturbed full row rank of `B + DeltaB` from the source transpose margin. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hB.transposeVecNorm2LowerMargin)
+    (hmultGain :
+      LSEKKTInverseMultiplierStatCoeff hB
+          ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+            hStack) *
+          (eps * frobNormRect B) < 1)
+    (hsolGain :
+      LSEKKTInverseSolutionDataCoeff hB
+          ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+            hStack) *
+          (eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) *
+          (eps * frobNormRect B) < 1)
+    (hcoupledGain :
+      theorem20_8KKTCoupledSelfCoeff hB
+          ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+            hStack) eps < 1) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      theorem20_8KKTSourceResidualRatioCoupledBound hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) b x eps := by
+  let hnull : LSENullIntersectionTrivial A B :=
+    (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hStack
+  have hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps :=
+    theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
+      A DeltaA b Deltab B DeltaB d Deltad
+      hApos hbpos hBpos hdpos hmax
+  have heps_nonneg : 0 ≤ eps :=
+    (theorem20_8MaxRelativePerturbation_nonneg A DeltaA b Deltab B DeltaB d
+      Deltad hApos).trans hmax
+  have hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j) :=
+    LSEFullRowRank.of_maxRelativePerturbation_lt_transposeLowerMargin
+      hB hApos hbpos hBpos hdpos hmax hBsmall
+  exact
+    hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound
+      hy hB hBpert hnull hxnorm hbudget heps_nonneg hmultGain hsolGain
+      hcoupledGain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-ranked maximum-relative-perturbation KKT estimate using the bundled
+    small-gain predicate. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hB.transposeVecNorm2LowerMargin)
+    (hgain :
+      theorem20_8KKTSourceResidualRatioGainConditions hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) eps) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      theorem20_8KKTSourceResidualRatioCoupledBound hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) b x eps := by
+  rcases hgain with ⟨hmultGain, hsolGain, hcoupledGain⟩
+  exact
+    hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank
+      hy hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hmultGain
+      hsolGain hcoupledGain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-ranked maximum-relative-perturbation KKT estimate with the bundled
+    gain predicate discharged by linearized margins. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank_linearized_margins
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hB.transposeVecNorm2LowerMargin)
+    (heps_le_one : eps ≤ 1)
+    (hmultGainHalf :
+      LSEKKTInverseMultiplierStatCoeff hB
+          ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+            hStack) *
+          (eps * frobNormRect B) ≤ (1 : ℝ) / 2)
+    (hsolSmall :
+      eps *
+          theorem20_8KKTSolutionSelfLinearCoeff hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) <
+        1)
+    (hcoupledLinearMargin :
+      LSEKKTInverseSolutionStatCoeff hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) *
+          (eps * frobNormRect B) *
+          (2 * eps *
+            theorem20_8KKTMultiplierSelfLinearCoeff hB
+              ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+                hStack)) <
+        1 -
+          eps *
+            theorem20_8KKTSolutionSelfLinearCoeff hB
+              ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+                hStack)) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      theorem20_8KKTSourceResidualRatioCoupledBound hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) b x eps := by
+  have heps_nonneg : 0 ≤ eps :=
+    (theorem20_8MaxRelativePerturbation_nonneg A DeltaA b Deltab B DeltaB d
+      Deltad hApos).trans hmax
+  have hgain :
+      theorem20_8KKTSourceResidualRatioGainConditions hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) eps :=
+    theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_margins
+      hB ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+        hStack) heps_nonneg heps_le_one hmultGainHalf hsolSmall
+      hcoupledLinearMargin
+  exact
+    hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
+      hy hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hgain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-ranked maximum-relative-perturbation KKT estimate with the bundled
+    gain predicate discharged by one linearized smallness comparison.  This is
+    the existing-perturbed-minimizer companion to the corresponding
+    existence-plus-bound wrapper below. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank_linearized_smallnessCoeff
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hB.transposeVecNorm2LowerMargin)
+    (hsmall :
+      eps *
+          theorem20_8KKTLinearizedGainSmallnessCoeff hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) <
+        1) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      theorem20_8KKTSourceResidualRatioCoupledBound hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) b x eps := by
+  have heps_nonneg : 0 ≤ eps :=
+    (theorem20_8MaxRelativePerturbation_nonneg A DeltaA b Deltab B DeltaB d
+      Deltad hApos).trans hmax
+  have hgain :
+      theorem20_8KKTSourceResidualRatioGainConditions hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) eps :=
+    theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessCoeff
+      hB ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+        hStack) heps_nonneg hsmall
+  exact
+    hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
+      hy hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hgain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    source-ranked maximum-relative-perturbation KKT estimate with the bundled
+    gain predicate discharged by the reciprocal linearized smallness threshold. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank_linearized_smallnessThreshold
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hB.transposeVecNorm2LowerMargin)
+    (hsmall :
+      eps <
+          theorem20_8KKTLinearizedGainSmallnessThreshold hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack)) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      theorem20_8KKTSourceResidualRatioCoupledBound hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) b x eps := by
+  have heps_nonneg : 0 ≤ eps :=
+    (theorem20_8MaxRelativePerturbation_nonneg A DeltaA b Deltab B DeltaB d
+      Deltad hApos).trans hmax
+  have hgain :
+      theorem20_8KKTSourceResidualRatioGainConditions hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) eps :=
+    theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessThreshold
+      hB ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+        hStack) heps_nonneg hsmall
+  exact
+    hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
+      hy hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hgain
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     canonical KKT response bound with the perturbed-solution scale absorbed by
@@ -74113,6 +75809,314 @@ theorem theorem20_8_exists_unique_perturbed_lse_minimizer_of_maxRelativePerturba
       A DeltaA b Deltab B DeltaB d Deltad
       hApos hbpos hBpos hdpos hmax)
     hBsmall hStackSmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    GQR-shaped source-rank existence-plus-bound version of the KKT route.
+    Source full row rank of `B`, full column rank of `[A; B]`, the displayed
+    maximum relative perturbation hypothesis, and strict source-margin
+    smallness give a unique perturbed LSE minimizer; every such minimizer
+    satisfies the named source-residual-ratio KKT error bound under the
+    remaining scalar gain assumptions. -/
+theorem
+    IsLSEMinimizer.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank
+    {r p q : ℕ}
+    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
+    {b Deltab : Fin (r + q) → ℝ}
+    {B DeltaB : Fin p → Fin (p + q) → ℝ}
+    {d Deltad : Fin p → ℝ} {x : Fin (p + q) → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hB.transposeVecNorm2LowerMargin)
+    (hStackSmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hStack.vecNorm2LowerMargin)
+    (hmultGain :
+      LSEKKTInverseMultiplierStatCoeff hB
+          ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+            hStack) *
+          (eps * frobNormRect B) < 1)
+    (hsolGain :
+      LSEKKTInverseSolutionDataCoeff hB
+          ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+            hStack) *
+          (eps * frobNormRect A) +
+        LSEKKTInverseSolutionStatCoeff hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) *
+          ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
+        LSEKKTInverseSolutionConstrCoeff hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) *
+          (eps * frobNormRect B) < 1)
+    (hcoupledGain :
+      theorem20_8KKTCoupledSelfCoeff hB
+          ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+            hStack) eps < 1) :
+    ∃! y : Fin (p + q) → ℝ,
+      IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) y ∧
+        vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+          theorem20_8KKTSourceResidualRatioCoupledBound hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) b x eps := by
+  rcases theorem20_8_exists_unique_perturbed_lse_minimizer_of_maxRelativePerturbation_lt_margins
+      (A := A) (DeltaA := DeltaA) (b := b) (Deltab := Deltab)
+      (B := B) (DeltaB := DeltaB) (d := d) (Deltad := Deltad)
+      hB hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall with
+    ⟨y, hy, hyuniq⟩
+  have hbound :
+      vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+        theorem20_8KKTSourceResidualRatioCoupledBound hB
+          ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+            hStack) b x eps :=
+    hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank
+      hy hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hmultGain
+      hsolGain hcoupledGain
+  refine ⟨y, ⟨hy, hbound⟩, ?_⟩
+  intro z hz
+  exact hyuniq z hz.1
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    GQR-shaped source-rank existence-plus-bound KKT route with bundled scalar
+    small-gain hypotheses. -/
+theorem
+    IsLSEMinimizer.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
+    {r p q : ℕ}
+    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
+    {b Deltab : Fin (r + q) → ℝ}
+    {B DeltaB : Fin p → Fin (p + q) → ℝ}
+    {d Deltad : Fin p → ℝ} {x : Fin (p + q) → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hB.transposeVecNorm2LowerMargin)
+    (hStackSmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hStack.vecNorm2LowerMargin)
+    (hgain :
+      theorem20_8KKTSourceResidualRatioGainConditions hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) eps) :
+    ∃! y : Fin (p + q) → ℝ,
+      IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) y ∧
+        vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+          theorem20_8KKTSourceResidualRatioCoupledBound hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) b x eps := by
+  rcases hgain with ⟨hmultGain, hsolGain, hcoupledGain⟩
+  exact
+    hx.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank
+      hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hStackSmall
+      hmultGain hsolGain hcoupledGain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    GQR-shaped source-rank existence-plus-bound KKT route with the bundled
+    gain predicate discharged by linearized margins. -/
+theorem
+    IsLSEMinimizer.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_linearized_margins
+    {r p q : ℕ}
+    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
+    {b Deltab : Fin (r + q) → ℝ}
+    {B DeltaB : Fin p → Fin (p + q) → ℝ}
+    {d Deltad : Fin p → ℝ} {x : Fin (p + q) → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hB.transposeVecNorm2LowerMargin)
+    (hStackSmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hStack.vecNorm2LowerMargin)
+    (heps_le_one : eps ≤ 1)
+    (hmultGainHalf :
+      LSEKKTInverseMultiplierStatCoeff hB
+          ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+            hStack) *
+          (eps * frobNormRect B) ≤ (1 : ℝ) / 2)
+    (hsolSmall :
+      eps *
+          theorem20_8KKTSolutionSelfLinearCoeff hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) <
+        1)
+    (hcoupledLinearMargin :
+      LSEKKTInverseSolutionStatCoeff hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) *
+          (eps * frobNormRect B) *
+          (2 * eps *
+            theorem20_8KKTMultiplierSelfLinearCoeff hB
+              ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+                hStack)) <
+        1 -
+          eps *
+            theorem20_8KKTSolutionSelfLinearCoeff hB
+              ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+                hStack)) :
+    ∃! y : Fin (p + q) → ℝ,
+      IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) y ∧
+        vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+          theorem20_8KKTSourceResidualRatioCoupledBound hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) b x eps := by
+  have heps_nonneg : 0 ≤ eps :=
+    (theorem20_8MaxRelativePerturbation_nonneg A DeltaA b Deltab B DeltaB d
+      Deltad hApos).trans hmax
+  have hgain :
+      theorem20_8KKTSourceResidualRatioGainConditions hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) eps :=
+    theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_margins
+      hB ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+        hStack) heps_nonneg heps_le_one hmultGainHalf hsolSmall
+      hcoupledLinearMargin
+  exact
+    hx.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
+      hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hStackSmall hgain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    GQR-shaped source-rank existence-plus-bound KKT route with the bundled
+    gain predicate discharged by one linearized smallness comparison. -/
+theorem
+    IsLSEMinimizer.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_linearized_smallnessCoeff
+    {r p q : ℕ}
+    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
+    {b Deltab : Fin (r + q) → ℝ}
+    {B DeltaB : Fin p → Fin (p + q) → ℝ}
+    {d Deltad : Fin p → ℝ} {x : Fin (p + q) → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hB.transposeVecNorm2LowerMargin)
+    (hStackSmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hStack.vecNorm2LowerMargin)
+    (hsmall :
+      eps *
+          theorem20_8KKTLinearizedGainSmallnessCoeff hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) <
+        1) :
+    ∃! y : Fin (p + q) → ℝ,
+      IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) y ∧
+        vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+          theorem20_8KKTSourceResidualRatioCoupledBound hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) b x eps := by
+  have heps_nonneg : 0 ≤ eps :=
+    (theorem20_8MaxRelativePerturbation_nonneg A DeltaA b Deltab B DeltaB d
+      Deltad hApos).trans hmax
+  have hgain :
+      theorem20_8KKTSourceResidualRatioGainConditions hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) eps :=
+    theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessCoeff
+      hB ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+        hStack) heps_nonneg hsmall
+  exact
+    hx.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
+      hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hStackSmall hgain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    GQR-shaped source-rank existence-plus-bound KKT route with the bundled
+    gain predicate discharged by the reciprocal linearized smallness threshold. -/
+theorem
+    IsLSEMinimizer.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_linearized_smallnessThreshold
+    {r p q : ℕ}
+    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
+    {b Deltab : Fin (r + q) → ℝ}
+    {B DeltaB : Fin p → Fin (p + q) → ℝ}
+    {d Deltad : Fin p → ℝ} {x : Fin (p + q) → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hB.transposeVecNorm2LowerMargin)
+    (hStackSmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hStack.vecNorm2LowerMargin)
+    (hsmall :
+      eps <
+          theorem20_8KKTLinearizedGainSmallnessThreshold hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack)) :
+    ∃! y : Fin (p + q) → ℝ,
+      IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) y ∧
+        vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+          theorem20_8KKTSourceResidualRatioCoupledBound hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) b x eps := by
+  have heps_nonneg : 0 ≤ eps :=
+    (theorem20_8MaxRelativePerturbation_nonneg A DeltaA b Deltab B DeltaB d
+      Deltad hApos).trans hmax
+  have hgain :
+      theorem20_8KKTSourceResidualRatioGainConditions hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) eps :=
+    theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessThreshold
+      hB ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+        hStack) heps_nonneg hsmall
+  exact
+    hx.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
+      hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hStackSmall hgain
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     perturbed-rank witness package for the reduced `AP` problem.
@@ -83157,6 +85161,418 @@ theorem theorem20_10_partB_backward_error_of_householder_components_conservative
       A DeltaA B DeltaB b Deltab d Deltad hB hstack
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
+    component package promoted to the certificate boundary with source-rank
+    margin preservation.
+
+This is the certificate-level companion to
+`theorem20_10_partB_backward_error_of_householder_components_source_ranks_conservative_gamma`:
+the concrete Householder perturbation components are packaged into a reusable
+`Theorem20_10PartBPerturbationCertificate` after the source rank margins prove
+that the perturbed matrices keep full row rank and stacked full column rank. -/
+theorem theorem20_10_partB_certificate_of_householder_components_source_ranks_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hBMargin :
+      theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hBsrc.transposeVecNorm2LowerMargin)
+    (hStackMargin :
+      theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hStack.vecNorm2LowerMargin) :
+    ∃ (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+      (DeltaB : Fin p → Fin (p + q) → ℝ)
+      (Deltab : Fin (r + q) → ℝ)
+      (Deltad : Fin p → ℝ),
+      (∀ i j,
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+          matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+            (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j) ∧
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p
+            (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+            (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+            vecNorm2 b +
+          theorem20_10_householder_gammaB fp r p q *
+            frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤
+        theorem20_10_householder_gammaB fp r p q *
+          frobNormRect B * vecNorm2 xhat ∧
+      Nonempty
+        (Theorem20_10PartBPerturbationCertificate A B b d xhat
+          (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q)) := by
+  rcases theorem20_10_partB_certificate_of_householder_components_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf with
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaArep, hDeltaBrep,
+      hDeltabrep, hDeltadrep, hDeltaA, hDeltaB, hDeltab, hDeltad,
+      hcert⟩
+  have hcond :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+        LSEStackedFullColumnRank
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) :=
+    theorem20_8_conditions20_24_of_frobNormRect_bounds_lt_margins
+      (A := A) (DeltaA := DeltaA) (B := B) (DeltaB := DeltaB)
+      (cA := theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+        frobNormRect A)
+      (cB := theorem20_10_householder_gammaB fp r p q * frobNormRect B)
+      hBsrc hStack hDeltaA hDeltaB hBMargin hStackMargin
+  exact
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaArep, hDeltaBrep,
+      hDeltabrep, hDeltadrep, hDeltaA, hDeltaB, hDeltab, hDeltad,
+      hcert hcond.1 hcond.2⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    named proposition for the concrete Householder component certificate route.
+
+This is the certificate-boundary analogue of
+`Theorem20_10HouseholderComponentPartBRoute`: it records the concrete `A Q₂`,
+`Bᵀ`, transformed RHS, and constraint-RHS perturbation identities together with
+the conservative source-shaped norm bounds, but stops at the reusable
+`Theorem20_10PartBPerturbationCertificate` rather than immediately unpacking the
+exact GQR/minimizer method conclusion. -/
+def Theorem20_10HouseholderComponentPartBCertificateRoute
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ) : Prop :=
+  let gammaA : ℝ := theorem20_10_householder_gammaA_conservativeRhs fp r p q
+  let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+  ∃ (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (DeltaB : Fin p → Fin (p + q) → ℝ)
+    (Deltab : Fin (r + q) → ℝ)
+    (Deltad : Fin p → ℝ),
+    (∀ i j,
+      gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+        matMulRect (r + q) (r + q) q
+          (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+          (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j) ∧
+    (∀ i j,
+      B i j + DeltaB i j =
+        matMulRect (p + q) (p + q) p
+          (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+          (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+    (∀ i,
+      fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+        matMulVec (r + q)
+          (matTranspose
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+          (fun k => b k + Deltab k) i) ∧
+    (∀ i,
+      rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+        rectMatMulVec B xhat i + Deltad i) ∧
+    frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+    frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+    vecNorm2 Deltab ≤
+      gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+    vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+    Nonempty (Theorem20_10PartBPerturbationCertificate A B b d xhat gammaA gammaB)
+
+/-- Extract the reusable Part B perturbation certificate from the named
+    component certificate route, discarding the concrete Householder component
+    identities and norm bounds. -/
+theorem Theorem20_10HouseholderComponentPartBCertificateRoute.partB_certificate
+    {r p q : ℕ} {fp : FPModel}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {Q : Fin (p + q) → Fin (p + q) → ℝ}
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    {xhat : Fin (p + q) → ℝ}
+    (hroute :
+      Theorem20_10HouseholderComponentPartBCertificateRoute fp A B Q b d xhat) :
+    Nonempty
+      (Theorem20_10PartBPerturbationCertificate A B b d xhat
+        (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+        (theorem20_10_householder_gammaB fp r p q)) := by
+  dsimp [Theorem20_10HouseholderComponentPartBCertificateRoute] at hroute
+  rcases hroute with
+    ⟨_DeltaA, _DeltaB, _Deltab, _Deltad, _hAQ, _hB, _hrhs, _hd,
+      _hDeltaA, _hDeltaB, _hDeltab, _hDeltad, hcert⟩
+  exact hcert
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    explicit-margin wrapper for the named component certificate route. -/
+theorem theorem20_10_householder_component_partB_certificate_route_of_source_ranks_margins_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hBMargin :
+      theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hBsrc.transposeVecNorm2LowerMargin)
+    (hStackMargin :
+      theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        hStack.vecNorm2LowerMargin) :
+    Theorem20_10HouseholderComponentPartBCertificateRoute fp A B Q b d xhat := by
+  dsimp [Theorem20_10HouseholderComponentPartBCertificateRoute]
+  exact
+    theorem20_10_partB_certificate_of_householder_components_source_ranks_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
+      hBMargin hStackMargin
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    source-rank radius wrapper for the component certificate route. -/
+theorem theorem20_10_householder_component_partB_certificate_route_of_source_ranks_rank_radius_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hMargin :
+      theorem20_10_householder_componentSourceRankBudget fp A B <
+        theorem20_10_householder_sourceRankRadius hBsrc hStack) :
+    Theorem20_10HouseholderComponentPartBCertificateRoute fp A B Q b d xhat := by
+  rcases
+    theorem20_10_householder_componentSourceRankMargins_of_budget_lt_sourceRankRadius
+      fp A B hBsrc hStack hvalidA hMargin with
+    ⟨hBMargin, hStackMargin⟩
+  exact
+    theorem20_10_householder_component_partB_certificate_route_of_source_ranks_margins_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
+      hBMargin hStackMargin
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    max-gamma source-rank radius wrapper for the component certificate route. -/
+theorem theorem20_10_householder_component_partB_certificate_route_of_source_ranks_max_gamma_sum_bound_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hsmall :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) *
+          (frobNormRect A + frobNormRect B) <
+        theorem20_10_householder_sourceRankRadius hBsrc hStack) :
+    Theorem20_10HouseholderComponentPartBCertificateRoute fp A B Q b d xhat := by
+  exact
+    theorem20_10_householder_component_partB_certificate_route_of_source_ranks_rank_radius_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
+      (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
+        fp A B hBsrc hStack hsmall)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    conservative source-rank gamma-threshold wrapper for the component
+    certificate route. -/
+theorem theorem20_10_householder_component_partB_certificate_route_of_source_ranks_gamma_threshold_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hsmall :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) <
+        theorem20_10_householder_sourceRankGammaThreshold hBsrc hStack) :
+    Theorem20_10HouseholderComponentPartBCertificateRoute fp A B Q b d xhat := by
+  exact
+    theorem20_10_householder_component_partB_certificate_route_of_source_ranks_rank_radius_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
+      (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_lt_sourceRankGammaThreshold
+        fp A B hBsrc hStack hvalidA hvalidB hsmall)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    linear unit-roundoff threshold wrapper for the component certificate route. -/
+theorem theorem20_10_householder_component_partB_certificate_route_of_source_ranks_unit_roundoff_threshold_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hsmallA :
+      ((((p + q) * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hsmallB :
+      ((((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ) *
+        fp.u) ≤ 1 / 2))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hunit :
+      theorem20_10_householder_componentUnitRoundoffCoefficient r p q *
+          fp.u <
+        theorem20_10_householder_sourceRankGammaThreshold hBsrc hStack) :
+    Theorem20_10HouseholderComponentPartBCertificateRoute fp A B Q b d xhat := by
+  have hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)) := by
+    unfold gammaValid
+    exact lt_of_le_of_lt hsmallA (by norm_num)
+  have hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)) := by
+    unfold gammaValid
+    exact lt_of_le_of_lt hsmallB (by norm_num)
+  have hsmall :
+      max (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q) <
+        theorem20_10_householder_sourceRankGammaThreshold hBsrc hStack :=
+    theorem20_10_householder_component_max_gamma_lt_sourceRankGammaThreshold_of_unit_roundoff_bound
+      fp hBsrc hStack (by omega) hsmallA hsmallB hhalf hunit
+  exact
+    theorem20_10_householder_component_partB_certificate_route_of_source_ranks_gamma_threshold_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack hsmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    combined unit-roundoff smallness-threshold wrapper for the component
+    certificate route. -/
+theorem theorem20_10_householder_component_partB_certificate_route_of_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hBsrc hStack) :
+    Theorem20_10HouseholderComponentPartBCertificateRoute fp A B Q b d xhat := by
+  rcases
+    theorem20_10_householder_component_unit_roundoff_conditions_of_lt_smallnessThreshold
+      fp hBsrc hStack hp hq hu with
+    ⟨hsmallA, hsmallB, hhalf, hunit⟩
+  exact
+    theorem20_10_householder_component_partB_certificate_route_of_source_ranks_unit_roundoff_threshold_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hsmallA hsmallB hhalf hBsrc hStack hunit
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    computed-`Bᵀ` specialization of the component certificate route.
+
+This is the certificate-boundary analogue of
+`theorem20_10_partB_backward_error_of_householder_components_computed_B_transpose_Q_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma`.
+It fixes the abstract orthogonal factor in the component route to the rounded
+Householder panel actually computed from `Bᵀ`, deriving its orthogonality from
+the concrete `Bᵀ` block theorem. -/
+theorem theorem20_10_householder_component_partB_certificate_route_of_computed_B_transpose_Q_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hBsrc hStack) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    Theorem20_10HouseholderComponentPartBCertificateRoute fp A B Qb b d xhat := by
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  rcases
+    theorem20_10_householder_component_unit_roundoff_conditions_of_lt_smallnessThreshold
+      fp hBsrc hStack hp hq hu with
+    ⟨_hsmallA, hsmallB, _hhalf, _hunit⟩
+  have hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)) := by
+    unfold gammaValid
+    exact lt_of_le_of_lt hsmallB (by norm_num)
+  have hQb : IsOrthogonal (p + q) Qb := by
+    rcases
+      theorem20_10_householder_B_transpose_perturbed_constraint_block
+        (r := r) fp B hp hvalidB with
+      ⟨_DeltaB, _hDeltaBrep, hQb, _hS, _hblock, _hDeltaB⟩
+    simpa [Qb] using hQb
+  exact
+    theorem20_10_householder_component_partB_certificate_route_of_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
+      fp A B Qb b d xhat hQb hp hq hBsrc hStack hu
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
     component package with source-rank margin preservation.
 
     This strengthens
@@ -84058,6 +86474,43 @@ theorem theorem20_10_constructed_returned_vector_with_computed_B_transpose_Q_com
       fp A B b d xhat hp hq hB hStack hu
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    returned-vector bridge between the constructed rounded Householder GQR path
+    and the computed-`Bᵀ` concrete component certificate route.
+
+This is the certificate-boundary companion to
+`theorem20_10_constructed_returned_vector_with_computed_B_transpose_Q_component_partB_route_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma`:
+it produces the constructed transformed-tail returned vector and attaches the
+reusable `Theorem20_10HouseholderComponentPartBCertificateRoute` with `Q` fixed
+to the computed `Bᵀ` Householder panel. -/
+theorem theorem20_10_constructed_returned_vector_with_computed_B_transpose_Q_component_partB_certificate_route_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hB hStack) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    ∃ xhat : Fin (p + q) → ℝ,
+      Theorem20_10ConstructedHouseholderReturnedVectorPartBRoute
+        fp A B b d xhat ∧
+      Theorem20_10HouseholderComponentPartBCertificateRoute
+        fp A B Qb b d xhat := by
+  dsimp
+  rcases
+    theorem20_10_constructed_householder_returned_vector_partB_route_exists_of_source_ranks_unit_roundoff_smallnessThreshold_composed_conservative_gamma
+      fp A B b d hp hq hB hStack hu with
+    ⟨xhat, hconstructed⟩
+  refine ⟨xhat, hconstructed, ?_⟩
+  exact
+    theorem20_10_householder_component_partB_certificate_route_of_computed_B_transpose_Q_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
+      fp A B b d xhat hp hq hB hStack hu
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     a named constructed returned vector for the rounded Householder GQR route.
 
     This is a noncomputable choice from the proved existential bridge above.
@@ -84111,6 +86564,141 @@ theorem theorem20_10_constructed_householder_returned_xhat_spec
     Classical.choose_spec
       (theorem20_10_constructed_returned_vector_with_computed_B_transpose_Q_component_partB_route_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
         fp A B b d hp hq hB hStack hu)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    certificate specification of the named constructed returned vector.
+
+The chosen proof-level returned vector satisfies the constructed rounded
+Householder route and, independently, the concrete computed-`Bᵀ` component
+certificate route.  This keeps the reusable Part B perturbation certificate
+available for downstream wrappers without unpacking the full exact method
+package. -/
+theorem theorem20_10_constructed_householder_returned_xhat_certificate_spec
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hB hStack) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    Theorem20_10ConstructedHouseholderReturnedVectorPartBRoute
+        fp A B b d
+        (theorem20_10_constructed_householder_returned_xhat
+          fp A B b d hp hq hB hStack hu) ∧
+      Theorem20_10HouseholderComponentPartBCertificateRoute
+        fp A B Qb b d
+        (theorem20_10_constructed_householder_returned_xhat
+          fp A B b d hp hq hB hStack hu) := by
+  dsimp
+  constructor
+  · exact
+      (theorem20_10_constructed_householder_returned_xhat_spec
+        fp A B b d hp hq hB hStack hu).1
+  · exact
+      theorem20_10_householder_component_partB_certificate_route_of_computed_B_transpose_Q_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
+        fp A B b d
+        (theorem20_10_constructed_householder_returned_xhat
+          fp A B b d hp hq hB hStack hu)
+        hp hq hB hStack hu
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    direct reusable Part B perturbation certificate for the named constructed
+    rounded Householder returned vector. -/
+theorem theorem20_10_constructed_householder_returned_xhat_partB_certificate_of_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hB hStack) :
+    Nonempty
+      (Theorem20_10PartBPerturbationCertificate A B b d
+        (theorem20_10_constructed_householder_returned_xhat
+          fp A B b d hp hq hB hStack hu)
+        (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+        (theorem20_10_householder_gammaB fp r p q)) := by
+  exact
+    Theorem20_10HouseholderComponentPartBCertificateRoute.partB_certificate
+      (Q := fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+      (theorem20_10_constructed_householder_returned_xhat_certificate_spec
+        fp A B b d hp hq hB hStack hu).2
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    concise backward-error package for the named constructed rounded
+    Householder returned vector.
+
+This is the certificate-free companion to
+`theorem20_10_constructed_householder_returned_xhat_partB_certificate_of_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma`.
+It hides the reusable Part B certificate object and exposes directly the
+source-shaped perturbation bounds and exact perturbed GQR/minimizer core for the
+chosen proof-level returned vector. -/
+theorem theorem20_10_partB_backward_error_of_constructed_householder_returned_xhat_certificate_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hB hStack) :
+    let xhat : Fin (p + q) → ℝ :=
+      theorem20_10_constructed_householder_returned_xhat
+        fp A B b d hp hq hB hStack hu
+    let gammaA : ℝ := theorem20_10_householder_gammaA_conservativeRhs fp r p q
+    let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ Deltad : Fin p → ℝ,
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  dsimp
+  rcases
+    theorem20_10_constructed_householder_returned_xhat_partB_certificate_of_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
+      fp A B b d hp hq hB hStack hu with
+    ⟨cert⟩
+  exact
+    ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, cert.Deltad, cert.hDeltaA,
+      cert.hDeltaB, cert.hDeltab, cert.hDeltad,
+      GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10_perturbed_d
+        A cert.DeltaA B cert.DeltaB b cert.Deltab d cert.Deltad
+        cert.hB cert.hstack⟩
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     computed-`Bᵀ` concrete component Part B route for the named constructed
@@ -84788,6 +87376,45 @@ theorem theorem20_10_partA_certificate_of_constructed_source_exact_rhs_household
   exact
     theorem20_10_partA_certificate_of_constructed_source_exact_rhs_householder_gamma
       fp h b d hdiag.1 hdiag.2 hvalidA hvalidB
+
+/-- Theorem 20.10(b), exact transformed-RHS constructed-source Part B
+    certificate with source rank hypotheses.
+
+This is the certificate-level companion to
+`theorem20_10_partB_backward_error_of_constructed_source_exact_rhs_householder_gamma_of_source_ranks`.
+It removes the supplied triangular diagonal hypotheses for the exact-RHS
+Householder-gamma branch while keeping the result at the reusable certificate
+boundary.  The rounded RHS-transform and external computed-vector identity
+remain separate obligations. -/
+theorem theorem20_10_partB_certificate_of_constructed_source_exact_rhs_householder_gamma_of_source_ranks
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    Nonempty
+      (Theorem20_10PartBPerturbationCertificate A B b d
+        (theorem20_10_gqr_xhat fp h b d)
+        (theorem20_10_householder_gammaA fp r p q)
+        (theorem20_10_householder_gammaB fp r p q)) := by
+  have hgammaB_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidB
+  rcases
+    theorem20_10_partA_certificate_of_constructed_source_exact_rhs_householder_gamma_of_source_ranks
+      fp h b d hBsrc hStack hvalidA hvalidB with
+    ⟨_DeltaS, _DeltaL22, _hDeltaSbound, _hDeltaL22bound,
+      _hDeltaSfrob, _hDeltaL22frob, hcertA⟩
+  exact
+    theorem20_10_partB_certificate_of_nonempty_partA_certificate
+      A B b d (theorem20_10_gqr_xhat fp h b d) hgammaB_nonneg hcertA
 
 /-- Theorem 20.10(b), exact transformed-RHS constructed-source
     backward-error core with source rank hypotheses instead of supplied

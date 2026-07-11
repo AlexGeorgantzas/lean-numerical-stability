@@ -6507,6 +6507,56 @@ theorem sylvester_relative_first_order_bound_schurDiagonal_of_vecCoeff_entrywise
       hU hV hA hB halpha hbeta hgamma hsigma heps hX hgap
       hDeltaA hDeltaB hDeltaC hLin
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.23):
+    source-numbered alias for the concrete Sylvester vec/Kronecker sigma-min
+    first-order bound. -/
+alias H16_eq16_23_sylvester_first_order_bound_of_vecCoeff_sigmaMin :=
+  sylvester_first_order_bound_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.23):
+    source-numbered alias for the concrete Sylvester vec/Kronecker
+    left-inverse first-order bound. -/
+alias H16_eq16_23_sylvester_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  sylvester_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.24):
+    source-numbered alias for the relative concrete Sylvester vec/Kronecker
+    sigma-min first-order bound. -/
+alias H16_eq16_24_sylvester_relative_first_order_bound_of_vecCoeff_sigmaMin :=
+  sylvester_relative_first_order_bound_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.24):
+    source-numbered alias for the relative concrete Sylvester vec/Kronecker
+    left-inverse first-order bound. -/
+alias H16_eq16_24_sylvester_relative_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  sylvester_relative_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.23), diagonal case:
+    source-numbered alias for the concrete Sylvester vec/Kronecker
+    entrywise-gap first-order bound. -/
+alias H16_eq16_23_sylvester_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge :=
+  sylvester_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.24), diagonal case:
+    source-numbered alias for the relative concrete Sylvester vec/Kronecker
+    entrywise-gap first-order bound. -/
+alias H16_eq16_24_sylvester_relative_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge :=
+  sylvester_relative_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.23), supplied orthogonal
+    Schur-diagonal case:
+    source-numbered alias for the concrete Sylvester vec/Kronecker
+    entrywise-gap first-order bound. -/
+alias H16_eq16_23_sylvester_first_order_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge :=
+  sylvester_first_order_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.24), supplied orthogonal
+    Schur-diagonal case:
+    source-numbered alias for the relative concrete Sylvester vec/Kronecker
+    entrywise-gap first-order bound. -/
+alias H16_eq16_24_sylvester_relative_first_order_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge :=
+  sylvester_relative_first_order_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
     Frobenius first-order Sylvester perturbation bound from a positive lower
     bound on the concrete Kronecker/vectorized Sylvester coefficient. -/
@@ -7758,6 +7808,75 @@ theorem sylvester_relative_aposteriori_bound_schurDiagonal_of_vecCoeff_entrywise
         U A V B a b sigma hU hV hA hB hSigma hgap)
       hExact hE_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the concrete Sylvester vec/Kronecker sigma-min
+    a posteriori bound, preserving the explicit nonzero-error side condition. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_of_vecCoeff_sigmaMin :=
+  sylvester_aposteriori_bound_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the relative concrete Sylvester vec/Kronecker
+    sigma-min a posteriori bound, preserving the explicit nonzero-error and
+    positive-solution-norm side conditions. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_of_vecCoeff_sigmaMin :=
+  sylvester_relative_aposteriori_bound_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the concrete Sylvester vec/Kronecker left-inverse
+    a posteriori bound, preserving the explicit nonzero-error side condition. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  sylvester_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the relative concrete Sylvester vec/Kronecker
+    left-inverse a posteriori bound, preserving the explicit nonzero-error and
+    positive-solution-norm side conditions. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  sylvester_relative_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the concrete Sylvester vec/Kronecker finite-Gram
+    a posteriori bound, preserving the explicit nonzero-error side condition. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_of_vecCoeff_gram_eigenvalues :=
+  sylvester_aposteriori_bound_of_vecCoeff_gram_eigenvalues
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the relative concrete Sylvester vec/Kronecker
+    finite-Gram a posteriori bound, preserving the explicit nonzero-error and
+    positive-solution-norm side conditions. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_of_vecCoeff_gram_eigenvalues :=
+  sylvester_relative_aposteriori_bound_of_vecCoeff_gram_eigenvalues
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal case:
+    source-numbered alias for the concrete Sylvester vec/Kronecker
+    entrywise-gap a posteriori bound, preserving the explicit nonzero-error
+    side condition. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge :=
+  sylvester_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal case:
+    source-numbered alias for the relative concrete Sylvester vec/Kronecker
+    entrywise-gap a posteriori bound, preserving the explicit nonzero-error
+    and positive-solution-norm side conditions. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge :=
+  sylvester_relative_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), supplied orthogonal
+    Schur-diagonal case:
+    source-numbered alias for the concrete Sylvester vec/Kronecker
+    entrywise-gap a posteriori bound, preserving the explicit nonzero-error
+    side condition. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge :=
+  sylvester_aposteriori_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), supplied orthogonal
+    Schur-diagonal case:
+    source-numbered alias for the relative concrete Sylvester vec/Kronecker
+    entrywise-gap a posteriori bound, preserving the explicit nonzero-error
+    and positive-solution-norm side conditions. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge :=
+  sylvester_relative_aposteriori_bound_schurDiagonal_of_vecCoeff_entrywise_abs_ge
+
 /-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
     total diagonal case: a posteriori error-residual bound from the concrete
     diagonal vec/Kronecker coefficient lower-bound certificate. -/
@@ -8450,6 +8569,75 @@ theorem lyapunov_relative_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywi
         U A a sigma hU hA hSigma hgap)
       hExact hE_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the concrete Lyapunov vec/Kronecker sigma-min
+    a posteriori bound, preserving the explicit nonzero-error side condition. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_of_vecCoeff_sigmaMin :=
+  lyapunov_aposteriori_bound_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the relative concrete Lyapunov vec/Kronecker
+    sigma-min a posteriori bound, preserving the explicit nonzero-error and
+    positive-solution-norm side conditions. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_of_vecCoeff_sigmaMin :=
+  lyapunov_relative_aposteriori_bound_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the concrete Lyapunov vec/Kronecker left-inverse
+    a posteriori bound, preserving the explicit nonzero-error side condition. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  lyapunov_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the relative concrete Lyapunov vec/Kronecker
+    left-inverse a posteriori bound, preserving the explicit nonzero-error and
+    positive-solution-norm side conditions. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  lyapunov_relative_aposteriori_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the concrete Lyapunov vec/Kronecker finite-Gram
+    a posteriori bound, preserving the explicit nonzero-error side condition. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_of_vecCoeff_gram_eigenvalues :=
+  lyapunov_aposteriori_bound_of_vecCoeff_gram_eigenvalues
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
+    source-numbered alias for the relative concrete Lyapunov vec/Kronecker
+    finite-Gram a posteriori bound, preserving the explicit nonzero-error and
+    positive-solution-norm side conditions. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_of_vecCoeff_gram_eigenvalues :=
+  lyapunov_relative_aposteriori_bound_of_vecCoeff_gram_eigenvalues
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal case:
+    source-numbered alias for the concrete Lyapunov vec/Kronecker
+    entrywise-gap a posteriori bound, preserving the explicit nonzero-error
+    side condition. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge :=
+  lyapunov_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), diagonal case:
+    source-numbered alias for the relative concrete Lyapunov vec/Kronecker
+    entrywise-gap a posteriori bound, preserving the explicit nonzero-error
+    and positive-solution-norm side conditions. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge :=
+  lyapunov_relative_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), supplied orthogonal
+    spectral-coordinate case:
+    source-numbered alias for the concrete Lyapunov vec/Kronecker
+    entrywise-gap a posteriori bound, preserving the explicit nonzero-error
+    side condition. -/
+alias H16_eq16_28_lyapunov_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge :=
+  lyapunov_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28), supplied orthogonal
+    spectral-coordinate case:
+    source-numbered alias for the relative concrete Lyapunov vec/Kronecker
+    entrywise-gap a posteriori bound, preserving the explicit nonzero-error
+    and positive-solution-norm side conditions. -/
+alias H16_eq16_28_lyapunov_relative_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge :=
+  lyapunov_relative_aposteriori_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28), total diagonal case:
     Lyapunov a posteriori error-residual bound from the concrete diagonal
     vec/Kronecker coefficient lower-bound certificate. -/
@@ -8946,6 +9134,30 @@ theorem lyapunov_relative_first_order_bound_of_vecCoeff_gram_eigenvalues
       hDeltaA hDeltaC hLin
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the concrete Lyapunov vec/Kronecker sigma-min
+    first-order bound. -/
+alias H16_eq16_27_lyapunov_first_order_bound_of_vecCoeff_sigmaMin :=
+  lyapunov_first_order_bound_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the relative concrete Lyapunov vec/Kronecker
+    sigma-min first-order bound. -/
+alias H16_eq16_27_lyapunov_relative_first_order_bound_of_vecCoeff_sigmaMin :=
+  lyapunov_relative_first_order_bound_of_vecCoeff_sigmaMin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the concrete Lyapunov vec/Kronecker left-inverse
+    first-order bound. -/
+alias H16_eq16_27_lyapunov_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  lyapunov_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
+    source-numbered alias for the relative concrete Lyapunov vec/Kronecker
+    left-inverse first-order bound. -/
+alias H16_eq16_27_lyapunov_relative_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le :=
+  lyapunov_relative_first_order_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27):
     source-numbered aliases for finite Gram-eigenvalue Lyapunov
     first-order condition wrappers. -/
 alias H16_eq16_27_lyapunov_first_order_bound_of_vecCoeff_gram_eigenvalues :=
@@ -9306,6 +9518,42 @@ theorem lyapunov_relative_perturbation_of_vecCoeff_gram_eigenvalues_total
       alpha gamma eps halpha hgamma heps
       hDeltaA hDeltaC hLin hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total Lyapunov perturbation endpoint from a
+    concrete vec-coefficient sigma-min lower bound. -/
+alias H16_eq16_27_lyapunov_perturbation_bound_of_vecCoeff_sigmaMin_total :=
+  lyapunov_perturbation_bound_of_vecCoeff_sigmaMin_total
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total relative Lyapunov perturbation endpoint
+    from a concrete vec-coefficient sigma-min lower bound. -/
+alias H16_eq16_27_lyapunov_relative_perturbation_of_vecCoeff_sigmaMin_total :=
+  lyapunov_relative_perturbation_of_vecCoeff_sigmaMin_total
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total Lyapunov perturbation endpoint from a
+    concrete left inverse and finite operator-2 bound. -/
+alias H16_eq16_27_lyapunov_perturbation_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total :=
+  lyapunov_perturbation_bound_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total relative Lyapunov perturbation endpoint
+    from a concrete left inverse and finite operator-2 bound. -/
+alias H16_eq16_27_lyapunov_relative_perturbation_of_vecCoeff_left_inverse_finiteOpNorm2Le_total :=
+  lyapunov_relative_perturbation_of_vecCoeff_left_inverse_finiteOpNorm2Le_total
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total Lyapunov perturbation endpoint from a
+    finite Gram-eigenvalue lower-bound certificate. -/
+alias H16_eq16_27_lyapunov_perturbation_bound_of_vecCoeff_gram_eigenvalues_total :=
+  lyapunov_perturbation_bound_of_vecCoeff_gram_eigenvalues_total
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total relative Lyapunov perturbation endpoint
+    from a finite Gram-eigenvalue lower-bound certificate. -/
+alias H16_eq16_27_lyapunov_relative_perturbation_of_vecCoeff_gram_eigenvalues_total :=
+  lyapunov_relative_perturbation_of_vecCoeff_gram_eigenvalues_total
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27),
     total diagonal case: Frobenius Lyapunov perturbation bound from the concrete
     diagonal Lyapunov vec/Kronecker coefficient lower-bound certificate. -/
@@ -9364,6 +9612,18 @@ theorem lyapunov_relative_perturbation_diagonal_of_vecCoeff_entrywise_abs_ge_tot
         a sigma (le_of_lt hsigma) hgap)
       alpha gamma eps halpha hgamma heps
       hDeltaA hDeltaC hLin hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total diagonal Lyapunov perturbation endpoint
+    from concrete pair-sum gap data. -/
+alias H16_eq16_27_lyapunov_perturbation_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total :=
+  lyapunov_perturbation_bound_diagonal_of_vecCoeff_entrywise_abs_ge_total
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27):
+    source-numbered alias for the total relative diagonal Lyapunov perturbation
+    endpoint from concrete pair-sum gap data. -/
+alias H16_eq16_27_lyapunov_relative_perturbation_diagonal_of_vecCoeff_entrywise_abs_ge_total :=
+  lyapunov_relative_perturbation_diagonal_of_vecCoeff_entrywise_abs_ge_total
 
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27),
     total supplied orthogonal spectral-coordinate case:
@@ -9649,6 +9909,32 @@ theorem lyapunov_relative_first_order_bound_spectralDiagonal_of_vecCoeff_entrywi
       U A a X DeltaA DeltaC DeltaX alpha gamma sigma eps
       hU hA halpha hgamma hsigma heps hX hgap
       hDeltaA hDeltaC hLin
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
+    source-numbered alias for the concrete Lyapunov vec/Kronecker
+    entrywise-gap first-order bound. -/
+alias H16_eq16_27_lyapunov_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge :=
+  lyapunov_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), diagonal case:
+    source-numbered alias for the relative concrete Lyapunov vec/Kronecker
+    entrywise-gap first-order bound. -/
+alias H16_eq16_27_lyapunov_relative_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge :=
+  lyapunov_relative_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal
+    spectral-coordinate case:
+    source-numbered alias for the concrete Lyapunov vec/Kronecker
+    entrywise-gap first-order bound. -/
+alias H16_eq16_27_lyapunov_first_order_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge :=
+  lyapunov_first_order_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal
+    spectral-coordinate case:
+    source-numbered alias for the relative concrete Lyapunov vec/Kronecker
+    entrywise-gap first-order bound. -/
+alias H16_eq16_27_lyapunov_relative_first_order_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge :=
+  lyapunov_relative_first_order_bound_spectralDiagonal_of_vecCoeff_entrywise_abs_ge
 
 /-- Higham, 2nd ed., Chapter 16.3, equation (16.27), supplied orthogonal
     spectral-coordinate case:
