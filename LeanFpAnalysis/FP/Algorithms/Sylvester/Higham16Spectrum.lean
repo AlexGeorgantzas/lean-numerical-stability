@@ -12500,6 +12500,25 @@ theorem existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_c
       n pmap p hmono hprev hnext
   · exact Or.inr hblock
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for scheduled Schur-coordinate traversal whose
+    singleton steps use local predecessor/successor block-label separation
+    before the no-common determinant discharge. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_neighbor_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_neighbor_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for scheduled original-coordinate reconstruction
+    whose singleton steps use local neighbor block-label separation. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_no_common_neighbor_frontier_step_oracle :=
+  sylvester_quasiSchur_blockTraversal_original_solution_eq_of_twoBlockSpectral_no_common_neighbor_frontier_step_oracle
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for scheduled original-coordinate unique solvability
+    whose singleton steps use local neighbor block-label separation. -/
+alias H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_common_neighbor_frontier_step_oracle :=
+  existsUnique_isSylvesterSolutionRect_of_quasiSchur_twoBlockSpectral_no_common_neighbor_frontier_step_oracle
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
     Schur-coordinate solvability from the generated quasi-Schur frontier
     schedule.  The block-map schedule and neighbor certificates are produced
