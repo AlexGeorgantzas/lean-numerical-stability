@@ -455,6 +455,13 @@ theorem sylvesterResidualRect_quasiTriangular_blockBackSub_componentwise_le
 -- Source-numbered aliases
 -- ============================================================
 
+/-- Higham, 2nd ed., Chapter 16.2, p. 308, equation (16.6),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    vectorized/matrix bookkeeping of the computed rounded quasi-triangular
+    Schur solve. -/
+alias H16_eq16_6_quasi_vec_flSylvesterQuasiSchurBlockBackSubSolve :=
+  vec_flSylvesterQuasiSchurBlockBackSubSolve
+
 /-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equation (16.7),
     quasi-triangular (real Schur) variant: source-numbered alias for the
     unconditional backward-error model with the explicit Theorem 9.3
