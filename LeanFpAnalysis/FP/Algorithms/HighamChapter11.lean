@@ -20090,6 +20090,51 @@ abbrev higham11_7_ConcretePathSecondPivotEarlierLiftRowsLiftedSupportAfterBranch
             (higham11_7_tridiagonalPathTailDim k step s) (step s))
           (ΔA s))
 
+/-- Local deep leading-support certificates for every strictly earlier
+perturbation produce the named ambient lifted-support-after-branch-end family.
+The endpoint inequality is exactly the bridge from the current accepted
+`2 × 2` branch end to the shifted local support offset. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsLiftedSupportAfterBranchEnd_of_deepLeadingBlockSupport
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hdeep : ∀ t : Fin k, ∀ _hstep : step t = PivotSize.two,
+      ∀ s : Fin k, s.val < t.val →
+        ∃ localOffset : ℕ,
+          higham11_7_TridiagonalLeadingBlockSupport
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            localOffset (ΔA s) ∧
+          higham11_7_tridiagonalPathPrefixSpan k step t +
+              higham11_7_tridiagonalBranchSupportOffset (step t) ≤
+            higham11_7_tridiagonalPathPrefixSpan k step s + localOffset) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsLiftedSupportAfterBranchEnd
+      k step ΔA := by
+  intro t hstep s hst
+  rcases hdeep t hstep s hst with ⟨localOffset, hEsupp, hend⟩
+  exact
+    higham11_7_tridiagonalLeadingBlockSupport_of_le_offset
+      (higham11_7_tridiagonalPathPivotSpan k step + 1)
+      (higham11_7_tridiagonalPathPrefixSpan k step t +
+        higham11_7_tridiagonalBranchSupportOffset (step t))
+      (higham11_7_tridiagonalPathPrefixSpan k step s + localOffset)
+      (higham11_7_tridiagonalLiftLocalBlockPerturbation
+        (higham11_7_tridiagonalPathPivotSpan k step + 1)
+        (higham11_7_tridiagonalPathPrefixSpan k step s)
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step s) (step s))
+        (ΔA s))
+      hend
+      (higham11_7_tridiagonalLiftLocalBlockPerturbation_leadingBlockSupport
+        (higham11_7_tridiagonalPathPivotSpan k step + 1)
+        (higham11_7_tridiagonalPathPrefixSpan k step s)
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step s) (step s))
+        localOffset (ΔA s) hEsupp)
+
 /-- Ambient zero-prefix support on the already lifted earlier perturbation
 discharges a single second-pivot prefix column. -/
 theorem higham11_7_tridiagonalLiftLocalBlockPerturbation_pathSecondPivot_two_zeroBeforePrefix_of_lifted_support_at_current_prefix

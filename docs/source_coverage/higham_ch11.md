@@ -27,6 +27,7 @@ assumptions remain open in the not-proved ledger below.
 
 | Source item | Lean declaration(s) | File | Notes |
 |---|---|---|---|
+| Thm 11.7 deep-support lifted-support producer | `higham11_7_ConcretePathSecondPivotEarlierLiftRowsLiftedSupportAfterBranchEnd_of_deepLeadingBlockSupport` | Ch11 | **new this session**; local deep leading-support certificates plus the current-branch-end offset inequality now package directly into the named ambient `LiftedSupportAfterBranchEnd` family consumed by the lifted-support local-block and local-row source endpoints. |
 | Thm 11.7 support-reduced local-row source endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_after_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_isSymTridiagonal_and_after_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_after_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_isSymTridiagonal_and_after_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_after_earlier_branch_end`, and `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_isSymTridiagonal_and_after_earlier_branch_end` | Ch11 | **new this session**; the coefficient-sum, uniform-coefficient, and scalar-budget source endpoints now consume residual-witness local second-pivot rows directly together with the all-earlier support-reduced after-branch-end prefix-zero facts, including symmetric-tridiagonal wrappers. The accepted-`2×2` local row equation remains the explicit mathematical obligation. |
 | Thm 11.7 non-adjacent local-row source endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_after_nonadjacent_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_isSymTridiagonal_and_after_nonadjacent_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_after_nonadjacent_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_isSymTridiagonal_and_after_nonadjacent_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_after_nonadjacent_earlier_branch_end`, and `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_isSymTridiagonal_and_after_nonadjacent_earlier_branch_end` | Ch11 | **new this session**; the coefficient-sum, uniform-coefficient, and scalar-budget source endpoints can now consume residual-witness local second-pivot rows directly together with the non-adjacent after-branch-end prefix-zero facts, including symmetric-tridiagonal wrappers. The accepted-`2×2` local row equation remains the explicit mathematical obligation. |
 | Thm 11.7 support-reduced local-row to local-block handoffs | `higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isTridiagonal_and_after_earlier_branch_end`, `higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isTridiagonal_and_after_earlier_branch_end`, `higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isSymTridiagonal_and_after_earlier_branch_end`, and `higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isSymTridiagonal_and_after_earlier_branch_end` | Ch11 | **new this session**; residual/supported local second-pivot row equations now restrict to the local-block combined-row predicate under the all-earlier support-reduced after-branch-end prefix-zero facts, with symmetric-tridiagonal wrappers. This is the broader companion to the strictly non-adjacent handoff. |
@@ -416,6 +417,12 @@ forms. They consume residual-witness `ConcretePathSecondPivotLocalSolveRows`
 obligations and use the lower lifted-support local-row-to-local-block handoff
 internally, leaving only the named deep-support family and the local row
 equation to callers.
+
+2026-07-11 update: local deep-leading support certificates now produce the
+named lifted-support-after-branch-end family directly when supplied with the
+current-branch-end offset inequality. This turns the support side of the
+lifted-support source endpoints back into a local certificate obligation rather
+than an ambient-support packaging obligation.
 
 2026-07-11 update: the branch-matrix second-pivot source endpoints now also
 have support-reduced coefficient-sum, uniform-coefficient, and scalar-budget
@@ -3992,6 +3999,19 @@ Problem transcription.
     focused theorem-dependency checks of the six
     `..._local_rows_of_after_earlier_branch_end` source endpoint aliases →
     elaborate; theorem dependencies
+    `[propext, Classical.choice, Quot.sound]`.
+    Hygiene checks `git diff --check`, placeholder scans for the changed Lean
+    file and added report lines, and tab scans over the touched files were
+    clean. Target-build warnings are pre-existing upstream warnings from
+    Chapter 9, Chapter 10, and `CholeskyFl`; no new Chapter 11 warning was
+    emitted.
+  - 2026-07-11 Theorem 11.7 deep-support lifted-support producer increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused theorem-dependency check of
+    `higham11_7_ConcretePathSecondPivotEarlierLiftRowsLiftedSupportAfterBranchEnd_of_deepLeadingBlockSupport`
+    → elaborate; theorem dependencies
     `[propext, Classical.choice, Quot.sound]`.
     Hygiene checks `git diff --check`, placeholder scans for the changed Lean
     file and added report lines, and tab scans over the touched files were
