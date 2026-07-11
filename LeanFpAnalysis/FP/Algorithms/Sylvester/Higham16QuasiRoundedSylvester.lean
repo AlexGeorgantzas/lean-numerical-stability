@@ -673,6 +673,67 @@ theorem sylvesterVecCoeff_quasiTriangular_blockBackSub_componentwise_error_and_r
       sylvesterResidualRect_quasiTriangular_blockBackSub_componentwise_le
         fp m n dblR R S Ct ρ hRp hR hS hsep hpiv hρ hgrow hgv i k
 
+/-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equations (16.7)-(16.8),
+    quasi-triangular (real Schur) variant: bundled endpoint exposing the
+    unconditional fill-in-budget backward-error model, its vectorized residual
+    consequence, and the printed matrix residual form under one shared
+    hypothesis list. -/
+theorem sylvesterVecCoeff_quasiTriangular_blockBackSub_componentwise_error_and_residual_with_growthTerm
+    (fp : FPModel) (m n : Nat) (dblR : Fin m → Bool)
+    (R : RMatFn m m) (S : RMatFn n n) (Ct : RMatFn m n)
+    (hRp : IsQuasiBlockPairing m dblR)
+    (hR : IsQuasiUpperTriangularFn m R dblR) (hS : IsUpperTriangularFn n S)
+    (hsep : ∀ (i : Fin m) (k : Fin n),
+      ¬(0 < i.val ∧ dblR ⟨i.val - 1, by omega⟩ = true) → R i i ≠ S k k)
+    (hpiv : ∀ (i i' : Fin m) (k : Fin n), i'.val = i.val + 1 →
+      dblR i = true →
+      flSolve2x2SecondPivot fp (R i i - S k k) (R i i') (R i' i)
+        (R i' i' - S k k) ≠ 0)
+    (hgv : gammaValid fp (n * m + 9)) :
+    (∃ ΔP : Matrix (Prod (Fin n) (Fin m)) (Prod (Fin n) (Fin m)) Real,
+      (∀ p q, |ΔP p q| ≤ gamma fp (n * m + 9) *
+        (|sylvesterVecCoeff m n R S p q| +
+          sylvesterQuasiGrowthTerm m n dblR R S p q)) ∧
+      Matrix.mulVec (sylvesterVecCoeff m n R S + ΔP)
+          (flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct) =
+        Matrix.vec Ct) ∧
+    (∀ p : Prod (Fin n) (Fin m),
+      |Matrix.vec Ct p -
+          Matrix.mulVec (sylvesterVecCoeff m n R S)
+            (flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct) p| ≤
+        gamma fp (n * m + 9) *
+          ∑ q, (|sylvesterVecCoeff m n R S p q| +
+            sylvesterQuasiGrowthTerm m n dblR R S p q) *
+            |flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct q|) ∧
+    (∀ (i : Fin m) (k : Fin n),
+      |sylvesterResidualRect m n R S Ct
+          (flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct) i k| ≤
+        gamma fp (n * m + 9) *
+          (matMulRect m m n (fun a b => |R a b|)
+              (fun a b =>
+                |flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct a b|)
+              i k +
+            matMulRect m n n
+              (fun a b =>
+                |flSylvesterQuasiSchurBlockBackSubSolve fp m n dblR R S Ct a b|)
+              (fun a b => |S a b|) i k +
+            ∑ q : Prod (Fin n) (Fin m),
+              sylvesterQuasiGrowthTerm m n dblR R S (k, i) q *
+                |flSylvesterQuasiSchurBlockBackSubSolveVec fp m n dblR R S Ct q|)) := by
+  constructor
+  · exact
+      sylvesterVecCoeff_quasiTriangular_blockBackSub_backward_error
+        fp m n dblR R S Ct hRp hR hS hsep hpiv hgv
+  constructor
+  · intro p
+    exact
+      sylvesterVecCoeff_quasiTriangular_blockBackSub_componentwise_residual_with_growthTerm
+        fp m n dblR R S Ct hRp hR hS hsep hpiv hgv p
+  · intro i k
+    exact
+      sylvesterResidualRect_quasiTriangular_blockBackSub_componentwise_le_with_growthTerm
+        fp m n dblR R S Ct hRp hR hS hsep hpiv hgv i k
+
 -- ============================================================
 -- Source-numbered aliases
 -- ============================================================
@@ -789,6 +850,13 @@ alias H16_eq16_8_quasi_sylvesterVecCoeff_blockBackSub_componentwise_residual_wit
     budget from the unconditional (16.7) model. -/
 alias H16_eq16_8_quasi_sylvesterResidualRect_blockBackSub_componentwise_le_with_growthTerm :=
   sylvesterResidualRect_quasiTriangular_blockBackSub_componentwise_le_with_growthTerm
+
+/-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equations (16.7)-(16.8),
+    quasi-triangular (real Schur) variant: source-numbered alias for the
+    bundled unconditional fill-in-budget backward-error and residual endpoint
+    package. -/
+alias H16_eq16_7_8_quasi_sylvesterVecCoeff_blockBackSub_componentwise_error_and_residual_with_growthTerm :=
+  sylvesterVecCoeff_quasiTriangular_blockBackSub_componentwise_error_and_residual_with_growthTerm
 
 /-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equation (16.8),
     quasi-triangular (real Schur) variant: source-numbered alias for the
