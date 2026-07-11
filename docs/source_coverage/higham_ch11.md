@@ -27,6 +27,7 @@ assumptions remain open in the not-proved ledger below.
 
 | Source item | Lean declaration(s) | File | Notes |
 |---|---|---|---|
+| Thm 11.7 non-adjacent local-row to local-block handoffs | `higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isTridiagonal_and_after_nonadjacent_earlier_branch_end`, `higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isTridiagonal_and_after_nonadjacent_earlier_branch_end`, `higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isSymTridiagonal_and_after_nonadjacent_earlier_branch_end`, and `higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isSymTridiagonal_and_after_nonadjacent_earlier_branch_end` | Ch11 | **new this session**; residual/supported local second-pivot row equations can now be restricted to the local-block combined-row predicate under tridiagonal or symmetric-tridiagonal base support plus the strictly non-adjacent after-branch-end prefix-zero fact. The local row equation itself remains an explicit caller obligation. |
 | Thm 11.7 scalar-budget non-adjacent support-reduced source endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_after_nonadjacent_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_isSymTridiagonal_and_after_nonadjacent_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_after_nonadjacent_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_isSymTridiagonal_and_after_nonadjacent_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_after_nonadjacent_earlier_branch_end`, and `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_isSymTridiagonal_and_after_nonadjacent_earlier_branch_end` | Ch11 | **new this session**; adds the strictly non-adjacent support-reduced endpoint shape for the per-branch roundoff-budget route with `u_loc ≤ u`, matching the coefficient-sum and uniform endpoint families. |
 | Alg 11.1 α = (1+√17)/8 root of 4α²−α−1 | `bunch_parlett_alpha_root`, `higham11_1_bunch_parlett_alpha_root` | CholeskyIndefinite / Ch11 | exact algebraic identity |
 | Alg 11.6 α = (√5−1)/2 root of α²+α−1 | `bunch_tridiagonal_alpha_root`, `bunch_tridiagonal_alpha_pos`, `bunch_tridiagonal_alpha_lt_one`, `bunch_tridiagonal_alpha_sq`, `higham11_6_bunch_tridiagonal_alpha_root`, `higham11_6_bunch_tridiagonal_alpha_pos`, `higham11_6_bunch_tridiagonal_alpha_lt_one`, `higham11_6_bunch_tridiagonal_alpha_sq` | " | exact algebraic identity plus `0<α<1` and `α²=1−α`, used by tridiagonal pivot-case inequalities |
@@ -477,6 +478,12 @@ include symmetric-tridiagonal wrappers.
 symmetric-tridiagonal entry points for both prefix-zero and local-block
 combined-solve forms. Symmetric callers can use the same residual/support
 packages without manually projecting `IsSymTridiagonal`.
+
+2026-07-11 update: the non-adjacent local-row-to-local-block handoff now
+routes residual/supported local second-pivot row equations directly into
+local-block combined row predicates, including symmetric-tridiagonal wrappers.
+This leaves the local row equation explicit while removing a caller-side
+combined-row and prefix-zero reconstruction step.
 
 2026-07-11 update: the current-local-block zero target now has a
 local and ambient deep-leading-support reducers:
@@ -3951,6 +3958,20 @@ Problem transcription.
     dependencies `[propext, Classical.choice, Quot.sound]`.
     Target-build warnings are pre-existing upstream warnings from Chapter 9,
     Chapter 10, and `CholeskyFl`; no new Chapter 11 warning was emitted.
+  - 2026-07-11 Theorem 11.7 non-adjacent local-row local-block handoff
+    increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused theorem-dependency checks of the four
+    `...combinedLocalBlock_rows_of_local_rows...after_nonadjacent...` wrappers
+    → elaborate; theorem dependencies
+    `[propext, Classical.choice, Quot.sound]`.
+    Hygiene checks `git diff --check`, placeholder scans for the changed Lean
+    file and added report lines, and tab scans over the touched files were
+    clean. Target-build warnings are pre-existing upstream warnings from
+    Chapter 9, Chapter 10, and `CholeskyFl`; no new Chapter 11 warning was
+    emitted.
   - 2026-07-08 Theorem 11.3 all-1×1 source-facing package increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
     `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
