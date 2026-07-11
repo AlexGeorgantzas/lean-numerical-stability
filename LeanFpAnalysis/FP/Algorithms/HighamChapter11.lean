@@ -61974,6 +61974,102 @@ def higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_checkerbo
       hT_L_lower hT_U_upper hThat_component hT_norm hTNJ hdetJ hineqJ hLU
       hL_entry_inv
 
+/-- Normalized checkerboard principal-block componentwise-`T` inverse-entry
+endpoint with `sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hTNJ hdetJ hineqJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl)
+      hcoeff_valid hrec hHnz hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hThat_component hT_component hTNJ
+      hdetJ hineqJ hLU hL_entry_inv
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound`. -/
+def higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound_of_unit_roundoff_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hTNJ hdetJ hineqJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound_of_unit_roundoff_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl) hcap
+      hrec hHnz hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hThat_component hT_component hTNJ hdetJ hineqJ
+      hLU hL_entry_inv
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound`. -/
+def higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound_of_u_le_cap :=
+  fun fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hu hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hTNJ hdetJ hineqJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound_of_u_le_cap
+      fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat
+      U_T_hat (fun i : Fin n => i) b DeltaT_LU hspec
+      (by intro i; rfl) hu hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hTNJ hdetJ hineqJ hLU hL_entry_inv
+
+/-- Normalized checkerboard principal-block `T`-norm inverse-entry endpoint
+with `sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hTNJ hdetJ hineqJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl)
+      hcoeff_valid hrec hHnz hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hThat_component hT_norm hTNJ hdetJ
+      hineqJ hLU hL_entry_inv
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound_of_unit_roundoff_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hTNJ hdetJ hineqJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound_of_unit_roundoff_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl) hcap
+      hrec hHnz hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hThat_component hT_norm hTNJ hdetJ hineqJ hLU
+      hL_entry_inv
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound_of_u_le_cap :=
+  fun fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hu hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hTNJ hdetJ hineqJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound_of_u_le_cap
+      fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat
+      U_T_hat (fun i : Fin n => i) b DeltaT_LU hspec
+      (by intro i; rfl) hu hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hTNJ hdetJ hineqJ hLU hL_entry_inv
+
 /-- Higham, 2nd ed., Chapter 11, Theorem 11.8 source-prefix exact-product
 route: source-facing `H=T L^T` form of the normalized checkerboard
 principal-block componentwise-`T` inverse-entry endpoint. -/
@@ -62315,6 +62411,198 @@ def higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_chec
       hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
       hT_L_lower hT_U_upper hThat_component hT_component hTNJ hdetJ hleadJ
       hLU hL_entry_inv
+
+/-- Normalized direct-middle componentwise-`T` inverse-entry endpoint with
+`sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hmiddle_entry hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl)
+      hcoeff_valid hrec hHnz hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hThat_component hT_component
+      hmiddle_entry hL_entry_inv
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound`. -/
+def higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_unit_roundoff_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hmiddle_entry hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_unit_roundoff_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl) hcap
+      hrec hHnz hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hThat_component hT_component hmiddle_entry
+      hL_entry_inv
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound`. -/
+def higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_u_le_cap :=
+  fun fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hu hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hmiddle_entry hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_u_le_cap
+      fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat
+      U_T_hat (fun i : Fin n => i) b DeltaT_LU hspec
+      (by intro i; rfl) hu hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hmiddle_entry hL_entry_inv
+
+/-- Normalized direct-middle `T`-norm inverse-entry endpoint with
+`sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hmiddle_entry hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl)
+      hcoeff_valid hrec hHnz hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hThat_component hT_norm
+      hmiddle_entry hL_entry_inv
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_unit_roundoff_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hmiddle_entry hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_unit_roundoff_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl) hcap
+      hrec hHnz hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hThat_component hT_norm hmiddle_entry
+      hL_entry_inv
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_u_le_cap :=
+  fun fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hu hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hmiddle_entry hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_u_le_cap
+      fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat
+      U_T_hat (fun i : Fin n => i) b DeltaT_LU hspec
+      (by intro i; rfl) hu hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hmiddle_entry hL_entry_inv
+
+/-- Normalized checkerboard `T`-norm inverse-entry endpoint with
+`sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hTNJ hdetJ hleadJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl)
+      hcoeff_valid hrec hHnz hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hThat_component hT_norm hTNJ hdetJ
+      hleadJ hLU hL_entry_inv
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_unit_roundoff_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hTNJ hdetJ hleadJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_unit_roundoff_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl) hcap
+      hrec hHnz hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hThat_component hT_norm hTNJ hdetJ hleadJ hLU
+      hL_entry_inv
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_u_le_cap :=
+  fun fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hu hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hTNJ hdetJ hleadJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_u_le_cap
+      fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat
+      U_T_hat (fun i : Fin n => i) b DeltaT_LU hspec
+      (by intro i; rfl) hu hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hTNJ hdetJ hleadJ hLU hL_entry_inv
+
+/-- Normalized checkerboard componentwise-`T` inverse-entry endpoint with
+`sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hTNJ hdetJ hleadJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl)
+      hcoeff_valid hrec hHnz hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hThat_component hT_component hTNJ
+      hdetJ hleadJ hLU hL_entry_inv
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound`. -/
+def higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_unit_roundoff_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hTNJ hdetJ hleadJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_unit_roundoff_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl) hcap
+      hrec hHnz hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hThat_component hT_component hTNJ hdetJ hleadJ
+      hLU hL_entry_inv
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound`. -/
+def higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_u_le_cap :=
+  fun fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hu hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hTNJ hdetJ hleadJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_u_le_cap
+      fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat
+      U_T_hat (fun i : Fin n => i) b DeltaT_LU hspec
+      (by intro i; rfl) hu hcap hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hTNJ hdetJ hleadJ hLU hL_entry_inv
 
 /-- Higham, 2nd ed., Chapter 11, Theorem 11.8 source-prefix exact-product
 route: source-facing `H=T L^T` form of the normalized direct-middle
@@ -63235,6 +63523,170 @@ theorem higham11_8_AasenSpec_identity_source_prefix_componentwise_T_checkerboard
     (higham11_8_AasenSpec_product_eq_of_identity_perm n A L T σ hspec hσ)
     hThat_component hT_component hTNJ hdetJ hleadJ hLU hκLentry
     hκLentry_cap hL_entry hspec.L_upper_zero hspec.L_first_col
+
+/-- Normalized direct-middle componentwise-`T` endpoint with `sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_direct_middle_endpoint :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κLentry hspec hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hmiddle_entry hκLentry_unit hL_entry =>
+    higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_direct_middle_endpoint
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU κLentry hspec
+      (by intro i; rfl) hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hmiddle_entry hκLentry_unit hL_entry
+
+/-- Normalized direct-middle `T`-norm endpoint with `sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_direct_middle_endpoint :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κLentry hspec hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hmiddle_entry hκLentry_unit hL_entry =>
+    higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_direct_middle_endpoint
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU κLentry hspec
+      (by intro i; rfl) hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hmiddle_entry hκLentry_unit hL_entry
+
+/-- Normalized checkerboard componentwise-`T` endpoint with `sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_endpoint :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κLentry hspec hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hTNJ hdetJ hleadJ hLU hκLentry_unit
+      hL_entry =>
+    higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_checkerboard_endpoint
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU κLentry hspec
+      (by intro i; rfl) hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hTNJ hdetJ hleadJ hLU hκLentry_unit
+      hL_entry
+
+/-- Normalized checkerboard principal-block componentwise-`T` endpoint with
+`sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κLentry hspec hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hTNJ hdetJ hineqJ hLU hκLentry_unit
+      hL_entry =>
+    higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU κLentry hspec
+      (by intro i; rfl) hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hTNJ hdetJ hineqJ hLU hκLentry_unit
+      hL_entry
+
+/-- Normalized checkerboard `T`-norm endpoint with `sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_endpoint :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κLentry hspec hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hTNJ hdetJ hleadJ hLU hκLentry_unit
+      hL_entry =>
+    higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_checkerboard_endpoint
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU κLentry hspec
+      (by intro i; rfl) hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hTNJ hdetJ hleadJ hLU hκLentry_unit
+      hL_entry
+
+/-- Normalized checkerboard principal-block `T`-norm endpoint with
+`sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_principalBlock_endpoint :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κLentry hspec hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hTNJ hdetJ hineqJ hLU hκLentry_unit
+      hL_entry =>
+    higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_checkerboard_principalBlock_endpoint
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU κLentry hspec
+      (by intro i; rfl) hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hTNJ hdetJ hineqJ hLU hκLentry_unit
+      hL_entry
+
+/-- Direct-middle componentwise-`T` endpoint with `sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_componentwise_T_direct_middle_endpoint :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κLentry hspec hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hmiddle_entry hκLentry_inv hL_entry =>
+    higham11_8_AasenSpec_identity_source_prefix_componentwise_T_direct_middle_endpoint
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU κLentry hspec
+      (by intro i; rfl) hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hmiddle_entry hκLentry_inv hL_entry
+
+/-- Direct-middle `T`-norm endpoint with `sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_norm_cap_direct_middle_endpoint :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κLentry hspec hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hmiddle_entry hκLentry_inv hL_entry =>
+    higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_direct_middle_endpoint
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU κLentry hspec
+      (by intro i; rfl) hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hmiddle_entry hκLentry_inv hL_entry
+
+/-- Checkerboard `T`-norm endpoint with `sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_norm_cap_checkerboard_endpoint :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κLentry hspec hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hTNJ hdetJ hleadJ hLU hκLentry_inv
+      hL_entry =>
+    higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_checkerboard_endpoint
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU κLentry hspec
+      (by intro i; rfl) hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_norm hTNJ hdetJ hleadJ hLU hκLentry_inv
+      hL_entry
+
+/-- Checkerboard componentwise-`T` endpoint with `sigma := id`. -/
+def higham11_8_AasenSpec_id_source_prefix_componentwise_T_checkerboard_endpoint :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κLentry hspec hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hTNJ hdetJ hleadJ hLU hκLentry
+      hκLentry_cap hL_entry =>
+    higham11_8_AasenSpec_identity_source_prefix_componentwise_T_checkerboard_endpoint
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU κLentry hspec
+      (by intro i; rfl) hcoeff_valid hrec hHnz hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hThat_component hT_component hTNJ hdetJ hleadJ hLU hκLentry
+      hκLentry_cap hL_entry
 
 /-- Higham, 2nd ed., Chapter 11, Theorem 11.8 source-prefix exact-product
 route: the direct-middle componentwise-`T` endpoint specialized to the
