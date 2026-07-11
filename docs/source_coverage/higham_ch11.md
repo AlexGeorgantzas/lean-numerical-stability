@@ -27,6 +27,7 @@ assumptions remain open in the not-proved ledger below.
 
 | Source item | Lean declaration(s) | File | Notes |
 |---|---|---|---|
+| Thm 11.7 uniform/scalar deep-support branch-matrix source endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_deepLeadingBlockSupport`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_isSymTridiagonal_and_deepLeadingBlockSupport`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_deepLeadingBlockSupport`, and `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_isSymTridiagonal_and_deepLeadingBlockSupport` | Ch11 | **new this session**; the uniform-coefficient and scalar-budget branch-matrix source endpoints now accept witness-indexed local deep-support certificates directly and derive both earlier-lift zero side conditions internally, including symmetric-tridiagonal wrappers. |
 | Thm 11.7 coefficient deep-support branch-matrix source endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_deepLeadingBlockSupport` and `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_isSymTridiagonal_and_deepLeadingBlockSupport` | Ch11 | **new this session**; the coefficient-sum branch-matrix source endpoint now accepts witness-indexed local deep-support certificates directly and derives both earlier-lift zero side conditions internally, including the symmetric-tridiagonal wrapper. |
 | Thm 11.7 deep-support full/global handoffs | `higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of_isTridiagonal_and_deepLeadingBlockSupport`, `higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of_isSymTridiagonal_and_deepLeadingBlockSupport`, `higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_global_base_solve_of_isTridiagonal_and_deepLeadingBlockSupport`, and `higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_global_base_solve_of_isSymTridiagonal_and_deepLeadingBlockSupport` | Ch11 | **new this session**; full ambient accepted-`2×2` second-pivot base rows and global base solves can now consume witness-indexed local deep-support certificates directly, with symmetric-tridiagonal wrappers, by routing through the lifted-support producer and the existing ambient support-after-branch-end handoffs. |
 | Thm 11.7 deep-support branch-matrix handoffs | `higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isTridiagonal_and_deepLeadingBlockSupport` and `higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isSymTridiagonal_and_deepLeadingBlockSupport` | Ch11 | **new this session**; bare branch-matrix accepted-`2×2` second-pivot base rows can now be combined with witness-indexed local deep-support certificates directly. The wrappers package those local certificates through the lifted-support producer before applying the existing ambient support-after-branch-end combined-row handoff. |
@@ -561,6 +562,12 @@ now extracts the bare branch-matrix second-pivot base row from a combined local
 row once the current-local-block earlier-lift zero fact is known. This is the
 direction needed when the local residual analysis supplies the combined row
 first.
+
+2026-07-11 update: the uniform-coefficient and scalar-budget branch-matrix
+source endpoints now match the coefficient-sum deep-support route. They consume
+the same witness-indexed local deep-leading-support certificates and derive both
+the current-local-block zero and summed prefix-zero earlier-lift side
+conditions internally, including symmetric-tridiagonal source wrappers.
 
 2026-07-09 update: `higham11_7_fl_tridiagonal_twoByTwo_trailing_recursive_residual_printed_bound_accumulate_leadingBlockSupport_infNorm_entries`
 specializes the leading `2×2` local+recursive residual accumulator to ambient matrix
@@ -1410,6 +1417,12 @@ Problem transcription.
 
 ## Verification
 - Commands:
+  - 2026-07-11 uniform/scalar deep-support branch-matrix source endpoints:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
+    focused axiom check of the four new uniform/scalar branch-matrix deep-support
+    endpoint declarations → `[propext, Classical.choice, Quot.sound]`;
+    hygiene scans (`git diff --check`, placeholder scan, tab scan) → clean.
   - `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`.
   - 2026-07-07 norm-budget bridge increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
