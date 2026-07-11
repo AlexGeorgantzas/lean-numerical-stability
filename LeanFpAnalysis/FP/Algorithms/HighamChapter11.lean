@@ -678,6 +678,25 @@ theorem higham11_4_bunch_kaufman_case1_schur_growth
     _ ≤ Amax + Amax / α := add_le_add hb hcorr_Amax
     _ = (1 + 1 / α) * Amax := by ring
 
+/-- **Theorem 11.4 / Algorithm 11.2 case-(1) source-factor growth bridge**:
+the case-(1) one-step Schur-growth estimate specialized to Higham's
+`α=(1+√17)/8` and written with the same `1+α⁻¹` factor used by the stage-growth
+recursion. -/
+theorem higham11_4_bunch_kaufman_case1_schur_growth_source_factor
+    (b ci cj a11 arr ω1 ωr Amax : ℝ) (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case1)
+    (hb : |b| ≤ Amax) (hci : |ci| ≤ ω1) (hcj : |cj| ≤ ω1)
+    (hω1_Amax : ω1 ≤ Amax) :
+    |b - ci * cj / a11| ≤
+      (1 + higham11_1_bunchParlettAlpha⁻¹) * Amax := by
+  have hα : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  simpa [one_div] using
+    higham11_4_bunch_kaufman_case1_schur_growth
+      higham11_1_bunchParlettAlpha b ci cj a11 arr ω1 ωr Amax
+      hα hω1 hcase hb hci hcj hω1_Amax
+
 /-- **Theorem 11.4 / Algorithm 11.2 case-(1) scalar row cap**: the accepted
 `a11` pivot has the source one-entry multiplier row-sum cap `≤6`. -/
 theorem higham11_4_bunch_kaufman_case1_multiplier_row_sum_le_six
@@ -814,6 +833,24 @@ theorem higham11_4_bunch_kaufman_case2_schur_growth
     |b - ci * cj / a11| ≤ |b| + |ci * cj / a11| := htri
     _ ≤ Amax + Amax / α := add_le_add hb hcorr_Amax
     _ = (1 + 1 / α) * Amax := by ring
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(2) source-factor growth bridge**:
+case-(2)'s product-test growth estimate, specialized to Higham's `α` and
+written in the `1+α⁻¹` form consumed by the stage-growth recursion. -/
+theorem higham11_4_bunch_kaufman_case2_schur_growth_source_factor
+    (b ci cj a11 arr ω1 ωr Amax : ℝ) (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case2)
+    (hb : |b| ≤ Amax) (hci : |ci| ≤ ω1) (hcj : |cj| ≤ ω1)
+    (hωr_Amax : ωr ≤ Amax) :
+    |b - ci * cj / a11| ≤
+      (1 + higham11_1_bunchParlettAlpha⁻¹) * Amax := by
+  have hα : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  simpa [one_div] using
+    higham11_4_bunch_kaufman_case2_schur_growth
+      higham11_1_bunchParlettAlpha b ci cj a11 arr ω1 ωr Amax
+      hα hω1 hcase hb hci hcj hωr_Amax
 
 /-- **Theorem 11.4 / Algorithm 11.2 case-(2) pivot-entry cap**: for the
 source value of `α`, the printed case-(2) test `|a₁₁|<αω₁` bounds the accepted
@@ -1014,6 +1051,24 @@ theorem higham11_4_bunch_kaufman_case3_schur_growth
     |b - ci * cj / arr| ≤ |b| + |ci * cj / arr| := htri
     _ ≤ Amax + Amax / α := add_le_add hb hcorr_Amax
     _ = (1 + 1 / α) * Amax := by ring
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(3) source-factor growth bridge**:
+after the symmetric swap, case-(3)'s scalar Schur-growth estimate is stated with
+Higham's `1+α⁻¹` stage-growth factor. -/
+theorem higham11_4_bunch_kaufman_case3_schur_growth_source_factor
+    (b ci cj a11 arr ω1 ωr Amax : ℝ) (hωr : 0 < ωr)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case3)
+    (hb : |b| ≤ Amax) (hci : |ci| ≤ ωr) (hcj : |cj| ≤ ωr)
+    (hωr_Amax : ωr ≤ Amax) :
+    |b - ci * cj / arr| ≤
+      (1 + higham11_1_bunchParlettAlpha⁻¹) * Amax := by
+  have hα : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  simpa [one_div] using
+    higham11_4_bunch_kaufman_case3_schur_growth
+      higham11_1_bunchParlettAlpha b ci cj a11 arr ω1 ωr Amax
+      hα hωr hcase hb hci hcj hωr_Amax
 
 /-- **Theorem 11.4 / Algorithm 11.2 case-(3) local scalar cap package**.
 After the symmetric swap, the existing source-six row cap for the accepted
@@ -1554,6 +1609,35 @@ theorem higham11_4_bunch_kaufman_case4_twoByTwo_schur_growth
         add_le_add hb (hcorr.trans hcorr_Amax)
     _ = (1 + 2 / (1 - higham11_1_bunchParlettAlpha)) * Amax := by
         ring
+
+/-- **Theorem 11.4 / Algorithm 11.2 case-(4) source-factor growth bridge**:
+the direct `2×2` Schur-growth estimate rewritten using Higham's balancing
+identity, so a size-two pivot consumes two `1+α⁻¹` stage-growth steps. -/
+theorem higham11_4_bunch_kaufman_case4_twoByTwo_schur_growth_source_factor_sq
+    (bij ci1 ci2 cj1 cj2 a11 a1r arr ω1 ωr Amax : ℝ)
+    (hω1 : 0 < ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case4)
+    (ha1r : |a1r| = ω1)
+    (hb : |bij| ≤ Amax)
+    (hci1 : |ci1| ≤ ω1) (hci2 : |ci2| ≤ ωr)
+    (hcj1 : |cj1| ≤ ω1) (hcj2 : |cj2| ≤ ωr)
+    (hωr_Amax : ωr ≤ Amax) :
+    |higham11_4_twoByTwoSchurEntry bij ci1 ci2 cj1 cj2
+        (arr / (a11 * arr - a1r ^ 2)) (-(a1r / (a11 * arr - a1r ^ 2)))
+        (-(a1r / (a11 * arr - a1r ^ 2))) (a11 / (a11 * arr - a1r ^ 2))| ≤
+      (1 + higham11_1_bunchParlettAlpha⁻¹) ^ 2 * Amax := by
+  calc
+    |higham11_4_twoByTwoSchurEntry bij ci1 ci2 cj1 cj2
+        (arr / (a11 * arr - a1r ^ 2)) (-(a1r / (a11 * arr - a1r ^ 2)))
+        (-(a1r / (a11 * arr - a1r ^ 2))) (a11 / (a11 * arr - a1r ^ 2))|
+        ≤ (1 + 2 / (1 - higham11_1_bunchParlettAlpha)) * Amax :=
+          higham11_4_bunch_kaufman_case4_twoByTwo_schur_growth
+            bij ci1 ci2 cj1 cj2 a11 a1r arr ω1 ωr Amax hω1 hcase ha1r
+            hb hci1 hci2 hcj1 hcj2 hωr_Amax
+    _ = (1 + higham11_1_bunchParlettAlpha⁻¹) ^ 2 * Amax := by
+          rw [← higham11_1_growth_balance]
+          ring
 
 /-- **Theorem 11.4 / Algorithm 11.2 case-(4) asymmetric scaled multiplier
 row-sum bound**: the direct inverse-entry estimates bound the two components of
