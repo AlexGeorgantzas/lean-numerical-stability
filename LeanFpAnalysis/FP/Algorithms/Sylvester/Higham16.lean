@@ -3702,6 +3702,12 @@ theorem sylvester_schur_transform_identity (m n : Nat)
   rw [hleft, hright]
   exact hcombine.symm
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5):
+    source-numbered alias for the supplied Schur-coordinate Sylvester
+    operator identity. -/
+alias H16_eq16_4_5_sylvester_schur_transform_identity :=
+  sylvester_schur_transform_identity
+
 theorem rectMatMul_schur_coords_cancel {m n : Nat}
     (U : RMatFn m m) (V : RMatFn n n) (M : RMatFn m n)
     (hU : IsOrthogonal m U) (hV : IsOrthogonal n V) :
@@ -4356,6 +4362,12 @@ theorem sylvester_schur_transform_solution_iff (m n : Nat)
       exact hUMVt
     intro i j
     exact congrFun (congrFun hsol i) j
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5):
+    source-numbered alias for the supplied Schur-coordinate equation-level
+    solution equivalence. -/
+alias H16_eq16_4_5_sylvester_schur_transform_solution_iff :=
+  sylvester_schur_transform_solution_iff
 
 /-- Higham, 2nd ed., Chapter 16.1, equations (16.4)-(16.5), diagonal
     Schur-coordinate case: reconstruct the original-coordinate solution from
