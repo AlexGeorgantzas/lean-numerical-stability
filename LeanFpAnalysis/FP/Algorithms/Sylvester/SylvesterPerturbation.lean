@@ -59,6 +59,15 @@ theorem sylvester_perturbation_first_order (n : ℕ)
       ΔC i j - matMul n ΔA X i j + matMul n X ΔB i j :=
   hLin
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.22):
+    source-numbered aliases for the full and first-order Sylvester
+    perturbation identities. -/
+alias H16_eq16_22_sylvester_perturbation_equation :=
+  sylvester_perturbation_equation
+
+alias H16_eq16_22_sylvester_perturbation_first_order :=
+  sylvester_perturbation_first_order
+
 -- ============================================================
 -- Structured first-order condition-number surface (§16.3, eqs 16.23-16.24)
 -- ============================================================
@@ -460,5 +469,16 @@ theorem sylvester_relative_perturbation (n : ℕ)
           (σ * frobNorm X) * ε *
           frobNorm X := by
         field_simp
+
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.25):
+    source-numbered aliases for the base sep-certificate Sylvester
+    perturbation bound and condition-number expression. -/
+noncomputable abbrev H16_eq16_25_condSylvester := condSylvester
+
+alias H16_eq16_25_sylvester_perturbation_bound :=
+  sylvester_perturbation_bound
+
+alias H16_eq16_25_sylvester_relative_perturbation :=
+  sylvester_relative_perturbation
 
 end LeanFpAnalysis.FP
