@@ -855,6 +855,18 @@ theorem sylvesterVecCoeff_one_det_eq_sylvesterTriangularShiftedCoeff_det
   rw [← hdet_reindex,
     sylvesterVecCoeff_one_reindex_eq_sylvesterTriangularShiftedCoeff]
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
+    source-numbered alias for the one-column vec/Kronecker reindexing bridge
+    to the singleton shifted column coefficient. -/
+alias H16_eq16_6_sylvesterVecCoeff_one_reindex_eq_sylvesterTriangularShiftedCoeff :=
+  sylvesterVecCoeff_one_reindex_eq_sylvesterTriangularShiftedCoeff
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
+    source-numbered alias for the determinant form of the one-column
+    vec/Kronecker bridge to the singleton shifted column coefficient. -/
+alias H16_eq16_6_sylvesterVecCoeff_one_det_eq_sylvesterTriangularShiftedCoeff_det :=
+  sylvesterVecCoeff_one_det_eq_sylvesterTriangularShiftedCoeff_det
+
 private theorem triangular_column_sum_split (m n : Nat) (T : RMatFn n n)
     (hT : IsUpperTriangularFn n T) (X : RMatFn m n) (i : Fin m) (k : Fin n) :
     (Finset.sum Finset.univ fun j : Fin n => X i j * T j k) =
@@ -10949,6 +10961,36 @@ theorem quasiSchur_exists_frontier_schedule
     n pmap hcard 0 (Nat.zero_le n) ?_
   intro h0lt q hq
   omega
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the local generated-frontier branch-selection
+    step in a real-quasi-Schur block map. -/
+alias H16_eq16_4_8_quasiSchur_frontier_step_of_boundary :=
+  quasiSchur_frontier_step_of_boundary
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for preserving the generated-frontier boundary after
+    a singleton step. -/
+alias H16_eq16_4_8_quasiSchur_boundary_after_singleton_step :=
+  quasiSchur_boundary_after_singleton_step
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for preserving the generated-frontier boundary after
+    an adjacent same-labelled two-column step. -/
+alias H16_eq16_4_8_quasiSchur_boundary_after_adjacent_same_block :=
+  quasiSchur_boundary_after_adjacent_same_block
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for constructing a generated frontier schedule from
+    an arbitrary boundary index. -/
+alias H16_eq16_4_8_quasiSchur_exists_frontier_schedule_from_boundary :=
+  quasiSchur_exists_frontier_schedule_from_boundary
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for existence of the generated quasi-Schur frontier
+    schedule. -/
+alias H16_eq16_4_8_quasiSchur_exists_frontier_schedule :=
+  quasiSchur_exists_frontier_schedule
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
     Schur-coordinate solvability from the generated quasi-Schur frontier
