@@ -1787,6 +1787,33 @@ theorem higham11_4_bunch_kaufman_case4_twoByTwo_pivotBlock_entries_le_Amax
   fin_cases i <;> fin_cases j <;>
     simp [higham11_4_twoByTwoPivotBlock, ha11_le, ha1r_le, harr_le]
 
+/-- **Theorem 11.4 / Algorithm 11.2 case-(4) local `2 × 2` cap package**.
+Under the same concrete row-maximum dominance used by the source-six `CE⁻¹`
+row cap, the accepted pivot block also carries the concrete `D̂` entry cap.
+This is the case-(4) counterpart of the scalar branch row/`D̂` cap packages
+used by the first-stage split route toward the product bound. -/
+theorem higham11_4_bunch_kaufman_case4_twoByTwo_row_sum_and_D_cap_of_row_max_le
+    (c1 c2 a11 a1r arr ω1 ωr K Amax : ℝ)
+    (hω1 : 0 < ω1) (hωr_le : ωr ≤ ω1)
+    (hcase : higham11_2_BunchKaufmanPartialPivotCase
+      higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case4)
+    (ha1r : |a1r| = ω1)
+    (hK : (1 - higham11_1_bunchParlettAlpha ^ 2) * ω1 * K = 1)
+    (hc1 : |c1| ≤ ω1) (hc2 : |c2| ≤ ω1)
+    (hω1_Amax : ω1 ≤ Amax) (hωr_Amax : ωr ≤ Amax) :
+    (|c1 * (arr / (a11 * arr - a1r ^ 2)) +
+        c2 * (-(a1r / (a11 * arr - a1r ^ 2)))| +
+      |c1 * (-(a1r / (a11 * arr - a1r ^ 2))) +
+        c2 * (a11 / (a11 * arr - a1r ^ 2))| ≤ 6) ∧
+      (∀ i j : Fin 2, |higham11_4_twoByTwoPivotBlock a11 a1r arr i j| ≤ Amax) := by
+  refine ⟨?_, ?_⟩
+  · exact
+      higham11_4_bunch_kaufman_case4_twoByTwo_multiplier_row_sum_le_six_of_row_max_le
+        c1 c2 a11 a1r arr ω1 ωr K hω1 hωr_le hcase ha1r hK hc1 hc2
+  · exact
+      higham11_4_bunch_kaufman_case4_twoByTwo_pivotBlock_entries_le_Amax
+        a11 a1r arr ω1 ωr Amax hω1 hcase ha1r hω1_Amax hωr_Amax
+
 /-- **Theorem 11.4 / Algorithm 11.2 case-(4) determinant bridge**: with the
 same explicit row-maximum dominance needed by the local case-(4) `2 × 2`
 bridges, the accepted pivot block has the standard determinant lower bound. -/
