@@ -5453,6 +5453,38 @@ theorem exists_sylvesterSepInf_schurDiagonal_pos_lower_bound_of_entrywise_ne
     sylvesterSepInf_schurDiagonal_ge_of_entrywise_abs_ge_of_pos_dim n
       U A V B a b sigma hU hV hA hB hsigma hgap hn
 
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3):
+    source-numbered alias for the positive spectral-coordinate gap constructed
+    from pairwise exclusion in positive dimension. -/
+alias H16_eq16_2_3_exists_pos_sylvesterDiagonalGap_of_entrywise_ne :=
+  exists_pos_sylvesterDiagonalGap_of_entrywise_ne
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3):
+    source-numbered alias for the supplied Schur-diagonal sigma-min lower-bound
+    route obtained from pairwise spectral-coordinate exclusion. -/
+alias H16_eq16_2_3_exists_sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_ne :=
+  exists_sylvesterVecCoeff_schurDiagonal_sigmaMin_of_entrywise_ne
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3):
+    source-numbered alias for the supplied Schur-diagonal Gram-eigenvalue
+    lower-bound route obtained from pairwise spectral-coordinate exclusion. -/
+alias H16_eq16_2_3_exists_sylvesterVecCoeff_schurDiagonal_gram_eigenvalues_ge_of_entrywise_ne :=
+  exists_sylvesterVecCoeff_schurDiagonal_gram_eigenvalues_ge_of_entrywise_ne
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), and Chapter
+    16.4, equation (16.26): source-numbered alias for the positive
+    `SepLowerBound` certificate obtained from supplied Schur-diagonal
+    spectral-coordinate exclusion. -/
+alias H16_eq16_2_3_26_exists_SepLowerBound_schurDiagonal_of_entrywise_ne :=
+  exists_SepLowerBound_schurDiagonal_of_entrywise_ne
+
+/-- Higham, 2nd ed., Chapter 16.1, equations (16.2)-(16.3), and Chapter
+    16.4, equation (16.26): source-numbered alias for the positive exact
+    `sep(A,B)` lower-bound route obtained from supplied Schur-diagonal
+    spectral-coordinate exclusion. -/
+alias H16_eq16_2_3_26_exists_sylvesterSepInf_schurDiagonal_pos_lower_bound_of_entrywise_ne :=
+  exists_sylvesterSepInf_schurDiagonal_pos_lower_bound_of_entrywise_ne
+
 /-- Higham, 2nd ed., Chapter 16.3, equations (16.26)-(16.27),
     supplied orthogonal spectral-coordinate Lyapunov case:
     a uniform spectral-coordinate sum gap gives a `SepLowerBound` certificate
