@@ -47627,6 +47627,107 @@ theorem higham11_8_aasen_relative_coeff_le_of_gamma_base_square_exact_radius
       hval le_rfl hκT hκT_le_one hκBT hκBT_le hκmidLU
       hκmidLU_le_one hprod_base hprod_rel
 
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 scalar budget dependency:
+`AasenSpec` plus the normalized exact outer-factor entry cap discharges the
+exact-product coefficient comparison at the printed radius. -/
+theorem higham11_8_aasen_relative_coeff_le_of_AasenSpec_entry_bound_scaled_unit
+    (fp : FPModel) (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (γ_factor κ κT κBT κmidLU : ℝ)
+    (hval : gammaValid fp (15 * n + 25))
+    (hγ_factor : 0 ≤ γ_factor)
+    (hκunit : (1 + γ_factor) * κ ≤ 1)
+    (hκT : 0 ≤ κT) (hκT_le_one : κT ≤ 1)
+    (hκBT : 0 ≤ κBT) (hκBT_le : κBT ≤ gamma fp n)
+    (hκmidLU : 0 ≤ κmidLU) (hκmidLU_le_one : κmidLU ≤ 1)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    (2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L * κT * infNorm (fun r c => L c r)) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L * κBT * infNorm (fun r c => L c r)) +
+      (2 * gamma fp n + (gamma fp n) ^ 2) *
+        (((1 + γ_factor) * infNorm L) *
+          ((1 + γ_factor) * infNorm (fun r c => L c r))) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (((1 + γ_factor) * infNorm L) *
+          (higham9_14_f (gamma fp n) * κmidLU) *
+          ((1 + γ_factor) * infNorm (fun r c => L c r))) ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * gamma fp (15 * n + 25) := by
+  rcases
+      higham11_8_aasen_product_square_bounds_of_AasenSpec_entry_bound_scaled_unit
+        n hn A L T σ γ_factor κ κT κmidLU hγ_factor hκunit
+        hκT hκT_le_one hκmidLU hκmidLU_le_one hspec hentry with
+    ⟨hprodFT, hprodFB_base, hprodST, hprodSB⟩
+  exact
+    higham11_8_aasen_relative_coeff_le_of_gamma_product_square_bounds
+      fp n γ_factor (gamma fp (15 * n + 25))
+      (infNorm L) (infNorm (fun r c => L c r)) κT κBT κmidLU
+      hval le_rfl hκBT hκBT_le hprodFT hprodFB_base hprodST hprodSB
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 scalar budget dependency:
+source-style inverse-scale exact outer-factor entries discharge the
+exact-product coefficient comparison through `AasenSpec`. -/
+theorem higham11_8_aasen_relative_coeff_le_of_AasenSpec_entry_bound_inv_one_plus
+    (fp : FPModel) (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (γ_factor κ κT κBT κmidLU : ℝ)
+    (hval : gammaValid fp (15 * n + 25))
+    (hγ_factor : 0 ≤ γ_factor) (hκ : κ ≤ 1 / (1 + γ_factor))
+    (hκT : 0 ≤ κT) (hκT_le_one : κT ≤ 1)
+    (hκBT : 0 ≤ κBT) (hκBT_le : κBT ≤ gamma fp n)
+    (hκmidLU : 0 ≤ κmidLU) (hκmidLU_le_one : κmidLU ≤ 1)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    (2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L * κT * infNorm (fun r c => L c r)) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L * κBT * infNorm (fun r c => L c r)) +
+      (2 * gamma fp n + (gamma fp n) ^ 2) *
+        (((1 + γ_factor) * infNorm L) *
+          ((1 + γ_factor) * infNorm (fun r c => L c r))) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (((1 + γ_factor) * infNorm L) *
+          (higham9_14_f (gamma fp n) * κmidLU) *
+          ((1 + γ_factor) * infNorm (fun r c => L c r))) ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * gamma fp (15 * n + 25) :=
+  higham11_8_aasen_relative_coeff_le_of_AasenSpec_entry_bound_scaled_unit
+    fp n hn A L T σ γ_factor κ κT κBT κmidLU hval hγ_factor
+    (higham11_8_one_plus_mul_le_one_of_le_inv_one_plus γ_factor κ
+      hγ_factor hκ)
+    hκT hκT_le_one hκBT hκBT_le hκmidLU hκmidLU_le_one hspec hentry
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 scalar budget dependency,
+source inverse-entry form: the direct `|Lᵢⱼ|≤1/(1+γ)` cap discharges the
+exact-product coefficient comparison through `AasenSpec`. -/
+theorem higham11_8_aasen_relative_coeff_le_of_AasenSpec_inverse_entry_bound
+    (fp : FPModel) (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (γ_factor κT κBT κmidLU : ℝ)
+    (hval : gammaValid fp (15 * n + 25))
+    (hγ_factor : 0 ≤ γ_factor)
+    (hκT : 0 ≤ κT) (hκT_le_one : κT ≤ 1)
+    (hκBT : 0 ≤ κBT) (hκBT_le : κBT ≤ gamma fp n)
+    (hκmidLU : 0 ≤ κmidLU) (hκmidLU_le_one : κmidLU ≤ 1)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ 1 / (1 + γ_factor)) :
+    (2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L * κT * infNorm (fun r c => L c r)) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (infNorm L * κBT * infNorm (fun r c => L c r)) +
+      (2 * gamma fp n + (gamma fp n) ^ 2) *
+        (((1 + γ_factor) * infNorm L) *
+          ((1 + γ_factor) * infNorm (fun r c => L c r))) +
+      (1 + 2 * gamma fp n + (gamma fp n) ^ 2) *
+        (((1 + γ_factor) * infNorm L) *
+          (higham9_14_f (gamma fp n) * κmidLU) *
+          ((1 + γ_factor) * infNorm (fun r c => L c r))) ≤
+      ((n - 1 : ℕ) : ℝ) ^ 2 * gamma fp (15 * n + 25) :=
+  higham11_8_aasen_relative_coeff_le_of_AasenSpec_entry_bound_inv_one_plus
+    fp n hn A L T σ γ_factor (1 / (1 + γ_factor)) κT κBT κmidLU
+    hval hγ_factor le_rfl hκT hκT_le_one hκBT hκBT_le hκmidLU
+    hκmidLU_le_one hspec hentry
+
 /-- The printed Aasen radius `γ_{15n+25}` supplies all local gamma-validity
 side conditions used by the source-prefix recurrence and the tridiagonal solve
 subproblem. -/
