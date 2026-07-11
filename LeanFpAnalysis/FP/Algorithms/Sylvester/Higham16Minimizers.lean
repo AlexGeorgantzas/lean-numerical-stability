@@ -2284,6 +2284,78 @@ theorem lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual
       PinvAbs' eta hdet hXSylv hPinvAbs_le hRhatSylv hRu hdR
       hRhat_le hRu_le heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16, equation (16.29):
+    source-numbered alias for the Lyapunov determinant computed-residual
+    certificate practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate :=
+  lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16, equation (16.29):
+    source-numbered alias for the scalar Lyapunov determinant
+    computed-residual certificate endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_scalar :=
+  lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16, equation (16.29):
+    source-numbered alias for the monotone Lyapunov determinant
+    computed-residual certificate endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono :=
+  lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16, equation (16.29):
+    source-numbered alias for the monotone-scalar Lyapunov determinant
+    computed-residual certificate endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono_scalar :=
+  lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_certificate_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16, equation (16.29):
+    source-numbered alias for the Lyapunov determinant raw computed-residual
+    budget practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget :=
+  lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16, equation (16.29):
+    source-numbered alias for the scalar Lyapunov determinant raw-budget
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_scalar :=
+  lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16, equation (16.29):
+    source-numbered alias for the monotone Lyapunov determinant raw-budget
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono :=
+  lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16, equation (16.29):
+    source-numbered alias for the monotone-scalar Lyapunov determinant
+    raw-budget practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono_scalar :=
+  lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_budget_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16, equation (16.29):
+    source-numbered alias for the Lyapunov determinant explicit residual-error
+    model practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model :=
+  lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16, equation (16.29):
+    source-numbered alias for the scalar Lyapunov determinant explicit
+    residual-error model practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_scalar :=
+  lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16, equation (16.29):
+    source-numbered alias for the monotone Lyapunov determinant explicit
+    residual-error model practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono :=
+  lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16, equation (16.29):
+    source-numbered alias for the monotone-scalar Lyapunov determinant explicit
+    residual-error model practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono_scalar :=
+  lyapunov_practical_error_bound_of_vecCoeff_det_ne_zero_computed_residual_error_model_mono_scalar
+
 /-- Higham, 2nd ed., Chapter 16, equation (16.29), Lyapunov practical
     computed-residual certificate from a supplied positive separation lower
     bound. -/
