@@ -27,6 +27,7 @@ assumptions remain open in the not-proved ledger below.
 
 | Source item | Lean declaration(s) | File | Notes |
 |---|---|---|---|
+| Thm 11.7 support-reduced local-row source endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_after_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_isSymTridiagonal_and_after_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_after_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_isSymTridiagonal_and_after_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_after_earlier_branch_end`, and `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_isSymTridiagonal_and_after_earlier_branch_end` | Ch11 | **new this session**; the coefficient-sum, uniform-coefficient, and scalar-budget source endpoints now consume residual-witness local second-pivot rows directly together with the all-earlier support-reduced after-branch-end prefix-zero facts, including symmetric-tridiagonal wrappers. The accepted-`2×2` local row equation remains the explicit mathematical obligation. |
 | Thm 11.7 non-adjacent local-row source endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_after_nonadjacent_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_isSymTridiagonal_and_after_nonadjacent_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_after_nonadjacent_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_isSymTridiagonal_and_after_nonadjacent_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_after_nonadjacent_earlier_branch_end`, and `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_local_rows_of_isSymTridiagonal_and_after_nonadjacent_earlier_branch_end` | Ch11 | **new this session**; the coefficient-sum, uniform-coefficient, and scalar-budget source endpoints can now consume residual-witness local second-pivot rows directly together with the non-adjacent after-branch-end prefix-zero facts, including symmetric-tridiagonal wrappers. The accepted-`2×2` local row equation remains the explicit mathematical obligation. |
 | Thm 11.7 support-reduced local-row to local-block handoffs | `higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isTridiagonal_and_after_earlier_branch_end`, `higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isTridiagonal_and_after_earlier_branch_end`, `higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isSymTridiagonal_and_after_earlier_branch_end`, and `higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isSymTridiagonal_and_after_earlier_branch_end` | Ch11 | **new this session**; residual/supported local second-pivot row equations now restrict to the local-block combined-row predicate under the all-earlier support-reduced after-branch-end prefix-zero facts, with symmetric-tridiagonal wrappers. This is the broader companion to the strictly non-adjacent handoff. |
 | Thm 11.7 non-adjacent local-row to local-block handoffs | `higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isTridiagonal_and_after_nonadjacent_earlier_branch_end`, `higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isTridiagonal_and_after_nonadjacent_earlier_branch_end`, `higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isSymTridiagonal_and_after_nonadjacent_earlier_branch_end`, and `higham11_7_tridiagonalConcretePathSupportedWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isSymTridiagonal_and_after_nonadjacent_earlier_branch_end` | Ch11 | **new this session**; residual/supported local second-pivot row equations can now be restricted to the local-block combined-row predicate under tridiagonal or symmetric-tridiagonal base support plus the strictly non-adjacent after-branch-end prefix-zero fact. The local row equation itself remains an explicit caller obligation. |
@@ -482,6 +483,12 @@ also feeds residual/supported local second-pivot row equations into the
 local-block combined-row predicate, with symmetric-tridiagonal wrappers. This
 matches the later non-adjacent local-row handoff while retaining the stronger
 all-earlier prefix-zero hypothesis.
+
+2026-07-11 update: the coefficient-sum, uniform-coefficient, and scalar-budget
+support-reduced source endpoints now have direct local-row variants. Callers
+can provide residual-witness local accepted-`2×2` second-pivot rows and the
+all-earlier after-branch-end prefix-zero facts, and the source endpoints route
+those through the local-block combined-row handoff internally.
 
 2026-07-11 update: the non-adjacent local-block source endpoints now carry
 the same coefficient-sum, uniform-coefficient, and per-branch roundoff budgets
@@ -3977,6 +3984,20 @@ Problem transcription.
     `[propext, Classical.choice, Quot.sound]`.
     Target-build warnings are pre-existing upstream warnings from Chapter 9,
     Chapter 10, and `CholeskyFl`; no new Chapter 11 warning was emitted.
+  - 2026-07-11 Theorem 11.7 support-reduced local-row source endpoint
+    increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused theorem-dependency checks of the six
+    `..._local_rows_of_after_earlier_branch_end` source endpoint aliases →
+    elaborate; theorem dependencies
+    `[propext, Classical.choice, Quot.sound]`.
+    Hygiene checks `git diff --check`, placeholder scans for the changed Lean
+    file and added report lines, and tab scans over the touched files were
+    clean. Target-build warnings are pre-existing upstream warnings from
+    Chapter 9, Chapter 10, and `CholeskyFl`; no new Chapter 11 warning was
+    emitted.
   - 2026-07-11 Theorem 11.7 non-adjacent local-block support-reduced handoff
     increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
