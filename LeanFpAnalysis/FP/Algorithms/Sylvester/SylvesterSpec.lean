@@ -121,6 +121,10 @@ noncomputable def lyapunovResidual (n : Nat) (A C Y : Fin n -> Fin n -> Real) :
     Fin n -> Fin n -> Real :=
   fun i j => C i j - lyapunovOp n A Y i j
 
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered abbreviation for the Lyapunov residual. -/
+noncomputable abbrev H16_eq16_21_lyapunovResidual := lyapunovResidual
+
 /-- Lyapunov operator is Sylvester operator with B = -Aᵀ:
     L(X) = AX + XAᵀ = AX - X(-Aᵀ). -/
 theorem lyapunovOp_eq_sylvesterOp (n : ℕ) (A X : Fin n → Fin n → ℝ) :
@@ -176,6 +180,11 @@ def IsLyapunovBackwardError (n : Nat) (A C Y : Fin n -> Fin n -> Real)
       C i j + DeltaC i j) ∧
     frobNormSq DeltaA ≤ (eta * alpha) ^ 2 ∧
     frobNormSq DeltaC ≤ (eta * gamma) ^ 2
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered abbreviation for the structured Lyapunov backward-error
+    certificate. -/
+abbrev H16_eq16_21_IsLyapunovBackwardError := IsLyapunovBackwardError
 
 -- ============================================================
 -- Residual bound (§15.2, eq 15.12)

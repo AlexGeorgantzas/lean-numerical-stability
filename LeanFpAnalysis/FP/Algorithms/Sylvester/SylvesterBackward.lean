@@ -1429,6 +1429,12 @@ noncomputable def lyapunovBackwardResidual (n : ℕ)
     (DA DC Y : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
   fun i j => matMul n DA Y i j + matMul n Y (matTranspose DA) i j - DC i j
 
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered abbreviation for the structured Lyapunov backward
+    residual. -/
+noncomputable abbrev H16_eq16_21_lyapunovBackwardResidual :=
+  lyapunovBackwardResidual
+
 /-- Higham, 2nd ed., Chapter 16.2.1:
     nonnegative feasible values for the structured Lyapunov backward error
     `eta(Y)`, with a tied `DeltaA`/`DeltaA^T` perturbation and symmetric
@@ -1444,6 +1450,16 @@ def lyapunovBackwardErrorValues (n : Nat)
 noncomputable def lyapunovBackwardErrorInf (n : Nat)
     (A C Y : Fin n -> Fin n -> Real) (alpha gamma : Real) : Real :=
   sInf (lyapunovBackwardErrorValues n A C Y alpha gamma)
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered abbreviation for the structured Lyapunov eta feasible set. -/
+abbrev H16_eq16_21_lyapunovBackwardErrorValues :=
+  lyapunovBackwardErrorValues
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered abbreviation for the structured Lyapunov eta infimum. -/
+noncomputable abbrev H16_eq16_21_lyapunovBackwardErrorInf :=
+  lyapunovBackwardErrorInf
 
 /-- The nonnegative feasible-value set for the structured Lyapunov eta model
     is bounded below by zero. -/
@@ -1475,6 +1491,17 @@ theorem lyapunovBackwardErrorInf_le_of_backwardError (n : Nat)
   exact csInf_le
     (lyapunovBackwardErrorValues_bddBelow n A C Y alpha gamma)
     ⟨heta_nonneg, hBack⟩
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered aliases for basic structured Lyapunov eta-infimum facts. -/
+alias H16_eq16_21_lyapunovBackwardErrorValues_bddBelow :=
+  lyapunovBackwardErrorValues_bddBelow
+
+alias H16_eq16_21_lyapunovBackwardErrorInf_nonneg :=
+  lyapunovBackwardErrorInf_nonneg
+
+alias H16_eq16_21_lyapunovBackwardErrorInf_le_of_backwardError :=
+  lyapunovBackwardErrorInf_le_of_backwardError
 
 /-- Higham, 2nd ed., Chapter 16.2.1:
     from the perturbed Lyapunov equation, the residual decomposes as
@@ -1639,6 +1666,18 @@ theorem lyapunov_relative_residual_le_backwardErrorInf (n : Nat)
       halpha hgamma heta.1 heta.2
   rw [div_le_iff₀ hscale]
   simpa [mul_comm, mul_left_comm, mul_assoc] using hbound
+
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered aliases for the structured Lyapunov residual decomposition
+    and eta/residual bounds. -/
+alias H16_eq16_21_lyapunovResidual_decomposition :=
+  lyapunovResidual_decomposition
+
+alias H16_eq16_21_lyapunov_residual_bound_of_backward_error :=
+  lyapunov_residual_bound_of_backward_error
+
+alias H16_eq16_21_lyapunov_relative_residual_le_backwardErrorInf :=
+  lyapunov_relative_residual_le_backwardErrorInf
 
 /-- If `Y = U * Lambda * U^T`, the left perturbation product transforms to
     `DeltaA_tilde * Lambda`. -/
