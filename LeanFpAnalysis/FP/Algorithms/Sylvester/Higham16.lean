@@ -7558,6 +7558,26 @@ theorem sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf
       (SepLowerBound_of_pos_le_sylvesterSepInf n A B sigma hSigma hle)
       hExact hE_ne hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered alias
+    for the supplied `SepLowerBound` a posteriori residual-error endpoint. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_of_sepLowerBound :=
+  sylvester_aposteriori_bound_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered alias
+    for the relative supplied `SepLowerBound` a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_of_sepLowerBound :=
+  sylvester_relative_aposteriori_bound_of_sepLowerBound
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the exact-infimum a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_of_pos_le_sylvesterSepInf :=
+  sylvester_aposteriori_bound_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28):
+    source-numbered alias for the relative exact-infimum a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf :=
+  sylvester_relative_aposteriori_bound_of_pos_le_sylvesterSepInf
+
 /-- Higham, 2nd ed., Chapter 16.4, equation (16.28):
     total source-facing Sylvester a posteriori error-residual bound from a
     supplied exact `SepLowerBound` certificate.
@@ -7707,6 +7727,16 @@ theorem sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge
       (Matrix.diagonal a) (Matrix.diagonal b) C X Xhat sigma hSigma
       (SepLowerBound_diagonal_of_entrywise_abs_ge n a b sigma hSigma hgap)
       hExact hE_ne hX_pos
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered alias
+    for the diagonal entrywise-gap a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_aposteriori_bound_diagonal_of_entrywise_abs_ge :=
+  sylvester_aposteriori_bound_diagonal_of_entrywise_abs_ge
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.28): source-numbered alias
+    for the relative diagonal entrywise-gap a posteriori endpoint. -/
+alias H16_eq16_28_sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge :=
+  sylvester_relative_aposteriori_bound_diagonal_of_entrywise_abs_ge
 
 /-- Higham, 2nd ed., Chapter 16.4, equations (16.26) and (16.28),
     diagonal case: the total Frobenius a posteriori error-residual bound
