@@ -2855,4 +2855,109 @@ theorem sqrt_lyapunovXiSq_le_mu_relative_residual (n : ℕ)
   rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hkappa_nonneg] at hsqrt
   simpa [kappa] using hsqrt
 
+/-- Higham, 2nd ed., Chapter 16.2.1, equation (16.21):
+    source-numbered aliases for the Lyapunov scalar equation, xi/optimizer
+    layer, and residual-amplification consequences. -/
+abbrev H16_eq16_21_lyapunovBackwardScalarEq := lyapunovBackwardScalarEq
+
+alias H16_eq16_21_lyapunovBackwardScalarEq_iff_unscaled :=
+  lyapunovBackwardScalarEq_iff_unscaled
+
+alias H16_eq16_21_lyapunovBackwardScalarEq_iff_residual_eq :=
+  lyapunovBackwardScalarEq_iff_residual_eq
+
+alias H16_eq16_21_lyapunovBackwardScalarEq_of_spectral_decomposition :=
+  lyapunovBackwardScalarEq_of_spectral_decomposition
+
+alias H16_eq16_21_lyapunovBackwardScalarEq_of_isLyapunovBackwardError_spectral_decomposition :=
+  lyapunovBackwardScalarEq_of_isLyapunovBackwardError_spectral_decomposition
+
+alias H16_eq16_21_lyapunovBackwardScalarEq_of_isLyapunovBackwardError_spectral_decomposition_symm :=
+  lyapunovBackwardScalarEq_of_isLyapunovBackwardError_spectral_decomposition_symm
+
+alias H16_eq16_21_lyapunovBackwardScalarEq_iff_diagMatrix_eq :=
+  lyapunovBackwardScalarEq_iff_diagMatrix_eq
+
+noncomputable abbrev H16_eq16_21_lyapunovXiSq := lyapunovXiSq
+
+noncomputable abbrev H16_eq16_21_lyapunovXiSqSimpleBound :=
+  lyapunovXiSqSimpleBound
+
+noncomputable abbrev H16_eq16_21_lyapunovOptimalDeltaA :=
+  lyapunovOptimalDeltaA
+
+noncomputable abbrev H16_eq16_21_lyapunovOptimalDeltaC :=
+  lyapunovOptimalDeltaC
+
+alias H16_eq16_21_lyapunovXiSq_nonneg := lyapunovXiSq_nonneg
+
+alias H16_eq16_21_lyapunovOptimalPerturbations_scalar_eq :=
+  lyapunovOptimalPerturbations_scalar_eq
+
+alias H16_eq16_21_lyapunovOptimalDeltaC_symmetric :=
+  lyapunovOptimalDeltaC_symmetric
+
+alias H16_eq16_21_lyapunovOptimalDeltaA_frobNormSq_le_xiSq :=
+  lyapunovOptimalDeltaA_frobNormSq_le_xiSq
+
+alias H16_eq16_21_lyapunovOptimalDeltaC_frobNormSq_le_xiSq :=
+  lyapunovOptimalDeltaC_frobNormSq_le_xiSq
+
+alias H16_eq16_21_exists_lyapunovOptimalPerturbations :=
+  exists_lyapunovOptimalPerturbations
+
+alias H16_eq16_21_isLyapunovBackwardError_sqrt_lyapunovXiSq_of_spectral_optimalPerturbations :=
+  isLyapunovBackwardError_sqrt_lyapunovXiSq_of_spectral_optimalPerturbations
+
+alias H16_eq16_21_isLyapunovBackwardError_sqrt_lyapunovXiSq_of_symmetric_spectral :=
+  isLyapunovBackwardError_sqrt_lyapunovXiSq_of_symmetric_spectral
+
+alias H16_eq16_21_lyapunovBackwardErrorValues_nonempty_of_symmetric_spectral :=
+  lyapunovBackwardErrorValues_nonempty_of_symmetric_spectral
+
+alias H16_eq16_21_lyapunovBackwardErrorInf_le_sqrt_lyapunovXiSq_of_symmetric_spectral :=
+  lyapunovBackwardErrorInf_le_sqrt_lyapunovXiSq_of_symmetric_spectral
+
+alias H16_eq16_21_two_mul_lyapunovXiSq_eq_simple_bound_of_symmetric :=
+  two_mul_lyapunovXiSq_eq_simple_bound_of_symmetric
+
+alias H16_eq16_21_lyapunovXiSqSimpleBound_le_scaled_perturbation_cost :=
+  lyapunovXiSqSimpleBound_le_scaled_perturbation_cost
+
+alias H16_eq16_21_lyapunovXiSq_le_two_eta_sq_of_scalar_eq :=
+  lyapunovXiSq_le_two_eta_sq_of_scalar_eq
+
+alias H16_eq16_21_lyapunovXiSq_le_two_eta_sq_of_backward_error_spectral :=
+  lyapunovXiSq_le_two_eta_sq_of_backward_error_spectral
+
+alias H16_eq16_21_sqrt_lyapunovXiSq_div_two_le_lyapunovBackwardErrorInf_of_symmetric_spectral :=
+  sqrt_lyapunovXiSq_div_two_le_lyapunovBackwardErrorInf_of_symmetric_spectral
+
+alias H16_eq16_21_lyapunovXiSq_le_simple_bound :=
+  lyapunovXiSq_le_simple_bound
+
+noncomputable abbrev H16_eq16_21_lyapunovAmplificationMu :=
+  lyapunovAmplificationMu
+
+alias H16_eq16_21_lyapunovXiSqSimpleBound_le_min_eigen_bound :=
+  lyapunovXiSqSimpleBound_le_min_eigen_bound
+
+alias H16_eq16_21_lyapunovXiSq_le_min_eigen_bound :=
+  lyapunovXiSq_le_min_eigen_bound
+
+alias H16_eq16_21_lyapunovXiSq_symmetric_le_min_eigen_bound :=
+  lyapunovXiSq_symmetric_le_min_eigen_bound
+
+alias H16_eq16_21_lyapunovXiSq_spectral_le_min_eigen_bound :=
+  lyapunovXiSq_spectral_le_min_eigen_bound
+
+alias H16_eq16_21_lyapunovXiSq_spectral_symmetric_le_min_eigen_bound :=
+  lyapunovXiSq_spectral_symmetric_le_min_eigen_bound
+
+alias H16_eq16_21_lyapunovXiSq_le_mu_relative_residual_sq :=
+  lyapunovXiSq_le_mu_relative_residual_sq
+
+alias H16_eq16_21_sqrt_lyapunovXiSq_le_mu_relative_residual :=
+  sqrt_lyapunovXiSq_le_mu_relative_residual
+
 end LeanFpAnalysis.FP
