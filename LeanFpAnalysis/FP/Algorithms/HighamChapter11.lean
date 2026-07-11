@@ -19652,6 +19652,73 @@ theorem higham11_7_ConcretePathSecondPivotBranchMatrixCombinedLocalBlockSolveRow
     _ = b (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) := by
       simpa [irow] using hrows t hstep
 
+/-- A branch-matrix combined second-pivot local row equation reduces back to
+the bare branch-matrix row equation when every strictly earlier lifted
+perturbation vanishes on the current local block. -/
+theorem higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_combined_rows_and_earlier_local_zero
+    (k : ℕ) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (b x_hat : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hrows :
+      higham11_7_ConcretePathSecondPivotBranchMatrixCombinedLocalBlockSolveRows
+        k step A b x_hat ΔA)
+    (hearlier :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock
+        k step ΔA) :
+    higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows
+        k step A b x_hat := by
+  intro t hstep
+  let irow : Fin (higham11_7_tridiagonalBranchAmbientDim
+      (higham11_7_tridiagonalPathTailDim k step t) (step t)) :=
+    Fin.cast (by rw [hstep])
+      (higham11_7_tridiagonalTwoByTwoSecondPivotIndex
+        (higham11_7_tridiagonalPathTailDim k step t))
+  have hzero :
+      ∀ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)),
+        (∑ s ∈ Finset.univ.filter (fun s : Fin k => s.val < t.val),
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s)
+            (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+            (higham11_7_tridiagonalPathLocalBlockIndex k step t j)) = 0 := by
+    intro j
+    refine Finset.sum_eq_zero ?_
+    intro s hs
+    exact hearlier t hstep s (Finset.mem_filter.mp hs).2 j
+  calc
+    (∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t)),
+      higham11_7_tridiagonalPathBranchMatrix k step A t irow j *
+        x_hat (higham11_7_tridiagonalPathLocalBlockIndex k step t j)) =
+        ∑ j : Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)),
+          (higham11_7_tridiagonalPathBranchMatrix k step A t irow j +
+            (∑ s ∈ Finset.univ.filter (fun s : Fin k => s.val < t.val),
+              higham11_7_tridiagonalLiftLocalBlockPerturbation
+                (higham11_7_tridiagonalPathPivotSpan k step + 1)
+                (higham11_7_tridiagonalPathPrefixSpan k step s)
+                (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim k step s) (step s))
+                (ΔA s)
+                (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+                (higham11_7_tridiagonalPathLocalBlockIndex k step t j))) *
+            x_hat (higham11_7_tridiagonalPathLocalBlockIndex k step t j) := by
+      apply Finset.sum_congr rfl
+      intro j _hj
+      rw [hzero j, add_zero]
+    _ = b (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep) := by
+      simpa [irow] using hrows t hstep
+
 /-- Outside-block zero condition for a combined second-pivot row.  Together
 with the local-block row equation this gives the full ambient combined
 second-pivot handoff. -/
