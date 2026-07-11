@@ -641,6 +641,25 @@ theorem sylvesterResidualRect_schurTriangular_backSub_componentwise_le
 -- ============================================================
 
 /-- Higham, 2nd ed., Chapter 16.2, p. 307, equation (16.7): source-numbered
+    alias for the raw triangular-solve backward-error model of the vectorized
+    Sylvester system. -/
+alias H16_eq16_7_sylvesterVecCoeff_triangular_backSub_backward_error :=
+  sylvesterVecCoeff_triangular_backSub_backward_error
+
+/-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equation (16.8):
+    source-numbered alias for the raw vectorized componentwise residual
+    consequence of the (16.7) backward-error model. -/
+alias H16_eq16_8_sylvesterVecCoeff_triangular_backSub_componentwise_residual :=
+  sylvesterVecCoeff_triangular_backSub_componentwise_residual
+
+/-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equation (16.8):
+    source-numbered alias for the raw printed matrix form
+    `|C~ - R Z^ + Z^ S| <= gamma_{nm} (|R||Z^| + |Z^||S|)` of the
+    componentwise residual consequence. -/
+alias H16_eq16_8_sylvesterResidualRect_triangular_backSub_componentwise_le :=
+  sylvesterResidualRect_triangular_backSub_componentwise_le
+
+/-- Higham, 2nd ed., Chapter 16.2, p. 307, equation (16.7): source-numbered
     alias for the supplied Schur-factor rounded triangular-solve
     backward-error model of the vectorized Sylvester system. -/
 alias H16_eq16_7_sylvesterVecCoeff_schurTriangular_backSub_backward_error :=
