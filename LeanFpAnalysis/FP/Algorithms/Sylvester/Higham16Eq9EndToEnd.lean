@@ -219,6 +219,13 @@ theorem frobNormRect_sylvesterResidualRect_schurTriangular_backSub_le
     hgv
 
 /-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equations (16.8)-(16.9):
+    source-numbered alias for the raw triangular Schur-coordinate
+    Frobenius residual bound discharged from the componentwise (16.8)
+    theorem. -/
+alias H16_eq16_8_frobNormRect_sylvesterResidualRect_triangular_backSub_le :=
+  frobNormRect_sylvesterResidualRect_triangular_backSub_le
+
+/-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equations (16.8)-(16.9):
     source-numbered alias for the Frobenius form of the (16.8) rounded
     triangular-solve residual bound, i.e. the discharged residual hypothesis
     of the (16.9) assembly. -/
