@@ -67147,6 +67147,107 @@ theorem
         hB hstack)
       hstack rfl rfl hgap
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
+    existential rank-tolerant `(AP)^+` handoff for the additive scaled
+    residual-gap route.
+
+    This packages the supplied-GQR additive scaled theorem behind the source
+    full-row-rank and stacked-full-column-rank hypotheses.  The chosen lifted
+    reduced-Gram table supplies the Moore--Penrose and `null(B)` certificates;
+    callers supply only the two scaled residual-gap component bounds and their
+    combined residual-amplifier comparison for that chosen table. -/
+theorem
+    LSEFullRowRank.exists_theorem20_8_rank_tolerant_APplus_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_BAplus_residual_gap_additive_scaled_of_minimizers
+    {r p q : ℕ}
+    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (b Deltab : Fin (r + q) → ℝ)
+    {B : Fin p → Fin (p + q) → ℝ} (hB : LSEFullRowRank B)
+    (DeltaB : Fin p → Fin (p + q) → ℝ)
+    (d Deltad : Fin p → ℝ)
+    (x y : Fin (p + q) → ℝ) {eps gapAP gapCorr : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hxpos : 0 < vecNorm2 x) (hy_norm : vecNorm2 y ≤ vecNorm2 x)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y) :
+    ∃ APplus : Fin (p + q) → Fin (r + q) → ℝ,
+      RectMoorePenrosePseudoinverse (r + q) (p + q)
+          (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus ∧
+        rectMatMul B APplus =
+          (fun _i : Fin p => fun _j : Fin (r + q) => 0) ∧
+        ((complexMatrixOp2 (realRectToCMatrix APplus) *
+            (complexMatrixOp2
+                (realRectToCMatrix
+                  (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) *
+                vecNorm2 (fun j : Fin (p + q) => y j - x j)) ≤
+            gapAP) →
+          (complexMatrixOp2 (realRectToCMatrix APplus) *
+              ((theorem20_8KappaB A APplus *
+                    (complexMatrixOp2
+                        (realRectToCMatrix
+                          (rectMatMul A (undetAplusOfGramNonsingInv B))) *
+                      (eps * vecNorm2 d + (eps * frobNormRect B) *
+                        vecNorm2 y)) +
+                  complexMatrixOp2
+                      (realRectToCMatrix
+                        (rectMatMul A
+                          (theorem20_8BAplus A B
+                            (undetAplusOfGramNonsingInv B) APplus))) *
+                    (eps * vecNorm2 d + (eps * frobNormRect B) *
+                      vecNorm2 y)) +
+                (eps * frobNormRect A) * vecNorm2 y +
+                eps * vecNorm2 b) ≤
+              gapCorr) →
+          (gapAP + gapCorr ≤
+            eps * theorem20_8ResidualAmplifier A B APplus
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  APplus) *
+              (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) →
+          vecNorm2 (fun j : Fin (p + q) => y j - x j) / vecNorm2 x ≤
+            eps * theorem20_8FirstOrderRHS A b B d x
+                (lsResidualHigham A b x) APplus
+                (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                  APplus) +
+              eps ^ 2 *
+                theorem20_8FirstOrderRHS A b B d x
+                  (lsResidualHigham A b x) APplus
+                  (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
+                    APplus) *
+                (complexMatrixOp2
+                    (realRectToCMatrix
+                      (theorem20_8BAplus A B
+                        (undetAplusOfGramNonsingInv B) APplus)) *
+                    frobNormRect B +
+                  complexMatrixOp2 (realRectToCMatrix APplus) *
+                    frobNormRect A)) := by
+  rcases GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨h⟩
+  have hMP :
+      RectMoorePenrosePseudoinverse (r + q) (p + q)
+        (theorem20_8AP A B (undetAplusOfGramNonsingInv B))
+        h.liftedReducedGramAPplus :=
+    h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
+      hB hstack
+  have hnull :
+      rectMatMul B h.liftedReducedGramAPplus =
+        (fun _i : Fin p => fun _j : Fin (r + q) => 0) :=
+    h.liftedReducedGramAPplus_constraint_annihilates
+  refine ⟨h.liftedReducedGramAPplus, hMP, hnull, ?_⟩
+  intro hgapScaleAP hgapScaleCorr hgapScale
+  exact
+    h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_additive_scaled_of_minimizers
+      A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
+      hxpos hy_norm hmax hstack hx hy hgapScaleAP hgapScaleCorr hgapScale
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     for supplied GQR data, `B` has full row rank iff the displayed
     lower-triangular constraint block `S` has trivial kernel.
