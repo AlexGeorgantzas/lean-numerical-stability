@@ -3254,6 +3254,54 @@ theorem lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_er
       n A C X Xhat Rhat Rhat' Ru Ru' dR PinvAbs' eta hdet hX
       hPinvAbs_le hRhat_eq hRu hdR hRhat_le hRu_le heta hcomponent hXhat
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the Lyapunov operator-sigma-min raw residual-budget practical
+    endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_budget :=
+  lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar Lyapunov operator-sigma-min raw residual-budget
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_scalar :=
+  lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone Lyapunov operator-sigma-min raw residual-budget
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_mono :=
+  lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar Lyapunov operator-sigma-min raw
+    residual-budget practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_mono_scalar :=
+  lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the Lyapunov operator-sigma-min explicit residual-error-model
+    practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model :=
+  lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar Lyapunov operator-sigma-min explicit
+    residual-error-model practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_scalar :=
+  lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone Lyapunov operator-sigma-min explicit
+    residual-error-model practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_mono :=
+  lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar Lyapunov operator-sigma-min explicit
+    residual-error-model practical endpoint. -/
+alias H16_eq16_29_lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_mono_scalar :=
+  lyapunov_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_mono_scalar
+
 /-- Higham, 2nd ed., Chapter 16, equation (16.29), Lyapunov practical
     computed-residual certificate from a positive lower bound on the exact
     separation infimum. -/
