@@ -6180,6 +6180,145 @@ theorem
         n D_hat ρ0 Amax r hAmax h0 hρ0 hstep hD)
       hrows hsolve
 
+/-- **Theorem 11.4 unit-initial prefix-growth `D̂` cap bridge**.  Source-shaped
+specialization of `higham11_4_D_bound_of_normalized_prefix_growth_factor` for a
+normalized growth sequence with `r 0 = 1`. -/
+theorem higham11_4_D_bound_of_unit_initial_prefix_growth_factor
+    (n : ℕ) (D_hat : Fin n → Fin n → ℝ) (Amax : ℝ) (r : ℕ → ℝ)
+    (hAmax : 0 ≤ Amax)
+    (h0 : r 0 = 1)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ r (n - 1) * Amax) :
+    ∀ k₁ k₂ : Fin n,
+      |D_hat k₁ k₂| ≤
+        (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * Amax :=
+  higham11_4_D_bound_of_normalized_prefix_growth_factor
+    n D_hat 1 Amax r hAmax h0 le_rfl hstep hD
+
+/-- **Theorem 11.4 unit-initial normalized prefix-growth product bridge**. -/
+theorem
+    higham11_4_product_entries_of_first_stage_recursive_uniform_six_row_sum_normalized_prefix_growth_D_bound_unit_initial
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Amax : ℝ) (r : ℕ → ℝ)
+    (hAmax : 0 ≤ Amax)
+    (h0 : r 0 = 1)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ r (n - 1) * Amax)
+    (hrows : ∀ row : Fin n, (∑ k : Fin n, |L_hat row k|) ≤ 6) :
+    ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) *
+          (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * Amax :=
+  higham11_4_product_entries_of_first_stage_recursive_uniform_six_row_sum_normalized_prefix_growth_D_bound
+    n s hn hs_pos hs_le L_hat D_hat 1 Amax r hAmax h0 le_rfl hstep hD hrows
+
+/-- **Theorem 11.4 unit-initial normalized prefix-growth max-entry bridge**. -/
+theorem
+    higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_uniform_six_row_sum_normalized_prefix_growth_D_bound_unit_initial
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Amax : ℝ) (r : ℕ → ℝ)
+    (hAmax : 0 ≤ Amax)
+    (h0 : r 0 = 1)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ r (n - 1) * Amax)
+    (hrows : ∀ row : Fin n, (∑ k : Fin n, |L_hat row k|) ≤ 6) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) *
+        (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_uniform_six_row_sum_normalized_prefix_growth_D_bound
+    n s hn hs_pos hs_le L_hat D_hat 1 Amax r hAmax h0 le_rfl hstep hD hrows
+
+/-- **Theorem 11.4 unit-initial normalized prefix-growth scalar certificate**. -/
+theorem
+    higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_uniform_six_row_sum_normalized_prefix_growth_D_bound_unit_initial
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Amax : ℝ) (r : ℕ → ℝ)
+    (hAmax : 0 ≤ Amax)
+    (h0 : r 0 = 1)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ r (n - 1) * Amax)
+    (hrows : ∀ row : Fin n, (∑ k : Fin n, |L_hat row k|) ≤ 6) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat)
+      ((1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1)) Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_uniform_six_row_sum_normalized_prefix_growth_D_bound
+    n s hn hs_pos hs_le L_hat D_hat 1 Amax r hAmax h0 le_rfl hstep hD hrows
+
+/-- **Theorem 11.4 unit-initial normalized prefix-growth stability bridge**. -/
+theorem
+    higham11_4_bunch_kaufman_stability_of_first_stage_recursive_uniform_six_row_sum_normalized_prefix_growth_D_bound_unit_initial
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (maxNorm_A : ℝ) (r : ℕ → ℝ)
+    (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (h0 : r 0 = 1)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ r (n - 1) * maxNorm_A)
+    (hrows : ∀ row : Fin n, (∑ k : Fin n, |L_hat row k|) ≤ 6) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_first_stage_recursive_uniform_six_row_sum_normalized_prefix_growth_D_bound
+    n s hn hs_pos hs_le A L_hat D_hat 1 maxNorm_A r hmA hA_norm h0 le_rfl hstep hD
+    hrows
+
+/-- **Theorem 11.4 unit-initial normalized prefix-growth solve bridge**. -/
+theorem
+    higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_uniform_six_row_sum_normalized_prefix_growth_D_bound_unit_initial
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (p u Amax : ℝ) (r : ℕ → ℝ)
+    (hpu : 0 ≤ p * u) (hAmax : 0 ≤ Amax)
+    (h0 : r 0 = 1)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ r (n - 1) * Amax)
+    (hrows : ∀ row : Fin n, (∑ k : Fin n, |L_hat row k|) ≤ 6)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        (p * 36 * (n : ℝ)) *
+          (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_uniform_six_row_sum_normalized_prefix_growth_D_bound
+    n s hn hs_pos hs_le A L_hat D_hat b x_hat 1 p u Amax r hpu hAmax h0 le_rfl
+    hstep hD hrows hsolve
+
+/-- **Theorem 11.4 unit-initial normalized prefix-growth solve bridge,
+max-entry norm form**. -/
+theorem
+    higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_uniform_six_row_sum_normalized_prefix_growth_D_maxEntryNorm_bound_unit_initial
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (p u Amax : ℝ) (r : ℕ → ℝ)
+    (hpu : 0 ≤ p * u) (hAmax : 0 ≤ Amax)
+    (h0 : r 0 = 1)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ r (n - 1) * Amax)
+    (hrows : ∀ row : Fin n, (∑ k : Fin n, |L_hat row k|) ≤ 6)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        (p * 36 * (n : ℝ)) *
+          (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_uniform_six_row_sum_normalized_prefix_growth_D_maxEntryNorm_bound
+    n s hn hs_pos hs_le A L_hat D_hat b x_hat 1 p u Amax r hpu hAmax h0 le_rfl
+    hstep hD hrows hsolve
+
 /-- A growth-scaled `D̂` entry cap can be relaxed from a stage growth factor to
 a larger final growth factor. -/
 theorem higham11_4_growth_scaled_D_bound_of_le
