@@ -9347,6 +9347,41 @@ theorem sylvester_quasiSchur_singleton_column_eq_of_nonsingInv_of_solution_prev_
     sylvester_singleton_column_eq_of_nonsingInv_of_solution_prev_columns_eq
       m n A T C X Y k hbelow hdet hXk hYsol hprev
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
+    source-numbered alias for the singleton zero-below column identity. -/
+alias H16_eq16_6_sylvester_column_identity_of_zero_below :=
+  sylvester_column_identity_of_zero_below
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
+    source-numbered alias for extracting the singleton column recurrence from
+    an exact solution under the zero-below hypothesis. -/
+alias H16_eq16_6_sylvester_column_equation_of_solution_zero_below :=
+  sylvester_column_equation_of_solution_zero_below
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
+    source-numbered alias for the zero-below singleton nonsingular-inverse
+    solution bridge. -/
+alias H16_eq16_6_sylvester_singleton_column_solution_of_nonsingInv_zero_below :=
+  sylvester_singleton_column_solution_of_nonsingInv_zero_below
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the quasi-Schur singleton nonsingular-inverse
+    solution bridge. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_singleton_column_solution_of_nonsingInv :=
+  sylvester_quasiSchur_singleton_column_solution_of_nonsingInv
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
+    source-numbered alias for singleton nonsingular-inverse column uniqueness
+    from previous-column agreement. -/
+alias H16_eq16_6_sylvester_singleton_column_eq_of_nonsingInv_of_solution_prev_columns_eq :=
+  sylvester_singleton_column_eq_of_nonsingInv_of_solution_prev_columns_eq
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for the quasi-Schur singleton column uniqueness
+    bridge from previous-column agreement. -/
+alias H16_eq16_4_8_sylvester_quasiSchur_singleton_column_eq_of_nonsingInv_of_solution_prev_columns_eq :=
+  sylvester_quasiSchur_singleton_column_eq_of_nonsingInv_of_solution_prev_columns_eq
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
     quasi-Schur traversal uniqueness skeleton: if every column of a supplied
     candidate `X` is covered either by the singleton one-column recurrence or
