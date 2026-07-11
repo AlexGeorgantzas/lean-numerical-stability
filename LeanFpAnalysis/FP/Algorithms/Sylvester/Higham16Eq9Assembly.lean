@@ -635,6 +635,12 @@ theorem frobNormRect_sylvesterResidualRect_le_gamma_dataScale_of_theorem19_4_fac
         (n * householderConstructApplyGammaIndex n))
       m n U R A dA V S B dB C Y hU hV hA hB hdA' hdB' hvalid hres
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.9), p. 308:
+    source-numbered alias for the fully-rounded-factor residual guarantee
+    with Chapter 19 Theorem 19.4 factor-perturbation coefficients. -/
+alias H16_eq16_9_frobNormRect_sylvesterResidualRect_le_gamma_dataScale_of_theorem19_4_factor_coefficients :=
+  frobNormRect_sylvesterResidualRect_le_gamma_dataScale_of_theorem19_4_factor_coefficients
+
 -- ============================================================
 -- (16.9) assembly: rounded RHS transform and reconstruction budgets
 -- ============================================================
