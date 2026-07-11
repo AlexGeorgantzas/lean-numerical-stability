@@ -86296,6 +86296,45 @@ theorem theorem20_10_partA_certificate_of_constructed_source_exact_rhs_household
     theorem20_10_partA_certificate_of_constructed_source_exact_rhs_householder_gamma
       fp h b d hdiag.1 hdiag.2 hvalidA hvalidB
 
+/-- Theorem 20.10(b), exact transformed-RHS constructed-source Part B
+    certificate with source rank hypotheses.
+
+This is the certificate-level companion to
+`theorem20_10_partB_backward_error_of_constructed_source_exact_rhs_householder_gamma_of_source_ranks`.
+It removes the supplied triangular diagonal hypotheses for the exact-RHS
+Householder-gamma branch while keeping the result at the reusable certificate
+boundary.  The rounded RHS-transform and external computed-vector identity
+remain separate obligations. -/
+theorem theorem20_10_partB_certificate_of_constructed_source_exact_rhs_householder_gamma_of_source_ranks
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hBsrc : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    Nonempty
+      (Theorem20_10PartBPerturbationCertificate A B b d
+        (theorem20_10_gqr_xhat fp h b d)
+        (theorem20_10_householder_gammaA fp r p q)
+        (theorem20_10_householder_gammaB fp r p q)) := by
+  have hgammaB_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidB
+  rcases
+    theorem20_10_partA_certificate_of_constructed_source_exact_rhs_householder_gamma_of_source_ranks
+      fp h b d hBsrc hStack hvalidA hvalidB with
+    ⟨_DeltaS, _DeltaL22, _hDeltaSbound, _hDeltaL22bound,
+      _hDeltaSfrob, _hDeltaL22frob, hcertA⟩
+  exact
+    theorem20_10_partB_certificate_of_nonempty_partA_certificate
+      A B b d (theorem20_10_gqr_xhat fp h b d) hgammaB_nonneg hcertA
+
 /-- Theorem 20.10(b), exact transformed-RHS constructed-source
     backward-error core with source rank hypotheses instead of supplied
     triangular diagonal hypotheses.
