@@ -7449,6 +7449,30 @@ theorem sylvester_relative_perturbation_diagonal_of_entrywise_abs_ge_total
       alpha beta gamma eps hAlpha hBeta hGamma hEps
       hdA hdB hdC hLin hX_pos
 
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    source-numbered alias for the total exact-infimum Sylvester perturbation
+    bound. -/
+alias H16_eq16_25_sylvester_perturbation_bound_of_pos_le_sylvesterSepInf_total :=
+  sylvester_perturbation_bound_of_pos_le_sylvesterSepInf_total
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    source-numbered alias for the total relative exact-infimum Sylvester
+    perturbation bound. -/
+alias H16_eq16_25_sylvester_relative_perturbation_of_pos_le_sylvesterSepInf_total :=
+  sylvester_relative_perturbation_of_pos_le_sylvesterSepInf_total
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    source-numbered alias for the total diagonal-gap Sylvester perturbation
+    bound. -/
+alias H16_eq16_25_sylvester_perturbation_bound_diagonal_of_entrywise_abs_ge_total :=
+  sylvester_perturbation_bound_diagonal_of_entrywise_abs_ge_total
+
+/-- Higham, 2nd ed., Chapter 16.3, equations (16.25)-(16.26):
+    source-numbered alias for the total relative diagonal-gap Sylvester
+    perturbation bound. -/
+alias H16_eq16_25_sylvester_relative_perturbation_diagonal_of_entrywise_abs_ge_total :=
+  sylvester_relative_perturbation_diagonal_of_entrywise_abs_ge_total
+
 -- ============================================================
 -- A posteriori source wrapper from Chapter 16.4
 -- ============================================================

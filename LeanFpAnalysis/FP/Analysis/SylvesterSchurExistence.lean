@@ -750,6 +750,18 @@ theorem complexSylvester_shift_det_ne_zero_of_schur_diagonal_separation
   exact complexShiftedCoeff_det_ne_zero_of_upperTriangular_diag_ne
     R (S k k) hR (fun i => hsep i k)
 
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.6):
+    source-numbered alias for nonsingularity of the shifted triangular
+    column coefficient from supplied diagonal separation. -/
+alias H16_eq16_6_complexShiftedCoeff_det_ne_zero_of_upperTriangular_diag_ne :=
+  complexShiftedCoeff_det_ne_zero_of_upperTriangular_diag_ne
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.3)-(16.6):
+    source-numbered alias for the supplied complex Schur diagonal-separation
+    shifted determinant certificates. -/
+alias H16_eq16_3_6_complexSylvester_shift_det_ne_zero_of_schur_diagonal_separation :=
+  complexSylvester_shift_det_ne_zero_of_schur_diagonal_separation
+
 /-- Entrywise column identity: for upper-triangular `S`, applying the shifted
     coefficient to column `k` of `Y` reproduces the `k`-th column of the
     Sylvester operator `R Y - Y S` plus a sum over strictly earlier columns.
@@ -1103,6 +1115,12 @@ theorem complexSylvester_exists_unique_of_schur_diagonal_separation {m n : ℕ}
     hU hV hA hB hStri
     (complexSylvester_shift_det_ne_zero_of_schur_diagonal_separation
       R S hRtri hsep)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.3)-(16.6):
+    source-numbered alias for the supplied complex Schur diagonal-separation
+    exact unique-solve theorem. -/
+alias H16_eq16_3_6_complexSylvester_exists_unique_of_schur_diagonal_separation :=
+  complexSylvester_exists_unique_of_schur_diagonal_separation
 
 /-- Eigenpairs of a supplied complex Schur factor transfer back through the
     unitary similarity to eigenpairs of the original matrix. -/
