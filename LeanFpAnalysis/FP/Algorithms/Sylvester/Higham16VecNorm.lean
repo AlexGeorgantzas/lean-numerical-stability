@@ -44,6 +44,16 @@ theorem finiteVecNorm2_vec_eq_frobNorm (m n : Nat)
   rw [finiteVecNorm2Sq_vec_eq_frobNormSq m n A,
     frobNorm_eq_sqrt_frobNormSq]
 
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered
+    alias for the squared Frobenius/`vec` Euclidean norm isometry. -/
+alias H16_eq16_2_finiteVecNorm2Sq_vec_eq_frobNormSq :=
+  finiteVecNorm2Sq_vec_eq_frobNormSq
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered
+    alias for the Frobenius/`vec` Euclidean norm isometry. -/
+alias H16_eq16_2_finiteVecNorm2_vec_eq_frobNorm :=
+  finiteVecNorm2_vec_eq_frobNorm
+
 /-- Finite Gram matrix `P^T P` for an arbitrary finite index type.  This local
     Chapter 16 helper keeps the printed product-index vec coefficient without
     reindexing it through `Fin (n*n)`. -/
@@ -129,6 +139,11 @@ theorem finiteQuadraticForm_finiteMatrixGram_eq_finiteVecNorm2Sq_mulVec
             apply Finset.sum_congr rfl
             intro k _
             ring
+
+/-- Higham, 2nd ed., Chapter 16.1, equation (16.2): source-numbered
+    alias for the product-index Gram identity `x^T P^T P x = ||P x||_2^2`. -/
+alias H16_eq16_2_finiteQuadraticForm_finiteMatrixGram_eq_finiteVecNorm2Sq_mulVec :=
+  finiteQuadraticForm_finiteMatrixGram_eq_finiteVecNorm2Sq_mulVec
 
 /-- Singular-value lower-bound certificate for an arbitrary finite-index real
     matrix, stated with the repository's generic finite Euclidean norm. -/
