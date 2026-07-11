@@ -8551,6 +8551,269 @@ theorem
       hfirst_budget htrail_budget)
     hsolve
 
+/-- **Theorem 11.4 exact-budget split regional `D̂` product bridge**.
+Regional first-stage and trailing `D̂` caps are aggregated into the global
+`Dmax` cap before feeding the exact Higham coefficient route. -/
+theorem
+    higham11_4_product_entries_of_first_stage_recursive_higham_const_split_regional_D_exact_budgets
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax D_first D_rec : ℝ)
+    (ρ_n Amax : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD_first_le : D_first ≤ Dmax)
+    (hD_rec_le : D_rec ≤ Dmax)
+    (hDfirst : ∀ k₁ k₂ : Fin n, k₁.val < s ∨ k₂.val < s →
+      |D_hat k₁ k₂| ≤ D_first)
+    (hDtrail : ∀ k₁ k₂ : Fin n, s ≤ k₁.val → s ≤ k₂.val →
+      |D_hat k₁ k₂| ≤ D_rec)
+    (hLfirst : ∀ r : Fin n, r.val < s →
+      (∑ k : Fin n, |L_hat r k|) ≤ 6)
+    (hLtrail : ∀ r : Fin n, s ≤ r.val →
+      (∑ k : Fin n, |L_hat r k|) ≤ 6)
+    (hfirst_budget :
+      (6 : ℝ) * Dmax * 6 ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (htrail_budget :
+      (6 : ℝ) * Dmax * 6 ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax +
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax) :
+    ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_product_entries_of_first_stage_recursive_higham_const_split_six_row_sum_exact_budgets
+    n s hn hs_pos hs_le L_hat D_hat Dmax ρ_n Amax hρ hAmax
+    (higham11_4_D_bound_of_first_stage_recursive_split
+      n s D_hat Dmax D_first D_rec hD_first_le hD_rec_le hDfirst hDtrail)
+    hLfirst hLtrail hfirst_budget htrail_budget
+
+/-- **Theorem 11.4 exact-budget split regional `D̂` max-entry bridge**. -/
+theorem
+    higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_higham_const_split_regional_D_exact_budgets
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax D_first D_rec : ℝ)
+    (ρ_n Amax : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD_first_le : D_first ≤ Dmax)
+    (hD_rec_le : D_rec ≤ Dmax)
+    (hDfirst : ∀ k₁ k₂ : Fin n, k₁.val < s ∨ k₂.val < s →
+      |D_hat k₁ k₂| ≤ D_first)
+    (hDtrail : ∀ k₁ k₂ : Fin n, s ≤ k₁.val → s ≤ k₂.val →
+      |D_hat k₁ k₂| ≤ D_rec)
+    (hLfirst : ∀ r : Fin n, r.val < s →
+      (∑ k : Fin n, |L_hat r k|) ≤ 6)
+    (hLtrail : ∀ r : Fin n, s ≤ r.val →
+      (∑ k : Fin n, |L_hat r k|) ≤ 6)
+    (hfirst_budget :
+      (6 : ℝ) * Dmax * 6 ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (htrail_budget :
+      (6 : ℝ) * Dmax * 6 ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax +
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) * ρ_n * Amax :=
+  higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_higham_const_split_six_row_sum_exact_budgets
+    n s hn hs_pos hs_le L_hat D_hat Dmax ρ_n Amax hρ hAmax
+    (higham11_4_D_bound_of_first_stage_recursive_split
+      n s D_hat Dmax D_first D_rec hD_first_le hD_rec_le hDfirst hDtrail)
+    hLfirst hLtrail hfirst_budget htrail_budget
+
+/-- **Theorem 11.4 exact-budget split regional `D̂` scalar certificate**. -/
+theorem
+    higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_split_regional_D_exact_budgets
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (Dmax D_first D_rec : ℝ)
+    (ρ_n Amax : ℝ)
+    (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD_first_le : D_first ≤ Dmax)
+    (hD_rec_le : D_rec ≤ Dmax)
+    (hDfirst : ∀ k₁ k₂ : Fin n, k₁.val < s ∨ k₂.val < s →
+      |D_hat k₁ k₂| ≤ D_first)
+    (hDtrail : ∀ k₁ k₂ : Fin n, s ≤ k₁.val → s ≤ k₂.val →
+      |D_hat k₁ k₂| ≤ D_rec)
+    (hLfirst : ∀ r : Fin n, r.val < s →
+      (∑ k : Fin n, |L_hat r k|) ≤ 6)
+    (hLtrail : ∀ r : Fin n, s ≤ r.val →
+      (∑ k : Fin n, |L_hat r k|) ≤ 6)
+    (hfirst_budget :
+      (6 : ℝ) * Dmax * 6 ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (htrail_budget :
+      (6 : ℝ) * Dmax * 6 ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax +
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ρ_n Amax :=
+  higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_higham_const_split_six_row_sum_exact_budgets
+    n s hn hs_pos hs_le L_hat D_hat Dmax ρ_n Amax hρ hAmax
+    (higham11_4_D_bound_of_first_stage_recursive_split
+      n s D_hat Dmax D_first D_rec hD_first_le hD_rec_le hDfirst hDtrail)
+    hLfirst hLtrail hfirst_budget htrail_budget
+
+/-- **Theorem 11.4 exact-budget split regional `D̂` stability bridge**. -/
+theorem
+    higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_split_regional_D_exact_budgets
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (Dmax D_first D_rec : ℝ)
+    (ρ_n maxNorm_A : ℝ)
+    (hρ : 0 ≤ ρ_n) (hmA : 0 ≤ maxNorm_A)
+    (hA_norm : ∀ i j : Fin n, |A i j| ≤ maxNorm_A)
+    (hD_first_le : D_first ≤ Dmax)
+    (hD_rec_le : D_rec ≤ Dmax)
+    (hDfirst : ∀ k₁ k₂ : Fin n, k₁.val < s ∨ k₂.val < s →
+      |D_hat k₁ k₂| ≤ D_first)
+    (hDtrail : ∀ k₁ k₂ : Fin n, s ≤ k₁.val → s ≤ k₂.val →
+      |D_hat k₁ k₂| ≤ D_rec)
+    (hLfirst : ∀ r : Fin n, r.val < s →
+      (∑ k : Fin n, |L_hat r k|) ≤ 6)
+    (hLtrail : ∀ r : Fin n, s ≤ r.val →
+      (∑ k : Fin n, |L_hat r k|) ≤ 6)
+    (hfirst_budget :
+      (6 : ℝ) * Dmax * 6 ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * maxNorm_A)
+    (htrail_budget :
+      (6 : ℝ) * Dmax * 6 ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * maxNorm_A +
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * maxNorm_A) :
+    ∀ i j : Fin n,
+      ∑ k₁ : Fin n, ∑ k₂ : Fin n,
+        |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂| ≤
+      36 * ↑n * ρ_n * maxNorm_A :=
+  higham11_4_bunch_kaufman_stability_of_first_stage_recursive_higham_const_split_six_row_sum_exact_budgets
+    n s hn hs_pos hs_le A L_hat D_hat Dmax ρ_n maxNorm_A hρ hmA hA_norm
+    (higham11_4_D_bound_of_first_stage_recursive_split
+      n s D_hat Dmax D_first D_rec hD_first_le hD_rec_le hDfirst hDtrail)
+    hLfirst hLtrail hfirst_budget htrail_budget
+
+/-- **Theorem 11.4 exact-budget split regional `D̂` solve bridge**. -/
+theorem
+    higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_split_regional_D_exact_budgets
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (Dmax D_first D_rec p u ρ_n Amax : ℝ)
+    (hpu : 0 ≤ p * u) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD_first_le : D_first ≤ Dmax)
+    (hD_rec_le : D_rec ≤ Dmax)
+    (hDfirst : ∀ k₁ k₂ : Fin n, k₁.val < s ∨ k₂.val < s →
+      |D_hat k₁ k₂| ≤ D_first)
+    (hDtrail : ∀ k₁ k₂ : Fin n, s ≤ k₁.val → s ≤ k₂.val →
+      |D_hat k₁ k₂| ≤ D_rec)
+    (hLfirst : ∀ r : Fin n, r.val < s →
+      (∑ k : Fin n, |L_hat r k|) ≤ 6)
+    (hLtrail : ∀ r : Fin n, s ≤ r.val →
+      (∑ k : Fin n, |L_hat r k|) ≤ 6)
+    (hfirst_budget :
+      (6 : ℝ) * Dmax * 6 ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (htrail_budget :
+      (6 : ℝ) * Dmax * 6 ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax +
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * higham11_4_bunchKaufmanProductMax n hn L_hat D_hat) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_split_six_row_sum_exact_budgets
+    n s hn hs_pos hs_le A L_hat D_hat b x_hat Dmax p u ρ_n Amax hpu hρ hAmax
+    (higham11_4_D_bound_of_first_stage_recursive_split
+      n s D_hat Dmax D_first D_rec hD_first_le hD_rec_le hDfirst hDtrail)
+    hLfirst hLtrail hfirst_budget htrail_budget hsolve
+
+/-- **Theorem 11.4 exact-budget split regional `D̂` solve bridge,
+max-entry norm form**. -/
+theorem
+    higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_split_regional_D_exact_budgets_maxEntryNorm
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (A L_hat D_hat : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (Dmax D_first D_rec p u ρ_n Amax : ℝ)
+    (hpu : 0 ≤ p * u) (hρ : 0 ≤ ρ_n) (hAmax : 0 ≤ Amax)
+    (hD_first_le : D_first ≤ Dmax)
+    (hD_rec_le : D_rec ≤ Dmax)
+    (hDfirst : ∀ k₁ k₂ : Fin n, k₁.val < s ∨ k₂.val < s →
+      |D_hat k₁ k₂| ≤ D_first)
+    (hDtrail : ∀ k₁ k₂ : Fin n, s ≤ k₁.val → s ≤ k₂.val →
+      |D_hat k₁ k₂| ≤ D_rec)
+    (hLfirst : ∀ r : Fin n, r.val < s →
+      (∑ k : Fin n, |L_hat r k|) ≤ 6)
+    (hLtrail : ∀ r : Fin n, s ≤ r.val →
+      (∑ k : Fin n, |L_hat r k|) ≤ 6)
+    (hfirst_budget :
+      (6 : ℝ) * Dmax * 6 ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax)
+    (htrail_budget :
+      (6 : ℝ) * Dmax * 6 ≤
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ρ_n * Amax +
+        ((3 + higham11_1_bunchParlettAlpha ^ 2) *
+            (3 + higham11_1_bunchParlettAlpha) /
+            (1 - higham11_1_bunchParlettAlpha ^ 2) ^ 2) *
+          ((n - s : ℕ) : ℝ) * ρ_n * Amax)
+    (hsolve : ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤
+        p * u * maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat)) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i)) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA i j| ≤ (p * 36 * (n : ℝ)) * ρ_n * u * Amax) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham11_4_bunch_kaufman_solve_backward_error_of_first_stage_recursive_higham_const_split_six_row_sum_exact_budgets_maxEntryNorm
+    n s hn hs_pos hs_le A L_hat D_hat b x_hat Dmax p u ρ_n Amax hpu hρ hAmax
+    (higham11_4_D_bound_of_first_stage_recursive_split
+      n s D_hat Dmax D_first D_rec hD_first_le hD_rec_le hDfirst hDtrail)
+    hLfirst hLtrail hfirst_budget htrail_budget hsolve
+
 /-- **Theorem 11.4 exact-budget split regional `|L̂|` entry product bridge**.
 Regional entry caps whose `n`-scaled values are at most six supply the
 source-six row-sum premises for the exact Higham coefficient route. -/
