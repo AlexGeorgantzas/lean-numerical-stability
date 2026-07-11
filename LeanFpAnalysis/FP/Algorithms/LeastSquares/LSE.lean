@@ -72531,6 +72531,89 @@ theorem theorem20_8KKTSolutionSelfCoeff_lt_one_of_eps_mul_linearCoeff_lt_one
   (theorem20_8KKTSolutionSelfCoeff_le_linear_of_eps_le_one
     hB hnull heps_nonneg heps_le_one).trans_lt hsmall
 
+/-- The linearized solution-row self coefficient is nonnegative. -/
+theorem theorem20_8KKTSolutionSelfLinearCoeff_nonneg
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    0 ≤ theorem20_8KKTSolutionSelfLinearCoeff hB hnull := by
+  have hdata : 0 ≤ LSEKKTInverseSolutionDataCoeff hB hnull :=
+    LSEKKTInverseSolutionDataCoeff_nonneg hB hnull
+  have hstat : 0 ≤ LSEKKTInverseSolutionStatCoeff hB hnull :=
+    LSEKKTInverseSolutionStatCoeff_nonneg hB hnull
+  have hconstr : 0 ≤ LSEKKTInverseSolutionConstrCoeff hB hnull :=
+    LSEKKTInverseSolutionConstrCoeff_nonneg hB hnull
+  have hA : 0 ≤ frobNormRect A := frobNormRect_nonneg A
+  have hBnorm : 0 ≤ frobNormRect B := frobNormRect_nonneg B
+  have hdataTerm :
+      0 ≤ LSEKKTInverseSolutionDataCoeff hB hnull * frobNormRect A :=
+    mul_nonneg hdata hA
+  have hstatTerm :
+      0 ≤
+        2 * LSEKKTInverseSolutionStatCoeff hB hnull *
+          frobNormRect A * frobNormRect A :=
+    mul_nonneg
+      (mul_nonneg (mul_nonneg (by norm_num) hstat) hA) hA
+  have hconstrTerm :
+      0 ≤ LSEKKTInverseSolutionConstrCoeff hB hnull * frobNormRect B :=
+    mul_nonneg hconstr hBnorm
+  dsimp [theorem20_8KKTSolutionSelfLinearCoeff]
+  exact add_nonneg (add_nonneg hdataTerm hstatTerm) hconstrTerm
+
+/-- Single source-facing linearized KKT smallness coefficient for the current
+    Theorem 20.8 source-residual-ratio route.
+
+    The coefficient dominates the three scalar margins used by
+    `theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_margins`:
+    the multiplier half-gain, the solution-row linear gain, and the coupled
+    linear margin. -/
+noncomputable def theorem20_8KKTLinearizedGainSmallnessCoeff
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
+  1 +
+    2 * LSEKKTInverseMultiplierStatCoeff hB hnull * frobNormRect B +
+    2 * theorem20_8KKTSolutionSelfLinearCoeff hB hnull +
+    4 * LSEKKTInverseSolutionStatCoeff hB hnull * frobNormRect B *
+      theorem20_8KKTMultiplierSelfLinearCoeff hB hnull
+
+/-- The single linearized KKT smallness coefficient is at least one. -/
+theorem theorem20_8KKTLinearizedGainSmallnessCoeff_ge_one
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
+    1 ≤ theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull := by
+  have hmult : 0 ≤ LSEKKTInverseMultiplierStatCoeff hB hnull :=
+    LSEKKTInverseMultiplierStatCoeff_nonneg hB hnull
+  have hsol : 0 ≤ theorem20_8KKTSolutionSelfLinearCoeff hB hnull :=
+    theorem20_8KKTSolutionSelfLinearCoeff_nonneg hB hnull
+  have hstat : 0 ≤ LSEKKTInverseSolutionStatCoeff hB hnull :=
+    LSEKKTInverseSolutionStatCoeff_nonneg hB hnull
+  have hmulSelf : 0 ≤ theorem20_8KKTMultiplierSelfLinearCoeff hB hnull :=
+    theorem20_8KKTMultiplierSelfLinearCoeff_nonneg hB hnull
+  have hBnorm : 0 ≤ frobNormRect B := frobNormRect_nonneg B
+  have hmultTerm :
+      0 ≤ 2 * LSEKKTInverseMultiplierStatCoeff hB hnull * frobNormRect B :=
+    mul_nonneg (mul_nonneg (by norm_num) hmult) hBnorm
+  have hsolTerm :
+      0 ≤ 2 * theorem20_8KKTSolutionSelfLinearCoeff hB hnull :=
+    mul_nonneg (by norm_num) hsol
+  have hcoupledTerm :
+      0 ≤
+        4 * LSEKKTInverseSolutionStatCoeff hB hnull * frobNormRect B *
+          theorem20_8KKTMultiplierSelfLinearCoeff hB hnull :=
+    mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) hstat) hBnorm)
+      hmulSelf
+  have htail :
+      0 ≤
+        2 * LSEKKTInverseMultiplierStatCoeff hB hnull * frobNormRect B +
+          2 * theorem20_8KKTSolutionSelfLinearCoeff hB hnull +
+            4 * LSEKKTInverseSolutionStatCoeff hB hnull * frobNormRect B *
+              theorem20_8KKTMultiplierSelfLinearCoeff hB hnull :=
+    add_nonneg (add_nonneg hmultTerm hsolTerm) hcoupledTerm
+  dsimp [theorem20_8KKTLinearizedGainSmallnessCoeff]
+  linarith
+
 /-- Bundled scalar small-gain hypotheses for the current source-residual-ratio
     KKT route for Higham Theorem 20.8. -/
 def theorem20_8KKTSourceResidualRatioGainConditions {m n p : ℕ}
@@ -72635,6 +72718,118 @@ theorem theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_margins
   exact
     theorem20_8KKTSourceResidualRatioGainConditions_of_coupledNumerator_lt_solutionMargin
       hB hnull hmultGain hsolGain hcoupledMargin
+
+/-- A single smallness comparison against
+    `theorem20_8KKTLinearizedGainSmallnessCoeff` discharges the bundled
+    source-residual-ratio KKT gain predicate. -/
+theorem theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessCoeff
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {eps : ℝ} (heps_nonneg : 0 ≤ eps)
+    (hsmall :
+      eps * theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull < 1) :
+    theorem20_8KKTSourceResidualRatioGainConditions hB hnull eps := by
+  let C : ℝ := theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull
+  let mCoeff : ℝ :=
+    LSEKKTInverseMultiplierStatCoeff hB hnull * frobNormRect B
+  let sCoeff : ℝ := theorem20_8KKTSolutionSelfLinearCoeff hB hnull
+  let cCoeff : ℝ :=
+    LSEKKTInverseSolutionStatCoeff hB hnull * frobNormRect B *
+      theorem20_8KKTMultiplierSelfLinearCoeff hB hnull
+  have hmultCoeff_nonneg : 0 ≤ mCoeff := by
+    dsimp [mCoeff]
+    exact mul_nonneg (LSEKKTInverseMultiplierStatCoeff_nonneg hB hnull)
+      (frobNormRect_nonneg B)
+  have hsolCoeff_nonneg : 0 ≤ sCoeff := by
+    dsimp [sCoeff]
+    exact theorem20_8KKTSolutionSelfLinearCoeff_nonneg hB hnull
+  have hcCoeff_nonneg : 0 ≤ cCoeff := by
+    dsimp [cCoeff]
+    exact mul_nonneg
+      (mul_nonneg (LSEKKTInverseSolutionStatCoeff_nonneg hB hnull)
+        (frobNormRect_nonneg B))
+      (theorem20_8KKTMultiplierSelfLinearCoeff_nonneg hB hnull)
+  have hC_ge_one : 1 ≤ C := by
+    dsimp [C]
+    exact theorem20_8KKTLinearizedGainSmallnessCoeff_ge_one hB hnull
+  have heps_le_one : eps ≤ 1 := by
+    have heps_lt_one : eps < 1 := by
+      calc
+        eps = eps * 1 := by ring
+        _ ≤ eps * C := mul_le_mul_of_nonneg_left hC_ge_one heps_nonneg
+        _ < 1 := by simpa [C] using hsmall
+    exact heps_lt_one.le
+  have hC_m : 2 * mCoeff ≤ C := by
+    dsimp [C, mCoeff, sCoeff, cCoeff,
+      theorem20_8KKTLinearizedGainSmallnessCoeff]
+    nlinarith [hsolCoeff_nonneg, hcCoeff_nonneg]
+  have hC_s : 2 * sCoeff ≤ C := by
+    dsimp [C, mCoeff, sCoeff, cCoeff,
+      theorem20_8KKTLinearizedGainSmallnessCoeff]
+    nlinarith [hmultCoeff_nonneg, hcCoeff_nonneg]
+  have hC_c : 4 * cCoeff ≤ C := by
+    dsimp [C, mCoeff, sCoeff, cCoeff,
+      theorem20_8KKTLinearizedGainSmallnessCoeff]
+    nlinarith [hmultCoeff_nonneg, hsolCoeff_nonneg]
+  have hmult_small : eps * (2 * mCoeff) < 1 :=
+    (mul_le_mul_of_nonneg_left hC_m heps_nonneg).trans_lt
+      (by simpa [C] using hsmall)
+  have hsol_small_half : eps * sCoeff < (1 : ℝ) / 2 := by
+    have htwo : 2 * (eps * sCoeff) < 1 := by
+      have hs : eps * (2 * sCoeff) < 1 :=
+        (mul_le_mul_of_nonneg_left hC_s heps_nonneg).trans_lt
+          (by simpa [C] using hsmall)
+      nlinarith
+    nlinarith
+  have hcoupled_coeff_small : 2 * eps * cCoeff < (1 : ℝ) / 2 := by
+    have hc : eps * (4 * cCoeff) < 1 :=
+      (mul_le_mul_of_nonneg_left hC_c heps_nonneg).trans_lt
+        (by simpa [C] using hsmall)
+    nlinarith
+  have hmultGainHalf :
+      LSEKKTInverseMultiplierStatCoeff hB hnull *
+          (eps * frobNormRect B) ≤
+        (1 : ℝ) / 2 := by
+    have htwo : 2 *
+        (LSEKKTInverseMultiplierStatCoeff hB hnull *
+          (eps * frobNormRect B)) < 1 := by
+      have hm : eps * (2 * mCoeff) =
+          2 * (LSEKKTInverseMultiplierStatCoeff hB hnull *
+            (eps * frobNormRect B)) := by
+        dsimp [mCoeff]
+        ring
+      rwa [hm] at hmult_small
+    nlinarith
+  have hsolSmall :
+      eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull < 1 := by
+    dsimp [sCoeff] at hsol_small_half
+    nlinarith
+  have hcoupledLinearMargin :
+      LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+          (2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull) <
+        1 - eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull := by
+    have heps_sq_le_eps : eps ^ 2 ≤ eps := by
+      nlinarith [heps_nonneg, heps_le_one]
+    have hterm_le :
+        LSEKKTInverseSolutionStatCoeff hB hnull * (eps * frobNormRect B) *
+            (2 * eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull) ≤
+          2 * eps * cCoeff := by
+      have hscale_nonneg : 0 ≤ 2 * cCoeff := by nlinarith [hcCoeff_nonneg]
+      have hsq_scaled : eps ^ 2 * (2 * cCoeff) ≤ eps * (2 * cCoeff) :=
+        mul_le_mul_of_nonneg_right heps_sq_le_eps hscale_nonneg
+      dsimp [cCoeff]
+      nlinarith
+    have hmargin_half :
+        (1 : ℝ) / 2 <
+          1 - eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull := by
+      dsimp [sCoeff] at hsol_small_half
+      nlinarith
+    exact hterm_le.trans_lt (hcoupled_coeff_small.trans hmargin_half)
+  exact
+    theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_margins
+      hB hnull heps_nonneg heps_le_one hmultGainHalf hsolSmall
+      hcoupledLinearMargin
 
 /-- The scalar right-hand side of the current source-residual-ratio KKT bound
     for Higham Theorem 20.8.  This keeps the public theorem below readable
@@ -72799,6 +72994,42 @@ theorem
     theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_margins
       hB hnull heps_nonneg heps_le_one hmultGainHalf hsolSmall
       hcoupledLinearMargin
+  exact
+    hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_gainConditions
+      hy hB hBpert hnull hxnorm hbudget heps_nonneg hgain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    named-bound KKT estimate with the bundled scalar gain predicate discharged
+    by one linearized smallness comparison. -/
+theorem
+    IsLSEMinimizer.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_linearized_smallnessCoeff
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ} {b Deltab : Fin m → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {d Deltad : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i)
+      (fun i j => B i j + DeltaB i j)
+      (fun i => d i + Deltad i) y)
+    (hB : LSEFullRowRank B)
+    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hnull : LSENullIntersectionTrivial A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hbudget :
+      theorem20_8RelativePerturbationBudget A DeltaA b Deltab B DeltaB d Deltad
+        eps)
+    (heps_nonneg : 0 ≤ eps)
+    (hsmall :
+      eps * theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull < 1) :
+    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+      theorem20_8KKTSourceResidualRatioCoupledBound hB hnull b x eps := by
+  have hgain :
+      theorem20_8KKTSourceResidualRatioGainConditions hB hnull eps :=
+    theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessCoeff
+      hB hnull heps_nonneg hsmall
   exact
     hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_gainConditions
       hy hB hBpert hnull hxnorm hbudget heps_nonneg hgain
@@ -75279,6 +75510,61 @@ theorem
       hB ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
         hStack) heps_nonneg heps_le_one hmultGainHalf hsolSmall
       hcoupledLinearMargin
+  exact
+    hx.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
+      hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hStackSmall hgain
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
+    GQR-shaped source-rank existence-plus-bound KKT route with the bundled
+    gain predicate discharged by one linearized smallness comparison. -/
+theorem
+    IsLSEMinimizer.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_linearized_smallnessCoeff
+    {r p q : ℕ}
+    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
+    {b Deltab : Fin (r + q) → ℝ}
+    {B DeltaB : Fin p → Fin (p + q) → ℝ}
+    {d Deltad : Fin p → ℝ} {x : Fin (p + q) → ℝ}
+    (hx : IsLSEMinimizer A b B d x)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hxnorm : 0 < vecNorm2 x)
+    {eps : ℝ}
+    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
+    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
+    (hmax :
+      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
+        ≤ eps)
+    (hBsmall :
+      eps * frobNormRect B < hB.transposeVecNorm2LowerMargin)
+    (hStackSmall :
+      eps * frobNormRect A + eps * frobNormRect B <
+        hStack.vecNorm2LowerMargin)
+    (hsmall :
+      eps *
+          theorem20_8KKTLinearizedGainSmallnessCoeff hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) <
+        1) :
+    ∃! y : Fin (p + q) → ℝ,
+      IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          (fun i => b i + Deltab i)
+          (fun i j => B i j + DeltaB i j)
+          (fun i => d i + Deltad i) y ∧
+        vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
+          theorem20_8KKTSourceResidualRatioCoupledBound hB
+            ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+              hStack) b x eps := by
+  have heps_nonneg : 0 ≤ eps :=
+    (theorem20_8MaxRelativePerturbation_nonneg A DeltaA b Deltab B DeltaB d
+      Deltad hApos).trans hmax
+  have hgain :
+      theorem20_8KKTSourceResidualRatioGainConditions hB
+        ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+          hStack) eps :=
+    theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessCoeff
+      hB ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
+        hStack) heps_nonneg hsmall
   exact
     hx.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
       hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hStackSmall hgain
