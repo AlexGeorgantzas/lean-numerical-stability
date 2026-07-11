@@ -5580,6 +5580,37 @@ theorem SepLowerBound_iff_pos_le_sylvesterSepInf_of_pos_dim (n : Nat)
     SepLowerBound_iff_pos_le_sylvesterSepInf_of_nonempty n A B sigma
       (sylvesterSepRatios_nonempty_of_pos_dim n A B hn)
 
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    source-numbered alias for transferring a `SepLowerBound` certificate to
+    the exact `sep(A,B)` infimum model when the feasible ratio set is
+    nonempty. -/
+alias H16_eq16_26_SepLowerBound_le_sylvesterSepInf_of_nonempty :=
+  SepLowerBound_le_sylvesterSepInf_of_nonempty
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    source-numbered alias for transferring a `SepLowerBound` certificate to
+    the exact `sep(A,B)` infimum model in positive dimension. -/
+alias H16_eq16_26_SepLowerBound_le_sylvesterSepInf_of_pos_dim :=
+  SepLowerBound_le_sylvesterSepInf_of_pos_dim
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    source-numbered alias turning a positive lower bound on the exact
+    `sep(A,B)` infimum into the theorem-facing `SepLowerBound` certificate. -/
+alias H16_eq16_26_SepLowerBound_of_pos_le_sylvesterSepInf :=
+  SepLowerBound_of_pos_le_sylvesterSepInf
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    source-numbered alias for the nonempty-set equivalence between
+    `SepLowerBound` and a positive lower bound on the exact infimum model. -/
+alias H16_eq16_26_SepLowerBound_iff_pos_le_sylvesterSepInf_of_nonempty :=
+  SepLowerBound_iff_pos_le_sylvesterSepInf_of_nonempty
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.26):
+    source-numbered alias for the positive-dimensional equivalence between
+    `SepLowerBound` and a positive lower bound on the exact infimum model. -/
+alias H16_eq16_26_SepLowerBound_iff_pos_le_sylvesterSepInf_of_pos_dim :=
+  SepLowerBound_iff_pos_le_sylvesterSepInf_of_pos_dim
+
 private theorem sylvesterVecCoeff_det_ne_zero_of_sepLowerBound (n : Nat)
     (A B : Fin n -> Fin n -> Real) (sigma : Real)
     (hSep : SepLowerBound n A B sigma) :
