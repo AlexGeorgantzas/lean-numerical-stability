@@ -20627,6 +20627,248 @@ theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRo
       k fp step A c_bound c_rec u tail_fl tail_exact ΔA hwit)
     hlocal hafter
 
+/-- Non-adjacent version of the leading-support full-row earlier-lift zero
+bridge.  The current-local-block zero condition stays explicit; leading-block
+support and successor-prefix equality discharge the adjacent predecessor in
+the prefix-zero region. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_leadingBlockSupport_currentLocalBlock_and_after_nonadjacent_earlier_branch_end
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hEsupp : ∀ s : Fin k,
+      higham11_7_TridiagonalLeadingBlockSupport
+        (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step s) (step s))
+        (higham11_7_tridiagonalBranchSupportOffset (step s)) (ΔA s))
+    (hlocal :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock
+        k step ΔA)
+    (hafter : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+        ∀ s : Fin k, s.val + 1 < t.val →
+          higham11_7_tridiagonalPathPrefixSpan k step s +
+              higham11_7_tridiagonalBranchSupportOffset (step s) ≤ j.val →
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s)
+            (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+            j = 0) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+        k step ΔA :=
+  higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_currentLocalBlock_and_zeroBeforePrefix
+    k step ΔA hlocal
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_leadingBlockSupport_and_after_nonadjacent_earlier_branch_end
+      k step ΔA hEsupp hafter)
+
+/-- Supported-witness version of the non-adjacent full-row earlier-lift zero
+bridge. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_supportedWitnesses_currentLocalBlock_and_after_nonadjacent_earlier_branch_end
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathSupportedWitnesses k fp
+      (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+      (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+      c_bound c_rec u tail_fl tail_exact ΔA)
+    (hlocal :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock
+        k step ΔA)
+    (hafter : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+        ∀ s : Fin k, s.val + 1 < t.val →
+          higham11_7_tridiagonalPathPrefixSpan k step s +
+              higham11_7_tridiagonalBranchSupportOffset (step s) ≤ j.val →
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s)
+            (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+            j = 0) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+        k step ΔA :=
+  higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_leadingBlockSupport_currentLocalBlock_and_after_nonadjacent_earlier_branch_end
+    k step ΔA
+    (higham11_7_tridiagonalConcretePathSupportedWitnesses_leadingBlockSupport_family
+      k fp step A c_bound c_rec u tail_fl tail_exact ΔA hwit)
+    hlocal hafter
+
+/-- Residual-witness version of the non-adjacent full-row earlier-lift zero
+bridge. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_residualWitnesses_currentLocalBlock_and_after_nonadjacent_earlier_branch_end
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (ΔA : ∀ t : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step t) (step t)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)) → ℝ)
+    (hwit : higham11_7_TridiagonalBranchPathResidualWitnesses k fp
+      (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+      (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+      c_bound c_rec u tail_fl tail_exact ΔA)
+    (hlocal :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock
+        k step ΔA)
+    (hafter : ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+      ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+        j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+        ∀ s : Fin k, s.val + 1 < t.val →
+          higham11_7_tridiagonalPathPrefixSpan k step s +
+              higham11_7_tridiagonalBranchSupportOffset (step s) ≤ j.val →
+          higham11_7_tridiagonalLiftLocalBlockPerturbation
+            (higham11_7_tridiagonalPathPivotSpan k step + 1)
+            (higham11_7_tridiagonalPathPrefixSpan k step s)
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            (ΔA s)
+            (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+            j = 0) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+        k step ΔA :=
+  higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_leadingBlockSupport_currentLocalBlock_and_after_nonadjacent_earlier_branch_end
+    k step ΔA
+    (higham11_7_tridiagonalConcretePathResidualWitnesses_leadingBlockSupport_family
+      k fp step A c_bound c_rec u tail_fl tail_exact ΔA hwit)
+    hlocal hafter
+
+/-- Supported-witness family form of the non-adjacent full-row earlier-lift
+zero bridge. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_family_of_supportedWitnesses_currentLocalBlock_and_after_nonadjacent_earlier_branch_end
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (hlocal :
+      ∀ ΔA : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp
+          (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+          c_bound c_rec u tail_fl tail_exact ΔA →
+        higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock
+          k step ΔA)
+    (hafter :
+      ∀ ΔA : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathSupportedWitnesses k fp
+          (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+          c_bound c_rec u tail_fl tail_exact ΔA →
+        ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+          ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+            j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+            ∀ s : Fin k, s.val + 1 < t.val →
+              higham11_7_tridiagonalPathPrefixSpan k step s +
+                  higham11_7_tridiagonalBranchSupportOffset (step s) ≤ j.val →
+              higham11_7_tridiagonalLiftLocalBlockPerturbation
+                (higham11_7_tridiagonalPathPivotSpan k step + 1)
+                (higham11_7_tridiagonalPathPrefixSpan k step s)
+                (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim k step s) (step s))
+                (ΔA s)
+                (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+                j = 0) :
+    ∀ ΔA : ∀ t : Fin k,
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step t) (step t)) → ℝ,
+      higham11_7_TridiagonalBranchPathSupportedWitnesses k fp
+        (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+        (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+        c_bound c_rec u tail_fl tail_exact ΔA →
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+        k step ΔA := by
+  intro ΔA hwit
+  exact
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_supportedWitnesses_currentLocalBlock_and_after_nonadjacent_earlier_branch_end
+      k fp step A c_bound c_rec u tail_fl tail_exact ΔA hwit
+      (hlocal ΔA hwit) (hafter ΔA hwit)
+
+/-- Residual-witness family form of the non-adjacent full-row earlier-lift
+zero bridge. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_family_of_residualWitnesses_currentLocalBlock_and_after_nonadjacent_earlier_branch_end
+    (k : ℕ) (fp : FPModel) (step : Fin k → PivotSize)
+    (A : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) →
+      Fin (higham11_7_tridiagonalPathPivotSpan k step + 1) → ℝ)
+    (c_bound c_rec u tail_fl tail_exact : Fin k → ℝ)
+    (hlocal :
+      ∀ ΔA : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathResidualWitnesses k fp
+          (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+          c_bound c_rec u tail_fl tail_exact ΔA →
+        higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock
+          k step ΔA)
+    (hafter :
+      ∀ ΔA : ∀ t : Fin k,
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step t) (step t)) →
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step t) (step t)) → ℝ,
+        higham11_7_TridiagonalBranchPathResidualWitnesses k fp
+          (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+          (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+          c_bound c_rec u tail_fl tail_exact ΔA →
+        ∀ t : Fin k, ∀ hstep : step t = PivotSize.two,
+          ∀ j : Fin (higham11_7_tridiagonalPathPivotSpan k step + 1),
+            j.val < higham11_7_tridiagonalPathPrefixSpan k step t →
+            ∀ s : Fin k, s.val + 1 < t.val →
+              higham11_7_tridiagonalPathPrefixSpan k step s +
+                  higham11_7_tridiagonalBranchSupportOffset (step s) ≤ j.val →
+              higham11_7_tridiagonalLiftLocalBlockPerturbation
+                (higham11_7_tridiagonalPathPivotSpan k step + 1)
+                (higham11_7_tridiagonalPathPrefixSpan k step s)
+                (higham11_7_tridiagonalBranchAmbientDim
+                  (higham11_7_tridiagonalPathTailDim k step s) (step s))
+                (ΔA s)
+                (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)
+                j = 0) :
+    ∀ ΔA : ∀ t : Fin k,
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step t) (step t)) →
+          Fin (higham11_7_tridiagonalBranchAmbientDim
+            (higham11_7_tridiagonalPathTailDim k step t) (step t)) → ℝ,
+      higham11_7_TridiagonalBranchPathResidualWitnesses k fp
+        (fun t => higham11_7_tridiagonalPathTailDim k step t) step
+        (fun t => higham11_7_tridiagonalPathBranchMatrix k step A t)
+        c_bound c_rec u tail_fl tail_exact ΔA →
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+        k step ΔA := by
+  intro ΔA hwit
+  exact
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_residualWitnesses_currentLocalBlock_and_after_nonadjacent_earlier_branch_end
+      k fp step A c_bound c_rec u tail_fl tail_exact ΔA hwit
+      (hlocal ΔA hwit) (hafter ΔA hwit)
+
 /-- Supported-witness family form of the support-reduced full-row earlier-lift
 zero bridge.  This is the source-facing shape expected by endpoints that range
 over all path-local perturbation witnesses. -/
