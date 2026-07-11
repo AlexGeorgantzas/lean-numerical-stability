@@ -15914,6 +15914,13 @@ small enough to serve as a smoke check for representative public declarations.
 -- (16.9) END-TO-END: hres discharged from the proved (16.7)/(16.8) rounded solve
 #check Wave14.bartels_stewart_end_to_end_residual
 #check Wave14.H16_eq16_9_end_to_end_bartels_stewart_residual
+-- Wave-15: rounded QUASI-triangular (2×2-block real-Schur) block back-substitution engine (16.6)-(16.8)
+#check Wave15.fl_solve2x2_backward_error
+#check Wave15.flQuasiBlockBackSub_backward_error
+#check Wave15.flQuasiBlockBackSub_backward_error_componentwise
+#check Wave15.flQuasiBlockBackSub_componentwise_residual
+#check Wave15.sylvesterQuasiPairing_isQuasiBlockPairing
+#check Wave15.flSylvesterQuasiSchurBlockBackSubSolve
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved
