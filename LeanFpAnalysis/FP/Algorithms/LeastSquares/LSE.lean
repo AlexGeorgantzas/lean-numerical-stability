@@ -85009,6 +85009,28 @@ def Theorem20_10HouseholderComponentPartBCertificateRoute
     vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
     Nonempty (Theorem20_10PartBPerturbationCertificate A B b d xhat gammaA gammaB)
 
+/-- Extract the reusable Part B perturbation certificate from the named
+    component certificate route, discarding the concrete Householder component
+    identities and norm bounds. -/
+theorem Theorem20_10HouseholderComponentPartBCertificateRoute.partB_certificate
+    {r p q : ℕ} {fp : FPModel}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {Q : Fin (p + q) → Fin (p + q) → ℝ}
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    {xhat : Fin (p + q) → ℝ}
+    (hroute :
+      Theorem20_10HouseholderComponentPartBCertificateRoute fp A B Q b d xhat) :
+    Nonempty
+      (Theorem20_10PartBPerturbationCertificate A B b d xhat
+        (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+        (theorem20_10_householder_gammaB fp r p q)) := by
+  dsimp [Theorem20_10HouseholderComponentPartBCertificateRoute] at hroute
+  rcases hroute with
+    ⟨_DeltaA, _DeltaB, _Deltab, _Deltad, _hAQ, _hB, _hrhs, _hd,
+      _hDeltaA, _hDeltaB, _hDeltab, _hDeltad, hcert⟩
+  exact hcert
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     explicit-margin wrapper for the named component certificate route. -/
 theorem theorem20_10_householder_component_partB_certificate_route_of_source_ranks_margins_conservative_gamma
@@ -86288,6 +86310,32 @@ theorem theorem20_10_constructed_householder_returned_xhat_certificate_spec
         (theorem20_10_constructed_householder_returned_xhat
           fp A B b d hp hq hB hStack hu)
         hp hq hB hStack hu
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    direct reusable Part B perturbation certificate for the named constructed
+    rounded Householder returned vector. -/
+theorem theorem20_10_constructed_householder_returned_xhat_partB_certificate_of_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hu :
+      fp.u <
+        theorem20_10_householder_componentUnitRoundoffSmallnessThreshold hB hStack) :
+    Nonempty
+      (Theorem20_10PartBPerturbationCertificate A B b d
+        (theorem20_10_constructed_householder_returned_xhat
+          fp A B b d hp hq hB hStack hu)
+        (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+        (theorem20_10_householder_gammaB fp r p q)) := by
+  exact
+    Theorem20_10HouseholderComponentPartBCertificateRoute.partB_certificate
+      (Q := fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+      (theorem20_10_constructed_householder_returned_xhat_certificate_spec
+        fp A B b d hp hq hB hStack hu).2
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     computed-`Bᵀ` concrete component Part B route for the named constructed
