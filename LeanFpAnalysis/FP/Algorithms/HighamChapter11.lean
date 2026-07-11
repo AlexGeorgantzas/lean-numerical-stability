@@ -29444,6 +29444,85 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
           tail_fl tail_exact Δloc hwit (hearlierPrefixAfter Δloc hwit))
       hrow_second_base
 
+/-- Symmetric-tridiagonal source form of the branch-matrix support-reduced
+coefficient endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_isSymTridiagonal_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixAfter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hearlierLocal hearlierPrefixAfter hrow_second_base
+
+/-- **Theorem 11.7 full-base-row support-reduced second-pivot endpoint,
+coefficient-sum form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixAfter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA hearlierLocal hearlierPrefixAfter
+      (higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_full_base_rows_of_isTridiagonal
+        (k + 1) step A b x_hat hA hrow_second_base)
+
+/-- Symmetric-tridiagonal source form of the full-base-row support-reduced
+coefficient endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_isSymTridiagonal_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixAfter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hearlierLocal hearlierPrefixAfter hrow_second_base
+
+/-- **Theorem 11.7 global base-solve support-reduced second-pivot endpoint,
+coefficient-sum form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixAfter hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA hearlierLocal hearlierPrefixAfter
+      (higham11_7_ConcretePathSecondPivotFullBaseRows_of_global_base_solve
+        (k + 1) step A b x_hat hsolve)
+
+/-- Symmetric-tridiagonal source form of the global base-solve
+support-reduced coefficient endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_isSymTridiagonal_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixAfter hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hearlierLocal hearlierPrefixAfter hsolve
+
 /-- Symmetric-tridiagonal source form of the branch-matrix pointwise-prefix
 coefficient endpoint. -/
 def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_isSymTridiagonal_and_each_earlier_zero :=
@@ -31441,6 +31520,85 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
           (k + 1) fp step A c_bound c_rec (fun _ : Fin (k + 1) => u)
           tail_fl tail_exact Δloc hwit (hearlierPrefixAfter Δloc hwit))
       hrow_second_base
+
+/-- Symmetric-tridiagonal source form of the branch-matrix support-reduced
+uniform coefficient endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_isSymTridiagonal_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixAfter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hearlierLocal hearlierPrefixAfter hrow_second_base
+
+/-- **Theorem 11.7 full-base-row support-reduced second-pivot endpoint,
+uniform coefficient form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixAfter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA hearlierLocal hearlierPrefixAfter
+      (higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_full_base_rows_of_isTridiagonal
+        (k + 1) step A b x_hat hA hrow_second_base)
+
+/-- Symmetric-tridiagonal source form of the full-base-row support-reduced
+uniform coefficient endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_isSymTridiagonal_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixAfter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hearlierLocal hearlierPrefixAfter hrow_second_base
+
+/-- **Theorem 11.7 global base-solve support-reduced second-pivot endpoint,
+uniform coefficient form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixAfter hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA hearlierLocal hearlierPrefixAfter
+      (higham11_7_ConcretePathSecondPivotFullBaseRows_of_global_base_solve
+        (k + 1) step A b x_hat hsolve)
+
+/-- Symmetric-tridiagonal source form of the global base-solve support-reduced
+uniform coefficient endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_isSymTridiagonal_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixAfter hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hearlierLocal hearlierPrefixAfter hsolve
 
 /-- Symmetric-tridiagonal source form of the branch-matrix pointwise-prefix
 uniform coefficient endpoint. -/
@@ -33456,6 +33614,90 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
           (k + 1) fp step A c_bound c_rec u_loc tail_fl tail_exact Δloc
           hwit (hearlierPrefixAfter Δloc hwit))
       hrow_second_base
+
+/-- Symmetric-tridiagonal source form of the branch-matrix support-reduced
+scalar-budget endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_isSymTridiagonal_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixAfter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA.2 hearlierLocal hearlierPrefixAfter hrow_second_base
+
+/-- **Theorem 11.7 full-base-row support-reduced second-pivot endpoint,
+scalar-budget form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixAfter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA hearlierLocal hearlierPrefixAfter
+      (higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_full_base_rows_of_isTridiagonal
+        (k + 1) step A b x_hat hA hrow_second_base)
+
+/-- Symmetric-tridiagonal source form of the full-base-row support-reduced
+scalar-budget endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_isSymTridiagonal_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixAfter hrow_second_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA.2 hearlierLocal hearlierPrefixAfter hrow_second_base
+
+/-- **Theorem 11.7 global base-solve support-reduced second-pivot endpoint,
+scalar-budget form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixAfter hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA hearlierLocal hearlierPrefixAfter
+      (higham11_7_ConcretePathSecondPivotFullBaseRows_of_global_base_solve
+        (k + 1) step A b x_hat hsolve)
+
+/-- Symmetric-tridiagonal source form of the global base-solve support-reduced
+scalar-budget endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_isSymTridiagonal_and_after_earlier_branch_end :=
+  fun k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hearlierLocal hearlierPrefixAfter hsolve =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_after_earlier_branch_end
+      k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA.2 hearlierLocal hearlierPrefixAfter hsolve
 
 /-- Symmetric-tridiagonal source form of the branch-matrix pointwise-prefix
 scalar-budget endpoint. -/
