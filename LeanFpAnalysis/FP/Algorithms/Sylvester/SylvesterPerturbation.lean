@@ -470,4 +470,15 @@ theorem sylvester_relative_perturbation (n : ℕ)
           frobNorm X := by
         field_simp
 
+/-- Higham, 2nd ed., Chapter 16.3, equation (16.25):
+    source-numbered aliases for the base sep-certificate Sylvester
+    perturbation bound and condition-number expression. -/
+noncomputable abbrev H16_eq16_25_condSylvester := condSylvester
+
+alias H16_eq16_25_sylvester_perturbation_bound :=
+  sylvester_perturbation_bound
+
+alias H16_eq16_25_sylvester_relative_perturbation :=
+  sylvester_relative_perturbation
+
 end LeanFpAnalysis.FP
