@@ -66606,6 +66606,54 @@ def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_gamma_par
       hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
       hT_L_lower hT_U_upper hEq hmiddle_entry hL_entry_inv
 
+/-- Exact-`T_hat` aggregate-coefficient product-majorant endpoint with the
+identity permutation specialized as `σ := id`, removing the separate
+`σ i = i` caller obligation. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_of_entry_bound_scaled_unit :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κ hspec hH_eq hTnz hcoeff_valid hκunit hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq
+      hmiddle_entry hL_entry =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_of_entry_bound_scaled_unit
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU κ hspec (by intro i; rfl) hH_eq
+      hTnz hcoeff_valid hκunit hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hEq hmiddle_entry hL_entry
+
+/-- Exact-`T_hat` aggregate-coefficient product-majorant inverse-scale endpoint
+with the identity permutation specialized as `σ := id`, removing the separate
+`σ i = i` caller obligation. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_of_entry_bound_inv_one_plus :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κ hspec hH_eq hTnz hcoeff_valid hκ hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq
+      hmiddle_entry hL_entry =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_of_entry_bound_inv_one_plus
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU κ hspec (by intro i; rfl) hH_eq
+      hTnz hcoeff_valid hκ hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hEq hmiddle_entry hL_entry
+
+/-- Exact-`T_hat` aggregate-coefficient product-majorant inverse-entry endpoint
+with the identity permutation specialized as `σ := id`, removing the separate
+`σ i = i` caller obligation. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_of_inverse_entry_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hH_eq hTnz hcoeff_valid hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq
+      hmiddle_entry hL_entry_inv =>
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_of_inverse_entry_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat
+      (fun i : Fin n => i) b DeltaT_LU hspec (by intro i; rfl) hH_eq
+      hTnz hcoeff_valid hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hEq hmiddle_entry hL_entry_inv
+
 /-- Exact-`T_hat` checkerboard product-majorant inverse-entry endpoint with the
 identity permutation specialized as `σ := id`, removing the separate
 `σ i = i` caller obligation. -/
