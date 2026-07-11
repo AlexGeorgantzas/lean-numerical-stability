@@ -13041,6 +13041,12 @@ theorem isSylvesterQuasiSchurGeneratedStepFormula_of_column_family_generated_pre
   · intro p q hpq hsame
     exact hblock p q p.isLt q.isLt hpq hsame
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for turning a complete recursive column-family
+    generated-prefix certificate into the packaged generated-step formula. -/
+alias H16_eq16_4_8_isSylvesterQuasiSchurGeneratedStepFormula_of_column_family_generated_prefix :=
+  isSylvesterQuasiSchurGeneratedStepFormula_of_column_family_generated_prefix
+
 /-- A singleton recursive update extends the generated-prefix certificate by
     one frontier column, provided that the current frontier column is separated
     from its immediate predecessor in the quasi-Schur block map. -/
@@ -13456,6 +13462,12 @@ theorem isSylvesterQuasiSchurGeneratedStepFormula_of_column_family
     exact hsingle p hprev hnext i
   · intro p q hpq hsame
     exact hblock p q hpq hsame
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8):
+    source-numbered alias for packaging recursive column-family singleton and
+    adjacent-block formulas as an `RMatFn` generated-step formula. -/
+alias H16_eq16_4_8_isSylvesterQuasiSchurGeneratedStepFormula_of_column_family :=
+  isSylvesterQuasiSchurGeneratedStepFormula_of_column_family
 
 /-- Predicate-packaged version of
     `sylvester_quasiSchur_blockTraversal_solution_of_twoBlockSpectral_no_common_generated_frontier_step_oracle`. -/
