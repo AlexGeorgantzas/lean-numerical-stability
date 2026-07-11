@@ -4937,6 +4937,45 @@ theorem sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_no_c
       m n A T pmap p q hmono hcard hzero hpq_adj hsame hspectral
       hnoA
 
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): global
+    vec/Kronecker determinant nonsingularity supplies the bundled real
+    quasi-Schur block-separation predicate for an adjacent same-block `2 x 2`
+    active Bartels-Stewart block. -/
+theorem sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_global_vecCoeff_det_ne_zero
+    (m n : Nat)
+    (A : RMatFn m m) (T : RMatFn n n)
+    (pmap : Fin n -> Nat) (p q : Fin n)
+    (hmono : Monotone pmap)
+    (hcard :
+      forall c : Nat, (Finset.univ.filter (fun i : Fin n => pmap i = c)).card <= 2)
+    (hzero : forall i j : Fin n, pmap j < pmap i -> T i j = 0)
+    (hpq_adj : q.val = p.val + 1)
+    (hsame : pmap p = pmap q)
+    (hspectral : HasRealQuasiSchurTwoBlockSpectral (Matrix.of T) pmap)
+    (hdetGlobal : Not (Matrix.det (sylvesterVecCoeff m n A T) = 0)) :
+    IsSylvesterTwoColumnRealQuasiSchurBlockSeparation m n A T pmap p q := by
+  have hBT : (realMatrixToComplex (Matrix.of T)).BlockTriangular pmap := by
+    intro i j hij
+    simp [realMatrixToComplex, Matrix.of_apply, hzero i j hij]
+  have hnoGlobal :
+      NoCommonComplexRightEigenvalue
+        (realMatrixToComplex (Matrix.of A))
+        (realMatrixToComplex (Matrix.of T)) := by
+    simpa [Matrix.of_apply] using
+      no_common_complex_right_eigenvalue_of_sylvesterVecCoeff_det_ne_zero
+        m n A T hdetGlobal
+  exact
+    sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_no_common_complex_right_eigenvalue_left
+      m n A T pmap p q hmono hcard hzero hpq_adj hsame hspectral
+      (noCommonComplexRightEigenvalue_of_sameBlock_twoBlock_quasiSchur
+        m n A T pmap p q hcard hBT hpq_adj hsame hnoGlobal)
+
+/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8): source-numbered
+    alias for producing the bundled real-quasi-Schur block-separation
+    predicate from global vec/Kronecker determinant nonsingularity. -/
+alias H16_eq16_4_8_sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_global_vecCoeff_det_ne_zero :=
+  sylvesterTwoColumnRealQuasiSchurBlockSeparation_of_twoBlockSpectral_global_vecCoeff_det_ne_zero
+
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), constructed
     two-block spectral data plus exclusion of the matching complex root for
     `A` gives the active two-column no-block-action certificate. -/
