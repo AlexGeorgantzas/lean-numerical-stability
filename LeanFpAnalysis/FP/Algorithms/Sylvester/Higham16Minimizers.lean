@@ -5674,6 +5674,56 @@ theorem H16_eq16_29_lyapunov_relative_error_le_of_sepLowerBound_computed_residua
       n A C X Xhat Rhat Ru dR hSep hX hRhat hRu hdR hX_pos hResidualCap
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
+    16.4, equation (16.29), Lyapunov Frobenius residual-error-model endpoint:
+    a positive lower bound on the exact `sep(A,-A^T)` infimum supplies the
+    separation certificate for the explicit computed-residual model. -/
+theorem lyapunov_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_error_model
+    (n : Nat)
+    (A C X Xhat Rhat Ru dR : RMatFn n n) {sigma eta : Real}
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hRhat : forall i j,
+      Rhat i j = lyapunovResidual n A C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    lyapunov_relative_error_le_of_sepLowerBound_computed_residual_error_model
+      n A C X Xhat Rhat Ru dR
+      (SepLowerBound_of_pos_le_sylvesterSepInf n A
+        (fun i j => -matTranspose A i j) sigma hsigma hle)
+      hX hRhat hRu hdR hX_pos hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
+    Section 16.4, equation (16.29): source-numbered alias for the Lyapunov
+    Frobenius relative-error endpoint from an explicit residual-error model
+    and a positive lower bound on the exact `sep(A,-A^T)` infimum. -/
+theorem H16_eq16_29_lyapunov_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_error_model
+    (n : Nat)
+    (A C X Xhat Rhat Ru dR : RMatFn n n) {sigma eta : Real}
+    (hsigma : 0 < sigma)
+    (hle : sigma <= sylvesterSepInf n A (fun i j => -matTranspose A i j))
+    (hX : forall i j, lyapunovOp n A X i j = C i j)
+    (hRhat : forall i j,
+      Rhat i j = lyapunovResidual n A C Xhat i j + dR i j)
+    (hRu : forall i j, 0 <= Ru i j)
+    (hdR : forall i j, |dR i j| <= Ru i j)
+    (hX_pos : 0 < frobNorm X)
+    (hResidualCap :
+      frobNorm (fun i j => |Rhat i j| + Ru i j) <=
+        eta * sigma * frobNorm X) :
+    frobNorm (fun i j => X i j - Xhat i j) / frobNorm X <= eta := by
+  exact
+    lyapunov_relative_error_le_of_pos_le_sylvesterSepInf_computed_residual_error_model
+      n A C X Xhat Rhat Ru dR hsigma hle hX hRhat hRu hdR hX_pos
+      hResidualCap
+
+/-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, eq (16.29), square arbitrary-coefficient raw residual-budget
     monotone endpoint: an operator sigma-min lower-bound certificate supplies
     determinant nonsingularity, while componentwise larger practical estimates
@@ -5744,6 +5794,78 @@ theorem sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_b
       (sylvesterVecCoeff_det_ne_zero_of_operator_sigmaMin
         n A B sigma hsigma hSigmaMin)
       hX hRu hRhat_budget hPinvAbs_le hRhat hRu_le heta hcomponent hXhat
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the Sylvester operator-sigma-min practical computed-residual
+    certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar Sylvester operator-sigma-min practical
+    computed-residual certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate_scalar :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone Sylvester operator-sigma-min practical
+    computed-residual certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate_mono :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar Sylvester operator-sigma-min practical
+    computed-residual certificate endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate_mono_scalar :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_certificate_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the Sylvester operator-sigma-min explicit residual-error-model
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar Sylvester operator-sigma-min explicit
+    residual-error-model practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_scalar :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone Sylvester operator-sigma-min explicit
+    residual-error-model practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_mono :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar Sylvester operator-sigma-min explicit
+    residual-error-model practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_mono_scalar :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_error_model_mono_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the Sylvester operator-sigma-min raw residual-budget practical
+    endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_budget :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_budget
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the scalar Sylvester operator-sigma-min raw residual-budget
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_scalar :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_scalar
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone Sylvester operator-sigma-min raw residual-budget
+    practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_mono :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_mono
+
+/-- Higham, 2nd ed., Chapter 16.4, equation (16.29): source-numbered
+    alias for the monotone scalar Sylvester operator-sigma-min raw
+    residual-budget practical endpoint. -/
+alias H16_eq16_29_sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_mono_scalar :=
+  sylvester_practical_error_bound_of_operator_sigmaMin_computed_residual_budget_mono_scalar
 
 /-- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section
     16.4, eq (16.29), square arbitrary-coefficient raw residual-budget scalar
