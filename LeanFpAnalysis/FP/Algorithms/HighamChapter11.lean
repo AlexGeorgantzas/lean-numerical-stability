@@ -5469,6 +5469,152 @@ theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_uni
       (36 * ((n - s : ℕ) : ℝ) * ρ_n * Amax)
       hρ hAmax le_rfl le_rfl hD hrows hfirst_budget htrail_budget
 
+/-- **Theorem 11.4 prefix-growth `D̂` cap bridge**.  If accepted pivot entries
+are bounded by the final stage maximum of a concrete finite prefix growth
+sequence, the printed Bunch-Parlett growth recursion turns that into the
+corresponding source growth-factor `D̂` cap. -/
+theorem higham11_4_D_bound_of_prefix_growth_factor
+    (n : ℕ) (D_hat : Fin n → Fin n → ℝ) (ρ0 Amax : ℝ) (r : ℕ → ℝ)
+    (hAmax : 0 ≤ Amax)
+    (h0 : r 0 = ρ0)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ r (n - 1) * Amax) :
+    ∀ k₁ k₂ : Fin n,
+      |D_hat k₁ k₂| ≤
+        ((1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * ρ0) * Amax := by
+  have hr :=
+    higham11_1_growth_factor_bound_of_prefix_steps n ρ0 r h0 hstep
+  intro k₁ k₂
+  exact (hD k₁ k₂).trans (mul_le_mul_of_nonneg_right hr hAmax)
+
+/-- **Theorem 11.4 normalized prefix-growth `D̂` cap bridge**.  With normalized
+initial maximum `ρ₀≤1`, the previous bridge gives the standard printed
+`(1+α⁻¹)^(n−1)‖A‖_M` cap. -/
+theorem higham11_4_D_bound_of_normalized_prefix_growth_factor
+    (n : ℕ) (D_hat : Fin n → Fin n → ℝ) (ρ0 Amax : ℝ) (r : ℕ → ℝ)
+    (hAmax : 0 ≤ Amax)
+    (h0 : r 0 = ρ0) (hρ0 : ρ0 ≤ 1)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ r (n - 1) * Amax) :
+    ∀ k₁ k₂ : Fin n,
+      |D_hat k₁ k₂| ≤
+        (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * Amax := by
+  have hα : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  have hfactor_nonneg :
+      0 ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) := by
+    have hinv_nonneg : 0 ≤ higham11_1_bunchParlettAlpha⁻¹ :=
+      inv_nonneg.mpr (le_of_lt hα)
+    exact pow_nonneg (by linarith) _
+  have hr :
+      r (n - 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) := by
+    calc
+      r (n - 1)
+          ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * ρ0 :=
+            higham11_1_growth_factor_bound_of_prefix_steps n ρ0 r h0 hstep
+      _ ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * 1 :=
+            mul_le_mul_of_nonneg_left hρ0 hfactor_nonneg
+      _ = (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) := by ring
+  intro k₁ k₂
+  exact (hD k₁ k₂).trans (mul_le_mul_of_nonneg_right hr hAmax)
+
+/-- **Theorem 11.4 normalized prefix-growth product bridge**.  A source-six
+row-sum cap plus a `D̂` cap produced from the finite prefix growth recursion
+feeds the product-entry estimate at the printed growth factor. -/
+theorem
+    higham11_4_product_entries_of_first_stage_recursive_uniform_six_row_sum_normalized_prefix_growth_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ρ0 Amax : ℝ) (r : ℕ → ℝ)
+    (hAmax : 0 ≤ Amax)
+    (h0 : r 0 = ρ0) (hρ0 : ρ0 ≤ 1)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ r (n - 1) * Amax)
+    (hrows : ∀ row : Fin n, (∑ k : Fin n, |L_hat row k|) ≤ 6) :
+    ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n L_hat D_hat i j ≤
+        36 * (n : ℝ) *
+          (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * Amax := by
+  have hα : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  have hρ :
+      0 ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) := by
+    have hinv_nonneg : 0 ≤ higham11_1_bunchParlettAlpha⁻¹ :=
+      inv_nonneg.mpr (le_of_lt hα)
+    exact pow_nonneg (by linarith) _
+  exact
+    higham11_4_product_entries_of_first_stage_recursive_uniform_six_row_sum_growth_D_bound
+      n s hn hs_pos hs_le L_hat D_hat
+      ((1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1)) Amax
+      hρ hAmax
+      (higham11_4_D_bound_of_normalized_prefix_growth_factor
+        n D_hat ρ0 Amax r hAmax h0 hρ0 hstep hD)
+      hrows
+
+/-- **Theorem 11.4 normalized prefix-growth max-entry bridge**. -/
+theorem
+    higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_uniform_six_row_sum_normalized_prefix_growth_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ρ0 Amax : ℝ) (r : ℕ → ℝ)
+    (hAmax : 0 ≤ Amax)
+    (h0 : r 0 = ρ0) (hρ0 : ρ0 ≤ 1)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ r (n - 1) * Amax)
+    (hrows : ∀ row : Fin n, (∑ k : Fin n, |L_hat row k|) ≤ 6) :
+    maxEntryNorm hn (higham11_4_absLDLTProduct n L_hat D_hat) ≤
+      36 * (n : ℝ) *
+        (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * Amax := by
+  have hα : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  have hρ :
+      0 ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) := by
+    have hinv_nonneg : 0 ≤ higham11_1_bunchParlettAlpha⁻¹ :=
+      inv_nonneg.mpr (le_of_lt hα)
+    exact pow_nonneg (by linarith) _
+  exact
+    higham11_4_maxEntryNorm_absLDLTProduct_le_of_first_stage_recursive_uniform_six_row_sum_growth_D_bound
+      n s hn hs_pos hs_le L_hat D_hat
+      ((1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1)) Amax
+      hρ hAmax
+      (higham11_4_D_bound_of_normalized_prefix_growth_factor
+        n D_hat ρ0 Amax r hAmax h0 hρ0 hstep hD)
+      hrows
+
+/-- **Theorem 11.4 normalized prefix-growth scalar certificate**.  The same
+prefix-growth `D̂` cap and source-six row-sum cap package into the scalar
+max-entry product certificate. -/
+theorem
+    higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_uniform_six_row_sum_normalized_prefix_growth_D_bound
+    (n s : ℕ) (hn : 0 < n) (hs_pos : 0 < s) (hs_le : s ≤ n)
+    (L_hat D_hat : Fin n → Fin n → ℝ) (ρ0 Amax : ℝ) (r : ℕ → ℝ)
+    (hAmax : 0 ≤ Amax)
+    (h0 : r 0 = ρ0) (hρ0 : ρ0 ≤ 1)
+    (hstep : ∀ k, k < n - 1 →
+      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
+    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ r (n - 1) * Amax)
+    (hrows : ∀ row : Fin n, (∑ k : Fin n, |L_hat row k|) ≤ 6) :
+    higham11_4_bunchKaufmanMaxEntryProductBound n
+      (higham11_4_bunchKaufmanProductMax n hn L_hat D_hat)
+      ((1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1)) Amax := by
+  have hα : 0 < higham11_1_bunchParlettAlpha := by
+    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
+  have hρ :
+      0 ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) := by
+    have hinv_nonneg : 0 ≤ higham11_1_bunchParlettAlpha⁻¹ :=
+      inv_nonneg.mpr (le_of_lt hα)
+    exact pow_nonneg (by linarith) _
+  exact
+    higham11_4_bunchKaufmanMaxEntryProductBound_of_first_stage_recursive_uniform_six_row_sum_growth_D_bound
+      n s hn hs_pos hs_le L_hat D_hat
+      ((1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1)) Amax
+      hρ hAmax
+      (higham11_4_D_bound_of_normalized_prefix_growth_factor
+        n D_hat ρ0 Amax r hAmax h0 hρ0 hstep hD)
+      hrows
+
 /-- **Theorem 11.4 exact-coefficient uniform row-sum first-stage/recursive
 product bridge**.  This is the uniform-row counterpart of the Higham-coefficient
 row-sum split. -/
@@ -5812,57 +5958,6 @@ theorem higham11_4_growth_scaled_D_bound_of_le
     ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ ρ_n * Amax := by
   intro k₁ k₂
   exact (hD k₁ k₂).trans (mul_le_mul_of_nonneg_right hρ_le hAmax)
-
-/-- **Theorem 11.4 prefix-growth `D̂` cap bridge**.  If accepted pivot entries
-are bounded by the final stage maximum of a concrete finite prefix growth
-sequence, the printed Bunch-Parlett growth recursion turns that into the
-corresponding source growth-factor `D̂` cap. -/
-theorem higham11_4_D_bound_of_prefix_growth_factor
-    (n : ℕ) (D_hat : Fin n → Fin n → ℝ) (ρ0 Amax : ℝ) (r : ℕ → ℝ)
-    (hAmax : 0 ≤ Amax)
-    (h0 : r 0 = ρ0)
-    (hstep : ∀ k, k < n - 1 →
-      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
-    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ r (n - 1) * Amax) :
-    ∀ k₁ k₂ : Fin n,
-      |D_hat k₁ k₂| ≤
-        ((1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * ρ0) * Amax := by
-  have hr :=
-    higham11_1_growth_factor_bound_of_prefix_steps n ρ0 r h0 hstep
-  intro k₁ k₂
-  exact (hD k₁ k₂).trans (mul_le_mul_of_nonneg_right hr hAmax)
-
-/-- **Theorem 11.4 normalized prefix-growth `D̂` cap bridge**.  With normalized
-initial maximum `ρ₀≤1`, the previous bridge gives the standard printed
-`(1+α⁻¹)^(n−1)‖A‖_M` cap. -/
-theorem higham11_4_D_bound_of_normalized_prefix_growth_factor
-    (n : ℕ) (D_hat : Fin n → Fin n → ℝ) (ρ0 Amax : ℝ) (r : ℕ → ℝ)
-    (hAmax : 0 ≤ Amax)
-    (h0 : r 0 = ρ0) (hρ0 : ρ0 ≤ 1)
-    (hstep : ∀ k, k < n - 1 →
-      r (k + 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) * r k)
-    (hD : ∀ k₁ k₂ : Fin n, |D_hat k₁ k₂| ≤ r (n - 1) * Amax) :
-    ∀ k₁ k₂ : Fin n,
-      |D_hat k₁ k₂| ≤
-        (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * Amax := by
-  have hα : 0 < higham11_1_bunchParlettAlpha := by
-    simpa [higham11_1_bunchParlettAlpha] using bunch_parlett_alpha_pos
-  have hfactor_nonneg :
-      0 ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) := by
-    have hinv_nonneg : 0 ≤ higham11_1_bunchParlettAlpha⁻¹ :=
-      inv_nonneg.mpr (le_of_lt hα)
-    exact pow_nonneg (by linarith) _
-  have hr :
-      r (n - 1) ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) := by
-    calc
-      r (n - 1)
-          ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * ρ0 :=
-            higham11_1_growth_factor_bound_of_prefix_steps n ρ0 r h0 hstep
-      _ ≤ (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) * 1 :=
-            mul_le_mul_of_nonneg_left hρ0 hfactor_nonneg
-      _ = (1 + higham11_1_bunchParlettAlpha⁻¹) ^ (n - 1) := by ring
-  intro k₁ k₂
-  exact (hD k₁ k₂).trans (mul_le_mul_of_nonneg_right hr hAmax)
 
 /-- **Theorem 11.4 global `D̂` cap split**.  First-stage and recursive trailing
 absolute-entry caps cover every entry of `D̂`, using the same leading/trailing
