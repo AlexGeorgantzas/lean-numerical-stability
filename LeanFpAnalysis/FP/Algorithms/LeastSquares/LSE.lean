@@ -22603,6 +22603,138 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stor
         hm hn hnm Aperm bperm hphi hrowsPerm hbdomPerm hσArowRatioMax)
       hcert
 
+/-- Theorem 20.7 row-sorting policy: existential common-sort wrapper for the
+    square-margin direct compact-budget active-ratio concrete
+    stored-Householder QR route.
+
+This packages the source-side monotone `|b|` row policy together with the
+dimensioned square-margin compact-budget surface.  The active-pivot choice,
+compact-component budget bound, leading-block nonbreakdown, stage recurrences,
+unweighted active-ratio bound, source RHS domination, and exact weighted-LS
+certificate remain explicit for the chosen permutation. -/
+theorem Theorem20_7RowwiseBackwardError.exists_common_sorted_permuteRows_uniform_bounds_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_activeMaxPivotColumn_prefix_lower_signed_alpha_budget_sq_leading_block_det_ne_zero_abs_b_mono_activeRatioMax_le_of_abs_b_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (fp : FPModel) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (diagBudget : ℕ → ℝ) {phi : ℝ} (gammaTilde err : ℝ)
+    (xhat : Fin n → ℝ)
+    (hphi : 0 < phi) (hgamma : 0 ≤ gammaTilde) (herr : 0 ≤ err)
+    (hmfp : gammaValid fp m)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hcopy : H19.Theorem19_13.subtractZeroExact fp)
+    (hcompat :
+      ∀ i j : Fin m,
+        theorem20_7_initialRowMax hn A i ≤
+          theorem20_7_initialRowMax hn A j →
+        |b i| ≤ |b j|) :
+    ∃ σ : Fin m ≃ Fin m,
+      ∀ (Aexact : ℕ → Fin m → Fin n → ℝ)
+        (bexact : ℕ → Fin m → ℝ),
+      (∀ r : Fin m, ∀ j : Fin n, Aexact 0 r j = A (σ r) j) →
+      (∀ r : Fin m, bexact 0 r = b (σ r)) →
+      (∀ k (hk : k < n),
+        householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hnm⟩
+              (fun a =>
+                storedHouseholderQRMatrixSeq fp hnm
+                  (fun r j => A (σ r) j) k a ⟨k, hk⟩)
+              (storedHouseholderQRAlphaSeq fp hnm
+                (fun r j => A (σ r) j) k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                ⟨k, lt_of_lt_of_le hk hnm⟩
+                (fun a =>
+                  storedHouseholderQRMatrixSeq fp hnm
+                    (fun r j => A (σ r) j) k a ⟨k, hk⟩)
+                (storedHouseholderQRAlphaSeq fp hnm
+                  (fun r j => A (σ r) j) k)))
+            (fun a =>
+              storedHouseholderQRMatrixSeq fp hnm
+                (fun r j => A (σ r) j) k a ⟨k, hk⟩)
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤ diagBudget k) →
+      (∀ k (hk : k < n),
+        (m : ℝ) * (diagBudget k) ^ 2 <
+          householderTrailingNorm2Sq m
+            ⟨k, lt_of_lt_of_le hk hnm⟩
+            (fun i =>
+              storedHouseholderQRMatrixSeq fp hnm
+                (fun r j => A (σ r) j) k i ⟨k, hk⟩)) →
+      (∀ k (hk : k < n),
+        Matrix.det
+          (qrLeadingBlock
+            (storedHouseholderQRMatrixSeq fp hnm
+              (fun r j => A (σ r) j) k)
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hnm)) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0) →
+      (∀ t (ht : t < n),
+        Fin.mk t ht =
+          householderActiveMaxPivotColumn
+            (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht)
+            (storedHouseholderQRMatrixSeq fp hnm
+              (fun r j => A (σ r) j) t)) →
+      (∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |Aexact t r j|) →
+      (∀ r : Fin m, ∀ j : Fin n, ∀ t : ℕ,
+        |storedHouseholderQRMatrixSeq fp hnm
+            (fun s j => A (σ s) j) (t + 1) r j -
+            Aexact (t + 1) r j| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |storedHouseholderQRMatrixSeq fp hnm
+                (fun s j => A (σ s) j) t r j - Aexact t r j|) →
+      (theorem20_7_activeInitialRowMaxRatioMax hm hn hnm
+        (fun r j => A (σ r) j) ≤ Real.sqrt (m : ℝ)) →
+      (∀ i : Fin m,
+        |b i| ≤ phi * theorem20_7_initialRowMax hn A i) →
+      (∀ r : Fin m, ∀ t : ℕ,
+        |bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |bexact t r|) →
+      (∀ r : Fin m, ∀ t : ℕ,
+        |storedHouseholderQRRhsSeq fp hnm
+            (fun s j => A (σ s) j) (fun s => b (σ s))
+            (t + 1) r -
+            bexact (t + 1) r| ≤
+          H19.Theorem19_6.rowwise_step_growth_factor *
+            |storedHouseholderQRRhsSeq fp hnm
+                (fun s j => A (σ s) j) (fun s => b (σ s))
+                t r - bexact t r|) →
+      (hcert :
+        Theorem20_7RowwiseBackwardError hn
+          (fun r j => A (σ r) j) (fun r => b (σ r))
+          (storedHouseholderQRMatrixSeq fp hnm
+            (fun r j => A (σ r) j))
+          (storedHouseholderQRRhsSeq fp hnm
+            (fun r j => A (σ r) j) (fun r => b (σ r)))
+          phi gammaTilde xhat) →
+      IsLeastSquaresMinimizer
+          (fun i j => A i j + hcert.DeltaA (σ.symm i) j)
+          (fun i => b i + hcert.Deltab (σ.symm i)) xhat ∧
+        (∀ i : Fin m, ∀ j : Fin n,
+          |hcert.DeltaA (σ.symm i) j| ≤
+            theorem20_7_deltaAEntryBudget gammaTilde
+              (theorem20_7_compactActiveHorizon fp m err (n - 1))
+              (theorem20_7_initialRowMax hn A i) j) ∧
+        (∀ i : Fin m,
+          |hcert.Deltab (σ.symm i)| ≤
+            theorem20_7_deltaBEntryBudget n gammaTilde
+              (theorem20_7_compactActiveHorizon fp m err (n - 1))
+              (theorem20_7_initialWeightedRowMax hn A b phi i)) := by
+  rcases theorem20_7_exists_common_sorted_permuteRows_activeRatioMax_fields_of_abs_b_mono_initialRowMax_nat
+      hm hn hnm A b (le_of_lt hphi) hcompat with
+    ⟨σ, hσA, _, _, _, _, _, _⟩
+  refine ⟨σ, ?_⟩
+  intro Aexact bexact hAexact0 hbexact0 hbudgetBound hmargin hdetLead
+    hpivotChoice hAstepExact hAstepErr hσArowRatioMax hbdom
+    hbstepExact hbstepErr hcert
+  exact
+    Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_mono_of_activeMaxPivotColumn_prefix_lower_signed_alpha_budget_sq_leading_block_det_ne_zero_activeRatioMax_le_of_abs_b_le_nat
+      hm hn hnm fp σ Aexact A bexact b diagBudget gammaTilde err xhat
+      hphi hgamma herr hmfp hrows hAexact0 hbexact0 hbudgetBound hmargin
+      hdetLead hcopy hpivotChoice hσA hcompat hAstepExact hAstepErr
+      hσArowRatioMax hbdom hbstepExact hbstepErr hcert
+
 /-- Theorem 20.7 row-sorting support: certificate-free form of the permuted
     concrete stored-Householder QR wrapper.
 
