@@ -3798,6 +3798,12 @@ theorem sylvesterResidualRect_schur_transform_identity (m n : Nat)
   have hsubij := congrFun (congrFun hsub i) j
   rw [← hCij, ← hsubij]
 
+/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.5) and (16.9):
+    source-numbered alias for exact residual transport under supplied
+    orthogonal Schur coordinates. -/
+alias H16_eq16_5_9_sylvesterResidualRect_schur_transform_identity :=
+  sylvesterResidualRect_schur_transform_identity
+
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.9), exact residual norm
     transport for supplied orthogonal Schur coordinates.  This is the
     exact-arithmetic norm bridge used before any rounded Schur-solve residual
@@ -3827,6 +3833,12 @@ theorem frobNormRect_sylvesterResidualRect_schur_transform (m n : Nat)
     _ = frobNormRect Rs := by
           simpa [Rs, matMulRectRight] using
             frobNormRect_orthogonal_right Rs (matTranspose V) hV.transpose
+
+/-- Higham, 2nd ed., Chapter 16.2, equation (16.9): source-numbered alias
+    for exact Frobenius residual norm transport under supplied orthogonal
+    Schur coordinates. -/
+alias H16_eq16_9_frobNormRect_sylvesterResidualRect_schur_transform :=
+  frobNormRect_sylvesterResidualRect_schur_transform
 
 /-- Higham, 2nd ed., Chapter 16.2, equation (16.9), conditional exact
     residual-bound transport.  Any Schur-coordinate Frobenius residual bound
