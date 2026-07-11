@@ -31229,6 +31229,21 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
           (k + 1) step A b x_hat Δloc hA (hsupp Δloc hwit)
           (hrow_second_localBlock Δloc hwit))
 
+/-- Symmetric-tridiagonal source form of the local-block lifted-support
+coefficient endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_localBlock_rows_of_isSymTridiagonal_and_liftedSupportAfterBranchEnd :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hsupp hrow_second_localBlock =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_localBlock_rows_of_liftedSupportAfterBranchEnd
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hsupp hrow_second_localBlock
+
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint from
 decomposed branch-matrix second-pivot rows, coefficient-sum form**, zero common
 offset.  The accepted `2 × 2` second-pivot handoff is supplied as a bare
@@ -33727,6 +33742,21 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
           (k + 1) step A b x_hat Δloc hA (hsupp Δloc hwit)
           (hrow_second_localBlock Δloc hwit))
 
+/-- Symmetric-tridiagonal source form of the local-block lifted-support uniform
+coefficient endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_localBlock_rows_of_isSymTridiagonal_and_liftedSupportAfterBranchEnd :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit hlast_eq
+      hlast hc_bound hc_rec hc hu hcoeff hrow_one_local hrow_two_local
+      hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hsupp hrow_second_localBlock =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_localBlock_rows_of_liftedSupportAfterBranchEnd
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact c u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hcoeff hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hsupp hrow_second_localBlock
+
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint from
 decomposed branch-matrix second-pivot rows, uniform coefficient form**, zero
 common offset.  This is the constant-coefficient specialization of the
@@ -35970,6 +36000,22 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
         higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_of_isTridiagonal_and_liftedSupportAfterBranchEnd
           (k + 1) step A b x_hat Δloc hA (hsupp Δloc hwit)
           (hrow_second_localBlock Δloc hwit))
+
+/-- Symmetric-tridiagonal source form of the local-block lifted-support
+scalar-budget endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_localBlock_rows_of_isSymTridiagonal_and_liftedSupportAfterBranchEnd :=
+  fun k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hsupp hrow_second_localBlock =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_localBlock_rows_of_liftedSupportAfterBranchEnd
+      k fp step A b x_hat c_bound c_rec u_loc tail_fl tail_exact c C u hinit
+      hlast_eq hlast hc_bound hc_rec hc hu hu_loc hu_le hcoeff hC
+      hrow_one_local hrow_two_local hrow_last_one_local hrow_last_two_local
+      hrow_zero_base hA.2 hsupp hrow_second_localBlock
 
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint from
 decomposed branch-matrix second-pivot rows, scalar-budget form**, zero common
