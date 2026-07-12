@@ -34590,6 +34590,117 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
       hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
       hA.2 hdeep hrow_second_localBlock
 
+/-- **Theorem 11.7 local-row lifted-support source endpoint, uniform
+component-cap form**, zero common offset.  This routes explicit second-pivot
+local rows through the local-block combined row bridge internally. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_secondPivot_local_rows_of_liftedSupportAfterBranchEnd :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact
+      c_bound_cap c_rec_cap C u hinit hlast_eq hlast hc_bound hc_rec
+      hc_bound_cap hc_rec_cap hu hbound hrec hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hsupp
+      (hrow_second_local :
+        ∀ Δloc : ∀ t : Fin (k + 1),
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+              Fin (higham11_7_tridiagonalBranchAmbientDim
+                (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+          higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+            (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+            (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+            c_bound c_rec (fun _ : Fin (k + 1) => u) tail_fl tail_exact Δloc →
+          higham11_7_ConcretePathSecondPivotLocalSolveRows
+            (k + 1) step A b x_hat Δloc) =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_secondPivot_localBlock_rows_of_liftedSupportAfterBranchEnd
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact
+      c_bound_cap c_rec_cap C u hinit hlast_eq hlast hc_bound hc_rec
+      hc_bound_cap hc_rec_cap hu hbound hrec hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base hA
+      hsupp
+      (fun Δloc hwit =>
+        higham11_7_tridiagonalConcretePathResidualWitnesses_secondPivot_combinedLocalBlock_rows_of_local_rows_of_isTridiagonal_and_liftedSupportAfterBranchEnd
+          (k + 1) fp step A b x_hat c_bound c_rec
+          (fun _ : Fin (k + 1) => u) tail_fl tail_exact Δloc hA hwit
+          (hsupp Δloc hwit) (hrow_second_local Δloc hwit))
+
+/-- Symmetric-tridiagonal source form of the lifted-support local-row
+component endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_secondPivot_local_rows_of_isSymTridiagonal_and_liftedSupportAfterBranchEnd :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact
+      c_bound_cap c_rec_cap C u hinit hlast_eq hlast hc_bound hc_rec
+      hc_bound_cap hc_rec_cap hu hbound hrec hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hsupp hrow_second_local =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_secondPivot_local_rows_of_liftedSupportAfterBranchEnd
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact
+      c_bound_cap c_rec_cap C u hinit hlast_eq hlast hc_bound hc_rec
+      hc_bound_cap hc_rec_cap hu hbound hrec hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hsupp hrow_second_local
+
+/-- **Theorem 11.7 local-row deep-support source endpoint, uniform
+component-cap form**, zero common offset. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_secondPivot_local_rows_of_deepLeadingBlockSupport :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact
+      c_bound_cap c_rec_cap C u hinit hlast_eq hlast hc_bound hc_rec
+      hc_bound_cap hc_rec_cap hu hbound hrec hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      (hdeep :
+        ∀ Δloc : ∀ t : Fin (k + 1),
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+              Fin (higham11_7_tridiagonalBranchAmbientDim
+                (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+          higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+            (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+            (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+            c_bound c_rec (fun _ : Fin (k + 1) => u) tail_fl tail_exact Δloc →
+          ∀ t : Fin (k + 1), ∀ _hstep : step t = PivotSize.two,
+            ∀ s : Fin (k + 1), s.val < t.val →
+              ∃ localOffset : ℕ,
+                higham11_7_TridiagonalLeadingBlockSupport
+                  (higham11_7_tridiagonalBranchAmbientDim
+                    (higham11_7_tridiagonalPathTailDim (k + 1) step s)
+                    (step s))
+                  localOffset (Δloc s) ∧
+                higham11_7_tridiagonalPathPrefixSpan (k + 1) step t +
+                    higham11_7_tridiagonalBranchSupportOffset (step t) ≤
+                  higham11_7_tridiagonalPathPrefixSpan (k + 1) step s +
+                    localOffset)
+      hrow_second_local =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_secondPivot_local_rows_of_liftedSupportAfterBranchEnd
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact
+      c_bound_cap c_rec_cap C u hinit hlast_eq hlast hc_bound hc_rec
+      hc_bound_cap hc_rec_cap hu hbound hrec hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base hA
+      (fun Δloc hwit =>
+        higham11_7_ConcretePathSecondPivotEarlierLiftRowsLiftedSupportAfterBranchEnd_of_deepLeadingBlockSupport
+          (k + 1) step Δloc (hdeep Δloc hwit))
+      hrow_second_local
+
+/-- Symmetric-tridiagonal source form of the deep-support local-row
+component endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_secondPivot_local_rows_of_isSymTridiagonal_and_deepLeadingBlockSupport :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact
+      c_bound_cap c_rec_cap C u hinit hlast_eq hlast hc_bound hc_rec
+      hc_bound_cap hc_rec_cap hu hbound hrec hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hA : IsSymTridiagonal
+        (higham11_7_tridiagonalPathPivotSpan (k + 1) step + 1) A)
+      hdeep hrow_second_local =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_secondPivot_local_rows_of_deepLeadingBlockSupport
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact
+      c_bound_cap c_rec_cap C u hinit hlast_eq hlast hc_bound hc_rec
+      hc_bound_cap hc_rec_cap hu hbound hrec hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      hA.2 hdeep hrow_second_local
+
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint from initial
 local branches and a terminal last branch, scalar-budget form**, zero common
 offset.  This keeps per-branch roundoff and coefficient majorants visible while
