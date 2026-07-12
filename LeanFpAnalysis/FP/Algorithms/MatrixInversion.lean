@@ -843,6 +843,41 @@ theorem triInv_method2_offdiag_trailing_update_bound (n : ℕ) (fp : FPModel)
         exact add_le_add (by simpa [tailAbs] using hΔ) hδ_tail
     _ = (fp.u + η) * tailAbs := by ring
 
+/-- Full-column budget form of `triInv_method2_offdiag_trailing_update_bound`:
+    the strict trailing absolute product is bounded by the complete
+    `|X_hat|*|L|` column budget used in Lemma 14.1. -/
+theorem triInv_method2_offdiag_trailing_update_full_bound (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ) {η : ℝ}
+    (hη : 0 ≤ η)
+    (hLT : ∀ a b : Fin n, b.val > a.val → L a b = 0)
+    (hDiag : ∀ j : Fin n, ∃ δ : ℝ, |δ| ≤ fp.u ∧
+      X_hat j j * L j j = 1 + δ)
+    (hTrail : ∀ j row : Fin n, row.val > j.val →
+      ∃ Δ : ℝ,
+        |Δ * L j j| ≤ η *
+          (∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0) ∧
+        X_hat row j =
+          -X_hat j j *
+            (∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0) + Δ) :
+    ∀ j row : Fin n, row.val > j.val →
+      |(∑ k : Fin n, X_hat row k * L k j) -
+          (if row = j then 1 else 0)| ≤
+        (fp.u + η) * (∑ k : Fin n, |X_hat row k| * |L k j|) := by
+  intro j row hij
+  have htail :=
+    triInv_method2_offdiag_trailing_update_bound n fp L X_hat hη hLT hDiag hTrail
+      j row hij
+  have htail_le_full :
+      (∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0) ≤
+        ∑ k : Fin n, |X_hat row k| * |L k j| := by
+    apply Finset.sum_le_sum
+    intro k _
+    have hterm_nonneg : 0 ≤ |X_hat row k| * |L k j| :=
+      mul_nonneg (abs_nonneg (X_hat row k)) (abs_nonneg (L k j))
+    by_cases hjk : j.val < k.val <;> simp [hjk, hterm_nonneg]
+  have hcoef : 0 ≤ fp.u + η := add_nonneg fp.u_nonneg hη
+  exact le_trans htail (mul_le_mul_of_nonneg_left htail_le_full hcoef)
+
 /-- **Specification for Method 2 triangular inversion**.
 
     Method 2 computes columns of X̂ ≈ L⁻¹ in reverse order j = n, n−1, …, 1.
