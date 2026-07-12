@@ -304,6 +304,70 @@ theorem ideal_forward_error (n : ℕ)
           apply Finset.sum_congr rfl; intro k₂ _; ring
         rw [this]; ring
 
+/-- Higham, 2nd ed., Chapter 14, Section 14.1, equation (14.3):
+    bounded-replacement form of the perturbed-inverse forward-error estimate.
+
+    The exact theorem `ideal_forward_error` gives the pre-asymptotic envelope
+    with `|Y|`.  This wrapper replaces `|Y|` by any componentwise upper envelope
+    supplied by the caller, exposing the first-order substitution step without
+    hiding it in an informal `O(ε^2)` term. -/
+theorem higham14_eq14_3_forward_error_bound_of_abs_Y_le (n : ℕ)
+    (A A_inv Y : Fin n → Fin n → ℝ)
+    (ΔA Y_bound : Fin n → Fin n → ℝ)
+    (ε : ℝ) (hε : 0 ≤ ε)
+    (hΔA : ∀ i j, |ΔA i j| ≤ ε * |A i j|)
+    (hInv : IsLeftInverse n A A_inv)
+    (hRInv : IsRightInverse n A A_inv)
+    (hY : ∀ i j, ∑ k : Fin n, (A i k + ΔA i k) * Y k j =
+      if i = j then 1 else 0)
+    (hY_bound : ∀ i j : Fin n, |Y i j| ≤ Y_bound i j) :
+    ∀ i j, |A_inv i j - Y i j| ≤
+      ε * ∑ k₁ : Fin n, |A_inv i k₁| *
+        (∑ k₂ : Fin n, |A k₁ k₂| * Y_bound k₂ j) := by
+  intro i j
+  have hbase :=
+    ideal_forward_error n A A_inv Y ΔA ε hε hΔA hInv hRInv hY
+  calc
+    |A_inv i j - Y i j|
+        ≤ ε * ∑ k₁ : Fin n, |A_inv i k₁| *
+            (∑ k₂ : Fin n, |A k₁ k₂| * |Y k₂ j|) := hbase i j
+    _ ≤ ε * ∑ k₁ : Fin n, |A_inv i k₁| *
+            (∑ k₂ : Fin n, |A k₁ k₂| * Y_bound k₂ j) := by
+        apply mul_le_mul_of_nonneg_left _ hε
+        apply Finset.sum_le_sum
+        intro k₁ _
+        apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+        apply Finset.sum_le_sum
+        intro k₂ _
+        exact mul_le_mul_of_nonneg_left (hY_bound k₂ j) (abs_nonneg _)
+
+/-- Higham, 2nd ed., Chapter 14, Section 14.1, equation (14.3):
+    first-order replacement form under an explicit componentwise hypothesis
+    `|Y| ≤ |A⁻¹|`.
+
+    This is the source-facing `|A⁻¹||A||A⁻¹|` envelope as a proved bounded
+    replacement.  It does not claim to formalize the remaining asymptotic
+    `O(ε^2)` calculus. -/
+theorem higham14_eq14_3_forward_error_firstorder_replacement (n : ℕ)
+    (A A_inv Y : Fin n → Fin n → ℝ)
+    (ΔA : Fin n → Fin n → ℝ)
+    (ε : ℝ) (hε : 0 ≤ ε)
+    (hΔA : ∀ i j, |ΔA i j| ≤ ε * |A i j|)
+    (hInv : IsLeftInverse n A A_inv)
+    (hRInv : IsRightInverse n A A_inv)
+    (hY : ∀ i j, ∑ k : Fin n, (A i k + ΔA i k) * Y k j =
+      if i = j then 1 else 0)
+    (hY_first : ∀ i j : Fin n, |Y i j| ≤ |A_inv i j|) :
+    ∀ i j, |A_inv i j - Y i j| ≤
+      ε * ∑ k₁ : Fin n, |A_inv i k₁| *
+        (∑ k₂ : Fin n, |A k₁ k₂| * |A_inv k₂ j|) := by
+  simpa [absMatrix] using
+    (higham14_eq14_3_forward_error_bound_of_abs_Y_le
+      n A A_inv Y ΔA (absMatrix n A_inv) ε hε hΔA hInv hRInv hY
+      (by
+        intro i j
+        simpa [absMatrix] using hY_first i j))
+
 -- ============================================================
 -- §14.1  Residual comparison: inversion vs GEPP
 -- ============================================================
