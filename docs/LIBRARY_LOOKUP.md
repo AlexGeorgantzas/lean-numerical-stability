@@ -5550,6 +5550,7 @@ composition wrappers:
 - `gje_cumulative_product_componentwise_perturbation_bound_const`
 - `gje_cumulative_product_componentwise_perturbation_bound_gamma_c3`
 - `gje_cumulative_product_matMulVec_componentwise_perturbation_bound_gamma_c3`
+- `gje_cumulative_product_matMul_componentwise_perturbation_bound_gamma_c3`
 - `gje_cumulative_product_matrix_accumulation`
 - `gje_cumulative_product_rhs_accumulation`
 - `gje_stage2_forward_error_bound`
