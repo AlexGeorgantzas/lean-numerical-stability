@@ -5581,6 +5581,80 @@ theorem higham14_problem14_15_top_singularValue_add_le_of_opNorm2Le
       (Nat.succ_pos k) A]
   exact higham14_problem14_15_opNorm2_add_le_of_opNorm2Le A Delta hDelta
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    square operator 2-norm certificates are stable under negating the matrix.
+    This local helper lets the largest-singular-value perturbation bound be
+    applied in both directions without importing the QR-specific wrapper. -/
+theorem higham14_problem14_15_opNorm2Le_neg
+    {n : ℕ} {M : Fin n → Fin n → ℝ} {c : ℝ}
+    (hM : opNorm2Le M c) :
+    opNorm2Le (fun i j => -M i j) c := by
+  intro x
+  have hmul :
+      matMulVec n (fun i j => -M i j) x =
+        fun i => -matMulVec n M x i := by
+    ext i
+    unfold matMulVec
+    calc
+      (Finset.univ.sum fun j : Fin n => (-M i j) * x j)
+          = Finset.univ.sum fun j : Fin n => -(M i j * x j) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+      _ = -(Finset.univ.sum fun j : Fin n => M i j * x j) := by
+            rw [Finset.sum_neg_distrib]
+  rw [hmul]
+  simpa [vecNorm2_neg] using hM x
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    absolute perturbation bound for the largest ordered singular value.  This
+    is only the top-index case of the all-index Weyl/Mirsky inequality still
+    needed to close the full determinant perturbation theorem. -/
+theorem higham14_problem14_15_top_singularValue_abs_sub_le_of_opNorm2Le
+    {k : ℕ} (A Delta : Fin (k + 1) → Fin (k + 1) → ℝ) {delta : ℝ}
+    (hDelta : opNorm2Le Delta delta) :
+    |complexMatrixSingularValue
+        (realRectToCMatrix (fun i j => A i j + Delta i j))
+        ⟨0, Nat.succ_pos k⟩ -
+      complexMatrixSingularValue (realRectToCMatrix A)
+        ⟨0, Nat.succ_pos k⟩| ≤ delta := by
+  let top : Fin (k + 1) := ⟨0, Nat.succ_pos k⟩
+  have hUpper :
+      complexMatrixSingularValue
+          (realRectToCMatrix (fun i j => A i j + Delta i j)) top ≤
+        complexMatrixSingularValue (realRectToCMatrix A) top + delta := by
+    simpa [top] using
+      higham14_problem14_15_top_singularValue_add_le_of_opNorm2Le
+        A Delta hDelta
+  have hNeg : opNorm2Le (fun i j => -Delta i j) delta :=
+    higham14_problem14_15_opNorm2Le_neg hDelta
+  have hLowerRaw :
+      complexMatrixSingularValue
+          (realRectToCMatrix
+            (fun i j => (A i j + Delta i j) + -Delta i j)) top ≤
+        complexMatrixSingularValue
+          (realRectToCMatrix (fun i j => A i j + Delta i j)) top + delta := by
+    simpa [top] using
+      higham14_problem14_15_top_singularValue_add_le_of_opNorm2Le
+        (fun i j => A i j + Delta i j) (fun i j => -Delta i j) hNeg
+  have hLower :
+      complexMatrixSingularValue (realRectToCMatrix A) top ≤
+        complexMatrixSingularValue
+          (realRectToCMatrix (fun i j => A i j + Delta i j)) top + delta := by
+    simpa [top] using hLowerRaw
+  have hRight :
+      complexMatrixSingularValue
+          (realRectToCMatrix (fun i j => A i j + Delta i j)) top -
+        complexMatrixSingularValue (realRectToCMatrix A) top ≤ delta := by
+    linarith
+  have hLeft :
+      -delta ≤
+        complexMatrixSingularValue
+            (realRectToCMatrix (fun i j => A i j + Delta i j)) top -
+          complexMatrixSingularValue (realRectToCMatrix A) top := by
+    linarith
+  simpa [top] using abs_le.mpr ⟨hLeft, hRight⟩
+
 /-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
     LU core: the determinant is the product of the diagonal entries of `U`. -/
 theorem higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec
