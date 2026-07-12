@@ -6859,6 +6859,67 @@ theorem higham14_problem14_15_sigmaMin_add_pos_of_rectOpNorm2Le_lt
       (by simpa [wedinLemma20_11_sigmaMinCol] using hsmall)
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    rectangular operator-2 certificates are stable under negating the matrix.
+    This lets extremal singular-value perturbation estimates be applied in
+    both additive directions. -/
+theorem higham14_problem14_15_rectOpNorm2Le_neg
+    {m n : Nat} {M : Fin m -> Fin n -> Real} {c : Real}
+    (hM : rectOpNorm2Le M c) :
+    rectOpNorm2Le (fun i j => -M i j) c := by
+  intro x
+  have hmul :
+      rectMatMulVec (fun i j => -M i j) x =
+        fun i => -rectMatMulVec M x i := by
+    ext i
+    unfold rectMatMulVec
+    calc
+      (Finset.univ.sum fun j : Fin n => (-M i j) * x j)
+          = Finset.univ.sum fun j : Fin n => -(M i j * x j) := by
+            apply Finset.sum_congr rfl
+            intro j _hj
+            ring
+      _ = -(Finset.univ.sum fun j : Fin n => M i j * x j) := by
+            rw [Finset.sum_neg_distrib]
+  rw [hmul]
+  simpa [vecNorm2_neg] using hM x
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    absolute perturbation bound for the smallest ordered singular value.
+    This closes the last-index extremal case of the all-index Weyl/Mirsky
+    inequality still needed for the full determinant perturbation theorem. -/
+theorem higham14_problem14_15_sigmaMin_abs_sub_le_of_rectOpNorm2Le
+    {k : Nat} (A Delta : Fin (k + 1) -> Fin (k + 1) -> Real) {delta : Real}
+    (hDelta : rectOpNorm2Le Delta delta) :
+    |complexMatrixSingularValue
+        (realRectToCMatrix (fun i j => A i j + Delta i j)) (Fin.last k) -
+      complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k)| <= delta := by
+  let sigmaA : Real := complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k)
+  let sigmaB : Real :=
+    complexMatrixSingularValue
+      (realRectToCMatrix (fun i j => A i j + Delta i j)) (Fin.last k)
+  have hLower : sigmaA - delta <= sigmaB := by
+    simpa [sigmaA, sigmaB] using
+      higham14_problem14_15_sigmaMin_sub_le_sigmaMin_add_of_rectOpNorm2Le
+        A Delta hDelta
+  have hNeg : rectOpNorm2Le (fun i j => -Delta i j) delta :=
+    higham14_problem14_15_rectOpNorm2Le_neg hDelta
+  have hReverseRaw :
+      sigmaB - delta <=
+        complexMatrixSingularValue
+          (realRectToCMatrix
+            (fun i j => (A i j + Delta i j) + -Delta i j)) (Fin.last k) := by
+    simpa [sigmaB] using
+      higham14_problem14_15_sigmaMin_sub_le_sigmaMin_add_of_rectOpNorm2Le
+        (fun i j => A i j + Delta i j) (fun i j => -Delta i j) hNeg
+  have hReverse : sigmaB - delta <= sigmaA := by
+    simpa [sigmaA] using hReverseRaw
+  have hRight : sigmaB - sigmaA <= delta := by linarith
+  have hLeft : -delta <= sigmaB - sigmaA := by linarith
+  have hAbs : |sigmaB - sigmaA| <= delta :=
+    abs_le.mpr (And.intro hLeft hRight)
+  simpa [sigmaA, sigmaB] using hAbs
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
     operator 2-norm triangle inequality for an additive perturbation. -/
 theorem higham14_problem14_15_opNorm2_add_le_of_opNorm2Le
     {k : ℕ} (A Delta : Fin (k + 1) → Fin (k + 1) → ℝ) {delta : ℝ}

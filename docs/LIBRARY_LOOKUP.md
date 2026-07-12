@@ -5749,6 +5749,8 @@ simplification, the exact Hyman block identities
 - `higham14_problem14_15_sigmaMin_sub_le_sigmaMin_of_sub_rectOpNorm2Le`
 - `higham14_problem14_15_sigmaMin_sub_le_sigmaMin_add_of_rectOpNorm2Le`
 - `higham14_problem14_15_sigmaMin_add_pos_of_rectOpNorm2Le_lt`
+- `higham14_problem14_15_rectOpNorm2Le_neg`
+- `higham14_problem14_15_sigmaMin_abs_sub_le_of_rectOpNorm2Le`
 - `higham14_problem14_15_opNorm2_add_le_of_opNorm2Le`
 - `higham14_problem14_15_top_singularValue_add_le_of_opNorm2Le`
 - `higham14_problem14_15_opNorm2Le_neg`
