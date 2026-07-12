@@ -66003,6 +66003,282 @@ theorem higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants
     h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
     hEq hmiddle_entry hL_entry_inv
 
+/-- Exact-`T_hat` `AasenSpec` aggregate-coefficient product-majorant endpoint
+where checkerboard principal-block determinant inequalities supply the
+coefficient-one middle product bound, in normalized entry-bound form. -/
+theorem higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_entry_bound_scaled_unit
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ) (κ : ℝ)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hσ : ∀ i : Fin n, σ i = i)
+    (hH_eq : ∀ i j : Fin n, H i j = higham11_10_aasenH n T L i j)
+    (hTnz : ∀ i next : Fin n, next.val = i.val + 1 → T next i ≠ 0)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hκunit : (1 + gamma fp n) * κ ≤ 1)
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hEq : ∀ i j : Fin n, T_hat i j = T i j)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+                  Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => (0 : ℝ) * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) := by
+  exact
+    higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_of_entry_bound_scaled_unit
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+      DeltaT_LU κ hspec hσ hH_eq hTnz hcoeff_valid hκunit
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hEq
+      (fun i j => by
+        simpa using
+          higham11_15_absLU_componentwise_T_bound_of_checkerboard_principalBlock_inequalities
+            n T_hat L_T_hat U_T_hat hTNJ hdetJ hineqJ hLU i j)
+      hL_entry
+
+/-- Exact-`T_hat` `AasenSpec` aggregate-coefficient product-majorant endpoint
+where checkerboard principal-block determinant inequalities supply the
+coefficient-one middle product bound, in inverse-scale entry-bound form. -/
+theorem higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_entry_bound_inv_one_plus
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ) (κ : ℝ)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hσ : ∀ i : Fin n, σ i = i)
+    (hH_eq : ∀ i j : Fin n, H i j = higham11_10_aasenH n T L i j)
+    (hTnz : ∀ i next : Fin n, next.val = i.val + 1 → T next i ≠ 0)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hκ : κ ≤ 1 / (1 + gamma fp n))
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hEq : ∀ i j : Fin n, T_hat i j = T i j)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+                  Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hL_entry : ∀ i j : Fin n, |L i j| ≤ κ) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => (0 : ℝ) * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) :=
+  higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_entry_bound_scaled_unit
+    fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+    DeltaT_LU κ hspec hσ hH_eq hTnz hcoeff_valid
+    (by
+      have hn : gammaValid fp n := gammaValid_mono fp (by omega) hcoeff_valid
+      exact higham11_8_one_plus_mul_le_one_of_le_inv_one_plus
+        (gamma fp n) κ (gamma_nonneg fp hn) hκ)
+    hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+    hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+    hEq hTNJ hdetJ hineqJ hLU hL_entry
+
+/-- Exact-`T_hat` `AasenSpec` aggregate-coefficient product-majorant endpoint
+where checkerboard principal-block determinant inequalities supply the
+coefficient-one middle product bound, in direct inverse-entry form. -/
+theorem higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_inverse_entry_bound
+    (fp : FPModel) (n : ℕ) (hn_pos : 0 < n) (hn_dim : 1 < n)
+    (A Pmat L H T L_hat T_hat L_T_hat U_T_hat : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n)
+    (b : Fin n → ℝ) (DeltaT_LU : Fin n → Fin n → ℝ)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hσ : ∀ i : Fin n, σ i = i)
+    (hH_eq : ∀ i j : Fin n, H i j = higham11_10_aasenH n T L i j)
+    (hTnz : ∀ i next : Fin n, next.val = i.val + 1 → T next i ≠ 0)
+    (hcoeff_valid : gammaValid fp (15 * n + 25))
+    (hLhat_update : ∀ i next k : Fin n, next.val = i.val + 1 →
+      i.val + 2 ≤ k.val →
+      L_hat k next =
+        fp.fl_div
+          (fp.fl_sub (A k i)
+            (higham11_14_fl_aasenSourcePrefixDot n fp L H i next k))
+          (H next i))
+    (hLhat_fixed_successor : ∀ i next k : Fin n, next.val = i.val + 1 →
+      ¬ i.val + 2 ≤ k.val → L_hat k next = L k next)
+    (hLhat_fixed_other : ∀ k j : Fin n,
+      (∀ i : Fin n, j.val ≠ i.val + 1) → L_hat k j = L k j)
+    (hbudget_rel : ∀ i next : Fin n, next.val = i.val + 1 →
+      ∀ k : Fin n, i.val + 2 ≤ k.val →
+      let Bsum : ℝ :=
+        gamma fp next.val *
+          ∑ j : Fin next.val,
+            |L k ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩| *
+              |H ⟨j.val, Nat.lt_trans j.isLt next.isLt⟩ i|
+      Bsum / |H next i| +
+          gamma fp 2 * (|L k next| + Bsum / |H next i|)
+        ≤ gamma fp n * |L k next|)
+    (h20 : higham9_20_tridiag_lu_perturbation_model n T_hat L_T_hat U_T_hat
+      DeltaT_LU (gamma fp n))
+    (hLhat_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hLhat_lower : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hT_L_diag : ∀ i : Fin n, L_T_hat i i ≠ 0)
+    (hT_U_diag : ∀ i : Fin n, U_T_hat i i ≠ 0)
+    (hT_L_lower : ∀ i j : Fin n, i.val < j.val → L_T_hat i j = 0)
+    (hT_U_upper : ∀ i j : Fin n, j.val < i.val → U_T_hat i j = 0)
+    (hEq : ∀ i j : Fin n, T_hat i j = T i j)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate T_hat))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate T_hat) :
+                  Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n T_hat L_T_hat U_T_hat)
+    (hL_entry_inv : ∀ i j : Fin n, |L i j| ≤ 1 / (1 + gamma fp n)) :
+    let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
+    let z_hat := fl_forwardSub fp n L_hat rhs
+    let q_hat := fl_forwardSub fp n L_T_hat z_hat
+    let y_hat := fl_backSub fp n U_T_hat q_hat
+    let U_outer : Fin n → Fin n → ℝ := fun i j => L_hat j i
+    let w_hat := fl_backSub fp n U_outer y_hat
+    let BT_factor : Fin n → Fin n → ℝ := fun i j => (0 : ℝ) * |T_hat i j|
+    let BT_solve := higham11_15_aasenMiddleSolveBudget fp n L_T_hat U_T_hat
+    let B_factor :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_factor L T (fun r c => L c r)
+    let B_solve :=
+      higham11_15_aasenChainDeltaABound n (gamma fp n) BT_solve L_hat T_hat U_outer
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |DeltaA i j| ≤ B_factor i j + B_solve i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + DeltaA i j) * w_hat j = rhs i) ∧
+      higham11_8_aasenNormwiseBackwardBound n (infNorm DeltaA)
+        (gamma fp (15 * n + 25)) (infNorm T_hat) :=
+  higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_entry_bound_inv_one_plus
+    fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat σ b
+    DeltaT_LU (1 / (1 + gamma fp n)) hspec hσ hH_eq hTnz hcoeff_valid
+    le_rfl hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel
+    h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+    hEq hTNJ hdetJ hineqJ hLU hL_entry_inv
+
 /-- Exact-`T_hat` `AasenSpec` product-majorant endpoint with the
 checkerboard principal-block determinant inequalities supplying the
 coefficient-one middle product bound `|L_T||U_T|≤|T_hat|`. -/
