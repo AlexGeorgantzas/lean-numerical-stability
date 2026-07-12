@@ -970,6 +970,28 @@ theorem higham11_4_bunch_kaufman_case1_or_case2_multiplier_row_sum_le_six_of_row
       higham11_1_bunchParlettAlpha a11 arr ω1 ωr c hα hω1 hωr_le hcase hc).trans
       higham11_4_oneByOne_multiplier_row_sum_const_le_six
 
+/-- **Theorem 11.4 / Algorithm 11.2 cases-(1)/(2) scalar row/`D̂` cap
+package**: the two branches that accept the leading scalar pivot `a₁₁` share
+the source-six one-entry `|L̂|` row cap and a scalar accepted-pivot `D̂` cap.
+Case-(2) consumes the explicit row-maximum side condition used by its
+multiplier lower bound; case-(1) keeps the pivot cap as path data. -/
+theorem higham11_4_bunch_kaufman_case1_or_case2_scalar_row_sum_and_D_cap_of_row_max_le
+    (a11 arr ω1 ωr c Amax : ℝ) (hω1 : 0 < ω1) (hωr_le : ωr ≤ ω1)
+    (hcase :
+      higham11_2_BunchKaufmanPartialPivotCase
+        higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case1 ∨
+      higham11_2_BunchKaufmanPartialPivotCase
+        higham11_1_bunchParlettAlpha a11 arr ω1 ωr BunchKaufmanCase.case2)
+    (hc : |c| ≤ ω1) (hω1_Amax : ω1 ≤ Amax) (ha11_Amax : |a11| ≤ Amax) :
+    |c / a11| ≤ 6 ∧ |a11| ≤ Amax := by
+  rcases hcase with hcase1 | hcase2
+  · exact
+      higham11_4_bunch_kaufman_case1_scalar_row_sum_and_D_cap
+        a11 arr ω1 ωr c Amax hω1 hcase1 hc ha11_Amax
+  · exact
+      higham11_4_bunch_kaufman_case2_scalar_row_sum_and_D_cap_of_row_max_le
+        a11 arr ω1 ωr c Amax hω1 hωr_le hcase2 hc hω1_Amax
+
 /-- **Algorithm 11.2**, case-(3) nonsingularity after the symmetric swap: the
 accepted scalar pivot `arr` is nonzero when its row/column maximum is positive. -/
 theorem higham11_2_bunch_kaufman_case3_pivot_ne_zero
