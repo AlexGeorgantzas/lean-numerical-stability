@@ -5528,10 +5528,13 @@ a transfer or packaging result rather than a complete local analysis.
 
 Chapter 14 GJE declarations in `Algorithms/GaussJordan.lean` include the
 cumulative-product and exact recurrence-accumulation support for
-(14.27)--(14.28), abstract second-stage interfaces, and the proved overall
+(14.27)--(14.28), the generic and constant product-perturbation bridges feeding
+(14.29)--(14.30), abstract second-stage interfaces, and the proved overall
 composition wrappers:
 
 - `gje_c₃`
+- `gje_one_add_pow_sub_one_le_nat_mul_pred`
+- `gje_one_add_gamma_three_pow_sub_one_le_c3`
 - `GJEStage2Spec`
 - `gje_stage2_matrix_recurrence`
 - `gje_stage2_rhs_recurrence`
@@ -5541,6 +5544,13 @@ composition wrappers:
 - `gje_cumulative_product_oob`
 - `gje_cumulative_product_nonneg`
 - `gje_cumulative_product_abs_nonneg`
+- `gje_cumulative_product_eq_matSeqProd_rev`
+- `gje_cumulative_product_componentwise_perturbation_bound`
+- `gje_scalarSeqProd_const`
+- `gje_cumulative_product_componentwise_perturbation_bound_const`
+- `gje_cumulative_product_componentwise_perturbation_bound_gamma_c3`
+- `gje_cumulative_product_matMulVec_componentwise_perturbation_bound_gamma_c3`
+- `gje_cumulative_product_matMul_componentwise_perturbation_bound_gamma_c3`
 - `gje_cumulative_product_matrix_accumulation`
 - `gje_cumulative_product_rhs_accumulation`
 - `gje_stage2_forward_error_bound`
@@ -5550,21 +5560,43 @@ composition wrappers:
 - `gje_spd_residual`
 
 Chapter 14 exact algebra closures in `Algorithms/MatrixInversion.lean` include
-Problem 14.3, the explicit residual-ratio family from Problem 14.4, the residual
-and forward-error consequences from Problem 14.5, Problem 14.7, Problem 14.8's
+the (14.3) bounded-replacement forward-error layer, Problem 14.3, the explicit
+residual-ratio family from Problem 14.4, the residual and forward-error
+consequences from Problem 14.5, Problem 14.7, Problem 14.8's
 complex-to-real block inverse and HPD-to-SPD bridge, the p.279
 Hadamard determinant condition number, equation (14.34) in its exact
 no-pivot/unit-lower LU form plus signed and absolute-value pivoted forms,
-Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence,
+Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence and full equality/row-orthogonality characterization,
 Problem 14.13's AM-GM, SVD norm, and determinant-product support bridges,
-Problem 14.15's scalar product-radius support, Method D's expanded
+Problem 14.15's scalar product-radius and top-index perturbation support, Method 2 structural
+left-residual upper/diagonal edges, trailing-column split, strict-tail update and gamma full-budget support, and off-diagonal update support, Method D's expanded
 componentwise residual-budget dependency and printed-coefficient scalar
 simplification, the exact Hyman block identities
 (14.35)--(14.36), and Problem 14.10:
 
 - `inverseRightResidual`, `inverseLeftResidual`
+- `higham14_eq14_3_forward_error_bound_of_abs_Y_le`
+- `higham14_eq14_3_forward_error_firstorder_replacement`
+- `higham14_eq14_3_forward_error_firstorder_plus_remainder`
 - `higham14_infNorm_le_of_componentwise_abs_matmul_bound`
 - `higham14_infNorm_le_of_componentwise_matmul_bound`
+- `triInv_lower_left_residual_upper_zero`
+- `lowerTri_column_sum_eq_diag_add_tail`
+- `triInv_method2_offdiag_trailing_update_identity`
+- `triInv_method2_offdiag_trailing_update_bound`
+- `triInv_method2_offdiag_trailing_update_full_bound`
+- `triInv_method2_offdiag_trailing_update_gamma_full_bound`
+- `triInv_method2_left_residual_upper_zero`
+- `triInv_method2_left_residual_diag_bound`
+- `triInv_method2_left_residual_diag_product_bound`
+- `triInv_method2_left_residual_from_region_bounds`
+- `triInv_method2_left_residual_of_strict_tail_gamma`
+- `higham14_unit_roundoff_add_one_plus_u_mul_gamma_le_gamma_succ`
+- `triInv_method2_left_residual_of_strict_tail_fl_dot`
+- `higham14_unit_roundoff_add_one_plus_u_mul_rounded_gamma_le_gamma_succ_succ`
+- `triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul`
+- `triInv_method2_offdiag_update_delta_bound`
+- `triInv_method2_offdiag_scaled_residual_bound`
 - `triInv_method2_left_residual_normwise`
 - `triInv_method1B_right_residual_normwise`
 - `triInv_method1B_right_residual_normwise_from_spec`
@@ -5645,11 +5677,19 @@ simplification, the exact Hyman block identities
 - `higham14_problem14_11_abs_det_le_prod_rowNorm2`
 - `higham14_problem14_11_hadamardConditionNumber_ge_one_of_det_ne_zero`
 - `higham14_rowsOrthogonal`
+- `higham14_rowsOrthogonal_iff_hasOrthogonalRows`
+- `higham14_rowsOrthogonal_iff_gram_offdiag_zero`
+- `higham14_problem14_11_gram_det_eq_prod_diag_of_abs_det_eq_prod_rowNorm2`
+- `higham14_amgm_all_eq_one_of_sum_eq_card_prod_eq_one`
+- `higham14_problem14_11_posDef_offdiag_eq_zero_of_det_eq_prod_diag`
 - `higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_rowsOrthogonal`
 - `higham14_problem14_11_hadamardConditionNumber_eq_one_of_abs_det_eq_prod_rowNorm2`
 - `higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_hadamardConditionNumber_eq_one`
+- `higham14_problem14_11_gram_det_eq_prod_diag_of_hadamardConditionNumber_eq_one`
 - `higham14_problem14_11_hadamardConditionNumber_eq_one_iff_abs_det_eq_prod_rowNorm2`
 - `higham14_problem14_11_hadamardConditionNumber_eq_one_of_rowsOrthogonal`
+- `higham14_problem14_11_rowsOrthogonal_of_abs_det_eq_prod_rowNorm2`
+- `higham14_problem14_11_rowsOrthogonal_of_hadamardConditionNumber_eq_one`
 - `higham14_colNorm2`
 - `higham14_abs_det_eq_one_of_isOrthogonal`
 - `higham14_colNorm2_matMul_orthogonal_left`
@@ -5709,6 +5749,8 @@ simplification, the exact Hyman block identities
 - `higham14_problem14_15_sigmaMin_add_pos_of_rectOpNorm2Le_lt`
 - `higham14_problem14_15_opNorm2_add_le_of_opNorm2Le`
 - `higham14_problem14_15_top_singularValue_add_le_of_opNorm2Le`
+- `higham14_problem14_15_opNorm2Le_neg`
+- `higham14_problem14_15_top_singularValue_abs_sub_le_of_opNorm2Le`
 - `higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec`
 - `higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec`
 - `higham14_eq14_34_perm_sign_mul_det_eq_prod_U_diag_of_PermutedLUFactSpec`

@@ -6319,6 +6319,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check frobNormRect_preconditionRows_sourceSketchResidualTail_sourceSVDTail_moorePenrose_le_sqrt_one_add_methodA_inverse_product_sum_budget_sq
 #check LUBackwardError.of_input_abs_error_le_absLUProduct
 #check gje_c₃
+#check gje_one_add_pow_sub_one_le_nat_mul_pred
+#check gje_one_add_gamma_three_pow_sub_one_le_c3
 #check GJEStage2Spec
 #check gje_stage2_matrix_recurrence
 #check gje_stage2_rhs_recurrence
@@ -6328,6 +6330,13 @@ small enough to serve as a smoke check for representative public declarations.
 #check gje_cumulative_product_oob
 #check gje_cumulative_product_nonneg
 #check gje_cumulative_product_abs_nonneg
+#check gje_cumulative_product_eq_matSeqProd_rev
+#check gje_cumulative_product_componentwise_perturbation_bound
+#check gje_scalarSeqProd_const
+#check gje_cumulative_product_componentwise_perturbation_bound_const
+#check gje_cumulative_product_componentwise_perturbation_bound_gamma_c3
+#check gje_cumulative_product_matMulVec_componentwise_perturbation_bound_gamma_c3
+#check gje_cumulative_product_matMul_componentwise_perturbation_bound_gamma_c3
 #check gje_cumulative_product_matrix_accumulation
 #check gje_cumulative_product_rhs_accumulation
 #check gje_stage2_forward_error_bound
@@ -6343,8 +6352,28 @@ small enough to serve as a smoke check for representative public declarations.
 #check methodA_computed_inverse_entry_abs_sub_nonsingInv_le_of_lu_factor_budget
 #check inverseRightResidual
 #check inverseLeftResidual
+#check higham14_eq14_3_forward_error_bound_of_abs_Y_le
+#check higham14_eq14_3_forward_error_firstorder_replacement
+#check higham14_eq14_3_forward_error_firstorder_plus_remainder
 #check higham14_infNorm_le_of_componentwise_abs_matmul_bound
 #check higham14_infNorm_le_of_componentwise_matmul_bound
+#check triInv_lower_left_residual_upper_zero
+#check lowerTri_column_sum_eq_diag_add_tail
+#check triInv_method2_offdiag_trailing_update_identity
+#check triInv_method2_offdiag_trailing_update_bound
+#check triInv_method2_offdiag_trailing_update_full_bound
+#check triInv_method2_offdiag_trailing_update_gamma_full_bound
+#check triInv_method2_left_residual_upper_zero
+#check triInv_method2_left_residual_diag_bound
+#check triInv_method2_left_residual_diag_product_bound
+#check triInv_method2_left_residual_from_region_bounds
+#check triInv_method2_left_residual_of_strict_tail_gamma
+#check higham14_unit_roundoff_add_one_plus_u_mul_gamma_le_gamma_succ
+#check triInv_method2_left_residual_of_strict_tail_fl_dot
+#check higham14_unit_roundoff_add_one_plus_u_mul_rounded_gamma_le_gamma_succ_succ
+#check triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul
+#check triInv_method2_offdiag_update_delta_bound
+#check triInv_method2_offdiag_scaled_residual_bound
 #check triInv_method2_left_residual_normwise
 #check triInv_method1B_right_residual_normwise
 #check triInv_method1B_right_residual_normwise_from_spec
@@ -6427,11 +6456,19 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_problem14_11_abs_det_le_prod_rowNorm2
 #check higham14_problem14_11_hadamardConditionNumber_ge_one_of_det_ne_zero
 #check higham14_rowsOrthogonal
+#check higham14_rowsOrthogonal_iff_hasOrthogonalRows
+#check higham14_rowsOrthogonal_iff_gram_offdiag_zero
+#check higham14_problem14_11_gram_det_eq_prod_diag_of_abs_det_eq_prod_rowNorm2
+#check higham14_amgm_all_eq_one_of_sum_eq_card_prod_eq_one
+#check higham14_problem14_11_posDef_offdiag_eq_zero_of_det_eq_prod_diag
 #check higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_rowsOrthogonal
 #check higham14_problem14_11_hadamardConditionNumber_eq_one_of_abs_det_eq_prod_rowNorm2
 #check higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_hadamardConditionNumber_eq_one
+#check higham14_problem14_11_gram_det_eq_prod_diag_of_hadamardConditionNumber_eq_one
 #check higham14_problem14_11_hadamardConditionNumber_eq_one_iff_abs_det_eq_prod_rowNorm2
 #check higham14_problem14_11_hadamardConditionNumber_eq_one_of_rowsOrthogonal
+#check higham14_problem14_11_rowsOrthogonal_of_abs_det_eq_prod_rowNorm2
+#check higham14_problem14_11_rowsOrthogonal_of_hadamardConditionNumber_eq_one
 #check higham14_colNorm2
 #check higham14_abs_det_eq_one_of_isOrthogonal
 #check higham14_colNorm2_matMul_orthogonal_left
@@ -6491,6 +6528,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_problem14_15_sigmaMin_add_pos_of_rectOpNorm2Le_lt
 #check higham14_problem14_15_opNorm2_add_le_of_opNorm2Le
 #check higham14_problem14_15_top_singularValue_add_le_of_opNorm2Le
+#check higham14_problem14_15_opNorm2Le_neg
+#check higham14_problem14_15_top_singularValue_abs_sub_le_of_opNorm2Le
 #check higham14_eq14_34_det_eq_prod_U_diag_of_LUFactSpec
 #check higham14_eq14_34_abs_det_eq_abs_prod_U_diag_of_LUFactSpec
 #check higham14_eq14_34_perm_sign_mul_det_eq_prod_U_diag_of_PermutedLUFactSpec
@@ -15936,6 +15975,47 @@ small enough to serve as a smoke check for representative public declarations.
 #check Wave16.sylvesterQQPartition_valid
 #check Wave16.sylvesterQQBlockCoeff_entry
 #check Wave16.sylvesterQQBackSubCoeff_zero
+-- Wave-16 companion: the (16.7)/(16.8) QUASI-QUASI Sylvester-level instantiation (full real-Schur generality)
+#check Wave16.flSylvesterQQBlockBackSubSolve
+#check Wave16.sylvesterVecCoeff_quasiQuasi_blockBackSub_componentwise_error_and_residual
+#check Wave16.sylvesterVecCoeff_quasiQuasi_blockBackSub_componentwise_residual
+#check Wave16.sylvesterResidualRect_quasiQuasi_blockBackSub_componentwise_le
+-- Wave-17: full ch16 closure — AUTOMATIC condition numbers (σ_min>0 from det≠0), LAPACK norm-1 estimator, rounded Hessenberg-Schur
+#check Wave17.finiteMatrixGram_eigenvalues_pos_of_det_ne_zero
+#check Wave17.exists_sylvesterOp_sigmaMin_of_no_common_complex_right_eigenvalue
+#check Wave17.H16_eq16_24_structured_condition_of_no_common_complex_right_eigenvalue
+#check Wave17.H16_eq16_27_lyapunov_condition_of_no_common_complex_right_eigenvalue
+#check Wave17.H16_eq16_28_sylvester_relative_aposteriori_bound_of_no_common_complex_right_eigenvalue
+#check NormEstimator.lapackNormEstimatorG_le_oneNormG
+#check NormEstimator.sylvester_practical_error_bound_with_norm1_estimator
+#check Wave17.sylvesterHessenbergShiftedColumn_roundedGEPP_backward_error
+#check Wave17.H16_eq16_4_8_auto_realSchur_existsUnique_solution_of_no_common
+-- Wave-18: Theorem 19.6 elementwise envelope — entrywise reflector error + reduced-space j² accumulation (printed j² reached)
+#check Wave18A.householder_single_reflector_entrywise_backward_error
+#check Wave18A.theorem19_6_elementwise_computed_backward_error
+#check Wave18B.fl_householderApply_entrywise_backward_error
+#check Wave18B.fl_householderApply_rowwise_accumulated_entry_bound_j_sq
+#check Wave18B.theorem19_6_elementwise_computed_entry_printed_j_sq
+-- Wave-18c/d: 19.6 original-space packaging (√m envelope) + PROVED intrinsic-√m obstruction
+#check Wave18C.theorem19_6_packaged_original_space_printed_j_sq
+#check Wave18D.perStep_leadingRow_contribution_zero
+#check Wave18D.pivotRow_entrywiseBudget_incurs_sqrt_m
+-- Wave-19: Theorem 19.6 Cox-Higham proof — √m-free crux PROVED (found the source, formalized the argument)
+#check Wave19.householder_multiplier_le_sqrt_two
+#check Wave19.sigma_ordering_norm_ratio_le
+#check Wave19.y_i_entrywise_bound
+#check Wave19.theorem19_6_coxHigham_rowwise_elementwise_backward_error
+-- Wave-19 concrete: hfact discharged for the computed fl_householderQR; hstage reduced to a crux-proved contract
+#check Wave19.entrywise_residual_telescope
+#check Wave19.theorem19_6_coxHigham_concrete_of_stageBound
+#check Wave19.concreteStageBound_of_yBounds
+-- Wave-19 full: concrete entrywise per-step reflector error + single-level σ-transport PROVED on the genuine panel
+#check Wave19.fl_householderApplyMatrixRect_entrywise_backward_error
+#check Wave19.panelStep_entrywise_le_rowGrowth
+#check Wave19.panelStep_transport_entrywise_le
+#check Wave19.theorem19_6_coxHigham_concrete_full
+-- Wave-19 assembly: recursive entrywise step + the verified per-stage-pivoting prerequisite (missing algorithm, not math)
+#check Wave19.entrywise_recursive_cons
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved

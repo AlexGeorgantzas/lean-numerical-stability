@@ -101,6 +101,10 @@ import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Eq9EndToEnd
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16QuasiRoundedSolve
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16QuasiRoundedSylvester
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16QuasiQuasiRounded
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16QuasiQuasiSylvester
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16AutoCondition
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16NormEstimator
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16HessenbergRounded
 import LeanFpAnalysis.FP.Analysis.NumericalRadius
 import LeanFpAnalysis.FP.Analysis.SchurTriangulation
 import LeanFpAnalysis.FP.Analysis.MatrixPowersHenrici
@@ -155,6 +159,14 @@ import LeanFpAnalysis.FP.Algorithms.QR.Higham19Lemma7Gamma4
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Lemma9DisjointSweep
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Alg11CGSRounded
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6Pivoted
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6Elementwise
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6ElementwiseEntry
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6ElementwisePackaged
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6RowSpecific
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6CoxHigham
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6CoxHighamConcrete
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6CoxHighamFull
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6CoxHighamAssembly
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Labels
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve

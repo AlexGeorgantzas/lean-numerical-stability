@@ -19303,6 +19303,146 @@ theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQR
     hDeltaR1, hDeltaR2, ?_⟩
   simpa [Q, Rhat, R, c_hat, cBot, h, rhat] using hsys
 
+/-- The conservative gamma-factor RHS index used in the current Theorem 20.4
+    implementation-backed `Delta f` package is positive for every nonempty
+    panel. -/
+theorem theorem20_4GammaFactorRhsIndex_pos {n k : ℕ} (hn : 0 < n) :
+    0 < householderQRRhsPanelGammaClosedGrowthIndex (n + k) n := by
+  have hm : 0 < n + k := Nat.lt_of_lt_of_le hn (Nat.le_add_right n k)
+  have hF :
+      0 < householderQRRhsPanelGammaClosedGrowthFactor (n + k) n :=
+    householderQRRhsPanelGammaClosedGrowthFactor_pos (m := n + k) (p := n) hm
+  have hK : 0 < householderConstructApplyGammaIndex (n + k) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hprinted : 0 < n * householderConstructApplyGammaIndex (n + k) :=
+    Nat.mul_pos hn hK
+  rw [householderQRRhsPanelGammaClosedGrowthIndex_eq_factor_mul_printedIndex]
+  exact Nat.mul_pos hF hprinted
+
+/-- Unit-roundoff threshold that implies the half-radius guard for the
+    conservative gamma-factor RHS package in Theorem 20.4. -/
+noncomputable def theorem20_4GammaFactorRhsSmallnessThreshold (n k : ℕ) : ℝ :=
+  1 / (2 *
+    (householderQRRhsPanelGammaClosedGrowthIndex (n + k) n : ℝ))
+
+/-- The gamma-factor RHS smallness threshold is positive for every nonempty
+    panel. -/
+theorem theorem20_4GammaFactorRhsSmallnessThreshold_pos {n k : ℕ}
+    (hn : 0 < n) :
+    0 < theorem20_4GammaFactorRhsSmallnessThreshold n k := by
+  have hidx_nat :
+      0 < householderQRRhsPanelGammaClosedGrowthIndex (n + k) n :=
+    theorem20_4GammaFactorRhsIndex_pos (n := n) (k := k) hn
+  have hidx : 0 < (householderQRRhsPanelGammaClosedGrowthIndex (n + k) n : ℝ) := by
+    exact_mod_cast hidx_nat
+  unfold theorem20_4GammaFactorRhsSmallnessThreshold
+  exact one_div_pos.mpr (mul_pos (by norm_num) hidx)
+
+/-- Source-facing smallness lemma for the current Theorem 20.4 conservative
+    gamma-factor RHS package.  It replaces the raw half-radius guard
+    `idx * fp.u <= 1/2` by a named unit-roundoff threshold. -/
+theorem theorem20_4GammaFactorRhs_half_of_unit_roundoff_lt_smallnessThreshold
+    (fp : FPModel) {n k : ℕ} (hn : 0 < n)
+    (hu : fp.u < theorem20_4GammaFactorRhsSmallnessThreshold n k) :
+    ((householderQRRhsPanelGammaClosedGrowthIndex (n + k) n : ℝ) *
+        fp.u ≤ 1 / 2) := by
+  let idx : ℕ := householderQRRhsPanelGammaClosedGrowthIndex (n + k) n
+  have hidx_nat : 0 < idx := by
+    simpa [idx] using theorem20_4GammaFactorRhsIndex_pos (n := n) (k := k) hn
+  have hidx : 0 < (idx : ℝ) := by
+    exact_mod_cast hidx_nat
+  have hmul_lt :
+      (idx : ℝ) * fp.u <
+        (idx : ℝ) * theorem20_4GammaFactorRhsSmallnessThreshold n k :=
+    mul_lt_mul_of_pos_left hu hidx
+  have hright :
+      (idx : ℝ) * theorem20_4GammaFactorRhsSmallnessThreshold n k = 1 / 2 := by
+    have hthreshold :
+        theorem20_4GammaFactorRhsSmallnessThreshold n k =
+          1 / (2 * (idx : ℝ)) := by
+      dsimp [idx, theorem20_4GammaFactorRhsSmallnessThreshold]
+    rw [hthreshold]
+    field_simp [ne_of_gt hidx]
+  rw [hright] at hmul_lt
+  exact le_of_lt hmul_lt
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 conservative gamma-factor
+    source package with the half-radius guard discharged by a named
+    unit-roundoff smallness threshold.
+
+This is the source-facing form of the implementation-backed `Delta f` route
+with the explicit gamma-factor coefficient.  It still deliberately keeps the
+extra factor `2 * householderQRRhsPanelGammaClosedGrowthFactor (n+k) n`; the
+printed `n * gamma` coefficient remains a separate sharpening problem. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_gamma_factor_source_rhs_bound_unit_roundoff_smallnessThreshold
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hu : fp.u < theorem20_4GammaFactorRhsSmallnessThreshold n k)
+    (hdiag : ∀ i : Fin n,
+      fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) i ≠ 0) :
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA : Fin (n + k) → Fin n → ℝ,
+    ∃ G : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H1w H2w H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      frobNorm DeltaA ≤
+        gamma fp (n * householderConstructApplyGammaIndex (n + k)) *
+          frobNorm A ∧
+      (∀ i j, 0 ≤ G i j) ∧
+      frobNorm G = 1 ∧
+      (∀ i j, |DeltaA i j| ≤
+        ((n + k : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j) ∧
+      (∀ i, |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) *
+          ((2 : ℝ) *
+            (householderQRRhsPanelGammaClosedGrowthFactor (n + k) n : ℝ) *
+            gamma fp (n * householderConstructApplyGammaIndex (n + k)))) *
+          lsTheorem20_4DeltafMajorant H1w H2w f rhat i) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H1w i j) ∧
+      (∀ i j, 0 ≤ H2w i j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H1w = 1 ∧
+      frobNorm H2w = 1 ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR1) i j)
+        (fun i j => A i j + DeltaA i j +
+          matMulRectLeft Q (lsQRTallBlock DeltaR2) i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x :=
+  LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_higham_matrix_solve_components_with_gamma_factor_source_rhs_bound
+    fp A f g hn
+    (theorem20_4GammaFactorRhs_half_of_unit_roundoff_lt_smallnessThreshold
+      fp hn hu)
+    hdiag
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.4, source-facing coefficient
     obstruction for the printed `Delta f` route.
 
@@ -24735,6 +24875,38 @@ theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_matrixOnlyEtaF_atTop
   exact
     lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_nonneg_iSup_atTop_of_left_panel_rowRank_eq_card
       A b hy hnot hA
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 source-facing WKS package:
+    under the finite-positive, nonzero-candidate, non-minimizer, and
+    full-left-panel-rank hypotheses, the infimum model equals both displayed
+    finite right-hand sides, and the eigenvalue right-hand side tends to the
+    matrix-only `Delta b = 0` model as `theta -> +∞`. -/
+theorem theorem20_5_wks_formula_eigenvalue_and_matrixOnly_limit_of_left_panel_rowRank_eq_card
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hA : lsRealRectRowRank A = m + 1) :
+    (lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y) ∧
+    (lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y) ∧
+    Filter.Tendsto
+      (fun theta : ℝ =>
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y)
+      Filter.atTop
+      (nhds (lsNormwiseBackwardErrorMatrixOnlyEtaF A b y)) := by
+  exact
+    ⟨lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_left_panel_rowRank_eq_card
+        htheta A b hy hnot hA,
+      lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_left_panel_rowRank_eq_card
+        htheta A b hy hnot hA,
+      lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_matrixOnlyEtaF_atTop_of_left_panel_rowRank_eq_card
+        A b hy hnot hA⟩
 
 /-- Positive finite-`theta` WKS branch from the concrete rank-one
     source-block certificate.  This replaces the generic upper-inequality

@@ -21,8 +21,33 @@
   19.10 (γ̃_{m+n−2}-shape restatement), 19.6 (assembled with Π, columnwise +
   componentwise); Algorithms 19.11 (exact skeleton + ROUNDED kernel/state) and 19.12
   (exact skeleton + the 19.13 route). The exactly-two allowed obstructions: (a)
-  Theorem 19.6's printed row-wise ELEMENTWISE envelope — cited-without-local-proof
-  (Powell–Reid/Cox–Higham external; no printed proof to anchor); (b) Theorem 19.13's
+  Theorem 19.6's printed row-wise ELEMENTWISE envelope — the elementwise CORE is now
+  PROVED (Wave-18, `Higham19Thm6Elementwise`/`Higham19Thm6ElementwiseEntry`, axiom-clean):
+  the entrywise single-Householder-reflector backward error from the FP primitives
+  (`fl_householderApply_entrywise_backward_error`) and the reduced-space accumulation
+  `theorem19_6_elementwise_computed_entry_printed_j_sq` reaching the PRINTED `j²`
+  (reflector-count × elementwise-dimension) · γ̃-class · (1+√2)^steps (= α_i) · rowMax
+  for the genuine computed reflector sequence. Residual: the original-space backward-ΔA
+  PACKAGING (mapping the reduced-space difference through the orthogonal Q to a bound on
+  ΔA of AΠ) — the Powell–Reid row-structure step; the naive orthogonal bound gives a
+  √m·max-over-rows constant (`Higham19Thm6ElementwisePackaged`: the packaging identity
+  ΔA = Q·(R̂ − Qᵀ(AΠ)) and `|ΔA_ij| ≤ √m·j²·γ̃-class·α·rowMax` for the genuine computed
+  pivoted QR, axiom-clean). PROVEN that from orthogonality alone the √m and the
+  max-over-rows are unavoidable (an orthogonal Q genuinely spreads a reduced-space row-k
+  perturbation across all output rows). The EXACT printed row-i-specific α_i·max_s|a_is|
+  (no √m, row-i data only) needs the Powell–Reid triangular-sweep row-structure argument,
+  whose source paper is NOT in the local set — so it stays cited-without-local-proof, but
+  now with the elementwise core proved and the residual PINNED — and PROVED intrinsic
+  (Wave-18d, `Higham19Thm6RowSpecific`, axiom-clean): the per-step trailing-perturbation
+  route splits into a leading-row half that is EXACTLY local and √m-free
+  (`perStep_leadingRow_contribution_zero`) and a pivot-row half that PROVABLY incurs √m
+  (`pivotRow_entrywiseBudget_incurs_sqrt_m`, derived from the repo's own exact pivot
+  identity `pivot entry = trailing 2-norm`, and the repo's own row-growth constant
+  `active_row_growth_factor = max(1+√2,√m)` already carries the √m). So the √m is a
+  THEOREM about the algorithm, not proof slack; removing it to reach the row-i-local
+  α_i·max needs the external Powell–Reid ENTRYWISE (not normwise) accumulation whose
+  source is not local — a rigorously-evidenced cited-without-local-proof terminal
+   (`theorem19_6_rowSpecific_packaging_obstruction`). WEB-RESEARCH FINDING (2026-07-12, Powell–Reid 1969 / Cox–Higham 1998 "Stability of Householder QR Factorization for Weighted Least Squares"): the row-wise elementwise bound is a property of ROW-SORTED Householder QR — sorting rows by decreasing norm (a preprocessing permutation) plus the specific (19.1) sign choice is what yields row-wise backward stability and controls α_i. The current assembly is column-pivot-only, which is exactly why it hits the proven-intrinsic √m. Full closure requires formalizing the Cox–Higham row-sorted backward-error construction; its precise ΔA form is not reliably reconstructible from the abstracts alone (the √m-removal mechanism is subtle — the pivot identity |pivot|=trailing-2-norm holds regardless of row order), so this remains a rigorously-evidenced, source-dependent BLOCKED terminal — RESOLVED (2026-07-12): I obtained the actual proof (Cox–Higham 1998, on the author site) and FORMALIZED the entire √m-free Cox–Higham mathematics (Wave-19 `Higham19Thm6CoxHigham`: Lemma 2.1 √2-multiplier, Lemma 2.2 entrywise per-step, the σ-ordering z_k/y_i bound that removes the √m, the j² assembly, and abstract Theorem 2.3 |ΔA_ij| ≤ j²γ̃_m α_i), discharged `hfact` for the computed panel, proved the concrete entrywise per-step reflector error + single-level σ-transport + the recursive assembly step (`…Concrete/Full/Assembly`). The √m my earlier waves hit is NOT a defect — it lives inside α_i (Cox–Higham Thm 4.2: α_i ≤ √m(1+√2)^{n-1}). DECISIVE VERIFIED FINDING: the √m-free row-wise bound requires PER-STAGE column pivoting, but the repositorys computed `fl_householderQRPanel_R` does NOT pivot per stage (it head-permutes once via `pivotHeadPerm` then runs the standard non-pivoting panel; the `pivoted_qr_activeMaxPivot_policy_*` lemmas are standalone, never used in the QR construction — verified by grep + exploration). So the per-stage σ-ordering is unavailable and the √m-free bound genuinely does not hold for THAT algorithm (its honest bound carries √m, matching Wave-18D). REMAINING PREREQUISITE (a missing ALGORITHM, not missing mathematics): implement a genuine per-stage column-pivoting computed Householder QR (Algorithm 19.5) calling `householderActiveMaxPivotColumn`/`householderSwapColumns` before each reflector, prove its backward error + the σ-ordering, then the assembly closes 19.6 unconditionally. (b) Theorem 19.13's
   genuinely-MGS rounded-loop identification over the BARE `FPModel` — PROVEN
   impossible by in-repo counterexamples; closed instead under the honest
   source-faithful strong model (`AllPivotsSelfAnnihilatingReflectorModel`, full
