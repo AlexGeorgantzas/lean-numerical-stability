@@ -30,8 +30,15 @@
   for the genuine computed reflector sequence. Residual: the original-space backward-ΔA
   PACKAGING (mapping the reduced-space difference through the orthogonal Q to a bound on
   ΔA of AΠ) — the Powell–Reid row-structure step; the naive orthogonal bound gives a
-  √m·max-over-rows constant, and recovering the exact printed row-i-specific α_i·max_s|a_is|
-  is the remaining external-cited subtlety. (b) Theorem 19.13's
+  √m·max-over-rows constant (`Higham19Thm6ElementwisePackaged`: the packaging identity
+  ΔA = Q·(R̂ − Qᵀ(AΠ)) and `|ΔA_ij| ≤ √m·j²·γ̃-class·α·rowMax` for the genuine computed
+  pivoted QR, axiom-clean). PROVEN that from orthogonality alone the √m and the
+  max-over-rows are unavoidable (an orthogonal Q genuinely spreads a reduced-space row-k
+  perturbation across all output rows). The EXACT printed row-i-specific α_i·max_s|a_is|
+  (no √m, row-i data only) needs the Powell–Reid triangular-sweep row-structure argument,
+  whose source paper is NOT in the local set — so it stays cited-without-local-proof, but
+  now with the elementwise core proved and the residual pinned to exactly that one
+  row-structure step (`theorem19_6_printed_row_specific_residual`). (b) Theorem 19.13's
   genuinely-MGS rounded-loop identification over the BARE `FPModel` — PROVEN
   impossible by in-repo counterexamples; closed instead under the honest
   source-faithful strong model (`AllPivotsSelfAnnihilatingReflectorModel`, full
