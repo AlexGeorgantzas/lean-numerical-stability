@@ -16005,6 +16005,10 @@ small enough to serve as a smoke check for representative public declarations.
 #check Wave19.sigma_ordering_norm_ratio_le
 #check Wave19.y_i_entrywise_bound
 #check Wave19.theorem19_6_coxHigham_rowwise_elementwise_backward_error
+-- Wave-19 concrete: hfact discharged for the computed fl_householderQR; hstage reduced to a crux-proved contract
+#check Wave19.entrywise_residual_telescope
+#check Wave19.theorem19_6_coxHigham_concrete_of_stageBound
+#check Wave19.concreteStageBound_of_yBounds
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved
