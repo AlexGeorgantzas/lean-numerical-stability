@@ -6377,6 +6377,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check triInv_method2_offdiag_update_delta_bound
 #check triInv_method2_offdiag_scaled_residual_bound
 #check triInv_method2_left_residual_normwise
+#check triInv_method2_left_residual_normwise_of_strict_tail_kernel_spec
 #check triInv_method1B_spec_of_column_backward_error
 #check triInv_method1B_right_residual_of_column_backward_error
 #check triInv_method1B_right_residual_normwise

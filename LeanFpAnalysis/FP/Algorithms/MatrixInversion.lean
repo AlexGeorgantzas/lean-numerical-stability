@@ -3939,6 +3939,31 @@ theorem triInv_method2_left_residual_of_strict_tail_kernel_spec
   triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul
     n fp L X_hat hn2 hLT hKernel.method2 hKernel.strict_tail_dot_scalar
 
+/-- Problem 14.2 / Lemma 14.1 normwise bridge:
+    a Method 2 strict-tail kernel certificate implies the corresponding
+    infinity-norm left-residual bound, with the same conservative
+    `gamma_(n+2)` coefficient as the rounded dot/scalar componentwise theorem.
+
+    This is still conditional on the concrete reverse-column loop producing
+    `Method2StrictTailKernelSpec`, but it removes the remaining normwise
+    handoff once that kernel package is available. -/
+theorem triInv_method2_left_residual_normwise_of_strict_tail_kernel_spec
+    (n : ℕ) (hn0 : 0 < n) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn2 : gammaValid fp (n + 2))
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hKernel : Method2StrictTailKernelSpec fp n L X_hat) :
+    infNorm (fun i j =>
+      ∑ k : Fin n, X_hat i k * L k j - if i = j then 1 else 0) ≤
+      gamma fp (n + 2) * infNorm X_hat * infNorm L := by
+  have hComp :=
+    triInv_method2_left_residual_of_strict_tail_kernel_spec
+      n fp L X_hat hn2 hLT hKernel
+  exact higham14_infNorm_le_of_componentwise_matmul_bound hn0
+    (R := fun i j => ∑ k : Fin n, X_hat i k * L k j -
+      if i = j then 1 else 0)
+    (A := X_hat) (B := L) (gamma_nonneg fp hn2) hComp
+
 /-- Higham, 2nd ed., Chapter 14, Problem 14.5, right-approximate-inverse
     residual bound.
 
