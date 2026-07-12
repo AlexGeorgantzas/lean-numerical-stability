@@ -101,6 +101,7 @@ import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Eq9EndToEnd
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16QuasiRoundedSolve
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16QuasiRoundedSylvester
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16QuasiQuasiRounded
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16QuasiQuasiSylvester
 import LeanFpAnalysis.FP.Analysis.NumericalRadius
 import LeanFpAnalysis.FP.Analysis.SchurTriangulation
 import LeanFpAnalysis.FP.Analysis.MatrixPowersHenrici

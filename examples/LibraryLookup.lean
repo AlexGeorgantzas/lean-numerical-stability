@@ -15936,6 +15936,11 @@ small enough to serve as a smoke check for representative public declarations.
 #check Wave16.sylvesterQQPartition_valid
 #check Wave16.sylvesterQQBlockCoeff_entry
 #check Wave16.sylvesterQQBackSubCoeff_zero
+-- Wave-16 companion: the (16.7)/(16.8) QUASI-QUASI Sylvester-level instantiation (full real-Schur generality)
+#check Wave16.flSylvesterQQBlockBackSubSolve
+#check Wave16.sylvesterVecCoeff_quasiQuasi_blockBackSub_componentwise_error_and_residual
+#check Wave16.sylvesterVecCoeff_quasiQuasi_blockBackSub_componentwise_residual
+#check Wave16.sylvesterResidualRect_quasiQuasi_blockBackSub_componentwise_le
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved
