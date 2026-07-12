@@ -5590,12 +5590,14 @@ simplification, the exact Hyman block identities
 - `triInv_method2_left_residual_upper_zero`
 - `triInv_method2_left_residual_diag_bound`
 - `triInv_method2_left_residual_diag_product_bound`
+- `triInv_method2_left_residual_diag_product_bound_of_diag_upper`
 - `triInv_method2_left_residual_from_region_bounds`
 - `triInv_method2_left_residual_of_strict_tail_gamma`
 - `higham14_unit_roundoff_add_one_plus_u_mul_gamma_le_gamma_succ`
 - `triInv_method2_left_residual_of_strict_tail_fl_dot`
 - `higham14_unit_roundoff_add_one_plus_u_mul_rounded_gamma_le_gamma_succ_succ`
 - `triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul`
+- `triInv_method2_left_residual_of_strict_tail_storage`
 - `Method2StrictTailKernelSpec`
 - `triInv_method2_left_residual_of_strict_tail_kernel_spec`
 - `triInv_method2_offdiag_update_delta_bound`
@@ -5754,6 +5756,10 @@ simplification, the exact Hyman block identities
 - `higham14_problem14_15_opNorm2_le_kappa2_scaled_last_singularValue`
 - `higham14_problem14_15_abs_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound`
 - `higham14_problem14_15_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound_of_det_pos`
+- `higham14_problem14_15_product_guard_of_lt_inv_card`
+- `higham14_problem14_15_eps_lt_one_not_sufficient_for_product_guard`
+- `higham14_problem14_15_abs_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound_inv_card_guard`
+- `higham14_problem14_15_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound_inv_card_guard_of_det_pos`
 - `higham14_problem14_15_sigmaMin_sub_le_sigmaMin_of_sub_rectOpNorm2Le`
 - `higham14_problem14_15_sigmaMin_sub_le_sigmaMin_add_of_rectOpNorm2Le`
 - `higham14_problem14_15_sigmaMin_add_pos_of_rectOpNorm2Le_lt`
