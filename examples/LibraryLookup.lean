@@ -6350,6 +6350,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check methodA_computed_inverse_entry_abs_sub_nonsingInv_le_of_lu_factor_budget
 #check inverseRightResidual
 #check inverseLeftResidual
+#check higham14_eq14_3_forward_error_bound_of_abs_Y_le
+#check higham14_eq14_3_forward_error_firstorder_replacement
 #check higham14_infNorm_le_of_componentwise_abs_matmul_bound
 #check higham14_infNorm_le_of_componentwise_matmul_bound
 #check triInv_method2_left_residual_normwise

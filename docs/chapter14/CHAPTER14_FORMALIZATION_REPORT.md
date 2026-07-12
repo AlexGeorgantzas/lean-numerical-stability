@@ -26,6 +26,7 @@
 |---|---|---|---|---|
 | (14.1) | `ideal_right_residual` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Exact componentwise right-residual bound from an explicit perturbation and right-inverse equation. | Proved. |
 | (14.2) | `ideal_left_residual` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Exact componentwise left-residual bound from an explicit perturbation and left-inverse equation. | Proved. |
+| (14.3) bounded replacement layer | `ideal_forward_error`, `higham14_eq14_3_forward_error_bound_of_abs_Y_le`, `higham14_eq14_3_forward_error_firstorder_replacement` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Exact perturbed-inverse forward-error bound with `|Y|`, replacement by any supplied componentwise envelope, and the source-shaped `|A_inv||A||A_inv|` envelope under the explicit hypothesis `|Y| <= |A_inv|`. | Bounded-replacement layer proved; the source `|Y| = |A_inv| + O(eps)` derivation and full `O(eps^2)` endpoint remain open. |
 | (14.4) | `triInv_method1_right_residual_matrix` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Method 1 right-residual bound via Ch8 triangular solve. | Proved from existing triangular solve theorem. |
 | (14.5) | `triInv_method1_forward_error` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Componentwise forward-error bound for Method 1. | Proved. |
 | (14.7) | `triInv_method1_normwise_error` | `LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` | Legacy infinity-norm wrapper. | Proved. |
@@ -79,6 +80,8 @@
 | Declaration | Why needed | Used by | Feasibility status |
 |---|---|---|---|
 | `inverseRightResidual`, `inverseLeftResidual` | Stable source-facing names for `AX-I` and `XA-I`. | Problem 14.3; later Problems 14.4--14.5. | implemented |
+| `higham14_eq14_3_forward_error_bound_of_abs_Y_le` | Replaces the `|Y|` factor in the ideal forward-error theorem by any caller-supplied componentwise envelope. | Equation (14.3) first-order replacement layer. | implemented |
+| `higham14_eq14_3_forward_error_firstorder_replacement` | Specializes (14.3) to the source-shaped `|A_inv||A||A_inv|` envelope under the explicit hypothesis `|Y| <= |A_inv|`. | Equation (14.3) first-order replacement layer. | implemented |
 | `higham14_problem14_3_right_residual_eq_mul_left_residual` | Exact identity `AX-I = A(XA-I)A_inv`. | Problem 14.3 right-over-left ratio. | implemented |
 | `higham14_problem14_3_left_residual_eq_mul_right_residual` | Exact identity `XA-I = A_inv(AX-I)A`. | Problem 14.3 left-over-right ratio. | implemented |
 | `higham14_problem14_3_max_residual_ratio_infNorm_le_kappa` | Closes the printed max residual-ratio inequality for `infNorm` under nonzero residual denominators. | Chapter 14 inventory/report. | implemented |
@@ -276,6 +279,7 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
 ## Hidden-hypothesis summary
 
 - The new Problem 14.3 max-ratio theorem assumes both residual denominators are positive. The two one-sided ratio lemmas require only the denominator used by that ratio. This makes the source's implicit nonzero-ratio side condition explicit.
+- The new (14.3) bounded-replacement theorems assume an explicit componentwise envelope for `|Y|`; the strongest wrapper assumes `|Y| <= |A_inv|`. This is the correct first-order handoff surface, not a proof of the source's remaining `|Y| = |A_inv| + O(eps)` or `O(eps^2)` remainder.
 - The new Problem 14.4 theorem closes the Appendix A two-by-two family in infinity norm. It proves exact `XA`, exact `AX`, `||XA-I||_inf = 2 eps`, a right-residual lower bound, and an arbitrary-large right-over-left ratio for `0 < eps <= 1`.
 - The new Problem 14.5 theorems close both source residual bounds, the exact right/left forward-error consequences, explicit first-order replacement wrappers, and the exact envelope-comparison interpretation. The right residual theorem assumes `|AX-I| <= u|A||X|`; the right forward theorem additionally assumes a supplied left inverse `A_inv` and `Ax = b`. The first-order wrappers make the `|X| <= |A_inv|` and `|Y| <= |A_inv|` replacement assumptions explicit; the comparison theorem shows the exact-RHS right envelope is the left first-order envelope after one extra nonnegative `|A_inv||A|` amplification. Full asymptotic `O(u^2)` replacement calculus remains open.
 - The new Problem 14.2 normwise wrappers turn existing componentwise product-shaped triangular-inverse residual bounds into infinity-norm residual bounds. They rely on the same componentwise Method 2/1B/2C interfaces already recorded in the ledger, so they do not by themselves close the missing loop/source-assumption analyses.
@@ -305,6 +309,9 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
 - Commands run so far:
   - `lake env lean LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean`
   - `lake env lean LeanFpAnalysis/FP/Algorithms/GaussJordan.lean`
+  - `lake env lean LeanFpAnalysis/FP/Algorithms/MatrixInversion.lean` after adding the (14.3) bounded-replacement wrappers
+  - `lake env lean LeanFpAnalysis/FP/Algorithms/LeastSquares/LSE.lean` after merging latest `origin/main` into the (14.3) wrapper milestone
+  - focused scratch `#check`/`#print axioms` run for the new (14.3) bounded-replacement wrappers
   - `lake build LeanFpAnalysis.FP.Algorithms.MatrixInversion`
   - `lake build LeanFpAnalysis.FP.Algorithms.GaussJordan`
   - `git diff --check`

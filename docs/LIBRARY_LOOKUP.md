@@ -5558,8 +5558,9 @@ composition wrappers:
 - `gje_spd_residual`
 
 Chapter 14 exact algebra closures in `Algorithms/MatrixInversion.lean` include
-Problem 14.3, the explicit residual-ratio family from Problem 14.4, the residual
-and forward-error consequences from Problem 14.5, Problem 14.7, Problem 14.8's
+the (14.3) bounded-replacement forward-error layer, Problem 14.3, the explicit
+residual-ratio family from Problem 14.4, the residual and forward-error
+consequences from Problem 14.5, Problem 14.7, Problem 14.8's
 complex-to-real block inverse and HPD-to-SPD bridge, the p.279
 Hadamard determinant condition number, equation (14.34) in its exact
 no-pivot/unit-lower LU form plus signed and absolute-value pivoted forms,
@@ -5571,6 +5572,8 @@ simplification, the exact Hyman block identities
 (14.35)--(14.36), and Problem 14.10:
 
 - `inverseRightResidual`, `inverseLeftResidual`
+- `higham14_eq14_3_forward_error_bound_of_abs_Y_le`
+- `higham14_eq14_3_forward_error_firstorder_replacement`
 - `higham14_infNorm_le_of_componentwise_abs_matmul_bound`
 - `higham14_infNorm_le_of_componentwise_matmul_bound`
 - `triInv_method2_left_residual_normwise`
