@@ -16041,6 +16041,10 @@ small enough to serve as a smoke check for representative public declarations.
 -- Wave-20 full-swap: 19.6 hfact UNCONDITIONAL + entrywise assembly + correct one-indexed printed envelope
 #check Wave20.fl_householderQRColPivotFull_hfact
 #check Wave20.entrywiseStage_to_rowwise
+-- Wave-20 FINAL: 19.6 reduced to one named readiness predicate; the full entrywise induction + culminating theorem
+#check Wave20.perturbation_col_le_sigma
+#check Wave20.entrywiseStage_of_stageData
+#check Wave20.H19_Theorem19_6_final
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved
