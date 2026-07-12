@@ -14,6 +14,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.LinearAlgebra.Matrix.Orthogonal
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
@@ -3961,6 +3962,35 @@ theorem higham14_problem14_11_hadamardConditionNumber_ge_one_of_det_ne_zero
     the rows of `A` are pairwise orthogonal in the Euclidean inner product. -/
 def higham14_rowsOrthogonal {n : ℕ} (A : Fin n → Fin n → ℝ) : Prop :=
   ∀ ⦃i j : Fin n⦄, i ≠ j → ∑ k : Fin n, A i k * A j k = 0
+
+/-- The source-facing row-orthogonality predicate is exactly Mathlib's
+    matrix row-orthogonality predicate. -/
+theorem higham14_rowsOrthogonal_iff_hasOrthogonalRows {n : ℕ}
+    (A : Fin n → Fin n → ℝ) :
+    higham14_rowsOrthogonal A ↔
+      Matrix.HasOrthogonalRows (A : Matrix (Fin n) (Fin n) ℝ) := by
+  rfl
+
+/-- Row orthogonality is equivalently zero off-diagonal entries in the
+    row Gram matrix `A Aᵀ`.  This is the landing point for the missing
+    equality case of Hadamard's determinant inequality. -/
+theorem higham14_rowsOrthogonal_iff_gram_offdiag_zero {n : ℕ}
+    (A : Fin n → Fin n → ℝ) :
+    higham14_rowsOrthogonal A ↔
+      let AM : Matrix (Fin n) (Fin n) ℝ := A
+      ∀ ⦃i j : Fin n⦄, i ≠ j →
+        (AM * Matrix.transpose AM) i j = 0 := by
+  constructor
+  · intro h
+    dsimp only
+    intro i j hij
+    simpa [Matrix.mul_apply, Matrix.transpose_apply] using
+      h (i := i) (j := j) hij
+  · intro h
+    dsimp only at h
+    intro i j hij
+    simpa [Matrix.mul_apply, Matrix.transpose_apply] using
+      h (i := i) (j := j) hij
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.11:
     pairwise orthogonal rows attain equality in Hadamard's determinant
