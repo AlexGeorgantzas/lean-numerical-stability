@@ -167,6 +167,7 @@ import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6CoxHigham
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6CoxHighamConcrete
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6CoxHighamFull
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6CoxHighamAssembly
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6ColPivot
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Labels
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
