@@ -28941,6 +28941,36 @@ theorem higham11_7_tridiagonalBranchPath_uniform_coeff_add_majorant_of_component
     k c_bound c_rec c_bound_cap c_rec_cap (c_bound_cap + c_rec_cap)
     hbound hrec le_rfl
 
+/-- **Theorem 11.7 uniform component path budget comparison**.  Uniform local
+and recursive coefficient caps, together with roundoff and local-matrix norm
+comparisons, supply the concrete lifted-path budget inequality with the final
+constant coefficient `c_bound_cap+c_rec_cap`. -/
+theorem higham11_7_tridiagonalBranchPath_local_budgets_le_global_of_uniform_component_bounds
+    (n k : ℕ) (tailDim : Fin k → ℕ) (step : Fin k → PivotSize)
+    (Aloc : ∀ t : Fin k,
+      higham11_7_TridiagonalBranchMatrix (tailDim t) (step t))
+    (A : Fin n → Fin n → ℝ)
+    (c_bound c_rec u_loc : Fin k → ℝ) (u c_bound_cap c_rec_cap : ℝ)
+    (hc_bound : ∀ t : Fin k, 0 ≤ c_bound t)
+    (hc_rec : ∀ t : Fin k, 0 ≤ c_rec t)
+    (hc_bound_cap : 0 ≤ c_bound_cap) (hc_rec_cap : 0 ≤ c_rec_cap)
+    (hu_loc : ∀ t : Fin k, 0 ≤ u_loc t)
+    (hu_le : ∀ t : Fin k, u_loc t ≤ u)
+    (hbound : ∀ t : Fin k, c_bound t ≤ c_bound_cap)
+    (hrec : ∀ t : Fin k, c_rec t ≤ c_rec_cap)
+    (hAnorm : ∀ t : Fin k, infNorm (Aloc t) ≤ infNorm A) :
+    ∀ t : Fin k,
+      (c_bound t + c_rec t) * u_loc t * infNorm (Aloc t) ≤
+        (c_bound_cap + c_rec_cap) * u * infNorm A := by
+  exact
+    higham11_7_tridiagonalBranchPath_local_budgets_le_global_of_coeff_roundoff_norm
+      n k tailDim step Aloc A c_bound c_rec u_loc
+      (fun _ => c_bound_cap + c_rec_cap) u hc_bound hc_rec
+      (fun _ => add_nonneg hc_bound_cap hc_rec_cap) hu_loc hu_le
+      (higham11_7_tridiagonalBranchPath_uniform_coeff_add_majorant_of_component_bounds
+        k c_bound c_rec c_bound_cap c_rec_cap hbound hrec)
+      hAnorm
+
 /-- **Theorem 11.7 branch residual witness extraction**.  A single branch-local
 residual package supplies an explicit perturbation matrix with the componentwise
 budget, leading-block support, and `∞`-norm bound needed by later aggregation. -/
