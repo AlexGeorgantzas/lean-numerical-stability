@@ -780,6 +780,58 @@ theorem triInv_method2_left_residual_diag_bound (n : ℕ) (fp : FPModel)
       simp at hnot
   simpa [hsum, hdiag] using hδ
 
+/-- Method 2 off-diagonal update residual unpacked from `Method2Spec`:
+    for `i > j`, the update equation gives a local delta certificate for
+    `X_hat i j + X_hat j j * (X_hat * L) i j`. -/
+theorem triInv_method2_offdiag_update_delta_bound (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hSpec : Method2Spec fp n L X_hat) :
+    ∀ j i : Fin n, i.val > j.val →
+      ∃ Δ : ℝ,
+        |Δ| ≤ gamma fp n * |X_hat i j| * |L j j| ∧
+        X_hat i j +
+          X_hat j j * (∑ k : Fin n, X_hat i k * L k j) = Δ := by
+  intro j i hij
+  obtain ⟨Δ_mv, hΔ, hupdate⟩ := hSpec.offdiag_err j i hij
+  refine ⟨Δ_mv j, ?_, ?_⟩
+  · simpa using hΔ j
+  · rw [hupdate]
+    ring
+
+/-- Method 2 off-diagonal update residual after multiplying by the diagonal
+    entry `L j j`.  This combines `offdiag_err` with the diagonal error field
+    and is a below-diagonal support lemma for the Lemma 14.1 induction. -/
+theorem triInv_method2_offdiag_scaled_residual_bound (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hSpec : Method2Spec fp n L X_hat) :
+    ∀ j i : Fin n, i.val > j.val →
+      ∃ δ : ℝ, |δ| ≤ fp.u ∧
+        |X_hat i j * L j j +
+          (1 + δ) * (∑ k : Fin n, X_hat i k * L k j)| ≤
+        (gamma fp n * |X_hat i j| * |L j j|) * |L j j| := by
+  intro j i hij
+  obtain ⟨δ, hδ, hdiag⟩ := hSpec.diag_err j
+  obtain ⟨Δ, hΔ, hΔeq⟩ :=
+    triInv_method2_offdiag_update_delta_bound n fp L X_hat hSpec j i hij
+  refine ⟨δ, hδ, ?_⟩
+  have hmain :
+      X_hat i j * L j j +
+          (1 + δ) * (∑ k : Fin n, X_hat i k * L k j) =
+        Δ * L j j := by
+    calc
+      X_hat i j * L j j +
+          (1 + δ) * (∑ k : Fin n, X_hat i k * L k j)
+          = (X_hat i j +
+              X_hat j j * (∑ k : Fin n, X_hat i k * L k j)) * L j j := by
+              rw [← hdiag]
+              ring
+      _ = Δ * L j j := by rw [hΔeq]
+  rw [hmain]
+  calc
+    |Δ * L j j| = |Δ| * |L j j| := abs_mul _ _
+    _ ≤ (gamma fp n * |X_hat i j| * |L j j|) * |L j j| :=
+      mul_le_mul_of_nonneg_right hΔ (abs_nonneg _)
+
 /-- **Abstract Lemma 14.1 interface** (Higham eq. 14.8): Method 2 left residual.
 
     The computed inverse X̂ from Method 2 satisfies the left residual bound:
