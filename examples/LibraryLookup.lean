@@ -6341,6 +6341,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check gje_cumulative_product_rhs_accumulation
 #check gje_stage2_forward_error_bound
 #check gje_stage2_backward_error
+#check gje_stage2_backward_error_of_cumulative_product_certificates
 #check gje_overall_residual
 #check gje_overall_forward_error
 #check gje_spd_residual
