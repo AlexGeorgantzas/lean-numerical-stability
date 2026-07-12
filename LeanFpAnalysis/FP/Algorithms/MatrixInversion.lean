@@ -972,6 +972,47 @@ theorem triInv_method2_left_residual_diag_bound (n : ℕ) (fp : FPModel)
       simp at hnot
   simpa [hsum, hdiag] using hδ
 
+/-- Lemma 14.1 support: regionwise Method 2 residual bounds assemble into
+    the full componentwise left-residual bound.  This is only an assembly
+    theorem: the diagonal and below-diagonal product-budget estimates remain
+    explicit hypotheses, so the missing rounded-loop induction is not hidden. -/
+theorem triInv_method2_left_residual_from_region_bounds (n : ℕ)
+    (L X_hat : Fin n → Fin n → ℝ) {eps : ℝ}
+    (heps : 0 ≤ eps)
+    (hUpper : ∀ i j : Fin n, i.val < j.val →
+      ∑ k : Fin n, X_hat i k * L k j -
+        (if i = j then 1 else 0) = 0)
+    (hDiag : ∀ j : Fin n,
+      |∑ k : Fin n, X_hat j k * L k j - 1| ≤
+        eps * ∑ k : Fin n, |X_hat j k| * |L k j|)
+    (hLower : ∀ j row : Fin n, row.val > j.val →
+      |∑ k : Fin n, X_hat row k * L k j -
+          (if row = j then 1 else 0)| ≤
+        eps * ∑ k : Fin n, |X_hat row k| * |L k j|) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * L k j -
+          (if i = j then 1 else 0)| ≤
+        eps * ∑ k : Fin n, |X_hat i k| * |L k j| := by
+  intro i j
+  by_cases hij : i.val < j.val
+  · have hzero := hUpper i j hij
+    have hS_nonneg :
+        0 ≤ ∑ k : Fin n, |X_hat i k| * |L k j| := by
+      exact Finset.sum_nonneg fun k _ =>
+        mul_nonneg (abs_nonneg (X_hat i k)) (abs_nonneg (L k j))
+    have hres_zero :
+        |∑ k : Fin n, X_hat i k * L k j -
+            (if i = j then 1 else 0)| = 0 := by
+      rw [hzero]
+      simp
+    rw [hres_zero]
+    exact mul_nonneg heps hS_nonneg
+  · by_cases hji : j.val < i.val
+    · exact hLower j i hji
+    · have hij_eq : i = j := Fin.ext (by omega)
+      subst i
+      simpa using hDiag j
+
 /-- Method 2 off-diagonal update residual unpacked from `Method2Spec`:
     for `i > j`, the update equation gives a local delta certificate for
     `X_hat i j + X_hat j j * (X_hat * L) i j`. -/
