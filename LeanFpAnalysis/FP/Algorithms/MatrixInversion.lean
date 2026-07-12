@@ -710,6 +710,76 @@ structure Method2Spec (fp : FPModel) (n : ℕ)
   /-- Upper triangle is zero (since L is lower triangular, L⁻¹ is too). -/
   upper_zero : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0
 
+/-- Triangular-shape support for Method 2: if both `X_hat` and `L` are lower
+    triangular, then the left residual `X_hat * L - I` is zero strictly above
+    the diagonal. -/
+theorem triInv_lower_left_residual_upper_zero (n : ℕ)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hX_lower : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0)
+    (hL_lower : ∀ i j : Fin n, j.val > i.val → L i j = 0) :
+    ∀ i j : Fin n, i.val < j.val →
+      ∑ k : Fin n, X_hat i k * L k j -
+        (if i = j then 1 else 0) = 0 := by
+  intro i j hij
+  have hne : i ≠ j := by
+    intro h
+    have hval : i.val = j.val := congrArg Fin.val h
+    omega
+  have hsum : ∑ k : Fin n, X_hat i k * L k j = 0 := by
+    apply Finset.sum_eq_zero
+    intro k _
+    by_cases hik : i.val < k.val
+    · rw [hX_lower i k hik]
+      ring
+    · have hkj : j.val > k.val := by
+        exact Nat.lt_of_le_of_lt (Nat.le_of_not_gt hik) hij
+      rw [hL_lower k j hkj]
+      ring
+  simp [hsum, hne]
+
+/-- Method 2's stored triangular shape makes the left residual vanish above
+    the diagonal.  This closes the easy structural part of the Lemma 14.1
+    residual; the below-diagonal induction remains separate. -/
+theorem triInv_method2_left_residual_upper_zero (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hSpec : Method2Spec fp n L X_hat) :
+    ∀ i j : Fin n, i.val < j.val →
+      ∑ k : Fin n, X_hat i k * L k j -
+        (if i = j then 1 else 0) = 0 :=
+  triInv_lower_left_residual_upper_zero n L X_hat
+    hSpec.upper_zero hLT
+
+/-- Method 2's diagonal residual bound from the diagonal error field in
+    `Method2Spec`: on the diagonal, triangularity reduces `(X_hat * L)_{jj}`
+    to `X_hat j j * L j j = 1 + δ`, with `|δ| ≤ u`. -/
+theorem triInv_method2_left_residual_diag_bound (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hSpec : Method2Spec fp n L X_hat) :
+    ∀ j : Fin n,
+      |∑ k : Fin n, X_hat j k * L k j - 1| ≤ fp.u := by
+  intro j
+  obtain ⟨δ, hδ, hdiag⟩ := hSpec.diag_err j
+  have hsum : ∑ k : Fin n, X_hat j k * L k j =
+      X_hat j j * L j j := by
+    apply Finset.sum_eq_single j
+    · intro k _ hk
+      by_cases hjk : j.val < k.val
+      · rw [hSpec.upper_zero j k hjk]
+        ring
+      · have hkj : j.val > k.val := by
+          have hle : k.val ≤ j.val := Nat.le_of_not_gt hjk
+          have hne_val : k.val ≠ j.val := by
+            intro hval
+            exact hk (Fin.ext hval)
+          omega
+        rw [hLT k j hkj]
+        ring
+    · intro hnot
+      simp at hnot
+  simpa [hsum, hdiag] using hδ
+
 /-- **Abstract Lemma 14.1 interface** (Higham eq. 14.8): Method 2 left residual.
 
     The computed inverse X̂ from Method 2 satisfies the left residual bound:
