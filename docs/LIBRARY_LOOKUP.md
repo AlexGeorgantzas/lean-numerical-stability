@@ -5598,6 +5598,8 @@ simplification, the exact Hyman block identities
 - `triInv_method2_offdiag_update_delta_bound`
 - `triInv_method2_offdiag_scaled_residual_bound`
 - `triInv_method2_left_residual_normwise`
+- `triInv_method1B_spec_of_column_backward_error`
+- `triInv_method1B_right_residual_of_column_backward_error`
 - `triInv_method1B_right_residual_normwise`
 - `triInv_method1B_right_residual_normwise_from_spec`
 - `triInv_method2C_left_residual_normwise`

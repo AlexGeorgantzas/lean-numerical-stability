@@ -1242,6 +1242,28 @@ structure BlockMethod1BSpec (fp : FPModel) (n N : ℕ)
     ∀ i, ∑ k : Fin n, (L i k + ΔL i k) * X_hat k j =
       if i = j then 1 else 0
 
+/-- **Method 1B specification from column backward errors** (Higham eqs.
+    14.11--14.13 support).
+
+    This source-facing packaging theorem records the exact data needed by the
+    abstract block Method 1B interface: a compatible block count, lower
+    triangular shape of the computed inverse, and per-column backward-error
+    certificates.  The block-loop derivation of those column certificates
+    remains a separate dependency. -/
+theorem triInv_method1B_spec_of_column_backward_error
+    (n N : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hBlockCount : N ≤ n)
+    (hLower : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0)
+    (hCol : ∀ j : Fin n, ∃ ΔL : Fin n → Fin n → ℝ,
+      (∀ i k, |ΔL i k| ≤ gamma fp n * |L i k|) ∧
+      ∀ i, ∑ k : Fin n, (L i k + ΔL i k) * X_hat k j =
+        if i = j then 1 else 0) :
+    BlockMethod1BSpec fp n N L X_hat :=
+  { block_count_le_dim := hBlockCount
+    lower_triangular_inverse := hLower
+    column_backward_error := hCol }
+
 /-- **Lemma 14.2** (Higham eq. 14.10): Method 1B right residual.
 
     |LX̂ − I| ≤ cₙu|L||X̂|.
@@ -1298,6 +1320,30 @@ theorem triInv_method1B_right_residual_from_spec (n N : ℕ) (fp : FPModel)
       gamma fp n * ∑ k : Fin n, |L i k| * |X_hat k j| :=
   triInv_method1B_right_residual n fp L X_hat hL_diag hLT hn
     hSpec.column_backward_error
+
+/-- **Lemma 14.2 bridge**: Method 1B right residual from explicit column
+    backward-error certificates.
+
+    This theorem separates the residual consequence from the still-open block
+    partition proof of the column certificates in equations (14.11)--(14.13). -/
+theorem triInv_method1B_right_residual_of_column_backward_error
+    (n N : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hn : gammaValid fp n)
+    (hBlockCount : N ≤ n)
+    (hLower : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0)
+    (hCol : ∀ j : Fin n, ∃ ΔL : Fin n → Fin n → ℝ,
+      (∀ i k, |ΔL i k| ≤ gamma fp n * |L i k|) ∧
+      ∀ i, ∑ k : Fin n, (L i k + ΔL i k) * X_hat k j =
+        if i = j then 1 else 0) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, L i k * X_hat k j - if i = j then 1 else 0| ≤
+      gamma fp n * ∑ k : Fin n, |L i k| * |X_hat k j| :=
+  triInv_method1B_right_residual_from_spec n N fp L X_hat hL_diag hLT hn
+    (triInv_method1B_spec_of_column_backward_error n N fp L X_hat
+      hBlockCount hLower hCol)
 
 /-- Problem 14.2 / Lemma 14.2 normwise form:
     Method 1B's componentwise right-residual bound implies the corresponding

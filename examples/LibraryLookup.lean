@@ -6375,6 +6375,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check triInv_method2_offdiag_update_delta_bound
 #check triInv_method2_offdiag_scaled_residual_bound
 #check triInv_method2_left_residual_normwise
+#check triInv_method1B_spec_of_column_backward_error
+#check triInv_method1B_right_residual_of_column_backward_error
 #check triInv_method1B_right_residual_normwise
 #check triInv_method1B_right_residual_normwise_from_spec
 #check triInv_method2C_left_residual_normwise
@@ -16020,6 +16022,9 @@ small enough to serve as a smoke check for representative public declarations.
 #check Wave20.fl_householderQRColPivot_R
 #check Wave20.vecNorm2_col_colPivotNextPanelExact_le_sigma
 #check Wave20.colPivot_ratio_le_of_sigma
+-- Wave-20 full-swap: 19.6 hfact UNCONDITIONAL + entrywise assembly + correct one-indexed printed envelope
+#check Wave20.fl_householderQRColPivotFull_hfact
+#check Wave20.entrywiseStage_to_rowwise
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved
