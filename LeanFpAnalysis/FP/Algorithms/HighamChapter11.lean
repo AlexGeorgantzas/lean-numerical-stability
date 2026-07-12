@@ -46930,6 +46930,56 @@ theorem higham11_8_aasen_outer_factor_row_col_sum_majorants_of_AasenSpec_entry_b
   higham11_8_aasen_outer_factor_row_col_sum_majorants_of_entry_bound
     n hn L κ hentry hspec.L_upper_zero hspec.L_first_col
 
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency,
+source inverse-entry form: a direct exact outer-factor entry estimate
+`|Lᵢⱼ|≤1/(1+γ)` gives source-shaped row and column sum majorants through
+the `AasenSpec` structural zeros. -/
+theorem higham11_8_aasen_outer_factor_row_col_sum_majorants_of_AasenSpec_inverse_entry_bound
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (γ : ℝ)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ 1 / (1 + γ)) :
+    (∀ i : Fin n, (∑ j : Fin n, |L i j|) ≤
+        ((n - 1 : ℕ) : ℝ) * (1 / (1 + γ))) ∧
+      (∀ j : Fin n, (∑ i : Fin n, |L i j|) ≤
+        ((n - 1 : ℕ) : ℝ) * (1 / (1 + γ))) :=
+  higham11_8_aasen_outer_factor_row_col_sum_majorants_of_AasenSpec_entry_bound
+    n hn A L T σ (1 / (1 + γ)) hspec hentry
+
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency,
+relative source inverse-entry form: the direct exact outer-factor entry
+estimate `|Lᵢⱼ|≤1/(1+γ)` gives `(1+γ)`-scaled row and column sum caps by
+the printed `(n-1)` factor. -/
+theorem higham11_8_relative_outer_factor_row_col_sum_majorants_of_AasenSpec_inverse_entry_bound
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (γ : ℝ)
+    (hγ : 0 ≤ γ)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ 1 / (1 + γ)) :
+    (∀ i : Fin n,
+        (1 + γ) * (∑ j : Fin n, |L i j|) ≤ ((n - 1 : ℕ) : ℝ)) ∧
+      (∀ j : Fin n,
+        (1 + γ) * (∑ i : Fin n, |L i j|) ≤ ((n - 1 : ℕ) : ℝ)) := by
+  rcases
+      higham11_8_aasen_outer_factor_row_col_sum_majorants_of_AasenSpec_inverse_entry_bound
+        n hn A L T σ γ hspec hentry with
+    ⟨hrow, hcol⟩
+  have h1γ_nonneg : 0 ≤ 1 + γ := by nlinarith
+  have h1γ_pos : 0 < 1 + γ := by nlinarith
+  have hscale :
+      (1 + γ) * (((n - 1 : ℕ) : ℝ) * (1 + γ)⁻¹) =
+        ((n - 1 : ℕ) : ℝ) := by
+    field_simp [ne_of_gt h1γ_pos]
+  constructor
+  · intro i
+    have h :=
+      mul_le_mul_of_nonneg_left (hrow i) h1γ_nonneg
+    simpa [one_div, hscale] using h
+  · intro j
+    have h :=
+      mul_le_mul_of_nonneg_left (hcol j) h1γ_nonneg
+    simpa [one_div, hscale] using h
+
 /-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency:
 an `AasenSpec` plus the normalized source-scale entry cap gives the relative
 outer-factor norm caps used by exact-radius Aasen wrappers. -/
