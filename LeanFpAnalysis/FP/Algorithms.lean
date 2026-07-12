@@ -162,6 +162,7 @@ import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6Pivoted
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6Elementwise
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6ElementwiseEntry
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6ElementwisePackaged
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6RowSpecific
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Labels
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve

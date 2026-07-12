@@ -15983,6 +15983,10 @@ small enough to serve as a smoke check for representative public declarations.
 #check Wave18B.fl_householderApply_entrywise_backward_error
 #check Wave18B.fl_householderApply_rowwise_accumulated_entry_bound_j_sq
 #check Wave18B.theorem19_6_elementwise_computed_entry_printed_j_sq
+-- Wave-18c/d: 19.6 original-space packaging (√m envelope) + PROVED intrinsic-√m obstruction
+#check Wave18C.theorem19_6_packaged_original_space_printed_j_sq
+#check Wave18D.perStep_leadingRow_contribution_zero
+#check Wave18D.pivotRow_entrywiseBudget_incurs_sqrt_m
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved

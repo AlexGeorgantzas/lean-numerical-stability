@@ -37,8 +37,17 @@
   perturbation across all output rows). The EXACT printed row-i-specific α_i·max_s|a_is|
   (no √m, row-i data only) needs the Powell–Reid triangular-sweep row-structure argument,
   whose source paper is NOT in the local set — so it stays cited-without-local-proof, but
-  now with the elementwise core proved and the residual pinned to exactly that one
-  row-structure step (`theorem19_6_printed_row_specific_residual`). (b) Theorem 19.13's
+  now with the elementwise core proved and the residual PINNED — and PROVED intrinsic
+  (Wave-18d, `Higham19Thm6RowSpecific`, axiom-clean): the per-step trailing-perturbation
+  route splits into a leading-row half that is EXACTLY local and √m-free
+  (`perStep_leadingRow_contribution_zero`) and a pivot-row half that PROVABLY incurs √m
+  (`pivotRow_entrywiseBudget_incurs_sqrt_m`, derived from the repo's own exact pivot
+  identity `pivot entry = trailing 2-norm`, and the repo's own row-growth constant
+  `active_row_growth_factor = max(1+√2,√m)` already carries the √m). So the √m is a
+  THEOREM about the algorithm, not proof slack; removing it to reach the row-i-local
+  α_i·max needs the external Powell–Reid ENTRYWISE (not normwise) accumulation whose
+  source is not local — a rigorously-evidenced cited-without-local-proof terminal
+  (`theorem19_6_rowSpecific_packaging_obstruction`). (b) Theorem 19.13's
   genuinely-MGS rounded-loop identification over the BARE `FPModel` — PROVEN
   impossible by in-repo counterexamples; closed instead under the honest
   source-faithful strong model (`AllPivotsSelfAnnihilatingReflectorModel`, full
