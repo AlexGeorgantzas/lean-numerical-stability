@@ -34336,6 +34336,38 @@ theorem higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_lo
         tail_fl tail_exact Δloc hwit b x_hat hrow_zero_base)
     hrow_comp
 
+/-- **Theorem 11.7 concrete prefix-span residual-witness endpoint from
+endpoint, terminal, leading, and second-pivot solve bridges, uniform
+component-cap form**, zero common offset.  This is the component-cap analogue
+of the coefficient-sum second-pivot endpoint, routing the concrete
+second-pivot local row equations through the complement-row bridge. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_secondPivot_solve_rows :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact
+      c_bound_cap c_rec_cap C u hinit hlast_eq hlast hc_bound hc_rec
+      hc_bound_cap hc_rec_cap hu hbound hrec hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (hrow_second_local :
+        ∀ Δloc : ∀ t : Fin (k + 1),
+            Fin (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) →
+              Fin (higham11_7_tridiagonalBranchAmbientDim
+                (higham11_7_tridiagonalPathTailDim (k + 1) step t) (step t)) → ℝ,
+          higham11_7_TridiagonalBranchPathResidualWitnesses (k + 1) fp
+            (fun t => higham11_7_tridiagonalPathTailDim (k + 1) step t) step
+            (fun t => higham11_7_tridiagonalPathBranchMatrix (k + 1) step A t)
+            c_bound c_rec (fun _ : Fin (k + 1) => u) tail_fl tail_exact Δloc →
+          higham11_7_ConcretePathSecondPivotLocalSolveRows
+            (k + 1) step A b x_hat Δloc) =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_solve_rows
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact
+      c_bound_cap c_rec_cap C u hinit hlast_eq hlast hc_bound hc_rec
+      hc_bound_cap hc_rec_cap hu hbound hrec hC hrow_one_local
+      hrow_two_local hrow_last_one_local hrow_last_two_local hrow_zero_base
+      (fun Δloc hwit =>
+        higham11_7_tridiagonalConcretePathResidualWitnesses_complement_full_solve_rows_of_pathSecondPivot_local_rows
+          (k + 1) fp step A b x_hat c_bound c_rec (fun _ : Fin (k + 1) => u)
+          tail_fl tail_exact Δloc hwit (hrow_second_local Δloc hwit))
+
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint from initial
 local branches and a terminal last branch, scalar-budget form**, zero common
 offset.  This keeps per-branch roundoff and coefficient majorants visible while
