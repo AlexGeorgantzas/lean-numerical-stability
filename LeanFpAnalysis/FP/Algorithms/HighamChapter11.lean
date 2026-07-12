@@ -67074,6 +67074,102 @@ def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerbo
       hT_U_diag hT_L_lower hT_U_upper hEq hTNJ hdetJ hineqJ hLU
       hL_entry_inv
 
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_entry_bound_scaled_unit`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_entry_bound_scaled_unit_of_unit_roundoff_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κ hspec hH_eq hTnz hcap hκunit hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hTNJ
+      hdetJ hineqJ hLU hL_entry =>
+    higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_entry_bound_scaled_unit
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κ hspec hH_eq hTnz
+      (higham11_8_gammaValid_15n25_of_unit_roundoff_bound fp n hcap)
+      hκunit hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hTNJ hdetJ hineqJ hLU hL_entry
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_entry_bound_scaled_unit`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_entry_bound_scaled_unit_of_u_le_cap :=
+  fun fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κ hspec hH_eq hTnz hu hcap hκunit hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hTNJ
+      hdetJ hineqJ hLU hL_entry =>
+    higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_entry_bound_scaled_unit
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κ hspec hH_eq hTnz
+      (higham11_8_gammaValid_15n25_of_u_le_cap fp n Ucap hu hcap)
+      hκunit hLhat_update hLhat_fixed_successor hLhat_fixed_other
+      hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag
+      hT_L_lower hT_U_upper hEq hTNJ hdetJ hineqJ hLU hL_entry
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_entry_bound_inv_one_plus`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_entry_bound_inv_one_plus_of_unit_roundoff_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κ hspec hH_eq hTnz hcap hκ hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hTNJ
+      hdetJ hineqJ hLU hL_entry =>
+    higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_entry_bound_inv_one_plus
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κ hspec hH_eq hTnz
+      (higham11_8_gammaValid_15n25_of_unit_roundoff_bound fp n hcap)
+      hκ hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel
+      h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower
+      hT_U_upper hEq hTNJ hdetJ hineqJ hLU hL_entry
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_entry_bound_inv_one_plus`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_entry_bound_inv_one_plus_of_u_le_cap :=
+  fun fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κ hspec hH_eq hTnz hu hcap hκ hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hTNJ
+      hdetJ hineqJ hLU hL_entry =>
+    higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_entry_bound_inv_one_plus
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU κ hspec hH_eq hTnz
+      (higham11_8_gammaValid_15n25_of_u_le_cap fp n Ucap hu hcap)
+      hκ hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel
+      h20 hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower
+      hT_U_upper hEq hTNJ hdetJ hineqJ hLU hL_entry
+
+/-- Unit-roundoff-smallness source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_inverse_entry_bound`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_inverse_entry_bound_of_unit_roundoff_bound :=
+  fun fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hH_eq hTnz hcap hLhat_update hLhat_fixed_successor
+      hLhat_fixed_other hbudget_rel h20 hLhat_diag hLhat_lower hT_L_diag
+      hT_U_diag hT_L_lower hT_U_upper hEq hTNJ hdetJ hineqJ hLU
+      hL_entry_inv =>
+    higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_inverse_entry_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hH_eq hTnz
+      (higham11_8_gammaValid_15n25_of_unit_roundoff_bound fp n hcap)
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hEq hTNJ hdetJ hineqJ hLU hL_entry_inv
+
+/-- Displayed-cap source form of
+`higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_inverse_entry_bound`. -/
+def higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_inverse_entry_bound_of_u_le_cap :=
+  fun fp n Ucap hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hH_eq hTnz hu hcap hLhat_update
+      hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20 hLhat_diag
+      hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper hEq hTNJ
+      hdetJ hineqJ hLU hL_entry_inv =>
+    higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_of_inverse_entry_bound
+      fp n hn_pos hn_dim A Pmat L H T L_hat T_hat L_T_hat U_T_hat b
+      DeltaT_LU hspec hH_eq hTnz
+      (higham11_8_gammaValid_15n25_of_u_le_cap fp n Ucap hu hcap)
+      hLhat_update hLhat_fixed_successor hLhat_fixed_other hbudget_rel h20
+      hLhat_diag hLhat_lower hT_L_diag hT_U_diag hT_L_lower hT_U_upper
+      hEq hTNJ hdetJ hineqJ hLU hL_entry_inv
+
 /-- Exact-`T_hat` checkerboard product-majorant inverse-entry endpoint with the
 identity permutation specialized as `σ := id`, removing the separate
 `σ i = i` caller obligation. -/
