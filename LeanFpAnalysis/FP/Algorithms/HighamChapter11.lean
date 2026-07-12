@@ -47348,6 +47348,30 @@ theorem higham11_8_aasen_product_square_bounds_of_AasenSpec_inverse_entry_bound
     n hn A L T σ γ (1 / (1 + γ)) κT κmidLU hγ le_rfl
     hκT hκT_le_one hκmidLU hκmidLU_le_one hspec hentry
 
+/-- Higham, 2nd ed., Chapter 11, Theorem 11.8 product-size dependency,
+source inverse-entry form with exact middle constants: the direct Aasen entry
+cap supplies the four square product caps used by exact-`T_hat` routes when
+the middle `T` and middle LU factors are charged with coefficient `1`. -/
+theorem higham11_8_aasen_product_square_bounds_of_AasenSpec_inverse_entry_bound_unit_middle
+    (n : ℕ) (hn : 1 < n)
+    (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n) (γ : ℝ)
+    (hγ : 0 ≤ γ)
+    (hspec : higham11_8_AasenSpec n A L T σ)
+    (hentry : ∀ i j : Fin n, |L i j| ≤ 1 / (1 + γ)) :
+    (infNorm L * 1 * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (infNorm L * infNorm (fun r c => L c r) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ) * infNorm L) *
+          ((1 + γ) * infNorm (fun r c => L c r)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) ∧
+      (((1 + γ) * infNorm L) * 1 *
+          ((1 + γ) * infNorm (fun r c => L c r)) ≤
+        ((n - 1 : ℕ) : ℝ) ^ 2) :=
+  higham11_8_aasen_product_square_bounds_of_AasenSpec_inverse_entry_bound
+    n hn A L T σ γ 1 1 hγ
+    (by norm_num) (by norm_num) (by norm_num) (by norm_num) hspec hentry
+
 /-- Monotonicity helper for coefficient terms with multiplier `2γ+γ^2`. -/
 theorem higham11_8_two_gamma_plus_sq_mul_le_of_le
     (γ x y η : ℝ) (hγ : 0 ≤ γ) (hxy : x ≤ y)
