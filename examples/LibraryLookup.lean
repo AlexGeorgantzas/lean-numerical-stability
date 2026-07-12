@@ -6358,6 +6358,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check triInv_lower_left_residual_upper_zero
 #check triInv_method2_left_residual_upper_zero
 #check triInv_method2_left_residual_diag_bound
+#check triInv_method2_offdiag_update_delta_bound
+#check triInv_method2_offdiag_scaled_residual_bound
 #check triInv_method2_left_residual_normwise
 #check triInv_method1B_right_residual_normwise
 #check triInv_method1B_right_residual_normwise_from_spec
