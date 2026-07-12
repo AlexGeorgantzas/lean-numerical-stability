@@ -24876,6 +24876,38 @@ theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_matrixOnlyEtaF_atTop
     lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_nonneg_iSup_atTop_of_left_panel_rowRank_eq_card
       A b hy hnot hA
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 source-facing WKS package:
+    under the finite-positive, nonzero-candidate, non-minimizer, and
+    full-left-panel-rank hypotheses, the infimum model equals both displayed
+    finite right-hand sides, and the eigenvalue right-hand side tends to the
+    matrix-only `Delta b = 0` model as `theta -> +∞`. -/
+theorem theorem20_5_wks_formula_eigenvalue_and_matrixOnly_limit_of_left_panel_rowRank_eq_card
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hA : lsRealRectRowRank A = m + 1) :
+    (lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y) ∧
+    (lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y) ∧
+    Filter.Tendsto
+      (fun theta : ℝ =>
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y)
+      Filter.atTop
+      (nhds (lsNormwiseBackwardErrorMatrixOnlyEtaF A b y)) := by
+  exact
+    ⟨lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_left_panel_rowRank_eq_card
+        htheta A b hy hnot hA,
+      lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_left_panel_rowRank_eq_card
+        htheta A b hy hnot hA,
+      lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_matrixOnlyEtaF_atTop_of_left_panel_rowRank_eq_card
+        A b hy hnot hA⟩
+
 /-- Positive finite-`theta` WKS branch from the concrete rank-one
     source-block certificate.  This replaces the generic upper-inequality
     hypothesis by the explicit expanded rank-one witness cost bound against
