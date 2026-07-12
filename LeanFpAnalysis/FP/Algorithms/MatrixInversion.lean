@@ -1404,6 +1404,34 @@ theorem triInv_method1B_right_residual_normwise_from_spec
   triInv_method1B_right_residual_normwise n hn0 fp L X_hat
     hL_diag hLT hn hSpec.column_backward_error
 
+/-- Problem 14.2 / Lemma 14.2 normwise bridge:
+    Method 1B's explicit column backward-error certificates imply the
+    corresponding infinity-norm right-residual bound.
+
+    This is the normwise companion of
+    `triInv_method1B_right_residual_of_column_backward_error`; the open source
+    obligation is still to derive the column certificates from the block Method
+    1B loop in equations (14.11)--(14.13). -/
+theorem triInv_method1B_right_residual_normwise_of_column_backward_error
+    (n N : ℕ) (hn0 : 0 < n) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hn : gammaValid fp n)
+    (hBlockCount : N ≤ n)
+    (hLower : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0)
+    (hCol : ∀ j : Fin n, ∃ ΔL : Fin n → Fin n → ℝ,
+      (∀ i k, |ΔL i k| ≤ gamma fp n * |L i k|) ∧
+      ∀ i, ∑ k : Fin n, (L i k + ΔL i k) * X_hat k j =
+        if i = j then 1 else 0) :
+    infNorm (fun i j =>
+      ∑ k : Fin n, L i k * X_hat k j - if i = j then 1 else 0) ≤
+      gamma fp n * infNorm L * infNorm X_hat :=
+  triInv_method1B_right_residual_normwise_from_spec n N hn0 fp L X_hat
+    hL_diag hLT hn
+    (triInv_method1B_spec_of_column_backward_error n N fp L X_hat
+      hBlockCount hLower hCol)
+
 /-- Exact off-diagonal block used in Higham equation (14.14), Method 2B:
     `-X22 * L21 * X11`.  Here `L21` is the lower-left rectangular block, and
     `X11`, `X22` are diagonal-block inverse approximations/exact blocks. -/
