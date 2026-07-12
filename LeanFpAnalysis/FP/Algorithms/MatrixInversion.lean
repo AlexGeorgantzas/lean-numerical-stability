@@ -686,6 +686,43 @@ theorem triInv_method1_normwise_error (n : ℕ) (_hn0 : 0 < n) (fp : FPModel)
 
 -- §14.2.1  Method 2 (reverse-order column computation via mat-vec multiply)
 
+/-- Lower-triangular column split used by Method 2: in column `j`, entries
+    above the diagonal vanish, so the column product separates into the diagonal
+    term plus the strict trailing tail. -/
+theorem lowerTri_column_sum_eq_diag_add_tail (n : ℕ)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hLT : ∀ a b : Fin n, b.val > a.val → L a b = 0) :
+    ∀ i j : Fin n,
+      (∑ k : Fin n, X_hat i k * L k j) =
+        X_hat i j * L j j +
+          ∑ k : Fin n, if j.val < k.val then X_hat i k * L k j else 0 := by
+  intro i j
+  classical
+  rw [← Finset.add_sum_erase Finset.univ
+    (fun k : Fin n => X_hat i k * L k j) (Finset.mem_univ j)]
+  congr 1
+  calc
+    (∑ k ∈ Finset.univ.erase j, X_hat i k * L k j)
+        = ∑ k ∈ Finset.univ.erase j,
+            (if j.val < k.val then X_hat i k * L k j else 0) := by
+          apply Finset.sum_congr rfl
+          intro k hk
+          have hk_ne : k ≠ j := by
+            simpa [Finset.mem_erase] using hk
+          by_cases hjk : j.val < k.val
+          · simp [hjk]
+          · have hkj : j.val > k.val := by
+              have hle : k.val ≤ j.val := Nat.le_of_not_gt hjk
+              have hne_val : k.val ≠ j.val := by
+                intro hval
+                exact hk_ne (Fin.ext hval)
+              omega
+            rw [hLT k j hkj]
+            simp [hjk]
+    _ = ∑ k : Fin n, if j.val < k.val then X_hat i k * L k j else 0 := by
+          rw [Finset.sum_erase]
+          simp
+
 /-- **Specification for Method 2 triangular inversion**.
 
     Method 2 computes columns of X̂ ≈ L⁻¹ in reverse order j = n, n−1, …, 1.
