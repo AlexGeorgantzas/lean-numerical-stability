@@ -972,6 +972,107 @@ theorem triInv_method2_left_residual_diag_bound (n : ℕ) (fp : FPModel)
       simp at hnot
   simpa [hsum, hdiag] using hδ
 
+/-- Lemma 14.1 support: Method 2's diagonal residual has the product-budget
+    shape needed by the all-region assembly theorem.  The diagonal relation
+    `X_hat j j * L j j = 1 + δ`, together with `|δ| ≤ u` and
+    `gammaValid fp (n + 1)`, ensures the diagonal product budget is nonvacuous:
+    the full column budget is at least `1 - u`, while
+    `gamma_(n+1) * (1 - u) ≥ u`. -/
+theorem triInv_method2_left_residual_diag_product_bound (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hSpec : Method2Spec fp n L X_hat) :
+    ∀ j : Fin n,
+      |∑ k : Fin n, X_hat j k * L k j - 1| ≤
+        gamma fp (n + 1) * ∑ k : Fin n, |X_hat j k| * |L k j| := by
+  intro j
+  have hdiag_res :=
+    triInv_method2_left_residual_diag_bound n fp L X_hat hLT hSpec j
+  obtain ⟨δ, hδ, hdiag⟩ := hSpec.diag_err j
+  have hle1 : 1 ≤ n + 1 := Nat.succ_le_succ (Nat.zero_le n)
+  have hvalid1 : gammaValid fp 1 :=
+    gammaValid_mono fp hle1 hn1
+  have hgamma1_le : gamma fp 1 ≤ gamma fp (n + 1) :=
+    gamma_mono fp hle1 hn1
+  have hu_lt_one : fp.u < 1 := by
+    have h := hvalid1
+    unfold gammaValid at h
+    norm_num at h
+    exact h
+  have hone_minus_nonneg : 0 ≤ 1 - fp.u := by linarith
+  have hgamma1_mul : gamma fp 1 * (1 - fp.u) = fp.u := by
+    have hden : (1 - fp.u) ≠ 0 := by linarith
+    unfold gamma
+    norm_num
+    field_simp [hden]
+  let S : ℝ := ∑ k : Fin n, |X_hat j k| * |L k j|
+  have hdiag_term_le_S : |X_hat j j| * |L j j| ≤ S := by
+    dsimp [S]
+    exact Finset.single_le_sum
+      (fun k _ => mul_nonneg (abs_nonneg (X_hat j k)) (abs_nonneg (L k j)))
+      (Finset.mem_univ j)
+  have hone_minus_le_prod : 1 - fp.u ≤ |X_hat j j| * |L j j| := by
+    have habs_lower : 1 - |δ| ≤ |1 + δ| := by
+      have htri : (1 : ℝ) ≤ |1 + δ| + |δ| := by
+        simpa [abs_neg, add_assoc] using (abs_add_le (1 + δ) (-δ))
+      linarith
+    calc
+      1 - fp.u ≤ 1 - |δ| := by linarith
+      _ ≤ |1 + δ| := habs_lower
+      _ = |X_hat j j * L j j| := by rw [hdiag]
+      _ = |X_hat j j| * |L j j| := by rw [abs_mul]
+  have hu_le_coeff_budget : fp.u ≤ gamma fp (n + 1) * S := by
+    calc
+      fp.u = gamma fp 1 * (1 - fp.u) := hgamma1_mul.symm
+      _ ≤ gamma fp (n + 1) * (1 - fp.u) :=
+        mul_le_mul_of_nonneg_right hgamma1_le hone_minus_nonneg
+      _ ≤ gamma fp (n + 1) * S := by
+        apply mul_le_mul_of_nonneg_left _ (gamma_nonneg fp hn1)
+        exact le_trans hone_minus_le_prod hdiag_term_le_S
+  exact le_trans hdiag_res hu_le_coeff_budget
+
+/-- Lemma 14.1 support: regionwise Method 2 residual bounds assemble into
+    the full componentwise left-residual bound.  This is only an assembly
+    theorem: the diagonal and below-diagonal product-budget estimates remain
+    explicit hypotheses, so the missing rounded-loop induction is not hidden. -/
+theorem triInv_method2_left_residual_from_region_bounds (n : ℕ)
+    (L X_hat : Fin n → Fin n → ℝ) {eps : ℝ}
+    (heps : 0 ≤ eps)
+    (hUpper : ∀ i j : Fin n, i.val < j.val →
+      ∑ k : Fin n, X_hat i k * L k j -
+        (if i = j then 1 else 0) = 0)
+    (hDiag : ∀ j : Fin n,
+      |∑ k : Fin n, X_hat j k * L k j - 1| ≤
+        eps * ∑ k : Fin n, |X_hat j k| * |L k j|)
+    (hLower : ∀ j row : Fin n, row.val > j.val →
+      |∑ k : Fin n, X_hat row k * L k j -
+          (if row = j then 1 else 0)| ≤
+        eps * ∑ k : Fin n, |X_hat row k| * |L k j|) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * L k j -
+          (if i = j then 1 else 0)| ≤
+        eps * ∑ k : Fin n, |X_hat i k| * |L k j| := by
+  intro i j
+  by_cases hij : i.val < j.val
+  · have hzero := hUpper i j hij
+    have hS_nonneg :
+        0 ≤ ∑ k : Fin n, |X_hat i k| * |L k j| := by
+      exact Finset.sum_nonneg fun k _ =>
+        mul_nonneg (abs_nonneg (X_hat i k)) (abs_nonneg (L k j))
+    have hres_zero :
+        |∑ k : Fin n, X_hat i k * L k j -
+            (if i = j then 1 else 0)| = 0 := by
+      rw [hzero]
+      simp
+    rw [hres_zero]
+    exact mul_nonneg heps hS_nonneg
+  · by_cases hji : j.val < i.val
+    · exact hLower j i hji
+    · have hij_eq : i = j := Fin.ext (by omega)
+      subst i
+      simpa using hDiag j
+
 /-- Method 2 off-diagonal update residual unpacked from `Method2Spec`:
     for `i > j`, the update equation gives a local delta certificate for
     `X_hat i j + X_hat j j * (X_hat * L) i j`. -/
@@ -3244,6 +3345,26 @@ lemma higham14_unit_roundoff_add_gamma_le_gamma_succ
     mul_nonneg (gamma_nonneg fp hvalid1) (gamma_nonneg fp hvalidn)
   linarith
 
+/-- Scalar gamma collapse used by the Method 2 strict-tail dot-product adapter:
+    `u + (1 + u) * gamma_n <= gamma_{n+1}`. -/
+lemma higham14_unit_roundoff_add_one_plus_u_mul_gamma_le_gamma_succ
+    (fp : FPModel) (n : ℕ) (hn1 : gammaValid fp (n + 1)) :
+    fp.u + (1 + fp.u) * gamma fp n ≤ gamma fp (n + 1) := by
+  have hvalid1 : gammaValid fp 1 :=
+    gammaValid_mono fp (by omega : 1 ≤ n + 1) hn1
+  have hvalidn : gammaValid fp n :=
+    gammaValid_mono fp (Nat.le_succ n) hn1
+  have hγ_sum : gamma fp 1 + gamma fp n + gamma fp 1 * gamma fp n ≤
+      gamma fp (n + 1) := by
+    have h := gamma_sum_le fp 1 n (by simpa [Nat.add_comm] using hn1)
+    simpa [Nat.add_comm, Nat.add_left_comm, Nat.add_assoc] using h
+  have hu_le_γ1 : fp.u ≤ gamma fp 1 :=
+    u_le_gamma fp one_pos hvalid1
+  have hγn_nonneg : 0 ≤ gamma fp n := gamma_nonneg fp hvalidn
+  have hu_gamma_le : fp.u * gamma fp n ≤ gamma fp 1 * gamma fp n :=
+    mul_le_mul_of_nonneg_right hu_le_γ1 hγn_nonneg
+  nlinarith
+
 /-- Lemma 14.1 support: a strict-tail Method 2 update with a `gamma_n`
     scaled product certificate gives the source-shaped below-diagonal
     `gamma_{n+1}` full-column residual budget. -/
@@ -3277,6 +3398,149 @@ theorem triInv_method2_offdiag_trailing_update_gamma_full_bound
   have hcoeff : fp.u + gamma fp n ≤ gamma fp (n + 1) :=
     higham14_unit_roundoff_add_gamma_le_gamma_succ fp n hn1
   exact le_trans hbase (mul_le_mul_of_nonneg_right hcoeff hS_nonneg)
+
+/-- Lemma 14.1 support: once the rounded strict-tail Method 2 update supplies
+    a `gamma_n` certificate, the already-proved upper, diagonal, and
+    below-diagonal regional estimates assemble into the source-shaped
+    `gamma_{n+1}` componentwise left-residual bound.
+
+This is still conditional infrastructure: the rounded strict-tail certificate
+is the remaining source-facing induction obligation. -/
+theorem triInv_method2_left_residual_of_strict_tail_gamma
+    (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hSpec : Method2Spec fp n L X_hat)
+    (hTrail : ∀ j row : Fin n, row.val > j.val →
+      ∃ Δ : ℝ,
+        |Δ * L j j| ≤ gamma fp n *
+          (∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0) ∧
+        X_hat row j =
+          -X_hat j j *
+            (∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0) + Δ) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * L k j -
+          (if i = j then 1 else 0)| ≤
+        gamma fp (n + 1) * ∑ k : Fin n, |X_hat i k| * |L k j| := by
+  have hUpper :=
+    triInv_method2_left_residual_upper_zero n fp L X_hat hLT hSpec
+  have hDiag :=
+    triInv_method2_left_residual_diag_product_bound n fp L X_hat hn1 hLT hSpec
+  have hLower :=
+    triInv_method2_offdiag_trailing_update_gamma_full_bound n fp L X_hat
+      hn1 hLT hSpec.diag_err hTrail
+  exact triInv_method2_left_residual_from_region_bounds n L X_hat
+    (gamma_nonneg fp hn1) hUpper hDiag hLower
+
+/-- Lemma 14.1 support: if the below-diagonal Method 2 entry is obtained by a
+    rounded strict-tail dot product and then scaled exactly by `-X_hat j j`,
+    the full componentwise left-residual bound follows with coefficient
+    `gamma_{n+1}`.
+
+This is a concrete dot-product adapter, not the final fully rounded Method 2
+loop theorem: the subsequent scalar scaling is still exact on this surface. -/
+theorem triInv_method2_left_residual_of_strict_tail_fl_dot
+    (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hSpec : Method2Spec fp n L X_hat)
+    (hUpdate : ∀ j row : Fin n, row.val > j.val →
+      X_hat row j =
+        -X_hat j j *
+          fl_dotProduct fp n
+            (fun k : Fin n => if j.val < k.val then X_hat row k else 0)
+            (fun k : Fin n => L k j)) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * L k j -
+          (if i = j then 1 else 0)| ≤
+        gamma fp (n + 1) * ∑ k : Fin n, |X_hat i k| * |L k j| := by
+  have hn : gammaValid fp n := gammaValid_mono fp (Nat.le_succ n) hn1
+  have hη_nonneg : 0 ≤ (1 + fp.u) * gamma fp n := by
+    exact mul_nonneg (by linarith [fp.u_nonneg]) (gamma_nonneg fp hn)
+  have hTrail : ∀ j row : Fin n, row.val > j.val →
+      ∃ Δ : ℝ,
+        |Δ * L j j| ≤ ((1 + fp.u) * gamma fp n) *
+          (∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0) ∧
+        X_hat row j =
+          -X_hat j j *
+            (∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0) + Δ := by
+    intro j row hij
+    let x : Fin n → ℝ := fun k => if j.val < k.val then X_hat row k else 0
+    let y : Fin n → ℝ := fun k => L k j
+    let exactTail : ℝ :=
+      ∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0
+    let tailAbs : ℝ :=
+      ∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0
+    let flTail : ℝ := fl_dotProduct fp n x y
+    let Δ : ℝ := -X_hat j j * (flTail - exactTail)
+    refine Exists.intro Δ (And.intro ?_ ?_)
+    case refine_1 =>
+      have hdot := dotProduct_error_bound fp n x y hn
+      have hsum_exact :
+          (∑ k : Fin n, x k * y k) = exactTail := by
+        dsimp [x, y, exactTail]
+        apply Finset.sum_congr rfl
+        intro k _
+        by_cases hjk : j.val < k.val <;> simp [hjk]
+      have hsum_abs :
+          (∑ k : Fin n, |x k| * |y k|) = tailAbs := by
+        dsimp [x, y, tailAbs]
+        apply Finset.sum_congr rfl
+        intro k _
+        by_cases hjk : j.val < k.val <;> simp [hjk]
+      have hdot_tail : |flTail - exactTail| ≤ gamma fp n * tailAbs := by
+        simpa [flTail, hsum_exact, hsum_abs] using hdot
+      let δ : ℝ := Classical.choose (hSpec.diag_err j)
+      have hδ_diag := Classical.choose_spec (hSpec.diag_err j)
+      have hδ : |δ| ≤ fp.u := hδ_diag.1
+      have hdiag : X_hat j j * L j j = 1 + δ := hδ_diag.2
+      have hdiag_abs : |X_hat j j * L j j| ≤ 1 + fp.u := by
+        calc
+          |X_hat j j * L j j| = |1 + δ| := by rw [hdiag]
+          _ ≤ |(1 : ℝ)| + |δ| := abs_add_le 1 δ
+          _ ≤ 1 + fp.u := by
+            norm_num
+            exact hδ
+      have honeu_nonneg : 0 ≤ 1 + fp.u := by linarith [fp.u_nonneg]
+      calc
+        |Δ * L j j| = |X_hat j j * L j j| * |flTail - exactTail| := by
+          dsimp [Δ]
+          rw [abs_mul, abs_mul, abs_neg, abs_mul]
+          ring
+        _ ≤ (1 + fp.u) * (gamma fp n * tailAbs) := by
+          exact mul_le_mul hdiag_abs hdot_tail (abs_nonneg _) honeu_nonneg
+        _ = ((1 + fp.u) * gamma fp n) * tailAbs := by ring
+    case refine_2 =>
+      have hupdate := hUpdate j row hij
+      calc
+        X_hat row j = -X_hat j j * flTail := by
+          simpa [flTail, x, y] using hupdate
+        _ = -X_hat j j * exactTail + Δ := by
+          dsimp [Δ]
+          ring
+  have hUpper :=
+    triInv_method2_left_residual_upper_zero n fp L X_hat hLT hSpec
+  have hDiag :=
+    triInv_method2_left_residual_diag_product_bound n fp L X_hat hn1 hLT hSpec
+  have hLowerEta :=
+    triInv_method2_offdiag_trailing_update_full_bound n fp L X_hat
+      hη_nonneg hLT hSpec.diag_err hTrail
+  have hcoeff : fp.u + (1 + fp.u) * gamma fp n ≤ gamma fp (n + 1) :=
+    higham14_unit_roundoff_add_one_plus_u_mul_gamma_le_gamma_succ fp n hn1
+  have hLower : ∀ j row : Fin n, row.val > j.val →
+      |∑ k : Fin n, X_hat row k * L k j -
+          (if row = j then 1 else 0)| ≤
+        gamma fp (n + 1) * ∑ k : Fin n, |X_hat row k| * |L k j| := by
+    intro j row hij
+    have hbase := hLowerEta j row hij
+    have hS_nonneg : 0 ≤ ∑ k : Fin n, |X_hat row k| * |L k j| := by
+      exact Finset.sum_nonneg (fun k _ =>
+        mul_nonneg (abs_nonneg _) (abs_nonneg _))
+    exact le_trans hbase (mul_le_mul_of_nonneg_right hcoeff hS_nonneg)
+  exact triInv_method2_left_residual_from_region_bounds n L X_hat
+    (gamma_nonneg fp hn1) hUpper hDiag hLower
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.5, right-approximate-inverse
     residual bound.
