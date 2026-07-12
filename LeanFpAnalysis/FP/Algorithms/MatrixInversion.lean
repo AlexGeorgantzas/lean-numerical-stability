@@ -4039,6 +4039,154 @@ theorem higham14_problem14_11_gram_det_eq_prod_diag_of_abs_det_eq_prod_rowNorm2
     _ = ∏ i : Fin n, (AM * Matrix.transpose AM) i i := by
           exact Finset.prod_congr rfl (fun i _ => (hdiag i).symm)
 
+/-- AM-GM equality helper for the Chapter 14 Hadamard equality case:
+    nonnegative `z_i` with arithmetic mean and geometric mean both one must
+    have every `z_i = 1`. -/
+theorem higham14_amgm_all_eq_one_of_sum_eq_card_prod_eq_one {n : ℕ} (hn : 0 < n)
+    (z : Fin n → ℝ) (hz : ∀ i, 0 ≤ z i)
+    (hsum : ∑ i : Fin n, z i = n) (hprod : ∏ i : Fin n, z i = 1) :
+    ∀ i : Fin n, z i = 1 := by
+  have hnR : (0 : ℝ) < n := by exact_mod_cast hn
+  have hw : ∀ i ∈ (Finset.univ : Finset (Fin n)),
+      0 < (1 / (n : ℝ)) := by
+    intro _ _
+    positivity
+  have hw' : ∑ _i : Fin n, (1 / (n : ℝ)) = 1 := by
+    rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+    field_simp
+  have hz' : ∀ i ∈ (Finset.univ : Finset (Fin n)), 0 ≤ z i := by
+    intro i _
+    exact hz i
+  have hrhs : ∑ i : Fin n, (1 / (n : ℝ)) * z i = 1 := by
+    rw [← Finset.mul_sum, hsum]
+    field_simp
+  have hgm_nonneg : 0 ≤ ∏ i : Fin n, z i ^ (1 / (n : ℝ)) := by
+    exact Finset.prod_nonneg fun i _ => Real.rpow_nonneg (hz i) _
+  have hpow :
+      (∏ i : Fin n, z i ^ (1 / (n : ℝ))) ^ n = ∏ i : Fin n, z i := by
+    rw [← Finset.prod_pow]
+    apply Finset.prod_congr rfl
+    intro i _
+    rw [← Real.rpow_natCast (z i ^ (1 / (n : ℝ))) n,
+      ← Real.rpow_mul (hz i)]
+    rw [one_div, inv_mul_cancel₀ (by exact_mod_cast hn.ne'), Real.rpow_one]
+  have hgm_pow_one :
+      (∏ i : Fin n, z i ^ (1 / (n : ℝ))) ^ n = 1 := by
+    rw [hpow, hprod]
+  have hgm_one : (∏ i : Fin n, z i ^ (1 / (n : ℝ))) = 1 :=
+    (pow_eq_one_iff_of_nonneg hgm_nonneg hn.ne').mp hgm_pow_one
+  have heq_gm_am :
+      (∏ i ∈ (Finset.univ : Finset (Fin n)), z i ^ (1 / (n : ℝ))) =
+        ∑ i ∈ (Finset.univ : Finset (Fin n)), (1 / (n : ℝ)) * z i := by
+    have hgm_one_univ :
+        (∏ i ∈ (Finset.univ : Finset (Fin n)), z i ^ (1 / (n : ℝ))) = 1 := by
+      simpa using hgm_one
+    have hrhs_univ :
+        (∑ i ∈ (Finset.univ : Finset (Fin n)), (1 / (n : ℝ)) * z i) = 1 := by
+      simpa using hrhs
+    exact hgm_one_univ.trans hrhs_univ.symm
+  have hall :=
+    (Real.geom_mean_eq_arith_mean_weighted_iff'
+      (s := (Finset.univ : Finset (Fin n)))
+      (w := fun _ : Fin n => (1 / (n : ℝ))) (z := z)
+      hw hw' hz').mp heq_gm_am
+  intro i
+  have hi := hall i (Finset.mem_univ i)
+  exact hi.trans hrhs
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11 support:
+    equality in the positive-definite Hadamard determinant inequality forces
+    every off-diagonal entry to vanish. -/
+theorem higham14_problem14_11_posDef_offdiag_eq_zero_of_det_eq_prod_diag
+    {n : ℕ} (M : Matrix (Fin n) (Fin n) ℝ) (hM : M.PosDef)
+    (heq : Matrix.det M = ∏ i : Fin n, M i i) :
+    ∀ ⦃i j : Fin n⦄, i ≠ j → M i j = 0 := by
+  rcases Nat.eq_zero_or_pos n with hn0 | hn
+  · subst hn0
+    intro i
+    exact Fin.elim0 i
+  have hpos : ∀ i : Fin n, 0 < M i i := fun i => hM.diag_pos
+  set d : Fin n → ℝ := fun i => (Real.sqrt (M i i))⁻¹ with hd
+  set D : Matrix (Fin n) (Fin n) ℝ := Matrix.diagonal d with hD
+  have hdsq : ∀ i : Fin n, d i * d i = (M i i)⁻¹ := by
+    intro i
+    have hs : Real.sqrt (M i i) * Real.sqrt (M i i) = M i i :=
+      Real.mul_self_sqrt (hpos i).le
+    simp only [hd]
+    rw [← mul_inv, hs]
+  set C : Matrix (Fin n) (Fin n) ℝ := D * M * D with hC
+  have hCij : ∀ i j : Fin n, C i j = d i * M i j * d j := by
+    intro i j
+    simp [hC, hD, Matrix.mul_apply, Matrix.diagonal_apply, Finset.sum_ite_eq]
+  have hCii : ∀ i : Fin n, C i i = 1 := by
+    intro i
+    rw [hCij i i]
+    calc d i * M i i * d i = d i * d i * M i i := by ring
+      _ = (M i i)⁻¹ * M i i := by rw [hdsq i]
+      _ = 1 := inv_mul_cancel₀ (hpos i).ne'
+  have hstar : star d = d := by ext i; simp
+  have hCpsd : C.PosSemidef := by
+    have h1 := hM.posSemidef.conjTranspose_mul_mul_same D
+    rw [hD, Matrix.diagonal_conjTranspose, hstar] at h1
+    rw [hC, hD]
+    exact h1
+  have hCherm : C.IsHermitian := hCpsd.1
+  have hprodd : (∏ i : Fin n, d i) * (∏ i : Fin n, d i) =
+      (∏ i : Fin n, M i i)⁻¹ := by
+    rw [← Finset.prod_mul_distrib, ← Finset.prod_inv_distrib]
+    exact Finset.prod_congr rfl (fun i _ => hdsq i)
+  have hdetC : C.det = M.det * (∏ i : Fin n, M i i)⁻¹ := by
+    rw [hC, Matrix.det_mul, Matrix.det_mul, Matrix.det_diagonal]
+    calc (∏ i : Fin n, d i) * M.det * (∏ i : Fin n, d i)
+        = M.det * ((∏ i : Fin n, d i) * (∏ i : Fin n, d i)) := by ring
+      _ = M.det * (∏ i : Fin n, M i i)⁻¹ := by rw [hprodd]
+  have hdetC_eig : C.det = ∏ i : Fin n, hCherm.eigenvalues i := by
+    rw [hCherm.det_eq_prod_eigenvalues]
+    simp only [RCLike.ofReal_real_eq_id, id]
+  have htraceC_eig : C.trace = ∑ i : Fin n, hCherm.eigenvalues i := by
+    rw [hCherm.trace_eq_sum_eigenvalues]
+    simp only [RCLike.ofReal_real_eq_id, id]
+  have htraceC : C.trace = (n : ℝ) := by
+    simp only [Matrix.trace, Matrix.diag_apply]
+    rw [Finset.sum_congr rfl (fun i _ => hCii i)]
+    simp
+  have hsum_eig : ∑ i : Fin n, hCherm.eigenvalues i = (n : ℝ) := by
+    rw [← htraceC_eig, htraceC]
+  have hprodpos : 0 < ∏ i : Fin n, M i i :=
+    Finset.prod_pos fun i _ => hpos i
+  have hdetC_one : C.det = 1 := by
+    rw [hdetC, heq, mul_inv_cancel₀ hprodpos.ne']
+  have hprod_eig_one : ∏ i : Fin n, hCherm.eigenvalues i = 1 := by
+    rw [← hdetC_eig, hdetC_one]
+  have heig_one : ∀ i : Fin n, hCherm.eigenvalues i = 1 :=
+    higham14_amgm_all_eq_one_of_sum_eq_card_prod_eq_one hn
+      hCherm.eigenvalues (fun i => hCpsd.eigenvalues_nonneg i)
+      hsum_eig hprod_eig_one
+  have hCeq_one : C = 1 := by
+    rw [hCherm.spectral_theorem]
+    have hdiag :
+        Matrix.diagonal (RCLike.ofReal ∘ hCherm.eigenvalues) =
+          (1 : Matrix (Fin n) (Fin n) ℝ) := by
+      ext i j
+      by_cases hij : i = j
+      · subst j
+        simp [Matrix.diagonal, heig_one i]
+      · simp [Matrix.diagonal, hij]
+    rw [hdiag]
+    simp
+  intro i j hij
+  have hCij_zero : C i j = 0 := by
+    have hentry := congrArg (fun N : Matrix (Fin n) (Fin n) ℝ => N i j) hCeq_one
+    simpa [Matrix.one_apply, hij] using hentry
+  have hdi_ne : d i ≠ 0 := by
+    simp [hd, (Real.sqrt_pos.mpr (hpos i)).ne']
+  have hdj_ne : d j ≠ 0 := by
+    simp [hd, (Real.sqrt_pos.mpr (hpos j)).ne']
+  rw [hCij i j] at hCij_zero
+  have hleft : d i * M i j = 0 := by
+    exact (mul_eq_zero.mp hCij_zero).resolve_right hdj_ne
+  exact (mul_eq_zero.mp hleft).resolve_left hdi_ne
+
 /-- Higham, 2nd ed., Chapter 14, Problem 14.11:
     pairwise orthogonal rows attain equality in Hadamard's determinant
     inequality.  This is the source equality direction that does not require
@@ -4154,6 +4302,53 @@ theorem higham14_problem14_11_hadamardConditionNumber_eq_one_of_rowsOrthogonal
   higham14_problem14_11_hadamardConditionNumber_eq_one_of_abs_det_eq_prod_rowNorm2
     A hdet
     (higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_rowsOrthogonal A horth)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11:
+    equality in Hadamard's determinant inequality for a nonsingular matrix
+    forces pairwise orthogonal rows. -/
+theorem higham14_problem14_11_rowsOrthogonal_of_abs_det_eq_prod_rowNorm2
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (heq :
+      |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+        ∏ i : Fin n, higham14_rowNorm2 A i) :
+    higham14_rowsOrthogonal A := by
+  rw [higham14_rowsOrthogonal_iff_gram_offdiag_zero A]
+  dsimp only
+  let AM : Matrix (Fin n) (Fin n) ℝ := A
+  have hgram_eq :
+      Matrix.det (AM * Matrix.transpose AM) =
+        ∏ i : Fin n, (AM * Matrix.transpose AM) i i := by
+    simpa [AM] using
+      higham14_problem14_11_gram_det_eq_prod_diag_of_abs_det_eq_prod_rowNorm2
+        A heq
+  have hAT :
+      Matrix.conjTranspose AM = Matrix.transpose AM :=
+    Matrix.conjTranspose_eq_transpose_of_trivial AM
+  have hGpsd : (AM * Matrix.transpose AM).PosSemidef := by
+    have h := Matrix.posSemidef_self_mul_conjTranspose AM
+    rwa [hAT] at h
+  have hAunit : IsUnit AM :=
+    (Matrix.isUnit_iff_isUnit_det AM).mpr (isUnit_iff_ne_zero.mpr (by simpa [AM] using hdet))
+  have hATunit : IsUnit (Matrix.transpose AM) := by
+    rw [Matrix.isUnit_iff_isUnit_det, Matrix.det_transpose]
+    exact isUnit_iff_ne_zero.mpr (by simpa [AM] using hdet)
+  have hGpd : (AM * Matrix.transpose AM).PosDef :=
+    (hGpsd.posDef_iff_isUnit).mpr (hAunit.mul hATunit)
+  exact
+    higham14_problem14_11_posDef_offdiag_eq_zero_of_det_eq_prod_diag
+      (AM * Matrix.transpose AM) hGpd hgram_eq
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11:
+    for nonsingular `A`, `ψ(A) = 1` forces pairwise orthogonal rows. -/
+theorem higham14_problem14_11_rowsOrthogonal_of_hadamardConditionNumber_eq_one
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hpsi : higham14_hadamardConditionNumber A = 1) :
+    higham14_rowsOrthogonal A :=
+  higham14_problem14_11_rowsOrthogonal_of_abs_det_eq_prod_rowNorm2 A hdet
+    (higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_hadamardConditionNumber_eq_one
+      A hdet hpsi)
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.12:
     Euclidean norm of column `j`, the quantity `rho_j = ||R(:,j)||_2` in the
