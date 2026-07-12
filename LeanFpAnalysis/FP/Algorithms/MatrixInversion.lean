@@ -14,6 +14,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.LinearAlgebra.Matrix.Orthogonal
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
@@ -3962,6 +3963,82 @@ theorem higham14_problem14_11_hadamardConditionNumber_ge_one_of_det_ne_zero
 def higham14_rowsOrthogonal {n : ℕ} (A : Fin n → Fin n → ℝ) : Prop :=
   ∀ ⦃i j : Fin n⦄, i ≠ j → ∑ k : Fin n, A i k * A j k = 0
 
+/-- The source-facing row-orthogonality predicate is exactly Mathlib's
+    matrix row-orthogonality predicate. -/
+theorem higham14_rowsOrthogonal_iff_hasOrthogonalRows {n : ℕ}
+    (A : Fin n → Fin n → ℝ) :
+    higham14_rowsOrthogonal A ↔
+      Matrix.HasOrthogonalRows (A : Matrix (Fin n) (Fin n) ℝ) := by
+  rfl
+
+/-- Row orthogonality is equivalently zero off-diagonal entries in the
+    row Gram matrix `A Aᵀ`.  This is the landing point for the missing
+    equality case of Hadamard's determinant inequality. -/
+theorem higham14_rowsOrthogonal_iff_gram_offdiag_zero {n : ℕ}
+    (A : Fin n → Fin n → ℝ) :
+    higham14_rowsOrthogonal A ↔
+      let AM : Matrix (Fin n) (Fin n) ℝ := A
+      ∀ ⦃i j : Fin n⦄, i ≠ j →
+        (AM * Matrix.transpose AM) i j = 0 := by
+  constructor
+  · intro h
+    dsimp only
+    intro i j hij
+    simpa [Matrix.mul_apply, Matrix.transpose_apply] using
+      h (i := i) (j := j) hij
+  · intro h
+    dsimp only at h
+    intro i j hij
+    simpa [Matrix.mul_apply, Matrix.transpose_apply] using
+      h (i := i) (j := j) hij
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11 support:
+    equality in the row-norm Hadamard bound transfers to equality in the
+    row-Gram positive-definite Hadamard bound.  The remaining converse reduces
+    to proving the equality case of that positive-definite bound. -/
+theorem higham14_problem14_11_gram_det_eq_prod_diag_of_abs_det_eq_prod_rowNorm2
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (heq :
+      |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+        ∏ i : Fin n, higham14_rowNorm2 A i) :
+    let AM : Matrix (Fin n) (Fin n) ℝ := A
+    Matrix.det (AM * Matrix.transpose AM) =
+      ∏ i : Fin n, (AM * Matrix.transpose AM) i i := by
+  dsimp only
+  let AM : Matrix (Fin n) (Fin n) ℝ := A
+  change Matrix.det (AM * Matrix.transpose AM) =
+    ∏ i : Fin n, (AM * Matrix.transpose AM) i i
+  have hdetGram :
+      Matrix.det (AM * Matrix.transpose AM) = Matrix.det AM ^ 2 := by
+    rw [Matrix.det_mul, Matrix.det_transpose]
+    ring
+  have hdiag :
+      ∀ i : Fin n,
+        (AM * Matrix.transpose AM) i i = higham14_rowNorm2 A i ^ 2 := by
+    intro i
+    have hnorm :
+        higham14_rowNorm2 A i ^ 2 = ∑ j : Fin n, A i j ^ 2 := by
+      simp [higham14_rowNorm2, vecNorm2_sq, vecNorm2Sq]
+    calc
+      (AM * Matrix.transpose AM) i i
+          = ∑ j : Fin n, A i j * A i j := by
+            simp [AM, Matrix.mul_apply, Matrix.transpose_apply]
+      _ = ∑ j : Fin n, A i j ^ 2 := by
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+      _ = higham14_rowNorm2 A i ^ 2 := hnorm.symm
+  calc
+    Matrix.det (AM * Matrix.transpose AM)
+        = Matrix.det AM ^ 2 := hdetGram
+    _ = |Matrix.det AM| ^ 2 := by rw [sq_abs]
+    _ = |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| ^ 2 := by simp [AM]
+    _ = (∏ i : Fin n, higham14_rowNorm2 A i) ^ 2 := by rw [heq]
+    _ = ∏ i : Fin n, higham14_rowNorm2 A i ^ 2 := by
+          rw [Finset.prod_pow]
+    _ = ∏ i : Fin n, (AM * Matrix.transpose AM) i i := by
+          exact Finset.prod_congr rfl (fun i _ => (hdiag i).symm)
+
 /-- Higham, 2nd ed., Chapter 14, Problem 14.11:
     pairwise orthogonal rows attain equality in Hadamard's determinant
     inequality.  This is the source equality direction that does not require
@@ -4035,6 +4112,20 @@ theorem higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_hadamardConditionNumbe
   dsimp only at hmul
   rw [div_mul_cancel₀ _ hden_ne] at hmul
   simpa [one_mul] using hmul.symm
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11 support:
+    if `psi(A)=1` for nonsingular `A`, then the associated row Gram matrix
+    attains equality in the positive-definite Hadamard determinant bound. -/
+theorem higham14_problem14_11_gram_det_eq_prod_diag_of_hadamardConditionNumber_eq_one
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hpsi : higham14_hadamardConditionNumber A = 1) :
+    let AM : Matrix (Fin n) (Fin n) ℝ := A
+    Matrix.det (AM * Matrix.transpose AM) =
+      ∏ i : Fin n, (AM * Matrix.transpose AM) i i :=
+  higham14_problem14_11_gram_det_eq_prod_diag_of_abs_det_eq_prod_rowNorm2 A
+    (higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_hadamardConditionNumber_eq_one
+      A hdet hpsi)
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.11:
     for nonsingular `A`, the normalized condition-number statement `ψ(A) = 1`
@@ -5580,6 +5671,80 @@ theorem higham14_problem14_15_top_singularValue_add_le_of_opNorm2Le
     ← higham14_problem14_13_opNorm2_eq_complex_top_singularValue
       (Nat.succ_pos k) A]
   exact higham14_problem14_15_opNorm2_add_le_of_opNorm2Le A Delta hDelta
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    square operator 2-norm certificates are stable under negating the matrix.
+    This local helper lets the largest-singular-value perturbation bound be
+    applied in both directions without importing the QR-specific wrapper. -/
+theorem higham14_problem14_15_opNorm2Le_neg
+    {n : ℕ} {M : Fin n → Fin n → ℝ} {c : ℝ}
+    (hM : opNorm2Le M c) :
+    opNorm2Le (fun i j => -M i j) c := by
+  intro x
+  have hmul :
+      matMulVec n (fun i j => -M i j) x =
+        fun i => -matMulVec n M x i := by
+    ext i
+    unfold matMulVec
+    calc
+      (Finset.univ.sum fun j : Fin n => (-M i j) * x j)
+          = Finset.univ.sum fun j : Fin n => -(M i j * x j) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+      _ = -(Finset.univ.sum fun j : Fin n => M i j * x j) := by
+            rw [Finset.sum_neg_distrib]
+  rw [hmul]
+  simpa [vecNorm2_neg] using hM x
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    absolute perturbation bound for the largest ordered singular value.  This
+    is only the top-index case of the all-index Weyl/Mirsky inequality still
+    needed to close the full determinant perturbation theorem. -/
+theorem higham14_problem14_15_top_singularValue_abs_sub_le_of_opNorm2Le
+    {k : ℕ} (A Delta : Fin (k + 1) → Fin (k + 1) → ℝ) {delta : ℝ}
+    (hDelta : opNorm2Le Delta delta) :
+    |complexMatrixSingularValue
+        (realRectToCMatrix (fun i j => A i j + Delta i j))
+        ⟨0, Nat.succ_pos k⟩ -
+      complexMatrixSingularValue (realRectToCMatrix A)
+        ⟨0, Nat.succ_pos k⟩| ≤ delta := by
+  let top : Fin (k + 1) := ⟨0, Nat.succ_pos k⟩
+  have hUpper :
+      complexMatrixSingularValue
+          (realRectToCMatrix (fun i j => A i j + Delta i j)) top ≤
+        complexMatrixSingularValue (realRectToCMatrix A) top + delta := by
+    simpa [top] using
+      higham14_problem14_15_top_singularValue_add_le_of_opNorm2Le
+        A Delta hDelta
+  have hNeg : opNorm2Le (fun i j => -Delta i j) delta :=
+    higham14_problem14_15_opNorm2Le_neg hDelta
+  have hLowerRaw :
+      complexMatrixSingularValue
+          (realRectToCMatrix
+            (fun i j => (A i j + Delta i j) + -Delta i j)) top ≤
+        complexMatrixSingularValue
+          (realRectToCMatrix (fun i j => A i j + Delta i j)) top + delta := by
+    simpa [top] using
+      higham14_problem14_15_top_singularValue_add_le_of_opNorm2Le
+        (fun i j => A i j + Delta i j) (fun i j => -Delta i j) hNeg
+  have hLower :
+      complexMatrixSingularValue (realRectToCMatrix A) top ≤
+        complexMatrixSingularValue
+          (realRectToCMatrix (fun i j => A i j + Delta i j)) top + delta := by
+    simpa [top] using hLowerRaw
+  have hRight :
+      complexMatrixSingularValue
+          (realRectToCMatrix (fun i j => A i j + Delta i j)) top -
+        complexMatrixSingularValue (realRectToCMatrix A) top ≤ delta := by
+    linarith
+  have hLeft :
+      -delta ≤
+        complexMatrixSingularValue
+            (realRectToCMatrix (fun i j => A i j + Delta i j)) top -
+          complexMatrixSingularValue (realRectToCMatrix A) top := by
+    linarith
+  simpa [top] using abs_le.mpr ⟨hLeft, hRight⟩
 
 /-- Higham, 2nd ed., Chapter 14, equation (14.34), exact no-pivot/unit-lower
     LU core: the determinant is the product of the diagonal entries of `U`. -/
