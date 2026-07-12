@@ -6355,6 +6355,9 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_eq14_3_forward_error_firstorder_replacement
 #check higham14_infNorm_le_of_componentwise_abs_matmul_bound
 #check higham14_infNorm_le_of_componentwise_matmul_bound
+#check triInv_lower_left_residual_upper_zero
+#check triInv_method2_left_residual_upper_zero
+#check triInv_method2_left_residual_diag_bound
 #check triInv_method2_left_residual_normwise
 #check triInv_method1B_right_residual_normwise
 #check triInv_method1B_right_residual_normwise_from_spec
