@@ -3992,6 +3992,53 @@ theorem higham14_rowsOrthogonal_iff_gram_offdiag_zero {n : ℕ}
     simpa [Matrix.mul_apply, Matrix.transpose_apply] using
       h (i := i) (j := j) hij
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11 support:
+    equality in the row-norm Hadamard bound transfers to equality in the
+    row-Gram positive-definite Hadamard bound.  The remaining converse reduces
+    to proving the equality case of that positive-definite bound. -/
+theorem higham14_problem14_11_gram_det_eq_prod_diag_of_abs_det_eq_prod_rowNorm2
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (heq :
+      |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| =
+        ∏ i : Fin n, higham14_rowNorm2 A i) :
+    let AM : Matrix (Fin n) (Fin n) ℝ := A
+    Matrix.det (AM * Matrix.transpose AM) =
+      ∏ i : Fin n, (AM * Matrix.transpose AM) i i := by
+  dsimp only
+  let AM : Matrix (Fin n) (Fin n) ℝ := A
+  change Matrix.det (AM * Matrix.transpose AM) =
+    ∏ i : Fin n, (AM * Matrix.transpose AM) i i
+  have hdetGram :
+      Matrix.det (AM * Matrix.transpose AM) = Matrix.det AM ^ 2 := by
+    rw [Matrix.det_mul, Matrix.det_transpose]
+    ring
+  have hdiag :
+      ∀ i : Fin n,
+        (AM * Matrix.transpose AM) i i = higham14_rowNorm2 A i ^ 2 := by
+    intro i
+    have hnorm :
+        higham14_rowNorm2 A i ^ 2 = ∑ j : Fin n, A i j ^ 2 := by
+      simp [higham14_rowNorm2, vecNorm2_sq, vecNorm2Sq]
+    calc
+      (AM * Matrix.transpose AM) i i
+          = ∑ j : Fin n, A i j * A i j := by
+            simp [AM, Matrix.mul_apply, Matrix.transpose_apply]
+      _ = ∑ j : Fin n, A i j ^ 2 := by
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+      _ = higham14_rowNorm2 A i ^ 2 := hnorm.symm
+  calc
+    Matrix.det (AM * Matrix.transpose AM)
+        = Matrix.det AM ^ 2 := hdetGram
+    _ = |Matrix.det AM| ^ 2 := by rw [sq_abs]
+    _ = |Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)| ^ 2 := by simp [AM]
+    _ = (∏ i : Fin n, higham14_rowNorm2 A i) ^ 2 := by rw [heq]
+    _ = ∏ i : Fin n, higham14_rowNorm2 A i ^ 2 := by
+          rw [Finset.prod_pow]
+    _ = ∏ i : Fin n, (AM * Matrix.transpose AM) i i := by
+          exact Finset.prod_congr rfl (fun i _ => (hdiag i).symm)
+
 /-- Higham, 2nd ed., Chapter 14, Problem 14.11:
     pairwise orthogonal rows attain equality in Hadamard's determinant
     inequality.  This is the source equality direction that does not require
@@ -4065,6 +4112,20 @@ theorem higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_hadamardConditionNumbe
   dsimp only at hmul
   rw [div_mul_cancel₀ _ hden_ne] at hmul
   simpa [one_mul] using hmul.symm
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.11 support:
+    if `psi(A)=1` for nonsingular `A`, then the associated row Gram matrix
+    attains equality in the positive-definite Hadamard determinant bound. -/
+theorem higham14_problem14_11_gram_det_eq_prod_diag_of_hadamardConditionNumber_eq_one
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hpsi : higham14_hadamardConditionNumber A = 1) :
+    let AM : Matrix (Fin n) (Fin n) ℝ := A
+    Matrix.det (AM * Matrix.transpose AM) =
+      ∏ i : Fin n, (AM * Matrix.transpose AM) i i :=
+  higham14_problem14_11_gram_det_eq_prod_diag_of_abs_det_eq_prod_rowNorm2 A
+    (higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_hadamardConditionNumber_eq_one
+      A hdet hpsi)
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.11:
     for nonsingular `A`, the normalized condition-number statement `ψ(A) = 1`
