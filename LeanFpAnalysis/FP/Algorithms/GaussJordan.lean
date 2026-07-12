@@ -375,6 +375,37 @@ theorem gje_cumulative_product_componentwise_perturbation_bound_const (n : Nat)
     (fun _ => heta) hDelta i j
   simpa [gje_scalarSeqProd_const] using h
 
+/-- Source-shaped constant-error GJE product perturbation bound with the
+    accumulated scalar envelope absorbed into `gje_c₃ fp n`. -/
+theorem gje_cumulative_product_componentwise_perturbation_bound_gamma_c3
+    (n : Nat) (fp : FPModel)
+    (N_hat DeltaN : Fin n -> Fin n -> Fin n -> Real)
+    (start : Nat)
+    (hn : 1 <= n) (hvalid : gammaValid fp 3)
+    (hidx : forall r : Fin (n - 1),
+      start + ((n - 1) - 1 - r.val) < n)
+    (hDelta : forall r : Fin (n - 1), forall i j : Fin n,
+      |DeltaN (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j| <=
+        gamma fp 3 *
+          |N_hat (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j|)
+    (i j : Fin n) :
+    |gje_cumulative_product n (fun k i j => N_hat k i j + DeltaN k i j)
+        start (start + (n - 1)) i j -
+      gje_cumulative_product n N_hat start (start + (n - 1)) i j| <=
+      gje_c₃ fp n *
+        gje_cumulative_product n (fun k i j => |N_hat k i j|)
+          start (start + (n - 1)) i j := by
+  have hconst :=
+    gje_cumulative_product_componentwise_perturbation_bound_const n
+      N_hat DeltaN start (n - 1) (gamma fp 3) hidx
+      (gamma_nonneg fp hvalid) hDelta i j
+  have hscalar := gje_one_add_gamma_three_pow_sub_one_le_c3 fp n hn hvalid
+  have hprod_nonneg :
+      0 <= gje_cumulative_product n (fun k i j => |N_hat k i j|)
+        start (start + (n - 1)) i j :=
+    gje_cumulative_product_abs_nonneg n N_hat start (start + (n - 1)) i j
+  exact le_trans hconst (mul_le_mul_of_nonneg_right hscalar hprod_nonneg)
+
 /-- Equation (14.27) accumulation algebra for the GJE second-stage matrix
     recurrence.  If the exact stage matrices obey
     `U_{start+t+1} = N_{start+t} U_{start+t}` for `steps` valid stages, then
