@@ -478,6 +478,77 @@ theorem gje_cumulative_product_matMulVec_componentwise_perturbation_bound_gamma_
           intro j _
           ring
 
+/-- Matrix-applied form of the Chapter 14 GJE cumulative-product perturbation
+    bound.  This is the fixed-right-matrix bridge needed by the matrix side of
+    equation (14.30): the entrywise product perturbation theorem is pushed
+    through multiplication by the current upper-triangular factor. -/
+theorem gje_cumulative_product_matMul_componentwise_perturbation_bound_gamma_c3
+    (n : Nat) (fp : FPModel)
+    (N_hat DeltaN : Fin n -> Fin n -> Fin n -> Real)
+    (start : Nat) (rhs : Fin n -> Fin n -> Real)
+    (hn : 1 <= n) (hvalid : gammaValid fp 3)
+    (hidx : forall r : Fin (n - 1),
+      start + ((n - 1) - 1 - r.val) < n)
+    (hDelta : forall r : Fin (n - 1), forall i j : Fin n,
+      |DeltaN (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j| <=
+        gamma fp 3 *
+          |N_hat (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j|)
+    (i j : Fin n) :
+    |matMul n
+        (gje_cumulative_product n (fun k a b => N_hat k a b + DeltaN k a b)
+          start (start + (n - 1))) rhs i j -
+      matMul n
+        (gje_cumulative_product n N_hat start (start + (n - 1))) rhs i j| <=
+      gje_c₃ fp n *
+        ∑ k : Fin n,
+          gje_cumulative_product n (fun s a b => |N_hat s a b|)
+            start (start + (n - 1)) i k * |rhs k j| := by
+  let Pdelta : Fin n -> Fin n -> Real :=
+    gje_cumulative_product n (fun k a b => N_hat k a b + DeltaN k a b)
+      start (start + (n - 1))
+  let P : Fin n -> Fin n -> Real :=
+    gje_cumulative_product n N_hat start (start + (n - 1))
+  let Pabs : Fin n -> Fin n -> Real :=
+    gje_cumulative_product n (fun k a b => |N_hat k a b|)
+      start (start + (n - 1))
+  have hentry : forall k : Fin n,
+      |Pdelta i k - P i k| <= gje_c₃ fp n * Pabs i k := by
+    intro k
+    simpa [Pdelta, P, Pabs] using
+      gje_cumulative_product_componentwise_perturbation_bound_gamma_c3
+        n fp N_hat DeltaN start hn hvalid hidx hDelta i k
+  change |matMul n Pdelta rhs i j - matMul n P rhs i j| <=
+    gje_c₃ fp n * ∑ k : Fin n, Pabs i k * |rhs k j|
+  change |(∑ k : Fin n, Pdelta i k * rhs k j) -
+      (∑ k : Fin n, P i k * rhs k j)| <=
+    gje_c₃ fp n * ∑ k : Fin n, Pabs i k * |rhs k j|
+  have hdiff :
+      (∑ k : Fin n, Pdelta i k * rhs k j) -
+          (∑ k : Fin n, P i k * rhs k j) =
+        ∑ k : Fin n, (Pdelta i k - P i k) * rhs k j := by
+    rw [← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intro k _
+    ring
+  rw [hdiff]
+  calc
+    |∑ k : Fin n, (Pdelta i k - P i k) * rhs k j|
+        <= ∑ k : Fin n, |(Pdelta i k - P i k) * rhs k j| :=
+          Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ k : Fin n, |Pdelta i k - P i k| * |rhs k j| := by
+          apply Finset.sum_congr rfl
+          intro k _
+          exact abs_mul _ _
+    _ <= ∑ k : Fin n, (gje_c₃ fp n * Pabs i k) * |rhs k j| := by
+          apply Finset.sum_le_sum
+          intro k _
+          exact mul_le_mul_of_nonneg_right (hentry k) (abs_nonneg _)
+    _ = gje_c₃ fp n * ∑ k : Fin n, Pabs i k * |rhs k j| := by
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro k _
+          ring
+
 /-- Equation (14.27) accumulation algebra for the GJE second-stage matrix
     recurrence.  If the exact stage matrices obey
     `U_{start+t+1} = N_{start+t} U_{start+t}` for `steps` valid stages, then
