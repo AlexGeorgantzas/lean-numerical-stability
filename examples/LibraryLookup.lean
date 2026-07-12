@@ -6319,6 +6319,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check frobNormRect_preconditionRows_sourceSketchResidualTail_sourceSVDTail_moorePenrose_le_sqrt_one_add_methodA_inverse_product_sum_budget_sq
 #check LUBackwardError.of_input_abs_error_le_absLUProduct
 #check gje_c₃
+#check gje_one_add_pow_sub_one_le_nat_mul_pred
+#check gje_one_add_gamma_three_pow_sub_one_le_c3
 #check GJEStage2Spec
 #check gje_stage2_matrix_recurrence
 #check gje_stage2_rhs_recurrence
