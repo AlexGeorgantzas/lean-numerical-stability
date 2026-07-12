@@ -6972,6 +6972,103 @@ theorem higham14_problem14_15_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs
       A Ainv Delta hRight hsmall habs
   simpa [abs_of_pos hdetA_pos, abs_of_pos hdetB_pos] using hAbs
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 side-condition audit:
+    the product-radius denominator is positive under the corrected guard
+    `eps < 1/n`, because then `n*eps < 1`.
+
+The determinant perturbation wrappers use the stronger `n*eps < 1` guard
+directly; this lemma records the equivalent small-parameter form for positive
+dimension. -/
+theorem higham14_problem14_15_product_guard_of_lt_inv_card {n : ℕ}
+    (hnpos : 0 < n) {eps : ℝ}
+    (hsmall : eps < ((n : ℝ)⁻¹)) :
+    (n : ℝ) * eps < (1 : ℝ) := by
+  have hnreal_pos : 0 < (n : ℝ) := Nat.cast_pos.mpr hnpos
+  calc
+    (n : ℝ) * eps < (n : ℝ) * ((n : ℝ)⁻¹) := by
+      exact mul_lt_mul_of_pos_left hsmall hnreal_pos
+    _ = (1 : ℝ) := by
+      field_simp [ne_of_gt hnreal_pos]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 side-condition audit:
+    the weaker-looking hypothesis `eps < 1` does not imply the denominator
+    guard `n*eps < 1` once `n > 1`.  For `n = 2`, `eps = 3/4` is already a
+    counterexample. -/
+theorem higham14_problem14_15_eps_lt_one_not_sufficient_for_product_guard :
+    ∃ eps : ℝ, 0 ≤ eps ∧ eps < 1 ∧ ¬ ((2 : ℝ) * eps < 1) := by
+  refine ⟨(3 : ℝ) / 4, ?_, ?_, ?_⟩
+  · norm_num
+  · norm_num
+  · norm_num
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    source-scaled determinant perturbation bridge with the corrected
+    small-parameter guard `eps < 1/(k+1)`.  It is a source-side-condition
+    wrapper around the existing `n*eps < 1` determinant bridge.
+
+The remaining spectral input is still the all-index absolute singular-value
+perturbation bound supplied by `habs`. -/
+theorem higham14_problem14_15_abs_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound_inv_card_guard
+    {k : ℕ} (A Ainv Delta : Fin (k + 1) → Fin (k + 1) → ℝ)
+    (hRight : IsRightInverse (k + 1) A Ainv)
+    (hsmall :
+      kappa2 A Ainv * opNorm2 Delta / opNorm2 A <
+        (((k + 1 : ℕ) : ℝ)⁻¹))
+    (habs : ∀ i : Fin (k + 1),
+      |complexMatrixSingularValue
+          (realRectToCMatrix (fun r c => A r c + Delta r c)) i -
+        complexMatrixSingularValue (realRectToCMatrix A) i| ≤ opNorm2 Delta) :
+    |(|Matrix.det
+          ((fun r c => A r c + Delta r c) :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ)| /
+        |Matrix.det (A : Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ)|) - 1| ≤
+      (((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A)) /
+        (1 - ((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A)) := by
+  have hguard :
+      ((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A) < (1 : ℝ) :=
+    higham14_problem14_15_product_guard_of_lt_inv_card (Nat.succ_pos k) hsmall
+  exact
+    higham14_problem14_15_abs_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound
+      A Ainv Delta hRight hguard habs
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    signed determinant companion of the corrected `eps < 1/(k+1)` guard
+    wrapper, under positive determinant signs. -/
+theorem higham14_problem14_15_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound_inv_card_guard_of_det_pos
+    {k : ℕ} (A Ainv Delta : Fin (k + 1) → Fin (k + 1) → ℝ)
+    (hRight : IsRightInverse (k + 1) A Ainv)
+    (hsmall :
+      kappa2 A Ainv * opNorm2 Delta / opNorm2 A <
+        (((k + 1 : ℕ) : ℝ)⁻¹))
+    (habs : ∀ i : Fin (k + 1),
+      |complexMatrixSingularValue
+          (realRectToCMatrix (fun r c => A r c + Delta r c)) i -
+        complexMatrixSingularValue (realRectToCMatrix A) i| ≤ opNorm2 Delta)
+    (hdetA_pos : 0 < Matrix.det
+      (A : Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ))
+    (hdetB_pos :
+      0 < Matrix.det
+        ((fun r c => A r c + Delta r c) :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ)) :
+    |(Matrix.det
+          ((fun r c => A r c + Delta r c) :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) /
+        Matrix.det (A : Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ)) - 1| ≤
+      (((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A)) /
+        (1 - ((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A)) := by
+  have hguard :
+      ((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A) < (1 : ℝ) :=
+    higham14_problem14_15_product_guard_of_lt_inv_card (Nat.succ_pos k) hsmall
+  exact
+    higham14_problem14_15_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound_of_det_pos
+      A Ainv Delta hRight hguard habs hdetA_pos hdetB_pos
+
 /-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
     the smallest ordered singular value of a perturbed square matrix is bounded
     below by `sigma_min(A) - delta` whenever `delta` bounds `B - A` in
