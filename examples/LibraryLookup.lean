@@ -6365,6 +6365,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check triInv_method2_left_residual_diag_bound
 #check triInv_method2_left_residual_diag_product_bound
 #check triInv_method2_left_residual_from_region_bounds
+#check triInv_method2_left_residual_of_strict_tail_gamma
 #check triInv_method2_offdiag_update_delta_bound
 #check triInv_method2_offdiag_scaled_residual_bound
 #check triInv_method2_left_residual_normwise
