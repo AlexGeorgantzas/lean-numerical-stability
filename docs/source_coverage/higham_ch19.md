@@ -47,7 +47,7 @@
   THEOREM about the algorithm, not proof slack; removing it to reach the row-i-local
   α_i·max needs the external Powell–Reid ENTRYWISE (not normwise) accumulation whose
   source is not local — a rigorously-evidenced cited-without-local-proof terminal
-  (`theorem19_6_rowSpecific_packaging_obstruction`). (b) Theorem 19.13's
+   (`theorem19_6_rowSpecific_packaging_obstruction`). WEB-RESEARCH FINDING (2026-07-12, Powell–Reid 1969 / Cox–Higham 1998 "Stability of Householder QR Factorization for Weighted Least Squares"): the row-wise elementwise bound is a property of ROW-SORTED Householder QR — sorting rows by decreasing norm (a preprocessing permutation) plus the specific (19.1) sign choice is what yields row-wise backward stability and controls α_i. The current assembly is column-pivot-only, which is exactly why it hits the proven-intrinsic √m. Full closure requires formalizing the Cox–Higham row-sorted backward-error construction; its precise ΔA form is not reliably reconstructible from the abstracts alone (the √m-removal mechanism is subtle — the pivot identity |pivot|=trailing-2-norm holds regardless of row order), so this remains a rigorously-evidenced, source-dependent BLOCKED terminal pending the paper. (b) Theorem 19.13's
   genuinely-MGS rounded-loop identification over the BARE `FPModel` — PROVEN
   impossible by in-repo counterexamples; closed instead under the honest
   source-faithful strong model (`AllPivotsSelfAnnihilatingReflectorModel`, full
