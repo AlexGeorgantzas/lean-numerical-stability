@@ -5569,7 +5569,7 @@ no-pivot/unit-lower LU form plus signed and absolute-value pivoted forms,
 Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence and full equality/row-orthogonality characterization,
 Problem 14.13's AM-GM, SVD norm, and determinant-product support bridges,
 Problem 14.15's scalar product-radius and top-index perturbation support, Method 2 structural
-left-residual upper/diagonal edges, trailing-column split, strict-tail update and gamma full-budget support, and off-diagonal update support, Method D's expanded
+left-residual upper/diagonal edges, trailing-column split, strict-tail update and gamma full-budget support, strict-tail rounded kernel packaging, and off-diagonal update support, Method D's expanded
 componentwise residual-budget dependency and printed-coefficient scalar
 simplification, the exact Hyman block identities
 (14.35)--(14.36), and Problem 14.10:
@@ -5595,6 +5595,8 @@ simplification, the exact Hyman block identities
 - `triInv_method2_left_residual_of_strict_tail_fl_dot`
 - `higham14_unit_roundoff_add_one_plus_u_mul_rounded_gamma_le_gamma_succ_succ`
 - `triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul`
+- `Method2StrictTailKernelSpec`
+- `triInv_method2_left_residual_of_strict_tail_kernel_spec`
 - `triInv_method2_offdiag_update_delta_bound`
 - `triInv_method2_offdiag_scaled_residual_bound`
 - `triInv_method2_left_residual_normwise`
@@ -5749,6 +5751,8 @@ simplification, the exact Hyman block identities
 - `higham14_problem14_15_sigmaMin_sub_le_sigmaMin_of_sub_rectOpNorm2Le`
 - `higham14_problem14_15_sigmaMin_sub_le_sigmaMin_add_of_rectOpNorm2Le`
 - `higham14_problem14_15_sigmaMin_add_pos_of_rectOpNorm2Le_lt`
+- `higham14_problem14_15_rectOpNorm2Le_neg`
+- `higham14_problem14_15_sigmaMin_abs_sub_le_of_rectOpNorm2Le`
 - `higham14_problem14_15_opNorm2_add_le_of_opNorm2Le`
 - `higham14_problem14_15_top_singularValue_add_le_of_opNorm2Le`
 - `higham14_problem14_15_opNorm2Le_neg`
