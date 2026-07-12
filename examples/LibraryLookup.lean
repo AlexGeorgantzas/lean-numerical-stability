@@ -16016,6 +16016,10 @@ small enough to serve as a smoke check for representative public declarations.
 #check Wave19.theorem19_6_coxHigham_concrete_full
 -- Wave-19 assembly: recursive entrywise step + the verified per-stage-pivoting prerequisite (missing algorithm, not math)
 #check Wave19.entrywise_recursive_cons
+-- Wave-20: genuine per-stage-pivoting QR algorithm + the executed σ-ordering PROVED (the obstruction's core)
+#check Wave20.fl_householderQRColPivot_R
+#check Wave20.vecNorm2_col_colPivotNextPanelExact_le_sigma
+#check Wave20.colPivot_ratio_le_of_sigma
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved
