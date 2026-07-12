@@ -16000,6 +16000,11 @@ small enough to serve as a smoke check for representative public declarations.
 #check Wave18C.theorem19_6_packaged_original_space_printed_j_sq
 #check Wave18D.perStep_leadingRow_contribution_zero
 #check Wave18D.pivotRow_entrywiseBudget_incurs_sqrt_m
+-- Wave-19: Theorem 19.6 Cox-Higham proof — √m-free crux PROVED (found the source, formalized the argument)
+#check Wave19.householder_multiplier_le_sqrt_two
+#check Wave19.sigma_ordering_norm_ratio_le
+#check Wave19.y_i_entrywise_bound
+#check Wave19.theorem19_6_coxHigham_rowwise_elementwise_backward_error
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved
