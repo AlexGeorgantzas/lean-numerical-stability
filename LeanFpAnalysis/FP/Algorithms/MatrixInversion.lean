@@ -949,6 +949,27 @@ structure Method2Spec (fp : FPModel) (n : ℕ)
   /-- Upper triangle is zero (since L is lower triangular, L⁻¹ is too). -/
   upper_zero : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0
 
+/-- Higham, 2nd ed., Chapter 14, Section 14.2.1, Method 2:
+    source-facing kernel certificate for the reverse-column strict-tail update.
+
+    This packages the existing Method 2 diagonal/shape/error specification
+    together with the exact stored below-diagonal update
+    `fl_mul (-X_hat j j) (fl_dotProduct strictTail Lcol)`.  It is not yet the
+    full loop proof; the remaining source obligation is to show the concrete
+    reverse-column implementation produces this certificate. -/
+structure Method2StrictTailKernelSpec (fp : FPModel) (n : ℕ)
+    (L : Fin n → Fin n → ℝ) (X_hat : Fin n → Fin n → ℝ) : Prop where
+  /-- Existing Method 2 diagonal, off-diagonal, and triangular-shape contract. -/
+  method2 : Method2Spec fp n L X_hat
+  /-- Below-diagonal entries are stored by the rounded strict-tail dot/scalar
+      kernel described in the source Method 2 recurrence. -/
+  strict_tail_dot_scalar : ∀ j row : Fin n, row.val > j.val →
+    X_hat row j =
+      fp.fl_mul (-X_hat j j)
+        (fl_dotProduct fp n
+          (fun k : Fin n => if j.val < k.val then X_hat row k else 0)
+          (fun k : Fin n => L k j))
+
 /-- Triangular-shape support for Method 2: if both `X_hat` and `L` are lower
     triangular, then the left residual `X_hat * L - I` is zero strictly above
     the diagonal. -/
@@ -3896,6 +3917,52 @@ theorem triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul
     exact le_trans hbase (mul_le_mul_of_nonneg_right hcoeff hS_nonneg)
   exact triInv_method2_left_residual_from_region_bounds n L X_hat
     (gamma_nonneg fp hn2) hUpper hDiag hLower
+
+/-- Higham, 2nd ed., Chapter 14, Lemma 14.1 / equation (14.8), Method 2
+    strict-tail kernel surface:
+    a source-facing strict-tail dot/scalar kernel certificate implies the
+    componentwise left-residual bound with coefficient `gamma_(n+2)`.
+
+    This closes the residual consequence of the packaged kernel certificate.
+    The concrete reverse-column loop proof that produces
+    `Method2StrictTailKernelSpec` remains a separate selected dependency. -/
+theorem triInv_method2_left_residual_of_strict_tail_kernel_spec
+    (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn2 : gammaValid fp (n + 2))
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hKernel : Method2StrictTailKernelSpec fp n L X_hat) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * L k j -
+          (if i = j then 1 else 0)| ≤
+        gamma fp (n + 2) * ∑ k : Fin n, |X_hat i k| * |L k j| :=
+  triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul
+    n fp L X_hat hn2 hLT hKernel.method2 hKernel.strict_tail_dot_scalar
+
+/-- Problem 14.2 / Lemma 14.1 normwise bridge:
+    a Method 2 strict-tail kernel certificate implies the corresponding
+    infinity-norm left-residual bound, with the same conservative
+    `gamma_(n+2)` coefficient as the rounded dot/scalar componentwise theorem.
+
+    This is still conditional on the concrete reverse-column loop producing
+    `Method2StrictTailKernelSpec`, but it removes the remaining normwise
+    handoff once that kernel package is available. -/
+theorem triInv_method2_left_residual_normwise_of_strict_tail_kernel_spec
+    (n : ℕ) (hn0 : 0 < n) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn2 : gammaValid fp (n + 2))
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hKernel : Method2StrictTailKernelSpec fp n L X_hat) :
+    infNorm (fun i j =>
+      ∑ k : Fin n, X_hat i k * L k j - if i = j then 1 else 0) ≤
+      gamma fp (n + 2) * infNorm X_hat * infNorm L := by
+  have hComp :=
+    triInv_method2_left_residual_of_strict_tail_kernel_spec
+      n fp L X_hat hn2 hLT hKernel
+  exact higham14_infNorm_le_of_componentwise_matmul_bound hn0
+    (R := fun i j => ∑ k : Fin n, X_hat i k * L k j -
+      if i = j then 1 else 0)
+    (A := X_hat) (B := L) (gamma_nonneg fp hn2) hComp
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.5, right-approximate-inverse
     residual bound.
@@ -6857,6 +6924,67 @@ theorem higham14_problem14_15_sigmaMin_add_pos_of_rectOpNorm2Le_lt
     wedinLemma20_11_sigmaMinCol_pos_of_sub_rectOpNorm2Le_lt
       A (fun i j => A i j + Delta i j) hSub
       (by simpa [wedinLemma20_11_sigmaMinCol] using hsmall)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    rectangular operator-2 certificates are stable under negating the matrix.
+    This lets extremal singular-value perturbation estimates be applied in
+    both additive directions. -/
+theorem higham14_problem14_15_rectOpNorm2Le_neg
+    {m n : Nat} {M : Fin m -> Fin n -> Real} {c : Real}
+    (hM : rectOpNorm2Le M c) :
+    rectOpNorm2Le (fun i j => -M i j) c := by
+  intro x
+  have hmul :
+      rectMatMulVec (fun i j => -M i j) x =
+        fun i => -rectMatMulVec M x i := by
+    ext i
+    unfold rectMatMulVec
+    calc
+      (Finset.univ.sum fun j : Fin n => (-M i j) * x j)
+          = Finset.univ.sum fun j : Fin n => -(M i j * x j) := by
+            apply Finset.sum_congr rfl
+            intro j _hj
+            ring
+      _ = -(Finset.univ.sum fun j : Fin n => M i j * x j) := by
+            rw [Finset.sum_neg_distrib]
+  rw [hmul]
+  simpa [vecNorm2_neg] using hM x
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    absolute perturbation bound for the smallest ordered singular value.
+    This closes the last-index extremal case of the all-index Weyl/Mirsky
+    inequality still needed for the full determinant perturbation theorem. -/
+theorem higham14_problem14_15_sigmaMin_abs_sub_le_of_rectOpNorm2Le
+    {k : Nat} (A Delta : Fin (k + 1) -> Fin (k + 1) -> Real) {delta : Real}
+    (hDelta : rectOpNorm2Le Delta delta) :
+    |complexMatrixSingularValue
+        (realRectToCMatrix (fun i j => A i j + Delta i j)) (Fin.last k) -
+      complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k)| <= delta := by
+  let sigmaA : Real := complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k)
+  let sigmaB : Real :=
+    complexMatrixSingularValue
+      (realRectToCMatrix (fun i j => A i j + Delta i j)) (Fin.last k)
+  have hLower : sigmaA - delta <= sigmaB := by
+    simpa [sigmaA, sigmaB] using
+      higham14_problem14_15_sigmaMin_sub_le_sigmaMin_add_of_rectOpNorm2Le
+        A Delta hDelta
+  have hNeg : rectOpNorm2Le (fun i j => -Delta i j) delta :=
+    higham14_problem14_15_rectOpNorm2Le_neg hDelta
+  have hReverseRaw :
+      sigmaB - delta <=
+        complexMatrixSingularValue
+          (realRectToCMatrix
+            (fun i j => (A i j + Delta i j) + -Delta i j)) (Fin.last k) := by
+    simpa [sigmaB] using
+      higham14_problem14_15_sigmaMin_sub_le_sigmaMin_add_of_rectOpNorm2Le
+        (fun i j => A i j + Delta i j) (fun i j => -Delta i j) hNeg
+  have hReverse : sigmaB - delta <= sigmaA := by
+    simpa [sigmaA] using hReverseRaw
+  have hRight : sigmaB - sigmaA <= delta := by linarith
+  have hLeft : -delta <= sigmaB - sigmaA := by linarith
+  have hAbs : |sigmaB - sigmaA| <= delta :=
+    abs_le.mpr (And.intro hLeft hRight)
+  simpa [sigmaA, sigmaB] using hAbs
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
     operator 2-norm triangle inequality for an additive perturbation. -/
