@@ -22309,6 +22309,55 @@ theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRo
     rw [← ha]
     exact hlocal t hstep s hst a
 
+/-- The named lifted support-after-branch-end family packages the local-block
+and prefix-zero regional earlier-lift conditions into the stronger full-row
+zero certificate. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_liftedSupportAfterBranchEnd
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hsupp :
+      higham11_7_ConcretePathSecondPivotEarlierLiftRowsLiftedSupportAfterBranchEnd
+        k step ΔA) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+        k step ΔA :=
+  higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_currentLocalBlock_and_zeroBeforePrefix
+    k step ΔA
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock_of_liftedSupportAfterBranchEnd
+      k step ΔA hsupp)
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_liftedSupportAfterBranchEnd
+      k step ΔA hsupp)
+
+/-- Source-shaped local deep-support certificates produce the full-row
+earlier-lift zero certificate by first lifting them to the ambient
+support-after-branch-end family. -/
+theorem higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_deepLeadingBlockSupport
+    (k : ℕ) (step : Fin k → PivotSize)
+    (ΔA : ∀ u : Fin k,
+      Fin (higham11_7_tridiagonalBranchAmbientDim
+        (higham11_7_tridiagonalPathTailDim k step u) (step u)) →
+        Fin (higham11_7_tridiagonalBranchAmbientDim
+          (higham11_7_tridiagonalPathTailDim k step u) (step u)) → ℝ)
+    (hdeep : ∀ t : Fin k, ∀ _hstep : step t = PivotSize.two,
+      ∀ s : Fin k, s.val < t.val →
+        ∃ localOffset : ℕ,
+          higham11_7_TridiagonalLeadingBlockSupport
+            (higham11_7_tridiagonalBranchAmbientDim
+              (higham11_7_tridiagonalPathTailDim k step s) (step s))
+            localOffset (ΔA s) ∧
+          higham11_7_tridiagonalPathPrefixSpan k step t +
+              higham11_7_tridiagonalBranchSupportOffset (step t) ≤
+            higham11_7_tridiagonalPathPrefixSpan k step s + localOffset) :
+    higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow
+        k step ΔA :=
+  higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_liftedSupportAfterBranchEnd
+    k step ΔA
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsLiftedSupportAfterBranchEnd_of_deepLeadingBlockSupport
+      k step ΔA hdeep)
+
 /-- Leading-support version of the full-row earlier-lift zero bridge.  The
 columns before each earlier branch end are supplied by support, while the
 remaining intermediate prefix columns and the current local block stay as the
@@ -24895,11 +24944,9 @@ theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base
         k step A b x_hat) :
     higham11_7_ConcretePathSecondPivotCombinedSolveRows
         k step A b x_hat ΔA :=
-  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isTridiagonal_and_earlier_local_zero_and_zeroBeforePrefix
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_branchMatrix_base_rows_of_isTridiagonal_and_earlier_full_row_zero
     k step A b x_hat ΔA hA
-    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock_of_liftedSupportAfterBranchEnd
-      k step ΔA hsupp)
-    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_liftedSupportAfterBranchEnd
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_liftedSupportAfterBranchEnd
       k step ΔA hsupp)
     hrows
 
@@ -25521,11 +25568,9 @@ theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of
         b (higham11_7_tridiagonalPathSecondPivotIndex_two k step t hstep)) :
     higham11_7_ConcretePathSecondPivotCombinedSolveRows
         k step A b x_hat ΔA :=
-  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of_isTridiagonal_and_earlier_local_zero_and_zeroBeforePrefix
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_full_base_rows_of_isTridiagonal_and_earlier_full_row_zero
     k step A b x_hat ΔA hA
-    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock_of_liftedSupportAfterBranchEnd
-      k step ΔA hsupp)
-    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_liftedSupportAfterBranchEnd
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_liftedSupportAfterBranchEnd
       k step ΔA hsupp)
     hrows
 
@@ -26123,11 +26168,9 @@ theorem higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_global_base_solve
         A i j * x_hat j) = b i) :
     higham11_7_ConcretePathSecondPivotCombinedSolveRows
         k step A b x_hat ΔA :=
-  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_global_base_solve_of_isTridiagonal_and_earlier_local_zero_and_zeroBeforePrefix
+  higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_global_base_solve_of_isTridiagonal_and_earlier_full_row_zero
     k step A b x_hat ΔA hA
-    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnCurrentLocalBlock_of_liftedSupportAfterBranchEnd
-      k step ΔA hsupp)
-    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroBeforePrefix_of_liftedSupportAfterBranchEnd
+    (higham11_7_ConcretePathSecondPivotEarlierLiftRowsZeroOnFullSecondPivotRow_of_liftedSupportAfterBranchEnd
       k step ΔA hsupp)
     hsolve
 
