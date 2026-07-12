@@ -3379,6 +3379,40 @@ theorem triInv_method2_offdiag_trailing_update_gamma_full_bound
     higham14_unit_roundoff_add_gamma_le_gamma_succ fp n hn1
   exact le_trans hbase (mul_le_mul_of_nonneg_right hcoeff hS_nonneg)
 
+/-- Lemma 14.1 support: once the rounded strict-tail Method 2 update supplies
+    a `gamma_n` certificate, the already-proved upper, diagonal, and
+    below-diagonal regional estimates assemble into the source-shaped
+    `gamma_{n+1}` componentwise left-residual bound.
+
+This is still conditional infrastructure: the rounded strict-tail certificate
+is the remaining source-facing induction obligation. -/
+theorem triInv_method2_left_residual_of_strict_tail_gamma
+    (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hSpec : Method2Spec fp n L X_hat)
+    (hTrail : ∀ j row : Fin n, row.val > j.val →
+      ∃ Δ : ℝ,
+        |Δ * L j j| ≤ gamma fp n *
+          (∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0) ∧
+        X_hat row j =
+          -X_hat j j *
+            (∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0) + Δ) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * L k j -
+          (if i = j then 1 else 0)| ≤
+        gamma fp (n + 1) * ∑ k : Fin n, |X_hat i k| * |L k j| := by
+  have hUpper :=
+    triInv_method2_left_residual_upper_zero n fp L X_hat hLT hSpec
+  have hDiag :=
+    triInv_method2_left_residual_diag_product_bound n fp L X_hat hn1 hLT hSpec
+  have hLower :=
+    triInv_method2_offdiag_trailing_update_gamma_full_bound n fp L X_hat
+      hn1 hLT hSpec.diag_err hTrail
+  exact triInv_method2_left_residual_from_region_bounds n L X_hat
+    (gamma_nonneg fp hn1) hUpper hDiag hLower
+
 /-- Higham, 2nd ed., Chapter 14, Problem 14.5, right-approximate-inverse
     residual bound.
 
