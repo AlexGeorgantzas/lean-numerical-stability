@@ -1404,6 +1404,34 @@ theorem triInv_method1B_right_residual_normwise_from_spec
   triInv_method1B_right_residual_normwise n hn0 fp L X_hat
     hL_diag hLT hn hSpec.column_backward_error
 
+/-- Problem 14.2 / Lemma 14.2 normwise bridge:
+    Method 1B's explicit column backward-error certificates imply the
+    corresponding infinity-norm right-residual bound.
+
+    This is the normwise companion of
+    `triInv_method1B_right_residual_of_column_backward_error`; the open source
+    obligation is still to derive the column certificates from the block Method
+    1B loop in equations (14.11)--(14.13). -/
+theorem triInv_method1B_right_residual_normwise_of_column_backward_error
+    (n N : ℕ) (hn0 : 0 < n) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hn : gammaValid fp n)
+    (hBlockCount : N ≤ n)
+    (hLower : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0)
+    (hCol : ∀ j : Fin n, ∃ ΔL : Fin n → Fin n → ℝ,
+      (∀ i k, |ΔL i k| ≤ gamma fp n * |L i k|) ∧
+      ∀ i, ∑ k : Fin n, (L i k + ΔL i k) * X_hat k j =
+        if i = j then 1 else 0) :
+    infNorm (fun i j =>
+      ∑ k : Fin n, L i k * X_hat k j - if i = j then 1 else 0) ≤
+      gamma fp n * infNorm L * infNorm X_hat :=
+  triInv_method1B_right_residual_normwise_from_spec n N hn0 fp L X_hat
+    hL_diag hLT hn
+    (triInv_method1B_spec_of_column_backward_error n N fp L X_hat
+      hBlockCount hLower hCol)
+
 /-- Exact off-diagonal block used in Higham equation (14.14), Method 2B:
     `-X22 * L21 * X11`.  Here `L21` is the lower-left rectangular block, and
     `X11`, `X22` are diagonal-block inverse approximations/exact blocks. -/
@@ -1451,6 +1479,50 @@ theorem higham14_eq14_14_method2B_block_update_delta_bound {m r : ℕ}
         ε * absBound i j := by
   intro i j
   simpa [higham14_method2BBlockUpdateDelta] using hBound i j
+
+/-- Higham, 2nd ed., Chapter 14, equation (14.14), Method 2B:
+    source-facing package for the rounded off-diagonal block update.
+
+    The package records both the exact decomposition of the computed block into
+    `-X22 * L21 * X11` plus an explicit perturbation and the componentwise
+    product-error bound on that perturbation.  The instability analysis that
+    uses this update certificate remains a separate source obligation. -/
+structure Method2BBlockUpdateSpec {m r : ℕ}
+    (X21_hat : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (X11 : Fin m → Fin m → ℝ)
+    (ε : ℝ) (absBound : Fin r → Fin m → ℝ) : Prop where
+  /-- The computed off-diagonal block is the exact Method 2B update plus
+      the explicitly named perturbation. -/
+  update_decomposition : ∀ i : Fin r, ∀ j : Fin m,
+    X21_hat i j =
+      higham14_method2BBlockUpdateExact X22 L21 X11 i j +
+        higham14_method2BBlockUpdateDelta X21_hat X22 L21 X11 i j
+  /-- The explicit perturbation obeys the supplied componentwise product-error
+      envelope for the rectangular triple product. -/
+  delta_bound : ∀ i : Fin r, ∀ j : Fin m,
+    |higham14_method2BBlockUpdateDelta X21_hat X22 L21 X11 i j| ≤
+      ε * absBound i j
+
+/-- Higham, 2nd ed., Chapter 14, equation (14.14), Method 2B:
+    build the source-facing block-update package from a rectangular
+    triple-product error certificate. -/
+theorem higham14_eq14_14_method2B_block_update_spec_of_product_error {m r : ℕ}
+    (X21_hat : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (X11 : Fin m → Fin m → ℝ)
+    (ε : ℝ) (absBound : Fin r → Fin m → ℝ)
+    (hBound : ∀ i : Fin r, ∀ j : Fin m,
+      |X21_hat i j -
+        higham14_method2BBlockUpdateExact X22 L21 X11 i j| ≤
+          ε * absBound i j) :
+    Method2BBlockUpdateSpec X21_hat X22 L21 X11 ε absBound where
+  update_decomposition :=
+    higham14_eq14_14_method2B_block_update_decomposition
+      X21_hat X22 L21 X11
+  delta_bound :=
+    higham14_eq14_14_method2B_block_update_delta_bound
+      X21_hat X22 L21 X11 ε absBound hBound
 
 /-- Exact Method 2B off-diagonal block formula from the block equation
     `X21 * L11 + X22 * L21 = 0` and the diagonal-block inverse certificate
@@ -2878,6 +2950,36 @@ theorem higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget {n : �
           nlinarith [hU, hL, hPterm, hA]
     _ = (4 * γ + 2 * γ ^ 2) * P := by ring_nf
 
+/-- Higham, 2nd ed., Chapter 14, equation (14.23), Method D:
+    source-facing local-certificate route to the printed scalar coefficient.
+
+    This wrapper exposes the proved path from the LU backward-error certificate,
+    lower/upper triangular inverse residual certificates, and product-error
+    certificate directly to the `(4γ + 2γ^2)` left-residual envelope.  The
+    remaining source dependency is upstream: deriving the triangular inverse
+    residual certificates for the chosen Method 2/2C kernels. -/
+theorem higham14_eq14_23_methodD_left_residual_bound_of_local_certificates
+    (n : ℕ) (fp : FPModel)
+    (A L_hat U_hat X_U X_L X_hat : Fin n → Fin n → ℝ)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hXL_res : ∀ i j : Fin n,
+      |higham14_methodDXLLeftResidual X_L L_hat i j| ≤
+        gamma fp n * ∑ k : Fin n, |X_L i k| * |L_hat k j|)
+    (hXU_res : ∀ i j : Fin n,
+      |higham14_methodDXULeftResidual X_U U_hat i j| ≤
+        gamma fp n * ∑ k : Fin n, |X_U i k| * |U_hat k j|)
+    (hProd : MatProdError n X_hat (matMul n X_U X_L) (gamma fp n)
+      (fun i j => ∑ k : Fin n, |X_U i k| * |X_L k j|)) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * A k j - (if i = j then 1 else 0)| ≤
+        (4 * gamma fp n + 2 * gamma fp n ^ 2) *
+          ∑ p : Fin n,
+            (∑ q : Fin n, |X_U i q| * |X_L q p|) *
+              (∑ r : Fin n, |L_hat p r| * |U_hat r j|) :=
+  higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget
+    fp A L_hat U_hat X_U X_L X_hat hLU hn hXL_res hXU_res hProd
+
 /-- **Abstract Method D left residual interface** (Higham eq. 14.20–14.23).
 
     Method D: compute X_L ≈ L⁻¹ and X_U ≈ U⁻¹ separately,
@@ -3938,6 +4040,31 @@ theorem triInv_method2_left_residual_of_strict_tail_kernel_spec
         gamma fp (n + 2) * ∑ k : Fin n, |X_hat i k| * |L k j| :=
   triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul
     n fp L X_hat hn2 hLT hKernel.method2 hKernel.strict_tail_dot_scalar
+
+/-- Problem 14.2 / Lemma 14.1 normwise bridge:
+    a Method 2 strict-tail kernel certificate implies the corresponding
+    infinity-norm left-residual bound, with the same conservative
+    `gamma_(n+2)` coefficient as the rounded dot/scalar componentwise theorem.
+
+    This is still conditional on the concrete reverse-column loop producing
+    `Method2StrictTailKernelSpec`, but it removes the remaining normwise
+    handoff once that kernel package is available. -/
+theorem triInv_method2_left_residual_normwise_of_strict_tail_kernel_spec
+    (n : ℕ) (hn0 : 0 < n) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn2 : gammaValid fp (n + 2))
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hKernel : Method2StrictTailKernelSpec fp n L X_hat) :
+    infNorm (fun i j =>
+      ∑ k : Fin n, X_hat i k * L k j - if i = j then 1 else 0) ≤
+      gamma fp (n + 2) * infNorm X_hat * infNorm L := by
+  have hComp :=
+    triInv_method2_left_residual_of_strict_tail_kernel_spec
+      n fp L X_hat hn2 hLT hKernel
+  exact higham14_infNorm_le_of_componentwise_matmul_bound hn0
+    (R := fun i j => ∑ k : Fin n, X_hat i k * L k j -
+      if i = j then 1 else 0)
+    (A := X_hat) (B := L) (gamma_nonneg fp hn2) hComp
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.5, right-approximate-inverse
     residual bound.

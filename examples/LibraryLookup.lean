@@ -6377,10 +6377,12 @@ small enough to serve as a smoke check for representative public declarations.
 #check triInv_method2_offdiag_update_delta_bound
 #check triInv_method2_offdiag_scaled_residual_bound
 #check triInv_method2_left_residual_normwise
+#check triInv_method2_left_residual_normwise_of_strict_tail_kernel_spec
 #check triInv_method1B_spec_of_column_backward_error
 #check triInv_method1B_right_residual_of_column_backward_error
 #check triInv_method1B_right_residual_normwise
 #check triInv_method1B_right_residual_normwise_from_spec
+#check triInv_method1B_right_residual_normwise_of_column_backward_error
 #check triInv_method2C_left_residual_normwise
 #check higham14_problem14_3_right_residual_eq_mul_left_residual
 #check higham14_problem14_3_left_residual_eq_mul_right_residual
@@ -6428,6 +6430,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_method2BBlockUpdateDelta
 #check higham14_eq14_14_method2B_block_update_decomposition
 #check higham14_eq14_14_method2B_block_update_delta_bound
+#check Method2BBlockUpdateSpec
+#check higham14_eq14_14_method2B_block_update_spec_of_product_error
 #check higham14_eq14_14_method2B_exact_offdiag_block_update
 #check higham14_methodDProductDelta
 #check higham14_methodDLUBackwardDelta
@@ -6445,6 +6449,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_methodD_abs_XU_U_le_scaled_abs_product
 #check higham14_methodD_abs_Xhat_le_scaled_abs_product
 #check higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget
+#check higham14_eq14_23_methodD_left_residual_bound_of_local_certificates
 #check higham14_eq14_23_methodD_left_residual_bound
 #check higham14_rowNorm2
 #check higham14_rowNormDiagonal

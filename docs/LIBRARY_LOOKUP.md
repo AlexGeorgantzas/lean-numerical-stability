@@ -5569,7 +5569,7 @@ no-pivot/unit-lower LU form plus signed and absolute-value pivoted forms,
 Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence and full equality/row-orthogonality characterization,
 Problem 14.13's AM-GM, SVD norm, and determinant-product support bridges,
 Problem 14.15's scalar product-radius and top-index perturbation support, Method 2 structural
-left-residual upper/diagonal edges, trailing-column split, strict-tail update and gamma full-budget support, strict-tail rounded kernel packaging, and off-diagonal update support, Method D's expanded
+left-residual upper/diagonal edges, trailing-column split, strict-tail update and gamma full-budget support, strict-tail rounded kernel packaging and normwise bridge, and off-diagonal update support, Method D's expanded
 componentwise residual-budget dependency and printed-coefficient scalar
 simplification, the exact Hyman block identities
 (14.35)--(14.36), and Problem 14.10:
@@ -5600,10 +5600,12 @@ simplification, the exact Hyman block identities
 - `triInv_method2_offdiag_update_delta_bound`
 - `triInv_method2_offdiag_scaled_residual_bound`
 - `triInv_method2_left_residual_normwise`
+- `triInv_method2_left_residual_normwise_of_strict_tail_kernel_spec`
 - `triInv_method1B_spec_of_column_backward_error`
 - `triInv_method1B_right_residual_of_column_backward_error`
 - `triInv_method1B_right_residual_normwise`
 - `triInv_method1B_right_residual_normwise_from_spec`
+- `triInv_method1B_right_residual_normwise_of_column_backward_error`
 - `triInv_method2C_left_residual_normwise`
 - `higham14_problem14_3_right_residual_eq_mul_left_residual`
 - `higham14_problem14_3_left_residual_eq_mul_right_residual`
@@ -5649,6 +5651,8 @@ simplification, the exact Hyman block identities
 - `higham14_method2BBlockUpdateDelta`
 - `higham14_eq14_14_method2B_block_update_decomposition`
 - `higham14_eq14_14_method2B_block_update_delta_bound`
+- `Method2BBlockUpdateSpec`
+- `higham14_eq14_14_method2B_block_update_spec_of_product_error`
 - `higham14_eq14_14_method2B_exact_offdiag_block_update`
 - `higham14_methodDProductDelta`
 - `higham14_methodDLUBackwardDelta`
@@ -5666,6 +5670,7 @@ simplification, the exact Hyman block identities
 - `higham14_methodD_abs_XU_U_le_scaled_abs_product`
 - `higham14_methodD_abs_Xhat_le_scaled_abs_product`
 - `higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget`
+- `higham14_eq14_23_methodD_left_residual_bound_of_local_certificates`
 - `higham14_eq14_23_methodD_left_residual_bound`
 - `higham14_rowNorm2`
 - `higham14_rowNormDiagonal`
