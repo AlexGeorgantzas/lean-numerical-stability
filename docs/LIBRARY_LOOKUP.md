@@ -5576,6 +5576,7 @@ simplification, the exact Hyman block identities
 - `inverseRightResidual`, `inverseLeftResidual`
 - `higham14_eq14_3_forward_error_bound_of_abs_Y_le`
 - `higham14_eq14_3_forward_error_firstorder_replacement`
+- `higham14_eq14_3_forward_error_firstorder_plus_remainder`
 - `higham14_infNorm_le_of_componentwise_abs_matmul_bound`
 - `higham14_infNorm_le_of_componentwise_matmul_bound`
 - `triInv_lower_left_residual_upper_zero`
@@ -5591,6 +5592,8 @@ simplification, the exact Hyman block identities
 - `triInv_method2_left_residual_of_strict_tail_gamma`
 - `higham14_unit_roundoff_add_one_plus_u_mul_gamma_le_gamma_succ`
 - `triInv_method2_left_residual_of_strict_tail_fl_dot`
+- `higham14_unit_roundoff_add_one_plus_u_mul_rounded_gamma_le_gamma_succ_succ`
+- `triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul`
 - `triInv_method2_offdiag_update_delta_bound`
 - `triInv_method2_offdiag_scaled_residual_bound`
 - `triInv_method2_left_residual_normwise`

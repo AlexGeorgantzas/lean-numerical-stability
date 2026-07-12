@@ -368,6 +368,53 @@ theorem higham14_eq14_3_forward_error_firstorder_replacement (n : ℕ)
         intro i j
         simpa [absMatrix] using hY_first i j))
 
+/-- Higham, 2nd ed., Chapter 14, Section 14.1, equation (14.3):
+    explicit first-order plus replacement-remainder form.
+
+If a caller supplies `|Y| <= |A⁻¹| + R`, the exact perturbed-inverse
+forward-error bound separates into the displayed first-order term and an
+explicit `R` remainder term.  Taking `R = O(ε)` is the remaining asymptotic
+step behind the book's informal `O(ε^2)` notation. -/
+theorem higham14_eq14_3_forward_error_firstorder_plus_remainder (n : ℕ)
+    (A A_inv Y : Fin n → Fin n → ℝ)
+    (ΔA R : Fin n → Fin n → ℝ)
+    (ε : ℝ) (hε : 0 ≤ ε)
+    (hΔA : ∀ i j, |ΔA i j| ≤ ε * |A i j|)
+    (hInv : IsLeftInverse n A A_inv)
+    (hRInv : IsRightInverse n A A_inv)
+    (hY : ∀ i j, ∑ k : Fin n, (A i k + ΔA i k) * Y k j =
+      if i = j then 1 else 0)
+    (hY_bound : ∀ i j : Fin n, |Y i j| ≤ |A_inv i j| + R i j) :
+    ∀ i j, |A_inv i j - Y i j| ≤
+      ε * (∑ k₁ : Fin n, |A_inv i k₁| *
+        (∑ k₂ : Fin n, |A k₁ k₂| * |A_inv k₂ j|)) +
+      ε * (∑ k₁ : Fin n, |A_inv i k₁| *
+        (∑ k₂ : Fin n, |A k₁ k₂| * R k₂ j)) := by
+  intro i j
+  have hbase :=
+    higham14_eq14_3_forward_error_bound_of_abs_Y_le
+      n A A_inv Y ΔA (fun i j => |A_inv i j| + R i j)
+      ε hε hΔA hInv hRInv hY hY_bound i j
+  calc
+    |A_inv i j - Y i j|
+        ≤ ε * ∑ k₁ : Fin n, |A_inv i k₁| *
+            (∑ k₂ : Fin n, |A k₁ k₂| * (|A_inv k₂ j| + R k₂ j)) := hbase
+    _ = ε * (∑ k₁ : Fin n, |A_inv i k₁| *
+            (∑ k₂ : Fin n, |A k₁ k₂| * |A_inv k₂ j|)) +
+        ε * (∑ k₁ : Fin n, |A_inv i k₁| *
+            (∑ k₂ : Fin n, |A k₁ k₂| * R k₂ j)) := by
+        rw [← mul_add]
+        congr 1
+        rw [← Finset.sum_add_distrib]
+        apply Finset.sum_congr rfl
+        intro k₁ _
+        rw [← mul_add]
+        congr 1
+        rw [← Finset.sum_add_distrib]
+        apply Finset.sum_congr rfl
+        intro k₂ _
+        ring
+
 -- ============================================================
 -- §14.1  Residual comparison: inversion vs GEPP
 -- ============================================================
@@ -3365,6 +3412,64 @@ lemma higham14_unit_roundoff_add_one_plus_u_mul_gamma_le_gamma_succ
     mul_le_mul_of_nonneg_right hu_le_γ1 hγn_nonneg
   nlinarith
 
+/-- Scalar gamma collapse for a rounded strict-tail dot product followed by one
+    rounded scalar multiplication and then the Method 2 diagonal factor:
+    `u + (1 + u) * (gamma_n + u * (1 + gamma_n)) <= gamma_{n+2}`. -/
+lemma higham14_unit_roundoff_add_one_plus_u_mul_rounded_gamma_le_gamma_succ_succ
+    (fp : FPModel) (n : ℕ) (hn2 : gammaValid fp (n + 2)) :
+    fp.u + (1 + fp.u) * (gamma fp n + fp.u * (1 + gamma fp n)) ≤
+      gamma fp (n + 2) := by
+  let C : ℝ := gamma fp n + fp.u * (1 + gamma fp n)
+  let D : ℝ := fp.u + (1 + fp.u) * C
+  have hvalid1 : gammaValid fp 1 :=
+    gammaValid_mono fp (by omega : 1 ≤ n + 2) hn2
+  have hvalidn : gammaValid fp n :=
+    gammaValid_mono fp (by omega : n ≤ n + 2) hn2
+  have hvalidn1 : gammaValid fp (n + 1) :=
+    gammaValid_mono fp (by omega : n + 1 ≤ n + 2) hn2
+  have hvalidn1p1 : gammaValid fp ((n + 1) + 1) := by
+    simpa [Nat.add_assoc] using hn2
+  have hγn_nonneg : 0 ≤ gamma fp n := gamma_nonneg fp hvalidn
+  have hu_abs_gamma1 : |fp.u| ≤ gamma fp 1 := by
+    simpa [abs_of_nonneg fp.u_nonneg] using u_le_gamma fp one_pos hvalid1
+  have hγn_abs : |gamma fp n| ≤ gamma fp n := by
+    simp [abs_of_nonneg hγn_nonneg]
+  obtain ⟨θ1, hθ1, hprod1⟩ :=
+    gamma_mul fp n 1 (gamma fp n) fp.u hγn_abs hu_abs_gamma1 hvalidn1
+  have hC_eq : C = θ1 := by
+    have hC_prod : C = (1 + gamma fp n) * (1 + fp.u) - 1 := by
+      simp [C]
+      ring
+    have hprod1' : (1 + gamma fp n) * (1 + fp.u) - 1 = θ1 := by
+      linarith
+    exact hC_prod.trans hprod1'
+  have hC_nonneg : 0 ≤ C := by
+    have honeγ_nonneg : 0 ≤ 1 + gamma fp n := by linarith
+    dsimp [C]
+    exact add_nonneg hγn_nonneg (mul_nonneg fp.u_nonneg honeγ_nonneg)
+  have hC_abs : |C| ≤ gamma fp (n + 1) := by
+    rw [hC_eq]
+    exact hθ1
+  obtain ⟨θ2, hθ2, hprod2⟩ :=
+    gamma_mul fp (n + 1) 1 C fp.u hC_abs hu_abs_gamma1 hvalidn1p1
+  have hD_eq : D = θ2 := by
+    have hD_prod : D = (1 + C) * (1 + fp.u) - 1 := by
+      simp [D]
+      ring
+    have hprod2' : (1 + C) * (1 + fp.u) - 1 = θ2 := by
+      linarith
+    exact hD_prod.trans hprod2'
+  have hD_nonneg : 0 ≤ D := by
+    have honeu_nonneg : 0 ≤ 1 + fp.u := by linarith [fp.u_nonneg]
+    dsimp [D]
+    exact add_nonneg fp.u_nonneg (mul_nonneg honeu_nonneg hC_nonneg)
+  have hD_le : D ≤ gamma fp ((n + 1) + 1) := by
+    rw [hD_eq]
+    have hθ2_nonneg : 0 ≤ θ2 := by
+      rwa [← hD_eq]
+    simpa [abs_of_nonneg hθ2_nonneg] using hθ2
+  simpa [D, C, Nat.add_assoc] using hD_le
+
 /-- Lemma 14.1 support: a strict-tail Method 2 update with a `gamma_n`
     scaled product certificate gives the source-shaped below-diagonal
     `gamma_{n+1}` full-column residual budget. -/
@@ -3541,6 +3646,210 @@ theorem triInv_method2_left_residual_of_strict_tail_fl_dot
     exact le_trans hbase (mul_le_mul_of_nonneg_right hcoeff hS_nonneg)
   exact triInv_method2_left_residual_from_region_bounds n L X_hat
     (gamma_nonneg fp hn1) hUpper hDiag hLower
+
+/-- Lemma 14.1 support: if the below-diagonal Method 2 entry is obtained by a
+    rounded strict-tail dot product and then by one rounded scalar
+    multiplication with `-X_hat j j`, the full componentwise left-residual bound
+    follows with the conservative coefficient `gamma_{n+2}`.
+
+This closes the local dot/scalar rounding wrapper for the strict-tail update.
+It is still not the full source loop theorem, since it assumes the stored
+below-diagonal entries are exactly produced by this one dot/scalar kernel. -/
+theorem triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul
+    (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn2 : gammaValid fp (n + 2))
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hSpec : Method2Spec fp n L X_hat)
+    (hUpdate : ∀ j row : Fin n, row.val > j.val →
+      X_hat row j =
+        fp.fl_mul (-X_hat j j)
+          (fl_dotProduct fp n
+            (fun k : Fin n => if j.val < k.val then X_hat row k else 0)
+            (fun k : Fin n => L k j))) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * L k j -
+          (if i = j then 1 else 0)| ≤
+        gamma fp (n + 2) * ∑ k : Fin n, |X_hat i k| * |L k j| := by
+  have hn : gammaValid fp n := gammaValid_mono fp (by omega : n ≤ n + 2) hn2
+  have hn1 : gammaValid fp (n + 1) :=
+    gammaValid_mono fp (by omega : n + 1 ≤ n + 2) hn2
+  have hη_nonneg :
+      0 ≤ (1 + fp.u) * (gamma fp n + fp.u * (1 + gamma fp n)) := by
+    have hγn_nonneg : 0 ≤ gamma fp n := gamma_nonneg fp hn
+    have honeu_nonneg : 0 ≤ 1 + fp.u := by linarith [fp.u_nonneg]
+    have honeγ_nonneg : 0 ≤ 1 + gamma fp n := by linarith
+    exact mul_nonneg honeu_nonneg
+      (add_nonneg hγn_nonneg (mul_nonneg fp.u_nonneg honeγ_nonneg))
+  have hTrail : ∀ j row : Fin n, row.val > j.val →
+      ∃ Δ : ℝ,
+        |Δ * L j j| ≤ ((1 + fp.u) * (gamma fp n + fp.u * (1 + gamma fp n))) *
+          (∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0) ∧
+        X_hat row j =
+          -X_hat j j *
+            (∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0) + Δ := by
+    intro j row hij
+    let x : Fin n → ℝ := fun k => if j.val < k.val then X_hat row k else 0
+    let y : Fin n → ℝ := fun k => L k j
+    let exactTail : ℝ :=
+      ∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0
+    let tailAbs : ℝ :=
+      ∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0
+    let flTail : ℝ := fl_dotProduct fp n x y
+    let Δ : ℝ := fp.fl_mul (-X_hat j j) flTail - (-X_hat j j * exactTail)
+    refine Exists.intro Δ (And.intro ?_ ?_)
+    · obtain ⟨δmul, hδmul, hmul⟩ := fp.model_mul (-X_hat j j) flTail
+      have hdot := dotProduct_error_bound fp n x y hn
+      have hsum_exact :
+          (∑ k : Fin n, x k * y k) = exactTail := by
+        dsimp [x, y, exactTail]
+        apply Finset.sum_congr rfl
+        intro k _
+        by_cases hjk : j.val < k.val <;> simp [hjk]
+      have hsum_abs :
+          (∑ k : Fin n, |x k| * |y k|) = tailAbs := by
+        dsimp [x, y, tailAbs]
+        apply Finset.sum_congr rfl
+        intro k _
+        by_cases hjk : j.val < k.val <;> simp [hjk]
+      have hdot_tail : |flTail - exactTail| ≤ gamma fp n * tailAbs := by
+        simpa [flTail, hsum_exact, hsum_abs] using hdot
+      have htail_abs : |exactTail| ≤ tailAbs := by
+        calc
+          |exactTail| =
+              |∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0| := by
+                rfl
+          _ ≤ ∑ k : Fin n,
+                |if j.val < k.val then X_hat row k * L k j else 0| :=
+              Finset.abs_sum_le_sum_abs _ _
+          _ = tailAbs := by
+              apply Finset.sum_congr rfl
+              intro k _
+              by_cases hjk : j.val < k.val <;> simp [hjk, abs_mul]
+      have htail_nonneg : 0 ≤ tailAbs := by
+        dsimp [tailAbs]
+        exact Finset.sum_nonneg (fun k _ => by
+          by_cases hjk : j.val < k.val
+          · simpa [hjk] using
+              mul_nonneg (abs_nonneg (X_hat row k)) (abs_nonneg (L k j))
+          · simp [hjk])
+      have hfl_abs : |flTail| ≤ (1 + gamma fp n) * tailAbs := by
+        calc
+          |flTail| = |exactTail + (flTail - exactTail)| := by
+            congr 1
+            ring
+          _ ≤ |exactTail| + |flTail - exactTail| :=
+              abs_add_le exactTail (flTail - exactTail)
+          _ ≤ tailAbs + gamma fp n * tailAbs :=
+              add_le_add htail_abs hdot_tail
+          _ = (1 + gamma fp n) * tailAbs := by ring
+      let δ : ℝ := Classical.choose (hSpec.diag_err j)
+      have hδ_diag := Classical.choose_spec (hSpec.diag_err j)
+      have hδ : |δ| ≤ fp.u := hδ_diag.1
+      have hdiag : X_hat j j * L j j = 1 + δ := hδ_diag.2
+      have hdiag_abs : |X_hat j j * L j j| ≤ 1 + fp.u := by
+        calc
+          |X_hat j j * L j j| = |1 + δ| := by rw [hdiag]
+          _ ≤ |(1 : ℝ)| + |δ| := abs_add_le 1 δ
+          _ ≤ 1 + fp.u := by
+            norm_num
+            exact hδ
+      have honeu_nonneg : 0 ≤ 1 + fp.u := by linarith [fp.u_nonneg]
+      have honeγ_nonneg : 0 ≤ 1 + gamma fp n := by
+        linarith [gamma_nonneg fp hn]
+      have hcoef_nonneg :
+          0 ≤ (1 + fp.u) * ((1 + gamma fp n) * tailAbs) := by
+        exact mul_nonneg honeu_nonneg
+          (mul_nonneg honeγ_nonneg htail_nonneg)
+      have hΔ_decomp :
+          Δ * L j j =
+            (-X_hat j j * L j j) * (flTail - exactTail) +
+              ((-X_hat j j * L j j) * flTail) * δmul := by
+        dsimp [Δ]
+        rw [hmul]
+        ring
+      have hfirst :
+          |(-X_hat j j * L j j) * (flTail - exactTail)| ≤
+            (1 + fp.u) * (gamma fp n * tailAbs) := by
+        have hneg_abs : |(-X_hat j j * L j j)| = |X_hat j j * L j j| := by
+          have hneg : (-X_hat j j * L j j) = -(X_hat j j * L j j) := by ring
+          rw [hneg, abs_neg]
+        calc
+          |(-X_hat j j * L j j) * (flTail - exactTail)|
+              = |X_hat j j * L j j| * |flTail - exactTail| := by
+                rw [abs_mul, hneg_abs]
+          _ ≤ (1 + fp.u) * (gamma fp n * tailAbs) :=
+              mul_le_mul hdiag_abs hdot_tail (abs_nonneg _) honeu_nonneg
+      have hsecond :
+          |((-X_hat j j * L j j) * flTail) * δmul| ≤
+            ((1 + fp.u) * ((1 + gamma fp n) * tailAbs)) * fp.u := by
+        have hneg_abs : |(-X_hat j j * L j j)| = |X_hat j j * L j j| := by
+          have hneg : (-X_hat j j * L j j) = -(X_hat j j * L j j) := by ring
+          rw [hneg, abs_neg]
+        have hleft :
+            |X_hat j j * L j j| * |flTail| ≤
+              (1 + fp.u) * ((1 + gamma fp n) * tailAbs) :=
+          mul_le_mul hdiag_abs hfl_abs (abs_nonneg _) honeu_nonneg
+        calc
+          |((-X_hat j j * L j j) * flTail) * δmul|
+              = |X_hat j j * L j j| * |flTail| * |δmul| := by
+                rw [abs_mul, abs_mul, hneg_abs]
+          _ ≤ ((1 + fp.u) * ((1 + gamma fp n) * tailAbs)) * fp.u :=
+              mul_le_mul hleft hδmul (abs_nonneg _) hcoef_nonneg
+      calc
+        |Δ * L j j|
+            = |(-X_hat j j * L j j) * (flTail - exactTail) +
+                ((-X_hat j j * L j j) * flTail) * δmul| := by
+              rw [hΔ_decomp]
+        _ ≤ |(-X_hat j j * L j j) * (flTail - exactTail)| +
+              |((-X_hat j j * L j j) * flTail) * δmul| :=
+            abs_add_le _ _
+        _ ≤ (1 + fp.u) * (gamma fp n * tailAbs) +
+              ((1 + fp.u) * ((1 + gamma fp n) * tailAbs)) * fp.u :=
+            add_le_add hfirst hsecond
+        _ = ((1 + fp.u) * (gamma fp n + fp.u * (1 + gamma fp n))) *
+              tailAbs := by ring
+    · have hupdate := hUpdate j row hij
+      calc
+        X_hat row j = fp.fl_mul (-X_hat j j) flTail := by
+          simpa [flTail, x, y] using hupdate
+        _ = -X_hat j j * exactTail + Δ := by
+          dsimp [Δ]
+          ring
+  have hUpper :=
+    triInv_method2_left_residual_upper_zero n fp L X_hat hLT hSpec
+  have hDiagBase :=
+    triInv_method2_left_residual_diag_product_bound n fp L X_hat hn1 hLT hSpec
+  have hDiag : ∀ j : Fin n,
+      |∑ k : Fin n, X_hat j k * L k j - 1| ≤
+        gamma fp (n + 2) * ∑ k : Fin n, |X_hat j k| * |L k j| := by
+    intro j
+    have hS_nonneg : 0 ≤ ∑ k : Fin n, |X_hat j k| * |L k j| := by
+      exact Finset.sum_nonneg (fun k _ =>
+        mul_nonneg (abs_nonneg _) (abs_nonneg _))
+    have hmono : gamma fp (n + 1) ≤ gamma fp (n + 2) :=
+      gamma_mono fp (by omega : n + 1 ≤ n + 2) hn2
+    exact le_trans (hDiagBase j) (mul_le_mul_of_nonneg_right hmono hS_nonneg)
+  have hLowerEta :=
+    triInv_method2_offdiag_trailing_update_full_bound n fp L X_hat
+      hη_nonneg hLT hSpec.diag_err hTrail
+  have hcoeff :
+      fp.u + (1 + fp.u) * (gamma fp n + fp.u * (1 + gamma fp n)) ≤
+        gamma fp (n + 2) :=
+    higham14_unit_roundoff_add_one_plus_u_mul_rounded_gamma_le_gamma_succ_succ
+      fp n hn2
+  have hLower : ∀ j row : Fin n, row.val > j.val →
+      |∑ k : Fin n, X_hat row k * L k j -
+          (if row = j then 1 else 0)| ≤
+        gamma fp (n + 2) * ∑ k : Fin n, |X_hat row k| * |L k j| := by
+    intro j row hij
+    have hbase := hLowerEta j row hij
+    have hS_nonneg : 0 ≤ ∑ k : Fin n, |X_hat row k| * |L k j| := by
+      exact Finset.sum_nonneg (fun k _ =>
+        mul_nonneg (abs_nonneg _) (abs_nonneg _))
+    exact le_trans hbase (mul_le_mul_of_nonneg_right hcoeff hS_nonneg)
+  exact triInv_method2_left_residual_from_region_bounds n L X_hat
+    (gamma_nonneg fp hn2) hUpper hDiag hLower
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.5, right-approximate-inverse
     residual bound.

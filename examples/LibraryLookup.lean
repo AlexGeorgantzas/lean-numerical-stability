@@ -6353,6 +6353,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check inverseLeftResidual
 #check higham14_eq14_3_forward_error_bound_of_abs_Y_le
 #check higham14_eq14_3_forward_error_firstorder_replacement
+#check higham14_eq14_3_forward_error_firstorder_plus_remainder
 #check higham14_infNorm_le_of_componentwise_abs_matmul_bound
 #check higham14_infNorm_le_of_componentwise_matmul_bound
 #check triInv_lower_left_residual_upper_zero
@@ -6368,6 +6369,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check triInv_method2_left_residual_of_strict_tail_gamma
 #check higham14_unit_roundoff_add_one_plus_u_mul_gamma_le_gamma_succ
 #check triInv_method2_left_residual_of_strict_tail_fl_dot
+#check higham14_unit_roundoff_add_one_plus_u_mul_rounded_gamma_le_gamma_succ_succ
+#check triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul
 #check triInv_method2_offdiag_update_delta_bound
 #check triInv_method2_offdiag_scaled_residual_bound
 #check triInv_method2_left_residual_normwise
