@@ -34431,6 +34431,44 @@ def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localA
         higham11_7_ConcretePathSecondPivotReducedSolveRows_of_combined_rows
           (k + 1) step A b x_hat Δloc (hrow_second_combined Δloc hwit))
 
+/-- **Theorem 11.7 concrete prefix-span residual-witness endpoint for paths
+with no accepted `2 × 2` branch, uniform component-cap form**, zero common
+offset.  The `2 × 2` first-trailing, terminal, and second-pivot row obligations
+are discharged by the no-second-pivot path condition. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_no_secondPivot :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact
+      c_bound_cap c_rec_cap C u
+      (hno : ∀ t : Fin (k + 1), step t ≠ PivotSize.two)
+      hinit hlast_eq hlast hc_bound hc_rec hc_bound_cap hc_rec_cap hu
+      hbound hrec hC hrow_one_local hrow_last_one_local hrow_zero_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_secondPivot_reduced_solve_rows
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact
+      c_bound_cap c_rec_cap C u hinit hlast_eq hlast hc_bound hc_rec
+      hc_bound_cap hc_rec_cap hu hbound hrec hC hrow_one_local
+      (fun _Δloc _hwit t _htlast hstep => False.elim (hno t hstep))
+      hrow_last_one_local
+      (fun _Δloc _hwit hstep => False.elim (hno (Fin.last k) hstep))
+      hrow_zero_base
+      (fun Δloc _hwit =>
+        higham11_7_ConcretePathSecondPivotReducedSolveRows_of_no_two
+          (k + 1) step A b x_hat Δloc hno)
+
+/-- **Theorem 11.7 concrete prefix-span residual-witness endpoint for all-`1 × 1`
+paths, uniform component-cap form**, zero common offset.  This is the
+source-facing all-one specialization of the no-second-pivot component endpoint. -/
+def higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_all_one :=
+  fun k fp step A b x_hat c_bound c_rec tail_fl tail_exact
+      c_bound_cap c_rec_cap C u
+      (hone : ∀ t : Fin (k + 1), step t = PivotSize.one)
+      hinit hlast_eq hlast hc_bound hc_rec hc_bound_cap hc_rec_cap hu
+      hbound hrec hC hrow_one_local hrow_last_one_local hrow_zero_base =>
+    higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_no_secondPivot
+      k fp step A b x_hat c_bound c_rec tail_fl tail_exact
+      c_bound_cap c_rec_cap C u
+      (higham11_7_tridiagonalPath_no_secondPivot_of_all_one (k + 1) step hone)
+      hinit hlast_eq hlast hc_bound hc_rec hc_bound_cap hc_rec_cap hu
+      hbound hrec hC hrow_one_local hrow_last_one_local hrow_zero_base
+
 /-- **Theorem 11.7 concrete prefix-span residual-witness endpoint from initial
 local branches and a terminal last branch, scalar-budget form**, zero common
 offset.  This keeps per-branch roundoff and coefficient majorants visible while
