@@ -5528,7 +5528,8 @@ a transfer or packaging result rather than a complete local analysis.
 
 Chapter 14 GJE declarations in `Algorithms/GaussJordan.lean` include the
 cumulative-product and exact recurrence-accumulation support for
-(14.27)--(14.28), abstract second-stage interfaces, and the proved overall
+(14.27)--(14.28), the generic and constant product-perturbation bridges feeding
+(14.29)--(14.30), abstract second-stage interfaces, and the proved overall
 composition wrappers:
 
 - `gje_c₃`
@@ -5541,6 +5542,10 @@ composition wrappers:
 - `gje_cumulative_product_oob`
 - `gje_cumulative_product_nonneg`
 - `gje_cumulative_product_abs_nonneg`
+- `gje_cumulative_product_eq_matSeqProd_rev`
+- `gje_cumulative_product_componentwise_perturbation_bound`
+- `gje_scalarSeqProd_const`
+- `gje_cumulative_product_componentwise_perturbation_bound_const`
 - `gje_cumulative_product_matrix_accumulation`
 - `gje_cumulative_product_rhs_accumulation`
 - `gje_stage2_forward_error_bound`

@@ -37,6 +37,67 @@ open Finset BigOperators
 noncomputable def gje_c₃ (fp : FPModel) (n : ℕ) : ℝ :=
   ((n : ℝ) - 1) * gamma fp 3 * (1 + gamma fp 3) ^ (n - 2)
 
+/-- Elementary scalar growth bound used to connect the exact constant
+    product envelope `(1 + c)^steps - 1` to Higham's `c₃`-style coefficient. -/
+theorem gje_one_add_pow_sub_one_le_nat_mul_pred {c : ℝ} (hc : 0 ≤ c) :
+    ∀ steps : ℕ,
+      (1 + c) ^ steps - 1 ≤ (steps : ℝ) * c * (1 + c) ^ (steps - 1) := by
+  intro steps
+  induction steps with
+  | zero =>
+      simp
+  | succ k ih =>
+      cases k with
+      | zero =>
+          ring_nf
+          exact le_rfl
+      | succ m =>
+          have hbase_nonneg : 0 ≤ 1 + c := by linarith
+          have hbase_one : (1 : ℝ) ≤ 1 + c := by linarith
+          have hpow_ge_one : (1 : ℝ) ≤ (1 + c) ^ (m + 1) :=
+            one_le_pow₀ hbase_one
+          have hmul := mul_le_mul_of_nonneg_right ih hbase_nonneg
+          have hc_le : c ≤ c * (1 + c) ^ (m + 1) := by
+            calc
+              c = c * 1 := by ring
+              _ ≤ c * (1 + c) ^ (m + 1) :=
+                mul_le_mul_of_nonneg_left hpow_ge_one hc
+          calc
+            (1 + c) ^ (Nat.succ (Nat.succ m)) - 1 =
+                (1 + c) ^ (m + 1) * (1 + c) - 1 := by
+              rw [show Nat.succ (Nat.succ m) = (m + 1) + 1 by omega, pow_succ]
+            _ = ((1 + c) ^ (m + 1) - 1) * (1 + c) + c := by
+              ring
+            _ ≤ ((m + 1 : ℕ) : ℝ) * c * (1 + c) ^ ((m + 1) - 1) *
+                  (1 + c) + c := by
+              exact add_le_add hmul (le_refl c)
+            _ = ((m + 1 : ℕ) : ℝ) * c * ((1 + c) ^ m * (1 + c)) + c := by
+              rw [show (m + 1 : ℕ) - 1 = m by omega]
+              ring
+            _ = ((m + 1 : ℕ) : ℝ) * c * (1 + c) ^ (m + 1) + c := by
+              rw [pow_succ]
+            _ ≤ ((m + 1 : ℕ) : ℝ) * c * (1 + c) ^ (m + 1) +
+                  c * (1 + c) ^ (m + 1) := by
+              exact add_le_add (le_refl _) hc_le
+            _ = ((Nat.succ (Nat.succ m) : ℕ) : ℝ) * c *
+                  (1 + c) ^ (Nat.succ (Nat.succ m) - 1) := by
+              rw [show Nat.succ (Nat.succ m) - 1 = m + 1 by omega]
+              norm_num [Nat.cast_add, Nat.cast_one]
+              ring
+
+/-- Chapter 14 scalar bridge: the constant GJE product envelope with
+    `eta = gamma fp 3` is bounded by the file's `gje_c₃ fp n` coefficient. -/
+theorem gje_one_add_gamma_three_pow_sub_one_le_c3 (fp : FPModel) (n : ℕ)
+    (hn : 1 ≤ n) (hvalid : gammaValid fp 3) :
+    (1 + gamma fp 3) ^ (n - 1) - 1 ≤ gje_c₃ fp n := by
+  have hgamma : 0 ≤ gamma fp 3 := gamma_nonneg fp hvalid
+  have h := gje_one_add_pow_sub_one_le_nat_mul_pred hgamma (n - 1)
+  have hcast : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by
+    rw [Nat.cast_sub hn]
+    norm_num
+  have hexp : (n - 1) - 1 = n - 2 := by omega
+  simpa [gje_c₃, hcast, hexp] using h
+
 -- ══════════════════════════════════════════════════════════════════════
 -- §14.4.1  GJE Second Stage: Specification
 -- ══════════════════════════════════════════════════════════════════════
@@ -280,6 +341,39 @@ theorem gje_cumulative_product_componentwise_perturbation_bound (n : Nat)
     (fun k i j => |N_hat k i j|) start steps hidx
   rw [hpert, hbase, habs]
   simpa [X, DX, absMatrix] using hbound
+
+/-- Constant per-stage scalar product for the GJE product-error envelope. -/
+theorem gje_scalarSeqProd_const (steps : Nat) (eta : Real) :
+    scalarSeqProd steps (fun _ : Fin steps => 1 + eta) =
+      (1 + eta) ^ steps := by
+  induction steps with
+  | zero =>
+      simp [scalarSeqProd]
+  | succ m ih =>
+      simp [scalarSeqProd, ih, pow_succ, mul_comm]
+
+/-- Constant-error specialization of
+    `gje_cumulative_product_componentwise_perturbation_bound`, with the
+    scalar envelope in the source-shaped form `(1 + eta)^steps - 1`. -/
+theorem gje_cumulative_product_componentwise_perturbation_bound_const (n : Nat)
+    (N_hat DeltaN : Fin n -> Fin n -> Fin n -> Real)
+    (start steps : Nat) (eta : Real)
+    (hidx : forall r : Fin steps, start + (steps - 1 - r.val) < n)
+    (heta : 0 <= eta)
+    (hDelta : forall r : Fin steps, forall i j : Fin n,
+      |DeltaN (Fin.mk (start + (steps - 1 - r.val)) (hidx r)) i j| <=
+        eta * |N_hat (Fin.mk (start + (steps - 1 - r.val)) (hidx r)) i j|)
+    (i j : Fin n) :
+    |gje_cumulative_product n (fun k i j => N_hat k i j + DeltaN k i j)
+        start (start + steps) i j -
+      gje_cumulative_product n N_hat start (start + steps) i j| <=
+      ((1 + eta) ^ steps - 1) *
+        gje_cumulative_product n (fun k i j => |N_hat k i j|)
+          start (start + steps) i j := by
+  have h := gje_cumulative_product_componentwise_perturbation_bound n
+    N_hat DeltaN start steps (fun _ : Fin steps => eta) hidx
+    (fun _ => heta) hDelta i j
+  simpa [gje_scalarSeqProd_const] using h
 
 /-- Equation (14.27) accumulation algebra for the GJE second-stage matrix
     recurrence.  If the exact stage matrices obey
