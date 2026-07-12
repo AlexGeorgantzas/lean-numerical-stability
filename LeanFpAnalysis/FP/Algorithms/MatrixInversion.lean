@@ -949,6 +949,27 @@ structure Method2Spec (fp : FPModel) (n : ℕ)
   /-- Upper triangle is zero (since L is lower triangular, L⁻¹ is too). -/
   upper_zero : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0
 
+/-- Higham, 2nd ed., Chapter 14, Section 14.2.1, Method 2:
+    source-facing kernel certificate for the reverse-column strict-tail update.
+
+    This packages the existing Method 2 diagonal/shape/error specification
+    together with the exact stored below-diagonal update
+    `fl_mul (-X_hat j j) (fl_dotProduct strictTail Lcol)`.  It is not yet the
+    full loop proof; the remaining source obligation is to show the concrete
+    reverse-column implementation produces this certificate. -/
+structure Method2StrictTailKernelSpec (fp : FPModel) (n : ℕ)
+    (L : Fin n → Fin n → ℝ) (X_hat : Fin n → Fin n → ℝ) : Prop where
+  /-- Existing Method 2 diagonal, off-diagonal, and triangular-shape contract. -/
+  method2 : Method2Spec fp n L X_hat
+  /-- Below-diagonal entries are stored by the rounded strict-tail dot/scalar
+      kernel described in the source Method 2 recurrence. -/
+  strict_tail_dot_scalar : ∀ j row : Fin n, row.val > j.val →
+    X_hat row j =
+      fp.fl_mul (-X_hat j j)
+        (fl_dotProduct fp n
+          (fun k : Fin n => if j.val < k.val then X_hat row k else 0)
+          (fun k : Fin n => L k j))
+
 /-- Triangular-shape support for Method 2: if both `X_hat` and `L` are lower
     triangular, then the left residual `X_hat * L - I` is zero strictly above
     the diagonal. -/
@@ -3896,6 +3917,27 @@ theorem triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul
     exact le_trans hbase (mul_le_mul_of_nonneg_right hcoeff hS_nonneg)
   exact triInv_method2_left_residual_from_region_bounds n L X_hat
     (gamma_nonneg fp hn2) hUpper hDiag hLower
+
+/-- Higham, 2nd ed., Chapter 14, Lemma 14.1 / equation (14.8), Method 2
+    strict-tail kernel surface:
+    a source-facing strict-tail dot/scalar kernel certificate implies the
+    componentwise left-residual bound with coefficient `gamma_(n+2)`.
+
+    This closes the residual consequence of the packaged kernel certificate.
+    The concrete reverse-column loop proof that produces
+    `Method2StrictTailKernelSpec` remains a separate selected dependency. -/
+theorem triInv_method2_left_residual_of_strict_tail_kernel_spec
+    (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn2 : gammaValid fp (n + 2))
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hKernel : Method2StrictTailKernelSpec fp n L X_hat) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * L k j -
+          (if i = j then 1 else 0)| ≤
+        gamma fp (n + 2) * ∑ k : Fin n, |X_hat i k| * |L k j| :=
+  triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul
+    n fp L X_hat hn2 hLT hKernel.method2 hKernel.strict_tail_dot_scalar
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.5, right-approximate-inverse
     residual bound.
