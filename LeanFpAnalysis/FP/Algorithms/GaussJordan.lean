@@ -281,6 +281,39 @@ theorem gje_cumulative_product_componentwise_perturbation_bound (n : Nat)
   rw [hpert, hbase, habs]
   simpa [X, DX, absMatrix] using hbound
 
+/-- Constant per-stage scalar product for the GJE product-error envelope. -/
+theorem gje_scalarSeqProd_const (steps : Nat) (eta : Real) :
+    scalarSeqProd steps (fun _ : Fin steps => 1 + eta) =
+      (1 + eta) ^ steps := by
+  induction steps with
+  | zero =>
+      simp [scalarSeqProd]
+  | succ m ih =>
+      simp [scalarSeqProd, ih, pow_succ, mul_comm]
+
+/-- Constant-error specialization of
+    `gje_cumulative_product_componentwise_perturbation_bound`, with the
+    scalar envelope in the source-shaped form `(1 + eta)^steps - 1`. -/
+theorem gje_cumulative_product_componentwise_perturbation_bound_const (n : Nat)
+    (N_hat DeltaN : Fin n -> Fin n -> Fin n -> Real)
+    (start steps : Nat) (eta : Real)
+    (hidx : forall r : Fin steps, start + (steps - 1 - r.val) < n)
+    (heta : 0 <= eta)
+    (hDelta : forall r : Fin steps, forall i j : Fin n,
+      |DeltaN (Fin.mk (start + (steps - 1 - r.val)) (hidx r)) i j| <=
+        eta * |N_hat (Fin.mk (start + (steps - 1 - r.val)) (hidx r)) i j|)
+    (i j : Fin n) :
+    |gje_cumulative_product n (fun k i j => N_hat k i j + DeltaN k i j)
+        start (start + steps) i j -
+      gje_cumulative_product n N_hat start (start + steps) i j| <=
+      ((1 + eta) ^ steps - 1) *
+        gje_cumulative_product n (fun k i j => |N_hat k i j|)
+          start (start + steps) i j := by
+  have h := gje_cumulative_product_componentwise_perturbation_bound n
+    N_hat DeltaN start steps (fun _ : Fin steps => eta) hidx
+    (fun _ => heta) hDelta i j
+  simpa [gje_scalarSeqProd_const] using h
+
 /-- Equation (14.27) accumulation algebra for the GJE second-stage matrix
     recurrence.  If the exact stage matrices obey
     `U_{start+t+1} = N_{start+t} U_{start+t}` for `steps` valid stages, then
