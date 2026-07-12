@@ -1480,6 +1480,50 @@ theorem higham14_eq14_14_method2B_block_update_delta_bound {m r : ℕ}
   intro i j
   simpa [higham14_method2BBlockUpdateDelta] using hBound i j
 
+/-- Higham, 2nd ed., Chapter 14, equation (14.14), Method 2B:
+    source-facing package for the rounded off-diagonal block update.
+
+    The package records both the exact decomposition of the computed block into
+    `-X22 * L21 * X11` plus an explicit perturbation and the componentwise
+    product-error bound on that perturbation.  The instability analysis that
+    uses this update certificate remains a separate source obligation. -/
+structure Method2BBlockUpdateSpec {m r : ℕ}
+    (X21_hat : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (X11 : Fin m → Fin m → ℝ)
+    (ε : ℝ) (absBound : Fin r → Fin m → ℝ) : Prop where
+  /-- The computed off-diagonal block is the exact Method 2B update plus
+      the explicitly named perturbation. -/
+  update_decomposition : ∀ i : Fin r, ∀ j : Fin m,
+    X21_hat i j =
+      higham14_method2BBlockUpdateExact X22 L21 X11 i j +
+        higham14_method2BBlockUpdateDelta X21_hat X22 L21 X11 i j
+  /-- The explicit perturbation obeys the supplied componentwise product-error
+      envelope for the rectangular triple product. -/
+  delta_bound : ∀ i : Fin r, ∀ j : Fin m,
+    |higham14_method2BBlockUpdateDelta X21_hat X22 L21 X11 i j| ≤
+      ε * absBound i j
+
+/-- Higham, 2nd ed., Chapter 14, equation (14.14), Method 2B:
+    build the source-facing block-update package from a rectangular
+    triple-product error certificate. -/
+theorem higham14_eq14_14_method2B_block_update_spec_of_product_error {m r : ℕ}
+    (X21_hat : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (X11 : Fin m → Fin m → ℝ)
+    (ε : ℝ) (absBound : Fin r → Fin m → ℝ)
+    (hBound : ∀ i : Fin r, ∀ j : Fin m,
+      |X21_hat i j -
+        higham14_method2BBlockUpdateExact X22 L21 X11 i j| ≤
+          ε * absBound i j) :
+    Method2BBlockUpdateSpec X21_hat X22 L21 X11 ε absBound where
+  update_decomposition :=
+    higham14_eq14_14_method2B_block_update_decomposition
+      X21_hat X22 L21 X11
+  delta_bound :=
+    higham14_eq14_14_method2B_block_update_delta_bound
+      X21_hat X22 L21 X11 ε absBound hBound
+
 /-- Exact Method 2B off-diagonal block formula from the block equation
     `X21 * L11 + X22 * L21 = 0` and the diagonal-block inverse certificate
     `L11 * X11 = I`.  This is the exact algebra behind equation (14.14);

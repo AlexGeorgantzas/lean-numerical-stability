@@ -6430,6 +6430,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_method2BBlockUpdateDelta
 #check higham14_eq14_14_method2B_block_update_decomposition
 #check higham14_eq14_14_method2B_block_update_delta_bound
+#check Method2BBlockUpdateSpec
+#check higham14_eq14_14_method2B_block_update_spec_of_product_error
 #check higham14_eq14_14_method2B_exact_offdiag_block_update
 #check higham14_methodDProductDelta
 #check higham14_methodDLUBackwardDelta
