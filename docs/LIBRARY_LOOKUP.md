@@ -5670,6 +5670,7 @@ simplification, the exact Hyman block identities
 - `higham14_methodD_abs_XU_U_le_scaled_abs_product`
 - `higham14_methodD_abs_Xhat_le_scaled_abs_product`
 - `higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget`
+- `higham14_eq14_23_methodD_left_residual_bound_of_local_certificates`
 - `higham14_eq14_23_methodD_left_residual_bound`
 - `higham14_rowNorm2`
 - `higham14_rowNormDiagonal`

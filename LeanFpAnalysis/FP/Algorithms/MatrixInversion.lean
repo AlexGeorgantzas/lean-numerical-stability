@@ -2950,6 +2950,36 @@ theorem higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget {n : �
           nlinarith [hU, hL, hPterm, hA]
     _ = (4 * γ + 2 * γ ^ 2) * P := by ring_nf
 
+/-- Higham, 2nd ed., Chapter 14, equation (14.23), Method D:
+    source-facing local-certificate route to the printed scalar coefficient.
+
+    This wrapper exposes the proved path from the LU backward-error certificate,
+    lower/upper triangular inverse residual certificates, and product-error
+    certificate directly to the `(4γ + 2γ^2)` left-residual envelope.  The
+    remaining source dependency is upstream: deriving the triangular inverse
+    residual certificates for the chosen Method 2/2C kernels. -/
+theorem higham14_eq14_23_methodD_left_residual_bound_of_local_certificates
+    (n : ℕ) (fp : FPModel)
+    (A L_hat U_hat X_U X_L X_hat : Fin n → Fin n → ℝ)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hXL_res : ∀ i j : Fin n,
+      |higham14_methodDXLLeftResidual X_L L_hat i j| ≤
+        gamma fp n * ∑ k : Fin n, |X_L i k| * |L_hat k j|)
+    (hXU_res : ∀ i j : Fin n,
+      |higham14_methodDXULeftResidual X_U U_hat i j| ≤
+        gamma fp n * ∑ k : Fin n, |X_U i k| * |U_hat k j|)
+    (hProd : MatProdError n X_hat (matMul n X_U X_L) (gamma fp n)
+      (fun i j => ∑ k : Fin n, |X_U i k| * |X_L k j|)) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * A k j - (if i = j then 1 else 0)| ≤
+        (4 * gamma fp n + 2 * gamma fp n ^ 2) *
+          ∑ p : Fin n,
+            (∑ q : Fin n, |X_U i q| * |X_L q p|) *
+              (∑ r : Fin n, |L_hat p r| * |U_hat r j|) :=
+  higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget
+    fp A L_hat U_hat X_U X_L X_hat hLU hn hXL_res hXU_res hProd
+
 /-- **Abstract Method D left residual interface** (Higham eq. 14.20–14.23).
 
     Method D: compute X_L ≈ L⁻¹ and X_U ≈ U⁻¹ separately,
