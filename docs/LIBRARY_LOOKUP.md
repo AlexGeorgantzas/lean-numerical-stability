@@ -5589,6 +5589,8 @@ simplification, the exact Hyman block identities
 - `triInv_method2_left_residual_diag_product_bound`
 - `triInv_method2_left_residual_from_region_bounds`
 - `triInv_method2_left_residual_of_strict_tail_gamma`
+- `higham14_unit_roundoff_add_one_plus_u_mul_gamma_le_gamma_succ`
+- `triInv_method2_left_residual_of_strict_tail_fl_dot`
 - `triInv_method2_offdiag_update_delta_bound`
 - `triInv_method2_offdiag_scaled_residual_bound`
 - `triInv_method2_left_residual_normwise`
