@@ -972,6 +972,66 @@ theorem triInv_method2_left_residual_diag_bound (n : ℕ) (fp : FPModel)
       simp at hnot
   simpa [hsum, hdiag] using hδ
 
+/-- Lemma 14.1 support: Method 2's diagonal residual has the product-budget
+    shape needed by the all-region assembly theorem.  The diagonal relation
+    `X_hat j j * L j j = 1 + δ`, together with `|δ| ≤ u` and
+    `gammaValid fp (n + 1)`, ensures the diagonal product budget is nonvacuous:
+    the full column budget is at least `1 - u`, while
+    `gamma_(n+1) * (1 - u) ≥ u`. -/
+theorem triInv_method2_left_residual_diag_product_bound (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hSpec : Method2Spec fp n L X_hat) :
+    ∀ j : Fin n,
+      |∑ k : Fin n, X_hat j k * L k j - 1| ≤
+        gamma fp (n + 1) * ∑ k : Fin n, |X_hat j k| * |L k j| := by
+  intro j
+  have hdiag_res :=
+    triInv_method2_left_residual_diag_bound n fp L X_hat hLT hSpec j
+  obtain ⟨δ, hδ, hdiag⟩ := hSpec.diag_err j
+  have hle1 : 1 ≤ n + 1 := Nat.succ_le_succ (Nat.zero_le n)
+  have hvalid1 : gammaValid fp 1 :=
+    gammaValid_mono fp hle1 hn1
+  have hgamma1_le : gamma fp 1 ≤ gamma fp (n + 1) :=
+    gamma_mono fp hle1 hn1
+  have hu_lt_one : fp.u < 1 := by
+    have h := hvalid1
+    unfold gammaValid at h
+    norm_num at h
+    exact h
+  have hone_minus_nonneg : 0 ≤ 1 - fp.u := by linarith
+  have hgamma1_mul : gamma fp 1 * (1 - fp.u) = fp.u := by
+    have hden : (1 - fp.u) ≠ 0 := by linarith
+    unfold gamma
+    norm_num
+    field_simp [hden]
+  let S : ℝ := ∑ k : Fin n, |X_hat j k| * |L k j|
+  have hdiag_term_le_S : |X_hat j j| * |L j j| ≤ S := by
+    dsimp [S]
+    exact Finset.single_le_sum
+      (fun k _ => mul_nonneg (abs_nonneg (X_hat j k)) (abs_nonneg (L k j)))
+      (Finset.mem_univ j)
+  have hone_minus_le_prod : 1 - fp.u ≤ |X_hat j j| * |L j j| := by
+    have habs_lower : 1 - |δ| ≤ |1 + δ| := by
+      have htri : (1 : ℝ) ≤ |1 + δ| + |δ| := by
+        simpa [abs_neg, add_assoc] using (abs_add_le (1 + δ) (-δ))
+      linarith
+    calc
+      1 - fp.u ≤ 1 - |δ| := by linarith
+      _ ≤ |1 + δ| := habs_lower
+      _ = |X_hat j j * L j j| := by rw [hdiag]
+      _ = |X_hat j j| * |L j j| := by rw [abs_mul]
+  have hu_le_coeff_budget : fp.u ≤ gamma fp (n + 1) * S := by
+    calc
+      fp.u = gamma fp 1 * (1 - fp.u) := hgamma1_mul.symm
+      _ ≤ gamma fp (n + 1) * (1 - fp.u) :=
+        mul_le_mul_of_nonneg_right hgamma1_le hone_minus_nonneg
+      _ ≤ gamma fp (n + 1) * S := by
+        apply mul_le_mul_of_nonneg_left _ (gamma_nonneg fp hn1)
+        exact le_trans hone_minus_le_prod hdiag_term_le_S
+  exact le_trans hdiag_res hu_le_coeff_budget
+
 /-- Lemma 14.1 support: regionwise Method 2 residual bounds assemble into
     the full componentwise left-residual bound.  This is only an assembly
     theorem: the diagonal and below-diagonal product-budget estimates remain
