@@ -16008,6 +16008,11 @@ small enough to serve as a smoke check for representative public declarations.
 #check Wave19.entrywise_residual_telescope
 #check Wave19.theorem19_6_coxHigham_concrete_of_stageBound
 #check Wave19.concreteStageBound_of_yBounds
+-- Wave-19 full: concrete entrywise per-step reflector error + single-level σ-transport PROVED on the genuine panel
+#check Wave19.fl_householderApplyMatrixRect_entrywise_backward_error
+#check Wave19.panelStep_entrywise_le_rowGrowth
+#check Wave19.panelStep_transport_entrywise_le
+#check Wave19.theorem19_6_coxHigham_concrete_full
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved
