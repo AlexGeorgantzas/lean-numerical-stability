@@ -5576,6 +5576,7 @@ simplification, the exact Hyman block identities
 - `inverseRightResidual`, `inverseLeftResidual`
 - `higham14_eq14_3_forward_error_bound_of_abs_Y_le`
 - `higham14_eq14_3_forward_error_firstorder_replacement`
+- `higham14_eq14_3_forward_error_firstorder_plus_remainder`
 - `higham14_infNorm_le_of_componentwise_abs_matmul_bound`
 - `higham14_infNorm_le_of_componentwise_matmul_bound`
 - `triInv_lower_left_residual_upper_zero`
