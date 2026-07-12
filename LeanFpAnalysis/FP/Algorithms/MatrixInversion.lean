@@ -368,6 +368,53 @@ theorem higham14_eq14_3_forward_error_firstorder_replacement (n : ℕ)
         intro i j
         simpa [absMatrix] using hY_first i j))
 
+/-- Higham, 2nd ed., Chapter 14, Section 14.1, equation (14.3):
+    explicit first-order plus replacement-remainder form.
+
+If a caller supplies `|Y| <= |A⁻¹| + R`, the exact perturbed-inverse
+forward-error bound separates into the displayed first-order term and an
+explicit `R` remainder term.  Taking `R = O(ε)` is the remaining asymptotic
+step behind the book's informal `O(ε^2)` notation. -/
+theorem higham14_eq14_3_forward_error_firstorder_plus_remainder (n : ℕ)
+    (A A_inv Y : Fin n → Fin n → ℝ)
+    (ΔA R : Fin n → Fin n → ℝ)
+    (ε : ℝ) (hε : 0 ≤ ε)
+    (hΔA : ∀ i j, |ΔA i j| ≤ ε * |A i j|)
+    (hInv : IsLeftInverse n A A_inv)
+    (hRInv : IsRightInverse n A A_inv)
+    (hY : ∀ i j, ∑ k : Fin n, (A i k + ΔA i k) * Y k j =
+      if i = j then 1 else 0)
+    (hY_bound : ∀ i j : Fin n, |Y i j| ≤ |A_inv i j| + R i j) :
+    ∀ i j, |A_inv i j - Y i j| ≤
+      ε * (∑ k₁ : Fin n, |A_inv i k₁| *
+        (∑ k₂ : Fin n, |A k₁ k₂| * |A_inv k₂ j|)) +
+      ε * (∑ k₁ : Fin n, |A_inv i k₁| *
+        (∑ k₂ : Fin n, |A k₁ k₂| * R k₂ j)) := by
+  intro i j
+  have hbase :=
+    higham14_eq14_3_forward_error_bound_of_abs_Y_le
+      n A A_inv Y ΔA (fun i j => |A_inv i j| + R i j)
+      ε hε hΔA hInv hRInv hY hY_bound i j
+  calc
+    |A_inv i j - Y i j|
+        ≤ ε * ∑ k₁ : Fin n, |A_inv i k₁| *
+            (∑ k₂ : Fin n, |A k₁ k₂| * (|A_inv k₂ j| + R k₂ j)) := hbase
+    _ = ε * (∑ k₁ : Fin n, |A_inv i k₁| *
+            (∑ k₂ : Fin n, |A k₁ k₂| * |A_inv k₂ j|)) +
+        ε * (∑ k₁ : Fin n, |A_inv i k₁| *
+            (∑ k₂ : Fin n, |A k₁ k₂| * R k₂ j)) := by
+        rw [← mul_add]
+        congr 1
+        rw [← Finset.sum_add_distrib]
+        apply Finset.sum_congr rfl
+        intro k₁ _
+        rw [← mul_add]
+        congr 1
+        rw [← Finset.sum_add_distrib]
+        apply Finset.sum_congr rfl
+        intro k₂ _
+        ring
+
 -- ============================================================
 -- §14.1  Residual comparison: inversion vs GEPP
 -- ============================================================
