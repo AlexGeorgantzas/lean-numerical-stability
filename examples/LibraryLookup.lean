@@ -15941,6 +15941,16 @@ small enough to serve as a smoke check for representative public declarations.
 #check Wave16.sylvesterVecCoeff_quasiQuasi_blockBackSub_componentwise_error_and_residual
 #check Wave16.sylvesterVecCoeff_quasiQuasi_blockBackSub_componentwise_residual
 #check Wave16.sylvesterResidualRect_quasiQuasi_blockBackSub_componentwise_le
+-- Wave-17: full ch16 closure — AUTOMATIC condition numbers (σ_min>0 from det≠0), LAPACK norm-1 estimator, rounded Hessenberg-Schur
+#check Wave17.finiteMatrixGram_eigenvalues_pos_of_det_ne_zero
+#check Wave17.exists_sylvesterOp_sigmaMin_of_no_common_complex_right_eigenvalue
+#check Wave17.H16_eq16_24_structured_condition_of_no_common_complex_right_eigenvalue
+#check Wave17.H16_eq16_27_lyapunov_condition_of_no_common_complex_right_eigenvalue
+#check Wave17.H16_eq16_28_sylvester_relative_aposteriori_bound_of_no_common_complex_right_eigenvalue
+#check NormEstimator.lapackNormEstimatorG_le_oneNormG
+#check NormEstimator.sylvester_practical_error_bound_with_norm1_estimator
+#check Wave17.sylvesterHessenbergShiftedColumn_roundedGEPP_backward_error
+#check Wave17.H16_eq16_4_8_auto_realSchur_existsUnique_solution_of_no_common
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved
