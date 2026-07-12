@@ -6330,6 +6330,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check gje_cumulative_product_abs_nonneg
 #check gje_cumulative_product_eq_matSeqProd_rev
 #check gje_cumulative_product_componentwise_perturbation_bound
+#check gje_scalarSeqProd_const
+#check gje_cumulative_product_componentwise_perturbation_bound_const
 #check gje_cumulative_product_matrix_accumulation
 #check gje_cumulative_product_rhs_accumulation
 #check gje_stage2_forward_error_bound
