@@ -6359,6 +6359,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check lowerTri_column_sum_eq_diag_add_tail
 #check triInv_method2_offdiag_trailing_update_identity
 #check triInv_method2_offdiag_trailing_update_bound
+#check triInv_method2_offdiag_trailing_update_full_bound
 #check triInv_method2_left_residual_upper_zero
 #check triInv_method2_left_residual_diag_bound
 #check triInv_method2_offdiag_update_delta_bound

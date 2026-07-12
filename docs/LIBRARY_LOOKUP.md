@@ -5568,7 +5568,7 @@ no-pivot/unit-lower LU form plus signed and absolute-value pivoted forms,
 Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence and full equality/row-orthogonality characterization,
 Problem 14.13's AM-GM, SVD norm, and determinant-product support bridges,
 Problem 14.15's scalar product-radius and top-index perturbation support, Method 2 structural
-left-residual upper/diagonal edges, trailing-column split, strict-tail update support, and off-diagonal update support, Method D's expanded
+left-residual upper/diagonal edges, trailing-column split, strict-tail update and full-budget support, and off-diagonal update support, Method D's expanded
 componentwise residual-budget dependency and printed-coefficient scalar
 simplification, the exact Hyman block identities
 (14.35)--(14.36), and Problem 14.10:
@@ -5582,6 +5582,7 @@ simplification, the exact Hyman block identities
 - `lowerTri_column_sum_eq_diag_add_tail`
 - `triInv_method2_offdiag_trailing_update_identity`
 - `triInv_method2_offdiag_trailing_update_bound`
+- `triInv_method2_offdiag_trailing_update_full_bound`
 - `triInv_method2_left_residual_upper_zero`
 - `triInv_method2_left_residual_diag_bound`
 - `triInv_method2_offdiag_update_delta_bound`
