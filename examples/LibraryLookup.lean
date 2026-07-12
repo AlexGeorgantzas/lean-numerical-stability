@@ -6335,6 +6335,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check gje_scalarSeqProd_const
 #check gje_cumulative_product_componentwise_perturbation_bound_const
 #check gje_cumulative_product_componentwise_perturbation_bound_gamma_c3
+#check gje_cumulative_product_matMulVec_componentwise_perturbation_bound_gamma_c3
 #check gje_cumulative_product_matrix_accumulation
 #check gje_cumulative_product_rhs_accumulation
 #check gje_stage2_forward_error_bound
@@ -6350,8 +6351,19 @@ small enough to serve as a smoke check for representative public declarations.
 #check methodA_computed_inverse_entry_abs_sub_nonsingInv_le_of_lu_factor_budget
 #check inverseRightResidual
 #check inverseLeftResidual
+#check higham14_eq14_3_forward_error_bound_of_abs_Y_le
+#check higham14_eq14_3_forward_error_firstorder_replacement
 #check higham14_infNorm_le_of_componentwise_abs_matmul_bound
 #check higham14_infNorm_le_of_componentwise_matmul_bound
+#check triInv_lower_left_residual_upper_zero
+#check lowerTri_column_sum_eq_diag_add_tail
+#check triInv_method2_offdiag_trailing_update_identity
+#check triInv_method2_offdiag_trailing_update_bound
+#check triInv_method2_offdiag_trailing_update_full_bound
+#check triInv_method2_left_residual_upper_zero
+#check triInv_method2_left_residual_diag_bound
+#check triInv_method2_offdiag_update_delta_bound
+#check triInv_method2_offdiag_scaled_residual_bound
 #check triInv_method2_left_residual_normwise
 #check triInv_method1B_right_residual_normwise
 #check triInv_method1B_right_residual_normwise_from_spec
@@ -15974,6 +15986,10 @@ small enough to serve as a smoke check for representative public declarations.
 #check Wave18B.fl_householderApply_entrywise_backward_error
 #check Wave18B.fl_householderApply_rowwise_accumulated_entry_bound_j_sq
 #check Wave18B.theorem19_6_elementwise_computed_entry_printed_j_sq
+-- Wave-18c/d: 19.6 original-space packaging (√m envelope) + PROVED intrinsic-√m obstruction
+#check Wave18C.theorem19_6_packaged_original_space_printed_j_sq
+#check Wave18D.perStep_leadingRow_contribution_zero
+#check Wave18D.pivotRow_entrywiseBudget_incurs_sqrt_m
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved

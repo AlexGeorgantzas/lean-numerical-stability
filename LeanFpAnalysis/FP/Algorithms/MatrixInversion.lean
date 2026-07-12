@@ -304,6 +304,70 @@ theorem ideal_forward_error (n : ℕ)
           apply Finset.sum_congr rfl; intro k₂ _; ring
         rw [this]; ring
 
+/-- Higham, 2nd ed., Chapter 14, Section 14.1, equation (14.3):
+    bounded-replacement form of the perturbed-inverse forward-error estimate.
+
+    The exact theorem `ideal_forward_error` gives the pre-asymptotic envelope
+    with `|Y|`.  This wrapper replaces `|Y|` by any componentwise upper envelope
+    supplied by the caller, exposing the first-order substitution step without
+    hiding it in an informal `O(ε^2)` term. -/
+theorem higham14_eq14_3_forward_error_bound_of_abs_Y_le (n : ℕ)
+    (A A_inv Y : Fin n → Fin n → ℝ)
+    (ΔA Y_bound : Fin n → Fin n → ℝ)
+    (ε : ℝ) (hε : 0 ≤ ε)
+    (hΔA : ∀ i j, |ΔA i j| ≤ ε * |A i j|)
+    (hInv : IsLeftInverse n A A_inv)
+    (hRInv : IsRightInverse n A A_inv)
+    (hY : ∀ i j, ∑ k : Fin n, (A i k + ΔA i k) * Y k j =
+      if i = j then 1 else 0)
+    (hY_bound : ∀ i j : Fin n, |Y i j| ≤ Y_bound i j) :
+    ∀ i j, |A_inv i j - Y i j| ≤
+      ε * ∑ k₁ : Fin n, |A_inv i k₁| *
+        (∑ k₂ : Fin n, |A k₁ k₂| * Y_bound k₂ j) := by
+  intro i j
+  have hbase :=
+    ideal_forward_error n A A_inv Y ΔA ε hε hΔA hInv hRInv hY
+  calc
+    |A_inv i j - Y i j|
+        ≤ ε * ∑ k₁ : Fin n, |A_inv i k₁| *
+            (∑ k₂ : Fin n, |A k₁ k₂| * |Y k₂ j|) := hbase i j
+    _ ≤ ε * ∑ k₁ : Fin n, |A_inv i k₁| *
+            (∑ k₂ : Fin n, |A k₁ k₂| * Y_bound k₂ j) := by
+        apply mul_le_mul_of_nonneg_left _ hε
+        apply Finset.sum_le_sum
+        intro k₁ _
+        apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+        apply Finset.sum_le_sum
+        intro k₂ _
+        exact mul_le_mul_of_nonneg_left (hY_bound k₂ j) (abs_nonneg _)
+
+/-- Higham, 2nd ed., Chapter 14, Section 14.1, equation (14.3):
+    first-order replacement form under an explicit componentwise hypothesis
+    `|Y| ≤ |A⁻¹|`.
+
+    This is the source-facing `|A⁻¹||A||A⁻¹|` envelope as a proved bounded
+    replacement.  It does not claim to formalize the remaining asymptotic
+    `O(ε^2)` calculus. -/
+theorem higham14_eq14_3_forward_error_firstorder_replacement (n : ℕ)
+    (A A_inv Y : Fin n → Fin n → ℝ)
+    (ΔA : Fin n → Fin n → ℝ)
+    (ε : ℝ) (hε : 0 ≤ ε)
+    (hΔA : ∀ i j, |ΔA i j| ≤ ε * |A i j|)
+    (hInv : IsLeftInverse n A A_inv)
+    (hRInv : IsRightInverse n A A_inv)
+    (hY : ∀ i j, ∑ k : Fin n, (A i k + ΔA i k) * Y k j =
+      if i = j then 1 else 0)
+    (hY_first : ∀ i j : Fin n, |Y i j| ≤ |A_inv i j|) :
+    ∀ i j, |A_inv i j - Y i j| ≤
+      ε * ∑ k₁ : Fin n, |A_inv i k₁| *
+        (∑ k₂ : Fin n, |A k₁ k₂| * |A_inv k₂ j|) := by
+  simpa [absMatrix] using
+    (higham14_eq14_3_forward_error_bound_of_abs_Y_le
+      n A A_inv Y ΔA (absMatrix n A_inv) ε hε hΔA hInv hRInv hY
+      (by
+        intro i j
+        simpa [absMatrix] using hY_first i j))
+
 -- ============================================================
 -- §14.1  Residual comparison: inversion vs GEPP
 -- ============================================================
@@ -622,6 +686,198 @@ theorem triInv_method1_normwise_error (n : ℕ) (_hn0 : 0 < n) (fp : FPModel)
 
 -- §14.2.1  Method 2 (reverse-order column computation via mat-vec multiply)
 
+/-- Lower-triangular column split used by Method 2: in column `j`, entries
+    above the diagonal vanish, so the column product separates into the diagonal
+    term plus the strict trailing tail. -/
+theorem lowerTri_column_sum_eq_diag_add_tail (n : ℕ)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hLT : ∀ a b : Fin n, b.val > a.val → L a b = 0) :
+    ∀ i j : Fin n,
+      (∑ k : Fin n, X_hat i k * L k j) =
+        X_hat i j * L j j +
+          ∑ k : Fin n, if j.val < k.val then X_hat i k * L k j else 0 := by
+  intro i j
+  classical
+  rw [← Finset.add_sum_erase Finset.univ
+    (fun k : Fin n => X_hat i k * L k j) (Finset.mem_univ j)]
+  congr 1
+  calc
+    (∑ k ∈ Finset.univ.erase j, X_hat i k * L k j)
+        = ∑ k ∈ Finset.univ.erase j,
+            (if j.val < k.val then X_hat i k * L k j else 0) := by
+          apply Finset.sum_congr rfl
+          intro k hk
+          have hk_ne : k ≠ j := by
+            simpa [Finset.mem_erase] using hk
+          by_cases hjk : j.val < k.val
+          · simp [hjk]
+          · have hkj : j.val > k.val := by
+              have hle : k.val ≤ j.val := Nat.le_of_not_gt hjk
+              have hne_val : k.val ≠ j.val := by
+                intro hval
+                exact hk_ne (Fin.ext hval)
+              omega
+            rw [hLT k j hkj]
+            simp [hjk]
+    _ = ∑ k : Fin n, if j.val < k.val then X_hat i k * L k j else 0 := by
+          rw [Finset.sum_erase]
+          simp
+
+/-- Source-shaped Method 2 off-diagonal identity from a strict trailing update.
+    The update hypothesis uses only the tail `k > j`, avoiding the
+    self-reference in the full column sum. -/
+theorem triInv_method2_offdiag_trailing_update_identity (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hLT : ∀ a b : Fin n, b.val > a.val → L a b = 0)
+    (hDiag : ∀ j : Fin n, ∃ δ : ℝ, |δ| ≤ fp.u ∧
+      X_hat j j * L j j = 1 + δ)
+    (hTrail : ∀ j row : Fin n, row.val > j.val →
+      ∃ Δ : ℝ,
+        X_hat row j =
+          -X_hat j j *
+            (∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0) + Δ) :
+    ∀ j row : Fin n, row.val > j.val →
+      ∃ δ Δ : ℝ, |δ| ≤ fp.u ∧
+        (∑ k : Fin n, X_hat row k * L k j) -
+            (if row = j then 1 else 0) =
+          Δ * L j j - δ *
+            (∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0) := by
+  intro j row hij
+  obtain ⟨δ, hδ, hdiag⟩ := hDiag j
+  obtain ⟨Δ, hupdate⟩ := hTrail j row hij
+  refine ⟨δ, Δ, hδ, ?_⟩
+  let tail : ℝ :=
+    ∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0
+  have hupdate_tail : X_hat row j = -X_hat j j * tail + Δ := by
+    simpa [tail] using hupdate
+  have hne : row ≠ j := by
+    intro h
+    exact (Nat.ne_of_gt hij) (congrArg Fin.val h)
+  have hsplit :
+      (∑ k : Fin n, X_hat row k * L k j) =
+        X_hat row j * L j j + tail := by
+    simpa [tail] using lowerTri_column_sum_eq_diag_add_tail n L X_hat hLT row j
+  rw [if_neg hne, sub_zero, hsplit]
+  calc
+    X_hat row j * L j j + tail
+        = (-X_hat j j * tail + Δ) * L j j + tail := by
+            rw [hupdate_tail]
+    _ = (-(X_hat j j * L j j) * tail + Δ * L j j) + tail := by ring
+    _ = (-(1 + δ) * tail + Δ * L j j) + tail := by rw [hdiag]
+    _ = Δ * L j j - δ * tail := by ring
+
+/-- Source-shaped Method 2 off-diagonal residual bound from a strict trailing
+    update.  The constant `η` is left abstract so later product-error analyses
+    can instantiate the matvec/scalar rounding budget without using the current
+    full-column `Method2Spec.offdiag_err` field. -/
+theorem triInv_method2_offdiag_trailing_update_bound (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ) {η : ℝ}
+    (_hη : 0 ≤ η)
+    (hLT : ∀ a b : Fin n, b.val > a.val → L a b = 0)
+    (hDiag : ∀ j : Fin n, ∃ δ : ℝ, |δ| ≤ fp.u ∧
+      X_hat j j * L j j = 1 + δ)
+    (hTrail : ∀ j row : Fin n, row.val > j.val →
+      ∃ Δ : ℝ,
+        |Δ * L j j| ≤ η *
+          (∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0) ∧
+        X_hat row j =
+          -X_hat j j *
+            (∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0) + Δ) :
+    ∀ j row : Fin n, row.val > j.val →
+      |(∑ k : Fin n, X_hat row k * L k j) -
+          (if row = j then 1 else 0)| ≤
+        (fp.u + η) *
+          (∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0) := by
+  intro j row hij
+  let tail : ℝ :=
+    ∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0
+  let tailAbs : ℝ :=
+    ∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0
+  obtain ⟨δ, hδ, hdiag⟩ := hDiag j
+  obtain ⟨Δ, hΔ, hupdate⟩ := hTrail j row hij
+  have hupdate_tail : X_hat row j = -X_hat j j * tail + Δ := by
+    simpa [tail] using hupdate
+  have hne : row ≠ j := by
+    intro h
+    exact (Nat.ne_of_gt hij) (congrArg Fin.val h)
+  have hsplit :
+      (∑ k : Fin n, X_hat row k * L k j) =
+        X_hat row j * L j j + tail := by
+    simpa [tail] using lowerTri_column_sum_eq_diag_add_tail n L X_hat hLT row j
+  have hid :
+      (∑ k : Fin n, X_hat row k * L k j) -
+          (if row = j then 1 else 0) =
+        Δ * L j j - δ * tail := by
+    rw [if_neg hne, sub_zero, hsplit]
+    calc
+      X_hat row j * L j j + tail
+          = (-X_hat j j * tail + Δ) * L j j + tail := by
+              rw [hupdate_tail]
+      _ = (-(X_hat j j * L j j) * tail + Δ * L j j) + tail := by ring
+      _ = (-(1 + δ) * tail + Δ * L j j) + tail := by rw [hdiag]
+      _ = Δ * L j j - δ * tail := by ring
+  have htail_abs : |tail| ≤ tailAbs := by
+    calc
+      |tail| =
+          |∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0| := by
+            rfl
+      _ ≤ ∑ k : Fin n,
+            |if j.val < k.val then X_hat row k * L k j else 0| :=
+          Finset.abs_sum_le_sum_abs _ _
+      _ = tailAbs := by
+          apply Finset.sum_congr rfl
+          intro k _
+          by_cases hjk : j.val < k.val <;> simp [hjk, abs_mul]
+  have hδ_tail : |δ * tail| ≤ fp.u * tailAbs := by
+    calc
+      |δ * tail| = |δ| * |tail| := abs_mul _ _
+      _ ≤ fp.u * tailAbs :=
+          mul_le_mul hδ htail_abs (abs_nonneg _) fp.u_nonneg
+  rw [hid]
+  calc
+    |Δ * L j j - δ * tail|
+        ≤ |Δ * L j j| + |δ * tail| := by
+            simpa [sub_eq_add_neg, abs_neg] using
+              abs_add_le (Δ * L j j) (-(δ * tail))
+    _ ≤ η * tailAbs + fp.u * tailAbs := by
+        exact add_le_add (by simpa [tailAbs] using hΔ) hδ_tail
+    _ = (fp.u + η) * tailAbs := by ring
+
+/-- Full-column budget form of `triInv_method2_offdiag_trailing_update_bound`:
+    the strict trailing absolute product is bounded by the complete
+    `|X_hat|*|L|` column budget used in Lemma 14.1. -/
+theorem triInv_method2_offdiag_trailing_update_full_bound (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ) {η : ℝ}
+    (hη : 0 ≤ η)
+    (hLT : ∀ a b : Fin n, b.val > a.val → L a b = 0)
+    (hDiag : ∀ j : Fin n, ∃ δ : ℝ, |δ| ≤ fp.u ∧
+      X_hat j j * L j j = 1 + δ)
+    (hTrail : ∀ j row : Fin n, row.val > j.val →
+      ∃ Δ : ℝ,
+        |Δ * L j j| ≤ η *
+          (∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0) ∧
+        X_hat row j =
+          -X_hat j j *
+            (∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0) + Δ) :
+    ∀ j row : Fin n, row.val > j.val →
+      |(∑ k : Fin n, X_hat row k * L k j) -
+          (if row = j then 1 else 0)| ≤
+        (fp.u + η) * (∑ k : Fin n, |X_hat row k| * |L k j|) := by
+  intro j row hij
+  have htail :=
+    triInv_method2_offdiag_trailing_update_bound n fp L X_hat hη hLT hDiag hTrail
+      j row hij
+  have htail_le_full :
+      (∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0) ≤
+        ∑ k : Fin n, |X_hat row k| * |L k j| := by
+    apply Finset.sum_le_sum
+    intro k _
+    have hterm_nonneg : 0 ≤ |X_hat row k| * |L k j| :=
+      mul_nonneg (abs_nonneg (X_hat row k)) (abs_nonneg (L k j))
+    by_cases hjk : j.val < k.val <;> simp [hjk, hterm_nonneg]
+  have hcoef : 0 ≤ fp.u + η := add_nonneg fp.u_nonneg hη
+  exact le_trans htail (mul_le_mul_of_nonneg_left htail_le_full hcoef)
+
 /-- **Specification for Method 2 triangular inversion**.
 
     Method 2 computes columns of X̂ ≈ L⁻¹ in reverse order j = n, n−1, …, 1.
@@ -645,6 +901,128 @@ structure Method2Spec (fp : FPModel) (n : ℕ)
         Δ_mv j
   /-- Upper triangle is zero (since L is lower triangular, L⁻¹ is too). -/
   upper_zero : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0
+
+/-- Triangular-shape support for Method 2: if both `X_hat` and `L` are lower
+    triangular, then the left residual `X_hat * L - I` is zero strictly above
+    the diagonal. -/
+theorem triInv_lower_left_residual_upper_zero (n : ℕ)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hX_lower : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0)
+    (hL_lower : ∀ i j : Fin n, j.val > i.val → L i j = 0) :
+    ∀ i j : Fin n, i.val < j.val →
+      ∑ k : Fin n, X_hat i k * L k j -
+        (if i = j then 1 else 0) = 0 := by
+  intro i j hij
+  have hne : i ≠ j := by
+    intro h
+    have hval : i.val = j.val := congrArg Fin.val h
+    omega
+  have hsum : ∑ k : Fin n, X_hat i k * L k j = 0 := by
+    apply Finset.sum_eq_zero
+    intro k _
+    by_cases hik : i.val < k.val
+    · rw [hX_lower i k hik]
+      ring
+    · have hkj : j.val > k.val := by
+        exact Nat.lt_of_le_of_lt (Nat.le_of_not_gt hik) hij
+      rw [hL_lower k j hkj]
+      ring
+  simp [hsum, hne]
+
+/-- Method 2's stored triangular shape makes the left residual vanish above
+    the diagonal.  This closes the easy structural part of the Lemma 14.1
+    residual; the below-diagonal induction remains separate. -/
+theorem triInv_method2_left_residual_upper_zero (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hSpec : Method2Spec fp n L X_hat) :
+    ∀ i j : Fin n, i.val < j.val →
+      ∑ k : Fin n, X_hat i k * L k j -
+        (if i = j then 1 else 0) = 0 :=
+  triInv_lower_left_residual_upper_zero n L X_hat
+    hSpec.upper_zero hLT
+
+/-- Method 2's diagonal residual bound from the diagonal error field in
+    `Method2Spec`: on the diagonal, triangularity reduces `(X_hat * L)_{jj}`
+    to `X_hat j j * L j j = 1 + δ`, with `|δ| ≤ u`. -/
+theorem triInv_method2_left_residual_diag_bound (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hSpec : Method2Spec fp n L X_hat) :
+    ∀ j : Fin n,
+      |∑ k : Fin n, X_hat j k * L k j - 1| ≤ fp.u := by
+  intro j
+  obtain ⟨δ, hδ, hdiag⟩ := hSpec.diag_err j
+  have hsum : ∑ k : Fin n, X_hat j k * L k j =
+      X_hat j j * L j j := by
+    apply Finset.sum_eq_single j
+    · intro k _ hk
+      by_cases hjk : j.val < k.val
+      · rw [hSpec.upper_zero j k hjk]
+        ring
+      · have hkj : j.val > k.val := by
+          have hle : k.val ≤ j.val := Nat.le_of_not_gt hjk
+          have hne_val : k.val ≠ j.val := by
+            intro hval
+            exact hk (Fin.ext hval)
+          omega
+        rw [hLT k j hkj]
+        ring
+    · intro hnot
+      simp at hnot
+  simpa [hsum, hdiag] using hδ
+
+/-- Method 2 off-diagonal update residual unpacked from `Method2Spec`:
+    for `i > j`, the update equation gives a local delta certificate for
+    `X_hat i j + X_hat j j * (X_hat * L) i j`. -/
+theorem triInv_method2_offdiag_update_delta_bound (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hSpec : Method2Spec fp n L X_hat) :
+    ∀ j i : Fin n, i.val > j.val →
+      ∃ Δ : ℝ,
+        |Δ| ≤ gamma fp n * |X_hat i j| * |L j j| ∧
+        X_hat i j +
+          X_hat j j * (∑ k : Fin n, X_hat i k * L k j) = Δ := by
+  intro j i hij
+  obtain ⟨Δ_mv, hΔ, hupdate⟩ := hSpec.offdiag_err j i hij
+  refine ⟨Δ_mv j, ?_, ?_⟩
+  · simpa using hΔ j
+  · rw [hupdate]
+    ring
+
+/-- Method 2 off-diagonal update residual after multiplying by the diagonal
+    entry `L j j`.  This combines `offdiag_err` with the diagonal error field
+    and is a below-diagonal support lemma for the Lemma 14.1 induction. -/
+theorem triInv_method2_offdiag_scaled_residual_bound (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hSpec : Method2Spec fp n L X_hat) :
+    ∀ j i : Fin n, i.val > j.val →
+      ∃ δ : ℝ, |δ| ≤ fp.u ∧
+        |X_hat i j * L j j +
+          (1 + δ) * (∑ k : Fin n, X_hat i k * L k j)| ≤
+        (gamma fp n * |X_hat i j| * |L j j|) * |L j j| := by
+  intro j i hij
+  obtain ⟨δ, hδ, hdiag⟩ := hSpec.diag_err j
+  obtain ⟨Δ, hΔ, hΔeq⟩ :=
+    triInv_method2_offdiag_update_delta_bound n fp L X_hat hSpec j i hij
+  refine ⟨δ, hδ, ?_⟩
+  have hmain :
+      X_hat i j * L j j +
+          (1 + δ) * (∑ k : Fin n, X_hat i k * L k j) =
+        Δ * L j j := by
+    calc
+      X_hat i j * L j j +
+          (1 + δ) * (∑ k : Fin n, X_hat i k * L k j)
+          = (X_hat i j +
+              X_hat j j * (∑ k : Fin n, X_hat i k * L k j)) * L j j := by
+              rw [← hdiag]
+              ring
+      _ = Δ * L j j := by rw [hΔeq]
+  rw [hmain]
+  calc
+    |Δ * L j j| = |Δ| * |L j j| := abs_mul _ _
+    _ ≤ (gamma fp n * |X_hat i j| * |L j j|) * |L j j| :=
+      mul_le_mul_of_nonneg_right hΔ (abs_nonneg _)
 
 /-- **Abstract Lemma 14.1 interface** (Higham eq. 14.8): Method 2 left residual.
 
@@ -2865,6 +3243,40 @@ lemma higham14_unit_roundoff_add_gamma_le_gamma_succ
   have hγprod_nonneg : 0 ≤ gamma fp 1 * gamma fp n :=
     mul_nonneg (gamma_nonneg fp hvalid1) (gamma_nonneg fp hvalidn)
   linarith
+
+/-- Lemma 14.1 support: a strict-tail Method 2 update with a `gamma_n`
+    scaled product certificate gives the source-shaped below-diagonal
+    `gamma_{n+1}` full-column residual budget. -/
+theorem triInv_method2_offdiag_trailing_update_gamma_full_bound
+    (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hLT : ∀ a b : Fin n, b.val > a.val → L a b = 0)
+    (hDiag : ∀ j : Fin n, ∃ δ : ℝ, |δ| ≤ fp.u ∧
+      X_hat j j * L j j = 1 + δ)
+    (hTrail : ∀ j row : Fin n, row.val > j.val →
+      ∃ Δ : ℝ,
+        |Δ * L j j| ≤ gamma fp n *
+          (∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0) ∧
+        X_hat row j =
+          -X_hat j j *
+            (∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0) + Δ) :
+    ∀ j row : Fin n, row.val > j.val →
+      |(∑ k : Fin n, X_hat row k * L k j) -
+          (if row = j then 1 else 0)| ≤
+        gamma fp (n + 1) * (∑ k : Fin n, |X_hat row k| * |L k j|) := by
+  intro j row hij
+  have hn : gammaValid fp n := gammaValid_mono fp (Nat.le_succ n) hn1
+  have hbase :=
+    triInv_method2_offdiag_trailing_update_full_bound n fp L X_hat
+      (gamma_nonneg fp hn) hLT hDiag hTrail j row hij
+  let S : ℝ := ∑ k : Fin n, |X_hat row k| * |L k j|
+  have hS_nonneg : 0 ≤ S := by
+    exact Finset.sum_nonneg (fun k _ =>
+      mul_nonneg (abs_nonneg (X_hat row k)) (abs_nonneg (L k j)))
+  have hcoeff : fp.u + gamma fp n ≤ gamma fp (n + 1) :=
+    higham14_unit_roundoff_add_gamma_le_gamma_succ fp n hn1
+  exact le_trans hbase (mul_le_mul_of_nonneg_right hcoeff hS_nonneg)
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.5, right-approximate-inverse
     residual bound.
