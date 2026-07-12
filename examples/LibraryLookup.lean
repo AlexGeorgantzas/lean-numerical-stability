@@ -6430,12 +6430,16 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_rowsOrthogonal_iff_hasOrthogonalRows
 #check higham14_rowsOrthogonal_iff_gram_offdiag_zero
 #check higham14_problem14_11_gram_det_eq_prod_diag_of_abs_det_eq_prod_rowNorm2
+#check higham14_amgm_all_eq_one_of_sum_eq_card_prod_eq_one
+#check higham14_problem14_11_posDef_offdiag_eq_zero_of_det_eq_prod_diag
 #check higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_rowsOrthogonal
 #check higham14_problem14_11_hadamardConditionNumber_eq_one_of_abs_det_eq_prod_rowNorm2
 #check higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_hadamardConditionNumber_eq_one
 #check higham14_problem14_11_gram_det_eq_prod_diag_of_hadamardConditionNumber_eq_one
 #check higham14_problem14_11_hadamardConditionNumber_eq_one_iff_abs_det_eq_prod_rowNorm2
 #check higham14_problem14_11_hadamardConditionNumber_eq_one_of_rowsOrthogonal
+#check higham14_problem14_11_rowsOrthogonal_of_abs_det_eq_prod_rowNorm2
+#check higham14_problem14_11_rowsOrthogonal_of_hadamardConditionNumber_eq_one
 #check higham14_colNorm2
 #check higham14_abs_det_eq_one_of_isOrthogonal
 #check higham14_colNorm2_matMul_orthogonal_left
@@ -15957,6 +15961,12 @@ small enough to serve as a smoke check for representative public declarations.
 #check NormEstimator.sylvester_practical_error_bound_with_norm1_estimator
 #check Wave17.sylvesterHessenbergShiftedColumn_roundedGEPP_backward_error
 #check Wave17.H16_eq16_4_8_auto_realSchur_existsUnique_solution_of_no_common
+-- Wave-18: Theorem 19.6 elementwise envelope — entrywise reflector error + reduced-space j² accumulation (printed j² reached)
+#check Wave18A.householder_single_reflector_entrywise_backward_error
+#check Wave18A.theorem19_6_elementwise_computed_backward_error
+#check Wave18B.fl_householderApply_entrywise_backward_error
+#check Wave18B.fl_householderApply_rowwise_accumulated_entry_bound_j_sq
+#check Wave18B.theorem19_6_elementwise_computed_entry_printed_j_sq
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved

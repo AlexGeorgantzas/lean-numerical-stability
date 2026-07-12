@@ -5555,7 +5555,7 @@ and forward-error consequences from Problem 14.5, Problem 14.7, Problem 14.8's
 complex-to-real block inverse and HPD-to-SPD bridge, the p.279
 Hadamard determinant condition number, equation (14.34) in its exact
 no-pivot/unit-lower LU form plus signed and absolute-value pivoted forms,
-Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence and row-orthogonality bridges,
+Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence and full equality/row-orthogonality characterization,
 Problem 14.13's AM-GM, SVD norm, and determinant-product support bridges,
 Problem 14.15's scalar product-radius and top-index perturbation support, Method D's expanded
 componentwise residual-budget dependency and printed-coefficient scalar
@@ -5648,12 +5648,16 @@ simplification, the exact Hyman block identities
 - `higham14_rowsOrthogonal_iff_hasOrthogonalRows`
 - `higham14_rowsOrthogonal_iff_gram_offdiag_zero`
 - `higham14_problem14_11_gram_det_eq_prod_diag_of_abs_det_eq_prod_rowNorm2`
+- `higham14_amgm_all_eq_one_of_sum_eq_card_prod_eq_one`
+- `higham14_problem14_11_posDef_offdiag_eq_zero_of_det_eq_prod_diag`
 - `higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_rowsOrthogonal`
 - `higham14_problem14_11_hadamardConditionNumber_eq_one_of_abs_det_eq_prod_rowNorm2`
 - `higham14_problem14_11_abs_det_eq_prod_rowNorm2_of_hadamardConditionNumber_eq_one`
 - `higham14_problem14_11_gram_det_eq_prod_diag_of_hadamardConditionNumber_eq_one`
 - `higham14_problem14_11_hadamardConditionNumber_eq_one_iff_abs_det_eq_prod_rowNorm2`
 - `higham14_problem14_11_hadamardConditionNumber_eq_one_of_rowsOrthogonal`
+- `higham14_problem14_11_rowsOrthogonal_of_abs_det_eq_prod_rowNorm2`
+- `higham14_problem14_11_rowsOrthogonal_of_hadamardConditionNumber_eq_one`
 - `higham14_colNorm2`
 - `higham14_abs_det_eq_one_of_isOrthogonal`
 - `higham14_colNorm2_matMul_orthogonal_left`

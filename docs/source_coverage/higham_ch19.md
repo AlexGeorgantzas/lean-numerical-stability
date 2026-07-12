@@ -21,8 +21,17 @@
   19.10 (γ̃_{m+n−2}-shape restatement), 19.6 (assembled with Π, columnwise +
   componentwise); Algorithms 19.11 (exact skeleton + ROUNDED kernel/state) and 19.12
   (exact skeleton + the 19.13 route). The exactly-two allowed obstructions: (a)
-  Theorem 19.6's printed row-wise ELEMENTWISE envelope — cited-without-local-proof
-  (Powell–Reid/Cox–Higham external; no printed proof to anchor); (b) Theorem 19.13's
+  Theorem 19.6's printed row-wise ELEMENTWISE envelope — the elementwise CORE is now
+  PROVED (Wave-18, `Higham19Thm6Elementwise`/`Higham19Thm6ElementwiseEntry`, axiom-clean):
+  the entrywise single-Householder-reflector backward error from the FP primitives
+  (`fl_householderApply_entrywise_backward_error`) and the reduced-space accumulation
+  `theorem19_6_elementwise_computed_entry_printed_j_sq` reaching the PRINTED `j²`
+  (reflector-count × elementwise-dimension) · γ̃-class · (1+√2)^steps (= α_i) · rowMax
+  for the genuine computed reflector sequence. Residual: the original-space backward-ΔA
+  PACKAGING (mapping the reduced-space difference through the orthogonal Q to a bound on
+  ΔA of AΠ) — the Powell–Reid row-structure step; the naive orthogonal bound gives a
+  √m·max-over-rows constant, and recovering the exact printed row-i-specific α_i·max_s|a_is|
+  is the remaining external-cited subtlety. (b) Theorem 19.13's
   genuinely-MGS rounded-loop identification over the BARE `FPModel` — PROVEN
   impossible by in-repo counterexamples; closed instead under the honest
   source-faithful strong model (`AllPivotsSelfAnnihilatingReflectorModel`, full
