@@ -3244,6 +3244,40 @@ lemma higham14_unit_roundoff_add_gamma_le_gamma_succ
     mul_nonneg (gamma_nonneg fp hvalid1) (gamma_nonneg fp hvalidn)
   linarith
 
+/-- Lemma 14.1 support: a strict-tail Method 2 update with a `gamma_n`
+    scaled product certificate gives the source-shaped below-diagonal
+    `gamma_{n+1}` full-column residual budget. -/
+theorem triInv_method2_offdiag_trailing_update_gamma_full_bound
+    (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hLT : ∀ a b : Fin n, b.val > a.val → L a b = 0)
+    (hDiag : ∀ j : Fin n, ∃ δ : ℝ, |δ| ≤ fp.u ∧
+      X_hat j j * L j j = 1 + δ)
+    (hTrail : ∀ j row : Fin n, row.val > j.val →
+      ∃ Δ : ℝ,
+        |Δ * L j j| ≤ gamma fp n *
+          (∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0) ∧
+        X_hat row j =
+          -X_hat j j *
+            (∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0) + Δ) :
+    ∀ j row : Fin n, row.val > j.val →
+      |(∑ k : Fin n, X_hat row k * L k j) -
+          (if row = j then 1 else 0)| ≤
+        gamma fp (n + 1) * (∑ k : Fin n, |X_hat row k| * |L k j|) := by
+  intro j row hij
+  have hn : gammaValid fp n := gammaValid_mono fp (Nat.le_succ n) hn1
+  have hbase :=
+    triInv_method2_offdiag_trailing_update_full_bound n fp L X_hat
+      (gamma_nonneg fp hn) hLT hDiag hTrail j row hij
+  let S : ℝ := ∑ k : Fin n, |X_hat row k| * |L k j|
+  have hS_nonneg : 0 ≤ S := by
+    exact Finset.sum_nonneg (fun k _ =>
+      mul_nonneg (abs_nonneg (X_hat row k)) (abs_nonneg (L k j)))
+  have hcoeff : fp.u + gamma fp n ≤ gamma fp (n + 1) :=
+    higham14_unit_roundoff_add_gamma_le_gamma_succ fp n hn1
+  exact le_trans hbase (mul_le_mul_of_nonneg_right hcoeff hS_nonneg)
+
 /-- Higham, 2nd ed., Chapter 14, Problem 14.5, right-approximate-inverse
     residual bound.
 
