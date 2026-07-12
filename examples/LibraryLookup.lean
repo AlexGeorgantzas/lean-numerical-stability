@@ -6335,6 +6335,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check gje_scalarSeqProd_const
 #check gje_cumulative_product_componentwise_perturbation_bound_const
 #check gje_cumulative_product_componentwise_perturbation_bound_gamma_c3
+#check gje_cumulative_product_matMulVec_componentwise_perturbation_bound_gamma_c3
 #check gje_cumulative_product_matrix_accumulation
 #check gje_cumulative_product_rhs_accumulation
 #check gje_stage2_forward_error_bound
@@ -6354,6 +6355,12 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_eq14_3_forward_error_firstorder_replacement
 #check higham14_infNorm_le_of_componentwise_abs_matmul_bound
 #check higham14_infNorm_le_of_componentwise_matmul_bound
+#check triInv_lower_left_residual_upper_zero
+#check lowerTri_column_sum_eq_diag_add_tail
+#check triInv_method2_left_residual_upper_zero
+#check triInv_method2_left_residual_diag_bound
+#check triInv_method2_offdiag_update_delta_bound
+#check triInv_method2_offdiag_scaled_residual_bound
 #check triInv_method2_left_residual_normwise
 #check triInv_method1B_right_residual_normwise
 #check triInv_method1B_right_residual_normwise_from_spec
