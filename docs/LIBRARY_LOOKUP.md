@@ -5586,6 +5586,7 @@ simplification, the exact Hyman block identities
 - `triInv_method2_offdiag_trailing_update_gamma_full_bound`
 - `triInv_method2_left_residual_upper_zero`
 - `triInv_method2_left_residual_diag_bound`
+- `triInv_method2_left_residual_from_region_bounds`
 - `triInv_method2_offdiag_update_delta_bound`
 - `triInv_method2_offdiag_scaled_residual_bound`
 - `triInv_method2_left_residual_normwise`
