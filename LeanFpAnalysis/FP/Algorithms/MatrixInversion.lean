@@ -723,6 +723,126 @@ theorem lowerTri_column_sum_eq_diag_add_tail (n : ℕ)
           rw [Finset.sum_erase]
           simp
 
+/-- Source-shaped Method 2 off-diagonal identity from a strict trailing update.
+    The update hypothesis uses only the tail `k > j`, avoiding the
+    self-reference in the full column sum. -/
+theorem triInv_method2_offdiag_trailing_update_identity (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hLT : ∀ a b : Fin n, b.val > a.val → L a b = 0)
+    (hDiag : ∀ j : Fin n, ∃ δ : ℝ, |δ| ≤ fp.u ∧
+      X_hat j j * L j j = 1 + δ)
+    (hTrail : ∀ j row : Fin n, row.val > j.val →
+      ∃ Δ : ℝ,
+        X_hat row j =
+          -X_hat j j *
+            (∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0) + Δ) :
+    ∀ j row : Fin n, row.val > j.val →
+      ∃ δ Δ : ℝ, |δ| ≤ fp.u ∧
+        (∑ k : Fin n, X_hat row k * L k j) -
+            (if row = j then 1 else 0) =
+          Δ * L j j - δ *
+            (∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0) := by
+  intro j row hij
+  obtain ⟨δ, hδ, hdiag⟩ := hDiag j
+  obtain ⟨Δ, hupdate⟩ := hTrail j row hij
+  refine ⟨δ, Δ, hδ, ?_⟩
+  let tail : ℝ :=
+    ∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0
+  have hupdate_tail : X_hat row j = -X_hat j j * tail + Δ := by
+    simpa [tail] using hupdate
+  have hne : row ≠ j := by
+    intro h
+    exact (Nat.ne_of_gt hij) (congrArg Fin.val h)
+  have hsplit :
+      (∑ k : Fin n, X_hat row k * L k j) =
+        X_hat row j * L j j + tail := by
+    simpa [tail] using lowerTri_column_sum_eq_diag_add_tail n L X_hat hLT row j
+  rw [if_neg hne, sub_zero, hsplit]
+  calc
+    X_hat row j * L j j + tail
+        = (-X_hat j j * tail + Δ) * L j j + tail := by
+            rw [hupdate_tail]
+    _ = (-(X_hat j j * L j j) * tail + Δ * L j j) + tail := by ring
+    _ = (-(1 + δ) * tail + Δ * L j j) + tail := by rw [hdiag]
+    _ = Δ * L j j - δ * tail := by ring
+
+/-- Source-shaped Method 2 off-diagonal residual bound from a strict trailing
+    update.  The constant `η` is left abstract so later product-error analyses
+    can instantiate the matvec/scalar rounding budget without using the current
+    full-column `Method2Spec.offdiag_err` field. -/
+theorem triInv_method2_offdiag_trailing_update_bound (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ) {η : ℝ}
+    (_hη : 0 ≤ η)
+    (hLT : ∀ a b : Fin n, b.val > a.val → L a b = 0)
+    (hDiag : ∀ j : Fin n, ∃ δ : ℝ, |δ| ≤ fp.u ∧
+      X_hat j j * L j j = 1 + δ)
+    (hTrail : ∀ j row : Fin n, row.val > j.val →
+      ∃ Δ : ℝ,
+        |Δ * L j j| ≤ η *
+          (∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0) ∧
+        X_hat row j =
+          -X_hat j j *
+            (∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0) + Δ) :
+    ∀ j row : Fin n, row.val > j.val →
+      |(∑ k : Fin n, X_hat row k * L k j) -
+          (if row = j then 1 else 0)| ≤
+        (fp.u + η) *
+          (∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0) := by
+  intro j row hij
+  let tail : ℝ :=
+    ∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0
+  let tailAbs : ℝ :=
+    ∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0
+  obtain ⟨δ, hδ, hdiag⟩ := hDiag j
+  obtain ⟨Δ, hΔ, hupdate⟩ := hTrail j row hij
+  have hupdate_tail : X_hat row j = -X_hat j j * tail + Δ := by
+    simpa [tail] using hupdate
+  have hne : row ≠ j := by
+    intro h
+    exact (Nat.ne_of_gt hij) (congrArg Fin.val h)
+  have hsplit :
+      (∑ k : Fin n, X_hat row k * L k j) =
+        X_hat row j * L j j + tail := by
+    simpa [tail] using lowerTri_column_sum_eq_diag_add_tail n L X_hat hLT row j
+  have hid :
+      (∑ k : Fin n, X_hat row k * L k j) -
+          (if row = j then 1 else 0) =
+        Δ * L j j - δ * tail := by
+    rw [if_neg hne, sub_zero, hsplit]
+    calc
+      X_hat row j * L j j + tail
+          = (-X_hat j j * tail + Δ) * L j j + tail := by
+              rw [hupdate_tail]
+      _ = (-(X_hat j j * L j j) * tail + Δ * L j j) + tail := by ring
+      _ = (-(1 + δ) * tail + Δ * L j j) + tail := by rw [hdiag]
+      _ = Δ * L j j - δ * tail := by ring
+  have htail_abs : |tail| ≤ tailAbs := by
+    calc
+      |tail| =
+          |∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0| := by
+            rfl
+      _ ≤ ∑ k : Fin n,
+            |if j.val < k.val then X_hat row k * L k j else 0| :=
+          Finset.abs_sum_le_sum_abs _ _
+      _ = tailAbs := by
+          apply Finset.sum_congr rfl
+          intro k _
+          by_cases hjk : j.val < k.val <;> simp [hjk, abs_mul]
+  have hδ_tail : |δ * tail| ≤ fp.u * tailAbs := by
+    calc
+      |δ * tail| = |δ| * |tail| := abs_mul _ _
+      _ ≤ fp.u * tailAbs :=
+          mul_le_mul hδ htail_abs (abs_nonneg _) fp.u_nonneg
+  rw [hid]
+  calc
+    |Δ * L j j - δ * tail|
+        ≤ |Δ * L j j| + |δ * tail| := by
+            simpa [sub_eq_add_neg, abs_neg] using
+              abs_add_le (Δ * L j j) (-(δ * tail))
+    _ ≤ η * tailAbs + fp.u * tailAbs := by
+        exact add_le_add (by simpa [tailAbs] using hΔ) hδ_tail
+    _ = (fp.u + η) * tailAbs := by ring
+
 /-- **Specification for Method 2 triangular inversion**.
 
     Method 2 computes columns of X̂ ≈ L⁻¹ in reverse order j = n, n−1, …, 1.
