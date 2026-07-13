@@ -8151,6 +8151,50 @@ theorem higham21_theorem21_4_forwardSub_transpose_triangular_solve_backward_erro
     simpa [DeltaR, L, matTranspose, matMulVec] using hsolve i
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    triangular perturbation nonsingularity for the rounded `R_hat^T` solve.
+    If an upper-triangular factor has nonzero diagonal and the perturbation is
+    entrywise relatively bounded by a factor below one, then the perturbed
+    transpose factor remains nonsingular. -/
+theorem higham21_theorem21_4_perturbed_transpose_factor_det_ne_zero_of_componentwise_bound
+    {m : ℕ}
+    (R_hat DeltaR : Fin m → Fin m → ℝ)
+    (hdiag : ∀ i : Fin m, R_hat i i ≠ 0)
+    (hupper : IsUpperTrapezoidal m m R_hat)
+    {eta : ℝ} (heta_lt : eta < 1)
+    (hDelta : ∀ i j, |DeltaR i j| ≤ eta * |R_hat i j|) :
+    Matrix.det
+        (matTranspose (fun a b => R_hat a b + DeltaR a b) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0 := by
+  let Tpert : Fin m → Fin m → ℝ :=
+    matTranspose (fun a b => R_hat a b + DeltaR a b)
+  have hlowerPert : ∀ i j : Fin m, i.val < j.val → Tpert i j = 0 := by
+    intro i j hij
+    have hR : R_hat j i = 0 := hupper j i hij
+    have hbound : |DeltaR j i| ≤ 0 := by
+      simpa [hR] using hDelta j i
+    have hDeltaZero : DeltaR j i = 0 := by
+      exact abs_eq_zero.mp (le_antisymm hbound (abs_nonneg (DeltaR j i)))
+    simp [Tpert, matTranspose, hR, hDeltaZero]
+  have hdiagPert : ∀ i : Fin m, Tpert i i ≠ 0 := by
+    intro i hzero
+    have hsum : R_hat i i + DeltaR i i = 0 := by
+      simpa [Tpert, matTranspose] using hzero
+    have hDelta_eq : DeltaR i i = -R_hat i i := by
+      linarith
+    have habs_eq : |DeltaR i i| = |R_hat i i| := by
+      rw [hDelta_eq, abs_neg]
+    have hle : |R_hat i i| ≤ eta * |R_hat i i| := by
+      simpa [habs_eq] using hDelta i i
+    have hpos : 0 < |R_hat i i| := abs_pos.mpr (hdiag i)
+    nlinarith
+  have hdet :
+      Matrix.det (Tpert : Matrix (Fin m) (Fin m) ℝ) ≠ 0 :=
+    det_ne_zero_of_lower_triangular_diag_ne_zero m
+      Tpert
+      hlowerPert hdiagPert
+  simpa [Tpert] using hdet
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
     triangular-solve handoff into the exact Q-method minimum-norm theorem.
     The rounded solve of `R_hat^T y = b` supplies a perturbation `DeltaR`;
     if the perturbed transpose factor is nonsingular, then the formed
@@ -8198,6 +8242,45 @@ theorem higham21_theorem21_4_forwardSub_q_method_min_norm_handoff
   exact
     higham21_eq21_3_q_method_min_norm_of_qr_det_ne_zero
       Q hQ Rpert b y1 hdetT hy1
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    determinant-free triangular-solve handoff for the Q-method minimum-norm
+    theorem.  The stronger guard `gammaValid fp (2*m)` makes `gamma_m < 1`,
+    so the componentwise triangular perturbation preserves nonsingularity of
+    the perturbed transpose factor. -/
+theorem higham21_theorem21_4_forwardSub_q_method_min_norm_handoff_of_gammaValid2
+    {m k : ℕ} (fp : FPModel)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R_hat : Fin m → Fin m → ℝ) (b : Fin m → ℝ)
+    (hdiag : ∀ i : Fin m, R_hat i i ≠ 0)
+    (hupper : IsUpperTrapezoidal m m R_hat)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m)) :
+    ∃ DeltaR : Fin m → Fin m → ℝ,
+      (∀ i j, |DeltaR i j| ≤ gamma fp m * |R_hat i j|) ∧
+      (∀ i,
+        matMulVec m (matTranspose (fun a b => R_hat a b + DeltaR a b))
+          (fl_forwardSub fp m (matTranspose R_hat) b) i = b i) ∧
+      RectMinNormSolution m (m + k)
+        (finiteTranspose
+          (matMulRectLeft Q
+            (lsQRTallBlock (k := k) (fun a b => R_hat a b + DeltaR a b))))
+        b
+        (matMulVec (m + k) Q
+          (Fin.append
+            (fl_forwardSub fp m (matTranspose R_hat) b)
+            (0 : Fin k → ℝ))) := by
+  obtain ⟨DeltaR, hDeltaR, hsolve, hminCond⟩ :=
+    higham21_theorem21_4_forwardSub_q_method_min_norm_handoff
+      fp Q hQ R_hat b hdiag hupper hvalid
+  have hdet :
+      Matrix.det
+          (matTranspose (fun a b => R_hat a b + DeltaR a b) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0 :=
+    higham21_theorem21_4_perturbed_transpose_factor_det_ne_zero_of_componentwise_bound
+      R_hat DeltaR hdiag hupper (gamma_lt_one fp m hvalid2) hDeltaR
+  exact ⟨DeltaR, hDeltaR, hsolve, hminCond hdet⟩
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
     row-wise backward-error handoff after the triangular solve.  The theorem
@@ -8280,6 +8363,63 @@ theorem higham21_theorem21_4_forwardSub_rowwise_backward_error_handoff
     higham21_lemma21_2_rowwise_backward_error_bound_of_common_row_bound
       A DeltaA1 DeltaA2 b x_hat heta hminSingle
       hDeltaA1Row hDeltaA2Row
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    determinant-free row-wise backward-error handoff after the triangular
+    solve.  Compared with
+    `higham21_theorem21_4_forwardSub_rowwise_backward_error_handoff`, the
+    stronger `gammaValid fp (2*m)` guard discharges the perturbed transpose
+    factor nonsingularity side condition. -/
+theorem higham21_theorem21_4_forwardSub_rowwise_backward_error_handoff_of_gammaValid2
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R_hat : Fin m → Fin m → ℝ) (b : Fin m → ℝ)
+    (hdiag : ∀ i : Fin m, R_hat i i ≠ 0)
+    (hupper : IsUpperTrapezoidal m m R_hat)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m))
+    (DeltaA1 DeltaA2 : Fin m → Fin (m + k) → ℝ)
+    {eta : ℝ} (heta : 0 ≤ eta)
+    (hDeltaA1Row : ∀ i : Fin m,
+      rectRowNorm2 DeltaA1 i ≤ eta * rectRowNorm2 A i)
+    (hDeltaA2Row : ∀ i : Fin m,
+      rectRowNorm2 DeltaA2 i ≤ eta * rectRowNorm2 A i) :
+    ∃ DeltaR : Fin m → Fin m → ℝ,
+      (∀ i j, |DeltaR i j| ≤ gamma fp m * |R_hat i j|) ∧
+      (∀ i,
+        matMulVec m (matTranspose (fun a b => R_hat a b + DeltaR a b))
+          (fl_forwardSub fp m (matTranspose R_hat) b) i = b i) ∧
+      ((fun i j =>
+          A i j +
+            undetLemma21_2SinglePerturbation
+              (matMulVec (m + k) Q
+                (Fin.append
+                  (fl_forwardSub fp m (matTranspose R_hat) b)
+                  (0 : Fin k → ℝ)))
+              DeltaA1 DeltaA2 i j) =
+        finiteTranspose
+          (matMulRectLeft Q
+            (lsQRTallBlock (k := k)
+              (fun a b => R_hat a b + DeltaR a b))) →
+        UndetRowwiseBackwardErrorBounded m (m + k) A b
+          (matMulVec (m + k) Q
+            (Fin.append
+              (fl_forwardSub fp m (matTranspose R_hat) b)
+              (0 : Fin k → ℝ)))
+          (Real.sqrt 2 * eta)) := by
+  obtain ⟨DeltaR, hDeltaR, hsolve, hrowCond⟩ :=
+    higham21_theorem21_4_forwardSub_rowwise_backward_error_handoff
+      fp A Q hQ R_hat b hdiag hupper hvalid DeltaA1 DeltaA2
+      heta hDeltaA1Row hDeltaA2Row
+  have hdet :
+      Matrix.det
+          (matTranspose (fun a b => R_hat a b + DeltaR a b) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0 :=
+    higham21_theorem21_4_perturbed_transpose_factor_det_ne_zero_of_componentwise_bound
+      R_hat DeltaR hdiag hupper (gamma_lt_one fp m hvalid2) hDeltaR
+  exact ⟨DeltaR, hDeltaR, hsolve, fun hsingle => hrowCond hdet hsingle⟩
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
     algebraic difference form of the computed final `Q` action.  If
