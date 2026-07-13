@@ -8115,6 +8115,35 @@ theorem higham14_problem14_14_hyman_det_cyclic_block_of_upper_add_zero_diag
   rw [higham14_problem14_14_det_upper_add_zero_diag_of_abs_bound
     T DeltaT gamma hTupper hDeltaDiag hDeltaBound]
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.14, Appendix A:
+    original-matrix Hyman determinant wrapper after perturbing the triangular
+    solve block.  This combines the perturbed cyclic-block determinant formula
+    with the signed row-permutation wrapper for the original Hessenberg matrix. -/
+theorem higham14_problem14_14_hyman_det_original_of_upper_add_zero_diag
+    {n : ℕ}
+    (H : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ)
+    (T DeltaT TpertInv : Matrix (Fin n) (Fin n) ℝ)
+    (y h : Fin n → ℝ) (η gamma : ℝ)
+    (σ : Equiv.Perm (Fin n ⊕ Unit))
+    (hH :
+      higham14_hymanBlockMatrix (T + DeltaT) y h η =
+        Matrix.submatrix H σ (Equiv.refl (Fin n ⊕ Unit)))
+    (hTupper : T.BlockTriangular id)
+    (hDeltaDiag : ∀ i : Fin n, DeltaT i i = 0)
+    (hDeltaBound : ∀ i j : Fin n, |DeltaT i j| ≤ gamma * |T i j|)
+    (hTpertInv : IsLeftInverse n (T + DeltaT) TpertInv) :
+    Matrix.det H =
+      (Equiv.Perm.sign σ : ℝ) *
+        Matrix.det T * higham14_hymanSchur h y TpertInv η := by
+  have horig :=
+    higham14_eq14_36_hyman_det_original_of_row_permutation
+      H (T + DeltaT) TpertInv y h η σ hH hTpertInv
+  have hdet :
+      Matrix.det (T + DeltaT) = Matrix.det T :=
+    higham14_problem14_14_det_upper_add_zero_diag_of_abs_bound
+      T DeltaT gamma hTupper hDeltaDiag hDeltaBound
+  simpa [hdet] using horig
+
 /-! ### Problem 14.8: complex inverse via a real block matrix -/
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.8:
