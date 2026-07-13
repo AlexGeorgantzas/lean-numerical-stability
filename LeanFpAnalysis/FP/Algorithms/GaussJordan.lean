@@ -2231,4 +2231,219 @@ theorem gje_spd_forward_error_of_cumulative_product_certificates
       change T1 + T2X + T3X ≤ T1 + T2R + T3R
       linarith
 
+/-- **Corollary 14.6 conditional normwise forward-error route**.
+
+    This converts the componentwise SPD/GJE forward-error certificate to a
+    relative 2-norm bound after exposing the remaining Cholesky norm
+    aggregation facts as `alpha`, `beta`, and `eta` hypotheses and keeping
+    the absolute inverse action as `opNorm2 |A_inv|`.  The second-stage
+    coefficient is capped by the source-facing
+    `3 n u + gje_c3_quadratic_remainder fp n`; the printed
+    `kappa_2(A)^(1/2)` constants remain separate aggregation obligations. -/
+theorem gje_spd_forward_error_relative_norm2_of_cumulative_product_certificates_c3_cap
+    (n : ℕ) (fp : FPModel)
+    (A A_inv R_hat R_inv : Fin n → Fin n → ℝ)
+    (b y x x_hat : Fin n → ℝ)
+    (N_hat DeltaN : Fin n → Fin n → Fin n → ℝ)
+    (start : ℕ)
+    (hSPD : IsSymPosDef n A)
+    (hLU : LUBackwardError n A (fun i j => R_hat j i) R_hat (gamma fp n))
+    (hAinv : IsLeftInverse n A A_inv)
+    (hn : gammaValid fp n)
+    (hnpos : 1 ≤ n)
+    (hn3 : gammaValid fp 3)
+    (hidx : ∀ r : Fin (n - 1),
+      start + ((n - 1) - 1 - r.val) < n)
+    (hDelta : ∀ r : Fin (n - 1), ∀ i j : Fin n,
+      |DeltaN (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j| ≤
+        gamma fp 3 *
+          |N_hat (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j|)
+    (hy : ∀ i : Fin n, ∑ j : Fin n, R_hat j i * y j = b i)
+    (hExact : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i)
+    (hBackwardEq : ∀ i : Fin n,
+      ∑ j : Fin n,
+          (R_hat i j +
+            (matMul n
+                (gje_cumulative_product n
+                  (fun k a b => N_hat k a b + DeltaN k a b)
+                  start (start + (n - 1))) R_hat i j -
+              matMul n
+                (gje_cumulative_product n N_hat start (start + (n - 1)))
+                R_hat i j)) *
+            x_hat j =
+        y i +
+          (matMulVec n
+              (gje_cumulative_product n
+                (fun k a b => N_hat k a b + DeltaN k a b)
+                start (start + (n - 1))) y i -
+            matMulVec n
+              (gje_cumulative_product n N_hat start (start + (n - 1))) y i))
+    (hRinvDom : ∀ i j : Fin n,
+      |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+        start (start + (n - 1)) i j| ≤ |R_inv i j|)
+    (alpha beta eta : ℝ)
+    (hxpos : 0 < vecNorm2 x)
+    (hbeta : 0 ≤ beta) (heta : 0 ≤ eta)
+    (hRT_R_x :
+      vecNorm2 (fun i : Fin n =>
+        ∑ k : Fin n,
+          (∑ l : Fin n, |R_hat l i| * |R_hat l k|) * |x_hat k|) ≤
+        alpha * vecNorm2 x_hat)
+    (hRT_Rinv_R_x :
+      vecNorm2 (fun i : Fin n =>
+        ∑ k : Fin n,
+          (∑ k₁ : Fin n, |R_hat k₁ i| *
+            (∑ k₂ : Fin n, |R_inv k₁ k₂| * |R_hat k₂ k|)) *
+            |x_hat k|) ≤
+        beta * vecNorm2 x_hat)
+    (hRT_Rinv_y :
+      vecNorm2 (fun i : Fin n =>
+        ∑ l : Fin n, |R_hat l i| *
+          (∑ k : Fin n, |R_inv l k| * |y k|)) ≤
+        eta * vecNorm2 x_hat) :
+    vecNorm2 (fun i : Fin n => x i - x_hat i) / vecNorm2 x ≤
+      opNorm2 (fun i j : Fin n => |A_inv i j|) *
+      (gamma fp n * alpha +
+        (3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n) *
+          (beta + eta)) *
+        (vecNorm2 x_hat / vecNorm2 x) := by
+  let e : Fin n → ℝ := fun i => x i - x_hat i
+  let AbsAinv : Fin n → Fin n → ℝ := fun i j => |A_inv i j|
+  let T1 : Fin n → ℝ := fun i =>
+    ∑ k : Fin n,
+      (∑ l : Fin n, |R_hat l i| * |R_hat l k|) * |x_hat k|
+  let T2 : Fin n → ℝ := fun i =>
+    ∑ k : Fin n,
+      (∑ k₁ : Fin n, |R_hat k₁ i| *
+        (∑ k₂ : Fin n, |R_inv k₁ k₂| * |R_hat k₂ k|)) *
+        |x_hat k|
+  let T3 : Fin n → ℝ := fun i =>
+    ∑ l : Fin n, |R_hat l i| *
+      (∑ k : Fin n, |R_inv l k| * |y k|)
+  let S : Fin n → ℝ := fun i =>
+    gamma fp n * T1 i + gje_c₃ fp n * T2 i + gje_c₃ fp n * T3 i
+  let C : ℝ := 3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n
+  have hForward :=
+    gje_spd_forward_error_of_cumulative_product_certificates
+      n fp A A_inv R_hat R_inv b y x x_hat N_hat DeltaN start
+      hSPD hLU hAinv hn hnpos hn3 hidx hDelta hy hExact hBackwardEq hRinvDom
+  have hAbs : ∀ i : Fin n,
+      |e i| ≤ matMulVec n AbsAinv S i := by
+    intro i
+    simpa [e, AbsAinv, S, T1, T2, T3, matMulVec] using hForward i
+  have hgamma : 0 ≤ gamma fp n := gamma_nonneg fp hn
+  have hc3 : 0 ≤ gje_c₃ fp n := gje_c3_nonneg fp n hnpos hn3
+  have hC : gje_c₃ fp n ≤ C := by
+    simpa [C] using gje_c3_le_three_n_u_plus_quadratic_remainder fp n hn3
+  have hNormStart :
+      vecNorm2 e ≤
+        vecNorm2 (matMulVec n AbsAinv S) :=
+    vecNorm2_le_of_abs_le e (matMulVec n AbsAinv S) hAbs
+  have hOuter :
+      vecNorm2 (matMulVec n AbsAinv S) ≤
+        opNorm2 AbsAinv * vecNorm2 S :=
+    opNorm2Le_opNorm2 AbsAinv S
+  have hTri :
+      vecNorm2 S ≤
+        gamma fp n * vecNorm2 T1 + gje_c₃ fp n * vecNorm2 T2 +
+          gje_c₃ fp n * vecNorm2 T3 := by
+    have h12 :=
+      vecNorm2_add_le
+        (fun i : Fin n => gamma fp n * T1 i)
+        (fun i : Fin n => gje_c₃ fp n * T2 i)
+    have h123 :=
+      vecNorm2_add_le
+        (fun i : Fin n => gamma fp n * T1 i + gje_c₃ fp n * T2 i)
+        (fun i : Fin n => gje_c₃ fp n * T3 i)
+    have h1 :
+        vecNorm2 (fun i : Fin n => gamma fp n * T1 i) =
+          gamma fp n * vecNorm2 T1 := by
+      rw [vecNorm2_smul, abs_of_nonneg hgamma]
+    have h2 :
+        vecNorm2 (fun i : Fin n => gje_c₃ fp n * T2 i) =
+          gje_c₃ fp n * vecNorm2 T2 := by
+      rw [vecNorm2_smul, abs_of_nonneg hc3]
+    have h3 :
+        vecNorm2 (fun i : Fin n => gje_c₃ fp n * T3 i) =
+          gje_c₃ fp n * vecNorm2 T3 := by
+      rw [vecNorm2_smul, abs_of_nonneg hc3]
+    calc
+      vecNorm2 S
+          = vecNorm2 (fun i : Fin n =>
+              gamma fp n * T1 i + gje_c₃ fp n * T2 i + gje_c₃ fp n * T3 i) := by rfl
+      _
+          ≤ vecNorm2 (fun i : Fin n =>
+              gamma fp n * T1 i + gje_c₃ fp n * T2 i) +
+            vecNorm2 (fun i : Fin n => gje_c₃ fp n * T3 i) := h123
+      _ ≤ (vecNorm2 (fun i : Fin n => gamma fp n * T1 i) +
+              vecNorm2 (fun i : Fin n => gje_c₃ fp n * T2 i)) +
+            vecNorm2 (fun i : Fin n => gje_c₃ fp n * T3 i) := by
+              exact add_le_add h12 (le_refl _)
+      _ = gamma fp n * vecNorm2 T1 + gje_c₃ fp n * vecNorm2 T2 +
+          gje_c₃ fp n * vecNorm2 T3 := by
+            rw [h1, h2, h3]
+  have hT1 :
+      gamma fp n * vecNorm2 T1 ≤
+        gamma fp n * (alpha * vecNorm2 x_hat) := by
+    exact mul_le_mul_of_nonneg_left
+      (by simpa [T1] using hRT_R_x) hgamma
+  have hT2 :
+      gje_c₃ fp n * vecNorm2 T2 ≤
+        C * (beta * vecNorm2 x_hat) := by
+    calc
+      gje_c₃ fp n * vecNorm2 T2 ≤
+          gje_c₃ fp n * (beta * vecNorm2 x_hat) := by
+            exact mul_le_mul_of_nonneg_left
+              (by simpa [T2] using hRT_Rinv_R_x) hc3
+      _ ≤ C * (beta * vecNorm2 x_hat) := by
+            exact mul_le_mul_of_nonneg_right hC
+              (mul_nonneg hbeta (vecNorm2_nonneg x_hat))
+  have hT3 :
+      gje_c₃ fp n * vecNorm2 T3 ≤
+        C * (eta * vecNorm2 x_hat) := by
+    calc
+      gje_c₃ fp n * vecNorm2 T3 ≤
+          gje_c₃ fp n * (eta * vecNorm2 x_hat) := by
+            exact mul_le_mul_of_nonneg_left
+              (by simpa [T3] using hRT_Rinv_y) hc3
+      _ ≤ C * (eta * vecNorm2 x_hat) := by
+            exact mul_le_mul_of_nonneg_right hC
+              (mul_nonneg heta (vecNorm2_nonneg x_hat))
+  have hSBound :
+      vecNorm2 S ≤
+        (gamma fp n * alpha + C * (beta + eta)) * vecNorm2 x_hat := by
+    calc
+      vecNorm2 S ≤
+          gamma fp n * vecNorm2 T1 + gje_c₃ fp n * vecNorm2 T2 +
+            gje_c₃ fp n * vecNorm2 T3 := hTri
+      _ ≤ gamma fp n * (alpha * vecNorm2 x_hat) +
+            C * (beta * vecNorm2 x_hat) + C * (eta * vecNorm2 x_hat) := by
+            nlinarith
+      _ = (gamma fp n * alpha + C * (beta + eta)) * vecNorm2 x_hat := by
+            ring
+  have hVec :
+      vecNorm2 e ≤
+        opNorm2 AbsAinv *
+          ((gamma fp n * alpha + C * (beta + eta)) * vecNorm2 x_hat) := by
+    calc
+      vecNorm2 e ≤ vecNorm2 (matMulVec n AbsAinv S) := hNormStart
+      _ ≤ opNorm2 AbsAinv * vecNorm2 S := hOuter
+      _ ≤ opNorm2 AbsAinv *
+          ((gamma fp n * alpha + C * (beta + eta)) * vecNorm2 x_hat) := by
+            exact mul_le_mul_of_nonneg_left hSBound (opNorm2_nonneg AbsAinv)
+  have hFinal :
+      vecNorm2 e / vecNorm2 x ≤
+        opNorm2 AbsAinv * (gamma fp n * alpha + C * (beta + eta)) *
+          (vecNorm2 x_hat / vecNorm2 x) := by
+    have hDiv := div_le_div_of_nonneg_right hVec hxpos.le
+    calc
+      vecNorm2 e / vecNorm2 x ≤
+          (opNorm2 AbsAinv *
+            ((gamma fp n * alpha + C * (beta + eta)) * vecNorm2 x_hat)) /
+            vecNorm2 x := hDiv
+      _ = opNorm2 AbsAinv * (gamma fp n * alpha + C * (beta + eta)) *
+            (vecNorm2 x_hat / vecNorm2 x) := by
+          field_simp [hxpos.ne']
+  simpa [e, AbsAinv, C] using hFinal
+
 end LeanFpAnalysis.FP
