@@ -603,7 +603,7 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
 - New theorem axiom-surface addendum: the GJE overall residual and forward-error certificate-route wrappers use only the standard Mathlib axioms reported by Lean (`propext`, `Classical.choice`, `Quot.sound`) when checked.
 - Result addendum: `LeanFpAnalysis.FP.Algorithms.GaussJordan` builds after the Theorem 14.5 `gje_c₃` scalar split support; focused `#check`/`#print axioms` validation is recorded for `gamma_three_sub_linear_eq_quadratic_remainder`, `gje_c3_eq_linear_plus_explicit_remainder`, and `gje_c3_eq_linear_plus_quadratic_remainder`.
 - New theorem axiom-surface addendum: the GJE `gje_c₃` scalar split support uses only the standard Mathlib axioms reported by Lean (`propext`, `Classical.choice`, `Quot.sound`) when checked.
-- Known verification issue: the full `examples/LibraryLookup.lean` run currently exits nonzero on unrelated Wave16--Wave18 unknown identifiers after producing a large declaration listing. Focused lookups for the new Chapter 14 declarations pass.
+- Lookup validation addendum: the full `examples/LibraryLookup.lean` run now passes after the GJE `gje_c₃` scalar split lookup entries were added.
 - Post-merge detached-worktree verification: `lake build LeanFpAnalysis.FP.Algorithms.MatrixInversion` passed after clean merge `601617da`. The incoming Split 4 `LeanFpAnalysis.FP.Algorithms.LeastSquares.LSE` target was attempted after building `LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, but the temporary symlinked Lake cache did not materialize `BlockLU.olean` at the module path expected by `LSE`; this is recorded as a temp-cache artifact blocker, not a Chapter 14 Lean failure.
 - Coordination note: parallel Chapter 13 local edits in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and a Chapter 13 row of `docs/LIBRARY_LOOKUP.md` are not part of this Chapter 14 milestone. The current `BlockLU.lean` worktree state builds locally, so Chapter 14 import replay and focused lookup checks were able to complete in this working tree.
 - New versus pre-existing warnings: a new unused-simp warning appeared during initial Problem 14.7 proof and was removed; the focused HighamChapter9 replay emits pre-existing `Fin.coe_castLE` deprecation / unused-simp warnings and a `ring_nf` tactic suggestion, unrelated to the Chapter 14 wrappers.
@@ -638,6 +638,7 @@ See `docs/chapter14/CHAPTER14_NOT_PROVED_LEDGER.md`. The highest-leverage next r
 - Latest Split 3A proof milestone: `6c21be41` (`Split 3A: route Ch14 GJE residual certificate`)
 - Latest Split 3A report milestone: `e7c83a1f` (`Split 3A: report Ch14 GJE residual route`)
 - Latest Split 3A proof milestone: `0cf4b0c7` (`Split 3A: split Ch14 GJE c3 scalar constant`)
+- Latest Split 3A report milestone: `e31119ec` (`Split 3A: report Ch14 GJE c3 scalar split`)
 - Latest Split 3A proof milestone: `a0d043f4` (`Split 3A: bridge Ch14 Method 1B row certificates`)
 - Latest Split 3A proof milestone: `1b2c592f` (`Split 3A: add Ch14 Method 1B row normwise bridge`)
 - Latest Split 3A proof milestone: `15754d3f` (`Split 3A: expose Ch14 Method 2B obstruction`)
