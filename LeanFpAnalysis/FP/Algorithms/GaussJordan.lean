@@ -1194,6 +1194,121 @@ theorem gje_overall_residual_of_cumulative_product_certificates_c3_split
       hLU hn hnpos hn3 hidx hDelta hy hBackwardEq
   simpa [gje_c3_eq_linear_plus_quadratic_remainder_term fp n hn3] using h
 
+/-- **Theorem 14.5 residual route with the source-facing `3 n u` cap**.
+
+    This pushes `gje_c3_le_three_n_u_plus_quadratic_remainder` through the
+    cumulative-product residual certificate route, replacing the exact
+    second-stage coefficient by `3 n u` plus the explicit higher-order
+    remainder. -/
+theorem gje_overall_residual_of_cumulative_product_certificates_c3_three_n
+    (n : ℕ) (fp : FPModel)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b y x_hat : Fin n → ℝ)
+    (N_hat DeltaN : Fin n → Fin n → Fin n → ℝ)
+    (start : ℕ)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hnpos : 1 ≤ n)
+    (hn3 : gammaValid fp 3)
+    (hidx : ∀ r : Fin (n - 1),
+      start + ((n - 1) - 1 - r.val) < n)
+    (hDelta : ∀ r : Fin (n - 1), ∀ i j : Fin n,
+      |DeltaN (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j| ≤
+        gamma fp 3 *
+          |N_hat (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j|)
+    (hy : ∀ i : Fin n, ∑ j : Fin n, L_hat i j * y j = b i)
+    (hBackwardEq : ∀ i : Fin n,
+      ∑ j : Fin n,
+          (U_hat i j +
+            (matMul n
+                (gje_cumulative_product n
+                  (fun k a b => N_hat k a b + DeltaN k a b)
+                  start (start + (n - 1))) U_hat i j -
+              matMul n
+                (gje_cumulative_product n N_hat start (start + (n - 1)))
+                U_hat i j)) *
+            x_hat j =
+        y i +
+          (matMulVec n
+              (gje_cumulative_product n
+                (fun k a b => N_hat k a b + DeltaN k a b)
+                start (start + (n - 1))) y i -
+            matMulVec n
+              (gje_cumulative_product n N_hat start (start + (n - 1))) y i)) :
+    ∀ i : Fin n,
+      |b i - ∑ j : Fin n, A i j * x_hat j| ≤
+      gamma fp n * ∑ j : Fin n,
+        (∑ k : Fin n, |L_hat i k| * |U_hat k j|) * |x_hat j| +
+      (3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n) *
+        ∑ j : Fin n,
+          (∑ k₁ : Fin n, |L_hat i k₁| *
+            (∑ k₂ : Fin n,
+              |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+                start (start + (n - 1)) k₁ k₂| *
+              |U_hat k₂ j|)) * |x_hat j| +
+      (3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n) *
+        ∑ k : Fin n, |L_hat i k| *
+          (∑ j : Fin n,
+            |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+              start (start + (n - 1)) k j| * |y j|) := by
+  intro i
+  let C : ℝ := 3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n
+  let S2 : ℝ :=
+    ∑ j : Fin n,
+      (∑ k₁ : Fin n, |L_hat i k₁| *
+        (∑ k₂ : Fin n,
+          |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+            start (start + (n - 1)) k₁ k₂| *
+          |U_hat k₂ j|)) * |x_hat j|
+  let S3 : ℝ :=
+    ∑ k : Fin n, |L_hat i k| *
+      (∑ j : Fin n,
+        |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+          start (start + (n - 1)) k j| * |y j|)
+  have hBase :=
+    gje_overall_residual_of_cumulative_product_certificates
+      n fp A L_hat U_hat b y x_hat N_hat DeltaN start
+      hLU hn hnpos hn3 hidx hDelta hy hBackwardEq
+  have hC : gje_c₃ fp n ≤ C := by
+    simpa [C] using gje_c3_le_three_n_u_plus_quadratic_remainder fp n hn3
+  have hS2_nonneg : 0 ≤ S2 := by
+    dsimp [S2]
+    apply Finset.sum_nonneg
+    intro j _
+    exact mul_nonneg
+      (Finset.sum_nonneg (fun k₁ _ =>
+        mul_nonneg (abs_nonneg _)
+          (Finset.sum_nonneg (fun k₂ _ =>
+            mul_nonneg (abs_nonneg _) (abs_nonneg _)))))
+      (abs_nonneg _)
+  have hS3_nonneg : 0 ≤ S3 := by
+    dsimp [S3]
+    apply Finset.sum_nonneg
+    intro k _
+    exact mul_nonneg (abs_nonneg _)
+      (Finset.sum_nonneg (fun j _ =>
+        mul_nonneg (abs_nonneg _) (abs_nonneg _)))
+  have h2 : gje_c₃ fp n * S2 ≤ C * S2 :=
+    mul_le_mul_of_nonneg_right hC hS2_nonneg
+  have h3 : gje_c₃ fp n * S3 ≤ C * S3 :=
+    mul_le_mul_of_nonneg_right hC hS3_nonneg
+  have hGoal :
+      |b i - ∑ j : Fin n, A i j * x_hat j| ≤
+      gamma fp n * ∑ j : Fin n,
+        (∑ k : Fin n, |L_hat i k| * |U_hat k j|) * |x_hat j| +
+      C * S2 + C * S3 := by
+    calc
+      |b i - ∑ j : Fin n, A i j * x_hat j| ≤
+          gamma fp n * ∑ j : Fin n,
+            (∑ k : Fin n, |L_hat i k| * |U_hat k j|) * |x_hat j| +
+          gje_c₃ fp n * S2 + gje_c₃ fp n * S3 := by
+            simpa [S2, S3] using hBase i
+      _ ≤ gamma fp n * ∑ j : Fin n,
+            (∑ k : Fin n, |L_hat i k| * |U_hat k j|) * |x_hat j| +
+          C * S2 + C * S3 := by
+            nlinarith
+  simpa [C, S2, S3] using hGoal
+
 /-- **Theorem 14.5, eq. 14.32**: Overall GJE forward error.
 
     The forward error satisfies:
@@ -1421,6 +1536,171 @@ theorem gje_overall_forward_error_of_cumulative_product_certificates_c3_split
       n fp A A_inv L_hat U_hat b y x x_hat N_hat DeltaN start
       hLU hAinv hn hnpos hn3 hidx hDelta hy hExact hBackwardEq
   simpa [gje_c3_eq_linear_plus_quadratic_remainder_term fp n hn3] using h
+
+/-- **Theorem 14.5 forward-error route with the source-facing `3 n u` cap**.
+
+    This is the forward-error companion to
+    `gje_overall_residual_of_cumulative_product_certificates_c3_three_n`. -/
+theorem gje_overall_forward_error_of_cumulative_product_certificates_c3_three_n
+    (n : ℕ) (fp : FPModel)
+    (A A_inv L_hat U_hat : Fin n → Fin n → ℝ)
+    (b y x x_hat : Fin n → ℝ)
+    (N_hat DeltaN : Fin n → Fin n → Fin n → ℝ)
+    (start : ℕ)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hAinv : IsLeftInverse n A A_inv)
+    (hn : gammaValid fp n)
+    (hnpos : 1 ≤ n)
+    (hn3 : gammaValid fp 3)
+    (hidx : ∀ r : Fin (n - 1),
+      start + ((n - 1) - 1 - r.val) < n)
+    (hDelta : ∀ r : Fin (n - 1), ∀ i j : Fin n,
+      |DeltaN (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j| ≤
+        gamma fp 3 *
+          |N_hat (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j|)
+    (hy : ∀ i : Fin n, ∑ j : Fin n, L_hat i j * y j = b i)
+    (hExact : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i)
+    (hBackwardEq : ∀ i : Fin n,
+      ∑ j : Fin n,
+          (U_hat i j +
+            (matMul n
+                (gje_cumulative_product n
+                  (fun k a b => N_hat k a b + DeltaN k a b)
+                  start (start + (n - 1))) U_hat i j -
+              matMul n
+                (gje_cumulative_product n N_hat start (start + (n - 1)))
+                U_hat i j)) *
+            x_hat j =
+        y i +
+          (matMulVec n
+              (gje_cumulative_product n
+                (fun k a b => N_hat k a b + DeltaN k a b)
+                start (start + (n - 1))) y i -
+            matMulVec n
+              (gje_cumulative_product n N_hat start (start + (n - 1))) y i)) :
+    ∀ i : Fin n,
+      |x i - x_hat i| ≤
+      ∑ j : Fin n, |A_inv i j| *
+        (gamma fp n * ∑ k : Fin n,
+          (∑ l : Fin n, |L_hat j l| * |U_hat l k|) * |x_hat k| +
+        (3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n) *
+          ∑ k : Fin n,
+            (∑ k₁ : Fin n, |L_hat j k₁| *
+              (∑ k₂ : Fin n,
+                |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+                  start (start + (n - 1)) k₁ k₂| *
+                |U_hat k₂ k|)) * |x_hat k| +
+        (3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n) *
+          ∑ l : Fin n, |L_hat j l| *
+            (∑ k : Fin n,
+              |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+                start (start + (n - 1)) l k| * |y k|)) := by
+  intro i
+  let C : ℝ := 3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n
+  have hBase :=
+    gje_overall_forward_error_of_cumulative_product_certificates
+      n fp A A_inv L_hat U_hat b y x x_hat N_hat DeltaN start
+      hLU hAinv hn hnpos hn3 hidx hDelta hy hExact hBackwardEq
+  have hC : gje_c₃ fp n ≤ C := by
+    simpa [C] using gje_c3_le_three_n_u_plus_quadratic_remainder fp n hn3
+  have hTerm :
+      ∀ j : Fin n,
+        gamma fp n * ∑ k : Fin n,
+          (∑ l : Fin n, |L_hat j l| * |U_hat l k|) * |x_hat k| +
+        gje_c₃ fp n * ∑ k : Fin n,
+          (∑ k₁ : Fin n, |L_hat j k₁| *
+            (∑ k₂ : Fin n,
+              |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+                start (start + (n - 1)) k₁ k₂| *
+              |U_hat k₂ k|)) * |x_hat k| +
+        gje_c₃ fp n * ∑ l : Fin n, |L_hat j l| *
+          (∑ k : Fin n,
+            |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+              start (start + (n - 1)) l k| * |y k|) ≤
+        gamma fp n * ∑ k : Fin n,
+          (∑ l : Fin n, |L_hat j l| * |U_hat l k|) * |x_hat k| +
+        C * ∑ k : Fin n,
+          (∑ k₁ : Fin n, |L_hat j k₁| *
+            (∑ k₂ : Fin n,
+              |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+                start (start + (n - 1)) k₁ k₂| *
+              |U_hat k₂ k|)) * |x_hat k| +
+        C * ∑ l : Fin n, |L_hat j l| *
+          (∑ k : Fin n,
+            |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+              start (start + (n - 1)) l k| * |y k|) := by
+    intro j
+    let S2 : ℝ :=
+      ∑ k : Fin n,
+        (∑ k₁ : Fin n, |L_hat j k₁| *
+          (∑ k₂ : Fin n,
+            |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+              start (start + (n - 1)) k₁ k₂| *
+            |U_hat k₂ k|)) * |x_hat k|
+    let S3 : ℝ :=
+      ∑ l : Fin n, |L_hat j l| *
+        (∑ k : Fin n,
+          |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+            start (start + (n - 1)) l k| * |y k|)
+    have hS2_nonneg : 0 ≤ S2 := by
+      dsimp [S2]
+      apply Finset.sum_nonneg
+      intro k _
+      exact mul_nonneg
+        (Finset.sum_nonneg (fun k₁ _ =>
+          mul_nonneg (abs_nonneg _)
+            (Finset.sum_nonneg (fun k₂ _ =>
+              mul_nonneg (abs_nonneg _) (abs_nonneg _)))))
+        (abs_nonneg _)
+    have hS3_nonneg : 0 ≤ S3 := by
+      dsimp [S3]
+      apply Finset.sum_nonneg
+      intro l _
+      exact mul_nonneg (abs_nonneg _)
+        (Finset.sum_nonneg (fun k _ =>
+          mul_nonneg (abs_nonneg _) (abs_nonneg _)))
+    have h2 : gje_c₃ fp n * S2 ≤ C * S2 :=
+      mul_le_mul_of_nonneg_right hC hS2_nonneg
+    have h3 : gje_c₃ fp n * S3 ≤ C * S3 :=
+      mul_le_mul_of_nonneg_right hC hS3_nonneg
+    simpa [S2, S3] using (by nlinarith : gamma fp n * ∑ k : Fin n,
+          (∑ l : Fin n, |L_hat j l| * |U_hat l k|) * |x_hat k| +
+        gje_c₃ fp n * S2 + gje_c₃ fp n * S3 ≤
+        gamma fp n * ∑ k : Fin n,
+          (∑ l : Fin n, |L_hat j l| * |U_hat l k|) * |x_hat k| +
+        C * S2 + C * S3)
+  calc
+    |x i - x_hat i| ≤
+      ∑ j : Fin n, |A_inv i j| *
+        (gamma fp n * ∑ k : Fin n,
+          (∑ l : Fin n, |L_hat j l| * |U_hat l k|) * |x_hat k| +
+        gje_c₃ fp n * ∑ k : Fin n,
+          (∑ k₁ : Fin n, |L_hat j k₁| *
+            (∑ k₂ : Fin n,
+              |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+                start (start + (n - 1)) k₁ k₂| *
+              |U_hat k₂ k|)) * |x_hat k| +
+        gje_c₃ fp n * ∑ l : Fin n, |L_hat j l| *
+          (∑ k : Fin n,
+            |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+              start (start + (n - 1)) l k| * |y k|)) := by
+        simpa using hBase i
+    _ ≤ ∑ j : Fin n, |A_inv i j| *
+        (gamma fp n * ∑ k : Fin n,
+          (∑ l : Fin n, |L_hat j l| * |U_hat l k|) * |x_hat k| +
+        C * ∑ k : Fin n,
+          (∑ k₁ : Fin n, |L_hat j k₁| *
+            (∑ k₂ : Fin n,
+              |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+                start (start + (n - 1)) k₁ k₂| *
+              |U_hat k₂ k|)) * |x_hat k| +
+        C * ∑ l : Fin n, |L_hat j l| *
+          (∑ k : Fin n,
+            |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+              start (start + (n - 1)) l k| * |y k|)) := by
+        apply Finset.sum_le_sum
+        intro j _
+        exact mul_le_mul_of_nonneg_left (hTerm j) (abs_nonneg _)
 
 -- ══════════════════════════════════════════════════════════════════════
 -- §14.4.7  Corollary 14.6: SPD Specialization

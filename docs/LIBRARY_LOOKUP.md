@@ -5613,6 +5613,7 @@ and Problem 14.10:
 - `higham14_unit_roundoff_add_one_plus_u_mul_rounded_gamma_le_gamma_succ_succ`
 - `triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul`
 - `triInv_method2_left_residual_of_strict_tail_storage`
+- `triInv_method2_left_residual_normwise_of_strict_tail_storage`
 - `Method2StrictTailKernelSpec`
 - `triInv_method2_left_residual_of_strict_tail_kernel_spec`
 - `triInv_method2_offdiag_update_delta_bound`
