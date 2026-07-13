@@ -6319,6 +6319,9 @@ small enough to serve as a smoke check for representative public declarations.
 #check frobNormRect_preconditionRows_sourceSketchResidualTail_sourceSVDTail_moorePenrose_le_sqrt_one_add_methodA_inverse_product_sum_budget_sq
 #check LUBackwardError.of_input_abs_error_le_absLUProduct
 #check gje_c₃
+#check gamma_three_sub_linear_eq_quadratic_remainder
+#check gje_c3_eq_linear_plus_explicit_remainder
+#check gje_c3_eq_linear_plus_quadratic_remainder
 #check gje_one_add_pow_sub_one_le_nat_mul_pred
 #check gje_one_add_gamma_three_pow_sub_one_le_c3
 #check GJEStage2Spec
@@ -6570,6 +6573,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_eq14_35_hyman_block_lu_factorization
 #check higham14_eq14_36_hyman_det_cyclic_block
 #check higham14_eq14_36_hyman_det_original_of_row_permutation
+#check higham14_problem14_14_det_upper_add_zero_diag_of_abs_bound
+#check higham14_problem14_14_hyman_det_cyclic_block_of_upper_add_zero_diag
 #check matrixEntryPerturb
 #check higham14_problem14_10_det_entry_perturb_eq
 #check higham14_problem14_10_det_entry_independent_of_adjugate_eq_zero

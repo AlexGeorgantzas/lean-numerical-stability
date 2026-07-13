@@ -8070,6 +8070,51 @@ theorem higham14_eq14_36_hyman_det_original_of_row_permutation {n : ℕ}
           Matrix.det T * higham14_hymanSchur h y Tinv η := by
           ring
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.14, Appendix A:
+    exact determinant hinge used in the Hyman backward-error proof.  If `T`
+    is upper triangular, `DeltaT` has zero diagonal, and the componentwise
+    bound `|DeltaT| <= gamma |T|` holds, then the bound forces `DeltaT` to
+    have zero entries below the diagonal, so `T + DeltaT` has the same
+    triangular determinant product as `T`. -/
+theorem higham14_problem14_14_det_upper_add_zero_diag_of_abs_bound {n : ℕ}
+    (T DeltaT : Matrix (Fin n) (Fin n) ℝ) (gamma : ℝ)
+    (hTupper : T.BlockTriangular id)
+    (hDeltaDiag : ∀ i : Fin n, DeltaT i i = 0)
+    (hDeltaBound : ∀ i j : Fin n, |DeltaT i j| ≤ gamma * |T i j|) :
+    Matrix.det (T + DeltaT) = Matrix.det T := by
+  have hDeltaLower : ∀ i j : Fin n, j < i → DeltaT i j = 0 := by
+    intro i j hji
+    have hTij : T i j = 0 := hTupper hji
+    have hbound := hDeltaBound i j
+    rw [hTij, abs_zero, mul_zero] at hbound
+    exact abs_eq_zero.mp (le_antisymm hbound (abs_nonneg _))
+  have hUpperSum : (T + DeltaT).BlockTriangular id := by
+    intro i j hji
+    simp [Matrix.add_apply, hTupper hji, hDeltaLower i j hji]
+  rw [Matrix.det_of_upperTriangular hUpperSum, Matrix.det_of_upperTriangular hTupper]
+  apply Finset.prod_congr rfl
+  intro i _
+  simp [Matrix.add_apply, hDeltaDiag i]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.14, Appendix A:
+    exact Hyman determinant wrapper after perturbing the triangular solve
+    block.  The determinant-invariance hinge above keeps the factor `det T`
+    even though the Hyman block uses `T + DeltaT` and its inverse certificate. -/
+theorem higham14_problem14_14_hyman_det_cyclic_block_of_upper_add_zero_diag
+    {n : ℕ}
+    (T DeltaT TpertInv : Matrix (Fin n) (Fin n) ℝ)
+    (y h : Fin n → ℝ) (η gamma : ℝ)
+    (hTupper : T.BlockTriangular id)
+    (hDeltaDiag : ∀ i : Fin n, DeltaT i i = 0)
+    (hDeltaBound : ∀ i j : Fin n, |DeltaT i j| ≤ gamma * |T i j|)
+    (hTpertInv : IsLeftInverse n (T + DeltaT) TpertInv) :
+    Matrix.det (higham14_hymanBlockMatrix (T + DeltaT) y h η) =
+      Matrix.det T * higham14_hymanSchur h y TpertInv η := by
+  rw [higham14_eq14_36_hyman_det_cyclic_block
+    (T + DeltaT) TpertInv y h η hTpertInv]
+  rw [higham14_problem14_14_det_upper_add_zero_diag_of_abs_bound
+    T DeltaT gamma hTupper hDeltaDiag hDeltaBound]
+
 /-! ### Problem 14.8: complex inverse via a real block matrix -/
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.8:
