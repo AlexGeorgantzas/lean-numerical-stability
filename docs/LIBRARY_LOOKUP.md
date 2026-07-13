@@ -5580,8 +5580,8 @@ Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence and 
 Problem 14.13's AM-GM, SVD norm, and determinant-product support bridges,
 Problem 14.15's scalar product-radius and top-index perturbation support, Method 2 structural
 left-residual upper/diagonal edges, trailing-column split, strict-tail update and gamma full-budget support, strict-tail rounded kernel packaging and normwise bridge, and off-diagonal update support, Method D's expanded
-componentwise residual-budget dependency and printed-coefficient scalar
-simplification, the exact Hyman block identities
+componentwise residual-budget dependency, printed-coefficient scalar
+simplification, and normwise local-certificate companion, the exact Hyman block identities
 (14.35)--(14.36), Problem 14.14 determinant support including the
 original-matrix perturbed determinant wrapper and diagonal-scaling transport,
 and Problem 14.10:
@@ -5691,6 +5691,8 @@ and Problem 14.10:
 - `higham14_methodD_abs_Xhat_le_scaled_abs_product`
 - `higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget`
 - `higham14_eq14_23_methodD_left_residual_bound_of_local_certificates`
+- `higham14_eq14_23_methodD_left_residual_infNorm_of_local_certificates`
+- `higham14_eq14_23_methodD_left_residual_infNorm_product_of_local_certificates`
 - `higham14_eq14_23_methodD_left_residual_bound`
 - `higham14_rowNorm2`
 - `higham14_rowNormDiagonal`
