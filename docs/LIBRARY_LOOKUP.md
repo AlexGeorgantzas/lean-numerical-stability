@@ -5692,6 +5692,7 @@ and Problem 14.10:
 - `higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget`
 - `higham14_eq14_23_methodD_left_residual_bound_of_local_certificates`
 - `higham14_eq14_23_methodD_left_residual_infNorm_of_local_certificates`
+- `higham14_eq14_23_methodD_left_residual_infNorm_product_of_local_certificates`
 - `higham14_eq14_23_methodD_left_residual_bound`
 - `higham14_rowNorm2`
 - `higham14_rowNormDiagonal`

@@ -3318,6 +3318,68 @@ theorem higham14_eq14_23_methodD_left_residual_infNorm_of_local_certificates
         ∑ k : Fin n, X_hat i k * A k j - if i = j then 1 else 0)
       (A := XUL) (B := LU) hCoeff_nonneg hComp
 
+/-- Higham, 2nd ed., Chapter 14, equation (14.23), Method D:
+    product-of-norms companion to the local-certificate residual route.
+
+    This is the coarser but simpler infinity-norm form obtained by applying
+    submultiplicativity to the two retained absolute-product norms. -/
+theorem higham14_eq14_23_methodD_left_residual_infNorm_product_of_local_certificates
+    (n : ℕ) (hn0 : 0 < n) (fp : FPModel)
+    (A L_hat U_hat X_U X_L X_hat : Fin n → Fin n → ℝ)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hXL_res : ∀ i j : Fin n,
+      |higham14_methodDXLLeftResidual X_L L_hat i j| ≤
+        gamma fp n * ∑ k : Fin n, |X_L i k| * |L_hat k j|)
+    (hXU_res : ∀ i j : Fin n,
+      |higham14_methodDXULeftResidual X_U U_hat i j| ≤
+        gamma fp n * ∑ k : Fin n, |X_U i k| * |U_hat k j|)
+    (hProd : MatProdError n X_hat (matMul n X_U X_L) (gamma fp n)
+      (fun i j => ∑ k : Fin n, |X_U i k| * |X_L k j|)) :
+    infNorm (fun i j : Fin n =>
+      ∑ k : Fin n, X_hat i k * A k j - if i = j then 1 else 0) ≤
+      (4 * gamma fp n + 2 * gamma fp n ^ 2) *
+        infNorm X_U * infNorm X_L * infNorm L_hat * infNorm U_hat := by
+  let XUL := matMul n (absMatrix n X_U) (absMatrix n X_L)
+  let LU := matMul n (absMatrix n L_hat) (absMatrix n U_hat)
+  have hRetained :=
+    higham14_eq14_23_methodD_left_residual_infNorm_of_local_certificates
+      n hn0 fp A L_hat U_hat X_U X_L X_hat hLU hn hXL_res hXU_res hProd
+  have hCoeff_nonneg : 0 ≤ 4 * gamma fp n + 2 * gamma fp n ^ 2 := by
+    have hγ : 0 ≤ gamma fp n := gamma_nonneg fp hn
+    nlinarith [sq_nonneg (gamma fp n)]
+  have hXUL :
+      infNorm XUL ≤ infNorm X_U * infNorm X_L := by
+    simpa [XUL, infNorm_absMatrix hn0 X_U, infNorm_absMatrix hn0 X_L] using
+      infNorm_matMul_le hn0 (absMatrix n X_U) (absMatrix n X_L)
+  have hLUprod :
+      infNorm LU ≤ infNorm L_hat * infNorm U_hat := by
+    simpa [LU, infNorm_absMatrix hn0 L_hat, infNorm_absMatrix hn0 U_hat] using
+      infNorm_matMul_le hn0 (absMatrix n L_hat) (absMatrix n U_hat)
+  have hXUNonneg : 0 ≤ infNorm X_U := infNorm_nonneg X_U
+  have hXLNonneg : 0 ≤ infNorm X_L := infNorm_nonneg X_L
+  have hXULProdNonneg : 0 ≤ infNorm X_U * infNorm X_L :=
+    mul_nonneg hXUNonneg hXLNonneg
+  calc
+    infNorm (fun i j : Fin n =>
+        ∑ k : Fin n, X_hat i k * A k j - if i = j then 1 else 0)
+        ≤ (4 * gamma fp n + 2 * gamma fp n ^ 2) *
+          infNorm XUL * infNorm LU := by
+            simpa [XUL, LU] using hRetained
+    _ ≤ (4 * gamma fp n + 2 * gamma fp n ^ 2) *
+          (infNorm X_U * infNorm X_L) * infNorm LU := by
+            exact mul_le_mul_of_nonneg_right
+              (mul_le_mul_of_nonneg_left hXUL hCoeff_nonneg)
+              (infNorm_nonneg LU)
+    _ ≤ (4 * gamma fp n + 2 * gamma fp n ^ 2) *
+          (infNorm X_U * infNorm X_L) *
+            (infNorm L_hat * infNorm U_hat) := by
+            exact mul_le_mul_of_nonneg_left hLUprod
+              (mul_nonneg hCoeff_nonneg hXULProdNonneg)
+    _ = (4 * gamma fp n + 2 * gamma fp n ^ 2) *
+          infNorm X_U * infNorm X_L * infNorm L_hat * infNorm U_hat := by
+            ring
+
 /-- **Abstract Method D left residual interface** (Higham eq. 14.20–14.23).
 
     Method D: compute X_L ≈ L⁻¹ and X_U ≈ U⁻¹ separately,
