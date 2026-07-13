@@ -91,6 +91,34 @@ theorem gje_c3_eq_linear_plus_quadratic_remainder_term
   simpa [gje_c3_quadratic_remainder] using
     gje_c3_eq_linear_plus_quadratic_remainder fp n h3
 
+/-- Theorem 14.5 scalar support: the GJE `c₃` coefficient is bounded by the
+    source-facing `3 n u` first-order term plus the existing explicit
+    higher-order remainder. -/
+theorem gje_c3_le_three_n_u_plus_quadratic_remainder
+    (fp : FPModel) (n : ℕ) (h3 : gammaValid fp 3) :
+    gje_c₃ fp n ≤
+      3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n := by
+  rw [gje_c3_eq_linear_plus_quadratic_remainder_term fp n h3]
+  nlinarith [fp.u_nonneg]
+
+/-- Higham, 2nd ed., Chapter 14, Theorem 14.5 support:
+    the GJE cumulative coefficient `c₃ = (n-1) γ₃ (1+γ₃)^(n-2)` is
+    nonnegative under the usual dimension and gamma-validity side conditions. -/
+theorem gje_c3_nonneg (fp : FPModel) (n : ℕ)
+    (hn : 1 ≤ n) (h3 : gammaValid fp 3) :
+    0 ≤ gje_c₃ fp n := by
+  have hgamma : 0 ≤ gamma fp 3 := gamma_nonneg fp h3
+  have hcast : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by
+    rw [Nat.cast_sub hn]
+    norm_num
+  have hnminus : 0 ≤ (n : ℝ) - 1 := by
+    rw [← hcast]
+    exact Nat.cast_nonneg _
+  have hbase : 0 ≤ 1 + gamma fp 3 := by linarith
+  have hpow : 0 ≤ (1 + gamma fp 3) ^ (n - 2) := pow_nonneg hbase _
+  unfold gje_c₃
+  exact mul_nonneg (mul_nonneg hnminus hgamma) hpow
+
 /-- Elementary scalar growth bound used to connect the exact constant
     product envelope `(1 + c)^steps - 1` to Higham's `c₃`-style coefficient. -/
 theorem gje_one_add_pow_sub_one_le_nat_mul_pred {c : ℝ} (hc : 0 ≤ c) :
@@ -1442,5 +1470,295 @@ theorem gje_spd_residual (n : ℕ) (fp : FPModel)
       gje_c₃ fp n * ∑ k : Fin n, |R_hat k i| *
         (∑ j : Fin n, |R_inv k j| * |y j|) :=
   hResidual
+
+/-- **Corollary 14.6 componentwise certificate route** (Higham p. 277).
+
+    This specializes the proved Theorem 14.5 cumulative-product residual route
+    to the SPD/GJE shape `L_hat = R_hatᵀ`, `U_hat = R_hat`.  The extra
+    certificate `hRinvDom` records the source comparison that the second-stage
+    absolute cumulative product is bounded entrywise by the supplied
+    `R_inv` majorant.  This closes the componentwise residual transfer to the
+    existing Corollary 14.6 interface; the normwise printed `κ₂(A)^{1/2}`
+    endpoint remains a separate open norm/Cholesky aggregation step. -/
+theorem gje_spd_residual_of_cumulative_product_certificates
+    (n : ℕ) (fp : FPModel)
+    (A R_hat R_inv : Fin n → Fin n → ℝ)
+    (b y x_hat : Fin n → ℝ)
+    (N_hat DeltaN : Fin n → Fin n → Fin n → ℝ)
+    (start : ℕ)
+    (hSPD : IsSymPosDef n A)
+    (hLU : LUBackwardError n A (fun i j => R_hat j i) R_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hnpos : 1 ≤ n)
+    (hn3 : gammaValid fp 3)
+    (hidx : ∀ r : Fin (n - 1),
+      start + ((n - 1) - 1 - r.val) < n)
+    (hDelta : ∀ r : Fin (n - 1), ∀ i j : Fin n,
+      |DeltaN (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j| ≤
+        gamma fp 3 *
+          |N_hat (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j|)
+    (hy : ∀ i : Fin n, ∑ j : Fin n, R_hat j i * y j = b i)
+    (hBackwardEq : ∀ i : Fin n,
+      ∑ j : Fin n,
+          (R_hat i j +
+            (matMul n
+                (gje_cumulative_product n
+                  (fun k a b => N_hat k a b + DeltaN k a b)
+                  start (start + (n - 1))) R_hat i j -
+              matMul n
+                (gje_cumulative_product n N_hat start (start + (n - 1)))
+                R_hat i j)) *
+            x_hat j =
+        y i +
+          (matMulVec n
+              (gje_cumulative_product n
+                (fun k a b => N_hat k a b + DeltaN k a b)
+                start (start + (n - 1))) y i -
+            matMulVec n
+              (gje_cumulative_product n N_hat start (start + (n - 1))) y i))
+    (hRinvDom : ∀ i j : Fin n,
+      |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+        start (start + (n - 1)) i j| ≤ |R_inv i j|) :
+    ∀ i : Fin n,
+      |b i - ∑ j : Fin n, A i j * x_hat j| ≤
+      gamma fp n * ∑ j : Fin n,
+        (∑ k : Fin n, |R_hat k i| * |R_hat k j|) * |x_hat j| +
+      gje_c₃ fp n * ∑ j : Fin n,
+        (∑ k₁ : Fin n, |R_hat k₁ i| *
+          (∑ k₂ : Fin n, |R_inv k₁ k₂| * |R_hat k₂ j|)) * |x_hat j| +
+      gje_c₃ fp n * ∑ k : Fin n, |R_hat k i| *
+        (∑ j : Fin n, |R_inv k j| * |y j|) := by
+  let X_abs : Fin n → Fin n → ℝ :=
+    gje_cumulative_product n (fun s a b => |N_hat s a b|)
+      start (start + (n - 1))
+  have hXdom : ∀ i j : Fin n, |X_abs i j| ≤ |R_inv i j| := by
+    intro i j
+    simpa [X_abs] using hRinvDom i j
+  have hc3 : 0 ≤ gje_c₃ fp n := gje_c3_nonneg fp n hnpos hn3
+  have hGen :
+      ∀ i : Fin n,
+        |b i - ∑ j : Fin n, A i j * x_hat j| ≤
+        gamma fp n * ∑ j : Fin n,
+          (∑ k : Fin n, |R_hat k i| * |R_hat k j|) * |x_hat j| +
+        gje_c₃ fp n * ∑ j : Fin n,
+          (∑ k₁ : Fin n, |R_hat k₁ i| *
+            (∑ k₂ : Fin n, |X_abs k₁ k₂| * |R_hat k₂ j|)) * |x_hat j| +
+        gje_c₃ fp n * ∑ k : Fin n, |R_hat k i| *
+          (∑ j : Fin n, |X_abs k j| * |y j|) := by
+    simpa [X_abs] using
+      gje_overall_residual_of_cumulative_product_certificates
+        n fp A (fun i j => R_hat j i) R_hat b y x_hat
+        N_hat DeltaN start hLU hn hnpos hn3 hidx hDelta hy hBackwardEq
+  have hResidual :
+      ∀ i : Fin n,
+        |b i - ∑ j : Fin n, A i j * x_hat j| ≤
+        gamma fp n * ∑ j : Fin n,
+          (∑ k : Fin n, |R_hat k i| * |R_hat k j|) * |x_hat j| +
+        gje_c₃ fp n * ∑ j : Fin n,
+          (∑ k₁ : Fin n, |R_hat k₁ i| *
+            (∑ k₂ : Fin n, |R_inv k₁ k₂| * |R_hat k₂ j|)) * |x_hat j| +
+        gje_c₃ fp n * ∑ k : Fin n, |R_hat k i| *
+          (∑ j : Fin n, |R_inv k j| * |y j|) := by
+    intro i
+    let T1 : ℝ :=
+      gamma fp n * ∑ j : Fin n,
+        (∑ k : Fin n, |R_hat k i| * |R_hat k j|) * |x_hat j|
+    let T2X : ℝ :=
+      gje_c₃ fp n * ∑ j : Fin n,
+        (∑ k₁ : Fin n, |R_hat k₁ i| *
+          (∑ k₂ : Fin n, |X_abs k₁ k₂| * |R_hat k₂ j|)) * |x_hat j|
+    let T2R : ℝ :=
+      gje_c₃ fp n * ∑ j : Fin n,
+        (∑ k₁ : Fin n, |R_hat k₁ i| *
+          (∑ k₂ : Fin n, |R_inv k₁ k₂| * |R_hat k₂ j|)) * |x_hat j|
+    let T3X : ℝ :=
+      gje_c₃ fp n * ∑ k : Fin n, |R_hat k i| *
+        (∑ j : Fin n, |X_abs k j| * |y j|)
+    let T3R : ℝ :=
+      gje_c₃ fp n * ∑ k : Fin n, |R_hat k i| *
+        (∑ j : Fin n, |R_inv k j| * |y j|)
+    have hT2 : T2X ≤ T2R := by
+      dsimp [T2X, T2R]
+      apply mul_le_mul_of_nonneg_left _ hc3
+      apply Finset.sum_le_sum
+      intro j _
+      apply mul_le_mul_of_nonneg_right _ (abs_nonneg _)
+      apply Finset.sum_le_sum
+      intro k₁ _
+      apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+      apply Finset.sum_le_sum
+      intro k₂ _
+      exact mul_le_mul_of_nonneg_right (hXdom k₁ k₂) (abs_nonneg _)
+    have hT3 : T3X ≤ T3R := by
+      dsimp [T3X, T3R]
+      apply mul_le_mul_of_nonneg_left _ hc3
+      apply Finset.sum_le_sum
+      intro k _
+      apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+      apply Finset.sum_le_sum
+      intro j _
+      exact mul_le_mul_of_nonneg_right (hXdom k j) (abs_nonneg _)
+    calc
+      |b i - ∑ j : Fin n, A i j * x_hat j| ≤ T1 + T2X + T3X := by
+        simpa [T1, T2X, T3X] using hGen i
+      _ ≤ T1 + T2R + T3X := by
+        linarith
+      _ ≤ T1 + T2R + T3R := by
+        linarith
+      _ = gamma fp n * ∑ j : Fin n,
+            (∑ k : Fin n, |R_hat k i| * |R_hat k j|) * |x_hat j| +
+          gje_c₃ fp n * ∑ j : Fin n,
+            (∑ k₁ : Fin n, |R_hat k₁ i| *
+              (∑ k₂ : Fin n, |R_inv k₁ k₂| * |R_hat k₂ j|)) * |x_hat j| +
+          gje_c₃ fp n * ∑ k : Fin n, |R_hat k i| *
+          (∑ j : Fin n, |R_inv k j| * |y j|) := by
+        rfl
+  exact gje_spd_residual n fp A R_hat R_inv b y x_hat hSPD hn hn3 hLU hResidual
+
+/-- **Corollary 14.6 componentwise forward-error certificate route**.
+
+    This is the forward-error companion to
+    `gje_spd_residual_of_cumulative_product_certificates`.  It specializes the
+    proved Theorem 14.5 cumulative-product forward-error route to the SPD/GJE
+    shape `L_hat = R_hatᵀ`, `U_hat = R_hat`, and uses the explicit
+    `hRinvDom` majorization certificate to replace the second-stage absolute
+    cumulative product by the supplied `R_inv` entrywise majorant.  The
+    source normwise `κ₂(A)^{1/2}` endpoint remains a separate norm/Cholesky
+    aggregation step. -/
+theorem gje_spd_forward_error_of_cumulative_product_certificates
+    (n : ℕ) (fp : FPModel)
+    (A A_inv R_hat R_inv : Fin n → Fin n → ℝ)
+    (b y x x_hat : Fin n → ℝ)
+    (N_hat DeltaN : Fin n → Fin n → Fin n → ℝ)
+    (start : ℕ)
+    (_hSPD : IsSymPosDef n A)
+    (hLU : LUBackwardError n A (fun i j => R_hat j i) R_hat (gamma fp n))
+    (hAinv : IsLeftInverse n A A_inv)
+    (hn : gammaValid fp n)
+    (hnpos : 1 ≤ n)
+    (hn3 : gammaValid fp 3)
+    (hidx : ∀ r : Fin (n - 1),
+      start + ((n - 1) - 1 - r.val) < n)
+    (hDelta : ∀ r : Fin (n - 1), ∀ i j : Fin n,
+      |DeltaN (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j| ≤
+        gamma fp 3 *
+          |N_hat (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j|)
+    (hy : ∀ i : Fin n, ∑ j : Fin n, R_hat j i * y j = b i)
+    (hExact : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i)
+    (hBackwardEq : ∀ i : Fin n,
+      ∑ j : Fin n,
+          (R_hat i j +
+            (matMul n
+                (gje_cumulative_product n
+                  (fun k a b => N_hat k a b + DeltaN k a b)
+                  start (start + (n - 1))) R_hat i j -
+              matMul n
+                (gje_cumulative_product n N_hat start (start + (n - 1)))
+                R_hat i j)) *
+            x_hat j =
+        y i +
+          (matMulVec n
+              (gje_cumulative_product n
+                (fun k a b => N_hat k a b + DeltaN k a b)
+                start (start + (n - 1))) y i -
+            matMulVec n
+              (gje_cumulative_product n N_hat start (start + (n - 1))) y i))
+    (hRinvDom : ∀ i j : Fin n,
+      |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+        start (start + (n - 1)) i j| ≤ |R_inv i j|) :
+    ∀ i : Fin n,
+      |x i - x_hat i| ≤
+      ∑ j : Fin n, |A_inv i j| *
+        (gamma fp n * ∑ k : Fin n,
+          (∑ l : Fin n, |R_hat l j| * |R_hat l k|) * |x_hat k| +
+        gje_c₃ fp n * ∑ k : Fin n,
+          (∑ k₁ : Fin n, |R_hat k₁ j| *
+            (∑ k₂ : Fin n, |R_inv k₁ k₂| * |R_hat k₂ k|)) * |x_hat k| +
+        gje_c₃ fp n * ∑ l : Fin n, |R_hat l j| *
+          (∑ k : Fin n, |R_inv l k| * |y k|)) := by
+  let X_abs : Fin n → Fin n → ℝ :=
+    gje_cumulative_product n (fun s a b => |N_hat s a b|)
+      start (start + (n - 1))
+  have hXdom : ∀ i j : Fin n, |X_abs i j| ≤ |R_inv i j| := by
+    intro i j
+    simpa [X_abs] using hRinvDom i j
+  have hc3 : 0 ≤ gje_c₃ fp n := gje_c3_nonneg fp n hnpos hn3
+  have hGen :
+      ∀ i : Fin n,
+        |x i - x_hat i| ≤
+        ∑ j : Fin n, |A_inv i j| *
+          (gamma fp n * ∑ k : Fin n,
+            (∑ l : Fin n, |R_hat l j| * |R_hat l k|) * |x_hat k| +
+          gje_c₃ fp n * ∑ k : Fin n,
+            (∑ k₁ : Fin n, |R_hat k₁ j| *
+              (∑ k₂ : Fin n, |X_abs k₁ k₂| * |R_hat k₂ k|)) * |x_hat k| +
+          gje_c₃ fp n * ∑ l : Fin n, |R_hat l j| *
+            (∑ k : Fin n, |X_abs l k| * |y k|)) := by
+    simpa [X_abs] using
+      gje_overall_forward_error_of_cumulative_product_certificates
+        n fp A A_inv (fun i j => R_hat j i) R_hat b y x x_hat
+        N_hat DeltaN start hLU hAinv hn hnpos hn3 hidx hDelta hy hExact hBackwardEq
+  intro i
+  calc
+    |x i - x_hat i| ≤
+        ∑ j : Fin n, |A_inv i j| *
+          (gamma fp n * ∑ k : Fin n,
+            (∑ l : Fin n, |R_hat l j| * |R_hat l k|) * |x_hat k| +
+          gje_c₃ fp n * ∑ k : Fin n,
+            (∑ k₁ : Fin n, |R_hat k₁ j| *
+              (∑ k₂ : Fin n, |X_abs k₁ k₂| * |R_hat k₂ k|)) * |x_hat k| +
+          gje_c₃ fp n * ∑ l : Fin n, |R_hat l j| *
+            (∑ k : Fin n, |X_abs l k| * |y k|)) := hGen i
+    _ ≤ ∑ j : Fin n, |A_inv i j| *
+        (gamma fp n * ∑ k : Fin n,
+          (∑ l : Fin n, |R_hat l j| * |R_hat l k|) * |x_hat k| +
+        gje_c₃ fp n * ∑ k : Fin n,
+          (∑ k₁ : Fin n, |R_hat k₁ j| *
+            (∑ k₂ : Fin n, |R_inv k₁ k₂| * |R_hat k₂ k|)) * |x_hat k| +
+        gje_c₃ fp n * ∑ l : Fin n, |R_hat l j| *
+          (∑ k : Fin n, |R_inv l k| * |y k|)) := by
+      apply Finset.sum_le_sum
+      intro j _
+      apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+      let T1 : ℝ :=
+        gamma fp n * ∑ k : Fin n,
+          (∑ l : Fin n, |R_hat l j| * |R_hat l k|) * |x_hat k|
+      let T2X : ℝ :=
+        gje_c₃ fp n * ∑ k : Fin n,
+          (∑ k₁ : Fin n, |R_hat k₁ j| *
+            (∑ k₂ : Fin n, |X_abs k₁ k₂| * |R_hat k₂ k|)) * |x_hat k|
+      let T2R : ℝ :=
+        gje_c₃ fp n * ∑ k : Fin n,
+          (∑ k₁ : Fin n, |R_hat k₁ j| *
+            (∑ k₂ : Fin n, |R_inv k₁ k₂| * |R_hat k₂ k|)) * |x_hat k|
+      let T3X : ℝ :=
+        gje_c₃ fp n * ∑ l : Fin n, |R_hat l j| *
+          (∑ k : Fin n, |X_abs l k| * |y k|)
+      let T3R : ℝ :=
+        gje_c₃ fp n * ∑ l : Fin n, |R_hat l j| *
+          (∑ k : Fin n, |R_inv l k| * |y k|)
+      have hT2 : T2X ≤ T2R := by
+        dsimp [T2X, T2R]
+        apply mul_le_mul_of_nonneg_left _ hc3
+        apply Finset.sum_le_sum
+        intro k _
+        apply mul_le_mul_of_nonneg_right _ (abs_nonneg _)
+        apply Finset.sum_le_sum
+        intro k₁ _
+        apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+        apply Finset.sum_le_sum
+        intro k₂ _
+        exact mul_le_mul_of_nonneg_right (hXdom k₁ k₂) (abs_nonneg _)
+      have hT3 : T3X ≤ T3R := by
+        dsimp [T3X, T3R]
+        apply mul_le_mul_of_nonneg_left _ hc3
+        apply Finset.sum_le_sum
+        intro l _
+        apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+        apply Finset.sum_le_sum
+        intro k _
+        exact mul_le_mul_of_nonneg_right (hXdom l k) (abs_nonneg _)
+      change T1 + T2X + T3X ≤ T1 + T2R + T3R
+      linarith
 
 end LeanFpAnalysis.FP

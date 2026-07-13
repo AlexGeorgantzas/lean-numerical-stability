@@ -6324,6 +6324,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check gje_c3_eq_linear_plus_quadratic_remainder
 #check gje_c3_quadratic_remainder
 #check gje_c3_eq_linear_plus_quadratic_remainder_term
+#check gje_c3_le_three_n_u_plus_quadratic_remainder
+#check gje_c3_nonneg
 #check gje_one_add_pow_sub_one_le_nat_mul_pred
 #check gje_one_add_gamma_three_pow_sub_one_le_c3
 #check GJEStage2Spec
@@ -6354,6 +6356,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check gje_overall_residual
 #check gje_overall_forward_error
 #check gje_spd_residual
+#check gje_spd_residual_of_cumulative_product_certificates
+#check gje_spd_forward_error_of_cumulative_product_certificates
 #check lu_solve_backward_error_factor_gamma
 #check methodA_column_backward_error_factor_bound
 #check methodA_column_backward_error_computed_inverse_factor_bound
@@ -6469,6 +6473,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget
 #check higham14_eq14_23_methodD_left_residual_bound_of_local_certificates
 #check higham14_eq14_23_methodD_left_residual_infNorm_of_local_certificates
+#check higham14_eq14_23_methodD_left_residual_infNorm_product_of_local_certificates
 #check higham14_eq14_23_methodD_left_residual_bound
 #check higham14_rowNorm2
 #check higham14_rowNormDiagonal

@@ -5538,6 +5538,8 @@ composition wrappers:
 - `gje_c3_eq_linear_plus_quadratic_remainder`
 - `gje_c3_quadratic_remainder`
 - `gje_c3_eq_linear_plus_quadratic_remainder_term`
+- `gje_c3_le_three_n_u_plus_quadratic_remainder`
+- `gje_c3_nonneg`
 - `gje_one_add_pow_sub_one_le_nat_mul_pred`
 - `gje_one_add_gamma_three_pow_sub_one_le_c3`
 - `GJEStage2Spec`
@@ -5568,6 +5570,8 @@ composition wrappers:
 - `gje_overall_residual`
 - `gje_overall_forward_error`
 - `gje_spd_residual`
+- `gje_spd_residual_of_cumulative_product_certificates`
+- `gje_spd_forward_error_of_cumulative_product_certificates`
 
 Chapter 14 exact algebra closures in `Algorithms/MatrixInversion.lean` include
 the (14.3) bounded-replacement forward-error layer, Problem 14.3, the explicit
@@ -5692,6 +5696,7 @@ and Problem 14.10:
 - `higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget`
 - `higham14_eq14_23_methodD_left_residual_bound_of_local_certificates`
 - `higham14_eq14_23_methodD_left_residual_infNorm_of_local_certificates`
+- `higham14_eq14_23_methodD_left_residual_infNorm_product_of_local_certificates`
 - `higham14_eq14_23_methodD_left_residual_bound`
 - `higham14_rowNorm2`
 - `higham14_rowNormDiagonal`
