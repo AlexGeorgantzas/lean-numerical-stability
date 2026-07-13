@@ -2966,4 +2966,96 @@ theorem gje_rowDiagDominantUpper_forward_error_relative_infNorm_of_cumulative_pr
           field_simp [hxpos.ne']
   simpa [e, B] using hFinal
 
+/-- **Corollary 14.7 conditional infinity-norm forward-error route, kappa form**.
+
+    This is the source-facing condition-number wrapper for
+    `gje_rowDiagDominantUpper_forward_error_relative_infNorm_of_cumulative_product_certificates_c3_cap`.
+    It rewrites the raw `infNorm A_inv * infNorm A` amplification as
+    `kappaInf n _ A A_inv`, leaving the same explicit certificate and
+    aggregation hypotheses. -/
+theorem gje_rowDiagDominantUpper_forward_error_relative_infNorm_kappaInf_of_cumulative_product_certificates_c3_cap
+    (n : ℕ) (fp : FPModel)
+    (A A_inv L_hat U_hat : Fin n → Fin n → ℝ)
+    (b y x x_hat : Fin n → ℝ)
+    (N_hat DeltaN : Fin n → Fin n → Fin n → ℝ)
+    (start : ℕ)
+    (hLUExact : LUFactSpec n A L_hat U_hat)
+    (hAinv : IsLeftInverse n A A_inv)
+    (hURow : higham8_8_rowDiagDominantUpper n U_hat)
+    (hn : gammaValid fp n)
+    (hnpos : 1 ≤ n)
+    (hn3 : gammaValid fp 3)
+    (hidx : ∀ r : Fin (n - 1),
+      start + ((n - 1) - 1 - r.val) < n)
+    (hDelta : ∀ r : Fin (n - 1), ∀ i j : Fin n,
+      |DeltaN (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j| ≤
+        gamma fp 3 *
+          |N_hat (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j|)
+    (hy : ∀ i : Fin n, ∑ j : Fin n, L_hat i j * y j = b i)
+    (hExact : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i)
+    (hBackwardEq : ∀ i : Fin n,
+      ∑ j : Fin n,
+          (U_hat i j +
+            (matMul n
+                (gje_cumulative_product n
+                  (fun k a b => N_hat k a b + DeltaN k a b)
+                  start (start + (n - 1))) U_hat i j -
+              matMul n
+                (gje_cumulative_product n N_hat start (start + (n - 1)))
+                U_hat i j)) *
+            x_hat j =
+        y i +
+          (matMulVec n
+              (gje_cumulative_product n
+                (fun k a b => N_hat k a b + DeltaN k a b)
+                start (start + (n - 1))) y i -
+            matMulVec n
+              (gje_cumulative_product n N_hat start (start + (n - 1))) y i))
+    (hUinvDom : ∀ i j : Fin n,
+      |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+        start (start + (n - 1)) i j| ≤ |nonsingInv n U_hat i j|)
+    (beta eta : ℝ)
+    (hApos : 0 < infNorm A)
+    (hxhatpos : 0 < infNormVec x_hat)
+    (hxpos : 0 < infNormVec x)
+    (hbeta : 0 ≤ beta)
+    (heta : 0 ≤ eta)
+    (hSecondU_x : ∀ i : Fin n,
+      ∑ j : Fin n,
+        (∑ k₁ : Fin n, |L_hat i k₁| *
+          (∑ k₂ : Fin n,
+            |nonsingInv n U_hat k₁ k₂| * |U_hat k₂ j|)) * |x_hat j| ≤
+      beta * infNorm A * infNormVec x_hat)
+    (hSecondU_y : ∀ i : Fin n,
+      ∑ k : Fin n, |L_hat i k| *
+        (∑ j : Fin n, |nonsingInv n U_hat k j| * |y j|) ≤
+      eta * infNorm A * infNormVec x_hat) :
+    infNormVec (fun i : Fin n => x i - x_hat i) / infNormVec x ≤
+      kappaInf n (Nat.lt_of_lt_of_le Nat.zero_lt_one hnpos) A A_inv *
+        (gamma fp n * (2 * (n : ℝ) - 1) +
+          (3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n) *
+            (beta + eta)) *
+        (infNormVec x_hat / infNormVec x) := by
+  have hraw :=
+    gje_rowDiagDominantUpper_forward_error_relative_infNorm_of_cumulative_product_certificates_c3_cap
+      n fp A A_inv L_hat U_hat b y x x_hat N_hat DeltaN start
+      hLUExact hAinv hURow hn hnpos hn3 hidx hDelta hy hExact hBackwardEq hUinvDom
+      beta eta hApos hxhatpos hxpos hbeta heta hSecondU_x hSecondU_y
+  calc
+    infNormVec (fun i : Fin n => x i - x_hat i) / infNormVec x ≤
+        infNorm A_inv * infNorm A *
+          (gamma fp n * (2 * (n : ℝ) - 1) +
+            (3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n) *
+              (beta + eta)) *
+          (infNormVec x_hat / infNormVec x) := hraw
+    _ =
+        kappaInf n (Nat.lt_of_lt_of_le Nat.zero_lt_one hnpos) A A_inv *
+          (gamma fp n * (2 * (n : ℝ) - 1) +
+            (3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n) *
+              (beta + eta)) *
+          (infNormVec x_hat / infNormVec x) := by
+        rw [kappaInf_eq_infNorm_mul_infNorm n
+          (Nat.lt_of_lt_of_le Nat.zero_lt_one hnpos) A A_inv]
+        ring
+
 end LeanFpAnalysis.FP
