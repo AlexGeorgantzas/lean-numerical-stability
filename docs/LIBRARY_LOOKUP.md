@@ -5583,7 +5583,8 @@ left-residual upper/diagonal edges, trailing-column split, strict-tail update an
 componentwise residual-budget dependency and printed-coefficient scalar
 simplification, the exact Hyman block identities
 (14.35)--(14.36), Problem 14.14 determinant support including the
-original-matrix perturbed determinant wrapper, and Problem 14.10:
+original-matrix perturbed determinant wrapper and diagonal-scaling transport,
+and Problem 14.10:
 
 - `inverseRightResidual`, `inverseLeftResidual`
 - `higham14_eq14_3_forward_error_bound_of_abs_Y_le`
@@ -5804,6 +5805,14 @@ original-matrix perturbed determinant wrapper, and Problem 14.10:
 - `higham14_problem14_14_hyman_det_original_of_upper_add_zero_diag`
 - `higham14_problem14_14_abs_det_original_of_upper_add_zero_diag`
 - `higham14_problem14_14_exists_deltaH_det_original_of_upper_add_zero_diag`
+- `higham14_problem14_14_diagonalSimilarity`
+- `higham14_problem14_14_diagonalUnscalePerturbation`
+- `higham14_problem14_14_diagonalSimilarity_apply`
+- `higham14_problem14_14_diagonalUnscalePerturbation_apply`
+- `higham14_problem14_14_det_diagonalSimilarity`
+- `higham14_problem14_14_unscaled_delta_bound_of_scaled`
+- `higham14_problem14_14_unscale_deltaH_det_of_diagonal_scaled_det`
+- `higham14_problem14_14_exists_deltaH_det_original_of_diagonal_scaled_upper_add_zero_diag`
 - `matrixEntryPerturb`
 - `higham14_problem14_10_det_entry_perturb_eq`
 - `higham14_problem14_10_det_entry_independent_of_adjugate_eq_zero`
