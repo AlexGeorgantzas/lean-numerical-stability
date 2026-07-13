@@ -5580,10 +5580,11 @@ Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence and 
 Problem 14.13's AM-GM, SVD norm, and determinant-product support bridges,
 Problem 14.15's scalar product-radius and top-index perturbation support, Method 2 structural
 left-residual upper/diagonal edges, trailing-column split, strict-tail update and gamma full-budget support, strict-tail rounded kernel packaging and normwise bridge, and off-diagonal update support, Method D's expanded
-componentwise residual-budget dependency and printed-coefficient scalar
-simplification, the exact Hyman block identities
+componentwise residual-budget dependency, printed-coefficient scalar
+simplification, and normwise local-certificate companion, the exact Hyman block identities
 (14.35)--(14.36), Problem 14.14 determinant support including the
-original-matrix perturbed determinant wrapper, and Problem 14.10:
+original-matrix perturbed determinant wrapper and diagonal-scaling transport,
+and Problem 14.10:
 
 - `inverseRightResidual`, `inverseLeftResidual`
 - `higham14_eq14_3_forward_error_bound_of_abs_Y_le`
@@ -5690,6 +5691,7 @@ original-matrix perturbed determinant wrapper, and Problem 14.10:
 - `higham14_methodD_abs_Xhat_le_scaled_abs_product`
 - `higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget`
 - `higham14_eq14_23_methodD_left_residual_bound_of_local_certificates`
+- `higham14_eq14_23_methodD_left_residual_infNorm_of_local_certificates`
 - `higham14_eq14_23_methodD_left_residual_bound`
 - `higham14_rowNorm2`
 - `higham14_rowNormDiagonal`
@@ -5804,6 +5806,16 @@ original-matrix perturbed determinant wrapper, and Problem 14.10:
 - `higham14_problem14_14_hyman_det_original_of_upper_add_zero_diag`
 - `higham14_problem14_14_abs_det_original_of_upper_add_zero_diag`
 - `higham14_problem14_14_exists_deltaH_det_original_of_upper_add_zero_diag`
+- `higham14_problem14_14_exists_deltaH_abs_det_original_of_upper_add_zero_diag`
+- `higham14_problem14_14_diagonalSimilarity`
+- `higham14_problem14_14_diagonalUnscalePerturbation`
+- `higham14_problem14_14_diagonalSimilarity_apply`
+- `higham14_problem14_14_diagonalUnscalePerturbation_apply`
+- `higham14_problem14_14_det_diagonalSimilarity`
+- `higham14_problem14_14_unscaled_delta_bound_of_scaled`
+- `higham14_problem14_14_unscale_deltaH_det_of_diagonal_scaled_det`
+- `higham14_problem14_14_exists_deltaH_det_original_of_diagonal_scaled_upper_add_zero_diag`
+- `higham14_problem14_14_exists_deltaH_abs_det_original_of_diagonal_scaled_upper_add_zero_diag`
 - `matrixEntryPerturb`
 - `higham14_problem14_10_det_entry_perturb_eq`
 - `higham14_problem14_10_det_entry_independent_of_adjugate_eq_zero`

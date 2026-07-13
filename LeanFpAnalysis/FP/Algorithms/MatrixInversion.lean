@@ -3254,6 +3254,70 @@ theorem higham14_eq14_23_methodD_left_residual_bound_of_local_certificates
   higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget
     fp A L_hat U_hat X_U X_L X_hat hLU hn hXL_res hXU_res hProd
 
+/-- Higham, 2nd ed., Chapter 14, equation (14.23), Method D:
+    normwise companion to the local-certificate residual route.
+
+    The componentwise `(4γ + 2γ^2)` envelope above implies the corresponding
+    infinity-norm bound with the two source absolute products retained. -/
+theorem higham14_eq14_23_methodD_left_residual_infNorm_of_local_certificates
+    (n : ℕ) (hn0 : 0 < n) (fp : FPModel)
+    (A L_hat U_hat X_U X_L X_hat : Fin n → Fin n → ℝ)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hXL_res : ∀ i j : Fin n,
+      |higham14_methodDXLLeftResidual X_L L_hat i j| ≤
+        gamma fp n * ∑ k : Fin n, |X_L i k| * |L_hat k j|)
+    (hXU_res : ∀ i j : Fin n,
+      |higham14_methodDXULeftResidual X_U U_hat i j| ≤
+        gamma fp n * ∑ k : Fin n, |X_U i k| * |U_hat k j|)
+    (hProd : MatProdError n X_hat (matMul n X_U X_L) (gamma fp n)
+      (fun i j => ∑ k : Fin n, |X_U i k| * |X_L k j|)) :
+    infNorm (fun i j : Fin n =>
+      ∑ k : Fin n, X_hat i k * A k j - if i = j then 1 else 0) ≤
+      (4 * gamma fp n + 2 * gamma fp n ^ 2) *
+        infNorm (matMul n (absMatrix n X_U) (absMatrix n X_L)) *
+          infNorm (matMul n (absMatrix n L_hat) (absMatrix n U_hat)) := by
+  let XUL := matMul n (absMatrix n X_U) (absMatrix n X_L)
+  let LU := matMul n (absMatrix n L_hat) (absMatrix n U_hat)
+  have hComp0 :=
+    higham14_eq14_23_methodD_left_residual_bound_of_local_certificates
+      n fp A L_hat U_hat X_U X_L X_hat hLU hn hXL_res hXU_res hProd
+  have hCoeff_nonneg : 0 ≤ 4 * gamma fp n + 2 * gamma fp n ^ 2 := by
+    have hγ : 0 ≤ gamma fp n := gamma_nonneg fp hn
+    nlinarith [sq_nonneg (gamma fp n)]
+  have hXUL_nonneg : ∀ i p : Fin n, 0 ≤ XUL i p := by
+    intro i p
+    simp [XUL, matMul, absMatrix,
+      Finset.sum_nonneg, mul_nonneg, abs_nonneg]
+  have hLU_nonneg : ∀ p j : Fin n, 0 ≤ LU p j := by
+    intro p j
+    simp [LU, matMul, absMatrix,
+      Finset.sum_nonneg, mul_nonneg, abs_nonneg]
+  have hComp : ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * A k j - if i = j then 1 else 0| ≤
+        (4 * gamma fp n + 2 * gamma fp n ^ 2) *
+          ∑ p : Fin n, |XUL i p| * |LU p j| := by
+    intro i j
+    calc
+      |∑ k : Fin n, X_hat i k * A k j - if i = j then 1 else 0|
+          ≤ (4 * gamma fp n + 2 * gamma fp n ^ 2) *
+            ∑ p : Fin n,
+              (∑ q : Fin n, |X_U i q| * |X_L q p|) *
+                (∑ r : Fin n, |L_hat p r| * |U_hat r j|) := hComp0 i j
+      _ = (4 * gamma fp n + 2 * gamma fp n ^ 2) *
+            ∑ p : Fin n, |XUL i p| * |LU p j| := by
+          congr 1
+          apply Finset.sum_congr rfl
+          intro p _
+          rw [abs_of_nonneg (hXUL_nonneg i p),
+            abs_of_nonneg (hLU_nonneg p j)]
+          rfl
+  simpa [XUL, LU] using
+    higham14_infNorm_le_of_componentwise_matmul_bound hn0
+      (R := fun i j : Fin n =>
+        ∑ k : Fin n, X_hat i k * A k j - if i = j then 1 else 0)
+      (A := XUL) (B := LU) hCoeff_nonneg hComp
+
 /-- **Abstract Method D left residual interface** (Higham eq. 14.20–14.23).
 
     Method D: compute X_L ≈ L⁻¹ and X_U ≈ U⁻¹ separately,
@@ -8203,6 +8267,39 @@ theorem higham14_problem14_14_exists_deltaH_det_original_of_upper_add_zero_diag
       (H + DeltaH) T DeltaT TpertInv y h η gammaT σ
       hBlock hTupper hDeltaTDiag hDeltaTBound hTpertInv
 
+/-- Problem 14.14 absolute-value backward-error target for Hyman's method.
+    This is the existential `DeltaH` companion to the signed determinant
+    package above. -/
+theorem higham14_problem14_14_exists_deltaH_abs_det_original_of_upper_add_zero_diag
+    {n : ℕ}
+    (H : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ)
+    (T DeltaT TpertInv : Matrix (Fin n) (Fin n) ℝ)
+    (y h : Fin n → ℝ) (η gammaT gammaH : ℝ)
+    (σ : Equiv.Perm (Fin n ⊕ Unit))
+    (hDeltaHCert :
+      ∃ DeltaH : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ,
+        (∀ i j, |DeltaH i j| ≤ gammaH * |H i j|) ∧
+        higham14_hymanBlockMatrix (T + DeltaT) y h η =
+          Matrix.submatrix (H + DeltaH) σ (Equiv.refl (Fin n ⊕ Unit)))
+    (hTupper : T.BlockTriangular id)
+    (hDeltaTDiag : ∀ i : Fin n, DeltaT i i = 0)
+    (hDeltaTBound : ∀ i j : Fin n, |DeltaT i j| ≤ gammaT * |T i j|)
+    (hTpertInv : IsLeftInverse n (T + DeltaT) TpertInv) :
+    ∃ DeltaH : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ,
+      (∀ i j, |DeltaH i j| ≤ gammaH * |H i j|) ∧
+      |Matrix.det (H + DeltaH)| =
+        |Matrix.det T| * |higham14_hymanSchur h y TpertInv η| := by
+  rcases
+    higham14_problem14_14_exists_deltaH_det_original_of_upper_add_zero_diag
+      H T DeltaT TpertInv y h η gammaT gammaH σ hDeltaHCert
+      hTupper hDeltaTDiag hDeltaTBound hTpertInv
+    with ⟨DeltaH, hDeltaHBound, hdet⟩
+  refine ⟨DeltaH, hDeltaHBound, ?_⟩
+  have hsign_abs : |(Equiv.Perm.sign σ : ℝ)| = 1 := by
+    rcases Int.units_eq_one_or (Equiv.Perm.sign σ) with hsign | hsign <;>
+      simp [hsign]
+  rw [hdet, abs_mul, abs_mul, hsign_abs, one_mul]
+
 /-- Problem 14.14 support: diagonal similarity used to model the optional
     scaling of Hyman's Hessenberg matrix. -/
 noncomputable def higham14_problem14_14_diagonalSimilarity
@@ -8371,6 +8468,42 @@ theorem higham14_problem14_14_exists_deltaH_det_original_of_diagonal_scaled_uppe
       ((Equiv.Perm.sign σ : ℝ) *
         Matrix.det T * higham14_hymanSchur h y TpertInv η)
       hd hHscaled hDeltaHscaled hdetScaled
+
+/-- Absolute-value form of the diagonally scaled Problem 14.14 Hyman
+    backward-error target. -/
+theorem higham14_problem14_14_exists_deltaH_abs_det_original_of_diagonal_scaled_upper_add_zero_diag
+    {n : ℕ}
+    (H Hscaled : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ)
+    (d : Fin n ⊕ Unit → ℝ)
+    (T DeltaT TpertInv : Matrix (Fin n) (Fin n) ℝ)
+    (y h : Fin n → ℝ) (η gammaT gammaH : ℝ)
+    (σ : Equiv.Perm (Fin n ⊕ Unit))
+    (hd : ∀ i : Fin n ⊕ Unit, d i ≠ 0)
+    (hHscaled : Hscaled = higham14_problem14_14_diagonalSimilarity d H)
+    (hDeltaHScaledCert :
+      ∃ DeltaHscaled : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ,
+        (∀ i j, |DeltaHscaled i j| ≤ gammaH * |Hscaled i j|) ∧
+        higham14_hymanBlockMatrix (T + DeltaT) y h η =
+          Matrix.submatrix (Hscaled + DeltaHscaled) σ (Equiv.refl (Fin n ⊕ Unit)))
+    (hTupper : T.BlockTriangular id)
+    (hDeltaTDiag : ∀ i : Fin n, DeltaT i i = 0)
+    (hDeltaTBound : ∀ i j : Fin n, |DeltaT i j| ≤ gammaT * |T i j|)
+    (hTpertInv : IsLeftInverse n (T + DeltaT) TpertInv) :
+    ∃ DeltaH : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ,
+      (∀ i j, |DeltaH i j| ≤ gammaH * |H i j|) ∧
+      |Matrix.det (H + DeltaH)| =
+        |Matrix.det T| * |higham14_hymanSchur h y TpertInv η| := by
+  rcases
+    higham14_problem14_14_exists_deltaH_det_original_of_diagonal_scaled_upper_add_zero_diag
+      H Hscaled d T DeltaT TpertInv y h η gammaT gammaH σ
+      hd hHscaled hDeltaHScaledCert hTupper hDeltaTDiag hDeltaTBound
+      hTpertInv
+    with ⟨DeltaH, hDeltaHBound, hdet⟩
+  refine ⟨DeltaH, hDeltaHBound, ?_⟩
+  have hsign_abs : |(Equiv.Perm.sign σ : ℝ)| = 1 := by
+    rcases Int.units_eq_one_or (Equiv.Perm.sign σ) with hsign | hsign <;>
+      simp [hsign]
+  rw [hdet, abs_mul, abs_mul, hsign_abs, one_mul]
 
 /-! ### Problem 14.8: complex inverse via a real block matrix -/
 
