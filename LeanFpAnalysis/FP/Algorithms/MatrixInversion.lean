@@ -1343,6 +1343,30 @@ structure BlockMethod1BSpec (fp : FPModel) (n N : ℕ)
     ∀ i, ∑ k : Fin n, (L i k + ΔL i k) * X_hat k j =
       if i = j then 1 else 0
 
+/-- **Method 1B row-to-column assembly** (Higham eqs. 14.11--14.13 support).
+
+    If each row of a fixed computed column has its own local backward-error
+    row certificate, assemble those rows into the full matrix perturbation
+    certificate expected by `BlockMethod1BSpec.column_backward_error`. -/
+theorem triInv_method1B_column_backward_error_of_row_certificates
+    (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ) (j : Fin n)
+    (hRows : ∀ i : Fin n, ∃ Δrow : Fin n → ℝ,
+      (∀ k : Fin n, |Δrow k| ≤ gamma fp n * |L i k|) ∧
+      ∑ k : Fin n, (L i k + Δrow k) * X_hat k j =
+        if i = j then 1 else 0) :
+    ∃ ΔL : Fin n → Fin n → ℝ,
+      (∀ i k : Fin n, |ΔL i k| ≤ gamma fp n * |L i k|) ∧
+      ∀ i : Fin n, ∑ k : Fin n, (L i k + ΔL i k) * X_hat k j =
+        if i = j then 1 else 0 := by
+  classical
+  let ΔL : Fin n → Fin n → ℝ := fun i k => Classical.choose (hRows i) k
+  refine ⟨ΔL, ?_, ?_⟩
+  · intro i k
+    simpa [ΔL] using (Classical.choose_spec (hRows i)).1 k
+  · intro i
+    simpa [ΔL] using (Classical.choose_spec (hRows i)).2
+
 /-- **Method 1B specification from column backward errors** (Higham eqs.
     14.11--14.13 support).
 
@@ -1364,6 +1388,26 @@ theorem triInv_method1B_spec_of_column_backward_error
   { block_count_le_dim := hBlockCount
     lower_triangular_inverse := hLower
     column_backward_error := hCol }
+
+/-- **Method 1B specification from row-local certificates** (Higham eqs.
+    14.11--14.13 support).
+
+    This bridge reduces the open block-loop obligation to row-local
+    backward-error certificates for each computed column. -/
+theorem triInv_method1B_spec_of_row_certificates
+    (n N : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hBlockCount : N ≤ n)
+    (hLower : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0)
+    (hRows : ∀ j i : Fin n, ∃ Δrow : Fin n → ℝ,
+      (∀ k : Fin n, |Δrow k| ≤ gamma fp n * |L i k|) ∧
+      ∑ k : Fin n, (L i k + Δrow k) * X_hat k j =
+        if i = j then 1 else 0) :
+    BlockMethod1BSpec fp n N L X_hat :=
+  triInv_method1B_spec_of_column_backward_error n N fp L X_hat
+    hBlockCount hLower
+    (fun j => triInv_method1B_column_backward_error_of_row_certificates
+      n fp L X_hat j (hRows j))
 
 /-- **Lemma 14.2** (Higham eq. 14.10): Method 1B right residual.
 
@@ -1446,6 +1490,32 @@ theorem triInv_method1B_right_residual_of_column_backward_error
     (triInv_method1B_spec_of_column_backward_error n N fp L X_hat
       hBlockCount hLower hCol)
 
+/-- **Lemma 14.2 bridge**: Method 1B right residual from row-local
+    backward-error certificates.
+
+    This is a row-local companion to
+    `triInv_method1B_right_residual_of_column_backward_error`; the remaining
+    source obligation is to derive the row certificates from the block Method
+    1B update loop. -/
+theorem triInv_method1B_right_residual_of_row_certificates
+    (n N : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hn : gammaValid fp n)
+    (hBlockCount : N ≤ n)
+    (hLower : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0)
+    (hRows : ∀ j i : Fin n, ∃ Δrow : Fin n → ℝ,
+      (∀ k : Fin n, |Δrow k| ≤ gamma fp n * |L i k|) ∧
+      ∑ k : Fin n, (L i k + Δrow k) * X_hat k j =
+        if i = j then 1 else 0) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, L i k * X_hat k j - if i = j then 1 else 0| ≤
+      gamma fp n * ∑ k : Fin n, |L i k| * |X_hat k j| :=
+  triInv_method1B_right_residual_from_spec n N fp L X_hat hL_diag hLT hn
+    (triInv_method1B_spec_of_row_certificates n N fp L X_hat
+      hBlockCount hLower hRows)
+
 /-- Problem 14.2 / Lemma 14.2 normwise form:
     Method 1B's componentwise right-residual bound implies the corresponding
     infinity-norm residual bound. -/
@@ -1511,6 +1581,35 @@ theorem triInv_method1B_right_residual_normwise_of_column_backward_error
     hL_diag hLT hn
     (triInv_method1B_spec_of_column_backward_error n N fp L X_hat
       hBlockCount hLower hCol)
+
+/-- Problem 14.2 / Lemma 14.2 normwise bridge:
+    Method 1B's row-local backward-error certificates imply the corresponding
+    infinity-norm right-residual bound after assembling the rows into the
+    column-certificate interface.
+
+    This is the normwise companion of
+    `triInv_method1B_right_residual_of_row_certificates`; the open source
+    obligation is still to derive the row certificates from the block Method
+    1B loop in equations (14.11)--(14.13). -/
+theorem triInv_method1B_right_residual_normwise_of_row_certificates
+    (n N : ℕ) (hn0 : 0 < n) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hn : gammaValid fp n)
+    (hBlockCount : N ≤ n)
+    (hLower : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0)
+    (hRows : ∀ j i : Fin n, ∃ Δrow : Fin n → ℝ,
+      (∀ k : Fin n, |Δrow k| ≤ gamma fp n * |L i k|) ∧
+      ∑ k : Fin n, (L i k + Δrow k) * X_hat k j =
+        if i = j then 1 else 0) :
+    infNorm (fun i j =>
+      ∑ k : Fin n, L i k * X_hat k j - if i = j then 1 else 0) ≤
+      gamma fp n * infNorm L * infNorm X_hat :=
+  triInv_method1B_right_residual_normwise_from_spec n N hn0 fp L X_hat
+    hL_diag hLT hn
+    (triInv_method1B_spec_of_row_certificates n N fp L X_hat
+      hBlockCount hLower hRows)
 
 /-- Exact off-diagonal block used in Higham equation (14.14), Method 2B:
     `-X22 * L21 * X11`.  Here `L21` is the lower-left rectangular block, and
@@ -1603,6 +1702,101 @@ theorem higham14_eq14_14_method2B_block_update_spec_of_product_error {m r : ℕ}
   delta_bound :=
     higham14_eq14_14_method2B_block_update_delta_bound
       X21_hat X22 L21 X11 ε absBound hBound
+
+/-- Higham equation (14.14), Method 2B residual identity:
+    the off-diagonal left-residual block
+    `X21_hat * L11 + X22 * L21` is exactly the block-update perturbation
+    propagated through `L11`, provided `X11 * L11 = I`.
+
+    This isolates the algebraic hinge used by the instability discussion:
+    even if the block update has a local product-error certificate, that
+    perturbation is subsequently multiplied by `L11` in the residual. -/
+theorem higham14_eq14_14_method2B_offdiag_residual_eq_delta_mul {m r : ℕ}
+    (L11 X11 : Fin m → Fin m → ℝ)
+    (X21_hat : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (ε : ℝ) (absBound : Fin r → Fin m → ℝ)
+    (hSpec : Method2BBlockUpdateSpec X21_hat X22 L21 X11 ε absBound)
+    (hX11_left : IsLeftInverse m L11 X11) :
+    ∀ i : Fin r, ∀ j : Fin m,
+      rectMatMul X21_hat L11 i j + rectMatMul X22 L21 i j =
+        rectMatMul
+          (higham14_method2BBlockUpdateDelta X21_hat X22 L21 X11)
+          L11 i j := by
+  intro i j
+  let Δ := higham14_method2BBlockUpdateDelta X21_hat X22 L21 X11
+  let E := higham14_method2BBlockUpdateExact X22 L21 X11
+  have hX21 : X21_hat = fun a b => E a b + Δ a b := by
+    ext a b
+    exact hSpec.update_decomposition a b
+  have hX11L11 : rectMatMul X11 L11 = idMatrix m := by
+    ext a b
+    exact hX11_left a b
+  have hE_mul :
+      rectMatMul E L11 = fun a b => -rectMatMul X22 L21 a b := by
+    unfold E higham14_method2BBlockUpdateExact
+    calc
+      rectMatMul (fun a b => -rectMatMul (rectMatMul X22 L21) X11 a b) L11
+          = fun a b =>
+              -rectMatMul (rectMatMul (rectMatMul X22 L21) X11) L11 a b := by
+            exact rectMatMul_neg_left (rectMatMul (rectMatMul X22 L21) X11) L11
+      _ = fun a b =>
+              -rectMatMul (rectMatMul X22 L21) (rectMatMul X11 L11) a b := by
+            rw [rectMatMul_assoc (rectMatMul X22 L21) X11 L11]
+      _ = fun a b =>
+              -rectMatMul (rectMatMul X22 L21) (idMatrix m) a b := by
+            rw [hX11L11]
+      _ = fun a b => -rectMatMul X22 L21 a b := by
+            rw [rectMatMul_id_right (rectMatMul X22 L21)]
+  have hX21_mul :
+      rectMatMul X21_hat L11 i j =
+        rectMatMul E L11 i j + rectMatMul Δ L11 i j := by
+    calc
+      rectMatMul X21_hat L11 i j =
+          rectMatMul (fun a b => E a b + Δ a b) L11 i j := by
+            rw [hX21]
+      _ = rectMatMul E L11 i j + rectMatMul Δ L11 i j := by
+            rw [rectMatMul_add_left E Δ L11]
+  calc
+    rectMatMul X21_hat L11 i j + rectMatMul X22 L21 i j
+        = (rectMatMul E L11 i j + rectMatMul Δ L11 i j) +
+            rectMatMul X22 L21 i j := by rw [hX21_mul]
+    _ = (-rectMatMul X22 L21 i j + rectMatMul Δ L11 i j) +
+            rectMatMul X22 L21 i j := by rw [hE_mul]
+    _ = rectMatMul Δ L11 i j := by ring
+
+/-- Higham equation (14.14), Method 2B obstruction wrapper:
+    if the propagated block-update perturbation is larger than a proposed
+    off-diagonal residual budget in one entry, then the whole off-diagonal
+    residual block cannot satisfy that budget.
+
+    This is a source-facing obstruction hinge, not the full instability
+    theorem: the large propagated-delta hypothesis still has to be established
+    for a concrete Method 2B instance. -/
+theorem higham14_eq14_14_method2B_no_small_offdiag_residual_of_propagated_delta
+    {m r : ℕ}
+    (L11 X11 : Fin m → Fin m → ℝ)
+    (X21_hat : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (ε : ℝ) (absBound sourceBudget : Fin r → Fin m → ℝ)
+    (hSpec : Method2BBlockUpdateSpec X21_hat X22 L21 X11 ε absBound)
+    (hX11_left : IsLeftInverse m L11 X11)
+    {i0 : Fin r} {j0 : Fin m}
+    (hLarge :
+      sourceBudget i0 j0 <
+        |rectMatMul
+          (higham14_method2BBlockUpdateDelta X21_hat X22 L21 X11)
+          L11 i0 j0|) :
+    ¬ (∀ i : Fin r, ∀ j : Fin m,
+      |rectMatMul X21_hat L11 i j + rectMatMul X22 L21 i j| ≤
+        sourceBudget i j) := by
+  intro hSmall
+  have hId :=
+    higham14_eq14_14_method2B_offdiag_residual_eq_delta_mul
+      L11 X11 X21_hat X22 L21 ε absBound hSpec hX11_left i0 j0
+  have hEntry := hSmall i0 j0
+  rw [hId] at hEntry
+  exact not_lt_of_ge hEntry hLarge
 
 /-- Exact Method 2B off-diagonal block formula from the block equation
     `X21 * L11 + X22 * L21 = 0` and the diagonal-block inverse certificate
@@ -7875,6 +8069,139 @@ theorem higham14_eq14_36_hyman_det_original_of_row_permutation {n : ℕ}
     _ = (Equiv.Perm.sign σ : ℝ) *
           Matrix.det T * higham14_hymanSchur h y Tinv η := by
           ring
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.14, Appendix A:
+    exact determinant hinge used in the Hyman backward-error proof.  If `T`
+    is upper triangular, `DeltaT` has zero diagonal, and the componentwise
+    bound `|DeltaT| <= gamma |T|` holds, then the bound forces `DeltaT` to
+    have zero entries below the diagonal, so `T + DeltaT` has the same
+    triangular determinant product as `T`. -/
+theorem higham14_problem14_14_det_upper_add_zero_diag_of_abs_bound {n : ℕ}
+    (T DeltaT : Matrix (Fin n) (Fin n) ℝ) (gamma : ℝ)
+    (hTupper : T.BlockTriangular id)
+    (hDeltaDiag : ∀ i : Fin n, DeltaT i i = 0)
+    (hDeltaBound : ∀ i j : Fin n, |DeltaT i j| ≤ gamma * |T i j|) :
+    Matrix.det (T + DeltaT) = Matrix.det T := by
+  have hDeltaLower : ∀ i j : Fin n, j < i → DeltaT i j = 0 := by
+    intro i j hji
+    have hTij : T i j = 0 := hTupper hji
+    have hbound := hDeltaBound i j
+    rw [hTij, abs_zero, mul_zero] at hbound
+    exact abs_eq_zero.mp (le_antisymm hbound (abs_nonneg _))
+  have hUpperSum : (T + DeltaT).BlockTriangular id := by
+    intro i j hji
+    simp [Matrix.add_apply, hTupper hji, hDeltaLower i j hji]
+  rw [Matrix.det_of_upperTriangular hUpperSum, Matrix.det_of_upperTriangular hTupper]
+  apply Finset.prod_congr rfl
+  intro i _
+  simp [Matrix.add_apply, hDeltaDiag i]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.14, Appendix A:
+    exact Hyman determinant wrapper after perturbing the triangular solve
+    block.  The determinant-invariance hinge above keeps the factor `det T`
+    even though the Hyman block uses `T + DeltaT` and its inverse certificate. -/
+theorem higham14_problem14_14_hyman_det_cyclic_block_of_upper_add_zero_diag
+    {n : ℕ}
+    (T DeltaT TpertInv : Matrix (Fin n) (Fin n) ℝ)
+    (y h : Fin n → ℝ) (η gamma : ℝ)
+    (hTupper : T.BlockTriangular id)
+    (hDeltaDiag : ∀ i : Fin n, DeltaT i i = 0)
+    (hDeltaBound : ∀ i j : Fin n, |DeltaT i j| ≤ gamma * |T i j|)
+    (hTpertInv : IsLeftInverse n (T + DeltaT) TpertInv) :
+    Matrix.det (higham14_hymanBlockMatrix (T + DeltaT) y h η) =
+      Matrix.det T * higham14_hymanSchur h y TpertInv η := by
+  rw [higham14_eq14_36_hyman_det_cyclic_block
+    (T + DeltaT) TpertInv y h η hTpertInv]
+  rw [higham14_problem14_14_det_upper_add_zero_diag_of_abs_bound
+    T DeltaT gamma hTupper hDeltaDiag hDeltaBound]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.14, Appendix A:
+    original-matrix Hyman determinant wrapper after perturbing the triangular
+    solve block.  This combines the perturbed cyclic-block determinant formula
+    with the signed row-permutation wrapper for the original Hessenberg matrix. -/
+theorem higham14_problem14_14_hyman_det_original_of_upper_add_zero_diag
+    {n : ℕ}
+    (H : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ)
+    (T DeltaT TpertInv : Matrix (Fin n) (Fin n) ℝ)
+    (y h : Fin n → ℝ) (η gamma : ℝ)
+    (σ : Equiv.Perm (Fin n ⊕ Unit))
+    (hH :
+      higham14_hymanBlockMatrix (T + DeltaT) y h η =
+        Matrix.submatrix H σ (Equiv.refl (Fin n ⊕ Unit)))
+    (hTupper : T.BlockTriangular id)
+    (hDeltaDiag : ∀ i : Fin n, DeltaT i i = 0)
+    (hDeltaBound : ∀ i j : Fin n, |DeltaT i j| ≤ gamma * |T i j|)
+    (hTpertInv : IsLeftInverse n (T + DeltaT) TpertInv) :
+    Matrix.det H =
+      (Equiv.Perm.sign σ : ℝ) *
+        Matrix.det T * higham14_hymanSchur h y TpertInv η := by
+  have horig :=
+    higham14_eq14_36_hyman_det_original_of_row_permutation
+      H (T + DeltaT) TpertInv y h η σ hH hTpertInv
+  have hdet :
+      Matrix.det (T + DeltaT) = Matrix.det T :=
+    higham14_problem14_14_det_upper_add_zero_diag_of_abs_bound
+      T DeltaT gamma hTupper hDeltaDiag hDeltaBound
+  simpa [hdet] using horig
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.14, Appendix A:
+    absolute-value form of the perturbed original-matrix Hyman determinant
+    wrapper.  The row-permutation sign disappears from the magnitude bound. -/
+theorem higham14_problem14_14_abs_det_original_of_upper_add_zero_diag
+    {n : ℕ}
+    (H : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ)
+    (T DeltaT TpertInv : Matrix (Fin n) (Fin n) ℝ)
+    (y h : Fin n → ℝ) (η gamma : ℝ)
+    (σ : Equiv.Perm (Fin n ⊕ Unit))
+    (hH :
+      higham14_hymanBlockMatrix (T + DeltaT) y h η =
+        Matrix.submatrix H σ (Equiv.refl (Fin n ⊕ Unit)))
+    (hTupper : T.BlockTriangular id)
+    (hDeltaDiag : ∀ i : Fin n, DeltaT i i = 0)
+    (hDeltaBound : ∀ i j : Fin n, |DeltaT i j| ≤ gamma * |T i j|)
+    (hTpertInv : IsLeftInverse n (T + DeltaT) TpertInv) :
+    |Matrix.det H| =
+      |Matrix.det T| * |higham14_hymanSchur h y TpertInv η| := by
+  have hdet :=
+    higham14_problem14_14_hyman_det_original_of_upper_add_zero_diag
+      H T DeltaT TpertInv y h η gamma σ hH hTupper hDeltaDiag hDeltaBound
+      hTpertInv
+  have hsign_abs : |(Equiv.Perm.sign σ : ℝ)| = 1 := by
+    rcases Int.units_eq_one_or (Equiv.Perm.sign σ) with hsign | hsign <;>
+      simp [hsign]
+  rw [hdet, abs_mul, abs_mul, hsign_abs, one_mul]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.14, Appendix A:
+    packaged original-matrix backward-error target for Hyman's method.  Once a
+    later floating-point analysis supplies a componentwise-bounded `DeltaH`
+    whose permuted block is the perturbed Hyman block, the exact determinant
+    statement follows from the determinant wrappers above. -/
+theorem higham14_problem14_14_exists_deltaH_det_original_of_upper_add_zero_diag
+    {n : ℕ}
+    (H : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ)
+    (T DeltaT TpertInv : Matrix (Fin n) (Fin n) ℝ)
+    (y h : Fin n → ℝ) (η gammaT gammaH : ℝ)
+    (σ : Equiv.Perm (Fin n ⊕ Unit))
+    (hDeltaHCert :
+      ∃ DeltaH : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ,
+        (∀ i j, |DeltaH i j| ≤ gammaH * |H i j|) ∧
+        higham14_hymanBlockMatrix (T + DeltaT) y h η =
+          Matrix.submatrix (H + DeltaH) σ (Equiv.refl (Fin n ⊕ Unit)))
+    (hTupper : T.BlockTriangular id)
+    (hDeltaTDiag : ∀ i : Fin n, DeltaT i i = 0)
+    (hDeltaTBound : ∀ i j : Fin n, |DeltaT i j| ≤ gammaT * |T i j|)
+    (hTpertInv : IsLeftInverse n (T + DeltaT) TpertInv) :
+    ∃ DeltaH : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ,
+      (∀ i j, |DeltaH i j| ≤ gammaH * |H i j|) ∧
+      Matrix.det (H + DeltaH) =
+        (Equiv.Perm.sign σ : ℝ) *
+          Matrix.det T * higham14_hymanSchur h y TpertInv η := by
+  rcases hDeltaHCert with ⟨DeltaH, hDeltaHBound, hBlock⟩
+  refine ⟨DeltaH, hDeltaHBound, ?_⟩
+  exact
+    higham14_problem14_14_hyman_det_original_of_upper_add_zero_diag
+      (H + DeltaH) T DeltaT TpertInv y h η gammaT σ
+      hBlock hTupper hDeltaTDiag hDeltaTBound hTpertInv
 
 /-! ### Problem 14.8: complex inverse via a real block matrix -/
 
