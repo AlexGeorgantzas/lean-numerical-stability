@@ -35,11 +35,6 @@ Each *derives* a per-step/loop hypothesis Codex had left assumed (verified: `der
 | **Lemma 14.3** — Method 2C block left residual | **PARTIAL** | `Ch14Method2C.lean` — base + Higham's 2-block reduction, deriving the residual from block update + back-substitution error. **Residual:** the outer N-block recursion (N>2). |
 | **Lemma 14.2** / (14.10)–(14.13) — Method 1B block right residual | **PARTIAL** | `Ch14BlockTriInverse.lean` — derives the row-local certificates from the two-block partition (Higham's reduced case, p.265). **Residual:** the general N-block loop (N>2). |
 
-## Remaining open (documented residuals)
-
-- **Corollaries 14.6 (SPD) / 14.7 (row-dominant)** depend on the Theorem 14.5 overall endpoint (see wave 3).
-- The N-block induction for **Lemma 14.2** (Method 1B) — Lemma 14.3 (Method 2C) is now whole-matrix (wave 3).
-
 ## Wave 3 — dependent deep tail
 
 | Row | Status | Module / result |
@@ -48,7 +43,16 @@ Each *derives* a per-step/loop hypothesis Codex had left assumed (verified: `der
 | **Theorem 14.5** / (14.27)–(14.32) | **PARTIAL (accumulation closed)** | `Ch14GaussJordanAccumulation.lean` — the multi-stage accumulation (14.27)/(14.28) is closed **unconditionally** (Duhamel telescoping of the wave-2 per-step Δ_k with the `(1+γ₃)` growth envelope → `gje_c3·\|X\|\|·\|`). Endpoints (14.31)/(14.32) reached via `gje_overall_residual`/`_forward_error` in `gje_c3` form. **Residuals:** Higham's own WLOG `D=I` normalization; the cumulative-product inverse `Q=(∏N̂)⁻¹` supplied as data (constructible as the reverse product of `N̂ₖ⁻¹=I+n̂ₖeₖᵀ`); the printed `8nu`/`2nu` = `gje_c3` + GE first-stage budget (scalar audit). The wave-2 obstruction (column-dependent rounding ⇏ single j-independent `DeltaN`) is confirmed and honored — the additive accumulation route was used. |
 | **Method D (14.20)–(14.23)** | **PARTIAL** | `Ch14MethodDLeftResidual.lean` — the printed `(4γ+2γ²)` componentwise + normwise left-residual envelope (14.23) derived at arbitrary ε (removes Codex's hardcoded accumulator). **Residual:** three local certificates (notably the upper-triangular-inverse left residual `\|X_U U − I\|`) — genuine inputs to Higham's Method D analysis, not smuggled. |
 
+## Wave 4 — Corollaries 14.6 / 14.7 + Method D completion
+
+| Row | Status | Module / result |
+|---|---|---|
+| **Corollary 14.6** (SPD GJE residual + forward stability) | **PARTIAL (cores derived)** | `Ch14GaussJordanSPDCorollary.lean` — derived the **spectral Cholesky identity** `‖RᵀR‖₂ = ‖R‖₂²` (closing a step the codebase had flagged *open* at `HighamChapter10:970`), discharged the α/β/η SPD norm-aggregations via the Lemma 6.6 operator-2 chain, and derived the residual + forward-stability bounds with the printed **κ₂ leading constant derived**. **Residual:** the literal `8n³u·κ₂^{1/2}` constant is blocked by a 3-factor-vs-2-factor structure inherited from the accumulation surrogate (β/η stay a scale-dependent additive remainder), the entrywise `\|Rinv\|` majorant vs `opNorm2`, and exact-Cholesky idealization (`+O(u²)`). |
+| **Corollary 14.7** (row diagonally dominant GJE) | **PARTIAL (cores derived)** | `Ch14Corollary147.lean` — **fully derived** the two row-dominant control facts: `cond_∞(U) = ‖\|U⁻¹\|\|U\|‖_∞ ≤ 2n−1` (Lemma 8.8 repackaged) and the `\|L\|\|U\|` bound for A=LU row-dominant. **Residual:** the printed (14.31)/(14.32) leading-order bounds are wired as hypotheses rather than to the accumulation endpoint. |
+| **Method D** upper-triangular-inverse certificate | **PARTIAL (chief target closed)** | `Ch14MethodDUpperCertificate.lean` — **derived unconditionally** the upper-triangular-inverse left residual `\|X_U U − I\| ≤ γ_{n+2}\|X_U\|\|U\|` via a **reversal-conjugation bridge** `U ↦ JUJ` (`J=Fin.rev`; the naive transpose lands in the wrong residual slot), discharging Method D's chief local certificate. **Residual:** two standard upstream FP inputs (LU backward error = Thm 9.3, fl-matmul error) remain as hypotheses — both proven elsewhere in the repo, wireable. |
+
 ## Notes
 
-- Chapter 14 was co-owned with a concurrent Codex agent, now stopped; wave 1 took the independent rows, wave 2 the deep GJE-cluster cores, wave 3 the dependent deep tail (accumulation, whole-matrix Method 2C, Method D envelope).
-- **Closed primary labels (Claude):** (14.3), Lemma 14.1, **Lemma 14.3**, Algorithm 14.4, (14.14), Problems 14.14 & 14.15. **Advanced with derived cores + documented residuals:** Theorem 14.5, Lemma 14.2, Method D.
+- Chapter 14 was co-owned with a concurrent Codex agent, now stopped; wave 1 took the independent rows, waves 2–4 the deep GJE-cluster cores + corollaries.
+- **Closed primary labels / rows (Claude):** (14.3), (14.14), **Lemma 14.1**, **Lemma 14.3** (whole-matrix), **Algorithm 14.4** (spec), Problems 14.14 & 14.15; plus the unconditional Theorem 14.5 per-step (14.25)/(14.26) and multi-stage accumulation (14.27)/(14.28); the Method D (14.23) envelope + its upper-tri certificate; the spectral Cholesky identity and the Cor 14.7 `cond(U)≤2n−1` control fact.
+- **Advanced with derived cores + documented residuals (not literal-constant closure):** Theorem 14.5 overall endpoints (14.31)–(14.33), Corollary 14.6, Corollary 14.7, Method D whole-matrix, Lemma 14.2 (Method 1B, 2-block). The residuals are consistently: Higham's own WLOG `D=I`, a constructible cumulative-product inverse, the printed integer-constant scalar audits, wireable upstream FP certificates, and the Method 1B N-block induction.
