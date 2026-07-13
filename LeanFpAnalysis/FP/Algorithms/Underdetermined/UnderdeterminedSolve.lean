@@ -8112,6 +8112,55 @@ theorem higham21_theorem21_4_forwardSub_transpose_triangular_solve_backward_erro
   · intro i
     simpa [DeltaR, L, matTranspose, matMulVec] using hsolve i
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    triangular-solve handoff into the exact Q-method minimum-norm theorem.
+    The rounded solve of `R_hat^T y = b` supplies a perturbation `DeltaR`;
+    if the perturbed transpose factor is nonsingular, then the formed
+    Q-method vector is the exact minimum-norm solution for the corresponding
+    perturbed QR-coordinate system.
+
+    This is not the full row-wise backward-stability theorem: it isolates the
+    remaining nonsingularity and row-wise perturbation obligations from the
+    already proved triangular-solve backward-error certificate. -/
+theorem higham21_theorem21_4_forwardSub_q_method_min_norm_handoff
+    {m k : ℕ} (fp : FPModel)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R_hat : Fin m → Fin m → ℝ) (b : Fin m → ℝ)
+    (hdiag : ∀ i : Fin m, R_hat i i ≠ 0)
+    (hupper : IsUpperTrapezoidal m m R_hat)
+    (hvalid : gammaValid fp m) :
+    ∃ DeltaR : Fin m → Fin m → ℝ,
+      (∀ i j, |DeltaR i j| ≤ gamma fp m * |R_hat i j|) ∧
+      (∀ i,
+        matMulVec m (matTranspose (fun a b => R_hat a b + DeltaR a b))
+          (fl_forwardSub fp m (matTranspose R_hat) b) i = b i) ∧
+      (Matrix.det
+          (matTranspose (fun a b => R_hat a b + DeltaR a b) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0 →
+        RectMinNormSolution m (m + k)
+          (finiteTranspose
+            (matMulRectLeft Q
+              (lsQRTallBlock (k := k) (fun a b => R_hat a b + DeltaR a b))))
+          b
+          (matMulVec (m + k) Q
+            (Fin.append
+              (fl_forwardSub fp m (matTranspose R_hat) b)
+              (0 : Fin k → ℝ)))) := by
+  obtain ⟨DeltaR, hDeltaR, hsolve⟩ :=
+    higham21_theorem21_4_forwardSub_transpose_triangular_solve_backward_error
+      fp m R_hat b hdiag hupper hvalid
+  refine ⟨DeltaR, hDeltaR, hsolve, ?_⟩
+  intro hdetT
+  let Rpert : Fin m → Fin m → ℝ := fun a b => R_hat a b + DeltaR a b
+  let y1 : Fin m → ℝ := fl_forwardSub fp m (matTranspose R_hat) b
+  have hy1 : (fun j : Fin m => ∑ i : Fin m, Rpert i j * y1 i) = b := by
+    ext j
+    simpa [Rpert, y1, matMulVec, matTranspose] using hsolve j
+  exact
+    higham21_eq21_3_q_method_min_norm_of_qr_det_ne_zero
+      Q hQ Rpert b y1 hdetT hy1
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
     algebraic difference form of the computed final `Q` action.  If
     `x_hat = (Q + DeltaQ)[y1;0]`, then its difference from the exact
