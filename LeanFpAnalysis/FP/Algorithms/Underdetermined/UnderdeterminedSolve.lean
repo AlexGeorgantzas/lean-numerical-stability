@@ -8421,6 +8421,68 @@ theorem higham21_theorem21_4_forwardSub_rowwise_backward_error_handoff_of_gammaV
       R_hat DeltaR hdiag hupper (gamma_lt_one fp m hvalid2) hDeltaR
   exact ⟨DeltaR, hDeltaR, hsolve, fun hsingle => hrowCond hdet hsingle⟩
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    common-perturbation specialization of the row-wise Q-method handoff.
+    Taking `DeltaA1 = DeltaA2 = DeltaA` reduces the Lemma 21.2 single
+    perturbation equality to the ordinary QR assembly equality
+    `A + DeltaA = (Q [R_hat + DeltaR; 0])^T`. -/
+theorem higham21_theorem21_4_forwardSub_single_perturbation_rowwise_backward_error_handoff_of_gammaValid2
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R_hat : Fin m → Fin m → ℝ) (b : Fin m → ℝ)
+    (hdiag : ∀ i : Fin m, R_hat i i ≠ 0)
+    (hupper : IsUpperTrapezoidal m m R_hat)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m))
+    (DeltaA : Fin m → Fin (m + k) → ℝ)
+    {eta : ℝ} (heta : 0 ≤ eta)
+    (hDeltaARow : ∀ i : Fin m,
+      rectRowNorm2 DeltaA i ≤ eta * rectRowNorm2 A i) :
+    ∃ DeltaR : Fin m → Fin m → ℝ,
+      (∀ i j, |DeltaR i j| ≤ gamma fp m * |R_hat i j|) ∧
+      (∀ i,
+        matMulVec m (matTranspose (fun a b => R_hat a b + DeltaR a b))
+          (fl_forwardSub fp m (matTranspose R_hat) b) i = b i) ∧
+      ((fun i j => A i j + DeltaA i j) =
+        finiteTranspose
+          (matMulRectLeft Q
+            (lsQRTallBlock (k := k)
+              (fun a b => R_hat a b + DeltaR a b))) →
+        UndetRowwiseBackwardErrorBounded m (m + k) A b
+          (matMulVec (m + k) Q
+            (Fin.append
+              (fl_forwardSub fp m (matTranspose R_hat) b)
+              (0 : Fin k → ℝ)))
+          (Real.sqrt 2 * eta)) := by
+  obtain ⟨DeltaR, hDeltaR, hsolve, hrowCond⟩ :=
+    higham21_theorem21_4_forwardSub_rowwise_backward_error_handoff_of_gammaValid2
+      fp A Q hQ R_hat b hdiag hupper hvalid hvalid2
+      DeltaA DeltaA heta hDeltaARow hDeltaARow
+  refine ⟨DeltaR, hDeltaR, hsolve, ?_⟩
+  intro hqr
+  apply hrowCond
+  let x_hat : Fin (m + k) → ℝ :=
+    matMulVec (m + k) Q
+      (Fin.append
+        (fl_forwardSub fp m (matTranspose R_hat) b)
+        (0 : Fin k → ℝ))
+  calc
+    (fun i j =>
+        A i j +
+          undetLemma21_2SinglePerturbation x_hat DeltaA DeltaA i j)
+        = (fun i j => A i j + DeltaA i j) := by
+          have hsame :=
+            higham21_lemma21_2_single_perturbation_same x_hat DeltaA
+          ext i j
+          rw [congrFun (congrFun hsame i) j]
+    _ =
+        finiteTranspose
+          (matMulRectLeft Q
+            (lsQRTallBlock (k := k)
+              (fun a b => R_hat a b + DeltaR a b))) := hqr
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
     algebraic difference form of the computed final `Q` action.  If
     `x_hat = (Q + DeltaQ)[y1;0]`, then its difference from the exact
