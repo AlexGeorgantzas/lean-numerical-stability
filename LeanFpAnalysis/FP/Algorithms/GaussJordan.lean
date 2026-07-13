@@ -3080,6 +3080,152 @@ noncomputable def gje_rowDiagDominantUpper_secondStageY_rowsumConstant
       (∑ j : Fin n, |nonsingInv n U_hat k j| * |y j|)) /
     (infNorm A * infNormVec x_hat)
 
+/-- **Corollary 14.7 conditional infinity-norm residual route, finite
+    row-sum aggregation form**.
+
+    This wrapper discharges the explicit `beta` and `eta` aggregation
+    hypotheses in the row-dominant residual theorem by using canonical finite
+    row-sum constants. It is the residual-side companion to the `kappaInf`
+    forward-error row-sum wrapper below. -/
+theorem gje_rowDiagDominantUpper_residual_relative_infNorm_rowsum_of_cumulative_product_certificates_c3_cap
+    (n : ℕ) (fp : FPModel)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b y x_hat : Fin n → ℝ)
+    (N_hat DeltaN : Fin n → Fin n → Fin n → ℝ)
+    (start : ℕ)
+    (hLUExact : LUFactSpec n A L_hat U_hat)
+    (hURow : higham8_8_rowDiagDominantUpper n U_hat)
+    (hn : gammaValid fp n)
+    (hnpos : 1 ≤ n)
+    (hn3 : gammaValid fp 3)
+    (hidx : ∀ r : Fin (n - 1),
+      start + ((n - 1) - 1 - r.val) < n)
+    (hDelta : ∀ r : Fin (n - 1), ∀ i j : Fin n,
+      |DeltaN (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j| ≤
+        gamma fp 3 *
+          |N_hat (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j|)
+    (hy : ∀ i : Fin n, ∑ j : Fin n, L_hat i j * y j = b i)
+    (hBackwardEq : ∀ i : Fin n,
+      ∑ j : Fin n,
+          (U_hat i j +
+            (matMul n
+                (gje_cumulative_product n
+                  (fun k a b => N_hat k a b + DeltaN k a b)
+                  start (start + (n - 1))) U_hat i j -
+              matMul n
+                (gje_cumulative_product n N_hat start (start + (n - 1)))
+                U_hat i j)) *
+            x_hat j =
+        y i +
+          (matMulVec n
+              (gje_cumulative_product n
+                (fun k a b => N_hat k a b + DeltaN k a b)
+                start (start + (n - 1))) y i -
+            matMulVec n
+              (gje_cumulative_product n N_hat start (start + (n - 1))) y i))
+    (hUinvDom : ∀ i j : Fin n,
+      |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+        start (start + (n - 1)) i j| ≤ |nonsingInv n U_hat i j|)
+    (hApos : 0 < infNorm A)
+    (hxhatpos : 0 < infNormVec x_hat) :
+    infNormVec (fun i : Fin n => b i - ∑ j : Fin n, A i j * x_hat j) /
+        (infNorm A * infNormVec x_hat) ≤
+      gamma fp n * (2 * (n : ℝ) - 1) +
+        (3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n) *
+          (gje_rowDiagDominantUpper_secondStageX_rowsumConstant
+              n A L_hat U_hat x_hat +
+            gje_rowDiagDominantUpper_secondStageY_rowsumConstant
+              n A L_hat U_hat x_hat y) := by
+  let beta : ℝ :=
+    gje_rowDiagDominantUpper_secondStageX_rowsumConstant n A L_hat U_hat x_hat
+  let eta : ℝ :=
+    gje_rowDiagDominantUpper_secondStageY_rowsumConstant n A L_hat U_hat x_hat y
+  let denom : ℝ := infNorm A * infNormVec x_hat
+  let Xrow : Fin n → ℝ := fun i =>
+    ∑ j : Fin n,
+      (∑ k₁ : Fin n, |L_hat i k₁| *
+        (∑ k₂ : Fin n,
+          |nonsingInv n U_hat k₁ k₂| * |U_hat k₂ j|)) * |x_hat j|
+  let Yrow : Fin n → ℝ := fun i =>
+    ∑ k : Fin n, |L_hat i k| *
+      (∑ j : Fin n, |nonsingInv n U_hat k j| * |y j|)
+  have hdenom_pos : 0 < denom := mul_pos hApos hxhatpos
+  have hXrow_nonneg : ∀ i : Fin n, 0 ≤ Xrow i := by
+    intro i
+    exact Finset.sum_nonneg (fun j _ =>
+      mul_nonneg
+        (Finset.sum_nonneg (fun k₁ _ =>
+          mul_nonneg (abs_nonneg _)
+            (Finset.sum_nonneg (fun k₂ _ =>
+              mul_nonneg (abs_nonneg _) (abs_nonneg _)))))
+        (abs_nonneg _))
+  have hYrow_nonneg : ∀ i : Fin n, 0 ≤ Yrow i := by
+    intro i
+    exact Finset.sum_nonneg (fun k _ =>
+      mul_nonneg (abs_nonneg _)
+        (Finset.sum_nonneg (fun j _ =>
+          mul_nonneg (abs_nonneg _) (abs_nonneg _))))
+  have hbeta_nonneg : 0 ≤ beta := by
+    have hsum : 0 ≤ ∑ i : Fin n, Xrow i :=
+      Finset.sum_nonneg (fun i _ => hXrow_nonneg i)
+    have hdiv : 0 ≤ (∑ i : Fin n, Xrow i) / denom :=
+      div_nonneg hsum hdenom_pos.le
+    simpa [beta, gje_rowDiagDominantUpper_secondStageX_rowsumConstant,
+      Xrow, denom] using hdiv
+  have heta_nonneg : 0 ≤ eta := by
+    have hsum : 0 ≤ ∑ i : Fin n, Yrow i :=
+      Finset.sum_nonneg (fun i _ => hYrow_nonneg i)
+    have hdiv : 0 ≤ (∑ i : Fin n, Yrow i) / denom :=
+      div_nonneg hsum hdenom_pos.le
+    simpa [eta, gje_rowDiagDominantUpper_secondStageY_rowsumConstant,
+      Yrow, denom] using hdiv
+  have hbeta_eq :
+      beta * infNorm A * infNormVec x_hat = ∑ i : Fin n, Xrow i := by
+    simp [beta, gje_rowDiagDominantUpper_secondStageX_rowsumConstant,
+      Xrow]
+    field_simp [hdenom_pos.ne']
+  have heta_eq :
+      eta * infNorm A * infNormVec x_hat = ∑ i : Fin n, Yrow i := by
+    simp [eta, gje_rowDiagDominantUpper_secondStageY_rowsumConstant,
+      Yrow]
+    field_simp [hdenom_pos.ne']
+  have hSecondU_x : ∀ i : Fin n,
+      ∑ j : Fin n,
+        (∑ k₁ : Fin n, |L_hat i k₁| *
+          (∑ k₂ : Fin n,
+            |nonsingInv n U_hat k₁ k₂| * |U_hat k₂ j|)) * |x_hat j| ≤
+      beta * infNorm A * infNormVec x_hat := by
+    intro i
+    calc
+      ∑ j : Fin n,
+          (∑ k₁ : Fin n, |L_hat i k₁| *
+            (∑ k₂ : Fin n,
+              |nonsingInv n U_hat k₁ k₂| * |U_hat k₂ j|)) * |x_hat j|
+          = Xrow i := rfl
+      _ ≤ ∑ r : Fin n, Xrow r :=
+          Finset.single_le_sum (fun r _ => hXrow_nonneg r) (Finset.mem_univ i)
+      _ = beta * infNorm A * infNormVec x_hat := by
+          rw [hbeta_eq]
+  have hSecondU_y : ∀ i : Fin n,
+      ∑ k : Fin n, |L_hat i k| *
+        (∑ j : Fin n, |nonsingInv n U_hat k j| * |y j|) ≤
+      eta * infNorm A * infNormVec x_hat := by
+    intro i
+    calc
+      ∑ k : Fin n, |L_hat i k| *
+          (∑ j : Fin n, |nonsingInv n U_hat k j| * |y j|)
+          = Yrow i := rfl
+      _ ≤ ∑ r : Fin n, Yrow r :=
+          Finset.single_le_sum (fun r _ => hYrow_nonneg r) (Finset.mem_univ i)
+      _ = eta * infNorm A * infNormVec x_hat := by
+          rw [heta_eq]
+  have hbase :=
+    gje_rowDiagDominantUpper_residual_relative_infNorm_of_cumulative_product_certificates_c3_cap
+      n fp A L_hat U_hat b y x_hat N_hat DeltaN start
+      hLUExact hURow hn hnpos hn3 hidx hDelta hy hBackwardEq hUinvDom
+      beta eta hApos hxhatpos hbeta_nonneg heta_nonneg hSecondU_x hSecondU_y
+  simpa [beta, eta] using hbase
+
 /-- **Corollary 14.7 conditional infinity-norm forward-error route, finite
     row-sum aggregation form**.
 
