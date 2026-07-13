@@ -65,6 +65,9 @@ import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyNonsym
 import LeanFpAnalysis.FP.Algorithms.IterativeRefinement
 import LeanFpAnalysis.FP.Algorithms.MatrixInversion
 import LeanFpAnalysis.FP.Algorithms.GaussJordan
+import LeanFpAnalysis.FP.Algorithms.Ch14ForwardErrorEndpoint
+import LeanFpAnalysis.FP.Algorithms.Chapter14Problem1415Weyl
+import LeanFpAnalysis.FP.Algorithms.Ch14HymanDeterminant
 import LeanFpAnalysis.FP.Algorithms.CondEstimation
 import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCond
 import LeanFpAnalysis.FP.Algorithms.PNormPowerMethod
