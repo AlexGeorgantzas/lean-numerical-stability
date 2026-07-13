@@ -29,6 +29,7 @@ assumptions remain open in the not-proved ledger below.
 |---|---|---|---|
 | Thm 11.8 Aasen growth-factor algebra bridges | `higham11_8_aasenGrowthBound_rhs_nonneg`, `higham11_8_aasenGrowthFactor_nonneg`, `higham11_8_aasenGrowthFactor_mul_Amax_eq`, `higham11_8_aasenGrowthBound_of_Tmax_le_printed_mul_Amax`, `higham11_8_Tmax_le_printed_mul_Amax_of_aasenGrowthBound` | Ch11 | **new this session**; records the elementary algebra around the printed growth-factor form `ρ_n = Tmax/Amax` and `ρ_n ≤ 4^(n-2)`, including nonnegativity, cancellation by a nonzero source scale, and both directions between the quotient predicate and the equivalent product bound when `Amax > 0`. This is a dependency bridge and does not close Theorem 11.8 by itself. |
 | Thm 11.8 Aasen growth-factor `∞`-norm bridges | `higham11_8_aasenGrowthFactor_infNorm_nonneg`, `higham11_8_aasenGrowthBound_of_infNorm_le_printed_mul_infNorm`, `higham11_8_infNorm_le_printed_mul_infNorm_of_aasenGrowthBound` | Ch11 | **new this session**; specializes the scalar growth-factor algebra to actual matrix infinity norms, using `infNorm_nonneg` and the positive source norm hypothesis to move between `infNorm T / infNorm A ≤ 4^(n-2)` and `infNorm T ≤ 4^(n-2) * infNorm A`. This is a dependency bridge toward source-shaped Aasen growth callers. |
+| Thm 11.8 exact-`T_hat` Aasen growth-factor `∞`-norm bridges | `higham11_8_aasenGrowthBound_of_T_hat_eq_T_and_infNorm_T_hat_le_printed_mul_infNorm`, `higham11_8_infNorm_T_hat_le_printed_mul_infNorm_of_T_hat_eq_T_and_aasenGrowthBound` | Ch11 | **new this session**; combines the exact-middle equality route `T_hat = T` with the printed infinity-norm growth predicate, moving from a computed-middle product cap to the exact-middle growth-bound predicate and back from that predicate to the computed-middle product cap. This is a dependency bridge for exact-`T_hat` Aasen callers and does not close Theorem 11.8 by itself. |
 | Thm 11.8 normalized componentwise/`T`-norm sigma-id inverse-entry aliases | `higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the normalized direct-middle and checkerboard componentwise-`T` / direct-`T`-norm inverse-entry endpoints to `σ := id`, discharging the identity-permutation proof by reflexivity while keeping the recurrence/nonzero-pivot hypotheses, `T_hat` comparison, componentwise or `T`-norm cap, middle-product/checkerboard certificate, inverse-entry cap, and rounded source-prefix update/budget facts explicit. |
 | Thm 11.8 componentwise/`T`-norm sigma-id inverse-entry aliases | `higham11_8_AasenSpec_id_source_prefix_componentwise_T_direct_middle_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_direct_middle_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_checkerboard_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_componentwise_T_checkerboard_endpoint_of_inverse_entry_bound`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the ordinary direct-middle and checkerboard componentwise-`T` / direct-`T`-norm inverse-entry endpoints to `σ := id`, discharging the identity-permutation proof by reflexivity while keeping the recurrence/nonzero-pivot hypotheses, `T_hat` comparison, componentwise or `T`-norm cap, middle-product/checkerboard certificate, inverse-entry cap, and rounded source-prefix update/budget facts explicit. |
 | Thm 11.8 normalized principal-block componentwise/`T`-norm sigma-id inverse-entry aliases | `higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the normalized checkerboard principal-block componentwise-`T` / direct-`T`-norm inverse-entry endpoints to `σ := id`, discharging the identity-permutation proof by reflexivity while keeping the recurrence/nonzero-pivot hypotheses, `T_hat` comparison, componentwise or `T`-norm cap, principal-block checkerboard certificate, inverse-entry cap, and rounded source-prefix update/budget facts explicit. |
@@ -4935,6 +4936,22 @@ Problem transcription.
     file, and tab scans over the touched files were clean. Target-build
     warnings are pre-existing upstream warnings from Chapter 9, Chapter 10,
     and `CholeskyFl`; no new Chapter 11 warning was emitted.
+  - 2026-07-13 Theorem 11.8 exact-`T_hat` Aasen growth-factor `∞`-norm
+    bridge increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused checks of
+    `higham11_8_aasenGrowthBound_of_T_hat_eq_T_and_infNorm_T_hat_le_printed_mul_infNorm`
+    and
+    `higham11_8_infNorm_T_hat_le_printed_mul_infNorm_of_T_hat_eq_T_and_aasenGrowthBound`
+    → elaborate; theorem dependencies
+    `[propext, Classical.choice, Quot.sound]`.
+    Hygiene checks `git diff --check`, placeholder scans for the changed Lean
+    file and added report lines, and tab scans over the touched files were
+    clean. Target-build warnings are pre-existing upstream warnings from
+    Chapter 9, Chapter 10, and `CholeskyFl`; no new Chapter 11 warning was
+    emitted.
   - 2026-07-11 Theorem 11.8 exact-`T_hat` sigma-id relative-middle alias
     increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
