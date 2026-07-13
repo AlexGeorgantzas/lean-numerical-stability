@@ -510,6 +510,8 @@
     higham13_algorithm13_3_matrixStages_product_eq_of_first_schur_tail_pivot_right_inverse_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos,
     higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos,
     higham13_algorithm13_3_matrixStages_product_eq_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos,
+    higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound_of_first_schur_tail_pivot_right_inverse_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos,
+    higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos,
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_continuousLinearMap_source_table,
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_continuousLinearMap_source_table_of_pivot_right_inverse,
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_initial_diag_right_inverse_of_pivot_right_inverse,
@@ -26243,6 +26245,107 @@ theorem
     (higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos
       hr A pivotInv invDiagBound hPrefix hDom hBound hPivot0 hTailDet
       hTailPivotInv).product_eq
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    product-bound witness form of the BDD first-tail right-inverse exact
+    matrix-stage reconstruction.
+
+    This packages the assembled `L,U` factors and product bound under the same
+    source-facing first-Schur-tail obligation as the BDD matrix-`∞` endpoint. -/
+theorem
+    higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound_of_first_schur_tail_pivot_right_inverse_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos
+    {m r : ℕ} (hr : 0 < r)
+    (A : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    {C_L C_U : ℝ}
+    (invDiagBound : Fin (m + 1) → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDom : IsBlockDiagDomCol (m + 1)
+      (fun i j : Fin (m + 1) => infNorm (A i j)) invDiagBound)
+    (hBound : ∀ j : Fin (m + 1), invDiagBound j ≤ 0)
+    (hPivot0 : pivotInv 0 =
+      nonsingInv r (A (0 : Fin (m + 1)) (0 : Fin (m + 1))))
+    (hTail : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv (k + 1)))
+    (hId : 1 ≤ C_L)
+    (hLower : ∀ i j : Fin (m + 1), j.val < i.val →
+      maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv j.val i j *
+            pivotInv j.val) ≤ C_L)
+    (hUpper :
+      blockMaxNorm (Nat.succ_pos m) hr
+          (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        C_U) :
+    ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec (m + 1) r A L U ∧
+        blockMaxNorm (Nat.succ_pos m) hr L * blockMaxNorm (Nat.succ_pos m) hr U ≤
+          C_L * C_U := by
+  exact
+    higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound
+      (Nat.succ_pos m) hr A pivotInv
+      (higham13_algorithm13_3_matrixStages_product_eq_of_first_schur_tail_pivot_right_inverse_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos
+        hr A pivotInv invDiagBound hPrefix hDom hBound hPivot0 hTail)
+      hId hLower hUpper
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    product-bound witness form of the BDD canonical-tail exact matrix-stage
+    reconstruction.
+
+    First-tail determinant nonzero facts plus the canonical `nonsingInv` table
+    supply the recursive active pivot certificates before the generic product
+    witness theorem is invoked. -/
+theorem
+    higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos
+    {m r : ℕ} (hr : 0 < r)
+    (A : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    {C_L C_U : ℝ}
+    (invDiagBound : Fin (m + 1) → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDom : IsBlockDiagDomCol (m + 1)
+      (fun i j : Fin (m + 1) => infNorm (A i j)) invDiagBound)
+    (hBound : ∀ j : Fin (m + 1), invDiagBound j ≤ 0)
+    (hPivot0 : pivotInv 0 =
+      nonsingInv r (A (0 : Fin (m + 1)) (0 : Fin (m + 1))))
+    (hTailDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hTailPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv (k + 1) =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) k
+            ⟨k, hk⟩ ⟨k, hk⟩))
+    (hId : 1 ≤ C_L)
+    (hLower : ∀ i j : Fin (m + 1), j.val < i.val →
+      maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv j.val i j *
+            pivotInv j.val) ≤ C_L)
+    (hUpper :
+      blockMaxNorm (Nat.succ_pos m) hr
+          (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        C_U) :
+    ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec (m + 1) r A L U ∧
+        blockMaxNorm (Nat.succ_pos m) hr L * blockMaxNorm (Nat.succ_pos m) hr U ≤
+          C_L * C_U := by
+  exact
+    higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound
+      (Nat.succ_pos m) hr A pivotInv
+      (higham13_algorithm13_3_matrixStages_product_eq_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos
+        hr A pivotInv invDiagBound hPrefix hDom hBound hPivot0 hTailDet
+        hTailPivotInv)
+      hId hLower hUpper
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equations (13.21),(13.23):
     positive-block-size form of the paired matrix-`∞` endpoint from initial
