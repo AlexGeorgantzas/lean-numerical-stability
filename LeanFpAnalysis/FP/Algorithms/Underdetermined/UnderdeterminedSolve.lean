@@ -8540,6 +8540,63 @@ theorem higham21_theorem21_4_qr_deltaR_assembly_eq
           (lsQRTallBlock (k := k)
             (fun i j => R_hat i j + DeltaR i j)) j i := hmulji
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    row-wise triangle-inequality adapter for assembling two perturbation
+    bounds against the same source matrix. -/
+theorem higham21_rectRowNorm2_add_le_of_row_bounds
+    {m n : ℕ}
+    (DeltaA DeltaB A : Fin m → Fin n → ℝ)
+    {etaA etaB : ℝ}
+    (hDeltaA : ∀ i : Fin m,
+      rectRowNorm2 DeltaA i ≤ etaA * rectRowNorm2 A i)
+    (hDeltaB : ∀ i : Fin m,
+      rectRowNorm2 DeltaB i ≤ etaB * rectRowNorm2 A i)
+    (i : Fin m) :
+    rectRowNorm2 (fun r c => DeltaA r c + DeltaB r c) i ≤
+      (etaA + etaB) * rectRowNorm2 A i := by
+  calc
+    rectRowNorm2 (fun r c => DeltaA r c + DeltaB r c) i
+        = vecNorm2 (fun j : Fin n => DeltaA i j + DeltaB i j) := rfl
+    _ ≤ vecNorm2 (fun j : Fin n => DeltaA i j) +
+          vecNorm2 (fun j : Fin n => DeltaB i j) := by
+          exact vecNorm2_add_le
+            (fun j : Fin n => DeltaA i j)
+            (fun j : Fin n => DeltaB i j)
+    _ = rectRowNorm2 DeltaA i + rectRowNorm2 DeltaB i := rfl
+    _ ≤ etaA * rectRowNorm2 A i + etaB * rectRowNorm2 A i := by
+          exact add_le_add (hDeltaA i) (hDeltaB i)
+    _ = (etaA + etaB) * rectRowNorm2 A i := by ring
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    once the QR perturbation and lifted triangular-solve perturbation are
+    bounded row-wise against `A`, their assembled common perturbation satisfies
+    the summed row-wise bound used by the Q-method proof. -/
+theorem higham21_theorem21_4_common_perturbation_row_bound_of_qr_and_lifted_bounds
+    {m k : ℕ}
+    (A DeltaA0 : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (DeltaR : Fin m → Fin m → ℝ)
+    {etaQR etaR : ℝ}
+    (hDeltaA0 : ∀ i : Fin m,
+      rectRowNorm2 DeltaA0 i ≤ etaQR * rectRowNorm2 A i)
+    (hDeltaR : ∀ i : Fin m,
+      rectRowNorm2
+        (finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR))) i ≤
+        etaR * rectRowNorm2 A i)
+    (i : Fin m) :
+    rectRowNorm2
+        (fun r c =>
+          DeltaA0 r c +
+            finiteTranspose
+              (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR)) r c) i ≤
+      (etaQR + etaR) * rectRowNorm2 A i :=
+  higham21_rectRowNorm2_add_le_of_row_bounds
+    DeltaA0
+    (finiteTranspose
+      (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR)))
+    A hDeltaA0 hDeltaR i
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
     algebraic difference form of the computed final `Q` action.  If
     `x_hat = (Q + DeltaQ)[y1;0]`, then its difference from the exact
