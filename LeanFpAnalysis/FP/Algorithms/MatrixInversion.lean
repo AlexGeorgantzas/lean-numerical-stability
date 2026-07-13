@@ -4626,6 +4626,39 @@ theorem triInv_method2_left_residual_of_strict_tail_storage
   exact triInv_method2_left_residual_from_region_bounds n L X_hat
     (gamma_nonneg fp hn2) hUpperRes hDiagBudget hLower
 
+/-- Problem 14.2 / Lemma 14.1 normwise bridge:
+    the strict-tail Method 2 storage recurrence implies the corresponding
+    infinity-norm left-residual bound.
+
+This is the normwise companion to
+`triInv_method2_left_residual_of_strict_tail_storage`.  It remains conditional
+on the source-facing storage recurrence `hStore`, so the concrete reverse-column
+loop proof producing that recurrence is still explicit. -/
+theorem triInv_method2_left_residual_normwise_of_strict_tail_storage
+    (n : ℕ) (hn0 : 0 < n) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn2 : gammaValid fp (n + 2))
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hDiag : ∀ j : Fin n, ∃ δ : ℝ, |δ| ≤ fp.u ∧
+      X_hat j j * L j j = 1 + δ)
+    (hUpper : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0)
+    (hStore : ∀ j row : Fin n, row.val > j.val →
+      X_hat row j =
+        fp.fl_mul (-X_hat j j)
+          (fl_dotProduct fp n
+            (fun k : Fin n => if j.val < k.val then X_hat row k else 0)
+            (fun k : Fin n => L k j))) :
+    infNorm (fun i j =>
+      ∑ k : Fin n, X_hat i k * L k j - if i = j then 1 else 0) ≤
+      gamma fp (n + 2) * infNorm X_hat * infNorm L := by
+  have hComp :=
+    triInv_method2_left_residual_of_strict_tail_storage
+      n fp L X_hat hn2 hLT hDiag hUpper hStore
+  exact higham14_infNorm_le_of_componentwise_matmul_bound hn0
+    (R := fun i j => ∑ k : Fin n, X_hat i k * L k j -
+      if i = j then 1 else 0)
+    (A := X_hat) (B := L) (gamma_nonneg fp hn2) hComp
+
 /-- Higham, 2nd ed., Chapter 14, Lemma 14.1 / equation (14.8), Method 2
     strict-tail kernel surface:
     a source-facing strict-tail dot/scalar kernel certificate implies the
