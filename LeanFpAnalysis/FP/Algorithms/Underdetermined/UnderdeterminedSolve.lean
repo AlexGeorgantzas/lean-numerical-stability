@@ -9068,6 +9068,35 @@ def Higham21QMethodTopBlockNonbreakdown
     (A : Fin m → Fin (m + k) → ℝ) : Prop :=
   lsTheorem20_4ComputedQRNonbreakdown fp (finiteTranspose A)
 
+theorem Higham21QMethodTopBlockNonbreakdown.of_topBlock_det_ne_zero
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (hdet :
+      Matrix.det
+        ((fun i j =>
+          fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+            (Fin.castAdd k i) j) : Matrix (Fin m) (Fin m) ℝ) ≠ 0) :
+    Higham21QMethodTopBlockNonbreakdown m k fp A := by
+  let R_top : Fin m → Fin m → ℝ :=
+    fun i j =>
+      fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+        (Fin.castAdd k i) j
+  have hupperTall :
+      IsUpperTrapezoidal (m + k) m
+        (fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)) :=
+    fl_householderQRPanel_R_upper_trapezoidal fp (m + k) m
+      (finiteTranspose A)
+  have hupperTop : ∀ i j : Fin m, j.val < i.val → R_top i j = 0 := by
+    simpa [R_top] using
+      lsQRTallBlock_top_upper_of_upper_trapezoidal
+        (fl_householderQRPanel_R fp (m + k) m (finiteTranspose A))
+        hupperTall
+  have hdiag : ∀ i : Fin m, R_top i i ≠ 0 :=
+    diag_ne_zero_of_upper_triangular_det_ne_zero m R_top hupperTop (by
+      simpa [R_top] using hdet)
+  simpa [Higham21QMethodTopBlockNonbreakdown,
+    lsTheorem20_4ComputedQRNonbreakdown, R_top] using hdiag
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
     source-facing concrete domain for the Q-method Householder path.  The
     printed full-row-rank condition for `A` is represented as full column rank
@@ -9172,6 +9201,40 @@ theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_householder_qr_
       (H19.Theorem19_4.householder_qr_backward_error
         fp (m + k) m (finiteTranspose A) hm (Nat.le_add_right m k) hvalidQR)
       hdiag hvalid hvalid2
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    determinant-facing nonbreakdown variant.  A nonzero determinant of the
+    computed top square `R` block implies the diagonal nonbreakdown field
+    consumed by the concrete Q-method row-wise theorem. -/
+theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_topBlock_det_ne_zero
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ)
+    (hm : 0 < m)
+    (hvalidQR :
+      gammaValid fp (m * householderConstructApplyGammaIndex (m + k)))
+    (hdet :
+      Matrix.det
+        ((fun i j =>
+          fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+            (Fin.castAdd k i) j) : Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m)) :
+    UndetRowwiseBackwardErrorBounded m (m + k) A b
+      (matMulVec (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (Fin.append
+          (fl_forwardSub fp m
+            (matTranspose
+              (fun a b =>
+                fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                  (Fin.castAdd k a) b)) b)
+          (0 : Fin k → ℝ)))
+      (Higham21QMethodRowwiseCoefficient fp m k) := by
+  simpa [Higham21QMethodRowwiseCoefficient] using
+    higham21_theorem21_4_q_method_rowwise_backward_stable_of_householder_qr_transpose
+      fp A b hm hvalidQR
+      (Higham21QMethodTopBlockNonbreakdown.of_topBlock_det_ne_zero fp A hdet)
+      hvalid hvalid2
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
     concrete row-wise backward-stability wrapper under the source-facing
