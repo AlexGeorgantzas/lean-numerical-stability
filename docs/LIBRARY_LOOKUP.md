@@ -5606,7 +5606,10 @@ simplification, the exact Hyman block identities
 - `triInv_method2_left_residual_normwise`
 - `triInv_method2_left_residual_normwise_of_strict_tail_kernel_spec`
 - `triInv_method1B_spec_of_column_backward_error`
+- `triInv_method1B_column_backward_error_of_row_certificates`
+- `triInv_method1B_spec_of_row_certificates`
 - `triInv_method1B_right_residual_of_column_backward_error`
+- `triInv_method1B_right_residual_of_row_certificates`
 - `triInv_method1B_right_residual_normwise`
 - `triInv_method1B_right_residual_normwise_from_spec`
 - `triInv_method1B_right_residual_normwise_of_column_backward_error`
