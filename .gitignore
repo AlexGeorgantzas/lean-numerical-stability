@@ -2,7 +2,8 @@
 /.venv/
 .DS_Store
 /.agents/
-/.codex/skills/
+/.codex/
+/.github/workflows/
 
 # Local auto-formalization workspace. Do not commit or push.
 /chapter_splitting/
