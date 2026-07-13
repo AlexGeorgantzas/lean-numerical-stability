@@ -74,6 +74,9 @@ import LeanFpAnalysis.FP.Algorithms.Ch14Method2C
 import LeanFpAnalysis.FP.Algorithms.Ch14BlockTriInverse
 import LeanFpAnalysis.FP.Algorithms.GaussJordanPivoting
 import LeanFpAnalysis.FP.Algorithms.MatrixInversionMethod2BInstance
+import LeanFpAnalysis.FP.Algorithms.Ch14Method2CWhole
+import LeanFpAnalysis.FP.Algorithms.Ch14GaussJordanAccumulation
+import LeanFpAnalysis.FP.Algorithms.Ch14MethodDLeftResidual
 import LeanFpAnalysis.FP.Algorithms.CondEstimation
 import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCond
 import LeanFpAnalysis.FP.Algorithms.PNormPowerMethod
