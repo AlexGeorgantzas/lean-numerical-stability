@@ -8144,6 +8144,33 @@ theorem higham14_problem14_14_hyman_det_original_of_upper_add_zero_diag
       T DeltaT gamma hTupper hDeltaDiag hDeltaBound
   simpa [hdet] using horig
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.14, Appendix A:
+    absolute-value form of the perturbed original-matrix Hyman determinant
+    wrapper.  The row-permutation sign disappears from the magnitude bound. -/
+theorem higham14_problem14_14_abs_det_original_of_upper_add_zero_diag
+    {n : ℕ}
+    (H : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ)
+    (T DeltaT TpertInv : Matrix (Fin n) (Fin n) ℝ)
+    (y h : Fin n → ℝ) (η gamma : ℝ)
+    (σ : Equiv.Perm (Fin n ⊕ Unit))
+    (hH :
+      higham14_hymanBlockMatrix (T + DeltaT) y h η =
+        Matrix.submatrix H σ (Equiv.refl (Fin n ⊕ Unit)))
+    (hTupper : T.BlockTriangular id)
+    (hDeltaDiag : ∀ i : Fin n, DeltaT i i = 0)
+    (hDeltaBound : ∀ i j : Fin n, |DeltaT i j| ≤ gamma * |T i j|)
+    (hTpertInv : IsLeftInverse n (T + DeltaT) TpertInv) :
+    |Matrix.det H| =
+      |Matrix.det T| * |higham14_hymanSchur h y TpertInv η| := by
+  have hdet :=
+    higham14_problem14_14_hyman_det_original_of_upper_add_zero_diag
+      H T DeltaT TpertInv y h η gamma σ hH hTupper hDeltaDiag hDeltaBound
+      hTpertInv
+  have hsign_abs : |(Equiv.Perm.sign σ : ℝ)| = 1 := by
+    rcases Int.units_eq_one_or (Equiv.Perm.sign σ) with hsign | hsign <;>
+      simp [hsign]
+  rw [hdet, abs_mul, abs_mul, hsign_abs, one_mul]
+
 /-! ### Problem 14.8: complex inverse via a real block matrix -/
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.8:
