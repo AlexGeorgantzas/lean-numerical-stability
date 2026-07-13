@@ -5557,6 +5557,7 @@ composition wrappers:
 - `gje_stage2_backward_error`
 - `gje_stage2_backward_error_of_cumulative_product_certificates`
 - `gje_overall_residual_of_cumulative_product_certificates`
+- `gje_overall_forward_error_of_cumulative_product_certificates`
 - `gje_overall_residual`
 - `gje_overall_forward_error`
 - `gje_spd_residual`
