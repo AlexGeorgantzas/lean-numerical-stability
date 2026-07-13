@@ -6356,6 +6356,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check gje_overall_forward_error
 #check gje_spd_residual
 #check gje_spd_residual_of_cumulative_product_certificates
+#check gje_spd_forward_error_of_cumulative_product_certificates
 #check lu_solve_backward_error_factor_gamma
 #check methodA_column_backward_error_factor_bound
 #check methodA_column_backward_error_computed_inverse_factor_bound

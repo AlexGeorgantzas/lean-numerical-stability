@@ -5570,6 +5570,7 @@ composition wrappers:
 - `gje_overall_forward_error`
 - `gje_spd_residual`
 - `gje_spd_residual_of_cumulative_product_certificates`
+- `gje_spd_forward_error_of_cumulative_product_certificates`
 
 Chapter 14 exact algebra closures in `Algorithms/MatrixInversion.lean` include
 the (14.3) bounded-replacement forward-error layer, Problem 14.3, the explicit
