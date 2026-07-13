@@ -5792,6 +5792,7 @@ simplification, the exact Hyman block identities
 - `higham14_eq14_36_hyman_det_cyclic_block`
 - `higham14_eq14_36_hyman_det_original_of_row_permutation`
 - `higham14_problem14_14_det_upper_add_zero_diag_of_abs_bound`
+- `higham14_problem14_14_hyman_det_cyclic_block_of_upper_add_zero_diag`
 - `matrixEntryPerturb`
 - `higham14_problem14_10_det_entry_perturb_eq`
 - `higham14_problem14_10_det_entry_independent_of_adjugate_eq_zero`
