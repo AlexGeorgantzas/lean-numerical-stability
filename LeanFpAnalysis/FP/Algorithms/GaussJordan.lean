@@ -988,6 +988,69 @@ theorem gje_overall_residual (n : ℕ) (fp : FPModel)
     rw [← Finset.sum_sub_distrib]
     apply Finset.sum_congr rfl; intro j _; ring]
 
+/-- **Theorem 14.5, eq. 14.31 certificate route**:
+    the cumulative-product second-stage certificates from (14.30) imply the
+    overall GJE residual bound, leaving only the exact rounded-recurrence
+    backward equation as an explicit source-instantiation hypothesis. -/
+theorem gje_overall_residual_of_cumulative_product_certificates
+    (n : ℕ) (fp : FPModel)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b y x_hat : Fin n → ℝ)
+    (N_hat DeltaN : Fin n → Fin n → Fin n → ℝ)
+    (start : ℕ)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hnpos : 1 ≤ n)
+    (hn3 : gammaValid fp 3)
+    (hidx : ∀ r : Fin (n - 1),
+      start + ((n - 1) - 1 - r.val) < n)
+    (hDelta : ∀ r : Fin (n - 1), ∀ i j : Fin n,
+      |DeltaN (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j| ≤
+        gamma fp 3 *
+          |N_hat (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j|)
+    (hy : ∀ i : Fin n, ∑ j : Fin n, L_hat i j * y j = b i)
+    (hBackwardEq : ∀ i : Fin n,
+      ∑ j : Fin n,
+          (U_hat i j +
+            (matMul n
+                (gje_cumulative_product n
+                  (fun k a b => N_hat k a b + DeltaN k a b)
+                  start (start + (n - 1))) U_hat i j -
+              matMul n
+                (gje_cumulative_product n N_hat start (start + (n - 1)))
+                U_hat i j)) *
+            x_hat j =
+        y i +
+          (matMulVec n
+              (gje_cumulative_product n
+                (fun k a b => N_hat k a b + DeltaN k a b)
+                start (start + (n - 1))) y i -
+            matMulVec n
+              (gje_cumulative_product n N_hat start (start + (n - 1))) y i)) :
+    ∀ i : Fin n,
+      |b i - ∑ j : Fin n, A i j * x_hat j| ≤
+      gamma fp n * ∑ j : Fin n,
+        (∑ k : Fin n, |L_hat i k| * |U_hat k j|) * |x_hat j| +
+      gje_c₃ fp n * ∑ j : Fin n,
+        (∑ k₁ : Fin n, |L_hat i k₁| *
+          (∑ k₂ : Fin n,
+            |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+              start (start + (n - 1)) k₁ k₂| *
+              |U_hat k₂ j|)) * |x_hat j| +
+      gje_c₃ fp n * ∑ k : Fin n, |L_hat i k| *
+        (∑ j : Fin n,
+          |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+            start (start + (n - 1)) k j| * |y j|) := by
+  let X_abs : Fin n → Fin n → ℝ :=
+    gje_cumulative_product n (fun s a b => |N_hat s a b|)
+      start (start + (n - 1))
+  obtain ⟨DeltaU, Deltay, hStage2_eq, hDeltaU, hDeltay⟩ :=
+    gje_stage2_backward_error_of_cumulative_product_certificates
+      n fp U_hat y x_hat N_hat DeltaN start hnpos hn3 hidx hDelta hBackwardEq
+  simpa [X_abs] using
+    gje_overall_residual n fp A L_hat U_hat b y x_hat X_abs
+      hLU hn hn3 hy DeltaU Deltay hStage2_eq hDeltaU hDeltay
+
 /-- **Theorem 14.5, eq. 14.32**: Overall GJE forward error.
 
     The forward error satisfies:
