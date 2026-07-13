@@ -8203,6 +8203,39 @@ theorem higham14_problem14_14_exists_deltaH_det_original_of_upper_add_zero_diag
       (H + DeltaH) T DeltaT TpertInv y h η gammaT σ
       hBlock hTupper hDeltaTDiag hDeltaTBound hTpertInv
 
+/-- Problem 14.14 absolute-value backward-error target for Hyman's method.
+    This is the existential `DeltaH` companion to the signed determinant
+    package above. -/
+theorem higham14_problem14_14_exists_deltaH_abs_det_original_of_upper_add_zero_diag
+    {n : ℕ}
+    (H : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ)
+    (T DeltaT TpertInv : Matrix (Fin n) (Fin n) ℝ)
+    (y h : Fin n → ℝ) (η gammaT gammaH : ℝ)
+    (σ : Equiv.Perm (Fin n ⊕ Unit))
+    (hDeltaHCert :
+      ∃ DeltaH : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ,
+        (∀ i j, |DeltaH i j| ≤ gammaH * |H i j|) ∧
+        higham14_hymanBlockMatrix (T + DeltaT) y h η =
+          Matrix.submatrix (H + DeltaH) σ (Equiv.refl (Fin n ⊕ Unit)))
+    (hTupper : T.BlockTriangular id)
+    (hDeltaTDiag : ∀ i : Fin n, DeltaT i i = 0)
+    (hDeltaTBound : ∀ i j : Fin n, |DeltaT i j| ≤ gammaT * |T i j|)
+    (hTpertInv : IsLeftInverse n (T + DeltaT) TpertInv) :
+    ∃ DeltaH : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ,
+      (∀ i j, |DeltaH i j| ≤ gammaH * |H i j|) ∧
+      |Matrix.det (H + DeltaH)| =
+        |Matrix.det T| * |higham14_hymanSchur h y TpertInv η| := by
+  rcases
+    higham14_problem14_14_exists_deltaH_det_original_of_upper_add_zero_diag
+      H T DeltaT TpertInv y h η gammaT gammaH σ hDeltaHCert
+      hTupper hDeltaTDiag hDeltaTBound hTpertInv
+    with ⟨DeltaH, hDeltaHBound, hdet⟩
+  refine ⟨DeltaH, hDeltaHBound, ?_⟩
+  have hsign_abs : |(Equiv.Perm.sign σ : ℝ)| = 1 := by
+    rcases Int.units_eq_one_or (Equiv.Perm.sign σ) with hsign | hsign <;>
+      simp [hsign]
+  rw [hdet, abs_mul, abs_mul, hsign_abs, one_mul]
+
 /-- Problem 14.14 support: diagonal similarity used to model the optional
     scaling of Hyman's Hessenberg matrix. -/
 noncomputable def higham14_problem14_14_diagonalSimilarity
@@ -8371,6 +8404,42 @@ theorem higham14_problem14_14_exists_deltaH_det_original_of_diagonal_scaled_uppe
       ((Equiv.Perm.sign σ : ℝ) *
         Matrix.det T * higham14_hymanSchur h y TpertInv η)
       hd hHscaled hDeltaHscaled hdetScaled
+
+/-- Absolute-value form of the diagonally scaled Problem 14.14 Hyman
+    backward-error target. -/
+theorem higham14_problem14_14_exists_deltaH_abs_det_original_of_diagonal_scaled_upper_add_zero_diag
+    {n : ℕ}
+    (H Hscaled : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ)
+    (d : Fin n ⊕ Unit → ℝ)
+    (T DeltaT TpertInv : Matrix (Fin n) (Fin n) ℝ)
+    (y h : Fin n → ℝ) (η gammaT gammaH : ℝ)
+    (σ : Equiv.Perm (Fin n ⊕ Unit))
+    (hd : ∀ i : Fin n ⊕ Unit, d i ≠ 0)
+    (hHscaled : Hscaled = higham14_problem14_14_diagonalSimilarity d H)
+    (hDeltaHScaledCert :
+      ∃ DeltaHscaled : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ,
+        (∀ i j, |DeltaHscaled i j| ≤ gammaH * |Hscaled i j|) ∧
+        higham14_hymanBlockMatrix (T + DeltaT) y h η =
+          Matrix.submatrix (Hscaled + DeltaHscaled) σ (Equiv.refl (Fin n ⊕ Unit)))
+    (hTupper : T.BlockTriangular id)
+    (hDeltaTDiag : ∀ i : Fin n, DeltaT i i = 0)
+    (hDeltaTBound : ∀ i j : Fin n, |DeltaT i j| ≤ gammaT * |T i j|)
+    (hTpertInv : IsLeftInverse n (T + DeltaT) TpertInv) :
+    ∃ DeltaH : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ,
+      (∀ i j, |DeltaH i j| ≤ gammaH * |H i j|) ∧
+      |Matrix.det (H + DeltaH)| =
+        |Matrix.det T| * |higham14_hymanSchur h y TpertInv η| := by
+  rcases
+    higham14_problem14_14_exists_deltaH_det_original_of_diagonal_scaled_upper_add_zero_diag
+      H Hscaled d T DeltaT TpertInv y h η gammaT gammaH σ
+      hd hHscaled hDeltaHScaledCert hTupper hDeltaTDiag hDeltaTBound
+      hTpertInv
+    with ⟨DeltaH, hDeltaHBound, hdet⟩
+  refine ⟨DeltaH, hDeltaHBound, ?_⟩
+  have hsign_abs : |(Equiv.Perm.sign σ : ℝ)| = 1 := by
+    rcases Int.units_eq_one_or (Equiv.Perm.sign σ) with hsign | hsign <;>
+      simp [hsign]
+  rw [hdet, abs_mul, abs_mul, hsign_abs, one_mul]
 
 /-! ### Problem 14.8: complex inverse via a real block matrix -/
 
