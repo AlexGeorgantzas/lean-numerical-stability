@@ -5575,7 +5575,7 @@ Problem 14.15's scalar product-radius and top-index perturbation support, Method
 left-residual upper/diagonal edges, trailing-column split, strict-tail update and gamma full-budget support, strict-tail rounded kernel packaging and normwise bridge, and off-diagonal update support, Method D's expanded
 componentwise residual-budget dependency and printed-coefficient scalar
 simplification, the exact Hyman block identities
-(14.35)--(14.36), and Problem 14.10:
+(14.35)--(14.36), Problem 14.14 determinant support, and Problem 14.10:
 
 - `inverseRightResidual`, `inverseLeftResidual`
 - `higham14_eq14_3_forward_error_bound_of_abs_Y_le`
@@ -5791,6 +5791,7 @@ simplification, the exact Hyman block identities
 - `higham14_eq14_35_hyman_block_lu_factorization`
 - `higham14_eq14_36_hyman_det_cyclic_block`
 - `higham14_eq14_36_hyman_det_original_of_row_permutation`
+- `higham14_problem14_14_det_upper_add_zero_diag_of_abs_bound`
 - `matrixEntryPerturb`
 - `higham14_problem14_10_det_entry_perturb_eq`
 - `higham14_problem14_10_det_entry_independent_of_adjugate_eq_zero`

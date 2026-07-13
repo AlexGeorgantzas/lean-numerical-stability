@@ -6570,6 +6570,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_eq14_35_hyman_block_lu_factorization
 #check higham14_eq14_36_hyman_det_cyclic_block
 #check higham14_eq14_36_hyman_det_original_of_row_permutation
+#check higham14_problem14_14_det_upper_add_zero_diag_of_abs_bound
 #check matrixEntryPerturb
 #check higham14_problem14_10_det_entry_perturb_eq
 #check higham14_problem14_10_det_entry_independent_of_adjugate_eq_zero
