@@ -49,19 +49,45 @@ That was a smuggle: the numerator is the dominant analytic content of the
   bounded by the pivot scale, `vecNorm2_col_colPivotNextPanelExact_le_sigma`'s
   concrete instance) — carried as a magnitude field; and
 * **the trailing-perturbation column control** `columnFrob (panelTrailingPerturbation
-  ΔT) j ≤ γtil·|σ|` — the Cox–Higham ΔT-vs-σ accumulation (each accumulated
-  per-step column is bounded by a reduced column, `≤ σ` by pivot maximality),
-  carried as a source-faithful field on the *deeper* recursion's backward error
-  (it is NOT this level's conclusion, and the `√m`-free column form is genuinely
-  unavailable from the entrywise `StageDataReady` ΔT bound alone — see the honest
-  boundary note below).
+  ΔT) j ≤ γtil·|σ|` — this is now itself DERIVED (`deltaT_col_le_sigma`, §0b), NOT
+  carried: the orthogonal characterizing equation of the deeper panel's backward
+  error PINS `ΔT` to that panel's genuine backward perturbation, and the
+  repository's `√m`-free columnwise panel backward error
+  (`fl_householderQRPanel_R_columnwise_backward_error…`) + deeper-panel pivot
+  maximality fold it to `γtil·|σ|`.
 
-The two carried facts are pure magnitude/backward-error data about the executed
-iterate — the same class `AllPivotsSelfAnnihilatingReflectorModel` carries — NOT
+The one carried magnitude fact for the numerator is the pure current-panel pivot
+maximality — the same class `AllPivotsSelfAnnihilatingReflectorModel` carries — NOT
 the numerator.  The numerator itself is a THEOREM here (`numerator_col_le`), and
 the σ-ratio is DERIVED from it via `Wave19.sigma_ordering_norm_ratio_le`
 (`sigma_ratio_of_numerator`), with `u := c`, `γ := γtil/2` (so `u + 2γ = c + γtil`)
 and the fold `(c + γtil)/√2 ≤ γtil`.
+
+## The ΔT-column control is now DERIVED, not carried
+
+The prior version of this file ALSO carried, inside `StrongStageModel`'s nonzero
+branch, the conclusion-shaped ΔT-column clause
+
+  `∀ ΔT, (R̂ = Qᵀ(trailing + ΔT)) → (entrywise ΔT bound) →
+     ∀ j, columnFrob (panelTrailingPerturbation ΔT) j ≤ γtil·|σ|`.
+
+That was the last smuggle: its conclusion IS the perturbation-side of the σ-ratio.
+This version PROVES it (`deltaT_col_le_sigma`, §0b) by the route:
+
+1. the orthogonal characterizing equation PINS `ΔT` to the deeper panel's genuine
+   backward perturbation `ΔA` (`panel_eq_of_matTranspose_matMulRect_eq`, via
+   `QQᵀ = I`);
+2. the repository columnwise panel backward error gives
+   `columnFrob ΔA j ≤ c·columnFrob (trailing) j`, `√m`-FREE;
+3. the embedding relation `columnFrob (panelTrailingPerturbation ΔT) j.succ =
+   columnFrob ΔT j`;
+4. deeper-panel pivot maximality `columnFrob (trailing) j ≤ |σ|` (eq. (2.4));
+5. the gamma-class fold `c ≤ γtil`.
+
+The entrywise `StageDataReady` ΔT bound is NOT used in the derivation — pinning
+alone determines `ΔT`, so the column bound is genuinely `√m`-free.  `StrongStageModel`
+now carries only the deeper-panel pivot maximality (a pure magnitude fact) and the
+roundoff fold, NOT the ΔT-column clause.
 
 ## What is PROVED here (not assumed) at each nonzero strong-model level
 
@@ -83,15 +109,20 @@ and the fold `(c + γtil)/√2 ≤ γtil`.
 
 ## Honest boundary
 
-The only remaining carried analytic data are the magnitude/backward-error fields
-`columnFrob A j ≤ |σ|` (pivot maximality) and `columnFrob (panelTrailingPerturbation
-ΔT) j ≤ γtil·|σ|` (ΔT-vs-σ accumulation), plus the reflector sign choice
-`√2·|σ| ≤ ‖v‖₂` and the roundoff fold `(c + γtil)/√2 ≤ γtil`.  None of these is the
-conclusion; the numerator and the σ-ratio are now derived through, not assumed.
-The `√m`-free ΔT column bound is carried (not derived) precisely because the
-`StageDataReady` recursion tracks ΔT only entrywise, and the entrywise bound gives
-the column 2-norm only up to a `√m` factor; the `√m`-free column control is the
-genuine Cox–Higham backward-error-column fact about the deeper panel.
+The only remaining carried analytic data are the pure magnitude/backward-error
+fields: pivot maximality on the current panel `columnFrob A j ≤ |σ|` and on the
+deeper reduced panel `columnFrob (trailingPanel (stageStepPanel A)) j ≤ |σ|`
+(eq. (2.4)), the reflector sign choice `√2·|σ| ≤ ‖v‖₂` (eq. (2.5)), and the
+roundoff folds `(c + γtil)/√2 ≤ γtil` and `gamma fp (min m p · index) ≤ γtil`
+(with the deeper-panel gamma validity).  NONE of these is a conclusion-shaped
+clause: the σ-numerator, the σ-ratio, AND the ΔT-column control are all now
+derived through, not assumed.  The `√m`-free ΔT column bound comes from PINNING
+`ΔT` to the deeper panel's genuine backward error (via orthogonality) and applying
+the repository's `√m`-free columnwise panel backward error — NOT from the entrywise
+`StageDataReady` ΔT bound (which would incur `√m`).  So Theorem 19.6 is genuinely
+closed under the strong model with no carried σ-ratio / numerator / ΔT-column
+hypothesis — the same source-faithful magnitude class Theorem 19.13's strong model
+carries.
 
 No `sorry`/`admit`/`axiom`/proof-disabling `set_option`; new file only.
 -/
@@ -126,6 +157,162 @@ theorem stageColErrorConst_nonneg (fp : FPModel) (m : ℕ)
   have h1 : 0 ≤ Real.sqrt ((m : ℝ) * fp.u ^ 2) := Real.sqrt_nonneg _
   have h2 : 0 ≤ gamma fp (11 * m + 23) := gamma_nonneg fp hvalid
   linarith
+
+/-! ## §0b  Orthogonal cancellation and the DERIVED ΔT-column control
+
+The ΔT-column control that the numerator's second summand consumes was previously
+CARRIED as a source-faithful field of `StrongStageModel`.  It is now DERIVED here.
+
+The key is that the characterizing equation of the deeper panel's backward error,
+`R̂_deeper = Qᵀ·(trailing + ΔT)` with `Q = fl_householderQRPanel_Q (deeper)`
+**orthogonal**, PINS `ΔT`: multiplying by `Q` (using `QQᵀ = I`) gives
+`trailing + ΔT = Q·R̂_deeper`, so `ΔT` is uniquely the deeper panel's genuine
+backward perturbation `ΔA` of its input.  The repository's columnwise panel
+backward error (`fl_householderQRPanel_R_columnwise_backward_error…`) then bounds
+`columnFrob ΔT j = columnFrob ΔA j ≤ c·columnFrob (trailing) j` — `√m`-FREE — and
+pivot maximality on the deeper reduced panel gives `columnFrob (trailing) j ≤ |σ|`,
+folding to `columnFrob (panelTrailingPerturbation ΔT) j ≤ γtil·|σ|`. -/
+
+/-- `matMul m Q Qᵀ = idMatrix m` for an orthogonal `Q` (the right-inverse law). -/
+theorem matMul_transpose_self_eq_id {m : ℕ} {Q : Fin m → Fin m → ℝ}
+    (hQ : IsOrthogonal m Q) :
+    matMul m Q (matTranspose Q) = idMatrix m := by
+  funext i j
+  have := hQ.right_inv i j
+  simpa [matMul, idMatrix, matTranspose] using this
+
+/-- Left cancellation of `Qᵀ` under an orthogonal `Q`:
+`matMulRect Q (matMulRect Qᵀ X) = X`. -/
+theorem matMulRect_matTranspose_cancel {m p : ℕ} {Q : Fin m → Fin m → ℝ}
+    (hQ : IsOrthogonal m Q) (X : Fin m → Fin p → ℝ) :
+    matMulRect m m p Q (matMulRect m m p (matTranspose Q) X) = X := by
+  rw [← matMulRect_assoc_square_left m p Q (matTranspose Q) X,
+      matMul_transpose_self_eq_id hQ, matMulRect_id_left]
+
+/-- **Pinning: the orthogonal characterizing equation determines the panel input.**
+
+If two panels `X`, `Y` give the same image under `matMulRect Qᵀ` (with `Q`
+orthogonal), then `X = Y`. -/
+theorem panel_eq_of_matTranspose_matMulRect_eq {m p : ℕ} {Q : Fin m → Fin m → ℝ}
+    (hQ : IsOrthogonal m Q) {X Y : Fin m → Fin p → ℝ}
+    (h : ∀ i j, matMulRect m m p (matTranspose Q) X i j =
+        matMulRect m m p (matTranspose Q) Y i j) :
+    X = Y := by
+  have hXY : matMulRect m m p (matTranspose Q) X =
+      matMulRect m m p (matTranspose Q) Y := by
+    funext i j; exact h i j
+  calc X = matMulRect m m p Q (matMulRect m m p (matTranspose Q) X) :=
+        (matMulRect_matTranspose_cancel hQ X).symm
+    _ = matMulRect m m p Q (matMulRect m m p (matTranspose Q) Y) := by rw [hXY]
+    _ = Y := matMulRect_matTranspose_cancel hQ Y
+
+/-- **The ΔT-column control, DERIVED (√m-free).**
+
+For any `ΔT` realizing the deeper panel's backward-error characterizing equation
+`R̂_deeper = Qᵀ·(trailing + ΔT)` with `Q = fl_householderQRPanel_Q (deeper)`
+ORTHOGONAL, the embedded trailing perturbation column obeys
+`columnFrob (panelTrailingPerturbation ΔT) j ≤ γtil·|σ|`.
+
+Proof (steps 1–5 of the route):
+1. The orthogonal characterizing equation PINS `ΔT` to the deeper panel's genuine
+   backward perturbation `ΔA` (`panel_eq_of_matTranspose_matMulRect_eq`).
+2. The repository columnwise panel backward error
+   (`fl_householderQRPanel_R_columnwise_backward_error…`) gives
+   `columnFrob ΔA j ≤ c·columnFrob (trailing) j`, `√m`-free.
+3. The embedding relation
+   `columnFrob (panelTrailingPerturbation ΔT) j.succ = columnFrob ΔT j`.
+4. Pivot maximality on the deeper reduced panel: `columnFrob (trailing) j ≤ |σ|`.
+5. The gamma-class fold `c ≤ γtil`.
+
+The entrywise hypothesis (`hΔentry`) is NOT used — the pinning alone determines
+`ΔT`, so the column bound is genuinely `√m`-free (the entrywise route would incur
+`√m`). -/
+theorem deltaT_col_le_sigma {m p : ℕ}
+    (fp : FPModel)
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (α : Fin (m + 1) → ℝ)
+    (σ γtil : ℝ) (hσnn : 0 ≤ |σ|) (hγtil : 0 ≤ γtil)
+    (hvalidGamma : gammaValid fp
+      (Nat.min m p * householderConstructApplyGammaIndex m))
+    (hTmax : ∀ j : Fin p,
+      columnFrob (trailingPanel (stageStepPanel fp A)) j ≤ |σ|)
+    (hfold : gamma fp (Nat.min m p * householderConstructApplyGammaIndex m) ≤ γtil)
+    (ΔT : Fin m → Fin p → ℝ)
+    (hΔrep : ∀ i j,
+      fl_householderQRPanel_R fp m p (trailingPanel (stageStepPanel fp A)) i j =
+        matMulRect m m p
+          (matTranspose (fl_householderQRPanel_Q fp m p
+            (trailingPanel (stageStepPanel fp A))))
+          (fun a b => trailingPanel (stageStoredPanel fp A) a b + ΔT a b) i j)
+    (hΔentry : ∀ i' j', |ΔT i' j'| ≤ stageCoeff (j'.val + 1) * γtil * α i'.succ)
+    (j : Fin (p + 1)) :
+    columnFrob (panelTrailingPerturbation ΔT) j ≤ γtil * |σ| := by
+  clear hΔentry
+  -- The deeper panel and its computed QR outputs.
+  set T : Fin m → Fin p → ℝ := trailingPanel (stageStepPanel fp A) with hT
+  -- `trailingPanel (stageStoredPanel) = trailingPanel (stageStepPanel) = T`.
+  have hStored : trailingPanel (stageStoredPanel fp A) = T := by
+    rw [hT, trailingPanel_stageStoredPanel fp A]
+  -- Rewrite the characterizing equation against `T`.
+  have hΔrep' : ∀ i j,
+      fl_householderQRPanel_R fp m p T i j =
+        matMulRect m m p
+          (matTranspose (fl_householderQRPanel_Q fp m p T))
+          (fun a b => T a b + ΔT a b) i j := by
+    intro i j
+    have := hΔrep i j
+    rw [hStored] at this
+    exact this
+  -- Reduce to the deeper `Fin p`-column bound `columnFrob ΔT j' ≤ γtil·|σ|`.
+  have hΔTcol : ∀ j' : Fin p, columnFrob ΔT j' ≤ γtil * |σ| := by
+    -- Degenerate case: an empty deeper panel has no reduced content.
+    rcases Nat.eq_zero_or_pos (Nat.min m p) with hmin | hmin
+    · -- `Nat.min m p = 0`: either `m = 0` (ΔT has empty rows) or `p = 0`
+      -- (no `Fin p`-column).  In both cases `columnFrob ΔT j' = 0`.
+      intro j'
+      have hmp : m = 0 ∨ p = 0 := Nat.min_eq_zero_iff.mp hmin
+      rcases hmp with hm0 | hp0
+      · subst hm0
+        have : columnFrob ΔT j' = 0 := by
+          rw [columnFrob, frobNorm_eq_zero_iff]
+          intro i; exact Fin.elim0 i
+        rw [this]; exact mul_nonneg hγtil hσnn
+      · subst hp0; exact Fin.elim0 j'
+    · -- Nonempty deeper panel: use the columnwise backward error.
+      -- The columnwise panel backward error, coefficient absorbed to one gamma.
+      have hcw :=
+        fl_householderQRPanel_R_columnwise_backward_error_gammaHigham_of_global_gammaValid
+          fp m p T hmin hvalidGamma
+      obtain ⟨ΔA, hArep, _hAnorm, hAcol⟩ := hcw.result
+      -- Q of the deeper panel is orthogonal.
+      have hQorth : IsOrthogonal m (fl_householderQRPanel_Q fp m p T) := hcw.orth
+      -- Pin: the characterizing equation determines the input, so ΔT = ΔA.
+      have hpin : (fun a b => T a b + ΔT a b) = (fun a b => T a b + ΔA a b) := by
+        apply panel_eq_of_matTranspose_matMulRect_eq hQorth
+        intro i j
+        rw [← hΔrep' i j, hArep i j]
+      have hΔeqΔA : ΔT = ΔA := by
+        funext a b
+        have := congrFun (congrFun hpin a) b
+        simpa using this
+      intro j'
+      -- columnFrob ΔT j' = columnFrob ΔA j' ≤ c·columnFrob T j' ≤ c·|σ| ≤ γtil·|σ|.
+      have hcnn : 0 ≤ gamma fp (Nat.min m p * householderConstructApplyGammaIndex m) :=
+        gamma_nonneg fp hvalidGamma
+      calc columnFrob ΔT j'
+            = columnFrob ΔA j' := by rw [hΔeqΔA]
+        _ ≤ gamma fp (Nat.min m p * householderConstructApplyGammaIndex m) *
+              columnFrob T j' := hAcol j'
+        _ ≤ gamma fp (Nat.min m p * householderConstructApplyGammaIndex m) * |σ| :=
+              mul_le_mul_of_nonneg_left (hTmax j') hcnn
+        _ ≤ γtil * |σ| := mul_le_mul_of_nonneg_right hfold hσnn
+  -- Now the embedded column: `j = 0` gives `0`; `j = j'.succ` gives `columnFrob ΔT j'`.
+  refine Fin.cases ?_ ?_ j
+  · rw [columnFrob_panelTrailingPerturbation_zero]
+    exact mul_nonneg hγtil hσnn
+  · intro j'
+    rw [columnFrob_panelTrailingPerturbation_succ]
+    exact hΔTcol j'
 
 /-! ## §1  Notation and the step-panel as the exact-vector application
 
@@ -341,18 +528,24 @@ Cox–Higham source-faithful facts:
 * the row-growth magnitudes (eq. (2.10)) and the fold bound;
 * the pivot scale `σ` with `0 < |σ|` and the reflector sign choice
   `√2·|σ| ≤ ‖v‖₂` (eq. (2.5));
-* the **pivot maximality** magnitude fact `columnFrob A j ≤ |σ|` (every reduced
-  column norm is bounded by the pivot scale);
-* the **trailing-perturbation column control** `columnFrob (panelTrailingPerturbation
-  ΔT) j ≤ γtil·|σ|` for the ΔT arising from the trailing representation with the
-  entrywise stage bound (Cox–Higham ΔT-vs-σ accumulation); and
-* the roundoff fold `(c + γtil)/√2 ≤ γtil` (`c = stageColErrorConst`).
+* the **pivot maximality** magnitude fact `columnFrob A j ≤ |σ|` on the CURRENT
+  panel (every reduced column norm is bounded by the pivot scale — feeds the
+  `E`-column part of the numerator);
+* the **pivot maximality** magnitude fact `columnFrob (trailingPanel (stageStepPanel
+  A)) j ≤ |σ|` on the DEEPER reduced panel (eq. (2.4) one stage down — the only
+  magnitude datum the now-DERIVED ΔT-column control needs); and
+* the roundoff folds `(c + γtil)/√2 ≤ γtil` (`c = stageColErrorConst`) and
+  `gamma fp (min m p · index) ≤ γtil`, plus the deeper-panel gamma validity.
 
-NONE of these is the numerator or the σ-ratio: the numerator is DERIVED
-(`numerator_col_le`) from the columnwise reflector-application error + the two
-magnitude fields, and the σ-ratio is DERIVED (`sigma_ratio_of_numerator`).  Combined
-with the top-level `exactWithUnitRoundoff` hypothesis it DISCHARGES the
-algorithm-structural facts of `StageDataReady` and recurses. -/
+NONE of these is the numerator, the σ-ratio, OR the ΔT-column control: the
+ΔT-column control is now DERIVED (`deltaT_col_le_sigma`) by PINNING `ΔT` to the
+deeper panel's genuine backward error via orthogonality and applying the
+`√m`-free columnwise panel backward error + deeper-panel pivot maximality; the
+numerator is DERIVED (`numerator_col_le`) from the columnwise reflector-application
+error + the current-panel maximality; and the σ-ratio is DERIVED
+(`sigma_ratio_of_numerator`).  Combined with the top-level `exactWithUnitRoundoff`
+hypothesis it DISCHARGES the algorithm-structural facts of `StageDataReady` and
+recurses. -/
 def StrongStageModel (fp : FPModel) :
     (m p : ℕ) → (Fin m → Fin p → ℝ) → (Fin m → ℝ) → ℝ → ℝ → ℝ → Prop
   | 0, _, _A, _α, _γtil, _Vmax, _αmax => True
@@ -370,39 +563,41 @@ def StrongStageModel (fp : FPModel) :
         StrongStageModel fp m p (trailingPanel A) (fun i => α i.succ) γtil Vmax αmax) ∧
       -- Nonzero-pivot branch: carry ONLY the source-faithful magnitude /
       -- backward-error data (the pivot scale `σ`, the reflector sign choice, the
-      -- pivot maximality, the ΔT-column control, and the roundoff fold).  The
-      -- numerator and the σ-ratio are DERIVED, not assumed.
+      -- pivot maximality on the current AND deeper reduced panels, and the roundoff
+      -- folds + deeper-panel gamma validity).  The numerator, the σ-ratio, AND the
+      -- ΔT-column control are DERIVED, not assumed.
       (panelFirstColumn (Nat.succ_pos p) A ≠ 0 →
         ∃ σ : ℝ,
           0 < |σ| ∧
           (stageColErrorConst fp (m + 1) + γtil) / Real.sqrt 2 ≤ γtil ∧
           Real.sqrt 2 * |σ| ≤ vecNorm2 (stageReflectorVector A) ∧
-          -- Pivot maximality (eq. (2.4)): reduced columns ≤ pivot scale.
+          -- Pivot maximality (eq. (2.4)) on the CURRENT panel: reduced columns ≤
+          -- pivot scale (feeds the numerator's `E`-column bound).
           (∀ j : Fin (p + 1), columnFrob A j ≤ |σ|) ∧
-          -- ΔT-vs-σ accumulation (eq. (2.12)): the trailing perturbation column,
-          -- for any ΔT realizing the trailing representation with the entrywise
-          -- stage bound, is bounded (√m-free) by `γtil·|σ|`.
-          (∀ (ΔT : Fin m → Fin p → ℝ),
-            (∀ i j,
-              fl_householderQRPanel_R fp m p (trailingPanel (stageStepPanel fp A)) i j =
-                matMulRect m m p
-                  (matTranspose (fl_householderQRPanel_Q fp m p
-                    (trailingPanel (stageStepPanel fp A))))
-                  (fun a b => trailingPanel (stageStoredPanel fp A) a b + ΔT a b) i j) →
-            (∀ i' j', |ΔT i' j'| ≤
-              stageCoeff (j'.val + 1) * γtil * α i'.succ) →
-            ∀ j : Fin (p + 1),
-              columnFrob (panelTrailingPerturbation ΔT) j ≤ γtil * |σ|) ∧
+          -- Pivot maximality (eq. (2.4)) on the DEEPER reduced panel: every column
+          -- of `trailingPanel (stageStepPanel A)` (the panel one stage down) has
+          -- Euclidean norm ≤ the pivot scale.  This is the ONLY magnitude datum the
+          -- (now DERIVED) ΔT-column control needs; it is NOT the conclusion.
+          (∀ j : Fin p,
+            columnFrob (trailingPanel (stageStepPanel fp A)) j ≤ |σ|) ∧
+          -- Roundoff fold `c ≤ γtil` for the deeper columnwise backward-error
+          -- coefficient (same γ̃-class constant fold).
+          (gamma fp (Nat.min m p * householderConstructApplyGammaIndex m) ≤ γtil) ∧
+          -- Deeper-panel gamma validity for the columnwise backward error.
+          (gammaValid fp
+            (Nat.min m p * householderConstructApplyGammaIndex m)) ∧
           StrongStageModel fp m p (trailingPanel (stageStepPanel fp A))
             (fun i => α i.succ) γtil Vmax αmax)
 
 /-! ## §4  The strong-model discharge of `StageDataReady`
 
 At each nonzero level: `‖v‖₂²=2`, `0 < ‖v‖₂`, `hSrep`, and `hE` are PROVED (as
-before); the σ-ratio (`hratioTail`) is DERIVED from the honest strong-model
-magnitude fields (pivot maximality + ΔT-column control) + the reflector sign
-choice, via `sigma_ratio_of_numerator` (the numerator being the theorem
-`numerator_col_le`, NOT an assumption). -/
+before); the ΔT-column control (`hΔTcol`) is DERIVED from the deeper panel's
+`√m`-free columnwise backward error + deeper-panel pivot maximality via
+`deltaT_col_le_sigma`; and the σ-ratio (`hratioTail`) is then DERIVED from the
+honest strong-model magnitude fields (current-panel pivot maximality + the derived
+ΔT-column control) + the reflector sign choice, via `sigma_ratio_of_numerator`
+(the numerator being the theorem `numerator_col_le`, NOT an assumption). -/
 
 theorem stageDataReady_of_strongModel
     (u0 : ℝ) (hu0 : 0 ≤ u0) :
@@ -429,8 +624,28 @@ theorem stageDataReady_of_strongModel
               (hzeroBranch hcol)
           · -- nonzero-pivot branch
             intro hcol
-            obtain ⟨σ, hσpos, hfoldσ, hvSign, hpivotMax, hΔTcol, hDataTail⟩ :=
+            obtain ⟨σ, hσpos, hfoldσ, hvSign, hpivotMax, hTmaxDeep, hfoldCol,
+                hvalidDeep, hDataTail⟩ :=
               hnonzeroBranch hcol
+            -- Derive the ΔT-column control (previously carried) from the deeper
+            -- panel's columnwise backward error + pivot maximality.
+            have hΔTcol :
+                ∀ (ΔT : Fin m → Fin p → ℝ),
+                  (∀ i j,
+                    fl_householderQRPanel_R fp m p
+                        (trailingPanel (stageStepPanel fp A)) i j =
+                      matMulRect m m p
+                        (matTranspose (fl_householderQRPanel_Q fp m p
+                          (trailingPanel (stageStepPanel fp A))))
+                        (fun a b => trailingPanel (stageStoredPanel fp A) a b +
+                          ΔT a b) i j) →
+                  (∀ i' j', |ΔT i' j'| ≤
+                    stageCoeff (j'.val + 1) * γtil * α i'.succ) →
+                  ∀ j : Fin (p + 1),
+                    columnFrob (panelTrailingPerturbation ΔT) j ≤ γtil * |σ| := by
+              intro ΔT hrep hΔ j
+              exact deltaT_col_le_sigma fp A α σ γtil (abs_nonneg σ) hγtil
+                hvalidDeep hTmaxDeep hfoldCol ΔT hrep hΔ j
             set v : Fin (m + 1) → ℝ := stageReflectorVector A with hv
             have hcolne : panelFirstColumn (Nat.succ_pos p) A ≠ 0 := hcol
             -- `‖v‖₂² = 2` for the exact normalized reflector.
