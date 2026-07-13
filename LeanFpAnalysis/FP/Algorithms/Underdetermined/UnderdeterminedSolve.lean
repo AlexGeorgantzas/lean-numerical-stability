@@ -8483,6 +8483,63 @@ theorem higham21_theorem21_4_forwardSub_single_perturbation_rowwise_backward_err
             (lsQRTallBlock (k := k)
               (fun a b => R_hat a b + DeltaR a b))) := hqr
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    QR assembly equality for adding the triangular-solve perturbation to an
+    existing QR perturbation.  If `A + DeltaA0` is represented by
+    `(Q [R_hat;0])^T`, then adding the lifted block
+    `(Q [DeltaR;0])^T` gives the represented system
+    `(Q [R_hat + DeltaR;0])^T`. -/
+theorem higham21_theorem21_4_qr_deltaR_assembly_eq
+    {m k : ℕ}
+    (A DeltaA0 : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_hat DeltaR : Fin m → Fin m → ℝ)
+    (hA :
+      (fun i j => A i j + DeltaA0 i j) =
+        finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) R_hat))) :
+    (fun i j =>
+        A i j +
+          (DeltaA0 i j +
+            finiteTranspose
+              (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR)) i j)) =
+      finiteTranspose
+        (matMulRectLeft Q
+          (lsQRTallBlock (k := k)
+            (fun i j => R_hat i j + DeltaR i j))) := by
+  have hblock :
+      (fun i j =>
+          lsQRTallBlock (k := k) R_hat i j +
+            lsQRTallBlock (k := k) DeltaR i j) =
+        lsQRTallBlock (k := k)
+          (fun i j => R_hat i j + DeltaR i j) :=
+    lsQRTallBlock_add R_hat DeltaR
+  have hmul :
+      (fun i j =>
+          matMulRectLeft Q (lsQRTallBlock (k := k) R_hat) i j +
+            matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR) i j) =
+        matMulRectLeft Q
+          (lsQRTallBlock (k := k)
+            (fun i j => R_hat i j + DeltaR i j)) := by
+    rw [← hblock]
+    exact (matMulRectLeft_add_right Q
+      (lsQRTallBlock (k := k) R_hat)
+      (lsQRTallBlock (k := k) DeltaR)).symm
+  ext i j
+  have hAij := congrFun (congrFun hA i) j
+  have hmulji := congrFun (congrFun hmul j) i
+  simp [finiteTranspose] at hAij hmulji ⊢
+  calc
+    A i j + (DeltaA0 i j + matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR) j i)
+        = (A i j + DeltaA0 i j) +
+            matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR) j i := by ring
+    _ = matMulRectLeft Q (lsQRTallBlock (k := k) R_hat) j i +
+          matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR) j i := by
+          rw [hAij]
+    _ = matMulRectLeft Q
+          (lsQRTallBlock (k := k)
+            (fun i j => R_hat i j + DeltaR i j)) j i := hmulji
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
     algebraic difference form of the computed final `Q` action.  If
     `x_hat = (Q + DeltaQ)[y1;0]`, then its difference from the exact
