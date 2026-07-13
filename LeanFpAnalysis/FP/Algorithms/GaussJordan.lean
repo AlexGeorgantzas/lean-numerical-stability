@@ -2593,4 +2593,221 @@ theorem gje_rowDiagDominantUpper_residual_of_cumulative_product_certificates
         linarith
   simpa [T1, T2U, T3U, U_inv] using hResidual
 
+/-- **Corollary 14.7 conditional infinity-norm residual route**.
+
+    This normwise wrapper uses the row-dominant `|| |L| |U| ||_inf` budget
+    supplied by `gje_rowDiagDominantUpper_residual_of_cumulative_product_certificates`
+    for the first-stage term, caps the GJE second-stage coefficient by
+    `3 n u + gje_c3_quadratic_remainder fp n`, and exposes the two remaining
+    second-stage norm aggregations as `beta` and `eta` hypotheses. -/
+theorem gje_rowDiagDominantUpper_residual_relative_infNorm_of_cumulative_product_certificates_c3_cap
+    (n : ℕ) (fp : FPModel)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b y x_hat : Fin n → ℝ)
+    (N_hat DeltaN : Fin n → Fin n → Fin n → ℝ)
+    (start : ℕ)
+    (hLUExact : LUFactSpec n A L_hat U_hat)
+    (hURow : higham8_8_rowDiagDominantUpper n U_hat)
+    (hn : gammaValid fp n)
+    (hnpos : 1 ≤ n)
+    (hn3 : gammaValid fp 3)
+    (hidx : ∀ r : Fin (n - 1),
+      start + ((n - 1) - 1 - r.val) < n)
+    (hDelta : ∀ r : Fin (n - 1), ∀ i j : Fin n,
+      |DeltaN (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j| ≤
+        gamma fp 3 *
+          |N_hat (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j|)
+    (hy : ∀ i : Fin n, ∑ j : Fin n, L_hat i j * y j = b i)
+    (hBackwardEq : ∀ i : Fin n,
+      ∑ j : Fin n,
+          (U_hat i j +
+            (matMul n
+                (gje_cumulative_product n
+                  (fun k a b => N_hat k a b + DeltaN k a b)
+                  start (start + (n - 1))) U_hat i j -
+              matMul n
+                (gje_cumulative_product n N_hat start (start + (n - 1)))
+                U_hat i j)) *
+            x_hat j =
+        y i +
+          (matMulVec n
+              (gje_cumulative_product n
+                (fun k a b => N_hat k a b + DeltaN k a b)
+                start (start + (n - 1))) y i -
+            matMulVec n
+              (gje_cumulative_product n N_hat start (start + (n - 1))) y i))
+    (hUinvDom : ∀ i j : Fin n,
+      |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+        start (start + (n - 1)) i j| ≤ |nonsingInv n U_hat i j|)
+    (beta eta : ℝ)
+    (hApos : 0 < infNorm A)
+    (hxpos : 0 < infNormVec x_hat)
+    (hbeta : 0 ≤ beta)
+    (heta : 0 ≤ eta)
+    (hSecondU_x : ∀ i : Fin n,
+      ∑ j : Fin n,
+        (∑ k₁ : Fin n, |L_hat i k₁| *
+          (∑ k₂ : Fin n,
+            |nonsingInv n U_hat k₁ k₂| * |U_hat k₂ j|)) * |x_hat j| ≤
+      beta * infNorm A * infNormVec x_hat)
+    (hSecondU_y : ∀ i : Fin n,
+      ∑ k : Fin n, |L_hat i k| *
+        (∑ j : Fin n, |nonsingInv n U_hat k j| * |y j|) ≤
+      eta * infNorm A * infNormVec x_hat) :
+    infNormVec (fun i : Fin n => b i - ∑ j : Fin n, A i j * x_hat j) /
+        (infNorm A * infNormVec x_hat) ≤
+      gamma fp n * (2 * (n : ℝ) - 1) +
+        (3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n) *
+          (beta + eta) := by
+  let r : Fin n → ℝ := fun i => b i - ∑ j : Fin n, A i j * x_hat j
+  let W : Fin n → Fin n → ℝ :=
+    matMul n (absMatrix n L_hat) (absMatrix n U_hat)
+  let x_abs : Fin n → ℝ := absVec n x_hat
+  let denom : ℝ := infNorm A * infNormVec x_hat
+  let C : ℝ := 3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n
+  have hLU : LUBackwardError n A L_hat U_hat (gamma fp n) :=
+    higham9_LUFactSpec_to_LUBackwardError_gamma fp n hn hLUExact
+  have hPack :=
+    gje_rowDiagDominantUpper_residual_of_cumulative_product_certificates
+      n fp A L_hat U_hat b y x_hat N_hat DeltaN start
+      hLUExact hLU hURow hn hnpos hn3 hidx hDelta hy hBackwardEq hUinvDom
+  have hAbsLU : higham9_17_rowDiagDom_absLU_bound n A L_hat U_hat := hPack.1
+  have hResidual := hPack.2
+  have hgamma : 0 ≤ gamma fp n := gamma_nonneg fp hn
+  have hc3 : 0 ≤ gje_c₃ fp n := gje_c3_nonneg fp n hnpos hn3
+  have hC : gje_c₃ fp n ≤ C := by
+    simpa [C] using gje_c3_le_three_n_u_plus_quadratic_remainder fp n hn3
+  have hC_nonneg : 0 ≤ C := le_trans hc3 hC
+  have hdenom_pos : 0 < denom := by
+    exact mul_pos hApos hxpos
+  have hrowCoeff_nonneg : 0 ≤ 2 * (n : ℝ) - 1 := by
+    have hnreal : (1 : ℝ) ≤ n := by exact_mod_cast hnpos
+    nlinarith
+  have hT1_bound : ∀ i : Fin n,
+      ∑ j : Fin n,
+        (∑ k : Fin n, |L_hat i k| * |U_hat k j|) * |x_hat j| ≤
+        (2 * (n : ℝ) - 1) * infNorm A * infNormVec x_hat := by
+    intro i
+    have hsum_eq :
+        (∑ j : Fin n,
+          (∑ k : Fin n, |L_hat i k| * |U_hat k j|) * |x_hat j|) =
+          matMulVec n W x_abs i := by
+      simp [W, x_abs, matMulVec, matMul, absMatrix, absVec]
+    have hcomponent :
+        matMulVec n W x_abs i ≤ infNorm W * infNormVec x_abs := by
+      exact (le_abs_self _).trans
+        ((abs_le_infNormVec (matMulVec n W x_abs) i).trans
+          (infNormVec_matMulVec_le hnpos W x_abs))
+    calc
+      ∑ j : Fin n,
+          (∑ k : Fin n, |L_hat i k| * |U_hat k j|) * |x_hat j|
+          = matMulVec n W x_abs i := hsum_eq
+      _ ≤ infNorm W * infNormVec x_abs := hcomponent
+      _ ≤ ((2 * (n : ℝ) - 1) * infNorm A) * infNormVec x_abs := by
+            exact mul_le_mul_of_nonneg_right hAbsLU (infNormVec_nonneg x_abs)
+      _ = (2 * (n : ℝ) - 1) * infNorm A * infNormVec x_hat := by
+            rw [infNormVec_absVec hnpos x_hat]
+  have hcomponent_bound : ∀ i : Fin n,
+      |r i| ≤
+        (gamma fp n * (2 * (n : ℝ) - 1) + C * (beta + eta)) * denom := by
+    intro i
+    let S1 : ℝ :=
+      ∑ j : Fin n,
+        (∑ k : Fin n, |L_hat i k| * |U_hat k j|) * |x_hat j|
+    let S2 : ℝ :=
+      ∑ j : Fin n,
+        (∑ k₁ : Fin n, |L_hat i k₁| *
+          (∑ k₂ : Fin n,
+            |nonsingInv n U_hat k₁ k₂| * |U_hat k₂ j|)) * |x_hat j|
+    let S3 : ℝ :=
+      ∑ k : Fin n, |L_hat i k| *
+        (∑ j : Fin n, |nonsingInv n U_hat k j| * |y j|)
+    have hS1 : S1 ≤ (2 * (n : ℝ) - 1) * denom := by
+      calc
+        S1 ≤ (2 * (n : ℝ) - 1) * infNorm A * infNormVec x_hat := by
+          simpa [S1] using hT1_bound i
+        _ = (2 * (n : ℝ) - 1) * denom := by
+          simp [denom]
+          ring
+    have hS2 : S2 ≤ beta * denom := by
+      calc
+        S2 ≤ beta * infNorm A * infNormVec x_hat := by
+          simpa [S2] using hSecondU_x i
+        _ = beta * denom := by
+          simp [denom]
+          ring
+    have hS3 : S3 ≤ eta * denom := by
+      calc
+        S3 ≤ eta * infNorm A * infNormVec x_hat := by
+          simpa [S3] using hSecondU_y i
+        _ = eta * denom := by
+          simp [denom]
+          ring
+    have hS2_nonneg : 0 ≤ S2 := by
+      dsimp [S2]
+      apply Finset.sum_nonneg
+      intro j _
+      exact mul_nonneg
+        (Finset.sum_nonneg (fun k₁ _ =>
+          mul_nonneg (abs_nonneg _)
+            (Finset.sum_nonneg (fun k₂ _ =>
+              mul_nonneg (abs_nonneg _) (abs_nonneg _)))))
+        (abs_nonneg _)
+    have hS3_nonneg : 0 ≤ S3 := by
+      dsimp [S3]
+      apply Finset.sum_nonneg
+      intro k _
+      exact mul_nonneg (abs_nonneg _)
+        (Finset.sum_nonneg (fun j _ =>
+          mul_nonneg (abs_nonneg _) (abs_nonneg _)))
+    have h1 :
+        gamma fp n * S1 ≤
+          gamma fp n * ((2 * (n : ℝ) - 1) * denom) :=
+      mul_le_mul_of_nonneg_left hS1 hgamma
+    have h2 :
+        gje_c₃ fp n * S2 ≤ C * (beta * denom) := by
+      calc
+        gje_c₃ fp n * S2 ≤ C * S2 :=
+          mul_le_mul_of_nonneg_right hC hS2_nonneg
+        _ ≤ C * (beta * denom) :=
+          mul_le_mul_of_nonneg_left hS2 hC_nonneg
+    have h3 :
+        gje_c₃ fp n * S3 ≤ C * (eta * denom) := by
+      calc
+        gje_c₃ fp n * S3 ≤ C * S3 :=
+          mul_le_mul_of_nonneg_right hC hS3_nonneg
+        _ ≤ C * (eta * denom) :=
+          mul_le_mul_of_nonneg_left hS3 hC_nonneg
+    calc
+      |r i| ≤ gamma fp n * S1 + gje_c₃ fp n * S2 + gje_c₃ fp n * S3 := by
+        simpa [r, S1, S2, S3] using hResidual i
+      _ ≤ gamma fp n * ((2 * (n : ℝ) - 1) * denom) +
+            C * (beta * denom) + C * (eta * denom) := by
+            nlinarith
+      _ = (gamma fp n * (2 * (n : ℝ) - 1) + C * (beta + eta)) * denom := by
+            ring
+  have hscalar_nonneg :
+      0 ≤ (gamma fp n * (2 * (n : ℝ) - 1) + C * (beta + eta)) * denom := by
+    have hsum_nonneg :
+        0 ≤ gamma fp n * (2 * (n : ℝ) - 1) + C * (beta + eta) :=
+      add_nonneg
+        (mul_nonneg hgamma hrowCoeff_nonneg)
+        (mul_nonneg hC_nonneg (add_nonneg hbeta heta))
+    exact mul_nonneg hsum_nonneg hdenom_pos.le
+  have hVec :
+      infNormVec r ≤
+        (gamma fp n * (2 * (n : ℝ) - 1) + C * (beta + eta)) * denom :=
+    infNormVec_le_of_abs_le r hcomponent_bound hscalar_nonneg
+  have hFinal :
+      infNormVec r / denom ≤
+        gamma fp n * (2 * (n : ℝ) - 1) + C * (beta + eta) := by
+    have hDiv := div_le_div_of_nonneg_right hVec hdenom_pos.le
+    calc
+      infNormVec r / denom ≤
+          ((gamma fp n * (2 * (n : ℝ) - 1) + C * (beta + eta)) * denom) /
+            denom := hDiv
+      _ = gamma fp n * (2 * (n : ℝ) - 1) + C * (beta + eta) := by
+          field_simp [hdenom_pos.ne']
+  simpa [r, denom, C] using hFinal
+
 end LeanFpAnalysis.FP
