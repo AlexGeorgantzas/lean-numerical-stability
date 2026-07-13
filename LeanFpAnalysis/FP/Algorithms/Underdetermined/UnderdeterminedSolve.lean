@@ -9326,6 +9326,47 @@ theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_c
       heta hcoeff
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    concrete repository coefficient for the rounded final `Q_hat` action.
+    This names the growth radius currently supplied by the Householder QR panel
+    accumulated-`Q` theorem, so later source comparisons need only prove a
+    scalar domination inequality. -/
+noncomputable def Higham21QActionGrowthCoefficient
+    (fp : FPModel) (n : ℕ) : ℝ :=
+  (n : ℝ) * householderConstructApplyBound fp n *
+    (1 + householderConstructApplyBound fp n) ^ n *
+    Real.sqrt (n : ℝ)
+
+theorem higham21_eq21_10_q_action_closed_form_coefficient_le_gamma
+    (fp : FPModel) (n : ℕ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex n)) :
+    householderQR_QhatClosedFormBound fp n n ≤
+      gamma fp (n * householderConstructApplyGammaIndex n) *
+        Real.sqrt (n : ℝ) := by
+  let K : ℕ := householderConstructApplyGammaIndex n
+  have hKvalid : gammaValid fp K := by
+    exact gammaValid_mono fp (Nat.le_mul_of_pos_left K hn) hvalid
+  have hbase_valid : gammaValid fp (11 * n + 23) := by
+    exact gammaValid_mono fp (by
+      dsimp [K, householderConstructApplyGammaIndex]
+      omega) hKvalid
+  have hc0 : 0 ≤ householderConstructApplyBound fp n :=
+    householderConstructApplyBound_nonneg fp n hbase_valid
+  have hc :
+      householderConstructApplyBound fp n ≤ gamma fp K := by
+    simpa [K] using householderConstructApplyBound_le_gamma fp n hKvalid
+  have hpow :
+      (1 + householderConstructApplyBound fp n) ^ n - 1 ≤
+        gamma fp (n * K) :=
+    one_add_pow_sub_one_le_gamma_mul_of_le_gamma fp n K hc0 hc (by
+      simpa [K] using hvalid)
+  have hsqrt : 0 ≤ Real.sqrt (n : ℝ) := Real.sqrt_nonneg _
+  have hmul :=
+    mul_le_mul_of_nonneg_right hpow hsqrt
+  simpa [householderQR_QhatClosedFormBound, K, mul_assoc] using hmul
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
     algebraic difference form of the computed final `Q` action.  If
     `x_hat = (Q + DeltaQ)[y1;0]`, then its difference from the exact
     `Q[y1;0]` action is precisely `DeltaQ [y1;0]`. -/
@@ -9492,6 +9533,147 @@ theorem higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat
       (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
       (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
       y1 x_hat eta hQerr hx
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    sharper closed-form coefficient for the concrete Householder panel
+    `Q_hat` action error.  This keeps the repository's closed accumulated
+    `Q_hat` recurrence before it is enlarged to the simple growth bound. -/
+theorem higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_closed_form
+    {m k : ℕ}
+    (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hvalid : gammaValid fp (11 * (m + k) + 23))
+    (hx :
+      x_hat =
+        matMulVec (m + k)
+          (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ))) :
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k)
+          (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      householderQR_QhatClosedFormBound fp (m + k) (m + k) *
+        vecNorm2 y1 := by
+  have hQerr :
+      HouseholderQRPanelQhatFixedAccumError (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+        (householderQR_QhatClosedFormBound fp (m + k) (m + k)) := by
+    have hUniform :
+        HouseholderQRPanelQhatFixedAccumError (m + k)
+          (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+          (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+          (householderQR_QhatUniformClosedBound fp (m + k) (m + k)) :=
+      fl_householderQRPanel_Qhat_fixed_Q_uniform_accum_error
+        fp (m + k) m (m + k) (finiteTranspose A) (le_refl (m + k)) hvalid
+    simpa [householderQR_QhatUniformClosedBound_eq_closedForm] using hUniform
+  exact
+    higham21_eq21_10_q_action_vec_error_bound_of_fixed_q_accum_error
+      (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+      (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+      y1 x_hat (householderQR_QhatClosedFormBound fp (m + k) (m + k))
+      hQerr hx
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    gamma-shaped consequence of the closed-form accumulated `Q_hat` radius.
+    This is closer to the printed Lemma 19.3 style, while still using the
+    repository's concrete Householder operation-count index. -/
+theorem higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_gamma
+    {m k : ℕ}
+    (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hNpos : 0 < m + k)
+    (hvalid :
+      gammaValid fp
+        ((m + k) * householderConstructApplyGammaIndex (m + k)))
+    (hx :
+      x_hat =
+        matMulVec (m + k)
+          (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ))) :
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k)
+          (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      (gamma fp ((m + k) * householderConstructApplyGammaIndex (m + k)) *
+        Real.sqrt ((m + k : ℕ) : ℝ)) * vecNorm2 y1 := by
+  have hKvalid :
+      gammaValid fp (householderConstructApplyGammaIndex (m + k)) :=
+    gammaValid_mono fp
+      (Nat.le_mul_of_pos_left (householderConstructApplyGammaIndex (m + k))
+        hNpos) hvalid
+  have hQvalid : gammaValid fp (11 * (m + k) + 23) :=
+    gammaValid_mono fp (by
+      dsimp [householderConstructApplyGammaIndex]
+      omega) hKvalid
+  have hclosed :=
+    higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_closed_form
+      fp A y1 x_hat hQvalid hx
+  have hcoeff :=
+    higham21_eq21_10_q_action_closed_form_coefficient_le_gamma
+      fp (m + k) hNpos hvalid
+  exact le_trans hclosed
+    (mul_le_mul_of_nonneg_right hcoeff (vecNorm2_nonneg y1))
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    named-coefficient form of the concrete Householder panel `Q_hat` action
+    error bound. -/
+theorem higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_coefficient
+    {m k : ℕ}
+    (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hvalid : gammaValid fp (11 * (m + k) + 23))
+    (hx :
+      x_hat =
+        matMulVec (m + k)
+          (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ))) :
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k)
+          (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      Higham21QActionGrowthCoefficient fp (m + k) * vecNorm2 y1 := by
+  simpa [Higham21QActionGrowthCoefficient] using
+    higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat
+      fp A y1 x_hat hvalid hx
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    conservative-coefficient form of the concrete Householder panel `Q_hat`
+    action error bound.  Any source radius dominating
+    `Higham21QActionGrowthCoefficient` inherits the vector-error certificate. -/
+theorem higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_of_coefficient_le
+    {m k : ℕ}
+    (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hvalid : gammaValid fp (11 * (m + k) + 23))
+    (hx :
+      x_hat =
+        matMulVec (m + k)
+          (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ)))
+    {eta : ℝ}
+    (hcoeff : Higham21QActionGrowthCoefficient fp (m + k) ≤ eta) :
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k)
+          (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      eta * vecNorm2 y1 := by
+  exact le_trans
+    (higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_coefficient
+      fp A y1 x_hat hvalid hx)
+    (mul_le_mul_of_nonneg_right hcoeff (vecNorm2_nonneg y1))
 
 /-- **Theorem 21.4** (Higham): The Q method for underdetermined systems
     is row-wise backward stable.
