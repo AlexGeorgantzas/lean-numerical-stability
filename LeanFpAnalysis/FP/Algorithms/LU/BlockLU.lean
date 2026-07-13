@@ -484,8 +484,12 @@
     higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse,
     higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_diag_lower_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim,
     higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim,
+    higham13_algorithm13_3_pivot_right_inverse_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos,
+    higham13_algorithm13_3_pivot_det_ne_zero_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos,
     higham13_algorithm13_3_matrix_infNorm_active_column_dominance_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim,
+    higham13_algorithm13_3_matrix_infNorm_active_column_dominance_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pos_dim,
     higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim,
+    higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pos_dim,
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_matrixStageHistoryInfBound_le_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim,
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim,
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_det_ne_zero_of_pos_dim,
@@ -19929,6 +19933,120 @@ theorem
       (higham13_algorithm13_3_pivot_right_inverse_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
         A pivotInv invDiagBound hPrefix hDom hBound hPivot0 hTailDet hTailPivotInv)
 
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    matrix-`∞` BDD specialization of the canonical-tail recursive active
+    pivot-table lift.
+
+    This is the source-facing matrix-norm version of
+    `...blockDiagDomCol_diagBound_nonpos`: it transports the `∞` operator-norm
+    column-BDD hypothesis to the finite-function block norm and then reuses the
+    existing first-Schur-tail canonical `nonsingInv` pivot lift. -/
+theorem
+    higham13_algorithm13_3_pivot_right_inverse_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos
+    {m r : ℕ} (hr : 0 < r)
+    (A : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin (m + 1) → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDom : IsBlockDiagDomCol (m + 1)
+      (fun i j : Fin (m + 1) => infNorm (A i j)) invDiagBound)
+    (hBound : ∀ j : Fin (m + 1), invDiagBound j ≤ 0)
+    (hPivot0 : pivotInv 0 =
+      nonsingInv r (A (0 : Fin (m + 1)) (0 : Fin (m + 1))))
+    (hTailDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hTailPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv (k + 1) =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) k
+            ⟨k, hk⟩ ⟨k, hk⟩)) :
+    ∀ k : ℕ, ∀ hk : k < m + 1,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k) := by
+  let Afn : Fin (m + 1) → Fin (m + 1) → Fin r → Fin r → ℝ :=
+    fun i j a b => A i j a b
+  let pivotFn : ℕ → Fin r → Fin r → ℝ :=
+    fun k a b => pivotInv k a b
+  have hPrefixFn : ∀ p : ℕ, ∀ hp : p < m + 1,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 Afn p hp) := by
+    intro p hp
+    simpa [Afn] using hPrefix p hp
+  have hDomPi : IsBlockDiagDomCol (m + 1)
+      (fun i j => ‖Afn i j‖) invDiagBound := by
+    simpa [Afn] using
+      (higham13_blockDiagDomCol_piNorm_of_infNorm hr A invDiagBound hDom)
+  have hPivot0Fn :
+      pivotFn 0 =
+        nonsingInv r (Afn (0 : Fin (m + 1)) (0 : Fin (m + 1))) := by
+    simpa [Afn, pivotFn] using hPivot0
+  have hTailDetFn : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          (blockSchur Afn (pivotFn 0)) (fun q => pivotFn (q + 1)) k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+    intro k hk
+    simpa [Afn, pivotFn] using hTailDet k hk
+  have hTailPivotInvFn : ∀ k : ℕ, ∀ hk : k < m,
+      pivotFn (k + 1) =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            (blockSchur Afn (pivotFn 0)) (fun q => pivotFn (q + 1)) k
+            ⟨k, hk⟩ ⟨k, hk⟩) := by
+    intro k hk
+    simpa [Afn, pivotFn] using hTailPivotInv k hk
+  have hPivotRightFn :=
+    higham13_algorithm13_3_pivot_right_inverse_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos
+      Afn pivotFn invDiagBound hPrefixFn hDomPi hBound hPivot0Fn
+      hTailDetFn hTailPivotInvFn
+  intro k hk
+  simpa [Afn, pivotFn] using hPivotRightFn k hk
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof step:
+    determinant projection of the matrix-`∞` BDD canonical-tail recursive
+    active pivot-table lift. -/
+theorem
+    higham13_algorithm13_3_pivot_det_ne_zero_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos
+    {m r : ℕ} (hr : 0 < r)
+    (A : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin (m + 1) → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDom : IsBlockDiagDomCol (m + 1)
+      (fun i j : Fin (m + 1) => infNorm (A i j)) invDiagBound)
+    (hBound : ∀ j : Fin (m + 1), invDiagBound j ≤ 0)
+    (hPivot0 : pivotInv 0 =
+      nonsingInv r (A (0 : Fin (m + 1)) (0 : Fin (m + 1))))
+    (hTailDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hTailPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv (k + 1) =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) k
+            ⟨k, hk⟩ ⟨k, hk⟩)) :
+    ∀ k : ℕ, ∀ hk : k < m + 1,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  exact
+    higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse A pivotInv
+      (higham13_algorithm13_3_pivot_right_inverse_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos
+        hr A pivotInv invDiagBound hPrefix hDom hBound hPivot0 hTailDet
+        hTailPivotInv)
+
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
     the assembled matrix-product stage factors satisfy `BlockLUFactSpec` from
     exact pivot right-inverse certificates. -/
@@ -21749,6 +21867,52 @@ theorem
       (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv invDiagBound
       hDom hInit hPivotRight
 
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7:
+    source-facing matrix-`∞` active column dominance from BDD data and
+    canonical first-Schur-tail pivot inverse data.
+
+    The active pivot right-inverse table is derived internally from
+    `pivotInv 0 = nonsingInv r (A 0 0)` and the first Schur tail's determinant
+    plus canonical `nonsingInv` table. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_active_column_dominance_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pos_dim
+    {m r : ℕ} (hr : 0 < r)
+    (A : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin (m + 1) → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDom : IsBlockDiagDomCol (m + 1)
+      (fun i j : Fin (m + 1) => infNorm (A i j)) invDiagBound)
+    (hBound : ∀ j : Fin (m + 1), invDiagBound j ≤ 0)
+    (hPivot0 : pivotInv 0 =
+      nonsingInv r (A (0 : Fin (m + 1)) (0 : Fin (m + 1))))
+    (hTailDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hTailPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv (k + 1) =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) k
+            ⟨k, hk⟩ ⟨k, hk⟩)) :
+    letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+    SchurStageActiveColumnDom13_7
+      (fun k i j => infNorm
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv) := by
+  letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+  have hPivotRight :=
+    higham13_algorithm13_3_pivot_right_inverse_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos
+      hr A pivotInv invDiagBound hPrefix hDom hBound hPivot0 hTailDet
+      hTailPivotInv
+  exact
+    higham13_algorithm13_3_matrix_infNorm_active_column_dominance_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim
+      hr A pivotInv invDiagBound hPrefix hDom hBound hPivotRight
+
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and Theorem 13.7:
     matrix-`∞` active column dominance from initial diagonal inverse reciprocal
     data and certified active pivot right inverses. -/
@@ -22434,6 +22598,53 @@ theorem
     higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_continuousLinearMap_source_table_of_pivot_right_inverse
       (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv invDiagBound
       hDom hDiagBound hInit hPivotRight normMax hMax k i j hik hjk
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.8:
+    source-facing matrix-`∞` active-stage `2 * max` bound from BDD data and
+    canonical first-Schur-tail pivot inverse data.
+
+    This removes the explicit all-active pivot right-inverse table from the
+    BDD matrix-`∞` stage-bound interface, leaving the recursive tail
+    determinant/equality table as the remaining source obligation. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pos_dim
+    {m r : ℕ} (hr : 0 < r)
+    (A : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin (m + 1) → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDom : IsBlockDiagDomCol (m + 1)
+      (fun i j : Fin (m + 1) => infNorm (A i j)) invDiagBound)
+    (hBound : ∀ j : Fin (m + 1), invDiagBound j ≤ 0)
+    (hPivot0 : pivotInv 0 =
+      nonsingInv r (A (0 : Fin (m + 1)) (0 : Fin (m + 1))))
+    (hTailDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hTailPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv (k + 1) =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) k
+            ⟨k, hk⟩ ⟨k, hk⟩))
+    (normMax : ℝ)
+    (hMax : ∀ i j : Fin (m + 1), infNorm (A i j) ≤ normMax)
+    (k : ℕ) (i j : Fin (m + 1)) (hik : k ≤ i.val) (hjk : k ≤ j.val) :
+    infNorm (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j) ≤
+      2 * normMax := by
+  letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+  have hPivotRight :=
+    higham13_algorithm13_3_pivot_right_inverse_of_first_schur_tail_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos
+      hr A pivotInv invDiagBound hPrefix hDom hBound hPivot0 hTailDet
+      hTailPivotInv
+  exact
+    higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim
+      hr A pivotInv invDiagBound hPrefix hDom hBound hPivotRight
+      normMax hMax k i j hik hjk
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and Theorem 13.8:
     matrix-`∞` active-stage bound from initial diagonal inverse reciprocal data
