@@ -7170,6 +7170,27 @@ theorem higham21_rowwise_backward_error_bound_witness
     UndetRowwiseBackwardErrorBounded m n A b x_hat eta :=
   ⟨ΔA, ⟨heta, hmin, hrow⟩⟩
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.3:
+    row-wise backward-error certificates are monotone in the displayed error
+    factor.  This is a small packaging lemma for later source statements whose
+    printed coefficient is a conservative upper bound for a proved one. -/
+theorem higham21_rowwise_backward_error_bound_mono
+    {m n : ℕ}
+    {A : Fin m → Fin n → ℝ}
+    {b : Fin m → ℝ}
+    {x_hat : Fin n → ℝ}
+    {eta eta' : ℝ}
+    (hcert : UndetRowwiseBackwardErrorBounded m n A b x_hat eta)
+    (heta' : 0 ≤ eta')
+    (hle : eta ≤ eta') :
+    UndetRowwiseBackwardErrorBounded m n A b x_hat eta' := by
+  rcases hcert with ⟨DeltaA, hfeas⟩
+  refine ⟨DeltaA, ?_⟩
+  refine ⟨heta', hfeas.min_norm, ?_⟩
+  intro i
+  exact le_trans (hfeas.row_bound i)
+    (mul_le_mul_of_nonneg_right hle (rectRowNorm2_nonneg A i))
+
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2 and Section 21.3:
     once the Lemma 21.2 single perturbation is known to make `x_hat` a
     minimum-norm solution, common row-wise relative bounds on the two source
@@ -9065,6 +9086,30 @@ theorem Higham21QMethodFullRowRankComputedQRDomain.nonbreakdown
   lsTheorem20_4FullRankComputedQRDomain.computedQRNonbreakdown fp h
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    the concrete row-wise coefficient currently proved for the Householder
+    Q-method path: the Chapter 19 QR perturbation factor plus the triangular
+    solve factor and their first-order product. -/
+noncomputable def Higham21QMethodRowwiseCoefficient
+    (fp : FPModel) (m k : ℕ) : ℝ :=
+  H19.Theorem19_4.gamma_tilde fp (m + k) m +
+    gamma fp m * (1 + H19.Theorem19_4.gamma_tilde fp (m + k) m)
+
+theorem Higham21QMethodRowwiseCoefficient_nonneg
+    (fp : FPModel) (m k : ℕ)
+    (hvalidQR :
+      gammaValid fp (m * householderConstructApplyGammaIndex (m + k)))
+    (hvalid : gammaValid fp m) :
+    0 ≤ Higham21QMethodRowwiseCoefficient fp m k := by
+  have hqr_nonneg :
+      0 ≤ H19.Theorem19_4.gamma_tilde fp (m + k) m :=
+    H19.Theorem19_4.gamma_tilde_nonneg fp hvalidQR
+  have hgamma_nonneg : 0 ≤ gamma fp m := gamma_nonneg fp hvalid
+  have hone : 0 ≤ 1 + H19.Theorem19_4.gamma_tilde fp (m + k) m := by
+    linarith
+  simpa [Higham21QMethodRowwiseCoefficient] using
+    add_nonneg hqr_nonneg (mul_nonneg hgamma_nonneg hone)
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
     source-facing row-wise backward-stability wrapper for any Chapter 19 QR
     certificate of `A^T`.  This projects the detailed `DeltaA0`/`DeltaR`
     witness into the row-wise backward-error predicate used by the theorem. -/
@@ -9157,6 +9202,65 @@ theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_c
       fp A b hm hvalidQR
       (Higham21QMethodFullRowRankComputedQRDomain.nonbreakdown hdomain)
       hvalid hvalid2
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    same concrete Q-method row-wise theorem with the proved coefficient named
+    explicitly for later comparison with the printed asymptotic coefficient. -/
+theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain_coefficient
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ)
+    (hm : 0 < m)
+    (hvalidQR :
+      gammaValid fp (m * householderConstructApplyGammaIndex (m + k)))
+    (hdomain : Higham21QMethodFullRowRankComputedQRDomain m k fp A)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m)) :
+    UndetRowwiseBackwardErrorBounded m (m + k) A b
+      (matMulVec (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (Fin.append
+          (fl_forwardSub fp m
+            (matTranspose
+              (fun a b =>
+                fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                  (Fin.castAdd k a) b)) b)
+          (0 : Fin k → ℝ)))
+      (Higham21QMethodRowwiseCoefficient fp m k) := by
+  simpa [Higham21QMethodRowwiseCoefficient] using
+    higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain
+      fp A b hm hvalidQR hdomain hvalid hvalid2
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    conservative-coefficient handoff.  Any nonnegative source coefficient
+    that dominates `Higham21QMethodRowwiseCoefficient` inherits the concrete
+    row-wise backward-stability certificate. -/
+theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain_of_coefficient_le
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ)
+    (hm : 0 < m)
+    (hvalidQR :
+      gammaValid fp (m * householderConstructApplyGammaIndex (m + k)))
+    (hdomain : Higham21QMethodFullRowRankComputedQRDomain m k fp A)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m))
+    {eta : ℝ} (heta : 0 ≤ eta)
+    (hcoeff : Higham21QMethodRowwiseCoefficient fp m k ≤ eta) :
+    UndetRowwiseBackwardErrorBounded m (m + k) A b
+      (matMulVec (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (Fin.append
+          (fl_forwardSub fp m
+            (matTranspose
+              (fun a b =>
+                fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                  (Fin.castAdd k a) b)) b)
+          (0 : Fin k → ℝ)))
+      eta := by
+  exact
+    higham21_rowwise_backward_error_bound_mono
+      (higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain_coefficient
+        fp A b hm hvalidQR hdomain hvalid hvalid2)
+      heta hcoeff
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
     algebraic difference form of the computed final `Q` action.  If
