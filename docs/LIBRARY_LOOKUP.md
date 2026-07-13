@@ -5802,6 +5802,8 @@ original-matrix perturbed determinant wrapper, and Problem 14.10:
 - `higham14_problem14_14_det_upper_add_zero_diag_of_abs_bound`
 - `higham14_problem14_14_hyman_det_cyclic_block_of_upper_add_zero_diag`
 - `higham14_problem14_14_hyman_det_original_of_upper_add_zero_diag`
+- `higham14_problem14_14_abs_det_original_of_upper_add_zero_diag`
+- `higham14_problem14_14_exists_deltaH_det_original_of_upper_add_zero_diag`
 - `matrixEntryPerturb`
 - `higham14_problem14_10_det_entry_perturb_eq`
 - `higham14_problem14_10_det_entry_independent_of_adjugate_eq_zero`
