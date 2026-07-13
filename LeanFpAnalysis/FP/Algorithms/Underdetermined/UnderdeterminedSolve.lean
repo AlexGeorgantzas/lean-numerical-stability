@@ -7170,6 +7170,27 @@ theorem higham21_rowwise_backward_error_bound_witness
     UndetRowwiseBackwardErrorBounded m n A b x_hat eta :=
   ⟨ΔA, ⟨heta, hmin, hrow⟩⟩
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.3:
+    row-wise backward-error certificates are monotone in the displayed error
+    factor.  This is a small packaging lemma for later source statements whose
+    printed coefficient is a conservative upper bound for a proved one. -/
+theorem higham21_rowwise_backward_error_bound_mono
+    {m n : ℕ}
+    {A : Fin m → Fin n → ℝ}
+    {b : Fin m → ℝ}
+    {x_hat : Fin n → ℝ}
+    {eta eta' : ℝ}
+    (hcert : UndetRowwiseBackwardErrorBounded m n A b x_hat eta)
+    (heta' : 0 ≤ eta')
+    (hle : eta ≤ eta') :
+    UndetRowwiseBackwardErrorBounded m n A b x_hat eta' := by
+  rcases hcert with ⟨DeltaA, hfeas⟩
+  refine ⟨DeltaA, ?_⟩
+  refine ⟨heta', hfeas.min_norm, ?_⟩
+  intro i
+  exact le_trans (hfeas.row_bound i)
+    (mul_le_mul_of_nonneg_right hle (rectRowNorm2_nonneg A i))
+
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2 and Section 21.3:
     once the Lemma 21.2 single perturbation is known to make `x_hat` a
     minimum-norm solution, common row-wise relative bounds on the two source
@@ -9047,6 +9068,35 @@ def Higham21QMethodTopBlockNonbreakdown
     (A : Fin m → Fin (m + k) → ℝ) : Prop :=
   lsTheorem20_4ComputedQRNonbreakdown fp (finiteTranspose A)
 
+theorem Higham21QMethodTopBlockNonbreakdown.of_topBlock_det_ne_zero
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (hdet :
+      Matrix.det
+        ((fun i j =>
+          fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+            (Fin.castAdd k i) j) : Matrix (Fin m) (Fin m) ℝ) ≠ 0) :
+    Higham21QMethodTopBlockNonbreakdown m k fp A := by
+  let R_top : Fin m → Fin m → ℝ :=
+    fun i j =>
+      fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+        (Fin.castAdd k i) j
+  have hupperTall :
+      IsUpperTrapezoidal (m + k) m
+        (fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)) :=
+    fl_householderQRPanel_R_upper_trapezoidal fp (m + k) m
+      (finiteTranspose A)
+  have hupperTop : ∀ i j : Fin m, j.val < i.val → R_top i j = 0 := by
+    simpa [R_top] using
+      lsQRTallBlock_top_upper_of_upper_trapezoidal
+        (fl_householderQRPanel_R fp (m + k) m (finiteTranspose A))
+        hupperTall
+  have hdiag : ∀ i : Fin m, R_top i i ≠ 0 :=
+    diag_ne_zero_of_upper_triangular_det_ne_zero m R_top hupperTop (by
+      simpa [R_top] using hdet)
+  simpa [Higham21QMethodTopBlockNonbreakdown,
+    lsTheorem20_4ComputedQRNonbreakdown, R_top] using hdiag
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
     source-facing concrete domain for the Q-method Householder path.  The
     printed full-row-rank condition for `A` is represented as full column rank
@@ -9063,6 +9113,30 @@ theorem Higham21QMethodFullRowRankComputedQRDomain.nonbreakdown
     (h : Higham21QMethodFullRowRankComputedQRDomain m k fp A) :
     Higham21QMethodTopBlockNonbreakdown m k fp A :=
   lsTheorem20_4FullRankComputedQRDomain.computedQRNonbreakdown fp h
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    the concrete row-wise coefficient currently proved for the Householder
+    Q-method path: the Chapter 19 QR perturbation factor plus the triangular
+    solve factor and their first-order product. -/
+noncomputable def Higham21QMethodRowwiseCoefficient
+    (fp : FPModel) (m k : ℕ) : ℝ :=
+  H19.Theorem19_4.gamma_tilde fp (m + k) m +
+    gamma fp m * (1 + H19.Theorem19_4.gamma_tilde fp (m + k) m)
+
+theorem Higham21QMethodRowwiseCoefficient_nonneg
+    (fp : FPModel) (m k : ℕ)
+    (hvalidQR :
+      gammaValid fp (m * householderConstructApplyGammaIndex (m + k)))
+    (hvalid : gammaValid fp m) :
+    0 ≤ Higham21QMethodRowwiseCoefficient fp m k := by
+  have hqr_nonneg :
+      0 ≤ H19.Theorem19_4.gamma_tilde fp (m + k) m :=
+    H19.Theorem19_4.gamma_tilde_nonneg fp hvalidQR
+  have hgamma_nonneg : 0 ≤ gamma fp m := gamma_nonneg fp hvalid
+  have hone : 0 ≤ 1 + H19.Theorem19_4.gamma_tilde fp (m + k) m := by
+    linarith
+  simpa [Higham21QMethodRowwiseCoefficient] using
+    add_nonneg hqr_nonneg (mul_nonneg hgamma_nonneg hone)
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
     source-facing row-wise backward-stability wrapper for any Chapter 19 QR
@@ -9129,6 +9203,40 @@ theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_householder_qr_
       hdiag hvalid hvalid2
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    determinant-facing nonbreakdown variant.  A nonzero determinant of the
+    computed top square `R` block implies the diagonal nonbreakdown field
+    consumed by the concrete Q-method row-wise theorem. -/
+theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_topBlock_det_ne_zero
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ)
+    (hm : 0 < m)
+    (hvalidQR :
+      gammaValid fp (m * householderConstructApplyGammaIndex (m + k)))
+    (hdet :
+      Matrix.det
+        ((fun i j =>
+          fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+            (Fin.castAdd k i) j) : Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m)) :
+    UndetRowwiseBackwardErrorBounded m (m + k) A b
+      (matMulVec (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (Fin.append
+          (fl_forwardSub fp m
+            (matTranspose
+              (fun a b =>
+                fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                  (Fin.castAdd k a) b)) b)
+          (0 : Fin k → ℝ)))
+      (Higham21QMethodRowwiseCoefficient fp m k) := by
+  simpa [Higham21QMethodRowwiseCoefficient] using
+    higham21_theorem21_4_q_method_rowwise_backward_stable_of_householder_qr_transpose
+      fp A b hm hvalidQR
+      (Higham21QMethodTopBlockNonbreakdown.of_topBlock_det_ne_zero fp A hdet)
+      hvalid hvalid2
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
     concrete row-wise backward-stability wrapper under the source-facing
     full-row-rank/computed-QR domain for the Householder QR of `A^T`. -/
 theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain
@@ -9157,6 +9265,106 @@ theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_c
       fp A b hm hvalidQR
       (Higham21QMethodFullRowRankComputedQRDomain.nonbreakdown hdomain)
       hvalid hvalid2
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    same concrete Q-method row-wise theorem with the proved coefficient named
+    explicitly for later comparison with the printed asymptotic coefficient. -/
+theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain_coefficient
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ)
+    (hm : 0 < m)
+    (hvalidQR :
+      gammaValid fp (m * householderConstructApplyGammaIndex (m + k)))
+    (hdomain : Higham21QMethodFullRowRankComputedQRDomain m k fp A)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m)) :
+    UndetRowwiseBackwardErrorBounded m (m + k) A b
+      (matMulVec (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (Fin.append
+          (fl_forwardSub fp m
+            (matTranspose
+              (fun a b =>
+                fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                  (Fin.castAdd k a) b)) b)
+          (0 : Fin k → ℝ)))
+      (Higham21QMethodRowwiseCoefficient fp m k) := by
+  simpa [Higham21QMethodRowwiseCoefficient] using
+    higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain
+      fp A b hm hvalidQR hdomain hvalid hvalid2
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    conservative-coefficient handoff.  Any nonnegative source coefficient
+    that dominates `Higham21QMethodRowwiseCoefficient` inherits the concrete
+    row-wise backward-stability certificate. -/
+theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain_of_coefficient_le
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ)
+    (hm : 0 < m)
+    (hvalidQR :
+      gammaValid fp (m * householderConstructApplyGammaIndex (m + k)))
+    (hdomain : Higham21QMethodFullRowRankComputedQRDomain m k fp A)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m))
+    {eta : ℝ} (heta : 0 ≤ eta)
+    (hcoeff : Higham21QMethodRowwiseCoefficient fp m k ≤ eta) :
+    UndetRowwiseBackwardErrorBounded m (m + k) A b
+      (matMulVec (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (Fin.append
+          (fl_forwardSub fp m
+            (matTranspose
+              (fun a b =>
+                fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                  (Fin.castAdd k a) b)) b)
+          (0 : Fin k → ℝ)))
+      eta := by
+  exact
+    higham21_rowwise_backward_error_bound_mono
+      (higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain_coefficient
+        fp A b hm hvalidQR hdomain hvalid hvalid2)
+      heta hcoeff
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    concrete repository coefficient for the rounded final `Q_hat` action.
+    This names the growth radius currently supplied by the Householder QR panel
+    accumulated-`Q` theorem, so later source comparisons need only prove a
+    scalar domination inequality. -/
+noncomputable def Higham21QActionGrowthCoefficient
+    (fp : FPModel) (n : ℕ) : ℝ :=
+  (n : ℝ) * householderConstructApplyBound fp n *
+    (1 + householderConstructApplyBound fp n) ^ n *
+    Real.sqrt (n : ℝ)
+
+theorem higham21_eq21_10_q_action_closed_form_coefficient_le_gamma
+    (fp : FPModel) (n : ℕ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex n)) :
+    householderQR_QhatClosedFormBound fp n n ≤
+      gamma fp (n * householderConstructApplyGammaIndex n) *
+        Real.sqrt (n : ℝ) := by
+  let K : ℕ := householderConstructApplyGammaIndex n
+  have hKvalid : gammaValid fp K := by
+    exact gammaValid_mono fp (Nat.le_mul_of_pos_left K hn) hvalid
+  have hbase_valid : gammaValid fp (11 * n + 23) := by
+    exact gammaValid_mono fp (by
+      dsimp [K, householderConstructApplyGammaIndex]
+      omega) hKvalid
+  have hc0 : 0 ≤ householderConstructApplyBound fp n :=
+    householderConstructApplyBound_nonneg fp n hbase_valid
+  have hc :
+      householderConstructApplyBound fp n ≤ gamma fp K := by
+    simpa [K] using householderConstructApplyBound_le_gamma fp n hKvalid
+  have hpow :
+      (1 + householderConstructApplyBound fp n) ^ n - 1 ≤
+        gamma fp (n * K) :=
+    one_add_pow_sub_one_le_gamma_mul_of_le_gamma fp n K hc0 hc (by
+      simpa [K] using hvalid)
+  have hsqrt : 0 ≤ Real.sqrt (n : ℝ) := Real.sqrt_nonneg _
+  have hmul :=
+    mul_le_mul_of_nonneg_right hpow hsqrt
+  simpa [householderQR_QhatClosedFormBound, K, mul_assoc] using hmul
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
     algebraic difference form of the computed final `Q` action.  If
@@ -9325,6 +9533,147 @@ theorem higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat
       (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
       (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
       y1 x_hat eta hQerr hx
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    sharper closed-form coefficient for the concrete Householder panel
+    `Q_hat` action error.  This keeps the repository's closed accumulated
+    `Q_hat` recurrence before it is enlarged to the simple growth bound. -/
+theorem higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_closed_form
+    {m k : ℕ}
+    (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hvalid : gammaValid fp (11 * (m + k) + 23))
+    (hx :
+      x_hat =
+        matMulVec (m + k)
+          (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ))) :
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k)
+          (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      householderQR_QhatClosedFormBound fp (m + k) (m + k) *
+        vecNorm2 y1 := by
+  have hQerr :
+      HouseholderQRPanelQhatFixedAccumError (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+        (householderQR_QhatClosedFormBound fp (m + k) (m + k)) := by
+    have hUniform :
+        HouseholderQRPanelQhatFixedAccumError (m + k)
+          (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+          (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+          (householderQR_QhatUniformClosedBound fp (m + k) (m + k)) :=
+      fl_householderQRPanel_Qhat_fixed_Q_uniform_accum_error
+        fp (m + k) m (m + k) (finiteTranspose A) (le_refl (m + k)) hvalid
+    simpa [householderQR_QhatUniformClosedBound_eq_closedForm] using hUniform
+  exact
+    higham21_eq21_10_q_action_vec_error_bound_of_fixed_q_accum_error
+      (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+      (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+      y1 x_hat (householderQR_QhatClosedFormBound fp (m + k) (m + k))
+      hQerr hx
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    gamma-shaped consequence of the closed-form accumulated `Q_hat` radius.
+    This is closer to the printed Lemma 19.3 style, while still using the
+    repository's concrete Householder operation-count index. -/
+theorem higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_gamma
+    {m k : ℕ}
+    (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hNpos : 0 < m + k)
+    (hvalid :
+      gammaValid fp
+        ((m + k) * householderConstructApplyGammaIndex (m + k)))
+    (hx :
+      x_hat =
+        matMulVec (m + k)
+          (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ))) :
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k)
+          (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      (gamma fp ((m + k) * householderConstructApplyGammaIndex (m + k)) *
+        Real.sqrt ((m + k : ℕ) : ℝ)) * vecNorm2 y1 := by
+  have hKvalid :
+      gammaValid fp (householderConstructApplyGammaIndex (m + k)) :=
+    gammaValid_mono fp
+      (Nat.le_mul_of_pos_left (householderConstructApplyGammaIndex (m + k))
+        hNpos) hvalid
+  have hQvalid : gammaValid fp (11 * (m + k) + 23) :=
+    gammaValid_mono fp (by
+      dsimp [householderConstructApplyGammaIndex]
+      omega) hKvalid
+  have hclosed :=
+    higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_closed_form
+      fp A y1 x_hat hQvalid hx
+  have hcoeff :=
+    higham21_eq21_10_q_action_closed_form_coefficient_le_gamma
+      fp (m + k) hNpos hvalid
+  exact le_trans hclosed
+    (mul_le_mul_of_nonneg_right hcoeff (vecNorm2_nonneg y1))
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    named-coefficient form of the concrete Householder panel `Q_hat` action
+    error bound. -/
+theorem higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_coefficient
+    {m k : ℕ}
+    (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hvalid : gammaValid fp (11 * (m + k) + 23))
+    (hx :
+      x_hat =
+        matMulVec (m + k)
+          (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ))) :
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k)
+          (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      Higham21QActionGrowthCoefficient fp (m + k) * vecNorm2 y1 := by
+  simpa [Higham21QActionGrowthCoefficient] using
+    higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat
+      fp A y1 x_hat hvalid hx
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    conservative-coefficient form of the concrete Householder panel `Q_hat`
+    action error bound.  Any source radius dominating
+    `Higham21QActionGrowthCoefficient` inherits the vector-error certificate. -/
+theorem higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_of_coefficient_le
+    {m k : ℕ}
+    (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hvalid : gammaValid fp (11 * (m + k) + 23))
+    (hx :
+      x_hat =
+        matMulVec (m + k)
+          (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ)))
+    {eta : ℝ}
+    (hcoeff : Higham21QActionGrowthCoefficient fp (m + k) ≤ eta) :
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k)
+          (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      eta * vecNorm2 y1 := by
+  exact le_trans
+    (higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_coefficient
+      fp A y1 x_hat hvalid hx)
+    (mul_le_mul_of_nonneg_right hcoeff (vecNorm2_nonneg y1))
 
 /-- **Theorem 21.4** (Higham): The Q method for underdetermined systems
     is row-wise backward stable.
