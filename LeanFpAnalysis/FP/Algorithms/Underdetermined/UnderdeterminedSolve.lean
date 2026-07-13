@@ -8421,6 +8421,182 @@ theorem higham21_theorem21_4_forwardSub_rowwise_backward_error_handoff_of_gammaV
       R_hat DeltaR hdiag hupper (gamma_lt_one fp m hvalid2) hDeltaR
   exact ⟨DeltaR, hDeltaR, hsolve, fun hsingle => hrowCond hdet hsingle⟩
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    common-perturbation specialization of the row-wise Q-method handoff.
+    Taking `DeltaA1 = DeltaA2 = DeltaA` reduces the Lemma 21.2 single
+    perturbation equality to the ordinary QR assembly equality
+    `A + DeltaA = (Q [R_hat + DeltaR; 0])^T`. -/
+theorem higham21_theorem21_4_forwardSub_single_perturbation_rowwise_backward_error_handoff_of_gammaValid2
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R_hat : Fin m → Fin m → ℝ) (b : Fin m → ℝ)
+    (hdiag : ∀ i : Fin m, R_hat i i ≠ 0)
+    (hupper : IsUpperTrapezoidal m m R_hat)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m))
+    (DeltaA : Fin m → Fin (m + k) → ℝ)
+    {eta : ℝ} (heta : 0 ≤ eta)
+    (hDeltaARow : ∀ i : Fin m,
+      rectRowNorm2 DeltaA i ≤ eta * rectRowNorm2 A i) :
+    ∃ DeltaR : Fin m → Fin m → ℝ,
+      (∀ i j, |DeltaR i j| ≤ gamma fp m * |R_hat i j|) ∧
+      (∀ i,
+        matMulVec m (matTranspose (fun a b => R_hat a b + DeltaR a b))
+          (fl_forwardSub fp m (matTranspose R_hat) b) i = b i) ∧
+      ((fun i j => A i j + DeltaA i j) =
+        finiteTranspose
+          (matMulRectLeft Q
+            (lsQRTallBlock (k := k)
+              (fun a b => R_hat a b + DeltaR a b))) →
+        UndetRowwiseBackwardErrorBounded m (m + k) A b
+          (matMulVec (m + k) Q
+            (Fin.append
+              (fl_forwardSub fp m (matTranspose R_hat) b)
+              (0 : Fin k → ℝ)))
+          (Real.sqrt 2 * eta)) := by
+  obtain ⟨DeltaR, hDeltaR, hsolve, hrowCond⟩ :=
+    higham21_theorem21_4_forwardSub_rowwise_backward_error_handoff_of_gammaValid2
+      fp A Q hQ R_hat b hdiag hupper hvalid hvalid2
+      DeltaA DeltaA heta hDeltaARow hDeltaARow
+  refine ⟨DeltaR, hDeltaR, hsolve, ?_⟩
+  intro hqr
+  apply hrowCond
+  let x_hat : Fin (m + k) → ℝ :=
+    matMulVec (m + k) Q
+      (Fin.append
+        (fl_forwardSub fp m (matTranspose R_hat) b)
+        (0 : Fin k → ℝ))
+  calc
+    (fun i j =>
+        A i j +
+          undetLemma21_2SinglePerturbation x_hat DeltaA DeltaA i j)
+        = (fun i j => A i j + DeltaA i j) := by
+          have hsame :=
+            higham21_lemma21_2_single_perturbation_same x_hat DeltaA
+          ext i j
+          rw [congrFun (congrFun hsame i) j]
+    _ =
+        finiteTranspose
+          (matMulRectLeft Q
+            (lsQRTallBlock (k := k)
+              (fun a b => R_hat a b + DeltaR a b))) := hqr
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    QR assembly equality for adding the triangular-solve perturbation to an
+    existing QR perturbation.  If `A + DeltaA0` is represented by
+    `(Q [R_hat;0])^T`, then adding the lifted block
+    `(Q [DeltaR;0])^T` gives the represented system
+    `(Q [R_hat + DeltaR;0])^T`. -/
+theorem higham21_theorem21_4_qr_deltaR_assembly_eq
+    {m k : ℕ}
+    (A DeltaA0 : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_hat DeltaR : Fin m → Fin m → ℝ)
+    (hA :
+      (fun i j => A i j + DeltaA0 i j) =
+        finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) R_hat))) :
+    (fun i j =>
+        A i j +
+          (DeltaA0 i j +
+            finiteTranspose
+              (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR)) i j)) =
+      finiteTranspose
+        (matMulRectLeft Q
+          (lsQRTallBlock (k := k)
+            (fun i j => R_hat i j + DeltaR i j))) := by
+  have hblock :
+      (fun i j =>
+          lsQRTallBlock (k := k) R_hat i j +
+            lsQRTallBlock (k := k) DeltaR i j) =
+        lsQRTallBlock (k := k)
+          (fun i j => R_hat i j + DeltaR i j) :=
+    lsQRTallBlock_add R_hat DeltaR
+  have hmul :
+      (fun i j =>
+          matMulRectLeft Q (lsQRTallBlock (k := k) R_hat) i j +
+            matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR) i j) =
+        matMulRectLeft Q
+          (lsQRTallBlock (k := k)
+            (fun i j => R_hat i j + DeltaR i j)) := by
+    rw [← hblock]
+    exact (matMulRectLeft_add_right Q
+      (lsQRTallBlock (k := k) R_hat)
+      (lsQRTallBlock (k := k) DeltaR)).symm
+  ext i j
+  have hAij := congrFun (congrFun hA i) j
+  have hmulji := congrFun (congrFun hmul j) i
+  simp [finiteTranspose] at hAij hmulji ⊢
+  calc
+    A i j + (DeltaA0 i j + matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR) j i)
+        = (A i j + DeltaA0 i j) +
+            matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR) j i := by ring
+    _ = matMulRectLeft Q (lsQRTallBlock (k := k) R_hat) j i +
+          matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR) j i := by
+          rw [hAij]
+    _ = matMulRectLeft Q
+          (lsQRTallBlock (k := k)
+            (fun i j => R_hat i j + DeltaR i j)) j i := hmulji
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    row-wise triangle-inequality adapter for assembling two perturbation
+    bounds against the same source matrix. -/
+theorem higham21_rectRowNorm2_add_le_of_row_bounds
+    {m n : ℕ}
+    (DeltaA DeltaB A : Fin m → Fin n → ℝ)
+    {etaA etaB : ℝ}
+    (hDeltaA : ∀ i : Fin m,
+      rectRowNorm2 DeltaA i ≤ etaA * rectRowNorm2 A i)
+    (hDeltaB : ∀ i : Fin m,
+      rectRowNorm2 DeltaB i ≤ etaB * rectRowNorm2 A i)
+    (i : Fin m) :
+    rectRowNorm2 (fun r c => DeltaA r c + DeltaB r c) i ≤
+      (etaA + etaB) * rectRowNorm2 A i := by
+  calc
+    rectRowNorm2 (fun r c => DeltaA r c + DeltaB r c) i
+        = vecNorm2 (fun j : Fin n => DeltaA i j + DeltaB i j) := rfl
+    _ ≤ vecNorm2 (fun j : Fin n => DeltaA i j) +
+          vecNorm2 (fun j : Fin n => DeltaB i j) := by
+          exact vecNorm2_add_le
+            (fun j : Fin n => DeltaA i j)
+            (fun j : Fin n => DeltaB i j)
+    _ = rectRowNorm2 DeltaA i + rectRowNorm2 DeltaB i := rfl
+    _ ≤ etaA * rectRowNorm2 A i + etaB * rectRowNorm2 A i := by
+          exact add_le_add (hDeltaA i) (hDeltaB i)
+    _ = (etaA + etaB) * rectRowNorm2 A i := by ring
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    once the QR perturbation and lifted triangular-solve perturbation are
+    bounded row-wise against `A`, their assembled common perturbation satisfies
+    the summed row-wise bound used by the Q-method proof. -/
+theorem higham21_theorem21_4_common_perturbation_row_bound_of_qr_and_lifted_bounds
+    {m k : ℕ}
+    (A DeltaA0 : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (DeltaR : Fin m → Fin m → ℝ)
+    {etaQR etaR : ℝ}
+    (hDeltaA0 : ∀ i : Fin m,
+      rectRowNorm2 DeltaA0 i ≤ etaQR * rectRowNorm2 A i)
+    (hDeltaR : ∀ i : Fin m,
+      rectRowNorm2
+        (finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR))) i ≤
+        etaR * rectRowNorm2 A i)
+    (i : Fin m) :
+    rectRowNorm2
+        (fun r c =>
+          DeltaA0 r c +
+            finiteTranspose
+              (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR)) r c) i ≤
+      (etaQR + etaR) * rectRowNorm2 A i :=
+  higham21_rectRowNorm2_add_le_of_row_bounds
+    DeltaA0
+    (finiteTranspose
+      (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR)))
+    A hDeltaA0 hDeltaR i
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
     algebraic difference form of the computed final `Q` action.  If
     `x_hat = (Q + DeltaQ)[y1;0]`, then its difference from the exact
