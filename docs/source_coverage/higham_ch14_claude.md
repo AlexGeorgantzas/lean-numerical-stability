@@ -22,7 +22,25 @@ and adversarially verified.
 
 - **All-index Weyl/Mirsky singular-value perturbation** for real rectangular / complex matrices, built on a from-scratch Courant–Fischer min-max over the Gram eigenbasis (`ch14ext_problem14_15_all_index_singularValue_abs_sub_le_opNorm2`, `ch14ext_singularValue_abs_sub_le_of_euclideanLin_diff_bound`). Mathlib currently lacks this; it may unblock other perturbation rows.
 
+## Wave 2 — deep GJE-cluster cores (Codex stopped; sole ownership)
+
+Each *derives* a per-step/loop hypothesis Codex had left assumed (verified: `derivedNotAssumed = true` in every case), rather than re-assuming it. All axiom-clean, adversarially verified, import-only.
+
+| Row | Status | Module / result |
+|---|---|---|
+| **Lemma 14.1** / (14.8) — Method 2 triangular-inverse left residual | **CLOSED** | `Ch14Method2Loop.lean` — `ch14ext_method2_left_residual`(`_normwise`). Concrete reverse-column loop (`termination_by n − j`) derives the strict-tail `fl_dotProduct`/`fl_mul` recurrence; no assumed storage hypothesis. |
+| **Algorithm 14.4** — full GJE with partial pivoting | **CLOSED** (spec + structural) | `GaussJordanPivoting.lean` — pivot selection (max-magnitude), permutation (`ch14ext_perm_isPermutation`), multiplier `\|m\|≤1` under pivoting (`ch14ext_pivoted_multiplier_abs_le_one`), elimination = matmul, column-zeroing. (Numerical stability is Theorem 14.5, separate.) |
+| **(14.14)** — Method 2B block-update instability | **CLOSED** | `MatrixInversionMethod2BInstance.lean` — explicit witness `Δ=[0,ε]`; off-diagonal residual not small + unbounded amplification, largeness derived. |
+| **Theorem 14.5** / (14.25)–(14.26) per-step | **PARTIAL** | `Ch14GaussJordanStep.lean` — **derived** the GJE second-stage per-step `γ₃` bound `\|Û_{k+1}−N̂ₖÛₖ\| ≤ γ₃\|N̂ₖ\|\|Ûₖ\|` (+ RHS analogue) from `fl(a op b)=(a op b)(1+δ)`, discharging Codex's assumed `hComp` unconditionally. **Residual:** the multi-stage cumulative accumulation (14.27)–(14.30) to the printed `8nu`/`2nu` endpoints (14.31)–(14.32). |
+| **Lemma 14.3** — Method 2C block left residual | **PARTIAL** | `Ch14Method2C.lean` — base + Higham's 2-block reduction, deriving the residual from block update + back-substitution error. **Residual:** the outer N-block recursion (N>2). |
+| **Lemma 14.2** / (14.10)–(14.13) — Method 1B block right residual | **PARTIAL** | `Ch14BlockTriInverse.lean` — derives the row-local certificates from the two-block partition (Higham's reduced case, p.265). **Residual:** the general N-block loop (N>2). |
+
+## Remaining open (documented residuals)
+
+- **Theorem 14.5 overall endpoints (14.31)–(14.33)** + **Corollaries 14.6 (SPD) / 14.7 (row-dominant)** depend on the multi-stage cumulative accumulation on top of the now-derived per-step bound.
+- **Method D (14.20)–(14.23)** composes once Lemmas 14.1 (closed) + 14.3 reach whole-matrix strength.
+- The N-block inductions for Lemmas 14.2 / 14.3.
+
 ## Notes
 
-- Chapter 14 was co-owned with a concurrent Codex agent (now stopped). Wave 1 targeted the rows independent of Codex's §14.3–§14.4 Gauss–Jordan cluster.
-- Wave 2 (in progress at time of writing) targets the deep GJE-cluster cores (Theorem 14.5 keystone loop, Lemmas 14.1/14.2/14.3 Method 2/1B/2C loops, Algorithm 14.4 pivoting spec, Method 2B (14.14) instability instance).
+- Chapter 14 was co-owned with a concurrent Codex agent, now stopped; wave 1 took the independent rows, wave 2 the deep GJE-cluster cores that were Codex's lane.

@@ -68,6 +68,12 @@ import LeanFpAnalysis.FP.Algorithms.GaussJordan
 import LeanFpAnalysis.FP.Algorithms.Ch14ForwardErrorEndpoint
 import LeanFpAnalysis.FP.Algorithms.Chapter14Problem1415Weyl
 import LeanFpAnalysis.FP.Algorithms.Ch14HymanDeterminant
+import LeanFpAnalysis.FP.Algorithms.Ch14GaussJordanStep
+import LeanFpAnalysis.FP.Algorithms.Ch14Method2Loop
+import LeanFpAnalysis.FP.Algorithms.Ch14Method2C
+import LeanFpAnalysis.FP.Algorithms.Ch14BlockTriInverse
+import LeanFpAnalysis.FP.Algorithms.GaussJordanPivoting
+import LeanFpAnalysis.FP.Algorithms.MatrixInversionMethod2BInstance
 import LeanFpAnalysis.FP.Algorithms.CondEstimation
 import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCond
 import LeanFpAnalysis.FP.Algorithms.PNormPowerMethod
