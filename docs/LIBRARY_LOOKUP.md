@@ -5538,6 +5538,7 @@ composition wrappers:
 - `gje_c3_eq_linear_plus_quadratic_remainder`
 - `gje_c3_quadratic_remainder`
 - `gje_c3_eq_linear_plus_quadratic_remainder_term`
+- `gje_c3_nonneg`
 - `gje_one_add_pow_sub_one_le_nat_mul_pred`
 - `gje_one_add_gamma_three_pow_sub_one_le_c3`
 - `GJEStage2Spec`
@@ -5568,6 +5569,7 @@ composition wrappers:
 - `gje_overall_residual`
 - `gje_overall_forward_error`
 - `gje_spd_residual`
+- `gje_spd_residual_of_cumulative_product_certificates`
 
 Chapter 14 exact algebra closures in `Algorithms/MatrixInversion.lean` include
 the (14.3) bounded-replacement forward-error layer, Problem 14.3, the explicit
