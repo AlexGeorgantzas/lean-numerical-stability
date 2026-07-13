@@ -5533,6 +5533,9 @@ cumulative-product and exact recurrence-accumulation support for
 composition wrappers:
 
 - `gje_c₃`
+- `gamma_three_sub_linear_eq_quadratic_remainder`
+- `gje_c3_eq_linear_plus_explicit_remainder`
+- `gje_c3_eq_linear_plus_quadratic_remainder`
 - `gje_one_add_pow_sub_one_le_nat_mul_pred`
 - `gje_one_add_gamma_three_pow_sub_one_le_c3`
 - `GJEStage2Spec`
