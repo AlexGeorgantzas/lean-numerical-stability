@@ -1,10 +1,12 @@
 /.lake
 /.venv/
+.DS_Store
 /.agents/
 /.codex/skills/
 
 # Local auto-formalization workspace. Do not commit or push.
 /chapter_splitting/
+/benchmark/
 /docs/chapter13/
 /scratch/
 *.aux
