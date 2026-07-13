@@ -8171,6 +8171,38 @@ theorem higham14_problem14_14_abs_det_original_of_upper_add_zero_diag
       simp [hsign]
   rw [hdet, abs_mul, abs_mul, hsign_abs, one_mul]
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.14, Appendix A:
+    packaged original-matrix backward-error target for Hyman's method.  Once a
+    later floating-point analysis supplies a componentwise-bounded `DeltaH`
+    whose permuted block is the perturbed Hyman block, the exact determinant
+    statement follows from the determinant wrappers above. -/
+theorem higham14_problem14_14_exists_deltaH_det_original_of_upper_add_zero_diag
+    {n : ℕ}
+    (H : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ)
+    (T DeltaT TpertInv : Matrix (Fin n) (Fin n) ℝ)
+    (y h : Fin n → ℝ) (η gammaT gammaH : ℝ)
+    (σ : Equiv.Perm (Fin n ⊕ Unit))
+    (hDeltaHCert :
+      ∃ DeltaH : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ,
+        (∀ i j, |DeltaH i j| ≤ gammaH * |H i j|) ∧
+        higham14_hymanBlockMatrix (T + DeltaT) y h η =
+          Matrix.submatrix (H + DeltaH) σ (Equiv.refl (Fin n ⊕ Unit)))
+    (hTupper : T.BlockTriangular id)
+    (hDeltaTDiag : ∀ i : Fin n, DeltaT i i = 0)
+    (hDeltaTBound : ∀ i j : Fin n, |DeltaT i j| ≤ gammaT * |T i j|)
+    (hTpertInv : IsLeftInverse n (T + DeltaT) TpertInv) :
+    ∃ DeltaH : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ,
+      (∀ i j, |DeltaH i j| ≤ gammaH * |H i j|) ∧
+      Matrix.det (H + DeltaH) =
+        (Equiv.Perm.sign σ : ℝ) *
+          Matrix.det T * higham14_hymanSchur h y TpertInv η := by
+  rcases hDeltaHCert with ⟨DeltaH, hDeltaHBound, hBlock⟩
+  refine ⟨DeltaH, hDeltaHBound, ?_⟩
+  exact
+    higham14_problem14_14_hyman_det_original_of_upper_add_zero_diag
+      (H + DeltaH) T DeltaT TpertInv y h η gammaT σ
+      hBlock hTupper hDeltaTDiag hDeltaTBound hTpertInv
+
 /-! ### Problem 14.8: complex inverse via a real block matrix -/
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.8:
