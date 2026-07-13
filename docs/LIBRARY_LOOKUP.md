@@ -5805,6 +5805,7 @@ and Problem 14.10:
 - `higham14_problem14_14_hyman_det_original_of_upper_add_zero_diag`
 - `higham14_problem14_14_abs_det_original_of_upper_add_zero_diag`
 - `higham14_problem14_14_exists_deltaH_det_original_of_upper_add_zero_diag`
+- `higham14_problem14_14_exists_deltaH_abs_det_original_of_upper_add_zero_diag`
 - `higham14_problem14_14_diagonalSimilarity`
 - `higham14_problem14_14_diagonalUnscalePerturbation`
 - `higham14_problem14_14_diagonalSimilarity_apply`
@@ -5813,6 +5814,7 @@ and Problem 14.10:
 - `higham14_problem14_14_unscaled_delta_bound_of_scaled`
 - `higham14_problem14_14_unscale_deltaH_det_of_diagonal_scaled_det`
 - `higham14_problem14_14_exists_deltaH_det_original_of_diagonal_scaled_upper_add_zero_diag`
+- `higham14_problem14_14_exists_deltaH_abs_det_original_of_diagonal_scaled_upper_add_zero_diag`
 - `matrixEntryPerturb`
 - `higham14_problem14_10_det_entry_perturb_eq`
 - `higham14_problem14_10_det_entry_independent_of_adjugate_eq_zero`
