@@ -16039,6 +16039,10 @@ small enough to serve as a smoke check for representative public declarations.
 #check Wave20.perturbation_col_le_sigma
 #check Wave20.entrywiseStage_of_stageData
 #check Wave20.H19_Theorem19_6_final
+-- Wave-20 strong model: 19.6 under FPModel.exactWithUnitRoundoff; reflector self-dot + entrywise E + columnwise E-error DERIVED
+#check Wave20.columnFrob_stage_residual_le
+#check Wave20.numerator_col_le
+#check Wave20.H19_Theorem19_6_strongModel
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved
