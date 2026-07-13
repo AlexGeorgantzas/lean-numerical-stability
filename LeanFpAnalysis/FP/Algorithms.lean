@@ -67,6 +67,10 @@ import LeanFpAnalysis.FP.Algorithms.MatrixInversion
 import LeanFpAnalysis.FP.Algorithms.GaussJordan
 import LeanFpAnalysis.FP.Algorithms.CondEstimation
 import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCond
+import LeanFpAnalysis.FP.Algorithms.PNormPowerMethod
+import LeanFpAnalysis.FP.Algorithms.Chapter15CondEst
+import LeanFpAnalysis.FP.Algorithms.Ch15CondEstimators
+import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCondCh15
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterSpec
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterBackward
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterPerturbation
