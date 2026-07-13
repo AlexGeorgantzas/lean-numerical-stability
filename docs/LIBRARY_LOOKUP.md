@@ -5661,6 +5661,8 @@ simplification, the exact Hyman block identities
 - `higham14_eq14_14_method2B_block_update_delta_bound`
 - `Method2BBlockUpdateSpec`
 - `higham14_eq14_14_method2B_block_update_spec_of_product_error`
+- `higham14_eq14_14_method2B_offdiag_residual_eq_delta_mul`
+- `higham14_eq14_14_method2B_no_small_offdiag_residual_of_propagated_delta`
 - `higham14_eq14_14_method2B_exact_offdiag_block_update`
 - `higham14_methodDProductDelta`
 - `higham14_methodDLUBackwardDelta`
