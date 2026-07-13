@@ -6468,6 +6468,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_methodD_abs_Xhat_le_scaled_abs_product
 #check higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget
 #check higham14_eq14_23_methodD_left_residual_bound_of_local_certificates
+#check higham14_eq14_23_methodD_left_residual_infNorm_of_local_certificates
 #check higham14_eq14_23_methodD_left_residual_bound
 #check higham14_rowNorm2
 #check higham14_rowNormDiagonal
