@@ -1,5 +1,6 @@
 /.lake
 /.venv/
+.DS_Store
 /.agents/
 /.codex/skills/
 
