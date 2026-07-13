@@ -6322,6 +6322,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check gamma_three_sub_linear_eq_quadratic_remainder
 #check gje_c3_eq_linear_plus_explicit_remainder
 #check gje_c3_eq_linear_plus_quadratic_remainder
+#check gje_c3_quadratic_remainder
+#check gje_c3_eq_linear_plus_quadratic_remainder_term
 #check gje_one_add_pow_sub_one_le_nat_mul_pred
 #check gje_one_add_gamma_three_pow_sub_one_le_c3
 #check GJEStage2Spec
@@ -6347,6 +6349,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check gje_stage2_backward_error_of_cumulative_product_certificates
 #check gje_overall_residual_of_cumulative_product_certificates
 #check gje_overall_forward_error_of_cumulative_product_certificates
+#check gje_overall_residual_of_cumulative_product_certificates_c3_split
+#check gje_overall_forward_error_of_cumulative_product_certificates_c3_split
 #check gje_overall_residual
 #check gje_overall_forward_error
 #check gje_spd_residual
