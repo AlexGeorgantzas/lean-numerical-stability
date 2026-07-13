@@ -91,6 +91,16 @@ theorem gje_c3_eq_linear_plus_quadratic_remainder_term
   simpa [gje_c3_quadratic_remainder] using
     gje_c3_eq_linear_plus_quadratic_remainder fp n h3
 
+/-- Theorem 14.5 scalar support: the GJE `c₃` coefficient is bounded by the
+    source-facing `3 n u` first-order term plus the existing explicit
+    higher-order remainder. -/
+theorem gje_c3_le_three_n_u_plus_quadratic_remainder
+    (fp : FPModel) (n : ℕ) (h3 : gammaValid fp 3) :
+    gje_c₃ fp n ≤
+      3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n := by
+  rw [gje_c3_eq_linear_plus_quadratic_remainder_term fp n h3]
+  nlinarith [fp.u_nonneg]
+
 /-- Higham, 2nd ed., Chapter 14, Theorem 14.5 support:
     the GJE cumulative coefficient `c₃ = (n-1) γ₃ (1+γ₃)^(n-2)` is
     nonnegative under the usual dimension and gamma-validity side conditions. -/
