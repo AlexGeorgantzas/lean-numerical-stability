@@ -2810,4 +2810,160 @@ theorem gje_rowDiagDominantUpper_residual_relative_infNorm_of_cumulative_product
           field_simp [hdenom_pos.ne']
   simpa [r, denom, C] using hFinal
 
+/-- **Corollary 14.7 conditional infinity-norm forward-error route**.
+
+    This composes the row-dominant relative residual bridge with the exact
+    inverse action `x - x_hat = A_inv (b - A x_hat)`.  The result keeps
+    the same explicit `beta`/`eta` second-stage aggregation hypotheses and
+    an explicit `infNorm A_inv * infNorm A` condition factor. -/
+theorem gje_rowDiagDominantUpper_forward_error_relative_infNorm_of_cumulative_product_certificates_c3_cap
+    (n : ℕ) (fp : FPModel)
+    (A A_inv L_hat U_hat : Fin n → Fin n → ℝ)
+    (b y x x_hat : Fin n → ℝ)
+    (N_hat DeltaN : Fin n → Fin n → Fin n → ℝ)
+    (start : ℕ)
+    (hLUExact : LUFactSpec n A L_hat U_hat)
+    (hAinv : IsLeftInverse n A A_inv)
+    (hURow : higham8_8_rowDiagDominantUpper n U_hat)
+    (hn : gammaValid fp n)
+    (hnpos : 1 ≤ n)
+    (hn3 : gammaValid fp 3)
+    (hidx : ∀ r : Fin (n - 1),
+      start + ((n - 1) - 1 - r.val) < n)
+    (hDelta : ∀ r : Fin (n - 1), ∀ i j : Fin n,
+      |DeltaN (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j| ≤
+        gamma fp 3 *
+          |N_hat (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j|)
+    (hy : ∀ i : Fin n, ∑ j : Fin n, L_hat i j * y j = b i)
+    (hExact : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i)
+    (hBackwardEq : ∀ i : Fin n,
+      ∑ j : Fin n,
+          (U_hat i j +
+            (matMul n
+                (gje_cumulative_product n
+                  (fun k a b => N_hat k a b + DeltaN k a b)
+                  start (start + (n - 1))) U_hat i j -
+              matMul n
+                (gje_cumulative_product n N_hat start (start + (n - 1)))
+                U_hat i j)) *
+            x_hat j =
+        y i +
+          (matMulVec n
+              (gje_cumulative_product n
+                (fun k a b => N_hat k a b + DeltaN k a b)
+                start (start + (n - 1))) y i -
+            matMulVec n
+              (gje_cumulative_product n N_hat start (start + (n - 1))) y i))
+    (hUinvDom : ∀ i j : Fin n,
+      |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+        start (start + (n - 1)) i j| ≤ |nonsingInv n U_hat i j|)
+    (beta eta : ℝ)
+    (hApos : 0 < infNorm A)
+    (hxhatpos : 0 < infNormVec x_hat)
+    (hxpos : 0 < infNormVec x)
+    (hbeta : 0 ≤ beta)
+    (heta : 0 ≤ eta)
+    (hSecondU_x : ∀ i : Fin n,
+      ∑ j : Fin n,
+        (∑ k₁ : Fin n, |L_hat i k₁| *
+          (∑ k₂ : Fin n,
+            |nonsingInv n U_hat k₁ k₂| * |U_hat k₂ j|)) * |x_hat j| ≤
+      beta * infNorm A * infNormVec x_hat)
+    (hSecondU_y : ∀ i : Fin n,
+      ∑ k : Fin n, |L_hat i k| *
+        (∑ j : Fin n, |nonsingInv n U_hat k j| * |y j|) ≤
+      eta * infNorm A * infNormVec x_hat) :
+    infNormVec (fun i : Fin n => x i - x_hat i) / infNormVec x ≤
+      infNorm A_inv * infNorm A *
+        (gamma fp n * (2 * (n : ℝ) - 1) +
+          (3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n) *
+            (beta + eta)) *
+        (infNormVec x_hat / infNormVec x) := by
+  let e : Fin n → ℝ := fun i => x i - x_hat i
+  let r : Fin n → ℝ := fun i => b i - ∑ j : Fin n, A i j * x_hat j
+  let B : ℝ :=
+    gamma fp n * (2 * (n : ℝ) - 1) +
+      (3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n) * (beta + eta)
+  let denom : ℝ := infNorm A * infNormVec x_hat
+  have hResRel :=
+    gje_rowDiagDominantUpper_residual_relative_infNorm_of_cumulative_product_certificates_c3_cap
+      n fp A L_hat U_hat b y x_hat N_hat DeltaN start
+      hLUExact hURow hn hnpos hn3 hidx hDelta hy hBackwardEq hUinvDom
+      beta eta hApos hxhatpos hbeta heta hSecondU_x hSecondU_y
+  have hdenom_pos : 0 < denom := mul_pos hApos hxhatpos
+  have hResNorm : infNormVec r ≤ B * denom := by
+    have hmul := mul_le_mul_of_nonneg_right
+      (by simpa [r, denom, B] using hResRel) hdenom_pos.le
+    calc
+      infNormVec r = (infNormVec r / denom) * denom := by
+        field_simp [hdenom_pos.ne']
+      _ ≤ B * denom := by
+        simpa using hmul
+  have hDiff : ∀ i : Fin n, e i = ∑ j : Fin n, A_inv i j * r j := by
+    intro i
+    have hRHS_expand : ∑ j : Fin n, A_inv i j * r j =
+        ∑ j : Fin n, A_inv i j * (∑ k : Fin n, A j k * x k) -
+        ∑ j : Fin n, A_inv i j * (∑ k : Fin n, A j k * x_hat k) := by
+      rw [← Finset.sum_sub_distrib]
+      apply Finset.sum_congr rfl
+      intro j _
+      rw [hExact j]
+      simp [r]
+      ring
+    have hFirst : ∑ j : Fin n, A_inv i j *
+        (∑ k : Fin n, A j k * x k) = x i := by
+      simp_rw [Finset.mul_sum, ← mul_assoc]
+      rw [Finset.sum_comm]
+      simp_rw [← Finset.sum_mul, hAinv i]
+      simp only [ite_mul, one_mul, zero_mul, Finset.sum_ite_eq, Finset.mem_univ, ite_true]
+    have hSecond : ∑ j : Fin n, A_inv i j *
+        (∑ k : Fin n, A j k * x_hat k) = x_hat i := by
+      simp_rw [Finset.mul_sum, ← mul_assoc]
+      rw [Finset.sum_comm]
+      simp_rw [← Finset.sum_mul, hAinv i]
+      simp only [ite_mul, one_mul, zero_mul, Finset.sum_ite_eq, Finset.mem_univ, ite_true]
+    calc
+      e i = x i - x_hat i := rfl
+      _ = ∑ j : Fin n, A_inv i j * r j := by
+        rw [hRHS_expand, hFirst, hSecond]
+  have hForwardNorm : infNormVec e ≤ infNorm A_inv * infNormVec r := by
+    apply infNormVec_le_of_abs_le
+    · intro i
+      calc
+        |e i| = |∑ j : Fin n, A_inv i j * r j| := by rw [hDiff i]
+        _ ≤ ∑ j : Fin n, |A_inv i j * r j| := Finset.abs_sum_le_sum_abs _ _
+        _ = ∑ j : Fin n, |A_inv i j| * |r j| := by
+              apply Finset.sum_congr rfl
+              intro j _
+              rw [abs_mul]
+        _ ≤ ∑ j : Fin n, |A_inv i j| * infNormVec r := by
+              apply Finset.sum_le_sum
+              intro j _
+              exact mul_le_mul_of_nonneg_left (abs_le_infNormVec r j) (abs_nonneg _)
+        _ = (∑ j : Fin n, |A_inv i j|) * infNormVec r := by
+              rw [Finset.sum_mul]
+        _ ≤ infNorm A_inv * infNormVec r := by
+              exact mul_le_mul_of_nonneg_right
+                (row_sum_le_infNorm A_inv i) (infNormVec_nonneg r)
+    · exact mul_nonneg (infNorm_nonneg A_inv) (infNormVec_nonneg r)
+  have hEbound :
+      infNormVec e ≤ infNorm A_inv * (B * denom) := by
+    calc
+      infNormVec e ≤ infNorm A_inv * infNormVec r := hForwardNorm
+      _ ≤ infNorm A_inv * (B * denom) :=
+        mul_le_mul_of_nonneg_left hResNorm (infNorm_nonneg A_inv)
+  have hFinal :
+      infNormVec e / infNormVec x ≤
+        infNorm A_inv * infNorm A * B *
+          (infNormVec x_hat / infNormVec x) := by
+    have hDiv := div_le_div_of_nonneg_right hEbound hxpos.le
+    calc
+      infNormVec e / infNormVec x ≤
+          (infNorm A_inv * (B * denom)) / infNormVec x := hDiv
+      _ = infNorm A_inv * infNorm A * B *
+            (infNormVec x_hat / infNormVec x) := by
+          simp [denom]
+          field_simp [hxpos.ne']
+  simpa [e, B] using hFinal
+
 end LeanFpAnalysis.FP
