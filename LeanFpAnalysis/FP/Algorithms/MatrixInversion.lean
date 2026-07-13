@@ -8096,6 +8096,25 @@ theorem higham14_problem14_14_det_upper_add_zero_diag_of_abs_bound {n : ℕ}
   intro i _
   simp [Matrix.add_apply, hDeltaDiag i]
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.14, Appendix A:
+    exact Hyman determinant wrapper after perturbing the triangular solve
+    block.  The determinant-invariance hinge above keeps the factor `det T`
+    even though the Hyman block uses `T + DeltaT` and its inverse certificate. -/
+theorem higham14_problem14_14_hyman_det_cyclic_block_of_upper_add_zero_diag
+    {n : ℕ}
+    (T DeltaT TpertInv : Matrix (Fin n) (Fin n) ℝ)
+    (y h : Fin n → ℝ) (η gamma : ℝ)
+    (hTupper : T.BlockTriangular id)
+    (hDeltaDiag : ∀ i : Fin n, DeltaT i i = 0)
+    (hDeltaBound : ∀ i j : Fin n, |DeltaT i j| ≤ gamma * |T i j|)
+    (hTpertInv : IsLeftInverse n (T + DeltaT) TpertInv) :
+    Matrix.det (higham14_hymanBlockMatrix (T + DeltaT) y h η) =
+      Matrix.det T * higham14_hymanSchur h y TpertInv η := by
+  rw [higham14_eq14_36_hyman_det_cyclic_block
+    (T + DeltaT) TpertInv y h η hTpertInv]
+  rw [higham14_problem14_14_det_upper_add_zero_diag_of_abs_bound
+    T DeltaT gamma hTupper hDeltaDiag hDeltaBound]
+
 /-! ### Problem 14.8: complex inverse via a real block matrix -/
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.8:
