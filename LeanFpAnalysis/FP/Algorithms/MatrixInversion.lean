@@ -1582,6 +1582,35 @@ theorem triInv_method1B_right_residual_normwise_of_column_backward_error
     (triInv_method1B_spec_of_column_backward_error n N fp L X_hat
       hBlockCount hLower hCol)
 
+/-- Problem 14.2 / Lemma 14.2 normwise bridge:
+    Method 1B's row-local backward-error certificates imply the corresponding
+    infinity-norm right-residual bound after assembling the rows into the
+    column-certificate interface.
+
+    This is the normwise companion of
+    `triInv_method1B_right_residual_of_row_certificates`; the open source
+    obligation is still to derive the row certificates from the block Method
+    1B loop in equations (14.11)--(14.13). -/
+theorem triInv_method1B_right_residual_normwise_of_row_certificates
+    (n N : ℕ) (hn0 : 0 < n) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hn : gammaValid fp n)
+    (hBlockCount : N ≤ n)
+    (hLower : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0)
+    (hRows : ∀ j i : Fin n, ∃ Δrow : Fin n → ℝ,
+      (∀ k : Fin n, |Δrow k| ≤ gamma fp n * |L i k|) ∧
+      ∑ k : Fin n, (L i k + Δrow k) * X_hat k j =
+        if i = j then 1 else 0) :
+    infNorm (fun i j =>
+      ∑ k : Fin n, L i k * X_hat k j - if i = j then 1 else 0) ≤
+      gamma fp n * infNorm L * infNorm X_hat :=
+  triInv_method1B_right_residual_normwise_from_spec n N hn0 fp L X_hat
+    hL_diag hLT hn
+    (triInv_method1B_spec_of_row_certificates n N fp L X_hat
+      hBlockCount hLower hRows)
+
 /-- Exact off-diagonal block used in Higham equation (14.14), Method 2B:
     `-X22 * L21 * X11`.  Here `L21` is the lower-left rectangular block, and
     `X11`, `X22` are diagonal-block inverse approximations/exact blocks. -/
@@ -1673,6 +1702,101 @@ theorem higham14_eq14_14_method2B_block_update_spec_of_product_error {m r : ℕ}
   delta_bound :=
     higham14_eq14_14_method2B_block_update_delta_bound
       X21_hat X22 L21 X11 ε absBound hBound
+
+/-- Higham equation (14.14), Method 2B residual identity:
+    the off-diagonal left-residual block
+    `X21_hat * L11 + X22 * L21` is exactly the block-update perturbation
+    propagated through `L11`, provided `X11 * L11 = I`.
+
+    This isolates the algebraic hinge used by the instability discussion:
+    even if the block update has a local product-error certificate, that
+    perturbation is subsequently multiplied by `L11` in the residual. -/
+theorem higham14_eq14_14_method2B_offdiag_residual_eq_delta_mul {m r : ℕ}
+    (L11 X11 : Fin m → Fin m → ℝ)
+    (X21_hat : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (ε : ℝ) (absBound : Fin r → Fin m → ℝ)
+    (hSpec : Method2BBlockUpdateSpec X21_hat X22 L21 X11 ε absBound)
+    (hX11_left : IsLeftInverse m L11 X11) :
+    ∀ i : Fin r, ∀ j : Fin m,
+      rectMatMul X21_hat L11 i j + rectMatMul X22 L21 i j =
+        rectMatMul
+          (higham14_method2BBlockUpdateDelta X21_hat X22 L21 X11)
+          L11 i j := by
+  intro i j
+  let Δ := higham14_method2BBlockUpdateDelta X21_hat X22 L21 X11
+  let E := higham14_method2BBlockUpdateExact X22 L21 X11
+  have hX21 : X21_hat = fun a b => E a b + Δ a b := by
+    ext a b
+    exact hSpec.update_decomposition a b
+  have hX11L11 : rectMatMul X11 L11 = idMatrix m := by
+    ext a b
+    exact hX11_left a b
+  have hE_mul :
+      rectMatMul E L11 = fun a b => -rectMatMul X22 L21 a b := by
+    unfold E higham14_method2BBlockUpdateExact
+    calc
+      rectMatMul (fun a b => -rectMatMul (rectMatMul X22 L21) X11 a b) L11
+          = fun a b =>
+              -rectMatMul (rectMatMul (rectMatMul X22 L21) X11) L11 a b := by
+            exact rectMatMul_neg_left (rectMatMul (rectMatMul X22 L21) X11) L11
+      _ = fun a b =>
+              -rectMatMul (rectMatMul X22 L21) (rectMatMul X11 L11) a b := by
+            rw [rectMatMul_assoc (rectMatMul X22 L21) X11 L11]
+      _ = fun a b =>
+              -rectMatMul (rectMatMul X22 L21) (idMatrix m) a b := by
+            rw [hX11L11]
+      _ = fun a b => -rectMatMul X22 L21 a b := by
+            rw [rectMatMul_id_right (rectMatMul X22 L21)]
+  have hX21_mul :
+      rectMatMul X21_hat L11 i j =
+        rectMatMul E L11 i j + rectMatMul Δ L11 i j := by
+    calc
+      rectMatMul X21_hat L11 i j =
+          rectMatMul (fun a b => E a b + Δ a b) L11 i j := by
+            rw [hX21]
+      _ = rectMatMul E L11 i j + rectMatMul Δ L11 i j := by
+            rw [rectMatMul_add_left E Δ L11]
+  calc
+    rectMatMul X21_hat L11 i j + rectMatMul X22 L21 i j
+        = (rectMatMul E L11 i j + rectMatMul Δ L11 i j) +
+            rectMatMul X22 L21 i j := by rw [hX21_mul]
+    _ = (-rectMatMul X22 L21 i j + rectMatMul Δ L11 i j) +
+            rectMatMul X22 L21 i j := by rw [hE_mul]
+    _ = rectMatMul Δ L11 i j := by ring
+
+/-- Higham equation (14.14), Method 2B obstruction wrapper:
+    if the propagated block-update perturbation is larger than a proposed
+    off-diagonal residual budget in one entry, then the whole off-diagonal
+    residual block cannot satisfy that budget.
+
+    This is a source-facing obstruction hinge, not the full instability
+    theorem: the large propagated-delta hypothesis still has to be established
+    for a concrete Method 2B instance. -/
+theorem higham14_eq14_14_method2B_no_small_offdiag_residual_of_propagated_delta
+    {m r : ℕ}
+    (L11 X11 : Fin m → Fin m → ℝ)
+    (X21_hat : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (ε : ℝ) (absBound sourceBudget : Fin r → Fin m → ℝ)
+    (hSpec : Method2BBlockUpdateSpec X21_hat X22 L21 X11 ε absBound)
+    (hX11_left : IsLeftInverse m L11 X11)
+    {i0 : Fin r} {j0 : Fin m}
+    (hLarge :
+      sourceBudget i0 j0 <
+        |rectMatMul
+          (higham14_method2BBlockUpdateDelta X21_hat X22 L21 X11)
+          L11 i0 j0|) :
+    ¬ (∀ i : Fin r, ∀ j : Fin m,
+      |rectMatMul X21_hat L11 i j + rectMatMul X22 L21 i j| ≤
+        sourceBudget i j) := by
+  intro hSmall
+  have hId :=
+    higham14_eq14_14_method2B_offdiag_residual_eq_delta_mul
+      L11 X11 X21_hat X22 L21 ε absBound hSpec hX11_left i0 j0
+  have hEntry := hSmall i0 j0
+  rw [hId] at hEntry
+  exact not_lt_of_ge hEntry hLarge
 
 /-- Exact Method 2B off-diagonal block formula from the block equation
     `X21 * L11 + X22 * L21 = 0` and the diagonal-block inverse certificate

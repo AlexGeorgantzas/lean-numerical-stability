@@ -6343,6 +6343,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check gje_stage2_backward_error
 #check gje_stage2_backward_error_of_cumulative_product_certificates
 #check gje_overall_residual_of_cumulative_product_certificates
+#check gje_overall_forward_error_of_cumulative_product_certificates
 #check gje_overall_residual
 #check gje_overall_forward_error
 #check gje_spd_residual
@@ -6390,6 +6391,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check triInv_method1B_right_residual_normwise
 #check triInv_method1B_right_residual_normwise_from_spec
 #check triInv_method1B_right_residual_normwise_of_column_backward_error
+#check triInv_method1B_right_residual_normwise_of_row_certificates
 #check triInv_method2C_left_residual_normwise
 #check higham14_problem14_3_right_residual_eq_mul_left_residual
 #check higham14_problem14_3_left_residual_eq_mul_right_residual
@@ -6439,6 +6441,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_eq14_14_method2B_block_update_delta_bound
 #check Method2BBlockUpdateSpec
 #check higham14_eq14_14_method2B_block_update_spec_of_product_error
+#check higham14_eq14_14_method2B_offdiag_residual_eq_delta_mul
+#check higham14_eq14_14_method2B_no_small_offdiag_residual_of_propagated_delta
 #check higham14_eq14_14_method2B_exact_offdiag_block_update
 #check higham14_methodDProductDelta
 #check higham14_methodDLUBackwardDelta

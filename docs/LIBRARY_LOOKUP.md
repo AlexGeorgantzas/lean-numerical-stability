@@ -5557,6 +5557,7 @@ composition wrappers:
 - `gje_stage2_backward_error`
 - `gje_stage2_backward_error_of_cumulative_product_certificates`
 - `gje_overall_residual_of_cumulative_product_certificates`
+- `gje_overall_forward_error_of_cumulative_product_certificates`
 - `gje_overall_residual`
 - `gje_overall_forward_error`
 - `gje_spd_residual`
@@ -5613,6 +5614,7 @@ simplification, the exact Hyman block identities
 - `triInv_method1B_right_residual_normwise`
 - `triInv_method1B_right_residual_normwise_from_spec`
 - `triInv_method1B_right_residual_normwise_of_column_backward_error`
+- `triInv_method1B_right_residual_normwise_of_row_certificates`
 - `triInv_method2C_left_residual_normwise`
 - `higham14_problem14_3_right_residual_eq_mul_left_residual`
 - `higham14_problem14_3_left_residual_eq_mul_right_residual`
@@ -5660,6 +5662,8 @@ simplification, the exact Hyman block identities
 - `higham14_eq14_14_method2B_block_update_delta_bound`
 - `Method2BBlockUpdateSpec`
 - `higham14_eq14_14_method2B_block_update_spec_of_product_error`
+- `higham14_eq14_14_method2B_offdiag_residual_eq_delta_mul`
+- `higham14_eq14_14_method2B_no_small_offdiag_residual_of_propagated_delta`
 - `higham14_eq14_14_method2B_exact_offdiag_block_update`
 - `higham14_methodDProductDelta`
 - `higham14_methodDLUBackwardDelta`
