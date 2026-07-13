@@ -1343,6 +1343,30 @@ structure BlockMethod1BSpec (fp : FPModel) (n N : ℕ)
     ∀ i, ∑ k : Fin n, (L i k + ΔL i k) * X_hat k j =
       if i = j then 1 else 0
 
+/-- **Method 1B row-to-column assembly** (Higham eqs. 14.11--14.13 support).
+
+    If each row of a fixed computed column has its own local backward-error
+    row certificate, assemble those rows into the full matrix perturbation
+    certificate expected by `BlockMethod1BSpec.column_backward_error`. -/
+theorem triInv_method1B_column_backward_error_of_row_certificates
+    (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ) (j : Fin n)
+    (hRows : ∀ i : Fin n, ∃ Δrow : Fin n → ℝ,
+      (∀ k : Fin n, |Δrow k| ≤ gamma fp n * |L i k|) ∧
+      ∑ k : Fin n, (L i k + Δrow k) * X_hat k j =
+        if i = j then 1 else 0) :
+    ∃ ΔL : Fin n → Fin n → ℝ,
+      (∀ i k : Fin n, |ΔL i k| ≤ gamma fp n * |L i k|) ∧
+      ∀ i : Fin n, ∑ k : Fin n, (L i k + ΔL i k) * X_hat k j =
+        if i = j then 1 else 0 := by
+  classical
+  let ΔL : Fin n → Fin n → ℝ := fun i k => Classical.choose (hRows i) k
+  refine ⟨ΔL, ?_, ?_⟩
+  · intro i k
+    simpa [ΔL] using (Classical.choose_spec (hRows i)).1 k
+  · intro i
+    simpa [ΔL] using (Classical.choose_spec (hRows i)).2
+
 /-- **Method 1B specification from column backward errors** (Higham eqs.
     14.11--14.13 support).
 
@@ -1364,6 +1388,26 @@ theorem triInv_method1B_spec_of_column_backward_error
   { block_count_le_dim := hBlockCount
     lower_triangular_inverse := hLower
     column_backward_error := hCol }
+
+/-- **Method 1B specification from row-local certificates** (Higham eqs.
+    14.11--14.13 support).
+
+    This bridge reduces the open block-loop obligation to row-local
+    backward-error certificates for each computed column. -/
+theorem triInv_method1B_spec_of_row_certificates
+    (n N : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hBlockCount : N ≤ n)
+    (hLower : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0)
+    (hRows : ∀ j i : Fin n, ∃ Δrow : Fin n → ℝ,
+      (∀ k : Fin n, |Δrow k| ≤ gamma fp n * |L i k|) ∧
+      ∑ k : Fin n, (L i k + Δrow k) * X_hat k j =
+        if i = j then 1 else 0) :
+    BlockMethod1BSpec fp n N L X_hat :=
+  triInv_method1B_spec_of_column_backward_error n N fp L X_hat
+    hBlockCount hLower
+    (fun j => triInv_method1B_column_backward_error_of_row_certificates
+      n fp L X_hat j (hRows j))
 
 /-- **Lemma 14.2** (Higham eq. 14.10): Method 1B right residual.
 
@@ -1445,6 +1489,32 @@ theorem triInv_method1B_right_residual_of_column_backward_error
   triInv_method1B_right_residual_from_spec n N fp L X_hat hL_diag hLT hn
     (triInv_method1B_spec_of_column_backward_error n N fp L X_hat
       hBlockCount hLower hCol)
+
+/-- **Lemma 14.2 bridge**: Method 1B right residual from row-local
+    backward-error certificates.
+
+    This is a row-local companion to
+    `triInv_method1B_right_residual_of_column_backward_error`; the remaining
+    source obligation is to derive the row certificates from the block Method
+    1B update loop. -/
+theorem triInv_method1B_right_residual_of_row_certificates
+    (n N : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hn : gammaValid fp n)
+    (hBlockCount : N ≤ n)
+    (hLower : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0)
+    (hRows : ∀ j i : Fin n, ∃ Δrow : Fin n → ℝ,
+      (∀ k : Fin n, |Δrow k| ≤ gamma fp n * |L i k|) ∧
+      ∑ k : Fin n, (L i k + Δrow k) * X_hat k j =
+        if i = j then 1 else 0) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, L i k * X_hat k j - if i = j then 1 else 0| ≤
+      gamma fp n * ∑ k : Fin n, |L i k| * |X_hat k j| :=
+  triInv_method1B_right_residual_from_spec n N fp L X_hat hL_diag hLT hn
+    (triInv_method1B_spec_of_row_certificates n N fp L X_hat
+      hBlockCount hLower hRows)
 
 /-- Problem 14.2 / Lemma 14.2 normwise form:
     Method 1B's componentwise right-residual bound implies the corresponding
