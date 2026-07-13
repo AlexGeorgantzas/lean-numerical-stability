@@ -581,6 +581,44 @@ theorem higham21_lemma21_2_symmetrized_perturbation_eq_right_projector_mixture {
           matMulRectRight DeltaA2 (lsLemma20_6ProjectorComplement x) i j := by
           ring
 
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    if the two source perturbation slots are the same matrix, then the
+    source-case single perturbation collapses back to that matrix. -/
+theorem higham21_lemma21_2_single_perturbation_same {m n : ℕ}
+    (x : Fin n → ℝ) (DeltaA : Fin m → Fin n → ℝ) :
+    undetLemma21_2SinglePerturbation x DeltaA DeltaA = DeltaA := by
+  by_cases hx : x = 0
+  · simp [undetLemma21_2SinglePerturbation, hx]
+  · ext i j
+    calc
+      undetLemma21_2SinglePerturbation x DeltaA DeltaA i j =
+          undetLemma21_2SymmetrizedPerturbation x DeltaA DeltaA i j := by
+            simp [undetLemma21_2SinglePerturbation, hx]
+      _ =
+          matMulRectRight DeltaA (lsLemma20_6Projector x) i j +
+            matMulRectRight DeltaA (lsLemma20_6ProjectorComplement x) i j :=
+            higham21_lemma21_2_symmetrized_perturbation_eq_right_projector_mixture
+              x DeltaA DeltaA i j
+      _ =
+          matMulRectRight DeltaA
+            (fun a b => lsLemma20_6Projector x a b +
+              lsLemma20_6ProjectorComplement x a b) i j := by
+            unfold matMulRectRight
+            rw [← Finset.sum_add_distrib]
+            apply Finset.sum_congr rfl
+            intro k _
+            ring
+      _ = matMulRectRight DeltaA (idMatrix n) i j := by
+            unfold matMulRectRight
+            apply Finset.sum_congr rfl
+            intro k _
+            simpa using
+              congrArg (fun t : ℝ => DeltaA i k * t)
+                (lsLemma20_6Projector_add_complement x k j)
+      _ = DeltaA i j := by
+            have h := congrFun (congrFun (rectMatMul_id_right DeltaA) i) j
+            simpa [rectMatMul, matMulRectRight] using h
+
 private theorem higham21_rectMatMulVec_matMulRectRight {m n : ℕ}
     (A : Fin m → Fin n → ℝ) (V : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
     rectMatMulVec (matMulRectRight A V) x =
@@ -8160,6 +8198,88 @@ theorem higham21_theorem21_4_forwardSub_q_method_min_norm_handoff
   exact
     higham21_eq21_3_q_method_min_norm_of_qr_det_ne_zero
       Q hQ Rpert b y1 hdetT hy1
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    row-wise backward-error handoff after the triangular solve.  The theorem
+    combines the forward-substitution perturbation certificate with the
+    existing Lemma 21.2 row-wise witness surface.  The remaining source work is
+    exactly the Q-method row-wise assembly: identify the single Lemma 21.2
+    perturbation with the perturbed QR-coordinate system and prove the two
+    source row bounds. -/
+theorem higham21_theorem21_4_forwardSub_rowwise_backward_error_handoff
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R_hat : Fin m → Fin m → ℝ) (b : Fin m → ℝ)
+    (hdiag : ∀ i : Fin m, R_hat i i ≠ 0)
+    (hupper : IsUpperTrapezoidal m m R_hat)
+    (hvalid : gammaValid fp m)
+    (DeltaA1 DeltaA2 : Fin m → Fin (m + k) → ℝ)
+    {eta : ℝ} (heta : 0 ≤ eta)
+    (hDeltaA1Row : ∀ i : Fin m,
+      rectRowNorm2 DeltaA1 i ≤ eta * rectRowNorm2 A i)
+    (hDeltaA2Row : ∀ i : Fin m,
+      rectRowNorm2 DeltaA2 i ≤ eta * rectRowNorm2 A i) :
+    ∃ DeltaR : Fin m → Fin m → ℝ,
+      (∀ i j, |DeltaR i j| ≤ gamma fp m * |R_hat i j|) ∧
+      (∀ i,
+        matMulVec m (matTranspose (fun a b => R_hat a b + DeltaR a b))
+          (fl_forwardSub fp m (matTranspose R_hat) b) i = b i) ∧
+      (Matrix.det
+          (matTranspose (fun a b => R_hat a b + DeltaR a b) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0 →
+        (fun i j =>
+            A i j +
+              undetLemma21_2SinglePerturbation
+                (matMulVec (m + k) Q
+                  (Fin.append
+                    (fl_forwardSub fp m (matTranspose R_hat) b)
+                    (0 : Fin k → ℝ)))
+                DeltaA1 DeltaA2 i j) =
+          finiteTranspose
+            (matMulRectLeft Q
+              (lsQRTallBlock (k := k)
+                (fun a b => R_hat a b + DeltaR a b))) →
+        UndetRowwiseBackwardErrorBounded m (m + k) A b
+          (matMulVec (m + k) Q
+            (Fin.append
+              (fl_forwardSub fp m (matTranspose R_hat) b)
+              (0 : Fin k → ℝ)))
+          (Real.sqrt 2 * eta)) := by
+  obtain ⟨DeltaR, hDeltaR, hsolve, hminCond⟩ :=
+    higham21_theorem21_4_forwardSub_q_method_min_norm_handoff
+      fp Q hQ R_hat b hdiag hupper hvalid
+  refine ⟨DeltaR, hDeltaR, hsolve, ?_⟩
+  intro hdet hsingle
+  let x_hat : Fin (m + k) → ℝ :=
+    matMulVec (m + k) Q
+      (Fin.append
+        (fl_forwardSub fp m (matTranspose R_hat) b)
+        (0 : Fin k → ℝ))
+  let A_qr : Fin m → Fin (m + k) → ℝ :=
+    finiteTranspose
+      (matMulRectLeft Q
+        (lsQRTallBlock (k := k)
+          (fun a b => R_hat a b + DeltaR a b)))
+  have hminQR : RectMinNormSolution m (m + k) A_qr b x_hat := by
+    simpa [A_qr, x_hat] using hminCond hdet
+  have hsingle' :
+      (fun i j =>
+          A i j + undetLemma21_2SinglePerturbation x_hat DeltaA1 DeltaA2 i j)
+        = A_qr := by
+    simpa [A_qr, x_hat] using hsingle
+  have hminSingle :
+      RectMinNormSolution m (m + k)
+        (fun i j =>
+          A i j + undetLemma21_2SinglePerturbation x_hat DeltaA1 DeltaA2 i j)
+        b x_hat := by
+    rw [hsingle']
+    exact hminQR
+  simpa [x_hat] using
+    higham21_lemma21_2_rowwise_backward_error_bound_of_common_row_bound
+      A DeltaA1 DeltaA2 b x_hat heta hminSingle
+      hDeltaA1Row hDeltaA2Row
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
     algebraic difference form of the computed final `Q` action.  If
