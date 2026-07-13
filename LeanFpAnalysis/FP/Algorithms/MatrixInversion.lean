@@ -8203,6 +8203,175 @@ theorem higham14_problem14_14_exists_deltaH_det_original_of_upper_add_zero_diag
       (H + DeltaH) T DeltaT TpertInv y h η gammaT σ
       hBlock hTupper hDeltaTDiag hDeltaTBound hTpertInv
 
+/-- Problem 14.14 support: diagonal similarity used to model the optional
+    scaling of Hyman's Hessenberg matrix. -/
+noncomputable def higham14_problem14_14_diagonalSimilarity
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (d : ι → ℝ) (A : Matrix ι ι ℝ) : Matrix ι ι ℝ :=
+  Matrix.diagonal d * A * Matrix.diagonal (fun i => (d i)⁻¹)
+
+/-- Problem 14.14 support: transport a perturbation on the diagonally scaled
+    matrix back to the original matrix. -/
+noncomputable def higham14_problem14_14_diagonalUnscalePerturbation
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (d : ι → ℝ) (DeltaScaled : Matrix ι ι ℝ) : Matrix ι ι ℝ :=
+  Matrix.diagonal (fun i => (d i)⁻¹) * DeltaScaled * Matrix.diagonal d
+
+theorem higham14_problem14_14_diagonalSimilarity_apply
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (d : ι → ℝ) (A : Matrix ι ι ℝ) (i j : ι) :
+    higham14_problem14_14_diagonalSimilarity d A i j =
+      d i * A i j * (d j)⁻¹ := by
+  simp [higham14_problem14_14_diagonalSimilarity, Matrix.mul_apply,
+    Matrix.diagonal_apply, Finset.sum_ite_eq]
+
+theorem higham14_problem14_14_diagonalUnscalePerturbation_apply
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (d : ι → ℝ) (DeltaScaled : Matrix ι ι ℝ) (i j : ι) :
+    higham14_problem14_14_diagonalUnscalePerturbation d DeltaScaled i j =
+      (d i)⁻¹ * DeltaScaled i j * d j := by
+  simp [higham14_problem14_14_diagonalUnscalePerturbation, Matrix.mul_apply,
+    Matrix.diagonal_apply, Finset.sum_ite_eq]
+
+/-- Diagonal similarity preserves determinants.  This is the exact algebraic
+    core behind the diagonal-scaling clause in Problem 14.14. -/
+theorem higham14_problem14_14_det_diagonalSimilarity
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (d : ι → ℝ) (A : Matrix ι ι ℝ)
+    (hd : ∀ i : ι, d i ≠ 0) :
+    Matrix.det (higham14_problem14_14_diagonalSimilarity d A) =
+      Matrix.det A := by
+  have hprod :
+      (∏ i : ι, d i) * (∏ i : ι, (d i)⁻¹) = 1 := by
+    rw [← Finset.prod_mul_distrib]
+    exact Finset.prod_eq_one (fun i _ => mul_inv_cancel₀ (hd i))
+  rw [higham14_problem14_14_diagonalSimilarity, Matrix.det_mul,
+    Matrix.det_mul, Matrix.det_diagonal, Matrix.det_diagonal]
+  calc
+    (∏ i : ι, d i) * Matrix.det A * (∏ i : ι, (d i)⁻¹)
+        = ((∏ i : ι, d i) * (∏ i : ι, (d i)⁻¹)) * Matrix.det A := by
+            ring
+    _ = Matrix.det A := by
+            rw [hprod]
+            ring
+
+/-- A componentwise perturbation bound on the diagonally scaled matrix
+    transports back to the same relative componentwise bound on the original
+    matrix. -/
+theorem higham14_problem14_14_unscaled_delta_bound_of_scaled
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (d : ι → ℝ) (H DeltaScaled : Matrix ι ι ℝ) (gamma : ℝ)
+    (hd : ∀ i : ι, d i ≠ 0)
+    (hDeltaScaled : ∀ i j : ι,
+      |DeltaScaled i j| ≤
+        gamma * |higham14_problem14_14_diagonalSimilarity d H i j|) :
+    ∀ i j : ι,
+      |higham14_problem14_14_diagonalUnscalePerturbation d DeltaScaled i j| ≤
+        gamma * |H i j| := by
+  intro i j
+  have hleft_nonneg : 0 ≤ |(d i)⁻¹| := abs_nonneg _
+  have hright_nonneg : 0 ≤ |d j| := abs_nonneg _
+  have hmul_left :=
+    mul_le_mul_of_nonneg_left (hDeltaScaled i j) hleft_nonneg
+  have hmul := mul_le_mul_of_nonneg_right hmul_left hright_nonneg
+  have hdi : |(d i)⁻¹| * |d i| = 1 := by
+    rw [abs_inv]
+    exact inv_mul_cancel₀ (abs_ne_zero.mpr (hd i))
+  have hdj : |(d j)⁻¹| * |d j| = 1 := by
+    rw [abs_inv]
+    exact inv_mul_cancel₀ (abs_ne_zero.mpr (hd j))
+  calc
+    |higham14_problem14_14_diagonalUnscalePerturbation d DeltaScaled i j|
+        = |(d i)⁻¹| * |DeltaScaled i j| * |d j| := by
+            rw [higham14_problem14_14_diagonalUnscalePerturbation_apply,
+              abs_mul, abs_mul]
+    _ ≤ |(d i)⁻¹| *
+          (gamma * |higham14_problem14_14_diagonalSimilarity d H i j|) *
+          |d j| := hmul
+    _ = gamma * |H i j| := by
+            rw [higham14_problem14_14_diagonalSimilarity_apply, abs_mul,
+              abs_mul]
+            calc
+              |(d i)⁻¹| * (gamma * (|d i| * |H i j| * |(d j)⁻¹|)) *
+                  |d j|
+                  = gamma * |H i j| *
+                      ((|(d i)⁻¹| * |d i|) * (|(d j)⁻¹| * |d j|)) := by
+                      ring
+              _ = gamma * |H i j| := by
+                      rw [hdi, hdj]
+                      ring
+
+/-- Problem 14.14 diagonal-scaling transport: a determinant certificate and
+    componentwise perturbation bound for the scaled Hessenberg matrix give the
+    same determinant certificate and relative bound after unscaling. -/
+theorem higham14_problem14_14_unscale_deltaH_det_of_diagonal_scaled_det
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (H Hscaled DeltaHscaled : Matrix ι ι ℝ) (d : ι → ℝ)
+    (gamma theta : ℝ)
+    (hd : ∀ i : ι, d i ≠ 0)
+    (hHscaled : Hscaled = higham14_problem14_14_diagonalSimilarity d H)
+    (hDeltaScaled : ∀ i j : ι, |DeltaHscaled i j| ≤ gamma * |Hscaled i j|)
+    (hdetScaled : Matrix.det (Hscaled + DeltaHscaled) = theta) :
+    ∃ DeltaH : Matrix ι ι ℝ,
+      (∀ i j : ι, |DeltaH i j| ≤ gamma * |H i j|) ∧
+      Matrix.det (H + DeltaH) = theta := by
+  let DeltaH :=
+    higham14_problem14_14_diagonalUnscalePerturbation d DeltaHscaled
+  refine ⟨DeltaH, ?_, ?_⟩
+  · apply higham14_problem14_14_unscaled_delta_bound_of_scaled d H DeltaHscaled gamma hd
+    intro i j
+    simpa [hHscaled] using hDeltaScaled i j
+  · have hsim :
+        higham14_problem14_14_diagonalSimilarity d (H + DeltaH) =
+          Hscaled + DeltaHscaled := by
+      ext i j
+      simp [DeltaH, hHscaled, Matrix.add_apply,
+        higham14_problem14_14_diagonalSimilarity_apply,
+        higham14_problem14_14_diagonalUnscalePerturbation_apply]
+      field_simp [hd i, hd j]
+    have hdet :=
+      higham14_problem14_14_det_diagonalSimilarity d (H + DeltaH) hd
+    rw [← hdet, hsim, hdetScaled]
+
+/-- Problem 14.14 diagonal-scaling wrapper for Hyman's method.  Applying the
+    existing perturbed Hyman determinant package to a diagonally scaled
+    Hessenberg matrix and then unscaling gives the same relative
+    componentwise `DeltaH` certificate for the original matrix. -/
+theorem higham14_problem14_14_exists_deltaH_det_original_of_diagonal_scaled_upper_add_zero_diag
+    {n : ℕ}
+    (H Hscaled : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ)
+    (d : Fin n ⊕ Unit → ℝ)
+    (T DeltaT TpertInv : Matrix (Fin n) (Fin n) ℝ)
+    (y h : Fin n → ℝ) (η gammaT gammaH : ℝ)
+    (σ : Equiv.Perm (Fin n ⊕ Unit))
+    (hd : ∀ i : Fin n ⊕ Unit, d i ≠ 0)
+    (hHscaled : Hscaled = higham14_problem14_14_diagonalSimilarity d H)
+    (hDeltaHScaledCert :
+      ∃ DeltaHscaled : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ,
+        (∀ i j, |DeltaHscaled i j| ≤ gammaH * |Hscaled i j|) ∧
+        higham14_hymanBlockMatrix (T + DeltaT) y h η =
+          Matrix.submatrix (Hscaled + DeltaHscaled) σ (Equiv.refl (Fin n ⊕ Unit)))
+    (hTupper : T.BlockTriangular id)
+    (hDeltaTDiag : ∀ i : Fin n, DeltaT i i = 0)
+    (hDeltaTBound : ∀ i j : Fin n, |DeltaT i j| ≤ gammaT * |T i j|)
+    (hTpertInv : IsLeftInverse n (T + DeltaT) TpertInv) :
+    ∃ DeltaH : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ,
+      (∀ i j, |DeltaH i j| ≤ gammaH * |H i j|) ∧
+      Matrix.det (H + DeltaH) =
+        (Equiv.Perm.sign σ : ℝ) *
+          Matrix.det T * higham14_hymanSchur h y TpertInv η := by
+  rcases
+    higham14_problem14_14_exists_deltaH_det_original_of_upper_add_zero_diag
+      Hscaled T DeltaT TpertInv y h η gammaT gammaH σ
+      hDeltaHScaledCert hTupper hDeltaTDiag hDeltaTBound hTpertInv
+    with ⟨DeltaHscaled, hDeltaHscaled, hdetScaled⟩
+  exact
+    higham14_problem14_14_unscale_deltaH_det_of_diagonal_scaled_det
+      H Hscaled DeltaHscaled d gammaH
+      ((Equiv.Perm.sign σ : ℝ) *
+        Matrix.det T * higham14_hymanSchur h y TpertInv η)
+      hd hHscaled hDeltaHscaled hdetScaled
+
 /-! ### Problem 14.8: complex inverse via a real block matrix -/
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.8:
