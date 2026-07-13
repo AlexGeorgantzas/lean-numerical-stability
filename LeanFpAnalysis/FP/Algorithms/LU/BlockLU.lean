@@ -21670,6 +21670,219 @@ theorem higham13_algorithm13_3_matrix_infNorm_active_local_schur_bound
     higham13_algorithm13_3_schurStageMatrixBlock, infNorm] using
     (higham13_algorithm13_3_schurStage_local_schur_bound A pivotInv)
 
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.8:
+    exact matrix-product local Schur estimate in the Euclidean `2`-operator
+    norm.
+
+    This is the Euclidean analogue of the matrix-`∞` local Schur route above.
+    It uses the exact Algorithm 13.3 Schur update, the `opNorm2` triangle
+    inequality, and the triple-product subordinate bound, so no entrywise
+    max-norm product shortcut is asserted. -/
+theorem higham13_algorithm13_3_matrix_opNorm2_active_local_schur_bound
+    {m r : ℕ}
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ) :
+    SchurStageActiveLocalSchurBound13_8
+      (fun k i j => opNorm2 (fun s t =>
+        higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j s t))
+      (fun k => opNorm2 (fun s t => pivotInv k s t)) := by
+  intro k hk i j hik hjk
+  let stage : ℕ → Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ :=
+    higham13_algorithm13_3_schurStageMatrixBlock A pivotInv
+  let p : Fin m := ⟨k, hk⟩
+  have hUpdate :=
+    (higham13_algorithm13_3_schurStageBlock_exact_update A pivotInv)
+      k hk i j hik hjk
+  have hUpdateM :
+      stage (k + 1) i j =
+        stage k i j - stage k i p * pivotInv k * stage k p j := by
+    simpa [stage, higham13_algorithm13_3_schurStageMatrixBlock, p] using
+      hUpdate
+  have hsub :
+      opNorm2 (fun s t => stage (k + 1) i j s t) ≤
+        opNorm2 (fun s t => stage k i j s t) +
+          opNorm2
+            (fun s t => (stage k i p * pivotInv k * stage k p j) s t) := by
+    rw [hUpdateM]
+    simpa [Pi.sub_apply] using
+      (opNorm2_sub_le
+        (fun s t => stage k i j s t)
+        (fun s t => (stage k i p * pivotInv k * stage k p j) s t))
+  have hprod :
+      opNorm2
+          (fun s t => (stage k i p * pivotInv k * stage k p j) s t) ≤
+        opNorm2 (fun s t => stage k i p s t) *
+          opNorm2 (fun s t => pivotInv k s t) *
+            opNorm2 (fun s t => stage k p j s t) := by
+    simpa [matMul, Matrix.mul_apply] using
+      (opNorm2_matMul_triple_le
+        (fun s t => stage k i p s t)
+        (fun s t => pivotInv k s t)
+        (fun s t => stage k p j s t))
+  exact le_trans hsub (add_le_add_right hprod _)
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7:
+    Euclidean lower-norm source table gives active column dominance for the
+    matrix-product Algorithm 13.3 stage table in the `2`-operator norm.
+
+    The stage diagonal certificate is the attained lower norm
+    `matMulVecLowerNorm2`; the active reciprocal table is derived from exact
+    pivot right-inverse data.  This is a genuine Euclidean downstream surface,
+    deliberately separate from the entrywise max-norm Eq.13.21 branch. -/
+theorem
+    higham13_algorithm13_3_matrix_opNorm2_active_column_dominance_of_vecNorm2_source_table
+    {m r : ℕ} (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => opNorm2 (fun s t => A i j s t)) invDiagBound)
+    (hInitInv : ∀ j : Fin m,
+      matMulVecLowerNorm2 hr (fun s t => A j j s t) = invDiagBound j)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (fun s t =>
+          higham13_algorithm13_3_schurStageMatrixBlock
+            A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩ s t)
+        (fun s t => pivotInv k s t)) :
+    SchurStageActiveColumnDom13_7
+      (fun k i j => opNorm2 (fun s t =>
+        higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j s t))
+      (fun k j => matMulVecLowerNorm2 hr (fun s t =>
+        higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k j j s t)) := by
+  let stageNorm : ℕ → Fin m → Fin m → ℝ :=
+    fun k i j => opNorm2 (fun s t =>
+      higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j s t)
+  let stageInvDiagBound : ℕ → Fin m → ℝ :=
+    fun k j => matMulVecLowerNorm2 hr (fun s t =>
+      higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k j j s t)
+  let pivotInvNorm : ℕ → ℝ :=
+    fun k => opNorm2 (fun s t => pivotInv k s t)
+  have hDiagUpdate :
+      SchurStageActiveDiagLowerUpdate13_7
+        stageNorm stageInvDiagBound pivotInvNorm := by
+    simpa [stageNorm, stageInvDiagBound, pivotInvNorm] using
+      (higham13_algorithm13_3_vecNorm2_diag_lower_update hr A pivotInv)
+  have hRecip :
+      SchurStageActivePivotInvReciprocal13_7
+        stageInvDiagBound pivotInvNorm := by
+    simpa [stageInvDiagBound, pivotInvNorm] using
+      (higham13_algorithm13_3_vecNorm2_active_pivot_reciprocal_of_right_inverse
+        hr A pivotInv hPivotRight)
+  have hPivotBound :
+      ∀ k : ℕ, ∀ hk : k < m,
+        pivotInvNorm k * stageInvDiagBound k ⟨k, hk⟩ ≤ 1 :=
+    higham13_theorem13_7_pivot_inverse_bound_of_reciprocal
+      stageInvDiagBound pivotInvNorm hRecip
+  exact
+    higham13_theorem13_7_active_column_dominance_of_steps
+      (fun i j : Fin m => opNorm2 (fun s t => A i j s t))
+      invDiagBound hDom stageNorm stageInvDiagBound
+      (by
+        intro i j
+        simp [stageNorm, higham13_algorithm13_3_schurStageMatrixBlock,
+          higham13_algorithm13_3_schurStageBlock])
+      (by
+        intro j
+        simpa [stageInvDiagBound, higham13_algorithm13_3_schurStageMatrixBlock,
+          higham13_algorithm13_3_schurStageBlock] using hInitInv j)
+      (higham13_theorem13_7_active_column_dom_step_of_local_schur_bound
+        stageNorm stageInvDiagBound pivotInvNorm
+        (by
+          intro k i j
+          exact opNorm2_nonneg _)
+        (by
+          intro k
+          exact opNorm2_nonneg _)
+        hPivotBound
+        (by
+          simpa [stageNorm, pivotInvNorm] using
+            (higham13_algorithm13_3_matrix_opNorm2_active_local_schur_bound
+              A pivotInv))
+        hDiagUpdate)
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.8:
+    Euclidean active-stage `2 * max` bound for Algorithm 13.3 from the
+    concrete `matMulVecLowerNorm2` source table and active pivot right
+    inverses.
+
+    This theorem explicitly chooses the `opNorm2` downstream surface: both the
+    initial BDD table and every Schur-stage block are measured in the
+    Euclidean operator norm.  It is not the printed entrywise max-norm
+    Eq.13.21 endpoint. -/
+theorem
+    higham13_algorithm13_3_matrix_opNorm2_active_stage_bound_of_vecNorm2_source_table
+    {m r : ℕ} (_hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => opNorm2 (fun s t => A i j s t)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m,
+      invDiagBound j ≤ opNorm2 (fun s t => A j j s t))
+    (hInitInv : ∀ j : Fin m,
+      matMulVecLowerNorm2 hr (fun s t => A j j s t) = invDiagBound j)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (fun s t =>
+          higham13_algorithm13_3_schurStageMatrixBlock
+            A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩ s t)
+        (fun s t => pivotInv k s t))
+    (normMax : ℝ)
+    (hMax : ∀ i j : Fin m, opNorm2 (fun s t => A i j s t) ≤ normMax) :
+    ∀ k : ℕ, ∀ i j : Fin m, k ≤ m → k ≤ i.val → k ≤ j.val →
+      opNorm2 (fun s t =>
+        higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j s t) ≤
+          2 * normMax := by
+  intro k i j _hk hik hjk
+  let stageNorm : ℕ → Fin m → Fin m → ℝ :=
+    fun k i j => opNorm2 (fun s t =>
+      higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j s t)
+  let stageInvDiagBound : ℕ → Fin m → ℝ :=
+    fun k j => matMulVecLowerNorm2 hr (fun s t =>
+      higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k j j s t)
+  let pivotInvNorm : ℕ → ℝ :=
+    fun k => opNorm2 (fun s t => pivotInv k s t)
+  have hDiagUpdate :
+      SchurStageActiveDiagLowerUpdate13_7
+        stageNorm stageInvDiagBound pivotInvNorm := by
+    simpa [stageNorm, stageInvDiagBound, pivotInvNorm] using
+      (higham13_algorithm13_3_vecNorm2_diag_lower_update hr A pivotInv)
+  have hRecip :
+      SchurStageActivePivotInvReciprocal13_7
+        stageInvDiagBound pivotInvNorm := by
+    simpa [stageInvDiagBound, pivotInvNorm] using
+      (higham13_algorithm13_3_vecNorm2_active_pivot_reciprocal_of_right_inverse
+        hr A pivotInv hPivotRight)
+  have hPivotBound :
+      ∀ k : ℕ, ∀ hk : k < m,
+        pivotInvNorm k * stageInvDiagBound k ⟨k, hk⟩ ≤ 1 :=
+    higham13_theorem13_7_pivot_inverse_bound_of_reciprocal
+      stageInvDiagBound pivotInvNorm hRecip
+  exact
+    higham13_theorem13_8_active_stage_block_bound_of_local_schur_bound
+      (fun i j : Fin m => opNorm2 (fun s t => A i j s t))
+      invDiagBound hDom hDiagBound
+      stageNorm stageInvDiagBound pivotInvNorm
+      (by
+        intro i j
+        simp [stageNorm, higham13_algorithm13_3_schurStageMatrixBlock,
+          higham13_algorithm13_3_schurStageBlock])
+      (by
+        intro k i j
+        exact opNorm2_nonneg _)
+      (by
+        intro k
+        exact opNorm2_nonneg _)
+      (higham13_algorithm13_3_matrix_opNorm2_active_column_dominance_of_vecNorm2_source_table
+        hr A pivotInv invDiagBound hDom hInitInv hPivotRight)
+      hPivotBound
+      (by
+        simpa [stageNorm, pivotInvNorm] using
+          (higham13_algorithm13_3_matrix_opNorm2_active_local_schur_bound
+            A pivotInv))
+      normMax hMax k i j hik hjk
+
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.7:
     source-shaped active column block diagonal dominance for true
     matrix-product Algorithm 13.3 in the matrix `∞` operator norm.
