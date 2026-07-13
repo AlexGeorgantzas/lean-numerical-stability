@@ -5904,6 +5904,23 @@ theorem opNorm2_nonneg {n : ℕ} (M : Fin n → Fin n → ℝ) :
   rw [Matrix.l2_opNorm_def]
   exact norm_nonneg _
 
+/-- Triangle inequality for the exact matrix `2`-operator norm in repository
+    function-matrix notation. -/
+theorem opNorm2_sub_le {n : ℕ}
+    (A B : Fin n → Fin n → ℝ) :
+    opNorm2 (fun i j => A i j - B i j) ≤ opNorm2 A + opNorm2 B := by
+  letI := Matrix.instL2OpNormedAddCommGroup (m := Fin n) (n := Fin n) (𝕜 := ℝ)
+  simpa [opNorm2, Pi.sub_apply] using
+    (@norm_sub_le
+      (Matrix (Fin n) (Fin n) ℝ)
+      (@SeminormedAddCommGroup.toSeminormedAddGroup
+        (Matrix (Fin n) (Fin n) ℝ)
+        (@NormedAddCommGroup.toSeminormedAddCommGroup
+          (Matrix (Fin n) (Fin n) ℝ)
+          (Matrix.instL2OpNormedAddCommGroup (m := Fin n) (n := Fin n) (𝕜 := ℝ))))
+      (A : Matrix (Fin n) (Fin n) ℝ)
+      (B : Matrix (Fin n) (Fin n) ℝ))
+
 /-- Mathlib's exact l2 operator norm gives the repository's vector-action
     operator-2 certificate. -/
 theorem opNorm2Le_opNorm2 {n : ℕ}
@@ -10444,6 +10461,19 @@ theorem vecNorm2_matMulVec_triple_le_opNorm2_of_unit {n : ℕ}
     vecNorm2 (matMulVec n (matMul n (matMul n A B) C) x) ≤
       opNorm2 A * opNorm2 B * opNorm2 C := by
   simpa [hx] using vecNorm2_matMulVec_triple_le_opNorm2 A B C x
+
+/-- The exact matrix `2`-operator norm is submultiplicative across the triple
+    products used in Algorithm 13.3 Schur updates. -/
+theorem opNorm2_matMul_triple_le {n : ℕ}
+    (A B C : Fin n → Fin n → ℝ) :
+    opNorm2 (matMul n (matMul n A B) C) ≤
+      opNorm2 A * opNorm2 B * opNorm2 C := by
+  refine opNorm2_le_of_opNorm2Le
+    (matMul n (matMul n A B) C) ?_ ?_
+  · exact mul_nonneg
+      (mul_nonneg (opNorm2_nonneg A) (opNorm2_nonneg B))
+      (opNorm2_nonneg C)
+  · exact vecNorm2_matMulVec_triple_le_opNorm2 A B C
 
 /-- The identity matrix acts as the identity on vectors. -/
 theorem matMulVec_id (n : ℕ) (v : Fin n → ℝ) :
