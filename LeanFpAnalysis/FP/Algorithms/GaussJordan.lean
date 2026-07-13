@@ -74,6 +74,23 @@ theorem gje_c3_eq_linear_plus_quadratic_remainder
   rw [gje_c3_eq_linear_plus_explicit_remainder,
     gamma_three_sub_linear_eq_quadratic_remainder fp h3]
 
+/-- Explicit higher-order term in the Chapter 14 first-order split of
+    the GJE cumulative coefficient. -/
+noncomputable def gje_c3_quadratic_remainder (fp : FPModel) (n : ℕ) : ℝ :=
+  ((n : ℝ) - 1) *
+    (((((3 : ℝ) * fp.u) ^ 2) / (1 - (3 : ℝ) * fp.u)) *
+        (1 + gamma fp 3) ^ (n - 2) +
+      3 * fp.u * ((1 + gamma fp 3) ^ (n - 2) - 1))
+
+/-- Named form of the `gje_c₃` first-order split, using
+    `gje_c3_quadratic_remainder` for the higher-order contribution. -/
+theorem gje_c3_eq_linear_plus_quadratic_remainder_term
+    (fp : FPModel) (n : ℕ) (h3 : gammaValid fp 3) :
+    gje_c₃ fp n =
+      3 * ((n : ℝ) - 1) * fp.u + gje_c3_quadratic_remainder fp n := by
+  simpa [gje_c3_quadratic_remainder] using
+    gje_c3_eq_linear_plus_quadratic_remainder fp n h3
+
 /-- Elementary scalar growth bound used to connect the exact constant
     product envelope `(1 + c)^steps - 1` to Higham's `c₃`-style coefficient. -/
 theorem gje_one_add_pow_sub_one_le_nat_mul_pred {c : ℝ} (hc : 0 ≤ c) :
@@ -1088,6 +1105,67 @@ theorem gje_overall_residual_of_cumulative_product_certificates
     gje_overall_residual n fp A L_hat U_hat b y x_hat X_abs
       hLU hn hn3 hy DeltaU Deltay hStage2_eq hDeltaU hDeltay
 
+/-- **Theorem 14.5 scalar-split residual route**:
+    the cumulative-product residual certificate route with the `gje_c₃`
+    coefficient expanded into its first-order `3(n-1)u` part plus the
+    explicit higher-order remainder. -/
+theorem gje_overall_residual_of_cumulative_product_certificates_c3_split
+    (n : ℕ) (fp : FPModel)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b y x_hat : Fin n → ℝ)
+    (N_hat DeltaN : Fin n → Fin n → Fin n → ℝ)
+    (start : ℕ)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hnpos : 1 ≤ n)
+    (hn3 : gammaValid fp 3)
+    (hidx : ∀ r : Fin (n - 1),
+      start + ((n - 1) - 1 - r.val) < n)
+    (hDelta : ∀ r : Fin (n - 1), ∀ i j : Fin n,
+      |DeltaN (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j| ≤
+        gamma fp 3 *
+          |N_hat (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j|)
+    (hy : ∀ i : Fin n, ∑ j : Fin n, L_hat i j * y j = b i)
+    (hBackwardEq : ∀ i : Fin n,
+      ∑ j : Fin n,
+          (U_hat i j +
+            (matMul n
+                (gje_cumulative_product n
+                  (fun k a b => N_hat k a b + DeltaN k a b)
+                  start (start + (n - 1))) U_hat i j -
+              matMul n
+                (gje_cumulative_product n N_hat start (start + (n - 1)))
+                U_hat i j)) *
+            x_hat j =
+        y i +
+          (matMulVec n
+              (gje_cumulative_product n
+                (fun k a b => N_hat k a b + DeltaN k a b)
+                start (start + (n - 1))) y i -
+            matMulVec n
+              (gje_cumulative_product n N_hat start (start + (n - 1))) y i)) :
+    ∀ i : Fin n,
+      |b i - ∑ j : Fin n, A i j * x_hat j| ≤
+      gamma fp n * ∑ j : Fin n,
+        (∑ k : Fin n, |L_hat i k| * |U_hat k j|) * |x_hat j| +
+      (3 * ((n : ℝ) - 1) * fp.u + gje_c3_quadratic_remainder fp n) *
+        ∑ j : Fin n,
+          (∑ k₁ : Fin n, |L_hat i k₁| *
+            (∑ k₂ : Fin n,
+              |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+                start (start + (n - 1)) k₁ k₂| *
+              |U_hat k₂ j|)) * |x_hat j| +
+      (3 * ((n : ℝ) - 1) * fp.u + gje_c3_quadratic_remainder fp n) *
+        ∑ k : Fin n, |L_hat i k| *
+          (∑ j : Fin n,
+            |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+              start (start + (n - 1)) k j| * |y j|) := by
+  have h :=
+    gje_overall_residual_of_cumulative_product_certificates
+      n fp A L_hat U_hat b y x_hat N_hat DeltaN start
+      hLU hn hnpos hn3 hidx hDelta hy hBackwardEq
+  simpa [gje_c3_eq_linear_plus_quadratic_remainder_term fp n hn3] using h
+
 /-- **Theorem 14.5, eq. 14.32**: Overall GJE forward error.
 
     The forward error satisfies:
@@ -1251,6 +1329,70 @@ theorem gje_overall_forward_error_of_cumulative_product_certificates
   simpa [X_abs] using
     gje_overall_forward_error n fp A A_inv L_hat U_hat b y x x_hat X_abs
       hLU hAinv hn hn3 hExact hResidual
+
+/-- **Theorem 14.5 scalar-split forward-error route**:
+    the cumulative-product forward-error certificate route with the `gje_c₃`
+    coefficient expanded into its first-order `3(n-1)u` part plus the
+    explicit higher-order remainder. -/
+theorem gje_overall_forward_error_of_cumulative_product_certificates_c3_split
+    (n : ℕ) (fp : FPModel)
+    (A A_inv L_hat U_hat : Fin n → Fin n → ℝ)
+    (b y x x_hat : Fin n → ℝ)
+    (N_hat DeltaN : Fin n → Fin n → Fin n → ℝ)
+    (start : ℕ)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hAinv : IsLeftInverse n A A_inv)
+    (hn : gammaValid fp n)
+    (hnpos : 1 ≤ n)
+    (hn3 : gammaValid fp 3)
+    (hidx : ∀ r : Fin (n - 1),
+      start + ((n - 1) - 1 - r.val) < n)
+    (hDelta : ∀ r : Fin (n - 1), ∀ i j : Fin n,
+      |DeltaN (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j| ≤
+        gamma fp 3 *
+          |N_hat (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j|)
+    (hy : ∀ i : Fin n, ∑ j : Fin n, L_hat i j * y j = b i)
+    (hExact : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i)
+    (hBackwardEq : ∀ i : Fin n,
+      ∑ j : Fin n,
+          (U_hat i j +
+            (matMul n
+                (gje_cumulative_product n
+                  (fun k a b => N_hat k a b + DeltaN k a b)
+                  start (start + (n - 1))) U_hat i j -
+              matMul n
+                (gje_cumulative_product n N_hat start (start + (n - 1)))
+                U_hat i j)) *
+            x_hat j =
+        y i +
+          (matMulVec n
+              (gje_cumulative_product n
+                (fun k a b => N_hat k a b + DeltaN k a b)
+                start (start + (n - 1))) y i -
+            matMulVec n
+              (gje_cumulative_product n N_hat start (start + (n - 1))) y i)) :
+    ∀ i : Fin n,
+      |x i - x_hat i| ≤
+      ∑ j : Fin n, |A_inv i j| *
+        (gamma fp n * ∑ k : Fin n,
+          (∑ l : Fin n, |L_hat j l| * |U_hat l k|) * |x_hat k| +
+        (3 * ((n : ℝ) - 1) * fp.u + gje_c3_quadratic_remainder fp n) *
+          ∑ k : Fin n,
+            (∑ k₁ : Fin n, |L_hat j k₁| *
+              (∑ k₂ : Fin n,
+                |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+                  start (start + (n - 1)) k₁ k₂| *
+                |U_hat k₂ k|)) * |x_hat k| +
+        (3 * ((n : ℝ) - 1) * fp.u + gje_c3_quadratic_remainder fp n) *
+          ∑ l : Fin n, |L_hat j l| *
+            (∑ k : Fin n,
+              |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+                start (start + (n - 1)) l k| * |y k|)) := by
+  have h :=
+    gje_overall_forward_error_of_cumulative_product_certificates
+      n fp A A_inv L_hat U_hat b y x x_hat N_hat DeltaN start
+      hLU hAinv hn hnpos hn3 hidx hDelta hy hExact hBackwardEq
+  simpa [gje_c3_eq_linear_plus_quadratic_remainder_term fp n hn3] using h
 
 -- ══════════════════════════════════════════════════════════════════════
 -- §14.4.7  Corollary 14.6: SPD Specialization
