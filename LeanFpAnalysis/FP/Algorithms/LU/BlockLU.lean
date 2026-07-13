@@ -24954,6 +24954,138 @@ theorem
       hm hr hunit A pivotInv hApos invDiagBound diagInv hDom hInvBound
       hDiagRight hPivotRight
 
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.21):
+    positive-block-size form of the initial-diagonal/right-inverse
+    dimension-aware max-entry upper-factor route.
+
+    This has the same conclusion as
+    `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_with_card_of_initial_diag_right_inverse_of_pivot_right_inverse`;
+    the finite unit-sphere witness is constructed from `0 < r`. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_with_card_of_initial_diag_right_inverse_of_pivot_right_inverse_of_pos_dim
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (diagInv : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hInvBound : ∀ j : Fin m, invDiagBound j ≤ (infNorm (diagInv j))⁻¹)
+    (hDiagRight : ∀ j : Fin m, IsRightInverse r (A j j) (diagInv j))
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+      2 * ((r : ℝ) * blockMaxNorm hm hr A) := by
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_with_card_of_initial_diag_right_inverse_of_pivot_right_inverse
+      hm hr (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv
+      invDiagBound diagInv hDom hInvBound hDiagRight hPivotRight
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.23):
+    positive-block-size form of the initial-diagonal/right-inverse
+    dimension-aware finite-history growth-factor route.
+
+    This discharges the finite unit-sphere witness from `0 < r`; the endpoint
+    remains the currently proved `growthFactorEntry <= 2*r` max-entry transfer,
+    not the printed dimension-free `rho <= 2` theorem. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_initial_diag_right_inverse_of_pivot_right_inverse_of_pos_dim
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A))
+    (invDiagBound : Fin m → ℝ)
+    (diagInv : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hInvBound : ∀ j : Fin m, invDiagBound j ≤ (infNorm (diagInv j))⁻¹)
+    (hDiagRight : ∀ j : Fin m, IsRightInverse r (A j j) (diagInv j))
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+        (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+          (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤
+      2 * (r : ℝ) := by
+  exact
+    higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_initial_diag_right_inverse_of_pivot_right_inverse
+      hm hr (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv hApos
+      invDiagBound diagInv hDom hInvBound hDiagRight hPivotRight
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    positive-block-size package for the initial-diagonal/right-inverse
+    dimension-aware max-entry transfer.
+
+    The two conclusions are unchanged from the witness-taking package: the
+    assembled upper factor is bounded by `2*r*‖A‖`, and the matching finite
+    history growth factor is bounded by `2*r`. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_initial_diag_right_inverse_of_pivot_right_inverse_of_pos_dim
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A))
+    (invDiagBound : Fin m → ℝ)
+    (diagInv : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hInvBound : ∀ j : Fin m, invDiagBound j ≤ (infNorm (diagInv j))⁻¹)
+    (hDiagRight : ∀ j : Fin m, IsRightInverse r (A j j) (diagInv j))
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * ((r : ℝ) * blockMaxNorm hm hr A) ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤
+        2 * (r : ℝ) := by
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_initial_diag_right_inverse_of_pivot_right_inverse
+      hm hr (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv hApos
+      invDiagBound diagInv hDom hInvBound hDiagRight hPivotRight
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    determinant-nonzero positive-block-size form of the
+    initial-diagonal/right-inverse max-entry transfer package.
+
+    The determinant hypothesis supplies the positive growth-factor denominator;
+    `0 < r` supplies the finite unit-sphere witness. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_initial_diag_right_inverse_of_pivot_right_inverse_of_det_ne_zero_of_pos_dim
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (diagInv : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (hdet :
+      Matrix.det (blockMatrixFlatFin A :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hInvBound : ∀ j : Fin m, invDiagBound j ≤ (infNorm (diagInv j))⁻¹)
+    (hDiagRight : ∀ j : Fin m, IsRightInverse r (A j j) (diagInv j))
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * ((r : ℝ) * blockMaxNorm hm hr A) ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv)
+          (maxEntryNorm_pos_of_det_ne_zero
+            (Nat.mul_pos hm hr) (blockMatrixFlatFin A) hdet) ≤
+        2 * (r : ℝ) := by
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_initial_diag_right_inverse_of_pivot_right_inverse_of_det_ne_zero
+      hm hr (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv
+      invDiagBound diagInv hdet hDom hInvBound hDiagRight hPivotRight
+
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and Theorem 13.8:
     matrix-`∞` active-stage bound from the source-shaped reciprocal initial
     diagonal table.
