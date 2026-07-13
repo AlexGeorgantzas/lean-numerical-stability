@@ -20,6 +20,7 @@ import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.Rounding
 import LeanFpAnalysis.FP.Analysis.ForwardError
 import LeanFpAnalysis.FP.Algorithms.LU.GaussianElimination
+import LeanFpAnalysis.FP.Algorithms.HighamChapter9
 
 namespace LeanFpAnalysis.FP
 
@@ -2445,5 +2446,151 @@ theorem gje_spd_forward_error_relative_norm2_of_cumulative_product_certificates_
             (vecNorm2 x_hat / vecNorm2 x) := by
           field_simp [hxpos.ne']
   simpa [e, AbsAinv, C] using hFinal
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- §14.4.8  Corollary 14.7: Row-Diagonally-Dominant Specialization
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+/-- **Corollary 14.7 conditional row-dominant certificate route**.
+
+    For a row-diagonally-dominant upper factor, the existing Chapter 9
+    Lemma-8.8 route gives the source-facing `‖|L||U|‖∞ ≤ (2n-1)‖A‖∞`
+    first-stage budget.  The GJE residual side then specializes the proved
+    cumulative-product certificate route by exposing the remaining source
+    comparison `|N̂_n⋯N̂_2| ≤ |Û⁻¹|` as `hUinvDom`.
+
+    This is deliberately conditional: the theorem records the row-dominant
+    bridge and the componentwise residual transfer, while the preservation of
+    row diagonal dominance by the computed elimination path remains a separate
+    source-instantiation obligation. -/
+theorem gje_rowDiagDominantUpper_residual_of_cumulative_product_certificates
+    (n : ℕ) (fp : FPModel)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b y x_hat : Fin n → ℝ)
+    (N_hat DeltaN : Fin n → Fin n → Fin n → ℝ)
+    (start : ℕ)
+    (hLUExact : LUFactSpec n A L_hat U_hat)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hURow : higham8_8_rowDiagDominantUpper n U_hat)
+    (hn : gammaValid fp n)
+    (hnpos : 1 ≤ n)
+    (hn3 : gammaValid fp 3)
+    (hidx : ∀ r : Fin (n - 1),
+      start + ((n - 1) - 1 - r.val) < n)
+    (hDelta : ∀ r : Fin (n - 1), ∀ i j : Fin n,
+      |DeltaN (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j| ≤
+        gamma fp 3 *
+          |N_hat (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j|)
+    (hy : ∀ i : Fin n, ∑ j : Fin n, L_hat i j * y j = b i)
+    (hBackwardEq : ∀ i : Fin n,
+      ∑ j : Fin n,
+          (U_hat i j +
+            (matMul n
+                (gje_cumulative_product n
+                  (fun k a b => N_hat k a b + DeltaN k a b)
+                  start (start + (n - 1))) U_hat i j -
+              matMul n
+                (gje_cumulative_product n N_hat start (start + (n - 1)))
+                U_hat i j)) *
+            x_hat j =
+        y i +
+          (matMulVec n
+              (gje_cumulative_product n
+                (fun k a b => N_hat k a b + DeltaN k a b)
+                start (start + (n - 1))) y i -
+            matMulVec n
+              (gje_cumulative_product n N_hat start (start + (n - 1))) y i))
+    (hUinvDom : ∀ i j : Fin n,
+      |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+        start (start + (n - 1)) i j| ≤ |nonsingInv n U_hat i j|) :
+    higham9_17_rowDiagDom_absLU_bound n A L_hat U_hat ∧
+      ∀ i : Fin n,
+        |b i - ∑ j : Fin n, A i j * x_hat j| ≤
+        gamma fp n * ∑ j : Fin n,
+          (∑ k : Fin n, |L_hat i k| * |U_hat k j|) * |x_hat j| +
+        gje_c₃ fp n * ∑ j : Fin n,
+          (∑ k₁ : Fin n, |L_hat i k₁| *
+            (∑ k₂ : Fin n,
+              |nonsingInv n U_hat k₁ k₂| * |U_hat k₂ j|)) * |x_hat j| +
+        gje_c₃ fp n * ∑ k : Fin n, |L_hat i k| *
+          (∑ j : Fin n, |nonsingInv n U_hat k j| * |y j|) := by
+  have hAbsLU : higham9_17_rowDiagDom_absLU_bound n A L_hat U_hat :=
+    higham9_17_rowDiagDom_absLU_bound_of_LUFactSpec
+      hnpos A L_hat U_hat hLUExact hURow
+  refine ⟨hAbsLU, ?_⟩
+  let X_abs : Fin n → Fin n → ℝ :=
+    gje_cumulative_product n (fun s a b => |N_hat s a b|)
+      start (start + (n - 1))
+  let U_inv : Fin n → Fin n → ℝ := nonsingInv n U_hat
+  have hXdom : ∀ i j : Fin n, |X_abs i j| ≤ |U_inv i j| := by
+    intro i j
+    simpa [X_abs, U_inv] using hUinvDom i j
+  have hc3 : 0 ≤ gje_c₃ fp n := gje_c3_nonneg fp n hnpos hn3
+  have hGen :
+      ∀ i : Fin n,
+        |b i - ∑ j : Fin n, A i j * x_hat j| ≤
+        gamma fp n * ∑ j : Fin n,
+          (∑ k : Fin n, |L_hat i k| * |U_hat k j|) * |x_hat j| +
+        gje_c₃ fp n * ∑ j : Fin n,
+          (∑ k₁ : Fin n, |L_hat i k₁| *
+            (∑ k₂ : Fin n, |X_abs k₁ k₂| * |U_hat k₂ j|)) *
+            |x_hat j| +
+        gje_c₃ fp n * ∑ k : Fin n, |L_hat i k| *
+          (∑ j : Fin n, |X_abs k j| * |y j|) := by
+    simpa [X_abs] using
+      gje_overall_residual_of_cumulative_product_certificates
+        n fp A L_hat U_hat b y x_hat N_hat DeltaN start
+        hLU hn hnpos hn3 hidx hDelta hy hBackwardEq
+  intro i
+  let T1 : ℝ :=
+    gamma fp n * ∑ j : Fin n,
+      (∑ k : Fin n, |L_hat i k| * |U_hat k j|) * |x_hat j|
+  let T2X : ℝ :=
+    gje_c₃ fp n * ∑ j : Fin n,
+      (∑ k₁ : Fin n, |L_hat i k₁| *
+        (∑ k₂ : Fin n, |X_abs k₁ k₂| * |U_hat k₂ j|)) *
+        |x_hat j|
+  let T2U : ℝ :=
+    gje_c₃ fp n * ∑ j : Fin n,
+      (∑ k₁ : Fin n, |L_hat i k₁| *
+        (∑ k₂ : Fin n, |U_inv k₁ k₂| * |U_hat k₂ j|)) *
+        |x_hat j|
+  let T3X : ℝ :=
+    gje_c₃ fp n * ∑ k : Fin n, |L_hat i k| *
+      (∑ j : Fin n, |X_abs k j| * |y j|)
+  let T3U : ℝ :=
+    gje_c₃ fp n * ∑ k : Fin n, |L_hat i k| *
+      (∑ j : Fin n, |U_inv k j| * |y j|)
+  have hT2 : T2X ≤ T2U := by
+    dsimp [T2X, T2U]
+    apply mul_le_mul_of_nonneg_left _ hc3
+    apply Finset.sum_le_sum
+    intro j _
+    apply mul_le_mul_of_nonneg_right _ (abs_nonneg _)
+    apply Finset.sum_le_sum
+    intro k₁ _
+    apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+    apply Finset.sum_le_sum
+    intro k₂ _
+    exact mul_le_mul_of_nonneg_right (hXdom k₁ k₂) (abs_nonneg _)
+  have hT3 : T3X ≤ T3U := by
+    dsimp [T3X, T3U]
+    apply mul_le_mul_of_nonneg_left _ hc3
+    apply Finset.sum_le_sum
+    intro k _
+    apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+    apply Finset.sum_le_sum
+    intro j _
+    exact mul_le_mul_of_nonneg_right (hXdom k j) (abs_nonneg _)
+  have hResidual :
+      |b i - ∑ j : Fin n, A i j * x_hat j| ≤ T1 + T2U + T3U := by
+    calc
+      |b i - ∑ j : Fin n, A i j * x_hat j| ≤ T1 + T2X + T3X := by
+        simpa [T1, T2X, T3X] using hGen i
+      _ ≤ T1 + T2U + T3X := by
+        linarith
+      _ ≤ T1 + T2U + T3U := by
+        linarith
+  simpa [T1, T2U, T3U, U_inv] using hResidual
 
 end LeanFpAnalysis.FP
