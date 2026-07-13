@@ -6353,6 +6353,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check gje_overall_forward_error_of_cumulative_product_certificates
 #check gje_overall_residual_of_cumulative_product_certificates_c3_split
 #check gje_overall_forward_error_of_cumulative_product_certificates_c3_split
+#check gje_overall_residual_of_cumulative_product_certificates_c3_three_n
+#check gje_overall_forward_error_of_cumulative_product_certificates_c3_three_n
 #check gje_overall_residual
 #check gje_overall_forward_error
 #check gje_spd_residual
