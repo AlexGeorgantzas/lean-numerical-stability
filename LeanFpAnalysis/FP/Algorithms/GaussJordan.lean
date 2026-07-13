@@ -37,6 +37,43 @@ open Finset BigOperators
 noncomputable def gje_c₃ (fp : FPModel) (n : ℕ) : ℝ :=
   ((n : ℝ) - 1) * gamma fp 3 * (1 + gamma fp 3) ^ (n - 2)
 
+/-- Higham, 2nd ed., Chapter 14, Theorem 14.5 support:
+    specialize the generic `gamma` first-order split to the `gamma_3`
+    correction term used by the GJE second-stage constant. -/
+theorem gamma_three_sub_linear_eq_quadratic_remainder
+    (fp : FPModel) (h3 : gammaValid fp 3) :
+    gamma fp 3 - 3 * fp.u =
+      (((3 : ℝ) * fp.u) ^ 2) / (1 - (3 : ℝ) * fp.u) := by
+  rw [gamma_eq_linear_plus_quadratic_remainder fp 3 h3]
+  ring
+
+/-- Higham, 2nd ed., Chapter 14, Theorem 14.5 support:
+    exact scalar split of the GJE cumulative coefficient into the displayed
+    first-order term `3 (n - 1) u` plus explicit higher-order factors. -/
+theorem gje_c3_eq_linear_plus_explicit_remainder
+    (fp : FPModel) (n : ℕ) :
+    gje_c₃ fp n =
+      3 * ((n : ℝ) - 1) * fp.u +
+        ((n : ℝ) - 1) *
+          ((gamma fp 3 - 3 * fp.u) * (1 + gamma fp 3) ^ (n - 2) +
+            3 * fp.u * ((1 + gamma fp 3) ^ (n - 2) - 1)) := by
+  unfold gje_c₃
+  ring
+
+/-- Higham, 2nd ed., Chapter 14, Theorem 14.5 support:
+    the preceding split with the `gamma_3 - 3u` term expanded using the
+    standard quadratic-and-higher `gamma` remainder. -/
+theorem gje_c3_eq_linear_plus_quadratic_remainder
+    (fp : FPModel) (n : ℕ) (h3 : gammaValid fp 3) :
+    gje_c₃ fp n =
+      3 * ((n : ℝ) - 1) * fp.u +
+        ((n : ℝ) - 1) *
+          (((((3 : ℝ) * fp.u) ^ 2) / (1 - (3 : ℝ) * fp.u)) *
+              (1 + gamma fp 3) ^ (n - 2) +
+            3 * fp.u * ((1 + gamma fp 3) ^ (n - 2) - 1)) := by
+  rw [gje_c3_eq_linear_plus_explicit_remainder,
+    gamma_three_sub_linear_eq_quadratic_remainder fp h3]
+
 /-- Elementary scalar growth bound used to connect the exact constant
     product envelope `(1 + c)^steps - 1` to Higham's `c₃`-style coefficient. -/
 theorem gje_one_add_pow_sub_one_le_nat_mul_pred {c : ℝ} (hc : 0 ≤ c) :
