@@ -6341,6 +6341,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check gje_cumulative_product_rhs_accumulation
 #check gje_stage2_forward_error_bound
 #check gje_stage2_backward_error
+#check gje_stage2_backward_error_of_cumulative_product_certificates
 #check gje_overall_residual
 #check gje_overall_forward_error
 #check gje_spd_residual
@@ -6372,11 +6373,17 @@ small enough to serve as a smoke check for representative public declarations.
 #check triInv_method2_left_residual_of_strict_tail_fl_dot
 #check higham14_unit_roundoff_add_one_plus_u_mul_rounded_gamma_le_gamma_succ_succ
 #check triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul
+#check Method2StrictTailKernelSpec
+#check triInv_method2_left_residual_of_strict_tail_kernel_spec
 #check triInv_method2_offdiag_update_delta_bound
 #check triInv_method2_offdiag_scaled_residual_bound
 #check triInv_method2_left_residual_normwise
+#check triInv_method2_left_residual_normwise_of_strict_tail_kernel_spec
+#check triInv_method1B_spec_of_column_backward_error
+#check triInv_method1B_right_residual_of_column_backward_error
 #check triInv_method1B_right_residual_normwise
 #check triInv_method1B_right_residual_normwise_from_spec
+#check triInv_method1B_right_residual_normwise_of_column_backward_error
 #check triInv_method2C_left_residual_normwise
 #check higham14_problem14_3_right_residual_eq_mul_left_residual
 #check higham14_problem14_3_left_residual_eq_mul_right_residual
@@ -6424,6 +6431,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_method2BBlockUpdateDelta
 #check higham14_eq14_14_method2B_block_update_decomposition
 #check higham14_eq14_14_method2B_block_update_delta_bound
+#check Method2BBlockUpdateSpec
+#check higham14_eq14_14_method2B_block_update_spec_of_product_error
 #check higham14_eq14_14_method2B_exact_offdiag_block_update
 #check higham14_methodDProductDelta
 #check higham14_methodDLUBackwardDelta
@@ -6441,6 +6450,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_methodD_abs_XU_U_le_scaled_abs_product
 #check higham14_methodD_abs_Xhat_le_scaled_abs_product
 #check higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget
+#check higham14_eq14_23_methodD_left_residual_bound_of_local_certificates
 #check higham14_eq14_23_methodD_left_residual_bound
 #check higham14_rowNorm2
 #check higham14_rowNormDiagonal
@@ -6526,6 +6536,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham14_problem14_15_sigmaMin_sub_le_sigmaMin_of_sub_rectOpNorm2Le
 #check higham14_problem14_15_sigmaMin_sub_le_sigmaMin_add_of_rectOpNorm2Le
 #check higham14_problem14_15_sigmaMin_add_pos_of_rectOpNorm2Le_lt
+#check higham14_problem14_15_rectOpNorm2Le_neg
+#check higham14_problem14_15_sigmaMin_abs_sub_le_of_rectOpNorm2Le
 #check higham14_problem14_15_opNorm2_add_le_of_opNorm2Le
 #check higham14_problem14_15_top_singularValue_add_le_of_opNorm2Le
 #check higham14_problem14_15_opNorm2Le_neg
@@ -16020,6 +16032,13 @@ small enough to serve as a smoke check for representative public declarations.
 #check Wave20.fl_householderQRColPivot_R
 #check Wave20.vecNorm2_col_colPivotNextPanelExact_le_sigma
 #check Wave20.colPivot_ratio_le_of_sigma
+-- Wave-20 full-swap: 19.6 hfact UNCONDITIONAL + entrywise assembly + correct one-indexed printed envelope
+#check Wave20.fl_householderQRColPivotFull_hfact
+#check Wave20.entrywiseStage_to_rowwise
+-- Wave-20 FINAL: 19.6 reduced to one named readiness predicate; the full entrywise induction + culminating theorem
+#check Wave20.perturbation_col_le_sigma
+#check Wave20.entrywiseStage_of_stageData
+#check Wave20.H19_Theorem19_6_final
 -- Split-2 M26: Thm 9.11 general-p — unconditional banded GEPP growth 2^(2p-1) (Bohte leading term)
 #check LeanFpAnalysis.FP.higham9_11_BandActiveBound
 #check LeanFpAnalysis.FP.higham9_11_bandActive_schur_preserved

@@ -949,6 +949,27 @@ structure Method2Spec (fp : FPModel) (n : ℕ)
   /-- Upper triangle is zero (since L is lower triangular, L⁻¹ is too). -/
   upper_zero : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0
 
+/-- Higham, 2nd ed., Chapter 14, Section 14.2.1, Method 2:
+    source-facing kernel certificate for the reverse-column strict-tail update.
+
+    This packages the existing Method 2 diagonal/shape/error specification
+    together with the exact stored below-diagonal update
+    `fl_mul (-X_hat j j) (fl_dotProduct strictTail Lcol)`.  It is not yet the
+    full loop proof; the remaining source obligation is to show the concrete
+    reverse-column implementation produces this certificate. -/
+structure Method2StrictTailKernelSpec (fp : FPModel) (n : ℕ)
+    (L : Fin n → Fin n → ℝ) (X_hat : Fin n → Fin n → ℝ) : Prop where
+  /-- Existing Method 2 diagonal, off-diagonal, and triangular-shape contract. -/
+  method2 : Method2Spec fp n L X_hat
+  /-- Below-diagonal entries are stored by the rounded strict-tail dot/scalar
+      kernel described in the source Method 2 recurrence. -/
+  strict_tail_dot_scalar : ∀ j row : Fin n, row.val > j.val →
+    X_hat row j =
+      fp.fl_mul (-X_hat j j)
+        (fl_dotProduct fp n
+          (fun k : Fin n => if j.val < k.val then X_hat row k else 0)
+          (fun k : Fin n => L k j))
+
 /-- Triangular-shape support for Method 2: if both `X_hat` and `L` are lower
     triangular, then the left residual `X_hat * L - I` is zero strictly above
     the diagonal. -/
@@ -1037,6 +1058,86 @@ theorem triInv_method2_left_residual_diag_product_bound (n : ℕ) (fp : FPModel)
   have hdiag_res :=
     triInv_method2_left_residual_diag_bound n fp L X_hat hLT hSpec j
   obtain ⟨δ, hδ, hdiag⟩ := hSpec.diag_err j
+  have hle1 : 1 ≤ n + 1 := Nat.succ_le_succ (Nat.zero_le n)
+  have hvalid1 : gammaValid fp 1 :=
+    gammaValid_mono fp hle1 hn1
+  have hgamma1_le : gamma fp 1 ≤ gamma fp (n + 1) :=
+    gamma_mono fp hle1 hn1
+  have hu_lt_one : fp.u < 1 := by
+    have h := hvalid1
+    unfold gammaValid at h
+    norm_num at h
+    exact h
+  have hone_minus_nonneg : 0 ≤ 1 - fp.u := by linarith
+  have hgamma1_mul : gamma fp 1 * (1 - fp.u) = fp.u := by
+    have hden : (1 - fp.u) ≠ 0 := by linarith
+    unfold gamma
+    norm_num
+    field_simp [hden]
+  let S : ℝ := ∑ k : Fin n, |X_hat j k| * |L k j|
+  have hdiag_term_le_S : |X_hat j j| * |L j j| ≤ S := by
+    dsimp [S]
+    exact Finset.single_le_sum
+      (fun k _ => mul_nonneg (abs_nonneg (X_hat j k)) (abs_nonneg (L k j)))
+      (Finset.mem_univ j)
+  have hone_minus_le_prod : 1 - fp.u ≤ |X_hat j j| * |L j j| := by
+    have habs_lower : 1 - |δ| ≤ |1 + δ| := by
+      have htri : (1 : ℝ) ≤ |1 + δ| + |δ| := by
+        simpa [abs_neg, add_assoc] using (abs_add_le (1 + δ) (-δ))
+      linarith
+    calc
+      1 - fp.u ≤ 1 - |δ| := by linarith
+      _ ≤ |1 + δ| := habs_lower
+      _ = |X_hat j j * L j j| := by rw [hdiag]
+      _ = |X_hat j j| * |L j j| := by rw [abs_mul]
+  have hu_le_coeff_budget : fp.u ≤ gamma fp (n + 1) * S := by
+    calc
+      fp.u = gamma fp 1 * (1 - fp.u) := hgamma1_mul.symm
+      _ ≤ gamma fp (n + 1) * (1 - fp.u) :=
+        mul_le_mul_of_nonneg_right hgamma1_le hone_minus_nonneg
+      _ ≤ gamma fp (n + 1) * S := by
+        apply mul_le_mul_of_nonneg_left _ (gamma_nonneg fp hn1)
+        exact le_trans hone_minus_le_prod hdiag_term_le_S
+  exact le_trans hdiag_res hu_le_coeff_budget
+
+/-- Lemma 14.1 support: diagonal Method 2 product-budget bound from only the
+    diagonal rounded-reciprocal certificate and triangular shape.
+
+This is the same diagonal edge as
+`triInv_method2_left_residual_diag_product_bound`, but it avoids depending on
+the older full-column `Method2Spec.offdiag_err` field. -/
+theorem triInv_method2_left_residual_diag_product_bound_of_diag_upper
+    (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hDiag : ∀ j : Fin n, ∃ δ : ℝ, |δ| ≤ fp.u ∧
+      X_hat j j * L j j = 1 + δ)
+    (hUpper : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0) :
+    ∀ j : Fin n,
+      |∑ k : Fin n, X_hat j k * L k j - 1| ≤
+        gamma fp (n + 1) * ∑ k : Fin n, |X_hat j k| * |L k j| := by
+  intro j
+  obtain ⟨δ, hδ, hdiag⟩ := hDiag j
+  have hsum : ∑ k : Fin n, X_hat j k * L k j =
+      X_hat j j * L j j := by
+    apply Finset.sum_eq_single j
+    · intro k _ hk
+      by_cases hjk : j.val < k.val
+      · rw [hUpper j k hjk]
+        ring
+      · have hkj : j.val > k.val := by
+          have hle : k.val ≤ j.val := Nat.le_of_not_gt hjk
+          have hne_val : k.val ≠ j.val := by
+            intro hval
+            exact hk (Fin.ext hval)
+          omega
+        rw [hLT k j hkj]
+        ring
+    · intro hnot
+      simp at hnot
+  have hdiag_res : |∑ k : Fin n, X_hat j k * L k j - 1| ≤ fp.u := by
+    simpa [hsum, hdiag] using hδ
   have hle1 : 1 ≤ n + 1 := Nat.succ_le_succ (Nat.zero_le n)
   have hvalid1 : gammaValid fp 1 :=
     gammaValid_mono fp hle1 hn1
@@ -1242,6 +1343,28 @@ structure BlockMethod1BSpec (fp : FPModel) (n N : ℕ)
     ∀ i, ∑ k : Fin n, (L i k + ΔL i k) * X_hat k j =
       if i = j then 1 else 0
 
+/-- **Method 1B specification from column backward errors** (Higham eqs.
+    14.11--14.13 support).
+
+    This source-facing packaging theorem records the exact data needed by the
+    abstract block Method 1B interface: a compatible block count, lower
+    triangular shape of the computed inverse, and per-column backward-error
+    certificates.  The block-loop derivation of those column certificates
+    remains a separate dependency. -/
+theorem triInv_method1B_spec_of_column_backward_error
+    (n N : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hBlockCount : N ≤ n)
+    (hLower : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0)
+    (hCol : ∀ j : Fin n, ∃ ΔL : Fin n → Fin n → ℝ,
+      (∀ i k, |ΔL i k| ≤ gamma fp n * |L i k|) ∧
+      ∀ i, ∑ k : Fin n, (L i k + ΔL i k) * X_hat k j =
+        if i = j then 1 else 0) :
+    BlockMethod1BSpec fp n N L X_hat :=
+  { block_count_le_dim := hBlockCount
+    lower_triangular_inverse := hLower
+    column_backward_error := hCol }
+
 /-- **Lemma 14.2** (Higham eq. 14.10): Method 1B right residual.
 
     |LX̂ − I| ≤ cₙu|L||X̂|.
@@ -1299,6 +1422,30 @@ theorem triInv_method1B_right_residual_from_spec (n N : ℕ) (fp : FPModel)
   triInv_method1B_right_residual n fp L X_hat hL_diag hLT hn
     hSpec.column_backward_error
 
+/-- **Lemma 14.2 bridge**: Method 1B right residual from explicit column
+    backward-error certificates.
+
+    This theorem separates the residual consequence from the still-open block
+    partition proof of the column certificates in equations (14.11)--(14.13). -/
+theorem triInv_method1B_right_residual_of_column_backward_error
+    (n N : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hn : gammaValid fp n)
+    (hBlockCount : N ≤ n)
+    (hLower : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0)
+    (hCol : ∀ j : Fin n, ∃ ΔL : Fin n → Fin n → ℝ,
+      (∀ i k, |ΔL i k| ≤ gamma fp n * |L i k|) ∧
+      ∀ i, ∑ k : Fin n, (L i k + ΔL i k) * X_hat k j =
+        if i = j then 1 else 0) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, L i k * X_hat k j - if i = j then 1 else 0| ≤
+      gamma fp n * ∑ k : Fin n, |L i k| * |X_hat k j| :=
+  triInv_method1B_right_residual_from_spec n N fp L X_hat hL_diag hLT hn
+    (triInv_method1B_spec_of_column_backward_error n N fp L X_hat
+      hBlockCount hLower hCol)
+
 /-- Problem 14.2 / Lemma 14.2 normwise form:
     Method 1B's componentwise right-residual bound implies the corresponding
     infinity-norm residual bound. -/
@@ -1336,6 +1483,34 @@ theorem triInv_method1B_right_residual_normwise_from_spec
       gamma fp n * infNorm L * infNorm X_hat :=
   triInv_method1B_right_residual_normwise n hn0 fp L X_hat
     hL_diag hLT hn hSpec.column_backward_error
+
+/-- Problem 14.2 / Lemma 14.2 normwise bridge:
+    Method 1B's explicit column backward-error certificates imply the
+    corresponding infinity-norm right-residual bound.
+
+    This is the normwise companion of
+    `triInv_method1B_right_residual_of_column_backward_error`; the open source
+    obligation is still to derive the column certificates from the block Method
+    1B loop in equations (14.11)--(14.13). -/
+theorem triInv_method1B_right_residual_normwise_of_column_backward_error
+    (n N : ℕ) (hn0 : 0 < n) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hn : gammaValid fp n)
+    (hBlockCount : N ≤ n)
+    (hLower : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0)
+    (hCol : ∀ j : Fin n, ∃ ΔL : Fin n → Fin n → ℝ,
+      (∀ i k, |ΔL i k| ≤ gamma fp n * |L i k|) ∧
+      ∀ i, ∑ k : Fin n, (L i k + ΔL i k) * X_hat k j =
+        if i = j then 1 else 0) :
+    infNorm (fun i j =>
+      ∑ k : Fin n, L i k * X_hat k j - if i = j then 1 else 0) ≤
+      gamma fp n * infNorm L * infNorm X_hat :=
+  triInv_method1B_right_residual_normwise_from_spec n N hn0 fp L X_hat
+    hL_diag hLT hn
+    (triInv_method1B_spec_of_column_backward_error n N fp L X_hat
+      hBlockCount hLower hCol)
 
 /-- Exact off-diagonal block used in Higham equation (14.14), Method 2B:
     `-X22 * L21 * X11`.  Here `L21` is the lower-left rectangular block, and
@@ -1384,6 +1559,50 @@ theorem higham14_eq14_14_method2B_block_update_delta_bound {m r : ℕ}
         ε * absBound i j := by
   intro i j
   simpa [higham14_method2BBlockUpdateDelta] using hBound i j
+
+/-- Higham, 2nd ed., Chapter 14, equation (14.14), Method 2B:
+    source-facing package for the rounded off-diagonal block update.
+
+    The package records both the exact decomposition of the computed block into
+    `-X22 * L21 * X11` plus an explicit perturbation and the componentwise
+    product-error bound on that perturbation.  The instability analysis that
+    uses this update certificate remains a separate source obligation. -/
+structure Method2BBlockUpdateSpec {m r : ℕ}
+    (X21_hat : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (X11 : Fin m → Fin m → ℝ)
+    (ε : ℝ) (absBound : Fin r → Fin m → ℝ) : Prop where
+  /-- The computed off-diagonal block is the exact Method 2B update plus
+      the explicitly named perturbation. -/
+  update_decomposition : ∀ i : Fin r, ∀ j : Fin m,
+    X21_hat i j =
+      higham14_method2BBlockUpdateExact X22 L21 X11 i j +
+        higham14_method2BBlockUpdateDelta X21_hat X22 L21 X11 i j
+  /-- The explicit perturbation obeys the supplied componentwise product-error
+      envelope for the rectangular triple product. -/
+  delta_bound : ∀ i : Fin r, ∀ j : Fin m,
+    |higham14_method2BBlockUpdateDelta X21_hat X22 L21 X11 i j| ≤
+      ε * absBound i j
+
+/-- Higham, 2nd ed., Chapter 14, equation (14.14), Method 2B:
+    build the source-facing block-update package from a rectangular
+    triple-product error certificate. -/
+theorem higham14_eq14_14_method2B_block_update_spec_of_product_error {m r : ℕ}
+    (X21_hat : Fin r → Fin m → ℝ)
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin m → ℝ)
+    (X11 : Fin m → Fin m → ℝ)
+    (ε : ℝ) (absBound : Fin r → Fin m → ℝ)
+    (hBound : ∀ i : Fin r, ∀ j : Fin m,
+      |X21_hat i j -
+        higham14_method2BBlockUpdateExact X22 L21 X11 i j| ≤
+          ε * absBound i j) :
+    Method2BBlockUpdateSpec X21_hat X22 L21 X11 ε absBound where
+  update_decomposition :=
+    higham14_eq14_14_method2B_block_update_decomposition
+      X21_hat X22 L21 X11
+  delta_bound :=
+    higham14_eq14_14_method2B_block_update_delta_bound
+      X21_hat X22 L21 X11 ε absBound hBound
 
 /-- Exact Method 2B off-diagonal block formula from the block equation
     `X21 * L11 + X22 * L21 = 0` and the diagonal-block inverse certificate
@@ -2811,6 +3030,36 @@ theorem higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget {n : �
           nlinarith [hU, hL, hPterm, hA]
     _ = (4 * γ + 2 * γ ^ 2) * P := by ring_nf
 
+/-- Higham, 2nd ed., Chapter 14, equation (14.23), Method D:
+    source-facing local-certificate route to the printed scalar coefficient.
+
+    This wrapper exposes the proved path from the LU backward-error certificate,
+    lower/upper triangular inverse residual certificates, and product-error
+    certificate directly to the `(4γ + 2γ^2)` left-residual envelope.  The
+    remaining source dependency is upstream: deriving the triangular inverse
+    residual certificates for the chosen Method 2/2C kernels. -/
+theorem higham14_eq14_23_methodD_left_residual_bound_of_local_certificates
+    (n : ℕ) (fp : FPModel)
+    (A L_hat U_hat X_U X_L X_hat : Fin n → Fin n → ℝ)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hXL_res : ∀ i j : Fin n,
+      |higham14_methodDXLLeftResidual X_L L_hat i j| ≤
+        gamma fp n * ∑ k : Fin n, |X_L i k| * |L_hat k j|)
+    (hXU_res : ∀ i j : Fin n,
+      |higham14_methodDXULeftResidual X_U U_hat i j| ≤
+        gamma fp n * ∑ k : Fin n, |X_U i k| * |U_hat k j|)
+    (hProd : MatProdError n X_hat (matMul n X_U X_L) (gamma fp n)
+      (fun i j => ∑ k : Fin n, |X_U i k| * |X_L k j|)) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * A k j - (if i = j then 1 else 0)| ≤
+        (4 * gamma fp n + 2 * gamma fp n ^ 2) *
+          ∑ p : Fin n,
+            (∑ q : Fin n, |X_U i q| * |X_L q p|) *
+              (∑ r : Fin n, |L_hat p r| * |U_hat r j|) :=
+  higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget
+    fp A L_hat U_hat X_U X_L X_hat hLU hn hXL_res hXU_res hProd
+
 /-- **Abstract Method D left residual interface** (Higham eq. 14.20–14.23).
 
     Method D: compute X_L ≈ L⁻¹ and X_U ≈ U⁻¹ separately,
@@ -3850,6 +4099,258 @@ theorem triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul
     exact le_trans hbase (mul_le_mul_of_nonneg_right hcoeff hS_nonneg)
   exact triInv_method2_left_residual_from_region_bounds n L X_hat
     (gamma_nonneg fp hn2) hUpper hDiag hLower
+
+/-- Lemma 14.1 support: a strict-tail Method 2 storage recurrence implies
+    the full componentwise left-residual bound using only the diagonal
+    rounded-reciprocal certificate, triangular shape, and stored rounded
+    dot/scalar update.
+
+Compared with `triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul`,
+this theorem removes the dependency on the older `Method2Spec.offdiag_err`
+field.  It still assumes the storage recurrence itself; the remaining
+source-facing loop obligation is to prove `hStore` from the concrete
+reverse-column implementation. -/
+theorem triInv_method2_left_residual_of_strict_tail_storage
+    (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn2 : gammaValid fp (n + 2))
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hDiag : ∀ j : Fin n, ∃ δ : ℝ, |δ| ≤ fp.u ∧
+      X_hat j j * L j j = 1 + δ)
+    (hUpper : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0)
+    (hStore : ∀ j row : Fin n, row.val > j.val →
+      X_hat row j =
+        fp.fl_mul (-X_hat j j)
+          (fl_dotProduct fp n
+            (fun k : Fin n => if j.val < k.val then X_hat row k else 0)
+            (fun k : Fin n => L k j))) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * L k j -
+          (if i = j then 1 else 0)| ≤
+        gamma fp (n + 2) * ∑ k : Fin n, |X_hat i k| * |L k j| := by
+  have hn : gammaValid fp n := gammaValid_mono fp (by omega : n ≤ n + 2) hn2
+  have hn1 : gammaValid fp (n + 1) :=
+    gammaValid_mono fp (by omega : n + 1 ≤ n + 2) hn2
+  have hη_nonneg :
+      0 ≤ (1 + fp.u) * (gamma fp n + fp.u * (1 + gamma fp n)) := by
+    have hγn_nonneg : 0 ≤ gamma fp n := gamma_nonneg fp hn
+    have honeu_nonneg : 0 ≤ 1 + fp.u := by linarith [fp.u_nonneg]
+    have honeγ_nonneg : 0 ≤ 1 + gamma fp n := by linarith
+    exact mul_nonneg honeu_nonneg
+      (add_nonneg hγn_nonneg (mul_nonneg fp.u_nonneg honeγ_nonneg))
+  have hTrail : ∀ j row : Fin n, row.val > j.val →
+      ∃ Δ : ℝ,
+        |Δ * L j j| ≤ ((1 + fp.u) * (gamma fp n + fp.u * (1 + gamma fp n))) *
+          (∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0) ∧
+        X_hat row j =
+          -X_hat j j *
+            (∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0) + Δ := by
+    intro j row hij
+    let x : Fin n → ℝ := fun k => if j.val < k.val then X_hat row k else 0
+    let y : Fin n → ℝ := fun k => L k j
+    let exactTail : ℝ :=
+      ∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0
+    let tailAbs : ℝ :=
+      ∑ k : Fin n, if j.val < k.val then |X_hat row k| * |L k j| else 0
+    let flTail : ℝ := fl_dotProduct fp n x y
+    let Δ : ℝ := fp.fl_mul (-X_hat j j) flTail - (-X_hat j j * exactTail)
+    refine Exists.intro Δ (And.intro ?_ ?_)
+    · obtain ⟨δmul, hδmul, hmul⟩ := fp.model_mul (-X_hat j j) flTail
+      have hdot := dotProduct_error_bound fp n x y hn
+      have hsum_exact :
+          (∑ k : Fin n, x k * y k) = exactTail := by
+        dsimp [x, y, exactTail]
+        apply Finset.sum_congr rfl
+        intro k _
+        by_cases hjk : j.val < k.val <;> simp [hjk]
+      have hsum_abs :
+          (∑ k : Fin n, |x k| * |y k|) = tailAbs := by
+        dsimp [x, y, tailAbs]
+        apply Finset.sum_congr rfl
+        intro k _
+        by_cases hjk : j.val < k.val <;> simp [hjk]
+      have hdot_tail : |flTail - exactTail| ≤ gamma fp n * tailAbs := by
+        simpa [flTail, hsum_exact, hsum_abs] using hdot
+      have htail_abs : |exactTail| ≤ tailAbs := by
+        calc
+          |exactTail| =
+              |∑ k : Fin n, if j.val < k.val then X_hat row k * L k j else 0| := by
+                rfl
+          _ ≤ ∑ k : Fin n,
+                |if j.val < k.val then X_hat row k * L k j else 0| :=
+              Finset.abs_sum_le_sum_abs _ _
+          _ = tailAbs := by
+              apply Finset.sum_congr rfl
+              intro k _
+              by_cases hjk : j.val < k.val <;> simp [hjk, abs_mul]
+      have htail_nonneg : 0 ≤ tailAbs := by
+        dsimp [tailAbs]
+        exact Finset.sum_nonneg (fun k _ => by
+          by_cases hjk : j.val < k.val
+          · simpa [hjk] using
+              mul_nonneg (abs_nonneg (X_hat row k)) (abs_nonneg (L k j))
+          · simp [hjk])
+      have hfl_abs : |flTail| ≤ (1 + gamma fp n) * tailAbs := by
+        calc
+          |flTail| = |exactTail + (flTail - exactTail)| := by
+            congr 1
+            ring
+          _ ≤ |exactTail| + |flTail - exactTail| :=
+              abs_add_le exactTail (flTail - exactTail)
+          _ ≤ tailAbs + gamma fp n * tailAbs :=
+              add_le_add htail_abs hdot_tail
+          _ = (1 + gamma fp n) * tailAbs := by ring
+      obtain ⟨δ, hδ, hdiag⟩ := hDiag j
+      have hdiag_abs : |X_hat j j * L j j| ≤ 1 + fp.u := by
+        calc
+          |X_hat j j * L j j| = |1 + δ| := by rw [hdiag]
+          _ ≤ |(1 : ℝ)| + |δ| := abs_add_le 1 δ
+          _ ≤ 1 + fp.u := by
+            norm_num
+            exact hδ
+      have honeu_nonneg : 0 ≤ 1 + fp.u := by linarith [fp.u_nonneg]
+      have honeγ_nonneg : 0 ≤ 1 + gamma fp n := by
+        linarith [gamma_nonneg fp hn]
+      have hcoef_nonneg :
+          0 ≤ (1 + fp.u) * ((1 + gamma fp n) * tailAbs) := by
+        exact mul_nonneg honeu_nonneg
+          (mul_nonneg honeγ_nonneg htail_nonneg)
+      have hΔ_decomp :
+          Δ * L j j =
+            (-X_hat j j * L j j) * (flTail - exactTail) +
+              ((-X_hat j j * L j j) * flTail) * δmul := by
+        dsimp [Δ]
+        rw [hmul]
+        ring
+      have hfirst :
+          |(-X_hat j j * L j j) * (flTail - exactTail)| ≤
+            (1 + fp.u) * (gamma fp n * tailAbs) := by
+        have hneg_abs : |(-X_hat j j * L j j)| = |X_hat j j * L j j| := by
+          have hneg : (-X_hat j j * L j j) = -(X_hat j j * L j j) := by ring
+          rw [hneg, abs_neg]
+        calc
+          |(-X_hat j j * L j j) * (flTail - exactTail)|
+              = |X_hat j j * L j j| * |flTail - exactTail| := by
+                rw [abs_mul, hneg_abs]
+          _ ≤ (1 + fp.u) * (gamma fp n * tailAbs) :=
+              mul_le_mul hdiag_abs hdot_tail (abs_nonneg _) honeu_nonneg
+      have hsecond :
+          |((-X_hat j j * L j j) * flTail) * δmul| ≤
+            ((1 + fp.u) * ((1 + gamma fp n) * tailAbs)) * fp.u := by
+        have hneg_abs : |(-X_hat j j * L j j)| = |X_hat j j * L j j| := by
+          have hneg : (-X_hat j j * L j j) = -(X_hat j j * L j j) := by ring
+          rw [hneg, abs_neg]
+        have hleft :
+            |X_hat j j * L j j| * |flTail| ≤
+              (1 + fp.u) * ((1 + gamma fp n) * tailAbs) :=
+          mul_le_mul hdiag_abs hfl_abs (abs_nonneg _) honeu_nonneg
+        calc
+          |((-X_hat j j * L j j) * flTail) * δmul|
+              = |X_hat j j * L j j| * |flTail| * |δmul| := by
+                rw [abs_mul, abs_mul, hneg_abs]
+          _ ≤ ((1 + fp.u) * ((1 + gamma fp n) * tailAbs)) * fp.u :=
+              mul_le_mul hleft hδmul (abs_nonneg _) hcoef_nonneg
+      calc
+        |Δ * L j j|
+            = |(-X_hat j j * L j j) * (flTail - exactTail) +
+                ((-X_hat j j * L j j) * flTail) * δmul| := by
+              rw [hΔ_decomp]
+        _ ≤ |(-X_hat j j * L j j) * (flTail - exactTail)| +
+              |((-X_hat j j * L j j) * flTail) * δmul| :=
+            abs_add_le _ _
+        _ ≤ (1 + fp.u) * (gamma fp n * tailAbs) +
+              ((1 + fp.u) * ((1 + gamma fp n) * tailAbs)) * fp.u :=
+            add_le_add hfirst hsecond
+        _ = ((1 + fp.u) * (gamma fp n + fp.u * (1 + gamma fp n))) *
+              tailAbs := by ring
+    · have hstore := hStore j row hij
+      calc
+        X_hat row j = fp.fl_mul (-X_hat j j) flTail := by
+          simpa [flTail, x, y] using hstore
+        _ = -X_hat j j * exactTail + Δ := by
+          dsimp [Δ]
+          ring
+  have hUpperRes :=
+    triInv_lower_left_residual_upper_zero n L X_hat hUpper hLT
+  have hDiagBase :=
+    triInv_method2_left_residual_diag_product_bound_of_diag_upper
+      n fp L X_hat hn1 hLT hDiag hUpper
+  have hDiagBudget : ∀ j : Fin n,
+      |∑ k : Fin n, X_hat j k * L k j - 1| ≤
+        gamma fp (n + 2) * ∑ k : Fin n, |X_hat j k| * |L k j| := by
+    intro j
+    have hS_nonneg : 0 ≤ ∑ k : Fin n, |X_hat j k| * |L k j| := by
+      exact Finset.sum_nonneg (fun k _ =>
+        mul_nonneg (abs_nonneg _) (abs_nonneg _))
+    have hmono : gamma fp (n + 1) ≤ gamma fp (n + 2) :=
+      gamma_mono fp (by omega : n + 1 ≤ n + 2) hn2
+    exact le_trans (hDiagBase j) (mul_le_mul_of_nonneg_right hmono hS_nonneg)
+  have hLowerEta :=
+    triInv_method2_offdiag_trailing_update_full_bound n fp L X_hat
+      hη_nonneg hLT hDiag hTrail
+  have hcoeff :
+      fp.u + (1 + fp.u) * (gamma fp n + fp.u * (1 + gamma fp n)) ≤
+        gamma fp (n + 2) :=
+    higham14_unit_roundoff_add_one_plus_u_mul_rounded_gamma_le_gamma_succ_succ
+      fp n hn2
+  have hLower : ∀ j row : Fin n, row.val > j.val →
+      |∑ k : Fin n, X_hat row k * L k j -
+          (if row = j then 1 else 0)| ≤
+        gamma fp (n + 2) * ∑ k : Fin n, |X_hat row k| * |L k j| := by
+    intro j row hij
+    have hbase := hLowerEta j row hij
+    have hS_nonneg : 0 ≤ ∑ k : Fin n, |X_hat row k| * |L k j| := by
+      exact Finset.sum_nonneg (fun k _ =>
+        mul_nonneg (abs_nonneg _) (abs_nonneg _))
+    exact le_trans hbase (mul_le_mul_of_nonneg_right hcoeff hS_nonneg)
+  exact triInv_method2_left_residual_from_region_bounds n L X_hat
+    (gamma_nonneg fp hn2) hUpperRes hDiagBudget hLower
+
+/-- Higham, 2nd ed., Chapter 14, Lemma 14.1 / equation (14.8), Method 2
+    strict-tail kernel surface:
+    a source-facing strict-tail dot/scalar kernel certificate implies the
+    componentwise left-residual bound with coefficient `gamma_(n+2)`.
+
+    This closes the residual consequence of the packaged kernel certificate.
+    The concrete reverse-column loop proof that produces
+    `Method2StrictTailKernelSpec` remains a separate selected dependency. -/
+theorem triInv_method2_left_residual_of_strict_tail_kernel_spec
+    (n : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn2 : gammaValid fp (n + 2))
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hKernel : Method2StrictTailKernelSpec fp n L X_hat) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, X_hat i k * L k j -
+          (if i = j then 1 else 0)| ≤
+        gamma fp (n + 2) * ∑ k : Fin n, |X_hat i k| * |L k j| :=
+  triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul
+    n fp L X_hat hn2 hLT hKernel.method2 hKernel.strict_tail_dot_scalar
+
+/-- Problem 14.2 / Lemma 14.1 normwise bridge:
+    a Method 2 strict-tail kernel certificate implies the corresponding
+    infinity-norm left-residual bound, with the same conservative
+    `gamma_(n+2)` coefficient as the rounded dot/scalar componentwise theorem.
+
+    This is still conditional on the concrete reverse-column loop producing
+    `Method2StrictTailKernelSpec`, but it removes the remaining normwise
+    handoff once that kernel package is available. -/
+theorem triInv_method2_left_residual_normwise_of_strict_tail_kernel_spec
+    (n : ℕ) (hn0 : 0 < n) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hn2 : gammaValid fp (n + 2))
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hKernel : Method2StrictTailKernelSpec fp n L X_hat) :
+    infNorm (fun i j =>
+      ∑ k : Fin n, X_hat i k * L k j - if i = j then 1 else 0) ≤
+      gamma fp (n + 2) * infNorm X_hat * infNorm L := by
+  have hComp :=
+    triInv_method2_left_residual_of_strict_tail_kernel_spec
+      n fp L X_hat hn2 hLT hKernel
+  exact higham14_infNorm_le_of_componentwise_matmul_bound hn0
+    (R := fun i j => ∑ k : Fin n, X_hat i k * L k j -
+      if i = j then 1 else 0)
+    (A := X_hat) (B := L) (gamma_nonneg fp hn2) hComp
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.5, right-approximate-inverse
     residual bound.
@@ -6757,6 +7258,103 @@ theorem higham14_problem14_15_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs
       A Ainv Delta hRight hsmall habs
   simpa [abs_of_pos hdetA_pos, abs_of_pos hdetB_pos] using hAbs
 
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 side-condition audit:
+    the product-radius denominator is positive under the corrected guard
+    `eps < 1/n`, because then `n*eps < 1`.
+
+The determinant perturbation wrappers use the stronger `n*eps < 1` guard
+directly; this lemma records the equivalent small-parameter form for positive
+dimension. -/
+theorem higham14_problem14_15_product_guard_of_lt_inv_card {n : ℕ}
+    (hnpos : 0 < n) {eps : ℝ}
+    (hsmall : eps < ((n : ℝ)⁻¹)) :
+    (n : ℝ) * eps < (1 : ℝ) := by
+  have hnreal_pos : 0 < (n : ℝ) := Nat.cast_pos.mpr hnpos
+  calc
+    (n : ℝ) * eps < (n : ℝ) * ((n : ℝ)⁻¹) := by
+      exact mul_lt_mul_of_pos_left hsmall hnreal_pos
+    _ = (1 : ℝ) := by
+      field_simp [ne_of_gt hnreal_pos]
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 side-condition audit:
+    the weaker-looking hypothesis `eps < 1` does not imply the denominator
+    guard `n*eps < 1` once `n > 1`.  For `n = 2`, `eps = 3/4` is already a
+    counterexample. -/
+theorem higham14_problem14_15_eps_lt_one_not_sufficient_for_product_guard :
+    ∃ eps : ℝ, 0 ≤ eps ∧ eps < 1 ∧ ¬ ((2 : ℝ) * eps < 1) := by
+  refine ⟨(3 : ℝ) / 4, ?_, ?_, ?_⟩
+  · norm_num
+  · norm_num
+  · norm_num
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    source-scaled determinant perturbation bridge with the corrected
+    small-parameter guard `eps < 1/(k+1)`.  It is a source-side-condition
+    wrapper around the existing `n*eps < 1` determinant bridge.
+
+The remaining spectral input is still the all-index absolute singular-value
+perturbation bound supplied by `habs`. -/
+theorem higham14_problem14_15_abs_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound_inv_card_guard
+    {k : ℕ} (A Ainv Delta : Fin (k + 1) → Fin (k + 1) → ℝ)
+    (hRight : IsRightInverse (k + 1) A Ainv)
+    (hsmall :
+      kappa2 A Ainv * opNorm2 Delta / opNorm2 A <
+        (((k + 1 : ℕ) : ℝ)⁻¹))
+    (habs : ∀ i : Fin (k + 1),
+      |complexMatrixSingularValue
+          (realRectToCMatrix (fun r c => A r c + Delta r c)) i -
+        complexMatrixSingularValue (realRectToCMatrix A) i| ≤ opNorm2 Delta) :
+    |(|Matrix.det
+          ((fun r c => A r c + Delta r c) :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ)| /
+        |Matrix.det (A : Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ)|) - 1| ≤
+      (((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A)) /
+        (1 - ((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A)) := by
+  have hguard :
+      ((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A) < (1 : ℝ) :=
+    higham14_problem14_15_product_guard_of_lt_inv_card (Nat.succ_pos k) hsmall
+  exact
+    higham14_problem14_15_abs_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound
+      A Ainv Delta hRight hguard habs
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    signed determinant companion of the corrected `eps < 1/(k+1)` guard
+    wrapper, under positive determinant signs. -/
+theorem higham14_problem14_15_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound_inv_card_guard_of_det_pos
+    {k : ℕ} (A Ainv Delta : Fin (k + 1) → Fin (k + 1) → ℝ)
+    (hRight : IsRightInverse (k + 1) A Ainv)
+    (hsmall :
+      kappa2 A Ainv * opNorm2 Delta / opNorm2 A <
+        (((k + 1 : ℕ) : ℝ)⁻¹))
+    (habs : ∀ i : Fin (k + 1),
+      |complexMatrixSingularValue
+          (realRectToCMatrix (fun r c => A r c + Delta r c)) i -
+        complexMatrixSingularValue (realRectToCMatrix A) i| ≤ opNorm2 Delta)
+    (hdetA_pos : 0 < Matrix.det
+      (A : Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ))
+    (hdetB_pos :
+      0 < Matrix.det
+        ((fun r c => A r c + Delta r c) :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ)) :
+    |(Matrix.det
+          ((fun r c => A r c + Delta r c) :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) /
+        Matrix.det (A : Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ)) - 1| ≤
+      (((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A)) /
+        (1 - ((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A)) := by
+  have hguard :
+      ((k + 1 : ℕ) : ℝ) *
+          (kappa2 A Ainv * opNorm2 Delta / opNorm2 A) < (1 : ℝ) :=
+    higham14_problem14_15_product_guard_of_lt_inv_card (Nat.succ_pos k) hsmall
+  exact
+    higham14_problem14_15_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound_of_det_pos
+      A Ainv Delta hRight hguard habs hdetA_pos hdetB_pos
+
 /-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
     the smallest ordered singular value of a perturbed square matrix is bounded
     below by `sigma_min(A) - delta` whenever `delta` bounds `B - A` in
@@ -6811,6 +7409,67 @@ theorem higham14_problem14_15_sigmaMin_add_pos_of_rectOpNorm2Le_lt
     wedinLemma20_11_sigmaMinCol_pos_of_sub_rectOpNorm2Le_lt
       A (fun i j => A i j + Delta i j) hSub
       (by simpa [wedinLemma20_11_sigmaMinCol] using hsmall)
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    rectangular operator-2 certificates are stable under negating the matrix.
+    This lets extremal singular-value perturbation estimates be applied in
+    both additive directions. -/
+theorem higham14_problem14_15_rectOpNorm2Le_neg
+    {m n : Nat} {M : Fin m -> Fin n -> Real} {c : Real}
+    (hM : rectOpNorm2Le M c) :
+    rectOpNorm2Le (fun i j => -M i j) c := by
+  intro x
+  have hmul :
+      rectMatMulVec (fun i j => -M i j) x =
+        fun i => -rectMatMulVec M x i := by
+    ext i
+    unfold rectMatMulVec
+    calc
+      (Finset.univ.sum fun j : Fin n => (-M i j) * x j)
+          = Finset.univ.sum fun j : Fin n => -(M i j * x j) := by
+            apply Finset.sum_congr rfl
+            intro j _hj
+            ring
+      _ = -(Finset.univ.sum fun j : Fin n => M i j * x j) := by
+            rw [Finset.sum_neg_distrib]
+  rw [hmul]
+  simpa [vecNorm2_neg] using hM x
+
+/-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
+    absolute perturbation bound for the smallest ordered singular value.
+    This closes the last-index extremal case of the all-index Weyl/Mirsky
+    inequality still needed for the full determinant perturbation theorem. -/
+theorem higham14_problem14_15_sigmaMin_abs_sub_le_of_rectOpNorm2Le
+    {k : Nat} (A Delta : Fin (k + 1) -> Fin (k + 1) -> Real) {delta : Real}
+    (hDelta : rectOpNorm2Le Delta delta) :
+    |complexMatrixSingularValue
+        (realRectToCMatrix (fun i j => A i j + Delta i j)) (Fin.last k) -
+      complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k)| <= delta := by
+  let sigmaA : Real := complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k)
+  let sigmaB : Real :=
+    complexMatrixSingularValue
+      (realRectToCMatrix (fun i j => A i j + Delta i j)) (Fin.last k)
+  have hLower : sigmaA - delta <= sigmaB := by
+    simpa [sigmaA, sigmaB] using
+      higham14_problem14_15_sigmaMin_sub_le_sigmaMin_add_of_rectOpNorm2Le
+        A Delta hDelta
+  have hNeg : rectOpNorm2Le (fun i j => -Delta i j) delta :=
+    higham14_problem14_15_rectOpNorm2Le_neg hDelta
+  have hReverseRaw :
+      sigmaB - delta <=
+        complexMatrixSingularValue
+          (realRectToCMatrix
+            (fun i j => (A i j + Delta i j) + -Delta i j)) (Fin.last k) := by
+    simpa [sigmaB] using
+      higham14_problem14_15_sigmaMin_sub_le_sigmaMin_add_of_rectOpNorm2Le
+        (fun i j => A i j + Delta i j) (fun i j => -Delta i j) hNeg
+  have hReverse : sigmaB - delta <= sigmaA := by
+    simpa [sigmaA] using hReverseRaw
+  have hRight : sigmaB - sigmaA <= delta := by linarith
+  have hLeft : -delta <= sigmaB - sigmaA := by linarith
+  have hAbs : |sigmaB - sigmaA| <= delta :=
+    abs_le.mpr (And.intro hLeft hRight)
+  simpa [sigmaA, sigmaB] using hAbs
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.15 support:
     operator 2-norm triangle inequality for an additive perturbation. -/

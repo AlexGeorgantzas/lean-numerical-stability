@@ -722,6 +722,109 @@ theorem gje_stage2_backward_error (n : ℕ) (fp : FPModel)
 -- §14.4.6  Theorem 14.5: Overall GJE Error (eqs. 14.31–14.32)
 -- ══════════════════════════════════════════════════════════════════════
 
+/-- **Equation 14.30, cumulative-product certificate route.**
+
+    This source-facing wrapper removes the final componentwise bound
+    hypotheses from `gje_stage2_backward_error`: once the per-stage
+    perturbations of the GJE second-stage matrices are bounded by `γ₃`, the
+    cumulative-product matrix and right-hand-side perturbation bridges provide
+    the componentwise bounds (14.30b)--(14.30c).  The exact backward equation
+    (14.30a) remains an explicit recurrence-instantiation hypothesis. -/
+theorem gje_stage2_backward_error_of_cumulative_product_certificates
+    (n : ℕ) (fp : FPModel)
+    (U : Fin n → Fin n → ℝ) (y x_hat : Fin n → ℝ)
+    (N_hat DeltaN : Fin n → Fin n → Fin n → ℝ)
+    (start : ℕ)
+    (hn : 1 ≤ n) (hvalid : gammaValid fp 3)
+    (hidx : ∀ r : Fin (n - 1),
+      start + ((n - 1) - 1 - r.val) < n)
+    (hDelta : ∀ r : Fin (n - 1), ∀ i j : Fin n,
+      |DeltaN (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j| ≤
+        gamma fp 3 *
+          |N_hat (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j|)
+    (hBackwardEq : ∀ i : Fin n,
+      ∑ j : Fin n,
+          (U i j +
+            (matMul n
+                (gje_cumulative_product n
+                  (fun k a b => N_hat k a b + DeltaN k a b)
+                  start (start + (n - 1))) U i j -
+              matMul n
+                (gje_cumulative_product n N_hat start (start + (n - 1))) U i j)) *
+            x_hat j =
+        y i +
+          (matMulVec n
+              (gje_cumulative_product n
+                (fun k a b => N_hat k a b + DeltaN k a b)
+                start (start + (n - 1))) y i -
+            matMulVec n
+              (gje_cumulative_product n N_hat start (start + (n - 1))) y i)) :
+    ∃ (DeltaU : Fin n → Fin n → ℝ) (Deltay : Fin n → ℝ),
+      (∀ i : Fin n, ∑ j : Fin n, (U i j + DeltaU i j) * x_hat j =
+        y i + Deltay i) ∧
+      (∀ i j : Fin n, |DeltaU i j| ≤
+        gje_c₃ fp n * ∑ k : Fin n,
+          |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+            start (start + (n - 1)) i k| * |U k j|) ∧
+      (∀ i : Fin n, |Deltay i| ≤
+        gje_c₃ fp n * ∑ j : Fin n,
+          |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+            start (start + (n - 1)) i j| * |y j|) := by
+  let Pdelta : Fin n → Fin n → ℝ :=
+    gje_cumulative_product n
+      (fun k a b => N_hat k a b + DeltaN k a b)
+      start (start + (n - 1))
+  let P : Fin n → Fin n → ℝ :=
+    gje_cumulative_product n N_hat start (start + (n - 1))
+  let Pabs : Fin n → Fin n → ℝ :=
+    gje_cumulative_product n (fun s a b => |N_hat s a b|)
+      start (start + (n - 1))
+  let DeltaU : Fin n → Fin n → ℝ := fun i j =>
+    matMul n Pdelta U i j - matMul n P U i j
+  let Deltay : Fin n → ℝ := fun i =>
+    matMulVec n Pdelta y i - matMulVec n P y i
+  refine ⟨DeltaU, Deltay, ?_, ?_, ?_⟩
+  · intro i
+    simpa [DeltaU, Deltay, Pdelta, P] using hBackwardEq i
+  · intro i j
+    change |DeltaU i j| ≤
+      gje_c₃ fp n * ∑ k : Fin n, |Pabs i k| * |U k j|
+    have hPabs_nonneg : ∀ a b : Fin n, 0 ≤ Pabs a b := by
+      intro a b
+      simpa [Pabs] using
+        gje_cumulative_product_abs_nonneg n N_hat start (start + (n - 1)) a b
+    have hBridge : |DeltaU i j| ≤
+        gje_c₃ fp n * ∑ k : Fin n, Pabs i k * |U k j| := by
+      simpa [DeltaU, Pdelta, P, Pabs] using
+        gje_cumulative_product_matMul_componentwise_perturbation_bound_gamma_c3
+          n fp N_hat DeltaN start U hn hvalid hidx hDelta i j
+    have hsum :
+        (∑ k : Fin n, Pabs i k * |U k j|) =
+          ∑ k : Fin n, |Pabs i k| * |U k j| := by
+      apply Finset.sum_congr rfl
+      intro k _
+      rw [abs_of_nonneg (hPabs_nonneg i k)]
+    simpa [hsum] using hBridge
+  · intro i
+    change |Deltay i| ≤
+      gje_c₃ fp n * ∑ j : Fin n, |Pabs i j| * |y j|
+    have hPabs_nonneg : ∀ a b : Fin n, 0 ≤ Pabs a b := by
+      intro a b
+      simpa [Pabs] using
+        gje_cumulative_product_abs_nonneg n N_hat start (start + (n - 1)) a b
+    have hBridge : |Deltay i| ≤
+        gje_c₃ fp n * ∑ j : Fin n, Pabs i j * |y j| := by
+      simpa [Deltay, Pdelta, P, Pabs] using
+        gje_cumulative_product_matMulVec_componentwise_perturbation_bound_gamma_c3
+          n fp N_hat DeltaN start y hn hvalid hidx hDelta i
+    have hsum :
+        (∑ j : Fin n, Pabs i j * |y j|) =
+          ∑ j : Fin n, |Pabs i j| * |y j| := by
+      apply Finset.sum_congr rfl
+      intro j _
+      rw [abs_of_nonneg (hPabs_nonneg i j)]
+    simpa [hsum] using hBridge
+
 /-- **Theorem 14.5, eq. 14.31**: Overall GJE residual bound.
 
     Combining the first-stage error (GE: A + ΔA = L̂Û with |ΔA| ≤ γₙ|L̂||Û|)
