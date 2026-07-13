@@ -5613,6 +5613,7 @@ simplification, the exact Hyman block identities
 - `triInv_method1B_right_residual_normwise`
 - `triInv_method1B_right_residual_normwise_from_spec`
 - `triInv_method1B_right_residual_normwise_of_column_backward_error`
+- `triInv_method1B_right_residual_normwise_of_row_certificates`
 - `triInv_method2C_left_residual_normwise`
 - `higham14_problem14_3_right_residual_eq_mul_left_residual`
 - `higham14_problem14_3_left_residual_eq_mul_right_residual`
