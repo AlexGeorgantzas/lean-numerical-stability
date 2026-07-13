@@ -8597,6 +8597,231 @@ theorem higham21_theorem21_4_common_perturbation_row_bound_of_qr_and_lifted_boun
       (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR)))
     A hDeltaA0 hDeltaR i
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    an orthogonal left factor preserves each column norm of a rectangular
+    panel.  This is the per-column form needed for the lifted triangular
+    perturbation `(Q [DeltaR;0])^T`. -/
+theorem higham21_columnFrob_matMulRectLeft_orthogonal
+    {m n : ℕ}
+    (Q : Fin m → Fin m → ℝ)
+    (B : Fin m → Fin n → ℝ)
+    (hQ : IsOrthogonal m Q)
+    (j : Fin n) :
+    columnFrob (matMulRectLeft Q B) j = columnFrob B j := by
+  rw [columnFrob_eq_vecNorm2, columnFrob_eq_vecNorm2]
+  have hcol :
+      (fun i : Fin m => matMulRectLeft Q B i j) =
+        matMulVec m Q (fun i : Fin m => B i j) := by
+    ext i
+    rfl
+  rw [hcol]
+  exact vecNorm2_orthogonal Q (fun i : Fin m => B i j) hQ
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    stacking zero rows below a square triangular perturbation preserves each
+    column Frobenius norm. -/
+theorem higham21_columnFrob_lsQRTallBlock
+    {m k : ℕ}
+    (R : Fin m → Fin m → ℝ)
+    (j : Fin m) :
+    columnFrob (lsQRTallBlock (k := k) R) j = columnFrob R j := by
+  rw [columnFrob_eq_vecNorm2, columnFrob_eq_vecNorm2]
+  have hcol :
+      (fun i : Fin (m + k) => lsQRTallBlock (k := k) R i j) =
+        Fin.append (fun i : Fin m => R i j) (0 : Fin k → ℝ) := by
+    ext i
+    refine Fin.addCases
+      (motive := fun i : Fin (m + k) =>
+        lsQRTallBlock (k := k) R i j =
+          Fin.append (fun i : Fin m => R i j) (0 : Fin k → ℝ) i)
+      ?left ?right i
+    · intro i
+      simp [lsQRTallBlock, Fin.append_left]
+    · intro i
+      simp [lsQRTallBlock, Fin.append_right]
+  rw [hcol]
+  unfold vecNorm2
+  rw [lsVecNorm2Sq_append]
+  simp [vecNorm2Sq]
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    the lifted triangular block has row norm equal to the corresponding column
+    norm of the triangular perturbation when the QR factor is orthogonal. -/
+theorem higham21_theorem21_4_lifted_deltaR_row_norm_eq_columnFrob
+    {m k : ℕ}
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (DeltaR : Fin m → Fin m → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (j : Fin m) :
+    rectRowNorm2
+        (finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR))) j =
+      columnFrob DeltaR j := by
+  calc
+    rectRowNorm2
+        (finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR))) j
+        = columnFrob
+            (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR)) j := by
+          simp [rectRowNorm2, columnFrob_eq_vecNorm2, finiteTranspose]
+    _ = columnFrob (lsQRTallBlock (k := k) DeltaR) j := by
+          exact higham21_columnFrob_matMulRectLeft_orthogonal
+            Q (lsQRTallBlock (k := k) DeltaR) hQ j
+    _ = columnFrob DeltaR j := higham21_columnFrob_lsQRTallBlock DeltaR j
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    columnwise control of the triangular perturbation gives the row-wise bound
+    for its lifted original-coordinate perturbation. -/
+theorem higham21_theorem21_4_lifted_deltaR_row_bound_of_column_bound
+    {m k : ℕ}
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (DeltaR : Fin m → Fin m → ℝ)
+    {etaR : ℝ}
+    (hQ : IsOrthogonal (m + k) Q)
+    (hDeltaRCol : ∀ i : Fin m,
+      columnFrob DeltaR i ≤ etaR * rectRowNorm2 A i)
+    (i : Fin m) :
+    rectRowNorm2
+        (finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR))) i ≤
+      etaR * rectRowNorm2 A i := by
+  rw [higham21_theorem21_4_lifted_deltaR_row_norm_eq_columnFrob
+    Q DeltaR hQ i]
+  exact hDeltaRCol i
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    entrywise relative bounds on the triangular perturbation imply the
+    corresponding columnwise Euclidean bound. -/
+theorem higham21_columnFrob_le_of_entrywise_relative_bound
+    {m : ℕ}
+    (R DeltaR : Fin m → Fin m → ℝ)
+    {eta : ℝ} (heta : 0 ≤ eta)
+    (hDeltaR : ∀ i j, |DeltaR i j| ≤ eta * |R i j|)
+    (j : Fin m) :
+    columnFrob DeltaR j ≤ eta * columnFrob R j := by
+  calc
+    columnFrob DeltaR j
+        = vecNorm2 (fun i : Fin m => DeltaR i j) := by
+          rw [columnFrob_eq_vecNorm2]
+    _ ≤ vecNorm2 (fun i : Fin m => eta * |R i j|) := by
+          exact
+            vecNorm2_le_of_abs_le
+              (fun i : Fin m => DeltaR i j)
+              (fun i : Fin m => eta * |R i j|)
+              (fun i => hDeltaR i j)
+    _ = eta * columnFrob R j := by
+          rw [vecNorm2_smul, abs_of_nonneg heta, vecNorm2_abs,
+            columnFrob_eq_vecNorm2]
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    if `A + DeltaA0 = (Q [R_hat;0])^T`, then the row norm of the assembled
+    QR side is the corresponding column norm of `R_hat`. -/
+theorem higham21_theorem21_4_assembled_qr_row_norm_eq_R_columnFrob
+    {m k : ℕ}
+    (A DeltaA0 : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_hat : Fin m → Fin m → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (hA :
+      (fun i j => A i j + DeltaA0 i j) =
+        finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) R_hat)))
+    (j : Fin m) :
+    rectRowNorm2 (fun i j => A i j + DeltaA0 i j) j =
+      columnFrob R_hat j := by
+  rw [hA]
+  exact higham21_theorem21_4_lifted_deltaR_row_norm_eq_columnFrob
+    Q R_hat hQ j
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    componentwise triangular-solve backward error, together with the QR
+    assembly and QR row perturbation bound, gives a row-wise bound for the
+    lifted triangular perturbation `(Q [DeltaR;0])^T` relative to the original
+    underdetermined matrix `A`. -/
+theorem higham21_theorem21_4_lifted_deltaR_row_bound_of_entrywise_relative
+    {m k : ℕ}
+    (A DeltaA0 : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_hat DeltaR : Fin m → Fin m → ℝ)
+    {etaQR etaR : ℝ} (hetaR : 0 ≤ etaR)
+    (hQ : IsOrthogonal (m + k) Q)
+    (hA :
+      (fun i j => A i j + DeltaA0 i j) =
+        finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) R_hat)))
+    (hDeltaA0 : ∀ i : Fin m,
+      rectRowNorm2 DeltaA0 i ≤ etaQR * rectRowNorm2 A i)
+    (hDeltaR : ∀ i j, |DeltaR i j| ≤ etaR * |R_hat i j|)
+    (i : Fin m) :
+    rectRowNorm2
+        (finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR))) i ≤
+      etaR * (1 + etaQR) * rectRowNorm2 A i := by
+  have hcol :
+      columnFrob DeltaR i ≤ etaR * columnFrob R_hat i :=
+    higham21_columnFrob_le_of_entrywise_relative_bound
+      R_hat DeltaR hetaR hDeltaR i
+  have hassembled_eq :
+      rectRowNorm2 (fun r c => A r c + DeltaA0 r c) i =
+        columnFrob R_hat i :=
+    higham21_theorem21_4_assembled_qr_row_norm_eq_R_columnFrob
+      A DeltaA0 Q R_hat hQ hA i
+  have hAself : ∀ r : Fin m,
+      rectRowNorm2 A r ≤ (1 : ℝ) * rectRowNorm2 A r := by
+    intro r
+    rw [one_mul]
+  have hassembled_bound :
+      rectRowNorm2 (fun r c => A r c + DeltaA0 r c) i ≤
+        (1 + etaQR) * rectRowNorm2 A i :=
+    higham21_rectRowNorm2_add_le_of_row_bounds
+      A DeltaA0 A hAself hDeltaA0 i
+  calc
+    rectRowNorm2
+        (finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR))) i
+        = columnFrob DeltaR i := by
+          exact higham21_theorem21_4_lifted_deltaR_row_norm_eq_columnFrob
+            Q DeltaR hQ i
+    _ ≤ etaR * columnFrob R_hat i := hcol
+    _ = etaR * rectRowNorm2 (fun r c => A r c + DeltaA0 r c) i := by
+          rw [← hassembled_eq]
+    _ ≤ etaR * ((1 + etaQR) * rectRowNorm2 A i) :=
+          mul_le_mul_of_nonneg_left hassembled_bound hetaR
+    _ = etaR * (1 + etaQR) * rectRowNorm2 A i := by ring
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    combines the QR row perturbation and the componentwise triangular-solve
+    perturbation into the row-wise bound for the common perturbation assembled
+    as `DeltaA0 + (Q [DeltaR;0])^T`. -/
+theorem higham21_theorem21_4_common_perturbation_row_bound_of_entrywise_deltaR
+    {m k : ℕ}
+    (A DeltaA0 : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_hat DeltaR : Fin m → Fin m → ℝ)
+    {etaQR etaR : ℝ} (hetaR : 0 ≤ etaR)
+    (hQ : IsOrthogonal (m + k) Q)
+    (hA :
+      (fun i j => A i j + DeltaA0 i j) =
+        finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) R_hat)))
+    (hDeltaA0 : ∀ i : Fin m,
+      rectRowNorm2 DeltaA0 i ≤ etaQR * rectRowNorm2 A i)
+    (hDeltaR : ∀ i j, |DeltaR i j| ≤ etaR * |R_hat i j|)
+    (i : Fin m) :
+    rectRowNorm2
+        (fun r c =>
+          DeltaA0 r c +
+            finiteTranspose
+              (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR)) r c) i ≤
+      (etaQR + etaR * (1 + etaQR)) * rectRowNorm2 A i :=
+  higham21_theorem21_4_common_perturbation_row_bound_of_qr_and_lifted_bounds
+    A DeltaA0 Q DeltaR hDeltaA0
+    (fun r =>
+      higham21_theorem21_4_lifted_deltaR_row_bound_of_entrywise_relative
+        A DeltaA0 Q R_hat DeltaR hetaR hQ hA hDeltaA0 hDeltaR r)
+    i
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
     algebraic difference form of the computed final `Q` action.  If
     `x_hat = (Q + DeltaQ)[y1;0]`, then its difference from the exact
