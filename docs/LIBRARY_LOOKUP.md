@@ -5533,6 +5533,13 @@ cumulative-product and exact recurrence-accumulation support for
 composition wrappers:
 
 - `gje_c₃`
+- `gamma_three_sub_linear_eq_quadratic_remainder`
+- `gje_c3_eq_linear_plus_explicit_remainder`
+- `gje_c3_eq_linear_plus_quadratic_remainder`
+- `gje_c3_quadratic_remainder`
+- `gje_c3_eq_linear_plus_quadratic_remainder_term`
+- `gje_c3_le_three_n_u_plus_quadratic_remainder`
+- `gje_c3_nonneg`
 - `gje_one_add_pow_sub_one_le_nat_mul_pred`
 - `gje_one_add_gamma_three_pow_sub_one_le_c3`
 - `GJEStage2Spec`
@@ -5556,9 +5563,15 @@ composition wrappers:
 - `gje_stage2_forward_error_bound`
 - `gje_stage2_backward_error`
 - `gje_stage2_backward_error_of_cumulative_product_certificates`
+- `gje_overall_residual_of_cumulative_product_certificates`
+- `gje_overall_forward_error_of_cumulative_product_certificates`
+- `gje_overall_residual_of_cumulative_product_certificates_c3_split`
+- `gje_overall_forward_error_of_cumulative_product_certificates_c3_split`
 - `gje_overall_residual`
 - `gje_overall_forward_error`
 - `gje_spd_residual`
+- `gje_spd_residual_of_cumulative_product_certificates`
+- `gje_spd_forward_error_of_cumulative_product_certificates`
 
 Chapter 14 exact algebra closures in `Algorithms/MatrixInversion.lean` include
 the (14.3) bounded-replacement forward-error layer, Problem 14.3, the explicit
@@ -5571,9 +5584,11 @@ Problem 14.11's Hadamard determinant inequality / `psi(A) >= 1` consequence and 
 Problem 14.13's AM-GM, SVD norm, and determinant-product support bridges,
 Problem 14.15's scalar product-radius and top-index perturbation support, Method 2 structural
 left-residual upper/diagonal edges, trailing-column split, strict-tail update and gamma full-budget support, strict-tail rounded kernel packaging and normwise bridge, and off-diagonal update support, Method D's expanded
-componentwise residual-budget dependency and printed-coefficient scalar
-simplification, the exact Hyman block identities
-(14.35)--(14.36), and Problem 14.10:
+componentwise residual-budget dependency, printed-coefficient scalar
+simplification, and normwise local-certificate companion, the exact Hyman block identities
+(14.35)--(14.36), Problem 14.14 determinant support including the
+original-matrix perturbed determinant wrapper and diagonal-scaling transport,
+and Problem 14.10:
 
 - `inverseRightResidual`, `inverseLeftResidual`
 - `higham14_eq14_3_forward_error_bound_of_abs_Y_le`
@@ -5590,12 +5605,15 @@ simplification, the exact Hyman block identities
 - `triInv_method2_left_residual_upper_zero`
 - `triInv_method2_left_residual_diag_bound`
 - `triInv_method2_left_residual_diag_product_bound`
+- `triInv_method2_left_residual_diag_product_bound_of_diag_upper`
 - `triInv_method2_left_residual_from_region_bounds`
 - `triInv_method2_left_residual_of_strict_tail_gamma`
 - `higham14_unit_roundoff_add_one_plus_u_mul_gamma_le_gamma_succ`
 - `triInv_method2_left_residual_of_strict_tail_fl_dot`
 - `higham14_unit_roundoff_add_one_plus_u_mul_rounded_gamma_le_gamma_succ_succ`
 - `triInv_method2_left_residual_of_strict_tail_fl_dot_fl_mul`
+- `triInv_method2_left_residual_of_strict_tail_storage`
+- `triInv_method2_left_residual_normwise_of_strict_tail_storage`
 - `Method2StrictTailKernelSpec`
 - `triInv_method2_left_residual_of_strict_tail_kernel_spec`
 - `triInv_method2_offdiag_update_delta_bound`
@@ -5603,10 +5621,14 @@ simplification, the exact Hyman block identities
 - `triInv_method2_left_residual_normwise`
 - `triInv_method2_left_residual_normwise_of_strict_tail_kernel_spec`
 - `triInv_method1B_spec_of_column_backward_error`
+- `triInv_method1B_column_backward_error_of_row_certificates`
+- `triInv_method1B_spec_of_row_certificates`
 - `triInv_method1B_right_residual_of_column_backward_error`
+- `triInv_method1B_right_residual_of_row_certificates`
 - `triInv_method1B_right_residual_normwise`
 - `triInv_method1B_right_residual_normwise_from_spec`
 - `triInv_method1B_right_residual_normwise_of_column_backward_error`
+- `triInv_method1B_right_residual_normwise_of_row_certificates`
 - `triInv_method2C_left_residual_normwise`
 - `higham14_problem14_3_right_residual_eq_mul_left_residual`
 - `higham14_problem14_3_left_residual_eq_mul_right_residual`
@@ -5654,6 +5676,8 @@ simplification, the exact Hyman block identities
 - `higham14_eq14_14_method2B_block_update_delta_bound`
 - `Method2BBlockUpdateSpec`
 - `higham14_eq14_14_method2B_block_update_spec_of_product_error`
+- `higham14_eq14_14_method2B_offdiag_residual_eq_delta_mul`
+- `higham14_eq14_14_method2B_no_small_offdiag_residual_of_propagated_delta`
 - `higham14_eq14_14_method2B_exact_offdiag_block_update`
 - `higham14_methodDProductDelta`
 - `higham14_methodDLUBackwardDelta`
@@ -5672,6 +5696,8 @@ simplification, the exact Hyman block identities
 - `higham14_methodD_abs_Xhat_le_scaled_abs_product`
 - `higham14_eq14_23_methodD_left_residual_bound_from_expanded_budget`
 - `higham14_eq14_23_methodD_left_residual_bound_of_local_certificates`
+- `higham14_eq14_23_methodD_left_residual_infNorm_of_local_certificates`
+- `higham14_eq14_23_methodD_left_residual_infNorm_product_of_local_certificates`
 - `higham14_eq14_23_methodD_left_residual_bound`
 - `higham14_rowNorm2`
 - `higham14_rowNormDiagonal`
@@ -5754,6 +5780,10 @@ simplification, the exact Hyman block identities
 - `higham14_problem14_15_opNorm2_le_kappa2_scaled_last_singularValue`
 - `higham14_problem14_15_abs_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound`
 - `higham14_problem14_15_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound_of_det_pos`
+- `higham14_problem14_15_product_guard_of_lt_inv_card`
+- `higham14_problem14_15_eps_lt_one_not_sufficient_for_product_guard`
+- `higham14_problem14_15_abs_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound_inv_card_guard`
+- `higham14_problem14_15_det_add_rel_le_of_kappa2_opNorm2_singularValue_abs_sub_bound_inv_card_guard_of_det_pos`
 - `higham14_problem14_15_sigmaMin_sub_le_sigmaMin_of_sub_rectOpNorm2Le`
 - `higham14_problem14_15_sigmaMin_sub_le_sigmaMin_add_of_rectOpNorm2Le`
 - `higham14_problem14_15_sigmaMin_add_pos_of_rectOpNorm2Le_lt`
@@ -5777,6 +5807,21 @@ simplification, the exact Hyman block identities
 - `higham14_eq14_35_hyman_block_lu_factorization`
 - `higham14_eq14_36_hyman_det_cyclic_block`
 - `higham14_eq14_36_hyman_det_original_of_row_permutation`
+- `higham14_problem14_14_det_upper_add_zero_diag_of_abs_bound`
+- `higham14_problem14_14_hyman_det_cyclic_block_of_upper_add_zero_diag`
+- `higham14_problem14_14_hyman_det_original_of_upper_add_zero_diag`
+- `higham14_problem14_14_abs_det_original_of_upper_add_zero_diag`
+- `higham14_problem14_14_exists_deltaH_det_original_of_upper_add_zero_diag`
+- `higham14_problem14_14_exists_deltaH_abs_det_original_of_upper_add_zero_diag`
+- `higham14_problem14_14_diagonalSimilarity`
+- `higham14_problem14_14_diagonalUnscalePerturbation`
+- `higham14_problem14_14_diagonalSimilarity_apply`
+- `higham14_problem14_14_diagonalUnscalePerturbation_apply`
+- `higham14_problem14_14_det_diagonalSimilarity`
+- `higham14_problem14_14_unscaled_delta_bound_of_scaled`
+- `higham14_problem14_14_unscale_deltaH_det_of_diagonal_scaled_det`
+- `higham14_problem14_14_exists_deltaH_det_original_of_diagonal_scaled_upper_add_zero_diag`
+- `higham14_problem14_14_exists_deltaH_abs_det_original_of_diagonal_scaled_upper_add_zero_diag`
 - `matrixEntryPerturb`
 - `higham14_problem14_10_det_entry_perturb_eq`
 - `higham14_problem14_10_det_entry_independent_of_adjugate_eq_zero`
