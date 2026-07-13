@@ -27,6 +27,11 @@ assumptions remain open in the not-proved ledger below.
 
 | Source item | Lean declaration(s) | File | Notes |
 |---|---|---|---|
+| Thm 11.8 Aasen growth-factor algebra bridges | `higham11_8_aasenGrowthBound_rhs_nonneg`, `higham11_8_aasenGrowthFactor_nonneg`, `higham11_8_aasenGrowthFactor_mul_Amax_eq`, `higham11_8_aasenGrowthBound_of_Tmax_le_printed_mul_Amax`, `higham11_8_Tmax_le_printed_mul_Amax_of_aasenGrowthBound` | Ch11 | **new this session**; records the elementary algebra around the printed growth-factor form `ρ_n = Tmax/Amax` and `ρ_n ≤ 4^(n-2)`, including nonnegativity, cancellation by a nonzero source scale, and both directions between the quotient predicate and the equivalent product bound when `Amax > 0`. This is a dependency bridge and does not close Theorem 11.8 by itself. |
+| Thm 11.8 Aasen growth-factor `∞`-norm bridges | `higham11_8_aasenGrowthFactor_infNorm_nonneg`, `higham11_8_aasenGrowthBound_of_infNorm_le_printed_mul_infNorm`, `higham11_8_infNorm_le_printed_mul_infNorm_of_aasenGrowthBound` | Ch11 | **new this session**; specializes the scalar growth-factor algebra to actual matrix infinity norms, using `infNorm_nonneg` and the positive source norm hypothesis to move between `infNorm T / infNorm A ≤ 4^(n-2)` and `infNorm T ≤ 4^(n-2) * infNorm A`. This is a dependency bridge toward source-shaped Aasen growth callers. |
+| Thm 11.8 exact-`T_hat` Aasen growth-factor `∞`-norm bridges | `higham11_8_aasenGrowthBound_of_T_hat_eq_T_and_infNorm_T_hat_le_printed_mul_infNorm`, `higham11_8_infNorm_T_hat_le_printed_mul_infNorm_of_T_hat_eq_T_and_aasenGrowthBound` | Ch11 | **new this session**; combines the exact-middle equality route `T_hat = T` with the printed infinity-norm growth predicate, moving from a computed-middle product cap to the exact-middle growth-bound predicate and back from that predicate to the computed-middle product cap. This is a dependency bridge for exact-`T_hat` Aasen callers and does not close Theorem 11.8 by itself. |
+| Thm 11.8 relative-`T_hat` Aasen growth-factor `∞`-norm bridges | `higham11_8_aasenGrowthBound_of_relative_T_hat_error_and_one_plus_infNorm_T_hat_le_printed_mul_infNorm`, `higham11_8_aasenGrowthBound_of_relative_T_hat_error_and_infNorm_T_hat_le_kappa_mul_infNorm` | Ch11 | **new this session**; combines the non-exact middle comparison `|T_hat-T|≤γ|T_hat|` with the printed infinity-norm growth predicate, either from a direct `(1+γ)‖T_hat‖∞` product cap or from a computed-middle cap `‖T_hat‖∞≤κ‖A‖∞` plus `(1+γ)κ≤4^(n-2)`. This is a dependency bridge for non-exact Aasen growth callers and does not close Theorem 11.8 by itself. |
+| Thm 11.8 Aasen growth-factor max-entry bridges | `higham11_8_aasenGrowthFactor_maxEntryNorm_nonneg`, `higham11_8_aasenGrowthBound_of_maxEntryNorm_le_printed_mul_maxEntryNorm`, `higham11_8_maxEntryNorm_le_printed_mul_maxEntryNorm_of_aasenGrowthBound`, `higham11_8_maxEntryNorm_T_le_T_hat_of_eq`, `higham11_8_maxEntryNorm_T_le_one_plus_gamma_T_hat_of_relative_error`, `higham11_8_aasenGrowthBound_of_T_hat_eq_T_and_maxEntryNorm_T_hat_le_printed_mul_maxEntryNorm`, `higham11_8_maxEntryNorm_T_hat_le_printed_mul_maxEntryNorm_of_T_hat_eq_T_and_aasenGrowthBound`, `higham11_8_aasenGrowthBound_of_relative_T_hat_error_and_one_plus_maxEntryNorm_T_hat_le_printed_mul_maxEntryNorm`, `higham11_8_aasenGrowthBound_of_relative_T_hat_error_and_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm` | Ch11 | **new this session**; specializes the Aasen growth-factor algebra to the source-native max-entry norm, including exact- and relative-`T_hat` middle comparisons. This records the printed max-entry `ρ_n` route in addition to the `∞`-norm dependency bridges and does not close Theorem 11.8 by itself. |
 | Thm 11.8 normalized componentwise/`T`-norm sigma-id inverse-entry aliases | `higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the normalized direct-middle and checkerboard componentwise-`T` / direct-`T`-norm inverse-entry endpoints to `σ := id`, discharging the identity-permutation proof by reflexivity while keeping the recurrence/nonzero-pivot hypotheses, `T_hat` comparison, componentwise or `T`-norm cap, middle-product/checkerboard certificate, inverse-entry cap, and rounded source-prefix update/budget facts explicit. |
 | Thm 11.8 componentwise/`T`-norm sigma-id inverse-entry aliases | `higham11_8_AasenSpec_id_source_prefix_componentwise_T_direct_middle_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_direct_middle_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_checkerboard_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_componentwise_T_checkerboard_endpoint_of_inverse_entry_bound`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the ordinary direct-middle and checkerboard componentwise-`T` / direct-`T`-norm inverse-entry endpoints to `σ := id`, discharging the identity-permutation proof by reflexivity while keeping the recurrence/nonzero-pivot hypotheses, `T_hat` comparison, componentwise or `T`-norm cap, middle-product/checkerboard certificate, inverse-entry cap, and rounded source-prefix update/budget facts explicit. |
 | Thm 11.8 normalized principal-block componentwise/`T`-norm sigma-id inverse-entry aliases | `higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the normalized checkerboard principal-block componentwise-`T` / direct-`T`-norm inverse-entry endpoints to `σ := id`, discharging the identity-permutation proof by reflexivity while keeping the recurrence/nonzero-pivot hypotheses, `T_hat` comparison, componentwise or `T`-norm cap, principal-block checkerboard certificate, inverse-entry cap, and rounded source-prefix update/budget facts explicit. |
@@ -195,6 +200,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.7 mixed-path schedule uniqueness | `higham11_7_tridiagonalPathStartOffsetsFrom_unique`, `higham11_7_tridiagonalPathStartOffsetsFrom_exists_unique`, `higham11_7_tridiagonalPathStartOffsets_unique`, `higham11_7_tridiagonalPathStartOffsets_exists_unique` | Ch11 | **new this session**; proves the base-offset and zero-based mixed-path start schedules are unique, and packages existence plus uniqueness for canonical schedule handoffs. |
 | Thm 11.7 mixed-path schedule prefix spans | `higham11_7_tridiagonalPathPrefixSpan`, `higham11_7_tridiagonalPathPrefixSpan_zero`, `higham11_7_tridiagonalPathPrefixSpan_succ`, `higham11_7_tridiagonalPathStartOffsetsFrom_eq_base_add_prefixSpan`, `higham11_7_tridiagonalPathStartOffsetsFrom_base_add_prefixSpan`, `higham11_7_tridiagonalPathStartOffsets_eq_prefixSpan`, `higham11_7_tridiagonalPathStartOffsets_prefixSpan`, `higham11_7_tridiagonalPathPrefixSpan_last_add_branch_eq_pivotSpan` | Ch11 | **new this session**; identifies each scheduled branch start with the base plus the sum of earlier consumed pivot spans, proves the explicit prefix-span starts themselves are the canonical base-offset/zero-based schedules, and identifies the last explicit prefix endpoint with the full path span. |
 | Thm 11.7 mixed-path prefix-span bounds and ordering | `higham11_7_tridiagonalPathPrefixSpan_lt_pivotSpan`, `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_pivotSpan`, `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_of_lt`, `higham11_7_tridiagonalPathPrefixSpan_lt_of_lt`, `higham11_7_tridiagonalPathPrefixSpan_le_of_le`, `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_branch_end_of_le`, `higham11_7_tridiagonalPathPrefixSpan_branch_end_lt_branch_end_of_lt` | Ch11 | **new this session**; transfers containment, strict start ordering, monotone endpoint facts, and strict endpoint ordering from canonical schedules to explicit prefix spans, so later lifted-entry arguments can avoid carrying a separate `starts` witness. |
+| Thm 11.7 all-`1×1` / no-second-pivot span exactness | `higham11_7_tridiagonalPathPivotSpan_eq_length_of_all_one`, `higham11_7_tridiagonalPathPivotSpan_eq_length_of_no_secondPivot`, `higham11_7_tridiagonalPathPivotSpan_succ_eq_length_succ_of_all_one`, `higham11_7_tridiagonalPathPivotSpan_succ_eq_length_succ_of_no_secondPivot` | Ch11 | **new this session**; strengthens the general `k ≤ pathSpan ≤ 2k` mixed-path bounds to exact `pathSpan=k` and ambient dimension `pathSpan+1=k+1` for all-`1×1` paths and equivalent no-accepted-`2×2` paths. This removes dimension arithmetic from all-`1×1`/no-second-pivot endpoint callers. |
 | Thm 11.7 concrete mixed-path tail dimensions | `higham11_7_tridiagonalPathTailDim`, `higham11_7_tridiagonalBranchAmbientDim_eq_tail_add_offset_succ`, `higham11_7_tridiagonalPathPrefixSpan_add_branchAmbientDim_tailDim_eq_pivotSpan_succ`, `higham11_7_tridiagonalPath_local_index_lt_pivotSpan_succ`, `higham11_7_tridiagonalPathLocalBlockIndex`, `higham11_7_tridiagonalPathLocalBlockIndex_val`, `higham11_7_tridiagonalPathTailDim_last_eq_zero`, `higham11_7_tridiagonalPathTailDim_head`, `higham11_7_tridiagonalPathTailDim_succ` | Ch11 | **new this session**; defines the remaining tail dimension after each concrete mixed-path branch, proves the branch-local block fits in the full `pathSpan+1` ambient at the prefix offset, exposes a path-local index embedding, proves the terminal branch has zero remaining tail, and gives the head/successor recurrence needed by path induction. |
 | Thm 11.7 concrete mixed-path branch matrix view | `higham11_7_tridiagonalPathBranchMatrix`, `higham11_7_tridiagonalPathBranchMatrix_apply`, `higham11_7_tridiagonalPathLocalBlockIndex_injective`, `higham11_7_tridiagonalPathBranchMatrix_abs_entry_le_infNorm`, `higham11_7_tridiagonalPathBranchMatrix_infNorm_le_card_mul_global_infNorm`, `higham11_7_tridiagonalPathBranchMatrix_infNorm_le_global_infNorm` | Ch11 | **new this session**; restricts a full `pathSpan+1` ambient tridiagonal matrix to each branch-local block at its explicit prefix offset, proves local entries are bounded by the global `∞` norm, gives a coarse local-row-length norm bound for coefficient-absorbing budget routes, and proves the sharper principal-block `∞`-norm comparison needed by the concrete path endpoint. |
 | Thm 11.7 concrete scheduled mixed-path endpoint | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm` | Ch11 | **new this session**; specializes the scheduled lifted path source endpoint to the canonical `pathSpan+1` ambient matrix, concrete tail dimensions, and prefix-offset branch matrices, discharging the local matrix-norm comparison via the principal-block bound while keeping the genuine path-local assumptions, coefficient/roundoff comparisons, and lifted solve equation explicit. |
@@ -2958,6 +2964,21 @@ Problem transcription.
     `higham11_7_tridiagonalPathPrefixSpan_le_of_le`, and
     `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_branch_end_of_le`
     → elaborate; theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-13 Theorem 11.7 all-`1×1`/no-second-pivot span exactness
+    increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused checks of `higham11_7_tridiagonalPathPivotSpan_eq_length_of_all_one`,
+    `higham11_7_tridiagonalPathPivotSpan_eq_length_of_no_secondPivot`,
+    `higham11_7_tridiagonalPathPivotSpan_succ_eq_length_succ_of_all_one`, and
+    `higham11_7_tridiagonalPathPivotSpan_succ_eq_length_succ_of_no_secondPivot`
+    → elaborate; theorem dependencies
+    `[propext, Classical.choice, Quot.sound]`.
+    Hygiene checks `git diff --check`, placeholder scans for the changed Lean
+    file, and tab scans over the touched files were clean. Target-build
+    warnings are pre-existing upstream warnings from Chapter 9, Chapter 10,
+    and `CholeskyFl`; no new Chapter 11 warning was emitted.
   - 2026-07-09 Theorem 11.7 concrete mixed-path tail-dimension increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
     `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → `Build completed successfully (3054 jobs)`;
@@ -4885,6 +4906,77 @@ Problem transcription.
     `secondPivot_(branchMatrix_base_rows|full_base_rows|global_base_solve)_of...currentLocalBlock_and_after_earlier_branch_end`
     source endpoint aliases → elaborate; theorem dependencies
     `[propext, Classical.choice, Quot.sound]`.
+    Hygiene checks `git diff --check`, placeholder scans for the changed Lean
+    file and added report lines, and tab scans over the touched files were
+    clean. Target-build warnings are pre-existing upstream warnings from
+    Chapter 9, Chapter 10, and `CholeskyFl`; no new Chapter 11 warning was
+    emitted.
+  - 2026-07-13 Theorem 11.8 Aasen growth-factor algebra bridge increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused checks of `higham11_8_aasenGrowthBound_rhs_nonneg`,
+    `higham11_8_aasenGrowthFactor_nonneg`,
+    `higham11_8_aasenGrowthFactor_mul_Amax_eq`,
+    `higham11_8_aasenGrowthBound_of_Tmax_le_printed_mul_Amax`, and
+    `higham11_8_Tmax_le_printed_mul_Amax_of_aasenGrowthBound` → elaborate;
+    theorem dependencies `[propext, Classical.choice, Quot.sound]`.
+    Hygiene checks `git diff --check`, placeholder scans for the changed Lean
+    file, and tab scans over the touched files were clean. Target-build
+    warnings are pre-existing upstream warnings from Chapter 9, Chapter 10,
+    and `CholeskyFl`; no new Chapter 11 warning was emitted.
+  - 2026-07-13 Theorem 11.8 Aasen growth-factor `∞`-norm bridge increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused checks of `higham11_8_aasenGrowthFactor_infNorm_nonneg`,
+    `higham11_8_aasenGrowthBound_of_infNorm_le_printed_mul_infNorm`, and
+    `higham11_8_infNorm_le_printed_mul_infNorm_of_aasenGrowthBound` →
+    elaborate; theorem dependencies
+    `[propext, Classical.choice, Quot.sound]`.
+    Hygiene checks `git diff --check`, placeholder scans for the changed Lean
+    file, and tab scans over the touched files were clean. Target-build
+    warnings are pre-existing upstream warnings from Chapter 9, Chapter 10,
+    and `CholeskyFl`; no new Chapter 11 warning was emitted.
+  - 2026-07-13 Theorem 11.8 exact-`T_hat` Aasen growth-factor `∞`-norm
+    bridge increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused checks of
+    `higham11_8_aasenGrowthBound_of_T_hat_eq_T_and_infNorm_T_hat_le_printed_mul_infNorm`
+    and
+    `higham11_8_infNorm_T_hat_le_printed_mul_infNorm_of_T_hat_eq_T_and_aasenGrowthBound`
+    → elaborate; theorem dependencies
+    `[propext, Classical.choice, Quot.sound]`.
+    Hygiene checks `git diff --check`, placeholder scans for the changed Lean
+    file and added report lines, and tab scans over the touched files were
+    clean. Target-build warnings are pre-existing upstream warnings from
+    Chapter 9, Chapter 10, and `CholeskyFl`; no new Chapter 11 warning was
+    emitted.
+  - 2026-07-13 Theorem 11.8 relative-`T_hat` Aasen growth-factor `∞`-norm
+    bridge increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused checks of
+    `higham11_8_aasenGrowthBound_of_relative_T_hat_error_and_one_plus_infNorm_T_hat_le_printed_mul_infNorm`
+    and
+    `higham11_8_aasenGrowthBound_of_relative_T_hat_error_and_infNorm_T_hat_le_kappa_mul_infNorm`
+    → elaborate; theorem dependencies
+    `[propext, Classical.choice, Quot.sound]`.
+    Hygiene checks `git diff --check`, placeholder scans for the changed Lean
+    file and added report lines, and tab scans over the touched files were
+    clean. Target-build warnings are pre-existing upstream warnings from
+    Chapter 9, Chapter 10, and `CholeskyFl`; no new Chapter 11 warning was
+    emitted.
+  - 2026-07-13 Theorem 11.8 Aasen growth-factor max-entry bridge increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused checks of the nine
+    `higham11_8_*maxEntryNorm*` Aasen growth-factor bridges → elaborate;
+    theorem dependencies `[propext, Classical.choice, Quot.sound]`.
     Hygiene checks `git diff --check`, placeholder scans for the changed Lean
     file and added report lines, and tab scans over the touched files were
     clean. Target-build warnings are pre-existing upstream warnings from

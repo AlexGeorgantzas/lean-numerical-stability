@@ -581,6 +581,44 @@ theorem higham21_lemma21_2_symmetrized_perturbation_eq_right_projector_mixture {
           matMulRectRight DeltaA2 (lsLemma20_6ProjectorComplement x) i j := by
           ring
 
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    if the two source perturbation slots are the same matrix, then the
+    source-case single perturbation collapses back to that matrix. -/
+theorem higham21_lemma21_2_single_perturbation_same {m n : ℕ}
+    (x : Fin n → ℝ) (DeltaA : Fin m → Fin n → ℝ) :
+    undetLemma21_2SinglePerturbation x DeltaA DeltaA = DeltaA := by
+  by_cases hx : x = 0
+  · simp [undetLemma21_2SinglePerturbation, hx]
+  · ext i j
+    calc
+      undetLemma21_2SinglePerturbation x DeltaA DeltaA i j =
+          undetLemma21_2SymmetrizedPerturbation x DeltaA DeltaA i j := by
+            simp [undetLemma21_2SinglePerturbation, hx]
+      _ =
+          matMulRectRight DeltaA (lsLemma20_6Projector x) i j +
+            matMulRectRight DeltaA (lsLemma20_6ProjectorComplement x) i j :=
+            higham21_lemma21_2_symmetrized_perturbation_eq_right_projector_mixture
+              x DeltaA DeltaA i j
+      _ =
+          matMulRectRight DeltaA
+            (fun a b => lsLemma20_6Projector x a b +
+              lsLemma20_6ProjectorComplement x a b) i j := by
+            unfold matMulRectRight
+            rw [← Finset.sum_add_distrib]
+            apply Finset.sum_congr rfl
+            intro k _
+            ring
+      _ = matMulRectRight DeltaA (idMatrix n) i j := by
+            unfold matMulRectRight
+            apply Finset.sum_congr rfl
+            intro k _
+            simpa using
+              congrArg (fun t : ℝ => DeltaA i k * t)
+                (lsLemma20_6Projector_add_complement x k j)
+      _ = DeltaA i j := by
+            have h := congrFun (congrFun (rectMatMul_id_right DeltaA) i) j
+            simpa [rectMatMul, matMulRectRight] using h
+
 private theorem higham21_rectMatMulVec_matMulRectRight {m n : ℕ}
     (A : Fin m → Fin n → ℝ) (V : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
     rectMatMulVec (matMulRectRight A V) x =
@@ -7132,6 +7170,27 @@ theorem higham21_rowwise_backward_error_bound_witness
     UndetRowwiseBackwardErrorBounded m n A b x_hat eta :=
   ⟨ΔA, ⟨heta, hmin, hrow⟩⟩
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.3:
+    row-wise backward-error certificates are monotone in the displayed error
+    factor.  This is a small packaging lemma for later source statements whose
+    printed coefficient is a conservative upper bound for a proved one. -/
+theorem higham21_rowwise_backward_error_bound_mono
+    {m n : ℕ}
+    {A : Fin m → Fin n → ℝ}
+    {b : Fin m → ℝ}
+    {x_hat : Fin n → ℝ}
+    {eta eta' : ℝ}
+    (hcert : UndetRowwiseBackwardErrorBounded m n A b x_hat eta)
+    (heta' : 0 ≤ eta')
+    (hle : eta ≤ eta') :
+    UndetRowwiseBackwardErrorBounded m n A b x_hat eta' := by
+  rcases hcert with ⟨DeltaA, hfeas⟩
+  refine ⟨DeltaA, ?_⟩
+  refine ⟨heta', hfeas.min_norm, ?_⟩
+  intro i
+  exact le_trans (hfeas.row_bound i)
+    (mul_le_mul_of_nonneg_right hle (rectRowNorm2_nonneg A i))
+
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2 and Section 21.3:
     once the Lemma 21.2 single perturbation is known to make `x_hat` a
     minimum-norm solution, common row-wise relative bounds on the two source
@@ -8112,6 +8171,1201 @@ theorem higham21_theorem21_4_forwardSub_transpose_triangular_solve_backward_erro
   · intro i
     simpa [DeltaR, L, matTranspose, matMulVec] using hsolve i
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    triangular perturbation nonsingularity for the rounded `R_hat^T` solve.
+    If an upper-triangular factor has nonzero diagonal and the perturbation is
+    entrywise relatively bounded by a factor below one, then the perturbed
+    transpose factor remains nonsingular. -/
+theorem higham21_theorem21_4_perturbed_transpose_factor_det_ne_zero_of_componentwise_bound
+    {m : ℕ}
+    (R_hat DeltaR : Fin m → Fin m → ℝ)
+    (hdiag : ∀ i : Fin m, R_hat i i ≠ 0)
+    (hupper : IsUpperTrapezoidal m m R_hat)
+    {eta : ℝ} (heta_lt : eta < 1)
+    (hDelta : ∀ i j, |DeltaR i j| ≤ eta * |R_hat i j|) :
+    Matrix.det
+        (matTranspose (fun a b => R_hat a b + DeltaR a b) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0 := by
+  let Tpert : Fin m → Fin m → ℝ :=
+    matTranspose (fun a b => R_hat a b + DeltaR a b)
+  have hlowerPert : ∀ i j : Fin m, i.val < j.val → Tpert i j = 0 := by
+    intro i j hij
+    have hR : R_hat j i = 0 := hupper j i hij
+    have hbound : |DeltaR j i| ≤ 0 := by
+      simpa [hR] using hDelta j i
+    have hDeltaZero : DeltaR j i = 0 := by
+      exact abs_eq_zero.mp (le_antisymm hbound (abs_nonneg (DeltaR j i)))
+    simp [Tpert, matTranspose, hR, hDeltaZero]
+  have hdiagPert : ∀ i : Fin m, Tpert i i ≠ 0 := by
+    intro i hzero
+    have hsum : R_hat i i + DeltaR i i = 0 := by
+      simpa [Tpert, matTranspose] using hzero
+    have hDelta_eq : DeltaR i i = -R_hat i i := by
+      linarith
+    have habs_eq : |DeltaR i i| = |R_hat i i| := by
+      rw [hDelta_eq, abs_neg]
+    have hle : |R_hat i i| ≤ eta * |R_hat i i| := by
+      simpa [habs_eq] using hDelta i i
+    have hpos : 0 < |R_hat i i| := abs_pos.mpr (hdiag i)
+    nlinarith
+  have hdet :
+      Matrix.det (Tpert : Matrix (Fin m) (Fin m) ℝ) ≠ 0 :=
+    det_ne_zero_of_lower_triangular_diag_ne_zero m
+      Tpert
+      hlowerPert hdiagPert
+  simpa [Tpert] using hdet
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    triangular-solve handoff into the exact Q-method minimum-norm theorem.
+    The rounded solve of `R_hat^T y = b` supplies a perturbation `DeltaR`;
+    if the perturbed transpose factor is nonsingular, then the formed
+    Q-method vector is the exact minimum-norm solution for the corresponding
+    perturbed QR-coordinate system.
+
+    This is not the full row-wise backward-stability theorem: it isolates the
+    remaining nonsingularity and row-wise perturbation obligations from the
+    already proved triangular-solve backward-error certificate. -/
+theorem higham21_theorem21_4_forwardSub_q_method_min_norm_handoff
+    {m k : ℕ} (fp : FPModel)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R_hat : Fin m → Fin m → ℝ) (b : Fin m → ℝ)
+    (hdiag : ∀ i : Fin m, R_hat i i ≠ 0)
+    (hupper : IsUpperTrapezoidal m m R_hat)
+    (hvalid : gammaValid fp m) :
+    ∃ DeltaR : Fin m → Fin m → ℝ,
+      (∀ i j, |DeltaR i j| ≤ gamma fp m * |R_hat i j|) ∧
+      (∀ i,
+        matMulVec m (matTranspose (fun a b => R_hat a b + DeltaR a b))
+          (fl_forwardSub fp m (matTranspose R_hat) b) i = b i) ∧
+      (Matrix.det
+          (matTranspose (fun a b => R_hat a b + DeltaR a b) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0 →
+        RectMinNormSolution m (m + k)
+          (finiteTranspose
+            (matMulRectLeft Q
+              (lsQRTallBlock (k := k) (fun a b => R_hat a b + DeltaR a b))))
+          b
+          (matMulVec (m + k) Q
+            (Fin.append
+              (fl_forwardSub fp m (matTranspose R_hat) b)
+              (0 : Fin k → ℝ)))) := by
+  obtain ⟨DeltaR, hDeltaR, hsolve⟩ :=
+    higham21_theorem21_4_forwardSub_transpose_triangular_solve_backward_error
+      fp m R_hat b hdiag hupper hvalid
+  refine ⟨DeltaR, hDeltaR, hsolve, ?_⟩
+  intro hdetT
+  let Rpert : Fin m → Fin m → ℝ := fun a b => R_hat a b + DeltaR a b
+  let y1 : Fin m → ℝ := fl_forwardSub fp m (matTranspose R_hat) b
+  have hy1 : (fun j : Fin m => ∑ i : Fin m, Rpert i j * y1 i) = b := by
+    ext j
+    simpa [Rpert, y1, matMulVec, matTranspose] using hsolve j
+  exact
+    higham21_eq21_3_q_method_min_norm_of_qr_det_ne_zero
+      Q hQ Rpert b y1 hdetT hy1
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    determinant-free triangular-solve handoff for the Q-method minimum-norm
+    theorem.  The stronger guard `gammaValid fp (2*m)` makes `gamma_m < 1`,
+    so the componentwise triangular perturbation preserves nonsingularity of
+    the perturbed transpose factor. -/
+theorem higham21_theorem21_4_forwardSub_q_method_min_norm_handoff_of_gammaValid2
+    {m k : ℕ} (fp : FPModel)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R_hat : Fin m → Fin m → ℝ) (b : Fin m → ℝ)
+    (hdiag : ∀ i : Fin m, R_hat i i ≠ 0)
+    (hupper : IsUpperTrapezoidal m m R_hat)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m)) :
+    ∃ DeltaR : Fin m → Fin m → ℝ,
+      (∀ i j, |DeltaR i j| ≤ gamma fp m * |R_hat i j|) ∧
+      (∀ i,
+        matMulVec m (matTranspose (fun a b => R_hat a b + DeltaR a b))
+          (fl_forwardSub fp m (matTranspose R_hat) b) i = b i) ∧
+      RectMinNormSolution m (m + k)
+        (finiteTranspose
+          (matMulRectLeft Q
+            (lsQRTallBlock (k := k) (fun a b => R_hat a b + DeltaR a b))))
+        b
+        (matMulVec (m + k) Q
+          (Fin.append
+            (fl_forwardSub fp m (matTranspose R_hat) b)
+            (0 : Fin k → ℝ))) := by
+  obtain ⟨DeltaR, hDeltaR, hsolve, hminCond⟩ :=
+    higham21_theorem21_4_forwardSub_q_method_min_norm_handoff
+      fp Q hQ R_hat b hdiag hupper hvalid
+  have hdet :
+      Matrix.det
+          (matTranspose (fun a b => R_hat a b + DeltaR a b) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0 :=
+    higham21_theorem21_4_perturbed_transpose_factor_det_ne_zero_of_componentwise_bound
+      R_hat DeltaR hdiag hupper (gamma_lt_one fp m hvalid2) hDeltaR
+  exact ⟨DeltaR, hDeltaR, hsolve, hminCond hdet⟩
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    row-wise backward-error handoff after the triangular solve.  The theorem
+    combines the forward-substitution perturbation certificate with the
+    existing Lemma 21.2 row-wise witness surface.  The remaining source work is
+    exactly the Q-method row-wise assembly: identify the single Lemma 21.2
+    perturbation with the perturbed QR-coordinate system and prove the two
+    source row bounds. -/
+theorem higham21_theorem21_4_forwardSub_rowwise_backward_error_handoff
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R_hat : Fin m → Fin m → ℝ) (b : Fin m → ℝ)
+    (hdiag : ∀ i : Fin m, R_hat i i ≠ 0)
+    (hupper : IsUpperTrapezoidal m m R_hat)
+    (hvalid : gammaValid fp m)
+    (DeltaA1 DeltaA2 : Fin m → Fin (m + k) → ℝ)
+    {eta : ℝ} (heta : 0 ≤ eta)
+    (hDeltaA1Row : ∀ i : Fin m,
+      rectRowNorm2 DeltaA1 i ≤ eta * rectRowNorm2 A i)
+    (hDeltaA2Row : ∀ i : Fin m,
+      rectRowNorm2 DeltaA2 i ≤ eta * rectRowNorm2 A i) :
+    ∃ DeltaR : Fin m → Fin m → ℝ,
+      (∀ i j, |DeltaR i j| ≤ gamma fp m * |R_hat i j|) ∧
+      (∀ i,
+        matMulVec m (matTranspose (fun a b => R_hat a b + DeltaR a b))
+          (fl_forwardSub fp m (matTranspose R_hat) b) i = b i) ∧
+      (Matrix.det
+          (matTranspose (fun a b => R_hat a b + DeltaR a b) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0 →
+        (fun i j =>
+            A i j +
+              undetLemma21_2SinglePerturbation
+                (matMulVec (m + k) Q
+                  (Fin.append
+                    (fl_forwardSub fp m (matTranspose R_hat) b)
+                    (0 : Fin k → ℝ)))
+                DeltaA1 DeltaA2 i j) =
+          finiteTranspose
+            (matMulRectLeft Q
+              (lsQRTallBlock (k := k)
+                (fun a b => R_hat a b + DeltaR a b))) →
+        UndetRowwiseBackwardErrorBounded m (m + k) A b
+          (matMulVec (m + k) Q
+            (Fin.append
+              (fl_forwardSub fp m (matTranspose R_hat) b)
+              (0 : Fin k → ℝ)))
+          (Real.sqrt 2 * eta)) := by
+  obtain ⟨DeltaR, hDeltaR, hsolve, hminCond⟩ :=
+    higham21_theorem21_4_forwardSub_q_method_min_norm_handoff
+      fp Q hQ R_hat b hdiag hupper hvalid
+  refine ⟨DeltaR, hDeltaR, hsolve, ?_⟩
+  intro hdet hsingle
+  let x_hat : Fin (m + k) → ℝ :=
+    matMulVec (m + k) Q
+      (Fin.append
+        (fl_forwardSub fp m (matTranspose R_hat) b)
+        (0 : Fin k → ℝ))
+  let A_qr : Fin m → Fin (m + k) → ℝ :=
+    finiteTranspose
+      (matMulRectLeft Q
+        (lsQRTallBlock (k := k)
+          (fun a b => R_hat a b + DeltaR a b)))
+  have hminQR : RectMinNormSolution m (m + k) A_qr b x_hat := by
+    simpa [A_qr, x_hat] using hminCond hdet
+  have hsingle' :
+      (fun i j =>
+          A i j + undetLemma21_2SinglePerturbation x_hat DeltaA1 DeltaA2 i j)
+        = A_qr := by
+    simpa [A_qr, x_hat] using hsingle
+  have hminSingle :
+      RectMinNormSolution m (m + k)
+        (fun i j =>
+          A i j + undetLemma21_2SinglePerturbation x_hat DeltaA1 DeltaA2 i j)
+        b x_hat := by
+    rw [hsingle']
+    exact hminQR
+  simpa [x_hat] using
+    higham21_lemma21_2_rowwise_backward_error_bound_of_common_row_bound
+      A DeltaA1 DeltaA2 b x_hat heta hminSingle
+      hDeltaA1Row hDeltaA2Row
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    determinant-free row-wise backward-error handoff after the triangular
+    solve.  Compared with
+    `higham21_theorem21_4_forwardSub_rowwise_backward_error_handoff`, the
+    stronger `gammaValid fp (2*m)` guard discharges the perturbed transpose
+    factor nonsingularity side condition. -/
+theorem higham21_theorem21_4_forwardSub_rowwise_backward_error_handoff_of_gammaValid2
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R_hat : Fin m → Fin m → ℝ) (b : Fin m → ℝ)
+    (hdiag : ∀ i : Fin m, R_hat i i ≠ 0)
+    (hupper : IsUpperTrapezoidal m m R_hat)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m))
+    (DeltaA1 DeltaA2 : Fin m → Fin (m + k) → ℝ)
+    {eta : ℝ} (heta : 0 ≤ eta)
+    (hDeltaA1Row : ∀ i : Fin m,
+      rectRowNorm2 DeltaA1 i ≤ eta * rectRowNorm2 A i)
+    (hDeltaA2Row : ∀ i : Fin m,
+      rectRowNorm2 DeltaA2 i ≤ eta * rectRowNorm2 A i) :
+    ∃ DeltaR : Fin m → Fin m → ℝ,
+      (∀ i j, |DeltaR i j| ≤ gamma fp m * |R_hat i j|) ∧
+      (∀ i,
+        matMulVec m (matTranspose (fun a b => R_hat a b + DeltaR a b))
+          (fl_forwardSub fp m (matTranspose R_hat) b) i = b i) ∧
+      ((fun i j =>
+          A i j +
+            undetLemma21_2SinglePerturbation
+              (matMulVec (m + k) Q
+                (Fin.append
+                  (fl_forwardSub fp m (matTranspose R_hat) b)
+                  (0 : Fin k → ℝ)))
+              DeltaA1 DeltaA2 i j) =
+        finiteTranspose
+          (matMulRectLeft Q
+            (lsQRTallBlock (k := k)
+              (fun a b => R_hat a b + DeltaR a b))) →
+        UndetRowwiseBackwardErrorBounded m (m + k) A b
+          (matMulVec (m + k) Q
+            (Fin.append
+              (fl_forwardSub fp m (matTranspose R_hat) b)
+              (0 : Fin k → ℝ)))
+          (Real.sqrt 2 * eta)) := by
+  obtain ⟨DeltaR, hDeltaR, hsolve, hrowCond⟩ :=
+    higham21_theorem21_4_forwardSub_rowwise_backward_error_handoff
+      fp A Q hQ R_hat b hdiag hupper hvalid DeltaA1 DeltaA2
+      heta hDeltaA1Row hDeltaA2Row
+  have hdet :
+      Matrix.det
+          (matTranspose (fun a b => R_hat a b + DeltaR a b) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0 :=
+    higham21_theorem21_4_perturbed_transpose_factor_det_ne_zero_of_componentwise_bound
+      R_hat DeltaR hdiag hupper (gamma_lt_one fp m hvalid2) hDeltaR
+  exact ⟨DeltaR, hDeltaR, hsolve, fun hsingle => hrowCond hdet hsingle⟩
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    common-perturbation specialization of the row-wise Q-method handoff.
+    Taking `DeltaA1 = DeltaA2 = DeltaA` reduces the Lemma 21.2 single
+    perturbation equality to the ordinary QR assembly equality
+    `A + DeltaA = (Q [R_hat + DeltaR; 0])^T`. -/
+theorem higham21_theorem21_4_forwardSub_single_perturbation_rowwise_backward_error_handoff_of_gammaValid2
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R_hat : Fin m → Fin m → ℝ) (b : Fin m → ℝ)
+    (hdiag : ∀ i : Fin m, R_hat i i ≠ 0)
+    (hupper : IsUpperTrapezoidal m m R_hat)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m))
+    (DeltaA : Fin m → Fin (m + k) → ℝ)
+    {eta : ℝ} (heta : 0 ≤ eta)
+    (hDeltaARow : ∀ i : Fin m,
+      rectRowNorm2 DeltaA i ≤ eta * rectRowNorm2 A i) :
+    ∃ DeltaR : Fin m → Fin m → ℝ,
+      (∀ i j, |DeltaR i j| ≤ gamma fp m * |R_hat i j|) ∧
+      (∀ i,
+        matMulVec m (matTranspose (fun a b => R_hat a b + DeltaR a b))
+          (fl_forwardSub fp m (matTranspose R_hat) b) i = b i) ∧
+      ((fun i j => A i j + DeltaA i j) =
+        finiteTranspose
+          (matMulRectLeft Q
+            (lsQRTallBlock (k := k)
+              (fun a b => R_hat a b + DeltaR a b))) →
+        UndetRowwiseBackwardErrorBounded m (m + k) A b
+          (matMulVec (m + k) Q
+            (Fin.append
+              (fl_forwardSub fp m (matTranspose R_hat) b)
+              (0 : Fin k → ℝ)))
+          (Real.sqrt 2 * eta)) := by
+  obtain ⟨DeltaR, hDeltaR, hsolve, hrowCond⟩ :=
+    higham21_theorem21_4_forwardSub_rowwise_backward_error_handoff_of_gammaValid2
+      fp A Q hQ R_hat b hdiag hupper hvalid hvalid2
+      DeltaA DeltaA heta hDeltaARow hDeltaARow
+  refine ⟨DeltaR, hDeltaR, hsolve, ?_⟩
+  intro hqr
+  apply hrowCond
+  let x_hat : Fin (m + k) → ℝ :=
+    matMulVec (m + k) Q
+      (Fin.append
+        (fl_forwardSub fp m (matTranspose R_hat) b)
+        (0 : Fin k → ℝ))
+  calc
+    (fun i j =>
+        A i j +
+          undetLemma21_2SinglePerturbation x_hat DeltaA DeltaA i j)
+        = (fun i j => A i j + DeltaA i j) := by
+          have hsame :=
+            higham21_lemma21_2_single_perturbation_same x_hat DeltaA
+          ext i j
+          rw [congrFun (congrFun hsame i) j]
+    _ =
+        finiteTranspose
+          (matMulRectLeft Q
+            (lsQRTallBlock (k := k)
+              (fun a b => R_hat a b + DeltaR a b))) := hqr
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    QR assembly equality for adding the triangular-solve perturbation to an
+    existing QR perturbation.  If `A + DeltaA0` is represented by
+    `(Q [R_hat;0])^T`, then adding the lifted block
+    `(Q [DeltaR;0])^T` gives the represented system
+    `(Q [R_hat + DeltaR;0])^T`. -/
+theorem higham21_theorem21_4_qr_deltaR_assembly_eq
+    {m k : ℕ}
+    (A DeltaA0 : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_hat DeltaR : Fin m → Fin m → ℝ)
+    (hA :
+      (fun i j => A i j + DeltaA0 i j) =
+        finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) R_hat))) :
+    (fun i j =>
+        A i j +
+          (DeltaA0 i j +
+            finiteTranspose
+              (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR)) i j)) =
+      finiteTranspose
+        (matMulRectLeft Q
+          (lsQRTallBlock (k := k)
+            (fun i j => R_hat i j + DeltaR i j))) := by
+  have hblock :
+      (fun i j =>
+          lsQRTallBlock (k := k) R_hat i j +
+            lsQRTallBlock (k := k) DeltaR i j) =
+        lsQRTallBlock (k := k)
+          (fun i j => R_hat i j + DeltaR i j) :=
+    lsQRTallBlock_add R_hat DeltaR
+  have hmul :
+      (fun i j =>
+          matMulRectLeft Q (lsQRTallBlock (k := k) R_hat) i j +
+            matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR) i j) =
+        matMulRectLeft Q
+          (lsQRTallBlock (k := k)
+            (fun i j => R_hat i j + DeltaR i j)) := by
+    rw [← hblock]
+    exact (matMulRectLeft_add_right Q
+      (lsQRTallBlock (k := k) R_hat)
+      (lsQRTallBlock (k := k) DeltaR)).symm
+  ext i j
+  have hAij := congrFun (congrFun hA i) j
+  have hmulji := congrFun (congrFun hmul j) i
+  simp [finiteTranspose] at hAij hmulji ⊢
+  calc
+    A i j + (DeltaA0 i j + matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR) j i)
+        = (A i j + DeltaA0 i j) +
+            matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR) j i := by ring
+    _ = matMulRectLeft Q (lsQRTallBlock (k := k) R_hat) j i +
+          matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR) j i := by
+          rw [hAij]
+    _ = matMulRectLeft Q
+          (lsQRTallBlock (k := k)
+            (fun i j => R_hat i j + DeltaR i j)) j i := hmulji
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    row-wise triangle-inequality adapter for assembling two perturbation
+    bounds against the same source matrix. -/
+theorem higham21_rectRowNorm2_add_le_of_row_bounds
+    {m n : ℕ}
+    (DeltaA DeltaB A : Fin m → Fin n → ℝ)
+    {etaA etaB : ℝ}
+    (hDeltaA : ∀ i : Fin m,
+      rectRowNorm2 DeltaA i ≤ etaA * rectRowNorm2 A i)
+    (hDeltaB : ∀ i : Fin m,
+      rectRowNorm2 DeltaB i ≤ etaB * rectRowNorm2 A i)
+    (i : Fin m) :
+    rectRowNorm2 (fun r c => DeltaA r c + DeltaB r c) i ≤
+      (etaA + etaB) * rectRowNorm2 A i := by
+  calc
+    rectRowNorm2 (fun r c => DeltaA r c + DeltaB r c) i
+        = vecNorm2 (fun j : Fin n => DeltaA i j + DeltaB i j) := rfl
+    _ ≤ vecNorm2 (fun j : Fin n => DeltaA i j) +
+          vecNorm2 (fun j : Fin n => DeltaB i j) := by
+          exact vecNorm2_add_le
+            (fun j : Fin n => DeltaA i j)
+            (fun j : Fin n => DeltaB i j)
+    _ = rectRowNorm2 DeltaA i + rectRowNorm2 DeltaB i := rfl
+    _ ≤ etaA * rectRowNorm2 A i + etaB * rectRowNorm2 A i := by
+          exact add_le_add (hDeltaA i) (hDeltaB i)
+    _ = (etaA + etaB) * rectRowNorm2 A i := by ring
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    once the QR perturbation and lifted triangular-solve perturbation are
+    bounded row-wise against `A`, their assembled common perturbation satisfies
+    the summed row-wise bound used by the Q-method proof. -/
+theorem higham21_theorem21_4_common_perturbation_row_bound_of_qr_and_lifted_bounds
+    {m k : ℕ}
+    (A DeltaA0 : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (DeltaR : Fin m → Fin m → ℝ)
+    {etaQR etaR : ℝ}
+    (hDeltaA0 : ∀ i : Fin m,
+      rectRowNorm2 DeltaA0 i ≤ etaQR * rectRowNorm2 A i)
+    (hDeltaR : ∀ i : Fin m,
+      rectRowNorm2
+        (finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR))) i ≤
+        etaR * rectRowNorm2 A i)
+    (i : Fin m) :
+    rectRowNorm2
+        (fun r c =>
+          DeltaA0 r c +
+            finiteTranspose
+              (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR)) r c) i ≤
+      (etaQR + etaR) * rectRowNorm2 A i :=
+  higham21_rectRowNorm2_add_le_of_row_bounds
+    DeltaA0
+    (finiteTranspose
+      (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR)))
+    A hDeltaA0 hDeltaR i
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    an orthogonal left factor preserves each column norm of a rectangular
+    panel.  This is the per-column form needed for the lifted triangular
+    perturbation `(Q [DeltaR;0])^T`. -/
+theorem higham21_columnFrob_matMulRectLeft_orthogonal
+    {m n : ℕ}
+    (Q : Fin m → Fin m → ℝ)
+    (B : Fin m → Fin n → ℝ)
+    (hQ : IsOrthogonal m Q)
+    (j : Fin n) :
+    columnFrob (matMulRectLeft Q B) j = columnFrob B j := by
+  rw [columnFrob_eq_vecNorm2, columnFrob_eq_vecNorm2]
+  have hcol :
+      (fun i : Fin m => matMulRectLeft Q B i j) =
+        matMulVec m Q (fun i : Fin m => B i j) := by
+    ext i
+    rfl
+  rw [hcol]
+  exact vecNorm2_orthogonal Q (fun i : Fin m => B i j) hQ
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    stacking zero rows below a square triangular perturbation preserves each
+    column Frobenius norm. -/
+theorem higham21_columnFrob_lsQRTallBlock
+    {m k : ℕ}
+    (R : Fin m → Fin m → ℝ)
+    (j : Fin m) :
+    columnFrob (lsQRTallBlock (k := k) R) j = columnFrob R j := by
+  rw [columnFrob_eq_vecNorm2, columnFrob_eq_vecNorm2]
+  have hcol :
+      (fun i : Fin (m + k) => lsQRTallBlock (k := k) R i j) =
+        Fin.append (fun i : Fin m => R i j) (0 : Fin k → ℝ) := by
+    ext i
+    refine Fin.addCases
+      (motive := fun i : Fin (m + k) =>
+        lsQRTallBlock (k := k) R i j =
+          Fin.append (fun i : Fin m => R i j) (0 : Fin k → ℝ) i)
+      ?left ?right i
+    · intro i
+      simp [lsQRTallBlock, Fin.append_left]
+    · intro i
+      simp [lsQRTallBlock, Fin.append_right]
+  rw [hcol]
+  unfold vecNorm2
+  rw [lsVecNorm2Sq_append]
+  simp [vecNorm2Sq]
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    the lifted triangular block has row norm equal to the corresponding column
+    norm of the triangular perturbation when the QR factor is orthogonal. -/
+theorem higham21_theorem21_4_lifted_deltaR_row_norm_eq_columnFrob
+    {m k : ℕ}
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (DeltaR : Fin m → Fin m → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (j : Fin m) :
+    rectRowNorm2
+        (finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR))) j =
+      columnFrob DeltaR j := by
+  calc
+    rectRowNorm2
+        (finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR))) j
+        = columnFrob
+            (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR)) j := by
+          simp [rectRowNorm2, columnFrob_eq_vecNorm2, finiteTranspose]
+    _ = columnFrob (lsQRTallBlock (k := k) DeltaR) j := by
+          exact higham21_columnFrob_matMulRectLeft_orthogonal
+            Q (lsQRTallBlock (k := k) DeltaR) hQ j
+    _ = columnFrob DeltaR j := higham21_columnFrob_lsQRTallBlock DeltaR j
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    columnwise control of the triangular perturbation gives the row-wise bound
+    for its lifted original-coordinate perturbation. -/
+theorem higham21_theorem21_4_lifted_deltaR_row_bound_of_column_bound
+    {m k : ℕ}
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (DeltaR : Fin m → Fin m → ℝ)
+    {etaR : ℝ}
+    (hQ : IsOrthogonal (m + k) Q)
+    (hDeltaRCol : ∀ i : Fin m,
+      columnFrob DeltaR i ≤ etaR * rectRowNorm2 A i)
+    (i : Fin m) :
+    rectRowNorm2
+        (finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR))) i ≤
+      etaR * rectRowNorm2 A i := by
+  rw [higham21_theorem21_4_lifted_deltaR_row_norm_eq_columnFrob
+    Q DeltaR hQ i]
+  exact hDeltaRCol i
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    entrywise relative bounds on the triangular perturbation imply the
+    corresponding columnwise Euclidean bound. -/
+theorem higham21_columnFrob_le_of_entrywise_relative_bound
+    {m : ℕ}
+    (R DeltaR : Fin m → Fin m → ℝ)
+    {eta : ℝ} (heta : 0 ≤ eta)
+    (hDeltaR : ∀ i j, |DeltaR i j| ≤ eta * |R i j|)
+    (j : Fin m) :
+    columnFrob DeltaR j ≤ eta * columnFrob R j := by
+  calc
+    columnFrob DeltaR j
+        = vecNorm2 (fun i : Fin m => DeltaR i j) := by
+          rw [columnFrob_eq_vecNorm2]
+    _ ≤ vecNorm2 (fun i : Fin m => eta * |R i j|) := by
+          exact
+            vecNorm2_le_of_abs_le
+              (fun i : Fin m => DeltaR i j)
+              (fun i : Fin m => eta * |R i j|)
+              (fun i => hDeltaR i j)
+    _ = eta * columnFrob R j := by
+          rw [vecNorm2_smul, abs_of_nonneg heta, vecNorm2_abs,
+            columnFrob_eq_vecNorm2]
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    if `A + DeltaA0 = (Q [R_hat;0])^T`, then the row norm of the assembled
+    QR side is the corresponding column norm of `R_hat`. -/
+theorem higham21_theorem21_4_assembled_qr_row_norm_eq_R_columnFrob
+    {m k : ℕ}
+    (A DeltaA0 : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_hat : Fin m → Fin m → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (hA :
+      (fun i j => A i j + DeltaA0 i j) =
+        finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) R_hat)))
+    (j : Fin m) :
+    rectRowNorm2 (fun i j => A i j + DeltaA0 i j) j =
+      columnFrob R_hat j := by
+  rw [hA]
+  exact higham21_theorem21_4_lifted_deltaR_row_norm_eq_columnFrob
+    Q R_hat hQ j
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    componentwise triangular-solve backward error, together with the QR
+    assembly and QR row perturbation bound, gives a row-wise bound for the
+    lifted triangular perturbation `(Q [DeltaR;0])^T` relative to the original
+    underdetermined matrix `A`. -/
+theorem higham21_theorem21_4_lifted_deltaR_row_bound_of_entrywise_relative
+    {m k : ℕ}
+    (A DeltaA0 : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_hat DeltaR : Fin m → Fin m → ℝ)
+    {etaQR etaR : ℝ} (hetaR : 0 ≤ etaR)
+    (hQ : IsOrthogonal (m + k) Q)
+    (hA :
+      (fun i j => A i j + DeltaA0 i j) =
+        finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) R_hat)))
+    (hDeltaA0 : ∀ i : Fin m,
+      rectRowNorm2 DeltaA0 i ≤ etaQR * rectRowNorm2 A i)
+    (hDeltaR : ∀ i j, |DeltaR i j| ≤ etaR * |R_hat i j|)
+    (i : Fin m) :
+    rectRowNorm2
+        (finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR))) i ≤
+      etaR * (1 + etaQR) * rectRowNorm2 A i := by
+  have hcol :
+      columnFrob DeltaR i ≤ etaR * columnFrob R_hat i :=
+    higham21_columnFrob_le_of_entrywise_relative_bound
+      R_hat DeltaR hetaR hDeltaR i
+  have hassembled_eq :
+      rectRowNorm2 (fun r c => A r c + DeltaA0 r c) i =
+        columnFrob R_hat i :=
+    higham21_theorem21_4_assembled_qr_row_norm_eq_R_columnFrob
+      A DeltaA0 Q R_hat hQ hA i
+  have hAself : ∀ r : Fin m,
+      rectRowNorm2 A r ≤ (1 : ℝ) * rectRowNorm2 A r := by
+    intro r
+    rw [one_mul]
+  have hassembled_bound :
+      rectRowNorm2 (fun r c => A r c + DeltaA0 r c) i ≤
+        (1 + etaQR) * rectRowNorm2 A i :=
+    higham21_rectRowNorm2_add_le_of_row_bounds
+      A DeltaA0 A hAself hDeltaA0 i
+  calc
+    rectRowNorm2
+        (finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR))) i
+        = columnFrob DeltaR i := by
+          exact higham21_theorem21_4_lifted_deltaR_row_norm_eq_columnFrob
+            Q DeltaR hQ i
+    _ ≤ etaR * columnFrob R_hat i := hcol
+    _ = etaR * rectRowNorm2 (fun r c => A r c + DeltaA0 r c) i := by
+          rw [← hassembled_eq]
+    _ ≤ etaR * ((1 + etaQR) * rectRowNorm2 A i) :=
+          mul_le_mul_of_nonneg_left hassembled_bound hetaR
+    _ = etaR * (1 + etaQR) * rectRowNorm2 A i := by ring
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    combines the QR row perturbation and the componentwise triangular-solve
+    perturbation into the row-wise bound for the common perturbation assembled
+    as `DeltaA0 + (Q [DeltaR;0])^T`. -/
+theorem higham21_theorem21_4_common_perturbation_row_bound_of_entrywise_deltaR
+    {m k : ℕ}
+    (A DeltaA0 : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_hat DeltaR : Fin m → Fin m → ℝ)
+    {etaQR etaR : ℝ} (hetaR : 0 ≤ etaR)
+    (hQ : IsOrthogonal (m + k) Q)
+    (hA :
+      (fun i j => A i j + DeltaA0 i j) =
+        finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) R_hat)))
+    (hDeltaA0 : ∀ i : Fin m,
+      rectRowNorm2 DeltaA0 i ≤ etaQR * rectRowNorm2 A i)
+    (hDeltaR : ∀ i j, |DeltaR i j| ≤ etaR * |R_hat i j|)
+    (i : Fin m) :
+    rectRowNorm2
+        (fun r c =>
+          DeltaA0 r c +
+            finiteTranspose
+              (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR)) r c) i ≤
+      (etaQR + etaR * (1 + etaQR)) * rectRowNorm2 A i :=
+  higham21_theorem21_4_common_perturbation_row_bound_of_qr_and_lifted_bounds
+    A DeltaA0 Q DeltaR hDeltaA0
+    (fun r =>
+      higham21_theorem21_4_lifted_deltaR_row_bound_of_entrywise_relative
+        A DeltaA0 Q R_hat DeltaR hetaR hQ hA hDeltaA0 hDeltaR r)
+    i
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    determinant-free row-wise Q-method handoff after QR assembly.  Given the
+    QR perturbation for `A`, the componentwise triangular-solve perturbation,
+    and the orthogonal QR factor, the assembled perturbation
+    `DeltaA0 + (Q [DeltaR;0])^T` is a row-wise backward-error witness. -/
+theorem higham21_theorem21_4_rowwise_backward_error_of_qr_assembly_and_entrywise_deltaR
+    {m k : ℕ} (fp : FPModel)
+    (A DeltaA0 : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R_hat : Fin m → Fin m → ℝ) (b : Fin m → ℝ)
+    (hdiag : ∀ i : Fin m, R_hat i i ≠ 0)
+    (hupper : IsUpperTrapezoidal m m R_hat)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m))
+    {etaQR : ℝ} (hetaQR : 0 ≤ etaQR)
+    (hA :
+      (fun i j => A i j + DeltaA0 i j) =
+        finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) R_hat)))
+    (hDeltaA0 : ∀ i : Fin m,
+      rectRowNorm2 DeltaA0 i ≤ etaQR * rectRowNorm2 A i) :
+    ∃ DeltaR : Fin m → Fin m → ℝ,
+      (∀ i j, |DeltaR i j| ≤ gamma fp m * |R_hat i j|) ∧
+      (∀ i,
+        matMulVec m (matTranspose (fun a b => R_hat a b + DeltaR a b))
+          (fl_forwardSub fp m (matTranspose R_hat) b) i = b i) ∧
+      UndetRowwiseBackwardErrorBounded m (m + k) A b
+        (matMulVec (m + k) Q
+          (Fin.append
+            (fl_forwardSub fp m (matTranspose R_hat) b)
+            (0 : Fin k → ℝ)))
+        (etaQR + gamma fp m * (1 + etaQR)) := by
+  obtain ⟨DeltaR, hDeltaR, hsolve, hmin⟩ :=
+    higham21_theorem21_4_forwardSub_q_method_min_norm_handoff_of_gammaValid2
+      fp Q hQ R_hat b hdiag hupper hvalid hvalid2
+  let DeltaA : Fin m → Fin (m + k) → ℝ :=
+    fun i j =>
+      DeltaA0 i j +
+        finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) DeltaR)) i j
+  have hqr :
+      (fun i j => A i j + DeltaA i j) =
+        finiteTranspose
+          (matMulRectLeft Q
+            (lsQRTallBlock (k := k)
+              (fun i j => R_hat i j + DeltaR i j))) := by
+    simpa [DeltaA] using
+      higham21_theorem21_4_qr_deltaR_assembly_eq
+        A DeltaA0 Q R_hat DeltaR hA
+  have hminA :
+      RectMinNormSolution m (m + k)
+        (fun i j => A i j + DeltaA i j) b
+        (matMulVec (m + k) Q
+          (Fin.append
+            (fl_forwardSub fp m (matTranspose R_hat) b)
+            (0 : Fin k → ℝ))) := by
+    rw [hqr]
+    exact hmin
+  have hgamma_nonneg : 0 ≤ gamma fp m := gamma_nonneg fp hvalid
+  have heta : 0 ≤ etaQR + gamma fp m * (1 + etaQR) := by
+    have hone_eta : 0 ≤ 1 + etaQR := by linarith
+    exact add_nonneg hetaQR (mul_nonneg hgamma_nonneg hone_eta)
+  have hrow : ∀ i : Fin m,
+      rectRowNorm2 DeltaA i ≤
+        (etaQR + gamma fp m * (1 + etaQR)) * rectRowNorm2 A i := by
+    intro i
+    simpa [DeltaA] using
+      higham21_theorem21_4_common_perturbation_row_bound_of_entrywise_deltaR
+        A DeltaA0 Q R_hat DeltaR hgamma_nonneg hQ hA hDeltaA0 hDeltaR i
+  exact
+    ⟨DeltaR, hDeltaR, hsolve,
+      higham21_rowwise_backward_error_bound_witness
+        m (m + k) A DeltaA b
+        (matMulVec (m + k) Q
+          (Fin.append
+            (fl_forwardSub fp m (matTranspose R_hat) b)
+            (0 : Fin k → ℝ)))
+        (etaQR + gamma fp m * (1 + etaQR))
+        heta hminA hrow⟩
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    row-wise Q-method handoff from a Chapter 19 QR certificate for `A^T`.
+    The tall QR factor is reduced to its top square block using its
+    upper-trapezoidal shape, then fed to the assembled row-wise handoff. -/
+theorem higham21_theorem21_4_rowwise_backward_error_of_qr_transpose_certificate
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_tall : Fin (m + k) → Fin m → ℝ)
+    (b : Fin m → ℝ)
+    {etaQR : ℝ} (hetaQR : 0 ≤ etaQR)
+    (hqr : H19.Theorem19_4.HouseholderQRBackwardError (m + k) m
+      (finiteTranspose A) Q R_tall etaQR)
+    (hdiag : ∀ i : Fin m, R_tall (Fin.castAdd k i) i ≠ 0)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m)) :
+    ∃ DeltaA0 : Fin m → Fin (m + k) → ℝ,
+      (∀ i j, A i j + DeltaA0 i j =
+        matMulRect (m + k) (m + k) m Q R_tall j i) ∧
+      (∀ i : Fin m,
+        rectRowNorm2 DeltaA0 i ≤ etaQR * rectRowNorm2 A i) ∧
+      ∃ DeltaR : Fin m → Fin m → ℝ,
+        (∀ i j, |DeltaR i j| ≤
+          gamma fp m * |R_tall (Fin.castAdd k i) j|) ∧
+        (∀ i,
+          matMulVec m
+            (matTranspose
+              (fun a b => R_tall (Fin.castAdd k a) b + DeltaR a b))
+            (fl_forwardSub fp m
+              (matTranspose (fun a b => R_tall (Fin.castAdd k a) b)) b) i =
+            b i) ∧
+        UndetRowwiseBackwardErrorBounded m (m + k) A b
+          (matMulVec (m + k) Q
+            (Fin.append
+              (fl_forwardSub fp m
+                (matTranspose (fun a b => R_tall (Fin.castAdd k a) b)) b)
+              (0 : Fin k → ℝ)))
+          (etaQR + gamma fp m * (1 + etaQR)) := by
+  let R_top : Fin m → Fin m → ℝ :=
+    fun i j => R_tall (Fin.castAdd k i) j
+  obtain ⟨DeltaA0, hDeltaA0Rep, hDeltaA0Row⟩ :=
+    higham21_theorem21_4_qr_transpose_row_perturbation_bound
+      A Q R_tall etaQR hqr
+  have hRblock :
+      R_tall = lsQRTallBlock (k := k) R_top :=
+    lsQRTallBlock_of_upper_trapezoidal R_tall hqr.upper
+  have hA :
+      (fun i j => A i j + DeltaA0 i j) =
+        finiteTranspose
+          (matMulRectLeft Q (lsQRTallBlock (k := k) R_top)) := by
+    ext i j
+    calc
+      A i j + DeltaA0 i j =
+          matMulRect (m + k) (m + k) m Q R_tall j i := hDeltaA0Rep i j
+      _ =
+          finiteTranspose
+            (matMulRectLeft Q (lsQRTallBlock (k := k) R_top)) i j := by
+            simp [finiteTranspose, matMulRect, matMulRectLeft, hRblock]
+  have hupperTop : IsUpperTrapezoidal m m R_top :=
+    lsQRTallBlock_top_upper_of_upper_trapezoidal R_tall hqr.upper
+  obtain ⟨DeltaR, hDeltaR, hsolve, hcert⟩ :=
+    higham21_theorem21_4_rowwise_backward_error_of_qr_assembly_and_entrywise_deltaR
+      fp A DeltaA0 Q hqr.orth R_top b hdiag hupperTop
+      hvalid hvalid2 hetaQR hA hDeltaA0Row
+  exact ⟨DeltaA0, hDeltaA0Rep, hDeltaA0Row, DeltaR,
+    by simpa [R_top] using hDeltaR,
+    by simpa [R_top] using hsolve,
+    by simpa [R_top] using hcert⟩
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    concrete Householder-QR specialization of the row-wise Q-method handoff
+    for `A^T`.  The remaining diagonal hypothesis is the local nonbreakdown
+    condition for the computed top square triangular block. -/
+theorem higham21_theorem21_4_rowwise_backward_error_of_householder_qr_transpose
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ)
+    (hm : 0 < m)
+    (hvalidQR :
+      gammaValid fp (m * householderConstructApplyGammaIndex (m + k)))
+    (hdiag : ∀ i : Fin m,
+      fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+        (Fin.castAdd k i) i ≠ 0)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m)) :
+    ∃ DeltaA0 : Fin m → Fin (m + k) → ℝ,
+      (∀ i j, A i j + DeltaA0 i j =
+        matMulRect (m + k) (m + k) m
+          (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+          (fl_householderQRPanel_R fp (m + k) m (finiteTranspose A))
+          j i) ∧
+      (∀ i : Fin m,
+        rectRowNorm2 DeltaA0 i ≤
+          H19.Theorem19_4.gamma_tilde fp (m + k) m * rectRowNorm2 A i) ∧
+      ∃ DeltaR : Fin m → Fin m → ℝ,
+        (∀ i j, |DeltaR i j| ≤
+          gamma fp m *
+            |fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+              (Fin.castAdd k i) j|) ∧
+        (∀ i,
+          matMulVec m
+            (matTranspose
+              (fun a b =>
+                fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                  (Fin.castAdd k a) b + DeltaR a b))
+            (fl_forwardSub fp m
+              (matTranspose
+                (fun a b =>
+                  fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                    (Fin.castAdd k a) b)) b) i =
+            b i) ∧
+        UndetRowwiseBackwardErrorBounded m (m + k) A b
+          (matMulVec (m + k)
+            (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+            (Fin.append
+              (fl_forwardSub fp m
+                (matTranspose
+                  (fun a b =>
+                    fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                      (Fin.castAdd k a) b)) b)
+              (0 : Fin k → ℝ)))
+          (H19.Theorem19_4.gamma_tilde fp (m + k) m +
+            gamma fp m * (1 + H19.Theorem19_4.gamma_tilde fp (m + k) m)) := by
+  exact
+    higham21_theorem21_4_rowwise_backward_error_of_qr_transpose_certificate
+      fp A
+      (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+      (fl_householderQRPanel_R fp (m + k) m (finiteTranspose A))
+      b
+      (H19.Theorem19_4.gamma_tilde_nonneg fp hvalidQR)
+      (H19.Theorem19_4.householder_qr_backward_error
+        fp (m + k) m (finiteTranspose A) hm (Nat.le_add_right m k) hvalidQR)
+      hdiag hvalid hvalid2
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    named side condition that the computed top square block of the tall
+    Householder QR factor for `A^T` has no zero diagonal pivots.  The printed
+    theorem assumes the Q-method triangular solve does not break down; this
+    predicate records exactly the local formal obligation still exposed by
+    the concrete QR path. -/
+def Higham21QMethodTopBlockNonbreakdown
+    (m k : ℕ) (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) : Prop :=
+  lsTheorem20_4ComputedQRNonbreakdown fp (finiteTranspose A)
+
+theorem Higham21QMethodTopBlockNonbreakdown.of_topBlock_det_ne_zero
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (hdet :
+      Matrix.det
+        ((fun i j =>
+          fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+            (Fin.castAdd k i) j) : Matrix (Fin m) (Fin m) ℝ) ≠ 0) :
+    Higham21QMethodTopBlockNonbreakdown m k fp A := by
+  let R_top : Fin m → Fin m → ℝ :=
+    fun i j =>
+      fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+        (Fin.castAdd k i) j
+  have hupperTall :
+      IsUpperTrapezoidal (m + k) m
+        (fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)) :=
+    fl_householderQRPanel_R_upper_trapezoidal fp (m + k) m
+      (finiteTranspose A)
+  have hupperTop : ∀ i j : Fin m, j.val < i.val → R_top i j = 0 := by
+    simpa [R_top] using
+      lsQRTallBlock_top_upper_of_upper_trapezoidal
+        (fl_householderQRPanel_R fp (m + k) m (finiteTranspose A))
+        hupperTall
+  have hdiag : ∀ i : Fin m, R_top i i ≠ 0 :=
+    diag_ne_zero_of_upper_triangular_det_ne_zero m R_top hupperTop (by
+      simpa [R_top] using hdet)
+  simpa [Higham21QMethodTopBlockNonbreakdown,
+    lsTheorem20_4ComputedQRNonbreakdown, R_top] using hdiag
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    source-facing concrete domain for the Q-method Householder path.  The
+    printed full-row-rank condition for `A` is represented as full column rank
+    of `A^T`; the current verified QR API still also exposes the computed
+    top-block nonbreakdown condition needed by the triangular solve. -/
+def Higham21QMethodFullRowRankComputedQRDomain
+    (m k : ℕ) (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) : Prop :=
+  lsTheorem20_4FullRankComputedQRDomain fp (finiteTranspose A)
+
+theorem Higham21QMethodFullRowRankComputedQRDomain.nonbreakdown
+    {m k : ℕ} {fp : FPModel}
+    {A : Fin m → Fin (m + k) → ℝ}
+    (h : Higham21QMethodFullRowRankComputedQRDomain m k fp A) :
+    Higham21QMethodTopBlockNonbreakdown m k fp A :=
+  lsTheorem20_4FullRankComputedQRDomain.computedQRNonbreakdown fp h
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    the concrete row-wise coefficient currently proved for the Householder
+    Q-method path: the Chapter 19 QR perturbation factor plus the triangular
+    solve factor and their first-order product. -/
+noncomputable def Higham21QMethodRowwiseCoefficient
+    (fp : FPModel) (m k : ℕ) : ℝ :=
+  H19.Theorem19_4.gamma_tilde fp (m + k) m +
+    gamma fp m * (1 + H19.Theorem19_4.gamma_tilde fp (m + k) m)
+
+theorem Higham21QMethodRowwiseCoefficient_nonneg
+    (fp : FPModel) (m k : ℕ)
+    (hvalidQR :
+      gammaValid fp (m * householderConstructApplyGammaIndex (m + k)))
+    (hvalid : gammaValid fp m) :
+    0 ≤ Higham21QMethodRowwiseCoefficient fp m k := by
+  have hqr_nonneg :
+      0 ≤ H19.Theorem19_4.gamma_tilde fp (m + k) m :=
+    H19.Theorem19_4.gamma_tilde_nonneg fp hvalidQR
+  have hgamma_nonneg : 0 ≤ gamma fp m := gamma_nonneg fp hvalid
+  have hone : 0 ≤ 1 + H19.Theorem19_4.gamma_tilde fp (m + k) m := by
+    linarith
+  simpa [Higham21QMethodRowwiseCoefficient] using
+    add_nonneg hqr_nonneg (mul_nonneg hgamma_nonneg hone)
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    source-facing row-wise backward-stability wrapper for any Chapter 19 QR
+    certificate of `A^T`.  This projects the detailed `DeltaA0`/`DeltaR`
+    witness into the row-wise backward-error predicate used by the theorem. -/
+theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_qr_transpose_certificate
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_tall : Fin (m + k) → Fin m → ℝ)
+    (b : Fin m → ℝ)
+    {etaQR : ℝ} (hetaQR : 0 ≤ etaQR)
+    (hqr : H19.Theorem19_4.HouseholderQRBackwardError (m + k) m
+      (finiteTranspose A) Q R_tall etaQR)
+    (hdiag : ∀ i : Fin m, R_tall (Fin.castAdd k i) i ≠ 0)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m)) :
+    UndetRowwiseBackwardErrorBounded m (m + k) A b
+      (matMulVec (m + k) Q
+        (Fin.append
+          (fl_forwardSub fp m
+            (matTranspose (fun a b => R_tall (Fin.castAdd k a) b)) b)
+          (0 : Fin k → ℝ)))
+      (etaQR + gamma fp m * (1 + etaQR)) := by
+  obtain ⟨_, _, _, _, _, _, hcert⟩ :=
+    higham21_theorem21_4_rowwise_backward_error_of_qr_transpose_certificate
+      fp A Q R_tall b hetaQR hqr hdiag hvalid hvalid2
+  exact hcert
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    concrete source-facing row-wise backward-stability theorem for the
+    Householder QR panel applied to `A^T`, with the remaining nonbreakdown
+    condition named explicitly by `Higham21QMethodTopBlockNonbreakdown`. -/
+theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_householder_qr_transpose
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ)
+    (hm : 0 < m)
+    (hvalidQR :
+      gammaValid fp (m * householderConstructApplyGammaIndex (m + k)))
+    (hdiag : Higham21QMethodTopBlockNonbreakdown m k fp A)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m)) :
+    UndetRowwiseBackwardErrorBounded m (m + k) A b
+      (matMulVec (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (Fin.append
+          (fl_forwardSub fp m
+            (matTranspose
+              (fun a b =>
+                fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                  (Fin.castAdd k a) b)) b)
+          (0 : Fin k → ℝ)))
+      (H19.Theorem19_4.gamma_tilde fp (m + k) m +
+        gamma fp m * (1 + H19.Theorem19_4.gamma_tilde fp (m + k) m)) := by
+  exact
+    higham21_theorem21_4_q_method_rowwise_backward_stable_of_qr_transpose_certificate
+      fp A
+      (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+      (fl_householderQRPanel_R fp (m + k) m (finiteTranspose A))
+      b
+      (H19.Theorem19_4.gamma_tilde_nonneg fp hvalidQR)
+      (H19.Theorem19_4.householder_qr_backward_error
+        fp (m + k) m (finiteTranspose A) hm (Nat.le_add_right m k) hvalidQR)
+      hdiag hvalid hvalid2
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    determinant-facing nonbreakdown variant.  A nonzero determinant of the
+    computed top square `R` block implies the diagonal nonbreakdown field
+    consumed by the concrete Q-method row-wise theorem. -/
+theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_topBlock_det_ne_zero
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ)
+    (hm : 0 < m)
+    (hvalidQR :
+      gammaValid fp (m * householderConstructApplyGammaIndex (m + k)))
+    (hdet :
+      Matrix.det
+        ((fun i j =>
+          fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+            (Fin.castAdd k i) j) : Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m)) :
+    UndetRowwiseBackwardErrorBounded m (m + k) A b
+      (matMulVec (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (Fin.append
+          (fl_forwardSub fp m
+            (matTranspose
+              (fun a b =>
+                fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                  (Fin.castAdd k a) b)) b)
+          (0 : Fin k → ℝ)))
+      (Higham21QMethodRowwiseCoefficient fp m k) := by
+  simpa [Higham21QMethodRowwiseCoefficient] using
+    higham21_theorem21_4_q_method_rowwise_backward_stable_of_householder_qr_transpose
+      fp A b hm hvalidQR
+      (Higham21QMethodTopBlockNonbreakdown.of_topBlock_det_ne_zero fp A hdet)
+      hvalid hvalid2
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    concrete row-wise backward-stability wrapper under the source-facing
+    full-row-rank/computed-QR domain for the Householder QR of `A^T`. -/
+theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ)
+    (hm : 0 < m)
+    (hvalidQR :
+      gammaValid fp (m * householderConstructApplyGammaIndex (m + k)))
+    (hdomain : Higham21QMethodFullRowRankComputedQRDomain m k fp A)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m)) :
+    UndetRowwiseBackwardErrorBounded m (m + k) A b
+      (matMulVec (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (Fin.append
+          (fl_forwardSub fp m
+            (matTranspose
+              (fun a b =>
+                fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                  (Fin.castAdd k a) b)) b)
+          (0 : Fin k → ℝ)))
+      (H19.Theorem19_4.gamma_tilde fp (m + k) m +
+        gamma fp m * (1 + H19.Theorem19_4.gamma_tilde fp (m + k) m)) := by
+  exact
+    higham21_theorem21_4_q_method_rowwise_backward_stable_of_householder_qr_transpose
+      fp A b hm hvalidQR
+      (Higham21QMethodFullRowRankComputedQRDomain.nonbreakdown hdomain)
+      hvalid hvalid2
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    same concrete Q-method row-wise theorem with the proved coefficient named
+    explicitly for later comparison with the printed asymptotic coefficient. -/
+theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain_coefficient
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ)
+    (hm : 0 < m)
+    (hvalidQR :
+      gammaValid fp (m * householderConstructApplyGammaIndex (m + k)))
+    (hdomain : Higham21QMethodFullRowRankComputedQRDomain m k fp A)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m)) :
+    UndetRowwiseBackwardErrorBounded m (m + k) A b
+      (matMulVec (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (Fin.append
+          (fl_forwardSub fp m
+            (matTranspose
+              (fun a b =>
+                fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                  (Fin.castAdd k a) b)) b)
+          (0 : Fin k → ℝ)))
+      (Higham21QMethodRowwiseCoefficient fp m k) := by
+  simpa [Higham21QMethodRowwiseCoefficient] using
+    higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain
+      fp A b hm hvalidQR hdomain hvalid hvalid2
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    conservative-coefficient handoff.  Any nonnegative source coefficient
+    that dominates `Higham21QMethodRowwiseCoefficient` inherits the concrete
+    row-wise backward-stability certificate. -/
+theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain_of_coefficient_le
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ)
+    (hm : 0 < m)
+    (hvalidQR :
+      gammaValid fp (m * householderConstructApplyGammaIndex (m + k)))
+    (hdomain : Higham21QMethodFullRowRankComputedQRDomain m k fp A)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m))
+    {eta : ℝ} (heta : 0 ≤ eta)
+    (hcoeff : Higham21QMethodRowwiseCoefficient fp m k ≤ eta) :
+    UndetRowwiseBackwardErrorBounded m (m + k) A b
+      (matMulVec (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (Fin.append
+          (fl_forwardSub fp m
+            (matTranspose
+              (fun a b =>
+                fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                  (Fin.castAdd k a) b)) b)
+          (0 : Fin k → ℝ)))
+      eta := by
+  exact
+    higham21_rowwise_backward_error_bound_mono
+      (higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain_coefficient
+        fp A b hm hvalidQR hdomain hvalid hvalid2)
+      heta hcoeff
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    concrete repository coefficient for the rounded final `Q_hat` action.
+    This names the growth radius currently supplied by the Householder QR panel
+    accumulated-`Q` theorem, so later source comparisons need only prove a
+    scalar domination inequality. -/
+noncomputable def Higham21QActionGrowthCoefficient
+    (fp : FPModel) (n : ℕ) : ℝ :=
+  (n : ℝ) * householderConstructApplyBound fp n *
+    (1 + householderConstructApplyBound fp n) ^ n *
+    Real.sqrt (n : ℝ)
+
+theorem higham21_eq21_10_q_action_closed_form_coefficient_le_gamma
+    (fp : FPModel) (n : ℕ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex n)) :
+    householderQR_QhatClosedFormBound fp n n ≤
+      gamma fp (n * householderConstructApplyGammaIndex n) *
+        Real.sqrt (n : ℝ) := by
+  let K : ℕ := householderConstructApplyGammaIndex n
+  have hKvalid : gammaValid fp K := by
+    exact gammaValid_mono fp (Nat.le_mul_of_pos_left K hn) hvalid
+  have hbase_valid : gammaValid fp (11 * n + 23) := by
+    exact gammaValid_mono fp (by
+      dsimp [K, householderConstructApplyGammaIndex]
+      omega) hKvalid
+  have hc0 : 0 ≤ householderConstructApplyBound fp n :=
+    householderConstructApplyBound_nonneg fp n hbase_valid
+  have hc :
+      householderConstructApplyBound fp n ≤ gamma fp K := by
+    simpa [K] using householderConstructApplyBound_le_gamma fp n hKvalid
+  have hpow :
+      (1 + householderConstructApplyBound fp n) ^ n - 1 ≤
+        gamma fp (n * K) :=
+    one_add_pow_sub_one_le_gamma_mul_of_le_gamma fp n K hc0 hc (by
+      simpa [K] using hvalid)
+  have hsqrt : 0 ≤ Real.sqrt (n : ℝ) := Real.sqrt_nonneg _
+  have hmul :=
+    mul_le_mul_of_nonneg_right hpow hsqrt
+  simpa [householderQR_QhatClosedFormBound, K, mul_assoc] using hmul
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
     algebraic difference form of the computed final `Q` action.  If
     `x_hat = (Q + DeltaQ)[y1;0]`, then its difference from the exact
@@ -8279,6 +9533,147 @@ theorem higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat
       (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
       (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
       y1 x_hat eta hQerr hx
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    sharper closed-form coefficient for the concrete Householder panel
+    `Q_hat` action error.  This keeps the repository's closed accumulated
+    `Q_hat` recurrence before it is enlarged to the simple growth bound. -/
+theorem higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_closed_form
+    {m k : ℕ}
+    (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hvalid : gammaValid fp (11 * (m + k) + 23))
+    (hx :
+      x_hat =
+        matMulVec (m + k)
+          (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ))) :
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k)
+          (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      householderQR_QhatClosedFormBound fp (m + k) (m + k) *
+        vecNorm2 y1 := by
+  have hQerr :
+      HouseholderQRPanelQhatFixedAccumError (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+        (householderQR_QhatClosedFormBound fp (m + k) (m + k)) := by
+    have hUniform :
+        HouseholderQRPanelQhatFixedAccumError (m + k)
+          (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+          (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+          (householderQR_QhatUniformClosedBound fp (m + k) (m + k)) :=
+      fl_householderQRPanel_Qhat_fixed_Q_uniform_accum_error
+        fp (m + k) m (m + k) (finiteTranspose A) (le_refl (m + k)) hvalid
+    simpa [householderQR_QhatUniformClosedBound_eq_closedForm] using hUniform
+  exact
+    higham21_eq21_10_q_action_vec_error_bound_of_fixed_q_accum_error
+      (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+      (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+      y1 x_hat (householderQR_QhatClosedFormBound fp (m + k) (m + k))
+      hQerr hx
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    gamma-shaped consequence of the closed-form accumulated `Q_hat` radius.
+    This is closer to the printed Lemma 19.3 style, while still using the
+    repository's concrete Householder operation-count index. -/
+theorem higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_gamma
+    {m k : ℕ}
+    (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hNpos : 0 < m + k)
+    (hvalid :
+      gammaValid fp
+        ((m + k) * householderConstructApplyGammaIndex (m + k)))
+    (hx :
+      x_hat =
+        matMulVec (m + k)
+          (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ))) :
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k)
+          (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      (gamma fp ((m + k) * householderConstructApplyGammaIndex (m + k)) *
+        Real.sqrt ((m + k : ℕ) : ℝ)) * vecNorm2 y1 := by
+  have hKvalid :
+      gammaValid fp (householderConstructApplyGammaIndex (m + k)) :=
+    gammaValid_mono fp
+      (Nat.le_mul_of_pos_left (householderConstructApplyGammaIndex (m + k))
+        hNpos) hvalid
+  have hQvalid : gammaValid fp (11 * (m + k) + 23) :=
+    gammaValid_mono fp (by
+      dsimp [householderConstructApplyGammaIndex]
+      omega) hKvalid
+  have hclosed :=
+    higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_closed_form
+      fp A y1 x_hat hQvalid hx
+  have hcoeff :=
+    higham21_eq21_10_q_action_closed_form_coefficient_le_gamma
+      fp (m + k) hNpos hvalid
+  exact le_trans hclosed
+    (mul_le_mul_of_nonneg_right hcoeff (vecNorm2_nonneg y1))
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    named-coefficient form of the concrete Householder panel `Q_hat` action
+    error bound. -/
+theorem higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_coefficient
+    {m k : ℕ}
+    (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hvalid : gammaValid fp (11 * (m + k) + 23))
+    (hx :
+      x_hat =
+        matMulVec (m + k)
+          (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ))) :
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k)
+          (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      Higham21QActionGrowthCoefficient fp (m + k) * vecNorm2 y1 := by
+  simpa [Higham21QActionGrowthCoefficient] using
+    higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat
+      fp A y1 x_hat hvalid hx
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    conservative-coefficient form of the concrete Householder panel `Q_hat`
+    action error bound.  Any source radius dominating
+    `Higham21QActionGrowthCoefficient` inherits the vector-error certificate. -/
+theorem higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_of_coefficient_le
+    {m k : ℕ}
+    (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hvalid : gammaValid fp (11 * (m + k) + 23))
+    (hx :
+      x_hat =
+        matMulVec (m + k)
+          (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ)))
+    {eta : ℝ}
+    (hcoeff : Higham21QActionGrowthCoefficient fp (m + k) ≤ eta) :
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k)
+          (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      eta * vecNorm2 y1 := by
+  exact le_trans
+    (higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_coefficient
+      fp A y1 x_hat hvalid hx)
+    (mul_le_mul_of_nonneg_right hcoeff (vecNorm2_nonneg y1))
 
 /-- **Theorem 21.4** (Higham): The Q method for underdetermined systems
     is row-wise backward stable.
