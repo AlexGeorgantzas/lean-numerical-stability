@@ -50,9 +50,22 @@ The new modules below are **import-only**: they reuse those proofs verbatim unde
 - **Theorem 15.6 probabilistic tail (EVIDENCED_OBSTRUCTION).** The right inequality of (15.7), `‖A⁻¹‖₂ ≤ θ(xᵀ(AAᵀ)⁻ᵏx)^{1/2k}` holding with probability `≥ 1 − 0.8θ^{−k/2}n^{1/2}` for `x` uniform on the unit sphere, is not formalized. Precise missing Mathlib API: (a) the marginal/pushforward law that a squared coordinate (equivalently `(uᵀx)²`) of a uniform point on `Sⁿ⁻¹` is `Beta(1/2,(n−1)/2)` — Mathlib has `MeasureTheory.Measure.toSphere` and `ProbabilityTheory.betaMeasure` separately but no lemma linking them; (b) a Beta CDF small-argument tail bound `∫₀^ε betaPDF(1/2,(n−1)/2) ≤ c√ε√n` — `Beta.lean` provides only the pdf, `lintegral_betaPDF_eq_one`, and measurability. The union bound over singular directions (`measure_iUnion_le`) exists but is moot without (a),(b).
 - **Lemma 15.2 general real p (documented residual).** The abstract `PNormPair` tier proves Lemma 15.2 for *any* `p` once the dual-norm data is supplied; the two endpoint instances Higham singles out (p=2 → power method on `AᵀA`; p=1 → LAPACK basis) are fully built. A third instance for general `p ∈ (1,∞)` is not built because Mathlib lacks a packaged mixed-`p` vector dual norm with its induced operator `p`-norm and attained `dualp`. This residual is only the general-`p` `dualp` construction, not any part of Lemma 15.2's logic.
 
-## Appendix A / Problems
+## Appendix A / Problems (wave 2)
 
-- Split 3A owns Appendix A solutions 15.1, 15.4, 15.7 (per `split_primary_contracts.md`). These are optional in core mode; not selected in this pass. Recorded here for completeness. Chapter 15 Problems are optional core targets; none selected in this pass.
+Split 3A owns Appendix A solutions 15.1, 15.4, 15.7 (per `split_primary_contracts.md`). These are optional in core mode; they were selected and formalized as a second wave because they are useful precise mathematical targets.
+
+| Problem | Statement | Status | Main Lean declaration(s) | File |
+|---|---|---|---|---|
+| **15.4** | `PA=LU` partial pivoting: `‖A⁻¹‖∞/2ⁿ⁻¹ ≤ ‖U⁻¹‖∞ ≤ n‖A⁻¹‖∞` | CLOSED | `Ch15.ch15p4_infNorm_Uinv_two_sided` (+ `ch15p4_infNorm_Linv_le` `‖L⁻¹‖∞ ≤ 2ⁿ⁻¹`, `ch15p4_infNorm_L_le` `‖L‖∞ ≤ n`) | `Algorithms/LU/Ch15Problem4.lean` |
+| **15.1** | rewrite `‖|A||A⁻¹||A|‖∞` for estimation by the LAPACK estimator | CLOSED | `Ch15.tripleProduct_rewrite`, `tripleProduct_infNorm_eq_reducedMatrix`, `lapackEstimator_le_tripleProduct` (honest lower bound) | `Algorithms/CondEstimationTripleProduct.lean` |
+| **15.7** | `3n−2`-parameter representation of the irreducible-tridiagonal inverse (symmetrize) | SUBSTANTIVE_PARTIAL | `Ch15.ikebe_symmetrized_representation(_constructive)`, `inv_scaling_relation`, `symmetrizerDiag_isSymmetric` | `Algorithms/LU/Ikebe15Symmetrized.lean` |
+
+Honest-strength notes (wave 2):
+- **15.4** — full two-sided bound at printed strength; the constants `2ⁿ⁻¹` and `n` are derived into the conclusion (`‖L⁻¹‖∞ ≤ 2ⁿ⁻¹` proved from scratch by a downward row-sum induction; the repo previously had only the upper-triangular column-sum form). The partial-pivoting fact `|Lᵢⱼ| ≤ 1` is the sole `≤1` hypothesis (the definition of partial pivoting). Uses the repo's `PermutedLUFactSpec` and `IsInverse`.
+- **15.1** — exact, unconditional reduction identity `‖|A||A⁻¹||A|‖∞ = ‖C‖∞` with `C = |A|·|A⁻¹ diag(g)|` a genuine nonnegative matrix (`g = |A|·𝟙`), folding the two outer `|A|` factors into a nonnegative weight and removing the middle `|A⁻¹|` via `cond_norm_identity`. The estimator step is stated honestly as a lower bound (`lapackNormEstimator` on `Cᵀ ≤ ‖|A||A⁻¹||A|‖∞`), matching that Algorithm 15.4 is itself only a lower-bound estimator.
+- **15.7** — the symmetrization is fully proved: an explicit diagonal `D = symmetrizerDiag A` (product of `√(aₘ,ₘ₊₁/aₘ₊₁,ₘ)`) makes `DAD⁻¹` symmetric, `DA⁻¹D⁻¹` is then symmetric, giving the collapse identity `dᵢ²(A⁻¹)ᵢⱼ = dⱼ²(A⁻¹)ⱼᵢ` and the representation `(A⁻¹)ᵢⱼ = (dⱼ/dᵢ)·u₍ₘᵢₙ₎·v₍ₘₐₓ₎` with only `u=Dx`, `v=y/D` and `D` (the Ikebe lower factors `p,q` eliminated). **Residual:** the literal `3n−2` free-parameter *count* is documented (not formalized as a `Fintype.card`/dimension theorem) — formalizing it needs the scaling-quotient dimension argument. Hypothesis note: the symmetrizer uses `PosRatio` (adjacent super/sub-diagonal ratios `> 0`, i.e. same sign — the condition for a *real* symmetrizer), which is stronger than bare irreducibility; this is disclosed in the module, not disguised. Hence recorded honestly as SUBSTANTIVE_PARTIAL, not full closure.
+
+Remaining Chapter 15 Problems: 15.2 (starting-vector heuristic — open-ended "develop an algorithm"), 15.3 and 15.5 (fixed-matrix numerical experiments), 15.6 (O(n) Ikebe algorithm — implementation), 15.8 (explicitly a research problem). Correctly not selected (empirical / open / not Split-3A-owned appendix targets).
 
 ## Verification
 

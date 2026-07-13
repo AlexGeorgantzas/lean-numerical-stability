@@ -71,6 +71,9 @@ import LeanFpAnalysis.FP.Algorithms.PNormPowerMethod
 import LeanFpAnalysis.FP.Algorithms.Chapter15CondEst
 import LeanFpAnalysis.FP.Algorithms.Ch15CondEstimators
 import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCondCh15
+import LeanFpAnalysis.FP.Algorithms.LU.Ch15Problem4
+import LeanFpAnalysis.FP.Algorithms.CondEstimationTripleProduct
+import LeanFpAnalysis.FP.Algorithms.LU.Ikebe15Symmetrized
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterSpec
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterBackward
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterPerturbation
