@@ -1798,6 +1798,32 @@ theorem higham14_eq14_14_method2B_no_small_offdiag_residual_of_propagated_delta
   rw [hId] at hEntry
   exact not_lt_of_ge hEntry hLarge
 
+/-- One-column diagonal-block specialization of the Method 2B residual
+    obstruction.  In the scalar `L11` case, the propagated perturbation entry
+    is the explicit product `Delta21 * L11`, so callers can supply a concrete
+    scalar lower bound instead of a rectangular matrix product. -/
+theorem higham14_eq14_14_method2B_no_small_offdiag_residual_of_scalar_propagated_delta
+    {r : ℕ}
+    (L11 X11 : Fin 1 → Fin 1 → ℝ)
+    (X21_hat : Fin r → Fin 1 → ℝ)
+    (X22 : Fin r → Fin r → ℝ) (L21 : Fin r → Fin 1 → ℝ)
+    (ε : ℝ) (absBound sourceBudget : Fin r → Fin 1 → ℝ)
+    (hSpec : Method2BBlockUpdateSpec X21_hat X22 L21 X11 ε absBound)
+    (hX11_left : IsLeftInverse 1 L11 X11)
+    {i0 : Fin r}
+    (hLarge :
+      sourceBudget i0 (0 : Fin 1) <
+        |higham14_method2BBlockUpdateDelta X21_hat X22 L21 X11
+            i0 (0 : Fin 1) * L11 (0 : Fin 1) (0 : Fin 1)|) :
+    ¬ (∀ i : Fin r, ∀ j : Fin 1,
+      |rectMatMul X21_hat L11 i j + rectMatMul X22 L21 i j| ≤
+        sourceBudget i j) := by
+  apply
+    higham14_eq14_14_method2B_no_small_offdiag_residual_of_propagated_delta
+      L11 X11 X21_hat X22 L21 ε absBound sourceBudget hSpec hX11_left
+      (i0 := i0) (j0 := (0 : Fin 1))
+  simpa [rectMatMul] using hLarge
+
 /-- Exact Method 2B off-diagonal block formula from the block equation
     `X21 * L11 + X22 * L21 = 0` and the diagonal-block inverse certificate
     `L11 * X11 = I`.  This is the exact algebra behind equation (14.14);
