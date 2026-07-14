@@ -9918,6 +9918,254 @@ theorem higham21_theorem21_4_q_method_rowwise_and_qhat_action_of_full_row_rank_c
                 fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
                   (Fin.castAdd k a) b)) b)))
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    transpose action through a not-necessarily-orthogonal factor with a
+    supplied left inverse.  This is the exact algebra behind the first
+    perturbed system in the proof. -/
+theorem higham21_matMulRectLeft_transpose_action_of_left_inverse
+    {m n : ℕ}
+    (Q_inv Q_hat : Fin m → Fin m → ℝ)
+    (B : Fin m → Fin n → ℝ)
+    (z : Fin m → ℝ)
+    (hleft : matMul m Q_inv Q_hat = idMatrix m) :
+    rectMatMulVec
+        (finiteTranspose (matMulRectLeft (matTranspose Q_inv) B))
+        (matMulVec m Q_hat z) =
+      fun j : Fin n => ∑ i : Fin m, B i j * z i := by
+  ext j
+  unfold rectMatMulVec finiteTranspose matMulRectLeft matTranspose matMulVec
+  calc
+    ∑ i : Fin m, (∑ k : Fin m, Q_inv k i * B k j) *
+        (∑ l : Fin m, Q_hat i l * z l)
+        = ∑ i : Fin m, ∑ k : Fin m, ∑ l : Fin m,
+            (Q_inv k i * B k j) * (Q_hat i l * z l) := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [Finset.mul_sum]
+    _ = ∑ k : Fin m, ∑ l : Fin m, ∑ i : Fin m,
+          (Q_inv k i * B k j) * (Q_hat i l * z l) := by
+            rw [Finset.sum_comm]
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [Finset.sum_comm]
+    _ = ∑ k : Fin m, ∑ l : Fin m,
+          (∑ i : Fin m, Q_inv k i * Q_hat i l) * (B k j * z l) := by
+            apply Finset.sum_congr rfl
+            intro k _
+            apply Finset.sum_congr rfl
+            intro l _
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+    _ = ∑ k : Fin m, ∑ l : Fin m,
+          (if k = l then 1 else 0) * (B k j * z l) := by
+            apply Finset.sum_congr rfl
+            intro k _
+            apply Finset.sum_congr rfl
+            intro l _
+            have hkl := congrFun (congrFun hleft k) l
+            have hkl' :
+                (∑ i : Fin m, Q_inv k i * Q_hat i l) =
+                  if k = l then 1 else 0 := by
+              simpa [matMul, idMatrix] using hkl
+            rw [hkl']
+    _ = ∑ k : Fin m, B k j * z k := by
+            simp [Finset.mem_univ]
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    block-coordinate specialization of the left-inverse transpose action.
+    It reduces the first perturbed system to the triangular equation
+    `(R_plus)^T y1 = b`. -/
+theorem higham21_theorem21_4_qhat_first_system_block_action
+    {m k : ℕ}
+    (Q_inv Q_hat : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_plus : Fin m → Fin m → ℝ)
+    (y1 : Fin m → ℝ)
+    (hleft : matMul (m + k) Q_inv Q_hat = idMatrix (m + k)) :
+    rectMatMulVec
+        (finiteTranspose
+          (matMulRectLeft (matTranspose Q_inv)
+            (lsQRTallBlock (k := k) R_plus)))
+        (matMulVec (m + k) Q_hat
+          (Fin.append y1 (0 : Fin k → ℝ))) =
+      fun j : Fin m => ∑ i : Fin m, R_plus i j * y1 i := by
+  calc
+    rectMatMulVec
+        (finiteTranspose
+          (matMulRectLeft (matTranspose Q_inv)
+            (lsQRTallBlock (k := k) R_plus)))
+        (matMulVec (m + k) Q_hat
+          (Fin.append y1 (0 : Fin k → ℝ))) =
+      (fun j : Fin m =>
+        ∑ i : Fin (m + k),
+          lsQRTallBlock (k := k) R_plus i j *
+            Fin.append y1 (0 : Fin k → ℝ) i) :=
+      higham21_matMulRectLeft_transpose_action_of_left_inverse
+        Q_inv Q_hat (lsQRTallBlock (k := k) R_plus)
+        (Fin.append y1 (0 : Fin k → ℝ)) hleft
+    _ = fun j : Fin m => ∑ i : Fin m, R_plus i j * y1 i :=
+      higham21_eq21_2_qr_block_transpose_coordinates
+        R_plus y1 (0 : Fin k → ℝ)
+
+/-- The first source perturbation in Higham's Theorem 21.4 proof.  Its
+    perturbed matrix is `[R_plus^T,0] Q_hat^{-1}`, represented by transposing
+    `(Q_hat^{-1})^T [R_plus;0]`. -/
+noncomputable def Higham21QMethodDeltaA1
+    {m k : ℕ}
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q_inv : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_plus : Fin m → Fin m → ℝ) :
+    Fin m → Fin (m + k) → ℝ :=
+  fun i j =>
+    finiteTranspose
+        (matMulRectLeft (matTranspose Q_inv)
+          (lsQRTallBlock (k := k) R_plus)) i j - A i j
+
+theorem Higham21QMethodDeltaA1.add_eq
+    {m k : ℕ}
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q_inv : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_plus : Fin m → Fin m → ℝ) :
+    (fun i j => A i j + Higham21QMethodDeltaA1 A Q_inv R_plus i j) =
+      finiteTranspose
+        (matMulRectLeft (matTranspose Q_inv)
+          (lsQRTallBlock (k := k) R_plus)) := by
+  ext i j
+  simp [Higham21QMethodDeltaA1]
+
+/-- The constructed `DeltaA1` makes the rounded `Q_hat` action solve the
+    first perturbed system whenever `Q_inv` is a left inverse and the
+    perturbed triangular equation holds. -/
+theorem Higham21QMethodDeltaA1.system_eq
+    {m k : ℕ}
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q_inv Q_hat : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_plus : Fin m → Fin m → ℝ)
+    (b y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hleft : matMul (m + k) Q_inv Q_hat = idMatrix (m + k))
+    (htri : ∀ j : Fin m, ∑ i : Fin m, R_plus i j * y1 i = b j)
+    (hx : x_hat = matMulVec (m + k) Q_hat
+      (Fin.append y1 (0 : Fin k → ℝ))) :
+    rectMatMulVec
+        (fun i j => A i j + Higham21QMethodDeltaA1 A Q_inv R_plus i j)
+        x_hat = b := by
+  rw [Higham21QMethodDeltaA1.add_eq A Q_inv R_plus, hx]
+  exact
+    (higham21_theorem21_4_qhat_first_system_block_action
+      Q_inv Q_hat R_plus y1 hleft).trans (funext htri)
+
+/-- Transposing a rectangular product and applying it to a vector is the
+    same as applying the square left factor after the rectangular action. -/
+theorem higham21_rectTransposeMulVec_finiteTranspose_matMulRectLeft
+    {m n : ℕ}
+    (Q : Fin n → Fin n → ℝ)
+    (B : Fin n → Fin m → ℝ)
+    (y : Fin m → ℝ) :
+    rectTransposeMulVec (finiteTranspose (matMulRectLeft Q B)) y =
+      matMulVec n Q (rectMatMulVec B y) := by
+  ext j
+  have h := congrFun (rectMatMulVec_matMulRectLeft Q B y) j
+  simpa [rectTransposeMulVec, finiteTranspose] using h
+
+/-- Block specialization of the transpose-range identity for the concrete
+    rounded `Q_hat` factor. -/
+theorem higham21_theorem21_4_qhat_tall_block_transpose_action
+    {m k : ℕ}
+    (Q_hat : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_hat : Fin m → Fin m → ℝ)
+    (y : Fin m → ℝ) :
+    rectTransposeMulVec
+        (finiteTranspose
+          (matMulRectLeft Q_hat (lsQRTallBlock (k := k) R_hat))) y =
+      matMulVec (m + k) Q_hat
+        (Fin.append (rectMatMulVec R_hat y) (0 : Fin k → ℝ)) := by
+  rw [higham21_rectTransposeMulVec_finiteTranspose_matMulRectLeft]
+  rw [higham21_eq21_1_qr_transpose_block_mulVec]
+
+/-- The second source perturbation in Higham's Theorem 21.4 proof, defined
+    by the concrete rounded product `Q_hat [R_hat;0]`. -/
+noncomputable def Higham21QMethodDeltaA2
+    {m k : ℕ}
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q_hat : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_hat : Fin m → Fin m → ℝ) :
+    Fin m → Fin (m + k) → ℝ :=
+  fun i j =>
+    finiteTranspose
+        (matMulRectLeft Q_hat (lsQRTallBlock (k := k) R_hat)) i j - A i j
+
+theorem Higham21QMethodDeltaA2.add_eq
+    {m k : ℕ}
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q_hat : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_hat : Fin m → Fin m → ℝ) :
+    (fun i j => A i j + Higham21QMethodDeltaA2 A Q_hat R_hat i j) =
+      finiteTranspose
+        (matMulRectLeft Q_hat (lsQRTallBlock (k := k) R_hat)) := by
+  ext i j
+  simp [Higham21QMethodDeltaA2]
+
+/-- If `R_hat y = y1`, the concrete rounded action `Q_hat [y1;0]` lies in
+    the transpose range of `A + DeltaA2`, exactly as required by the second
+    perturbed system in Higham's proof. -/
+theorem Higham21QMethodDeltaA2.transpose_representation
+    {m k : ℕ}
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q_hat : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_hat : Fin m → Fin m → ℝ)
+    (y y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hRy : rectMatMulVec R_hat y = y1)
+    (hx : x_hat = matMulVec (m + k) Q_hat
+      (Fin.append y1 (0 : Fin k → ℝ))) :
+    x_hat =
+      rectTransposeMulVec
+        (fun i j => A i j + Higham21QMethodDeltaA2 A Q_hat R_hat i j) y := by
+  rw [Higham21QMethodDeltaA2.add_eq A Q_hat R_hat]
+  calc
+    x_hat = matMulVec (m + k) Q_hat
+        (Fin.append y1 (0 : Fin k → ℝ)) := hx
+    _ = matMulVec (m + k) Q_hat
+        (Fin.append (rectMatMulVec R_hat y) (0 : Fin k → ℝ)) := by rw [hRy]
+    _ = rectTransposeMulVec
+        (finiteTranspose
+          (matMulRectLeft Q_hat (lsQRTallBlock (k := k) R_hat))) y :=
+      (higham21_theorem21_4_qhat_tall_block_transpose_action
+        Q_hat R_hat y).symm
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    the two exact perturbed-system equations for the rounded `Q_hat` output.
+    This is the algebraic input to Lemma 21.2; perturbation-size and
+    smallness bounds remain separate obligations. -/
+theorem higham21_theorem21_4_qhat_two_perturbed_systems
+    {m k : ℕ}
+    (A : Fin m → Fin (m + k) → ℝ)
+    (Q_inv Q_hat : Fin (m + k) → Fin (m + k) → ℝ)
+    (R_plus R_hat : Fin m → Fin m → ℝ)
+    (b y1 y : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hleft : matMul (m + k) Q_inv Q_hat = idMatrix (m + k))
+    (htri : ∀ j : Fin m, ∑ i : Fin m, R_plus i j * y1 i = b j)
+    (hRy : rectMatMulVec R_hat y = y1)
+    (hx : x_hat = matMulVec (m + k) Q_hat
+      (Fin.append y1 (0 : Fin k → ℝ))) :
+    rectMatMulVec
+        (fun i j => A i j + Higham21QMethodDeltaA1 A Q_inv R_plus i j)
+        x_hat = b ∧
+      x_hat =
+        rectTransposeMulVec
+          (fun i j => A i j + Higham21QMethodDeltaA2 A Q_hat R_hat i j) y := by
+  constructor
+  · exact Higham21QMethodDeltaA1.system_eq
+      A Q_inv Q_hat R_plus b y1 x_hat hleft htri hx
+  · exact Higham21QMethodDeltaA2.transpose_representation
+      A Q_hat R_hat y y1 x_hat hRy hx
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
     named-coefficient form of the concrete Householder panel `Q_hat` action
     error bound. -/
