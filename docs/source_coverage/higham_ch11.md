@@ -449,6 +449,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.8 `AasenSpec` product-size wrappers | `higham11_8_aasen_outer_factor_row_col_sum_majorants_of_AasenSpec_entry_bound`, `higham11_8_relative_outer_factor_caps_of_AasenSpec_entry_bound_scaled_unit`, `higham11_8_relative_outer_factor_caps_of_AasenSpec_entry_bound_inv_one_plus`, `higham11_8_aasen_base_square_bounds_of_AasenSpec_entry_bound_scaled_unit`, `higham11_8_aasen_base_square_bounds_of_AasenSpec_entry_bound_inv_one_plus` | Ch11 | **new this session**; source-facing wrappers unpack `AasenSpec`'s lower-triangular and first-column-zero fields, so a concrete uniform exact outer-factor entry cap plus either normalized `(1+γ)κ≤1` or source-style `κ≤1/(1+γ)` scalar comparison now directly yields the row/column majorants, relative norm caps, and exact-product base-square caps required by the `T_hat` exact-radius route. |
 | Thm 11.8 `AasenSpec` product-square wrappers | `higham11_8_aasen_product_square_bounds_of_AasenSpec_entry_bound_scaled_unit`, `higham11_8_aasen_product_square_bounds_of_AasenSpec_entry_bound_inv_one_plus`, `higham11_8_aasen_product_square_bounds_of_AasenSpec_inverse_entry_bound` | Ch11 | **new this session**; packages the `AasenSpec` base-square caps with the exact-middle side conditions `κT≤1` and `κmidLU≤1`, yielding the four square product caps consumed by the exact-product `T_hat` coefficient reducer. This removes another repeated arithmetic handoff while the concrete entry cap and middle certificate remain open source obligations. |
 | Thm 11.8 `AasenSpec` exact-product coefficient reducers | `higham11_8_aasen_relative_coeff_le_of_AasenSpec_entry_bound_scaled_unit`, `higham11_8_aasen_relative_coeff_le_of_AasenSpec_entry_bound_inv_one_plus`, `higham11_8_aasen_relative_coeff_le_of_AasenSpec_inverse_entry_bound` | Ch11 | **new this session**; combines the `AasenSpec` product-square wrappers with the printed `γ_{15n+25}` coefficient reducer, so normalized, inverse-scale, or direct inverse-entry outer-factor caps discharge the exact-product scalar coefficient comparison directly. The concrete entry estimate, `κT≤1`, `κBT≤γ_n`, `κmidLU≤1`, and the middle certificate remain visible caller obligations. |
+| Thm 11.8 `AasenSpec` inverse-entry unit-middle coefficient reducer | `higham11_8_aasen_relative_coeff_le_of_AasenSpec_inverse_entry_bound_unit_middle`, `higham11_8_aasen_relative_coeff_le_of_AasenSpec_inverse_entry_bound_unit_middle_of_unit_roundoff_bound`, `higham11_8_aasen_relative_coeff_le_of_AasenSpec_inverse_entry_bound_unit_middle_of_u_le_cap` | Ch11 | **new this session**; specializes the direct inverse-entry scalar-budget reducer to exact middle constants `κT=κmidLU=1`, with source-smallness aliases for `(15n+25)u<1` or a displayed cap `u≤Ucap`. The concrete inverse entry estimate and `κBT≤γ_n` middle perturbation bound remain explicit obligations. |
 | Thm 11.8 `AasenSpec` exact-product wrappers | `higham11_8_AasenSpec_permuted_product_eq`, `higham11_8_AasenSpec_product_eq_of_identity_perm` | Ch11 | **new this session**; exposes the exact `PAPᵀ=LTLᵀ` product carried by `AasenSpec`, plus the identity-permutation specialization in the unpermuted `A=LTLᵀ` form consumed by the source-prefix backward-error endpoints. |
 | Thm 11.8 `AasenSpec` identity zero-relative checkerboard endpoint | `higham11_8_AasenSpec_identity_source_prefix_zero_relative_checkerboard_endpoint` | Ch11 | **new this session**; feeds an identity-permutation `AasenSpec` directly into the zero-relative `T_hat` source-prefix checkerboard endpoint, discharging the exact product and `L` zero-pattern hypotheses while leaving the concrete recurrence, entry-cap, `T_hat`, LU-certificate, and gamma-validity assumptions explicit. |
 | Thm 11.8 `AasenSpec` identity zero-relative direct-middle endpoint | `higham11_8_AasenSpec_identity_source_prefix_zero_relative_direct_middle_endpoint` | Ch11 | **new this session**; feeds an identity-permutation `AasenSpec` into the zero-relative source-prefix direct-middle endpoint, discharging the exact product and `L` zero-pattern hypotheses while keeping the supplied `|L_T||U_T|≤|T_hat|` middle-product estimate, recurrence, entry cap, `T_hat`, and gamma-validity assumptions explicit. |
@@ -6428,6 +6429,22 @@ Problem transcription.
     `higham11_8_aasen_relative_coeff_le_of_AasenSpec_entry_bound_inv_one_plus`,
     and `higham11_8_aasen_relative_coeff_le_of_AasenSpec_inverse_entry_bound`;
     focused theorem-dependency checks of all three declarations → dependencies
+    `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-14 Theorem 11.8 AasenSpec inverse-entry unit-middle coefficient
+    reducer:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → pass;
+    Lean forbidden-token scan → clean;
+    docs diff forbidden-token scan → clean;
+    tab scan of the touched Lean/doc files → clean;
+    adds
+    `higham11_8_aasen_relative_coeff_le_of_AasenSpec_inverse_entry_bound_unit_middle`,
+    `higham11_8_aasen_relative_coeff_le_of_AasenSpec_inverse_entry_bound_unit_middle_of_unit_roundoff_bound`,
+    and
+    `higham11_8_aasen_relative_coeff_le_of_AasenSpec_inverse_entry_bound_unit_middle_of_u_le_cap`;
+    focused theorem-dependency checks of the declarations → dependencies
     `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-11 Theorem 11.8 exact-`T_hat` AasenSpec aggregate-coefficient
     product endpoint increment:
