@@ -9139,6 +9139,40 @@ theorem Higham21QMethodRowwiseCoefficient_nonneg
     add_nonneg hqr_nonneg (mul_nonneg hgamma_nonneg hone)
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    conservative single-gamma index for the proved row-wise Q-method
+    coefficient.  It combines the Chapter 19 QR-on-`A^T` operation index with
+    the triangular-solve index from the final back substitution. -/
+def Higham21QMethodRowwiseGammaIndex (m k : ℕ) : ℕ :=
+  m * householderConstructApplyGammaIndex (m + k) + m
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    the proved Q-method row-wise coefficient is absorbed by one larger gamma
+    term.  This is the concrete repository analogue of the printed
+    dimension-dependent gamma factor in the row perturbation bound. -/
+theorem Higham21QMethodRowwiseCoefficient_le_gamma_index
+    (fp : FPModel) (m k : ℕ)
+    (hvalid : gammaValid fp (Higham21QMethodRowwiseGammaIndex m k)) :
+    Higham21QMethodRowwiseCoefficient fp m k ≤
+      gamma fp (Higham21QMethodRowwiseGammaIndex m k) := by
+  let q : ℕ := m * householderConstructApplyGammaIndex (m + k)
+  have hsum :
+      gamma fp q + gamma fp m + gamma fp q * gamma fp m ≤
+        gamma fp (q + m) :=
+    gamma_sum_le fp q m (by
+      simpa [Higham21QMethodRowwiseGammaIndex, q] using hvalid)
+  have hcoeff :
+      Higham21QMethodRowwiseCoefficient fp m k =
+        gamma fp q + gamma fp m + gamma fp q * gamma fp m := by
+    simp [Higham21QMethodRowwiseCoefficient, H19.Theorem19_4.gamma_tilde, q]
+    ring
+  calc
+    Higham21QMethodRowwiseCoefficient fp m k =
+        gamma fp q + gamma fp m + gamma fp q * gamma fp m := hcoeff
+    _ ≤ gamma fp (q + m) := hsum
+    _ = gamma fp (Higham21QMethodRowwiseGammaIndex m k) := by
+      simp [Higham21QMethodRowwiseGammaIndex, q]
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
     source-facing row-wise backward-stability wrapper for any Chapter 19 QR
     certificate of `A^T`.  This projects the detailed `DeltaA0`/`DeltaR`
     witness into the row-wise backward-error predicate used by the theorem. -/
@@ -9324,6 +9358,36 @@ theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_c
       (higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain_coefficient
         fp A b hm hvalidQR hdomain hvalid hvalid2)
       heta hcoeff
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    single-gamma row-wise Q-method stability wrapper under the source-facing
+    full-row-rank/computed-QR domain. -/
+theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain_gamma
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ)
+    (hm : 0 < m)
+    (hvalidQR :
+      gammaValid fp (m * householderConstructApplyGammaIndex (m + k)))
+    (hdomain : Higham21QMethodFullRowRankComputedQRDomain m k fp A)
+    (hvalid : gammaValid fp m)
+    (hvalid2 : gammaValid fp (2 * m))
+    (hvalidCoeff : gammaValid fp (Higham21QMethodRowwiseGammaIndex m k)) :
+    UndetRowwiseBackwardErrorBounded m (m + k) A b
+      (matMulVec (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (Fin.append
+          (fl_forwardSub fp m
+            (matTranspose
+              (fun a b =>
+                fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                  (Fin.castAdd k a) b)) b)
+          (0 : Fin k → ℝ)))
+      (gamma fp (Higham21QMethodRowwiseGammaIndex m k)) := by
+  exact
+    higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain_of_coefficient_le
+      fp A b hm hvalidQR hdomain hvalid hvalid2
+      (gamma_nonneg fp hvalidCoeff)
+      (Higham21QMethodRowwiseCoefficient_le_gamma_index fp m k hvalidCoeff)
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
     concrete repository coefficient for the rounded final `Q_hat` action.
