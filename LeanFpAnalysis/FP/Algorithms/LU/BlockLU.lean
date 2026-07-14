@@ -1699,6 +1699,51 @@ theorem maxEntryNormRect_rectMatMul_le {m n p : ℕ}
           maxEntryNormRect hn hp B := by
       simp [normA, normB, mul_assoc]
 
+/-- Mixed matrix-∞/entrywise max product bound:
+    `||A B||_max <= ||A||_∞ ||B||_max`.
+
+    This is the dimension-free product estimate needed by the column-BDD
+    Chapter 13 route: the left factor is controlled by row mass while the
+    right factor is controlled entrywise. -/
+theorem maxEntryNorm_matrix_mul_le_infNorm_mul_maxEntryNorm {r : ℕ} (hr : 0 < r)
+    (A B : Matrix (Fin r) (Fin r) ℝ) :
+    maxEntryNorm hr (A * B) ≤ infNorm A * maxEntryNorm hr B := by
+  change maxEntryNormRect hr hr (fun i j => (A * B) i j) ≤
+    infNorm A * maxEntryNorm hr B
+  apply maxEntryNormRect_le_of_entry_abs_le
+  intro i j
+  have hB_nonneg : 0 ≤ maxEntryNorm hr B := maxEntryNorm_nonneg hr B
+  have hsum_abs :
+      |∑ k : Fin r, A i k * B k j| ≤
+        ∑ k : Fin r, |A i k * B k j| :=
+    Finset.abs_sum_le_sum_abs
+      (s := (Finset.univ : Finset (Fin r)))
+      (f := fun k => A i k * B k j)
+  have hterms :
+      (∑ k : Fin r, |A i k * B k j|) ≤
+        ∑ k : Fin r, |A i k| * maxEntryNorm hr B := by
+    apply Finset.sum_le_sum
+    intro k _hk
+    rw [abs_mul]
+    exact mul_le_mul_of_nonneg_left
+      (entry_le_maxEntryNorm hr B k j) (abs_nonneg (A i k))
+  have hrow :
+      (∑ k : Fin r, |A i k| * maxEntryNorm hr B) ≤
+        infNorm A * maxEntryNorm hr B := by
+    calc
+      (∑ k : Fin r, |A i k| * maxEntryNorm hr B)
+          = (∑ k : Fin r, |A i k|) * maxEntryNorm hr B := by
+              rw [Finset.sum_mul]
+      _ ≤ infNorm A * maxEntryNorm hr B :=
+              mul_le_mul_of_nonneg_right (row_sum_le_infNorm A i) hB_nonneg
+  calc
+    |(A * B) i j|
+        = |∑ k : Fin r, A i k * B k j| := by
+            simp [Matrix.mul_apply]
+    _ ≤ ∑ k : Fin r, |A i k * B k j| := hsum_abs
+    _ ≤ ∑ k : Fin r, |A i k| * maxEntryNorm hr B := hterms
+    _ ≤ infNorm A * maxEntryNorm hr B := hrow
+
 /-- Square matrix-product max-entry bound with the dimension factor exposed. -/
 theorem maxEntryNorm_matrix_mul_le_dim {r : ℕ} (hr : 0 < r)
     (A B : Matrix (Fin r) (Fin r) ℝ) :
@@ -1798,6 +1843,30 @@ theorem one_le_dim_mul_maxEntryNormRect_mul_of_isRightInverse {n : ℕ}
           rw [← hmul_eq_I]
     _ ≤ (n : ℝ) * maxEntryNormRect hn hn A *
           maxEntryNormRect hn hn Ainv := hmul_norm
+
+/-- A certified inverse gives the dimension-free mixed-norm pivot lower
+    product used by the column-BDD route:
+    `1 <= ||A⁻¹||_∞ ||A||_max`.
+
+    The proof applies the mixed `∞`/max-entry product bound to the left inverse
+    equation `A⁻¹ * A = I`, which is derived from the supplied finite square
+    right-inverse certificate. -/
+theorem one_le_infNorm_mul_maxEntryNorm_of_isRightInverse {r : ℕ} (hr : 0 < r)
+    (A Ainv : Matrix (Fin r) (Fin r) ℝ)
+    (hRight : IsRightInverse r A Ainv) :
+    1 ≤ infNorm Ainv * maxEntryNorm hr A := by
+  let i0 : Fin r := ⟨0, hr⟩
+  have hLeft : IsLeftInverse r A Ainv :=
+    isLeftInverse_of_isRightInverse A Ainv hRight
+  have hdiag : (Ainv * A) i0 i0 = 1 := by
+    simpa [Matrix.mul_apply] using hLeft i0 i0
+  have hentry :
+      (1 : ℝ) ≤ maxEntryNorm hr (Ainv * A) := by
+    have h :=
+      entry_le_maxEntryNorm hr (Ainv * A) i0 i0
+    simpa [hdiag] using h
+  exact le_trans hentry
+    (maxEntryNorm_matrix_mul_le_infNorm_mul_maxEntryNorm hr Ainv A)
 
 /-- Reindexing a source `Fin n` matrix by an equivalence and taking Mathlib's
     constructive inverse gives entrywise max-entry certificates bounded by the
