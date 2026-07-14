@@ -1948,6 +1948,31 @@ theorem one_le_infNorm_mul_maxEntryNorm_of_isRightInverse {r : ℕ} (hr : 0 < r)
   exact le_trans hentry
     (maxEntryNorm_matrix_mul_le_infNorm_mul_maxEntryNorm hr Ainv A)
 
+/-- A certified right inverse turns the source reciprocal diagonal budget into
+    a max-entry lower bound for the original diagonal block.  This is the
+    mixed matrix-`∞`/max-entry bridge used in the column-BDD route for
+    Theorem 13.8. -/
+theorem inv_infNorm_le_maxEntryNorm_of_isRightInverse {r : ℕ} (hr : 0 < r)
+    (A Ainv : Matrix (Fin r) (Fin r) ℝ)
+    (hRight : IsRightInverse r A Ainv) :
+    (infNorm Ainv)⁻¹ ≤ maxEntryNorm hr A := by
+  have hprod := one_le_infNorm_mul_maxEntryNorm_of_isRightInverse hr A Ainv hRight
+  have hnorm_nonneg : 0 ≤ infNorm Ainv := infNorm_nonneg Ainv
+  by_cases hzero : infNorm Ainv = 0
+  · have hbad : (1 : ℝ) ≤ 0 := by
+      have hprod0 : (1 : ℝ) ≤ 0 * maxEntryNorm hr A := by
+        simpa [hzero] using hprod
+      simpa using hprod0
+    linarith
+  · have hpos : 0 < infNorm Ainv := lt_of_le_of_ne hnorm_nonneg (Ne.symm hzero)
+    have hinv_nonneg : 0 ≤ (infNorm Ainv)⁻¹ := inv_nonneg.mpr hnorm_nonneg
+    calc
+      (infNorm Ainv)⁻¹ = (infNorm Ainv)⁻¹ * 1 := by ring
+      _ ≤ (infNorm Ainv)⁻¹ * (infNorm Ainv * maxEntryNorm hr A) :=
+        mul_le_mul_of_nonneg_left hprod hinv_nonneg
+      _ = maxEntryNorm hr A := by
+        field_simp [hpos.ne']
+
 /-- Reindexing a source `Fin n` matrix by an equivalence and taking Mathlib's
     constructive inverse gives entrywise max-entry certificates bounded by the
     repository's source-facing canonical inverse `nonsingInv`.
@@ -7547,6 +7572,25 @@ theorem higham13_blockDiagDomCol_piNorm_of_infNorm {m r : ℕ} (hr : 0 < r)
             exact maxEntryNorm_le_infNorm hr (A i j)
     _ ≤ invDiagBound j := hDom j
 
+/-- Matrix-`∞` block diagonal dominance implies the source max-entry
+    block-norm form used by the mixed column-mass proof of Theorem 13.8. -/
+theorem higham13_blockDiagDomCol_maxEntry_of_infNorm {m r : ℕ} (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound) :
+    IsBlockDiagDomCol m (fun i j : Fin m => maxEntryNorm hr (A i j)) invDiagBound := by
+  intro j
+  calc
+    ∑ i : Fin m, (if i = j then 0 else maxEntryNorm hr (A i j))
+        ≤ ∑ i : Fin m, (if i = j then 0 else infNorm (A i j)) := by
+          apply Finset.sum_le_sum
+          intro i _hi
+          by_cases hij : i = j
+          · simp [hij]
+          · simp [hij]
+            exact maxEntryNorm_le_infNorm hr (A i j)
+    _ ≤ invDiagBound j := hDom j
+
 /-- **Block diagonal dominance by rows** (Higham, 2nd ed., §13.3.1):
     A is block diag dom by rows if Aᵀ is block diag dom by columns. -/
 def IsBlockDiagDomRow (m : ℕ) (blockNorm : Fin m → Fin m → ℝ)
@@ -11065,6 +11109,46 @@ theorem col_sum_le_twice_diag {m : ℕ}
     le_trans hdom_j (le_trans (hDiagBound j) (hMax j j))
   linarith
 
+/-- Higham, 2nd ed., Chapter 13, equation (13.19):
+    initial max-entry column mass from matrix-`∞` column BDD plus a max-entry
+    diagonal lower comparison. -/
+theorem higham13_initial_maxEntry_column_sum_le_of_infNorm_bdd
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hDomInf : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hDiagMax : ∀ j : Fin m, invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (j : Fin m) :
+    ∑ i : Fin m, maxEntryNorm hr (A i j) ≤ 2 * blockMaxNorm hm hr A := by
+  exact
+    col_sum_le_twice_diag
+      (fun i j : Fin m => maxEntryNorm hr (A i j)) invDiagBound
+      (higham13_blockDiagDomCol_maxEntry_of_infNorm hr A invDiagBound hDomInf)
+      hDiagMax (blockMaxNorm hm hr A)
+      (fun i j => block_le_blockMaxNorm hm hr A i j) j
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.19):
+    initial max-entry column mass from matrix-`∞` column BDD and diagonal
+    right-inverse reciprocal certificates. -/
+theorem higham13_initial_maxEntry_column_sum_le_of_infNorm_bdd_and_diag_right_inverse
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (diagInv : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (hDomInf : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hInvBound : ∀ j : Fin m, invDiagBound j ≤ (infNorm (diagInv j))⁻¹)
+    (hDiagRight : ∀ j : Fin m, IsRightInverse r (A j j) (diagInv j))
+    (j : Fin m) :
+    ∑ i : Fin m, maxEntryNorm hr (A i j) ≤ 2 * blockMaxNorm hm hr A := by
+  exact
+    higham13_initial_maxEntry_column_sum_le_of_infNorm_bdd hm hr A invDiagBound
+      hDomInf
+      (fun j =>
+        le_trans (hInvBound j)
+          (inv_infNorm_le_maxEntryNorm_of_isRightInverse
+            hr (A j j) (diagInv j) (hDiagRight j)))
+      j
+
 /-- **Theorem 13.8, one Schur step**: after one step of Algorithm 13.3,
     every block in the Schur complement is bounded by
     `2 * max_{i,j} ‖Aᵢⱼ‖`, assuming the source column-dominance hypotheses and
@@ -13016,6 +13100,103 @@ theorem higham13_theorem13_8_active_column_step_on_active_of_mixed_column_mass
           maxEntryNorm hr (stageBlock k i j) := by
         rw [hactive_sum]
         ring
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.8 proof, mixed matrix route:
+    the active-column invariant for max-entry stage norms follows from exact
+    Algorithm 13.3-style Schur updates, active column dominance in the
+    matrix-`∞` norm, and the mixed pivot product bound. -/
+theorem higham13_theorem13_8_active_column_bound_on_active_of_mixed_column_mass
+    {m r : ℕ} (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (stageBlock : ℕ → Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hInit : ∀ i j : Fin m, stageBlock 0 i j = A i j)
+    (hInfDom : SchurStageActiveColumnDom13_7
+      (fun k i j => infNorm (stageBlock k i j)) stageInvDiagBound)
+    (hPivotBound : ∀ k : ℕ, ∀ hk : k < m,
+      infNorm (pivotInv k) * stageInvDiagBound k ⟨k, hk⟩ ≤ 1)
+    (hUpdate : SchurStageActiveExactUpdate13_8 stageBlock pivotInv) :
+    SchurStageActiveColumnBoundOnActive13_8
+      (fun k i j => maxEntryNorm hr (stageBlock k i j))
+      (fun i j => maxEntryNorm hr (A i j)) := by
+  exact
+    higham13_theorem13_8_active_column_bound_on_active_of_steps
+      (fun k i j => maxEntryNorm hr (stageBlock k i j))
+      (fun i j => maxEntryNorm hr (A i j))
+      (by
+        intro i j
+        simpa using congrArg (maxEntryNorm hr) (hInit i j))
+      (higham13_theorem13_8_active_column_step_on_active_of_mixed_column_mass
+        hr stageBlock pivotInv stageInvDiagBound hInfDom hPivotBound hUpdate)
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.8:
+    source-strength active-stage max-entry bound from the mixed
+    matrix-`∞`/max-entry column-mass route. -/
+theorem higham13_theorem13_8_active_stage_block_bound_of_mixed_column_mass
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (stageBlock : ℕ → Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hInit : ∀ i j : Fin m, stageBlock 0 i j = A i j)
+    (hDomInf : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hDiagMax : ∀ j : Fin m, invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInfDom : SchurStageActiveColumnDom13_7
+      (fun k i j => infNorm (stageBlock k i j)) stageInvDiagBound)
+    (hPivotBound : ∀ k : ℕ, ∀ hk : k < m,
+      infNorm (pivotInv k) * stageInvDiagBound k ⟨k, hk⟩ ≤ 1)
+    (hUpdate : SchurStageActiveExactUpdate13_8 stageBlock pivotInv)
+    (k : ℕ) (i j : Fin m) (hik : k ≤ i.val) (hjk : k ≤ j.val) :
+    maxEntryNorm hr (stageBlock k i j) ≤ 2 * blockMaxNorm hm hr A := by
+  exact
+    higham13_theorem13_8_active_stage_block_bound_on_active
+      (fun i j => maxEntryNorm hr (A i j)) invDiagBound
+      (higham13_blockDiagDomCol_maxEntry_of_infNorm hr A invDiagBound hDomInf)
+      hDiagMax
+      (fun k i j => maxEntryNorm hr (stageBlock k i j))
+      (by
+        intro k i j
+        exact maxEntryNorm_nonneg hr (stageBlock k i j))
+      (higham13_theorem13_8_active_column_bound_on_active_of_mixed_column_mass
+        hr A stageBlock pivotInv stageInvDiagBound hInit hInfDom hPivotBound hUpdate)
+      (blockMaxNorm hm hr A)
+      (fun i j => block_le_blockMaxNorm hm hr A i j)
+      k i j hik hjk
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and Theorem 13.8:
+    active-stage max-entry bound for the concrete matrix-product stage table
+    from the mixed matrix-`∞`/max-entry column-mass route. -/
+theorem higham13_algorithm13_3_matrix_active_stage_bound_of_mixed_column_mass
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hDomInf : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hDiagMax : ∀ j : Fin m, invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInfDom : SchurStageActiveColumnDom13_7
+      (fun k i j => infNorm
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+      stageInvDiagBound)
+    (hPivotBound : ∀ k : ℕ, ∀ hk : k < m,
+      infNorm (pivotInv k) * stageInvDiagBound k ⟨k, hk⟩ ≤ 1) :
+    ∀ k : ℕ, ∀ i j : Fin m, k ≤ m → k ≤ i.val → k ≤ j.val →
+      maxEntryNorm hr
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j) ≤
+          2 * blockMaxNorm hm hr A := by
+  intro k i j _hk hik hjk
+  exact
+    higham13_theorem13_8_active_stage_block_bound_of_mixed_column_mass
+      hm hr A (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv)
+      pivotInv invDiagBound stageInvDiagBound
+      (by
+        intro i j
+        exact higham13_algorithm13_3_schurStageBlock_zero A pivotInv i j)
+      hDomInf hDiagMax hInfDom hPivotBound
+      (higham13_algorithm13_3_schurStageBlock_exact_update A pivotInv)
+      k i j hik hjk
 
 /-- **Theorem 13.8, active-stage max bound from local Schur estimates**.
     This combines the active-column-only induction with the local Schur
@@ -23574,6 +23755,95 @@ theorem higham13_algorithm13_3_upperFromMatrixStages_blockMaxNorm_bound_of_activ
       |higham13_algorithm13_3_upperFromMatrixStages A pivotInv i j s t| = 0 := by
         simp [hzero]
       _ ≤ C := hC
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.21):
+    source-strength upper-factor max-entry bound from the mixed
+    matrix-`∞`/max-entry column-mass route. -/
+theorem higham13_algorithm13_3_upperFromMatrixStages_blockMaxNorm_bound_of_mixed_column_mass
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hDomInf : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hDiagMax : ∀ j : Fin m, invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInfDom : SchurStageActiveColumnDom13_7
+      (fun k i j => infNorm
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+      stageInvDiagBound)
+    (hPivotBound : ∀ k : ℕ, ∀ hk : k < m,
+      infNorm (pivotInv k) * stageInvDiagBound k ⟨k, hk⟩ ≤ 1) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+      2 * blockMaxNorm hm hr A := by
+  exact
+    higham13_algorithm13_3_upperFromMatrixStages_blockMaxNorm_bound_of_active_stage_bound
+      hm hr A pivotInv
+      (mul_nonneg (by norm_num) (blockMaxNorm_nonneg hm hr A))
+      (higham13_algorithm13_3_matrix_active_stage_bound_of_mixed_column_mass
+        hm hr A pivotInv invDiagBound stageInvDiagBound
+        hDomInf hDiagMax hInfDom hPivotBound)
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    source-strength `ρ_n <= 2` growth-factor bound from the mixed
+    matrix-`∞`/max-entry column-mass route. -/
+theorem higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_mixed_column_mass
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A))
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hDomInf : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hDiagMax : ∀ j : Fin m, invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInfDom : SchurStageActiveColumnDom13_7
+      (fun k i j => infNorm
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+      stageInvDiagBound)
+    (hPivotBound : ∀ k : ℕ, ∀ hk : k < m,
+      infNorm (pivotInv k) * stageInvDiagBound k ⟨k, hk⟩ ≤ 1) :
+    growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+        (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+          (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤
+      2 := by
+  exact
+    higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_active_stage_bound
+      hm hr A pivotInv hApos
+      (higham13_algorithm13_3_matrix_active_stage_bound_of_mixed_column_mass
+        hm hr A pivotInv invDiagBound stageInvDiagBound
+        hDomInf hDiagMax hInfDom hPivotBound)
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.21) and (13.23):
+    paired source-strength upper-factor and finite-history growth-factor
+    consequences of the mixed matrix-`∞`/max-entry column-mass route. -/
+theorem
+    higham13_algorithm13_3_upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_mixed_column_mass
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A))
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hDomInf : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hDiagMax : ∀ j : Fin m, invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInfDom : SchurStageActiveColumnDom13_7
+      (fun k i j => infNorm
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+      stageInvDiagBound)
+    (hPivotBound : ∀ k : ℕ, ∀ hk : k < m,
+      infNorm (pivotInv k) * stageInvDiagBound k ⟨k, hk⟩ ≤ 1) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * blockMaxNorm hm hr A ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤
+        2 := by
+  exact
+    ⟨higham13_algorithm13_3_upperFromMatrixStages_blockMaxNorm_bound_of_mixed_column_mass
+        hm hr A pivotInv invDiagBound stageInvDiagBound hDomInf hDiagMax
+        hInfDom hPivotBound,
+      higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_mixed_column_mass
+        hm hr A pivotInv hApos invDiagBound stageInvDiagBound hDomInf
+        hDiagMax hInfDom hPivotBound⟩
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.23):
     the finite matrix-stage history growth factor satisfies `ρ_n <= 2` once
