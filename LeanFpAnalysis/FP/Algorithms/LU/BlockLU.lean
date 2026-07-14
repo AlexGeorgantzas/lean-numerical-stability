@@ -113,8 +113,11 @@
     Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update,
     Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_reciprocal,
     Higham13Eq1322InverseRatioSourceChain.to_lowerComparisonSourceChain,
+    Higham13Eq1322InverseRatioSourceChain.nonterminal_pivot_right_inverse,
     Higham13Eq1322InverseRatioSourceChain.nonterminal_pivot_det_ne_zero,
+    Higham13Eq1322InverseRatioSourceChain.pivot_right_inverse_of_final,
     Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_right_inverse,
+    Higham13Eq1322InverseRatioSourceChain.pivot_right_inverse_of_final_nonsingInv,
     Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_nonsingInv,
     Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final:
     recursive source certificate and chain/product lift for the inverse-ratio
@@ -166,8 +169,11 @@
     source BDD product/update table
   - Higham13Eq1322LowerComparisonSourceChain,
     Higham13Eq1322LowerComparisonSourceChain.det_ne_zero,
+    Higham13Eq1322LowerComparisonSourceChain.nonterminal_pivot_right_inverse,
     Higham13Eq1322LowerComparisonSourceChain.nonterminal_pivot_det_ne_zero,
+    Higham13Eq1322LowerComparisonSourceChain.pivot_right_inverse_of_final,
     Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final_right_inverse,
+    Higham13Eq1322LowerComparisonSourceChain.pivot_right_inverse_of_final_nonsingInv,
     Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final_nonsingInv,
     Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final,
     Higham13Eq1322LowerComparisonSourceChain.to_blockLUBudgetChain,
@@ -180,7 +186,9 @@
     hypothesis by per-tail determinant, pivot, and direct comparison data; the
     Eq.13.23 product-bound/diagonal-update wrapper replaces the raw `rho <= 2`
     hypothesis at this source-chain surface while keeping the direct comparison
-    and product/update obligations explicit
+    and product/update obligations explicit; the pivot extractors expose both
+    right-inverse and determinant forms for represented nonterminal pivots and
+    final-pivot specializations
   - Higham13Eq1322GlobalTableauSourceChain,
     higham13_algorithm13_3_activeSuffixTail,
     higham13_algorithm13_3_activeSuffixStageTailBlock,
