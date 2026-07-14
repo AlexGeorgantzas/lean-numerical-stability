@@ -891,8 +891,12 @@
     higham13_eq13_23_blockLUOneStep_product_from_matrix_stage_history_first_split_tail_exact_kappa_of_product_bound_diag_update,
     higham13_eq13_23_blockLUOneStep_product_from_matrix_stage_history_first_split_tail_exact_kappa_of_product_bound_diag_update_reciprocal,
     higham13_eq13_22_exists_blockLUOneStep_fact_product_from_matrix_stage_history_first_split_tail_exact_kappa,
+    higham13_eq13_22_blockLUOneStep_product_from_matrix_stage_history_first_split_tail_exact_kappa_of_det_ne_zero,
+    higham13_eq13_23_blockLUOneStep_product_from_matrix_stage_history_first_split_tail_exact_kappa_of_det_ne_zero,
+    higham13_eq13_22_exists_blockLUOneStep_fact_product_from_matrix_stage_history_first_split_tail_exact_kappa_of_det_ne_zero,
     higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_witness_matrix_stage_history_exact_kappa,
     higham13_eq13_23_exists_blockLUOneStep_fact_product_from_matrix_stage_history_first_split_tail_exact_kappa,
+    higham13_eq13_23_exists_blockLUOneStep_fact_product_from_matrix_stage_history_first_split_tail_exact_kappa_of_det_ne_zero,
     higham13_eq13_23_exists_blockLUOneStep_fact_product_from_matrix_stage_history_first_split_tail_exact_kappa_of_product_bound_diag_update,
     higham13_eq13_23_exists_blockLUOneStep_fact_product_from_matrix_stage_history_first_split_tail_exact_kappa_of_product_bound_diag_update_reciprocal,
     higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_witness_matrix_stage_history_exact_kappa,
@@ -70188,6 +70192,293 @@ theorem higham13_eq13_23_exists_blockLUOneStep_fact_product_from_matrix_stage_hi
       higham13_eq13_23_blockLUOneStep_product_from_matrix_stage_history_first_split_tail_exact_kappa
         hm hr hN Ablk pivotInv hpivot hApos hRight n hsn hNn hRho_le_two
         L_S U_S hTailL hTailU
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.22):
+    determinant-nonzero one-step product lift for the source-faithful first
+    split.
+
+    This is the same one-step Eq.13.22 product bound as
+    `higham13_eq13_22_blockLUOneStep_product_from_matrix_stage_history_first_split_tail_exact_kappa`,
+    but derives the positive growth denominator and canonical ambient
+    `nonsingInv` right-inverse from
+    `det(blockMatrixFirstSplitFlat Ablk) != 0`. -/
+theorem
+    higham13_eq13_22_blockLUOneStep_product_from_matrix_stage_history_first_split_tail_exact_kappa_of_det_ne_zero
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r) (hN : 0 < r + m * r)
+    (Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    [Invertible (blockMatrixFirstSplitA11 Ablk)]
+    [Invertible (blockMatrixFirstSplitA22 Ablk -
+      blockMatrixFirstSplitA21 Ablk * ⅟(blockMatrixFirstSplitA11 Ablk) *
+        blockMatrixFirstSplitA12 Ablk)]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 Ablk)
+      (blockMatrixFirstSplitA12 Ablk)
+      (blockMatrixFirstSplitA21 Ablk)
+      (blockMatrixFirstSplitA22 Ablk))]
+    (hpivot : pivotInv 0 = ⅟(blockMatrixFirstSplitA11 Ablk))
+    (hdet :
+      Matrix.det (blockMatrixFirstSplitFlat Ablk :
+        Matrix (Fin (r + m * r)) (Fin (r + m * r)) ℝ) ≠ 0)
+    (n : ℕ)
+    (hsn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hNn : ((r + m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (L_S U_S : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (hTailL :
+      blockMaxNorm hm hr L_S ≤
+        (n : ℝ) *
+          (growthFactorEntry hN (blockMatrixFirstSplitFlat Ablk)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              hN (Nat.succ_pos m) hr Ablk pivotInv)
+            (maxEntryNorm_pos_of_det_ne_zero hN
+              (blockMatrixFirstSplitFlat Ablk) hdet)) ^ 2 *
+          (maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk) *
+            maxEntryNormRect hN hN (nonsingInv (r + m * r)
+              (blockMatrixFirstSplitFlat Ablk))))
+    (hTailU :
+      blockMaxNorm hm hr U_S ≤
+        growthFactorEntry hN (blockMatrixFirstSplitFlat Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hN (Nat.succ_pos m) hr Ablk pivotInv)
+          (maxEntryNorm_pos_of_det_ne_zero hN
+            (blockMatrixFirstSplitFlat Ablk) hdet) *
+        maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk)) :
+    blockMaxNorm (Nat.succ_pos m) hr
+        (blockLUOneStepL Ablk (pivotInv 0) L_S) *
+      blockMaxNorm (Nat.succ_pos m) hr (blockLUOneStepU Ablk U_S) ≤
+        (n : ℝ) *
+          (growthFactorEntry hN (blockMatrixFirstSplitFlat Ablk)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              hN (Nat.succ_pos m) hr Ablk pivotInv)
+            (maxEntryNorm_pos_of_det_ne_zero hN
+              (blockMatrixFirstSplitFlat Ablk) hdet)) ^ 3 *
+          (maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk) *
+            maxEntryNormRect hN hN (nonsingInv (r + m * r)
+              (blockMatrixFirstSplitFlat Ablk))) *
+          maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk) := by
+  have hRight :
+      IsRightInverse (r + m * r) (blockMatrixFirstSplitFlat Ablk)
+        (nonsingInv (r + m * r) (blockMatrixFirstSplitFlat Ablk)) :=
+    (isInverse_nonsingInv_of_det_ne_zero (r + m * r)
+      (blockMatrixFirstSplitFlat Ablk) hdet).2
+  simpa using
+    higham13_eq13_22_blockLUOneStep_product_from_matrix_stage_history_first_split_tail_exact_kappa
+      hm hr hN Ablk pivotInv hpivot
+      (maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFirstSplitFlat Ablk) hdet)
+      hRight n hsn hNn L_S U_S hTailL hTailU
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    determinant-nonzero one-step point-row product lift for the source-faithful
+    first split.
+
+    The `rho <= 2` side condition is still explicit, but is stated for the
+    determinant-derived growth denominator. -/
+theorem
+    higham13_eq13_23_blockLUOneStep_product_from_matrix_stage_history_first_split_tail_exact_kappa_of_det_ne_zero
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r) (hN : 0 < r + m * r)
+    (Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    [Invertible (blockMatrixFirstSplitA11 Ablk)]
+    [Invertible (blockMatrixFirstSplitA22 Ablk -
+      blockMatrixFirstSplitA21 Ablk * ⅟(blockMatrixFirstSplitA11 Ablk) *
+        blockMatrixFirstSplitA12 Ablk)]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 Ablk)
+      (blockMatrixFirstSplitA12 Ablk)
+      (blockMatrixFirstSplitA21 Ablk)
+      (blockMatrixFirstSplitA22 Ablk))]
+    (hpivot : pivotInv 0 = ⅟(blockMatrixFirstSplitA11 Ablk))
+    (hdet :
+      Matrix.det (blockMatrixFirstSplitFlat Ablk :
+        Matrix (Fin (r + m * r)) (Fin (r + m * r)) ℝ) ≠ 0)
+    (n : ℕ)
+    (hsn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hNn : ((r + m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hRho_le_two :
+      growthFactorEntry hN (blockMatrixFirstSplitFlat Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hN (Nat.succ_pos m) hr Ablk pivotInv)
+          (maxEntryNorm_pos_of_det_ne_zero hN
+            (blockMatrixFirstSplitFlat Ablk) hdet) ≤ 2)
+    (L_S U_S : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (hTailL :
+      blockMaxNorm hm hr L_S ≤
+        (n : ℝ) *
+          (growthFactorEntry hN (blockMatrixFirstSplitFlat Ablk)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              hN (Nat.succ_pos m) hr Ablk pivotInv)
+            (maxEntryNorm_pos_of_det_ne_zero hN
+              (blockMatrixFirstSplitFlat Ablk) hdet)) ^ 2 *
+          (maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk) *
+            maxEntryNormRect hN hN (nonsingInv (r + m * r)
+              (blockMatrixFirstSplitFlat Ablk))))
+    (hTailU :
+      blockMaxNorm hm hr U_S ≤
+        growthFactorEntry hN (blockMatrixFirstSplitFlat Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hN (Nat.succ_pos m) hr Ablk pivotInv)
+          (maxEntryNorm_pos_of_det_ne_zero hN
+            (blockMatrixFirstSplitFlat Ablk) hdet) *
+        maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk)) :
+    blockMaxNorm (Nat.succ_pos m) hr
+        (blockLUOneStepL Ablk (pivotInv 0) L_S) *
+      blockMaxNorm (Nat.succ_pos m) hr (blockLUOneStepU Ablk U_S) ≤
+        8 * (n : ℝ) *
+          (maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk) *
+            maxEntryNormRect hN hN (nonsingInv (r + m * r)
+              (blockMatrixFirstSplitFlat Ablk))) *
+          maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk) := by
+  have hRight :
+      IsRightInverse (r + m * r) (blockMatrixFirstSplitFlat Ablk)
+        (nonsingInv (r + m * r) (blockMatrixFirstSplitFlat Ablk)) :=
+    (isInverse_nonsingInv_of_det_ne_zero (r + m * r)
+      (blockMatrixFirstSplitFlat Ablk) hdet).2
+  simpa using
+    higham13_eq13_23_blockLUOneStep_product_from_matrix_stage_history_first_split_tail_exact_kappa
+      hm hr hN Ablk pivotInv hpivot
+      (maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFirstSplitFlat Ablk) hdet)
+      hRight n hsn hNn hRho_le_two L_S U_S hTailL hTailU
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.22):
+    determinant-nonzero one-step `BlockLUFactSpec` product witness for the
+    source-faithful first split. -/
+theorem
+    higham13_eq13_22_exists_blockLUOneStep_fact_product_from_matrix_stage_history_first_split_tail_exact_kappa_of_det_ne_zero
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r) (hN : 0 < r + m * r)
+    (Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    [Invertible (blockMatrixFirstSplitA11 Ablk)]
+    [Invertible (blockMatrixFirstSplitA22 Ablk -
+      blockMatrixFirstSplitA21 Ablk * ⅟(blockMatrixFirstSplitA11 Ablk) *
+        blockMatrixFirstSplitA12 Ablk)]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 Ablk)
+      (blockMatrixFirstSplitA12 Ablk)
+      (blockMatrixFirstSplitA21 Ablk)
+      (blockMatrixFirstSplitA22 Ablk))]
+    (hpivot : pivotInv 0 = ⅟(blockMatrixFirstSplitA11 Ablk))
+    (hdet :
+      Matrix.det (blockMatrixFirstSplitFlat Ablk :
+        Matrix (Fin (r + m * r)) (Fin (r + m * r)) ℝ) ≠ 0)
+    (n : ℕ)
+    (hsn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hNn : ((r + m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (L_S U_S : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (hTailFact : BlockLUFactSpec m r (blockSchur Ablk (pivotInv 0)) L_S U_S)
+    (hTailL :
+      blockMaxNorm hm hr L_S ≤
+        (n : ℝ) *
+          (growthFactorEntry hN (blockMatrixFirstSplitFlat Ablk)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              hN (Nat.succ_pos m) hr Ablk pivotInv)
+            (maxEntryNorm_pos_of_det_ne_zero hN
+              (blockMatrixFirstSplitFlat Ablk) hdet)) ^ 2 *
+          (maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk) *
+            maxEntryNormRect hN hN (nonsingInv (r + m * r)
+              (blockMatrixFirstSplitFlat Ablk))))
+    (hTailU :
+      blockMaxNorm hm hr U_S ≤
+        growthFactorEntry hN (blockMatrixFirstSplitFlat Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hN (Nat.succ_pos m) hr Ablk pivotInv)
+          (maxEntryNorm_pos_of_det_ne_zero hN
+            (blockMatrixFirstSplitFlat Ablk) hdet) *
+        maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk)) :
+    ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec (m + 1) r Ablk L U ∧
+        blockMaxNorm (Nat.succ_pos m) hr L *
+          blockMaxNorm (Nat.succ_pos m) hr U ≤
+            (n : ℝ) *
+              (growthFactorEntry hN (blockMatrixFirstSplitFlat Ablk)
+                (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+                  hN (Nat.succ_pos m) hr Ablk pivotInv)
+                (maxEntryNorm_pos_of_det_ne_zero hN
+                  (blockMatrixFirstSplitFlat Ablk) hdet)) ^ 3 *
+              (maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk) *
+                maxEntryNormRect hN hN (nonsingInv (r + m * r)
+                  (blockMatrixFirstSplitFlat Ablk))) *
+              maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk) := by
+  have hRight :
+      IsRightInverse (r + m * r) (blockMatrixFirstSplitFlat Ablk)
+        (nonsingInv (r + m * r) (blockMatrixFirstSplitFlat Ablk)) :=
+    (isInverse_nonsingInv_of_det_ne_zero (r + m * r)
+      (blockMatrixFirstSplitFlat Ablk) hdet).2
+  simpa using
+    higham13_eq13_22_exists_blockLUOneStep_fact_product_from_matrix_stage_history_first_split_tail_exact_kappa
+      hm hr hN Ablk pivotInv hpivot
+      (maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFirstSplitFlat Ablk) hdet)
+      hRight n hsn hNn L_S U_S hTailFact hTailL hTailU
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    determinant-nonzero one-step `BlockLUFactSpec` point-row product witness
+    for the source-faithful first split. -/
+theorem
+    higham13_eq13_23_exists_blockLUOneStep_fact_product_from_matrix_stage_history_first_split_tail_exact_kappa_of_det_ne_zero
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r) (hN : 0 < r + m * r)
+    (Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    [Invertible (blockMatrixFirstSplitA11 Ablk)]
+    [Invertible (blockMatrixFirstSplitA22 Ablk -
+      blockMatrixFirstSplitA21 Ablk * ⅟(blockMatrixFirstSplitA11 Ablk) *
+        blockMatrixFirstSplitA12 Ablk)]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 Ablk)
+      (blockMatrixFirstSplitA12 Ablk)
+      (blockMatrixFirstSplitA21 Ablk)
+      (blockMatrixFirstSplitA22 Ablk))]
+    (hpivot : pivotInv 0 = ⅟(blockMatrixFirstSplitA11 Ablk))
+    (hdet :
+      Matrix.det (blockMatrixFirstSplitFlat Ablk :
+        Matrix (Fin (r + m * r)) (Fin (r + m * r)) ℝ) ≠ 0)
+    (n : ℕ)
+    (hsn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hNn : ((r + m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hRho_le_two :
+      growthFactorEntry hN (blockMatrixFirstSplitFlat Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hN (Nat.succ_pos m) hr Ablk pivotInv)
+          (maxEntryNorm_pos_of_det_ne_zero hN
+            (blockMatrixFirstSplitFlat Ablk) hdet) ≤ 2)
+    (L_S U_S : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (hTailFact : BlockLUFactSpec m r (blockSchur Ablk (pivotInv 0)) L_S U_S)
+    (hTailL :
+      blockMaxNorm hm hr L_S ≤
+        (n : ℝ) *
+          (growthFactorEntry hN (blockMatrixFirstSplitFlat Ablk)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              hN (Nat.succ_pos m) hr Ablk pivotInv)
+            (maxEntryNorm_pos_of_det_ne_zero hN
+              (blockMatrixFirstSplitFlat Ablk) hdet)) ^ 2 *
+          (maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk) *
+            maxEntryNormRect hN hN (nonsingInv (r + m * r)
+              (blockMatrixFirstSplitFlat Ablk))))
+    (hTailU :
+      blockMaxNorm hm hr U_S ≤
+        growthFactorEntry hN (blockMatrixFirstSplitFlat Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hN (Nat.succ_pos m) hr Ablk pivotInv)
+          (maxEntryNorm_pos_of_det_ne_zero hN
+            (blockMatrixFirstSplitFlat Ablk) hdet) *
+        maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk)) :
+    ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec (m + 1) r Ablk L U ∧
+        blockMaxNorm (Nat.succ_pos m) hr L *
+          blockMaxNorm (Nat.succ_pos m) hr U ≤
+            8 * (n : ℝ) *
+              (maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk) *
+                maxEntryNormRect hN hN (nonsingInv (r + m * r)
+                  (blockMatrixFirstSplitFlat Ablk))) *
+              maxEntryNormRect hN hN (blockMatrixFirstSplitFlat Ablk) := by
+  have hRight :
+      IsRightInverse (r + m * r) (blockMatrixFirstSplitFlat Ablk)
+        (nonsingInv (r + m * r) (blockMatrixFirstSplitFlat Ablk)) :=
+    (isInverse_nonsingInv_of_det_ne_zero (r + m * r)
+      (blockMatrixFirstSplitFlat Ablk) hdet).2
+  simpa using
+    higham13_eq13_23_exists_blockLUOneStep_fact_product_from_matrix_stage_history_first_split_tail_exact_kappa
+      hm hr hN Ablk pivotInv hpivot
+      (maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFirstSplitFlat Ablk) hdet)
+      hRight n hsn hNn hRho_le_two L_S U_S hTailFact hTailL hTailU
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.23):
     successor-shaped one-step factor witness with `rho <= 2` supplied by the
