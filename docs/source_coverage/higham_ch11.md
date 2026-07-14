@@ -32,6 +32,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.8 exact-`T_hat` Aasen growth-factor `∞`-norm bridges | `higham11_8_aasenGrowthBound_of_T_hat_eq_T_and_infNorm_T_hat_le_printed_mul_infNorm`, `higham11_8_infNorm_T_hat_le_printed_mul_infNorm_of_T_hat_eq_T_and_aasenGrowthBound` | Ch11 | **new this session**; combines the exact-middle equality route `T_hat = T` with the printed infinity-norm growth predicate, moving from a computed-middle product cap to the exact-middle growth-bound predicate and back from that predicate to the computed-middle product cap. This is a dependency bridge for exact-`T_hat` Aasen callers and does not close Theorem 11.8 by itself. |
 | Thm 11.8 relative-`T_hat` Aasen growth-factor `∞`-norm bridges | `higham11_8_aasenGrowthBound_of_relative_T_hat_error_and_one_plus_infNorm_T_hat_le_printed_mul_infNorm`, `higham11_8_aasenGrowthBound_of_relative_T_hat_error_and_infNorm_T_hat_le_kappa_mul_infNorm` | Ch11 | **new this session**; combines the non-exact middle comparison `|T_hat-T|≤γ|T_hat|` with the printed infinity-norm growth predicate, either from a direct `(1+γ)‖T_hat‖∞` product cap or from a computed-middle cap `‖T_hat‖∞≤κ‖A‖∞` plus `(1+γ)κ≤4^(n-2)`. This is a dependency bridge for non-exact Aasen growth callers and does not close Theorem 11.8 by itself. |
 | Thm 11.8 Aasen growth-factor max-entry bridges | `higham11_8_aasenGrowthFactor_maxEntryNorm_nonneg`, `higham11_8_aasenGrowthBound_of_maxEntryNorm_le_printed_mul_maxEntryNorm`, `higham11_8_maxEntryNorm_le_printed_mul_maxEntryNorm_of_aasenGrowthBound`, `higham11_8_maxEntryNorm_T_le_T_hat_of_eq`, `higham11_8_maxEntryNorm_T_le_one_plus_gamma_T_hat_of_relative_error`, `higham11_8_aasenGrowthBound_of_T_hat_eq_T_and_maxEntryNorm_T_hat_le_printed_mul_maxEntryNorm`, `higham11_8_maxEntryNorm_T_hat_le_printed_mul_maxEntryNorm_of_T_hat_eq_T_and_aasenGrowthBound`, `higham11_8_aasenGrowthBound_of_relative_T_hat_error_and_one_plus_maxEntryNorm_T_hat_le_printed_mul_maxEntryNorm`, `higham11_8_aasenGrowthBound_of_relative_T_hat_error_and_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm` | Ch11 | **new this session**; specializes the Aasen growth-factor algebra to the source-native max-entry norm, including exact- and relative-`T_hat` middle comparisons. This records the printed max-entry `ρ_n` route in addition to the `∞`-norm dependency bridges and does not close Theorem 11.8 by itself. |
+| Thm 11.8 source-norm growth-factor transport | `higham11_8_aasenSourceNormwiseBackwardBound`, `higham11_8_aasenSourceNormwiseBackwardBound_of_T_hat_cap`, `higham11_8_aasenSourceNormwiseBackwardBound_of_infNorm_T_hat_le_printed_mul_infNorm`, `higham11_8_aasenSourceNormwiseBackwardBound_of_infNorm_T_hat_le_kappa_mul_infNorm`, `higham11_8_aasenSourceNormwiseBackwardBound_of_infNorm_T_hat_le_kappa_mul_infNorm_relative_growth_cap`, `higham11_8_infNorm_le_three_mul_maxEntryNorm_of_rowSupport_card_le_three`, `higham11_8_rowSupport_card_le_three_of_isTridiagonal`, `higham11_8_infNorm_le_three_mul_maxEntryNorm_of_isTridiagonal`, `higham11_8_aasenSourceNormwiseBackwardBound_of_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`, `higham11_8_aasenSourceNormwiseBackwardBound_of_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`, `higham11_8_aasenSourceNormwiseBackwardBound_of_rowSupport_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`, `higham11_8_aasenSourceNormwiseBackwardBound_of_rowSupport_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`, `higham11_8_aasenSourceNormwiseBackwardBound_of_isTridiagonal_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`, `higham11_8_aasenSourceNormwiseBackwardBound_of_isTridiagonal_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`, `higham11_8_aasenSourceNormwiseBackwardBound_of_T_hat_eq_T_and_aasenGrowthBound`, `higham11_8_aasen_source_normwise_backward_error_of_normwise_backward_error`, `higham11_8_aasen_source_normwise_backward_error_of_infNorm_T_hat_le_kappa_mul_infNorm`, `higham11_8_aasen_source_normwise_backward_error_of_infNorm_T_hat_le_kappa_mul_infNorm_relative_growth_cap`, `higham11_8_aasen_source_normwise_backward_error_of_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`, `higham11_8_aasen_source_normwise_backward_error_of_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`, `higham11_8_aasen_source_normwise_backward_error_of_rowSupport_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`, `higham11_8_aasen_source_normwise_backward_error_of_rowSupport_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`, `higham11_8_aasen_source_normwise_backward_error_of_isTridiagonal_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`, `higham11_8_aasen_source_normwise_backward_error_of_isTridiagonal_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`, `higham11_8_aasen_source_normwise_backward_error_of_T_hat_eq_T_and_aasenGrowthBound` | Ch11 | **new this session**; records the source `‖A‖∞` form of the Aasen normwise bound and transports existing `‖T_hat‖∞` endpoint results through the printed growth cap `‖T_hat‖∞≤4^(n-2)‖A‖∞`, including exact-`T_hat` growth-bound, computed-middle `κ‖A‖∞`, relative-route `(1+γ)κ≤4^(n-2)` scalar comparison with `κ≥0`, and existential wrapper forms. Max-entry computed-middle caps now also feed the same source-norm transport when the explicit norm-conversion loss is accounted for by `nκ≤4^(n-2)` or `n(1+γ)κ≤4^(n-2)`, and three-entry row-support or local `IsTridiagonal` certificates give the sharper Aasen/tridiagonal route with `3κ≤4^(n-2)` or `3(1+γ)κ≤4^(n-2)`. This bridges the proved local normwise endpoints to the book's source-norm statement shape, but the concrete `T_hat` growth/factorization obligations remain open. |
 | Thm 11.8 normalized componentwise/`T`-norm sigma-id inverse-entry aliases | `higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the normalized direct-middle and checkerboard componentwise-`T` / direct-`T`-norm inverse-entry endpoints to `σ := id`, discharging the identity-permutation proof by reflexivity while keeping the recurrence/nonzero-pivot hypotheses, `T_hat` comparison, componentwise or `T`-norm cap, middle-product/checkerboard certificate, inverse-entry cap, and rounded source-prefix update/budget facts explicit. |
 | Thm 11.8 componentwise/`T`-norm sigma-id inverse-entry aliases | `higham11_8_AasenSpec_id_source_prefix_componentwise_T_direct_middle_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_direct_middle_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_checkerboard_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_componentwise_T_checkerboard_endpoint_of_inverse_entry_bound`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the ordinary direct-middle and checkerboard componentwise-`T` / direct-`T`-norm inverse-entry endpoints to `σ := id`, discharging the identity-permutation proof by reflexivity while keeping the recurrence/nonzero-pivot hypotheses, `T_hat` comparison, componentwise or `T`-norm cap, middle-product/checkerboard certificate, inverse-entry cap, and rounded source-prefix update/budget facts explicit. |
 | Thm 11.8 normalized principal-block componentwise/`T`-norm sigma-id inverse-entry aliases | `higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the normalized checkerboard principal-block componentwise-`T` / direct-`T`-norm inverse-entry endpoints to `σ := id`, discharging the identity-permutation proof by reflexivity while keeping the recurrence/nonzero-pivot hypotheses, `T_hat` comparison, componentwise or `T`-norm cap, principal-block checkerboard certificate, inverse-entry cap, and rounded source-prefix update/budget facts explicit. |
@@ -252,7 +253,7 @@ assumptions remain open in the not-proved ledger below.
 | §4.2 stored-symmetric rounded Schur bridge | `flStoredSymSchurCompl`, `flStoredSymSchurCompl_symm`, `flStoredSymSchurCompl_first_row_col`, `higham11_3_fl_storedSymSchurCompl`, `higham11_3_fl_storedSymSchurCompl_symm`, `higham11_3_fl_storedSymSchurCompl_first_row_col` | " | **new this session**; formalizes "compute one triangle, copy across the diagonal" for the rounded Schur complement and proves the symmetry/first-row-column fact needed by recursive stage hypotheses. This is a bridge toward replacing explicit stage-symmetry assumptions by a stored-symmetric algorithm path. |
 | §4.2 stored-Schur one-stage error bridge | `flStoredSymSchurDefect`, `fl_blockLDLT_oneByOne_stage_bound_of_stored_schur`, `higham11_3_fl_storedSymSchurDefect`, `higham11_3_fl_storedSymSchurDefect_nonneg`, `higham11_3_fl_blockLDLT_oneByOne_stage_bound_of_stored_schur` | " | **new this session**; if recursive factors approximate the stored-symmetric Schur complement within `B`, the one-stage bound holds with trailing envelope `B + |S_stored − S_raw|`. The storage defect is exposed as nonnegative, which is needed to package zero perturbations. This is the precise storage-defect bridge needed to connect symmetric storage to the existing raw-Schur analysis. |
 | §4.2 fl **stored-symmetric recursive all-1×1 envelope** | `FlStoredAllOnePivots`, `flBlockLDLTStoredAllOneByOneBound`, `fl_blockLDLT_stored_all_oneByOne_bound`, `higham11_3_FlStoredAllOnePivots`, `higham11_3_fl_storedAllOneByOneBound`, `higham11_3_fl_storedAllOneByOneBound_nonneg`, `higham11_3_fl_blockLDLT_stored_all_oneByOne_bound`, `higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne` | " | **new this session**; symmetric input + nonzero pivots along the stored-symmetric rounded Schur path ⇒ computed-style `L̂,D̂` factors with an accumulated componentwise envelope that includes the stored-vs-raw Schur defect at each level. The envelope is proved nonnegative and the all-1×1 stored path is packaged with explicit `ΔA₁, ΔA₂` witnesses in the source-facing interface shape. This removes the explicit per-stage symmetry hypothesis for the all-1×1 path. |
-| §4.2 all-1×1 perturbation norm/scalar aggregation | `higham11_3_infNorm_le_of_componentwise_bound_nonneg`, `higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne_with_norm_bounds`, `higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne_with_norm_bounds`, `higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne_of_uniform_envelope_bound`, `higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne_of_uniform_envelope_bound` | Ch11 | **new this session**; any nonnegative entrywise all-1×1 envelope now induces the corresponding `∞`-norm perturbation bound, both raw-Schur and stored-symmetric source-facing all-1×1 packages carry those norm bounds for `ΔA₁` and `ΔA₂`, and a scalar envelope majorant `β` now yields componentwise `β` and norm `nβ` budgets directly. This remains an all-1×1-path dependency and does **not** close the mixed-pivot Theorem 11.3 row. |
+| §4.2 all-1×1 perturbation norm/scalar aggregation | `higham11_3_infNorm_le_of_componentwise_bound_nonneg`, `higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne_with_norm_bounds`, `higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne_with_norm_bounds`, `higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne_of_uniform_envelope_bound`, `higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne_of_uniform_envelope_bound`, `higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne_of_pu_uniform_envelope_bound`, `higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne_of_pu_uniform_envelope_bound`, `higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne_of_pu_uniform_envelope_bound_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne_of_pu_uniform_envelope_bound_maxEntryNorm_A` | Ch11 | **new this session**; any nonnegative entrywise all-1×1 envelope now induces the corresponding `∞`-norm perturbation bound, both raw-Schur and stored-symmetric source-facing all-1×1 packages carry those norm bounds for `ΔA₁` and `ΔA₂`, and a scalar envelope majorant `β` yields componentwise `β` and norm `nβ` budgets directly. The source-scale wrappers specialize that scalar route to the printed-style `p*u*Amax` budget for both raw-Schur and stored-symmetric all-1×1 paths, and the source-norm variants instantiate `Amax` as the actual `maxEntryNorm A` while discharging nonnegativity internally. This remains an all-1×1-path dependency and does **not** close the mixed-pivot Theorem 11.3 row. |
 | Thm 11.3 structured factorization-envelope bridge | `higham11_3_blockLDLTBackwardErrorBound`, `higham11_3_blockLDLTBackwardErrorBound_nonneg`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_with_norm_bounds` | Ch11 | **new this session**; connects the shared `BlockLDLTBackwardError` structure to the Chapter 11 source-facing perturbation-witness interface with the printed first-order envelope `ε·\|L̂\|·\|D̂\|·\|L̂ᵀ\|`, using zero for the solve-side perturbation in this factorization-only bridge. The norm-bound variant also derives `∞`-norm bounds for both perturbation witnesses from the same structured envelope. This improves the interface plumbing but leaves the mixed-pivot floating-point induction and solve equation open. |
 | Thm 11.3 printed first-order source envelope bridge | `higham11_3_printedFirstOrderBound`, `higham11_3_printedFirstOrderBound_nonneg`, `higham11_3_blockLDLTBackwardErrorBound_le_printedFirstOrderBound`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_printed_first_order_bound_with_norm_bounds` | Ch11 | **new this session**; names the source first-order `(11.5)` envelope `p u (|A|+|L̂||D̂||L̂ᵀ|)` in permuted coordinates, proves its nonnegativity, shows the structured `ε|L̂||D̂||L̂ᵀ|` envelope is dominated when `ε≤pu`, and packages `BlockLDLTBackwardError` witnesses with componentwise and `∞`-norm bounds against that printed envelope. This still leaves the mixed-pivot fl induction and the higher-order term unmodeled. |
 | Thm 11.3 structured product-entry/max-entry bridges | `higham11_3_blockLDLTBackwardErrorBound_eq_epsilon_mul_productEntry`, `higham11_3_blockLDLTBackwardErrorBound_le_of_productEntry_le`, `higham11_3_blockLDLTBackwardErrorBound_le_epsilon_mul_productMax`, `higham11_3_blockLDLTBackwardErrorBound_le_epsilon_mul_maxEntryNorm_absLDLTProduct`, `higham11_3_blockLDLTBackwardErrorBound_le_epsilon_mul_higham_product_bound`, `higham11_3_blockLDLTBackwardErrorBound_le_pu_higham_product_bound`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_higham_product_bound`, `higham11_3_infNorm_le_card_mul_of_uniform_componentwise_bound`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_higham_product_bound_with_norm_bounds`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_higham_product_bound_with_norm_bounds` | Ch11 | **new this session**; identifies the structured 11.3 envelope as `ε` times the existing `|L̂||D̂||L̂ᵀ|` product-entry API and transports product-entry, product-max, max-entry-norm, and Higham-style product-max bounds to the envelope. The final consumers combine a `BlockLDLTBackwardError` certificate with a Higham product-max bound to produce Chapter 11 perturbation witnesses with the corresponding scalar product budget, including induced `∞`-norm bounds in the norm variant; the source-scale variant additionally consumes `ε≤p*u` and yields the direct printed-scale scalar budget `(p*u)*(36*n*ρₙ*Amax)`. This is a normalization bridge toward the printed `p(n)u(|A|+Pᵀ|L̂||D̂||L̂ᵀ|P)` form, not the remaining mixed-pivot induction. |
@@ -277,21 +278,32 @@ assumptions remain open in the not-proved ledger below.
 | Alg 11.2 case-(4) natural-scale local producer package | `higham11_4_bunch_kaufman_case4_twoByTwo_local_growth_weighted_row_sum_and_D_cap` | Ch11 | **new this session**; the accepted `2×2` branch now also bundles the two-step normalized Schur-growth estimate with the natural-scale weighted `CE⁻¹` row bound and concrete pivot-block `D̂` cap. This route avoids the extra `ωr≤ω1` relaxation required by the source-six row-sum package, leaving callers free to use the sharper weighted row estimate. |
 | Alg 11.2 active Bunch-Kaufman path skeleton | `higham11_4_BunchKaufmanActiveBranch`, `higham11_4_bunchKaufmanActiveBranch_toCase`, `higham11_4_bunchKaufmanActiveBranch_pivotSize`, `higham11_4_bunchKaufmanBranchSupportOffset`, `higham11_4_bunchKaufmanPathPivotSpan`, `higham11_4_bunchKaufmanPathPrefixSpan`, `higham11_4_BunchKaufmanPathStartOffsetsFrom`, `higham11_4_BunchKaufmanPathStartOffsets`, `higham11_4_bunchKaufmanPathLocalPivotIndex`, `higham11_4_bunchKaufmanPathLeadingPivotIndex`, `higham11_4_bunchKaufmanPathLastPivotIndex`, and the associated span/start uniqueness, ordering, branch-end, zero-based prefix endpoint, local-index interval/range/coverage, cross-branch disjointness, and final-slot endpoint bounds | Ch11 | **new this session**; introduces the finite active-branch path data needed by the remaining Theorem 11.4 pivot-path aggregation. The skeleton excludes the terminal `noAction` case, records that scalar branches consume one index and case-(4) consumes two, proves total-span and prefix-span bounds, supplies canonical start schedules whose branch blocks fit inside the full consumed span, exposes ordered-start plus immediate-successor prefix endpoint facts, embeds each branch-local pivot slot into the full consumed path span, identifies each branch embedding's range as the branch half-open interval, proves every consumed global index is covered by some branch-local slot, and proves earlier branch slots are ordered before later branch slots for local-to-global `L̂`/`D̂` placement. This is path infrastructure only; the global cap proof remains open. |
 | Thm 11.4 path block-diagonal `D̂` cap aggregation | `higham11_4_BunchKaufmanPathSameBranchPivotPair`, `higham11_4_BunchKaufmanPathBlockDiagonalD`, `higham11_4_BunchKaufmanPathLocalDEntryBound`, `higham11_4_bunchKaufmanPath_D_entry_bound_of_local_caps`, `higham11_4_bunchKaufmanPath_maxEntryNorm_D_le_of_local_caps`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_local_D_caps_uniform_row_sum`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_local_D_caps_uniform_row_sum`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_local_D_caps_row_sum_bounds`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_local_D_caps_row_sum_bounds` | Ch11 | **new this session**; packages the block-diagonal shape of the accepted pivot-block `D̂` matrix over a finite active Bunch-Kaufman path. If off-block entries are zero and every branch-local pivot block satisfies a uniform absolute entry cap, the cap holds for every global path entry and for the path `maxEntryNorm`; with either a uniform global `|L̂|` row-sum cap or row-dependent `|L̂|` row-sum caps and the exact Higham scalar budget comparison, the same local `D̂` caps now feed both the `|L̂||D̂||L̂ᵀ|` max-entry norm target and the scalar Bunch-Kaufman product certificate. This still requires the concrete path to supply the block-diagonal, local cap, and row-sum hypotheses. |
-| Thm 11.4 path local `L̂` row-sum aggregation | `higham11_4_BunchKaufmanPathLocalLRowSumBound`, `higham11_4_BunchKaufmanPathLocalLRowSumBound_of_uniform_local_caps`, `higham11_4_BunchKaufmanPathLocalLRowSumBound_of_source_six_local_caps`, `higham11_4_BunchKaufmanPathLocalLRowSumBound_of_local_entry_bounds`, `higham11_4_BunchKaufmanPathLocalLRowSumBound_of_uniform_entry_bound`, `higham11_4_BunchKaufmanPathLocalLRowSumBound_of_source_six_entry_bound`, `higham11_4_bunchKaufmanPath_L_row_sum_bound_of_local_caps`, `higham11_4_bunchKaufmanPath_L_row_sum_bound_of_uniform_local_caps`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_local_LD_caps_row_sum_bounds`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_local_LD_caps_row_sum_bounds`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_local_LD_caps_uniform_row_sum`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_local_LD_caps_uniform_row_sum` | Ch11 | **new this session**; records row-dependent, uniform, or source-six `|L̂|` row-sum caps on branch-local pivot rows, includes named constructors from uniform branch-local handoffs and row-local entry caps into the row-dependent local predicate, uses the path-local index coverage theorem to lift them to every consumed global row, and combines those local `L̂` caps with the path block-diagonal/local `D̂` cap package to feed the exact-coefficient max-entry and scalar product consumers. This still leaves the concrete branch producers and scalar budget comparison explicit. |
+| Thm 11.4 path local `L̂` row-sum aggregation | `higham11_4_BunchKaufmanPathLocalLRowSumBound`, `higham11_4_BunchKaufmanPathLocalLRowSumBound_of_uniform_local_caps`, `higham11_4_BunchKaufmanPathLocalLRowSumBound_of_source_six_local_caps`, `higham11_4_abs_row_sum_le_of_single_nonzero`, `higham11_4_abs_row_sum_le_of_two_nonzero`, `higham11_4_BunchKaufmanPathLocalLRowSumBound_of_single_nonzero_rows`, `higham11_4_BunchKaufmanPathLocalLRowSumBound_of_two_nonzero_rows`, `higham11_4_BunchKaufmanPathLocalLRowSumBound_of_local_entry_bounds`, `higham11_4_BunchKaufmanPathLocalLRowSumBound_of_uniform_entry_bound`, `higham11_4_BunchKaufmanPathLocalLRowSumBound_of_source_six_entry_bound`, `higham11_4_bunchKaufmanPath_L_row_sum_bound_of_local_caps`, `higham11_4_bunchKaufmanPath_L_row_sum_bound_of_uniform_local_caps`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_local_LD_caps_row_sum_bounds`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_local_LD_caps_row_sum_bounds`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_local_LD_caps_uniform_row_sum`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_local_LD_caps_uniform_row_sum` | Ch11 | **new this session**; records row-dependent, uniform, or source-six `|L̂|` row-sum caps on branch-local pivot rows, includes named constructors from uniform branch-local handoffs, finite one-/two-supported row facts, and row-local entry caps into the row-dependent local predicate, uses the path-local index coverage theorem to lift them to every consumed global row, and combines those local `L̂` caps with the path block-diagonal/local `D̂` cap package to feed the exact-coefficient max-entry and scalar product consumers. This still leaves the concrete branch producers and scalar budget comparison explicit. |
 | Thm 11.4 path source-six/growth-`D̂` product consumers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_local_LD_caps_uniform_row_sum_bound`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_local_LD_caps_uniform_row_sum_bound`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_local_LD_caps_uniform_six_row_sum_growth_D_bound`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_local_LD_caps_uniform_six_row_sum_growth_D_bound`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_of_local_L_row_sum_bound`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_maxEntryNorm_A_of_local_bounds`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_maxEntryNorm_A_of_local_L_row_sum_bound`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_source_six_growth_LD_package`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_source_six_growth_LD_package`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_source_six_growth_LD_package_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_source_six_growth_LD_package_maxEntryNorm_A`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_local_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_local_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_local_L_row_sum_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_local_L_row_sum_source_six_growth_bounds_maxEntryNorm_A` | Ch11 | **new this session**; adds the loose `36 n` path-level consumer for uniform branch-local `|L̂|` row sums and local block-diagonal `D̂` caps, then specializes it to source-six branch-local row sums plus a growth-scaled local `D̂≤ρₙ‖A‖` cap. The packaged route now names the remaining concrete path handoff as block diagonality, local branch row sums, and local `D̂` growth caps, with source-norm variants where the cap is measured against the actual `maxEntryNorm A`; the direct local-bound variants consume either the raw local row-cap hypotheses or the named local source-six row-sum predicate without requiring callers to build the package first. |
 | Thm 11.4 scalar/`2×2` path local-cap dispatch | `higham11_4_bunchKaufmanBranchLocalIndex_eq_leading_of_not_case4`, `higham11_4_BunchKaufmanPathLocalDEntryBound_of_scalar_and_twoByTwo_local_caps`, `higham11_4_BunchKaufmanPathLocalLRowSumBound_of_scalar_and_twoByTwo_local_caps`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_of_scalar_and_twoByTwo_local_caps`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_maxEntryNorm_A_of_scalar_and_twoByTwo_local_caps` | Ch11 | **new this session**; path-local `D̂` caps and source-six `L̂` row sums can now be supplied by scalar-branch leading-row/diagonal facts plus accepted-`2×2` full local-block facts. This is the caller-shape bridge from the Algorithm 11.2 branch producers to the existing path source-six/growth-`D̂` product, stability, solve, and factorization consumers; the block-diagonal `D̂` shape remains an explicit path obligation. |
 | Thm 11.4 branchwise cap-package handoff | `higham11_4_BunchKaufmanPathBranchwiseSourceSixGrowthCaps`, `higham11_4_BunchKaufmanPathLocalDEntryBound_of_branchwise_source_six_growth_caps`, `higham11_4_BunchKaufmanPathLocalLRowSumBound_of_branchwise_source_six_growth_caps`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_of_branchwise_source_six_growth_caps`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_maxEntryNorm_A_of_branchwise_source_six_growth_caps` | Ch11 | **new this session**; names the per-branch handoff expected from the Algorithm 11.2 local producer packages: scalar branches provide their leading diagonal and leading `L̂` row cap, while accepted case-(4) branches provide the full local `D̂` block and both local `L̂` row caps. The predicate now projects to the path-local `D̂` and source-six `L̂` row-sum predicates and builds the source-norm package consumed by the product/stability/solve/factorization bridges. |
+| Thm 11.4 branchwise cap-package constructors | `higham11_4_BunchKaufmanPathBranchwiseSourceSixGrowthCaps_of_scalar_and_twoByTwo_local_caps`, `higham11_4_BunchKaufmanPathBranchwiseSourceSixGrowthCaps_of_local_D_entry_and_L_row_sum_bounds`, `higham11_4_BunchKaufmanPathBranchwiseSourceSixGrowthCaps_of_local_D_entry_and_single_nonzero_L_rows`, `higham11_4_BunchKaufmanPathBranchwiseSourceSixGrowthCaps_of_local_D_entry_and_two_nonzero_L_rows` | Ch11 | **new this session**; the branchwise source-six/growth cap predicate can now be assembled either from separated scalar-branch and accepted-`2×2` local obligations, from the existing path-local `D̂` entry-bound and source-six `L̂` row-sum predicates, or directly from local `D̂` entry caps plus one-/two-supported branch-local `L̂` rows. This gives the concrete pivot-path induction a named producer target before invoking the downstream package, aggregation, product, stability, solve, and factorization consumers. |
 | Thm 11.4 branchwise cap-package global aggregators | `higham11_4_bunchKaufmanPath_D_entry_bound_of_branchwise_source_six_growth_caps`, `higham11_4_bunchKaufmanPath_maxEntryNorm_D_le_of_branchwise_source_six_growth_caps`, `higham11_4_bunchKaufmanPath_L_row_sum_bound_of_branchwise_source_six_growth_caps` | Ch11 | **new this session**; branchwise cap packages now feed the global path `D̂` entry cap, `D̂` max-entry cap, and full consumed-row `L̂` source-six row-sum cap directly. The block-diagonal `D̂` shape and nonnegative `Dmax` remain explicit where needed. |
 | Thm 11.4 source-norm branchwise `D̂` aggregators | `higham11_4_bunchKaufmanPath_D_entry_bound_of_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_maxEntryNorm_D_le_of_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_D_entry_bound_of_offbranch_local_entries_zero_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_maxEntryNorm_D_le_of_offbranch_local_entries_zero_branchwise_source_six_growth_caps_maxEntryNorm_A` | Ch11 | **new this session**; the named branchwise source-six/growth cap package now feeds source-norm global `D̂` entry and max-entry aggregation while deriving `0≤ρₙ‖A‖_M` from `ρₙ≥0`. The off-branch-zero variants discharge the block-diagonal `D̂` shape internally. |
 | Thm 11.4 scalar/`2×2` global cap aggregators | `higham11_4_bunchKaufmanPath_D_entry_bound_of_scalar_and_twoByTwo_local_caps`, `higham11_4_bunchKaufmanPath_maxEntryNorm_D_le_of_scalar_and_twoByTwo_local_caps`, `higham11_4_bunchKaufmanPath_L_row_sum_bound_of_scalar_and_twoByTwo_local_caps`, `higham11_4_bunchKaufmanPath_D_entry_bound_of_offbranch_local_entries_zero_scalar_and_twoByTwo_local_caps`, `higham11_4_bunchKaufmanPath_maxEntryNorm_D_le_of_offbranch_local_entries_zero_scalar_and_twoByTwo_local_caps` | Ch11 | **new this session**; scalar-branch and accepted-`2×2` local cap obligations now project directly to global consumed-path `D̂` entry caps, `D̂` max-entry caps, and `L̂` source-six row-sum caps. The off-branch-zero variants discharge the block-diagonal `D̂` shape internally, leaving concrete off-branch zeros plus local scalar/`2×2` cap facts as the caller obligations. |
 | Thm 11.4 source-norm scalar/`2×2` `D̂` aggregators | `higham11_4_bunchKaufmanPath_D_entry_bound_of_scalar_and_twoByTwo_local_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_maxEntryNorm_D_le_of_scalar_and_twoByTwo_local_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_D_entry_bound_of_offbranch_local_entries_zero_scalar_and_twoByTwo_local_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_maxEntryNorm_D_le_of_offbranch_local_entries_zero_scalar_and_twoByTwo_local_caps_maxEntryNorm_A` | Ch11 | **new this session**; source-norm local `D̂` caps now aggregate to global entry and max-entry bounds while deriving `0≤ρₙ‖A‖_M` from `ρₙ≥0` and `maxEntryNorm_nonneg`. The off-branch variants also discharge the path block-diagonal shape from concrete off-branch zeros. |
 | Thm 11.4 source-norm global `L̂`/`D̂` cap bundles | `higham11_4_bunchKaufmanPath_global_LD_bounds_of_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_global_LD_bounds_of_offbranch_local_entries_zero_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_global_LD_bounds_of_scalar_and_twoByTwo_local_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_global_LD_bounds_of_offbranch_local_entries_zero_scalar_and_twoByTwo_local_caps_maxEntryNorm_A` | Ch11 | **new this session**; branchwise cap-package and raw scalar/`2×2` local obligations now produce the two global path facts together: source-norm `D̂` entry caps and source-six `L̂` row-sum caps. The off-branch variants also discharge the block-diagonal `D̂` shape from concrete off-branch zeros, matching the remaining product aggregation input shape. |
-| Thm 11.4 global source-six/growth predicate producers | `higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_offbranch_local_entries_zero_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_scalar_and_twoByTwo_local_caps_maxEntryNorm_A`, `higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_offbranch_local_entries_zero_scalar_and_twoByTwo_local_caps_maxEntryNorm_A` | Ch11 | **new this session**; the branchwise cap predicate and the raw scalar/accepted-`2×2` local-cap routes now target the named global source-six/growth-bound predicate directly. Off-branch variants discharge the block-diagonal `D̂` shape from concrete zero entries before producing the named predicate. |
+| Thm 11.4 global source-six/growth predicate producers | `higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_offbranch_local_entries_zero_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_offbranch_D_entries_zero_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_local_D_entry_and_single_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_local_D_entry_and_two_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_offbranch_D_entries_zero_local_D_entry_and_single_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_offbranch_D_entries_zero_local_D_entry_and_two_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_scalar_and_twoByTwo_local_caps_maxEntryNorm_A`, `higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_offbranch_local_entries_zero_scalar_and_twoByTwo_local_caps_maxEntryNorm_A`, `higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_offbranch_D_entries_zero_scalar_and_twoByTwo_local_caps_maxEntryNorm_A` | Ch11 | **new this session**; the branchwise cap predicate, local `D̂` plus one-/two-supported `L̂` row routes, and the raw scalar/accepted-`2×2` local-cap routes now target the named global source-six/growth-bound predicate directly. Off-branch variants discharge the block-diagonal `D̂` shape from either concrete zero entries or the named off-branch-zero predicate before producing the named global predicate. |
 | Thm 11.4 global source-six/growth product consumers | `higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds`, `higham11_4_product_entries_of_path_global_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_global_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_global_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunch_kaufman_stability_of_path_global_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_global_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_global_source_six_growth_bounds_maxEntryNorm_A_product` | Ch11 | **new this session**; once a concrete pivot path has global source-norm `D̂` entry caps and source-six `L̂` row-sum caps, those facts now feed the product-entry estimate, max-entry norm target, scalar product certificate, pointwise stability surface, and both solve-budget forms directly. This connects the new global `L̂`/`D̂` bundles to the exact consumer shape without rebuilding the local package. |
-| Thm 11.4 off-branch path `D̂` shape handoff | `higham11_4_BunchKaufmanPathBlockDiagonalD_of_offbranch_local_entries_zero`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_of_offbranch_local_entries_zero_branchwise_source_six_growth_caps`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_maxEntryNorm_A_of_offbranch_local_entries_zero_branchwise_source_six_growth_caps` | Ch11 | **new this session**; concrete pivot paths can now prove the `D̂` block-diagonal shape by showing that every entry between distinct active branches is zero. The off-branch zero handoff combines directly with the named branchwise source-six/growth cap predicate to build both the generic and source-norm path `L̂`/`D̂` packages consumed by the product, stability, solve, and factorization bridges. |
+| Thm 11.4 branchwise/off-branch source-six/growth product-entry endpoints | `higham11_4_product_entries_of_path_branchwise_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_product_entries_of_path_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_product_entries_of_path_offbranch_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_product_entries_of_path_offbranch_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_product_entries_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_product_entries_of_path_offbranch_D_entries_zero_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_product_entries_of_path_local_D_single_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_product_entries_of_path_local_D_two_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_product_entries_of_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_product_entries_of_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_maxEntryNorm_A` | Ch11 | **new this session**; the scalar/accepted-`2×2` local-cap route, the named branchwise cap predicate, and the local source-growth `D̂` plus one-/two-supported `L̂` row routes now feed the pointwise `\|L̂\|\|D̂\|\|L̂ᵀ\|` product-entry estimate directly, with an explicit block-diagonal `D̂` hypothesis, concrete off-branch zero facts, or the named off-branch-zero predicate. These are source-shaped endpoints for callers that need the entrywise product estimate before selecting the max-entry, scalar certificate, stability, or solve consumer. |
+| Thm 11.4 sparse-row max-entry/scalar product endpoints | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_local_D_single_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_local_D_two_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_local_D_single_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_local_D_two_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_maxEntryNorm_A` | Ch11 | **new this session**; the local source-growth `D̂` cap plus one-/two-supported `L̂` row hypotheses now feed the source-shaped max-entry norm target and scalar product certificate directly. The variants accept either an explicit path block-diagonal `D̂` shape or the named off-branch-zero predicate, removing the caller-side global source-six/growth predicate construction while leaving the concrete sparse-row and local `D̂` obligations visible. |
+| Thm 11.4 sparse-row stability endpoints | `higham11_4_bunch_kaufman_stability_of_path_local_D_single_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_bunch_kaufman_stability_of_path_local_D_two_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_bunch_kaufman_stability_of_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_bunch_kaufman_stability_of_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_maxEntryNorm_A` | Ch11 | **new this session**; the same local source-growth `D̂` plus one-/two-supported `L̂` row hypotheses now feed the pointwise Bunch-Kaufman stability surface directly. As with the max-entry/scalar endpoints, callers may supply either an explicit block-diagonal `D̂` shape or the named off-branch-zero predicate, while the genuine sparse-row and local `D̂` obligations remain explicit. |
+| Thm 11.4 sparse-row finite-product solve endpoints | `higham11_4_bunch_kaufman_solve_backward_error_of_path_local_D_single_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_local_D_two_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_maxEntryNorm_A` | Ch11 | **new this session**; finite-product triangular-solve residual budgets can now be converted to the source-shaped `36nρₙu‖A‖_M` perturbation bound directly from local source-growth `D̂` caps plus one-/two-supported `L̂` row hypotheses. The block-diagonal and named off-branch-zero variants match the sparse-row product and stability endpoint shapes. |
+| Thm 11.4 sparse-row product-norm solve endpoints | `higham11_4_bunch_kaufman_solve_backward_error_of_path_local_D_single_nonzero_L_rows_maxEntryNorm_A_product`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_local_D_two_nonzero_L_rows_maxEntryNorm_A_product`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_maxEntryNorm_A_product`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_maxEntryNorm_A_product` | Ch11 | **new this session**; solve residual budgets stated against `‖|L̂||D̂||L̂ᵀ|‖_M` now have the same direct sparse-row endpoint shape as the finite-product solve route. This removes another caller-side construction step between local sparse `L̂`/`D̂` facts and the source-shaped Bunch-Kaufman solve perturbation bound. |
+| Thm 11.3/11.4 sparse-row factorization product-scale endpoints | `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_local_D_single_nonzero_L_rows_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_local_D_two_nonzero_L_rows_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_maxEntryNorm_A` | Ch11 | **new this session**; the structured `BlockLDLTBackwardError` product-scale factorization interface now has direct sparse-row endpoints from local source-growth `D̂` caps plus one-/two-supported `L̂` rows. These wrappers instantiate the global source-six/growth product certificate route internally while keeping the actual block-LDLᵀ backward-error certificate and sparse local cap obligations visible. |
+| Thm 11.3/11.4 sparse-row factorization norm/source-scale endpoints | `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_local_D_single_nonzero_L_rows_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_local_D_two_nonzero_L_rows_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_local_D_single_nonzero_L_rows_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_local_D_two_nonzero_L_rows_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_with_norm_bounds_maxEntryNorm_A` | Ch11 | **new this session**; the sparse-row factorization route now also exposes the `∞`-norm perturbation-witness bounds and the direct `ε≤p*u` source-scale budget from the same local source-growth `D̂` and one-/two-supported `L̂` row hypotheses. The wrappers preserve both block-diagonal and named off-branch-zero caller shapes while reusing the global source-six/growth factorization consumers internally. |
+| Thm 11.4 off-branch path `D̂` shape handoff | `higham11_4_BunchKaufmanPathOffBranchDEntriesZero`, `higham11_4_BunchKaufmanPathBlockDiagonalD_of_offbranch_local_entries_zero`, `higham11_4_BunchKaufmanPathBlockDiagonalD_of_offbranch_D_entries_zero`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_of_offbranch_local_entries_zero_branchwise_source_six_growth_caps`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_maxEntryNorm_A_of_offbranch_local_entries_zero_branchwise_source_six_growth_caps` | Ch11 | **new this session**; concrete pivot paths can now prove the `D̂` block-diagonal shape by showing that every entry between distinct active branches is zero, either in the raw quantified shape or as the named off-branch-zero predicate. The off-branch zero handoff combines directly with the named branchwise source-six/growth cap predicate to build both the generic and source-norm path `L̂`/`D̂` packages consumed by the product, stability, solve, and factorization bridges. |
 | Thm 11.4 off-branch scalar/`2×2` local-cap package handoff | `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_of_offbranch_local_entries_zero_scalar_and_twoByTwo_local_caps`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_maxEntryNorm_A_of_offbranch_local_entries_zero_scalar_and_twoByTwo_local_caps` | Ch11 | **new this session**; concrete off-branch zeros plus scalar-branch and accepted-`2×2` local `D̂`/`L̂` caps now build the generic and source-norm path source-six/growth packages directly. Final product, stability, solve, and factorization consumers can reuse this package-level handoff while keeping the real pivot-path obligations explicit. |
-| Thm 11.4/11.3 off-branch cap-package consumers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_offbranch_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_offbranch_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunch_kaufman_stability_of_path_offbranch_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_source_six_growth_caps_maxEntryNorm_A_product`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_source_six_growth_caps_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_source_six_growth_caps_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_offbranch_source_six_growth_caps_with_norm_bounds_maxEntryNorm_A` | Ch11 | **new this session**; the source-norm product, scalar product-certificate, stability, solve, and factorization consumers now accept concrete off-branch zero entries plus the named branchwise cap predicate directly. This removes the caller-side construction of `BunchKaufmanPathBlockDiagonalD` while leaving the genuine concrete obligations explicit: off-branch `D̂` zeros, branchwise caps, nonnegative `ρₙ`, and the solve or factorization certificate. |
-| Thm 11.4/11.3 off-branch scalar/`2×2` local-cap consumers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_offbranch_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_offbranch_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunch_kaufman_stability_of_path_offbranch_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_source_six_growth_bounds_maxEntryNorm_A_product`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_source_six_growth_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_source_six_growth_bounds_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_offbranch_source_six_growth_bounds_with_norm_bounds_maxEntryNorm_A` | Ch11 | **new this session**; the source-norm product, scalar product-certificate, stability, solve, and factorization consumers now accept concrete off-branch zero entries together with scalar-branch and accepted-`2×2` local `D̂`/`L̂` cap obligations directly. This matches the shape produced by the Algorithm 11.2 local branch lemmas while preserving the remaining real work: prove those local caps and off-branch zeros for the concrete pivot path. |
+| Thm 11.4 named off-branch package/global-cap handoffs | `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_of_offbranch_D_entries_zero_scalar_and_twoByTwo_local_caps`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_maxEntryNorm_A_of_offbranch_D_entries_zero_scalar_and_twoByTwo_local_caps`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_of_offbranch_D_entries_zero_branchwise_source_six_growth_caps`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_maxEntryNorm_A_of_offbranch_D_entries_zero_branchwise_source_six_growth_caps`, `higham11_4_bunchKaufmanPath_D_entry_bound_of_offbranch_D_entries_zero_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_maxEntryNorm_D_le_of_offbranch_D_entries_zero_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_D_entry_bound_of_offbranch_D_entries_zero_scalar_and_twoByTwo_local_caps`, `higham11_4_bunchKaufmanPath_maxEntryNorm_D_le_of_offbranch_D_entries_zero_scalar_and_twoByTwo_local_caps`, `higham11_4_bunchKaufmanPath_D_entry_bound_of_offbranch_D_entries_zero_scalar_and_twoByTwo_local_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_maxEntryNorm_D_le_of_offbranch_D_entries_zero_scalar_and_twoByTwo_local_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_global_LD_bounds_of_offbranch_D_entries_zero_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_global_LD_bounds_of_offbranch_D_entries_zero_scalar_and_twoByTwo_local_caps_maxEntryNorm_A` | Ch11 | **new this session**; the named off-branch-zero predicate now feeds the generic/source-norm package constructors, source-norm `D̂` entry and max-entry aggregators, and combined global `D̂`/`L̂` source-six bound bundles directly. This aligns the package and aggregation handoffs with the existing named-predicate product, stability, solve, and factorization consumers while preserving the concrete local cap obligations. |
+| Thm 11.4/11.3 off-branch cap-package consumers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_offbranch_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_offbranch_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_offbranch_D_entries_zero_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_offbranch_D_entries_zero_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunch_kaufman_stability_of_path_offbranch_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_source_six_growth_caps_maxEntryNorm_A_product`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_source_six_growth_caps_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_source_six_growth_caps_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_offbranch_source_six_growth_caps_with_norm_bounds_maxEntryNorm_A` | Ch11 | **new this session**; the source-norm product, scalar product-certificate, stability, solve, and factorization consumers now accept concrete off-branch zero entries plus the named branchwise cap predicate directly, and the product/scalar certificate route also accepts the named off-branch-zero predicate. This removes the caller-side construction of `BunchKaufmanPathBlockDiagonalD` while leaving the genuine concrete obligations explicit: off-branch `D̂` zeros, branchwise caps, nonnegative `ρₙ`, and the solve or factorization certificate. |
+| Thm 11.4/11.3 named off-branch cap-package consumers | `higham11_4_bunch_kaufman_stability_of_path_offbranch_D_entries_zero_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_source_six_growth_caps_maxEntryNorm_A_product`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_source_six_growth_caps_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_source_six_growth_caps_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_offbranch_D_entries_zero_source_six_growth_caps_with_norm_bounds_maxEntryNorm_A` | Ch11 | **new this session**; the named off-branch-zero predicate now feeds the cap-package stability, solve, and Theorem 11.3 factorization consumer surfaces directly, matching the product/scalar certificate named-predicate route and avoiding caller-side expansion of the off-branch `D̂` zero predicate. |
+| Thm 11.4/11.3 off-branch scalar/`2×2` local-cap consumers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_offbranch_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_offbranch_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunch_kaufman_stability_of_path_offbranch_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_source_six_growth_bounds_maxEntryNorm_A_product`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_source_six_growth_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_source_six_growth_bounds_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_offbranch_source_six_growth_bounds_with_norm_bounds_maxEntryNorm_A` | Ch11 | **new this session**; the source-norm product, scalar product-certificate, stability, solve, and factorization consumers now accept concrete off-branch zero entries together with scalar-branch and accepted-`2×2` local `D̂`/`L̂` cap obligations directly, and the product/scalar certificate route also accepts the named off-branch-zero predicate. This matches the shape produced by the Algorithm 11.2 local branch lemmas while preserving the remaining real work: prove those local caps and off-branch zeros for the concrete pivot path. |
+| Thm 11.4/11.3 named off-branch scalar/`2×2` local-cap consumers | `higham11_4_bunch_kaufman_stability_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A_product`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_source_six_growth_bounds_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_offbranch_D_entries_zero_source_six_growth_bounds_with_norm_bounds_maxEntryNorm_A` | Ch11 | **new this session**; scalar-branch and accepted-`2×2` local-cap stability, solve, and Theorem 11.3 factorization consumers now accept the named off-branch-zero predicate directly, matching the concrete off-branch route while preserving the actual local cap and solve/factorization certificate hypotheses. |
 | Thm 11.4/11.3 branchwise cap-package consumers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunch_kaufman_stability_of_path_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_branchwise_source_six_growth_caps_maxEntryNorm_A_product`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_branchwise_source_six_growth_caps_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_branchwise_source_six_growth_caps_with_norm_bounds_maxEntryNorm_A` | Ch11 | **new this session**; the named branchwise cap predicate now feeds the product, stability, solve, and factorization consumers directly through the path source-six/growth package. The remaining concrete obligations stay explicit: block-diagonal `D̂`, branchwise caps, nonnegative `ρₙ`, and the solve or factorization certificates. |
 | Thm 11.4 branchwise path product/stability/solve consumers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_branchwise_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_branchwise_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunch_kaufman_stability_of_path_branchwise_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_branchwise_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_branchwise_source_six_growth_bounds_maxEntryNorm_A_product` | Ch11 | **new this session**; the scalar/`2×2` path local-cap dispatch now feeds the source-norm product bound, scalar product certificate, pointwise stability bridge, and both solve-side perturbation consumers directly. The remaining concrete path obligations are the block-diagonal `D̂` shape, branchwise accepted-pivot `D̂` caps, branchwise source-six `L̂` row sums, and the triangular-solve residual budget. |
 | Thm 11.4 path source-six/growth-`D̂` stability/solve package consumers | `higham11_4_bunch_kaufman_stability_of_path_source_six_growth_LD_package`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_source_six_growth_LD_package`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_source_six_growth_LD_package_maxEntryNorm`, `higham11_4_bunch_kaufman_stability_of_path_source_six_growth_LD_package_maxEntryNorm_A`, `higham11_4_bunch_kaufman_stability_of_path_local_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_source_six_growth_LD_package_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_source_six_growth_LD_package_maxEntryNorm_A_product`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_local_source_six_growth_bounds_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_local_source_six_growth_bounds_maxEntryNorm_A_product` | Ch11 | **new this session**; carries the packaged path source-six/growth-`D̂` assumptions through the existing pointwise stability and solve-budget bridges. Callers can now provide the local path package plus either a product-max or `maxEntryNorm` triangular-solve budget without separately invoking the intermediate product certificate, and the source-norm variants derive the source entry majorant and nonnegativity directly from `maxEntryNorm A`; the direct local-bound stability and solve variants take the concrete block-diagonal/`D̂`/`L̂` path obligations directly. |
@@ -4982,6 +4994,80 @@ Problem transcription.
     clean. Target-build warnings are pre-existing upstream warnings from
     Chapter 9, Chapter 10, and `CholeskyFl`; no new Chapter 11 warning was
     emitted.
+  - 2026-07-13 Theorem 11.8 source-norm growth-factor transport increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused checks of `higham11_8_aasenSourceNormwiseBackwardBound`,
+    `higham11_8_aasenSourceNormwiseBackwardBound_of_T_hat_cap`,
+    `higham11_8_aasenSourceNormwiseBackwardBound_of_infNorm_T_hat_le_printed_mul_infNorm`,
+    `higham11_8_aasenSourceNormwiseBackwardBound_of_infNorm_T_hat_le_kappa_mul_infNorm`,
+    `higham11_8_aasenSourceNormwiseBackwardBound_of_T_hat_eq_T_and_aasenGrowthBound`,
+    and
+    `higham11_8_aasen_source_normwise_backward_error_of_normwise_backward_error`
+    → elaborate; theorem dependencies `[propext, Classical.choice, Quot.sound]`.
+    Hygiene checks `git diff --check`, placeholder scan over the changed Lean
+    file, diff scan over added report lines, and tab scans over the touched
+    files were clean. Target-build warnings are pre-existing upstream warnings
+    from Chapter 9, Chapter 10, and `CholeskyFl`; no new Chapter 11 warning was
+    emitted.
+  - 2026-07-13 Theorem 11.8 source-norm existential transport wrapper
+    increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused checks of
+    `higham11_8_aasen_source_normwise_backward_error_of_infNorm_T_hat_le_kappa_mul_infNorm`
+    and
+    `higham11_8_aasen_source_normwise_backward_error_of_T_hat_eq_T_and_aasenGrowthBound`
+    → elaborate; theorem dependencies `[propext, Classical.choice, Quot.sound]`.
+    This follow-up exposes the whole perturbation-existence result under either
+    a computed-middle `κ‖A‖∞` cap or an exact-middle growth-bound predicate,
+    rather than only transporting the scalar norm predicate.
+    Hygiene checks `git diff --check`, placeholder scan over the changed Lean
+    file, diff scan over added report lines, and tab scans over the touched
+    files were clean. Target-build warnings are pre-existing upstream warnings
+    from Chapter 9, Chapter 10, and `CholeskyFl`; no new Chapter 11 warning was
+    emitted.
+  - 2026-07-13 Theorem 11.8 relative source-norm growth-factor transport
+    increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused checks of
+    `higham11_8_aasenSourceNormwiseBackwardBound_of_infNorm_T_hat_le_kappa_mul_infNorm_relative_growth_cap`
+    and
+    `higham11_8_aasen_source_normwise_backward_error_of_infNorm_T_hat_le_kappa_mul_infNorm_relative_growth_cap`
+    → elaborate; theorem dependencies `[propext, Classical.choice, Quot.sound]`.
+    This follow-up reuses the existing computed-middle source-norm transport
+    after deriving `κ≤4^(n-2)` from the relative-route scalar comparison
+    `(1+γ)κ≤4^(n-2)` with `γ≥0` and `κ≥0`, preserving the concrete middle
+    comparison and factorization obligations as caller hypotheses.
+    Hygiene checks `git diff --check`, placeholder scan over the changed Lean
+    file, diff scan over added report lines, and tab scans over the touched
+    files were clean. Target-build warnings are pre-existing upstream warnings
+    from Chapter 9, Chapter 10, and `CholeskyFl`; no new Chapter 11 warning was
+    emitted.
+  - 2026-07-14 Theorem 11.8 max-entry source-norm transport increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    declaration-shaped forbidden-token scan and tab scan of
+    `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused checks of
+    `LeanFpAnalysis.FP.higham11_8_aasenSourceNormwiseBackwardBound_of_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`,
+    `LeanFpAnalysis.FP.higham11_8_aasenSourceNormwiseBackwardBound_of_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`,
+    `LeanFpAnalysis.FP.higham11_8_aasen_source_normwise_backward_error_of_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`,
+    and
+    `LeanFpAnalysis.FP.higham11_8_aasen_source_normwise_backward_error_of_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`
+    → elaborate; representative existential max-entry source-norm transport
+    theorem axioms `[propext, Classical.choice, Quot.sound]`.
+    This increment routes computed-middle `maxEntryNorm` caps into the existing
+    source `∞`-norm Aasen transport only under the explicit conversion
+    conditions `nκ≤4^(n-2)` or `n(1+γ)κ≤4^(n-2)`. Target-build warnings were
+    the known upstream Chapter 9, Chapter 10, and `CholeskyFl` warnings; no new
+    Chapter 11 warning was emitted.
   - 2026-07-11 Theorem 11.8 exact-`T_hat` sigma-id relative-middle alias
     increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
@@ -7713,6 +7799,24 @@ Problem transcription.
     and
     `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_offbranch_local_entries_zero_scalar_and_twoByTwo_local_caps_maxEntryNorm_A`
     → elaborate; global source-six/growth predicate producer theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-13 Theorem 11.4 named off-branch `D̂` zero predicate increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathBlockDiagonalD_of_offbranch_D_entries_zero`,
+    `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_offbranch_D_entries_zero_branchwise_source_six_growth_caps_maxEntryNorm_A`,
+    and
+    `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_offbranch_D_entries_zero_scalar_and_twoByTwo_local_caps_maxEntryNorm_A`
+    → elaborate; named off-branch producer theorem axioms `[propext, Classical.choice, Quot.sound]`.
+    The new predicate `higham11_4_BunchKaufmanPathOffBranchDEntriesZero`
+    gives concrete pivot-path proofs a stable target for the off-branch
+    `D̂` zero obligation before producing the global source-six/growth facts.
+    Hygiene checks `git diff --check`, forbidden-token scan over the changed
+    Lean file, diff scan over added report lines, and tab scans over the
+    touched files were clean. Target-build warnings are pre-existing upstream
+    warnings from Chapter 9, Chapter 10, and `CholeskyFl`; no new Chapter 11
+    warning was emitted.
   - 2026-07-13 Theorem 11.4 global source-six/growth product consumer increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
     `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
@@ -7824,6 +7928,346 @@ Problem transcription.
     and
     `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_solve_backward_error_of_path_branchwise_source_six_growth_bounds_maxEntryNorm_A_product`
     → elaborate; branchwise product/stability/solve theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-13 Theorem 11.4 branchwise/off-branch product-entry endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    Lean forbidden-token scan and tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean
+    (the full report token scan still sees pre-existing verification prose naming the tokens);
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_4_product_entries_of_path_branchwise_source_six_growth_bounds_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_product_entries_of_path_branchwise_source_six_growth_caps_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_product_entries_of_path_offbranch_source_six_growth_bounds_maxEntryNorm_A`,
+    and
+    `LeanFpAnalysis.FP.higham11_4_product_entries_of_path_offbranch_source_six_growth_caps_maxEntryNorm_A`
+    → elaborate; branchwise/off-branch product-entry theorem axioms `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-14 Theorem 11.4 named off-branch `D̂` zero consumer increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    forbidden-token and tab scans of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_4_product_entries_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_product_entries_of_path_offbranch_D_entries_zero_source_six_growth_caps_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_offbranch_D_entries_zero_source_six_growth_caps_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_bunchKaufmanMaxEntryProductBound_of_path_offbranch_D_entries_zero_source_six_growth_caps_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A`,
+    and
+    `LeanFpAnalysis.FP.higham11_4_bunchKaufmanMaxEntryProductBound_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A`
+    → elaborate; named off-branch consumer theorem/alias axioms `[propext, Classical.choice, Quot.sound]`.
+    The target-build warnings are pre-existing upstream warnings from Chapter 9,
+    Chapter 10, and `CholeskyFl`; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.4/11.3 named off-branch cap-package consumer increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    forbidden-token and tab scans of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_stability_of_path_offbranch_D_entries_zero_source_six_growth_caps_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_source_six_growth_caps_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_source_six_growth_caps_maxEntryNorm_A_product`,
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_source_six_growth_caps_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_source_six_growth_caps_with_norm_bounds_maxEntryNorm_A`,
+    and
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_offbranch_D_entries_zero_source_six_growth_caps_with_norm_bounds_maxEntryNorm_A`
+    → elaborate; named off-branch cap-package consumer theorem/alias axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.4/11.3 named off-branch scalar/`2×2` local-cap consumer increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    forbidden-token and tab scans of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_stability_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A_product`,
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_source_six_growth_bounds_with_norm_bounds_maxEntryNorm_A`,
+    and
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_offbranch_D_entries_zero_source_six_growth_bounds_with_norm_bounds_maxEntryNorm_A`
+    → elaborate; named off-branch local-cap consumer theorem/alias axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.4 named off-branch package/global-cap handoff increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    forbidden-token and tab scans of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_of_offbranch_D_entries_zero_scalar_and_twoByTwo_local_caps`,
+    `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_maxEntryNorm_A_of_offbranch_D_entries_zero_scalar_and_twoByTwo_local_caps`,
+    `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_of_offbranch_D_entries_zero_branchwise_source_six_growth_caps`,
+    `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_maxEntryNorm_A_of_offbranch_D_entries_zero_branchwise_source_six_growth_caps`,
+    `LeanFpAnalysis.FP.higham11_4_bunchKaufmanPath_D_entry_bound_of_offbranch_D_entries_zero_branchwise_source_six_growth_caps_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_bunchKaufmanPath_maxEntryNorm_D_le_of_offbranch_D_entries_zero_branchwise_source_six_growth_caps_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_bunchKaufmanPath_D_entry_bound_of_offbranch_D_entries_zero_scalar_and_twoByTwo_local_caps`,
+    `LeanFpAnalysis.FP.higham11_4_bunchKaufmanPath_maxEntryNorm_D_le_of_offbranch_D_entries_zero_scalar_and_twoByTwo_local_caps`,
+    `LeanFpAnalysis.FP.higham11_4_bunchKaufmanPath_D_entry_bound_of_offbranch_D_entries_zero_scalar_and_twoByTwo_local_caps_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_bunchKaufmanPath_maxEntryNorm_D_le_of_offbranch_D_entries_zero_scalar_and_twoByTwo_local_caps_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_bunchKaufmanPath_global_LD_bounds_of_offbranch_D_entries_zero_branchwise_source_six_growth_caps_maxEntryNorm_A`,
+    and
+    `LeanFpAnalysis.FP.higham11_4_bunchKaufmanPath_global_LD_bounds_of_offbranch_D_entries_zero_scalar_and_twoByTwo_local_caps_maxEntryNorm_A`
+    → elaborate; named off-branch package/global-cap handoff theorem axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.4 branchwise cap-package constructor increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    forbidden-token and tab scans of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathBranchwiseSourceSixGrowthCaps_of_scalar_and_twoByTwo_local_caps`
+    and
+    `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathBranchwiseSourceSixGrowthCaps_of_local_D_entry_and_L_row_sum_bounds`
+    → elaborate; branchwise cap-package constructor theorem axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.4 finite-support row-sum constructor increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    declaration-shaped forbidden-token scan and tab scan of
+    `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_4_abs_row_sum_le_of_single_nonzero`,
+    `LeanFpAnalysis.FP.higham11_4_abs_row_sum_le_of_two_nonzero`,
+    `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathLocalLRowSumBound_of_single_nonzero_rows`,
+    and
+    `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathLocalLRowSumBound_of_two_nonzero_rows`
+    → elaborate; finite-support row-sum theorem axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.4 branchwise sparse-row cap-package constructor increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    declaration-shaped forbidden-token scan and tab scan of
+    `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathBranchwiseSourceSixGrowthCaps_of_local_D_entry_and_single_nonzero_L_rows`
+    and
+    `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathBranchwiseSourceSixGrowthCaps_of_local_D_entry_and_two_nonzero_L_rows`
+    → elaborate; branchwise sparse-row package theorem axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.4 global sparse-row source-six/growth producer increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    declaration-shaped forbidden-token scan and tab scan of
+    `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_local_D_entry_and_single_nonzero_L_rows_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_local_D_entry_and_two_nonzero_L_rows_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_offbranch_D_entries_zero_local_D_entry_and_single_nonzero_L_rows_maxEntryNorm_A`,
+    and
+    `LeanFpAnalysis.FP.higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_offbranch_D_entries_zero_local_D_entry_and_two_nonzero_L_rows_maxEntryNorm_A`
+    → elaborate; global sparse-row source-six/growth theorem axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.4 sparse-row product-entry endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    declaration-shaped forbidden-token scan and tab scan of
+    `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_4_product_entries_of_path_local_D_single_nonzero_L_rows_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_product_entries_of_path_local_D_two_nonzero_L_rows_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_product_entries_of_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_maxEntryNorm_A`,
+    and
+    `LeanFpAnalysis.FP.higham11_4_product_entries_of_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_maxEntryNorm_A`
+    → elaborate; sparse-row product-entry theorem axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.4 sparse-row max-entry/scalar product endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    declaration-shaped forbidden-token scan and tab scan of
+    `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_local_D_single_nonzero_L_rows_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_local_D_two_nonzero_L_rows_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_bunchKaufmanMaxEntryProductBound_of_path_local_D_single_nonzero_L_rows_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_bunchKaufmanMaxEntryProductBound_of_path_local_D_two_nonzero_L_rows_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_bunchKaufmanMaxEntryProductBound_of_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_maxEntryNorm_A`,
+    and
+    `LeanFpAnalysis.FP.higham11_4_bunchKaufmanMaxEntryProductBound_of_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_maxEntryNorm_A`
+    → elaborate; representative sparse-row max-entry/scalar theorem axioms
+    `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.4 sparse-row stability endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    declaration-shaped forbidden-token scan and tab scan of
+    `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_stability_of_path_local_D_single_nonzero_L_rows_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_stability_of_path_local_D_two_nonzero_L_rows_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_stability_of_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_maxEntryNorm_A`,
+    and
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_stability_of_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_maxEntryNorm_A`
+    → elaborate; representative sparse-row stability theorem axioms
+    `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.4 sparse-row finite-product solve endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    declaration-shaped forbidden-token scan and tab scan of
+    `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_solve_backward_error_of_path_local_D_single_nonzero_L_rows_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_solve_backward_error_of_path_local_D_two_nonzero_L_rows_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_maxEntryNorm_A`,
+    and
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_maxEntryNorm_A`
+    → elaborate; representative sparse-row finite-product solve theorem axioms
+    `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.4 sparse-row product-norm solve endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    declaration-shaped forbidden-token scan and tab scan of
+    `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_solve_backward_error_of_path_local_D_single_nonzero_L_rows_maxEntryNorm_A_product`,
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_solve_backward_error_of_path_local_D_two_nonzero_L_rows_maxEntryNorm_A_product`,
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_maxEntryNorm_A_product`,
+    and
+    `LeanFpAnalysis.FP.higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_maxEntryNorm_A_product`
+    → elaborate; representative sparse-row product-norm solve theorem axioms
+    `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.3/11.4 sparse-row factorization product-scale endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    declaration-shaped forbidden-token scan and tab scan of
+    `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_local_D_single_nonzero_L_rows_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_local_D_two_nonzero_L_rows_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_maxEntryNorm_A`,
+    and
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_maxEntryNorm_A`
+    → elaborate; representative sparse-row factorization product-scale theorem
+    axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.3/11.4 sparse-row factorization norm/source-scale endpoint increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    declaration-shaped forbidden-token scan and tab scan of
+    `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_local_D_single_nonzero_L_rows_with_norm_bounds_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_local_D_two_nonzero_L_rows_with_norm_bounds_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_with_norm_bounds_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_with_norm_bounds_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_local_D_single_nonzero_L_rows_with_norm_bounds_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_local_D_two_nonzero_L_rows_with_norm_bounds_maxEntryNorm_A`,
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_offbranch_D_entries_zero_local_D_single_nonzero_L_rows_with_norm_bounds_maxEntryNorm_A`,
+    and
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_offbranch_D_entries_zero_local_D_two_nonzero_L_rows_with_norm_bounds_maxEntryNorm_A`
+    → elaborate; representative sparse-row factorization source-scale theorem
+    axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.3 all-`1×1` source-scale scalar-budget increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    declaration-shaped forbidden-token scan and tab scan of
+    `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne_of_pu_uniform_envelope_bound`
+    and
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne_of_pu_uniform_envelope_bound`
+    → elaborate; representative raw-Schur all-`1×1` source-scale theorem
+    axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.3 all-`1×1` source-norm scalar-budget increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    declaration-shaped forbidden-token scan and tab scan of
+    `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne_of_pu_uniform_envelope_bound_maxEntryNorm_A`
+    and
+    `LeanFpAnalysis.FP.higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne_of_pu_uniform_envelope_bound_maxEntryNorm_A`
+    → elaborate; representative raw-Schur all-`1×1` source-norm theorem
+    axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.8 row-support source-norm transport increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    declaration-shaped forbidden-token scan and tab scan of
+    `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_8_infNorm_le_three_mul_maxEntryNorm_of_rowSupport_card_le_three`,
+    `LeanFpAnalysis.FP.higham11_8_aasenSourceNormwiseBackwardBound_of_rowSupport_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`,
+    `LeanFpAnalysis.FP.higham11_8_aasenSourceNormwiseBackwardBound_of_rowSupport_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`,
+    `LeanFpAnalysis.FP.higham11_8_aasen_source_normwise_backward_error_of_rowSupport_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`,
+    and
+    `LeanFpAnalysis.FP.higham11_8_aasen_source_normwise_backward_error_of_rowSupport_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`
+    → elaborate; representative existential row-support source-norm theorem
+    axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.8 tridiagonal source-norm transport increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    declaration-shaped forbidden-token scan and tab scan of
+    `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_8_rowSupport_card_le_three_of_isTridiagonal`,
+    `LeanFpAnalysis.FP.higham11_8_infNorm_le_three_mul_maxEntryNorm_of_isTridiagonal`,
+    `LeanFpAnalysis.FP.higham11_8_aasenSourceNormwiseBackwardBound_of_isTridiagonal_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`,
+    `LeanFpAnalysis.FP.higham11_8_aasenSourceNormwiseBackwardBound_of_isTridiagonal_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`,
+    `LeanFpAnalysis.FP.higham11_8_aasen_source_normwise_backward_error_of_isTridiagonal_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`,
+    and
+    `LeanFpAnalysis.FP.higham11_8_aasen_source_normwise_backward_error_of_isTridiagonal_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`
+    → elaborate; representative existential tridiagonal source-norm theorem
+    axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
   - 2026-07-12 Theorem 11.4 active Bunch-Kaufman path local-`L̂` entry-to-row-sum increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
     `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
