@@ -119,7 +119,9 @@
     Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_right_inverse,
     Higham13Eq1322InverseRatioSourceChain.pivot_right_inverse_of_final_nonsingInv,
     Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_nonsingInv,
-    Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final:
+    Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final,
+    Higham13Eq1322InverseRatioSourceChain.upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_final_right_inverse_mixed_column_mass,
+    Higham13Eq1322InverseRatioSourceChain.upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_final_nonsingInv_mixed_column_mass:
     recursive source certificate and chain/product lift for the inverse-ratio
     transport route, replacing the prebuilt ambient-chain hypothesis by
     per-tail determinant, pivot, and inverse-ratio comparison data; the
@@ -139,6 +141,8 @@
     Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final_right_inverse,
     Higham13Eq1322BaseInverseSourceChain.pivot_right_inverse_of_final_nonsingInv,
     Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final_nonsingInv,
+    Higham13Eq1322BaseInverseSourceChain.upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_final_right_inverse_mixed_column_mass,
+    Higham13Eq1322BaseInverseSourceChain.upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_final_nonsingInv_mixed_column_mass,
     Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa,
     Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa,
     Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update,
@@ -62442,6 +62446,100 @@ theorem Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_nonsing
       (Higham13Eq1322InverseRatioSourceChain.pivot_right_inverse_of_final_nonsingInv
         hcert hdet hfinalEq)
 
+/-- Higham, 2nd ed., Chapter 13, equations (13.21) and (13.23):
+    inverse-ratio source-chain form of the mixed matrix-`∞`/max-entry endpoint.
+
+    The inverse-ratio source certificate specializes to the direct
+    lower-comparison certificate, so this wrapper removes that intermediate
+    source-chain conversion from callers of the mixed endpoint. -/
+theorem
+    Higham13Eq1322InverseRatioSourceChain.upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_final_right_inverse_mixed_column_mass
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      (hcert : Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv) →
+      (invDiagBound : Fin (m + 1) → ℝ) →
+      (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+        BlockMatrixNonsingular
+          (leadingBlockPrefix13_2 (fun i j a b => Ablk i j a b) p hp)) →
+      IsBlockDiagDomCol (m + 1)
+        (fun i j : Fin (m + 1) => infNorm (Ablk i j)) invDiagBound →
+      (∀ j : Fin (m + 1), invDiagBound j ≤ 0) →
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+          ⟨m, Nat.lt_succ_self m⟩
+          ⟨m, Nat.lt_succ_self m⟩)
+        (pivotInv m) →
+      blockMaxNorm (Nat.succ_pos m) hr
+          (higham13_algorithm13_3_upperFromMatrixStages Ablk pivotInv) ≤
+          2 * blockMaxNorm (Nat.succ_pos m) hr Ablk ∧
+        growthFactorEntry (Nat.mul_pos (Nat.succ_pos m) hr)
+            (blockMatrixFlatFin Ablk)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              (Nat.mul_pos (Nat.succ_pos m) hr) (Nat.succ_pos m) hr Ablk
+              pivotInv)
+            (maxEntryNorm_pos_of_det_ne_zero
+              (Nat.mul_pos (Nat.succ_pos m) hr) (blockMatrixFlatFin Ablk)
+              (higham13_blockMatrixFlatFin_det_ne_zero_of_all_leadingBlockPrefixes
+                (Nat.succ_pos m) (fun i j a b => Ablk i j a b) hPrefix)) ≤
+          2 := by
+  intro m Ablk pivotInv hcert invDiagBound hPrefix hDomInf hBound hFinal
+  exact
+    Higham13Eq1322LowerComparisonSourceChain.upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_final_right_inverse_mixed_column_mass
+      (r := r) (n := n) (hr := hr)
+      (Higham13Eq1322InverseRatioSourceChain.to_lowerComparisonSourceChain
+        (r := r) (n := n) hr hcert)
+      invDiagBound hPrefix hDomInf hBound hFinal
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.21) and (13.23):
+    canonical-terminal-pivot inverse-ratio source-chain form of the mixed
+    matrix-`∞`/max-entry endpoint. -/
+theorem
+    Higham13Eq1322InverseRatioSourceChain.upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_final_nonsingInv_mixed_column_mass
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      (hcert : Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv) →
+      (invDiagBound : Fin (m + 1) → ℝ) →
+      (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+        BlockMatrixNonsingular
+          (leadingBlockPrefix13_2 (fun i j a b => Ablk i j a b) p hp)) →
+      IsBlockDiagDomCol (m + 1)
+        (fun i j : Fin (m + 1) => infNorm (Ablk i j)) invDiagBound →
+      (∀ j : Fin (m + 1), invDiagBound j ≤ 0) →
+      Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) ≠ 0 →
+      pivotInv m =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) →
+      blockMaxNorm (Nat.succ_pos m) hr
+          (higham13_algorithm13_3_upperFromMatrixStages Ablk pivotInv) ≤
+          2 * blockMaxNorm (Nat.succ_pos m) hr Ablk ∧
+        growthFactorEntry (Nat.mul_pos (Nat.succ_pos m) hr)
+            (blockMatrixFlatFin Ablk)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              (Nat.mul_pos (Nat.succ_pos m) hr) (Nat.succ_pos m) hr Ablk
+              pivotInv)
+            (maxEntryNorm_pos_of_det_ne_zero
+              (Nat.mul_pos (Nat.succ_pos m) hr) (blockMatrixFlatFin Ablk)
+              (higham13_blockMatrixFlatFin_det_ne_zero_of_all_leadingBlockPrefixes
+                (Nat.succ_pos m) (fun i j a b => Ablk i j a b) hPrefix)) ≤
+          2 := by
+  intro m Ablk pivotInv hcert invDiagBound hPrefix hDomInf hBound hFinalDet
+    hFinalEq
+  exact
+    Higham13Eq1322LowerComparisonSourceChain.upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_final_nonsingInv_mixed_column_mass
+      (r := r) (n := n) (hr := hr)
+      (Higham13Eq1322InverseRatioSourceChain.to_lowerComparisonSourceChain
+        (r := r) (n := n) hr hcert)
+      invDiagBound hPrefix hDomInf hBound hFinalDet hFinalEq
+
 /-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
     recursive source certificate for the stronger base/inverse comparison
     route.
@@ -62793,6 +62891,100 @@ theorem Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final_nonsingI
       (Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain
         (r := r) (n := n) hr hcert)
       hdet hfinalEq
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.21) and (13.23):
+    base/inverse source-chain form of the mixed matrix-`∞`/max-entry endpoint.
+
+    The stronger source certificate specializes to the direct lower-comparison
+    source chain, so callers of this route can use the Eq.13.21/Eq.13.23 mixed
+    endpoint without separately materializing that conversion. -/
+theorem
+    Higham13Eq1322BaseInverseSourceChain.upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_final_right_inverse_mixed_column_mass
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      (hcert : Higham13Eq1322BaseInverseSourceChain hr n m Ablk pivotInv) →
+      (invDiagBound : Fin (m + 1) → ℝ) →
+      (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+        BlockMatrixNonsingular
+          (leadingBlockPrefix13_2 (fun i j a b => Ablk i j a b) p hp)) →
+      IsBlockDiagDomCol (m + 1)
+        (fun i j : Fin (m + 1) => infNorm (Ablk i j)) invDiagBound →
+      (∀ j : Fin (m + 1), invDiagBound j ≤ 0) →
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+          ⟨m, Nat.lt_succ_self m⟩
+          ⟨m, Nat.lt_succ_self m⟩)
+        (pivotInv m) →
+      blockMaxNorm (Nat.succ_pos m) hr
+          (higham13_algorithm13_3_upperFromMatrixStages Ablk pivotInv) ≤
+          2 * blockMaxNorm (Nat.succ_pos m) hr Ablk ∧
+        growthFactorEntry (Nat.mul_pos (Nat.succ_pos m) hr)
+            (blockMatrixFlatFin Ablk)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              (Nat.mul_pos (Nat.succ_pos m) hr) (Nat.succ_pos m) hr Ablk
+              pivotInv)
+            (maxEntryNorm_pos_of_det_ne_zero
+              (Nat.mul_pos (Nat.succ_pos m) hr) (blockMatrixFlatFin Ablk)
+              (higham13_blockMatrixFlatFin_det_ne_zero_of_all_leadingBlockPrefixes
+                (Nat.succ_pos m) (fun i j a b => Ablk i j a b) hPrefix)) ≤
+          2 := by
+  intro m Ablk pivotInv hcert invDiagBound hPrefix hDomInf hBound hFinal
+  exact
+    Higham13Eq1322LowerComparisonSourceChain.upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_final_right_inverse_mixed_column_mass
+      (r := r) (n := n) (hr := hr)
+      (Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain
+        (r := r) (n := n) hr hcert)
+      invDiagBound hPrefix hDomInf hBound hFinal
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.21) and (13.23):
+    canonical-terminal-pivot base/inverse source-chain form of the mixed
+    matrix-`∞`/max-entry endpoint. -/
+theorem
+    Higham13Eq1322BaseInverseSourceChain.upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_final_nonsingInv_mixed_column_mass
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      (hcert : Higham13Eq1322BaseInverseSourceChain hr n m Ablk pivotInv) →
+      (invDiagBound : Fin (m + 1) → ℝ) →
+      (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+        BlockMatrixNonsingular
+          (leadingBlockPrefix13_2 (fun i j a b => Ablk i j a b) p hp)) →
+      IsBlockDiagDomCol (m + 1)
+        (fun i j : Fin (m + 1) => infNorm (Ablk i j)) invDiagBound →
+      (∀ j : Fin (m + 1), invDiagBound j ≤ 0) →
+      Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) ≠ 0 →
+      pivotInv m =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) →
+      blockMaxNorm (Nat.succ_pos m) hr
+          (higham13_algorithm13_3_upperFromMatrixStages Ablk pivotInv) ≤
+          2 * blockMaxNorm (Nat.succ_pos m) hr Ablk ∧
+        growthFactorEntry (Nat.mul_pos (Nat.succ_pos m) hr)
+            (blockMatrixFlatFin Ablk)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              (Nat.mul_pos (Nat.succ_pos m) hr) (Nat.succ_pos m) hr Ablk
+              pivotInv)
+            (maxEntryNorm_pos_of_det_ne_zero
+              (Nat.mul_pos (Nat.succ_pos m) hr) (blockMatrixFlatFin Ablk)
+              (higham13_blockMatrixFlatFin_det_ne_zero_of_all_leadingBlockPrefixes
+                (Nat.succ_pos m) (fun i j a b => Ablk i j a b) hPrefix)) ≤
+          2 := by
+  intro m Ablk pivotInv hcert invDiagBound hPrefix hDomInf hBound hFinalDet
+    hFinalEq
+  exact
+    Higham13Eq1322LowerComparisonSourceChain.upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_final_nonsingInv_mixed_column_mass
+      (r := r) (n := n) (hr := hr)
+      (Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain
+        (r := r) (n := n) hr hcert)
+      invDiagBound hPrefix hDomInf hBound hFinalDet hFinalEq
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     a recursive base/inverse source certificate instantiates the ambient
