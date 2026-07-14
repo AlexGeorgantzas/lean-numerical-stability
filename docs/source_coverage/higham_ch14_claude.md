@@ -53,6 +53,17 @@ Each *derives* a per-step/loop hypothesis Codex had left assumed (verified: `der
 
 ## Notes
 
-- Chapter 14 was co-owned with a concurrent Codex agent, now stopped; wave 1 took the independent rows, waves 2–4 the deep GJE-cluster cores + corollaries.
-- **Closed primary labels / rows (Claude):** (14.3), (14.14), **Lemma 14.1**, **Lemma 14.3** (whole-matrix), **Algorithm 14.4** (spec), Problems 14.14 & 14.15; plus the unconditional Theorem 14.5 per-step (14.25)/(14.26) and multi-stage accumulation (14.27)/(14.28); the Method D (14.23) envelope + its upper-tri certificate; the spectral Cholesky identity and the Cor 14.7 `cond(U)≤2n−1` control fact.
-- **Advanced with derived cores + documented residuals (not literal-constant closure):** Theorem 14.5 overall endpoints (14.31)–(14.33), Corollary 14.6, Corollary 14.7, Method D whole-matrix, Lemma 14.2 (Method 1B, 2-block). The residuals are consistently: Higham's own WLOG `D=I`, a constructible cumulative-product inverse, the printed integer-constant scalar audits, wireable upstream FP certificates, and the Method 1B N-block induction.
+- Chapter 14 was co-owned with a concurrent Codex agent, now stopped; wave 1 took the independent rows, waves 2–5 the deep GJE-cluster cores, corollaries, and residual discharge.
+
+## Wave 5 — closing the closable residuals
+
+| Row | Status | Module / result |
+|---|---|---|
+| **Lemma 14.2** (Method 1B) — whole-matrix / general N-block | **CLOSED** | `Ch14Method1BWhole.lean` — `ch14ext_method1B_whole_right_residual`(`_normwise`): `\|LX̂−I\| ≤ γ_n\|L\|\|X̂\|` for any block partition, via the same List-induction template as Lemma 14.3. **All three Lemmas 14.1/14.2/14.3 now closed whole-matrix.** |
+| **Theorem 14.5** — supplied-Q discharged | **improved** | `Ch14GaussJordanQConstruction.lean` — the cumulative-product inverse `Q=(∏N̂)⁻¹` is **constructed** (each `N̂ₖ⁻¹=I+n̂ₖeₖᵀ` from rank-1 nilpotency `(n̂ₖeₖᵀ)²=0`; `QP=I` by telescoping), turning the former `hQP` hypothesis into a theorem. Remaining: Higham's own WLOG `D=I`; the leading constant via this socket is a sharp `7nu` (the socket takes `Lx̂=b` exact, dropping one GE `ΔL`) — a decomposition nuance vs the printed `8nu`. |
+| **Method D** — `hProd` discharged | **improved** | `Ch14MethodDProductDischarge.lean` — the fl-matmul product-error certificate is **discharged unconditionally** from `matMul_error_bound`. Remaining `hLU`: a genuine repo limitation — no unconditional rounded-GE `LUBackwardError` producer for arbitrary A exists (only exact-factorization producers); closing it needs a Chapter-9 rounded-GE forward analysis. |
+
+## Final status
+
+- **Closed at printed strength:** (14.3); (14.14); **Lemma 14.1, Lemma 14.2, Lemma 14.3** (all whole-matrix); **Algorithm 14.4** (spec); Problems 14.14 & 14.15. Plus the unconditional Theorem 14.5 per-step (14.25)/(14.26) + multi-stage accumulation (14.27)/(14.28) + the constructed cumulative-product inverse; the Method D (14.23) envelope + upper-tri certificate + discharged product error; the spectral Cholesky identity `‖RᵀR‖₂=‖R‖₂²`; the Cor 14.7 `cond(U)≤2n−1` control fact.
+- **Advanced with derived cores; residuals are source-faithful or infrastructure-level, not smuggled:** Theorem 14.5 overall (14.31)–(14.33) and Corollaries 14.6/14.7 — remaining residuals are (i) Higham's OWN WLOG `D=I` normalization (source-faithful, not a gap), (ii) the printed integer-constant `7nu`/`8nu`/`2nu` scalar-decomposition audit, (iii) the SPD 3-factor-vs-2-factor norm structure, and (iv) Method D's `hLU` = a genuine missing rounded-GE-for-arbitrary-A producer in the repo's Chapter 9. Every module is axiom-clean and adversarially verified.

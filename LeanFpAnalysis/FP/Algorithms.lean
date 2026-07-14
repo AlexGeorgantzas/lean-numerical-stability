@@ -80,6 +80,9 @@ import LeanFpAnalysis.FP.Algorithms.Ch14MethodDLeftResidual
 import LeanFpAnalysis.FP.Algorithms.Ch14GaussJordanSPDCorollary
 import LeanFpAnalysis.FP.Algorithms.Ch14Corollary147
 import LeanFpAnalysis.FP.Algorithms.Ch14MethodDUpperCertificate
+import LeanFpAnalysis.FP.Algorithms.Ch14Method1BWhole
+import LeanFpAnalysis.FP.Algorithms.Ch14GaussJordanQConstruction
+import LeanFpAnalysis.FP.Algorithms.Ch14MethodDProductDischarge
 import LeanFpAnalysis.FP.Algorithms.CondEstimation
 import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCond
 import LeanFpAnalysis.FP.Algorithms.PNormPowerMethod
