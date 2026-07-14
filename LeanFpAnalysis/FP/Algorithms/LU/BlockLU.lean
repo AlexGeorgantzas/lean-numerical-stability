@@ -481,6 +481,7 @@
     higham13_problem13_4_L21_eq13_22_premise_from_ambient_block_inverse_growth,
     higham13_problem13_4_L21_eq13_22_premise_from_global_growth_tableau_exact_kappa,
     higham13_problem13_4_L21_eq13_22_premise_from_source_global_growth_tableau_exact_kappa,
+    higham13_problem13_4_all_tail_inverse_entry_bound_counterexample,
     higham13_problem13_4_schur_kappa_maxEntryNormRect_from_block_inverse,
     higham13_problem13_4_maxEntry_bounds_from_block_inverse_growth,
     higham13_problem13_4_maxEntry_bounds_from_source_block_inverse_growth,
@@ -32645,6 +32646,81 @@ theorem higham13_inverse_ratio_principal_tail_counterexample :
     norm_num
   · rw [hSinv_norm, hAinv_norm]
   · norm_num [hSinv_norm, hA_norm, hAinv_norm, hS_norm]
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 audit:
+    a global all-active-suffix inverse-entry table cannot be inferred from
+    nonsingularity of the final matrix and the active pivot block alone.
+
+    The matrix `[[1/2, 1], [1, 0]]` has inverse `[[0, 1], [1, -1/2]]`, whose
+    max-entry norm is `1`; but the first `1 x 1` active pivot block has inverse
+    entry `2`.  Thus the source-table condition bounding every active pivot
+    inverse entry by the final inverse max-entry norm is false without an
+    additional hypothesis. -/
+theorem higham13_problem13_4_all_tail_inverse_entry_bound_counterexample :
+    ∃ A Ainv : Fin 2 → Fin 2 → ℝ,
+    ∃ P Pinv : Fin 1 → Fin 1 → ℝ,
+      IsRightInverse 2 A Ainv ∧ IsLeftInverse 2 A Ainv ∧
+        IsRightInverse 1 P Pinv ∧ IsLeftInverse 1 P Pinv ∧
+        (∀ i j : Fin 1, P i j = A (0 : Fin 2) (0 : Fin 2)) ∧
+        maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2) Ainv = 1 ∧
+        ¬ (∀ i j : Fin 1,
+          |Pinv i j| ≤
+            maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2) Ainv) := by
+  let A : Fin 2 → Fin 2 → ℝ := fun i j =>
+    if i = (0 : Fin 2) ∧ j = (0 : Fin 2) then (1 / 2 : ℝ)
+    else if i = (0 : Fin 2) ∧ j = (1 : Fin 2) then 1
+    else if i = (1 : Fin 2) ∧ j = (0 : Fin 2) then 1
+    else 0
+  let Ainv : Fin 2 → Fin 2 → ℝ := fun i j =>
+    if i = (0 : Fin 2) ∧ j = (0 : Fin 2) then 0
+    else if i = (0 : Fin 2) ∧ j = (1 : Fin 2) then 1
+    else if i = (1 : Fin 2) ∧ j = (0 : Fin 2) then 1
+    else (-1 / 2 : ℝ)
+  let P : Fin 1 → Fin 1 → ℝ := fun _ _ => (1 / 2 : ℝ)
+  let Pinv : Fin 1 → Fin 1 → ℝ := fun _ _ => 2
+  have hA_right : IsRightInverse 2 A Ainv := by
+    intro i j
+    fin_cases i <;> fin_cases j <;>
+      norm_num [A, Ainv, Fin.sum_univ_two]
+    all_goals rfl
+  have hA_left : IsLeftInverse 2 A Ainv := by
+    intro i j
+    fin_cases i <;> fin_cases j <;>
+      norm_num [A, Ainv, Fin.sum_univ_two]
+    all_goals rfl
+  have hP_right : IsRightInverse 1 P Pinv := by
+    intro i j
+    fin_cases i
+    fin_cases j
+    norm_num [P, Pinv, Fin.sum_univ_one]
+    rfl
+  have hP_left : IsLeftInverse 1 P Pinv := by
+    intro i j
+    fin_cases i
+    fin_cases j
+    norm_num [P, Pinv, Fin.sum_univ_one]
+    rfl
+  have hP_initial : ∀ i j : Fin 1, P i j = A (0 : Fin 2) (0 : Fin 2) := by
+    intro i j
+    fin_cases i
+    fin_cases j
+    norm_num [A, P]
+  have hAinv_norm :
+      maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2) Ainv = 1 := by
+    apply le_antisymm
+    · apply maxEntryNormRect_le_of_entry_abs_le
+      intro i j
+      fin_cases i <;> fin_cases j <;> norm_num [Ainv]
+    · have h :=
+        entry_le_maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2)
+          Ainv (0 : Fin 2) (1 : Fin 2)
+      simpa [Ainv] using h
+  refine ⟨A, Ainv, P, Pinv, hA_right, hA_left, hP_right, hP_left,
+    hP_initial, hAinv_norm, ?_⟩
+  intro hbound
+  have h := hbound (0 : Fin 1) (0 : Fin 1)
+  rw [hAinv_norm] at h
+  norm_num [Pinv] at h
 
 /-- Higham, 2nd ed., Chapter 13, Problem 13.4 audit:
     the direct local-inverse comparison used by the stage-local growth route is
