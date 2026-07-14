@@ -62995,9 +62995,11 @@ theorem
     determinant-table/matrix-`∞` BDD/canonical-parent version of the
     active-suffix first-split product-update witness.
 
-    This derives the active-suffix pivot-block and Schur-complement
-    invertibility/pivot tables from determinant-nonzero source tables, then
-    reuses the canonical-parent matrix-`∞` BDD product-update wrapper. -/
+    This derives the active-suffix full-tail, pivot-block, and
+    Schur-complement invertibility instances from determinant-nonzero source
+    tables, supplies the resulting typeclass instances to the pivot-identity
+    table, and then reuses the canonical-parent matrix-`∞` BDD product-update
+    wrapper. -/
 theorem
     higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_initial_pivot_nonsingInv_infNorm_bdd_of_product_bound_diag_update_of_canonical_parent_inverse_entry_of_det_tables
     {m r n : ℕ} (hr : 0 < r) (hN : 0 < r + (m + 1) * r)
