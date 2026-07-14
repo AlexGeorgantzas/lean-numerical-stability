@@ -9172,6 +9172,45 @@ theorem Higham21QMethodRowwiseCoefficient_le_gamma_index
     _ = gamma fp (Higham21QMethodRowwiseGammaIndex m k) := by
       simp [Higham21QMethodRowwiseGammaIndex, q]
 
+/-- The combined Chapter 21 Q-method gamma index validates the Chapter 19
+    Householder QR operation index used in Theorem 21.4. -/
+theorem Higham21QMethodRowwiseGammaIndex.validQR
+    (fp : FPModel) (m k : ℕ)
+    (hvalid : gammaValid fp (Higham21QMethodRowwiseGammaIndex m k)) :
+    gammaValid fp (m * householderConstructApplyGammaIndex (m + k)) :=
+  gammaValid_mono fp (by
+    dsimp [Higham21QMethodRowwiseGammaIndex]
+    exact Nat.le_add_right _ _) hvalid
+
+/-- The combined Chapter 21 Q-method gamma index validates the triangular
+    solve index `m` used in Theorem 21.4. -/
+theorem Higham21QMethodRowwiseGammaIndex.validM
+    (fp : FPModel) (m k : ℕ)
+    (hvalid : gammaValid fp (Higham21QMethodRowwiseGammaIndex m k)) :
+    gammaValid fp m :=
+  gammaValid_mono fp (by
+    dsimp [Higham21QMethodRowwiseGammaIndex]
+    exact Nat.le_add_left _ _) hvalid
+
+/-- The combined Chapter 21 Q-method gamma index validates the doubled
+    triangular-solve index needed for the nonbreakdown argument. -/
+theorem Higham21QMethodRowwiseGammaIndex.valid2M
+    (fp : FPModel) (m k : ℕ)
+    (hvalid : gammaValid fp (Higham21QMethodRowwiseGammaIndex m k)) :
+    gammaValid fp (2 * m) :=
+  gammaValid_mono fp (by
+    dsimp [Higham21QMethodRowwiseGammaIndex]
+    have hK_ge_one : 1 ≤ householderConstructApplyGammaIndex (m + k) := by
+      dsimp [householderConstructApplyGammaIndex]
+      omega
+    have hm_le_mK :
+        m ≤ m * householderConstructApplyGammaIndex (m + k) := by
+      simpa using Nat.mul_le_mul_left m hK_ge_one
+    calc
+      2 * m = m + m := by omega
+      _ ≤ m * householderConstructApplyGammaIndex (m + k) + m :=
+        Nat.add_le_add_right hm_le_mK m) hvalid
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
     source-facing row-wise backward-stability wrapper for any Chapter 19 QR
     certificate of `A^T`.  This projects the detailed `DeltaA0`/`DeltaR`
@@ -9388,6 +9427,74 @@ theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_c
       fp A b hm hvalidQR hdomain hvalid hvalid2
       (gamma_nonneg fp hvalidCoeff)
       (Higham21QMethodRowwiseCoefficient_le_gamma_index fp m k hvalidCoeff)
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    single-gamma row-wise Q-method stability under the source-facing
+    full-row-rank/computed-QR domain.  Validity of the displayed combined
+    gamma index discharges every smaller QR and triangular-solve validity
+    condition. -/
+theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain_gamma_single_valid
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ)
+    (hm : 0 < m)
+    (hdomain : Higham21QMethodFullRowRankComputedQRDomain m k fp A)
+    (hvalid : gammaValid fp (Higham21QMethodRowwiseGammaIndex m k)) :
+    UndetRowwiseBackwardErrorBounded m (m + k) A b
+      (matMulVec (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (Fin.append
+          (fl_forwardSub fp m
+            (matTranspose
+              (fun a b =>
+                fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                  (Fin.castAdd k a) b)) b)
+          (0 : Fin k → ℝ)))
+      (gamma fp (Higham21QMethodRowwiseGammaIndex m k)) := by
+  exact
+    higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain_gamma
+      fp A b hm
+      (Higham21QMethodRowwiseGammaIndex.validQR fp m k hvalid)
+      hdomain
+      (Higham21QMethodRowwiseGammaIndex.validM fp m k hvalid)
+      (Higham21QMethodRowwiseGammaIndex.valid2M fp m k hvalid)
+      hvalid
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    determinant-facing single-gamma Q-method stability theorem.  A single
+    validity assumption at the combined index supplies all validity conditions
+    used by the QR and triangular-solve certificates. -/
+theorem higham21_theorem21_4_q_method_rowwise_backward_stable_of_topBlock_det_ne_zero_gamma_single_valid
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ)
+    (hm : 0 < m)
+    (hdet :
+      Matrix.det
+        ((fun i j =>
+          fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+            (Fin.castAdd k i) j) : Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hvalid : gammaValid fp (Higham21QMethodRowwiseGammaIndex m k)) :
+    UndetRowwiseBackwardErrorBounded m (m + k) A b
+      (matMulVec (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (Fin.append
+          (fl_forwardSub fp m
+            (matTranspose
+              (fun a b =>
+                fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                  (Fin.castAdd k a) b)) b)
+          (0 : Fin k → ℝ)))
+      (gamma fp (Higham21QMethodRowwiseGammaIndex m k)) := by
+  have hcert :=
+    higham21_theorem21_4_q_method_rowwise_backward_stable_of_topBlock_det_ne_zero
+      fp A b hm
+      (Higham21QMethodRowwiseGammaIndex.validQR fp m k hvalid)
+      hdet
+      (Higham21QMethodRowwiseGammaIndex.validM fp m k hvalid)
+      (Higham21QMethodRowwiseGammaIndex.valid2M fp m k hvalid)
+  exact
+    higham21_rowwise_backward_error_bound_mono hcert
+      (gamma_nonneg fp hvalid)
+      (Higham21QMethodRowwiseCoefficient_le_gamma_index fp m k hvalid)
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
     concrete repository coefficient for the rounded final `Q_hat` action.
