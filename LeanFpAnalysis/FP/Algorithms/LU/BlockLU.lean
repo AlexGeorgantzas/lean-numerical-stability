@@ -482,6 +482,7 @@
     higham13_problem13_4_L21_eq13_22_premise_from_global_growth_tableau_exact_kappa,
     higham13_problem13_4_L21_eq13_22_premise_from_source_global_growth_tableau_exact_kappa,
     higham13_problem13_4_all_tail_inverse_entry_bound_counterexample,
+    higham13_problem13_4_all_tail_inverse_entry_bound_counterexample_activeSuffix,
     higham13_problem13_4_schur_kappa_maxEntryNormRect_from_block_inverse,
     higham13_problem13_4_maxEntry_bounds_from_block_inverse_growth,
     higham13_problem13_4_maxEntry_bounds_from_source_block_inverse_growth,
@@ -32721,6 +32722,61 @@ theorem higham13_problem13_4_all_tail_inverse_entry_bound_counterexample :
   have h := hbound (0 : Fin 1) (0 : Fin 1)
   rw [hAinv_norm] at h
   norm_num [Pinv] at h
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 audit:
+    the all-active-suffix inverse-entry table also fails when the offending
+    pivot block is realized as the canonical stage-zero active suffix of
+    Algorithm 13.3.
+
+    This is the source-facing companion to
+    `higham13_problem13_4_all_tail_inverse_entry_bound_counterexample`: the
+    scalar `2 x 2` witness is packaged as `1 x 1` blocks, its product-index
+    flattening agrees with the scalar matrix on all displayed block entries,
+    and the canonical active-suffix block at `k = 0`, `q = 0` is exactly the
+    pivot block whose inverse entry is too large. -/
+theorem higham13_problem13_4_all_tail_inverse_entry_bound_counterexample_activeSuffix :
+    ∃ A Ainv : Fin 2 → Fin 2 → ℝ,
+    ∃ Ablk : Fin 2 → Fin 2 → Matrix (Fin 1) (Fin 1) ℝ,
+    ∃ pivotInv : ℕ → Matrix (Fin 1) (Fin 1) ℝ,
+    ∃ P Pinv : Fin 1 → Fin 1 → ℝ,
+      IsRightInverse 2 A Ainv ∧ IsLeftInverse 2 A Ainv ∧
+        IsRightInverse 1 P Pinv ∧ IsLeftInverse 1 P Pinv ∧
+        (∀ i j : Fin 2,
+          blockMatrixFlatFin Ablk (finProdFinEquiv (i, (0 : Fin 1)))
+            (finProdFinEquiv (j, (0 : Fin 1))) = A i j) ∧
+        (∀ i j : Fin 1, P i j = A (0 : Fin 2) (0 : Fin 2)) ∧
+        (∀ i j s t,
+          higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv
+              0 0 (by norm_num) i j s t = P s t) ∧
+        maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2) Ainv = 1 ∧
+        ¬ (∀ i j : Fin 1,
+          |Pinv i j| ≤
+            maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2) Ainv) := by
+  rcases higham13_problem13_4_all_tail_inverse_entry_bound_counterexample with
+    ⟨A, Ainv, P, Pinv, hA_right, hA_left, hP_right, hP_left,
+      hP_initial, hAinv_norm, hbad⟩
+  let Ablk : Fin 2 → Fin 2 → Matrix (Fin 1) (Fin 1) ℝ := fun i j _ _ => A i j
+  let pivotInv : ℕ → Matrix (Fin 1) (Fin 1) ℝ := fun _ _ _ => 0
+  have hFlat :
+      ∀ i j : Fin 2,
+        blockMatrixFlatFin Ablk (finProdFinEquiv (i, (0 : Fin 1)))
+          (finProdFinEquiv (j, (0 : Fin 1))) = A i j := by
+    intro i j
+    rw [blockMatrixFlatFin_apply]
+  have hActive :
+      ∀ i j s t,
+        higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv
+            0 0 (by norm_num) i j s t = P s t := by
+    intro i j s t
+    fin_cases i
+    fin_cases j
+    simpa [Ablk, higham13_algorithm13_3_activeSuffixStageTailBlock,
+      higham13_algorithm13_3_activeSuffixTail,
+      higham13_algorithm13_3_schurStageMatrixTailBlock,
+      higham13_algorithm13_3_schurStageMatrixBlock,
+      higham13_algorithm13_3_schurStageBlock] using (hP_initial s t).symm
+  exact ⟨A, Ainv, Ablk, pivotInv, P, Pinv, hA_right, hA_left, hP_right,
+    hP_left, hFlat, hP_initial, hActive, hAinv_norm, hbad⟩
 
 /-- Higham, 2nd ed., Chapter 13, Problem 13.4 audit:
     the direct local-inverse comparison used by the stage-local growth route is
