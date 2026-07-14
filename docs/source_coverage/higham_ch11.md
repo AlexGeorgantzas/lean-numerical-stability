@@ -35,7 +35,28 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.8 source-norm growth-factor transport | `higham11_8_aasenSourceNormwiseBackwardBound`, `higham11_8_aasenSourceNormwiseBackwardBound_of_T_hat_cap`, `higham11_8_aasenSourceNormwiseBackwardBound_of_infNorm_T_hat_le_printed_mul_infNorm`, `higham11_8_aasenSourceNormwiseBackwardBound_of_infNorm_T_hat_le_kappa_mul_infNorm`, `higham11_8_aasenSourceNormwiseBackwardBound_of_infNorm_T_hat_le_kappa_mul_infNorm_relative_growth_cap`, `higham11_8_infNorm_le_three_mul_maxEntryNorm_of_rowSupport_card_le_three`, `higham11_8_rowSupport_card_le_three_of_isTridiagonal`, `higham11_8_infNorm_le_three_mul_maxEntryNorm_of_isTridiagonal`, `higham11_8_aasenSourceNormwiseBackwardBound_of_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`, `higham11_8_aasenSourceNormwiseBackwardBound_of_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`, `higham11_8_aasenSourceNormwiseBackwardBound_of_rowSupport_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`, `higham11_8_aasenSourceNormwiseBackwardBound_of_rowSupport_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`, `higham11_8_aasenSourceNormwiseBackwardBound_of_isTridiagonal_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`, `higham11_8_aasenSourceNormwiseBackwardBound_of_isTridiagonal_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`, `higham11_8_aasenSourceNormwiseBackwardBound_of_T_hat_eq_T_and_aasenGrowthBound`, `higham11_8_aasen_source_normwise_backward_error_of_normwise_backward_error`, `higham11_8_aasen_source_normwise_backward_error_of_infNorm_T_hat_le_kappa_mul_infNorm`, `higham11_8_aasen_source_normwise_backward_error_of_infNorm_T_hat_le_kappa_mul_infNorm_relative_growth_cap`, `higham11_8_aasen_source_normwise_backward_error_of_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`, `higham11_8_aasen_source_normwise_backward_error_of_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`, `higham11_8_aasen_source_normwise_backward_error_of_rowSupport_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`, `higham11_8_aasen_source_normwise_backward_error_of_rowSupport_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`, `higham11_8_aasen_source_normwise_backward_error_of_isTridiagonal_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm`, `higham11_8_aasen_source_normwise_backward_error_of_isTridiagonal_maxEntryNorm_T_hat_le_kappa_mul_maxEntryNorm_relative_growth_cap`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_colDiagDom_middle_coeff_source_norm_of_T_hat_maxEntry_cap`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_rowDiagDom_middle_coeff_source_norm_of_T_hat_maxEntry_cap`, `higham11_8_aasen_source_normwise_backward_error_of_T_hat_eq_T_and_aasenGrowthBound` | Ch11 | **new this session**; records the source `‖A‖∞` form of the Aasen normwise bound and transports existing `‖T_hat‖∞` endpoint results through the printed growth cap `‖T_hat‖∞≤4^(n-2)‖A‖∞`, including exact-`T_hat` growth-bound, computed-middle `κ‖A‖∞`, relative-route `(1+γ)κ≤4^(n-2)` scalar comparison with `κ≥0`, and existential wrapper forms. Max-entry computed-middle caps now also feed the same source-norm transport when the explicit norm-conversion loss is accounted for by `nκ≤4^(n-2)` or `n(1+γ)κ≤4^(n-2)`, and three-entry row-support or local `IsTridiagonal` certificates give the sharper Aasen/tridiagonal route with `3κ≤4^(n-2)` or `3(1+γ)κ≤4^(n-2)`. Two concrete source-prefix column-/row-dominant factor/solve endpoints now consume that tridiagonal max-entry cap and return the source `‖A‖∞` normwise predicate directly. This bridges the proved local normwise endpoints to the book's source-norm statement shape, but the concrete `T_hat` growth/factorization obligations remain open. |
 | Thm 11.8 raw source-prefix source-norm source-smallness aliases | `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_colDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_T_hat_maxEntry_cap`, `higham11_8_fl_aasen_factor_solve_source_normwise_backward_error_of_source_prefix_relative_rowDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_T_hat_maxEntry_cap`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; gives the raw column-/row-dominant source-prefix source-norm endpoints the same printed-radius and unit-roundoff source-smallness entry points as the `AasenSpec` wrappers. The displayed `gammaValid (15n+25)` or source smallness cap now supplies `gammaValid n`, `gammaValid 2`, all source-prefix gamma-validity premises, and nonnegativity of the printed source coefficient while preserving the recurrence, product, tridiagonal `T_hat` max-entry cap, and scalar coefficient budget as explicit obligations. |
 | Thm 11.8 `AasenSpec` exact-`T_hat` source-norm growth aliases | `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound`, `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; upgrades the exact-`T_hat` column-/row-dominant `AasenSpec` relative-middle endpoints from the `‖T_hat‖∞` normwise statement to the source `‖A‖∞` statement using the exact-middle Aasen growth-bound predicate and `0 < ‖A‖∞`. The wrappers preserve the exact equality `T_hat = T`, LU dominance certificate, rounded source-prefix update/budget facts, and scalar coefficient budget, while the smallness aliases derive the printed `gammaValid (15n+25)` guard from either `(15n+25)u<1` or `u≤Ucap`. |
+| Thm 11.8 `AasenSpec` exact-`T_hat` source-norm simplified-coefficient aliases | `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_simplified_coeff`, `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_simplified_coeff` | Ch11 | **new this session**; removes the syntactic zero middle-factor perturbation share from the scalar coefficient hypothesis for the exact-`T_hat` source-norm growth route. The exact equality, Aasen growth-bound predicate, positive source norm, dominance certificate, rounded source-prefix update/budget facts, and remaining scalar coefficient budget stay explicit. |
+| Thm 11.8 `AasenSpec` exact-`T_hat` source-norm inverse-entry aliases | `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_simplified_coeff`, `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_simplified_coeff` | Ch11 | **new this session**; feeds the exact Aasen inverse-entry cap `|Lᵢⱼ|≤1/(1+γ_n)` into the simplified exact-`T_hat` source-norm growth aliases, deriving the outer-factor norm caps `κL=κLᵀ=n-1` internally while preserving the exact-middle equality, Aasen growth-bound predicate, positive source norm, rounded source-prefix update/budget facts, and final scalar coefficient comparison as explicit obligations. |
+| Thm 11.8 `AasenSpec` exact-`T_hat` source-norm inverse-entry source-smallness aliases | the `_of_unit_roundoff_bound` and `_of_u_le_cap` aliases for `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_simplified_coeff` and `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_simplified_coeff` | Ch11 | **new this session**; derives the printed `gammaValid (15n+25)` guard for the inverse-entry source-norm exact-`T_hat` route from either `(15n+25)u<1` or `u≤Ucap`, while leaving the inverse-entry cap, exact-middle Aasen growth predicate, positive source norm, and scalar coefficient comparison explicit. |
 | Thm 11.8 sigma-id exact-`T_hat` source-norm growth aliases | `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the exact-`T_hat` source-norm growth aliases to `σ := id`, discharging the identity-permutation proof by reflexivity while preserving the exact-middle equality, Aasen growth-bound predicate, positive source norm, LU dominance certificate, rounded source-prefix update/budget facts, and scalar coefficient budget as explicit obligations. |
+| Thm 11.8 sigma-id exact-`T_hat` source-norm simplified-coefficient aliases | `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_simplified_coeff`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_simplified_coeff` | Ch11 | **new this session**; specializes the simplified exact-`T_hat` source-norm growth aliases to `σ := id`, removing the separate identity-permutation proof while preserving the exact-middle equality, Aasen growth-bound predicate, positive source norm, rounded source-prefix update/budget facts, dominance certificate, and simplified scalar coefficient obligation. |
+| Thm 11.8 sigma-id exact-`T_hat` source-norm inverse-entry aliases | `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_simplified_coeff`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_simplified_coeff`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the inverse-entry exact-`T_hat` source-norm aliases to `σ := id`, discharging the identity-permutation proof by reflexivity while preserving the inverse-entry cap, exact-middle Aasen growth predicate, positive source norm, rounded source-prefix update/budget facts, source-smallness options, and simplified scalar coefficient comparison as explicit obligations. |
+| Thm 11.8 exact-`T_hat` product-majorant generic source-norm aliases | `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_gamma_parts_gamma_validity_source_norm_of_aasenGrowthBound`, `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_source_norm_of_aasenGrowthBound`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_gamma_parts_gamma_validity_source_norm_of_aasenGrowthBound`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_source_norm_of_aasenGrowthBound`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; transports the generic exact-`T_hat` product-majorant gamma-share endpoint, and its checkerboard principal-block middle-product specialization, from the `‖T_hat‖∞` predicate to the source `‖A‖∞` predicate using the exact-middle Aasen growth bound and `0 < ‖A‖∞`. The wrappers preserve explicit outer norm caps, concrete middle abs-product majorants or checkerboard determinant/LU certificates, source-prefix update/budget facts, identity-permutation aliases, and source-smallness entry points. |
+| Thm 11.8 non-exact product-majorant source-norm aliases | `higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity_source_norm_of_T_hat_norm_cap`, `higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity_source_norm_relative_growth_cap`, `higham11_8_AasenSpec_id_source_prefix_product_majorants_gamma_parts_gamma_validity_source_norm_of_T_hat_norm_cap`, `higham11_8_AasenSpec_id_source_prefix_product_majorants_gamma_parts_gamma_validity_source_norm_relative_growth_cap`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; transports the non-exact `AasenSpec` product-majorant gamma-share endpoint from the `‖T_hat‖∞` predicate to the source `‖A‖∞` predicate using either a direct computed-middle cap `‖T_hat‖∞≤κA‖A‖∞` with `κA≤4^(n−2)` or the relative-growth scalar cap `(1+κBT)κA≤4^(n−2)`. The wrappers preserve the concrete relative `T_hat` comparison, exact outer norm/product majorants, middle abs-LU majorant, source-prefix update/budget facts, identity-permutation aliases, and source-smallness entry points. |
+| Thm 11.8 non-exact checkerboard product-majorant source-norm aliases | `higham11_8_AasenSpec_identity_source_prefix_product_majorants_checkerboard_principalBlock_endpoint_source_norm_of_T_hat_norm_cap`, `higham11_8_AasenSpec_identity_source_prefix_product_majorants_checkerboard_principalBlock_endpoint_source_norm_relative_growth_cap`, `higham11_8_AasenSpec_id_source_prefix_product_majorants_checkerboard_principalBlock_endpoint_source_norm_of_T_hat_norm_cap`, `higham11_8_AasenSpec_id_source_prefix_product_majorants_checkerboard_principalBlock_endpoint_source_norm_relative_growth_cap`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the non-exact product-majorant source-norm route to checkerboard principal blocks, deriving the middle abs-LU majorant from total nonnegativity, determinant inequalities, and the LU certificate while preserving the relative `T_hat` comparison, outer norm caps, source-prefix update/budget facts, identity-permutation aliases, direct computed-middle or relative-growth source cap, and source-smallness entry points. |
+| Thm 11.8 `AasenSpec` base-square exact-radius source-prefix wrappers | `higham11_8_AasenSpec_identity_source_prefix_gamma_base_square_exact_radius_source_norm_caps`, `higham11_8_AasenSpec_id_source_prefix_gamma_base_square_exact_radius_source_norm_caps`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; lifts the raw source-prefix base-square exact-radius source-norm-cap endpoint through identity-permutation `AasenSpec`, deriving the Aasen recurrence, nonzero `H` subdiagonal pivots, and exact unpermuted product internally from `H=T Lᵀ` and concrete `T` subdiagonal nonzeros. The relative `T_hat` comparison, middle product cap, outer `L`/`Lᵀ` norm caps, source-prefix update/budget facts, and source-smallness entry points remain explicit obligations, so this is dependency progress rather than closure of Theorem 11.8. |
+| Thm 11.8 `AasenSpec` componentwise-`T` checkerboard base-square wrappers | `higham11_8_AasenSpec_identity_source_prefix_gamma_base_square_exact_radius_source_norm_caps_of_componentwise_T_checkerboard_middle`, `higham11_8_AasenSpec_id_source_prefix_gamma_base_square_exact_radius_source_norm_caps_of_componentwise_T_checkerboard_middle`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; composes the new `AasenSpec` base-square source-prefix wrapper with the existing `|T|≤|T_hat|` norm transport and checkerboard LU middle-product certificate. Callers no longer need to supply a separate `‖T‖∞≤‖T_hat‖∞` proof or direct `|L_T||U_T|≤|T_hat|` middle-product bound for this exact-radius route; the relative `T_hat` comparison, checkerboard certificate, outer norm caps, source-prefix update/budget facts, and source-smallness entry points remain explicit. |
+| Thm 11.8 `AasenSpec` relative-norm checkerboard base-square wrappers | `higham11_8_AasenSpec_identity_source_prefix_gamma_base_square_exact_radius_relative_norm_caps_of_componentwise_T_checkerboard_middle`, `higham11_8_AasenSpec_id_source_prefix_gamma_base_square_exact_radius_relative_norm_caps_of_componentwise_T_checkerboard_middle`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; further specializes the componentwise-`T` checkerboard base-square route by deriving the unscaled exact outer-factor caps from displayed relative `(1+γ_n)` norm caps. This removes the separate `‖L‖∞≤n−1` and `‖Lᵀ‖∞≤n−1` obligations while preserving the relative caps, checkerboard certificate, `T_hat` comparison, source-prefix update/budget facts, and source-smallness entry points. |
+| Thm 11.8 `AasenSpec` row-sum checkerboard base-square wrappers | `higham11_8_AasenSpec_identity_source_prefix_gamma_base_square_exact_radius_row_sum_caps_of_componentwise_T_checkerboard_middle`, `higham11_8_AasenSpec_id_source_prefix_gamma_base_square_exact_radius_row_sum_caps_of_componentwise_T_checkerboard_middle`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the relative-norm checkerboard base-square route by deriving the displayed relative outer-factor caps from scaled row/column sum budgets. This removes the separate relative `∞`-norm cap obligations while preserving the row/column budgets, checkerboard certificate, `T_hat` comparison, source-prefix update/budget facts, and source-smallness entry points. |
+| Thm 11.8 `AasenSpec` entrywise-majorant checkerboard base-square wrappers | `higham11_8_AasenSpec_identity_source_prefix_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_componentwise_T_checkerboard_middle`, `higham11_8_AasenSpec_id_source_prefix_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_componentwise_T_checkerboard_middle`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the relative-norm checkerboard base-square route by deriving the displayed relative outer-factor caps from a uniform exact outer-factor entry majorant and the scalar `(1+γ_n)(nκ)≤n−1` cap. This removes separate row/column sum or relative norm cap obligations while preserving the entry majorant, checkerboard certificate, `T_hat` comparison, source-prefix update/budget facts, and source-smallness entry points. |
+| Thm 11.8 `AasenSpec` entrywise-majorant nonnegativity aliases | `higham11_8_AasenSpec_identity_source_prefix_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_componentwise_T_checkerboard_middle_entry_bound_nonneg`, `higham11_8_AasenSpec_id_source_prefix_gamma_base_square_exact_radius_entrywise_outer_factor_majorant_of_componentwise_T_checkerboard_middle_entry_bound_nonneg`, and their source-smallness aliases | Ch11 | **new this session**; derives the `0≤κ` side condition for the entrywise-majorant checkerboard base-square route from the same nonempty uniform absolute entry bound. This leaves only the scalar `(1+γ_n)(nκ)≤n−1` cap, entry majorant, checkerboard certificate, `T_hat` comparison, and source-prefix update/budget facts explicit. |
+| Thm 11.8 `AasenSpec` Aasen-entry checkerboard base-square wrappers | `higham11_8_AasenSpec_identity_source_prefix_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_componentwise_T_checkerboard_middle`, `higham11_8_AasenSpec_id_source_prefix_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_of_componentwise_T_checkerboard_middle`, their source-smallness aliases, and the `_entry_bound_nonneg` variants | Ch11 | **new this session**; specializes the relative-norm checkerboard base-square route using the `AasenSpec` strict-upper and first-column zero structure, so a uniform exact outer-factor entry cap feeds the sharper `(1+γ_n)((n−1)κ)≤n−1` scalar budget instead of the fallback `nκ` budget. The nonnegativity aliases derive `0≤κ` from the entry bound; the concrete entry cap, scalar budget, checkerboard certificate, `T_hat` comparison, and source-prefix update/budget facts remain explicit. |
+| Thm 11.8 `AasenSpec` normalized Aasen-entry checkerboard base-square wrappers | `higham11_8_AasenSpec_identity_source_prefix_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_componentwise_T_checkerboard_middle`, `higham11_8_AasenSpec_id_source_prefix_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_scaled_unit_of_componentwise_T_checkerboard_middle`, their source-smallness aliases, and the `_entry_bound_nonneg` variants | Ch11 | **new this session**; removes the displayed `(1+γ_n)((n−1)κ)≤n−1` scalar-cap hypothesis from the Aasen-entry checkerboard base-square route, replacing it with the source-style normalized entry cap `(1+γ_n)κ≤1` and deriving the row/column budget by `higham11_8_aasen_outer_factor_scaled_entry_cap`. The concrete normalized entry cap, entry majorant, checkerboard certificate, `T_hat` comparison, and source-prefix update/budget facts remain explicit. |
+| Thm 11.8 `AasenSpec` inverse-scale Aasen-entry checkerboard base-square wrappers | `higham11_8_AasenSpec_identity_source_prefix_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_componentwise_T_checkerboard_middle`, `higham11_8_AasenSpec_id_source_prefix_gamma_base_square_exact_radius_aasen_outer_factor_entry_bound_inv_one_plus_of_componentwise_T_checkerboard_middle`, their source-smallness aliases, and the `_entry_bound_nonneg` variants | Ch11 | **new this session**; replaces the normalized `(1+γ_n)κ≤1` entry-cap obligation by the source-style inverse cap `κ≤1/(1+γ_n)`, deriving the normalized cap through `higham11_8_one_plus_mul_le_one_of_le_inv_one_plus` and `gamma_nonneg`. The concrete inverse entry cap, entry majorant, checkerboard certificate, `T_hat` comparison, and source-prefix update/budget facts remain explicit. |
+| Thm 11.8 exact-`T_hat` product-majorant source-norm entry-bound aliases | `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_scaled_unit`, `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_inv_one_plus`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_scaled_unit`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_inv_one_plus`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; transports the aggregate-coefficient exact-`T_hat` product-majorant normalized and inverse-scale entry-bound routes from the `‖T_hat‖∞` predicate to the source `‖A‖∞` predicate using the exact-middle Aasen growth bound and `0 < ‖A‖∞`. The wrappers preserve the direct entry cap `|Lᵢⱼ|≤κ`, the scaled-unit or inverse-scale cap on `κ`, exact equality, concrete middle abs-product majorant, rounded source-prefix update/budget facts, identity-permutation aliases, and source-smallness entry points. |
+| Thm 11.8 exact-`T_hat` checkerboard product-majorant source-norm entry-bound aliases | `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_scaled_unit`, `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_inv_one_plus`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_scaled_unit`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_inv_one_plus`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the aggregate entry-bound source-norm transport to the checkerboard principal-block route, deriving the coefficient-one middle product majorant from total nonnegativity, determinant inequalities, and the LU certificate while preserving the direct entry cap, exact equality, Aasen growth predicate, positive source norm, rounded source-prefix update/budget facts, identity-permutation aliases, and source-smallness entry points. |
+| Thm 11.8 exact-`T_hat` product-majorant source-norm inverse-entry aliases | `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; transports the aggregate-coefficient exact-`T_hat` product-majorant inverse-entry route from the `‖T_hat‖∞` predicate to the source `‖A‖∞` predicate using the exact-middle Aasen growth bound and `0 < ‖A‖∞`, preserving the concrete middle abs-product majorant, inverse-entry cap, exact equality, source-prefix update/budget facts, and source-smallness entry points. |
+| Thm 11.8 exact-`T_hat` checkerboard product-majorant source-norm inverse-entry aliases | `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_source_norm_of_aasenGrowthBound_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_source_norm_of_aasenGrowthBound_of_inverse_entry_bound`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; transports the checkerboard principal-block exact-`T_hat` product-majorant inverse-entry endpoint to the source `‖A‖∞` predicate, preserving the checkerboard total-nonnegativity, determinant, LU, inverse-entry, source-prefix update/budget, exact equality, and source-smallness obligations while the Aasen growth predicate supplies the source-norm comparison. |
 | Thm 11.8 `AasenSpec` source-norm source-prefix transports | `higham11_8_AasenSpec_identity_source_prefix_relative_colDiagDom_middle_coeff_source_norm_of_T_hat_maxEntry_cap`, `higham11_8_AasenSpec_identity_source_prefix_relative_rowDiagDom_middle_coeff_source_norm_of_T_hat_maxEntry_cap`, `higham11_8_AasenSpec_identity_source_prefix_relative_colDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_T_hat_maxEntry_cap`, `higham11_8_AasenSpec_identity_source_prefix_relative_rowDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_T_hat_maxEntry_cap` | Ch11 | **new this session**; lifts the tridiagonal max-entry source-norm transport through the identity-permutation `AasenSpec` source-prefix relative middle routes. The exact recurrence/product facts are now supplied by `AasenSpec`, and the printed-gamma variants derive the source coefficient nonnegativity and local gamma-validity side conditions from `gammaValid (15n+25)`. The concrete `T_hat` max-entry growth cap and remaining factor/solve scalar budgets remain explicit. |
 | Thm 11.8 `AasenSpec` componentwise-`BT_factor` source-norm transports | `higham11_8_AasenSpec_identity_source_prefix_relative_colDiagDom_middle_coeff_componentwise_BT_source_norm_of_T_hat_maxEntry_cap`, `higham11_8_AasenSpec_identity_source_prefix_relative_rowDiagDom_middle_coeff_componentwise_BT_source_norm_of_T_hat_maxEntry_cap`, `higham11_8_AasenSpec_identity_source_prefix_relative_colDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity_source_norm_of_T_hat_maxEntry_cap`, `higham11_8_AasenSpec_identity_source_prefix_relative_rowDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity_source_norm_of_T_hat_maxEntry_cap` | Ch11 | **new this session**; extends the source-norm `AasenSpec` transport to the componentwise middle-comparison route, deriving `‖BT_factor‖∞≤κBT‖T_hat‖∞` internally from `BT_factor i j≤κBT|T_hat i j|` before applying the tridiagonal max-entry source cap. This keeps the source-norm endpoint compatible with concrete relative `T_hat` comparison facts while leaving the max-entry growth cap and scalar coefficient budget explicit. |
 | Thm 11.8 `AasenSpec` source-norm source-smallness aliases | the `_of_unit_roundoff_bound` and `_of_u_le_cap` aliases for `higham11_8_AasenSpec_identity_source_prefix_relative_colDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_T_hat_maxEntry_cap`, `higham11_8_AasenSpec_identity_source_prefix_relative_rowDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_T_hat_maxEntry_cap`, `higham11_8_AasenSpec_identity_source_prefix_relative_colDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity_source_norm_of_T_hat_maxEntry_cap`, and `higham11_8_AasenSpec_identity_source_prefix_relative_rowDiagDom_middle_coeff_componentwise_BT_printed_gamma_validity_source_norm_of_T_hat_maxEntry_cap` | Ch11 | **new this session**; derives the printed `gammaValid (15n+25)` side condition for the arbitrary-`sigma` `AasenSpec` source-norm column/row and componentwise-`BT_factor` routes from either `(15n+25)u<1` or a displayed cap `u≤Ucap`, while preserving the identity-permutation proof, tridiagonal `T_hat` max-entry growth cap, and scalar coefficient budget as explicit obligations. |
@@ -51,6 +72,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.8 normalized componentwise/`T`-norm sigma-id `H=T Lᵀ` inverse-entry aliases | `higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the normalized direct-middle and checkerboard componentwise-`T` / direct-`T`-norm inverse-entry endpoints whose recurrences are derived from `H=T Lᵀ` and concrete `T` subdiagonal nonzeros to `σ := id`, discharging the identity-permutation proof by reflexivity. The concrete `T_hat` comparison, componentwise/`T`-norm cap, middle-product certificate, inverse-entry cap, and rounded source-prefix update/budget facts remain explicit. |
 | Thm 11.8 normalized componentwise/`T`-norm `H=T Lᵀ` inverse-entry wrappers | `higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_identity_source_prefix_componentwise_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; routes the normalized direct-middle and checkerboard componentwise-`T` / direct-`T`-norm inverse-entry endpoints through `AasenSpec`, `H=T Lᵀ`, and concrete `T` subdiagonal nonzeros, deriving the exact Aasen recurrence and nonzero `H` pivots internally. The identity-permutation proof, concrete `T_hat` comparison, componentwise/`T`-norm cap, middle-product certificate, inverse-entry cap, and rounded source-prefix update/budget facts remain explicit. |
 | Thm 11.8 componentwise/`T`-norm sigma-id `H=T Lᵀ` inverse-entry aliases | `higham11_8_AasenSpec_id_source_prefix_componentwise_T_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_scaled_unit_checkerboard_principalBlock_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_componentwise_T_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_componentwise_T_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the componentwise-`T` and direct-`T`-norm inverse-entry endpoints whose Aasen recurrences are derived from `H=T Lᵀ` and concrete `T` subdiagonal nonzeros to `σ := id`, discharging the identity-permutation proof by reflexivity for normalized principal-block and ordinary direct/checkerboard routes. The concrete `T_hat` comparison, componentwise/`T`-norm cap, middle-product certificate, inverse-entry cap, and rounded source-prefix update/budget facts remain explicit. |
+| Thm 11.8 non-exact inverse-entry `T`-norm source-norm aliases | `higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_direct_middle_endpoint_source_norm_of_T_hat_norm_cap_of_inverse_entry_bound`, `higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_checkerboard_endpoint_source_norm_of_T_hat_norm_cap_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_direct_middle_endpoint_source_norm_of_T_hat_norm_cap_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_checkerboard_endpoint_source_norm_of_T_hat_norm_cap_of_inverse_entry_bound`, their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases, the matching identity and `σ := id` `..._source_norm_relative_growth_cap_of_inverse_entry_bound` aliases with source-smallness forms, and the direct-cap / relative-growth `..._of_H_eq_T_subdiagonal_ne_zero` identity / `σ := id` forms, including relative-growth source-smallness aliases | Ch11 | **new this session**; transports the ordinary non-exact direct-middle and checkerboard inverse-entry `T`-norm endpoints from the `‖T_hat‖∞` predicate to the source `‖A‖∞` predicate using either a computed-middle cap `‖T_hat‖∞≤κA‖A‖∞` with `κA≤4^(n−2)` or the relative-growth scalar cap `(1+γ_n)κA≤4^(n−2)` with `0≤κA`. The wrappers preserve the relative `T_hat` comparison, direct `T`-norm cap, middle-product/checkerboard certificate, inverse-entry cap, source-prefix update/budget facts, source-smallness aliases, identity-permutation aliases, and direct-cap / relative-growth `H=T Lᵀ` recurrence-derived routes. |
 | Thm 11.8 exact-`T_hat` sigma-id `H=T Lᵀ` inverse-entry aliases | `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the exact-`T_hat` direct-middle and checkerboard inverse-entry endpoints whose Aasen recurrences are derived from `H=T Lᵀ` and concrete `T` subdiagonal nonzeros to `σ := id`, discharging the identity-permutation proof by reflexivity in both ordinary and normalized scaled-unit source-smallness forms. The exact middle equality, inverse-entry cap, middle-product/checkerboard certificate, and rounded source-prefix update/budget facts remain explicit. |
 | Thm 11.8 exact-`T_hat` sigma-id relative-middle aliases | `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity`, their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases, the column/row `..._of_simplified_coeff` aliases, and the column/row inverse-entry simplified-coefficient aliases with source-smallness forms | Ch11 | **new this session**; specializes the exact-`T_hat` column- and row-dominant relative middle routes to `σ := id`, discharging the identity-permutation proof by reflexivity for the printed-validity, source-smallness, simplified-coefficient, and inverse-entry endpoint surfaces. The exact `T_hat=T` equality, LU dominance certificate, inverse-entry cap where applicable, rounded source-prefix update/budget facts, and scalar coefficient obligations remain explicit. |
 | Thm 11.7 coefficient current-local/earlier-branch branch/full/global source endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_currentLocalBlock_and_after_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_currentLocalBlock_and_after_earlier_branch_end`, and `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_currentLocalBlock_and_after_earlier_branch_end`, plus their symmetric-tridiagonal wrappers | Ch11 | **new this session**; the coefficient-sum branch-matrix, full-base-row, and global-base-solve source endpoints now consume the support-reduced current-local-block plus after-earlier-branch-end route directly, deriving the full-row earlier-lift zero certificate internally while leaving the accepted-`2×2` base row equation explicit. |
@@ -182,10 +204,14 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.7 local-block second-pivot special cases | `higham11_7_ConcretePathSecondPivotCombinedLocalBlockSolveRows_of_no_two`, `higham11_7_ConcretePathSecondPivotBranchMatrixCombinedLocalBlockSolveRows_of_no_two`, `higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_no_two`, `higham11_7_ConcretePathSecondPivotCombinedLocalBlockSolveRows_of_all_one`, `higham11_7_ConcretePathSecondPivotBranchMatrixCombinedLocalBlockSolveRows_of_all_one`, and `higham11_7_ConcretePathSecondPivotBranchMatrixBaseLocalBlockSolveRows_of_all_one` | Ch11 | **new this session**; extends the no-`2×2`/all-`1×1` vacuity route down to the local-block, branch-matrix local-block, and bare branch-matrix base-row predicates. Later second-pivot endpoint callers can use the local predicate API directly in scalar-only path shapes instead of detouring through the reduced full-row predicate. |
 | Thm 11.7 initial second-pivot reduced-row bridge | `higham11_7_fin_sum_before_eq_zero_of_val_zero`, `higham11_7_fin_before_dot_eq_zero_of_val_zero`, `higham11_7_ConcretePathSecondPivotReducedSolveRow_of_val_zero`, `higham11_7_ConcretePathSecondPivotReducedSolveRows_of_base_rows_of_two_only_at_zero` | Ch11 | **new this session**; proves that the strict-before lifted perturbation sum is empty at a branch whose path value is `0`, so an initial accepted `2×2` branch's reduced second-pivot row follows from the unperturbed base row equation. The predicate wrapper packages the case where every accepted `2×2` branch is the initial branch. |
 | Thm 11.7 initial second-pivot coefficient endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_initial_secondPivot_base_rows`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_initial_secondPivot_base_rows`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_initial_secondPivot_base_rows` | Ch11 | **new this session**; threads the initial-second-pivot reduced-row bridge through the coefficient-sum, uniform-coefficient, and scalar-budget concrete prefix-span residual-witness endpoints. If every accepted `2×2` branch has path value `0`, callers can discharge the reduced second-pivot handoff using only the corresponding unperturbed base row equations. |
+| Thm 11.7 initial second-pivot coefficient global-base endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_initial_secondPivot_global_base_solve`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_initial_secondPivot_global_base_solve`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_initial_secondPivot_global_base_solve` | Ch11 | **new this session**; specializes the coefficient-sum, uniform-coefficient, and scalar-budget initial-second-pivot endpoints to a source-shaped all-row base solve. The global solve supplies both the leading base row and the accepted-`2×2` second-pivot base rows directly, avoiding the older tridiagonal full-row-zero route in the initial-only subcase. |
+| Thm 11.7 initial second-pivot component endpoint | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_initial_secondPivot_base_rows` | Ch11 | **new this session**; threads the same initial-second-pivot reduced-row bridge through the uniform component-cap concrete prefix-span endpoint. Component-budget callers in the initial-only `2×2` subcase can now provide just the base second-pivot row equations instead of a reduced-row family. |
+| Thm 11.7 initial second-pivot component global-base endpoint | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_initial_secondPivot_global_base_solve` | Ch11 | **new this session**; specializes the component initial-only reduced-row endpoint to a source-shaped all-row base solve. The global solve supplies both the leading base row and the second-pivot base rows directly, avoiding the older tridiagonal full-row-zero detour in this initial-only subcase. |
 | Thm 11.7 reduced second-pivot source endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_reduced_solve_rows`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_reduced_solve_rows`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_reduced_solve_rows` | Ch11 | **new this session**; threads the reduced second-pivot row assumption through the coefficient-sum, uniform-coefficient, and scalar-budget concrete prefix-span source endpoints, so these endpoints no longer require the branch-current local dot term. The remaining 11.7 solve-side handoff is the reduced base-plus-earlier second-pivot row equation itself. |
 | Thm 11.7 no-second-pivot path row vacuity | `higham11_7_ConcretePathSecondPivotReducedSolveRows_of_no_two`, `higham11_7_ConcretePathSecondPivotReducedSolveRows_of_all_one`, `higham11_7_tridiagonalPath_no_secondPivot_of_all_one`, `higham11_7_tridiagonalPath_all_one_of_no_secondPivot`, `higham11_7_tridiagonalPath_no_secondPivot_iff_all_one`, `higham11_7_tridiagonalPath_complement_full_solve_rows_of_no_secondPivot`, `higham11_7_tridiagonalPath_complement_full_solve_rows_of_all_one` | Ch11 | **new this session**; proves that the reduced second-pivot handoff and non-leading/non-first-trailing complement solve rows are vacuous when the concrete mixed path has no accepted `2×2` branch, and packages the exact all-`1×1` row-coverage subcase through explicit adapters in both directions between no-second-pivot paths and all-`1×1` paths. |
 | Thm 11.7 no-second-pivot source endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_no_secondPivot`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_no_secondPivot`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_no_secondPivot` | Ch11 | **new this session**; feeds the no-`2×2` row-vacuity lemmas into the coefficient-sum, uniform-coefficient, and scalar-budget concrete prefix-span endpoints. In an all-`1×1` path, callers now supply only the nonfinal/final `1×1` first-trailing solve rows plus the leading base row; all `2×2` first-trailing and second-pivot obligations are discharged by contradiction. |
 | Thm 11.7 all-`1×1` source endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_all_one`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_all_one`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_all_one` | Ch11 | **new this session**; exposes the all-`1×1` concrete prefix-span residual-witness endpoints directly in coefficient-sum, uniform-coefficient, and scalar-budget forms by deriving the no-second-pivot hypothesis from the all-one path proof. This removes the negative `2×2` branch precondition from source-facing callers in the all-`1×1` subcase. |
+| Thm 11.7 no-second/all-`1×1` global-base endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_no_secondPivot_global_base_solve`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_all_one_global_base_solve`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_no_secondPivot_global_base_solve`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_all_one_global_base_solve`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_no_secondPivot_global_base_solve`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_all_one_global_base_solve`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_no_secondPivot_global_base_solve`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_all_one_global_base_solve` | Ch11 | **new this session**; specializes the no-accepted-`2×2` and all-`1×1` endpoint families to a source-shaped all-row base solve. The global solve discharges the leading base row in coefficient-sum, uniform-coefficient, scalar-budget, and uniform component-cap forms while leaving the first-trailing residual row equations explicit. |
 | Thm 11.7 terminal/leading row separation | `higham11_7_tridiagonalPath_finLast_ne_zero`, `higham11_7_tridiagonalPath_zero_ne_finLast` | Ch11 | **new this session**; proves that the ambient last row of a nonempty concrete path is distinct from the leading row, using the final first-trailing endpoint identification. This keeps the terminal-tail row and the leading-row complement case disjoint in the remaining lifted solve-equation split. |
 | Thm 11.7 concrete lifted solve-row splitter | `higham11_7_tridiagonalPath_solve_rows_of_one_two_nonfinal_firstTrailingIndex_last_zero_and_complement`, `higham11_7_tridiagonalPath_solve_rows_of_one_two_nonfinal_firstTrailingIndex_last_zero_secondPivot` | Ch11 | **new this session**; specializes the generic row-coverage split to the actual lifted equation for `A + ∑ ΔA_lift`, so the remaining final `hsolve` can be supplied as non-final `1×1`/`2×2` endpoint rows, the terminal last row, the leading row, and either arbitrary non-leading/non-endpoint complement rows or the refined concrete `2×2` second-pivot rows. |
 | Thm 11.7 entrywise infinity-norm bridge | `higham11_7_abs_entry_le_infNorm` | Ch11 | **new this session**; row-sum bridge showing every entry satisfies `|Aᵢⱼ| ≤ ‖A‖∞`, used to discharge local scalar `Amax` hypotheses from a norm budget |
@@ -210,6 +236,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.7 mixed-path schedule prefix spans | `higham11_7_tridiagonalPathPrefixSpan`, `higham11_7_tridiagonalPathPrefixSpan_zero`, `higham11_7_tridiagonalPathPrefixSpan_succ`, `higham11_7_tridiagonalPathStartOffsetsFrom_eq_base_add_prefixSpan`, `higham11_7_tridiagonalPathStartOffsetsFrom_base_add_prefixSpan`, `higham11_7_tridiagonalPathStartOffsets_eq_prefixSpan`, `higham11_7_tridiagonalPathStartOffsets_prefixSpan`, `higham11_7_tridiagonalPathPrefixSpan_last_add_branch_eq_pivotSpan` | Ch11 | **new this session**; identifies each scheduled branch start with the base plus the sum of earlier consumed pivot spans, proves the explicit prefix-span starts themselves are the canonical base-offset/zero-based schedules, and identifies the last explicit prefix endpoint with the full path span. |
 | Thm 11.7 mixed-path prefix-span bounds and ordering | `higham11_7_tridiagonalPathPrefixSpan_lt_pivotSpan`, `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_pivotSpan`, `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_of_lt`, `higham11_7_tridiagonalPathPrefixSpan_lt_of_lt`, `higham11_7_tridiagonalPathPrefixSpan_le_of_le`, `higham11_7_tridiagonalPathPrefixSpan_branch_end_le_branch_end_of_le`, `higham11_7_tridiagonalPathPrefixSpan_branch_end_lt_branch_end_of_lt` | Ch11 | **new this session**; transfers containment, strict start ordering, monotone endpoint facts, and strict endpoint ordering from canonical schedules to explicit prefix spans, so later lifted-entry arguments can avoid carrying a separate `starts` witness. |
 | Thm 11.7 all-`1×1` / no-second-pivot span exactness | `higham11_7_tridiagonalPathPivotSpan_eq_length_of_all_one`, `higham11_7_tridiagonalPathPivotSpan_eq_length_of_no_secondPivot`, `higham11_7_tridiagonalPathPivotSpan_succ_eq_length_succ_of_all_one`, `higham11_7_tridiagonalPathPivotSpan_succ_eq_length_succ_of_no_secondPivot` | Ch11 | **new this session**; strengthens the general `k ≤ pathSpan ≤ 2k` mixed-path bounds to exact `pathSpan=k` and ambient dimension `pathSpan+1=k+1` for all-`1×1` paths and equivalent no-accepted-`2×2` paths. This removes dimension arithmetic from all-`1×1`/no-second-pivot endpoint callers. |
+| Thm 11.7 canonical-length no-second/all-`1×1` global-base endpoints | `higham11_7_tridiagonalPath_global_base_solve_of_pivotSpan_succ_eq` and the eight `..._endpoint_terminal_base_{no_secondPivot,all_one}_length_global_base_solve` wrappers for `coeff_norm`, `uniform_coeff_norm`, `coeff_roundoff_norm`, and `uniform_component_bounds` | Ch11 | **new this session**; transports a source-shaped all-row base solve from canonical `Fin ((k+1)+1)` through the no-second/all-`1×1` pivot-span exactness into the existing dependent `pivotSpan+1` global-base endpoints. This lets callers state the global solve over path length while keeping the first-trailing residual row equations explicit. |
 | Thm 11.7 concrete mixed-path tail dimensions | `higham11_7_tridiagonalPathTailDim`, `higham11_7_tridiagonalBranchAmbientDim_eq_tail_add_offset_succ`, `higham11_7_tridiagonalPathPrefixSpan_add_branchAmbientDim_tailDim_eq_pivotSpan_succ`, `higham11_7_tridiagonalPath_local_index_lt_pivotSpan_succ`, `higham11_7_tridiagonalPathLocalBlockIndex`, `higham11_7_tridiagonalPathLocalBlockIndex_val`, `higham11_7_tridiagonalPathTailDim_last_eq_zero`, `higham11_7_tridiagonalPathTailDim_head`, `higham11_7_tridiagonalPathTailDim_succ` | Ch11 | **new this session**; defines the remaining tail dimension after each concrete mixed-path branch, proves the branch-local block fits in the full `pathSpan+1` ambient at the prefix offset, exposes a path-local index embedding, proves the terminal branch has zero remaining tail, and gives the head/successor recurrence needed by path induction. |
 | Thm 11.7 concrete mixed-path branch matrix view | `higham11_7_tridiagonalPathBranchMatrix`, `higham11_7_tridiagonalPathBranchMatrix_apply`, `higham11_7_tridiagonalPathLocalBlockIndex_injective`, `higham11_7_tridiagonalPathBranchMatrix_abs_entry_le_infNorm`, `higham11_7_tridiagonalPathBranchMatrix_infNorm_le_card_mul_global_infNorm`, `higham11_7_tridiagonalPathBranchMatrix_infNorm_le_global_infNorm` | Ch11 | **new this session**; restricts a full `pathSpan+1` ambient tridiagonal matrix to each branch-local block at its explicit prefix offset, proves local entries are bounded by the global `∞` norm, gives a coarse local-row-length norm bound for coefficient-absorbing budget routes, and proves the sharper principal-block `∞`-norm comparison needed by the concrete path endpoint. |
 | Thm 11.7 concrete scheduled mixed-path endpoint | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_local_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_terminal_assumptions_scheduled_lifted_sum_zero_offset_of_coeff_roundoff_norm` | Ch11 | **new this session**; specializes the scheduled lifted path source endpoint to the canonical `pathSpan+1` ambient matrix, concrete tail dimensions, and prefix-offset branch matrices, discharging the local matrix-norm comparison via the principal-block bound while keeping the genuine path-local assumptions, coefficient/roundoff comparisons, and lifted solve equation explicit. |
@@ -428,6 +455,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.8 `AasenSpec` product-size wrappers | `higham11_8_aasen_outer_factor_row_col_sum_majorants_of_AasenSpec_entry_bound`, `higham11_8_relative_outer_factor_caps_of_AasenSpec_entry_bound_scaled_unit`, `higham11_8_relative_outer_factor_caps_of_AasenSpec_entry_bound_inv_one_plus`, `higham11_8_aasen_base_square_bounds_of_AasenSpec_entry_bound_scaled_unit`, `higham11_8_aasen_base_square_bounds_of_AasenSpec_entry_bound_inv_one_plus` | Ch11 | **new this session**; source-facing wrappers unpack `AasenSpec`'s lower-triangular and first-column-zero fields, so a concrete uniform exact outer-factor entry cap plus either normalized `(1+γ)κ≤1` or source-style `κ≤1/(1+γ)` scalar comparison now directly yields the row/column majorants, relative norm caps, and exact-product base-square caps required by the `T_hat` exact-radius route. |
 | Thm 11.8 `AasenSpec` product-square wrappers | `higham11_8_aasen_product_square_bounds_of_AasenSpec_entry_bound_scaled_unit`, `higham11_8_aasen_product_square_bounds_of_AasenSpec_entry_bound_inv_one_plus`, `higham11_8_aasen_product_square_bounds_of_AasenSpec_inverse_entry_bound` | Ch11 | **new this session**; packages the `AasenSpec` base-square caps with the exact-middle side conditions `κT≤1` and `κmidLU≤1`, yielding the four square product caps consumed by the exact-product `T_hat` coefficient reducer. This removes another repeated arithmetic handoff while the concrete entry cap and middle certificate remain open source obligations. |
 | Thm 11.8 `AasenSpec` exact-product coefficient reducers | `higham11_8_aasen_relative_coeff_le_of_AasenSpec_entry_bound_scaled_unit`, `higham11_8_aasen_relative_coeff_le_of_AasenSpec_entry_bound_inv_one_plus`, `higham11_8_aasen_relative_coeff_le_of_AasenSpec_inverse_entry_bound` | Ch11 | **new this session**; combines the `AasenSpec` product-square wrappers with the printed `γ_{15n+25}` coefficient reducer, so normalized, inverse-scale, or direct inverse-entry outer-factor caps discharge the exact-product scalar coefficient comparison directly. The concrete entry estimate, `κT≤1`, `κBT≤γ_n`, `κmidLU≤1`, and the middle certificate remain visible caller obligations. |
+| Thm 11.8 `AasenSpec` inverse-entry unit-middle coefficient reducer | `higham11_8_aasen_relative_coeff_le_of_AasenSpec_inverse_entry_bound_unit_middle`, `higham11_8_aasen_relative_coeff_le_of_AasenSpec_inverse_entry_bound_unit_middle_of_unit_roundoff_bound`, `higham11_8_aasen_relative_coeff_le_of_AasenSpec_inverse_entry_bound_unit_middle_of_u_le_cap` | Ch11 | **new this session**; specializes the direct inverse-entry scalar-budget reducer to exact middle constants `κT=κmidLU=1`, with source-smallness aliases for `(15n+25)u<1` or a displayed cap `u≤Ucap`. The concrete inverse entry estimate and `κBT≤γ_n` middle perturbation bound remain explicit obligations. |
 | Thm 11.8 `AasenSpec` exact-product wrappers | `higham11_8_AasenSpec_permuted_product_eq`, `higham11_8_AasenSpec_product_eq_of_identity_perm` | Ch11 | **new this session**; exposes the exact `PAPᵀ=LTLᵀ` product carried by `AasenSpec`, plus the identity-permutation specialization in the unpermuted `A=LTLᵀ` form consumed by the source-prefix backward-error endpoints. |
 | Thm 11.8 `AasenSpec` identity zero-relative checkerboard endpoint | `higham11_8_AasenSpec_identity_source_prefix_zero_relative_checkerboard_endpoint` | Ch11 | **new this session**; feeds an identity-permutation `AasenSpec` directly into the zero-relative `T_hat` source-prefix checkerboard endpoint, discharging the exact product and `L` zero-pattern hypotheses while leaving the concrete recurrence, entry-cap, `T_hat`, LU-certificate, and gamma-validity assumptions explicit. |
 | Thm 11.8 `AasenSpec` identity zero-relative direct-middle endpoint | `higham11_8_AasenSpec_identity_source_prefix_zero_relative_direct_middle_endpoint` | Ch11 | **new this session**; feeds an identity-permutation `AasenSpec` into the zero-relative source-prefix direct-middle endpoint, discharging the exact product and `L` zero-pattern hypotheses while keeping the supplied `|L_T||U_T|≤|T_hat|` middle-product estimate, recurrence, entry cap, `T_hat`, and gamma-validity assumptions explicit. |
@@ -2800,6 +2828,62 @@ Problem transcription.
     earlier-branch, current-local/non-adjacent, and initial-only second-pivot
     routes; focused dependency checks of the 18 new declarations → dependency
     set `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-14 Theorem 11.7 initial second-pivot residual-witness uniform-component source endpoint:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass with
+    pre-existing upstream warnings only; `git diff --check`, placeholder scan,
+    and tab scan → pass; scratch `#print axioms` →
+    `[propext, Classical.choice, Quot.sound]`;
+    adds
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_initial_secondPivot_base_rows`,
+    routing the initial-only second-pivot base-row bridge through the component
+    source endpoint.
+  - 2026-07-14 Theorem 11.7 initial second-pivot residual-witness component global-base endpoint:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass with
+    pre-existing upstream warnings only; `git diff --check`, placeholder scan,
+    and tab scan → pass; scratch `#print axioms` →
+    `[propext, Classical.choice, Quot.sound]`;
+    adds
+    `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_component_bounds_of_endpoint_terminal_base_initial_secondPivot_global_base_solve`,
+    deriving the leading row and initial-only second-pivot base rows from a
+    source-shaped all-row base solve before invoking the component reduced-row
+    endpoint.
+  - 2026-07-14 Theorem 11.7 initial second-pivot residual-witness coefficient global-base endpoints:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass with
+    pre-existing upstream warnings only; `git diff --check`, placeholder scan,
+    and tab scan → pass; scratch `#print axioms` on the three new wrappers →
+    `[propext, Classical.choice, Quot.sound]`;
+    adds the coefficient-sum, uniform-coefficient, and scalar-budget
+    `..._endpoint_terminal_base_initial_secondPivot_global_base_solve`
+    wrappers, deriving the leading row and initial-only second-pivot base rows
+    from a source-shaped all-row base solve before invoking the corresponding
+    reduced-row endpoints.
+  - 2026-07-14 Theorem 11.7 no-second/all-`1×1` residual-witness global-base endpoints:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass with
+    pre-existing upstream warnings only; `git diff --check`, placeholder scan,
+    and tab scan → pass; scratch `#print axioms` on the eight new wrappers →
+    `[propext, Classical.choice, Quot.sound]`;
+    adds eight coefficient-sum, uniform-coefficient, scalar-budget, and uniform
+    component-cap wrappers ending in
+    `..._endpoint_terminal_base_no_secondPivot_global_base_solve` and
+    `..._endpoint_terminal_base_all_one_global_base_solve`, deriving the
+    leading base row from a source-shaped all-row base solve while leaving the
+    first-trailing residual row equations explicit.
+  - 2026-07-14 Theorem 11.7 canonical-length no-second/all-`1×1` residual-witness global-base endpoints:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` → pass with
+    pre-existing upstream warnings only; `git diff --check`, placeholder scan,
+    and tab scan → pass; scratch `#print axioms` on the transport lemma and
+    representative wrappers → `[propext, Classical.choice, Quot.sound]`;
+    adds `higham11_7_tridiagonalPath_global_base_solve_of_pivotSpan_succ_eq`
+    and eight `..._length_global_base_solve` wrappers for the coefficient-sum,
+    uniform-coefficient, scalar-budget, and uniform component-cap no-second/all-`1×1`
+    endpoint families, transporting canonical `Fin ((k+1)+1)` base solves
+    through path-span exactness before invoking the dependent global-base
+    endpoints.
   - 2026-07-12 Theorem 11.7 support-reduced local residual-witness uniform-component increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
     `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
@@ -6408,6 +6492,22 @@ Problem transcription.
     and `higham11_8_aasen_relative_coeff_le_of_AasenSpec_inverse_entry_bound`;
     focused theorem-dependency checks of all three declarations → dependencies
     `[propext, Classical.choice, Quot.sound]`.
+  - 2026-07-14 Theorem 11.8 AasenSpec inverse-entry unit-middle coefficient
+    reducer:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → pass;
+    Lean forbidden-token scan → clean;
+    docs diff forbidden-token scan → clean;
+    tab scan of the touched Lean/doc files → clean;
+    adds
+    `higham11_8_aasen_relative_coeff_le_of_AasenSpec_inverse_entry_bound_unit_middle`,
+    `higham11_8_aasen_relative_coeff_le_of_AasenSpec_inverse_entry_bound_unit_middle_of_unit_roundoff_bound`,
+    and
+    `higham11_8_aasen_relative_coeff_le_of_AasenSpec_inverse_entry_bound_unit_middle_of_u_le_cap`;
+    focused theorem-dependency checks of the declarations → dependencies
+    `[propext, Classical.choice, Quot.sound]`.
   - 2026-07-11 Theorem 11.8 exact-`T_hat` AasenSpec aggregate-coefficient
     product endpoint increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
@@ -8388,6 +8488,50 @@ Problem transcription.
     alias axioms `[propext, Classical.choice, Quot.sound]`.
     Target-build warnings were the known upstream Chapter 9, Chapter 10, and
     `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.8 exact-`T_hat` source-norm simplified-coefficient alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    forbidden-token and tab scans of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_simplified_coeff`
+    and
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_simplified_coeff`
+    → elaborate; representative column-dominant simplified source-norm alias
+    axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.8 exact-`T_hat` source-norm inverse-entry alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    forbidden-token and tab scans of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_simplified_coeff`
+    and
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_simplified_coeff`
+    → elaborate; representative column-dominant inverse-entry source-norm alias
+    axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.8 exact-`T_hat` source-norm inverse-entry source-smallness alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    forbidden-token and tab scans of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_simplified_coeff_of_unit_roundoff_bound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_simplified_coeff_of_u_le_cap`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_simplified_coeff_of_unit_roundoff_bound`,
+    and
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_simplified_coeff_of_u_le_cap`
+    → elaborate; representative displayed-cap column-dominant inverse-entry
+    source-smallness alias axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
   - 2026-07-14 Theorem 11.8 sigma-id exact-`T_hat` source-norm growth alias increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
     `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
@@ -8400,6 +8544,368 @@ Problem transcription.
     source-norm alias axioms `[propext, Classical.choice, Quot.sound]`.
     Target-build warnings were the known upstream Chapter 9, Chapter 10, and
     `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.8 sigma-id exact-`T_hat` source-norm simplified-coefficient alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    forbidden-token and tab scans of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_simplified_coeff`
+    and
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_simplified_coeff`
+    → elaborate; representative column-dominant sigma-id simplified
+    source-norm alias axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.8 sigma-id exact-`T_hat` source-norm inverse-entry alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    forbidden-token and tab scans of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_simplified_coeff`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_simplified_coeff`,
+    and their four `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases
+    → elaborate; representative displayed-cap column-dominant sigma-id
+    inverse-entry source-norm alias axioms `[propext, Classical.choice,
+    Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.8 exact-`T_hat` product-majorant source-norm inverse-entry alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    forbidden-token and tab scans of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_of_unit_roundoff_bound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_of_u_le_cap`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_of_unit_roundoff_bound`,
+    and
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_of_u_le_cap`
+    → elaborate; representative displayed-cap sigma-id product-majorant
+    source-norm alias axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.8 exact-`T_hat` checkerboard product-majorant source-norm inverse-entry alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    forbidden-token and tab scans of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_source_norm_of_aasenGrowthBound_of_inverse_entry_bound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_of_unit_roundoff_bound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_of_u_le_cap`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_source_norm_of_aasenGrowthBound_of_inverse_entry_bound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_of_unit_roundoff_bound`,
+    and
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_source_norm_of_aasenGrowthBound_of_inverse_entry_bound_of_u_le_cap`
+    → elaborate; representative displayed-cap sigma-id checkerboard
+    source-norm alias axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.8 exact-`T_hat` product-majorant source-norm entry-bound alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    forbidden-token and tab scans of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_scaled_unit`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_scaled_unit_of_unit_roundoff_bound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_scaled_unit_of_u_le_cap`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_inv_one_plus`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_inv_one_plus_of_unit_roundoff_bound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_inv_one_plus_of_u_le_cap`,
+    and the six corresponding `σ := id` aliases
+    → elaborate; representative displayed-cap sigma-id entry-bound
+    source-norm alias axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.8 exact-`T_hat` checkerboard product-majorant source-norm entry-bound alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    forbidden-token and tab scans of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_scaled_unit`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_scaled_unit_of_unit_roundoff_bound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_scaled_unit_of_u_le_cap`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_inv_one_plus`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_inv_one_plus_of_unit_roundoff_bound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_coeff_gamma_validity_source_norm_of_aasenGrowthBound_of_entry_bound_inv_one_plus_of_u_le_cap`,
+    and the six corresponding `σ := id` aliases
+    → elaborate; representative displayed-cap sigma-id checkerboard
+    entry-bound source-norm alias axioms `[propext, Classical.choice,
+    Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.8 exact-`T_hat` product-majorant generic source-norm alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    forbidden-token and tab scans of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_gamma_parts_gamma_validity_source_norm_of_aasenGrowthBound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_gamma_parts_gamma_validity_source_norm_of_aasenGrowthBound_of_unit_roundoff_bound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_gamma_parts_gamma_validity_source_norm_of_aasenGrowthBound_of_u_le_cap`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_source_norm_of_aasenGrowthBound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_source_norm_of_aasenGrowthBound_of_unit_roundoff_bound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_product_majorants_checkerboard_principalBlock_endpoint_source_norm_of_aasenGrowthBound_of_u_le_cap`,
+    and the six corresponding `σ := id` aliases
+    → elaborate; representative displayed-cap sigma-id checkerboard
+    generic source-norm alias axioms `[propext, Classical.choice,
+    Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.8 non-exact product-majorant source-norm alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → clean;
+    forbidden-token and tab scans of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    focused lookup/axiom check of fully-qualified
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity_source_norm_of_T_hat_norm_cap`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity_source_norm_of_T_hat_norm_cap_of_unit_roundoff_bound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity_source_norm_of_T_hat_norm_cap_of_u_le_cap`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity_source_norm_relative_growth_cap`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity_source_norm_relative_growth_cap_of_unit_roundoff_bound`,
+    `LeanFpAnalysis.FP.higham11_8_AasenSpec_identity_source_prefix_product_majorants_gamma_parts_gamma_validity_source_norm_relative_growth_cap_of_u_le_cap`,
+    and representative `σ := id` aliases
+    → elaborate; representative displayed-cap sigma-id relative-growth alias
+    axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.8 non-exact checkerboard product-majorant source-norm alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` →
+    clean;
+    forbidden-token and tab scans of `HighamChapter11.lean` / `higham_ch11.md` →
+    clean;
+    focused lookup/axiom check of fully-qualified identity and `σ := id`
+    checkerboard principal-block direct-cap and relative-growth source-norm
+    aliases, including `_of_unit_roundoff_bound` / `_of_u_le_cap` forms →
+    elaborate; representative displayed-cap sigma-id relative-growth alias
+    axioms `[propext, Classical.choice, Quot.sound]`.
+    Target-build warnings were the known upstream Chapter 9, Chapter 10, and
+    `CholeskyFl` warnings; no new Chapter 11 warning was emitted.
+  - 2026-07-14 Theorem 11.8 `AasenSpec` base-square exact-radius source-prefix wrapper increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused lookup/axiom check of the fully-qualified identity and `σ := id`
+    base-square exact-radius source-prefix wrappers, including
+    `_of_unit_roundoff_bound` / `_of_u_le_cap` forms → elaborate;
+    representative displayed-cap sigma-id alias axioms `[propext,
+    Classical.choice, Quot.sound]`.
+    new identity-permutation and `σ := id` wrappers derive the Aasen recurrence,
+    nonzero `H` subdiagonal facts, and exact product before applying the raw
+    source-prefix base-square exact-radius source-norm-cap endpoint. The
+    relative `T_hat` comparison, middle product cap, outer norm caps, and
+    source-prefix update/budget hypotheses remain explicit.
+  - 2026-07-14 Theorem 11.8 `AasenSpec` componentwise-`T` checkerboard base-square wrapper increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused lookup/axiom check of the fully-qualified identity and `σ := id`
+    componentwise-`T` checkerboard base-square wrappers, including
+    `_of_unit_roundoff_bound` / `_of_u_le_cap` forms → elaborate;
+    representative displayed-cap sigma-id alias axioms `[propext,
+    Classical.choice, Quot.sound]`.
+    new identity-permutation and `σ := id` wrappers derive the direct
+    `‖T‖∞≤‖T_hat‖∞` cap from `|T|≤|T_hat|` and the middle abs-LU product
+    from the checkerboard LU certificate before applying the base-square
+    exact-radius source-prefix route. The relative `T_hat` comparison,
+    checkerboard certificate, outer norm caps, and source-prefix update/budget
+    hypotheses remain explicit.
+  - 2026-07-14 Theorem 11.8 `AasenSpec` relative-norm checkerboard base-square wrapper increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused lookup/axiom check of the fully-qualified identity and `σ := id`
+    relative-norm checkerboard base-square wrappers, including
+    `_of_unit_roundoff_bound` / `_of_u_le_cap` forms → elaborate;
+    representative displayed-cap sigma-id alias axioms `[propext,
+    Classical.choice, Quot.sound]`.
+    new identity-permutation and `σ := id` wrappers derive the unscaled exact
+    outer-factor norm caps from the displayed relative `(1+γ_n)` caps before
+    applying the componentwise-`T` checkerboard base-square source-prefix
+    route. The relative caps, `T_hat` comparison, checkerboard certificate, and
+    source-prefix update/budget hypotheses remain explicit.
+  - 2026-07-14 Theorem 11.8 `AasenSpec` row-sum checkerboard base-square wrapper increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused lookup/axiom check of the fully-qualified identity and `σ := id`
+    row-sum checkerboard base-square wrappers, including
+    `_of_unit_roundoff_bound` / `_of_u_le_cap` forms → elaborate;
+    representative displayed-cap sigma-id alias axioms `[propext,
+    Classical.choice, Quot.sound]`.
+    new identity-permutation and `σ := id` wrappers derive the displayed
+    relative outer-factor norm caps from scaled row/column sum budgets before
+    applying the relative-norm componentwise-`T` checkerboard base-square
+    source-prefix route. The row/column sum budgets, `T_hat` comparison,
+    checkerboard certificate, and source-prefix update/budget hypotheses remain
+    explicit.
+  - 2026-07-14 Theorem 11.8 `AasenSpec` entrywise-majorant checkerboard base-square wrapper increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused lookup/axiom check of the fully-qualified identity and `σ := id`
+    entrywise-majorant checkerboard base-square wrappers, including
+    `_of_unit_roundoff_bound` / `_of_u_le_cap` forms → elaborate;
+    representative displayed-cap sigma-id alias axioms `[propext,
+    Classical.choice, Quot.sound]`.
+    new identity-permutation and `σ := id` wrappers derive the displayed
+    relative outer-factor norm caps from a uniform exact outer-factor entry
+    majorant plus `(1+γ_n)(nκ)≤n−1` before applying the relative-norm
+    componentwise-`T` checkerboard base-square source-prefix route. The entry
+    majorant, scalar cap, `T_hat` comparison, checkerboard certificate, and
+    source-prefix update/budget hypotheses remain explicit.
+  - 2026-07-14 Theorem 11.8 `AasenSpec` entrywise-majorant nonnegativity alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused lookup/axiom check of the fully-qualified identity and `σ := id`
+    entrywise-majorant nonnegativity aliases, including
+    `_of_unit_roundoff_bound` / `_of_u_le_cap` forms → elaborate;
+    representative displayed-cap sigma-id alias axioms `[propext,
+    Classical.choice, Quot.sound]`.
+    new identity-permutation and `σ := id` aliases derive the `0≤κ` side
+    condition for the entrywise-majorant checkerboard base-square route from the
+    same nonempty uniform absolute entry bound. The scalar cap, entry majorant,
+    `T_hat` comparison, checkerboard certificate, and source-prefix
+    update/budget hypotheses remain explicit.
+  - 2026-07-14 Theorem 11.8 `AasenSpec` Aasen-entry checkerboard base-square wrapper increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused lookup/axiom check of the fully-qualified identity and `σ := id`
+    Aasen-entry checkerboard base-square wrappers, including
+    `_entry_bound_nonneg`, `_of_unit_roundoff_bound`, and `_of_u_le_cap`
+    forms → elaborate; representative displayed-cap sigma-id alias axioms
+    `[propext, Classical.choice, Quot.sound]`;
+    new identity-permutation and `σ := id` wrappers use the `AasenSpec`
+    strict-upper and first-column zero structure to derive the displayed
+    relative outer-factor norm caps from a uniform exact outer-factor entry
+    cap and the sharper `(1+γ_n)((n−1)κ)≤n−1` scalar budget. The
+    nonnegativity aliases derive `0≤κ` from the entry bound, while the entry
+    cap, scalar budget, `T_hat` comparison, checkerboard certificate, and
+    source-prefix update/budget hypotheses remain explicit.
+  - 2026-07-14 Theorem 11.8 `AasenSpec` normalized Aasen-entry checkerboard base-square alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    focused lookup/axiom check of the fully-qualified identity and `σ := id`
+    normalized Aasen-entry checkerboard base-square wrappers, including
+    `_entry_bound_nonneg`, `_of_unit_roundoff_bound`, and `_of_u_le_cap`
+    forms → elaborate; representative displayed-cap sigma-id alias axioms
+    `[propext, Classical.choice, Quot.sound]`;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    new identity-permutation and `σ := id` wrappers replace the displayed
+    `(1+γ_n)((n−1)κ)≤n−1` scalar cap with the normalized source condition
+    `(1+γ_n)κ≤1`, using `higham11_8_aasen_outer_factor_scaled_entry_cap`
+    before applying the Aasen-entry checkerboard route. The concrete normalized
+    entry cap, entry majorant, `T_hat` comparison, checkerboard certificate,
+    and source-prefix update/budget hypotheses remain explicit.
+  - 2026-07-14 Theorem 11.8 `AasenSpec` inverse-scale Aasen-entry checkerboard base-square alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    focused lookup/axiom check of the fully-qualified identity and `σ := id`
+    inverse-scale Aasen-entry checkerboard base-square wrappers, including
+    `_entry_bound_nonneg`, `_of_unit_roundoff_bound`, and `_of_u_le_cap`
+    forms → elaborate; representative displayed-cap sigma-id alias axioms
+    `[propext, Classical.choice, Quot.sound]`;
+    new identity-permutation and `σ := id` wrappers replace the normalized
+    `(1+γ_n)κ≤1` source condition with the inverse-scale source condition
+    `κ≤1/(1+γ_n)`, using
+    `higham11_8_one_plus_mul_le_one_of_le_inv_one_plus` and `gamma_nonneg`
+    before applying the normalized Aasen-entry checkerboard route. The concrete
+    inverse entry cap, entry majorant, `T_hat` comparison, checkerboard
+    certificate, and source-prefix update/budget hypotheses remain explicit.
+  - 2026-07-14 Theorem 11.8 non-exact inverse-entry `T`-norm source-norm alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → pass;
+    tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    forbidden-token scan of `HighamChapter11.lean` → clean;
+    broad report scan hit existing prose that names the forbidden words in prior
+    verification-log text, not Lean declarations;
+    focused lookup/axiom check of the fully-qualified identity and `σ := id`
+    direct-middle/checkerboard source-norm aliases, including the `H=T Lᵀ`
+    route, → elaborate; representative alias axioms `[propext,
+    Classical.choice, Quot.sound]`;
+    new wrappers transport the ordinary non-exact direct-middle and checkerboard
+    inverse-entry `T`-norm endpoints from the `‖T_hat‖∞` predicate to the
+    source `‖A‖∞` predicate through the computed-middle cap
+    `‖T_hat‖∞≤κA‖A‖∞` and `κA≤4^(n−2)`. The relative `T_hat` comparison,
+    direct `T`-norm cap, middle-product/checkerboard certificate, inverse-entry
+    cap, source-prefix update/budget facts, source-smallness aliases,
+    identity-permutation aliases, and `H=T Lᵀ` recurrence-derived route remain
+    explicit obligations.
+  - 2026-07-14 Theorem 11.8 non-exact inverse-entry `T`-norm relative-growth source-norm alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`; replayed warnings were the
+    pre-existing Chapter 9 / Chapter 10 / Cholesky warnings;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → pass;
+    tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    forbidden-token scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of the identity and `σ := id`
+    direct-middle/checkerboard relative-growth source-norm aliases → elaborate;
+    representative alias axioms `[propext, Classical.choice, Quot.sound]`;
+    new wrappers let the non-exact inverse-entry source-norm route consume the
+    source-shaped relative-growth scalar cap `(1+γ_n)κA≤4^(n−2)` with `0≤κA`,
+    deriving the direct cap `κA≤4^(n−2)` internally before applying the
+    previously verified computed-middle source-norm aliases. The relative
+    `T_hat` comparison, inverse-entry cap, middle-product/checkerboard
+    certificate, source-prefix update/budget facts, and source-smallness aliases
+    remain explicit.
+  - 2026-07-14 Theorem 11.8 `H=T Lᵀ` inverse-entry relative-growth source-norm alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`; replayed warnings were the
+    pre-existing Chapter 9 / Chapter 10 / Cholesky warnings;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → pass;
+    tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    forbidden-token scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of the four `H=T Lᵀ`
+    direct-middle/checkerboard relative-growth source-norm aliases, plus the
+    generic/id aliases from the previous increment, → elaborate; representative
+    alias axioms `[propext, Classical.choice, Quot.sound]`;
+    new wrappers compose the relative-growth source-norm inverse-entry route
+    with the `H=T Lᵀ` recurrence/subdiagonal-nonzero package, deriving the
+    source-prefix recurrence and nonzero `H` pivots internally while preserving
+    the relative scalar cap `(1+γ_n)κA≤4^(n−2)`, `0≤κA`, inverse-entry cap,
+    direct-middle/checkerboard certificate, and source-prefix update/budget
+    obligations.
+  - 2026-07-14 Theorem 11.8 `H=T Lᵀ` inverse-entry relative-growth source-smallness alias increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`; replayed warnings were the
+    pre-existing Chapter 9 / Chapter 10 / Cholesky warnings;
+    `git diff --check -- LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean docs/source_coverage/higham_ch11.md` → pass;
+    tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+    forbidden-token scan of `HighamChapter11.lean` → clean;
+    focused lookup/axiom check of the eight unit-roundoff/displayed-cap
+    `H=T Lᵀ` direct-middle/checkerboard relative-growth aliases, plus the
+    underlying relative-growth aliases, → elaborate; representative alias
+    axioms `[propext, Classical.choice, Quot.sound]`;
+    new source-smallness wrappers derive `gammaValid (15n+25)` from either
+    `(15n+25)u<1` or `u≤Ucap` before applying the verified `H=T Lᵀ`
+    relative-growth source-norm route. The relative scalar cap, `κA`
+    nonnegativity, inverse-entry cap, direct-middle/checkerboard certificate,
+    and source-prefix update/budget obligations remain explicit.
   - 2026-07-12 Theorem 11.4 active Bunch-Kaufman path local-`L̂` entry-to-row-sum increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
     `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
