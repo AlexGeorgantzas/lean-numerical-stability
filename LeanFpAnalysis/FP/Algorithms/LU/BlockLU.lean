@@ -1744,6 +1744,86 @@ theorem maxEntryNorm_matrix_mul_le_infNorm_mul_maxEntryNorm {r : ℕ} (hr : 0 < 
     _ ≤ ∑ k : Fin r, |A i k| * maxEntryNorm hr B := hterms
     _ ≤ infNorm A * maxEntryNorm hr B := hrow
 
+/-- Matrix-`∞` submultiplicativity for Mathlib matrix multiplication.
+
+    The repository's base theorem is stated for the local `matMul`; this thin
+    wrapper lets the Chapter 13 block-matrix route use ordinary `Matrix.mul`. -/
+theorem infNorm_matrix_mul_le {r : ℕ} (hr : 0 < r)
+    (A B : Matrix (Fin r) (Fin r) ℝ) :
+    infNorm (A * B) ≤ infNorm A * infNorm B := by
+  simpa [matMul, Matrix.mul_apply] using
+    (infNorm_matMul_le hr (fun i j => A i j) (fun i j => B i j))
+
+/-- Aggregate column-mass budget after multiplying every active lower block by
+    the pivot inverse in the matrix-`∞` norm. -/
+theorem higham13_sum_infNorm_matrix_mul_pivot_le_of_column_mass
+    {m r : ℕ} (hr : 0 < r) (tail : Finset (Fin m))
+    (Acol : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (P : Matrix (Fin r) (Fin r) ℝ) {gamma : ℝ}
+    (hMass : ∑ i ∈ tail, infNorm (Acol i) ≤ gamma)
+    (hPivot : infNorm P * gamma ≤ 1) :
+    ∑ i ∈ tail, infNorm (Acol i * P) ≤ 1 := by
+  have hterm :
+      ∑ i ∈ tail, infNorm (Acol i * P) ≤
+        ∑ i ∈ tail, infNorm (Acol i) * infNorm P := by
+    apply Finset.sum_le_sum
+    intro i _hi
+    exact infNorm_matrix_mul_le hr (Acol i) P
+  have hsum_mul :
+      ∑ i ∈ tail, infNorm (Acol i) * infNorm P =
+        (∑ i ∈ tail, infNorm (Acol i)) * infNorm P := by
+    rw [Finset.sum_mul]
+  have hscale :
+      (∑ i ∈ tail, infNorm (Acol i)) * infNorm P ≤
+        gamma * infNorm P :=
+    mul_le_mul_of_nonneg_right hMass (infNorm_nonneg P)
+  have hpivot_comm : gamma * infNorm P ≤ 1 := by
+    calc
+      gamma * infNorm P = infNorm P * gamma := by ring
+      _ ≤ 1 := hPivot
+  calc
+    ∑ i ∈ tail, infNorm (Acol i * P)
+        ≤ ∑ i ∈ tail, infNorm (Acol i) * infNorm P := hterm
+    _ = (∑ i ∈ tail, infNorm (Acol i)) * infNorm P := hsum_mul
+    _ ≤ gamma * infNorm P := hscale
+    _ ≤ 1 := hpivot_comm
+
+/-- Mixed aggregate triple-product budget for the column-BDD route.
+
+    If the active pivot-column matrix-`∞` mass is bounded by `gamma` and the
+    pivot inverse satisfies `||P||∞ * gamma <= 1`, then the whole active
+    Schur-correction column contributes at most the pivot-row max-entry norm. -/
+theorem higham13_sum_maxEntryNorm_matrix_mul_pivot_mul_le_of_column_mass
+    {m r : ℕ} (hr : 0 < r) (tail : Finset (Fin m))
+    (Acol : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (P R : Matrix (Fin r) (Fin r) ℝ) {gamma : ℝ}
+    (hMass : ∑ i ∈ tail, infNorm (Acol i) ≤ gamma)
+    (hPivot : infNorm P * gamma ≤ 1) :
+    ∑ i ∈ tail, maxEntryNorm hr (Acol i * P * R) ≤
+      maxEntryNorm hr R := by
+  have hterm :
+      ∑ i ∈ tail, maxEntryNorm hr (Acol i * P * R) ≤
+        ∑ i ∈ tail, infNorm (Acol i * P) * maxEntryNorm hr R := by
+    apply Finset.sum_le_sum
+    intro i _hi
+    exact maxEntryNorm_matrix_mul_le_infNorm_mul_maxEntryNorm hr (Acol i * P) R
+  have hsum_mul :
+      ∑ i ∈ tail, infNorm (Acol i * P) * maxEntryNorm hr R =
+        (∑ i ∈ tail, infNorm (Acol i * P)) * maxEntryNorm hr R := by
+    rw [Finset.sum_mul]
+  have hmass :
+      ∑ i ∈ tail, infNorm (Acol i * P) ≤ 1 :=
+    higham13_sum_infNorm_matrix_mul_pivot_le_of_column_mass
+      hr tail Acol P hMass hPivot
+  have hmax_nonneg : 0 ≤ maxEntryNorm hr R := maxEntryNorm_nonneg hr R
+  calc
+    ∑ i ∈ tail, maxEntryNorm hr (Acol i * P * R)
+        ≤ ∑ i ∈ tail, infNorm (Acol i * P) * maxEntryNorm hr R := hterm
+    _ = (∑ i ∈ tail, infNorm (Acol i * P)) * maxEntryNorm hr R := hsum_mul
+    _ ≤ 1 * maxEntryNorm hr R :=
+        mul_le_mul_of_nonneg_right hmass hmax_nonneg
+    _ = maxEntryNorm hr R := by ring
+
 /-- Square matrix-product max-entry bound with the dimension factor exposed. -/
 theorem maxEntryNorm_matrix_mul_le_dim {r : ℕ} (hr : 0 < r)
     (A B : Matrix (Fin r) (Fin r) ℝ) :
@@ -12834,6 +12914,106 @@ theorem higham13_theorem13_8_active_column_step_on_active_of_local_schur_bound {
     _ ≤ ∑ i ∈ tail, stageNorm k i j + stageNorm k p j :=
         by linarith
     _ = ∑ i ∈ activeBlockIndices13_8 m k, stageNorm k i j := by
+        rw [hactive_sum]
+        ring
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.8 proof, mixed matrix route:
+    the active-column one-step inequality for entrywise max norms follows from
+    the exact matrix Schur update, active column dominance measured in the
+    matrix-`∞` norm, and the pivot product bound
+    `||pivotInv_k||∞ * gamma_k <= 1`.
+
+    This is the column-BDD max-entry dependency suggested by the Pro route: the
+    pivot column is controlled by row-sum mass, while the pivot row is controlled
+    entrywise. -/
+theorem higham13_theorem13_8_active_column_step_on_active_of_mixed_column_mass
+    {m r : ℕ} (hr : 0 < r)
+    (stageBlock : ℕ → Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hInfDom : SchurStageActiveColumnDom13_7
+      (fun k i j => infNorm (stageBlock k i j)) stageInvDiagBound)
+    (hPivotBound : ∀ k : ℕ, ∀ hk : k < m,
+      infNorm (pivotInv k) * stageInvDiagBound k ⟨k, hk⟩ ≤ 1)
+    (hUpdate : SchurStageActiveExactUpdate13_8 stageBlock pivotInv) :
+    SchurStageActiveColumnStepOnActive13_8
+      (fun k i j => maxEntryNorm hr (stageBlock k i j)) := by
+  intro k j hj
+  have hk_lt_j : k < j.val := Nat.lt_of_lt_of_le (Nat.lt_succ_self k) hj
+  have hk : k < m := Nat.lt_trans hk_lt_j j.isLt
+  let p : Fin m := ⟨k, hk⟩
+  let tail := activeBlockIndices13_8 m (k + 1)
+  have hp_not : p ∉ tail := by
+    simpa [p, tail] using activeBlockIndices13_8_succ_not_mem (m := m) (k := k) hk
+  have hsum_local :
+      ∑ i ∈ tail, maxEntryNorm hr (stageBlock (k + 1) i j) ≤
+        ∑ i ∈ tail,
+          (maxEntryNorm hr (stageBlock k i j) +
+            maxEntryNorm hr (stageBlock k i p * pivotInv k * stageBlock k p j)) := by
+    apply Finset.sum_le_sum
+    intro i hi
+    have hik : k + 1 ≤ i.val := by
+      simpa [tail, activeBlockIndices13_8] using hi
+    have hupdate :
+        stageBlock (k + 1) i j =
+          stageBlock k i j -
+            stageBlock k i p * pivotInv k * stageBlock k p j := by
+      simpa [p] using hUpdate k hk i j hik hj
+    calc
+      maxEntryNorm hr (stageBlock (k + 1) i j)
+          = maxEntryNorm hr
+              (stageBlock k i j -
+                stageBlock k i p * pivotInv k * stageBlock k p j) := by
+              rw [hupdate]
+      _ ≤ maxEntryNorm hr (stageBlock k i j) +
+            maxEntryNorm hr
+              (stageBlock k i p * pivotInv k * stageBlock k p j) :=
+          maxEntryNorm_sub_le hr (stageBlock k i j)
+            (stageBlock k i p * pivotInv k * stageBlock k p j)
+  have hsum_expand :
+      ∑ i ∈ tail,
+          (maxEntryNorm hr (stageBlock k i j) +
+            maxEntryNorm hr (stageBlock k i p * pivotInv k * stageBlock k p j)) =
+        ∑ i ∈ tail, maxEntryNorm hr (stageBlock k i j) +
+          ∑ i ∈ tail,
+            maxEntryNorm hr (stageBlock k i p * pivotInv k * stageBlock k p j) := by
+    rw [Finset.sum_add_distrib]
+  have htail_pivot_le :
+      ∑ i ∈ tail, infNorm (stageBlock k i p) ≤ stageInvDiagBound k p := by
+    simpa [p, tail] using
+      higham13_theorem13_8_active_tail_pivot_sum_le_of_column_dominance
+        (fun k i j => infNorm (stageBlock k i j)) stageInvDiagBound hInfDom k hk
+  have htriple :
+      ∑ i ∈ tail,
+          maxEntryNorm hr (stageBlock k i p * pivotInv k * stageBlock k p j) ≤
+        maxEntryNorm hr (stageBlock k p j) := by
+    exact
+      higham13_sum_maxEntryNorm_matrix_mul_pivot_mul_le_of_column_mass
+        hr tail (fun i => stageBlock k i p) (pivotInv k) (stageBlock k p j)
+        htail_pivot_le (by simpa [p] using hPivotBound k hk)
+  have hactive_sum :
+      ∑ i ∈ activeBlockIndices13_8 m k, maxEntryNorm hr (stageBlock k i j) =
+        maxEntryNorm hr (stageBlock k p j) +
+          ∑ i ∈ tail, maxEntryNorm hr (stageBlock k i j) := by
+    rw [activeBlockIndices13_8_succ_insert (m := m) (k := k) hk]
+    rw [Finset.sum_insert hp_not]
+  calc
+    ∑ i ∈ activeBlockIndices13_8 m (k + 1),
+        maxEntryNorm hr (stageBlock (k + 1) i j)
+        = ∑ i ∈ tail, maxEntryNorm hr (stageBlock (k + 1) i j) := by rfl
+    _ ≤ ∑ i ∈ tail,
+          (maxEntryNorm hr (stageBlock k i j) +
+            maxEntryNorm hr (stageBlock k i p * pivotInv k * stageBlock k p j)) :=
+        hsum_local
+    _ = ∑ i ∈ tail, maxEntryNorm hr (stageBlock k i j) +
+          ∑ i ∈ tail,
+            maxEntryNorm hr (stageBlock k i p * pivotInv k * stageBlock k p j) :=
+        hsum_expand
+    _ ≤ ∑ i ∈ tail, maxEntryNorm hr (stageBlock k i j) +
+          maxEntryNorm hr (stageBlock k p j) :=
+        add_le_add_right htriple _
+    _ = ∑ i ∈ activeBlockIndices13_8 m k,
+          maxEntryNorm hr (stageBlock k i j) := by
         rw [hactive_sum]
         ring
 
