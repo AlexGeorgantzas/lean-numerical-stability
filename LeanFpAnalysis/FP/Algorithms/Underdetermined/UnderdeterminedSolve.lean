@@ -9792,6 +9792,132 @@ theorem higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_g
   exact le_trans hclosed
     (mul_le_mul_of_nonneg_right hcoeff (vecNorm2_nonneg y1))
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4 and equation
+    (21.10): one operation-count index covering QR of `A^T`, the triangular
+    solve, and the rounded accumulated-`Q` action. -/
+def Higham21QMethodComputedGammaIndex (m k : ℕ) : ℕ :=
+  Higham21QMethodRowwiseGammaIndex m k +
+    (m + k) * householderConstructApplyGammaIndex (m + k)
+
+/-- Validity at the full computed Q-method index implies validity at the
+    row-wise QR-plus-triangular-solve index. -/
+theorem Higham21QMethodComputedGammaIndex.validRowwise
+    (fp : FPModel) (m k : ℕ)
+    (hvalid : gammaValid fp (Higham21QMethodComputedGammaIndex m k)) :
+    gammaValid fp (Higham21QMethodRowwiseGammaIndex m k) :=
+  gammaValid_mono fp (by
+    dsimp [Higham21QMethodComputedGammaIndex]
+    exact Nat.le_add_right _ _) hvalid
+
+/-- Validity at the full computed Q-method index implies validity at the
+    rounded accumulated-`Q` action index from equation (21.10). -/
+theorem Higham21QMethodComputedGammaIndex.validQAction
+    (fp : FPModel) (m k : ℕ)
+    (hvalid : gammaValid fp (Higham21QMethodComputedGammaIndex m k)) :
+    gammaValid fp
+      ((m + k) * householderConstructApplyGammaIndex (m + k)) :=
+  gammaValid_mono fp (by
+    dsimp [Higham21QMethodComputedGammaIndex]
+    exact Nat.le_add_left _ _) hvalid
+
+/-- The row-wise Q-method gamma is dominated by the gamma at the full
+    computed operation-count index. -/
+theorem Higham21QMethodComputedGammaIndex.rowwiseGamma_le
+    (fp : FPModel) (m k : ℕ)
+    (hvalid : gammaValid fp (Higham21QMethodComputedGammaIndex m k)) :
+    gamma fp (Higham21QMethodRowwiseGammaIndex m k) ≤
+      gamma fp (Higham21QMethodComputedGammaIndex m k) :=
+  gamma_mono fp (by
+    dsimp [Higham21QMethodComputedGammaIndex]
+    exact Nat.le_add_right _ _) hvalid
+
+/-- The equation (21.10) accumulated-`Q` gamma is dominated by the gamma at
+    the full computed operation-count index. -/
+theorem Higham21QMethodComputedGammaIndex.qActionGamma_le
+    (fp : FPModel) (m k : ℕ)
+    (hvalid : gammaValid fp (Higham21QMethodComputedGammaIndex m k)) :
+    gamma fp ((m + k) * householderConstructApplyGammaIndex (m + k)) ≤
+      gamma fp (Higham21QMethodComputedGammaIndex m k) :=
+  gamma_mono fp (by
+    dsimp [Higham21QMethodComputedGammaIndex]
+    exact Nat.le_add_left _ _) hvalid
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4 and equation
+    (21.10): computed-Q-method package under one validity condition.  The
+    ideal action by the computed orthogonal `Q` has the proved row-wise
+    certificate, while the rounded accumulated `Q_hat` action is within the
+    displayed equation-(21.10) vector radius.  This keeps the remaining
+    row-wise transfer to `Q_hat` explicit rather than assuming it. -/
+theorem higham21_theorem21_4_q_method_rowwise_and_qhat_action_of_full_row_rank_computed_qr_domain
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ)
+    (hm : 0 < m)
+    (hdomain : Higham21QMethodFullRowRankComputedQRDomain m k fp A)
+    (hvalid : gammaValid fp (Higham21QMethodComputedGammaIndex m k)) :
+    let Q := fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A)
+    let Q_hat := fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A)
+    let y1 :=
+      fl_forwardSub fp m
+        (matTranspose
+          (fun a b =>
+            fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+              (Fin.castAdd k a) b)) b
+    let z := Fin.append y1 (0 : Fin k → ℝ)
+    let x := matMulVec (m + k) Q z
+    let x_hat := matMulVec (m + k) Q_hat z
+    UndetRowwiseBackwardErrorBounded m (m + k) A b x
+        (gamma fp (Higham21QMethodComputedGammaIndex m k)) ∧
+      vecNorm2 (fun i : Fin (m + k) => x_hat i - x i) ≤
+        (gamma fp (Higham21QMethodComputedGammaIndex m k) *
+          Real.sqrt ((m + k : ℕ) : ℝ)) * vecNorm2 y1 := by
+  dsimp only
+  constructor
+  · have hrow :=
+      higham21_theorem21_4_q_method_rowwise_backward_stable_of_full_row_rank_computed_qr_domain_gamma_single_valid
+        fp A b hm hdomain
+        (Higham21QMethodComputedGammaIndex.validRowwise fp m k hvalid)
+    exact
+      higham21_rowwise_backward_error_bound_mono hrow
+        (gamma_nonneg fp hvalid)
+        (Higham21QMethodComputedGammaIndex.rowwiseGamma_le fp m k hvalid)
+  · have hNpos : 0 < m + k := by omega
+    have haction :=
+      higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat_gamma
+        fp A
+        (fl_forwardSub fp m
+          (matTranspose
+            (fun a b =>
+              fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                (Fin.castAdd k a) b)) b)
+        (matMulVec (m + k)
+          (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+          (Fin.append
+            (fl_forwardSub fp m
+              (matTranspose
+                (fun a b =>
+                  fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                    (Fin.castAdd k a) b)) b)
+            (0 : Fin k → ℝ)))
+        hNpos
+        (Higham21QMethodComputedGammaIndex.validQAction fp m k hvalid)
+        rfl
+    have hcoeff :
+        gamma fp ((m + k) * householderConstructApplyGammaIndex (m + k)) *
+            Real.sqrt ((m + k : ℕ) : ℝ) ≤
+          gamma fp (Higham21QMethodComputedGammaIndex m k) *
+            Real.sqrt ((m + k : ℕ) : ℝ) :=
+      mul_le_mul_of_nonneg_right
+        (Higham21QMethodComputedGammaIndex.qActionGamma_le fp m k hvalid)
+        (Real.sqrt_nonneg _)
+    exact le_trans haction
+      (mul_le_mul_of_nonneg_right hcoeff
+        (vecNorm2_nonneg
+          (fl_forwardSub fp m
+            (matTranspose
+              (fun a b =>
+                fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+                  (Fin.castAdd k a) b)) b)))
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
     named-coefficient form of the concrete Householder panel `Q_hat` action
     error bound. -/
