@@ -477,6 +477,7 @@
     DemmelHighamSchreiber13_6Estimates,
     DemmelHighamSchreiber13_6SourcePath,
     DemmelHighamSchreiber13_6FactorizationResult,
+    demmelHighamSchreiber13_6_factorization_result_from_partitioned_layer,
     DemmelHighamSchreiber13_6SolveResult,
     DemmelHighamSchreiber13_6Theorem2_1Result,
     demmelHighamSchreiber13_6_theorem2_1_result_from_factorization_solve_results,
@@ -7420,6 +7421,38 @@ structure DemmelHighamSchreiber13_6FactorizationResult
   max_entry_product_laws : maxEntryProductLaws
   factorization :
     FirstOrderLe u (d_fact * u * (normA + normL * normU)) normDeltaA_fact
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 factorization route:
+    package a checked partitioned-LU first-order layer into the audited DHS
+    factorization-result boundary.
+
+    This is the factorization-side companion to
+    `demmelHighamSchreiber13_6_solve_result_from_perturbation_layers`.  It does
+    not prove the recursive implementation kernels by itself: recursive
+    execution, the rounded Schur update, and the max-entry product laws remain
+    explicit source-path hypotheses, and the scalar comparison from the
+    partitioned leading term to the advertised DHS constant is explicit. -/
+theorem demmelHighamSchreiber13_6_factorization_result_from_partitioned_layer
+    {n : Type*} [Fintype n]
+    (A DeltaA Lhat Uhat : Matrix n n ℝ)
+    (u δ θ d_fact normA normL normU normDeltaA_fact : ℝ)
+    (recursiveExecution schurUpdate maxEntryProductLaws : Prop)
+    (hRecursiveExecution : recursiveExecution)
+    (hSchurUpdate : schurUpdate)
+    (hMaxEntryProductLaws : maxEntryProductLaws)
+    (hSpec : PartitionedLUFirstOrderSpec u δ θ normA normL normU
+      normDeltaA_fact A DeltaA Lhat Uhat)
+    (hLeading :
+      u * (δ * normA + θ * normL * normU) ≤
+        d_fact * u * (normA + normL * normU)) :
+    (Lhat * Uhat = A + DeltaA) ∧
+      DemmelHighamSchreiber13_6FactorizationResult
+        u d_fact normA normL normU normDeltaA_fact
+        recursiveExecution schurUpdate maxEntryProductLaws := by
+  exact
+    ⟨hSpec.equation,
+      ⟨hRecursiveExecution, hSchurUpdate, hMaxEntryProductLaws,
+        hSpec.norm_bound.mono_leading hLeading⟩⟩
 
 /-- Solve half of the Demmel--Higham--Schreiber [326] source boundary used by
     Higham, Chapter 13, Theorem 13.6.

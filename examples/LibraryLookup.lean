@@ -11891,6 +11891,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check DemmelHighamSchreiber13_6Estimates
 #check DemmelHighamSchreiber13_6SourcePath
 #check DemmelHighamSchreiber13_6FactorizationResult
+#check demmelHighamSchreiber13_6_factorization_result_from_partitioned_layer
 #check DemmelHighamSchreiber13_6SolveResult
 #check DemmelHighamSchreiber13_6Theorem2_1Result
 #check demmelHighamSchreiber13_6_theorem2_1_result_from_factorization_solve_results
