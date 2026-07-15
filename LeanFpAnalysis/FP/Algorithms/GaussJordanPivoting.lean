@@ -398,4 +398,172 @@ theorem ch14ext_reduce_diagonal (A : Fin n → Fin n → ℝ)
   intro i j hij
   exact ch14ext_reduce_ReducedUpTo A hpiv n j j.isLt i hij
 
+-- ═════════════════════════════════════════════════════════════════════════════
+-- §6  Literal Algorithm 14.4 state: A-tail swap, RHS update, and final scaling
+-- ═════════════════════════════════════════════════════════════════════════════
+
+/-- The mutable data of Algorithm 14.4: the matrix and right-hand side are
+    advanced together. -/
+structure Ch14GJEState (n : ℕ) where
+  matrix : Fin n → Fin n → ℝ
+  rhs : Fin n → ℝ
+
+/-- Swap rows `k` and `r` only in columns `j ≥ k`, exactly matching the
+    source instruction `A(k,k:n) ↔ A(r,k:n)`.  Earlier columns are left
+    definitionally unchanged. -/
+def ch14ext_tailSwapRows (A : Fin n → Fin n → ℝ) (k r : Fin n) :
+    Fin n → Fin n → ℝ :=
+  fun i j => if k ≤ j then A (Equiv.swap k r i) j else A i j
+
+/-- The simultaneous RHS interchange `b(k) ↔ b(r)` in Algorithm 14.4. -/
+def ch14ext_swapRhs (b : Fin n → ℝ) (k r : Fin n) : Fin n → ℝ :=
+  fun i => b (Equiv.swap k r i)
+
+/-- Matrix after the source's partial-pivot search and tail-row interchange. -/
+noncomputable def ch14ext_tailPivotMatrix (s : Ch14GJEState n) (k : Fin n) :
+    Fin n → Fin n → ℝ :=
+  ch14ext_tailSwapRows s.matrix k (ch14ext_pivotRow s.matrix k)
+
+/-- RHS after the same pivot-row interchange. -/
+noncomputable def ch14ext_tailPivotRhs (s : Ch14GJEState n) (k : Fin n) :
+    Fin n → ℝ :=
+  ch14ext_swapRhs s.rhs k (ch14ext_pivotRow s.matrix k)
+
+/-- The exact multiplier vector formed from the pivoted state. -/
+noncomputable def ch14ext_fullMultiplier (s : Ch14GJEState n) (k i : Fin n) : ℝ :=
+  ch14ext_tailPivotMatrix s k i k / ch14ext_tailPivotMatrix s k k k
+
+/-- One literal loop body of Algorithm 14.4.  It performs the max-magnitude
+    pivot search, swaps only the matrix tail `k:n`, swaps the RHS entries,
+    updates every nonpivot row in columns `k:n`, and updates the same RHS rows
+    with the same multiplier. -/
+noncomputable def ch14ext_fullStep (s : Ch14GJEState n) (k : Fin n) :
+    Ch14GJEState n where
+  matrix := fun i j =>
+    if i = k then ch14ext_tailPivotMatrix s k i j
+    else if k ≤ j then
+      ch14ext_tailPivotMatrix s k i j -
+        ch14ext_fullMultiplier s k i * ch14ext_tailPivotMatrix s k k j
+    else ch14ext_tailPivotMatrix s k i j
+  rhs := fun i =>
+    if i = k then ch14ext_tailPivotRhs s k i
+    else ch14ext_tailPivotRhs s k i -
+      ch14ext_fullMultiplier s k i * ch14ext_tailPivotRhs s k k
+
+@[simp] theorem ch14ext_tailPivotMatrix_before
+    (s : Ch14GJEState n) (k i j : Fin n) (hj : j < k) :
+    ch14ext_tailPivotMatrix s k i j = s.matrix i j := by
+  simp [ch14ext_tailPivotMatrix, ch14ext_tailSwapRows, not_le.mpr hj]
+
+/-- The tail swap puts the selected maximum-magnitude entry in position
+    `(k,k)`; restricting the swap to `k:n` does not alter pivot semantics. -/
+theorem ch14ext_tailPivotMatrix_colmax (s : Ch14GJEState n) (k : Fin n) :
+    ∀ i : Fin n, k ≤ i →
+      |ch14ext_tailPivotMatrix s k i k| ≤
+        |ch14ext_tailPivotMatrix s k k k| := by
+  intro i hi
+  simpa [ch14ext_tailPivotMatrix, ch14ext_tailSwapRows,
+    ch14ext_permRows, ch14ext_swap] using
+      ch14ext_pivoted_colmax s.matrix k i hi
+
+/-- A literal Algorithm-14.4 step leaves every earlier matrix column
+    definitionally unchanged. -/
+theorem ch14ext_fullStep_matrix_before
+    (s : Ch14GJEState n) (k i j : Fin n) (hj : j < k) :
+    (ch14ext_fullStep s k).matrix i j = s.matrix i j := by
+  by_cases hik : i = k
+  · subst i
+    simp [ch14ext_fullStep, ch14ext_tailPivotMatrix_before s k k j hj]
+  · simp [ch14ext_fullStep, hik, not_le.mpr hj,
+      ch14ext_tailPivotMatrix_before s k i j hj]
+
+/-- With a nonzero selected pivot, the full source step zeros every
+    off-diagonal entry in the current column. -/
+theorem ch14ext_fullStep_current_column_zero
+    (s : Ch14GJEState n) (k i : Fin n)
+    (hpiv : ch14ext_tailPivotMatrix s k k k ≠ 0) (hik : i ≠ k) :
+    (ch14ext_fullStep s k).matrix i k = 0 := by
+  simp only [ch14ext_fullStep, hik, if_false, le_refl, if_true]
+  unfold ch14ext_fullMultiplier
+  rw [div_mul_cancel₀ _ hpiv, sub_self]
+
+/-- The RHS update uses exactly the same multiplier as the matrix row update. -/
+theorem ch14ext_fullStep_rhs_offpivot
+    (s : Ch14GJEState n) (k i : Fin n) (hik : i ≠ k) :
+    (ch14ext_fullStep s k).rhs i =
+      ch14ext_tailPivotRhs s k i -
+        ch14ext_fullMultiplier s k i * ch14ext_tailPivotRhs s k k := by
+  simp [ch14ext_fullStep, hik]
+
+/-- Run the literal stateful Algorithm-14.4 loop for the first `t` columns. -/
+noncomputable def ch14ext_fullReduce (s : Ch14GJEState n) : ℕ → Ch14GJEState n
+  | 0 => s
+  | (t + 1) =>
+      if h : t < n then ch14ext_fullStep (ch14ext_fullReduce s t) ⟨t, h⟩
+      else ch14ext_fullReduce s t
+
+/-- The matrix component of a state is reduced in its first `t` columns. -/
+def ch14ext_FullReducedUpTo (t : ℕ) (s : Ch14GJEState n) : Prop :=
+  ∀ j : Fin n, j.val < t → ∀ i : Fin n, i ≠ j → s.matrix i j = 0
+
+/-- The literal stateful loop reaches reduced form, assuming each selected
+    pivot is nonzero.  This hypothesis is the operational meaning of the
+    source phrase "GJE successfully computes"; it is not inferred here from a
+    target-equivalent conclusion. -/
+theorem ch14ext_fullReduce_ReducedUpTo (s : Ch14GJEState n)
+    (hpiv : ∀ t : ℕ, ∀ ht : t < n,
+      ch14ext_tailPivotMatrix (ch14ext_fullReduce s t) ⟨t, ht⟩ ⟨t, ht⟩ ⟨t, ht⟩ ≠ 0) :
+    ∀ t : ℕ, ch14ext_FullReducedUpTo t (ch14ext_fullReduce s t) := by
+  intro t
+  induction t with
+  | zero =>
+      intro j hj
+      exact absurd hj (by omega)
+  | succ t ih =>
+      intro j hj i hij
+      by_cases ht : t < n
+      · let k : Fin n := ⟨t, ht⟩
+        have hstep : ch14ext_fullReduce s (t + 1) =
+            ch14ext_fullStep (ch14ext_fullReduce s t) k := by
+          simp [ch14ext_fullReduce, ht, k]
+        rw [hstep]
+        by_cases hjt : j.val = t
+        · have hjk : j = k := Fin.ext hjt
+          subst j
+          exact ch14ext_fullStep_current_column_zero
+            (ch14ext_fullReduce s t) k i (hpiv t ht) hij
+        · have hjlt : j.val < t := by omega
+          have hjk : j < k := hjlt
+          rw [ch14ext_fullStep_matrix_before (ch14ext_fullReduce s t) k i j hjk]
+          exact ih j hjlt i hij
+      · have hstep : ch14ext_fullReduce s (t + 1) = ch14ext_fullReduce s t := by
+          simp [ch14ext_fullReduce, ht]
+        rw [hstep]
+        have hjlt : j.val < t := by
+          have := j.isLt
+          omega
+        exact ih j hjlt i hij
+
+/-- After all `n` loop iterations, the literal Algorithm-14.4 matrix state is
+    diagonal. -/
+theorem ch14ext_fullReduce_diagonal (s : Ch14GJEState n)
+    (hpiv : ∀ t : ℕ, ∀ ht : t < n,
+      ch14ext_tailPivotMatrix (ch14ext_fullReduce s t) ⟨t, ht⟩ ⟨t, ht⟩ ⟨t, ht⟩ ≠ 0) :
+    ∀ i j : Fin n, i ≠ j → (ch14ext_fullReduce s n).matrix i j = 0 := by
+  intro i j hij
+  exact ch14ext_fullReduce_ReducedUpTo s hpiv n j j.isLt i hij
+
+/-- The final source instruction `xᵢ = bᵢ/aᵢᵢ`. -/
+noncomputable def ch14ext_fullSolution (s : Ch14GJEState n) : Fin n → ℝ :=
+  fun i =>
+    (ch14ext_fullReduce s n).rhs i / (ch14ext_fullReduce s n).matrix i i
+
+/-- Successful final scaling solves every diagonal equation exactly. -/
+theorem ch14ext_fullSolution_diag_equation (s : Ch14GJEState n) (i : Fin n)
+    (hdiag : (ch14ext_fullReduce s n).matrix i i ≠ 0) :
+    ch14ext_fullSolution s i * (ch14ext_fullReduce s n).matrix i i =
+      (ch14ext_fullReduce s n).rhs i := by
+  unfold ch14ext_fullSolution
+  exact div_mul_cancel₀ _ hdiag
+
 end LeanFpAnalysis.FP.Ch14Ext

@@ -260,6 +260,83 @@ theorem rectMinNormSolution_eq_of_transpose_solution {m n : ℕ}
   simp [e, z] at hj
   exact sub_eq_zero.mp hj
 
+/-- Every finite-dimensional minimum 2-norm solution belongs to the range of
+    the transposed coefficient matrix. -/
+theorem RectMinNormSolution.exists_transpose_witness
+    {m n : ℕ}
+    {B : Fin m → Fin n → ℝ} {c : Fin m → ℝ} {y : Fin n → ℝ}
+    (h : RectMinNormSolution m n B c y) :
+    ∃ z : Fin m → ℝ, rectTransposeMulVec B z = y := by
+  let BM : Matrix (Fin m) (Fin n) ℝ := B
+  let Tlin : EuclideanSpace ℝ (Fin n) →ₗ[ℝ] EuclideanSpace ℝ (Fin m) :=
+    Matrix.toEuclideanLin BM
+  let T : EuclideanSpace ℝ (Fin n) →L[ℝ] EuclideanSpace ℝ (Fin m) :=
+    Tlin.toContinuousLinearMap
+  let Y : EuclideanSpace ℝ (Fin n) := WithLp.toLp 2 y
+  let K : Submodule ℝ (EuclideanSpace ℝ (Fin n)) :=
+    LinearMap.ker T.toLinearMap
+
+  rcases K.exists_add_mem_mem_orthogonal Y with
+    ⟨u, hu, v, hv, hY⟩
+
+  have hTu : T u = 0 := hu
+  have hTvY : T v = T Y := by
+    have hmap := congrArg T hY
+    simpa [map_add, hTu] using hmap.symm
+  have hTY : T Y = WithLp.toLp 2 c := by
+    have hsystem := h.system_eq
+    change T Y = WithLp.toLp 2 c
+    rw [show T Y = WithLp.toLp 2 (rectMatMulVec B y) by
+      ext i
+      simp [T, Tlin, Y, BM, Matrix.toLpLin_apply,
+        Matrix.mulVec, dotProduct, rectMatMulVec]]
+    exact congrArg (WithLp.toLp 2) hsystem
+  have hv_system : rectMatMulVec B (WithLp.ofLp v) = c := by
+    have hz := congrArg WithLp.ofLp (hTvY.trans hTY)
+    simpa [T, Tlin, BM, Matrix.toLpLin_apply,
+      Matrix.mulVec, dotProduct, rectMatMulVec] using hz
+
+  have hmin : vecNorm2 y ≤ vecNorm2 (WithLp.ofLp v) :=
+    h.min_norm (WithLp.ofLp v) hv_system
+  have hYnorm : ‖Y‖ = vecNorm2 y := by
+    unfold Y vecNorm2 vecNorm2Sq
+    rw [EuclideanSpace.norm_eq]
+    simp [Real.norm_eq_abs, sq_abs]
+  have hvnorm : ‖v‖ = vecNorm2 (WithLp.ofLp v) := by
+    unfold vecNorm2 vecNorm2Sq
+    rw [EuclideanSpace.norm_eq]
+    simp [Real.norm_eq_abs, sq_abs]
+  have hnorm : ‖Y‖ ≤ ‖v‖ := by
+    simpa [hYnorm, hvnorm] using hmin
+  have hinner : inner ℝ u v = 0 :=
+    (K.mem_orthogonal v).mp hv u hu
+  have hpyth : ‖Y‖ ^ 2 = ‖u‖ ^ 2 + ‖v‖ ^ 2 := by
+    rw [hY]
+    simpa [pow_two] using
+      norm_add_sq_eq_norm_sq_add_norm_sq_of_inner_eq_zero u v hinner
+  have hnormsq : ‖Y‖ ^ 2 ≤ ‖v‖ ^ 2 :=
+    (sq_le_sq₀ (norm_nonneg Y) (norm_nonneg v)).2 hnorm
+  have hu_norm : ‖u‖ = 0 := by
+    nlinarith [sq_nonneg ‖u‖]
+  have hu_zero : u = 0 := norm_eq_zero.mp hu_norm
+  have hYv : Y = v := by
+    simpa [hu_zero] using hY
+  have hYorth : Y ∈ Kᗮ := hYv.symm ▸ hv
+
+  have hYclosure : Y ∈ T.adjoint.range.topologicalClosure := by
+    rw [← T.orthogonal_ker]
+    exact hYorth
+  have hYrange : Y ∈ T.adjoint.range := by
+    simpa using hYclosure
+  rcases hYrange with ⟨z, hz⟩
+  refine ⟨WithLp.ofLp z, ?_⟩
+  have hzlin : Matrix.toEuclideanLin BM.conjTranspose z = Y := by
+    rw [Matrix.toEuclideanLin_conjTranspose_eq_adjoint]
+    simpa [T, Tlin, LinearMap.adjoint_eq_toCLM_adjoint] using hz
+  have hzfun := congrArg WithLp.ofLp hzlin
+  simpa [Y, BM, Matrix.toLpLin_apply, Matrix.mulVec,
+    dotProduct, rectTransposeMulVec] using hzfun
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
     algebraic normal-equation identity `A (Aᵀ y) = (A Aᵀ) y`. -/
 theorem rectMatMulVec_rectTransposeMulVec {m n : ℕ}
@@ -742,8 +819,10 @@ theorem higham21_eq21_5_sne_rect_transpose_solution {m n : ℕ}
     - E = |A|H, f = |b|: bound involves cond₂(A) = ‖|A⁺||A|‖₂
     - Normwise: ‖x−y‖₂/‖x‖₂ ≤ min{3,n−m+2}(mn)^{1/2}κ₂(A)ε + O(ε²)
 
-    Recorded as an abstract predicate until the rectangular pseudoinverse
-    perturbation expansion is fully formalized. -/
+    This legacy compatibility record predates the completed rectangular
+    pseudoinverse development. It is not the source-facing proof of Theorem
+    21.1; the proved expansion and finite-radius endpoints live in the
+    `Higham21Perturbation` and `Higham21PerturbationRadius` modules. -/
 structure DemmelHighamPerturbation (m : ℕ)
     (x y : Fin m → ℝ) (kappa eps : ℝ)
     (sol_bound : ℝ) : Prop where
@@ -770,9 +849,10 @@ structure DemmelHighamPerturbation (m : ℕ)
 
     The normwise bound satisfies: ‖ΔA‖_p ≤ (‖ΔA₁‖²_p + ‖ΔA₂‖²_p)^{1/2}.
 
-    This is the underdetermined analogue of Lemma 20.6.
-    Recorded as an abstract predicate until the rectangular projector
-    construction is fully formalized. -/
+    This is the underdetermined analogue of Lemma 20.6. The structure is a
+    legacy compatibility record and is not evidence for the source lemma;
+    `higham21_lemma21_2_source_bundle` supplies the proved single-perturbation
+    construction and norm bounds. -/
 structure KielbasinskiSchwetlickUndet (m : ℕ)
     (AAT : Fin m → Fin m → ℝ)
     (b : Fin m → ℝ)
