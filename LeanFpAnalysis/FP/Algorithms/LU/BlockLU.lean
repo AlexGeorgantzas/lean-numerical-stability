@@ -476,10 +476,12 @@
     higham13_theorem13_6_eq13_16_firstOrder_from_factor_solve_estimates,
     DemmelHighamSchreiber13_6Estimates,
     DemmelHighamSchreiber13_6SourcePath,
+    demmelHighamSchreiber13_6_source_path_from_implementation1_local_spec,
     DemmelHighamSchreiber13_6FactorizationResult,
     demmelHighamSchreiber13_6_factorization_result_from_partitioned_layer,
     DemmelHighamSchreiber13_6SolveResult,
     DemmelHighamSchreiber13_6Theorem2_1Result,
+    demmelHighamSchreiber13_6_theorem2_1_result_from_estimates_and_implementation1_local_spec,
     demmelHighamSchreiber13_6_theorem2_1_result_from_factorization_solve_results,
     demmelHighamSchreiber13_6_estimates_from_theorem2_1_result,
     demmelHighamSchreiber13_6_estimates_from_factorization_solve_results,
@@ -7406,6 +7408,42 @@ structure DemmelHighamSchreiber13_6SourcePath
   local_solve_success : localSolveSuccess
   max_entry_product_laws : maxEntryProductLaws
 
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 source-path instantiation
+    from Higham Algorithm 13.3 Implementation 1's local model.
+
+    The local spec already exposes the two source facts available in Higham's
+    text: the step-2 block solve residual (13.14) and the diagonal-block solve
+    residual (13.15), each with its first-order scalar bound.  This theorem
+    feeds exactly those facts into the corresponding DHS source-path slots.
+    Recursive execution, the rounded Schur update, and max-entry product laws
+    remain explicit hypotheses, so this does not prove the cited DHS estimates. -/
+theorem demmelHighamSchreiber13_6_source_path_from_implementation1_local_spec
+    {r s p : Type*} [Fintype r]
+    (u c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii : ℝ)
+    (Lhat21 A21 E21 : Matrix s r ℝ) (A11 Uii DeltaUii : Matrix r r ℝ)
+    (Xhat D : Matrix r p ℝ)
+    (recursiveExecution schurUpdate maxEntryProductLaws : Prop)
+    (hRecursiveExecution : recursiveExecution)
+    (hSchurUpdate : schurUpdate)
+    (hMaxEntryProductLaws : maxEntryProductLaws)
+    (hLocal : Algorithm13_3Implementation1LocalSpec
+      u c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii
+      Lhat21 A21 E21 A11 Uii DeltaUii Xhat D) :
+    DemmelHighamSchreiber13_6SourcePath recursiveExecution schurUpdate
+      (Lhat21 * A11 = A21 + E21)
+      (BlockSolveFirstOrderBound u c₄ normLhat21 normA11 normE21)
+      ((Uii + DeltaUii) * Xhat = D)
+      (DiagonalBlockSolveFirstOrderBound u c₅ normUii normDeltaUii)
+      maxEntryProductLaws := by
+  rcases
+    higham13_algorithm13_3_implementation1_eq13_14_15_from_spec
+      u c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii
+      Lhat21 A21 E21 A11 Uii DeltaUii Xhat D hLocal with
+    ⟨hBlock, hDiag⟩
+  exact
+    ⟨hRecursiveExecution, hSchurUpdate, hBlock.1, hBlock.2, hDiag.1,
+      hDiag.2, hMaxEntryProductLaws⟩
+
 /-- Factorization half of the Demmel--Higham--Schreiber [326] source boundary
     used by Higham, Chapter 13, Theorem 13.6.
 
@@ -7494,6 +7532,48 @@ structure DemmelHighamSchreiber13_6Theorem2_1Result
   estimates :
     DemmelHighamSchreiber13_6Estimates u d_fact d_solve normA normL normU
       normDeltaA_fact normDeltaA_solve
+
+/-- Build the audited DHS Theorem 2.1 result object from the named estimate
+    package and the concrete Algorithm 13.3 Implementation 1 local path.
+
+    Compared with a result object whose source-path fields are arbitrary
+    propositions, this version instantiates the block-row/forward-solve and
+    block-back/local-solve slots with the actual Eq.13.14 and Eq.13.15
+    equation/bound facts supplied by `Algorithm13_3Implementation1LocalSpec`.
+    The estimate package is still an explicit hypothesis: this is a source-path
+    tightening step, not the omitted DHS implementation analysis. -/
+theorem demmelHighamSchreiber13_6_theorem2_1_result_from_estimates_and_implementation1_local_spec
+    {r s p : Type*} [Fintype r]
+    (u d_fact d_solve normA normL normU normDeltaA_fact normDeltaA_solve : ℝ)
+    (c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii : ℝ)
+    (Lhat21 A21 E21 : Matrix s r ℝ) (A11 Uii DeltaUii : Matrix r r ℝ)
+    (Xhat D : Matrix r p ℝ)
+    (recursiveExecution schurUpdate maxEntryProductLaws : Prop)
+    (hRecursiveExecution : recursiveExecution)
+    (hSchurUpdate : schurUpdate)
+    (hMaxEntryProductLaws : maxEntryProductLaws)
+    (hLocal : Algorithm13_3Implementation1LocalSpec
+      u c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii
+      Lhat21 A21 E21 A11 Uii DeltaUii Xhat D)
+    (hEst : DemmelHighamSchreiber13_6Estimates
+      u d_fact d_solve normA normL normU
+      normDeltaA_fact normDeltaA_solve) :
+    DemmelHighamSchreiber13_6Theorem2_1Result
+      u d_fact d_solve normA normL normU
+      normDeltaA_fact normDeltaA_solve
+      recursiveExecution schurUpdate
+      (Lhat21 * A11 = A21 + E21)
+      (BlockSolveFirstOrderBound u c₄ normLhat21 normA11 normE21)
+      ((Uii + DeltaUii) * Xhat = D)
+      (DiagonalBlockSolveFirstOrderBound u c₅ normUii normDeltaUii)
+      maxEntryProductLaws := by
+  exact
+    ⟨demmelHighamSchreiber13_6_source_path_from_implementation1_local_spec
+        u c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii
+        Lhat21 A21 E21 A11 Uii DeltaUii Xhat D
+        recursiveExecution schurUpdate maxEntryProductLaws
+        hRecursiveExecution hSchurUpdate hMaxEntryProductLaws hLocal,
+      hEst⟩
 
 /-- Combine the factorization and solve halves of the audited DHS source
     boundary into the full DHS Theorem 2.1 result object used by the existing
