@@ -453,7 +453,8 @@
     higham13_theorem13_6_eq13_16_from_factor_solve_estimates,
     higham13_theorem13_6_eq13_16_firstOrder_from_factor_solve_estimates,
     DemmelHighamSchreiber13_6Estimates,
-    higham13_theorem13_6_eq13_16_firstOrder_from_DHS_estimates:
+    higham13_theorem13_6_eq13_16_firstOrder_from_DHS_estimates,
+    higham13_theorem13_6_implementation1_conditional_from_DHS_estimates:
     Theorem 13.6 scalar and conditional Eq.13.16 aggregation, with a named
     surface for the still-open Demmel--Higham--Schreiber estimates
   - maxEntryNormRect_rectMatMul_le, maxEntryNorm_matrix_mul_le_dim,
@@ -7247,6 +7248,48 @@ theorem higham13_theorem13_6_eq13_16_firstOrder_from_DHS_estimates
   exact higham13_theorem13_6_eq13_16_firstOrder_from_factor_solve_estimates
     normDeltaA_fact normDeltaA_solve normA normL normU u d_fact d_solve dn
     hu hA hL hU hd_fact hd_solve hEst.factorization hEst.solve
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 Implementation 1 and
+    Theorem 13.6 / equation (13.16), conditional on the cited
+    Demmel--Higham--Schreiber [326] estimates.
+
+    This source-facing wrapper keeps both sides of the conditional theorem
+    visible: the local computed path supplies equations (13.14) and (13.15),
+    while `DemmelHighamSchreiber13_6Estimates` is the still-open
+    implementation analysis needed to obtain the two first-order Eq.13.16
+    backward-error bounds. -/
+theorem higham13_theorem13_6_implementation1_conditional_from_DHS_estimates
+    {r s p : Type*} [Fintype r]
+    (u c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii : ℝ)
+    (Lhat21 A21 E21 : Matrix s r ℝ) (A11 Uii DeltaUii : Matrix r r ℝ)
+    (Xhat D : Matrix r p ℝ)
+    (normDeltaA_fact normDeltaA_solve : ℝ)
+    (normA normL normU d_fact d_solve dn : ℝ)
+    (hu : 0 ≤ u) (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hd_fact : d_fact ≤ dn) (hd_solve : d_solve ≤ dn)
+    (hLocal : Algorithm13_3Implementation1LocalSpec
+      u c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii
+      Lhat21 A21 E21 A11 Uii DeltaUii Xhat D)
+    (hEst : DemmelHighamSchreiber13_6Estimates
+      u d_fact d_solve normA normL normU
+      normDeltaA_fact normDeltaA_solve) :
+    ((Lhat21 * A11 = A21 + E21 ∧
+        BlockSolveFirstOrderBound u c₄ normLhat21 normA11 normE21) ∧
+      ((Uii + DeltaUii) * Xhat = D ∧
+        DiagonalBlockSolveFirstOrderBound u c₅ normUii normDeltaUii)) ∧
+      FirstOrderLe u (dn * u * (normA + normL * normU))
+        normDeltaA_fact ∧
+      FirstOrderLe u (dn * u * (normA + normL * normU))
+        normDeltaA_solve ∧
+      FirstOrderLe u (dn * u * (normA + normL * normU))
+        (max normDeltaA_fact normDeltaA_solve) := by
+  exact
+    ⟨higham13_algorithm13_3_implementation1_eq13_14_15_from_spec
+        u c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii
+        Lhat21 A21 E21 A11 Uii DeltaUii Xhat D hLocal,
+      higham13_theorem13_6_eq13_16_firstOrder_from_DHS_estimates
+        normDeltaA_fact normDeltaA_solve normA normL normU u
+        d_fact d_solve dn hu hA hL hU hd_fact hd_solve hEst⟩
 
 /-- Higham, 2nd ed., Chapter 13, p.251, Algorithm 13.3 Implementation 2:
     if the exact-inverse local analysis has multiplied the factorization and
