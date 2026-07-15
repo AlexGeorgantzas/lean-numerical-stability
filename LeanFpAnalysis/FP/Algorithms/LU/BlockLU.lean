@@ -430,7 +430,8 @@
   - DHSBlockForwardSubstitutionFirstOrderSpec,
     DHSBlockBackSubstitutionFirstOrderSpec,
     dhs_block_forward_substitution_firstOrder,
-    dhs_block_back_substitution_firstOrder:
+    dhs_block_back_substitution_firstOrder,
+    dhs_block_back_substitution_firstOrder_from_diagonal_block_solve_spec:
     DHS Theorem 2.1 selected-scope forward/back substitution branch specs
   - Algorithm13_3Implementation1LocalSpec,
     Algorithm13_3Implementation2ExplicitInverseSpec:
@@ -2273,6 +2274,12 @@ lemma FirstOrderLe.of_le {u leading value : ℝ} (h : value ≤ leading) :
 lemma FirstOrderLe.mono_leading {u leading₁ leading₂ value : ℝ}
     (h : FirstOrderLe u leading₁ value) (hle : leading₁ ≤ leading₂) :
     FirstOrderLe u leading₂ value := by
+  rcases h with ⟨K, hK, hvalue⟩
+  exact ⟨K, hK, by linarith⟩
+
+lemma FirstOrderLe.mono_value {u leading value₁ value₂ : ℝ}
+    (h : FirstOrderLe u leading value₂) (hle : value₁ ≤ value₂) :
+    FirstOrderLe u leading value₁ := by
   rcases h with ⟨K, hK, hvalue⟩
   exact ⟨K, hK, by linarith⟩
 
@@ -8092,6 +8099,32 @@ theorem dhs_block_back_substitution_firstOrder
     DHSBlockBackSubstitutionFirstOrderSpec
       u cBack normA normL normU normLDeltaU Uhat DeltaU Xhat Yhat :=
   ⟨hEquation, hBound⟩
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch
+    from a local diagonal-block solve specification.
+
+    Higham's local equation (13.15) supplies the exact perturbed diagonal solve
+    and a first-order bound for its local perturbation.  To use that solve as
+    the DHS block-back-substitution branch, callers must still provide the
+    product-law/value comparison that transports the local perturbation to the
+    left-multiplied budget `normLDeltaU`, plus the scalar comparison from the
+    local leading term to the global DHS branch leading term.  This keeps the
+    max-entry/product obligation visible instead of hiding it in the branch
+    constructor. -/
+theorem dhs_block_back_substitution_firstOrder_from_diagonal_block_solve_spec
+    {n p : Type*} [Fintype n]
+    (u c₅ cBack normA normL normU normUii normDeltaUii normLDeltaU : ℝ)
+    (Uii DeltaUii : Matrix n n ℝ) (Xhat D : Matrix n p ℝ)
+    (hProductLaw : normLDeltaU ≤ normDeltaUii)
+    (hLeading :
+      c₅ * u * normUii ≤ cBack * u * (normA + normL * normU))
+    (hSpec :
+      DiagonalBlockSolveFirstOrderSpec
+        u c₅ normUii normDeltaUii Uii DeltaUii Xhat D) :
+    DHSBlockBackSubstitutionFirstOrderSpec
+      u cBack normA normL normU normLDeltaU Uii DeltaUii Xhat D :=
+  ⟨hSpec.equation,
+    (hSpec.norm_bound.mono_value hProductLaw).mono_leading hLeading⟩
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 solve route:
     package the exact solve perturbation and first-order budget into the audited
