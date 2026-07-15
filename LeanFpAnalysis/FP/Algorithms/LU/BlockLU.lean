@@ -32856,6 +32856,167 @@ theorem higham13_problem13_4_all_tail_inverse_entry_bound_counterexample_activeS
     hP_left, hFlat, hP_initial, hActive, hAinv_norm, hbad⟩
 
 /-- Higham, 2nd ed., Chapter 13, Problem 13.4 audit:
+    the all-active-suffix inverse-entry table is not rescued merely by the
+    initial column block-diagonal-dominance data used in the Theorem 13.8
+    mixed route.
+
+    The scalar matrix `[[1, -1], [1, 1]]`, packaged as `1 x 1` blocks, is
+    column block diagonally dominant in the matrix-`∞` sense with diagonal
+    max-entry lower comparison.  Its full inverse has max-entry norm `1/2`,
+    while the canonical stage-zero active pivot block is `[1]`, whose inverse
+    entry is `1`.  Hence a source proof of the all-tail table still needs a
+    genuinely recursive tail/source comparison or an additional hypothesis;
+    BDD-at-the-initial-table alone does not supply it. -/
+theorem
+    higham13_problem13_4_all_tail_inverse_entry_bound_counterexample_activeSuffix_infNorm_bdd :
+    ∃ A Ainv : Fin 2 → Fin 2 → ℝ,
+    ∃ Ablk : Fin 2 → Fin 2 → Matrix (Fin 1) (Fin 1) ℝ,
+    ∃ pivotInv : ℕ → Matrix (Fin 1) (Fin 1) ℝ,
+    ∃ invDiagBound : Fin 2 → ℝ,
+    ∃ P Pinv : Fin 1 → Fin 1 → ℝ,
+      IsRightInverse 2 A Ainv ∧ IsLeftInverse 2 A Ainv ∧
+        IsRightInverse 1 P Pinv ∧ IsLeftInverse 1 P Pinv ∧
+        IsBlockDiagDomCol 2 (fun i j : Fin 2 => infNorm (Ablk i j)) invDiagBound ∧
+        IsBlockDiagDomCol 2
+          (fun i j : Fin 2 => maxEntryNorm (by norm_num : 0 < 1) (Ablk i j))
+          invDiagBound ∧
+        (∀ j : Fin 2,
+          invDiagBound j ≤ maxEntryNorm (by norm_num : 0 < 1) (Ablk j j)) ∧
+        (∀ i j : Fin 2,
+          blockMatrixFlatFin Ablk (finProdFinEquiv (i, (0 : Fin 1)))
+            (finProdFinEquiv (j, (0 : Fin 1))) = A i j) ∧
+        (∀ i j : Fin 1, P i j = A (0 : Fin 2) (0 : Fin 2)) ∧
+        (∀ i j s t,
+          higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv
+              0 0 (by norm_num) i j s t = P s t) ∧
+        maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2) Ainv =
+          (1 / 2 : ℝ) ∧
+        ¬ (∀ i j : Fin 1,
+          |Pinv i j| ≤
+            maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2) Ainv) := by
+  let A : Fin 2 → Fin 2 → ℝ := fun i j =>
+    if i = (0 : Fin 2) ∧ j = (0 : Fin 2) then 1
+    else if i = (0 : Fin 2) ∧ j = (1 : Fin 2) then (-1)
+    else if i = (1 : Fin 2) ∧ j = (0 : Fin 2) then 1
+    else 1
+  let Ainv : Fin 2 → Fin 2 → ℝ := fun i j =>
+    if i = (0 : Fin 2) ∧ j = (0 : Fin 2) then (1 / 2 : ℝ)
+    else if i = (0 : Fin 2) ∧ j = (1 : Fin 2) then (1 / 2 : ℝ)
+    else if i = (1 : Fin 2) ∧ j = (0 : Fin 2) then (-1 / 2 : ℝ)
+    else (1 / 2 : ℝ)
+  let Ablk : Fin 2 → Fin 2 → Matrix (Fin 1) (Fin 1) ℝ := fun i j _ _ => A i j
+  let pivotInv : ℕ → Matrix (Fin 1) (Fin 1) ℝ := fun _ _ _ => 0
+  let invDiagBound : Fin 2 → ℝ := fun _ => 1
+  let P : Fin 1 → Fin 1 → ℝ := fun _ _ => 1
+  let Pinv : Fin 1 → Fin 1 → ℝ := fun _ _ => 1
+  have hA_right : IsRightInverse 2 A Ainv := by
+    intro i j
+    fin_cases i <;> fin_cases j <;>
+      norm_num [A, Ainv, Fin.sum_univ_two]
+    all_goals rfl
+  have hA_left : IsLeftInverse 2 A Ainv := by
+    intro i j
+    fin_cases i <;> fin_cases j <;>
+      norm_num [A, Ainv, Fin.sum_univ_two]
+    all_goals rfl
+  have hP_right : IsRightInverse 1 P Pinv := by
+    intro i j
+    fin_cases i
+    fin_cases j
+    norm_num [P, Pinv, Fin.sum_univ_one]
+  have hP_left : IsLeftInverse 1 P Pinv := by
+    intro i j
+    fin_cases i
+    fin_cases j
+    norm_num [P, Pinv, Fin.sum_univ_one]
+  have hInfNorm_Ablk :
+      ∀ i j : Fin 2, infNorm (Ablk i j) = |A i j| := by
+    intro i j
+    apply le_antisymm
+    · apply infNorm_le_of_row_sum_le
+      · intro s
+        fin_cases s
+        simp [Ablk]
+      · exact abs_nonneg (A i j)
+    · have h := row_sum_le_infNorm (Ablk i j) (0 : Fin 1)
+      simpa [Ablk] using h
+  have hMaxNorm_Ablk :
+      ∀ i j : Fin 2, maxEntryNorm (by norm_num : 0 < 1) (Ablk i j) = |A i j| := by
+    intro i j
+    apply le_antisymm
+    · apply
+        (maxEntryNormRect_le_of_entry_abs_le
+          (by norm_num : 0 < 1) (by norm_num : 0 < 1) (Ablk i j) |A i j|)
+      intro s t
+      fin_cases s
+      fin_cases t
+      simp [Ablk]
+    · have h :=
+        entry_le_maxEntryNorm (by norm_num : 0 < 1) (Ablk i j) (0 : Fin 1) (0 : Fin 1)
+      simpa [Ablk] using h
+  have hDomInf :
+      IsBlockDiagDomCol 2 (fun i j : Fin 2 => infNorm (Ablk i j)) invDiagBound := by
+    intro j
+    fin_cases j <;>
+      norm_num [IsBlockDiagDomCol, hInfNorm_Ablk, A, invDiagBound, Fin.sum_univ_two]
+  have hDomMax :
+      IsBlockDiagDomCol 2
+        (fun i j : Fin 2 => maxEntryNorm (by norm_num : 0 < 1) (Ablk i j))
+        invDiagBound := by
+    exact higham13_blockDiagDomCol_maxEntry_of_infNorm
+      (by norm_num : 0 < 1) Ablk invDiagBound hDomInf
+  have hDiagMax :
+      ∀ j : Fin 2,
+        invDiagBound j ≤ maxEntryNorm (by norm_num : 0 < 1) (Ablk j j) := by
+    intro j
+    fin_cases j <;> norm_num [hMaxNorm_Ablk, A, invDiagBound]
+  have hFlat :
+      ∀ i j : Fin 2,
+        blockMatrixFlatFin Ablk (finProdFinEquiv (i, (0 : Fin 1)))
+          (finProdFinEquiv (j, (0 : Fin 1))) = A i j := by
+    intro i j
+    rw [blockMatrixFlatFin_apply]
+  have hP_initial : ∀ i j : Fin 1, P i j = A (0 : Fin 2) (0 : Fin 2) := by
+    intro i j
+    fin_cases i
+    fin_cases j
+    norm_num [A, P]
+  have hActive :
+      ∀ i j s t,
+        higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv
+            0 0 (by norm_num) i j s t = P s t := by
+    intro i j s t
+    fin_cases i
+    fin_cases j
+    simpa [Ablk, higham13_algorithm13_3_activeSuffixStageTailBlock,
+      higham13_algorithm13_3_activeSuffixTail,
+      higham13_algorithm13_3_schurStageMatrixTailBlock,
+      higham13_algorithm13_3_schurStageMatrixBlock,
+      higham13_algorithm13_3_schurStageBlock] using (hP_initial s t).symm
+  have hAinv_norm :
+      maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2) Ainv =
+        (1 / 2 : ℝ) := by
+    apply le_antisymm
+    · apply maxEntryNormRect_le_of_entry_abs_le
+      intro i j
+      fin_cases i <;> fin_cases j <;> norm_num [Ainv]
+    · have h :=
+        entry_le_maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2)
+          Ainv (0 : Fin 2) (0 : Fin 2)
+      simpa [Ainv] using h
+  have hbad :
+      ¬ (∀ i j : Fin 1,
+          |Pinv i j| ≤
+            maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2) Ainv) := by
+    intro hbound
+    have h := hbound (0 : Fin 1) (0 : Fin 1)
+    rw [hAinv_norm] at h
+    norm_num [Pinv] at h
+  exact ⟨A, Ainv, Ablk, pivotInv, invDiagBound, P, Pinv, hA_right, hA_left,
+    hP_right, hP_left, hDomInf, hDomMax, hDiagMax, hFlat, hP_initial,
+    hActive, hAinv_norm, hbad⟩
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 audit:
     the direct local-inverse comparison used by the stage-local growth route is
     not a scalar consequence of ambient growth containment alone.
 
