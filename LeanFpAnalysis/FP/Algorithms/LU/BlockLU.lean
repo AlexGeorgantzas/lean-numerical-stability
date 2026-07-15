@@ -430,6 +430,7 @@
   - DHSBlockForwardSubstitutionFirstOrderSpec,
     DHSBlockBackSubstitutionFirstOrderSpec,
     dhs_block_forward_substitution_firstOrder,
+    dhs_block_forward_residual_firstOrder_from_block_solve_spec,
     dhs_block_back_substitution_firstOrder,
     dhs_block_back_substitution_firstOrder_from_diagonal_block_solve_spec:
     DHS Theorem 2.1 selected-scope forward/back substitution branch specs
@@ -8081,6 +8082,30 @@ theorem dhs_block_forward_substitution_firstOrder
     DHSBlockForwardSubstitutionFirstOrderSpec
       u cForward normA normL normU normDeltaLU Lhat DeltaL Yhat B :=
   ⟨hEquation, hBound⟩
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 forward-side residual scale
+    from Higham's local block solve specification (equation 13.14).
+
+    Equation (13.14) gives a residual equation
+    `Lhat21 * A11 = A21 + E21` and a local first-order bound for `E21`.
+    It is not, by itself, the full DHS global forward-substitution perturbation
+    equation `(Lhat + DeltaL) * Yhat = B`.  This adapter therefore transports
+    only the residual equation and scalar budget to the global DHS
+    forward-branch leading scale, keeping the operational forward-substitution
+    equation and any product/value laws as separate obligations. -/
+theorem dhs_block_forward_residual_firstOrder_from_block_solve_spec
+    {r s : Type*} [Fintype r]
+    (u c₄ cForward normA normL normU normLhat21 normA11 normE21 : ℝ)
+    (Lhat21 A21 E21 : Matrix s r ℝ) (A11 : Matrix r r ℝ)
+    (hLeading :
+      c₄ * u * normLhat21 * normA11 ≤
+        cForward * u * (normA + normL * normU))
+    (hSpec :
+      BlockSolveFirstOrderSpec u c₄ normLhat21 normA11 normE21
+        Lhat21 A21 E21 A11) :
+    (Lhat21 * A11 = A21 + E21) ∧
+      FirstOrderLe u (cForward * u * (normA + normL * normU)) normE21 :=
+  ⟨hSpec.equation, hSpec.norm_bound.mono_leading hLeading⟩
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 block-back-substitution
     branch, selected-scope spec constructor.

@@ -11899,6 +11899,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check DHSBlockForwardSubstitutionFirstOrderSpec
 #check DHSBlockBackSubstitutionFirstOrderSpec
 #check dhs_block_forward_substitution_firstOrder
+#check dhs_block_forward_residual_firstOrder_from_block_solve_spec
 #check dhs_block_back_substitution_firstOrder
 #check dhs_block_back_substitution_firstOrder_from_diagonal_block_solve_spec
 #check DemmelHighamSchreiber13_6Theorem2_1Result
