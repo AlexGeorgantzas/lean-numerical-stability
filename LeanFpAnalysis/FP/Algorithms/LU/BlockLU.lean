@@ -483,7 +483,9 @@
     DemmelHighamSchreiber13_6SourcePath,
     demmelHighamSchreiber13_6_source_path_from_implementation1_local_spec,
     DemmelHighamSchreiber13_6FactorizationResult,
+    demmelHighamSchreiber13_6_partitioned_leading_term_le_of_coeff_bounds,
     demmelHighamSchreiber13_6_factorization_result_from_partitioned_layer,
+    demmelHighamSchreiber13_6_factorization_result_from_partitioned_layer_of_coeff_bounds,
     DemmelHighamSchreiber13_6SolveResult,
     DemmelHighamSchreiber13_6Theorem2_1Result,
     demmelHighamSchreiber13_6_theorem2_1_result_from_estimates_and_implementation1_local_spec,
@@ -500,9 +502,11 @@
     demmelHighamSchreiber13_6_solve_result_from_perturbation_layers,
     demmelHighamSchreiber13_6_solve_result_from_forward_back_substitution_specs,
     demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_forward_back_substitution_specs,
+    demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_forward_back_substitution_specs_of_coeff_bounds,
     demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_and_solve_perturbation_layers,
     demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_solve_layers_and_implementation1_local_spec,
     higham13_theorem13_6_implementation1_from_DHS_partitioned_forward_back_substitution_specs_and_implementation1_local_spec,
+    higham13_theorem13_6_implementation1_from_DHS_partitioned_forward_back_substitution_specs_of_coeff_bounds_and_implementation1_local_spec,
     higham13_theorem13_6_implementation1_from_DHS_partitioned_solve_layers_and_implementation1_local_spec,
     higham13_theorem13_6_eq13_16_firstOrder_from_DHS_estimates,
     higham13_theorem13_6_implementation1_conditional_from_DHS_estimates:
@@ -7472,6 +7476,40 @@ structure DemmelHighamSchreiber13_6FactorizationResult
   factorization :
     FirstOrderLe u (d_fact * u * (normA + normL * normU)) normDeltaA_fact
 
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 scalar comparison for the
+    partitioned factorization leading term.
+
+    Once the source-side factorization coefficients for the `‖A‖` and
+    `‖L̂‖‖Û‖` terms are each bounded by the advertised DHS constant `d_fact`,
+    the partitioned first-order leading term is bounded by the common
+    `d_fact * u * (‖A‖ + ‖L̂‖‖Û‖)` expression.  This closes one of the scalar
+    comparison obligations that was previously passed as a raw hypothesis. -/
+theorem demmelHighamSchreiber13_6_partitioned_leading_term_le_of_coeff_bounds
+    (u δ θ d_fact normA normL normU : ℝ)
+    (hu : 0 ≤ u) (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hδ : δ ≤ d_fact) (hθ : θ ≤ d_fact) :
+    u * (δ * normA + θ * normL * normU) ≤
+      d_fact * u * (normA + normL * normU) := by
+  have hLU : 0 ≤ normL * normU := mul_nonneg hL hU
+  have hδA : δ * normA ≤ d_fact * normA :=
+    mul_le_mul_of_nonneg_right hδ hA
+  have hθLU : θ * (normL * normU) ≤ d_fact * (normL * normU) :=
+    mul_le_mul_of_nonneg_right hθ hLU
+  have hsum :
+      δ * normA + θ * normL * normU ≤
+        d_fact * (normA + normL * normU) := by
+    calc
+      δ * normA + θ * normL * normU
+          = δ * normA + θ * (normL * normU) := by ring
+      _ ≤ d_fact * normA + d_fact * (normL * normU) :=
+          add_le_add hδA hθLU
+      _ = d_fact * (normA + normL * normU) := by ring
+  calc
+    u * (δ * normA + θ * normL * normU)
+        ≤ u * (d_fact * (normA + normL * normU)) :=
+          mul_le_mul_of_nonneg_left hsum hu
+    _ = d_fact * u * (normA + normL * normU) := by ring
+
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 factorization route:
     package a checked partitioned-LU first-order layer into the audited DHS
     factorization-result boundary.
@@ -7503,6 +7541,39 @@ theorem demmelHighamSchreiber13_6_factorization_result_from_partitioned_layer
     ⟨hSpec.equation,
       ⟨hRecursiveExecution, hSchurUpdate, hMaxEntryProductLaws,
         hSpec.norm_bound.mono_leading hLeading⟩⟩
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 factorization route with the
+    scalar leading-term comparison derived from coefficient bounds.
+
+    This is the source-facing companion to
+    `demmelHighamSchreiber13_6_factorization_result_from_partitioned_layer`.
+    It removes the raw `hLeading` premise when the available source analysis
+    provides separate coefficient inequalities `δ ≤ d_fact` and `θ ≤ d_fact`.
+    The recursive execution, rounded Schur update, and max-entry product-law
+    facts remain explicit implementation obligations. -/
+theorem demmelHighamSchreiber13_6_factorization_result_from_partitioned_layer_of_coeff_bounds
+    {n : Type*} [Fintype n]
+    (A DeltaA Lhat Uhat : Matrix n n ℝ)
+    (u δ θ d_fact normA normL normU normDeltaA_fact : ℝ)
+    (recursiveExecution schurUpdate maxEntryProductLaws : Prop)
+    (hRecursiveExecution : recursiveExecution)
+    (hSchurUpdate : schurUpdate)
+    (hMaxEntryProductLaws : maxEntryProductLaws)
+    (hu : 0 ≤ u) (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hδ : δ ≤ d_fact) (hθ : θ ≤ d_fact)
+    (hSpec : PartitionedLUFirstOrderSpec u δ θ normA normL normU
+      normDeltaA_fact A DeltaA Lhat Uhat) :
+    (Lhat * Uhat = A + DeltaA) ∧
+      DemmelHighamSchreiber13_6FactorizationResult
+        u d_fact normA normL normU normDeltaA_fact
+        recursiveExecution schurUpdate maxEntryProductLaws := by
+  exact
+    demmelHighamSchreiber13_6_factorization_result_from_partitioned_layer
+      A DeltaA Lhat Uhat u δ θ d_fact normA normL normU normDeltaA_fact
+      recursiveExecution schurUpdate maxEntryProductLaws
+      hRecursiveExecution hSchurUpdate hMaxEntryProductLaws hSpec
+      (demmelHighamSchreiber13_6_partitioned_leading_term_le_of_coeff_bounds
+        u δ θ d_fact normA normL normU hu hA hL hU hδ hθ)
 
 /-- Solve half of the Demmel--Higham--Schreiber [326] source boundary used by
     Higham, Chapter 13, Theorem 13.6.
@@ -8215,6 +8286,71 @@ theorem demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_forward_bac
         localSolveSuccess maxEntryProductLaws hFactResult hSolveResult⟩
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 packaging route from the
+    checked partitioned factorization layer and named forward/back branch
+    specs, with the factorization scalar comparison derived from coefficient
+    bounds.
+
+    Compared with
+    `demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_forward_back_substitution_specs`,
+    this version replaces the raw leading-term comparison by the source-shaped
+    coefficient premises `δ ≤ d_fact` and `θ ≤ d_fact`.  The remaining solve
+    aggregation, branch execution, block-row RHS, solve-success, product-law,
+    and recursive-execution obligations stay explicit. -/
+theorem demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_forward_back_substitution_specs_of_coeff_bounds
+    {n p : Type*} [Fintype n]
+    (A DeltaA_fact Lhat Uhat DeltaL DeltaU : Matrix n n ℝ)
+    (Xhat B Yhat : Matrix n p ℝ)
+    (u δ θ d_fact d_solve normA normL normU normDeltaA_fact
+      normDeltaA_solve normDeltaLU normLDeltaU normDeltaLDeltaU
+      cForward cBack : ℝ)
+    (recursiveExecution schurUpdate blockRowRHS localSolveSuccess
+      maxEntryProductLaws : Prop)
+    (hRecursiveExecution : recursiveExecution)
+    (hSchurUpdate : schurUpdate)
+    (hBlockRowRHS : blockRowRHS)
+    (hSolveSuccess : localSolveSuccess)
+    (hMaxEntryProductLaws : maxEntryProductLaws)
+    (hu : 0 ≤ u) (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hδ : δ ≤ d_fact) (hθ : θ ≤ d_fact)
+    (hc : d_fact + cForward + cBack ≤ d_solve)
+    (hFactSpec : PartitionedLUFirstOrderSpec u δ θ normA normL normU
+      normDeltaA_fact A DeltaA_fact Lhat Uhat)
+    (hForward :
+      DHSBlockForwardSubstitutionFirstOrderSpec
+        u cForward normA normL normU normDeltaLU Lhat DeltaL Yhat B)
+    (hBack :
+      DHSBlockBackSubstitutionFirstOrderSpec
+        u cBack normA normL normU normLDeltaU Uhat DeltaU Xhat Yhat)
+    (hDeltaLDeltaU : FirstOrderLe u 0 normDeltaLDeltaU)
+    (hTotal :
+      normDeltaA_solve ≤
+        normDeltaA_fact + normDeltaLU + normLDeltaU + normDeltaLDeltaU) :
+    (Lhat * Uhat = A + DeltaA_fact) ∧
+      ((A + (DeltaA_fact + DeltaL * Uhat + Lhat * DeltaU +
+        DeltaL * DeltaU)) * Xhat = B) ∧
+      DemmelHighamSchreiber13_6Theorem2_1Result
+        u d_fact d_solve normA normL normU
+        normDeltaA_fact normDeltaA_solve
+        recursiveExecution schurUpdate blockRowRHS
+        (DHSBlockForwardSubstitutionFirstOrderSpec
+          u cForward normA normL normU normDeltaLU Lhat DeltaL Yhat B)
+        (DHSBlockBackSubstitutionFirstOrderSpec
+          u cBack normA normL normU normLDeltaU Uhat DeltaU Xhat Yhat)
+        localSolveSuccess maxEntryProductLaws := by
+  exact
+    demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_forward_back_substitution_specs
+      A DeltaA_fact Lhat Uhat DeltaL DeltaU Xhat B Yhat
+      u δ θ d_fact d_solve normA normL normU normDeltaA_fact
+      normDeltaA_solve normDeltaLU normLDeltaU normDeltaLDeltaU
+      cForward cBack recursiveExecution schurUpdate blockRowRHS
+      localSolveSuccess maxEntryProductLaws hRecursiveExecution hSchurUpdate
+      hBlockRowRHS hSolveSuccess hMaxEntryProductLaws hu hA hL hU hc
+      hFactSpec
+      (demmelHighamSchreiber13_6_partitioned_leading_term_le_of_coeff_bounds
+        u δ θ d_fact normA normL normU hu hA hL hU hδ hθ)
+      hForward hBack hDeltaLDeltaU hTotal
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 packaging route from the
     two checked layers recovered in the Pro audit.
 
     The partitioned first-order factorization layer supplies both the
@@ -8453,6 +8589,80 @@ theorem higham13_theorem13_6_implementation1_from_DHS_partitioned_forward_back_s
           u cBack normA normL normU normLDeltaU Uhat DeltaU XhatSolve Yhat)
         localSolveSuccess maxEntryProductLaws hu hA hL hU hd_fact hd_solve
         hLocal hDHS⟩
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 Implementation 1 and
+    Theorem 13.6 / equation (13.16), routed through named DHS forward/back
+    branch specs, with the factorization scalar comparison derived from
+    coefficient bounds.
+
+    This is the coefficient-bound companion to
+    `higham13_theorem13_6_implementation1_from_DHS_partitioned_forward_back_substitution_specs_and_implementation1_local_spec`.
+    It removes the raw partitioned leading-term comparison from the
+    implementation-facing surface when the source proof has supplied
+    `δ ≤ d_fact` and `θ ≤ d_fact`. -/
+theorem higham13_theorem13_6_implementation1_from_DHS_partitioned_forward_back_substitution_specs_of_coeff_bounds_and_implementation1_local_spec
+    {n p r s q : Type*} [Fintype n] [Fintype r]
+    (A DeltaA_fact Lhat Uhat DeltaL DeltaU : Matrix n n ℝ)
+    (XhatSolve B Yhat : Matrix n p ℝ)
+    (u δ θ d_fact d_solve dn normA normL normU normDeltaA_fact
+      normDeltaA_solve normDeltaLU normLDeltaU normDeltaLDeltaU
+      cForward cBack : ℝ)
+    (c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii : ℝ)
+    (Lhat21 A21 E21 : Matrix s r ℝ) (A11 Uii DeltaUii : Matrix r r ℝ)
+    (XhatLocal D : Matrix r q ℝ)
+    (recursiveExecution schurUpdate blockRowRHS localSolveSuccess
+      maxEntryProductLaws : Prop)
+    (hRecursiveExecution : recursiveExecution)
+    (hSchurUpdate : schurUpdate)
+    (hBlockRowRHS : blockRowRHS)
+    (hSolveSuccess : localSolveSuccess)
+    (hMaxEntryProductLaws : maxEntryProductLaws)
+    (hu : 0 ≤ u) (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hd_fact : d_fact ≤ dn) (hd_solve : d_solve ≤ dn)
+    (hδ : δ ≤ d_fact) (hθ : θ ≤ d_fact)
+    (hc : d_fact + cForward + cBack ≤ d_solve)
+    (hFactSpec : PartitionedLUFirstOrderSpec u δ θ normA normL normU
+      normDeltaA_fact A DeltaA_fact Lhat Uhat)
+    (hForward :
+      DHSBlockForwardSubstitutionFirstOrderSpec
+        u cForward normA normL normU normDeltaLU Lhat DeltaL Yhat B)
+    (hBack :
+      DHSBlockBackSubstitutionFirstOrderSpec
+        u cBack normA normL normU normLDeltaU Uhat DeltaU XhatSolve Yhat)
+    (hDeltaLDeltaU : FirstOrderLe u 0 normDeltaLDeltaU)
+    (hTotal :
+      normDeltaA_solve ≤
+        normDeltaA_fact + normDeltaLU + normLDeltaU + normDeltaLDeltaU)
+    (hLocal : Algorithm13_3Implementation1LocalSpec
+      u c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii
+      Lhat21 A21 E21 A11 Uii DeltaUii XhatLocal D) :
+    (Lhat * Uhat = A + DeltaA_fact) ∧
+      ((A + (DeltaA_fact + DeltaL * Uhat + Lhat * DeltaU +
+        DeltaL * DeltaU)) * XhatSolve = B) ∧
+      (((Lhat21 * A11 = A21 + E21 ∧
+          BlockSolveFirstOrderBound u c₄ normLhat21 normA11 normE21) ∧
+        ((Uii + DeltaUii) * XhatLocal = D ∧
+          DiagonalBlockSolveFirstOrderBound u c₅ normUii normDeltaUii)) ∧
+        FirstOrderLe u (dn * u * (normA + normL * normU))
+          normDeltaA_fact ∧
+        FirstOrderLe u (dn * u * (normA + normL * normU))
+          normDeltaA_solve ∧
+        FirstOrderLe u (dn * u * (normA + normL * normU))
+          (max normDeltaA_fact normDeltaA_solve)) := by
+  exact
+    higham13_theorem13_6_implementation1_from_DHS_partitioned_forward_back_substitution_specs_and_implementation1_local_spec
+      A DeltaA_fact Lhat Uhat DeltaL DeltaU XhatSolve B Yhat
+      u δ θ d_fact d_solve dn normA normL normU normDeltaA_fact
+      normDeltaA_solve normDeltaLU normLDeltaU normDeltaLDeltaU
+      cForward cBack c₄ c₅ normLhat21 normA11 normE21 normUii
+      normDeltaUii Lhat21 A21 E21 A11 Uii DeltaUii XhatLocal D
+      recursiveExecution schurUpdate blockRowRHS localSolveSuccess
+      maxEntryProductLaws hRecursiveExecution hSchurUpdate hBlockRowRHS
+      hSolveSuccess hMaxEntryProductLaws hu hA hL hU hd_fact hd_solve hc
+      hFactSpec
+      (demmelHighamSchreiber13_6_partitioned_leading_term_le_of_coeff_bounds
+        u δ θ d_fact normA normL normU hu hA hL hU hδ hθ)
+      hForward hBack hDeltaLDeltaU hTotal hLocal
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 Implementation 1 and
     Theorem 13.6 / equation (13.16), routed through the checked partitioned
