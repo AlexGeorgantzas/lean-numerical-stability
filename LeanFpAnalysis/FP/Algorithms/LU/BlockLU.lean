@@ -33849,6 +33849,147 @@ theorem higham13_problem13_4_all_tail_inverse_entry_bound_counterexample_activeS
     hP_left, hFlat, hP_initial, hActive, hAinv_norm, hbad⟩
 
 /-- Higham, 2nd ed., Chapter 13, Problem 13.4 audit:
+    the recovered Pro source-statement audit gives a stronger scalar
+    counterexample to the all-active-suffix inverse-entry table.
+
+    The `3 x 3` matrix `diag(1, [[1/2, 1], [1, 1/2]])` has successful scalar
+    Gaussian elimination pivots `1`, `1/2`, and `-3/2`.  Its inverse has
+    entrywise max norm `4/3`, but the one-by-one shorter suffix `[1/2]` inside
+    the first Schur tail has inverse entry `2`.  Therefore the old
+    all-active-suffix table is false even with successful elimination; the
+    source route must stay on full recursively generated Schur tails or add a
+    genuine stronger hypothesis. -/
+theorem
+    higham13_problem13_4_all_tail_inverse_entry_bound_counterexample_successful_scalar_ge :
+    ∃ A Ainv : Fin 3 → Fin 3 → ℝ,
+    ∃ G Ginv : Fin 2 → Fin 2 → ℝ,
+    ∃ T Tinv : Fin 1 → Fin 1 → ℝ,
+      IsRightInverse 3 A Ainv ∧ IsLeftInverse 3 A Ainv ∧
+        IsRightInverse 2 G Ginv ∧ IsLeftInverse 2 G Ginv ∧
+        IsRightInverse 1 T Tinv ∧ IsLeftInverse 1 T Tinv ∧
+        (∀ i j : Fin 2, G i j = A (Fin.succ i) (Fin.succ j)) ∧
+        (∀ i j : Fin 1, T i j = G (0 : Fin 2) (0 : Fin 2)) ∧
+        A (0 : Fin 3) (0 : Fin 3) = 1 ∧
+        G (0 : Fin 2) (0 : Fin 2) = (1 / 2 : ℝ) ∧
+        G (1 : Fin 2) (1 : Fin 2) -
+            G (1 : Fin 2) (0 : Fin 2) *
+              (G (0 : Fin 2) (0 : Fin 2))⁻¹ *
+              G (0 : Fin 2) (1 : Fin 2) = (-3 / 2 : ℝ) ∧
+        maxEntryNormRect (by norm_num : 0 < 3) (by norm_num : 0 < 3) Ainv =
+          (4 / 3 : ℝ) ∧
+        ¬ (∀ i j : Fin 1,
+          |Tinv i j| ≤
+            maxEntryNormRect (by norm_num : 0 < 3) (by norm_num : 0 < 3)
+              Ainv) := by
+  let A : Fin 3 → Fin 3 → ℝ := fun i j =>
+    match i.val, j.val with
+    | 0, 0 => 1
+    | 1, 1 => (1 / 2 : ℝ)
+    | 1, 2 => 1
+    | 2, 1 => 1
+    | 2, 2 => (1 / 2 : ℝ)
+    | _, _ => 0
+  let Ainv : Fin 3 → Fin 3 → ℝ := fun i j =>
+    match i.val, j.val with
+    | 0, 0 => 1
+    | 1, 1 => (-2 / 3 : ℝ)
+    | 1, 2 => (4 / 3 : ℝ)
+    | 2, 1 => (4 / 3 : ℝ)
+    | 2, 2 => (-2 / 3 : ℝ)
+    | _, _ => 0
+  let G : Fin 2 → Fin 2 → ℝ := fun i j =>
+    match i.val, j.val with
+    | 0, 0 => (1 / 2 : ℝ)
+    | 0, 1 => 1
+    | 1, 0 => 1
+    | _, _ => (1 / 2 : ℝ)
+  let Ginv : Fin 2 → Fin 2 → ℝ := fun i j =>
+    match i.val, j.val with
+    | 0, 0 => (-2 / 3 : ℝ)
+    | 0, 1 => (4 / 3 : ℝ)
+    | 1, 0 => (4 / 3 : ℝ)
+    | _, _ => (-2 / 3 : ℝ)
+  let T : Fin 1 → Fin 1 → ℝ := fun _ _ => (1 / 2 : ℝ)
+  let Tinv : Fin 1 → Fin 1 → ℝ := fun _ _ => 2
+  have hzero_add_zero : (0 : ℝ) + 0 = 0 := by ring
+  have hA_right : IsRightInverse 3 A Ainv := by
+    intro i j
+    fin_cases i <;> fin_cases j <;>
+      norm_num [A, Ainv, Fin.sum_univ_three]
+    all_goals first | exact hzero_add_zero | rfl
+  have hA_left : IsLeftInverse 3 A Ainv := by
+    intro i j
+    fin_cases i <;> fin_cases j <;>
+      norm_num [A, Ainv, Fin.sum_univ_three]
+    all_goals first | exact hzero_add_zero | rfl
+  have hG_right : IsRightInverse 2 G Ginv := by
+    intro i j
+    fin_cases i <;> fin_cases j <;>
+      norm_num [G, Ginv, Fin.sum_univ_two]
+    all_goals first | exact hzero_add_zero | rfl
+  have hG_left : IsLeftInverse 2 G Ginv := by
+    intro i j
+    fin_cases i <;> fin_cases j <;>
+      norm_num [G, Ginv, Fin.sum_univ_two]
+    all_goals first | exact hzero_add_zero | rfl
+  have hT_right : IsRightInverse 1 T Tinv := by
+    intro i j
+    fin_cases i
+    fin_cases j
+    norm_num [T, Tinv, Fin.sum_univ_one]
+    rfl
+  have hT_left : IsLeftInverse 1 T Tinv := by
+    intro i j
+    fin_cases i
+    fin_cases j
+    norm_num [T, Tinv, Fin.sum_univ_one]
+    rfl
+  have hG_tail : ∀ i j : Fin 2, G i j = A (Fin.succ i) (Fin.succ j) := by
+    intro i j
+    fin_cases i <;> fin_cases j <;> norm_num [A, G]
+  have hT_suffix : ∀ i j : Fin 1, T i j = G (0 : Fin 2) (0 : Fin 2) := by
+    intro i j
+    fin_cases i
+    fin_cases j
+    norm_num [G, T]
+  have hA00 : A (0 : Fin 3) (0 : Fin 3) = 1 := by
+    norm_num [A]
+  have hG00 : G (0 : Fin 2) (0 : Fin 2) = (1 / 2 : ℝ) := by
+    norm_num [G]
+  have hFinalPivot :
+      G (1 : Fin 2) (1 : Fin 2) -
+          G (1 : Fin 2) (0 : Fin 2) *
+            (G (0 : Fin 2) (0 : Fin 2))⁻¹ *
+            G (0 : Fin 2) (1 : Fin 2) = (-3 / 2 : ℝ) := by
+    norm_num [G]
+  have hAinv_norm :
+      maxEntryNormRect (by norm_num : 0 < 3) (by norm_num : 0 < 3) Ainv =
+        (4 / 3 : ℝ) := by
+    apply le_antisymm
+    · apply maxEntryNormRect_le_of_entry_abs_le
+      intro i j
+      fin_cases i <;> fin_cases j <;> norm_num [Ainv]
+    · have h :=
+        entry_le_maxEntryNormRect (by norm_num : 0 < 3) (by norm_num : 0 < 3)
+          Ainv (1 : Fin 3) (2 : Fin 3)
+      have hentry : |Ainv (1 : Fin 3) (2 : Fin 3)| = (4 / 3 : ℝ) := by
+        norm_num [Ainv]
+      rw [hentry] at h
+      exact h
+  have hbad :
+      ¬ (∀ i j : Fin 1,
+          |Tinv i j| ≤
+            maxEntryNormRect (by norm_num : 0 < 3) (by norm_num : 0 < 3)
+              Ainv) := by
+    intro hbound
+    have h := hbound (0 : Fin 1) (0 : Fin 1)
+    rw [hAinv_norm] at h
+    norm_num [Tinv] at h
+  exact ⟨A, Ainv, G, Ginv, T, Tinv, hA_right, hA_left, hG_right, hG_left,
+    hT_right, hT_left, hG_tail, hT_suffix, hA00, hG00, hFinalPivot,
+    hAinv_norm, hbad⟩
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 audit:
     the all-active-suffix inverse-entry table is not rescued merely by the
     initial column block-diagonal-dominance data used in the Theorem 13.8
     mixed route.
