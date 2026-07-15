@@ -486,6 +486,8 @@
     higham13_theorem13_6_implementation1_from_DHS_theorem2_1_result,
     higham13_theorem13_6_eq13_16_firstOrder_from_DHS_factorization_solve_results,
     higham13_theorem13_6_implementation1_from_DHS_factorization_solve_results,
+    dhs_lu_solve_perturbation_identity,
+    dhs_lu_solve_perturbation_firstOrder,
     higham13_theorem13_6_eq13_16_firstOrder_from_DHS_estimates,
     higham13_theorem13_6_implementation1_conditional_from_DHS_estimates:
     Theorem 13.6 scalar and conditional Eq.13.16 aggregation, with a named
@@ -7676,6 +7678,101 @@ theorem higham13_theorem13_6_implementation1_from_DHS_factorization_solve_result
         normDeltaA_fact normDeltaA_solve recursiveExecution schurUpdate
         blockRowRHS forwardSubstitution blockBackSubstitution localSolveSuccess
         maxEntryProductLaws hFact hSolve)
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 solve route:
+    exact LU-solve perturbation identity.
+
+    If the factorization residual is `Lhat * Uhat = A + E`, the forward solve
+    supplies `(Lhat + DeltaL) * Yhat = B`, and block back substitution supplies
+    `(Uhat + DeltaU) * Xhat = Yhat`, then the final solve is exact for the
+    perturbed coefficient matrix
+    `A + (E + DeltaL * Uhat + Lhat * DeltaU + DeltaL * DeltaU)`.  This is the
+    algebraic composition step named by the recovered DHS/Pro answer; it is not
+    by itself the full first-order solve estimate. -/
+theorem dhs_lu_solve_perturbation_identity
+    {n p : Type*} [Fintype n]
+    (A E Lhat Uhat DeltaL DeltaU : Matrix n n ℝ)
+    (Xhat B Yhat : Matrix n p ℝ)
+    (hFact : Lhat * Uhat = A + E)
+    (hForward : (Lhat + DeltaL) * Yhat = B)
+    (hBack : (Uhat + DeltaU) * Xhat = Yhat) :
+    (A + (E + DeltaL * Uhat + Lhat * DeltaU + DeltaL * DeltaU)) * Xhat =
+      B := by
+  have hProduct :
+      A + (E + DeltaL * Uhat + Lhat * DeltaU + DeltaL * DeltaU) =
+        (Lhat + DeltaL) * (Uhat + DeltaU) := by
+    calc
+      A + (E + DeltaL * Uhat + Lhat * DeltaU + DeltaL * DeltaU)
+          = (A + E) + (DeltaL * Uhat + Lhat * DeltaU + DeltaL * DeltaU) := by
+            abel
+      _ = Lhat * Uhat +
+            (DeltaL * Uhat + Lhat * DeltaU + DeltaL * DeltaU) := by
+            rw [← hFact]
+      _ = (Lhat + DeltaL) * (Uhat + DeltaU) := by
+            rw [Matrix.add_mul, Matrix.mul_add, Matrix.mul_add]
+            abel
+  calc
+    (A + (E + DeltaL * Uhat + Lhat * DeltaU + DeltaL * DeltaU)) * Xhat
+        = ((Lhat + DeltaL) * (Uhat + DeltaU)) * Xhat := by rw [hProduct]
+    _ = (Lhat + DeltaL) * ((Uhat + DeltaU) * Xhat) := by
+        rw [Matrix.mul_assoc]
+    _ = (Lhat + DeltaL) * Yhat := by rw [hBack]
+    _ = B := hForward
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 solve route:
+    scalar first-order aggregation for the exact LU-solve perturbation identity.
+
+    The exact perturbation in `dhs_lu_solve_perturbation_identity` contains the
+    factorization residual `E`, the forward-solve term `DeltaL * Uhat`, the
+    back-substitution term `Lhat * DeltaU`, and the cross term
+    `DeltaL * DeltaU`.  If the first three satisfy source-shaped first-order
+    bounds and the cross term is explicitly second order, then the total solve
+    perturbation satisfies the common first-order bound. -/
+theorem dhs_lu_solve_perturbation_firstOrder
+    (normDeltaSolve normE normDeltaLU normLDeltaU normDeltaLDeltaU
+      normA normL normU u cFact cForward cBack cSolve : ℝ)
+    (hu : 0 ≤ u) (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hc : cFact + cForward + cBack ≤ cSolve)
+    (hE : FirstOrderLe u (cFact * u * (normA + normL * normU)) normE)
+    (hDeltaLU : FirstOrderLe u
+      (cForward * u * (normA + normL * normU)) normDeltaLU)
+    (hLDeltaU : FirstOrderLe u
+      (cBack * u * (normA + normL * normU)) normLDeltaU)
+    (hDeltaLDeltaU : FirstOrderLe u 0 normDeltaLDeltaU)
+    (hTotal :
+      normDeltaSolve ≤ normE + normDeltaLU + normLDeltaU + normDeltaLDeltaU) :
+    FirstOrderLe u (cSolve * u * (normA + normL * normU)) normDeltaSolve := by
+  have h12 : FirstOrderLe u
+      (cFact * u * (normA + normL * normU) +
+        cForward * u * (normA + normL * normU))
+      (normE + normDeltaLU) :=
+    FirstOrderLe.add hE hDeltaLU le_rfl
+  have h123 : FirstOrderLe u
+      ((cFact * u * (normA + normL * normU) +
+          cForward * u * (normA + normL * normU)) +
+        cBack * u * (normA + normL * normU))
+      (normE + normDeltaLU + normLDeltaU) :=
+    FirstOrderLe.add h12 hLDeltaU (by linarith)
+  have hAll : FirstOrderLe u
+      (((cFact * u * (normA + normL * normU) +
+          cForward * u * (normA + normL * normU)) +
+        cBack * u * (normA + normL * normU)) + 0)
+      normDeltaSolve :=
+    FirstOrderLe.add h123 hDeltaLDeltaU (by linarith)
+  refine hAll.mono_leading ?_
+  have hsum : 0 ≤ normA + normL * normU := by
+    linarith [mul_nonneg hL hU]
+  have hscale : 0 ≤ u * (normA + normL * normU) :=
+    mul_nonneg hu hsum
+  calc
+    ((cFact * u * (normA + normL * normU) +
+          cForward * u * (normA + normL * normU)) +
+        cBack * u * (normA + normL * normU)) + 0
+        = (cFact + cForward + cBack) * (u * (normA + normL * normU)) := by
+          ring
+    _ ≤ cSolve * (u * (normA + normL * normU)) :=
+        mul_le_mul_of_nonneg_right hc hscale
+    _ = cSolve * u * (normA + normL * normU) := by ring
 
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.6 / equation (13.16), conditional
     on the Demmel--Higham--Schreiber [326] implementation estimates.
