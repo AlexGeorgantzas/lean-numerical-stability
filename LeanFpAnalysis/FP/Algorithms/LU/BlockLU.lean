@@ -427,6 +427,11 @@
     conventional triangular substitution satisfies (13.5) with c₂(m,p)=m²
   - BlockSolveFirstOrderSpec, DiagonalBlockSolveFirstOrderSpec:
     Theorem 13.6 first-order residual specs
+  - DHSBlockForwardSubstitutionFirstOrderSpec,
+    DHSBlockBackSubstitutionFirstOrderSpec,
+    dhs_block_forward_substitution_firstOrder,
+    dhs_block_back_substitution_firstOrder:
+    DHS Theorem 2.1 selected-scope forward/back substitution branch specs
   - Algorithm13_3Implementation1LocalSpec,
     Algorithm13_3Implementation2ExplicitInverseSpec:
     Algorithm 13.3 Implementation 1/2 local computed-path specs
@@ -493,6 +498,7 @@
     dhs_lu_solve_perturbation_identity,
     dhs_lu_solve_perturbation_firstOrder,
     demmelHighamSchreiber13_6_solve_result_from_perturbation_layers,
+    demmelHighamSchreiber13_6_solve_result_from_forward_back_substitution_specs,
     demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_and_solve_perturbation_layers,
     demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_solve_layers_and_implementation1_local_spec,
     higham13_theorem13_6_implementation1_from_DHS_partitioned_solve_layers_and_implementation1_local_spec,
@@ -7515,6 +7521,35 @@ structure DemmelHighamSchreiber13_6SolveResult
   solve :
     FirstOrderLe u (d_solve * u * (normA + normL * normU)) normDeltaA_solve
 
+/-- Selected-scope DHS forward-substitution branch for Theorem 13.6.
+
+    The strict recovered Pro audit separates the solve proof into a forward
+    substitution branch and a block-back-substitution branch before they are
+    recombined into the global perturbation identity.  This structure records
+    the higher-level forward branch once its exact perturbed equation and
+    first-order transported perturbation budget have been proved from a chosen
+    triangular-solve execution model. -/
+structure DHSBlockForwardSubstitutionFirstOrderSpec {n p : Type*} [Fintype n]
+    (u cForward normA normL normU normDeltaLU : ℝ)
+    (Lhat DeltaL : Matrix n n ℝ) (Yhat B : Matrix n p ℝ) : Prop where
+  equation : (Lhat + DeltaL) * Yhat = B
+  norm_bound :
+    FirstOrderLe u (cForward * u * (normA + normL * normU)) normDeltaLU
+
+/-- Selected-scope DHS block-back-substitution branch for Theorem 13.6.
+
+    The norm field is the left-transported perturbation budget used by the
+    global solve perturbation identity, namely the scalar bound later consumed
+    for the `Lhat * DeltaU` term.  A full operational proof should construct
+    this spec from the fixed block-row evaluation order, the local
+    equation (13.15), and the BLAS/product rounding model. -/
+structure DHSBlockBackSubstitutionFirstOrderSpec {n p : Type*} [Fintype n]
+    (u cBack normA normL normU normLDeltaU : ℝ)
+    (Uhat DeltaU : Matrix n n ℝ) (Xhat Yhat : Matrix n p ℝ) : Prop where
+  equation : (Uhat + DeltaU) * Xhat = Yhat
+  norm_bound :
+    FirstOrderLe u (cBack * u * (normA + normL * normU)) normLDeltaU
+
 /-- Source-level result boundary for Demmel--Higham--Schreiber [326],
     Theorem 2.1, equations (2.5)--(2.6), as used by Higham Theorem 13.6.
 
@@ -7949,6 +7984,42 @@ theorem dhs_lu_solve_perturbation_firstOrder
         mul_le_mul_of_nonneg_right hc hscale
     _ = cSolve * u * (normA + normL * normU) := by ring
 
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 forward-substitution branch,
+    selected-scope spec constructor.
+
+    The full operational theorem should derive this spec from a fixed forward
+    substitution execution and rounding model.  This constructor is the
+    reusable boundary used by the higher-level DHS solve packaging once that
+    equation and first-order perturbation budget are available. -/
+theorem dhs_block_forward_substitution_firstOrder
+    {n p : Type*} [Fintype n]
+    (u cForward normA normL normU normDeltaLU : ℝ)
+    (Lhat DeltaL : Matrix n n ℝ) (Yhat B : Matrix n p ℝ)
+    (hEquation : (Lhat + DeltaL) * Yhat = B)
+    (hBound :
+      FirstOrderLe u (cForward * u * (normA + normL * normU)) normDeltaLU) :
+    DHSBlockForwardSubstitutionFirstOrderSpec
+      u cForward normA normL normU normDeltaLU Lhat DeltaL Yhat B :=
+  ⟨hEquation, hBound⟩
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 block-back-substitution
+    branch, selected-scope spec constructor.
+
+    This is the named branch requested by the recovered strict DHS audit.  It
+    does not replace the missing row-by-row implementation proof; instead it
+    records the exact perturbed back-substitution equation and the transported
+    first-order budget that the final solve perturbation theorem consumes. -/
+theorem dhs_block_back_substitution_firstOrder
+    {n p : Type*} [Fintype n]
+    (u cBack normA normL normU normLDeltaU : ℝ)
+    (Uhat DeltaU : Matrix n n ℝ) (Xhat Yhat : Matrix n p ℝ)
+    (hEquation : (Uhat + DeltaU) * Xhat = Yhat)
+    (hBound :
+      FirstOrderLe u (cBack * u * (normA + normL * normU)) normLDeltaU) :
+    DHSBlockBackSubstitutionFirstOrderSpec
+      u cBack normA normL normU normLDeltaU Uhat DeltaU Xhat Yhat :=
+  ⟨hEquation, hBound⟩
+
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 solve route:
     package the exact solve perturbation and first-order budget into the audited
     DHS solve-result boundary.
@@ -7999,6 +8070,63 @@ theorem demmelHighamSchreiber13_6_solve_result_from_perturbation_layers
           normDeltaA_solve normE normDeltaLU normLDeltaU normDeltaLDeltaU
           normA normL normU u cFact cForward cBack d_solve
           hu hA hL hU hc hE hDeltaLU hLDeltaU hDeltaLDeltaU hTotal⟩⟩
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 solve route, with the
+    forward and block-back substitution branches passed as named specs.
+
+    This is the selected-scope companion to
+    `demmelHighamSchreiber13_6_solve_result_from_perturbation_layers`.  The
+    recovered strict Pro audit singled out the back-substitution branch as a
+    genuine independent proof component.  This theorem exposes that component
+    as `DHSBlockBackSubstitutionFirstOrderSpec` instead of a raw equation and
+    bound pair, while still leaving the eventual operational row-by-row proof
+    as a visible upstream obligation. -/
+theorem demmelHighamSchreiber13_6_solve_result_from_forward_back_substitution_specs
+    {n p : Type*} [Fintype n]
+    (A E Lhat Uhat DeltaL DeltaU : Matrix n n ℝ)
+    (Xhat B Yhat : Matrix n p ℝ)
+    (normDeltaA_solve normE normDeltaLU normLDeltaU normDeltaLDeltaU
+      normA normL normU u cFact cForward cBack d_solve : ℝ)
+    (blockRowRHS localSolveSuccess maxEntryProductLaws : Prop)
+    (hBlockRowRHS : blockRowRHS)
+    (hSolveSuccess : localSolveSuccess)
+    (hMaxEntryProductLaws : maxEntryProductLaws)
+    (hu : 0 ≤ u) (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hc : cFact + cForward + cBack ≤ d_solve)
+    (hFact : Lhat * Uhat = A + E)
+    (hForward :
+      DHSBlockForwardSubstitutionFirstOrderSpec
+        u cForward normA normL normU normDeltaLU Lhat DeltaL Yhat B)
+    (hBack :
+      DHSBlockBackSubstitutionFirstOrderSpec
+        u cBack normA normL normU normLDeltaU Uhat DeltaU Xhat Yhat)
+    (hE : FirstOrderLe u (cFact * u * (normA + normL * normU)) normE)
+    (hDeltaLDeltaU : FirstOrderLe u 0 normDeltaLDeltaU)
+    (hTotal :
+      normDeltaA_solve ≤ normE + normDeltaLU + normLDeltaU + normDeltaLDeltaU) :
+    ((A + (E + DeltaL * Uhat + Lhat * DeltaU + DeltaL * DeltaU)) * Xhat = B) ∧
+      DemmelHighamSchreiber13_6SolveResult
+        u d_solve normA normL normU normDeltaA_solve
+        blockRowRHS
+        (DHSBlockForwardSubstitutionFirstOrderSpec
+          u cForward normA normL normU normDeltaLU Lhat DeltaL Yhat B)
+        (DHSBlockBackSubstitutionFirstOrderSpec
+          u cBack normA normL normU normLDeltaU Uhat DeltaU Xhat Yhat)
+        localSolveSuccess maxEntryProductLaws := by
+  exact
+    demmelHighamSchreiber13_6_solve_result_from_perturbation_layers
+      A E Lhat Uhat DeltaL DeltaU Xhat B Yhat
+      normDeltaA_solve normE normDeltaLU normLDeltaU normDeltaLDeltaU
+      normA normL normU u cFact cForward cBack d_solve
+      blockRowRHS
+      (DHSBlockForwardSubstitutionFirstOrderSpec
+        u cForward normA normL normU normDeltaLU Lhat DeltaL Yhat B)
+      (DHSBlockBackSubstitutionFirstOrderSpec
+        u cBack normA normL normU normLDeltaU Uhat DeltaU Xhat Yhat)
+      localSolveSuccess maxEntryProductLaws hBlockRowRHS hForward hBack
+      hSolveSuccess hMaxEntryProductLaws hu hA hL hU hc hFact
+      hForward.equation hBack.equation hE hForward.norm_bound
+      hBack.norm_bound hDeltaLDeltaU hTotal
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 packaging route from the
     two checked layers recovered in the Pro audit.
