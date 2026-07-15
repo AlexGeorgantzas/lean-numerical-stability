@@ -451,6 +451,7 @@ assumptions remain open in the not-proved ledger below.
 | α bounds `1/2 < α ≤ 5/7`, `α² = (α+1)/4` | `bunch_parlett_alpha_gt_half`, `bunch_parlett_alpha_le_5_7`, `bunch_parlett_alpha_sq` | " | **new this session**; supporting the Thm 11.4 constants |
 | Eq (11.6) example factorization A = LDLᵀ (partial pivoting) | `higham11_6_partialPivotExample_factorization` | Ch11 | exact `fin_cases` algebra, ε≠0 |
 | §11.3 skew-symmetric diag zero | `skewSymmetric_diag_zero`, `higham11_16_skew_diag_zero` | " | Aᵀ=−A ⇒ Aᵢᵢ=0 |
+| §11.3 skew Schur complement invariant | `higham11_16_skewSchurComplement_skew` | Ch11 | **new this session**; proves the displayed `B + C E^{-1} Cᵀ` Schur-complement update remains skew-symmetric when `B` and the pivot inverse `E^{-1}` are skew-symmetric, recording the structural invariant behind the skew block-LDLᵀ recursion. |
 | §11.3 / Alg 11.9 skew 2×2 multiplier bound `|c/a₂₁| ≤ 1` | `skew_twoByTwo_multiplier_bound`, `higham11_9_skew_multiplier_bound` | " | **new this session**; from `|c| ≤ |a₂₁|` (pivot is max) — honest content behind `higham11_9_skew_L_entry_bound_interface` |
 | §11.3 / Alg 11.9 skew Schur entry bound `|s| ≤ 3M` | `skew_twoByTwo_schur_entry_bound`, `higham11_9_skew_schur_entry_bound` | " | **new this session**; `s = a_ij − (a_{i2}/a₂₁)a_{j1} + (a_{i1}/a₂₁)a_{j2}` (printed formula); establishes `higham11_9_skewSchurEntryBound` |
 | §11.2 Aasen recurrence eq (11.12) from `A=LH` | `higham11_12_aasen_diagonal_equation_of_product` | Ch11 | **new this session**; exact-arithmetic: unit-lower-tri `L` ⇒ `A i i = ∑_{j<i} L i j·H j i + H i i` |
@@ -9427,6 +9428,16 @@ Problem transcription.
     `D̂` caps, and the named path-local source-six `L̂` row-sum predicate feed
     the 11.3 product-scale, norm-bound, and `ε≤p*u` source-scale
     factorization surfaces directly.
+  - 2026-07-15 §11.3 skew Schur-complement invariant increment:
+    `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+    `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+    `Build completed successfully (3054 jobs)`; replayed warnings were the
+    pre-existing Chapter 9 / Chapter 10 / Cholesky warnings;
+    focused lookup/axiom check of `higham11_16_skewSchurComplement_skew` →
+    elaborates with representative axioms `[propext, Classical.choice,
+    Quot.sound]`; hygiene scans were clean. This is a structural invariant for
+    the skew block-LDLᵀ recursion and does not close the open Theorem 11.3 /
+    11.4 / 11.7 / 11.8 selected rows.
   - 2026-07-15 Theorem 11.4/11.3 concrete off-branch local-row-sum consumer increment:
     `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
     `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
