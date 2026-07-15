@@ -11860,6 +11860,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham13_eq13_11a_subtraction_error
 #check higham13_eq13_11b_trailing_schur_error_firstOrder
 #check higham13_eq13_11_from_matmul_subtraction_specs
+#check dhs_schur_update_firstOrder
 #check higham13_eq13_13_trailing_block_identity
 #check higham13_eq13_13_trailing_block_error_firstOrder
 #check higham13_eq13_13_from_matmul_subtraction_induction_specs
@@ -11881,6 +11882,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham13_theorem13_5_recurrence_step_firstOrder
 #check higham13_theorem13_5_residual_and_recurrence_from_specs
 #check higham13_theorem13_5_partitioned_step_spec_from_specs
+#check dhs_block_lu_factorization_twoBudget_firstOrder
 #check BlockLUBackwardError
 #check block_lu_solve_backward_error
 #check block_lu_solve_backward_error_firstOrder

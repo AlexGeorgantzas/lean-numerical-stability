@@ -6634,6 +6634,35 @@ theorem higham13_eq13_11_from_matmul_subtraction_specs
       (by simpa [MatMulFirstOrderBound] using hmul.norm_bound)
       hsub.norm_bound hChat
 
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 proof boundary:
+    rounded Schur-complement update, first-order scalar form.
+
+    The recovered Pro audit of Higham Theorem 13.6 identified this as the
+    first local layer needed before the recursive DHS factorization theorem:
+    the product model (13.4) and subtraction model (13.10) assemble to
+    `S_hat = A22 - L21_hat * U12_hat + DeltaS`, with the displayed
+    first-order Schur-update bound. -/
+theorem dhs_schur_update_firstOrder
+    {r s t : Type*} [Fintype r]
+    (u c₁ normA22 normChat normF normL21 normU12 normDeltaC normDeltaS : ℝ)
+    (Lhat21 : Matrix s r ℝ) (Uhat12 : Matrix r t ℝ)
+    (A22 Chat DeltaC F Shat : Matrix s t ℝ)
+    (hu : 0 ≤ u) (hc₁ : 0 ≤ c₁)
+    (hA22 : 0 ≤ normA22) (hL21 : 0 ≤ normL21) (hU12 : 0 ≤ normU12)
+    (hmul : MatMulFirstOrderSpec u c₁ normL21 normU12 normDeltaC
+      Lhat21 Uhat12 Chat DeltaC)
+    (hsub : SubtractionFirstOrderSpec u normA22 normChat normF A22 Chat F Shat)
+    (hDeltaS : normDeltaS ≤ normDeltaC + normF)
+    (hChat : normChat ≤ normL21 * normU12 + normDeltaC) :
+    Shat = A22 - Lhat21 * Uhat12 + (F - DeltaC) ∧
+      FirstOrderLe u
+        (u * (normA22 + normL21 * normU12 + c₁ * (normL21 * normU12)))
+        normDeltaS :=
+  higham13_eq13_11_from_matmul_subtraction_specs
+    u c₁ normA22 normChat normF normL21 normU12 normDeltaC normDeltaS
+    Lhat21 Uhat12 A22 Chat DeltaC F Shat hu hc₁ hA22 hL21 hU12 hmul
+    hsub hDeltaS hChat
+
 /-- Higham, 2nd ed., Chapter 13, Section 13.2, equation (13.13), scalar
     first-order aggregation form.
 
@@ -7040,6 +7069,94 @@ theorem higham13_theorem13_5_partitioned_step_spec_from_specs
       hA hL hU h11 h12 h21 h22_residual h22_bound with
     ⟨hResidual, hBound⟩
   exact ⟨hResidual, hBound⟩
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 factorization route:
+    two-budget recursive first-order step.
+
+    This is the named DHS-facing composition requested by the recovered Pro
+    audit.  It uses the rounded Schur-update layer
+    `dhs_schur_update_firstOrder`, the recursive trailing-factor induction
+    equation, and the existing Higham 13.5 partitioned-LU recurrence to produce
+    the next partitioned first-order factorization spec.  It still assumes the
+    local residual specs and scalar norm majorants explicitly; it does not hide
+    the remaining implementation kernels inside the theorem statement. -/
+theorem dhs_block_lu_factorization_twoBudget_firstOrder
+    {r s : Type*} [Fintype r] [Fintype s]
+    (m : ℕ)
+    (u c₁ c₂ c₃ normA normL normU
+      normChat normF normDeltaA11 normDeltaA12 normDeltaA21 normDeltaC
+      normDeltaS normDeltaShat normDeltaA22 normShat normLhat22
+      normUhat22 : ℝ)
+    (Lhat11 Uhat11 A11 DeltaA11 : Matrix r r ℝ)
+    (Uhat12 A12 DeltaA12 : Matrix r s ℝ)
+    (Lhat21 A21 DeltaA21 : Matrix s r ℝ)
+    (Lhat22 Uhat22 A22 Chat DeltaC F Shat DeltaShat : Matrix s s ℝ)
+    (hu : 0 ≤ u) (hc₁ : 0 ≤ c₁) (hc₂ : 0 ≤ c₂) (hc₃ : 0 ≤ c₃)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (h11 : LocalLUFirstOrderSpec u c₃ normL normU normDeltaA11
+      A11 DeltaA11 Lhat11 Uhat11)
+    (h12 : TriangularSolveFirstOrderSpec u c₂ normL normU normDeltaA12
+      Lhat11 A12 DeltaA12 Uhat12)
+    (h21 : RightTriangularSolveFirstOrderSpec u c₂ normU normL normDeltaA21
+      Uhat11 A21 DeltaA21 Lhat21)
+    (hmul : MatMulFirstOrderSpec u c₁ normL normU normDeltaC
+      Lhat21 Uhat12 Chat DeltaC)
+    (hsub : SubtractionFirstOrderSpec u normA normChat normF A22 Chat F Shat)
+    (hind : PartitionedLUFirstOrderSpec u (blockErrorDelta (m + 1))
+      (blockErrorTheta c₁ c₂ c₃ (m + 1)) normShat normLhat22 normUhat22
+      normDeltaShat Shat DeltaShat Lhat22 Uhat22)
+    (hDeltaS : normDeltaS ≤ normDeltaC + normF)
+    (hChat : normChat ≤ normL * normU + normDeltaC)
+    (hDeltaA22 : normDeltaA22 ≤ normDeltaS + normDeltaShat)
+    (hDeltaShat : FirstOrderLe u
+      (u * (blockErrorDelta (m + 1) * normA +
+        blockErrorDelta (m + 1) * (normL * normU) +
+        blockErrorTheta c₁ c₂ c₃ (m + 1) * (normL * normU)))
+      normDeltaShat) :
+    PartitionedLUFirstOrderSpec u (blockErrorDelta (m + 2))
+      (blockErrorTheta c₁ c₂ c₃ (m + 2)) normA normL normU
+      (max (max normDeltaA11 normDeltaA12)
+        (max normDeltaA21 normDeltaA22))
+      (Matrix.fromBlocks A11 A12 A21 A22)
+      (Matrix.fromBlocks DeltaA11 DeltaA12 DeltaA21 ((F - DeltaC) + DeltaShat))
+      (Matrix.fromBlocks Lhat11 0 Lhat21 Lhat22)
+      (Matrix.fromBlocks Uhat11 Uhat12 0 Uhat22) := by
+  have hSchur :=
+    dhs_schur_update_firstOrder
+      u c₁ normA normChat normF normL normU normDeltaC normDeltaS
+      Lhat21 Uhat12 A22 Chat DeltaC F Shat hu hc₁ hA hL hU hmul hsub
+      hDeltaS hChat
+  have hTrailingResidual :
+      Lhat21 * Uhat12 + Lhat22 * Uhat22 = A22 + ((F - DeltaC) + DeltaShat) :=
+    higham13_eq13_13_trailing_block_identity
+      (Lhat21 * Uhat12) (Lhat22 * Uhat22) Shat A22 (F - DeltaC) DeltaShat
+      hSchur.1 hind.equation
+  have hTrailingBoundLocal :
+      FirstOrderLe u
+        (u * ((1 + blockErrorDelta (m + 1)) * normA +
+          (1 + c₁ + blockErrorDelta (m + 1)) * (normL * normU) +
+          blockErrorTheta c₁ c₂ c₃ (m + 1) * (normL * normU)))
+        normDeltaA22 :=
+    higham13_eq13_13_trailing_block_error_firstOrder
+      normDeltaA22 normDeltaS normDeltaShat normA (normL * normU)
+      (normL * normU) u c₁ (blockErrorDelta (m + 1))
+      (blockErrorTheta c₁ c₂ c₃ (m + 1))
+      hDeltaA22 hSchur.2 hDeltaShat
+  have hTrailingBound : FirstOrderLe u
+      (u * ((1 + blockErrorDelta (m + 1)) * normA +
+        (1 + c₁ + blockErrorDelta (m + 1) +
+          blockErrorTheta c₁ c₂ c₃ (m + 1)) * normL * normU))
+      normDeltaA22 :=
+    hTrailingBoundLocal.mono_leading (by
+      ring_nf
+      exact le_rfl)
+  exact
+    higham13_theorem13_5_partitioned_step_spec_from_specs
+      m u c₁ c₂ c₃ normA normL normU normDeltaA11 normDeltaA12
+      normDeltaA21 normDeltaA22 Lhat11 Uhat11 A11 DeltaA11
+      Uhat12 A12 DeltaA12 Lhat21 A21 DeltaA21 Lhat22 Uhat22
+      A22 ((F - DeltaC) + DeltaShat) hu hc₁ hc₂ hc₃ hA hL hU
+      h11 h12 h21 hTrailingResidual hTrailingBound
 
 -- ============================================================
 -- §13.3  Theorem 13.6 scalar aggregation
