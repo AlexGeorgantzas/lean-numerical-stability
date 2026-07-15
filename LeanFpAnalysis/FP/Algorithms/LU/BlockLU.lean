@@ -499,8 +499,10 @@
     dhs_lu_solve_perturbation_firstOrder,
     demmelHighamSchreiber13_6_solve_result_from_perturbation_layers,
     demmelHighamSchreiber13_6_solve_result_from_forward_back_substitution_specs,
+    demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_forward_back_substitution_specs,
     demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_and_solve_perturbation_layers,
     demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_solve_layers_and_implementation1_local_spec,
+    higham13_theorem13_6_implementation1_from_DHS_partitioned_forward_back_substitution_specs_and_implementation1_local_spec,
     higham13_theorem13_6_implementation1_from_DHS_partitioned_solve_layers_and_implementation1_local_spec,
     higham13_theorem13_6_eq13_16_firstOrder_from_DHS_estimates,
     higham13_theorem13_6_implementation1_conditional_from_DHS_estimates:
@@ -8129,6 +8131,90 @@ theorem demmelHighamSchreiber13_6_solve_result_from_forward_back_substitution_sp
       hBack.norm_bound hDeltaLDeltaU hTotal
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 packaging route from the
+    checked partitioned factorization layer and the named forward/back
+    substitution branch specs.
+
+    This is the stricter branch-surface companion to
+    `demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_and_solve_perturbation_layers`.
+    It carries the recovered Pro split of the solve proof all the way into the
+    audited DHS Theorem 2.1 result object: the solve source-path fields are the
+    `DHSBlockForwardSubstitutionFirstOrderSpec` and
+    `DHSBlockBackSubstitutionFirstOrderSpec` propositions, not unnamed raw
+    equations and bounds.  The row-by-row execution proof for those specs,
+    rounded Schur update, product laws, and scalar comparisons remain visible
+    upstream obligations. -/
+theorem demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_forward_back_substitution_specs
+    {n p : Type*} [Fintype n]
+    (A DeltaA_fact Lhat Uhat DeltaL DeltaU : Matrix n n ℝ)
+    (Xhat B Yhat : Matrix n p ℝ)
+    (u δ θ d_fact d_solve normA normL normU normDeltaA_fact
+      normDeltaA_solve normDeltaLU normLDeltaU normDeltaLDeltaU
+      cForward cBack : ℝ)
+    (recursiveExecution schurUpdate blockRowRHS localSolveSuccess
+      maxEntryProductLaws : Prop)
+    (hRecursiveExecution : recursiveExecution)
+    (hSchurUpdate : schurUpdate)
+    (hBlockRowRHS : blockRowRHS)
+    (hSolveSuccess : localSolveSuccess)
+    (hMaxEntryProductLaws : maxEntryProductLaws)
+    (hu : 0 ≤ u) (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hc : d_fact + cForward + cBack ≤ d_solve)
+    (hFactSpec : PartitionedLUFirstOrderSpec u δ θ normA normL normU
+      normDeltaA_fact A DeltaA_fact Lhat Uhat)
+    (hLeading :
+      u * (δ * normA + θ * normL * normU) ≤
+        d_fact * u * (normA + normL * normU))
+    (hForward :
+      DHSBlockForwardSubstitutionFirstOrderSpec
+        u cForward normA normL normU normDeltaLU Lhat DeltaL Yhat B)
+    (hBack :
+      DHSBlockBackSubstitutionFirstOrderSpec
+        u cBack normA normL normU normLDeltaU Uhat DeltaU Xhat Yhat)
+    (hDeltaLDeltaU : FirstOrderLe u 0 normDeltaLDeltaU)
+    (hTotal :
+      normDeltaA_solve ≤
+        normDeltaA_fact + normDeltaLU + normLDeltaU + normDeltaLDeltaU) :
+    (Lhat * Uhat = A + DeltaA_fact) ∧
+      ((A + (DeltaA_fact + DeltaL * Uhat + Lhat * DeltaU +
+        DeltaL * DeltaU)) * Xhat = B) ∧
+      DemmelHighamSchreiber13_6Theorem2_1Result
+        u d_fact d_solve normA normL normU
+        normDeltaA_fact normDeltaA_solve
+        recursiveExecution schurUpdate blockRowRHS
+        (DHSBlockForwardSubstitutionFirstOrderSpec
+          u cForward normA normL normU normDeltaLU Lhat DeltaL Yhat B)
+        (DHSBlockBackSubstitutionFirstOrderSpec
+          u cBack normA normL normU normLDeltaU Uhat DeltaU Xhat Yhat)
+        localSolveSuccess maxEntryProductLaws := by
+  rcases
+    demmelHighamSchreiber13_6_factorization_result_from_partitioned_layer
+      A DeltaA_fact Lhat Uhat u δ θ d_fact normA normL normU
+      normDeltaA_fact recursiveExecution schurUpdate maxEntryProductLaws
+      hRecursiveExecution hSchurUpdate hMaxEntryProductLaws hFactSpec
+      hLeading with
+    ⟨hFactorEq, hFactResult⟩
+  rcases
+    demmelHighamSchreiber13_6_solve_result_from_forward_back_substitution_specs
+      A DeltaA_fact Lhat Uhat DeltaL DeltaU Xhat B Yhat
+      normDeltaA_solve normDeltaA_fact normDeltaLU normLDeltaU
+      normDeltaLDeltaU normA normL normU u d_fact cForward cBack d_solve
+      blockRowRHS localSolveSuccess maxEntryProductLaws hBlockRowRHS
+      hSolveSuccess hMaxEntryProductLaws hu hA hL hU hc hFactorEq
+      hForward hBack hFactResult.factorization hDeltaLDeltaU hTotal with
+    ⟨hSolveEq, hSolveResult⟩
+  exact
+    ⟨hFactorEq, hSolveEq,
+      demmelHighamSchreiber13_6_theorem2_1_result_from_factorization_solve_results
+        u d_fact d_solve normA normL normU
+        normDeltaA_fact normDeltaA_solve recursiveExecution schurUpdate
+        blockRowRHS
+        (DHSBlockForwardSubstitutionFirstOrderSpec
+          u cForward normA normL normU normDeltaLU Lhat DeltaL Yhat B)
+        (DHSBlockBackSubstitutionFirstOrderSpec
+          u cBack normA normL normU normLDeltaU Uhat DeltaU Xhat Yhat)
+        localSolveSuccess maxEntryProductLaws hFactResult hSolveResult⟩
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 packaging route from the
     two checked layers recovered in the Pro audit.
 
     The partitioned first-order factorization layer supplies both the
@@ -8280,6 +8366,93 @@ theorem demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_solve_layer
       hBlock.2 hDiag.1 hDiag.2 hMaxEntryProductLaws hu hA hL hU hc
       hFactSpec hLeading hForward hBack hDeltaLU hLDeltaU
       hDeltaLDeltaU hTotal
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 Implementation 1 and
+    Theorem 13.6 / equation (13.16), routed through the checked partitioned
+    factorization layer and the named DHS forward/back substitution branch
+    specs.
+
+    This wrapper keeps the Algorithm 13.3 local Eq.13.14/Eq.13.15 facts
+    supplied by `Algorithm13_3Implementation1LocalSpec`, while the DHS
+    Theorem 2.1 source-path fields are the stricter global forward/back branch
+    specs recovered from the Pro audit.  It is dependency progress only: the
+    operational construction of those branch specs, recursive execution,
+    rounded Schur update, product laws, and scalar comparisons remain explicit
+    premises. -/
+theorem higham13_theorem13_6_implementation1_from_DHS_partitioned_forward_back_substitution_specs_and_implementation1_local_spec
+    {n p r s q : Type*} [Fintype n] [Fintype r]
+    (A DeltaA_fact Lhat Uhat DeltaL DeltaU : Matrix n n ℝ)
+    (XhatSolve B Yhat : Matrix n p ℝ)
+    (u δ θ d_fact d_solve dn normA normL normU normDeltaA_fact
+      normDeltaA_solve normDeltaLU normLDeltaU normDeltaLDeltaU
+      cForward cBack : ℝ)
+    (c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii : ℝ)
+    (Lhat21 A21 E21 : Matrix s r ℝ) (A11 Uii DeltaUii : Matrix r r ℝ)
+    (XhatLocal D : Matrix r q ℝ)
+    (recursiveExecution schurUpdate blockRowRHS localSolveSuccess
+      maxEntryProductLaws : Prop)
+    (hRecursiveExecution : recursiveExecution)
+    (hSchurUpdate : schurUpdate)
+    (hBlockRowRHS : blockRowRHS)
+    (hSolveSuccess : localSolveSuccess)
+    (hMaxEntryProductLaws : maxEntryProductLaws)
+    (hu : 0 ≤ u) (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hd_fact : d_fact ≤ dn) (hd_solve : d_solve ≤ dn)
+    (hc : d_fact + cForward + cBack ≤ d_solve)
+    (hFactSpec : PartitionedLUFirstOrderSpec u δ θ normA normL normU
+      normDeltaA_fact A DeltaA_fact Lhat Uhat)
+    (hLeading :
+      u * (δ * normA + θ * normL * normU) ≤
+        d_fact * u * (normA + normL * normU))
+    (hForward :
+      DHSBlockForwardSubstitutionFirstOrderSpec
+        u cForward normA normL normU normDeltaLU Lhat DeltaL Yhat B)
+    (hBack :
+      DHSBlockBackSubstitutionFirstOrderSpec
+        u cBack normA normL normU normLDeltaU Uhat DeltaU XhatSolve Yhat)
+    (hDeltaLDeltaU : FirstOrderLe u 0 normDeltaLDeltaU)
+    (hTotal :
+      normDeltaA_solve ≤
+        normDeltaA_fact + normDeltaLU + normLDeltaU + normDeltaLDeltaU)
+    (hLocal : Algorithm13_3Implementation1LocalSpec
+      u c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii
+      Lhat21 A21 E21 A11 Uii DeltaUii XhatLocal D) :
+    (Lhat * Uhat = A + DeltaA_fact) ∧
+      ((A + (DeltaA_fact + DeltaL * Uhat + Lhat * DeltaU +
+        DeltaL * DeltaU)) * XhatSolve = B) ∧
+      (((Lhat21 * A11 = A21 + E21 ∧
+          BlockSolveFirstOrderBound u c₄ normLhat21 normA11 normE21) ∧
+        ((Uii + DeltaUii) * XhatLocal = D ∧
+          DiagonalBlockSolveFirstOrderBound u c₅ normUii normDeltaUii)) ∧
+        FirstOrderLe u (dn * u * (normA + normL * normU))
+          normDeltaA_fact ∧
+        FirstOrderLe u (dn * u * (normA + normL * normU))
+          normDeltaA_solve ∧
+        FirstOrderLe u (dn * u * (normA + normL * normU))
+          (max normDeltaA_fact normDeltaA_solve)) := by
+  rcases
+    demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_forward_back_substitution_specs
+      A DeltaA_fact Lhat Uhat DeltaL DeltaU XhatSolve B Yhat
+      u δ θ d_fact d_solve normA normL normU normDeltaA_fact
+      normDeltaA_solve normDeltaLU normLDeltaU normDeltaLDeltaU
+      cForward cBack recursiveExecution schurUpdate blockRowRHS
+      localSolveSuccess maxEntryProductLaws hRecursiveExecution hSchurUpdate
+      hBlockRowRHS hSolveSuccess hMaxEntryProductLaws hu hA hL hU hc
+      hFactSpec hLeading hForward hBack hDeltaLDeltaU hTotal with
+    ⟨hFactEq, hSolveEq, hDHS⟩
+  exact
+    ⟨hFactEq, hSolveEq,
+      higham13_theorem13_6_implementation1_from_DHS_theorem2_1_result
+        u c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii
+        Lhat21 A21 E21 A11 Uii DeltaUii XhatLocal D
+        normDeltaA_fact normDeltaA_solve normA normL normU
+        d_fact d_solve dn recursiveExecution schurUpdate blockRowRHS
+        (DHSBlockForwardSubstitutionFirstOrderSpec
+          u cForward normA normL normU normDeltaLU Lhat DeltaL Yhat B)
+        (DHSBlockBackSubstitutionFirstOrderSpec
+          u cBack normA normL normU normLDeltaU Uhat DeltaU XhatSolve Yhat)
+        localSolveSuccess maxEntryProductLaws hu hA hL hU hd_fact hd_solve
+        hLocal hDHS⟩
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 Implementation 1 and
     Theorem 13.6 / equation (13.16), routed through the checked partitioned
