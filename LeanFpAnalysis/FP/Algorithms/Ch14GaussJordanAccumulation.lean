@@ -1201,6 +1201,323 @@ theorem ch14ext_gjeConcrete_rhsAccumulation (fp : FPModel) (n : ℕ)
   ch14ext_rhsAccumulation_c3 n fp (ch14ext_gjeSeqStages n V) xseq start hnpos h3 hidx
     (ch14ext_gjeConcrete_hrecX fp n V xseq start h3 hidx hxrec hpiv)
 
+/-- The source-shaped right side of (14.29):
+    `|X| (|Û| |x| + |y|)`, where `|X|` is the product of the absolute GJE
+    stage matrices. -/
+noncomputable def ch14ext_gjeForwardEnvelope (n : ℕ)
+    (N_hat : Fin n → Fin n → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (x y : Fin n → ℝ) (start steps : ℕ) (i : Fin n) : ℝ :=
+  matMulVec n (ch14ext_absCumProd n N_hat start steps)
+      (matMulVec n (absMatrix n U) (absVec n x)) i +
+    matMulVec n (ch14ext_absCumProd n N_hat start steps) (absVec n y) i
+
+/-- **Higham (14.29), concrete rounded second-stage loop.**
+
+    If `x` is the exact solution of `Û x = y`, the actual matrix and RHS
+    recurrences from `ch14ext_gjeStepMatrix`/`ch14ext_gjeStepVec` imply
+    `|x - x̂| ≤ c₃ |X| (|Û||x| + |y|)`.  No forward-error certificate is an
+    input: both accumulated terms are obtained from the per-operation FP
+    model through `ch14ext_gjeConcrete_{matrix,rhs}Accumulation`. -/
+theorem ch14ext_gjeConcrete_stage2_forward_error
+    (fp : FPModel) (n : ℕ)
+    (V : ℕ → Fin n → Fin n → ℝ) (xseq : ℕ → Fin n → ℝ)
+    (x : Fin n → ℝ) (start : ℕ)
+    (hnpos : 1 ≤ n) (h3 : gammaValid fp 3)
+    (hidx : ∀ t : ℕ, t < n - 1 → start + t < n)
+    (hVfinal : V (start + (n - 1)) = idMatrix n)
+    (hUx : ∀ i : Fin n, matMulVec n (V start) x i = xseq start i)
+    (hVrec : ∀ t : ℕ, (ht : t < n - 1) →
+      V (start + (t + 1)) =
+        ch14ext_gjeStepMatrix fp n (V (start + t)) ⟨start + t, hidx t ht⟩)
+    (hxrec : ∀ t : ℕ, (ht : t < n - 1) →
+      xseq (start + (t + 1)) =
+        ch14ext_gjeStepVec fp n (V (start + t)) ⟨start + t, hidx t ht⟩
+          (xseq (start + t)))
+    (hpiv : ∀ t : ℕ, (ht : t < n - 1) →
+      V (start + t) ⟨start + t, hidx t ht⟩ ⟨start + t, hidx t ht⟩ ≠ 0) :
+    ∀ i : Fin n,
+      |x i - xseq (start + (n - 1)) i| ≤
+        gje_c₃ fp n *
+          ch14ext_gjeForwardEnvelope n (ch14ext_gjeSeqStages n V) (V start)
+            x (xseq start) start (n - 1) i := by
+  intro i
+  let N_hat := ch14ext_gjeSeqStages n V
+  let P := gje_cumulative_product n N_hat start (start + (n - 1))
+  let B := ch14ext_boundObj n N_hat (V start) start (n - 1)
+  let bv := ch14ext_boundVec n N_hat (xseq start) start (n - 1)
+  let R₁ := ∑ j : Fin n, (idMatrix n i j - matMul n P (V start) i j) * x j
+  let R₂ := matMulVec n P (xseq start) i - xseq (start + (n - 1)) i
+  have hM := ch14ext_gjeConcrete_matrixAccumulation fp n V start hnpos h3 hidx
+    hVrec hpiv
+  have hR := ch14ext_gjeConcrete_rhsAccumulation fp n V xseq start hnpos h3 hidx
+    hxrec hpiv
+  have hM' : ∀ a b : Fin n,
+      |idMatrix n a b - matMul n P (V start) a b| ≤ gje_c₃ fp n * B a b := by
+    intro a b
+    have h := hM a b
+    rw [hVfinal] at h
+    simpa [N_hat, P, B] using h
+  have hR' : |R₂| ≤ gje_c₃ fp n * bv i := by
+    have h := hR i
+    have hsym :
+        |matMulVec n P (xseq start) i - xseq (start + (n - 1)) i| =
+          |xseq (start + (n - 1)) i - matMulVec n P (xseq start) i| :=
+      abs_sub_comm _ _
+    rw [hsym]
+    simpa [N_hat, P, bv, R₂] using h
+  have hUxFn : matMulVec n (V start) x = xseq start := by
+    funext a
+    exact hUx a
+  have hPUx : matMulVec n (matMul n P (V start)) x i =
+      matMulVec n P (xseq start) i := by
+    rw [matMulVec_matMul, hUxFn]
+  have hId : matMulVec n (idMatrix n) x i = x i := by
+    rw [matMulVec_id]
+  have hR₁eq : R₁ = x i - matMulVec n P (xseq start) i := by
+    unfold R₁
+    calc
+      (∑ j : Fin n, (idMatrix n i j - matMul n P (V start) i j) * x j) =
+          (∑ j : Fin n, idMatrix n i j * x j) -
+            ∑ j : Fin n, matMul n P (V start) i j * x j := by
+              rw [← Finset.sum_sub_distrib]
+              exact Finset.sum_congr rfl (fun j _ => by ring)
+      _ = matMulVec n (idMatrix n) x i -
+            matMulVec n (matMul n P (V start)) x i := rfl
+      _ = x i - matMulVec n P (xseq start) i := by rw [hId, hPUx]
+  have hdecomp : x i - xseq (start + (n - 1)) i = R₁ + R₂ := by
+    rw [hR₁eq]
+    unfold R₂
+    ring
+  have hBaction :
+      (∑ j : Fin n, B i j * |x j|) =
+        matMulVec n (ch14ext_absCumProd n N_hat start (n - 1))
+          (matMulVec n (absMatrix n (V start)) (absVec n x)) i := by
+    change matMulVec n B (absVec n x) i = _
+    unfold B ch14ext_boundObj
+    rw [matMulVec_matMul]
+  have hR₁ : |R₁| ≤ gje_c₃ fp n *
+      matMulVec n (ch14ext_absCumProd n N_hat start (n - 1))
+        (matMulVec n (absMatrix n (V start)) (absVec n x)) i := by
+    unfold R₁
+    calc
+      |∑ j : Fin n, (idMatrix n i j - matMul n P (V start) i j) * x j| ≤
+          ∑ j : Fin n,
+            |(idMatrix n i j - matMul n P (V start) i j) * x j| :=
+        Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ j : Fin n,
+            |idMatrix n i j - matMul n P (V start) i j| * |x j| :=
+        Finset.sum_congr rfl (fun j _ => abs_mul _ _)
+      _ ≤ ∑ j : Fin n, (gje_c₃ fp n * B i j) * |x j| := by
+        apply Finset.sum_le_sum
+        intro j _
+        exact mul_le_mul_of_nonneg_right (hM' i j) (abs_nonneg _)
+      _ = gje_c₃ fp n * ∑ j : Fin n, B i j * |x j| := by
+        rw [Finset.mul_sum]
+        exact Finset.sum_congr rfl (fun j _ => by ring)
+      _ = gje_c₃ fp n *
+          matMulVec n (ch14ext_absCumProd n N_hat start (n - 1))
+            (matMulVec n (absMatrix n (V start)) (absVec n x)) i := by
+        rw [hBaction]
+  have hR₂ : |R₂| ≤ gje_c₃ fp n *
+      matMulVec n (ch14ext_absCumProd n N_hat start (n - 1))
+        (absVec n (xseq start)) i := by
+    simpa [bv, ch14ext_boundVec] using hR'
+  rw [hdecomp]
+  refine le_trans (abs_add_le R₁ R₂) ?_
+  unfold ch14ext_gjeForwardEnvelope
+  calc
+    |R₁| + |R₂| ≤
+        gje_c₃ fp n *
+            matMulVec n (ch14ext_absCumProd n N_hat start (n - 1))
+              (matMulVec n (absMatrix n (V start)) (absVec n x)) i +
+          gje_c₃ fp n *
+            matMulVec n (ch14ext_absCumProd n N_hat start (n - 1))
+              (absVec n (xseq start)) i := add_le_add hR₁ hR₂
+    _ = gje_c₃ fp n *
+        (matMulVec n (ch14ext_absCumProd n N_hat start (n - 1))
+            (matMulVec n (absMatrix n (V start)) (absVec n x)) i +
+          matMulVec n (ch14ext_absCumProd n N_hat start (n - 1))
+            (absVec n (xseq start)) i) := by ring
+
+/-- **Higham (14.30a-c), accumulated second-stage backward equation.**
+
+    The perturbations are exhibited as `ΔU = Q E` and `Δy = Q g`, where
+    `E` and `g` are the accumulated errors of the concrete recurrences and
+    `Q` is a supplied left inverse of their signed cumulative product.  The
+    exact equation and both componentwise bounds are derived here; none is an
+    input certificate. -/
+theorem ch14ext_gje_stage2_backward_error_of_accumulation
+    (n : ℕ) (fp : FPModel) (x_hat : Fin n → ℝ)
+    (N_hat : Fin n → Fin n → Fin n → ℝ)
+    (V : ℕ → Fin n → Fin n → ℝ) (xseq : ℕ → Fin n → ℝ)
+    (Q : Fin n → Fin n → ℝ) (start : ℕ)
+    (hnpos : 1 ≤ n) (h3 : gammaValid fp 3)
+    (hidx : ∀ t : ℕ, t < n - 1 → start + t < n)
+    (hVfinal : V (start + (n - 1)) = idMatrix n)
+    (hxfinal : ∀ i : Fin n, x_hat i = xseq (start + (n - 1)) i)
+    (hQP : matMul n Q (gje_cumulative_product n N_hat start (start + (n - 1))) =
+      idMatrix n)
+    (hrecM : ∀ t : ℕ, (ht : t < n - 1) → ∀ i j : Fin n,
+      |V (start + (t + 1)) i j -
+          ∑ l : Fin n, N_hat ⟨start + t, hidx t ht⟩ i l * V (start + t) l j| ≤
+        gamma fp 3 *
+          ∑ l : Fin n, |N_hat ⟨start + t, hidx t ht⟩ i l| * |V (start + t) l j|)
+    (hrecX : ∀ t : ℕ, (ht : t < n - 1) → ∀ i : Fin n,
+      |xseq (start + (t + 1)) i -
+          ∑ l : Fin n, N_hat ⟨start + t, hidx t ht⟩ i l * xseq (start + t) l| ≤
+        gamma fp 3 *
+          ∑ l : Fin n, |N_hat ⟨start + t, hidx t ht⟩ i l| * |xseq (start + t) l|) :
+    ∃ ΔU : Fin n → Fin n → ℝ, ∃ Δy : Fin n → ℝ,
+      (∀ i : Fin n,
+        ∑ j : Fin n, (V start i j + ΔU i j) * x_hat j =
+          xseq start i + Δy i) ∧
+      (∀ i j : Fin n, |ΔU i j| ≤ gje_c₃ fp n *
+        ∑ k : Fin n, |ch14ext_gjeXabs n N_hat Q start (n - 1) i k| *
+          |V start k j|) ∧
+      (∀ i : Fin n, |Δy i| ≤ gje_c₃ fp n *
+        ∑ j : Fin n, |ch14ext_gjeXabs n N_hat Q start (n - 1) i j| *
+          |xseq start j|) := by
+  let E : Fin n → Fin n → ℝ := fun i j =>
+    V (start + (n - 1)) i j -
+      matMul n (gje_cumulative_product n N_hat start (start + (n - 1)))
+        (V start) i j
+  let g : Fin n → ℝ := fun i =>
+    xseq (start + (n - 1)) i -
+      matMulVec n (gje_cumulative_product n N_hat start (start + (n - 1)))
+        (xseq start) i
+  let ΔU := matMul n Q E
+  let Δy := matMulVec n Q g
+  have hEbnd : ∀ k j : Fin n,
+      |E k j| ≤ gje_c₃ fp n *
+        ch14ext_boundObj n N_hat (V start) start (n - 1) k j :=
+    ch14ext_matrixAccumulation_c3 n fp N_hat V start hnpos h3 hidx hrecM
+  have hgbnd : ∀ k : Fin n,
+      |g k| ≤ gje_c₃ fp n *
+        ch14ext_boundVec n N_hat (xseq start) start (n - 1) k :=
+    ch14ext_rhsAccumulation_c3 n fp N_hat xseq start hnpos h3 hidx hrecX
+  have h1 : matMul n Q (V (start + (n - 1))) = Q := by
+    rw [hVfinal, matMul_id_right]
+  have h2 : matMul n Q
+      (matMul n (gje_cumulative_product n N_hat start (start + (n - 1))) (V start)) =
+      V start := by
+    rw [← matMul_assoc, hQP, matMul_id_left]
+  have hΔUeq : ΔU = fun i j => Q i j - V start i j := by
+    funext i j
+    have hexp : matMul n Q E i j =
+        matMul n Q (V (start + (n - 1))) i j -
+          matMul n Q
+            (matMul n (gje_cumulative_product n N_hat start (start + (n - 1)))
+              (V start)) i j := by
+      show (∑ k : Fin n, Q i k * E k j) =
+        (∑ k : Fin n, Q i k * V (start + (n - 1)) k j) -
+          (∑ k : Fin n, Q i k *
+            matMul n (gje_cumulative_product n N_hat start (start + (n - 1)))
+              (V start) k j)
+      rw [← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl (fun k _ => by
+        show Q i k * (V (start + (n - 1)) k j -
+          matMul n (gje_cumulative_product n N_hat start (start + (n - 1)))
+            (V start) k j) = _
+        ring)
+    change matMul n Q E i j = _
+    rw [hexp, h1, h2]
+  have hg1 : (fun i => matMulVec n Q
+      (matMulVec n (gje_cumulative_product n N_hat start (start + (n - 1)))
+        (xseq start)) i) = xseq start := by
+    funext i
+    rw [← matMulVec_matMul, hQP, matMulVec_id]
+  have hΔyeq : ∀ i : Fin n,
+      Δy i = matMulVec n Q (xseq (start + (n - 1))) i - xseq start i := by
+    intro i
+    have hlin : matMulVec n Q g i =
+        matMulVec n Q (xseq (start + (n - 1))) i -
+          matMulVec n Q
+            (matMulVec n (gje_cumulative_product n N_hat start (start + (n - 1)))
+              (xseq start)) i := by
+      show (∑ k : Fin n, Q i k * g k) =
+        (∑ k : Fin n, Q i k * xseq (start + (n - 1)) k) -
+          (∑ k : Fin n, Q i k *
+            matMulVec n (gje_cumulative_product n N_hat start (start + (n - 1)))
+              (xseq start) k)
+      rw [← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl (fun k _ => by
+        show Q i k * (xseq (start + (n - 1)) k -
+          matMulVec n (gje_cumulative_product n N_hat start (start + (n - 1)))
+            (xseq start) k) = _
+        ring)
+    change matMulVec n Q g i = _
+    rw [hlin, congrFun hg1 i]
+  have hEq : ∀ i : Fin n,
+      ∑ j : Fin n, (V start i j + ΔU i j) * x_hat j =
+        xseq start i + Δy i := by
+    intro i
+    have hUQ : ∀ j : Fin n, V start i j + ΔU i j = Q i j := by
+      intro j
+      rw [hΔUeq]
+      ring
+    calc
+      ∑ j : Fin n, (V start i j + ΔU i j) * x_hat j =
+          ∑ j : Fin n, Q i j * x_hat j :=
+        Finset.sum_congr rfl (fun j _ => by rw [hUQ j])
+      _ = ∑ j : Fin n, Q i j * xseq (start + (n - 1)) j :=
+        Finset.sum_congr rfl (fun j _ => by rw [hxfinal j])
+      _ = matMulVec n Q (xseq (start + (n - 1))) i := rfl
+      _ = xseq start i + Δy i := by rw [hΔyeq i]; ring
+  have hΔU : ∀ i j : Fin n, |ΔU i j| ≤ gje_c₃ fp n *
+      ∑ k : Fin n, |ch14ext_gjeXabs n N_hat Q start (n - 1) i k| *
+        |V start k j| := by
+    intro i j
+    have hb := ch14ext_matMul_abs_bound n Q E
+      (ch14ext_boundObj n N_hat (V start) start (n - 1)) (gje_c₃ fp n) hEbnd i j
+    have hrw : matMul n (absMatrix n Q)
+          (ch14ext_boundObj n N_hat (V start) start (n - 1)) i j =
+        ∑ k : Fin n, |ch14ext_gjeXabs n N_hat Q start (n - 1) i k| *
+          |V start k j| := by
+      have hassoc : matMul n (absMatrix n Q)
+            (ch14ext_boundObj n N_hat (V start) start (n - 1)) =
+          matMul n (ch14ext_gjeXabs n N_hat Q start (n - 1))
+            (absMatrix n (V start)) := by
+        show matMul n (absMatrix n Q)
+            (matMul n (ch14ext_absCumProd n N_hat start (n - 1))
+              (absMatrix n (V start))) = _
+        rw [← matMul_assoc]
+        rfl
+      rw [hassoc]
+      exact Finset.sum_congr rfl (fun k _ => by
+        rw [abs_of_nonneg (ch14ext_gjeXabs_nonneg n N_hat Q start (n - 1) i k)]
+        simp [absMatrix])
+    change |matMul n Q E i j| ≤ _
+    rw [hrw] at hb
+    exact hb
+  have hΔy : ∀ i : Fin n, |Δy i| ≤ gje_c₃ fp n *
+      ∑ j : Fin n, |ch14ext_gjeXabs n N_hat Q start (n - 1) i j| *
+        |xseq start j| := by
+    intro i
+    have hb := ch14ext_matMulVec_abs_bound n Q g
+      (ch14ext_boundVec n N_hat (xseq start) start (n - 1)) (gje_c₃ fp n) hgbnd i
+    have hrw : matMulVec n (absMatrix n Q)
+          (ch14ext_boundVec n N_hat (xseq start) start (n - 1)) i =
+        ∑ j : Fin n, |ch14ext_gjeXabs n N_hat Q start (n - 1) i j| *
+          |xseq start j| := by
+      have hassoc : matMulVec n (absMatrix n Q)
+            (ch14ext_boundVec n N_hat (xseq start) start (n - 1)) =
+          matMulVec n (ch14ext_gjeXabs n N_hat Q start (n - 1))
+            (absVec n (xseq start)) := by
+        funext i'
+        show matMulVec n (absMatrix n Q)
+            (matMulVec n (ch14ext_absCumProd n N_hat start (n - 1))
+              (absVec n (xseq start))) i' = _
+        rw [← matMulVec_matMul]
+        rfl
+      rw [hassoc]
+      exact Finset.sum_congr rfl (fun j _ => by
+        rw [abs_of_nonneg (ch14ext_gjeXabs_nonneg n N_hat Q start (n - 1) i j)]
+        simp [absVec])
+    change |matMulVec n Q g i| ≤ _
+    rw [hrw] at hb
+    exact hb
+  exact ⟨ΔU, Δy, hEq, hΔU, hΔy⟩
+
 /-- **Theorem 14.5 (14.31), concrete GJE loop.**  The overall residual for the
     actual `ch14ext_gjeStep{Matrix,Vec}` iteration, with the accumulation
     hypotheses discharged from wave 2's per-step γ₃ bounds. -/
