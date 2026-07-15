@@ -487,6 +487,7 @@
     demmelHighamSchreiber13_6_estimates_from_factorization_solve_results,
     higham13_theorem13_6_eq13_16_firstOrder_from_DHS_theorem2_1_result,
     higham13_theorem13_6_implementation1_from_DHS_theorem2_1_result,
+    higham13_theorem13_6_implementation1_from_DHS_estimates_and_implementation1_local_spec,
     higham13_theorem13_6_eq13_16_firstOrder_from_DHS_factorization_solve_results,
     higham13_theorem13_6_implementation1_from_DHS_factorization_solve_results,
     dhs_lu_solve_perturbation_identity,
@@ -7745,6 +7746,63 @@ theorem higham13_theorem13_6_implementation1_from_DHS_theorem2_1_result
         d_fact d_solve dn recursiveExecution schurUpdate blockRowRHS
         forwardSubstitution blockBackSubstitution localSolveSuccess
         maxEntryProductLaws hu hA hL hU hd_fact hd_solve hDHS⟩
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 Implementation 1 and
+    Theorem 13.6 / equation (13.16), routed through the audited DHS estimate
+    package and the concrete local Eq.13.14/Eq.13.15 source path.
+
+    This is the implementation-facing companion to
+    `demmelHighamSchreiber13_6_theorem2_1_result_from_estimates_and_implementation1_local_spec`.
+    It prevents the DHS source-path slots from being arbitrary at the final
+    wrapper: the block-row and diagonal-block local facts are exactly those
+    unpacked from `Algorithm13_3Implementation1LocalSpec`.  The cited DHS
+    first-order estimates themselves remain explicit hypotheses. -/
+theorem higham13_theorem13_6_implementation1_from_DHS_estimates_and_implementation1_local_spec
+    {r s p : Type*} [Fintype r]
+    (u c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii : ℝ)
+    (Lhat21 A21 E21 : Matrix s r ℝ) (A11 Uii DeltaUii : Matrix r r ℝ)
+    (Xhat D : Matrix r p ℝ)
+    (normDeltaA_fact normDeltaA_solve : ℝ)
+    (normA normL normU d_fact d_solve dn : ℝ)
+    (recursiveExecution schurUpdate maxEntryProductLaws : Prop)
+    (hRecursiveExecution : recursiveExecution)
+    (hSchurUpdate : schurUpdate)
+    (hMaxEntryProductLaws : maxEntryProductLaws)
+    (hu : 0 ≤ u) (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hd_fact : d_fact ≤ dn) (hd_solve : d_solve ≤ dn)
+    (hLocal : Algorithm13_3Implementation1LocalSpec
+      u c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii
+      Lhat21 A21 E21 A11 Uii DeltaUii Xhat D)
+    (hEst : DemmelHighamSchreiber13_6Estimates
+      u d_fact d_solve normA normL normU
+      normDeltaA_fact normDeltaA_solve) :
+    ((Lhat21 * A11 = A21 + E21 ∧
+        BlockSolveFirstOrderBound u c₄ normLhat21 normA11 normE21) ∧
+      ((Uii + DeltaUii) * Xhat = D ∧
+        DiagonalBlockSolveFirstOrderBound u c₅ normUii normDeltaUii)) ∧
+      FirstOrderLe u (dn * u * (normA + normL * normU))
+        normDeltaA_fact ∧
+      FirstOrderLe u (dn * u * (normA + normL * normU))
+        normDeltaA_solve ∧
+      FirstOrderLe u (dn * u * (normA + normL * normU))
+        (max normDeltaA_fact normDeltaA_solve) := by
+  exact
+    higham13_theorem13_6_implementation1_from_DHS_theorem2_1_result
+      u c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii
+      Lhat21 A21 E21 A11 Uii DeltaUii Xhat D
+      normDeltaA_fact normDeltaA_solve normA normL normU
+      d_fact d_solve dn recursiveExecution schurUpdate
+      (Lhat21 * A11 = A21 + E21)
+      (BlockSolveFirstOrderBound u c₄ normLhat21 normA11 normE21)
+      ((Uii + DeltaUii) * Xhat = D)
+      (DiagonalBlockSolveFirstOrderBound u c₅ normUii normDeltaUii)
+      maxEntryProductLaws hu hA hL hU hd_fact hd_solve hLocal
+      (demmelHighamSchreiber13_6_theorem2_1_result_from_estimates_and_implementation1_local_spec
+        u d_fact d_solve normA normL normU
+        normDeltaA_fact normDeltaA_solve c₄ c₅ normLhat21 normA11
+        normE21 normUii normDeltaUii Lhat21 A21 E21 A11 Uii
+        DeltaUii Xhat D recursiveExecution schurUpdate maxEntryProductLaws
+        hRecursiveExecution hSchurUpdate hMaxEntryProductLaws hLocal hEst)
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 Implementation 1 and
     Theorem 13.6 / equation (13.16), routed through the separated
