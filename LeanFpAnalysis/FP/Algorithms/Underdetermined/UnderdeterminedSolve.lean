@@ -965,6 +965,882 @@ theorem higham21Eq21_7_exact_expansion_of_gram_det_ne_zero
     (isInverse_nonsingInv_of_det_ne_zero m
       (rectGram (higham21Eq21_7ScaledMatrix A DeltaA t)) hdet_t).2
 
+/-- Higham, 2nd ed., Chapter 21, Theorem 21.1, equation (21.7):
+    the null-space and pseudoinverse-range vectors in the first-order change
+    are orthogonal. -/
+theorem higham21Eq21_7_source_vectors_orthogonal
+    {m n : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ)
+    (b Deltab : Fin m → ℝ)
+    (hdet :
+      Matrix.det (rectGram A : Matrix (Fin m) (Fin m) ℝ) ≠ 0) :
+    let Aplus := undetAplusOfGramNonsingInv A
+    let x := rectMatMulVec Aplus b
+    let z := rectTransposeMulVec Aplus x
+    let w := rectTransposeMulVec DeltaA z
+    let q := fun i => Deltab i - rectMatMulVec DeltaA x i
+    (∑ j : Fin n,
+      (w j - rectMatMulVec Aplus (rectMatMulVec A w) j) *
+        rectMatMulVec Aplus q j) = 0 := by
+  dsimp only
+  let Aplus : Fin n → Fin m → ℝ :=
+    undetAplusOfGramNonsingInv A
+  let x : Fin n → ℝ := rectMatMulVec Aplus b
+  let z : Fin m → ℝ := rectTransposeMulVec Aplus x
+  let w : Fin n → ℝ := rectTransposeMulVec DeltaA z
+  let q : Fin m → ℝ :=
+    fun i => Deltab i - rectMatMulVec DeltaA x i
+  change
+    (∑ j : Fin n,
+      (w j - rectMatMulVec Aplus (rectMatMulVec A w) j) *
+        rectMatMulVec Aplus q j) = 0
+  have hRight : rectMatMul A Aplus = idMatrix m := by
+    simpa [Aplus] using
+      higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_det_ne_zero
+        A hdet
+  have hSym :
+      IsSymmetricFiniteMatrix (rectMatMul Aplus A) := by
+    simpa [Aplus] using
+      undetAplusOfGramNonsingInv_domain_projection_symmetric A
+  simpa only [rectMatMulVec_rectMatMul] using
+    (rectMatMulVec_domainProjection_residual_orthogonal_range_of_symmetric_right_inverse
+      A Aplus hRight hSym w q)
+
+/-- Higham, 2nd ed., Chapter 21, Theorem 21.1, equation (21.6):
+    direct componentwise majorant for the first-order change in (21.7).
+    The first term is
+    `|(I - Aplus*A) DeltaA^T Aplus^T x|`; the second is
+    `|Aplus| (f + E|x|)`. -/
+theorem higham21Eq21_7_firstOrder_componentwise_abs_majorant
+    {m n : ℕ}
+    (A DeltaA E : Fin m → Fin n → ℝ)
+    (b Deltab f : Fin m → ℝ)
+    (hdet :
+      Matrix.det (rectGram A : Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hDeltaA : ∀ i j, |DeltaA i j| ≤ E i j)
+    (hDeltab : ∀ i, |Deltab i| ≤ f i) :
+    let Aplus := undetAplusOfGramNonsingInv A
+    let x := rectMatMulVec Aplus b
+    let z := rectTransposeMulVec Aplus x
+    let w := rectTransposeMulVec DeltaA z
+    ∀ j : Fin n,
+      |higham21Eq21_7FirstOrder A DeltaA b Deltab
+          (undetGramNonsingInv A) j| ≤
+        |w j - rectMatMulVec Aplus (rectMatMulVec A w) j| +
+          rectMatMulVec (absMatrixRect Aplus)
+            (fun i => f i + rectMatMulVec E (fun k => |x k|) i) j := by
+  dsimp only
+  intro j
+  let G_inv : Fin m → Fin m → ℝ := undetGramNonsingInv A
+  let Aplus : Fin n → Fin m → ℝ :=
+    undetAplusOfGramNonsingInv A
+  let x : Fin n → ℝ := rectMatMulVec Aplus b
+  let y : Fin m → ℝ := matMulVec m G_inv b
+  let z : Fin m → ℝ := rectTransposeMulVec Aplus x
+  let w : Fin n → ℝ := rectTransposeMulVec DeltaA z
+  let q : Fin m → ℝ :=
+    fun i => Deltab i - rectMatMulVec DeltaA x i
+  let budget : Fin m → ℝ :=
+    fun i => f i + rectMatMulVec E (fun k => |x k|) i
+  change
+    |higham21Eq21_7FirstOrder A DeltaA b Deltab G_inv j| ≤
+      |w j - rectMatMulVec Aplus (rectMatMulVec A w) j| +
+        rectMatMulVec (absMatrixRect Aplus) budget j
+  have hRight : rectMatMul A Aplus = idMatrix m := by
+    simpa [Aplus] using
+      higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_det_ne_zero
+        A hdet
+  have hRightEntry : ∀ r i : Fin m,
+      (∑ k : Fin n, A r k * Aplus k i) =
+        if r = i then 1 else 0 := by
+    intro r i
+    have hri := congrFun (congrFun hRight r) i
+    simpa [rectMatMul, idMatrix] using hri
+  have hx : x = rectTransposeMulVec A y := by
+    simpa [x, Aplus, y, G_inv, undetAplusOfGramNonsingInv] using
+      (rectMatMulVec_undetAplusOfGramInv A G_inv b)
+  have hyz : y = z := by
+    ext i
+    symm
+    rw [show z = rectTransposeMulVec Aplus x by rfl, hx]
+    unfold rectTransposeMulVec
+    calc
+      ∑ j : Fin n, Aplus j i * (∑ r : Fin m, A r j * y r) =
+          ∑ j : Fin n, ∑ r : Fin m,
+            Aplus j i * (A r j * y r) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [Finset.mul_sum]
+      _ = ∑ r : Fin m, ∑ j : Fin n,
+            Aplus j i * (A r j * y r) := by
+            rw [Finset.sum_comm]
+      _ = ∑ r : Fin m,
+            (∑ j : Fin n, A r j * Aplus j i) * y r := by
+            apply Finset.sum_congr rfl
+            intro r _
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+      _ = ∑ r : Fin m, (if r = i then 1 else 0) * y r := by
+            apply Finset.sum_congr rfl
+            intro r _
+            rw [hRightEntry r i]
+      _ = y i := by
+            simp
+  have hsource :
+      higham21Eq21_7FirstOrder A DeltaA b Deltab G_inv j =
+        (w j - rectMatMulVec Aplus (rectMatMulVec A w) j) +
+          rectMatMulVec Aplus q j := by
+    simp only [higham21Eq21_7FirstOrder]
+    change
+      rectTransposeMulVec DeltaA y j -
+            rectMatMulVec Aplus
+              (rectMatMulVec A (rectTransposeMulVec DeltaA y)) j +
+          rectMatMulVec Aplus q j =
+        (w j - rectMatMulVec Aplus (rectMatMulVec A w) j) +
+          rectMatMulVec Aplus q j
+    rw [hyz]
+  have hDeltaAction : ∀ i : Fin m,
+      |rectMatMulVec DeltaA x i| ≤
+        rectMatMulVec E (fun k => |x k|) i :=
+    rectMatMulVec_abs_entry_le hDeltaA x
+  have hq : ∀ i : Fin m, |q i| ≤ budget i := by
+    intro i
+    change
+      |Deltab i - rectMatMulVec DeltaA x i| ≤
+        f i + rectMatMulVec E (fun k => |x k|) i
+    exact
+      le_trans (abs_sub _ _)
+        (add_le_add (hDeltab i) (hDeltaAction i))
+  have hv :
+      |rectMatMulVec Aplus q j| ≤
+        rectMatMulVec (absMatrixRect Aplus) budget j := by
+    calc
+      |rectMatMulVec Aplus q j| ≤
+          ∑ i : Fin m, |Aplus j i| * |q i| :=
+        abs_rectMatMulVec_le Aplus q j
+      _ ≤ ∑ i : Fin m, |Aplus j i| * budget i := by
+        apply Finset.sum_le_sum
+        intro i _
+        exact
+          mul_le_mul_of_nonneg_left (hq i) (abs_nonneg (Aplus j i))
+      _ = rectMatMulVec (absMatrixRect Aplus) budget j := by
+        rfl
+  calc
+    |higham21Eq21_7FirstOrder A DeltaA b Deltab G_inv j| =
+        |(w j - rectMatMulVec Aplus (rectMatMulVec A w) j) +
+          rectMatMulVec Aplus q j| :=
+      congrArg (fun r : ℝ => |r|) hsource
+    _ ≤ |w j - rectMatMulVec Aplus (rectMatMulVec A w) j| +
+          |rectMatMulVec Aplus q j| :=
+      abs_add_le _ _
+    _ ≤ |w j - rectMatMulVec Aplus (rectMatMulVec A w) j| +
+          rectMatMulVec (absMatrixRect Aplus) budget j :=
+      add_le_add le_rfl hv
+
+-- Equation (21.7): explicit fixed-radius quadratic remainder bounds.
+section Higham21Eq21_7QuadraticRemainder
+
+open Filter
+open Asymptotics
+noncomputable def higham21Eq21_7GramAbsEnvelope
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real) (rho : Real) :
+    Fin m -> Fin m -> Real :=
+  let H := higham21Eq21_7GramLinear A DeltaA
+  let K := higham21Eq21_7GramQuadratic DeltaA
+  fun i j => |H i j| + rho * |K i j|
+
+noncomputable def higham21Eq21_7LinearizedMatrix
+    {m : Nat} (G_inv D : Fin m -> Fin m -> Real) :
+    Fin m -> Fin m -> Real :=
+  fun i j => ch7InverseLinearizedEntry m G_inv D i j
+
+noncomputable def higham21Eq21_7InverseQuadraticCoefficient
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
+    (G_inv : Fin m -> Fin m -> Real) (rho beta : Real) : Real :=
+  let Ebar := higham21Eq21_7GramAbsEnvelope A DeltaA rho
+  let P := ch7InverseFirstProductSensitivity m G_inv Ebar
+  frobNorm P ^ 2 * beta
+
+noncomputable def higham21Eq21_7InverseDifferenceCoefficient
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
+    (G_inv : Fin m -> Fin m -> Real) (rho beta : Real) : Real :=
+  let H := higham21Eq21_7GramLinear A DeltaA
+  let K := higham21Eq21_7GramQuadratic DeltaA
+  let LH := higham21Eq21_7LinearizedMatrix G_inv H
+  let LK := higham21Eq21_7LinearizedMatrix G_inv K
+  frobNorm LH + rho * frobNorm LK +
+    rho * higham21Eq21_7InverseQuadraticCoefficient
+      A DeltaA G_inv rho beta
+
+noncomputable def higham21Eq21_7CancellationCoefficient
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
+    (G_inv : Fin m -> Fin m -> Real) (rho beta : Real) : Real :=
+  let K := higham21Eq21_7GramQuadratic DeltaA
+  let LK := higham21Eq21_7LinearizedMatrix G_inv K
+  frobNorm LK +
+    higham21Eq21_7InverseQuadraticCoefficient A DeltaA G_inv rho beta
+
+noncomputable def higham21Eq21_7InverseDifferenceMatrix
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
+    (G_inv G_t_inv : Fin m -> Fin m -> Real) (t : Real) :
+    Fin m -> Fin m -> Real :=
+  higham21Eq21_7GramInverseDifferenceModel G_inv
+    (higham21Eq21_7GramPerturbation A DeltaA t) G_t_inv
+
+noncomputable def higham21Eq21_7CancellationMatrix
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
+    (G_inv G_t_inv : Fin m -> Fin m -> Real) (t : Real) :
+    Fin m -> Fin m -> Real :=
+  let dG := higham21Eq21_7InverseDifferenceMatrix
+    A DeltaA G_inv G_t_inv t
+  let H := higham21Eq21_7GramLinear A DeltaA
+  let LH := higham21Eq21_7LinearizedMatrix G_inv H
+  fun i j => dG i j + t * LH i j
+
+/-- A fixed-neighborhood coefficient for the exact remainder in Higham,
+    Chapter 21, equation (21.7).  It depends on uniform bounds for the
+    perturbed Gram inverse, but not on the perturbation parameter `t`. -/
+noncomputable def higham21Eq21_7FixedRadiusCoefficient
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
+    (b Deltab : Fin m -> Real) (G_inv : Fin m -> Fin m -> Real)
+    (rho beta : Real) : Real :=
+  let dC := higham21Eq21_7InverseDifferenceCoefficient
+    A DeltaA G_inv rho beta
+  let qC := higham21Eq21_7CancellationCoefficient
+    A DeltaA G_inv rho beta
+  frobNormRect A * qC * vecNorm2 b +
+    frobNormRect DeltaA * dC * vecNorm2 b +
+    frobNormRect A * dC * vecNorm2 Deltab +
+    frobNormRect DeltaA * beta * vecNorm2 Deltab
+
+theorem higham21Eq21_7_gramPerturbation_abs_le_fixed_radius
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
+    (rho t : Real) (hrho : 0 <= rho) (ht : |t| <= rho) :
+    forall i j,
+      |higham21Eq21_7GramPerturbation A DeltaA t i j| <=
+        |t| * higham21Eq21_7GramAbsEnvelope A DeltaA rho i j := by
+  intro i j
+  let H := higham21Eq21_7GramLinear A DeltaA
+  let K := higham21Eq21_7GramQuadratic DeltaA
+  have ht0 : 0 <= |t| := abs_nonneg t
+  have hK0 : 0 <= |K i j| := abs_nonneg _
+  calc
+    |higham21Eq21_7GramPerturbation A DeltaA t i j|
+        = |t * H i j + t ^ 2 * K i j| := by
+            rfl
+    _ <= |t * H i j| + |t ^ 2 * K i j| := abs_add_le _ _
+    _ = |t| * |H i j| + |t| ^ 2 * |K i j| := by
+          rw [abs_mul, abs_mul, abs_pow]
+    _ <= |t| * |H i j| + (|t| * rho) * |K i j| := by
+          have hsq : |t| ^ 2 <= |t| * rho := by
+            calc
+              |t| ^ 2 = |t| * |t| := by ring
+              _ <= |t| * rho := mul_le_mul_of_nonneg_left ht ht0
+          exact add_le_add (le_refl _) (mul_le_mul_of_nonneg_right hsq hK0)
+    _ = |t| * higham21Eq21_7GramAbsEnvelope A DeltaA rho i j := by
+          simp only [higham21Eq21_7GramAbsEnvelope]
+          change |t| * |H i j| + (|t| * rho) * |K i j| =
+            |t| * (|H i j| + rho * |K i j|)
+          ring
+
+theorem higham21Eq21_7_linearized_gramPerturbation
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
+    (G_inv : Fin m -> Fin m -> Real) (t : Real) :
+    higham21Eq21_7LinearizedMatrix G_inv
+        (higham21Eq21_7GramPerturbation A DeltaA t) =
+      fun i j =>
+        t * higham21Eq21_7LinearizedMatrix G_inv
+              (higham21Eq21_7GramLinear A DeltaA) i j +
+          t ^ 2 * higham21Eq21_7LinearizedMatrix G_inv
+              (higham21Eq21_7GramQuadratic DeltaA) i j := by
+  ext i j
+  simp only [higham21Eq21_7LinearizedMatrix,
+    ch7InverseLinearizedEntry, higham21Eq21_7GramPerturbation]
+  simp_rw [mul_add, add_mul, Finset.sum_add_distrib]
+  apply congrArg₂ (fun x y : Real => x + y)
+  · rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro k _
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro l _
+    ring
+  · rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro k _
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro l _
+    ring
+
+theorem higham21Eq21_7_inverseDifference_decomposition
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
+    (G_inv G_t_inv : Fin m -> Fin m -> Real) (t : Real) :
+    higham21Eq21_7GramInverseDifferenceModel G_inv
+        (higham21Eq21_7GramPerturbation A DeltaA t) G_t_inv =
+      fun i j =>
+        -(t * higham21Eq21_7LinearizedMatrix G_inv
+              (higham21Eq21_7GramLinear A DeltaA) i j +
+            t ^ 2 * higham21Eq21_7LinearizedMatrix G_inv
+              (higham21Eq21_7GramQuadratic DeltaA) i j) +
+          ch7InverseQuadraticRemainderEntry m G_inv
+            (higham21Eq21_7GramPerturbation A DeltaA t) G_t_inv i j := by
+  have hlin :=
+    higham21Eq21_7_linearized_gramPerturbation A DeltaA G_inv t
+  ext i j
+  have hlinij := congrFun (congrFun hlin i) j
+  simp only [higham21Eq21_7GramInverseDifferenceModel]
+  rw [show ch7InverseLinearizedEntry m G_inv
+        (higham21Eq21_7GramPerturbation A DeltaA t) i j =
+      higham21Eq21_7LinearizedMatrix G_inv
+        (higham21Eq21_7GramPerturbation A DeltaA t) i j by rfl]
+  rw [hlinij]
+
+set_option maxHeartbeats 800000 in
+theorem higham21Eq21_7_inverseQuadraticRemainder_frobNorm_le_fixed_radius
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
+    (G_inv G_t_inv : Fin m -> Fin m -> Real)
+    (rho beta t : Real) (hrho : 0 <= rho) (hbeta : 0 <= beta)
+    (ht : |t| <= rho) (hG_t_inv : frobNorm G_t_inv <= beta) :
+    frobNorm
+        (fun i j =>
+          ch7InverseQuadraticRemainderEntry m G_inv
+            (higham21Eq21_7GramPerturbation A DeltaA t) G_t_inv i j) <=
+      |t| ^ 2 *
+        (frobNorm
+            (ch7InverseFirstProductSensitivity m G_inv
+              (higham21Eq21_7GramAbsEnvelope A DeltaA rho)) ^ 2 * beta) := by
+  let E := higham21Eq21_7GramPerturbation A DeltaA t
+  let Ebar := higham21Eq21_7GramAbsEnvelope A DeltaA rho
+  let P := ch7InverseFirstProductSensitivity m G_inv Ebar
+  let R : Fin m -> Fin m -> Real :=
+    fun i j => ch7InverseQuadraticRemainderEntry m G_inv E G_t_inv i j
+  let S : Fin m -> Fin m -> Real :=
+    fun i j =>
+      ch7InverseQuadraticRemainderSensitivityEntry m G_inv Ebar G_t_inv i j
+  have hEbar : forall i j, 0 <= Ebar i j := by
+    intro i j
+    dsimp [Ebar, higham21Eq21_7GramAbsEnvelope]
+    exact add_nonneg (abs_nonneg _)
+      (mul_nonneg hrho (abs_nonneg _))
+  have hE : forall i j, |E i j| <= |t| * Ebar i j := by
+    intro i j
+    exact higham21Eq21_7_gramPerturbation_abs_le_fixed_radius
+      A DeltaA rho t hrho ht i j
+  have hRentry : forall i j, |R i j| <= |t| ^ 2 * S i j := by
+    intro i j
+    exact ch7InverseQuadraticRemainderEntry_abs_le m G_inv E Ebar G_t_inv
+      |t| (abs_nonneg t) hEbar hE i j
+  have hSnonneg : forall i j, 0 <= S i j := by
+    intro i j
+    exact ch7InverseQuadraticRemainderSensitivityEntry_nonneg
+      m G_inv Ebar G_t_inv hEbar i j
+  have hRnorm : frobNorm R <= |t| ^ 2 * frobNorm S := by
+    apply frobNorm_le_const_mul_frobNorm_of_entrywise_abs_le
+      R S (sq_nonneg |t|)
+    intro i j
+    simpa [abs_of_nonneg (hSnonneg i j)] using hRentry i j
+  have hAbsG : frobNorm (absMatrix m G_t_inv) = frobNorm G_t_inv := by
+    rw [← frobNormRect_eq_frobNormFn, ← frobNormRect_eq_frobNormFn]
+    simpa [absMatrix] using (frobNormRect_abs G_t_inv)
+  have hinner :
+      frobNorm (matMul m P (absMatrix m G_t_inv)) <=
+        frobNorm P * frobNorm G_t_inv := by
+    calc
+      frobNorm (matMul m P (absMatrix m G_t_inv)) <=
+          frobNorm P * frobNorm (absMatrix m G_t_inv) :=
+        frobNorm_matMul_le P (absMatrix m G_t_inv)
+      _ = frobNorm P * frobNorm G_t_inv := by rw [hAbsG]
+  have hSnorm : frobNorm S <= frobNorm P ^ 2 * beta := by
+    calc
+      frobNorm S =
+          frobNorm (matMul m P (matMul m P (absMatrix m G_t_inv))) := by
+            rfl
+      _ <= frobNorm P *
+            frobNorm (matMul m P (absMatrix m G_t_inv)) :=
+          frobNorm_matMul_le P (matMul m P (absMatrix m G_t_inv))
+      _ <= frobNorm P * (frobNorm P * frobNorm G_t_inv) :=
+          mul_le_mul_of_nonneg_left hinner (frobNorm_nonneg P)
+      _ <= frobNorm P * (frobNorm P * beta) := by
+          exact mul_le_mul_of_nonneg_left
+            (mul_le_mul_of_nonneg_left hG_t_inv (frobNorm_nonneg P))
+            (frobNorm_nonneg P)
+      _ = frobNorm P ^ 2 * beta := by ring
+  change frobNorm R <= |t| ^ 2 * (frobNorm P ^ 2 * beta)
+  exact le_trans hRnorm
+    (mul_le_mul_of_nonneg_left hSnorm (sq_nonneg |t|))
+
+set_option maxHeartbeats 800000 in
+theorem higham21Eq21_7_inverseDifference_frobNorm_le_fixed_radius
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
+    (G_inv G_t_inv : Fin m -> Fin m -> Real)
+    (rho beta t : Real) (hrho : 0 <= rho) (hbeta : 0 <= beta)
+    (ht : |t| <= rho) (hG_t_inv : frobNorm G_t_inv <= beta) :
+    frobNorm
+        (higham21Eq21_7GramInverseDifferenceModel G_inv
+          (higham21Eq21_7GramPerturbation A DeltaA t) G_t_inv) <=
+      |t| * higham21Eq21_7InverseDifferenceCoefficient
+        A DeltaA G_inv rho beta := by
+  let H := higham21Eq21_7GramLinear A DeltaA
+  let K := higham21Eq21_7GramQuadratic DeltaA
+  let LH := higham21Eq21_7LinearizedMatrix G_inv H
+  let LK := higham21Eq21_7LinearizedMatrix G_inv K
+  let R : Fin m -> Fin m -> Real :=
+    fun i j =>
+      ch7InverseQuadraticRemainderEntry m G_inv
+        (higham21Eq21_7GramPerturbation A DeltaA t) G_t_inv i j
+  let rC := higham21Eq21_7InverseQuadraticCoefficient
+    A DeltaA G_inv rho beta
+  have hrC : 0 <= rC := by
+    dsimp [rC, higham21Eq21_7InverseQuadraticCoefficient]
+    exact mul_nonneg (sq_nonneg _) hbeta
+  have hsmul : forall (a : Real) (M : Fin m -> Fin m -> Real),
+      frobNorm (fun i j => a * M i j) = |a| * frobNorm M := by
+    intro a M
+    rw [← frobNormRect_eq_frobNormFn, ← frobNormRect_eq_frobNormFn]
+    exact frobNormRect_smul a M
+  have hlinNorm :
+      frobNorm (fun i j => t * LH i j + t ^ 2 * LK i j) <=
+        |t| * (frobNorm LH + rho * frobNorm LK) := by
+    calc
+      frobNorm (fun i j => t * LH i j + t ^ 2 * LK i j) <=
+          frobNorm (fun i j => t * LH i j) +
+            frobNorm (fun i j => t ^ 2 * LK i j) :=
+        frobNorm_add_le _ _
+      _ = |t| * frobNorm LH + |t| ^ 2 * frobNorm LK := by
+        rw [hsmul t LH, hsmul (t ^ 2) LK, abs_pow]
+      _ <= |t| * frobNorm LH + (|t| * rho) * frobNorm LK := by
+        have hsq : |t| ^ 2 <= |t| * rho := by
+          calc
+            |t| ^ 2 = |t| * |t| := by ring
+            _ <= |t| * rho :=
+              mul_le_mul_of_nonneg_left ht (abs_nonneg t)
+        exact add_le_add (le_refl _)
+          (mul_le_mul_of_nonneg_right hsq (frobNorm_nonneg LK))
+      _ = |t| * (frobNorm LH + rho * frobNorm LK) := by ring
+  have hR : frobNorm R <= |t| ^ 2 * rC := by
+    exact higham21Eq21_7_inverseQuadraticRemainder_frobNorm_le_fixed_radius
+      A DeltaA G_inv G_t_inv rho beta t hrho hbeta ht hG_t_inv
+  have hdecomp :=
+    higham21Eq21_7_inverseDifference_decomposition
+      A DeltaA G_inv G_t_inv t
+  change frobNorm
+      (higham21Eq21_7GramInverseDifferenceModel G_inv
+        (higham21Eq21_7GramPerturbation A DeltaA t) G_t_inv) <= _
+  rw [hdecomp]
+  calc
+    frobNorm
+        (fun i j =>
+          -(t * LH i j + t ^ 2 * LK i j) + R i j) <=
+      frobNorm (fun i j => -(t * LH i j + t ^ 2 * LK i j)) +
+        frobNorm R := frobNorm_add_le _ _
+    _ = frobNorm (fun i j => t * LH i j + t ^ 2 * LK i j) +
+        frobNorm R := by rw [frobNorm_neg]
+    _ <= |t| * (frobNorm LH + rho * frobNorm LK) +
+        |t| ^ 2 * rC := add_le_add hlinNorm hR
+    _ <= |t| * (frobNorm LH + rho * frobNorm LK) +
+        (|t| * rho) * rC := by
+      have hsq : |t| ^ 2 <= |t| * rho := by
+        calc
+          |t| ^ 2 = |t| * |t| := by ring
+          _ <= |t| * rho := mul_le_mul_of_nonneg_left ht (abs_nonneg t)
+      exact add_le_add (le_refl _) (mul_le_mul_of_nonneg_right hsq hrC)
+    _ = |t| * higham21Eq21_7InverseDifferenceCoefficient
+          A DeltaA G_inv rho beta := by
+      simp only [higham21Eq21_7InverseDifferenceCoefficient]
+      change |t| * (frobNorm LH + rho * frobNorm LK) +
+          (|t| * rho) * rC =
+        |t| * (frobNorm LH + rho * frobNorm LK + rho * rC)
+      ring
+
+set_option maxHeartbeats 800000 in
+theorem higham21Eq21_7_inverseDifference_cancellation_frobNorm_le_fixed_radius
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
+    (G_inv G_t_inv : Fin m -> Fin m -> Real)
+    (rho beta t : Real) (hrho : 0 <= rho) (hbeta : 0 <= beta)
+    (ht : |t| <= rho) (hG_t_inv : frobNorm G_t_inv <= beta) :
+    frobNorm
+        (fun i j =>
+          higham21Eq21_7GramInverseDifferenceModel G_inv
+              (higham21Eq21_7GramPerturbation A DeltaA t) G_t_inv i j +
+            t * higham21Eq21_7LinearizedMatrix G_inv
+              (higham21Eq21_7GramLinear A DeltaA) i j) <=
+      |t| ^ 2 * higham21Eq21_7CancellationCoefficient
+        A DeltaA G_inv rho beta := by
+  let H := higham21Eq21_7GramLinear A DeltaA
+  let K := higham21Eq21_7GramQuadratic DeltaA
+  let LH := higham21Eq21_7LinearizedMatrix G_inv H
+  let LK := higham21Eq21_7LinearizedMatrix G_inv K
+  let R : Fin m -> Fin m -> Real :=
+    fun i j =>
+      ch7InverseQuadraticRemainderEntry m G_inv
+        (higham21Eq21_7GramPerturbation A DeltaA t) G_t_inv i j
+  let rC := higham21Eq21_7InverseQuadraticCoefficient
+    A DeltaA G_inv rho beta
+  have hsmul : forall (a : Real) (M : Fin m -> Fin m -> Real),
+      frobNorm (fun i j => a * M i j) = |a| * frobNorm M := by
+    intro a M
+    rw [← frobNormRect_eq_frobNormFn, ← frobNormRect_eq_frobNormFn]
+    exact frobNormRect_smul a M
+  have hR : frobNorm R <= |t| ^ 2 * rC := by
+    exact higham21Eq21_7_inverseQuadraticRemainder_frobNorm_le_fixed_radius
+      A DeltaA G_inv G_t_inv rho beta t hrho hbeta ht hG_t_inv
+  have hdecomp :=
+    higham21Eq21_7_inverseDifference_decomposition
+      A DeltaA G_inv G_t_inv t
+  rw [hdecomp]
+  change frobNorm
+      (fun i j =>
+        (-(t * LH i j + t ^ 2 * LK i j) + R i j) + t * LH i j) <= _
+  have hcancel :
+      (fun i j =>
+        (-(t * LH i j + t ^ 2 * LK i j) + R i j) + t * LH i j) =
+        fun i j => -(t ^ 2 * LK i j) + R i j := by
+    ext i j
+    ring
+  rw [hcancel]
+  calc
+    frobNorm (fun i j => -(t ^ 2 * LK i j) + R i j) <=
+        frobNorm (fun i j => -(t ^ 2 * LK i j)) + frobNorm R :=
+      frobNorm_add_le _ _
+    _ = |t| ^ 2 * frobNorm LK + frobNorm R := by
+      rw [frobNorm_neg, hsmul (t ^ 2) LK, abs_pow]
+    _ <= |t| ^ 2 * frobNorm LK + |t| ^ 2 * rC :=
+      add_le_add (le_refl _) hR
+    _ = |t| ^ 2 * higham21Eq21_7CancellationCoefficient
+          A DeltaA G_inv rho beta := by
+      simp only [higham21Eq21_7CancellationCoefficient]
+      change |t| ^ 2 * frobNorm LK + |t| ^ 2 * rC =
+        |t| ^ 2 * (frobNorm LK + rC)
+      ring
+
+theorem higham21Eq21_7_matMulVec_matrix_const_mul
+    {m : Nat} (M : Fin m -> Fin m -> Real)
+    (t : Real) (x : Fin m -> Real) :
+    matMulVec m (fun i j => t * M i j) x =
+      fun i => t * matMulVec m M x i := by
+  ext i
+  unfold matMulVec
+  rw [Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro j _
+  ring
+
+set_option maxHeartbeats 800000 in
+theorem higham21Eq21_7_exactRemainder_four_term_decomposition
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
+    (b Deltab : Fin m -> Real)
+    (G_inv G_t_inv : Fin m -> Fin m -> Real) (t : Real) :
+    higham21Eq21_7ExactRemainder
+        A DeltaA b Deltab G_inv G_t_inv t =
+      fun j =>
+        (((rectTransposeMulVec A
+              (matMulVec m
+                (higham21Eq21_7CancellationMatrix
+                  A DeltaA G_inv G_t_inv t) b) j +
+            t * rectTransposeMulVec DeltaA
+              (matMulVec m
+                (higham21Eq21_7InverseDifferenceMatrix
+                  A DeltaA G_inv G_t_inv t) b) j) +
+          t * rectTransposeMulVec A
+            (matMulVec m
+              (higham21Eq21_7InverseDifferenceMatrix
+                A DeltaA G_inv G_t_inv t) Deltab) j) +
+        t ^ 2 * rectTransposeMulVec DeltaA
+          (matMulVec m G_t_inv Deltab) j) := by
+  let H := higham21Eq21_7GramLinear A DeltaA
+  let dG := higham21Eq21_7InverseDifferenceMatrix
+    A DeltaA G_inv G_t_inv t
+  let LH := higham21Eq21_7LinearizedMatrix G_inv H
+  let qMat := higham21Eq21_7CancellationMatrix
+    A DeltaA G_inv G_t_inv t
+  have hLHmat : LH = matMul m (matMul m G_inv H) G_inv := by
+    ext i j
+    exact ch7InverseLinearizedEntry_eq_matMul m G_inv H i j
+  have hLHb :
+      matMulVec m LH b =
+        matMulVec m G_inv (matMulVec m H (matMulVec m G_inv b)) := by
+    rw [hLHmat]
+    ext i
+    rw [matMulVec_matMul m (matMul m G_inv H) G_inv b i]
+    rw [matMulVec_matMul m G_inv H (matMulVec m G_inv b) i]
+  have hqAction :
+      matMulVec m qMat b =
+        fun i => matMulVec m dG b i + t * matMulVec m LH b i := by
+    change matMulVec m (fun i j => dG i j + t * LH i j) b = _
+    rw [matMulVec_add_left]
+    rw [higham21Eq21_7_matMulVec_matrix_const_mul]
+  have hcombine :
+      rectTransposeMulVec A (matMulVec m qMat b) =
+        fun j =>
+          rectTransposeMulVec A (matMulVec m dG b) j +
+            t * rectTransposeMulVec A
+              (matMulVec m G_inv
+                (matMulVec m H (matMulVec m G_inv b))) j := by
+    rw [hqAction]
+    rw [higham21Eq21_7_rectTransposeMulVec_add]
+    rw [higham21Eq21_7_rectTransposeMulVec_const_mul]
+    rw [hLHb]
+  ext j
+  have hj := congrFun hcombine j
+  change
+    rectTransposeMulVec A (matMulVec m dG b) j +
+        t * rectTransposeMulVec DeltaA (matMulVec m dG b) j +
+        t * rectTransposeMulVec A (matMulVec m dG Deltab) j +
+        t ^ 2 * rectTransposeMulVec DeltaA
+          (matMulVec m G_t_inv Deltab) j +
+        t * rectTransposeMulVec A
+          (matMulVec m G_inv
+            (matMulVec m H (matMulVec m G_inv b))) j =
+      (((rectTransposeMulVec A (matMulVec m qMat b) j +
+            t * rectTransposeMulVec DeltaA (matMulVec m dG b) j) +
+          t * rectTransposeMulVec A (matMulVec m dG Deltab) j) +
+        t ^ 2 * rectTransposeMulVec DeltaA
+          (matMulVec m G_t_inv Deltab) j)
+  calc
+    rectTransposeMulVec A (matMulVec m dG b) j +
+          t * rectTransposeMulVec DeltaA (matMulVec m dG b) j +
+          t * rectTransposeMulVec A (matMulVec m dG Deltab) j +
+          t ^ 2 * rectTransposeMulVec DeltaA
+            (matMulVec m G_t_inv Deltab) j +
+          t * rectTransposeMulVec A
+            (matMulVec m G_inv
+              (matMulVec m H (matMulVec m G_inv b))) j =
+        (((rectTransposeMulVec A (matMulVec m dG b) j +
+              t * rectTransposeMulVec A
+                (matMulVec m G_inv
+                  (matMulVec m H (matMulVec m G_inv b))) j) +
+            t * rectTransposeMulVec DeltaA (matMulVec m dG b) j) +
+          t * rectTransposeMulVec A (matMulVec m dG Deltab) j) +
+        t ^ 2 * rectTransposeMulVec DeltaA
+          (matMulVec m G_t_inv Deltab) j := by ring
+    _ = (((rectTransposeMulVec A (matMulVec m qMat b) j +
+            t * rectTransposeMulVec DeltaA (matMulVec m dG b) j) +
+          t * rectTransposeMulVec A (matMulVec m dG Deltab) j) +
+        t ^ 2 * rectTransposeMulVec DeltaA
+          (matMulVec m G_t_inv Deltab) j) := by rw [hj]
+
+set_option maxHeartbeats 5000000
+/-- Higham, 2nd ed., Chapter 21, Theorem 21.1, equation (21.7): the exact
+    finite remainder is bounded by `|t|^2` times an explicit fixed-radius
+    coefficient whenever the perturbed Gram inverses are uniformly bounded. -/
+theorem higham21Eq21_7_exactRemainder_vecNorm2_le_fixed_radius
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
+    (b Deltab : Fin m -> Real)
+    (G_inv G_t_inv : Fin m -> Fin m -> Real)
+    (rho beta t : Real) (hrho : 0 <= rho) (hbeta : 0 <= beta)
+    (ht : |t| <= rho) (hG_t_inv : frobNorm G_t_inv <= beta) :
+    vecNorm2
+        (higham21Eq21_7ExactRemainder
+          A DeltaA b Deltab G_inv G_t_inv t) <=
+      |t| ^ 2 * higham21Eq21_7FixedRadiusCoefficient
+        A DeltaA b Deltab G_inv rho beta := by
+  let dG := higham21Eq21_7InverseDifferenceMatrix
+    A DeltaA G_inv G_t_inv t
+  let qMat := higham21Eq21_7CancellationMatrix
+    A DeltaA G_inv G_t_inv t
+  let dC := higham21Eq21_7InverseDifferenceCoefficient
+    A DeltaA G_inv rho beta
+  let qC := higham21Eq21_7CancellationCoefficient
+    A DeltaA G_inv rho beta
+  have hDnorm : frobNorm dG <= |t| * dC := by
+    simpa [dG, higham21Eq21_7InverseDifferenceMatrix] using
+      (higham21Eq21_7_inverseDifference_frobNorm_le_fixed_radius
+        A DeltaA G_inv G_t_inv rho beta t hrho hbeta ht hG_t_inv)
+  have hQnorm : frobNorm qMat <= |t| ^ 2 * qC := by
+    simpa [qMat, higham21Eq21_7CancellationMatrix,
+      higham21Eq21_7InverseDifferenceMatrix] using
+      higham21Eq21_7_inverseDifference_cancellation_frobNorm_le_fixed_radius
+        A DeltaA G_inv G_t_inv rho beta t hrho hbeta ht hG_t_inv
+  let v0 : Fin n -> Real :=
+    rectTransposeMulVec A (matMulVec m qMat b)
+  let v1 : Fin n -> Real :=
+    fun j => t * rectTransposeMulVec DeltaA (matMulVec m dG b) j
+  let v2 : Fin n -> Real :=
+    fun j => t * rectTransposeMulVec A (matMulVec m dG Deltab) j
+  let v3 : Fin n -> Real :=
+    fun j => t ^ 2 *
+      rectTransposeMulVec DeltaA (matMulVec m G_t_inv Deltab) j
+  have hrem :
+      higham21Eq21_7ExactRemainder
+          A DeltaA b Deltab G_inv G_t_inv t =
+        fun j => ((v0 j + v1 j) + v2 j) + v3 j := by
+    simpa [v0, v1, v2, v3, dG, qMat] using
+      (higham21Eq21_7_exactRemainder_four_term_decomposition
+        A DeltaA b Deltab G_inv G_t_inv t)
+  have hv0 : vecNorm2 v0 <=
+      |t| ^ 2 * (frobNormRect A * qC * vecNorm2 b) := by
+    calc
+      vecNorm2 v0 <=
+          frobNormRect A * vecNorm2 (matMulVec m qMat b) := by
+        exact vecNorm2_rectMatMulVec_finiteTranspose_le_frobNormRect_mul
+          A (matMulVec m qMat b)
+      _ <= frobNormRect A * (frobNorm qMat * vecNorm2 b) :=
+        mul_le_mul_of_nonneg_left
+          (vecNorm2_matMulVec_le_frobNorm_mul qMat b)
+          (frobNormRect_nonneg A)
+      _ <= frobNormRect A * ((|t| ^ 2 * qC) * vecNorm2 b) :=
+        mul_le_mul_of_nonneg_left
+          (mul_le_mul_of_nonneg_right hQnorm (vecNorm2_nonneg b))
+          (frobNormRect_nonneg A)
+      _ = |t| ^ 2 * (frobNormRect A * qC * vecNorm2 b) := by ring
+  have hv1 : vecNorm2 v1 <=
+      |t| ^ 2 * (frobNormRect DeltaA * dC * vecNorm2 b) := by
+    calc
+      vecNorm2 v1 = |t| *
+          vecNorm2 (rectTransposeMulVec DeltaA (matMulVec m dG b)) := by
+        exact vecNorm2_smul t _
+      _ <= |t| * (frobNormRect DeltaA * vecNorm2 (matMulVec m dG b)) :=
+        mul_le_mul_of_nonneg_left
+          (vecNorm2_rectMatMulVec_finiteTranspose_le_frobNormRect_mul
+            DeltaA (matMulVec m dG b)) (abs_nonneg t)
+      _ <= |t| *
+          (frobNormRect DeltaA * (frobNorm dG * vecNorm2 b)) :=
+        mul_le_mul_of_nonneg_left
+          (mul_le_mul_of_nonneg_left
+            (vecNorm2_matMulVec_le_frobNorm_mul dG b)
+            (frobNormRect_nonneg DeltaA)) (abs_nonneg t)
+      _ <= |t| *
+          (frobNormRect DeltaA * ((|t| * dC) * vecNorm2 b)) :=
+        mul_le_mul_of_nonneg_left
+          (mul_le_mul_of_nonneg_left
+            (mul_le_mul_of_nonneg_right hDnorm (vecNorm2_nonneg b))
+            (frobNormRect_nonneg DeltaA)) (abs_nonneg t)
+      _ = |t| ^ 2 * (frobNormRect DeltaA * dC * vecNorm2 b) := by ring
+  have hv2 : vecNorm2 v2 <=
+      |t| ^ 2 * (frobNormRect A * dC * vecNorm2 Deltab) := by
+    calc
+      vecNorm2 v2 = |t| *
+          vecNorm2 (rectTransposeMulVec A (matMulVec m dG Deltab)) := by
+        exact vecNorm2_smul t _
+      _ <= |t| * (frobNormRect A * vecNorm2 (matMulVec m dG Deltab)) :=
+        mul_le_mul_of_nonneg_left
+          (vecNorm2_rectMatMulVec_finiteTranspose_le_frobNormRect_mul
+            A (matMulVec m dG Deltab)) (abs_nonneg t)
+      _ <= |t| *
+          (frobNormRect A * (frobNorm dG * vecNorm2 Deltab)) :=
+        mul_le_mul_of_nonneg_left
+          (mul_le_mul_of_nonneg_left
+            (vecNorm2_matMulVec_le_frobNorm_mul dG Deltab)
+            (frobNormRect_nonneg A)) (abs_nonneg t)
+      _ <= |t| *
+          (frobNormRect A * ((|t| * dC) * vecNorm2 Deltab)) :=
+        mul_le_mul_of_nonneg_left
+          (mul_le_mul_of_nonneg_left
+            (mul_le_mul_of_nonneg_right hDnorm (vecNorm2_nonneg Deltab))
+            (frobNormRect_nonneg A)) (abs_nonneg t)
+      _ = |t| ^ 2 * (frobNormRect A * dC * vecNorm2 Deltab) := by ring
+  have hv3 : vecNorm2 v3 <=
+      |t| ^ 2 * (frobNormRect DeltaA * beta * vecNorm2 Deltab) := by
+    calc
+      vecNorm2 v3 = |t ^ 2| *
+          vecNorm2 (rectTransposeMulVec DeltaA
+            (matMulVec m G_t_inv Deltab)) := by
+        exact vecNorm2_smul (t ^ 2) _
+      _ = |t| ^ 2 *
+          vecNorm2 (rectTransposeMulVec DeltaA
+            (matMulVec m G_t_inv Deltab)) := by rw [abs_pow]
+      _ <= |t| ^ 2 *
+          (frobNormRect DeltaA * vecNorm2 (matMulVec m G_t_inv Deltab)) :=
+        mul_le_mul_of_nonneg_left
+          (vecNorm2_rectMatMulVec_finiteTranspose_le_frobNormRect_mul
+            DeltaA (matMulVec m G_t_inv Deltab)) (sq_nonneg |t|)
+      _ <= |t| ^ 2 *
+          (frobNormRect DeltaA * (frobNorm G_t_inv * vecNorm2 Deltab)) :=
+        mul_le_mul_of_nonneg_left
+          (mul_le_mul_of_nonneg_left
+            (vecNorm2_matMulVec_le_frobNorm_mul G_t_inv Deltab)
+            (frobNormRect_nonneg DeltaA)) (sq_nonneg |t|)
+      _ <= |t| ^ 2 *
+          (frobNormRect DeltaA * (beta * vecNorm2 Deltab)) :=
+        mul_le_mul_of_nonneg_left
+          (mul_le_mul_of_nonneg_left
+            (mul_le_mul_of_nonneg_right hG_t_inv (vecNorm2_nonneg Deltab))
+            (frobNormRect_nonneg DeltaA)) (sq_nonneg |t|)
+      _ = |t| ^ 2 *
+          (frobNormRect DeltaA * beta * vecNorm2 Deltab) := by ring
+  rw [hrem]
+  calc
+    vecNorm2 (fun j => ((v0 j + v1 j) + v2 j) + v3 j) <=
+        vecNorm2 (fun j => (v0 j + v1 j) + v2 j) + vecNorm2 v3 :=
+      vecNorm2_add_le _ _
+    _ <= (vecNorm2 (fun j => v0 j + v1 j) + vecNorm2 v2) +
+        vecNorm2 v3 :=
+      by
+        have h012 := vecNorm2_add_le (fun j => v0 j + v1 j) v2
+        nlinarith
+    _ <= ((vecNorm2 v0 + vecNorm2 v1) + vecNorm2 v2) +
+        vecNorm2 v3 :=
+      by
+        have h01 := vecNorm2_add_le v0 v1
+        nlinarith
+    _ <=
+        ((|t| ^ 2 * (frobNormRect A * qC * vecNorm2 b) +
+            |t| ^ 2 * (frobNormRect DeltaA * dC * vecNorm2 b)) +
+          |t| ^ 2 * (frobNormRect A * dC * vecNorm2 Deltab)) +
+        |t| ^ 2 * (frobNormRect DeltaA * beta * vecNorm2 Deltab) :=
+      add_le_add (add_le_add (add_le_add hv0 hv1) hv2) hv3
+    _ = |t| ^ 2 * higham21Eq21_7FixedRadiusCoefficient
+          A DeltaA b Deltab G_inv rho beta := by
+      simp only [higham21Eq21_7FixedRadiusCoefficient]
+      change
+        ((|t| ^ 2 * (frobNormRect A * qC * vecNorm2 b) +
+              |t| ^ 2 * (frobNormRect DeltaA * dC * vecNorm2 b)) +
+            |t| ^ 2 * (frobNormRect A * dC * vecNorm2 Deltab)) +
+          |t| ^ 2 * (frobNormRect DeltaA * beta * vecNorm2 Deltab) =
+        |t| ^ 2 *
+          (frobNormRect A * qC * vecNorm2 b +
+            frobNormRect DeltaA * dC * vecNorm2 b +
+            frobNormRect A * dC * vecNorm2 Deltab +
+            frobNormRect DeltaA * beta * vecNorm2 Deltab)
+      ring
+
+/-- Higham, 2nd ed., Chapter 21, Theorem 21.1, equation (21.7): the exact
+    remainder is `O(t^2)` for any locally uniformly bounded family of
+    perturbed Gram inverses. -/
+theorem higham21Eq21_7_exactRemainder_vecNorm2_isBigO
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
+    (b Deltab : Fin m -> Real)
+    (G_inv : Fin m -> Fin m -> Real)
+    (G_t_inv : Real -> Fin m -> Fin m -> Real)
+    (rho beta : Real) (hrho : 0 < rho) (hbeta : 0 <= beta)
+    (hG_t_inv : forall t, |t| <= rho -> frobNorm (G_t_inv t) <= beta) :
+    (fun t =>
+      vecNorm2
+        (higham21Eq21_7ExactRemainder
+          A DeltaA b Deltab G_inv (G_t_inv t) t)) =O[nhds 0]
+      (fun t : Real => t ^ 2) := by
+  let C := higham21Eq21_7FixedRadiusCoefficient
+    A DeltaA b Deltab G_inv rho beta
+  apply Asymptotics.IsBigO.of_bound C
+  filter_upwards [Metric.ball_mem_nhds (0 : Real) hrho] with t ht
+  have htlt : |t| < rho := by
+    simpa [Real.dist_eq] using ht
+  have hquad :=
+    higham21Eq21_7_exactRemainder_vecNorm2_le_fixed_radius
+      A DeltaA b Deltab G_inv (G_t_inv t) rho beta t hrho.le hbeta
+        htlt.le (hG_t_inv t htlt.le)
+  calc
+    norm
+        (vecNorm2
+          (higham21Eq21_7ExactRemainder
+            A DeltaA b Deltab G_inv (G_t_inv t) t)) =
+        vecNorm2
+          (higham21Eq21_7ExactRemainder
+            A DeltaA b Deltab G_inv (G_t_inv t) t) := by
+      rw [Real.norm_eq_abs, abs_of_nonneg (vecNorm2_nonneg _)]
+    _ <= |t| ^ 2 * C := by simpa [C] using hquad
+    _ = C * norm (t ^ 2) := by
+      rw [Real.norm_eq_abs, abs_pow]
+      ring
+
+
+
+end Higham21Eq21_7QuadraticRemainder
+
+
 -- ============================================================
 -- §21.2  Lemma 21.2 projector/norm bridge
 -- ============================================================
@@ -7872,7 +8748,7 @@ theorem higham21_rectOpNorm2Le_pseudoinverse_product_of_row_bounds_nat_factor
     higham21_rectOpNorm2Le_pseudoinverse_product_of_row_bounds
       A Delta Aplus eta heta hrow
 
-set_option maxHeartbeats 1200000 in
+set_option maxHeartbeats 1200000
 /-- Direct Lemma 21.2 row-wise handoff from the printed pseudoinverse-product
     smallness condition.  The proof constructs the source symmetrization in
     the nonzero branch and uses the second perturbation in the zero branch. -/
@@ -8517,8 +9393,7 @@ theorem undetNormwiseBackwardErrorCostF_ge_theta_vecNorm_of_zero_feasible
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
     zero-vector branch of the Sun--Sun normwise Frobenius backward-error
-    formula, `eta_F(0) = theta * ||b||_2`, stated for nonnegative `theta`.
-    The nonzero singular-value formula remains a separate selected target. -/
+    formula, `eta_F(0) = theta * ||b||_2`, stated for nonnegative `theta`. -/
 theorem higham21_thm21_3_etaF_zero
     {m n : ℕ} (theta : ℝ) (htheta : 0 ≤ theta)
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) :
@@ -8682,7 +9557,7 @@ theorem higham21_thm21_3_formulaMatrix_mulVec_candidate_eq_zero
   ext i
   simp [rectMatMulVec]
 
-set_option maxHeartbeats 800000 in
+set_option maxHeartbeats 800000
 /-- The right-projector Pythagorean identity used in both directions of the
     nonzero branch of Theorem 21.3. -/
 theorem higham21_thm21_3_right_projector_frobNormSqRect_pythagoras
@@ -8791,6 +9666,291 @@ theorem undetNormwiseBackwardErrorNonzeroFormulaRHS_sq
   exact Real.sq_sqrt
     (undetNormwiseBackwardErrorNonzeroFormulaRHS_radicand_nonneg
       theta A b y sigma)
+
+set_option maxHeartbeats 2000000
+/-- Higham, 2nd ed., Chapter 21, Theorem 21.3: every feasible
+    perturbation for a nonzero candidate has squared weighted Frobenius cost
+    at least the squared Sun--Sun formula, with the row singular value of
+    `A(I - y y^+)`. -/
+theorem higham21_thm21_3_nonzeroFormulaRHS_sq_le_costF_sq_of_feasible
+    {m n : Nat} (theta : Real)
+    (A : Fin (m + 1) -> Fin n -> Real)
+    (b : Fin (m + 1) -> Real) {y : Fin n -> Real}
+    (hy : Not (y = 0))
+    (DeltaA : Fin (m + 1) -> Fin n -> Real)
+    (Deltab : Fin (m + 1) -> Real)
+    (hfeas : UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab) :
+    undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y
+          (higham21SigmaMinRow
+            (undetNormwiseBackwardErrorFormulaMatrix A y)) ^ 2 <=
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab ^ 2 := by
+  let P : Fin n -> Fin n -> Real := undetApproxComplementProjector y
+  let M : Fin (m + 1) -> Fin n -> Real :=
+    undetNormwiseBackwardErrorFormulaMatrix A y
+  let E : Fin (m + 1) -> Fin n -> Real := rectMatMul DeltaA P
+  let w : Fin (m + 1) -> Real := rectMatMulVec DeltaA y
+  let r : Fin (m + 1) -> Real := undetResidualHigham A b y
+  let Y : Real := vecNorm2Sq y
+  let T : Real := theta ^ 2
+  let D : Real := 1 + T * Y
+  let sigma : Real := higham21SigmaMinRow M
+
+  have hYne : Not (Y = 0) := by
+    simpa [Y] using higham21_vecNorm2Sq_ne_zero_of_ne_zero hy
+  have hYpos : 0 < Y :=
+    lt_of_le_of_ne' (by simpa [Y] using vecNorm2Sq_nonneg y) hYne
+  have hDpos : 0 < D := by
+    simpa [D, T, Y] using lsNormwiseBackwardErrorMu_den_pos theta y
+
+  have hsigma_sq : sigma ^ 2 <= frobNormSqRect E := by
+    let B : Fin (m + 1) -> Fin n -> Real :=
+      fun i j => A i j + DeltaA i j
+    let z : Fin (m + 1) -> Real :=
+      Classical.choose (RectMinNormSolution.exists_transpose_witness hfeas)
+    have hz : rectTransposeMulVec (fun i j => A i j + DeltaA i j) z = y :=
+      Classical.choose_spec (RectMinNormSolution.exists_transpose_witness hfeas)
+    have hzB : rectTransposeMulVec B z = y := by
+      simpa [B] using hz
+    have hz_ne : Not (z = 0) := by
+      intro hz0
+      apply hy
+      calc
+        y = rectTransposeMulVec B z := hzB.symm
+        _ = rectTransposeMulVec B 0 := by rw [hz0]
+        _ = 0 := by
+          ext j
+          simp [rectTransposeMulVec]
+    have hzNormPos : 0 < vecNorm2 z := by
+      have hnorm_ne : Not (vecNorm2 z = 0) := by
+        intro hzero
+        apply hz_ne
+        ext i
+        exact (vecNorm2_eq_zero_iff z).mp hzero i
+      exact lt_of_le_of_ne' (vecNorm2_nonneg z) hnorm_ne
+    have hPzero : rectMatMulVec P y = 0 := by
+      simpa [P, undetApproxComplementProjector, rectMatMulVec, matMulVec] using
+        (lsResidualComplementProjector_mulVec_residual y hYne)
+    have hPsymm : forall i j : Fin n, P i j = P j i := by
+      intro i j
+      simpa [P, undetApproxComplementProjector,
+        lsResidualComplementProjector] using
+        (lsLemma20_6ProjectorComplement_symmetric y i j)
+    have hPtranspose : rectTransposeMulVec P y = rectMatMulVec P y := by
+      ext j
+      unfold rectTransposeMulVec rectMatMulVec
+      apply Finset.sum_congr rfl
+      intro i _
+      rw [hPsymm i j]
+    have htransProduct :
+        rectTransposeMulVec (rectMatMul B P) z =
+          rectTransposeMulVec P (rectTransposeMulVec B z) := by
+      ext j
+      unfold rectTransposeMulVec rectMatMul
+      calc
+        Finset.univ.sum (fun i : Fin (m + 1) =>
+            (Finset.univ.sum (fun k : Fin n => B i k * P k j)) * z i) =
+          Finset.univ.sum (fun i : Fin (m + 1) =>
+            Finset.univ.sum (fun k : Fin n => (B i k * P k j) * z i)) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              rw [Finset.sum_mul]
+        _ = Finset.univ.sum (fun k : Fin n =>
+              Finset.univ.sum (fun i : Fin (m + 1) =>
+                (B i k * P k j) * z i)) := by
+              rw [Finset.sum_comm]
+        _ = Finset.univ.sum (fun k : Fin n => P k j *
+              Finset.univ.sum (fun i : Fin (m + 1) => B i k * z i)) := by
+              apply Finset.sum_congr rfl
+              intro k _
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro i _
+              ring
+    have hBPzero : rectTransposeMulVec (rectMatMul B P) z = 0 := by
+      calc
+        rectTransposeMulVec (rectMatMul B P) z =
+            rectTransposeMulVec P (rectTransposeMulVec B z) := htransProduct
+        _ = rectTransposeMulVec P y := by rw [hzB]
+        _ = rectMatMulVec P y := hPtranspose
+        _ = 0 := hPzero
+    have hMEeq :
+        (fun i j => M i j + E i j) = rectMatMul B P := by
+      simpa [M, E, B, P, undetNormwiseBackwardErrorFormulaMatrix] using
+        (rectMatMul_add_left A DeltaA
+          (undetApproxComplementProjector y)).symm
+    have hsplit :
+        rectTransposeMulVec (fun i j => M i j + E i j) z =
+          fun j => rectTransposeMulVec M z j + rectTransposeMulVec E z j := by
+      ext j
+      unfold rectTransposeMulVec
+      calc
+        Finset.univ.sum (fun i : Fin (m + 1) =>
+            (M i j + E i j) * z i) =
+          Finset.univ.sum (fun i : Fin (m + 1) =>
+            M i j * z i + E i j * z i) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              ring
+        _ = Finset.univ.sum (fun i : Fin (m + 1) => M i j * z i) +
+            Finset.univ.sum (fun i : Fin (m + 1) => E i j * z i) :=
+              Finset.sum_add_distrib
+    have hsumzero :
+        rectTransposeMulVec (fun i j => M i j + E i j) z = 0 := by
+      rw [hMEeq]
+      exact hBPzero
+    rw [hsplit] at hsumzero
+    have hrelation :
+        rectTransposeMulVec M z =
+          fun j => -rectTransposeMulVec E z j := by
+      ext j
+      have hj := congrFun hsumzero j
+      simp only [Pi.zero_apply] at hj
+      linarith
+    have hsigma_action :
+        sigma * vecNorm2 z <= vecNorm2 (rectTransposeMulVec M z) := by
+      simpa [sigma] using
+        (higham21SigmaMinRow_mul_vecNorm2_le_rectTransposeMulVec M z)
+    have hEaction :
+        vecNorm2 (rectTransposeMulVec E z) <=
+          frobNormRect E * vecNorm2 z := by
+      simpa only [rectTransposeMulVec, rectMatMulVec, finiteTranspose] using
+        (vecNorm2_rectMatMulVec_finiteTranspose_le_frobNormRect_mul E z)
+    have hprod : sigma * vecNorm2 z <= frobNormRect E * vecNorm2 z := by
+      calc
+        sigma * vecNorm2 z <= vecNorm2 (rectTransposeMulVec M z) :=
+          hsigma_action
+        _ = vecNorm2 (rectTransposeMulVec E z) := by
+          rw [hrelation, vecNorm2_neg]
+        _ <= frobNormRect E * vecNorm2 z := hEaction
+    have hsigma_le : sigma <= frobNormRect E :=
+      le_of_mul_le_mul_right hprod hzNormPos
+    have hsigma_nonneg : 0 <= sigma := by
+      simpa [sigma] using higham21SigmaMinRow_nonneg M
+    have habs : abs sigma <= abs (frobNormRect E) := by
+      simpa [abs_of_nonneg hsigma_nonneg,
+        abs_of_nonneg (frobNormRect_nonneg E)] using hsigma_le
+    have hsquares : sigma ^ 2 <= frobNormRect E ^ 2 :=
+      (sq_le_sq).mpr habs
+    simpa [frobNormRect_sq] using hsquares
+
+  have hres : r = fun i => w i - Deltab i := by
+    simpa [r, w] using hfeas.source_residual_eq
+  have hscalar :
+      T * Y / D * (vecNorm2Sq r / Y) <=
+        vecNorm2Sq w / Y + T * vecNorm2Sq Deltab := by
+    let q : Fin (m + 1) -> Real :=
+      fun i => w i + T * Y * Deltab i
+    have hWB :
+        vecNorm2Sq w + T * Y * vecNorm2Sq Deltab =
+          Finset.univ.sum (fun i : Fin (m + 1) =>
+            (w i) ^ 2 + T * Y * (Deltab i) ^ 2) := by
+      unfold vecNorm2Sq
+      calc
+        Finset.univ.sum (fun i : Fin (m + 1) => w i ^ 2) +
+            T * Y * Finset.univ.sum (fun i : Fin (m + 1) => Deltab i ^ 2) =
+          Finset.univ.sum (fun i : Fin (m + 1) => w i ^ 2) +
+            Finset.univ.sum (fun i : Fin (m + 1) => T * Y * Deltab i ^ 2) := by
+              rw [Finset.mul_sum]
+        _ = Finset.univ.sum (fun i : Fin (m + 1) =>
+              w i ^ 2 + T * Y * Deltab i ^ 2) :=
+              Finset.sum_add_distrib.symm
+    have hcomplete_sum :
+        D * (vecNorm2Sq w + T * Y * vecNorm2Sq Deltab) =
+          T * Y * vecNorm2Sq r + vecNorm2Sq q := by
+      calc
+        D * (vecNorm2Sq w + T * Y * vecNorm2Sq Deltab) =
+            D * Finset.univ.sum (fun i : Fin (m + 1) =>
+              ((w i) ^ 2 + T * Y * (Deltab i) ^ 2)) := by rw [hWB]
+        _ = Finset.univ.sum (fun i : Fin (m + 1) =>
+              D * ((w i) ^ 2 + T * Y * (Deltab i) ^ 2)) := by
+                rw [Finset.mul_sum]
+        _ = Finset.univ.sum (fun i : Fin (m + 1) =>
+              (T * Y * (w i - Deltab i) ^ 2 +
+                (w i + T * Y * Deltab i) ^ 2)) := by
+                apply Finset.sum_congr rfl
+                intro i _
+                dsimp [D]
+                ring
+        _ = T * Y * Finset.univ.sum (fun i : Fin (m + 1) =>
+              (w i - Deltab i) ^ 2) +
+              Finset.univ.sum (fun i : Fin (m + 1) =>
+                (w i + T * Y * Deltab i) ^ 2) := by
+                rw [Finset.sum_add_distrib, Finset.mul_sum]
+        _ = T * Y * vecNorm2Sq r + vecNorm2Sq q := by
+                simp only [vecNorm2Sq]
+                rw [hres]
+    have hq_nonneg : 0 <= vecNorm2Sq q := vecNorm2Sq_nonneg q
+    have hTYR_le :
+        T * Y * vecNorm2Sq r <=
+          D * (vecNorm2Sq w + T * Y * vecNorm2Sq Deltab) := by
+      rw [hcomplete_sum]
+      linarith
+    have hTR_le :
+        T * vecNorm2Sq r <=
+          D * (vecNorm2Sq w / Y + T * vecNorm2Sq Deltab) := by
+      have hmul :
+          (T * vecNorm2Sq r) * Y <=
+            (D * (vecNorm2Sq w / Y + T * vecNorm2Sq Deltab)) * Y := by
+        calc
+          (T * vecNorm2Sq r) * Y = T * Y * vecNorm2Sq r := by ring
+          _ <= D * (vecNorm2Sq w + T * Y * vecNorm2Sq Deltab) := hTYR_le
+          _ = (D * (vecNorm2Sq w / Y + T * vecNorm2Sq Deltab)) * Y := by
+            field_simp [hYne] <;> ring
+      exact le_of_mul_le_mul_right hmul hYpos
+    have hformula :
+        T * Y / D * (vecNorm2Sq r / Y) =
+          T * vecNorm2Sq r / D := by
+      field_simp [hYne, ne_of_gt hDpos]
+    rw [hformula]
+    have hdiv :
+        T * vecNorm2Sq r / D <=
+          ((vecNorm2Sq w / Y + T * vecNorm2Sq Deltab) * D) / D :=
+      (div_le_div_iff_of_pos_right hDpos).2 (by
+        simpa [mul_comm] using hTR_le)
+    calc
+      T * vecNorm2Sq r / D <=
+          ((vecNorm2Sq w / Y + T * vecNorm2Sq Deltab) * D) / D := hdiv
+      _ = vecNorm2Sq w / Y + T * vecNorm2Sq Deltab := by
+        field_simp [ne_of_gt hDpos]
+
+  have hpyth :
+      frobNormSqRect DeltaA = vecNorm2Sq w / Y + frobNormSqRect E := by
+    simpa [w, Y, E, P] using
+      (higham21_thm21_3_right_projector_frobNormSqRect_pythagoras
+        DeltaA y hy)
+  rw [undetNormwiseBackwardErrorNonzeroFormulaRHS_sq,
+    lsNormwiseBackwardErrorCostF_sq]
+  change
+    T * Y / D * (vecNorm2Sq r / Y) + sigma ^ 2 <=
+      frobNormSqRect DeltaA + T * vecNorm2Sq Deltab
+  calc
+    T * Y / D * (vecNorm2Sq r / Y) + sigma ^ 2 <=
+        (vecNorm2Sq w / Y + T * vecNorm2Sq Deltab) +
+          frobNormSqRect E := add_le_add hscalar hsigma_sq
+    _ = frobNormSqRect DeltaA + T * vecNorm2Sq Deltab := by
+      rw [hpyth] <;> ring
+
+/-- Higham, 2nd ed., Chapter 21, Theorem 21.3: every feasible
+    perturbation for a nonzero candidate has weighted Frobenius cost at least
+    the Sun--Sun formula. -/
+theorem higham21_thm21_3_nonzeroFormulaRHS_le_costF_of_feasible
+    {m n : Nat} (theta : Real)
+    (A : Fin (m + 1) -> Fin n -> Real)
+    (b : Fin (m + 1) -> Real) {y : Fin n -> Real}
+    (hy : Not (y = 0))
+    (DeltaA : Fin (m + 1) -> Fin n -> Real)
+    (Deltab : Fin (m + 1) -> Real)
+    (hfeas : UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab) :
+    undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y
+          (higham21SigmaMinRow
+            (undetNormwiseBackwardErrorFormulaMatrix A y)) <=
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab := by
+  apply (sq_le_sq₀
+    (undetNormwiseBackwardErrorNonzeroFormulaRHS_nonneg theta A b y _)
+    (lsNormwiseBackwardErrorCostF_nonneg theta DeltaA Deltab)).mp
+  exact
+    higham21_thm21_3_nonzeroFormulaRHS_sq_le_costF_sq_of_feasible
+      theta A b hy DeltaA Deltab hfeas
 
 /-- Positive singular-value branch of the scalar right-hand side in Higham
     Chapter 21, Theorem 21.3: a positive supplied singular-value parameter
@@ -8995,6 +10155,781 @@ theorem undetNormwiseBackwardErrorEtaF_eq_nonzeroFormulaRHS_of_formula_upper_cer
       theta A b y sigma ⟨DeltaA, Deltab, hfeas, hcost⟩)
     (undetNormwiseBackwardErrorNonzeroFormulaRHS_le_etaF_of_forall_feasible_cost_ge
       theta A b y sigma hnonempty hlower)
+
+/-- Minimum-norm feasibility is equivalent to exact feasibility together with
+    a transpose-range witness.  The forward implication uses finite-dimensional
+    range attainment; the reverse implication is the standard orthogonality
+    characterization of a minimum 2-norm solution. -/
+theorem undetNormwiseBackwardErrorFeasible_iff_system_eq_and_exists_transpose_witness
+    {m n : Nat}
+    (A : Fin m -> Fin n -> Real) (b : Fin m -> Real) (y : Fin n -> Real)
+    (DeltaA : Fin m -> Fin n -> Real) (Deltab : Fin m -> Real) :
+    UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab <->
+      rectMatMulVec (fun i j => A i j + DeltaA i j) y =
+          (fun i => b i + Deltab i) /\
+        exists z : Fin m -> Real,
+          rectTransposeMulVec (fun i j => A i j + DeltaA i j) z = y := by
+  unfold UndetNormwiseBackwardErrorFeasible
+  constructor
+  · intro h
+    exact ⟨h.system_eq, h.exists_transpose_witness⟩
+  · rintro ⟨hsystem, z, hz⟩
+    have hsolve :
+        rectMatMulVec (fun i j => A i j + DeltaA i j)
+            (rectTransposeMulVec (fun i j => A i j + DeltaA i j) z) =
+          fun i => b i + Deltab i := by
+      rw [hz]
+      exact hsystem
+    simpa [hz] using
+      (higham21_eq21_4_rect_transpose_min_norm_of_solves
+        (fun i j => A i j + DeltaA i j) (fun i => b i + Deltab i) z hsolve)
+
+/-- Pairing identity for a rectangular matrix and its transpose. -/
+theorem higham21_rectTransposeMulVec_pairing
+    {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (u : Fin m -> Real) (x : Fin n -> Real) :
+    (∑ j : Fin n, rectTransposeMulVec A u j * x j) =
+      ∑ i : Fin m, u i * rectMatMulVec A x i := by
+  unfold rectTransposeMulVec rectMatMulVec
+  calc
+    (∑ j : Fin n, (∑ i : Fin m, A i j * u i) * x j) =
+        ∑ j : Fin n, ∑ i : Fin m, (A i j * u i) * x j := by
+      apply Finset.sum_congr rfl
+      intro j _
+      rw [Finset.sum_mul]
+    _ = ∑ i : Fin m, ∑ j : Fin n, (A i j * u i) * x j := by
+      rw [Finset.sum_comm]
+    _ = ∑ i : Fin m, u i * ∑ j : Fin n, A i j * x j := by
+      apply Finset.sum_congr rfl
+      intro i _
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro j _
+      ring
+
+/-- Triangle inequality for the weighted Frobenius perturbation cost. -/
+theorem higham21_lsNormwiseBackwardErrorCostF_add_le
+    {m n : Nat} (theta : Real)
+    (A1 A2 : Fin m -> Fin n -> Real) (b1 b2 : Fin m -> Real) :
+    lsNormwiseBackwardErrorCostF theta
+        (fun i j => A1 i j + A2 i j) (fun i => b1 i + b2 i) <=
+      lsNormwiseBackwardErrorCostF theta A1 b1 +
+        lsNormwiseBackwardErrorCostF theta A2 b2 := by
+  unfold lsNormwiseBackwardErrorCostF
+  have hweighted :
+      lsNormwiseBackwardErrorWeightedMatrix theta
+          (fun i j => A1 i j + A2 i j) (fun i => b1 i + b2 i) =
+        fun i j =>
+          lsNormwiseBackwardErrorWeightedMatrix theta A1 b1 i j +
+            lsNormwiseBackwardErrorWeightedMatrix theta A2 b2 i j := by
+    ext i j
+    refine Fin.addCases (fun j => ?_) (fun j => ?_) j <;>
+      simp [lsNormwiseBackwardErrorWeightedMatrix, mul_add]
+  rw [hweighted]
+  exact frobNormRect_add_le _ _
+
+/-- Simultaneous scalar multiplication is homogeneous for the weighted cost. -/
+theorem higham21_lsNormwiseBackwardErrorCostF_smul
+    {m n : Nat} (theta t : Real)
+    (A : Fin m -> Fin n -> Real) (b : Fin m -> Real) :
+    lsNormwiseBackwardErrorCostF theta
+        (fun i j => t * A i j) (fun i => t * b i) =
+      |t| * lsNormwiseBackwardErrorCostF theta A b := by
+  unfold lsNormwiseBackwardErrorCostF
+  have hweighted :
+      lsNormwiseBackwardErrorWeightedMatrix theta
+          (fun i j => t * A i j) (fun i => t * b i) =
+        fun i j =>
+          t * lsNormwiseBackwardErrorWeightedMatrix theta A b i j := by
+    ext i j
+    refine Fin.addCases (fun j => ?_) (fun j => ?_) j <;>
+      simp [lsNormwiseBackwardErrorWeightedMatrix] <;> ring
+  rw [hweighted, frobNormRect_smul]
+
+/-- An arbitrarily small signed scalar can avoid one forbidden affine root. -/
+theorem higham21_exists_signed_small_parameter
+    (a U K eps : Real) (hU : 0 < U) (hK : 0 <= K) (heps : 0 < eps) :
+    exists t : Real, a + t * U ≠ 0 /\ |t| * K <= eps := by
+  let d : Real := eps / (2 * (K + 1))
+  have hden : 0 < 2 * (K + 1) := by positivity
+  have hd : 0 < d := div_pos heps hden
+  have hdK : d * K <= eps := by
+    dsimp [d]
+    have hdK_eq : d * K = eps * K / (2 * (K + 1)) := by
+      dsimp [d]
+      ring
+    rw [hdK_eq]
+    apply (div_le_iff₀ hden).2
+    nlinarith [mul_nonneg (le_of_lt heps) hK]
+  by_cases hplus : a + d * U ≠ 0
+  · refine ⟨d, hplus, ?_⟩
+    simpa [abs_of_pos hd] using hdK
+  · have hplus_eq : a + d * U = 0 := not_ne_iff.mp hplus
+    refine ⟨-d, ?_, ?_⟩
+    · intro hminus
+      have hdu : d * U = 0 := by nlinarith
+      exact (mul_ne_zero (ne_of_gt hd) (ne_of_gt hU)) hdu
+    · simpa [abs_of_pos hd] using hdK
+
+/-- Residual-correcting matrix part of the nonzero Theorem 21.3 witness. -/
+noncomputable def higham21Thm21_3ResidualDeltaA
+    {m n : Nat} (theta : Real)
+    (A : Fin m -> Fin n -> Real) (b : Fin m -> Real) (y : Fin n -> Real) :
+    Fin m -> Fin n -> Real :=
+  let r := undetResidualHigham A b y
+  let den := 1 + theta ^ 2 * vecNorm2Sq y
+  fun i j => (theta ^ 2 / den) * r i * y j
+
+/-- Residual-correcting right-hand-side part of the witness. -/
+noncomputable def higham21Thm21_3ResidualDeltab
+    {m n : Nat} (theta : Real)
+    (A : Fin m -> Fin n -> Real) (b : Fin m -> Real) (y : Fin n -> Real) :
+    Fin m -> Real :=
+  let r := undetResidualHigham A b y
+  let den := 1 + theta ^ 2 * vecNorm2Sq y
+  fun i => -(1 / den) * r i
+
+/-- Rank-one cancellation of the projected transpose action along `u`. -/
+noncomputable def higham21Thm21_3CancellationDeltaA
+    {m n : Nat} (A : Fin m -> Fin n -> Real) (y : Fin n -> Real)
+    (u : Fin m -> Real) : Fin m -> Fin n -> Real :=
+  lsNormwiseBackwardErrorRankOneDeltaA u
+    (rectTransposeMulVec (undetNormwiseBackwardErrorFormulaMatrix A y) u)
+
+/-- The small residual-preserving signed perturbation. -/
+noncomputable abbrev higham21Thm21_3SignedExtraDeltaA
+    {m n : Nat} (t : Real) (u : Fin m -> Real) (y : Fin n -> Real) :
+    Fin m -> Fin n -> Real :=
+  lsNormwiseBackwardErrorRankTwoExtraDeltaA t u y
+
+/-- Full epsilon-approximating matrix perturbation family. -/
+noncomputable def higham21Thm21_3ApproxDeltaA
+    {m n : Nat} (theta : Real)
+    (A : Fin m -> Fin n -> Real) (b : Fin m -> Real) (y : Fin n -> Real)
+    (u : Fin m -> Real) (t : Real) : Fin m -> Fin n -> Real :=
+  fun i j =>
+    higham21Thm21_3ResidualDeltaA theta A b y i j +
+      higham21Thm21_3CancellationDeltaA A y u i j +
+        higham21Thm21_3SignedExtraDeltaA t u y i j
+
+/-- Full epsilon-approximating right-hand-side perturbation family. -/
+noncomputable def higham21Thm21_3ApproxDeltab
+    {m n : Nat} (theta : Real)
+    (A : Fin m -> Fin n -> Real) (b : Fin m -> Real) (y : Fin n -> Real)
+    (u : Fin m -> Real) (t : Real) : Fin m -> Real :=
+  fun i => higham21Thm21_3ResidualDeltab theta A b y i + t * u i
+
+/-- The residual rank-one term has the required action on `y`. -/
+theorem higham21Thm21_3ResidualDeltaA_mulVec
+    {m n : Nat} (theta : Real)
+    (A : Fin m -> Fin n -> Real) (b : Fin m -> Real) (y : Fin n -> Real) :
+    rectMatMulVec (higham21Thm21_3ResidualDeltaA theta A b y) y =
+      fun i =>
+        (theta ^ 2 / (1 + theta ^ 2 * vecNorm2Sq y)) *
+          vecNorm2Sq y * undetResidualHigham A b y i := by
+  ext i
+  unfold rectMatMulVec higham21Thm21_3ResidualDeltaA
+  calc
+    (∑ j : Fin n,
+        (theta ^ 2 / (1 + theta ^ 2 * vecNorm2Sq y) *
+          undetResidualHigham A b y i * y j) * y j) =
+        (theta ^ 2 / (1 + theta ^ 2 * vecNorm2Sq y) *
+          undetResidualHigham A b y i) * ∑ j : Fin n, y j ^ 2 := by
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro j _
+      ring
+    _ = (theta ^ 2 / (1 + theta ^ 2 * vecNorm2Sq y)) *
+          vecNorm2Sq y * undetResidualHigham A b y i := by
+      change
+        (theta ^ 2 / (1 + theta ^ 2 * vecNorm2Sq y) *
+            undetResidualHigham A b y i) * vecNorm2Sq y = _
+      ring
+
+/-- The residual rank-one term vanishes after right projection. -/
+theorem higham21Thm21_3ResidualDeltaA_projector_eq_zero
+    {m n : Nat} (theta : Real)
+    (A : Fin m -> Fin n -> Real) (b : Fin m -> Real)
+    (y : Fin n -> Real) (hy : y ≠ 0) :
+    rectMatMul (higham21Thm21_3ResidualDeltaA theta A b y)
+        (undetApproxComplementProjector y) = 0 := by
+  have hysq : vecNorm2Sq y ≠ 0 :=
+    higham21_vecNorm2Sq_ne_zero_of_ne_zero hy
+  ext i j
+  have hproj :=
+    lsResidualComplementProjector_transpose_mul_residual y hysq j
+  unfold rectMatMul higham21Thm21_3ResidualDeltaA
+  calc
+    (∑ k : Fin n,
+        (theta ^ 2 / (1 + theta ^ 2 * vecNorm2Sq y) *
+          undetResidualHigham A b y i * y k) *
+            undetApproxComplementProjector y k j) =
+        (theta ^ 2 / (1 + theta ^ 2 * vecNorm2Sq y) *
+          undetResidualHigham A b y i) *
+            (∑ k : Fin n,
+              lsResidualComplementProjector y k j * y k) := by
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro k _
+          simp only [undetApproxComplementProjector]
+          ring
+    _ = 0 := by rw [hproj, mul_zero]
+
+/-- The cancellation rank-one term annihilates `y`. -/
+theorem higham21Thm21_3CancellationDeltaA_mulVec_eq_zero
+    {m n : Nat} (A : Fin m -> Fin n -> Real) (y : Fin n -> Real)
+    (u : Fin m -> Real) (hy : y ≠ 0) :
+    rectMatMulVec (higham21Thm21_3CancellationDeltaA A y u) y = 0 := by
+  let M := undetNormwiseBackwardErrorFormulaMatrix A y
+  let w := rectTransposeMulVec M u
+  have hysq : vecNorm2Sq y ≠ 0 :=
+    higham21_vecNorm2Sq_ne_zero_of_ne_zero hy
+  have hMy : rectMatMulVec M y = 0 := by
+    simpa [M] using
+      higham21_thm21_3_formulaMatrix_mulVec_candidate_eq_zero A y hysq
+  have hwy : (∑ j : Fin n, w j * y j) = 0 := by
+    rw [higham21_rectTransposeMulVec_pairing M u y, hMy]
+    simp
+  simpa [higham21Thm21_3CancellationDeltaA, M, w, hwy] using
+    (lsNormwiseBackwardErrorRankOneDeltaA_mulVec u w y)
+
+/-- The transpose action of `A - A(I-yy+)` is rank one in `y`. -/
+theorem higham21_rectTransposeMulVec_sub_formulaMatrix_eq_rankOne
+    {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (y : Fin n -> Real) (u : Fin m -> Real) :
+    (fun j =>
+      rectTransposeMulVec A u j -
+        rectTransposeMulVec (undetNormwiseBackwardErrorFormulaMatrix A y) u j) =
+      fun j =>
+        (y j / vecNorm2Sq y) *
+          (∑ i : Fin m, u i * rectMatMulVec A y i) := by
+  let v : Fin n -> Real := rectTransposeMulVec A u
+  have hformula : forall j : Fin n,
+      rectTransposeMulVec (undetNormwiseBackwardErrorFormulaMatrix A y) u j =
+        ∑ k : Fin n, undetApproxComplementProjector y j k * v k := by
+    intro j
+    unfold undetNormwiseBackwardErrorFormulaMatrix rectTransposeMulVec rectMatMul
+    calc
+      (∑ i : Fin m,
+          (∑ k : Fin n, A i k * undetApproxComplementProjector y k j) * u i) =
+          ∑ i : Fin m, ∑ k : Fin n,
+            (A i k * undetApproxComplementProjector y k j) * u i := by
+              apply Finset.sum_congr rfl
+              intro i _
+              rw [Finset.sum_mul]
+      _ = ∑ k : Fin n, ∑ i : Fin m,
+            (A i k * undetApproxComplementProjector y k j) * u i := by
+              rw [Finset.sum_comm]
+      _ = ∑ k : Fin n, undetApproxComplementProjector y j k * v k := by
+              apply Finset.sum_congr rfl
+              intro k _
+              simp only [v, rectTransposeMulVec]
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro i _
+              simp only [undetApproxComplementProjector]
+              rw [lsResidualComplementProjector_symmetric]
+              ring
+  ext j
+  rw [hformula j]
+  have happly := lsLemma20_6ProjectorComplement_apply_vec y v j
+  simp only [undetApproxComplementProjector] at happly
+  rw [happly]
+  have hpair :
+      (∑ k : Fin n, y k * v k) =
+        ∑ i : Fin m, u i * rectMatMulVec A y i := by
+    calc
+      (∑ k : Fin n, y k * v k) = ∑ k : Fin n, v k * y k := by
+        apply Finset.sum_congr rfl
+        intro k _
+        ring
+      _ = ∑ i : Fin m, u i * rectMatMulVec A y i := by
+        simpa [v] using higham21_rectTransposeMulVec_pairing A u y
+  rw [hpair]
+  ring
+
+/-- The full signed family solves the perturbed system exactly. -/
+theorem higham21Thm21_3Approx_system_eq
+    {m n : Nat} (theta : Real)
+    (A : Fin m -> Fin n -> Real) (b : Fin m -> Real)
+    (y : Fin n -> Real) (u : Fin m -> Real) (t : Real) (hy : y ≠ 0) :
+    rectMatMulVec
+        (fun i j => A i j + higham21Thm21_3ApproxDeltaA theta A b y u t i j) y =
+      fun i => b i + higham21Thm21_3ApproxDeltab theta A b y u t i := by
+  let r := undetResidualHigham A b y
+  let Y := vecNorm2Sq y
+  let den := 1 + theta ^ 2 * Y
+  have hY : Y ≠ 0 := by
+    simpa [Y] using higham21_vecNorm2Sq_ne_zero_of_ne_zero hy
+  have hden : den ≠ 0 := by
+    exact ne_of_gt (by
+      dsimp [den, Y]
+      exact lsNormwiseBackwardErrorMu_den_pos theta y)
+  have hden' : 1 + theta ^ 2 * vecNorm2Sq y ≠ 0 := by
+    simpa [den, Y] using hden
+  have hR := higham21Thm21_3ResidualDeltaA_mulVec theta A b y
+  have hC := higham21Thm21_3CancellationDeltaA_mulVec_eq_zero A y u hy
+  have hE :=
+    lsNormwiseBackwardErrorRankTwoExtraDeltaA_mulVec
+      (beta := t) u hY
+  ext i
+  have hRi := congrFun hR i
+  have hCi := congrFun hC i
+  have hEi := congrFun hE i
+  unfold rectMatMulVec higham21Thm21_3ApproxDeltaA
+    higham21Thm21_3ApproxDeltab at *
+  simp_rw [add_mul, Finset.sum_add_distrib]
+  rw [hRi, hCi, hEi]
+  dsimp [higham21Thm21_3ResidualDeltab, r, Y, den]
+  unfold undetResidualHigham
+  unfold rectMatMulVec
+  field_simp [hden'] <;> ring
+
+/-- The signed family has a rank-one transpose action, with coefficient
+    determined by its exact perturbed right-hand side. -/
+theorem higham21Thm21_3Approx_transpose_action
+    {m n : Nat} (theta : Real)
+    (A : Fin m -> Fin n -> Real) (b : Fin m -> Real)
+    (y : Fin n -> Real) (u : Fin m -> Real) (t : Real)
+    (hy : y ≠ 0) (hu : u ≠ 0) :
+    rectTransposeMulVec
+        (fun i j => A i j + higham21Thm21_3ApproxDeltaA theta A b y u t i j) u =
+      fun j =>
+        ((∑ i : Fin m,
+            u i * (b i + higham21Thm21_3ApproxDeltab theta A b y u t i)) /
+          vecNorm2Sq y) * y j := by
+  let M := undetNormwiseBackwardErrorFormulaMatrix A y
+  let w := rectTransposeMulVec M u
+  let Y := vecNorm2Sq y
+  let U := vecNorm2Sq u
+  let alpha := theta ^ 2 / (1 + theta ^ 2 * Y)
+  let lambda :=
+    (∑ i : Fin m, u i * rectMatMulVec A y i) / Y +
+      alpha * (∑ i : Fin m, undetResidualHigham A b y i * u i) +
+        t * U / Y
+  have hY : Y ≠ 0 := by
+    simpa [Y] using higham21_vecNorm2Sq_ne_zero_of_ne_zero hy
+  have hU : U ≠ 0 := by
+    simpa [U] using higham21_vecNorm2Sq_ne_zero_of_ne_zero hu
+  have hdiff :=
+    higham21_rectTransposeMulVec_sub_formulaMatrix_eq_rankOne A y u
+  have hcancel :
+      rectTransposeMulVec (higham21Thm21_3CancellationDeltaA A y u) u =
+        fun j => -w j := by
+    simpa [higham21Thm21_3CancellationDeltaA, M, w, rectTransposeMulVec] using
+      (lsNormwiseBackwardErrorRankOneDeltaA_transpose_mul
+        (p := u) (u := w) hU)
+  have hraw :
+      rectTransposeMulVec
+          (fun i j => A i j + higham21Thm21_3ApproxDeltaA theta A b y u t i j) u =
+        fun j => lambda * y j := by
+    ext j
+    have hdiffj := congrFun hdiff j
+    have hcancelj := congrFun hcancel j
+    unfold rectTransposeMulVec higham21Thm21_3ApproxDeltaA at *
+    simp_rw [add_mul, Finset.sum_add_distrib]
+    have hres :
+        (∑ i : Fin m,
+          higham21Thm21_3ResidualDeltaA theta A b y i j * u i) =
+          alpha * (∑ i : Fin m, undetResidualHigham A b y i * u i) * y j := by
+      unfold higham21Thm21_3ResidualDeltaA
+      dsimp [alpha, Y]
+      calc
+        (∑ i : Fin m,
+            (theta ^ 2 / (1 + theta ^ 2 * vecNorm2Sq y) *
+              undetResidualHigham A b y i * y j) * u i) =
+            ∑ i : Fin m,
+              (theta ^ 2 / (1 + theta ^ 2 * vecNorm2Sq y) * y j) *
+                (undetResidualHigham A b y i * u i) := by
+          apply Finset.sum_congr rfl
+          intro i _
+          ring
+        _ = (theta ^ 2 / (1 + theta ^ 2 * vecNorm2Sq y) * y j) *
+              ∑ i : Fin m, undetResidualHigham A b y i * u i := by
+          rw [Finset.mul_sum]
+        _ = (theta ^ 2 / (1 + theta ^ 2 * vecNorm2Sq y)) *
+              (∑ i : Fin m, undetResidualHigham A b y i * u i) * y j := by
+          ring
+    have hextra :
+        (∑ i : Fin m,
+          higham21Thm21_3SignedExtraDeltaA t u y i j * u i) =
+          (t * U / Y) * y j := by
+      simp only [higham21Thm21_3SignedExtraDeltaA,
+        lsNormwiseBackwardErrorRankTwoExtraDeltaA]
+      dsimp [U, Y, vecNorm2Sq]
+      calc
+        (∑ i : Fin m,
+            (t / vecNorm2Sq y * u i * y j) * u i) =
+            ∑ i : Fin m, (t / vecNorm2Sq y * y j) * (u i ^ 2) := by
+          apply Finset.sum_congr rfl
+          intro i _
+          ring
+        _ = (t / vecNorm2Sq y * y j) * ∑ i : Fin m, u i ^ 2 := by
+          rw [Finset.mul_sum]
+        _ = (t * (∑ i : Fin m, u i ^ 2) / vecNorm2Sq y) * y j := by
+          ring
+    rw [hres, hcancelj, hextra]
+    simp only [w, rectTransposeMulVec]
+    dsimp [lambda]
+    rw [show y j / Y = (1 / Y) * y j by field_simp [hY]] at hdiffj
+    linear_combination hdiffj
+  have hsystem := higham21Thm21_3Approx_system_eq theta A b y u t hy
+  have hpair :=
+    higham21_rectTransposeMulVec_pairing
+      (fun i j => A i j + higham21Thm21_3ApproxDeltaA theta A b y u t i j)
+      u y
+  rw [hraw, hsystem] at hpair
+  have hlambda :
+      lambda =
+        (∑ i : Fin m,
+          u i * (b i + higham21Thm21_3ApproxDeltab theta A b y u t i)) / Y := by
+    have hleft :
+        (∑ j : Fin n, lambda * y j * y j) = lambda * Y := by
+      simp only [Y, vecNorm2Sq]
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro j _
+      ring
+    rw [hleft] at hpair
+    apply (eq_div_iff hY).2
+    exact hpair
+  rw [hraw, hlambda]
+
+/-- The `t = 0` member has cost exactly the displayed Theorem 21.3 RHS. -/
+theorem higham21Thm21_3Approx_cost_zero_eq_formulaRHS_of_attaining
+    {m n : Nat} {theta : Real} (htheta : 0 <= theta)
+    (A : Fin (m + 1) -> Fin n -> Real) (b : Fin (m + 1) -> Real)
+    (y : Fin n -> Real) (u : Fin (m + 1) -> Real)
+    (hy : y ≠ 0) (hu : u ≠ 0)
+    (hattain :
+      vecNorm2Sq
+          (rectTransposeMulVec (undetNormwiseBackwardErrorFormulaMatrix A y) u) =
+        higham21SigmaMinRow (undetNormwiseBackwardErrorFormulaMatrix A y) ^ 2 *
+          vecNorm2Sq u) :
+    lsNormwiseBackwardErrorCostF theta
+        (higham21Thm21_3ApproxDeltaA theta A b y u 0)
+        (higham21Thm21_3ApproxDeltab theta A b y u 0) =
+      undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y
+        (higham21SigmaMinRow (undetNormwiseBackwardErrorFormulaMatrix A y)) := by
+  let r := undetResidualHigham A b y
+  let Y := vecNorm2Sq y
+  let R := vecNorm2Sq r
+  let den := 1 + theta ^ 2 * Y
+  let M := undetNormwiseBackwardErrorFormulaMatrix A y
+  let sigma := higham21SigmaMinRow M
+  let w := rectTransposeMulVec M u
+  let DR := higham21Thm21_3ResidualDeltaA theta A b y
+  let DP := higham21Thm21_3CancellationDeltaA A y u
+  let db := higham21Thm21_3ResidualDeltab theta A b y
+  let base : Fin (m + 1) -> Fin n -> Real := fun i j => DR i j + DP i j
+  have hY : Y ≠ 0 := by
+    simpa [Y] using higham21_vecNorm2Sq_ne_zero_of_ne_zero hy
+  have hU : vecNorm2Sq u ≠ 0 :=
+    higham21_vecNorm2Sq_ne_zero_of_ne_zero hu
+  have hden : den ≠ 0 := by
+    exact ne_of_gt (by
+      dsimp [den, Y]
+      exact lsNormwiseBackwardErrorMu_den_pos theta y)
+  have hDRy := higham21Thm21_3ResidualDeltaA_mulVec theta A b y
+  have hDPy := higham21Thm21_3CancellationDeltaA_mulVec_eq_zero A y u hy
+  have hDRP :=
+    higham21Thm21_3ResidualDeltaA_projector_eq_zero theta A b y hy
+  have hbasey :
+      rectMatMulVec base y =
+        fun i => (theta ^ 2 / den * Y) * r i := by
+    rw [show base = fun i j => DR i j + DP i j by rfl]
+    rw [rectMatMulVec_mat_add, hDRy, hDPy]
+    ext i
+    simp only [Pi.zero_apply, add_zero]
+    dsimp [DR, r, Y, den]
+  have hbaseP :
+      rectMatMul base (undetApproxComplementProjector y) =
+        rectMatMul DP (undetApproxComplementProjector y) := by
+    rw [show base = fun i j => DR i j + DP i j by rfl]
+    rw [rectMatMul_add_left, hDRP]
+    ext i j
+    simp
+  have hDPprojector :
+      frobNormSqRect DP =
+        frobNormSqRect (rectMatMul DP (undetApproxComplementProjector y)) := by
+    have hpyth :=
+      higham21_thm21_3_right_projector_frobNormSqRect_pythagoras DP y hy
+    rw [hDPy] at hpyth
+    simpa [vecNorm2Sq] using hpyth
+  have hDPfrob : frobNormSqRect DP = sigma ^ 2 := by
+    have hrank :=
+      lsNormwiseBackwardErrorRankOneDeltaA_frobNormSq
+        (p := u) (u := w) hU
+    have hattain' : vecNorm2Sq w = sigma ^ 2 * vecNorm2Sq u := by
+      simpa [w, sigma, M] using hattain
+    rw [show DP = lsNormwiseBackwardErrorRankOneDeltaA u w by
+      rfl, hrank, hattain']
+    apply (div_eq_iff hU).2
+    rfl
+  have hbasefrob :
+      frobNormSqRect base =
+        (theta ^ 2 / den) ^ 2 * Y * R + sigma ^ 2 := by
+    have hpyth :=
+      higham21_thm21_3_right_projector_frobNormSqRect_pythagoras base y hy
+    rw [hbasey, hbaseP, <- hDPprojector, hDPfrob] at hpyth
+    have hnorm :
+        vecNorm2Sq (fun i : Fin (m + 1) => (theta ^ 2 / den * Y) * r i) =
+          (theta ^ 2 / den * Y) ^ 2 * R := by
+      simpa [R] using vecNorm2Sq_smul (theta ^ 2 / den * Y) r
+    rw [hnorm] at hpyth
+    rw [hpyth]
+    change
+      (theta ^ 2 / den * Y) ^ 2 * R / Y + sigma ^ 2 =
+        (theta ^ 2 / den) ^ 2 * Y * R + sigma ^ 2
+    field_simp [hY]
+  have hdbnorm : vecNorm2Sq db = (1 / den) ^ 2 * R := by
+    simpa [db, higham21Thm21_3ResidualDeltab, r, den] using
+      vecNorm2Sq_smul (-(1 / den)) r
+  have hcostsq :
+      lsNormwiseBackwardErrorCostF theta base db ^ 2 =
+        theta ^ 2 * R / den + sigma ^ 2 := by
+    rw [lsNormwiseBackwardErrorCostF_sq, hbasefrob, hdbnorm]
+    field_simp [hden] <;> ring
+  have hrhssq :
+      undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma ^ 2 =
+        theta ^ 2 * R / den + sigma ^ 2 := by
+    rw [undetNormwiseBackwardErrorNonzeroFormulaRHS_sq]
+    change
+      theta ^ 2 * Y / den * (R / Y) + sigma ^ 2 =
+        theta ^ 2 * R / den + sigma ^ 2
+    field_simp [hY, hden]
+  have hbase_eq :
+      higham21Thm21_3ApproxDeltaA theta A b y u 0 = base := by
+    ext i j
+    simp [higham21Thm21_3ApproxDeltaA, base, DR, DP,
+      higham21Thm21_3SignedExtraDeltaA,
+      lsNormwiseBackwardErrorRankTwoExtraDeltaA]
+  have hdb_eq :
+      higham21Thm21_3ApproxDeltab theta A b y u 0 = db := by
+    ext i
+    simp [higham21Thm21_3ApproxDeltab, db]
+  rw [hbase_eq, hdb_eq]
+  apply (sq_eq_sq₀
+    (lsNormwiseBackwardErrorCostF_nonneg theta base db)
+    (undetNormwiseBackwardErrorNonzeroFormulaRHS_nonneg theta A b y sigma)).mp
+  rw [hcostsq, hrhssq]
+
+/-- Cost of the signed family is at most its exact `t = 0` value plus the
+    homogeneous cost of the small residual-preserving term. -/
+theorem higham21Thm21_3Approx_cost_le_formulaRHS_add
+    {m n : Nat} {theta : Real} (htheta : 0 <= theta)
+    (A : Fin (m + 1) -> Fin n -> Real) (b : Fin (m + 1) -> Real)
+    (y : Fin n -> Real) (u : Fin (m + 1) -> Real) (t : Real)
+    (hy : y ≠ 0) (hu : u ≠ 0)
+    (hattain :
+      vecNorm2Sq
+          (rectTransposeMulVec (undetNormwiseBackwardErrorFormulaMatrix A y) u) =
+        higham21SigmaMinRow (undetNormwiseBackwardErrorFormulaMatrix A y) ^ 2 *
+          vecNorm2Sq u) :
+    lsNormwiseBackwardErrorCostF theta
+        (higham21Thm21_3ApproxDeltaA theta A b y u t)
+        (higham21Thm21_3ApproxDeltab theta A b y u t) <=
+      undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y
+          (higham21SigmaMinRow (undetNormwiseBackwardErrorFormulaMatrix A y)) +
+        |t| * lsNormwiseBackwardErrorCostF theta
+          (higham21Thm21_3SignedExtraDeltaA 1 u y) u := by
+  let baseA := higham21Thm21_3ApproxDeltaA theta A b y u 0
+  let baseb := higham21Thm21_3ApproxDeltab theta A b y u 0
+  let E := higham21Thm21_3SignedExtraDeltaA 1 u y
+  have hA :
+      higham21Thm21_3ApproxDeltaA theta A b y u t =
+        fun i j => baseA i j + t * E i j := by
+    ext i j
+    simp [higham21Thm21_3ApproxDeltaA, baseA, E,
+      higham21Thm21_3SignedExtraDeltaA,
+      lsNormwiseBackwardErrorRankTwoExtraDeltaA]
+    ring
+  have hb :
+      higham21Thm21_3ApproxDeltab theta A b y u t =
+        fun i => baseb i + t * u i := by
+    ext i
+    simp [higham21Thm21_3ApproxDeltab, baseb]
+  rw [hA, hb]
+  calc
+    lsNormwiseBackwardErrorCostF theta
+          (fun i j => baseA i j + t * E i j) (fun i => baseb i + t * u i) <=
+        lsNormwiseBackwardErrorCostF theta baseA baseb +
+          lsNormwiseBackwardErrorCostF theta
+            (fun i j => t * E i j) (fun i => t * u i) :=
+      higham21_lsNormwiseBackwardErrorCostF_add_le theta baseA
+        (fun i j => t * E i j) baseb (fun i => t * u i)
+    _ = undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y
+          (higham21SigmaMinRow (undetNormwiseBackwardErrorFormulaMatrix A y)) +
+        |t| * lsNormwiseBackwardErrorCostF theta E u := by
+      rw [higham21Thm21_3Approx_cost_zero_eq_formulaRHS_of_attaining
+        htheta A b y u hy hu hattain]
+      rw [higham21_lsNormwiseBackwardErrorCostF_smul]
+
+/-- Higham, Theorem 21.3, nonzero upper route: for every positive epsilon,
+    an explicit signed perturbation is feasible and has weighted cost at most
+    the printed formula plus epsilon.  No exact attaining feasible witness is
+    asserted. -/
+theorem higham21_thm21_3_nonzero_upper_epsilon
+    {m n : Nat} {theta : Real} (htheta : 0 <= theta)
+    (A : Fin (m + 1) -> Fin n -> Real) (b : Fin (m + 1) -> Real)
+    (y : Fin n -> Real) (hy : y ≠ 0)
+    (eps : Real) (heps : 0 < eps) :
+    exists (DeltaA : Fin (m + 1) -> Fin n -> Real)
+        (Deltab : Fin (m + 1) -> Real),
+      UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab /\
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab <=
+          undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y
+              (higham21SigmaMinRow
+                (undetNormwiseBackwardErrorFormulaMatrix A y)) + eps := by
+  let M := undetNormwiseBackwardErrorFormulaMatrix A y
+  obtain ⟨u, hu, hattain⟩ :=
+    higham21SigmaMinRow_exists_real_attaining_vector_sq M
+  let db0 := higham21Thm21_3ResidualDeltab theta A b y
+  let U := vecNorm2Sq u
+  let a := ∑ i : Fin (m + 1), u i * (b i + db0 i)
+  let K := lsNormwiseBackwardErrorCostF theta
+    (higham21Thm21_3SignedExtraDeltaA 1 u y) u
+  have hU : 0 < U := by
+    exact lt_of_le_of_ne (vecNorm2Sq_nonneg u)
+      (Ne.symm (by simpa [U] using higham21_vecNorm2Sq_ne_zero_of_ne_zero hu))
+  have hK : 0 <= K := by
+    exact lsNormwiseBackwardErrorCostF_nonneg theta
+      (higham21Thm21_3SignedExtraDeltaA 1 u y) u
+  obtain ⟨t, ht, htcost⟩ :=
+    higham21_exists_signed_small_parameter a U K eps hU hK heps
+  let DeltaA := higham21Thm21_3ApproxDeltaA theta A b y u t
+  let Deltab := higham21Thm21_3ApproxDeltab theta A b y u t
+  refine ⟨DeltaA, Deltab, ?_, ?_⟩
+  · apply
+      (undetNormwiseBackwardErrorFeasible_iff_system_eq_and_exists_transpose_witness
+        A b y DeltaA Deltab).2
+    have hsystem :
+        rectMatMulVec (fun i j => A i j + DeltaA i j) y =
+          fun i => b i + Deltab i := by
+      simpa [DeltaA, Deltab] using
+        higham21Thm21_3Approx_system_eq theta A b y u t hy
+    refine ⟨hsystem, ?_⟩
+    have hY : vecNorm2Sq y ≠ 0 :=
+      higham21_vecNorm2Sq_ne_zero_of_ne_zero hy
+    have hdot :
+        (∑ i : Fin (m + 1), u i * (b i + Deltab i)) = a + t * U := by
+      dsimp [Deltab, higham21Thm21_3ApproxDeltab, a, db0, U]
+      calc
+        (∑ i : Fin (m + 1),
+            u i * (b i +
+              (higham21Thm21_3ResidualDeltab theta A b y i + t * u i))) =
+            ∑ i : Fin (m + 1),
+              (u i * (b i + higham21Thm21_3ResidualDeltab theta A b y i) +
+                t * (u i ^ 2)) := by
+          apply Finset.sum_congr rfl
+          intro i _
+          ring
+        _ = (∑ i : Fin (m + 1),
+              u i * (b i + higham21Thm21_3ResidualDeltab theta A b y i)) +
+              t * ∑ i : Fin (m + 1), u i ^ 2 := by
+          rw [Finset.sum_add_distrib, Finset.mul_sum]
+        _ = (∑ i : Fin (m + 1),
+              u i * (b i + higham21Thm21_3ResidualDeltab theta A b y i)) +
+              t * vecNorm2Sq u := by rfl
+    have hdot_ne :
+        (∑ i : Fin (m + 1), u i * (b i + Deltab i)) ≠ 0 := by
+      rw [hdot]
+      exact ht
+    let q :=
+      (∑ i : Fin (m + 1), u i * (b i + Deltab i)) / vecNorm2Sq y
+    have hq : q ≠ 0 := div_ne_zero hdot_ne hY
+    have htrans :
+        rectTransposeMulVec (fun i j => A i j + DeltaA i j) u =
+          fun j => q * y j := by
+      simpa [DeltaA, Deltab, q] using
+        higham21Thm21_3Approx_transpose_action theta A b y u t hy hu
+    refine ⟨(fun i => (1 / q) * u i), ?_⟩
+    ext j
+    have htransj :
+        (∑ i : Fin (m + 1), (A i j + DeltaA i j) * u i) = q * y j := by
+      simpa [rectTransposeMulVec] using congrFun htrans j
+    unfold rectTransposeMulVec
+    calc
+      (∑ i : Fin (m + 1),
+          (A i j + DeltaA i j) * ((1 / q) * u i)) =
+          (1 / q) *
+            (∑ i : Fin (m + 1), (A i j + DeltaA i j) * u i) := by
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro i _
+              ring
+      _ = (1 / q) * (q * y j) := by rw [htransj]
+      _ = y j := by field_simp [hq]
+  · have hcost :=
+      higham21Thm21_3Approx_cost_le_formulaRHS_add
+        htheta A b y u t hy hu (by simpa [M] using hattain)
+    exact hcost.trans (by
+      have htcost' : |t| * K ≤ eps := htcost
+      nlinarith)
+
+/-- Infimum consequence of the epsilon-feasible upper construction. -/
+theorem higham21_thm21_3_etaF_le_nonzeroFormulaRHS
+    {m n : Nat} {theta : Real} (htheta : 0 <= theta)
+    (A : Fin (m + 1) -> Fin n -> Real) (b : Fin (m + 1) -> Real)
+    (y : Fin n -> Real) (hy : y ≠ 0) :
+    undetNormwiseBackwardErrorEtaF theta A b y <=
+      undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y
+        (higham21SigmaMinRow (undetNormwiseBackwardErrorFormulaMatrix A y)) := by
+  refine le_of_forall_pos_le_add ?_
+  intro eps heps
+  obtain ⟨DeltaA, Deltab, hfeas, hcost⟩ :=
+    higham21_thm21_3_nonzero_upper_epsilon
+      htheta A b y hy eps heps
+  exact
+    (undetNormwiseBackwardErrorEtaF_le_costF_of_feasible
+      theta A b y DeltaA Deltab hfeas).trans hcost
+
+/-- Higham, 2nd ed., Chapter 21, Theorem 21.3, nonzero branch: the normwise
+    backward-error infimum is exactly the displayed Sun--Sun formula with the
+    smallest row singular value of `A(I - y y^+)`. -/
+theorem higham21_theorem21_3_nonzero_normwise_backward_error_formula
+    {m n : Nat} {theta : Real} (htheta : 0 <= theta)
+    (A : Fin (m + 1) -> Fin n -> Real) (b : Fin (m + 1) -> Real)
+    (y : Fin n -> Real) (hy : y ≠ 0) :
+    undetNormwiseBackwardErrorEtaF theta A b y =
+      undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y
+        (higham21SigmaMinRow
+          (undetNormwiseBackwardErrorFormulaMatrix A y)) := by
+  apply le_antisymm
+  · exact higham21_thm21_3_etaF_le_nonzeroFormulaRHS
+      htheta A b y hy
+  · apply
+      undetNormwiseBackwardErrorNonzeroFormulaRHS_le_etaF_of_forall_feasible_cost_ge
+    · obtain ⟨DeltaA, Deltab, hfeas, _hcost⟩ :=
+        higham21_thm21_3_nonzero_upper_epsilon
+          htheta A b y hy 1 zero_lt_one
+      exact
+        ⟨lsNormwiseBackwardErrorCostF theta DeltaA Deltab,
+          DeltaA, Deltab, hfeas, rfl⟩
+    · intro DeltaA Deltab hfeas
+      exact
+        higham21_thm21_3_nonzeroFormulaRHS_le_costF_of_feasible
+          theta A b hy DeltaA Deltab hfeas
+
+/-- Higham, 2nd ed., Chapter 21, Theorem 21.3: complete case-split formula
+    for the normwise Frobenius backward error of an approximate minimum-norm
+    solution. -/
+theorem higham21_theorem21_3_normwise_backward_error_formula
+    {m n : Nat} {theta : Real} (htheta : 0 <= theta)
+    (A : Fin (m + 1) -> Fin n -> Real) (b : Fin (m + 1) -> Real)
+    (y : Fin n -> Real) :
+    undetNormwiseBackwardErrorEtaF theta A b y =
+      if y = 0 then theta * vecNorm2 b
+      else
+        undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y
+          (higham21SigmaMinRow
+            (undetNormwiseBackwardErrorFormulaMatrix A y)) := by
+  by_cases hy : y = 0
+  · subst y
+    simpa using higham21_thm21_3_etaF_zero theta htheta A b
+  · simpa [hy] using
+      higham21_theorem21_3_nonzero_normwise_backward_error_formula
+        htheta A b y hy
 
 -- ============================================================
 -- §21.3  Theorem 21.4: Q method backward stability
@@ -11384,7 +13319,7 @@ theorem Higham21QMethodDeltaA1.system_eq
     (higham21_theorem21_4_qhat_first_system_block_action
       Q_inv Q_hat R_plus y1 hleft).trans (funext htri)
 
-set_option maxHeartbeats 800000 in
+set_option maxHeartbeats 800000
 /-- The first perturbation in Higham's rounded-`Q` proof is bounded by the
     ideal QR-plus-triangular perturbation and the defect between
     `(Q_hat^{-1})^T` and the exact orthogonal factor. -/
@@ -11726,7 +13661,7 @@ theorem Higham21QMethodDeltaA2.transpose_representation
       (higham21_theorem21_4_qhat_tall_block_transpose_action
         Q_hat R_hat y).symm
 
-set_option maxHeartbeats 800000 in
+set_option maxHeartbeats 800000
 /-- The second perturbation in Higham's rounded-`Q` proof inherits a
     row-relative bound from the QR residual and the accumulated `Q_hat`
     perturbation. -/
@@ -13038,5 +14973,577 @@ theorem higham21_sne_gram_forward_error_matches_q_method
         ∑ k : Fin m, |ΔC j k| * |y_hat k| :=
   sne_forward_error_matches_q_method m AAT AAT_inv hInv b y y_hat hExact ΔC
     hPerturbed
+
+/-- The linear term in Higham's equation (21.11), specialized to the Q method,
+    where the right-hand side is unperturbed.  Written with
+    `z = Aplus^T x`, it is the source form from equation (21.7):
+
+    `(I - Aplus*A) DeltaA^T z - Aplus*DeltaA*x`. -/
+noncomputable def higham21Eq21_11FirstOrder
+    {m n : ℕ} (A DeltaA : Fin m → Fin n → ℝ) (b : Fin m → ℝ) :
+    Fin n → ℝ :=
+  let Aplus := undetAplusOfGramNonsingInv A
+  let x := rectMatMulVec Aplus b
+  let z := rectTransposeMulVec Aplus x
+  let w := rectTransposeMulVec DeltaA z
+  fun j =>
+    w j - rectMatMulVec Aplus (rectMatMulVec A w) j -
+      rectMatMulVec Aplus (rectMatMulVec DeltaA x) j
+
+/-- Exact finite remainder accompanying `higham21Eq21_11FirstOrder`.
+    Every summand contains `DeltaA` multiplied by a response difference:
+    either the dual-coordinate change `z_hat - Aplus^T*x` or the forward
+    change `x_hat - x`.  Thus this is the explicit finite term represented by
+    `O(u^2)` in (21.11), before a separate quadratic norm estimate is applied. -/
+noncomputable def higham21Eq21_11FiniteRemainder
+    {m n : ℕ} (A DeltaA : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (x_hat : Fin n → ℝ) (z_hat : Fin m → ℝ) : Fin n → ℝ :=
+  let Aplus := undetAplusOfGramNonsingInv A
+  let x := rectMatMulVec Aplus b
+  let z := rectTransposeMulVec Aplus x
+  let dualChange := fun i => z_hat i - z i
+  let forwardChange := fun j => x_hat j - x j
+  let dualTerm := rectTransposeMulVec DeltaA dualChange
+  fun j =>
+    dualTerm j -
+        rectMatMulVec Aplus (rectMatMulVec A dualTerm) j -
+      rectMatMulVec Aplus (rectMatMulVec DeltaA forwardChange) j
+
+/-- The equation-(21.11) source first-order term is exactly the already-proved
+    equation-(21.7) first-order perturbation with `Deltab = 0`. -/
+theorem higham21_eq21_11_firstOrder_eq_eq21_7_firstOrder
+    {m n : ℕ} (A DeltaA : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (hdet : Matrix.det (rectGram A : Matrix (Fin m) (Fin m) ℝ) ≠ 0) :
+    higham21Eq21_11FirstOrder A DeltaA b =
+      higham21Eq21_7FirstOrder A DeltaA b (0 : Fin m → ℝ)
+        (undetGramNonsingInv A) := by
+  let G_inv : Fin m → Fin m → ℝ := undetGramNonsingInv A
+  let Aplus : Fin n → Fin m → ℝ := undetAplusOfGramNonsingInv A
+  let x : Fin n → ℝ := rectMatMulVec Aplus b
+  let y : Fin m → ℝ := matMulVec m G_inv b
+  let z : Fin m → ℝ := rectTransposeMulVec Aplus x
+  let w : Fin n → ℝ := rectTransposeMulVec DeltaA z
+  have hRight : rectMatMul A Aplus = idMatrix m := by
+    simpa [Aplus] using
+      higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_det_ne_zero
+        A hdet
+  have hRightEntry : ∀ r i : Fin m,
+      (∑ k : Fin n, A r k * Aplus k i) =
+        if r = i then 1 else 0 := by
+    intro r i
+    have hri := congrFun (congrFun hRight r) i
+    simpa [rectMatMul, idMatrix] using hri
+  have hx : x = rectTransposeMulVec A y := by
+    simpa [x, Aplus, y, G_inv, undetAplusOfGramNonsingInv] using
+      (rectMatMulVec_undetAplusOfGramInv A G_inv b)
+  have hyz : y = z := by
+    ext i
+    symm
+    rw [show z = rectTransposeMulVec Aplus x by rfl, hx]
+    unfold rectTransposeMulVec
+    calc
+      ∑ j : Fin n, Aplus j i * (∑ r : Fin m, A r j * y r) =
+          ∑ j : Fin n, ∑ r : Fin m,
+            Aplus j i * (A r j * y r) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [Finset.mul_sum]
+      _ = ∑ r : Fin m, ∑ j : Fin n,
+            Aplus j i * (A r j * y r) := by
+            rw [Finset.sum_comm]
+      _ = ∑ r : Fin m,
+            (∑ j : Fin n, A r j * Aplus j i) * y r := by
+            apply Finset.sum_congr rfl
+            intro r _
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+      _ = ∑ r : Fin m, (if r = i then 1 else 0) * y r := by
+            apply Finset.sum_congr rfl
+            intro r _
+            rw [hRightEntry r i]
+      _ = y i := by simp
+  have hneg :
+      rectMatMulVec Aplus
+          (fun i => (0 : ℝ) - rectMatMulVec DeltaA x i) =
+        fun j => -rectMatMulVec Aplus (rectMatMulVec DeltaA x) j := by
+    simpa using
+      (rectMatMulVec_smul Aplus (-1 : ℝ) (rectMatMulVec DeltaA x))
+  ext j
+  change
+    w j - rectMatMulVec Aplus (rectMatMulVec A w) j -
+          rectMatMulVec Aplus (rectMatMulVec DeltaA x) j =
+      rectTransposeMulVec DeltaA y j -
+          rectMatMulVec Aplus
+            (rectMatMulVec A (rectTransposeMulVec DeltaA y)) j +
+        rectMatMulVec Aplus
+          (fun i => (0 : ℝ) - rectMatMulVec DeltaA x i) j
+  rw [hyz, congrFun hneg j]
+  rfl
+
+/-- Exact finite equation-(21.11) expansion for any rowwise backward-error
+    witness.  No perturbed-Gram inverse is assumed: the transpose witness is
+    supplied by minimum-norm feasibility, and the remainder is the explicit
+    bilinear term above. -/
+theorem higham21_eq21_11_exact_finite_forward_expansion
+    {m n : ℕ} (A DeltaA : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (x_hat : Fin n → ℝ) (z_hat : Fin m → ℝ)
+    (hdet : Matrix.det (rectGram A : Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hsystem :
+      rectMatMulVec (fun i j => A i j + DeltaA i j) x_hat = b)
+    (hrange :
+      rectTransposeMulVec (fun i j => A i j + DeltaA i j) z_hat = x_hat) :
+    (fun j =>
+      x_hat j -
+        rectMatMulVec (undetAplusOfGramNonsingInv A) b j) =
+      fun j =>
+        higham21Eq21_11FirstOrder A DeltaA b j +
+          higham21Eq21_11FiniteRemainder A DeltaA b x_hat z_hat j := by
+  let Aplus : Fin n → Fin m → ℝ := undetAplusOfGramNonsingInv A
+  let x : Fin n → ℝ := rectMatMulVec Aplus b
+  let z : Fin m → ℝ := rectTransposeMulVec Aplus x
+  let w : Fin n → ℝ := rectTransposeMulVec DeltaA z
+  let dualChange : Fin m → ℝ := fun i => z_hat i - z i
+  let dualTerm : Fin n → ℝ := rectTransposeMulVec DeltaA dualChange
+  let forwardChange : Fin n → ℝ := fun j => x_hat j - x j
+  have hRangeAdd :
+      x_hat = fun j =>
+        rectTransposeMulVec A z_hat j +
+          rectTransposeMulVec DeltaA z_hat j := by
+    calc
+      x_hat =
+          rectTransposeMulVec (fun i j => A i j + DeltaA i j) z_hat :=
+        hrange.symm
+      _ = fun j =>
+          rectTransposeMulVec A z_hat j +
+            rectTransposeMulVec DeltaA z_hat j := by
+        ext j
+        unfold rectTransposeMulVec
+        rw [← Finset.sum_add_distrib]
+        apply Finset.sum_congr rfl
+        intro i _
+        ring
+  have hAtRange :
+      rectTransposeMulVec A z_hat =
+        rectMatMulVec Aplus (matMulVec m (rectGram A) z_hat) := by
+    simpa [Aplus] using
+      higham21_lemma21_2_gram_pseudoinverse_range_of_transpose
+        A hdet z_hat
+  have hPAt :
+      rectMatMulVec Aplus
+          (rectMatMulVec A (rectTransposeMulVec A z_hat)) =
+        rectTransposeMulVec A z_hat := by
+    rw [← rectMatMulVec_rectMatMul]
+    rw [hAtRange]
+    simpa [Aplus] using
+      higham21_lemma21_2_gram_pseudoinverse_domain_projection_apply_range
+        A hdet (matMulVec m (rectGram A) z_hat)
+  have hnull : ∀ j : Fin n,
+      x_hat j - rectMatMulVec Aplus (rectMatMulVec A x_hat) j =
+        rectTransposeMulVec DeltaA z_hat j -
+          rectMatMulVec Aplus
+            (rectMatMulVec A (rectTransposeMulVec DeltaA z_hat)) j := by
+    intro j
+    rw [hRangeAdd]
+    rw [rectMatMulVec_add, rectMatMulVec_add]
+    rw [hPAt]
+    ring
+  have hsystemAdd :
+      (fun i =>
+        rectMatMulVec A x_hat i + rectMatMulVec DeltaA x_hat i) = b := by
+    rw [← rectMatMulVec_mat_add]
+    exact hsystem
+  have hApplied := congrArg (rectMatMulVec Aplus) hsystemAdd
+  rw [rectMatMulVec_add] at hApplied
+  have hcore : ∀ j : Fin n,
+      x_hat j - x j =
+        (x_hat j - rectMatMulVec Aplus (rectMatMulVec A x_hat) j) -
+          rectMatMulVec Aplus (rectMatMulVec DeltaA x_hat) j := by
+    intro j
+    have hj := congrFun hApplied j
+    have hj' :
+        rectMatMulVec Aplus (rectMatMulVec A x_hat) j +
+            rectMatMulVec Aplus (rectMatMulVec DeltaA x_hat) j = x j := by
+      simpa [x] using hj
+    linarith
+  have hzSplit : z_hat = fun i => z i + dualChange i := by
+    ext i
+    simp [dualChange]
+  have hwSplit :
+      rectTransposeMulVec DeltaA z_hat = fun j => w j + dualTerm j := by
+    rw [hzSplit]
+    simpa [w, dualTerm] using
+      higham21Eq21_7_rectTransposeMulVec_add DeltaA z dualChange
+  have hpSplit :
+      rectMatMulVec Aplus
+          (rectMatMulVec A (rectTransposeMulVec DeltaA z_hat)) =
+        fun j =>
+          rectMatMulVec Aplus (rectMatMulVec A w) j +
+            rectMatMulVec Aplus (rectMatMulVec A dualTerm) j := by
+    rw [hwSplit]
+    rw [rectMatMulVec_add, rectMatMulVec_add]
+  have hxSplit : x_hat = fun j => x j + forwardChange j := by
+    ext j
+    simp [forwardChange]
+  have hDeltaSplit :
+      rectMatMulVec Aplus (rectMatMulVec DeltaA x_hat) =
+        fun j =>
+          rectMatMulVec Aplus (rectMatMulVec DeltaA x) j +
+            rectMatMulVec Aplus (rectMatMulVec DeltaA forwardChange) j := by
+    rw [hxSplit]
+    rw [rectMatMulVec_add, rectMatMulVec_add]
+  ext j
+  have hcorej := hcore j
+  rw [hnull j] at hcorej
+  calc
+    x_hat j - x j =
+        (rectTransposeMulVec DeltaA z_hat j -
+            rectMatMulVec Aplus
+              (rectMatMulVec A (rectTransposeMulVec DeltaA z_hat)) j) -
+          rectMatMulVec Aplus (rectMatMulVec DeltaA x_hat) j := hcorej
+    _ =
+        (w j - rectMatMulVec Aplus (rectMatMulVec A w) j -
+            rectMatMulVec Aplus (rectMatMulVec DeltaA x) j) +
+          (dualTerm j -
+              rectMatMulVec Aplus (rectMatMulVec A dualTerm) j -
+            rectMatMulVec Aplus
+              (rectMatMulVec DeltaA forwardChange) j) := by
+        rw [congrFun hwSplit j, congrFun hpSplit j,
+          congrFun hDeltaSplit j]
+        ring
+    _ = higham21Eq21_11FirstOrder A DeltaA b j +
+          higham21Eq21_11FiniteRemainder A DeltaA b x_hat z_hat j := by
+        rfl
+
+/-- Rowwise perturbations give the printed first-order coefficient in (21.11).
+    For a genuinely underdetermined system (`2 <= n`), orthogonality of the two
+    equation-(21.7) components improves the two separate
+    `eta * sqrt(n) * cond2(A)` bounds to
+    `n * eta * cond2(A)`. -/
+theorem higham21_eq21_11_firstOrder_norm_le_rowwise_cond2
+    {m n : ℕ} (A DeltaA : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    {eta : ℝ} (hn : 2 ≤ n)
+    (hdet : Matrix.det (rectGram A : Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (heta : 0 ≤ eta)
+    (hrow : ∀ i : Fin m,
+      rectRowNorm2 DeltaA i ≤ eta * rectRowNorm2 A i) :
+    vecNorm2 (higham21Eq21_11FirstOrder A DeltaA b) ≤
+      (n : ℝ) * eta *
+        higham21Cond2With A (undetAplusOfGramNonsingInv A) *
+          vecNorm2
+            (rectMatMulVec (undetAplusOfGramNonsingInv A) b) := by
+  let Aplus : Fin n → Fin m → ℝ := undetAplusOfGramNonsingInv A
+  let x : Fin n → ℝ := rectMatMulVec Aplus b
+  let z : Fin m → ℝ := rectTransposeMulVec Aplus x
+  let w : Fin n → ℝ := rectTransposeMulVec DeltaA z
+  let p : Fin n → ℝ := fun j =>
+    w j - rectMatMulVec Aplus (rectMatMulVec A w) j
+  let v : Fin n → ℝ :=
+    rectMatMulVec Aplus (rectMatMulVec DeltaA x)
+  let q : Fin n → ℝ :=
+    rectMatMulVec Aplus
+      (fun i => (0 : ℝ) - rectMatMulVec DeltaA x i)
+  let B : Fin n → Fin n → ℝ := rectMatMul Aplus DeltaA
+  let cond : ℝ := higham21Cond2With A Aplus
+  let rho : ℝ := eta * Real.sqrt (n : ℝ) * cond
+  let target : ℝ := (n : ℝ) * eta * cond * vecNorm2 x
+  have hRight : rectMatMul A Aplus = idMatrix m := by
+    simpa [Aplus] using
+      higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_det_ne_zero
+        A hdet
+  have hSym : IsSymmetricFiniteMatrix (rectMatMul Aplus A) := by
+    simpa [Aplus] using
+      undetAplusOfGramNonsingInv_domain_projection_symmetric A
+  have hcond : 0 ≤ cond := by
+    simpa [cond] using higham21Cond2With_nonneg A Aplus
+  have hrho : 0 ≤ rho := by
+    exact mul_nonneg
+      (mul_nonneg heta (Real.sqrt_nonneg _)) hcond
+  have hB : rectOpNorm2Le B rho := by
+    simpa [B, rho, cond] using
+      higham21_rectOpNorm2Le_pseudoinverse_product_of_row_bounds
+        A DeltaA Aplus eta heta hrow
+  have hBt : rectOpNorm2Le (finiteTranspose B) rho :=
+    rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le B hrho hB
+  have hwEq : w = rectMatMulVec (finiteTranspose B) x := by
+    ext j
+    unfold w z B rectTransposeMulVec rectMatMulVec rectMatMul finiteTranspose
+    calc
+      ∑ i : Fin m, DeltaA i j * (∑ l : Fin n, Aplus l i * x l) =
+          ∑ i : Fin m, ∑ l : Fin n,
+            DeltaA i j * (Aplus l i * x l) := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.mul_sum]
+      _ = ∑ l : Fin n, ∑ i : Fin m,
+            DeltaA i j * (Aplus l i * x l) := by
+            rw [Finset.sum_comm]
+      _ = ∑ l : Fin n,
+            (∑ i : Fin m, Aplus l i * DeltaA i j) * x l := by
+            apply Finset.sum_congr rfl
+            intro l _
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+  have hw : vecNorm2 w ≤ rho * vecNorm2 x := by
+    rw [hwEq]
+    exact hBt x
+  have hpw : vecNorm2 p ≤ vecNorm2 w := by
+    have hproj :=
+      rectMatMulVec_domainProjection_residual_norm_le_range_residual_of_symmetric_right_inverse
+        A Aplus hRight hSym w (0 : Fin m → ℝ)
+    rw [rectMatMulVec_rectMatMul] at hproj
+    simpa [p, rectMatMulVec] using hproj
+  have hp : vecNorm2 p ≤ rho * vecNorm2 x := hpw.trans hw
+  have hv : vecNorm2 v ≤ rho * vecNorm2 x := by
+    simpa [v, B, rectMatMulVec_rectMatMul] using hB x
+  have hqEq : q = fun j => -v j := by
+    ext j
+    unfold q v rectMatMulVec
+    rw [← Finset.sum_neg_distrib]
+    apply Finset.sum_congr rfl
+    intro i _
+    ring
+  have hq : vecNorm2 q ≤ rho * vecNorm2 x := by
+    rw [hqEq, vecNorm2_neg]
+    exact hv
+  have horth : (∑ j : Fin n, p j * q j) = 0 := by
+    simpa [Aplus, x, z, w, p, q] using
+      higham21Eq21_7_source_vectors_orthogonal
+        A DeltaA b (0 : Fin m → ℝ) hdet
+  have hfirst :
+      higham21Eq21_11FirstOrder A DeltaA b = fun j => p j + q j := by
+    ext j
+    rw [hqEq]
+    rfl
+  have hpyth :
+      vecNorm2Sq (higham21Eq21_11FirstOrder A DeltaA b) =
+        vecNorm2Sq p + vecNorm2Sq q := by
+    rw [hfirst]
+    simpa [finiteVecNorm2Sq_fin] using
+      finiteVecNorm2Sq_add_of_inner_eq_zero p q horth
+  have hbound0 : 0 ≤ rho * vecNorm2 x :=
+    mul_nonneg hrho (vecNorm2_nonneg x)
+  have hpSq : vecNorm2Sq p ≤ (rho * vecNorm2 x) ^ 2 := by
+    rw [← vecNorm2_sq]
+    nlinarith [vecNorm2_nonneg p]
+  have hqSq : vecNorm2Sq q ≤ (rho * vecNorm2 x) ^ 2 := by
+    rw [← vecNorm2_sq]
+    nlinarith [vecNorm2_nonneg q]
+  have hnR : (2 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+  have hn0 : 0 ≤ (n : ℝ) := by positivity
+  have hdim : 2 * (n : ℝ) ≤ (n : ℝ) ^ 2 := by
+    nlinarith
+  have hsqrtSq : (Real.sqrt (n : ℝ)) ^ 2 = (n : ℝ) :=
+    Real.sq_sqrt hn0
+  have hrhoEq : rho ^ 2 = (n : ℝ) * (eta * cond) ^ 2 := by
+    dsimp [rho]
+    calc
+      (eta * Real.sqrt (n : ℝ) * cond) ^ 2 =
+          (Real.sqrt (n : ℝ)) ^ 2 * (eta * cond) ^ 2 := by ring
+      _ = (n : ℝ) * (eta * cond) ^ 2 := by rw [hsqrtSq]
+  have hrhoSq :
+      2 * rho ^ 2 ≤ ((n : ℝ) * eta * cond) ^ 2 := by
+    rw [hrhoEq]
+    calc
+      2 * ((n : ℝ) * (eta * cond) ^ 2) =
+          (2 * (n : ℝ)) * (eta * cond) ^ 2 := by ring
+      _ ≤ (n : ℝ) ^ 2 * (eta * cond) ^ 2 :=
+        mul_le_mul_of_nonneg_right hdim (sq_nonneg _)
+      _ = ((n : ℝ) * eta * cond) ^ 2 := by ring
+  have hnormSq :
+      vecNorm2 (higham21Eq21_11FirstOrder A DeltaA b) ^ 2 ≤ target ^ 2 := by
+    rw [vecNorm2_sq, hpyth]
+    calc
+      vecNorm2Sq p + vecNorm2Sq q ≤
+          2 * (rho * vecNorm2 x) ^ 2 := by nlinarith
+      _ = 2 * rho ^ 2 * vecNorm2 x ^ 2 := by ring
+      _ ≤ ((n : ℝ) * eta * cond) ^ 2 * vecNorm2 x ^ 2 :=
+        mul_le_mul_of_nonneg_right hrhoSq (sq_nonneg _)
+      _ = target ^ 2 := by
+        simp [target]
+        ring
+  have htarget : 0 ≤ target := by
+    exact mul_nonneg
+      (mul_nonneg (mul_nonneg hn0 heta) hcond) (vecNorm2_nonneg x)
+  simpa [target, cond, x, Aplus] using
+    (sq_le_sq₀
+      (vecNorm2_nonneg (higham21Eq21_11FirstOrder A DeltaA b)) htarget).mp
+      hnormSq
+
+/-- The concrete rounded Q-method output used in equation (21.11). -/
+noncomputable def higham21Eq21_11ComputedQhat
+    (fp : FPModel) (m k : ℕ)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ) :
+    Fin (m + k) → ℝ :=
+  let Q_hat := fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A)
+  let R_hat : Fin m → Fin m → ℝ := fun i j =>
+    fl_householderQRPanel_R fp (m + k) m (finiteTranspose A)
+      (Fin.castAdd k i) j
+  let y1 := fl_forwardSub fp m (matTranspose R_hat) b
+  matMulVec (m + k) Q_hat (Fin.append y1 (0 : Fin k → ℝ))
+
+/-- Higham, 2nd ed., Chapter 21, equation (21.11), concrete Q-method
+    composition theorem.
+
+    Theorem 21.4 supplies the actual rounded `Q_hat` output and a rowwise
+    perturbation with radius `gamma_tilde_mn`.  Theorem 21.1 supplies the
+    orthogonal first-order decomposition.  The result is the exact finite
+    relative inequality
+
+    `||x_hat-x||/||x|| <= n*gamma_tilde_mn*cond2(A) + ||R||/||x||`,
+
+    where `R` is the explicit bilinear remainder above.  Consequently a
+    quadratic estimate for `R` gives the printed `+ O(u^2)` form without any
+    further algorithmic or certificate assumption. -/
+theorem higham21_eq21_11_computed_qhat_relative_forward_error_with_remainder
+    {m k : ℕ} (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ) (b : Fin m → ℝ)
+    (hm : 0 < m) (hk : 0 < k) (hb : b ≠ 0)
+    (hdomain : Higham21QMethodFullRowRankComputedQRDomain m k fp A)
+    (hvalid : gammaValid fp (Higham21QMethodRoundedGammaIndex m k))
+    (hCondSmall :
+      gamma fp (Higham21QMethodRoundedGammaIndex m k) *
+          higham21Cond2With A (undetAplusOfGramNonsingInv A) < 1) :
+    let x_hat := higham21Eq21_11ComputedQhat fp m k A b
+    let x := rectMatMulVec (undetAplusOfGramNonsingInv A) b
+    let eta := gamma fp (Higham21QMethodRoundedGammaIndex m k)
+    ∃ (DeltaA : Fin m → Fin (m + k) → ℝ) (z_hat : Fin m → ℝ),
+      UndetRowwiseBackwardErrorFeasible m (m + k)
+        A DeltaA b x_hat eta ∧
+      rectTransposeMulVec (fun i j => A i j + DeltaA i j) z_hat = x_hat ∧
+      higham21Eq21_11FirstOrder A DeltaA b =
+        higham21Eq21_7FirstOrder A DeltaA b (0 : Fin m → ℝ)
+          (undetGramNonsingInv A) ∧
+      ((fun j => x_hat j - x j) =
+        fun j =>
+          higham21Eq21_11FirstOrder A DeltaA b j +
+            higham21Eq21_11FiniteRemainder A DeltaA b x_hat z_hat j) ∧
+      vecNorm2 (higham21Eq21_11FirstOrder A DeltaA b) ≤
+        ((m + k : ℕ) : ℝ) * eta *
+          higham21Cond2With A (undetAplusOfGramNonsingInv A) * vecNorm2 x ∧
+      vecNorm2 (fun j => x_hat j - x j) ≤
+        ((m + k : ℕ) : ℝ) * eta *
+            higham21Cond2With A (undetAplusOfGramNonsingInv A) * vecNorm2 x +
+          vecNorm2
+            (higham21Eq21_11FiniteRemainder A DeltaA b x_hat z_hat) ∧
+      vecNorm2 (fun j => x_hat j - x j) / vecNorm2 x ≤
+        ((m + k : ℕ) : ℝ) * eta *
+            higham21Cond2With A (undetAplusOfGramNonsingInv A) +
+          vecNorm2
+              (higham21Eq21_11FiniteRemainder A DeltaA b x_hat z_hat) /
+            vecNorm2 x := by
+  dsimp only
+  let x_hat : Fin (m + k) → ℝ :=
+    higham21Eq21_11ComputedQhat fp m k A b
+  let Aplus : Fin (m + k) → Fin m → ℝ :=
+    undetAplusOfGramNonsingInv A
+  let x : Fin (m + k) → ℝ := rectMatMulVec Aplus b
+  let eta : ℝ := gamma fp (Higham21QMethodRoundedGammaIndex m k)
+  change ∃ (DeltaA : Fin m → Fin (m + k) → ℝ) (z_hat : Fin m → ℝ),
+    UndetRowwiseBackwardErrorFeasible m (m + k)
+        A DeltaA b x_hat eta ∧
+      rectTransposeMulVec (fun i j => A i j + DeltaA i j) z_hat = x_hat ∧
+      higham21Eq21_11FirstOrder A DeltaA b =
+        higham21Eq21_7FirstOrder A DeltaA b (0 : Fin m → ℝ)
+          (undetGramNonsingInv A) ∧
+      ((fun j => x_hat j - x j) =
+        fun j =>
+          higham21Eq21_11FirstOrder A DeltaA b j +
+            higham21Eq21_11FiniteRemainder A DeltaA b x_hat z_hat j) ∧
+      vecNorm2 (higham21Eq21_11FirstOrder A DeltaA b) ≤
+        ((m + k : ℕ) : ℝ) * eta * higham21Cond2With A Aplus * vecNorm2 x ∧
+      vecNorm2 (fun j => x_hat j - x j) ≤
+        ((m + k : ℕ) : ℝ) * eta * higham21Cond2With A Aplus * vecNorm2 x +
+          vecNorm2
+            (higham21Eq21_11FiniteRemainder A DeltaA b x_hat z_hat) ∧
+      vecNorm2 (fun j => x_hat j - x j) / vecNorm2 x ≤
+        ((m + k : ℕ) : ℝ) * eta * higham21Cond2With A Aplus +
+          vecNorm2
+              (higham21Eq21_11FiniteRemainder A DeltaA b x_hat z_hat) /
+            vecNorm2 x
+  have hcert :
+      UndetRowwiseBackwardErrorBounded m (m + k) A b x_hat eta := by
+    simpa [x_hat, eta, higham21Eq21_11ComputedQhat] using
+      higham21_theorem21_4_computed_qhat_rowwise_backward_stable_gamma
+        fp A b hm hdomain hvalid hCondSmall
+  rcases hcert with ⟨DeltaA, hfeas⟩
+  obtain ⟨z_hat, hrange⟩ := hfeas.min_norm.exists_transpose_witness
+  have hdet :
+      Matrix.det (rectGram A : Matrix (Fin m) (Fin m) ℝ) ≠ 0 :=
+    higham21_qmethod_full_row_rank_gram_det_ne_zero hdomain
+  have hfirstEq :=
+    higham21_eq21_11_firstOrder_eq_eq21_7_firstOrder
+      A DeltaA b hdet
+  have hexact :=
+    higham21_eq21_11_exact_finite_forward_expansion
+      A DeltaA b x_hat z_hat hdet hfeas.min_norm.system_eq hrange
+  have hN : 2 ≤ m + k := by omega
+  have hfirstBound :
+      vecNorm2 (higham21Eq21_11FirstOrder A DeltaA b) ≤
+        ((m + k : ℕ) : ℝ) * eta * higham21Cond2With A Aplus * vecNorm2 x := by
+    simpa [Aplus, x] using
+      higham21_eq21_11_firstOrder_norm_le_rowwise_cond2
+        A DeltaA b hN hdet hfeas.eta_nonneg hfeas.row_bound
+  have habsolute :
+      vecNorm2 (fun j => x_hat j - x j) ≤
+        ((m + k : ℕ) : ℝ) * eta * higham21Cond2With A Aplus * vecNorm2 x +
+          vecNorm2
+            (higham21Eq21_11FiniteRemainder A DeltaA b x_hat z_hat) := by
+    calc
+      vecNorm2 (fun j => x_hat j - x j) =
+          vecNorm2 (fun j =>
+            higham21Eq21_11FirstOrder A DeltaA b j +
+              higham21Eq21_11FiniteRemainder A DeltaA b x_hat z_hat j) :=
+        congrArg vecNorm2 hexact
+      _ ≤ vecNorm2 (higham21Eq21_11FirstOrder A DeltaA b) +
+            vecNorm2
+              (higham21Eq21_11FiniteRemainder A DeltaA b x_hat z_hat) :=
+        vecNorm2_add_le _ _
+      _ ≤ ((m + k : ℕ) : ℝ) * eta *
+              higham21Cond2With A Aplus * vecNorm2 x +
+            vecNorm2
+              (higham21Eq21_11FiniteRemainder A DeltaA b x_hat z_hat) :=
+        by nlinarith [hfirstBound]
+  have hxmin : RectMinNormSolution m (m + k) A b x := by
+    simpa [x, Aplus] using
+      higham21_eq21_4_rect_pseudoinverse_formula_min_norm_of_gram_det_ne_zero
+        A b hdet
+  have hxne : x ≠ 0 := by
+    intro hx0
+    apply hb
+    rw [← hxmin.system_eq, hx0]
+    ext i
+    simp [rectMatMulVec]
+  have hxnorm_ne : vecNorm2 x ≠ 0 := by
+    intro hxnorm
+    apply hxne
+    ext j
+    exact (vecNorm2_eq_zero_iff x).mp hxnorm j
+  have hxnorm_pos : 0 < vecNorm2 x :=
+    lt_of_le_of_ne (vecNorm2_nonneg x) (Ne.symm hxnorm_ne)
+  have hrelative :
+      vecNorm2 (fun j => x_hat j - x j) / vecNorm2 x ≤
+        ((m + k : ℕ) : ℝ) * eta * higham21Cond2With A Aplus +
+          vecNorm2
+              (higham21Eq21_11FiniteRemainder A DeltaA b x_hat z_hat) /
+            vecNorm2 x := by
+    calc
+      vecNorm2 (fun j => x_hat j - x j) / vecNorm2 x ≤
+          (((m + k : ℕ) : ℝ) * eta * higham21Cond2With A Aplus *
+                vecNorm2 x +
+              vecNorm2
+                (higham21Eq21_11FiniteRemainder A DeltaA b x_hat z_hat)) /
+            vecNorm2 x :=
+        div_le_div_of_nonneg_right habsolute (le_of_lt hxnorm_pos)
+      _ = ((m + k : ℕ) : ℝ) * eta * higham21Cond2With A Aplus +
+          vecNorm2
+              (higham21Eq21_11FiniteRemainder A DeltaA b x_hat z_hat) /
+            vecNorm2 x := by
+        field_simp [hxnorm_ne]
+  exact ⟨DeltaA, z_hat, hfeas, hrange, hfirstEq, hexact,
+    hfirstBound, habsolute, hrelative⟩
 
 end LeanFpAnalysis.FP
