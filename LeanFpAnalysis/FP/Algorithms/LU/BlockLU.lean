@@ -488,6 +488,7 @@
     higham13_theorem13_6_implementation1_from_DHS_factorization_solve_results,
     dhs_lu_solve_perturbation_identity,
     dhs_lu_solve_perturbation_firstOrder,
+    demmelHighamSchreiber13_6_solve_result_from_perturbation_layers,
     higham13_theorem13_6_eq13_16_firstOrder_from_DHS_estimates,
     higham13_theorem13_6_implementation1_conditional_from_DHS_estimates:
     Theorem 13.6 scalar and conditional Eq.13.16 aggregation, with a named
@@ -7773,6 +7774,57 @@ theorem dhs_lu_solve_perturbation_firstOrder
     _ ≤ cSolve * (u * (normA + normL * normU)) :=
         mul_le_mul_of_nonneg_right hc hscale
     _ = cSolve * u * (normA + normL * normU) := by ring
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 solve route:
+    package the exact solve perturbation and first-order budget into the audited
+    DHS solve-result boundary.
+
+    This is the next source-facing layer after
+    `dhs_lu_solve_perturbation_identity`: once the factorization residual,
+    forward solve, and back substitution have supplied their exact equations and
+    component first-order budgets, this theorem produces the separated
+    `DemmelHighamSchreiber13_6SolveResult`.  The implementation-facing kernel
+    facts remain explicit hypotheses; they are not hidden in the solve estimate. -/
+theorem demmelHighamSchreiber13_6_solve_result_from_perturbation_layers
+    {n p : Type*} [Fintype n]
+    (A E Lhat Uhat DeltaL DeltaU : Matrix n n ℝ)
+    (Xhat B Yhat : Matrix n p ℝ)
+    (normDeltaA_solve normE normDeltaLU normLDeltaU normDeltaLDeltaU
+      normA normL normU u cFact cForward cBack d_solve : ℝ)
+    (blockRowRHS forwardSubstitution blockBackSubstitution localSolveSuccess
+      maxEntryProductLaws : Prop)
+    (hBlockRowRHS : blockRowRHS)
+    (hForwardPath : forwardSubstitution)
+    (hBackPath : blockBackSubstitution)
+    (hSolveSuccess : localSolveSuccess)
+    (hMaxEntryProductLaws : maxEntryProductLaws)
+    (hu : 0 ≤ u) (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hc : cFact + cForward + cBack ≤ d_solve)
+    (hFact : Lhat * Uhat = A + E)
+    (hForward : (Lhat + DeltaL) * Yhat = B)
+    (hBack : (Uhat + DeltaU) * Xhat = Yhat)
+    (hE : FirstOrderLe u (cFact * u * (normA + normL * normU)) normE)
+    (hDeltaLU : FirstOrderLe u
+      (cForward * u * (normA + normL * normU)) normDeltaLU)
+    (hLDeltaU : FirstOrderLe u
+      (cBack * u * (normA + normL * normU)) normLDeltaU)
+    (hDeltaLDeltaU : FirstOrderLe u 0 normDeltaLDeltaU)
+    (hTotal :
+      normDeltaA_solve ≤ normE + normDeltaLU + normLDeltaU + normDeltaLDeltaU) :
+    ((A + (E + DeltaL * Uhat + Lhat * DeltaU + DeltaL * DeltaU)) * Xhat = B) ∧
+      DemmelHighamSchreiber13_6SolveResult
+        u d_solve normA normL normU normDeltaA_solve
+        blockRowRHS forwardSubstitution blockBackSubstitution
+        localSolveSuccess maxEntryProductLaws := by
+  exact
+    ⟨dhs_lu_solve_perturbation_identity
+        A E Lhat Uhat DeltaL DeltaU Xhat B Yhat hFact hForward hBack,
+      ⟨hBlockRowRHS, hForwardPath, hBackPath, hSolveSuccess,
+        hMaxEntryProductLaws,
+        dhs_lu_solve_perturbation_firstOrder
+          normDeltaA_solve normE normDeltaLU normLDeltaU normDeltaLDeltaU
+          normA normL normU u cFact cForward cBack d_solve
+          hu hA hL hU hc hE hDeltaLU hLDeltaU hDeltaLDeltaU hTotal⟩⟩
 
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.6 / equation (13.16), conditional
     on the Demmel--Higham--Schreiber [326] implementation estimates.
