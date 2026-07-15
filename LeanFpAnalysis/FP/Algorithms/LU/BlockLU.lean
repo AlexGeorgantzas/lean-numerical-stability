@@ -430,8 +430,13 @@
   - DHSBlockForwardSubstitutionFirstOrderSpec,
     DHSBlockBackSubstitutionFirstOrderSpec,
     dhs_block_forward_substitution_firstOrder,
+    dhs_block_forward_residual_leading_term_le_of_coeff_bounds,
+    dhs_block_forward_residual_firstOrder_from_block_solve_spec,
+    dhs_block_forward_residual_firstOrder_from_block_solve_spec_of_coeff_bounds,
     dhs_block_back_substitution_firstOrder,
-    dhs_block_back_substitution_firstOrder_from_diagonal_block_solve_spec:
+    dhs_block_back_substitution_leading_term_le_of_coeff_bounds,
+    dhs_block_back_substitution_firstOrder_from_diagonal_block_solve_spec,
+    dhs_block_back_substitution_firstOrder_from_diagonal_block_solve_spec_of_coeff_bounds:
     DHS Theorem 2.1 selected-scope forward/back substitution branch specs
   - Algorithm13_3Implementation1LocalSpec,
     Algorithm13_3Implementation2ExplicitInverseSpec:
@@ -485,6 +490,8 @@
     demmelHighamSchreiber13_6_source_path_from_implementation1_local_spec,
     DemmelHighamSchreiber13_6FactorizationResult,
     demmelHighamSchreiber13_6_partitioned_leading_term_le_of_coeff_bounds,
+    dhs_block_forward_residual_leading_term_le_of_coeff_bounds,
+    dhs_block_back_substitution_leading_term_le_of_coeff_bounds,
     demmelHighamSchreiber13_6_factorization_result_from_partitioned_layer,
     demmelHighamSchreiber13_6_factorization_result_from_partitioned_layer_of_coeff_bounds,
     DemmelHighamSchreiber13_6SolveResult,
@@ -8082,6 +8089,86 @@ theorem dhs_block_forward_substitution_firstOrder
       u cForward normA normL normU normDeltaLU Lhat DeltaL Yhat B :=
   ⟨hEquation, hBound⟩
 
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 forward-side residual scale:
+    scalar comparison from local Eq.13.14 coefficients.
+
+    The recovered strict DHS audit separates the local block-solve residual
+    from the global forward-substitution branch.  This lemma discharges the
+    scalar leading-term comparison when the source analysis supplies a
+    coefficient bound `c₄ <= cForward` and a norm comparison from the local
+    residual product `‖Lhat21‖‖A11‖` into the global DHS scale
+    `‖A‖ + ‖Lhat‖‖Uhat‖`. -/
+theorem dhs_block_forward_residual_leading_term_le_of_coeff_bounds
+    (u c₄ cForward normA normL normU normLhat21 normA11 : ℝ)
+    (hu : 0 ≤ u) (hc₄_nonneg : 0 ≤ c₄)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hc₄_le : c₄ ≤ cForward)
+    (hLocalScale : normLhat21 * normA11 ≤ normA + normL * normU) :
+    c₄ * u * normLhat21 * normA11 ≤
+      cForward * u * (normA + normL * normU) := by
+  have hsum : 0 ≤ normA + normL * normU := by
+    linarith [mul_nonneg hL hU]
+  have hc₄u : 0 ≤ c₄ * u := mul_nonneg hc₄_nonneg hu
+  have hscale : 0 ≤ u * (normA + normL * normU) :=
+    mul_nonneg hu hsum
+  calc
+    c₄ * u * normLhat21 * normA11
+        = (c₄ * u) * (normLhat21 * normA11) := by ring
+    _ ≤ (c₄ * u) * (normA + normL * normU) :=
+        mul_le_mul_of_nonneg_left hLocalScale hc₄u
+    _ = c₄ * (u * (normA + normL * normU)) := by ring
+    _ ≤ cForward * (u * (normA + normL * normU)) :=
+        mul_le_mul_of_nonneg_right hc₄_le hscale
+    _ = cForward * u * (normA + normL * normU) := by ring
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 forward-side residual scale
+    from Higham's local block solve specification (equation 13.14).
+
+    Equation (13.14) gives a residual equation
+    `Lhat21 * A11 = A21 + E21` and a local first-order bound for `E21`.
+    It is not, by itself, the full DHS global forward-substitution perturbation
+    equation `(Lhat + DeltaL) * Yhat = B`.  This adapter therefore transports
+    only the residual equation and scalar budget to the global DHS
+    forward-branch leading scale, keeping the operational forward-substitution
+    equation and any product/value laws as separate obligations. -/
+theorem dhs_block_forward_residual_firstOrder_from_block_solve_spec
+    {r s : Type*} [Fintype r]
+    (u c₄ cForward normA normL normU normLhat21 normA11 normE21 : ℝ)
+    (Lhat21 A21 E21 : Matrix s r ℝ) (A11 : Matrix r r ℝ)
+    (hLeading :
+      c₄ * u * normLhat21 * normA11 ≤
+        cForward * u * (normA + normL * normU))
+    (hSpec :
+      BlockSolveFirstOrderSpec u c₄ normLhat21 normA11 normE21
+        Lhat21 A21 E21 A11) :
+    (Lhat21 * A11 = A21 + E21) ∧
+      FirstOrderLe u (cForward * u * (normA + normL * normU)) normE21 :=
+  ⟨hSpec.equation, hSpec.norm_bound.mono_leading hLeading⟩
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 forward-side residual scale
+    from Higham's local block solve specification, with the scalar comparison
+    derived from source-shaped coefficient and norm comparisons. -/
+theorem dhs_block_forward_residual_firstOrder_from_block_solve_spec_of_coeff_bounds
+    {r s : Type*} [Fintype r]
+    (u c₄ cForward normA normL normU normLhat21 normA11 normE21 : ℝ)
+    (Lhat21 A21 E21 : Matrix s r ℝ) (A11 : Matrix r r ℝ)
+    (hu : 0 ≤ u) (hc₄_nonneg : 0 ≤ c₄)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hc₄_le : c₄ ≤ cForward)
+    (hLocalScale : normLhat21 * normA11 ≤ normA + normL * normU)
+    (hSpec :
+      BlockSolveFirstOrderSpec u c₄ normLhat21 normA11 normE21
+        Lhat21 A21 E21 A11) :
+    (Lhat21 * A11 = A21 + E21) ∧
+      FirstOrderLe u (cForward * u * (normA + normL * normU)) normE21 :=
+  dhs_block_forward_residual_firstOrder_from_block_solve_spec
+    u c₄ cForward normA normL normU normLhat21 normA11 normE21
+    Lhat21 A21 E21 A11
+    (dhs_block_forward_residual_leading_term_le_of_coeff_bounds
+      u c₄ cForward normA normL normU normLhat21 normA11
+      hu hc₄_nonneg hA hL hU hc₄_le hLocalScale)
+    hSpec
+
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 block-back-substitution
     branch, selected-scope spec constructor.
 
@@ -8099,6 +8186,35 @@ theorem dhs_block_back_substitution_firstOrder
     DHSBlockBackSubstitutionFirstOrderSpec
       u cBack normA normL normU normLDeltaU Uhat DeltaU Xhat Yhat :=
   ⟨hEquation, hBound⟩
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch:
+    scalar comparison from local Eq.13.15 coefficients.
+
+    This discharges the raw leading-term comparison for a diagonal-block solve
+    when the source analysis has bounded the local coefficient `c₅` by the
+    global back-substitution coefficient and has compared the local diagonal
+    block scale to `‖A‖ + ‖Lhat‖‖Uhat‖`. -/
+theorem dhs_block_back_substitution_leading_term_le_of_coeff_bounds
+    (u c₅ cBack normA normL normU normUii : ℝ)
+    (hu : 0 ≤ u) (hc₅_nonneg : 0 ≤ c₅)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hc₅_le : c₅ ≤ cBack)
+    (hLocalScale : normUii ≤ normA + normL * normU) :
+    c₅ * u * normUii ≤ cBack * u * (normA + normL * normU) := by
+  have hsum : 0 ≤ normA + normL * normU := by
+    linarith [mul_nonneg hL hU]
+  have hc₅u : 0 ≤ c₅ * u := mul_nonneg hc₅_nonneg hu
+  have hscale : 0 ≤ u * (normA + normL * normU) :=
+    mul_nonneg hu hsum
+  calc
+    c₅ * u * normUii
+        = (c₅ * u) * normUii := by ring
+    _ ≤ (c₅ * u) * (normA + normL * normU) :=
+        mul_le_mul_of_nonneg_left hLocalScale hc₅u
+    _ = c₅ * (u * (normA + normL * normU)) := by ring
+    _ ≤ cBack * (u * (normA + normL * normU)) :=
+        mul_le_mul_of_nonneg_right hc₅_le hscale
+    _ = cBack * u * (normA + normL * normU) := by ring
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch
     from a local diagonal-block solve specification.
@@ -8125,6 +8241,31 @@ theorem dhs_block_back_substitution_firstOrder_from_diagonal_block_solve_spec
       u cBack normA normL normU normLDeltaU Uii DeltaUii Xhat D :=
   ⟨hSpec.equation,
     (hSpec.norm_bound.mono_value hProductLaw).mono_leading hLeading⟩
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch
+    from a local diagonal-block solve specification, with the scalar comparison
+    derived from source-shaped coefficient and norm comparisons. -/
+theorem dhs_block_back_substitution_firstOrder_from_diagonal_block_solve_spec_of_coeff_bounds
+    {n p : Type*} [Fintype n]
+    (u c₅ cBack normA normL normU normUii normDeltaUii normLDeltaU : ℝ)
+    (Uii DeltaUii : Matrix n n ℝ) (Xhat D : Matrix n p ℝ)
+    (hProductLaw : normLDeltaU ≤ normDeltaUii)
+    (hu : 0 ≤ u) (hc₅_nonneg : 0 ≤ c₅)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hc₅_le : c₅ ≤ cBack)
+    (hLocalScale : normUii ≤ normA + normL * normU)
+    (hSpec :
+      DiagonalBlockSolveFirstOrderSpec
+        u c₅ normUii normDeltaUii Uii DeltaUii Xhat D) :
+    DHSBlockBackSubstitutionFirstOrderSpec
+      u cBack normA normL normU normLDeltaU Uii DeltaUii Xhat D :=
+  dhs_block_back_substitution_firstOrder_from_diagonal_block_solve_spec
+    u c₅ cBack normA normL normU normUii normDeltaUii normLDeltaU
+    Uii DeltaUii Xhat D hProductLaw
+    (dhs_block_back_substitution_leading_term_le_of_coeff_bounds
+      u c₅ cBack normA normL normU normUii
+      hu hc₅_nonneg hA hL hU hc₅_le hLocalScale)
+    hSpec
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 solve route:
     package the exact solve perturbation and first-order budget into the audited
