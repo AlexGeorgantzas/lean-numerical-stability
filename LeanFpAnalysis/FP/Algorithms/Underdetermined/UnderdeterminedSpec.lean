@@ -819,8 +819,10 @@ theorem higham21_eq21_5_sne_rect_transpose_solution {m n : ℕ}
     - E = |A|H, f = |b|: bound involves cond₂(A) = ‖|A⁺||A|‖₂
     - Normwise: ‖x−y‖₂/‖x‖₂ ≤ min{3,n−m+2}(mn)^{1/2}κ₂(A)ε + O(ε²)
 
-    Recorded as an abstract predicate until the rectangular pseudoinverse
-    perturbation expansion is fully formalized. -/
+    This legacy compatibility record predates the completed rectangular
+    pseudoinverse development. It is not the source-facing proof of Theorem
+    21.1; the proved expansion and finite-radius endpoints live in the
+    `Higham21Perturbation` and `Higham21PerturbationRadius` modules. -/
 structure DemmelHighamPerturbation (m : ℕ)
     (x y : Fin m → ℝ) (kappa eps : ℝ)
     (sol_bound : ℝ) : Prop where
@@ -847,9 +849,10 @@ structure DemmelHighamPerturbation (m : ℕ)
 
     The normwise bound satisfies: ‖ΔA‖_p ≤ (‖ΔA₁‖²_p + ‖ΔA₂‖²_p)^{1/2}.
 
-    This is the underdetermined analogue of Lemma 20.6.
-    Recorded as an abstract predicate until the rectangular projector
-    construction is fully formalized. -/
+    This is the underdetermined analogue of Lemma 20.6. The structure is a
+    legacy compatibility record and is not evidence for the source lemma;
+    `higham21_lemma21_2_source_bundle` supplies the proved single-perturbation
+    construction and norm bounds. -/
 structure KielbasinskiSchwetlickUndet (m : ℕ)
     (AAT : Fin m → Fin m → ℝ)
     (b : Fin m → ℝ)

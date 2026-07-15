@@ -9,7 +9,9 @@ import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21Eq21_11Uniform
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21Eq21_8
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21Eq21_9
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21Equation21_11
+import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21Equation21_11Scalar
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21Givens
+import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21GivensClosure
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21GivensRounded
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21MGS
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21MGSRounded
@@ -20,8 +22,13 @@ import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21QRFoundations
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21RankStability
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21RowwiseMeasure
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21SNEActualOutput
+import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21SNEClosure
+import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21SNEConditionTransfer
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21SNEEnvelopeTransfer
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21SNEForward
+import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21SNEQRMajorant
+import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21SNERemainderBounds
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21SNESigned
+import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21SNEUniform
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21Theorem21_3Attainment
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQApply

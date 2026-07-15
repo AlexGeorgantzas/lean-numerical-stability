@@ -7,10 +7,10 @@
 -- row-wise backward stable under an explicit source-shaped gamma/cond2
 -- smallness condition. A legacy coarse Gram predicate is retained below.
 --
--- SNE method: solves RᵀRy = b via Cholesky-like approach. The
--- backward error is proved by composing with existing Cholesky
--- solve results. The forward error (eq. 21.11) follows from
--- normwise_perturbation_bound (Theorem 7.2).
+-- SNE method: solves RᵀRy = b by two rounded triangular solves. The
+-- componentwise Gram-system envelope below is only an intermediate result;
+-- the source-shaped equation (21.11) endpoint uses the signed factorwise
+-- Demmel--Higham cancellation developed in the dedicated Higham21SNE modules.
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
@@ -9969,8 +9969,9 @@ theorem higham21_thm21_3_right_projector_frobNormSqRect_pythagoras
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
     scalar right-hand side of the nonzero Sun--Sun formula, parameterized by
-    the smallest singular value of `A(I - y y^+)`.  Proving that this equals
-    `eta_F(y)` remains the open singular-value branch. -/
+    the smallest singular value of `A(I - y y^+)`. This definition is used
+    by the completed equality and attainment results later in this file and
+    in `Higham21Theorem21_3Attainment`. -/
 noncomputable def undetNormwiseBackwardErrorNonzeroFormulaRHS {m n : ℕ}
     (theta : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
     (y : Fin n → ℝ) (sigma : ℝ) : ℝ :=
@@ -15267,18 +15268,12 @@ theorem underdetermined_forward_error (m : ℕ)
     _ = ∑ j, |AAT_inv i j| * ∑ k, |ΔG j k| * |y_hat k| := by
         apply Finset.sum_congr rfl; intro j _; ring_nf
 
-/-- **SNE method is NOT backward stable** (Higham §21.3, remark).
+/-- Legacy Gram-system perturbation bound used in the SNE development.
 
-    Unlike the Q method (Theorem 21.4), the SNE method does not
-    guarantee that x̂ is the minimum 2-norm solution to a nearby
-    system. The SNE only guarantees a small residual in the normal
-    equations RᵀRŷ ≈ b.
-
-    However, both methods achieve the same forward error bound (eq. 21.11):
-    ‖x̂−x‖₂/‖x‖₂ ≤ mnγ'_{cn} · cond₂(A) + O(u²)
-
-    This means the forward error from SNE is as good as from Q method,
-    even though the backward error characterization is weaker. -/
+    Despite its historical name, this theorem proves only the exact
+    componentwise consequence for a supplied Gram perturbation. It is not
+    the source-facing equation (21.11) closure and makes no SNE
+    backward-stability claim. -/
 theorem sne_forward_error_matches_q_method
     (m : ℕ)
     (AAT AAT_inv : Fin m → Fin m → ℝ)
