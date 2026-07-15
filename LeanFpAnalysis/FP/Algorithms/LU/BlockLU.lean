@@ -33158,6 +33158,270 @@ theorem
     hP_initial, hActive, hAinv_norm, hbad⟩
 
 /-- Higham, 2nd ed., Chapter 13, Problem 13.4 audit:
+    the all-active-suffix inverse-entry table is not rescued by strengthening
+    the initial BDD hypothesis to both row and column dominance.
+
+    The witness is again `[[1, -1], [1, 1]]` in scalar `1 x 1` blocks.  It
+    satisfies matrix-`∞` and max-entry row/column BDD tables, the diagonal
+    max-entry lower comparison, and the all-leading-prefix nonsingularity
+    table.  Its stage-zero active pivot inverse entry is still larger than the
+    final inverse max-entry norm, so the source route needs a recursive
+    tail/source comparison or a genuinely stronger hidden hypothesis than
+    two-sided initial BDD. -/
+theorem
+    higham13_problem13_4_all_tail_inverse_entry_bound_counterexample_activeSuffix_infNorm_rowCol_bdd_leadingPrefixes :
+    ∃ A Ainv : Fin 2 → Fin 2 → ℝ,
+    ∃ Ablk : Fin 2 → Fin 2 → Matrix (Fin 1) (Fin 1) ℝ,
+    ∃ pivotInv : ℕ → Matrix (Fin 1) (Fin 1) ℝ,
+    ∃ invDiagBound : Fin 2 → ℝ,
+    ∃ P Pinv : Fin 1 → Fin 1 → ℝ,
+      IsRightInverse 2 A Ainv ∧ IsLeftInverse 2 A Ainv ∧
+        IsRightInverse 1 P Pinv ∧ IsLeftInverse 1 P Pinv ∧
+        IsBlockDiagDomCol 2 (fun i j : Fin 2 => infNorm (Ablk i j)) invDiagBound ∧
+        IsBlockDiagDomRow 2 (fun i j : Fin 2 => infNorm (Ablk i j)) invDiagBound ∧
+        IsBlockDiagDomCol 2
+          (fun i j : Fin 2 => maxEntryNorm (by norm_num : 0 < 1) (Ablk i j))
+          invDiagBound ∧
+        IsBlockDiagDomRow 2
+          (fun i j : Fin 2 => maxEntryNorm (by norm_num : 0 < 1) (Ablk i j))
+          invDiagBound ∧
+        (∀ j : Fin 2,
+          invDiagBound j ≤ maxEntryNorm (by norm_num : 0 < 1) (Ablk j j)) ∧
+        (∀ p : ℕ, ∀ hp : p < 2,
+          BlockMatrixNonsingular
+            (leadingBlockPrefix13_2 (fun i j a b => Ablk i j a b) p hp)) ∧
+        (∀ i j : Fin 2,
+          blockMatrixFlatFin Ablk (finProdFinEquiv (i, (0 : Fin 1)))
+            (finProdFinEquiv (j, (0 : Fin 1))) = A i j) ∧
+        (∀ i j : Fin 1, P i j = A (0 : Fin 2) (0 : Fin 2)) ∧
+        (∀ i j s t,
+          higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv
+              0 0 (by norm_num) i j s t = P s t) ∧
+        maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2) Ainv =
+          (1 / 2 : ℝ) ∧
+        ¬ (∀ i j : Fin 1,
+          |Pinv i j| ≤
+            maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2) Ainv) := by
+  let A : Fin 2 → Fin 2 → ℝ := fun i j =>
+    if i = (0 : Fin 2) ∧ j = (0 : Fin 2) then 1
+    else if i = (0 : Fin 2) ∧ j = (1 : Fin 2) then (-1)
+    else if i = (1 : Fin 2) ∧ j = (0 : Fin 2) then 1
+    else 1
+  let Ainv : Fin 2 → Fin 2 → ℝ := fun i j =>
+    if i = (0 : Fin 2) ∧ j = (0 : Fin 2) then (1 / 2 : ℝ)
+    else if i = (0 : Fin 2) ∧ j = (1 : Fin 2) then (1 / 2 : ℝ)
+    else if i = (1 : Fin 2) ∧ j = (0 : Fin 2) then (-1 / 2 : ℝ)
+    else (1 / 2 : ℝ)
+  let Ablk : Fin 2 → Fin 2 → Matrix (Fin 1) (Fin 1) ℝ := fun i j _ _ => A i j
+  let pivotInv : ℕ → Matrix (Fin 1) (Fin 1) ℝ := fun _ _ _ => 0
+  let invDiagBound : Fin 2 → ℝ := fun _ => 1
+  let P : Fin 1 → Fin 1 → ℝ := fun _ _ => 1
+  let Pinv : Fin 1 → Fin 1 → ℝ := fun _ _ => 1
+  have hA_right : IsRightInverse 2 A Ainv := by
+    intro i j
+    fin_cases i <;> fin_cases j <;>
+      norm_num [A, Ainv, Fin.sum_univ_two]
+    all_goals rfl
+  have hA_left : IsLeftInverse 2 A Ainv := by
+    intro i j
+    fin_cases i <;> fin_cases j <;>
+      norm_num [A, Ainv, Fin.sum_univ_two]
+    all_goals rfl
+  have hP_right : IsRightInverse 1 P Pinv := by
+    intro i j
+    fin_cases i
+    fin_cases j
+    norm_num [P, Pinv, Fin.sum_univ_one]
+  have hP_left : IsLeftInverse 1 P Pinv := by
+    intro i j
+    fin_cases i
+    fin_cases j
+    norm_num [P, Pinv, Fin.sum_univ_one]
+  have hInfNorm_Ablk :
+      ∀ i j : Fin 2, infNorm (Ablk i j) = |A i j| := by
+    intro i j
+    apply le_antisymm
+    · apply infNorm_le_of_row_sum_le
+      · intro s
+        fin_cases s
+        simp [Ablk]
+      · exact abs_nonneg (A i j)
+    · have h := row_sum_le_infNorm (Ablk i j) (0 : Fin 1)
+      simpa [Ablk] using h
+  have hMaxNorm_Ablk :
+      ∀ i j : Fin 2, maxEntryNorm (by norm_num : 0 < 1) (Ablk i j) = |A i j| := by
+    intro i j
+    apply le_antisymm
+    · apply
+        (maxEntryNormRect_le_of_entry_abs_le
+          (by norm_num : 0 < 1) (by norm_num : 0 < 1) (Ablk i j) |A i j|)
+      intro s t
+      fin_cases s
+      fin_cases t
+      simp [Ablk]
+    · have h :=
+        entry_le_maxEntryNorm (by norm_num : 0 < 1) (Ablk i j) (0 : Fin 1) (0 : Fin 1)
+      simpa [Ablk] using h
+  have hDomInfCol :
+      IsBlockDiagDomCol 2 (fun i j : Fin 2 => infNorm (Ablk i j)) invDiagBound := by
+    intro j
+    fin_cases j <;>
+      norm_num [IsBlockDiagDomCol, hInfNorm_Ablk, A, invDiagBound, Fin.sum_univ_two]
+  have hDomInfRow :
+      IsBlockDiagDomRow 2 (fun i j : Fin 2 => infNorm (Ablk i j)) invDiagBound := by
+    intro i
+    fin_cases i <;>
+      norm_num [IsBlockDiagDomRow, hInfNorm_Ablk, A, invDiagBound, Fin.sum_univ_two]
+  have hDomMaxCol :
+      IsBlockDiagDomCol 2
+        (fun i j : Fin 2 => maxEntryNorm (by norm_num : 0 < 1) (Ablk i j))
+        invDiagBound := by
+    exact higham13_blockDiagDomCol_maxEntry_of_infNorm
+      (by norm_num : 0 < 1) Ablk invDiagBound hDomInfCol
+  have hDomMaxRow :
+      IsBlockDiagDomRow 2
+        (fun i j : Fin 2 => maxEntryNorm (by norm_num : 0 < 1) (Ablk i j))
+        invDiagBound := by
+    intro i
+    fin_cases i <;>
+      norm_num [IsBlockDiagDomRow, hMaxNorm_Ablk, A, invDiagBound, Fin.sum_univ_two]
+  have hDiagMax :
+      ∀ j : Fin 2,
+        invDiagBound j ≤ maxEntryNorm (by norm_num : 0 < 1) (Ablk j j) := by
+    intro j
+    fin_cases j <;> norm_num [hMaxNorm_Ablk, A, invDiagBound]
+  have hFlat :
+      ∀ i j : Fin 2,
+        blockMatrixFlatFin Ablk (finProdFinEquiv (i, (0 : Fin 1)))
+          (finProdFinEquiv (j, (0 : Fin 1))) = A i j := by
+    intro i j
+    rw [blockMatrixFlatFin_apply]
+  have hP_initial : ∀ i j : Fin 1, P i j = A (0 : Fin 2) (0 : Fin 2) := by
+    intro i j
+    fin_cases i
+    fin_cases j
+    norm_num [A, P]
+  have hActive :
+      ∀ i j s t,
+        higham13_algorithm13_3_activeSuffixStageTailBlock Ablk pivotInv
+            0 0 (by norm_num) i j s t = P s t := by
+    intro i j s t
+    fin_cases i
+    fin_cases j
+    simpa [Ablk, higham13_algorithm13_3_activeSuffixStageTailBlock,
+      higham13_algorithm13_3_activeSuffixTail,
+      higham13_algorithm13_3_schurStageMatrixTailBlock,
+      higham13_algorithm13_3_schurStageMatrixBlock,
+      higham13_algorithm13_3_schurStageBlock] using (hP_initial s t).symm
+  have hAinv_norm :
+      maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2) Ainv =
+        (1 / 2 : ℝ) := by
+    apply le_antisymm
+    · apply maxEntryNormRect_le_of_entry_abs_le
+      intro i j
+      fin_cases i <;> fin_cases j <;> norm_num [Ainv]
+    · have h :=
+        entry_le_maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2)
+          Ainv (0 : Fin 2) (0 : Fin 2)
+      simpa [Ainv] using h
+  have hbad :
+      ¬ (∀ i j : Fin 1,
+          |Pinv i j| ≤
+            maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2) Ainv) := by
+    intro hbound
+    have h := hbound (0 : Fin 1) (0 : Fin 1)
+    rw [hAinv_norm] at h
+    norm_num [Pinv] at h
+  have hAblk_entry :
+      ∀ i j : Fin 2, Ablk i j (0 : Fin 1) (0 : Fin 1) = A i j := by
+    intro i j
+    simp [Ablk]
+  have hPrefix :
+      ∀ p : ℕ, ∀ hp : p < 2,
+        BlockMatrixNonsingular
+          (leadingBlockPrefix13_2 (fun i j a b => Ablk i j a b) p hp) := by
+    intro p hp
+    cases p with
+    | zero =>
+        refine ⟨fun _ _ _ _ => Pinv (0 : Fin 1) (0 : Fin 1), ?_⟩
+        constructor
+        · intro i j s t
+          fin_cases i
+          fin_cases j
+          fin_cases s
+          fin_cases t
+          have hA00 : Ablk (0 : Fin 2) (0 : Fin 2) (0 : Fin 1) (0 : Fin 1) =
+              P (0 : Fin 1) (0 : Fin 1) := by
+            rw [hAblk_entry]
+            exact (hP_initial (0 : Fin 1) (0 : Fin 1)).symm
+          simpa [BlockMatrixTwoSidedInverse, blockMatrixIdentity, idBlock,
+            zeroBlock, leadingBlockPrefix13_2, Fin.sum_univ_one, hA00]
+            using hP_left (0 : Fin 1) (0 : Fin 1)
+        · intro i j s t
+          fin_cases i
+          fin_cases j
+          fin_cases s
+          fin_cases t
+          have hA00 : Ablk (0 : Fin 2) (0 : Fin 2) (0 : Fin 1) (0 : Fin 1) =
+              P (0 : Fin 1) (0 : Fin 1) := by
+            rw [hAblk_entry]
+            exact (hP_initial (0 : Fin 1) (0 : Fin 1)).symm
+          simpa [BlockMatrixTwoSidedInverse, blockMatrixIdentity, idBlock,
+            zeroBlock, leadingBlockPrefix13_2, Fin.sum_univ_one, hA00]
+            using hP_right (0 : Fin 1) (0 : Fin 1)
+    | succ p =>
+        have hp0 : p = 0 := by omega
+        subst p
+        refine ⟨fun i j _ _ => Ainv i j, ?_⟩
+        have hPrefixEntry :
+            ∀ i j : Fin 2, ∀ s t : Fin 1,
+              leadingBlockPrefix13_2 (fun i j a b => Ablk i j a b) (0 + 1) hp
+                  i j s t = A i j := by
+          intro i j s t
+          fin_cases i <;> fin_cases j <;> fin_cases s <;> fin_cases t <;>
+            simp [leadingBlockPrefix13_2, hAblk_entry]
+        have hId :
+            ∀ i j : Fin 2, ∀ s t : Fin 1,
+              blockMatrixIdentity (0 + 1 + 1) 1 i j s t =
+                if i = j then 1 else 0 := by
+          intro i j s t
+          fin_cases s
+          fin_cases t
+          by_cases hij : i = j
+          · simp [blockMatrixIdentity, idBlock, hij]
+          · simp [blockMatrixIdentity, zeroBlock, hij]
+        constructor
+        · intro i j s t
+          calc
+            (∑ k : Fin (0 + 1 + 1), ∑ l : Fin 1,
+                (fun i j _ _ => Ainv i j) i k s l *
+                  leadingBlockPrefix13_2 (fun i j a b => Ablk i j a b) (0 + 1) hp
+                    k j l t)
+                = ∑ k : Fin 2, Ainv i k * A k j := by
+                    apply Finset.sum_congr rfl
+                    intro k _hk
+                    simp [hPrefixEntry]
+            _ = if i = j then 1 else 0 := hA_left i j
+            _ = blockMatrixIdentity (0 + 1 + 1) 1 i j s t := by
+                  rw [hId]
+        · intro i j s t
+          calc
+            (∑ k : Fin (0 + 1 + 1), ∑ l : Fin 1,
+                leadingBlockPrefix13_2 (fun i j a b => Ablk i j a b) (0 + 1) hp
+                    i k s l *
+                  (fun i j _ _ => Ainv i j) k j l t)
+                = ∑ k : Fin 2, A i k * Ainv k j := by
+                    apply Finset.sum_congr rfl
+                    intro k _hk
+                    simp [hPrefixEntry]
+            _ = if i = j then 1 else 0 := hA_right i j
+            _ = blockMatrixIdentity (0 + 1 + 1) 1 i j s t := by
+                  rw [hId]
+  exact ⟨A, Ainv, Ablk, pivotInv, invDiagBound, P, Pinv, hA_right, hA_left,
+    hP_right, hP_left, hDomInfCol, hDomInfRow, hDomMaxCol, hDomMaxRow,
+    hDiagMax, hPrefix, hFlat, hP_initial, hActive, hAinv_norm, hbad⟩
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 audit:
     the direct local-inverse comparison used by the stage-local growth route is
     not a scalar consequence of ambient growth containment alone.
 
