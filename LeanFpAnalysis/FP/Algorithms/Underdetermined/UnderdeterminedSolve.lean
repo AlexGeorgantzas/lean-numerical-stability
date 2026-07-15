@@ -8749,6 +8749,170 @@ theorem higham21_rectOpNorm2Le_pseudoinverse_product_of_row_bounds_nat_factor
       A Delta Aplus eta heta hrow
 
 set_option maxHeartbeats 1200000
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2: the minimum-norm core of the
+    printed pseudoinverse-product argument.  This separates the source lemma's
+    constructed perturbation from the later row-wise backward-error wrapper. -/
+theorem higham21_lemma21_2_single_min_norm_of_pseudoinverse_products
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (Aplus : Fin n → Fin m → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (x : Fin n → ℝ) (y : Fin m → ℝ)
+    (rho1 rho2 : ℝ)
+    (hRight : rectMatMul A Aplus = idMatrix m)
+    (hFirst :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hSecond :
+      x = rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hProd1 : rectOpNorm2Le (rectMatMul Aplus DeltaA1) rho1)
+    (hProd2 : rectOpNorm2Le (rectMatMul Aplus DeltaA2) rho2)
+    (hsmall : 3 * max rho1 rho2 < 1) :
+    RectMinNormSolution m n
+      (fun i j =>
+        A i j + undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  by_cases hx : x = 0
+  case pos =>
+    have hzero :
+        RectMinNormSolution m n (fun i j => A i j + DeltaA2 i j) b x :=
+      higham21_lemma21_2_zero_branch_min_norm_of_deltaA2
+        A x DeltaA1 DeltaA2 b hx hFirst
+    simpa [undetLemma21_2SinglePerturbation, hx] using hzero
+  case neg =>
+    let z : Fin n → ℝ := rectMatMulVec (finiteTranspose A) y
+    have hrho1 : 0 ≤ rho1 :=
+      higham21_lemma21_2_op_radius_nonneg_of_vec_ne_zero
+        (x := x) (rectMatMul Aplus DeltaA1) hx hProd1
+    have hrho2 : 0 ≤ rho2 :=
+      higham21_lemma21_2_op_radius_nonneg_of_vec_ne_zero
+        (x := x) (rectMatMul Aplus DeltaA2) hx hProd2
+    have hAplusTz :
+        rectMatMulVec (finiteTranspose Aplus) z = y := by
+      calc
+        rectMatMulVec (finiteTranspose Aplus) z =
+            rectMatMulVec (finiteTranspose (rectMatMul A Aplus)) y := by
+              simpa [z] using
+                (higham21_lemma21_2_pseudoinverse_transpose_action_eq_domain_projection
+                  Aplus A y)
+        _ = rectMatMulVec (finiteTranspose (idMatrix m)) y := by
+          rw [hRight]
+        _ = y := by
+          ext i
+          simp [rectMatMulVec, finiteTranspose, idMatrix]
+    have hDeltaA2T :
+        rectMatMulVec (finiteTranspose DeltaA2) y =
+          rectMatMulVec
+            (finiteTranspose (rectMatMul Aplus DeltaA2)) z := by
+      rw [hAplusTz.symm]
+      exact
+        higham21_lemma21_2_pseudoinverse_transpose_action_eq_domain_projection
+          DeltaA2 Aplus z
+    have hSecondMat :
+        x = rectMatMulVec
+          (finiteTranspose (fun i j => A i j + DeltaA2 i j)) y := by
+      simpa [rectTransposeMulVec, rectMatMulVec, finiteTranspose] using hSecond
+    have hxsum :
+        x = fun j =>
+          z j +
+            rectMatMulVec
+              (finiteTranspose (rectMatMul Aplus DeltaA2)) z j := by
+      calc
+        x = rectMatMulVec
+              (finiteTranspose (fun i j => A i j + DeltaA2 i j)) y :=
+          hSecondMat
+        _ = fun j =>
+              rectMatMulVec (finiteTranspose A) y j +
+                rectMatMulVec (finiteTranspose DeltaA2) y j := by
+              simpa [finiteTranspose] using
+                (rectMatMulVec_mat_add
+                  (finiteTranspose A) (finiteTranspose DeltaA2) y)
+        _ = fun j =>
+              z j +
+                rectMatMulVec
+                  (finiteTranspose (rectMatMul Aplus DeltaA2)) z j := by
+              rw [hDeltaA2T]
+    have hProd2T :
+        rectOpNorm2Le (finiteTranspose (rectMatMul Aplus DeltaA2)) rho2 :=
+      rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le
+        (rectMatMul Aplus DeltaA2) hrho2 hProd2
+    have hcancel :
+        (fun j =>
+          x j +
+            -rectMatMulVec
+              (finiteTranspose (rectMatMul Aplus DeltaA2)) z j) = z := by
+      ext j
+      have hj := congrFun hxsum j
+      linarith
+    have htri :=
+      vecNorm2_add_le x
+        (fun j =>
+          -rectMatMulVec
+            (finiteTranspose (rectMatMul Aplus DeltaA2)) z j)
+    rw [hcancel, vecNorm2_neg] at htri
+    have hlower :
+        (1 - rho2) * vecNorm2 z ≤ vecNorm2 x := by
+      calc
+        (1 - rho2) * vecNorm2 z =
+            vecNorm2 z - rho2 * vecNorm2 z := by ring
+        _ ≤ vecNorm2 z -
+              vecNorm2
+                (rectMatMulVec
+                  (finiteTranspose (rectMatMul Aplus DeltaA2)) z) :=
+            sub_le_sub_left (hProd2T z) _
+        _ ≤ vecNorm2 x := (sub_le_iff_le_add).2 htri
+    have hden : 0 < 1 - rho2 := by
+      have hrho2_le : rho2 ≤ max rho1 rho2 := le_max_right rho1 rho2
+      nlinarith
+    have hz :
+        vecNorm2 z ≤ (1 / (1 - rho2)) * vecNorm2 x := by
+      calc
+        vecNorm2 z =
+            ((1 - rho2) * vecNorm2 z) / (1 - rho2) := by
+              field_simp [ne_of_gt hden]
+        _ ≤ vecNorm2 x / (1 - rho2) :=
+              (div_le_div_iff_of_pos_right hden).2 hlower
+        _ = (1 / (1 - rho2)) * vecNorm2 x := by
+              simp only [div_eq_mul_inv, one_mul, mul_comm]
+    have hProductSub :
+        rectOpNorm2Le
+          (rectMatMul Aplus (fun i j => DeltaA1 i j - DeltaA2 i j))
+          (rho1 + rho2) := by
+      rw [rectMatMul_sub_right]
+      exact
+        rectOpNorm2Le_sub
+          (rectMatMul Aplus DeltaA1) (rectMatMul Aplus DeltaA2)
+          hProd1 hProd2
+    have hActionZ :=
+      higham21_lemma21_2_transpose_action_bound_of_pseudoinverse_product_bound
+        z DeltaA1 DeltaA2 Aplus (add_nonneg hrho1 hrho2) hProductSub
+    rw [hAplusTz] at hActionZ
+    have hAction :
+        vecNorm2
+            (rectMatMulVec
+              (finiteTranspose (fun i j => DeltaA1 i j - DeltaA2 i j)) y) ≤
+          ((rho1 + rho2) / (1 - rho2)) * vecNorm2 x := by
+      calc
+        vecNorm2
+            (rectMatMulVec
+              (finiteTranspose (fun i j => DeltaA1 i j - DeltaA2 i j)) y)
+            ≤ (rho1 + rho2) * vecNorm2 z := hActionZ
+        _ ≤ (rho1 + rho2) *
+              ((1 / (1 - rho2)) * vecNorm2 x) :=
+            mul_le_mul_of_nonneg_left hz (add_nonneg hrho1 hrho2)
+        _ = ((rho1 + rho2) / (1 - rho2)) * vecNorm2 x := by
+            simp [div_eq_mul_inv, mul_assoc]
+    have hsq : ¬ vecNorm2Sq x = 0 :=
+      higham21_vecNorm2Sq_ne_zero_of_ne_zero hx
+    have hminSym :
+        RectMinNormSolution m n
+          (fun i j =>
+            A i j + undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+          b x :=
+      higham21_lemma21_2_symmetrized_min_norm_of_transpose_action_bound
+        A x DeltaA1 DeltaA2 b y rho1 rho2 hsq hFirst hSecondMat.symm
+        hsmall hAction
+    simpa [undetLemma21_2SinglePerturbation, hx] using hminSym
+
 /-- Direct Lemma 21.2 row-wise handoff from the printed pseudoinverse-product
     smallness condition.  The proof constructs the source symmetrization in
     the nonzero branch and uses the second perturbation in the zero branch. -/
@@ -8930,6 +9094,201 @@ theorem higham21_lemma21_2_rowwise_backward_error_bound_of_pseudoinverse_product
     exact
       higham21_lemma21_2_rowwise_backward_error_bound_of_common_row_bound
         A DeltaA1 DeltaA2 b x heta hmin hrow1 hrow2
+
+/-- The exact operator-2 norm of the source product `A^+ DeltaA` appearing in
+    the smallness hypothesis of Lemma 21.2. -/
+noncomputable def higham21Lemma21_2ProductNorm2 {m n : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ) : ℝ :=
+  complexMatrixOp2
+    (realRectToCMatrix
+      (rectMatMul (undetAplusOfGramNonsingInv A) DeltaA))
+
+/-- Canonical minimum-norm core of Lemma 21.2, with the source smallness
+    condition stated using exact operator norms rather than supplied radii. -/
+theorem higham21_lemma21_2_single_min_norm_of_exact_product_norms
+    {m n : ℕ}
+    (A DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (x : Fin n → ℝ) (y : Fin m → ℝ)
+    (hFirst :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hSecond :
+      x = rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall :
+      3 * max (higham21Lemma21_2ProductNorm2 A DeltaA1)
+          (higham21Lemma21_2ProductNorm2 A DeltaA2) < 1)
+    (hdet :
+      Matrix.det (rectGram A : Matrix (Fin m) (Fin m) ℝ) ≠ 0) :
+    RectMinNormSolution m n
+      (fun i j =>
+        A i j + undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  let Aplus : Fin n → Fin m → ℝ := undetAplusOfGramNonsingInv A
+  let rho1 : ℝ := higham21Lemma21_2ProductNorm2 A DeltaA1
+  let rho2 : ℝ := higham21Lemma21_2ProductNorm2 A DeltaA2
+  have hRight : rectMatMul A Aplus = idMatrix m := by
+    simpa [Aplus] using
+      higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_det_ne_zero
+        A hdet
+  have hProd1 : rectOpNorm2Le (rectMatMul Aplus DeltaA1) rho1 := by
+    exact rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+      (rectMatMul Aplus DeltaA1)
+      (by simp [rho1, higham21Lemma21_2ProductNorm2, Aplus])
+  have hProd2 : rectOpNorm2Le (rectMatMul Aplus DeltaA2) rho2 := by
+    exact rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+      (rectMatMul Aplus DeltaA2)
+      (by simp [rho2, higham21Lemma21_2ProductNorm2, Aplus])
+  exact
+    higham21_lemma21_2_single_min_norm_of_pseudoinverse_products
+      A Aplus DeltaA1 DeltaA2 b x y rho1 rho2 hRight hFirst hSecond
+      hProd1 hProd2 (by simpa [rho1, rho2] using hsmall)
+
+/-- The source-case perturbation is literally
+    `DeltaA1 G1 + DeltaA2 G2`, with `G1 = xx^T/(x^T x)` and `G2 = I-G1`.
+    In the zero branch this reads `G1=0`, `G2=I`, and `DeltaA=DeltaA2`. -/
+theorem higham21_lemma21_2_single_perturbation_eq_projector_mixture
+    {m n : ℕ} (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (i : Fin m) (j : Fin n) :
+    undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j =
+      matMulRectRight DeltaA1 (lsLemma20_6Projector x) i j +
+        matMulRectRight DeltaA2 (lsLemma20_6ProjectorComplement x) i j := by
+  by_cases hx : x = 0
+  · subst x
+    have hP :
+        lsLemma20_6Projector (0 : Fin n → ℝ) =
+          (0 : Fin n → Fin n → ℝ) := by
+      ext a c
+      simp [lsLemma20_6Projector]
+    have hQ :
+        lsLemma20_6ProjectorComplement (0 : Fin n → ℝ) =
+          idMatrix n := by
+      ext a c
+      simp [lsLemma20_6ProjectorComplement, hP]
+    have hid : matMulRectRight DeltaA2 (idMatrix n) i j = DeltaA2 i j := by
+      have h := congrFun (congrFun (rectMatMul_id_right DeltaA2) i) j
+      simpa [rectMatMul, matMulRectRight] using h
+    simp only [undetLemma21_2SinglePerturbation, hP, hQ, hid]
+    simp [matMulRectRight]
+  · simpa [undetLemma21_2SinglePerturbation, hx] using
+      higham21_lemma21_2_symmetrized_perturbation_eq_right_projector_mixture
+        x DeltaA1 DeltaA2 i j
+
+/-- The rank-one source projector is idempotent also in the `x=0` branch. -/
+theorem higham21_lemma21_2_projector_idempotent_all {n : ℕ}
+    (x : Fin n → ℝ) :
+    matMul n (lsLemma20_6Projector x) (lsLemma20_6Projector x) =
+      lsLemma20_6Projector x := by
+  by_cases hx : x = 0
+  · subst x
+    ext i j
+    simp [matMul, lsLemma20_6Projector]
+  · exact lsLemma20_6Projector_idempotent x
+      (higham21_vecNorm2Sq_ne_zero_of_ne_zero hx)
+
+/-- A source-facing bundle for Higham's Lemma 21.2.  It records the explicit
+    projector construction, an exact transpose witness, minimum-norm recovery,
+    and the printed `p=2` and Frobenius square-sum norm bounds. -/
+structure Higham21Lemma21_2SourceBundle {m n : ℕ}
+    (A DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (x : Fin n → ℝ) : Prop where
+  min_norm :
+    RectMinNormSolution m n
+      (fun i j =>
+        A i j + undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x
+  transpose_witness : ∃ dual : Fin m → ℝ,
+    x = rectTransposeMulVec
+        (fun i j =>
+          A i j + undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+        dual
+  projector_mixture : ∀ i j,
+    undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j =
+      matMulRectRight DeltaA1 (lsLemma20_6Projector x) i j +
+        matMulRectRight DeltaA2 (lsLemma20_6ProjectorComplement x) i j
+  projector_symmetric :
+    IsSymmetricFiniteMatrix (lsLemma20_6Projector x)
+  projector_idempotent :
+    matMul n (lsLemma20_6Projector x) (lsLemma20_6Projector x) =
+      lsLemma20_6Projector x
+  projector_sum : ∀ i j,
+    lsLemma20_6Projector x i j +
+      lsLemma20_6ProjectorComplement x i j = idMatrix n i j
+  op2_bound :
+    complexMatrixOp2
+        (realRectToCMatrix
+          (undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2)) ≤
+      Real.sqrt
+        (complexMatrixOp2 (realRectToCMatrix DeltaA1) ^ 2 +
+          complexMatrixOp2 (realRectToCMatrix DeltaA2) ^ 2)
+  frobenius_bound :
+    frobNormRect
+        (undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2) ≤
+      Real.sqrt (frobNormRect DeltaA1 ^ 2 + frobNormRect DeltaA2 ^ 2)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2 (Kielbasinski--Schwetlick),
+    canonical exact-norm formulation.  Full row rank is represented by Gram
+    nonsingularity; `m <= n` is retained explicitly from the source statement. -/
+theorem higham21_lemma21_2_source_bundle
+    {m n : ℕ}
+    (A DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (x : Fin n → ℝ) (y : Fin m → ℝ)
+    (_hmn : m ≤ n)
+    (hdet :
+      Matrix.det (rectGram A : Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hFirst :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hSecond :
+      x = rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall :
+      3 * max (higham21Lemma21_2ProductNorm2 A DeltaA1)
+          (higham21Lemma21_2ProductNorm2 A DeltaA2) < 1) :
+    Higham21Lemma21_2SourceBundle A DeltaA1 DeltaA2 b x := by
+  have hmin :=
+    higham21_lemma21_2_single_min_norm_of_exact_product_norms
+      A DeltaA1 DeltaA2 b x y hFirst hSecond hsmall hdet
+  obtain ⟨ytilde, hytilde⟩ :=
+    RectMinNormSolution.exists_transpose_witness hmin
+  refine
+    { min_norm := hmin
+      transpose_witness := ⟨ytilde, hytilde.symm⟩
+      projector_mixture := ?_
+      projector_symmetric := ?_
+      projector_idempotent := ?_
+      projector_sum := ?_
+      op2_bound := ?_
+      frobenius_bound := ?_ }
+  · intro i j
+    exact higham21_lemma21_2_single_perturbation_eq_projector_mixture
+      x DeltaA1 DeltaA2 i j
+  · intro i j
+    exact lsLemma20_6Projector_symmetric x i j
+  · exact higham21_lemma21_2_projector_idempotent_all x
+  · intro i j
+    exact lsLemma20_6Projector_add_complement x i j
+  · let alpha : ℝ := complexMatrixOp2 (realRectToCMatrix DeltaA1)
+    let beta : ℝ := complexMatrixOp2 (realRectToCMatrix DeltaA2)
+    have hOp :
+        rectOpNorm2Le
+          (undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2)
+          (Real.sqrt (alpha ^ 2 + beta ^ 2)) :=
+      higham21_lemma21_2_single_perturbation_op_bound
+        x DeltaA1 DeltaA2
+        (by
+          simpa [alpha] using
+            (complexMatrixOp2_nonneg (realRectToCMatrix DeltaA1)))
+        (by
+          simpa [beta] using
+            (complexMatrixOp2_nonneg (realRectToCMatrix DeltaA2)))
+        (rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+          DeltaA1 le_rfl)
+        (rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
+          DeltaA2 le_rfl)
+    simpa [alpha, beta] using
+      (complexMatrixOp2_realRectToCMatrix_le_of_rectOpNorm2Le
+        (undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2)
+        (Real.sqrt_nonneg _) hOp)
+  · exact higham21_lemma21_2_single_perturbation_frob_bound
+      x DeltaA1 DeltaA2
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2 and Section 21.3:
     source-shaped row-wise backward-error handoff with a common source radius

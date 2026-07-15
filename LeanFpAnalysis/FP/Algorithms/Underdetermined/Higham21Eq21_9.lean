@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: QED
 -/
 
-import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21Perturbation
+import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21PerturbationRadius
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21RankStability
 
 namespace LeanFpAnalysis.FP
@@ -43,6 +43,18 @@ noncomputable def higham21Eq21_9DimensionCoefficient
     (m n : Nat) (kappa : Real) : Real :=
   (Nat.min 3 (n - m + 2) : Nat) *
     Real.sqrt ((m : Real) * (n : Real)) * kappa
+
+/-- The canonical `kappa_2(A)` used in (21.9), with `A^+` fixed to the
+    Moore--Penrose table `A^T(AA^T)^{-1}`. -/
+noncomputable def higham21Eq21_9Kappa2 {m n : Nat}
+    (A : Fin m -> Fin n -> Real) : Real :=
+  higham21RectKappa2With A (undetAplusOfGramNonsingInv A)
+
+theorem higham21Eq21_9Kappa2_nonneg {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    0 <= higham21Eq21_9Kappa2 A := by
+  exact higham21RectKappa2With_nonneg A
+    (undetAplusOfGramNonsingInv A)
 
 /-- The first source term in Theorem 21.1, equation (21.7). -/
 noncomputable def higham21Eq21_9NullspaceTerm {m n : Nat}
@@ -896,5 +908,111 @@ theorem higham21_eq21_9_relative_bound_with_fixed_radius_remainder
         vecNorm2 remainder / vecNorm2 x := by ring
     _ <= |eps| * K + (|eps| ^ 2 * C) / vecNorm2 x :=
       add_le_add hfirst (div_le_div_of_nonneg_right hrem hxpos.le)
+
+/-- Canonical first-order numerator form of equation (21.9).  Unlike the
+    certificate-level theorem above, all three scalar parameters are fixed to
+    exact rectangular operator norms, so the coefficient is the source
+    `kappa_2(A)` rather than an arbitrary upper certificate. -/
+theorem higham21_eq21_9_firstOrder_numerator_le_canonical
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
+    (b Deltab : Fin m -> Real) (hmn : m <= n)
+    (hdet : Matrix.det
+      (rectGram A : Matrix (Fin m) (Fin m) Real) ≠ 0)
+    (hb : b ≠ 0)
+    (hDeltaA : forall i j,
+      |DeltaA i j| <=
+        higham21Eq21_9NormwiseMatrixBudget
+          (higham21RectOpNorm2 A) i j)
+    (hDeltab : forall i,
+      |Deltab i| <= higham21Eq21_9NormwiseRhsBudget b i) :
+    vecNorm2
+        (higham21Eq21_7FirstOrder A DeltaA b Deltab
+          (undetGramNonsingInv A)) <=
+      higham21Eq21_9DimensionCoefficient m n
+          (higham21Eq21_9Kappa2 A) *
+        vecNorm2
+          (rectMatMulVec (undetAplusOfGramNonsingInv A) b) := by
+  let Aplus : Fin n -> Fin m -> Real := undetAplusOfGramNonsingInv A
+  let Aop : Real := higham21RectOpNorm2 A
+  let AplusOp : Real := higham21RectOpNorm2 Aplus
+  have hA : rectOpNorm2Le A Aop := by
+    simpa [Aop] using higham21_rectOpNorm2Le_exact A
+  have hAplus : rectOpNorm2Le Aplus AplusOp := by
+    simpa [AplusOp] using higham21_rectOpNorm2Le_exact Aplus
+  have hkappa : higham21Eq21_9Kappa2 A = AplusOp * Aop := by
+    simp [higham21Eq21_9Kappa2, higham21RectKappa2With,
+      Aplus, Aop, AplusOp, mul_comm]
+  simpa [Aplus, Aop, AplusOp] using
+    (higham21_eq21_9_firstOrder_numerator_le
+      A DeltaA b Deltab Aop AplusOp (higham21Eq21_9Kappa2 A)
+      hmn hdet hb hA hAplus hkappa hDeltaA hDeltab)
+
+/-- Higham, 2nd ed., Chapter 21, equation (21.9), in its literal asymptotic
+    form with exact rectangular `kappa_2(A)`.  The returned remainder is the
+    normalized exact remainder from (21.7) and is proved `O(t^2)` on a derived
+    full-row-rank neighborhood. -/
+theorem higham21_eq21_9_relative_asymptotic_bound
+    {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
+    (b Deltab : Fin m -> Real) (hmn : m <= n)
+    (hdet : Matrix.det
+      (rectGram A : Matrix (Fin m) (Fin m) Real) ≠ 0)
+    (hb : b ≠ 0)
+    (hDeltaA : forall i j,
+      |DeltaA i j| <=
+        higham21Eq21_9NormwiseMatrixBudget
+          (higham21RectOpNorm2 A) i j)
+    (hDeltab : forall i,
+      |Deltab i| <= higham21Eq21_9NormwiseRhsBudget b i) :
+    let x := rectMatMulVec (undetAplusOfGramNonsingInv A) b
+    let E := higham21Eq21_9NormwiseMatrixBudget (higham21RectOpNorm2 A)
+    let K := higham21Eq21_9DimensionCoefficient m n
+      (higham21Eq21_9Kappa2 A)
+    let remainderRatio : Real -> Real := fun t =>
+      vecNorm2
+          (higham21Eq21_7ExactRemainder A DeltaA b Deltab
+            (undetGramNonsingInv A)
+            (undetGramNonsingInv
+              (higham21Eq21_7ScaledMatrix A DeltaA t)) t) /
+        vecNorm2 x
+    And
+      (remainderRatio =O[nhds 0] (fun t : Real => t ^ 2))
+      (forall t,
+        abs t <= higham21PerturbationDirectionRadius A DeltaA E ->
+        vecNorm2
+            (fun j =>
+              higham21Eq21_7PerturbedSolution A DeltaA b Deltab
+                    (undetGramNonsingInv
+                      (higham21Eq21_7ScaledMatrix A DeltaA t)) t j -
+                higham21Eq21_7BaseSolution A b
+                  (undetGramNonsingInv A) j) /
+            vecNorm2 x <=
+          abs t * K + remainderRatio t) := by
+  dsimp only
+  let E : Fin m -> Fin n -> Real :=
+    higham21Eq21_9NormwiseMatrixBudget (higham21RectOpNorm2 A)
+  let K : Real := higham21Eq21_9DimensionCoefficient m n
+    (higham21Eq21_9Kappa2 A)
+  have hm : 0 < m := higham21_row_dimension_pos_of_rhs_ne_zero b hb
+  have hE : forall i j, 0 <= E i j := by
+    intro i j
+    simpa [E, higham21Eq21_9NormwiseMatrixBudget] using
+      higham21RectOpNorm2_nonneg A
+  have hxpos :
+      0 < vecNorm2
+        (rectMatMulVec (undetAplusOfGramNonsingInv A) b) :=
+    higham21_eq21_9_base_solution_norm_pos A b hdet hb
+  have hfirst :
+      vecNorm2
+          (higham21Eq21_7FirstOrder A DeltaA b Deltab
+            (undetGramNonsingInv A)) <=
+        K * vecNorm2
+          (rectMatMulVec (undetAplusOfGramNonsingInv A) b) := by
+    simpa [K] using
+      (higham21_eq21_9_firstOrder_numerator_le_canonical
+        A DeltaA b Deltab hmn hdet hb hDeltaA hDeltab)
+  simpa [E, K] using
+    (higham21_eq21_7_euclidean_relative_asymptotic_bound_of_firstOrder_bound
+      A DeltaA E b Deltab K hm hdet hE
+      (by simpa [E] using hDeltaA) hxpos hfirst)
 
 end LeanFpAnalysis.FP

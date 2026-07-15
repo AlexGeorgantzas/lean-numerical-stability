@@ -7,6 +7,48 @@ namespace LeanFpAnalysis.FP
 
 open scoped BigOperators Matrix.Norms.Frobenius
 
+/-- The exact Euclidean operator norm of a real rectangular matrix, routed
+    through the operator norm of its complexification.  The real/complex
+    bridge in `Norms.lean` shows that this is also the sharp radius for the
+    repository predicate `rectOpNorm2Le`. -/
+noncomputable def higham21RectOpNorm2 {m n : Nat}
+    (A : Fin m -> Fin n -> Real) : Real :=
+  complexMatrixOp2 (realRectToCMatrix A)
+
+theorem higham21RectOpNorm2_nonneg {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    0 <= higham21RectOpNorm2 A := by
+  exact complexMatrixOp2_nonneg _
+
+/-- The exact rectangular condition-number product associated with a supplied
+    pseudoinverse.  For the Moore--Penrose inverse this is Higham's
+    `kappa_2(A) = ||A||_2 ||A^+||_2`. -/
+noncomputable def higham21RectKappa2With {m n : Nat}
+    (A : Fin m -> Fin n -> Real)
+    (Aplus : Fin n -> Fin m -> Real) : Real :=
+  higham21RectOpNorm2 A * higham21RectOpNorm2 Aplus
+
+theorem higham21RectKappa2With_nonneg {m n : Nat}
+    (A : Fin m -> Fin n -> Real)
+    (Aplus : Fin n -> Fin m -> Real) :
+    0 <= higham21RectKappa2With A Aplus := by
+  exact mul_nonneg (higham21RectOpNorm2_nonneg A)
+    (higham21RectOpNorm2_nonneg Aplus)
+
+/-- The exact rectangular norm is an admissible vector-action certificate. -/
+theorem higham21_rectOpNorm2Le_exact {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    rectOpNorm2Le A (higham21RectOpNorm2 A) := by
+  exact rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le A le_rfl
+
+/-- Conversely, every nonnegative vector-action certificate bounds the exact
+    rectangular operator norm. -/
+theorem higham21RectOpNorm2_le_of_rectOpNorm2Le {m n : Nat}
+    (A : Fin m -> Fin n -> Real) {c : Real}
+    (hc : 0 <= c) (hA : rectOpNorm2Le A c) :
+    higham21RectOpNorm2 A <= c := by
+  exact complexMatrixOp2_realRectToCMatrix_le_of_rectOpNorm2Le A hc hA
+
 /-- A fixed Gram-perturbation envelope for directions satisfying `abs D <= E`.
     The quadratic part is frozen at unit radius, so every smaller signed
     perturbation has a Gram perturbation bounded by `abs t` times this table. -/
@@ -735,5 +777,121 @@ theorem higham21_theorem21_1_relative_asymptotic_bound_of_direction_envelope
       (higham21PerturbationGramInverseBound A)
       hdet (fun t ht => (hcert.2.2 t ht).1) hb hE hf hD hDeltab
       hcert.1 hcert.2.1 (fun t ht => (hcert.2.2 t ht).2)
+
+/-- Euclidean specialization of the exact equation-(21.7) expansion with an
+    arbitrary proved first-order coefficient.  The result packages the actual
+    normalized remainder as an `O(t^2)` function, rather than merely replacing
+    it by a pointwise quadratic majorant.  Equations (21.8) and (21.9) are
+    obtained by supplying their respective first-order estimates. -/
+theorem higham21_eq21_7_euclidean_relative_asymptotic_bound_of_firstOrder_bound
+    {m n : Nat}
+    (A D E : Fin m -> Fin n -> Real)
+    (b Deltab : Fin m -> Real) (K : Real)
+    (hm : 0 < m)
+    (hdet :
+      Not (Matrix.det (rectGram A : Matrix (Fin m) (Fin m) Real) = 0))
+    (hE : forall i j, 0 <= E i j)
+    (hD : forall i j, abs (D i j) <= E i j)
+    (hxpos :
+      0 < vecNorm2
+        (rectMatMulVec (undetAplusOfGramNonsingInv A) b))
+    (hfirst :
+      vecNorm2
+          (higham21Eq21_7FirstOrder A D b Deltab
+            (undetGramNonsingInv A)) <=
+        K * vecNorm2
+          (rectMatMulVec (undetAplusOfGramNonsingInv A) b)) :
+    let x := rectMatMulVec (undetAplusOfGramNonsingInv A) b
+    let remainderRatio : Real -> Real := fun t =>
+      vecNorm2
+          (higham21Eq21_7ExactRemainder A D b Deltab
+            (undetGramNonsingInv A)
+            (undetGramNonsingInv
+              (higham21Eq21_7ScaledMatrix A D t)) t) /
+        vecNorm2 x
+    And
+      (remainderRatio =O[nhds 0] (fun t : Real => t ^ 2))
+      (forall t,
+        abs t <= higham21PerturbationDirectionRadius A D E ->
+        vecNorm2
+            (fun j =>
+              higham21Eq21_7PerturbedSolution A D b Deltab
+                    (undetGramNonsingInv
+                      (higham21Eq21_7ScaledMatrix A D t)) t j -
+                higham21Eq21_7BaseSolution A b
+                  (undetGramNonsingInv A) j) /
+            vecNorm2 x <=
+          abs t * K + remainderRatio t) := by
+  dsimp only
+  let x : Fin n -> Real :=
+    rectMatMulVec (undetAplusOfGramNonsingInv A) b
+  let firstOrder : Fin n -> Real :=
+    higham21Eq21_7FirstOrder A D b Deltab
+      (undetGramNonsingInv A)
+  let remainder : Real -> Fin n -> Real := fun t =>
+    higham21Eq21_7ExactRemainder A D b Deltab
+      (undetGramNonsingInv A)
+      (undetGramNonsingInv (higham21Eq21_7ScaledMatrix A D t)) t
+  have hcert :=
+    higham21_theorem21_1_fixed_radius_certificates_of_direction_envelope
+      A D E hm hdet hE hD
+  constructor
+  · have hO :
+        (fun t => vecNorm2 (remainder t)) =O[nhds 0]
+          (fun t : Real => t ^ 2) := by
+      simpa [remainder] using
+        (higham21Eq21_7_exactRemainder_vecNorm2_isBigO
+          A D b Deltab (undetGramNonsingInv A)
+          (fun t =>
+            undetGramNonsingInv (higham21Eq21_7ScaledMatrix A D t))
+          (higham21PerturbationDirectionRadius A D E)
+          (higham21PerturbationGramInverseBound A)
+          hcert.1 hcert.2.1 (fun t ht => (hcert.2.2 t ht).2))
+    have hNormalized := hO.const_mul_left (vecNorm2 x)⁻¹
+    simpa [x, remainder, div_eq_mul_inv, mul_comm] using hNormalized
+  · intro t ht
+    have hdet_t := (hcert.2.2 t ht).1
+    have hscaled :
+        vecNorm2 (fun j => t * firstOrder j) / vecNorm2 x <=
+          abs t * K := by
+      have hfirst' : vecNorm2 firstOrder <= K * vecNorm2 x := by
+        simpa [firstOrder, x] using hfirst
+      have hmul :
+          abs t * vecNorm2 firstOrder <=
+            abs t * (K * vecNorm2 x) :=
+        mul_le_mul_of_nonneg_left hfirst' (abs_nonneg t)
+      rw [vecNorm2_smul]
+      calc
+        abs t * vecNorm2 firstOrder / vecNorm2 x <=
+            (abs t * (K * vecNorm2 x)) / vecNorm2 x :=
+          div_le_div_of_nonneg_right hmul hxpos.le
+        _ = abs t * K := by
+           simp only [div_eq_mul_inv]
+           have hxne : vecNorm2 x ≠ 0 := by
+             simpa [x] using (ne_of_gt hxpos)
+           calc
+             abs t * (K * vecNorm2 x) * (vecNorm2 x)⁻¹ =
+                 (abs t * K) * (vecNorm2 x * (vecNorm2 x)⁻¹) := by ring
+             _ = abs t * K := by rw [mul_inv_cancel₀ hxne, mul_one]
+    have hExpansion :=
+      higham21Eq21_7_exact_expansion_of_gram_det_ne_zero
+        A D b Deltab t hdet hdet_t
+    rw [hExpansion]
+    change
+      vecNorm2 (fun j => t * firstOrder j + remainder t j) /
+          vecNorm2 x <=
+        abs t * K + vecNorm2 (remainder t) / vecNorm2 x
+    calc
+      vecNorm2 (fun j => t * firstOrder j + remainder t j) /
+            vecNorm2 x <=
+          (vecNorm2 (fun j => t * firstOrder j) +
+              vecNorm2 (remainder t)) / vecNorm2 x :=
+        div_le_div_of_nonneg_right
+          (vecNorm2_add_le (fun j => t * firstOrder j) (remainder t))
+          hxpos.le
+      _ = vecNorm2 (fun j => t * firstOrder j) / vecNorm2 x +
+          vecNorm2 (remainder t) / vecNorm2 x := by ring
+      _ <= abs t * K + vecNorm2 (remainder t) / vecNorm2 x :=
+        add_le_add hscaled le_rfl
 
 end LeanFpAnalysis.FP
