@@ -476,10 +476,16 @@
     higham13_theorem13_6_eq13_16_firstOrder_from_factor_solve_estimates,
     DemmelHighamSchreiber13_6Estimates,
     DemmelHighamSchreiber13_6SourcePath,
+    DemmelHighamSchreiber13_6FactorizationResult,
+    DemmelHighamSchreiber13_6SolveResult,
     DemmelHighamSchreiber13_6Theorem2_1Result,
+    demmelHighamSchreiber13_6_theorem2_1_result_from_factorization_solve_results,
     demmelHighamSchreiber13_6_estimates_from_theorem2_1_result,
+    demmelHighamSchreiber13_6_estimates_from_factorization_solve_results,
     higham13_theorem13_6_eq13_16_firstOrder_from_DHS_theorem2_1_result,
     higham13_theorem13_6_implementation1_from_DHS_theorem2_1_result,
+    higham13_theorem13_6_eq13_16_firstOrder_from_DHS_factorization_solve_results,
+    higham13_theorem13_6_implementation1_from_DHS_factorization_solve_results,
     higham13_theorem13_6_eq13_16_firstOrder_from_DHS_estimates,
     higham13_theorem13_6_implementation1_conditional_from_DHS_estimates:
     Theorem 13.6 scalar and conditional Eq.13.16 aggregation, with a named
@@ -7278,6 +7284,42 @@ structure DemmelHighamSchreiber13_6SourcePath
   local_solve_success : localSolveSuccess
   max_entry_product_laws : maxEntryProductLaws
 
+/-- Factorization half of the Demmel--Higham--Schreiber [326] source boundary
+    used by Higham, Chapter 13, Theorem 13.6.
+
+    The recovered Pro audit recommends keeping the factorization estimate
+    separate from the block-solve estimate.  This predicate records the
+    recursive execution, rounded Schur-update, and max-entry product-law
+    obligations that justify the factorization `FirstOrderLe` estimate; it is
+    still a proof-source boundary, not the local reconstruction of [326]. -/
+structure DemmelHighamSchreiber13_6FactorizationResult
+    (u d_fact normA normL normU normDeltaA_fact : ℝ)
+    (recursiveExecution schurUpdate maxEntryProductLaws : Prop) : Prop where
+  recursive_execution : recursiveExecution
+  schur_update : schurUpdate
+  max_entry_product_laws : maxEntryProductLaws
+  factorization :
+    FirstOrderLe u (d_fact * u * (normA + normL * normU)) normDeltaA_fact
+
+/-- Solve half of the Demmel--Higham--Schreiber [326] source boundary used by
+    Higham, Chapter 13, Theorem 13.6.
+
+    This keeps the block-row right-hand-side formation, local forward/diagonal
+    solves, block back substitution, solve-success, and max-entry product-law
+    obligations visible before they are combined with the factorization half
+    into the full DHS Theorem 2.1 result object. -/
+structure DemmelHighamSchreiber13_6SolveResult
+    (u d_solve normA normL normU normDeltaA_solve : ℝ)
+    (blockRowRHS forwardSubstitution blockBackSubstitution localSolveSuccess
+      maxEntryProductLaws : Prop) : Prop where
+  block_row_rhs : blockRowRHS
+  forward_substitution : forwardSubstitution
+  block_back_substitution : blockBackSubstitution
+  local_solve_success : localSolveSuccess
+  max_entry_product_laws : maxEntryProductLaws
+  solve :
+    FirstOrderLe u (d_solve * u * (normA + normL * normU)) normDeltaA_solve
+
 /-- Source-level result boundary for Demmel--Higham--Schreiber [326],
     Theorem 2.1, equations (2.5)--(2.6), as used by Higham Theorem 13.6.
 
@@ -7299,6 +7341,31 @@ structure DemmelHighamSchreiber13_6Theorem2_1Result
     DemmelHighamSchreiber13_6Estimates u d_fact d_solve normA normL normU
       normDeltaA_fact normDeltaA_solve
 
+/-- Combine the factorization and solve halves of the audited DHS source
+    boundary into the full DHS Theorem 2.1 result object used by the existing
+    Higham Theorem 13.6 wrappers. -/
+theorem demmelHighamSchreiber13_6_theorem2_1_result_from_factorization_solve_results
+    (u d_fact d_solve normA normL normU normDeltaA_fact normDeltaA_solve : ℝ)
+    (recursiveExecution schurUpdate blockRowRHS forwardSubstitution
+      blockBackSubstitution localSolveSuccess maxEntryProductLaws : Prop)
+    (hFact : DemmelHighamSchreiber13_6FactorizationResult
+      u d_fact normA normL normU normDeltaA_fact
+      recursiveExecution schurUpdate maxEntryProductLaws)
+    (hSolve : DemmelHighamSchreiber13_6SolveResult
+      u d_solve normA normL normU normDeltaA_solve
+      blockRowRHS forwardSubstitution blockBackSubstitution localSolveSuccess
+      maxEntryProductLaws) :
+    DemmelHighamSchreiber13_6Theorem2_1Result
+      u d_fact d_solve normA normL normU
+      normDeltaA_fact normDeltaA_solve
+      recursiveExecution schurUpdate blockRowRHS forwardSubstitution
+      blockBackSubstitution localSolveSuccess maxEntryProductLaws := by
+  exact
+    ⟨⟨hFact.recursive_execution, hFact.schur_update, hSolve.block_row_rhs,
+        hSolve.forward_substitution, hSolve.block_back_substitution,
+        hSolve.local_solve_success, hFact.max_entry_product_laws⟩,
+      ⟨hFact.factorization, hSolve.solve⟩⟩
+
 /-- A proved projection from the audited DHS Theorem 2.1 boundary to the older
     estimate predicate used by the scalar Eq.13.16 aggregation wrappers. -/
 theorem demmelHighamSchreiber13_6_estimates_from_theorem2_1_result
@@ -7314,6 +7381,24 @@ theorem demmelHighamSchreiber13_6_estimates_from_theorem2_1_result
     DemmelHighamSchreiber13_6Estimates u d_fact d_solve normA normL normU
       normDeltaA_fact normDeltaA_solve :=
   h.estimates
+
+/-- Combine the factorization and solve halves directly into the older estimate
+    predicate.  This projection is useful for older conditional wrappers while
+    preserving the finer source-boundary decomposition in new callers. -/
+theorem demmelHighamSchreiber13_6_estimates_from_factorization_solve_results
+    (u d_fact d_solve normA normL normU normDeltaA_fact normDeltaA_solve : ℝ)
+    (recursiveExecution schurUpdate blockRowRHS forwardSubstitution
+      blockBackSubstitution localSolveSuccess maxEntryProductLaws : Prop)
+    (hFact : DemmelHighamSchreiber13_6FactorizationResult
+      u d_fact normA normL normU normDeltaA_fact
+      recursiveExecution schurUpdate maxEntryProductLaws)
+    (hSolve : DemmelHighamSchreiber13_6SolveResult
+      u d_solve normA normL normU normDeltaA_solve
+      blockRowRHS forwardSubstitution blockBackSubstitution localSolveSuccess
+      maxEntryProductLaws) :
+    DemmelHighamSchreiber13_6Estimates u d_fact d_solve normA normL normU
+      normDeltaA_fact normDeltaA_solve :=
+  ⟨hFact.factorization, hSolve.solve⟩
 
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.6 / equation (13.16), routed
     through the audited DHS Theorem 2.1 source boundary.
@@ -7345,6 +7430,39 @@ theorem higham13_theorem13_6_eq13_16_firstOrder_from_DHS_theorem2_1_result
       normDeltaA_fact normDeltaA_solve normA normL normU u
       d_fact d_solve dn hu hA hL hU hd_fact hd_solve
       hDHS.estimates.factorization hDHS.estimates.solve
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.6 / equation (13.16), routed
+    through the separated factorization and solve halves of the audited DHS
+    source boundary. -/
+theorem higham13_theorem13_6_eq13_16_firstOrder_from_DHS_factorization_solve_results
+    (normDeltaA_fact normDeltaA_solve : ℝ)
+    (normA normL normU u d_fact d_solve dn : ℝ)
+    (recursiveExecution schurUpdate blockRowRHS forwardSubstitution
+      blockBackSubstitution localSolveSuccess maxEntryProductLaws : Prop)
+    (hu : 0 ≤ u) (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hd_fact : d_fact ≤ dn) (hd_solve : d_solve ≤ dn)
+    (hFact : DemmelHighamSchreiber13_6FactorizationResult
+      u d_fact normA normL normU normDeltaA_fact
+      recursiveExecution schurUpdate maxEntryProductLaws)
+    (hSolve : DemmelHighamSchreiber13_6SolveResult
+      u d_solve normA normL normU normDeltaA_solve
+      blockRowRHS forwardSubstitution blockBackSubstitution localSolveSuccess
+      maxEntryProductLaws) :
+    FirstOrderLe u (dn * u * (normA + normL * normU)) normDeltaA_fact ∧
+      FirstOrderLe u (dn * u * (normA + normL * normU)) normDeltaA_solve ∧
+      FirstOrderLe u (dn * u * (normA + normL * normU))
+        (max normDeltaA_fact normDeltaA_solve) := by
+  exact
+    higham13_theorem13_6_eq13_16_firstOrder_from_DHS_theorem2_1_result
+      normDeltaA_fact normDeltaA_solve normA normL normU u
+      d_fact d_solve dn recursiveExecution schurUpdate blockRowRHS
+      forwardSubstitution blockBackSubstitution localSolveSuccess
+      maxEntryProductLaws hu hA hL hU hd_fact hd_solve
+      (demmelHighamSchreiber13_6_theorem2_1_result_from_factorization_solve_results
+        u d_fact d_solve normA normL normU
+        normDeltaA_fact normDeltaA_solve recursiveExecution schurUpdate
+        blockRowRHS forwardSubstitution blockBackSubstitution localSolveSuccess
+        maxEntryProductLaws hFact hSolve)
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 Implementation 1 and
     Theorem 13.6 / equation (13.16), routed through the audited DHS Theorem 2.1
@@ -7393,6 +7511,54 @@ theorem higham13_theorem13_6_implementation1_from_DHS_theorem2_1_result
         d_fact d_solve dn recursiveExecution schurUpdate blockRowRHS
         forwardSubstitution blockBackSubstitution localSolveSuccess
         maxEntryProductLaws hu hA hL hU hd_fact hd_solve hDHS⟩
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 Implementation 1 and
+    Theorem 13.6 / equation (13.16), routed through the separated
+    factorization and solve halves of the audited DHS source boundary. -/
+theorem higham13_theorem13_6_implementation1_from_DHS_factorization_solve_results
+    {r s p : Type*} [Fintype r]
+    (u c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii : ℝ)
+    (Lhat21 A21 E21 : Matrix s r ℝ) (A11 Uii DeltaUii : Matrix r r ℝ)
+    (Xhat D : Matrix r p ℝ)
+    (normDeltaA_fact normDeltaA_solve : ℝ)
+    (normA normL normU d_fact d_solve dn : ℝ)
+    (recursiveExecution schurUpdate blockRowRHS forwardSubstitution
+      blockBackSubstitution localSolveSuccess maxEntryProductLaws : Prop)
+    (hu : 0 ≤ u) (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hd_fact : d_fact ≤ dn) (hd_solve : d_solve ≤ dn)
+    (hLocal : Algorithm13_3Implementation1LocalSpec
+      u c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii
+      Lhat21 A21 E21 A11 Uii DeltaUii Xhat D)
+    (hFact : DemmelHighamSchreiber13_6FactorizationResult
+      u d_fact normA normL normU normDeltaA_fact
+      recursiveExecution schurUpdate maxEntryProductLaws)
+    (hSolve : DemmelHighamSchreiber13_6SolveResult
+      u d_solve normA normL normU normDeltaA_solve
+      blockRowRHS forwardSubstitution blockBackSubstitution localSolveSuccess
+      maxEntryProductLaws) :
+    ((Lhat21 * A11 = A21 + E21 ∧
+        BlockSolveFirstOrderBound u c₄ normLhat21 normA11 normE21) ∧
+      ((Uii + DeltaUii) * Xhat = D ∧
+        DiagonalBlockSolveFirstOrderBound u c₅ normUii normDeltaUii)) ∧
+      FirstOrderLe u (dn * u * (normA + normL * normU))
+        normDeltaA_fact ∧
+      FirstOrderLe u (dn * u * (normA + normL * normU))
+        normDeltaA_solve ∧
+      FirstOrderLe u (dn * u * (normA + normL * normU))
+        (max normDeltaA_fact normDeltaA_solve) := by
+  exact
+    higham13_theorem13_6_implementation1_from_DHS_theorem2_1_result
+      u c₄ c₅ normLhat21 normA11 normE21 normUii normDeltaUii
+      Lhat21 A21 E21 A11 Uii DeltaUii Xhat D
+      normDeltaA_fact normDeltaA_solve normA normL normU
+      d_fact d_solve dn recursiveExecution schurUpdate blockRowRHS
+      forwardSubstitution blockBackSubstitution localSolveSuccess
+      maxEntryProductLaws hu hA hL hU hd_fact hd_solve hLocal
+      (demmelHighamSchreiber13_6_theorem2_1_result_from_factorization_solve_results
+        u d_fact d_solve normA normL normU
+        normDeltaA_fact normDeltaA_solve recursiveExecution schurUpdate
+        blockRowRHS forwardSubstitution blockBackSubstitution localSolveSuccess
+        maxEntryProductLaws hFact hSolve)
 
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.6 / equation (13.16), conditional
     on the Demmel--Higham--Schreiber [326] implementation estimates.
