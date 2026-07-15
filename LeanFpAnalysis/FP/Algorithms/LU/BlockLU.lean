@@ -240,6 +240,8 @@
     Higham13Eq1322GlobalTableauSourceChain.to_blockLUBudgetChain_of_det_ne_zero,
     Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa_of_det_ne_zero,
     Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_det_ne_zero,
+    Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_mixed_column_mass,
+    Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_det_ne_zero_of_mixed_column_mass,
     Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_product_bound_diag_update,
     Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_product_bound_diag_update_reciprocal,
     Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_of_det_ne_zero,
@@ -57143,6 +57145,129 @@ theorem
       (nonsingInv N Aglob) hApos
       ((isInverse_nonsingInv_of_det_ne_zero N Aglob hdet).2)
       hNn hA_le_G hRho_le_two hcert
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 / equation (13.23):
+    fixed-ambient global-tableau Eq.13.23 product witness with `rho <= 2`
+    supplied by the mixed matrix-`∞`/max-entry BDD endpoint.
+
+    This wrapper removes the raw global growth-factor side condition from the
+    concrete `BlockLUFactSpec` witness surface while keeping the source-chain
+    certificate, all-prefix BDD data, and active pivot right-inverse table
+    explicit. -/
+theorem
+    Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_mixed_column_mass
+    {M r m n : ℕ} (hr : 0 < r) (hM : 0 < M)
+    (AinvGlob : Fin (M * r) → Fin (M * r) → ℝ)
+    (A : Fin M → Fin M → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (chainPivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hM hr) (blockMatrixFlatFin A))
+    (hRight : IsRightInverse (M * r) (blockMatrixFlatFin A) AinvGlob)
+    (hNn : (((M * r : ℕ) : ℝ) ≤ (n : ℝ)))
+    (hcert : Higham13Eq1322GlobalTableauSourceChain hr (Nat.mul_pos hM hr)
+      (blockMatrixFlatFin A)
+      (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+        (Nat.mul_pos hM hr) hM hr A pivotInv)
+      AinvGlob hApos n m Ablk chainPivotInv)
+    (invDiagBound : Fin M → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < M,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDomInf : IsBlockDiagDomCol M
+      (fun i j : Fin M => infNorm (A i j)) invDiagBound)
+    (hBound : ∀ j : Fin M, invDiagBound j ≤ 0)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < M,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec (m + 1) r Ablk L U ∧
+        blockMaxNorm (Nat.succ_pos m) hr L *
+            blockMaxNorm (Nat.succ_pos m) hr U ≤
+          8 * (n : ℝ) *
+            (maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+                (blockMatrixFlatFin A) *
+              maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+                AinvGlob) *
+            maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+              (blockMatrixFlatFin A) := by
+  classical
+  let hFlat : 0 < M * r := Nat.mul_pos hM hr
+  let G : Fin (M * r) → Fin (M * r) → ℝ :=
+    higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hFlat hM hr A pivotInv
+  have hA_le_G :
+      maxEntryNorm hFlat (blockMatrixFlatFin A) ≤ maxEntryNorm hFlat G := by
+    rw [maxEntryNorm_blockMatrixFlatFin_eq_blockMaxNorm hM hr A]
+    simpa [G] using
+      higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_contains_initial
+        hFlat hM hr A pivotInv
+  have hRho_le_two :
+      growthFactorEntry hFlat (blockMatrixFlatFin A) G hApos ≤ 2 := by
+    have hEndpoint :=
+      higham13_algorithm13_3_upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse
+        hM hr A pivotInv invDiagBound hPrefix hDomInf hBound hPivotRight
+    simpa [hFlat, G] using hEndpoint.2
+  exact
+    Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse
+      (r := r) (N := M * r) (n := n) hr hFlat (blockMatrixFlatFin A)
+      G AinvGlob hApos hRight hNn hA_le_G hRho_le_two
+      (by simpa [hFlat, G] using hcert)
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 / equation (13.23):
+    determinant-nonzero form of
+    `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_mixed_column_mass`.
+
+    The ambient inverse is the canonical `nonsingInv`; the mixed BDD endpoint
+    still supplies the Eq.13.23 growth-factor side condition internally. -/
+theorem
+    Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_det_ne_zero_of_mixed_column_mass
+    {M r m n : ℕ} (hr : 0 < r) (hM : 0 < M)
+    (A : Fin M → Fin M → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (chainPivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hM hr) (blockMatrixFlatFin A))
+    (hdet :
+      Matrix.det (blockMatrixFlatFin A :
+        Matrix (Fin (M * r)) (Fin (M * r)) ℝ) ≠ 0)
+    (hNn : (((M * r : ℕ) : ℝ) ≤ (n : ℝ)))
+    (hcert : Higham13Eq1322GlobalTableauSourceChain hr (Nat.mul_pos hM hr)
+      (blockMatrixFlatFin A)
+      (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+        (Nat.mul_pos hM hr) hM hr A pivotInv)
+      (nonsingInv (M * r) (blockMatrixFlatFin A)) hApos n m
+      Ablk chainPivotInv)
+    (invDiagBound : Fin M → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < M,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDomInf : IsBlockDiagDomCol M
+      (fun i j : Fin M => infNorm (A i j)) invDiagBound)
+    (hBound : ∀ j : Fin M, invDiagBound j ≤ 0)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < M,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec (m + 1) r Ablk L U ∧
+        blockMaxNorm (Nat.succ_pos m) hr L *
+            blockMaxNorm (Nat.succ_pos m) hr U ≤
+          8 * (n : ℝ) *
+            (maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+                (blockMatrixFlatFin A) *
+              maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+                (nonsingInv (M * r) (blockMatrixFlatFin A))) *
+            maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+              (blockMatrixFlatFin A) := by
+  exact
+    Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_mixed_column_mass
+      hr hM (nonsingInv (M * r) (blockMatrixFlatFin A)) A pivotInv
+      Ablk chainPivotInv hApos
+      ((isInverse_nonsingInv_of_det_ne_zero (M * r) (blockMatrixFlatFin A) hdet).2)
+      hNn hcert invDiagBound hPrefix hDomInf hBound hPivotRight
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 / equation (13.23):
     fixed-ambient global-tableau source-chain witness with `rho <= 2`
