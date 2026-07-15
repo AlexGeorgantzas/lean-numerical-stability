@@ -214,6 +214,10 @@
     Higham13Eq1322GlobalTableauSourceChain.pivot_right_inverse_of_final_nonsingInv,
     Higham13Eq1322GlobalTableauSourceChain.pivot_det_ne_zero_of_final_nonsingInv,
     Higham13Eq1322GlobalTableauSourceChain.pivot_det_ne_zero_of_final,
+    Higham13Eq1322GlobalTableauSourceChain.matrix_infNorm_active_column_dominance_of_final_right_inverse,
+    Higham13Eq1322GlobalTableauSourceChain.matrix_infNorm_active_column_dominance_of_final_nonsingInv,
+    Higham13Eq1322GlobalTableauSourceChain.matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_final_right_inverse,
+    Higham13Eq1322GlobalTableauSourceChain.matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_final_nonsingInv,
     Higham13Eq1322GlobalTableauSourceChain.upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_final_right_inverse_mixed_column_mass,
     Higham13Eq1322GlobalTableauSourceChain.upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_final_nonsingInv_mixed_column_mass,
     Higham13Eq1322GlobalTableauSourceChain.one_of_blockMaxNorm_le_global_tableau,
@@ -57293,6 +57297,210 @@ theorem Higham13Eq1322GlobalTableauSourceChain.pivot_det_ne_zero_of_final_nonsin
       Ablk pivotInv
       (Higham13Eq1322GlobalTableauSourceChain.pivot_right_inverse_of_final_nonsingInv
         hcert hdet hfinalEq)
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 and equations (13.22)--(13.23):
+    a fixed-ambient global-tableau source chain, plus the terminal pivot
+    right-inverse certificate, supplies the active matrix-`∞` column-dominance
+    table needed by the mixed Eq.13.23 route. -/
+theorem
+    Higham13Eq1322GlobalTableauSourceChain.matrix_infNorm_active_column_dominance_of_final_right_inverse
+    {r N n : ℕ} {hr : 0 < r} {hN : 0 < N}
+    {Aglob Gglob AinvGlob : Fin N → Fin N → ℝ}
+    {hApos : 0 < maxEntryNorm hN Aglob} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322GlobalTableauSourceChain hr hN Aglob Gglob AinvGlob
+        hApos n m Ablk pivotInv →
+      (invDiagBound : Fin (m + 1) → ℝ) →
+      (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+        BlockMatrixNonsingular
+          (leadingBlockPrefix13_2 (fun i j a b => Ablk i j a b) p hp)) →
+      IsBlockDiagDomCol (m + 1)
+        (fun i j : Fin (m + 1) => infNorm (Ablk i j)) invDiagBound →
+      (∀ j : Fin (m + 1), invDiagBound j ≤ 0) →
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+          ⟨m, Nat.lt_succ_self m⟩
+          ⟨m, Nat.lt_succ_self m⟩)
+        (pivotInv m) →
+      letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+      SchurStageActiveColumnDom13_7
+        (fun k i j => infNorm
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i j))
+        (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound Ablk
+          pivotInv) := by
+  intro m Ablk pivotInv hcert invDiagBound hPrefix hDomInf hBound hFinal
+  letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+  have hPivotRight :
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        IsRightInverse r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩)
+          (pivotInv k) :=
+    Higham13Eq1322GlobalTableauSourceChain.pivot_right_inverse_of_final
+      hcert hFinal
+  simpa using
+    (higham13_algorithm13_3_matrix_infNorm_active_column_dominance_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim
+      hr Ablk pivotInv invDiagBound hPrefix hDomInf hBound hPivotRight)
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 and equations (13.22)--(13.23):
+    canonical-terminal-pivot form of the global-tableau active matrix-`∞`
+    column-dominance source table. -/
+theorem
+    Higham13Eq1322GlobalTableauSourceChain.matrix_infNorm_active_column_dominance_of_final_nonsingInv
+    {r N n : ℕ} {hr : 0 < r} {hN : 0 < N}
+    {Aglob Gglob AinvGlob : Fin N → Fin N → ℝ}
+    {hApos : 0 < maxEntryNorm hN Aglob} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322GlobalTableauSourceChain hr hN Aglob Gglob AinvGlob
+        hApos n m Ablk pivotInv →
+      (invDiagBound : Fin (m + 1) → ℝ) →
+      (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+        BlockMatrixNonsingular
+          (leadingBlockPrefix13_2 (fun i j a b => Ablk i j a b) p hp)) →
+      IsBlockDiagDomCol (m + 1)
+        (fun i j : Fin (m + 1) => infNorm (Ablk i j)) invDiagBound →
+      (∀ j : Fin (m + 1), invDiagBound j ≤ 0) →
+      Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) ≠ 0 →
+      pivotInv m =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) →
+      letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+      SchurStageActiveColumnDom13_7
+        (fun k i j => infNorm
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i j))
+        (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound Ablk
+          pivotInv) := by
+  intro m Ablk pivotInv hcert invDiagBound hPrefix hDomInf hBound hFinalDet
+    hFinalEq
+  letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+  have hPivotRight :
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        IsRightInverse r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩)
+          (pivotInv k) :=
+    Higham13Eq1322GlobalTableauSourceChain.pivot_right_inverse_of_final_nonsingInv
+      hcert hFinalDet hFinalEq
+  simpa using
+    (higham13_algorithm13_3_matrix_infNorm_active_column_dominance_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim
+      hr Ablk pivotInv invDiagBound hPrefix hDomInf hBound hPivotRight)
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 and equations (13.22)--(13.23):
+    a fixed-ambient global-tableau source chain, plus the terminal pivot
+    right-inverse certificate, supplies the matrix-`∞` pivot-product table
+    needed by the mixed Eq.13.23 route. -/
+theorem
+    Higham13Eq1322GlobalTableauSourceChain.matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_final_right_inverse
+    {r N n : ℕ} {hr : 0 < r} {hN : 0 < N}
+    {Aglob Gglob AinvGlob : Fin N → Fin N → ℝ}
+    {hApos : 0 < maxEntryNorm hN Aglob} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322GlobalTableauSourceChain hr hN Aglob Gglob AinvGlob
+        hApos n m Ablk pivotInv →
+      (invDiagBound : Fin (m + 1) → ℝ) →
+      (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+        BlockMatrixNonsingular
+          (leadingBlockPrefix13_2 (fun i j a b => Ablk i j a b) p hp)) →
+      IsBlockDiagDomCol (m + 1)
+        (fun i j : Fin (m + 1) => infNorm (Ablk i j)) invDiagBound →
+      (∀ j : Fin (m + 1), invDiagBound j ≤ 0) →
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+          ⟨m, Nat.lt_succ_self m⟩
+          ⟨m, Nat.lt_succ_self m⟩)
+        (pivotInv m) →
+      letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        infNorm (pivotInv k) *
+            higham13_algorithm13_3_diagLowerCertGeneric invDiagBound Ablk
+              pivotInv k ⟨k, hk⟩ ≤
+          1 := by
+  intro m Ablk pivotInv hcert invDiagBound hPrefix hDomInf hBound hFinal
+  letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+  have hDomPi :
+      IsBlockDiagDomCol (m + 1)
+        (fun i j =>
+          ‖(fun a b => Ablk i j a b : Fin r → Fin r → ℝ)‖)
+        invDiagBound :=
+    higham13_blockDiagDomCol_piNorm_of_infNorm hr Ablk invDiagBound hDomInf
+  have hPivotRight :
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        IsRightInverse r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩)
+          (pivotInv k) :=
+    Higham13Eq1322GlobalTableauSourceChain.pivot_right_inverse_of_final
+      hcert hFinal
+  simpa using
+    (higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim
+      hr invDiagBound Ablk pivotInv hPrefix hDomPi hBound hPivotRight)
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 and equations (13.22)--(13.23):
+    canonical-terminal-pivot form of the global-tableau matrix-`∞`
+    pivot-product source table. -/
+theorem
+    Higham13Eq1322GlobalTableauSourceChain.matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_final_nonsingInv
+    {r N n : ℕ} {hr : 0 < r} {hN : 0 < N}
+    {Aglob Gglob AinvGlob : Fin N → Fin N → ℝ}
+    {hApos : 0 < maxEntryNorm hN Aglob} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322GlobalTableauSourceChain hr hN Aglob Gglob AinvGlob
+        hApos n m Ablk pivotInv →
+      (invDiagBound : Fin (m + 1) → ℝ) →
+      (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+        BlockMatrixNonsingular
+          (leadingBlockPrefix13_2 (fun i j a b => Ablk i j a b) p hp)) →
+      IsBlockDiagDomCol (m + 1)
+        (fun i j : Fin (m + 1) => infNorm (Ablk i j)) invDiagBound →
+      (∀ j : Fin (m + 1), invDiagBound j ≤ 0) →
+      Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) ≠ 0 →
+      pivotInv m =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) →
+      letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        infNorm (pivotInv k) *
+            higham13_algorithm13_3_diagLowerCertGeneric invDiagBound Ablk
+              pivotInv k ⟨k, hk⟩ ≤
+          1 := by
+  intro m Ablk pivotInv hcert invDiagBound hPrefix hDomInf hBound hFinalDet
+    hFinalEq
+  letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+  have hDomPi :
+      IsBlockDiagDomCol (m + 1)
+        (fun i j =>
+          ‖(fun a b => Ablk i j a b : Fin r → Fin r → ℝ)‖)
+        invDiagBound :=
+    higham13_blockDiagDomCol_piNorm_of_infNorm hr Ablk invDiagBound hDomInf
+  have hPivotRight :
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        IsRightInverse r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩)
+          (pivotInv k) :=
+    Higham13Eq1322GlobalTableauSourceChain.pivot_right_inverse_of_final_nonsingInv
+      hcert hFinalDet hFinalEq
+  simpa using
+    (higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_all_leadingBlockPrefixes_blockDiagDomCol_diagBound_nonpos_of_pivot_right_inverse_of_pos_dim
+      hr invDiagBound Ablk pivotInv hPrefix hDomPi hBound hPivotRight)
 
 /-- Higham, 2nd ed., Chapter 13, equations (13.21) and (13.23):
     a fixed-ambient global-tableau source chain, plus the terminal pivot
