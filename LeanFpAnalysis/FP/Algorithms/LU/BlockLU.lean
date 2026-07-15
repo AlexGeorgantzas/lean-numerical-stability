@@ -490,6 +490,7 @@
     dhs_lu_solve_perturbation_identity,
     dhs_lu_solve_perturbation_firstOrder,
     demmelHighamSchreiber13_6_solve_result_from_perturbation_layers,
+    demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_and_solve_perturbation_layers,
     higham13_theorem13_6_eq13_16_firstOrder_from_DHS_estimates,
     higham13_theorem13_6_implementation1_conditional_from_DHS_estimates:
     Theorem 13.6 scalar and conditional Eq.13.16 aggregation, with a named
@@ -7858,6 +7859,82 @@ theorem demmelHighamSchreiber13_6_solve_result_from_perturbation_layers
           normDeltaA_solve normE normDeltaLU normLDeltaU normDeltaLDeltaU
           normA normL normU u cFact cForward cBack d_solve
           hu hA hL hU hc hE hDeltaLU hLDeltaU hDeltaLDeltaU hTotal⟩⟩
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 packaging route from the
+    two checked layers recovered in the Pro audit.
+
+    The partitioned first-order factorization layer supplies both the
+    factorization equation and the factorization perturbation budget used as
+    the solve route's `E` term.  The solve perturbation layer then supplies the
+    solve equation and solve estimate.  The result is the audited DHS
+    Theorem 2.1 boundary object, while recursive execution, Schur update,
+    block-row RHS, local solve path, product laws, and scalar comparisons stay
+    explicit on the theorem surface. -/
+theorem demmelHighamSchreiber13_6_theorem2_1_result_from_partitioned_and_solve_perturbation_layers
+    {n p : Type*} [Fintype n]
+    (A DeltaA_fact Lhat Uhat DeltaL DeltaU : Matrix n n ℝ)
+    (Xhat B Yhat : Matrix n p ℝ)
+    (u δ θ d_fact d_solve normA normL normU normDeltaA_fact
+      normDeltaA_solve normDeltaLU normLDeltaU normDeltaLDeltaU
+      cForward cBack : ℝ)
+    (recursiveExecution schurUpdate blockRowRHS forwardSubstitution
+      blockBackSubstitution localSolveSuccess maxEntryProductLaws : Prop)
+    (hRecursiveExecution : recursiveExecution)
+    (hSchurUpdate : schurUpdate)
+    (hBlockRowRHS : blockRowRHS)
+    (hForwardPath : forwardSubstitution)
+    (hBackPath : blockBackSubstitution)
+    (hSolveSuccess : localSolveSuccess)
+    (hMaxEntryProductLaws : maxEntryProductLaws)
+    (hu : 0 ≤ u) (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hc : d_fact + cForward + cBack ≤ d_solve)
+    (hFactSpec : PartitionedLUFirstOrderSpec u δ θ normA normL normU
+      normDeltaA_fact A DeltaA_fact Lhat Uhat)
+    (hLeading :
+      u * (δ * normA + θ * normL * normU) ≤
+        d_fact * u * (normA + normL * normU))
+    (hForward : (Lhat + DeltaL) * Yhat = B)
+    (hBack : (Uhat + DeltaU) * Xhat = Yhat)
+    (hDeltaLU : FirstOrderLe u
+      (cForward * u * (normA + normL * normU)) normDeltaLU)
+    (hLDeltaU : FirstOrderLe u
+      (cBack * u * (normA + normL * normU)) normLDeltaU)
+    (hDeltaLDeltaU : FirstOrderLe u 0 normDeltaLDeltaU)
+    (hTotal :
+      normDeltaA_solve ≤
+        normDeltaA_fact + normDeltaLU + normLDeltaU + normDeltaLDeltaU) :
+    (Lhat * Uhat = A + DeltaA_fact) ∧
+      ((A + (DeltaA_fact + DeltaL * Uhat + Lhat * DeltaU +
+        DeltaL * DeltaU)) * Xhat = B) ∧
+      DemmelHighamSchreiber13_6Theorem2_1Result
+        u d_fact d_solve normA normL normU
+        normDeltaA_fact normDeltaA_solve
+        recursiveExecution schurUpdate blockRowRHS forwardSubstitution
+        blockBackSubstitution localSolveSuccess maxEntryProductLaws := by
+  rcases
+    demmelHighamSchreiber13_6_factorization_result_from_partitioned_layer
+      A DeltaA_fact Lhat Uhat u δ θ d_fact normA normL normU
+      normDeltaA_fact recursiveExecution schurUpdate maxEntryProductLaws
+      hRecursiveExecution hSchurUpdate hMaxEntryProductLaws hFactSpec
+      hLeading with
+    ⟨hFactorEq, hFactResult⟩
+  rcases
+    demmelHighamSchreiber13_6_solve_result_from_perturbation_layers
+      A DeltaA_fact Lhat Uhat DeltaL DeltaU Xhat B Yhat
+      normDeltaA_solve normDeltaA_fact normDeltaLU normLDeltaU
+      normDeltaLDeltaU normA normL normU u d_fact cForward cBack d_solve
+      blockRowRHS forwardSubstitution blockBackSubstitution localSolveSuccess
+      maxEntryProductLaws hBlockRowRHS hForwardPath hBackPath hSolveSuccess
+      hMaxEntryProductLaws hu hA hL hU hc hFactorEq hForward hBack
+      hFactResult.factorization hDeltaLU hLDeltaU hDeltaLDeltaU hTotal with
+    ⟨hSolveEq, hSolveResult⟩
+  exact
+    ⟨hFactorEq, hSolveEq,
+      demmelHighamSchreiber13_6_theorem2_1_result_from_factorization_solve_results
+        u d_fact d_solve normA normL normU
+        normDeltaA_fact normDeltaA_solve recursiveExecution schurUpdate
+        blockRowRHS forwardSubstitution blockBackSubstitution localSolveSuccess
+        maxEntryProductLaws hFactResult hSolveResult⟩
 
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.6 / equation (13.16), conditional
     on the Demmel--Higham--Schreiber [326] implementation estimates.
