@@ -362,7 +362,9 @@
     source-facing one-step Eq.13.22 witness theorem combining the explicit
     block LU construction with the one-step product bound
   - blockMatrixIdentity, BlockMatrixTwoSidedInverse, BlockMatrixNonsingular,
-    blockMatrixFlat, blockMatrixFlatFin, blockMatrixFirstSplitFlat,
+    blockMatrixFlat, blockMatrixFlatFin, blockMatrixRowsFlatFin,
+    blockMatrixFlatFin_add_mul_blockMatrixRowsFlatFin_apply,
+    blockMatrixFirstSplitFlat,
     blockMatrixFirstSplitA11, blockMatrixFirstSplitA12,
     blockMatrixFirstSplitA21, blockMatrixFirstSplitA22,
     blockMatrixFirstSplit_schur_eq_blockMatrixFlatFin_blockSchur,
@@ -440,6 +442,7 @@
   - DHSBlockForwardSubstitutionFirstOrderSpec,
     DHSBlockBackSubstitutionFirstOrderSpec,
     DHSBlockBackSubstitutionRowsFirstOrderSpec,
+    DHSBlockBackSubstitutionFixedBlockRowsFirstOrderSpec,
     dhs_block_forward_substitution_firstOrder,
     dhs_block_forward_substitution_firstOrder_from_conventional_forwardSub_single_rhs,
     dhs_block_forward_residual_leading_term_le_of_coeff_bounds,
@@ -447,6 +450,8 @@
     dhs_block_forward_residual_firstOrder_from_block_solve_spec_of_coeff_bounds,
     dhs_block_back_substitution_firstOrder,
     dhs_block_back_substitution_firstOrder_from_rows_spec_of_coeff_bounds,
+    dhs_block_back_substitution_rows_spec_from_fixed_block_rows_and_eq13_15,
+    dhs_block_back_substitution_firstOrder_from_fixed_block_rows_and_eq13_15_of_coeff_bounds,
     dhs_block_back_substitution_firstOrder_from_conventional_backSub_single_rhs,
     dhs_cross_product_firstOrder_of_componentwise_backward,
     dhs_block_forward_back_substitution_firstOrder_from_conventional_single_rhs,
@@ -2730,6 +2735,53 @@ noncomputable def blockMatrixFlatFin {m r : ℕ}
     blockMatrixFlatFin A (finProdFinEquiv (i, s)) (finProdFinEquiv (j, t)) =
       A i j s t := by
   simp [blockMatrixFlatFin]
+
+/-- Flatten a uniformly blocked matrix of right-hand sides by stacking its
+    block rows.  Unlike `blockMatrixFlatFin`, the column type is left generic;
+    this is the representation used to turn the DHS per-block-row solve
+    equations into one ordinary matrix equation. -/
+noncomputable def blockMatrixRowsFlatFin {m r : ℕ} {p : Type*}
+    (X : Fin m → Matrix (Fin r) p ℝ) : Matrix (Fin (m * r)) p ℝ :=
+  fun is k =>
+    X (finProdFinEquiv.symm is).1 (finProdFinEquiv.symm is).2 k
+
+@[simp] theorem blockMatrixRowsFlatFin_apply {m r : ℕ} {p : Type*}
+    (X : Fin m → Matrix (Fin r) p ℝ)
+    (i : Fin m) (s : Fin r) (k : p) :
+    blockMatrixRowsFlatFin X (finProdFinEquiv (i, s)) k = X i s k := by
+  simp [blockMatrixRowsFlatFin]
+
+/-- A product of a flattened uniform block row with stacked right-hand sides
+    is the scalar entry of the corresponding sum of block products.
+
+    The two coefficient families are kept separate because the DHS row
+    equation uses `Uhat + DeltaU`. -/
+theorem blockMatrixFlatFin_add_mul_blockMatrixRowsFlatFin_apply
+    {m r : ℕ} {p : Type*}
+    (A B : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X : Fin m → Matrix (Fin r) p ℝ)
+    (i : Fin m) (s : Fin r) (k : p) :
+    (∑ jt : Fin (m * r),
+      (blockMatrixFlatFin A (finProdFinEquiv (i, s)) jt +
+          blockMatrixFlatFin B (finProdFinEquiv (i, s)) jt) *
+        blockMatrixRowsFlatFin X jt k) =
+      ∑ j : Fin m, ((A i j + B i j) * X j) s k := by
+  calc
+    (∑ jt : Fin (m * r),
+      (blockMatrixFlatFin A (finProdFinEquiv (i, s)) jt +
+          blockMatrixFlatFin B (finProdFinEquiv (i, s)) jt) *
+        blockMatrixRowsFlatFin X jt k) =
+        ∑ jt : Fin m × Fin r,
+          (A i jt.1 s jt.2 + B i jt.1 s jt.2) * X jt.1 jt.2 k := by
+      rw [Fintype.sum_equiv finProdFinEquiv]
+      intro jt
+      rw [blockMatrixFlatFin_apply, blockMatrixFlatFin_apply,
+        blockMatrixRowsFlatFin_apply]
+    _ = ∑ j : Fin m, ∑ t : Fin r,
+          (A i j s t + B i j s t) * X j t k := by
+      rw [Fintype.sum_prod_type]
+    _ = ∑ j : Fin m, ((A i j + B i j) * X j) s k := by
+      simp [Matrix.mul_apply]
 
 /-- The product-index and `Fin (m*r)` flattenings have the same determinant,
     because they are simultaneous row/column reindexings of the same scalar
@@ -7731,6 +7783,37 @@ structure DHSBlockBackSubstitutionRowsFirstOrderSpec {n : ℕ} {p : Type*}
   entry_bound : ∀ i j : Fin n, |DeltaU i j| ≤ rowPerturbBound
   norm_bound : FirstOrderLe u (cRows * u * normU) rowPerturbBound
 
+/-- Source-facing fixed-block-row boundary for DHS block back substitution.
+
+    For each uniform block row, `rhs_formation` is the exact relation obtained
+    after the rounded products and subtractions have formed `Dhat i` from the
+    already computed later solution blocks.  `diagonal_solve` supplies the
+    corresponding local equation (13.15), indexed over every diagonal block.
+    Keeping those two facts separate makes their subsequent algebraic
+    combination auditable.  The entrywise and first-order fields are the
+    common perturbation budget delivered by the row arithmetic analysis. -/
+structure DHSBlockBackSubstitutionFixedBlockRowsFirstOrderSpec
+    {m r : ℕ} {p : Type*}
+    (hr : 0 < r)
+    (u c₅ cRows normU rowPerturbBound : ℝ)
+    (normUii : Fin m → ℝ)
+    (Uhat DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (Xhat Yhat Dhat : Fin m → Matrix (Fin r) p ℝ) : Prop where
+  upper_support : ∀ i j : Fin m, j.val < i.val →
+    Uhat i j = 0 ∧ DeltaU i j = 0
+  rhs_formation : ∀ i : Fin m,
+    Dhat i +
+        ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+          (Uhat i j + DeltaU i j) * Xhat j =
+      Yhat i
+  diagonal_solve : ∀ i : Fin m,
+    DiagonalBlockSolveFirstOrderSpec u c₅ (normUii i)
+      (maxEntryNorm hr (DeltaU i i))
+      (Uhat i i) (DeltaU i i) (Xhat i) (Dhat i)
+  entry_bound : ∀ i j : Fin m, ∀ s t : Fin r,
+    |DeltaU i j s t| ≤ rowPerturbBound
+  norm_bound : FirstOrderLe u (cRows * u * normU) rowPerturbBound
+
 /-- Source-level result boundary for Demmel--Higham--Schreiber [326],
     Theorem 2.1, equations (2.5)--(2.6), as used by Higham Theorem 13.6.
 
@@ -8437,6 +8520,138 @@ theorem
   · exact
       (hRows.norm_bound.bound_mul_nonneg_right
         (mul_nonneg (Nat.cast_nonneg n) hL) hProduct).mono_leading hLeading
+
+/-- Combine every fixed block-row right-hand-side relation with its local
+    equation (13.15), then flatten the uniform block system into the global DHS
+    row certificate.
+
+    This theorem closes the exact algebra and representation layer between the
+    source's two rowwise ingredients.  Constructing the fixed-row spec from the
+    rounded block products/subtractions and the concrete local solver remains
+    the numerical-analysis obligation. -/
+theorem
+    dhs_block_back_substitution_rows_spec_from_fixed_block_rows_and_eq13_15
+    {m r : ℕ} {p : Type*}
+    (hr : 0 < r)
+    (u c₅ cRows normU rowPerturbBound : ℝ)
+    (normUii : Fin m → ℝ)
+    (Uhat DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (Xhat Yhat Dhat : Fin m → Matrix (Fin r) p ℝ)
+    (h : DHSBlockBackSubstitutionFixedBlockRowsFirstOrderSpec
+      hr u c₅ cRows normU rowPerturbBound normUii
+      Uhat DeltaU Xhat Yhat Dhat) :
+    DHSBlockBackSubstitutionRowsFirstOrderSpec
+      u cRows normU rowPerturbBound
+      (blockMatrixFlatFin Uhat) (blockMatrixFlatFin DeltaU)
+      (blockMatrixRowsFlatFin Xhat) (blockMatrixRowsFlatFin Yhat) := by
+  have hBlockEquation : ∀ i : Fin m,
+      (∑ j : Fin m, (Uhat i j + DeltaU i j) * Xhat j) = Yhat i := by
+    intro i
+    let f : Fin m → Matrix (Fin r) p ℝ :=
+      fun j => (Uhat i j + DeltaU i j) * Xhat j
+    have hbelow :
+        (∑ j ∈ Finset.univ.filter (fun j : Fin m => ¬i.val ≤ j.val), f j) = 0 := by
+      apply Finset.sum_eq_zero
+      intro j hj
+      have hji : j.val < i.val := by
+        simpa only [Finset.mem_filter, Finset.mem_univ, true_and, not_le] using hj
+      rcases h.upper_support i j hji with ⟨hU, hDelta⟩
+      simp only [f]
+      rw [hU, hDelta]
+      simp
+    have htailset :
+        Finset.univ.filter (fun j : Fin m => i.val ≤ j.val) \ {i} =
+          Finset.univ.filter (fun j : Fin m => i.val < j.val) := by
+      ext j
+      simp only [Finset.mem_sdiff, Finset.mem_filter, Finset.mem_univ, true_and,
+        Finset.mem_singleton]
+      omega
+    have hge :
+        (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val ≤ j.val), f j) =
+          Dhat i +
+            ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val), f j := by
+      calc
+        (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val ≤ j.val), f j) =
+            f i +
+              ∑ j ∈ (Finset.univ.filter
+                (fun j : Fin m => i.val ≤ j.val)) \ {i}, f j := by
+          exact Finset.sum_eq_add_sum_diff_singleton i f (by simp)
+        _ = f i +
+              ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val), f j := by
+          rw [htailset]
+        _ = Dhat i +
+              ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val), f j := by
+          have hdiag : f i = Dhat i := by
+            simpa [f] using (h.diagonal_solve i).equation
+          rw [hdiag]
+    rw [← Finset.sum_filter_add_sum_filter_not Finset.univ
+      (fun j : Fin m => i.val ≤ j.val)]
+    rw [hbelow, add_zero, hge]
+    exact h.rhs_formation i
+  refine ⟨?_, ?_, h.norm_bound⟩
+  · intro is k
+    let q := finProdFinEquiv.symm is
+    have his : finProdFinEquiv q = is := finProdFinEquiv.apply_symm_apply is
+    calc
+      (∑ jt : Fin (m * r),
+          (blockMatrixFlatFin Uhat is jt + blockMatrixFlatFin DeltaU is jt) *
+            blockMatrixRowsFlatFin Xhat jt k) =
+          ∑ jt : Fin (m * r),
+            (blockMatrixFlatFin Uhat (finProdFinEquiv q) jt +
+                blockMatrixFlatFin DeltaU (finProdFinEquiv q) jt) *
+              blockMatrixRowsFlatFin Xhat jt k := by rw [his]
+      _ = ∑ j : Fin m,
+            ((Uhat q.1 j + DeltaU q.1 j) * Xhat j) q.2 k :=
+        blockMatrixFlatFin_add_mul_blockMatrixRowsFlatFin_apply
+          Uhat DeltaU Xhat q.1 q.2 k
+      _ = Yhat q.1 q.2 k := by
+        have hrow := congrFun (congrFun (hBlockEquation q.1) q.2) k
+        simpa only [Matrix.sum_apply] using hrow
+      _ = blockMatrixRowsFlatFin Yhat is k := by
+        simp [blockMatrixRowsFlatFin, q]
+  · intro is jt
+    simpa [blockMatrixFlatFin] using
+      h.entry_bound (finProdFinEquiv.symm is).1
+        (finProdFinEquiv.symm jt).1 (finProdFinEquiv.symm is).2
+        (finProdFinEquiv.symm jt).2
+
+/-- Source-shaped fixed block rows and every local equation (13.15) imply the
+    selected global DHS back-substitution branch.
+
+    The first theorem above performs row algebra and block flattening; the
+    existing row assembler supplies the max-entry product transport through
+    `Lhat`.  Thus the only remaining premise at this layer is the checked
+    fixed-row arithmetic certificate itself, plus explicit scalar coefficient
+    comparisons. -/
+theorem
+    dhs_block_back_substitution_firstOrder_from_fixed_block_rows_and_eq13_15_of_coeff_bounds
+    {m r : ℕ} {p : Type*}
+    (hm : 0 < m) (hr : 0 < r)
+    (u c₅ cRows cBack normA normL normU rowPerturbBound : ℝ)
+    (normUii : Fin m → ℝ)
+    (Lhat Uhat DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (Xhat Yhat Dhat : Fin m → Matrix (Fin r) p ℝ)
+    (hu : 0 ≤ u) (hcRows : 0 ≤ cRows)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hLhat : maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin Lhat) ≤ normL)
+    (hc : ((m * r : ℕ) : ℝ) * cRows ≤ cBack)
+    (hRows : DHSBlockBackSubstitutionFixedBlockRowsFirstOrderSpec
+      hr u c₅ cRows normU rowPerturbBound normUii
+      Uhat DeltaU Xhat Yhat Dhat) :
+    DHSBlockBackSubstitutionFirstOrderSpec
+      u cBack normA normL normU
+      (maxEntryNorm (Nat.mul_pos hm hr)
+        (blockMatrixFlatFin Lhat * blockMatrixFlatFin DeltaU))
+      (blockMatrixFlatFin Uhat) (blockMatrixFlatFin DeltaU)
+      (blockMatrixRowsFlatFin Xhat) (blockMatrixRowsFlatFin Yhat) :=
+  dhs_block_back_substitution_firstOrder_from_rows_spec_of_coeff_bounds
+    (Nat.mul_pos hm hr) u cRows cBack normA normL normU rowPerturbBound
+    (blockMatrixFlatFin Lhat) (blockMatrixFlatFin Uhat)
+    (blockMatrixFlatFin DeltaU) (blockMatrixRowsFlatFin Xhat)
+    (blockMatrixRowsFlatFin Yhat) hu hcRows hA hL hU hLhat hc
+    (dhs_block_back_substitution_rows_spec_from_fixed_block_rows_and_eq13_15
+      hr u c₅ cRows normU rowPerturbBound normUii
+      Uhat DeltaU Xhat Yhat Dhat hRows)
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch for
     the conventional flattened algorithm and one right-hand side.
