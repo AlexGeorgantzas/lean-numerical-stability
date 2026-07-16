@@ -312,7 +312,7 @@ theorem higham13VaryingBlockUpper_sub_mul_of_rows_zero {s r : ℕ}
       (X * B) (Fin.natAdd s i)
         (Fin.castAdd (List.foldr (fun r n => r + n) 0 ss) j) = 0
     have hx : ∀ q : Fin r, X (Fin.natAdd s i) q = 0 :=
-      hXzero (Fin.natAdd s i) (by simp) 
+      hXzero (Fin.natAdd s i) (by simp)
     rw [show (X * B) (Fin.natAdd s i)
         (Fin.castAdd (List.foldr (fun r n => r + n) 0 ss) j) = 0 by
       change (∑ q : Fin r, X (Fin.natAdd s i) q *
