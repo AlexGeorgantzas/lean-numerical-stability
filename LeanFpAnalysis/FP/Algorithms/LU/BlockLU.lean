@@ -437,6 +437,8 @@
   - higham13_conventional_subtraction_spec_maxEntry:
     conventional entrywise subtraction satisfies the Chapter 13 subtraction
     residual model in the max-entry norm
+  - maxEntryNormRect_single_col_eq_infNormVec:
+    the rectangular max-entry norm of one column is its vector infinity norm
   - higham13_conventional_backSub_spec_c2_maxEntry,
     higham13_conventional_forwardSub_spec_c2_maxEntry:
     conventional triangular substitution satisfies (13.5) with c₂(m,p)=m²
@@ -456,6 +458,8 @@
     dhs_block_back_substitution_rows_spec_from_fixed_block_rows_and_eq13_15,
     dhs_block_back_substitution_firstOrder_from_fixed_block_rows_and_eq13_15_of_coeff_bounds,
     dhs_two_block_back_rhs_perturbation_from_matmul_subtraction_specs,
+    dhs_two_block_back_rhs_perturbation_firstOrder_from_matmul_subtraction_specs_of_rhs_scale,
+    dhs_two_block_back_rhs_perturbation_firstOrder_from_conventional_operations,
     dhs_block_back_substitution_firstOrder_from_conventional_backSub_single_rhs,
     dhs_cross_product_firstOrder_of_componentwise_backward,
     dhs_block_forward_back_substitution_firstOrder_from_conventional_single_rhs,
@@ -1731,6 +1735,22 @@ lemma maxEntryNormRect_le_of_entry_abs_le {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
   apply Finset.sup'_le
   intro j _hj
   exact hEntry i j
+
+/-- The rectangular max-entry norm of a single-column matrix is exactly the
+    infinity norm of the represented vector. -/
+lemma maxEntryNormRect_single_col_eq_infNormVec {r : ℕ}
+    (hr : 0 < r) (X : Matrix (Fin r) (Fin 1) ℝ) :
+    maxEntryNormRect hr (Nat.succ_pos 0) X =
+      infNormVec (fun i : Fin r => X i 0) := by
+  apply le_antisymm
+  · apply maxEntryNormRect_le_of_entry_abs_le
+    intro i j
+    fin_cases j
+    exact abs_le_infNormVec (fun t : Fin r => X t 0) i
+  · apply infNormVec_le_of_abs_le
+    · intro i
+      exact entry_le_maxEntryNormRect hr (Nat.succ_pos 0) X i 0
+    · exact maxEntryNormRect_nonneg hr (Nat.succ_pos 0) X
 
 /-- Max-norm residual lifting used by the DHS block-back-substitution proof.
 
@@ -8827,6 +8847,148 @@ theorem dhs_two_block_back_rhs_perturbation_from_matmul_subtraction_specs
   refine ⟨DeltaU12, ?_, hDeltaNorm⟩
   rw [hSub.equation, Matrix.add_mul, hMul.equation, hDeltaMatrix]
   abel
+
+/-- DHS two-block back-substitution RHS perturbation with its first-order
+    coefficient bound derived from the product and subtraction budgets.
+
+    The source-style magnitude comparison bounds the subtraction inputs by the
+    common upper-factor scale times `‖X₂‖∞`.  Together with containment of the
+    off-diagonal block norm in that common scale, this removes the preceding
+    theorem's raw residual-scale premise.  Division by the nonzero solution
+    norm realizes the residual as a coefficient perturbation and cancels the
+    solution norm from the first-order leading term. -/
+theorem dhs_two_block_back_rhs_perturbation_firstOrder_from_matmul_subtraction_specs_of_rhs_scale
+    {r : ℕ}
+    (hr : 0 < r)
+    (u cMul cSub normU12 normU normY1 normChat : ℝ)
+    (U12 : Matrix (Fin r) (Fin r) ℝ)
+    (X2 Chat DeltaC Y1 Fsub Dhat : Matrix (Fin r) (Fin 1) ℝ)
+    (hu : 0 ≤ u) (hcMul : 0 ≤ cMul)
+    (hU12U : normU12 ≤ normU)
+    (hX2 : infNormVec (fun t : Fin r => X2 t 0) ≠ 0)
+    (hRhsScale :
+      normY1 + normChat ≤
+        cSub * normU * infNormVec (fun t : Fin r => X2 t 0))
+    (hMul : MatMulFirstOrderSpec u cMul normU12
+      (infNormVec (fun t : Fin r => X2 t 0))
+      (maxEntryNormRect hr (Nat.succ_pos 0) DeltaC)
+      U12 X2 Chat DeltaC)
+    (hSub : SubtractionFirstOrderSpec u normY1 normChat
+      (maxEntryNormRect hr (Nat.succ_pos 0) Fsub)
+      Y1 Chat Fsub Dhat) :
+    ∃ DeltaU12 : Matrix (Fin r) (Fin r) ℝ,
+      Dhat + (U12 + DeltaU12) * X2 = Y1 ∧
+      FirstOrderLe u ((cMul + cSub) * u * normU)
+        (maxEntryNormRect hr hr DeltaU12) := by
+  let xnorm := infNormVec (fun t : Fin r => X2 t 0)
+  let deltaNorm := maxEntryNormRect hr (Nat.succ_pos 0) DeltaC
+  let fNorm := maxEntryNormRect hr (Nat.succ_pos 0) Fsub
+  have hxpos : 0 < xnorm :=
+    lt_of_le_of_ne (infNormVec_nonneg _) (Ne.symm hX2)
+  have hMulU : FirstOrderLe u
+      (cMul * u * normU * xnorm) deltaNorm := by
+    apply hMul.norm_bound.mono_leading
+    apply mul_le_mul_of_nonneg_right
+    · exact mul_le_mul_of_nonneg_left hU12U (mul_nonneg hcMul hu)
+    · exact infNormVec_nonneg _
+  have hFsub : FirstOrderLe u
+      (cSub * u * normU * xnorm) fNorm := by
+    apply FirstOrderLe.of_le
+    calc
+      fNorm ≤ u * (normY1 + normChat) := hSub.norm_bound
+      _ ≤ u * (cSub * normU * xnorm) :=
+        mul_le_mul_of_nonneg_left hRhsScale hu
+      _ = cSub * u * normU * xnorm := by ring
+  have hResidual : FirstOrderLe u
+      ((cMul + cSub) * u * normU * xnorm) (deltaNorm + fNorm) := by
+    have hAdd := FirstOrderLe.add hMulU hFsub le_rfl
+    apply hAdd.mono_leading
+    exact le_of_eq (by ring)
+  have heta : 0 ≤ (deltaNorm + fNorm) / xnorm :=
+    div_nonneg
+      (add_nonneg
+        (maxEntryNormRect_nonneg hr (Nat.succ_pos 0) DeltaC)
+        (maxEntryNormRect_nonneg hr (Nat.succ_pos 0) Fsub))
+      (le_of_lt hxpos)
+  have hResidualScale :
+      deltaNorm + fNorm ≤ ((deltaNorm + fNorm) / xnorm) * xnorm := by
+    apply le_of_eq
+    field_simp [ne_of_gt hxpos]
+  obtain ⟨DeltaU12, hEquation, hDeltaNorm⟩ :=
+    dhs_two_block_back_rhs_perturbation_from_matmul_subtraction_specs
+      hr u cMul normU12 xnorm normY1 normChat
+      ((deltaNorm + fNorm) / xnorm) U12 X2 Chat DeltaC Y1 Fsub Dhat
+      heta hMul hSub hResidualScale
+  have hxinv_nonneg : 0 ≤ xnorm⁻¹ := inv_nonneg.mpr (le_of_lt hxpos)
+  have hScaled : FirstOrderLe u
+      (((cMul + cSub) * u * normU * xnorm) * xnorm⁻¹)
+      ((deltaNorm + fNorm) * xnorm⁻¹) :=
+    hResidual.bound_mul_nonneg_right hxinv_nonneg le_rfl
+  have hLeading :
+      ((cMul + cSub) * u * normU * xnorm) * xnorm⁻¹ =
+        (cMul + cSub) * u * normU := by
+    field_simp [ne_of_gt hxpos]
+  have hEtaFirstOrder : FirstOrderLe u
+      ((cMul + cSub) * u * normU) ((deltaNorm + fNorm) / xnorm) := by
+    simpa [div_eq_mul_inv] using
+      hScaled.mono_leading (le_of_eq hLeading)
+  exact ⟨DeltaU12, hEquation, hEtaFirstOrder.mono_value hDeltaNorm⟩
+
+/-- Concrete two-block DHS back-substitution row formed by the repository's
+    conventional rounded matrix product and entrywise subtraction.
+
+    This instantiates both abstract operation specs in the preceding theorem.
+    Under the source-style RHS magnitude comparison, the returned coefficient
+    perturbation satisfies the exact equation for the actual computed
+    right-hand side and has leading coefficient `r² + cRhs`. -/
+theorem dhs_two_block_back_rhs_perturbation_firstOrder_from_conventional_operations
+    {r : ℕ}
+    (fp : FPModel) (hr : 0 < r)
+    (cRhs normU : ℝ)
+    (U12 : Matrix (Fin r) (Fin r) ℝ)
+    (X2 Y1 : Matrix (Fin r) (Fin 1) ℝ)
+    (hγ : gammaValid fp r)
+    (hU12U : maxEntryNormRect hr hr U12 ≤ normU)
+    (hX2 : infNormVec (fun t : Fin r => X2 t 0) ≠ 0)
+    (hRhsScale :
+      maxEntryNormRect hr (Nat.succ_pos 0) Y1 +
+          maxEntryNormRect hr (Nat.succ_pos 0)
+            (fl_matMul fp r r 1 U12 X2) ≤
+        cRhs * normU * infNormVec (fun t : Fin r => X2 t 0)) :
+    ∃ DeltaU12 : Matrix (Fin r) (Fin r) ℝ,
+      higham13_fl_matrixSub fp Y1 (fl_matMul fp r r 1 U12 X2) +
+          (U12 + DeltaU12) * X2 = Y1 ∧
+      FirstOrderLe fp.u (((r : ℝ) ^ 2 + cRhs) * fp.u * normU)
+        (maxEntryNormRect hr hr DeltaU12) := by
+  let Chat : Matrix (Fin r) (Fin 1) ℝ := fl_matMul fp r r 1 U12 X2
+  let DeltaC : Matrix (Fin r) (Fin 1) ℝ := fun i j =>
+    Chat i j - ∑ k : Fin r, U12 i k * X2 k j
+  let Fsub := higham13_fl_matrixSubError fp Y1 Chat
+  let Dhat := higham13_fl_matrixSub fp Y1 Chat
+  have hMul : MatMulFirstOrderSpec fp.u ((r : ℝ) ^ 2)
+      (maxEntryNormRect hr hr U12)
+      (infNormVec (fun t : Fin r => X2 t 0))
+      (maxEntryNormRect hr (Nat.succ_pos 0) DeltaC)
+      U12 X2 Chat DeltaC := by
+    simpa only [Chat, DeltaC,
+      maxEntryNormRect_single_col_eq_infNormVec hr X2] using
+      higham13_conventional_matmul_spec_c1_maxEntry
+        fp hr hr (Nat.succ_pos 0) U12 X2 hγ
+  have hSub : SubtractionFirstOrderSpec fp.u
+      (maxEntryNormRect hr (Nat.succ_pos 0) Y1)
+      (maxEntryNormRect hr (Nat.succ_pos 0) Chat)
+      (maxEntryNormRect hr (Nat.succ_pos 0) Fsub)
+      Y1 Chat Fsub Dhat := by
+    exact higham13_conventional_subtraction_spec_maxEntry
+      fp hr (Nat.succ_pos 0) Y1 Chat
+  simpa [Chat, Dhat] using
+    dhs_two_block_back_rhs_perturbation_firstOrder_from_matmul_subtraction_specs_of_rhs_scale
+      hr fp.u ((r : ℝ) ^ 2) cRhs
+      (maxEntryNormRect hr hr U12) normU
+      (maxEntryNormRect hr (Nat.succ_pos 0) Y1)
+      (maxEntryNormRect hr (Nat.succ_pos 0) Chat)
+      U12 X2 Chat DeltaC Y1 Fsub Dhat fp.u_nonneg (sq_nonneg (r : ℝ))
+      hU12U hX2 (by simpa [Chat] using hRhsScale) hMul hSub
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch for
     the conventional flattened algorithm and one right-hand side.
