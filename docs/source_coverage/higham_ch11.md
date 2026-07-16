@@ -762,6 +762,16 @@ local-block combined-row predicate, with symmetric-tridiagonal wrappers. This
 matches the later non-adjacent local-row handoff while retaining the stronger
 all-earlier prefix-zero hypothesis.
 
+2026-07-15 update: the ordinary after-earlier-branch lower local-block
+second-pivot handoffs now have symmetric-tridiagonal entry points:
+`higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_of_isSymTridiagonal_and_leadingBlockSupport_after_earlier_branch_end`,
+`higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_of_isSymTridiagonal_and_residualWitnesses_after_earlier_branch_end`,
+and
+`higham11_7_ConcretePathSecondPivotCombinedSolveRows_of_localBlock_rows_of_isSymTridiagonal_and_supportedWitnesses_after_earlier_branch_end`.
+They mirror the non-adjacent symmetric wrappers and remove a caller-side
+projection from `IsSymTridiagonal` to `IsTridiagonal`; the genuine non-initial
+after-branch support and local row obligations remain explicit.
+
 2026-07-11 update: the coefficient-sum, uniform-coefficient, and scalar-budget
 support-reduced source endpoints now have direct local-row variants. Callers
 can provide residual-witness local accepted-`2×2` second-pivot rows and the
@@ -10216,6 +10226,16 @@ Problem transcription.
   `[propext, Classical.choice, Quot.sound]`. The wrappers restrict existing
   initial-only combined-row handoffs to the local-block predicate using the
   vacuous earlier-lift prefix-zero route.
+- 2026-07-15 Theorem 11.7 symmetric after-earlier local-block handoff increment:
+  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+  `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`;
+  `git diff --check` → pass; forbidden-token scan of
+  `HighamChapter11.lean` → clean; focused lookup/axiom check of the three
+  ordinary after-earlier symmetric local-block wrappers → elaborate; axioms
+  `[propext, Classical.choice, Quot.sound]`. The wrappers project
+  `IsSymTridiagonal` to the tridiagonal handoff without hiding the residual,
+  supported, after-branch support, or local row obligations.
 - New vs pre-existing warnings: **no new warnings** from the edited Chapter 11 file. The target
   build warnings are pre-existing in `HighamChapter9.lean`, `CholeskyFl.lean`, and
   `HighamChapter10.lean` (deprecated `Fin` coercions, unused simp arguments, one `ring`
