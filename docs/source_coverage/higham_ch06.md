@@ -124,10 +124,15 @@ All five requested primary labels are now VERIFIED (Thm 6.2/6.5, Lemma 6.3/6.6) 
 statement-level coverage. **Gate = PASS for the primary-label + numbered-equation + central-definition
 scope.**
 
-Optional documented residuals (unnumbered body-prose asides; non-gating in core mode):
-max-norm inconsistency + `‖AB‖_M ≤ n‖A‖_M‖B‖_M`; `κ(X) ≥ 1`, `κ_F(X) ≥ √n`; complex two-sided unitary
-invariance `‖UAV‖ = ‖A‖` as a single named theorem; block antidiagonal `‖[[0,A],[A^*,0]]‖_p`; the
-(6.1) equality-condition sentence; the second Lemma 6.6(a) sharpness witness (A=ee^T, B=√n·I).
+**Follow-up (2026-07-17):** the norm asides are now closed in `LeanFpAnalysis/FP/Analysis/Higham6Asides.lean`
+(axiom-clean): `ch6aside_conditionNumber_ge_one` (`κ(X) ≥ 1` for any submultiplicative/definite norm; `κ_F ≥ √n`),
+the two-sided unitary invariance `‖UAV‖₂ = ‖A‖₂`, `‖UAV‖_F = ‖A‖_F`, and the max-norm inconsistency bound
+`‖AB‖_M ≤ n‖A‖_M‖B‖_M` with all-ones equality. The block-antidiagonal `‖[[0,A],[A^*,0]]‖₂ = ‖A‖₂` is proved
+conditional on one explicit standard hypothesis (block-diagonal l2 op-norm = max of block norms).
+
+Remaining optional documented residuals (unnumbered body-prose; non-gating): the block-diagonal-op-norm
+hypothesis for the antidiagonal identity; the (6.1) equality-condition sentence; the second Lemma 6.6(a)
+sharpness witness (A=ee^T, B=√n·I).
 
 ## Cross-chapter role
 
