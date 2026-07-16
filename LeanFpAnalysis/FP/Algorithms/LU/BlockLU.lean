@@ -2040,6 +2040,19 @@ theorem dhsBlockBackUpperTail_infNormVec_le_suffix {m r : ℕ}
       simp [hq, infNormVec_nonneg]
   · exact infNormVec_nonneg _
 
+/-- The current computed block is one active component of the full upper
+    suffix, so its column infinity norm is bounded by the suffix norm. -/
+theorem dhsBlockBackCurrentBlock_infNormVec_le_suffix {m r : ℕ}
+    (i : Fin m) (X : Fin m → Matrix (Fin r) (Fin 1) ℝ) :
+    infNormVec (fun s : Fin r => X i s 0) ≤
+      infNormVec (dhsBlockBackUpperSuffixVector i X) := by
+  apply infNormVec_le_of_abs_le
+  · intro s
+    have hs := abs_le_infNormVec
+      (dhsBlockBackUpperSuffixVector i X) (finProdFinEquiv (i, s))
+    simpa using hs
+  · exact infNormVec_nonneg _
+
 /-- Lift a row residual against the full computed upper suffix.
 
     The resulting coefficient blocks vanish strictly below the current block
@@ -10815,6 +10828,230 @@ theorem dhs_block_back_substitution_firstOrder_from_conventional_upper_rows_and_
         (hRhsScale i) (hZeroTail i)
   · exact hDiagonal
 
+/-- Under the standard small-roundoff regime `(m*r)u <= 1/2`, the actual
+    rounded strict-upper row product is bounded by twice the exact dimension
+    factor times the global upper-factor scale and full computed suffix norm. -/
+theorem dhsBlockBackConventionalUpperProduct_maxEntry_le_two_dim
+    {m r : ℕ}
+    (fp : FPModel) (hm : 0 < m) (hr : 0 < r) (i : Fin m)
+    (normU : ℝ)
+    (U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hSmall : (((m * r : ℕ) : ℝ) * fp.u) ≤ 1 / 2)
+    (hUTailU :
+      maxEntryNormRect hr (Nat.mul_pos hm hr)
+        (dhsBlockBackUpperTailRowFlat i (U i)) ≤ normU) :
+    maxEntryNormRect hr (Nat.succ_pos 0)
+        (dhsBlockBackConventionalUpperProduct fp i U X) ≤
+      2 * ((m * r : ℕ) : ℝ) * normU *
+        infNormVec (dhsBlockBackUpperSuffixVector i X) := by
+  let A := dhsBlockBackUpperTailRowFlat i (U i)
+  let B := dhsBlockBackUpperTailColumn i X
+  let suffixNorm := infNormVec (dhsBlockBackUpperSuffixVector i X)
+  have hγ : gammaValid fp (m * r) := by
+    unfold gammaValid
+    linarith
+  have hNormU : 0 ≤ normU :=
+    le_trans (maxEntryNormRect_nonneg hr (Nat.mul_pos hm hr) A) hUTailU
+  have hGammaLeOne : gamma fp (m * r) ≤ 1 := by
+    have hgammaLinear :=
+      gamma_le_two_mul_n_u_of_nu_le_half fp (m * r) hSmall
+    linarith
+  have hGammaNonneg : 0 ≤ gamma fp (m * r) := gamma_nonneg fp hγ
+  have hTailSuffix :
+      infNormVec (dhsBlockBackUpperTailVector i X) ≤ suffixNorm :=
+    dhsBlockBackUpperTail_infNormVec_le_suffix i X
+  apply maxEntryNormRect_le_of_entry_abs_le
+  intro s k
+  have hsum :
+      (∑ jt : Fin (m * r), |A s jt| * |B jt k|) ≤
+        ((m * r : ℕ) : ℝ) * (normU * suffixNorm) := by
+    calc
+      (∑ jt : Fin (m * r), |A s jt| * |B jt k|) ≤
+          ∑ _jt : Fin (m * r), normU * suffixNorm := by
+        apply Finset.sum_le_sum
+        intro jt _hjt
+        apply mul_le_mul
+        · exact le_trans
+            (entry_le_maxEntryNormRect hr (Nat.mul_pos hm hr) A s jt)
+            hUTailU
+        · fin_cases k
+          exact le_trans
+            (abs_le_infNormVec (dhsBlockBackUpperTailVector i X) jt)
+            hTailSuffix
+        · exact abs_nonneg (B jt k)
+        · exact hNormU
+      _ = ((m * r : ℕ) : ℝ) * (normU * suffixNorm) := by simp
+  have herr := matMul_error_bound fp r (m * r) 1 A B hγ s k
+  have hexact :
+      |∑ jt : Fin (m * r), A s jt * B jt k| ≤
+        ∑ jt : Fin (m * r), |A s jt| * |B jt k| := by
+    calc
+      |∑ jt : Fin (m * r), A s jt * B jt k| ≤
+          ∑ jt : Fin (m * r), |A s jt * B jt k| :=
+        Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ jt : Fin (m * r), |A s jt| * |B jt k| := by
+        apply Finset.sum_congr rfl
+        intro jt _hjt
+        rw [abs_mul]
+  change |fl_matMul fp r (m * r) 1 A B s k| ≤ _
+  calc
+    |fl_matMul fp r (m * r) 1 A B s k| =
+        |(fl_matMul fp r (m * r) 1 A B s k -
+              ∑ jt : Fin (m * r), A s jt * B jt k) +
+            ∑ jt : Fin (m * r), A s jt * B jt k| := by ring_nf
+    _ ≤ |fl_matMul fp r (m * r) 1 A B s k -
+              ∑ jt : Fin (m * r), A s jt * B jt k| +
+            |∑ jt : Fin (m * r), A s jt * B jt k| := abs_add_le _ _
+    _ ≤ gamma fp (m * r) *
+              (∑ jt : Fin (m * r), |A s jt| * |B jt k|) +
+            (∑ jt : Fin (m * r), |A s jt| * |B jt k|) :=
+      add_le_add herr hexact
+    _ ≤ 1 * (((m * r : ℕ) : ℝ) * (normU * suffixNorm)) +
+            (((m * r : ℕ) : ℝ) * (normU * suffixNorm)) := by
+      apply add_le_add
+      · exact mul_le_mul hGammaLeOne hsum
+          (Finset.sum_nonneg (fun jt _ =>
+            mul_nonneg (abs_nonneg (A s jt)) (abs_nonneg (B jt k))))
+          (by norm_num)
+      · exact hsum
+    _ = 2 * ((m * r : ℕ) : ℝ) * normU * suffixNorm := by ring
+
+/-- Derive the formerly external full-suffix RHS-magnitude comparison from
+    the conventional row operations, Eq.13.15, and explicit source-style
+    smallness/norm bounds.
+
+    The rounded tail product contributes `2*(m*r)`.  The diagonal equation
+    bounds the computed RHS by `2*r`, while the relative subtraction factor is
+    bounded away from zero by `(m*r)u <= 1/2`.  Combining these estimates gives
+    the concrete coefficient `4*((m*r)+r)`. -/
+theorem dhs_block_back_conventional_rhs_scale_of_small_roundoff_and_diagonal_bounds
+    {m r : ℕ}
+    (fp : FPModel) (hm : 0 < m) (hr : 0 < r) (i : Fin m)
+    (normU : ℝ)
+    (U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (DeltaDiag : Matrix (Fin r) (Fin r) ℝ)
+    (X Y : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hSmallProduct : (((m * r : ℕ) : ℝ) * fp.u) ≤ 1 / 2)
+    (hUTailU :
+      maxEntryNormRect hr (Nat.mul_pos hm hr)
+        (dhsBlockBackUpperTailRowFlat i (U i)) ≤ normU)
+    (hUiiU : maxEntryNorm hr (U i i) ≤ normU)
+    (hDeltaDiagU : maxEntryNorm hr DeltaDiag ≤ normU)
+    (hDiagonalEquation :
+      (U i i + DeltaDiag) * X i =
+        dhsBlockBackConventionalRHS fp i U X Y) :
+    maxEntryNormRect hr (Nat.succ_pos 0) (Y i) +
+        maxEntryNormRect hr (Nat.succ_pos 0)
+          (dhsBlockBackConventionalUpperProduct fp i U X) ≤
+      (4 * (((m * r : ℕ) : ℝ) + (r : ℝ))) * normU *
+        infNormVec (dhsBlockBackUpperSuffixVector i X) := by
+  let suffixNorm := infNormVec (dhsBlockBackUpperSuffixVector i X)
+  let Chat := dhsBlockBackConventionalUpperProduct fp i U X
+  let Dhat := dhsBlockBackConventionalRHS fp i U X Y
+  have hNormU : 0 ≤ normU :=
+    le_trans (maxEntryNorm_nonneg hr (U i i)) hUiiU
+  have hSuffixNonneg : 0 ≤ suffixNorm := infNormVec_nonneg _
+  have hSmallUnit : fp.u ≤ 1 / 2 := by
+    have hone : (1 : ℝ) ≤ ((m * r : ℕ) : ℝ) := by
+      exact_mod_cast Nat.succ_le_iff.mpr (Nat.mul_pos hm hr)
+    have hu_le : fp.u ≤ ((m * r : ℕ) : ℝ) * fp.u := by
+      calc
+        fp.u = 1 * fp.u := by ring
+        _ ≤ ((m * r : ℕ) : ℝ) * fp.u :=
+          mul_le_mul_of_nonneg_right hone fp.u_nonneg
+    exact le_trans hu_le hSmallProduct
+  have hXiSuffix :
+      maxEntryNormRect hr (Nat.succ_pos 0) (X i) ≤ suffixNorm := by
+    rw [maxEntryNormRect_single_col_eq_infNormVec]
+    exact dhsBlockBackCurrentBlock_infNormVec_le_suffix i X
+  have hUPlusDelta :
+      maxEntryNormRect hr hr (U i i + DeltaDiag) ≤ 2 * normU := by
+    rw [maxEntryNormRect_eq_maxEntryNorm hr]
+    calc
+      maxEntryNorm hr (U i i + DeltaDiag) ≤
+          maxEntryNorm hr (U i i) + maxEntryNorm hr DeltaDiag :=
+        maxEntryNorm_add_le hr (U i i) DeltaDiag
+      _ ≤ normU + normU := add_le_add hUiiU hDeltaDiagU
+      _ = 2 * normU := by ring
+  have hDhatNorm :
+      maxEntryNormRect hr (Nat.succ_pos 0) Dhat ≤
+        2 * (r : ℝ) * normU * suffixNorm := by
+    simp only [Dhat]
+    rw [← hDiagonalEquation]
+    calc
+      maxEntryNormRect hr (Nat.succ_pos 0)
+          ((U i i + DeltaDiag) * X i) ≤
+          (r : ℝ) * maxEntryNormRect hr hr (U i i + DeltaDiag) *
+            maxEntryNormRect hr (Nat.succ_pos 0) (X i) := by
+        simpa [rectMatMul, Matrix.mul_apply] using
+          maxEntryNormRect_rectMatMul_le hr hr (Nat.succ_pos 0)
+            (U i i + DeltaDiag) (X i)
+      _ ≤ (r : ℝ) * (2 * normU) * suffixNorm := by
+        exact mul_le_mul
+          (mul_le_mul_of_nonneg_left hUPlusDelta (Nat.cast_nonneg r))
+          hXiSuffix
+          (maxEntryNormRect_nonneg hr (Nat.succ_pos 0) (X i))
+          (mul_nonneg (Nat.cast_nonneg r)
+            (mul_nonneg (by norm_num) hNormU))
+      _ = 2 * (r : ℝ) * normU * suffixNorm := by ring
+  have hChatNorm :
+      maxEntryNormRect hr (Nat.succ_pos 0) Chat ≤
+        2 * ((m * r : ℕ) : ℝ) * normU * suffixNorm :=
+    dhsBlockBackConventionalUpperProduct_maxEntry_le_two_dim
+      fp hm hr i normU U X hSmallProduct hUTailU
+  have hYNorm :
+      maxEntryNormRect hr (Nat.succ_pos 0) (Y i) ≤
+        2 * maxEntryNormRect hr (Nat.succ_pos 0) Dhat +
+          maxEntryNormRect hr (Nat.succ_pos 0) Chat := by
+    apply maxEntryNormRect_le_of_entry_abs_le
+    intro s k
+    fin_cases k
+    obtain ⟨delta, hdelta, hsub⟩ := fp.model_sub (Y i s 0) (Chat s 0)
+    have hDhatEntry :
+        Dhat s 0 = (Y i s 0 - Chat s 0) * (1 + delta) := by
+      simpa [Dhat, dhsBlockBackConventionalRHS, higham13_fl_matrixSub,
+        Chat] using hsub
+    have hFactorHalf : (1 / 2 : ℝ) ≤ |1 + delta| := by
+      have hdeltaLower : -(1 / 2 : ℝ) ≤ delta := by
+        have hnegabs : -|delta| ≤ delta := neg_abs_le delta
+        linarith
+      have hfactorNonneg : 0 ≤ 1 + delta := by linarith
+      rw [abs_of_nonneg hfactorNonneg]
+      linarith
+    have hDiff : |Y i s 0 - Chat s 0| ≤ 2 * |Dhat s 0| := by
+      have hhalfMul :
+          |Y i s 0 - Chat s 0| * (1 / 2 : ℝ) ≤ |Dhat s 0| := by
+        calc
+          |Y i s 0 - Chat s 0| * (1 / 2 : ℝ) ≤
+              |Y i s 0 - Chat s 0| * |1 + delta| :=
+            mul_le_mul_of_nonneg_left hFactorHalf (abs_nonneg _)
+          _ = |Dhat s 0| := by rw [hDhatEntry, abs_mul]
+      linarith
+    calc
+      |Y i s 0| = |(Y i s 0 - Chat s 0) + Chat s 0| := by ring_nf
+      _ ≤ |Y i s 0 - Chat s 0| + |Chat s 0| := abs_add_le _ _
+      _ ≤ 2 * |Dhat s 0| + |Chat s 0| := add_le_add hDiff le_rfl
+      _ ≤ 2 * maxEntryNormRect hr (Nat.succ_pos 0) Dhat +
+          maxEntryNormRect hr (Nat.succ_pos 0) Chat := by
+        exact add_le_add
+          (mul_le_mul_of_nonneg_left
+            (entry_le_maxEntryNormRect hr (Nat.succ_pos 0) Dhat s 0)
+            (by norm_num))
+          (entry_le_maxEntryNormRect hr (Nat.succ_pos 0) Chat s 0)
+  calc
+    maxEntryNormRect hr (Nat.succ_pos 0) (Y i) +
+          maxEntryNormRect hr (Nat.succ_pos 0) Chat ≤
+        (2 * maxEntryNormRect hr (Nat.succ_pos 0) Dhat +
+            maxEntryNormRect hr (Nat.succ_pos 0) Chat) +
+          maxEntryNormRect hr (Nat.succ_pos 0) Chat := add_le_add hYNorm le_rfl
+    _ ≤ (2 * (2 * (r : ℝ) * normU * suffixNorm) +
+            (2 * ((m * r : ℕ) : ℝ) * normU * suffixNorm)) +
+          (2 * ((m * r : ℕ) : ℝ) * normU * suffixNorm) := by
+      gcongr
+    _ = (4 * (((m * r : ℕ) : ℝ) + (r : ℝ))) * normU *
+          suffixNorm := by ring
+
 /-- Concrete source-correct all-row DHS back-substitution branch from the
     conventional rounded strict-tail products, following subtractions, and
     every local Eq.13.15 solve.
@@ -10874,6 +11111,79 @@ theorem dhs_block_back_substitution_firstOrder_from_conventional_suffix_rows_and
         fp hm hr i cRhs normU c₅ (normUii i)
         (maxEntryNorm hr (DeltaDiag i)) U (DeltaDiag i) X Y hγ hcRhs hU
         (hUTailU i) (hRhsScale i) (hDiagonal i)
+  · exact hDiagonal
+
+/-- Fully derived conventional block-back-substitution branch under explicit
+    DHS small-roundoff and local diagonal-solver bounds.
+
+    This discharges the nonzero-suffix magnitude premise of the preceding
+    all-row theorem with coefficient `4*((m*r)+r)`.  The local concrete bound
+    `||DeltaDiag_i||max <= c₅*u*normUii_i`, together with `c₅*u <= 1`,
+    supplies the diagonal scale needed by the RHS comparison. -/
+theorem dhs_block_back_substitution_firstOrder_from_conventional_suffix_rows_of_small_roundoff
+    {m r : ℕ}
+    (fp : FPModel) (hm : 0 < m) (hr : 0 < r)
+    (c₅ cBack normA normL normU : ℝ)
+    (normUii : Fin m → ℝ)
+    (Lhat U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (DeltaDiag : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hSmallProduct : (((m * r : ℕ) : ℝ) * fp.u) ≤ 1 / 2)
+    (hc₅ : 0 ≤ c₅) (hSmallDiag : c₅ * fp.u ≤ 1)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hUUpper : ∀ i j : Fin m, j.val < i.val → U i j = 0)
+    (hNormUii : ∀ i : Fin m, normUii i ≤ normU)
+    (hLhat : maxEntryNorm (Nat.mul_pos hm hr)
+      (blockMatrixFlatFin Lhat) ≤ normL)
+    (hc : (((m * r : ℕ) : ℝ) *
+      ((((m * r : ℕ) : ℝ) ^ 2 +
+          4 * (((m * r : ℕ) : ℝ) + (r : ℝ))) + c₅)) ≤ cBack)
+    (hUTailU : ∀ i : Fin m,
+      maxEntryNormRect hr (Nat.mul_pos hm hr)
+        (dhsBlockBackUpperTailRowFlat i (U i)) ≤ normU)
+    (hUiiNorm : ∀ i : Fin m, maxEntryNorm hr (U i i) ≤ normUii i)
+    (hDeltaDiagConcrete : ∀ i : Fin m,
+      maxEntryNorm hr (DeltaDiag i) ≤ c₅ * fp.u * normUii i)
+    (hDiagonal : ∀ i : Fin m,
+      DiagonalBlockSolveFirstOrderSpec fp.u c₅ (normUii i)
+        (maxEntryNorm hr (DeltaDiag i))
+        (U i i) (DeltaDiag i) (X i)
+        (dhsBlockBackConventionalRHS fp i U X Y)) :
+    ∃ DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      DHSBlockBackSubstitutionFirstOrderSpec
+        fp.u cBack normA normL normU
+        (maxEntryNorm (Nat.mul_pos hm hr)
+          (blockMatrixFlatFin Lhat * blockMatrixFlatFin DeltaU))
+        (blockMatrixFlatFin U) (blockMatrixFlatFin DeltaU)
+        (blockMatrixRowsFlatFin X) (blockMatrixRowsFlatFin Y) := by
+  have hγ : gammaValid fp (m * r) := by
+    unfold gammaValid
+    linarith
+  apply
+    dhs_block_back_substitution_firstOrder_from_conventional_suffix_rows_and_eq13_15
+      fp hm hr (4 * (((m * r : ℕ) : ℝ) + (r : ℝ))) c₅ cBack
+      normA normL normU normUii Lhat U DeltaDiag X Y hγ
+      (mul_nonneg (by norm_num)
+        (add_nonneg (Nat.cast_nonneg (m * r)) (Nat.cast_nonneg r)))
+      hc₅ hA hL hU hUUpper hNormUii hLhat hc hUTailU
+  · intro i _hSuffixNonzero
+    have hUiiU : maxEntryNorm hr (U i i) ≤ normU :=
+      le_trans (hUiiNorm i) (hNormUii i)
+    have hNormUiiNonneg : 0 ≤ normUii i :=
+      le_trans (maxEntryNorm_nonneg hr (U i i)) (hUiiNorm i)
+    have hDeltaDiagU : maxEntryNorm hr (DeltaDiag i) ≤ normU := by
+      calc
+        maxEntryNorm hr (DeltaDiag i) ≤
+            c₅ * fp.u * normUii i := hDeltaDiagConcrete i
+        _ ≤ 1 * normUii i :=
+          mul_le_mul_of_nonneg_right hSmallDiag hNormUiiNonneg
+        _ ≤ 1 * normU :=
+          mul_le_mul_of_nonneg_left (hNormUii i) (by norm_num)
+        _ = normU := one_mul normU
+    exact
+      dhs_block_back_conventional_rhs_scale_of_small_roundoff_and_diagonal_bounds
+        fp hm hr i normU U (DeltaDiag i) X Y hSmallProduct
+        (hUTailU i) hUiiU hDeltaDiagU (hDiagonal i).equation
   · exact hDiagonal
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch for
