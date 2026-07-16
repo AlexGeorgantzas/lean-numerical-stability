@@ -247,25 +247,62 @@ Chapter 20 least-squares work is summarized in the
 [`Chapter 20 formalization report`](docs/chapter20/CHAPTER20_FORMALIZATION_REPORT.md),
 with row-level scope in the
 [`source inventory`](docs/chapter20/CHAPTER20_SOURCE_INVENTORY.md) and explicit
-open source-strength rows in the
+domain/exclusion boundaries in the
 [`not-proved ledger`](docs/chapter20/CHAPTER20_NOT_PROVED_LEDGER.md).
 Representative public modules include
 [`LSPerturbation.lean`](LeanFpAnalysis/FP/Algorithms/LeastSquares/LSPerturbation.lean),
 [`LSQRSolve.lean`](LeanFpAnalysis/FP/Algorithms/LeastSquares/LSQRSolve.lean),
+[`Higham20Theorem20_4Absorption.lean`](LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Theorem20_4Absorption.lean),
 [`LSNormalEquations.lean`](LeanFpAnalysis/FP/Algorithms/LeastSquares/LSNormalEquations.lean),
 and [`LSE.lean`](LeanFpAnalysis/FP/Algorithms/LeastSquares/LSE.lean).
+The p.404 minimum-norm refinement is modeled in
+[`Higham20MinimumNormBackwardError.lean`](LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20MinimumNormBackwardError.lean),
+including the source's immediate full-rank-at-an-attaining-perturbation
+subcase. The same module proves an exact nonzero-data scalar counterexample to
+the printed square-or-tall extension; the cited Sun theorem is strict-tall and
+matrix-only.
 Source-facing endpoints include
 `higham20_theorem20_1_solution_and_residualRelativeRHS_le_of_one_rhs_budget`,
 `Theorem20_3.householder_qr_fl_backSub_backward_error`,
+`LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_theorem20_4_printed_total_perturbations`,
 `theorem20_5_wks_formula_eigenvalue_and_matrixOnly_limit`,
 `Theorem20_8.source_facing_firstOrder_plus_eps_sq_of_finalSmallnessThreshold`,
 `GeneralizedQRFactorization.exists_theorem20_9_exact_householder`, and the
 positive-block plus empty/full-constraint Theorem 20.10 Part A/Part B results.
 Equation (20.19) is proved at its valid strict-tall scope, with a compiled
 square scalar counterexample recording the source discrepancy.
-The Chapter 20 core gate remains `FAIL`: the report distinguishes the exact literal-runtime Theorem 20.7
-certificate from the still-open printed `alpha`/`beta`/`phi` producer and
-records the other source-strength gaps without relabeling them as closure.
+The Chapter 20 core gate is `PASS (EXPLICIT-DOMAIN)`.  Theorem 20.7 now uses
+`fl_pivotedStoredQR_returnedX_pivotPosition_of_roundedCoxHigham`: its primitive
+forward-row and compact-operation budgets construct the numerical contract
+internally, while the triangular correction is transported through a direct
+rounded Householder-multiplier budget.  The resulting printed-scale matrix
+coefficient is `(j+1)^2 * 16 * gammaTilde` in pivot position; the source-column
+wrapper has the valid uniform `n^2` envelope, and the RHS coefficient is
+`n^2 * 5 * gammaTilde`.  The obsolete exact-tail policy remains documented by
+`sigmaCounter_no_coxHighamRowPolicy`, whose full-rank gamma-valid trace grows
+from pivot scale `1` to final entry `45/32`; the corrected endpoint never uses
+that false field, and `roundedPolicy_exact_one_nonempty` supplies a compiled
+non-vacuity witness.  Theorem 20.4's formerly open triangular absorption is
+also closed with one shared nonnegative Frobenius-unit witness and an explicit
+dimension-only `gammaTilde`.
+
+The complete Split 4 audit (Chapters 20-28 plus the owned Appendix A rows) is
+summarized in the
+[`Split 4 formalization report`](docs/SPLIT4_FORMALIZATION_REPORT.md).
+New chapter-facing modules include
+[`Higham22.lean`](LeanFpAnalysis/FP/Algorithms/Vandermonde/Higham22.lean),
+[`Higham23.lean`](LeanFpAnalysis/FP/Algorithms/FastMatMul/Higham23.lean),
+[`Higham24Radix2.lean`](LeanFpAnalysis/FP/Algorithms/FFT/Higham24Radix2.lean),
+[`Higham25.lean`](LeanFpAnalysis/FP/Algorithms/Nonlinear/Higham25.lean),
+[`Higham26.lean`](LeanFpAnalysis/FP/Algorithms/AutomaticErrorAnalysis/Higham26.lean),
+[`Higham27.lean`](LeanFpAnalysis/FP/Algorithms/SoftwareIssues/Higham27.lean),
+[`Higham28.lean`](LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28.lean),
+[`Higham28Exact.lean`](LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Exact.lean),
+[`Higham28Probability.lean`](LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Probability.lean),
+[`Higham28Asymptotics.lean`](LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Asymptotics.lean),
+and [`Higham28Contracts.lean`](LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Contracts.lean).
+Each chapter report separates unconditional proofs, explicit-domain endpoints,
+source discrepancies, and deferred under-specified prose.
 
 For a searchable map from stability-analysis goals to files, definitions, and
 theorem names, see [`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md).  For a

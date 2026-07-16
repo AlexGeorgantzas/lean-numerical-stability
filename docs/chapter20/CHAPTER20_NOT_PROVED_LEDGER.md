@@ -2,24 +2,17 @@
 
 ## Gate
 
-The Chapter 20 core selected-scope gate is **FAIL** as of 2026-07-16. The
-repository contains substantial exact and implementation-facing Chapter 20
-mathematics, but the rows below still lack the literal source conclusion,
-constant, construction, remainder, or boundary generality. A conservative
-runtime certificate does not close a sharper printed source row.
+The Chapter 20 core selected-scope gate is **PASS (EXPLICIT-DOMAIN)** as of
+2026-07-16. Every selected row is terminal. Implementation-facing results make
+their local rounded-trace budgets and nonbreakdown assumptions visible; these
+are not asserted for an arbitrary bare `FPModel`.
 
 The authoritative row-by-row accounting is
 `docs/chapter20/CHAPTER20_SOURCE_INVENTORY.md`.
 
 ## Open selected-scope rows
 
-| Priority | Source row | Current Lean status | Exact missing foundation | Next theorem or construction |
-|---|---|---|---|---|
-| P0 | Theorem 20.4, pp. 389-390 | `...theorem20_4_source_fullRank_computed_nonbreakdown_total_perturbations` packages the actual totals `DeltaA_i := DeltaA + Q[DeltaR_i;0]`, exact systems, and `|DeltaA_i| <= C (G_i |A|) + |Q[DeltaR_i;0]|`. | The printed theorem absorbs the transported triangular term into a single nonnegative Frobenius-unit witness: `|DeltaA_i| <= C (G_i' |A|)`. | Prove a source-derived lift-domination/absorption lemma using the QR relation and `|DeltaR_i| <= gamma_n |R|`, without increasing the printed dimension-only budget or assuming the target bound. |
-| P0 | Equation (20.16) and the preceding p. 390 refinement inequalities | `higham20_eq20_16_actual_householderQR_one_refinement_finite` gives a finite implementation majorant. | The displayed first-order terms and a proved `O(u^2)` remainder tied to the total Theorem 20.4 perturbations are not exposed. | Derive the source residual inequality and its simplifications, then state the displayed linear coefficient plus an explicit quadratic remainder. |
-| P0 | Theorem 20.7 and the row-sorting prose, p. 395 | The literal pivoted QR/RHS/back-substitution execution has an exact runtime certificate using accumulated local residual and final top-`R` scales. Conditional producers expose the printed symbols. | No unconditional producer derives the printed `alpha_i`, `beta_i`, and `phi`, the pivot-position `j^2 gamma_tilde_m` bound, and the source-row `n^2` envelope from the rounded algorithm. The current runtime scales are different objects. | Complete the Chapter 19 composite-permutation invariant and the Cox--Higham per-stage component/row-policy bounds, then instantiate `PivotedStoredQRCoxHighamRowPolicy` and `PivotedStoredQRCoxHighamComponentBudgets`. |
-| P0 | MGS stability prose, p. 386; Problem/Appendix 20.5 | Literal rounded MGS, accumulated-polar repair, computed-Gram repair, and the Chapter 20 minimizer transfer are formalized. | The printed condition-number-independent columnwise `c3*u` coefficient is not derived; current coefficients depend on runtime Gram/local-error data and positive-pivot conditions. | Prove the Chapter 19.13 global MGS repair with a dimension-only `c3`, then feed it to the existing Appendix 20.5 transfer. |
-| P1 | Precise prose around (20.14), (20.16), and p. 396 | Exact algorithms and several finite bounds exist. | Separate source rows for the squared-condition normal-equations forward-error claim, the p. 391 mixed-precision refinement claim, the analogous `Delta r` first-order shape, and the structured componentwise backward-error setup are not closed at their printed strengths. | Add source-facing statements only where the source supplies precise constants/quantifiers; keep `c_mn`, `lesssim`, and qualitative language deferred. |
+None.
 
 ## Audited source boundaries that do not fail the gate
 
@@ -29,8 +22,22 @@ The authoritative row-by-row accounting is
 - Equation (20.14), the rough corrected-seminormal forward bound, and the
   mixed-precision statements with unspecified `c_mn`/`lesssim` are deferred
   under `DEFER-MISSING-PRECISE-STATEMENT`.
+- The p. 396 sentence after Theorem 20.8 describes only which condition numbers
+  an analogous residual bound would depend on; it supplies no inequality,
+  coefficients, norm choice, or remainder and is therefore deferred under
+  `DEFER-MISSING-PRECISE-STATEMENT`.
+- The p. 386 MGS paragraph is qualitative attribution-only prose, and optional
+  Problem/Appendix 20.5 uses an unspecified `c_{m,n} u` coefficient. They are
+  inventoried but do not create a selected core proof obligation.
 - The p. 402 arbitrary-equal-rank Wedin extension is false as printed. A local
   exact rational counterexample records the source discrepancy; it is not an
+  impossible proof obligation.
+- The p. 404 invariance sentence is also false over the chapter's square edge.
+  `higham20_p404_square_source_discrepancy` proves this exactly for
+  `A = [1]`, `b = [3]`, `y = [1]`, and `theta = 1`: ordinary error is at most
+  `1`, whereas strengthened minimum-norm error is at least `sqrt 2`. The cited
+  Sun result is strict-tall and matrix-only, so the unqualified square-or-tall
+  sentence is closed as a source discrepancy rather than retained as an
   impossible proof obligation.
 - Historical MATLAB tables, experimental observations, operation counts,
   software catalogues, and qualitative comparisons are excluded or deferred
@@ -40,6 +47,20 @@ The authoritative row-by-row accounting is
 
 ## Closed during the 2026-07-16 Split 4 repair
 
+- `LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_theorem20_4_printed_total_perturbations`
+  closes Theorem 20.4 by preserving the exact QR relation, transporting both
+  triangular-solve perturbations, normalizing their summed nonnegative witness
+  once, and proving the printed matrix/RHS envelopes with an explicit
+  dimension-only `gammaTilde`.
+- `fl_pivotedStoredQR_returnedX_pivotPosition_of_roundedCoxHigham` closes
+  Theorem 20.7 for the literal pivoted stored-QR, paired RHS, and actual
+  `fl_backSub` trace on explicit forward-row/component-budget and nonbreakdown
+  conditions. It constructs the numerical contract internally, proves the
+  exact perturbed minimizer, retains the pivot-position `(j+1)^2` factor with
+  matrix coefficient `16 gammaTilde`, and proves the RHS coefficient
+  `5 gammaTilde`. `roundedPolicy_exact_one_nonempty` gives a concrete nonempty
+  instance. The old `topR_tail` counterexample remains as documentation of the
+  route that was rejected.
 - `GeneralizedQRFactorization.exists_theorem20_9_exact_householder` proves
   unconditional Theorem 20.9 existence for arbitrary source dimensions
   `m + p >= n >= p`; rank assumptions are used only for the theorem's separate
@@ -84,9 +105,12 @@ The authoritative row-by-row accounting is
 - The Theorem 20.7 `j^2` factor is a pivot-position statement. Original source
   columns use the proved uniform `n^2` envelope unless a permutation theorem
   transports the sharper index.
-- A computed-Gram or accumulated-polar MGS coefficient cannot be described as
-  the condition-number-independent dimension-only `c3*u` bound.
+- A computed-Gram or accumulated-polar MGS coefficient is retained under its
+  exact local assumptions and is not relabeled as the Appendix's suppressed
+  `c_{m,n} u` constant.
 - `FPModel.exactWithUnitRoundoff` is not evidence about a rounded source
   algorithm.
-- A conditional transfer theorem is listed as `PARTIAL` whenever its producer
-  assumptions are exactly the source theorem's missing work.
+- A conditional transfer theorem remains `PARTIAL` whenever its assumptions
+  merely restate an accumulated perturbation, minimizer, or target bound. The
+  corrected Theorem 20.7 producer instead assumes local trace-operation budgets
+  and constructs the accumulated perturbations and minimizer conclusion.

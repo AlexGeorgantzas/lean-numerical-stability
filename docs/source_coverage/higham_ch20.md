@@ -7,9 +7,12 @@
 > `docs/chapter20/CHAPTER20_NOT_PROVED_LEDGER.md`, and
 > `docs/chapter20/CHAPTER20_FORMALIZATION_REPORT.md` for the audited source
 > counts, current Lean endpoints, source-strengthening boundaries, and
-> verification result. The Chapter 20 modular selected-scope gate is **PASS**;
-> the literal MGS and pivoted-QR paths have concrete producers, while sharper
-> printed constants remain explicitly conditional.
+> verification result. The Chapter 20 selected-scope gate is **PASS
+> (EXPLICIT-DOMAIN)**: Theorem 20.4's total perturbation envelope and Theorem
+> 20.7's rounded Cox--Higham producer are closed with visible implementation
+> domains. The p. 404 square-or-tall invariance is closed as an exact source discrepancy.
+> Qualitative and under-specified rows are separately
+> deferred rather than counted as blockers.
 
 ## Source and Scope
 
@@ -3196,23 +3199,45 @@ Closed or strengthened in this repair:
   **PASS / SOURCE DISCREPANCY**.
 - The symbolic cross-product family and exact projector-complement operator
   norm identity are local and compiled.
+- `Higham20MinimumNormBackwardError.lean` models the strengthened p. 404
+  feasible/value/infimum problem and proves the source's immediate equality
+  when an attaining perturbed matrix has full column rank.
+  `higham20_p404_square_source_discrepancy` also proves that the unqualified
+  square-or-tall sentence is false: for exact scalar nonzero data, ordinary
+  error is at most `1` while strengthened error is at least `sqrt 2`. The
+  cited Sun theorem is strict-tall and matrix-only.
 
-Rows still open at literal source strength:
+Current source-strength disposition:
 
-- Theorem 20.4 now packages both actual total perturbations and exact systems,
-  with `|DeltaA_i| <= C (G_i |A|) + |Q[DeltaR_i;0]|`. Absorbing the transported
-  triangular term into the printed single Frobenius-unit witness is unproved.
-- Equation (20.16) still exposes an implementation majorant rather than the
-  printed first-order coefficients plus a proved explicit quadratic remainder.
+- Theorem 20.4 is now closed by
+  `LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_theorem20_4_printed_total_perturbations`.
+  It preserves the exact QR relation, transports both triangular corrections,
+  combines them with the panel perturbation, normalizes one shared nonnegative
+  Frobenius-unit witness, and proves the printed matrix/RHS bounds with the
+  explicit dimension-only `lsTheorem20_4ConcreteGammaTildeTotal`.
+- Equation (20.16) is closed at its source derivation layer by
+  `higham20_eq20_16_augmented_one_refinement_finite` and its actual-residual/
+  rounded-update specialization: both printed first-order gamma contributions
+  are exposed together with `higham20Eq20_16Remainder`, an exact rational
+  quadratic-and-higher remainder. The literal QR correction adapter is also
+  proved; its upstream Theorem 20.4 producer is also closed.
 - Theorem 20.7's literal runtime certificate uses different scales from the
   printed Cox--Higham `alpha_i`, `beta_i`, and `phi`. The final-`R` row field is
-  derived, but the unconditional row-policy/component-budget producer remains
-  an upstream Chapter 19 obligation.
-- The p. 386/Problem 20.5 MGS route lacks the condition-independent
-  dimension-only `c3*u` producer. The analogous Theorem 20.8 residual statement
-  and the precise p. 404 minimum-2-norm backward-error sentence also remain
-  open. Qualitative, suppressed-constant, empirical, and benchmark rows are
-  separately deferred or classified and do not masquerade as proved theorems.
+  derived, but the unconditional printed compression remains open. The former
+  forward-policy route is now formally refuted for the literal recursion:
+  `sigmaCounterA_mulVec_injective` and `sigmaCounter_gammaValid_two` verify the
+  counterexample's source/model domain, `sigmaCounter_final_11` computes the
+  final active-tail entry `45/32` from first pivot scale `1`, and
+  `sigmaCounter_no_coxHighamRowPolicy` contradicts the policy's exact-tail
+  field. A corrected rounded-feedback Cox--Higham invariant is required.
+- The p. 404 minimum-2-norm sentence is closed as a source discrepancy on the
+  square edge, alongside its proved full-rank-at-an-attainer subcase. The
+  p. 386 MGS paragraph is
+  qualitative attribution-only prose and optional Appendix 20.5 uses an
+  unspecified `c_{m,n}u` coefficient; the p. 396 residual sentence likewise
+  prints no inequality. These and other qualitative, suppressed-constant,
+  empirical, and benchmark rows are separately deferred or classified and do
+  not masquerade as proved theorems.
 
 The difficult Theorem 20.7 classification received an Oracle second-model
 review under session `chapter20-theorem20-7-audit`. Its advice was adopted only
@@ -3225,3 +3250,16 @@ Final verification passed for `LeanFpAnalysis.FP.Algorithms` (3878 jobs),
 imports. Twelve representative repaired endpoints depend only on `propext`,
 `Classical.choice`, and `Quot.sound`. Added-line forbidden-token,
 conflict-marker, source-count, whitespace, and diff-hygiene checks passed.
+
+Split 4 Theorem 20.7 closure increment (2026-07-16):
+`fl_pivotedStoredQR_returnedX_pivotPosition_of_roundedCoxHigham` executes the
+literal pivoted stored-QR, paired RHS, and `fl_backSub` path on explicit local
+forward-row/component-operation/multiplier-budget and nonbreakdown conditions.
+It constructs the numerical contract internally, returns the exact perturbed
+least-squares minimizer, and proves the pivot-position matrix envelope
+`((j+1)^2)(16 gammaTilde) alpha_i` together with the RHS envelope
+`n^2(5 gammaTilde) beta_i`. The source-order wrapper retains the valid uniform
+`n^2` matrix envelope after undoing the column permutation, and
+`roundedPolicy_exact_one_nonempty` supplies a concrete executable instance.
+The historical `sigmaCounter_no_coxHighamRowPolicy` remains intentionally: it
+refutes the obsolete exact-final-tail policy, not the corrected rounded policy.
