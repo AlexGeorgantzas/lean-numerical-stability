@@ -243,6 +243,30 @@ full rounded stored-loop proof remains open until the per-stage certificate
 fields are proved from a source-faithful model or replaced by a separate
 compatibility/perturbation theorem.
 
+Chapter 20 least-squares work is summarized in the
+[`Chapter 20 formalization report`](docs/chapter20/CHAPTER20_FORMALIZATION_REPORT.md),
+with row-level scope in the
+[`source inventory`](docs/chapter20/CHAPTER20_SOURCE_INVENTORY.md) and explicit
+open source-strength rows in the
+[`not-proved ledger`](docs/chapter20/CHAPTER20_NOT_PROVED_LEDGER.md).
+Representative public modules include
+[`LSPerturbation.lean`](LeanFpAnalysis/FP/Algorithms/LeastSquares/LSPerturbation.lean),
+[`LSQRSolve.lean`](LeanFpAnalysis/FP/Algorithms/LeastSquares/LSQRSolve.lean),
+[`LSNormalEquations.lean`](LeanFpAnalysis/FP/Algorithms/LeastSquares/LSNormalEquations.lean),
+and [`LSE.lean`](LeanFpAnalysis/FP/Algorithms/LeastSquares/LSE.lean).
+Source-facing endpoints include
+`higham20_theorem20_1_solution_and_residualRelativeRHS_le_of_one_rhs_budget`,
+`Theorem20_3.householder_qr_fl_backSub_backward_error`,
+`theorem20_5_wks_formula_eigenvalue_and_matrixOnly_limit`,
+`Theorem20_8.source_facing_firstOrder_plus_eps_sq_of_finalSmallnessThreshold`,
+`GeneralizedQRFactorization.exists_theorem20_9_exact_householder`, and the
+positive-block plus empty/full-constraint Theorem 20.10 Part A/Part B results.
+Equation (20.19) is proved at its valid strict-tall scope, with a compiled
+square scalar counterexample recording the source discrepancy.
+The Chapter 20 core gate remains `FAIL`: the report distinguishes the exact literal-runtime Theorem 20.7
+certificate from the still-open printed `alpha`/`beta`/`phi` producer and
+records the other source-strength gaps without relabeling them as closure.
+
 For a searchable map from stability-analysis goals to files, definitions, and
 theorem names, see [`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md).  For a
 Lean `#check` companion index, see [`examples/LibraryLookup.lean`](examples/LibraryLookup.lean).

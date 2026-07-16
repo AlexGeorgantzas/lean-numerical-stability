@@ -702,6 +702,135 @@ noncomputable def lseEliminationActualSolution {p q : ℕ}
   vecPermute (lseEliminationActualPerm B).symm
     (Fin.append (lseEliminationActualX1 B d x2) x2)
 
+/-- Literal coefficient matrix of the reduced least-squares problem (20.30),
+`A2 - A1 R1⁻¹ R2`. -/
+noncomputable def lseEliminationActualReducedMatrix {m p q : ℕ}
+    (A : Fin m → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ) : Fin m → Fin q → ℝ :=
+  fun i j =>
+    lseEliminationActualA2 A B i j -
+      rectMatMul
+        (lseEliminationActualA1 A B)
+        (rectMatMul (lseEliminationActualR1Inv B)
+          (lseEliminationActualR2 B)) i j
+
+/-- Literal right-hand side of the reduced least-squares problem (20.30). -/
+noncomputable def lseEliminationActualReducedRhs {m p q : ℕ}
+    (A : Fin m → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ) (d : Fin p → ℝ)
+    (b : Fin m → ℝ) : Fin m → ℝ :=
+  lseEliminationReducedRhs (lseEliminationActualA1 A B)
+    (lseEliminationActualR1Inv B) (lseEliminationActualQtd B d) b
+
+/-- Final exact QR factor in the reduced problem. -/
+noncomputable def lseEliminationActualReducedQ {m p q : ℕ}
+    (hqm : q ≤ m) (A : Fin m → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ) : Fin m → Fin m → ℝ :=
+  Wave19.Qacc
+    (exactPivotedQRPseq (s := q) hqm le_rfl
+      (lseEliminationActualReducedMatrix A B)) q
+
+/-- Final exact upper-trapezoidal QR factor in the reduced problem. -/
+noncomputable def lseEliminationActualReducedR {m p q : ℕ}
+    (hqm : q ≤ m) (A : Fin m → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ) : Fin m → Fin q → ℝ :=
+  exactPivotedQRMatrixSeq (s := q) hqm le_rfl
+    (lseEliminationActualReducedMatrix A B) q
+
+/-- Reduced-coordinate column permutation selected by the final exact QR. -/
+noncomputable def lseEliminationActualReducedPerm {m p q : ℕ}
+    (hqm : q ≤ m) (A : Fin m → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ) : Equiv.Perm (Fin q) :=
+  Theorem20_7.pivotPermAcc
+    (exactPivotedQRSwapSeq (s := q) hqm le_rfl
+      (lseEliminationActualReducedMatrix A B)) q
+
+/-- Nonsingular square top block of the final reduced QR factor. -/
+noncomputable def lseEliminationActualReducedRTop {m p q : ℕ}
+    (hqm : q ≤ m) (A : Fin m → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ) : Fin q → Fin q → ℝ :=
+  fun i j => lseEliminationActualReducedR hqm A B (Fin.castLE hqm i) j
+
+/-- Leading transformed right-hand side paired with the final reduced QR. -/
+noncomputable def lseEliminationActualReducedC {m p q : ℕ}
+    (hqm : q ≤ m) (A : Fin m → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ) (d : Fin p → ℝ)
+    (b : Fin m → ℝ) : Fin q → ℝ :=
+  fun i =>
+    matMulVec m (matTranspose (lseEliminationActualReducedQ hqm A B))
+      (lseEliminationActualReducedRhs A B d b) (Fin.castLE hqm i)
+
+/-- Exact triangular back-substitution result in final-QR pivot coordinates. -/
+noncomputable def lseEliminationActualReducedPivotSolution {m p q : ℕ}
+    (hqm : q ≤ m) (A : Fin m → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ) (d : Fin p → ℝ)
+    (b : Fin m → ℝ) : Fin q → ℝ :=
+  matMulVec q (nonsingInv q (lseEliminationActualReducedRTop hqm A B))
+    (lseEliminationActualReducedC hqm A B d b)
+
+/-- Reduced variable returned after undoing the final QR column permutation. -/
+noncomputable def lseEliminationActualReducedSolution {m p q : ℕ}
+    (hqm : q ≤ m) (A : Fin m → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ) (d : Fin p → ℝ)
+    (b : Fin m → ℝ) : Fin q → ℝ :=
+  vecPermute (lseEliminationActualReducedPerm hqm A B).symm
+    (lseEliminationActualReducedPivotSolution hqm A B d b)
+
+/-- Literal original-coordinate vector returned by both QR/backsolve stages. -/
+noncomputable def lseEliminationActualReturnedSolution {m p q : ℕ}
+    (hqm : q ≤ m) (A : Fin m → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ) (d : Fin p → ℝ)
+    (b : Fin m → ℝ) : Fin (p + q) → ℝ :=
+  lseEliminationActualSolution B d
+    (lseEliminationActualReducedSolution hqm A B d b)
+
+theorem lseEliminationActualReducedMatrix_mulVec {m p q : ℕ}
+    (A : Fin m → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ) (x2 : Fin q → ℝ) :
+    rectMatMulVec (lseEliminationActualReducedMatrix A B) x2 =
+      lseEliminationReducedAction
+        (lseEliminationActualA1 A B) (lseEliminationActualA2 A B)
+        (lseEliminationActualR1Inv B) (lseEliminationActualR2 B) x2 := by
+  let P := rectMatMul
+    (lseEliminationActualA1 A B)
+    (rectMatMul (lseEliminationActualR1Inv B)
+      (lseEliminationActualR2 B))
+  have hsub :
+      rectMatMulVec
+          (fun i j => lseEliminationActualA2 A B i j - P i j) x2 =
+        fun i => rectMatMulVec (lseEliminationActualA2 A B) x2 i -
+          rectMatMulVec P x2 i := by
+    ext i
+    unfold rectMatMulVec
+    rw [← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  rw [show lseEliminationActualReducedMatrix A B =
+      fun i j => lseEliminationActualA2 A B i j - P i j by rfl, hsub]
+  rw [show P = rectMatMul
+      (lseEliminationActualA1 A B)
+      (rectMatMul (lseEliminationActualR1Inv B)
+        (lseEliminationActualR2 B)) by rfl]
+  rw [rectMatMulVec_rectMatMul, rectMatMulVec_rectMatMul]
+  rfl
+
+theorem lseEliminationActualReducedObjective_eq_lsObjective {m p q : ℕ}
+    (A : Fin m → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ) (d : Fin p → ℝ)
+    (b : Fin m → ℝ) (x2 : Fin q → ℝ) :
+    lseEliminationReducedObjective
+        (lseEliminationActualA1 A B) (lseEliminationActualA2 A B)
+        (lseEliminationActualR1Inv B) (lseEliminationActualR2 B)
+        (lseEliminationActualQtd B d) b x2 =
+      lsObjective (lseEliminationActualReducedMatrix A B)
+        (lseEliminationActualReducedRhs A B d b) x2 := by
+  unfold lseEliminationReducedObjective lsObjective lsResidual
+  congr 1
+  funext i
+  rw [congrFun (lseEliminationActualReducedMatrix_mulVec A B x2) i]
+  rfl
+
 theorem lseEliminationActualR_block {p q : ℕ}
     (B : Fin p → Fin (p + q) → ℝ) :
     lseEliminationBlockMatrix (lseEliminationActualR1 B)
@@ -812,6 +941,103 @@ theorem lseEliminationActual_backsolve_constraint_of_fullRowRank {p q : ℕ}
     (lseEliminationActualR2 B) (lseEliminationActualQtd B d) x2
     (lseEliminationActualR1_inverse_actions_of_fullRowRank B hB).1
 
+/-- The source rank hypotheses imply full column rank of the literal reduced
+coefficient `A2 - A1 R1⁻¹ R2`.  This is the nonbreakdown fact needed by the
+final QR; no reduced minimizer is assumed. -/
+theorem lseEliminationActualReducedMatrix_injective_of_fullRanks
+    {m p q : ℕ}
+    (A : Fin m → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B) :
+    Function.Injective
+      (rectMatMulVec (lseEliminationActualReducedMatrix A B)) := by
+  intro x y hxy
+  let A1 := lseEliminationActualA1 A B
+  let A2 := lseEliminationActualA2 A B
+  let R1 := lseEliminationActualR1 B
+  let R1inv := lseEliminationActualR1Inv B
+  let R2 := lseEliminationActualR2 B
+  let pi := lseEliminationActualPerm B
+  let dx : Fin q → ℝ := fun j => x j - y j
+  let x1 := lseEliminationBackSubstitution R1inv R2 0 dx
+  let z := Fin.append x1 dx
+  have hCdx :
+      rectMatMulVec (lseEliminationActualReducedMatrix A B) dx = 0 := by
+    rw [show dx = fun j => x j - y j by rfl,
+      rectMatMulVec_sub, hxy]
+    ext i
+    simp
+  have hredDx :
+      lseEliminationReducedAction A1 A2 R1inv R2 dx = 0 := by
+    rw [← lseEliminationActualReducedMatrix_mulVec A B dx]
+    exact hCdx
+  have hAz :
+      rectMatMulVec (lseEliminationBlockMatrix A1 A2) z = 0 := by
+    have hres :=
+      lseEliminationResidual_eq_reduced A1 A2 R1inv R2 0 0 dx
+    have hres0 :
+        lsResidual (lseEliminationBlockMatrix A1 A2) 0
+            (Fin.append (lseEliminationBackSubstitution R1inv R2 0 dx) dx) =
+          0 := by
+      calc
+        lsResidual (lseEliminationBlockMatrix A1 A2) 0
+            (Fin.append (lseEliminationBackSubstitution R1inv R2 0 dx) dx) =
+            fun i => rectMatMulVec A1 (rectMatMulVec R1inv 0) i := by
+              simpa [lseEliminationReducedRhs, hredDx] using hres
+        _ = 0 := by
+          ext i
+          simp [rectMatMulVec]
+    ext i
+    have hi := congrFun hres0 i
+    simpa [z, x1, lsResidual, rectMatMulVec] using hi
+  have hInv := lseEliminationActualR1_inverse_actions_of_fullRowRank B hB
+  have hRz :
+      rectMatMulVec (lseEliminationBlockMatrix R1 R2) z = 0 := by
+    simpa [z, x1] using
+      lseEliminationBlockConstraint_eq_qtd_of_left_inverse
+        R1 R1inv R2 0 dx hInv.1
+  have hApi : rectMatMulVec (rectPermuteCols pi A) z = 0 := by
+    rw [show rectPermuteCols pi A = lseEliminationBlockMatrix A1 A2 by
+      simpa [pi, A1, A2] using (lseEliminationActualA_block A B).symm]
+    exact hAz
+  have hQR := lseEliminationActual_pivotedQR B
+  have hBpi : rectMatMulVec (rectPermuteCols pi B) z = 0 := by
+    have hfact : rectPermuteCols pi B =
+        matMulRect p p (p + q) (lseEliminationActualQ B)
+          (lseEliminationBlockMatrix R1 R2) := by
+      simpa [pi, R1, R2] using hQR.2
+    rw [hfact, matMulRect_eq_rectMatMul,
+      rectMatMulVec_rectMatMul, hRz]
+    ext i
+    unfold rectMatMulVec
+    simp
+  let w := vecPermute pi.symm z
+  have hAw : rectMatMulVec A w = 0 := by
+    calc
+      rectMatMulVec A w = rectMatMulVec (rectPermuteCols pi A) z := by
+        simpa [w] using (rectMatMulVec_permuteCols pi A z).symm
+      _ = 0 := hApi
+  have hBw : rectMatMulVec B w = 0 := by
+    calc
+      rectMatMulVec B w = rectMatMulVec (rectPermuteCols pi B) z := by
+        simpa [w] using (rectMatMulVec_permuteCols pi B z).symm
+      _ = 0 := hBpi
+  have hw : w = 0 :=
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hStack)
+      w hAw hBw
+  have hz : z = 0 := by
+    have := congrArg (vecPermute pi) hw
+    simpa [w, vecPermute_vecPermute_symm] using this
+  have hdx : dx = 0 := by
+    ext i
+    have hi := congrFun hz (Fin.natAdd p i)
+    simpa [z, Fin.append_right] using hi
+  ext i
+  have hi := congrFun hdx i
+  dsimp [dx] at hi
+  linarith
+
 /-- An orthogonal row factor in the constraint matrix changes only the
 constraint coordinates, not the feasible set. -/
 theorem isLSEMinimizer_of_orthogonal_constraint_factor
@@ -912,6 +1138,143 @@ theorem lseEliminationActual_isLSEMinimizer_of_reduced_minimizer
     simpa [rectPermuteCols, Wave13.columnPermuteMatrix] using hpermutedR
   have horiginal := IsLSEMinimizer.of_permuteCols pi hpermuted
   simpa [lseEliminationActualSolution, pi, z, x1] using horiginal
+
+/-- The final exact pivoted QR and triangular back solve genuinely construct
+the minimizer of the literal reduced problem (20.30). -/
+theorem lseEliminationActualReducedSolution_is_reduced_minimizer
+    {m p q : ℕ} (hqm : q ≤ m)
+    (A : Fin m → Fin (p + q) → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ) (d : Fin p → ℝ)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B) :
+    IsLSEEliminationReducedMinimizer
+      (lseEliminationActualA1 A B) (lseEliminationActualA2 A B)
+      (lseEliminationActualR1Inv B) (lseEliminationActualR2 B)
+      (lseEliminationActualQtd B d) b
+      (lseEliminationActualReducedSolution hqm A B d b) := by
+  let C := lseEliminationActualReducedMatrix A B
+  let f := lseEliminationActualReducedRhs A B d b
+  let Q := lseEliminationActualReducedQ hqm A B
+  let Rfull := lseEliminationActualReducedR hqm A B
+  let pi := lseEliminationActualReducedPerm hqm A B
+  let Rtop := lseEliminationActualReducedRTop hqm A B
+  let chat : Fin m → ℝ := matMulVec m (matTranspose Q) f
+  let c := lseEliminationActualReducedC hqm A B d b
+  let xPivot := lseEliminationActualReducedPivotSolution hqm A B d b
+  let x2 := lseEliminationActualReducedSolution hqm A B d b
+  have hQR := exactPivotedQR_factorization (s := q) hqm le_rfl C
+  have hQ : IsOrthogonal m Q := by
+    simpa [Q, C, lseEliminationActualReducedQ] using hQR.1
+  have hRupper : IsUpperTrapezoidal m q Rfull := by
+    intro i j hji
+    exact exactPivotedQRMatrixSeq_prefix_lower_zero
+      (s := q) hqm le_rfl C q le_rfl i j j.isLt hji
+  have hAhat :
+      Rfull = matMulRectLeft (matTranspose Q) (rectPermuteCols pi C) := by
+    funext i j
+    simpa [Rfull, Q, pi, C, lseEliminationActualReducedR,
+      lseEliminationActualReducedQ, lseEliminationActualReducedPerm,
+      matMulRectLeft, rectPermuteCols, Wave13.columnPermuteMatrix] using
+      exactPivotedQR_telescope (s := q) hqm le_rfl C i j
+  have hRtopUpper : ∀ i j : Fin q, j.val < i.val → Rtop i j = 0 := by
+    intro i j hji
+    exact hRupper (Fin.castLE hqm i) j (by simpa using hji)
+  have hCinj : Function.Injective (rectMatMulVec C) := by
+    simpa [C] using
+      lseEliminationActualReducedMatrix_injective_of_fullRanks A B hB hStack
+  have hPivotCinj :
+      Function.Injective (rectMatMulVec (rectPermuteCols pi C)) :=
+    rectMatMulVec_injective_rectPermuteCols pi hCinj
+  have hRtopInj : Function.Injective (rectMatMulVec Rtop) := by
+    intro x y hxy
+    apply hPivotCinj
+    have hfull : rectMatMulVec Rfull x = rectMatMulVec Rfull y := by
+      ext i
+      by_cases hi : i.val < q
+      · have hitop := congrFun hxy ⟨i.val, hi⟩
+        simpa [Rtop, Rfull, lseEliminationActualReducedRTop] using hitop
+      · have hqi : q ≤ i.val := Nat.le_of_not_gt hi
+        unfold rectMatMulVec
+        apply Finset.sum_congr rfl
+        intro j _
+        simp [hRupper i j (lt_of_lt_of_le j.isLt hqi)]
+    have htrans :
+        matMulVec m (matTranspose Q)
+            (rectMatMulVec (rectPermuteCols pi C) x) =
+          matMulVec m (matTranspose Q)
+            (rectMatMulVec (rectPermuteCols pi C) y) := by
+      simpa [hAhat, rectMatMulVec_matMulRectLeft] using hfull
+    have hQQT : matMul m Q (matTranspose Q) = idMatrix m :=
+      funext fun i => funext fun j => hQ.right_inv i j
+    have hrecover := congrArg (matMulVec m Q) htrans
+    let ax := rectMatMulVec (rectPermuteCols pi C) x
+    let ay := rectMatMulVec (rectPermuteCols pi C) y
+    calc
+      ax = matMulVec m (idMatrix m) ax := (matMulVec_id m ax).symm
+      _ = matMulVec m (matMul m Q (matTranspose Q)) ax := by rw [hQQT]
+      _ = matMulVec m Q (matMulVec m (matTranspose Q) ax) := by
+        ext i
+        exact matMulVec_matMul m Q (matTranspose Q) ax i
+      _ = matMulVec m Q (matMulVec m (matTranspose Q) ay) := by
+        simpa [ax, ay] using hrecover
+      _ = matMulVec m (matMul m Q (matTranspose Q)) ay := by
+        ext i
+        exact (matMulVec_matMul m Q (matTranspose Q) ay i).symm
+      _ = matMulVec m (idMatrix m) ay := by rw [hQQT]
+      _ = ay := matMulVec_id m ay
+  have hdet : Matrix.det (Rtop : Matrix (Fin q) (Fin q) ℝ) ≠ 0 :=
+    rectMatMulVec_det_ne_zero_of_injective hRtopInj
+  have hInv := isInverse_nonsingInv_of_det_ne_zero q Rtop hdet
+  have hsolve : ∀ r : Fin q, matMulVec q Rtop xPivot r = c r := by
+    intro r
+    have hmul : matMul q Rtop (nonsingInv q Rtop) = idMatrix q :=
+      funext fun i => funext fun j => hInv.2 i j
+    change matMulVec q Rtop
+      (matMulVec q (nonsingInv q Rtop) c) r = c r
+    rw [← matMulVec_matMul, hmul, matMulVec_id]
+  have hNEtrans : RectLSNormalEquations Rfull chat xPivot := by
+    apply RectLSNormalEquations.of_top_solve_zero_bottom
+      Rfull chat Rtop c xPivot
+    · intro i j hi
+      rfl
+    · intro i j hi
+      exact hRupper i j (lt_of_lt_of_le j.isLt hi)
+    · intro i hi
+      rfl
+    · exact hsolve
+  have hNEPivot :
+      RectLSNormalEquations (rectPermuteCols pi C) f xPivot :=
+    RectLSNormalEquations.of_orthogonal_left
+      (matTranspose Q) (rectPermuteCols pi C) Rfull f chat xPivot
+      hQ.transpose hAhat rfl hNEtrans
+  have hNESource : RectLSNormalEquations C f x2 := by
+    simpa [x2, pi, C, lseEliminationActualReducedSolution] using
+      RectLSNormalEquations.of_permuteCols pi C f xPivot hNEPivot
+  have hMin : IsLeastSquaresMinimizer C f x2 :=
+    hNESource.isLeastSquaresMinimizer
+  intro z2
+  rw [lseEliminationActualReducedObjective_eq_lsObjective A B d b,
+    lseEliminationActualReducedObjective_eq_lsObjective A B d b]
+  simpa [C, f, x2] using hMin z2
+
+/-- Higham page 399, fully constructed exact elimination endpoint.
+
+Both QR factorizations, both triangular solves, the reduced minimizer, and the
+original-coordinate returned vector are now definitions.  The only inputs are
+the printed dimension and rank conditions. -/
+theorem lseEliminationActualReturnedSolution_isLSEMinimizer
+    {m p q : ℕ} (hqm : q ≤ m)
+    (A : Fin m → Fin (p + q) → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ) (d : Fin p → ℝ)
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B) :
+    IsLSEMinimizer A b B d
+      (lseEliminationActualReturnedSolution hqm A B d b) := by
+  have hred := lseEliminationActualReducedSolution_is_reduced_minimizer
+    hqm A b B d hB hStack
+  simpa [lseEliminationActualReturnedSolution] using
+    lseEliminationActual_isLSEMinimizer_of_reduced_minimizer
+      A b B d hB (lseEliminationActualReducedSolution hqm A B d b) hred
 
 end Higham20EliminationActual
 

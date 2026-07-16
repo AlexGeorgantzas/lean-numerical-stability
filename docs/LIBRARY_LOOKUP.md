@@ -6231,6 +6231,33 @@ use this table adapter so the final witness surface no longer needs an explicit
 local positivity hypothesis.  The hard inverse/condition ratio itself remains
 open.
 
+## Higham Chapter 20: The Least Squares Problem
+
+The audited chapter summary is
+[`chapter20/CHAPTER20_FORMALIZATION_REPORT.md`](chapter20/CHAPTER20_FORMALIZATION_REPORT.md),
+with source-order classifications in
+[`chapter20/CHAPTER20_SOURCE_INVENTORY.md`](chapter20/CHAPTER20_SOURCE_INVENTORY.md).
+All modules below are re-exported by `LeanFpAnalysis.FP.Algorithms` and
+`LeanFpAnalysis.FP`.
+
+| Topic | Representative module | Public declarations |
+|---|---|---|
+| Theorems 20.1-20.2, perturbation theory | [`LSPerturbation.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/LSPerturbation.lean), [`LSQRSolve.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/LSQRSolve.lean) | `higham20_theorem20_1_solution_and_residualRelativeRHS_le_of_one_rhs_budget`; `theorem20_2_relative_bounds_of_minimizers_full_column_rank_of_componentwise_perturbation` |
+| Theorems 20.3-20.4 and one-step refinement | [`Higham20Theorem20_3.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Theorem20_3.lean), [`LSQRSolve.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/LSQRSolve.lean), [`Higham20Refinement.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Refinement.lean) | `Theorem20_3.householder_qr_fl_backSub_backward_error`; `LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_theorem20_4_source_fullRank_computed_nonbreakdown_total_perturbations` (actual totals with unabsorbed triangular terms); `higham20_eq20_16_actual_householderQR_one_refinement_finite` (the latter two remain partial at printed strength) |
+| Theorem 20.5 and Lemma 20.6 | [`LSQRSolve.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/LSQRSolve.lean), [`Higham20SourceAliases.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20SourceAliases.lean) | `theorem20_5_wks_finite_formula_and_eigenvalue`; `theorem20_5_wks_formula_eigenvalue_and_matrixOnly_limit`; `higham20_lemma20_6_exists_symmetric_perturbation_minimizer_and_norm_bounds` |
+| Theorem 20.7 literal runtime certificate and printed-policy boundary | [`Higham20Theorem20_7Runtime.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Theorem20_7Runtime.lean), [`Higham20Theorem20_7Contract.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Theorem20_7Contract.lean) | `Theorem20_7.fl_pivotedStoredQR_returnedX_exactMinimizer_of_runtime`; `Theorem20_7.pivotedStoredQRTopR_abs_le_printedAlphaScale`; `Theorem20_7.PivotedStoredQRCoxHighamRowPolicy.of_trace_core` (printed producer remains partial) |
+| Theorems 20.8-20.9, equality-constrained least squares and GQR | [`LSE.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/LSE.lean), [`Higham20Theorem20_8.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Theorem20_8.lean) | `Theorem20_8.source_facing_firstOrder_plus_eps_sq_of_finalSmallnessThreshold`; `GeneralizedQRFactorization.exists_theorem20_9_exact_householder` |
+| Theorem 20.10, concrete rounded Householder GQR | [`Higham20Theorem20_10.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Theorem20_10.lean) | Positive blocks: `Theorem20_10.computedX_partA_mixed_stability`, `...partB_backward_error`; empty constraints: `...computedX_emptyConstraints_partA_mixed_stability`, `...partB_backward_error`; full constraints: `...computedX_fullConstraints_partA_mixed_stability`, `...partB_backward_error` |
+| Equation (20.19), Problem/Appendix 20.7 | [`Higham20Equations.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Equations.lean) | `higham20_problem20_7_scaled_augmented_condition_extremum` (full strict-tall extremum); `higham20_problem20_7_square_scalar_branch_discrepancy` (square-case source discrepancy) |
+| Elimination method / (20.29)-(20.30) | [`Higham20EliminationActual.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20EliminationActual.lean) | `Higham20EliminationActual.lseEliminationActualReducedSolution_is_reduced_minimizer`; `Higham20EliminationActual.lseEliminationActualReturnedSolution_isLSEMinimizer` |
+| Lemmas 20.11-20.12, arbitrary equal-rank Wedin endpoints | [`Higham20Lemma20_11.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Lemma20_11.lean), [`Higham20Lemma20_12.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Lemma20_12.lean) | `higham20_lemma20_11_equalRank_pseudoinverse_op2_le`; `higham20_lemma20_12_equalRank_moorePenrose` |
+
+The Theorem 20.3, 20.4, 20.7, 20.8, and 20.10 implementation endpoints expose
+their nonbreakdown or smallness domains. The Chapter 20 core gate is `FAIL`:
+Theorem 20.4's total perturbations, Theorem 20.7's printed Cox--Higham
+row-local producer, the MGS `c3*u` constant, and the other report-listed rows
+remain open at source strength.
+
 ## Higham Chapter 18: Matrix Powers
 
 This section is a human-readable companion to `examples/LibraryLookup.lean`

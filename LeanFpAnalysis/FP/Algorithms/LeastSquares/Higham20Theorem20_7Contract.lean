@@ -123,6 +123,20 @@ theorem pivotedStoredQRPrintedAlphaScale_nonneg
   exact Wave18D.rowInftyGrowthFactor_nonneg
     (fl_pivotedStoredQRMatrixSeq fp hmn A) n i j0
 
+/-- The final leading factor already satisfies the literal printed-alpha row
+bound: its entries are entries of the last state included in the defining
+finite trace maximum.  Thus this part of the Cox--Higham row policy is data,
+not an additional numerical hypothesis. -/
+theorem pivotedStoredQRTopR_abs_le_printedAlphaScale
+    (fp : FPModel) {m n : ℕ} (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (i j : Fin n) :
+    |pivotedStoredQRTopR fp hmn A i j| ≤
+      pivotedStoredQRPrintedAlphaScale fp hmn A
+        ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ := by
+  exact Wave18D.abs_entry_le_rowInftyGrowthFactor
+    (fl_pivotedStoredQRMatrixSeq fp hmn A) n
+    ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ n le_rfl j
+
 theorem pivotedStoredQRRhsRowGrowthScale_nonneg
     (fp : FPModel) {m n : ℕ} (hmn : n ≤ m)
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (i : Fin m) :
@@ -282,6 +296,37 @@ structure PivotedStoredQRCoxHighamRowPolicy (fp : FPModel) {m n : ℕ}
           (fun i => rectTopBlock (m := m)
             (pivotedStoredQRTopR fp hmn A) i j)) ≤
       |pivotedStoredQRSigma fp hmn A k|
+
+/-- Build the primitive row policy from its genuinely numerical trace
+obligations.  The final-`R` row bound is discharged internally from the
+definition of the printed alpha scale. -/
+theorem PivotedStoredQRCoxHighamRowPolicy.of_trace_core
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ)
+    (hsigma : ∀ k, k < n → 0 < |pivotedStoredQRSigma fp hmn A k|)
+    (hraw : ∀ k, k < n → ∀ i,
+      |pivotedStoredQRRawVector fp hmn A k i| ≤
+        2 * pivotedStoredQRPrintedAlphaScale fp hmn A i)
+    (hprefix : ∀ k, k < n → ∀ i,
+      |Wave19.applyProd
+          (fun q => householder m
+            (pivotedStoredQRRawVector fp hmn A q)
+            (pivotedStoredQRBeta fp hmn A q)) 0 k
+          (pivotedStoredQRRawVector fp hmn A k) i| ≤
+        (1 + 4 * (k : ℝ)) * 2 *
+          pivotedStoredQRPrintedAlphaScale fp hmn A i)
+    (htail : ∀ k (hk : k < n) (j : Fin n),
+      vecNorm2
+          (householderTrailingPart m (pivotedQRActiveRow hmn k hk)
+            (fun i => rectTopBlock (m := m)
+              (pivotedStoredQRTopR fp hmn A) i j)) ≤
+        |pivotedStoredQRSigma fp hmn A k|) :
+    PivotedStoredQRCoxHighamRowPolicy fp hn hmn A where
+  sigma_pos := hsigma
+  raw_vector_row := hraw
+  prefix_vector_row := hprefix
+  topR_row := pivotedStoredQRTopR_abs_le_printedAlphaScale fp hmn A
+  topR_tail := htail
 
 /-- Optional source-row caps supplied by a common row-sorting/growth policy.
 They convert the exact printed forward numerators into the initial-data form;
