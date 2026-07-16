@@ -434,6 +434,9 @@
     source-facing first-order residual specs
   - higham13_conventional_matmul_spec_c1_maxEntry:
     conventional matrix multiplication satisfies (13.4) with c₁(m,n,p)=n²
+  - higham13_conventional_subtraction_spec_maxEntry:
+    conventional entrywise subtraction satisfies the Chapter 13 subtraction
+    residual model in the max-entry norm
   - higham13_conventional_backSub_spec_c2_maxEntry,
     higham13_conventional_forwardSub_spec_c2_maxEntry:
     conventional triangular substitution satisfies (13.5) with c₂(m,p)=m²
@@ -452,6 +455,7 @@
     dhs_block_back_substitution_firstOrder_from_rows_spec_of_coeff_bounds,
     dhs_block_back_substitution_rows_spec_from_fixed_block_rows_and_eq13_15,
     dhs_block_back_substitution_firstOrder_from_fixed_block_rows_and_eq13_15_of_coeff_bounds,
+    dhs_two_block_back_rhs_perturbation_from_matmul_subtraction_specs,
     dhs_block_back_substitution_firstOrder_from_conventional_backSub_single_rhs,
     dhs_cross_product_firstOrder_of_componentwise_backward,
     dhs_block_forward_back_substitution_firstOrder_from_conventional_single_rhs,
@@ -553,6 +557,7 @@
     maxEntryNormRect_eq_maxEntryNorm,
     growthFactorEntry_mul_maxEntryNormRect_eq_maxEntryNorm,
     maxEntryNormRect_le_maxEntryNorm_of_reindex_eq,
+    higham13_maxNorm_vecResidual_lift,
     one_le_dim_mul_maxEntryNormRect_mul_of_isRightInverse,
     maxEntryNorm_le_growthFactorEntry_mul_of_le_maxEntryNorm,
     growthFactorEntry_le_of_maxEntryNorm_le_mul,
@@ -1727,6 +1732,60 @@ lemma maxEntryNormRect_le_of_entry_abs_le {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
   intro j _hj
   exact hEntry i j
 
+/-- Max-norm residual lifting used by the DHS block-back-substitution proof.
+
+    If a vector residual `f` is at most `eta * ‖x‖∞`, it can be represented as
+    `F x` by a rank-one coefficient perturbation with
+    `‖F‖max <= eta`.  The proof places the residual in a column where `x`
+    attains its infinity norm.  This is the dimension-free bridge specific to
+    the max-entry/max-vector norm pairing in the source analysis. -/
+theorem higham13_maxNorm_vecResidual_lift {m k : ℕ}
+    (hm : 0 < m) (hk : 0 < k)
+    (x : Fin k → ℝ) (f : Fin m → ℝ) (eta : ℝ)
+    (heta : 0 ≤ eta)
+    (hres : infNormVec f ≤ eta * infNormVec x) :
+    ∃ F : Matrix (Fin m) (Fin k) ℝ,
+      Matrix.mulVec F x = f ∧ maxEntryNormRect hm hk F ≤ eta := by
+  by_cases hxzero : infNormVec x = 0
+  · have hfnorm : infNormVec f = 0 := by
+      apply le_antisymm
+      · calc
+          infNormVec f ≤ eta * infNormVec x := hres
+          _ = 0 := by rw [hxzero, mul_zero]
+      · exact infNormVec_nonneg f
+    have hfzero : f = 0 := by
+      funext i
+      apply abs_eq_zero.mp
+      apply le_antisymm
+      · simpa [hfnorm] using abs_le_infNormVec f i
+      · exact abs_nonneg (f i)
+    refine ⟨0, ?_, ?_⟩
+    · simp [hfzero]
+    · exact le_trans
+        (maxEntryNormRect_le_of_entry_abs_le hm hk 0 0 (by simp)) heta
+  · have hxpos : 0 < infNormVec x :=
+      lt_of_le_of_ne (infNormVec_nonneg x) (Ne.symm hxzero)
+    obtain ⟨j0, hj0⟩ := infNormVec_exists_abs_eq hk x
+    have hxj0 : x j0 ≠ 0 := by
+      intro hx
+      rw [hx, abs_zero] at hj0
+      linarith
+    let F : Matrix (Fin m) (Fin k) ℝ := fun i j =>
+      if j = j0 then f i / x j0 else 0
+    refine ⟨F, ?_, ?_⟩
+    · ext i
+      simp [Matrix.mulVec, dotProduct, F, hxj0]
+    · apply maxEntryNormRect_le_of_entry_abs_le
+      intro i j
+      by_cases hj : j = j0
+      · subst j
+        have hfi : |f i| ≤ eta * infNormVec x :=
+          le_trans (abs_le_infNormVec f i) hres
+        simp only [F, if_pos, abs_div]
+        rw [← hj0]
+        exact (div_le_iff₀ hxpos).2 (by simpa [hj0] using hfi)
+      · simp [F, hj, heta]
+
 /-- Triangle inequality for the Chapter 13 block max norm under subtraction. -/
 lemma maxEntryNorm_sub_le {r : ℕ} (hr : 0 < r)
     (A B : Matrix (Fin r) (Fin r) ℝ) :
@@ -2443,6 +2502,64 @@ lemma FirstOrderLe.of_gamma_sq_dim_mul (fp : FPModel) (d : ℕ)
         unfold gamma
         field_simp [hden_ne]
         ring
+
+/-- One rounded subtraction has an absolute error bounded by unit roundoff
+    times the sum of the input magnitudes. -/
+theorem higham13_fl_sub_error_le_abs_add_abs (fp : FPModel) (x y : ℝ) :
+    |fp.fl_sub x y - (x - y)| ≤ fp.u * (|x| + |y|) := by
+  obtain ⟨delta, hdelta, hfl⟩ := fp.model_sub x y
+  rw [hfl]
+  have hdiff :
+      (x - y) * (1 + delta) - (x - y) = (x - y) * delta := by ring
+  rw [hdiff, abs_mul]
+  have hsub : |x - y| ≤ |x| + |y| := by
+    simpa [sub_eq_add_neg, abs_neg] using abs_sub_le x 0 y
+  calc
+    |x - y| * |delta| ≤ (|x| + |y|) * fp.u :=
+      mul_le_mul hsub hdelta (abs_nonneg _)
+        (add_nonneg (abs_nonneg _) (abs_nonneg _))
+    _ = fp.u * (|x| + |y|) := by ring
+
+/-- Entrywise rounded matrix subtraction used by the concrete Chapter 13
+    subtraction model. -/
+noncomputable def higham13_fl_matrixSub (fp : FPModel) {m p : ℕ}
+    (A B : Matrix (Fin m) (Fin p) ℝ) : Matrix (Fin m) (Fin p) ℝ :=
+  fun i j => fp.fl_sub (A i j) (B i j)
+
+/-- Residual of entrywise rounded matrix subtraction. -/
+noncomputable def higham13_fl_matrixSubError (fp : FPModel) {m p : ℕ}
+    (A B : Matrix (Fin m) (Fin p) ℝ) : Matrix (Fin m) (Fin p) ℝ :=
+  fun i j => higham13_fl_matrixSub fp A B i j - (A i j - B i j)
+
+/-- Concrete max-entry instance of the Chapter 13 subtraction residual model.
+
+    This supplies the ordinary rounded subtraction step needed, together with
+    equation (13.4), when forming a block-back-substitution right-hand side. -/
+theorem higham13_conventional_subtraction_spec_maxEntry {m p : ℕ}
+    (fp : FPModel) (hm : 0 < m) (hp : 0 < p)
+    (A B : Matrix (Fin m) (Fin p) ℝ) :
+    SubtractionFirstOrderSpec fp.u
+      (maxEntryNormRect hm hp A) (maxEntryNormRect hm hp B)
+      (maxEntryNormRect hm hp (higham13_fl_matrixSubError fp A B))
+      A B (higham13_fl_matrixSubError fp A B)
+      (higham13_fl_matrixSub fp A B) := by
+  refine ⟨?_, ?_⟩
+  · ext i j
+    simp only [higham13_fl_matrixSub, higham13_fl_matrixSubError,
+      Matrix.sub_apply, Matrix.add_apply]
+    ring
+  · apply maxEntryNormRect_le_of_entry_abs_le
+    intro i j
+    calc
+      |higham13_fl_matrixSubError fp A B i j| ≤
+          fp.u * (|A i j| + |B i j|) := by
+        simpa [higham13_fl_matrixSubError, higham13_fl_matrixSub] using
+          higham13_fl_sub_error_le_abs_add_abs fp (A i j) (B i j)
+      _ ≤ fp.u *
+          (maxEntryNormRect hm hp A + maxEntryNormRect hm hp B) := by
+        exact mul_le_mul_of_nonneg_left
+          (add_le_add (entry_le_maxEntryNormRect hm hp A i j)
+            (entry_le_maxEntryNormRect hm hp B i j)) fp.u_nonneg
 
 /-- Higham, 2nd ed., Chapter 13, p.248: the conventional matrix product
     satisfies the first-order norm bound in (13.4) with
@@ -8652,6 +8769,64 @@ theorem
     (dhs_block_back_substitution_rows_spec_from_fixed_block_rows_and_eq13_15
       hr u c₅ cRows normU rowPerturbBound normUii
       Uhat DeltaU Xhat Yhat Dhat hRows)
+
+/-- DHS two-block back-substitution RHS perturbation from the Chapter 13
+    product and subtraction models.
+
+    For one right-hand side, the product residual `DeltaC` and subtraction
+    residual `Fsub` combine as `DeltaC - Fsub`.  The max-norm residual-lifting
+    lemma turns that vector into an off-diagonal coefficient perturbation
+    `DeltaU12`, giving the source equation
+    `Dhat + (U12 + DeltaU12) X2 = Y1`.  The explicit residual-scale premise is
+    the remaining numerical comparison needed to bound this coefficient
+    perturbation; no exact row equation is assumed. -/
+theorem dhs_two_block_back_rhs_perturbation_from_matmul_subtraction_specs
+    {r : ℕ}
+    (hr : 0 < r)
+    (u cMul normU12 normX2 normY1 normChat eta : ℝ)
+    (U12 : Matrix (Fin r) (Fin r) ℝ)
+    (X2 Chat DeltaC Y1 Fsub Dhat : Matrix (Fin r) (Fin 1) ℝ)
+    (heta : 0 ≤ eta)
+    (hMul : MatMulFirstOrderSpec u cMul normU12 normX2
+      (maxEntryNormRect hr (Nat.succ_pos 0) DeltaC)
+      U12 X2 Chat DeltaC)
+    (hSub : SubtractionFirstOrderSpec u normY1 normChat
+      (maxEntryNormRect hr (Nat.succ_pos 0) Fsub)
+      Y1 Chat Fsub Dhat)
+    (hResidualScale :
+      maxEntryNormRect hr (Nat.succ_pos 0) DeltaC +
+          maxEntryNormRect hr (Nat.succ_pos 0) Fsub ≤
+        eta * infNormVec (fun t : Fin r => X2 t 0)) :
+    ∃ DeltaU12 : Matrix (Fin r) (Fin r) ℝ,
+      Dhat + (U12 + DeltaU12) * X2 = Y1 ∧
+      maxEntryNormRect hr hr DeltaU12 ≤ eta := by
+  let residual : Fin r → ℝ := fun s => DeltaC s 0 - Fsub s 0
+  have hResidualNorm : infNormVec residual ≤
+      eta * infNormVec (fun t : Fin r => X2 t 0) := by
+    apply infNormVec_le_of_abs_le
+    · intro s
+      calc
+        |residual s| ≤ |DeltaC s 0| + |Fsub s 0| := by
+          simpa [sub_eq_add_neg, abs_neg] using
+            abs_sub_le (DeltaC s 0) 0 (Fsub s 0)
+        _ ≤ maxEntryNormRect hr (Nat.succ_pos 0) DeltaC +
+            maxEntryNormRect hr (Nat.succ_pos 0) Fsub :=
+          add_le_add
+            (entry_le_maxEntryNormRect hr (Nat.succ_pos 0) DeltaC s 0)
+            (entry_le_maxEntryNormRect hr (Nat.succ_pos 0) Fsub s 0)
+        _ ≤ eta * infNormVec (fun t : Fin r => X2 t 0) := hResidualScale
+    · exact mul_nonneg heta (infNormVec_nonneg _)
+  obtain ⟨DeltaU12, hDeltaMul, hDeltaNorm⟩ :=
+    higham13_maxNorm_vecResidual_lift hr hr
+      (fun t : Fin r => X2 t 0) residual eta heta hResidualNorm
+  have hDeltaMatrix : DeltaU12 * X2 = DeltaC - Fsub := by
+    ext s k
+    fin_cases k
+    simpa [Matrix.mul_apply, Matrix.mulVec, dotProduct, residual] using
+      congrFun hDeltaMul s
+  refine ⟨DeltaU12, ?_, hDeltaNorm⟩
+  rw [hSub.equation, Matrix.add_mul, hMul.equation, hDeltaMatrix]
+  abel
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch for
     the conventional flattened algorithm and one right-hand side.
