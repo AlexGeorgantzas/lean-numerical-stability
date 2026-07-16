@@ -2,17 +2,19 @@
 
 ## Gate
 
-The Chapter 20 core selected-scope gate is **PASS (EXPLICIT-DOMAIN)** as of
-2026-07-16. Every selected row is terminal. Implementation-facing results make
-their local rounded-trace budgets and nonbreakdown assumptions visible; these
-are not asserted for an arbitrary bare `FPModel`.
+The Chapter 20 core selected-scope gate is **FAIL** as of 2026-07-16. The
+named implementation-facing Theorem 20.7 result makes its local rounded-trace
+budgets and nonbreakdown assumptions visible, but selected precise prose row
+27 on p. 395 remains open.
 
 The authoritative row-by-row accounting is
 `docs/chapter20/CHAPTER20_SOURCE_INVENTORY.md`.
 
 ## Open selected-scope rows
 
-None.
+| Source row | Status | Exact missing dependency | Smallest next theorem |
+|---|---|---|---|
+| p. 395 / PDF 15: row sorting gives `max_i {alpha_i, beta_i} <= sqrt(m) (1 + sqrt(2))^(n-1)` and `phi` is independent of row ordering | PARTIAL / OPEN SELECTED | `PivotedStoredQRCoxHighamRowSortingCaps` assumes `alpha_row_sorted`, `beta_row_sorted`, and `rowSortCoeff_le_printed`; no actual row-pivoting/sorting trace produces them. No local theorem proves invariance of the printed `phi` for the same reordering. | Define the executable row-order policy and prove its Cox-Higham stage-growth invariant. Derive both normalized ratio bounds and the printed common coefficient, then prove that simultaneous row reordering transports the active-tail numerator and denominator defining `phi` without changing their maximum ratio. |
 
 ## Audited source boundaries that do not fail the gate
 
@@ -52,15 +54,16 @@ None.
   triangular-solve perturbations, normalizing their summed nonnegative witness
   once, and proving the printed matrix/RHS envelopes with an explicit
   dimension-only `gammaTilde`.
-- `fl_pivotedStoredQR_returnedX_pivotPosition_of_roundedCoxHigham` closes
-  Theorem 20.7 for the literal pivoted stored-QR, paired RHS, and actual
+- `fl_pivotedStoredQR_returnedX_pivotPosition_of_roundedCoxHigham` closes the
+  named Theorem 20.7 endpoint for the literal pivoted stored-QR, paired RHS, and actual
   `fl_backSub` trace on explicit forward-row/component-budget and nonbreakdown
   conditions. It constructs the numerical contract internally, proves the
   exact perturbed minimizer, retains the pivot-position `(j+1)^2` factor with
   matrix coefficient `16 gammaTilde`, and proves the RHS coefficient
   `5 gammaTilde`. `roundedPolicy_exact_one_nonempty` gives a concrete nonempty
   instance. The old `topR_tail` counterexample remains as documentation of the
-  route that was rejected.
+  route that was rejected. It does **not** close the separate p. 395
+  row-sorting-cap and `phi`-invariance prose row.
 - `GeneralizedQRFactorization.exists_theorem20_9_exact_householder` proves
   unconditional Theorem 20.9 existence for arbitrary source dimensions
   `m + p >= n >= p`; rank assumptions are used only for the theorem's separate
@@ -112,5 +115,7 @@ None.
   algorithm.
 - A conditional transfer theorem remains `PARTIAL` whenever its assumptions
   merely restate an accumulated perturbation, minimizer, or target bound. The
-  corrected Theorem 20.7 producer instead assumes local trace-operation budgets
-  and constructs the accumulated perturbations and minimizer conclusion.
+  corrected named Theorem 20.7 producer constructs its accumulated
+  perturbations and minimizer conclusion from local trace-operation budgets,
+  but `PivotedStoredQRCoxHighamRowSortingCaps` still assumes the separate
+  row-sorting targets and therefore cannot close prose row 27.

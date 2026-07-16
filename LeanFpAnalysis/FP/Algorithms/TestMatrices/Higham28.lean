@@ -398,7 +398,7 @@ matrix.  In an inverse entry `(i,j)`, `i` indexes the `y` nodes and `j` the
 `x` nodes. -/
 noncomputable def cauchyInverseEntry
     (n : ℕ) (x y : RVec n) (i j : Fin n) : ℝ :=
-  ((∏ k : Fin n, (x j + y k)) * (∏ k : Fin n, (x k + y i))) /
+  (∏ k : Fin n, (x j + y k) * (x k + y i)) /
     ((x j + y i) *
       (∏ k ∈ Finset.univ.erase j, (x j - x k)) *
       (∏ k ∈ Finset.univ.erase i, (y i - y k)))
@@ -769,6 +769,61 @@ theorem pascalMatrix_mul_signedGram (n : ℕ) :
 theorem signedGram_mul_pascalMatrix (n : ℕ) :
     ((signedPascal n).transpose * signedPascal n) * pascalMatrix n = 1 := by
   exact mul_eq_one_comm.mp (pascalMatrix_mul_signedGram n)
+
+/-- Higham, 2nd ed., Section 28.4, p. 520: Cohen's printed entry formula for
+the inverse of the symmetric Pascal matrix, on its stated lower-triangular
+range `i ≥ j`.  Together with `pascalMatrix_mul_signedGram`, the left-hand
+side is the `(i,j)` entry of `Pₙ⁻¹`. -/
+theorem pascalInverseFormula_apply_of_le {n : ℕ} (i j : Fin n) (hji : j ≤ i) :
+    ((signedPascal n).transpose * signedPascal n) i j =
+      (-1 : ℝ) ^ (i.val - j.val) *
+        ∑ k ∈ Finset.range (n - i.val),
+          (Nat.choose (i.val + k) k : ℝ) *
+            Nat.choose (i.val + k) (i.val + k - j.val) := by
+  rw [Matrix.mul_apply]
+  simp only [Matrix.transpose_apply, signedPascal]
+  rw [Fin.sum_univ_eq_sum_range
+    (fun k : ℕ =>
+      ((-1 : ℝ) ^ i.val * Nat.choose k i.val) *
+        ((-1 : ℝ) ^ j.val * Nat.choose k j.val)) n]
+  have hsplit := Finset.sum_range_add_sum_Ico
+    (fun k : ℕ =>
+      ((-1 : ℝ) ^ i.val * Nat.choose k i.val) *
+        ((-1 : ℝ) ^ j.val * Nat.choose k j.val))
+    (Nat.le_of_lt i.isLt)
+  have hlow :
+      (∑ k ∈ Finset.range i.val,
+        ((-1 : ℝ) ^ i.val * Nat.choose k i.val) *
+          ((-1 : ℝ) ^ j.val * Nat.choose k j.val)) = 0 := by
+    apply Finset.sum_eq_zero
+    intro k hk
+    have hki : k < i.val := Finset.mem_range.mp hk
+    simp [Nat.choose_eq_zero_of_lt hki]
+  rw [← hsplit, hlow, zero_add, Finset.sum_Ico_eq_sum_range]
+  rw [Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro k hk
+  have hjk : j.val ≤ i.val + k := by omega
+  have hsign : (-1 : ℝ) ^ i.val * (-1 : ℝ) ^ j.val =
+      (-1 : ℝ) ^ (i.val - j.val) := by
+    calc
+      (-1 : ℝ) ^ i.val * (-1 : ℝ) ^ j.val =
+          (-1 : ℝ) ^ (i.val - j.val + j.val) * (-1 : ℝ) ^ j.val := by
+            rw [Nat.sub_add_cancel hji]
+      _ = ((-1 : ℝ) ^ (i.val - j.val) * (-1 : ℝ) ^ j.val) *
+          (-1 : ℝ) ^ j.val := by rw [pow_add]
+      _ = (-1 : ℝ) ^ (i.val - j.val) := by
+        calc
+          ((-1 : ℝ) ^ (i.val - j.val) * (-1 : ℝ) ^ j.val) *
+              (-1 : ℝ) ^ j.val =
+            (-1 : ℝ) ^ (i.val - j.val) *
+              (((-1 : ℝ) ^ j.val) * (-1 : ℝ) ^ j.val) := by ring
+          _ = (-1 : ℝ) ^ (i.val - j.val) := by
+            simp [← mul_pow]
+  rw [Nat.choose_symm_add (a := i.val) (b := k)]
+  rw [← Nat.choose_symm hjk]
+  rw [← hsign]
+  ring
 
 /-- Higham, 2nd ed., Section 28.5, p. 521: the tridiagonal Toeplitz matrix
 `T_n(c,d,e)`. -/

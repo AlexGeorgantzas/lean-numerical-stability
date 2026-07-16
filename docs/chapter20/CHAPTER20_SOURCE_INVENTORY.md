@@ -27,14 +27,14 @@
 - `GAP`: no adequate local theorem was identified.
 - `EXCLUDED` / `DEFERRED`: the row is accounted for but intentionally outside selected core scope for the stated stable reason.
 
-The Chapter 20 core selected-scope gate is **PASS (EXPLICIT-DOMAIN)**. Every
-selected row is terminal. Theorem 20.7 is now closed on a visible rounded-trace
-domain: the literal pivoted stored-QR, paired RHS, and `fl_backSub` execution
-produces its numerical contract from forward-row and compact-operation budgets,
-retains the printed pivot-position `(j+1)^2` factor, and returns the exact
-perturbed least-squares minimizer. The former exact-final-tail policy remains
-formally refuted by `sigmaCounter_no_coxHighamRowPolicy`; that counterexample
-documents the rejected route rather than an open obligation.
+The Chapter 20 core selected-scope gate is **FAIL**. The named Theorem 20.7
+rounded-trace endpoint is proved on its visible execution domain, but precise
+prose row 27 on p. 395 is still open: the row-sorting cap on the printed
+`alpha_i` and `beta_i` ratios and row-order invariance of `phi` have not been
+derived. `PivotedStoredQRCoxHighamRowSortingCaps` assumes the two target caps
+through `alpha_row_sorted` and `beta_row_sorted` and separately assumes the
+printed coefficient bound through `rowSortCoeff_le_printed`; it is a transfer
+contract, not the missing row-sorting/growth producer.
 
 ## Named Results
 
@@ -124,7 +124,7 @@ documents the rejected route rather than an open obligation.
 | 24 | Theorem 20.5 piecewise eigenvalue expression, including `lambda_*`, `mu`, and branch condition | p. 393 / PDF 13 | Exact | Stated with theorem | FORMALIZE_CORE / CORE-PRECISE-PROSE | Eigenvalue-formula RHS and WKS equality theorems in `LSQRSolve.lean`; **PASS**. |
 | 25 | `theta -> infinity` forces `Delta b=0`; `b notin range(A), mu != 0` implies `lambda_* < 0` | p. 393 / PDF 13 | Exact quantitative prose | Brief argument/interpretation | FORMALIZE_CORE / CORE-PRECISE-PROSE | The matrix-only limit is proved; `higham20_lambdaStar_neg_of_b_not_mem_range` uses the exact LS residual as the nonzero left-null separator to prove the source `b notin range(A), mu != 0` implication. **PASS**. |
 | 26 | Lemma 20.6 stronger norm bound `||Delta A||_p <= sqrt(||Delta A_1||_p^2+||Delta A_2||_p^2)` for `p=2,F` | p. 394 / PDF 14 | Exact | Follows from orthogonal projectors | FORMALIZE_CORE / CORE-PRECISE-PROSE | `lsLemma20_6Perturbation_norm_bound_two_frob` and `_operator`; **PASS**. |
-| 27 | Row sorting gives `max_i{alpha_i,beta_i} <= sqrt(m)(1+sqrt(2))^(n-1)`; `phi` is row-order invariant | p. 395 / PDF 15 | Exact | Consequence of Chapter 19 row-growth estimates | FORMALIZE_CORE / CORE-PRECISE-PROSE | `PivotedStoredQRCoxHighamRowSortingCaps` exposes the correct conditional shape, but the rounded-algorithm row-policy/component-budget producer is still assumed. The conservative runtime contract proves a different scale. **PARTIAL**. |
+| 27 | Row sorting gives `max_i{alpha_i,beta_i} <= sqrt(m)(1+sqrt(2))^(n-1)`; `phi` is row-order invariant | p. 395 / PDF 15 | Exact | Consequence of Chapter 19 row-growth estimates | FORMALIZE_CORE / CORE-PRECISE-PROSE | `PivotedStoredQRCoxHighamRowSortingCaps` exposes only a conditional transfer shape: `alpha_row_sorted` and `beta_row_sorted` assume the desired normalized bounds, while `rowSortCoeff_le_printed` assumes the final coefficient cap. No theorem produces these fields from an actual row-pivoting or row-sorting trace, and no theorem proves invariance of the printed `phi` under the corresponding row reordering. **PARTIAL / OPEN SELECTED ROW**. |
 | 28 | Exact triangular GQR solution method: solve `S y1=d`, then `L22 y2=c2-L21 y1`, recover `x=Qy` | p. 398 / PDF 18 | Exact algorithm | Derived immediately from (20.27) | FORMALIZE_CORE / CORE-PRECISE-PROSE | Exact constructed `GeneralizedQRFactorization` method/unique-coordinate theorems; **PASS**. |
 | 29 | Elimination method: pivoted QR of `B`, back solve for `x1`, reduced QR least-squares solve | p. 399 / PDF 19 | Exact algorithm | Derived in prose around (20.29)-(20.30) | FORMALIZE_CORE / CORE-PRECISE-PROSE | `Higham20EliminationActual.lean` constructs both exact pivoted QR factorizations, both triangular solves, the reduced returned vector, and the final original-coordinate vector. `Higham20EliminationActual.lseEliminationActualReturnedSolution_isLSEMinimizer` proves the latter is an LSE minimizer under the printed dimension/rank assumptions, with no supplied reduced minimizer. **PASS**. |
 | 30 | Wedin theorem extends without `m >= n` and full rank if pseudoinverse solutions are used and ranks agree | p. 402 / PDF 22 | Exact stronger generality statement | Citation to Wedin; no chapter proof | FORMALIZE_CORE / CORE-PRECISE-PROSE | `higham20_wedin_pseudoinverse_difference_decomposition` proves the exact three-term MP identity. `higham20_general_rank_unchanged_theorem20_1_source_discrepancy` then gives a fully rational equal-rank `3`-by-`3` counterexample satisfying all printed perturbation budgets and `kappa epsilon < 1` while strictly reversing the printed (20.1) extension. **PASS / SOURCE DISCREPANCY**: the stronger p.402 sentence is false as stated; it is not retained as an open proof obligation. |
@@ -204,9 +204,10 @@ documents the rejected route rather than an open obligation.
 
 ## Gate Summary
 
-The Chapter 20 core selected-scope gate is **PASS (EXPLICIT-DOMAIN)**. All
-selected rows are terminal, including Theorems 20.4 and 20.7. The latter makes
-its local rounded-trace budgets and nonbreakdown assumptions visible and does
-not claim that they follow from an arbitrary bare `FPModel`. Deferred
-underspecified statements and properly classified empirical outputs remain
-outside the core gate.
+The Chapter 20 core selected-scope gate is **FAIL**. Named Theorems 20.4 and
+20.7 are terminal at their stated source-facing/explicit execution domains,
+but precise selected prose row 27 is not. Closing it requires an actual
+row-pivoting or row-sorting producer for the printed `alpha_i`/`beta_i` cap and
+a proof of `phi` invariance under that row ordering. Deferred underspecified
+statements and properly classified empirical outputs remain outside the core
+gate and are not the reason for failure.
