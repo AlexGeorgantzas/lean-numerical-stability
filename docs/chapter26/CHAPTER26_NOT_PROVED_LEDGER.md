@@ -1,8 +1,12 @@
 # Chapter 26 Not-Proved Ledger
 
-No selected Chapter 26 row remains open. The finite-real outward-directed
-rounding producer and all four containment theorems are now verified. The rows
-below remain deferred or optional under the source-selection policy.
+No selected Chapter 26 row remains open. The general MDS simplex transition is
+encoded through exact reflection, expansion, contraction/retry, finite maximum
+selection, best-vertex reordering, and finite execution traces. It assumes no
+global/local optimizer, stationarity theorem, convergence, or termination.
+The finite-real outward-directed rounding producer and all four containment
+theorems are also verified. The rows below remain deferred or optional under
+the source-selection policy.
 
 | Source location | Claim | Status | Why current Lean does not close it | Needed foundation |
 |---|---|---|---|---|

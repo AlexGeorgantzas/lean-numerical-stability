@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: QED
 -/
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28Exact
+import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28Stewart
 import Mathlib.Probability.Distributions.Gaussian.Real
 import Mathlib.MeasureTheory.Constructions.Pi
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
@@ -27,7 +28,7 @@ noncomputable def realGinibreMeasure (n : ℕ) : Measure (RSqMat n) :=
   Measure.pi (fun _ : Fin n => Measure.pi (fun _ : Fin n => gaussianReal 0 1))
 
 noncomputable def realEigenvalueCount (n : ℕ) (A : RSqMat n) : ℕ :=
-  Fintype.card ((Matrix.charpoly A).rootSet ℝ)
+  (Matrix.charpoly A).roots.card
 
 noncomputable def expectedRealEigenvalueCount (n : ℕ) : ℝ :=
   ∫ A : RSqMat n, (realEigenvalueCount n A : ℝ) ∂realGinibreMeasure n
@@ -57,7 +58,7 @@ def UniformPositivePerronAlmostSure : Prop :=
     uniformUnitIntervalMatrixMeasure n
       (strictlyPositiveMatrixSet n ∩ positiveDominantEigenvalueSet n) = 1
 
-/-! ## Explicit-domain probability transfers -/
+/-! ## Explicit-domain probability transfers and compatibility predicates -/
 
 /-- The standard real-Ginibre product law is normalized.  This is the
 nonvacuity check for the probability space used by the expectation transfer
@@ -127,11 +128,12 @@ theorem uniformPositivePerronAlmostSure_of_boundary_null_of_perron
       exact ⟨hA, hperron A hA⟩
   rw [hset, hpositive n hn]
 
-/-- A law on square real matrices has the normalized orthogonal Haar
-characterization used in Stewart's Theorem 28.1 when it has unit mass, is
-supported on orthogonal matrices, and is invariant under every orthogonal
-left multiplication.  The invariance premise is deliberately stated on
-measurable sets so that it can be produced by a push-forward proof. -/
+/-- An ambient-matrix compatibility predicate for a normalized orthogonally
+supported, left-invariant law.  This is useful as a transfer surface, but is
+not Mathlib's group-level `Measure.IsHaarMeasure` endpoint and does not by
+itself prove Stewart's Theorem 28.1.  The exact source push-forward and exact
+group-level endpoint are `stewartOrthogonalGroupLaw` and
+`StewartTheorem28_1HaarConclusion`. -/
 def IsNormalizedOrthogonalHaarLaw (n : ℕ) (mu : Measure (RSqMat n)) : Prop :=
   mu Set.univ = 1 ∧
     mu {Q | IsOrthogonal n Q} = 1 ∧
@@ -139,10 +141,10 @@ def IsNormalizedOrthogonalHaarLaw (n : ℕ) (mu : Measure (RSqMat n)) : Prop :=
       ∀ s : Set (RSqMat n), MeasurableSet s →
         mu ((fun Q => U * Q) ⁻¹' s) = mu s
 
-/-- Theorem 28.1's Haar conclusion follows from the three genuine upstream
-push-forward facts: normalization, orthogonal support, and left invariance.
-This is an explicit-domain uniqueness contract, not an assumption of the
-named Haar conclusion. -/
+/-- Constructor for the ambient compatibility predicate from its three
+fields.  This is a packaging lemma only: callers must still produce
+normalization, orthogonal support, and left invariance, and the theorem does
+not identify Stewart's Gaussian push-forward with group Haar measure. -/
 theorem stewartLaw_isNormalizedOrthogonalHaarLaw
     {n : ℕ} (mu : Measure (RSqMat n))
     (hmass : mu Set.univ = 1)
@@ -153,9 +155,10 @@ theorem stewartLaw_isNormalizedOrthogonalHaarLaw
     IsNormalizedOrthogonalHaarLaw n mu :=
   ⟨hmass, hsupport, hinvariant⟩
 
-/-- The Haar-law contract is nonvacuous: in dimension zero the matrix space
-is a singleton, so the Dirac law at the identity is normalized, supported on
-orthogonal matrices, and left invariant. -/
+/-- The ambient compatibility predicate is inhabited in dimension zero: the
+matrix space is a singleton, so the Dirac law at the identity has all three
+fields.  This is not a nonvacuity witness for Stewart's positive-dimensional
+Gaussian producer or its Haar conclusion. -/
 theorem diracIdentity_isNormalizedOrthogonalHaarLaw_zero :
     IsNormalizedOrthogonalHaarLaw 0
       (Measure.dirac (1 : RSqMat 0)) := by

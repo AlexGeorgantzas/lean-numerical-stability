@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: QED
 -/
 import LeanFpAnalysis.FP.Analysis.Rounding
+import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.Normed.Operator.NNNorm
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.Data.Real.Pointwise
@@ -348,6 +349,22 @@ structure Higham25TaylorRemainderContract
     ∀ dd ∈ Metric.closedBall (0 : D) (epsilon * dataNorm),
       ‖phi dd - L dd‖ ≤ epsilon * remainder epsilon
 
+/-- Fréchet differentiability at the base point supplies the source's local
+first-order Taylor estimate.  Unlike `Higham25TaylorRemainderContract`, this
+statement does not assume a pre-packaged shrinking-ball remainder: it follows
+directly from `HasFDerivAt`. -/
+theorem higham25_taylor_linear_bound_of_hasFDerivAt
+    {D X : Type*} [NormedAddCommGroup D] [NormedSpace ℝ D]
+    [NormedAddCommGroup X] [NormedSpace ℝ X]
+    (phi : D → X) (L : D →L[ℝ] X) (hphi0 : phi 0 = 0)
+    (hderiv : HasFDerivAt phi L 0) :
+    ∀ c : ℝ, 0 < c →
+      ∀ᶠ dd in 𝓝 (0 : D), ‖phi dd - L dd‖ ≤ c * ‖dd‖ := by
+  intro c hc
+  have hbound := hderiv.isLittleO.bound hc
+  filter_upwards [hbound] with dd hdd
+  simpa [hphi0] using hdd
+
 /-- Supremums of two nonempty bounded real images differ by at most a uniform
 pointwise error. -/
 theorem higham25_abs_sSup_image_sub_sSup_image_le
@@ -407,6 +424,165 @@ theorem higham25_actualConditionValues_eq_solutionMap_image
     rw [contract.unique dx hdx dd hsolve]
   · rintro ⟨dd, hdd, rfl⟩
     exact ⟨phi dd, contract.mapsTo dd, dd, hdd, contract.solves dd, rfl⟩
+
+/-- A local first-order remainder bound controls the difference between the
+actual nonlinear supremum and its linearized counterpart.  This is the
+quantitative bridge needed to use `HasFDerivAt` directly in (25.11). -/
+theorem higham25_actualEpsilonCondition_sub_linearized_abs_le_of_linear_bound
+    {D X : Type*} [NormedAddCommGroup D] [NormedSpace ℝ D]
+    [NormedAddCommGroup X] [NormedSpace ℝ X]
+    (isSolution : X → D → Prop) (solutionDomain : Set X) (phi : D → X)
+    (L : D →L[ℝ] X) (dataNorm solutionNorm epsilon c : ℝ)
+    (hdata : 0 ≤ dataNorm) (hsolution : 0 < solutionNorm)
+    (hepsilon : 0 < epsilon) (hc : 0 ≤ c)
+    (contract : Higham25ActualSolutionMapContract isSolution solutionDomain phi)
+    (hbound : ∀ dd ∈ Metric.closedBall (0 : D) (epsilon * dataNorm),
+      ‖phi dd - L dd‖ ≤ c * ‖dd‖) :
+    |higham25ActualEpsilonCondition isSolution solutionDomain
+        dataNorm solutionNorm epsilon -
+      higham25LinearizedEpsilonCondition L dataNorm solutionNorm epsilon| ≤
+        c * dataNorm / solutionNorm := by
+  let S : Set D := Metric.closedBall 0 (epsilon * dataNorm)
+  let f : D → ℝ := fun dd => ‖phi dd‖ / (epsilon * solutionNorm)
+  let g : D → ℝ := fun dd => ‖L dd‖ / (epsilon * solutionNorm)
+  let q : ℝ := c * dataNorm / solutionNorm
+  have hS : S.Nonempty := by
+    refine ⟨0, ?_⟩
+    rw [mem_closedBall_zero_iff]
+    simpa [S] using mul_nonneg hepsilon.le hdata
+  have hgpoint : ∀ dd ∈ S,
+      g dd ≤ ‖L‖ * dataNorm / solutionNorm := by
+    intro dd hdd
+    have hdnorm : ‖dd‖ ≤ epsilon * dataNorm := by
+      simpa [S] using mem_closedBall_zero_iff.mp hdd
+    have hL := L.le_opNorm dd
+    have hden : 0 < epsilon * solutionNorm := mul_pos hepsilon hsolution
+    apply (div_le_iff₀ hden).2
+    calc
+      ‖L dd‖ ≤ ‖L‖ * ‖dd‖ := hL
+      _ ≤ ‖L‖ * (epsilon * dataNorm) :=
+        mul_le_mul_of_nonneg_left hdnorm (norm_nonneg L)
+      _ = (‖L‖ * dataNorm / solutionNorm) *
+          (epsilon * solutionNorm) := by
+        field_simp [ne_of_gt hsolution]
+  have hg : BddAbove (g '' S) := by
+    refine ⟨‖L‖ * dataNorm / solutionNorm, ?_⟩
+    rintro _ ⟨dd, hdd, rfl⟩
+    exact hgpoint dd hdd
+  have hq : 0 ≤ q :=
+    div_nonneg (mul_nonneg hc hdata) hsolution.le
+  have hclose : ∀ dd ∈ S, |f dd - g dd| ≤ q := by
+    intro dd hdd
+    have hden : 0 < epsilon * solutionNorm := mul_pos hepsilon hsolution
+    have hdnorm : ‖dd‖ ≤ epsilon * dataNorm := by
+      simpa [S] using mem_closedBall_zero_iff.mp hdd
+    have hnormdiff : |‖phi dd‖ - ‖L dd‖| ≤ ‖phi dd - L dd‖ :=
+      abs_norm_sub_norm_le _ _
+    have hrem := hbound dd (by simpa [S] using hdd)
+    have hrem' : ‖phi dd - L dd‖ ≤ c * (epsilon * dataNorm) :=
+      hrem.trans (mul_le_mul_of_nonneg_left hdnorm hc)
+    dsimp [f, g, q]
+    rw [← sub_div, abs_div, abs_of_pos hden]
+    apply (div_le_iff₀ hden).2
+    calc
+      |‖phi dd‖ - ‖L dd‖| ≤ ‖phi dd - L dd‖ := hnormdiff
+      _ ≤ c * (epsilon * dataNorm) := hrem'
+      _ = (c * dataNorm / solutionNorm) *
+          (epsilon * solutionNorm) := by
+        field_simp [ne_of_gt hsolution]
+  have hf : BddAbove (f '' S) := by
+    refine ⟨‖L‖ * dataNorm / solutionNorm + q, ?_⟩
+    rintro _ ⟨dd, hdd, rfl⟩
+    have hfg0 := (abs_le.mp (hclose dd hdd)).2
+    have hgdd := hgpoint dd hdd
+    linarith
+  unfold higham25ActualEpsilonCondition higham25LinearizedEpsilonCondition
+  rw [higham25_actualConditionValues_eq_solutionMap_image
+    isSolution solutionDomain phi contract dataNorm solutionNorm epsilon]
+  exact higham25_abs_sSup_image_sub_sSup_image_le S f g q hS hf hg hclose
+
+/-- Equation (25.11) from an actual unique solution map and an ordinary
+Fréchet derivative at the base data.  In particular, the Taylor remainder is
+derived from `HasFDerivAt`; it is not assumed through the older uniform
+remainder contract.  Producing the local unique solution map from the source's
+implicit-function hypotheses remains a separate obligation. -/
+theorem higham25_eq25_11_of_actualSolutionMap_hasFDerivAt
+    {D X : Type*} [NormedAddCommGroup D] [NormedSpace ℝ D]
+    [NormedAddCommGroup X] [NormedSpace ℝ X]
+    (isSolution : X → D → Prop) (solutionDomain : Set X) (phi : D → X)
+    (L : D →L[ℝ] X) (dataNorm solutionNorm : ℝ)
+    (hdata : 0 ≤ dataNorm) (hsolution : 0 < solutionNorm)
+    (contract : Higham25ActualSolutionMapContract isSolution solutionDomain phi)
+    (hderiv : HasFDerivAt phi L 0) :
+    Tendsto (fun epsilon =>
+      higham25ActualEpsilonCondition isSolution solutionDomain
+        dataNorm solutionNorm epsilon)
+      (nhdsWithin 0 (Set.Ioi 0))
+      (nhds (‖L‖ * dataNorm / solutionNorm)) := by
+  refine Metric.tendsto_nhds.mpr ?_
+  intro eta heta
+  rcases hdata.eq_or_lt with hdataZero | hdataPos
+  · have hdataEq : dataNorm = 0 := hdataZero.symm
+    filter_upwards [self_mem_nhdsWithin] with epsilon hepsilon
+    have hbound : ∀ dd ∈ Metric.closedBall (0 : D) (epsilon * dataNorm),
+        ‖phi dd - L dd‖ ≤ (0 : ℝ) * ‖dd‖ := by
+      intro dd hdd
+      have hdnorm : ‖dd‖ ≤ 0 := by
+        simpa [hdataEq] using mem_closedBall_zero_iff.mp hdd
+      have hddZero : dd = 0 := by
+        apply norm_eq_zero.mp
+        exact le_antisymm hdnorm (norm_nonneg dd)
+      subst dd
+      simp [contract.map_zero]
+    have hclose :=
+      higham25_actualEpsilonCondition_sub_linearized_abs_le_of_linear_bound
+        isSolution solutionDomain phi L dataNorm solutionNorm epsilon 0
+        hdata hsolution hepsilon le_rfl contract hbound
+    have hlin := higham25_linearizedEpsilonCondition_eq
+      L dataNorm solutionNorm epsilon hdata hsolution hepsilon
+    rw [Real.dist_eq, ← hlin]
+    have hzero : (0 : ℝ) * dataNorm / solutionNorm = 0 := by simp
+    rw [hzero] at hclose
+    exact lt_of_le_of_lt hclose heta
+  · let c : ℝ := eta * solutionNorm / (2 * dataNorm)
+    have hc : 0 < c := by
+      exact div_pos (mul_pos heta hsolution) (mul_pos (by norm_num) hdataPos)
+    have hev := higham25_taylor_linear_bound_of_hasFDerivAt
+      phi L contract.map_zero hderiv c hc
+    rcases Metric.eventually_nhds_iff_ball.mp hev with ⟨r, hr, hrbound⟩
+    let epsilonRadius : ℝ := r / dataNorm
+    have hepsilonRadius : 0 < epsilonRadius := div_pos hr hdataPos
+    have hevRadius : ∀ᶠ epsilon in nhdsWithin 0 (Set.Ioi 0),
+        epsilon < epsilonRadius := by
+      exact mem_nhdsWithin_of_mem_nhds (Iio_mem_nhds hepsilonRadius)
+    filter_upwards [self_mem_nhdsWithin, hevRadius] with epsilon hepsilon heradius
+    have hball : ∀ dd ∈ Metric.closedBall (0 : D) (epsilon * dataNorm),
+        ‖phi dd - L dd‖ ≤ c * ‖dd‖ := by
+      intro dd hdd
+      apply hrbound dd
+      rw [mem_ball_zero_iff]
+      have hdnorm : ‖dd‖ ≤ epsilon * dataNorm :=
+        mem_closedBall_zero_iff.mp hdd
+      have hepsilonData : epsilon * dataNorm < r := by
+        calc
+          epsilon * dataNorm < epsilonRadius * dataNorm :=
+            mul_lt_mul_of_pos_right heradius hdataPos
+          _ = r := by
+            dsimp [epsilonRadius]
+            field_simp [ne_of_gt hdataPos]
+      exact hdnorm.trans_lt hepsilonData
+    have hclose :=
+      higham25_actualEpsilonCondition_sub_linearized_abs_le_of_linear_bound
+        isSolution solutionDomain phi L dataNorm solutionNorm epsilon c
+        hdata hsolution hepsilon hc.le contract hball
+    have hlin := higham25_linearizedEpsilonCondition_eq
+      L dataNorm solutionNorm epsilon hdata hsolution hepsilon
+    rw [Real.dist_eq, ← hlin]
+    have hhalf : c * dataNorm / solutionNorm = eta / 2 := by
+      dsimp [c]
+      field_simp [ne_of_gt hdataPos, ne_of_gt hsolution]
+    rw [hhalf] at hclose
+    linarith
 
 /-- The nonlinear solution-map supremum differs from its derivative-model
 supremum by a vanishing normalized Taylor remainder. -/

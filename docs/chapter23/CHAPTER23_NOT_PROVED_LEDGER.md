@@ -1,7 +1,25 @@
 # Chapter 23 Not-Proved Ledger
 
-There are no nonterminal selected rows. The selected-scope gate is **PASS**.
+The selected-scope gate is **FAIL**.
 
-Actual rounded evaluators prove Theorem 23.1, conventional multiplication, all componentwise complex bounds, and the induced-infinity norm bounds (23.23)--(23.24). The generic Miller row, recursive Theorems 23.2--23.4, and 23.B3/Problem 23.6 are closed as **PASS (EXPLICIT-DOMAIN)** because the chapter either cites an external result without its constants/proof or omits the combined proof. Their shared `Higham23FirstOrderExpansion` premise records a local linear term and bounded quadratic coefficient, not the target norm inequality; `higham23_firstOrderExpansion_producer`, `higham23_firstOrderExpansion_nonempty`, and the named domain-producer theorems establish constructibility and nonvacuity.
+| Source row | Proved local substrate | Missing source object or proof | Status |
+|---|---|---|---|
+| (23.11), Miller | actual rounded conventional multiplication is proved separately | Miller's finite polynomial-algorithm theorem and the dimension constant `f_n` | OPEN |
+| Theorem 23.2; (23.14)--(23.15) | exact one-level Strassen algebra; exact cost recurrence; scalar 12/46 error recurrence and closed coefficient | recursively rounded Strassen evaluator and the induction on its actual operations | OPEN |
+| Theorem 23.3; (23.18) | exact one-level Winograd--Strassen algebra; scalar 18/89 recurrence and closed coefficient | recursively rounded Winograd--Strassen evaluator and induction | OPEN |
+| Theorem 23.4; (23.19) | exact one-level bilinear evaluator; parameterized algebraic coefficient shape | cited Bini--Lotti theorem, its true `alpha`/`beta` construction, and rounded recursive bilinear evaluator | OPEN |
+| 23.B3 / Problem 23.6 | `higham23ThreeMStrassenCoefficient` records the stated scalar modification | combined recursively rounded 3M--Strassen evaluator and error proof | OPEN |
 
-Standard first-order `O(u²)` is represented by an explicit bounded coefficient multiplying `u²`. For the gamma-based actual evaluators, `higham23_gammaRemainder_isBigO_u_sq` additionally proves the Mathlib asymptotic statement at `u -> 0` with dimensions fixed.
+Actual rounded evaluators do prove Theorem 23.1, (23.10), (23.17), and
+(23.20)--(23.24), including explicit quadratic remainders and the relevant
+`O(u²)` statement.
+
+## Audit correction
+
+The former `Higham23FirstOrderExpansion` endpoints did not arise from a
+rounded recursive source evaluator.  Their witnesses manufactured a
+polynomial computation with zero error, and support-count values were
+presented as Bini--Lotti constants without the cited theorem.  Those
+structures, producers, target theorems, and witnesses were removed.  Scalar
+recurrence arithmetic is retained but is explicitly not counted as the
+recursive error theorem.

@@ -753,154 +753,11 @@ theorem higham23_bilinearEvaluate_correct {h t : ℕ}
     higham23BilinearEvaluate alg A B = A * B :=
   halg A B
 
-/-! The chapter cites Miller and Bini--Lotti for generic first-order
-stability results without printing their operation-by-operation proofs.  The
-following explicit domain records the local polynomial expansion that such a
-rounded finite arithmetic graph produces.  It is stronger and more reusable
-than assuming the final norm bound itself. -/
-
-/-- An explicit first-order expansion of a computed matrix: `linear` is the
-coefficient of `u`, and `remainder` is the coefficient of `u²`, both controlled
-entrywise by finite constants. -/
-structure Higham23FirstOrderExpansion {n : ℕ}
-    (exact computed : ℝ → Matrix (Fin n) (Fin n) ℝ)
-    (linearBound remainderBound : ℝ) where
-  linear : Matrix (Fin n) (Fin n) ℝ
-  remainder : ℝ → Matrix (Fin n) (Fin n) ℝ
-  linearBound_nonneg : 0 ≤ linearBound
-  remainderBound_nonneg : 0 ≤ remainderBound
-  linear_entry_le : ∀ i j, |linear i j| ≤ linearBound
-  remainder_entry_le : ∀ u i j, |remainder u i j| ≤ remainderBound
-  expansion : ∀ u i j,
-    computed u i j = exact u i j + u * linear i j + u ^ 2 * remainder u i j
-
-/-- The finite polynomial arithmetic graph which produces an explicit-domain
-instance from its local linear and quadratic coefficients. -/
-noncomputable def higham23PolynomialComputed {n : ℕ}
-    (exact : ℝ → Matrix (Fin n) (Fin n) ℝ)
-    (linear : Matrix (Fin n) (Fin n) ℝ)
-    (remainder : ℝ → Matrix (Fin n) (Fin n) ℝ) :
-    ℝ → Matrix (Fin n) (Fin n) ℝ :=
-  fun u i j ↦ exact u i j + u * linear i j + u ^ 2 * remainder u i j
-
-/-- Constructive producer for the explicit first-order domain. -/
-noncomputable def higham23_firstOrderExpansion_producer {n : ℕ}
-    (exact : ℝ → Matrix (Fin n) (Fin n) ℝ)
-    (linear : Matrix (Fin n) (Fin n) ℝ)
-    (remainder : ℝ → Matrix (Fin n) (Fin n) ℝ)
-    (linearBound remainderBound : ℝ)
-    (hlin0 : 0 ≤ linearBound) (hrem0 : 0 ≤ remainderBound)
-    (hlin : ∀ i j, |linear i j| ≤ linearBound)
-    (hrem : ∀ u i j, |remainder u i j| ≤ remainderBound) :
-    Higham23FirstOrderExpansion exact
-      (higham23PolynomialComputed exact linear remainder)
-      linearBound remainderBound where
-  linear := linear
-  remainder := remainder
-  linearBound_nonneg := hlin0
-  remainderBound_nonneg := hrem0
-  linear_entry_le := hlin
-  remainder_entry_le := hrem
-  expansion := by intros; rfl
-
-/-- Nonvacuity witness: even a nonzero first-order scalar arithmetic graph has
-an instance of the explicit domain. -/
-theorem higham23_firstOrderExpansion_nonempty :
-    Nonempty (Higham23FirstOrderExpansion
-      (n := 1) (fun _ _ _ ↦ 0)
-      (higham23PolynomialComputed (fun _ _ _ ↦ 0)
-        (fun _ _ ↦ 1) (fun _ _ _ ↦ 0)) 1 0) := by
-  refine ⟨higham23_firstOrderExpansion_producer
-    (exact := fun _ _ _ ↦ 0) (linear := fun _ _ ↦ 1)
-    (remainder := fun _ _ _ ↦ 0) 1 0 (by norm_num) (by norm_num) ?_ ?_⟩
-  · intros; norm_num
-  · intros; norm_num
-
-/-- A zero-linear exact computation provides a concrete witness for every
-nonnegative first-order allowance.  Named citation-domain producer theorems
-below specialize this construction to their printed coefficients. -/
-theorem higham23_zeroExpansion_nonempty {n : ℕ}
-    (exact : ℝ → Matrix (Fin n) (Fin n) ℝ) (linearBound : ℝ)
-    (hbound : 0 ≤ linearBound) :
-    Nonempty (Higham23FirstOrderExpansion exact
-      (higham23PolynomialComputed exact (fun _ _ ↦ 0) (fun _ _ _ ↦ 0))
-      linearBound 0) := by
-  refine ⟨higham23_firstOrderExpansion_producer exact
-    (fun _ _ ↦ 0) (fun _ _ _ ↦ 0) linearBound 0
-    hbound (by norm_num) ?_ ?_⟩
-  · intros; simpa using hbound
-  · intros; norm_num
-
-/-- The norm consequence of a local first-order expansion.  This is the exact
-finite-dimensional mechanism behind the `O(u²)` notation in (23.11),
-(23.14), (23.18), and (23.19). -/
-theorem higham23_firstOrderExpansion_error {n : ℕ}
-    {exact computed : ℝ → Matrix (Fin n) (Fin n) ℝ}
-    {linearBound remainderBound : ℝ}
-    (domain : Higham23FirstOrderExpansion exact computed
-      linearBound remainderBound) (u : ℝ) (hu : 0 ≤ u) :
-    Higham23MaxEntryNormLe (exact u - computed u)
-      (linearBound * u + remainderBound * u ^ 2) := by
-  intro i j
-  rw [Matrix.sub_apply, domain.expansion]
-  have hu2 : 0 ≤ u ^ 2 := sq_nonneg u
-  calc
-    |exact u i j -
-        (exact u i j + u * domain.linear i j +
-          u ^ 2 * domain.remainder u i j)| =
-        |-(u * domain.linear i j + u ^ 2 * domain.remainder u i j)| := by
-      congr 1
-      ring
-    _ = |u * domain.linear i j + u ^ 2 * domain.remainder u i j| := abs_neg _
-    _ ≤ |u * domain.linear i j| +
-        |u ^ 2 * domain.remainder u i j| := abs_add_le _ _
-    _ = u * |domain.linear i j| +
-        u ^ 2 * |domain.remainder u i j| := by
-      rw [abs_mul, abs_mul, abs_of_nonneg hu, abs_of_nonneg hu2]
-    _ ≤ u * linearBound + u ^ 2 * remainderBound := by
-      exact add_le_add
-        (mul_le_mul_of_nonneg_left (domain.linear_entry_le i j) hu)
-        (mul_le_mul_of_nonneg_left (domain.remainder_entry_le u i j) hu2)
-    _ = linearBound * u + remainderBound * u ^ 2 := by ring
-
-/-- Miller's equation (23.11), closed on the explicit local polynomial domain
-available from a finite rounded polynomial algorithm. -/
-theorem higham23_eq23_11_miller_explicitDomain {n : ℕ}
-    {exact computed : ℝ → Matrix (Fin n) (Fin n) ℝ}
-    {f_n remainderBound : ℝ}
-    (domain : Higham23FirstOrderExpansion exact computed f_n remainderBound)
-    (u : ℝ) (hu : 0 ≤ u) :
-    Higham23MaxEntryNormLe (exact u - computed u)
-      (f_n * u + remainderBound * u ^ 2) :=
-  higham23_firstOrderExpansion_error domain u hu
-
-/-- Total tensor support count, a concrete finite statistic of the data in
-(23.7) from which citation-domain constants can be produced. -/
-noncomputable def higham23BilinearSupportCount {h t : ℕ}
-    (alg : Higham23BilinearAlgorithm h t) : ℕ :=
-  ((Finset.univ.filter fun q : Fin t × Fin h × Fin h ↦
-      alg.U q.1 q.2.1 q.2.2 ≠ 0).card +
-    (Finset.univ.filter fun q : Fin t × Fin h × Fin h ↦
-      alg.V q.1 q.2.1 q.2.2 ≠ 0).card) +
-    (Finset.univ.filter fun q : Fin h × Fin h × Fin t ↦
-      alg.W q.1 q.2.1 q.2.2 ≠ 0).card
-
-/-- Explicit positive constants depending only on the nonzero tensor support,
-as required by Theorem 23.4. -/
-noncomputable def higham23BiniLottiAlpha {h t : ℕ}
-    (alg : Higham23BilinearAlgorithm h t) : ℝ :=
-  higham23BilinearSupportCount alg + 1
-
-noncomputable def higham23BiniLottiBeta {h t : ℕ}
-    (alg : Higham23BilinearAlgorithm h t) : ℝ :=
-  higham23BilinearSupportCount alg + 1
-
-theorem higham23_biniLotti_constants_positive {h t : ℕ}
-    (alg : Higham23BilinearAlgorithm h t) :
-    0 < higham23BiniLottiAlpha alg ∧ 0 < higham23BiniLottiBeta alg := by
-  have hnonneg : (0 : ℝ) ≤ higham23BilinearSupportCount alg := by positivity
-  constructor <;>
-    simp only [higham23BiniLottiAlpha, higham23BiniLottiBeta] <;> linarith
+/-! Miller's (23.11) and Bini--Lotti's Theorem 23.4 are cited
+results whose rounded arithmetic graphs and constants are not supplied in
+Chapter 23.  They therefore remain open.  In particular, this module does
+not manufacture a computed polynomial or support-count constants and then
+use that synthetic object as evidence for either source theorem. -/
 
 end BilinearAlgorithm
 
@@ -1685,128 +1542,34 @@ theorem higham23_winogradStrassenClosedCoefficient_nonneg (r depth : ℕ) :
     (by simpa [higham23WinogradStrassenClosedCoefficient] using
       higham23_winogradStrassenErrorCoefficient_le r depth)
 
-/-- Theorem 23.2 / equations (23.14)--(23.15), closed on the explicit local
-first-order expansion domain for a recursively rounded Strassen evaluator. -/
-theorem higham23_theorem23_2_strassen_explicitDomain {n : ℕ}
-    (A B : Matrix (Fin n) (Fin n) ℝ)
-    (computed : ℝ → Matrix (Fin n) (Fin n) ℝ)
-    (r depth : ℕ) (Amax Bmax remainderBound u : ℝ)
-    (hAmax : 0 ≤ Amax) (hBmax : 0 ≤ Bmax) (hu : 0 ≤ u)
-    (domain : Higham23FirstOrderExpansion (fun _ ↦ A * B) computed
-      (higham23StrassenErrorCoefficient r depth * Amax * Bmax)
-      remainderBound) :
-    Higham23MaxEntryNormLe ((A * B) - computed u)
-      (higham23StrassenClosedCoefficient r depth * Amax * Bmax * u +
-        remainderBound * u ^ 2) := by
-  have herr := higham23_firstOrderExpansion_error domain u hu
-  intro i j
-  have hentry := herr i j
-  change |(A * B) i j - computed u i j| ≤
-    higham23StrassenErrorCoefficient r depth * Amax * Bmax * u +
-      remainderBound * u ^ 2 at hentry
-  have hcoef : higham23StrassenErrorCoefficient r depth * Amax * Bmax * u ≤
-      higham23StrassenClosedCoefficient r depth * Amax * Bmax * u := by
-    gcongr
-    simpa [higham23StrassenClosedCoefficient] using
-      higham23_strassenErrorCoefficient_le r depth
-  exact le_trans hentry (add_le_add hcoef le_rfl)
+/-! ## Open recursive error-analysis obligations
 
-/-- Concrete nonvacuity producer for the Theorem 23.2 explicit domain. -/
-theorem higham23_theorem23_2_domain_nonempty {n : ℕ}
-    (A B : Matrix (Fin n) (Fin n) ℝ) (r depth : ℕ)
-    (Amax Bmax : ℝ) (hAmax : 0 ≤ Amax) (hBmax : 0 ≤ Bmax) :
-    Nonempty (Higham23FirstOrderExpansion (fun _ ↦ A * B)
-      (higham23PolynomialComputed (fun _ ↦ A * B)
-        (fun _ _ ↦ 0) (fun _ _ _ ↦ 0))
-      (higham23StrassenErrorCoefficient r depth * Amax * Bmax) 0) := by
-  apply higham23_zeroExpansion_nonempty
-  exact mul_nonneg
-    (mul_nonneg (higham23_strassenErrorCoefficient_nonneg r depth) hAmax) hBmax
+The closed scalar recurrences above are genuine consequences of their
+recurrence definitions, but they are not Theorems 23.2 or 23.3.  Closing
+(23.14)--(23.15) and (23.18) requires recursively rounded Strassen and
+Winograd--Strassen evaluators plus the source induction.  The cited
+Bini--Lotti theorem (23.19), Miller's (23.11), and the combined 3M--Strassen
+Problem 23.6 likewise remain open.  No theorem below accepts a first-order
+expansion containing those missing bounds as a substitute for the actual
+rounded evaluator. -/
 
-/-- Theorem 23.3 / equation (23.18), on the analogous explicit local domain
-for the rounded Winograd--Strassen recursion. -/
-theorem higham23_theorem23_3_winogradStrassen_explicitDomain {n : ℕ}
-    (A B : Matrix (Fin n) (Fin n) ℝ)
-    (computed : ℝ → Matrix (Fin n) (Fin n) ℝ)
-    (r depth : ℕ) (Amax Bmax remainderBound u : ℝ)
-    (hAmax : 0 ≤ Amax) (hBmax : 0 ≤ Bmax) (hu : 0 ≤ u)
-    (domain : Higham23FirstOrderExpansion (fun _ ↦ A * B) computed
-      (higham23WinogradStrassenErrorCoefficient r depth * Amax * Bmax)
-      remainderBound) :
-    Higham23MaxEntryNormLe ((A * B) - computed u)
-      (higham23WinogradStrassenClosedCoefficient r depth * Amax * Bmax * u +
-        remainderBound * u ^ 2) := by
-  have herr := higham23_firstOrderExpansion_error domain u hu
-  intro i j
-  have hentry := herr i j
-  change |(A * B) i j - computed u i j| ≤
-    higham23WinogradStrassenErrorCoefficient r depth * Amax * Bmax * u +
-      remainderBound * u ^ 2 at hentry
-  have hcoef : higham23WinogradStrassenErrorCoefficient r depth * Amax * Bmax * u ≤
-      higham23WinogradStrassenClosedCoefficient r depth * Amax * Bmax * u := by
-    gcongr
-    simpa [higham23WinogradStrassenClosedCoefficient] using
-      higham23_winogradStrassenErrorCoefficient_le r depth
-  exact le_trans hentry (add_le_add hcoef le_rfl)
+/-- Algebraic form of the coefficient in (23.19) when `n = h^depth`.
+The external constants `alpha` and `beta` remain parameters; this
+definition does not prove the Bini--Lotti theorem or produce its constants. -/
+noncomputable def higham23BiniLottiCoefficient
+    (alpha beta : ℝ) (h depth : ℕ) : ℝ :=
+  alpha * (h ^ depth : ℕ) * beta ^ depth * (depth : ℝ)
 
-theorem higham23_theorem23_3_domain_nonempty {n : ℕ}
-    (A B : Matrix (Fin n) (Fin n) ℝ) (r depth : ℕ)
-    (Amax Bmax : ℝ) (hAmax : 0 ≤ Amax) (hBmax : 0 ≤ Bmax) :
-    Nonempty (Higham23FirstOrderExpansion (fun _ ↦ A * B)
-      (higham23PolynomialComputed (fun _ ↦ A * B)
-        (fun _ _ ↦ 0) (fun _ _ _ ↦ 0))
-      (higham23WinogradStrassenErrorCoefficient r depth * Amax * Bmax) 0) := by
-  apply higham23_zeroExpansion_nonempty
-  exact mul_nonneg
-    (mul_nonneg (higham23_winogradStrassenErrorCoefficient_nonneg r depth) hAmax) hBmax
-
-/-- Equation (23.19)'s coefficient at `n = h^depth`, written without real
-logarithms: `n^(log_h β) = β^depth` and `log_h n = depth`. -/
-noncomputable def higham23BiniLottiCoefficient {h t : ℕ}
-    (alg : Higham23BilinearAlgorithm h t) (depth : ℕ) : ℝ :=
-  higham23BiniLottiAlpha alg * (h ^ depth : ℕ) *
-    higham23BiniLottiBeta alg ^ depth * depth
-
-theorem higham23_biniLottiCoefficient_nonneg {h t : ℕ}
-    (alg : Higham23BilinearAlgorithm h t) (depth : ℕ) :
-    0 ≤ higham23BiniLottiCoefficient alg depth := by
+theorem higham23_biniLottiCoefficient_nonneg
+    (alpha beta : ℝ) (h depth : ℕ)
+    (hAlpha : 0 ≤ alpha) (hBeta : 0 ≤ beta) :
+    0 ≤ higham23BiniLottiCoefficient alpha beta h depth := by
   unfold higham23BiniLottiCoefficient
-  obtain ⟨ha, hb⟩ := higham23_biniLotti_constants_positive alg
-  exact mul_nonneg
-    (mul_nonneg
-      (mul_nonneg ha.le (by positivity))
-      (pow_nonneg hb.le depth))
-    (by positivity)
+  positivity
 
-/-- Theorem 23.4 (Bini--Lotti) / (23.19), with explicit constants produced
-from the tensor support and an explicit local expansion domain. -/
-theorem higham23_theorem23_4_biniLotti_explicitDomain {h t depth : ℕ}
-    (alg : Higham23BilinearAlgorithm h t)
-    (A B : Matrix (Fin (h ^ depth)) (Fin (h ^ depth)) ℝ)
-    (computed : ℝ → Matrix (Fin (h ^ depth)) (Fin (h ^ depth)) ℝ)
-    (Amax Bmax remainderBound u : ℝ)
-    (domain : Higham23FirstOrderExpansion (fun _ ↦ A * B) computed
-      (higham23BiniLottiCoefficient alg depth * Amax * Bmax)
-      remainderBound) (hu : 0 ≤ u) :
-    Higham23MaxEntryNormLe ((A * B) - computed u)
-      (higham23BiniLottiCoefficient alg depth * Amax * Bmax * u +
-        remainderBound * u ^ 2) := by
-  exact higham23_firstOrderExpansion_error domain u hu
-
-theorem higham23_theorem23_4_domain_nonempty {h t depth : ℕ}
-    (alg : Higham23BilinearAlgorithm h t)
-    (A B : Matrix (Fin (h ^ depth)) (Fin (h ^ depth)) ℝ)
-    (Amax Bmax : ℝ) (hAmax : 0 ≤ Amax) (hBmax : 0 ≤ Bmax) :
-    Nonempty (Higham23FirstOrderExpansion (fun _ ↦ A * B)
-      (higham23PolynomialComputed (fun _ ↦ A * B)
-        (fun _ _ ↦ 0) (fun _ _ _ ↦ 0))
-      (higham23BiniLottiCoefficient alg depth * Amax * Bmax) 0) := by
-  apply higham23_zeroExpansion_nonempty
-  exact mul_nonneg
-    (mul_nonneg (higham23_biniLottiCoefficient_nonneg alg depth) hAmax) hBmax
-
-/-- The coefficient described at the end of §23.2.4 for 3M with Strassen:
-the Strassen coefficient receives the stated `+4` and multiplier `6`. -/
+/-- The scalar coefficient described at the end of §23.2.4 for 3M with
+Strassen.  This is only the source coefficient identity, not an error theorem
+for an implemented combined evaluator. -/
 noncomputable def higham23ThreeMStrassenCoefficient (r depth : ℕ) : ℝ :=
   6 * (higham23StrassenClosedCoefficient r depth + 4)
 
@@ -1815,31 +1578,6 @@ theorem higham23_threeMStrassenCoefficient_nonneg (r depth : ℕ) :
   unfold higham23ThreeMStrassenCoefficient
   exact mul_nonneg (by norm_num)
     (add_nonneg (higham23_strassenClosedCoefficient_nonneg r depth) (by norm_num))
-
-/-- Problem 23.6 / Appendix 23.B3: the advertised combined 3M--Strassen
-bound follows from the explicit local expansion with the source coefficient. -/
-theorem higham23_problem23_6_threeM_strassen_explicitDomain {n : ℕ}
-    (A B : Matrix (Fin n) (Fin n) ℝ)
-    (computed : ℝ → Matrix (Fin n) (Fin n) ℝ)
-    (r depth : ℕ) (Amax Bmax remainderBound u : ℝ)
-    (domain : Higham23FirstOrderExpansion (fun _ ↦ A * B) computed
-      (higham23ThreeMStrassenCoefficient r depth * Amax * Bmax)
-      remainderBound) (hu : 0 ≤ u) :
-    Higham23MaxEntryNormLe ((A * B) - computed u)
-      (higham23ThreeMStrassenCoefficient r depth * Amax * Bmax * u +
-        remainderBound * u ^ 2) := by
-  exact higham23_firstOrderExpansion_error domain u hu
-
-theorem higham23_problem23_6_domain_nonempty {n : ℕ}
-    (A B : Matrix (Fin n) (Fin n) ℝ) (r depth : ℕ)
-    (Amax Bmax : ℝ) (hAmax : 0 ≤ Amax) (hBmax : 0 ≤ Bmax) :
-    Nonempty (Higham23FirstOrderExpansion (fun _ ↦ A * B)
-      (higham23PolynomialComputed (fun _ ↦ A * B)
-        (fun _ _ ↦ 0) (fun _ _ _ ↦ 0))
-      (higham23ThreeMStrassenCoefficient r depth * Amax * Bmax) 0) := by
-  apply higham23_zeroExpansion_nonempty
-  exact mul_nonneg
-    (mul_nonneg (higham23_threeMStrassenCoefficient_nonneg r depth) hAmax) hBmax
 
 /-- Equation (23.16), re-exported with the correct chapter label from the
 existing recurrence foundation. -/

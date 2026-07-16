@@ -7,8 +7,9 @@
 - Local source: `References/1.9780898718027.ch27.pdf`, printed pp. 489-509.
 - Mode: core; parallel owner: Split 4.
 - Source inspection: all 21 PDF pages were extracted, rendered, and visually
-  checked. Appendix A solutions 27.1, 27.3, 27.5, 27.7, and 27.8 were checked on
-  printed pp. 570-571.
+  checked. Appendix A solutions 27.1, 27.3, 27.4, 27.5, 27.7, and 27.8 were
+  checked on printed pp. 570-571. Solution 27.4 is the historical random-number
+  generator/underflow diagnosis and remains an unselected optional row.
 - Primary named labels: none. Numbered equation ledger: (27.1).
 
 ## Inventory

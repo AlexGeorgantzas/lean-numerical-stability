@@ -18,14 +18,18 @@
 - The Problems page has **two** rows, Problems 25.1 and 25.2, printed p. 469 / PDF 11. The former count of one problem was incorrect.
 - Appendix A provides a solution for Problem 25.1 on printed pp. 569-570.
 
-The selected-scope gate is **PASS**. Most precise selected equations,
-algorithmic rows, symbolic examples, and the selected exercise have local
-artifacts. Equation (25.11) is closed on a visible explicit nonlinear domain:
-the literal feasible value set and supremum, a unique actual solution-map
-contract, a uniform Taylor-remainder contract, a concrete zero-perturbation
-witness, and the limit equality are all proved. Equation (25.13), including
-production of its three witnesses from a literal rounded evaluation order, is
-proved. Theorems
+The selected-scope gate is **FAIL** because equation (25.11) is selected and
+not yet derived from the hypotheses printed on pp. 464-466. The literal
+feasible value set and supremum are formalized, and
+`higham25_eq25_11_of_actualSolutionMap_hasFDerivAt` now derives the Taylor and
+shrinking-ball step from an ordinary Fréchet derivative rather than assuming a
+target-shaped remainder contract. However, the remaining
+`Higham25ActualSolutionMapContract` assumes the local existence and uniqueness
+that the source obtains from the implicit-function theorem, and no local
+theorem yet constructs that map from smoothness of `F` and nonsingularity of
+`F_x` or identifies its derivative with `-F_x⁻¹ F_d`. Equation (25.13),
+including production of its three witnesses from a literal rounded evaluation
+order, is proved. Theorems
 25.1 and 25.2 cannot be stated at source strength without
 defining the printed `≈` relation and “decreases until” event, so the skill's
 `DEFER-MISSING-PRECISE-STATEMENT` rule applies; deferred rows do not fail the
@@ -52,7 +56,7 @@ gate. No replacement theorem is invented.
 | (25.8) | p. 461 / PDF 3 | approximate limiting relative accuracy | DEFER-MISSING-PRECISE-STATEMENT; undefined `≈` and stopping event. **DEFERRED**. |
 | (25.9) | p. 462 / PDF 4 | approximate limiting residual | DEFER-MISSING-PRECISE-STATEMENT; undefined `≈` and stopping event. **DEFERRED**. |
 | (25.10) | p. 463 / PDF 5 | eigenproblem as normalized nonlinear system | `higham25EigenResidual`, `higham25_eq25_10_zero_iff`. **PASS**. |
-| (25.11) | p. 466 / PDF 8 | exact equality between the preceding limit-supremum condition number and the inverse-derivative norm formula | `higham25ActualConditionValues` and `higham25ActualEpsilonCondition` are the literal feasible set and `sSup`. `Higham25ActualSolutionMapContract` supplies actual existence/uniqueness on an explicit solution domain; `Higham25TaylorRemainderContract` replaces “sufficiently small” by a uniform shrinking-ball remainder. `higham25_actualConditionValues_nonempty` gives the concrete `(Δx,Δd)=(0,0)` witness, and `higham25_eq25_11_of_actualSolutionMap` proves the limit equals `‖L‖‖d‖/‖x*‖`. **PASS (EXPLICIT NONLINEAR SOLUTION DOMAIN)**. |
+| (25.11) | p. 466 / PDF 8 | exact equality between the preceding limit-supremum condition number and the inverse-derivative norm formula | `higham25ActualConditionValues` and `higham25ActualEpsilonCondition` are the literal feasible set and `sSup`. `higham25_taylor_linear_bound_of_hasFDerivAt` proves the local Taylor estimate from `HasFDerivAt`, and `higham25_eq25_11_of_actualSolutionMap_hasFDerivAt` proves the shrinking-ball limit without assuming `Higham25TaylorRemainderContract`. The remaining `Higham25ActualSolutionMapContract` is not produced from a smooth residual `F` and nonsingular `F_x`, and the derivative is not yet identified as `-F_x⁻¹ F_d`. **PARTIAL / OPEN SELECTED ROW**. |
 | (25.12) | p. 466 / PDF 8 | Wozniakowski two-variable example | `higham25Eq25_12`, displayed positive solution, and exact zero theorem. **PASS**. |
 | (25.13) | p. 466 / PDF 8 | floating-point evaluation of the example admits the displayed three-error representation | `higham25Eq25_13RoundedEval` fixes the straightforward operation order; `higham25_eq25_13_roundedEval_model` derives the two `u` witnesses and the common `gamma₃` quadratic-core witness from the primitive FP model, using `mu >= 0`. **PASS (EXPLICIT-DOMAIN)**. |
 | (25.14) | p. 468 / PDF 10 | local quadratic-convergence premise | `higham25_eq25_14_denominator_bound` and `higham25_eq25_14_step_squared_bound` prove the printed stopping algebra with the source's “small enough” exposed as an exact reciprocal-square premise. **PASS (EXPLICIT-DOMAIN)**. |
@@ -69,7 +73,7 @@ gate. No replacement theorem is invented.
 | First-order perturbation relation before (25.11) | pp. 464-466 / PDFs 6-8 | FORMALIZE_CORE | `higham25_eq25_11_first_order`. **PASS** for exact linearized algebra. |
 | Sensitivity calculation and condition `1/2` after (25.13) | p. 466 / PDF 8 | FORMALIZE_CORE | `higham25_eq25_13_sensitivity_direction`, `higham25_eq25_13_condition_half`. **PASS**. |
 | `μ=10^8` MATLAB experiment | p. 467 / PDF 9 | EXCLUDED-EMPIRICAL | Accounted for. |
-| Implicit-function/Taylor derivation surrounding (25.11) | pp. 464-466 / PDFs 6-8 | FORMALIZE_CORE / CORE-PRECISE-PROSE | `higham25_eq25_11_first_order` proves the inverse-derivative algebra. The actual unique solution map and its uniform Taylor remainder are exposed as explicit contracts, not silently inferred from “sufficiently smooth/small”; the sSup comparison and limit are proved from them. **PASS (EXPLICIT NONLINEAR SOLUTION/TAYLOR DOMAIN)**. |
+| Implicit-function/Taylor derivation surrounding (25.11) | pp. 464-466 / PDFs 6-8 | FORMALIZE_CORE / CORE-PRECISE-PROSE | `higham25_eq25_11_first_order` proves the inverse-derivative algebra. `higham25_taylor_linear_bound_of_hasFDerivAt` and `higham25_eq25_11_of_actualSolutionMap_hasFDerivAt` close the Taylor-to-limit dependency from a genuine Fréchet derivative. The source-facing implicit-function producer—smooth `F` plus nonsingular `F_x` yielding a local unique solution map with derivative `-F_x⁻¹ F_d`—is still absent. **PARTIAL / OPEN SELECTED ROW**. |
 | Rheinboldt `C(F,S)` quotient and shrinking-set limit | p. 467 / PDF 9 | DEFER-MISSING-PRECISE-STATEMENT | The displayed max/min omits `u ≠ v`, nonemptiness, boundedness/compactness, positivity of the denominator, and attainment hypotheses; “closed” alone does not supply them. **DEFERRED**. |
 | Rigorous residual/error factors `1/2` and `2` | p. 467 / PDF 9 | DEFER-MISSING-PRECISE-STATEMENT | The constants are printed, but the result says only “sufficiently close” and cites Kelley without specifying the differentiability, norm, or quantitative Taylor-remainder hypotheses needed for a theorem. **DEFERRED**. |
 | §25.6 Notes and References | p. 468 / PDF 10 | EXCLUDED-BIBLIOGRAPHIC | Accounted for. |

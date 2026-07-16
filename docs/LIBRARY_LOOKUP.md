@@ -6261,10 +6261,11 @@ All modules below are re-exported by `LeanFpAnalysis.FP.Algorithms` and
 | Lemmas 20.11-20.12, arbitrary equal-rank Wedin endpoints | [`Higham20Lemma20_11.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Lemma20_11.lean), [`Higham20Lemma20_12.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Lemma20_12.lean) | `higham20_lemma20_11_equalRank_pseudoinverse_op2_le`; `higham20_lemma20_12_equalRank_moorePenrose` |
 
 The Theorem 20.3, 20.4, 20.7, 20.8, and 20.10 implementation endpoints expose
-their nonbreakdown, primitive trace-budget, or smallness domains. The Chapter
-20 core gate is `PASS (EXPLICIT-DOMAIN)`; Theorem 20.7's corrected producer
-uses direct rounded Householder multipliers and does not assume the refuted
-exact final-tail/pivot comparison.
+their nonbreakdown, primitive trace-budget, or smallness domains. Theorem
+20.7's corrected producer uses direct rounded Householder multipliers and does
+not assume the refuted exact final-tail/pivot comparison. The Chapter 20 core
+gate is nevertheless `FAIL`: the distinct p. 395 row-sorting cap and
+row-order invariance of `phi` still lack an executable producer.
 
 ## Higham Split 4: Chapters 21-28
 
@@ -6278,11 +6279,31 @@ and a chapter report under the linked directory.
 | 21, underdetermined systems | [`Underdetermined/Higham21.lean`](../LeanFpAnalysis/FP/Algorithms/Underdetermined/Higham21.lean) | [`chapter21/CHAPTER21_FORMALIZATION_REPORT.md`](chapter21/CHAPTER21_FORMALIZATION_REPORT.md) |
 | 22, Vandermonde systems | [`Vandermonde/Higham22.lean`](../LeanFpAnalysis/FP/Algorithms/Vandermonde/Higham22.lean) | [`chapter22/CHAPTER22_FORMALIZATION_REPORT.md`](chapter22/CHAPTER22_FORMALIZATION_REPORT.md) |
 | 23, fast matrix multiplication | [`FastMatMul/Higham23.lean`](../LeanFpAnalysis/FP/Algorithms/FastMatMul/Higham23.lean) | [`chapter23/CHAPTER23_FORMALIZATION_REPORT.md`](chapter23/CHAPTER23_FORMALIZATION_REPORT.md) |
-| 24, FFT and circulants | [`FFT/Higham24.lean`](../LeanFpAnalysis/FP/Algorithms/FFT/Higham24.lean), [`FFT/Higham24Radix2.lean`](../LeanFpAnalysis/FP/Algorithms/FFT/Higham24Radix2.lean), [`Circulant/Higham24.lean`](../LeanFpAnalysis/FP/Algorithms/Circulant/Higham24.lean) | [`chapter24/CHAPTER24_FORMALIZATION_REPORT.md`](chapter24/CHAPTER24_FORMALIZATION_REPORT.md) |
+| 24, FFT and circulants | [`FFT/Higham24.lean`](../LeanFpAnalysis/FP/Algorithms/FFT/Higham24.lean), [`FFT/Higham24Radix2.lean`](../LeanFpAnalysis/FP/Algorithms/FFT/Higham24Radix2.lean), [`Circulant/Higham24.lean`](../LeanFpAnalysis/FP/Algorithms/Circulant/Higham24.lean), [`Circulant/Higham24ForwardPerturbation.lean`](../LeanFpAnalysis/FP/Algorithms/Circulant/Higham24ForwardPerturbation.lean), [`Circulant/Higham24Rounded.lean`](../LeanFpAnalysis/FP/Algorithms/Circulant/Higham24Rounded.lean), [`Circulant/Higham24InverseFFT.lean`](../LeanFpAnalysis/FP/Algorithms/Circulant/Higham24InverseFFT.lean), [`Circulant/Higham24LiteralSolver.lean`](../LeanFpAnalysis/FP/Algorithms/Circulant/Higham24LiteralSolver.lean), [`Circulant/Higham24BackwardStability.lean`](../LeanFpAnalysis/FP/Algorithms/Circulant/Higham24BackwardStability.lean) | [`chapter24/CHAPTER24_FORMALIZATION_REPORT.md`](chapter24/CHAPTER24_FORMALIZATION_REPORT.md) |
 | 25, nonlinear systems | [`Nonlinear/Higham25.lean`](../LeanFpAnalysis/FP/Algorithms/Nonlinear/Higham25.lean), [`Nonlinear/Higham25Problem25_1.lean`](../LeanFpAnalysis/FP/Algorithms/Nonlinear/Higham25Problem25_1.lean) | [`chapter25/CHAPTER25_FORMALIZATION_REPORT.md`](chapter25/CHAPTER25_FORMALIZATION_REPORT.md) |
 | 26, automatic error analysis | [`AutomaticErrorAnalysis/Higham26.lean`](../LeanFpAnalysis/FP/Algorithms/AutomaticErrorAnalysis/Higham26.lean) | [`chapter26/CHAPTER26_FORMALIZATION_REPORT.md`](chapter26/CHAPTER26_FORMALIZATION_REPORT.md) |
 | 27, software issues | [`SoftwareIssues/Higham27.lean`](../LeanFpAnalysis/FP/Algorithms/SoftwareIssues/Higham27.lean) | [`chapter27/CHAPTER27_FORMALIZATION_REPORT.md`](chapter27/CHAPTER27_FORMALIZATION_REPORT.md) |
-| 28, test matrices | [`TestMatrices/Higham28.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28.lean), [`Higham28Exact.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Exact.lean), [`Higham28Probability.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Probability.lean), [`Higham28Asymptotics.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Asymptotics.lean), [`Higham28Contracts.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Contracts.lean) | [`chapter28/CHAPTER28_FORMALIZATION_REPORT.md`](chapter28/CHAPTER28_FORMALIZATION_REPORT.md) |
+| 28, test matrices | [`TestMatrices/Higham28.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28.lean), [`Higham28Exact.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Exact.lean), [`Higham28Probability.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Probability.lean), [`Higham28Asymptotics.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Asymptotics.lean), [`Higham28Contracts.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Contracts.lean), [`Higham28Stewart.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Stewart.lean), [`Higham28Pascal.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Pascal.lean) | [`chapter28/CHAPTER28_FORMALIZATION_REPORT.md`](chapter28/CHAPTER28_FORMALIZATION_REPORT.md) |
+
+Chapter 28's Toeplitz/companion exact entry points include
+`symmetricToeplitz_sine_eigenpair`, `toeplitzSineVector_ne_zero`,
+`higham9_sineMatrix_isOrthogonal`, and
+`symmetricToeplitz_orthogonal_diagonalization` for the complete symmetric
+Toeplitz family, plus `companion_transpose_krylov_eq_reverseBasis`,
+`companion_hasLeftCyclicVector`, and `companion_conjTranspose_mul_self` for
+the companion Krylov and Gram constructions. `companionRankMinor_det` and
+`companionMatrix_sub_scalar_rank_ge` prove the printed rank-form
+nonderogatory statement. The general nonsymmetric
+Toeplitz square-root spectrum, second-difference condition asymptotic,
+companion characteristic-polynomial equality, and singular-value formula
+remain OPEN; no transfer that assumes one of those
+missing conclusions is counted as closure.
+
+Chapter 26's multidirectional-search entry points are `MDSSimplex`,
+`MDSSimplex.reorderBest`, the exact `reflect`/`expand`/`contract` maps,
+`MDSSimplex.iteration`, `MDSSimplex.IterationSpec`, and
+`MDSSimplex.SearchTrace`. They specify the printed simplex control flow without
+assuming optimization correctness, stationarity, convergence, or termination.
 
 Representative checked entry points are listed in
 [`examples/LibraryLookup.lean`](../examples/LibraryLookup.lean). Explicit-domain

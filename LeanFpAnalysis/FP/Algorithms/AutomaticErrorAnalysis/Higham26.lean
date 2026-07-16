@@ -24,9 +24,9 @@ global maximizer of a real objective on the unconstrained search space. -/
 def IsGlobalMax {α : Type*} (f : α → ℝ) (x : α) : Prop :=
   ∀ y, f y ≤ f x
 
-/-- A direct-search specification uses function values only: its output, when
-certified, is a global maximizer of the objective in equation (26.1).  Concrete
-heuristics in the chapter do not provide this certificate. -/
+/-- Optional global-optimality postcondition for equation (26.1), retained as
+general vocabulary.  This is not an operational direct-search specification,
+and no Chapter 26 algorithm assumes or produces this certificate. -/
 def DirectSearchSpec {α : Type*} (search : (α → ℝ) → α) : Prop :=
   ∀ f, IsGlobalMax f (search f)
 
@@ -50,6 +50,169 @@ noncomputable def mdsRelativeSize {n : ℕ} (v0 : RVec n)
 def mdsConverged {n : ℕ} (tol : ℝ) (v0 : RVec n)
     (v : Fin n → RVec n) : Prop :=
   mdsRelativeSize v0 v ≤ tol
+
+/-! ### Multidirectional-search iteration (Section 26.2) -/
+
+/-- An `n`-dimensional MDS simplex is stored as its distinguished vertex
+`v₀` together with the other `n` vertices.  The source reorders these `n+1`
+vertices after a successful trial so that `v₀` has maximal objective value. -/
+structure MDSSimplex (n : ℕ) where
+  base : RVec n
+  other : Fin n → RVec n
+
+namespace MDSSimplex
+
+/-- All `n+1` vertices, with source vertex zero represented by `base`. -/
+def point {n : ℕ} (s : MDSSimplex n) : Fin (n + 1) → RVec n :=
+  Fin.cases s.base s.other
+
+@[simp] theorem point_zero {n : ℕ} (s : MDSSimplex n) :
+    s.point 0 = s.base := rfl
+
+@[simp] theorem point_succ {n : ℕ} (s : MDSSimplex n) (i : Fin n) :
+    s.point i.succ = s.other i := rfl
+
+/-- The source ordering invariant `f(v₀) = maxᵢ f(vᵢ)`. -/
+def OrderedFor {n : ℕ} (s : MDSSimplex n) (f : RVec n → ℝ) : Prop :=
+  ∀ i, f (s.other i) ≤ f s.base
+
+/-- A maximizing vertex of the finite family.  This is a deterministic
+mathematical choice, not a hypothesis that the search finds a global maximizer
+of the objective on `ℝⁿ`. -/
+noncomputable def bestIndex {n : ℕ} (f : RVec n → ℝ)
+    (s : MDSSimplex n) : Fin (n + 1) :=
+  Classical.choose (Finite.exists_max (fun i : Fin (n + 1) => f (s.point i)))
+
+theorem le_bestIndex {n : ℕ} (f : RVec n → ℝ)
+    (s : MDSSimplex n) (i : Fin (n + 1)) :
+    f (s.point i) ≤ f (s.point (bestIndex f s)) :=
+  Classical.choose_spec
+    (Finite.exists_max (fun i : Fin (n + 1) => f (s.point i))) i
+
+/-- The maximum objective value among the `n+1` simplex vertices. -/
+noncomputable def bestValue {n : ℕ} (f : RVec n → ℝ)
+    (s : MDSSimplex n) : ℝ :=
+  f (s.point (bestIndex f s))
+
+theorem point_le_bestValue {n : ℕ} (f : RVec n → ℝ)
+    (s : MDSSimplex n) (i : Fin (n + 1)) :
+    f (s.point i) ≤ bestValue f s := by
+  exact le_bestIndex f s i
+
+/-- Reorder a simplex by swapping a maximizing vertex into position zero.
+The remaining vertices are permuted by the same swap, so no vertex is added or
+discarded. -/
+noncomputable def reorderBest {n : ℕ} (f : RVec n → ℝ)
+    (s : MDSSimplex n) : MDSSimplex n where
+  base := s.point (bestIndex f s)
+  other := fun i =>
+    s.point ((Equiv.swap (0 : Fin (n + 1)) (bestIndex f s)) i.succ)
+
+theorem reorderBest_orderedFor {n : ℕ} (f : RVec n → ℝ)
+    (s : MDSSimplex n) : (reorderBest f s).OrderedFor f := by
+  intro i
+  exact le_bestIndex f s
+    ((Equiv.swap (0 : Fin (n + 1)) (bestIndex f s)) i.succ)
+
+/-- Reflection of every non-base vertex through `v₀`:
+`rᵢ = v₀ + (v₀-vᵢ) = 2v₀-vᵢ`. -/
+def reflect {n : ℕ} (s : MDSSimplex n) : MDSSimplex n where
+  base := s.base
+  other := fun i j => s.base j + (s.base j - s.other i j)
+
+/-- Expansion doubles each reflected edge from `v₀`:
+`eᵢ = v₀ + 2(v₀-vᵢ)`. -/
+def expand {n : ℕ} (s : MDSSimplex n) : MDSSimplex n where
+  base := s.base
+  other := fun i j => s.base j + 2 * (s.base j - s.other i j)
+
+/-- Contraction halves every edge incident on `v₀`:
+`cᵢ = v₀ + (vᵢ-v₀)/2`. -/
+noncomputable def contract {n : ℕ} (s : MDSSimplex n) : MDSSimplex n where
+  base := s.base
+  other := fun i j => s.base j + (s.other i j - s.base j) / 2
+
+@[simp] theorem reflect_base {n : ℕ} (s : MDSSimplex n) :
+    s.reflect.base = s.base := rfl
+
+@[simp] theorem reflect_other {n : ℕ} (s : MDSSimplex n)
+    (i : Fin n) (j : Fin n) :
+    s.reflect.other i j = s.base j + (s.base j - s.other i j) := rfl
+
+@[simp] theorem expand_base {n : ℕ} (s : MDSSimplex n) :
+    s.expand.base = s.base := rfl
+
+@[simp] theorem expand_other {n : ℕ} (s : MDSSimplex n)
+    (i : Fin n) (j : Fin n) :
+    s.expand.other i j = s.base j + 2 * (s.base j - s.other i j) := rfl
+
+@[simp] theorem contract_base {n : ℕ} (s : MDSSimplex n) :
+    s.contract.base = s.base := rfl
+
+@[simp] theorem contract_other {n : ℕ} (s : MDSSimplex n)
+    (i : Fin n) (j : Fin n) :
+    s.contract.other i j = s.base j + (s.other i j - s.base j) / 2 := rfl
+
+private noncomputable def iterationOrdered {n : ℕ} :
+    ℕ → (RVec n → ℝ) → MDSSimplex n → Option (MDSSimplex n)
+  | 0, _f, _current => none
+  | fuel + 1, f, current =>
+      let reflected := current.reflect
+      if bestValue f reflected > f current.base then
+        let expanded := current.expand
+        if bestValue f expanded > bestValue f reflected then
+          some (reorderBest f expanded)
+        else
+          some (reorderBest f reflected)
+      else
+        let contracted := current.contract
+        if bestValue f contracted > bestValue f current then
+          some (reorderBest f contracted)
+        else
+          iterationOrdered fuel f contracted
+
+/-- Higham, 2nd ed., Section 26.2, pp. 475-476: one multidirectional-search
+iteration with at most `fuel` contraction retries.
+
+The input is first reordered so that `v₀` is a best current vertex.  A
+successful reflection is expanded when the expanded simplex has the larger
+maximum; otherwise the reflected simplex is accepted.  An unsuccessful
+reflection contracts the simplex.  A contraction improving on the current
+simplex is accepted, while a non-improving contraction restarts the reflection
+test about the same `v₀`, with one less unit of fuel.  `none` records that this
+finite observation budget did not witness completion of the iteration; it
+makes no termination or optimization-correctness assumption. -/
+noncomputable def iteration {n : ℕ} (fuel : ℕ) (f : RVec n → ℝ)
+    (input : MDSSimplex n) : Option (MDSSimplex n) :=
+  iterationOrdered fuel f (reorderBest f input)
+
+/-- Relational, unbounded specification of a completed MDS iteration: some
+finite number of contraction retries reaches one of the source's accepted
+reflection, expansion, or contraction branches. -/
+def IterationSpec {n : ℕ} (f : RVec n → ℝ)
+    (input output : MDSSimplex n) : Prop :=
+  ∃ fuel, iteration fuel f input = some output
+
+/-- The source stopping test (26.3), specialized to an MDS simplex. -/
+def Converged {n : ℕ} (tol : ℝ) (s : MDSSimplex n) : Prop :=
+  mdsConverged tol s.base s.other
+
+/-- General finite execution semantics for the MDS method: stop exactly when
+the printed test (26.3) holds; otherwise complete one reflection/expansion/
+contraction iteration and continue.  This trace records algorithm control flow
+only.  In particular it assumes neither existence of a maximizer nor
+stationarity, convergence, or global correctness of the returned simplex. -/
+inductive SearchTrace {n : ℕ} (tol : ℝ) (f : RVec n → ℝ) :
+    MDSSimplex n → MDSSimplex n → Prop where
+  | stop (s : MDSSimplex n) (hconverged : s.Converged tol) :
+      SearchTrace tol f s s
+  | next {s nextState output : MDSSimplex n}
+      (hnotConverged : ¬ s.Converged tol)
+      (hiteration : IterationSpec f s nextState)
+      (htail : SearchTrace tol f nextState output) :
+      SearchTrace tol f s output
+
+end MDSSimplex
 
 /-- Higham, 2nd ed., Section 26.3.2, p. 478, equation (26.4): the normalized
 minimum of the left and right inverse residuals, in the repository's exact

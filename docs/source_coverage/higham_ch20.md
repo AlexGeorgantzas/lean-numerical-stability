@@ -7,12 +7,14 @@
 > `docs/chapter20/CHAPTER20_NOT_PROVED_LEDGER.md`, and
 > `docs/chapter20/CHAPTER20_FORMALIZATION_REPORT.md` for the audited source
 > counts, current Lean endpoints, source-strengthening boundaries, and
-> verification result. The Chapter 20 selected-scope gate is **PASS
-> (EXPLICIT-DOMAIN)**: Theorem 20.4's total perturbation envelope and Theorem
-> 20.7's rounded Cox--Higham producer are closed with visible implementation
-> domains. The p. 404 square-or-tall invariance is closed as an exact source discrepancy.
-> Qualitative and under-specified rows are separately
-> deferred rather than counted as blockers.
+> verification result. The Chapter 20 selected-scope gate is **FAIL**.
+> Theorem 20.4's total perturbation envelope and Theorem 20.7's rounded
+> Cox--Higham producer are closed with visible implementation domains, but the
+> separate p. 395 row-sorting cap for `alpha_i`/`beta_i` and row-order
+> invariance of `phi` lack an executable producer. The p. 404 square-or-tall
+> invariance is closed as an exact source discrepancy. Qualitative and
+> under-specified rows are separately deferred rather than counted as
+> blockers.
 
 ## Source and Scope
 
@@ -3090,9 +3092,10 @@ classifications and proof-source decisions are in
 `docs/chapter20/CHAPTER20_PROOF_SOURCE_LEDGER.md`, and
 `docs/chapter20/CHAPTER20_FORMALIZATION_REPORT.md`.
 
-The Chapter 20 modular selected-scope gate is **PASS**. All 12 named results
-pass at their documented APIs, and all selected numbered equations are closed
-or explicitly deferred.
+The Chapter 20 modular selected-scope gate is **FAIL**. All 12 named results
+pass at their documented APIs, and the selected numbered equations are closed
+or explicitly deferred, but the separate precise p. 395 row-sorting cap and
+`phi`-invariance row remains selected and open.
 
 - The p. 385 zero-`Delta b` row is **PASS (EXPLICIT-DOMAIN)** through
   `metricGraphSmallness_of_frobNorm_le` and

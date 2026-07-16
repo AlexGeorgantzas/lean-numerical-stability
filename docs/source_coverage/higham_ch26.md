@@ -4,8 +4,9 @@ Source: Higham, 2nd ed., Chapter 26, printed pp. 471-487. Mode: core.
 
 | Source group | Status | Lean evidence |
 |---|---|---|
-| (26.1) optimization specification | VERIFIED | `IsGlobalMax`, `DirectSearchSpec` |
+| (26.1) optimization problem | VERIFIED | `IsGlobalMax`; `DirectSearchSpec` remains only an unused optional global postcondition |
 | (26.2) AD stopping test | VERIFIED | `adConverged` |
+| Section 26.2 MDS algorithm | VERIFIED | `MDSSimplex`, exact `reflect`/`expand`/`contract` maps, `reorderBest`, fuel-observed `iteration`, unbounded `IterationSpec`, and repeat-until-stopped `SearchTrace`; no optimizer-correctness or termination assumption |
 | (26.3) MDS stopping test | VERIFIED | `mdsRelativeSize`, `mdsConverged` |
 | (26.4) inverse residual measure | VERIFIED | `inverseResidualStabilityMeasure` |
 | (26.5) cubic branches | VERIFIED | `cubicWCubePlus_quadratic`, `cubicWCubeMinus_quadratic` |
