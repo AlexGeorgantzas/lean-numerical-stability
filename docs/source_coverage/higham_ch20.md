@@ -1,5 +1,16 @@
 # Higham Chapter 20 Source Coverage Ledger
 
+> **Current-gate notice (2026-07-16).** This file is an append-only historical
+> coverage log, not the authoritative current completion verdict. Use
+> `docs/chapter20/CHAPTER20_SOURCE_INVENTORY.md`,
+> `docs/chapter20/CHAPTER20_PROOF_SOURCE_LEDGER.md`,
+> `docs/chapter20/CHAPTER20_NOT_PROVED_LEDGER.md`, and
+> `docs/chapter20/CHAPTER20_FORMALIZATION_REPORT.md` for the audited source
+> counts, current Lean endpoints, source-strengthening boundaries, and
+> verification result. The Chapter 20 modular selected-scope gate is **PASS**;
+> the literal MGS and pivoted-QR paths have concrete producers, while sharper
+> printed constants remain explicitly conditional.
+
 ## Source and Scope
 
 - Edition: Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed. (SIAM, 2002), verified from repository metadata and the SIAM chapter PDF title metadata.
@@ -3067,7 +3078,86 @@ Additional Theorem 20.8 unique general reduced-Wedin GQR same-witness increment:
 
 Additional Theorem 20.7 upper-triangular sqrt-balanced row-policy increment: `theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_mono_of_activeMaxPivotColumn_upper_triangular_diag_ne_zero_sqrtBalancedRowPolicy_of_abs_b_le_nat`, `Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_mono_of_activeMaxPivotColumn_upper_triangular_diag_ne_zero_sqrtBalancedRowPolicy_of_abs_b_le_nat`, and `Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_mono_of_activeMaxPivotColumn_upper_triangular_diag_ne_zero_sqrtBalancedRowPolicy_of_abs_b_le_nat` extend the explicit `sqrt(m)` active-suffix row-domination policy to the fixed-order upper-triangular/diagonal-nonzero convenience surface.  This removes the separate unweighted finite active-ratio premise from that route while preserving active-max pivot choice, upper-triangular and diagonal-nonzero stage facts, signed-stage recurrences, source RHS domination, and the row-wise certificate or concrete perturbation bounds as explicit obligations.  Validation: focused `lake env lean LeanFpAnalysis/FP/Algorithms/LeastSquares/LSE.lean`, target `lake build LeanFpAnalysis.FP.Algorithms.LeastSquares.LSE:olean`, `git diff --check`, added-line forbidden-token scan, and namespaced dependency checks passed; the exact-perturbation companion dependency check reported only `propext`, `Classical.choice`, and `Quot.sound`.  No GPT Pro oracle answer was obtained or adopted.
 
-## Next Row
+## Audited closure snapshot — 2026-07-16
+
+This snapshot supersedes the historical queue below. The authoritative row
+classifications and proof-source decisions are in
+`docs/chapter20/CHAPTER20_SOURCE_INVENTORY.md`,
+`docs/chapter20/CHAPTER20_NOT_PROVED_LEDGER.md`,
+`docs/chapter20/CHAPTER20_PROOF_SOURCE_LEDGER.md`, and
+`docs/chapter20/CHAPTER20_FORMALIZATION_REPORT.md`.
+
+The Chapter 20 modular selected-scope gate is **PASS**. All 12 named results
+pass at their documented APIs, and all selected numbered equations are closed
+or explicitly deferred.
+
+- The p. 385 zero-`Delta b` row is **PASS (EXPLICIT-DOMAIN)** through
+  `metricGraphSmallness_of_frobNorm_le` and
+  `householder_qr_fl_backSub_matrix_only_backward_error_all_rhs_of_scalar_smallness`.
+  The former universal metric-graph guard is derived from the source-sized
+  Frobenius perturbation bound plus the two explicit scalar conditions
+  `rhsRadius fp m n < 1` and
+  `metricDefectEnvelope fp m n < 1`.
+- Problem 20.5 is **PASS (LITERAL END-TO-END ACCUMULATED-POLAR;
+  COMPUTED-GRAM EXPLICIT-DOMAIN)**. The literal rounded Algorithm 19.12 loop
+  now has a proved telescoped product-error budget and polar-resolvent global
+  repair. `actualAugmentedMGSBackSub_end_to_end_accumulatedPolar` runs that
+  repair with the actual `[A b]` factors and literal `fl_backSub` return.
+  `actualAugmentedMGSBackSub_end_to_end_localGram` exposes the stronger
+  primitive numerator under the directly computed premise
+  `||I-QhatᵀQhat||_F <= gramCoeff*u`; it does not assume a repair or LS
+  conclusion. Neither endpoint claims Higham Theorem 19.13's stronger
+  condition-number-independent printed `c3*u` coefficient. The accumulated-
+  polar endpoint has no external repair premise on its explicit
+  tall/full-pivot/positive-column and gamma-valid domain.
+- Theorem 20.7 is **PASS (CH20 ASSEMBLY / LITERAL RUNTIME PRODUCER;
+  EXPLICIT-DOMAIN; SOURCE-COORDINATE CORRECTION)** through
+  `PivotedStoredQRSplit3BNumericalContract` and
+  `fl_pivotedStoredQR_returnedX_exactMinimizer_of_split3B`. The contract has no
+  minimizer, returned-vector, or final backward-error field. The formal
+  Cox--Higham (3.7) prefix expansion and `pivotedStoredQR_QdR_source_n_sq_le`
+  in `Higham20Theorem20_7QdR.lean` supply direct `Q[DeltaR;0]` support with
+  `backSubCoeff = 16 * eta` and no strict sigma-history premise. The formal
+  obstructions `sigmaHistory_not_forall_literal_rounded_trace` and
+  `pivotPositionFactor_not_le_sourceColumnFactor_forall` reject the legacy
+  strict rounded sigma history and the false source-column relabeling of the
+  pivot-position `j^2` factor. Corrected source-coordinate endpoints use the
+  proved uniform `n^2` envelope. `Higham20Theorem20_7Runtime.lean` now supplies
+  the complete literal producer: `pivotedStoredQR_split3B_numericalContract_runtime`
+  derives all three numerical fields from finite local matrix/RHS `Eseq` norm
+  sums and final top-`R` column norms, and
+  `fl_pivotedStoredQR_returnedX_exactMinimizer_of_runtime` closes the actual
+  QR/RHS/back-substitution execution on the explicit `n > 0`, gamma-valid,
+  nonzero-top-diagonal domain. This is a conservative row-uniform,
+  execution-derived exact-Real runtime certificate, not a Lean-executability
+  claim or the printed source-row compression.
+
+There are no Chapter 20-owned selected blockers or missing literal numerical
+producers. The Cox--Higham `alpha`, `beta`, `phi`, component-budget, and
+row-sorting form remains a stronger conditional source-row compression, not a
+repository no-placeholder blocker. The literal MGS global repair is concrete;
+only the stronger printed condition-independent Theorem 19.13 `c3*u`
+coefficient remains upstream for that row.
+
+All selected numbered equations are closed or explicitly deferred. Newly
+closed rows include (20.13a/b), (20.16), (20.25), (20.26), the sharp p. 385
+residual estimate, the alternative Theorem 20.2 combined bound, Problem 20.3,
+the actual rounded cross-product example, and the constructed p. 399
+elimination method. The stronger p. 402 equal-rank Wedin sentence is **PASS /
+SOURCE DISCREPANCY**: a rational equal-rank counterexample refutes its printed
+solution bound.
+
+All 28 Chapter 20 modules, including the Split 3B contract, Cox--Higham support,
+and runtime producer modules, are aggregate-imported. The literal rounded MGS
+and quantitative repair modules are imported with their Chapter 20 consumer.
+The final focused six-module MGS/Theorem 20.7 build passed all 3087 jobs; the
+aggregate algorithms build passed all 3878 jobs; and the full repository build
+passed all 3931 jobs. Nine representative endpoint dependency checks each
+reported exactly `propext`, `Classical.choice`, and `Quot.sound`; the
+forbidden-declaration scan, aggregate-import coverage, and `git diff --check`
+also passed.
+
+## Historical Next Row (superseded)
 
 - The row-policy path now has source-side row-permutation discharges for row nonzero witnesses, RHS domination, the weighted finite active-ratio maximum, the active-row geometric/accumulated-error alpha/beta maximum wrappers, and certificate-level transport back to original source rows.  The next Theorem 20.7 row-policy target should be the actual QR-specific source policy that proves the permuted unweighted finite active-ratio `<= sqrt(m)` bound and feeds active-max pivot choice, scalar compact-budget control, leading-block/nonbreakdown control, stage bounds, perturbation construction, and weighted-LS exactness into the existing conditional wrappers.
 - The same reduction is now wired into the concrete stored-Householder active-tail wrapper.  Downstream stored-QR callers should prefer the `_activeRatioMax_le_of_abs_b_le_nat` surface when their RHS is dominated by the scaled source row maximum, and should reserve the older two-max surface for cases where the weighted finite ratio is proved independently.
