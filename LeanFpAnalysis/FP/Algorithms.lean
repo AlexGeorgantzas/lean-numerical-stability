@@ -59,6 +59,7 @@ import LeanFpAnalysis.FP.Algorithms.LU.BlockLUSPDSourceClosure
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLUFirstOrderFamilies
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLUComputationSourceClosure
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLUSPDFamilies
+import LeanFpAnalysis.FP.Algorithms.LU.BlockLUTable13_1Families
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLUArbitraryNormSourceClosure
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLUPointRowGrowthSourceClosure
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLUScalarGrowthBridge
