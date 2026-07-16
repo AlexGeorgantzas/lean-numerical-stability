@@ -54,6 +54,7 @@ import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalRecurrence
 import LeanFpAnalysis.FP.Algorithms.LU.SpecialMatrices
 import LeanFpAnalysis.FP.Algorithms.LU.Doolittle
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLU
+import LeanFpAnalysis.FP.Algorithms.LU.BlockLUVarying
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLUSPDSourceClosure
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLUFirstOrderFamilies
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLUComputationSourceClosure
