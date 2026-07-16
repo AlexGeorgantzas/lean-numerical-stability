@@ -366,6 +366,10 @@
     block LU construction with the one-step product bound
   - blockMatrixIdentity, BlockMatrixTwoSidedInverse, BlockMatrixNonsingular,
     blockMatrixFlat, blockMatrixFlatFin, blockMatrixRowsFlatFin,
+    maxEntryNorm_diagonalBlock_le_blockMatrixFlatFin,
+    maxEntryNorm_upperTailRowFlat_le_blockMatrixFlatFin,
+    dhsBlockForwardConventionalSolution,
+    dhsBlockForwardConventionalSolution_flat,
     blockMatrixFlatFin_add_mul_blockMatrixRowsFlatFin_apply,
     blockMatrixFirstSplitFlat,
     blockMatrixFirstSplitA11, blockMatrixFirstSplitA12,
@@ -466,6 +470,7 @@
     dhs_block_back_substitution_firstOrder,
     dhs_block_back_substitution_firstOrder_from_rows_spec_of_coeff_bounds,
     dhs_block_back_substitution_rows_spec_from_fixed_block_rows_and_eq13_15,
+    dhs_block_back_substitution_rows_and_firstOrder_from_suffix_row_witnesses_and_eq13_15,
     dhs_block_back_substitution_firstOrder_from_fixed_block_rows_and_eq13_15_of_coeff_bounds,
     dhs_block_back_upper_rows_spec_from_row_witnesses,
     dhs_block_back_fixed_rows_spec_from_upper_rows_and_eq13_15,
@@ -484,8 +489,11 @@
     dhs_conventional_diagonal_block_solve_specs,
     dhs_block_back_substitution_firstOrder_from_conventional_local_backSub,
     dhs_block_back_substitution_firstOrder_from_conventional_recursive_block_solution,
+    dhs_block_back_substitution_rows_and_firstOrder_from_conventional_suffix_rows_of_small_roundoff,
+    dhs_block_back_substitution_rows_and_firstOrder_from_conventional_recursive_block_solution,
     dhs_block_back_substitution_firstOrder_from_conventional_backSub_single_rhs,
     dhs_cross_product_firstOrder_of_componentwise_backward,
+    dhs_cross_product_firstOrder_of_forward_componentwise_and_back_rows,
     dhs_block_forward_back_substitution_firstOrder_from_conventional_single_rhs,
     dhs_lu_solve_perturbation_firstOrder_from_conventional_single_rhs,
     dhs_block_back_substitution_leading_term_le_of_coeff_bounds,
@@ -573,11 +581,12 @@
     higham13_theorem13_6_implementation1_from_DHS_partitioned_forward_back_substitution_specs_and_implementation1_local_spec,
     higham13_theorem13_6_implementation1_from_DHS_partitioned_forward_back_substitution_specs_of_coeff_bounds_and_implementation1_local_spec,
     higham13_theorem13_6_implementation1_from_DHS_partitioned_solve_layers_and_implementation1_local_spec,
+    higham13_theorem13_6_implementation1_from_partitioned_factorization_and_conventional_recursive_solve,
     higham13_theorem13_6_eq13_16_firstOrder_from_DHS_estimates,
     higham13_theorem13_6_implementation1_conditional_from_DHS_estimates:
-    Theorem 13.6 scalar and conditional Eq.13.16 aggregation, with a named
-    surface for the still-open Demmel--Higham--Schreiber estimates and the
-    stricter DHS Theorem 2.1 proof-source boundary
+    Theorem 13.6 scalar and conditional Eq.13.16 aggregation, plus the concrete
+    conventional forward/recursive-block-back solve endpoint from a checked
+    partitioned factorization and Eq.13.14 local spec
   - maxEntryNormRect_rectMatMul_le, maxEntryNorm_matrix_mul_le_dim,
     maxEntryNorm_matrix_mul_mul_le_dim_sq,
     maxEntryNorm_matrix_mul_dimension_free_counterexample,
@@ -2851,6 +2860,41 @@ lemma FirstOrderLe.add {u leading₁ leading₂ value₁ value₂ value : ℝ}
   refine ⟨K₁ + K₂, add_nonneg hK₁ hK₂, ?_⟩
   linarith
 
+/-- The product of two first-order quantities is a pure second-order term.
+
+    Writing each leading term as `cᵢ*u`, the explicit `FirstOrderLe`
+    witnesses factor both upper bounds by `u`.  Their product is therefore a
+    nonnegative multiple of `u^2`, exactly the remainder shape used in the
+    DHS solve aggregation. -/
+lemma FirstOrderLe.mul_is_secondOrder
+    {u c₁ c₂ value₁ value₂ value : ℝ}
+    (hu : 0 ≤ u) (hc₁ : 0 ≤ c₁) (hc₂ : 0 ≤ c₂)
+    (hvalue₂ : 0 ≤ value₂)
+    (h₁ : FirstOrderLe u (c₁ * u) value₁)
+    (h₂ : FirstOrderLe u (c₂ * u) value₂)
+    (hvalue : value ≤ value₁ * value₂) :
+    FirstOrderLe u 0 value := by
+  rcases h₁ with ⟨K₁, hK₁, h₁⟩
+  rcases h₂ with ⟨K₂, hK₂, h₂⟩
+  let C₁ := c₁ + K₁ * u
+  let C₂ := c₂ + K₂ * u
+  have hC₁ : 0 ≤ C₁ := add_nonneg hc₁ (mul_nonneg hK₁ hu)
+  have hC₂ : 0 ≤ C₂ := add_nonneg hc₂ (mul_nonneg hK₂ hu)
+  have hv₁ : value₁ ≤ u * C₁ := by
+    calc
+      value₁ ≤ c₁ * u + K₁ * u ^ 2 := h₁
+      _ = u * C₁ := by simp only [C₁]; ring
+  have hv₂ : value₂ ≤ u * C₂ := by
+    calc
+      value₂ ≤ c₂ * u + K₂ * u ^ 2 := h₂
+      _ = u * C₂ := by simp only [C₂]; ring
+  refine ⟨C₁ * C₂, mul_nonneg hC₁ hC₂, ?_⟩
+  calc
+    value ≤ value₁ * value₂ := hvalue
+    _ ≤ (u * C₁) * (u * C₂) :=
+      mul_le_mul hv₁ hv₂ hvalue₂ (mul_nonneg hu hC₁)
+    _ = 0 + (C₁ * C₂) * u ^ 2 := by ring
+
 /-- A finite supremum of quantities with the same first-order leading term
     retains that leading term.  The hidden second-order witnesses are bounded
     by their finite sum. -/
@@ -3293,6 +3337,76 @@ noncomputable def blockMatrixRowsFlatFin {m r : ℕ} {p : Type*}
     (i : Fin m) (s : Fin r) (k : p) :
     blockMatrixRowsFlatFin X (finProdFinEquiv (i, s)) k = X i s k := by
   simp [blockMatrixRowsFlatFin]
+
+/-- A diagonal block's max-entry norm is bounded by that of the full flattened
+    block matrix. -/
+theorem maxEntryNorm_diagonalBlock_le_blockMatrixFlatFin
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (i : Fin m) :
+    maxEntryNorm hr (U i i) ≤
+      maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin U) := by
+  apply maxEntryNorm_le_of_entry_le_bound
+  intro s t
+  simpa using entry_le_maxEntryNorm (Nat.mul_pos hm hr)
+    (blockMatrixFlatFin U) (finProdFinEquiv (i, s))
+      (finProdFinEquiv (i, t))
+
+/-- The masked strict-upper block row is an entrywise submatrix of the full
+    flattened upper factor, so it needs no independent norm majorant. -/
+theorem maxEntryNorm_upperTailRowFlat_le_blockMatrixFlatFin
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (i : Fin m) :
+    maxEntryNormRect hr (Nat.mul_pos hm hr)
+        (dhsBlockBackUpperTailRowFlat i (U i)) ≤
+      maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin U) := by
+  apply maxEntryNormRect_le_of_entry_abs_le
+  intro s jt
+  let q := finProdFinEquiv.symm jt
+  have hjt : finProdFinEquiv q = jt := finProdFinEquiv.apply_symm_apply jt
+  rw [← hjt, dhsBlockBackUpperTailRowFlat_apply]
+  by_cases hiq : i.val < q.1.val
+  · have hiq' : i.val < jt.val / r := by simpa [q] using hiq
+    simpa [blockMatrixFlatFin, hiq'] using
+      entry_le_maxEntryNorm (Nat.mul_pos hm hr)
+        (blockMatrixFlatFin U) (finProdFinEquiv (i, s)) jt
+  · have hiq' : ¬i.val < jt.val / r := by simpa [q] using hiq
+    simp [hiq', maxEntryNorm_nonneg]
+
+/-- Conventional flattened forward substitution, reblocked into uniform
+    single-column rows for the subsequent recursive block-back solve. -/
+noncomputable def dhsBlockForwardConventionalSolution {m r : ℕ}
+    (fp : FPModel)
+    (Lhat : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (b : Fin (m * r) → ℝ) :
+    Fin m → Matrix (Fin r) (Fin 1) ℝ := fun i a _ =>
+  fl_forwardSub fp (m * r) (blockMatrixFlatFin Lhat) b
+    (finProdFinEquiv (i, a))
+
+@[simp] theorem dhsBlockForwardConventionalSolution_apply {m r : ℕ}
+    (fp : FPModel)
+    (Lhat : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (b : Fin (m * r) → ℝ) (i : Fin m) (a : Fin r) (k : Fin 1) :
+    dhsBlockForwardConventionalSolution fp Lhat b i a k =
+      fl_forwardSub fp (m * r) (blockMatrixFlatFin Lhat) b
+        (finProdFinEquiv (i, a)) := rfl
+
+/-- Reflattening the reblocked conventional forward solution recovers the
+    original scalar `fl_forwardSub` output exactly. -/
+theorem dhsBlockForwardConventionalSolution_flat {m r : ℕ}
+    (fp : FPModel)
+    (Lhat : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (b : Fin (m * r) → ℝ) :
+    blockMatrixRowsFlatFin (dhsBlockForwardConventionalSolution fp Lhat b) =
+      (fun i (_k : Fin 1) =>
+        fl_forwardSub fp (m * r) (blockMatrixFlatFin Lhat) b i) := by
+  ext is k
+  let q := finProdFinEquiv.symm is
+  have his : finProdFinEquiv q = is := finProdFinEquiv.apply_symm_apply is
+  rw [← his]
+  rw [blockMatrixRowsFlatFin_apply,
+    dhsBlockForwardConventionalSolution_apply]
 
 /-- A product of a flattened uniform block row with stacked right-hand sides
     is the scalar entry of the corresponding sum of block products.
@@ -9745,6 +9859,80 @@ theorem dhs_block_back_substitution_firstOrder_from_suffix_row_witnesses_and_eq1
       Lhat U DeltaU X Y DhatCombined hu (add_nonneg hcSuffix hc₅)
       hA hL hU hLhat hc hFixed
 
+/-- Source-correct suffix witnesses with Eq.13.15 produce both the flattened
+    row certificate and the transported global back-substitution spec.
+
+    Retaining the row certificate exposes the entrywise perturbation bound
+    needed to prove that the forward/back cross product is `O(u^2)`; the
+    earlier wrapper deliberately projected this information away. -/
+theorem
+    dhs_block_back_substitution_rows_and_firstOrder_from_suffix_row_witnesses_and_eq13_15
+    {m r : ℕ}
+    (hm : 0 < m) (hr : 0 < r)
+    (u c₅ cSuffix cBack normA normL normU : ℝ)
+    (normUii : Fin m → ℝ)
+    (Lhat U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (DeltaDiag : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y Dhat : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hu : 0 ≤ u) (hc₅ : 0 ≤ c₅) (hcSuffix : 0 ≤ cSuffix)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hUUpper : ∀ i j : Fin m, j.val < i.val → U i j = 0)
+    (hNormUii : ∀ i : Fin m, normUii i ≤ normU)
+    (hLhat : maxEntryNorm (Nat.mul_pos hm hr)
+      (blockMatrixFlatFin Lhat) ≤ normL)
+    (hc : (((m * r : ℕ) : ℝ) * (cSuffix + c₅)) ≤ cBack)
+    (hRowWitnesses : ∀ i : Fin m,
+      ∃ (DeltaRow : Fin m → Matrix (Fin r) (Fin r) ℝ)
+          (rowPerturbBound : ℝ),
+        Dhat i +
+            (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+              U i j * X j) +
+            (∑ j : Fin m, DeltaRow j * X j) = Y i ∧
+        (∀ j : Fin m, j.val < i.val → DeltaRow j = 0) ∧
+        (∀ j : Fin m, ∀ s t : Fin r,
+          |DeltaRow j s t| ≤ rowPerturbBound) ∧
+        FirstOrderLe u (cSuffix * u * normU) rowPerturbBound)
+    (hDiagonal : ∀ i : Fin m,
+      DiagonalBlockSolveFirstOrderSpec u c₅ (normUii i)
+        (maxEntryNorm hr (DeltaDiag i))
+        (U i i) (DeltaDiag i) (X i) (Dhat i)) :
+    ∃ (DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+        (rowPerturbBound : ℝ),
+      DHSBlockBackSubstitutionRowsFirstOrderSpec
+        u (cSuffix + c₅) normU rowPerturbBound
+        (blockMatrixFlatFin U) (blockMatrixFlatFin DeltaU)
+        (blockMatrixRowsFlatFin X) (blockMatrixRowsFlatFin Y) ∧
+      DHSBlockBackSubstitutionFirstOrderSpec
+        u cBack normA normL normU
+        (maxEntryNorm (Nat.mul_pos hm hr)
+          (blockMatrixFlatFin Lhat * blockMatrixFlatFin DeltaU))
+        (blockMatrixFlatFin U) (blockMatrixFlatFin DeltaU)
+        (blockMatrixRowsFlatFin X) (blockMatrixRowsFlatFin Y) := by
+  obtain ⟨DeltaSuffix, suffixPerturbBound, hSuffix⟩ :=
+    dhs_block_back_suffix_rows_spec_from_row_witnesses
+      hm u cSuffix normU U X Y Dhat hRowWitnesses
+  obtain ⟨DeltaU, rowPerturbBound, DhatCombined, hFixed⟩ :=
+    dhs_block_back_fixed_rows_spec_from_suffix_rows_and_eq13_15
+      hm hr u c₅ cSuffix normU suffixPerturbBound normUii
+      U DeltaSuffix DeltaDiag X Y Dhat hu hc₅ hUUpper hNormUii
+      hSuffix hDiagonal
+  have hRows : DHSBlockBackSubstitutionRowsFirstOrderSpec
+      u (cSuffix + c₅) normU rowPerturbBound
+      (blockMatrixFlatFin U) (blockMatrixFlatFin DeltaU)
+      (blockMatrixRowsFlatFin X) (blockMatrixRowsFlatFin Y) :=
+    dhs_block_back_substitution_rows_spec_from_fixed_block_rows_and_eq13_15
+      hr u (cSuffix + c₅) (cSuffix + c₅) normU rowPerturbBound
+      (fun _i => normU) U DeltaU X Y DhatCombined hFixed
+  refine ⟨DeltaU, rowPerturbBound, hRows, ?_⟩
+  exact
+    dhs_block_back_substitution_firstOrder_from_rows_spec_of_coeff_bounds
+      (Nat.mul_pos hm hr) u (cSuffix + c₅) cBack
+      normA normL normU rowPerturbBound
+      (blockMatrixFlatFin Lhat) (blockMatrixFlatFin U)
+      (blockMatrixFlatFin DeltaU) (blockMatrixRowsFlatFin X)
+      (blockMatrixRowsFlatFin Y) hu (add_nonneg hcSuffix hc₅)
+      hA hL hU hLhat hc hRows
+
 /-- DHS two-block back-substitution RHS perturbation from the Chapter 13
     product and subtraction models.
 
@@ -11266,6 +11454,102 @@ theorem dhs_block_back_substitution_firstOrder_from_conventional_suffix_rows_of_
         (hUTailU i) hUiiU hDeltaDiagU (hDiagonal i).equation
   · exact hDiagonal
 
+/-- The fully derived conventional suffix-row analysis, retaining its
+    flattened row certificate as well as the global back-substitution spec.
+
+    This is the entrywise-strengthened companion to
+    `dhs_block_back_substitution_firstOrder_from_conventional_suffix_rows_of_small_roundoff`.
+    Its row coefficient is the exact assembled
+    `n^2 + 4*(n+r) + c₅`, before the final left-product factor `n`. -/
+theorem
+    dhs_block_back_substitution_rows_and_firstOrder_from_conventional_suffix_rows_of_small_roundoff
+    {m r : ℕ}
+    (fp : FPModel) (hm : 0 < m) (hr : 0 < r)
+    (c₅ cBack normA normL normU : ℝ)
+    (normUii : Fin m → ℝ)
+    (Lhat U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (DeltaDiag : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hSmallProduct : (((m * r : ℕ) : ℝ) * fp.u) ≤ 1 / 2)
+    (hc₅ : 0 ≤ c₅) (hSmallDiag : c₅ * fp.u ≤ 1)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hUUpper : ∀ i j : Fin m, j.val < i.val → U i j = 0)
+    (hNormUii : ∀ i : Fin m, normUii i ≤ normU)
+    (hLhat : maxEntryNorm (Nat.mul_pos hm hr)
+      (blockMatrixFlatFin Lhat) ≤ normL)
+    (hc : (((m * r : ℕ) : ℝ) *
+      ((((m * r : ℕ) : ℝ) ^ 2 +
+          4 * (((m * r : ℕ) : ℝ) + (r : ℝ))) + c₅)) ≤ cBack)
+    (hUTailU : ∀ i : Fin m,
+      maxEntryNormRect hr (Nat.mul_pos hm hr)
+        (dhsBlockBackUpperTailRowFlat i (U i)) ≤ normU)
+    (hUiiNorm : ∀ i : Fin m, maxEntryNorm hr (U i i) ≤ normUii i)
+    (hDeltaDiagConcrete : ∀ i : Fin m,
+      maxEntryNorm hr (DeltaDiag i) ≤ c₅ * fp.u * normUii i)
+    (hDiagonal : ∀ i : Fin m,
+      DiagonalBlockSolveFirstOrderSpec fp.u c₅ (normUii i)
+        (maxEntryNorm hr (DeltaDiag i))
+        (U i i) (DeltaDiag i) (X i)
+        (dhsBlockBackConventionalRHS fp i U X Y)) :
+    ∃ (DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+        (rowPerturbBound : ℝ),
+      DHSBlockBackSubstitutionRowsFirstOrderSpec
+        fp.u
+        ((((m * r : ℕ) : ℝ) ^ 2 +
+          4 * (((m * r : ℕ) : ℝ) + (r : ℝ))) + c₅)
+        normU rowPerturbBound
+        (blockMatrixFlatFin U) (blockMatrixFlatFin DeltaU)
+        (blockMatrixRowsFlatFin X) (blockMatrixRowsFlatFin Y) ∧
+      DHSBlockBackSubstitutionFirstOrderSpec
+        fp.u cBack normA normL normU
+        (maxEntryNorm (Nat.mul_pos hm hr)
+          (blockMatrixFlatFin Lhat * blockMatrixFlatFin DeltaU))
+        (blockMatrixFlatFin U) (blockMatrixFlatFin DeltaU)
+        (blockMatrixRowsFlatFin X) (blockMatrixRowsFlatFin Y) := by
+  have hγ : gammaValid fp (m * r) := by
+    unfold gammaValid
+    linarith
+  apply
+    dhs_block_back_substitution_rows_and_firstOrder_from_suffix_row_witnesses_and_eq13_15
+      hm hr fp.u c₅
+      (((m * r : ℕ) : ℝ) ^ 2 +
+        4 * (((m * r : ℕ) : ℝ) + (r : ℝ)))
+      cBack normA normL normU normUii Lhat U DeltaDiag X Y
+      (fun i => dhsBlockBackConventionalRHS fp i U X Y)
+      fp.u_nonneg hc₅
+      (add_nonneg (sq_nonneg (((m * r : ℕ) : ℝ)))
+        (mul_nonneg (by norm_num)
+          (add_nonneg (Nat.cast_nonneg (m * r)) (Nat.cast_nonneg r))))
+      hA hL hU hUUpper hNormUii hLhat hc
+  · intro i
+    apply dhs_block_back_upper_suffix_row_witness_from_conventional
+      fp hm hr i (4 * (((m * r : ℕ) : ℝ) + (r : ℝ))) normU c₅
+      (normUii i) (maxEntryNorm hr (DeltaDiag i)) U (DeltaDiag i)
+      X Y hγ
+      (mul_nonneg (by norm_num)
+        (add_nonneg (Nat.cast_nonneg (m * r)) (Nat.cast_nonneg r)))
+      hU (hUTailU i)
+    · intro _hSuffixNonzero
+      have hUiiU : maxEntryNorm hr (U i i) ≤ normU :=
+        le_trans (hUiiNorm i) (hNormUii i)
+      have hNormUiiNonneg : 0 ≤ normUii i :=
+        le_trans (maxEntryNorm_nonneg hr (U i i)) (hUiiNorm i)
+      have hDeltaDiagU : maxEntryNorm hr (DeltaDiag i) ≤ normU := by
+        calc
+          maxEntryNorm hr (DeltaDiag i) ≤
+              c₅ * fp.u * normUii i := hDeltaDiagConcrete i
+          _ ≤ 1 * normUii i :=
+            mul_le_mul_of_nonneg_right hSmallDiag hNormUiiNonneg
+          _ ≤ 1 * normU :=
+            mul_le_mul_of_nonneg_left (hNormUii i) (by norm_num)
+          _ = normU := one_mul normU
+      exact
+        dhs_block_back_conventional_rhs_scale_of_small_roundoff_and_diagonal_bounds
+          fp hm hr i normU U (DeltaDiag i) X Y hSmallProduct
+          (hUTailU i) hUiiU hDeltaDiagU (hDiagonal i).equation
+    · exact hDiagonal i
+  · exact hDiagonal
+
 /-- Concrete Eq.13.15 diagonal-block solve family from the conventional
     triangular solver used by Algorithm 13.3 Implementation 1.
 
@@ -11484,6 +11768,95 @@ theorem
       hA hL hU hUUpper hNormUii hLhat hc hUTailU hUiiNorm hDiag hUpper
       (dhsBlockBackConventionalSolution_execution fp U Y)
 
+/-- The recursive conventional block solution together with the retained
+    flattened back-row certificate.
+
+    Besides the local Eq.13.15 family and global back spec, this endpoint
+    exposes the assembled entrywise perturbation bound needed by the concrete
+    forward/back cross-product proof. -/
+theorem
+    dhs_block_back_substitution_rows_and_firstOrder_from_conventional_recursive_block_solution
+    {m r : ℕ}
+    (fp : FPModel) (hm : 0 < m) (hr : 0 < r)
+    (cBack normA normL normU : ℝ)
+    (normUii : Fin m → ℝ)
+    (Lhat U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (Y : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hSmallProduct : (((m * r : ℕ) : ℝ) * fp.u) ≤ 1 / 2)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hUUpper : ∀ i j : Fin m, j.val < i.val → U i j = 0)
+    (hNormUii : ∀ i : Fin m, normUii i ≤ normU)
+    (hLhat : maxEntryNorm (Nat.mul_pos hm hr)
+      (blockMatrixFlatFin Lhat) ≤ normL)
+    (hc : (((m * r : ℕ) : ℝ) *
+      ((((m * r : ℕ) : ℝ) ^ 2 +
+          4 * (((m * r : ℕ) : ℝ) + (r : ℝ))) +
+        2 * (r : ℝ))) ≤ cBack)
+    (hUTailU : ∀ i : Fin m,
+      maxEntryNormRect hr (Nat.mul_pos hm hr)
+        (dhsBlockBackUpperTailRowFlat i (U i)) ≤ normU)
+    (hUiiNorm : ∀ i : Fin m, maxEntryNorm hr (U i i) ≤ normUii i)
+    (hDiag : ∀ i : Fin m, ∀ a : Fin r, U i i a a ≠ 0)
+    (hUpper : ∀ i : Fin m, ∀ a b : Fin r,
+      b.val < a.val → U i i a b = 0) :
+    ∃ (DeltaDiag : Fin m → Matrix (Fin r) (Fin r) ℝ)
+      (DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+      (rowPerturbBound : ℝ),
+      (∀ i : Fin m,
+        maxEntryNorm hr (DeltaDiag i) ≤
+          (2 * (r : ℝ)) * fp.u * normUii i) ∧
+      (∀ i : Fin m,
+        DiagonalBlockSolveFirstOrderSpec fp.u (2 * (r : ℝ)) (normUii i)
+          (maxEntryNorm hr (DeltaDiag i))
+          (U i i) (DeltaDiag i)
+          (dhsBlockBackConventionalSolution fp U Y i)
+          (dhsBlockBackConventionalRHS fp i U
+            (dhsBlockBackConventionalSolution fp U Y) Y)) ∧
+      DHSBlockBackSubstitutionRowsFirstOrderSpec
+        fp.u
+        ((((m * r : ℕ) : ℝ) ^ 2 +
+          4 * (((m * r : ℕ) : ℝ) + (r : ℝ))) + 2 * (r : ℝ))
+        normU rowPerturbBound
+        (blockMatrixFlatFin U) (blockMatrixFlatFin DeltaU)
+        (blockMatrixRowsFlatFin (dhsBlockBackConventionalSolution fp U Y))
+        (blockMatrixRowsFlatFin Y) ∧
+      DHSBlockBackSubstitutionFirstOrderSpec
+        fp.u cBack normA normL normU
+        (maxEntryNorm (Nat.mul_pos hm hr)
+          (blockMatrixFlatFin Lhat * blockMatrixFlatFin DeltaU))
+        (blockMatrixFlatFin U) (blockMatrixFlatFin DeltaU)
+        (blockMatrixRowsFlatFin (dhsBlockBackConventionalSolution fp U Y))
+        (blockMatrixRowsFlatFin Y) := by
+  have hrNat : r ≤ m * r := by
+    calc
+      r = 1 * r := by simp
+      _ ≤ m * r := Nat.mul_le_mul_right r (by omega)
+  have hrReal : (r : ℝ) ≤ ((m * r : ℕ) : ℝ) := by
+    exact_mod_cast hrNat
+  have hSmallBlock : (r : ℝ) * fp.u ≤ 1 / 2 :=
+    le_trans (mul_le_mul_of_nonneg_right hrReal fp.u_nonneg) hSmallProduct
+  rcases dhs_conventional_diagonal_block_solve_specs
+      fp hr normUii U (dhsBlockBackConventionalSolution fp U Y) Y
+      hSmallBlock hUiiNorm hDiag hUpper
+      (dhsBlockBackConventionalSolution_execution fp U Y) with
+    ⟨DeltaDiag, hDeltaDiag, hDiagonal⟩
+  have hSmallDiag : (2 * (r : ℝ)) * fp.u ≤ 1 := by
+    calc
+      (2 * (r : ℝ)) * fp.u = 2 * ((r : ℝ) * fp.u) := by ring
+      _ ≤ 2 * (1 / 2 : ℝ) :=
+        mul_le_mul_of_nonneg_left hSmallBlock (by norm_num)
+      _ = 1 := by norm_num
+  rcases
+      dhs_block_back_substitution_rows_and_firstOrder_from_conventional_suffix_rows_of_small_roundoff
+        fp hm hr (2 * (r : ℝ)) cBack normA normL normU normUii
+        Lhat U DeltaDiag (dhsBlockBackConventionalSolution fp U Y) Y
+        hSmallProduct (mul_nonneg (by norm_num) (Nat.cast_nonneg r))
+        hSmallDiag hA hL hU hUUpper hNormUii hLhat hc hUTailU hUiiNorm
+        hDeltaDiag hDiagonal with
+    ⟨DeltaU, rowPerturbBound, hRows, hBack⟩
+  exact ⟨DeltaDiag, DeltaU, rowPerturbBound,
+    hDeltaDiag, hDiagonal, hRows, hBack⟩
+
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch for
     the conventional flattened algorithm and one right-hand side.
 
@@ -11614,6 +11987,307 @@ theorem dhs_cross_product_firstOrder_of_componentwise_backward {n : ℕ}
         (mul_nonneg (Nat.cast_nonneg n) (mul_nonneg hgamma hnormL))
     _ = (n : ℝ) * gamma fp n ^ 2 * maxEntryNorm hn Lhat *
           maxEntryNorm hn Uhat := by ring
+
+/-- The concrete conventional forward perturbation and the assembled block
+    back-row certificate make their cross product purely second order.
+
+    The forward componentwise `gamma` bound supplies a first-order max norm;
+    the retained row entry bound supplies the corresponding first-order norm
+    for the flattened `DeltaU`.  The matrix-product dimension factor is folded
+    into the first coefficient before applying
+    `FirstOrderLe.mul_is_secondOrder`. -/
+theorem
+    dhs_cross_product_firstOrder_of_forward_componentwise_and_back_rows
+    {n : ℕ} {p : Type*}
+    (fp : FPModel) (hn : 0 < n)
+    (cRows normU rowPerturbBound : ℝ)
+    (Lhat DeltaL Uhat DeltaU : Matrix (Fin n) (Fin n) ℝ)
+    (Xhat Yhat : Matrix (Fin n) p ℝ)
+    (hγ : gammaValid fp n)
+    (hcRows : 0 ≤ cRows) (hNormU : 0 ≤ normU)
+    (hDeltaL : ∀ i j : Fin n,
+      |DeltaL i j| ≤ gamma fp n * |Lhat i j|)
+    (hRows : DHSBlockBackSubstitutionRowsFirstOrderSpec
+      fp.u cRows normU rowPerturbBound Uhat DeltaU Xhat Yhat) :
+    FirstOrderLe fp.u 0 (maxEntryNorm hn (DeltaL * DeltaU)) := by
+  have hGammaNonneg : 0 ≤ gamma fp n := gamma_nonneg fp hγ
+  have hNormLNonneg : 0 ≤ maxEntryNorm hn Lhat :=
+    maxEntryNorm_nonneg hn Lhat
+  have hDeltaLNorm :
+      maxEntryNorm hn DeltaL ≤ gamma fp n * maxEntryNorm hn Lhat := by
+    apply maxEntryNorm_le_of_entry_le_bound
+    intro i j
+    exact le_trans (hDeltaL i j)
+      (mul_le_mul_of_nonneg_left
+        (entry_le_maxEntryNorm hn Lhat i j) hGammaNonneg)
+  have hnOne : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+  have hDeltaLFirst : FirstOrderLe fp.u
+      (((n : ℝ) ^ 2) * fp.u * maxEntryNorm hn Lhat * 1)
+      (maxEntryNorm hn DeltaL) :=
+    FirstOrderLe.of_gamma_dim_mul fp n hγ hNormLNonneg (by norm_num) <| by
+      calc
+        maxEntryNorm hn DeltaL ≤ gamma fp n * maxEntryNorm hn Lhat :=
+          hDeltaLNorm
+        _ ≤ gamma fp n * (n : ℝ) * maxEntryNorm hn Lhat * 1 := by
+          have := mul_le_mul_of_nonneg_left hnOne hGammaNonneg
+          nlinarith [hNormLNonneg]
+  have hDeltaUFirst : FirstOrderLe fp.u
+      (cRows * fp.u * normU) (maxEntryNorm hn DeltaU) :=
+    hRows.norm_bound.mono_value
+      (maxEntryNorm_le_of_entry_le_bound hn DeltaU rowPerturbBound
+        hRows.entry_bound)
+  have hDeltaLScaled : FirstOrderLe fp.u
+      ((((n : ℝ) ^ 2) * fp.u * maxEntryNorm hn Lhat * 1) * (n : ℝ))
+      ((n : ℝ) * maxEntryNorm hn DeltaL) := by
+    exact hDeltaLFirst.bound_mul_nonneg_right (Nat.cast_nonneg n) (by
+      rw [mul_comm])
+  have hDeltaLScaled' : FirstOrderLe fp.u
+      (((n : ℝ) ^ 3 * maxEntryNorm hn Lhat) * fp.u)
+      ((n : ℝ) * maxEntryNorm hn DeltaL) := by
+    convert hDeltaLScaled using 1
+    ring
+  have hDeltaUFirst' : FirstOrderLe fp.u
+      ((cRows * normU) * fp.u) (maxEntryNorm hn DeltaU) := by
+    convert hDeltaUFirst using 1
+    ring
+  apply FirstOrderLe.mul_is_secondOrder fp.u_nonneg
+    (mul_nonneg (pow_nonneg (Nat.cast_nonneg n) 3) hNormLNonneg)
+    (mul_nonneg hcRows hNormU)
+    (maxEntryNorm_nonneg hn DeltaU) hDeltaLScaled' hDeltaUFirst'
+  exact maxEntryNorm_matrix_mul_le_dim hn DeltaL DeltaU
+
+/-- Higham Theorem 13.6 / Eq.13.16 for Implementation 1, with the solve path
+    executed by the repository's conventional algorithms.
+
+    Starting from the checked partitioned-factorization spec and the local
+    Eq.13.14 block-solve spec, this theorem constructs the conventional
+    flattened forward solution, the descending conventional block-back
+    solution, every Eq.13.15 perturbation, the assembled global `DeltaU`, and
+    the forward `DeltaL`.  It proves the cross product is second order and
+    uses the concrete four-term max-entry inequality for the total solve
+    perturbation.  The conclusion contains the exact factorization and solve
+    equations, the Eq.13.14/Eq.13.15 source facts, and all three displayed
+    Eq.13.16 first-order bounds.  No abstract DHS source-path proposition or
+    assumed forward/back branch spec remains. -/
+theorem
+    higham13_theorem13_6_implementation1_from_partitioned_factorization_and_conventional_recursive_solve
+    {m r : ℕ} {s : Type*}
+    (fp : FPModel) (hm : 0 < m) (hr : 0 < r)
+    (δ θ dFact dn normA : ℝ)
+    (A DeltaFact : Matrix (Fin (m * r)) (Fin (m * r)) ℝ)
+    (Lhat U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (b : Fin (m * r) → ℝ)
+    (c₄ normLhat21 normA11 normE21 : ℝ)
+    (Lhat21 A21 E21 : Matrix s (Fin r) ℝ)
+    (A11 : Matrix (Fin r) (Fin r) ℝ)
+    (hSmallProduct : (((m * r : ℕ) : ℝ) * fp.u) ≤ 1 / 2)
+    (hA : 0 ≤ normA)
+    (hδ : δ ≤ dFact) (hθ : θ ≤ dFact)
+    (hdFact : dFact ≤ dn)
+    (hdSolve : dFact + (((m * r : ℕ) : ℝ) ^ 2) +
+      (((m * r : ℕ) : ℝ) *
+        ((((m * r : ℕ) : ℝ) ^ 2 +
+          4 * (((m * r : ℕ) : ℝ) + (r : ℝ))) +
+          2 * (r : ℝ))) ≤ dn)
+    (hFactSpec : PartitionedLUFirstOrderSpec
+      fp.u δ θ normA
+      (maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin Lhat))
+      (maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin U))
+      (maxEntryNorm (Nat.mul_pos hm hr) DeltaFact) A DeltaFact
+      (blockMatrixFlatFin Lhat) (blockMatrixFlatFin U))
+    (hStep2 : BlockSolveFirstOrderSpec
+      fp.u c₄ normLhat21 normA11 normE21 Lhat21 A21 E21 A11)
+    (hLdiag : ∀ i : Fin (m * r), blockMatrixFlatFin Lhat i i ≠ 0)
+    (hLower : ∀ i j : Fin (m * r), i.val < j.val →
+      blockMatrixFlatFin Lhat i j = 0)
+    (hUUpper : ∀ i j : Fin m, j.val < i.val → U i j = 0)
+    (hDiag : ∀ i : Fin m, ∀ a : Fin r, U i i a a ≠ 0)
+    (hUpper : ∀ i : Fin m, ∀ a b : Fin r,
+      b.val < a.val → U i i a b = 0) :
+    ∃ (DeltaDiag : Fin m → Matrix (Fin r) (Fin r) ℝ)
+      (DeltaL : Matrix (Fin (m * r)) (Fin (m * r)) ℝ)
+      (DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ),
+      (∀ i : Fin m,
+        maxEntryNorm hr (DeltaDiag i) ≤
+          (2 * (r : ℝ)) * fp.u * maxEntryNorm hr (U i i)) ∧
+      (∀ i j : Fin (m * r),
+        |DeltaL i j| ≤ gamma fp (m * r) *
+          |blockMatrixFlatFin Lhat i j|) ∧
+      (blockMatrixFlatFin Lhat * blockMatrixFlatFin U = A + DeltaFact) ∧
+      ((A + (DeltaFact + DeltaL * blockMatrixFlatFin U +
+          blockMatrixFlatFin Lhat * blockMatrixFlatFin DeltaU +
+          DeltaL * blockMatrixFlatFin DeltaU)) *
+          blockMatrixRowsFlatFin
+            (dhsBlockBackConventionalSolution fp U
+              (dhsBlockForwardConventionalSolution fp Lhat b)) =
+        (fun i (_k : Fin 1) => b i)) ∧
+      ((Lhat21 * A11 = A21 + E21 ∧
+          BlockSolveFirstOrderBound fp.u c₄ normLhat21 normA11 normE21) ∧
+        (∀ i : Fin m,
+          (U i i + DeltaDiag i) *
+              dhsBlockBackConventionalSolution fp U
+                (dhsBlockForwardConventionalSolution fp Lhat b) i =
+            dhsBlockBackConventionalRHS fp i U
+              (dhsBlockBackConventionalSolution fp U
+                (dhsBlockForwardConventionalSolution fp Lhat b))
+              (dhsBlockForwardConventionalSolution fp Lhat b) ∧
+          DiagonalBlockSolveFirstOrderBound fp.u (2 * (r : ℝ))
+            (maxEntryNorm hr (U i i))
+            (maxEntryNorm hr (DeltaDiag i)))) ∧
+      FirstOrderLe fp.u
+        (dn * fp.u *
+          (normA +
+            maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin Lhat) *
+            maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin U)))
+        (maxEntryNorm (Nat.mul_pos hm hr) DeltaFact) ∧
+      FirstOrderLe fp.u
+        (dn * fp.u *
+          (normA +
+            maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin Lhat) *
+            maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin U)))
+        (maxEntryNorm (Nat.mul_pos hm hr)
+          (DeltaFact + DeltaL * blockMatrixFlatFin U +
+            blockMatrixFlatFin Lhat * blockMatrixFlatFin DeltaU +
+            DeltaL * blockMatrixFlatFin DeltaU)) ∧
+      FirstOrderLe fp.u
+        (dn * fp.u *
+          (normA +
+            maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin Lhat) *
+            maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin U)))
+        (max (maxEntryNorm (Nat.mul_pos hm hr) DeltaFact)
+          (maxEntryNorm (Nat.mul_pos hm hr)
+            (DeltaFact + DeltaL * blockMatrixFlatFin U +
+              blockMatrixFlatFin Lhat * blockMatrixFlatFin DeltaU +
+              DeltaL * blockMatrixFlatFin DeltaU))) := by
+  let hn : 0 < m * r := Nat.mul_pos hm hr
+  let Lflat := blockMatrixFlatFin Lhat
+  let Uflat := blockMatrixFlatFin U
+  let normL := maxEntryNorm hn Lflat
+  let normU := maxEntryNorm hn Uflat
+  let Y := dhsBlockForwardConventionalSolution fp Lhat b
+  let X := dhsBlockBackConventionalSolution fp U Y
+  let cRows : ℝ := (((m * r : ℕ) : ℝ) ^ 2 +
+    4 * (((m * r : ℕ) : ℝ) + (r : ℝ))) + 2 * (r : ℝ)
+  let cBack : ℝ := ((m * r : ℕ) : ℝ) * cRows
+  let cForward : ℝ := ((m * r : ℕ) : ℝ) ^ 2
+  let dSolve : ℝ := dFact + cForward + cBack
+  have hγ : gammaValid fp (m * r) := by
+    unfold gammaValid
+    linarith
+  have hNormL : 0 ≤ normL := maxEntryNorm_nonneg hn Lflat
+  have hNormU : 0 ≤ normU := maxEntryNorm_nonneg hn Uflat
+  rcases
+      dhs_block_forward_substitution_firstOrder_from_conventional_forwardSub_single_rhs
+        fp hn normA Lflat Uflat b hA hLdiag hLower hγ with
+    ⟨DeltaL, hDeltaL, hForwardRaw⟩
+  have hYFlat : blockMatrixRowsFlatFin Y =
+      (fun i (_k : Fin 1) => fl_forwardSub fp (m * r) Lflat b i) := by
+    simpa only [Y, Lflat] using
+      dhsBlockForwardConventionalSolution_flat fp Lhat b
+  have hForward : DHSBlockForwardSubstitutionFirstOrderSpec
+      fp.u cForward normA normL normU
+      (maxEntryNorm hn (DeltaL * Uflat)) Lflat DeltaL
+      (blockMatrixRowsFlatFin Y) (fun i (_k : Fin 1) => b i) := by
+    rw [hYFlat]
+    simpa only [cForward, normL, normU, Lflat, Uflat] using hForwardRaw
+  have hNormUii : ∀ i : Fin m, maxEntryNorm hr (U i i) ≤ normU := by
+    intro i
+    simpa only [normU, Uflat, hn] using
+      maxEntryNorm_diagonalBlock_le_blockMatrixFlatFin hm hr U i
+  have hUTail : ∀ i : Fin m,
+      maxEntryNormRect hr hn (dhsBlockBackUpperTailRowFlat i (U i)) ≤
+        normU := by
+    intro i
+    simpa only [normU, Uflat, hn] using
+      maxEntryNorm_upperTailRowFlat_le_blockMatrixFlatFin hm hr U i
+  rcases
+      dhs_block_back_substitution_rows_and_firstOrder_from_conventional_recursive_block_solution
+        fp hm hr cBack normA normL normU
+        (fun i => maxEntryNorm hr (U i i)) Lhat U Y hSmallProduct
+        hA hNormL hNormU hUUpper hNormUii
+        (by
+          change maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin Lhat) ≤
+            maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin Lhat)
+          exact le_rfl)
+        (by
+          dsimp only [cBack, cRows]
+          exact le_rfl)
+        hUTail (fun _i => le_rfl) hDiag hUpper with
+    ⟨DeltaDiag, DeltaU, rowPerturbBound,
+      hDeltaDiag, hDiagonal, hRows, hBack⟩
+  have hcRows : 0 ≤ cRows := by
+    dsimp only [cRows]
+    positivity
+  have hCross : FirstOrderLe fp.u 0
+      (maxEntryNorm hn (DeltaL * blockMatrixFlatFin DeltaU)) := by
+    exact
+      dhs_cross_product_firstOrder_of_forward_componentwise_and_back_rows
+        fp hn cRows normU rowPerturbBound Lflat DeltaL Uflat
+        (blockMatrixFlatFin DeltaU) (blockMatrixRowsFlatFin X)
+        (blockMatrixRowsFlatFin Y) hγ hcRows hNormU hDeltaL hRows
+  let normSolve := maxEntryNorm hn
+    (DeltaFact + DeltaL * Uflat + Lflat * blockMatrixFlatFin DeltaU +
+      DeltaL * blockMatrixFlatFin DeltaU)
+  have hTotal : normSolve ≤
+      maxEntryNorm hn DeltaFact + maxEntryNorm hn (DeltaL * Uflat) +
+        maxEntryNorm hn (Lflat * blockMatrixFlatFin DeltaU) +
+        maxEntryNorm hn (DeltaL * blockMatrixFlatFin DeltaU) := by
+    simpa only [normSolve] using
+      maxEntryNorm_four_add_le hn DeltaFact (DeltaL * Uflat)
+        (Lflat * blockMatrixFlatFin DeltaU)
+        (DeltaL * blockMatrixFlatFin DeltaU)
+  have hFactLeading : FirstOrderLe fp.u
+      (dFact * fp.u * (normA + normL * normU))
+      (maxEntryNorm hn DeltaFact) :=
+    hFactSpec.norm_bound.mono_leading
+      (demmelHighamSchreiber13_6_partitioned_leading_term_le_of_coeff_bounds
+        fp.u δ θ dFact normA normL normU fp.u_nonneg hA hNormL hNormU
+        hδ hθ)
+  have hSolveLeading : FirstOrderLe fp.u
+      (dSolve * fp.u * (normA + normL * normU)) normSolve := by
+    apply dhs_lu_solve_perturbation_firstOrder
+      normSolve (maxEntryNorm hn DeltaFact) (maxEntryNorm hn (DeltaL * Uflat))
+      (maxEntryNorm hn (Lflat * blockMatrixFlatFin DeltaU))
+      (maxEntryNorm hn (DeltaL * blockMatrixFlatFin DeltaU))
+      normA normL normU fp.u dFact cForward cBack dSolve
+      fp.u_nonneg hA hNormL hNormU
+    · exact le_rfl
+    · exact hFactLeading
+    · exact hForward.norm_bound
+    · exact hBack.norm_bound
+    · exact hCross
+    · exact hTotal
+  have hSolveEquation :
+      (A + (DeltaFact + DeltaL * Uflat +
+          Lflat * blockMatrixFlatFin DeltaU +
+          DeltaL * blockMatrixFlatFin DeltaU)) *
+          blockMatrixRowsFlatFin X =
+        (fun i (_k : Fin 1) => b i) :=
+    dhs_lu_solve_perturbation_identity A DeltaFact Lflat Uflat
+      DeltaL (blockMatrixFlatFin DeltaU) (blockMatrixRowsFlatFin X)
+      (fun i (_k : Fin 1) => b i) (blockMatrixRowsFlatFin Y)
+      hFactSpec.equation hForward.equation hBack.equation
+  have hFinal :=
+    higham13_theorem13_6_eq13_16_firstOrder_from_factor_solve_estimates
+      (maxEntryNorm hn DeltaFact) normSolve normA normL normU
+      fp.u dFact dSolve dn
+      fp.u_nonneg hA hNormL hNormU hdFact (by
+        simpa only [dSolve, cForward, cBack, cRows] using hdSolve)
+      hFactLeading hSolveLeading
+  refine ⟨DeltaDiag, DeltaL, DeltaU, ?_, hDeltaL, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · simpa only using hDeltaDiag
+  · simpa only [Lflat, Uflat] using hFactSpec.equation
+  · simpa only [X, Y, Lflat, Uflat] using hSolveEquation
+  · refine ⟨higham13_eq13_14_from_block_solve_spec
+      fp.u c₄ normLhat21 normA11 normE21 Lhat21 A21 E21 A11 hStep2, ?_⟩
+    intro i
+    exact higham13_eq13_15_from_diagonal_block_solve_spec
+      fp.u (2 * (r : ℝ)) (maxEntryNorm hr (U i i))
+      (maxEntryNorm hr (DeltaDiag i)) (U i i) (DeltaDiag i) (X i)
+      (dhsBlockBackConventionalRHS fp i U X Y) (hDiagonal i)
+  · simpa only [normL, normU, Lflat, Uflat, hn] using hFinal.1
+  · simpa only [normSolve, normL, normU, Lflat, Uflat, hn] using hFinal.2.1
+  · simpa only [normSolve, normL, normU, Lflat, Uflat, hn] using hFinal.2.2
 
 /-- Concrete conventional single-right-hand-side specialization of the two
     named DHS triangular-solve branches.
