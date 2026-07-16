@@ -13,7 +13,8 @@
 
 | Source | Lean declarations | Theorem surface |
 |---|---|---|
-| (26.1)-(26.3) | `IsGlobalMax`, `DirectSearchSpec`, `adConverged`, `mdsRelativeSize`, `mdsConverged` | exact objective and stopping specifications |
+| (26.1)-(26.2) | `IsGlobalMax`, `adConverged` | exact optimization problem and AD stopping predicate; the optional `DirectSearchSpec` global postcondition is not used to specify an algorithm |
+| Sec. 26.2 MDS method / (26.3) | `MDSSimplex`, `MDSSimplex.reorderBest`, `reflect`, `expand`, `contract`, `iteration`, `IterationSpec`, `SearchTrace`, `Converged` | actual general simplex transition and finite execution semantics, including contraction retries and the printed stopping test; no optimizer-correctness or termination assumption |
 | (26.4) | `inverseResidualStabilityMeasure` | exact maximum-row-sum residual definition |
 | (26.5)-(26.6) | `depressedCubic_identity`, `cubicWCubePlus_quadratic`, `cubicWCubeMinus_quadratic`, `stableCubicWCube_quadratic` | end-to-end exact cubic algebra |
 | (26.7) | `monicCubic`, `cubicRootResidualMeasure` | exact residual objective only; no empirical accuracy claim |
@@ -42,20 +43,34 @@ and exact-real interval division exposes `0` not belonging to the denominator
 interval. The new computed enclosure theorems reuse the repository's proved
 directed-rounding inequalities rather than adding rounding assumptions.
 
+The MDS transition uses `Finite.exists_max` only to choose the best of the
+current `n+1` vertices. Its reflection, expansion, and contraction candidates
+are constructed directly from the printed affine formulas, and its branch
+tests compare their actual finite objective maxima. `SearchTrace` records the
+repeat-until-(26.3) control flow. No theorem assumes that MDS returns a local or
+global maximizer, that a limit point is stationary, or that an iteration or run
+terminates.
+
 ## Exclusions
 
 Historical MATLAB matrices, decimal outputs, figures, iteration counts, and
-machine observations are `SKIP-EMPIRICAL`. AD/MDS/Nelder-Mead implementations
-and estimator comparisons are benchmark candidates. The cited pattern-search
-convergence sentence and (26.8) are deferred because the printed statements omit
-the technical conditions or a semantics for "to first order". Problems
-26.1-26.4, including Appendix solution 26.2, were not selected.
+machine observations are `SKIP-EMPIRICAL`. The partly specified AD line-search
+implementation, the unprinted Nelder--Mead transitions, and estimator
+comparisons are benchmark candidates; the printed MDS transition is core and
+is encoded. The cited pattern-search convergence sentence and (26.8) are
+deferred because the printed statements omit the technical conditions or a
+semantics for "to first order". Problems 26.1-26.4, including Appendix solution
+26.2, were not selected.
 
 ## Verification
 
 - Target build: `lake build LeanFpAnalysis.FP.Algorithms.AutomaticErrorAnalysis.Higham26` - PASS.
+- Public import audit: `examples/LibraryLookup.lean` checks `MDSSimplex`, its
+  best-vertex ordering theorem, `iteration`, `IterationSpec`, and `SearchTrace`
+  and compiles - PASS.
 - Hygiene scan for `sorry`, `admit`, `axiom`, `unsafe`, and `opaque` - PASS (no matches).
-- Representative `#print axioms` checks report only Mathlib's standard
+- `#print axioms MDSSimplex.reorderBest_orderedFor` and the representative
+  chapter checks report only Mathlib's standard
   `propext`, `Classical.choice`, and `Quot.sound` axioms.
 
 ## Documentation

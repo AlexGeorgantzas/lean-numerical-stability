@@ -15,12 +15,12 @@
 
 | ID | Source location | Kind | Statement summary | Precision / generality | Source proof | Dependencies | Decision | Reason code | Lean artifact / status |
 |---|---|---|---|---|---|---|---|---|---|
-| 26-D1 | p. 472, Sec. 26.1 | definition | Direct-search problem `max f(x)` using values only | precise / general | definition | real order | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `IsGlobalMax`, `DirectSearchSpec` / PASS |
+| 26-D1 | p. 472, Sec. 26.1 | definition | Direct-search problem `max f(x)` using values only | precise / general | definition | real order | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `IsGlobalMax` / PASS; `DirectSearchSpec` is retained only as an optional global-optimality postcondition and is not assumed by an algorithm |
 | 26.1 | p. 472 | equation | Unconstrained maximization `max_{x in R^n} f(x)` | precise / general | definition | 26-D1 | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `IsGlobalMax` / PASS |
 | 26-E1 | pp. 472-474 | experiment | GE growth-factor searches and printed matrices/outputs | empirical runs | none | Chapter 9 `growthFactor` | SKIP | SKIP-EMPIRICAL | not encoded; source does not specify a unique execution |
 | 26-A1 | pp. 474-475 | algorithm | Alternating-directions heuristic and line-search choices | partly precise / software heuristic | none | objective comparisons | BENCHMARK_CANDIDATE | BENCHMARK-COMPARISON | stopping contract only; heuristic not encoded |
 | 26.2 | p. 475 | equation | Relative-increase AD stopping test | precise / general | definition | real absolute value | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `adConverged` / PASS |
-| 26-A2 | pp. 475-476 | algorithm | MDS reflection, expansion, and contraction of a simplex | precise algorithm sketch / general | citation-only | simplex geometry | BENCHMARK_CANDIDATE | BENCHMARK-COMPARISON | no executable heuristic; exact stopping contract encoded |
+| 26-A2 | pp. 475-476 | algorithm | MDS reflection, expansion, contraction/retry, best-vertex reordering, and repeat-until-stopped control flow | precise algorithm specification / general | direct description; convergence theorem citation separate | finite vertex maxima, simplex geometry | FORMALIZE_CORE | CORE-PRECISE-PROSE | `MDSSimplex`, `point`, `bestIndex`, `reorderBest`, `reflect`, `expand`, `contract`, `iteration`, `IterationSpec`, `SearchTrace` / PASS; no optimizer-correctness or termination premise |
 | 26.3 | p. 476 | equation | Relative 1-norm simplex-size stopping test | precise / general | definition | finite 1- and max-norms | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `vecOneNorm`, `mdsRelativeSize`, `mdsConverged` / PASS |
 | 26-C1 | p. 476 | cited convergence prose | Pattern-search limit points are stationary under compactness, smoothness, and further technical conditions | partly precise | citation-only | omitted Torczon conditions | DEFER | DEFER-MISSING-PRECISE-STATEMENT | not encoded; exact hypotheses are not printed |
 | 26-E2 | pp. 477-478, Sec. 26.3.1 | experiment | `rcond`/`condest` counterexample searches and decimal matrices | empirical runs | none | Chapter 15 estimators | SKIP | SKIP-EMPIRICAL | not encoded |
@@ -46,6 +46,8 @@
 
 | Source algorithm | Inputs | Computed objects | Analysis-only objects | Core disposition |
 |---|---|---|---|---|
-| AD/MDS/Nelder-Mead | objective, start point/simplex, tolerance | heuristic iterates and function values | hypothetical global/local maximizer | Stopping predicates only; benchmark candidate |
+| AD | objective, start point, tolerance, line-search choices | coordinate iterates and function values | hypothetical global/local maximizer | stopping predicate encoded; underspecified line-search implementation remains a benchmark candidate |
+| MDS | objective, initial `n+1` vertices, tolerance | finite vertex maxima, reordered simplex, reflected/expanded/contracted candidates, contraction retries | hypothetical global/local maximizer and stationary limit | general finite-transition and finite-trace semantics plus stopping predicate encoded; no correctness or termination claim |
+| Nelder--Mead | objective, start simplex, tolerance | implementation-dependent simplex updates | hypothetical global/local maximizer | benchmark candidate; the chapter does not print its transition rules |
 | Cubic formulas | real coefficients | rounded roots in the experiment | exact depressed cubic and exact `w^3` branches | Exact algebra and residual objective formalized; historical output skipped |
 | Interval arithmetic | endpoint intervals and directed rounding mode | exact endpoint operations; computed outward-rounded endpoints | represented real values and rounded operation results | Exact-real soundness and concrete finite-range outward-rounded producers formalized |

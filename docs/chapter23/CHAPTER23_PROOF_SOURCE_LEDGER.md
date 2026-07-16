@@ -1,19 +1,24 @@
 # Chapter 23 Proof-Source Ledger
 
-| Selected claim | Missing proof step | Source and exact location | Assumptions/constants | Intended Lean target | Route/status | Local closure theorem |
-|---|---|---|---|---|---|---|
-| (23.2) Winograd identity | noncommutative/algebraic expansion | Higham p. 434 | even length | paired finite-sum identity | formalized | `higham23_eq23_2_winograd_identity` |
-| (23.4) Strassen formulas | block-algebra correctness | Higham p. 435 | distributive noncommutative multiplication | exact seven-product evaluator | formalized | `higham23_eq23_4_strassen_correct` |
-| (23.5) operation counts | solve multiplication/addition recurrences | Higham p. 435 | `r <= k`; powers-of-two threshold | executable cost recurrence and exact source closed forms | formalized | `higham23_eq23_5_strassen_costs` |
-| (23.6) Winograd--Strassen formulas | block-algebra correctness | Higham p. 436 | distributive noncommutative multiplication | exact evaluator | formalized | `higham23_eq23_6_winogradStrassen_correct` |
-| (23.7a)--(23.7b) bilinear evaluator | turn tensors into the displayed weighted sums/products | Higham pp. 436--437 | real coefficient tensors; explicit tensor correctness predicate | one-level exact evaluator | formalized | `higham23_eq23_7a`, `higham23_eq23_7b`, `higham23_bilinearEvaluate_correct` |
-| (23.8)--(23.9) 3M | noncommutative expansion | Higham pp. 437--438 | distributive noncommutative multiplication | exact pair evaluator | formalized | `higham23_eq23_9_threeM_correct` |
-| Theorem 23.1 | rounded Winograd expansion | Higham p. 439, proof adapts Chapter 3 (3.3) | standard model; even dimension; `gammaValid` | computed algorithm plus exact error bound | formalized | `higham23_winograd_factor_expansion`, `higham23_theorem23_1_winograd_error` |
-| (23.11) Miller generic result | chapter gives no proof or `f_n` formula | Higham p. 438, attributed to Miller | finite polynomial arithmetic graph; nonnegative `u` | local linear/quadratic expansion and max-entry consequence | PASS (EXPLICIT-DOMAIN) | `Higham23FirstOrderExpansion`, producer, nonzero witness, `higham23_eq23_11_miller_explicitDomain` |
-| Theorem 23.2 | lift local recursive expansion through the solved recurrence | Higham pp. 440--442; Brent [158, 1970] / Higham [592, 1990] | recursive powers of two; threshold; bounded quadratic coefficient | explicit first-order domain plus canonical recurrence | PASS (EXPLICIT-DOMAIN) | `higham23_theorem23_2_strassen_explicitDomain`, `higham23_theorem23_2_domain_nonempty` |
-| Theorem 23.3 | lift local recursive expansion through the Winograd--Strassen recurrence | Higham pp. 442--443 | as above; coefficient 18/89 | explicit first-order domain plus canonical recurrence | PASS (EXPLICIT-DOMAIN) | `higham23_theorem23_3_winogradStrassen_explicitDomain`, domain producer |
-| Theorem 23.4 | chapter omits exact external `alpha`,`beta` formulas | Higham p. 443 cites Bini--Lotti [110, 1980] | constants depend on tensor nonzeros | finite tensor-support constants and local expansion domain | PASS (EXPLICIT-DOMAIN) | support count, positive constants, `higham23_theorem23_4_biniLotti_explicitDomain`, producer |
-| (23.23)--(23.24) | sum component budgets in the induced infinity norm | Higham pp. 445--446 | complex row-sum norm; `sqrt 2` weakening | actual conventional/3M rounded matrices | formalized | `higham23_eq23_23_conventional_imaginary_normwise`, `higham23_eq23_24_threeM_imaginary_normwise` |
-| 23.B3 / Problem 23.6 | chapter delegates proof to Problem 23.6 | Higham pp. 446, 449 | combined 3M--Strassen first-order expansion | stated modified coefficient plus local expansion | PASS (EXPLICIT-DOMAIN) | `higham23_problem23_6_threeM_strassen_explicitDomain`, producer |
+| Selected claim | Source location | Local route | Status |
+|---|---|---|---|
+| (23.2) Winograd identity | p. 434 | paired finite-sum algebra | PROVED |
+| (23.4) Strassen formulas | p. 435 | exact seven-product block evaluator | PROVED |
+| (23.5) operation counts | p. 435 | executable count recurrence and closed forms | PROVED |
+| (23.6) Winograd--Strassen formulas | p. 436 | exact 15-addition block evaluator | PROVED |
+| (23.7a)--(23.7b) | pp. 436--437 | exact tensor product/reconstruction and correctness predicate | PROVED one level |
+| (23.8)--(23.9) 3M | pp. 437--438 | exact noncommutative three-product identity | PROVED |
+| (23.10), (23.17) | pp. 438, 442 | actual rounded conventional matrix evaluator | PROVED with explicit quadratic remainder |
+| (23.11), Miller | p. 438; cited result | import/reconstruct Miller's theorem for an actual finite rounded polynomial algorithm | OPEN |
+| Theorem 23.1 / (23.12) | p. 439 | actual rounded Winograd inner product and factor expansion | PROVED |
+| Theorem 23.2 / (23.14)--(23.16) | pp. 440--442 | actual rounded recursive Strassen evaluator plus the printed induction | PARTIAL: scalar 12/46 recurrence proved; theorem OPEN |
+| Theorem 23.3 / (23.18) | pp. 442--443 | actual rounded recursive Winograd--Strassen evaluator plus induction | PARTIAL: scalar 18/89 recurrence proved; theorem OPEN |
+| Theorem 23.4 / (23.19) | p. 443; Bini--Lotti citation | external constants/theorem and actual rounded bilinear recursion | OPEN; only parameterized coefficient algebra retained |
+| (23.20)--(23.24) and scaling | pp. 445--446 | actual conventional/3M rounded evaluators and row-sum norms | PROVED |
+| 23.B3 / Problem 23.6 | pp. 446, 449 | combine actual 3M and recursively rounded Strassen paths | PARTIAL coefficient / OPEN theorem |
 
-No web or oracle source was used. The exact algebraic proofs were verified locally with Lean's noncommutative ring normalizer. Citation-only rows are explicitly labeled `PASS (EXPLICIT-DOMAIN)`; their domains record local coefficient expansions and have constructive producers, rather than assuming the final error inequality.
+The proof source was the rendered local PDF
+`References/1.9780898718027.ch23.pdf`, especially pp. 438, 440, 442--443.
+Exact algebra was checked with Lean's noncommutative ring normalization.
+No synthetic first-order expansion or zero-error witness is counted as a
+proof source.

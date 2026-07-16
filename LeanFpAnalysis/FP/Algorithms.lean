@@ -258,6 +258,11 @@ import LeanFpAnalysis.FP.Algorithms.Vandermonde.Higham22
 import LeanFpAnalysis.FP.Algorithms.FFT.Higham24
 import LeanFpAnalysis.FP.Algorithms.FFT.Higham24Radix2
 import LeanFpAnalysis.FP.Algorithms.Circulant.Higham24
+import LeanFpAnalysis.FP.Algorithms.Circulant.Higham24ForwardPerturbation
+import LeanFpAnalysis.FP.Algorithms.Circulant.Higham24Rounded
+import LeanFpAnalysis.FP.Algorithms.Circulant.Higham24InverseFFT
+import LeanFpAnalysis.FP.Algorithms.Circulant.Higham24LiteralSolver
+import LeanFpAnalysis.FP.Algorithms.Circulant.Higham24BackwardStability
 import LeanFpAnalysis.FP.Algorithms.Nonlinear.Higham25
 import LeanFpAnalysis.FP.Algorithms.Nonlinear.Higham25Problem25_1
 import LeanFpAnalysis.FP.Algorithms.AutomaticErrorAnalysis.Higham26
@@ -266,6 +271,7 @@ import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28Exact
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28Probability
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28Asymptotics
+import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28Pascal
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28Contracts
 import LeanFpAnalysis.FP.Algorithms.FastMatMul
 import LeanFpAnalysis.FP.Algorithms.FastMatMul.Higham23

@@ -39,6 +39,11 @@ as a distinct verified algorithm. Historical machines, compiler behavior,
 timing tables, software catalogues, and the Patriot incident are classified as
 machine-specific, empirical, or literature review.
 
+All owned Appendix rows 27.1, 27.3, 27.4, 27.5, 27.7, and 27.8 are inventoried.
+Appendix 27.4's defective-generator and underflow trace is an optional,
+historical machine-specific row and is not selected; Appendix 27.5 supplies the
+exact scaled-norm invariant proved above.
+
 ## Verification
 
 - Target build: `lake build LeanFpAnalysis.FP.Algorithms.SoftwareIssues.Higham27` - PASS.

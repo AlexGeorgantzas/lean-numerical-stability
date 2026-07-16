@@ -1,69 +1,59 @@
 # Higham Chapter 23 Formalization Report
 
-## Source and scope
+## Outcome
 
-- Edition: 2nd ed., SIAM, 2002.
-- Chapter: 23, "Fast Matrix Multiplication", pp. 433--449.
-- Mode: core; Split 4.
-- Planning documents consulted: full blueprint, complete Split 4 contract, chapter index.
-- Selected-scope gate: **PASS**.
+The selected-scope gate is **FAIL** after re-auditing the recursively rounded
+claims against pp. 440 and 442--443.  The actual one-level algorithms and
+several rounded nonrecursive analyses are proved; Miller's result and
+Theorems 23.2--23.4 are not.
 
-## Completed selected targets
+## Proved source-facing work
 
-| Source | Lean declaration | Theorem surface | Notes |
-|---|---|---|---|
-| (23.2) | `higham23_eq23_2_winograd_identity` | exact paired finite-sum identity | even dimension represented as `m` adjacent pairs |
-| Theorem 23.1 / (23.12), balanced scaling | actual rounded Winograd evaluator, factor expansion, error and balancing theorems | `n gamma_(n/2+4)` bound and displayed balanced coefficient | no target-equivalent error certificate; derived from `FPModel` operations and dot-product backward error |
-| (23.10), (23.17) | actual conventional rounded matrix product, componentwise and max-entry envelope theorems | printed `nu` and `n²u` terms plus explicit quadratic remainder | remainder is formally `O(u²)` |
-| (23.3)--(23.4) | `Higham23Block2`, `higham23BlockMul`, `higham23Strassen2`, correctness theorem | exact Strassen seven-product algorithm | valid for noncommutative blocks |
-| (23.5) | `higham23StrassenCosts`, closed-form recurrence theorems | exact multiplication/addition counts | derived from executable recursive cost semantics |
-| (23.6) | `higham23WinogradStrassen2`, correctness theorem | exact 15-addition variant | valid for noncommutative blocks |
-| (23.7a)--(23.7b) | `Higham23BilinearAlgorithm`, product/evaluator definitions, source equations, correctness surface | exact coefficient tensors and one-level evaluator | recursive rounded evaluator remains part of Theorem 23.4 |
-| (23.8)--(23.9) | `higham23ThreeM`, `higham23_eq23_9_threeM_correct` | exact three-product real/imaginary formula | valid for matrix blocks |
-| (23.20)--(23.22), scaling prose | actual conventional and 3M rounded entry evaluators, exact-gamma/first-order theorems, gamma remainder `O(u²)`, diagonal budget invariance | componentwise real/imaginary bounds with printed leading coefficients | computed operations, not an error certificate |
-| (23.16) | canonical Strassen coefficient, recurrence equation, and closed upper-coefficient theorem | exact recurrence arithmetic and displayed coefficient | no supplied recurrence certificate required |
-| recurrence and coefficient in (23.18) | canonical Winograd--Strassen coefficient, step, and closed upper bound | exact recurrence arithmetic | computed recursive block path remains separate |
-| (23.23)--(23.24) | actual conventional/3M imaginary-part matrices and induced complex infinity norm | exact-gamma normwise bounds with constants 2 and 4 | the 3M proof formalizes the printed `sqrt 2` weakening |
-| (23.11) | `Higham23FirstOrderExpansion`, producer, witness, Miller theorem | generic first-order plus bounded quadratic remainder | PASS (EXPLICIT-DOMAIN), because the source states the result without proof or `f_n` |
-| Theorems 23.2--23.3 / (23.14)--(23.18) | canonical recurrences, closed coefficients, named domain theorems, and producers | printed coefficients plus bounded quadratic remainder | PASS (EXPLICIT-DOMAIN) for the recursively rounded local expansion |
-| Theorem 23.4 / (23.19) | tensor support count, positive `alpha`/`beta`, Bini--Lotti coefficient, domain theorem and producer | `n = h^depth` coefficient form | PASS (EXPLICIT-DOMAIN); exact external constants are not printed in the chapter |
-| 23.B3 / Problem 23.6 | `higham23ThreeMStrassenCoefficient`, named theorem and producer | multiplier 6 and added 4 from the source prose | PASS (EXPLICIT-DOMAIN) |
+| Source | Lean surface | Result |
+|---|---|---|
+| (23.2) | paired Winograd finite-sum identity | exact algebra proved |
+| (23.3)--(23.4) | `Higham23Block2`, `higham23Strassen2` | exact seven-product correctness proved |
+| (23.5) | executable Strassen cost recurrence | printed multiplication/addition counts proved |
+| (23.6) | `higham23WinogradStrassen2` | exact 15-addition correctness proved |
+| (23.7a)--(23.7b) | exact bilinear product/evaluator | source equations and one-level correctness predicate proved |
+| (23.8)--(23.9) | `higham23ThreeM` | exact three-real-product identity proved |
+| (23.10), (23.17) | actual rounded conventional matrix multiplication | componentwise/max-entry bounds with quadratic remainder proved |
+| Theorem 23.1 / (23.12) | actual rounded Winograd inner product | printed error bound and balancing theorem proved |
+| (23.16), recurrence after (23.18) | canonical scalar coefficient recurrences | 12/46 and 18/89 arithmetic and closed upper coefficients proved |
+| (23.20)--(23.24) | actual rounded conventional and 3M complex paths | componentwise, scaling, and induced-infinity bounds proved |
 
-## Reused results
+## Open selected work
 
-- Conventional matrix multiplication and its exact/componentwise infrastructure are reused from repository matrix-multiplication modules.
-- `StrassenRecurrence` and `WinogradStrassenRecurrence` are reused from `FastMatMul.lean`; the new module corrects source traceability to Chapter 23 without treating its certificate structures as proofs of the named error theorems.
-- Lean's `noncomm_ring` tactic proves the exact block identities.
+| Source | Bottleneck |
+|---|---|
+| (23.11) | Miller's cited polynomial-algorithm theorem and `f_n` |
+| Theorem 23.2 / (23.14)--(23.15) | recursively rounded Strassen evaluator and operation-level induction |
+| Theorem 23.3 / (23.18) | recursively rounded Winograd--Strassen evaluator and induction |
+| Theorem 23.4 / (23.19) | cited Bini--Lotti constants/theorem and rounded recursive bilinear evaluator |
+| 23.B3 / Problem 23.6 | combined rounded 3M--Strassen path |
 
-## Skipped material and explicit-domain scope
+## Audit correction
 
-- No selected row remains open. Theorems 23.2--23.4, (23.11), and 23.B3/Problem 23.6 are explicitly domain-qualified because their complete rounded recursive operation graphs or external constants are not printed in the chapter. The local domain exposes linear and quadratic coefficients, has constructive producers and concrete witnesses, and is not target-equivalent to the final bound.
-- Standard `O(u²)` content is an explicit bounded quadratic term. Gamma-based actual paths additionally carry a Mathlib `IsBigO` proof at `u -> 0` with fixed dimensions.
-- Figures, historical machine speedups, random-matrix output, MATLAB output, and implementation anecdotes are skipped as empirical/editorial.
-- All ten Problems and owned Appendix A rows 23.1, 23.2, 23.3, 23.5, 23.7, and 23.9 are inventoried. Problem 23.6 is a selected proof dependency for the precise 23.B3 combined 3M--Strassen bound; the other optional exact results are benchmark candidates.
+The previous report called these rows `PASS (EXPLICIT-DOMAIN)`.  The shared
+first-order structure already required the missing expansion and its
+nonemptiness witnesses used synthetic exact/zero-error computations rather
+than recursive Strassen, Winograd--Strassen, or bilinear evaluation.
+Likewise, support-count-plus-one values were not the external Bini--Lotti
+constants.  Those structures, producers, theorem-shaped consequences, and
+witnesses were removed.
 
-## Selected-scope closure
-
-Every selected row is terminal. Actual algorithms and FP paths prove Theorem 23.1/(23.12), balanced scaling, (23.5), (23.7), (23.10), (23.17), and (23.20)--(23.24). Citation-dependent recursive/generic claims are marked **PASS (EXPLICIT-DOMAIN)** in the inventory and proof-source ledger, with named nonvacuity producers. The not-proved ledger is empty.
-
-## Hidden-hypothesis and weak-component audit
-
-- Exact Strassen/Winograd--Strassen/3M correctness assumes only a nonunital nonassociative ring, which is weaker than the source's real matrix-block setting and does not assume the conclusion.
-- No exact identity is described as a floating-point error theorem.
-- The existing certificate structures in `FastMatMul.lean` were not counted as closures because their bound fields assume the advertised bound.
-- `Higham23FirstOrderExpansion` is not such a certificate: it records the stronger operation-local identity `computed = exact + u*linear + u²*remainder` and independent entrywise coefficient bounds; the target norm inequality is derived from that identity.
-- Weak components were independently checked by rendered-source comparison, Lean theorem types, focused compilation, and repository search.
+The retained `higham23BiniLottiCoefficient` now takes `alpha` and `beta`
+as parameters and represents only the algebraic coefficient shape.
+`higham23ThreeMStrassenCoefficient` is likewise documented as a scalar
+identity, not a combined error theorem.
 
 ## Verification
 
-- Focused compile: `lake env lean LeanFpAnalysis/FP/Algorithms/FastMatMul/Higham23.lean` -- PASS.
-- Joint narrow build: `lake build LeanFpAnalysis.FP.Algorithms.Vandermonde.Higham22 LeanFpAnalysis.FP.Algorithms.FastMatMul.Higham23` -- PASS (3063 jobs).
-- Aggregate import compile and `examples/LibraryLookup.lean` -- PASS.
-- Hygiene scan found no `sorry`, `admit`, new `axiom`, `unsafe`, or `opaque` declarations.
-- Representative `#print axioms` on Theorem 23.1, (23.24), Theorems 23.2/23.4, and Problem 23.6 endpoints reported only `propext`, `Classical.choice`, and `Quot.sound`.
+- `lake env lean LeanFpAnalysis/FP/Algorithms/FastMatMul/Higham23.lean`:
+  PASS after the audit correction.
+- The module contains no `sorry`, `admit`, `axiom`, `unsafe`,
+  `opaque`, `Higham23FirstOrderExpansion`, synthetic nonempty producer,
+  or `*_explicitDomain` theorem.
+- Source formulas were checked against rendered pp. 438, 440, 442, and 443.
 
-## Documentation
-
-- Inventory: `docs/chapter23/CHAPTER23_SOURCE_INVENTORY.md`
-- Not-proved ledger: `docs/chapter23/CHAPTER23_NOT_PROVED_LEDGER.md`
-- Proof sources: `docs/chapter23/CHAPTER23_PROOF_SOURCE_LEDGER.md`
+See the inventory and not-proved ledger for row-level status.

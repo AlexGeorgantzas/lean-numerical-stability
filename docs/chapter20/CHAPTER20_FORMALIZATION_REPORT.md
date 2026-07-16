@@ -17,12 +17,12 @@
   Chapter 20 index, and the chapter-formalization skill references.
 - Inventory counts: 12 named results, 36 actually printed equation tags, 13
   Problems, and 11 Appendix solution rows.
-- Selected-scope gate: **PASS (EXPLICIT-DOMAIN)**.
+- Selected-scope gate: **FAIL**.
 
-Every selected row is terminal. Implementation-facing theorems expose their
-model-validity, local rounded-trace, and nonbreakdown domains; no conclusion is
-silently weakened and no such domain is claimed for an arbitrary bare
-`FPModel`.
+Implementation-facing theorems expose their model-validity, local
+rounded-trace, and nonbreakdown domains. One selected precise prose row is not
+terminal: the p. 395 row-sorting cap for `alpha_i`/`beta_i` and row-order
+invariance of `phi` is assumed by a transfer contract rather than produced.
 
 ## Split 4 repair outcome
 
@@ -39,6 +39,7 @@ source-strength improvements:
 | Cross-product example | `higham20CrossProductExample_symbolic_family` | `Higham20CrossProductExample.lean` | Symbolic `0 < epsilon < sqrt(u)` family, actual modeled rounded Gram, all-ones identity, singularity | PASS |
 | p. 383 projector-complement identity | `higham20_fullColumn_range_projector_complement_complexMatrixOp2_eq_min_one_sub` | `Higham20Prose.lean` | Exact `||I-AA^+||_2 = min {1,m-n}` including square/tall cases | PASS |
 | Theorem 20.7 rounded producer and pivot-position bound | `fl_pivotedStoredQR_returnedX_pivotPosition_of_roundedCoxHigham`, `fl_pivotedStoredQR_returnedX_exactMinimizer_of_roundedCoxHigham`, `roundedPolicy_exact_one_nonempty` | `Higham20Theorem20_7Contract.lean` | Runs the literal pivoted stored-QR, paired RHS, and `fl_backSub`; constructs the numerical contract from visible local trace budgets; returns the exact perturbed minimizer; and proves pivot-position matrix coefficient `16 gammaTilde` plus RHS coefficient `5 gammaTilde`. The older `sigmaCounter...` results remain to document the refuted exact-tail route. | PASS (EXPLICIT-DOMAIN) |
+| p. 395 row-sorting cap and `phi` invariance | `PivotedStoredQRCoxHighamRowSortingCaps` | `Higham20Theorem20_7Contract.lean` | The structure assumes `alpha_row_sorted`, `beta_row_sorted`, and `rowSortCoeff_le_printed`; no actual row-sorting trace produces those fields, and no theorem proves `phi` invariant under the row ordering. | PARTIAL / OPEN SELECTED ROW |
 | Theorem 20.10, `p = 0` boundary | `Theorem20_10.computedX_emptyConstraints_partA_mixed_stability`, `Theorem20_10.computedX_emptyConstraints_partB_backward_error` | `Higham20Theorem20_10.lean` | Genuine rounded unconstrained branch; a source-rank threshold derives computed-`R` nonbreakdown | PASS (EXPLICIT-DOMAIN) |
 | Theorem 20.10, `q = 0` boundary | `Theorem20_10.computedX_fullConstraints_partA_mixed_stability`, `Theorem20_10.computedX_fullConstraints_partB_backward_error` | `Higham20Theorem20_10.lean` | Genuine rounded constraint-only `B^T` Householder/forward-solve branch; source-rank threshold derives computed-`S` nonbreakdown | PASS (EXPLICIT-DOMAIN) |
 | Elimination method / (20.30) | `Higham20EliminationActual.lseEliminationActualReducedSolution_is_reduced_minimizer`, `Higham20EliminationActual.lseEliminationActualReturnedSolution_isLSEMinimizer` | `Higham20EliminationActual.lean` | Constructs both exact pivoted QR stages, both solves, and the final returned LSE minimizer without assuming a reduced minimizer | PASS |
@@ -87,7 +88,8 @@ No duplicate parallel least-squares API was introduced for the new results.
 |---|---|---|---|
 | Source-general rank proof for the WKS formula matrix | The printed Theorem 20.5 permits tall `A`; the old full-row-rank wrapper was impossible there | Theorem 20.5 finite formula/eigenvalue branches and matrix-only limit | Implemented and compiled |
 | Exact zero-aware Householder GQR existence | Theorem 20.9 existence has no rank hypothesis | `GeneralizedQRFactorization.exists_theorem20_9_exact_householder` | Implemented and compiled |
-| Corrected Cox-Higham rounded-feedback analysis | Theorem 20.7's printed row-local constants must come from an execution whose stage invariants account for rounded feedback | Replacement forward-row and rounded multiplier policies, compact-operation budgets, triangular-column transport, and exact minimizer assembly | Implemented and compiled; `sigmaCounter_no_coxHighamRowPolicy` remains as the formal reason the former exact-tail route was rejected |
+| Corrected Cox-Higham rounded-feedback analysis | Theorem 20.7's printed row-local constants must come from an execution whose stage invariants account for rounded feedback | Replacement forward-row and rounded multiplier policies, compact-operation budgets, triangular-column transport, and exact minimizer assembly | Named theorem endpoint implemented and compiled; `sigmaCounter_no_coxHighamRowPolicy` remains as the formal reason the former exact-tail route was rejected |
+| Row-sorting growth producer and `phi` invariance | The precise sentence after Theorem 20.7 requires an actual row policy, the common `sqrt(m)(1+sqrt(2))^(n-1)` cap, and invariance of `phi` | Source-facing row-pivot/sort trace, stage-growth invariant, normalized `alpha_i`/`beta_i` bounds, and simultaneous-row-permutation theorem for `phi` | **OPEN**; the current `PivotedStoredQRCoxHighamRowSortingCaps` fields restate the target bounds |
 | Total Theorem 20.4 perturbation absorption | The printed named theorem requires single-witness bounds for both total `DeltaA_i` | Theorem 20.4 | Implemented by transporting each triangular correction through the exact QR relation, summing the two nonnegative witnesses, and normalizing once |
 
 ## External proof sources
@@ -97,7 +99,7 @@ No duplicate parallel least-squares API was introduced for the new results.
 | Theorem 20.1 | Wedin citation summarized in pp. 400-402 | Perturbation route and attainability attribution | Full-column inequalities local; stronger p. 402 sentence refuted by exact counterexample | ADOPTED/REJECTED AS CLASSIFIED |
 | Lemma 20.12 | Stewart and Stewart-Sun citations on p. 400 | Cross-projection norm equality | Proved locally at arbitrary equal rank | ADOPTED |
 | Theorem 20.5 | Walden-Karlson-Sun citation, pp. 392-393 | Backward-error/eigenvalue formula | Proved locally after source-generality repair | ADOPTED |
-| Theorem 20.7 | Powell-Reid/Cox-Higham citation, p. 395 | Printed row-local producer | Reconstructed locally for the literal trace on explicit rounded-feedback and nonbreakdown conditions | ADOPTED AND PROVED (EXPLICIT-DOMAIN) |
+| Theorem 20.7 and following row-sorting prose | Powell-Reid/Cox-Higham citation, p. 395 | Printed row-local producer followed by the common row-sorting cap and `phi` invariance | Named endpoint reconstructed locally for the literal trace on explicit rounded-feedback and nonbreakdown conditions; following precise prose remains unproved | NAMED RESULT PROVED / PRECISE PROSE OPEN |
 | Theorem 20.8 | Elden/Cox-Higham citation, p. 396 | First-order LSE perturbation route | Proved locally on explicit source-only threshold | ADOPTED |
 | Theorem 20.10 | Cox-Higham citation, pp. 398-399 | Rounded GQR stability | Positive-block path and both nontrivial empty-block boundary branches are proved locally on explicit source-rank/roundoff domains | ADOPTED |
 | Difficult Theorem 20.7 audit | Oracle second-model consultation, slug `chapter20-theorem20-7-audit` | Independent source/type review and dependency-plan check | Its rejection of the earlier weaker endpoint and its pivot-position/rounded-feedback dependency outline were checked against the PDF and Lean types, then implemented locally | ADVISORY; VERIFIED DIAGNOSIS/PLAN ADOPTED |
@@ -133,7 +135,9 @@ No duplicate parallel least-squares API was introduced for the new results.
 
 ## Open selected-scope items
 
-None.
+| Source location | Open claim | Current evidence | Missing producer |
+|---|---|---|---|
+| p. 395 / PDF 15, sentence after Theorem 20.7 | Row sorting gives `max_i {alpha_i,beta_i} <= sqrt(m)(1+sqrt(2))^(n-1)` and `phi` is row-order invariant | Conditional `PivotedStoredQRCoxHighamRowSortingCaps` plus reusable Chapter 19 scalar growth lemmas | An executable row-order policy with a stage-growth proof deriving the two normalized caps, and a permutation/invariance theorem for the printed `phi` definition |
 
 ## Hidden-hypothesis summary
 
@@ -151,18 +155,21 @@ None.
   They are stated as the visible domain of the corrected rounded producer, not
   claimed automatically for an arbitrary `FPModel`. The impossible exact-tail
   field is absent; `sigmaCounter_no_coxHighamRowPolicy` documents why.
+- The separate `PivotedStoredQRCoxHighamRowSortingCaps` fields are
+  target-bearing: the two normalized row bounds and the printed common
+  coefficient are assumptions. Visibility does not turn them into a producer,
+  so the p. 395 prose row remains open.
 - Theorem 20.10 `0 < p` and `0 < q` are implementation branch restrictions,
   not source assumptions; empty-block branches are tracked explicitly.
 
 ## Weak-component and bottleneck summary
 
-Two independent source/type audits compared all named theorem declarations
-against the PDF. The repair closes the total Theorem 20.4 perturbations, the
-rounded Theorem 20.7 scale bridge, the square edge of (20.19), and Theorem
-20.10's boundary branches. The MGS statement with an unspecified source
-constant remains correctly deferred rather than selected. The final
-verification pass repeats the focused compile, placeholder scan, axiom audit,
-import coverage, and clean-diff checks.
+Two independent source/type audits compared theorem declarations against the
+PDF. The repair closes the total Theorem 20.4 perturbations, the named rounded
+Theorem 20.7 scale bridge, the square edge of (20.19), and Theorem 20.10's
+boundary branches. Re-auditing every precise prose row exposed the distinct
+p. 395 sorting-cap/`phi`-invariance gap. The MGS statement with an unspecified
+source constant remains correctly deferred rather than selected.
 
 ## Verification
 
@@ -193,8 +200,9 @@ import coverage, and clean-diff checks.
   every repaired proof family, reported only `propext`, `Classical.choice`,
   and `Quot.sound`. Added-line forbidden-token, conflict-marker,
   source-count, and `git diff --check` audits passed.
-- These verification results validate the implemented theorem surfaces and
-  support the Chapter 20 **PASS (EXPLICIT-DOMAIN)** gate.
+- These verification results validate the implemented theorem surfaces, but
+  they do not prove the target-bearing row-sorting fields. The Chapter 20 gate
+  therefore remains **FAIL**.
 
 ## Documentation
 
