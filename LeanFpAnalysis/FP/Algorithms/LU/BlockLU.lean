@@ -8327,6 +8327,29 @@ structure DHSBlockBackSubstitutionUpperRowsFirstOrderSpec
     |DeltaUpper i j s t| ≤ upperPerturbBound
   norm_bound : FirstOrderLe u (cUpper * u * normU) upperPerturbBound
 
+/-- Simultaneously assembled source-correct RHS-formation perturbations for
+    every uniform block-back-substitution row.
+
+    In contrast to the strict-upper boundary, `DeltaSuffix` may occupy the
+    diagonal block because the rounded row subtraction can perturb that
+    coefficient.  It remains zero strictly below the diagonal.  The separate
+    local Eq.13.15 perturbations are added only in the next composition layer. -/
+structure DHSBlockBackSubstitutionSuffixRowsFirstOrderSpec
+    {m r : ℕ}
+    (u cSuffix normU suffixPerturbBound : ℝ)
+    (U DeltaSuffix : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y Dhat : Fin m → Matrix (Fin r) (Fin 1) ℝ) : Prop where
+  support : ∀ i j : Fin m, j.val < i.val → DeltaSuffix i j = 0
+  rhs_formation : ∀ i : Fin m,
+    Dhat i +
+        (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+          U i j * X j) +
+        (∑ j : Fin m, DeltaSuffix i j * X j) = Y i
+  entry_bound : ∀ i j : Fin m, ∀ s t : Fin r,
+    |DeltaSuffix i j s t| ≤ suffixPerturbBound
+  norm_bound :
+    FirstOrderLe u (cSuffix * u * normU) suffixPerturbBound
+
 /-- Source-facing fixed-block-row boundary for DHS block back substitution.
 
     For each uniform block row, `rhs_formation` is the exact relation obtained
@@ -9396,6 +9419,311 @@ theorem dhs_block_back_substitution_firstOrder_from_upper_row_witnesses_and_eq13
       normUii Lhat U DeltaU X Y Dhat hu (add_nonneg hcUpper hc₅)
       hA hL hU hLhat hc hFixed
 
+/-- Choose the individually proved full-suffix row witnesses simultaneously
+    and aggregate their first-order budgets into one finite envelope. -/
+theorem dhs_block_back_suffix_rows_spec_from_row_witnesses
+    {m r : ℕ}
+    (hm : 0 < m)
+    (u cSuffix normU : ℝ)
+    (U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y Dhat : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hRows : ∀ i : Fin m,
+      ∃ (DeltaRow : Fin m → Matrix (Fin r) (Fin r) ℝ)
+          (rowPerturbBound : ℝ),
+        Dhat i +
+            (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+              U i j * X j) +
+            (∑ j : Fin m, DeltaRow j * X j) = Y i ∧
+        (∀ j : Fin m, j.val < i.val → DeltaRow j = 0) ∧
+        (∀ j : Fin m, ∀ s t : Fin r,
+          |DeltaRow j s t| ≤ rowPerturbBound) ∧
+        FirstOrderLe u (cSuffix * u * normU) rowPerturbBound) :
+    ∃ (DeltaSuffix : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+        (suffixPerturbBound : ℝ),
+      DHSBlockBackSubstitutionSuffixRowsFirstOrderSpec
+        u cSuffix normU suffixPerturbBound U DeltaSuffix X Y Dhat := by
+  classical
+  choose DeltaRow rowPerturbBound hRow using hRows
+  let DeltaSuffix : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ :=
+    fun i j => DeltaRow i j
+  have hne : (Finset.univ : Finset (Fin m)).Nonempty :=
+    Finset.univ_nonempty_iff.mpr ⟨⟨0, hm⟩⟩
+  let suffixPerturbBound := Finset.univ.sup' hne rowPerturbBound
+  refine ⟨DeltaSuffix, suffixPerturbBound, ?_, ?_, ?_, ?_⟩
+  · intro i j hji
+    simpa [DeltaSuffix] using (hRow i).2.1 j hji
+  · intro i
+    simpa [DeltaSuffix] using (hRow i).1
+  · intro i j s t
+    calc
+      |DeltaSuffix i j s t| ≤ rowPerturbBound i := by
+        simpa [DeltaSuffix] using (hRow i).2.2.1 j s t
+      _ ≤ suffixPerturbBound :=
+        Finset.le_sup' rowPerturbBound (Finset.mem_univ i)
+  · exact FirstOrderLe.finset_univ_sup' hne rowPerturbBound
+      (fun i => (hRow i).2.2.2)
+
+/-- Add every local Eq.13.15 perturbation to the simultaneously assembled
+    RHS-formation suffix perturbations.
+
+    The combined diagonal block is `DeltaSuffix i i + DeltaDiag i`, and its
+    right-hand side is correspondingly
+    `Dhat i + DeltaSuffix i i * X i`.  Thus the RHS-formation diagonal
+    perturbation is neither discarded nor counted twice.  Finite envelopes
+    give the single coefficient `cSuffix + c₅` used by the existing fixed-row
+    and flattening layers. -/
+theorem dhs_block_back_fixed_rows_spec_from_suffix_rows_and_eq13_15
+    {m r : ℕ}
+    (hm : 0 < m) (hr : 0 < r)
+    (u c₅ cSuffix normU suffixPerturbBound : ℝ)
+    (normUii : Fin m → ℝ)
+    (U DeltaSuffix : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (DeltaDiag : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y Dhat : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hu : 0 ≤ u) (hc₅ : 0 ≤ c₅)
+    (hUUpper : ∀ i j : Fin m, j.val < i.val → U i j = 0)
+    (hNormUii : ∀ i : Fin m, normUii i ≤ normU)
+    (hSuffix : DHSBlockBackSubstitutionSuffixRowsFirstOrderSpec
+      u cSuffix normU suffixPerturbBound U DeltaSuffix X Y Dhat)
+    (hDiagonal : ∀ i : Fin m,
+      DiagonalBlockSolveFirstOrderSpec u c₅ (normUii i)
+        (maxEntryNorm hr (DeltaDiag i))
+        (U i i) (DeltaDiag i) (X i) (Dhat i)) :
+    ∃ (DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+        (rowPerturbBound : ℝ)
+        (DhatCombined : Fin m → Matrix (Fin r) (Fin 1) ℝ),
+      DHSBlockBackSubstitutionFixedBlockRowsFirstOrderSpec
+        hr u (cSuffix + c₅) (cSuffix + c₅) normU rowPerturbBound
+        (fun _i => normU) U DeltaU X Y DhatCombined := by
+  classical
+  have hne : (Finset.univ : Finset (Fin m)).Nonempty :=
+    Finset.univ_nonempty_iff.mpr ⟨⟨0, hm⟩⟩
+  let diagPerturbBound :=
+    Finset.univ.sup' hne (fun i => maxEntryNorm hr (DeltaDiag i))
+  have hDiagFirstOrder : ∀ i : Fin m,
+      FirstOrderLe u (c₅ * u * normU) (maxEntryNorm hr (DeltaDiag i)) := by
+    intro i
+    apply (hDiagonal i).norm_bound.mono_leading
+    exact mul_le_mul_of_nonneg_left (hNormUii i) (mul_nonneg hc₅ hu)
+  have hDiagBound : FirstOrderLe u (c₅ * u * normU) diagPerturbBound :=
+    FirstOrderLe.finset_univ_sup' hne
+      (fun i => maxEntryNorm hr (DeltaDiag i)) hDiagFirstOrder
+  have hCombinedBound : FirstOrderLe u
+      ((cSuffix + c₅) * u * normU)
+      (suffixPerturbBound + diagPerturbBound) := by
+    have hAdd := FirstOrderLe.add hSuffix.norm_bound hDiagBound le_rfl
+    apply hAdd.mono_leading
+    exact le_of_eq (by ring)
+  have hSuffixNonneg : 0 ≤ suffixPerturbBound := by
+    let i0 : Fin m := ⟨0, hm⟩
+    let s0 : Fin r := ⟨0, hr⟩
+    exact le_trans (abs_nonneg (DeltaSuffix i0 i0 s0 s0))
+      (hSuffix.entry_bound i0 i0 s0 s0)
+  have hDiagNonneg : 0 ≤ diagPerturbBound := by
+    let i0 : Fin m := ⟨0, hm⟩
+    exact le_trans (maxEntryNorm_nonneg hr (DeltaDiag i0))
+      (Finset.le_sup' (fun i => maxEntryNorm hr (DeltaDiag i))
+        (Finset.mem_univ i0))
+  let DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ := fun i j =>
+    DeltaSuffix i j + if j = i then DeltaDiag i else 0
+  let DhatCombined : Fin m → Matrix (Fin r) (Fin 1) ℝ := fun i =>
+    Dhat i + DeltaSuffix i i * X i
+  refine ⟨DeltaU, suffixPerturbBound + diagPerturbBound,
+    DhatCombined, ?_, ?_, ?_, ?_, ?_⟩
+  · intro i j hji
+    have hneji : j ≠ i := by omega
+    refine ⟨hUUpper i j hji, ?_⟩
+    simp [DeltaU, hneji, hSuffix.support i j hji]
+  · intro i
+    let g : Fin m → Matrix (Fin r) (Fin 1) ℝ :=
+      fun j => DeltaSuffix i j * X j
+    have hbelow :
+        (∑ j ∈ Finset.univ.filter (fun j : Fin m => ¬i.val ≤ j.val),
+          g j) = 0 := by
+      apply Finset.sum_eq_zero
+      intro j hj
+      have hji : j.val < i.val := by
+        simpa only [Finset.mem_filter, Finset.mem_univ, true_and, not_le] using hj
+      simp [g, hSuffix.support i j hji]
+    have htailset :
+        Finset.univ.filter (fun j : Fin m => i.val ≤ j.val) \ {i} =
+          Finset.univ.filter (fun j : Fin m => i.val < j.val) := by
+      ext j
+      simp only [Finset.mem_sdiff, Finset.mem_filter, Finset.mem_univ, true_and,
+        Finset.mem_singleton]
+      omega
+    have hge :
+        (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val ≤ j.val),
+          g j) =
+          DeltaSuffix i i * X i +
+            ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+              DeltaSuffix i j * X j := by
+      calc
+        (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val ≤ j.val),
+            g j) =
+            g i +
+              ∑ j ∈ (Finset.univ.filter
+                (fun j : Fin m => i.val ≤ j.val)) \ {i}, g j := by
+          exact Finset.sum_eq_add_sum_diff_singleton i g (by simp)
+        _ = g i +
+              ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+                g j := by
+          rw [htailset]
+        _ = DeltaSuffix i i * X i +
+              ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+                DeltaSuffix i j * X j := by rfl
+    have hDeltaDecomp :
+        (∑ j : Fin m, DeltaSuffix i j * X j) =
+          DeltaSuffix i i * X i +
+            ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+              DeltaSuffix i j * X j := by
+      change (∑ j : Fin m, g j) = _
+      rw [← Finset.sum_filter_add_sum_filter_not Finset.univ
+        (fun j : Fin m => i.val ≤ j.val)]
+      rw [hbelow, add_zero, hge]
+    have hTailExpand :
+        (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+          (U i j + DeltaU i j) * X j) =
+          (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+            U i j * X j) +
+          (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+            DeltaSuffix i j * X j) := by
+      rw [← Finset.sum_add_distrib]
+      apply Finset.sum_congr rfl
+      intro j hj
+      have hij : i.val < j.val := by
+        simpa only [Finset.mem_filter, Finset.mem_univ, true_and] using hj
+      have hneji : j ≠ i := by omega
+      simp only [DeltaU, if_neg hneji, add_zero, Matrix.add_mul]
+    rw [hTailExpand]
+    simp only [DhatCombined]
+    calc
+      Dhat i + DeltaSuffix i i * X i +
+            ((∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+                U i j * X j) +
+              ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+                DeltaSuffix i j * X j) =
+          Dhat i +
+            (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+              U i j * X j) +
+            (DeltaSuffix i i * X i +
+              ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+                DeltaSuffix i j * X j) := by abel
+      _ = Dhat i +
+            (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+              U i j * X j) +
+            (∑ j : Fin m, DeltaSuffix i j * X j) := by
+        rw [hDeltaDecomp]
+      _ = Y i := hSuffix.rhs_formation i
+  · intro i
+    have hDeltaAtDiag : DeltaU i i = DeltaSuffix i i + DeltaDiag i := by
+      simp [DeltaU]
+    refine ⟨?_, ?_⟩
+    · rw [hDeltaAtDiag]
+      calc
+        (U i i + (DeltaSuffix i i + DeltaDiag i)) * X i =
+            (U i i + DeltaDiag i) * X i + DeltaSuffix i i * X i := by
+          rw [show U i i + (DeltaSuffix i i + DeltaDiag i) =
+              (U i i + DeltaDiag i) + DeltaSuffix i i by abel]
+          rw [Matrix.add_mul]
+        _ = Dhat i + DeltaSuffix i i * X i := by
+          rw [(hDiagonal i).equation]
+        _ = DhatCombined i := by rfl
+    · apply hCombinedBound.mono_value
+      calc
+        maxEntryNorm hr (DeltaU i i) =
+            maxEntryNorm hr (DeltaSuffix i i + DeltaDiag i) := by
+          rw [hDeltaAtDiag]
+        _ ≤ maxEntryNorm hr (DeltaSuffix i i) +
+            maxEntryNorm hr (DeltaDiag i) :=
+          maxEntryNorm_add_le hr (DeltaSuffix i i) (DeltaDiag i)
+        _ ≤ suffixPerturbBound + diagPerturbBound :=
+          add_le_add
+            (maxEntryNorm_le_of_entry_le_bound hr (DeltaSuffix i i)
+              suffixPerturbBound (hSuffix.entry_bound i i))
+            (Finset.le_sup' (fun k => maxEntryNorm hr (DeltaDiag k))
+              (Finset.mem_univ i))
+  · intro i j s t
+    by_cases hji : j = i
+    · subst j
+      simp only [DeltaU, if_pos]
+      calc
+        |DeltaSuffix i i s t + DeltaDiag i s t| ≤
+            |DeltaSuffix i i s t| + |DeltaDiag i s t| := abs_add_le _ _
+        _ ≤ suffixPerturbBound + maxEntryNorm hr (DeltaDiag i) :=
+          add_le_add (hSuffix.entry_bound i i s t)
+            (entry_le_maxEntryNorm hr (DeltaDiag i) s t)
+        _ ≤ suffixPerturbBound + diagPerturbBound :=
+          add_le_add le_rfl
+            (Finset.le_sup' (fun k => maxEntryNorm hr (DeltaDiag k))
+              (Finset.mem_univ i))
+    · simp only [DeltaU, if_neg hji, add_zero]
+      calc
+        |DeltaSuffix i j s t| ≤ suffixPerturbBound :=
+          hSuffix.entry_bound i j s t
+        _ ≤ suffixPerturbBound + diagPerturbBound := by linarith
+  · exact hCombinedBound
+
+/-- Simultaneous full-suffix RHS-formation row witnesses and all local
+    Eq.13.15 solves imply the selected global DHS back-substitution branch.
+
+    This is the source-correct counterpart of the earlier strict-upper
+    wrapper: finite witness selection, diagonal composition, fixed-row
+    algebra, block flattening, and `Lhat * DeltaU` transport are all performed
+    without excluding the RHS-formation perturbation at `j = i`. -/
+theorem dhs_block_back_substitution_firstOrder_from_suffix_row_witnesses_and_eq13_15
+    {m r : ℕ}
+    (hm : 0 < m) (hr : 0 < r)
+    (u c₅ cSuffix cBack normA normL normU : ℝ)
+    (normUii : Fin m → ℝ)
+    (Lhat U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (DeltaDiag : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y Dhat : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hu : 0 ≤ u) (hc₅ : 0 ≤ c₅) (hcSuffix : 0 ≤ cSuffix)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hUUpper : ∀ i j : Fin m, j.val < i.val → U i j = 0)
+    (hNormUii : ∀ i : Fin m, normUii i ≤ normU)
+    (hLhat : maxEntryNorm (Nat.mul_pos hm hr)
+      (blockMatrixFlatFin Lhat) ≤ normL)
+    (hc : (((m * r : ℕ) : ℝ) * (cSuffix + c₅)) ≤ cBack)
+    (hRows : ∀ i : Fin m,
+      ∃ (DeltaRow : Fin m → Matrix (Fin r) (Fin r) ℝ)
+          (rowPerturbBound : ℝ),
+        Dhat i +
+            (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+              U i j * X j) +
+            (∑ j : Fin m, DeltaRow j * X j) = Y i ∧
+        (∀ j : Fin m, j.val < i.val → DeltaRow j = 0) ∧
+        (∀ j : Fin m, ∀ s t : Fin r,
+          |DeltaRow j s t| ≤ rowPerturbBound) ∧
+        FirstOrderLe u (cSuffix * u * normU) rowPerturbBound)
+    (hDiagonal : ∀ i : Fin m,
+      DiagonalBlockSolveFirstOrderSpec u c₅ (normUii i)
+        (maxEntryNorm hr (DeltaDiag i))
+        (U i i) (DeltaDiag i) (X i) (Dhat i)) :
+    ∃ DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      DHSBlockBackSubstitutionFirstOrderSpec
+        u cBack normA normL normU
+        (maxEntryNorm (Nat.mul_pos hm hr)
+          (blockMatrixFlatFin Lhat * blockMatrixFlatFin DeltaU))
+        (blockMatrixFlatFin U) (blockMatrixFlatFin DeltaU)
+        (blockMatrixRowsFlatFin X) (blockMatrixRowsFlatFin Y) := by
+  obtain ⟨DeltaSuffix, suffixPerturbBound, hSuffix⟩ :=
+    dhs_block_back_suffix_rows_spec_from_row_witnesses
+      hm u cSuffix normU U X Y Dhat hRows
+  obtain ⟨DeltaU, rowPerturbBound, DhatCombined, hFixed⟩ :=
+    dhs_block_back_fixed_rows_spec_from_suffix_rows_and_eq13_15
+      hm hr u c₅ cSuffix normU suffixPerturbBound normUii
+      U DeltaSuffix DeltaDiag X Y Dhat hu hc₅ hUUpper hNormUii
+      hSuffix hDiagonal
+  refine ⟨DeltaU, ?_⟩
+  exact
+    dhs_block_back_substitution_firstOrder_from_fixed_block_rows_and_eq13_15_of_coeff_bounds
+      hm hr u (cSuffix + c₅) (cSuffix + c₅) cBack
+      normA normL normU rowPerturbBound (fun _i => normU)
+      Lhat U DeltaU X Y DhatCombined hu (add_nonneg hcSuffix hc₅)
+      hA hL hU hLhat hc hFixed
+
 /-- DHS two-block back-substitution RHS perturbation from the Chapter 13
     product and subtraction models.
 
@@ -10152,6 +10480,196 @@ noncomputable def dhsBlockBackConventionalRHS {m r : ℕ}
   higham13_fl_matrixSub fp (Y i)
     (dhsBlockBackConventionalUpperProduct fp i U X)
 
+/-- A zero full upper suffix forces both the conventional row RHS and the
+    original forward-solve block to be zero once the local Eq.13.15 equation
+    is imposed.
+
+    The conventional strict-tail product is exactly zero by its checked
+    matrix-product error bound.  Eq.13.15 then makes the rounded subtraction
+    zero.  Finally `gammaValid fp (m*r)` gives `u < 1`, so the relative
+    subtraction model `fl(Y-0) = Y*(1+delta)` has a nonzero factor and forces
+    `Y = 0`.  No subtract-by-zero exactness law is needed. -/
+theorem dhs_block_back_conventional_rhs_eq_zero_of_upper_suffix_zero_and_eq13_15
+    {m r : ℕ}
+    (fp : FPModel) (hm : 0 < m) (hr : 0 < r) (i : Fin m)
+    (c₅ normUii normDeltaUii : ℝ)
+    (U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (DeltaDiag : Matrix (Fin r) (Fin r) ℝ)
+    (X Y : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hγ : gammaValid fp (m * r))
+    (hSuffixZero : infNormVec (dhsBlockBackUpperSuffixVector i X) = 0)
+    (hDiagonal :
+      DiagonalBlockSolveFirstOrderSpec fp.u c₅ normUii normDeltaUii
+        (U i i) DeltaDiag (X i)
+        (dhsBlockBackConventionalRHS fp i U X Y)) :
+    dhsBlockBackConventionalRHS fp i U X Y = 0 ∧ Y i = 0 := by
+  have hSuffixVectorZero : dhsBlockBackUpperSuffixVector i X = 0 := by
+    funext jt
+    apply abs_eq_zero.mp
+    apply le_antisymm
+    · simpa [hSuffixZero] using
+        abs_le_infNormVec (dhsBlockBackUpperSuffixVector i X) jt
+    · exact abs_nonneg (dhsBlockBackUpperSuffixVector i X jt)
+  have hTailNormZero :
+      infNormVec (dhsBlockBackUpperTailVector i X) = 0 := by
+    apply le_antisymm
+    · calc
+        infNormVec (dhsBlockBackUpperTailVector i X) ≤
+            infNormVec (dhsBlockBackUpperSuffixVector i X) :=
+          dhsBlockBackUpperTail_infNormVec_le_suffix i X
+        _ = 0 := hSuffixZero
+    · exact infNormVec_nonneg _
+  have hTailVectorZero : dhsBlockBackUpperTailVector i X = 0 := by
+    funext jt
+    apply abs_eq_zero.mp
+    apply le_antisymm
+    · simpa [hTailNormZero] using
+        abs_le_infNormVec (dhsBlockBackUpperTailVector i X) jt
+    · exact abs_nonneg (dhsBlockBackUpperTailVector i X jt)
+  have hXiZero : X i = 0 := by
+    ext s k
+    fin_cases k
+    have hzero := congrFun hSuffixVectorZero (finProdFinEquiv (i, s))
+    simpa using hzero
+  have hDhatZero : dhsBlockBackConventionalRHS fp i U X Y = 0 := by
+    have hEq := hDiagonal.equation
+    rw [hXiZero] at hEq
+    simpa using hEq.symm
+  have hTailColumnZero : dhsBlockBackUpperTailColumn i X = 0 := by
+    ext jt k
+    fin_cases k
+    exact congrFun hTailVectorZero jt
+  have hChatZero : dhsBlockBackConventionalUpperProduct fp i U X = 0 := by
+    rw [dhsBlockBackConventionalUpperProduct, hTailColumnZero]
+    ext s k
+    have herr := matMul_error_bound fp r (m * r) 1
+      (dhsBlockBackUpperTailRowFlat i (U i)) 0 hγ s k
+    apply abs_eq_zero.mp
+    apply le_antisymm
+    · simpa using herr
+    · exact abs_nonneg
+        (fl_matMul fp r (m * r) 1
+          (dhsBlockBackUpperTailRowFlat i (U i)) 0 s k)
+  have hu_lt_one : fp.u < 1 := by
+    have hγ1 : gammaValid fp 1 :=
+      gammaValid_mono fp (Nat.succ_le_iff.mpr (Nat.mul_pos hm hr)) hγ
+    unfold gammaValid at hγ1
+    simpa using hγ1
+  have hYZero : Y i = 0 := by
+    ext s k
+    fin_cases k
+    obtain ⟨delta, hdelta, hsub⟩ := fp.model_sub (Y i s 0) 0
+    have hflzero : fp.fl_sub (Y i s 0) 0 = 0 := by
+      have hd := congrFun (congrFun hDhatZero s) 0
+      simpa [dhsBlockBackConventionalRHS, higham13_fl_matrixSub,
+        hChatZero] using hd
+    have hfactor : 1 + delta ≠ 0 := by
+      have hdeltaLower : -1 < delta := by
+        have hnegabs : -|delta| ≤ delta := neg_abs_le delta
+        linarith
+      linarith
+    have hprod : Y i s 0 * (1 + delta) = 0 := by
+      calc
+        Y i s 0 * (1 + delta) =
+            (Y i s 0 - 0) * (1 + delta) := by ring
+        _ = fp.fl_sub (Y i s 0) 0 := hsub.symm
+        _ = 0 := hflzero
+    exact (mul_eq_zero.mp hprod).resolve_right hfactor
+  exact ⟨hDhatZero, hYZero⟩
+
+/-- Construct one source-correct conventional full-suffix row witness.
+
+    A nonzero suffix uses the executable suffix perturbation theorem and its
+    RHS-magnitude comparison.  In the zero-suffix case the preceding theorem
+    derives the exact zero row from `gammaValid` and Eq.13.15, so the witness
+    uses zero coefficient perturbation without any extra operational premise. -/
+theorem dhs_block_back_upper_suffix_row_witness_from_conventional
+    {m r : ℕ}
+    (fp : FPModel) (hm : 0 < m) (hr : 0 < r) (i : Fin m)
+    (cRhs normU c₅ normUii normDeltaUii : ℝ)
+    (U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (DeltaDiag : Matrix (Fin r) (Fin r) ℝ)
+    (X Y : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hγ : gammaValid fp (m * r))
+    (hcRhs : 0 ≤ cRhs) (hNormU : 0 ≤ normU)
+    (hUTailU :
+      maxEntryNormRect hr (Nat.mul_pos hm hr)
+        (dhsBlockBackUpperTailRowFlat i (U i)) ≤ normU)
+    (hRhsScale : infNormVec (dhsBlockBackUpperSuffixVector i X) ≠ 0 →
+      maxEntryNormRect hr (Nat.succ_pos 0) (Y i) +
+          maxEntryNormRect hr (Nat.succ_pos 0)
+            (dhsBlockBackConventionalUpperProduct fp i U X) ≤
+        cRhs * normU * infNormVec (dhsBlockBackUpperSuffixVector i X))
+    (hDiagonal :
+      DiagonalBlockSolveFirstOrderSpec fp.u c₅ normUii normDeltaUii
+        (U i i) DeltaDiag (X i)
+        (dhsBlockBackConventionalRHS fp i U X Y)) :
+    ∃ (DeltaRow : Fin m → Matrix (Fin r) (Fin r) ℝ)
+        (rowPerturbBound : ℝ),
+      dhsBlockBackConventionalRHS fp i U X Y +
+          (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+            U i j * X j) +
+          (∑ j : Fin m, DeltaRow j * X j) = Y i ∧
+      (∀ j : Fin m, j.val < i.val → DeltaRow j = 0) ∧
+      (∀ j : Fin m, ∀ s t : Fin r,
+        |DeltaRow j s t| ≤ rowPerturbBound) ∧
+      FirstOrderLe fp.u
+        ((((m * r : ℕ) : ℝ) ^ 2 + cRhs) * fp.u * normU)
+        rowPerturbBound := by
+  by_cases hXSuffix : infNormVec (dhsBlockBackUpperSuffixVector i X) = 0
+  · obtain ⟨hDhatZero, hYZero⟩ :=
+      dhs_block_back_conventional_rhs_eq_zero_of_upper_suffix_zero_and_eq13_15
+        fp hm hr i c₅ normUii normDeltaUii U DeltaDiag X Y hγ hXSuffix
+        hDiagonal
+    have hTailNormZero :
+        infNormVec (dhsBlockBackUpperTailVector i X) = 0 := by
+      apply le_antisymm
+      · calc
+          infNormVec (dhsBlockBackUpperTailVector i X) ≤
+              infNormVec (dhsBlockBackUpperSuffixVector i X) :=
+            dhsBlockBackUpperTail_infNormVec_le_suffix i X
+          _ = 0 := hXSuffix
+      · exact infNormVec_nonneg _
+    have hTailVectorZero : dhsBlockBackUpperTailVector i X = 0 := by
+      funext jt
+      apply abs_eq_zero.mp
+      apply le_antisymm
+      · simpa [hTailNormZero] using
+          abs_le_infNormVec (dhsBlockBackUpperTailVector i X) jt
+      · exact abs_nonneg (dhsBlockBackUpperTailVector i X jt)
+    have hXZero : ∀ j : Fin m, i.val < j.val → X j = 0 := by
+      intro j hij
+      ext s k
+      fin_cases k
+      have hzero := congrFun hTailVectorZero (finProdFinEquiv (j, s))
+      simpa [dhsBlockBackUpperTailVector_apply, hij] using hzero
+    refine ⟨0, 0, ?_, ?_, ?_, ?_⟩
+    · rw [hDhatZero, hYZero]
+      simp only [zero_add]
+      have hTailSum :
+          (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+            U i j * X j) = 0 := by
+        apply Finset.sum_eq_zero
+        intro j hj
+        have hij : i.val < j.val := by
+          simpa only [Finset.mem_filter, Finset.mem_univ, true_and] using hj
+        rw [hXZero j hij]
+        simp
+      rw [hTailSum]
+      simp
+    · simp
+    · simp
+    · apply FirstOrderLe.of_le
+      exact mul_nonneg
+        (mul_nonneg (add_nonneg (sq_nonneg (((m * r : ℕ) : ℝ))) hcRhs)
+          fp.u_nonneg) hNormU
+  · simpa [dhsBlockBackConventionalUpperProduct,
+      dhsBlockBackConventionalRHS] using
+      dhs_block_back_upper_suffix_row_perturbation_firstOrder_from_conventional_operations
+        fp hm hr i cRhs normU (U i) X (Y i) hγ hUTailU hXSuffix
+        (by simpa [dhsBlockBackConventionalUpperProduct] using
+          hRhsScale hXSuffix)
+
 /-- Construct one conventional strict-upper row witness without dividing by a
     zero tail norm.
 
@@ -10295,6 +10813,67 @@ theorem dhs_block_back_substitution_firstOrder_from_conventional_upper_rows_and_
       dhs_block_back_upper_row_witness_from_conventional_or_zero_tail
         fp hm hr i cRhs normU U X Y hγ hcRhs hU (hUTailU i)
         (hRhsScale i) (hZeroTail i)
+  · exact hDiagonal
+
+/-- Concrete source-correct all-row DHS back-substitution branch from the
+    conventional rounded strict-tail products, following subtractions, and
+    every local Eq.13.15 solve.
+
+    Each nonzero full suffix consumes the source RHS-magnitude comparison.
+    A zero suffix is discharged internally from `gammaValid` and Eq.13.15.
+    The assembled RHS-formation perturbations may occupy `j = i`; they are
+    combined exactly once with the local diagonal-solve perturbations before
+    the existing fixed-row, flattening, and product-transport layers. -/
+theorem dhs_block_back_substitution_firstOrder_from_conventional_suffix_rows_and_eq13_15
+    {m r : ℕ}
+    (fp : FPModel) (hm : 0 < m) (hr : 0 < r)
+    (cRhs c₅ cBack normA normL normU : ℝ)
+    (normUii : Fin m → ℝ)
+    (Lhat U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (DeltaDiag : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hγ : gammaValid fp (m * r))
+    (hcRhs : 0 ≤ cRhs) (hc₅ : 0 ≤ c₅)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hUUpper : ∀ i j : Fin m, j.val < i.val → U i j = 0)
+    (hNormUii : ∀ i : Fin m, normUii i ≤ normU)
+    (hLhat : maxEntryNorm (Nat.mul_pos hm hr)
+      (blockMatrixFlatFin Lhat) ≤ normL)
+    (hc : (((m * r : ℕ) : ℝ) *
+      ((((m * r : ℕ) : ℝ) ^ 2 + cRhs) + c₅)) ≤ cBack)
+    (hUTailU : ∀ i : Fin m,
+      maxEntryNormRect hr (Nat.mul_pos hm hr)
+        (dhsBlockBackUpperTailRowFlat i (U i)) ≤ normU)
+    (hRhsScale : ∀ i : Fin m,
+      infNormVec (dhsBlockBackUpperSuffixVector i X) ≠ 0 →
+        maxEntryNormRect hr (Nat.succ_pos 0) (Y i) +
+            maxEntryNormRect hr (Nat.succ_pos 0)
+              (dhsBlockBackConventionalUpperProduct fp i U X) ≤
+          cRhs * normU * infNormVec (dhsBlockBackUpperSuffixVector i X))
+    (hDiagonal : ∀ i : Fin m,
+      DiagonalBlockSolveFirstOrderSpec fp.u c₅ (normUii i)
+        (maxEntryNorm hr (DeltaDiag i))
+        (U i i) (DeltaDiag i) (X i)
+        (dhsBlockBackConventionalRHS fp i U X Y)) :
+    ∃ DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      DHSBlockBackSubstitutionFirstOrderSpec
+        fp.u cBack normA normL normU
+        (maxEntryNorm (Nat.mul_pos hm hr)
+          (blockMatrixFlatFin Lhat * blockMatrixFlatFin DeltaU))
+        (blockMatrixFlatFin U) (blockMatrixFlatFin DeltaU)
+        (blockMatrixRowsFlatFin X) (blockMatrixRowsFlatFin Y) := by
+  apply dhs_block_back_substitution_firstOrder_from_suffix_row_witnesses_and_eq13_15
+    hm hr fp.u c₅ (((m * r : ℕ) : ℝ) ^ 2 + cRhs) cBack
+    normA normL normU normUii Lhat U DeltaDiag X Y
+    (fun i => dhsBlockBackConventionalRHS fp i U X Y)
+    fp.u_nonneg hc₅ (add_nonneg (sq_nonneg (((m * r : ℕ) : ℝ))) hcRhs)
+    hA hL hU hUUpper hNormUii hLhat hc
+  · intro i
+    exact
+      dhs_block_back_upper_suffix_row_witness_from_conventional
+        fp hm hr i cRhs normU c₅ (normUii i)
+        (maxEntryNorm hr (DeltaDiag i)) U (DeltaDiag i) X Y hγ hcRhs hU
+        (hUTailU i) (hRhsScale i) (hDiagonal i)
   · exact hDiagonal
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch for
