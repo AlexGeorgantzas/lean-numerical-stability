@@ -453,6 +453,7 @@
   - DHSBlockForwardSubstitutionFirstOrderSpec,
     DHSBlockBackSubstitutionFirstOrderSpec,
     DHSBlockBackSubstitutionRowsFirstOrderSpec,
+    DHSBlockBackSubstitutionUpperRowsFirstOrderSpec,
     DHSBlockBackSubstitutionFixedBlockRowsFirstOrderSpec,
     dhs_block_forward_substitution_firstOrder,
     dhs_block_forward_substitution_firstOrder_from_conventional_forwardSub_single_rhs,
@@ -463,12 +464,18 @@
     dhs_block_back_substitution_firstOrder_from_rows_spec_of_coeff_bounds,
     dhs_block_back_substitution_rows_spec_from_fixed_block_rows_and_eq13_15,
     dhs_block_back_substitution_firstOrder_from_fixed_block_rows_and_eq13_15_of_coeff_bounds,
+    dhs_block_back_upper_rows_spec_from_row_witnesses,
+    dhs_block_back_fixed_rows_spec_from_upper_rows_and_eq13_15,
+    dhs_block_back_substitution_firstOrder_from_upper_row_witnesses_and_eq13_15,
     dhs_two_block_back_rhs_perturbation_from_matmul_subtraction_specs,
     dhs_two_block_back_rhs_perturbation_firstOrder_from_matmul_subtraction_specs_of_rhs_scale,
     dhs_two_block_back_rhs_perturbation_firstOrder_from_conventional_operations,
     dhs_block_back_upper_row_perturbation_from_matmul_subtraction_specs,
     dhs_block_back_upper_row_perturbation_firstOrder_from_matmul_subtraction_specs_of_rhs_scale,
     dhs_block_back_upper_row_perturbation_firstOrder_from_conventional_operations,
+    dhsBlockBackConventionalUpperProduct, dhsBlockBackConventionalRHS,
+    dhs_block_back_upper_row_witness_from_conventional_or_zero_tail,
+    dhs_block_back_substitution_firstOrder_from_conventional_upper_rows_and_eq13_15,
     dhs_block_back_substitution_firstOrder_from_conventional_backSub_single_rhs,
     dhs_cross_product_firstOrder_of_componentwise_backward,
     dhs_block_forward_back_substitution_firstOrder_from_conventional_single_rhs,
@@ -2698,6 +2705,27 @@ lemma FirstOrderLe.add {u leading₁ leading₂ value₁ value₂ value : ℝ}
   rcases h₂ with ⟨K₂, hK₂, hvalue₂⟩
   refine ⟨K₁ + K₂, add_nonneg hK₁ hK₂, ?_⟩
   linarith
+
+/-- A finite supremum of quantities with the same first-order leading term
+    retains that leading term.  The hidden second-order witnesses are bounded
+    by their finite sum. -/
+theorem FirstOrderLe.finset_univ_sup' {ι : Type*} [Fintype ι]
+    (hne : (Finset.univ : Finset ι).Nonempty)
+    {u leading : ℝ} (value : ι → ℝ)
+    (h : ∀ i : ι, FirstOrderLe u leading (value i)) :
+    FirstOrderLe u leading (Finset.univ.sup' hne value) := by
+  classical
+  choose K hK hvalue using h
+  refine ⟨∑ i : ι, K i, Finset.sum_nonneg (fun i _hi => hK i), ?_⟩
+  apply Finset.sup'_le
+  intro i hi
+  have hKi : K i ≤ ∑ j : ι, K j :=
+    Finset.single_le_sum (fun j _hj => hK j) hi
+  calc
+    value i ≤ leading + K i * u ^ 2 := hvalue i
+    _ ≤ leading + (∑ j : ι, K j) * u ^ 2 := by
+      exact add_le_add le_rfl
+        (mul_le_mul_of_nonneg_right hKi (sq_nonneg u))
 
 lemma FirstOrderLe.bound_mul_nonneg_right {u leading value c target : ℝ}
     (h : FirstOrderLe u leading value) (hc : 0 ≤ c)
@@ -8153,6 +8181,28 @@ structure DHSBlockBackSubstitutionRowsFirstOrderSpec {n : ℕ} {p : Type*}
   entry_bound : ∀ i j : Fin n, |DeltaU i j| ≤ rowPerturbBound
   norm_bound : FirstOrderLe u (cRows * u * normU) rowPerturbBound
 
+/-- Simultaneously assembled strict-upper perturbations for every uniform
+    block-back-substitution row.
+
+    Each row has its concrete RHS-formation equation, diagonal-and-lower
+    support is zero, and one finite first-order envelope bounds all scalar
+    entries.  The diagonal Eq.13.15 perturbations are deliberately kept
+    separate for the next composition layer. -/
+structure DHSBlockBackSubstitutionUpperRowsFirstOrderSpec
+    {m r : ℕ}
+    (u cUpper normU upperPerturbBound : ℝ)
+    (U DeltaUpper : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y Dhat : Fin m → Matrix (Fin r) (Fin 1) ℝ) : Prop where
+  support : ∀ i j : Fin m, ¬i.val < j.val → DeltaUpper i j = 0
+  rhs_formation : ∀ i : Fin m,
+    Dhat i +
+        ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+          (U i j + DeltaUpper i j) * X j =
+      Y i
+  entry_bound : ∀ i j : Fin m, ∀ s t : Fin r,
+    |DeltaUpper i j s t| ≤ upperPerturbBound
+  norm_bound : FirstOrderLe u (cUpper * u * normU) upperPerturbBound
+
 /-- Source-facing fixed-block-row boundary for DHS block back substitution.
 
     For each uniform block row, `rhs_formation` is the exact relation obtained
@@ -8183,6 +8233,148 @@ structure DHSBlockBackSubstitutionFixedBlockRowsFirstOrderSpec
   entry_bound : ∀ i j : Fin m, ∀ s t : Fin r,
     |DeltaU i j s t| ≤ rowPerturbBound
   norm_bound : FirstOrderLe u (cRows * u * normU) rowPerturbBound
+
+/-- Choose the individually proved strict-upper row witnesses simultaneously
+    and aggregate their first-order budgets into one finite envelope. -/
+theorem dhs_block_back_upper_rows_spec_from_row_witnesses
+    {m r : ℕ}
+    (hm : 0 < m)
+    (u cUpper normU : ℝ)
+    (U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y Dhat : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hRows : ∀ i : Fin m,
+      ∃ (DeltaRow : Fin m → Matrix (Fin r) (Fin r) ℝ)
+          (rowPerturbBound : ℝ),
+        Dhat i +
+            ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+              (U i j + DeltaRow j) * X j = Y i ∧
+        (∀ j : Fin m, ¬i.val < j.val → DeltaRow j = 0) ∧
+        (∀ j : Fin m, ∀ s t : Fin r,
+          |DeltaRow j s t| ≤ rowPerturbBound) ∧
+        FirstOrderLe u (cUpper * u * normU) rowPerturbBound) :
+    ∃ (DeltaUpper : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+        (upperPerturbBound : ℝ),
+      DHSBlockBackSubstitutionUpperRowsFirstOrderSpec
+        u cUpper normU upperPerturbBound U DeltaUpper X Y Dhat := by
+  classical
+  choose DeltaRow rowPerturbBound hRow using hRows
+  let DeltaUpper : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ :=
+    fun i j => DeltaRow i j
+  have hne : (Finset.univ : Finset (Fin m)).Nonempty :=
+    Finset.univ_nonempty_iff.mpr ⟨⟨0, hm⟩⟩
+  let upperPerturbBound := Finset.univ.sup' hne rowPerturbBound
+  refine ⟨DeltaUpper, upperPerturbBound, ?_, ?_, ?_, ?_⟩
+  · intro i j hj
+    simpa [DeltaUpper] using (hRow i).2.1 j hj
+  · intro i
+    simpa [DeltaUpper] using (hRow i).1
+  · intro i j s t
+    calc
+      |DeltaUpper i j s t| ≤ rowPerturbBound i := by
+        simpa [DeltaUpper] using (hRow i).2.2.1 j s t
+      _ ≤ upperPerturbBound := by
+        exact Finset.le_sup' rowPerturbBound (Finset.mem_univ i)
+  · exact FirstOrderLe.finset_univ_sup' hne rowPerturbBound
+      (fun i => (hRow i).2.2.2)
+
+/-- Merge the simultaneously assembled strict-upper perturbations with every
+    diagonal Eq.13.15 perturbation.
+
+    The diagonal max-entry norms are enclosed by their own finite supremum.
+    Adding that envelope to the upper-row envelope gives the common entrywise
+    budget and coefficient `cUpper + c₅` required by the existing fixed-row
+    DHS composition theorem. -/
+theorem dhs_block_back_fixed_rows_spec_from_upper_rows_and_eq13_15
+    {m r : ℕ}
+    (hm : 0 < m) (hr : 0 < r)
+    (u c₅ cUpper normU upperPerturbBound : ℝ)
+    (normUii : Fin m → ℝ)
+    (U DeltaUpper : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (DeltaDiag : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y Dhat : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hu : 0 ≤ u) (hc₅ : 0 ≤ c₅)
+    (hUUpper : ∀ i j : Fin m, j.val < i.val → U i j = 0)
+    (hNormUii : ∀ i : Fin m, normUii i ≤ normU)
+    (hUpper : DHSBlockBackSubstitutionUpperRowsFirstOrderSpec
+      u cUpper normU upperPerturbBound U DeltaUpper X Y Dhat)
+    (hDiagonal : ∀ i : Fin m,
+      DiagonalBlockSolveFirstOrderSpec u c₅ (normUii i)
+        (maxEntryNorm hr (DeltaDiag i))
+        (U i i) (DeltaDiag i) (X i) (Dhat i)) :
+    ∃ (DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+        (rowPerturbBound : ℝ),
+      DHSBlockBackSubstitutionFixedBlockRowsFirstOrderSpec
+        hr u c₅ (cUpper + c₅) normU rowPerturbBound normUii
+        U DeltaU X Y Dhat := by
+  classical
+  have hne : (Finset.univ : Finset (Fin m)).Nonempty :=
+    Finset.univ_nonempty_iff.mpr ⟨⟨0, hm⟩⟩
+  let diagPerturbBound :=
+    Finset.univ.sup' hne (fun i => maxEntryNorm hr (DeltaDiag i))
+  have hDiagFirstOrder : ∀ i : Fin m,
+      FirstOrderLe u (c₅ * u * normU) (maxEntryNorm hr (DeltaDiag i)) := by
+    intro i
+    apply (hDiagonal i).norm_bound.mono_leading
+    exact mul_le_mul_of_nonneg_left (hNormUii i) (mul_nonneg hc₅ hu)
+  have hDiagBound : FirstOrderLe u (c₅ * u * normU) diagPerturbBound :=
+    FirstOrderLe.finset_univ_sup' hne
+      (fun i => maxEntryNorm hr (DeltaDiag i)) hDiagFirstOrder
+  have hUpperNonneg : 0 ≤ upperPerturbBound := by
+    let i0 : Fin m := ⟨0, hm⟩
+    let s0 : Fin r := ⟨0, hr⟩
+    exact le_trans (abs_nonneg (DeltaUpper i0 i0 s0 s0))
+      (hUpper.entry_bound i0 i0 s0 s0)
+  have hDiagNonneg : 0 ≤ diagPerturbBound := by
+    let i0 : Fin m := ⟨0, hm⟩
+    exact le_trans (maxEntryNorm_nonneg hr (DeltaDiag i0))
+      (Finset.le_sup' (fun i => maxEntryNorm hr (DeltaDiag i))
+        (Finset.mem_univ i0))
+  let DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ := fun i j =>
+    if j = i then DeltaDiag i else DeltaUpper i j
+  refine ⟨DeltaU, upperPerturbBound + diagPerturbBound,
+    ?_, ?_, ?_, ?_, ?_⟩
+  · intro i j hji
+    have hneji : j ≠ i := by omega
+    exact
+      ⟨hUUpper i j hji,
+        by simp [DeltaU, hneji, hUpper.support i j (by omega)]⟩
+  · intro i
+    calc
+      Dhat i +
+            ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+              (U i j + DeltaU i j) * X j =
+          Dhat i +
+            ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+              (U i j + DeltaUpper i j) * X j := by
+        congr 1
+        apply Finset.sum_congr rfl
+        intro j hj
+        have hij : i.val < j.val := by
+          simpa only [Finset.mem_filter, Finset.mem_univ, true_and] using hj
+        have hneji : j ≠ i := by omega
+        simp [DeltaU, hneji]
+      _ = Y i := hUpper.rhs_formation i
+  · intro i
+    simpa [DeltaU] using hDiagonal i
+  · intro i j s t
+    by_cases hji : j = i
+    · subst j
+      simp only [DeltaU, if_pos]
+      calc
+        |DeltaDiag i s t| ≤ maxEntryNorm hr (DeltaDiag i) :=
+          entry_le_maxEntryNorm hr (DeltaDiag i) s t
+        _ ≤ diagPerturbBound :=
+          Finset.le_sup' (fun k => maxEntryNorm hr (DeltaDiag k))
+            (Finset.mem_univ i)
+        _ ≤ upperPerturbBound + diagPerturbBound := by linarith
+    · simp only [DeltaU, if_neg hji]
+      calc
+        |DeltaUpper i j s t| ≤ upperPerturbBound :=
+          hUpper.entry_bound i j s t
+        _ ≤ upperPerturbBound + diagPerturbBound := by linarith
+  · have hCombined := FirstOrderLe.add hUpper.norm_bound hDiagBound le_rfl
+    apply hCombined.mono_leading
+    exact le_of_eq (by ring)
 
 /-- Source-level result boundary for Demmel--Higham--Schreiber [326],
     Theorem 2.1, equations (2.5)--(2.6), as used by Higham Theorem 13.6.
@@ -9023,6 +9215,63 @@ theorem
       hr u c₅ cRows normU rowPerturbBound normUii
       Uhat DeltaU Xhat Yhat Dhat hRows)
 
+/-- Simultaneous strict-upper row witnesses and all local Eq.13.15 solves imply
+    the selected global DHS block-back-substitution branch.
+
+    This wrapper performs finite witness selection, upper/diagonal budget
+    aggregation, fixed-row composition, block flattening, and the final
+    `Lhat * DeltaU` max-entry transport. -/
+theorem dhs_block_back_substitution_firstOrder_from_upper_row_witnesses_and_eq13_15
+    {m r : ℕ}
+    (hm : 0 < m) (hr : 0 < r)
+    (u c₅ cUpper cBack normA normL normU : ℝ)
+    (normUii : Fin m → ℝ)
+    (Lhat U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (DeltaDiag : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y Dhat : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hu : 0 ≤ u) (hc₅ : 0 ≤ c₅) (hcUpper : 0 ≤ cUpper)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hUUpper : ∀ i j : Fin m, j.val < i.val → U i j = 0)
+    (hNormUii : ∀ i : Fin m, normUii i ≤ normU)
+    (hLhat : maxEntryNorm (Nat.mul_pos hm hr)
+      (blockMatrixFlatFin Lhat) ≤ normL)
+    (hc : (((m * r : ℕ) : ℝ) * (cUpper + c₅)) ≤ cBack)
+    (hRows : ∀ i : Fin m,
+      ∃ (DeltaRow : Fin m → Matrix (Fin r) (Fin r) ℝ)
+          (rowPerturbBound : ℝ),
+        Dhat i +
+            ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+              (U i j + DeltaRow j) * X j = Y i ∧
+        (∀ j : Fin m, ¬i.val < j.val → DeltaRow j = 0) ∧
+        (∀ j : Fin m, ∀ s t : Fin r,
+          |DeltaRow j s t| ≤ rowPerturbBound) ∧
+        FirstOrderLe u (cUpper * u * normU) rowPerturbBound)
+    (hDiagonal : ∀ i : Fin m,
+      DiagonalBlockSolveFirstOrderSpec u c₅ (normUii i)
+        (maxEntryNorm hr (DeltaDiag i))
+        (U i i) (DeltaDiag i) (X i) (Dhat i)) :
+    ∃ DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      DHSBlockBackSubstitutionFirstOrderSpec
+        u cBack normA normL normU
+        (maxEntryNorm (Nat.mul_pos hm hr)
+          (blockMatrixFlatFin Lhat * blockMatrixFlatFin DeltaU))
+        (blockMatrixFlatFin U) (blockMatrixFlatFin DeltaU)
+        (blockMatrixRowsFlatFin X) (blockMatrixRowsFlatFin Y) := by
+  obtain ⟨DeltaUpper, upperPerturbBound, hUpper⟩ :=
+    dhs_block_back_upper_rows_spec_from_row_witnesses
+      hm u cUpper normU U X Y Dhat hRows
+  obtain ⟨DeltaU, rowPerturbBound, hFixed⟩ :=
+    dhs_block_back_fixed_rows_spec_from_upper_rows_and_eq13_15
+      hm hr u c₅ cUpper normU upperPerturbBound normUii
+      U DeltaUpper DeltaDiag X Y Dhat hu hc₅ hUUpper hNormUii
+      hUpper hDiagonal
+  refine ⟨DeltaU, ?_⟩
+  exact
+    dhs_block_back_substitution_firstOrder_from_fixed_block_rows_and_eq13_15_of_coeff_bounds
+      hm hr u c₅ (cUpper + c₅) cBack normA normL normU rowPerturbBound
+      normUii Lhat U DeltaU X Y Dhat hu (add_nonneg hcUpper hc₅)
+      hA hL hU hLhat hc hFixed
+
 /-- DHS two-block back-substitution RHS perturbation from the Chapter 13
     product and subtraction models.
 
@@ -9496,6 +9745,172 @@ theorem dhs_block_back_upper_row_perturbation_firstOrder_from_conventional_opera
       U X Chat DeltaC Y Fsub Dhat fp.u_nonneg
       (sq_nonneg (((m * r : ℕ) : ℝ))) hUTailU hXTail
       (by simpa [A, B, Chat] using hRhsScale) hMul hSub
+
+/-- The actual conventional rounded strict-upper product for one fixed block
+    back-substitution row. -/
+noncomputable def dhsBlockBackConventionalUpperProduct {m r : ℕ}
+    (fp : FPModel) (i : Fin m)
+    (U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X : Fin m → Matrix (Fin r) (Fin 1) ℝ) :
+    Matrix (Fin r) (Fin 1) ℝ :=
+  fl_matMul fp r (m * r) 1
+    (dhsBlockBackUpperTailRowFlat i (U i))
+    (dhsBlockBackUpperTailColumn i X)
+
+/-- The actual conventional rounded RHS obtained by subtracting the strict
+    upper product from the current block of the forward-solve output. -/
+noncomputable def dhsBlockBackConventionalRHS {m r : ℕ}
+    (fp : FPModel) (i : Fin m)
+    (U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y : Fin m → Matrix (Fin r) (Fin 1) ℝ) :
+    Matrix (Fin r) (Fin 1) ℝ :=
+  higham13_fl_matrixSub fp (Y i)
+    (dhsBlockBackConventionalUpperProduct fp i U X)
+
+/-- Construct one conventional strict-upper row witness without dividing by a
+    zero tail norm.
+
+    A nonzero tail uses the concrete rounded row theorem and its source
+    RHS-magnitude comparison.  A zero tail uses the algorithm's explicit exact
+    no-tail RHS relation and the zero coefficient perturbation. -/
+theorem dhs_block_back_upper_row_witness_from_conventional_or_zero_tail
+    {m r : ℕ}
+    (fp : FPModel) (hm : 0 < m) (hr : 0 < r) (i : Fin m)
+    (cRhs normU : ℝ)
+    (U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (Y : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hγ : gammaValid fp (m * r))
+    (hcRhs : 0 ≤ cRhs) (hNormU : 0 ≤ normU)
+    (hUTailU :
+      maxEntryNormRect hr (Nat.mul_pos hm hr)
+        (dhsBlockBackUpperTailRowFlat i (U i)) ≤ normU)
+    (hRhsScale : infNormVec (dhsBlockBackUpperTailVector i X) ≠ 0 →
+      maxEntryNormRect hr (Nat.succ_pos 0) (Y i) +
+          maxEntryNormRect hr (Nat.succ_pos 0)
+            (fl_matMul fp r (m * r) 1
+              (dhsBlockBackUpperTailRowFlat i (U i))
+              (dhsBlockBackUpperTailColumn i X)) ≤
+        cRhs * normU * infNormVec (dhsBlockBackUpperTailVector i X))
+    (hZeroTail : infNormVec (dhsBlockBackUpperTailVector i X) = 0 →
+      higham13_fl_matrixSub fp (Y i)
+          (fl_matMul fp r (m * r) 1
+            (dhsBlockBackUpperTailRowFlat i (U i))
+            (dhsBlockBackUpperTailColumn i X)) =
+        Y i) :
+    ∃ (DeltaRow : Fin m → Matrix (Fin r) (Fin r) ℝ)
+        (rowPerturbBound : ℝ),
+      higham13_fl_matrixSub fp (Y i)
+            (fl_matMul fp r (m * r) 1
+              (dhsBlockBackUpperTailRowFlat i (U i))
+              (dhsBlockBackUpperTailColumn i X)) +
+          ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+            (U i j + DeltaRow j) * X j = Y i ∧
+      (∀ j : Fin m, ¬i.val < j.val → DeltaRow j = 0) ∧
+      (∀ j : Fin m, ∀ s t : Fin r,
+        |DeltaRow j s t| ≤ rowPerturbBound) ∧
+      FirstOrderLe fp.u
+        ((((m * r : ℕ) : ℝ) ^ 2 + cRhs) * fp.u * normU)
+        rowPerturbBound := by
+  by_cases hXTail : infNormVec (dhsBlockBackUpperTailVector i X) = 0
+  · have hTailZero : dhsBlockBackUpperTailVector i X = 0 := by
+      funext jt
+      apply abs_eq_zero.mp
+      apply le_antisymm
+      · simpa [hXTail] using
+          abs_le_infNormVec (dhsBlockBackUpperTailVector i X) jt
+      · exact abs_nonneg (dhsBlockBackUpperTailVector i X jt)
+    have hXZero : ∀ j : Fin m, i.val < j.val → X j = 0 := by
+      intro j hij
+      ext s k
+      fin_cases k
+      have hzero := congrFun hTailZero (finProdFinEquiv (j, s))
+      simpa [dhsBlockBackUpperTailVector_apply, hij] using hzero
+    refine ⟨0, 0, ?_, ?_, ?_, ?_⟩
+    · rw [hZeroTail hXTail]
+      have hsum :
+          (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+            (U i j + (0 : Matrix (Fin r) (Fin r) ℝ)) * X j) = 0 := by
+        apply Finset.sum_eq_zero
+        intro j hj
+        have hij : i.val < j.val := by
+          simpa only [Finset.mem_filter, Finset.mem_univ, true_and] using hj
+        rw [hXZero j hij]
+        simp
+      simpa using congrArg (fun Z => Y i + Z) hsum
+    · simp
+    · simp
+    · apply FirstOrderLe.of_le
+      exact mul_nonneg
+        (mul_nonneg (add_nonneg (sq_nonneg (((m * r : ℕ) : ℝ))) hcRhs)
+          fp.u_nonneg) hNormU
+  · exact
+      dhs_block_back_upper_row_perturbation_firstOrder_from_conventional_operations
+        fp hm hr i cRhs normU (U i) X (Y i) hγ hUTailU hXTail
+        (hRhsScale hXTail)
+
+/-- Concrete all-row DHS back-substitution branch from conventional rounded
+    strict-upper products/subtractions and every local Eq.13.15 solve.
+
+    The only remaining row-analysis inputs are the source magnitude comparison
+    for nonzero tails and the exact operational no-tail relation for zero
+    tails.  From them this theorem constructs every row witness, aggregates the
+    finite budgets, merges the diagonal perturbations, and reaches the selected
+    global branch. -/
+theorem dhs_block_back_substitution_firstOrder_from_conventional_upper_rows_and_eq13_15
+    {m r : ℕ}
+    (fp : FPModel) (hm : 0 < m) (hr : 0 < r)
+    (cRhs c₅ cBack normA normL normU : ℝ)
+    (normUii : Fin m → ℝ)
+    (Lhat U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (DeltaDiag : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hγ : gammaValid fp (m * r))
+    (hcRhs : 0 ≤ cRhs) (hc₅ : 0 ≤ c₅)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hUUpper : ∀ i j : Fin m, j.val < i.val → U i j = 0)
+    (hNormUii : ∀ i : Fin m, normUii i ≤ normU)
+    (hLhat : maxEntryNorm (Nat.mul_pos hm hr)
+      (blockMatrixFlatFin Lhat) ≤ normL)
+    (hc : (((m * r : ℕ) : ℝ) *
+      ((((m * r : ℕ) : ℝ) ^ 2 + cRhs) + c₅)) ≤ cBack)
+    (hUTailU : ∀ i : Fin m,
+      maxEntryNormRect hr (Nat.mul_pos hm hr)
+        (dhsBlockBackUpperTailRowFlat i (U i)) ≤ normU)
+    (hRhsScale : ∀ i : Fin m,
+      infNormVec (dhsBlockBackUpperTailVector i X) ≠ 0 →
+        maxEntryNormRect hr (Nat.succ_pos 0) (Y i) +
+            maxEntryNormRect hr (Nat.succ_pos 0)
+              (dhsBlockBackConventionalUpperProduct fp i U X) ≤
+          cRhs * normU * infNormVec (dhsBlockBackUpperTailVector i X))
+    (hZeroTail : ∀ i : Fin m,
+      infNormVec (dhsBlockBackUpperTailVector i X) = 0 →
+        dhsBlockBackConventionalRHS fp i U X Y = Y i)
+    (hDiagonal : ∀ i : Fin m,
+      DiagonalBlockSolveFirstOrderSpec fp.u c₅ (normUii i)
+        (maxEntryNorm hr (DeltaDiag i))
+        (U i i) (DeltaDiag i) (X i)
+        (dhsBlockBackConventionalRHS fp i U X Y)) :
+    ∃ DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      DHSBlockBackSubstitutionFirstOrderSpec
+        fp.u cBack normA normL normU
+        (maxEntryNorm (Nat.mul_pos hm hr)
+          (blockMatrixFlatFin Lhat * blockMatrixFlatFin DeltaU))
+        (blockMatrixFlatFin U) (blockMatrixFlatFin DeltaU)
+        (blockMatrixRowsFlatFin X) (blockMatrixRowsFlatFin Y) := by
+  apply dhs_block_back_substitution_firstOrder_from_upper_row_witnesses_and_eq13_15
+    hm hr fp.u c₅ (((m * r : ℕ) : ℝ) ^ 2 + cRhs) cBack
+    normA normL normU normUii Lhat U DeltaDiag X Y
+    (fun i => dhsBlockBackConventionalRHS fp i U X Y)
+    fp.u_nonneg hc₅ (add_nonneg (sq_nonneg (((m * r : ℕ) : ℝ))) hcRhs)
+    hA hL hU hUUpper hNormUii hLhat hc
+  · intro i
+    simpa [dhsBlockBackConventionalUpperProduct,
+      dhsBlockBackConventionalRHS] using
+      dhs_block_back_upper_row_witness_from_conventional_or_zero_tail
+        fp hm hr i cRhs normU U X Y hγ hcRhs hU (hUTailU i)
+        (hRhsScale i) (hZeroTail i)
+  · exact hDiagonal
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch for
     the conventional flattened algorithm and one right-hand side.
