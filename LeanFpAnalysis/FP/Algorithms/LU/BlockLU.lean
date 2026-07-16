@@ -22,6 +22,9 @@
     higham13_algorithm13_3_exists_pivotInv_right_inverse_of_all_leadingBlockPrefixes:
     recursive construction of the exact active-pivot inverse table from
     all-leading-prefix nonsingularity
+  - higham13_algorithm13_3_exists_pivotInv_eq13_21_eq13_23_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm:
+    source-strength BDD mixed Eq.13.21/Eq.13.23 endpoint with the Algorithm
+    13.3 pivot sequence constructed internally
   - higham13_algorithm13_3_exists_pivotInv_eq13_21_eq13_23_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos:
     conditional BDD mixed Eq.13.21/Eq.13.23 endpoint with the Algorithm 13.3
     pivot sequence constructed internally; the nonpositive auxiliary
@@ -29022,6 +29025,125 @@ theorem
       higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_mixed_column_mass
         hm hr A pivotInv hApos invDiagBound stageInvDiagBound hDomInf
         hDiagMax hInfDom hPivotBound⟩
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.21) and (13.23):
+    source-strength mixed matrix-`∞`/max-entry endpoint from ordinary BDD,
+    certified initial diagonal inverses, and certified active pivot inverses.
+
+    The diagonal reciprocal data gives the max-entry diagonal comparison via
+    `inv_infNorm_le_maxEntryNorm_of_isRightInverse`.  The same initial inverse
+    table drives the matrix-`∞` active-column certificate, so the mixed
+    column-mass proof reaches `rho <= 2` without the former nonpositive-budget
+    collapse and without a factor depending on the block size. -/
+theorem
+    higham13_algorithm13_3_upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_initial_diag_right_inverse_of_pivot_right_inverse_mixed_column_mass
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A))
+    (invDiagBound : Fin m → ℝ)
+    (diagInv : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hInvBound : ∀ j : Fin m,
+      invDiagBound j ≤ (infNorm (diagInv j))⁻¹)
+    (hDiagRight : ∀ j : Fin m, IsRightInverse r (A j j) (diagInv j))
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    blockMaxNorm hm hr
+        (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * blockMaxNorm hm hr A ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤
+        2 := by
+  letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+  have hDiagMax : ∀ j : Fin m,
+      invDiagBound j ≤ maxEntryNorm hr (A j j) := by
+    intro j
+    exact le_trans (hInvBound j)
+      (inv_infNorm_le_maxEntryNorm_of_isRightInverse
+        hr (A j j) (diagInv j) (hDiagRight j))
+  have hInfDom :
+      SchurStageActiveColumnDom13_7
+        (fun k i j => infNorm
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+        (higham13_algorithm13_3_diagLowerCertGeneric
+          invDiagBound A pivotInv) := by
+    simpa using
+      (higham13_algorithm13_3_matrix_infNorm_active_column_dominance_of_initial_diag_right_inverse_of_pivot_right_inverse
+        (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv invDiagBound
+        diagInv hDom hInvBound hDiagRight hPivotRight)
+  have hPivotBound : ∀ k : ℕ, ∀ hk : k < m,
+      infNorm (pivotInv k) *
+          higham13_algorithm13_3_diagLowerCertGeneric
+            invDiagBound A pivotInv k ⟨k, hk⟩ ≤
+        1 := by
+    simpa using
+      (higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_initial_diag_right_inverse_of_pivot_right_inverse
+        (higham13_fin_fun_unit_sphere_nonempty hr) invDiagBound A pivotInv
+        diagInv hInvBound hDiagRight hPivotRight)
+  exact
+    higham13_algorithm13_3_upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_mixed_column_mass
+      hm hr A pivotInv hApos invDiagBound
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
+      hDom hDiagMax hInfDom hPivotBound
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equations
+    (13.17)--(13.23): source-strength BDD endpoint with the complete recursive
+    pivot-inverse sequence constructed internally.
+
+    Ordinary column BDD is stated with the actual reciprocal matrix-`∞` norm
+    of each nonsingular diagonal block.  All-leading-prefix nonsingularity
+    constructs one compatible right-inverse table for every active Schur
+    pivot.  The preceding mixed column-mass theorem then gives both the
+    Eq.13.21 upper-factor estimate and the dimension-free `rho <= 2` stage
+    growth estimate. -/
+theorem
+    higham13_algorithm13_3_exists_pivotInv_eq13_21_eq13_23_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (hDiagDet : ∀ j : Fin m, Matrix.det (A j j) ≠ 0)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => infNorm (A i j))
+      (fun j : Fin m => (infNorm (nonsingInv r (A j j)))⁻¹)) :
+    ∃ pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ,
+      blockMaxNorm hm hr
+          (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+          2 * blockMaxNorm hm hr A ∧
+        growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              (Nat.mul_pos hm hr) hm hr A pivotInv)
+            (maxEntryNorm_pos_of_det_ne_zero
+              (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+              (higham13_blockMatrixFlatFin_det_ne_zero_of_all_leadingBlockPrefixes
+                hm (fun i j a b => A i j a b) hPrefix)) ≤
+          2 := by
+  rcases
+      higham13_algorithm13_3_exists_pivotInv_right_inverse_of_all_leadingBlockPrefixes
+        A hPrefix with
+    ⟨pivotInv, hPivotRight⟩
+  have hDiagRight : ∀ j : Fin m,
+      IsRightInverse r (A j j) (nonsingInv r (A j j)) := by
+    intro j
+    exact (isInverse_nonsingInv_of_det_ne_zero r (A j j) (hDiagDet j)).2
+  refine ⟨pivotInv, ?_⟩
+  exact
+    higham13_algorithm13_3_upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_initial_diag_right_inverse_of_pivot_right_inverse_mixed_column_mass
+      hm hr A pivotInv
+      (maxEntryNorm_pos_of_det_ne_zero
+        (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+        (higham13_blockMatrixFlatFin_det_ne_zero_of_all_leadingBlockPrefixes
+          hm (fun i j a b => A i j a b) hPrefix))
+      (fun j : Fin m => (infNorm (nonsingInv r (A j j)))⁻¹)
+      (fun j : Fin m => nonsingInv r (A j j)) hDom (fun _ => le_rfl)
+      hDiagRight hPivotRight
 
 /-- Higham, 2nd ed., Chapter 13, equations (13.21) and (13.23):
     BDD all-leading-prefix data and certified active pivot right inverses supply
