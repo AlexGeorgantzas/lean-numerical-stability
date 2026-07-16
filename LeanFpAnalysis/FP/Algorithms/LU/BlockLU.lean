@@ -16,6 +16,15 @@
     higham13_block_norm_eq_maxEntryNorm:
     zero-block and Pi-norm helpers for Eq.13.21 stage/`U` premises
   - blockSchur: block Schur complement S = A₂₂ − A₂₁A₁₁⁻¹A₁₂ (eq. 13.2)
+  - higham13_first_block_inverse_of_all_leadingBlockPrefixes,
+    higham13_all_leadingBlockPrefixes_blockSchur,
+    higham13_algorithm13_3_exists_pivotInv_right_inverse_of_all_leadingBlockPrefixes:
+    recursive construction of the exact active-pivot inverse table from
+    all-leading-prefix nonsingularity
+  - higham13_algorithm13_3_exists_pivotInv_eq13_21_eq13_23_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos:
+    conditional BDD mixed Eq.13.21/Eq.13.23 endpoint with the Algorithm 13.3
+    pivot sequence constructed internally; the nonpositive auxiliary
+    diagonal-bound hypothesis remains explicit
   - block_lu_one_step: Algorithm 13.3 one-step construction
   - blockLUOneStepL_blockMaxNorm_le_of_firstSplit_tail:
     one-step lower-factor max-norm propagation from the first-split
@@ -13598,6 +13607,120 @@ theorem higham13_algorithm13_3_schurStageMatrixBlock_tail_shift
                 (higham13_algorithm13_3_schurStageMatrixBlock_past_last
                   A pivotInv hkFull (Fin.succ i) (Fin.succ j)).symm
 
+/-- Higham, 2nd ed., Chapter 13, Theorems 13.2 and 13.7:
+    an all-leading-prefix nonsingularity table contains a two-sided inverse for
+    the first block.  Unlike the first-`m-1` condition in Theorem 13.2, this
+    table includes the full matrix, as required by the nonsingularity
+    hypothesis of Theorem 13.7. -/
+theorem higham13_first_block_inverse_of_all_leadingBlockPrefixes {m r : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp)) :
+    ∃ A11_inv : Matrix (Fin r) (Fin r) ℝ,
+      IsLeftInverse r (A 0 0) A11_inv ∧
+        IsRightInverse r (A 0 0) A11_inv := by
+  rcases hPrefix 0 (Nat.succ_pos m) with ⟨Ainv, hInv⟩
+  refine ⟨Ainv 0 0, ?_, ?_⟩
+  · intro s t
+    have h := hInv.1 0 0 s t
+    rw [Fin.sum_univ_one] at h
+    simpa [leadingBlockPrefix13_2, blockMatrixIdentity, idBlock] using h
+  · intro s t
+    have h := hInv.2 0 0 s t
+    rw [Fin.sum_univ_one] at h
+    simpa [leadingBlockPrefix13_2, blockMatrixIdentity, idBlock] using h
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof dependency:
+    eliminating the first block transports an all-leading-prefix
+    nonsingularity table to the recursively generated Schur tail. -/
+theorem higham13_all_leadingBlockPrefixes_blockSchur {m r : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (A11_inv : Matrix (Fin r) (Fin r) ℝ)
+    (hInvLeft : IsLeftInverse r (A 0 0) A11_inv)
+    (hInvRight : IsRightInverse r (A 0 0) A11_inv)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp)) :
+    ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (blockSchur A A11_inv) p hp) := by
+  intro p hp
+  cases m with
+  | zero => omega
+  | succ m =>
+      have hpFull : p + 1 < m + 2 := Nat.succ_lt_succ hp
+      have hA_prefix := hPrefix (p + 1) hpFull
+      have hInvLeft_prefix :
+          IsLeftInverse r
+            (leadingBlockPrefix13_2 A (p + 1) hpFull 0 0) A11_inv := by
+        intro s t
+        simpa [leadingBlockPrefix13_2] using hInvLeft s t
+      have hInvRight_prefix :
+          IsRightInverse r
+            (leadingBlockPrefix13_2 A (p + 1) hpFull 0 0) A11_inv := by
+        intro s t
+        simpa [leadingBlockPrefix13_2] using hInvRight s t
+      rw [leadingBlockPrefix13_2_blockSchur A A11_inv p hp]
+      exact blockSchur_nonsingular_of_nonsingular_of_first_block_inverse
+        hInvLeft_prefix hInvRight_prefix hA_prefix
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and Theorem 13.7:
+    if every leading block prefix is nonsingular, there is a recursively
+    compatible pivot-inverse table whose entry at each active stage is an
+    exact right inverse of that stage's diagonal pivot block.
+
+    This constructs the formerly external pivot table used by the source
+    Eq.13.21/Eq.13.23 growth route.  It does not assume a prebuilt Algorithm
+    13.3 execution or any inverse-norm comparison. -/
+theorem
+    higham13_algorithm13_3_exists_pivotInv_right_inverse_of_all_leadingBlockPrefixes
+    {m r : ℕ}
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp)) :
+    ∃ pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ,
+      ∀ k : ℕ, ∀ hk : k < m,
+        IsRightInverse r
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩)
+          (pivotInv k) := by
+  induction m with
+  | zero =>
+      refine ⟨fun _ => 0, ?_⟩
+      intro k hk
+      omega
+  | succ m ih =>
+      rcases higham13_first_block_inverse_of_all_leadingBlockPrefixes A hPrefix with
+        ⟨A11_inv, hInvLeft, hInvRight⟩
+      let S : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ :=
+        blockSchur A A11_inv
+      have hTailPrefix : ∀ p : ℕ, ∀ hp : p < m,
+          BlockMatrixNonsingular (leadingBlockPrefix13_2 S p hp) := by
+        simpa [S] using
+          higham13_all_leadingBlockPrefixes_blockSchur
+            A A11_inv hInvLeft hInvRight hPrefix
+      rcases ih S hTailPrefix with ⟨tailInv, hTailInv⟩
+      let pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ
+        | 0 => A11_inv
+        | k + 1 => tailInv k
+      refine ⟨pivotInv, ?_⟩
+      intro k hk
+      cases k with
+      | zero =>
+          simpa [pivotInv, higham13_algorithm13_3_schurStageMatrixBlock,
+            higham13_algorithm13_3_schurStageBlock] using hInvRight
+      | succ k =>
+          have hkTail : k < m := Nat.lt_of_succ_lt_succ hk
+          have hStage :
+              higham13_algorithm13_3_schurStageMatrixBlock S tailInv k
+                  ⟨k, hkTail⟩ ⟨k, hkTail⟩ =
+                higham13_algorithm13_3_schurStageMatrixBlock A pivotInv (k + 1)
+                  ⟨k + 1, hk⟩ ⟨k + 1, hk⟩ := by
+            simpa [S, pivotInv] using
+              (higham13_algorithm13_3_schurStageMatrixBlock_tail_shift
+                A pivotInv k ⟨k, hkTail⟩ ⟨k, hkTail⟩)
+          rw [← hStage]
+          simpa [pivotInv] using hTailInv k hkTail
+
 /-- Norm table associated with the concrete Algorithm 13.3 Schur-stage blocks. -/
 noncomputable def higham13_algorithm13_3_schurStageNorm {m : ℕ}
     {α : Type*} [Sub α] [Mul α] [Norm α]
@@ -25839,6 +25962,49 @@ theorem
       (higham13_blockMatrixFlatFin_det_ne_zero_of_all_leadingBlockPrefixes
         hm (fun i j a b => A i j a b) hPrefix)
       hPrefix hDomInf hBound hPivotRight
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.21) and (13.23):
+    conditional BDD mixed matrix-`∞`/max-entry endpoint with the Algorithm
+    13.3 pivot sequence constructed internally from all-leading-prefix
+    nonsingularity.
+
+    The conclusion produces both the recursive pivot table and the resulting
+    upper-factor/growth estimates, removing the former external all-pivot
+    right-inverse obligation from this surface.  The explicit auxiliary
+    hypothesis `invDiagBound j ≤ 0` is stronger than the source's ordinary BDD
+    data, so this wrapper is dependency progress and does not close the general
+    source-strength BDD row. -/
+theorem
+    higham13_algorithm13_3_exists_pivotInv_eq13_21_eq13_23_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDomInf : IsBlockDiagDomCol m
+      (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0) :
+    ∃ pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ,
+      blockMaxNorm hm hr
+          (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+          2 * blockMaxNorm hm hr A ∧
+        growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              (Nat.mul_pos hm hr) hm hr A pivotInv)
+            (maxEntryNorm_pos_of_det_ne_zero
+              (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+              (higham13_blockMatrixFlatFin_det_ne_zero_of_all_leadingBlockPrefixes
+                hm (fun i j a b => A i j a b) hPrefix)) ≤
+          2 := by
+  rcases
+      higham13_algorithm13_3_exists_pivotInv_right_inverse_of_all_leadingBlockPrefixes
+        A hPrefix with
+    ⟨pivotInv, hPivotRight⟩
+  exact
+    ⟨pivotInv,
+      higham13_algorithm13_3_upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse
+        hm hr A pivotInv invDiagBound hPrefix hDomInf hBound hPivotRight⟩
 
 /-- Higham, 2nd ed., Chapter 13, equations (13.21) and (13.23):
     determinant-nonzero form of the BDD mixed endpoint with canonical
