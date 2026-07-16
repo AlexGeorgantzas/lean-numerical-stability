@@ -439,12 +439,14 @@
     Theorem 13.6 first-order residual specs
   - DHSBlockForwardSubstitutionFirstOrderSpec,
     DHSBlockBackSubstitutionFirstOrderSpec,
+    DHSBlockBackSubstitutionRowsFirstOrderSpec,
     dhs_block_forward_substitution_firstOrder,
     dhs_block_forward_substitution_firstOrder_from_conventional_forwardSub_single_rhs,
     dhs_block_forward_residual_leading_term_le_of_coeff_bounds,
     dhs_block_forward_residual_firstOrder_from_block_solve_spec,
     dhs_block_forward_residual_firstOrder_from_block_solve_spec_of_coeff_bounds,
     dhs_block_back_substitution_firstOrder,
+    dhs_block_back_substitution_firstOrder_from_rows_spec_of_coeff_bounds,
     dhs_block_back_substitution_firstOrder_from_conventional_backSub_single_rhs,
     dhs_cross_product_firstOrder_of_componentwise_backward,
     dhs_block_forward_back_substitution_firstOrder_from_conventional_single_rhs,
@@ -452,9 +454,10 @@
     dhs_block_back_substitution_leading_term_le_of_coeff_bounds,
     dhs_block_back_substitution_firstOrder_from_diagonal_block_solve_spec,
     dhs_block_back_substitution_firstOrder_from_diagonal_block_solve_spec_of_coeff_bounds:
-    DHS Theorem 2.1 selected-scope forward/back substitution branch specs and
-    a concrete conventional single-right-hand-side realization with its
-    second-order cross term and full solve perturbation estimate
+    DHS Theorem 2.1 selected-scope forward/back substitution and row-assembly
+    branch specs, plus a concrete conventional single-right-hand-side
+    realization with its second-order cross term and full solve perturbation
+    estimate
   - Algorithm13_3Implementation1LocalSpec,
     Algorithm13_3Implementation2ExplicitInverseSpec:
     Algorithm 13.3 Implementation 1/2 local computed-path specs
@@ -7711,6 +7714,23 @@ structure DHSBlockBackSubstitutionFirstOrderSpec {n p : Type*} [Fintype n]
   norm_bound :
     FirstOrderLe u (cBack * u * (normA + normL * normU)) normLDeltaU
 
+/-- Row-analysis boundary for the DHS block-back-substitution proof.
+
+    DHS obtains each row equation by combining the rounded block-row
+    right-hand-side formation with the local diagonal solve (13.15), then
+    assembles the rows into one perturbation `DeltaU`.  This structure records
+    exactly the output needed from that row arithmetic: every assembled row
+    equation, a uniform entry bound for `DeltaU`, and its first-order scalar
+    budget.  It does not assume the desired global `Lhat * DeltaU` estimate. -/
+structure DHSBlockBackSubstitutionRowsFirstOrderSpec {n : ℕ} {p : Type*}
+    (u cRows normU rowPerturbBound : ℝ)
+    (Uhat DeltaU : Matrix (Fin n) (Fin n) ℝ)
+    (Xhat Yhat : Matrix (Fin n) p ℝ) : Prop where
+  equation : ∀ i : Fin n, ∀ k : p,
+    ∑ j : Fin n, (Uhat i j + DeltaU i j) * Xhat j k = Yhat i k
+  entry_bound : ∀ i j : Fin n, |DeltaU i j| ≤ rowPerturbBound
+  norm_bound : FirstOrderLe u (cRows * u * normU) rowPerturbBound
+
 /-- Source-level result boundary for Demmel--Higham--Schreiber [326],
     Theorem 2.1, equations (2.5)--(2.6), as used by Higham Theorem 13.6.
 
@@ -8171,8 +8191,9 @@ theorem dhs_block_forward_substitution_firstOrder
     coefficient perturbation `DeltaL` for this single column.  Its exact
     perturbed solve equation and the max-entry product estimate for
     `DeltaL * Uhat` give the selected DHS forward spec with coefficient `n^2`.
-    Multiple right-hand sides require a block execution whose perturbation is
-    shared across columns and are deliberately not claimed here. -/
+    The DHS solve theorem is naturally a one-right-hand-side statement; no
+    stronger common-perturbation claim for simultaneous right-hand sides is
+    made here. -/
 theorem
     dhs_block_forward_substitution_firstOrder_from_conventional_forwardSub_single_rhs
     {n : ℕ}
@@ -8350,6 +8371,72 @@ theorem dhs_block_back_substitution_firstOrder
     DHSBlockBackSubstitutionFirstOrderSpec
       u cBack normA normL normU normLDeltaU Uhat DeltaU Xhat Yhat :=
   ⟨hEquation, hBound⟩
+
+/-- Assemble the DHS row-analysis boundary into the selected global
+    block-back-substitution branch.
+
+    The row equations give `(Uhat + DeltaU) * Xhat = Yhat`.  The uniform entry
+    budget bounds `‖DeltaU‖max`; one max-entry product estimate then transports
+    it to the `‖Lhat * DeltaU‖max` quantity consumed by the solve perturbation.
+    The displayed comparison `(n : ℝ) * cRows <= cBack` accounts for that
+    product's dimension factor. -/
+theorem
+    dhs_block_back_substitution_firstOrder_from_rows_spec_of_coeff_bounds
+    {n : ℕ} {p : Type*}
+    (hn : 0 < n)
+    (u cRows cBack normA normL normU rowPerturbBound : ℝ)
+    (Lhat Uhat DeltaU : Matrix (Fin n) (Fin n) ℝ)
+    (Xhat Yhat : Matrix (Fin n) p ℝ)
+    (hu : 0 ≤ u) (hcRows : 0 ≤ cRows)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hLhat : maxEntryNorm hn Lhat ≤ normL)
+    (hc : (n : ℝ) * cRows ≤ cBack)
+    (hRows : DHSBlockBackSubstitutionRowsFirstOrderSpec
+      u cRows normU rowPerturbBound Uhat DeltaU Xhat Yhat) :
+    DHSBlockBackSubstitutionFirstOrderSpec
+      u cBack normA normL normU (maxEntryNorm hn (Lhat * DeltaU))
+      Uhat DeltaU Xhat Yhat := by
+  have hDeltaNorm : maxEntryNorm hn DeltaU ≤ rowPerturbBound :=
+    maxEntryNorm_le_of_entry_le_bound hn DeltaU rowPerturbBound hRows.entry_bound
+  have hProduct :
+      maxEntryNorm hn (Lhat * DeltaU) ≤
+        rowPerturbBound * ((n : ℝ) * normL) := by
+    calc
+      maxEntryNorm hn (Lhat * DeltaU) ≤
+          (n : ℝ) * maxEntryNorm hn Lhat * maxEntryNorm hn DeltaU :=
+        maxEntryNorm_matrix_mul_le_dim hn Lhat DeltaU
+      _ ≤ (n : ℝ) * maxEntryNorm hn Lhat * rowPerturbBound :=
+        mul_le_mul_of_nonneg_left hDeltaNorm
+          (mul_nonneg (Nat.cast_nonneg n) (maxEntryNorm_nonneg hn Lhat))
+      _ ≤ (n : ℝ) * normL * rowPerturbBound := by
+        exact mul_le_mul_of_nonneg_right
+          (mul_le_mul_of_nonneg_left hLhat (Nat.cast_nonneg n))
+          (le_trans (maxEntryNorm_nonneg hn DeltaU) hDeltaNorm)
+      _ = rowPerturbBound * ((n : ℝ) * normL) := by ring
+  have hScale : normL * normU ≤ normA + normL * normU := by linarith
+  have hCoeffNonneg : 0 ≤ (n : ℝ) * cRows :=
+    mul_nonneg (Nat.cast_nonneg n) hcRows
+  have hcBack : 0 ≤ cBack := le_trans hCoeffNonneg hc
+  have hLeading :
+      (cRows * u * normU) * ((n : ℝ) * normL) ≤
+        cBack * u * (normA + normL * normU) := by
+    have hbase : 0 ≤ u * (normL * normU) :=
+      mul_nonneg hu (mul_nonneg hL hU)
+    calc
+      (cRows * u * normU) * ((n : ℝ) * normL) =
+          ((n : ℝ) * cRows) * (u * (normL * normU)) := by ring
+      _ ≤ cBack * (u * (normL * normU)) :=
+        mul_le_mul_of_nonneg_right hc hbase
+      _ = (cBack * u) * (normL * normU) := by ring
+      _ ≤ (cBack * u) * (normA + normL * normU) :=
+        mul_le_mul_of_nonneg_left hScale (mul_nonneg hcBack hu)
+      _ = cBack * u * (normA + normL * normU) := by ring
+  refine ⟨?_, ?_⟩
+  · ext i k
+    simpa [Matrix.mul_apply] using hRows.equation i k
+  · exact
+      (hRows.norm_bound.bound_mul_nonneg_right
+        (mul_nonneg (Nat.cast_nonneg n) hL) hProduct).mono_leading hLeading
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch for
     the conventional flattened algorithm and one right-hand side.
@@ -8546,9 +8633,9 @@ theorem
     `E + DeltaL * Uhat + Lhat * DeltaU + DeltaL * DeltaU` to first order.
 
     This closes the mathematical solve-composition layer for the flattened
-    one-column specialization.  It deliberately leaves the source's
-    multi-column fixed block-row/local-solve execution and its audited DHS
-    source-path facts outside the conclusion. -/
+    one-right-hand-side specialization.  It deliberately leaves the source's
+    fixed block-row/local-solve execution and its audited DHS source-path facts
+    outside the conclusion. -/
 theorem dhs_lu_solve_perturbation_firstOrder_from_conventional_single_rhs
     {n : ℕ}
     (fp : FPModel) (hn : 0 < n) (normA cFact dSolve : ℝ)
