@@ -11886,6 +11886,11 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham13_theorem13_5_residual_and_recurrence_from_specs
 #check higham13_theorem13_5_partitioned_step_spec_from_specs
 #check dhs_block_lu_factorization_twoBudget_firstOrder
+#check PartitionedLUComputationFirstOrder
+#check higham13_theorem13_5_schur_norm_linear_majorant
+#check higham13_theorem13_5_recursive_error_global_majorant
+#check PartitionedLUComputationFirstOrder.to_spec
+#check higham13_theorem13_5_eq13_7_from_computation
 #check BlockLUBackwardError
 #check block_lu_solve_backward_error
 #check block_lu_solve_backward_error_firstOrder
