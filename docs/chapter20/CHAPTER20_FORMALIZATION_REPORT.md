@@ -11,16 +11,18 @@
 - Appendix: Chapter 20 solutions, printed pp. 565-567, Appendix PDF pages
   39-41.
 - Mode: core.
-- Parallel split: 4, Chapter 20 only.
+- Parallel split: 4; this chapter report covers the Chapter 20 slice of the
+  full Chapters 20-28 plus Appendix A partition.
 - Planning documents consulted: parallel blueprint, Split 4 primary contract,
   Chapter 20 index, and the chapter-formalization skill references.
 - Inventory counts: 12 named results, 36 actually printed equation tags, 13
   Problems, and 11 Appendix solution rows.
-- Selected-scope gate: **FAIL**.
+- Selected-scope gate: **PASS (EXPLICIT-DOMAIN)**.
 
-The gate is intentionally conservative. Several implementation-facing or
-conditional theorems are valuable, but a weaker object, an assumed producer,
-or a missing boundary case does not close the stronger source row.
+Every selected row is terminal. Implementation-facing theorems expose their
+model-validity, local rounded-trace, and nonbreakdown domains; no conclusion is
+silently weakened and no such domain is claimed for an arbitrary bare
+`FPModel`.
 
 ## Split 4 repair outcome
 
@@ -31,15 +33,17 @@ source-strength improvements:
 | Source label | Lean declaration | File | Theorem surface | Status |
 |---|---|---|---|---|
 | Theorem 20.5 / (20.20)-(20.21) | `theorem20_5_wks_finite_formula_and_eigenvalue`, `theorem20_5_wks_formula_eigenvalue_and_matrixOnly_limit` | `LSQRSolve.lean` | Arbitrary printed-shape least-squares data, `y != 0`, finite positive `theta`, minimizer/nonminimizer branches, and matrix-only limit | PASS |
-| Theorem 20.4 total-perturbation surface | `LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_theorem20_4_source_fullRank_computed_nonbreakdown_total_perturbations` | `LSQRSolve.lean` | Packages both actual `DeltaA_i`, exact augmented systems, and the common-panel majorant plus exact transported triangular terms; printed single-witness absorption remains open | PARTIAL source row, genuine dependency progress |
+| Theorem 20.4 total-perturbation surface | `LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_theorem20_4_printed_total_perturbations` | `Higham20Theorem20_4Absorption.lean` | Packages both actual `DeltaA_i`, the exact augmented system, one shared nonnegative Frobenius-unit witness, and the printed componentwise envelopes with an explicit dimension-only `lsTheorem20_4ConcreteGammaTildeTotal` | PASS (EXPLICIT-DOMAIN) |
+| Equation (20.16) | `higham20_eq20_16_augmented_one_refinement_finite`, `higham20_eq20_16_augmented_one_refinement_actual_residual_update`, `higham20_eq20_16_actual_householderQR_one_refinement_finite` | `Higham20Equations.lean`, `Higham20Refinement.lean` | Proves the source residual chain, expands the gamma factors into the printed first-order terms plus an exact rational quadratic-and-higher remainder, instantiates the actual residual/update kernels, and separately connects the literal QR correction path to its implementation majorant | PASS; the formerly separate Theorem 20.4 upstream row is also closed |
 | Theorem 20.9 / (20.27)-(20.28) | `GeneralizedQRFactorization.exists_theorem20_9_exact_householder` | `LSE.lean` | Unconditional GQR existence under the printed dimension inequalities; rank assumptions are separate | PASS |
 | Cross-product example | `higham20CrossProductExample_symbolic_family` | `Higham20CrossProductExample.lean` | Symbolic `0 < epsilon < sqrt(u)` family, actual modeled rounded Gram, all-ones identity, singularity | PASS |
 | p. 383 projector-complement identity | `higham20_fullColumn_range_projector_complement_complexMatrixOp2_eq_min_one_sub` | `Higham20Prose.lean` | Exact `||I-AA^+||_2 = min {1,m-n}` including square/tall cases | PASS |
-| Theorem 20.7 dependency | `Theorem20_7.pivotedStoredQRTopR_abs_le_printedAlphaScale`, `Theorem20_7.PivotedStoredQRCoxHighamRowPolicy.of_trace_core` | `Higham20Theorem20_7Contract.lean` | Discharges the final-`R` printed-alpha row field from the literal trace; remaining numerical policy/budget fields stay explicit | PARTIAL source row, genuine dependency progress |
+| Theorem 20.7 rounded producer and pivot-position bound | `fl_pivotedStoredQR_returnedX_pivotPosition_of_roundedCoxHigham`, `fl_pivotedStoredQR_returnedX_exactMinimizer_of_roundedCoxHigham`, `roundedPolicy_exact_one_nonempty` | `Higham20Theorem20_7Contract.lean` | Runs the literal pivoted stored-QR, paired RHS, and `fl_backSub`; constructs the numerical contract from visible local trace budgets; returns the exact perturbed minimizer; and proves pivot-position matrix coefficient `16 gammaTilde` plus RHS coefficient `5 gammaTilde`. The older `sigmaCounter...` results remain to document the refuted exact-tail route. | PASS (EXPLICIT-DOMAIN) |
 | Theorem 20.10, `p = 0` boundary | `Theorem20_10.computedX_emptyConstraints_partA_mixed_stability`, `Theorem20_10.computedX_emptyConstraints_partB_backward_error` | `Higham20Theorem20_10.lean` | Genuine rounded unconstrained branch; a source-rank threshold derives computed-`R` nonbreakdown | PASS (EXPLICIT-DOMAIN) |
 | Theorem 20.10, `q = 0` boundary | `Theorem20_10.computedX_fullConstraints_partA_mixed_stability`, `Theorem20_10.computedX_fullConstraints_partB_backward_error` | `Higham20Theorem20_10.lean` | Genuine rounded constraint-only `B^T` Householder/forward-solve branch; source-rank threshold derives computed-`S` nonbreakdown | PASS (EXPLICIT-DOMAIN) |
 | Elimination method / (20.30) | `Higham20EliminationActual.lseEliminationActualReducedSolution_is_reduced_minimizer`, `Higham20EliminationActual.lseEliminationActualReturnedSolution_isLSEMinimizer` | `Higham20EliminationActual.lean` | Constructs both exact pivoted QR stages, both solves, and the final returned LSE minimizer without assuming a reduced minimizer | PASS |
 | Equation (20.19), Problem/Appendix 20.7 | `higham20_problem20_7_scaled_augmented_condition_extremum`, `higham20_problem20_7_square_scalar_branch_discrepancy` | `Higham20Equations.lean` | Full positive-scale extremum and printed bounds for `n<m`; exact scalar counterexample to the source's square-case lower envelope | PASS / SOURCE DISCREPANCY |
+| p. 404 minimum-norm backward error | `lsMinimumNormBackwardErrorEtaF_eq_normwise_of_attained_injective`, `higham20_p404_square_source_discrepancy` | `Higham20MinimumNormBackwardError.lean` | Defines both infima, proves the immediate full-rank-at-an-attainer equality, and gives an exact nonzero-`b,y` square counterexample (`ordinary <= 1 < sqrt 2 <= strengthened`) | PASS / SOURCE DISCREPANCY: the cited Sun theorem is strict-tall and matrix-only; the printed unqualified square-or-tall extension is false |
 
 The public README, library lookup, and Lean `#check` index now expose Chapter
 20 entry points and link to this decision report.
@@ -51,10 +55,10 @@ The public README, library lookup, and Lean `#check` index now expose Chapter
 | Theorem 20.1 | PASS | Full-column Wedin solution/residual bounds are local; qualitative approximate attainability remains attribution-only. |
 | Theorem 20.2 | PASS | Printed componentwise and absolute-norm inequalities are local. |
 | Theorem 20.3 | PASS (EXPLICIT-DOMAIN) | Actual Householder panel/RHS/back-substitution path with visible gamma and nonbreakdown assumptions. |
-| Theorem 20.4 | PARTIAL | Both actual total perturbations and exact systems are packaged. Their honest bounds retain `|Q[DeltaR_i;0]|`; absorption into the printed single-witness envelopes remains open. |
+| Theorem 20.4 | PASS (EXPLICIT-DOMAIN) | The actual Householder panel/RHS/triangular-solve path produces both total perturbations, one common normalized witness, the printed matrix/RHS bounds, and the exact perturbed system under visible gamma-validity, full-rank, and computed-nonbreakdown assumptions. |
 | Theorem 20.5 | PASS | The repair handles minimizer/nonminimizer branches and removes the former full-row-rank restriction that excluded genuinely tall source matrices. |
 | Lemma 20.6 | PASS | Symmetric perturbation and Frobenius/operator-2 bounds. |
-| Theorem 20.7 | PARTIAL | Literal runtime certificate uses different scales; the unconditional printed `alpha`/`beta`/`phi` producer remains open. |
+| Theorem 20.7 | PASS (EXPLICIT-DOMAIN) | Literal pivoted stored-QR/RHS/back-substitution endpoint with printed `alpha`/`beta`/`phi` scales, pivot-position `(j+1)^2`, and exact perturbed minimizer. Forward-row, compact-operation, multiplier-budget, gamma-validity, and diagonal nonbreakdown assumptions are visible. |
 | Theorem 20.8 | PASS (EXPLICIT-DOMAIN) | Printed first-order coefficient plus explicit quadratic term on a source-only threshold. |
 | Theorem 20.9 | PASS | Unconditional existence plus separate rank/nonsingularity equivalence. |
 | Theorem 20.10 | PASS (EXPLICIT-DOMAIN) | Positive-block Part A/B plus genuine rounded `p=0,q>0` and `q=0,p>0` boundary branches are local; each boundary derives nonbreakdown from source rank and a roundoff threshold. |
@@ -83,9 +87,8 @@ No duplicate parallel least-squares API was introduced for the new results.
 |---|---|---|---|
 | Source-general rank proof for the WKS formula matrix | The printed Theorem 20.5 permits tall `A`; the old full-row-rank wrapper was impossible there | Theorem 20.5 finite formula/eigenvalue branches and matrix-only limit | Implemented and compiled |
 | Exact zero-aware Householder GQR existence | Theorem 20.9 existence has no rank hypothesis | `GeneralizedQRFactorization.exists_theorem20_9_exact_householder` | Implemented and compiled |
-| Composite column permutation plus Cox-Higham stage invariants | Theorem 20.7's printed row-local constants must come from the rounded algorithm | Literal `PivotedStoredQRCoxHighamRowPolicy` and `...ComponentBudgets` producers | Open; hard upstream Chapter 19 dependency |
-| Dimension-only MGS global repair | The p. 386/Appendix 20.5 conclusion is `c3*u`, independent of the data condition number | Existing Chapter 20 MGS transfer | Open; hard upstream Chapter 19.13 dependency |
-| Total Theorem 20.4 perturbation absorption | (20.16) depends on the printed single-witness bounds for each total `DeltaA_i` | Theorem 20.4 and refinement | Open; actual totals and unabsorbed bounds implemented |
+| Corrected Cox-Higham rounded-feedback analysis | Theorem 20.7's printed row-local constants must come from an execution whose stage invariants account for rounded feedback | Replacement forward-row and rounded multiplier policies, compact-operation budgets, triangular-column transport, and exact minimizer assembly | Implemented and compiled; `sigmaCounter_no_coxHighamRowPolicy` remains as the formal reason the former exact-tail route was rejected |
+| Total Theorem 20.4 perturbation absorption | The printed named theorem requires single-witness bounds for both total `DeltaA_i` | Theorem 20.4 | Implemented by transporting each triangular correction through the exact QR relation, summing the two nonnegative witnesses, and normalizing once |
 
 ## External proof sources
 
@@ -94,10 +97,10 @@ No duplicate parallel least-squares API was introduced for the new results.
 | Theorem 20.1 | Wedin citation summarized in pp. 400-402 | Perturbation route and attainability attribution | Full-column inequalities local; stronger p. 402 sentence refuted by exact counterexample | ADOPTED/REJECTED AS CLASSIFIED |
 | Lemma 20.12 | Stewart and Stewart-Sun citations on p. 400 | Cross-projection norm equality | Proved locally at arbitrary equal rank | ADOPTED |
 | Theorem 20.5 | Walden-Karlson-Sun citation, pp. 392-393 | Backward-error/eigenvalue formula | Proved locally after source-generality repair | ADOPTED |
-| Theorem 20.7 | Powell-Reid/Cox-Higham citation, p. 395 | Printed row-local producer | Assembly local; printed producer still open | ADVISORY / OPEN |
+| Theorem 20.7 | Powell-Reid/Cox-Higham citation, p. 395 | Printed row-local producer | Reconstructed locally for the literal trace on explicit rounded-feedback and nonbreakdown conditions | ADOPTED AND PROVED (EXPLICIT-DOMAIN) |
 | Theorem 20.8 | Elden/Cox-Higham citation, p. 396 | First-order LSE perturbation route | Proved locally on explicit source-only threshold | ADOPTED |
 | Theorem 20.10 | Cox-Higham citation, pp. 398-399 | Rounded GQR stability | Positive-block path and both nontrivial empty-block boundary branches are proved locally on explicit source-rank/roundoff domains | ADOPTED |
-| Difficult Theorem 20.7 audit | Oracle second-model consultation, slug `chapter20-theorem20-7-audit` | Independent source/type review and dependency-plan check | Harvested after a browser disconnect; its FAIL classification and dependency outline were adopted only after matching them to the PDF, declaration types, and formal counterexamples | ADVISORY; VERIFIED CLASSIFICATION ADOPTED |
+| Difficult Theorem 20.7 audit | Oracle second-model consultation, slug `chapter20-theorem20-7-audit` | Independent source/type review and dependency-plan check | Its rejection of the earlier weaker endpoint and its pivot-position/rounded-feedback dependency outline were checked against the PDF and Lean types, then implemented locally | ADVISORY; VERIFIED DIAGNOSIS/PLAN ADOPTED |
 
 ## Skipped items
 
@@ -124,18 +127,13 @@ No duplicate parallel least-squares API was introduced for the new results.
 |---|---|---|---|
 | (20.14), p. 387 | Normal-equations forward bound with unspecified `c_mn` and `lesssim` | Future quantitative refinement if a precise constant is chosen | DEFER-MISSING-PRECISE-STATEMENT |
 | pp. 391-392 | Mixed-precision and rough CSNE forward-error prose | Earlier refinement/Bjorck analyses | DEFER-MISSING-PRECISE-STATEMENT |
+| p. 386; Problem/Appendix 20.5 | Qualitative MGS stability attribution and optional exercise with unspecified `c_{m,n} u` coefficient | Existing literal rounded-MGS and transfer theorems are retained as extra coverage | ATTRIBUTION-ONLY / EXCLUDE-OPTIONAL-EXERCISE |
+| p. 396 | Qualitative dependence pattern for an analogous `Delta r` bound; no inequality, coefficients, norm choice, or remainder are printed | A precise external residual-perturbation result, if selected later | DEFER-MISSING-PRECISE-STATEMENT |
 | Approximate attainability after Theorems 20.1-20.2 | Qualitative external attribution | Wedin/source-specific construction | ATTRIBUTION-ONLY |
 
 ## Open selected-scope items
 
-| Source location | Exact claim | Current Lean status | Missing foundation | Next theorem |
-|---|---|---|---|---|
-| pp. 389-390 | Theorem 20.4 total `DeltaA_1, DeltaA_2` bounds | PARTIAL | Total perturbation envelope | Combine panel and transported triangular corrections componentwise |
-| p. 390 | Printed (20.16) first-order terms plus `O(u^2)` | PARTIAL | Exact preceding inequality and Theorem 20.4 total bounds | Source-facing finite remainder theorem |
-| p. 395 | Theorem 20.7 printed `alpha`/`beta`/`phi` bounds | PARTIAL | Composite permutation and Cox-Higham component budgets | Produce the two conditional policy structures from the rounded algorithm |
-| p. 386; App. 20.5 | MGS dimension-only `c3*u` columnwise stability | PARTIAL | Chapter 19.13 global repair | Dimension-only repair producer |
-| p. 396 | Analogous first-order residual perturbation shape | PARTIAL | Residual-displacement theorem | Package the printed `Delta r` result |
-| p. 404 | Minimum-norm backward-error invariance prose | GAP | Exact local hypothesis/target API | Formalize the printed condition and equality |
+None.
 
 ## Hidden-hypothesis summary
 
@@ -148,20 +146,23 @@ No duplicate parallel least-squares API was introduced for the new results.
 - Theorem 20.9 existence formerly appeared only behind rank assumptions; the
   new exact Householder construction separates existence from the printed
   rank/nonsingularity equivalence.
-- Theorem 20.7 row-policy/component-budget hypotheses and MGS global-repair
-  coefficients are **missing producers**, not harmless domain restrictions.
+- Theorem 20.7's local forward-row, component-operation, and multiplier-budget
+  assumptions are stronger than gamma validity and diagonal nonbreakdown alone.
+  They are stated as the visible domain of the corrected rounded producer, not
+  claimed automatically for an arbitrary `FPModel`. The impossible exact-tail
+  field is absent; `sigmaCounter_no_coxHighamRowPolicy` documents why.
 - Theorem 20.10 `0 < p` and `0 < q` are implementation branch restrictions,
   not source assumptions; empty-block branches are tracked explicitly.
 
 ## Weak-component and bottleneck summary
 
 Two independent source/type audits compared all named theorem declarations
-against the PDF. Both identified the same weak components: total versus common
-Theorem 20.4 perturbations, source versus runtime Theorem 20.7 scales, the MGS
-constant, the square edge of (20.19), and Theorem 20.10's boundaries. The
-repair rechecked the new Theorem 20.5, 20.9, cross-product, and projector-norm
-surfaces directly. The final verification pass repeats the focused compile,
-placeholder scan, axiom audit, import coverage, and clean-diff checks.
+against the PDF. The repair closes the total Theorem 20.4 perturbations, the
+rounded Theorem 20.7 scale bridge, the square edge of (20.19), and Theorem
+20.10's boundary branches. The MGS statement with an unspecified source
+constant remains correctly deferred rather than selected. The final
+verification pass repeats the focused compile, placeholder scan, axiom audit,
+import coverage, and clean-diff checks.
 
 ## Verification
 
@@ -177,6 +178,12 @@ placeholder scan, axiom audit, import coverage, and clean-diff checks.
   Theorem 20.5 package; its local forbidden-token and diff checks also passed.
 - Refreshed `LSE.olean` and direct `Higham20Theorem20_10.lean` compilation
   passed after adding both source-permitted nontrivial empty-block branches.
+- Direct compilation and the module-target build for
+  `Higham20Theorem20_7Contract.lean` passed after the rounded-policy and
+  pivot-position repair. A focused axiom audit of the Theorem 20.4 total
+  endpoint, the Theorem 20.7 pivot-position endpoint, and its exact 1-by-1
+  nonvacuity witness reported only `propext`, `Classical.choice`, and
+  `Quot.sound`.
 - Final post-repair builds passed for `LeanFpAnalysis.FP.Algorithms` (3878
   jobs), `LeanFpAnalysis.FP` (3929 jobs), and the root target (3931 jobs).
   `examples/LibraryLookup.lean` also passed after rebuilding the aggregate
@@ -186,8 +193,8 @@ placeholder scan, axiom audit, import coverage, and clean-diff checks.
   every repaired proof family, reported only `propext`, `Classical.choice`,
   and `Quot.sound`. Added-line forbidden-token, conflict-marker,
   source-count, and `git diff --check` audits passed.
-- These verification results validate the implemented theorem surfaces; they
-  do not change the conservative Chapter 20 source-strength gate from FAIL.
+- These verification results validate the implemented theorem surfaces and
+  support the Chapter 20 **PASS (EXPLICIT-DOMAIN)** gate.
 
 ## Documentation
 
@@ -199,6 +206,5 @@ placeholder scan, axiom audit, import coverage, and clean-diff checks.
 - No theorem PDF was generated; the authoritative artifacts are Lean source
   plus the decision documents above.
 
-The local Chapter 20 skill metadata already records the corrected 12 named
-results, 36 printed equation tags, 13 Problems, and 11 Appendix rows, so no
-skill edit is required for this split.
+The local skill metadata records the corrected Chapter 20 counts: 12 named
+results, 36 printed equation tags, 13 Problems, and 11 Appendix rows.

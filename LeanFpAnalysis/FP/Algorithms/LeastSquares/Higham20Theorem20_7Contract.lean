@@ -263,7 +263,30 @@ theorem pivotedStoredQRRhsEseq_norm_le_componentBudget
   exact pivotedStoredQRRhsEseq_abs_le_componentBudget
     fp hmn A b hm k hk i
 
-/-- Primitive forward row policy used by the concrete producer.
+/-- Common forward row information used by both the legacy exact-tail
+producer and the rounded-feedback producer below.  These fields concern only
+the executed reflector trace; in particular they contain no final
+least-squares conclusion or accumulated perturbation. -/
+structure PivotedStoredQRCoxHighamForwardRowPolicy (fp : FPModel) {m n : ℕ}
+    (hn : 0 < n) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ) : Prop where
+  sigma_pos : ∀ k, k < n → 0 < |pivotedStoredQRSigma fp hmn A k|
+  raw_vector_row : ∀ k, k < n → ∀ i,
+    |pivotedStoredQRRawVector fp hmn A k i| ≤
+      2 * pivotedStoredQRPrintedAlphaScale fp hmn A i
+  prefix_vector_row : ∀ k, k < n → ∀ i,
+    |Wave19.applyProd
+        (fun q => householder m
+          (pivotedStoredQRRawVector fp hmn A q)
+          (pivotedStoredQRBeta fp hmn A q)) 0 k
+        (pivotedStoredQRRawVector fp hmn A k) i| ≤
+      (1 + 4 * (k : ℝ)) * 2 *
+        pivotedStoredQRPrintedAlphaScale fp hmn A i
+  topR_row : ∀ i j,
+    |pivotedStoredQRTopR fp hmn A i j| ≤
+      pivotedStoredQRPrintedAlphaScale fp hmn A
+        ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩
+
+/-- Primitive forward row policy used by the original exact-tail producer.
 
 Its fields are properties of the literal forward trace: nonzero executed
 pivots, the raw-reflector row bound of Cox--Higham (2.10), the executed-prefix
@@ -297,6 +320,17 @@ structure PivotedStoredQRCoxHighamRowPolicy (fp : FPModel) {m n : ℕ}
             (pivotedStoredQRTopR fp hmn A) i j)) ≤
       |pivotedStoredQRSigma fp hmn A k|
 
+/-- Forget the legacy exact-tail field. -/
+def PivotedStoredQRCoxHighamRowPolicy.toForward
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ)
+    (policy : PivotedStoredQRCoxHighamRowPolicy fp hn hmn A) :
+    PivotedStoredQRCoxHighamForwardRowPolicy fp hn hmn A where
+  sigma_pos := policy.sigma_pos
+  raw_vector_row := policy.raw_vector_row
+  prefix_vector_row := policy.prefix_vector_row
+  topR_row := policy.topR_row
+
 /-- Build the primitive row policy from its genuinely numerical trace
 obligations.  The final-`R` row bound is discharged internally from the
 definition of the printed alpha scale. -/
@@ -327,6 +361,306 @@ theorem PivotedStoredQRCoxHighamRowPolicy.of_trace_core
   prefix_vector_row := hprefix
   topR_row := pivotedStoredQRTopR_abs_le_printedAlphaScale fp hmn A
   topR_tail := htail
+
+/-! ### Bare-model obstruction for the forward row policy
+
+The prefix-policy interface avoids the false strict sigma history proved in
+`Higham20Theorem20_7.lean`, but its final active-tail field is still an
+exact-reflector property. Feeding the rounded compact update back into the next
+pivot can enlarge that tail. The existing legal full-rank two-by-two trace has
+first pivot scale `1` and final `(1,1)` entry `45/32`.
+-/
+
+theorem sigmaCounterA_mulVec_injective :
+    Function.Injective (rectMatMulVec sigmaCounterA) := by
+  intro x y hxy
+  funext j
+  have h0 := congrFun hxy (0 : Fin 2)
+  have h1 := congrFun hxy (1 : Fin 2)
+  fin_cases j
+  · norm_num [rectMatMulVec, sigmaCounterA, Fin.sum_univ_two] at h1 ⊢
+    linarith
+  · norm_num [rectMatMulVec, sigmaCounterA, Fin.sum_univ_two] at h0 ⊢
+    linarith
+
+theorem sigmaCounter_gammaValid_two :
+    gammaValid subInflatedQuarterFPModel 2 := by
+  norm_num [gammaValid, subInflatedQuarterFPModel]
+
+theorem sigmaCounter_final_11 :
+    fl_pivotedStoredQRMatrixSeq subInflatedQuarterFPModel (m := 2) (n := 2)
+      (by omega) sigmaCounterA 2 (1 : Fin 2) (1 : Fin 2) = 45 / 32 := by
+  rw [fl_pivotedStoredQRMatrixSeq_succ_of_lt subInflatedQuarterFPModel
+      (m := 2) (n := 2) (by omega) sigmaCounterA 1 (by omega)]
+  have hswap :
+      pivotedStoredQRSwappedPanel subInflatedQuarterFPModel (m := 2) (n := 2)
+        (by omega) sigmaCounterA 1 (1 : Fin 2) (1 : Fin 2) = -(9 / 8 : ℝ) :=
+    sigmaCounter_swap1_11
+  have hv :
+      pivotedStoredQRRawVector subInflatedQuarterFPModel (m := 2) (n := 2)
+        (by omega) sigmaCounterA 1 =
+          fun i => if i = (1 : Fin 2) then -(9 / 4 : ℝ) else 0 := by
+    funext i
+    fin_cases i
+    · simp [pivotedStoredQRRawVector, pivotedQRActiveRow,
+        pivotedQRActiveCol, householderTrailingActiveVector,
+        householderActiveVector, householderTrailingPart]
+    · norm_num [pivotedStoredQRRawVector, pivotedQRActiveRow,
+        pivotedQRActiveCol, hswap, householderTrailingActiveVector,
+        householderActiveVector, householderTrailingPart,
+        householderTrailingNorm2Sq, vecNorm2Sq, Fin.sum_univ_two,
+        signedHouseholderAlpha]
+      have h81 : Real.sqrt (81 : ℝ) = 9 := by
+        nlinarith [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 81),
+          Real.sqrt_nonneg (81 : ℝ)]
+      have h64 : Real.sqrt (64 : ℝ) = 8 := by
+        nlinarith [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 64),
+          Real.sqrt_nonneg (64 : ℝ)]
+      rw [h81, h64]
+      norm_num
+  have hbeta :
+      pivotedStoredQRBeta subInflatedQuarterFPModel (m := 2) (n := 2)
+        (by omega) sigmaCounterA 1 = 32 / 81 := by
+    norm_num [pivotedStoredQRBeta, hv, householderBetaSpec, Fin.sum_univ_two]
+  rw [hv, hbeta]
+  norm_num [fl_householderStoredPanelStep, fl_householderApplyCompactPanel,
+    fl_householderApplyCompact, fl_dotProduct, Fin.foldl_succ,
+    subInflatedQuarterFPModel]
+  change
+    (pivotedStoredQRSwappedPanel subInflatedQuarterFPModel (m := 2) (n := 2)
+          (by omega) sigmaCounterA 1 (1 : Fin 2) (1 : Fin 2) -
+        32 / 81 *
+          (9 / 4 *
+            pivotedStoredQRSwappedPanel subInflatedQuarterFPModel
+              (m := 2) (n := 2) (by omega) sigmaCounterA 1
+              (1 : Fin 2) (1 : Fin 2)) * (9 / 4)) * (5 / 4) = 45 / 32
+  rw [hswap]
+  norm_num
+
+theorem sigmaCounter_topR_11 :
+    pivotedStoredQRTopR subInflatedQuarterFPModel (m := 2) (n := 2)
+      (by omega) sigmaCounterA (1 : Fin 2) (1 : Fin 2) = 45 / 32 := by
+  exact sigmaCounter_final_11
+
+/-- The source-shaped forward row policy has no unconditional producer for the
+literal rounded recursion under the bare `FPModel`: its final-tail field is
+refuted by the legal full-rank counterexample. -/
+theorem sigmaCounter_no_coxHighamRowPolicy :
+    ¬ PivotedStoredQRCoxHighamRowPolicy subInflatedQuarterFPModel
+      (m := 2) (n := 2) (by omega) (by omega) sigmaCounterA := by
+  intro policy
+  let tail : Fin 2 → ℝ :=
+    householderTrailingPart 2
+      (pivotedQRActiveRow (m := 2) (n := 2) (by omega) 0 (by omega))
+      (fun i => rectTopBlock (m := 2)
+        (pivotedStoredQRTopR subInflatedQuarterFPModel (by omega) sigmaCounterA)
+        i (1 : Fin 2))
+  have hcoord : |tail (1 : Fin 2)| ≤ vecNorm2 tail :=
+    abs_coord_le_vecNorm2 tail (1 : Fin 2)
+  have htail := policy.topR_tail 0 (by omega) (1 : Fin 2)
+  have hcoordVal : tail (1 : Fin 2) = 45 / 32 := by
+    simp [tail, householderTrailingPart, pivotedQRActiveRow,
+      rectTopBlock, sigmaCounter_topR_11]
+  have hsigma := sigmaCounter_sigma0
+  change vecNorm2 tail ≤
+      |pivotedStoredQRSigma subInflatedQuarterFPModel (by omega)
+        sigmaCounterA 0| at htail
+  rw [hsigma] at htail
+  rw [hcoordVal] at hcoord
+  norm_num at hcoord htail
+  linarith
+
+/-! ### Rounded-feedback replacement for the exact-tail policy
+
+The triangular-solve correction does not need the false assertion that a
+final rounded active tail is no larger than an earlier pivot norm.  Its direct
+Householder expansion only needs a bound on the scalar multiplier
+`|βₖ| * |vₖᵀ [dR;0]ⱼ|`.  The following policy records the corresponding
+worst-case componentwise budget against the *actual final* `R`.  It is local,
+independent of `dR`, and contains no transported or accumulated error.
+-/
+
+/-- Forward Cox--Higham policy corrected for rounded feedback.  The last field
+is the explicit componentwise worst-case multiplier for every admissible
+triangular-solve perturbation. -/
+structure PivotedStoredQRCoxHighamRoundedRowPolicy (fp : FPModel) {m n : ℕ}
+    (hn : 0 < n) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (gammaTilde : ℝ) : Prop
+    extends PivotedStoredQRCoxHighamForwardRowPolicy fp hn hmn A where
+  gamma_nonneg : 0 ≤ gammaTilde
+  gamma_n_le : gamma fp n ≤ gammaTilde
+  backSub_multiplier_budget : ∀ k (_hk : k < n) (j : Fin n),
+    |pivotedStoredQRBeta fp hmn A k| *
+        (∑ s : Fin m,
+          |pivotedStoredQRRawVector fp hmn A k s| *
+            (gamma fp n *
+              |rectTopBlock (m := m) (pivotedStoredQRTopR fp hmn A) s j|)) ≤
+      gammaTilde
+
+/-- The corrected local budget controls the direct Householder multiplier for
+every componentwise-admissible triangular-solve perturbation. -/
+theorem pivotedStoredQR_backSub_direct_multiplier_le_of_roundedPolicy
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (gammaTilde : ℝ)
+    (hgammaN : gammaValid fp n)
+    (policy : PivotedStoredQRCoxHighamRoundedRowPolicy
+      fp hn hmn A gammaTilde)
+    (dR : Fin n → Fin n → ℝ)
+    (hdR : ∀ i j,
+      |dR i j| ≤ gamma fp n * |pivotedStoredQRTopR fp hmn A i j|)
+    (k : ℕ) (hk : k < n) (j : Fin n) :
+    |pivotedStoredQRBeta fp hmn A k *
+        (∑ s : Fin m, pivotedStoredQRRawVector fp hmn A k s *
+          rectTopBlock (m := m) dR s j)| ≤ gammaTilde := by
+  let v : Fin m → ℝ := pivotedStoredQRRawVector fp hmn A k
+  let topdR : Fin m → Fin n → ℝ := rectTopBlock (m := m) dR
+  let topR : Fin m → Fin n → ℝ :=
+    rectTopBlock (m := m) (pivotedStoredQRTopR fp hmn A)
+  have hgamma0 : 0 ≤ gamma fp n := gamma_nonneg fp hgammaN
+  have htop : ∀ s : Fin m,
+      |topdR s j| ≤ gamma fp n * |topR s j| := by
+    intro s
+    by_cases hs : s.val < n
+    · calc
+        |topdR s j| = |dR ⟨s.val, hs⟩ j| := by
+          simp [topdR, rectTopBlock_top, hs]
+        _ ≤ gamma fp n *
+              |pivotedStoredQRTopR fp hmn A ⟨s.val, hs⟩ j| :=
+          hdR ⟨s.val, hs⟩ j
+        _ = gamma fp n * |topR s j| := by
+          simp [topR, rectTopBlock_top, hs]
+    · have hle : n ≤ s.val := Nat.le_of_not_gt hs
+      simp [topdR, topR, rectTopBlock_bottom, hle]
+  have hsum :
+      |∑ s : Fin m, v s * topdR s j| ≤
+        ∑ s : Fin m, |v s| * (gamma fp n * |topR s j|) := by
+    calc
+      |∑ s : Fin m, v s * topdR s j| ≤
+          ∑ s : Fin m, |v s * topdR s j| :=
+        Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ s : Fin m, |v s| * |topdR s j| := by
+        apply Finset.sum_congr rfl
+        intro s _hs
+        rw [abs_mul]
+      _ ≤ ∑ s : Fin m, |v s| *
+          (gamma fp n * |topR s j|) := by
+        apply Finset.sum_le_sum
+        intro s _hs
+        exact mul_le_mul_of_nonneg_left (htop s) (abs_nonneg _)
+  calc
+    |pivotedStoredQRBeta fp hmn A k *
+        (∑ s : Fin m, pivotedStoredQRRawVector fp hmn A k s *
+          rectTopBlock (m := m) dR s j)| =
+        |pivotedStoredQRBeta fp hmn A k| *
+          |∑ s : Fin m, v s * topdR s j| := by
+      simp [v, topdR, abs_mul]
+    _ ≤ |pivotedStoredQRBeta fp hmn A k| *
+        (∑ s : Fin m, |v s| *
+          (gamma fp n * |topR s j|)) :=
+      mul_le_mul_of_nonneg_left hsum (abs_nonneg _)
+    _ ≤ gammaTilde := by
+      simpa [v, topR] using policy.backSub_multiplier_budget k hk j
+
+/-- A one-by-one nonzero exact trace used to certify that the corrected policy
+is genuinely inhabitable (unlike the refuted legacy exact-tail policy). -/
+noncomputable def roundedPolicyExactOneA : Fin 1 → Fin 1 → ℝ := fun _ _ => 1
+
+/-- Non-vacuity witness for the rounded-feedback policy. -/
+theorem roundedPolicy_exact_one_nonempty :
+    @PivotedStoredQRCoxHighamRoundedRowPolicy
+      (FPModel.exactWithUnitRoundoff 0 (by norm_num)) 1 1
+      (by omega) (by omega) roundedPolicyExactOneA 0 := by
+  refine
+    { sigma_pos := ?_
+      raw_vector_row := ?_
+      prefix_vector_row := ?_
+      topR_row := ?_
+      gamma_nonneg := by norm_num
+      gamma_n_le := ?_
+      backSub_multiplier_budget := ?_ }
+  · intro k hk
+    have hk0 : k = 0 := by omega
+    subst k
+    norm_num [pivotedStoredQRSigma, pivotedStoredQRSwappedPanel,
+      pivotedStoredQRSwapSeq, fl_pivotedStoredQRMatrixSeq,
+      pivotedQRActiveRow, pivotedQRActiveCol,
+      householderActiveMaxPivotColumn, householderTrailingColumnNorm2Sq,
+      householderTrailingNorm2Sq, householderTrailingPart, vecNorm2Sq,
+      householderTrailingActiveVector, householderActiveVector,
+      roundedPolicyExactOneA, Wave13.columnPermuteMatrix]
+  · intro k hk i
+    have hk0 : k = 0 := by omega
+    subst k
+    have hi : i = (0 : Fin 1) := Subsingleton.elim _ _
+    subst i
+    have hα := Wave18D.abs_entry_le_rowInftyGrowthFactor
+      (fl_pivotedStoredQRMatrixSeq
+        (FPModel.exactWithUnitRoundoff 0 (by norm_num))
+        (by omega) roundedPolicyExactOneA) 1 (0 : Fin 1) 0 (by omega)
+        (0 : Fin 1)
+    norm_num [fl_pivotedStoredQRMatrixSeq, roundedPolicyExactOneA] at hα
+    have hscale : 1 ≤ pivotedStoredQRPrintedAlphaScale
+        (FPModel.exactWithUnitRoundoff 0 (by norm_num))
+        (by omega) roundedPolicyExactOneA (0 : Fin 1) := by
+      simpa [pivotedStoredQRPrintedAlphaScale] using hα
+    have hraw : pivotedStoredQRRawVector
+        (FPModel.exactWithUnitRoundoff 0 (by norm_num))
+        (m := 1) (n := 1) (by omega) roundedPolicyExactOneA 0
+          (0 : Fin 1) = 2 := by
+      norm_num [pivotedStoredQRRawVector, pivotedStoredQRSwappedPanel,
+        pivotedStoredQRSwapSeq, fl_pivotedStoredQRMatrixSeq,
+        pivotedQRActiveRow, pivotedQRActiveCol,
+        householderActiveMaxPivotColumn, householderTrailingColumnNorm2Sq,
+        householderTrailingNorm2Sq, householderTrailingPart, vecNorm2Sq,
+        householderTrailingActiveVector, householderActiveVector,
+        signedHouseholderAlpha, roundedPolicyExactOneA,
+        Wave13.columnPermuteMatrix]
+    rw [hraw, abs_of_nonneg (by norm_num)]
+    linarith
+  · intro k hk i
+    have hk0 : k = 0 := by omega
+    subst k
+    simpa [Wave19.applyProd] using (show
+      |pivotedStoredQRRawVector
+          (FPModel.exactWithUnitRoundoff 0 (by norm_num))
+          (m := 1) (n := 1) (by omega) roundedPolicyExactOneA 0 i| ≤
+        2 * pivotedStoredQRPrintedAlphaScale
+          (FPModel.exactWithUnitRoundoff 0 (by norm_num))
+          (by omega) roundedPolicyExactOneA i by
+      have hi : i = (0 : Fin 1) := Subsingleton.elim _ _
+      subst i
+      have hα := Wave18D.abs_entry_le_rowInftyGrowthFactor
+        (fl_pivotedStoredQRMatrixSeq
+          (FPModel.exactWithUnitRoundoff 0 (by norm_num))
+          (by omega) roundedPolicyExactOneA) 1 (0 : Fin 1) 0 (by omega)
+          (0 : Fin 1)
+      norm_num [fl_pivotedStoredQRMatrixSeq, roundedPolicyExactOneA] at hα
+      have hscale : 1 ≤ pivotedStoredQRPrintedAlphaScale
+          (FPModel.exactWithUnitRoundoff 0 (by norm_num))
+          (by omega) roundedPolicyExactOneA (0 : Fin 1) := by
+        simpa [pivotedStoredQRPrintedAlphaScale] using hα
+      have hraw : pivotedStoredQRRawVector
+          (FPModel.exactWithUnitRoundoff 0 (by norm_num))
+          (m := 1) (n := 1) (by omega) roundedPolicyExactOneA 0
+            (0 : Fin 1) = 2 := by
+        norm_num [pivotedStoredQRRawVector, pivotedStoredQRSwappedPanel,
+          pivotedStoredQRSwapSeq, fl_pivotedStoredQRMatrixSeq,
+          pivotedQRActiveRow, pivotedQRActiveCol,
+          householderActiveMaxPivotColumn, householderTrailingColumnNorm2Sq,
+          householderTrailingNorm2Sq, householderTrailingPart, vecNorm2Sq,
+          householderTrailingActiveVector, householderActiveVector,
+          signedHouseholderAlpha, roundedPolicyExactOneA,
+          Wave13.columnPermuteMatrix]
+      rw [hraw, abs_of_nonneg (by norm_num)]
+      linarith)
+  · intro i j
+    exact pivotedStoredQRTopR_abs_le_printedAlphaScale
+      (FPModel.exactWithUnitRoundoff 0 (by norm_num)) (by omega)
+      roundedPolicyExactOneA i j
+  · norm_num [gamma, FPModel.exactWithUnitRoundoff]
+  · intro k hk j
+    norm_num [gamma, FPModel.exactWithUnitRoundoff]
+
 
 /-- Optional source-row caps supplied by a common row-sorting/growth policy.
 They convert the exact printed forward numerators into the initial-data form;
@@ -378,7 +712,7 @@ theorem pivotedStoredQR_stageImage_entrywise_le_of_componentBudgets
     (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
     (gammaTilde : ℝ) (hm : gammaValid fp m)
-    (policy : PivotedStoredQRCoxHighamRowPolicy fp hn hmn A)
+    (policy : PivotedStoredQRCoxHighamForwardRowPolicy fp hn hmn A)
     (budgets : PivotedStoredQRCoxHighamComponentBudgets
       fp hn hmn A b gammaTilde)
     (k : ℕ) (hk : k < n) (i : Fin m) (j : Fin n) :
@@ -436,7 +770,7 @@ theorem pivotedStoredQRRhs_stageImage_entrywise_le_of_componentBudgets
     (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
     (gammaTilde : ℝ) (hm : gammaValid fp m)
-    (policy : PivotedStoredQRCoxHighamRowPolicy fp hn hmn A)
+    (policy : PivotedStoredQRCoxHighamForwardRowPolicy fp hn hmn A)
     (budgets : PivotedStoredQRCoxHighamComponentBudgets
       fp hn hmn A b gammaTilde)
     (k : ℕ) (hk : k < n) (i : Fin m) :
@@ -498,7 +832,7 @@ theorem pivotedStoredQR_pivotDAacc_rowwise_bound_of_componentBudgets
     (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
     (gammaTilde : ℝ) (hm : gammaValid fp m)
-    (policy : PivotedStoredQRCoxHighamRowPolicy fp hn hmn A)
+    (policy : PivotedStoredQRCoxHighamForwardRowPolicy fp hn hmn A)
     (budgets : PivotedStoredQRCoxHighamComponentBudgets
       fp hn hmn A b gammaTilde)
     (i : Fin m) (j : Fin n) :
@@ -543,7 +877,7 @@ theorem pivotedStoredQRRhsDelta_rowwise_bound_of_componentBudgets
     (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
     (gammaTilde : ℝ) (hm : gammaValid fp m)
-    (policy : PivotedStoredQRCoxHighamRowPolicy fp hn hmn A)
+    (policy : PivotedStoredQRCoxHighamForwardRowPolicy fp hn hmn A)
     (budgets : PivotedStoredQRCoxHighamComponentBudgets
       fp hn hmn A b gammaTilde)
     (i : Fin m) :
@@ -586,6 +920,236 @@ theorem pivotedStoredQRRhsDelta_rowwise_bound_of_componentBudgets
       mul_le_mul_of_nonneg_right hsum hscale
     _ = (n : ℝ) ^ 2 * (5 * gammaTilde) *
           pivotedStoredQRPrintedBetaScale fp hmn A b i := by ring
+
+/-- Rounded-feedback `Q[dR;0]` transport retaining triangular column support.
+This version uses the actual local Householder multiplier budget and therefore
+does not require the refuted final-tail/pivot-scale comparison. -/
+theorem pivotedStoredQR_QdR_pivotPosition_sq_le_of_roundedPolicy
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (gammaTilde : ℝ)
+    (hgammaN : gammaValid fp n)
+    (policy : PivotedStoredQRCoxHighamRoundedRowPolicy
+      fp hn hmn A gammaTilde)
+    (dR : Fin n → Fin n → ℝ)
+    (hdR : ∀ i j,
+      |dR i j| ≤ gamma fp n * |pivotedStoredQRTopR fp hmn A i j|)
+    (i : Fin m) (j : Fin n) :
+    |matMulRect m m n
+        (Wave19.Qacc (pivotedStoredQRPseq fp hmn A) n)
+        (rectTopBlock (m := m) dR) i j| ≤
+      ((j.val : ℝ) + 1) ^ 2 * (11 * gammaTilde) *
+        pivotedStoredQRPrintedAlphaScale fp hmn A i := by
+  let alpha : Fin m → ℝ := pivotedStoredQRPrintedAlphaScale fp hmn A
+  let v : ℕ → Fin m → ℝ := fun k => pivotedStoredQRRawVector fp hmn A k
+  let beta : ℕ → ℝ := fun k => pivotedStoredQRBeta fp hmn A k
+  let P : ℕ → Fin m → Fin m → ℝ :=
+    fun k => householder m (v k) (beta k)
+  let f : Fin m → ℝ := fun s => rectTopBlock (m := m) dR s j
+  have halpha : ∀ r, 0 ≤ alpha r :=
+    pivotedStoredQRPrintedAlphaScale_nonneg fp hn hmn A
+  have hQ :
+      matMulRect m m n
+          (Wave19.Qacc (pivotedStoredQRPseq fp hmn A) n)
+          (rectTopBlock (m := m) dR) i j =
+        Wave19.applyProd P 0 n f i := by
+    simpa [P, v, beta, f, pivotedStoredQRPseq] using
+      qacc_matMulRect_eq_applyProd P
+        (fun k => householder_symmetric m (v k) (beta k)) n
+        (rectTopBlock (m := m) dR) i j
+  rw [hQ, applyProd_rawHouseholder_direct_expansion]
+  have hjn : j.val + 1 ≤ n := j.isLt
+  have hterm : ∀ k ∈ Finset.range n,
+      |Wave19.applyProd P 0 k (rawHouseholderDirectTerm v beta f k) i| ≤
+        if k < j.val + 1 then
+          2 * (1 + 4 * ((j.val : ℝ) + 1)) * gammaTilde * alpha i
+        else 0 := by
+    intro k hkset
+    have hk : k < n := Finset.mem_range.mp hkset
+    split_ifs with hkj
+    · have hmult :
+          |beta k * (∑ s : Fin m, v k s * f s)| ≤ gammaTilde := by
+        simpa [v, beta, f] using
+          pivotedStoredQR_backSub_direct_multiplier_le_of_roundedPolicy
+            fp hn hmn A gammaTilde hgammaN policy dR hdR k hk j
+      have hprefix :
+          |Wave19.applyProd P 0 k (v k) i| ≤
+            (1 + 4 * (k : ℝ)) * 2 * alpha i := by
+        simpa [P, v, beta, alpha] using
+          policy.prefix_vector_row k hk i
+      rw [applyProd_rawHouseholderDirectTerm, abs_mul]
+      have hmul :
+          |beta k * (∑ s : Fin m, v k s * f s)| *
+              |Wave19.applyProd P 0 k (v k) i| ≤
+            gammaTilde * ((1 + 4 * (k : ℝ)) * 2 * alpha i) := by
+        exact mul_le_mul hmult hprefix (abs_nonneg _)
+          policy.gamma_nonneg
+      have hkjReal : (k : ℝ) ≤ (j.val : ℝ) := by
+        exact_mod_cast Nat.le_of_lt_succ hkj
+      have hcoeff : 1 + 4 * (k : ℝ) ≤
+          1 + 4 * ((j.val : ℝ) + 1) := by
+        linarith
+      have hscale : 0 ≤ gammaTilde * alpha i :=
+        mul_nonneg policy.gamma_nonneg (halpha i)
+      calc
+        |beta k * (∑ s : Fin m, v k s * f s)| *
+            |Wave19.applyProd P 0 k (v k) i| ≤
+          gammaTilde * ((1 + 4 * (k : ℝ)) * 2 * alpha i) := hmul
+        _ = (2 * (1 + 4 * (k : ℝ))) * (gammaTilde * alpha i) := by ring
+        _ ≤ (2 * (1 + 4 * ((j.val : ℝ) + 1))) *
+              (gammaTilde * alpha i) := by
+          exact mul_le_mul_of_nonneg_right
+            (mul_le_mul_of_nonneg_left hcoeff (by norm_num)) hscale
+        _ = 2 * (1 + 4 * ((j.val : ℝ) + 1)) *
+              gammaTilde * alpha i := by ring
+    · have hjk : j.val < k := by omega
+      have hinner : (∑ s : Fin m, v k s * f s) = 0 := by
+        apply Finset.sum_eq_zero
+        intro s _hs
+        by_cases hsk : s.val < k
+        · rw [show v k s = 0 by
+            simpa [v] using
+              pivotedStoredQRRawVector_zero_prefix fp hmn A k hk s hsk]
+          ring
+        · have hks : k ≤ s.val := Nat.le_of_not_gt hsk
+          have hjs : j.val < s.val := lt_of_lt_of_le hjk hks
+          have hfzero : f s = 0 := by
+            by_cases hsn : s.val < n
+            · have hRzero : pivotedStoredQRTopR fp hmn A ⟨s.val, hsn⟩ j = 0 := by
+                exact fl_pivotedStoredQRMatrixSeq_upperTrapezoidal fp hmn A
+                  ⟨s.val, lt_of_lt_of_le hsn hmn⟩ j hjs
+              have hd := hdR ⟨s.val, hsn⟩ j
+              rw [hRzero, abs_zero, mul_zero] at hd
+              have hdzero : dR ⟨s.val, hsn⟩ j = 0 :=
+                abs_eq_zero.mp (le_antisymm hd (abs_nonneg _))
+              simpa [f, rectTopBlock_top, hsn] using hdzero
+            · have hns : n ≤ s.val := Nat.le_of_not_gt hsn
+              simp [f, rectTopBlock_bottom, hns]
+          rw [hfzero, mul_zero]
+      rw [applyProd_rawHouseholderDirectTerm, hinner]
+      simp
+  have hsum :
+      |∑ k ∈ Finset.range n,
+          Wave19.applyProd P 0 k (rawHouseholderDirectTerm v beta f k) i| ≤
+        ((j.val : ℝ) + 1) *
+          (2 * (1 + 4 * ((j.val : ℝ) + 1)) *
+            gammaTilde * alpha i) := by
+    calc
+      |∑ k ∈ Finset.range n,
+          Wave19.applyProd P 0 k (rawHouseholderDirectTerm v beta f k) i| ≤
+          ∑ k ∈ Finset.range n,
+            |Wave19.applyProd P 0 k
+              (rawHouseholderDirectTerm v beta f k) i| :=
+        Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ k ∈ Finset.range n,
+          (if k < j.val + 1 then
+            2 * (1 + 4 * ((j.val : ℝ) + 1)) * gammaTilde * alpha i
+          else 0) := by
+        apply Finset.sum_le_sum
+        intro k hk
+        exact hterm k hk
+      _ = ((j.val : ℝ) + 1) *
+          (2 * (1 + 4 * ((j.val : ℝ) + 1)) *
+            gammaTilde * alpha i) := by
+        rw [← Finset.sum_filter]
+        have hfilter : (Finset.range n).filter (fun k => k < j.val + 1) =
+            Finset.range (j.val + 1) := by
+          ext k
+          simp only [Finset.mem_filter, Finset.mem_range]
+          omega
+        rw [hfilter]
+        simp
+  have hf : |f i| ≤ gammaTilde * alpha i := by
+    by_cases hi : i.val < n
+    · have hd := hdR ⟨i.val, hi⟩ j
+      have hR := policy.topR_row ⟨i.val, hi⟩ j
+      have hgamma0 : 0 ≤ gamma fp n := gamma_nonneg fp hgammaN
+      calc
+        |f i| = |dR ⟨i.val, hi⟩ j| := by
+          simp [f, rectTopBlock_top, hi]
+        _ ≤ gamma fp n *
+              |pivotedStoredQRTopR fp hmn A ⟨i.val, hi⟩ j| := hd
+        _ ≤ gamma fp n * alpha i := by
+          exact mul_le_mul_of_nonneg_left hR hgamma0
+        _ ≤ gammaTilde * alpha i := by
+          exact mul_le_mul_of_nonneg_right policy.gamma_n_le (halpha i)
+    · have hle : n ≤ i.val := Nat.le_of_not_gt hi
+      rw [show f i = 0 by simp [f, rectTopBlock_bottom, hle], abs_zero]
+      exact mul_nonneg policy.gamma_nonneg (halpha i)
+  have hsub := abs_sub_le (f i) 0
+    (∑ k ∈ Finset.range n,
+      Wave19.applyProd P 0 k (rawHouseholderDirectTerm v beta f k) i)
+  have hjreal : (1 : ℝ) ≤ (j.val : ℝ) + 1 := by
+    have hj0 : (0 : ℝ) ≤ (j.val : ℝ) := by positivity
+    linarith
+  have hfactor :
+      1 + ((j.val : ℝ) + 1) *
+          (2 * (1 + 4 * ((j.val : ℝ) + 1))) ≤
+        11 * ((j.val : ℝ) + 1) ^ 2 := by
+    nlinarith [mul_nonneg (sub_nonneg.mpr hjreal)
+      (show 0 ≤ 3 * ((j.val : ℝ) + 1) + 1 by positivity)]
+  have hscale : 0 ≤ gammaTilde * alpha i :=
+    mul_nonneg policy.gamma_nonneg (halpha i)
+  calc
+    |f i - ∑ k ∈ Finset.range n,
+        Wave19.applyProd P 0 k (rawHouseholderDirectTerm v beta f k) i| ≤
+      |f i| +
+        |∑ k ∈ Finset.range n,
+          Wave19.applyProd P 0 k
+            (rawHouseholderDirectTerm v beta f k) i| := by
+      simpa using hsub
+    _ ≤ gammaTilde * alpha i +
+        ((j.val : ℝ) + 1) *
+          (2 * (1 + 4 * ((j.val : ℝ) + 1)) *
+            gammaTilde * alpha i) :=
+      add_le_add hf hsum
+    _ = (1 + ((j.val : ℝ) + 1) *
+          (2 * (1 + 4 * ((j.val : ℝ) + 1)))) *
+          (gammaTilde * alpha i) := by ring
+    _ ≤ (11 * ((j.val : ℝ) + 1) ^ 2) *
+          (gammaTilde * alpha i) :=
+      mul_le_mul_of_nonneg_right hfactor hscale
+    _ = ((j.val : ℝ) + 1) ^ 2 * (11 * gammaTilde) * alpha i := by ring
+
+/-- Uniform source-dimension envelope obtained from the sharper
+pivot-position transport bound. -/
+theorem pivotedStoredQR_QdR_source_n_sq_le_of_roundedPolicy
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (gammaTilde : ℝ)
+    (hgammaN : gammaValid fp n)
+    (policy : PivotedStoredQRCoxHighamRoundedRowPolicy
+      fp hn hmn A gammaTilde)
+    (dR : Fin n → Fin n → ℝ)
+    (hdR : ∀ i j,
+      |dR i j| ≤ gamma fp n * |pivotedStoredQRTopR fp hmn A i j|)
+    (i : Fin m) (j : Fin n) :
+    |matMulRect m m n
+        (Wave19.Qacc (pivotedStoredQRPseq fp hmn A) n)
+        (rectTopBlock (m := m) dR) i j| ≤
+      (n : ℝ) ^ 2 * (11 * gammaTilde) *
+        pivotedStoredQRPrintedAlphaScale fp hmn A i := by
+  have h := pivotedStoredQR_QdR_pivotPosition_sq_le_of_roundedPolicy
+    fp hn hmn A gammaTilde hgammaN policy dR hdR i j
+  have hfactor : ((j.val : ℝ) + 1) ^ 2 ≤ (n : ℝ) ^ 2 := by
+    simpa using pivotPositionFactor_le_sourceDimensionFactor (Equiv.refl (Fin n)) j
+  have hscale : 0 ≤ (11 * gammaTilde) *
+      pivotedStoredQRPrintedAlphaScale fp hmn A i :=
+    mul_nonneg (mul_nonneg (by norm_num) policy.gamma_nonneg)
+      (pivotedStoredQRPrintedAlphaScale_nonneg fp hn hmn A i)
+  calc
+    |matMulRect m m n
+        (Wave19.Qacc (pivotedStoredQRPseq fp hmn A) n)
+        (rectTopBlock (m := m) dR) i j| ≤
+      ((j.val : ℝ) + 1) ^ 2 * (11 * gammaTilde) *
+        pivotedStoredQRPrintedAlphaScale fp hmn A i := h
+    _ = ((j.val : ℝ) + 1) ^ 2 *
+        ((11 * gammaTilde) *
+          pivotedStoredQRPrintedAlphaScale fp hmn A i) := by ring
+    _ ≤ (n : ℝ) ^ 2 *
+        ((11 * gammaTilde) *
+          pivotedStoredQRPrintedAlphaScale fp hmn A i) :=
+      mul_le_mul_of_nonneg_right hfactor hscale
+    _ = (n : ℝ) ^ 2 * (11 * gammaTilde) *
+        pivotedStoredQRPrintedAlphaScale fp hmn A i := by ring
 
 /-- A componentwise-admissible triangular-solve perturbation satisfies the
 prefix-policy obligations needed to transport `Q [dR;0]`.  This is derived
@@ -679,6 +1243,8 @@ theorem pivotedStoredQR_split3B_numericalContract_of_coxHigham
       (pivotedStoredQRPrintedAlphaScale fp hmn A)
       (pivotedStoredQRPrintedBetaScale fp hmn A b)
       (5 * gammaTilde) (5 * gammaTilde) (16 * gamma fp n) := by
+  let forward : PivotedStoredQRCoxHighamForwardRowPolicy fp hn hmn A :=
+    PivotedStoredQRCoxHighamRowPolicy.toForward fp hn hmn A policy
   refine
     { alpha_nonneg := pivotedStoredQRPrintedAlphaScale_nonneg fp hn hmn A
       betaScale_nonneg :=
@@ -692,10 +1258,10 @@ theorem pivotedStoredQR_split3B_numericalContract_of_coxHigham
       backSub_transport_source_row := ?_ }
   · intro i j
     exact pivotedStoredQR_pivotDAacc_rowwise_bound_of_componentBudgets
-      fp hn hmn A b gammaTilde hm policy budgets i j
+      fp hn hmn A b gammaTilde hm forward budgets i j
   · intro i
     exact pivotedStoredQRRhsDelta_rowwise_bound_of_componentBudgets
-      fp hn hmn A b gammaTilde hm policy budgets i
+      fp hn hmn A b gammaTilde hm forward budgets i
   · intro dR hdR i j
     have qdr := pivotedStoredQR_qdRPrefixReady_of_componentwise_topR
       fp hn hmn A hgammaN policy dR hdR
@@ -703,6 +1269,46 @@ theorem pivotedStoredQR_split3B_numericalContract_of_coxHigham
       fp hmn A (pivotedStoredQRPrintedAlphaScale fp hmn A)
       (pivotedStoredQRPrintedAlphaScale_nonneg fp hn hmn A)
       policy.sigma_pos qdr i j
+
+/-- Corrected rounded-feedback numerical contract.  Matrix and RHS residuals
+use the same primitive component budgets as before; triangular-solve transport
+uses the direct multiplier budget, giving `11 * gammaTilde` without any exact
+final-tail comparison. -/
+theorem pivotedStoredQR_split3B_numericalContract_of_roundedCoxHigham
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (gammaTilde : ℝ)
+    (hm : gammaValid fp m) (hgammaN : gammaValid fp n)
+    (policy : PivotedStoredQRCoxHighamRoundedRowPolicy
+      fp hn hmn A gammaTilde)
+    (budgets : PivotedStoredQRCoxHighamComponentBudgets
+      fp hn hmn A b gammaTilde) :
+    PivotedStoredQRSplit3BNumericalContract fp hmn A b
+      (pivotedStoredQRPrintedAlphaScale fp hmn A)
+      (pivotedStoredQRPrintedBetaScale fp hmn A b)
+      (5 * gammaTilde) (5 * gammaTilde) (11 * gammaTilde) := by
+  let forward : PivotedStoredQRCoxHighamForwardRowPolicy fp hn hmn A :=
+    policy.toPivotedStoredQRCoxHighamForwardRowPolicy
+  refine
+    { alpha_nonneg := pivotedStoredQRPrintedAlphaScale_nonneg fp hn hmn A
+      betaScale_nonneg :=
+        pivotedStoredQRPrintedBetaScale_nonneg fp hmn A b
+      qrCoeff_nonneg := mul_nonneg (by norm_num) budgets.gamma_nonneg
+      rhsCoeff_nonneg := mul_nonneg (by norm_num) budgets.gamma_nonneg
+      backSubCoeff_nonneg := mul_nonneg (by norm_num) policy.gamma_nonneg
+      qr_accumulated_pivot_row := ?_
+      rhs_accumulated_source_row := ?_
+      backSub_transport_source_row := ?_ }
+  · intro i j
+    exact pivotedStoredQR_pivotDAacc_rowwise_bound_of_componentBudgets
+      fp hn hmn A b gammaTilde hm forward budgets i j
+  · intro i
+    exact pivotedStoredQRRhsDelta_rowwise_bound_of_componentBudgets
+      fp hn hmn A b gammaTilde hm forward budgets i
+  · intro dR hdR i j
+    simpa using pivotedStoredQR_QdR_source_n_sq_le_of_roundedPolicy
+      fp hn hmn A gammaTilde hgammaN policy dR hdR i
+        ((pivotPermAcc (pivotedStoredQRSwapSeq fp hmn A) n).symm j)
 
 /-- Zero-safe source-row form of the concrete producer.  The exact printed
 growth numerators are replaced by the row-policy caps
@@ -798,6 +1404,99 @@ theorem pivotedStoredQR_split3B_sourceRowContract_of_coxHigham
             (rowSortCoeff * Wave18D.rowInftyNorm A i) :=
         mul_le_mul_of_nonneg_left (sorting.alpha_row_sorted i) hcoeff
       _ = (n : ℝ) ^ 2 * (16 * gamma fp n) *
+            (rowSortCoeff * Wave18D.rowInftyNorm A i) := by ring
+
+/-- Initial-source-row form of the corrected rounded-feedback contract. -/
+theorem pivotedStoredQR_split3B_sourceRowContract_of_roundedCoxHigham
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (gammaTilde rowSortCoeff : ℝ)
+    (hm : gammaValid fp m) (hgammaN : gammaValid fp n)
+    (policy : PivotedStoredQRCoxHighamRoundedRowPolicy
+      fp hn hmn A gammaTilde)
+    (sorting : PivotedStoredQRCoxHighamRowSortingCaps
+      fp hn hmn A b rowSortCoeff)
+    (budgets : PivotedStoredQRCoxHighamComponentBudgets
+      fp hn hmn A b gammaTilde) :
+    PivotedStoredQRSplit3BNumericalContract fp hmn A b
+      (fun i => rowSortCoeff * Wave18D.rowInftyNorm A i)
+      (fun i => rowSortCoeff *
+        max (pivotedStoredQRPrintedPhi fp hmn A b *
+          Wave18D.rowInftyNorm A i) |b i|)
+      (5 * gammaTilde) (5 * gammaTilde) (11 * gammaTilde) := by
+  have base := pivotedStoredQR_split3B_numericalContract_of_roundedCoxHigham
+    fp hn hmn A b gammaTilde hm hgammaN policy budgets
+  refine
+    { alpha_nonneg := ?_
+      betaScale_nonneg := ?_
+      qrCoeff_nonneg := base.qrCoeff_nonneg
+      rhsCoeff_nonneg := base.rhsCoeff_nonneg
+      backSubCoeff_nonneg := base.backSubCoeff_nonneg
+      qr_accumulated_pivot_row := ?_
+      rhs_accumulated_source_row := ?_
+      backSub_transport_source_row := ?_ }
+  · intro i
+    exact mul_nonneg sorting.rowSortCoeff_nonneg
+      (Wave18D.rowInftyNorm_nonneg A i ⟨0, hn⟩)
+  · intro i
+    have hmax : 0 ≤ max
+        (pivotedStoredQRPrintedPhi fp hmn A b *
+          Wave18D.rowInftyNorm A i) |b i| :=
+      (abs_nonneg (b i)).trans (le_max_right _ _)
+    exact mul_nonneg sorting.rowSortCoeff_nonneg hmax
+  · intro i j
+    have h := base.qr_accumulated_pivot_row i j
+    have hcoeff : 0 ≤ (((j.val : ℝ) + 1) ^ 2 * (5 * gammaTilde)) :=
+      mul_nonneg (sq_nonneg _) base.qrCoeff_nonneg
+    calc
+      |pivotDAacc (pivotedStoredQRPseq fp hmn A)
+          (pivotedStoredQRSwapSeq fp hmn A)
+          (pivotedStoredQREseq fp hmn A) n i j| ≤
+          ((j.val : ℝ) + 1) ^ 2 * (5 * gammaTilde) *
+            pivotedStoredQRPrintedAlphaScale fp hmn A i := h
+      _ = (((j.val : ℝ) + 1) ^ 2 * (5 * gammaTilde)) *
+            pivotedStoredQRPrintedAlphaScale fp hmn A i := by ring
+      _ ≤ (((j.val : ℝ) + 1) ^ 2 * (5 * gammaTilde)) *
+            (rowSortCoeff * Wave18D.rowInftyNorm A i) :=
+        mul_le_mul_of_nonneg_left (sorting.alpha_row_sorted i) hcoeff
+      _ = ((j.val : ℝ) + 1) ^ 2 * (5 * gammaTilde) *
+            (rowSortCoeff * Wave18D.rowInftyNorm A i) := by ring
+  · intro i
+    have h := base.rhs_accumulated_source_row i
+    have hcoeff : 0 ≤ (n : ℝ) ^ 2 * (5 * gammaTilde) :=
+      mul_nonneg (sq_nonneg _) base.rhsCoeff_nonneg
+    calc
+      |pivotedStoredQRRhsDelta fp hmn A b i| ≤
+          (n : ℝ) ^ 2 * (5 * gammaTilde) *
+            pivotedStoredQRPrintedBetaScale fp hmn A b i := h
+      _ = ((n : ℝ) ^ 2 * (5 * gammaTilde)) *
+            pivotedStoredQRPrintedBetaScale fp hmn A b i := by ring
+      _ ≤ ((n : ℝ) ^ 2 * (5 * gammaTilde)) *
+            (rowSortCoeff *
+              max (pivotedStoredQRPrintedPhi fp hmn A b *
+                Wave18D.rowInftyNorm A i) |b i|) :=
+        mul_le_mul_of_nonneg_left (sorting.beta_row_sorted i) hcoeff
+      _ = (n : ℝ) ^ 2 * (5 * gammaTilde) *
+            (rowSortCoeff *
+              max (pivotedStoredQRPrintedPhi fp hmn A b *
+                Wave18D.rowInftyNorm A i) |b i|) := by ring
+  · intro dR hdR i j
+    have h := base.backSub_transport_source_row dR hdR i j
+    have hcoeff : 0 ≤ (n : ℝ) ^ 2 * (11 * gammaTilde) :=
+      mul_nonneg (sq_nonneg _) base.backSubCoeff_nonneg
+    calc
+      |matMulRect m m n
+          (Wave19.Qacc (pivotedStoredQRPseq fp hmn A) n)
+          (rectTopBlock (m := m) dR) i
+          ((pivotPermAcc (pivotedStoredQRSwapSeq fp hmn A) n).symm j)| ≤
+          (n : ℝ) ^ 2 * (11 * gammaTilde) *
+            pivotedStoredQRPrintedAlphaScale fp hmn A i := h
+      _ = ((n : ℝ) ^ 2 * (11 * gammaTilde)) *
+            pivotedStoredQRPrintedAlphaScale fp hmn A i := by ring
+      _ ≤ ((n : ℝ) ^ 2 * (11 * gammaTilde)) *
+            (rowSortCoeff * Wave18D.rowInftyNorm A i) :=
+        mul_le_mul_of_nonneg_left (sorting.alpha_row_sorted i) hcoeff
+      _ = (n : ℝ) ^ 2 * (11 * gammaTilde) *
             (rowSortCoeff * Wave18D.rowInftyNorm A i) := by ring
 
 /-! ## Executable common-row-permutation wrapper
@@ -1055,6 +1754,110 @@ theorem fl_pivotedStoredQR_returnedX_exactMinimizer_of_coxHigham
       (5 * gammaTilde) (5 * gammaTilde) (16 * gamma fp n)
       contract hdiag hgammaN
 
+/-- Growth-aware replacement for the direct endpoint.  The total matrix
+coefficient is the printed-class `16 * gammaTilde = 5 * gammaTilde +
+11 * gammaTilde`; no false exact-tail premise occurs. -/
+theorem fl_pivotedStoredQR_returnedX_exactMinimizer_of_roundedCoxHigham
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (gammaTilde : ℝ)
+    (hm : gammaValid fp m) (hgammaN : gammaValid fp n)
+    (policy : PivotedStoredQRCoxHighamRoundedRowPolicy
+      fp hn hmn A gammaTilde)
+    (budgets : PivotedStoredQRCoxHighamComponentBudgets
+      fp hn hmn A b gammaTilde)
+    (hdiag : ∀ i : Fin n, pivotedStoredQRTopR fp hmn A i i ≠ 0) :
+    ∃ dR : Fin n → Fin n → ℝ,
+      (∀ i j,
+        |dR i j| ≤ gamma fp n * |pivotedStoredQRTopR fp hmn A i j|) ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j +
+          pivotedStoredQRBackSubSourceDelta fp hmn A dR i j)
+        (fun i => b i + pivotedStoredQRRhsDelta fp hmn A b i)
+        (pivotedStoredQRReturnedX fp hmn A b) ∧
+      (∀ i j,
+        |pivotedStoredQRBackSubSourceDelta fp hmn A dR i j| ≤
+          (n : ℝ) ^ 2 * (16 * gammaTilde) *
+            pivotedStoredQRPrintedAlphaScale fp hmn A i) ∧
+      ∀ i,
+        |pivotedStoredQRRhsDelta fp hmn A b i| ≤
+          (n : ℝ) ^ 2 * (5 * gammaTilde) *
+            pivotedStoredQRPrintedBetaScale fp hmn A b i := by
+  let contract :=
+    pivotedStoredQR_split3B_numericalContract_of_roundedCoxHigham
+      fp hn hmn A b gammaTilde hm hgammaN policy budgets
+  have h := fl_pivotedStoredQR_returnedX_exactMinimizer_of_split3B
+    fp hmn A b
+      (pivotedStoredQRPrintedAlphaScale fp hmn A)
+      (pivotedStoredQRPrintedBetaScale fp hmn A b)
+      (5 * gammaTilde) (5 * gammaTilde) (11 * gammaTilde)
+      contract hdiag hgammaN
+  have hcoeff : 5 * gammaTilde + 11 * gammaTilde =
+      16 * gammaTilde := by ring
+  rw [hcoeff] at h
+  exact h
+
+/-- Printed pivot-position form of the rounded Cox--Higham endpoint.  Before
+the final column permutation is undone, the total matrix perturbation retains
+the literal `(j+1)²` factor: `5 * gammaTilde` comes from the accumulated QR
+residual and `11 * gammaTilde` from pulling the triangular-solve perturbation
+through the executed reflector product. -/
+theorem fl_pivotedStoredQR_returnedX_pivotPosition_of_roundedCoxHigham
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (gammaTilde : ℝ)
+    (hm : gammaValid fp m) (hgammaN : gammaValid fp n)
+    (policy : PivotedStoredQRCoxHighamRoundedRowPolicy
+      fp hn hmn A gammaTilde)
+    (budgets : PivotedStoredQRCoxHighamComponentBudgets
+      fp hn hmn A b gammaTilde)
+    (hdiag : ∀ i : Fin n, pivotedStoredQRTopR fp hmn A i i ≠ 0) :
+    ∃ dR : Fin n → Fin n → ℝ,
+      (∀ i j,
+        |dR i j| ≤ gamma fp n * |pivotedStoredQRTopR fp hmn A i j|) ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j +
+          pivotedStoredQRBackSubSourceDelta fp hmn A dR i j)
+        (fun i => b i + pivotedStoredQRRhsDelta fp hmn A b i)
+        (pivotedStoredQRReturnedX fp hmn A b) ∧
+      (∀ i j,
+        |pivotedStoredQRBackSubPivotDelta fp hmn A dR i j| ≤
+          ((j.val : ℝ) + 1) ^ 2 * (16 * gammaTilde) *
+            pivotedStoredQRPrintedAlphaScale fp hmn A i) ∧
+      ∀ i,
+        |pivotedStoredQRRhsDelta fp hmn A b i| ≤
+          (n : ℝ) ^ 2 * (5 * gammaTilde) *
+            pivotedStoredQRPrintedBetaScale fp hmn A b i := by
+  rcases fl_pivotedStoredQR_returnedX_exactMinimizer_of_roundedCoxHigham
+      fp hn hmn A b gammaTilde hm hgammaN policy budgets hdiag with
+    ⟨dR, hdR, hmin, _hsource, hrhs⟩
+  refine ⟨dR, hdR, hmin, ?_, hrhs⟩
+  intro i j
+  let Pseq := pivotedStoredQRPseq fp hmn A
+  let Sseq := pivotedStoredQRSwapSeq fp hmn A
+  let Eseq := pivotedStoredQREseq fp hmn A
+  let Q := Wave19.Qacc Pseq n
+  let dA := pivotDAacc Pseq Sseq Eseq n
+  let forward : PivotedStoredQRCoxHighamForwardRowPolicy fp hn hmn A :=
+    policy.toPivotedStoredQRCoxHighamForwardRowPolicy
+  have hqr := pivotedStoredQR_pivotDAacc_rowwise_bound_of_componentBudgets
+    fp hn hmn A b gammaTilde hm forward budgets i j
+  have hqdR := pivotedStoredQR_QdR_pivotPosition_sq_le_of_roundedPolicy
+    fp hn hmn A gammaTilde hgammaN policy dR hdR i j
+  calc
+    |pivotedStoredQRBackSubPivotDelta fp hmn A dR i j| =
+        |dA i j + matMulRect m m n Q (rectTopBlock (m := m) dR) i j| := by
+      simp [pivotedStoredQRBackSubPivotDelta, Pseq, Sseq, Eseq, Q, dA]
+    _ ≤ |dA i j| +
+        |matMulRect m m n Q (rectTopBlock (m := m) dR) i j| :=
+      abs_add_le _ _
+    _ ≤ ((j.val : ℝ) + 1) ^ 2 * (5 * gammaTilde) *
+          pivotedStoredQRPrintedAlphaScale fp hmn A i +
+        ((j.val : ℝ) + 1) ^ 2 * (11 * gammaTilde) *
+          pivotedStoredQRPrintedAlphaScale fp hmn A i := by
+      exact add_le_add (by simpa [Pseq, Sseq, Eseq, dA] using hqr)
+        (by simpa [Pseq, Q] using hqdR)
+    _ = ((j.val : ℝ) + 1) ^ 2 * (16 * gammaTilde) *
+          pivotedStoredQRPrintedAlphaScale fp hmn A i := by ring
+
 /-- Optional initial-data form of the direct endpoint.  This is a corollary of
 the forward-alpha/beta endpoint plus a separate common row-sorting/growth cap;
 row sorting is not used in the Cox--Higham (2.10)--(2.14) core itself. -/
@@ -1100,6 +1903,54 @@ theorem fl_pivotedStoredQR_returnedX_sourceRows_of_coxHigham
       (5 * gammaTilde) (5 * gammaTilde) (16 * gamma fp n)
       contract hdiag hgammaN
 
+/-- Printed initial-row-scale corollary of the rounded-feedback endpoint. -/
+theorem fl_pivotedStoredQR_returnedX_sourceRows_of_roundedCoxHigham
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (gammaTilde rowSortCoeff : ℝ)
+    (hm : gammaValid fp m) (hgammaN : gammaValid fp n)
+    (policy : PivotedStoredQRCoxHighamRoundedRowPolicy
+      fp hn hmn A gammaTilde)
+    (sorting : PivotedStoredQRCoxHighamRowSortingCaps
+      fp hn hmn A b rowSortCoeff)
+    (budgets : PivotedStoredQRCoxHighamComponentBudgets
+      fp hn hmn A b gammaTilde)
+    (hdiag : ∀ i : Fin n, pivotedStoredQRTopR fp hmn A i i ≠ 0) :
+    ∃ dR : Fin n → Fin n → ℝ,
+      (∀ i j,
+        |dR i j| ≤ gamma fp n * |pivotedStoredQRTopR fp hmn A i j|) ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j +
+          pivotedStoredQRBackSubSourceDelta fp hmn A dR i j)
+        (fun i => b i + pivotedStoredQRRhsDelta fp hmn A b i)
+        (pivotedStoredQRReturnedX fp hmn A b) ∧
+      (∀ i j,
+        |pivotedStoredQRBackSubSourceDelta fp hmn A dR i j| ≤
+          (n : ℝ) ^ 2 * (16 * gammaTilde) *
+            (rowSortCoeff * Wave18D.rowInftyNorm A i)) ∧
+      ∀ i,
+        |pivotedStoredQRRhsDelta fp hmn A b i| ≤
+          (n : ℝ) ^ 2 * (5 * gammaTilde) *
+            (rowSortCoeff *
+              max (pivotedStoredQRPrintedPhi fp hmn A b *
+                Wave18D.rowInftyNorm A i) |b i|) := by
+  let contract :=
+    pivotedStoredQR_split3B_sourceRowContract_of_roundedCoxHigham
+      fp hn hmn A b gammaTilde rowSortCoeff hm hgammaN
+        policy sorting budgets
+  have h := fl_pivotedStoredQR_returnedX_exactMinimizer_of_split3B
+    fp hmn A b
+      (fun i => rowSortCoeff * Wave18D.rowInftyNorm A i)
+      (fun i => rowSortCoeff *
+        max (pivotedStoredQRPrintedPhi fp hmn A b *
+          Wave18D.rowInftyNorm A i) |b i|)
+      (5 * gammaTilde) (5 * gammaTilde) (11 * gammaTilde)
+      contract hdiag hgammaN
+  have hcoeff : 5 * gammaTilde + 11 * gammaTilde =
+      16 * gammaTilde := by ring
+  rw [hcoeff] at h
+  exact h
+
 /-- Source-transported endpoint for the executable common-row-permutation
 wrapper.  The algorithm is run on `(A ∘ σ, b ∘ σ)` and the two perturbations
 are pulled back with `σ⁻¹`; row-permutation invariance then gives an exact
@@ -1139,6 +1990,79 @@ theorem fl_pivotedStoredQR_commonRowPermuted_exactMinimizer_of_coxHigham
             pivotedStoredQRPrintedBetaScale fp hmn
               (rectPermuteRows σ A) (vecPermute σ b) (σ.symm i) := by
   rcases fl_pivotedStoredQR_returnedX_exactMinimizer_of_coxHigham
+      fp hn hmn (rectPermuteRows σ A) (vecPermute σ b) gammaTilde
+      hm hgammaN policy budgets hdiag with
+    ⟨dR, hdR, hmin, hmatrix, hrhs⟩
+  refine ⟨dR, hdR, ?_, ?_, ?_⟩
+  · apply IsLeastSquaresMinimizer.of_permuteRows σ
+      (fun i j => A i j +
+        pivotedStoredQRCommonRowPermutedBackSubSourceDelta
+          fp hmn A σ dR i j)
+      (fun i => b i +
+        pivotedStoredQRCommonRowPermutedRhsDelta fp hmn A b σ i)
+      (pivotedStoredQRCommonRowPermutedReturnedX fp hmn A b σ)
+    have hAeq : rectPermuteRows σ
+        (fun i j => A i j +
+          pivotedStoredQRCommonRowPermutedBackSubSourceDelta
+            fp hmn A σ dR i j) =
+        fun i j => rectPermuteRows σ A i j +
+          pivotedStoredQRBackSubSourceDelta fp hmn
+            (rectPermuteRows σ A) dR i j := by
+      funext i j
+      simp [rectPermuteRows,
+        pivotedStoredQRCommonRowPermutedBackSubSourceDelta]
+    have hbeq : vecPermute σ
+        (fun i => b i +
+          pivotedStoredQRCommonRowPermutedRhsDelta fp hmn A b σ i) =
+        fun i => vecPermute σ b i +
+          pivotedStoredQRRhsDelta fp hmn
+            (rectPermuteRows σ A) (vecPermute σ b) i := by
+      funext i
+      simp [vecPermute, pivotedStoredQRCommonRowPermutedRhsDelta]
+    rw [hAeq, hbeq]
+    simpa [pivotedStoredQRCommonRowPermutedReturnedX] using hmin
+  · intro i j
+    exact hmatrix (σ.symm i) j
+  · intro i
+    exact hrhs (σ.symm i)
+
+/-- Common-row-permutation wrapper for the corrected rounded-feedback
+producer.  This is the executable row-exchange form used by the printed
+Powell--Reid/Cox--Higham statement. -/
+theorem fl_pivotedStoredQR_commonRowPermuted_exactMinimizer_of_roundedCoxHigham
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (σ : Fin m ≃ Fin m)
+    (gammaTilde : ℝ) (hm : gammaValid fp m)
+    (hgammaN : gammaValid fp n)
+    (policy : PivotedStoredQRCoxHighamRoundedRowPolicy fp hn hmn
+      (rectPermuteRows σ A) gammaTilde)
+    (budgets : PivotedStoredQRCoxHighamComponentBudgets fp hn hmn
+      (rectPermuteRows σ A) (vecPermute σ b) gammaTilde)
+    (hdiag : ∀ i : Fin n,
+      pivotedStoredQRTopR fp hmn (rectPermuteRows σ A) i i ≠ 0) :
+    ∃ dR : Fin n → Fin n → ℝ,
+      (∀ i j,
+        |dR i j| ≤ gamma fp n *
+          |pivotedStoredQRTopR fp hmn (rectPermuteRows σ A) i j|) ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j +
+          pivotedStoredQRCommonRowPermutedBackSubSourceDelta
+            fp hmn A σ dR i j)
+        (fun i => b i +
+          pivotedStoredQRCommonRowPermutedRhsDelta fp hmn A b σ i)
+        (pivotedStoredQRCommonRowPermutedReturnedX fp hmn A b σ) ∧
+      (∀ i j,
+        |pivotedStoredQRCommonRowPermutedBackSubSourceDelta
+            fp hmn A σ dR i j| ≤
+          (n : ℝ) ^ 2 * (16 * gammaTilde) *
+            pivotedStoredQRPrintedAlphaScale fp hmn
+              (rectPermuteRows σ A) (σ.symm i)) ∧
+      ∀ i,
+        |pivotedStoredQRCommonRowPermutedRhsDelta fp hmn A b σ i| ≤
+          (n : ℝ) ^ 2 * (5 * gammaTilde) *
+            pivotedStoredQRPrintedBetaScale fp hmn
+              (rectPermuteRows σ A) (vecPermute σ b) (σ.symm i) := by
+  rcases fl_pivotedStoredQR_returnedX_exactMinimizer_of_roundedCoxHigham
       fp hn hmn (rectPermuteRows σ A) (vecPermute σ b) gammaTilde
       hm hgammaN policy budgets hdiag with
     ⟨dR, hdR, hmin, hmatrix, hrhs⟩
