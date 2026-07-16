@@ -59,6 +59,7 @@ import LeanFpAnalysis.FP.Algorithms.LU.BlockLUFirstOrderFamilies
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLUComputationSourceClosure
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLUSPDFamilies
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLUArbitraryNormSourceClosure
+import LeanFpAnalysis.FP.Algorithms.LU.BlockLUPointRowGrowthSourceClosure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySpec
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySolve
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyDemmel
