@@ -16,6 +16,15 @@
     higham13_block_norm_eq_maxEntryNorm:
     zero-block and Pi-norm helpers for Eq.13.21 stage/`U` premises
   - blockSchur: block Schur complement S = A₂₂ − A₂₁A₁₁⁻¹A₁₂ (eq. 13.2)
+  - higham13_first_block_inverse_of_all_leadingBlockPrefixes,
+    higham13_all_leadingBlockPrefixes_blockSchur,
+    higham13_algorithm13_3_exists_pivotInv_right_inverse_of_all_leadingBlockPrefixes:
+    recursive construction of the exact active-pivot inverse table from
+    all-leading-prefix nonsingularity
+  - higham13_algorithm13_3_exists_pivotInv_eq13_21_eq13_23_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos:
+    conditional BDD mixed Eq.13.21/Eq.13.23 endpoint with the Algorithm 13.3
+    pivot sequence constructed internally; the nonpositive auxiliary
+    diagonal-bound hypothesis remains explicit
   - block_lu_one_step: Algorithm 13.3 one-step construction
   - blockLUOneStepL_blockMaxNorm_le_of_firstSplit_tail:
     one-step lower-factor max-norm propagation from the first-split
@@ -430,14 +439,20 @@
   - DHSBlockForwardSubstitutionFirstOrderSpec,
     DHSBlockBackSubstitutionFirstOrderSpec,
     dhs_block_forward_substitution_firstOrder,
+    dhs_block_forward_substitution_firstOrder_from_conventional_forwardSub_single_rhs,
     dhs_block_forward_residual_leading_term_le_of_coeff_bounds,
     dhs_block_forward_residual_firstOrder_from_block_solve_spec,
     dhs_block_forward_residual_firstOrder_from_block_solve_spec_of_coeff_bounds,
     dhs_block_back_substitution_firstOrder,
+    dhs_block_back_substitution_firstOrder_from_conventional_backSub_single_rhs,
+    dhs_cross_product_firstOrder_of_componentwise_backward,
+    dhs_block_forward_back_substitution_firstOrder_from_conventional_single_rhs,
     dhs_block_back_substitution_leading_term_le_of_coeff_bounds,
     dhs_block_back_substitution_firstOrder_from_diagonal_block_solve_spec,
     dhs_block_back_substitution_firstOrder_from_diagonal_block_solve_spec_of_coeff_bounds:
-    DHS Theorem 2.1 selected-scope forward/back substitution branch specs
+    DHS Theorem 2.1 selected-scope forward/back substitution branch specs and
+    a concrete conventional single-right-hand-side realization with its
+    second-order cross term
   - Algorithm13_3Implementation1LocalSpec,
     Algorithm13_3Implementation2ExplicitInverseSpec:
     Algorithm 13.3 Implementation 1/2 local computed-path specs
@@ -2361,6 +2376,29 @@ lemma FirstOrderLe.of_gamma_dim_mul (fp : FPModel) (d : ℕ)
               linarith
             rw [hγeq]
             field_simp [hden_ne]
+
+/-- A product carrying two componentwise `gamma d` perturbations is purely
+    second order.  This is the scalar remainder estimate used by the concrete
+    DHS single-right-hand-side solve route for `DeltaL * DeltaU`. -/
+lemma FirstOrderLe.of_gamma_sq_dim_mul (fp : FPModel) (d : ℕ)
+    (hγ : gammaValid fp d) {x y value : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y)
+    (hvalue : value ≤ (d : ℝ) * gamma fp d ^ 2 * x * y) :
+    FirstOrderLe fp.u 0 value := by
+  refine ⟨((d : ℝ) ^ 3 * x * y) /
+      (1 - (d : ℝ) * fp.u) ^ 2, ?_, ?_⟩
+  · exact div_nonneg
+      (mul_nonneg (mul_nonneg (pow_nonneg (Nat.cast_nonneg d) 3) hx) hy)
+      (sq_nonneg (1 - (d : ℝ) * fp.u))
+  · have hden_ne : 1 - (d : ℝ) * fp.u ≠ 0 := by
+      unfold gammaValid at hγ
+      linarith
+    calc
+      value ≤ (d : ℝ) * gamma fp d ^ 2 * x * y := hvalue
+      _ = 0 + (((d : ℝ) ^ 3 * x * y) /
+            (1 - (d : ℝ) * fp.u) ^ 2) * fp.u ^ 2 := by
+        unfold gamma
+        field_simp [hden_ne]
+        ring
 
 /-- Higham, 2nd ed., Chapter 13, p.248: the conventional matrix product
     satisfies the first-order norm bound in (13.4) with
@@ -8089,6 +8127,96 @@ theorem dhs_block_forward_substitution_firstOrder
       u cForward normA normL normU normDeltaLU Lhat DeltaL Yhat B :=
   ⟨hEquation, hBound⟩
 
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 forward branch for the
+    conventional flattened forward-substitution algorithm and one right-hand
+    side.
+
+    The Chapter 8 componentwise backward-error theorem supplies one common
+    coefficient perturbation `DeltaL` for this single column.  Its exact
+    perturbed solve equation and the max-entry product estimate for
+    `DeltaL * Uhat` give the selected DHS forward spec with coefficient `n^2`.
+    Multiple right-hand sides require a block execution whose perturbation is
+    shared across columns and are deliberately not claimed here. -/
+theorem
+    dhs_block_forward_substitution_firstOrder_from_conventional_forwardSub_single_rhs
+    {n : ℕ}
+    (fp : FPModel) (hn : 0 < n) (normA : ℝ)
+    (Lhat Uhat : Matrix (Fin n) (Fin n) ℝ) (b : Fin n → ℝ)
+    (hA : 0 ≤ normA)
+    (hdiag : ∀ i : Fin n, Lhat i i ≠ 0)
+    (hlower : ∀ i j : Fin n, i.val < j.val → Lhat i j = 0)
+    (hγ : gammaValid fp n) :
+    ∃ DeltaL : Matrix (Fin n) (Fin n) ℝ,
+      (∀ i j : Fin n, |DeltaL i j| ≤ gamma fp n * |Lhat i j|) ∧
+        DHSBlockForwardSubstitutionFirstOrderSpec
+          fp.u ((n : ℝ) ^ 2)
+          normA (maxEntryNorm hn Lhat) (maxEntryNorm hn Uhat)
+          (maxEntryNorm hn (DeltaL * Uhat))
+          Lhat DeltaL
+          (fun i (_j : Fin 1) => fl_forwardSub fp n Lhat b i)
+          (fun i (_j : Fin 1) => b i) := by
+  rcases forwardSub_backward_error fp n Lhat b hdiag hlower hγ with
+    ⟨DeltaLRaw, hDeltaL, hEquation⟩
+  let DeltaL : Matrix (Fin n) (Fin n) ℝ := DeltaLRaw
+  refine ⟨DeltaL, ?_, dhs_block_forward_substitution_firstOrder
+    fp.u ((n : ℝ) ^ 2)
+    normA (maxEntryNorm hn Lhat) (maxEntryNorm hn Uhat)
+    (maxEntryNorm hn (DeltaL * Uhat))
+    Lhat DeltaL
+    (fun i (_j : Fin 1) => fl_forwardSub fp n Lhat b i)
+    (fun i (_j : Fin 1) => b i) ?_ ?_⟩
+  · intro i j
+    simpa [DeltaL] using hDeltaL i j
+  · ext i j
+    simpa [DeltaL, Matrix.mul_apply] using hEquation i
+  · have hnormL : 0 ≤ maxEntryNorm hn Lhat := maxEntryNorm_nonneg hn Lhat
+    have hnormU : 0 ≤ maxEntryNorm hn Uhat := maxEntryNorm_nonneg hn Uhat
+    have hgamma : 0 ≤ gamma fp n := gamma_nonneg fp hγ
+    have hDeltaNorm :
+        maxEntryNorm hn DeltaL ≤ gamma fp n * maxEntryNorm hn Lhat := by
+      apply maxEntryNorm_le_of_entry_le_bound
+      intro i j
+      calc
+        |DeltaL i j| ≤ gamma fp n * |Lhat i j| := by
+          simpa [DeltaL] using hDeltaL i j
+        _ ≤ gamma fp n * maxEntryNorm hn Lhat :=
+          mul_le_mul_of_nonneg_left (entry_le_maxEntryNorm hn Lhat i j) hgamma
+    have hProduct :
+        maxEntryNorm hn (DeltaL * Uhat) ≤
+          gamma fp n * (n : ℝ) * maxEntryNorm hn Lhat *
+            maxEntryNorm hn Uhat := by
+      calc
+        maxEntryNorm hn (DeltaL * Uhat) ≤
+            (n : ℝ) * maxEntryNorm hn DeltaL * maxEntryNorm hn Uhat :=
+          maxEntryNorm_matrix_mul_le_dim hn DeltaL Uhat
+        _ ≤ (n : ℝ) * (gamma fp n * maxEntryNorm hn Lhat) *
+              maxEntryNorm hn Uhat := by
+          exact mul_le_mul_of_nonneg_right
+            (mul_le_mul_of_nonneg_left hDeltaNorm (Nat.cast_nonneg n)) hnormU
+        _ = gamma fp n * (n : ℝ) * maxEntryNorm hn Lhat *
+              maxEntryNorm hn Uhat := by ring
+    have hFirst : FirstOrderLe fp.u
+        (((n : ℝ) ^ 2) * fp.u * maxEntryNorm hn Lhat *
+          maxEntryNorm hn Uhat)
+        (maxEntryNorm hn (DeltaL * Uhat)) :=
+      FirstOrderLe.of_gamma_dim_mul fp n hγ hnormL hnormU hProduct
+    refine hFirst.mono_leading ?_
+    have hscale :
+        maxEntryNorm hn Lhat * maxEntryNorm hn Uhat ≤
+          normA + maxEntryNorm hn Lhat * maxEntryNorm hn Uhat := by
+      linarith
+    have hfactor : 0 ≤ ((n : ℝ) ^ 2) * fp.u :=
+      mul_nonneg (sq_nonneg (n : ℝ)) fp.u_nonneg
+    calc
+      ((n : ℝ) ^ 2) * fp.u * maxEntryNorm hn Lhat * maxEntryNorm hn Uhat =
+          (((n : ℝ) ^ 2) * fp.u) *
+            (maxEntryNorm hn Lhat * maxEntryNorm hn Uhat) := by ring
+      _ ≤ (((n : ℝ) ^ 2) * fp.u) *
+            (normA + maxEntryNorm hn Lhat * maxEntryNorm hn Uhat) :=
+          mul_le_mul_of_nonneg_left hscale hfactor
+      _ = ((n : ℝ) ^ 2) * fp.u *
+            (normA + maxEntryNorm hn Lhat * maxEntryNorm hn Uhat) := by ring
+
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 forward-side residual scale:
     scalar comparison from local Eq.13.14 coefficients.
 
@@ -8186,6 +8314,192 @@ theorem dhs_block_back_substitution_firstOrder
     DHSBlockBackSubstitutionFirstOrderSpec
       u cBack normA normL normU normLDeltaU Uhat DeltaU Xhat Yhat :=
   ⟨hEquation, hBound⟩
+
+/-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch for
+    the conventional flattened algorithm and one right-hand side.
+
+    The Chapter 8 backward-error theorem supplies one coefficient perturbation
+    `DeltaU` shared by the single computed solution column.  Left multiplication
+    by `Lhat`, the entrywise max product law, and the exact rational `gamma`
+    expansion give the DHS back spec with coefficient `n^2`. -/
+theorem
+    dhs_block_back_substitution_firstOrder_from_conventional_backSub_single_rhs
+    {n : ℕ}
+    (fp : FPModel) (hn : 0 < n) (normA : ℝ)
+    (Lhat Uhat : Matrix (Fin n) (Fin n) ℝ) (y : Fin n → ℝ)
+    (hA : 0 ≤ normA)
+    (hdiag : ∀ i : Fin n, Uhat i i ≠ 0)
+    (hupper : ∀ i j : Fin n, j.val < i.val → Uhat i j = 0)
+    (hγ : gammaValid fp n) :
+    ∃ DeltaU : Matrix (Fin n) (Fin n) ℝ,
+      (∀ i j : Fin n, |DeltaU i j| ≤ gamma fp n * |Uhat i j|) ∧
+        DHSBlockBackSubstitutionFirstOrderSpec
+          fp.u ((n : ℝ) ^ 2)
+          normA (maxEntryNorm hn Lhat) (maxEntryNorm hn Uhat)
+          (maxEntryNorm hn (Lhat * DeltaU))
+          Uhat DeltaU
+          (fun i (_j : Fin 1) => fl_backSub fp n Uhat y i)
+          (fun i (_j : Fin 1) => y i) := by
+  rcases backSub_backward_error fp n Uhat y hdiag hupper hγ with
+    ⟨DeltaURaw, hDeltaU, hEquation⟩
+  let DeltaU : Matrix (Fin n) (Fin n) ℝ := DeltaURaw
+  refine ⟨DeltaU, ?_, dhs_block_back_substitution_firstOrder
+    fp.u ((n : ℝ) ^ 2)
+    normA (maxEntryNorm hn Lhat) (maxEntryNorm hn Uhat)
+    (maxEntryNorm hn (Lhat * DeltaU))
+    Uhat DeltaU
+    (fun i (_j : Fin 1) => fl_backSub fp n Uhat y i)
+    (fun i (_j : Fin 1) => y i) ?_ ?_⟩
+  · intro i j
+    simpa [DeltaU] using hDeltaU i j
+  · ext i j
+    simpa [DeltaU, Matrix.mul_apply] using hEquation i
+  · have hnormL : 0 ≤ maxEntryNorm hn Lhat := maxEntryNorm_nonneg hn Lhat
+    have hnormU : 0 ≤ maxEntryNorm hn Uhat := maxEntryNorm_nonneg hn Uhat
+    have hgamma : 0 ≤ gamma fp n := gamma_nonneg fp hγ
+    have hDeltaNorm :
+        maxEntryNorm hn DeltaU ≤ gamma fp n * maxEntryNorm hn Uhat := by
+      apply maxEntryNorm_le_of_entry_le_bound
+      intro i j
+      calc
+        |DeltaU i j| ≤ gamma fp n * |Uhat i j| := by
+          simpa [DeltaU] using hDeltaU i j
+        _ ≤ gamma fp n * maxEntryNorm hn Uhat :=
+          mul_le_mul_of_nonneg_left (entry_le_maxEntryNorm hn Uhat i j) hgamma
+    have hProduct :
+        maxEntryNorm hn (Lhat * DeltaU) ≤
+          gamma fp n * (n : ℝ) * maxEntryNorm hn Lhat *
+            maxEntryNorm hn Uhat := by
+      calc
+        maxEntryNorm hn (Lhat * DeltaU) ≤
+            (n : ℝ) * maxEntryNorm hn Lhat * maxEntryNorm hn DeltaU :=
+          maxEntryNorm_matrix_mul_le_dim hn Lhat DeltaU
+        _ ≤ (n : ℝ) * maxEntryNorm hn Lhat *
+              (gamma fp n * maxEntryNorm hn Uhat) := by
+          exact mul_le_mul_of_nonneg_left hDeltaNorm
+            (mul_nonneg (Nat.cast_nonneg n) hnormL)
+        _ = gamma fp n * (n : ℝ) * maxEntryNorm hn Lhat *
+              maxEntryNorm hn Uhat := by ring
+    have hFirst : FirstOrderLe fp.u
+        (((n : ℝ) ^ 2) * fp.u * maxEntryNorm hn Lhat *
+          maxEntryNorm hn Uhat)
+        (maxEntryNorm hn (Lhat * DeltaU)) :=
+      FirstOrderLe.of_gamma_dim_mul fp n hγ hnormL hnormU hProduct
+    refine hFirst.mono_leading ?_
+    have hscale :
+        maxEntryNorm hn Lhat * maxEntryNorm hn Uhat ≤
+          normA + maxEntryNorm hn Lhat * maxEntryNorm hn Uhat := by
+      linarith
+    have hfactor : 0 ≤ ((n : ℝ) ^ 2) * fp.u :=
+      mul_nonneg (sq_nonneg (n : ℝ)) fp.u_nonneg
+    calc
+      ((n : ℝ) ^ 2) * fp.u * maxEntryNorm hn Lhat * maxEntryNorm hn Uhat =
+          (((n : ℝ) ^ 2) * fp.u) *
+            (maxEntryNorm hn Lhat * maxEntryNorm hn Uhat) := by ring
+      _ ≤ (((n : ℝ) ^ 2) * fp.u) *
+            (normA + maxEntryNorm hn Lhat * maxEntryNorm hn Uhat) :=
+          mul_le_mul_of_nonneg_left hscale hfactor
+      _ = ((n : ℝ) ^ 2) * fp.u *
+            (normA + maxEntryNorm hn Lhat * maxEntryNorm hn Uhat) := by ring
+
+/-- The product of the conventional forward- and back-substitution
+    coefficient perturbations is a genuine second-order DHS remainder. -/
+theorem dhs_cross_product_firstOrder_of_componentwise_backward {n : ℕ}
+    (fp : FPModel) (hn : 0 < n)
+    (Lhat Uhat DeltaL DeltaU : Matrix (Fin n) (Fin n) ℝ)
+    (hγ : gammaValid fp n)
+    (hDeltaL : ∀ i j : Fin n,
+      |DeltaL i j| ≤ gamma fp n * |Lhat i j|)
+    (hDeltaU : ∀ i j : Fin n,
+      |DeltaU i j| ≤ gamma fp n * |Uhat i j|) :
+    FirstOrderLe fp.u 0 (maxEntryNorm hn (DeltaL * DeltaU)) := by
+  have hgamma : 0 ≤ gamma fp n := gamma_nonneg fp hγ
+  have hnormL : 0 ≤ maxEntryNorm hn Lhat := maxEntryNorm_nonneg hn Lhat
+  have hnormU : 0 ≤ maxEntryNorm hn Uhat := maxEntryNorm_nonneg hn Uhat
+  have hDeltaLNorm :
+      maxEntryNorm hn DeltaL ≤ gamma fp n * maxEntryNorm hn Lhat := by
+    apply maxEntryNorm_le_of_entry_le_bound
+    intro i j
+    calc
+      |DeltaL i j| ≤ gamma fp n * |Lhat i j| := hDeltaL i j
+      _ ≤ gamma fp n * maxEntryNorm hn Lhat :=
+        mul_le_mul_of_nonneg_left (entry_le_maxEntryNorm hn Lhat i j) hgamma
+  have hDeltaUNorm :
+      maxEntryNorm hn DeltaU ≤ gamma fp n * maxEntryNorm hn Uhat := by
+    apply maxEntryNorm_le_of_entry_le_bound
+    intro i j
+    calc
+      |DeltaU i j| ≤ gamma fp n * |Uhat i j| := hDeltaU i j
+      _ ≤ gamma fp n * maxEntryNorm hn Uhat :=
+        mul_le_mul_of_nonneg_left (entry_le_maxEntryNorm hn Uhat i j) hgamma
+  apply FirstOrderLe.of_gamma_sq_dim_mul fp n hγ hnormL hnormU
+  calc
+    maxEntryNorm hn (DeltaL * DeltaU) ≤
+        (n : ℝ) * maxEntryNorm hn DeltaL * maxEntryNorm hn DeltaU :=
+      maxEntryNorm_matrix_mul_le_dim hn DeltaL DeltaU
+    _ ≤ (n : ℝ) * (gamma fp n * maxEntryNorm hn Lhat) *
+          (gamma fp n * maxEntryNorm hn Uhat) := by
+      exact mul_le_mul
+        (mul_le_mul_of_nonneg_left hDeltaLNorm (Nat.cast_nonneg n))
+        hDeltaUNorm (maxEntryNorm_nonneg hn DeltaU)
+        (mul_nonneg (Nat.cast_nonneg n) (mul_nonneg hgamma hnormL))
+    _ = (n : ℝ) * gamma fp n ^ 2 * maxEntryNorm hn Lhat *
+          maxEntryNorm hn Uhat := by ring
+
+/-- Concrete conventional single-right-hand-side specialization of the two
+    named DHS triangular-solve branches.
+
+    The witnesses are the actual coefficient perturbations produced by the
+    repository's forward- and back-substitution algorithms.  Besides the two
+    exact perturbed equations and `n^2` first-order transported budgets, the
+    conclusion supplies the second-order cross-product fact consumed by
+    `demmelHighamSchreiber13_6_solve_result_from_forward_back_substitution_specs`.
+    This is a flattened scalar specialization; the fixed block-row/local-solve
+    Implementation 1 execution required for full Theorem 13.6 remains a
+    separate source obligation. -/
+theorem
+    dhs_block_forward_back_substitution_firstOrder_from_conventional_single_rhs
+    {n : ℕ}
+    (fp : FPModel) (hn : 0 < n) (normA : ℝ)
+    (Lhat Uhat : Matrix (Fin n) (Fin n) ℝ) (b : Fin n → ℝ)
+    (hA : 0 ≤ normA)
+    (hLdiag : ∀ i : Fin n, Lhat i i ≠ 0)
+    (hlower : ∀ i j : Fin n, i.val < j.val → Lhat i j = 0)
+    (hUdiag : ∀ i : Fin n, Uhat i i ≠ 0)
+    (hupper : ∀ i j : Fin n, j.val < i.val → Uhat i j = 0)
+    (hγ : gammaValid fp n) :
+    ∃ (DeltaL DeltaU : Matrix (Fin n) (Fin n) ℝ),
+      ((∀ i j : Fin n, |DeltaL i j| ≤ gamma fp n * |Lhat i j|) ∧
+        DHSBlockForwardSubstitutionFirstOrderSpec
+          fp.u ((n : ℝ) ^ 2)
+          normA (maxEntryNorm hn Lhat) (maxEntryNorm hn Uhat)
+          (maxEntryNorm hn (DeltaL * Uhat))
+          Lhat DeltaL
+          (fun i (_j : Fin 1) => fl_forwardSub fp n Lhat b i)
+          (fun i (_j : Fin 1) => b i)) ∧
+      ((∀ i j : Fin n, |DeltaU i j| ≤ gamma fp n * |Uhat i j|) ∧
+        DHSBlockBackSubstitutionFirstOrderSpec
+          fp.u ((n : ℝ) ^ 2)
+          normA (maxEntryNorm hn Lhat) (maxEntryNorm hn Uhat)
+          (maxEntryNorm hn (Lhat * DeltaU))
+          Uhat DeltaU
+          (fun i (_j : Fin 1) =>
+            fl_backSub fp n Uhat (fl_forwardSub fp n Lhat b) i)
+          (fun i (_j : Fin 1) => fl_forwardSub fp n Lhat b i)) ∧
+      FirstOrderLe fp.u 0 (maxEntryNorm hn (DeltaL * DeltaU)) := by
+  rcases
+      dhs_block_forward_substitution_firstOrder_from_conventional_forwardSub_single_rhs
+        fp hn normA Lhat Uhat b hA hLdiag hlower hγ with
+    ⟨DeltaL, hDeltaL, hForward⟩
+  rcases
+      dhs_block_back_substitution_firstOrder_from_conventional_backSub_single_rhs
+        fp hn normA Lhat Uhat (fl_forwardSub fp n Lhat b)
+        hA hUdiag hupper hγ with
+    ⟨DeltaU, hDeltaU, hBack⟩
+  exact
+    ⟨DeltaL, DeltaU, ⟨hDeltaL, hForward⟩, ⟨hDeltaU, hBack⟩,
+      dhs_cross_product_firstOrder_of_componentwise_backward
+        fp hn Lhat Uhat DeltaL DeltaU hγ hDeltaL hDeltaU⟩
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch:
     scalar comparison from local Eq.13.15 coefficients.
@@ -13597,6 +13911,120 @@ theorem higham13_algorithm13_3_schurStageMatrixBlock_tail_shift
               exact
                 (higham13_algorithm13_3_schurStageMatrixBlock_past_last
                   A pivotInv hkFull (Fin.succ i) (Fin.succ j)).symm
+
+/-- Higham, 2nd ed., Chapter 13, Theorems 13.2 and 13.7:
+    an all-leading-prefix nonsingularity table contains a two-sided inverse for
+    the first block.  Unlike the first-`m-1` condition in Theorem 13.2, this
+    table includes the full matrix, as required by the nonsingularity
+    hypothesis of Theorem 13.7. -/
+theorem higham13_first_block_inverse_of_all_leadingBlockPrefixes {m r : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp)) :
+    ∃ A11_inv : Matrix (Fin r) (Fin r) ℝ,
+      IsLeftInverse r (A 0 0) A11_inv ∧
+        IsRightInverse r (A 0 0) A11_inv := by
+  rcases hPrefix 0 (Nat.succ_pos m) with ⟨Ainv, hInv⟩
+  refine ⟨Ainv 0 0, ?_, ?_⟩
+  · intro s t
+    have h := hInv.1 0 0 s t
+    rw [Fin.sum_univ_one] at h
+    simpa [leadingBlockPrefix13_2, blockMatrixIdentity, idBlock] using h
+  · intro s t
+    have h := hInv.2 0 0 s t
+    rw [Fin.sum_univ_one] at h
+    simpa [leadingBlockPrefix13_2, blockMatrixIdentity, idBlock] using h
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof dependency:
+    eliminating the first block transports an all-leading-prefix
+    nonsingularity table to the recursively generated Schur tail. -/
+theorem higham13_all_leadingBlockPrefixes_blockSchur {m r : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (A11_inv : Matrix (Fin r) (Fin r) ℝ)
+    (hInvLeft : IsLeftInverse r (A 0 0) A11_inv)
+    (hInvRight : IsRightInverse r (A 0 0) A11_inv)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m + 1,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp)) :
+    ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (blockSchur A A11_inv) p hp) := by
+  intro p hp
+  cases m with
+  | zero => omega
+  | succ m =>
+      have hpFull : p + 1 < m + 2 := Nat.succ_lt_succ hp
+      have hA_prefix := hPrefix (p + 1) hpFull
+      have hInvLeft_prefix :
+          IsLeftInverse r
+            (leadingBlockPrefix13_2 A (p + 1) hpFull 0 0) A11_inv := by
+        intro s t
+        simpa [leadingBlockPrefix13_2] using hInvLeft s t
+      have hInvRight_prefix :
+          IsRightInverse r
+            (leadingBlockPrefix13_2 A (p + 1) hpFull 0 0) A11_inv := by
+        intro s t
+        simpa [leadingBlockPrefix13_2] using hInvRight s t
+      rw [leadingBlockPrefix13_2_blockSchur A A11_inv p hp]
+      exact blockSchur_nonsingular_of_nonsingular_of_first_block_inverse
+        hInvLeft_prefix hInvRight_prefix hA_prefix
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and Theorem 13.7:
+    if every leading block prefix is nonsingular, there is a recursively
+    compatible pivot-inverse table whose entry at each active stage is an
+    exact right inverse of that stage's diagonal pivot block.
+
+    This constructs the formerly external pivot table used by the source
+    Eq.13.21/Eq.13.23 growth route.  It does not assume a prebuilt Algorithm
+    13.3 execution or any inverse-norm comparison. -/
+theorem
+    higham13_algorithm13_3_exists_pivotInv_right_inverse_of_all_leadingBlockPrefixes
+    {m r : ℕ}
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular (leadingBlockPrefix13_2 A p hp)) :
+    ∃ pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ,
+      ∀ k : ℕ, ∀ hk : k < m,
+        IsRightInverse r
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩)
+          (pivotInv k) := by
+  induction m with
+  | zero =>
+      refine ⟨fun _ => 0, ?_⟩
+      intro k hk
+      omega
+  | succ m ih =>
+      rcases higham13_first_block_inverse_of_all_leadingBlockPrefixes A hPrefix with
+        ⟨A11_inv, hInvLeft, hInvRight⟩
+      let S : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ :=
+        blockSchur A A11_inv
+      have hTailPrefix : ∀ p : ℕ, ∀ hp : p < m,
+          BlockMatrixNonsingular (leadingBlockPrefix13_2 S p hp) := by
+        simpa [S] using
+          higham13_all_leadingBlockPrefixes_blockSchur
+            A A11_inv hInvLeft hInvRight hPrefix
+      rcases ih S hTailPrefix with ⟨tailInv, hTailInv⟩
+      let pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ
+        | 0 => A11_inv
+        | k + 1 => tailInv k
+      refine ⟨pivotInv, ?_⟩
+      intro k hk
+      cases k with
+      | zero =>
+          simpa [pivotInv, higham13_algorithm13_3_schurStageMatrixBlock,
+            higham13_algorithm13_3_schurStageBlock] using hInvRight
+      | succ k =>
+          have hkTail : k < m := Nat.lt_of_succ_lt_succ hk
+          have hStage :
+              higham13_algorithm13_3_schurStageMatrixBlock S tailInv k
+                  ⟨k, hkTail⟩ ⟨k, hkTail⟩ =
+                higham13_algorithm13_3_schurStageMatrixBlock A pivotInv (k + 1)
+                  ⟨k + 1, hk⟩ ⟨k + 1, hk⟩ := by
+            simpa [S, pivotInv] using
+              (higham13_algorithm13_3_schurStageMatrixBlock_tail_shift
+                A pivotInv k ⟨k, hkTail⟩ ⟨k, hkTail⟩)
+          rw [← hStage]
+          simpa [pivotInv] using hTailInv k hkTail
 
 /-- Norm table associated with the concrete Algorithm 13.3 Schur-stage blocks. -/
 noncomputable def higham13_algorithm13_3_schurStageNorm {m : ℕ}
@@ -25839,6 +26267,49 @@ theorem
       (higham13_blockMatrixFlatFin_det_ne_zero_of_all_leadingBlockPrefixes
         hm (fun i j a b => A i j a b) hPrefix)
       hPrefix hDomInf hBound hPivotRight
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.21) and (13.23):
+    conditional BDD mixed matrix-`∞`/max-entry endpoint with the Algorithm
+    13.3 pivot sequence constructed internally from all-leading-prefix
+    nonsingularity.
+
+    The conclusion produces both the recursive pivot table and the resulting
+    upper-factor/growth estimates, removing the former external all-pivot
+    right-inverse obligation from this surface.  The explicit auxiliary
+    hypothesis `invDiagBound j ≤ 0` is stronger than the source's ordinary BDD
+    data, so this wrapper is dependency progress and does not close the general
+    source-strength BDD row. -/
+theorem
+    higham13_algorithm13_3_exists_pivotInv_eq13_21_eq13_23_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hPrefix : ∀ p : ℕ, ∀ hp : p < m,
+      BlockMatrixNonsingular
+        (leadingBlockPrefix13_2 (fun i j a b => A i j a b) p hp))
+    (hDomInf : IsBlockDiagDomCol m
+      (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hBound : ∀ j : Fin m, invDiagBound j ≤ 0) :
+    ∃ pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ,
+      blockMaxNorm hm hr
+          (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+          2 * blockMaxNorm hm hr A ∧
+        growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              (Nat.mul_pos hm hr) hm hr A pivotInv)
+            (maxEntryNorm_pos_of_det_ne_zero
+              (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+              (higham13_blockMatrixFlatFin_det_ne_zero_of_all_leadingBlockPrefixes
+                hm (fun i j a b => A i j a b) hPrefix)) ≤
+          2 := by
+  rcases
+      higham13_algorithm13_3_exists_pivotInv_right_inverse_of_all_leadingBlockPrefixes
+        A hPrefix with
+    ⟨pivotInv, hPivotRight⟩
+  exact
+    ⟨pivotInv,
+      higham13_algorithm13_3_upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_pivot_right_inverse
+        hm hr A pivotInv invDiagBound hPrefix hDomInf hBound hPivotRight⟩
 
 /-- Higham, 2nd ed., Chapter 13, equations (13.21) and (13.23):
     determinant-nonzero form of the BDD mixed endpoint with canonical
