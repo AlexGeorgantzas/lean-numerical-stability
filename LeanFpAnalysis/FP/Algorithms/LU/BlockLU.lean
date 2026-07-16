@@ -12,7 +12,8 @@
   - blockMaxNorm, higham13_norm_convention_blockMaxNorm_eq_entrywise_sup:
     Chapter 13 entrywise max norm convention (§13.1)
   - maxEntryNorm_zeroBlock, maxEntryNorm_le_zero_of_eq_zeroBlock,
-    maxEntryNorm_sub_le, maxEntryNorm_pos_of_invertible,
+    maxEntryNorm_sub_le, maxEntryNorm_add_le, maxEntryNorm_four_add_le,
+    maxEntryNorm_pos_of_invertible,
     higham13_block_norm_eq_maxEntryNorm:
     zero-block and Pi-norm helpers for Eq.13.21 stage/`U` premises
   - blockSchur: block Schur complement S = A₂₂ − A₂₁A₁₁⁻¹A₁₂ (eq. 13.2)
@@ -447,12 +448,13 @@
     dhs_block_back_substitution_firstOrder_from_conventional_backSub_single_rhs,
     dhs_cross_product_firstOrder_of_componentwise_backward,
     dhs_block_forward_back_substitution_firstOrder_from_conventional_single_rhs,
+    dhs_lu_solve_perturbation_firstOrder_from_conventional_single_rhs,
     dhs_block_back_substitution_leading_term_le_of_coeff_bounds,
     dhs_block_back_substitution_firstOrder_from_diagonal_block_solve_spec,
     dhs_block_back_substitution_firstOrder_from_diagonal_block_solve_spec_of_coeff_bounds:
     DHS Theorem 2.1 selected-scope forward/back substitution branch specs and
     a concrete conventional single-right-hand-side realization with its
-    second-order cross term
+    second-order cross term and full solve perturbation estimate
   - Algorithm13_3Implementation1LocalSpec,
     Algorithm13_3Implementation2ExplicitInverseSpec:
     Algorithm 13.3 Implementation 1/2 local computed-path specs
@@ -1731,6 +1733,40 @@ lemma maxEntryNorm_sub_le {r : ℕ} (hr : 0 < r)
       (add_le_add (entry_le_maxEntryNorm hr A s t)
         (entry_le_maxEntryNorm hr B s t))
   simpa [maxEntryNormRect_eq_maxEntryNorm hr] using hrect
+
+/-- Triangle inequality for the Chapter 13 square max-entry norm. -/
+lemma maxEntryNorm_add_le {r : ℕ} (hr : 0 < r)
+    (A B : Matrix (Fin r) (Fin r) ℝ) :
+    maxEntryNorm hr (A + B) ≤ maxEntryNorm hr A + maxEntryNorm hr B := by
+  have hrect :
+      maxEntryNormRect hr hr (A + B) ≤
+        maxEntryNorm hr A + maxEntryNorm hr B := by
+    apply maxEntryNormRect_le_of_entry_abs_le
+    intro i j
+    calc
+      |(A + B) i j| ≤ |A i j| + |B i j| := abs_add_le _ _
+      _ ≤ maxEntryNorm hr A + maxEntryNorm hr B :=
+        add_le_add (entry_le_maxEntryNorm hr A i j)
+          (entry_le_maxEntryNorm hr B i j)
+  simpa [maxEntryNormRect_eq_maxEntryNorm hr] using hrect
+
+/-- Four-term triangle inequality used by the concrete DHS solve perturbation
+    `E + DeltaL * Uhat + Lhat * DeltaU + DeltaL * DeltaU`. -/
+lemma maxEntryNorm_four_add_le {r : ℕ} (hr : 0 < r)
+    (A B C D : Matrix (Fin r) (Fin r) ℝ) :
+    maxEntryNorm hr (A + B + C + D) ≤
+      maxEntryNorm hr A + maxEntryNorm hr B +
+        maxEntryNorm hr C + maxEntryNorm hr D := by
+  calc
+    maxEntryNorm hr (A + B + C + D) ≤
+        maxEntryNorm hr (A + B + C) + maxEntryNorm hr D :=
+      maxEntryNorm_add_le hr (A + B + C) D
+    _ ≤ (maxEntryNorm hr (A + B) + maxEntryNorm hr C) +
+          maxEntryNorm hr D := by
+      linarith [maxEntryNorm_add_le hr (A + B) C]
+    _ ≤ ((maxEntryNorm hr A + maxEntryNorm hr B) + maxEntryNorm hr C) +
+          maxEntryNorm hr D := by
+      linarith [maxEntryNorm_add_le hr A B]
 
 /-- An invertible square matrix has positive Chapter 13 max-entry norm. -/
 lemma maxEntryNorm_pos_of_invertible {n : ℕ} (hn : 0 < n)
@@ -8500,6 +8536,80 @@ theorem
     ⟨DeltaL, DeltaU, ⟨hDeltaL, hForward⟩, ⟨hDeltaU, hBack⟩,
       dhs_cross_product_firstOrder_of_componentwise_backward
         fp hn Lhat Uhat DeltaL DeltaU hγ hDeltaL hDeltaU⟩
+
+/-- Concrete conventional single-right-hand-side DHS solve perturbation.
+
+    Starting from an exact factorization residual `Lhat * Uhat = A + E`, this
+    theorem runs the repository's scalar forward and back substitutions,
+    constructs their coefficient perturbations, proves the exact perturbed
+    solve, and bounds the actual max-entry norm of
+    `E + DeltaL * Uhat + Lhat * DeltaU + DeltaL * DeltaU` to first order.
+
+    This closes the mathematical solve-composition layer for the flattened
+    one-column specialization.  It deliberately leaves the source's
+    multi-column fixed block-row/local-solve execution and its audited DHS
+    source-path facts outside the conclusion. -/
+theorem dhs_lu_solve_perturbation_firstOrder_from_conventional_single_rhs
+    {n : ℕ}
+    (fp : FPModel) (hn : 0 < n) (normA cFact dSolve : ℝ)
+    (A E Lhat Uhat : Matrix (Fin n) (Fin n) ℝ) (b : Fin n → ℝ)
+    (hA : 0 ≤ normA)
+    (hLdiag : ∀ i : Fin n, Lhat i i ≠ 0)
+    (hlower : ∀ i j : Fin n, i.val < j.val → Lhat i j = 0)
+    (hUdiag : ∀ i : Fin n, Uhat i i ≠ 0)
+    (hupper : ∀ i j : Fin n, j.val < i.val → Uhat i j = 0)
+    (hγ : gammaValid fp n)
+    (hc : cFact + (n : ℝ) ^ 2 + (n : ℝ) ^ 2 ≤ dSolve)
+    (hFact : Lhat * Uhat = A + E)
+    (hE : FirstOrderLe fp.u
+      (cFact * fp.u *
+        (normA + maxEntryNorm hn Lhat * maxEntryNorm hn Uhat))
+      (maxEntryNorm hn E)) :
+    ∃ (DeltaL DeltaU : Matrix (Fin n) (Fin n) ℝ),
+      (rectMatMul
+          (A + (E + DeltaL * Uhat + Lhat * DeltaU + DeltaL * DeltaU))
+          ((fun i (_j : Fin 1) =>
+            fl_backSub fp n Uhat (fl_forwardSub fp n Lhat b) i) :
+              Matrix (Fin n) (Fin 1) ℝ)) =
+        ((fun i (_j : Fin 1) => b i) : Matrix (Fin n) (Fin 1) ℝ) ∧
+      FirstOrderLe fp.u
+        (dSolve * fp.u *
+          (normA + maxEntryNorm hn Lhat * maxEntryNorm hn Uhat))
+        (maxEntryNorm hn
+          (E + DeltaL * Uhat + Lhat * DeltaU + DeltaL * DeltaU)) := by
+  rcases
+      dhs_block_forward_back_substitution_firstOrder_from_conventional_single_rhs
+        fp hn normA Lhat Uhat b hA hLdiag hlower hUdiag hupper hγ with
+    ⟨DeltaL, DeltaU, ⟨_hDeltaL, hForward⟩, ⟨_hDeltaU, hBack⟩, hCross⟩
+  refine ⟨DeltaL, DeltaU, ?_, ?_⟩
+  · simpa [rectMatMul, Matrix.mul_apply] using
+      (dhs_lu_solve_perturbation_identity
+        A E Lhat Uhat DeltaL DeltaU
+        (fun i (_j : Fin 1) =>
+          fl_backSub fp n Uhat (fl_forwardSub fp n Lhat b) i)
+        (fun i (_j : Fin 1) => b i)
+        (fun i (_j : Fin 1) => fl_forwardSub fp n Lhat b i)
+        hFact hForward.equation hBack.equation)
+  · have hTotal :
+        maxEntryNorm hn
+            (E + DeltaL * Uhat + Lhat * DeltaU + DeltaL * DeltaU) ≤
+          maxEntryNorm hn E + maxEntryNorm hn (DeltaL * Uhat) +
+            maxEntryNorm hn (Lhat * DeltaU) +
+              maxEntryNorm hn (DeltaL * DeltaU) :=
+      maxEntryNorm_four_add_le hn E (DeltaL * Uhat)
+        (Lhat * DeltaU) (DeltaL * DeltaU)
+    exact dhs_lu_solve_perturbation_firstOrder
+      (maxEntryNorm hn
+        (E + DeltaL * Uhat + Lhat * DeltaU + DeltaL * DeltaU))
+      (maxEntryNorm hn E)
+      (maxEntryNorm hn (DeltaL * Uhat))
+      (maxEntryNorm hn (Lhat * DeltaU))
+      (maxEntryNorm hn (DeltaL * DeltaU))
+      normA (maxEntryNorm hn Lhat) (maxEntryNorm hn Uhat)
+      fp.u cFact ((n : ℝ) ^ 2) ((n : ℝ) ^ 2) dSolve
+      fp.u_nonneg hA (maxEntryNorm_nonneg hn Lhat)
+      (maxEntryNorm_nonneg hn Uhat) hc hE hForward.norm_bound
+      hBack.norm_bound hCross hTotal
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch:
     scalar comparison from local Eq.13.15 coefficients.
