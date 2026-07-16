@@ -477,8 +477,13 @@
     dhs_block_back_upper_row_perturbation_firstOrder_from_matmul_subtraction_specs_of_rhs_scale,
     dhs_block_back_upper_row_perturbation_firstOrder_from_conventional_operations,
     dhsBlockBackConventionalUpperProduct, dhsBlockBackConventionalRHS,
+    dhsBlockBackConventionalSolution,
+    dhsBlockBackConventionalSolution_execution,
     dhs_block_back_upper_row_witness_from_conventional_or_zero_tail,
     dhs_block_back_substitution_firstOrder_from_conventional_upper_rows_and_eq13_15,
+    dhs_conventional_diagonal_block_solve_specs,
+    dhs_block_back_substitution_firstOrder_from_conventional_local_backSub,
+    dhs_block_back_substitution_firstOrder_from_conventional_recursive_block_solution,
     dhs_block_back_substitution_firstOrder_from_conventional_backSub_single_rhs,
     dhs_cross_product_firstOrder_of_componentwise_backward,
     dhs_block_forward_back_substitution_firstOrder_from_conventional_single_rhs,
@@ -10496,6 +10501,78 @@ noncomputable def dhsBlockBackConventionalRHS {m r : ℕ}
   higham13_fl_matrixSub fp (Y i)
     (dhsBlockBackConventionalUpperProduct fp i U X)
 
+/-- The actual conventional block-back-substitution solution, constructed in
+    descending block-row order.
+
+    At block row `i`, only already-computed strict-upper blocks are exposed to
+    the rounded block product.  The current diagonal block is then solved by
+    the repository's conventional `fl_backSub`.  The decreasing measure
+    `m - i.val` makes the source's recursive execution order explicit. -/
+noncomputable def dhsBlockBackConventionalSolution {m r : ℕ}
+    (fp : FPModel)
+    (U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (Y : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (i : Fin m) : Matrix (Fin r) (Fin 1) ℝ :=
+  fun a _ =>
+    fl_backSub fp r (U i i)
+      (fun b : Fin r =>
+        dhsBlockBackConventionalRHS fp i U
+          (fun j : Fin m =>
+            if i.val < j.val then
+              dhsBlockBackConventionalSolution fp U Y j
+            else 0)
+          Y b 0) a
+termination_by m - i.val
+decreasing_by omega
+
+/-- The descending conventional block solution satisfies the exact per-row
+    execution relation consumed by the Eq.13.15 local-solve analysis.
+
+    The proof identifies the recursively visible tail with the corresponding
+    masked tail of the completed solution.  Thus no independent execution
+    hypothesis is needed when the solution is
+    `dhsBlockBackConventionalSolution fp U Y`. -/
+theorem dhsBlockBackConventionalSolution_execution {m r : ℕ}
+    (fp : FPModel)
+    (U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (Y : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (i : Fin m) (a : Fin r) :
+    dhsBlockBackConventionalSolution fp U Y i a 0 =
+      fl_backSub fp r (U i i)
+        (fun b : Fin r => dhsBlockBackConventionalRHS fp i U
+          (dhsBlockBackConventionalSolution fp U Y) Y b 0) a := by
+  rw [dhsBlockBackConventionalSolution]
+  apply congrArg (fun rhs : Fin r → ℝ => fl_backSub fp r (U i i) rhs a)
+  funext b
+  have hTail :
+      dhsBlockBackUpperTailColumn i
+          (fun j : Fin m =>
+            if i.val < j.val then
+              dhsBlockBackConventionalSolution fp U Y j
+            else 0) =
+        dhsBlockBackUpperTailColumn i
+          (dhsBlockBackConventionalSolution fp U Y) := by
+    ext jt k
+    simp only [dhsBlockBackUpperTailColumn]
+    change
+      (if i.val < (finProdFinEquiv.symm jt).1.val then
+          (if i.val < (finProdFinEquiv.symm jt).1.val then
+            dhsBlockBackConventionalSolution fp U Y
+              (finProdFinEquiv.symm jt).1
+          else 0) (finProdFinEquiv.symm jt).2 0
+        else 0) =
+        (if i.val < (finProdFinEquiv.symm jt).1.val then
+          dhsBlockBackConventionalSolution fp U Y
+            (finProdFinEquiv.symm jt).1 (finProdFinEquiv.symm jt).2 0
+        else 0)
+    by_cases hq : i.val < (finProdFinEquiv.symm jt).1.val
+    · have hq' : i.val < jt.val / r := by simpa using hq
+      simp [hq']
+    · have hq' : ¬i.val < jt.val / r := by simpa using hq
+      simp [hq']
+  unfold dhsBlockBackConventionalRHS dhsBlockBackConventionalUpperProduct
+  rw [hTail]
+
 /-- A zero full upper suffix forces both the conventional row RHS and the
     original forward-solve block to be zero once the local Eq.13.15 equation
     is imposed.
@@ -11188,6 +11265,224 @@ theorem dhs_block_back_substitution_firstOrder_from_conventional_suffix_rows_of_
         fp hm hr i normU U (DeltaDiag i) X Y hSmallProduct
         (hUTailU i) hUiiU hDeltaDiagU (hDiagonal i).equation
   · exact hDiagonal
+
+/-- Concrete Eq.13.15 diagonal-block solve family from the conventional
+    triangular solver used by Algorithm 13.3 Implementation 1.
+
+    If every computed block `X i` is the result of `fl_backSub` on the actual
+    rounded block-row right-hand side, the conventional backward-error theorem
+    selects one coefficient perturbation per diagonal block.  Under
+    `r*u <= 1/2`, these perturbations satisfy the raw leading-term bound
+    `||DeltaDiag_i||max <= 2*r*u*normUii_i`, as well as the named first-order
+    Eq.13.15 specification consumed by the DHS suffix-row assembly. -/
+theorem dhs_conventional_diagonal_block_solve_specs
+    {m r : ℕ}
+    (fp : FPModel) (hr : 0 < r)
+    (normUii : Fin m → ℝ)
+    (U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hSmallBlock : (r : ℝ) * fp.u ≤ 1 / 2)
+    (hUiiNorm : ∀ i : Fin m, maxEntryNorm hr (U i i) ≤ normUii i)
+    (hDiag : ∀ i : Fin m, ∀ a : Fin r, U i i a a ≠ 0)
+    (hUpper : ∀ i : Fin m, ∀ a b : Fin r,
+      b.val < a.val → U i i a b = 0)
+    (hXExec : ∀ i : Fin m, ∀ a : Fin r,
+      X i a 0 = fl_backSub fp r (U i i)
+        (fun b : Fin r => dhsBlockBackConventionalRHS fp i U X Y b 0) a) :
+    ∃ DeltaDiag : Fin m → Matrix (Fin r) (Fin r) ℝ,
+      (∀ i : Fin m,
+        maxEntryNorm hr (DeltaDiag i) ≤
+          (2 * (r : ℝ)) * fp.u * normUii i) ∧
+      ∀ i : Fin m,
+        DiagonalBlockSolveFirstOrderSpec fp.u (2 * (r : ℝ)) (normUii i)
+          (maxEntryNorm hr (DeltaDiag i))
+          (U i i) (DeltaDiag i) (X i)
+          (dhsBlockBackConventionalRHS fp i U X Y) := by
+  classical
+  have hGammaValid : gammaValid fp r := by
+    unfold gammaValid
+    linarith
+  have hGammaLe : gamma fp r ≤ 2 * ((r : ℝ) * fp.u) :=
+    gamma_le_two_mul_n_u_of_nu_le_half fp r hSmallBlock
+  have hWitness : ∀ i : Fin m,
+      ∃ Delta : Matrix (Fin r) (Fin r) ℝ,
+        (∀ a b : Fin r,
+          |Delta a b| ≤ gamma fp r * |U i i a b|) ∧
+        (U i i + Delta) * X i =
+          dhsBlockBackConventionalRHS fp i U X Y := by
+    intro i
+    rcases
+        backSub_backward_error fp r (U i i)
+          (fun b : Fin r => dhsBlockBackConventionalRHS fp i U X Y b 0)
+          (hDiag i) (hUpper i) hGammaValid with
+      ⟨Delta, hDelta, hEquation⟩
+    refine ⟨Delta, hDelta, ?_⟩
+    ext a j
+    have hj : j = (0 : Fin 1) := Subsingleton.elim _ _
+    subst j
+    simpa [Matrix.mul_apply, hXExec i] using hEquation a
+  choose DeltaDiag hDeltaEntry hDeltaEquation using hWitness
+  have hDeltaNorm : ∀ i : Fin m,
+      maxEntryNorm hr (DeltaDiag i) ≤
+        (2 * (r : ℝ)) * fp.u * normUii i := by
+    intro i
+    have hGammaNonneg : 0 ≤ gamma fp r := gamma_nonneg fp hGammaValid
+    have hNormUiiNonneg : 0 ≤ normUii i :=
+      le_trans (maxEntryNorm_nonneg hr (U i i)) (hUiiNorm i)
+    apply maxEntryNorm_le_of_entry_le_bound
+    intro a b
+    calc
+      |DeltaDiag i a b| ≤ gamma fp r * |U i i a b| :=
+        hDeltaEntry i a b
+      _ ≤ gamma fp r * maxEntryNorm hr (U i i) :=
+        mul_le_mul_of_nonneg_left
+          (entry_le_maxEntryNorm hr (U i i) a b) hGammaNonneg
+      _ ≤ gamma fp r * normUii i :=
+        mul_le_mul_of_nonneg_left (hUiiNorm i) hGammaNonneg
+      _ ≤ (2 * ((r : ℝ) * fp.u)) * normUii i :=
+        mul_le_mul_of_nonneg_right hGammaLe hNormUiiNonneg
+      _ = (2 * (r : ℝ)) * fp.u * normUii i := by ring
+  refine ⟨DeltaDiag, hDeltaNorm, ?_⟩
+  intro i
+  exact ⟨hDeltaEquation i, FirstOrderLe.of_le (hDeltaNorm i)⟩
+
+/-- Source-correct concrete DHS block-back-substitution branch with the local
+    Eq.13.15 solves instantiated by conventional per-block back substitution.
+
+    The global small-roundoff condition implies `r*u <= 1/2`; hence the
+    preceding theorem supplies all diagonal perturbations with coefficient
+    `c₅ = 2*r`.  Those witnesses are then combined with the conventional
+    rounded suffix products/subtractions, closing both the local diagonal
+    solver bound and the global RHS-scale premise in one executable branch. -/
+theorem dhs_block_back_substitution_firstOrder_from_conventional_local_backSub
+    {m r : ℕ}
+    (fp : FPModel) (hm : 0 < m) (hr : 0 < r)
+    (cBack normA normL normU : ℝ)
+    (normUii : Fin m → ℝ)
+    (Lhat U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hSmallProduct : (((m * r : ℕ) : ℝ) * fp.u) ≤ 1 / 2)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hUUpper : ∀ i j : Fin m, j.val < i.val → U i j = 0)
+    (hNormUii : ∀ i : Fin m, normUii i ≤ normU)
+    (hLhat : maxEntryNorm (Nat.mul_pos hm hr)
+      (blockMatrixFlatFin Lhat) ≤ normL)
+    (hc : (((m * r : ℕ) : ℝ) *
+      ((((m * r : ℕ) : ℝ) ^ 2 +
+          4 * (((m * r : ℕ) : ℝ) + (r : ℝ))) +
+        2 * (r : ℝ))) ≤ cBack)
+    (hUTailU : ∀ i : Fin m,
+      maxEntryNormRect hr (Nat.mul_pos hm hr)
+        (dhsBlockBackUpperTailRowFlat i (U i)) ≤ normU)
+    (hUiiNorm : ∀ i : Fin m, maxEntryNorm hr (U i i) ≤ normUii i)
+    (hDiag : ∀ i : Fin m, ∀ a : Fin r, U i i a a ≠ 0)
+    (hUpper : ∀ i : Fin m, ∀ a b : Fin r,
+      b.val < a.val → U i i a b = 0)
+    (hXExec : ∀ i : Fin m, ∀ a : Fin r,
+      X i a 0 = fl_backSub fp r (U i i)
+        (fun b : Fin r => dhsBlockBackConventionalRHS fp i U X Y b 0) a) :
+    ∃ (DeltaDiag : Fin m → Matrix (Fin r) (Fin r) ℝ)
+      (DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ),
+      (∀ i : Fin m,
+        maxEntryNorm hr (DeltaDiag i) ≤
+          (2 * (r : ℝ)) * fp.u * normUii i) ∧
+      (∀ i : Fin m,
+        DiagonalBlockSolveFirstOrderSpec fp.u (2 * (r : ℝ)) (normUii i)
+          (maxEntryNorm hr (DeltaDiag i))
+          (U i i) (DeltaDiag i) (X i)
+          (dhsBlockBackConventionalRHS fp i U X Y)) ∧
+      DHSBlockBackSubstitutionFirstOrderSpec
+        fp.u cBack normA normL normU
+        (maxEntryNorm (Nat.mul_pos hm hr)
+          (blockMatrixFlatFin Lhat * blockMatrixFlatFin DeltaU))
+        (blockMatrixFlatFin U) (blockMatrixFlatFin DeltaU)
+        (blockMatrixRowsFlatFin X) (blockMatrixRowsFlatFin Y) := by
+  have hrNat : r ≤ m * r := by
+    calc
+      r = 1 * r := by simp
+      _ ≤ m * r := Nat.mul_le_mul_right r (by omega)
+  have hrReal : (r : ℝ) ≤ ((m * r : ℕ) : ℝ) := by
+    exact_mod_cast hrNat
+  have hSmallBlock : (r : ℝ) * fp.u ≤ 1 / 2 :=
+    le_trans (mul_le_mul_of_nonneg_right hrReal fp.u_nonneg) hSmallProduct
+  rcases
+      dhs_conventional_diagonal_block_solve_specs
+        fp hr normUii U X Y hSmallBlock hUiiNorm hDiag hUpper hXExec with
+    ⟨DeltaDiag, hDeltaDiag, hDiagonal⟩
+  have hSmallDiag : (2 * (r : ℝ)) * fp.u ≤ 1 := by
+    calc
+      (2 * (r : ℝ)) * fp.u = 2 * ((r : ℝ) * fp.u) := by ring
+      _ ≤ 2 * (1 / 2 : ℝ) :=
+        mul_le_mul_of_nonneg_left hSmallBlock (by norm_num)
+      _ = 1 := by norm_num
+  rcases
+      dhs_block_back_substitution_firstOrder_from_conventional_suffix_rows_of_small_roundoff
+        fp hm hr (2 * (r : ℝ)) cBack normA normL normU normUii
+        Lhat U DeltaDiag X Y hSmallProduct
+        (mul_nonneg (by norm_num) (Nat.cast_nonneg r)) hSmallDiag
+        hA hL hU hUUpper hNormUii hLhat hc hUTailU hUiiNorm
+        hDeltaDiag hDiagonal with
+    ⟨DeltaU, hBack⟩
+  exact ⟨DeltaDiag, DeltaU, hDeltaDiag, hDiagonal, hBack⟩
+
+/-- Fully instantiated conventional DHS block-back-substitution branch for
+    the descending recursive block solution.
+
+    This removes the last operational premise from
+    `dhs_block_back_substitution_firstOrder_from_conventional_local_backSub`:
+    the computed blocks are the named recursive solution, whose execution
+    equation is proved above.  The conclusion simultaneously supplies every
+    local Eq.13.15 perturbation and the flattened global DHS back spec. -/
+theorem
+    dhs_block_back_substitution_firstOrder_from_conventional_recursive_block_solution
+    {m r : ℕ}
+    (fp : FPModel) (hm : 0 < m) (hr : 0 < r)
+    (cBack normA normL normU : ℝ)
+    (normUii : Fin m → ℝ)
+    (Lhat U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (Y : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hSmallProduct : (((m * r : ℕ) : ℝ) * fp.u) ≤ 1 / 2)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hUUpper : ∀ i j : Fin m, j.val < i.val → U i j = 0)
+    (hNormUii : ∀ i : Fin m, normUii i ≤ normU)
+    (hLhat : maxEntryNorm (Nat.mul_pos hm hr)
+      (blockMatrixFlatFin Lhat) ≤ normL)
+    (hc : (((m * r : ℕ) : ℝ) *
+      ((((m * r : ℕ) : ℝ) ^ 2 +
+          4 * (((m * r : ℕ) : ℝ) + (r : ℝ))) +
+        2 * (r : ℝ))) ≤ cBack)
+    (hUTailU : ∀ i : Fin m,
+      maxEntryNormRect hr (Nat.mul_pos hm hr)
+        (dhsBlockBackUpperTailRowFlat i (U i)) ≤ normU)
+    (hUiiNorm : ∀ i : Fin m, maxEntryNorm hr (U i i) ≤ normUii i)
+    (hDiag : ∀ i : Fin m, ∀ a : Fin r, U i i a a ≠ 0)
+    (hUpper : ∀ i : Fin m, ∀ a b : Fin r,
+      b.val < a.val → U i i a b = 0) :
+    ∃ (DeltaDiag : Fin m → Matrix (Fin r) (Fin r) ℝ)
+      (DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ),
+      (∀ i : Fin m,
+        maxEntryNorm hr (DeltaDiag i) ≤
+          (2 * (r : ℝ)) * fp.u * normUii i) ∧
+      (∀ i : Fin m,
+        DiagonalBlockSolveFirstOrderSpec fp.u (2 * (r : ℝ)) (normUii i)
+          (maxEntryNorm hr (DeltaDiag i))
+          (U i i) (DeltaDiag i)
+          (dhsBlockBackConventionalSolution fp U Y i)
+          (dhsBlockBackConventionalRHS fp i U
+            (dhsBlockBackConventionalSolution fp U Y) Y)) ∧
+      DHSBlockBackSubstitutionFirstOrderSpec
+        fp.u cBack normA normL normU
+        (maxEntryNorm (Nat.mul_pos hm hr)
+          (blockMatrixFlatFin Lhat * blockMatrixFlatFin DeltaU))
+        (blockMatrixFlatFin U) (blockMatrixFlatFin DeltaU)
+        (blockMatrixRowsFlatFin (dhsBlockBackConventionalSolution fp U Y))
+        (blockMatrixRowsFlatFin Y) := by
+  exact
+    dhs_block_back_substitution_firstOrder_from_conventional_local_backSub
+      fp hm hr cBack normA normL normU normUii Lhat U
+      (dhsBlockBackConventionalSolution fp U Y) Y hSmallProduct
+      hA hL hU hUUpper hNormUii hLhat hc hUTailU hUiiNorm hDiag hUpper
+      (dhsBlockBackConventionalSolution_execution fp U Y)
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch for
     the conventional flattened algorithm and one right-hand side.
