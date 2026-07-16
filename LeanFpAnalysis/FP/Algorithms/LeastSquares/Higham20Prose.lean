@@ -1,6 +1,7 @@
 -- Source-facing exact prose and symbolic examples from Higham, 2nd ed., Chapter 20.
 
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
+import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21ProjectorNorm
 import LeanFpAnalysis.FP.Analysis.HighamChapter7
 
 namespace LeanFpAnalysis.FP
@@ -133,6 +134,32 @@ theorem higham20_delta_example_relative_changes {delta : Real}
         Real.sqrt_mul (by norm_num : (0 : Real) ≤ 2)]
     rw [hsqrt10]
     field_simp [ne_of_gt hsqrt2, ne_of_gt hsqrt5]
+
+/-! ## The exact complementary range-projector norm on printed page 383 -/
+
+/-- Higham, 2nd ed., Chapter 20, printed page 383:
+
+    `||I - A A⁺||₂ = min {1, m - n}`
+
+for a full-column `m`-by-`n` matrix.  The left side is stated in the
+repository's exact complexified Euclidean operator-norm API.  Full column rank
+is exposed by the left-inverse identity `A⁺ A = I`; the supplied
+Moore--Penrose certificate provides symmetry of the range projection `A A⁺`.
+
+The proof applies the exact complementary-domain-projector theorem to the
+transposed interface `(A⁺, A)`.  It therefore includes both source branches:
+the norm is zero when `m = n`, and it is one when `n < m`. -/
+theorem higham20_fullColumn_range_projector_complement_complexMatrixOp2_eq_min_one_sub
+    {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (Aplus : Fin n -> Fin m -> Real) (hnm : n <= m)
+    (hleft : rectMatMul Aplus A = idMatrix n)
+    (hMP : RectMoorePenrosePseudoinverse m n A Aplus) :
+    complexMatrixOp2
+        (realRectToCMatrix
+          (fun i j => idMatrix m i j - rectMatMul A Aplus i j)) =
+      ((Nat.min 1 (m - n) : Nat) : Real) := by
+  exact higham21_projector_complement_complexMatrixOp2_eq_min_one_sub
+    Aplus A hnm hleft hMP.range_projection_symmetric
 
 /-! ## The componentwise condition number `cond₂` -/
 

@@ -13433,6 +13433,54 @@ theorem lsNormwiseBackwardErrorFormulaRHS_eq_eigenvalueFormulaRHS_of_residual_sq
     lsNormwiseBackwardErrorFormulaValue_eq_eigenvalueFormulaValue
       theta A (lsResidualHigham A b y) hy hrsq
 
+/-- If the source residual is zero, the Theorem 20.5 eigenmatrix is the
+    positive-semidefinite row Gram `A A^T`.  Hence `lambda_*` is nonnegative
+    and the printed eigenvalue formula selects its zero `phi` branch. -/
+theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_eq_zero_of_residual_eq_zero
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hres : lsResidualHigham A b y = 0) :
+    lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y = 0 := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let M : Fin (m + 1) → Fin (m + 1) → ℝ :=
+    lsNormwiseBackwardErrorEigenMatrix theta A r y
+  let hM : IsSymmetricFiniteMatrix M :=
+    lsNormwiseBackwardErrorEigenMatrix_isSymmetricFiniteMatrix theta A r y
+  have hr : r = 0 := by simpa [r] using hres
+  have hMgram :
+      M = fun i k : Fin (m + 1) => ∑ j : Fin n, A i j * A k j := by
+    ext i k
+    simp [M, lsNormwiseBackwardErrorEigenMatrix, hr]
+  have hPSD : finitePSD M := by
+    intro p
+    rw [hMgram,
+      finiteQuadraticForm_rowGram_transpose_eq_vecNorm2Sq_rectMatMulVec_finiteTranspose]
+    exact vecNorm2Sq_nonneg _
+  have heigs : ∀ i : Fin (m + 1),
+      0 ≤ finiteHermitianEigenvalues M hM i :=
+    (finitePSD_iff_finiteHermitianEigenvalues_nonneg M hM).mp hPSD
+  let e : Fin (Fintype.card (Fin (m + 1))) ≃ Fin (m + 1) :=
+    Fintype.equivOfCardEq (Fintype.card_fin _)
+  let a0 : Fin (Fintype.card (Fin (m + 1))) :=
+    lsNormwiseBackwardErrorLambdaStarIndex m
+  let a : Fin (m + 1) := e a0
+  have hlambda_eq :
+      finiteHermitianEigenvalues M hM a =
+        lsNormwiseBackwardErrorLambdaStar theta A r y := by
+    unfold finiteHermitianEigenvalues lsNormwiseBackwardErrorLambdaStar
+    simp only [Matrix.IsHermitian.eigenvalues]
+    congr 1
+    simp [e, a0, a]
+  have hlambda :
+      0 ≤ lsNormwiseBackwardErrorLambdaStar theta A r y := by
+    rw [← hlambda_eq]
+    exact heigs a
+  unfold lsNormwiseBackwardErrorEigenvalueFormulaRHS
+  rw [show lsResidualHigham A b y = r from rfl]
+  rw [lsNormwiseBackwardErrorEigenvalueFormulaValue_eq_phi_of_lambdaStar_nonneg
+    theta A r y hlambda]
+  exact lsNormwiseBackwardErrorPhi_eq_zero_of_residual_eq_zero theta y hr
+
 /-- Positivity characterization for the printed right-hand side in (20.21):
     the outer minimum `min {phi, sigma_min}` is positive exactly when both
     displayed nonnegative branches are positive. -/
@@ -18787,6 +18835,151 @@ theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQR
       fp A f g hn hvalid
       (lsTheorem20_4FullRankComputedQRDomain.computedQRNonbreakdown fp hdomain)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4 with the two actual matrix
+    perturbations exposed.  If `DeltaA` is the common Householder-QR panel and
+    `DeltaR_i` is the perturbation from triangular solve `i`, then the matrices
+    occurring in the exact asymmetric augmented system are
+
+      `DeltaA_i = DeltaA + Q [DeltaR_i; 0]`,  `i = 1,2`.
+
+    The componentwise estimates below are the strongest direct consequence of
+    the current verified ingredients: the printed `G_i |A|` majorant for the
+    common panel plus the exact absolute lifted triangular-solve remainder.
+    In particular, they do not misstate the common-panel estimate as a bound
+    on either total perturbation. -/
+theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_theorem20_4_source_fullRank_computed_nonbreakdown_total_perturbations
+    {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k)))
+    (hdomain : lsTheorem20_4FullRankComputedQRDomain fp A) :
+    let gammaTilde : ℝ :=
+      lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (n + k) n
+    let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+      fl_householderQRPanel_Q fp (n + k) n A
+    let Rhat : Fin (n + k) → Fin n → ℝ :=
+      fl_householderQRPanel_R fp (n + k) n A
+    let R : Fin n → Fin n → ℝ :=
+      fun i j => Rhat (Fin.castAdd k i) j
+    let c_hat : Fin (n + k) → ℝ :=
+      fl_householderQRPanel_rhs fp (n + k) n A f
+    let cTop : Fin n → ℝ := fun i => c_hat (Fin.castAdd k i)
+    let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+    let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+    let x : Fin n → ℝ := fl_backSub fp n R (fun i : Fin n => cTop i - h i)
+    let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+    ∃ DeltaA DeltaA1 DeltaA2 : Fin (n + k) → Fin n → ℝ,
+    ∃ G1 G2 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ Deltaf : Fin (n + k) → ℝ,
+    ∃ Deltag : Fin n → ℝ,
+    ∃ H1w H2w H3 : Fin (n + k) → Fin (n + k) → ℝ,
+    ∃ DeltaR1 DeltaR2 : Fin n → Fin n → ℝ,
+      DeltaA1 = (fun i j =>
+        DeltaA i j + matMulRectLeft Q (lsQRTallBlock DeltaR1) i j) ∧
+      DeltaA2 = (fun i j =>
+        DeltaA i j + matMulRectLeft Q (lsQRTallBlock DeltaR2) i j) ∧
+      frobNorm DeltaA ≤ gammaTilde * frobNorm A ∧
+      (∀ i j, 0 ≤ G1 i j) ∧
+      (∀ i j, 0 ≤ G2 i j) ∧
+      frobNorm G1 = 1 ∧
+      frobNorm G2 = 1 ∧
+      (∀ i j, |DeltaA1 i j| ≤
+        ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+            matMulRect (n + k) (n + k) n G1
+              (fun a b => |A a b|) i j +
+          |matMulRectLeft Q (lsQRTallBlock DeltaR1) i j|) ∧
+      (∀ i j, |DeltaA2 i j| ≤
+        ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+            matMulRect (n + k) (n + k) n G2
+              (fun a b => |A a b|) i j +
+          |matMulRectLeft Q (lsQRTallBlock DeltaR2) i j|) ∧
+      (∀ i, |Deltaf i| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltafMajorant H1w H2w f rhat i) ∧
+      (∀ j, |Deltag j| ≤
+        (Real.sqrt (n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          lsTheorem20_4DeltagMajorant A H3 rhat j) ∧
+      (∀ i j, 0 ≤ H1w i j) ∧
+      (∀ i j, 0 ≤ H2w i j) ∧
+      (∀ i j, 0 ≤ H3 i j) ∧
+      frobNorm H1w = 1 ∧
+      frobNorm H2w = 1 ∧
+      frobNorm H3 = 1 ∧
+      (∀ i j, |DeltaR1 i j| ≤ gamma fp n * |R i j|) ∧
+      (∀ i j, |DeltaR2 i j| ≤ gamma fp n * |R i j|) ∧
+      LSAsymmetricAugmentedSystem
+        (fun i j => A i j + DeltaA1 i j)
+        (fun i j => A i j + DeltaA2 i j)
+        (fun i => f i + Deltaf i) (fun j => g j + Deltag j)
+        rhat x := by
+  let gammaTilde : ℝ :=
+    lsTheorem20_4ConcreteGammaTildeSqrtResidual fp (n + k) n
+  let Q : Fin (n + k) → Fin (n + k) → ℝ :=
+    fl_householderQRPanel_Q fp (n + k) n A
+  let Rhat : Fin (n + k) → Fin n → ℝ :=
+    fl_householderQRPanel_R fp (n + k) n A
+  let R : Fin n → Fin n → ℝ :=
+    fun i j => Rhat (Fin.castAdd k i) j
+  let c_hat : Fin (n + k) → ℝ :=
+    fl_householderQRPanel_rhs fp (n + k) n A f
+  let cBot : Fin k → ℝ := fun i => c_hat (Fin.natAdd n i)
+  let h : Fin n → ℝ := fl_forwardSub fp n (matTranspose R) g
+  let rhat : Fin (n + k) → ℝ := matMulVec (n + k) Q (Fin.append h cBot)
+  rcases
+    LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_theorem20_4_source_fullRank_computed_nonbreakdown
+      fp A f g hn hvalid hdomain with
+    ⟨DeltaA, G, Deltaf, Deltag, H1, H2, H3, DeltaR1, DeltaR2,
+      hDeltaA, hGnonneg, hGnorm, hDeltaAcomp, hDeltaf, hDeltag,
+      hH1nonneg, hH2nonneg, hH3nonneg, hH1norm, hH2norm, hH3norm,
+      hDeltaR1, hDeltaR2, hsys⟩
+  let DeltaA1 : Fin (n + k) → Fin n → ℝ := fun i j =>
+    DeltaA i j + matMulRectLeft Q (lsQRTallBlock DeltaR1) i j
+  let DeltaA2 : Fin (n + k) → Fin n → ℝ := fun i j =>
+    DeltaA i j + matMulRectLeft Q (lsQRTallBlock DeltaR2) i j
+  have htotal1 : ∀ i j, |DeltaA1 i j| ≤
+      ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j +
+        |matMulRectLeft Q (lsQRTallBlock DeltaR1) i j| := by
+    intro i j
+    calc
+      |DeltaA1 i j| ≤ |DeltaA i j| +
+          |matMulRectLeft Q (lsQRTallBlock DeltaR1) i j| := by
+            simpa [DeltaA1] using
+              (abs_add_le (DeltaA i j)
+                (matMulRectLeft Q (lsQRTallBlock DeltaR1) i j))
+      _ ≤ ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+            matMulRect (n + k) (n + k) n G
+              (fun a b => |A a b|) i j +
+          |matMulRectLeft Q (lsQRTallBlock DeltaR1) i j| :=
+        add_le_add (by simpa [gammaTilde] using hDeltaAcomp i j) le_rfl
+  have htotal2 : ∀ i j, |DeltaA2 i j| ≤
+      ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+          matMulRect (n + k) (n + k) n G
+            (fun a b => |A a b|) i j +
+        |matMulRectLeft Q (lsQRTallBlock DeltaR2) i j| := by
+    intro i j
+    calc
+      |DeltaA2 i j| ≤ |DeltaA i j| +
+          |matMulRectLeft Q (lsQRTallBlock DeltaR2) i j| := by
+            simpa [DeltaA2] using
+              (abs_add_le (DeltaA i j)
+                (matMulRectLeft Q (lsQRTallBlock DeltaR2) i j))
+      _ ≤ ((n + k : ℝ) * (n : ℝ) * gammaTilde) *
+            matMulRect (n + k) (n + k) n G
+              (fun a b => |A a b|) i j +
+          |matMulRectLeft Q (lsQRTallBlock DeltaR2) i j| :=
+        add_le_add (by simpa [gammaTilde] using hDeltaAcomp i j) le_rfl
+  refine ⟨DeltaA, DeltaA1, DeltaA2, G, G, Deltaf, Deltag,
+    H1, H2, H3, DeltaR1, DeltaR2, rfl, rfl, hDeltaA,
+    hGnonneg, hGnonneg, hGnorm, hGnorm, htotal1, htotal2,
+    hDeltaf, hDeltag, hH1nonneg, hH2nonneg, hH3nonneg,
+    hH1norm, hH2norm, hH3norm, hDeltaR1, hDeltaR2, ?_⟩
+  simpa [DeltaA1, DeltaA2, add_assoc, gammaTilde, Q, Rhat, R,
+    c_hat, cBot, h, rhat] using hsys
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.4 concrete Householder QR
     handoff with implementation-backed uniform `Delta f` source witnesses and a
     nonrecursive closed RHS growth coefficient.
@@ -23978,6 +24171,188 @@ theorem lsNormwiseBackwardErrorPhi_pos_of_not_isLeastSquaresMinimizer_of_theta_p
     exact hnot (IsLeastSquaresMinimizer.of_lsResidualHigham_eq_zero hres)
   exact lt_of_le_of_ne hnonneg (Ne.symm hne)
 
+/-- On the positive finite-weight, non-minimizer branch, the only real
+    left-null vector of the WKS formula matrix is zero.  The complementary
+    projector first forces such a vector to be parallel to the residual;
+    failure of the normal equations then kills that remaining direction. -/
+private theorem
+    finiteTranspose_formulaMatrix_real_kernel_eq_zero_of_not_isLeastSquaresMinimizer
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    {p : Fin (m + 1) → ℝ}
+    (hp :
+      rectMatMulVec
+          (finiteTranspose
+            (lsNormwiseBackwardErrorFormulaMatrix theta A
+              (lsResidualHigham A b y) y)) p =
+        0) :
+    p = 0 := by
+  classical
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let phi : ℝ := lsNormwiseBackwardErrorPhi theta r y
+  have hphi : phi ≠ 0 := by
+    exact ne_of_gt (by
+      simpa [phi, r] using
+        lsNormwiseBackwardErrorPhi_pos_of_not_isLeastSquaresMinimizer_of_theta_pos_of_y_ne_zero
+          htheta A b hy hnot)
+  have hA (j : Fin n) : ∑ i : Fin (m + 1), A i j * p i = 0 := by
+    have hj := congrFun hp (Fin.castAdd (m + 1) j)
+    simpa [rectMatMulVec, finiteTranspose,
+      lsNormwiseBackwardErrorFormulaMatrix, Fin.append_left, r] using hj
+  have hright (j : Fin (m + 1)) :
+      phi *
+          (∑ i : Fin (m + 1),
+            lsResidualComplementProjector r i j * p i) =
+        0 := by
+    have hj := congrFun hp (Fin.natAdd n j)
+    have hj' :
+        (∑ i : Fin (m + 1),
+            (phi * lsResidualComplementProjector r i j) * p i) =
+          0 := by
+      simpa [rectMatMulVec, finiteTranspose,
+        lsNormwiseBackwardErrorFormulaMatrix, Fin.append_right, phi, r] using hj
+    calc
+      phi *
+          (∑ i : Fin (m + 1),
+            lsResidualComplementProjector r i j * p i) =
+          ∑ i : Fin (m + 1),
+            (phi * lsResidualComplementProjector r i j) * p i := by
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro i _
+              ring
+      _ = 0 := hj'
+  have hproj (j : Fin (m + 1)) :
+      ∑ i : Fin (m + 1),
+          lsResidualComplementProjector r j i * p i =
+        0 := by
+    have hcol :
+        ∑ i : Fin (m + 1),
+            lsResidualComplementProjector r i j * p i =
+          0 :=
+      (mul_eq_zero.mp (hright j)).resolve_left hphi
+    calc
+      (∑ i : Fin (m + 1),
+          lsResidualComplementProjector r j i * p i) =
+          ∑ i : Fin (m + 1),
+            lsResidualComplementProjector r i j * p i := by
+              apply Finset.sum_congr rfl
+              intro i _
+              rw [lsResidualComplementProjector_symmetric]
+      _ = 0 := hcol
+  let c : ℝ :=
+    (∑ k : Fin (m + 1), r k * p k) / vecNorm2Sq r
+  have hspan (i : Fin (m + 1)) : p i = c * r i := by
+    have happ := lsLemma20_6ProjectorComplement_apply_vec r p i
+    rw [hproj i] at happ
+    have hi :
+        p i =
+          (r i / vecNorm2Sq r) *
+            ∑ k : Fin (m + 1), r k * p k :=
+      sub_eq_zero.mp happ.symm
+    rw [hi]
+    simp only [c]
+    ring
+  have hnotorth :
+      ¬ ∀ j : Fin n, ∑ i : Fin (m + 1), A i j * r i = 0 := by
+    intro horth
+    apply hnot
+    have hnormal : RectLSNormalEquations A b y :=
+      RectLSNormalEquations.of_residual_orthogonal (by
+        intro j
+        have hsign := lsResidualHigham_column_sum_eq_neg A b y j
+        have hj := horth j
+        simp only [r] at hj
+        rw [hj] at hsign
+        linarith)
+    exact (RectLSNormalEquations.iff_isLeastSquaresMinimizer A b y).mp hnormal
+  rcases not_forall.mp hnotorth with ⟨j, hj⟩
+  have hcmul : c * (∑ i : Fin (m + 1), A i j * r i) = 0 := by
+    calc
+      c * (∑ i : Fin (m + 1), A i j * r i) =
+          ∑ i : Fin (m + 1), A i j * (c * r i) := by
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+      _ = ∑ i : Fin (m + 1), A i j * p i := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [hspan]
+      _ = 0 := hA j
+  have hc : c = 0 := (mul_eq_zero.mp hcmul).resolve_right hj
+  ext i
+  rw [hspan i, hc]
+  simp
+
+/-- Positive `theta`, a nonzero candidate, and failure of least-squares
+    optimality imply the full row-rank condition required by the finite WKS
+    formula.  No rank assumption on the original data matrix is needed. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixRowRank_eq_card_of_positive_theta_not_isLeastSquaresMinimizer
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y) :
+    lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y =
+      m + 1 := by
+  let MF := realRectToCMatrix
+    (finiteTranspose
+      (lsNormwiseBackwardErrorFormulaMatrix theta A
+        (lsResidualHigham A b y) y))
+  have hker : LinearMap.ker (complexMatrixEuclideanLin MF) = ⊥ := by
+    rw [LinearMap.ker_eq_bot']
+    intro z hz
+    have hre :
+        rectMatMulVec
+            (finiteTranspose
+              (lsNormwiseBackwardErrorFormulaMatrix theta A
+                (lsResidualHigham A b y) y))
+            (euclideanReVec z) =
+          0 := by
+      ext j
+      have hj :
+          (WithLp.ofLp (complexMatrixEuclideanLin MF z)) j = 0 := by
+        rw [hz]
+        rfl
+      have hjre := congrArg Complex.re hj
+      rw [realRectToCMatrix_euclideanLin_ofLp] at hjre
+      rw [realRectToCMatrix_vecMul_re] at hjre
+      simpa [MF] using hjre
+    have him :
+        rectMatMulVec
+            (finiteTranspose
+              (lsNormwiseBackwardErrorFormulaMatrix theta A
+                (lsResidualHigham A b y) y))
+            (euclideanImVec z) =
+          0 := by
+      ext j
+      have hj :
+          (WithLp.ofLp (complexMatrixEuclideanLin MF z)) j = 0 := by
+        rw [hz]
+        rfl
+      have hjim := congrArg Complex.im hj
+      rw [realRectToCMatrix_euclideanLin_ofLp] at hjim
+      rw [realRectToCMatrix_vecMul_im] at hjim
+      simpa [MF] using hjim
+    have hre_zero : euclideanReVec z = 0 :=
+      finiteTranspose_formulaMatrix_real_kernel_eq_zero_of_not_isLeastSquaresMinimizer
+        htheta A b hy hnot hre
+    have him_zero : euclideanImVec z = 0 :=
+      finiteTranspose_formulaMatrix_real_kernel_eq_zero_of_not_isLeastSquaresMinimizer
+        htheta A b hy hnot him
+    apply norm_eq_zero.mp
+    have hnorm_sq := euclidean_norm_sq_re_im z
+    rw [hre_zero, him_zero] at hnorm_sq
+    have hzero_norm : vecNorm2 (0 : Fin (m + 1) → ℝ) = 0 := by
+      simpa using (vecNorm2_zero (n := m + 1))
+    rw [hzero_norm] at hnorm_sq
+    exact sq_eq_zero_iff.mp (by simpa using hnorm_sq)
+  simpa [lsNormwiseBackwardErrorFormulaMatrixRowRank, MF] using
+    complexMatrixRank_eq_card_of_euclideanLin_ker_eq_bot MF hker
+
 /-- Non-minimizer zero-case classification for (20.20)-(20.21): after excluding
     the exact-minimizer branch, a zero printed RHS is equivalent to the
     degenerate row-side `sigma_min [A phi(I-r r^+)] = 0` branch. -/
@@ -24703,6 +25078,24 @@ theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_
       lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_phi_le_sigmaMin
         htheta A b hy hnot hrank (by simpa [sigma, phi] using hphi)
 
+/-- Source-generality finite-positive WKS equality.  The full row rank of the
+    formula matrix is a consequence of positive `theta`, nonzero `y`, and
+    failure of the normal equations, rather than an extra assumption. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_formulaMatrixRowRank_eq_card
+      htheta A b hy hnot
+      (lsNormwiseBackwardErrorFormulaMatrixRowRank_eq_card_of_positive_theta_not_isLeastSquaresMinimizer
+        htheta A b hy hnot)
+
 /-- Source-left-panel version of the finite-positive WKS equality.  Full row
     rank of the original data matrix `A` supplies the full-row-rank hypothesis
     for the source block `[A phi(I-r r^+)]`. -/
@@ -24806,6 +25199,61 @@ theorem lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_
       (lsNormwiseBackwardErrorFormulaRHS_eq_eigenvalueFormulaRHS_of_residual_sq_ne_zero
         theta A b hy hrsq)
 
+/-- Source-generality finite-positive WKS equality in the eigenvalue form.
+    The formula-matrix row-rank condition is discharged from the printed
+    assumptions instead of being imposed on `A` or on the block matrix. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y := by
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_formulaMatrixRowRank_eq_card
+      htheta A b hy hnot
+      (lsNormwiseBackwardErrorFormulaMatrixRowRank_eq_card_of_positive_theta_not_isLeastSquaresMinimizer
+        htheta A b hy hnot)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 at its printed finite source
+    assumptions.  Exact minimizers use the zero-error branch (including the
+    zero-residual Gram-matrix argument above); non-minimizers use the derived
+    WKS formula-matrix row rank. -/
+theorem theorem20_5_wks_finite_formula_and_eigenvalue
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
+      lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y := by
+  by_cases hmin : IsLeastSquaresMinimizer A b y
+  · have hformula :=
+      lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_isLeastSquaresMinimizer
+        theta A b y hmin
+    refine ⟨hformula, ?_⟩
+    by_cases hrsq : vecNorm2Sq (lsResidualHigham A b y) = 0
+    · have hnorm : vecNorm2 (lsResidualHigham A b y) = 0 := by
+        simp [vecNorm2, hrsq]
+      have hres : lsResidualHigham A b y = 0 := by
+        ext i
+        exact (vecNorm2_eq_zero_iff (lsResidualHigham A b y)).mp hnorm i
+      rw [lsNormwiseBackwardErrorEtaF_eq_zero_of_isLeastSquaresMinimizer
+        theta A b y hmin]
+      exact
+        (lsNormwiseBackwardErrorEigenvalueFormulaRHS_eq_zero_of_residual_eq_zero
+          theta A b y hres).symm
+    · exact hformula.trans
+        (lsNormwiseBackwardErrorFormulaRHS_eq_eigenvalueFormulaRHS_of_residual_sq_ne_zero
+          theta A b hy hrsq)
+  · exact
+      ⟨(lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer
+          htheta A b hy hmin).1,
+        (lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer
+          htheta A b hy hmin).1⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.5 with (20.21):
     source-left-panel finite-positive WKS equality in the eigenvalue
     formulation.  Full row rank of `A` supplies the source-block rank
@@ -24830,16 +25278,15 @@ theorem lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_
       htheta A b hy hnot hrank
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.5 limiting discussion:
-    under the already proved finite-positive WKS hypotheses, the printed
+    under the printed nonzero-candidate hypothesis, the
     eigenvalue right-hand side has the same `theta -> +∞` limit as the
     finite-weight backward-error model.  This version records the limit as the
     supremum of nonnegative finite-weight values; the following theorem rewrites
-    it to the matrix-only infimum using the compactness equality. -/
+    it to the matrix-only infimum using the compactness equality.  The legacy
+    suffix is retained for lookup compatibility; no row-rank hypothesis remains. -/
 theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_nonneg_iSup_atTop_of_left_panel_rowRank_eq_card
     {m n : ℕ} (A : Fin (m + 1) → Fin n → ℝ)
-    (b : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
-    (hnot : ¬ IsLeastSquaresMinimizer A b y)
-    (hA : lsRealRectRowRank A = m + 1) :
+    (b : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0) :
     Filter.Tendsto
       (fun theta : ℝ =>
         lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y)
@@ -24853,19 +25300,17 @@ theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_nonneg_iSup_atTop_of
     (by
       filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with theta htheta
       exact
-        (lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_left_panel_rowRank_eq_card
-          htheta A b hy hnot hA).1)
+        (theorem20_5_wks_finite_formula_and_eigenvalue
+          htheta A b hy).2)
     (lsNormwiseBackwardErrorEtaF_tendsto_nonneg_iSup_atTop A b y)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.5 limiting discussion:
-    under the finite-positive WKS hypotheses, the printed eigenvalue
+    under the printed nonzero-candidate hypothesis, the printed eigenvalue
     right-hand side tends to the matrix-only `Delta b = 0` infimum as
-    `theta -> +∞`. -/
+    `theta -> +∞`.  The legacy suffix is retained for lookup compatibility. -/
 theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_matrixOnlyEtaF_atTop_of_left_panel_rowRank_eq_card
     {m n : ℕ} (A : Fin (m + 1) → Fin n → ℝ)
-    (b : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
-    (hnot : ¬ IsLeastSquaresMinimizer A b y)
-    (hA : lsRealRectRowRank A = m + 1) :
+    (b : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0) :
     Filter.Tendsto
       (fun theta : ℝ =>
         lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y)
@@ -24874,39 +25319,51 @@ theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_matrixOnlyEtaF_atTop
   rw [lsNormwiseBackwardErrorMatrixOnlyEtaF_eq_nonneg_iSup A b y]
   exact
     lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_nonneg_iSup_atTop_of_left_panel_rowRank_eq_card
-      A b hy hnot hA
+      A b hy
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.5 source-facing WKS package:
-    under the finite-positive, nonzero-candidate, non-minimizer, and
-    full-left-panel-rank hypotheses, the infimum model equals both displayed
-    finite right-hand sides, and the eigenvalue right-hand side tends to the
-    matrix-only `Delta b = 0` model as `theta -> +∞`. -/
+    under positive finite `theta` and the printed nonzero-candidate hypothesis,
+    the infimum model equals both displayed finite right-hand sides, and the
+    eigenvalue right-hand side tends to the matrix-only `Delta b = 0` model as
+    `theta -> +∞`.  The legacy suffix is retained for lookup compatibility;
+    neither a non-minimizer nor a row-rank hypothesis remains. -/
 theorem theorem20_5_wks_formula_eigenvalue_and_matrixOnly_limit_of_left_panel_rowRank_eq_card
     {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
     (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
-    {y : Fin n → ℝ} (hy : y ≠ 0)
-    (hnot : ¬ IsLeastSquaresMinimizer A b y)
-    (hA : lsRealRectRowRank A = m + 1) :
+    {y : Fin n → ℝ} (hy : y ≠ 0) :
     (lsNormwiseBackwardErrorEtaF theta A b y =
-        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
-      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
-      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y) ∧
+        lsNormwiseBackwardErrorFormulaRHS theta A b y) ∧
     (lsNormwiseBackwardErrorEtaF theta A b y =
-        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y ∧
-      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
-      0 < lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y) ∧
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y) ∧
+    Filter.Tendsto
+      (fun theta : ℝ =>
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y)
+      Filter.atTop
+      (nhds (lsNormwiseBackwardErrorMatrixOnlyEtaF A b y)) := by
+  have hfinite :=
+    theorem20_5_wks_finite_formula_and_eigenvalue htheta A b hy
+  exact
+    ⟨hfinite.1, hfinite.2,
+      lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_matrixOnlyEtaF_atTop_of_left_panel_rowRank_eq_card
+        A b hy⟩
+
+/-- Clean source-facing name for the complete Theorem 20.5 package. -/
+theorem theorem20_5_wks_formula_eigenvalue_and_matrixOnly_limit
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0) :
+    (lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y) ∧
+    (lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y) ∧
     Filter.Tendsto
       (fun theta : ℝ =>
         lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y)
       Filter.atTop
       (nhds (lsNormwiseBackwardErrorMatrixOnlyEtaF A b y)) := by
   exact
-    ⟨lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_left_panel_rowRank_eq_card
-        htheta A b hy hnot hA,
-      lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_left_panel_rowRank_eq_card
-        htheta A b hy hnot hA,
-      lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_matrixOnlyEtaF_atTop_of_left_panel_rowRank_eq_card
-        A b hy hnot hA⟩
+    theorem20_5_wks_formula_eigenvalue_and_matrixOnly_limit_of_left_panel_rowRank_eq_card
+      htheta A b hy
 
 /-- Positive finite-`theta` WKS branch from the concrete rank-one
     source-block certificate.  This replaces the generic upper-inequality

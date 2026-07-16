@@ -1,88 +1,82 @@
 # Chapter 20 Proof-Source Ledger
 
-## Scope
+## Scope and gate
 
-This ledger records the proof sources used or materially reflected in the
-Chapter 20 Lean development. A citation, an Appendix hint, a generated proof
-idea, or an implementation contract is not itself treated as a proof of a
-stronger Lean theorem. The source inventory is
-`docs/chapter20/CHAPTER20_SOURCE_INVENTORY.md`.
+This ledger records proof sources used or materially reflected in the Chapter
+20 development. Citations, Appendix hints, implementation contracts, and model
+reviews are advisory until their mathematical content is proved in Lean.
 
-The Chapter 20 modular proof-source gate is **PASS**. All 12 named results pass
-at their documented APIs, and all selected numbered equations are closed or
-explicitly deferred. Literal Split 3B numerical producers are proved locally;
-stronger printed compressions that still require upstream algorithm-analysis
-hypotheses remain identified below without being treated as Chapter 20 proof
-terms.
+The core proof-source gate is **FAIL** because selected source-strength rows
+remain open. No external prose result is accepted as a Lean axiom.
 
-## Source Ledger
+## External and repository sources
 
-| Source | Exact role in Chapter 20 | Lean disposition | Trust status |
+| Source | Exact role | Local disposition | Status |
 |---|---|---|---|
-| Higham, 2nd ed., Chapter 20, printed pp. 381-406 | Primary statements, formulas, algorithms, constants, source generality, proof sketches, and exclusions | Compared against all 26 PDF pages and local theorem types; source-facing claims are classified row-by-row in the inventory | PRIMARY / ADOPTED OR CLASSIFIED |
-| Higham, Appendix A, Chapter 20 solutions, printed pp. 565-567 | Proof routes for Problems 20.1-20.11, especially Theorem 20.3, MGS stability, (20.18)-(20.19), (20.21), KKT conditions, and the first-order specialization of (20.25) | Each solution row is individually inventoried; adopted steps must be proved locally | ADVISORY UNTIL LOCALLY PROVED |
-| Higham Chapters 7-10, 12-13, and 19 | Pseudoinverse/condition facts, triangular and Cholesky solve analysis, iterative refinement, and Householder/MGS QR dependencies cited by Chapter 20 | Existing repository declarations are reused; no Chapter 20 axiom is introduced for them | REUSED; LOCAL THEOREM TYPES CONTROL |
-| Wedin [1218, 1973], Theorem 5.1 and Section 6, as cited in Higham's Chapter 20 notes | Original perturbation theorem and approximate-attainability attribution behind Theorem 20.1 | The chapter's full-column proof route is reconstructed locally. For the stronger equal-rank/general-shape sentence on p. 402, `Higham20GeneralWedin.lean` proves the exact MP decomposition and a rational equal-rank counterexample to the printed (20.1) extension | CITED / NOT A LEAN PROOF; STRONGER SOURCE SENTENCE REFUTED LOCALLY |
-| Stewart [1067, 1977, Thm. 2.3] and Stewart-Sun [1083, 1990, Lem. 3.3.5], cited on p. 400 | Nontrivial equality of the two cross-projection norms in Lemma 20.12 | `Higham20Lemma20_12.lean` proves the equal-rank `A,B,A^+,B^+` wrapper from Moore--Penrose certificates and local finite spectral/rank machinery; no external axiom is used | ROUTE ADOPTED AND LOCALLY PROVED AT THE ARBITRARY-EQUAL-RANK API |
-| Walden, Karlson, and Sun [1203, 1995], as cited in Theorem 20.5 | Normwise LS backward-error formula and eigenvalue characterization | The finite-positive source-block formula, eigenvalue equivalence, and matrix-only limiting model are proved in `LSQRSolve.lean`; Problem 20.9 supplies the chapter's algebraic route | ADOPTED AND LOCALLY PROVED AT SELECTED APIs |
-| Kielbasinski and Schwetlick attribution in Lemma 20.6 | Attribution for combining asymmetric augmented perturbations into one symmetric matrix perturbation | The chapter prints the proof; local projector-mixture and norm theorems prove the result | ATTRIBUTION ONLY; LOCALLY PROVED |
-| Powell-Reid and Cox-Higham sources cited by Theorem 20.7 and Chapter 19.6 | Row-wise weighted-LS Householder QR perturbation envelopes and row-growth estimates | `PivotedStoredQRSplit3BNumericalContract` states only the literal-trace QR, RHS, and back-substitution transport bounds and contains no minimizer or returned-vector conclusion. `fl_pivotedStoredQR_returnedX_exactMinimizer_of_split3B` proves the complete Chapter 20 least-squares assembly from it. `Higham20Theorem20_7Runtime.lean` provides a fully instantiated literal producer: `pivotedStoredQR_split3B_numericalContract_runtime` bounds the matrix and RHS telescopes by finite sums of their local `Eseq` norms and transports the triangular correction with a final top-`R` norm scale; `fl_pivotedStoredQR_returnedX_exactMinimizer_of_runtime` is the direct exact-minimizer endpoint. This is an execution-derived exact-Real runtime certificate on an explicit `n > 0`, gamma-valid, nonzero-top-diagonal domain, not a Lean-executability claim. `Higham20Theorem20_7QdR.lean` formalizes the separate Cox--Higham (3.7) prefix route. `pivotedStoredQR_split3B_numericalContract_of_coxHigham` and its direct endpoint remain the stronger conditional printed producer from explicit forward-policy and component-budget hypotheses; optional row-sorting caps supply the source-row form. Formal counterexamples record the false strict-history, source-index, and unsorted same-row strengthenings. | LITERAL QR/RHS/BACK-SUBSTITUTION RUNTIME PRODUCER LOCALLY PROVED ON EXPLICIT DOMAIN; PRINTED COX--HIGHAM ROW-LOCAL COMPRESSION PROVED CONDITIONALLY FROM EXPLICIT FORWARD/LOCAL ARITHMETIC OBLIGATIONS |
-| Elden and Cox-Higham sources attributed by Theorem 20.8 | LSE perturbation formula, KKT/null-space proof organization, and first-order coefficient | `Theorem20_8.source_facing_firstOrder_plus_eps_sq_of_finalSmallnessThreshold` reconstructs the local KKT inverse argument, derives perturbed ranks, and proves the actual displacement bound with the printed coefficient plus an explicit quadratic term | ADOPTED AND LOCALLY PROVED (EXPLICIT LOCAL DOMAIN) |
-| Cox-Higham source cited for Theorem 20.10 | Finite-precision generalized-QR mixed/backward stability theorem | `Higham20Theorem20_10.lean` proves the same named concrete computed vector satisfies the Part (a) mixed-stability and Part (b) backward-error conclusions under an explicit source-rank/unit-roundoff domain, with conservative gamma envelopes | ADOPTED AND LOCALLY PROVED (EXPLICIT-DOMAIN) |
-| Bjorck/Paige and related sources cited in Section 20.3 and Appendix solution 20.5 | Forward, normwise backward, and columnwise stability of the MGS LS method | `Higham19Alg12MGSRounded.lean` implements the literal rounded Algorithm 19.12 loop, telescopes the local trace errors, and proves an accumulated-polar `ModifiedGramSchmidtGlobalRepair`. `Higham19Alg12MGSRepair.lean` turns an independent computed-Gram bound `<= gramCoeff*u` into the explicit coefficient `sum_j (localBudget_j + gramCoeff*u*||Rhat(:,j)||₂)/||A(:,j)||₂`. `Problem20_5.actualAugmentedMGSBackSub_end_to_end_accumulatedPolar` and `_localGram` fix the actual `[A b]` factors and `fl_backSub` return and prove the nearby exact minimizer result. The accumulated-polar route has no external repair premise on its explicit tall/full-pivot/positive-column and gamma-valid domain. The condition-number-independent printed `c3*u` strengthening is not inferred from this polar route. | LITERAL END-TO-END ACCUMULATED-POLAR ROUTE LOCALLY PROVED ON EXPLICIT DOMAIN; COMPUTED-GRAM ROUTE PROVED ON ITS VISIBLE GRAM-DEFECT DOMAIN; PRINTED `c3*u` PRODUCER REMAINS UPSTREAM |
-| Bjorck and related SNE/CSNE sources cited in Section 20.6 | Seminormal/corrected-seminormal algorithms and rough forward-error discussion | Exact algorithm rows are selected separately; the rough `c_mn`/`lesssim` bound is deferred rather than sharpened by invention | CITED / DEFERRED OR OPEN |
-| Mathlib and existing `LeanFpAnalysis` matrix, norm, singular-value, QR, Cholesky, triangular-solve, and FP machinery | Standard algebraic and analytic foundations plus implementation-backed computation paths | Reused through ordinary imports; source-facing wrappers must expose any nonbreakdown/model-validity hypotheses | REUSED |
-| Rendered chapter and Appendix pages under `tmp/pdfs/` during the audit | Visual verification of tags, formulas, signs, source pages, Problems, and Appendix rows | Audit evidence only; temporary renders are not part of the formal proof | ADVISORY ONLY |
-| GPT Pro / Oracle consultation attempts recorded in `docs/source_coverage/higham_ch20.md` | Requested review of difficult closure points | No substantive mathematical output was obtained or adopted | REJECTED / NO OUTPUT |
+| Higham, 2nd ed., Chapter 20, printed pp. 381-406 | Primary statements, equations, algorithms, constants, assumptions, examples, and empirical material | All 26 pages were read and compared with local theorem types; every named result, printed equation tag, Problem, and precise selected prose row is classified in the inventory | PRIMARY / ADOPTED OR CLASSIFIED |
+| Higham, Appendix A, Chapter 20 solutions, printed pp. 565-567 | Proof routes for Problems 20.1-20.11 | Each row is inventoried separately; adopted steps must be locally proved | ADVISORY UNTIL PROVED |
+| Higham Chapters 7-13 and 19 | Pseudoinverse, norm, triangular/Cholesky solve, iterative-refinement, Householder, and MGS dependencies | Existing `LeanFpAnalysis` declarations are reused; source-facing wrappers expose model-validity and nonbreakdown assumptions | REUSED |
+| Wedin [1218, 1973], cited by Higham | Theorem 20.1 and the approximate-attainability attribution | The full-column inequalities are reconstructed locally. The stronger p. 402 equal-rank/general-shape sentence is refuted by a checked exact rational counterexample | CITED; CORE INEQUALITY PROVED; STRONGER SENTENCE REJECTED |
+| Stewart [1067] and Stewart-Sun [1083], cited on p. 400 | Cross-projection norm equality in Lemma 20.12 | `higham20_lemma20_12_equalRank_moorePenrose` proves the arbitrary-equal-rank Moore-Penrose surface locally | ROUTE ADOPTED AND PROVED |
+| Walden-Karlson-Sun [1203], cited in Theorem 20.5 | Weighted normwise LS backward-error and eigenvalue formula | Finite positive-`theta`, eigenvalue/singular-value, and matrix-only limit arguments are proved locally; the 2026-07-16 repair removes the former tall-matrix/full-row-rank mismatch | ROUTE ADOPTED AND PROVED AT THE FINAL COMPILED API |
+| Kielbasinski-Schwetlick attribution in Lemma 20.6 | Combination of two augmented perturbations into one symmetric perturbation | The chapter proof is reconstructed locally, including Frobenius and operator-2 bounds | ATTRIBUTION ONLY; PROVED |
+| Powell-Reid and Cox-Higham sources cited for Theorem 20.7 | Printed row-local `alpha_i`, `beta_i`, `phi`, pivot-position `j^2`, and row-sorting envelopes | Chapter 20 assembly and an exact literal runtime certificate are proved. The runtime scales are accumulated local residual/top-`R` quantities, not the printed compression. The printed producer remains conditional on explicit Chapter 19 row-policy/component-budget obligations | CITED; ASSEMBLY PROVED; PRINTED PRODUCER OPEN |
+| Elden and Cox-Higham sources cited for Theorem 20.8 | LSE perturbation organization and first-order coefficient | `Theorem20_8.source_facing_firstOrder_plus_eps_sq_of_finalSmallnessThreshold` proves the displacement bound with an explicit quadratic term on a source-only local threshold | ADOPTED AND PROVED (EXPLICIT DOMAIN) |
+| Cox-Higham source cited for Theorem 20.10 | Finite-precision GQR mixed/backward stability | Positive-block Part A/B endpoints are local. This split adds genuine rounded `p=0,q>0` ordinary-QR and `q=0,p>0` constraint-only Part A/B endpoints; both derive nonbreakdown from source rank and explicit unit-roundoff thresholds | ADOPTED AND LOCALLY PROVED (EXPLICIT-DOMAIN) |
+| Bjorck/Paige sources and Appendix 20.5 | MGS forward/backward/columnwise stability | Literal rounded MGS, accumulated-polar and computed-Gram repairs, back substitution, and Chapter 20 minimizer transfer are local. The printed dimension-only, condition-number-independent `c3*u` producer is not derived | PARTIAL AT PRINTED STRENGTH |
+| Bjorck and related SNE/CSNE sources | Exact SNE/CSNE algorithms and rough forward-error prose | Exact algorithms are selected and proved; statements using unspecified `c_mn`, `lesssim`, or qualitative comparisons are deferred | PROVED OR DEFERRED |
+| Mathlib and existing `LeanFpAnalysis` | Algebraic, analytic, matrix, norm, singular-value, QR, triangular-solve, Cholesky, and FP foundations | Reused through ordinary imports; final axiom audits permit only standard foundational axioms | REUSED |
+| Rendered Chapter 20 and Appendix pages in `tmp/pdfs/` | Visual verification of formulas, signs, tags, Problems, and Appendix rows | Audit-only temporary material, not a proof artifact | ADVISORY |
+| Oracle second-model consultation, slug `chapter20-theorem20-7-audit` | Independent audit of whether the existing runtime Theorem 20.7 endpoint matches the printed `alpha`/`beta`/`phi` theorem and identification of the smallest honest dependency plan | Prompt supplied the printed statement, runtime/conditional interfaces, and Chapter 19 obstruction. After a browser disconnect, `oracle session ... --harvest` recovered the answer. It agreed that the runtime theorem is a different-scale result and that the printed producer remains open. Only conclusions independently checked against the PDF and Lean types were adopted | ADVISORY; VERIFIED CLASSIFICATION/PLAN ADOPTED |
 
-## Named-Result Proof Status
+## Named-result proof disposition
 
-| Selected result | Printed proof status | Local proof-source disposition |
+| Result | Printed proof status | Local disposition |
 |---|---|---|
-| Theorem 20.1 | Chapter proof in Section 20.10; attainability cited externally | Local full-column Wedin route and compiled combined wrapper prove the source inequalities. The legacy contract is not used as proof; approximate attainability remains an attribution-only prose boundary. |
-| Theorem 20.2 | Chapter derivation from augmented-system inverse | Locally proved for exact minimizers under the printed full-rank/componentwise assumptions. |
-| Theorem 20.3 | Proof delegated to Problem 20.2 / Appendix p. 566 | Concrete actual-panel/RHS/back-substitution endpoint is compiled under explicit gamma-validity and computed-diagonal nonbreakdown guards. |
-| Theorem 20.4 | Proof omitted as tedious | Locally proved at an explicit full-rank-plus-computed-nonbreakdown domain. The omitted source proof is not supplied by citation. |
-| Theorem 20.5 | Attribution/statement; Problem 20.9 proves alternative formula | Locally proved at finite-positive, eigenvalue, and matrix-only limiting APIs. |
-| Lemma 20.6 | Full proof in chapter | Locally proved, including Frobenius and operator-2 bounds. |
-| Theorem 20.7 | Citation-only | `fl_pivotedStoredQR_returnedX_exactMinimizer_of_split3B` proves the exact-minimizer assembly from `PivotedStoredQRSplit3BNumericalContract`, an honest numerical-only interface with no target-equivalent field. `fl_pivotedStoredQR_returnedX_exactMinimizer_of_runtime` now instantiates that path for the actual literal QR/RHS/back-substitution execution using conservative local-`Eseq`/top-`R` scales and no Cox--Higham row-policy or component-budget premise. The conditional printed producer separately exposes the forward alpha/beta scales, two-scale RHS transport, primitive component coefficients, and optional row-sorting cap. The theorem is **PASS (CH20 ASSEMBLY / LITERAL RUNTIME PRODUCER; EXPLICIT-DOMAIN; SOURCE-COORDINATE CORRECTION)**. Formal counterexamples reject false strict rounded sigma history, source-index relabeling of the pivot-position `j^2` factor, and universal same-row scaling for the unsorted trace; corrected source-coordinate endpoints use `n^2`. |
-| Theorem 20.8 | Citation-only first-order theorem | `Theorem20_8.source_facing_firstOrder_plus_eps_sq_of_finalSmallnessThreshold` constructs the rank-tolerant pseudoinverse, derives both perturbed rank conditions, and proves the actual relative displacement is the printed first-order coefficient plus an explicit quadratic term on one source-only local threshold. |
-| Theorem 20.9 | Full chapter proof | Exact constructed GQR existence, shapes, solve, and nonsingularity equivalence are locally proved. |
-| Theorem 20.10 | Citation-only | The compact same-`computedX` Part A/Part B endpoints compile through the aggregate import and prove the printed conclusion shapes on their visible nondegenerate unit-roundoff domain. |
-| Lemma 20.11 | Short proof invokes a standard singular-value perturbation result | `higham20_lemma20_11_equalRank_pseudoinverse_op2_le` proves the arbitrary-equal-rank result, including rank zero, from Moore--Penrose certificates and the repository's complexified real-matrix rank surface. The needed pseudoinverse norm identity and all-index singular-value perturbation route are local proofs. |
-| Lemma 20.12 | One inequality proved; equality cited to external projection-angle results | `higham20_lemma20_12_equalRank_moorePenrose` proves the exact arbitrary-equal-rank `A,B,A^+,B^+` source theorem, including the zero-row case. |
+| Theorem 20.1 | Chapter proof; attainability cited | Exact full-column solution/residual inequalities proved. Approximate attainability remains attribution-only. |
+| Theorem 20.2 | Derived in chapter | Printed componentwise and absolute-norm inequalities proved. Approximate attainability is not invented. |
+| Theorem 20.3 | Problem 20.2 / Appendix 20.2 | Actual panel/RHS/back-substitution theorem proved on explicit gamma/nonbreakdown domain. |
+| Theorem 20.4 | Proof omitted | The actual totals and systems are now packaged with a common-panel majorant plus the exact transported triangular term. Absorption of that term into each printed Frobenius-unit witness is still missing; `PARTIAL`. |
+| Theorem 20.5 | Attribution; Problem 20.9 for alternative formula | Source-general tall-matrix formula, eigenvalue/singular-value bridge, and matrix-only limit proved at the final compiled APIs. |
+| Lemma 20.6 | Full chapter proof | Proved locally, including both norm bounds. |
+| Theorem 20.7 | Citation-only | Exact minimizer assembly and conservative literal runtime producer are proved. The unconditional printed Cox-Higham `alpha`/`beta`/`phi` producer is open; `PARTIAL`. |
+| Theorem 20.8 | Citation-only | Printed first-order coefficient plus explicit quadratic remainder proved on a source-only local threshold. |
+| Theorem 20.9 | Full chapter proof | `GeneralizedQRFactorization.exists_theorem20_9_exact_householder` now proves unconditional existence; rank assumptions are confined to the separate nonsingularity equivalence. |
+| Theorem 20.10 | Citation-only | Positive-block Part A/B and both genuine rounded nontrivial empty-block boundary branches are proved on explicit source-rank/roundoff domains. |
+| Lemma 20.11 | Short proof invokes a standard singular-value result | Arbitrary equal-rank Moore-Penrose theorem proved locally, including rank zero. |
+| Lemma 20.12 | One inequality proved; equality cited | Arbitrary equal-rank cross-projection equality and `min` bound proved locally. |
 
-## Appendix Proof-Source Decisions
+## Appendix decisions
 
-| Appendix row | Adoption decision | Reason |
+| Row | Decision | Local status |
 |---|---|---|
-| 20.1 | ADOPT | Required normal-equation/geometric dependency; proved locally. |
-| 20.2 | ADOPT | Primary proof source for selected Theorem 20.3; its actual-panel/RHS/back-substitution route is locally proved on the explicit algorithm domain. |
-| 20.3 | ADOPT | The Appendix hint is expanded into a local compact-SVD construction, the four Penrose equations, uniqueness, and involution in `Higham20Problem20_3.lean`. |
-| 20.4 | DO NOT ADOPT IN CORE | Optional Problem 20.4 is not selected. |
-| 20.5 | ADOPT | The literal rounded Algorithm 19.12 state now constructs an accumulated-polar `ModifiedGramSchmidtGlobalRepair`; the actual augmented `[A b]` factors, literal `fl_backSub` return, and Appendix perturbation/minimizer transfer are end-to-end. A computed-Gram variant exposes only `||I-QhatᵀQhat||_F <= gramCoeff*u`. The stronger printed `c3*u` coefficient remains upstream. |
-| 20.6 | DO NOT ADOPT AS A TARGET | Optional consequence; underlying numbered equations remain selected. |
-| 20.7 | ADOPT | Proof source for selected (20.18)-(20.19); locally formalized at the selected singular-value API. |
+| 20.1 | ADOPT | Normal-equation and residual-orthogonality iff theorems proved. |
+| 20.2 | ADOPT | Theorem 20.3 actual implementation route proved on its explicit domain. |
+| 20.3 | ADOPT | Compact-SVD Moore-Penrose construction, uniqueness, and involution proved. |
+| 20.4 | DO NOT ADOPT IN CORE | Optional Problem 20.4 is inventoried and excluded. |
+| 20.5 | ADOPT | Literal MGS transfer proved; the printed `c3*u` producer remains open, so the source row is `PARTIAL`. |
+| 20.6 | DO NOT ADOPT AS A TARGET | Optional consequence; its numbered-equation dependencies are selected separately. |
+| 20.7 | ADOPT WITH CORRECTION | The spectral basis and full minimization/attainment/max-lower-bound package are proved for `n<m`. A compiled square scalar counterexample shows the printed `sqrt(2)` lower envelope does not extend to `m=n`; the row is closed as **PROVED / SOURCE DISCREPANCY**. |
 | 20.8 | DO NOT ADOPT AS A TARGET | Optional specialization; the broader matrix-only limit is selected. |
-| 20.9 | ADOPT | Proof source for selected (20.21); locally formalized. |
-| 20.10 | ADOPT | Selected KKT characterization; locally proved instead of trusting the word "standard." |
-| 20.11 | ADOPT | The unconstrained coefficient reduction is proved locally and composes with the closed source-facing Theorem 20.8 endpoint. |
+| 20.9 | ADOPT | WKS eigenvalue/singular-value conversion proved. |
+| 20.10 | ADOPT | KKT characterization proved locally rather than trusted as “standard.” |
+| 20.11 | ADOPT | Unconstrained coefficient specialization of Theorem 20.8 proved. |
 
-## Selected Proof-Source and Integration Boundaries
+## Oracle consultation record
 
-| Claim | Why citation alone is insufficient | Required local closure |
-|---|---|---|
-| Approximate attainability in Theorems 20.1 and 20.2 | No construction/proof is printed in the chapter | Classified as an attribution-only prose boundary; it is not a selected gate blocker. |
-| MGS stability sentence and Problem 20.5 | Citation alone cannot supply either the literal rounded accumulation or the printed constant | The literal state-to-global-repair accumulation/polar construction and Chapter 20 transfer are closed, including a computed-Gram `gramCoeff*u` endpoint. Upstream work is now limited to the stronger condition-number-independent Theorem 19.13 `c3*u` coefficient. |
-| Theorem 20.7 | Citation alone cannot supply the three Cox--Higham numerical trace bounds, and the strict sigma history, source-index `j^2` relabeling, and unsorted same-row initial-scale strengthening are formally false | Chapter 20 assembly is closed at `PivotedStoredQRSplit3BNumericalContract`, and the execution-derived exact-Real runtime producer now closes the literal QR/RHS/back-substitution path on its explicit nonbreakdown/gamma-valid domain without row-policy or component-budget premises. The printed `alpha`/`beta` producer remains a stronger conditional specialization from explicit forward-policy and local component-budget obligations; row sorting is a separate optional cap. `j^2` stays in pivot coordinates and source coordinates use `n^2`. |
-| p. 385 zero-`Delta b` variant | The source citation does not itself discharge invertibility and graph bounds | Closed locally: `metricGraphSmallness_of_frobNorm_le` derives the certificate from `rho < 1` and metric-defect `< 1`, and the scalar-smallness endpoint proves the actual matrix-only result for every RHS. |
+| Field | Record |
+|---|---|
+| Theorem | Theorem 20.7, printed row-wise weighted-LS QR backward stability |
+| Reason | The existing endpoint is long and exact for a literal computation, but its scales differ from the source; an independent type/source audit was requested before changing the gate. |
+| Prompt summary | Compare the printed `alpha_i`, `beta_i`, `phi`, pivot-position `j^2`, and source-row `n^2` theorem with the runtime and conditional Lean surfaces; reject weaker-object closure; identify the smallest exact dependency plan. |
+| Answer summary | The current named-row PASS is invalid. The literal runtime theorem and conditional assembly are honest at their own APIs, but use different scales or assume the missing producer. A source-exact closure needs pivot-position `j^2` with triangular column support, a genuine Cox-Higham row-specific producer for the literal trace, a dimension-only `gamma_tilde_m`, and source-rank-derived nonbreakdown. Row sorting is a later cap, not part of the named theorem. |
+| Adopted content | The FAIL classification and the dependency outline above. The suggestion to preserve pivot-position indexing and use a permutation-aware source wrapper agrees with the local formal counterexample; the new `topR_row` theorem closes one small policy field. |
+| Lean/source verification | The PDF prints `alpha_i`, `beta_i`, `phi`, pivot-position `j^2`, and the source-row `n^2` envelope. The runtime definitions instead use accumulated local errors/top-`R` norms; the conditional producer assumes row-policy/component budgets. `pivotPositionFactor_not_le_sourceColumnFactor_forall` forbids naive source-index relabeling, and `Theorem20_7.pivotedStoredQRTopR_abs_le_printedAlphaScale` verifies the newly discharged field. |
 
-## Trust Result
+## Trust result
 
-No external prose result listed above is accepted as a Lean axiom. The local
-files use ordinary repository and Mathlib declarations. The final consolidated
-dependency audit of representative public endpoints reported only the standard
-foundational axioms `propext`, `Classical.choice`, and `Quot.sound`. The
-forbidden-token and whitespace audits also passed. The remaining items above
-are stronger printed source constants or row-local compressions, not missing
-no-placeholder literal producers or Chapter 20-owned selected proof gaps.
+No cited theorem, Appendix sentence, or model response is introduced as
+`axiom`, `sorry`, `admit`, `unsafe`, or `opaque`. The final report records the
+focused builds, placeholder scan, and representative `#print axioms` results.
+Open rows remain visible as open rows rather than hypotheses renamed as
+closure.
