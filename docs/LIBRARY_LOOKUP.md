@@ -6238,6 +6238,57 @@ use this table adapter so the final witness surface no longer needs an explicit
 local positivity hypothesis.  The hard inverse/condition ratio itself remains
 open.
 
+## Higham Chapter 20: The Least Squares Problem
+
+The audited chapter summary is
+[`chapter20/CHAPTER20_FORMALIZATION_REPORT.md`](chapter20/CHAPTER20_FORMALIZATION_REPORT.md),
+with source-order classifications in
+[`chapter20/CHAPTER20_SOURCE_INVENTORY.md`](chapter20/CHAPTER20_SOURCE_INVENTORY.md).
+All modules below are re-exported by `LeanFpAnalysis.FP.Algorithms` and
+`LeanFpAnalysis.FP`.
+
+| Topic | Representative module | Public declarations |
+|---|---|---|
+| Theorems 20.1-20.2, perturbation theory | [`LSPerturbation.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/LSPerturbation.lean), [`LSQRSolve.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/LSQRSolve.lean) | `higham20_theorem20_1_solution_and_residualRelativeRHS_le_of_one_rhs_budget`; `theorem20_2_relative_bounds_of_minimizers_full_column_rank_of_componentwise_perturbation` |
+| Theorems 20.3-20.4 and one-step refinement | [`Higham20Theorem20_3.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Theorem20_3.lean), [`Higham20Theorem20_4Absorption.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Theorem20_4Absorption.lean), [`Higham20Equations.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Equations.lean), [`Higham20Refinement.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Refinement.lean) | `Theorem20_3.householder_qr_fl_backSub_backward_error`; `LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_theorem20_4_printed_total_perturbations` (both actual totals, one shared nonnegative Frobenius-unit witness, explicit dimension-only `gammaTilde`, and the exact perturbed system); `higham20_eq20_16_augmented_one_refinement_finite` and `higham20_eq20_16_augmented_one_refinement_actual_residual_update` (printed first-order terms plus exact rational remainder); `higham20_eq20_16_actual_householderQR_one_refinement_finite` (literal QR correction adapter) |
+| Theorem 20.5 and Lemma 20.6 | [`LSQRSolve.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/LSQRSolve.lean), [`Higham20SourceAliases.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20SourceAliases.lean) | `theorem20_5_wks_finite_formula_and_eigenvalue`; `theorem20_5_wks_formula_eigenvalue_and_matrixOnly_limit`; `higham20_lemma20_6_exists_symmetric_perturbation_minimizer_and_norm_bounds` |
+| Theorem 20.7 rounded Cox--Higham LS stability | [`Higham20Theorem20_7Runtime.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Theorem20_7Runtime.lean), [`Higham20Theorem20_7Contract.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Theorem20_7Contract.lean) | `Theorem20_7.fl_pivotedStoredQR_returnedX_pivotPosition_of_roundedCoxHigham` (actual QR/RHS/back-substitution traces, printed alpha/beta/phi scales, pivot-position `(j+1)^2 * 16 * gammaTilde` matrix and `n^2 * 5 * gammaTilde` RHS envelopes under visible primitive trace budgets); `...exactMinimizer_of_roundedCoxHigham` gives the uniform source-column `n^2` envelope; `...sourceRows_of_roundedCoxHigham`; `...commonRowPermuted_exactMinimizer_of_roundedCoxHigham`; `roundedPolicy_exact_one_nonempty`; `sigmaCounter_no_coxHighamRowPolicy` documents why the obsolete exact-tail policy was replaced |
+| Theorems 20.8-20.9, equality-constrained least squares and GQR | [`LSE.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/LSE.lean), [`Higham20Theorem20_8.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Theorem20_8.lean) | `Theorem20_8.source_facing_firstOrder_plus_eps_sq_of_finalSmallnessThreshold`; `GeneralizedQRFactorization.exists_theorem20_9_exact_householder` |
+| Theorem 20.10, concrete rounded Householder GQR | [`Higham20Theorem20_10.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Theorem20_10.lean) | Positive blocks: `Theorem20_10.computedX_partA_mixed_stability`, `...partB_backward_error`; empty constraints: `...computedX_emptyConstraints_partA_mixed_stability`, `...partB_backward_error`; full constraints: `...computedX_fullConstraints_partA_mixed_stability`, `...partB_backward_error` |
+| Equation (20.19), Problem/Appendix 20.7 | [`Higham20Equations.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Equations.lean) | `higham20_problem20_7_scaled_augmented_condition_extremum` (full strict-tall extremum); `higham20_problem20_7_square_scalar_branch_discrepancy` (square-case source discrepancy) |
+| Elimination method / (20.29)-(20.30) | [`Higham20EliminationActual.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20EliminationActual.lean) | `Higham20EliminationActual.lseEliminationActualReducedSolution_is_reduced_minimizer`; `Higham20EliminationActual.lseEliminationActualReturnedSolution_isLSEMinimizer` |
+| p. 404 minimum-norm backward-error refinement | [`Higham20MinimumNormBackwardError.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20MinimumNormBackwardError.lean) | `LSMinimumNormBackwardErrorFeasible`; `lsMinimumNormBackwardErrorEtaF`; `lsMinimumNormBackwardErrorEtaF_eq_normwise_of_attained_injective`; `higham20_p404_square_source_discrepancy` (exact square-domain counterexample to the overgeneralized prose claim) |
+| Lemmas 20.11-20.12, arbitrary equal-rank Wedin endpoints | [`Higham20Lemma20_11.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Lemma20_11.lean), [`Higham20Lemma20_12.lean`](../LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Lemma20_12.lean) | `higham20_lemma20_11_equalRank_pseudoinverse_op2_le`; `higham20_lemma20_12_equalRank_moorePenrose` |
+
+The Theorem 20.3, 20.4, 20.7, 20.8, and 20.10 implementation endpoints expose
+their nonbreakdown, primitive trace-budget, or smallness domains. The Chapter
+20 core gate is `PASS (EXPLICIT-DOMAIN)`; Theorem 20.7's corrected producer
+uses direct rounded Householder multipliers and does not assume the refuted
+exact final-tail/pivot comparison.
+
+## Higham Split 4: Chapters 21-28
+
+The aggregate status and corrected source counts are in
+[`SPLIT4_FORMALIZATION_REPORT.md`](SPLIT4_FORMALIZATION_REPORT.md). Every row
+below has a source-order inventory, a proof-source ledger, a not-proved ledger,
+and a chapter report under the linked directory.
+
+| Chapter/topic | Public module(s) | Audit report |
+|---|---|---|
+| 21, underdetermined systems | [`Underdetermined/Higham21.lean`](../LeanFpAnalysis/FP/Algorithms/Underdetermined/Higham21.lean) | [`chapter21/CHAPTER21_FORMALIZATION_REPORT.md`](chapter21/CHAPTER21_FORMALIZATION_REPORT.md) |
+| 22, Vandermonde systems | [`Vandermonde/Higham22.lean`](../LeanFpAnalysis/FP/Algorithms/Vandermonde/Higham22.lean) | [`chapter22/CHAPTER22_FORMALIZATION_REPORT.md`](chapter22/CHAPTER22_FORMALIZATION_REPORT.md) |
+| 23, fast matrix multiplication | [`FastMatMul/Higham23.lean`](../LeanFpAnalysis/FP/Algorithms/FastMatMul/Higham23.lean) | [`chapter23/CHAPTER23_FORMALIZATION_REPORT.md`](chapter23/CHAPTER23_FORMALIZATION_REPORT.md) |
+| 24, FFT and circulants | [`FFT/Higham24.lean`](../LeanFpAnalysis/FP/Algorithms/FFT/Higham24.lean), [`FFT/Higham24Radix2.lean`](../LeanFpAnalysis/FP/Algorithms/FFT/Higham24Radix2.lean), [`Circulant/Higham24.lean`](../LeanFpAnalysis/FP/Algorithms/Circulant/Higham24.lean) | [`chapter24/CHAPTER24_FORMALIZATION_REPORT.md`](chapter24/CHAPTER24_FORMALIZATION_REPORT.md) |
+| 25, nonlinear systems | [`Nonlinear/Higham25.lean`](../LeanFpAnalysis/FP/Algorithms/Nonlinear/Higham25.lean), [`Nonlinear/Higham25Problem25_1.lean`](../LeanFpAnalysis/FP/Algorithms/Nonlinear/Higham25Problem25_1.lean) | [`chapter25/CHAPTER25_FORMALIZATION_REPORT.md`](chapter25/CHAPTER25_FORMALIZATION_REPORT.md) |
+| 26, automatic error analysis | [`AutomaticErrorAnalysis/Higham26.lean`](../LeanFpAnalysis/FP/Algorithms/AutomaticErrorAnalysis/Higham26.lean) | [`chapter26/CHAPTER26_FORMALIZATION_REPORT.md`](chapter26/CHAPTER26_FORMALIZATION_REPORT.md) |
+| 27, software issues | [`SoftwareIssues/Higham27.lean`](../LeanFpAnalysis/FP/Algorithms/SoftwareIssues/Higham27.lean) | [`chapter27/CHAPTER27_FORMALIZATION_REPORT.md`](chapter27/CHAPTER27_FORMALIZATION_REPORT.md) |
+| 28, test matrices | [`TestMatrices/Higham28.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28.lean), [`Higham28Exact.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Exact.lean), [`Higham28Probability.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Probability.lean), [`Higham28Asymptotics.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Asymptotics.lean), [`Higham28Contracts.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Contracts.lean) | [`chapter28/CHAPTER28_FORMALIZATION_REPORT.md`](chapter28/CHAPTER28_FORMALIZATION_REPORT.md) |
+
+Representative checked entry points are listed in
+[`examples/LibraryLookup.lean`](../examples/LibraryLookup.lean). Explicit-domain
+trace and source-law endpoints are named and documented with their visible
+producer assumptions and nonvacuity witnesses.
+
 ## Higham Chapter 18: Matrix Powers
 
 This section is a human-readable companion to `examples/LibraryLookup.lean`
