@@ -473,6 +473,9 @@
     dhs_block_back_upper_row_perturbation_from_matmul_subtraction_specs,
     dhs_block_back_upper_row_perturbation_firstOrder_from_matmul_subtraction_specs_of_rhs_scale,
     dhs_block_back_upper_row_perturbation_firstOrder_from_conventional_operations,
+    dhsBlockBackConventionalUpperProduct, dhsBlockBackConventionalRHS,
+    dhs_block_back_upper_row_witness_from_conventional_or_zero_tail,
+    dhs_block_back_substitution_firstOrder_from_conventional_upper_rows_and_eq13_15,
     dhs_block_back_substitution_firstOrder_from_conventional_backSub_single_rhs,
     dhs_cross_product_firstOrder_of_componentwise_backward,
     dhs_block_forward_back_substitution_firstOrder_from_conventional_single_rhs,
@@ -9742,6 +9745,172 @@ theorem dhs_block_back_upper_row_perturbation_firstOrder_from_conventional_opera
       U X Chat DeltaC Y Fsub Dhat fp.u_nonneg
       (sq_nonneg (((m * r : ℕ) : ℝ))) hUTailU hXTail
       (by simpa [A, B, Chat] using hRhsScale) hMul hSub
+
+/-- The actual conventional rounded strict-upper product for one fixed block
+    back-substitution row. -/
+noncomputable def dhsBlockBackConventionalUpperProduct {m r : ℕ}
+    (fp : FPModel) (i : Fin m)
+    (U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X : Fin m → Matrix (Fin r) (Fin 1) ℝ) :
+    Matrix (Fin r) (Fin 1) ℝ :=
+  fl_matMul fp r (m * r) 1
+    (dhsBlockBackUpperTailRowFlat i (U i))
+    (dhsBlockBackUpperTailColumn i X)
+
+/-- The actual conventional rounded RHS obtained by subtracting the strict
+    upper product from the current block of the forward-solve output. -/
+noncomputable def dhsBlockBackConventionalRHS {m r : ℕ}
+    (fp : FPModel) (i : Fin m)
+    (U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y : Fin m → Matrix (Fin r) (Fin 1) ℝ) :
+    Matrix (Fin r) (Fin 1) ℝ :=
+  higham13_fl_matrixSub fp (Y i)
+    (dhsBlockBackConventionalUpperProduct fp i U X)
+
+/-- Construct one conventional strict-upper row witness without dividing by a
+    zero tail norm.
+
+    A nonzero tail uses the concrete rounded row theorem and its source
+    RHS-magnitude comparison.  A zero tail uses the algorithm's explicit exact
+    no-tail RHS relation and the zero coefficient perturbation. -/
+theorem dhs_block_back_upper_row_witness_from_conventional_or_zero_tail
+    {m r : ℕ}
+    (fp : FPModel) (hm : 0 < m) (hr : 0 < r) (i : Fin m)
+    (cRhs normU : ℝ)
+    (U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (Y : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hγ : gammaValid fp (m * r))
+    (hcRhs : 0 ≤ cRhs) (hNormU : 0 ≤ normU)
+    (hUTailU :
+      maxEntryNormRect hr (Nat.mul_pos hm hr)
+        (dhsBlockBackUpperTailRowFlat i (U i)) ≤ normU)
+    (hRhsScale : infNormVec (dhsBlockBackUpperTailVector i X) ≠ 0 →
+      maxEntryNormRect hr (Nat.succ_pos 0) (Y i) +
+          maxEntryNormRect hr (Nat.succ_pos 0)
+            (fl_matMul fp r (m * r) 1
+              (dhsBlockBackUpperTailRowFlat i (U i))
+              (dhsBlockBackUpperTailColumn i X)) ≤
+        cRhs * normU * infNormVec (dhsBlockBackUpperTailVector i X))
+    (hZeroTail : infNormVec (dhsBlockBackUpperTailVector i X) = 0 →
+      higham13_fl_matrixSub fp (Y i)
+          (fl_matMul fp r (m * r) 1
+            (dhsBlockBackUpperTailRowFlat i (U i))
+            (dhsBlockBackUpperTailColumn i X)) =
+        Y i) :
+    ∃ (DeltaRow : Fin m → Matrix (Fin r) (Fin r) ℝ)
+        (rowPerturbBound : ℝ),
+      higham13_fl_matrixSub fp (Y i)
+            (fl_matMul fp r (m * r) 1
+              (dhsBlockBackUpperTailRowFlat i (U i))
+              (dhsBlockBackUpperTailColumn i X)) +
+          ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+            (U i j + DeltaRow j) * X j = Y i ∧
+      (∀ j : Fin m, ¬i.val < j.val → DeltaRow j = 0) ∧
+      (∀ j : Fin m, ∀ s t : Fin r,
+        |DeltaRow j s t| ≤ rowPerturbBound) ∧
+      FirstOrderLe fp.u
+        ((((m * r : ℕ) : ℝ) ^ 2 + cRhs) * fp.u * normU)
+        rowPerturbBound := by
+  by_cases hXTail : infNormVec (dhsBlockBackUpperTailVector i X) = 0
+  · have hTailZero : dhsBlockBackUpperTailVector i X = 0 := by
+      funext jt
+      apply abs_eq_zero.mp
+      apply le_antisymm
+      · simpa [hXTail] using
+          abs_le_infNormVec (dhsBlockBackUpperTailVector i X) jt
+      · exact abs_nonneg (dhsBlockBackUpperTailVector i X jt)
+    have hXZero : ∀ j : Fin m, i.val < j.val → X j = 0 := by
+      intro j hij
+      ext s k
+      fin_cases k
+      have hzero := congrFun hTailZero (finProdFinEquiv (j, s))
+      simpa [dhsBlockBackUpperTailVector_apply, hij] using hzero
+    refine ⟨0, 0, ?_, ?_, ?_, ?_⟩
+    · rw [hZeroTail hXTail]
+      have hsum :
+          (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+            (U i j + (0 : Matrix (Fin r) (Fin r) ℝ)) * X j) = 0 := by
+        apply Finset.sum_eq_zero
+        intro j hj
+        have hij : i.val < j.val := by
+          simpa only [Finset.mem_filter, Finset.mem_univ, true_and] using hj
+        rw [hXZero j hij]
+        simp
+      simpa using congrArg (fun Z => Y i + Z) hsum
+    · simp
+    · simp
+    · apply FirstOrderLe.of_le
+      exact mul_nonneg
+        (mul_nonneg (add_nonneg (sq_nonneg (((m * r : ℕ) : ℝ))) hcRhs)
+          fp.u_nonneg) hNormU
+  · exact
+      dhs_block_back_upper_row_perturbation_firstOrder_from_conventional_operations
+        fp hm hr i cRhs normU (U i) X (Y i) hγ hUTailU hXTail
+        (hRhsScale hXTail)
+
+/-- Concrete all-row DHS back-substitution branch from conventional rounded
+    strict-upper products/subtractions and every local Eq.13.15 solve.
+
+    The only remaining row-analysis inputs are the source magnitude comparison
+    for nonzero tails and the exact operational no-tail relation for zero
+    tails.  From them this theorem constructs every row witness, aggregates the
+    finite budgets, merges the diagonal perturbations, and reaches the selected
+    global branch. -/
+theorem dhs_block_back_substitution_firstOrder_from_conventional_upper_rows_and_eq13_15
+    {m r : ℕ}
+    (fp : FPModel) (hm : 0 < m) (hr : 0 < r)
+    (cRhs c₅ cBack normA normL normU : ℝ)
+    (normUii : Fin m → ℝ)
+    (Lhat U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (DeltaDiag : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X Y : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (hγ : gammaValid fp (m * r))
+    (hcRhs : 0 ≤ cRhs) (hc₅ : 0 ≤ c₅)
+    (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hUUpper : ∀ i j : Fin m, j.val < i.val → U i j = 0)
+    (hNormUii : ∀ i : Fin m, normUii i ≤ normU)
+    (hLhat : maxEntryNorm (Nat.mul_pos hm hr)
+      (blockMatrixFlatFin Lhat) ≤ normL)
+    (hc : (((m * r : ℕ) : ℝ) *
+      ((((m * r : ℕ) : ℝ) ^ 2 + cRhs) + c₅)) ≤ cBack)
+    (hUTailU : ∀ i : Fin m,
+      maxEntryNormRect hr (Nat.mul_pos hm hr)
+        (dhsBlockBackUpperTailRowFlat i (U i)) ≤ normU)
+    (hRhsScale : ∀ i : Fin m,
+      infNormVec (dhsBlockBackUpperTailVector i X) ≠ 0 →
+        maxEntryNormRect hr (Nat.succ_pos 0) (Y i) +
+            maxEntryNormRect hr (Nat.succ_pos 0)
+              (dhsBlockBackConventionalUpperProduct fp i U X) ≤
+          cRhs * normU * infNormVec (dhsBlockBackUpperTailVector i X))
+    (hZeroTail : ∀ i : Fin m,
+      infNormVec (dhsBlockBackUpperTailVector i X) = 0 →
+        dhsBlockBackConventionalRHS fp i U X Y = Y i)
+    (hDiagonal : ∀ i : Fin m,
+      DiagonalBlockSolveFirstOrderSpec fp.u c₅ (normUii i)
+        (maxEntryNorm hr (DeltaDiag i))
+        (U i i) (DeltaDiag i) (X i)
+        (dhsBlockBackConventionalRHS fp i U X Y)) :
+    ∃ DeltaU : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      DHSBlockBackSubstitutionFirstOrderSpec
+        fp.u cBack normA normL normU
+        (maxEntryNorm (Nat.mul_pos hm hr)
+          (blockMatrixFlatFin Lhat * blockMatrixFlatFin DeltaU))
+        (blockMatrixFlatFin U) (blockMatrixFlatFin DeltaU)
+        (blockMatrixRowsFlatFin X) (blockMatrixRowsFlatFin Y) := by
+  apply dhs_block_back_substitution_firstOrder_from_upper_row_witnesses_and_eq13_15
+    hm hr fp.u c₅ (((m * r : ℕ) : ℝ) ^ 2 + cRhs) cBack
+    normA normL normU normUii Lhat U DeltaDiag X Y
+    (fun i => dhsBlockBackConventionalRHS fp i U X Y)
+    fp.u_nonneg hc₅ (add_nonneg (sq_nonneg (((m * r : ℕ) : ℝ))) hcRhs)
+    hA hL hU hUUpper hNormUii hLhat hc
+  · intro i
+    simpa [dhsBlockBackConventionalUpperProduct,
+      dhsBlockBackConventionalRHS] using
+      dhs_block_back_upper_row_witness_from_conventional_or_zero_tail
+        fp hm hr i cRhs normU U X Y hγ hcRhs hU (hUTailU i)
+        (hRhsScale i) (hZeroTail i)
+  · exact hDiagonal
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch for
     the conventional flattened algorithm and one right-hand side.
