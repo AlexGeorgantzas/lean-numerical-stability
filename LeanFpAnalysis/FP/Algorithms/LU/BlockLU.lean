@@ -439,6 +439,12 @@
     residual model in the max-entry norm
   - maxEntryNormRect_single_col_eq_infNormVec:
     the rectangular max-entry norm of one column is its vector infinity norm
+  - higham13_maxNorm_vecResidual_lift_zero_columns,
+    higham13_maxNorm_upperBlockRowResidual_lift:
+    support-preserving residual-to-coefficient lifts for strict upper block rows
+  - dhsBlockBackUpperTailVector, dhsBlockBackUpperTailColumn,
+    dhsBlockBackUpperTailRowFlat, dhsBlockBackUpperTailRowFlat_mul_apply:
+    masked stacked-tail representations and their block-product identity
   - higham13_conventional_backSub_spec_c2_maxEntry,
     higham13_conventional_forwardSub_spec_c2_maxEntry:
     conventional triangular substitution satisfies (13.5) with c₂(m,p)=m²
@@ -460,6 +466,9 @@
     dhs_two_block_back_rhs_perturbation_from_matmul_subtraction_specs,
     dhs_two_block_back_rhs_perturbation_firstOrder_from_matmul_subtraction_specs_of_rhs_scale,
     dhs_two_block_back_rhs_perturbation_firstOrder_from_conventional_operations,
+    dhs_block_back_upper_row_perturbation_from_matmul_subtraction_specs,
+    dhs_block_back_upper_row_perturbation_firstOrder_from_matmul_subtraction_specs_of_rhs_scale,
+    dhs_block_back_upper_row_perturbation_firstOrder_from_conventional_operations,
     dhs_block_back_substitution_firstOrder_from_conventional_backSub_single_rhs,
     dhs_cross_product_firstOrder_of_componentwise_backward,
     dhs_block_forward_back_substitution_firstOrder_from_conventional_single_rhs,
@@ -1805,6 +1814,230 @@ theorem higham13_maxNorm_vecResidual_lift {m k : ℕ}
         rw [← hj0]
         exact (div_le_iff₀ hxpos).2 (by simpa [hj0] using hfi)
       · simp [F, hj, heta]
+
+/-- Support-preserving form of the max-norm residual lift.
+
+    In addition to the residual equation and max-entry bound, the constructed
+    rank-one perturbation has a zero column wherever the supplied vector is
+    zero.  This lets a block-back-substitution row mask all diagonal and lower
+    block columns before lifting its residual. -/
+theorem higham13_maxNorm_vecResidual_lift_zero_columns {m k : ℕ}
+    (hm : 0 < m) (hk : 0 < k)
+    (x : Fin k → ℝ) (f : Fin m → ℝ) (eta : ℝ)
+    (heta : 0 ≤ eta)
+    (hres : infNormVec f ≤ eta * infNormVec x) :
+    ∃ F : Matrix (Fin m) (Fin k) ℝ,
+      Matrix.mulVec F x = f ∧
+      maxEntryNormRect hm hk F ≤ eta ∧
+      ∀ j : Fin k, x j = 0 → ∀ i : Fin m, F i j = 0 := by
+  by_cases hxzero : infNormVec x = 0
+  · have hfnorm : infNormVec f = 0 := by
+      apply le_antisymm
+      · calc
+          infNormVec f ≤ eta * infNormVec x := hres
+          _ = 0 := by rw [hxzero, mul_zero]
+      · exact infNormVec_nonneg f
+    have hfzero : f = 0 := by
+      funext i
+      apply abs_eq_zero.mp
+      apply le_antisymm
+      · simpa [hfnorm] using abs_le_infNormVec f i
+      · exact abs_nonneg (f i)
+    refine ⟨0, ?_, ?_, ?_⟩
+    · simp [hfzero]
+    · exact le_trans
+        (maxEntryNormRect_le_of_entry_abs_le hm hk 0 0 (by simp)) heta
+    · simp
+  · have hxpos : 0 < infNormVec x :=
+      lt_of_le_of_ne (infNormVec_nonneg x) (Ne.symm hxzero)
+    obtain ⟨j0, hj0⟩ := infNormVec_exists_abs_eq hk x
+    have hxj0 : x j0 ≠ 0 := by
+      intro hx
+      rw [hx, abs_zero] at hj0
+      linarith
+    let F : Matrix (Fin m) (Fin k) ℝ := fun i j =>
+      if j = j0 then f i / x j0 else 0
+    refine ⟨F, ?_, ?_, ?_⟩
+    · ext i
+      simp [Matrix.mulVec, dotProduct, F, hxj0]
+    · apply maxEntryNormRect_le_of_entry_abs_le
+      intro i j
+      by_cases hj : j = j0
+      · subst j
+        have hfi : |f i| ≤ eta * infNormVec x :=
+          le_trans (abs_le_infNormVec f i) hres
+        simp only [F, if_pos, abs_div]
+        rw [← hj0]
+        exact (div_le_iff₀ hxpos).2 (by simpa [hj0] using hfi)
+      · simp [F, hj, heta]
+    · intro j hxj i
+      by_cases hj : j = j0
+      · subst j
+        exact (hxj0 hxj).elim
+      · simp [F, hj]
+
+/-- Lift a residual against the stacked, already computed upper tail of one
+    uniform block-back-substitution row.
+
+    The returned block coefficients vanish at the diagonal and below, their
+    full block-row product equals the supplied residual, and every scalar entry
+    inherits the same dimension-free `eta` bound. -/
+theorem higham13_maxNorm_upperBlockRowResidual_lift {m r : ℕ}
+    (hm : 0 < m) (hr : 0 < r)
+    (i : Fin m) (X : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (f : Fin r → ℝ) (eta : ℝ)
+    (heta : 0 ≤ eta)
+    (hres :
+      infNormVec f ≤ eta * infNormVec (fun jt : Fin (m * r) =>
+        if i.val < (finProdFinEquiv.symm jt).1.val then
+          X (finProdFinEquiv.symm jt).1 (finProdFinEquiv.symm jt).2 0
+        else 0)) :
+    ∃ Delta : Fin m → Matrix (Fin r) (Fin r) ℝ,
+      (∑ j : Fin m, Delta j * X j) = (fun s (_k : Fin 1) => f s) ∧
+      (∀ j : Fin m, ¬i.val < j.val → Delta j = 0) ∧
+      ∀ j : Fin m, ∀ s t : Fin r, |Delta j s t| ≤ eta := by
+  let xTail : Fin (m * r) → ℝ := fun jt =>
+    if i.val < (finProdFinEquiv.symm jt).1.val then
+      X (finProdFinEquiv.symm jt).1 (finProdFinEquiv.symm jt).2 0
+    else 0
+  obtain ⟨F, hFmul, hFbound, hFzero⟩ :=
+    higham13_maxNorm_vecResidual_lift_zero_columns
+      hr (Nat.mul_pos hm hr) xTail f eta heta hres
+  let Delta : Fin m → Matrix (Fin r) (Fin r) ℝ := fun j s t =>
+    F s (finProdFinEquiv (j, t))
+  have hInactive : ∀ j : Fin m, ¬i.val < j.val → Delta j = 0 := by
+    intro j hj
+    ext s t
+    have hxzero : xTail (finProdFinEquiv (j, t)) = 0 := by
+      rw [show xTail (finProdFinEquiv (j, t)) =
+          if i.val < j.val then X j t 0 else 0 by
+        simp only [xTail, Equiv.symm_apply_apply]]
+      simp [hj]
+    exact hFzero (finProdFinEquiv (j, t)) hxzero s
+  have hEntry : ∀ j : Fin m, ∀ s t : Fin r, |Delta j s t| ≤ eta := by
+    intro j s t
+    exact le_trans
+      (entry_le_maxEntryNormRect hr (Nat.mul_pos hm hr) F s
+        (finProdFinEquiv (j, t))) hFbound
+  refine ⟨Delta, ?_, hInactive, hEntry⟩
+  ext s k
+  fin_cases k
+  have hFmul_s := congrFun hFmul s
+  have hFlat :
+      (∑ jt : Fin (m * r), F s jt * xTail jt) =
+        ∑ jt : Fin m × Fin r,
+          F s (finProdFinEquiv jt) * X jt.1 jt.2 0 := by
+    rw [Fintype.sum_equiv finProdFinEquiv]
+    intro jt
+    have hxTailApply : xTail (finProdFinEquiv jt) =
+        if i.val < jt.1.val then X jt.1 jt.2 0 else 0 := by
+      simp only [xTail, Equiv.symm_apply_apply]
+    rw [hxTailApply]
+    by_cases hj : i.val < jt.1.val
+    · simp [hj]
+    · have hxzero : xTail (finProdFinEquiv jt) = 0 := by
+        rw [hxTailApply]
+        simp [hj]
+      have hzero := hFzero (finProdFinEquiv jt) hxzero s
+      simp [hj, hzero]
+  calc
+    (∑ j : Fin m, Delta j * X j) s 0 =
+        ∑ j : Fin m, ∑ t : Fin r,
+          F s (finProdFinEquiv (j, t)) * X j t 0 := by
+      simp only [Matrix.sum_apply, Matrix.mul_apply, Delta]
+    _ = ∑ jt : Fin m × Fin r,
+          F s (finProdFinEquiv jt) * X jt.1 jt.2 0 := by
+      rw [Fintype.sum_prod_type]
+    _ = ∑ jt : Fin (m * r), F s jt * xTail jt := hFlat.symm
+    _ = f s := by
+      simpa [Matrix.mulVec, dotProduct] using hFmul_s
+
+/-- The stacked computed upper tail in a fixed block-back-substitution row. -/
+noncomputable def dhsBlockBackUpperTailVector {m r : ℕ}
+    (i : Fin m) (X : Fin m → Matrix (Fin r) (Fin 1) ℝ) :
+    Fin (m * r) → ℝ := fun jt =>
+  if i.val < (finProdFinEquiv.symm jt).1.val then
+    X (finProdFinEquiv.symm jt).1 (finProdFinEquiv.symm jt).2 0
+  else 0
+
+@[simp] theorem dhsBlockBackUpperTailVector_apply {m r : ℕ}
+    (i j : Fin m) (s : Fin r)
+    (X : Fin m → Matrix (Fin r) (Fin 1) ℝ) :
+    dhsBlockBackUpperTailVector i X (finProdFinEquiv (j, s)) =
+      if i.val < j.val then X j s 0 else 0 := by
+  simp [dhsBlockBackUpperTailVector]
+
+/-- Single-column matrix representation of `dhsBlockBackUpperTailVector`. -/
+noncomputable def dhsBlockBackUpperTailColumn {m r : ℕ}
+    (i : Fin m) (X : Fin m → Matrix (Fin r) (Fin 1) ℝ) :
+    Matrix (Fin (m * r)) (Fin 1) ℝ := fun jt _k =>
+  dhsBlockBackUpperTailVector i X jt
+
+@[simp] theorem dhsBlockBackUpperTailColumn_apply {m r : ℕ}
+    (i j : Fin m) (s : Fin r)
+    (X : Fin m → Matrix (Fin r) (Fin 1) ℝ) :
+    dhsBlockBackUpperTailColumn i X (finProdFinEquiv (j, s)) 0 =
+      if i.val < j.val then X j s 0 else 0 := by
+  simp [dhsBlockBackUpperTailColumn]
+
+/-- Flattened coefficient row containing exactly the strict upper block tail. -/
+noncomputable def dhsBlockBackUpperTailRowFlat {m r : ℕ}
+    (i : Fin m) (U : Fin m → Matrix (Fin r) (Fin r) ℝ) :
+    Matrix (Fin r) (Fin (m * r)) ℝ := fun s jt =>
+  if i.val < (finProdFinEquiv.symm jt).1.val then
+    U (finProdFinEquiv.symm jt).1 s (finProdFinEquiv.symm jt).2
+  else 0
+
+@[simp] theorem dhsBlockBackUpperTailRowFlat_apply {m r : ℕ}
+    (i j : Fin m) (s t : Fin r)
+    (U : Fin m → Matrix (Fin r) (Fin r) ℝ) :
+    dhsBlockBackUpperTailRowFlat i U s (finProdFinEquiv (j, t)) =
+      if i.val < j.val then U j s t else 0 := by
+  simp [dhsBlockBackUpperTailRowFlat]
+
+/-- Multiplying the flattened strict upper block row by its stacked tail is
+    exactly the sum of the source block products. -/
+theorem dhsBlockBackUpperTailRowFlat_mul_apply {m r : ℕ}
+    (i : Fin m)
+    (U : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (s : Fin r) :
+    (dhsBlockBackUpperTailRowFlat i U *
+        dhsBlockBackUpperTailColumn i X) s 0 =
+      (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+        U j * X j) s 0 := by
+  calc
+    (dhsBlockBackUpperTailRowFlat i U *
+        dhsBlockBackUpperTailColumn i X) s 0 =
+        ∑ jt : Fin (m * r),
+          dhsBlockBackUpperTailRowFlat i U s jt *
+            dhsBlockBackUpperTailColumn i X jt 0 := by
+      rw [Matrix.mul_apply]
+    _ = ∑ jt : Fin m × Fin r,
+          (if i.val < jt.1.val then U jt.1 s jt.2 else 0) *
+            X jt.1 jt.2 0 := by
+      rw [Fintype.sum_equiv finProdFinEquiv]
+      intro jt
+      rw [dhsBlockBackUpperTailRowFlat_apply,
+        dhsBlockBackUpperTailColumn_apply]
+      by_cases hj : i.val < jt.1.val <;> simp [hj]
+    _ = ∑ j : Fin m, ∑ t : Fin r,
+          (if i.val < j.val then U j s t else 0) * X j t 0 := by
+      rw [Fintype.sum_prod_type]
+    _ = ∑ j : Fin m,
+          if i.val < j.val then (U j * X j) s 0 else 0 := by
+      apply Finset.sum_congr rfl
+      intro j _hjmem
+      by_cases hj : i.val < j.val
+      · simp [hj, Matrix.mul_apply]
+      · simp [hj]
+    _ = (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+          U j * X j) s 0 := by
+      rw [Finset.sum_filter]
+      simp only [Matrix.sum_apply]
+      apply Finset.sum_congr rfl
+      intro j _hjmem
+      by_cases hj : i.val < j.val <;> simp [hj]
 
 /-- Triangle inequality for the Chapter 13 block max norm under subtraction. -/
 lemma maxEntryNorm_sub_le {r : ℕ} (hr : 0 < r)
@@ -8989,6 +9222,280 @@ theorem dhs_two_block_back_rhs_perturbation_firstOrder_from_conventional_operati
       (maxEntryNormRect hr (Nat.succ_pos 0) Chat)
       U12 X2 Chat DeltaC Y1 Fsub Dhat fp.u_nonneg (sq_nonneg (r : ℝ))
       hU12U hX2 (by simpa [Chat] using hRhsScale) hMul hSub
+
+/-- Construct the coefficient perturbations for an arbitrary fixed upper
+    block-back-substitution row from an aggregate tail-product spec and the
+    following rounded subtraction.
+
+    The support-preserving residual lift distributes `DeltaC - Fsub` only over
+    strict upper blocks, while the flattened-tail product identity recovers
+    the source sum of block products. -/
+theorem dhs_block_back_upper_row_perturbation_from_matmul_subtraction_specs
+    {m r : ℕ}
+    (hm : 0 < m) (hr : 0 < r) (i : Fin m)
+    (u cMul normUTail normXTail normY normChat eta : ℝ)
+    (U : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (Chat DeltaC Y Fsub Dhat : Matrix (Fin r) (Fin 1) ℝ)
+    (heta : 0 ≤ eta)
+    (hMul : MatMulFirstOrderSpec u cMul normUTail normXTail
+      (maxEntryNormRect hr (Nat.succ_pos 0) DeltaC)
+      (dhsBlockBackUpperTailRowFlat i U)
+      (dhsBlockBackUpperTailColumn i X) Chat DeltaC)
+    (hSub : SubtractionFirstOrderSpec u normY normChat
+      (maxEntryNormRect hr (Nat.succ_pos 0) Fsub)
+      Y Chat Fsub Dhat)
+    (hResidualScale :
+      maxEntryNormRect hr (Nat.succ_pos 0) DeltaC +
+          maxEntryNormRect hr (Nat.succ_pos 0) Fsub ≤
+        eta * infNormVec (dhsBlockBackUpperTailVector i X)) :
+    ∃ Delta : Fin m → Matrix (Fin r) (Fin r) ℝ,
+      Dhat +
+          ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+            (U j + Delta j) * X j = Y ∧
+      (∀ j : Fin m, ¬i.val < j.val → Delta j = 0) ∧
+      ∀ j : Fin m, ∀ s t : Fin r, |Delta j s t| ≤ eta := by
+  let residual : Fin r → ℝ := fun s => DeltaC s 0 - Fsub s 0
+  have hResidualNorm : infNormVec residual ≤
+      eta * infNormVec (dhsBlockBackUpperTailVector i X) := by
+    apply infNormVec_le_of_abs_le
+    · intro s
+      calc
+        |residual s| ≤ |DeltaC s 0| + |Fsub s 0| := by
+          simpa [residual, sub_eq_add_neg, abs_neg] using
+            abs_sub_le (DeltaC s 0) 0 (Fsub s 0)
+        _ ≤ maxEntryNormRect hr (Nat.succ_pos 0) DeltaC +
+            maxEntryNormRect hr (Nat.succ_pos 0) Fsub :=
+          add_le_add
+            (entry_le_maxEntryNormRect hr (Nat.succ_pos 0) DeltaC s 0)
+            (entry_le_maxEntryNormRect hr (Nat.succ_pos 0) Fsub s 0)
+        _ ≤ eta * infNormVec (dhsBlockBackUpperTailVector i X) :=
+          hResidualScale
+    · exact mul_nonneg heta (infNormVec_nonneg _)
+  obtain ⟨Delta, hDeltaFull, hInactive, hEntry⟩ :=
+    higham13_maxNorm_upperBlockRowResidual_lift
+      hm hr i X residual eta heta hResidualNorm
+  have hDeltaTail :
+      (∑ j : Fin m, Delta j * X j) =
+        ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+          Delta j * X j := by
+    rw [Finset.sum_filter]
+    apply Finset.sum_congr rfl
+    intro j _hjmem
+    by_cases hj : i.val < j.val
+    · simp [hj]
+    · rw [hInactive j hj]
+      simp [hj]
+  have hDeltaResidual :
+      (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+          Delta j * X j) = DeltaC - Fsub := by
+    rw [← hDeltaTail, hDeltaFull]
+    ext s k
+    fin_cases k
+    rfl
+  have hProduct :
+      dhsBlockBackUpperTailRowFlat i U *
+          dhsBlockBackUpperTailColumn i X =
+        ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+          U j * X j := by
+    ext s k
+    fin_cases k
+    exact dhsBlockBackUpperTailRowFlat_mul_apply i U X s
+  have hMulEquation :
+      Chat =
+        (∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+          U j * X j) + DeltaC := by
+    simpa [hProduct] using hMul.equation
+  refine ⟨Delta, ?_, hInactive, hEntry⟩
+  calc
+    Dhat +
+          ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+            (U j + Delta j) * X j =
+        Dhat +
+          ((∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+              U j * X j) +
+            ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+              Delta j * X j) := by
+      congr 1
+      rw [← Finset.sum_add_distrib]
+      apply Finset.sum_congr rfl
+      intro j _hjmem
+      rw [Matrix.add_mul]
+    _ = Dhat +
+          ((∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+              U j * X j) + (DeltaC - Fsub)) := by
+      rw [hDeltaResidual]
+    _ = Y := by
+      rw [hSub.equation, hMulEquation]
+      abel
+
+/-- First-order arbitrary-row companion to
+    `dhs_block_back_upper_row_perturbation_from_matmul_subtraction_specs`.
+
+    A source-style bound on the subtraction inputs and containment of the
+    strict upper-tail norm in the global upper-factor scale remove the raw
+    error-scale premise.  The returned row perturbation has strict upper
+    support and a common entrywise first-order budget. -/
+theorem dhs_block_back_upper_row_perturbation_firstOrder_from_matmul_subtraction_specs_of_rhs_scale
+    {m r : ℕ}
+    (hm : 0 < m) (hr : 0 < r) (i : Fin m)
+    (u cMul cSub normUTail normU normY normChat : ℝ)
+    (U : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (Chat DeltaC Y Fsub Dhat : Matrix (Fin r) (Fin 1) ℝ)
+    (hu : 0 ≤ u) (hcMul : 0 ≤ cMul)
+    (hUTailU : normUTail ≤ normU)
+    (hXTail : infNormVec (dhsBlockBackUpperTailVector i X) ≠ 0)
+    (hRhsScale :
+      normY + normChat ≤
+        cSub * normU * infNormVec (dhsBlockBackUpperTailVector i X))
+    (hMul : MatMulFirstOrderSpec u cMul normUTail
+      (infNormVec (dhsBlockBackUpperTailVector i X))
+      (maxEntryNormRect hr (Nat.succ_pos 0) DeltaC)
+      (dhsBlockBackUpperTailRowFlat i U)
+      (dhsBlockBackUpperTailColumn i X) Chat DeltaC)
+    (hSub : SubtractionFirstOrderSpec u normY normChat
+      (maxEntryNormRect hr (Nat.succ_pos 0) Fsub)
+      Y Chat Fsub Dhat) :
+    ∃ (Delta : Fin m → Matrix (Fin r) (Fin r) ℝ)
+        (rowPerturbBound : ℝ),
+      Dhat +
+          ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+            (U j + Delta j) * X j = Y ∧
+      (∀ j : Fin m, ¬i.val < j.val → Delta j = 0) ∧
+      (∀ j : Fin m, ∀ s t : Fin r,
+        |Delta j s t| ≤ rowPerturbBound) ∧
+      FirstOrderLe u ((cMul + cSub) * u * normU) rowPerturbBound := by
+  let xnorm := infNormVec (dhsBlockBackUpperTailVector i X)
+  let deltaNorm := maxEntryNormRect hr (Nat.succ_pos 0) DeltaC
+  let fNorm := maxEntryNormRect hr (Nat.succ_pos 0) Fsub
+  have hxpos : 0 < xnorm :=
+    lt_of_le_of_ne (infNormVec_nonneg _) (Ne.symm hXTail)
+  have hMulU : FirstOrderLe u
+      (cMul * u * normU * xnorm) deltaNorm := by
+    apply hMul.norm_bound.mono_leading
+    apply mul_le_mul_of_nonneg_right
+    · exact mul_le_mul_of_nonneg_left hUTailU (mul_nonneg hcMul hu)
+    · exact infNormVec_nonneg _
+  have hFsub : FirstOrderLe u
+      (cSub * u * normU * xnorm) fNorm := by
+    apply FirstOrderLe.of_le
+    calc
+      fNorm ≤ u * (normY + normChat) := hSub.norm_bound
+      _ ≤ u * (cSub * normU * xnorm) :=
+        mul_le_mul_of_nonneg_left hRhsScale hu
+      _ = cSub * u * normU * xnorm := by ring
+  have hResidual : FirstOrderLe u
+      ((cMul + cSub) * u * normU * xnorm) (deltaNorm + fNorm) := by
+    have hAdd := FirstOrderLe.add hMulU hFsub le_rfl
+    apply hAdd.mono_leading
+    exact le_of_eq (by ring)
+  have heta : 0 ≤ (deltaNorm + fNorm) / xnorm :=
+    div_nonneg
+      (add_nonneg
+        (maxEntryNormRect_nonneg hr (Nat.succ_pos 0) DeltaC)
+        (maxEntryNormRect_nonneg hr (Nat.succ_pos 0) Fsub))
+      (le_of_lt hxpos)
+  have hResidualScale :
+      deltaNorm + fNorm ≤ ((deltaNorm + fNorm) / xnorm) * xnorm := by
+    apply le_of_eq
+    field_simp [ne_of_gt hxpos]
+  obtain ⟨Delta, hEquation, hInactive, hEntry⟩ :=
+    dhs_block_back_upper_row_perturbation_from_matmul_subtraction_specs
+      hm hr i u cMul normUTail xnorm normY normChat
+      ((deltaNorm + fNorm) / xnorm) U X Chat DeltaC Y Fsub Dhat
+      heta hMul hSub hResidualScale
+  have hxinv_nonneg : 0 ≤ xnorm⁻¹ := inv_nonneg.mpr (le_of_lt hxpos)
+  have hScaled : FirstOrderLe u
+      (((cMul + cSub) * u * normU * xnorm) * xnorm⁻¹)
+      ((deltaNorm + fNorm) * xnorm⁻¹) :=
+    hResidual.bound_mul_nonneg_right hxinv_nonneg le_rfl
+  have hLeading :
+      ((cMul + cSub) * u * normU * xnorm) * xnorm⁻¹ =
+        (cMul + cSub) * u * normU := by
+    field_simp [ne_of_gt hxpos]
+  have hEtaFirstOrder : FirstOrderLe u
+      ((cMul + cSub) * u * normU) ((deltaNorm + fNorm) / xnorm) := by
+    simpa [div_eq_mul_inv] using
+      hScaled.mono_leading (le_of_eq hLeading)
+  exact ⟨Delta, (deltaNorm + fNorm) / xnorm,
+    hEquation, hInactive, hEntry, hEtaFirstOrder⟩
+
+/-- Executable arbitrary upper block-row construction using the repository's
+    conventional rounded product and subtraction.
+
+    The matrix multiplication is performed on the flattened strict upper
+    coefficient row and masked stacked tail.  Its inner dimension is `m*r`, so
+    the concrete conventional leading coefficient is `(m*r)^2`; the
+    subtraction-input comparison contributes `cRhs`. -/
+theorem dhs_block_back_upper_row_perturbation_firstOrder_from_conventional_operations
+    {m r : ℕ}
+    (fp : FPModel) (hm : 0 < m) (hr : 0 < r) (i : Fin m)
+    (cRhs normU : ℝ)
+    (U : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (X : Fin m → Matrix (Fin r) (Fin 1) ℝ)
+    (Y : Matrix (Fin r) (Fin 1) ℝ)
+    (hγ : gammaValid fp (m * r))
+    (hUTailU :
+      maxEntryNormRect hr (Nat.mul_pos hm hr)
+        (dhsBlockBackUpperTailRowFlat i U) ≤ normU)
+    (hXTail : infNormVec (dhsBlockBackUpperTailVector i X) ≠ 0)
+    (hRhsScale :
+      maxEntryNormRect hr (Nat.succ_pos 0) Y +
+          maxEntryNormRect hr (Nat.succ_pos 0)
+            (fl_matMul fp r (m * r) 1
+              (dhsBlockBackUpperTailRowFlat i U)
+              (dhsBlockBackUpperTailColumn i X)) ≤
+        cRhs * normU * infNormVec (dhsBlockBackUpperTailVector i X)) :
+    ∃ (Delta : Fin m → Matrix (Fin r) (Fin r) ℝ)
+        (rowPerturbBound : ℝ),
+      higham13_fl_matrixSub fp Y
+            (fl_matMul fp r (m * r) 1
+              (dhsBlockBackUpperTailRowFlat i U)
+              (dhsBlockBackUpperTailColumn i X)) +
+          ∑ j ∈ Finset.univ.filter (fun j : Fin m => i.val < j.val),
+            (U j + Delta j) * X j = Y ∧
+      (∀ j : Fin m, ¬i.val < j.val → Delta j = 0) ∧
+      (∀ j : Fin m, ∀ s t : Fin r,
+        |Delta j s t| ≤ rowPerturbBound) ∧
+      FirstOrderLe fp.u
+        ((((m * r : ℕ) : ℝ) ^ 2 + cRhs) * fp.u * normU)
+        rowPerturbBound := by
+  let A := dhsBlockBackUpperTailRowFlat i U
+  let B := dhsBlockBackUpperTailColumn i X
+  let Chat : Matrix (Fin r) (Fin 1) ℝ := fl_matMul fp r (m * r) 1 A B
+  let DeltaC : Matrix (Fin r) (Fin 1) ℝ := fun s k =>
+    Chat s k - ∑ jt : Fin (m * r), A s jt * B jt k
+  let Fsub := higham13_fl_matrixSubError fp Y Chat
+  let Dhat := higham13_fl_matrixSub fp Y Chat
+  have hBnorm : maxEntryNormRect (Nat.mul_pos hm hr) (Nat.succ_pos 0) B =
+      infNormVec (dhsBlockBackUpperTailVector i X) := by
+    rw [maxEntryNormRect_single_col_eq_infNormVec]
+    rfl
+  have hMul : MatMulFirstOrderSpec fp.u (((m * r : ℕ) : ℝ) ^ 2)
+      (maxEntryNormRect hr (Nat.mul_pos hm hr) A)
+      (infNormVec (dhsBlockBackUpperTailVector i X))
+      (maxEntryNormRect hr (Nat.succ_pos 0) DeltaC)
+      A B Chat DeltaC := by
+    simpa only [Chat, DeltaC, hBnorm] using
+      higham13_conventional_matmul_spec_c1_maxEntry
+        fp hr (Nat.mul_pos hm hr) (Nat.succ_pos 0) A B hγ
+  have hSub : SubtractionFirstOrderSpec fp.u
+      (maxEntryNormRect hr (Nat.succ_pos 0) Y)
+      (maxEntryNormRect hr (Nat.succ_pos 0) Chat)
+      (maxEntryNormRect hr (Nat.succ_pos 0) Fsub)
+      Y Chat Fsub Dhat := by
+    exact higham13_conventional_subtraction_spec_maxEntry
+      fp hr (Nat.succ_pos 0) Y Chat
+  simpa [A, B, Chat, Dhat] using
+    dhs_block_back_upper_row_perturbation_firstOrder_from_matmul_subtraction_specs_of_rhs_scale
+      hm hr i fp.u (((m * r : ℕ) : ℝ) ^ 2) cRhs
+      (maxEntryNormRect hr (Nat.mul_pos hm hr) A) normU
+      (maxEntryNormRect hr (Nat.succ_pos 0) Y)
+      (maxEntryNormRect hr (Nat.succ_pos 0) Chat)
+      U X Chat DeltaC Y Fsub Dhat fp.u_nonneg
+      (sq_nonneg (((m * r : ℕ) : ℝ))) hUTailU hXTail
+      (by simpa [A, B, Chat] using hRhsScale) hMul hSub
 
 /-- Demmel--Higham--Schreiber [326], Theorem 2.1 back-substitution branch for
     the conventional flattened algorithm and one right-hand side.
