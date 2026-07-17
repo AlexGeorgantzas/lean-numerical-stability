@@ -71,6 +71,17 @@ import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyPerturbation
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyPSD
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyIndefinite
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyNonsym
+-- Chapter 11 backward-error closure modules (factorization backward errors
+-- derived from the fl model; see docs/source_coverage/higham_ch11.md).
+import LeanFpAnalysis.FP.Algorithms.Cholesky.BlockLDLTAllOneByOnePrintedCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.BlockLDLTMixedPivotCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.TwoByTwoSchurStepCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.BlockLDLTBunchTridiagonalCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchTridiagonalGrowthCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchTridiagonalFactorBoundCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchTridiagonalHFactorCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenGrowthCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenFactorNormCh11Closure
 import LeanFpAnalysis.FP.Algorithms.IterativeRefinement
 import LeanFpAnalysis.FP.Algorithms.MatrixInversion
 import LeanFpAnalysis.FP.Algorithms.GaussJordan

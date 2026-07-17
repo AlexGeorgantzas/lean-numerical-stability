@@ -19,6 +19,18 @@ Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
 (chapter-label surface); reusable definitions and proofs in
 `LeanFpAnalysis/FP/Algorithms/Cholesky/CholeskyIndefinite.lean`.
 
+**Update (2026-07-17, factorization closure — Claude lane).** The
+**factorization-side** backward errors of Theorems 11.3 (general mixed-pivot and
+all-1×1) and 11.7 (Bunch tridiagonal), and the Theorem 11.8 growth factor
+`ρₙ ≤ 4^(n−2)`, are now **derived from the floating-point model** (no assumed
+conclusion) in dedicated closure modules, replacing the `h : P ⊢ P` status for
+those factorization halves. See the section
+"Factorization-error closure modules (2026-07-17, Claude)" at the end of this
+report. The **solve-side** backward errors `(A+ΔA₂)x̂=b` and the **full** Aasen
+(11.8) backward error remain open (the latter blocked on an fl model of the
+middle factor `T̂`); Theorem 11.4 is a concurrent contributor's lane. The
+top-level gate line above is left unchanged pending those remaining rows.
+
 ## Proved selected targets and dependencies
 Rows in this table are compiled Lean results. Rows labelled with Theorem 11.8
 after the exact recurrence entries are dependency or wrapper results only; they
@@ -12450,3 +12462,25 @@ Problem transcription.
   interfaces to end-to-end proofs requires (i) the per-stage-to-`ρₙ` recursion, (ii) the
   `36nρₙ` product bound, and (iii) the block-LDLᵀ / Aasen floating-point backward-error
   foundation — a multi-session effort tracked in the not-proved ledger.
+
+## Factorization-error closure modules (2026-07-17, Claude)
+
+Separate closure modules under `LeanFpAnalysis/FP/Algorithms/Cholesky/` derive the
+**factorization-side** backward errors that the primary interfaces above left as
+`h : P ⊢ P`. Each derives its bound from the floating-point model (no assumed
+conclusion), builds, and is axiom-clean `[propext, Classical.choice, Quot.sound]`
+(no `sorry`/`admit`/`axiom`/`native_decide`). The **solve-side** backward errors
+`(A+ΔA₂)x̂=b` and the full Aasen (11.8) backward error remain open (see below).
+
+| Source item | Result (Lean) | Module | Honest strength |
+|---|---|---|---|
+| Thm 11.3, all-1×1 pivots (σ=id) | `higham11_3_block_ldlt_all_oneByOne_printed` | `BlockLDLTAllOneByOnePrintedCh11Closure` | Factorization backward error at **printed** strength `\|ΔA₁\|≤p(n)u(\|A\|+\|L̂\|\|D̂\|\|L̂ᵀ\|)`, `p(n)=20n` linear, under `n·u≤1/100`; from fl model via the recursive stage bound. |
+| Thm 11.3, general mixed 1×1/2×2 | `higham11_3_block_ldlt_mixed_printed`, `..._of_acceptance` | `BlockLDLTMixedPivotCh11Closure`, `TwoByTwoSchurStepCh11Closure` | Global mixed-pivot induction derived; the 2×2 Schur-update **rounding** derived (`schur2_dot_residual`), so `_of_acceptance` assumes only Higham's eq.(11.5) 2×2-solve family (`DenseAcceptance`) + 1×1 nonzero-pivot/symmetry. Factorization, printed strength, `p(n)=20n`. |
+| Thm 11.7, Bunch tridiagonal | `higham11_7_bunch_tridiagonal_backward_error_unconditional` | `BlockLDLTBunchTridiagonal / BunchTridiagonalGrowth / *FactorBound / *HFactor Ch11Closure` | Factorization backward error `\|ΔA₁\|≤c·u·Amax`, `c=20n(1+c₀)`, `c₀` dimension-independent; the tridiagonal factor-norm growth bound `hfactor` fully **discharged** (constant-growth invariant via Bunch acceptance test). Assumes `FlMixedPivots`+`TriPivotData`+(11.5); the solve part is taken as `hsolve`. |
+| Thm 11.8, Aasen growth `ρₙ≤4^(n−2)` | `higham11_8_aasen_maxEntryNorm_T_le_printed_mul_maxEntryNorm`, `..._aasenGrowthBound_of_multiplier_bound` | `AasenGrowthCh11Closure` | `maxEntryNorm T ≤ 4^(n−2)·maxEntryNorm A` from `AasenSpec`+`\|L\|≤1` (partial-pivoting multiplier bound), n≥4; feeds the existing `aasenGrowthBound` plumbing hypothesis-free. |
+| Thm 11.8, outer-factor norm | `aasen_L_infNorm_mul_transpose_le_sq` | `AasenFactorNormCh11Closure` | `‖L‖∞·‖Lᵀ‖∞ ≤ (n−1)²` from unit-lower-tri + first-col-e₁ + `\|L\|≤1`, n≥2; discharges the endpoint's structural `κL·κLT≤(n−1)²` cap. |
+
+**Still open after these modules (documented obstructions):**
+- **Solve-side** backward error `(A+ΔA₂)x̂=b` for 11.3/11.7: needs the triangular-solve backward-error composition with the factorization (not yet derived; `ΔA₂` is `0`/`hsolve`).
+- **Thm 11.8 full backward error** `‖ΔA‖∞≤(n−1)²γ_{15n+25}‖T̂‖∞`: the componentwise/normwise budget is largely assembled in `HighamChapter11.lean`, but genuinely needs an **fl model of the middle factor `T̂`** (Aasen recurrences 11.12/11.13 in floating point) + `|T̂−T|` bound — a large missing foundation. BLOCKED on that.
+- **Thm 11.4** (Bunch–Kaufman `36nρₙ` normwise): concurrent contributor's lane.
