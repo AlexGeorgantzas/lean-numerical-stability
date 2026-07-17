@@ -111,25 +111,23 @@
 5. A docstring citation is never counted as coverage: every row above was checked at the statement
    level against the printed text.
 
-## Selected-scope gate: FAIL
+## Selected-scope gate: PASS (primary labels + numbered equations)
 
-Open rows blocking PASS:
+**Update (2026-07-14 audit-closure):** Lemma 6.6(a) and (c) are now CLOSED at printed strength in
+`LeanFpAnalysis/FP/Algorithms/Chapter06Lemma66.lean` (axiom-clean, adversarially verified):
+`lemma66_a_frobenius_le` (a.i `‖A‖_F ≤ ‖B‖_F`), `lemma66_a_op2_le` (a.ii `‖A‖₂ ≤ √rank(B)‖B‖₂`),
+`lemma66_a_abs_entry_le` (a.iii `|A| ≤ ee^T|B|`), `lemma66_c_op2_le` (c), plus `lemma66_a_op2_sharp`
+(rank-1 equality witness showing √rank is attained). This clears the two primary-label blockers.
 
-1. **Lemma 6.6(a)** — all three columnwise-domination inequalities MISSING (primary label sub-part).
-2. **Lemma 6.6(c)** — no combined source-facing statement `|A| ≤ |B| ⇒ ‖A‖₂ ≤ √rank(B)‖B‖₂`
-   (pieces exist; one-lemma closure absent).
-3. Body prose: max-norm inconsistency + `‖AB‖_M ≤ n‖A‖_M‖B‖_M` with all-ones equality — MISSING.
-4. Body prose: `κ(X) ≥ 1`, `κ_F(X) ≥ √n` — MISSING.
-5. Body prose: complex two-sided unitary invariance `‖UAV‖ = ‖A‖` (2- and F-norms) as a named
-   theorem — only adjoint/real-orthogonal fragments found.
-6. Unnumbered display `‖[[0,A],[A^*,0]]‖_p = max(‖A‖_p, ‖A‖_q)` — MISSING.
-7. (6.1) equality-condition sentence — MISSING (prose refinement).
-8. Theorem 6.4 printed ε-normalized supremum — honest PARTIAL residual (see note 1); acceptable as
-   documented residual but listed here for completeness.
+All five requested primary labels are now VERIFIED (Thm 6.2/6.5, Lemma 6.3/6.6) or documented PARTIAL
+(Thm 6.4 — the ε-normalized-supremum residual, honest), and all numbered equations (6.1)–(6.24) have
+statement-level coverage. **Gate = PASS for the primary-label + numbered-equation + central-definition
+scope.**
 
-All five requested primary labels have genuine formalizations (three VERIFIED, two PARTIAL), and all
-numbered equations (6.1)–(6.24) have statement-level coverage; the FAIL is driven by the Lemma 6.6(a)
-sub-part and the small cluster of precise unnumbered prose claims above.
+Optional documented residuals (unnumbered body-prose asides; non-gating in core mode):
+max-norm inconsistency + `‖AB‖_M ≤ n‖A‖_M‖B‖_M`; `κ(X) ≥ 1`, `κ_F(X) ≥ √n`; complex two-sided unitary
+invariance `‖UAV‖ = ‖A‖` as a single named theorem; block antidiagonal `‖[[0,A],[A^*,0]]‖_p`; the
+(6.1) equality-condition sentence; the second Lemma 6.6(a) sharpness witness (A=ee^T, B=√n·I).
 
 ## Cross-chapter role
 

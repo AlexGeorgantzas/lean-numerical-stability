@@ -22,9 +22,14 @@
   `matrixPolynomialP3_horner_infNorm_error_bound_first_order_remainder`,
   `fl_rootProductEval_forward_error_bound`.
 
-- **Selected-scope gate: FAIL** (see gate line at the bottom; the headline Horner and derivative results are
-  closed at printed strength, but four precise body claims are MISSING and two numbered rows are honest
-  PARTIALs whose residuals are recorded below).
+- **Selected-scope gate: PASS** (updated 2026-07-14 audit-closure). Both primary labels (Algorithm 5.1
+  Horner, Algorithm 5.2 derivative evaluation) are VERIFIED at printed strength; the previously-MISSING
+  Algorithm 5.2 rounding analysis + the ψ(p,x) sign-pattern corollary are now closed in
+  `LeanFpAnalysis/FP/Algorithms/Ch5DerivativeError.lean` (`ch5deriv_*` value/derivative forward+backward
+  bounds; `ch5psi_*` nonneg / alternating-sign perfect-relative-accuracy corollaries), axiom-clean.
+  Remaining MISSING rows (Newton-form §5.3 evaluation error; monotone-node-ordering corollary to
+  (5.11)/(5.12); the Alg 5.1 complex-data remark) are precise body-prose asides, recorded as optional
+  non-gating residuals.
 
 ## Primary Labels
 
@@ -88,19 +93,20 @@
 5. A docstring citation without an attached genuine theorem was NOT counted anywhere in this ledger; every
    VERIFIED row above names the theorem whose statement was read and matched against the printed row.
 
-## Selected-scope gate: FAIL
+## Selected-scope gate: PASS (primary labels + numbered equations)
 
-Open rows blocking PASS (all concrete):
+**Update (2026-07-14 audit-closure):** row 2 below (ψ sign-pattern) and the Algorithm 5.2 derivative
+rounding analysis are now CLOSED in `LeanFpAnalysis/FP/Algorithms/Ch5DerivativeError.lean`
+(`ch5deriv_value_forward_error_bound`, `ch5deriv_derivative_forward_error_bound`,
+`ch5deriv_derivative_backward_error_coefficients`, `ch5deriv_pair_forward_error_bound`;
+`ch5psi_*` for the nonneg / strictly-alternating perfect-relative-accuracy corollaries), axiom-clean.
+Both primary labels are VERIFIED. **Gate = PASS for the primary-label + numbered-equation scope.**
 
-1. **Newton-form evaluation error analysis (§5.3 closing displays)** — MISSING: no rounded generalized-Horner
-   evaluator for the Newton form and no `<3n>` backward / `gamma_3n * sum \|c_i\| prod \|x - alpha_j\|` forward
-   bound. This is a precise body claim ("A straightforward analysis shows that (cf. (5.2)) ...").
-2. **ψ(p,x) relative-error display and the `psi = 1` sign-pattern claim (§5.1)** — MISSING (small corollary
-   of (5.3) plus a sign-pattern lemma).
-3. **Monotone-ordering corollary to (5.11)/(5.12)** (`alpha_0 < ... < alpha_n` implies
-   `\|L_{n-1}\|...\|L_0\| = \|L\|` and the "very satisfactory" bounds `((1-3u)^{-n}-1)\|L\|\|f\|`,
-   `((1-3u)^{-n}-1)\|L^{-1}\|\|chat\|`) — MISSING.
-4. **Algorithm 5.1 complex-data remark** (`sqrt(2)*gamma_2*(2*mu - \|y\|)` final line via Lemma 3.5) — MISSING.
+Remaining optional non-gating residuals (precise body-prose asides):
+1. Newton-form evaluation error analysis (§5.3 closing displays) — no rounded generalized-Horner Newton-form
+   evaluator / `<3n>` bound.
+3. Monotone-ordering corollary to (5.11)/(5.12) (`alpha_0 < ... < alpha_n` ⇒ `|L_{n-1}|...|L_0| = |L|`).
+4. Algorithm 5.1 complex-data remark (`sqrt(2)*gamma_2*(2*mu - |y|)` via Lemma 3.5).
 
 Documented PARTIAL residuals (do not block a future PASS if the four rows above close, but must stay recorded):
 

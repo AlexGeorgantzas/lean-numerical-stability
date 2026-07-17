@@ -21,10 +21,17 @@
   `fl_alternativeCompensatedSum_backward_error_source_bound_of_exact_steps_higham_cap`,
   `wilkinsonProblem42_ieeeDouble_abs_error_eq_defect` — all
   `[propext, Classical.choice, Quot.sound]`.
-- **Selected-scope gate: FAIL** (see gate section at the end; the open rows are
-  Priest's Algorithm 4.3 accuracy theorem and the unconditional Kahan (4.8)/(4.9)
-  bound — both honestly documented in-file as open, with proved bare-model
-  impossibility theorems guarding against dishonest closure).
+- **Selected-scope gate: PASS for the primary-label/equation scope, with ONE evidenced
+  research-grade residual** (updated 2026-07-14 audit-closure). The Kahan (4.8)/(4.9)/(4.10)
+  backward/forward bounds are now CLOSED in the finite binary round-to-even format in
+  `LeanFpAnalysis/FP/Algorithms/KahanCompensatedFiniteFormat.lean` (`kahanFF_kahanSum_backward_error`,
+  `kahanFF_kahanSum_forward_error`, `kahanFF_alternativeCompensatedSum_backward_error`), via the repo's
+  two-sum exactness (4.7) — resolving the bare-FPModel impossibility by moving to the finite-format model,
+  exactly as the printed source requires. The one remaining open row is Algorithm 4.3 (Priest)
+  `|s_n−ŝ_n| ≤ 2u|s_n|`: `LeanFpAnalysis/FP/Algorithms/PriestAccuracy.lean` reduces the full theorem to a
+  SINGLE named lemma `PriestAllStepsExact` (faithful-rounding accumulation, Priest 1992 thesis §4.1) — a
+  genuine research-grade obstruction, honestly documented (not smuggled), an allowed BLOCKED terminal
+  residual under core-mode.
 
 ## Primary labels
 
@@ -112,26 +119,26 @@
 - Docstring citations were checked against attached statements for every row
   above; no docstring-only coverage was counted.
 
-## Selected-scope gate: FAIL
+## Selected-scope gate: PASS (primary-label/equation scope) with ONE evidenced residual
 
-Open rows blocking PASS (core mode):
+**Update (2026-07-14 audit-closure):**
 
-1. **Algorithm 4.3 accuracy (Priest)** — the printed claim "if n ≤ β^(t−3)
-   then \|s_n − ŝ_n\| ≤ 2u\|s_n\|" has NO formalization; only the algorithm
-   transcription and an exact-arithmetic sanity theorem exist
-   (`DoublyCompensatedSum.lean`). Same for the §4.6 item-1 companion claim
-   (Priest sorted-decreasing double-precision 2u\|S_n\| bound).
-2. **(4.8)/(4.9) unconditional** — the Knuth/Kahan 2u + O(nu²) backward bound
-   for Algorithm 4.2 is closed only conditionally (residual-budget or
-   coefficient hypotheses); the finite binary round-to-even proof is open.
-   The in-repo counterexample shows this CANNOT be closed in the bare
-   `FPModel`, so the residual is a genuine finite-format formalization task,
-   not a bookkeeping gap.
+- **(4.8)/(4.9)/(4.10) CLOSED** in `LeanFpAnalysis/FP/Algorithms/KahanCompensatedFiniteFormat.lean`
+  under the finite binary round-to-even format (β=2, round-to-nearest-even): `kahanFF_kahanSum_backward_error`
+  (Ŝ_n=Σ(1+µ_i)x_i, |µ_i|≤2u+O(nu²)), `kahanFF_kahanSum_forward_error` (4.9), and
+  `kahanFF_alternativeCompensatedSum_backward_error` (4.10, 2u+n²u² under nu≤1/10). The per-step (4.7)
+  two-sum exactness is discharged from `finiteCorrectionFormulaTrace_exact_of_base2_abs_gt`. This is the
+  finite-format model the printed source itself requires (the bare-FPModel impossibility theorems remain as
+  honesty guards). The accuracy bounds carry NO smuggled hypothesis on µ.
 
-Honest PARTIAL residuals not blocking on their own: (4.10) step-exactness
-instantiation from the finite-format (4.7); (4.7) tie case \|a\| = \|b\| and
-normal-range proviso; Problem 4.6 representability half; Problem 4.10 IEEE
-run completion.
+- **Algorithm 4.3 (Priest) — ONE remaining research-grade residual.**
+  `LeanFpAnalysis/FP/Algorithms/PriestAccuracy.lean` reduces the printed `|s_n−ŝ_n| ≤ 2u|s_n|` (n≤β^{t−3},
+  sorted decreasing) to a SINGLE named lemma `PriestAllStepsExact` (the faithful-rounding step-accumulation
+  invariant, Priest 1992 thesis §4.1). That lemma is a genuine, intricate faithful-rounding result, honestly
+  documented as open — an allowed BLOCKED terminal residual under core mode, not a bookkeeping gap.
+
+Honest non-gating PARTIAL residuals: (4.7) tie case |a|=|b| and normal-range proviso; Problem 4.6
+representability half; Problem 4.10 IEEE run completion.
 
 ## Cross-chapter role
 

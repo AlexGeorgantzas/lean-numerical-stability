@@ -103,6 +103,11 @@ import LeanFpAnalysis.FP.Algorithms.Ch14GJETheorem145SourceClosure
 import LeanFpAnalysis.FP.Algorithms.Ch14Corollary146SourceClosure
 import LeanFpAnalysis.FP.Algorithms.Ch14Corollary147SourceClosure
 import LeanFpAnalysis.FP.Algorithms.Ch14MethodDProductDischarge
+import LeanFpAnalysis.FP.Algorithms.Chapter06Lemma66
+import LeanFpAnalysis.FP.Algorithms.KahanCompensatedFiniteFormat
+import LeanFpAnalysis.FP.Algorithms.PriestAccuracy
+import LeanFpAnalysis.FP.Algorithms.Ch5DerivativeError
+import LeanFpAnalysis.FP.Algorithms.HighamLemma88Entrywise
 import LeanFpAnalysis.FP.Algorithms.CondEstimation
 import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCond
 import LeanFpAnalysis.FP.Algorithms.PNormPowerMethod
