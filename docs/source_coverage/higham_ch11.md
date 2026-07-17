@@ -422,6 +422,20 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.3 path named local-row-sum source-six/growth factorization consumers | `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_local_L_row_sum_source_six_growth_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_local_L_row_sum_source_six_growth_bounds_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_local_L_row_sum_source_six_growth_bounds_with_norm_bounds_maxEntryNorm_A` | Ch11 | **new this session**; the named path-local source-six `L̂` row-sum predicate now feeds Theorem 11.3's source-norm factorization perturbation interface directly alongside block-diagonal and local growth-`D̂` obligations. The wrappers expose componentwise, `∞`-norm, and `ε≤p*u` source-scale budgets without requiring callers to expand the named local-row-sum predicate into raw per-branch inequalities. |
 | Thm 11.3 global source-six/growth factorization consumers | `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_global_source_six_growth_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_global_source_six_growth_bounds_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_global_source_six_growth_bounds_with_norm_bounds_maxEntryNorm_A` | Ch11 | **new this session**; the named global path source-six/growth bounds now feed the Theorem 11.3 structured factorization perturbation interface directly, including the infinity-norm and `ε≤p*u` source-scale forms. This lets a concrete pivot-path proof reuse the global `L̂`/`D̂` facts without rebuilding the local package before invoking the 11.3 bridge. |
 | Thm 11.3 branchwise path factorization consumers | `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_branchwise_source_six_growth_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_branchwise_source_six_growth_bounds_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_branchwise_source_six_growth_bounds_with_norm_bounds_maxEntryNorm_A` | Ch11 | **new this session**; routes scalar active branches and accepted case-(4) `2×2` branch caps through the source-norm path package into the Theorem 11.3 product-scale factorization perturbation interface. The componentwise, `∞`-norm, and `ε≤p*u` source-scale consumers now use the same branchwise local obligations as the Theorem 11.4 product/stability consumers. |
+| Thm 11.3 case-labelled factorization handoffs | `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_active_branch_case_caps_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_active_branch_case_caps_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_offbranch_D_entries_zero_active_branch_case_caps_with_norm_bounds_maxEntryNorm_A` | Ch11 | **new this session**; named off-branch-zero data plus case-labelled active-branch local caps now reach the Theorem 11.3 product-scale, norm-bound, and `ε≤p*u` source-scale factorization interfaces by internally constructing the branchwise source-six/growth cap package. |
+| Thm 11.4 active-path head/tail pivot-index bookkeeping | `higham11_4_bunchKaufmanPathLocalPivotIndex_zero_val`, `higham11_4_bunchKaufmanPathLeadingPivotIndex_zero_val`, `higham11_4_bunchKaufmanPathLastPivotIndex_zero_val`, `higham11_4_bunchKaufmanPathLocalPivotIndex_succ_val`, `higham11_4_bunchKaufmanPathLeadingPivotIndex_succ_val`, `higham11_4_bunchKaufmanPathLastPivotIndex_succ_val` | Ch11 | **new this session**; records the cons-decomposition facts for concrete Bunch-Kaufman pivot paths: the head branch embeds at the initial full-path indices, and every trailing branch-local, leading, or final pivot index embeds as the corresponding tail-path index shifted by the head branch span. This is bookkeeping for the remaining first-stage/trailing split and does not close Theorem 11.4 by itself. |
+| Thm 11.4 active-path tail split block-diagonal bookkeeping | `higham11_4_bunchKaufmanPathTailIndex`, `higham11_4_bunchKaufmanPathTailIndex_localPivotIndex`, `higham11_4_bunchKaufmanPathTailIndex_leadingPivotIndex`, `higham11_4_bunchKaufmanPathTailIndex_lastPivotIndex`, `higham11_4_BunchKaufmanPathSameBranchPivotPair_of_tail`, `higham11_4_BunchKaufmanPathSameBranchPivotPair_tail_of_tailIndex`, `higham11_4_BunchKaufmanPathSameBranchPivotPair_not_head_tailIndex`, `higham11_4_BunchKaufmanPathSameBranchPivotPair_not_tailIndex_head`, `higham11_4_bunchKaufmanPathTailMatrix`, `higham11_4_BunchKaufmanPathBlockDiagonalD_tail`, `higham11_4_BunchKaufmanPathBlockDiagonalD_head_tail_zero`, `higham11_4_BunchKaufmanPathBlockDiagonalD_tail_head_zero` | Ch11 | **new this session**; adds the full-path embedding for trailing pivot-path indices, transfers same-branch predicates between the tail and original path, separates head and tail indices, and restricts a block-diagonal full-path `D̂` to a block-diagonal tail matrix while deriving explicit head-tail zero entries. This directly supports the remaining first-stage/trailing split and does not close Theorem 11.4 by itself. |
+| Thm 11.4 active-path tail `D̂` cap restriction | `higham11_4_bunchKaufmanPathTailMatrix_localPivotIndex`, `higham11_4_BunchKaufmanPathOffBranchDEntriesZero_tail`, `higham11_4_BunchKaufmanPathLocalDEntryBound_tail`, `higham11_4_BunchKaufmanPathLocalDEntryBound_head` | Ch11 | **new this session**; records how the tail-restricted `D̂` matrix evaluates on branch-local tail indices, transports concrete off-branch zero data and local `D̂` entry caps from a nonempty full path to its trailing subpath, and extracts the head pivot-block local `D̂` cap. This supports the concrete first-stage/trailing split without claiming the remaining `|L̂|` row-sum aggregation. |
+| Thm 11.4 active-path tail `|L̂|` row-sum restriction | `higham11_4_bunchKaufmanPathTailIndex_injective`, `higham11_4_bunchKaufmanPath_tail_column_abs_sum_le_full`, `higham11_4_BunchKaufmanPathLocalLRowSumBound_tail` | Ch11 | **new this session**; proves that the embedded tail columns form an injective finite subset of the full path, so every tail-restricted absolute `L̂` row sum is bounded by the corresponding full-path row sum. A full-path source-six local `L̂` row-sum cap now restricts to the trailing active path, leaving the concrete production of the full-path row-sum cap and final product-bound assembly open. |
+| Thm 11.4 active-path tail source-six/growth package restriction | `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_tail` | Ch11 | **new this session**; packages the block-diagonal `D̂`, local growth-`D̂`, and source-six `|L̂|` row-sum tail restrictions into the named path package used by the product, stability, solve, and Theorem 11.3 factorization consumers. This removes a caller-side reconstruction step for recursive Bunch-Kaufman paths while the concrete full-path source-six/growth facts and final product-bound assembly remain open. |
+| Thm 11.4 active-path tail product-bound consumers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_source_six_growth_LD_package_tail`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_source_six_growth_LD_package_tail` | Ch11 | **new this session**; feeds a full nonempty path source-six/growth package through the tail package restriction and existing product consumers, yielding both the tail `maxEntryNorm` product bound and scalar max-entry product certificate for restricted trailing `L̂,D̂`. This is the recursive product-bound handoff for the first-stage/trailing split; the concrete production of the full-path package and local first-stage estimate remain open. |
+| Thm 11.4 active-path source-six/growth first-stage product share | `higham11_4_bunchKaufmanProductEntry_le_local_share_of_path_source_six_growth_LD_package`, `higham11_4_bunchKaufmanProductEntry_le_head_share_of_path_source_six_growth_LD_package` | Ch11 | **new this session**; turns the packaged source-six `|L̂|` row sums, block-diagonal `D̂`, and local growth-`D̂` caps into an entrywise local product share `≤36ρₙAmax`, then exposes the head-touching first-stage form needed by the recursive split. This supplies the local side of the split once the full-path package is produced. |
+| Thm 11.4 active-path source-six/growth split hypotheses | `higham11_4_first_stage_recursive_product_split_of_path_source_six_growth_LD_package` | Ch11 | **new this session**; packages the head-touching first-stage product share and the trailing-region `local + recB` inequality for any nonnegative recursive budget. This is the split-hypothesis shape consumed by the existing first-stage/trailing aggregation lemmas; the sharper full-tail-to-restricted-tail decomposition remains a future strengthening. |
+| Thm 11.4 active-path source-six/growth first-stage recursive product entries | `higham11_4_product_entries_of_path_source_six_growth_LD_package_first_stage_recursive` | Ch11 | **new this session**; combines the packaged split hypotheses with the existing first-stage/trailing scalar aggregation. A full nonempty path package plus a recursive tail budget `≤36·tailSpan·ρₙAmax` now yields the full-path all-entry `≤36·fullSpan·ρₙAmax` product estimate. |
+| Thm 11.4 active-path source-six/growth first-stage recursive product consumers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_source_six_growth_LD_package_first_stage_recursive`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_source_six_growth_LD_package_first_stage_recursive` | Ch11 | **new this session**; packages the first-stage recursive all-entry estimate into the source max-entry norm target and scalar max-entry product certificate consumed by the stability, solve, and factorization interfaces. |
+| Thm 11.4 active-path source-six/growth first-stage recursive stability/solve consumers | `higham11_4_bunch_kaufman_stability_of_path_source_six_growth_LD_package_first_stage_recursive`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_source_six_growth_LD_package_first_stage_recursive`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_source_six_growth_LD_package_first_stage_recursive_maxEntryNorm` | Ch11 | **new this session**; threads the recursive path product certificate into the pointwise Bunch-Kaufman stability bridge and both finite-product and max-entry-norm solve-budget consumers. |
+| Thm 11.3 active-path source-six/growth first-stage recursive factorization consumers | `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_source_six_growth_LD_package_first_stage_recursive`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_source_six_growth_LD_package_first_stage_recursive_with_norm_bounds`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_source_six_growth_LD_package_first_stage_recursive_with_norm_bounds` | Ch11 | **new this session**; threads the recursive path product certificate into the Theorem 11.3 `BlockLDLTBackwardError` product-scale, norm-bound, and source-scale factorization interfaces. |
+| Thm 11.3 active-path source-six/growth first-stage recursive source-norm factorization consumers | `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_source_six_growth_LD_package_first_stage_recursive_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_source_six_growth_LD_package_first_stage_recursive_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_source_six_growth_LD_package_first_stage_recursive_with_norm_bounds_maxEntryNorm_A` | Ch11 | **new this session**; specializes the recursive factorization consumers to the actual source max-entry norm `‖A‖_M`, eliminating an arbitrary `Amax` majorant from these handoffs. |
 | §11.1 exact block-LDLᵀ step, eq (11.3) `s=1`: `∑ L·D·Lᵀ = A` | `oneByOne_step_factorization`, `higham11_3_oneByOne_step_factorization` | " | **new this session**; exact 1×1-pivot factorization identity (unit-lower-tri `L`, block-diag `D` with Schur complement) — the **exact base of Theorem 11.3's diagonal-pivoting recursion** (fl version adds `fl_oneByOne_schur_step_error`) |
 | §11.1 exact block-LDLᵀ **inductive step**, eq (11.1)/(11.3) | `blockLDLT_assemble_step`, `higham11_3_blockLDLT_assemble_step` | " | **new this session**; trailing block factorized recursively (`L_S·D_S·L_Sᵀ = S`, IH) + 1×1 multipliers ⇒ assembled `∑ L·D·Lᵀ = A`; iterating gives the exact `PAPᵀ = LDLᵀ` recursion |
 | §11.1 exact **full recursion**, eq (11.1)/(11.2): `∃ L D, ∑ L·D·Lᵀ = A` | `exact_blockLDLT_all_oneByOne`, `higham11_1_exact_blockLDLT_all_oneByOne` (+ `schurCompl`, `schurCompl_symm`, `AllOnePivots`) | " | **new this session**; symmetric `A` with all Schur-complement pivots nonzero ⇒ exact `LDLᵀ` (no-2×2-pivot case), by induction on `n` via `blockLDLT_assemble_step` — the exact factorization scaffold for Theorem 11.3 |
@@ -453,6 +467,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.4 case-labelled global source-six/growth aggregators | `higham11_4_bunchKaufmanPath_global_LD_bounds_of_active_branch_case_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_global_LD_bounds_of_offbranch_D_entries_zero_active_branch_case_caps_maxEntryNorm_A`, `higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_active_branch_case_caps_maxEntryNorm_A`, `higham11_4_BunchKaufmanPathGlobalSourceSixGrowthBounds_of_offbranch_D_entries_zero_active_branch_case_caps_maxEntryNorm_A` | Ch11 | **new this session**; case-labelled active-branch local caps now aggregate to the global source-norm `D̂` entry cap and full consumed-row source-six `L̂` row-sum facts, and also build the named `GlobalSourceSixGrowthBounds` predicate, either with an explicit block-diagonal `D̂` hypothesis or directly from named off-branch `D̂` zeros. This is a direct bridge from concrete Algorithm 11.2 branch producers into the remaining global aggregation/product route. |
 | Thm 11.4 case-labelled product-entry adapters | `higham11_4_product_entries_of_path_active_branch_case_caps_maxEntryNorm_A`, `higham11_4_product_entries_of_path_offbranch_D_entries_zero_active_branch_case_caps_maxEntryNorm_A` | Ch11 | **new this session**; the case-labelled active-branch cap route now reaches the loose pointwise product-entry estimate `|L̂||D̂||L̂ᵀ| ≤ 36nρₙ‖A‖_M` through the named global source-six/growth predicate. The wrappers accept either an explicit block-diagonal `D̂` hypothesis or named off-branch `D̂` zero data, leaving the concrete branch facts and final exact-coefficient route visible. |
 | Thm 11.4 case-labelled max-entry product adapters | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_active_branch_case_caps_maxEntryNorm_A`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_offbranch_D_entries_zero_active_branch_case_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_active_branch_case_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_offbranch_D_entries_zero_active_branch_case_caps_maxEntryNorm_A` | Ch11 | **new this session**; case-labelled active-branch local caps now feed the max-entry norm `|L̂||D̂||L̂ᵀ|` target and the scalar Bunch-Kaufman product-bound certificate through the named global source-six/growth predicate, with either an explicit block-diagonal `D̂` hypothesis or named off-branch `D̂` zero data. |
+| Thm 11.4 case-labelled stability/solve consumers | `higham11_4_bunch_kaufman_stability_of_path_offbranch_D_entries_zero_active_branch_case_caps_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_active_branch_case_caps_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_offbranch_D_entries_zero_active_branch_case_caps_maxEntryNorm_A_product` | Ch11 | **new this session**; named off-branch-zero data plus case-labelled active-branch local caps now feed the pointwise Bunch-Kaufman stability surface and both finite-product/product-norm solve consumers by internally constructing the branchwise source-six/growth cap package. |
 | Thm 11.4 case-labelled selected stability/solve handoffs | `higham11_4_bunch_kaufman_stability_interface_of_path_offbranch_D_entries_zero_active_branch_case_caps_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_interface_of_path_offbranch_D_entries_zero_active_branch_case_caps_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_interface_of_path_offbranch_D_entries_zero_active_branch_case_caps_maxEntryNorm_A_product` | Ch11 | **new this session**; named off-branch-zero data plus case-labelled active-branch local caps now reach the source-facing Theorem 11.4 stability interface and both finite-product/product-norm solve interfaces by internally constructing the branchwise source-six/growth cap package. |
 | Thm 11.4 branchwise cap-package global aggregators | `higham11_4_bunchKaufmanPath_D_entry_bound_of_branchwise_source_six_growth_caps`, `higham11_4_bunchKaufmanPath_maxEntryNorm_D_le_of_branchwise_source_six_growth_caps`, `higham11_4_bunchKaufmanPath_L_row_sum_bound_of_branchwise_source_six_growth_caps` | Ch11 | **new this session**; branchwise cap packages now feed the global path `D̂` entry cap, `D̂` max-entry cap, and full consumed-row `L̂` source-six row-sum cap directly. The block-diagonal `D̂` shape and nonnegative `Dmax` remain explicit where needed. |
 | Thm 11.4 source-norm branchwise `D̂` aggregators | `higham11_4_bunchKaufmanPath_D_entry_bound_of_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_maxEntryNorm_D_le_of_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_D_entry_bound_of_offbranch_local_entries_zero_branchwise_source_six_growth_caps_maxEntryNorm_A`, `higham11_4_bunchKaufmanPath_maxEntryNorm_D_le_of_offbranch_local_entries_zero_branchwise_source_six_growth_caps_maxEntryNorm_A` | Ch11 | **new this session**; the named branchwise source-six/growth cap package now feeds source-norm global `D̂` entry and max-entry aggregation while deriving `0≤ρₙ‖A‖_M` from `ρₙ≥0`. The off-branch-zero variants discharge the block-diagonal `D̂` shape internally. |
@@ -738,8 +753,22 @@ this session proved the exact base case and the key constants.
 | Source label | Exact claim | Current Lean status | Missing foundation | Smallest next Lean theorem |
 |---|---|---|---|---|
 | Theorem 11.3 | block LDLᵀ backward error: `P(A+ΔA₁)Pᵀ = L̂D̂L̂ᵀ`, `(A+ΔA₂)x̂=b`, `|ΔAᵢ| ≤ p(n)u(|A|+Pᵀ|L̂||D̂||L̂ᵀ|P)+O(u²)` (eq 11.5) | `higham11_3_block_ldlt_backward_error_interface` (assumes the whole conclusion) | **substantially advanced (all-1×1 case)**: proved the exact recursion (`exact_blockLDLT_all_oneByOne`), the component stage bounds, packaged all-index one-stage envelope with nonnegativity, raw-Schur recursive all-1×1 envelope, stored-symmetric rounded Schur bridge, storage-defect one-stage bridge, recursive stored-symmetric all-1×1 envelope (`fl_blockLDLT_stored_all_oneByOne_bound`, `higham11_3_fl_blockLDLT_stored_all_oneByOne_bound`), source-facing all-1×1 perturbation packages (`higham11_3_block_ldlt_backward_error_interface_of_all_oneByOne`, `higham11_3_block_ldlt_backward_error_interface_of_stored_all_oneByOne`), norm-bound and scalar-budget consumers for both all-1×1 packages, `BlockLDLTBackwardError`-to-source-interface bridges for the structured factorization envelope including the `∞`-norm-bound variant, the printed first-order source envelope `p u (|A|+|L̂||D̂||L̂ᵀ|)` bridge, product-entry/max-entry normalization bridges for the structured envelope, and scalar product-bound perturbation consumers with and without `∞`-norm aggregation, including the direct `ε≤p*u` source-scale product-budget consumer. NOTE: (11.5) for 2×2 pivots = **Problem 11.5 (benchmark-reserved)** → stays a hypothesis. | extend the induction to mixed 1×1/2×2 pivots while keeping the 2×2 solve bound as a hypothesis, then relate the accumulated envelope to the printed `p(n)u(|A|+Pᵀ|L̂||D̂||L̂ᵀ|P)+O(u²)` form |
-| Theorem 11.4 | Bunch–Kaufman normwise stability `(A+ΔA)x̂=b`, `‖ΔA‖_M ≤ p(n)ρₙu‖A‖_M+O(u²)` via `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36nρₙ‖A‖_M` | `higham11_4_bunch_kaufman_stability` / `..._solve_backward_error_interface` (assume); scalar max-product, finite-max, matrix-product/max-entry-norm, row-sum/product, first-stage/recursive, exact-budget, stage-growth `D̂`, regional split-to-product, normalized-prefix split, regional-`D̂`, regional `|L̂|`/`D̂`, and direct/split/regional-`D̂`/regional-`LD` unit-initial normalized-prefix adapters now reduce the consumers to the source-style eq. (4.14) scalar certificate | proof now available (Higham [608,1997] §4.3, eqs. 4.11–4.14, appendix A). Constants, branch-test accessors, scalar case-(1)/(3) multiplier/correction/growth caps, scalar one-entry `≤6` row caps, direct case-(2) nonsingularity/correction/growth and local `D̂` pivot cap, conditional case-(2) multiplier/row-sum caps, local 2×2 `CE⁻¹` row caps, finite product-norm consumers, split-to-global `D̂` and `|L̂|` row-sum adapters, combined regional split-to-product consumers, normalized-prefix direct, split, regional-`D̂`, and regional `|L̂|`/`D̂` relaxations including source-normalized `r 0=1` forms, and growth recursions are proved. Case-(4) now has direct determinant lower-bound, nonsingularity, scaled inverse-entry, asymmetric scaled multiplier row-sum, natural-scale pivot-entry caps, scalar and concrete-block local `D̂` caps, correction, and one-step Schur-growth certificates from the printed product tests; the branch-local producer wrappers bundle those growth, row-cap, and `D̂` cap facts for each accepted branch, and the case-labelled path-package/global-bound/product-entry/max-entry/selected-interface adapters route those per-branch facts into the source-six/growth `L̂,D̂` package, global aggregation predicates, loose product-entry estimate, max-entry norm target, scalar product-bound certificate, and source-facing stability/solve interfaces once off-branch `D̂` zeros are known. Remaining: concrete pivot-path first-stage/trailing split, regional/global `|L̂|` and `D̂` cap aggregation, and path data needed by the aggregate row-sum/product caps (or a direct product-entry proof), then instantiate the exact-coefficient (4.14) estimate. | prove per-row or uniform global `|D̂|`, full `|L̂|` row-sum caps, or row-dependent `|L̂|` entry caps from the scalar-branch and direct case-(4) Schur-growth bridges, conditional case-(2) multiplier bridge where its side condition is available, local 2×2 asymmetric scaled row-sum bridge, local 2×2 `CE⁻¹` source-row cap `≤6`, per-pivot `\|E\|\|E⁻¹\|\|E\|` bounds, and Schur-recursion stage maxima; then feed the relevant `higham11_4_bunchKaufmanMaxEntryProductBound...` exact-coefficient wrapper |
+| Theorem 11.4 | Bunch–Kaufman normwise stability `(A+ΔA)x̂=b`, `‖ΔA‖_M ≤ p(n)ρₙu‖A‖_M+O(u²)` via `‖|L̂||D̂||L̂ᵀ|‖_M ≤ 36nρₙ‖A‖_M` | `higham11_4_bunch_kaufman_stability` / `..._solve_backward_error_interface` (assume); scalar max-product, finite-max, matrix-product/max-entry-norm, row-sum/product, first-stage/recursive, exact-budget, stage-growth `D̂`, regional split-to-product, normalized-prefix split, regional-`D̂`, regional `|L̂|`/`D̂`, and direct/split/regional-`D̂`/regional-`LD` unit-initial normalized-prefix adapters now reduce the consumers to the source-style eq. (4.14) scalar certificate | proof now available (Higham [608,1997] §4.3, eqs. 4.11–4.14, appendix A). Constants, branch-test accessors, scalar case-(1)/(3) multiplier/correction/growth caps, scalar one-entry `≤6` row caps, direct case-(2) nonsingularity/correction/growth and local `D̂` pivot cap, conditional case-(2) multiplier/row-sum caps, local 2×2 `CE⁻¹` row caps, finite product-norm consumers, split-to-global `D̂` and `|L̂|` row-sum adapters, combined regional split-to-product consumers, normalized-prefix direct, split, regional-`D̂`, and regional `|L̂|`/`D̂` relaxations including source-normalized `r 0=1` forms, and growth recursions are proved. Case-(4) now has direct determinant lower-bound, nonsingularity, scaled inverse-entry, asymmetric scaled multiplier row-sum, natural-scale pivot-entry caps, scalar and concrete-block local `D̂` caps, correction, and one-step Schur-growth certificates from the printed product tests; the branch-local producer wrappers bundle those growth, row-cap, and `D̂` cap facts for each accepted branch, and the case-labelled path-package/global-bound/product-entry/max-entry/stability/solve adapters route those per-branch facts into the source-six/growth `L̂,D̂` package, global aggregation predicates, loose product-entry estimate, max-entry norm target, scalar product-bound certificate, pointwise stability surface, solve consumers, and source-facing stability/solve interfaces once off-branch `D̂` zeros are known. Remaining: concrete pivot-path first-stage/trailing split, regional/global `|L̂|` and `D̂` cap aggregation, and path data needed by the aggregate row-sum/product caps (or a direct product-entry proof), then instantiate the exact-coefficient (4.14) estimate. | prove per-row or uniform global `|D̂|`, full `|L̂|` row-sum caps, or row-dependent `|L̂|` entry caps from the scalar-branch and direct case-(4) Schur-growth bridges, conditional case-(2) multiplier bridge where its side condition is available, local 2×2 asymmetric scaled row-sum bridge, local 2×2 `CE⁻¹` source-row cap `≤6`, per-pivot `\|E\|\|E⁻¹\|\|E\|` bounds, and Schur-recursion stage maxima; then feed the relevant `higham11_4_bunchKaufmanMaxEntryProductBound...` exact-coefficient wrapper |
 | Theorem 11.7 | Bunch tridiagonal normwise stability, `(A+ΔA₂)x̂=b`, `|ΔAᵢ| ≤ c·u·‖A‖` | `higham11_7_tridiagonal_backward_error_interface` (assumes); Algorithm 11.6 branch tests, the accepted `2×2` pivot determinant lower bound/nonsingularity, inverse-entry bounds, the atomic rounded scalar Schur update, a `Fin 1` trailing-block one-stage printed-budget handoff, the ambient `Fin 3` first-stage embedding, the dimension-generic `Fin (n+3)` local-recursion embedding, trailing-block support packaging, support-preserving perturbation addition, offset-generic zero-prefix base/add packaging including printed-coefficient variants, mixed-depth accumulation, and the offset-two bridge, first local+recursive residual accumulation with printed coefficient addition, the recursive trailing-subproblem perturbation lift, recursive scalar residual composition, zero-prefix support shifting under recursive lifts, leading-support versions of the subproblem and recursive-residual accumulators, the norm-bound version of the leading-support recursive-residual accumulator, the solve-side `ΔA₂` bridge into the source-facing interface with separate nonnegative and direct inf-norm budget forms, the entrywise `|Aᵢⱼ|≤‖A‖∞` bridge for local `Amax` hypotheses, componentwise-to-∞-norm aggregation, source-side norm-bound packaging, finite support-sum aggregation including mixed-offset printed variants, finite supported solve-delta aggregation into the source interface, the trailing-subproblem offset/injectivity bookkeeping for the `2×2` tridiagonal step, matching offset-one lift/support plus scalar and matrix-entry local-recursive norm-bound packages for the `1×1` tridiagonal step, the branch-indexed local assumptions/residual adapter, the terminal-tail branch adapter, finite mixed-pivot path-local adapter, embedded path solve-delta aggregation adapters, the residual-witness ambient-lift wrapper, the concrete local-to-ambient lift package including local block index range/injectivity, ambient row-dot reindexing, current first-trailing row-dot reindexing, outside-block, shifted-leading-block, earlier first-trailing row/column zero lemmas, later-branch filtered sum-zero variants, row dot-product zero variants, full-sum-to-prefix reductions, prefix-to-current splits, composed before-plus-current reductions at first-trailing rows, separated earlier-plus-current dot-product endpoints, cast-free path-local current-family row-dot reindexing, earlier-plus-current path-local current-dot endpoints, first-trailing solve-row additive decompositions, and residual-equation-to-full-solve-row endpoints, branch residual-equation accessors at local and lifted first-trailing entries, concrete path first-trailing embedding bounds, branch-size residual-witness accessors, lifted residual equations at full-ambient first-trailing indices, and concrete lifted-entry simplifiers for those indices, generic local-to-global budget comparison lemmas, zero-offset lifted source endpoints, zero-offset scalar-budget source endpoints, mixed-path start-offset schedule interface, concrete scheduled/prefix path endpoints, uniform-roundoff prefix endpoints, uniform-coefficient prefix endpoints, concrete last-terminal prefix endpoint, terminal/base lifted solve-row endpoints, second-pivot complement row classification, second-pivot lifted solve-row decomposition, second-pivot complement solve-row bridges, the second-pivot reduced local-row bridge, the local-block combined-row adapter, the prefix-zero decomposition, the pointwise-prefix/full-row earlier-lift bridge, the local/prefix handoff bridges, the decomposed local-block combined-row adapter, the tridiagonal base-zero local-block adapter, the branch-matrix local-block adapter, the branch-matrix base-row/local-earlier-zero handoff, the support-reduced local-block, branch-matrix, full-base-row, and global-base-solve row handoffs, the full-base-row-to-branch-matrix base-row bridge, the global base-solve second-pivot adapters, the global base-solve source endpoints including initial-only variants, the coefficient-sum/uniform/scalar full-base-row source endpoints, the branch-matrix/full-base-row/global-base-solve pointwise-prefix and support-reduced source endpoints, the local-block support-reduced source endpoints, the initial-only branch-matrix/full-base-row source endpoints including symmetric-tridiagonal source wrappers, the initial-only earlier-lift vacuity route including the full-row earlier-lift zero specialization, the local/ambient deep-leading-support current-local-block zero reducers, the ambient deep-leading-support prefix-zero reducers, the supported/residual deep-support family zero adapters, the single-support-family branch-matrix/full-base-row/global-base-solve row handoffs, and the inverse branch-matrix combined-local-row-to-base-row extraction are now proved | tridiagonal block-LDLᵀ fl analysis | prove or instantiate the non-initial accepted-`2×2` combined local row equation and the concrete deep-support certificates needed by that non-initial route, then assemble the final lifted solve equation through the existing endpoint row bridges |
+
+2026-07-17 update: the Theorem 11.4 status row also includes head/tail
+cons-decomposition bookkeeping for active pivot-path indices. The head branch's
+local, leading, and final pivots now have named full-path values, every trailing
+branch-local, leading, or final pivot index is identified with the tail-path
+index shifted by the head branch span, same-branch predicates transfer between
+the original and trailing path, and a block-diagonal full-path `D̂` restricts
+to a block-diagonal tail matrix with explicit head-tail zero entries. Concrete
+off-branch zero data and local `D̂` caps now also restrict to the trailing path,
+full-path local `D̂` caps expose the head pivot-block cap, and full-path
+source-six local `|L̂|` row-sum caps restrict to the trailing path by finite
+subset summation over the embedded tail columns. The concrete first-stage /
+trailing split still needs production of the full-path `|L̂|` row-sum caps and
+the final product-bound assembly.
 
 2026-07-17 update: the Theorem 11.7 status row also includes the supported/residual
 witness-family deep-support local-block, branch-matrix combined-row,
@@ -11798,6 +11827,173 @@ Problem transcription.
   local caps into the source-facing 11.4 stability interface and both
   finite-product/product-norm solve interfaces by internally constructing the
   branchwise source-six/growth cap package.
+- 2026-07-17 Theorem 11.4 case-labelled stability/solve consumers:
+  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` →
+  pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of the three case-labelled stability/solve consumers →
+  elaborate; axioms `[propext, Classical.choice, Quot.sound]`. These adapters
+  route named off-branch-zero data plus concrete case-labelled active-branch
+  local caps into the pointwise Bunch-Kaufman stability surface and both
+  finite-product/product-norm solve consumers by internally constructing the
+  branchwise source-six/growth cap package.
+- 2026-07-17 Theorem 11.3 case-labelled factorization handoffs:
+  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` →
+  pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of the three case-labelled factorization handoffs →
+  elaborate; axioms `[propext, Classical.choice, Quot.sound]`. These handoffs
+  route named off-branch-zero data plus concrete case-labelled active-branch
+  local caps into the 11.3 product-scale, norm-bound, and `ε≤p*u`
+  source-scale factorization interfaces by internally constructing the
+  branchwise source-six/growth cap package.
+- 2026-07-17 Theorem 11.4 active-path head/tail pivot-index bookkeeping:
+  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` →
+  pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of the six head/tail pivot-index lemmas → elaborate;
+  axioms `[propext, Classical.choice, Quot.sound]`. These lemmas identify
+  head local/leading/final pivot indices and trailing local/leading/final pivot
+  indices under the active-path cons decomposition, supporting the remaining
+  Bunch-Kaufman first-stage/trailing split.
+- 2026-07-17 Theorem 11.4 active-path tail split block-diagonal bookkeeping:
+  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` →
+  pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of the tail-index, same-branch transfer, and
+  block-diagonal tail split declarations → elaborate; axioms
+  `[propext, Classical.choice, Quot.sound]`. These lemmas embed trailing
+  subpath indices into the full Bunch-Kaufman path, transfer same-branch data
+  both ways, separate head and tail indices, and restrict a block-diagonal
+  full-path `D̂` to the trailing path with explicit head-tail zero entries.
+- 2026-07-17 Theorem 11.4 active-path tail `D̂` cap restriction:
+  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` →
+  pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of the four tail `D̂` restriction declarations →
+  elaborate; axioms `[propext, Classical.choice, Quot.sound]`. These lemmas
+  identify tail-matrix values on branch-local tail indices, restrict
+  off-branch zero data and local `D̂` caps to the trailing path, and extract
+  the head pivot-block local `D̂` cap from a full-path cap.
+- 2026-07-17 Theorem 11.4 active-path tail `|L̂|` row-sum restriction:
+  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` →
+  pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of the three tail `|L̂|` row-sum restriction
+  declarations → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  The image-sum lemma proves embedded tail columns form a finite subset of the
+  full path, so full-path source-six local `|L̂|` row caps restrict to the
+  trailing active path.
+- 2026-07-17 Theorem 11.4 active-path tail source-six/growth package
+  restriction: `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
+  → pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_tail`
+  → elaborate; axioms `[propext, Classical.choice, Quot.sound]`. This
+  theorem packages the established tail block-diagonal `D̂`, local
+  growth-`D̂`, and source-six `|L̂|` row-sum restrictions into the named path
+  source-six/growth package.
+- 2026-07-17 Theorem 11.4 active-path tail product-bound consumers:
+  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` →
+  pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of the two tail product-bound consumers → elaborate;
+  axioms `[propext, Classical.choice, Quot.sound]`. The wrappers compose the
+  tail source-six/growth package restriction with existing path product
+  consumers, producing the restricted trailing max-entry product bound and
+  scalar product certificate.
+- 2026-07-17 Theorem 11.4 active-path source-six/growth first-stage product
+  share: `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` →
+  pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of the local-share and head-share product-entry wrappers
+  → elaborate; axioms `[propext, Classical.choice, Quot.sound]`. The new
+  product-entry wrappers derive the local `36ρₙAmax` share from a packaged
+  path source-six/growth certificate and expose the head-touching first-stage
+  split form.
+- 2026-07-17 Theorem 11.4 active-path source-six/growth split hypotheses:
+  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` →
+  pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of
+  `higham11_4_first_stage_recursive_product_split_of_path_source_six_growth_LD_package`
+  → elaborate; axioms `[propext, Classical.choice, Quot.sound]`. This wrapper
+  packages the head-touching first-stage product share and the trailing-region
+  `local + recB` inequality for any nonnegative recursive budget.
+- 2026-07-17 Theorem 11.4 active-path source-six/growth first-stage recursive
+  product entries: `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
+  → pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of
+  `higham11_4_product_entries_of_path_source_six_growth_LD_package_first_stage_recursive`
+  → elaborate; axioms `[propext, Classical.choice, Quot.sound]`. This
+  theorem combines the packaged split hypotheses with the existing
+  first-stage/trailing scalar aggregation to get the full-path all-entry
+  `36·fullSpan·ρₙAmax` product estimate from a tail recursive budget.
+- 2026-07-17 Theorem 11.4 active-path source-six/growth first-stage recursive
+  product consumers: `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
+  → pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of the recursive max-entry norm and scalar product
+  consumers → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  These wrappers package the recursive all-entry estimate into the source
+  max-entry norm target and scalar product certificate.
+- 2026-07-17 Theorem 11.4 active-path source-six/growth first-stage recursive
+  stability/solve consumers: `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
+  → pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of the recursive stability, finite-product solve, and
+  max-entry-norm solve consumers → elaborate; axioms `[propext,
+  Classical.choice, Quot.sound]`. These wrappers thread the recursive path
+  product certificate into the pointwise stability bridge and the two solve
+  budget consumers.
+- 2026-07-17 Theorem 11.3 active-path source-six/growth first-stage recursive
+  factorization consumers: `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
+  → pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of the recursive factorization product-scale,
+  norm-bound, and source-scale consumers → elaborate; axioms `[propext,
+  Classical.choice, Quot.sound]`. These wrappers thread the recursive path
+  product certificate into the `BlockLDLTBackwardError` factorization
+  interfaces.
+- 2026-07-17 Theorem 11.3 active-path source-six/growth first-stage recursive
+  source-norm factorization consumers: `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
+  → pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of the source-norm recursive factorization product-scale,
+  norm-bound, and source-scale consumers → elaborate; axioms `[propext,
+  Classical.choice, Quot.sound]`. These wrappers specialize the recursive
+  factorization consumers to `maxEntryNorm A`.
 - New vs pre-existing warnings: **no new warnings** from the edited Chapter 11 file. The target
   build warnings are pre-existing in `HighamChapter9.lean`, `CholeskyFl.lean`, and
   `HighamChapter10.lean` (deprecated `Fin` coercions, unused simp arguments, one `ring`
