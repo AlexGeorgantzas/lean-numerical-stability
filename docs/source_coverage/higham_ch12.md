@@ -149,8 +149,8 @@ No repeated blocker or red bottleneck remains.
   the narrowed import surface.
 - Focused target after the audit batch:
   `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter12` — PASS.
-- Chapter-level aggregate gate:
-  `lake build LeanFpAnalysis.FP` — PASS, 4102 jobs. The emitted diagnostics
+- Post-merge chapter-level aggregate gate:
+  `lake build LeanFpAnalysis.FP` — PASS, 4315 jobs. The emitted diagnostics
   were pre-existing linter/deprecation warnings in untouched modules from
   Chapters 9-10, 14, 16, and 19-21, plus Cholesky, QR, matrix-power,
   FastMatMul, and test-matrix modules; no diagnostic came from Chapter 12.
