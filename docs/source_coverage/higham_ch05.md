@@ -102,11 +102,13 @@ rounding analysis are now CLOSED in `LeanFpAnalysis/FP/Algorithms/Ch5DerivativeE
 `ch5psi_*` for the nonneg / strictly-alternating perfect-relative-accuracy corollaries), axiom-clean.
 Both primary labels are VERIFIED. **Gate = PASS for the primary-label + numbered-equation scope.**
 
-Remaining optional non-gating residuals (precise body-prose asides):
-1. Newton-form evaluation error analysis (§5.3 closing displays) — no rounded generalized-Horner Newton-form
-   evaluator / `<3n>` bound.
-3. Monotone-ordering corollary to (5.11)/(5.12) (`alpha_0 < ... < alpha_n` ⇒ `|L_{n-1}|...|L_0| = |L|`).
-4. Algorithm 5.1 complex-data remark (`sqrt(2)*gamma_2*(2*mu - |y|)` via Lemma 3.5).
+**Follow-up (2026-07-17):** the Newton-form §5.3 analysis and the monotone-ordering corollary are now
+CLOSED in `LeanFpAnalysis/FP/Algorithms/Ch5NewtonForm.lean` (`ch5newton_backward_error` = the `<3n>`
+backward result for the rounded generalized-Horner Newton-form evaluator; `ch5newton_forward_error_bound`;
+plus the strictly-increasing-node corollary `|L_{n-1}|...|L_0| = |L|`), axiom-clean.
+
+Remaining optional non-gating residual (precise body-prose aside):
+- Algorithm 5.1 complex-data remark (`sqrt(2)*gamma_2*(2*mu - |y|)` via Lemma 3.5).
 
 Documented PARTIAL residuals (do not block a future PASS if the four rows above close, but must stay recorded):
 

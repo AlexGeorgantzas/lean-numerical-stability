@@ -131,11 +131,17 @@
   finite-format model the printed source itself requires (the bare-FPModel impossibility theorems remain as
   honesty guards). The accuracy bounds carry NO smuggled hypothesis on µ.
 
-- **Algorithm 4.3 (Priest) — ONE remaining research-grade residual.**
-  `LeanFpAnalysis/FP/Algorithms/PriestAccuracy.lean` reduces the printed `|s_n−ŝ_n| ≤ 2u|s_n|` (n≤β^{t−3},
-  sorted decreasing) to a SINGLE named lemma `PriestAllStepsExact` (the faithful-rounding step-accumulation
-  invariant, Priest 1992 thesis §4.1). That lemma is a genuine, intricate faithful-rounding result, honestly
-  documented as open — an allowed BLOCKED terminal residual under core mode, not a bookkeeping gap.
+- **Algorithm 4.3 (Priest) — ONE remaining research-grade residual, now sharpened.**
+  `LeanFpAnalysis/FP/Algorithms/PriestAccuracy.lean` first reduced the printed `|s_n−ŝ_n| ≤ 2u|s_n|`
+  (n≤β^{t−3}, sorted decreasing) to `PriestAllStepsExact` (per-step exactness). **Follow-up (2026-07-17):**
+  `LeanFpAnalysis/FP/Algorithms/PriestDefectBounded.lean` REMOVES the exactness idealization: it *derives*
+  the wrong-orientation FastTwoSum defect bound `|(y+u)−(c+x)| ≤ (u+O(u²))|x|` from the relative-error
+  model alone (`priestDB_twoSum_defect_bound`), carries a defect-bounded invariant `sₙ+cₙ = Σxᵢ + ΣEⱼ`
+  through the sorted loop, and reduces the printed bound to a SINGLE strictly-weaker residual
+  `priestDB_defectBudget` (`|cₙ| + Σⱼ|Eⱼ| ≤ 2u|Σxᵢ|`; proved implied by `PriestAllStepsExact`). The only
+  un-formalized step is the sorted-order + n≤β^{t−3} magnitude accounting that discharges that budget
+  (Priest 1992 thesis §4.1) — a genuine research-grade faithful-rounding argument, allowed BLOCKED
+  terminal residual, no smuggling.
 
 Honest non-gating PARTIAL residuals: (4.7) tie case |a|=|b| and normal-range proviso; Problem 4.6
 representability half; Problem 4.10 IEEE run completion.

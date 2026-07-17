@@ -115,8 +115,11 @@ import LeanFpAnalysis.FP.Algorithms.Ch14MethodDProductDischarge
 import LeanFpAnalysis.FP.Algorithms.Chapter06Lemma66
 import LeanFpAnalysis.FP.Algorithms.KahanCompensatedFiniteFormat
 import LeanFpAnalysis.FP.Algorithms.PriestAccuracy
+import LeanFpAnalysis.FP.Algorithms.PriestDefectBounded
 import LeanFpAnalysis.FP.Algorithms.Ch5DerivativeError
+import LeanFpAnalysis.FP.Algorithms.Ch5NewtonForm
 import LeanFpAnalysis.FP.Algorithms.HighamLemma88Entrywise
+import LeanFpAnalysis.FP.Analysis.Higham6Asides
 import LeanFpAnalysis.FP.Algorithms.CondEstimation
 import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCond
 import LeanFpAnalysis.FP.Algorithms.PNormPowerMethod
