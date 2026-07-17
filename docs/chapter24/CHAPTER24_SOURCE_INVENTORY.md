@@ -9,8 +9,7 @@
 - Inspection: all seven pages were text-extracted and visually checked from rendered page images, including Figure 24.1, notes, and the Problems page.
 - Mode: core. Named results, printed equations, exact algorithms, and precise quantitative prose are selected. Empirical plots, notes, and the optional exercise are accounted for but excluded.
 
-The selected-scope gate is **FAIL** only at Theorem 24.3's structured
-mixed-stability reduction.
+The selected-scope gate is **PASS**.
 Exact DFT/inverse foundations, a literal
 recursive radix-2 executor and its canonical-DFT correctness theorem, a rounded
 executor, exact source and computed butterfly/stage matrices, all four
@@ -32,9 +31,12 @@ execution produces the inverse-FFT perturbation with its sharp `n⁻¹f(n,u)`
 budget. `higham24LiteralRoundedCirculantSolveExecution` composes all four
 actual stages. The quantitative backward-stability consequence after Theorem
 24.2 is closed by exact forward/inverse DFT norm scaling.
-`Higham24MixedStabilityExecutionFamily` separates FFT,
-six-scalar-rounding, and quadratic components, and
-`higham24_theorem24_3_explicitDomain` proves the printed `O(u²)` conclusion.
+The literal four-stage execution now also produces the three structured
+perturbations in Theorem 24.3.  The exact rational radii are proved first;
+`higham24_theorem24_3_literal_firstOrder` extracts the printed
+`tη + 6u` term, and `higham24_theorem24_3_literal_quadraticRemainder`
+supplies an explicit coefficient for the `O(u²)` remainder under the standard
+`mu ≤ cMu*u` and small-radius regime.
 
 ## Named results
 
@@ -42,7 +44,7 @@ six-scalar-rounding, and quadratic components, and
 |---|---|---|---|
 | Theorem 24.1, Cooley-Tukey radix-2 factorization (24.1) | printed p. 452 / PDF 2 | FORMALIZE_CORE | `higham24_theorem24_1_stage_factorization` proves `Fₙ=(Aₜ⋯A₁)Pₙ` on explicit binary indices. `higham24BinaryTopStageMatrix`, the `I₂⊗M` lift, and `higham24BinaryStageProduct` transparently expand the ordered source stages; `higham24BitReversalMatrix` is the printed input permutation. **PASS**. |
 | Theorem 24.2, FFT relative forward-error bound | printed p. 453 / PDF 3 | FORMALIZE_CORE | `higham24_theorem24_2_literal` proves the printed `tη/(1-tη)` endpoint directly for `higham24RoundedRadix2FFT`. Primitive complex rounding produces the arithmetic perturbation, the computed-weight absolute-stage estimate is proved, and a recursive Euclidean induction yields the bound without a trace hypothesis. **PASS**. |
-| Theorem 24.3, Yalamov structured mixed stability | printed p. 456 / PDF 6 | FORMALIZE_CORE / CORE-NAMED-RESULT | The exact (24.8) algebra is proved, but `Higham24MixedStabilityExecutionFamily` assumes the FFT/scalar splits and bounds. Its exact-zero witness is not the rounded solver. **OPEN / CONDITIONAL TRANSFER**. |
+| Theorem 24.3, Yalamov structured mixed stability | printed p. 456 / PDF 6 | FORMALIZE_CORE / CORE-NAMED-RESULT | `higham24_literalStructuredMixedStability_identity` constructs `Δc`, `Δb`, and `Δx` from the literal solver and proves the exact structured equation. `higham24_theorem24_3_literal_exactRadii` proves the pre-asymptotic rational bounds; the first-order and quadratic-remainder theorems recover `tη+6u+O(u²)` with an explicit coefficient. No target equation or perturbation budget is assumed. **PASS (EXPLICIT-DOMAIN)**. |
 
 ## Printed equation tags
 
@@ -69,6 +71,7 @@ six-scalar-rounding, and quadratic components, and
 | DFT diagonalization and eigenvalues `d=F_n c` | p. 455 / PDF 5 | FORMALIZE_CORE | `higham24_dft_mul_circulant` and `higham24_circulant_diagonalization` prove `F_n C(c) F_n⁻¹ = diag(F_n c)` for the local sign/index convention. **PASS**. |
 | Four-stage FFT circulant solver | p. 455 / PDF 5 | FORMALIZE_CORE | `higham24ExactCirculantSolve` implements `d=F_n c`, `g=F_n b`, pointwise `h=D⁻¹g`, and `x=F_n⁻¹h`; `higham24_exactCirculantSolve_correct` proves `C(c)x=b` when every Fourier eigenvalue is nonzero. **PASS (EXPLICIT-DOMAIN)**. |
 | Rounded four-stage FFT circulant solver | pp. 455-456 / PDFs 5-6 | FORMALIZE_CORE | `higham24LiteralRoundedCirculantSolve` performs both literal forward FFTs, literal rounded complex divisions, and the literal conjugated-forward inverse FFT. `higham24LiteralRoundedCirculantSolveExecution` produces `Δ₂`, `E`, and `Δ₃` from those operations under computed-diagonal nonbreakdown; `higham24_literalRoundedCirculantSolve_composed` proves the exact composed matrix expression. The inverse stage additionally has the sharp printed `n⁻¹f(n,u)` bound. **PASS (ALGORITHM / LOCAL PERTURBATIONS)**. |
+| Structured perturbations and mixed-stability radius | p. 456 / PDF 6 | FORMALIZE_CORE | `Higham24Structured.lean` constructs the inverse factors `(I+E)⁻¹` and `(I+Δ₃F)⁻¹`, reconstructs the perturbed circulant generator, and proves norm bounds for all three produced perturbations. The common first-order radius and its explicit quadratic remainder close Theorem 24.3. **PASS (EXPLICIT-DOMAIN)**. |
 | Circulant closure/commutativity | structural content of §24.2 | FORMALIZE_CORE | `higham24_circulant_add`, `higham24_circulant_mul`, and `higham24_circulant_mul_comm`. **PASS**. |
 | Forward-error prose after Theorem 24.3 | p. 456 / PDF 6 | DEFER / DEFER-MISSING-PRECISE-STATEMENT | The source says only “a multiple of `kappa_2(C)u`” and prints no multiplier or quantified neighborhood. **DEFERRED**. |
 | §24.3 Notes and References | pp. 456-457 / PDFs 6-7 | EXCLUDED-BIBLIOGRAPHIC | Accounted for. |

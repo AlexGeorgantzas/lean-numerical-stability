@@ -9,13 +9,13 @@
 | (23.7a)--(23.7b) | pp. 436--437 | exact tensor product/reconstruction and correctness predicate | PROVED one level |
 | (23.8)--(23.9) 3M | pp. 437--438 | exact noncommutative three-product identity | PROVED |
 | (23.10), (23.17) | pp. 438, 442 | actual rounded conventional matrix evaluator | PROVED with explicit quadratic remainder |
-| (23.11), Miller | p. 438; cited result | import/reconstruct Miller's theorem for an actual finite rounded polynomial algorithm | OPEN |
+| (23.11), Miller | p. 438; cited result | literal rounded coefficient dots, bilinear products, and output reconstruction; explicit tensor-weight `f_n` | PROVED with explicit `O(u²)` remainder |
 | Theorem 23.1 / (23.12) | p. 439 | actual rounded Winograd inner product and factor expansion | PROVED |
-| Theorem 23.2 / (23.14)--(23.16) | pp. 440--442 | actual rounded recursive Strassen evaluator plus the printed induction | PARTIAL: scalar 12/46 recurrence proved; theorem OPEN |
-| Theorem 23.3 / (23.18) | pp. 442--443 | actual rounded recursive Winograd--Strassen evaluator plus induction | PARTIAL: scalar 18/89 recurrence proved; theorem OPEN |
-| Theorem 23.4 / (23.19) | p. 443; Bini--Lotti citation | external constants/theorem and actual rounded bilinear recursion | OPEN; only parameterized coefficient algebra retained |
+| Theorem 23.2 / (23.14)--(23.16) | pp. 440--442 | literal rounded recursive Strassen evaluator; seven-product/four-block induction; one-level residual factorization | PROVED with printed closed coefficient and explicit `O(u²)` remainder |
+| Theorem 23.3 / (23.18) | pp. 442--443 | actual 15-addition rounded recursive Winograd--Strassen evaluator plus induction | PROVED with closed 18/89 coefficient and `O(u²)` remainder |
+| Theorem 23.4 / (23.19) | p. 443; Bini--Lotti citation | literal rounded recursive tensor evaluator; explicit algorithm-dependent `alpha`,`beta` envelope | PROVED with `O(u²)` remainder |
 | (23.20)--(23.24) and scaling | pp. 445--446 | actual conventional/3M rounded evaluators and row-sum norms | PROVED |
-| 23.B3 / Problem 23.6 | pp. 446, 449 | combine actual 3M and recursively rounded Strassen paths | PARTIAL coefficient / OPEN theorem |
+| 23.B3 / Problem 23.6 | pp. 446, 449 | rounded complex input sums, three actual recursive Strassen products, rounded output subtractions | PROVED with source `6*(c+4)` coefficient and two `O(u²)` component remainders |
 
 The proof source was the rendered local PDF
 `References/1.9780898718027.ch23.pdf`, especially pp. 438, 440, 442--443.

@@ -13,16 +13,17 @@ bound, circulant structure, DFT diagonalization, exact four-stage circulant
 solver correctness, and exact (24.8) rearrangement are formalized without
 placeholders.
 
-The chapter gate is **FAIL** only at the final structured mixed-stability
-reduction listed in `CHAPTER24_NOT_PROVED_LEDGER.md`. The exact recursive FFT theorem extends to the
+The chapter selected-scope gate is **PASS**. The exact recursive FFT theorem extends to the
 printed stage-matrix/bit-reversal product in Theorem 24.1. The rounded results
 now include a literal end-to-end Theorem 24.2 producer and produced forms of
 (24.6)-(24.7): a zero-safe rank-one matrix realizes each pointwise FFT error,
 has the printed spectral-norm budget, and supplies both actual forward stages.
 The diagonal-scaling and inverse-transform perturbations and the complete
-four-stage rounded execution now come from literal operations as well. The
-structured `Δc`, `Δb`, and `Δx` first-order splits are not yet derived from
-that execution, so the exact-zero witness does not close Theorem 24.3.
+four-stage rounded execution come from literal operations as well.  The
+structured `Δc`, `Δb`, and `Δx` are now constructed from that execution:
+their exact equation, rational radii, printed first-order term, and an explicit
+quadratic remainder coefficient close Theorem 24.3 without a target-bearing
+premise.
 
 ## Lean deliverables
 
@@ -95,6 +96,13 @@ that execution, so the exact-zero witness does not close Theorem 24.3.
   - exact forward/inverse DFT Euclidean scaling and `‖Fₙ⁻¹‖₂=1/√n`
   - equal relative input/output perturbation norms
   - `higham24_literalFFT_backward_stable`
+- `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24Structured.lean`
+  - genuine inverse factors for `(I+E)` and `(I+Δ₃F)`, with norm bounds
+  - algorithmically produced generator, right-hand-side, and solution perturbations
+  - `higham24_literalStructuredMixedStability_identity`
+  - `higham24_theorem24_3_literal_exactRadii`
+  - `higham24_theorem24_3_literal_firstOrder`
+  - `higham24_theorem24_3_literal_quadraticRemainder`
 
 The DFT proof deliberately reuses the already proved Chapter 9 Fourier
 Vandermonde Gram and scaled-adjoint inverse theorems instead of duplicating a
@@ -103,22 +111,16 @@ second roots-of-unity development.
 ## Verification
 
 - Focused Lean checks passed for all Chapter 24 modules.
-- The combined target build covering all eight public Chapter 24 modules and
-  both Chapter 25 modules passed; the only replayed warnings came from
-  pre-existing dependencies.
+- The combined target build covering all nine public Chapter 24 modules passed.
 - Forbidden-token scan over the new modules found no `sorry`, `admit`, `axiom`,
   `unsafe`, or `opaque` declarations.
 - `git diff --check` passed for the Chapter 24 files.
-- `#print axioms` for the source-facing Theorems 24.1-24.2, the conditional
-  Theorem 24.3 transfer, `higham24_circulant_diagonalization`, and (24.7)
-  reports only `propext`, `Classical.choice`, and `Quot.sound`; this trust
-  check does not promote the conditional Theorem 24.3 transfer to closure.
+- `#print axioms` for the source-facing Theorems 24.1-24.3,
+  `higham24_circulant_diagonalization`, and (24.7) reports only `propext`,
+  `Classical.choice`, and `Quot.sound`.
 
 ## Remaining boundary
 
-Equations (24.6)-(24.7), the remaining literal rounded solver stages, their
-composition, and the quantitative backward-stability consequence after
-Theorem 24.2 are closed. Theorem 24.3 remains selected; see
-`CHAPTER24_BOTTLENECK_LEDGER.md`. The
-under-specified “a multiple of `kappa_2(C)u`” prose is stably deferred, and
-Problem 24.1 remains an optional excluded exercise.
+All selected Chapter 24 claims are closed.  The under-specified “a multiple of
+`kappa_2(C)u`” prose is stably deferred, and Problem 24.1 remains an optional
+excluded exercise.

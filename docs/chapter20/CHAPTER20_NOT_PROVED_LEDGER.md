@@ -2,19 +2,16 @@
 
 ## Gate
 
-The Chapter 20 core selected-scope gate is **FAIL** as of 2026-07-16. The
-named implementation-facing Theorem 20.7 result makes its local rounded-trace
-budgets and nonbreakdown assumptions visible, but selected precise prose row
-27 on p. 395 remains open.
+The Chapter 20 core selected-scope gate is **PASS** as of 2026-07-16. Every
+selected precise row is terminal at its documented API. Implementation-facing
+results continue to expose their rounded-trace and nonbreakdown domains.
 
 The authoritative row-by-row accounting is
 `docs/chapter20/CHAPTER20_SOURCE_INVENTORY.md`.
 
 ## Open selected-scope rows
 
-| Source row | Status | Exact missing dependency | Smallest next theorem |
-|---|---|---|---|
-| p. 395 / PDF 15: row sorting gives `max_i {alpha_i, beta_i} <= sqrt(m) (1 + sqrt(2))^(n-1)` and `phi` is independent of row ordering | PARTIAL / OPEN SELECTED | `PivotedStoredQRCoxHighamRowSortingCaps` assumes `alpha_row_sorted`, `beta_row_sorted`, and `rowSortCoeff_le_printed`; no actual row-pivoting/sorting trace produces them. No local theorem proves invariance of the printed `phi` for the same reordering. | Define the executable row-order policy and prove its Cox-Higham stage-growth invariant. Derive both normalized ratio bounds and the printed common coefficient, then prove that simultaneous row reordering transports the active-tail numerator and denominator defining `phi` without changing their maximum ratio. |
+None.
 
 ## Audited source boundaries that do not fail the gate
 
@@ -49,6 +46,18 @@ The authoritative row-by-row accounting is
 
 ## Closed during the 2026-07-16 Split 4 repair
 
+- `Higham20RowSorting.exactPrinted_iSup_max_alpha_beta_le_cap_of_source_injective` closes the p. 395
+  row-sorting cap for the executable decreasing source-row infinity-norm
+  permutation and the actual exact active-max signed-Householder matrix/RHS
+  trace. Ordinary source full column rank is proved to preserve injectivity
+  through row/column permutations and the exact factorization, hence every
+  pivot norm is positive; the theorem then returns the literal finite `max_i`.
+  `exactPrintedPhi_eq_qrCertificate` identifies the literal stagewise `phi`
+  with its completed `Q^T b`/`R` certificate, and
+  `exactPrintedPhi_independent_of_row_ordering` proves that simultaneous row
+  permutation transports the orthogonal QR certificate and leaves the scalar
+  exactly unchanged.
+
 - `LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_theorem20_4_printed_total_perturbations`
   closes Theorem 20.4 by preserving the exact QR relation, transporting both
   triangular-solve perturbations, normalizing their summed nonnegative witness
@@ -62,8 +71,8 @@ The authoritative row-by-row accounting is
   matrix coefficient `16 gammaTilde`, and proves the RHS coefficient
   `5 gammaTilde`. `roundedPolicy_exact_one_nonempty` gives a concrete nonempty
   instance. The old `topR_tail` counterexample remains as documentation of the
-  route that was rejected. It does **not** close the separate p. 395
-  row-sorting-cap and `phi`-invariance prose row.
+  route that was rejected. The separate p. 395 row-sorting-cap and
+  `phi`-invariance prose row is closed by `Higham20RowSorting.lean`.
 - `GeneralizedQRFactorization.exists_theorem20_9_exact_householder` proves
   unconditional Theorem 20.9 existence for arbitrary source dimensions
   `m + p >= n >= p`; rank assumptions are used only for the theorem's separate
@@ -116,6 +125,7 @@ The authoritative row-by-row accounting is
 - A conditional transfer theorem remains `PARTIAL` whenever its assumptions
   merely restate an accumulated perturbation, minimizer, or target bound. The
   corrected named Theorem 20.7 producer constructs its accumulated
-  perturbations and minimizer conclusion from local trace-operation budgets,
-  but `PivotedStoredQRCoxHighamRowSortingCaps` still assumes the separate
-  row-sorting targets and therefore cannot close prose row 27.
+  perturbations and minimizer conclusion from local trace-operation budgets.
+  The older conditional `PivotedStoredQRCoxHighamRowSortingCaps` is not used as
+  evidence for row 27; the independent executable producer and invariance proof
+  are in `Higham20RowSorting.lean`.

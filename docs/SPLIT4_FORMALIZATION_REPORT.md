@@ -9,16 +9,16 @@ Appendix PDF under `References/`, the complete Problems sections, rendered
 checks of formula-heavy pages, and the repository chapter-formalization skill
 in core mode.
 
-The local skill formerly described the assignment as Chapter 20 only. It now
-states the full Chapters 20-28 plus Appendix A partition in both maintained
-skill copies. The shared planning ledgers remain authoritative for exact source
+At this final audit, the local skill already stated the full Chapters 20-28
+plus Appendix A partition in both maintained skill copies, so it required no
+further edit. The shared planning ledgers remain authoritative for exact source
 labels and were corrected when visual inspection disagreed with them.
 
 ## Per-chapter selected-scope result
 
-The aggregate selected-scope gate is **FAIL**. Chapters 20, 22, 23, 24, 25,
-and 28 retain selected nonterminal rows. Terminal
-citation-dependent or implementation-facing rows use visible
+The aggregate selected-scope gate is **FAIL solely because Chapter 28 row
+28-P3 remains PARTIAL/OPEN**. Chapters 20-27 are PASS with no selected
+nonterminal row. Terminal citation-dependent or implementation-facing rows use visible
 explicit domains whose hypotheses are upstream identities, local operation
 budgets, law properties, or remainder estimates and whose nonvacuity is
 demonstrated where practical; target-bearing certificates are not counted as
@@ -26,15 +26,15 @@ closure.
 
 | Chapter | Gate | Principal local result | Remaining selected-scope boundary |
 |---|---|---|---|
-| 20, least squares | **FAIL** | Theorem 20.4's actual QR/RHS/two-solve total perturbations and common witness; Theorem 20.7's literal pivoted QR/RHS/back-substitution producer with pivot-position `(j+1)^2` | The precise p. 395 row-sorting cap for `alpha_i`/`beta_i` and invariance of `phi` lack an executable row-order producer and proof |
+| 20, least squares | **PASS** | Theorem 20.4's actual QR/RHS/two-solve total perturbations and common witness; Theorem 20.7's literal pivoted QR/RHS/back-substitution producer; executable decreasing-row-norm sorting with the printed `alpha_i`/`beta_i` cap and `phi` invariance | No selected row open; qualitative or coefficient-free prose and documented source discrepancies remain terminal |
 | 21, underdetermined systems | **PASS** | Previously completed and re-audited source-facing theory, algorithms, and explicit-domain rounded results | No selected row open; documented source corrections and domains remain visible |
-| 22, Vandermonde systems | **FAIL** | Literal Algorithms 22.1-22.3 loop/state definitions, symbolic/table/confluent algebra, and several exact recurrence and refinement results | Table 22.1 V1-V6, the Stage-I interpolation/factor-product/final-solve route, rounded factor perturbations, Theorems 22.4/22.6, Corollaries 22.5/22.7, and Problem 22.8 remain open |
-| 23, fast matrix multiplication | **FAIL** | Actual rounded conventional and one-level 3M paths, exact one-level Strassen/Winograd algebra, operation counts, and scalar coefficient recurrences | Miller's (23.11), recursively rounded Strassen/Winograd/Bini-Lotti error inductions, and the combined 3M-Strassen Problem 23.6 endpoint remain open |
-| 24, FFT and applications | **FAIL** | Literal Theorems 24.1-24.2; complete (24.3)-(24.7); actual rounded forward FFTs, diagonal division, inverse FFT, and composed four-stage solver; exact (24.8); backward-stability transfer | Theorem 24.3's structured generator/RHS perturbation split and first-order reduction have not been derived from the actual four-stage execution |
-| 25, nonlinear systems | **FAIL** | Newton/error predicates; literal feasible (25.11) supremum and Taylor-to-limit theorem from a genuine derivative; literal rounded (25.13); stopping algebra; Problem 25.1 | The source-facing implicit-function producer of the local unique solution map and derivative `-F_x⁻¹ F_d` for (25.11) remains open |
+| 22, Vandermonde systems | **PASS** | Exact Hermite factorization and Algorithms 22.1--22.3, including the literal Algorithm 22.3 executor-to-factor bridge and solve; actual rounded (22.19)--(22.21), Theorems 22.4/22.6, checkerboard Corollary 22.5, Problem 22.8 and Corollary 22.7, Algorithm 22.8 | Table 22.1 V1--V6 are citation-only literature-summary rows; empirical/editorial rows are stably skipped |
+| 23, fast matrix multiplication | **PASS** | Literal rounded conventional, Miller, recursive Strassen/Winograd--Strassen/Bini--Lotti, and combined 3M--Strassen evaluators; printed coefficients and `O(u²)` remainders | No selected row open; empirical experiments and optional benchmark problems remain correctly skipped |
+| 24, FFT and applications | **PASS** | Literal Theorems 24.1-24.2; complete (24.3)-(24.7); actual rounded four-stage solver; Theorem 24.3's constructed structured `Δc`, `Δb`, and `Δx`, exact equation, printed first-order radius, and explicit quadratic remainder | No selected row open; coefficient-free forward-error prose remains stably deferred |
+| 25, nonlinear systems | **PASS** | Newton/error predicates; source-facing implicit-function producer for the local unique solution map and derivative `-F_x⁻¹ F_d`; literal feasible (25.11) supremum; literal rounded (25.13); stopping algebra; Problem 25.1 | No selected row open; undefined approximation/decrease claims and underspecified cited constants remain stably deferred |
 | 26, automatic error analysis | **PASS** | General MDS best-vertex/reorder, reflection, expansion, contraction/retry, and finite run semantics plus stopping/cubic foundations and concrete finite directed-rounding producers for `+`, `-`, `*`, and `/` | No selected row open; MDS assumes no optimizer correctness or termination, while empirical examples remain correctly skipped |
 | 27, software issues | **PASS** | Exact/rounded two-pass scaled norm, Smith division branch safety, and explicit source-range audit including the overbroad universal claim's counterexample | No selected row open; Blue's underspecified prose is terminal deferred |
-| 28, test matrices | **FAIL** | Exact Hilbert/Pascal/Green-inverse algebra; normalized Gaussian/Stewart producer; all-orders Pascal cube and singular-kernel proofs; symmetric Toeplitz DST diagonalization; companion eigenvector, left Krylov basis, scalar-shift rank bound, and exact Gram identity | Hilbert/Cauchy total positivity and asymptotics, Ginibre/Perron and Stewart-Haar producers, randsvd prescribed-spectrum/condition, rank-2, and symmetric-adaptation claims, Pascal moment/palindromic/spectral/optimality/sign-change claims, general Toeplitz spectrum/asymptotic, and companion characteristic/eigenvalue/similarity/SVD endpoints remain open; the printed complex companion-normality iff is a source discrepancy, while undefined `approx`, cost, and LU-convergence rows are terminal deferred |
+| 28, test matrices | **FAIL** | Exact Hilbert/Cauchy/Pascal algebra and condition results; Stewart's concrete normalized-Haar producer; Ginibre density, incidence, expectation, determinant-moment, and characteristic-product reductions; prescribed-spectrum randsvd constructions; Pascal total-positivity and spectral endpoints; general Toeplitz spectrum/condition endpoints; companion characteristic, similarity, and SVD endpoints | The sole selected nonterminal row is 28-P3: the premise-free real-Ginibre expected-count formula for every positive dimension, or an equivalent unconditional limit theorem. The current general limit bridge assumes `RealGinibreFiniteExpectationFormula`. The printed complex companion-normality iff is a terminal source discrepancy, while undefined `approx`, cost, and LU-convergence rows are terminal deferred |
 
 The source-order count audit is:
 
@@ -81,9 +81,29 @@ Source-coverage summaries are under `docs/source_coverage/higham_chNN.md`.
 - `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Exact.lean`
 - `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Probability.lean`
 - `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Asymptotics.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Ginibre.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28GinibreMeasure.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28GinibreIncidence.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28GinibreExpectationGlue.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28GinibreDeterminantMoment.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28GinibreCharacteristicProduct.lean`
 - `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Contracts.lean`
 - `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Stewart.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Cauchy.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28RandsvdNorm.lean`
 - `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Pascal.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28PascalCondition.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28PascalTotalPositivity.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28PascalSpectral.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28PascalOscillation.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28PascalOscillationCore.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28PascalDualFlag.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28PascalOscillationExact.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28ToeplitzGeneral.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28ToeplitzSpectrum.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28ToeplitzCondition.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Companion.lean`
+- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28CompanionSpectral.lean`
 
 All are re-exported by `LeanFpAnalysis.FP.Algorithms`; representative entry
 points are checked by `examples/LibraryLookup.lean`.
@@ -125,20 +145,20 @@ part of the tracked commit.
   the printed unqualified invariance false, so that row is a source discrepancy
   rather than an impossible open theorem.
 - Chapter 24 now has actual producers for both forward FFTs, rounded diagonal
-  division, the inverse FFT, and their exact composition. Theorem 24.3 remains
-  open because its structured first-order generator/RHS split is still only a
-  conditional execution-family input.
+  division, the inverse FFT, and their exact composition. Theorem 24.3 is
+  closed by the constructed structured generator/RHS perturbations, exact
+  equation, printed first-order radius, and explicit quadratic remainder.
 - Chapter 25 (25.11) is implemented as the preceding literal feasible
   limit-supremum, not merely the right-hand scalar; its Taylor-to-limit route
-  is proved from a genuine derivative, but the source-facing implicit-function
-  producer and derivative identity remain open. Equation (25.13) is produced
-  from a literal rounded evaluation.
+  is proved from a genuine derivative. The source-facing implicit-function
+  producer and derivative identity are closed, and Equation (25.13) is
+  produced from a literal rounded evaluation.
 
 ## Verification and trust
 
-The final Chapter 28 focused build passed all 3,138 jobs, the Algorithms
-umbrella passed all 4,036 jobs, and the complete repository build passed all
-4,087 jobs. `examples/LibraryLookup.lean` compiled successfully. A
+The fresh Algorithms umbrella build passed all 4,246 jobs and the complete
+repository build passed all 4,296 jobs. `examples/LibraryLookup.lean` compiled
+successfully. A
 representative cross-chapter `#print axioms` audit, including actual producers
 from Chapters 20-28, reported only `propext`, `Classical.choice`, and
 `Quot.sound`. Forbidden-token, merge-marker, deleted-name, import/lookup,

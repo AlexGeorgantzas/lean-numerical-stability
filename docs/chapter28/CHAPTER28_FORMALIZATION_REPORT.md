@@ -6,137 +6,97 @@
 - Chapter: 28, "A Gallery of Test Matrices", printed pp. 511-526.
 - Source file: `References/1.9780898718027.ch28.pdf`.
 - Mode / split: core / Split 4.
-- Planning documents: full blueprint, Split 4 contract, chapter index.
-- Selected-scope gate: **FAIL** because the selected Hilbert/Pascal
-  asymptotic and total-positivity rows, the p. 515 Cauchy formulas, the p. 517
-  random-matrix probability producers and normalized-Haar conclusion, the
-  p. 517-518 prescribed-spectrum, rank-2, and symmetric randsvd endpoints, and
-  the remaining p. 522-523 Toeplitz/companion endpoints are open.
+- Selected-scope gate: **FAIL solely because 28-P3 remains PARTIAL/OPEN**.
+  Every selected non-Ginibre mathematical row is PASS or has a terminal
+  source-imprecision/source-discrepancy disposition.
 
 ## Compiled coverage
 
-| Source | Lean declaration | Honest status |
+| Source group | Principal production declarations | Honest status |
 |---|---|---|
-| Hilbert/Cauchy definitions | `hilbertMatrix`, `cauchyMatrix`, transpose theorems | VERIFIED definitions and symmetry/swap laws |
-| (28.1)-(28.4) | `hilbertMatrix_eq_choleskyGram`, `hilbert_det_formula`, `factorInverseGram_eq_hilbertInverseFormula`, `hilbert_inverse_formula`, `hilbertCholeskyFactor_mul_inverse` | GENERICALLY VERIFIED, including both-sided printed inverse and exact determinant |
-| Hilbert definiteness/total positivity | `hilbertMatrix_isSymPosDef_explicit`; Cauchy formula positivity precursor | SPD VERIFIED; total positivity OPEN pending the general ordered-minor determinant formula |
-| Cauchy formulas | exact candidates, `CauchyAdmissible`, nonzero factor/entry lemmas, source-shaped L/U and `cauchy_firstPivot_schur_entry` | PARTIAL; general determinant, inverse, LU, inverse-entry sum, and total positivity OPEN |
-| Randsvd definition/schedules | `rectangularDiagonal`, `randsvdMatrix`, four singular-value schedules, `randsvdMatrix_transpose_mul_self`, `stewartRandsvdMatrix` | VERIFIED definitions and samplewise Gram algebra; PARTIAL/OPEN for the prescribed singular-value multiset and `alpha = kappa_2(A)`, the single-Householder rank-2 decomposition, and the symmetric prescribed-eigenvalue adaptation; exact Haar laws of the paired factors also depend on the open Theorem 28.1 endpoint |
-| Theorem 28.1 | `stewartGaussianInputMeasure`, exact local reduction, embedded Householder/sign/product producer, `stewartOrthogonalGroupOutput`, `stewartOrthogonalGroupLaw`, `StewartTheorem28_1HaarConclusion` | PARTIAL/OPEN: input normalization, reduction, every-sample orthogonality, producer measurability, and push-forward normalization are VERIFIED; the Gaussian push-forward Haar/left-invariance theorem is not proved |
-| Pascal | explicit SPD quadratic form, factorization, determinant, involution, inverse, Cohen entries, `signedPascal_conj_pascalMatrix`, `pascal_reciprocal_eigenpair`, final-entry kernel, rotated cube identity | finite SPD/algebra, the all-orders singular perturbation, `T³=I`, and the central-binomial/factorial-ratio Stirling endpoints are VERIFIED; the general moment/contour representation and characteristic-polynomial palindromicity are OPEN, the literal first condition-number `~` is a source-notation discrepancy, and a faithful rough-order theorem, optimal perturbation norm, total positivity, and eigenvector sign changes remain OPEN |
-| Toeplitz | definition/transpose/Green inverse plus direct sine eigenpairs and normalized DST diagonalization | Green inverse and the full symmetric-family spectrum VERIFIED; general `T_n(c,d,e)` spectrum and the second-difference operator-norm/asymptotic endpoint PARTIAL/OPEN; LU/cyclic-reduction convergence prose is DEFERRED as underspecified |
-| Companion | eigenvector, exact target-polynomial coefficients, explicit all-order left Krylov basis, unit-determinant scalar-shift minor/rank bound, and direct Gram identity | eigenvector/Krylov/rank-form nonderogatory/Gram algebra VERIFIED; characteristic polynomial, `compan(poly(A))` eigenvalue preservation, similarity transport, and `2≤n` singular-value formulas remain PARTIAL/OPEN. The printed complex normality iff is a SOURCE DISCREPANCY; its repaired `n≥2`, `|a_0|=1` form is open. |
-| Probability rows | normalized product laws, multiplicity-correct real-root count, event surfaces, conditional Ginibre/Perron transfers, and Stewart's exact orthogonal-group push-forward surface | PARTIAL/OPEN: root-count measurability/integrability, the finite Ginibre expectation/asymptotic, the uniform boundary-null/Perron producer, and Stewart left-invariance/Haar proof are absent |
-| Asymptotic rows | exact proposition surfaces plus unconditional Pascal Stirling theorems | PARTIAL/OPEN: only the central-binomial and factorial-ratio Stirling endpoints are closed; the literal Hilbert determinant and first Pascal condition-number ratio readings are too strong, faithful log/rough-order theorems remain open, and rounded `3.5` is not strict ratio equivalence |
+| Hilbert definitions, SPD, inverse, Cholesky, determinant, total positivity | `hilbertMatrix`, `hilbertMatrix_isSymPosDef_explicit`, `factorInverseGram_eq_hilbertInverseFormula`, `hilbert_inverse_formula`, `hilbert_inverse_formula_left`, `hilbertMatrix_eq_choleskyGram`, `hilbertCholeskyFactor_mul_inverse`, `hilbertCholeskyFactorInverse_mul`, `hilbert_det_formula`, `hilbertMatrix_isStrictlyTotallyPositive` | PASS |
+| Hilbert determinant and shifted-norm asymptotics | `log_hilbert_det_eq_sum`, `hilbertDetLeadingLogRate_proved`, `opNorm2_shiftedHilbert_le_pi`, `pi_sub_sixteen_div_log_succ_le_opNorm2_shiftedHilbert`, `shiftedHilbert_norm_asymptotic` | PASS for the faithful leading-log determinant statement and the precise `π + O(1/log n)` norm statement; rounded condition-number `3.5` clause is terminally deferred |
+| Cauchy formulas | `cauchyMatrix_det_eq_formula`, `cauchyMatrix_mul_cauchyInverseFormula`, `cauchyInverseFormula_mul_cauchyMatrix`, `cauchyLower_mul_cauchyUpper`, `sum_cauchyInverseFormula`, `cauchy_ordered_minor_det_formula`, `cauchyMatrix_isStrictlyTotallyPositive` | PASS for determinant, inverse, Cho LU, inverse-entry sum, ordered minors, and total positivity |
+| Theorem 28.1 | `stewartOrthogonalGroupLaw_eq_normalizedOrthogonalHaar`, `stewartTheorem28_1HaarConclusion` | PASS: the concrete Gaussian Householder producer has normalized Haar law in every dimension |
+| Randsvd spectrum and schedules | `randsvdMatrix_rightGram_column_eigenpair`, `randsvdMatrix_rightSingularVectors_orthonormal`, `kappa2_randsvdMatrix_eq_of_attained_bounds`, `randsvd_oneLarge_kappa2_eq_alpha`, `randsvd_oneSmall_kappa2_eq_alpha`, `randsvd_geometric_kappa2_eq_alpha`, `randsvd_arithmetic_kappa2_eq_alpha` | PASS under explicit orthogonality, ordering, positivity, and nonzero hypotheses |
+| Randsvd structural warnings/adaptation | `singleHouseholder_randsvd_eq_diagonal_add_rankTwo`, `singleHouseholder_randsvd_correction_rank_le_two`, `symmetricRandsvdMatrix`, `symmetricRandsvdMatrix_transpose`, `symmetricRandsvdMatrix_column_eigenpair` | PASS |
+| Hilbert/Pascal moment representations | `intervalMomentMatrix_quadraticForm`, `intervalMomentMatrix_quadraticForm_re_nonneg`, `intervalMomentMatrix_quadraticForm_re_pos`, `hilbertMatrix_eq_intervalMomentMatrix`, `pascalMoment_integral`, `pascalMatrix_eq_intervalMomentMatrix`, `pascal_circleAverage`, `pascal_circleMoment_normalized`, `pascal_circleMoment` | PASS |
+| Pascal algebraic/oscillation core | `pascalMatrix_eq_lower_mul_transpose`, `pascalMatrix_det`, `signedPascal_mul_self`, `pascalMatrix_mul_signedGram`, `signedGram_mul_pascalMatrix`, `pascalInverseFormula_apply_of_le`, `signedPascal_conj_pascalMatrix`, `pascal_reciprocal_eigenpair`, `pascal_sub_last_entry_has_nonzero_kernel`, `pascalIdentityCubeRootCandidate_cube`, `pascalMatrix_isStrictlyTotallyPositive`, `pascalSortedEigenvalue_strictAnti`, `pascalSortedEigenvector_hasExactlySignChanges` | PASS |
+| Pascal characteristic polynomial | `pascal_charpoly_reciprocal`, `pascal_charpoly_palindromic_of_even` | PASS for the correct signed/parity theorem; SOURCE-DISCREPANCY for the false sign-free all-order sentence |
+| Pascal optimal perturbation/asymptotics | `pascalOptimalSingularizingPerturbation_mulVec`, `pascalOptimalPerturbation_has_nonzero_kernel`, `opNorm2_pascalOptimalSingularizingPerturbation`, `pascalOptimalPerturbation_is_operator2_minimal`, `pascalConditionTwo_log_rate`, `pascalOptimalPerturbation_log_rate`, `pascalCentralBinomial_sq_isEquivalent`, `pascalFactorialRatio_isEquivalent` | PASS for exact optimality, log rates, and Stirling endpoints; SOURCE-DISCREPANCY for the first printed ratio-one condition-number `~` |
+| Toeplitz | `generalToeplitz_unrestricted_complex_eigenpair`, `tridiagonalToeplitz_p522_unrestricted_eigenvalue`, `complexTridiagonalToeplitz_p522_unrestricted_charpoly`, `tridiagonalToeplitz_p522_unrestricted_charpoly`, `tridiagonalToeplitz_p522_unrestricted_roots_charpoly`, `tridiagonalToeplitz_mul_secondDifferenceInverse`, `secondDifferenceInverse_mul_tridiagonalToeplitz`, `opNorm2_secondDifference_eq`, `opNorm2_secondDifferenceInverse_eq`, `secondDifferenceConditionTwo_eq_closedForm`, `secondDifferenceConditionAsymptotic_proved` | PASS for the general spectrum, degenerate cases, inverse, exact condition quotient, and asymptotic; LU/cyclic prose terminally deferred |
+| Companion | `companionMatrix_mulVec_companionEigenvector`, `companion_transpose_krylov_eq_reverseBasis`, `companionMatrix_sub_scalar_rank_ge`, `companionMatrix_charpoly`, `companionOfMatrix_charpoly`, `isSimilar_companion_rank_sub_scalar_ge`, `companion_conjTranspose_mul_self`, `companionSquaredSingularValues_multiset_eq`, `companionSingularValues_multiset_eq`, `companion_orderTwo_isStarNormal_iff`, `companion_orderAtLeastThree_isStarNormal_iff` | PASS for eigenvector, characteristic/eigenvalue preservation, similarity nonderogatoriness, singular values, and repaired normality; SOURCE-DISCREPANCY for the printed normality iff |
+| Probability rows other than 28-P3 | `uniformPositivePerronAlmostSure` and the Stewart Haar theorems | PASS |
+| 28-P3 real-Ginibre limit | `measurable_realEigenvalueCount`, `integrable_realEigenvalueCount`, `lintegral_ginibreIncidence_regular_eq_rootCount`, `lintegral_ginibreIncidence_gaussian_eq_rootCount`, `lintegral_ginibreIncidence_gaussian_eq_expected`, `realGinibreExpectedCountClosedForm_limit`, plus exact dimensions one and two | **PARTIAL/OPEN**: no premise-free all-positive-dimension expectation/limit theorem |
 
-## External-domain status
+## The remaining selected gap
 
-The p.515 Cauchy subgroup is an active selected-scope bottleneck. The removed
-determinant, inverse, LU, inverse-entry-sum, and total-positivity transfers
-required the missing rational/minor identity as a premise and used order-one
-examples as nonvacuity evidence. The repaired module instead proves
-source-only regularity and algebraic precursors. A general finite Cauchy
-determinant/partial-fraction or Schur-complement induction is still required.
-The Stewart subgroup is a second active bottleneck.  Its exact normalized
-product-Gaussian input, source-ordered Householder/sign sample path, exact
-local reduction, measurable orthogonal-group-valued output, and normalized
-push-forward law are now concrete.  A genuine Gaussian/Householder argument
-that this push-forward is left invariant (hence Haar) is still required.
-For randsvd itself, the exact Gram identity does not yet supply the printed
-singular-value multiset or `alpha = kappa_2(A)` conclusion. The
-single-Householder diagonal-plus-rank-2 warning and the symmetric
-`Q Lambda Q^T` prescribed-eigenvalue construction are also open; the printed
-operation-count comparison is terminal deferred because no exact cost model
-is selected.
-The Toeplitz/companion re-audit removed transfer lemmas that assumed the
-missing component, coefficient, cyclicity, or low-rank conclusion.  Direct
-trigonometric recurrence and Chapter 9 sine orthogonality now prove the full
-symmetric Toeplitz diagonalization; an explicit transpose Krylov basis and an
-unit-determinant shift minor, and an entrywise `CᴴC` computation provide
-genuine companion results. The general
-nonsymmetric Toeplitz square-root spectrum, condition-number norm/asymptotic
-bridge, companion determinant recurrence, and Gram-spectrum/SVD calculation
-remain open.
+The actual real-eigenvalue count is measurable and integrable, the
+finite-to-one multiplicity/coarea identity is compiled, and the specialized
+Gaussian incidence integral is proved equal to
+`expectedRealEigenvalueCount (n + 1)`. The analytic EKS closed form and its
+`sqrt(2/pi)` normalized limit are also compiled.
 
-The probability re-audit keeps the normalized real-Ginibre and uniform
-product laws, corrects `realEigenvalueCount` to count algebraic multiplicity,
-and retains useful conditional transfers, but does not count missing
-measurability/integrability or their assumed finite expectation, limit,
-boundary-null, or Perron premises as closure. The
-Pascal re-audit replaces the former cube-root transfer with the genuine
-all-orders identity `pascalIdentityCubeRootCandidate_cube`, and proves the two
-Stirling endpoints unconditionally. The page's own Pascal norm bound rules out
-a literal ratio-one reading of its first condition-number `~`; a faithful
-constant-factor or log-rate theorem, the optimal perturbation norm, total
-positivity, and sign-change theorem remain open. The Hilbert determinant
-shorthand likewise still needs a log-scale formulation because its literal
-ratio-equivalence interpretation is too strong.
+What is still absent is an unconditional all-positive-dimension theorem
 
-Equations (28.5)-(28.11) remain terminal
-`DEFER-MISSING-PRECISE-STATEMENT` because the source writes `approx` without
-choosing a convergence mode, error term, or event. The qualitative
-GE/Cholesky stability prose and LU-diagonal/cyclic-reduction convergence prose
-are also accounted for as terminal deferred rows, and Table 28.1 is explicitly
-excluded as a software catalogue. Problems 28.1-28.2 are optional and not
-selected.
+`RealGinibreFiniteExpectationFormula`
 
-## Hidden-hypothesis and weak-component audit
+identifying `expectedRealEigenvalueCount n` with
+`realGinibreExpectedCountClosedForm n` for every positive `n`, or an equivalent direct
+proof of `RealGinibreExpectedCountLimit`. The existing theorem
+`realGinibreExpectedCountLimit_of_finiteExpectationFormula` requires the
+finite-formula proposition as a premise. The remaining analytic bottleneck is
+therefore the all-positive-dimension evaluation/recurrence of the exact determinant or
+absolute-characteristic-moment integral, not measurability or coarea.
 
-- `higham28_theorem28_1_product_orthogonal` assumes only that the sign matrix
-  and embedded factors are orthogonal.
-- `stewartOrthogonalMatrix_orthogonal` supplies those premises from the actual
-  Gaussian-tail sample-path construction rather than an arbitrary list.
-- `stewartLaw_isNormalizedOrthogonalHaarLaw` only constructs an ambient
-  compatibility predicate from assumed normalization, support, and left
-  invariance. It does not prove those fields for `stewartOrthogonalGroupLaw`
-  or discharge Mathlib's exact `Measure.IsHaarMeasure` endpoint.
-- `diracIdentity_isNormalizedOrthogonalHaarLaw_zero` concerns a singleton
-  ambient matrix space, not the printed general-order Gaussian producer.
-- Formula candidates for (28.1)-(28.4) are connected to source claims by
-  compiled generic equalities, not hypotheses asserting the target.
-- Cauchy inverse/LU/determinant conclusions are not exposed through assumed
-  partial-fraction or product-sum propositions. Only source-domain
-  admissibility, exact candidates, nonzero denominators, triangularity,
-  product positivity, and the first-pivot Schur identity are claimed.
-- Pascal similarity, its reciprocal-eigenpair consequence, the final-entry
-  kernel, the rotated cube identity, and the two Stirling endpoints are
-  unconditional. No theorem assumes the missing spectral/optimality or
-  total-positivity conclusions and counts them as closure. The source's moment
-  representation and characteristic-polynomial palindromicity are separately
-  inventoried as open rather than inferred from those weaker results.
-- The Ginibre and uniform/Perron transfer theorems remain explicitly
-  conditional; their target-bearing probability premises are open ledger
-  dependencies, not completion evidence.
-- Toeplitz sine identities and independence are proved directly, not carried
-  as hypotheses. The verified diagonalization is explicitly limited to the
-  symmetric family `T_n(c,d,c)`.
-- Companion cyclicity, the scalar-shift rank bound, and `CᴴC` are genuine
-  all-order constructions. The rank-form nonderogatory statement is verified;
-  characteristic-polynomial equality, `compan(poly(A))` eigenvalue transport,
-  similarity transport, and the `2≤n` singular-value endpoints remain open.
-  The printed complex normality iff is false for `a_0=-1` and at `n=1`; a
-  repaired `n≥2`, `|a_0|=1` theorem remains open.
+The supporting Ginibre development now includes exact density and
+Lebesgue-law bridges, incidence and projective charts, multiplicity and area
+identities, scalar projective integrals, characteristic-product expectations,
+Sylvester determinant identities, closed-form recurrences, and the exact
+dimension-one and dimension-two expectations. None of those weaker results
+is reported as closing 28-P3.
 
-## Verification
+## Source corrections and terminal deferrals
 
-- The seven-module Chapter 28 focused build (`Higham28`, `Higham28Exact`,
-  `Higham28Stewart`, `Higham28Probability`, `Higham28Asymptotics`,
-  `Higham28Pascal`, and `Higham28Contracts`) passed all 3,138 jobs.
-- `lake build LeanFpAnalysis.FP.Algorithms` passed all 4,036 jobs, and the full
-  repository `lake build` passed all 4,087 jobs.
-- `lake env lean examples/LibraryLookup.lean` compiled successfully with the
-  new Pascal, Stewart, Toeplitz, companion, and Chapter 24 entry points.
-- Representative `#print axioms` checks on Pascal SPD/cube, Stewart
-  orthogonality, Toeplitz diagonalization, companion rank, and the other Split 4
-  chapter endpoints report only `propext`, `Classical.choice`, and `Quot.sound`.
-- Forbidden-token, merge-marker, deleted-transfer-name, import/lookup,
-  stale-gate, and `git diff --check` scans passed; the diff check emitted only
-  line-ending notices.
-- Chapter selected-scope gate: **FAIL**.
+- The p. 519 Pascal characteristic polynomial is not palindromic in every
+  order. `pascal_charpoly_reciprocal` proves
+  `charpoly(P_n) = C((-1)^n) * charpoly(P_n).reverse`, and
+  `pascal_charpoly_palindromic_of_even` gives literal palindromicity for even
+  `n`.
+- The first Pascal condition-number `~` cannot be strict ratio equivalence in
+  view of the page's own norm bound. `pascalConditionTwo_log_rate` and
+  `pascalOptimalPerturbation_log_rate` prove the faithful exponential rates.
+- The printed companion normality iff is false over `ℂ`, at order two, and at
+  order one. `companion_orderTwo_isStarNormal_iff` and
+  `companion_orderAtLeastThree_isStarNormal_iff` prove the repaired
+  order-sensitive classifications.
+- The rounded Hilbert condition shorthand `exp(3.5n)` is
+  `DEFER-MISSING-PRECISE-STATEMENT`; it does not make the selected gate fail.
+- Equations (28.5)-(28.11), the qualitative stability/Perron-separation/cost
+  prose, and the Toeplitz LU/cyclic-reduction prose are terminally deferred
+  because the source does not determine a unique formal endpoint. Table 28.1
+  and Problems 28.1-28.2 retain their explicit excluded/optional statuses.
+
+## Hidden-hypothesis audit
+
+- Cauchy determinant, inverse, LU, entry-sum, and ordered-minor conclusions
+  are derived from source-domain hypotheses, not assumed identities.
+- The concrete Stewart producer is discharged by
+  `stewartOrthogonalGroupLaw_eq_normalizedOrthogonalHaar`; the older ambient
+  packaging predicate and dimension-zero Dirac example are not counted as
+  Theorem 28.1 closure.
+- Randsvd condition-number results state the required positivity, ordering,
+  nonzero, and attained-bound hypotheses explicitly.
+- Pascal, Toeplitz, and companion rows use the corrected production theorems
+  above; source-false statements are not silently asserted.
+- Ginibre measurability, coarea, and incidence-to-expectation theorems are
+  unconditional. The only general limit theorem remains explicitly
+  conditional on `RealGinibreFiniteExpectationFormula`, so 28-P3 stays OPEN.
 
 ## Documentation
 
 - Inventory: `docs/chapter28/CHAPTER28_SOURCE_INVENTORY.md`
-- Terminal explicit-domain register: `docs/chapter28/CHAPTER28_NOT_PROVED_LEDGER.md`
+- Terminal/open register: `docs/chapter28/CHAPTER28_NOT_PROVED_LEDGER.md`
 - Proof-source ledger: `docs/chapter28/CHAPTER28_PROOF_SOURCE_LEDGER.md`
 - Bottleneck ledger: `docs/chapter28/CHAPTER28_BOTTLENECK_LEDGER.md`
+- Source-coverage summary: `docs/source_coverage/higham_ch28.md`

@@ -29,13 +29,13 @@ in `CHAPTER21_NOT_PROVED_LEDGER.md`; exclusions below are not proof gaps.
 | 6 | Equation (21.5), seminormal equations | p. 408 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `higham21_eq21_5_qr_sne_gram_eq`, `higham21_eq21_5_sne_rect_transpose_solution` |
 | 7 | Theorem 21.1 and equation (21.6) | pp. 408–409 | FORMALIZE_CORE / CORE-NAMED-RESULT and CORE-NUMBERED-EQUATION | PASS | `Higham21Perturbation.lean`; end-to-end radius theorem `higham21_theorem21_1_relative_asymptotic_bound_of_direction_envelope` in `Higham21PerturbationRadius.lean` |
 | 8 | Equation (21.7), exact first-order perturbation expansion | p. 409 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `higham21Eq21_7_exact_expansion`, fixed-radius remainder and `IsBigO` theorems |
-| 9 | `‖I-A⁺A‖₂ = min{1,n-m}` | p. 409 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `higham21_complement_projection_op2_eq_min_one_nullity` in `Higham21ProjectorNorm.lean` |
+| 9 | `‖I-A⁺A‖₂ = min{1,n-m}` | p. 409 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `higham21_projector_complement_opNorm2_eq_min_one_sub_of_gram_det_ne_zero` in `Higham21ProjectorNorm.lean` |
 | 10 | Equation (21.8), componentwise perturbation specialization | p. 409 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Higham21Eq21_8.lean`, explicit fixed-radius quadratic remainder |
 | 11 | Equation (21.9), normwise specialization | p. 409 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Higham21Eq21_9.lean`, explicit fixed-radius quadratic remainder |
 | 12 | Row-scaling invariance of `cond₂` | p. 410 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `higham21Cond2With_row_scaling` in `Higham21Condition.lean` |
 | 13 | Lemma 21.2, one-perturbation symmetrization | p. 410 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS | `higham21_lemma21_2_source_bundle` and component lemmas in `UnderdeterminedSolve.lean` |
 | 14 | Theorem 21.3, Sun–Sun normwise backward-error formula | pp. 410–411 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS WITH DOCUMENTED SOURCE BOUNDARY CORRECTION | `higham21_theorem21_3_normwise_backward_error_formula`; exact/closure attainment in `Higham21Theorem21_3Attainment.lean` |
-| 15 | Theorem 21.3 square specialization | p. 411 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `higham21_theorem21_3_square_specialization` |
+| 15 | Theorem 21.3 square specialization | p. 411 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `higham21_theorem21_3_square_nonzero_etaF_eq_phi` |
 | 16 | Row-wise backward-error measure `ωᴿ` and `O(u)` criterion | p. 411 | FORMALIZE_DEPENDENCY / DEP-REQUIRED | PASS (quantitative gamma form) | `Higham21RowwiseMeasure.lean`; the Lean index is correctly `i=1:m`, repairing the printed `i=1:n` typo |
 | 17 | Equation (21.10), rounded Q-action formation | p. 411 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `higham21_eq21_10_*` family and Householder gamma wrappers |
 | 18 | Theorem 21.4, Householder branch | p. 411 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS WITH EXPLICIT NONBREAKDOWN DOMAIN | `higham21_theorem21_4_computed_qhat_rowwise_backward_stable_gamma` for the actual panel, solve, and Q action |

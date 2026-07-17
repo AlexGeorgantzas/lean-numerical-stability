@@ -5183,6 +5183,31 @@ Chapter 12 formalization status and source inventory:
 
 ---
 
+## Higham Chapter 22: Vandermonde Systems
+
+- Import: `LeanFpAnalysis.FP.Algorithms.Vandermonde.Higham22`
+- Exact factorization/solves: `higham22Hermite_eq22_17_inverse`,
+  `higham22Hermite_algorithm22_2Printed_solve`,
+  `higham22_algorithm22_3_eq_factorized`,
+  `higham22Hermite_algorithm22_3_solve`
+- Actual rounded forward path: `higham22_eq22_19_actual_stageI`,
+  `higham22_eq22_20_actual_stageII`,
+  `higham22_eq22_21_actual_rounded_factor_product`,
+  `higham22_theorem22_4_actual_factor_product_bound`,
+  `higham22_eq22_18_actual_forward_error`
+- Checkerboard specialization: `higham22_corollary22_5_named_bases`
+- Residual path: `Higham22Eq22_24`,
+  `higham22_eq22_23_exact_inverse_factor_product`,
+  `higham22_eq22_23_rounded_inverse_factor_product`,
+  `higham22_theorem22_6_actual_inverse_matrix_bound`,
+  `higham22_eq22_25_actual_residual_bound`
+- Problem 22.8 / Corollary 22.7:
+  `higham22_problem22_8_source_coefficient`,
+  `higham22_corollary22_7_monomial_residual`,
+  `higham22_corollary22_7_first_order`
+
+---
+
 # LeanFpAnalysis General Library Map
 
 This guide is a public map of the floating-point analysis library. It is meant
@@ -6279,8 +6304,11 @@ The Theorem 20.3, 20.4, 20.7, 20.8, and 20.10 implementation endpoints expose
 their nonbreakdown, primitive trace-budget, or smallness domains. Theorem
 20.7's corrected producer uses direct rounded Householder multipliers and does
 not assume the refuted exact final-tail/pivot comparison. The Chapter 20 core
-gate is nevertheless `FAIL`: the distinct p. 395 row-sorting cap and
-row-order invariance of `phi` still lack an executable producer.
+gate is `PASS`: the distinct p. 395 row-sorting cap and row-order invariance of
+`phi` are closed by the executable decreasing-row-norm producer and the exact
+printed-cap/invariance endpoints
+`Higham20RowSorting.exactPrinted_iSup_max_alpha_beta_le_cap_of_source_injective`
+and `Higham20RowSorting.exactPrintedPhi_independent_of_row_ordering`.
 
 ## Higham Split 4: Chapters 21-28
 
@@ -6288,6 +6316,9 @@ The aggregate status and corrected source counts are in
 [`SPLIT4_FORMALIZATION_REPORT.md`](SPLIT4_FORMALIZATION_REPORT.md). Every row
 below has a source-order inventory, a proof-source ledger, a not-proved ledger,
 and a chapter report under the linked directory.
+
+The current aggregate gate is `FAIL` solely because Chapter 28 row 28-P3
+remains PARTIAL/OPEN. Chapters 20-27 are `PASS` with no selected open row.
 
 | Chapter/topic | Public module(s) | Audit report |
 |---|---|---|
@@ -6298,21 +6329,22 @@ and a chapter report under the linked directory.
 | 25, nonlinear systems | [`Nonlinear/Higham25.lean`](../LeanFpAnalysis/FP/Algorithms/Nonlinear/Higham25.lean), [`Nonlinear/Higham25Problem25_1.lean`](../LeanFpAnalysis/FP/Algorithms/Nonlinear/Higham25Problem25_1.lean) | [`chapter25/CHAPTER25_FORMALIZATION_REPORT.md`](chapter25/CHAPTER25_FORMALIZATION_REPORT.md) |
 | 26, automatic error analysis | [`AutomaticErrorAnalysis/Higham26.lean`](../LeanFpAnalysis/FP/Algorithms/AutomaticErrorAnalysis/Higham26.lean) | [`chapter26/CHAPTER26_FORMALIZATION_REPORT.md`](chapter26/CHAPTER26_FORMALIZATION_REPORT.md) |
 | 27, software issues | [`SoftwareIssues/Higham27.lean`](../LeanFpAnalysis/FP/Algorithms/SoftwareIssues/Higham27.lean) | [`chapter27/CHAPTER27_FORMALIZATION_REPORT.md`](chapter27/CHAPTER27_FORMALIZATION_REPORT.md) |
-| 28, test matrices | [`TestMatrices/Higham28.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28.lean), [`Higham28Exact.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Exact.lean), [`Higham28Probability.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Probability.lean), [`Higham28Asymptotics.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Asymptotics.lean), [`Higham28Contracts.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Contracts.lean), [`Higham28Stewart.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Stewart.lean), [`Higham28Pascal.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Pascal.lean) | [`chapter28/CHAPTER28_FORMALIZATION_REPORT.md`](chapter28/CHAPTER28_FORMALIZATION_REPORT.md) |
+| 28, test matrices | [`TestMatrices/Higham28.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28.lean), [`Higham28Exact.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Exact.lean), [`Higham28Probability.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Probability.lean), [`Higham28Asymptotics.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Asymptotics.lean), [`Higham28GinibreMeasure.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28GinibreMeasure.lean), [`Higham28GinibreIncidence.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28GinibreIncidence.lean), [`Higham28GinibreExpectationGlue.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28GinibreExpectationGlue.lean), [`Higham28RandsvdNorm.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28RandsvdNorm.lean), [`Higham28Stewart.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Stewart.lean), [`Higham28Pascal.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Pascal.lean), [`Higham28PascalCondition.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28PascalCondition.lean), [`Higham28ToeplitzGeneral.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28ToeplitzGeneral.lean), [`Higham28ToeplitzCondition.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28ToeplitzCondition.lean), [`Higham28Companion.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Companion.lean), [`Higham28CompanionSpectral.lean`](../LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28CompanionSpectral.lean) | [`chapter28/CHAPTER28_FORMALIZATION_REPORT.md`](chapter28/CHAPTER28_FORMALIZATION_REPORT.md) |
 
 Chapter 28's Toeplitz/companion exact entry points include
-`symmetricToeplitz_sine_eigenpair`, `toeplitzSineVector_ne_zero`,
-`higham9_sineMatrix_isOrthogonal`, and
-`symmetricToeplitz_orthogonal_diagonalization` for the complete symmetric
-Toeplitz family, plus `companion_transpose_krylov_eq_reverseBasis`,
-`companion_hasLeftCyclicVector`, and `companion_conjTranspose_mul_self` for
-the companion Krylov and Gram constructions. `companionRankMinor_det` and
-`companionMatrix_sub_scalar_rank_ge` prove the printed rank-form
-nonderogatory statement. The general nonsymmetric
-Toeplitz square-root spectrum, second-difference condition asymptotic,
-companion characteristic-polynomial equality, and singular-value formula
-remain OPEN; no transfer that assumes one of those
-missing conclusions is counted as closure.
+`symmetricToeplitz_orthogonal_diagonalization`,
+`generalToeplitz_unrestricted_complex_eigenpair`, and
+`secondDifferenceConditionAsymptotic_proved` for the symmetric, general
+square-root-spectrum, and condition-asymptotic rows. The companion endpoints
+include `companionMatrix_charpoly`, `companionOfMatrix_charpoly`,
+`isSimilar_companion_rank_sub_scalar_ge`,
+`companionSquaredSingularValues_multiset_eq`, and
+`companionSingularValues_multiset_eq`. Those rows are closed. The sole
+selected Chapter 28 gap is 28-P3: a premise-free proof of
+`RealGinibreFiniteExpectationFormula` for every positive dimension, or an
+equivalent unconditional `RealGinibreExpectedCountLimit`; the existing
+`realGinibreExpectedCountLimit_of_finiteExpectationFormula` is a conditional
+bridge and is not counted as closure.
 
 Chapter 26's multidirectional-search entry points are `MDSSimplex`,
 `MDSSimplex.reorderBest`, the exact `reflect`/`expand`/`contract` maps,
