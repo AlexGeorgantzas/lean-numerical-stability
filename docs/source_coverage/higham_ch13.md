@@ -1,0 +1,179 @@
+# Higham Chapter 13 Formalization Report — "Block LU Factorization"
+
+## Source and scope
+
+- Edition: Nicholas J. Higham, *Accuracy and Stability of Numerical
+  Algorithms*, 2nd ed. (SIAM, 2002).
+- Chapter: 13, "Block LU Factorization," printed pp. 245-259 (chapter body
+  §§13.1-13.4 pp. 245-257; Problems 13.1-13.9 pp. 257-259).
+- Extracted source of truth for this audit:
+  `scratchpad/ch13.txt` (rendered 2nd-ed. chapter text).
+- Mode: core.
+- Parallel split: 3A (Block LU / Matrix Inversion / Condition Estimation
+  cluster, Chapters 13-15).
+- Primary Lean modules (`LeanFpAnalysis/FP/Algorithms/LU/`):
+  `BlockLU.lean` (monolithic core, ~82k lines), plus the source-closure and
+  family layers `BlockLUSourceClosure`, `BlockLURowSourceClosure`,
+  `BlockLUArbitraryNormSourceClosure`, `BlockLUSPDSourceClosure`,
+  `BlockLUSPDFamilies`, `BlockLUComputationSourceClosure`,
+  `BlockLUFirstOrderFamilies`, `BlockLUPointRowGrowthSourceClosure`,
+  `BlockLUScalarGrowthBridge`, `BlockLUVarying`, `BlockLUTable13_1Families`.
+- **Selected-scope gate: PASS** (0 open primary rows; two honest PARTIAL
+  equation rows — (13.22)/(13.23) and their Problem-13.4 inputs — are faithful
+  to the source's growth-factor parametrization; see notes).
+
+This audit is statement-level: I verified each Lean statement against the
+printed row for honest strength (no hidden target-equivalent hypothesis,
+constants derived, correct object), on top of the worktree's existing green
+build. Load-bearing declarations were axiom-checked.
+
+## Primary-label assessment
+
+| Source label | Printed summary | Status | Lean decl(s) | Scope / honest-strength notes |
+|---|---|---|---|---|
+| Algorithm 13.1 | Partitioned outer-product LU: factor A11, solve U12/L21, form Schur S, recurse | VERIFIED | `higham13_algorithm13_1_partitioned_lu_reconstructs`, `higham13_algorithm13_1_schur_complement_eq`, `higham13_eq13_1_partitioned_outer_product_lu` | Exact block-matrix reconstruction from the four step equations; step 4 identified with the Schur complement `A22 − A21 A11⁻¹ A12`. |
+| Theorem 13.2 | Unique block LU ⟺ first m−1 leading principal block submatrices nonsingular | VERIFIED | `BlockLUFactSpec.existsUnique_iff_leadingPrincipalBlockNonsingular13_2` (both directions), `LeadingPrincipalBlockNonsingular13_2` | Iff proved. For an (m+1)-block matrix the hypothesis is nonsingularity of leading prefixes of sizes 1..m, i.e. the first m = (m+1)−1 leading principal block submatrices — matches the printed count. |
+| Algorithm 13.3 | Block LU: U11=A11, U12=A12, solve L21, S=A22−L21A12, recurse | VERIFIED | `higham13_algorithm13_3_block_lu_reconstructs`, `higham13_algorithm13_3_schurStageMatrixBlock`, `..._lowerFromMatrixStages`, `..._upperFromMatrixStages`, `BlockLUFactSpec` | Concrete recursive stage machinery producing genuine block-triangular factors with identity diagonal. |
+| Algorithm 13.4 | Recursively partitioned LU (half-size, no block-size choice) | VERIFIED | `higham13_algorithm13_4_recursive_partitioned_lu_reconstructs`, `higham13_eq13_3_recursive_partitioned_lu` | Exact three-factor reconstruction of the (13.3) recursive partition. |
+| Theorem 13.5 (Demmel & Higham) | Partitioned LU backward error (13.7): ‖ΔA‖ ≤ u(δ‖A‖+θ‖L̂‖‖Û‖)+O(u²), δ/θ recurrences | VERIFIED | `higham13_theorem13_5_eq13_7_from_computation`, `blockErrorDelta`, `blockErrorTheta`, `higham13_eq13_{8,9,10,11,12,13}_*`, `higham13_theorem13_5_eq13_7_from_computation` | Proved for an actual recursively computed execution (`PartitionedLUComputationFirstOrder`); δ,θ recurrences match (13.7). Underlying (13.4)-(13.6) are the source's BLAS3/local-LU assumption models. |
+| Theorem 13.6 (Demmel, Higham & Schreiber) | Block LU + solve backward error (13.16): ‖ΔAᵢ‖ ≤ dₙu(‖A‖+‖L̂‖‖Û‖)+O(u²) | VERIFIED | `higham13_theorem13_6_eq13_16_from_factor_solve_estimates`, `..._firstOrder_...`, DHS path `demmelHighamSchreiber13_6_*`, and computation-derived `higham13_theorem13_6_implementation1_family_from_partitioned_computation_and_conventional_recursive_solve` | Book omits its proof (cites DHS [326]). Lean gives (a) a structured derivation from assumptions (13.4),(13.14),(13.15) and (b) a genuine Implementation-1 endpoint that derives the conventional BLAS/solve constants from the FP roundoff model — at or above source strength. |
+| Theorem 13.7 (DHS) | Block-diagonally-dominant A has block LU; Schur complements inherit the dominance | VERIFIED | `higham13_theorem13_7_algorithm13_3_opNorm2_column`, `..._row`, `higham13_theorem13_7_and_13_8_clm_column_source_closure`, `..._clm_row_...` | Constructs the whole pivot table from source hypotheses (full nonsingularity + BDD); no all-leading-prefix or prebuilt-pivot assumption. Column & row, Euclidean and arbitrary subordinate operator norm. |
+| Theorem 13.8 (DHS) | For BDD A, max active Schur block norm ≤ 2·max block norm of A | VERIFIED | `higham13_theorem13_8_algorithm13_3_opNorm2_column`, `..._row`, arbitrary-norm halves in `..._clm_column/row_source_closure` | Printed `2·max` growth estimate proved on the actual active stages, column & row, Euclidean & arbitrary norm. |
+| Lemma 13.9 (DHS) | SPD ⟹ ‖A21 A11⁻¹‖₂ ≤ κ₂(A)^{1/2} | VERIFIED | `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_spd_leading_nonsingInv_kappa2` | Derives from bare `IsSymPosDef` via `cholesky_existence`; `A11⁻¹` = `R11⁻¹R11⁻ᵀ`, bound `√(κ₂(A))` = `√(‖A‖₂‖A⁻¹‖₂)`. (The book's stronger attainable bound in the Notes is not claimed.) |
+| Lemma 13.10 (DHS) | SPD ⟹ κ₂(S) ≤ κ₂(A) for S = A22 − A21A11⁻¹A21ᵀ | VERIFIED (two operator halves) | `higham13_lemma13_10_schur_opNorm2Le_of_full_operator_bound` (‖S‖₂ ≤ ‖A‖₂ via Loewner) + `higham13_problem13_4_Sinv_finiteOpNorm2Le_from_source_posDef_block_inverse` (‖S⁻¹‖₂ ≤ ‖A⁻¹‖₂) | The two halves multiply to κ₂(S) ≤ κ₂(A); both used in the SPD (13.24) chain. Honest decomposition, no separate monolithic κ₂ theorem needed. |
+
+All ten primary labels: **VERIFIED**.
+
+## Numbered-equation coverage
+
+Printed chapter 13 numbers equations **(13.1)–(13.26)** only. There are no
+(13.27)–(13.29) in the source (the "(13.1)–(13.29)" in the audit brief is an
+overcount; (13.26) is the last, appearing in Problem 13.4).
+
+| Eq. | Content | Status | Lean evidence |
+|---|---|---|---|
+| (13.1) | Partitioned outer-product identity | VERIFIED | `higham13_eq13_1_partitioned_outer_product_lu` |
+| (13.2) | One block LU step, Schur form | VERIFIED | `higham13_eq13_2_block_lu_step` |
+| (13.3) | Recursive partition identity | VERIFIED | `higham13_eq13_3_recursive_partitioned_lu` |
+| (13.4) | Level-3 BLAS matmul error model | VERIFIED (assumption model) | `higham13_eq13_4_from_matmul_spec` |
+| (13.5) | Triangular multi-RHS solve error model | VERIFIED (assumption model) | `higham13_eq13_5_from_triangular_solve_spec` |
+| (13.6) | Local A11 LU error assumption | VERIFIED (assumption model) | `higham13_eq13_6_from_local_lu_spec` |
+| (13.7) | Theorem 13.5 backward bound + δ,θ | VERIFIED | `higham13_theorem13_5_eq13_7_from_computation` |
+| (13.8)–(13.9) | L11U12/L21U11 residuals | VERIFIED | `higham13_eq13_{8,9}` machinery in `higham13_theorem13_5_*` |
+| (13.10) | S formation subtraction error | VERIFIED | `higham13_eq13_10_from_subtraction_spec` |
+| (13.11a/b) | Trailing Schur residual | VERIFIED | `higham13_eq13_11a/b_*`, `higham13_eq13_11_from_matmul_subtraction_specs` |
+| (13.12a/b) | Inductive Schur factor assumption | VERIFIED | `higham13_eq13_12_from_induction_spec` |
+| (13.13) | ΔA22 combined bound | VERIFIED | `higham13_eq13_13_*` |
+| (13.14) | Block-solve residual model (13.3 step 2) | VERIFIED (assumption model) | `higham13_eq13_14_from_block_solve_spec` |
+| (13.15) | Diagonal-block solve model | VERIFIED (assumption model) | `higham13_eq13_15_from_diagonal_block_solve_spec` |
+| (13.16) | Theorem 13.6 bound | VERIFIED | `higham13_theorem13_6_eq13_16_*` |
+| (13.17) | Block diagonal dominance (columns) | VERIFIED (definition) | `IsBlockDiagDomCol`, `IsBlockDiagDomRow`, `blockDiagDomGamma`, `isBlockDiagDomCol_iff_gamma_nonneg` |
+| (13.18) | Theorem 13.7 column-dominance chain | VERIFIED | `higham13_eq13_18_min_lower_bound`, `..._vecNorm2_min_lower_bound`, `..._schur_column_dominance` |
+| (13.19) | max‖Aij‖ ≤ ‖A‖ ≤ Σ‖Aij‖ | VERIFIED | `higham13_eq13_19`, `..._block_le_norm`, `..._norm_le_sum` |
+| (13.20) | General r×r partition | VERIFIED | `higham13_eq13_20_partition` |
+| (13.21) | ‖U‖ ≤ ρₙ‖A‖ (block max-norm) | VERIFIED | `higham13_eq13_21_blockMaxNorm_bound*`, `SchurStageUpperBlockBound13_21` |
+| (13.22) | ‖L‖‖U‖ ≤ nρₙ³κ(A)‖A‖ (arbitrary) | PARTIAL | `block_lu_normLU_bound_general_higham_13_22`, `higham13_eq13_22_*`, `higham13_problem13_4_A21A11inv_rectOpNorm2Le_from_full_A_certificate` — algebraic assembly proved; the growth-factor operator inputs (‖A11⁻¹‖≤‖A⁻¹‖, ‖A21‖≤ρₙ‖A‖) are explicit certificates, faithful to the source's ρₙ parametrization |
+| (13.23) | Point-row: ‖L‖‖U‖ ≤ 8nκ(A)‖A‖ | PARTIAL | `higham13_eq13_23_*`, `higham13_table13_1_point_row_backward_error_from_growth`; point-row growth ≤2 closed in `BlockLUPointRowGrowthSourceClosure` (mirrors Thm 9.9); the ρₙ→2 specialization uses the same conditional inputs as (13.22) |
+| (13.24) | SPD ‖L‖₂‖U‖₂ ≤ √m(1+m√κ₂)‖A‖₂ | VERIFIED | `higham13_eq13_24_algorithm13_3_spd` (from Lemmas 13.9–13.10, no factor-norm premises) |
+| (13.25) | SPD backward error cₙ√m u‖A‖₂(2+m√κ₂) | VERIFIED (as Thm-13.6 corollary) | `higham13_eq13_25_spd_firstOrder_from_eq13_24`, `higham13_eq13_25_algorithm13_3_spd`, family forms in `BlockLUSPDFamilies` — conditional on the Theorem 13.6 conclusion, exactly the source's "It follows from Theorem 13.6 …" |
+| (13.26) | Problem 13.4 partition | VERIFIED | `higham13_eq13_26_partition` |
+
+## Central definitions
+
+- Block LU factorization object: `BlockLUFactSpec` (identity-diagonal block-
+  triangular L, block-upper U, product = A) — matches the display on p. 246.
+- Block diagonal dominance (13.17), columns and rows: `IsBlockDiagDomCol`,
+  `IsBlockDiagDomRow`, with `γⱼ` amount `blockDiagDomGamma` and the
+  transpose-duality `isBlockDiagDomRow_iff_col_transpose`.
+- Schur complement stage: `higham13_algorithm13_3_schurStageBlock/MatrixBlock`,
+  `blockSchur`, `higham13_clmBlockSchur` (arbitrary-norm).
+- Varying block dimensions ("the blocks can be of different dimensions",
+  p. 247): `Higham13VaryingBlockLUFactSpec` and its step/uniqueness lemmas in
+  `BlockLUVarying.lean`.
+
+## Problems accounting (13.1–13.9)
+
+| Problem | Content | Status | Lean evidence |
+|---|---|---|---|
+| 13.1 (Varah) | Block tridiagonal ‖Li,i−1‖, ‖Uii‖ bounds, col & row | VERIFIED | `higham13_problem13_1_column_step_bounds`, `..._row_step_bounds` |
+| 13.2 | Diag dom ⇏ block diag dom and vice versa (1-,∞-norms) | VERIFIED | `higham13_problem13_2_*` counterexample defs + `higham13_problem13_2_incomparability` |
+| 13.3 | Symmetric + positive diag + block-row-BDD ⇒ posdef? (No) | VERIFIED | `higham13_problem13_3_counterexample` (+ symmetric/positive-diag/row-BDD/singular/not-SPD witnesses) |
+| 13.4 | ‖A21A11⁻¹‖ ≤ nρₙκ(A); κ(S) ≤ ρₙκ(A) | PARTIAL | `higham13_problem13_4_A21A11inv_rectOpNorm2Le_from_*`, `..._schur_kappa_bound_from_operator_certificates`; unconditional posdef `S⁻¹` route `..._Sinv_finiteOpNorm2Le_from_source_posDef_block_inverse`. Growth-factor (ρₙ) operator inputs kept explicit — see honest-strength note |
+| 13.5 | Point-col-BDD ⇒ ‖A21A11⁻¹‖₁ ≤ 1 | VERIFIED | `higham13_problem13_5_oneNormRect_bound` (+ tail/diag chain) |
+| 13.6 | Ax=b and AX=B backward error under Thm 13.5 conditions | VERIFIED | `higham13_problem13_6_single_rhs_backward_error_*`, `..._multiple_rhs_residual_*` (identities + first-order) |
+| 13.7 | det(X)=det(A)det(D−CA⁻¹B); commuting-block corollary | VERIFIED | `higham13_problem13_7_det_schur`, `..._det_commuting_AC` |
+| 13.8 | Block 2×2 inverse via Schur complement | VERIFIED | `higham13_problem13_8_block_inverse` |
+| 13.9 | (I−AB)⁻¹ identity; Sherman–Morrison–Woodbury | VERIFIED | `higham13_problem13_9_resolvent_identity`, `..._sherman_morrison_woodbury` |
+
+## Honest-strength notes
+
+- **(13.22)/(13.23) and Problem 13.4 are PARTIAL, not overstated.** The book
+  derives the "Arbitrary" and "point-row" rows through the growth factor ρₙ for
+  GE without pivoting (Problem 13.4), which is a data-dependent quantity the
+  source itself carries as a parameter. The Lean proves the exact algebraic
+  combination (`nρₙ²κ` × `ρₙ‖A‖` = `nρₙ³κ‖A‖`; ρₙ≤2 ⟹ `8nκ‖A‖`) and derives the
+  multiplier/Schur operator bounds *conditionally* on the growth-factor
+  certificates (e.g. `normA21 ≤ ρₙ·normA`, `normA11inv ≤ normAinv`). The
+  crux `‖A11⁻¹‖ ≤ ‖A⁻¹‖`/condition-number tie-in is kept as a visible
+  hypothesis, and the docstrings say so explicitly. This is faithful PARTIAL
+  coverage, not a hidden closure.
+- **Theorem 13.6 exceeds the book.** The source omits the proof; the Lean
+  supplies both an assumption-level derivation and an Implementation-1 endpoint
+  whose (13.14)/(13.15) perturbations are *derived* from the conventional
+  floating-point model (`FPModel`, `gamma`) rather than assumed.
+- **Lemma 13.10** appears as the two operator inequalities (‖S‖₂≤‖A‖₂ and
+  ‖S⁻¹‖₂≤‖A⁻¹‖₂) whose product is κ₂(S)≤κ₂(A); this is the exact content, used
+  in the (13.24) chain.
+- **(13.24)** assumes no factor-norm premises — the two factor bounds and their
+  product are derived from SPD via Lemmas 13.9–13.10.
+- **(13.25)** is stated conditionally on the Theorem 13.6 conclusion for the
+  computed factors plus the source's explicit exact/computed product
+  comparison — matching the printed "It follows from Theorem 13.6 …".
+- Table 13.1 (empirical summary table) is formalized as product/backward-error
+  families per row in `BlockLUTable13_1Families.lean` and
+  `higham13_table13_1_*` (col-BDD, point-col-BDD, block-row-BDD, point-row,
+  arbitrary, SPD); the SPD/BDD rows are unconditional, the ρₙ rows inherit the
+  (13.22)/(13.23) PARTIAL status.
+
+## Axiom spot-check
+
+`#print axioms` (via `lake env lean` against the cached oleans; throwaway
+deleted) on eight load-bearing declarations — Theorem 13.7 column & CLM
+endpoints, Theorem 13.8 column endpoint, (13.24) SPD, Theorem 13.2 iff,
+Theorem 13.5 from-computation, Lemma 13.9 SPD endpoint, Problem 13.9 Woodbury —
+each reports only `[propext, Classical.choice, Quot.sound]`. No `sorry`, no
+custom axioms.
+
+## Cross-chapter role
+
+- **Consumes:** Chapter 9 Gaussian elimination — the growth factor ρₙ for GE
+  without pivoting, and the point-diagonal-dominance growth bound ρₙ≤2
+  (Theorem 9.9), which underpin (13.21)–(13.23) and the Table 13.1 point/block
+  rows (`BlockLUPointRowGrowthSourceClosure` mirrors the Thm-9.9 argument
+  block-wise). The conventional level-3 BLAS and triangular-solve error models
+  behind (13.4)/(13.5)/(13.14)/(13.15) reuse the inner-product / substitution
+  roundoff machinery (Chapters 3, 8) via `FPModel`/`gamma`; the SPD lemmas
+  reuse Cholesky existence (Chapter 10). Chapter 12 (iterative refinement) is
+  **not** a dependency of Chapter 13; if anything refinement is applied
+  *downstream* to block-LU solutions.
+- **Provides:** existence/uniqueness of block LU (Theorem 13.2), the
+  backward-error theory for partitioned (Theorem 13.5) and block (Theorem 13.6)
+  LU, the stability classification of Table 13.1, and the reusable
+  Schur-complement determinant/inverse and Sherman–Morrison–Woodbury identities
+  (Problems 13.7–13.9), which are foundational for matrix inversion (Chapter 14)
+  and elsewhere.
+
+## Selected-scope gate
+
+**PASS.** All ten primary labels VERIFIED; central definitions VERIFIED; the
+important numbered equations VERIFIED except the two honestly-PARTIAL
+growth-factor rows (13.22)/(13.23) (with Problem 13.4), which faithfully carry
+the source's ρₙ parametrization and are disclosed as conditional. No MISSING or
+BLOCKED primary rows.
+
+Open (non-blocking) rows carried as honest PARTIAL:
+- (13.22) arbitrary-matrix `nρₙ³κ(A)‖A‖` product bound — growth-factor operator
+  inputs are explicit certificates.
+- (13.23) point-row `8nκ(A)‖A‖` bound — same conditional inputs.
+- Problem 13.4 `‖A21A11⁻¹‖ ≤ nρₙκ(A)` / `κ(S) ≤ ρₙκ(A)` — algebraic assembly
+  proved; `‖A11⁻¹‖≤‖A⁻¹‖` growth tie-in kept as hypothesis.

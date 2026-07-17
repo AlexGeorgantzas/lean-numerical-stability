@@ -16,7 +16,7 @@
 | (22.23)--(22.25), Theorem 22.6 | PROVED conditional exactly on source assumption (22.24) |
 | Problem 22.8, Corollary 22.7 | PROVED structured inverse coefficient, monomial residual specialization, and `n(n+4)` first derivative |
 | Algorithm 22.8 / Problem 22.10 | PROVED |
-| Refinement consequence 22.B2 | REUSED from proved Chapter 12 Theorem 12.3, with local convergence theorem |
+| Refinement consequence 22.B2 | REUSED from proved Chapter 12 Theorem 12.3 via bridge `ch22b_refinement_converges_via_ch12` (`LeanFpAnalysis/FP/Algorithms/Vandermonde/Higham22Ch12RefinementBridge.lean`): the actual refinement residual's per-step contraction is produced by applying `higham12_3_exact_one_step_residual_bound`, and convergence closes through the local `higham22_refinement_converges` |
 
 The source assumption (22.24) is represented by `Higham22Eq22_24`; no final
 error or residual conclusion is assumed.  The forward and residual endpoints
