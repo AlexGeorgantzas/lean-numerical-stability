@@ -37,7 +37,7 @@
 | 28.9 | p. 516 | equation | Spectral radius `approx sqrt(n)` | partly empirical/approximate | upper bound cited; equality experimental | probability and spectra | DEFER | DEFER-MISSING-PRECISE-STATEMENT | not encoded |
 | 28.10 | p. 516 | equation | `kappa_2(T_n)^(1/n) approx 2` | approximate/probabilistic | citation-only | random triangular matrices | DEFER | DEFER-MISSING-PRECISE-STATEMENT | not encoded |
 | 28.11 | p. 516 | equation | Unit-triangular analogue `approx 1.306` | approximate/probabilistic | citation-only | random triangular matrices | DEFER | DEFER-MISSING-PRECISE-STATEMENT | not encoded |
-| 28-P3 | pp. 516-517 | precise prose | Expected real-eigenvalue limit `E_n/sqrt(n) -> sqrt(2/pi)` | precise probabilistic theorem | citation-only | real Ginibre ensemble | FORMALIZE_CORE | CORE-PRECISE-PROSE | PARTIAL/OPEN: `measurable_realEigenvalueCount` and `integrable_realEigenvalueCount` now close root-count measurability/integrability; `lintegral_ginibreIncidence_regular_eq_rootCount`, `lintegral_ginibreIncidence_gaussian_eq_rootCount`, and `lintegral_ginibreIncidence_gaussian_eq_expected` close the coarea/incidence-to-expectation bridge; `realGinibreExpectedCountClosedForm_limit` proves the analytic closed-form limit, with exact dimensions one and two also proved. The selected row remains OPEN because there is still no premise-free all-positive-dimension theorem `RealGinibreFiniteExpectationFormula` (equivalently, no unconditional theorem identifying `expectedRealEigenvalueCount n` with the closed form for every positive `n`) and hence no premise-free `RealGinibreExpectedCountLimit`; `realGinibreExpectedCountLimit_of_finiteExpectationFormula` still requires that missing premise. |
+| 28-P3 | pp. 516-517 | precise prose | Expected real-eigenvalue limit `E_n/sqrt(n) -> sqrt(2/pi)` | precise probabilistic theorem | citation-only | real Ginibre ensemble | FORMALIZE_CORE | CORE-PRECISE-PROSE | PASS (previously PARTIAL/OPEN): `ch28gf_realGinibreFiniteExpectationFormula` proves the premise-free all-positive-dimension `∀ n, 0 < n → expectedRealEigenvalueCount n = realGinibreExpectedCountClosedForm n`, and `ch28gf_realGinibreExpectedCountLimit` proves the premise-free `E_n/√n → √(2/π)` (both axiom-clean, `Higham28GinibreFiniteFormula.lean`), completing the incidence chain via the kernel-transfer link `ch28gf_kernelTransfer` and feeding the formerly-conditional `realGinibreExpectedCountLimit_of_finiteExpectationFormula`. Supporting: `measurable_realEigenvalueCount` and `integrable_realEigenvalueCount` (root-count measurability/integrability); `lintegral_ginibreIncidence_regular_eq_rootCount`, `lintegral_ginibreIncidence_gaussian_eq_rootCount`, and `lintegral_ginibreIncidence_gaussian_eq_expected` (coarea/incidence-to-expectation bridge); `realGinibreExpectedCountClosedForm_limit` (analytic closed-form limit); exact dimensions one and two. |
 | 28-P3a | p. 517 | precise probabilistic/spectral prose | An iid uniform-`[0,1]` square matrix has strictly positive entries almost surely and hence a real positive dominant eigenvalue | precise almost-sure claim / general order | explanatory Perron-Frobenius inference | product probability measure, null boundary event, Perron-Frobenius theory | FORMALIZE_CORE | CORE-PRECISE-PROSE | PASS: `uniformUnitIntervalMatrixMeasure_strictlyPositive` proves the boundary-null event, `hasPositiveDominantEigenvalue_of_strictlyPositive` supplies the deterministic Perron bridge, and `uniformPositivePerronAlmostSure` proves the stated full-measure event. |
 | 28-P3b | p. 517 | qualitative spectral prose | The remaining eigenvalues of iid uniform-`[0,1]` matrices tend to be much smaller than the Perron root | qualitative/asymptotic | observation | random-matrix spectral scaling | DEFER | DEFER-MISSING-PRECISE-STATEMENT | Accounted for; no normalization, convergence mode, quantitative separation, or event is specified |
 | 28-D3 | pp. 517-518, Sec. 28.3 | definition/construction | Randsvd matrix `A=U Sigma V^T`, with independent Haar orthogonal factors represented by Stewart products | precise / rectangular generality | definition plus Stewart citation | rectangular diagonal, matrix products, Gaussian Householders, Haar push-forward | FORMALIZE_CORE | CORE-PRECISE-PROSE | PASS: `randsvdMatrix`, `randsvdMatrix_transpose_mul_self`, paired independent-input `stewartRandsvdMatrix`, its Gram identity, and Theorem 28.1's exact Haar law for each Stewart factor are compiled. |
@@ -72,12 +72,15 @@
 |---|---|---|---|
 | Independent product-Gaussian tails `x_i` (`stewartGaussianInputMeasure`) | source-ordered embedded Householders `P_i`, `D = diag(sign(r_ii))`, `Q`, and measurable `stewartOrthogonalGroupOutput` | Gaussian rotational invariance, radial direction, and Haar-fiber uniqueness | PASS through `stewartOrthogonalGroupLaw_eq_normalizedOrthogonalHaar` and `stewartTheorem28_1HaarConclusion`. |
 
-## Selected-scope gate correction
+## Selected-scope gate
 
-The Chapter 28 selected-scope gate is **FAIL solely because 28-P3 remains
-PARTIAL/OPEN**. Every other selected mathematical row is now PASS or has a
-terminal source-imprecision/source-discrepancy disposition. The remaining
-selected gap is a premise-free all-positive-dimension theorem identifying
-`expectedRealEigenvalueCount n` with `realGinibreExpectedCountClosedForm n`
-(and therefore a premise-free proof of `RealGinibreExpectedCountLimit`). See
-`CHAPTER28_BOTTLENECK_LEDGER.md` for the exact dependency chain.
+The Chapter 28 selected-scope gate is now **PASS** (previously FAIL solely
+because 28-P3 remained PARTIAL/OPEN). Every selected mathematical row is now
+PASS or has a terminal source-imprecision/source-discrepancy disposition. The
+formerly-remaining selected gap — a premise-free all-positive-dimension theorem
+identifying `expectedRealEigenvalueCount n` with
+`realGinibreExpectedCountClosedForm n` (and therefore a premise-free
+`RealGinibreExpectedCountLimit`) — is now supplied by
+`ch28gf_realGinibreFiniteExpectationFormula` and
+`ch28gf_realGinibreExpectedCountLimit` (`Higham28GinibreFiniteFormula.lean`).
+See `CHAPTER28_BOTTLENECK_LEDGER.md` for the dependency chain.

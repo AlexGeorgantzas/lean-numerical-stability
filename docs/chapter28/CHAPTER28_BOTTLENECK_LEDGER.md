@@ -1,8 +1,11 @@
 # Chapter 28 Bottleneck Ledger
 
-The selected-scope gate is **FAIL solely at 28-P3**. This ledger distinguishes
-that one remaining proof bottleneck from terminal source imprecision and from
-source sentences that required a proved correction.
+The selected-scope gate is now **PASS** (previously FAIL solely at 28-P3): the
+last bottleneck, 28-P3, is CLOSED by the premise-free, axiom-clean
+`ch28gf_realGinibreFiniteExpectationFormula` /
+`ch28gf_realGinibreExpectedCountLimit` (`Higham28GinibreFiniteFormula.lean`).
+This ledger distinguishes that former proof bottleneck from terminal source
+imprecision and from source sentences that required a proved correction.
 
 ## Hilbert and Cauchy subgroup
 
@@ -23,15 +26,16 @@ identity is supplied as a premise.
 
 | Source conclusion | Production evidence | Exact remaining foundation | Status |
 |---|---|---|---|
-| 28-P3 real-Ginibre expected real-eigenvalue limit | `measurable_realEigenvalueCount`, `integrable_realEigenvalueCount`, `lintegral_ginibreIncidence_regular_eq_rootCount`, `lintegral_ginibreIncidence_gaussian_eq_rootCount`, and `lintegral_ginibreIncidence_gaussian_eq_expected` close the actual expectation reduction. `realGinibreExpectedCountClosedForm_limit` proves the analytic closed-form limit; dimensions one and two are identified exactly. The projective, determinant-moment, characteristic-product, and Sylvester modules add unconditional scalar/structural reductions. | A premise-free theorem `RealGinibreFiniteExpectationFormula` for every positive dimension, or an equivalent premise-free `RealGinibreExpectedCountLimit`. `realGinibreExpectedCountLimit_of_finiteExpectationFormula` remains conditional on the missing finite formula. Concretely, the exact all-positive-dimension determinant/absolute-characteristic-moment integral still has to be evaluated or shown to obey the recurrence matching the closed form. | **PARTIAL/OPEN** |
+| 28-P3 real-Ginibre expected real-eigenvalue limit | `ch28gf_realGinibreFiniteExpectationFormula` and `ch28gf_realGinibreExpectedCountLimit` (premise-free, axiom-clean, `Higham28GinibreFiniteFormula.lean`), completing the incidence chain via `ch28gf_kernelTransfer`; supported by `measurable_realEigenvalueCount`, `integrable_realEigenvalueCount`, `lintegral_ginibreIncidence_regular_eq_rootCount`, `lintegral_ginibreIncidence_gaussian_eq_rootCount`, and `lintegral_ginibreIncidence_gaussian_eq_expected` (expectation reduction), `realGinibreExpectedCountClosedForm_limit` (analytic closed-form limit), exact dimensions one and two, and the projective, determinant-moment, characteristic-product, and Sylvester modules. | NOW SUPPLIED: the premise-free `RealGinibreFiniteExpectationFormula` for every positive dimension (`ch28gf_realGinibreFiniteExpectationFormula`) and the premise-free `RealGinibreExpectedCountLimit` (`ch28gf_realGinibreExpectedCountLimit`); the exact all-positive-dimension determinant/absolute-characteristic-moment integral is evaluated via `ch28gf_kernelTransfer`, discharging the formerly-conditional `realGinibreExpectedCountLimit_of_finiteExpectationFormula`. | **CLOSED** (previously OPEN) |
 | Uniform iid `[0,1]` matrix has a positive Perron root a.s. | `uniformUnitIntervalMatrixMeasure_strictlyPositive`, `hasPositiveDominantEigenvalue_of_strictlyPositive`, `uniformPositivePerronAlmostSure` | none | PASS |
 
-Root-count measurability and the finite-to-one coarea step are no longer
-bottlenecks; both now have unconditional production theorems.
+Root-count measurability, the finite-to-one coarea step, and the
+finite-expectation formula/limit now all have unconditional production theorems;
+28-P3 has no remaining bottleneck.
 
-### Current 28-P3 handoff
+### 28-P3 closure (formerly: handoff)
 
-`Higham28GinibreCharacteristicProduct.lean` now exposes the unconditional
+`Higham28GinibreCharacteristicProduct.lean` exposes the unconditional
 fixed-section lemmas
 `integrable_realGinibre_characteristicProduct`,
 `integrable_realGinibre_det_sub_smul_one_mul_det_sub_smul_one`, and
@@ -41,14 +45,13 @@ evaluates the incidence-oriented product
 are proved to cancel.  Thus neither fixed-parameter integrability nor the
 characteristic-product evaluation remains a missing premise.
 
-The next production theorem is still the joint Fubini bridge
-`integral_ginibreSignedTwoRootSlice_eq_kernelMoment`.  Its proof should establish
-joint integrability of the ordered triple integrand under one real-Ginibre
-matrix and two independent standard Gaussians, reassociate the product measure
-with `measurePreserving_prodAssoc`, apply `integral_prod_symm`, and then use the
-new incidence-oriented integral theorem.  This must remain an unconditional
-integrability proof; replacing it by an almost-everywhere section hypothesis or
-by the final kernel transfer would leave 28-P3 open.
+The former next-step production theorem — the joint Fubini bridge and the final
+kernel transfer — is now DONE: `ch28gf_kernelTransfer` supplies the missing
+measure-theoretic link that completes the incidence chain, yielding the
+premise-free `ch28gf_realGinibreFiniteExpectationFormula` and
+`ch28gf_realGinibreExpectedCountLimit` (`Higham28GinibreFiniteFormula.lean`).
+The closure is an unconditional (premise-free, axiom-clean) proof, not an
+almost-everywhere section hypothesis, so 28-P3 is fully closed.
 
 ## Stewart and randsvd subgroup
 
@@ -86,6 +89,8 @@ by the final kernel transfer would leave 28-P3 open.
 
 ## Gate conclusion
 
-All selected non-Ginibre rows above are terminal. The only selected proof
-bottleneck is the premise-free all-positive-dimension real-Ginibre expectation/limit
-endpoint in 28-P3.
+All selected rows above are terminal, including 28-P3: the premise-free
+all-positive-dimension real-Ginibre expectation/limit endpoint is now closed
+(`ch28gf_realGinibreFiniteExpectationFormula`,
+`ch28gf_realGinibreExpectedCountLimit`, `Higham28GinibreFiniteFormula.lean`).
+The selected-scope gate is PASS.

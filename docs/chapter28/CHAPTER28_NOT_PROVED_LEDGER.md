@@ -1,22 +1,28 @@
 # Chapter 28 Not-Proved Ledger
 
-The Chapter 28 selected-scope gate is **FAIL solely because 28-P3 remains
-PARTIAL/OPEN**. Every selected non-Ginibre mathematical row is now PASS or
+The Chapter 28 selected-scope gate is now **PASS** (previously FAIL): row
+28-P3 — the last open row — is now CLOSED. `Higham28GinibreFiniteFormula.lean`
+proves the premise-free, axiom-clean `ch28gf_realGinibreFiniteExpectationFormula`
+(`∀ n, 0 < n → expectedRealEigenvalueCount n = realGinibreExpectedCountClosedForm n`)
+and hence the premise-free `ch28gf_realGinibreExpectedCountLimit`
+(`E_n/√n → √(2/π)`). Every selected non-Ginibre mathematical row is PASS or
 has a terminal source-imprecision/source-discrepancy disposition. Theorem
 28.1, the uniform/Perron row, and all selected Hilbert, Cauchy, randsvd,
 Pascal, Toeplitz, and companion endpoints are terminal.
 
-## Open selected row
+## Formerly-open selected row 28-P3 (now CLOSED)
 
-| ID | Printed conclusion | Genuine compiled progress | Exact missing endpoint | Status |
+| ID | Printed conclusion | Genuine compiled progress | Endpoint (now supplied) | Status |
 |---|---|---|---|---|
-| 28-P3 | For a real `n × n` Ginibre matrix, `E_n / sqrt(n) -> sqrt(2/pi)` | `measurable_realEigenvalueCount` and `integrable_realEigenvalueCount` close the actual count's measurability and integrability. `lintegral_ginibreIncidence_regular_eq_rootCount`, `lintegral_ginibreIncidence_gaussian_eq_rootCount`, and `lintegral_ginibreIncidence_gaussian_eq_expected` close the multiplicity/coarea/incidence-to-expectation chain. `realGinibreExpectedCountClosedForm_limit` proves the closed-form sequence's limit; `expectedRealEigenvalueCount_eq_closedForm_one` and `expectedRealEigenvalueCount_eq_closedForm_two` prove dimensions one and two. The determinant/projective/characteristic-product modules supply further unconditional reductions. | A premise-free all-positive-dimension proof of `RealGinibreFiniteExpectationFormula`, i.e. `∀ n, 0 < n → expectedRealEigenvalueCount n = realGinibreExpectedCountClosedForm n`, or an equivalent direct premise-free theorem `RealGinibreExpectedCountLimit`. The only general limit bridge, `realGinibreExpectedCountLimit_of_finiteExpectationFormula`, still takes the finite-formula proposition as a premise. | **PARTIAL/OPEN** |
+| 28-P3 | For a real `n × n` Ginibre matrix, `E_n / sqrt(n) -> sqrt(2/pi)` | `measurable_realEigenvalueCount` and `integrable_realEigenvalueCount` close the actual count's measurability and integrability. `lintegral_ginibreIncidence_regular_eq_rootCount`, `lintegral_ginibreIncidence_gaussian_eq_rootCount`, and `lintegral_ginibreIncidence_gaussian_eq_expected` close the multiplicity/coarea/incidence-to-expectation chain. `realGinibreExpectedCountClosedForm_limit` proves the closed-form sequence's limit; `expectedRealEigenvalueCount_eq_closedForm_one` and `expectedRealEigenvalueCount_eq_closedForm_two` prove dimensions one and two. The determinant/projective/characteristic-product modules supply further unconditional reductions. | NOW SUPPLIED: `ch28gf_realGinibreFiniteExpectationFormula` proves the premise-free all-positive-dimension `∀ n, 0 < n → expectedRealEigenvalueCount n = realGinibreExpectedCountClosedForm n`, and `ch28gf_realGinibreExpectedCountLimit` proves the premise-free `E_n/√n → √(2/π)` (both axiom-clean, `Higham28GinibreFiniteFormula.lean`), completing the incidence chain via the new kernel-transfer link `ch28gf_kernelTransfer` and feeding the formerly-conditional bridge `realGinibreExpectedCountLimit_of_finiteExpectationFormula`. | **CLOSED** (previously OPEN) |
 
-The remaining gap is therefore no longer root-count measurability or the
-finite-to-one coarea identity. It is the all-positive-dimension scalar evaluation of
-the exact expectation/determinant integral (equivalently, the missing
-all-positive-dimension absolute-characteristic-moment evaluation or recurrence needed
-to identify it with the proved EKS closed form).
+There is no remaining gap. The former bottleneck — the all-positive-dimension
+scalar evaluation of the exact expectation/determinant integral (equivalently,
+the all-positive-dimension absolute-characteristic-moment evaluation or
+recurrence needed to identify it with the proved EKS closed form) — is now
+discharged by `ch28gf_kernelTransfer`, which supplies the missing
+measure-theoretic kernel-transfer link that completes the incidence chain
+feeding `ch28gf_realGinibreFiniteExpectationFormula`.
 
 ## Closed selected rows formerly listed here
 
