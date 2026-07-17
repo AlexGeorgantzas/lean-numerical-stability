@@ -430,6 +430,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.4 active-path tail source-six/growth package restriction | `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_tail` | Ch11 | **new this session**; packages the block-diagonal `D̂`, local growth-`D̂`, and source-six `|L̂|` row-sum tail restrictions into the named path package used by the product, stability, solve, and Theorem 11.3 factorization consumers. This removes a caller-side reconstruction step for recursive Bunch-Kaufman paths while the concrete full-path source-six/growth facts and final product-bound assembly remain open. |
 | Thm 11.4 active-path tail product-bound consumers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_source_six_growth_LD_package_tail`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_source_six_growth_LD_package_tail` | Ch11 | **new this session**; feeds a full nonempty path source-six/growth package through the tail package restriction and existing product consumers, yielding both the tail `maxEntryNorm` product bound and scalar max-entry product certificate for restricted trailing `L̂,D̂`. This is the recursive product-bound handoff for the first-stage/trailing split; the concrete production of the full-path package and local first-stage estimate remain open. |
 | Thm 11.4 active-path source-six/growth first-stage product share | `higham11_4_bunchKaufmanProductEntry_le_local_share_of_path_source_six_growth_LD_package`, `higham11_4_bunchKaufmanProductEntry_le_head_share_of_path_source_six_growth_LD_package` | Ch11 | **new this session**; turns the packaged source-six `|L̂|` row sums, block-diagonal `D̂`, and local growth-`D̂` caps into an entrywise local product share `≤36ρₙAmax`, then exposes the head-touching first-stage form needed by the recursive split. This supplies the local side of the split once the full-path package is produced. |
+| Thm 11.4 active-path source-six/growth split hypotheses | `higham11_4_first_stage_recursive_product_split_of_path_source_six_growth_LD_package` | Ch11 | **new this session**; packages the head-touching first-stage product share and the trailing-region `local + recB` inequality for any nonnegative recursive budget. This is the split-hypothesis shape consumed by the existing first-stage/trailing aggregation lemmas; the sharper full-tail-to-restricted-tail decomposition remains a future strengthening. |
 | §11.1 exact block-LDLᵀ step, eq (11.3) `s=1`: `∑ L·D·Lᵀ = A` | `oneByOne_step_factorization`, `higham11_3_oneByOne_step_factorization` | " | **new this session**; exact 1×1-pivot factorization identity (unit-lower-tri `L`, block-diag `D` with Schur complement) — the **exact base of Theorem 11.3's diagonal-pivoting recursion** (fl version adds `fl_oneByOne_schur_step_error`) |
 | §11.1 exact block-LDLᵀ **inductive step**, eq (11.1)/(11.3) | `blockLDLT_assemble_step`, `higham11_3_blockLDLT_assemble_step` | " | **new this session**; trailing block factorized recursively (`L_S·D_S·L_Sᵀ = S`, IH) + 1×1 multipliers ⇒ assembled `∑ L·D·Lᵀ = A`; iterating gives the exact `PAPᵀ = LDLᵀ` recursion |
 | §11.1 exact **full recursion**, eq (11.1)/(11.2): `∃ L D, ∑ L·D·Lᵀ = A` | `exact_blockLDLT_all_oneByOne`, `higham11_1_exact_blockLDLT_all_oneByOne` (+ `schurCompl`, `schurCompl_symm`, `AllOnePivots`) | " | **new this session**; symmetric `A` with all Schur-complement pivots nonzero ⇒ exact `LDLᵀ` (no-2×2-pivot case), by induction on `n` via `blockLDLT_assemble_step` — the exact factorization scaffold for Theorem 11.3 |
@@ -11923,6 +11924,17 @@ Problem transcription.
   product-entry wrappers derive the local `36ρₙAmax` share from a packaged
   path source-six/growth certificate and expose the head-touching first-stage
   split form.
+- 2026-07-17 Theorem 11.4 active-path source-six/growth split hypotheses:
+  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` →
+  pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of
+  `higham11_4_first_stage_recursive_product_split_of_path_source_six_growth_LD_package`
+  → elaborate; axioms `[propext, Classical.choice, Quot.sound]`. This wrapper
+  packages the head-touching first-stage product share and the trailing-region
+  `local + recB` inequality for any nonnegative recursive budget.
 - New vs pre-existing warnings: **no new warnings** from the edited Chapter 11 file. The target
   build warnings are pre-existing in `HighamChapter9.lean`, `CholeskyFl.lean`, and
   `HighamChapter10.lean` (deprecated `Fin` coercions, unused simp arguments, one `ring`
