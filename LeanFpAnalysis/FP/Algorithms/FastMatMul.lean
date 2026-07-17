@@ -1,3 +1,26 @@
+/- ============================================================================
+   STALE-NUMBERING NOTICE — READ BEFORE CITING ANYTHING IN THIS FILE
+   ============================================================================
+
+   The docstrings below use STALE 1st-edition numbering ("Higham §22",
+   "Theorem 22.1"–"Theorem 22.4", Brent / Bini–Lotti). These labels are NOT the
+   authoritative source references for this repository.
+
+   The authoritative 2nd-edition Chapter 23 ("Fast Matrix Multiplication")
+   theorems live in `LeanFpAnalysis/FP/Algorithms/FastMatMul/Higham23*.lean`.
+   Cite those modules — never the numbering in this file — for any Chapter 23
+   result.
+
+   The `Prop` structures declared here — `StrassenErrorBound`,
+   `WinogradInnerProductError`, `BilinearAlgorithmError`, `ThreeMMethodError` —
+   are DEAD LEGACY STAND-INS (axiomatized bound placeholders). They are used by
+   NO Chapter 23 result and prove nothing about the actual algorithms.
+
+   This file is deliberately NOT deleted: `Higham23.lean` imports it only for
+   two benign recurrence re-exports (`hrec.step` on `StrassenRecurrence` /
+   `WinogradStrassenRecurrence`). Do not rely on anything else here.
+   ============================================================================ -/
+
 -- Algorithms/FastMatMul.lean
 --
 -- Error analysis of fast matrix multiplication methods (Higham §22).

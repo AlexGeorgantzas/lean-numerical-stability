@@ -6,7 +6,10 @@
 - Chapter: 28, "A Gallery of Test Matrices", printed pp. 511-526.
 - Source file: `References/1.9780898718027.ch28.pdf`.
 - Mode / split: core / Split 4.
-- Selected-scope gate: **FAIL solely because 28-P3 remains PARTIAL/OPEN**.
+- Selected-scope gate: **PASS** (previously FAIL). Row 28-P3 — the last open
+  row — is now CLOSED (premise-free, axiom-clean
+  `ch28gf_realGinibreFiniteExpectationFormula` and
+  `ch28gf_realGinibreExpectedCountLimit`, `Higham28GinibreFiniteFormula.lean`).
   Every selected non-Ginibre mathematical row is PASS or has a terminal
   source-imprecision/source-discrepancy disposition.
 
@@ -27,9 +30,9 @@
 | Toeplitz | `generalToeplitz_unrestricted_complex_eigenpair`, `tridiagonalToeplitz_p522_unrestricted_eigenvalue`, `complexTridiagonalToeplitz_p522_unrestricted_charpoly`, `tridiagonalToeplitz_p522_unrestricted_charpoly`, `tridiagonalToeplitz_p522_unrestricted_roots_charpoly`, `tridiagonalToeplitz_mul_secondDifferenceInverse`, `secondDifferenceInverse_mul_tridiagonalToeplitz`, `opNorm2_secondDifference_eq`, `opNorm2_secondDifferenceInverse_eq`, `secondDifferenceConditionTwo_eq_closedForm`, `secondDifferenceConditionAsymptotic_proved` | PASS for the general spectrum, degenerate cases, inverse, exact condition quotient, and asymptotic; LU/cyclic prose terminally deferred |
 | Companion | `companionMatrix_mulVec_companionEigenvector`, `companion_transpose_krylov_eq_reverseBasis`, `companionMatrix_sub_scalar_rank_ge`, `companionMatrix_charpoly`, `companionOfMatrix_charpoly`, `isSimilar_companion_rank_sub_scalar_ge`, `companion_conjTranspose_mul_self`, `companionSquaredSingularValues_multiset_eq`, `companionSingularValues_multiset_eq`, `companion_orderTwo_isStarNormal_iff`, `companion_orderAtLeastThree_isStarNormal_iff` | PASS for eigenvector, characteristic/eigenvalue preservation, similarity nonderogatoriness, singular values, and repaired normality; SOURCE-DISCREPANCY for the printed normality iff |
 | Probability rows other than 28-P3 | `uniformPositivePerronAlmostSure` and the Stewart Haar theorems | PASS |
-| 28-P3 real-Ginibre limit | `measurable_realEigenvalueCount`, `integrable_realEigenvalueCount`, `lintegral_ginibreIncidence_regular_eq_rootCount`, `lintegral_ginibreIncidence_gaussian_eq_rootCount`, `lintegral_ginibreIncidence_gaussian_eq_expected`, `realGinibreExpectedCountClosedForm_limit`, plus exact dimensions one and two | **PARTIAL/OPEN**: no premise-free all-positive-dimension expectation/limit theorem |
+| 28-P3 real-Ginibre limit | `ch28gf_realGinibreFiniteExpectationFormula`, `ch28gf_realGinibreExpectedCountLimit`, `ch28gf_kernelTransfer` (all premise-free, `Higham28GinibreFiniteFormula.lean`); supported by `measurable_realEigenvalueCount`, `integrable_realEigenvalueCount`, `lintegral_ginibreIncidence_regular_eq_rootCount`, `lintegral_ginibreIncidence_gaussian_eq_rootCount`, `lintegral_ginibreIncidence_gaussian_eq_expected`, `realGinibreExpectedCountClosedForm_limit`, plus exact dimensions one and two | **CLOSED** (previously PARTIAL/OPEN): premise-free all-positive-dimension expectation formula and `E_n/√n → √(2/π)` limit, axiom-clean |
 
-## The remaining selected gap
+## The former selected gap (now closed)
 
 The actual real-eigenvalue count is measurable and integrable, the
 finite-to-one multiplicity/coarea identity is compiled, and the specialized
@@ -37,24 +40,28 @@ Gaussian incidence integral is proved equal to
 `expectedRealEigenvalueCount (n + 1)`. The analytic EKS closed form and its
 `sqrt(2/pi)` normalized limit are also compiled.
 
-What is still absent is an unconditional all-positive-dimension theorem
+This gap is now CLOSED. The unconditional all-positive-dimension theorem
 
-`RealGinibreFiniteExpectationFormula`
+`ch28gf_realGinibreFiniteExpectationFormula`
 
-identifying `expectedRealEigenvalueCount n` with
-`realGinibreExpectedCountClosedForm n` for every positive `n`, or an equivalent direct
-proof of `RealGinibreExpectedCountLimit`. The existing theorem
-`realGinibreExpectedCountLimit_of_finiteExpectationFormula` requires the
-finite-formula proposition as a premise. The remaining analytic bottleneck is
-therefore the all-positive-dimension evaluation/recurrence of the exact determinant or
-absolute-characteristic-moment integral, not measurability or coarea.
+identifies `expectedRealEigenvalueCount n` with
+`realGinibreExpectedCountClosedForm n` for every positive `n` (premise-free,
+axiom-clean), and `ch28gf_realGinibreExpectedCountLimit` proves the premise-free
+`E_n/√n → √(2/π)` directly. These feed the formerly-conditional
+`realGinibreExpectedCountLimit_of_finiteExpectationFormula` (which took the
+finite-formula proposition as a premise). The former analytic bottleneck — the
+all-positive-dimension evaluation/recurrence of the exact determinant or
+absolute-characteristic-moment integral — is discharged by the new
+measure-theoretic kernel-transfer link `ch28gf_kernelTransfer`.
 
-The supporting Ginibre development now includes exact density and
+The supporting Ginibre development includes exact density and
 Lebesgue-law bridges, incidence and projective charts, multiplicity and area
 identities, scalar projective integrals, characteristic-product expectations,
 Sylvester determinant identities, closed-form recurrences, and the exact
-dimension-one and dimension-two expectations. None of those weaker results
-is reported as closing 28-P3.
+dimension-one and dimension-two expectations. No one of those weaker results
+closed 28-P3 alone; the closure is achieved by
+`ch28gf_realGinibreFiniteExpectationFormula` (via `ch28gf_kernelTransfer`),
+building on them.
 
 ## Source corrections and terminal deferrals
 
@@ -90,8 +97,11 @@ is reported as closing 28-P3.
 - Pascal, Toeplitz, and companion rows use the corrected production theorems
   above; source-false statements are not silently asserted.
 - Ginibre measurability, coarea, and incidence-to-expectation theorems are
-  unconditional. The only general limit theorem remains explicitly
-  conditional on `RealGinibreFiniteExpectationFormula`, so 28-P3 stays OPEN.
+  unconditional. The finite-expectation formula and limit are now proved
+  premise-free (`ch28gf_realGinibreFiniteExpectationFormula`,
+  `ch28gf_realGinibreExpectedCountLimit`), discharging the general limit bridge
+  `realGinibreExpectedCountLimit_of_finiteExpectationFormula`, so 28-P3 is now
+  CLOSED (previously OPEN).
 
 ## Documentation
 

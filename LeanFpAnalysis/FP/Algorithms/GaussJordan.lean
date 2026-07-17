@@ -2602,6 +2602,130 @@ theorem gje_spd_forward_error_relative_norm2_of_cumulative_product_certificates_
 -- §14.4.8  Corollary 14.7: Row-Diagonally-Dominant Specialization
 -- ═══════════════════════════════════════════════════════════════════════════════
 
+/-- **Corollary 14.6 conditional normwise forward-error route, finite
+    aggregation form**.
+
+    This is the forward-error companion to
+    `gje_spd_residual_relative_norm2_normConstants_of_cumulative_product_certificates_c3_cap`.
+    It reuses the same finite 2-norm quotient constants for the SPD/GJE
+    residual aggregation and keeps the absolute inverse action
+    `opNorm2 |A_inv|` explicit. -/
+theorem gje_spd_forward_error_relative_norm2_normConstants_of_cumulative_product_certificates_c3_cap
+    (n : ℕ) (fp : FPModel)
+    (A A_inv R_hat R_inv : Fin n → Fin n → ℝ)
+    (b y x x_hat : Fin n → ℝ)
+    (N_hat DeltaN : Fin n → Fin n → Fin n → ℝ)
+    (start : ℕ)
+    (hSPD : IsSymPosDef n A)
+    (hLU : LUBackwardError n A (fun i j => R_hat j i) R_hat (gamma fp n))
+    (hAinv : IsLeftInverse n A A_inv)
+    (hn : gammaValid fp n)
+    (hnpos : 1 ≤ n)
+    (hn3 : gammaValid fp 3)
+    (hidx : ∀ r : Fin (n - 1),
+      start + ((n - 1) - 1 - r.val) < n)
+    (hDelta : ∀ r : Fin (n - 1), ∀ i j : Fin n,
+      |DeltaN (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j| ≤
+        gamma fp 3 *
+          |N_hat (Fin.mk (start + ((n - 1) - 1 - r.val)) (hidx r)) i j|)
+    (hy : ∀ i : Fin n, ∑ j : Fin n, R_hat j i * y j = b i)
+    (hExact : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i)
+    (hBackwardEq : ∀ i : Fin n,
+      ∑ j : Fin n,
+          (R_hat i j +
+            (matMul n
+                (gje_cumulative_product n
+                  (fun k a b => N_hat k a b + DeltaN k a b)
+                  start (start + (n - 1))) R_hat i j -
+              matMul n
+                (gje_cumulative_product n N_hat start (start + (n - 1)))
+                R_hat i j)) *
+            x_hat j =
+        y i +
+          (matMulVec n
+              (gje_cumulative_product n
+                (fun k a b => N_hat k a b + DeltaN k a b)
+                start (start + (n - 1))) y i -
+            matMulVec n
+              (gje_cumulative_product n N_hat start (start + (n - 1))) y i))
+    (hRinvDom : ∀ i j : Fin n,
+      |gje_cumulative_product n (fun s a b => |N_hat s a b|)
+        start (start + (n - 1)) i j| ≤ |R_inv i j|)
+    (hxpos : 0 < vecNorm2 x)
+    (hxhatpos : 0 < vecNorm2 x_hat) :
+    vecNorm2 (fun i : Fin n => x i - x_hat i) / vecNorm2 x ≤
+      opNorm2 (fun i j : Fin n => |A_inv i j|) *
+      (gamma fp n *
+          gje_spd_firstStage_norm2AggregationConstant n R_hat x_hat +
+        (3 * (n : ℝ) * fp.u + gje_c3_quadratic_remainder fp n) *
+          (gje_spd_secondStageX_norm2AggregationConstant n R_hat R_inv x_hat +
+            gje_spd_secondStageY_norm2AggregationConstant n R_hat R_inv x_hat y)) *
+        (vecNorm2 x_hat / vecNorm2 x) := by
+  let alpha : ℝ :=
+    gje_spd_firstStage_norm2AggregationConstant n R_hat x_hat
+  let beta : ℝ :=
+    gje_spd_secondStageX_norm2AggregationConstant n R_hat R_inv x_hat
+  let eta : ℝ :=
+    gje_spd_secondStageY_norm2AggregationConstant n R_hat R_inv x_hat y
+  let T1 : Fin n → ℝ := fun i =>
+    ∑ k : Fin n,
+      (∑ l : Fin n, |R_hat l i| * |R_hat l k|) * |x_hat k|
+  let T2 : Fin n → ℝ := fun i =>
+    ∑ k : Fin n,
+      (∑ k₁ : Fin n, |R_hat k₁ i| *
+        (∑ k₂ : Fin n, |R_inv k₁ k₂| * |R_hat k₂ k|)) *
+        |x_hat k|
+  let T3 : Fin n → ℝ := fun i =>
+    ∑ l : Fin n, |R_hat l i| *
+      (∑ k : Fin n, |R_inv l k| * |y k|)
+  have hbeta_nonneg : 0 ≤ beta := by
+    have hdiv : 0 ≤ vecNorm2 T2 / vecNorm2 x_hat :=
+      div_nonneg (vecNorm2_nonneg T2) hxhatpos.le
+    simpa [beta, gje_spd_secondStageX_norm2AggregationConstant, T2] using hdiv
+  have heta_nonneg : 0 ≤ eta := by
+    have hdiv : 0 ≤ vecNorm2 T3 / vecNorm2 x_hat :=
+      div_nonneg (vecNorm2_nonneg T3) hxhatpos.le
+    simpa [eta, gje_spd_secondStageY_norm2AggregationConstant, T3] using hdiv
+  have halpha_eq : alpha * vecNorm2 x_hat = vecNorm2 T1 := by
+    simp [alpha, gje_spd_firstStage_norm2AggregationConstant, T1]
+    field_simp [hxhatpos.ne']
+  have hbeta_eq : beta * vecNorm2 x_hat = vecNorm2 T2 := by
+    simp [beta, gje_spd_secondStageX_norm2AggregationConstant, T2]
+    field_simp [hxhatpos.ne']
+  have heta_eq : eta * vecNorm2 x_hat = vecNorm2 T3 := by
+    simp [eta, gje_spd_secondStageY_norm2AggregationConstant, T3]
+    field_simp [hxhatpos.ne']
+  have hRT_R_x :
+      vecNorm2 (fun i : Fin n =>
+        ∑ k : Fin n,
+          (∑ l : Fin n, |R_hat l i| * |R_hat l k|) * |x_hat k|) ≤
+        alpha * vecNorm2 x_hat := by
+    change vecNorm2 T1 ≤ alpha * vecNorm2 x_hat
+    exact le_of_eq halpha_eq.symm
+  have hRT_Rinv_R_x :
+      vecNorm2 (fun i : Fin n =>
+        ∑ k : Fin n,
+          (∑ k₁ : Fin n, |R_hat k₁ i| *
+            (∑ k₂ : Fin n, |R_inv k₁ k₂| * |R_hat k₂ k|)) *
+            |x_hat k|) ≤
+        beta * vecNorm2 x_hat := by
+    change vecNorm2 T2 ≤ beta * vecNorm2 x_hat
+    exact le_of_eq hbeta_eq.symm
+  have hRT_Rinv_y :
+      vecNorm2 (fun i : Fin n =>
+        ∑ l : Fin n, |R_hat l i| *
+          (∑ k : Fin n, |R_inv l k| * |y k|)) ≤
+        eta * vecNorm2 x_hat := by
+    change vecNorm2 T3 ≤ eta * vecNorm2 x_hat
+    exact le_of_eq heta_eq.symm
+  have hbase :=
+    gje_spd_forward_error_relative_norm2_of_cumulative_product_certificates_c3_cap
+      n fp A A_inv R_hat R_inv b y x x_hat N_hat DeltaN start
+      hSPD hLU hAinv hn hnpos hn3 hidx hDelta hy hExact hBackwardEq hRinvDom
+      alpha beta eta hxpos hbeta_nonneg heta_nonneg
+      hRT_R_x hRT_Rinv_R_x hRT_Rinv_y
+  simpa [alpha, beta, eta] using hbase
+
 /-- **Corollary 14.7 conditional row-dominant certificate route**.
 
     For a row-diagonally-dominant upper factor, the existing Chapter 9
