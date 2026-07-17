@@ -29,6 +29,27 @@ identity is supplied as a premise.
 Root-count measurability and the finite-to-one coarea step are no longer
 bottlenecks; both now have unconditional production theorems.
 
+### Current 28-P3 handoff
+
+`Higham28GinibreCharacteristicProduct.lean` now exposes the unconditional
+fixed-section lemmas
+`integrable_realGinibre_characteristicProduct`,
+`integrable_realGinibre_det_sub_smul_one_mul_det_sub_smul_one`, and
+`integral_realGinibre_det_sub_smul_one_mul_det_sub_smul_one`.  The last theorem
+evaluates the incidence-oriented product
+`det (A - u I) * det (A - x I)` directly; the two `(-1)^n` orientation factors
+are proved to cancel.  Thus neither fixed-parameter integrability nor the
+characteristic-product evaluation remains a missing premise.
+
+The next production theorem is still the joint Fubini bridge
+`integral_ginibreSignedTwoRootSlice_eq_kernelMoment`.  Its proof should establish
+joint integrability of the ordered triple integrand under one real-Ginibre
+matrix and two independent standard Gaussians, reassociate the product measure
+with `measurePreserving_prodAssoc`, apply `integral_prod_symm`, and then use the
+new incidence-oriented integral theorem.  This must remain an unconditional
+integrability proof; replacing it by an almost-everywhere section hypothesis or
+by the final kernel transfer would leave 28-P3 open.
+
 ## Stewart and randsvd subgroup
 
 | Source conclusion | Production evidence | Exact remaining foundation | Status |

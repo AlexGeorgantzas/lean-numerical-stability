@@ -995,6 +995,107 @@ theorem integral_realGinibre_characteristicProduct
   rw [integral_realGinibre_characteristicProduct_eq_sum_fixedPoints]
   exact sum_pow_card_ginibrePermutationFixedPoints n (z * w)
 
+/-! ## Integrability and the incidence-form orientation -/
+
+/-- The characteristic-product integrand is integrable for every pair of
+real spectral parameters.  This is exposed separately from its integral so
+that later Fubini arguments can use the fixed-parameter sections. -/
+theorem integrable_realGinibre_characteristicProduct
+    (n : ℕ) (z w : ℝ) :
+    Integrable
+      (fun A : RSqMat n =>
+        (z • (1 : RSqMat n) - A).det *
+          (w • (1 : RSqMat n) - A).det)
+      (realGinibreMeasure n) := by
+  have hterm (σ τ : Equiv.Perm (Fin n)) :
+      Integrable
+        (fun A : RSqMat n =>
+          ginibreShiftedDeterminantPermutationTerm z σ A *
+            ginibreShiftedDeterminantPermutationTerm w τ A)
+        (realGinibreMeasure n) :=
+    integrable_ginibreShiftedDeterminantPermutationTerm_mul z w σ τ
+  have hinner (σ : Equiv.Perm (Fin n)) :
+      Integrable
+        (fun A : RSqMat n =>
+          ∑ τ : Equiv.Perm (Fin n),
+            ginibreShiftedDeterminantPermutationTerm z σ A *
+              ginibreShiftedDeterminantPermutationTerm w τ A)
+        (realGinibreMeasure n) :=
+    integrable_finset_sum _ (fun τ _ => hterm σ τ)
+  have hsum : Integrable
+      (fun A : RSqMat n =>
+        ∑ σ : Equiv.Perm (Fin n),
+          ∑ τ : Equiv.Perm (Fin n),
+            ginibreShiftedDeterminantPermutationTerm z σ A *
+              ginibreShiftedDeterminantPermutationTerm w τ A)
+      (realGinibreMeasure n) :=
+    integrable_finset_sum _ (fun σ _ => hinner σ)
+  apply hsum.congr
+  filter_upwards with A
+  rw [ginibre_shiftedDet_eq_sum_permutationTerms,
+    ginibre_shiftedDet_eq_sum_permutationTerms, Finset.sum_mul]
+  simp_rw [Finset.mul_sum]
+
+/-- Reversing both shifted determinants introduces two copies of the same
+`(-1)^n` factor, so their product is unchanged. -/
+theorem det_sub_smul_one_mul_det_sub_smul_one_eq
+    (n : ℕ) (A : RSqMat n) (u x : ℝ) :
+    (A - u • (1 : RSqMat n)).det *
+        (A - x • (1 : RSqMat n)).det =
+      (u • (1 : RSqMat n) - A).det *
+        (x • (1 : RSqMat n) - A).det := by
+  have hu : A - u • (1 : RSqMat n) =
+      -(u • (1 : RSqMat n) - A) := by
+    abel
+  have hx : A - x • (1 : RSqMat n) =
+      -(x • (1 : RSqMat n) - A) := by
+    abel
+  rw [hu, hx, Matrix.det_neg, Matrix.det_neg, Fintype.card_fin]
+  have hsign : ((-1 : ℝ) ^ n) * ((-1 : ℝ) ^ n) = 1 := by
+    rw [← pow_two, ← pow_mul]
+    norm_num
+  calc
+    (-1 : ℝ) ^ n * (u • (1 : RSqMat n) - A).det *
+          ((-1 : ℝ) ^ n * (x • (1 : RSqMat n) - A).det) =
+        (((-1 : ℝ) ^ n) * ((-1 : ℝ) ^ n)) *
+          ((u • (1 : RSqMat n) - A).det *
+            (x • (1 : RSqMat n) - A).det) := by ring
+    _ = _ := by rw [hsign, one_mul]
+
+/-- Fixed incidence-form characteristic products are integrable. -/
+theorem integrable_realGinibre_det_sub_smul_one_mul_det_sub_smul_one
+    (n : ℕ) (u x : ℝ) :
+    Integrable
+      (fun A : RSqMat n =>
+        (A - u • (1 : RSqMat n)).det *
+          (A - x • (1 : RSqMat n)).det)
+      (realGinibreMeasure n) := by
+  apply (integrable_realGinibre_characteristicProduct n u x).congr
+  filter_upwards with A
+  exact (det_sub_smul_one_mul_det_sub_smul_one_eq n A u x).symm
+
+/-- Incidence-form orientation of the two-point characteristic-product
+identity.  This is the matrix integral appearing after the signed two-root
+incidence formula; the two determinant sign changes cancel. -/
+theorem integral_realGinibre_det_sub_smul_one_mul_det_sub_smul_one
+    (n : ℕ) (u x : ℝ) :
+    (∫ A : RSqMat n,
+        (A - u • (1 : RSqMat n)).det *
+          (A - x • (1 : RSqMat n)).det
+      ∂realGinibreMeasure n) =
+      (n.factorial : ℝ) *
+        ∑ k ∈ Finset.range (n + 1),
+          (u * x) ^ k / (k.factorial : ℝ) := by
+  rw [show (fun A : RSqMat n =>
+      (A - u • (1 : RSqMat n)).det *
+        (A - x • (1 : RSqMat n)).det) =
+      (fun A : RSqMat n =>
+        (u • (1 : RSqMat n) - A).det *
+          (x • (1 : RSqMat n) - A).det) by
+    funext A
+    exact det_sub_smul_one_mul_det_sub_smul_one_eq n A u x]
+  exact integral_realGinibre_characteristicProduct n u x
+
 /-! ## Complex spectral parameters -/
 
 /-- Complex-valued coordinate products also factor under the real-Ginibre
