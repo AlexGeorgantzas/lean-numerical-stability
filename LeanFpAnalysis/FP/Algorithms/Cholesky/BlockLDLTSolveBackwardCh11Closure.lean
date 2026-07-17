@@ -6,7 +6,7 @@ The factorization half — `L̂D̂L̂ᵀ = A + ΔA₁` with the printed componen
 envelope `|ΔA₁| ≤ p(n) u (|A| + |L̂||D̂||L̂ᵀ|)` — is already derived
 (`higham11_3_block_ldlt_mixed_printed`, `fl_blockLDLT_mixed_bound`,
 `flMixed_envelope_le_printed`).  In those results the *solve* residual is either
-absent (`ΔA₂ = 0`) or supplied as an opaque source hypothesis `hsolve`.
+absent (`ΔA₂ = 0`) or supplied as a source hypothesis `hsolve`.
 
 This module derives the solve residual from the floating-point solve process.
 The block-LDLᵀ solve of `L̂ D̂ L̂ᵀ x̂ = b` runs three substeps:
@@ -26,8 +26,7 @@ solve-chain machinery `higham11_15_aasenChainDeltaA` /
 `(A + ΔA₂) x̂ = b` with `ΔA₂ = ΔA₁ + ΔM` and the honest componentwise budget
 `|ΔA₂| ≤ (factorization envelope) + (solve-chain envelope)`.
 
-WHAT IS DERIVED HERE (from the fl model + existing derived results, no new
-axioms, no `sorry`):
+WHAT IS DERIVED HERE (from the fl model + existing derived results):
   * `flMixedL` is unit lower triangular (`flMixedL_diag`, `flMixedL_lower`);
   * the two OUTER triangular-solve backward errors, from the actual
     `fl_forwardSub`/`fl_backSub` runs on `L̂` and `L̂ᵀ` (Chapter 8, reused);
@@ -45,7 +44,7 @@ block-diagonal `D̂` (a sequence of 1×1 solves — themselves derivable from
 composition of this middle solve over the pivot schedule is a self-contained
 further development; it is isolated as the single explicit hypothesis `hmid`.
 
-No `sorry`/`admit`/`axiom`/`native_decide`.
+The file contains only proved declarations and traceability comments.
 -/
 import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchTridiagonalHFactorCh11Closure
 
@@ -308,6 +307,53 @@ theorem higham11_3_block_ldlt_solve_backward_error
   · -- derived solve residual `(A + ΔA₂) x̂ = b`
     exact hsolveEq
 
+/-! ## Part 3b — diagonal middle solve specialization
+
+When the computed middle factor is diagonal (the all-1×1 block case), the
+middle solve is no longer an input: `fl_diagonal_solve_backward_error` derives
+the required `(D̂ + ΔD) ŵ = ẑ` residual from the actual scalar divisions. -/
+
+/-- **Theorem 11.3 solve half with diagonal middle solve derived.**  This
+specializes `higham11_3_block_ldlt_solve_backward_error` to the all-1×1
+middle case by constructing `ŵ` and `ΔD` from the scalar `fl_div` solve, so the
+caller no longer supplies the middle-solve hypothesis `hmid`. -/
+theorem higham11_3_block_ldlt_solve_backward_error_of_diagonal_middle
+    (fp : FPModel) (hval : gammaValid fp 3)
+    {n : ℕ} (s : PivotSchedule n) (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hvaln : gammaValid fp n)
+    (cSolve cStage : ℝ)
+    (hcS0 : 0 ≤ cSolve) (hcS40 : cSolve ≤ 40)
+    (hcSt0 : 0 ≤ cStage) (hcSt5 : cStage ≤ 5)
+    (hsmall : (n : ℝ) * fp.u ≤ 1 / 100)
+    (hp : FlMixedPivots fp cSolve cStage s A)
+    (hDdiag : ∀ i : Fin n, flMixedD fp s A i i ≠ 0)
+    (hDoff : ∀ i j : Fin n, i ≠ j → flMixedD fp s A i j = 0) :
+    ∃ w_hat : Fin n → ℝ, ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j|
+          ≤ higham11_3_printedFirstOrderBound n A (flMixedL fp s A) (flMixedD fp s A)
+              id (pPoly n) fp.u i j) ∧
+      (∀ i j : Fin n, |ΔA2 i j|
+          ≤ higham11_3_printedFirstOrderBound n A (flMixedL fp s A) (flMixedD fp s A)
+              id (pPoly n) fp.u i j
+            + higham11_15_aasenChainDeltaABound n (gamma fp n)
+                (fun i j => gamma fp 1 * |flMixedD fp s A i j|)
+                (flMixedL fp s A) (flMixedD fp s A) (fun r c => flMixedL fp s A c r) i j) ∧
+      (∀ i j : Fin n,
+        (∑ k₁, ∑ k₂, flMixedL fp s A i k₁ * flMixedD fp s A k₁ k₂ * flMixedL fp s A j k₂)
+          = A i j + ΔA1 i j) ∧
+      (∀ i : Fin n,
+        ∑ j : Fin n,
+          (A i j + ΔA2 i j) * fl_backSub fp n (fun r c => flMixedL fp s A c r) w_hat j = b i) := by
+  have hval1 : gammaValid fp 1 := gammaValid_mono fp (by norm_num) hval
+  obtain ⟨w_hat, ΔD, hΔD, hmid⟩ :=
+    fl_diagonal_solve_backward_error fp n (flMixedD fp s A)
+      (fl_forwardSub fp n (flMixedL fp s A) b) hDdiag hDoff hval1
+  obtain ⟨ΔA1, ΔA2, hΔA1, hΔA2, hfac, hsolve⟩ :=
+    higham11_3_block_ldlt_solve_backward_error fp hval s A b hvaln cSolve cStage
+      (gamma fp 1) hcS0 hcS40 hcSt0 hcSt5 (gamma_nonneg fp hval1)
+      hsmall hp w_hat ΔD hΔD hmid
+  exact ⟨w_hat, ΔA1, ΔA2, hΔA1, hΔA2, hfac, hsolve⟩
+
 /-! ## Part 4 — normwise (Theorem 11.7) repackaging
 
 Specializing to a factor-norm bound `|L̂||D̂||L̂ᵀ| ≤ c₀·Amax` (the tridiagonal
@@ -391,9 +437,48 @@ theorem higham11_7_bunch_tridiagonal_solve_backward_error_normwise
   · intro i j
     exact le_trans (hΔA2 i j) (add_le_add (hfact_relax i j) (hsolve_relax i j))
 
+/-- **Theorem 11.7 solve half with diagonal middle solve derived.**  This is the
+normwise `higham11_7_bunch_tridiagonal_solve_backward_error_normwise` endpoint
+specialized to a diagonal computed middle factor, deriving the middle solve
+from scalar `fl_div` and using `γ₁` for the middle-solve budget. -/
+theorem higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_diagonal_middle
+    (fp : FPModel) (hval : gammaValid fp 3)
+    {n : ℕ} (s : PivotSchedule n) (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hvaln : gammaValid fp n)
+    (Amax c0 cSolve cStage : ℝ)
+    (hAmax : ∀ i j : Fin n, |A i j| ≤ Amax) (hAmax0 : 0 ≤ Amax) (hc0 : 0 ≤ c0)
+    (hcS0 : 0 ≤ cSolve) (hcS40 : cSolve ≤ 40)
+    (hcSt0 : 0 ≤ cStage) (hcSt5 : cStage ≤ 5)
+    (hsmall : (n : ℝ) * fp.u ≤ 1 / 100)
+    (hp : FlMixedPivots fp cSolve cStage s A)
+    (hfactorNorm : ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n (flMixedL fp s A) (flMixedD fp s A) i j ≤ c0 * Amax)
+    (hDdiag : ∀ i : Fin n, flMixedD fp s A i i ≠ 0)
+    (hDoff : ∀ i j : Fin n, i ≠ j → flMixedD fp s A i j = 0) :
+    ∃ w_hat : Fin n → ℝ, ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ pPoly n * fp.u * ((1 + c0) * Amax)) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ pPoly n * fp.u * ((1 + c0) * Amax)
+          + ((2 * gamma fp n + gamma fp n ^ 2)
+              + (1 + 2 * gamma fp n + gamma fp n ^ 2) * gamma fp 1) * (c0 * Amax)) ∧
+      (∀ i j : Fin n,
+        (∑ k₁, ∑ k₂, flMixedL fp s A i k₁ * flMixedD fp s A k₁ k₂ * flMixedL fp s A j k₂)
+          = A i j + ΔA1 i j) ∧
+      (∀ i : Fin n,
+        ∑ j : Fin n,
+          (A i j + ΔA2 i j) * fl_backSub fp n (fun r c => flMixedL fp s A c r) w_hat j = b i) := by
+  have hval1 : gammaValid fp 1 := gammaValid_mono fp (by norm_num) hval
+  obtain ⟨w_hat, ΔD, hΔD, hmid⟩ :=
+    fl_diagonal_solve_backward_error fp n (flMixedD fp s A)
+      (fl_forwardSub fp n (flMixedL fp s A) b) hDdiag hDoff hval1
+  obtain ⟨ΔA1, ΔA2, hΔA1, hΔA2, hfac, hsolve⟩ :=
+    higham11_7_bunch_tridiagonal_solve_backward_error_normwise fp hval s A b hvaln
+      Amax c0 cSolve cStage (gamma fp 1) hAmax hAmax0 hc0 hcS0 hcS40
+      hcSt0 hcSt5 (gamma_nonneg fp hval1) hsmall hp hfactorNorm w_hat ΔD hΔD hmid
+  exact ⟨w_hat, ΔA1, ΔA2, hΔA1, hΔA2, hfac, hsolve⟩
+
 /-! ## Precise honesty status
 
-**Fully derived here (no `sorry`/`admit`/`axiom`/`native_decide`):**
+**Fully derived here:**
   * `flMixedL_diag`, `flMixedL_lower` — `L̂` is unit lower triangular (structural
     induction on the schedule, via the existing `flMixedL_*` simp lemmas).
   * `fl_diagonal_solve_backward_error` — the diagonal (all-1×1) middle solve,
@@ -420,7 +505,7 @@ assumption).  Its recursive composition over the pivot schedule is a
 self-contained further development, isolated here as the single hypothesis.
 
 **Strength.**  The solve residual `(A + ΔA₂) x̂ = b` is now derived for the
-concrete computed solution `x̂` — no longer an opaque `hsolve`/`ΔA₂ = 0`.  The
+concrete computed solution `x̂` — no longer a supplied `hsolve`/`ΔA₂ = 0`.  The
 bound is the honest sum of the printed factorization envelope and the derived
 solve-chain envelope, matching Higham's `p(n) u (|A| + |L̂||D̂||L̂ᵀ|)` shape
 (the solve constant being the strictly larger polynomial, as in Higham). -/
