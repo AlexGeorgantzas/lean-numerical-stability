@@ -770,9 +770,12 @@ to a block-diagonal tail matrix with explicit head-tail zero entries. Concrete
 off-branch zero data and local `D̂` caps now also restrict to the trailing path,
 full-path local `D̂` caps expose the head pivot-block cap, and full-path
 source-six local `|L̂|` row-sum caps restrict to the trailing path by finite
-subset summation over the embedded tail columns. The concrete first-stage /
-trailing split still needs production of the full-path `|L̂|` row-sum caps and
-the final product-bound assembly.
+subset summation over the embedded tail columns. The tail-path product maximum
+now also feeds the recursive-budget parameter of the full-path source-norm
+product certificate, pointwise stability bridge, and solve backward-error
+bridges. The concrete first-stage / trailing split still needs production of
+the full-path `|L̂|` row-sum caps and the final source-path package from
+pivot-path data.
 
 2026-07-17 update: the Theorem 11.7 status row also includes the supported/residual
 witness-family deep-support local-block, branch-matrix combined-row,
