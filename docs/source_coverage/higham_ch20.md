@@ -1,5 +1,21 @@
 # Higham Chapter 20 Source Coverage Ledger
 
+> **Current-gate notice (2026-07-16).** This file is an append-only historical
+> coverage log, not the authoritative current completion verdict. Use
+> `docs/chapter20/CHAPTER20_SOURCE_INVENTORY.md`,
+> `docs/chapter20/CHAPTER20_PROOF_SOURCE_LEDGER.md`,
+> `docs/chapter20/CHAPTER20_NOT_PROVED_LEDGER.md`, and
+> `docs/chapter20/CHAPTER20_FORMALIZATION_REPORT.md` for the audited source
+> counts, current Lean endpoints, source-strengthening boundaries, and
+> verification result. The Chapter 20 selected-scope gate is **FAIL**.
+> Theorem 20.4's total perturbation envelope and Theorem 20.7's rounded
+> Cox--Higham producer are closed with visible implementation domains, but the
+> separate p. 395 row-sorting cap for `alpha_i`/`beta_i` and row-order
+> invariance of `phi` lack an executable producer. The p. 404 square-or-tall
+> invariance is closed as an exact source discrepancy. Qualitative and
+> under-specified rows are separately deferred rather than counted as
+> blockers.
+
 ## Source and Scope
 
 - Edition: Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed. (SIAM, 2002), verified from repository metadata and the SIAM chapter PDF title metadata.
@@ -3067,7 +3083,87 @@ Additional Theorem 20.8 unique general reduced-Wedin GQR same-witness increment:
 
 Additional Theorem 20.7 upper-triangular sqrt-balanced row-policy increment: `theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_mono_of_activeMaxPivotColumn_upper_triangular_diag_ne_zero_sqrtBalancedRowPolicy_of_abs_b_le_nat`, `Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_mono_of_activeMaxPivotColumn_upper_triangular_diag_ne_zero_sqrtBalancedRowPolicy_of_abs_b_le_nat`, and `Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_mono_of_activeMaxPivotColumn_upper_triangular_diag_ne_zero_sqrtBalancedRowPolicy_of_abs_b_le_nat` extend the explicit `sqrt(m)` active-suffix row-domination policy to the fixed-order upper-triangular/diagonal-nonzero convenience surface.  This removes the separate unweighted finite active-ratio premise from that route while preserving active-max pivot choice, upper-triangular and diagonal-nonzero stage facts, signed-stage recurrences, source RHS domination, and the row-wise certificate or concrete perturbation bounds as explicit obligations.  Validation: focused `lake env lean LeanFpAnalysis/FP/Algorithms/LeastSquares/LSE.lean`, target `lake build LeanFpAnalysis.FP.Algorithms.LeastSquares.LSE:olean`, `git diff --check`, added-line forbidden-token scan, and namespaced dependency checks passed; the exact-perturbation companion dependency check reported only `propext`, `Classical.choice`, and `Quot.sound`.  No GPT Pro oracle answer was obtained or adopted.
 
-## Next Row
+## Audited closure snapshot — 2026-07-16
+
+This snapshot supersedes the historical queue below. The authoritative row
+classifications and proof-source decisions are in
+`docs/chapter20/CHAPTER20_SOURCE_INVENTORY.md`,
+`docs/chapter20/CHAPTER20_NOT_PROVED_LEDGER.md`,
+`docs/chapter20/CHAPTER20_PROOF_SOURCE_LEDGER.md`, and
+`docs/chapter20/CHAPTER20_FORMALIZATION_REPORT.md`.
+
+The Chapter 20 modular selected-scope gate is **FAIL**. All 12 named results
+pass at their documented APIs, and the selected numbered equations are closed
+or explicitly deferred, but the separate precise p. 395 row-sorting cap and
+`phi`-invariance row remains selected and open.
+
+- The p. 385 zero-`Delta b` row is **PASS (EXPLICIT-DOMAIN)** through
+  `metricGraphSmallness_of_frobNorm_le` and
+  `householder_qr_fl_backSub_matrix_only_backward_error_all_rhs_of_scalar_smallness`.
+  The former universal metric-graph guard is derived from the source-sized
+  Frobenius perturbation bound plus the two explicit scalar conditions
+  `rhsRadius fp m n < 1` and
+  `metricDefectEnvelope fp m n < 1`.
+- Problem 20.5 is **PASS (LITERAL END-TO-END ACCUMULATED-POLAR;
+  COMPUTED-GRAM EXPLICIT-DOMAIN)**. The literal rounded Algorithm 19.12 loop
+  now has a proved telescoped product-error budget and polar-resolvent global
+  repair. `actualAugmentedMGSBackSub_end_to_end_accumulatedPolar` runs that
+  repair with the actual `[A b]` factors and literal `fl_backSub` return.
+  `actualAugmentedMGSBackSub_end_to_end_localGram` exposes the stronger
+  primitive numerator under the directly computed premise
+  `||I-QhatᵀQhat||_F <= gramCoeff*u`; it does not assume a repair or LS
+  conclusion. Neither endpoint claims Higham Theorem 19.13's stronger
+  condition-number-independent printed `c3*u` coefficient. The accumulated-
+  polar endpoint has no external repair premise on its explicit
+  tall/full-pivot/positive-column and gamma-valid domain.
+- Theorem 20.7 is **PASS (CH20 ASSEMBLY / LITERAL RUNTIME PRODUCER;
+  EXPLICIT-DOMAIN; SOURCE-COORDINATE CORRECTION)** through
+  `PivotedStoredQRSplit3BNumericalContract` and
+  `fl_pivotedStoredQR_returnedX_exactMinimizer_of_split3B`. The contract has no
+  minimizer, returned-vector, or final backward-error field. The formal
+  Cox--Higham (3.7) prefix expansion and `pivotedStoredQR_QdR_source_n_sq_le`
+  in `Higham20Theorem20_7QdR.lean` supply direct `Q[DeltaR;0]` support with
+  `backSubCoeff = 16 * eta` and no strict sigma-history premise. The formal
+  obstructions `sigmaHistory_not_forall_literal_rounded_trace` and
+  `pivotPositionFactor_not_le_sourceColumnFactor_forall` reject the legacy
+  strict rounded sigma history and the false source-column relabeling of the
+  pivot-position `j^2` factor. Corrected source-coordinate endpoints use the
+  proved uniform `n^2` envelope. `Higham20Theorem20_7Runtime.lean` now supplies
+  the complete literal producer: `pivotedStoredQR_split3B_numericalContract_runtime`
+  derives all three numerical fields from finite local matrix/RHS `Eseq` norm
+  sums and final top-`R` column norms, and
+  `fl_pivotedStoredQR_returnedX_exactMinimizer_of_runtime` closes the actual
+  QR/RHS/back-substitution execution on the explicit `n > 0`, gamma-valid,
+  nonzero-top-diagonal domain. This is a conservative row-uniform,
+  execution-derived exact-Real runtime certificate, not a Lean-executability
+  claim or the printed source-row compression.
+
+There are no Chapter 20-owned selected blockers or missing literal numerical
+producers. The Cox--Higham `alpha`, `beta`, `phi`, component-budget, and
+row-sorting form remains a stronger conditional source-row compression, not a
+repository no-placeholder blocker. The literal MGS global repair is concrete;
+only the stronger printed condition-independent Theorem 19.13 `c3*u`
+coefficient remains upstream for that row.
+
+All selected numbered equations are closed or explicitly deferred. Newly
+closed rows include (20.13a/b), (20.16), (20.25), (20.26), the sharp p. 385
+residual estimate, the alternative Theorem 20.2 combined bound, Problem 20.3,
+the actual rounded cross-product example, and the constructed p. 399
+elimination method. The stronger p. 402 equal-rank Wedin sentence is **PASS /
+SOURCE DISCREPANCY**: a rational equal-rank counterexample refutes its printed
+solution bound.
+
+All 28 Chapter 20 modules, including the Split 3B contract, Cox--Higham support,
+and runtime producer modules, are aggregate-imported. The literal rounded MGS
+and quantitative repair modules are imported with their Chapter 20 consumer.
+The final focused six-module MGS/Theorem 20.7 build passed all 3087 jobs; the
+aggregate algorithms build passed all 3878 jobs; and the full repository build
+passed all 3931 jobs. Nine representative endpoint dependency checks each
+reported exactly `propext`, `Classical.choice`, and `Quot.sound`; the
+forbidden-declaration scan, aggregate-import coverage, and `git diff --check`
+also passed.
+
+## Historical Next Row (superseded)
 
 - The row-policy path now has source-side row-permutation discharges for row nonzero witnesses, RHS domination, the weighted finite active-ratio maximum, the active-row geometric/accumulated-error alpha/beta maximum wrappers, and certificate-level transport back to original source rows.  The next Theorem 20.7 row-policy target should be the actual QR-specific source policy that proves the permuted unweighted finite active-ratio `<= sqrt(m)` bound and feeds active-max pivot choice, scalar compact-budget control, leading-block/nonbreakdown control, stage bounds, perturbation construction, and weighted-LS exactness into the existing conditional wrappers.
 - The same reduction is now wired into the concrete stored-Householder active-tail wrapper.  Downstream stored-QR callers should prefer the `_activeRatioMax_le_of_abs_b_le_nat` surface when their RHS is dominated by the scaled source row maximum, and should reserve the older two-max surface for cases where the weighted finite ratio is proved independently.
@@ -3078,3 +3174,95 @@ Additional Theorem 20.7 upper-triangular sqrt-balanced row-policy increment: `th
 - The scalar signed-alpha current-diagonal, leading-block determinant budget, direct compact-budget/trailing-norm-positivity, sorted row-permuted compact-budget, row-permuted `abs_b_mono` compact-budget, and H19 source-sorted/`abs_b_mono` completion-preservation routes, including the stage-swap variants, now have the same single-active-ratio surface.  The remaining H19 completion-preservation work is no longer a weighted-active-ratio adapter; it is the deeper perturbation-budget/entry/all-entry and final certificate wiring.
 - The next implementation pass should move off Theorem 20.4 unless a no-extra-domain strengthening is explicitly required. The active selected blockers are Theorem 20.3's genuine stored-Householder side conditions, Theorem 20.7's row-wise weighted-LS QR dependency beyond the now-specialized source-initial/zero-start/zero-budget accumulated-error reductions, completed certificate-composition layer, completed-row preservation adapters, H19 completion-preservation finite-ratio wrapper, completion-preservation perturbation-budget wrappers, completion-preservation perturbation-entry wrappers, completion-preservation all-entry wrapper, signed-stage all-entry wrapper, signed-stage nonzero-row wrapper, signed-stage source-initial wrapper, signed-stage zero-start wrapper, signed-stage zero-budget wrapper, signed-stage zero-budget certificate wrapper, source-sorted row-sorted zero-budget all-entry and certificate wrappers, active-tail source-sorted zero-budget certificate wrapper, active-row accumulated-error budget/certificate wrappers, completion-preservation nonzero-row wrapper, completion-preservation source-initial wrapper, completion-preservation zero-start wrapper, completion-preservation zero-budget wrapper, completion-preservation certificate wrapper, completion-preservation zero-start certificate wrapper, and completion-preservation zero-budget certificate wrapper, the remaining Theorem 20.8 residual-gap estimate plus source construction or instantiation of a rank-tolerant `(AP)^+` branch, and the rounded Theorem 20.10 GQR stability path. The concrete determinant-facing Gram route for `(AP)^+` has been ruled out as source-derivable in general by `theorem20_8_gram_AP_rectGram_det_zero_counterexample`, so the viable Theorem 20.8 target is a rank-tolerant Moore--Penrose construction/instantiation or the residual-gap estimate. The exact transformed-RHS Householder-gamma Part B wrapper is now closed; Theorem 20.10 still needs the rounded RHS-transform/full computed-GQR identification and final returned-vector theorem before the fully rounded source path can be marked closed. For Theorem 20.7, the new common-row package removes routine row-sorting/`|b|`/weighted-sorting and ratio-field transport under the explicit monotonicity policy; the next concrete dependency is to justify or instantiate that compatibility and the finite active-ratio `<= sqrt(m)` bounds for the chosen QR row policy, plus active-max pivot choice, active-row `A`/RHS stage bounds in either exact `G^k` or accumulated-error `G^k + err` form, compact-budget domination, accumulated-error domination, perturbation construction, and weighted-LS exactness. The finite-ratio, all-entry, positive-`phi`/nonzero-row all-entry, row-sorted zero-budget all-entry, row-sorted zero-budget certificate, active-tail zero-budget certificate, active-row accumulated-error certificate, and row-permutation transport routes now expose the appropriate conditional wrappers, including the direct compact-budget row-permutation active-ratio route that does not require the stronger square-margin premise. Signed-stage matrix row preservation, signed-stage matrix exact-growth/completion-time bridges including the row-sorted matrix handoff, signed-stage RHS exact-growth/completion-time bridges including the source-sorted row-sorted RHS handoff, the signed-stage row-sorted finite-ratio bridge, the signed-stage row-sorted all-entry/nonzero-row/source-initial/zero-start/zero-budget perturbation bridges, signed-stage active-tail all-entry/nonzero-row/source-initial/zero-start/zero-budget/certificate perturbation wrappers, signed-stage all-entry/nonzero-row/source-initial/zero-start/zero-budget perturbation wrappers, and the signed-stage zero-budget plus row-sorted zero-budget certificate wrappers are now available under the explicit subtract-zero copy model. For the Theorem 20.1/Lemma 20.12 route, the companion-compression `PQP`/`QPQ` norm equality, complementary `D^2` compression decompositions, exact PSD top-eigenvalue norm wrappers for both `D^2` compressions, both raw and compressed nonunit vector-transfer directions, source-facing raw and compressed iff wrappers for the `lambda = 1` range/kernel characterization, endpoint top-eigenvalue iff wrappers against `ran(P) ∩ ker(Q)` and `ran(Q) ∩ ker(P)`, conditional selected-top equality away from endpoints, source range-projection finrank under left inverses, the restricted-map rank-nullity comparison for the `lambda = 1` endpoint subspaces, nonzero endpoint-subspace transfer under equal range dimension, the selected-top `lambda = 1` iff transfer, its source range-projection instantiation, unconditional selected-top equality under equal projection-range finrank, the two `D^2` compression operator-norm equality, the abstract Stewart--Sun cross-projection operator-norm equality, the source Lemma 20.12 `delta * min` projector-bound surface, the solution/residual Theorem 20.1 handoff wrappers, and the combined displayed-inequality wrapper are now proved at the repository residual-definition/column-orthogonality API.  Any further Theorem 20.1 work is optional source-minimal API cleanup; the concrete proof queue should otherwise prioritize the remaining selected blockers listed above. If Theorem 20.4 is revisited, the concrete target is only the optional strengthening `lsTheorem20_4ComputedQRNonbreakdown` from source-visible full rank plus smallness/no-underflow assumptions. Problems/exercises may now be selected explicitly; selected Problem 20.10 is closed at the exact normal-equations iff surface under full row rank of `B`.
 - The active-tail Theorem 20.7 certificate route now has the source-initial certificate wrapper, the active-bound discharge wrapper, the explicit-step-budget and zero-step-budget source-sorted zero-start wrappers, the compact-slack budget adapters, the norm-coefficient compact-budget adapters, the entry-norm compact-budget adapters, the active-tail compact-budget adapters, the signed-stage compact-coefficient slack adapters, the row-sorted active-bound compact-budget adapters, the compact-slack all-entry wrapper, the concrete compact-step slack wrapper, the compact active-step factor reduction, the printed-rowwise domination route-blocker, the larger compact-active scalar horizon, the generic horizon completion-budget adapters, the horizon-parametric active-tail/row-sorted compact-budget adapter stack, the concrete compact-active horizon row-sorted budget wrappers, the compact-active row-sorting accumulated-error active-stage wrappers, the compact-active all-entry/certificate final-budget bridge, the concrete stored-QR matrix/RHS/alpha specialization for the active-max row-scale wrapper, the concrete stored-QR finite active-ratio wrapper, the concrete leading-block determinant finite active-ratio wrapper, the concrete upper-triangular finite active-ratio wrapper, the concrete prefix-lower finite active-ratio wrapper, the concrete leading-diagonal finite active-ratio wrapper, the concrete leading-block determinant/lower-prefix nonbreakdown wrapper, the concrete upper-triangular/diagonal-nonzero nonbreakdown wrapper, the concrete prefix-lower-zero/local-diagonal nonbreakdown wrapper, the concrete leading-diagonal-only simplification wrapper, the concrete leading-diagonal preservation helper, the concrete signed-alpha step-diagonal helper, the concrete signed-alpha/current-diagonal leading-block wrapper, the concrete signed-alpha diagonal budget-bound wrapper, the concrete current-diagonal-from-leading-determinant helper, the concrete signed-alpha leading-determinant budget wrapper, the concrete signed-alpha budget positivity wrapper, the concrete signed-alpha direct square-root budget wrapper, the concrete signed-alpha diagonal-budget square-margin wrapper, the direct compact-budget row-permutation active-ratio wrappers, the row-permutation certificate transport bridge back to the original row order, explicit finite row-sorting existence bridges for any one row key, and the common row-max/`|b|`/weighted-sorting active-ratio package `theorem20_7_exists_common_sorted_permuteRows_activeRatioMax_fields_of_abs_b_mono_initialRowMax_nat`.  The remaining active-tail work is not another certificate-composition layer or another abstract stored-sequence wrapper; it is instantiating the QR-specific source compatibility and finite active-ratio bounds for the chosen row policy, active-max pivot choice, scalar compact-budget domination and square-margin control, leading-block determinant control, active/completed stage bounds, perturbation construction, and weighted-LS exactness hypotheses that feed those conditional surfaces.
+
+## Split 4 Source-Fidelity Corrective Snapshot (2026-07-16)
+
+This append-only snapshot supersedes the earlier Chapter 20 PASS narrative
+above. A fresh read of printed pp. 381-406 and Appendix pp. 565-567, followed
+by theorem-type and dependency audits, gives a selected core gate of **FAIL**.
+The inventory contains exactly 12 named results, 36 actually printed equation
+tags, 13 Problems, and 11 Appendix solution rows.
+
+Closed or strengthened in this repair:
+
+- Theorem 20.5 is source-general for tall matrices and covers minimizer,
+  nonminimizer, finite-positive-weight, eigenvalue, and matrix-only-limit
+  branches.
+- Theorem 20.9 has unconditional exact Householder GQR existence, with rank
+  consequences separated from existence.
+- Theorem 20.10 has genuine rounded positive-block, `p=0,q>0`, and `q=0,p>0`
+  Part A/Part B endpoints, deriving boundary nonbreakdown from source rank and
+  explicit roundoff thresholds.
+- The p. 399 elimination algorithm constructs both pivoted QR stages, both
+  solves, and the returned original-coordinate LSE minimizer without assuming
+  a reduced minimizer.
+- Equation (20.19) and Problem/Appendix 20.7 are proved for the mathematically
+  valid strict-tall case. An exact scalar theorem refutes the printed square
+  extension of the `sqrt(2)` lower envelope, so the square edge is recorded as
+  **PASS / SOURCE DISCREPANCY**.
+- The symbolic cross-product family and exact projector-complement operator
+  norm identity are local and compiled.
+- `Higham20MinimumNormBackwardError.lean` models the strengthened p. 404
+  feasible/value/infimum problem and proves the source's immediate equality
+  when an attaining perturbed matrix has full column rank.
+  `higham20_p404_square_source_discrepancy` also proves that the unqualified
+  square-or-tall sentence is false: for exact scalar nonzero data, ordinary
+  error is at most `1` while strengthened error is at least `sqrt 2`. The
+  cited Sun theorem is strict-tall and matrix-only.
+
+Current source-strength disposition:
+
+- Theorem 20.4 is now closed by
+  `LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_theorem20_4_printed_total_perturbations`.
+  It preserves the exact QR relation, transports both triangular corrections,
+  combines them with the panel perturbation, normalizes one shared nonnegative
+  Frobenius-unit witness, and proves the printed matrix/RHS bounds with the
+  explicit dimension-only `lsTheorem20_4ConcreteGammaTildeTotal`.
+- Equation (20.16) is closed at its source derivation layer by
+  `higham20_eq20_16_augmented_one_refinement_finite` and its actual-residual/
+  rounded-update specialization: both printed first-order gamma contributions
+  are exposed together with `higham20Eq20_16Remainder`, an exact rational
+  quadratic-and-higher remainder. The literal QR correction adapter is also
+  proved; its upstream Theorem 20.4 producer is also closed.
+- Theorem 20.7's literal runtime certificate uses different scales from the
+  printed Cox--Higham `alpha_i`, `beta_i`, and `phi`. The final-`R` row field is
+  derived, but the unconditional printed compression remains open. The former
+  forward-policy route is now formally refuted for the literal recursion:
+  `sigmaCounterA_mulVec_injective` and `sigmaCounter_gammaValid_two` verify the
+  counterexample's source/model domain, `sigmaCounter_final_11` computes the
+  final active-tail entry `45/32` from first pivot scale `1`, and
+  `sigmaCounter_no_coxHighamRowPolicy` contradicts the policy's exact-tail
+  field. A corrected rounded-feedback Cox--Higham invariant is required.
+- The p. 404 minimum-2-norm sentence is closed as a source discrepancy on the
+  square edge, alongside its proved full-rank-at-an-attainer subcase. The
+  p. 386 MGS paragraph is
+  qualitative attribution-only prose and optional Appendix 20.5 uses an
+  unspecified `c_{m,n}u` coefficient; the p. 396 residual sentence likewise
+  prints no inequality. These and other qualitative, suppressed-constant,
+  empirical, and benchmark rows are separately deferred or classified and do
+  not masquerade as proved theorems.
+
+The difficult Theorem 20.7 classification received an Oracle second-model
+review under session `chapter20-theorem20-7-audit`. Its advice was adopted only
+after independent comparison with the PDF, declaration types, and local
+counterexamples; the consulted model did not supply any trusted proof object.
+
+Final verification passed for `LeanFpAnalysis.FP.Algorithms` (3878 jobs),
+`LeanFpAnalysis.FP` (3929 jobs), the full root build (3931 jobs), and
+`examples/LibraryLookup.lean`. All 32 least-squares modules are aggregate
+imports. Twelve representative repaired endpoints depend only on `propext`,
+`Classical.choice`, and `Quot.sound`. Added-line forbidden-token,
+conflict-marker, source-count, whitespace, and diff-hygiene checks passed.
+
+Split 4 Theorem 20.7 closure increment (2026-07-16):
+`fl_pivotedStoredQR_returnedX_pivotPosition_of_roundedCoxHigham` executes the
+literal pivoted stored-QR, paired RHS, and `fl_backSub` path on explicit local
+forward-row/component-operation/multiplier-budget and nonbreakdown conditions.
+It constructs the numerical contract internally, returns the exact perturbed
+least-squares minimizer, and proves the pivot-position matrix envelope
+`((j+1)^2)(16 gammaTilde) alpha_i` together with the RHS envelope
+`n^2(5 gammaTilde) beta_i`. The source-order wrapper retains the valid uniform
+`n^2` matrix envelope after undoing the column permutation, and
+`roundedPolicy_exact_one_nonempty` supplies a concrete executable instance.
+The historical `sigmaCounter_no_coxHighamRowPolicy` remains intentionally: it
+refutes the obsolete exact-final-tail policy, not the corrected rounded policy.
