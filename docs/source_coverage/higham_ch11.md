@@ -424,6 +424,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.3 branchwise path factorization consumers | `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_branchwise_source_six_growth_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_branchwise_source_six_growth_bounds_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_branchwise_source_six_growth_bounds_with_norm_bounds_maxEntryNorm_A` | Ch11 | **new this session**; routes scalar active branches and accepted case-(4) `2×2` branch caps through the source-norm path package into the Theorem 11.3 product-scale factorization perturbation interface. The componentwise, `∞`-norm, and `ε≤p*u` source-scale consumers now use the same branchwise local obligations as the Theorem 11.4 product/stability consumers. |
 | Thm 11.3 case-labelled factorization handoffs | `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_active_branch_case_caps_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_offbranch_D_entries_zero_active_branch_case_caps_with_norm_bounds_maxEntryNorm_A`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_offbranch_D_entries_zero_active_branch_case_caps_with_norm_bounds_maxEntryNorm_A` | Ch11 | **new this session**; named off-branch-zero data plus case-labelled active-branch local caps now reach the Theorem 11.3 product-scale, norm-bound, and `ε≤p*u` source-scale factorization interfaces by internally constructing the branchwise source-six/growth cap package. |
 | Thm 11.4 active-path head/tail pivot-index bookkeeping | `higham11_4_bunchKaufmanPathLocalPivotIndex_zero_val`, `higham11_4_bunchKaufmanPathLeadingPivotIndex_zero_val`, `higham11_4_bunchKaufmanPathLastPivotIndex_zero_val`, `higham11_4_bunchKaufmanPathLocalPivotIndex_succ_val`, `higham11_4_bunchKaufmanPathLeadingPivotIndex_succ_val`, `higham11_4_bunchKaufmanPathLastPivotIndex_succ_val` | Ch11 | **new this session**; records the cons-decomposition facts for concrete Bunch-Kaufman pivot paths: the head branch embeds at the initial full-path indices, and every trailing branch-local, leading, or final pivot index embeds as the corresponding tail-path index shifted by the head branch span. This is bookkeeping for the remaining first-stage/trailing split and does not close Theorem 11.4 by itself. |
+| Thm 11.4 active-path tail split block-diagonal bookkeeping | `higham11_4_bunchKaufmanPathTailIndex`, `higham11_4_bunchKaufmanPathTailIndex_localPivotIndex`, `higham11_4_bunchKaufmanPathTailIndex_leadingPivotIndex`, `higham11_4_bunchKaufmanPathTailIndex_lastPivotIndex`, `higham11_4_BunchKaufmanPathSameBranchPivotPair_of_tail`, `higham11_4_BunchKaufmanPathSameBranchPivotPair_tail_of_tailIndex`, `higham11_4_BunchKaufmanPathSameBranchPivotPair_not_head_tailIndex`, `higham11_4_BunchKaufmanPathSameBranchPivotPair_not_tailIndex_head`, `higham11_4_bunchKaufmanPathTailMatrix`, `higham11_4_BunchKaufmanPathBlockDiagonalD_tail`, `higham11_4_BunchKaufmanPathBlockDiagonalD_head_tail_zero`, `higham11_4_BunchKaufmanPathBlockDiagonalD_tail_head_zero` | Ch11 | **new this session**; adds the full-path embedding for trailing pivot-path indices, transfers same-branch predicates between the tail and original path, separates head and tail indices, and restricts a block-diagonal full-path `D̂` to a block-diagonal tail matrix while deriving explicit head-tail zero entries. This directly supports the remaining first-stage/trailing split and does not close Theorem 11.4 by itself. |
 | §11.1 exact block-LDLᵀ step, eq (11.3) `s=1`: `∑ L·D·Lᵀ = A` | `oneByOne_step_factorization`, `higham11_3_oneByOne_step_factorization` | " | **new this session**; exact 1×1-pivot factorization identity (unit-lower-tri `L`, block-diag `D` with Schur complement) — the **exact base of Theorem 11.3's diagonal-pivoting recursion** (fl version adds `fl_oneByOne_schur_step_error`) |
 | §11.1 exact block-LDLᵀ **inductive step**, eq (11.1)/(11.3) | `blockLDLT_assemble_step`, `higham11_3_blockLDLT_assemble_step` | " | **new this session**; trailing block factorized recursively (`L_S·D_S·L_Sᵀ = S`, IH) + 1×1 multipliers ⇒ assembled `∑ L·D·Lᵀ = A`; iterating gives the exact `PAPᵀ = LDLᵀ` recursion |
 | §11.1 exact **full recursion**, eq (11.1)/(11.2): `∃ L D, ∑ L·D·Lᵀ = A` | `exact_blockLDLT_all_oneByOne`, `higham11_1_exact_blockLDLT_all_oneByOne` (+ `schurCompl`, `schurCompl_symm`, `AllOnePivots`) | " | **new this session**; symmetric `A` with all Schur-complement pivots nonzero ⇒ exact `LDLᵀ` (no-2×2-pivot case), by induction on `n` via `blockLDLT_assemble_step` — the exact factorization scaffold for Theorem 11.3 |
@@ -746,10 +747,13 @@ this session proved the exact base case and the key constants.
 
 2026-07-17 update: the Theorem 11.4 status row also includes head/tail
 cons-decomposition bookkeeping for active pivot-path indices. The head branch's
-local, leading, and final pivots now have named full-path values, and every
-trailing branch-local, leading, or final pivot index is identified with the
-tail-path index shifted by the head branch span. The concrete first-stage /
-trailing split and global cap aggregation still remain open.
+local, leading, and final pivots now have named full-path values, every trailing
+branch-local, leading, or final pivot index is identified with the tail-path
+index shifted by the head branch span, same-branch predicates transfer between
+the original and trailing path, and a block-diagonal full-path `D̂` restricts
+to a block-diagonal tail matrix with explicit head-tail zero entries. The
+concrete first-stage / trailing split and global cap aggregation still remain
+open.
 
 2026-07-17 update: the Theorem 11.7 status row also includes the supported/residual
 witness-family deep-support local-block, branch-matrix combined-row,
@@ -11843,6 +11847,18 @@ Problem transcription.
   head local/leading/final pivot indices and trailing local/leading/final pivot
   indices under the active-path cons decomposition, supporting the remaining
   Bunch-Kaufman first-stage/trailing split.
+- 2026-07-17 Theorem 11.4 active-path tail split block-diagonal bookkeeping:
+  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` →
+  pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of the tail-index, same-branch transfer, and
+  block-diagonal tail split declarations → elaborate; axioms
+  `[propext, Classical.choice, Quot.sound]`. These lemmas embed trailing
+  subpath indices into the full Bunch-Kaufman path, transfer same-branch data
+  both ways, separate head and tail indices, and restrict a block-diagonal
+  full-path `D̂` to the trailing path with explicit head-tail zero entries.
 - New vs pre-existing warnings: **no new warnings** from the edited Chapter 11 file. The target
   build warnings are pre-existing in `HighamChapter9.lean`, `CholeskyFl.lean`, and
   `HighamChapter10.lean` (deprecated `Fin` coercions, unused simp arguments, one `ring`
