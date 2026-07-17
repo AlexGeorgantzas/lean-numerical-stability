@@ -20,8 +20,8 @@ row into its mathematically distinct claims:
 - 71 intentionally selected mathematical rows.
 - 11 policy exclusions: five empirical/figure/table rows, three
   qualitative/expository/literature rows, and three optional Problems.
-- Current selected-scope result: 68 selected rows are `PASS`, two are
-  `SOURCE-ERROR/CORRECTED`, and one is `PARTIAL / OPEN`.
+- Current selected-scope result: 69 selected rows are `PASS` and two are
+  `SOURCE-ERROR/CORRECTED`; no selected row remains open.
 - The eleven excluded rows remain explicitly accounted for below.
 
 ## Inventory
@@ -85,7 +85,7 @@ row into its mathematically distinct claims:
 | 55 | Corollary 14.7 | p. 277 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS | `Ch14Corollary147SourceClosure.lean`: `ch14ext_cor147Source_vanishing_family_endpoint`, exact `32 n^2` residual and `4 n^3 (kappa_inf(A)+3)` relative-forward constants with explicit `O(u^2)` remainders |
 | 56a | Schulz iteration `X_(k+1)=X_k(2I-AX_k)=(2I-X_kA)X_k` | p. 278 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `Ch14SchulzIteration.lean`: rectangular `ch14ext_rectSchulzStep`, `ch14ext_rectSchulzStep_eq_left_form`; square specialization also retained |
 | 56b | Schulz residual identity `E_(k+1)=E_k^2` and `E_k=E_0^(2^k)` | p. 278 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `Ch14SchulzIteration.lean`: rectangular left/right one-step and iterated residual theorems, with square specializations |
-| 56c | Convergence for `X_0=alpha A^T`, `0<alpha<2/‖A‖₂^2`, to the inverse (or rectangular pseudoinverse) | p. 278 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PARTIAL / OPEN | `Ch14SchulzIteration.lean` formalizes the rectangular initializer and both exact Gram residuals, proves `X_k(AAplus)=X_k` and `Aplus-X_k=(I-X_kA)Aplus` from a Moore--Penrose certificate, and proves square convergence under the stronger sufficient contract `‖I-AX_0‖∞<1`; the printed spectral-2-norm decay and general pseudoinverse existence/convergence closure remain unproved. |
+| 56c | Convergence for `X_0=alpha A^T`, `0<alpha<2/‖A‖₂^2`, to the inverse (or rectangular pseudoinverse) | p. 278 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `Ch14SchulzSpectralConvergence.lean`: `ch14ext_rectSchulzIter_tendsto_canonicalMoorePenrose_of_lt_two_div_norm_sq` constructs a canonical arbitrary-rank compact-SVD Moore--Penrose inverse and proves the exact printed rectangular convergence criterion; `ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq` gives the nonsingular square inverse clause. |
 | 56d | Slow-start scalar discussion and approximate iteration count | p. 278 | SKIP / SKIP-QUALITATIVE | EXCLUDED | Uses informal `delta << 1`, “about”, and “begin quadratic convergence” language without a unique threshold. |
 | 56e | Csanky/parallel-complexity and finite-precision stability discussion | p. 278 | SKIP / SKIP-LITERATURE-REVIEW | EXCLUDED | Citation, complexity comparison, and qualitative stability observations; no single precise local theorem is stated. |
 | 57 | Hadamard condition number `psi(A)` | p. 279 | FORMALIZE_CORE / CORE-PRECISE-PROSE | SOURCE-ERROR/CORRECTED | Printed `det(D)/det(A)` can be negative. `MatrixInversion.lean` uses `abs(det A)`; `Ch14SourceCorrections.lean` proves the `[-1]` witness. |
@@ -122,8 +122,8 @@ The prior audit treated all of p. 278 as literature and claimed that it had no
 precise statement.  Rendered-page inspection shows that this was false: the
 Schulz iteration, its residual-squaring formula, and its spectral initializer
 convergence criterion are precise mathematical claims.  Rows 56a--56c replace
-that aggregate exclusion.  Rows 56a--56b are now proved; row 56c keeps the
-selected gate open.
+that aggregate exclusion, and all three now pass at the rendered source
+generality.  The selected-scope gate is closed.
 
 ## Exclusion Accounting
 

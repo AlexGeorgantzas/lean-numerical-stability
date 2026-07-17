@@ -3,9 +3,8 @@
 
 This module formalizes the exact algebraic core of the parallel matrix-inverse
 iteration printed in Section 14.5.  It intentionally separates that exact
-core from the source's spectral-norm initializer criterion: the latter needs a
-singular-value/spectral theorem not yet available in the repository in the
-required form.
+core from the source's spectral-norm initializer criterion, which is closed in
+the companion module `Ch14SchulzSpectralConvergence`.
 -/
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.UnderdeterminedSpec
 
@@ -356,8 +355,8 @@ theorem ch14ext_rectSchulzRightResidual_iter {m n : ℕ}
 /-! ## Moore--Penrose support identities
 
 These exact identities isolate the nullspace issue in the rectangular source
-claim.  They do not assert convergence: the missing analytic step is still the
-spectral decay of the residual after compression to the Moore--Penrose support.
+claim.  The companion module `Ch14SchulzSpectralConvergence` combines them with
+right-Gram spectral decay and a canonical Moore--Penrose construction.
 -/
 
 /-- A Moore--Penrose certificate implies `A^T (A Aplus) = A^T`.  This is the

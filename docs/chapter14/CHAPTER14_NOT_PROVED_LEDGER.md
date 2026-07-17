@@ -2,23 +2,23 @@
 
 ## Selected-Scope Gate
 
-**Current status: OPEN.**
+**Current status: CLOSED / PASS.**
 
 The 82-row source inventory is the authoritative accounting document. Of 71
-selected rows, 68 are `PASS`, two are `SOURCE-ERROR/CORRECTED`, and one is
-`PARTIAL / OPEN`.  Chapter 14 is therefore not complete in default core mode.
+selected rows, 69 are `PASS` and two are `SOURCE-ERROR/CORRECTED`.  No selected
+row remains open, so Chapter 14 is complete in default core mode.
 
-## Open Selected Obligation
+## Closed Final Selected Obligation
 
-| Source claim | What is now proved | Remaining completion obligation |
+| Source claim | Final closure | Remaining completion obligation |
 |---|---|---|
-| p. 278 Schulz convergence from `X_0=alpha A^T` and `0<alpha<2/‖A‖₂^2` (inverse, or pseudoinverse for rectangular `A`) | `Ch14SchulzIteration.lean` defines the rectangular printed step and initializer, proves both printed step forms equal, proves rectangular left/right residual squaring and `E_k=E_0^(2^k)`, identifies both initial Gram residuals, and proves the Moore--Penrose support/error identities `X_k(AAplus)=X_k` and `Aplus-X_k=(I-X_kA)Aplus`; it also proves square entrywise convergence under the stronger sufficient condition `‖I-AX_0‖∞<1` | Construct or reuse a general Moore--Penrose candidate and prove spectral decay on its support from the printed 2-norm initializer criterion.  The full residual retains eigenvalue `1` on nullspaces, so it cannot be treated as an ordinary contraction.  Do not replace the source condition with the stronger infinity-norm premise when claiming completion. |
+| p. 278 Schulz convergence from `X_0=alpha A^T` and `0<alpha<2/‖A‖₂^2` (inverse, or pseudoinverse for rectangular `A`) | `Ch14SchulzIteration.lean` supplies the exact step, residual powers, and Moore--Penrose support/error identities. `Ch14SchulzSpectralConvergence.lean` defines the exact rectangular operator norm, proves right-Gram spectral contraction, constructs a canonical arbitrary-rank compact-SVD Moore--Penrose inverse, and proves `ch14ext_rectSchulzIter_tendsto_canonicalMoorePenrose_of_lt_two_div_norm_sq`; `ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq` closes the square inverse clause. | None. |
 
 `Ch14GJEPrintedEnvelopeClosure.lean` is a generic algebraic helper. Its older unmasked-family endpoint is not used as the final Chapter 14 closure; the source-active masked trace and derived boundedness live in `Ch14GJETheorem145SourceClosure.lean`.
 
 Likewise, `Ch14Corollary146Closure.lean` retains the older unmasked fixed-run helper route, but the accepted Corollary 14.6 endpoint is the masked source-trace theorem in `Ch14Corollary146SourceClosure.lean`.
 
-## Previously Closed Primary Contracts
+## Closed Primary Contracts
 
 The following primary contracts remain closed and were checked against the
 rendered source during this re-audit:

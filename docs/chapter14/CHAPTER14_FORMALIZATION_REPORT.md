@@ -10,18 +10,18 @@
 - Mode: core, plus intentionally selected precise Problems
 - Parallel split: 3A
 - Planning documents: blueprint, Split 3A contract, chapter index
-- Selected-scope gate: **OPEN / FAIL**
+- Selected-scope gate: **CLOSED / PASS**
 
 The corrected completion audit contains 82 rows: 71 selected and 11
-intentionally excluded.  Of the selected rows, 68 pass, two retain explicit
-source corrections, and one remains open.  The earlier 78-row audit incorrectly
+intentionally excluded.  Of the selected rows, 69 pass and two retain explicit
+source corrections; none remains open.  The earlier 78-row audit incorrectly
 collapsed the precise p. 278 Schulz claims into a single literature exclusion.
 
 ## Progress Snapshot
 
 | Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| 14 | core completion audit | 100 | 99 | 98 | 99 | 100 | 95 | 1 | Spectral-2-norm Schulz initializer convergence and rectangular pseudoinverse clause | medium |
+| 14 | core completion audit | 100 | 100 | 100 | 100 | 100 | 100 | 0 | None | high |
 
 ## Completed Selected Targets
 
@@ -34,7 +34,7 @@ collapsed the precise p. 278 Schulz claims into a single literature exclusion.
 | Algorithm 14.4 and (14.25)-(14.30) | `GaussJordanPivoting.lean`, `Ch14GaussJordanSourceClosure.lean`, `Ch14GJESourceAccumulationBridge.lean` | Successful-run correctness, source-active masked recurrences, literal accumulated error sums, and the source (14.29) bridge |
 | Theorem 14.5 and (14.31)-(14.33) | `Ch14GaussJordanQConstruction.lean`, `Ch14GJETheorem145SourceClosure.lean` | Exact printed factors/constants, explicit `O(u^2)` remainders, and derived `Pabs`, `Q`, and `Xabs` boundedness under a genuine vanishing family |
 | Corollaries 14.6 and 14.7 | `Ch14Corollary146SourceClosure.lean`, `Ch14Corollary147SourceClosure.lean` | Source-active SPD and row-dominant endpoints with the printed constants, explicit `O(u^2)` remainders, and no assumed final residual/forward conclusion |
-| Schulz algebra on p. 278 | `Ch14SchulzIteration.lean` | Both printed step forms, left/right residual squaring, `E_k=E_0^(2^k)`, the printed transpose initializer, Moore--Penrose support/error identities, and square convergence under the stronger sufficient condition `‖I-AX_0‖∞<1` |
+| Schulz iteration and convergence on p. 278 | `Ch14SchulzIteration.lean`, `Ch14SchulzSpectralConvergence.lean` | Both printed step forms, left/right residual squaring, `E_k=E_0^(2^k)`, exact `X_0=alpha A^T`, right-Gram spectral decay under `0<alpha<2/‖A‖₂^2`, canonical arbitrary-rank Moore--Penrose construction, rectangular convergence to that pseudoinverse, and square convergence to a two-sided inverse |
 | Determinant section | `MatrixInversion.lean`, `Ch14HymanDeterminant.lean`, `Ch14SourceCorrections.lean` | GEPP determinant formula, Hyman backward error, scaling invariance, and corrected Hadamard condition-number sign |
 | Selected Problems | `MatrixInversion.lean`, `Ch14Problem142Families.lean`, `Ch14AsymptoticFamilies.lean`, `Ch14Problem1413Boundary.lean`, `Chapter14Problem1415Weyl.lean` | Problems 14.2-14.5, 14.7-14.8, and 14.10-14.15, including all positive dimensions for (14.37) |
 
@@ -62,7 +62,8 @@ The exact row-to-declaration map is in `CHAPTER14_SOURCE_INVENTORY.md`.
 | `Ch14Corollary146Closure.lean` | SPD norm, condition-number proximity, bootstrap, and asymptotic helper machinery | Corollary 14.6 | COMPLETE |
 | `Ch14Corollary146SourceClosure.lean` | Instantiate the SPD closure on the masked Algorithm 14.4 source trace | Corollary 14.6 | COMPLETE |
 | `Ch14Corollary147SourceClosure.lean` | Derive factor/inverse proximity and absorb the forward solution ratio | Corollary 14.7 | COMPLETE |
-| `Ch14SchulzIteration.lean` | Correct the false whole-row deferral of the p. 278 parallel-inversion section | Schulz step and residual identities; partial convergence support | PARTIAL: PRINTED INITIALIZER CONVERGENCE OPEN |
+| `Ch14SchulzIteration.lean` | Correct the false whole-row deferral of the p. 278 parallel-inversion section | Schulz step, residual powers, and Moore--Penrose support/error identities | COMPLETE |
+| `Ch14SchulzSpectralConvergence.lean` | Close the exact spectral initializer and arbitrary-rank target construction | Exact rectangular `2`-norm, right-Gram diagonalization and decay, canonical compact SVD/Moore--Penrose inverse, and printed rectangular/square convergence theorems | COMPLETE |
 
 ## External Proof Sources
 
@@ -70,7 +71,7 @@ The exact row-to-declaration map is in `CHAPTER14_SOURCE_INVENTORY.md`.
 |---|---|---|
 | Higham Chapter 14 and Appendix A | Primary statements and proof routes | Adopted steps proved locally |
 | Higham Chapters 3, 8, 9, 13 | Book-cited dependencies | Existing repository declarations reused |
-| Oracle session `ch14-schulz-initialize`, GPT-5.5 Pro | Audited the exact spectral initializer, rank assumptions, and rectangular nullspace obstruction | Partly adopted after local proof: support invariance and `Aplus-X_k=(I-X_kA)Aplus`.  Native transcript completed; the separate stable-header harvester failed operationally, as recorded in the proof-source ledger. |
+| Oracle session `ch14-schulz-initialize`, GPT-5.5 Pro | Audited the exact spectral initializer, rank assumptions, and rectangular nullspace obstruction | Partly adopted after local proof: support invariance and `Aplus-X_k=(I-X_kA)Aplus`.  The final spectral bound, compact-SVD construction, and convergence proof are local Lean derivations.  The separate stable-header harvester failure remains recorded in the proof-source ledger. |
 
 See `CHAPTER14_PROOF_SOURCE_LEDGER.md` for the full trust record.
 
@@ -88,13 +89,12 @@ The mathematical Method 2B instability phenomenon and the abstract fast-operatio
 
 ## Selected-Scope Result
 
-The gate is open.  Of the 82 source rows, 68 are `PASS`, two are
-`SOURCE-ERROR/CORRECTED`, one is `PARTIAL / OPEN`, and eleven are intentional
-exclusions.  The remaining selected obligation is the source's p. 278
-convergence claim for `X_0=alpha A^T` under
-`0<alpha<2/||A||_2^2`, including an honest disposition of the rectangular
-pseudoinverse clause.  The new infinity-norm contraction theorem is useful but
-is strictly stronger and is not counted as that closure.
+The gate is closed.  Of the 82 source rows, 69 are `PASS`, two are
+`SOURCE-ERROR/CORRECTED`, and eleven are intentional exclusions.  The former
+final obligation on p. 278 now has the exact source condition
+`0<alpha<2/||A||_2^2`: a canonical arbitrary-rank Moore--Penrose target is
+constructed locally, rectangular convergence is proved entrywise, and the
+nonsingular square specialization converges to the actual inverse.
 
 The generic helper in `Ch14GJEPrintedEnvelopeClosure.lean` was not accepted as the final source closure because its older family contract did not encode the masked Algorithm 14.4 trace and carried an `Xabs = O(1)` premise. The accepted endpoint is the source-active theorem in `Ch14GJETheorem145SourceClosure.lean`, where the required boundedness is derived from the finite stages.
 
@@ -111,11 +111,13 @@ The first Corollary 14.6 candidate likewise depended on the older unmasked recur
 | Suspicious proof artifacts | rounded dominance, final residual/forward bounds, `x_hat=x+O(u)` | None is assumed; factor/inverse proximity, forward bootstrap, and ratio absorption are proved locally |
 
 For the p. 278 initializer, no full-row-rank or full-column-rank hypothesis is
-mathematically required.  The printed quotient tacitly excludes `A=0`; with
-Lean's total real division, its two strict inequalities are simply
-inconsistent when `opNorm2 A=0`.  A future denominator-free general endpoint
-can instead use `0<alpha` and `alpha*(opNorm2 A)^2<2`, which includes the
-trivial zero-matrix case without a hidden rank premise.
+used.  The printed quotient tacitly excludes `A=0`; with Lean's total real
+division, its two strict inequalities are inconsistent when `opNorm2 A=0`.
+The proved denominator-free endpoint
+`ch14ext_rectSchulzIter_tendsto_canonicalMoorePenrose` instead assumes
+`0<alpha` and `alpha*(opNorm2 A)^2<2`, includes the zero matrix, and is wrapped
+by the exact printed quotient theorem.  Nullspace residual eigenvalue `1` is
+handled by a proved Penrose support identity, not by a hidden rank assumption.
 
 ## Weak-Component Audit
 
@@ -128,7 +130,7 @@ trivial zero-matrix case without a hidden rank premise.
 | Algorithm 14.4 through Theorem 14.5 | Source-active recurrence build | Independent rows 40-53 source/type/axiom audit | PASS |
 | Corollary 14.6 | Masked source-trace family theorem and standard-axiom audit | Independent exact-constant, recurrence, proximity, bootstrap, and remainder comparison | PASS |
 | Corollary 14.7 | Source-active family theorem and standard-axiom audit | Independent factor-induction, ratio-absorption, and remainder comparison | PASS |
-| p. 278 Schulz section | Rendered-source reinspection, standalone build, and Moore--Penrose certificate audit | Exact step/residual/support identities checked; theorem types compared with the printed spectral initializer criterion | PARTIAL / OPEN |
+| p. 278 Schulz section | Rendered-source reinspection, standalone build, theorem-type and standard-axiom audit | Exact complexified rectangular `2`-norm, Gram eigenvalue bound, nullspace support, compact-SVD Penrose construction, printed quotient theorem, and square inverse specialization checked | PASS |
 | Source corrections | Rendered-page inspection | Checked Lean witnesses | PASS |
 
 ## Source Corrections
@@ -151,29 +153,31 @@ lake build LeanFpAnalysis.FP.Algorithms.Ch14Corollary146Closure
 lake build LeanFpAnalysis.FP.Algorithms.Ch14Corollary146SourceClosure
 lake build LeanFpAnalysis.FP.Algorithms.Ch14Corollary147SourceClosure
 lake build LeanFpAnalysis.FP.Algorithms.Ch14SchulzIteration
+lake build LeanFpAnalysis.FP.Algorithms.Ch14SchulzSpectralConvergence
 lake build
 lake env lean /tmp/ch14_primary_axioms.lean
 lake env lean /tmp/ch14_schulz_axioms.lean
+lake env lean /tmp/ch14_schulz_spectral_axioms.lean
 git diff --check
 placeholder and conflict scans
 ```
 
-Results: the seven primary source modules passed together (3083 jobs), the
-focused Schulz module passed (2537 jobs), the final Algorithms umbrella passed
-(4268 jobs), and the final full project build passed (4319 jobs).  The focused
+Results: the prior seven-module primary batch remains checked, the new focused
+Schulz spectral module passed (3076 jobs), the final Algorithms umbrella passed
+(4269 jobs), and the final full project build passed (4320 jobs).  The focused
 Chapter 14 lookup and `#print axioms` files pass.  The audited primary and
 Schulz declarations depend only on `propext`, `Classical.choice`, and
 `Quot.sound`.  Changed Chapter 14 files have no placeholders or conflict
 markers; warnings shown by the builds are pre-existing deprecation/linter
-warnings.
+warnings in unrelated modules.
 
 The repository-wide `examples/LibraryLookup.lean` is not reported as a pass:
 Lean aborts with a stack overflow (exit 134) after printing thousands of
 pre-existing checks, both with a 64 MiB stack and with an unlimited process
 stack.  The Chapter 14 additions occur later in that oversized file, so the
 focused import/check/axiom audit above is the reliable lookup evidence for this
-batch.  This harness limitation does not change the selected-scope gate, which
-remains open for the mathematical convergence obligation stated above.
+batch.  This pre-existing harness limitation does not affect the now-closed
+selected-scope gate.
 
 ## Documentation
 

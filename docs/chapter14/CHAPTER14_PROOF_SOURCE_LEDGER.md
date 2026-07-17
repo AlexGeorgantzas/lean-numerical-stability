@@ -9,13 +9,13 @@ theorem.
 
 | Source | Exact role | Lean disposition | Status |
 |---|---|---|---|
-| Higham, 2nd ed., Chapter 14, pp. 259-285 | Primary statements, algorithms, constants, and proof sketches | Compared row-by-row with the corrected 82-row inventory and local Lean theorem types | PARTIALLY FORMALIZED; ONE SELECTED CLAIM OPEN |
+| Higham, 2nd ed., Chapter 14, pp. 259-285 | Primary statements, algorithms, constants, and proof sketches | Compared row-by-row with the corrected 82-row inventory and local Lean theorem types | SELECTED CORE SCOPE FORMALIZED |
 | Higham, Appendix A, Chapter 14 solutions, pp. 558-561 | Proof routes and missing details for selected Problems 14.2-14.5, 14.7-14.8, and 14.10-14.15 | Used as mathematical guidance; every adopted step is proved locally | ADOPTED AND FORMALIZED |
 | Higham Chapters 3, 8, 9, and 13 | Source-cited matrix product, triangular solve, LU, condition, and BLAS assumptions | Reused existing repository declarations; no chapter-crossing axiom added | REUSED |
 | Mathlib finite matrices, determinants, norms, topology, and asymptotics | Standard algebra, determinant continuity, l2 operator norm, singular values, and Landau calculus | Imported through normal modules; headline axiom audits show only `propext`, `Classical.choice`, and `Quot.sound` | REUSED |
 | Existing `LeanFpAnalysis` matrix algebra and FP model | `fl_matMul`, triangular solves, LU certificates, exact matrix norms, inverse identities, and Chapter 9 bounds | Reused rather than duplicated; new Chapter 14 wrappers instantiate these paths | REUSED |
 | Rendered chapter and Appendix pages in `tmp/pdfs/` | Visual verification of formulas, labels, signs, denominators, and omitted empirical rows | Audit evidence only; never staged or pushed | ADVISORY |
-| Oracle session `ch14-schulz-initialize`, GPT-5.5 Pro, 2026-07-17 | Math-only review of the p. 278 spectral initializer and rectangular nullspace issue; packet `scratch/chapter14/ch14_schulz_initializer_oracle_packet.md` | Partly adopted: the Moore--Penrose support/error route was translated and proved locally.  Oracle's native transcript is `/u501/m2fetrat/.oracle/sessions/ch14-schulz-initialize/artifacts/transcript.md`; its metadata embeds the exact packet as the sole prompt and records one completed 5,466-token answer.  The wrapper's separate central harvest failed because it looked for its script relative to the worktree, and a post-close retry was refused, so expected-prompt/stable-poll harvest headers are unavailable. | PARTLY ADOPTED; OPERATIONAL HARVEST-HEADER FAILURE RECORDED |
+| Oracle session `ch14-schulz-initialize`, GPT-5.5 Pro, 2026-07-17 | Math-only review of the p. 278 spectral initializer and rectangular nullspace issue; packet `scratch/chapter14/ch14_schulz_initializer_oracle_packet.md` | Partly adopted: the support/error route was translated and proved locally.  The final exact norm bound, right-Gram diagonalization, arbitrary-rank compact-SVD construction, and convergence proof were developed and checked locally.  Oracle's native transcript is `/u501/m2fetrat/.oracle/sessions/ch14-schulz-initialize/artifacts/transcript.md`; the separate stable-header harvest failure remains an operational record only. | PARTLY ADOPTED; ALL USED MATHEMATICS LOCALLY PROVED |
 
 ## Independent Audit Record
 
@@ -29,9 +29,9 @@ theorem.
 | Corollary 14.7 Lean/trust closure | Re-typechecked the final module, recursively audited assumptions/imports, and printed headline axioms | PASS; only `propext`, `Classical.choice`, and `Quot.sound` |
 | p. 278 parallel-inversion aggregate exclusion | Rendered-page inspection found exact Schulz step, convergence, and residual-power claims inside the row previously classified wholly as literature | Prior exclusion rejected; precise claims split into inventory rows 56a--56c |
 | p. 278 Schulz algebra | Checked the two printed step forms and left/right residual recurrence directly | `Ch14SchulzIteration.lean` proves the step equality and `E_k=E_0^(2^k)`; PASS |
-| p. 278 Schulz initializer convergence | Compared the source condition `0<alpha<2/‖A‖₂^2` and rectangular pseudoinverse clause with the new theorem types | OPEN; local infinity-norm contraction theorem is a stronger sufficient square condition and is not counted as the printed closure |
-| p. 278 Moore--Penrose support route | Pro review identified that the uncompressed right residual has eigenvalue `1` on `ker A`, and suggested proving `Aplus-X_k=(I-X_kA)Aplus` before compressing to `Aplus A-alpha A^T A` | Adopted only after local proof: `ch14ext_rectSchulzIter_mul_rangeProjection` and `ch14ext_rectMoorePenrose_sub_iter_eq_rightResidual_mul`; the spectral-support decay and general pseudoinverse construction remain open |
-| p. 278 initializer domain audit | Checked the quotient condition at `A=0` and across rank-deficient rectangular matrices | No full-rank hypothesis is needed.  The printed strict quotient condition is unsatisfiable at zero under Lean's total division; the nonvacuous all-matrix internal form is `0<alpha` and `alpha*(opNorm2 A)^2<2`. |
+| p. 278 Schulz initializer convergence | Compared the rendered source condition `0<alpha<2/‖A‖₂^2` and both inverse targets with the theorem types | PASS: `ch14ext_rectSchulzIter_tendsto_canonicalMoorePenrose_of_lt_two_div_norm_sq` proves arbitrary rectangular convergence to a locally certified Moore--Penrose inverse; `ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq` proves the square inverse clause |
+| p. 278 Moore--Penrose support route | Pro review identified that the uncompressed right residual has eigenvalue `1` on `ker A`, and suggested proving `Aplus-X_k=(I-X_kA)Aplus` before spectral decay | Adopted after local proof: the support/error identities in `Ch14SchulzIteration.lean` are combined in `Ch14SchulzSpectralConvergence.lean` with an exact complexified rectangular operator norm, right-Gram eigenvalue bound and diagonalization, null-direction annihilation from the Penrose equations, and a canonical arbitrary-rank compact SVD |
+| p. 278 initializer domain audit | Checked the quotient condition at `A=0` and across rank-deficient rectangular matrices | No full-rank hypothesis is needed.  The printed strict quotient condition is unsatisfiable at zero under Lean's total division; `ch14ext_rectSchulzIter_tendsto_canonicalMoorePenrose` proves the nonvacuous all-matrix internal form `0<alpha` and `alpha*(opNorm2 A)^2<2`. |
 | Corollary 14.7 regularity fields | Inspected `Ch14Cor147SourceFamily` rather than relying on the report summary | `P_abs_isBigO_one` and `X_abs_isBigO_one` are explicit source-family fields; factor/inverse proximity is derived.  These are visible asymptotic regularity contracts, not target-shaped residual/forward assumptions. |
 
 ## Imported Claims Closed Locally
@@ -43,6 +43,7 @@ theorem.
 | All-index singular-value perturbation needed by Problem 14.15 | Weyl/Mirsky route used by the Appendix argument | `Chapter14Problem1415Weyl.lean`; no spectral inequality remains assumed at the final endpoint |
 | Hadamard inequality equality case | Problem 14.11 / standard determinant theory | `MatrixInversion.lean`: inequality and orthogonal-row equivalence |
 | Positive-dimension boundary in Problem 14.13 | Appendix AM-GM proof starts at dimension two | `Ch14Problem1413Boundary.lean` separately proves `n=1` and combines it with the general result |
+| Arbitrary-rank Moore--Penrose existence for the Schulz target | Right-Gram spectral basis plus the compact-SVD Penrose theorem already proved for Chapter 20 Problem 20.3 | `Ch14SchulzSpectralConvergence.lean` selects exactly the nonzero right-Gram singular directions, proves the compact-SVD certificate including rank zero, and instantiates `higham20_problem20_3_compactSVD_moorePenrose` |
 
 ## Source Errors
 
@@ -55,8 +56,8 @@ theorem.
 
 No external prose result was introduced as a Lean `axiom`.  The Pro review's
 support-projection idea was used only after translation into locally checked
-Lean declarations.  Every declaration currently offered as proved is derived
-from repository/Mathlib declarations.  The named GJE source-facing endpoints
-typecheck and their recursive axiom reports contain only `propext`,
-`Classical.choice`, and `Quot.sound`.  The proof-source ledger does not claim
-the still-open Schulz initializer convergence result.
+Lean declarations.  Every declaration offered as proved is derived from
+repository/Mathlib declarations.  The named GJE and Schulz source-facing
+endpoints typecheck, and their recursive axiom reports contain only `propext`,
+`Classical.choice`, and `Quot.sound`.  The selected core inventory has no open
+proof-source row.

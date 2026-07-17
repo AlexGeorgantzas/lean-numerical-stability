@@ -113,6 +113,7 @@ import LeanFpAnalysis.FP.Algorithms.Ch14Corollary146SourceClosure
 import LeanFpAnalysis.FP.Algorithms.Ch14Corollary147SourceClosure
 import LeanFpAnalysis.FP.Algorithms.Ch14MethodDProductDischarge
 import LeanFpAnalysis.FP.Algorithms.Ch14SchulzIteration
+import LeanFpAnalysis.FP.Algorithms.Ch14SchulzSpectralConvergence
 import LeanFpAnalysis.FP.Algorithms.Chapter06Lemma66
 import LeanFpAnalysis.FP.Algorithms.KahanCompensatedFiniteFormat
 import LeanFpAnalysis.FP.Algorithms.PriestAccuracy
