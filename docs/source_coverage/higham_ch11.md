@@ -431,6 +431,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.4 active-path tail-local `L̂` row-sum source-package constructors | `higham11_4_bunchKaufmanPath_full_column_abs_sum_eq_tail_of_head_columns_zero`, `higham11_4_BunchKaufmanPathFullTailLRowSumBound_of_tail_L_row_sum_bound_and_head_columns_zero`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_cons_of_head_tail_D_cross_zero_and_tail_L_row_sum_bound`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_cons_maxEntryNorm_A_of_head_tail_D_cross_zero_and_tail_L_row_sum_bound` | Ch11 | **new this session**; proves that if scheduled tail rows are zero on the head pivot columns, then their full absolute row sums equal the tail-restricted sums. Nonempty head/tail package construction can now consume the tail-local source-six row-sum predicate plus explicit head-column zeros, instead of requiring callers to prove full-path tail row sums directly. Remaining concrete obligations are the head/tail `D̂` cross zeros, tail-row head-column zeros for `L̂`, and solve residual certificates. |
 | Thm 11.4 active-path full-block tail-local `L̂` row-sum source-package constructors | `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_cons_of_blockDiagonalD_and_tail_L_row_sum_bound`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_cons_maxEntryNorm_A_of_blockDiagonalD_and_tail_L_row_sum_bound` | Ch11 | **new this session**; adds the full block-diagonal `D̂` entry point for the tail-local source-six route. Callers with a full-path block-diagonal certificate, head/tail local `D̂` caps, tail-local `L̂` row sums, and explicit head-column zeros for scheduled tail rows can assemble the nonempty path source-six/growth package without separately proving the head/tail `D̂` cross-zero equations. |
 | Thm 11.4 active-path full-block tail-local recursive product consumers | `higham11_4_product_entries_of_blockDiagonalD_and_tail_L_row_sum_bound_first_stage_recursive`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_blockDiagonalD_and_tail_L_row_sum_bound_first_stage_recursive`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_blockDiagonalD_and_tail_L_row_sum_bound_first_stage_recursive`, `higham11_4_product_entries_of_blockDiagonalD_and_tail_L_row_sum_bound_first_stage_recursive_maxEntryNorm_A`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_blockDiagonalD_and_tail_L_row_sum_bound_first_stage_recursive_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_blockDiagonalD_and_tail_L_row_sum_bound_first_stage_recursive_maxEntryNorm_A` | Ch11 | **new this session**; threads the full block-diagonal/tail-local source-six package route directly into the first-stage recursive product-entry estimate, max-entry product norm bound, and scalar max-entry product certificate, both for arbitrary `Amax` and for the actual source scale `maxEntryNorm A`. This removes the caller-side package construction step and the separate head/tail `D̂` cross-zero inputs for this product-bound route. |
+| Thm 11.4 active-path full-block tail-local recursive stability/solve consumers | `higham11_4_bunch_kaufman_stability_of_blockDiagonalD_and_tail_L_row_sum_bound_first_stage_recursive_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_blockDiagonalD_and_tail_L_row_sum_bound_first_stage_recursive_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_blockDiagonalD_and_tail_L_row_sum_bound_first_stage_recursive_maxEntryNorm_A_product` | Ch11 | **new this session**; routes the same full block-diagonal/tail-local source-six package through the pointwise stability bridge and both finite-product and product-norm solve backward-error consumers with a caller-supplied recursive budget `recB`. This gives the abstract first-stage split route the same selected-surface handoffs as the concrete tail-recursive route while preserving solve residual certificates as explicit obligations. |
 | Thm 11.4 active-path full-block tail-local tail-recursive product consumers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_blockDiagonalD_and_tail_L_row_sum_bound_tail_recursive_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_blockDiagonalD_and_tail_L_row_sum_bound_tail_recursive_maxEntryNorm_A` | Ch11 | **new this session**; specializes the full block-diagonal/tail-local source-six route to the concrete scheduled-tail product maximum. Nonempty path product-norm and scalar certificates now consume full block diagonality, head/tail local `D̂` caps, tail-local source-six row sums, and head-column zeros without an abstract recursive-budget parameter. |
 | Thm 11.4 active-path full-block tail-local tail-recursive stability/solve consumers | `higham11_4_bunch_kaufman_stability_of_blockDiagonalD_and_tail_L_row_sum_bound_tail_recursive_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_blockDiagonalD_and_tail_L_row_sum_bound_tail_recursive_maxEntryNorm_A`, `higham11_4_bunch_kaufman_solve_backward_error_of_blockDiagonalD_and_tail_L_row_sum_bound_tail_recursive_maxEntryNorm_A_product` | Ch11 | **new this session**; routes the full block-diagonal/tail-local source-six package with concrete scheduled-tail recursive budget through the pointwise stability bridge and both finite-product and product-norm solve backward-error consumers. The selected-surface callers can now use full block diagonality plus tail-local row sums and head-column zeros directly, leaving solve residual certificates explicit. |
 | Thm 11.4 active-path head/tail recursive product consumers | `higham11_4_product_entries_of_head_tail_source_package_first_stage_recursive`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_head_tail_source_package_first_stage_recursive`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_head_tail_source_package_first_stage_recursive`, `higham11_4_product_entries_of_head_tail_source_package_first_stage_recursive_maxEntryNorm_A`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_head_tail_source_package_first_stage_recursive_maxEntryNorm_A`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_head_tail_source_package_first_stage_recursive_maxEntryNorm_A` | Ch11 | **new this session**; threads the head/tail source-package assembly directly into the first-stage recursive product-entry estimate, max-entry product norm bound, and scalar product certificate, both for an arbitrary `Amax` and for the actual source scale `maxEntryNorm A`. Callers can now supply cross-zero facts, tail block diagonality, head/tail `D̂` caps, full-path `L̂` row sums, and the recursive trailing budget without separately constructing the source-six/growth package. |
@@ -798,18 +799,13 @@ so a full-path block certificate can replace separate head/tail `D̂` cross-zero
 hypotheses while retaining explicit tail-row head-column zeros for `L̂`.
 That full-block/tail-local route now also reaches the first-stage recursive
 product-entry estimate, max-entry product norm bound, and scalar certificate
-directly for both arbitrary and source max-entry scales; in the source-norm
-case it can also use the actual scheduled-tail product maximum as the recursive
-budget, and now feeds the pointwise stability and solve backward-error
-consumers under the same concrete tail-recursive budget.
-That assembled package now also reaches the first-stage recursive product-entry
-estimate, max-entry product norm bound, and scalar product certificate directly
-once the recursive tail budget is supplied. In the source-norm nonempty-tail
-route, the recursive contribution can now be the actual scheduled-tail product
-maximum, so callers no longer supply a separate `recB` budget. The concrete
-first-stage / trailing split still needs production of whichever block shape or
-cross-zero route is chosen, tail-row head-column zeros, and solve residual
-certificates for the solve endpoints.
+directly for both arbitrary and source max-entry scales. The same source-norm
+full-block/tail-local data now also feeds the pointwise stability bridge and
+both solve backward-error consumers with either a caller-supplied recursive
+budget `recB` or, in the nonempty-tail route, the actual scheduled-tail product
+maximum. The concrete first-stage / trailing split still needs production of
+whichever block shape or cross-zero route is chosen, tail-row head-column zeros,
+and solve residual certificates for the solve endpoints.
 
 2026-07-17 update: the unit-initial prefix route now also has direct
 product-entry, max-entry norm, and scalar product-certificate consumers at the
@@ -12202,6 +12198,18 @@ Problem transcription.
   block-diagonal `D̂`, tail-local `L̂` row sums, and explicit tail-row head-column
   zeros directly into the recursive product-entry, max-entry norm, and scalar
   product-certificate surfaces.
+- 2026-07-17 Theorem 11.4 active-path full-block tail-local recursive
+  stability/solve consumers: `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
+  → pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused axiom check
+  of the three full-block/tail-local recursive stability/solve consumers →
+  elaborate; axioms `[propext, Classical.choice, Quot.sound]`. These wrappers
+  feed full block diagonality, tail-local source-six row sums, and explicit
+  head-column zeros through the source-norm pointwise stability and solve
+  endpoints while leaving the recursive tail budget and solve residual
+  certificate explicit.
 - 2026-07-17 Theorem 11.4 active-path full-block tail-local tail-recursive
   product consumers: `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
   → pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
