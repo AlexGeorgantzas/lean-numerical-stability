@@ -11,6 +11,7 @@ import LeanFpAnalysis.FP.Algorithms.HighamChapter12
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLU
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLUSPDSourceClosure
 import LeanFpAnalysis.FP.Algorithms.MatrixInversion
+import LeanFpAnalysis.FP.Algorithms.Ch14SchulzIteration
 import LeanFpAnalysis.FP.Algorithms.MatrixPowers
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersComplex
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersJordan
@@ -6383,6 +6384,19 @@ small enough to serve as a smoke check for representative public declarations.
 #check methodA_computed_inverse_entry_abs_sub_nonsingInv_le_of_lu_factor_budget
 #check inverseRightResidual
 #check inverseLeftResidual
+#check LeanFpAnalysis.FP.Ch14Ext.ch14ext_schulzStep
+#check LeanFpAnalysis.FP.Ch14Ext.ch14ext_rectSchulzStep
+#check LeanFpAnalysis.FP.Ch14Ext.ch14ext_rectSchulzStep_eq_left_form
+#check LeanFpAnalysis.FP.Ch14Ext.ch14ext_rectSchulzLeftResidual_iter
+#check LeanFpAnalysis.FP.Ch14Ext.ch14ext_rectSchulzRightResidual_iter
+#check LeanFpAnalysis.FP.Ch14Ext.ch14ext_rectMoorePenrose_transpose_mul_rangeProjection
+#check LeanFpAnalysis.FP.Ch14Ext.ch14ext_rectSchulzIter_mul_rangeProjection
+#check LeanFpAnalysis.FP.Ch14Ext.ch14ext_rectMoorePenrose_sub_iter_eq_rightResidual_mul
+#check LeanFpAnalysis.FP.Ch14Ext.ch14ext_schulzStep_eq_left_form
+#check LeanFpAnalysis.FP.Ch14Ext.ch14ext_schulzLeftResidual_iter
+#check LeanFpAnalysis.FP.Ch14Ext.ch14ext_schulzRightResidual_iter
+#check LeanFpAnalysis.FP.Ch14Ext.ch14ext_schulzTransposeInitializer
+#check LeanFpAnalysis.FP.Ch14Ext.ch14ext_schulzIter_tendsto_inverse_of_leftResidual_infNorm_lt_one
 #check higham14_eq14_3_forward_error_bound_of_abs_Y_le
 #check higham14_eq14_3_forward_error_firstorder_replacement
 #check higham14_eq14_3_forward_error_firstorder_plus_remainder

@@ -5600,6 +5600,36 @@ composition wrappers:
 - `gje_spd_residual_of_cumulative_product_certificates`
 - `gje_spd_forward_error_of_cumulative_product_certificates`
 
+Chapter 14's exact Schulz-iteration algebra from printed p. 278 is in
+`Algorithms/Ch14SchulzIteration.lean`:
+
+- `ch14ext_schulzStep`
+- `ch14ext_schulzIter`
+- `ch14ext_rectSchulzStep`
+- `ch14ext_rectSchulzIter`
+- `ch14ext_rectSchulzStep_eq_left_form`
+- `ch14ext_rectSchulzLeftResidual_iter`
+- `ch14ext_rectSchulzRightResidual_iter`
+- `ch14ext_rectSchulzTransposeInitializer`
+- `ch14ext_rectMoorePenrose_transpose_mul_rangeProjection`
+- `ch14ext_rectSchulzIter_mul_rangeProjection`
+- `ch14ext_rectMoorePenrose_sub_iter_eq_rightResidual_mul`
+- `ch14ext_schulzStep_eq_left_form`
+- `ch14ext_schulzLeftResidual_step`
+- `ch14ext_schulzRightResidual_step`
+- `ch14ext_schulzLeftResidual_iter`
+- `ch14ext_schulzRightResidual_iter`
+- `ch14ext_schulzTransposeInitializer`
+- `ch14ext_schulzLeftResidual_transposeInitializer`
+- `ch14ext_schulzIter_tendsto_inverse_of_leftResidual_infNorm_lt_one`
+
+The Moore--Penrose support declarations prove the exact rectangular identity
+`Aplus-X_k=(I-X_k A)Aplus`; they do not prove the required spectral decay.
+The last theorem is a square-matrix convergence result under the sufficient
+condition `||I-AX0||_inf<1`.  None of these declarations may be cited as the
+book's sharper open claim from `X0=alpha A^T`,
+`0<alpha<2/||A||_2^2`, especially for rectangular pseudoinverses.
+
 Chapter 14 exact algebra closures in `Algorithms/MatrixInversion.lean` include
 the (14.3) bounded-replacement forward-error layer, Problem 14.3, the explicit
 residual-ratio family from Problem 14.4, the residual and forward-error

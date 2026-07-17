@@ -2,7 +2,7 @@
 
 ## Audit Basis
 
-- Audit date: 2026-07-15
+- Audit date: 2026-07-17 completion re-audit
 - Source: `References/1.9780898718027.ch14.pdf`
 - Book: Nicholas J. Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed. (SIAM, 2002)
 - Chapter: 14, "Matrix Inversion", printed pp. 259-285
@@ -14,12 +14,15 @@
 
 ## Counts
 
-There are **78 source rows**:
+There are **82 source rows** after splitting the previously aggregated p. 278
+row into its mathematically distinct claims:
 
-- 68 intentionally selected mathematical rows.
-- 10 policy exclusions: five empirical/figure/table rows, two expository/literature rows, and three optional Problems.
-- Final selected-scope result: 66 selected rows are `PASS` and two are `SOURCE-ERROR/CORRECTED`.
-- The ten excluded rows remain explicitly accounted for below.
+- 71 intentionally selected mathematical rows.
+- 11 policy exclusions: five empirical/figure/table rows, three
+  qualitative/expository/literature rows, and three optional Problems.
+- Current selected-scope result: 68 selected rows are `PASS`, two are
+  `SOURCE-ERROR/CORRECTED`, and one is `PARTIAL / OPEN`.
+- The eleven excluded rows remain explicitly accounted for below.
 
 ## Inventory
 
@@ -80,7 +83,11 @@ There are **78 source rows**:
 | 53 | Equation (14.33) | p. 276 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14GaussJordanQConstruction.lean`: exact residual decomposition, used by the source-active Theorem 14.5 closure |
 | 54 | Corollary 14.6 | p. 277 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS | `Ch14Corollary146SourceClosure.lean`: `ch14ext_cor146Source_vanishing_family_endpoint`, masked Algorithm 14.4 trace, exact `8 n^3` residual and `8 n^(5/2)` relative-forward constants with explicit `O(u^2)` remainders |
 | 55 | Corollary 14.7 | p. 277 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS | `Ch14Corollary147SourceClosure.lean`: `ch14ext_cor147Source_vanishing_family_endpoint`, exact `32 n^2` residual and `4 n^3 (kappa_inf(A)+3)` relative-forward constants with explicit `O(u^2)` remainders |
-| 56 | Parallel inversion methods | p. 278 | DEFER / DEFER-MISSING-PRECISE-STATEMENT | EXCLUDED | Literature survey, complexity discussion, and qualitative stability observations; future benchmark material. |
+| 56a | Schulz iteration `X_(k+1)=X_k(2I-AX_k)=(2I-X_kA)X_k` | p. 278 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `Ch14SchulzIteration.lean`: rectangular `ch14ext_rectSchulzStep`, `ch14ext_rectSchulzStep_eq_left_form`; square specialization also retained |
+| 56b | Schulz residual identity `E_(k+1)=E_k^2` and `E_k=E_0^(2^k)` | p. 278 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `Ch14SchulzIteration.lean`: rectangular left/right one-step and iterated residual theorems, with square specializations |
+| 56c | Convergence for `X_0=alpha A^T`, `0<alpha<2/‖A‖₂^2`, to the inverse (or rectangular pseudoinverse) | p. 278 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PARTIAL / OPEN | `Ch14SchulzIteration.lean` formalizes the rectangular initializer and both exact Gram residuals, proves `X_k(AAplus)=X_k` and `Aplus-X_k=(I-X_kA)Aplus` from a Moore--Penrose certificate, and proves square convergence under the stronger sufficient contract `‖I-AX_0‖∞<1`; the printed spectral-2-norm decay and general pseudoinverse existence/convergence closure remain unproved. |
+| 56d | Slow-start scalar discussion and approximate iteration count | p. 278 | SKIP / SKIP-QUALITATIVE | EXCLUDED | Uses informal `delta << 1`, “about”, and “begin quadratic convergence” language without a unique threshold. |
+| 56e | Csanky/parallel-complexity and finite-precision stability discussion | p. 278 | SKIP / SKIP-LITERATURE-REVIEW | EXCLUDED | Citation, complexity comparison, and qualitative stability observations; no single precise local theorem is stated. |
 | 57 | Hadamard condition number `psi(A)` | p. 279 | FORMALIZE_CORE / CORE-PRECISE-PROSE | SOURCE-ERROR/CORRECTED | Printed `det(D)/det(A)` can be negative. `MatrixInversion.lean` uses `abs(det A)`; `Ch14SourceCorrections.lean` proves the `[-1]` witness. |
 | 58 | Equation (14.34) | p. 279 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `MatrixInversion.lean`: signed and absolute GEPP determinant products |
 | 59 | Hyman determinant method | p. 280 | FORMALIZE_DEPENDENCY / DEP-REQUIRED | PASS | `Ch14HymanDeterminant.lean` |
@@ -109,6 +116,19 @@ There are **78 source rows**:
 1. **Hadamard `psi`:** the printed signed denominator contradicts `psi(A) >= 1` for matrices with negative determinant. The formal condition number uses `|det(A)|`; the signed raw definition remains available and has a checked negative witness.
 2. **Problem 14.15:** the printed hypothesis permits a negative right-hand denominator. The proved theorem uses the necessary card-dependent guard `kappa_2(A) ||Delta A||_2 / ||A||_2 < 1/n`.
 
+## Completion-Audit Correction
+
+The prior audit treated all of p. 278 as literature and claimed that it had no
+precise statement.  Rendered-page inspection shows that this was false: the
+Schulz iteration, its residual-squaring formula, and its spectral initializer
+convergence criterion are precise mathematical claims.  Rows 56a--56c replace
+that aggregate exclusion.  Rows 56a--56b are now proved; row 56c keeps the
+selected gate open.
+
 ## Exclusion Accounting
 
-The ten excluded rows are source-visible and intentional. None is being counted as an unproved mathematical theorem. Tables 14.1, 14.2, 14.3-14.5, Table 14.6, and Figure 14.1 are empirical artifacts; the parallel-method and notes rows are literature/exposition; Problems 14.1, 14.6, and 14.9 are optional and not selected.
+The eleven excluded rows are source-visible and intentional. None is being
+counted as an unproved mathematical theorem. Tables 14.1, 14.2, 14.3-14.5,
+Table 14.6, and Figure 14.1 are empirical artifacts; rows 56d--56e and the
+Section 14.7 notes are qualitative/literature material; Problems 14.1, 14.6,
+and 14.9 are optional and not selected.
