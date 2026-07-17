@@ -428,6 +428,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.4 active-path tail split block-diagonal bookkeeping | `higham11_4_bunchKaufmanPathTailIndex`, `higham11_4_bunchKaufmanPathTailIndex_localPivotIndex`, `higham11_4_bunchKaufmanPathTailIndex_leadingPivotIndex`, `higham11_4_bunchKaufmanPathTailIndex_lastPivotIndex`, `higham11_4_BunchKaufmanPathSameBranchPivotPair_of_tail`, `higham11_4_BunchKaufmanPathSameBranchPivotPair_tail_of_tailIndex`, `higham11_4_BunchKaufmanPathSameBranchPivotPair_not_head_tailIndex`, `higham11_4_BunchKaufmanPathSameBranchPivotPair_not_tailIndex_head`, `higham11_4_bunchKaufmanPathTailMatrix`, `higham11_4_BunchKaufmanPathBlockDiagonalD_tail`, `higham11_4_BunchKaufmanPathBlockDiagonalD_head_tail_zero`, `higham11_4_BunchKaufmanPathBlockDiagonalD_tail_head_zero` | Ch11 | **new this session**; adds the full-path embedding for trailing pivot-path indices, transfers same-branch predicates between the tail and original path, separates head and tail indices, and restricts a block-diagonal full-path `D̂` to a block-diagonal tail matrix while deriving explicit head-tail zero entries. This directly supports the remaining first-stage/trailing split and does not close Theorem 11.4 by itself. |
 | Thm 11.4 active-path head/tail `D̂` assembly constructors | `higham11_4_BunchKaufmanPathOffBranchDEntriesZero_cons`, `higham11_4_BunchKaufmanPathLocalDEntryBound_cons`, `higham11_4_BunchKaufmanPathBlockDiagonalD_cons` | Ch11 | **new this session**; gives the reverse first-stage/trailing constructors for the `D̂` side of a nonempty active path. Head/tail cross zeros plus tail off-branch zeros assemble full-path off-branch zero data, the head pivot-block cap plus tail caps assemble full-path local `D̂` caps, and tail block diagonality plus cross zeros assemble full-path block diagonality. The concrete source of the cross zeros and the full-path `L̂` row-sum caps remain open. |
 | Thm 11.4 active-path head/tail source-package assembly constructors | `higham11_4_BunchKaufmanPathLocalLRowSumBound_cons_of_full_tail_rows`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_cons_of_full_tail_rows`, `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_cons_of_head_tail_D_cross_zero_and_full_tail_rows` | Ch11 | **new this session**; gives the matching `L̂` and package-level cons route for a nonempty active path. Full-path source-six row sums for head rows and embedded tail rows assemble the local `L̂` row-sum predicate; combined with head/tail `D̂` caps and either an existing full block-diagonal shape or head/tail cross-zero plus tail-block facts, they assemble the source-six/growth `L̂,D̂` package. The remaining source obligations are now the concrete cross-zero facts and the full-path `L̂` row-sum caps. |
+| Thm 11.4 active-path head/tail recursive product consumers | `higham11_4_product_entries_of_head_tail_source_package_first_stage_recursive`, `higham11_4_maxEntryNorm_absLDLTProduct_le_of_head_tail_source_package_first_stage_recursive`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_head_tail_source_package_first_stage_recursive` | Ch11 | **new this session**; threads the head/tail source-package assembly directly into the first-stage recursive product-entry estimate, max-entry product norm bound, and scalar product certificate. Callers can now supply cross-zero facts, tail block diagonality, head/tail `D̂` caps, full-path `L̂` row sums, and the recursive trailing budget without separately constructing the source-six/growth package. |
 | Thm 11.4 active-path tail `D̂` cap restriction | `higham11_4_bunchKaufmanPathTailMatrix_localPivotIndex`, `higham11_4_BunchKaufmanPathOffBranchDEntriesZero_tail`, `higham11_4_BunchKaufmanPathLocalDEntryBound_tail`, `higham11_4_BunchKaufmanPathLocalDEntryBound_head` | Ch11 | **new this session**; records how the tail-restricted `D̂` matrix evaluates on branch-local tail indices, transports concrete off-branch zero data and local `D̂` entry caps from a nonempty full path to its trailing subpath, and extracts the head pivot-block local `D̂` cap. This supports the concrete first-stage/trailing split without claiming the remaining `|L̂|` row-sum aggregation. |
 | Thm 11.4 active-path tail `|L̂|` row-sum restriction | `higham11_4_bunchKaufmanPathTailIndex_injective`, `higham11_4_bunchKaufmanPath_tail_column_abs_sum_le_full`, `higham11_4_BunchKaufmanPathLocalLRowSumBound_tail` | Ch11 | **new this session**; proves that the embedded tail columns form an injective finite subset of the full path, so every tail-restricted absolute `L̂` row sum is bounded by the corresponding full-path row sum. A full-path source-six local `L̂` row-sum cap now restricts to the trailing active path, leaving the concrete production of the full-path row-sum cap and final product-bound assembly open. |
 | Thm 11.4 active-path tail source-six/growth package restriction | `higham11_4_BunchKaufmanPathSourceSixGrowthLDPackage_tail` | Ch11 | **new this session**; packages the block-diagonal `D̂`, local growth-`D̂`, and source-six `|L̂|` row-sum tail restrictions into the named path package used by the product, stability, solve, and Theorem 11.3 factorization consumers. This removes a caller-side reconstruction step for recursive Bunch-Kaufman paths while the concrete full-path source-six/growth facts and final product-bound assembly remain open. |
@@ -785,8 +786,11 @@ zero data, the head pivot-block cap plus tail caps assemble full-path local
 diagonality. Full-path source-six row sums for the head and embedded tail rows
 now also assemble the local `|L̂|` row-sum predicate, and the combined
 head/tail data feeds a source-six/growth `L̂,D̂` package constructor directly.
-The concrete first-stage / trailing split still needs production of the
-cross-zero facts and full-path `|L̂|` row-sum caps from pivot-path data.
+That assembled package now also reaches the first-stage recursive product-entry
+estimate, max-entry product norm bound, and scalar product certificate directly
+once the recursive tail budget is supplied. The concrete first-stage / trailing
+split still needs production of the cross-zero facts, full-path `|L̂|` row-sum
+caps, and tail recursive budget from pivot-path data.
 
 2026-07-17 update: the unit-initial prefix route now also has direct
 product-entry, max-entry norm, and scalar product-certificate consumers at the
@@ -12110,6 +12114,17 @@ Problem transcription.
   constructors → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
   These lemmas assemble the nonempty-path package from head/tail full-row `L̂`
   caps plus head/tail `D̂` data.
+- 2026-07-17 Theorem 11.4 active-path head/tail recursive product consumers:
+  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+  `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused lookup/axiom
+  check of the head/tail product-entry, max-entry product norm, and scalar
+  product-certificate consumers → elaborate; axioms `[propext,
+  Classical.choice, Quot.sound]`. These wrappers thread the head/tail
+  source-package assembly directly into the first-stage recursive product
+  endpoints once the recursive tail budget is supplied.
 - New vs pre-existing warnings: **no new warnings** from the edited Chapter 11 file. The target
   build warnings are pre-existing in `HighamChapter9.lean`, `CholeskyFl.lean`, and
   `HighamChapter10.lean` (deprecated `Fin` coercions, unused simp arguments, one `ring`
