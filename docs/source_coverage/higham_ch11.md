@@ -434,6 +434,7 @@ assumptions remain open in the not-proved ledger below.
 | Thm 11.4 active-path source-six/growth first-stage recursive product entries | `higham11_4_product_entries_of_path_source_six_growth_LD_package_first_stage_recursive` | Ch11 | **new this session**; combines the packaged split hypotheses with the existing first-stage/trailing scalar aggregation. A full nonempty path package plus a recursive tail budget `≤36·tailSpan·ρₙAmax` now yields the full-path all-entry `≤36·fullSpan·ρₙAmax` product estimate. |
 | Thm 11.4 active-path source-six/growth first-stage recursive product consumers | `higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_source_six_growth_LD_package_first_stage_recursive`, `higham11_4_bunchKaufmanMaxEntryProductBound_of_path_source_six_growth_LD_package_first_stage_recursive` | Ch11 | **new this session**; packages the first-stage recursive all-entry estimate into the source max-entry norm target and scalar max-entry product certificate consumed by the stability, solve, and factorization interfaces. |
 | Thm 11.4 active-path source-six/growth first-stage recursive stability/solve consumers | `higham11_4_bunch_kaufman_stability_of_path_source_six_growth_LD_package_first_stage_recursive`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_source_six_growth_LD_package_first_stage_recursive`, `higham11_4_bunch_kaufman_solve_backward_error_of_path_source_six_growth_LD_package_first_stage_recursive_maxEntryNorm` | Ch11 | **new this session**; threads the recursive path product certificate into the pointwise Bunch-Kaufman stability bridge and both finite-product and max-entry-norm solve-budget consumers. |
+| Thm 11.3 active-path source-six/growth first-stage recursive factorization consumers | `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_source_six_growth_LD_package_first_stage_recursive`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_path_source_six_growth_LD_package_first_stage_recursive_with_norm_bounds`, `higham11_3_block_ldlt_backward_error_interface_of_BlockLDLTBackwardError_of_pu_path_source_six_growth_LD_package_first_stage_recursive_with_norm_bounds` | Ch11 | **new this session**; threads the recursive path product certificate into the Theorem 11.3 `BlockLDLTBackwardError` product-scale, norm-bound, and source-scale factorization interfaces. |
 | §11.1 exact block-LDLᵀ step, eq (11.3) `s=1`: `∑ L·D·Lᵀ = A` | `oneByOne_step_factorization`, `higham11_3_oneByOne_step_factorization` | " | **new this session**; exact 1×1-pivot factorization identity (unit-lower-tri `L`, block-diag `D` with Schur complement) — the **exact base of Theorem 11.3's diagonal-pivoting recursion** (fl version adds `fl_oneByOne_schur_step_error`) |
 | §11.1 exact block-LDLᵀ **inductive step**, eq (11.1)/(11.3) | `blockLDLT_assemble_step`, `higham11_3_blockLDLT_assemble_step` | " | **new this session**; trailing block factorized recursively (`L_S·D_S·L_Sᵀ = S`, IH) + 1×1 multipliers ⇒ assembled `∑ L·D·Lᵀ = A`; iterating gives the exact `PAPᵀ = LDLᵀ` recursion |
 | §11.1 exact **full recursion**, eq (11.1)/(11.2): `∃ L D, ∑ L·D·Lᵀ = A` | `exact_blockLDLT_all_oneByOne`, `higham11_1_exact_blockLDLT_all_oneByOne` (+ `schurCompl`, `schurCompl_symm`, `AllOnePivots`) | " | **new this session**; symmetric `A` with all Schur-complement pivots nonzero ⇒ exact `LDLᵀ` (no-2×2-pivot case), by induction on `n` via `blockLDLT_assemble_step` — the exact factorization scaffold for Theorem 11.3 |
@@ -11971,6 +11972,17 @@ Problem transcription.
   Classical.choice, Quot.sound]`. These wrappers thread the recursive path
   product certificate into the pointwise stability bridge and the two solve
   budget consumers.
+- 2026-07-17 Theorem 11.3 active-path source-six/growth first-stage recursive
+  factorization consumers: `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
+  → pass; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  forbidden-token scan of `HighamChapter11.lean` → clean; focused
+  lookup/axiom check of the recursive factorization product-scale,
+  norm-bound, and source-scale consumers → elaborate; axioms `[propext,
+  Classical.choice, Quot.sound]`. These wrappers thread the recursive path
+  product certificate into the `BlockLDLTBackwardError` factorization
+  interfaces.
 - New vs pre-existing warnings: **no new warnings** from the edited Chapter 11 file. The target
   build warnings are pre-existing in `HighamChapter9.lean`, `CholeskyFl.lean`, and
   `HighamChapter10.lean` (deprecated `Fin` coercions, unused simp arguments, one `ring`
