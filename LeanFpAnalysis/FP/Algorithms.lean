@@ -83,6 +83,7 @@ import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchTridiagonalHFactorCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenGrowthCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenFactorNormCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.BlockLDLTSolveBackwardCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.Aasen118ReducedCh11Closure
 import LeanFpAnalysis.FP.Algorithms.IterativeRefinement
 import LeanFpAnalysis.FP.Algorithms.MatrixInversion
 import LeanFpAnalysis.FP.Algorithms.GaussJordan
