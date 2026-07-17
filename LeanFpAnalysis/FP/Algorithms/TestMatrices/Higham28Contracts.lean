@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: QED
 -/
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28Probability
+import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28RandsvdNorm
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28Asymptotics
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28Pascal
 import LeanFpAnalysis.FP.Algorithms.HighamChapter9
@@ -350,6 +351,64 @@ theorem pascal_reciprocal_eigenpair
       field_simp
     _ = lambda⁻¹ * w i := by rw [← hi]
     _ = (lambda⁻¹ • w) i := by simp
+
+/-- Corrected all-orders form of the characteristic-polynomial reciprocity
+claim on p. 519.  Mathlib's convention is `det(XI-P)`, so odd orders are
+anti-palindromic and even orders are palindromic.  The source's sign-free
+identity is therefore valid only in even order (already `n=1` is a
+counterexample). -/
+theorem pascal_charpoly_reciprocal (n : ℕ) :
+    (pascalMatrix n).charpoly =
+      Polynomial.C ((-1 : ℝ) ^ n) * (pascalMatrix n).charpoly.reverse := by
+  let P : RSqMat n := pascalMatrix n
+  let S : RSqMat n := signedPascal n
+  let B : RSqMat n := S.transpose * S
+  have hdet : IsUnit (Matrix.det P) := by
+    rw [show Matrix.det P = 1 by simpa [P] using pascalMatrix_det n]
+    exact isUnit_one
+  have hPunit : IsUnit P := (Matrix.isUnit_iff_isUnit_det P).mpr hdet
+  have hBinv : P⁻¹ = B := by
+    have hBP : B * P = (1 : RSqMat n) := by
+      simpa [P, B, S] using signedGram_mul_pascalMatrix n
+    calc
+      P⁻¹ = 1 * P⁻¹ := by rw [Matrix.one_mul]
+      _ = (B * P) * P⁻¹ := by rw [hBP]
+      _ = B * (P * P⁻¹) := by rw [Matrix.mul_assoc]
+      _ = B := by rw [Matrix.mul_nonsing_inv P hdet, Matrix.mul_one]
+  have hcharB : B.charpoly = P.charpoly := by
+    have hconj : S * P * S = B := by
+      simpa [P, S, B] using signedPascal_conj_pascalMatrix n
+    rw [← hconj]
+    calc
+      (S * P * S).charpoly = (S * (P * S)).charpoly := by
+        rw [Matrix.mul_assoc]
+      _ = (P * S * S).charpoly := Matrix.charpoly_mul_comm S (P * S)
+      _ = P.charpoly := by
+        rw [Matrix.mul_assoc]
+        have hSS : S * S = (1 : RSqMat n) := by
+          simpa [S] using signedPascal_mul_self n
+        rw [hSS, Matrix.mul_one]
+  have hcharInv : P⁻¹.charpoly = P.charpoly := by rw [hBinv, hcharB]
+  have hinv := Matrix.charpoly_inv P hPunit
+  rw [hcharInv] at hinv
+  have hdetOne : Matrix.det P = 1 := by simpa [P] using pascalMatrix_det n
+  rw [hdetOne] at hinv
+  simp only [Ring.inverse_one, Polynomial.C_1, mul_one,
+    Fintype.card_fin] at hinv
+  rw [← Matrix.reverse_charpoly] at hinv
+  simpa [P] using hinv
+
+/-- In even order the corrected theorem specializes to the sign-free
+palindromic identity printed by Higham. -/
+theorem pascal_charpoly_palindromic_of_even (n : ℕ) (hn : Even n) :
+    (pascalMatrix n).charpoly = (pascalMatrix n).charpoly.reverse := by
+  calc
+    (pascalMatrix n).charpoly =
+        Polynomial.C ((-1 : ℝ) ^ n) *
+          (pascalMatrix n).charpoly.reverse := pascal_charpoly_reciprocal n
+    _ = (pascalMatrix n).charpoly.reverse := by
+      rw [Even.neg_one_pow hn]
+      simp
 
 /-- The final coordinate vector for an order-`n+1` Pascal matrix. -/
 noncomputable def pascalLastBasis (n : ℕ) : RVec (n + 1) :=

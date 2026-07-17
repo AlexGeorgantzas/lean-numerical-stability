@@ -2,8 +2,7 @@
 
 - Source: `References/1.9780898718027.ch24.pdf`, printed pp. 451-457.
 - Audit: complete seven-page text and rendered-page inspection on 2026-07-16.
-- Core status: **FAIL** only at Theorem 24.3's final structured first-order
-  reduction; see
+- Core status: **PASS**; see
   `docs/chapter24/CHAPTER24_SOURCE_INVENTORY.md`.
 
 ## Coverage map
@@ -26,6 +25,9 @@
   `Higham24InverseFFT.lean`, and `Higham24LiteralSolver.lean`.
 - Exact DFT norm scaling and the quantitative backward-stability consequence:
   `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24BackwardStability.lean`.
+- Produced structured perturbations, exact rational radii, the printed
+  first-order radius, and an explicit quadratic remainder coefficient:
+  `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24Structured.lean`.
 - Circulant structure, exact DFT diagonalization, the exact four-stage solver,
   and exact (24.8) algebra:
   `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24.lean`.
@@ -38,9 +40,10 @@
   produced `E` and `Delta3`, including the sharp inverse `n^-1 f(n,u)` budget.
 - Backward-stability consequence after Theorem 24.2: PASS with equality of the
   relative input and output perturbation norms.
-- Theorem 24.3: OPEN; the asymptotic execution family has an actual `IsBigO`
-  remainder, but its solver perturbation split is not yet produced by the
-  rounded four-stage implementation.
+- Theorem 24.3: PASS; the literal solver produces `Δc`, `Δb`, and `Δx`,
+  proves the exact structured equation, and satisfies
+  `t*eta + 6u + O(u²)` with an explicit quadratic coefficient under the
+  stated source/domain smallness conditions.
 - Problem 24.1: accounted-for optional exercise, excluded in core mode.
 
 Evidence ledgers:

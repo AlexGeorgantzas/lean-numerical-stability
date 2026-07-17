@@ -753,11 +753,11 @@ theorem higham23_bilinearEvaluate_correct {h t : ℕ}
     higham23BilinearEvaluate alg A B = A * B :=
   halg A B
 
-/-! Miller's (23.11) and Bini--Lotti's Theorem 23.4 are cited
-results whose rounded arithmetic graphs and constants are not supplied in
-Chapter 23.  They therefore remain open.  In particular, this module does
-not manufacture a computed polynomial or support-count constants and then
-use that synthetic object as evidence for either source theorem. -/
+/-! Miller's (23.11) and Bini--Lotti's Theorem 23.4 are cited results whose
+rounded arithmetic graphs are not supplied in Chapter 23.  This foundation
+does not manufacture target-bearing witnesses; the literal rounded circuits
+and their error inductions are provided downstream in `Higham23Remaining`
+and `Higham23Bini`. -/
 
 end BilinearAlgorithm
 
@@ -1542,23 +1542,20 @@ theorem higham23_winogradStrassenClosedCoefficient_nonneg (r depth : ℕ) :
     (by simpa [higham23WinogradStrassenClosedCoefficient] using
       higham23_winogradStrassenErrorCoefficient_le r depth)
 
-/-! ## Open recursive error-analysis obligations
+/-! ## Scalar coefficient foundations for downstream evaluator theorems
 
-The closed scalar recurrences above are genuine consequences of their
-recurrence definitions, but they are not Theorems 23.2 or 23.3.  Closing
-(23.14)--(23.15) and (23.18) requires recursively rounded Strassen and
-Winograd--Strassen evaluators plus the source induction.  The cited
-Bini--Lotti theorem (23.19), Miller's (23.11), and the combined 3M--Strassen
-Problem 23.6 likewise remain open.  No theorem below accepts a first-order
-expansion containing those missing bounds as a substitute for the actual
-rounded evaluator. -/
+The definitions below isolate the source coefficient shapes.  Literal
+rounded Strassen, Winograd--Strassen, Miller, Bini--Lotti, and combined
+3M--Strassen error theorems are proved in the downstream Chapter 23 modules;
+none accepts a target-bearing first-order expansion as a substitute for an
+actual evaluator. -/
 
-/-- Algebraic form of the coefficient in (23.19) when `n = h^depth`.
-The external constants `alpha` and `beta` remain parameters; this
-definition does not prove the Bini--Lotti theorem or produce its constants. -/
+/-- Algebraic form of the coefficient in (23.19) when `n = h^depth`:
+`n^(log_h beta) log_h n = beta^depth * depth`.  The retained `h` argument
+records the blocking base even though it cancels from this algebraic form. -/
 noncomputable def higham23BiniLottiCoefficient
-    (alpha beta : ℝ) (h depth : ℕ) : ℝ :=
-  alpha * (h ^ depth : ℕ) * beta ^ depth * (depth : ℝ)
+    (alpha beta : ℝ) (_h depth : ℕ) : ℝ :=
+  alpha * beta ^ depth * (depth : ℝ)
 
 theorem higham23_biniLottiCoefficient_nonneg
     (alpha beta : ℝ) (h depth : ℕ)
@@ -1568,8 +1565,8 @@ theorem higham23_biniLottiCoefficient_nonneg
   positivity
 
 /-- The scalar coefficient described at the end of §23.2.4 for 3M with
-Strassen.  This is only the source coefficient identity, not an error theorem
-for an implemented combined evaluator. -/
+Strassen.  `Higham23ThreeMStrassen` proves it for the implemented combined
+evaluator. -/
 noncomputable def higham23ThreeMStrassenCoefficient (r depth : ℕ) : ℝ :=
   6 * (higham23StrassenClosedCoefficient r depth + 4)
 

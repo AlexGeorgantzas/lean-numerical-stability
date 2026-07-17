@@ -5,6 +5,7 @@ Authors: QED
 -/
 import LeanFpAnalysis.FP.Analysis.Rounding
 import Mathlib.Analysis.Calculus.FDeriv.Basic
+import Mathlib.Analysis.Calculus.ImplicitContDiff
 import Mathlib.Analysis.Normed.Operator.NNNorm
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.Data.Real.Pointwise
@@ -331,6 +332,148 @@ structure Higham25ActualSolutionMapContract
   solves : ∀ dd, isSolution (phi dd) dd
   unique : ∀ dx ∈ solutionDomain, ∀ dd, isSolution dx dd → dx = phi dd
 
+/-- The source-facing local solution-map contract behind (25.11).  Both
+domains are genuine neighborhoods of the base point; existence and
+uniqueness are asserted only there, exactly as in the implicit-function
+theorem used by Higham. -/
+structure Higham25LocalSolutionMapContract
+    {D X : Type*} [TopologicalSpace D] [TopologicalSpace X] [Zero D] [Zero X]
+    (isSolution : X → D → Prop) (dataDomain : Set D)
+    (solutionDomain : Set X) (phi : D → X) : Prop where
+  data_mem_nhds : dataDomain ∈ nhds (0 : D)
+  solution_mem_nhds : solutionDomain ∈ nhds (0 : X)
+  map_zero : phi 0 = 0
+  mapsTo : ∀ dd ∈ dataDomain, phi dd ∈ solutionDomain
+  solves : ∀ dd ∈ dataDomain, isSolution (phi dd) dd
+  unique : ∀ dx ∈ solutionDomain, ∀ dd ∈ dataDomain,
+    isSolution dx dd → dx = phi dd
+
+/-- The hypotheses printed before (25.11) give the precise Mathlib
+implicit-function predicate: the full derivative splits into the data
+partial `Fd` and an invertible solution partial `Fx`. -/
+theorem higham25_isContDiffImplicitAt_of_partialEquiv
+    {D X Y : Type*}
+    [NormedAddCommGroup D] [NormedSpace ℝ D]
+    [NormedAddCommGroup X] [NormedSpace ℝ X]
+    [NormedAddCommGroup Y] [NormedSpace ℝ Y]
+    (f : D × X → Y) (Fd : D →L[ℝ] Y) (Fx : X ≃L[ℝ] Y)
+    (hderiv : HasFDerivAt f
+      (Fd.comp (ContinuousLinearMap.fst ℝ D X) +
+        Fx.toContinuousLinearMap.comp (ContinuousLinearMap.snd ℝ D X)) (0, 0))
+    (hcont : ContDiffAt ℝ (1 : WithTop ℕ∞) f (0, 0)) :
+    IsContDiffImplicitAt (1 : WithTop ℕ∞) f
+      (Fd.comp (ContinuousLinearMap.fst ℝ D X) +
+        Fx.toContinuousLinearMap.comp (ContinuousLinearMap.snd ℝ D X)) (0, 0) where
+  hasFDerivAt := hderiv
+  contDiffAt := hcont
+  bijective := by
+    have heq :
+        (Fd.comp (ContinuousLinearMap.fst ℝ D X) +
+          Fx.toContinuousLinearMap.comp (ContinuousLinearMap.snd ℝ D X)).comp
+            (ContinuousLinearMap.inr ℝ D X) = Fx.toContinuousLinearMap := by
+      ext x
+      simp [ContinuousLinearMap.comp_apply]
+    rw [heq]
+    exact Fx.bijective
+  ne_zero := one_ne_zero
+
+/-- Differentiating the local identity `f(d, phi d) = f(0,0)` yields the
+source's first-order formula `D phi(0) = -Fx⁻¹ Fd`. -/
+theorem higham25_implicitFunction_hasFDerivAt
+    {D X Y : Type*}
+    [NormedAddCommGroup D] [NormedSpace ℝ D] [CompleteSpace D]
+    [NormedAddCommGroup X] [NormedSpace ℝ X] [CompleteSpace X]
+    [NormedAddCommGroup Y] [NormedSpace ℝ Y] [CompleteSpace Y]
+    {n : WithTop ℕ∞} (f : D × X → Y) (f' : D × X →L[ℝ] Y)
+    (h : IsContDiffImplicitAt n f f' ((0 : D), (0 : X)))
+    (Fd : D →L[ℝ] Y) (Fx : X ≃L[ℝ] Y)
+    (hf' : f' = Fd.comp (ContinuousLinearMap.fst ℝ D X) +
+      Fx.toContinuousLinearMap.comp (ContinuousLinearMap.snd ℝ D X)) :
+    HasFDerivAt h.implicitFunction
+      (-(Fx.symm.toContinuousLinearMap.comp Fd)) 0 := by
+  let phi : D → X := h.implicitFunction
+  let A : D →L[ℝ] X := fderiv ℝ phi 0
+  have hphi0 : phi 0 = 0 := by
+    have hbase := h.eventually_implicitFunction_apply_eq.self_of_nhds
+    exact hbase rfl
+  have hphiDiff : DifferentiableAt ℝ phi 0 :=
+    h.contDiffAt_implicitFunction.differentiableAt h.ne_zero
+  have hphiDeriv : HasFDerivAt phi A 0 := hphiDiff.hasFDerivAt
+  have hpair : HasFDerivAt (fun d : D => (d, phi d))
+      ((ContinuousLinearMap.id ℝ D).prod A) 0 := by
+    simpa only [id_eq] using
+      (hasFDerivAt_id (𝕜 := ℝ) (0 : D)).prodMk hphiDeriv
+  have hfAt : HasFDerivAt f f' (0, phi 0) := by
+    simpa only [hphi0] using h.hasFDerivAt
+  have hcomp : HasFDerivAt (fun d : D => f (d, phi d))
+      (f'.comp ((ContinuousLinearMap.id ℝ D).prod A)) 0 := by
+    simpa only [Function.comp_apply] using hfAt.comp 0 hpair
+  have hevent : (fun d : D => f (d, phi d)) =ᶠ[nhds (0 : D)]
+      (fun _ : D => f (0, 0)) := h.apply_implicitFunction
+  have hzero : f'.comp ((ContinuousLinearMap.id ℝ D).prod A) = 0 := by
+    calc
+      f'.comp ((ContinuousLinearMap.id ℝ D).prod A) =
+          fderiv ℝ (fun d : D => f (d, phi d)) 0 := hcomp.fderiv.symm
+      _ = fderiv ℝ (fun _ : D => f (0, 0)) 0 := hevent.fderiv_eq
+      _ = 0 := (hasFDerivAt_const (x := (0 : D)) (f (0, 0))).fderiv
+  have hA : A = -(Fx.symm.toContinuousLinearMap.comp Fd) := by
+    ext d
+    have hz := DFunLike.congr_fun hzero d
+    have hsum : Fd d + Fx (A d) = 0 := by
+      simpa [hf', ContinuousLinearMap.comp_apply] using hz
+    have hx : Fx (A d) = -Fd d :=
+      eq_neg_of_add_eq_zero_right hsum
+    apply Fx.injective
+    simpa [ContinuousLinearMap.comp_apply] using hx
+  simpa [phi, A, hA] using hphiDeriv
+
+/-- Mathlib's implicit-function theorem produces Higham's local solution
+map, including local existence and local uniqueness rather than a
+target-bearing global solution-map assumption. -/
+theorem higham25_implicitFunction_local_solution_contract
+    {D X Y : Type*}
+    [NormedAddCommGroup D] [NormedSpace ℝ D] [CompleteSpace D]
+    [NormedAddCommGroup X] [NormedSpace ℝ X] [CompleteSpace X]
+    [NormedAddCommGroup Y] [NormedSpace ℝ Y] [CompleteSpace Y]
+    {n : WithTop ℕ∞} (f : D × X → Y) (f' : D × X →L[ℝ] Y)
+    (h : IsContDiffImplicitAt n f f' ((0 : D), (0 : X))) :
+    ∃ dataDomain : Set D, ∃ solutionDomain : Set X,
+      Higham25LocalSolutionMapContract
+        (fun dx dd ↦ f (dd, dx) = f (0, 0)) dataDomain solutionDomain
+        h.implicitFunction := by
+  let phi : D → X := h.implicitFunction
+  let solveSet : Set D := {dd | f (dd, phi dd) = f (0, 0)}
+  let uniqueSet : Set (D × X) :=
+    {p | f p = f (0, 0) → phi p.1 = p.2}
+  have hsolve : solveSet ∈ nhds (0 : D) := by
+    simpa [solveSet, phi] using h.apply_implicitFunction
+  have hunique : uniqueSet ∈ nhds ((0 : D), (0 : X)) := by
+    simpa [uniqueSet, phi] using h.eventually_implicitFunction_apply_eq
+  rcases mem_nhds_prod_iff.mp hunique with ⟨U, hU, V, hV, hUV⟩
+  have hphi0 : phi 0 = 0 := by
+    have hbase := h.eventually_implicitFunction_apply_eq.self_of_nhds
+    exact hbase rfl
+  have hpre : phi ⁻¹' V ∈ nhds (0 : D) := by
+    have hVphi : V ∈ nhds (phi 0) := by
+      rw [hphi0]
+      exact hV
+    exact h.contDiffAt_implicitFunction.continuousAt.preimage_mem_nhds hVphi
+  let dataDomain : Set D := U ∩ solveSet ∩ phi ⁻¹' V
+  refine ⟨dataDomain, V, ?_⟩
+  refine
+    { data_mem_nhds := inter_mem (inter_mem hU hsolve) hpre
+      solution_mem_nhds := hV
+      map_zero := hphi0
+      mapsTo := ?_
+      solves := ?_
+      unique := ?_ }
+  · intro dd hdd
+    exact hdd.2
+  · intro dd hdd
+    exact hdd.1.2
+  · intro dx hdx dd hdd hfdx
+    exact (hUV ⟨hdd.1.1, hdx⟩ hfdx).symm
+
 /-- A uniform Taylor-remainder contract on the shrinking data balls.  This is
 the precise explicit replacement for the source's phrase "sufficiently
 small": the unnormalized remainder is at most `epsilon * remainder epsilon`,
@@ -424,6 +567,64 @@ theorem higham25_actualConditionValues_eq_solutionMap_image
     rw [contract.unique dx hdx dd hsolve]
   · rintro ⟨dd, hdd, rfl⟩
     exact ⟨phi dd, contract.mapsTo dd, dd, hdd, contract.solves dd, rfl⟩
+
+/-- On every shrinking data ball contained in the local IFT domain, Higham's
+literal nonlinear feasible set agrees with the graph of the local solution
+map.  This is the bridge from local existence/uniqueness to the supremum in
+(25.11). -/
+theorem higham25_actualConditionValues_eq_localSolutionGraph
+    {D X : Type*} [NormedAddCommGroup D] [NormedAddCommGroup X]
+    (isSolution : X → D → Prop) (dataDomain : Set D)
+    (solutionDomain : Set X) (phi : D → X)
+    (contract : Higham25LocalSolutionMapContract
+      isSolution dataDomain solutionDomain phi)
+    (dataNorm solutionNorm epsilon : ℝ)
+    (hball : Metric.closedBall (0 : D) (epsilon * dataNorm) ⊆ dataDomain) :
+    higham25ActualConditionValues isSolution solutionDomain
+        dataNorm solutionNorm epsilon =
+      higham25ActualConditionValues (fun dx dd ↦ dx = phi dd) Set.univ
+        dataNorm solutionNorm epsilon := by
+  ext q
+  constructor
+  · rintro ⟨dx, hdx, dd, hdd, hsolve, rfl⟩
+    exact ⟨dx, Set.mem_univ dx, dd, hdd,
+      contract.unique dx hdx dd (hball hdd) hsolve, rfl⟩
+  · rintro ⟨dx, -, dd, hdd, hgraph, rfl⟩
+    subst dx
+    exact ⟨phi dd, contract.mapsTo dd (hball hdd), dd, hdd,
+      contract.solves dd (hball hdd), rfl⟩
+
+/-- A neighborhood of zero eventually contains every data perturbation ball
+used by the epsilon-limit in (25.11). -/
+theorem higham25_eventually_closedBall_subset_of_mem_nhds
+    {D : Type*} [NormedAddCommGroup D] [NormedSpace ℝ D]
+    (dataDomain : Set D) (dataNorm : ℝ)
+    (hdomain : dataDomain ∈ nhds (0 : D)) (hdata : 0 ≤ dataNorm) :
+    ∀ᶠ epsilon in nhdsWithin 0 (Set.Ioi 0),
+      Metric.closedBall (0 : D) (epsilon * dataNorm) ⊆ dataDomain := by
+  rcases hdata.eq_or_lt with hzero | hpos
+  · have hdataZero : dataNorm = 0 := hzero.symm
+    have hmem : (0 : D) ∈ dataDomain := mem_of_mem_nhds hdomain
+    filter_upwards with epsilon
+    intro dd hdd
+    have hddZero : dd = 0 := by
+      simpa [hdataZero] using hdd
+    simpa [hddZero] using hmem
+  · rcases Metric.eventually_nhds_iff_ball.mp hdomain with ⟨r, hr, hball⟩
+    have hepsilonRadius : 0 < r / dataNorm := div_pos hr hpos
+    have hev : ∀ᶠ epsilon in nhdsWithin 0 (Set.Ioi 0),
+        epsilon < r / dataNorm :=
+      mem_nhdsWithin_of_mem_nhds (Iio_mem_nhds hepsilonRadius)
+    filter_upwards [hev] with epsilon hepsilon
+    intro dd hdd
+    apply hball dd
+    apply Metric.closedBall_subset_ball
+        (show epsilon * dataNorm < r by
+          calc
+            epsilon * dataNorm < (r / dataNorm) * dataNorm :=
+              mul_lt_mul_of_pos_right hepsilon hpos
+            _ = r := by field_simp [ne_of_gt hpos])
+    exact hdd
 
 /-- A local first-order remainder bound controls the difference between the
 actual nonlinear supremum and its linearized counterpart.  This is the
@@ -583,6 +784,101 @@ theorem higham25_eq25_11_of_actualSolutionMap_hasFDerivAt
       field_simp [ne_of_gt hdataPos, ne_of_gt hsolution]
     rw [hhalf] at hclose
     linarith
+
+/-- Local existence and uniqueness are sufficient for (25.11): the shrinking
+balls eventually lie in the data neighborhood, where the literal feasible
+set agrees with the graph of `phi`. -/
+theorem higham25_eq25_11_of_localSolutionMap_hasFDerivAt
+    {D X : Type*} [NormedAddCommGroup D] [NormedSpace ℝ D]
+    [NormedAddCommGroup X] [NormedSpace ℝ X]
+    (isSolution : X → D → Prop) (dataDomain : Set D)
+    (solutionDomain : Set X) (phi : D → X)
+    (L : D →L[ℝ] X) (dataNorm solutionNorm : ℝ)
+    (hdata : 0 ≤ dataNorm) (hsolution : 0 < solutionNorm)
+    (contract : Higham25LocalSolutionMapContract
+      isSolution dataDomain solutionDomain phi)
+    (hderiv : HasFDerivAt phi L 0) :
+    Tendsto (fun epsilon =>
+      higham25ActualEpsilonCondition isSolution solutionDomain
+        dataNorm solutionNorm epsilon)
+      (nhdsWithin 0 (Set.Ioi 0))
+      (nhds (‖L‖ * dataNorm / solutionNorm)) := by
+  have graphContract : Higham25ActualSolutionMapContract
+      (fun dx dd ↦ dx = phi dd) Set.univ phi :=
+    { map_zero := contract.map_zero
+      zero_mem := Set.mem_univ 0
+      zero_solves := contract.map_zero.symm
+      mapsTo := fun dd ↦ Set.mem_univ (phi dd)
+      solves := fun _ ↦ rfl
+      unique := fun _ _ _ hgraph ↦ hgraph }
+  have hgraphLimit := higham25_eq25_11_of_actualSolutionMap_hasFDerivAt
+    (fun dx dd ↦ dx = phi dd) Set.univ phi L dataNorm solutionNorm
+    hdata hsolution graphContract hderiv
+  have hballs := higham25_eventually_closedBall_subset_of_mem_nhds
+    dataDomain dataNorm contract.data_mem_nhds hdata
+  have heq :
+      (fun epsilon => higham25ActualEpsilonCondition
+        (fun dx dd ↦ dx = phi dd) Set.univ dataNorm solutionNorm epsilon) =ᶠ[
+        nhdsWithin 0 (Set.Ioi 0)]
+      (fun epsilon => higham25ActualEpsilonCondition isSolution solutionDomain
+        dataNorm solutionNorm epsilon) := by
+    filter_upwards [hballs] with epsilon hball
+    unfold higham25ActualEpsilonCondition
+    exact congrArg sSup
+      (higham25_actualConditionValues_eq_localSolutionGraph
+        isSolution dataDomain solutionDomain phi contract
+        dataNorm solutionNorm epsilon hball).symm
+  exact hgraphLimit.congr' heq
+
+/-- Equation (25.11) directly from Higham's printed implicit-function
+hypotheses.  The theorem produces the local nonlinear solution map, proves
+its derivative is `-Fx⁻¹ Fd`, and evaluates the literal epsilon-indexed
+condition-number supremum. -/
+theorem higham25_eq25_11_of_implicitFunction
+    {D X Y : Type*}
+    [NormedAddCommGroup D] [NormedSpace ℝ D] [CompleteSpace D]
+    [NormedAddCommGroup X] [NormedSpace ℝ X] [CompleteSpace X]
+    [NormedAddCommGroup Y] [NormedSpace ℝ Y] [CompleteSpace Y]
+    (f : D × X → Y) (Fd : D →L[ℝ] Y) (Fx : X ≃L[ℝ] Y)
+    (dataNorm solutionNorm : ℝ)
+    (hbase : f (0, 0) = 0)
+    (hderiv : HasFDerivAt f
+      (Fd.comp (ContinuousLinearMap.fst ℝ D X) +
+        Fx.toContinuousLinearMap.comp (ContinuousLinearMap.snd ℝ D X)) (0, 0))
+    (hcont : ContDiffAt ℝ (1 : WithTop ℕ∞) f (0, 0))
+    (hdata : 0 ≤ dataNorm) (hsolution : 0 < solutionNorm) :
+    ∃ phi : D → X, ∃ dataDomain : Set D, ∃ solutionDomain : Set X,
+      Higham25LocalSolutionMapContract
+          (fun dx dd ↦ f (dd, dx) = 0) dataDomain solutionDomain phi ∧
+        HasFDerivAt phi (-(Fx.symm.toContinuousLinearMap.comp Fd)) 0 ∧
+        Tendsto (fun epsilon =>
+          higham25ActualEpsilonCondition (fun dx dd ↦ f (dd, dx) = 0)
+            solutionDomain dataNorm solutionNorm epsilon)
+          (nhdsWithin 0 (Set.Ioi 0))
+          (nhds (‖Fx.symm.toContinuousLinearMap.comp Fd‖ *
+            dataNorm / solutionNorm)) := by
+  let f' : D × X →L[ℝ] Y :=
+    Fd.comp (ContinuousLinearMap.fst ℝ D X) +
+      Fx.toContinuousLinearMap.comp (ContinuousLinearMap.snd ℝ D X)
+  have himplicit : IsContDiffImplicitAt (1 : WithTop ℕ∞) f f' (0, 0) := by
+    exact higham25_isContDiffImplicitAt_of_partialEquiv f Fd Fx hderiv hcont
+  rcases higham25_implicitFunction_local_solution_contract f f' himplicit with
+    ⟨dataDomain, solutionDomain, hlocal⟩
+  have hlocalZero : Higham25LocalSolutionMapContract
+      (fun dx dd ↦ f (dd, dx) = 0) dataDomain solutionDomain
+        himplicit.implicitFunction := by
+    simpa only [hbase] using hlocal
+  have hphi : HasFDerivAt himplicit.implicitFunction
+      (-(Fx.symm.toContinuousLinearMap.comp Fd)) 0 := by
+    apply higham25_implicitFunction_hasFDerivAt f f' himplicit Fd Fx
+    rfl
+  refine ⟨himplicit.implicitFunction, dataDomain, solutionDomain,
+    hlocalZero, hphi, ?_⟩
+  have hlimit := higham25_eq25_11_of_localSolutionMap_hasFDerivAt
+    (fun dx dd ↦ f (dd, dx) = 0) dataDomain solutionDomain
+    himplicit.implicitFunction (-(Fx.symm.toContinuousLinearMap.comp Fd))
+    dataNorm solutionNorm hdata hsolution hlocalZero hphi
+  simpa only [norm_neg] using hlimit
 
 /-- The nonlinear solution-map supremum differs from its derivative-model
 supremum by a vanishing normalized Taylor remainder. -/

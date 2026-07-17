@@ -1,23 +1,20 @@
 # Chapter 22 Proof-Source Ledger
 
-| Selected claim | Source location | What the source proves/assumes | Local route | Status |
-|---|---|---|---|---|
-| Vandermonde nonsingularity | p. 416 | distinct nodes iff nonsingular | Mathlib Vandermonde determinant adapter | PROVED: `higham22_vandermonde_det_ne_zero_iff` |
-| Algorithm 22.1 | pp. 416--417 | master polynomial and synthetic division form `V⁻¹` | actual quotient rows, cardinality, left inverse | PROVED |
-| (22.2)--(22.3) | pp. 416--418 | inverse entries and two-sided infinity-norm bound | Vieta/Mahler and finite-product lemmas | PROVED |
-| General confluent nonsingularity | p. 418 | distinct nonconfluent nodes give a nonsingular transpose | Hermite uniqueness via multiplicities | PROVED |
-| Table 22.1 V1--V6 | p. 418, cited literature | six family-specific estimates | external proof must be imported or reconstructed for the actual node families | OPEN |
-| Table 22.1 V7 | p. 418 | roots-of-unity condition number is one | Fourier/Vandermonde inverse | PROVED |
-| (22.6)--(22.14) and Stage II | pp. 419--421 | recurrence-basis and nested-polynomial derivation | sparse basis multiplication and Newton synthesis | PROVED through `higham22_algorithm22_2StageII_correct` |
-| Algorithms 22.2--22.3; (22.15)--(22.17) | pp. 421--423 | literal loops yield triangular factors whose product is `P⁻ᵀ` | actual state recurrences exist; matrix factors and Stage-I interpolation invariant do not | PARTIAL / OPEN |
-| Theorem 22.4; (22.18)--(22.21) | p. 424 | rounded Stage-I/II perturbations produce the forward bound | requires rounded loop evaluator and operation-level factor perturbation proof | OPEN |
-| Corollary 22.5; (22.22) | pp. 424--425 | checkerboard signs remove cancellation | requires the actual displayed factors and named basis/node sign argument | OPEN |
-| Theorem 22.6; (22.23)--(22.25) | pp. 425--426 | conditional residual bound under (22.24) | retain (22.24) as an explicit source assumption, then analyze actual inverse factors | OPEN |
-| Corollary 22.7; Problem 22.8 | pp. 426, 431 | monomial specialization from an upper-bidiagonal inverse perturbation | formalize Appendix proof for the actual factor | OPEN |
-| Algorithm 22.8 / Problem 22.10 | p. 427 and Appendix route | extended Clenshaw recurrence returns derivatives | actual normalized-jet loop and Taylor/factorial invariant | PROVED |
-| Refinement prose 22.B2 | p. 428, Theorem 12.3 cross-reference | Vandermonde refinement becomes asymptotically componentwise stable | scalar contraction proved; solver-specific hypotheses not instantiated | PARTIAL |
+| Selected claim | Source location | Local proof route | Status |
+|---|---|---|---|
+| Vandermonde algebra, (22.1)--(22.4), Algorithm 22.1 | pp. 416--418 | Lagrange/Vieta, synthetic quotient, determinant adapters | PROVED |
+| Table 22.1 V1--V6 | p. 418 | citation-only literature-summary rows | SKIP-LITERATURE-SUMMARY |
+| Table 22.1 V7 and Table 22.2 | pp. 418, 422 | Fourier inverse and five recurrence families | PROVED |
+| (22.5)--(22.17), Algorithm 22.2 | pp. 419--422 | contiguous repeated-node divided differences, Newton synthesis, literal finite factors, Hermite uniqueness | PROVED |
+| Algorithm 22.3 | pp. 422--423 | literal Stage-I upper-transpose loop, repeated-node `xlast` adjoint invariant for Stage II, executor-to-factor bridge, primal solve | PROVED for the separate printed executor |
+| (22.19)--(22.21), Theorem 22.4, (22.18) | p. 424 | primitive rounded graph, actual lower/upper perturbation producers, complex Lemma 3.8 | PROVED |
+| (22.22), Corollary 22.5 | pp. 424--425 | general lower/upper checkerboard factors and named monomial/Chebyshev/Legendre/Hermite specialization | PROVED |
+| (22.23)--(22.25), Theorem 22.6 | pp. 425--426 | reversed actual inverse factors, source assumption `Higham22Eq22_24`, lower inverse producer, complex Lemma 3.8, actual residual identity | PROVED, conditional exactly as source on (22.24) |
+| Problem 22.8 / Corollary 22.7 | pp. 426, 431 | structured upper-bidiagonal inverse formula, exact source coefficient, monomial residual specialization, derivative at zero | PROVED at the explicit (22.24) specialization |
+| Algorithm 22.8 / Problem 22.10 | p. 427 | normalized Taylor/Clenshaw jet invariant | PROVED |
+| Refinement prose 22.B2 | p. 428 | direct reuse of Chapter 12 Theorem 12.3 plus local geometric convergence | REUSE-REPOSITORY / PROVED |
 
-The proof source was the rendered local PDF
-`References/1.9780898718027.ch22.pdf`, especially pp. 422, 424--426,
-together with installed Mathlib.  No target-equivalent premise or synthetic
-nonempty witness is counted as a proof source.
+Equation (22.24) is the only simplifying numerical assumption introduced by
+the Chapter 22 residual theorem, exactly matching the book.  No premise that
+contains a final residual, forward-error conclusion, or target factor-product
+bound is counted as a producer.

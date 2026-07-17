@@ -25,29 +25,29 @@
 | 23.8 | p. 437 | equation | Three-real-multiplication complex scalar identity | precise | noncommutative blocks | complete algebra | distributivity | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `higham23ThreeM`; correctness theorem -- PROVED jointly with (23.9) |
 | 23.9 | p. 438 | equation/algorithm | 3M real/imaginary matrix-product formulas | precise | noncommutative blocks | complete algebra | (23.8) | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `higham23ThreeM`; `higham23_eq23_9_threeM_correct` -- PROVED |
 | 23.10 | p. 438 | equation | Conventional componentwise first-order error bound plus `O(u²)` | precise asymptotic (`u -> 0`, fixed `n`) | general | Chapter 3 | FP matrix multiply, asymptotics | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `higham23FlMatrixMul`, exact-gamma componentwise theorem, explicit quadratic remainder, and `higham23_gammaRemainder_isBigO_u_sq` -- PROVED |
-| 23.11 | p. 438 | equation | Generic polynomial-algorithm norm bound for some dimension constant `f_n` | precise existential asymptotic | general | citation/no proof | Miller result | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | OPEN — the chapter supplies neither Miller's proof nor `f_n`; the former synthetic polynomial-expansion domain was removed |
+| 23.11 | p. 438 | equation | Generic polynomial-algorithm norm bound for some dimension constant `f_n` | precise existential asymptotic | general | citation/no proof | Miller result | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `higham23_eq23_11_miller_exact`, `higham23_eq23_11_miller_normwise`: literal rounded finite bilinear circuit, explicit tensor-weight `f_n`, and `O(u²)` remainder — PROVED |
 | Thm. 23.1 | p. 439 | theorem | Winograd computed inner product error `n gamma_(n/2+4)(||x||+||y||)^2` | precise | even dimension | complete | computed Winograd path, gamma calculus | FORMALIZE_CORE | CORE-NAMED-RESULT | `higham23FlWinogradInnerProduct`, factor expansion, `higham23_theorem23_1_winograd_error` -- PROVED on actual rounded path |
 | 23.12 | p. 439 | equation | Theorem 23.1 bound | precise | even dimension | complete | theorem path | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `higham23_theorem23_1_winograd_error` -- PROVED |
 | 23.13 | p. 439 | equation | Conventional inner-product gamma bound | precise | general | Chapter 3 | existing dot-product result | REUSE_EXISTING | REUSE-REPOSITORY | repository dot-product bounds; no new wrapper |
 | 23.B1 | pp. 439--440 | precise prose | balanced scaling gives displayed Winograd matrix norm bound | precise except informal choice of power-of-base scale | general | derivation | Thm. 23.1 | FORMALIZE_CORE | CORE-PRECISE-PROSE | `higham23_balanced_sum_sq_le`, `higham23_balanced_winograd_error` -- PROVED uniformly for the computed inner products underlying the max-entry matrix bound |
-| Thm. 23.2 | p. 440 | theorem | Strassen forward error with coefficient and second-order remainder | precise asymptotic (`u -> 0`, fixed dimensions/depth) | powers of two | complete first-order proof | recursive rounded blocks, asymptotics | FORMALIZE_CORE | CORE-NAMED-RESULT | OPEN — no recursively rounded Strassen evaluator or source induction is implemented |
-| 23.14 | p. 440 | equation | Theorem 23.2 asymptotic bound | precise asymptotic | general | complete | theorem path | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | OPEN — `higham23StrassenClosedCoefficient` proves only scalar recurrence arithmetic |
-| 23.15 | p. 440 | equation/model | Inductive error form with second-order remainder | precise asymptotic | general | proof-local | recursive error semantics | FORMALIZE_DEPENDENCY | DEP-REQUIRED | OPEN — the actual rounded recursive computation and inductive expansion are missing |
+| Thm. 23.2 | p. 440 | theorem | Strassen forward error with coefficient and second-order remainder | precise asymptotic (`u -> 0`, fixed dimensions/depth) | powers of two | complete first-order proof | recursive rounded blocks, asymptotics | FORMALIZE_CORE | CORE-NAMED-RESULT | `higham23FlStrassenRecursive`, `higham23_theorem23_2_strassen_closedCoefficient_firstOrder`, and quadratic-remainder theorem — PROVED on the literal rounded recursion |
+| 23.14 | p. 440 | equation | Theorem 23.2 asymptotic bound | precise asymptotic | general | complete | theorem path | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | printed `higham23StrassenClosedCoefficient` bound plus explicit `O(u²)` remainder — PROVED |
+| 23.15 | p. 440 | equation/model | Inductive error form with second-order remainder | precise asymptotic | general | proof-local | recursive error semantics | FORMALIZE_DEPENDENCY | DEP-REQUIRED | `Higham23RecursiveErrorLe`, exact nonlinear majorant induction, and one-level residual factorization — PROVED |
 | 23.16 | p. 441 | equation | Exact recurrence `c_k=12c_(k-1)+46*2^(k-1)` | precise | natural recursion depth | complete | arithmetic | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | canonical `higham23StrassenErrorCoefficient`, actual recurrence equation, and source closed-coefficient upper bound -- PROVED arithmetic |
 | 23.17 | p. 442 | equation | Conventional normwise first-order bound plus second-order remainder | precise asymptotic | general | derived from (23.10) | max norm, asymptotics | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `Higham23MaxEntryNormLe`, `higham23_eq23_17_conventional_normwise`; printed `n²u` plus explicit `O(u²)` remainder -- PROVED |
 | Emp. 23.E2 | p. 442 | symbolic plus machine example | small-entry Strassen cancellation example and Pascal MATLAB output | mixed | symbolic/empirical | explanatory | exact Strassen formulas | FORMALIZE_DEPENDENCY / SKIP | CORE-SYMBOLIC-EXAMPLE / SKIP-EMPIRICAL | exact formula available from (23.4); machine output not encoded |
-| Thm. 23.3 | pp. 442--443 | theorem | Winograd--Strassen forward error with coefficient and second-order remainder | precise asymptotic | powers of two | sketch | rounded recursive blocks, asymptotics | FORMALIZE_CORE | CORE-NAMED-RESULT | OPEN — no recursively rounded Winograd--Strassen evaluator or induction is implemented |
-| 23.18 | p. 442 | equation | Theorem 23.3 asymptotic bound | precise asymptotic | general | sketch | theorem path | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | OPEN — the scalar 18/89 recurrence is proved, not the algorithmic error theorem |
+| Thm. 23.3 | pp. 442--443 | theorem | Winograd--Strassen forward error with coefficient and second-order remainder | precise asymptotic | powers of two | sketch | rounded recursive blocks, asymptotics | FORMALIZE_CORE | CORE-NAMED-RESULT | `higham23FlWinogradStrassenRecursive`, exact nonlinear induction, and first-order theorem — PROVED |
+| 23.18 | p. 442 | equation | Theorem 23.3 asymptotic bound | precise asymptotic | general | sketch | theorem path | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `higham23_theorem23_3_winograd_closedCoefficient_firstOrder` with genuine `O(u²)` remainder — PROVED |
 | Figure 23.2 | p. 444 | empirical output | random-matrix error curves | underspecified | empirical run | none | compiler/machine/RNG details | SKIP | SKIP-EMPIRICAL | not encoded |
-| Thm. 23.4 | p. 443 | theorem | Bini--Lotti recursive bilinear forward error for constants determined by algorithm tensors | precise existential asymptotic; exact formulas external | general | citation-only | external `alpha`,`beta`, rounded evaluator | FORMALIZE_CORE | CORE-NAMED-RESULT | OPEN — external constants/theorem and a recursively rounded bilinear evaluator are absent |
-| 23.19 | p. 443 | equation | Theorem 23.4 asymptotic bound | precise existential asymptotic | general | citation-only | external paper | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | OPEN — only the algebraic coefficient shape for parameterized `alpha`,`beta` is represented |
+| Thm. 23.4 | p. 443 | theorem | Bini--Lotti recursive bilinear forward error for constants determined by algorithm tensors | precise existential asymptotic; exact formulas external | general | citation-only | external `alpha`,`beta`, rounded evaluator | FORMALIZE_CORE | CORE-NAMED-RESULT | `higham23BiniFlEvaluate`, noncommutative exact-correctness predicate, and exact nonlinear recursive theorem — PROVED |
+| 23.19 | p. 443 | equation | Theorem 23.4 asymptotic bound | precise existential asymptotic | general | citation-only | external paper | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `higham23_theorem23_4_biniLotti_eq23_19` supplies explicit tensor-dependent `alpha`,`beta` and a genuine `O(u²)` remainder — PROVED |
 | 23.20 | p. 445 | equation | Conventional real-part componentwise first-order 3M comparison | precise asymptotic | general | straightforward | FP matmul/add | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | actual two-dot subtraction, exact `gamma_(n+1)` bound, explicit quadratic remainder, and `O(u²)` remainder theorem -- PROVED |
 | 23.21 | p. 445 | equation | Conventional imaginary-part componentwise first-order bound | precise asymptotic | general | straightforward | FP matmul/add | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | actual two-dot addition, exact `gamma_(n+1)` bound, explicit quadratic remainder, and `O(u²)` remainder theorem -- PROVED |
 | 23.22 | p. 445 | equation | 3M imaginary-part componentwise first-order bound | precise asymptotic | general | stated | computed 3M path | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | actual rounded 3M path, exact `gamma_(n+4)` bound, explicit quadratic remainder, and `O(u²)` remainder theorem -- PROVED |
 | 23.B2 | p. 445 | precise prose | Bounds (23.20)--(23.22), including their remainder families, are invariant under diagonal scaling | precise asymptotic | general | stated | computed path and scaling | FORMALIZE_CORE | CORE-PRECISE-PROSE | `higham23_abs_product_diagonal_scaling`, `higham23_threeM_budget_diagonal_scaling`; the explicit remainder multiplies the same budget -- PROVED |
 | 23.23 | p. 445 | equation | Conventional imaginary-part normwise asymptotic bound | precise asymptotic | general | derived | norms | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `higham23_eq23_23_conventional_imaginary_normwise`, actual rounded matrix path and induced infinity norm -- PROVED |
 | 23.24 | p. 445 | equation | 3M imaginary-part normwise asymptotic bound | precise asymptotic | general | derived | norms | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `higham23_eq23_24_threeM_imaginary_normwise`, including sharp `sqrt 2` weakening -- PROVED |
-| 23.B3 | p. 446 | precise prose | 3M plus Strassen has modified (23.14) coefficient | precise asymptotic | general | no proof; Problem 23.6 | combined rounded path | FORMALIZE_CORE | CORE-PRECISE-PROSE | PARTIAL — `higham23ThreeMStrassenCoefficient` records the scalar coefficient; the combined rounded error proof is OPEN |
+| 23.B3 | p. 446 | precise prose | 3M plus Strassen has modified (23.14) coefficient | precise asymptotic | general | no proof; Problem 23.6 | combined rounded path | FORMALIZE_CORE | CORE-PRECISE-PROSE | `higham23FlThreeMStrassen` and `higham23_threeMStrassen_sourceCoefficient`: three recursive Strassen products, rounded 3M recombination, source `6*(c+4)` coefficient, and `O(u²)` remainders — PROVED |
 | 23.N | pp. 446--448 | notes/references | history, implementations, and literature survey | editorial | editorial | not applicable | external literature | SKIP | SKIP-LITERATURE-REVIEW | inventoried; not encoded |
 
 ## Algorithms and computed quantities
@@ -55,9 +55,9 @@
 | Algorithm/source | Inputs | Outputs | Exact object | Computed object | Computed quantities | Analysis-only objects | Target claims |
 |---|---|---|---|---|---|---|---|
 | Winograd inner product, (23.2) | even-length `x,y` | scalar inner product | pair identity | rounded sums/products | pair sums/products and three accumulations | exact dot product | Thm. 23.1 |
-| Strassen, (23.4) | block matrices `A,B` | block product | seven-product expression | not yet implemented recursively with rounding | block sums, seven products, output recombinations | exact `AB` | Thm. 23.2 (OPEN) |
-| Winograd--Strassen, (23.6) | block matrices `A,B` | block product | seven-product expression | not yet implemented recursively with rounding | eight `S`, seven `M`, two `T`, output sums | exact `AB` | Thm. 23.3 (OPEN) |
-| bilinear algorithm, (23.7) | tensors `U,V,W`, matrices | product | coefficient reconstruction | one-level exact evaluator only; rounded recursion missing | weighted sums/products at every level | exact bilinear map | Thm. 23.4 (OPEN) |
+| Strassen, (23.4) | block matrices `A,B` | block product | seven-product expression | `higham23FlStrassenRecursive` with conventional rounded leaves | rounded block sums, seven recursive products, and rounded output recombinations | exact `AB` | Thm. 23.2 (PROVED) |
+| Winograd--Strassen, (23.6) | block matrices `A,B` | block product | seven-product expression | `higham23FlWinogradStrassenRecursive` | eight `S`, seven recursive `M`, two `T`, output sums | exact `AB` | Thm. 23.3 (PROVED) |
+| bilinear algorithm, (23.7) | tensors `U,V,W`, matrices | product | coefficient reconstruction | `higham23BiniFlEvaluate` | rounded weighted sums/products at every level | exact bilinear map | Thm. 23.4 (PROVED) |
 | 3M, (23.9) | real/imaginary matrix parts | complex product | three-real-product identity | rounded real products/sums | `T1,T2`, combined product, subtractions | exact complex product | (23.20)--(23.24) |
 
 ## Problems and owned Appendix A solutions
@@ -69,7 +69,7 @@
 | 23.3 | Strassen count ratios | solution present | SKIP | asymptotic estimate optional |
 | 23.4 | rectangular Strassen count | none | BENCHMARK_CANDIDATE | exact optional count |
 | 23.5 | compare two scalar formulas | solution present | SKIP | OPTIONAL-PROBLEM-NOT-SELECTED |
-| 23.6 | 3M plus Strassen error bound | none | FORMALIZE_DEPENDENCY | OPEN — scalar coefficient represented, combined rounded evaluator/error proof missing |
+| 23.6 | 3M plus Strassen error bound | none | FORMALIZE_DEPENDENCY | `higham23_threeMStrassen_sourceCoefficient` — PROVED on the literal combined evaluator |
 | 23.7 | compare two fast complex approaches | brief Appendix reference | SKIP | qualitative speed/storage exercise |
 | 23.8 | recursive Strassen inversion | none | BENCHMARK_CANDIDATE | exact algorithm; cross-chapter dependency |
 | 23.9 | block upper-triangular inverse reduces multiplication to inversion | solution present | BENCHMARK_CANDIDATE | exact optional theorem |
@@ -77,12 +77,9 @@
 
 ## Gate summary
 
-The inventory and all Problems/Appendix rows are complete, but the
-selected-scope gate is **FAIL**.  Actual rounded evaluators prove Theorem 23.1,
-(23.10), (23.17), and (23.20)--(23.24), while the exact one-level
-Strassen/Winograd--Strassen/3M algebra and the scalar error recurrences are
-also proved.  Miller's (23.11), recursive Theorems 23.2--23.4, and
-23.B3/Problem 23.6 remain open because no source-object recursively rounded
-evaluator supplies their first-order expansions.  Synthetic polynomial
-computations, support-count constants, target-bearing expansion domains, and
-zero-error witnesses were removed and are not counted as coverage.
+The inventory and all Problems/Appendix rows are complete, and the
+selected-scope gate is **PASS**.  The numbered and named stability rows now
+use literal rounded conventional, Strassen, Winograd--Strassen, bilinear,
+Miller, and combined 3M--Strassen evaluators, with explicit first-order
+coefficients and genuine `O(u²)` remainder families.  Synthetic
+target-bearing expansion domains and zero-error witnesses are not counted.

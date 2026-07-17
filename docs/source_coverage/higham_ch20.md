@@ -7,11 +7,11 @@
 > `docs/chapter20/CHAPTER20_NOT_PROVED_LEDGER.md`, and
 > `docs/chapter20/CHAPTER20_FORMALIZATION_REPORT.md` for the audited source
 > counts, current Lean endpoints, source-strengthening boundaries, and
-> verification result. The Chapter 20 selected-scope gate is **FAIL**.
+> verification result. The Chapter 20 selected-scope gate is **PASS**.
 > Theorem 20.4's total perturbation envelope and Theorem 20.7's rounded
 > Cox--Higham producer are closed with visible implementation domains, but the
 > separate p. 395 row-sorting cap for `alpha_i`/`beta_i` and row-order
-> invariance of `phi` lack an executable producer. The p. 404 square-or-tall
+> invariance of `phi` are closed by `Higham20RowSorting.lean`. The p. 404 square-or-tall
 > invariance is closed as an exact source discrepancy. Qualitative and
 > under-specified rows are separately deferred rather than counted as
 > blockers.
@@ -3092,10 +3092,10 @@ classifications and proof-source decisions are in
 `docs/chapter20/CHAPTER20_PROOF_SOURCE_LEDGER.md`, and
 `docs/chapter20/CHAPTER20_FORMALIZATION_REPORT.md`.
 
-The Chapter 20 modular selected-scope gate is **FAIL**. All 12 named results
-pass at their documented APIs, and the selected numbered equations are closed
-or explicitly deferred, but the separate precise p. 395 row-sorting cap and
-`phi`-invariance row remains selected and open.
+The Chapter 20 modular selected-scope gate is **PASS**. All 12 named results
+pass at their documented APIs, the selected numbered equations are closed or
+explicitly deferred, and the separate precise p. 395 row-sorting cap and
+`phi`-invariance row is closed by the executable exact trace.
 
 - The p. 385 zero-`Delta b` row is **PASS (EXPLICIT-DOMAIN)** through
   `metricGraphSmallness_of_frobNorm_le` and
@@ -3266,3 +3266,21 @@ least-squares minimizer, and proves the pivot-position matrix envelope
 `roundedPolicy_exact_one_nonempty` supplies a concrete executable instance.
 The historical `sigmaCounter_no_coxHighamRowPolicy` remains intentionally: it
 refutes the obsolete exact-final-tail policy, not the corrected rounded policy.
+
+Split 4 p. 395 row-sorting closure increment (2026-07-16):
+`Higham20RowSorting.rowSortPerm` implements decreasing source-row infinity-norm
+sorting and applies the resulting permutation simultaneously to the matrix and
+RHS. `exactPrinted_iSup_max_alpha_beta_le_cap_of_source_injective` proves the
+literal finite `max_i {alpha_i,beta_i} <= sqrt(m)(1+sqrt(2))^(n-1)` consequence
+for the paired exact active-max signed-Householder trace. Ordinary source full
+column rank is transported through sorting, pivoting, and QR to derive positive
+pivots.
+The proof derives the off-pivot `sqrt(2)` update, active and completed row
+growth, and the single pivot-row `sqrt(m)` contribution from the executor.
+`exactPrintedPhi_eq_qrCertificate` proves that the literal stagewise maximum
+ratio equals its completed `Q^T b`/`R` certificate; the proof includes suffix
+norm preservation and `pivotTailNorm = |R_kk|`.
+`exactPrintedPhi_independent_of_row_ordering` then transports orthogonality and
+the pivoted QR factorization through an arbitrary simultaneous row permutation
+and proves exact equality of `phi`. Focused compilation and representative
+axiom checks pass with only the standard foundational axioms.

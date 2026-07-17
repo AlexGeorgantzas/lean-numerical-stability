@@ -50,6 +50,287 @@ theorem randsvdMatrix_transpose_mul_self
     _ = V * (S.transpose * S) * V.transpose := by
       rw [hUeq, Matrix.mul_one]
 
+/-- The squared singular-value schedule, including the zero padding forced by
+rectangular dimensions. -/
+noncomputable def randsvdSingularValueSq {m n : ℕ}
+    (sigma : ℕ → ℝ) (k : Fin n) : ℝ :=
+  if k.val < m then sigma k.val ^ 2 else 0
+
+/-- The Gram matrix of the rectangular diagonal has exactly the scheduled
+squared singular values on its diagonal. -/
+theorem rectangularDiagonal_gram_apply {m n : ℕ}
+    (sigma : ℕ → ℝ) (i j : Fin n) :
+    ((rectangularDiagonal (m := m) (n := n) sigma).transpose *
+      rectangularDiagonal (m := m) (n := n) sigma) i j =
+      if i = j then randsvdSingularValueSq (m := m) sigma i else 0 := by
+  simp only [Matrix.mul_apply, Matrix.transpose_apply, rectangularDiagonal,
+    randsvdSingularValueSq]
+  by_cases hij : i = j
+  · subst j
+    simp only [if_pos]
+    by_cases hi : i.val < m
+    · let ii : Fin m := ⟨i.val, hi⟩
+      have hidx : ∀ x : Fin m, x.val = i.val ↔ x = ii := by
+        intro x
+        exact ⟨fun h => Fin.ext h, congrArg Fin.val⟩
+      simp_rw [hidx]
+      simp [ii, hi, pow_two]
+    · have hnone : ∀ x : Fin m, x.val ≠ i.val := by
+        intro x hx
+        omega
+      simp_rw [if_neg (hnone _)]
+      simp [hi]
+  · have hval : i.val ≠ j.val := fun h => hij (Fin.ext h)
+    rw [if_neg hij]
+    apply Finset.sum_eq_zero
+    intro x _
+    by_cases hxi : x.val = i.val
+    · have hxj : x.val ≠ j.val := by omega
+      change
+        (if x.val = i.val then sigma x.val else 0) *
+            (if x.val = j.val then sigma x.val else 0) = 0
+      rw [if_pos hxi, if_neg hxj, mul_zero]
+    · change
+        (if x.val = i.val then sigma x.val else 0) *
+            (if x.val = j.val then sigma x.val else 0) = 0
+      rw [if_neg hxi, zero_mul]
+
+/-- The columns of the right orthogonal factor are actual Gram eigenvectors
+with the scheduled squared singular values. -/
+theorem randsvdMatrix_rightGram_column_eigenpair {m n : ℕ}
+    (U : RSqMat m) (V : RSqMat n) (sigma : ℕ → ℝ)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V) (k : Fin n) :
+    Matrix.mulVec
+        ((randsvdMatrix U sigma V).transpose * randsvdMatrix U sigma V)
+        (fun i ↦ V i k) =
+      randsvdSingularValueSq (m := m) sigma k • (fun i ↦ V i k) := by
+  let D : RSqMat n :=
+    (rectangularDiagonal (m := m) (n := n) sigma).transpose *
+      rectangularDiagonal (m := m) (n := n) sigma
+  have hVtV : V.transpose * V = (1 : RSqMat n) := by
+    ext i j
+    simpa [Matrix.mul_apply, matTranspose, Matrix.one_apply, idMatrix] using
+      hV.left_inv i j
+  have hmatrix :
+      ((randsvdMatrix U sigma V).transpose * randsvdMatrix U sigma V) * V =
+        V * D := by
+    rw [randsvdMatrix_transpose_mul_self U V sigma hU]
+    calc
+      (V * D * V.transpose) * V = V * D * (V.transpose * V) := by
+        noncomm_ring
+      _ = V * D := by rw [hVtV, Matrix.mul_one]
+  funext i
+  have hentry := congrFun (congrFun hmatrix i) k
+  change
+    (((randsvdMatrix U sigma V).transpose * randsvdMatrix U sigma V) * V) i k =
+      randsvdSingularValueSq (m := m) sigma k * V i k
+  rw [hentry]
+  simp only [Matrix.mul_apply]
+  rw [Finset.sum_eq_single k]
+  · dsimp [D]
+    rw [rectangularDiagonal_gram_apply]
+    simp [mul_comm]
+  · intro j _ hj
+    dsimp [D]
+    rw [rectangularDiagonal_gram_apply]
+    simp [hj]
+  · simp
+
+/-- Higham's prescribed-singular-value claim in an explicit finite spectral
+form: the right Gram matrix has an orthonormal eigenbasis whose eigenvalues
+are precisely the scheduled squared singular values (with rectangular zero
+padding). -/
+theorem randsvdMatrix_rightSingularVectors_orthonormal {m n : ℕ}
+    (U : RSqMat m) (V : RSqMat n) (sigma : ℕ → ℝ)
+    (hU : IsOrthogonal m U) (hV : IsOrthogonal n V) :
+    (∀ k : Fin n,
+      Matrix.mulVec
+          ((randsvdMatrix U sigma V).transpose * randsvdMatrix U sigma V)
+          (fun i ↦ V i k) =
+        randsvdSingularValueSq (m := m) sigma k • (fun i ↦ V i k)) ∧
+      (∀ i j : Fin n,
+        dotProduct (fun k ↦ V k i) (fun k ↦ V k j) = if i = j then 1 else 0) := by
+  refine ⟨fun k => randsvdMatrix_rightGram_column_eigenpair U V sigma hU hV k, ?_⟩
+  exact hV.col_orthonormal
+
+/-- Higham, p. 518: the symmetric adaptation of `randsvd`,
+`A = Q Λ Qᵀ`, with prescribed real eigenvalues on the diagonal. -/
+noncomputable def symmetricRandsvdMatrix {n : ℕ}
+    (Q : RSqMat n) (lambda : ℕ → ℝ) : RSqMat n :=
+  Q * rectangularDiagonal (m := n) (n := n) lambda * Q.transpose
+
+theorem rectangularDiagonal_square_transpose {n : ℕ} (lambda : ℕ → ℝ) :
+    (rectangularDiagonal (m := n) (n := n) lambda).transpose =
+      rectangularDiagonal (m := n) (n := n) lambda := by
+  ext i j
+  by_cases hij : i = j
+  · subst j
+    simp [rectangularDiagonal, Matrix.transpose_apply]
+  · have hval : i.val ≠ j.val := fun h ↦ hij (Fin.ext h)
+    simp [rectangularDiagonal, Matrix.transpose_apply, hval, hval.symm]
+
+/-- The symmetric `randsvd` construction is symmetric for every factor `Q`;
+orthogonality is needed only for the spectral conclusion. -/
+theorem symmetricRandsvdMatrix_transpose {n : ℕ}
+    (Q : RSqMat n) (lambda : ℕ → ℝ) :
+    (symmetricRandsvdMatrix Q lambda).transpose =
+      symmetricRandsvdMatrix Q lambda := by
+  simp only [symmetricRandsvdMatrix, Matrix.transpose_mul,
+    Matrix.transpose_transpose, rectangularDiagonal_square_transpose]
+  noncomm_ring
+
+/-- Every column of the orthogonal factor is an eigenvector with its
+prescribed diagonal eigenvalue.  Thus the construction on p. 518 preserves
+the entire prescribed eigenvalue list without appealing to a spectral
+multiset transfer. -/
+theorem symmetricRandsvdMatrix_column_eigenpair {n : ℕ}
+    (Q : RSqMat n) (lambda : ℕ → ℝ) (hQ : IsOrthogonal n Q)
+    (k : Fin n) :
+    Matrix.mulVec (symmetricRandsvdMatrix Q lambda) (fun i ↦ Q i k) =
+      lambda k.val • (fun i ↦ Q i k) := by
+  let D : RSqMat n := rectangularDiagonal (m := n) (n := n) lambda
+  have hQtQ : Q.transpose * Q = (1 : RSqMat n) := by
+    ext i j
+    simpa [Matrix.mul_apply, matTranspose, Matrix.one_apply, idMatrix] using
+      hQ.left_inv i j
+  have hmatrix : symmetricRandsvdMatrix Q lambda * Q = Q * D := by
+    change (Q * D * Q.transpose) * Q = Q * D
+    calc
+      (Q * D * Q.transpose) * Q = Q * D * (Q.transpose * Q) := by
+        noncomm_ring
+      _ = Q * D := by rw [hQtQ, Matrix.mul_one]
+  funext i
+  have hentry := congrFun (congrFun hmatrix i) k
+  have hleft :
+      Matrix.mulVec (symmetricRandsvdMatrix Q lambda) (fun j ↦ Q j k) i =
+        (symmetricRandsvdMatrix Q lambda * Q) i k := by
+    rfl
+  rw [hleft, hentry]
+  have hk : ∀ x : Fin n, x.val = k.val ↔ x = k := by
+    intro x
+    exact ⟨Fin.ext, congrArg Fin.val⟩
+  simp_rw [D, Matrix.mul_apply, rectangularDiagonal, hk]
+  simp
+  ring
+
+private theorem householder_mul_apply_rectangular
+    {m n : ℕ} (u : Fin m → ℝ) (beta : ℝ) (S : RMat m n)
+    (i : Fin m) (j : Fin n) :
+    ((show RSqMat m from householder m u beta) * S) i j =
+      S i j - beta * u i * (∑ k : Fin m, u k * S k j) := by
+  simp only [Matrix.mul_apply, householder, idMatrix]
+  simp_rw [sub_mul]
+  rw [Finset.sum_sub_distrib]
+  simp only [Finset.mul_sum]
+  simp
+  ring_nf
+
+private theorem rectangular_mul_householder_apply
+    {m n : ℕ} (S : RMat m n) (v : Fin n → ℝ) (gamma : ℝ)
+    (i : Fin m) (j : Fin n) :
+    (S * (show RSqMat n from householder n v gamma)) i j =
+      S i j - gamma * (∑ k : Fin n, S i k * v k) * v j := by
+  simp only [Matrix.mul_apply, householder, idMatrix]
+  simp_rw [mul_sub]
+  rw [Finset.sum_sub_distrib]
+  simp
+  ring_nf
+  rw [Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro x _
+  ring
+
+/-- The two columns that span the correction when both `randsvd` factors are
+single Householder matrices. -/
+noncomputable def singleHouseholderRandsvdCorrectionLeft {m n : ℕ}
+    (S : RMat m n) (u : Fin m → ℝ) (v : Fin n → ℝ) : RMat m 2 :=
+  fun i r ↦ if r.val = 0 then u i else ∑ k : Fin n, S i k * v k
+
+/-- The paired two rows in the exact rank-two correction factorization. -/
+noncomputable def singleHouseholderRandsvdCorrectionRight {m n : ℕ}
+    (S : RMat m n) (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (beta gamma : ℝ) : RMat 2 n :=
+  fun r j ↦
+    if r.val = 0 then
+      -beta * (∑ k : Fin m, u k * S k j) +
+        beta * gamma *
+          (∑ p : Fin n, (∑ k : Fin m, u k * S k p) * v p) * v j
+    else -gamma * v j
+
+private theorem singleHouseholder_product_factorization {m n : ℕ}
+    (S : RMat m n) (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (beta gamma : ℝ) :
+    (show RSqMat m from householder m u beta) * S *
+        (show RSqMat n from householder n v gamma) =
+      S + singleHouseholderRandsvdCorrectionLeft S u v *
+        singleHouseholderRandsvdCorrectionRight S u v beta gamma := by
+  ext i j
+  rw [rectangular_mul_householder_apply]
+  simp_rw [householder_mul_apply_rectangular]
+  have hsum :
+      (∑ x : Fin n,
+        (S i x - beta * u i * (∑ k : Fin m, u k * S k x)) * v x) =
+        (∑ x : Fin n, S i x * v x) -
+          beta * u i *
+            (∑ x : Fin n, (∑ k : Fin m, u k * S k x) * v x) := by
+    simp_rw [sub_mul]
+    rw [Finset.sum_sub_distrib, Finset.mul_sum]
+    congr 1
+    apply Finset.sum_congr rfl
+    intro x _
+    ring
+  rw [hsum]
+  simp only [Matrix.add_apply, Matrix.mul_apply,
+    singleHouseholderRandsvdCorrectionLeft,
+    singleHouseholderRandsvdCorrectionRight]
+  simp only [Fin.sum_univ_two]
+  simp
+  ring
+
+/-- Higham's exact warning on p. 518: replacing each random orthogonal factor
+by one Householder matrix yields the rectangular diagonal matrix plus an
+explicit product through a two-dimensional space. -/
+theorem singleHouseholder_randsvd_eq_diagonal_add_rankTwo {m n : ℕ}
+    (sigma : ℕ → ℝ) (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (beta gamma : ℝ) :
+    randsvdMatrix (householder m u beta) sigma (householder n v gamma) =
+      rectangularDiagonal sigma +
+        singleHouseholderRandsvdCorrectionLeft (rectangularDiagonal sigma) u v *
+          singleHouseholderRandsvdCorrectionRight
+            (rectangularDiagonal sigma) u v beta gamma := by
+  have hVsym :
+      (show RSqMat n from householder n v gamma).transpose =
+        (show RSqMat n from householder n v gamma) := by
+    simpa [matTranspose] using householder_symmetric n v gamma
+  unfold randsvdMatrix
+  rw [hVsym]
+  exact singleHouseholder_product_factorization
+    (rectangularDiagonal sigma) u v beta gamma
+
+/-- The correction in the preceding decomposition has matrix rank at most
+two, including rectangular and degenerate dimensions. -/
+theorem singleHouseholder_randsvd_correction_rank_le_two {m n : ℕ}
+    (sigma : ℕ → ℝ) (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (beta gamma : ℝ) :
+    Matrix.rank
+        (randsvdMatrix (householder m u beta) sigma (householder n v gamma) -
+          rectangularDiagonal sigma) ≤ 2 := by
+  have hfactor := singleHouseholder_randsvd_eq_diagonal_add_rankTwo
+    sigma u v beta gamma
+  have hsub :
+      randsvdMatrix (householder m u beta) sigma (householder n v gamma) -
+          rectangularDiagonal sigma =
+        singleHouseholderRandsvdCorrectionLeft (rectangularDiagonal sigma) u v *
+          singleHouseholderRandsvdCorrectionRight
+            (rectangularDiagonal sigma) u v beta gamma := by
+    rw [hfactor]
+    abel
+  rw [hsub]
+  exact (Matrix.rank_mul_le_left _ _).trans (by
+    simpa using Matrix.rank_le_card_width
+      (singleHouseholderRandsvdCorrectionLeft
+        (rectangularDiagonal sigma) u v))
+
 /-! ## Standard independent Gaussian tails -/
 
 /-- Stewart's independent tail vectors in zero-based form: stage `i` has
@@ -404,7 +685,7 @@ theorem measurable_stewartOrthogonalGroupOutput {n : ℕ} :
   unfold stewartOrthogonalGroupOutput
   exact measurable_stewartOrthogonalMatrix.subtype_mk
 
-/-! ## Exact law and the unclosed Haar endpoint -/
+/-! ## Exact law and the Haar endpoint proposition -/
 
 /-- The exact push-forward law of Stewart's Gaussian-tail producer. -/
 noncomputable def stewartOrthogonalGroupLaw (n : ℕ) :
@@ -428,15 +709,14 @@ theorem stewartOrthogonalGroupLaw_univ (n : ℕ) :
 
 /-- The exact group-level, normalized Haar endpoint of Theorem 28.1.
 
-This proposition is intentionally left unproved.  Its normalization conjunct
-is now discharged by `stewartOrthogonalGroupLaw_univ`; the remaining first
-conjunct requires the Gaussian/Householder invariance argument. -/
+The downstream theorem `stewartTheorem28_1HaarConclusion` proves this
+proposition by a Gaussian/Householder induction and Haar-fiber uniqueness. -/
 def StewartTheorem28_1HaarConclusion (n : ℕ) : Prop :=
   (stewartOrthogonalGroupLaw n).IsHaarMeasure ∧
     stewartOrthogonalGroupLaw n Set.univ = 1
 
-/-- After the concrete normalization proof, Theorem 28.1 has exactly one
-remaining mathematical obligation: Haar invariance of the push-forward. -/
+/-- With normalization already built into the concrete push-forward, the
+endpoint is equivalent to its Haar-invariance conjunct. -/
 theorem stewartTheorem28_1HaarConclusion_iff_isHaarMeasure (n : ℕ) :
     StewartTheorem28_1HaarConclusion n ↔
       (stewartOrthogonalGroupLaw n).IsHaarMeasure := by

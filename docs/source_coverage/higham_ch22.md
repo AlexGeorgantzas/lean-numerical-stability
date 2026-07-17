@@ -1,22 +1,23 @@
 # Higham Chapter 22 Source Coverage
 
-| Source | Lean surface | Status |
-|---|---|---|
-| Vandermonde definition/nonsingularity; (22.1)--(22.3) | Vandermonde, Lagrange/Vieta, inverse-norm theorems | PROVED |
-| Algorithm 22.1 | actual master polynomial and synthetic division | PROVED end-to-end exact path |
-| Confluent example/general nonsingularity | displayed and arbitrary-multiplicity models | PROVED |
-| Table 22.1 V1--V6 | no source-family theorem | OPEN; cited estimates |
-| Table 22.1 V7; Table 22.2 | root-unity inverse and five polynomial families | PROVED |
-| (22.6)--(22.14) | recurrence, Newton form, sparse Stage-II synthesis | PROVED |
-| Algorithms 22.2--22.3; (22.15)--(22.17) | actual loop recurrences and Stage-II invariant | PARTIAL; factor product and final solves OPEN |
-| Theorem 22.4; (22.18)--(22.21) | no rounded loop-derived perturbation theorem | OPEN |
-| Corollary 22.5; (22.22) | no actual checkerboard factor specialization | OPEN |
-| Theorem 22.6; (22.23)--(22.25) | source assumption identified; no algorithmic residual proof | OPEN |
-| Corollary 22.7; Problem 22.8 | Appendix dependency inventoried | OPEN |
-| Algorithm 22.8 / Problem 22.10 | derivative Clenshaw loop and invariants | PROVED |
-| Refinement consequence 22.B2 | scalar contraction recurrence | PARTIAL; solver instantiation OPEN |
+- Source: `References/1.9780898718027.ch22.pdf`, printed pp. 415--431.
+- Core status: **PASS**.
+- Exhaustive row inventory: `docs/chapter22/CHAPTER22_SOURCE_INVENTORY.md`.
 
-The exhaustive row inventory is
-`docs/chapter22/CHAPTER22_SOURCE_INVENTORY.md`.  The selected-scope gate is
-**FAIL**; removed target-bearing domains and synthetic witnesses are not
-counted as coverage.
+| Source | Status and Lean surface |
+|---|---|
+| Vandermonde definition, Algorithm 22.1, (22.1)--(22.4) | PROVED end to end |
+| Table 22.1 V1--V6 | SKIP-LITERATURE-SUMMARY; external citation table |
+| Table 22.1 V7 and Table 22.2 | PROVED |
+| (22.5)--(22.17), Algorithm 22.2 | PROVED; repeated-node Hermite factorization and final solve |
+| Algorithm 22.3 | PROVED for the separate printed natural-indexed executor via `higham22_algorithm22_3_eq_factorized`, with literal primal solve `higham22Hermite_algorithm22_3_solve` |
+| (22.18)--(22.21), Theorem 22.4 | PROVED from the actual primitive rounded graph |
+| (22.22), Corollary 22.5 | PROVED for all four named source bases |
+| (22.23)--(22.25), Theorem 22.6 | PROVED conditional exactly on source assumption (22.24) |
+| Problem 22.8, Corollary 22.7 | PROVED structured inverse coefficient, monomial residual specialization, and `n(n+4)` first derivative |
+| Algorithm 22.8 / Problem 22.10 | PROVED |
+| Refinement consequence 22.B2 | REUSED from proved Chapter 12 Theorem 12.3, with local convergence theorem |
+
+The source assumption (22.24) is represented by `Higham22Eq22_24`; no final
+error or residual conclusion is assumed.  The forward and residual endpoints
+operate on factors extracted from the actual rounded Algorithm 22.2 graph.

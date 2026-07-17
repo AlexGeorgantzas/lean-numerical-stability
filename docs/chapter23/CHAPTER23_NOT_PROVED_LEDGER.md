@@ -1,25 +1,21 @@
 # Chapter 23 Not-Proved Ledger
 
-The selected-scope gate is **FAIL**.
+The selected-scope gate is **PASS**. No selected Chapter 23 source row remains
+open.
 
-| Source row | Proved local substrate | Missing source object or proof | Status |
-|---|---|---|---|
-| (23.11), Miller | actual rounded conventional multiplication is proved separately | Miller's finite polynomial-algorithm theorem and the dimension constant `f_n` | OPEN |
-| Theorem 23.2; (23.14)--(23.15) | exact one-level Strassen algebra; exact cost recurrence; scalar 12/46 error recurrence and closed coefficient | recursively rounded Strassen evaluator and the induction on its actual operations | OPEN |
-| Theorem 23.3; (23.18) | exact one-level Winograd--Strassen algebra; scalar 18/89 recurrence and closed coefficient | recursively rounded Winograd--Strassen evaluator and induction | OPEN |
-| Theorem 23.4; (23.19) | exact one-level bilinear evaluator; parameterized algebraic coefficient shape | cited Bini--Lotti theorem, its true `alpha`/`beta` construction, and rounded recursive bilinear evaluator | OPEN |
-| 23.B3 / Problem 23.6 | `higham23ThreeMStrassenCoefficient` records the stated scalar modification | combined recursively rounded 3M--Strassen evaluator and error proof | OPEN |
+The formerly open rows are now discharged by actual rounded computations:
 
-Actual rounded evaluators do prove Theorem 23.1, (23.10), (23.17), and
-(23.20)--(23.24), including explicit quadratic remainders and the relevant
-`O(u²)` statement.
+| Source row | Closing public endpoint | Status |
+|---|---|---|
+| (23.11), Miller | `higham23_eq23_11_miller_normwise` and `higham23_miller_normwiseRemainder_isBigO_u_sq` | PROVED |
+| Theorem 23.3; (23.18) | `higham23_theorem23_3_winograd_closedCoefficient_firstOrder` and `higham23_winogradMajorantRemainder_isBigO_u_sq` | PROVED |
+| Theorem 23.4; (23.19) | `higham23_theorem23_4_biniLotti_eq23_19` and `higham23_biniMajorantRemainder_isBigO_u_sq` | PROVED |
+| 23.B3 / Problem 23.6 | `higham23_threeMStrassen_sourceCoefficient` and `higham23_threeMStrassenRemainders_isBigO_u_sq` | PROVED |
 
-## Audit correction
+Empirical experiments, literature review, and optional benchmark problems
+remain skipped under the chapter skill; they are not selected-scope proof
+obligations.
 
-The former `Higham23FirstOrderExpansion` endpoints did not arise from a
-rounded recursive source evaluator.  Their witnesses manufactured a
-polynomial computation with zero error, and support-count values were
-presented as Bini--Lotti constants without the cited theorem.  Those
-structures, producers, target theorems, and witnesses were removed.  Scalar
-recurrence arithmetic is retained but is explicitly not counted as the
-recursive error theorem.
+The removed synthetic first-order expansion and zero-error witness surfaces
+remain excluded. Every stability endpoint above is derived from a literal
+rounded evaluator.
