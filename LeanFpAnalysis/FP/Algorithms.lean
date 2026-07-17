@@ -331,6 +331,7 @@ import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28PascalSpectral
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28PascalCondition
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28PascalOscillationExact
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28Contracts
+import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28GinibreFiniteFormula
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28Cauchy
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28Moments
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28ToeplitzGeneral

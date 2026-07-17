@@ -5157,6 +5157,7 @@ Source-facing Chapter 12 wrappers:
 - `higham12_8_residualComputationBound`
 - `higham12_9_conventional_residual_error`
 - `higham12_3_exact_one_step_residual_bound`
+- `higham12_10_exact_q_bound`
 - `higham12_14_residual_identity`
 - `higham12_14_residual_bound`
 - `higham12_17_update_bound`
@@ -5177,7 +5178,8 @@ Source-facing Chapter 12 wrappers:
 
 Chapter 12 formalization status and source inventory:
 
-- `chapter_splitting/reports/chapter12_formalization_report.md`
+- `docs/source_coverage/higham_ch12.md`
+- `docs/chapter12/CHAPTER12_SOURCE_INVENTORY.md`
 
 ---
 
