@@ -423,4 +423,319 @@ theorem H15_Theorem15_8_of_rowDiagDominant (n : ℕ) (hn : 0 < n)
   exact LeanFpAnalysis.FP.Ch15.H15_Theorem15_8 n hn A L U A_inv L_inv U_inv y hy
     hLU hLInv hAInv hRowSum
 
+-- ============================================================
+-- §15.6  Theorem 15.7 — honest closure from |L||U| = |A|
+-- ============================================================
+
+/-- If every pairwise product `f k * f l` is nonnegative (i.e. all `f k` share a
+    common sign), then `|∑ f| = ∑ |f|`.  This is the common-sign generalisation
+    of `abs_sum_eq_sum_abs_of_nonneg_terms` needed for tridiagonal LU whose
+    pivots may be negative. -/
+private theorem c15_abs_sum_of_pairwise_nonneg {n : ℕ} (f : Fin n → ℝ)
+    (h : ∀ k l : Fin n, 0 ≤ f k * f l) :
+    |∑ k : Fin n, f k| = ∑ k : Fin n, |f k| := by
+  by_cases hpos : ∃ k : Fin n, 0 < f k
+  · obtain ⟨k0, hk0⟩ := hpos
+    have hall : ∀ l : Fin n, 0 ≤ f l := fun l =>
+      (mul_nonneg_iff_of_pos_left hk0).mp (h k0 l)
+    rw [abs_of_nonneg (Finset.sum_nonneg (fun l _ => hall l))]
+    exact Finset.sum_congr rfl (fun l _ => (abs_of_nonneg (hall l)).symm)
+  · push_neg at hpos
+    have hall : ∀ l : Fin n, f l ≤ 0 := hpos
+    have hneg : ∑ l : Fin n, |f l| = ∑ l : Fin n, -(f l) :=
+      Finset.sum_congr rfl (fun l _ => abs_of_nonpos (hall l))
+    rw [hneg, Finset.sum_neg_distrib,
+      abs_of_nonpos (Finset.sum_nonpos (fun l _ => hall l))]
+
+/-- If `|a| + |b| = |a + b|` then `a` and `b` have the same sign: `0 ≤ a * b`.
+    (The no-cancellation consequence of the printed `|L||U| = |A|` diagonal.) -/
+private theorem c15_nonneg_of_abs_add_eq {a b : ℝ} (h : |a| + |b| = |a + b|) :
+    0 ≤ a * b := by
+  have hsq : (|a| + |b|) ^ 2 = (a + b) ^ 2 := by rw [h, sq_abs]
+  have e1 : (|a| + |b|) ^ 2 = |a| ^ 2 + 2 * (|a| * |b|) + |b| ^ 2 := by ring
+  have e2 : (a + b) ^ 2 = a ^ 2 + 2 * (a * b) + b ^ 2 := by ring
+  rw [e1, e2, sq_abs a, sq_abs b] at hsq
+  have hab : |a| * |b| = a * b := by linarith
+  have h1 : |a * b| = a * b := by rw [abs_mul, hab]
+  linarith [abs_nonneg (a * b), h1]
+
+/-- Abs-diagonal of a bidiagonal `LU`: `|A_{ii}| = |U_{ii}| + |L_{i,i-1}|·|U_{i-1,i}|`
+    for `i > 0` (from `|L||U| = |A|` and the tridiagonal zero pattern). -/
+private theorem c15_absLU_diag {n : ℕ} (L U A : Fin n → Fin n → ℝ)
+    (hStruct : IsTridiagLU n L U)
+    (hAbsLU : ∀ i j : Fin n, ∑ k : Fin n, |L i k| * |U k j| = |A i j|)
+    (i : Fin n) (hi : 0 < i.val) :
+    |A i i| = |U i i| + |L i ⟨i.val - 1, by omega⟩| * |U ⟨i.val - 1, by omega⟩ i| := by
+  have hn : i.val - 1 < n := by omega
+  let im1 : Fin n := ⟨i.val - 1, hn⟩
+  have hsum := hAbsLU i i
+  rw [← hsum, ← Finset.add_sum_erase _ _ (Finset.mem_univ i),
+    hStruct.L_diag i, abs_one, one_mul]
+  congr 1
+  have him1_ne : im1 ≠ i := by
+    intro h; have := congr_arg Fin.val h; simp only [im1] at this; omega
+  have him1_mem : im1 ∈ Finset.univ.erase i :=
+    Finset.mem_erase.mpr ⟨him1_ne, Finset.mem_univ _⟩
+  apply Finset.sum_eq_single_of_mem im1 him1_mem
+  intro k hk hk_ne
+  have hk_ne_i : k.val ≠ i.val := by
+    intro h; exact ((Finset.mem_erase.mp hk).1) (Fin.ext h)
+  by_cases h2 : i.val < k.val
+  · rw [hStruct.L_upper_zero i k h2, abs_zero, zero_mul]
+  · have hk_lt : k.val < i.val := by omega
+    by_cases h3 : k.val + 1 < i.val
+    · rw [hStruct.L_lower_bidiag i k h3, abs_zero, zero_mul]
+    · exfalso; exact hk_ne (Fin.ext (by simp only [im1]; omega))
+
+/-- **Diagonal sign / no-cancellation condition** derived from the PRINTED
+    `|L||U| = |A|`: for `i > 0`, `0 ≤ U_{ii}·(L_{i,i-1}·U_{i-1,i})`.  This is the
+    only sign input the common-sign argument of Theorem 15.7 needs. -/
+private theorem c15_diag_sign {n : ℕ} (L U A : Fin n → Fin n → ℝ)
+    (hStruct : IsTridiagLU n L U)
+    (hAbsLU : ∀ i j : Fin n, ∑ k : Fin n, |L i k| * |U k j| = |A i j|)
+    (hLU : ∀ i j : Fin n, ∑ k : Fin n, L i k * U k j = A i j)
+    (i : Fin n) (hi : 0 < i.val) :
+    0 ≤ U i i * (L i ⟨i.val - 1, by omega⟩ * U ⟨i.val - 1, by omega⟩ i) := by
+  have habsdiag := c15_absLU_diag L U A hStruct hAbsLU i hi
+  have hdiag := c15_LU_diag_rel L U A hStruct hLU i
+  rw [dif_pos hi] at hdiag
+  have h1 : |A i i| = |U i i + L i ⟨i.val - 1, by omega⟩ * U ⟨i.val - 1, by omega⟩ i| := by
+    rw [hdiag]
+  rw [habsdiag, ← abs_mul] at h1
+  exact c15_nonneg_of_abs_add_eq h1
+
+/-- Filter range-extension for the upper-inverse product: for `i ≤ l`,
+    `filter (i ≤ p < l+1) = insert l (filter (i ≤ p < l))`. -/
+private theorem c15_filter_upper_succ {n : ℕ} (i l : Fin n) (hl1 : l.val + 1 < n)
+    (hil : i.val ≤ l.val) :
+    (Finset.univ.filter (fun p : Fin n => i.val ≤ p.val ∧ p.val < l.val + 1))
+      = insert l (Finset.univ.filter (fun p : Fin n => i.val ≤ p.val ∧ p.val < l.val)) := by
+  ext p
+  simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_insert]
+  constructor
+  · rintro ⟨hip, hpl1⟩
+    by_cases hpl : p.val = l.val
+    · left; exact Fin.ext hpl
+    · right; exact ⟨hip, by omega⟩
+  · rintro (rfl | ⟨hip, hpl⟩)
+    · exact ⟨hil, by omega⟩
+    · exact ⟨hip, by omega⟩
+
+/-- **Upper bidiagonal inverse recurrence** (cleared denominator): for `i ≤ l`,
+    `U_{l+1,l+1}·U_inv_{i,l+1} = U_inv_{i,l}·(-U_{l,l+1})`. -/
+private theorem c15_Uinv_rec {n : ℕ} (U U_inv : Fin n → Fin n → ℝ)
+    (hU_diag : ∀ i : Fin n, U i i ≠ 0)
+    (hU_inv_eq : ∀ i k : Fin n, i.val ≤ k.val →
+      U_inv i k = upperBidiagInvEntry (fun m => U m m)
+        (fun m => if h : m.val + 1 < n then U m ⟨m.val + 1, h⟩ else 0) i k)
+    (i l : Fin n) (hl1 : l.val + 1 < n) (hil : i.val ≤ l.val) :
+    U ⟨l.val + 1, hl1⟩ ⟨l.val + 1, hl1⟩ * U_inv i ⟨l.val + 1, hl1⟩
+      = U_inv i l * (- U l ⟨l.val + 1, hl1⟩) := by
+  set lp1 : Fin n := ⟨l.val + 1, hl1⟩ with hlp1def
+  have hlp1_val : lp1.val = l.val + 1 := by rw [hlp1def]
+  have hil1 : i.val ≤ lp1.val := by rw [hlp1_val]; omega
+  rw [hU_inv_eq i lp1 hil1, hU_inv_eq i l hil]
+  unfold upperBidiagInvEntry
+  have hlt1 : ¬ (lp1.val < i.val) := by rw [hlp1_val]; omega
+  have hlt2 : ¬ (l.val < i.val) := by omega
+  rw [if_neg hlt1, if_neg hlt2, hlp1_val, c15_filter_upper_succ i l hl1 hil]
+  have hnotmem : l ∉ Finset.univ.filter (fun p : Fin n => i.val ≤ p.val ∧ p.val < l.val) := by
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and]; rintro ⟨_, h⟩; omega
+  rw [Finset.prod_insert hnotmem]
+  dsimp only
+  have hel : (if h : l.val + 1 < n then U l ⟨l.val + 1, h⟩ else 0) = U l lp1 := by
+    rw [dif_pos hl1, hlp1def]
+  rw [hel]
+  field_simp [hU_diag l, hU_diag lp1]
+
+/-- Filter range-extension for the lower-inverse product: for `j ≤ l`,
+    `filter (j < q ≤ l+1) = insert ⟨l+1⟩ (filter (j < q ≤ l))`. -/
+private theorem c15_filter_lower_succ {n : ℕ} (j l : Fin n) (hl1 : l.val + 1 < n)
+    (hjl : j.val ≤ l.val) :
+    (Finset.univ.filter (fun q : Fin n => j.val < q.val ∧ q.val ≤ l.val + 1))
+      = insert (⟨l.val + 1, hl1⟩ : Fin n)
+          (Finset.univ.filter (fun q : Fin n => j.val < q.val ∧ q.val ≤ l.val)) := by
+  have hv : (⟨l.val + 1, hl1⟩ : Fin n).val = l.val + 1 := rfl
+  ext q
+  simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_insert]
+  constructor
+  · rintro ⟨hjq, hql1⟩
+    by_cases hq : q.val = l.val + 1
+    · left; exact Fin.ext (by rw [hv]; exact hq)
+    · right; exact ⟨hjq, by omega⟩
+  · rintro (rfl | ⟨hjq, hql⟩)
+    · exact ⟨by rw [hv]; omega, by rw [hv]⟩
+    · exact ⟨hjq, by omega⟩
+
+/-- **Lower bidiagonal inverse recurrence**: for `j ≤ l`,
+    `L_inv_{l+1,j} = L_inv_{l,j}·(-L_{l+1,l})`. -/
+private theorem c15_Linv_rec {n : ℕ} (L L_inv : Fin n → Fin n → ℝ)
+    (hL_inv_eq : ∀ k j : Fin n, j.val ≤ k.val →
+      L_inv k j = lowerBidiagInvEntry
+        (fun q => if h : 0 < q.val then L q ⟨q.val - 1, by omega⟩ else 0) k j)
+    (j l : Fin n) (hl1 : l.val + 1 < n) (hjl : j.val ≤ l.val) :
+    L_inv ⟨l.val + 1, hl1⟩ j = L_inv l j * (- L ⟨l.val + 1, hl1⟩ l) := by
+  have hv : (⟨l.val + 1, hl1⟩ : Fin n).val = l.val + 1 := rfl
+  have hjl1 : j.val ≤ (⟨l.val + 1, hl1⟩ : Fin n).val := by rw [hv]; omega
+  rw [hL_inv_eq ⟨l.val + 1, hl1⟩ j hjl1, hL_inv_eq l j hjl]
+  unfold lowerBidiagInvEntry
+  have hlt1 : ¬ ((⟨l.val + 1, hl1⟩ : Fin n).val < j.val) := by rw [hv]; omega
+  have hlt2 : ¬ (l.val < j.val) := by omega
+  rw [if_neg hlt1, if_neg hlt2, hv, c15_filter_lower_succ j l hl1 hjl]
+  have hnotmem : (⟨l.val + 1, hl1⟩ : Fin n) ∉
+      Finset.univ.filter (fun q : Fin n => j.val < q.val ∧ q.val ≤ l.val) := by
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and]; rintro ⟨_, h⟩; omega
+  rw [Finset.prod_insert hnotmem]
+  dsimp only
+  have hll : (if h : 0 < (⟨l.val + 1, hl1⟩ : Fin n).val then
+        L ⟨l.val + 1, hl1⟩ ⟨(⟨l.val + 1, hl1⟩ : Fin n).val - 1, by omega⟩ else 0)
+      = L ⟨l.val + 1, hl1⟩ l := by
+    rw [dif_pos (by rw [hv]; omega)]
+    congr 1
+  rw [hll]; ring
+
+/-- **Combined term recurrence** (cleared denominator).  With
+    `t k := U_inv_{i,k}·L_inv_{k,j}`, for `i ≤ l` and `j ≤ l`:
+    `U_{l+1,l+1}·t_{l+1} = (U_{l,l+1}·L_{l+1,l})·t_l`. -/
+private theorem c15_t_recurrence {n : ℕ} (U L U_inv L_inv : Fin n → Fin n → ℝ)
+    (hU_diag : ∀ i : Fin n, U i i ≠ 0)
+    (hU_inv_eq : ∀ i k : Fin n, i.val ≤ k.val →
+      U_inv i k = upperBidiagInvEntry (fun m => U m m)
+        (fun m => if h : m.val + 1 < n then U m ⟨m.val + 1, h⟩ else 0) i k)
+    (hL_inv_eq : ∀ k j : Fin n, j.val ≤ k.val →
+      L_inv k j = lowerBidiagInvEntry
+        (fun q => if h : 0 < q.val then L q ⟨q.val - 1, by omega⟩ else 0) k j)
+    (i j l : Fin n) (hl1 : l.val + 1 < n) (hil : i.val ≤ l.val) (hjl : j.val ≤ l.val) :
+    U ⟨l.val + 1, hl1⟩ ⟨l.val + 1, hl1⟩ *
+        (U_inv i ⟨l.val + 1, hl1⟩ * L_inv ⟨l.val + 1, hl1⟩ j)
+      = (U l ⟨l.val + 1, hl1⟩ * L ⟨l.val + 1, hl1⟩ l) * (U_inv i l * L_inv l j) := by
+  have hu := c15_Uinv_rec U U_inv hU_diag hU_inv_eq i l hl1 hil
+  have hlr := c15_Linv_rec L L_inv hL_inv_eq j l hl1 hjl
+  calc U ⟨l.val + 1, hl1⟩ ⟨l.val + 1, hl1⟩ *
+        (U_inv i ⟨l.val + 1, hl1⟩ * L_inv ⟨l.val + 1, hl1⟩ j)
+      = (U ⟨l.val + 1, hl1⟩ ⟨l.val + 1, hl1⟩ * U_inv i ⟨l.val + 1, hl1⟩) *
+          L_inv ⟨l.val + 1, hl1⟩ j := by ring
+    _ = (U_inv i l * (- U l ⟨l.val + 1, hl1⟩)) * L_inv ⟨l.val + 1, hl1⟩ j := by rw [hu]
+    _ = (U_inv i l * (- U l ⟨l.val + 1, hl1⟩)) *
+          (L_inv l j * (- L ⟨l.val + 1, hl1⟩ l)) := by rw [hlr]
+    _ = (U l ⟨l.val + 1, hl1⟩ * L ⟨l.val + 1, hl1⟩ l) *
+          (U_inv i l * L_inv l j) := by ring
+
+/-- **Common-sign (pairwise-nonneg) crux** for `k ≤ l` both `≥ max(i,j)`:
+    `0 ≤ (U_inv_{i,k}·L_inv_{k,j})·(U_inv_{i,l}·L_inv_{l,j})`.  By induction on
+    `l - k` using the term recurrence and the diagonal sign condition. -/
+private theorem c15_t_pairwise_ge {n : ℕ} (U L U_inv L_inv A : Fin n → Fin n → ℝ)
+    (hStruct : IsTridiagLU n L U)
+    (hAbsLU : ∀ i j : Fin n, ∑ k : Fin n, |L i k| * |U k j| = |A i j|)
+    (hLU : ∀ i j : Fin n, ∑ k : Fin n, L i k * U k j = A i j)
+    (hU_diag : ∀ i : Fin n, U i i ≠ 0)
+    (hU_inv_eq : ∀ i k : Fin n, i.val ≤ k.val →
+      U_inv i k = upperBidiagInvEntry (fun m => U m m)
+        (fun m => if h : m.val + 1 < n then U m ⟨m.val + 1, h⟩ else 0) i k)
+    (hL_inv_eq : ∀ k j : Fin n, j.val ≤ k.val →
+      L_inv k j = lowerBidiagInvEntry
+        (fun q => if h : 0 < q.val then L q ⟨q.val - 1, by omega⟩ else 0) k j)
+    (i j : Fin n) :
+    ∀ (d : ℕ) (k l : Fin n), i.val ≤ k.val → j.val ≤ k.val → l.val = k.val + d →
+      0 ≤ (U_inv i k * L_inv k j) * (U_inv i l * L_inv l j) := by
+  intro d
+  induction d with
+  | zero =>
+    intro k l hik hjk hld
+    have hkl : l = k := Fin.ext (by omega)
+    subst hkl
+    exact mul_self_nonneg _
+  | succ d ih =>
+    intro k l hik hjk hld
+    have hl'lt : l.val - 1 < n := by omega
+    have hvv : (⟨l.val - 1, hl'lt⟩ : Fin n).val = l.val - 1 := rfl
+    have hl'1 : (⟨l.val - 1, hl'lt⟩ : Fin n).val + 1 < n := by rw [hvv]; omega
+    have hl'd : (⟨l.val - 1, hl'lt⟩ : Fin n).val = k.val + d := by rw [hvv]; omega
+    have hil' : i.val ≤ (⟨l.val - 1, hl'lt⟩ : Fin n).val := by rw [hl'd]; omega
+    have hjl' : j.val ≤ (⟨l.val - 1, hl'lt⟩ : Fin n).val := by rw [hl'd]; omega
+    have hlpos : 0 < l.val := by omega
+    have hlrw : l = ⟨(⟨l.val - 1, hl'lt⟩ : Fin n).val + 1, hl'1⟩ := by
+      apply Fin.ext; show l.val = (⟨l.val - 1, hl'lt⟩ : Fin n).val + 1; omega
+    have hIH := ih k ⟨l.val - 1, hl'lt⟩ hik hjk hl'd
+    have hrec := c15_t_recurrence U L U_inv L_inv hU_diag hU_inv_eq hL_inv_eq i j
+      ⟨l.val - 1, hl'lt⟩ hl'1 hil' hjl'
+    rw [← hlrw] at hrec
+    have hsign := c15_diag_sign L U A hStruct hAbsLU hLU l hlpos
+    have hsqpos : 0 < U l l * U l l := mul_self_pos.mpr (hU_diag l)
+    apply (mul_nonneg_iff_of_pos_left hsqpos).mp
+    have key : (U l l * U l l) *
+          ((U_inv i k * L_inv k j) * (U_inv i l * L_inv l j))
+        = (U l l * (L l ⟨l.val - 1, hl'lt⟩ * U ⟨l.val - 1, hl'lt⟩ l)) *
+          ((U_inv i k * L_inv k j) *
+            (U_inv i ⟨l.val - 1, hl'lt⟩ * L_inv ⟨l.val - 1, hl'lt⟩ j)) := by
+      have h2 : (U l l * U l l) *
+            ((U_inv i k * L_inv k j) * (U_inv i l * L_inv l j))
+          = U l l * (U l l * (U_inv i l * L_inv l j)) * (U_inv i k * L_inv k j) := by ring
+      rw [h2, hrec]; ring
+    rw [key]
+    exact mul_nonneg hsign hIH
+
+/-- **Theorem 15.7** (Higham §15.6, p. 299) — HONEST closure from the PRINTED
+    `|L||U| = |A|`.
+
+    "If the nonsingular tridiagonal `A ∈ ℝⁿˣⁿ` has the LU factorization `A = LU`
+    and `|L||U| = |A|`, then `|U⁻¹||L⁻¹| = |A⁻¹|`."
+
+    Unlike `Ch15.H15_Theorem15_7` (which assumes the sign-coherence conclusion
+    `0 ≤ U_inv_{i,k}·L_inv_{k,j}` — target-equivalent, and false when pivots are
+    negative), this statement takes only the printed hypothesis `hAbsLU`
+    (`|L||U| = |A|`, entrywise), the tridiagonal LU structure, nonzero pivots,
+    and the standard bidiagonal inverse-entry formulas pinning `U⁻¹`/`L⁻¹`, and
+    DERIVES the common-sign / no-cancellation crux internally: the diagonal of
+    `|L||U| = |A|` forces `0 ≤ U_{ii}·(L_{i,i-1}·U_{i-1,i})`
+    (`c15_diag_sign`), whence the term recurrence `U_{l+1,l+1}·t_{l+1} =
+    (U_{l,l+1}·L_{l+1,l})·t_l` (`c15_t_recurrence`, from the inverse formulas)
+    makes every `t_k := U⁻¹_{i,k}·L⁻¹_{k,j}` (fixed `i,j`) a common-sign family
+    (`c15_t_pairwise_ge`), so `|∑ₖ t_k| = ∑ₖ |t_k|` (`c15_abs_sum_of_pairwise_nonneg`).
+    The pivots may be of either sign. -/
+theorem H15_Theorem15_7_of_absLU_eq {n : ℕ}
+    (A L U A_inv L_inv U_inv : Fin n → Fin n → ℝ)
+    (hStruct : IsTridiagLU n L U)
+    (hLU : ∀ i j : Fin n, ∑ k : Fin n, L i k * U k j = A i j)
+    (hAbsLU : ∀ i j : Fin n, ∑ k : Fin n, |L i k| * |U k j| = |A i j|)
+    (hU_diag : ∀ i : Fin n, U i i ≠ 0)
+    (hA_inv_eq : ∀ i j : Fin n, A_inv i j = ∑ k : Fin n, U_inv i k * L_inv k j)
+    (hU_inv_ut : ∀ i k : Fin n, k.val < i.val → U_inv i k = 0)
+    (hL_inv_lt : ∀ k j : Fin n, k.val < j.val → L_inv k j = 0)
+    (hU_inv_eq : ∀ i k : Fin n, i.val ≤ k.val →
+      U_inv i k = upperBidiagInvEntry (fun m => U m m)
+        (fun m => if h : m.val + 1 < n then U m ⟨m.val + 1, h⟩ else 0) i k)
+    (hL_inv_eq : ∀ k j : Fin n, j.val ≤ k.val →
+      L_inv k j = lowerBidiagInvEntry
+        (fun q => if h : 0 < q.val then L q ⟨q.val - 1, by omega⟩ else 0) k j) :
+    ∀ i j : Fin n, ∑ k : Fin n, |U_inv i k| * |L_inv k j| = |A_inv i j| := by
+  intro i j
+  have htzero : ∀ m : Fin n, ¬(i.val ≤ m.val ∧ j.val ≤ m.val) →
+      U_inv i m * L_inv m j = 0 := by
+    intro m hm
+    by_cases h1 : i.val ≤ m.val
+    · have hmlt : m.val < j.val := by omega
+      rw [hL_inv_lt m j hmlt, mul_zero]
+    · have hmlt : m.val < i.val := by omega
+      rw [hU_inv_ut i m hmlt, zero_mul]
+  have hpair : ∀ k l : Fin n,
+      0 ≤ (U_inv i k * L_inv k j) * (U_inv i l * L_inv l j) := by
+    intro k l
+    by_cases hk : i.val ≤ k.val ∧ j.val ≤ k.val
+    · by_cases hl : i.val ≤ l.val ∧ j.val ≤ l.val
+      · rcases le_total k.val l.val with hkl | hlk
+        · exact c15_t_pairwise_ge U L U_inv L_inv A hStruct hAbsLU hLU hU_diag
+            hU_inv_eq hL_inv_eq i j (l.val - k.val) k l hk.1 hk.2 (by omega)
+        · have h := c15_t_pairwise_ge U L U_inv L_inv A hStruct hAbsLU hLU hU_diag
+            hU_inv_eq hL_inv_eq i j (k.val - l.val) l k hl.1 hl.2 (by omega)
+          rw [mul_comm]; exact h
+      · rw [htzero l hl, mul_zero]
+    · rw [htzero k hk, zero_mul]
+  calc ∑ k : Fin n, |U_inv i k| * |L_inv k j|
+      = ∑ k : Fin n, |U_inv i k * L_inv k j| := by
+        apply Finset.sum_congr rfl; intro k _; rw [abs_mul]
+    _ = |∑ k : Fin n, U_inv i k * L_inv k j| :=
+        (c15_abs_sum_of_pairwise_nonneg (fun k => U_inv i k * L_inv k j) hpair).symm
+    _ = |A_inv i j| := by rw [hA_inv_eq]
+
 end LeanFpAnalysis.FP.Ch15Closure
