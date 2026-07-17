@@ -35,6 +35,24 @@ private lemma geom_two_sum (m : ℕ) :
 private lemma pow_two_mono {a b : ℕ} (hab : a ≤ b) : (2 : ℝ) ^ a ≤ 2 ^ b :=
   pow_le_pow_right₀ (by norm_num) hab
 
+/-- Scalar comparison used by the infinity-norm Aasen growth bridge.
+
+The max-entry proof gives a `2^n` per-entry cap.  Tridiagonal row support costs
+three entries, so the printed `4^(n-2)` infinity-norm cap follows directly in
+the range `n ≥ 6`. -/
+private lemma three_mul_two_pow_le_four_pow_sub_two {n : ℕ} (hn6 : 6 ≤ n) :
+    (3 : ℝ) * 2 ^ n ≤ 4 ^ (n - 2) := by
+  have h3 : (3 : ℝ) ≤ 2 ^ (n - 4) := by
+    have hmono : (2 : ℝ) ^ 2 ≤ 2 ^ (n - 4) := pow_two_mono (by omega)
+    norm_num at hmono
+    linarith
+  calc
+    (3 : ℝ) * 2 ^ n ≤ 2 ^ (n - 4) * 2 ^ n :=
+      mul_le_mul_of_nonneg_right h3 (pow_nonneg (by norm_num : (0 : ℝ) ≤ 2) n)
+    _ = 2 ^ ((n - 4) + n) := by rw [← pow_add]
+    _ = 2 ^ (2 * (n - 2)) := by congr; omega
+    _ = 4 ^ (n - 2) := by rw [show (4 : ℝ) = 2 ^ 2 by norm_num, pow_mul]
+
 /-- **Row-wise Aasen growth bound.**  For the canonical Aasen middle factor
 `H = T Lᵀ` of an identity-permutation `AasenSpec`, using `A = L H`, unit
 lower-triangularity of `L`, and the partial-pivoting multiplier bound
@@ -306,6 +324,33 @@ theorem higham11_8_aasen_maxEntryNorm_T_le_printed_mul_maxEntryNorm
   rw [h4]
   exact pow_two_mono (by omega)
 
+/-- Infinity-norm form of the Aasen growth estimate in the range where the
+existing per-entry proof plus tridiagonal row support fits inside Higham's
+printed `4^(n-2)` factor.  This is deliberately stated with `6 ≤ n`; the
+all-dimension closure above is the max-entry result. -/
+theorem higham11_8_aasen_infNorm_T_le_printed_mul_infNorm_of_multiplier_bound
+    (n : ℕ) (hn : 0 < n) (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (hspec : AasenSpec n A L T σ) (hσ : ∀ i : Fin n, σ i = i)
+    (hmult : ∀ i j : Fin n, |L i j| ≤ 1) (hn6 : 6 ≤ n) :
+    infNorm T ≤ (4 : ℝ) ^ (n - 2) * infNorm A := by
+  have hA_nonneg : 0 ≤ infNorm A := infNorm_nonneg A
+  have hTmax : maxEntryNorm hn T ≤ (2 : ℝ) ^ n * infNorm A := by
+    refine maxEntryNorm_le_of_entry_le_bound hn T ((2 : ℝ) ^ n * infNorm A) ?_
+    intro i j
+    exact (aasenT_entry_bound n hn A L T σ hspec hσ hmult i j).trans
+      (mul_le_mul_of_nonneg_left (maxEntryNorm_le_infNorm hn A)
+        (pow_nonneg (by norm_num : (0 : ℝ) ≤ 2) n))
+  calc
+    infNorm T ≤ (3 : ℝ) * maxEntryNorm hn T :=
+      higham11_8_infNorm_le_three_mul_maxEntryNorm_of_isTridiagonal
+        n hn T hspec.T_tridiag.2
+    _ ≤ (3 : ℝ) * ((2 : ℝ) ^ n * infNorm A) :=
+      mul_le_mul_of_nonneg_left hTmax (by norm_num : (0 : ℝ) ≤ 3)
+    _ = ((3 : ℝ) * 2 ^ n) * infNorm A := by ring
+    _ ≤ ((4 : ℝ) ^ (n - 2)) * infNorm A :=
+      mul_le_mul_of_nonneg_right (three_mul_two_pow_le_four_pow_sub_two hn6) hA_nonneg
+    _ = (4 : ℝ) ^ (n - 2) * infNorm A := by ring
+
 /-- **Growth-bound plumbing feed.**  With the multiplier bound `|L i j| ≤ 1`
 discharging the growth half, the printed Aasen growth-factor predicate
 `ρ_n ≤ 4^{n-2}` holds without assuming any separate growth cap. -/
@@ -319,5 +364,20 @@ theorem higham11_8_aasen_aasenGrowthBound_of_multiplier_bound
   higham11_8_aasenGrowthBound_of_maxEntryNorm_le_printed_mul_maxEntryNorm n hn T A hA
     (higham11_8_aasen_maxEntryNorm_T_le_printed_mul_maxEntryNorm
       n hn A L T σ hspec hσ hmult hn4)
+
+/-- Infinity-norm growth-bound plumbing feed for `n ≥ 6`.  This supplies the
+source-norm growth predicate used by exact-`T_hat` Aasen callers whenever the
+matrix dimension is large enough for the tridiagonal row-support conversion to
+fit inside the printed factor. -/
+theorem higham11_8_aasen_infNormGrowthBound_of_multiplier_bound
+    (n : ℕ) (hn : 0 < n) (A L T : Fin n → Fin n → ℝ) (σ : Fin n → Fin n)
+    (hspec : AasenSpec n A L T σ) (hσ : ∀ i : Fin n, σ i = i)
+    (hmult : ∀ i j : Fin n, |L i j| ≤ 1) (hn6 : 6 ≤ n)
+    (hA : 0 < infNorm A) :
+    higham11_8_aasenGrowthBound n
+      (higham11_8_aasenGrowthFactor (infNorm T) (infNorm A)) :=
+  higham11_8_aasenGrowthBound_of_infNorm_le_printed_mul_infNorm n T A hA
+    (higham11_8_aasen_infNorm_T_le_printed_mul_infNorm_of_multiplier_bound
+      n hn A L T σ hspec hσ hmult hn6)
 
 end LeanFpAnalysis.FP.Ch11Closure.Aasen

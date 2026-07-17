@@ -12443,6 +12443,20 @@ Problem transcription.
   forms, while preserving source-norm positivity, dominance, LU/determinant,
   rounded update/budget, outer-factor, direct norm-cap, and scalar coefficient
   obligations.
+- 2026-07-17 Theorem 11.8 Aasen infinity-norm growth closure (n≥6):
+  `lake env lean LeanFpAnalysis/FP/Algorithms/Cholesky/AasenGrowthCh11Closure.lean`
+  → pass; `lake build LeanFpAnalysis.FP.Algorithms.Cholesky.AasenGrowthCh11Closure`
+  → `Build completed successfully (3055 jobs)`; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11`
+  → `Build completed successfully (3054 jobs)`; `git diff --check -- ...`
+  → pass; tab scan of `AasenGrowthCh11Closure.lean` / `higham_ch11.md`
+  → clean; forbidden-token scan of `AasenGrowthCh11Closure.lean` → clean;
+  focused axiom check of `higham11_8_aasen_infNorm_T_le_printed_mul_infNorm_of_multiplier_bound`
+  and `higham11_8_aasen_infNormGrowthBound_of_multiplier_bound` → elaborate;
+  axioms `[propext, Classical.choice, Quot.sound]`. The bridge derives
+  `‖T‖∞≤4^(n−2)‖A‖∞` and the corresponding infinity-norm growth predicate
+  from `AasenSpec`, identity permutation, multiplier bound `|L i j|≤1`,
+  and `6≤n`, using the existing per-entry Aasen bound plus tridiagonal
+  row support.
 - New vs pre-existing warnings: **no new warnings** from the edited Chapter 11 file. The target
   build warnings are pre-existing in `HighamChapter9.lean`, `CholeskyFl.lean`, and
   `HighamChapter10.lean` (deprecated `Fin` coercions, unused simp arguments, one `ring`
@@ -12477,7 +12491,7 @@ conclusion), builds, and is axiom-clean `[propext, Classical.choice, Quot.sound]
 | Thm 11.3, all-1×1 pivots (σ=id) | `higham11_3_block_ldlt_all_oneByOne_printed` | `BlockLDLTAllOneByOnePrintedCh11Closure` | Factorization backward error at **printed** strength `\|ΔA₁\|≤p(n)u(\|A\|+\|L̂\|\|D̂\|\|L̂ᵀ\|)`, `p(n)=20n` linear, under `n·u≤1/100`; from fl model via the recursive stage bound. |
 | Thm 11.3, general mixed 1×1/2×2 | `higham11_3_block_ldlt_mixed_printed`, `..._of_acceptance` | `BlockLDLTMixedPivotCh11Closure`, `TwoByTwoSchurStepCh11Closure` | Global mixed-pivot induction derived; the 2×2 Schur-update **rounding** derived (`schur2_dot_residual`), so `_of_acceptance` assumes only Higham's eq.(11.5) 2×2-solve family (`DenseAcceptance`) + 1×1 nonzero-pivot/symmetry. Factorization, printed strength, `p(n)=20n`. |
 | Thm 11.7, Bunch tridiagonal | `higham11_7_bunch_tridiagonal_backward_error_unconditional` | `BlockLDLTBunchTridiagonal / BunchTridiagonalGrowth / *FactorBound / *HFactor Ch11Closure` | Factorization backward error `\|ΔA₁\|≤c·u·Amax`, `c=20n(1+c₀)`, `c₀` dimension-independent; the tridiagonal factor-norm growth bound `hfactor` fully **discharged** (constant-growth invariant via Bunch acceptance test). Assumes `FlMixedPivots`+`TriPivotData`+(11.5); the solve part is taken as `hsolve`. |
-| Thm 11.8, Aasen growth `ρₙ≤4^(n−2)` | `higham11_8_aasen_maxEntryNorm_T_le_printed_mul_maxEntryNorm`, `..._aasenGrowthBound_of_multiplier_bound` | `AasenGrowthCh11Closure` | `maxEntryNorm T ≤ 4^(n−2)·maxEntryNorm A` from `AasenSpec`+`\|L\|≤1` (partial-pivoting multiplier bound), n≥4; feeds the existing `aasenGrowthBound` plumbing hypothesis-free. |
+| Thm 11.8, Aasen growth `ρₙ≤4^(n−2)` | `higham11_8_aasen_maxEntryNorm_T_le_printed_mul_maxEntryNorm`, `..._aasenGrowthBound_of_multiplier_bound`, `higham11_8_aasen_infNorm_T_le_printed_mul_infNorm_of_multiplier_bound`, `..._infNormGrowthBound_of_multiplier_bound` | `AasenGrowthCh11Closure` | `maxEntryNorm T ≤ 4^(n−2)·maxEntryNorm A` from `AasenSpec`+`\|L\|≤1` (partial-pivoting multiplier bound), n≥4; feeds the existing max-entry `aasenGrowthBound` plumbing hypothesis-free. The source-norm bridge also derives `‖T‖∞≤4^(n−2)‖A‖∞` and the corresponding infinity-norm growth predicate for n≥6, using the existing per-entry `2^n` proof plus tridiagonal row support. |
 | Thm 11.8, outer-factor norm | `aasen_L_infNorm_mul_transpose_le_sq` | `AasenFactorNormCh11Closure` | `‖L‖∞·‖Lᵀ‖∞ ≤ (n−1)²` from unit-lower-tri + first-col-e₁ + `\|L\|≤1`, n≥2; discharges the endpoint's structural `κL·κLT≤(n−1)²` cap. |
 
 **Still open after these modules (documented obstructions):**
