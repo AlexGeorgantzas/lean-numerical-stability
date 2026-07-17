@@ -3,15 +3,18 @@
 -- Source-facing entry points for Higham Chapter 12, "Iterative Refinement".
 -- The reusable one-step refinement proofs live in `IterativeRefinement`; this
 -- file gives stable Chapter 12 labels and closes the exact local problem lemma
--- used in the chapter's Appendix A solution.
+-- used in the book's Appendix A solution.
 
 import Mathlib.Tactic
-import LeanFpAnalysis.FP.Algorithms.HighamChapter11
 import LeanFpAnalysis.FP.Algorithms.IterativeRefinement
 
 namespace LeanFpAnalysis.FP
 
 open scoped BigOperators
+
+/-! All source references in this file are to N. J. Higham, *Accuracy and
+Stability of Numerical Algorithms*, 2nd ed. (SIAM, 2002), Chapter 12,
+"Iterative Refinement", printed pp. 231-243. -/
 
 /-! ## §12.1 Behaviour of the Forward Error -/
 
@@ -229,6 +232,46 @@ theorem higham12_3_exact_one_step_residual_bound (n : ℕ)
     ring
   linarith
 
+/-- **Theorem 12.3 / equation (12.10)** (Higham, 2nd ed., printed p. 235),
+with the asymptotic remainder `q` displayed exactly rather than hidden behind
+`O(u)`.  The source's later statement `q = O(u)` needs a parameterized
+regularity hypothesis for `t`; this theorem proves the finite identity from
+which that asymptotic interpretation is obtained.
+
+Here `gTerm`, `hTerm`, `tAtX`, and `tAtY` stand for the corresponding source
+quantities at the computed correction, original solution, and corrected
+solution. -/
+theorem higham12_10_exact_q_bound (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (x_hat d_hat : Fin n → ℝ) (b r r_hat : Fin n → ℝ)
+    (f2 : Fin n → ℝ) (y : Fin n → ℝ)
+    (u : ℝ) (gTerm hTerm tAtX tAtY : Fin n → ℝ)
+    (hr : ∀ i : Fin n, r i = b i - ∑ j : Fin n, A i j * x_hat j)
+    (hy : ∀ i : Fin n, y i = x_hat i + d_hat i + f2 i)
+    (hf1 : ∀ i : Fin n,
+      |r_hat i - ∑ j : Fin n, A i j * d_hat j| ≤
+        u * (gTerm i + hTerm i))
+    (hDeltaR : ∀ i : Fin n, |r_hat i - r i| ≤ u * tAtX i)
+    (hf2 : ∀ j : Fin n, |f2 j| ≤ u * (|x_hat j| + |d_hat j|)) :
+    ∀ i : Fin n,
+      |b i - ∑ j : Fin n, A i j * y j| ≤
+        u * (hTerm i + tAtY i + ∑ j : Fin n, |A i j| * |y j|) +
+        u * (tAtX i - tAtY i + gTerm i +
+          ∑ j : Fin n, |A i j| * (|x_hat j| - |y j| + |d_hat j|)) := by
+  intro i
+  have hbase := higham12_3_exact_one_step_residual_bound n A x_hat d_hat
+    b r r_hat f2 y u gTerm hTerm tAtX hr hy hf1 hDeltaR hf2 i
+  have hsum :
+      ∑ j : Fin n, |A i j| * (|x_hat j| - |y j| + |d_hat j|) =
+        (∑ j : Fin n, |A i j| * (|x_hat j| + |d_hat j|)) -
+          ∑ j : Fin n, |A i j| * |y j| := by
+    rw [← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  rw [hsum]
+  linarith
+
 /-- **Equation (12.14)** identity form:
 `b - A y = (r_hat - A d_hat) - (r_hat - r) - A f2`. -/
 theorem higham12_14_residual_identity (n : ℕ)
@@ -353,9 +396,11 @@ theorem higham12_21_correction_product_bound (n : ℕ)
       ∑ j : Fin n, |A i j| * ∑ k : Fin n, C j k * |r_hat k| :=
   correction_product_bound n A d_hat r_hat C hC_nonneg hd_bound
 
-/-- **Theorem 12.4 / equation (12.22)** exact conditional two-gamma
-conclusion.  The source's printed sufficient condition is approximate; here the
-needed dominance inequality is explicit. -/
+/-- **Theorem 12.4 / equation (12.22)** (Higham, 2nd ed., printed pp. 236-238):
+an exact conditional companion with the printed two-gamma conclusion.  The
+source's sufficient-condition function is approximate; here the needed
+componentwise dominance inequality remains an explicit hypothesis, so this is
+not the solver-derived endpoint. -/
 theorem higham12_4_conditional_two_gamma_bound (n : ℕ) (fp : FPModel)
     (A : Fin n → Fin n → ℝ)
     (x_hat d_hat r_hat : Fin n → ℝ)
@@ -382,9 +427,10 @@ theorem higham12_4_conditional_two_gamma_bound (n : ℕ) (fp : FPModel)
     b r hr hres hsolve hDeltaA y hy hmu_nonneg hnu_nonneg homega_nonneg
     (2 * gamma fp (n + 1)) hdom
 
-/-- **Theorem 12.4, explicit-condition form** (Higham §12.2, GE with `μ = γ(3n)`).
+/-- **Exact non-asymptotic stability companion to Theorem 12.4** (Higham,
+2nd ed., §12.2, printed pp. 236-238; GE with `μ = γ(3n)`).
 
-A fully-derived Theorem 12.4: from the solver/residual/update models, a norm
+From the solver/residual/update models, a norm
 bound `‖ |A||d̂| ‖∞ ≤ ρ₀` on the correction magnitude (supplied by the Neumann
 step `higham12_21_correction_infNorm_bound`), an explicit positive lower bound
 `m` on the scaled data `|A||ŷ| + |b|`, and the explicit scalar conditions
@@ -395,7 +441,9 @@ Unlike `higham12_4_conditional_two_gamma_bound`, this assumes **no** componentwi
 dominance: the dominance is *derived* via `correction_componentwise_of_infNorm`
 and fed to `lu_refinement_thm_11_4`.  All hypotheses are precise (no `≈`); the
 `(m, ρ)` pair is the explicit, non-asymptotic replacement for the source's
-approximate function `f(t₁,t₂)` and its `cond(A⁻¹)σ(A,ŷ)` sufficient condition. -/
+approximate function `f(t₁,t₂)` and its `cond(A⁻¹)σ(A,ŷ)` sufficient condition.
+The exact conclusion retains `+ |b|`; it must not be presented as the literal
+printed conclusion `2γ_{n+1}|A||ŷ|`. -/
 theorem higham12_4_explicit_condition (n : ℕ) (fp : FPModel)
     (A : Fin n → Fin n → ℝ)
     (x₀ d_hat r_hat b r : Fin n → ℝ)
@@ -458,12 +506,16 @@ theorem higham12_21_correction_infNorm_bound {n : ℕ} (hn : 0 < n)
       (fun _ _ => mul_nonneg (abs_nonneg _) (abs_nonneg _)))
     c hc_lt hrow hcorr
 
-/-- **Theorem 12.4, fully solver-derived** (Higham §12.2, GE with `μ = γ(3n)`).
+/-- **Solver-derived non-asymptotic stability companion to Theorem 12.4**
+(Higham, 2nd ed., §12.2, printed pp. 236-238; GE with `μ = γ(3n)`).
 
-The complete Theorem 12.4 for one step of fixed-precision iterative refinement:
+For one step of fixed-precision iterative refinement,
 from the solver `(A + ΔA)d̂ = r̂` (`|ΔA| ≤ γ(3n)|A|`, Theorem 9.4), the residual
 and update models, and a nonnegative resolver `Ainv` for `A`, one obtains
-`|b − Aŷ|_i ≤ 2γ_{n+1}(|A||ŷ| + |b|)_i`.
+`|b − Aŷ|_i ≤ 2γ_{n+1}(|A||ŷ| + |b|)_i`.  The source theorem uses an
+approximate sufficient-condition function and prints the sharper expression
+without `+ |b|`; this exact theorem is therefore a companion, not a literal
+closure of that underspecified envelope.
 
 The correction bound is **derived end-to-end**, not assumed: the solver gives the
 componentwise Neumann inequality `(I − μ|A|Ainv)(|A||d̂|) ≤ (|A|Ainv)|r̂|`
@@ -603,11 +655,12 @@ theorem higham12_vectorAbsSkew_entry_bound {n : ℕ} (hn : 0 < n)
     linarith
   exact le_trans hj_le hmax_le
 
-/-- **Problem 12.1**, square form used by the Appendix solution:
+/-- **Problem 12.1 / Appendix A solution 12.1** (Higham, 2nd ed., printed
+pp. 242 and 556), square form used by the main proof's sigma bridge:
 `|A||x| <= sigma ||A||_inf |x|`, where
 `sigma = max_i |x_i| / min_i |x_i|`.  The printed problem states `A` as
-rectangular, but the displayed right-hand vector has the same index type as
-`x`; this theorem records the dimension-compatible form actually used. -/
+rectangular, but its displayed vector inequality is dimensionally ill-typed
+when `m ≠ n`; this theorem records the square form actually used at (12.22). -/
 theorem higham12_problem_12_1_square {n : ℕ} (hn : 0 < n)
     (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
     (hpos : ∀ i : Fin n, 0 < |x i|) :

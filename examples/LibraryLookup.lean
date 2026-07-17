@@ -15960,7 +15960,9 @@ small enough to serve as a smoke check for representative public declarations.
 -- Higham Chapter 12 source-facing wrappers.
 #check higham12_9_conventional_residual_error
 #check higham12_3_exact_one_step_residual_bound
+#check higham12_10_exact_q_bound
 #check higham12_4_conditional_two_gamma_bound
+#check higham12_4_from_solver
 #check higham12_problem_12_1_square
 
 -- Higham Chapter 20 source-facing least-squares endpoints.
