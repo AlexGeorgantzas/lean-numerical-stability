@@ -90,6 +90,25 @@ formalizes the meta-algorithms of Drineas and Mahoney's CACM survey
 — row/elementwise/leverage-score sampling, matrix concentration, low-rank
 approximation, and least-squares preconditioning.
 
+## Project statistics
+
+Snapshot of the current `LeanFpAnalysis/` tree:
+
+| | |
+|---|---|
+| Lean files | **494** |
+| Lines of Lean | **~1.31 million** |
+| Theorems + lemmas proved | **~33,900** (32,136 `theorem` + 1,782 `lemma`) |
+| Definitions | **7,710** `def`, 228 `abbrev` |
+| Structures / instances | 344 `structure`, 131 `instance` |
+| `sorry` / `admit` / `axiom` declarations | **0** |
+| Full `lake build` | **~4,321** jobs |
+
+Everything is proved against Mathlib; sampled headline theorems depend only on
+the standard `[propext, Classical.choice, Quot.sound]` axioms. (Declaration
+counts are keyword occurrences across `LeanFpAnalysis/**/*.lean`; the line count
+is total physical lines, including comments and blanks.)
+
 ## Building
 
 Requires [`elan`](https://github.com/leanprover/elan) (which pins Lean/Lake from
