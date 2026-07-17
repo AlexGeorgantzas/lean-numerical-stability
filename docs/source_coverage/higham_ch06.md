@@ -134,6 +134,18 @@ Remaining optional documented residuals (unnumbered body-prose; non-gating): the
 hypothesis for the antidiagonal identity; the (6.1) equality-condition sentence; the second Lemma 6.6(a)
 sharpness witness (A=ee^T, B=√n·I).
 
+**De-orphaning (2026-07-17, bridge B5(b)):** the `Chapter06Lemma66.lean` operator-2-norm theorems
+`lemma66_a_op2_le` / `lemma66_c_op2_le` were previously ORPHANED (zero consumers repo-wide — the
+`CMatrix` op2 layer of this file was never reached by the Ch.10/Ch.14 modules, which carried their
+Lemma-6.6 usage through the separate real componentwise (b)/(d) chain in `MatrixAlgebra.lean`). They are
+now genuinely consumed by `LeanFpAnalysis/FP/Algorithms/Ch10Ch14Lemma66Op2Bridge.lean` (axiom-clean),
+which applies `lemma66_c_op2_le` to prove the printed 2-norm step cited from Lemma 6.6 in BOTH chapters:
+`lemma66c_absMatrix_op2_le_sqrt_card` (`‖ |B| ‖₂ ≤ √n‖B‖₂`), `lemma66c_ch10_absFactor_op2Sq_le`
+(Ch.10 (10.7) key inequality `‖ |R| ‖₂² ≤ n‖R‖₂²`), and `lemma66c_ch14_residual_op2_le_sqrt_card`
+(the Ch.14 §14.3.4 residual `‖G‖₂ ≤ …√n…` lift). This is a distinct realization from the
+`MatrixAlgebra.lean` (b)/(d) chain referenced below — that chain remains the one used inside the existing
+Ch.10/Ch.14 real-layer certificates.
+
 ## Cross-chapter role
 
 Chapter 6 is consumed everywhere norms appear; the concrete dependency spine observed in this repo:

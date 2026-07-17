@@ -113,6 +113,7 @@ import LeanFpAnalysis.FP.Algorithms.Ch14Corollary146SourceClosure
 import LeanFpAnalysis.FP.Algorithms.Ch14Corollary147SourceClosure
 import LeanFpAnalysis.FP.Algorithms.Ch14MethodDProductDischarge
 import LeanFpAnalysis.FP.Algorithms.Chapter06Lemma66
+import LeanFpAnalysis.FP.Algorithms.Ch10Ch14Lemma66Op2Bridge
 import LeanFpAnalysis.FP.Algorithms.KahanCompensatedFiniteFormat
 import LeanFpAnalysis.FP.Algorithms.PriestAccuracy
 import LeanFpAnalysis.FP.Algorithms.PriestDefectBounded
@@ -272,6 +273,7 @@ import LeanFpAnalysis.FP.Algorithms.Underdetermined.UnderdeterminedSpec
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.UnderdeterminedSolve
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21
 import LeanFpAnalysis.FP.Algorithms.Vandermonde.Higham22
+import LeanFpAnalysis.FP.Algorithms.Vandermonde.Higham22Ch12RefinementBridge
 import LeanFpAnalysis.FP.Algorithms.FFT.Higham24
 import LeanFpAnalysis.FP.Algorithms.FFT.Higham24Radix2
 import LeanFpAnalysis.FP.Algorithms.Circulant.Higham24
