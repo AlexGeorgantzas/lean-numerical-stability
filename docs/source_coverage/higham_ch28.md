@@ -23,7 +23,7 @@ Source: Higham, 2nd ed., Chapter 28, printed pp. 511-526. Mode: core.
 | Symmetric randsvd adaptation | PASS | `symmetricRandsvdMatrix`, `symmetricRandsvdMatrix_transpose`, and `symmetricRandsvdMatrix_column_eigenpair` give the symmetric construction and prescribed eigenbasis |
 | Randsvd cost discussion | DEFER-MISSING-PRECISE-STATEMENT | no concrete operation graph, flop convention, or selected asymptotic-cost proposition is printed |
 | Theorem 28.1 | PASS | normalized product-Gaussian inputs, exact Householder reduction, source-ordered `P_i`, `D`, `Q`, samplewise orthogonality, the dimension-step recursion, Gaussian rotation, Haar-fiber uniqueness, and `stewartOrthogonalGroupLaw_eq_normalizedOrthogonalHaar` are compiled |
-| Real-Ginibre expected-count limit (28-P3) | PARTIAL / OPEN | `measurable_realEigenvalueCount` and `integrable_realEigenvalueCount` close measurability; `lintegral_ginibreIncidence_regular_eq_rootCount`, `lintegral_ginibreIncidence_gaussian_eq_rootCount`, and `lintegral_ginibreIncidence_gaussian_eq_expected` close coarea and the incidence-to-expectation bridge; `realGinibreExpectedCountClosedForm_limit` closes the analytic sequence. What remains is a premise-free all-positive-dimension `RealGinibreFiniteExpectationFormula`, hence a premise-free `RealGinibreExpectedCountLimit`; the existing `realGinibreExpectedCountLimit_of_finiteExpectationFormula` is conditional. |
+| Real-Ginibre expected-count limit (28-P3) | **PASS** (2026-07-17) | Prior infrastructure (measurability, coarea/incidence chain, closed-form sequence limit, dims 1–2) is now completed by `ch28gf_kernelTransfer` → `ch28gf_realGinibreFiniteExpectationFormula` (premise-free) → `ch28gf_realGinibreExpectedCountLimit` (premise-free `E_n/√n → √(2/π)`), all axiom-clean, in `Higham28GinibreFiniteFormula.lean`. |
 | Uniform positive random matrix | PASS | `uniformUnitIntervalMatrixMeasure_strictlyPositive` proves boundary-null strict positivity, `hasPositiveDominantEigenvalue_of_strictlyPositive` supplies the deterministic Perron bridge, and `uniformPositivePerronAlmostSure` proves the concrete full-measure intersection event |
 | Pascal algebraic core | PASS | `pascalMatrix_eq_lower_mul_transpose`, `pascalMatrix_det`, `signedPascal_mul_self`, `pascalMatrix_mul_signedGram`, `signedGram_mul_pascalMatrix`, `pascalInverseFormula_apply_of_le`, `signedPascal_conj_pascalMatrix`, `pascal_reciprocal_eigenpair` |
 | Pascal characteristic-polynomial reciprocity | PASS / SOURCE-DISCREPANCY | `pascal_charpoly_reciprocal` proves the correct signed reversal `charpoly(P_n)=C((-1)^n)*charpoly(P_n).reverse`; `pascal_charpoly_palindromic_of_even` proves literal palindromicity for even order. The sign-free all-order source sentence is false at odd order. |
@@ -39,10 +39,18 @@ Source: Higham, 2nd ed., Chapter 28, printed pp. 511-526. Mode: core.
 | Companion normality classification | PASS / SOURCE-DISCREPANCY | `companion_orderTwo_isStarNormal_iff` and `companion_orderAtLeastThree_isStarNormal_iff` prove the correct order-sensitive classification. The printed `a_0=1`, all-higher-zero iff is false over `ℂ`, at order two, and at order one. |
 | Problems 28.1-28.2 | EXCLUDED | optional research rows not selected |
 
-Aggregate selected-scope status: **FAIL solely because 28-P3 is still
-PARTIAL/OPEN**. Every selected non-Ginibre row is PASS or has a terminal
-source-imprecision/source-discrepancy disposition. See
-`docs/chapter28/CHAPTER28_NOT_PROVED_LEDGER.md`.
+Aggregate selected-scope status: **PASS** (updated 2026-07-17). Row 28-P3 — the
+last open row — is now CLOSED: `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28GinibreFiniteFormula.lean`
+proves the premise-free `ch28gf_realGinibreFiniteExpectationFormula`
+(`∀ n, 0 < n → expectedRealEigenvalueCount n = realGinibreExpectedCountClosedForm n`)
+and hence the premise-free `ch28gf_realGinibreExpectedCountLimit` (`E_n/√n → √(2/π)`),
+by supplying the missing measure-theoretic kernel-transfer link
+(`ch28gf_kernelTransfer`) that completes the incidence chain and feeding the
+formerly-conditional bridge `realGinibreExpectedCountLimit_of_finiteExpectationFormula`.
+Both headline theorems take no hypotheses and are axiom-clean
+(`[propext, Classical.choice, Quot.sound]`, full transitive closure). Every other
+selected row is PASS or has a terminal source-imprecision/source-discrepancy
+disposition. See `docs/chapter28/CHAPTER28_NOT_PROVED_LEDGER.md`.
 
 Verification targets are `Higham28`, `Higham28Exact`, `Higham28Stewart`,
 `Higham28StewartHaar`, `Higham28StewartRecursion`, `Higham28StewartRawFiber`,
