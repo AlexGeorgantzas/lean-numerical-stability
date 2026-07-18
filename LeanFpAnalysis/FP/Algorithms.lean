@@ -80,6 +80,7 @@ import LeanFpAnalysis.FP.Algorithms.Cholesky.BlockLDLTBunchTridiagonalCh11Closur
 import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchTridiagonalGrowthCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchTridiagonalFactorBoundCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchTridiagonalGrowthInvariantCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchTridiagonalCapstoneCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchTridiagonalHFactorCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenGrowthCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenFactorNormCh11Closure

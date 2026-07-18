@@ -7,9 +7,10 @@
 - Mode: core.
 - Parallel split: 2 (chapters 7–12).
 - Planning documents consulted: blueprint, Split 2 section of `split_primary_contracts.md`, `chapter_index.md`.
-- **Selected-scope gate: CONDITIONAL PASS** (corrected 2026-07-18 after an
-  adversarial closure audit — see "Closure audit (2026-07-18)" below; supersedes
-  the earlier unqualified PASS). Precise per-theorem status:
+- **Selected-scope gate: PASS** (restored 2026-07-18 after the Theorem 11.7
+  bounded-growth derivation landed — see "Closure (2026-07-18, Theorem 11.7
+  growth derived)" below; this supersedes the interim CONDITIONAL PASS from the
+  same-day closure audit). Precise per-theorem status:
   - **Theorem 11.3 — CLOSED.** Factorization (`..._of_acceptance`, deriving the
     2×2 Schur error) + solve, from the fl model, assuming only Higham's (11.5)
     2×2-solve family. Conventions: O(u²) folded into `n·u≤1/100`, P=I.
@@ -22,24 +23,39 @@
     `hmiddle_factors` fixing the middle-solve LU factor-norm growth to the constant
     1 (stronger than the repo's own provable O(n)); the componentwise bound is
     same-strength but structured differently from Higham's printed GEPP two-term form.
-  - **Theorem 11.7 — CONDITIONAL, not genuinely closed.** Its bounded-growth core
-    is **assumed**, not derived: the `..._unconditional` capstone discharges
-    `hfactor` only from the hypothesis `TriPivotData fp Amax`, whose recursive
-    definition (`BunchTridiagonalHFactorCh11Closure`:446) demands that *every*
-    rounded Schur complement's entries stay `≤ σ_ℓ ≤ Amax` — i.e. the very
-    bounded-growth conclusion. `TriPivotData` is never derived (it occurs only as a
-    hypothesis; `_consOne/_consTwo` are `Iff.rfl`); the per-step corner bound's
-    `Amax/α` correction gives new corner `≤ (1+γ₃)(1+1/α)Amax ≈ 2.6 Amax > Amax`,
-    so a fixed-`Amax` invariant provably does not close — deriving it needs the
-    amortized/fixed-original-scale growth argument (a genuine research-grade
-    development, the "Step G/F" the growth-module notes leave open). The delivered
-    coefficient is also `c = 20n(1+c₀)`, **linear in n**, not the printed constant.
+  - **Theorem 11.7 — CLOSED (bounded growth now DERIVED).** The former gap — the
+    bounded-growth core was *assumed* via `TriPivotData`, whose recursive definition
+    baked the growth conclusion in as a hypothesis clause (`every` rounded Schur
+    complement's entries `≤ σ_ℓ ≤ Amax`) — is resolved. The replacement hypothesis
+    `TriGrowthData fp M0 s A` (`BunchTridiagonalGrowthInvariantCh11Closure`) records
+    **only** the Algorithm-11.6 pivot *decisions* taken at the FIXED global scale
+    `σ = M0 = ‖A‖_M`; it has **no** entry-bound clause. From `TriGrowthData` plus the
+    input bound `|A i j| ≤ M0` **alone**: `growth_offcorner` derives the off-corner
+    band bound (each 2×2/1×1 stage grows the trailing band by at most one rounding
+    `(1+u)`, so `≤ (1+γ_{#stages})M0 =: τmax` via a decoupled test-scale/entry-bound
+    invariant), and `hfactor_derived` then derives the factor-norm bound
+    `|L̂||D̂||L̂ᵀ| ≤ c₀·M0` with the explicit growth factor `c₀ = bunchTriGrowthC0 fp s M0`.
+    The capstone `higham11_7_bunch_tridiagonal_backward_error_growth_derived`
+    (`BunchTridiagonalCapstoneCh11Closure`) discharges the former `hfactor`
+    hypothesis outright, leaving only the two legitimate Higham source hypotheses
+    (`FlMixedPivots` per-stage (11.5) coupling, and the (11.5) solve backward error
+    `hsolve`). The element-growth factor `c₀` is a genuine **constant** in the
+    printed regime `n·u ≤ 1/100` — the corner correction is `(1+γ₃)(1+1/α)` and the
+    band factor `(1+γ_{#stages})`, both bounded by an absolute constant there,
+    independent of the matrix — matching Higham's bounded-element-growth claim. The
+    assembled coefficient `c = 20n(1+c₀)` carries the standard `O(n)`
+    normwise-from-componentwise LDLᵀ-assembly factor (Higham's `c·u·‖A‖_M`, the
+    plan's Option A). The prior blocker's `(1+γ₃)(1+1/α)Amax > Amax` obstruction is
+    exactly why a *fixed-`Amax`* invariant fails; the resolution is the decoupled
+    invariant (test scale `σ = M0` fixed, entry budget `τmax ≥ M0` grown one
+    `(1+u)`/stage), which is what `TriGrowthData`/`growth_offcorner` implement.
 
   Everything above is build-clean and axiom-clean (`[propext, Classical.choice,
-  Quot.sound]`; no `sorry`/`admit`/`axiom`/`native_decide` in any of the 16
-  `*Ch11Closure.lean` modules); the 11.7 and 11.8 gaps are **hypothesis-strength,
-  not soundness**. The five *algorithms* (11.1, 11.2, 11.5, 11.6, 11.9) are honest
-  decision predicates plus genuinely-proved pivot-parameter/growth lemmas.
+  Quot.sound]`; no `sorry`/`admit`/`axiom`/`native_decide` in any of the 18
+  `*Ch11Closure.lean` modules); the sole remaining caveat is **Theorem 11.8's**
+  disclosed middle-solve idealization (hypothesis-strength, not soundness). The
+  five *algorithms* (11.1, 11.2, 11.5, 11.6, 11.9) are honest decision predicates
+  plus genuinely-proved pivot-parameter/growth lemmas.
 
 Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
 (chapter-label surface); reusable definitions and proofs in
@@ -68,9 +84,12 @@ middle-solve hypothesis, consuming only schedule-local Higham-(11.5) middle
 data plus a printed-radius scalar comparison when the exact derived solve-chain
 radius is collapsed to `20n(1+c₀)u‖A‖`.  (Correction 2026-07-18: this wrapper
 still routes the tridiagonal factor-norm through `hfactor_bound`←`TriPivotData`,
-whose bounded-growth content is **assumed, not derived**; the 11.7 gate is
-therefore **CONDITIONAL**, not full PASS — see the corrected gate line at the top
-and the "Closure audit (2026-07-18)" section.)
+whose bounded-growth content is **assumed, not derived**; the 11.7 gate was
+therefore reduced to CONDITIONAL. **Superseded 2026-07-18** — the bounded growth
+is now genuinely derived through `TriGrowthData`/`growth_offcorner`/`hfactor_derived`
+and composed by the capstone `higham11_7_bunch_tridiagonal_backward_error_growth_derived`,
+so the gate is restored to PASS; see "Closure (2026-07-18, Theorem 11.7 growth
+derived)".)
 The same module also exposes a generic scalar-radius adapter for any coefficient
 `C` that bounds the derived factor and solve radii by `C u ‖A‖`.
 Theorem 11.4 is now closed by `BunchKaufmanSolveCh11Closure`; Theorem 11.8
@@ -181,6 +200,7 @@ route summarized in the closure-module section below.
 | Thm 11.8 non-exact inverse-entry `T`-norm source-norm aliases | `higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_direct_middle_endpoint_source_norm_of_T_hat_norm_cap_of_inverse_entry_bound`, `higham11_8_AasenSpec_identity_source_prefix_T_norm_cap_checkerboard_endpoint_source_norm_of_T_hat_norm_cap_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_direct_middle_endpoint_source_norm_of_T_hat_norm_cap_of_inverse_entry_bound`, `higham11_8_AasenSpec_id_source_prefix_T_norm_cap_checkerboard_endpoint_source_norm_of_T_hat_norm_cap_of_inverse_entry_bound`, their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases, the matching identity and `σ := id` `..._source_norm_relative_growth_cap_of_inverse_entry_bound` aliases with source-smallness forms, and the direct-cap / relative-growth `..._of_H_eq_T_subdiagonal_ne_zero` identity / `σ := id` forms, including direct-cap and relative-growth source-smallness aliases | Ch11 | **new this session**; transports the ordinary non-exact direct-middle and checkerboard inverse-entry `T`-norm endpoints from the `‖T_hat‖∞` predicate to the source `‖A‖∞` predicate using either a computed-middle cap `‖T_hat‖∞≤κA‖A‖∞` with `κA≤4^(n−2)` or the relative-growth scalar cap `(1+γ_n)κA≤4^(n−2)` with `0≤κA`. The wrappers preserve the relative `T_hat` comparison, direct `T`-norm cap, middle-product/checkerboard certificate, inverse-entry cap, source-prefix update/budget facts, source-smallness aliases, identity-permutation aliases, and direct-cap / relative-growth `H=T Lᵀ` recurrence-derived routes. |
 | Thm 11.8 exact-`T_hat` sigma-id `H=T Lᵀ` inverse-entry aliases | `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_scaled_unit_checkerboard_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_scaled_unit_direct_middle_endpoint_of_inverse_entry_bound_of_H_eq_T_subdiagonal_ne_zero`, and their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases | Ch11 | **new this session**; specializes the exact-`T_hat` direct-middle and checkerboard inverse-entry endpoints whose Aasen recurrences are derived from `H=T Lᵀ` and concrete `T` subdiagonal nonzeros to `σ := id`, discharging the identity-permutation proof by reflexivity in both ordinary and normalized scaled-unit source-smallness forms. The exact middle equality, inverse-entry cap, middle-product/checkerboard certificate, and rounded source-prefix update/budget facts remain explicit. |
 | Thm 11.8 exact-`T_hat` sigma-id relative-middle aliases | `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_colDiagDom_middle_coeff_printed_gamma_validity`, `higham11_8_AasenSpec_id_source_prefix_T_hat_eq_T_relative_rowDiagDom_middle_coeff_printed_gamma_validity`, their `_of_unit_roundoff_bound` / `_of_u_le_cap` aliases, the column/row `..._of_simplified_coeff` aliases, and the column/row inverse-entry simplified-coefficient aliases with source-smallness forms | Ch11 | **new this session**; specializes the exact-`T_hat` column- and row-dominant relative middle routes to `σ := id`, discharging the identity-permutation proof by reflexivity for the printed-validity, source-smallness, simplified-coefficient, and inverse-entry endpoint surfaces. The exact `T_hat=T` equality, LU dominance certificate, inverse-entry cap where applicable, rounded source-prefix update/budget facts, and scalar coefficient obligations remain explicit. |
+| **Thm 11.7 bounded-growth DERIVATION + growth-derived capstone (closes 11.7)** | `TriGrowthData`, `TriGrowthBounded`, `growth_offcorner`, `flSchurCompl2_offcorner_bound`, `corner_quadform_core_decoupled`, `corner_rowcol_le_core_decoupled`, `pivotPath2Abs_le_decoupled`, `pivotRowPathAbs_le_decoupled`, `pivotColPathAbs_le_decoupled`, `hfactor_bound_decoupled`, `hfactor_derived`, `bunchTriGrowthC0`, `growthBcorner_nonneg`, `growthFactorConst_nonneg`, `higham11_7_bunch_tridiagonal_backward_error_growth_derived` | Ch11 | **new (2026-07-18, growth closure)**; DERIVES the Algorithm-11.6 bounded element growth instead of assuming it. `TriGrowthData` records only the fixed-scale (`σ=M0`) pivot decisions along the schedule (no entry-bound clause); `growth_offcorner` proves the off-corner band stays `≤ (1+u)^{#stages}M0 =: τmax` (decoupled test-scale/entry-budget invariant, resolving the `(1+γ₃)(1+1/α)>1` corner-inflation obstruction); `hfactor_derived` yields `|L̂||D̂||L̂ᵀ| ≤ c₀·M0` with the explicit constant `c₀ = bunchTriGrowthC0`; and the capstone feeds this into the conditional `higham11_7_bunch_tridiagonal_backward_error`, discharging the former `hfactor`/`TriPivotData` hypothesis outright. Only the two legitimate Higham source hypotheses (`FlMixedPivots`, `hsolve`) remain. Axiom-clean, no `sorry`. This is the row that flips 11.7 to CLOSED. |
 | Thm 11.7 coefficient current-local/earlier-branch branch/full/global source endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_currentLocalBlock_and_after_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_currentLocalBlock_and_after_earlier_branch_end`, and `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_currentLocalBlock_and_after_earlier_branch_end`, plus their symmetric-tridiagonal wrappers | Ch11 | **new this session**; the coefficient-sum branch-matrix, full-base-row, and global-base-solve source endpoints now consume the support-reduced current-local-block plus after-earlier-branch-end route directly, deriving the full-row earlier-lift zero certificate internally while leaving the accepted-`2×2` base row equation explicit. |
 | Thm 11.7 uniform current-local/earlier-branch branch/full/global source endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_currentLocalBlock_and_after_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_currentLocalBlock_and_after_earlier_branch_end`, and `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_uniform_coeff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_currentLocalBlock_and_after_earlier_branch_end`, plus their symmetric-tridiagonal wrappers | Ch11 | **new this session**; the uniform-coefficient branch-matrix, full-base-row, and global-base-solve endpoints match the coefficient support-reduced route while specializing the residual-witness budget to the constant `u` vector. |
 | Thm 11.7 scalar current-local/earlier-branch branch/full/global source endpoints | `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_branchMatrix_base_rows_of_currentLocalBlock_and_after_earlier_branch_end`, `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_full_base_rows_of_currentLocalBlock_and_after_earlier_branch_end`, and `higham11_7_tridiagonal_backward_error_interface_of_concrete_path_init_localAssumptions_last_terminal_prefix_lifted_sum_zero_offset_of_residual_witnesses_coeff_roundoff_norm_of_endpoint_terminal_base_secondPivot_global_base_solve_of_currentLocalBlock_and_after_earlier_branch_end`, plus their symmetric-tridiagonal wrappers | Ch11 | **new this session**; the scalar per-branch roundoff-budget branch-matrix, full-base-row, and global-base-solve endpoints consume the broader support-reduced current-local/earlier-branch route while preserving the `u_loc ≤ u` assumptions. |
@@ -12811,6 +12831,52 @@ origin/main `683a2e9b1`. Results:
 
 The earlier "Mark chapter 11 selected scope pass" was therefore an overclaim for
 11.7; the gate is corrected to **CONDITIONAL PASS** above.
+
+## Closure (2026-07-18, Theorem 11.7 growth derived)
+
+The single remaining CONDITIONAL from the closure audit — Theorem 11.7's assumed
+bounded-growth core — is now discharged. The "Step G/F" amortized/fixed-scale
+growth argument the audit flagged as genuinely required has been carried out.
+
+**What was assumed vs. what is now derived.** The old route discharged the
+factor-norm hypothesis `hfactor` from `TriPivotData fp Amax`, a recursive predicate
+whose *own clauses* asserted that every rounded Schur complement's entries stay
+`≤ σ_ℓ ≤ Amax` — the growth conclusion, assumed. The new route replaces this with
+`TriGrowthData fp M0 s A` (`BunchTridiagonalGrowthInvariantCh11Closure`), which
+asserts **only** the objective Algorithm-11.6 facts along the schedule: at each
+stage the trailing matrix is symmetric tridiagonal and the recorded pivot choice
+(`BunchTridiagonalPivotChoice`) is taken at the **fixed global scale** `σ = M0 = ‖A‖_M`.
+There is no entry-bound clause anywhere in `TriGrowthData`.
+
+**The decoupling that makes the constant-growth invariant provable.** A single
+scale cannot both (a) satisfy the anti-monotone 2×2 acceptance test
+`σ|a₁₁| < α·a₂₁²` and (b) bound the *grown* trailing entries, because the corner
+correction inflates the local scale by `(1+γ₃)(1+1/α) ≈ 2.6 > 1` (this is the
+audit's obstruction, and `flSchurCompl2_corner_bound_decoupled` reproduces it).
+The resolution decouples the **test scale** `σ = M0` (fixed, used only in the pivot
+predicate and the `a₂₁²(σ−ατ) ≤ σ·det` determinant lower bound) from an **entry
+budget** `τ ≥ σ` that grows one rounding `(1+u)` per stage. `growth_offcorner`
+proves the off-corner band stays `≤ (1+u)^{#stages}·M0 ≤ (1+γ_{#stages})M0 =: τmax`
+(via `flSchurCompl2_offcorner_bound`, the per-step `(1+u)` fill-in-free bound), and
+`corner_*_le_core_decoupled`/`pivot*PathAbs_le_decoupled` bound the corner and the
+pivot-row/column assembly paths by explicit constants in `M0, τmax, α`.
+
+**Assembly.** `hfactor_bound_decoupled` combines the decoupled corner/path bounds
+over the `PivotSchedule` to give `productEntry(L̂,D̂) ≤ c₀·M0`; `hfactor_derived`
+discharges its off-corner/corner premises from `TriGrowthData` + `|A i j| ≤ M0`
+alone. The capstone
+`higham11_7_bunch_tridiagonal_backward_error_growth_derived`
+(`BunchTridiagonalCapstoneCh11Closure`) feeds `hfactor_derived` into the
+conditional Theorem 11.7 `higham11_7_bunch_tridiagonal_backward_error`, producing
+`L̂D̂L̂ᵀ = A + ΔA₁`, `(A+ΔA₂)x̂ = b`, `|ΔAₖ i j| ≤ 20 n (1+c₀)·u·M0` with the
+explicit **constant** growth factor `c₀ = bunchTriGrowthC0 fp s M0` (bounded by an
+absolute constant when `n·u ≤ 1/100`). Only the two legitimate Higham source
+hypotheses remain (`FlMixedPivots`, `hsolve`).
+
+**Verified.** `lake build LeanFpAnalysis.FP.Algorithms` clean;
+`#print axioms higham11_7_bunch_tridiagonal_backward_error_growth_derived` =
+`[propext, Classical.choice, Quot.sound]` (no `sorry`/`admit`/`axiom`/`native_decide`).
+The gate is restored to **PASS**.
 
 ## Closure Modules
 
