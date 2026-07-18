@@ -174,6 +174,126 @@ theorem fl_diagonal_solve_backward_error (fp : FPModel) (n : ℕ)
       simp only [hDpq, if_neg (show ¬ (p = q) from fun h => hqp h.symm), add_zero, zero_mul]
     · intro hp; exact absurd (Finset.mem_univ p) hp
 
+/-! ## Part 2a — block-diagonal middle-solve assembly
+
+The mixed-pivot middle factor is represented recursively: a leading 1×1 or 2×2
+block, zeros across the block split, and a trailing block-diagonal tail.  The
+following two assembly lemmas turn local block residuals plus a tail residual
+into the full block-diagonal residual with the same componentwise budget. -/
+
+noncomputable def middleBlockDiagConsOne {n : ℕ} (e : ℝ) (Dtail : Fin n → Fin n → ℝ) :
+    Fin (n + 1) → Fin (n + 1) → ℝ :=
+  fun I J =>
+    Fin.cases (Fin.cases e (fun _ => 0) J)
+      (fun i => Fin.cases 0 (fun j => Dtail i j) J) I
+
+noncomputable def middleVecConsOne {n : ℕ} (x0 : ℝ) (xtail : Fin n → ℝ) :
+    Fin (n + 1) → ℝ :=
+  fun I => Fin.cases x0 (fun i => xtail i) I
+
+/-- Assemble a leading scalar middle solve with a trailing block-diagonal solve. -/
+theorem middleBlockDiagConsOne_solve_assemble {n : ℕ}
+    (gammaMid e z0 : ℝ) (Dtail : Fin n → Fin n → ℝ) (ztail : Fin n → ℝ)
+    (w0 Δe : ℝ) (wTail : Fin n → ℝ) (ΔTail : Fin n → Fin n → ℝ)
+    (hheadBound : |Δe| ≤ gammaMid * |e|)
+    (hheadEq : (e + Δe) * w0 = z0)
+    (htailBound : ∀ i j : Fin n, |ΔTail i j| ≤ gammaMid * |Dtail i j|)
+    (htailEq : ∀ i : Fin n, ∑ j : Fin n, (Dtail i j + ΔTail i j) * wTail j = ztail i) :
+    ∃ (w : Fin (n + 1) → ℝ) (ΔD : Fin (n + 1) → Fin (n + 1) → ℝ),
+      (∀ i j : Fin (n + 1), |ΔD i j| ≤ gammaMid * |middleBlockDiagConsOne e Dtail i j|) ∧
+      (∀ p : Fin (n + 1),
+        ∑ q : Fin (n + 1), (middleBlockDiagConsOne e Dtail p q + ΔD p q) * w q
+          = middleVecConsOne z0 ztail p) := by
+  refine ⟨middleVecConsOne w0 wTail, middleBlockDiagConsOne Δe ΔTail, ?_, ?_⟩
+  · intro i j
+    cases i using Fin.cases with
+    | zero =>
+        cases j using Fin.cases with
+        | zero => simpa [middleBlockDiagConsOne] using hheadBound
+        | succ j => simp [middleBlockDiagConsOne]
+    | succ i =>
+        cases j using Fin.cases with
+        | zero => simp [middleBlockDiagConsOne]
+        | succ j => simpa [middleBlockDiagConsOne] using htailBound i j
+  · intro p
+    cases p using Fin.cases with
+    | zero =>
+        rw [Fin.sum_univ_succ]
+        simp [middleBlockDiagConsOne, middleVecConsOne, hheadEq]
+    | succ i =>
+        rw [Fin.sum_univ_succ]
+        simp [middleBlockDiagConsOne, middleVecConsOne, htailEq i]
+
+noncomputable def middleBlockDiagConsTwo {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
+    (Dtail : Fin n → Fin n → ℝ) : Fin (n + 2) → Fin (n + 2) → ℝ :=
+  fun I J =>
+    Fin.cases
+      (Fin.cases (E 0 0) (fun l => Fin.cases (E 0 1) (fun _ => 0) l) J)
+      (fun k => Fin.cases
+        (Fin.cases (E 1 0) (fun l => Fin.cases (E 1 1) (fun _ => 0) l) J)
+        (fun i => Fin.cases 0 (fun l => Fin.cases 0 (fun j => Dtail i j) l) J)
+        k) I
+
+noncomputable def middleVecConsTwo {n : ℕ} (xHead : Fin 2 → ℝ) (xtail : Fin n → ℝ) :
+    Fin (n + 2) → ℝ :=
+  fun I => Fin.cases (xHead 0) (fun k => Fin.cases (xHead 1) (fun i => xtail i) k) I
+
+/-- Assemble a leading 2×2 middle solve with a trailing block-diagonal solve. -/
+theorem middleBlockDiagConsTwo_solve_assemble {n : ℕ}
+    (gammaMid : ℝ) (E : Fin 2 → Fin 2 → ℝ) (Dtail : Fin n → Fin n → ℝ)
+    (zHead : Fin 2 → ℝ) (ztail : Fin n → ℝ)
+    (wHead : Fin 2 → ℝ) (ΔE : Fin 2 → Fin 2 → ℝ)
+    (wTail : Fin n → ℝ) (ΔTail : Fin n → Fin n → ℝ)
+    (hheadBound : ∀ p q : Fin 2, |ΔE p q| ≤ gammaMid * |E p q|)
+    (hheadEq : ∀ p : Fin 2, ∑ q : Fin 2, (E p q + ΔE p q) * wHead q = zHead p)
+    (htailBound : ∀ i j : Fin n, |ΔTail i j| ≤ gammaMid * |Dtail i j|)
+    (htailEq : ∀ i : Fin n, ∑ j : Fin n, (Dtail i j + ΔTail i j) * wTail j = ztail i) :
+    ∃ (w : Fin (n + 2) → ℝ) (ΔD : Fin (n + 2) → Fin (n + 2) → ℝ),
+      (∀ i j : Fin (n + 2), |ΔD i j| ≤ gammaMid * |middleBlockDiagConsTwo E Dtail i j|) ∧
+      (∀ p : Fin (n + 2),
+        ∑ q : Fin (n + 2), (middleBlockDiagConsTwo E Dtail p q + ΔD p q) * w q
+          = middleVecConsTwo zHead ztail p) := by
+  refine ⟨middleVecConsTwo wHead wTail, middleBlockDiagConsTwo ΔE ΔTail, ?_, ?_⟩
+  · intro i j
+    refine Fin.cases ?_ (fun iTail => ?_) i
+    · refine Fin.cases ?_ (fun jTail => ?_) j
+      · simpa [middleBlockDiagConsTwo] using hheadBound 0 0
+      · refine Fin.cases ?_ (fun _ => ?_) jTail
+        · simpa [middleBlockDiagConsTwo] using hheadBound 0 1
+        · change |(0 : ℝ)| ≤ gammaMid * |(0 : ℝ)|
+          simp
+    · refine Fin.cases ?_ (fun iTail2 => ?_) iTail
+      · refine Fin.cases ?_ (fun jTail => ?_) j
+        · simpa [middleBlockDiagConsTwo] using hheadBound 1 0
+        · refine Fin.cases ?_ (fun _ => ?_) jTail
+          · simpa [middleBlockDiagConsTwo] using hheadBound 1 1
+          · change |(0 : ℝ)| ≤ gammaMid * |(0 : ℝ)|
+            simp
+      · refine Fin.cases ?_ (fun jTail => ?_) j
+        · change |(0 : ℝ)| ≤ gammaMid * |(0 : ℝ)|
+          simp
+        · refine Fin.cases ?_ (fun jTail2 => ?_) jTail
+          · change |(0 : ℝ)| ≤ gammaMid * |(0 : ℝ)|
+            simp
+          · simpa [middleBlockDiagConsTwo] using htailBound iTail2 jTail2
+  · intro p
+    refine Fin.cases ?_ (fun pTail => ?_) p
+    · rw [sum_fin_add_two]
+      have h0 := hheadEq 0
+      rw [Fin.sum_univ_two] at h0
+      simpa [middleBlockDiagConsTwo, middleVecConsTwo] using h0
+    · refine Fin.cases ?_ (fun i => ?_) pTail
+      · rw [sum_fin_add_two]
+        have h1 := hheadEq 1
+        rw [Fin.sum_univ_two] at h1
+        simp only [middleBlockDiagConsTwo, middleVecConsTwo, Fin.cases_zero, Fin.cases_succ,
+          zero_mul, Finset.sum_const_zero, add_zero]
+        exact h1
+      · rw [sum_fin_add_two]
+        simp only [middleBlockDiagConsTwo, middleVecConsTwo, Fin.cases_zero, Fin.cases_succ,
+          zero_mul, zero_add, add_zero]
+        exact htailEq i
+
 /-! ## Part 2b — the solve-chain envelope is a scalar multiple of `|L̂||D̂||L̂ᵀ|`
 
 The derived Aasen collapsed budget for the middle factor `D̂` with symmetric
