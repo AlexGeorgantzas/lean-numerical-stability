@@ -143,4 +143,68 @@ theorem higham11_7_bunch_tridiagonal_backward_error_growth_derived
     (bunchTriGrowthC0 fp s M0) cSolve cStage hAmax hM0.le hc0 hcS0 hcS40 hcSt0 hcSt5
     hsmall hpiv hfac hsolve
 
+/-- A pivot schedule on a dimension-`k` matrix takes at most `k` stages (each stage
+    consumes one or two dimensions). -/
+theorem stages_le : ∀ {k : ℕ} (s : PivotSchedule k), stages s ≤ k
+  | _, .nil => Nat.le_refl 0
+  | _, .consOne s => by have h := stages_le s; simp only [stages_consOne]; omega
+  | _, .consTwo s => by have h := stages_le s; simp only [stages_consTwo]; omega
+
+/-- `1/50 < α = (√5−1)/2`: a crude numeric lower bound on the Bunch tridiagonal
+    threshold, from `α² = 1 − α` and `α > 0`. -/
+theorem one_div_fifty_lt_bunchTridiagonalAlpha :
+    (1 : ℝ) / 50 < bunchTridiagonalAlpha := by
+  have hsq := bunch_tridiagonal_alpha_sq
+  have hpos := bunch_tridiagonal_alpha_pos
+  nlinarith [hsq, hpos]
+
+/-- **Theorem 11.7 (Bunch, symmetric tridiagonal) — self-contained growth-derived
+    capstone.**  Identical to `higham11_7_bunch_tridiagonal_backward_error_growth_derived`
+    except the pivot-threshold smallness guard `hγα : γ_{#stages} < α` is **derived**
+    from the printed regime hypothesis `hsmall : n·u ≤ 1/100` (via `stages s ≤ n` and
+    `γ_{#stages} ≤ 2·(#stages)·u ≤ 2 n u ≤ 1/50 < α`).  So the entire closure rests on
+    exactly Higham's standard inputs — the (11.5) per-stage coupling `FlMixedPivots`,
+    the (11.5) solve backward error `hsolve`, and the single normwise smallness
+    `n·u ≤ 1/100` — with the constant element growth `c₀ = bunchTriGrowthC0 fp s M0`
+    fully derived. -/
+theorem higham11_7_bunch_tridiagonal_backward_error_growth_derived_of_small
+    (fp : FPModel) (hval : gammaValid fp 3)
+    {n : ℕ} (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
+    (s : PivotSchedule n) (M0 cSolve cStage : ℝ)
+    (hM0 : 0 < M0)
+    (hAmax : ∀ i j : Fin n, |A i j| ≤ M0)
+    (hcS0 : 0 ≤ cSolve) (hcS40 : cSolve ≤ 40)
+    (hcSt0 : 0 ≤ cStage) (hcSt5 : cStage ≤ 5)
+    (hsmall : (n : ℝ) * fp.u ≤ 1 / 100)
+    (hvalstages : gammaValid fp (stages s)) (hval1 : gammaValid fp 1)
+    (hdata : TriGrowthData fp M0 s A)
+    (hpiv : FlMixedPivots fp cSolve cStage s A)
+    (hsolve : ∃ ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n,
+        |ΔA2 i j| ≤ 20 * (n : ℝ) * (1 + bunchTriGrowthC0 fp s M0) * fp.u * M0) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i)) :
+    ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n,
+        |ΔA1 i j| ≤ 20 * (n : ℝ) * (1 + bunchTriGrowthC0 fp s M0) * fp.u * M0) ∧
+      (∀ i j : Fin n,
+        |ΔA2 i j| ≤ 20 * (n : ℝ) * (1 + bunchTriGrowthC0 fp s M0) * fp.u * M0) ∧
+      (∀ i j : Fin n,
+        (∑ k₁, ∑ k₂, flMixedL fp s A i k₁ * flMixedD fp s A k₁ k₂ * flMixedL fp s A j k₂)
+          = A i j + ΔA1 i j) ∧
+      (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA2 i j) * x_hat j = b i) := by
+  -- Derive the pivot-threshold guard hγα from the printed smallness regime.
+  have hun : (0 : ℝ) ≤ fp.u := fp.u_nonneg
+  have hstages_le : (stages s : ℝ) ≤ (n : ℝ) := by exact_mod_cast stages_le s
+  have hprod : (stages s : ℝ) * fp.u ≤ (n : ℝ) * fp.u :=
+    mul_le_mul_of_nonneg_right hstages_le hun
+  have hstages_half : (stages s : ℝ) * fp.u ≤ 1 / 2 := by linarith [hsmall]
+  have h2 : gamma fp (stages s) ≤ 2 * ((stages s : ℝ) * fp.u) :=
+    gamma_le_two_mul_n_u_of_nu_le_half fp (stages s) hstages_half
+  have hγα : gamma fp (stages s) < bunchTridiagonalAlpha := by
+    have hα50 := one_div_fifty_lt_bunchTridiagonalAlpha
+    linarith [h2, hprod, hsmall, hα50]
+  exact higham11_7_bunch_tridiagonal_backward_error_growth_derived fp hval A b x_hat s
+    M0 cSolve cStage hM0 hAmax hcS0 hcS40 hcSt0 hcSt5 hsmall hvalstages hval1 hγα
+    hdata hpiv hsolve
+
 end LeanFpAnalysis.FP.Ch11Closure.TriGrowthInv
