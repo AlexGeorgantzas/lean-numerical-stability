@@ -1042,6 +1042,50 @@ theorem higham11_7_bunch_tridiagonal_backward_error_printed_of_higham115_middle
     (fun i j => (hΔA2 i j).trans hsolveBudget),
     hfac, hsolve⟩
 
+/-- **Theorem 11.7 scalar-radius adapter with local Higham (11.5) middle data.**
+    This is the source-facing `c·u·Amax` shape: any scalar coefficient `C` that
+    dominates both the derived factorization radius and the full solve-chain
+    radius yields the same uniform bound for `ΔA₁` and `ΔA₂`. -/
+theorem higham11_7_bunch_tridiagonal_backward_error_scalar_radius_of_higham115_middle
+    (fp : FPModel) (hval : gammaValid fp 3)
+    {n : ℕ} (s : PivotSchedule n) (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hvaln : gammaValid fp n)
+    (Amax cSolve cStage gammaMid C : ℝ)
+    (hAmax : ∀ i j : Fin n, |A i j| ≤ Amax) (hAmax0 : 0 ≤ Amax)
+    (hcS0 : 0 ≤ cSolve) (hcS40 : cSolve ≤ 40)
+    (hcSt0 : 0 ≤ cStage) (hcSt5 : cStage ≤ 5)
+    (hscalar : gamma fp 1 ≤ gammaMid) (h2 : cSolve * fp.u ≤ gammaMid)
+    (hsmall : (n : ℝ) * fp.u ≤ 1 / 100)
+    (hp : FlMixedPivots fp cSolve cStage s A)
+    (hdata : TriPivotData fp Amax s A)
+    (hblocks : MixedMiddleSolveHigham115Blocks fp cSolve s A
+      (fl_forwardSub fp n (flMixedL fp s A) b))
+    (hfactorBudget :
+      pPoly n * fp.u * ((1 + hfactorConst fp) * Amax) ≤ C * fp.u * Amax)
+    (hsolveBudget :
+      pPoly n * fp.u * ((1 + hfactorConst fp) * Amax)
+          + ((2 * gamma fp n + gamma fp n ^ 2)
+              + (1 + 2 * gamma fp n + gamma fp n ^ 2) * gammaMid)
+                * (hfactorConst fp * Amax)
+        ≤ C * fp.u * Amax) :
+    ∃ w_hat : Fin n → ℝ, ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ C * fp.u * Amax) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ C * fp.u * Amax) ∧
+      (∀ i j : Fin n,
+        (∑ k₁, ∑ k₂, flMixedL fp s A i k₁ * flMixedD fp s A k₁ k₂ * flMixedL fp s A j k₂)
+          = A i j + ΔA1 i j) ∧
+      (∀ i : Fin n,
+        ∑ j : Fin n,
+          (A i j + ΔA2 i j) * fl_backSub fp n (fun r c => flMixedL fp s A c r) w_hat j = b i) := by
+  obtain ⟨w_hat, ΔA1, ΔA2, hΔA1, hΔA2, hfac, hsolve⟩ :=
+    higham11_7_bunch_tridiagonal_solve_backward_error_normwise_unconditional_of_higham115_middle
+      fp hval s A b hvaln Amax cSolve cStage gammaMid hAmax hAmax0
+      hcS0 hcS40 hcSt0 hcSt5 hscalar h2 hsmall hp hdata hblocks
+  exact ⟨w_hat, ΔA1, ΔA2,
+    (fun i j => (hΔA1 i j).trans hfactorBudget),
+    (fun i j => (hΔA2 i j).trans hsolveBudget),
+    hfac, hsolve⟩
+
 /-! ## Precise honesty status
 
 **Fully derived here:**
