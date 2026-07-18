@@ -1028,4 +1028,96 @@ theorem pivotColPathAbs_le_decoupled (fp : FPModel) (σ τ : ℝ) (hσpos : 0 < 
         | 1 => exact hc1
       · rw [pivotColPathAbs_eq_zero_of_ne_corner fp A hA i q hi]; exact hRC0
 
+/-! ## Session 7 — the growth invariant (off-corner entries stay ≤ τmax) -/
+
+/-- Number of pivot stages (constructors) in a schedule. -/
+def stages : {k : ℕ} → PivotSchedule k → ℕ
+  | _, .nil => 0
+  | _, .consOne s => stages s + 1
+  | _, .consTwo s => stages s + 1
+
+@[simp] theorem stages_consOne {n : ℕ} (s : PivotSchedule n) :
+    stages s.consOne = stages s + 1 := rfl
+@[simp] theorem stages_consTwo {n : ℕ} (s : PivotSchedule n) :
+    stages s.consTwo = stages s + 1 := rfl
+
+/-- Fixed-`M₀` Bunch run with the derived uniform off-corner entry bound `τmax`. -/
+def TriGrowthBounded (fp : FPModel) (M0 τmax : ℝ) :
+    {k : ℕ} → PivotSchedule k → (Fin k → Fin k → ℝ) → Prop
+  | 0, .nil, _ => True
+  | n + 1, .consOne s, A =>
+      IsSymTridiagonal (n + 1) A ∧ A 0 0 ≠ 0 ∧
+      (∀ i : Fin n, BunchTridiagonalPivotChoice M0 (A 0 0) (A i.succ 0) PivotSize.one) ∧
+      (∀ i j : Fin (n + 1), i.val ≠ 0 ∨ j.val ≠ 0 → |A i j| ≤ τmax) ∧
+      TriGrowthBounded fp M0 τmax s (flSchurCompl n fp A)
+  | n + 2, .consTwo s, A =>
+      IsSymTridiagonal (n + 2) A ∧
+      BunchTridiagonalPivotChoice M0 (A 0 0) (A (oneIdx n) 0) PivotSize.two ∧
+      (∀ i j : Fin (n + 2), i.val ≠ 0 ∨ j.val ≠ 0 → |A i j| ≤ τmax) ∧
+      TriGrowthBounded fp M0 τmax s (flSchurCompl2 n fp A)
+
+/-- **Growth invariant.**  A fixed-`M₀` Bunch run whose off-corner entries start
+`≤ B`, with the budget `(1+u)^(#stages)·B ≤ τmax`, has all off-corner entries of
+every reduced matrix `≤ τmax`.  Off-corner entries grow by exactly one `(1+u)` per
+stage (`flSchurCompl(2)_offcorner_bound`), which the budget absorbs. -/
+theorem growth_offcorner (fp : FPModel) (M0 τmax : ℝ) :
+    ∀ {k : ℕ} (s : PivotSchedule k) (A : Fin k → Fin k → ℝ) (B : ℝ),
+      TriGrowthData fp M0 s A →
+      (∀ i j : Fin k, i.val ≠ 0 ∨ j.val ≠ 0 → |A i j| ≤ B) → 0 ≤ B →
+      (1 + fp.u) ^ stages s * B ≤ τmax →
+      TriGrowthBounded fp M0 τmax s A := by
+  intro k s
+  induction s with
+  | nil => intro A B _ _ _ _; exact True.intro
+  | @consOne n s ih =>
+      intro A B hdata hoff hB0 hbud
+      rw [TriGrowthData_consOne] at hdata
+      obtain ⟨hA, hA00, hchoices, hrec⟩ := hdata
+      have hupos : (0 : ℝ) ≤ 1 + fp.u := by have := fp.u_nonneg; linarith
+      have hu1 : (1 : ℝ) ≤ 1 + fp.u := by have := fp.u_nonneg; linarith
+      have hpow1 : (1 : ℝ) ≤ (1 + fp.u) ^ stages s.consOne := one_le_pow₀ hu1
+      have hBle : B ≤ τmax := le_trans (le_mul_of_one_le_left hB0 hpow1) hbud
+      have hoff' : ∀ i j : Fin (n + 1), i.val ≠ 0 ∨ j.val ≠ 0 → |A i j| ≤ τmax :=
+        fun i j h => le_trans (hoff i j h) hBle
+      -- off-corner preservation for the Schur complement
+      have hoffS : ∀ i j : Fin n, i.val ≠ 0 ∨ j.val ≠ 0 →
+          |flSchurCompl n fp A i j| ≤ (1 + fp.u) * B := by
+        intro i j hne
+        refine le_trans (flSchurCompl_offcorner_bound fp A hA hA00 i j hne) ?_
+        have : |A i.succ j.succ| ≤ B := hoff i.succ j.succ (Or.inl (by simp [Fin.val_succ]))
+        exact mul_le_mul_of_nonneg_left this hupos
+      have hbud' : (1 + fp.u) ^ stages s * ((1 + fp.u) * B) ≤ τmax := by
+        have : (1 + fp.u) ^ stages s * ((1 + fp.u) * B)
+            = (1 + fp.u) ^ stages s.consOne * B := by
+          rw [stages_consOne, pow_succ]; ring
+        rw [this]; exact hbud
+      have hB0' : 0 ≤ (1 + fp.u) * B := mul_nonneg hupos hB0
+      refine ⟨hA, hA00, hchoices, hoff', ?_⟩
+      exact ih (flSchurCompl n fp A) ((1 + fp.u) * B) hrec hoffS hB0' hbud'
+  | @consTwo n s ih =>
+      intro A B hdata hoff hB0 hbud
+      rw [TriGrowthData_consTwo] at hdata
+      obtain ⟨hA, hchoice, hrec⟩ := hdata
+      have hupos : (0 : ℝ) ≤ 1 + fp.u := by have := fp.u_nonneg; linarith
+      have hu1 : (1 : ℝ) ≤ 1 + fp.u := by have := fp.u_nonneg; linarith
+      have hpow1 : (1 : ℝ) ≤ (1 + fp.u) ^ stages s.consTwo := one_le_pow₀ hu1
+      have hBle : B ≤ τmax := le_trans (le_mul_of_one_le_left hB0 hpow1) hbud
+      have hoff' : ∀ i j : Fin (n + 2), i.val ≠ 0 ∨ j.val ≠ 0 → |A i j| ≤ τmax :=
+        fun i j h => le_trans (hoff i j h) hBle
+      have hoffS : ∀ i j : Fin n, i.val ≠ 0 ∨ j.val ≠ 0 →
+          |flSchurCompl2 n fp A i j| ≤ (1 + fp.u) * B := by
+        intro i j hne
+        refine le_trans (flSchurCompl2_offcorner_bound fp A hA i j hne) ?_
+        have : |A i.succ.succ j.succ.succ| ≤ B :=
+          hoff i.succ.succ j.succ.succ (Or.inl (by simp only [Fin.val_succ, Fin.val_zero]; omega))
+        exact mul_le_mul_of_nonneg_left this hupos
+      have hbud' : (1 + fp.u) ^ stages s * ((1 + fp.u) * B) ≤ τmax := by
+        have : (1 + fp.u) ^ stages s * ((1 + fp.u) * B)
+            = (1 + fp.u) ^ stages s.consTwo * B := by
+          rw [stages_consTwo, pow_succ]; ring
+        rw [this]; exact hbud
+      have hB0' : 0 ≤ (1 + fp.u) * B := mul_nonneg hupos hB0
+      refine ⟨hA, hchoice, hoff', ?_⟩
+      exact ih (flSchurCompl2 n fp A) ((1 + fp.u) * B) hrec hoffS hB0' hbud'
+
 end LeanFpAnalysis.FP.Ch11Closure.TriGrowthInv
