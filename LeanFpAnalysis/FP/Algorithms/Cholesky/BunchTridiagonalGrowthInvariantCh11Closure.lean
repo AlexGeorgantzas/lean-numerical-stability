@@ -290,4 +290,102 @@ theorem flSchurCompl2_corner_bound_decoupled (fp : FPModel) (hval : gammaValid f
         apply mul_le_mul_of_nonneg_left _ (by linarith)
         linarith [hcorr]
 
+/-! ## Session 3 — growth-invariant prerequisites
+
+Building blocks for the schedule-level growth induction (Route B): the sharper `α`
+bound needed for the slack condition, the `(1+u)^ℓ` band-growth cap, the 1×1
+off-corner reduction (the missing analogue of `flSchurCompl2_eq_sub_zero_of_ne_corner`),
+and the fixed-`M₀` run predicate `TriGrowthData`. -/
+
+/-- Sharper bound `α < 3/4` (from `√5 < 5/2`), needed for the slack
+`α·(1+u)^ℓ < 1` (since `α·(1+γₙ) ≤ (3/4)(1+1/99) < 1`). -/
+theorem alpha_lt_three_quarters : bunchTridiagonalAlpha < 3 / 4 := by
+  unfold bunchTridiagonalAlpha
+  have h : Real.sqrt 5 < 5 / 2 := (Real.sqrt_lt' (by norm_num)).mpr (by norm_num)
+  linarith
+
+/-- **Band-growth cap.**  Off-corner entries pick up one `(1+u)` per stage, so over
+`ℓ ≤ n` stages the accumulated factor is `≤ 1 + γₙ`. -/
+theorem one_add_u_pow_le (fp : FPModel) {n l : ℕ} (hln : l ≤ n)
+    (hvaln : gammaValid fp n) (hval1 : gammaValid fp 1) :
+    (1 + fp.u) ^ l ≤ 1 + gamma fp n := by
+  have hu1 : fp.u < 1 := by have h := hval1; unfold gammaValid at h; simpa using h
+  have hu_le : fp.u ≤ gamma fp 1 := by
+    unfold gamma
+    rw [Nat.cast_one, one_mul, le_div_iff₀ (by linarith : (0 : ℝ) < 1 - fp.u)]
+    nlinarith [fp.u_nonneg, sq_nonneg fp.u]
+  have hvaln1 : gammaValid fp (n * 1) := by rw [Nat.mul_one]; exact hvaln
+  have hn := one_add_pow_sub_one_le_gamma_mul_of_le_gamma fp n 1 fp.u_nonneg hu_le hvaln1
+  rw [Nat.mul_one] at hn
+  have hbase : (1 : ℝ) ≤ 1 + fp.u := by have := fp.u_nonneg; linarith
+  have hpow : (1 + fp.u) ^ l ≤ (1 + fp.u) ^ n := pow_le_pow_right₀ hbase hln
+  linarith [hpow, hn]
+
+/-- **1×1 off-corner reduction** (the missing analogue of
+`flSchurCompl2_eq_sub_zero_of_ne_corner`).  For a symmetric tridiagonal `A` with
+nonzero pivot, every non-corner entry of the 1×1 Schur complement is the trailing
+datum through a single subtraction from zero. -/
+theorem flSchurCompl_eq_sub_zero_of_ne_corner (fp : FPModel) {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) (hA : IsSymTridiagonal (n + 1) A)
+    (hA00 : A 0 0 ≠ 0) (i j : Fin n) (hne : i.val ≠ 0 ∨ j.val ≠ 0) :
+    flSchurCompl n fp A i j = fp.fl_sub (A i.succ j.succ) 0 := by
+  have hcorr : fp.fl_mul (fp.fl_div (A i.succ 0) (A 0 0)) (A 0 j.succ) = 0 := by
+    rcases Nat.eq_zero_or_pos j.val with hj | hj
+    · have hi1 : 1 ≤ i.val := by rcases hne with h | h <;> omega
+      have hci0 : A i.succ 0 = 0 := by
+        apply hA.2; right; simp only [Fin.val_succ, Fin.val_zero]; omega
+      rw [hci0, fl_div_zero_left fp (A 0 0) hA00, fl_mul_left_zero]
+    · have hcj : A 0 j.succ = 0 := by
+        apply hA.2; left; simp only [Fin.val_succ, Fin.val_zero]; omega
+      rw [hcj, fl_mul_right_zero]
+  unfold flSchurCompl
+  rw [hcorr]
+
+/-- **Off-corner band-growth step (1×1).**  `|flSchurCompl A i j| ≤ (1+u)·|A_{i+1,j+1}|`
+for `(i,j) ≠ (0,0)` — the 1×1 analogue of `flSchurCompl2_offcorner_bound`. -/
+theorem flSchurCompl_offcorner_bound (fp : FPModel) {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) (hA : IsSymTridiagonal (n + 1) A)
+    (hA00 : A 0 0 ≠ 0) (i j : Fin n) (hne : i.val ≠ 0 ∨ j.val ≠ 0) :
+    |flSchurCompl n fp A i j| ≤ (1 + fp.u) * |A i.succ j.succ| := by
+  rw [flSchurCompl_eq_sub_zero_of_ne_corner fp A hA hA00 i j hne]
+  obtain ⟨δ, hδ, heq⟩ := fl_sub_zero_right fp (A i.succ j.succ)
+  rw [heq, abs_mul]
+  have h1 : |1 + δ| ≤ 1 + fp.u := by
+    calc |1 + δ| ≤ |(1 : ℝ)| + |δ| := abs_add_le _ _
+      _ ≤ 1 + fp.u := by rw [abs_one]; linarith
+  calc |A i.succ j.succ| * |1 + δ| ≤ |A i.succ j.succ| * (1 + fp.u) :=
+        mul_le_mul_of_nonneg_left h1 (abs_nonneg _)
+    _ = (1 + fp.u) * |A i.succ j.succ| := by ring
+
+/-- **Fixed-`M₀` Bunch run predicate.**  Records, along the schedule, only the
+structural facts and the Algorithm-11.6 pivot choices *at the fixed scale
+`σ = M₀ = ‖A‖_M`* (Higham's "compute σ once").  Unlike `TriPivotData` it does NOT
+bundle a per-stage "σ bounds all entries" clause — the entry bound `(1+u)^ℓ·M₀` is
+the *conclusion* of the growth induction, not a hypothesis. -/
+def TriGrowthData (fp : FPModel) (M0 : ℝ) :
+    {k : ℕ} → PivotSchedule k → (Fin k → Fin k → ℝ) → Prop
+  | 0, .nil, _ => True
+  | n + 1, .consOne s, A =>
+      IsSymTridiagonal (n + 1) A ∧ A 0 0 ≠ 0 ∧
+      (∀ i : Fin n, BunchTridiagonalPivotChoice M0 (A 0 0) (A i.succ 0) PivotSize.one) ∧
+      TriGrowthData fp M0 s (flSchurCompl n fp A)
+  | n + 2, .consTwo s, A =>
+      IsSymTridiagonal (n + 2) A ∧
+      BunchTridiagonalPivotChoice M0 (A 0 0) (A (oneIdx n) 0) PivotSize.two ∧
+      TriGrowthData fp M0 s (flSchurCompl2 n fp A)
+
+@[simp] theorem TriGrowthData_consOne (fp : FPModel) (M0 : ℝ) {n : ℕ}
+    (s : PivotSchedule n) (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    TriGrowthData fp M0 s.consOne A ↔
+      (IsSymTridiagonal (n + 1) A ∧ A 0 0 ≠ 0 ∧
+        (∀ i : Fin n, BunchTridiagonalPivotChoice M0 (A 0 0) (A i.succ 0) PivotSize.one) ∧
+        TriGrowthData fp M0 s (flSchurCompl n fp A)) := Iff.rfl
+
+@[simp] theorem TriGrowthData_consTwo (fp : FPModel) (M0 : ℝ) {n : ℕ}
+    (s : PivotSchedule n) (A : Fin (n + 2) → Fin (n + 2) → ℝ) :
+    TriGrowthData fp M0 s.consTwo A ↔
+      (IsSymTridiagonal (n + 2) A ∧
+        BunchTridiagonalPivotChoice M0 (A 0 0) (A (oneIdx n) 0) PivotSize.two ∧
+        TriGrowthData fp M0 s (flSchurCompl2 n fp A)) := Iff.rfl
+
 end LeanFpAnalysis.FP.Ch11Closure.TriGrowthInv
