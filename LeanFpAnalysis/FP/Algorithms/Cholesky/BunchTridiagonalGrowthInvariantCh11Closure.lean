@@ -1120,4 +1120,564 @@ theorem growth_offcorner (fp : FPModel) (M0 τmax : ℝ) :
       refine ⟨hA, hchoice, hoff', ?_⟩
       exact ih (flSchurCompl2 n fp A) ((1 + fp.u) * B) hrec hoffS hB0' hbud'
 
+/-! ## Session 8 — the decoupled hfactor_bound and hfactor_derived (crux assembly) -/
+
+/-! ### Re-proved product-entry equalities (originally HFactor-local) -/
+
+theorem productEntry_consTwo_00 (fp : FPModel) {m : ℕ}
+    (s : PivotSchedule m) (A : Fin (m + 2) → Fin (m + 2) → ℝ) :
+    higham11_4_bunchKaufmanProductEntry (m + 2) (flMixedL fp (s.consTwo) A)
+        (flMixedD fp (s.consTwo) A) 0 0 = |A 0 0| := by
+  unfold higham11_4_bunchKaufmanProductEntry
+  simp only [sum_fin_add_two, flMixedL_consTwo_00, flMixedL_consTwo_01, flMixedL_consTwo_0t,
+    flMixedD_consTwo_00,
+    abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one, add_zero,
+    Finset.sum_const_zero]
+
+theorem productEntry_consTwo_01 (fp : FPModel) {m : ℕ}
+    (s : PivotSchedule m) (A : Fin (m + 2) → Fin (m + 2) → ℝ) :
+    higham11_4_bunchKaufmanProductEntry (m + 2) (flMixedL fp (s.consTwo) A)
+        (flMixedD fp (s.consTwo) A) 0 (Fin.succ 0) = |A 0 (oneIdx m)| := by
+  unfold higham11_4_bunchKaufmanProductEntry
+  simp only [sum_fin_add_two, flMixedL_consTwo_00, flMixedL_consTwo_01, flMixedL_consTwo_0t,
+    flMixedL_consTwo_10, flMixedL_consTwo_11, flMixedL_consTwo_1t,
+    flMixedD_consTwo_01,
+    abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add,
+    Finset.sum_const_zero]
+
+theorem productEntry_consTwo_10 (fp : FPModel) {m : ℕ}
+    (s : PivotSchedule m) (A : Fin (m + 2) → Fin (m + 2) → ℝ) :
+    higham11_4_bunchKaufmanProductEntry (m + 2) (flMixedL fp (s.consTwo) A)
+        (flMixedD fp (s.consTwo) A) (Fin.succ 0) 0 = |A (oneIdx m) 0| := by
+  unfold higham11_4_bunchKaufmanProductEntry
+  simp only [sum_fin_add_two, flMixedL_consTwo_00, flMixedL_consTwo_01, flMixedL_consTwo_0t,
+    flMixedL_consTwo_10, flMixedL_consTwo_11, flMixedL_consTwo_1t,
+    flMixedD_consTwo_10,
+    abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add,
+    Finset.sum_const_zero]
+
+theorem productEntry_consTwo_11 (fp : FPModel) {m : ℕ}
+    (s : PivotSchedule m) (A : Fin (m + 2) → Fin (m + 2) → ℝ) :
+    higham11_4_bunchKaufmanProductEntry (m + 2) (flMixedL fp (s.consTwo) A)
+        (flMixedD fp (s.consTwo) A) (Fin.succ 0) (Fin.succ 0) = |A (oneIdx m) (oneIdx m)| := by
+  unfold higham11_4_bunchKaufmanProductEntry
+  simp only [sum_fin_add_two, flMixedL_consTwo_10, flMixedL_consTwo_11, flMixedL_consTwo_1t,
+    flMixedD_consTwo_11,
+    abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add,
+    Finset.sum_const_zero]
+
+theorem productEntry_head00 (fp : FPModel) {n : ℕ}
+    (s : PivotSchedule (n + 1)) (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    higham11_4_bunchKaufmanProductEntry (n + 1) (flMixedL fp s A) (flMixedD fp s A) 0 0
+      = |A 0 0| := by
+  cases s with
+  | consOne s' =>
+      unfold higham11_4_bunchKaufmanProductEntry
+      simp only [Fin.sum_univ_succ, flMixedL_consOne_00, flMixedL_consOne_0s,
+        flMixedD_consOne_00,
+        abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one, add_zero,
+        Finset.sum_const_zero]
+  | consTwo s' =>
+      exact productEntry_consTwo_00 fp s' A
+
+theorem productEntry_consOne_0s (fp : FPModel) {n : ℕ}
+    (s : PivotSchedule n) (A : Fin (n + 1) → Fin (n + 1) → ℝ) (j : Fin n) :
+    higham11_4_bunchKaufmanProductEntry (n + 1) (flMixedL fp (s.consOne) A)
+        (flMixedD fp (s.consOne) A) 0 j.succ
+      = |A 0 0| * |fp.fl_div (A j.succ 0) (A 0 0)| := by
+  unfold higham11_4_bunchKaufmanProductEntry
+  rw [Fin.sum_univ_succ]
+  rw [show (∑ k₁ : Fin n, ∑ k₂, |flMixedL fp (s.consOne) A 0 k₁.succ|
+        * |flMixedD fp (s.consOne) A k₁.succ k₂| * |flMixedL fp (s.consOne) A j.succ k₂|) = 0 from by
+    apply Finset.sum_eq_zero; intro k₁ _; apply Finset.sum_eq_zero; intro k₂ _; simp]
+  rw [add_zero, Fin.sum_univ_succ]
+  rw [show (∑ k₂ : Fin n, |flMixedL fp (s.consOne) A 0 0|
+        * |flMixedD fp (s.consOne) A 0 k₂.succ| * |flMixedL fp (s.consOne) A j.succ k₂.succ|) = 0 from by
+    apply Finset.sum_eq_zero; intro k₂ _; simp]
+  rw [add_zero]
+  simp only [flMixedL_consOne_00, flMixedD_consOne_00, flMixedL_consOne_s0, abs_one, one_mul]
+
+theorem productEntry_consOne_s0 (fp : FPModel) {n : ℕ}
+    (s : PivotSchedule n) (A : Fin (n + 1) → Fin (n + 1) → ℝ) (i : Fin n) :
+    higham11_4_bunchKaufmanProductEntry (n + 1) (flMixedL fp (s.consOne) A)
+        (flMixedD fp (s.consOne) A) i.succ 0
+      = |fp.fl_div (A i.succ 0) (A 0 0)| * |A 0 0| := by
+  unfold higham11_4_bunchKaufmanProductEntry
+  have hinner : ∀ k₁ : Fin (n + 1),
+      (∑ k₂, |flMixedL fp (s.consOne) A i.succ k₁| * |flMixedD fp (s.consOne) A k₁ k₂|
+          * |flMixedL fp (s.consOne) A 0 k₂|)
+        = |flMixedL fp (s.consOne) A i.succ k₁| * |flMixedD fp (s.consOne) A k₁ 0|
+          * |flMixedL fp (s.consOne) A 0 0| := by
+    intro k₁
+    rw [Fin.sum_univ_succ]
+    rw [show (∑ k₂ : Fin n, |flMixedL fp (s.consOne) A i.succ k₁|
+          * |flMixedD fp (s.consOne) A k₁ k₂.succ| * |flMixedL fp (s.consOne) A 0 k₂.succ|) = 0 from by
+      apply Finset.sum_eq_zero; intro k₂ _; simp]
+    rw [add_zero]
+  simp_rw [hinner]
+  rw [Fin.sum_univ_succ]
+  rw [show (∑ k₁ : Fin n, |flMixedL fp (s.consOne) A i.succ k₁.succ|
+        * |flMixedD fp (s.consOne) A k₁.succ 0| * |flMixedL fp (s.consOne) A 0 0|) = 0 from by
+    apply Finset.sum_eq_zero; intro k₁ _; simp]
+  rw [add_zero]
+  simp only [flMixedL_consOne_s0, flMixedD_consOne_00, flMixedL_consOne_00, abs_one, mul_one]
+
+/-! ### Re-proved rounding helpers (originally HFactor-local) -/
+
+theorem fl_div_mul_abs_le (fp : FPModel) (a e : ℝ) (he : e ≠ 0) :
+    |e| * |fp.fl_div a e| ≤ (1 + fp.u) * |a| := by
+  obtain ⟨δ, hδ, h⟩ := fp.model_div a e he
+  rw [h, abs_mul, abs_div]
+  have he0 : (|e| : ℝ) ≠ 0 := abs_ne_zero.mpr he
+  have hrw : |e| * (|a| / |e| * |1 + δ|) = |a| * |1 + δ| := by
+    field_simp
+  rw [hrw]
+  calc |a| * |1 + δ| ≤ |a| * (1 + fp.u) :=
+        mul_le_mul_of_nonneg_left (abs_one_add_le fp hδ) (abs_nonneg _)
+    _ = (1 + fp.u) * |a| := by ring
+
+theorem oneByOne_corner_mult_le (fp : FPModel) (σ a11 a21 Amax : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.one)
+    (ha11 : a11 ≠ 0) (hσA : σ ≤ Amax) :
+    |fp.fl_div a21 a11| ^ 2 * |a11|
+      ≤ (1 + fp.u) ^ 2 * (Amax / bunchTridiagonalAlpha) := by
+  obtain ⟨δ, hδ, h⟩ := fp.model_div a21 a11 ha11
+  have hcorr : |a21 * a21 / a11| ≤ Amax / bunchTridiagonalAlpha :=
+    higham11_7_tridiagonal_oneByOne_correction_le_of_choice σ a11 a21 Amax hchoice ha11 hσA
+  have ha11' : (|a11| : ℝ) ≠ 0 := abs_ne_zero.mpr ha11
+  have hbase : |a21 / a11| ^ 2 * |a11| = |a21 * a21 / a11| := by
+    rw [abs_div, div_pow, abs_div, abs_mul]
+    field_simp
+  have hkey : |fp.fl_div a21 a11| ^ 2 * |a11| = |a21 * a21 / a11| * |1 + δ| ^ 2 := by
+    rw [h, abs_mul, mul_pow]
+    rw [show |a21 / a11| ^ 2 * |1 + δ| ^ 2 * |a11|
+          = (|a21 / a11| ^ 2 * |a11|) * |1 + δ| ^ 2 from by ring, hbase]
+  rw [hkey]
+  have hδsq : |1 + δ| ^ 2 ≤ (1 + fp.u) ^ 2 := by
+    have h1 := abs_one_add_le fp hδ
+    have h2 := abs_nonneg (1 + δ)
+    nlinarith [h1, h2, fp.u_nonneg]
+  have hAmaxα : 0 ≤ Amax / bunchTridiagonalAlpha := le_trans (abs_nonneg _) hcorr
+  calc |a21 * a21 / a11| * |1 + δ| ^ 2
+      ≤ (Amax / bunchTridiagonalAlpha) * (1 + fp.u) ^ 2 :=
+        mul_le_mul hcorr hδsq (by positivity) hAmaxα
+    _ = (1 + fp.u) ^ 2 * (Amax / bunchTridiagonalAlpha) := by ring
+
+/-! ### The decoupled factor-norm constant and its domination lemmas -/
+
+noncomputable def growthFactorConst (fp : FPModel) (M0 tau Bcorner : ℝ) : ℝ :=
+  Bcorner / M0
+  + (1 + fp.u) * tau / M0
+  + pathConstRC fp.u M0 tau / M0
+  + pathConst2 fp.u M0 tau / M0
+  + (1 + fp.u) ^ 2 / bunchTridiagonalAlpha
+
+theorem growthFactorConst_mul_M0 (fp : FPModel) (M0 tau Bcorner : ℝ) (hM0 : 0 < M0) :
+    growthFactorConst fp M0 tau Bcorner * M0
+      = Bcorner + (1 + fp.u) * tau + pathConstRC fp.u M0 tau + pathConst2 fp.u M0 tau
+        + (1 + fp.u) ^ 2 / bunchTridiagonalAlpha * M0 := by
+  unfold growthFactorConst
+  field_simp
+
+theorem growth_summands_nonneg (fp : FPModel) (M0 tau : ℝ)
+    (hM0 : 0 < M0) (hMtau : M0 ≤ tau) (hslack : bunchTridiagonalAlpha * tau < M0) :
+    0 ≤ (1 + fp.u) * tau ∧ 0 ≤ pathConstRC fp.u M0 tau ∧ 0 ≤ pathConst2 fp.u M0 tau
+      ∧ 0 ≤ (1 + fp.u) ^ 2 / bunchTridiagonalAlpha * M0 ∧ 0 ≤ tau := by
+  have hα := bunch_tridiagonal_alpha_pos
+  have hu := fp.u_nonneg
+  have hτ0 : 0 ≤ tau := le_trans hM0.le hMtau
+  refine ⟨by positivity, ?_, ?_, by positivity, hτ0⟩
+  · exact pathConstRC_nonneg fp.u M0 tau hu hM0 hτ0 hslack
+  · exact pathConst2_nonneg fp.u M0 tau hu hM0 hτ0 hslack
+
+theorem dom_corner (fp : FPModel) (M0 tau Bcorner : ℝ)
+    (hM0 : 0 < M0) (hMtau : M0 ≤ tau) (hslack : bunchTridiagonalAlpha * tau < M0)
+    (_hBc0 : 0 ≤ Bcorner) :
+    Bcorner ≤ growthFactorConst fp M0 tau Bcorner * M0 := by
+  rw [growthFactorConst_mul_M0 fp M0 tau Bcorner hM0]
+  obtain ⟨h1, h2, h3, h4, h5⟩ := growth_summands_nonneg fp M0 tau hM0 hMtau hslack
+  linarith
+
+theorem dom_off (fp : FPModel) (M0 tau Bcorner : ℝ)
+    (hM0 : 0 < M0) (hMtau : M0 ≤ tau) (hslack : bunchTridiagonalAlpha * tau < M0)
+    (hBc0 : 0 ≤ Bcorner) :
+    tau ≤ growthFactorConst fp M0 tau Bcorner * M0 := by
+  rw [growthFactorConst_mul_M0 fp M0 tau Bcorner hM0]
+  obtain ⟨h1, h2, h3, h4, h5⟩ := growth_summands_nonneg fp M0 tau hM0 hMtau hslack
+  have hu := fp.u_nonneg
+  nlinarith [h5]
+
+theorem dom_row1 (fp : FPModel) (M0 tau Bcorner : ℝ)
+    (hM0 : 0 < M0) (hMtau : M0 ≤ tau) (hslack : bunchTridiagonalAlpha * tau < M0)
+    (hBc0 : 0 ≤ Bcorner) :
+    (1 + fp.u) * tau ≤ growthFactorConst fp M0 tau Bcorner * M0 := by
+  rw [growthFactorConst_mul_M0 fp M0 tau Bcorner hM0]
+  obtain ⟨h1, h2, h3, h4, h5⟩ := growth_summands_nonneg fp M0 tau hM0 hMtau hslack
+  linarith
+
+theorem dom_rc (fp : FPModel) (M0 tau Bcorner : ℝ)
+    (hM0 : 0 < M0) (hMtau : M0 ≤ tau) (hslack : bunchTridiagonalAlpha * tau < M0)
+    (hBc0 : 0 ≤ Bcorner) :
+    pathConstRC fp.u M0 tau ≤ growthFactorConst fp M0 tau Bcorner * M0 := by
+  rw [growthFactorConst_mul_M0 fp M0 tau Bcorner hM0]
+  obtain ⟨h1, h2, h3, h4, h5⟩ := growth_summands_nonneg fp M0 tau hM0 hMtau hslack
+  linarith
+
+theorem dom_two (fp : FPModel) (M0 tau Bcorner : ℝ)
+    (hM0 : 0 < M0) (hMtau : M0 ≤ tau) (hslack : bunchTridiagonalAlpha * tau < M0)
+    (_hBc0 : 0 ≤ Bcorner) :
+    pathConst2 fp.u M0 tau + Bcorner ≤ growthFactorConst fp M0 tau Bcorner * M0 := by
+  rw [growthFactorConst_mul_M0 fp M0 tau Bcorner hM0]
+  obtain ⟨h1, h2, h3, h4, h5⟩ := growth_summands_nonneg fp M0 tau hM0 hMtau hslack
+  linarith
+
+theorem dom_one (fp : FPModel) (M0 tau Bcorner : ℝ)
+    (hM0 : 0 < M0) (hMtau : M0 ≤ tau) (hslack : bunchTridiagonalAlpha * tau < M0)
+    (_hBc0 : 0 ≤ Bcorner) :
+    (1 + fp.u) ^ 2 / bunchTridiagonalAlpha * M0 + Bcorner
+      ≤ growthFactorConst fp M0 tau Bcorner * M0 := by
+  rw [growthFactorConst_mul_M0 fp M0 tau Bcorner hM0]
+  obtain ⟨h1, h2, h3, h4, h5⟩ := growth_summands_nonneg fp M0 tau hM0 hMtau hslack
+  linarith
+
+/-! ### Reduced-corner refresh: both pivot sizes give a reduced corner ≤ Bcorner -/
+
+theorem schur2Corner_le_Bcorner (fp : FPModel) (hval : gammaValid fp 3) {m : ℕ}
+    (A : Fin (m + 3) → Fin (m + 3) → ℝ) (hA : IsSymTridiagonal (m + 3) A)
+    (M0 tau Bcorner : ℝ) (hM0 : 0 < M0) (hslack : bunchTridiagonalAlpha * tau < M0)
+    (hchoice : BunchTridiagonalPivotChoice M0 (A 0 0) (A (oneIdx (m + 1)) 0) PivotSize.two)
+    (hoff : ∀ i j : Fin (m + 3), i.val ≠ 0 ∨ j.val ≠ 0 → |A i j| ≤ tau)
+    (hBc2 : (1 + gamma fp 3) *
+        (tau + tau ^ 2 * bunchTridiagonalAlpha / (M0 - bunchTridiagonalAlpha * tau))
+      ≤ Bcorner) :
+    |flSchurCompl2 (m + 1) fp A 0 0| ≤ Bcorner := by
+  have hα := bunch_tridiagonal_alpha_pos
+  have hd : 0 < M0 - bunchTridiagonalAlpha * tau := by linarith
+  have hγ0 : 0 ≤ 1 + gamma fp 3 := by have := gamma_nonneg fp hval; linarith
+  have hτa22 : |A (oneIdx (m + 1)) (oneIdx (m + 1))| ≤ tau :=
+    hoff _ _ (Or.inl (by simp [oneIdx]))
+  have hbound := flSchurCompl2_corner_bound_decoupled fp hval A hA M0 tau hM0 hchoice hτa22 hslack
+  have hA22 : |A ((0 : Fin (m + 1)).succ.succ) ((0 : Fin (m + 1)).succ.succ)| ≤ tau :=
+    hoff _ _ (Or.inl (by simp only [Fin.val_succ, Fin.val_zero]; omega))
+  have hanextabs : |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))| ≤ tau :=
+    hoff _ _ (Or.inl (by simp only [Fin.val_succ, Fin.val_zero]; omega))
+  have hτ0 : 0 ≤ tau := le_trans (abs_nonneg _) hanextabs
+  have hanextsq : (A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))) ^ 2 ≤ tau ^ 2 := by
+    nlinarith [hanextabs, abs_nonneg (A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))),
+      sq_abs (A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1)))]
+  have hnum2 : (A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))) ^ 2 * bunchTridiagonalAlpha
+      ≤ tau ^ 2 * bunchTridiagonalAlpha := mul_le_mul_of_nonneg_right hanextsq hα.le
+  have hcorr : (A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))) ^ 2 * bunchTridiagonalAlpha
+        / (M0 - bunchTridiagonalAlpha * tau)
+      ≤ tau ^ 2 * bunchTridiagonalAlpha / (M0 - bunchTridiagonalAlpha * tau) :=
+    div_le_div_of_nonneg_right hnum2 (le_of_lt hd)
+  calc |flSchurCompl2 (m + 1) fp A 0 0|
+      ≤ (1 + gamma fp 3) *
+          (|A ((0 : Fin (m + 1)).succ.succ) ((0 : Fin (m + 1)).succ.succ)|
+            + (A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))) ^ 2
+                * bunchTridiagonalAlpha / (M0 - bunchTridiagonalAlpha * tau)) := hbound
+    _ ≤ (1 + gamma fp 3) *
+          (tau + tau ^ 2 * bunchTridiagonalAlpha / (M0 - bunchTridiagonalAlpha * tau)) :=
+        mul_le_mul_of_nonneg_left (add_le_add hA22 hcorr) hγ0
+    _ ≤ Bcorner := hBc2
+
+theorem schur1Corner_le_Bcorner (fp : FPModel) (hval : gammaValid fp 3) {n : ℕ}
+    (A : Fin (n + 2) → Fin (n + 2) → ℝ) (hA : IsSymTridiagonal (n + 2) A)
+    (M0 tau Bcorner : ℝ) (_hM0 : 0 < M0)
+    (hchoice : BunchTridiagonalPivotChoice M0 (A 0 0) (A ((0 : Fin (n + 1)).succ) 0) PivotSize.one)
+    (hA00 : A 0 0 ≠ 0)
+    (hoff : ∀ i j : Fin (n + 2), i.val ≠ 0 ∨ j.val ≠ 0 → |A i j| ≤ tau)
+    (hBc1 : (1 + gamma fp 3) * (tau + M0 / bunchTridiagonalAlpha) ≤ Bcorner) :
+    |flSchurCompl (n + 1) fp A 0 0| ≤ Bcorner := by
+  have hγ0 : 0 ≤ 1 + gamma fp 3 := by have := gamma_nonneg fp hval; linarith
+  have hbound := flSchurCompl_corner_bound fp hval A hA M0 M0 (le_refl M0) hchoice hA00
+  have hA11 : |A ((0 : Fin (n + 1)).succ) ((0 : Fin (n + 1)).succ)| ≤ tau :=
+    hoff _ _ (Or.inl (by simp only [Fin.val_succ, Fin.val_zero]; omega))
+  calc |flSchurCompl (n + 1) fp A 0 0|
+      ≤ (1 + gamma fp 3) *
+          (|A ((0 : Fin (n + 1)).succ) ((0 : Fin (n + 1)).succ)|
+            + M0 / bunchTridiagonalAlpha) := hbound
+    _ ≤ (1 + gamma fp 3) * (tau + M0 / bunchTridiagonalAlpha) :=
+        mul_le_mul_of_nonneg_left (add_le_add hA11 le_rfl) hγ0
+    _ ≤ Bcorner := hBc1
+
+/-! ### Decoupled trailing terms -/
+
+theorem trailingTwo_le_decoupled (fp : FPModel) (hval : gammaValid fp 3)
+    (M0 tau Bcorner : ℝ) (hM0 : 0 < M0) (hMtau : M0 ≤ tau)
+    (hslack : bunchTridiagonalAlpha * tau < M0) (hBc0 : 0 ≤ Bcorner)
+    (hBc2 : (1 + gamma fp 3) *
+        (tau + tau ^ 2 * bunchTridiagonalAlpha / (M0 - bunchTridiagonalAlpha * tau))
+      ≤ Bcorner) :
+    ∀ {n : ℕ} (s : PivotSchedule n) (A : Fin (n + 2) → Fin (n + 2) → ℝ),
+      IsSymTridiagonal (n + 2) A →
+      BunchTridiagonalPivotChoice M0 (A 0 0) (A (oneIdx n) 0) PivotSize.two →
+      (∀ i j : Fin (n + 2), i.val ≠ 0 ∨ j.val ≠ 0 → |A i j| ≤ tau) →
+      (∀ i' j', higham11_4_bunchKaufmanProductEntry n
+          (flMixedL fp s (flSchurCompl2 n fp A)) (flMixedD fp s (flSchurCompl2 n fp A)) i' j'
+          ≤ growthFactorConst fp M0 tau Bcorner * M0) →
+      ∀ i j : Fin n,
+        pivotPath2Abs n fp A i j
+          + higham11_4_bunchKaufmanProductEntry n
+              (flMixedL fp s (flSchurCompl2 n fp A)) (flMixedD fp s (flSchurCompl2 n fp A)) i j
+          ≤ growthFactorConst fp M0 tau Bcorner * M0 := by
+  intro n
+  cases n with
+  | zero => intro s A _ _ _ _ i; exact Fin.elim0 i
+  | succ n' =>
+      intro s A hA hchoice hoff hIH i j
+      by_cases hc : i.val = 0 ∧ j.val = 0
+      · have hi : i = 0 := Fin.ext hc.1
+        have hj : j = 0 := Fin.ext hc.2
+        subst hi; subst hj
+        rw [productEntry_head00 fp s (flSchurCompl2 (n' + 1) fp A)]
+        have hpp : pivotPath2Abs (n' + 1) fp A 0 0 ≤ pathConst2 fp.u M0 tau :=
+          pivotPath2Abs_le_decoupled fp M0 tau hM0 hslack A hA hoff hchoice 0 0
+        have hKbound : |flSchurCompl2 (n' + 1) fp A 0 0| ≤ Bcorner :=
+          schur2Corner_le_Bcorner fp hval A hA M0 tau Bcorner hM0 hslack hchoice hoff hBc2
+        calc pivotPath2Abs (n' + 1) fp A 0 0 + |flSchurCompl2 (n' + 1) fp A 0 0|
+            ≤ pathConst2 fp.u M0 tau + Bcorner := add_le_add hpp hKbound
+          _ ≤ growthFactorConst fp M0 tau Bcorner * M0 :=
+              dom_two fp M0 tau Bcorner hM0 hMtau hslack hBc0
+      · have hne : i.val ≠ 0 ∨ j.val ≠ 0 := by
+          by_contra h; push_neg at h; exact hc ⟨h.1, h.2⟩
+        rw [pivotPath2Abs_eq_zero_of_ne_corner fp A hA i j hne, zero_add]
+        exact hIH i j
+
+theorem trailingOne_le_decoupled (fp : FPModel) (hval : gammaValid fp 3)
+    (M0 tau Bcorner : ℝ) (hM0 : 0 < M0) (hMtau : M0 ≤ tau)
+    (hslack : bunchTridiagonalAlpha * tau < M0) (hBc0 : 0 ≤ Bcorner)
+    (hBc1 : (1 + gamma fp 3) * (tau + M0 / bunchTridiagonalAlpha) ≤ Bcorner) :
+    ∀ {n : ℕ} (s : PivotSchedule n) (A : Fin (n + 1) → Fin (n + 1) → ℝ),
+      IsSymTridiagonal (n + 1) A → A 0 0 ≠ 0 →
+      (∀ i : Fin n, BunchTridiagonalPivotChoice M0 (A 0 0) (A i.succ 0) PivotSize.one) →
+      (∀ i j : Fin (n + 1), i.val ≠ 0 ∨ j.val ≠ 0 → |A i j| ≤ tau) →
+      (∀ i' j', higham11_4_bunchKaufmanProductEntry n
+          (flMixedL fp s (flSchurCompl n fp A)) (flMixedD fp s (flSchurCompl n fp A)) i' j'
+          ≤ growthFactorConst fp M0 tau Bcorner * M0) →
+      ∀ i j : Fin n,
+        |fp.fl_div (A i.succ 0) (A 0 0)| * |A 0 0| * |fp.fl_div (A j.succ 0) (A 0 0)|
+          + higham11_4_bunchKaufmanProductEntry n
+              (flMixedL fp s (flSchurCompl n fp A)) (flMixedD fp s (flSchurCompl n fp A)) i j
+          ≤ growthFactorConst fp M0 tau Bcorner * M0 := by
+  intro n
+  cases n with
+  | zero => intro s A _ _ _ _ _ i; exact Fin.elim0 i
+  | succ n' =>
+      intro s A hA hA00 hchoice hoff hIH i j
+      have hα := bunch_tridiagonal_alpha_pos
+      by_cases hc : i.val = 0 ∧ j.val = 0
+      · have hi : i = 0 := Fin.ext hc.1
+        have hj : j = 0 := Fin.ext hc.2
+        subst hi; subst hj
+        rw [productEntry_head00 fp s (flSchurCompl (n' + 1) fp A)]
+        have hrw : |fp.fl_div (A (0 : Fin (n' + 1)).succ 0) (A 0 0)| * |A 0 0|
+              * |fp.fl_div (A (0 : Fin (n' + 1)).succ 0) (A 0 0)|
+            = |fp.fl_div (A (0 : Fin (n' + 1)).succ 0) (A 0 0)| ^ 2 * |A 0 0| := by ring
+        rw [hrw]
+        have hmult : |fp.fl_div (A (0 : Fin (n' + 1)).succ 0) (A 0 0)| ^ 2 * |A 0 0|
+            ≤ (1 + fp.u) ^ 2 / bunchTridiagonalAlpha * M0 := by
+          have h := oneByOne_corner_mult_le fp M0 (A 0 0) (A (0 : Fin (n' + 1)).succ 0) M0
+            (hchoice 0) hA00 (le_refl M0)
+          calc |fp.fl_div (A (0 : Fin (n' + 1)).succ 0) (A 0 0)| ^ 2 * |A 0 0|
+              ≤ (1 + fp.u) ^ 2 * (M0 / bunchTridiagonalAlpha) := h
+            _ = (1 + fp.u) ^ 2 / bunchTridiagonalAlpha * M0 := by ring
+        have hKbound : |flSchurCompl (n' + 1) fp A 0 0| ≤ Bcorner :=
+          schur1Corner_le_Bcorner fp hval A hA M0 tau Bcorner hM0 (hchoice 0) hA00 hoff hBc1
+        calc |fp.fl_div (A (0 : Fin (n' + 1)).succ 0) (A 0 0)| ^ 2 * |A 0 0|
+              + |flSchurCompl (n' + 1) fp A 0 0|
+            ≤ (1 + fp.u) ^ 2 / bunchTridiagonalAlpha * M0 + Bcorner := add_le_add hmult hKbound
+          _ ≤ growthFactorConst fp M0 tau Bcorner * M0 :=
+              dom_one fp M0 tau Bcorner hM0 hMtau hslack hBc0
+      · have hzero : |fp.fl_div (A i.succ 0) (A 0 0)| * |A 0 0|
+              * |fp.fl_div (A j.succ 0) (A 0 0)| = 0 := by
+          rcases not_and_or.mp hc with hi | hj
+          · have h0 : A i.succ 0 = 0 := by
+              apply hA.2; right; simp only [Fin.val_succ, Fin.val_zero]; omega
+            simp only [h0, fl_div_zero_left fp (A 0 0) hA00, abs_zero, zero_mul]
+          · have h0 : A j.succ 0 = 0 := by
+              apply hA.2; right; simp only [Fin.val_succ, Fin.val_zero]; omega
+            simp only [h0, fl_div_zero_left fp (A 0 0) hA00, abs_zero, mul_zero]
+        rw [hzero, zero_add]
+        exact hIH i j
+
+/-! ### Unfolding lemmas for `TriGrowthBounded` -/
+
+@[simp] theorem TriGrowthBounded_consOne (fp : FPModel) (M0 τmax : ℝ) {n : ℕ}
+    (s : PivotSchedule n) (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    TriGrowthBounded fp M0 τmax s.consOne A ↔
+      (IsSymTridiagonal (n + 1) A ∧ A 0 0 ≠ 0 ∧
+        (∀ i : Fin n, BunchTridiagonalPivotChoice M0 (A 0 0) (A i.succ 0) PivotSize.one) ∧
+        (∀ i j : Fin (n + 1), i.val ≠ 0 ∨ j.val ≠ 0 → |A i j| ≤ τmax) ∧
+        TriGrowthBounded fp M0 τmax s (flSchurCompl n fp A)) := Iff.rfl
+
+@[simp] theorem TriGrowthBounded_consTwo (fp : FPModel) (M0 τmax : ℝ) {n : ℕ}
+    (s : PivotSchedule n) (A : Fin (n + 2) → Fin (n + 2) → ℝ) :
+    TriGrowthBounded fp M0 τmax s.consTwo A ↔
+      (IsSymTridiagonal (n + 2) A ∧
+        BunchTridiagonalPivotChoice M0 (A 0 0) (A (oneIdx n) 0) PivotSize.two ∧
+        (∀ i j : Fin (n + 2), i.val ≠ 0 ∨ j.val ≠ 0 → |A i j| ≤ τmax) ∧
+        TriGrowthBounded fp M0 τmax s (flSchurCompl2 n fp A)) := Iff.rfl
+
+/-! ### Step F (decoupled) — the factor-norm entry bound by structural induction -/
+
+theorem hfactor_bound_decoupled (fp : FPModel) (hval : gammaValid fp 3)
+    (M0 tau Bcorner : ℝ) (hM0 : 0 < M0) (hMtau : M0 ≤ tau)
+    (hslack : bunchTridiagonalAlpha * tau < M0) (hBc0 : 0 ≤ Bcorner)
+    (hBc1 : (1 + gamma fp 3) * (tau + M0 / bunchTridiagonalAlpha) ≤ Bcorner)
+    (hBc2 : (1 + gamma fp 3) *
+        (tau + tau ^ 2 * bunchTridiagonalAlpha / (M0 - bunchTridiagonalAlpha * tau)) ≤ Bcorner) :
+    ∀ {k : ℕ} (s : PivotSchedule k) (A : Fin k → Fin k → ℝ),
+      TriGrowthBounded fp M0 tau s A →
+      (∀ i j : Fin k, i.val = 0 → j.val = 0 → |A i j| ≤ Bcorner) →
+      ∀ I J : Fin k,
+        higham11_4_bunchKaufmanProductEntry k (flMixedL fp s A) (flMixedD fp s A) I J
+          ≤ growthFactorConst fp M0 tau Bcorner * M0 := by
+  intro k s
+  induction s with
+  | nil => intro A _ _ I; exact Fin.elim0 I
+  | @consOne n s ih =>
+      intro A hdata hcorner I J
+      rw [TriGrowthBounded_consOne] at hdata
+      obtain ⟨hA, hA00, hchoice, hoff, hrec⟩ := hdata
+      have hcornerS : ∀ i j : Fin n, i.val = 0 → j.val = 0 →
+          |flSchurCompl n fp A i j| ≤ Bcorner := by
+        intro i j hi hj
+        have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le i.val) i.2
+        obtain ⟨n', rfl⟩ := Nat.exists_eq_succ_of_ne_zero hn.ne'
+        have hi0 : i = 0 := Fin.ext hi
+        have hj0 : j = 0 := Fin.ext hj
+        subst hi0; subst hj0
+        exact schur1Corner_le_Bcorner fp hval A hA M0 tau Bcorner hM0 (hchoice 0) hA00 hoff hBc1
+      have hIH := ih (flSchurCompl n fp A) hrec hcornerS
+      have hrowbound : ∀ j : Fin n, |A 0 0| * |fp.fl_div (A j.succ 0) (A 0 0)|
+          ≤ growthFactorConst fp M0 tau Bcorner * M0 := by
+        intro j
+        refine le_trans (fl_div_mul_abs_le fp (A j.succ 0) (A 0 0) hA00) ?_
+        have hoffval : |A j.succ 0| ≤ tau := hoff j.succ 0 (Or.inl (by simp only [Fin.val_succ]; omega))
+        refine le_trans (mul_le_mul_of_nonneg_left hoffval (by have := fp.u_nonneg; linarith)) ?_
+        exact dom_row1 fp M0 tau Bcorner hM0 hMtau hslack hBc0
+      rcases Fin.eq_zero_or_eq_succ I with rfl | ⟨i, rfl⟩
+      · rcases Fin.eq_zero_or_eq_succ J with rfl | ⟨j, rfl⟩
+        · rw [productEntry_head00 fp (s.consOne) A]
+          exact le_trans (hcorner 0 0 rfl rfl) (dom_corner fp M0 tau Bcorner hM0 hMtau hslack hBc0)
+        · rw [productEntry_consOne_0s]; exact hrowbound j
+      · rcases Fin.eq_zero_or_eq_succ J with rfl | ⟨j, rfl⟩
+        · rw [productEntry_consOne_s0, mul_comm]; exact hrowbound i
+        · rw [productEntry_consOne_split fp s A i j]
+          exact trailingOne_le_decoupled fp hval M0 tau Bcorner hM0 hMtau hslack hBc0 hBc1
+            s A hA hA00 hchoice hoff hIH i j
+  | @consTwo m s ih =>
+      intro A hdata hcorner I J
+      rw [TriGrowthBounded_consTwo] at hdata
+      obtain ⟨hA, hchoice, hoff, hrec⟩ := hdata
+      have hcornerS : ∀ i j : Fin m, i.val = 0 → j.val = 0 →
+          |flSchurCompl2 m fp A i j| ≤ Bcorner := by
+        intro i j hi hj
+        have hn : 0 < m := Nat.lt_of_le_of_lt (Nat.zero_le i.val) i.2
+        obtain ⟨m', rfl⟩ := Nat.exists_eq_succ_of_ne_zero hn.ne'
+        have hi0 : i = 0 := Fin.ext hi
+        have hj0 : j = 0 := Fin.ext hj
+        subst hi0; subst hj0
+        exact schur2Corner_le_Bcorner fp hval A hA M0 tau Bcorner hM0 hslack hchoice hoff hBc2
+      have hIH := ih (flSchurCompl2 m fp A) hrec hcornerS
+      have hoffle : ∀ z : ℝ, z ≤ tau → z ≤ growthFactorConst fp M0 tau Bcorner * M0 := fun z hz =>
+        le_trans hz (dom_off fp M0 tau Bcorner hM0 hMtau hslack hBc0)
+      have hrc : ∀ z : ℝ, z ≤ pathConstRC fp.u M0 tau →
+          z ≤ growthFactorConst fp M0 tau Bcorner * M0 := fun z hz =>
+        le_trans hz (dom_rc fp M0 tau Bcorner hM0 hMtau hslack hBc0)
+      rcases Fin.eq_zero_or_eq_succ I with rfl | ⟨I', rfl⟩
+      · rcases Fin.eq_zero_or_eq_succ J with rfl | ⟨J', rfl⟩
+        · rw [productEntry_consTwo_00]
+          exact le_trans (hcorner 0 0 rfl rfl) (dom_corner fp M0 tau Bcorner hM0 hMtau hslack hBc0)
+        · rcases Fin.eq_zero_or_eq_succ J' with rfl | ⟨j, rfl⟩
+          · rw [productEntry_consTwo_01]
+            exact hoffle _ (hoff 0 (oneIdx m) (Or.inr (by simp [oneIdx])))
+          · rw [productEntry_consTwo_0t]
+            exact hrc _ (pivotRowPathAbs_le_decoupled fp M0 tau hM0 hslack A hA hoff hchoice 0 j)
+      · rcases Fin.eq_zero_or_eq_succ I' with rfl | ⟨i, rfl⟩
+        · rcases Fin.eq_zero_or_eq_succ J with rfl | ⟨J', rfl⟩
+          · rw [productEntry_consTwo_10]
+            exact hoffle _ (hoff (oneIdx m) 0 (Or.inl (by simp [oneIdx])))
+          · rcases Fin.eq_zero_or_eq_succ J' with rfl | ⟨j, rfl⟩
+            · rw [productEntry_consTwo_11]
+              exact hoffle _ (hoff (oneIdx m) (oneIdx m) (Or.inl (by simp [oneIdx])))
+            · rw [productEntry_consTwo_1t]
+              exact hrc _ (pivotRowPathAbs_le_decoupled fp M0 tau hM0 hslack A hA hoff hchoice 1 j)
+        · rcases Fin.eq_zero_or_eq_succ J with rfl | ⟨J', rfl⟩
+          · rw [productEntry_consTwo_t0]
+            exact hrc _ (pivotColPathAbs_le_decoupled fp M0 tau hM0 hslack A hA hoff hchoice i 0)
+          · rcases Fin.eq_zero_or_eq_succ J' with rfl | ⟨j, rfl⟩
+            · rw [productEntry_consTwo_t1]
+              exact hrc _ (pivotColPathAbs_le_decoupled fp M0 tau hM0 hslack A hA hoff hchoice i 1)
+            · rw [productEntry_consTwo_trailing]
+              exact trailingTwo_le_decoupled fp hval M0 tau Bcorner hM0 hMtau hslack hBc0 hBc2
+                s A hA hchoice hoff hIH i j
+
+/-! ### Step F wrapper (decoupled): discharge the entry bound from `TriGrowthData` -/
+
+noncomputable def growthBcorner (fp : FPModel) (M0 tau : ℝ) : ℝ :=
+  (1 + gamma fp 3) * (tau + M0 / bunchTridiagonalAlpha
+    + tau ^ 2 * bunchTridiagonalAlpha / (M0 - bunchTridiagonalAlpha * tau))
+
+theorem hfactor_derived (fp : FPModel) (hval : gammaValid fp 3)
+    {k : ℕ} (s : PivotSchedule k) (A : Fin k → Fin k → ℝ) (M0 : ℝ)
+    (hM0 : 0 < M0)
+    (hvalstages : gammaValid fp (stages s)) (hval1 : gammaValid fp 1)
+    (hγα : gamma fp (stages s) < bunchTridiagonalAlpha)
+    (hdata : TriGrowthData fp M0 s A)
+    (hoff : ∀ i j : Fin k, i.val ≠ 0 ∨ j.val ≠ 0 → |A i j| ≤ M0)
+    (hcorner : ∀ i j : Fin k, i.val = 0 → j.val = 0 → |A i j| ≤ M0) :
+    ∀ I J : Fin k,
+      higham11_4_bunchKaufmanProductEntry k (flMixedL fp s A) (flMixedD fp s A) I J
+        ≤ growthFactorConst fp M0 ((1 + gamma fp (stages s)) * M0)
+            (growthBcorner fp M0 ((1 + gamma fp (stages s)) * M0)) * M0 := by
+  set g := gamma fp (stages s) with hg
+  set τ := (1 + g) * M0 with hτdef
+  set Bcorner := growthBcorner fp M0 τ with hBcdef
+  have hα := bunch_tridiagonal_alpha_pos
+  have hαsq := bunch_tridiagonal_alpha_sq
+  have hg0 : 0 ≤ g := gamma_nonneg fp hvalstages
+  have hγ30 : 0 ≤ 1 + gamma fp 3 := by have := gamma_nonneg fp hval; linarith
+  have hMtau : M0 ≤ τ := by rw [hτdef]; nlinarith [hg0, hM0]
+  have hτ0 : 0 ≤ τ := le_trans hM0.le hMtau
+  have hslack : bunchTridiagonalAlpha * τ < M0 := by
+    rw [hτdef]
+    nlinarith [mul_lt_mul_of_pos_left hγα hα, hαsq, hM0, mul_pos hα hM0]
+  have hd : 0 < M0 - bunchTridiagonalAlpha * τ := by linarith [hslack]
+  have hcorr1 : 0 ≤ M0 / bunchTridiagonalAlpha := div_nonneg hM0.le hα.le
+  have hcorr2 : 0 ≤ τ ^ 2 * bunchTridiagonalAlpha / (M0 - bunchTridiagonalAlpha * τ) :=
+    div_nonneg (by positivity) hd.le
+  have hBc0 : 0 ≤ Bcorner := by
+    rw [hBcdef, growthBcorner]
+    have : 0 ≤ τ + M0 / bunchTridiagonalAlpha
+        + τ ^ 2 * bunchTridiagonalAlpha / (M0 - bunchTridiagonalAlpha * τ) := by
+      linarith [hτ0, hcorr1, hcorr2]
+    exact mul_nonneg hγ30 this
+  have hBc1 : (1 + gamma fp 3) * (τ + M0 / bunchTridiagonalAlpha) ≤ Bcorner := by
+    rw [hBcdef, growthBcorner]
+    exact mul_le_mul_of_nonneg_left (by linarith [hcorr2]) hγ30
+  have hBc2 : (1 + gamma fp 3) *
+      (τ + τ ^ 2 * bunchTridiagonalAlpha / (M0 - bunchTridiagonalAlpha * τ)) ≤ Bcorner := by
+    rw [hBcdef, growthBcorner]
+    exact mul_le_mul_of_nonneg_left (by linarith [hcorr1]) hγ30
+  have hM0Bc : M0 ≤ Bcorner := by
+    rw [hBcdef, growthBcorner]
+    have hX : M0 ≤ τ + M0 / bunchTridiagonalAlpha
+        + τ ^ 2 * bunchTridiagonalAlpha / (M0 - bunchTridiagonalAlpha * τ) := by
+      linarith [hMtau, hcorr1, hcorr2]
+    have hX0 : 0 ≤ τ + M0 / bunchTridiagonalAlpha
+        + τ ^ 2 * bunchTridiagonalAlpha / (M0 - bunchTridiagonalAlpha * τ) :=
+      le_trans hM0.le hX
+    exact le_trans hX (le_mul_of_one_le_left hX0 (by linarith [gamma_nonneg fp hval]))
+  have hpow : (1 + fp.u) ^ stages s ≤ 1 + g :=
+    one_add_u_pow_le fp (le_refl (stages s)) hvalstages hval1
+  have hbudget : (1 + fp.u) ^ stages s * M0 ≤ τ := by
+    rw [hτdef]; exact mul_le_mul_of_nonneg_right hpow hM0.le
+  have hTGB : TriGrowthBounded fp M0 τ s A :=
+    growth_offcorner fp M0 τ s A M0 hdata hoff hM0.le hbudget
+  have hcornerB : ∀ i j : Fin k, i.val = 0 → j.val = 0 → |A i j| ≤ Bcorner :=
+    fun i j hi hj => le_trans (hcorner i j hi hj) hM0Bc
+  exact hfactor_bound_decoupled fp hval M0 τ Bcorner hM0 hMtau hslack hBc0 hBc1 hBc2 s A hTGB hcornerB
+
 end LeanFpAnalysis.FP.Ch11Closure.TriGrowthInv
