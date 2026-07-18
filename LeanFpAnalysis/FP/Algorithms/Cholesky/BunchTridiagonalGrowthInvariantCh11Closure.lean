@@ -169,4 +169,125 @@ theorem twoByTwo_absdet_lower_decoupled (σ τ a11 a21 a22 : ℝ)
     _ ≤ a21 ^ 2 - |a11 * a22| := by linarith [hprod]
     _ ≤ |a11 * a22 - a21 ^ 2| := hrev
 
+/-- Division-free form of the decoupled determinant lower bound:
+`a₂₁²·(σ − α·τ) ≤ σ·|det|` (nlinarith-friendly for downstream use). -/
+theorem twoByTwo_absdet_lower_decoupled' (σ τ a11 a21 a22 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσ : 0 < σ) (hτ : |a22| ≤ τ) :
+    a21 ^ 2 * (σ - bunchTridiagonalAlpha * τ) ≤ σ * |a11 * a22 - a21 ^ 2| := by
+  have hα : 0 < bunchTridiagonalAlpha := bunch_tridiagonal_alpha_pos
+  have htest := bunch_tridiagonal_pivot_choice_two_threshold σ a11 a21 hchoice
+  have hrev : a21 ^ 2 - |a11 * a22| ≤ |a11 * a22 - a21 ^ 2| := by
+    have h := abs_sub_abs_le_abs_sub (a21 ^ 2) (a11 * a22)
+    rwa [abs_of_nonneg (sq_nonneg a21), abs_sub_comm] at h
+  have hprod : σ * |a11 * a22| ≤ bunchTridiagonalAlpha * a21 ^ 2 * τ := by
+    rw [abs_mul]
+    calc σ * (|a11| * |a22|) = (σ * |a11|) * |a22| := by ring
+      _ ≤ (bunchTridiagonalAlpha * a21 ^ 2) * τ :=
+          mul_le_mul (le_of_lt htest) hτ (abs_nonneg _)
+            (by positivity)
+  nlinarith [mul_le_mul_of_nonneg_left hrev (le_of_lt hσ), hprod]
+
+/-- **Decoupled 2×2 corner correction bound.**  With the pivot test at scale `σ`
+and the block diagonal `a₂₂` bounded by `τ ≥ σ` (the entry scale), the exact 2×2
+Schur correction satisfies
+
+  `|anext²·(a₁₁/det)| ≤ anext²·α / (σ − α·τ)`,
+
+provided `α·τ < σ` (so `det ≠ 0`).  This is the `(1+u)`-slack-tolerant analogue of
+`tridiag_twoByTwo_corner_correction_le_of_choice`; with `τ = σ` it reduces to
+`anext²·α/(σ(1−α)) = anext²/(σα)` (using `α² = 1−α`). -/
+theorem tridiag_twoByTwo_corner_correction_le_decoupled
+    (σ τ a11 a21 a22 anext : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσ : 0 < σ) (hτ : |a22| ≤ τ) (hslack : bunchTridiagonalAlpha * τ < σ) :
+    |anext * anext * (a11 / (a11 * a22 - a21 ^ 2))|
+      ≤ anext ^ 2 * bunchTridiagonalAlpha / (σ - bunchTridiagonalAlpha * τ) := by
+  have hα : 0 < bunchTridiagonalAlpha := bunch_tridiagonal_alpha_pos
+  have htest := bunch_tridiagonal_pivot_choice_two_threshold σ a11 a21 hchoice
+  have ha21 : a21 ≠ 0 :=
+    bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg σ a11 a21 hchoice (le_of_lt hσ)
+  have ha21sq : 0 < a21 ^ 2 := sq_pos_of_ne_zero ha21
+  have hd : 0 < σ - bunchTridiagonalAlpha * τ := by linarith
+  have hdet_lb : a21 ^ 2 * (σ - bunchTridiagonalAlpha * τ) ≤ σ * |a11 * a22 - a21 ^ 2| :=
+    twoByTwo_absdet_lower_decoupled' σ τ a11 a21 a22 hchoice hσ hτ
+  have hσdet : 0 < σ * |a11 * a22 - a21 ^ 2| := lt_of_lt_of_le (mul_pos ha21sq hd) hdet_lb
+  have hdetpos : 0 < |a11 * a22 - a21 ^ 2| := by
+    rcases (abs_nonneg (a11 * a22 - a21 ^ 2)).lt_or_eq with h | h
+    · exact h
+    · rw [← h, mul_zero] at hσdet; exact absurd hσdet (lt_irrefl 0)
+  -- key scalar inequality |a11|·(σ−ατ) ≤ α·|det|
+  have hkey : |a11| * (σ - bunchTridiagonalAlpha * τ)
+      ≤ bunchTridiagonalAlpha * |a11 * a22 - a21 ^ 2| := by
+    have h1 : σ * (|a11| * (σ - bunchTridiagonalAlpha * τ))
+        ≤ σ * (bunchTridiagonalAlpha * |a11 * a22 - a21 ^ 2|) := by
+      nlinarith [mul_le_mul_of_nonneg_right (le_of_lt htest) (le_of_lt hd),
+        mul_le_mul_of_nonneg_left hdet_lb (le_of_lt hα)]
+    exact le_of_mul_le_mul_left h1 hσ
+  have hLHS : |anext * anext * (a11 / (a11 * a22 - a21 ^ 2))|
+      = anext ^ 2 * |a11| / |a11 * a22 - a21 ^ 2| := by
+    rw [abs_mul, abs_div]
+    have hsq : |anext * anext| = anext ^ 2 := by
+      rw [← pow_two, abs_of_nonneg (sq_nonneg anext)]
+    rw [hsq]; ring
+  rw [hLHS, div_le_iff₀ hdetpos, div_mul_eq_mul_div, le_div_iff₀ hd]
+  nlinarith [mul_le_mul_of_nonneg_left hkey (sq_nonneg anext)]
+
+/-- **Decoupled per-step corner bound (2×2).**  The `(1+u)`-slack-tolerant analogue
+of `flSchurCompl2_corner_bound`: the pivot test is at scale `σ` (the fixed `M₀`),
+while the fed diagonal `a₂₂` is only bounded by `τ ≥ σ`.  The reduced corner then
+satisfies
+
+  `|flSchurCompl2 A 0 0| ≤ (1+γ₃)·(|A₂₂| + anext²·α/(σ − α·τ))`,
+
+with `anext = A₂₁` the off-corner coupling.  This is the schedule-induction-ready
+2×2 corner bound (Route B step 2). -/
+theorem flSchurCompl2_corner_bound_decoupled (fp : FPModel) (hval : gammaValid fp 3) {m : ℕ}
+    (A : Fin (m + 3) → Fin (m + 3) → ℝ) (hA : IsSymTridiagonal (m + 3) A)
+    (σ τ : ℝ) (hσpos : 0 < σ)
+    (hchoice : BunchTridiagonalPivotChoice σ (A 0 0) (A (oneIdx (m + 1)) 0) PivotSize.two)
+    (hτa22 : |A (oneIdx (m + 1)) (oneIdx (m + 1))| ≤ τ)
+    (hslack : bunchTridiagonalAlpha * τ < σ) :
+    |flSchurCompl2 (m + 1) fp A 0 0|
+      ≤ (1 + gamma fp 3) *
+          (|A ((0 : Fin (m + 1)).succ.succ) ((0 : Fin (m + 1)).succ.succ)|
+            + (A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))) ^ 2
+                * bunchTridiagonalAlpha / (σ - bunchTridiagonalAlpha * τ)) := by
+  set b := A ((0 : Fin (m + 1)).succ.succ) ((0 : Fin (m + 1)).succ.succ) with hb
+  set anext := A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1)) with hanext
+  set a11 := A 0 0 with ha11
+  set a22 := A (oneIdx (m + 1)) (oneIdx (m + 1)) with ha22
+  set a21 := A (oneIdx (m + 1)) 0 with ha21
+  have hsym : A 0 (oneIdx (m + 1)) = a21 := hA.1 0 (oneIdx (m + 1))
+  have hdeteq : mixedDet2 (m + 1) A = a11 * a22 - a21 ^ 2 := by
+    unfold mixedDet2; rw [hsym]; ring
+  have hcorner := flSchurCompl2_corner_eq fp A hA
+  rw [hdeteq] at hcorner
+  obtain ⟨Δ, hΔ, hstep⟩ :=
+    fl_tridiagonal_twoByTwo_schur_step_error fp b anext (a11 / (a11 * a22 - a21 ^ 2)) hval
+  rw [hstep] at hcorner
+  have hcorr : |anext * (a11 / (a11 * a22 - a21 ^ 2)) * anext|
+      ≤ anext ^ 2 * bunchTridiagonalAlpha / (σ - bunchTridiagonalAlpha * τ) := by
+    have hcomm : anext * (a11 / (a11 * a22 - a21 ^ 2)) * anext
+        = anext * anext * (a11 / (a11 * a22 - a21 ^ 2)) := by ring
+    rw [hcomm]
+    exact tridiag_twoByTwo_corner_correction_le_decoupled σ τ a11 a21 a22 anext
+      hchoice hσpos hτa22 hslack
+  have hγ0 : 0 ≤ gamma fp 3 := gamma_nonneg fp hval
+  rw [hcorner]
+  have htri : |(b - anext * (a11 / (a11 * a22 - a21 ^ 2)) * anext) + Δ|
+      ≤ |b - anext * (a11 / (a11 * a22 - a21 ^ 2)) * anext| + |Δ| := abs_add_le _ _
+  have hsub : |b - anext * (a11 / (a11 * a22 - a21 ^ 2)) * anext|
+      ≤ |b| + |anext * (a11 / (a11 * a22 - a21 ^ 2)) * anext| := abs_sub _ _
+  calc |(b - anext * (a11 / (a11 * a22 - a21 ^ 2)) * anext) + Δ|
+      ≤ |b - anext * (a11 / (a11 * a22 - a21 ^ 2)) * anext| + |Δ| := htri
+    _ ≤ (|b| + |anext * (a11 / (a11 * a22 - a21 ^ 2)) * anext|)
+          + gamma fp 3 * (|b| + |anext * (a11 / (a11 * a22 - a21 ^ 2)) * anext|) :=
+        add_le_add hsub hΔ
+    _ = (1 + gamma fp 3) * (|b| + |anext * (a11 / (a11 * a22 - a21 ^ 2)) * anext|) := by ring
+    _ ≤ (1 + gamma fp 3) *
+          (|b| + anext ^ 2 * bunchTridiagonalAlpha / (σ - bunchTridiagonalAlpha * τ)) := by
+        apply mul_le_mul_of_nonneg_left _ (by linarith)
+        linarith [hcorr]
+
 end LeanFpAnalysis.FP.Ch11Closure.TriGrowthInv
