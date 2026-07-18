@@ -388,4 +388,289 @@ def TriGrowthData (fp : FPModel) (M0 : ℝ) :
         BunchTridiagonalPivotChoice M0 (A 0 0) (A (oneIdx n) 0) PivotSize.two ∧
         TriGrowthData fp M0 s (flSchurCompl2 n fp A)) := Iff.rfl
 
+/-! ## Session 4 — decoupled 2x2 product-path arithmetic cores
+(σ = fixed test scale M0; τ ≥ σ = entry bound; adapted from the coupled
+`corner_quadform_core` / `corner_rowcol_le_core` via the decoupled determinant
+identity `a21²·(σ−ατ) ≤ σ·D`.  At τ=σ they reduce to the coupled bounds via α²=1−α.) -/
+
+theorem corner_quadform_core_decoupled
+    (u σ τ a11abs a21abs a22abs anextabs w0 w1 D : ℝ)
+    (hu : 0 ≤ u) (hσ : 0 < σ)
+    (ha11abs : 0 ≤ a11abs) (ha21abs : 0 < a21abs)
+    (ha22abs : 0 ≤ a22abs) (hanextabs : 0 ≤ anextabs)
+    (hw0 : 0 ≤ w0) (hw1 : 0 ≤ w1) (hDpos : 0 < D)
+    (hslack : bunchTridiagonalAlpha * τ < σ)
+    (hDlow : a21abs ^ 2 * (σ - bunchTridiagonalAlpha * τ) ≤ σ * D)
+    (htest : σ * a11abs ≤ bunchTridiagonalAlpha * a21abs ^ 2)
+    (ha22 : a22abs ≤ τ) (hanext : anextabs ≤ τ) :
+    w0 * D ≤ (1 + u) * anextabs * a21abs → w1 * D ≤ (1 + u) * anextabs * a11abs →
+    w0 ^ 2 * a11abs + 2 * w0 * w1 * a21abs + w1 ^ 2 * a22abs
+      ≤ (1 + u) ^ 2 * bunchTridiagonalAlpha * τ ^ 2 * (3 * σ + bunchTridiagonalAlpha * τ)
+          / (σ - bunchTridiagonalAlpha * τ) ^ 2 := by
+  intro hw0D hw1D
+  have hα : 0 < bunchTridiagonalAlpha := bunch_tridiagonal_alpha_pos
+  have hα1 : bunchTridiagonalAlpha < 1 := bunch_tridiagonal_alpha_lt_one
+  set α := bunchTridiagonalAlpha with hαdef
+  have h1u : (0 : ℝ) ≤ 1 + u := by linarith
+  have hσ0 : 0 ≤ σ := le_of_lt hσ
+  have hτ : (0 : ℝ) ≤ τ := le_trans ha22abs ha22
+  -- local squaring monotonicity (the private helper is inaccessible)
+  have sqmono : ∀ {a b : ℝ}, 0 ≤ a → a ≤ b → a ^ 2 ≤ b ^ 2 := by
+    intro a b ha hab; rw [pow_two, pow_two]; exact mul_self_le_mul_self ha hab
+  set s := σ - α * τ with hsdef
+  have hs : (0 : ℝ) < s := by rw [hsdef]; linarith
+  set R := (1 + u) ^ 2 * α * τ ^ 2 * (3 * σ + α * τ) with hR
+  have hRHSnn : 0 ≤ R := by rw [hR]; positivity
+  have hw0Dnn : 0 ≤ w0 * D := mul_nonneg hw0 hDpos.le
+  have hw1Dnn : 0 ≤ w1 * D := mul_nonneg hw1 hDpos.le
+  have hP0nn : 0 ≤ (1 + u) * anextabs * a21abs :=
+    mul_nonneg (mul_nonneg h1u hanextabs) ha21abs.le
+  -- squared / cross multiplier bounds (clearing `D`)
+  have e0 : (w0 * D) ^ 2 ≤ ((1 + u) * anextabs * a21abs) ^ 2 := sqmono hw0Dnn hw0D
+  have e1 : (w1 * D) ^ 2 ≤ ((1 + u) * anextabs * a11abs) ^ 2 := sqmono hw1Dnn hw1D
+  have ecross : (w0 * D) * (w1 * D)
+      ≤ ((1 + u) * anextabs * a21abs) * ((1 + u) * anextabs * a11abs) :=
+    mul_le_mul hw0D hw1D hw1Dnn hP0nn
+  -- STEP (i): `Q · D² ≤ N`
+  have hA : w0 ^ 2 * a11abs * D ^ 2 ≤ ((1 + u) * anextabs * a21abs) ^ 2 * a11abs := by
+    have h := mul_le_mul_of_nonneg_right e0 ha11abs
+    calc w0 ^ 2 * a11abs * D ^ 2 = (w0 * D) ^ 2 * a11abs := by ring
+      _ ≤ ((1 + u) * anextabs * a21abs) ^ 2 * a11abs := h
+  have hC : w1 ^ 2 * a22abs * D ^ 2 ≤ ((1 + u) * anextabs * a11abs) ^ 2 * a22abs := by
+    have h := mul_le_mul_of_nonneg_right e1 ha22abs
+    calc w1 ^ 2 * a22abs * D ^ 2 = (w1 * D) ^ 2 * a22abs := by ring
+      _ ≤ ((1 + u) * anextabs * a11abs) ^ 2 * a22abs := h
+  have hB : 2 * w0 * w1 * a21abs * D ^ 2
+      ≤ 2 * (((1 + u) * anextabs * a21abs) * ((1 + u) * anextabs * a11abs)) * a21abs := by
+    have h := mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right ecross ha21abs.le)
+      (by norm_num : (0 : ℝ) ≤ 2)
+    calc 2 * w0 * w1 * a21abs * D ^ 2 = 2 * ((w0 * D) * (w1 * D) * a21abs) := by ring
+      _ ≤ 2 * (((1 + u) * anextabs * a21abs) * ((1 + u) * anextabs * a11abs) * a21abs) := h
+      _ = 2 * (((1 + u) * anextabs * a21abs) * ((1 + u) * anextabs * a11abs)) * a21abs := by ring
+  set N := (1 + u) ^ 2 * anextabs ^ 2 * (3 * a21abs ^ 2 * a11abs + a11abs ^ 2 * a22abs) with hN
+  have stepi :
+      (w0 ^ 2 * a11abs + 2 * w0 * w1 * a21abs + w1 ^ 2 * a22abs) * D ^ 2 ≤ N := by
+    have hsum : (w0 ^ 2 * a11abs + 2 * w0 * w1 * a21abs + w1 ^ 2 * a22abs) * D ^ 2
+        = w0 ^ 2 * a11abs * D ^ 2 + 2 * w0 * w1 * a21abs * D ^ 2 + w1 ^ 2 * a22abs * D ^ 2 := by
+      ring
+    have hNeq : ((1 + u) * anextabs * a21abs) ^ 2 * a11abs
+        + 2 * (((1 + u) * anextabs * a21abs) * ((1 + u) * anextabs * a11abs)) * a21abs
+        + ((1 + u) * anextabs * a11abs) ^ 2 * a22abs = N := by rw [hN]; ring
+    rw [hsum, ← hNeq]
+    exact add_le_add (add_le_add hA hB) hC
+  -- STEP (ii): `Q ≤ N / D²`
+  have hD2pos : (0 : ℝ) < D ^ 2 := by positivity
+  have stepii : w0 ^ 2 * a11abs + 2 * w0 * w1 * a21abs + w1 ^ 2 * a22abs ≤ N / D ^ 2 :=
+    (le_div_iff₀ hD2pos).mpr stepi
+  -- reduced polynomial (numerator, scaled by σ²)
+  have hanextsq : anextabs ^ 2 ≤ τ ^ 2 := sqmono hanextabs hanext
+  have htestsq : (σ * a11abs) ^ 2 ≤ (α * a21abs ^ 2) ^ 2 :=
+    sqmono (mul_nonneg hσ0 ha11abs) htest
+  -- term 1
+  have t1 : anextabs ^ 2 * (3 * a21abs ^ 2 * a11abs) * σ ^ 2 ≤ 3 * α * σ * τ ^ 2 * a21abs ^ 4 := by
+    have hX : 0 ≤ 3 * a21abs ^ 2 * a11abs * σ ^ 2 := by positivity
+    have stepA : anextabs ^ 2 * (3 * a21abs ^ 2 * a11abs * σ ^ 2)
+        ≤ τ ^ 2 * (3 * a21abs ^ 2 * a11abs * σ ^ 2) := mul_le_mul_of_nonneg_right hanextsq hX
+    have hσa : 3 * a21abs ^ 2 * τ ^ 2 * (σ * (σ * a11abs))
+        ≤ 3 * a21abs ^ 2 * τ ^ 2 * (σ * (α * a21abs ^ 2)) :=
+      mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left htest hσ0)
+        (by positivity : (0 : ℝ) ≤ 3 * a21abs ^ 2 * τ ^ 2)
+    calc anextabs ^ 2 * (3 * a21abs ^ 2 * a11abs) * σ ^ 2
+        = anextabs ^ 2 * (3 * a21abs ^ 2 * a11abs * σ ^ 2) := by ring
+      _ ≤ τ ^ 2 * (3 * a21abs ^ 2 * a11abs * σ ^ 2) := stepA
+      _ = 3 * a21abs ^ 2 * τ ^ 2 * (σ * (σ * a11abs)) := by ring
+      _ ≤ 3 * a21abs ^ 2 * τ ^ 2 * (σ * (α * a21abs ^ 2)) := hσa
+      _ = 3 * α * σ * τ ^ 2 * a21abs ^ 4 := by ring
+  -- term 2
+  have t2 : anextabs ^ 2 * (a11abs ^ 2 * a22abs) * σ ^ 2 ≤ α ^ 2 * τ ^ 3 * a21abs ^ 4 := by
+    have hY : 0 ≤ a11abs ^ 2 * a22abs * σ ^ 2 := by positivity
+    have stepA' : anextabs ^ 2 * (a11abs ^ 2 * a22abs * σ ^ 2)
+        ≤ τ ^ 2 * (a11abs ^ 2 * a22abs * σ ^ 2) := mul_le_mul_of_nonneg_right hanextsq hY
+    have hstep1 : a22abs * (σ * a11abs) ^ 2 ≤ a22abs * (α * a21abs ^ 2) ^ 2 :=
+      mul_le_mul_of_nonneg_left htestsq ha22abs
+    have hstep2 : a22abs * (α ^ 2 * a21abs ^ 4) ≤ τ * (α ^ 2 * a21abs ^ 4) :=
+      mul_le_mul_of_nonneg_right ha22 (by positivity : (0 : ℝ) ≤ α ^ 2 * a21abs ^ 4)
+    calc anextabs ^ 2 * (a11abs ^ 2 * a22abs) * σ ^ 2
+        = anextabs ^ 2 * (a11abs ^ 2 * a22abs * σ ^ 2) := by ring
+      _ ≤ τ ^ 2 * (a11abs ^ 2 * a22abs * σ ^ 2) := stepA'
+      _ = τ ^ 2 * (a22abs * (σ * a11abs) ^ 2) := by ring
+      _ ≤ τ ^ 2 * (a22abs * (α * a21abs ^ 2) ^ 2) := mul_le_mul_of_nonneg_left hstep1 (sq_nonneg τ)
+      _ = τ ^ 2 * (a22abs * (α ^ 2 * a21abs ^ 4)) := by ring
+      _ ≤ τ ^ 2 * (τ * (α ^ 2 * a21abs ^ 4)) := mul_le_mul_of_nonneg_left hstep2 (sq_nonneg τ)
+      _ = α ^ 2 * τ ^ 3 * a21abs ^ 4 := by ring
+  have hcore : anextabs ^ 2 * (3 * a21abs ^ 2 * a11abs + a11abs ^ 2 * a22abs) * σ ^ 2
+      ≤ α * τ ^ 2 * (3 * σ + α * τ) * a21abs ^ 4 := by
+    have hdist : anextabs ^ 2 * (3 * a21abs ^ 2 * a11abs + a11abs ^ 2 * a22abs) * σ ^ 2
+        = anextabs ^ 2 * (3 * a21abs ^ 2 * a11abs) * σ ^ 2
+          + anextabs ^ 2 * (a11abs ^ 2 * a22abs) * σ ^ 2 := by ring
+    have hrhs : α * τ ^ 2 * (3 * σ + α * τ) * a21abs ^ 4
+        = 3 * α * σ * τ ^ 2 * a21abs ^ 4 + α ^ 2 * τ ^ 3 * a21abs ^ 4 := by ring
+    rw [hdist, hrhs]; exact add_le_add t1 t2
+  -- (A): N·σ² ≤ R·a21⁴
+  have hAineq : N * σ ^ 2 ≤ R * a21abs ^ 4 := by
+    have h := mul_le_mul_of_nonneg_left hcore (by positivity : (0 : ℝ) ≤ (1 + u) ^ 2)
+    calc N * σ ^ 2
+        = (1 + u) ^ 2 * (anextabs ^ 2 * (3 * a21abs ^ 2 * a11abs + a11abs ^ 2 * a22abs) * σ ^ 2) := by
+          rw [hN]; ring
+      _ ≤ (1 + u) ^ 2 * (α * τ ^ 2 * (3 * σ + α * τ) * a21abs ^ 4) := h
+      _ = R * a21abs ^ 4 := by rw [hR]; ring
+  -- (B): a21⁴·s² ≤ σ²·D²   (from hDlow squared)
+  have hBineq : a21abs ^ 4 * s ^ 2 ≤ σ ^ 2 * D ^ 2 := by
+    have hDlow_nn : 0 ≤ a21abs ^ 2 * s := mul_nonneg (sq_nonneg _) hs.le
+    have hsq : (a21abs ^ 2 * s) ^ 2 ≤ (σ * D) ^ 2 := sqmono hDlow_nn hDlow
+    calc a21abs ^ 4 * s ^ 2 = (a21abs ^ 2 * s) ^ 2 := by ring
+      _ ≤ (σ * D) ^ 2 := hsq
+      _ = σ ^ 2 * D ^ 2 := by ring
+  -- combine (A) and (B), then cancel σ²
+  have hσsq : (0 : ℝ) < σ ^ 2 := pow_pos hσ 2
+  have combined : (N * s ^ 2) * σ ^ 2 ≤ (R * D ^ 2) * σ ^ 2 := by
+    have hA' : N * σ ^ 2 * s ^ 2 ≤ R * a21abs ^ 4 * s ^ 2 :=
+      mul_le_mul_of_nonneg_right hAineq (sq_nonneg s)
+    have hB' : R * (a21abs ^ 4 * s ^ 2) ≤ R * (σ ^ 2 * D ^ 2) :=
+      mul_le_mul_of_nonneg_left hBineq hRHSnn
+    calc (N * s ^ 2) * σ ^ 2 = N * σ ^ 2 * s ^ 2 := by ring
+      _ ≤ R * a21abs ^ 4 * s ^ 2 := hA'
+      _ = R * (a21abs ^ 4 * s ^ 2) := by ring
+      _ ≤ R * (σ ^ 2 * D ^ 2) := hB'
+      _ = (R * D ^ 2) * σ ^ 2 := by ring
+  have hNs : N * s ^ 2 ≤ R * D ^ 2 := le_of_mul_le_mul_right combined hσsq
+  -- STEP (iii): assemble
+  have hs2pos : (0 : ℝ) < s ^ 2 := pow_pos hs 2
+  refine (le_div_iff₀ hs2pos).mpr ?_
+  calc (w0 ^ 2 * a11abs + 2 * w0 * w1 * a21abs + w1 ^ 2 * a22abs) * s ^ 2
+      ≤ (N / D ^ 2) * s ^ 2 := mul_le_mul_of_nonneg_right stepii (sq_nonneg s)
+    _ = N * s ^ 2 / D ^ 2 := by ring
+    _ ≤ R := (div_le_iff₀ hD2pos).mpr hNs
+
+theorem corner_rowcol_le_core_decoupled
+    (u σ τ a11abs a21abs a22abs anextabs w0 w1 D : ℝ)
+    (hu : 0 ≤ u) (hσ : 0 < σ)
+    (ha11abs : 0 ≤ a11abs) (ha21abs : 0 < a21abs)
+    (ha22abs : 0 ≤ a22abs) (hanextabs : 0 ≤ anextabs)
+    (hDpos : 0 < D)
+    (hslack : bunchTridiagonalAlpha * τ < σ)
+    (hDlow : a21abs ^ 2 * (σ - bunchTridiagonalAlpha * τ) ≤ σ * D)
+    (htest : σ * a11abs ≤ bunchTridiagonalAlpha * a21abs ^ 2)
+    (ha21 : a21abs ≤ τ) (ha22 : a22abs ≤ τ) (hanext : anextabs ≤ τ)
+    (hw0D : w0 * D ≤ (1 + u) * anextabs * a21abs)
+    (hw1D : w1 * D ≤ (1 + u) * anextabs * a11abs) :
+    a11abs * w0 + a21abs * w1
+        ≤ 2 * (1 + u) * bunchTridiagonalAlpha * τ ^ 2 / (σ - bunchTridiagonalAlpha * τ)
+      ∧ a21abs * w0 + a22abs * w1
+        ≤ 2 * (1 + u) * σ * τ / (σ - bunchTridiagonalAlpha * τ) := by
+  have hα : 0 < bunchTridiagonalAlpha := bunch_tridiagonal_alpha_pos
+  set α := bunchTridiagonalAlpha with hαdef
+  set γ := σ - α * τ with hγdef
+  have hγ : 0 < γ := by rw [hγdef]; linarith [hslack]
+  have h1u : (0 : ℝ) ≤ 1 + u := by linarith
+  have hσ0 : 0 ≤ σ := hσ.le
+  have hτ0 : 0 ≤ τ := le_trans ha21abs.le ha21
+  -- KA : linear cancellation numerator for the pivot-row a11/a21 paths
+  have KA : a11abs * anextabs * a21abs * γ ≤ α * τ ^ 2 * D := by
+    have hστ : σ * (a11abs * anextabs * a21abs * γ) ≤ σ * (α * τ ^ 2 * D) := by
+      calc σ * (a11abs * anextabs * a21abs * γ)
+          = (σ * a11abs) * (anextabs * a21abs * γ) := by ring
+        _ ≤ (α * a21abs ^ 2) * (anextabs * a21abs * γ) :=
+            mul_le_mul_of_nonneg_right htest
+              (mul_nonneg (mul_nonneg hanextabs ha21abs.le) hγ.le)
+        _ = (α * anextabs * a21abs) * (a21abs ^ 2 * γ) := by ring
+        _ ≤ (α * anextabs * a21abs) * (σ * D) :=
+            mul_le_mul_of_nonneg_left hDlow
+              (mul_nonneg (mul_nonneg hα.le hanextabs) ha21abs.le)
+        _ = σ * (α * (anextabs * a21abs) * D) := by ring
+        _ ≤ σ * (α * (τ * τ) * D) :=
+            mul_le_mul_of_nonneg_left
+              (mul_le_mul_of_nonneg_right
+                (mul_le_mul_of_nonneg_left (mul_le_mul hanext ha21 ha21abs.le hτ0) hα.le)
+                hDpos.le)
+              hσ0
+        _ = σ * (α * τ ^ 2 * D) := by ring
+    exact le_of_mul_le_mul_left hστ hσ
+  -- KC : linear cancellation numerator for the pivot-column a21 path
+  have KC : anextabs * a21abs ^ 2 * γ ≤ σ * τ * D := by
+    calc anextabs * a21abs ^ 2 * γ
+        = anextabs * (a21abs ^ 2 * γ) := by ring
+      _ ≤ anextabs * (σ * D) := mul_le_mul_of_nonneg_left hDlow hanextabs
+      _ ≤ τ * (σ * D) := mul_le_mul_of_nonneg_right hanext (mul_nonneg hσ0 hDpos.le)
+      _ = σ * τ * D := by ring
+  -- KD : linear cancellation numerator for the pivot-column a22 path
+  have KD : a22abs * anextabs * a11abs * γ ≤ α * τ ^ 2 * D := by
+    have hστ : σ * (a22abs * anextabs * a11abs * γ) ≤ σ * (α * τ ^ 2 * D) := by
+      calc σ * (a22abs * anextabs * a11abs * γ)
+          = (σ * a11abs) * (a22abs * anextabs * γ) := by ring
+        _ ≤ (α * a21abs ^ 2) * (a22abs * anextabs * γ) :=
+            mul_le_mul_of_nonneg_right htest
+              (mul_nonneg (mul_nonneg ha22abs hanextabs) hγ.le)
+        _ = (α * a22abs * anextabs) * (a21abs ^ 2 * γ) := by ring
+        _ ≤ (α * a22abs * anextabs) * (σ * D) :=
+            mul_le_mul_of_nonneg_left hDlow
+              (mul_nonneg (mul_nonneg hα.le ha22abs) hanextabs)
+        _ = σ * (α * (a22abs * anextabs) * D) := by ring
+        _ ≤ σ * (α * (τ * τ) * D) :=
+            mul_le_mul_of_nonneg_left
+              (mul_le_mul_of_nonneg_right
+                (mul_le_mul_of_nonneg_left (mul_le_mul ha22 hanext hanextabs hτ0) hα.le)
+                hDpos.le)
+              hσ0
+        _ = σ * (α * τ ^ 2 * D) := by ring
+    exact le_of_mul_le_mul_left hστ hσ
+  -- the four term bounds
+  have ta : a11abs * w0 ≤ (1 + u) * α * τ ^ 2 / γ := by
+    have hmul : a11abs * w0 * γ * D ≤ (1 + u) * α * τ ^ 2 * D := by
+      calc a11abs * w0 * γ * D
+          = γ * a11abs * (w0 * D) := by ring
+        _ ≤ γ * a11abs * ((1 + u) * anextabs * a21abs) :=
+            mul_le_mul_of_nonneg_left hw0D (mul_nonneg hγ.le ha11abs)
+        _ = (1 + u) * (a11abs * anextabs * a21abs * γ) := by ring
+        _ ≤ (1 + u) * (α * τ ^ 2 * D) := mul_le_mul_of_nonneg_left KA h1u
+        _ = (1 + u) * α * τ ^ 2 * D := by ring
+    have h2 : a11abs * w0 * γ ≤ (1 + u) * α * τ ^ 2 := le_of_mul_le_mul_right hmul hDpos
+    exact (le_div_iff₀ hγ).mpr h2
+  have tb : a21abs * w1 ≤ (1 + u) * α * τ ^ 2 / γ := by
+    have hmul : a21abs * w1 * γ * D ≤ (1 + u) * α * τ ^ 2 * D := by
+      calc a21abs * w1 * γ * D
+          = γ * a21abs * (w1 * D) := by ring
+        _ ≤ γ * a21abs * ((1 + u) * anextabs * a11abs) :=
+            mul_le_mul_of_nonneg_left hw1D (mul_nonneg hγ.le ha21abs.le)
+        _ = (1 + u) * (a11abs * anextabs * a21abs * γ) := by ring
+        _ ≤ (1 + u) * (α * τ ^ 2 * D) := mul_le_mul_of_nonneg_left KA h1u
+        _ = (1 + u) * α * τ ^ 2 * D := by ring
+    have h2 : a21abs * w1 * γ ≤ (1 + u) * α * τ ^ 2 := le_of_mul_le_mul_right hmul hDpos
+    exact (le_div_iff₀ hγ).mpr h2
+  have tc : a21abs * w0 ≤ (1 + u) * σ * τ / γ := by
+    have hmul : a21abs * w0 * γ * D ≤ (1 + u) * σ * τ * D := by
+      calc a21abs * w0 * γ * D
+          = γ * a21abs * (w0 * D) := by ring
+        _ ≤ γ * a21abs * ((1 + u) * anextabs * a21abs) :=
+            mul_le_mul_of_nonneg_left hw0D (mul_nonneg hγ.le ha21abs.le)
+        _ = (1 + u) * (anextabs * a21abs ^ 2 * γ) := by ring
+        _ ≤ (1 + u) * (σ * τ * D) := mul_le_mul_of_nonneg_left KC h1u
+        _ = (1 + u) * σ * τ * D := by ring
+    have h2 : a21abs * w0 * γ ≤ (1 + u) * σ * τ := le_of_mul_le_mul_right hmul hDpos
+    exact (le_div_iff₀ hγ).mpr h2
+  have td : a22abs * w1 ≤ (1 + u) * α * τ ^ 2 / γ := by
+    have hmul : a22abs * w1 * γ * D ≤ (1 + u) * α * τ ^ 2 * D := by
+      calc a22abs * w1 * γ * D
+          = γ * a22abs * (w1 * D) := by ring
+        _ ≤ γ * a22abs * ((1 + u) * anextabs * a11abs) :=
+            mul_le_mul_of_nonneg_left hw1D (mul_nonneg hγ.le ha22abs)
+        _ = (1 + u) * (a22abs * anextabs * a11abs * γ) := by ring
+        _ ≤ (1 + u) * (α * τ ^ 2 * D) := mul_le_mul_of_nonneg_left KD h1u
+        _ = (1 + u) * α * τ ^ 2 * D := by ring
+    have h2 : a22abs * w1 * γ ≤ (1 + u) * α * τ ^ 2 := le_of_mul_le_mul_right hmul hDpos
+    exact (le_div_iff₀ hγ).mpr h2
+  -- α·τ² ≤ σ·τ (from α·τ < σ), so the a22 path relaxes into the a21 constant
+  have relax : (1 + u) * α * τ ^ 2 / γ ≤ (1 + u) * σ * τ / γ := by
+    have hnum : (1 + u) * α * τ ^ 2 ≤ (1 + u) * σ * τ := by
+      nlinarith [mul_nonneg h1u (mul_nonneg (sub_nonneg.mpr hslack.le) hτ0)]
+    rw [div_eq_mul_inv, div_eq_mul_inv]
+    exact mul_le_mul_of_nonneg_right hnum (inv_pos.mpr hγ).le
+  refine ⟨?_, ?_⟩
+  · calc a11abs * w0 + a21abs * w1
+        ≤ (1 + u) * α * τ ^ 2 / γ + (1 + u) * α * τ ^ 2 / γ := add_le_add ta tb
+      _ = 2 * (1 + u) * α * τ ^ 2 / γ := by ring
+  · calc a21abs * w0 + a22abs * w1
+        ≤ (1 + u) * σ * τ / γ + (1 + u) * σ * τ / γ := add_le_add tc (le_trans td relax)
+      _ = 2 * (1 + u) * σ * τ / γ := by ring
+
 end LeanFpAnalysis.FP.Ch11Closure.TriGrowthInv
