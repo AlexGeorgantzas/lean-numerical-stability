@@ -191,6 +191,26 @@ noncomputable def middleVecConsOne {n : ℕ} (x0 : ℝ) (xtail : Fin n → ℝ) 
     Fin (n + 1) → ℝ :=
   fun I => Fin.cases x0 (fun i => xtail i) I
 
+@[simp] theorem middleBlockDiagConsOne_00 {n : ℕ} (e : ℝ)
+    (Dtail : Fin n → Fin n → ℝ) :
+    middleBlockDiagConsOne e Dtail 0 0 = e := by
+  simp [middleBlockDiagConsOne]
+
+@[simp] theorem middleBlockDiagConsOne_0s {n : ℕ} (e : ℝ)
+    (Dtail : Fin n → Fin n → ℝ) (j : Fin n) :
+    middleBlockDiagConsOne e Dtail 0 j.succ = 0 := by
+  simp [middleBlockDiagConsOne]
+
+@[simp] theorem middleBlockDiagConsOne_s0 {n : ℕ} (e : ℝ)
+    (Dtail : Fin n → Fin n → ℝ) (i : Fin n) :
+    middleBlockDiagConsOne e Dtail i.succ 0 = 0 := by
+  simp [middleBlockDiagConsOne]
+
+@[simp] theorem middleBlockDiagConsOne_ss {n : ℕ} (e : ℝ)
+    (Dtail : Fin n → Fin n → ℝ) (i j : Fin n) :
+    middleBlockDiagConsOne e Dtail i.succ j.succ = Dtail i j := by
+  simp [middleBlockDiagConsOne]
+
 /-- Assemble a leading scalar middle solve with a trailing block-diagonal solve. -/
 theorem middleBlockDiagConsOne_solve_assemble {n : ℕ}
     (gammaMid e z0 : ℝ) (Dtail : Fin n → Fin n → ℝ) (ztail : Fin n → ℝ)
@@ -237,6 +257,51 @@ noncomputable def middleBlockDiagConsTwo {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
 noncomputable def middleVecConsTwo {n : ℕ} (xHead : Fin 2 → ℝ) (xtail : Fin n → ℝ) :
     Fin (n + 2) → ℝ :=
   fun I => Fin.cases (xHead 0) (fun k => Fin.cases (xHead 1) (fun i => xtail i) k) I
+
+@[simp] theorem middleBlockDiagConsTwo_00 {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
+    (Dtail : Fin n → Fin n → ℝ) :
+    middleBlockDiagConsTwo E Dtail 0 0 = E 0 0 := by
+  simp only [middleBlockDiagConsTwo, Fin.cases_zero]
+
+@[simp] theorem middleBlockDiagConsTwo_01 {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
+    (Dtail : Fin n → Fin n → ℝ) :
+    middleBlockDiagConsTwo E Dtail 0 (Fin.succ 0) = E 0 1 := by
+  simp only [middleBlockDiagConsTwo, Fin.cases_zero, Fin.cases_succ]
+
+@[simp] theorem middleBlockDiagConsTwo_0t {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
+    (Dtail : Fin n → Fin n → ℝ) (j : Fin n) :
+    middleBlockDiagConsTwo E Dtail 0 j.succ.succ = 0 := by
+  simp only [middleBlockDiagConsTwo, Fin.cases_zero, Fin.cases_succ]
+
+@[simp] theorem middleBlockDiagConsTwo_10 {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
+    (Dtail : Fin n → Fin n → ℝ) :
+    middleBlockDiagConsTwo E Dtail (Fin.succ 0) 0 = E 1 0 := by
+  simp only [middleBlockDiagConsTwo, Fin.cases_zero, Fin.cases_succ]
+
+@[simp] theorem middleBlockDiagConsTwo_11 {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
+    (Dtail : Fin n → Fin n → ℝ) :
+    middleBlockDiagConsTwo E Dtail (Fin.succ 0) (Fin.succ 0) = E 1 1 := by
+  simp only [middleBlockDiagConsTwo, Fin.cases_zero, Fin.cases_succ]
+
+@[simp] theorem middleBlockDiagConsTwo_1t {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
+    (Dtail : Fin n → Fin n → ℝ) (j : Fin n) :
+    middleBlockDiagConsTwo E Dtail (Fin.succ 0) j.succ.succ = 0 := by
+  simp only [middleBlockDiagConsTwo, Fin.cases_zero, Fin.cases_succ]
+
+@[simp] theorem middleBlockDiagConsTwo_t0 {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
+    (Dtail : Fin n → Fin n → ℝ) (i : Fin n) :
+    middleBlockDiagConsTwo E Dtail i.succ.succ 0 = 0 := by
+  simp only [middleBlockDiagConsTwo, Fin.cases_zero, Fin.cases_succ]
+
+@[simp] theorem middleBlockDiagConsTwo_t1 {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
+    (Dtail : Fin n → Fin n → ℝ) (i : Fin n) :
+    middleBlockDiagConsTwo E Dtail i.succ.succ (Fin.succ 0) = 0 := by
+  simp only [middleBlockDiagConsTwo, Fin.cases_zero, Fin.cases_succ]
+
+@[simp] theorem middleBlockDiagConsTwo_tt {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
+    (Dtail : Fin n → Fin n → ℝ) (i j : Fin n) :
+    middleBlockDiagConsTwo E Dtail i.succ.succ j.succ.succ = Dtail i j := by
+  simp only [middleBlockDiagConsTwo, Fin.cases_succ]
 
 /-- Assemble a leading 2×2 middle solve with a trailing block-diagonal solve. -/
 theorem middleBlockDiagConsTwo_solve_assemble {n : ℕ}
@@ -374,6 +439,72 @@ theorem mixedMiddleDFromSchedule_solve_of_blocks (fp : FPModel) (gammaMid : ℝ)
             cases pTail using Fin.cases with
             | zero => simpa [mixedMiddleDFromSchedule, middleVecConsTwo] using hp
             | succ i => simpa [mixedMiddleDFromSchedule, middleVecConsTwo] using hp
+
+/-- The constructor-based mixed middle factor is the named `flMixedD` factor
+    used by the mixed-pivot block-LDLᵀ development. -/
+theorem mixedMiddleDFromSchedule_eq_flMixedD (fp : FPModel) :
+    {n : ℕ} → (s : PivotSchedule n) → (A : Fin n → Fin n → ℝ) →
+      mixedMiddleDFromSchedule fp s A = flMixedD fp s A
+  | 0, .nil, _ => by
+      funext i _
+      exact Fin.elim0 i
+  | _ + 1, .consOne s, A => by
+      have htail := mixedMiddleDFromSchedule_eq_flMixedD fp s (flSchurCompl _ fp A)
+      funext i j
+      cases i using Fin.cases with
+      | zero =>
+          cases j using Fin.cases with
+          | zero => simp [mixedMiddleDFromSchedule]
+          | succ j => simp [mixedMiddleDFromSchedule]
+      | succ i =>
+          cases j using Fin.cases with
+          | zero => simp [mixedMiddleDFromSchedule]
+          | succ j => simp [mixedMiddleDFromSchedule, htail]
+  | m + 2, .consTwo s, A => by
+      have htail := mixedMiddleDFromSchedule_eq_flMixedD fp s (flSchurCompl2 m fp A)
+      funext i j
+      refine Fin.cases ?_ (fun iTail => ?_) i
+      · refine Fin.cases ?_ (fun jTail => ?_) j
+        · simp [mixedMiddleDFromSchedule]
+        · refine Fin.cases ?_ (fun _ => ?_) jTail
+          · simp only [mixedMiddleDFromSchedule, middleBlockDiagConsTwo_01,
+              leadingTwoBlock_apply, embedTwo_zero, embedTwo_one_eq, flMixedD_consTwo_01]
+          · simp [mixedMiddleDFromSchedule]
+      · refine Fin.cases ?_ (fun iTail2 => ?_) iTail
+        · refine Fin.cases ?_ (fun jTail => ?_) j
+          · simp only [mixedMiddleDFromSchedule, middleBlockDiagConsTwo_10,
+              leadingTwoBlock_apply, embedTwo_zero, embedTwo_one_eq, flMixedD_consTwo_10]
+          · refine Fin.cases ?_ (fun jTail2 => ?_) jTail
+            · simp only [mixedMiddleDFromSchedule, middleBlockDiagConsTwo_11,
+                leadingTwoBlock_apply, embedTwo_one_eq, flMixedD_consTwo_11]
+            · change middleBlockDiagConsTwo (leadingTwoBlock m A)
+                  (mixedMiddleDFromSchedule fp s (flSchurCompl2 m fp A)) (Fin.succ 0)
+                  jTail2.succ.succ =
+                flMixedD fp (s.consTwo) A (Fin.succ 0) jTail2.succ.succ
+              simp only [middleBlockDiagConsTwo_1t, flMixedD_consTwo_1t]
+        · refine Fin.cases ?_ (fun jTail => ?_) j
+          · simp [mixedMiddleDFromSchedule]
+          · refine Fin.cases ?_ (fun jTail2 => ?_) jTail
+            · simp only [mixedMiddleDFromSchedule, middleBlockDiagConsTwo_t1,
+                flMixedD_consTwo_t1]
+            · simp [mixedMiddleDFromSchedule, htail]
+
+/-- Schedule-local middle-solve residuals folded directly for the named
+    mixed-pivot middle factor `flMixedD`. -/
+theorem flMixedD_solve_of_blocks (fp : FPModel) (gammaMid : ℝ)
+    {n : ℕ} (s : PivotSchedule n) (A : Fin n → Fin n → ℝ) (z : Fin n → ℝ)
+    (hblocks : MixedMiddleSolveBlocks fp gammaMid s A z) :
+    ∃ (w : Fin n → ℝ) (ΔD : Fin n → Fin n → ℝ),
+      (∀ i j : Fin n, |ΔD i j| ≤ gammaMid * |flMixedD fp s A i j|) ∧
+      (∀ p : Fin n, ∑ q : Fin n, (flMixedD fp s A p q + ΔD p q) * w q = z p) := by
+  obtain ⟨w, ΔD, hBound, hEq⟩ :=
+    mixedMiddleDFromSchedule_solve_of_blocks fp gammaMid s A z hblocks
+  have hD := mixedMiddleDFromSchedule_eq_flMixedD fp s A
+  refine ⟨w, ΔD, ?_, ?_⟩
+  · intro i j
+    simpa [hD] using hBound i j
+  · intro p
+    simpa [hD] using hEq p
 
 /-! ## Part 2c — the solve-chain envelope is a scalar multiple of `|L̂||D̂||L̂ᵀ|`
 
