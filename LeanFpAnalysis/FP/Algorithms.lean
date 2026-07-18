@@ -85,6 +85,10 @@ import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenFactorNormCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.BlockLDLTSolveBackwardCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.Aasen118ReducedCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchKaufmanSolveCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenCoupledFpCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenTridiagGEPPCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenFactorResidualCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenDirect118Ch11Closure
 import LeanFpAnalysis.FP.Algorithms.IterativeRefinement
 import LeanFpAnalysis.FP.Algorithms.MatrixInversion
 import LeanFpAnalysis.FP.Algorithms.GaussJordan
