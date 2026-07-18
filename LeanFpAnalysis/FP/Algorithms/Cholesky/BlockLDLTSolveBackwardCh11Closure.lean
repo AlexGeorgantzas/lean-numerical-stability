@@ -294,7 +294,88 @@ theorem middleBlockDiagConsTwo_solve_assemble {n : ℕ}
           zero_mul, zero_add, add_zero]
         exact htailEq i
 
-/-! ## Part 2b — the solve-chain envelope is a scalar multiple of `|L̂||D̂||L̂ᵀ|`
+/-! ## Part 2b — schedule-level middle-solve assembly
+
+The previous lemmas assemble one head block and one solved tail.  The following
+recursive predicate records exactly the local block middle-solve data needed
+along a pivot schedule, and the theorem folds those local data into one global
+middle-solve residual for the recursively assembled middle factor. -/
+
+noncomputable def mixedMiddleDFromSchedule (fp : FPModel) :
+    {n : ℕ} → PivotSchedule n → (Fin n → Fin n → ℝ) → Fin n → Fin n → ℝ
+  | 0, .nil, _ => fun I _ => Fin.elim0 I
+  | _ + 1, .consOne s, A =>
+      middleBlockDiagConsOne (A 0 0) (mixedMiddleDFromSchedule fp s (flSchurCompl _ fp A))
+  | _ + 2, .consTwo s, A =>
+      middleBlockDiagConsTwo (leadingTwoBlock _ A)
+        (mixedMiddleDFromSchedule fp s (flSchurCompl2 _ fp A))
+
+noncomputable def MixedMiddleSolveBlocks (fp : FPModel) (gammaMid : ℝ) :
+    {n : ℕ} → PivotSchedule n → (Fin n → Fin n → ℝ) → (Fin n → ℝ) → Prop
+  | 0, .nil, _, _ => True
+  | _ + 1, .consOne s, A, z =>
+      (∃ w0 Δe : ℝ,
+        |Δe| ≤ gammaMid * |A 0 0| ∧ (A 0 0 + Δe) * w0 = z 0) ∧
+      MixedMiddleSolveBlocks fp gammaMid s (flSchurCompl _ fp A) (fun i => z i.succ)
+  | m + 2, .consTwo s, A, z =>
+      (∃ (wHead : Fin 2 → ℝ) (ΔE : Fin 2 → Fin 2 → ℝ),
+        (∀ p q : Fin 2, |ΔE p q| ≤ gammaMid * |leadingTwoBlock m A p q|) ∧
+        (∀ p : Fin 2,
+          ∑ q : Fin 2, (leadingTwoBlock m A p q + ΔE p q) * wHead q = z (embedTwo m p))) ∧
+      MixedMiddleSolveBlocks fp gammaMid s (flSchurCompl2 m fp A) (fun i => z i.succ.succ)
+
+/-- Fold schedule-local middle-solve residuals into one global block-diagonal
+    residual for the constructor-based mixed middle factor. -/
+theorem mixedMiddleDFromSchedule_solve_of_blocks (fp : FPModel) (gammaMid : ℝ) :
+    {n : ℕ} → (s : PivotSchedule n) → (A : Fin n → Fin n → ℝ) → (z : Fin n → ℝ) →
+      MixedMiddleSolveBlocks fp gammaMid s A z →
+      ∃ (w : Fin n → ℝ) (ΔD : Fin n → Fin n → ℝ),
+        (∀ i j : Fin n, |ΔD i j| ≤ gammaMid * |mixedMiddleDFromSchedule fp s A i j|) ∧
+        (∀ p : Fin n, ∑ q : Fin n, (mixedMiddleDFromSchedule fp s A p q + ΔD p q) * w q = z p)
+  | 0, .nil, A, z, h => by
+      refine ⟨(fun I => Fin.elim0 I), (fun I _ => Fin.elim0 I), ?_, ?_⟩
+      · intro i; exact Fin.elim0 i
+      · intro p; exact Fin.elim0 p
+  | _ + 1, .consOne s, A, z, h => by
+      rcases h with ⟨hhead, htailBlocks⟩
+      rcases hhead with ⟨w0, Δe, hΔe, hheadEq⟩
+      obtain ⟨wTail, ΔTail, hTailBound, hTailEq⟩ :=
+        mixedMiddleDFromSchedule_solve_of_blocks fp gammaMid s (flSchurCompl _ fp A)
+          (fun i => z i.succ) htailBlocks
+      obtain ⟨w, ΔD, hBound, hEq⟩ :=
+        middleBlockDiagConsOne_solve_assemble gammaMid (A 0 0) (z 0)
+          (mixedMiddleDFromSchedule fp s (flSchurCompl _ fp A)) (fun i => z i.succ)
+          w0 Δe wTail ΔTail hΔe hheadEq hTailBound hTailEq
+      refine ⟨w, ΔD, ?_, ?_⟩
+      · simpa [mixedMiddleDFromSchedule] using hBound
+      · intro p
+        have hp := hEq p
+        cases p using Fin.cases with
+        | zero => simpa [mixedMiddleDFromSchedule, middleVecConsOne] using hp
+        | succ i => simpa [mixedMiddleDFromSchedule, middleVecConsOne] using hp
+  | m + 2, .consTwo s, A, z, h => by
+      rcases h with ⟨hhead, htailBlocks⟩
+      rcases hhead with ⟨wHead, ΔE, hΔE, hheadEq⟩
+      obtain ⟨wTail, ΔTail, hTailBound, hTailEq⟩ :=
+        mixedMiddleDFromSchedule_solve_of_blocks fp gammaMid s (flSchurCompl2 m fp A)
+          (fun i => z i.succ.succ) htailBlocks
+      obtain ⟨w, ΔD, hBound, hEq⟩ :=
+        middleBlockDiagConsTwo_solve_assemble gammaMid (leadingTwoBlock m A)
+          (mixedMiddleDFromSchedule fp s (flSchurCompl2 m fp A))
+          (fun p => z (embedTwo m p)) (fun i => z i.succ.succ)
+          wHead ΔE wTail ΔTail hΔE hheadEq hTailBound hTailEq
+      refine ⟨w, ΔD, ?_, ?_⟩
+      · simpa [mixedMiddleDFromSchedule] using hBound
+      · intro p
+        have hp := hEq p
+        cases p using Fin.cases with
+        | zero => simpa [mixedMiddleDFromSchedule, middleVecConsTwo] using hp
+        | succ pTail =>
+            cases pTail using Fin.cases with
+            | zero => simpa [mixedMiddleDFromSchedule, middleVecConsTwo] using hp
+            | succ i => simpa [mixedMiddleDFromSchedule, middleVecConsTwo] using hp
+
+/-! ## Part 2c — the solve-chain envelope is a scalar multiple of `|L̂||D̂||L̂ᵀ|`
 
 The derived Aasen collapsed budget for the middle factor `D̂` with symmetric
 outer factor (`U = L̂ᵀ`) and middle budget `γ_mid |D̂|` factors exactly as a

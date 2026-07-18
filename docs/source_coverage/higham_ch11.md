@@ -12486,6 +12486,23 @@ Problem transcription.
   removes the algebraic head/tail assembly part of the mixed middle-solve gap;
   remaining work is wiring these constructors recursively to the `flMixedD`
   `PivotSchedule` and supplying the per-2×2 middle-solve residual data.
+- 2026-07-17 mixed middle-solve schedule-fold foundation:
+  `lake env lean LeanFpAnalysis/FP/Algorithms/Cholesky/BlockLDLTSolveBackwardCh11Closure.lean`
+  → pass; `lake build LeanFpAnalysis.FP.Algorithms.Cholesky.BlockLDLTSolveBackwardCh11Closure`
+  → `Build completed successfully (3061 jobs)`; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11`
+  → `Build completed successfully (3054 jobs)`; `git diff --check -- ...`
+  → pass; tab scan of `BlockLDLTSolveBackwardCh11Closure.lean` / `higham_ch11.md`
+  → clean; forbidden-token scan of `BlockLDLTSolveBackwardCh11Closure.lean`
+  → clean; focused axiom check of `mixedMiddleDFromSchedule_solve_of_blocks`
+  → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  `mixedMiddleDFromSchedule`, `MixedMiddleSolveBlocks`, and
+  `mixedMiddleDFromSchedule_solve_of_blocks` give the schedule-level recursive
+  fold from local 1×1/2×2 middle-solve block data to a global
+  `(D̂+ΔD)ŵ=ẑ` residual for the constructor-built mixed middle factor. This
+  removes the recursive assembly part of the mixed middle-solve gap for the
+  constructor representation; remaining work is the representation bridge from
+  `mixedMiddleDFromSchedule` to the existing `flMixedD` and the per-2×2
+  residual data.
 - New vs pre-existing warnings: **no new warnings introduced by this increment**. The edited
   solve module still reports the pre-existing unused-parameter warnings on
   `hAmax0` and `hc0` in the merged normwise theorem; target build warnings are
@@ -12524,9 +12541,9 @@ conclusion), builds, and is axiom-clean `[propext, Classical.choice, Quot.sound]
 | Thm 11.8, Aasen growth `ρₙ≤4^(n−2)` | `higham11_8_aasen_maxEntryNorm_T_le_printed_mul_maxEntryNorm`, `..._aasenGrowthBound_of_multiplier_bound`, `higham11_8_aasen_infNorm_T_le_printed_mul_infNorm_of_multiplier_bound`, `..._infNormGrowthBound_of_multiplier_bound` | `AasenGrowthCh11Closure` | `maxEntryNorm T ≤ 4^(n−2)·maxEntryNorm A` from `AasenSpec`+`\|L\|≤1` (partial-pivoting multiplier bound), n≥4; feeds the existing max-entry `aasenGrowthBound` plumbing hypothesis-free. The source-norm bridge also derives `‖T‖∞≤4^(n−2)‖A‖∞` and the corresponding infinity-norm growth predicate for n≥6, using the existing per-entry `2^n` proof plus tridiagonal row support. |
 | Thm 11.8, outer-factor norm | `aasen_L_infNorm_mul_transpose_le_sq` | `AasenFactorNormCh11Closure` | `‖L‖∞·‖Lᵀ‖∞ ≤ (n−1)²` from unit-lower-tri + first-col-e₁ + `\|L\|≤1`, n≥2; discharges the endpoint's structural `κL·κLT≤(n−1)²` cap. |
 
-| Thm 11.3/11.7 solve-side | `higham11_3_block_ldlt_solve_backward_error`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise`, `higham11_3_block_ldlt_solve_backward_error_of_diagonal_middle`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_diagonal_middle`, `middleBlockDiagConsOne_solve_assemble`, `middleBlockDiagConsTwo_solve_assemble` | `BlockLDLTSolveBackwardCh11Closure` | `(A+ΔA₂)x̂=b` for a **concrete** `x̂` (`fl_forwardSub`/`fl_backSub`), `ΔA₂=ΔA₁+ΔM`. Outer triangular solves, the 3-step collapse, and the fold with the derived factorization residual are all **derived**. The general mixed endpoint assumes the (11.5) block-diagonal middle solve `hmid : (D̂+ΔD)ŵ=ẑ, |ΔD|≤γ_mid|D̂|`; the diagonal/all-1×1 specializations now derive that middle solve internally from scalar `fl_div` with `γ₁`. The new head/tail assembly lemmas prove the pure block-diagonal algebra for recursive 1×1/2×2 middle-solve assembly. |
+| Thm 11.3/11.7 solve-side | `higham11_3_block_ldlt_solve_backward_error`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise`, `higham11_3_block_ldlt_solve_backward_error_of_diagonal_middle`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_diagonal_middle`, `middleBlockDiagConsOne_solve_assemble`, `middleBlockDiagConsTwo_solve_assemble`, `mixedMiddleDFromSchedule_solve_of_blocks` | `BlockLDLTSolveBackwardCh11Closure` | `(A+ΔA₂)x̂=b` for a **concrete** `x̂` (`fl_forwardSub`/`fl_backSub`), `ΔA₂=ΔA₁+ΔM`. Outer triangular solves, the 3-step collapse, and the fold with the derived factorization residual are all **derived**. The general mixed endpoint assumes the (11.5) block-diagonal middle solve `hmid : (D̂+ΔD)ŵ=ẑ, |ΔD|≤γ_mid|D̂|`; the diagonal/all-1×1 specializations now derive that middle solve internally from scalar `fl_div` with `γ₁`. The new head/tail assembly lemmas and schedule fold prove the pure block-diagonal algebra for recursive 1×1/2×2 middle-solve assembly in a constructor-built representation. |
 
 **Still open after these modules (documented obstructions):**
-- **Mixed block-diagonal middle solve** for 11.3/11.7 solve-side: the diagonal/all-1×1 case now derives `hmid` from scalar `fl_div`, and generic 1×1/2×2 head/tail block-diagonal assembly is proved. The remaining solve-side piece is the schedule-level recursion that instantiates those assembly lemmas for `flMixedD`, threading `ΔD` block support through `PivotSchedule` and consuming Higham's sanctioned (11.5) 2×2 solve hypothesis.
+- **Mixed block-diagonal middle solve** for 11.3/11.7 solve-side: the diagonal/all-1×1 case now derives `hmid` from scalar `fl_div`; generic 1×1/2×2 head/tail block-diagonal assembly and a schedule-level fold are proved for a constructor-built middle factor. The remaining solve-side piece is the representation bridge from that constructor factor to `flMixedD` plus the per-2×2 block residual data, consuming Higham's sanctioned (11.5) 2×2 solve hypothesis.
 - **Thm 11.8 full backward error** `‖ΔA‖∞≤(n−1)²γ_{15n+25}‖T̂‖∞`: `Aasen118ReducedCh11Closure` provides `higham11_8_aasen_normwise_backward_error_of_reduced`, which **derives** (from the honest `|L|≤1`/`|L̂|≤1`, eliminating the `(1+γ)²` inflation cheat) the four outer-factor norm caps, the exact product `A=LTLᵀ`, and the printed `(n−1)²γ_{15n+25}` coefficient — reducing the endpoint's assumptions to `{T̂ accuracy (hThat), hLhat_entry, h20 (Ch9 model), lemma-B middle cap}`. The sole scientific gap is the **fl model of the middle factor `T̂`** (Aasen recurrences 11.12/11.13 in floating point) + `|T̂−T|≤γ|T̂|` bound: **BLOCKED** — no fp `T̂` exists in the repo (only exact-arith recurrences); smallest missing item = `def aasenT_hat` (fp diagonal/subdiagonal of the middle factor) + its relative-accuracy theorem. A genuine multi-session foundation, overlapping the concurrent 11.8 work.
 - **Thm 11.4** (Bunch–Kaufman `36nρₙ` normwise): concurrent contributor's lane.
