@@ -26,10 +26,14 @@ all-1×1) and 11.7 (Bunch tridiagonal), and the Theorem 11.8 growth factor
 conclusion) in dedicated closure modules, replacing the `h : P ⊢ P` status for
 those factorization halves. See the section
 "Factorization-error closure modules (2026-07-17, Claude)" at the end of this
-report. The **solve-side** backward errors `(A+ΔA₂)x̂=b` and the **full** Aasen
-(11.8) backward error remain open (the latter blocked on an fl model of the
-middle factor `T̂`); Theorem 11.4 is a concurrent contributor's lane. The
-top-level gate line above is left unchanged pending those remaining rows.
+report. The **solve-side** backward errors `(A+ΔA₂)x̂=b` of Theorems 11.3/11.7,
+and the full normwise solve backward error of **Theorem 11.4** (Bunch–Kaufman,
+`‖ΔA‖_M ≤ p(n)ρₙu‖A‖_M`, `p` quadratic — module `BunchKaufmanSolveCh11Closure`),
+are now likewise **derived from the fl model** assuming only Higham's own inputs
+(for 11.4: his cited [608] factor-growth bound and the (11.5) 2×2-pivot solve).
+Only the **full** Aasen (11.8) backward error remains open (blocked on an fl model
+of the middle factor `T̂`). The top-level gate line above is left unchanged
+pending that remaining row.
 
 **Update (2026-07-17, solve-side combined wrapper — Codex).** The 11.7
 tridiagonal solve-side endpoint now has a combined wrapper that discharges both
@@ -12723,8 +12727,13 @@ conclusion), builds, and is axiom-clean `[propext, Classical.choice, Quot.sound]
 | Thm 11.8, outer-factor norm | `aasen_L_infNorm_mul_transpose_le_sq` | `AasenFactorNormCh11Closure` | `‖L‖∞·‖Lᵀ‖∞ ≤ (n−1)²` from unit-lower-tri + first-col-e₁ + `\|L\|≤1`, n≥2; discharges the endpoint's structural `κL·κLT≤(n−1)²` cap. |
 
 | Thm 11.3/11.7 solve-side | `higham11_3_block_ldlt_solve_backward_error`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise`, `higham11_3_block_ldlt_solve_backward_error_of_diagonal_middle`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_diagonal_middle`, `middleBlockDiagConsOne_solve_assemble`, `middleBlockDiagConsTwo_solve_assemble`, `mixedMiddleDFromSchedule_solve_of_blocks`, `mixedMiddleDFromSchedule_eq_flMixedD`, `flMixedD_solve_of_blocks`, `MixedMiddleSolveHigham115Blocks`, `MixedMiddleSolveBlocks_of_higham115_blocks`, `flMixedD_solve_of_higham115_blocks`, `higham11_3_block_ldlt_solve_backward_error_of_higham115_middle`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_higham115_middle`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise_unconditional_of_higham115_middle`, `higham11_7_bunch_tridiagonal_backward_error_printed_of_higham115_middle`, `higham11_7_bunch_tridiagonal_backward_error_scalar_radius_of_higham115_middle` | `BlockLDLTSolveBackwardCh11Closure` | `(A+ΔA₂)x̂=b` for a **concrete** `x̂` (`fl_forwardSub`/`fl_backSub`), `ΔA₂=ΔA₁+ΔM`. Outer triangular solves, the 3-step collapse, and the fold with the derived factorization residual are all **derived**. The base mixed endpoint still accepts a global (11.5) block-diagonal middle solve `hmid : (D̂+ΔD)ŵ=ẑ, |ΔD|≤γ_mid|D̂|`; diagonal/all-1×1 and schedule-local Higham-(11.5) wrappers derive that middle solve internally. The new 11.7 combined wrapper also discharges `hfactor` via `hfactor_bound`; scalar-radius adapters expose either the exact solve-chain radius or any caller-proved `C u Amax` collapse explicitly. |
+| **Thm 11.4** (Bunch–Kaufman normwise solve) | `higham11_4_bunch_kaufman_solve_backward_error_of_growth`, `higham11_4_bunch_kaufman_solve_backward_error_printed` | `BunchKaufmanSolveCh11Closure` | Full normwise **solve** backward error `(A+ΔA)x̂=b`, `‖ΔA‖_M ≤ p(n)ρₙu‖A‖_M` with the explicit **quadratic** `p(n)=1100n²+20n` (printed form, under `n·u≤1/100`, `ρₙ≥1`), matching Higham's Theorem 11.4 ("`p` a quadratic", the `O(u²)` absorbed into the coefficient). The fl factorization + solve derivation is inherited from `BlockLDLTSolveBackwardCh11Closure` (generic in the factor-norm coefficient `c₀`); the **only** source hypotheses are exactly Higham's own: (i) his **cited** [608, 1997] growth bound `‖\|L̂\|\|D̂\|\|L̂ᵀ\|‖_M ≤ 36nρₙ‖A‖_M` (`hgrowth`, i.e. `c₀=36nρₙ`), and (ii) the "2×2 pivots solved by GEPP or the explicit inverse" (11.5) middle solve `hmid`/`hΔD`. This is **not** a `h : P ⊢ P` interface — it runs the actual fl solve. |
 
 **Still open after these modules (documented obstructions):**
 - **Mixed block-diagonal middle solve** for 11.3/11.7 solve-side: the diagonal/all-1×1 case now derives `hmid` from scalar `fl_div`; generic 1×1/2×2 head/tail block-diagonal assembly, a schedule-level fold, the bridge from that constructor factor to `flMixedD`, and the endpoint wrappers from schedule-local Higham-(11.5) data are proved. The remaining boundary is exactly the per-2×2 local residual data itself, which is the sanctioned (11.5) 2×2 solve hypothesis rather than an assumed global solve conclusion.
 - **Thm 11.8 full backward error** `‖ΔA‖∞≤(n−1)²γ_{15n+25}‖T̂‖∞`: `Aasen118ReducedCh11Closure` provides `higham11_8_aasen_normwise_backward_error_of_reduced`, which **derives** (from the honest `|L|≤1`/`|L̂|≤1`, eliminating the `(1+γ)²` inflation cheat) the four outer-factor norm caps, the exact product `A=LTLᵀ`, and the printed `(n−1)²γ_{15n+25}` coefficient — reducing the endpoint's assumptions to `{T̂ accuracy (hThat), hLhat_entry, h20 (Ch9 model), lemma-B middle cap}`. The local computed-`H` recurrence model defines the rounded diagonal/subdiagonal source-prefix path for the intermediate `H = T Lᵀ` entries, proves local additive error laws, exposes direct `|H_hat-H|` residual-budget wrappers, feeds subdiagonal scalar budgets into the global computed-`T_hat` reducer, and derives the first diagonal `T_hat` bound from the computed-`H` diagonal budget. The successor-diagonal `(11.11)` scalar recovery now has an explicit local absolute-error budget; the remaining scientific gap is to close the scalar relative-budget comparisons and feed their norm consequences into the reduced endpoint.
-- **Thm 11.4** (Bunch–Kaufman `36nρₙ` normwise): concurrent contributor's lane.
+- **Thm 11.4** (Bunch–Kaufman `36nρₙ` normwise): **CLOSED** — see the
+  `BunchKaufmanSolveCh11Closure` row above. The full normwise solve backward
+  error `(A+ΔA)x̂=b`, `‖ΔA‖_M ≤ (1100n²+20n)ρₙu‖A‖_M`, is derived from the fl
+  model assuming only Higham's own inputs for Theorem 11.4 (his cited [608] factor
+  growth bound and the (11.5) 2×2-pivot solve). No `h : P ⊢ P`.
