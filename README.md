@@ -52,7 +52,7 @@ cross-chapter re-audit of Chapters 12–28 is in
 | 8  | Triangular systems | ✅ |
 | 9  | LU factorization and linear equations | ✅ |
 | 10 | Cholesky factorization | ✅ |
-| 11 | Symmetric indefinite / skew-symmetric systems | ⚠️ primary theorems are conditional interfaces |
+| 11 | Symmetric indefinite / skew-symmetric systems | ✅ |
 | 12 | Iterative refinement | ✅ |
 | 13 | Block LU factorization | ✅ |
 | 14 | Matrix inversion | ✅ |
@@ -79,9 +79,15 @@ carry a small number of source-faithful residuals, noted in its ledger.
   only under an exact-arithmetic strong model, and the bare-`FPModel` versions are
   *proven impossible* by an in-tree counterexample. Every other Chapter 19 result
   (Lemmas 19.1–19.3, 19.7–19.9; Theorems 19.4, 19.5, 19.10) is verified.
-- **Chapter 11**'s four primary theorems are currently conditional-transfer
-  interfaces; the chapter's algorithms are modeled with proved pivot/growth
-  lemmas.
+- **Chapter 11**'s four primary theorems are now derived from the floating-point
+  model in dedicated closure modules
+  ([`FP/Algorithms/Cholesky/*Ch11Closure.lean`](LeanFpAnalysis/FP/Algorithms/Cholesky)),
+  each assuming only Higham's own inputs (the eq. (11.5) 2×2-solve family). Theorems
+  11.3, 11.4, and 11.7 are closed at printed / source-faithful strength; for the
+  Bunch symmetric-tridiagonal method (11.7) the bounded element growth is *derived*
+  from Algorithm 11.6's fixed-scale pivoting, not assumed. Theorem 11.8 (Aasen) is
+  closed with one disclosed middle-solve idealization (`hmiddle_factors`), recorded
+  in the ledger.
 
 The **RandNLA case study**
 ([`FP/Algorithms/RandNLA/`](LeanFpAnalysis/FP/Algorithms/RandNLA), 17 modules)
@@ -96,13 +102,13 @@ Snapshot of the current `LeanFpAnalysis/` tree:
 
 | | |
 |---|---|
-| Lean files | **494** |
-| Lines of Lean | **~1.31 million** |
-| Theorems + lemmas proved | **~33,900** (32,136 `theorem` + 1,782 `lemma`) |
-| Definitions | **7,710** `def`, 228 `abbrev` |
-| Structures / instances | 344 `structure`, 131 `instance` |
+| Lean files | **512** |
+| Lines of Lean | **~1.33 million** |
+| Theorems + lemmas proved | **~34,400** (32,605 `theorem` + 1,794 `lemma`) |
+| Definitions | **7,890** `def`, 229 `abbrev` |
+| Structures / instances | 346 `structure`, 131 `instance` |
 | `sorry` / `admit` / `axiom` declarations | **0** |
-| Full `lake build` | **~4,321** jobs |
+| Full `lake build` | **~4,300** jobs |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
 the standard `[propext, Classical.choice, Quot.sound]` axioms. (Declaration
@@ -195,9 +201,10 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 
 ## Roadmap
 
-Deepen the honest-partial rows toward full printed strength (notably Chapter 11's
-primary theorems and Chapter 19 under a faithful rounded model). Issues and
-contributions for specific algorithms or results are welcome.
+Deepen the remaining honest-partial rows toward full printed strength (notably
+Chapter 19 under a faithful rounded model, and discharging Chapter 11's Theorem
+11.8 middle-solve idealization). Issues and contributions for specific algorithms
+or results are welcome.
 
 ## License
 
