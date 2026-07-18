@@ -42,6 +42,7 @@ open LeanFpAnalysis.FP.Ch11Closure
 open LeanFpAnalysis.FP.Ch11Closure.Mixed
 open LeanFpAnalysis.FP.Ch11Closure.BunchTri
 open LeanFpAnalysis.FP.Ch11Closure.BunchTriGrowth
+open LeanFpAnalysis.FP.Ch11Closure.BunchTriFactor
 
 /-- The tridiagonal-Bunch growth constant `K = (1+γ₃)(1 + 1/α)` (≈ 2.618·(1+γ₃)),
 independent of the matrix dimension. -/
@@ -901,5 +902,130 @@ theorem pivotRowColPathAbs_corner_le_decoupled (fp : FPModel) {m : ℕ}
   · rw [hexpRow1]; exact hrow1
   · rw [hexpCol0]; exact hrow0
   · rw [hexpCol1]; exact hrow1
+
+/-! ## Session 6 — uniform decoupled pivot-path bounds -/
+
+/-- The uniform 2×2 pivot-path constant. -/
+noncomputable def pathConst2 (u σ τ : ℝ) : ℝ :=
+  (1 + u) ^ 2 * bunchTridiagonalAlpha * τ ^ 2
+    * (3 * σ + bunchTridiagonalAlpha * τ) / (σ - bunchTridiagonalAlpha * τ) ^ 2
+
+/-- The uniform pivot-row/column constant. -/
+noncomputable def pathConstRC (u σ τ : ℝ) : ℝ :=
+  2 * (1 + u) * σ * τ / (σ - bunchTridiagonalAlpha * τ)
+
+theorem pathConst2_nonneg (u σ τ : ℝ) (hu : 0 ≤ u) (hσ : 0 < σ) (hτ : 0 ≤ τ)
+    (hslack : bunchTridiagonalAlpha * τ < σ) : 0 ≤ pathConst2 u σ τ := by
+  have hα := bunch_tridiagonal_alpha_pos
+  have hd : 0 < σ - bunchTridiagonalAlpha * τ := by linarith
+  unfold pathConst2
+  apply div_nonneg _ (by positivity)
+  have hnn : 0 ≤ 3 * σ + bunchTridiagonalAlpha * τ := by nlinarith [mul_nonneg hα.le hτ]
+  have : 0 ≤ (1 + u) ^ 2 * bunchTridiagonalAlpha * τ ^ 2 := by positivity
+  exact mul_nonneg this hnn
+
+theorem pathConstRC_nonneg (u σ τ : ℝ) (hu : 0 ≤ u) (hσ : 0 < σ) (hτ : 0 ≤ τ)
+    (hslack : bunchTridiagonalAlpha * τ < σ) : 0 ≤ pathConstRC u σ τ := by
+  have hd : 0 < σ - bunchTridiagonalAlpha * τ := by linarith
+  unfold pathConstRC
+  apply div_nonneg _ (le_of_lt hd); positivity
+
+/-- Uniform decoupled 2×2 pivot-path bound. -/
+theorem pivotPath2Abs_le_decoupled (fp : FPModel) (σ τ : ℝ) (hσpos : 0 < σ)
+    (hslack : bunchTridiagonalAlpha * τ < σ) :
+    ∀ {m : ℕ} (A : Fin (m + 2) → Fin (m + 2) → ℝ), IsSymTridiagonal (m + 2) A →
+      (∀ i j : Fin (m + 2), i.val ≠ 0 ∨ j.val ≠ 0 → |A i j| ≤ τ) →
+      BunchTridiagonalPivotChoice σ (A 0 0) (A (oneIdx m) 0) PivotSize.two →
+      ∀ i j : Fin m, pivotPath2Abs m fp A i j ≤ pathConst2 fp.u σ τ := by
+  intro m
+  cases m with
+  | zero => intro A _ _ _ i; exact Fin.elim0 i
+  | succ m' =>
+      intro A hA hoff hchoice i j
+      have hτ0 : 0 ≤ τ :=
+        le_trans (abs_nonneg _) (hoff (oneIdx (m' + 1)) 0 (Or.inl (by simp [oneIdx])))
+      have hRHS0 : 0 ≤ pathConst2 fp.u σ τ :=
+        pathConst2_nonneg fp.u σ τ fp.u_nonneg hσpos hτ0 hslack
+      by_cases hc : i.val = 0 ∧ j.val = 0
+      · have hi : i = 0 := Fin.ext hc.1
+        have hj : j = 0 := Fin.ext hc.2
+        subst hi; subst hj
+        exact pivotPath2Abs_corner_le_decoupled fp A hA σ τ hσpos hslack hchoice
+          (hoff _ _ (Or.inl (by simp [oneIdx]))) (hoff _ _ (Or.inl (by simp only [Fin.val_succ, Fin.val_zero]; omega)))
+      · have hne : i.val ≠ 0 ∨ j.val ≠ 0 := by
+          by_contra h; push_neg at h; exact hc ⟨h.1, h.2⟩
+        rw [pivotPath2Abs_eq_zero_of_ne_corner fp A hA i j hne]; exact hRHS0
+
+/-- Uniform decoupled pivot-row bound. -/
+theorem pivotRowPathAbs_le_decoupled (fp : FPModel) (σ τ : ℝ) (hσpos : 0 < σ)
+    (hslack : bunchTridiagonalAlpha * τ < σ) :
+    ∀ {m : ℕ} (A : Fin (m + 2) → Fin (m + 2) → ℝ), IsSymTridiagonal (m + 2) A →
+      (∀ i j : Fin (m + 2), i.val ≠ 0 ∨ j.val ≠ 0 → |A i j| ≤ τ) →
+      BunchTridiagonalPivotChoice σ (A 0 0) (A (oneIdx m) 0) PivotSize.two →
+      ∀ (p : Fin 2) (j : Fin m), pivotRowPathAbs m fp A p j ≤ pathConstRC fp.u σ τ := by
+  intro m
+  cases m with
+  | zero => intro A _ _ _ _ j; exact Fin.elim0 j
+  | succ m' =>
+      intro A hA hoff hchoice p j
+      have hα := bunch_tridiagonal_alpha_pos
+      have hd : 0 < σ - bunchTridiagonalAlpha * τ := by linarith
+      have hτ0 : 0 ≤ τ :=
+        le_trans (abs_nonneg _) (hoff (oneIdx (m' + 1)) 0 (Or.inl (by simp [oneIdx])))
+      have hRC0 : 0 ≤ pathConstRC fp.u σ τ :=
+        pathConstRC_nonneg fp.u σ τ fp.u_nonneg hσpos hτ0 hslack
+      obtain ⟨hr0, hr1, _, _⟩ := pivotRowColPathAbs_corner_le_decoupled fp A hA σ τ hσpos hslack
+        hchoice (hoff _ _ (Or.inl (by simp [oneIdx])))
+        (hoff _ _ (Or.inl (by simp [oneIdx]))) (hoff _ _ (Or.inl (by simp only [Fin.val_succ, Fin.val_zero]; omega)))
+      have hrelax : 2 * (1 + fp.u) * bunchTridiagonalAlpha * τ ^ 2 / (σ - bunchTridiagonalAlpha * τ)
+          ≤ pathConstRC fp.u σ τ := by
+        unfold pathConstRC
+        have hnum : 2 * (1 + fp.u) * bunchTridiagonalAlpha * τ ^ 2 ≤ 2 * (1 + fp.u) * σ * τ := by
+          nlinarith [mul_nonneg (mul_nonneg (show (0:ℝ) ≤ 2 * (1 + fp.u) by
+            have := fp.u_nonneg; linarith) (le_of_lt hd)) hτ0, fp.u_nonneg, hτ0, hslack]
+        exact div_le_div_of_nonneg_right hnum (le_of_lt hd)
+      by_cases hj : j.val = 0
+      · have hj0 : j = 0 := Fin.ext hj
+        subst hj0
+        match p with
+        | 0 => exact le_trans hr0 hrelax
+        | 1 => exact hr1
+      · rw [pivotRowPathAbs_eq_zero_of_ne_corner fp A hA p j hj]; exact hRC0
+
+/-- Uniform decoupled pivot-column bound. -/
+theorem pivotColPathAbs_le_decoupled (fp : FPModel) (σ τ : ℝ) (hσpos : 0 < σ)
+    (hslack : bunchTridiagonalAlpha * τ < σ) :
+    ∀ {m : ℕ} (A : Fin (m + 2) → Fin (m + 2) → ℝ), IsSymTridiagonal (m + 2) A →
+      (∀ i j : Fin (m + 2), i.val ≠ 0 ∨ j.val ≠ 0 → |A i j| ≤ τ) →
+      BunchTridiagonalPivotChoice σ (A 0 0) (A (oneIdx m) 0) PivotSize.two →
+      ∀ (i : Fin m) (q : Fin 2), pivotColPathAbs m fp A i q ≤ pathConstRC fp.u σ τ := by
+  intro m
+  cases m with
+  | zero => intro A _ _ _ i _; exact Fin.elim0 i
+  | succ m' =>
+      intro A hA hoff hchoice i q
+      have hα := bunch_tridiagonal_alpha_pos
+      have hd : 0 < σ - bunchTridiagonalAlpha * τ := by linarith
+      have hτ0 : 0 ≤ τ :=
+        le_trans (abs_nonneg _) (hoff (oneIdx (m' + 1)) 0 (Or.inl (by simp [oneIdx])))
+      have hRC0 : 0 ≤ pathConstRC fp.u σ τ :=
+        pathConstRC_nonneg fp.u σ τ fp.u_nonneg hσpos hτ0 hslack
+      obtain ⟨_, _, hc0, hc1⟩ := pivotRowColPathAbs_corner_le_decoupled fp A hA σ τ hσpos hslack
+        hchoice (hoff _ _ (Or.inl (by simp [oneIdx])))
+        (hoff _ _ (Or.inl (by simp [oneIdx]))) (hoff _ _ (Or.inl (by simp only [Fin.val_succ, Fin.val_zero]; omega)))
+      have hrelax : 2 * (1 + fp.u) * bunchTridiagonalAlpha * τ ^ 2 / (σ - bunchTridiagonalAlpha * τ)
+          ≤ pathConstRC fp.u σ τ := by
+        unfold pathConstRC
+        have hnum : 2 * (1 + fp.u) * bunchTridiagonalAlpha * τ ^ 2 ≤ 2 * (1 + fp.u) * σ * τ := by
+          nlinarith [mul_nonneg (mul_nonneg (show (0:ℝ) ≤ 2 * (1 + fp.u) by
+            have := fp.u_nonneg; linarith) (le_of_lt hd)) hτ0, fp.u_nonneg, hτ0, hslack]
+        exact div_le_div_of_nonneg_right hnum (le_of_lt hd)
+      by_cases hi : i.val = 0
+      · have hi0 : i = 0 := Fin.ext hi
+        subst hi0
+        match q with
+        | 0 => exact le_trans hc0 hrelax
+        | 1 => exact hc1
+      · rw [pivotColPathAbs_eq_zero_of_ne_corner fp A hA i q hi]; exact hRC0
 
 end LeanFpAnalysis.FP.Ch11Closure.TriGrowthInv
