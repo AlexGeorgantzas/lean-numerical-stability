@@ -138,4 +138,35 @@ theorem twoByTwo_corner_growth (fp : FPModel) (hval : gammaValid fp 3) {m : ℕ}
         linarith [hfed, hcorr]
     _ = growthK fp * M0 := growth_rhs_eq fp M0
 
+/-! ## Session 2 building block — the decoupled determinant lower bound
+
+For the schedule induction the pivot test is at the fixed scale `σ = M₀`, but the
+reduced-matrix entries at stage `ℓ` are only bounded by `τ := (1+u)^ℓ M₀ ≥ σ` (each
+off-corner entry picks up one `(1+u)` per stage).  The existing 2×2 determinant lower
+bound requires `|a₂₂| ≤ σ` (the test scale); here we **decouple** the entry bound `τ`
+from the test scale `σ`.  Because `|a₁₁| ≤ α a₂₁²/σ` (2×2 test) and `|a₂₂| ≤ τ`,
+
+  `|det| = |a₁₁a₂₂ − a₂₁²| ≥ a₂₁² − |a₁₁||a₂₂| ≥ a₂₁²·(1 − α·τ/σ)`,
+
+which stays positive as long as `α·τ/σ < 1` (e.g. `τ/σ = (1+u)^ℓ ≤ 1.01 < 1/α`). -/
+theorem twoByTwo_absdet_lower_decoupled (σ τ a11 a21 a22 : ℝ)
+    (hchoice : BunchTridiagonalPivotChoice σ a11 a21 PivotSize.two)
+    (hσ : 0 < σ) (hτ : |a22| ≤ τ) :
+    a21 ^ 2 * (1 - bunchTridiagonalAlpha * τ / σ) ≤ |a11 * a22 - a21 ^ 2| := by
+  have hα : 0 < bunchTridiagonalAlpha := bunch_tridiagonal_alpha_pos
+  have htest := bunch_tridiagonal_pivot_choice_two_threshold σ a11 a21 hchoice
+  have ha11 : |a11| ≤ bunchTridiagonalAlpha * a21 ^ 2 / σ := by
+    rw [le_div_iff₀ hσ]; nlinarith [htest]
+  have hb_nonneg : (0 : ℝ) ≤ bunchTridiagonalAlpha * a21 ^ 2 / σ :=
+    div_nonneg (mul_nonneg (le_of_lt hα) (sq_nonneg a21)) (le_of_lt hσ)
+  have hprod : |a11 * a22| ≤ bunchTridiagonalAlpha * a21 ^ 2 / σ * τ := by
+    rw [abs_mul]; exact mul_le_mul ha11 hτ (abs_nonneg _) hb_nonneg
+  have hrev : a21 ^ 2 - |a11 * a22| ≤ |a11 * a22 - a21 ^ 2| := by
+    have h := abs_sub_abs_le_abs_sub (a21 ^ 2) (a11 * a22)
+    rwa [abs_of_nonneg (sq_nonneg a21), abs_sub_comm] at h
+  calc a21 ^ 2 * (1 - bunchTridiagonalAlpha * τ / σ)
+      = a21 ^ 2 - bunchTridiagonalAlpha * a21 ^ 2 / σ * τ := by ring
+    _ ≤ a21 ^ 2 - |a11 * a22| := by linarith [hprod]
+    _ ≤ |a11 * a22 - a21 ^ 2| := hrev
+
 end LeanFpAnalysis.FP.Ch11Closure.TriGrowthInv
