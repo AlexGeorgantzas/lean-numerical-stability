@@ -673,4 +673,233 @@ theorem corner_rowcol_le_core_decoupled
         ≤ (1 + u) * σ * τ / γ + (1 + u) * σ * τ / γ := add_le_add tc (le_trans td relax)
       _ = 2 * (1 + u) * σ * τ / γ := by ring
 
+/-! ## Session 5 — decoupled corner pivot-path bounds -/
+
+theorem pivotPath2Abs_corner_le_decoupled (fp : FPModel) {m : ℕ}
+    (A : Fin (m + 3) → Fin (m + 3) → ℝ) (hA : IsSymTridiagonal (m + 3) A)
+    (σ τ : ℝ) (hσpos : 0 < σ) (hslack : bunchTridiagonalAlpha * τ < σ)
+    (hchoice : BunchTridiagonalPivotChoice σ (A 0 0) (A (oneIdx (m + 1)) 0) PivotSize.two)
+    (hτa22 : |A (oneIdx (m + 1)) (oneIdx (m + 1))| ≤ τ)
+    (hτanext : |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))| ≤ τ) :
+    pivotPath2Abs (m + 1) fp A 0 0
+      ≤ (1 + fp.u) ^ 2 * bunchTridiagonalAlpha * τ ^ 2
+          * (3 * σ + bunchTridiagonalAlpha * τ) / (σ - bunchTridiagonalAlpha * τ) ^ 2 := by
+  have hu0 := fp.u_nonneg
+  have hsym : A 0 (oneIdx (m + 1)) = A (oneIdx (m + 1)) 0 := hA.1 0 (oneIdx (m + 1))
+  have ha21ne : A (oneIdx (m + 1)) 0 ≠ 0 :=
+    bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg σ (A 0 0)
+      (A (oneIdx (m + 1)) 0) hchoice hσpos.le
+  have ha21abspos : 0 < |A (oneIdx (m + 1)) 0| := abs_pos.mpr ha21ne
+  have hd : 0 < σ - bunchTridiagonalAlpha * τ := by linarith [hslack]
+  -- determinant identity and decoupled lower bound
+  have hdeteq : mixedDet2 (m + 1) A
+      = A 0 0 * A (oneIdx (m + 1)) (oneIdx (m + 1)) - A (oneIdx (m + 1)) 0 ^ 2 := by
+    unfold mixedDet2; rw [hsym]; ring
+  have hDlow_raw := twoByTwo_absdet_lower_decoupled' σ τ (A 0 0)
+    (A (oneIdx (m + 1)) 0) (A (oneIdx (m + 1)) (oneIdx (m + 1))) hchoice hσpos hτa22
+  have hDlow : |A (oneIdx (m + 1)) 0| ^ 2 * (σ - bunchTridiagonalAlpha * τ)
+      ≤ σ * |mixedDet2 (m + 1) A| := by
+    rw [sq_abs, hdeteq]; exact hDlow_raw
+  have hσdet : 0 < σ * |mixedDet2 (m + 1) A| :=
+    lt_of_lt_of_le (mul_pos (pow_pos ha21abspos 2) hd) hDlow
+  have hDgt : 0 < |mixedDet2 (m + 1) A| := by
+    rcases (abs_nonneg (mixedDet2 (m + 1) A)).lt_or_eq with h | h
+    · exact h
+    · rw [← h, mul_zero] at hσdet; exact absurd hσdet (lt_irrefl 0)
+  have htest : σ * |A 0 0| ≤ bunchTridiagonalAlpha * |A (oneIdx (m + 1)) 0| ^ 2 := by
+    rw [sq_abs]
+    exact le_of_lt (bunch_tridiagonal_pivot_choice_two_threshold σ (A 0 0)
+      (A (oneIdx (m + 1)) 0) hchoice)
+  -- multiplier rounding bounds (clearing `det`) — unchanged from the coupled proof
+  obtain ⟨δ0, hδ0, hm0⟩ := fp.model_mul (A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1)))
+    (-A (oneIdx (m + 1)) 0 / mixedDet2 (m + 1) A)
+  obtain ⟨δ1, hδ1, hm1⟩ := fp.model_mul (A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1)))
+    (A 0 0 / mixedDet2 (m + 1) A)
+  have hw0val : flMixedMult2 (m + 1) fp A 0 0
+      = A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))
+          * (-A (oneIdx (m + 1)) 0 / mixedDet2 (m + 1) A) * (1 + δ0) := by
+    rw [flMixedMult2_corner0 fp A hA]; exact hm0
+  have hw1val : flMixedMult2 (m + 1) fp A 0 1
+      = A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))
+          * (A 0 0 / mixedDet2 (m + 1) A) * (1 + δ1) := by
+    rw [flMixedMult2_corner1 fp A hA]; exact hm1
+  have hcancel0 : |(-A (oneIdx (m + 1)) 0) / mixedDet2 (m + 1) A| * |mixedDet2 (m + 1) A|
+      = |A (oneIdx (m + 1)) 0| := by
+    rw [abs_div, abs_neg, div_mul_cancel₀ _ hDgt.ne']
+  have hcancel1 : |A 0 0 / mixedDet2 (m + 1) A| * |mixedDet2 (m + 1) A| = |A 0 0| := by
+    rw [abs_div, div_mul_cancel₀ _ hDgt.ne']
+  have hw0D : |flMixedMult2 (m + 1) fp A 0 0| * |mixedDet2 (m + 1) A|
+      ≤ (1 + fp.u) * |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))|
+          * |A (oneIdx (m + 1)) 0| := by
+    rw [hw0val, abs_mul, abs_mul]
+    have hrw : |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))|
+          * |(-A (oneIdx (m + 1)) 0) / mixedDet2 (m + 1) A| * |1 + δ0|
+          * |mixedDet2 (m + 1) A|
+        = |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))|
+          * (|(-A (oneIdx (m + 1)) 0) / mixedDet2 (m + 1) A| * |mixedDet2 (m + 1) A|)
+          * |1 + δ0| := by ring
+    rw [hrw, hcancel0]
+    calc |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))| * |A (oneIdx (m + 1)) 0| * |1 + δ0|
+        ≤ |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))| * |A (oneIdx (m + 1)) 0|
+            * (1 + fp.u) :=
+          mul_le_mul_of_nonneg_left (abs_one_add_le fp hδ0)
+            (mul_nonneg (abs_nonneg _) (abs_nonneg _))
+      _ = (1 + fp.u) * |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))|
+            * |A (oneIdx (m + 1)) 0| := by ring
+  have hw1D : |flMixedMult2 (m + 1) fp A 0 1| * |mixedDet2 (m + 1) A|
+      ≤ (1 + fp.u) * |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))| * |A 0 0| := by
+    rw [hw1val, abs_mul, abs_mul]
+    have hrw : |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))|
+          * |A 0 0 / mixedDet2 (m + 1) A| * |1 + δ1| * |mixedDet2 (m + 1) A|
+        = |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))|
+          * (|A 0 0 / mixedDet2 (m + 1) A| * |mixedDet2 (m + 1) A|) * |1 + δ1| := by ring
+    rw [hrw, hcancel1]
+    calc |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))| * |A 0 0| * |1 + δ1|
+        ≤ |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))| * |A 0 0| * (1 + fp.u) :=
+          mul_le_mul_of_nonneg_left (abs_one_add_le fp hδ1)
+            (mul_nonneg (abs_nonneg _) (abs_nonneg _))
+      _ = (1 + fp.u) * |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))| * |A 0 0| := by ring
+  -- expand `pivotPath2Abs` at the corner — unchanged
+  have hexpand : pivotPath2Abs (m + 1) fp A 0 0
+      = |flMixedMult2 (m + 1) fp A 0 0| ^ 2 * |A 0 0|
+        + 2 * |flMixedMult2 (m + 1) fp A 0 0| * |flMixedMult2 (m + 1) fp A 0 1|
+            * |A (oneIdx (m + 1)) 0|
+        + |flMixedMult2 (m + 1) fp A 0 1| ^ 2 * |A (oneIdx (m + 1)) (oneIdx (m + 1))| := by
+    rw [pivotPath2Abs, Fin.sum_univ_two, Fin.sum_univ_two, Fin.sum_univ_two]
+    simp only [leadingTwoBlock_apply, embedTwo_zero, embedTwo_one_eq]
+    rw [hsym]; ring
+  rw [hexpand]
+  exact corner_quadform_core_decoupled fp.u σ τ |A 0 0| |A (oneIdx (m + 1)) 0|
+    |A (oneIdx (m + 1)) (oneIdx (m + 1))|
+    |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))|
+    |flMixedMult2 (m + 1) fp A 0 0| |flMixedMult2 (m + 1) fp A 0 1|
+    |mixedDet2 (m + 1) A|
+    hu0 hσpos (abs_nonneg _) ha21abspos (abs_nonneg _) (abs_nonneg _)
+    (abs_nonneg _) (abs_nonneg _) hDgt hslack hDlow htest hτa22 hτanext hw0D hw1D
+
+theorem pivotRowColPathAbs_corner_le_decoupled (fp : FPModel) {m : ℕ}
+    (A : Fin (m + 3) → Fin (m + 3) → ℝ) (hA : IsSymTridiagonal (m + 3) A)
+    (σ τ : ℝ) (hσpos : 0 < σ) (hslack : bunchTridiagonalAlpha * τ < σ)
+    (hchoice : BunchTridiagonalPivotChoice σ (A 0 0) (A (oneIdx (m + 1)) 0) PivotSize.two)
+    (hτa21 : |A (oneIdx (m + 1)) 0| ≤ τ)
+    (hτa22 : |A (oneIdx (m + 1)) (oneIdx (m + 1))| ≤ τ)
+    (hτanext : |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))| ≤ τ) :
+    pivotRowPathAbs (m + 1) fp A 0 0
+        ≤ 2 * (1 + fp.u) * bunchTridiagonalAlpha * τ ^ 2 / (σ - bunchTridiagonalAlpha * τ)
+      ∧ pivotRowPathAbs (m + 1) fp A 1 0
+        ≤ 2 * (1 + fp.u) * σ * τ / (σ - bunchTridiagonalAlpha * τ)
+      ∧ pivotColPathAbs (m + 1) fp A 0 0
+        ≤ 2 * (1 + fp.u) * bunchTridiagonalAlpha * τ ^ 2 / (σ - bunchTridiagonalAlpha * τ)
+      ∧ pivotColPathAbs (m + 1) fp A 0 1
+        ≤ 2 * (1 + fp.u) * σ * τ / (σ - bunchTridiagonalAlpha * τ) := by
+  have hu0 := fp.u_nonneg
+  have hgap : 0 < σ - bunchTridiagonalAlpha * τ := by linarith [hslack]
+  have hsym : A 0 (oneIdx (m + 1)) = A (oneIdx (m + 1)) 0 := hA.1 0 (oneIdx (m + 1))
+  have ha21ne : A (oneIdx (m + 1)) 0 ≠ 0 :=
+    bunch_tridiagonal_pivot_choice_two_a21_ne_zero_of_sigma_nonneg σ (A 0 0)
+      (A (oneIdx (m + 1)) 0) hchoice hσpos.le
+  have hdeteq : mixedDet2 (m + 1) A
+      = A 0 0 * A (oneIdx (m + 1)) (oneIdx (m + 1)) - A (oneIdx (m + 1)) 0 ^ 2 := by
+    unfold mixedDet2; rw [hsym]; ring
+  have hDlow : |A (oneIdx (m + 1)) 0| ^ 2 * (σ - bunchTridiagonalAlpha * τ)
+      ≤ σ * |mixedDet2 (m + 1) A| := by
+    rw [sq_abs, hdeteq]
+    exact twoByTwo_absdet_lower_decoupled' σ τ (A 0 0) (A (oneIdx (m + 1)) 0)
+      (A (oneIdx (m + 1)) (oneIdx (m + 1))) hchoice hσpos hτa22
+  have hσD : 0 < σ * |mixedDet2 (m + 1) A| :=
+    lt_of_lt_of_le (mul_pos (pow_pos (abs_pos.mpr ha21ne) 2) hgap) hDlow
+  have hDgt : 0 < |mixedDet2 (m + 1) A| := by
+    rcases (abs_nonneg (mixedDet2 (m + 1) A)).lt_or_eq with h | h
+    · exact h
+    · exfalso; rw [← h, mul_zero] at hσD; exact lt_irrefl 0 hσD
+  have htest : σ * |A 0 0| ≤ bunchTridiagonalAlpha * |A (oneIdx (m + 1)) 0| ^ 2 := by
+    rw [sq_abs]
+    exact le_of_lt (bunch_tridiagonal_pivot_choice_two_threshold σ (A 0 0)
+      (A (oneIdx (m + 1)) 0) hchoice)
+  obtain ⟨δ0, hδ0, hm0⟩ := fp.model_mul (A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1)))
+    (-A (oneIdx (m + 1)) 0 / mixedDet2 (m + 1) A)
+  obtain ⟨δ1, hδ1, hm1⟩ := fp.model_mul (A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1)))
+    (A 0 0 / mixedDet2 (m + 1) A)
+  have hw0val : flMixedMult2 (m + 1) fp A 0 0
+      = A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))
+          * (-A (oneIdx (m + 1)) 0 / mixedDet2 (m + 1) A) * (1 + δ0) := by
+    rw [flMixedMult2_corner0 fp A hA]; exact hm0
+  have hw1val : flMixedMult2 (m + 1) fp A 0 1
+      = A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))
+          * (A 0 0 / mixedDet2 (m + 1) A) * (1 + δ1) := by
+    rw [flMixedMult2_corner1 fp A hA]; exact hm1
+  have hcancel0 : |(-A (oneIdx (m + 1)) 0) / mixedDet2 (m + 1) A| * |mixedDet2 (m + 1) A|
+      = |A (oneIdx (m + 1)) 0| := by
+    rw [abs_div, abs_neg, div_mul_cancel₀ _ hDgt.ne']
+  have hcancel1 : |A 0 0 / mixedDet2 (m + 1) A| * |mixedDet2 (m + 1) A| = |A 0 0| := by
+    rw [abs_div, div_mul_cancel₀ _ hDgt.ne']
+  have hw0D : |flMixedMult2 (m + 1) fp A 0 0| * |mixedDet2 (m + 1) A|
+      ≤ (1 + fp.u) * |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))|
+          * |A (oneIdx (m + 1)) 0| := by
+    rw [hw0val, abs_mul, abs_mul]
+    have hrw : |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))|
+          * |(-A (oneIdx (m + 1)) 0) / mixedDet2 (m + 1) A| * |1 + δ0|
+          * |mixedDet2 (m + 1) A|
+        = |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))|
+          * (|(-A (oneIdx (m + 1)) 0) / mixedDet2 (m + 1) A| * |mixedDet2 (m + 1) A|)
+          * |1 + δ0| := by ring
+    rw [hrw, hcancel0]
+    calc |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))| * |A (oneIdx (m + 1)) 0| * |1 + δ0|
+        ≤ |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))| * |A (oneIdx (m + 1)) 0|
+            * (1 + fp.u) :=
+          mul_le_mul_of_nonneg_left (abs_one_add_le fp hδ0)
+            (mul_nonneg (abs_nonneg _) (abs_nonneg _))
+      _ = (1 + fp.u) * |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))|
+            * |A (oneIdx (m + 1)) 0| := by ring
+  have hw1D : |flMixedMult2 (m + 1) fp A 0 1| * |mixedDet2 (m + 1) A|
+      ≤ (1 + fp.u) * |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))| * |A 0 0| := by
+    rw [hw1val, abs_mul, abs_mul]
+    have hrw : |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))|
+          * |A 0 0 / mixedDet2 (m + 1) A| * |1 + δ1| * |mixedDet2 (m + 1) A|
+        = |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))|
+          * (|A 0 0 / mixedDet2 (m + 1) A| * |mixedDet2 (m + 1) A|) * |1 + δ1| := by ring
+    rw [hrw, hcancel1]
+    calc |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))| * |A 0 0| * |1 + δ1|
+        ≤ |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))| * |A 0 0| * (1 + fp.u) :=
+          mul_le_mul_of_nonneg_left (abs_one_add_le fp hδ1)
+            (mul_nonneg (abs_nonneg _) (abs_nonneg _))
+      _ = (1 + fp.u) * |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))| * |A 0 0| := by ring
+  obtain ⟨hrow0, hrow1⟩ := corner_rowcol_le_core_decoupled fp.u σ τ |A 0 0|
+    |A (oneIdx (m + 1)) 0|
+    |A (oneIdx (m + 1)) (oneIdx (m + 1))|
+    |A ((0 : Fin (m + 1)).succ.succ) (oneIdx (m + 1))|
+    |flMixedMult2 (m + 1) fp A 0 0| |flMixedMult2 (m + 1) fp A 0 1|
+    |mixedDet2 (m + 1) A|
+    hu0 hσpos (abs_nonneg _) (abs_pos.mpr ha21ne) (abs_nonneg _) (abs_nonneg _)
+    hDgt hslack hDlow htest hτa21 hτa22 hτanext hw0D hw1D
+  have hexpRow0 : pivotRowPathAbs (m + 1) fp A 0 0
+      = |A 0 0| * |flMixedMult2 (m + 1) fp A 0 0|
+        + |A (oneIdx (m + 1)) 0| * |flMixedMult2 (m + 1) fp A 0 1| := by
+    rw [pivotRowPathAbs, Fin.sum_univ_two]
+    simp only [leadingTwoBlock_apply, embedTwo_zero, embedTwo_one_eq]
+    rw [hsym]
+  have hexpRow1 : pivotRowPathAbs (m + 1) fp A 1 0
+      = |A (oneIdx (m + 1)) 0| * |flMixedMult2 (m + 1) fp A 0 0|
+        + |A (oneIdx (m + 1)) (oneIdx (m + 1))| * |flMixedMult2 (m + 1) fp A 0 1| := by
+    rw [pivotRowPathAbs, Fin.sum_univ_two]
+    simp only [leadingTwoBlock_apply, embedTwo_zero, embedTwo_one_eq]
+  have hexpCol0 : pivotColPathAbs (m + 1) fp A 0 0
+      = |A 0 0| * |flMixedMult2 (m + 1) fp A 0 0|
+        + |A (oneIdx (m + 1)) 0| * |flMixedMult2 (m + 1) fp A 0 1| := by
+    rw [pivotColPathAbs, Fin.sum_univ_two]
+    simp only [leadingTwoBlock_apply, embedTwo_zero, embedTwo_one_eq]
+    ring
+  have hexpCol1 : pivotColPathAbs (m + 1) fp A 0 1
+      = |A (oneIdx (m + 1)) 0| * |flMixedMult2 (m + 1) fp A 0 0|
+        + |A (oneIdx (m + 1)) (oneIdx (m + 1))| * |flMixedMult2 (m + 1) fp A 0 1| := by
+    rw [pivotColPathAbs, Fin.sum_univ_two]
+    simp only [leadingTwoBlock_apply, embedTwo_zero, embedTwo_one_eq]
+    rw [show A 0 (oneIdx (m + 1)) = A (oneIdx (m + 1)) 0 from hsym]
+    ring
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · rw [hexpRow0]; exact hrow0
+  · rw [hexpRow1]; exact hrow1
+  · rw [hexpCol0]; exact hrow0
+  · rw [hexpCol1]; exact hrow1
+
 end LeanFpAnalysis.FP.Ch11Closure.TriGrowthInv
