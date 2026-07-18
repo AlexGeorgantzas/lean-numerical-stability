@@ -31,6 +31,15 @@ report. The **solve-side** backward errors `(A+ΔA₂)x̂=b` and the **full** Aa
 middle factor `T̂`); Theorem 11.4 is a concurrent contributor's lane. The
 top-level gate line above is left unchanged pending those remaining rows.
 
+**Update (2026-07-17, solve-side combined wrapper — Codex).** The 11.7
+tridiagonal solve-side endpoint now has a combined wrapper that discharges both
+the tridiagonal factor-norm hypothesis (`hfactor_bound`) and the global
+middle-solve hypothesis, consuming only schedule-local Higham-(11.5) middle
+data plus a printed-radius scalar comparison when the exact derived solve-chain
+radius is collapsed to `20n(1+c₀)u‖A‖`.  The full selected gate is still FAIL:
+Theorem 11.4 remains in the concurrent lane and Theorem 11.8 still needs a
+floating-point `T̂` model and relative middle-factor theorem.
+
 ## Proved selected targets and dependencies
 Rows in this table are compiled Lean results. Rows labelled with Theorem 11.8
 after the exact recurrence entries are dependency or wrapper results only; they
@@ -12537,6 +12546,21 @@ Problem transcription.
   `(E+ΔE)w=z`, `|ΔE|≤cSolve·u·|E|`.  The new wrappers derive the global
   `flMixedD` middle residual and discharge the explicit `hmid` input in both
   the componentwise 11.3 solve endpoint and the normwise 11.7 solve endpoint.
+- 2026-07-17 11.7 combined factor/solve Higham (11.5) wrapper:
+  `lake env lean LeanFpAnalysis/FP/Algorithms/Cholesky/BlockLDLTSolveBackwardCh11Closure.lean`
+  → pass; `lake build LeanFpAnalysis.FP.Algorithms.Cholesky.BlockLDLTSolveBackwardCh11Closure`
+  → `Build completed successfully (3061 jobs)`; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11`
+  → `Build completed successfully (3054 jobs)`; `git diff --check -- ...`
+  → pass; tab scan of `BlockLDLTSolveBackwardCh11Closure.lean` /
+  `higham_ch11.md` → clean; forbidden-token scan of
+  `BlockLDLTSolveBackwardCh11Closure.lean` → clean; focused axiom check of
+  `higham11_7_bunch_tridiagonal_solve_backward_error_normwise_unconditional_of_higham115_middle`
+  and `higham11_7_bunch_tridiagonal_backward_error_printed_of_higham115_middle`
+  → elaborate; axioms `[propext, Classical.choice, Quot.sound]`.
+  The first wrapper discharges both the tridiagonal factor-norm hypothesis via
+  `hfactor_bound` and the global middle-solve hypothesis via schedule-local
+  Higham-(11.5) data.  The printed adapter collapses the exact derived solve-chain
+  normwise radius to `20n(1+c₀)uAmax` under an explicit scalar comparison.
 - New vs pre-existing warnings: **no new warnings introduced by this increment**. The edited
   solve module still reports the pre-existing unused-parameter warnings on
   `hAmax0` and `hc0` in the merged normwise theorem; target build warnings are
@@ -12575,7 +12599,7 @@ conclusion), builds, and is axiom-clean `[propext, Classical.choice, Quot.sound]
 | Thm 11.8, Aasen growth `ρₙ≤4^(n−2)` | `higham11_8_aasen_maxEntryNorm_T_le_printed_mul_maxEntryNorm`, `..._aasenGrowthBound_of_multiplier_bound`, `higham11_8_aasen_infNorm_T_le_printed_mul_infNorm_of_multiplier_bound`, `..._infNormGrowthBound_of_multiplier_bound` | `AasenGrowthCh11Closure` | `maxEntryNorm T ≤ 4^(n−2)·maxEntryNorm A` from `AasenSpec`+`\|L\|≤1` (partial-pivoting multiplier bound), n≥4; feeds the existing max-entry `aasenGrowthBound` plumbing hypothesis-free. The source-norm bridge also derives `‖T‖∞≤4^(n−2)‖A‖∞` and the corresponding infinity-norm growth predicate for n≥6, using the existing per-entry `2^n` proof plus tridiagonal row support. |
 | Thm 11.8, outer-factor norm | `aasen_L_infNorm_mul_transpose_le_sq` | `AasenFactorNormCh11Closure` | `‖L‖∞·‖Lᵀ‖∞ ≤ (n−1)²` from unit-lower-tri + first-col-e₁ + `\|L\|≤1`, n≥2; discharges the endpoint's structural `κL·κLT≤(n−1)²` cap. |
 
-| Thm 11.3/11.7 solve-side | `higham11_3_block_ldlt_solve_backward_error`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise`, `higham11_3_block_ldlt_solve_backward_error_of_diagonal_middle`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_diagonal_middle`, `middleBlockDiagConsOne_solve_assemble`, `middleBlockDiagConsTwo_solve_assemble`, `mixedMiddleDFromSchedule_solve_of_blocks`, `mixedMiddleDFromSchedule_eq_flMixedD`, `flMixedD_solve_of_blocks`, `MixedMiddleSolveHigham115Blocks`, `MixedMiddleSolveBlocks_of_higham115_blocks`, `flMixedD_solve_of_higham115_blocks`, `higham11_3_block_ldlt_solve_backward_error_of_higham115_middle`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_higham115_middle` | `BlockLDLTSolveBackwardCh11Closure` | `(A+ΔA₂)x̂=b` for a **concrete** `x̂` (`fl_forwardSub`/`fl_backSub`), `ΔA₂=ΔA₁+ΔM`. Outer triangular solves, the 3-step collapse, and the fold with the derived factorization residual are all **derived**. The base mixed endpoint still accepts a global (11.5) block-diagonal middle solve `hmid : (D̂+ΔD)ŵ=ẑ, |ΔD|≤γ_mid|D̂|`; diagonal/all-1×1 and schedule-local Higham-(11.5) wrappers derive that middle solve internally. The head/tail assembly lemmas, schedule fold, `flMixedD` bridge, and source-data wrappers prove the recursive 1×1/2×2 middle-solve assembly for the named factor. |
+| Thm 11.3/11.7 solve-side | `higham11_3_block_ldlt_solve_backward_error`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise`, `higham11_3_block_ldlt_solve_backward_error_of_diagonal_middle`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_diagonal_middle`, `middleBlockDiagConsOne_solve_assemble`, `middleBlockDiagConsTwo_solve_assemble`, `mixedMiddleDFromSchedule_solve_of_blocks`, `mixedMiddleDFromSchedule_eq_flMixedD`, `flMixedD_solve_of_blocks`, `MixedMiddleSolveHigham115Blocks`, `MixedMiddleSolveBlocks_of_higham115_blocks`, `flMixedD_solve_of_higham115_blocks`, `higham11_3_block_ldlt_solve_backward_error_of_higham115_middle`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_higham115_middle`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise_unconditional_of_higham115_middle`, `higham11_7_bunch_tridiagonal_backward_error_printed_of_higham115_middle` | `BlockLDLTSolveBackwardCh11Closure` | `(A+ΔA₂)x̂=b` for a **concrete** `x̂` (`fl_forwardSub`/`fl_backSub`), `ΔA₂=ΔA₁+ΔM`. Outer triangular solves, the 3-step collapse, and the fold with the derived factorization residual are all **derived**. The base mixed endpoint still accepts a global (11.5) block-diagonal middle solve `hmid : (D̂+ΔD)ŵ=ẑ, |ΔD|≤γ_mid|D̂|`; diagonal/all-1×1 and schedule-local Higham-(11.5) wrappers derive that middle solve internally. The new 11.7 combined wrapper also discharges `hfactor` via `hfactor_bound`; the printed-bound adapter leaves only the scalar comparison from the exact solve-chain radius to `20n(1+c₀)uAmax`. |
 
 **Still open after these modules (documented obstructions):**
 - **Mixed block-diagonal middle solve** for 11.3/11.7 solve-side: the diagonal/all-1×1 case now derives `hmid` from scalar `fl_div`; generic 1×1/2×2 head/tail block-diagonal assembly, a schedule-level fold, the bridge from that constructor factor to `flMixedD`, and the endpoint wrappers from schedule-local Higham-(11.5) data are proved. The remaining boundary is exactly the per-2×2 local residual data itself, which is the sanctioned (11.5) 2×2 solve hypothesis rather than an assumed global solve conclusion.

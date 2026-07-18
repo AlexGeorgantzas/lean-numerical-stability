@@ -55,6 +55,7 @@ namespace LeanFpAnalysis.FP.Ch11Closure.Solve
 open LeanFpAnalysis.FP
 open LeanFpAnalysis.FP.Ch11Closure
 open LeanFpAnalysis.FP.Ch11Closure.Mixed
+open LeanFpAnalysis.FP.Ch11Closure.HFactor
 
 /-! ## Part 1 — `L̂ = flMixedL` is unit lower triangular
 
@@ -953,6 +954,94 @@ theorem higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_higham115_
       hcSt0 hcSt5 hgammaMid hsmall hp hfactorNorm w_hat ΔD hΔD hmid
   exact ⟨w_hat, ΔA1, ΔA2, hΔA1, hΔA2, hfac, hsolve⟩
 
+/-- **Theorem 11.7 solve/factor endpoint with `hfactor` and middle solve derived.**
+    This combines the tridiagonal factor-norm proof `hfactor_bound` with the
+    schedule-local Higham (11.5) middle-solve wrapper.  The remaining assumptions
+    are the rounded mixed-pivot path data, the Algorithm-11.6 tridiagonal pivot
+    data, and the sanctioned per-2×2 (11.5) middle residuals. -/
+theorem higham11_7_bunch_tridiagonal_solve_backward_error_normwise_unconditional_of_higham115_middle
+    (fp : FPModel) (hval : gammaValid fp 3)
+    {n : ℕ} (s : PivotSchedule n) (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hvaln : gammaValid fp n)
+    (Amax cSolve cStage gammaMid : ℝ)
+    (hAmax : ∀ i j : Fin n, |A i j| ≤ Amax) (hAmax0 : 0 ≤ Amax)
+    (hcS0 : 0 ≤ cSolve) (hcS40 : cSolve ≤ 40)
+    (hcSt0 : 0 ≤ cStage) (hcSt5 : cStage ≤ 5)
+    (hscalar : gamma fp 1 ≤ gammaMid) (h2 : cSolve * fp.u ≤ gammaMid)
+    (hsmall : (n : ℝ) * fp.u ≤ 1 / 100)
+    (hp : FlMixedPivots fp cSolve cStage s A)
+    (hdata : TriPivotData fp Amax s A)
+    (hblocks : MixedMiddleSolveHigham115Blocks fp cSolve s A
+      (fl_forwardSub fp n (flMixedL fp s A) b)) :
+    ∃ w_hat : Fin n → ℝ, ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ pPoly n * fp.u * ((1 + hfactorConst fp) * Amax)) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ pPoly n * fp.u * ((1 + hfactorConst fp) * Amax)
+          + ((2 * gamma fp n + gamma fp n ^ 2)
+              + (1 + 2 * gamma fp n + gamma fp n ^ 2) * gammaMid)
+                * (hfactorConst fp * Amax)) ∧
+      (∀ i j : Fin n,
+        (∑ k₁, ∑ k₂, flMixedL fp s A i k₁ * flMixedD fp s A k₁ k₂ * flMixedL fp s A j k₂)
+          = A i j + ΔA1 i j) ∧
+      (∀ i : Fin n,
+        ∑ j : Fin n,
+          (A i j + ΔA2 i j) * fl_backSub fp n (fun r c => flMixedL fp s A c r) w_hat j = b i) :=
+  higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_higham115_middle
+    fp hval s A b hvaln Amax (hfactorConst fp) cSolve cStage gammaMid
+    hAmax hAmax0 (hfactorConst_nonneg fp hval) hcS0 hcS40 hcSt0 hcSt5
+    hscalar h2 hsmall hp (hfactor_bound fp hval Amax hAmax0 s A hdata) hblocks
+
+/-- **Theorem 11.7 printed-bound adapter with local Higham (11.5) middle data.**
+    If the honest solve-chain normwise radius from
+    `..._normwise_unconditional_of_higham115_middle` is below the displayed
+    `20 n (1+c₀)u Amax` radius, then the source-facing printed first-order
+    shape follows with no separate `hfactor`, `hsolve`, or global middle-solve
+    hypothesis. -/
+theorem higham11_7_bunch_tridiagonal_backward_error_printed_of_higham115_middle
+    (fp : FPModel) (hval : gammaValid fp 3)
+    {n : ℕ} (s : PivotSchedule n) (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hvaln : gammaValid fp n)
+    (Amax cSolve cStage gammaMid : ℝ)
+    (hAmax : ∀ i j : Fin n, |A i j| ≤ Amax) (hAmax0 : 0 ≤ Amax)
+    (hcS0 : 0 ≤ cSolve) (hcS40 : cSolve ≤ 40)
+    (hcSt0 : 0 ≤ cStage) (hcSt5 : cStage ≤ 5)
+    (hscalar : gamma fp 1 ≤ gammaMid) (h2 : cSolve * fp.u ≤ gammaMid)
+    (hsmall : (n : ℝ) * fp.u ≤ 1 / 100)
+    (hp : FlMixedPivots fp cSolve cStage s A)
+    (hdata : TriPivotData fp Amax s A)
+    (hblocks : MixedMiddleSolveHigham115Blocks fp cSolve s A
+      (fl_forwardSub fp n (flMixedL fp s A) b))
+    (hsolveBudget :
+      pPoly n * fp.u * ((1 + hfactorConst fp) * Amax)
+          + ((2 * gamma fp n + gamma fp n ^ 2)
+              + (1 + 2 * gamma fp n + gamma fp n ^ 2) * gammaMid)
+                * (hfactorConst fp * Amax)
+        ≤ 20 * (n : ℝ) * (1 + hfactorConst fp) * fp.u * Amax) :
+    ∃ w_hat : Fin n → ℝ, ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j|
+          ≤ 20 * (n : ℝ) * (1 + hfactorConst fp) * fp.u * Amax) ∧
+      (∀ i j : Fin n, |ΔA2 i j|
+          ≤ 20 * (n : ℝ) * (1 + hfactorConst fp) * fp.u * Amax) ∧
+      (∀ i j : Fin n,
+        (∑ k₁, ∑ k₂, flMixedL fp s A i k₁ * flMixedD fp s A k₁ k₂ * flMixedL fp s A j k₂)
+          = A i j + ΔA1 i j) ∧
+      (∀ i : Fin n,
+        ∑ j : Fin n,
+          (A i j + ΔA2 i j) * fl_backSub fp n (fun r c => flMixedL fp s A c r) w_hat j = b i) := by
+  obtain ⟨w_hat, ΔA1, ΔA2, hΔA1, hΔA2, hfac, hsolve⟩ :=
+    higham11_7_bunch_tridiagonal_solve_backward_error_normwise_unconditional_of_higham115_middle
+      fp hval s A b hvaln Amax cSolve cStage gammaMid hAmax hAmax0
+      hcS0 hcS40 hcSt0 hcSt5 hscalar h2 hsmall hp hdata hblocks
+  have hfactorBudget :
+      pPoly n * fp.u * ((1 + hfactorConst fp) * Amax)
+        ≤ 20 * (n : ℝ) * (1 + hfactorConst fp) * fp.u * Amax := by
+    rw [pPoly]
+    ring_nf
+    exact le_rfl
+  exact ⟨w_hat, ΔA1, ΔA2,
+    (fun i j => (hΔA1 i j).trans hfactorBudget),
+    (fun i j => (hΔA2 i j).trans hsolveBudget),
+    hfac, hsolve⟩
+
 /-! ## Precise honesty status
 
 **Fully derived here:**
@@ -964,6 +1053,9 @@ theorem higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_higham115_
   * `flMixedD_solve_of_higham115_blocks` — recursive composition of the mixed
     1×1/2×2 middle solve for the named `flMixedD` factor, deriving 1×1 blocks
     and consuming Higham's sanctioned (11.5) 2×2 residual data locally.
+  * `higham11_7_bunch_tridiagonal_solve_backward_error_normwise_unconditional_of_higham115_middle`
+    — discharges the Theorem 11.7 factor-norm hypothesis with `hfactor_bound`
+    and the global middle solve with schedule-local Higham (11.5) data.
   * The two OUTER triangular-solve backward errors, from the actual
     `fl_forwardSub`/`fl_backSub` runs (`forwardSub_backward_error`,
     `backSub_backward_error`, reused).
