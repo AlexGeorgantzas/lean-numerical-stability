@@ -40,9 +40,9 @@ block-diagonal solve backward error `(D̂ + ΔD) ŵ = ẑ` with
 `|ΔD| ≤ γ_mid |D̂|`.  This is exactly Higham's equation (11.5) applied to the
 block-diagonal `D̂` (a sequence of 1×1 solves — themselves derivable from
 `fl_oneByOne_solve_backward_error`, provided here for the diagonal case — and
-2×2 solves, the explicitly permitted assumption).  The full recursive
-composition of this middle solve over the pivot schedule is a self-contained
-further development; it is isolated as the single explicit hypothesis `hmid`.
+2×2 solves, the explicitly permitted assumption).  The base endpoint keeps this
+global middle residual explicit; later declarations derive it from schedule-local
+Higham (11.5) 2×2 data plus scalar 1×1 solves.
 
 The file contains only proved declarations and traceability comments.
 -/
@@ -506,6 +506,68 @@ theorem flMixedD_solve_of_blocks (fp : FPModel) (gammaMid : ℝ)
   · intro p
     simpa [hD] using hEq p
 
+/-- Schedule-level source data for the mixed middle solve.  The 1×1 blocks keep
+    only nonzero pivots, which are solved by scalar `fl_div`; the 2×2 blocks
+    carry Higham's sanctioned eq. (11.5) residual data. -/
+noncomputable def MixedMiddleSolveHigham115Blocks (fp : FPModel) (cSolve : ℝ) :
+    {n : ℕ} → PivotSchedule n → (Fin n → Fin n → ℝ) → (Fin n → ℝ) → Prop
+  | 0, .nil, _, _ => True
+  | _ + 1, .consOne s, A, z =>
+      A 0 0 ≠ 0 ∧
+      MixedMiddleSolveHigham115Blocks fp cSolve s (flSchurCompl _ fp A) (fun i => z i.succ)
+  | m + 2, .consTwo s, A, z =>
+      (∃ (wHead : Fin 2 → ℝ) (ΔE : Fin 2 → Fin 2 → ℝ),
+        LeanFpAnalysis.FP.higham11_5_twoByTwoPivotSolveStable fp.u cSolve
+          (leadingTwoBlock m A) ΔE ∧
+        (∀ p : Fin 2,
+          ∑ q : Fin 2, (leadingTwoBlock m A p q + ΔE p q) * wHead q
+            = z (embedTwo m p))) ∧
+      MixedMiddleSolveHigham115Blocks fp cSolve s (flSchurCompl2 m fp A) (fun i => z i.succ.succ)
+
+/-- Convert source-shaped Higham (11.5) middle-solve data into the uniform
+    block residual predicate used by the solve-chain fold. -/
+theorem MixedMiddleSolveBlocks_of_higham115_blocks (fp : FPModel)
+    (cSolve gammaMid : ℝ) (hval1 : gammaValid fp 1)
+    (hscalar : gamma fp 1 ≤ gammaMid) (h2 : cSolve * fp.u ≤ gammaMid) :
+    {n : ℕ} → (s : PivotSchedule n) → (A : Fin n → Fin n → ℝ) → (z : Fin n → ℝ) →
+      MixedMiddleSolveHigham115Blocks fp cSolve s A z →
+      MixedMiddleSolveBlocks fp gammaMid s A z
+  | 0, .nil, _, _, _ => trivial
+  | _ + 1, .consOne s, A, z, h => by
+      rcases h with ⟨hA00, htail⟩
+      constructor
+      · obtain ⟨Δe, hΔe, hEq⟩ :=
+          fl_oneByOne_solve_backward_error fp (z 0) (A 0 0) hA00 hval1
+        refine ⟨fp.fl_div (z 0) (A 0 0), Δe, ?_, hEq⟩
+        exact le_trans hΔe (mul_le_mul_of_nonneg_right hscalar (abs_nonneg _))
+      · exact
+          MixedMiddleSolveBlocks_of_higham115_blocks fp cSolve gammaMid hval1 hscalar h2
+            s (flSchurCompl _ fp A) (fun i => z i.succ) htail
+  | m + 2, .consTwo s, A, z, h => by
+      rcases h with ⟨hhead, htail⟩
+      rcases hhead with ⟨wHead, ΔE, hΔE, hEq⟩
+      constructor
+      · refine ⟨wHead, ΔE, ?_, hEq⟩
+        intro p q
+        exact le_trans (hΔE p q) (mul_le_mul_of_nonneg_right h2 (abs_nonneg _))
+      · exact
+          MixedMiddleSolveBlocks_of_higham115_blocks fp cSolve gammaMid hval1 hscalar h2
+            s (flSchurCompl2 m fp A) (fun i => z i.succ.succ) htail
+
+/-- Higham (11.5) block data, with derived 1×1 scalar solves, yields the global
+    named `flMixedD` middle-solve residual. -/
+theorem flMixedD_solve_of_higham115_blocks (fp : FPModel)
+    (cSolve gammaMid : ℝ) (hval1 : gammaValid fp 1)
+    (hscalar : gamma fp 1 ≤ gammaMid) (h2 : cSolve * fp.u ≤ gammaMid)
+    {n : ℕ} (s : PivotSchedule n) (A : Fin n → Fin n → ℝ) (z : Fin n → ℝ)
+    (hblocks : MixedMiddleSolveHigham115Blocks fp cSolve s A z) :
+    ∃ (w : Fin n → ℝ) (ΔD : Fin n → Fin n → ℝ),
+      (∀ i j : Fin n, |ΔD i j| ≤ gammaMid * |flMixedD fp s A i j|) ∧
+      (∀ p : Fin n, ∑ q : Fin n, (flMixedD fp s A p q + ΔD p q) * w q = z p) := by
+  exact flMixedD_solve_of_blocks fp gammaMid s A z
+    (MixedMiddleSolveBlocks_of_higham115_blocks fp cSolve gammaMid hval1 hscalar h2
+      s A z hblocks)
+
 /-! ## Part 2c — the solve-chain envelope is a scalar multiple of `|L̂||D̂||L̂ᵀ|`
 
 The derived Aasen collapsed budget for the middle factor `D̂` with symmetric
@@ -535,8 +597,10 @@ factorization *and* solve halves, with the solve residual `(A + ΔA₂) x̂ = b`
 DERIVED (not `0`/`hsolve`), for the concrete computed solution
 `x̂ = fl_backSub L̂ᵀ (block-diagonal solve of ẑ = fl_forwardSub L̂ b)`.
 
-The single explicit hypothesis `hmid`/`hΔD` is the (11.5) block-diagonal middle
-solve `(D̂ + ΔD) ŵ = ẑ` with `|ΔD| ≤ γ_mid |D̂|`. -/
+The base theorem's explicit hypothesis `hmid`/`hΔD` is the (11.5)
+block-diagonal middle solve `(D̂ + ΔD) ŵ = ẑ` with
+`|ΔD| ≤ γ_mid |D̂|`; the wrappers below derive it from diagonal or
+schedule-local Higham (11.5) data. -/
 
 /-- **Theorem 11.3 (block-LDLᵀ), solve half derived.**
 
@@ -686,6 +750,47 @@ theorem higham11_3_block_ldlt_solve_backward_error_of_diagonal_middle
       hsmall hp w_hat ΔD hΔD hmid
   exact ⟨w_hat, ΔA1, ΔA2, hΔA1, hΔA2, hfac, hsolve⟩
 
+/-- **Theorem 11.3 solve half with Higham (11.5) mixed middle solve data.**
+    This derives the block-diagonal middle solve from scalar `fl_div` on 1×1
+    blocks and source-sanctioned (11.5) residual data on 2×2 blocks. -/
+theorem higham11_3_block_ldlt_solve_backward_error_of_higham115_middle
+    (fp : FPModel) (hval : gammaValid fp 3)
+    {n : ℕ} (s : PivotSchedule n) (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hvaln : gammaValid fp n)
+    (cSolve cStage gammaMid : ℝ)
+    (hcS0 : 0 ≤ cSolve) (hcS40 : cSolve ≤ 40)
+    (hcSt0 : 0 ≤ cStage) (hcSt5 : cStage ≤ 5)
+    (hscalar : gamma fp 1 ≤ gammaMid) (h2 : cSolve * fp.u ≤ gammaMid)
+    (hsmall : (n : ℝ) * fp.u ≤ 1 / 100)
+    (hp : FlMixedPivots fp cSolve cStage s A)
+    (hblocks : MixedMiddleSolveHigham115Blocks fp cSolve s A
+      (fl_forwardSub fp n (flMixedL fp s A) b)) :
+    ∃ w_hat : Fin n → ℝ, ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j|
+          ≤ higham11_3_printedFirstOrderBound n A (flMixedL fp s A) (flMixedD fp s A)
+              id (pPoly n) fp.u i j) ∧
+      (∀ i j : Fin n, |ΔA2 i j|
+          ≤ higham11_3_printedFirstOrderBound n A (flMixedL fp s A) (flMixedD fp s A)
+              id (pPoly n) fp.u i j
+            + higham11_15_aasenChainDeltaABound n (gamma fp n)
+                (fun i j => gammaMid * |flMixedD fp s A i j|)
+                (flMixedL fp s A) (flMixedD fp s A) (fun r c => flMixedL fp s A c r) i j) ∧
+      (∀ i j : Fin n,
+        (∑ k₁, ∑ k₂, flMixedL fp s A i k₁ * flMixedD fp s A k₁ k₂ * flMixedL fp s A j k₂)
+          = A i j + ΔA1 i j) ∧
+      (∀ i : Fin n,
+        ∑ j : Fin n,
+          (A i j + ΔA2 i j) * fl_backSub fp n (fun r c => flMixedL fp s A c r) w_hat j = b i) := by
+  have hval1 : gammaValid fp 1 := gammaValid_mono fp (by norm_num) hval
+  have hgammaMid : 0 ≤ gammaMid := le_trans (gamma_nonneg fp hval1) hscalar
+  obtain ⟨w_hat, ΔD, hΔD, hmid⟩ :=
+    flMixedD_solve_of_higham115_blocks fp cSolve gammaMid hval1 hscalar h2
+      s A (fl_forwardSub fp n (flMixedL fp s A) b) hblocks
+  obtain ⟨ΔA1, ΔA2, hΔA1, hΔA2, hfac, hsolve⟩ :=
+    higham11_3_block_ldlt_solve_backward_error fp hval s A b hvaln cSolve cStage
+      gammaMid hcS0 hcS40 hcSt0 hcSt5 hgammaMid hsmall hp w_hat ΔD hΔD hmid
+  exact ⟨w_hat, ΔA1, ΔA2, hΔA1, hΔA2, hfac, hsolve⟩
+
 /-! ## Part 4 — normwise (Theorem 11.7) repackaging
 
 Specializing to a factor-norm bound `|L̂||D̂||L̂ᵀ| ≤ c₀·Amax` (the tridiagonal
@@ -808,6 +913,46 @@ theorem higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_diagonal_m
       hcSt0 hcSt5 (gamma_nonneg fp hval1) hsmall hp hfactorNorm w_hat ΔD hΔD hmid
   exact ⟨w_hat, ΔA1, ΔA2, hΔA1, hΔA2, hfac, hsolve⟩
 
+/-- **Theorem 11.7 solve half with Higham (11.5) mixed middle solve data.**
+    The normwise endpoint now consumes schedule-local 2×2 middle-solve residuals
+    plus derived scalar solves, rather than a global `hmid` hypothesis. -/
+theorem higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_higham115_middle
+    (fp : FPModel) (hval : gammaValid fp 3)
+    {n : ℕ} (s : PivotSchedule n) (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hvaln : gammaValid fp n)
+    (Amax c0 cSolve cStage gammaMid : ℝ)
+    (hAmax : ∀ i j : Fin n, |A i j| ≤ Amax) (hAmax0 : 0 ≤ Amax) (hc0 : 0 ≤ c0)
+    (hcS0 : 0 ≤ cSolve) (hcS40 : cSolve ≤ 40)
+    (hcSt0 : 0 ≤ cStage) (hcSt5 : cStage ≤ 5)
+    (hscalar : gamma fp 1 ≤ gammaMid) (h2 : cSolve * fp.u ≤ gammaMid)
+    (hsmall : (n : ℝ) * fp.u ≤ 1 / 100)
+    (hp : FlMixedPivots fp cSolve cStage s A)
+    (hfactorNorm : ∀ i j : Fin n,
+      higham11_4_bunchKaufmanProductEntry n (flMixedL fp s A) (flMixedD fp s A) i j ≤ c0 * Amax)
+    (hblocks : MixedMiddleSolveHigham115Blocks fp cSolve s A
+      (fl_forwardSub fp n (flMixedL fp s A) b)) :
+    ∃ w_hat : Fin n → ℝ, ∃ ΔA1 ΔA2 : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, |ΔA1 i j| ≤ pPoly n * fp.u * ((1 + c0) * Amax)) ∧
+      (∀ i j : Fin n, |ΔA2 i j| ≤ pPoly n * fp.u * ((1 + c0) * Amax)
+          + ((2 * gamma fp n + gamma fp n ^ 2)
+              + (1 + 2 * gamma fp n + gamma fp n ^ 2) * gammaMid) * (c0 * Amax)) ∧
+      (∀ i j : Fin n,
+        (∑ k₁, ∑ k₂, flMixedL fp s A i k₁ * flMixedD fp s A k₁ k₂ * flMixedL fp s A j k₂)
+          = A i j + ΔA1 i j) ∧
+      (∀ i : Fin n,
+        ∑ j : Fin n,
+          (A i j + ΔA2 i j) * fl_backSub fp n (fun r c => flMixedL fp s A c r) w_hat j = b i) := by
+  have hval1 : gammaValid fp 1 := gammaValid_mono fp (by norm_num) hval
+  have hgammaMid : 0 ≤ gammaMid := le_trans (gamma_nonneg fp hval1) hscalar
+  obtain ⟨w_hat, ΔD, hΔD, hmid⟩ :=
+    flMixedD_solve_of_higham115_blocks fp cSolve gammaMid hval1 hscalar h2
+      s A (fl_forwardSub fp n (flMixedL fp s A) b) hblocks
+  obtain ⟨ΔA1, ΔA2, hΔA1, hΔA2, hfac, hsolve⟩ :=
+    higham11_7_bunch_tridiagonal_solve_backward_error_normwise fp hval s A b hvaln
+      Amax c0 cSolve cStage gammaMid hAmax hAmax0 hc0 hcS0 hcS40
+      hcSt0 hcSt5 hgammaMid hsmall hp hfactorNorm w_hat ΔD hΔD hmid
+  exact ⟨w_hat, ΔA1, ΔA2, hΔA1, hΔA2, hfac, hsolve⟩
+
 /-! ## Precise honesty status
 
 **Fully derived here:**
@@ -816,6 +961,9 @@ theorem higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_diagonal_m
   * `fl_diagonal_solve_backward_error` — the diagonal (all-1×1) middle solve,
     derived per block from `fl_oneByOne_solve_backward_error`.  This is the model
     of the middle-solve hypothesis and shows the 1×1 blocks need no assumption.
+  * `flMixedD_solve_of_higham115_blocks` — recursive composition of the mixed
+    1×1/2×2 middle solve for the named `flMixedD` factor, deriving 1×1 blocks
+    and consuming Higham's sanctioned (11.5) 2×2 residual data locally.
   * The two OUTER triangular-solve backward errors, from the actual
     `fl_forwardSub`/`fl_backSub` runs (`forwardSub_backward_error`,
     `backSub_backward_error`, reused).
@@ -829,12 +977,11 @@ theorem higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_diagonal_m
     (`higham11_8_aasen_source_backward_error_of_factor_and_solve_residuals`),
     and the honest componentwise bound `|ΔA₂| ≤ B_factor + B_solve`.
 
-**Assumed (the sanctioned Higham (11.5) source hypothesis):** the MIDDLE
-block-diagonal solve `hmid`/`hΔD`: `(D̂ + ΔD) ŵ = ẑ` with `|ΔD| ≤ γ_mid |D̂|`.
-This is (11.5) for the block-diagonal `D̂` (1×1 blocks derivable as in
-`fl_diagonal_solve_backward_error`; 2×2 blocks the explicitly permitted (11.5)
-assumption).  Its recursive composition over the pivot schedule is a
-self-contained further development, isolated here as the single hypothesis.
+**Assumed (the sanctioned Higham (11.5) source hypothesis):** for the
+Higham-11.5 wrappers, each 2×2 pivot block supplies local residual data
+`(E+ΔE)w=z`, `|ΔE|≤cSolve·u·|E|`.  The 1×1 blocks and the global recursive
+composition over `flMixedD` are derived here.  The lower-level base theorem
+still exposes a global `hmid`/`hΔD` input for callers that already have one.
 
 **Strength.**  The solve residual `(A + ΔA₂) x̂ = b` is now derived for the
 concrete computed solution `x̂` — no longer a supplied `hsolve`/`ΔA₂ = 0`.  The
