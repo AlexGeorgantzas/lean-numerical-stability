@@ -7,13 +7,13 @@
 - Mode: core.
 - Parallel split: 2 (chapters 7–12).
 - Planning documents consulted: blueprint, Split 2 section of `split_primary_contracts.md`, `chapter_index.md`.
-- **Selected-scope gate: FAIL.** The chapter's four primary *theorems* (11.3, 11.4, 11.7,
-  11.8) are backward-error / stability results whose Lean surfaces are currently
-  **conditional-transfer interfaces**: they take the analytic backward-error bound as a
-  hypothesis and restate it (`h : P ⊢ P`). Per the project honesty policy a conditional
-  transfer does not close the stronger source row, so these rows remain **open**. The five
-  *algorithms* (11.1, 11.2, 11.5, 11.6, 11.9) are modeled as honest decision predicates plus
-  the genuinely-proved pivot-parameter and per-step growth lemmas listed below.
+- **Selected-scope gate: FAIL.** The selected theorem surface is now closed for
+  Theorems 11.3, 11.4, and 11.7 by the closure modules summarized below. The
+  remaining selected primary row is the full Aasen Theorem 11.8 backward error,
+  whose `T_hat` accuracy comparison is still being reduced to local fl scalar
+  budgets. The five *algorithms* (11.1, 11.2, 11.5, 11.6, 11.9) are modeled as
+  honest decision predicates plus the genuinely-proved pivot-parameter and
+  per-step growth lemmas listed below.
 
 Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
 (chapter-label surface); reusable definitions and proofs in
@@ -43,9 +43,10 @@ data plus a printed-radius scalar comparison when the exact derived solve-chain
 radius is collapsed to `20n(1+c₀)u‖A‖`.  The full selected gate is still FAIL:
 the same module also exposes a generic scalar-radius adapter for any coefficient
 `C` that bounds the derived factor and solve radii by `C u ‖A‖`.
-Theorem 11.4 remains in the concurrent lane and Theorem 11.8 still needs a
-global relative middle-factor theorem from the new local floating-point `H`
-recurrence model plus the (11.11) recovered tridiagonal `T_hat` structure.
+Theorem 11.4 is now closed by `BunchKaufmanSolveCh11Closure`; Theorem 11.8
+still needs a global relative middle-factor theorem from the new local
+floating-point `H` recurrence model plus the (11.11) recovered tridiagonal
+`T_hat` structure.
 
 ## Proved selected targets and dependencies
 Rows in this table are compiled Lean results. Rows labelled with Theorem 11.8
@@ -673,6 +674,7 @@ assumptions remain open in the not-proved ledger below.
 | §11.2 Aasen computed-`H` direct residual bounds | `higham11_8_fl_aasenComputedHRecurrences_diagonal_abs_sub_bound`, `higham11_8_fl_aasenComputedHRecurrences_subdiagonal_abs_sub_bound`, `higham11_8_fl_aasenComputedHRecurrences_diagonal_relative_error_of_budget`, `higham11_8_fl_aasenComputedHRecurrences_subdiagonal_relative_error_of_budget` | Ch11 | **new this session**; turns the additive computed-`H` laws into direct `|H_hat-H|` diagonal/subdiagonal bounds of the form `Bsum + u|H-Δs|`, and adds wrappers that discharge local relative `H_hat` bounds when a caller proves the scalar residual budget is below `γ|H_hat|`. These are the local `H` ingredients consumed by the computed-`T_hat` local-to-global reducer. |
 | §11.2 Aasen computed-`H` to computed-`T_hat` subdiagonal reducer | `higham11_8_fl_aasenComputedTRecoveries_relative_error_of_H_subdiagonal_budgets` | Ch11 | **new this session**; combines the computed-`H` subdiagonal relative-budget wrapper with the computed-`T_hat` storage rules, deriving both lower and upper off-diagonal `T_hat` relative bounds from the single copied `H_hat next i` entry. The diagonal `T_hat` relative recovery bounds remain explicit. |
 | §11.2 Aasen computed-`T_hat` diagonal and combined accuracy reducers | `higham11_11_fl_aasenComputedTRecoveries_diagonal_relative_error_of_first_H_budget_and_successor_bounds`, `higham11_8_fl_aasenComputedTRecoveries_relative_error_of_H_budgets_and_successor_diagonal_bounds` | Ch11 | **new this session**; derives the first diagonal `T_hat` relative bound from the computed-`H` diagonal budget and exact `H=T Lᵀ`, leaves successor diagonal recovery arithmetic explicit, and combines those diagonal facts with the computed-`H` subdiagonal budget reducer to produce the global `|T_hat-T|≤γ|T_hat|` hypothesis. |
+| §11.2 Aasen computed-`T_hat` H-budget plus recovery-budget reducer | `higham11_8_fl_aasenComputedTRecoveries_relative_error_of_H_budgets_and_successor_recovery_budgets` | Ch11 | **new this session**; wires the successor-diagonal scalar `(11.11)` recovery-budget wrapper into the existing combined `T_hat` accuracy reducer. Callers now supply first-diagonal computed-`H` budget, subdiagonal computed-`H` budgets, and successor recovery scalar budgets directly, with no separate successor diagonal `T_hat` relative-bound premise. |
 | §11.2 AasenSpec source-prefix split-entry endpoint | `higham11_8_AasenSpec_identity_source_prefix_split_entry_budgets_printed_gamma_validity`, `higham11_8_AasenSpec_identity_source_prefix_split_entry_budgets_printed_gamma_validity_of_unit_roundoff_bound`, `higham11_8_AasenSpec_identity_source_prefix_split_entry_budgets_printed_gamma_validity_of_u_le_cap` | Ch11 | **new this session**; feeds identity-permutation `AasenSpec` plus `H=T Lᵀ` into the source-prefix split-entry printed normwise endpoint, deriving `A=LTLᵀ`, the exact Aasen next-column recurrence, and the required nonzero `H` subdiagonal pivots from the concrete `T next i≠0` hypothesis. The unit-roundoff and displayed-cap aliases also derive the printed `gammaValid (15n+25)` guard from source-shaped smallness assumptions. The concrete `T_hat` comparison and factor/solve split-budget inequalities remain explicit, so this is dependency progress and does not close Theorem 11.8. |
 | §11.2 AasenSpec split-entry sigma-id aliases | `higham11_8_AasenSpec_id_source_prefix_split_entry_budgets_printed_gamma_validity`, `higham11_8_AasenSpec_id_source_prefix_split_entry_budgets_printed_gamma_validity_of_unit_roundoff_bound`, `higham11_8_AasenSpec_id_source_prefix_split_entry_budgets_printed_gamma_validity_of_u_le_cap` | Ch11 | **new this session**; specializes the source-prefix split-entry endpoint to `σ := id`, discharging the identity-permutation proof by reflexivity. The concrete `T_hat` comparison, rounded update/budget facts, and factorization/solve split-budget inequalities remain explicit source obligations. |
 | §11.2 AasenSpec exact-`T_hat` source-prefix split-entry endpoint | `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_split_entry_budgets_printed_gamma_validity`, `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_split_entry_budgets_printed_gamma_validity_of_unit_roundoff_bound`, `higham11_8_AasenSpec_identity_source_prefix_T_hat_eq_T_split_entry_budgets_printed_gamma_validity_of_u_le_cap` | Ch11 | **new this session**; specializes the `AasenSpec` source-prefix split-entry endpoint to the exact middle case `T_hat=T`, discharging the `T_hat` comparison with the zero budget while keeping the factorization and solve split-budget inequalities explicit. The source-smallness aliases derive the printed `gammaValid (15n+25)` guard from either `(15n+25)fp.u<1` or a displayed cap. This removes one concrete comparison handoff for the exact-`T_hat` route but does not close Theorem 11.8 by itself. |
@@ -12581,6 +12583,17 @@ Problem transcription.
   specializes the scalar `fl(h - fl(βℓ))` recovery bound to the exact
   successor-diagonal `H=T Lᵀ` identity and exposes a relative-budget wrapper
   for the remaining scalar comparison.
+- 2026-07-17 Theorem 11.8 computed-`T_hat` H-budget plus recovery-budget reducer:
+  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` → pass;
+  `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11` →
+  `Build completed successfully (3054 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `HighamChapter11.lean` / `higham_ch11.md` → clean;
+  focused axiom check of
+  `higham11_8_fl_aasenComputedTRecoveries_relative_error_of_H_budgets_and_successor_recovery_budgets`
+  → elaborate; axioms `[propext, Classical.choice, Quot.sound]`. This packages
+  the first-diagonal computed-`H` budget, subdiagonal computed-`H` budgets, and
+  successor-diagonal scalar recovery budgets into the global componentwise
+  `|T_hat-T|≤γ|T_hat|` reducer.
 - 2026-07-17 Theorem 11.8 Aasen infinity-norm growth closure (n≥6):
   `lake env lean LeanFpAnalysis/FP/Algorithms/Cholesky/AasenGrowthCh11Closure.lean`
   → pass; `lake build LeanFpAnalysis.FP.Algorithms.Cholesky.AasenGrowthCh11Closure`
@@ -12710,18 +12723,16 @@ Problem transcription.
 
 ## Documentation
 - Inventory + report: `docs/source_coverage/higham_ch11.md` (this file).
-- Not-proved ledger: the "Open selected-scope items" table above (4 primary theorems: 11.3, 11.4, 11.7, 11.8). The 2×2 growth sub-step listed there last session is now proved (`twoByTwo_schur_growth`).
+- Not-proved ledger: the "Open selected-scope items" table above; after the
+  closure-module merges, the remaining selected primary obstruction is the full
+  Aasen Theorem 11.8 backward error.
 
 ## Open issues
-- Gate is FAIL by design: Theorems 11.3/11.4/11.7/11.8 remain conditional-transfer
-  interfaces. This session added the honest per-step §11.1.1 element-growth,
-  multiplier, and determinant lemmas — **both** single-step growth bounds
-  (`oneByOne_schur_growth` `(1+1/α)μ₀`, `twoByTwo_schur_growth` `(1+2/(1−α))μ₀`) and the
-  2×2 determinant nonsingularity bound — the genuine building blocks of the Theorem 11.4
-  growth-factor bound, all derived from the pivot-acceptance tests. Converting the
-  interfaces to end-to-end proofs requires (i) the per-stage-to-`ρₙ` recursion, (ii) the
-  `36nρₙ` product bound, and (iii) the block-LDLᵀ / Aasen floating-point backward-error
-  foundation — a multi-session effort tracked in the not-proved ledger.
+- Gate is FAIL because the full Aasen Theorem 11.8 backward error still needs
+  the concrete `T_hat` scalar relative-budget comparisons and their norm
+  consequences. The 11.3, 11.4, and 11.7 selected theorem rows are now backed by
+  closure modules; older conditional interfaces remain as compatibility
+  surfaces, not as the current selected-scope blockers.
 
 ## Factorization-error closure modules (2026-07-17, Claude)
 
