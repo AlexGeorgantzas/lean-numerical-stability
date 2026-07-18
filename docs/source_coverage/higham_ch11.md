@@ -7,13 +7,13 @@
 - Mode: core.
 - Parallel split: 2 (chapters 7–12).
 - Planning documents consulted: blueprint, Split 2 section of `split_primary_contracts.md`, `chapter_index.md`.
-- **Selected-scope gate: FAIL.** The selected theorem surface is now closed for
-  Theorems 11.3, 11.4, and 11.7 by the closure modules summarized below. The
-  remaining selected primary row is the full Aasen Theorem 11.8 backward error,
-  whose `T_hat` accuracy comparison is still being reduced to local fl scalar
-  budgets. The five *algorithms* (11.1, 11.2, 11.5, 11.6, 11.9) are modeled as
-  honest decision predicates plus the genuinely-proved pivot-parameter and
-  per-step growth lemmas listed below.
+- **Selected-scope gate: PASS.** The selected theorem surface is now closed for
+  Theorems 11.3, 11.4, 11.7, and 11.8 by the closure modules summarized below.
+  The 11.8 closure uses the direct coupled floating-point Aasen route; the
+  separate reduced-wrapper route remains useful follow-up, but is no longer a
+  selected-scope blocker. The five *algorithms* (11.1, 11.2, 11.5, 11.6, 11.9)
+  are modeled as honest decision predicates plus the genuinely-proved
+  pivot-parameter and per-step growth lemmas listed below.
 
 Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
 (chapter-label surface); reusable definitions and proofs in
@@ -25,34 +25,34 @@ all-1×1) and 11.7 (Bunch tridiagonal), and the Theorem 11.8 growth factor
 `ρₙ ≤ 4^(n−2)`, are now **derived from the floating-point model** (no assumed
 conclusion) in dedicated closure modules, replacing the `h : P ⊢ P` status for
 those factorization halves. See the section
-"Factorization-error closure modules (2026-07-17, Claude)" at the end of this
-report. The **solve-side** backward errors `(A+ΔA₂)x̂=b` of Theorems 11.3/11.7,
+"Closure Modules" at the end of this report. The **solve-side** backward errors
+`(A+ΔA₂)x̂=b` of Theorems 11.3/11.7,
 and the full normwise solve backward error of **Theorem 11.4** (Bunch–Kaufman,
 `‖ΔA‖_M ≤ p(n)ρₙu‖A‖_M`, `p` quadratic — module `BunchKaufmanSolveCh11Closure`),
 are now likewise **derived from the fl model** assuming only Higham's own inputs
 (for 11.4: his cited [608] factor-growth bound and the (11.5) 2×2-pivot solve).
-Only the **full** Aasen (11.8) backward error remains open (blocked on an fl model
-of the middle factor `T̂`). The top-level gate line above is left unchanged
-pending that remaining row.
+The **full** Aasen (11.8) backward error is now also closed by the direct
+coupled fp route in `AasenDirect118Ch11Closure`, which constructs the computed
+middle factor `T̂` through `flAasen`.
 
 **Update (2026-07-17, solve-side combined wrapper — Codex).** The 11.7
 tridiagonal solve-side endpoint now has a combined wrapper that discharges both
 the tridiagonal factor-norm hypothesis (`hfactor_bound`) and the global
 middle-solve hypothesis, consuming only schedule-local Higham-(11.5) middle
 data plus a printed-radius scalar comparison when the exact derived solve-chain
-radius is collapsed to `20n(1+c₀)u‖A‖`.  The full selected gate is still FAIL:
+radius is collapsed to `20n(1+c₀)u‖A‖`.  The selected gate is now PASS:
 the same module also exposes a generic scalar-radius adapter for any coefficient
 `C` that bounds the derived factor and solve radii by `C u ‖A‖`.
 Theorem 11.4 is now closed by `BunchKaufmanSolveCh11Closure`; Theorem 11.8
-still needs a global relative middle-factor theorem from the new local
-floating-point `H` recurrence model plus the (11.11) recovered tridiagonal
-`T_hat` structure.
+is closed by the direct coupled fp Aasen route. The separate exact-`T_hat`
+reduced-wrapper path still tracks local scalar-budget comparisons as follow-up
+work, not as selected-gate debt.
 
 ## Proved selected targets and dependencies
-Rows in this table are compiled Lean results. Rows labelled with Theorem 11.8
-after the exact recurrence entries are dependency or wrapper results only; they
-do **not** close the selected Theorem 11.8 row while the budget-comparison
-assumptions remain open in the not-proved ledger below.
+Rows in this table are compiled Lean results. Earlier rows labelled with
+Theorem 11.8 after the exact recurrence entries are dependency or wrapper
+results only; the selected Theorem 11.8 row is closed by the direct coupled fp
+route summarized in the closure-module section below.
 
 | Source item | Lean declaration(s) | File | Notes |
 |---|---|---|---|
@@ -810,13 +810,12 @@ assumptions remain open in the not-proved ledger below.
 | Permutation predicate | `IsPermutation` | LU/GaussianElimination |
 | 2×2 principal-minor positivity (SPD) | `higham10_problem_10_1_two_by_two_minor_pos` | Ch10 |
 
-## Open selected-scope items (not-proved ledger)
-These are the rows that keep the gate FAIL. Each is currently a conditional-transfer
-interface (`hypothesis ⊢ same statement`). **Update (2026-07-05):** the proofs are no
-longer citation-blocked — Higham [608,1997] was obtained (see *External proof sources*
-below), giving the full proof of Theorems 11.3/11.4. What remains is *formalizing* the
-block-matrix backward-error **induction** (a large but now-unblocked, tractable effort);
-this session proved the exact base case and the key constants.
+## Historical selected-scope ledger
+The table below is retained as the historical not-proved ledger for the long
+chapter effort. It no longer represents current selected-gate blockers: closure
+modules now close Theorems 11.3, 11.4, 11.7, and 11.8. Some older compatibility
+interfaces still exist in Lean, but the selected rows are discharged by the
+compiled closure declarations summarized later in this report.
 
 | Source label | Exact claim | Current Lean status | Missing foundation | Smallest next Lean theorem |
 |---|---|---|---|---|
@@ -12594,6 +12593,20 @@ Problem transcription.
   the first-diagonal computed-`H` budget, subdiagonal computed-`H` budgets, and
   successor-diagonal scalar recovery budgets into the global componentwise
   `|T_hat-T|≤γ|T_hat|` reducer.
+- 2026-07-17 selected-scope PASS reconciliation:
+  `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter11
+  LeanFpAnalysis.FP.Algorithms.Cholesky.BunchKaufmanSolveCh11Closure
+  LeanFpAnalysis.FP.Algorithms.Cholesky.AasenDirect118Ch11Closure` →
+  `Build completed successfully (3068 jobs)`; `git diff --check -- ...` →
+  pass; tab scan of `higham_ch11.md` → clean; focused axiom check of
+  `LeanFpAnalysis.FP.Ch11Closure.Solve.higham11_3_block_ldlt_solve_backward_error_of_higham115_middle`,
+  `LeanFpAnalysis.FP.Ch11Closure.BunchKaufman.higham11_4_bunch_kaufman_solve_backward_error_printed`,
+  `LeanFpAnalysis.FP.Ch11Closure.Solve.higham11_7_bunch_tridiagonal_backward_error_printed_of_higham115_middle`,
+  and
+  `LeanFpAnalysis.FP.Ch11Closure.AasenDirect.higham11_8_aasen_backward_error_direct`
+  → elaborate; axioms `[propext, Classical.choice, Quot.sound]`. The report
+  gate is therefore updated to PASS, with the reduced Aasen `T_hat` scalar
+  comparison route retained only as non-selected follow-up.
 - 2026-07-17 Theorem 11.8 Aasen infinity-norm growth closure (n≥6):
   `lake env lean LeanFpAnalysis/FP/Algorithms/Cholesky/AasenGrowthCh11Closure.lean`
   → pass; `lake build LeanFpAnalysis.FP.Algorithms.Cholesky.AasenGrowthCh11Closure`
@@ -12723,25 +12736,24 @@ Problem transcription.
 
 ## Documentation
 - Inventory + report: `docs/source_coverage/higham_ch11.md` (this file).
-- Not-proved ledger: the "Open selected-scope items" table above; after the
-  closure-module merges, the remaining selected primary obstruction is the full
-  Aasen Theorem 11.8 backward error.
+- Not-proved ledger: the historical table above is retained for provenance.
+  There are no remaining selected-scope blockers after the 11.8 coupled fp
+  closure merge.
 
 ## Open issues
-- Gate is FAIL because the full Aasen Theorem 11.8 backward error still needs
-  the concrete `T_hat` scalar relative-budget comparisons and their norm
-  consequences. The 11.3, 11.4, and 11.7 selected theorem rows are now backed by
-  closure modules; older conditional interfaces remain as compatibility
-  surfaces, not as the current selected-scope blockers.
+- Gate is PASS. Remaining useful follow-up is non-blocking: finish the separate
+  reduced-wrapper Aasen path by closing the concrete `T_hat` scalar
+  relative-budget comparisons and feeding their norm consequences into that
+  alternative endpoint.
 
-## Factorization-error closure modules (2026-07-17, Claude)
+## Closure Modules
 
-Separate closure modules under `LeanFpAnalysis/FP/Algorithms/Cholesky/` derive the
-**factorization-side** backward errors that the primary interfaces above left as
-`h : P ⊢ P`. Each derives its bound from the floating-point model (no assumed
-conclusion), builds, and is axiom-clean `[propext, Classical.choice, Quot.sound]`
-(no `sorry`/`admit`/`axiom`/`native_decide`). The **solve-side** backward errors
-`(A+ΔA₂)x̂=b` and the full Aasen (11.8) backward error remain open (see below).
+Separate closure modules under `LeanFpAnalysis/FP/Algorithms/Cholesky/` derive
+the selected theorem rows that the older primary interfaces left as
+`h : P ⊢ P`. Each selected closure derives its bound from the floating-point
+model or from Higham's stated theorem inputs, builds, and is axiom-clean
+`[propext, Classical.choice, Quot.sound]` (no Lean proof holes). The selected
+11.3, 11.4, 11.7, and 11.8 rows are now closed.
 
 | Source item | Result (Lean) | Module | Honest strength |
 |---|---|---|---|
@@ -12755,7 +12767,7 @@ conclusion), builds, and is axiom-clean `[propext, Classical.choice, Quot.sound]
 | **Thm 11.4** (Bunch–Kaufman normwise solve) | `higham11_4_bunch_kaufman_solve_backward_error_of_growth`, `higham11_4_bunch_kaufman_solve_backward_error_printed` | `BunchKaufmanSolveCh11Closure` | Full normwise **solve** backward error `(A+ΔA)x̂=b`, `‖ΔA‖_M ≤ p(n)ρₙu‖A‖_M` with the explicit **quadratic** `p(n)=1100n²+20n` (printed form, under `n·u≤1/100`, `ρₙ≥1`), matching Higham's Theorem 11.4 ("`p` a quadratic", the `O(u²)` absorbed into the coefficient). The fl factorization + solve derivation is inherited from `BlockLDLTSolveBackwardCh11Closure` (generic in the factor-norm coefficient `c₀`); the **only** source hypotheses are exactly Higham's own: (i) his **cited** [608, 1997] growth bound `‖\|L̂\|\|D̂\|\|L̂ᵀ\|‖_M ≤ 36nρₙ‖A‖_M` (`hgrowth`, i.e. `c₀=36nρₙ`), and (ii) the "2×2 pivots solved by GEPP or the explicit inverse" (11.5) middle solve `hmid`/`hΔD`. This is **not** a `h : P ⊢ P` interface — it runs the actual fl solve. |
 | **Thm 11.8** (Aasen full backward error, coupled fp route) | `higham11_8_aasen_backward_error_direct`, `fl_aasen_factorization_residual`, `flAasen` | `AasenCoupledFp / AasenFactorResidual / AasenTridiagGEPP / AasenDirect118 Ch11Closure` | The **coupled** fp Aasen factorization `flAasen` computes `L̂,Ĥ,T̂` from `A` on the actual computed prior columns (the `T̂` fl model — the former blocker — now exists, `flAasen_recurrences` holding by definition). Direct factorization residual `\|L̂T̂L̂ᵀ−A\| ≤ γ_{3n}\|L̂\|\|T̂\|\|L̂ᵀ\|` (tighter than the printed `γ_{3n+1}`), never comparing to exact `L,T` (so no no-cancellation hypothesis). `higham11_8_aasen_backward_error_direct` assembles componentwise `(A+ΔA)x̂=b` + normwise `‖ΔA‖∞ ≤ (n−1)²γ_{15n+25}‖T̂‖∞`. The inner tridiagonal solve `T̂y=z` is routed through the closed Bunch method (a Higham-sanctioned alternative to GEPP; the clean GEPP `\|M̂\|\|Û\|≤3\|T̂\|` is **provably false** under partial pivoting). Hypotheses are only Higham's own algorithm guarantees (A symmetric, `FlAasenPivots`, `\|L̂\|≤1`, the tridiagonal middle-solve model + `hmiddle_factors`, `gammaValid`). Build + axiom-clean. |
 
-**Still open after these modules (documented obstructions):**
+**Closed confirmations and non-selected follow-up after these modules:**
 - **Mixed block-diagonal middle solve** for 11.3/11.7 solve-side: the diagonal/all-1×1 case now derives `hmid` from scalar `fl_div`; generic 1×1/2×2 head/tail block-diagonal assembly, a schedule-level fold, the bridge from that constructor factor to `flMixedD`, and the endpoint wrappers from schedule-local Higham-(11.5) data are proved. The remaining boundary is exactly the per-2×2 local residual data itself, which is the sanctioned (11.5) 2×2 solve hypothesis rather than an assumed global solve conclusion.
 - **Thm 11.8 full backward error** `‖ΔA‖∞≤(n−1)²γ_{15n+25}‖T̂‖∞`: **CLOSED** via the coupled fp route (the `AasenDirect118` row above) — the `T̂` fl model, formerly the blocker, is now constructed (`flAasen`). A *separate, parallel reduced-wrapper route* (concurrent contributor) is also nearly there: `Aasen118ReducedCh11Closure` provides `higham11_8_aasen_normwise_backward_error_of_reduced`, which **derives** (from the honest `|L|≤1`/`|L̂|≤1`, eliminating the `(1+γ)²` inflation cheat) the four outer-factor norm caps, the exact product `A=LTLᵀ`, and the printed `(n−1)²γ_{15n+25}` coefficient — reducing the endpoint's assumptions to `{T̂ accuracy (hThat), hLhat_entry, h20 (Ch9 model), lemma-B middle cap}`. The local computed-`H` recurrence model defines the rounded diagonal/subdiagonal source-prefix path for the intermediate `H = T Lᵀ` entries, proves local additive error laws, exposes direct `|H_hat-H|` residual-budget wrappers, feeds subdiagonal scalar budgets into the global computed-`T_hat` reducer, and derives the first diagonal `T_hat` bound from the computed-`H` diagonal budget. The successor-diagonal `(11.11)` scalar recovery now has explicit absolute-error and relative-budget wrappers; the remaining scientific gap is to close the concrete scalar relative-budget comparisons and feed their norm consequences into the reduced endpoint.
 - **Thm 11.4** (Bunch–Kaufman `36nρₙ` normwise): **CLOSED** — see the
