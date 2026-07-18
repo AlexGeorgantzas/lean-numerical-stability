@@ -7,13 +7,39 @@
 - Mode: core.
 - Parallel split: 2 (chapters 7–12).
 - Planning documents consulted: blueprint, Split 2 section of `split_primary_contracts.md`, `chapter_index.md`.
-- **Selected-scope gate: PASS.** The selected theorem surface is now closed for
-  Theorems 11.3, 11.4, 11.7, and 11.8 by the closure modules summarized below.
-  The 11.8 closure uses the direct coupled floating-point Aasen route; the
-  separate reduced-wrapper route remains useful follow-up, but is no longer a
-  selected-scope blocker. The five *algorithms* (11.1, 11.2, 11.5, 11.6, 11.9)
-  are modeled as honest decision predicates plus the genuinely-proved
-  pivot-parameter and per-step growth lemmas listed below.
+- **Selected-scope gate: CONDITIONAL PASS** (corrected 2026-07-18 after an
+  adversarial closure audit — see "Closure audit (2026-07-18)" below; supersedes
+  the earlier unqualified PASS). Precise per-theorem status:
+  - **Theorem 11.3 — CLOSED.** Factorization (`..._of_acceptance`, deriving the
+    2×2 Schur error) + solve, from the fl model, assuming only Higham's (11.5)
+    2×2-solve family. Conventions: O(u²) folded into `n·u≤1/100`, P=I.
+  - **Theorem 11.4 — CLOSED.** `BunchKaufmanSolveCh11Closure`, from the fl model,
+    assuming only Higham's cited [608] `36nρₙ` bound + the (11.5) middle solve.
+  - **Theorem 11.8 — CLOSED at Higham's sanctioned-assumption strength**, with one
+    *disclosed idealization*. The former blocker (no fp model of `T̂`) is genuinely
+    resolved: `flAasen` is a real computed fp factorization and the factorization
+    residual is *derived*. Caveat: the linear normwise radius rests on
+    `hmiddle_factors` fixing the middle-solve LU factor-norm growth to the constant
+    1 (stronger than the repo's own provable O(n)); the componentwise bound is
+    same-strength but structured differently from Higham's printed GEPP two-term form.
+  - **Theorem 11.7 — CONDITIONAL, not genuinely closed.** Its bounded-growth core
+    is **assumed**, not derived: the `..._unconditional` capstone discharges
+    `hfactor` only from the hypothesis `TriPivotData fp Amax`, whose recursive
+    definition (`BunchTridiagonalHFactorCh11Closure`:446) demands that *every*
+    rounded Schur complement's entries stay `≤ σ_ℓ ≤ Amax` — i.e. the very
+    bounded-growth conclusion. `TriPivotData` is never derived (it occurs only as a
+    hypothesis; `_consOne/_consTwo` are `Iff.rfl`); the per-step corner bound's
+    `Amax/α` correction gives new corner `≤ (1+γ₃)(1+1/α)Amax ≈ 2.6 Amax > Amax`,
+    so a fixed-`Amax` invariant provably does not close — deriving it needs the
+    amortized/fixed-original-scale growth argument (a genuine research-grade
+    development, the "Step G/F" the growth-module notes leave open). The delivered
+    coefficient is also `c = 20n(1+c₀)`, **linear in n**, not the printed constant.
+
+  Everything above is build-clean and axiom-clean (`[propext, Classical.choice,
+  Quot.sound]`; no `sorry`/`admit`/`axiom`/`native_decide` in any of the 16
+  `*Ch11Closure.lean` modules); the 11.7 and 11.8 gaps are **hypothesis-strength,
+  not soundness**. The five *algorithms* (11.1, 11.2, 11.5, 11.6, 11.9) are honest
+  decision predicates plus genuinely-proved pivot-parameter/growth lemmas.
 
 Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean`
 (chapter-label surface); reusable definitions and proofs in
@@ -40,8 +66,12 @@ tridiagonal solve-side endpoint now has a combined wrapper that discharges both
 the tridiagonal factor-norm hypothesis (`hfactor_bound`) and the global
 middle-solve hypothesis, consuming only schedule-local Higham-(11.5) middle
 data plus a printed-radius scalar comparison when the exact derived solve-chain
-radius is collapsed to `20n(1+c₀)u‖A‖`.  The selected gate is now PASS:
-the same module also exposes a generic scalar-radius adapter for any coefficient
+radius is collapsed to `20n(1+c₀)u‖A‖`.  (Correction 2026-07-18: this wrapper
+still routes the tridiagonal factor-norm through `hfactor_bound`←`TriPivotData`,
+whose bounded-growth content is **assumed, not derived**; the 11.7 gate is
+therefore **CONDITIONAL**, not full PASS — see the corrected gate line at the top
+and the "Closure audit (2026-07-18)" section.)
+The same module also exposes a generic scalar-radius adapter for any coefficient
 `C` that bounds the derived factor and solve radii by `C u ‖A‖`.
 Theorem 11.4 is now closed by `BunchKaufmanSolveCh11Closure`; Theorem 11.8
 is closed by the direct coupled fp Aasen route. The separate exact-`T_hat`
@@ -12738,13 +12768,49 @@ Problem transcription.
 - Inventory + report: `docs/source_coverage/higham_ch11.md` (this file).
 - Not-proved ledger: the historical table above is retained for provenance.
   There are no remaining selected-scope blockers after the 11.8 coupled fp
-  closure merge.
+  closure merge. **(Corrected 2026-07-18: superseded — 11.7 remains a
+  bounded-growth blocker; see below.)**
 
 ## Open issues
-- Gate is PASS. Remaining useful follow-up is non-blocking: finish the separate
-  reduced-wrapper Aasen path by closing the concrete `T_hat` scalar
-  relative-budget comparisons and feeding their norm consequences into that
-  alternative endpoint.
+- **Gate is CONDITIONAL PASS** (corrected 2026-07-18). The genuine remaining
+  blocker is **Theorem 11.7's bounded element growth**: the `..._unconditional`
+  capstone assumes it via `TriPivotData` (per-stage `≤ Amax` invariant threaded
+  onto `flSchurCompl`), which is never derived. Deriving it (discharging
+  `TriPivotData` / `hfactor` from the algorithm) is research-grade: the per-step
+  corner bound's `Amax/α` correction compounds under a fixed-`Amax` invariant
+  (new corner `≈2.6 Amax`), so it needs the amortized/fixed-original-scale growth
+  argument — decoupling the pivot-test scale from the entry bound, plus the (F)
+  2×2 quadratic-form product-entry assembly. Coefficient is also linear-in-n, not
+  the printed constant. This is the "Step G/F" the growth-module notes leave open.
+- Non-blocking follow-up: Theorem 11.8's `hmiddle_factors` idealizes the
+  middle-solve LU factor-norm growth to constant 1 (stronger than the repo's
+  provable O(n)); and the separate reduced-wrapper Aasen path still tracks the
+  concrete `T_hat` scalar relative-budget comparisons.
+
+## Closure audit (2026-07-18)
+
+An adversarial closure audit (per-theorem honesty auditors + skeptics tasked to
+*refute* each closure + honesty scan + source-faithfulness), plus a full
+`lake build` and `#print axioms` on all six capstones, was run against
+origin/main `683a2e9b1`. Results:
+
+- **Build + axioms:** all 16 `*Ch11Closure.lean` modules build (3069 jobs, exit
+  0); every capstone is axiom-clean `[propext, Classical.choice, Quot.sound]`
+  through the full import chain — no `sorry`/`admit`/`axiom`/`native_decide`. The
+  gaps below are hypothesis-strength, **not** soundness.
+- **11.3, 11.4 — genuinely CLOSED** (skeptic refutation failed).
+- **11.8 — CLOSED at sanctioned-assumption strength.** The former T̂ blocker is
+  authentically resolved (`flAasen` is a real computed fp factorization; the
+  factorization residual is derived, not assumed). One disclosed idealization:
+  `hmiddle_factors` fixes the middle-solve LU factor-norm growth to constant 1.
+- **11.7 — CONDITIONAL (not genuinely closed).** The bounded-growth core is
+  assumed via `TriPivotData` and never derived (it occurs only as a hypothesis;
+  the corner bound's `Amax/α` correction compounds under a fixed-`Amax` invariant,
+  so the amortized/fixed-scale argument — "Step G/F" — is genuinely required and
+  remains open). Coefficient linear-in-n vs the printed constant.
+
+The earlier "Mark chapter 11 selected scope pass" was therefore an overclaim for
+11.7; the gate is corrected to **CONDITIONAL PASS** above.
 
 ## Closure Modules
 
@@ -12752,8 +12818,12 @@ Separate closure modules under `LeanFpAnalysis/FP/Algorithms/Cholesky/` derive
 the selected theorem rows that the older primary interfaces left as
 `h : P ⊢ P`. Each selected closure derives its bound from the floating-point
 model or from Higham's stated theorem inputs, builds, and is axiom-clean
-`[propext, Classical.choice, Quot.sound]` (no Lean proof holes). The selected
-11.3, 11.4, 11.7, and 11.8 rows are now closed.
+`[propext, Classical.choice, Quot.sound]` (no Lean proof holes). **Closure status
+(corrected 2026-07-18 audit): 11.3 and 11.4 CLOSED; 11.8 CLOSED at sanctioned-
+assumption strength (one disclosed `hmiddle_factors` idealization); 11.7
+CONDITIONAL — its bounded-growth core (`hfactor`) is assumed via `TriPivotData`,
+not derived. All rows are build- and axiom-clean; the 11.7 gap is
+hypothesis-strength.**
 
 | Source item | Result (Lean) | Module | Honest strength |
 |---|---|---|---|
