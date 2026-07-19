@@ -31,6 +31,7 @@ import LeanFpAnalysis.FP.Algorithms.QR.GivensSpec
 import LeanFpAnalysis.FP.Algorithms.QR.GivensMatrixStep
 import LeanFpAnalysis.FP.Algorithms.QR.GivensQR
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Labels
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Lemma7Gamma4
 
 namespace LeanFpAnalysis.FP.Wave13
 
@@ -407,25 +408,24 @@ theorem fl_givensApply_pair_sq_error_le (fp : FPModel) (n : ℕ)
     where `c = givensC xi xj`, `s = givensS xi xj`.  The index moves from `γ₂`
     (supplied parameters) to `γ₈` because coefficient construction contributes
     `γ₆` and the two rounded fused operations contribute the remaining `γ₂`. -/
-theorem fl_givensApply_computed_pair_sq_error_le (fp : FPModel) (n : ℕ)
+theorem fl_givensApply_computed_pair_sq_error_le_gamma6 (fp : FPModel) (n : ℕ)
     (p q : Fin n) (xi xj : ℝ) (x : Fin n → ℝ)
     (hpq : p ≠ q) (hnz : xi ^ 2 + xj ^ 2 ≠ 0)
-    (hvalid : gammaValid fp 8) :
+    (hvalid : gammaValid fp 6) :
     (fl_givensApply fp n p q (fl_givensC fp xi xj) (fl_givensS fp xi xj) x p -
           (givensC xi xj * x p + givensS xi xj * x q)) ^ 2 +
         (fl_givensApply fp n p q (fl_givensC fp xi xj) (fl_givensS fp xi xj) x q -
           (givensC xi xj * x q - givensS xi xj * x p)) ^ 2 ≤
-      2 * gamma fp 8 ^ 2 * (x p ^ 2 + x q ^ 2) := by
+      2 * gamma fp 6 ^ 2 * (x p ^ 2 + x q ^ 2) := by
   classical
   -- Exact coefficients and their computed relative errors (Lemma 19.7, γ₆).
   set c := givensC xi xj with hc_def
   set s := givensS xi xj with hs_def
   have hcs : c ^ 2 + s ^ 2 = 1 := givensCoeff_norm_sq xi xj hnz
-  have hvalid6 : gammaValid fp 6 := gammaValid_mono fp (by omega) hvalid
   obtain ⟨εc, hεc, hc_hat⟩ :=
-    (fl_givensCoeffError_conservative fp xi xj hnz hvalid6).c_rel
+    (fl_givensCoeffError_gamma4 fp xi xj hnz hvalid).c_rel
   obtain ⟨εs, hεs, hs_hat⟩ :=
-    (fl_givensCoeffError_conservative fp xi xj hnz hvalid6).s_rel
+    (fl_givensCoeffError_gamma4 fp xi xj hnz hvalid).s_rel
   -- Per-operation rounding for the two touched components with COMPUTED c,s.
   obtain ⟨δcp, hδcp, hmul_cp⟩ := fp.model_mul (fl_givensC fp xi xj) (x p)
   obtain ⟨δsp, hδsp, hmul_sp⟩ := fp.model_mul (fl_givensS fp xi xj) (x q)
@@ -445,32 +445,32 @@ theorem fl_givensApply_computed_pair_sq_error_le (fp : FPModel) (n : ℕ)
   have hδcqγ : |δcq| ≤ gamma fp 1 := le_trans hδcq hu_le_γ1
   have hδsqγ : |δsq| ≤ gamma fp 1 := le_trans hδsq hu_le_γ1
   have hδsubγ : |δsub| ≤ gamma fp 1 := le_trans hδsub hu_le_γ1
-  have hεc6 : |εc| ≤ gamma fp 6 := hεc
-  have hεs6 : |εs| ≤ gamma fp 6 := hεs
-  have hvalid7 : gammaValid fp 7 := gammaValid_mono fp (by omega) hvalid
-  -- Fold coefficient error (γ₆) with first multiply (γ₁) → γ₇.
+  have hεc4 : |εc| ≤ gamma fp 4 := hεc
+  have hεs4 : |εs| ≤ gamma fp 4 := hεs
+  have hvalid5 : gammaValid fp 5 := gammaValid_mono fp (by omega) hvalid
+  -- Fold coefficient error (γ₄) with first multiply (γ₁) → γ₅.
   obtain ⟨φcp, hφcp, hφcp_eq⟩ :=
-    gamma_mul fp 6 1 εc δcp hεc6 hδcpγ (by simpa using hvalid7)
+    gamma_mul fp 4 1 εc δcp hεc4 hδcpγ (by simpa using hvalid5)
   obtain ⟨φsp, hφsp, hφsp_eq⟩ :=
-    gamma_mul fp 6 1 εs δsp hεs6 hδspγ (by simpa using hvalid7)
+    gamma_mul fp 4 1 εs δsp hεs4 hδspγ (by simpa using hvalid5)
   obtain ⟨φcq, hφcq, hφcq_eq⟩ :=
-    gamma_mul fp 6 1 εc δcq hεc6 hδcqγ (by simpa using hvalid7)
+    gamma_mul fp 4 1 εc δcq hεc4 hδcqγ (by simpa using hvalid5)
   obtain ⟨φsq, hφsq, hφsq_eq⟩ :=
-    gamma_mul fp 6 1 εs δsq hεs6 hδsqγ (by simpa using hvalid7)
-  -- Fold with add/sub rounding (γ₁) → γ₈.
+    gamma_mul fp 4 1 εs δsq hεs4 hδsqγ (by simpa using hvalid5)
+  -- Fold with add/sub rounding (γ₁) → γ₆.
   obtain ⟨θcp, hθcp, hθcp_eq⟩ :=
-    gamma_mul fp 7 1 φcp δadd (by simpa using hφcp) hδaddγ (by simpa using hvalid)
+    gamma_mul fp 5 1 φcp δadd (by simpa using hφcp) hδaddγ (by simpa using hvalid)
   obtain ⟨θsp, hθsp, hθsp_eq⟩ :=
-    gamma_mul fp 7 1 φsp δadd (by simpa using hφsp) hδaddγ (by simpa using hvalid)
+    gamma_mul fp 5 1 φsp δadd (by simpa using hφsp) hδaddγ (by simpa using hvalid)
   obtain ⟨θcq, hθcq, hθcq_eq⟩ :=
-    gamma_mul fp 7 1 φcq δsub (by simpa using hφcq) hδsubγ (by simpa using hvalid)
+    gamma_mul fp 5 1 φcq δsub (by simpa using hφcq) hδsubγ (by simpa using hvalid)
   obtain ⟨θsq, hθsq, hθsq_eq⟩ :=
-    gamma_mul fp 7 1 φsq δsub (by simpa using hφsq) hδsubγ (by simpa using hvalid)
-  have hθcp8 : |θcp| ≤ gamma fp 8 := by simpa using hθcp
-  have hθsp8 : |θsp| ≤ gamma fp 8 := by simpa using hθsp
-  have hθcq8 : |θcq| ≤ gamma fp 8 := by simpa using hθcq
-  have hθsq8 : |θsq| ≤ gamma fp 8 := by simpa using hθsq
-  have hγ8_nonneg : 0 ≤ gamma fp 8 := gamma_nonneg fp hvalid
+    gamma_mul fp 5 1 φsq δsub (by simpa using hφsq) hδsubγ (by simpa using hvalid)
+  have hθcp6 : |θcp| ≤ gamma fp 6 := by simpa using hθcp
+  have hθsp6 : |θsp| ≤ gamma fp 6 := by simpa using hθsp
+  have hθcq6 : |θcq| ≤ gamma fp 6 := by simpa using hθcq
+  have hθsq6 : |θsq| ≤ gamma fp 6 := by simpa using hθsq
+  have hγ6_nonneg : 0 ≤ gamma fp 6 := gamma_nonneg fp hvalid
   -- Component algebra with computed coefficients: p-component.
   have hp_alg :
       fl_givensApply fp n p q (fl_givensC fp xi xj) (fl_givensS fp xi xj) x p =
@@ -530,71 +530,133 @@ theorem fl_givensApply_computed_pair_sq_error_le (fp : FPModel) (n : ℕ)
     rw [hq_alg]; ring
   rw [hwp, hwq]
   -- Bound the two squared error components (same Cauchy–Schwarz as the
-  -- supplied-parameter case, now with γ₈).
+  -- supplied-parameter case, now with γ₆).
   have hbp : (c * θcp * x p + s * θsp * x q) ^ 2 ≤
-      gamma fp 8 ^ 2 * (x p ^ 2 + x q ^ 2) := by
+      gamma fp 6 ^ 2 * (x p ^ 2 + x q ^ 2) := by
     have habs : |c * θcp * x p + s * θsp * x q| ≤
-        gamma fp 8 * (|c| * |x p| + |s| * |x q|) := by
+        gamma fp 6 * (|c| * |x p| + |s| * |x q|) := by
       calc
         |c * θcp * x p + s * θsp * x q|
             ≤ |c * θcp * x p| + |s * θsp * x q| := abs_add_le _ _
         _ = |c| * |θcp| * |x p| + |s| * |θsp| * |x q| := by
               rw [abs_mul, abs_mul, abs_mul, abs_mul]
-        _ ≤ |c| * gamma fp 8 * |x p| + |s| * gamma fp 8 * |x q| := by
-              have h1 : |c| * |θcp| * |x p| ≤ |c| * gamma fp 8 * |x p| :=
+        _ ≤ |c| * gamma fp 6 * |x p| + |s| * gamma fp 6 * |x q| := by
+              have h1 : |c| * |θcp| * |x p| ≤ |c| * gamma fp 6 * |x p| :=
                 mul_le_mul_of_nonneg_right
-                  (mul_le_mul_of_nonneg_left hθcp8 (abs_nonneg c)) (abs_nonneg _)
-              have h2 : |s| * |θsp| * |x q| ≤ |s| * gamma fp 8 * |x q| :=
+                  (mul_le_mul_of_nonneg_left hθcp6 (abs_nonneg c)) (abs_nonneg _)
+              have h2 : |s| * |θsp| * |x q| ≤ |s| * gamma fp 6 * |x q| :=
                 mul_le_mul_of_nonneg_right
-                  (mul_le_mul_of_nonneg_left hθsp8 (abs_nonneg s)) (abs_nonneg _)
+                  (mul_le_mul_of_nonneg_left hθsp6 (abs_nonneg s)) (abs_nonneg _)
               linarith
-        _ = gamma fp 8 * (|c| * |x p| + |s| * |x q|) := by ring
+        _ = gamma fp 6 * (|c| * |x p| + |s| * |x q|) := by ring
     have hcs_bound : (|c| * |x p| + |s| * |x q|) ^ 2 ≤ x p ^ 2 + x q ^ 2 :=
       coeff_weighted_sq_le hcs
     calc
       (c * θcp * x p + s * θsp * x q) ^ 2
           = |c * θcp * x p + s * θsp * x q| ^ 2 := (sq_abs _).symm
-      _ ≤ (gamma fp 8 * (|c| * |x p| + |s| * |x q|)) ^ 2 :=
+      _ ≤ (gamma fp 6 * (|c| * |x p| + |s| * |x q|)) ^ 2 :=
             pow_le_pow_left₀ (abs_nonneg _) habs 2
-      _ = gamma fp 8 ^ 2 * (|c| * |x p| + |s| * |x q|) ^ 2 := by ring
-      _ ≤ gamma fp 8 ^ 2 * (x p ^ 2 + x q ^ 2) :=
+      _ = gamma fp 6 ^ 2 * (|c| * |x p| + |s| * |x q|) ^ 2 := by ring
+      _ ≤ gamma fp 6 ^ 2 * (x p ^ 2 + x q ^ 2) :=
             mul_le_mul_of_nonneg_left hcs_bound (by positivity)
   have hbq : (c * θcq * x q - s * θsq * x p) ^ 2 ≤
-      gamma fp 8 ^ 2 * (x p ^ 2 + x q ^ 2) := by
+      gamma fp 6 ^ 2 * (x p ^ 2 + x q ^ 2) := by
     have habs : |c * θcq * x q - s * θsq * x p| ≤
-        gamma fp 8 * (|c| * |x q| + |s| * |x p|) := by
+        gamma fp 6 * (|c| * |x q| + |s| * |x p|) := by
       calc
         |c * θcq * x q - s * θsq * x p|
             ≤ |c * θcq * x q| + |s * θsq * x p| := abs_sub _ _
         _ = |c| * |θcq| * |x q| + |s| * |θsq| * |x p| := by
               rw [abs_mul, abs_mul, abs_mul, abs_mul]
-        _ ≤ |c| * gamma fp 8 * |x q| + |s| * gamma fp 8 * |x p| := by
-              have h1 : |c| * |θcq| * |x q| ≤ |c| * gamma fp 8 * |x q| :=
+        _ ≤ |c| * gamma fp 6 * |x q| + |s| * gamma fp 6 * |x p| := by
+              have h1 : |c| * |θcq| * |x q| ≤ |c| * gamma fp 6 * |x q| :=
                 mul_le_mul_of_nonneg_right
-                  (mul_le_mul_of_nonneg_left hθcq8 (abs_nonneg c)) (abs_nonneg _)
-              have h2 : |s| * |θsq| * |x p| ≤ |s| * gamma fp 8 * |x p| :=
+                  (mul_le_mul_of_nonneg_left hθcq6 (abs_nonneg c)) (abs_nonneg _)
+              have h2 : |s| * |θsq| * |x p| ≤ |s| * gamma fp 6 * |x p| :=
                 mul_le_mul_of_nonneg_right
-                  (mul_le_mul_of_nonneg_left hθsq8 (abs_nonneg s)) (abs_nonneg _)
+                  (mul_le_mul_of_nonneg_left hθsq6 (abs_nonneg s)) (abs_nonneg _)
               linarith
-        _ = gamma fp 8 * (|c| * |x q| + |s| * |x p|) := by ring
+        _ = gamma fp 6 * (|c| * |x q| + |s| * |x p|) := by ring
     have hcs_bound : (|c| * |x q| + |s| * |x p|) ^ 2 ≤ x q ^ 2 + x p ^ 2 :=
       coeff_weighted_sq_le hcs
     calc
       (c * θcq * x q - s * θsq * x p) ^ 2
           = |c * θcq * x q - s * θsq * x p| ^ 2 := (sq_abs _).symm
-      _ ≤ (gamma fp 8 * (|c| * |x q| + |s| * |x p|)) ^ 2 :=
+      _ ≤ (gamma fp 6 * (|c| * |x q| + |s| * |x p|)) ^ 2 :=
             pow_le_pow_left₀ (abs_nonneg _) habs 2
-      _ = gamma fp 8 ^ 2 * (|c| * |x q| + |s| * |x p|) ^ 2 := by ring
-      _ ≤ gamma fp 8 ^ 2 * (x p ^ 2 + x q ^ 2) := by
+      _ = gamma fp 6 ^ 2 * (|c| * |x q| + |s| * |x p|) ^ 2 := by ring
+      _ ≤ gamma fp 6 ^ 2 * (x p ^ 2 + x q ^ 2) := by
             have hswap : x q ^ 2 + x p ^ 2 = x p ^ 2 + x q ^ 2 := by ring
             rw [hswap] at hcs_bound
             exact mul_le_mul_of_nonneg_left hcs_bound (by positivity)
   calc
     (c * θcp * x p + s * θsp * x q) ^ 2 +
         (c * θcq * x q - s * θsq * x p) ^ 2
-        ≤ gamma fp 8 ^ 2 * (x p ^ 2 + x q ^ 2) +
-            gamma fp 8 ^ 2 * (x p ^ 2 + x q ^ 2) := add_le_add hbp hbq
-    _ = 2 * gamma fp 8 ^ 2 * (x p ^ 2 + x q ^ 2) := by ring
+        ≤ gamma fp 6 ^ 2 * (x p ^ 2 + x q ^ 2) +
+            gamma fp 6 ^ 2 * (x p ^ 2 + x q ^ 2) := add_le_add hbp hbq
+    _ = 2 * gamma fp 6 ^ 2 * (x p ^ 2 + x q ^ 2) := by ring
+
+/-- Norm form of the computed-coefficient Lemma 19.8 bound.  The concrete
+`fl_givensC`/`fl_givensS` construction contributes `gamma_4`, the actual
+multiply/add application contributes two further operations, and the active
+two-vector error is therefore bounded sharply by `sqrt 2 * gamma_6`. -/
+theorem fl_givensApply_computed_pair_error_norm_le_gamma6
+    (fp : FPModel) (n : ℕ)
+    (p q : Fin n) (xi xj : ℝ) (x : Fin n → ℝ)
+    (hpq : p ≠ q) (hnz : xi ^ 2 + xj ^ 2 ≠ 0)
+    (hvalid : gammaValid fp 6) :
+    Real.sqrt
+        ((fl_givensApply fp n p q (fl_givensC fp xi xj) (fl_givensS fp xi xj) x p -
+            (givensC xi xj * x p + givensS xi xj * x q)) ^ 2 +
+          (fl_givensApply fp n p q (fl_givensC fp xi xj) (fl_givensS fp xi xj) x q -
+            (givensC xi xj * x q - givensS xi xj * x p)) ^ 2) ≤
+      Real.sqrt 2 * gamma fp 6 * Real.sqrt (x p ^ 2 + x q ^ 2) := by
+  have hsq := fl_givensApply_computed_pair_sq_error_le_gamma6
+    fp n p q xi xj x hpq hnz hvalid
+  have hmass : 0 ≤ x p ^ 2 + x q ^ 2 := by positivity
+  have hγ : 0 ≤ gamma fp 6 := gamma_nonneg fp hvalid
+  have hrhs : 0 ≤ Real.sqrt 2 * gamma fp 6 * Real.sqrt (x p ^ 2 + x q ^ 2) := by
+    positivity
+  have hrhs_sq :
+      (Real.sqrt 2 * gamma fp 6 * Real.sqrt (x p ^ 2 + x q ^ 2)) ^ 2 =
+        2 * gamma fp 6 ^ 2 * (x p ^ 2 + x q ^ 2) := by
+    rw [mul_pow, mul_pow, Real.sq_sqrt (by norm_num), Real.sq_sqrt hmass]
+  calc
+    Real.sqrt
+        ((fl_givensApply fp n p q (fl_givensC fp xi xj) (fl_givensS fp xi xj) x p -
+            (givensC xi xj * x p + givensS xi xj * x q)) ^ 2 +
+          (fl_givensApply fp n p q (fl_givensC fp xi xj) (fl_givensS fp xi xj) x q -
+            (givensC xi xj * x q - givensS xi xj * x p)) ^ 2)
+        ≤ Real.sqrt
+            ((Real.sqrt 2 * gamma fp 6 * Real.sqrt (x p ^ 2 + x q ^ 2)) ^ 2) := by
+          apply Real.sqrt_le_sqrt
+          rw [hrhs_sq]
+          exact hsq
+    _ = Real.sqrt 2 * gamma fp 6 * Real.sqrt (x p ^ 2 + x q ^ 2) := by
+      rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hrhs]
+
+/-- Compatibility weakening of the sharp `gamma_6` result to the former
+`gamma_8` endpoint. -/
+theorem fl_givensApply_computed_pair_sq_error_le (fp : FPModel) (n : ℕ)
+    (p q : Fin n) (xi xj : ℝ) (x : Fin n → ℝ)
+    (hpq : p ≠ q) (hnz : xi ^ 2 + xj ^ 2 ≠ 0)
+    (hvalid : gammaValid fp 8) :
+    (fl_givensApply fp n p q (fl_givensC fp xi xj) (fl_givensS fp xi xj) x p -
+          (givensC xi xj * x p + givensS xi xj * x q)) ^ 2 +
+        (fl_givensApply fp n p q (fl_givensC fp xi xj) (fl_givensS fp xi xj) x q -
+          (givensC xi xj * x q - givensS xi xj * x p)) ^ 2 ≤
+      2 * gamma fp 8 ^ 2 * (x p ^ 2 + x q ^ 2) := by
+  have h6 := fl_givensApply_computed_pair_sq_error_le_gamma6
+    fp n p q xi xj x hpq hnz (gammaValid_mono fp (by omega) hvalid)
+  have hγ : gamma fp 6 ≤ gamma fp 8 := gamma_mono fp (by omega) hvalid
+  have hγ6 : 0 ≤ gamma fp 6 :=
+    gamma_nonneg fp (gammaValid_mono fp (by omega) hvalid)
+  have hsq : gamma fp 6 ^ 2 ≤ gamma fp 8 ^ 2 :=
+    pow_le_pow_left₀ hγ6 hγ 2
+  have hmass : 0 ≤ x p ^ 2 + x q ^ 2 := by positivity
+  exact h6.trans
+    (mul_le_mul_of_nonneg_right
+      (mul_le_mul_of_nonneg_left hsq (by norm_num)) hmass)
 
 -- ============================================================
 -- §19.6  Concrete disjoint-sweep column operator
@@ -810,6 +872,53 @@ theorem H19_Lemma19_9_disjoint_stage_column_backward_error
   -- Apply the abstract disjoint-support Pythagorean per-stage bound.
   exact stage_columnError_le_sqrt2_gamma S hS (sweepResidual fp S src a) a
     (gamma fp 8) hγ8_nonneg hsupp hpair
+
+/-- **Lemma 19.9 with the sharp computed-coefficient constant.**  The
+    coefficient construction and application analysis above composes directly
+    to `gamma_6`; disjoint support then lifts the two-row estimate to the whole
+    stage without a factor depending on the number of rows or rotations. -/
+theorem H19_Lemma19_9_disjoint_stage_column_backward_error_gamma6
+    (fp : FPModel) {m : ℕ}
+    (S : Finset (Fin m × Fin m)) (hS : DisjointPairs S) (src : StageSrc m)
+    (a : Fin m → ℝ)
+    (hnz : ∀ pq ∈ S, (src pq).1 ^ 2 + (src pq).2 ^ 2 ≠ 0)
+    (hvalid : gammaValid fp 6) :
+    vecNorm2 (sweepResidual fp S src a) ≤
+      Real.sqrt 2 * gamma fp 6 * vecNorm2 a := by
+  classical
+  have hγ6_nonneg : 0 ≤ gamma fp 6 := gamma_nonneg fp hvalid
+  have hsupp : ∀ i : Fin m, i ∉ touchedRows S →
+      sweepResidual fp S src a i = 0 := by
+    intro i hi
+    exact sweepResidual_zero_of_not_touched fp S src a hi
+  have hpair : ∀ pq ∈ S,
+      sweepResidual fp S src a pq.1 ^ 2 +
+          sweepResidual fp S src a pq.2 ^ 2 ≤
+        2 * gamma fp 6 ^ 2 * (a pq.1 ^ 2 + a pq.2 ^ 2) := by
+    intro pq hpq
+    have hpqne : pq.1 ≠ pq.2 := hS.ne_self pq hpq
+    have hpqnz : (src pq).1 ^ 2 + (src pq).2 ^ 2 ≠ 0 := hnz pq hpq
+    rw [sweepResidual_at_fst fp S hS src a hpq,
+        sweepResidual_at_snd fp S hS src a hpq]
+    have hres1 : pairResidual fp pq src a pq.1 =
+        fl_givensApply fp m pq.1 pq.2
+            (fl_givensC fp (src pq).1 (src pq).2)
+            (fl_givensS fp (src pq).1 (src pq).2) a pq.1 -
+          (givensC (src pq).1 (src pq).2 * a pq.1 +
+            givensS (src pq).1 (src pq).2 * a pq.2) := by
+      simp [pairResidual]
+    have hres2 : pairResidual fp pq src a pq.2 =
+        fl_givensApply fp m pq.1 pq.2
+            (fl_givensC fp (src pq).1 (src pq).2)
+            (fl_givensS fp (src pq).1 (src pq).2) a pq.2 -
+          (givensC (src pq).1 (src pq).2 * a pq.2 -
+            givensS (src pq).1 (src pq).2 * a pq.1) := by
+      simp [pairResidual, hpqne, hpqne.symm]
+    rw [hres1, hres2]
+    exact fl_givensApply_computed_pair_sq_error_le_gamma6 fp m pq.1 pq.2
+      (src pq).1 (src pq).2 a hpqne hpqnz hvalid
+  exact stage_columnError_le_sqrt2_gamma S hS (sweepResidual fp S src a) a
+    (gamma fp 6) hγ6_nonneg hsupp hpair
 
 -- ============================================================
 -- §19.6  Non-vacuity: the residual is a genuine FP backward error
@@ -1030,6 +1139,65 @@ theorem stageExactCol_preserves_norm {m : ℕ}
   rw [hSq]
 
 -- ============================================================
+-- §19.6  Actual simultaneous disjoint-stage executor
+-- ============================================================
+
+/-- Execute one disjoint Givens stage on a column.  This is not an abstract
+    recurrence assumption: `sweepResidual` is definitionally the difference
+    between calls to the concrete `fl_givensC`, `fl_givensS`, and
+    `fl_givensApply` kernels and the exact block rotation. -/
+noncomputable def fl_givensDisjointStageColumn {m : ℕ} (fp : FPModel)
+    (S : Finset (Fin m × Fin m)) (src : StageSrc m)
+    (a : Fin m → ℝ) : Fin m → ℝ :=
+  fun i => stageExactCol S src a i + sweepResidual fp S src a i
+
+/-- On the first row of an active pair, the simultaneous stage executor is
+    exactly the repository's rounded Givens application kernel. -/
+theorem fl_givensDisjointStageColumn_at_fst {m : ℕ} (fp : FPModel)
+    (S : Finset (Fin m × Fin m)) (hS : DisjointPairs S) (src : StageSrc m)
+    (a : Fin m → ℝ) {pq : Fin m × Fin m} (hpq : pq ∈ S) :
+    fl_givensDisjointStageColumn fp S src a pq.1 =
+      fl_givensApply fp m pq.1 pq.2
+        (fl_givensC fp (src pq).1 (src pq).2)
+        (fl_givensS fp (src pq).1 (src pq).2) a pq.1 := by
+  rw [fl_givensDisjointStageColumn,
+    stageExactCol_at_fst S hS src a hpq]
+  exact (sweep_backward_error_identity_fst fp S hS src a hpq).symm
+
+/-- On the second row of an active pair, the simultaneous stage executor is
+    exactly the rounded Givens application kernel. -/
+theorem fl_givensDisjointStageColumn_at_snd {m : ℕ} (fp : FPModel)
+    (S : Finset (Fin m × Fin m)) (hS : DisjointPairs S) (src : StageSrc m)
+    (a : Fin m → ℝ) {pq : Fin m × Fin m} (hpq : pq ∈ S) :
+    fl_givensDisjointStageColumn fp S src a pq.2 =
+      fl_givensApply fp m pq.1 pq.2
+        (fl_givensC fp (src pq).1 (src pq).2)
+        (fl_givensS fp (src pq).1 (src pq).2) a pq.2 := by
+  rw [fl_givensDisjointStageColumn,
+    stageExactCol_at_snd S hS src a hpq]
+  exact (sweep_backward_error_identity_snd fp S hS src a hpq).symm
+
+/-- Rows not touched by the stage are copied exactly. -/
+theorem fl_givensDisjointStageColumn_at_untouched {m : ℕ} (fp : FPModel)
+    (S : Finset (Fin m × Fin m)) (src : StageSrc m)
+    (a : Fin m → ℝ) {i : Fin m} (hi : i ∉ touchedRows S) :
+    fl_givensDisjointStageColumn fp S src a i = a i := by
+  rw [fl_givensDisjointStageColumn,
+    stageExactCol_at_untouched S src a hi,
+    sweepResidual_zero_of_not_touched fp S src a hi, add_zero]
+
+/-- Execute successive disjoint stages.  At every touched coordinate this
+    recursion calls the actual rounded Givens coefficient and application
+    kernels, as certified by the two coordinate theorems above. -/
+noncomputable def fl_givensDisjointScheduleColumn {m : ℕ} (fp : FPModel)
+    (Sseq : ℕ → Finset (Fin m × Fin m))
+    (srcseq : ℕ → StageSrc m) (a0 : Fin m → ℝ) :
+    ℕ → Fin m → ℝ
+  | 0 => a0
+  | k + 1 => fl_givensDisjointStageColumn fp (Sseq k) (srcseq k)
+      (fl_givensDisjointScheduleColumn fp Sseq srcseq a0 k)
+
+-- ============================================================
 -- §19.6  r-stage accumulation → Theorem 19.10 coefficient
 -- ============================================================
 
@@ -1067,24 +1235,24 @@ def stageChainExact {m : ℕ}
     `γ₈·√m` of a flat per-rotation accumulation), the coefficient is the
     `γ̃_r`-class quantity `residualAccumBound (√2·γ₈) r = (1 + √2·γ₈)^r − 1`,
     independent of the ambient dimension. -/
-theorem disjointSweep_columnwise_accumulation {m r : ℕ}
+theorem disjointSweep_columnwise_accumulation {m r g : ℕ}
     (fp : FPModel)
     (aseq : ℕ → Fin m → ℝ)
     (Wcol : ℕ → (Fin m → ℝ) → (Fin m → ℝ))
     (Δ : ℕ → Fin m → ℝ)
-    (hvalid : gammaValid fp 8)
+    (hvalid : gammaValid fp g)
     (hadd : ∀ k : ℕ, k < r → ∀ (u v : Fin m → ℝ),
       Wcol k (fun i => u i + v i) = fun i => Wcol k u i + Wcol k v i)
     (hiso : ∀ k : ℕ, k < r → ∀ (v : Fin m → ℝ), vecNorm2 (Wcol k v) = vecNorm2 v)
     (hstep : ∀ k : ℕ, k < r →
       aseq (k + 1) = fun i => Wcol k (aseq k) i + Δ k i)
     (hΔ : ∀ k : ℕ, k < r →
-      vecNorm2 (Δ k) ≤ Real.sqrt 2 * gamma fp 8 * vecNorm2 (aseq k)) :
+      vecNorm2 (Δ k) ≤ Real.sqrt 2 * gamma fp g * vecNorm2 (aseq k)) :
     vecNorm2 (fun i => aseq r i - stageChainExact Wcol (aseq 0) r i) ≤
-      residualAccumBound (Real.sqrt 2 * gamma fp 8) r * vecNorm2 (aseq 0) := by
-  have hc : 0 ≤ Real.sqrt 2 * gamma fp 8 :=
+      residualAccumBound (Real.sqrt 2 * gamma fp g) r * vecNorm2 (aseq 0) := by
+  have hc : 0 ≤ Real.sqrt 2 * gamma fp g :=
     mul_nonneg (Real.sqrt_nonneg 2) (gamma_nonneg fp hvalid)
-  set c := Real.sqrt 2 * gamma fp 8 with hc_def
+  set c := Real.sqrt 2 * gamma fp g with hc_def
   -- Prove the stronger statement over all prefixes `k ≤ r` by induction.
   suffices h : ∀ k : ℕ, k ≤ r →
       vecNorm2 (fun i => aseq k i - stageChainExact Wcol (aseq 0) k i) ≤
@@ -1220,6 +1388,113 @@ theorem disjointSweep_columnwise_accumulation {m r : ℕ}
 -- §19.6  Theorem 19.10: Givens QR backward error with the
 --        dimension-independent-per-stage γ̃_{m+n-2} coefficient
 -- ============================================================
+
+/-- Sharp Theorem 19.10 coefficient obtained from the actual disjoint-stage
+    executor and the computed-coefficient `gamma_6` form of Lemmas 19.8--19.9. -/
+noncomputable def gammaTildeDimIndepGamma6
+    (fp : FPModel) (m n : ℕ) : ℝ :=
+  residualAccumBound (Real.sqrt 2 * gamma fp 6) (givensQRStageCount m n)
+
+/-- Closed form of the sharp actual-executor coefficient. -/
+theorem gammaTildeDimIndepGamma6_closed_form (fp : FPModel) (m n : ℕ) :
+    gammaTildeDimIndepGamma6 fp m n =
+      (1 + Real.sqrt 2 * gamma fp 6) ^ givensQRStageCount m n - 1 := by
+  unfold gammaTildeDimIndepGamma6
+  exact residualAccumBound_eq_one_add_pow_sub_one (Real.sqrt 2 * gamma fp 6)
+    (givensQRStageCount m n)
+
+/-- **Theorem 19.10 / equation (19.25), actual executor bridge.**  Running
+    `fl_givensDisjointScheduleColumn` for the canonical `m+n-2` stage count
+    satisfies the dimension-independent columnwise backward-error estimate.
+    The recurrence equation is discharged by reduction of the executor, rather
+    than supplied as a hypothesis.  Every active coordinate is an actual call
+    to `fl_givensC`, `fl_givensS`, and `fl_givensApply`.
+
+    The schedule interface retains only the two mathematical well-formedness
+    obligations used by Higham's staged proof: row pairs in a stage are
+    disjoint, and every coefficient source two-vector is nonzero. -/
+theorem H19_Theorem19_10_actual_disjoint_executor_gamma6 {m n : ℕ}
+    (fp : FPModel)
+    (Sseq : ℕ → Finset (Fin m × Fin m))
+    (srcseq : ℕ → StageSrc m)
+    (_hn : 0 < n) (_hnm : n ≤ m)
+    (hvalid : gammaValid fp 6)
+    (hdisj : ∀ k : ℕ, k < givensQRStageCount m n → DisjointPairs (Sseq k))
+    (hnz : ∀ k : ℕ, k < givensQRStageCount m n →
+      ∀ pq ∈ Sseq k, (srcseq k pq).1 ^ 2 + (srcseq k pq).2 ^ 2 ≠ 0)
+    (a0 : Fin m → ℝ) :
+    vecNorm2
+        (fun i =>
+          fl_givensDisjointScheduleColumn fp Sseq srcseq a0
+              (givensQRStageCount m n) i -
+            stageChainExact
+              (fun k v => stageExactCol (Sseq k) (srcseq k) v) a0
+              (givensQRStageCount m n) i) ≤
+      gammaTildeDimIndepGamma6 fp m n * vecNorm2 a0 := by
+  classical
+  have hacc := disjointSweep_columnwise_accumulation
+    (m := m) (r := givensQRStageCount m n) (g := 6)
+    fp (fl_givensDisjointScheduleColumn fp Sseq srcseq a0)
+      (fun k v => stageExactCol (Sseq k) (srcseq k) v)
+      (fun k => sweepResidual fp (Sseq k) (srcseq k)
+        (fl_givensDisjointScheduleColumn fp Sseq srcseq a0 k))
+      hvalid
+      (by
+        intro k _hk u v
+        funext i
+        show stageExactCol (Sseq k) (srcseq k) (fun j => u j + v j) i =
+          stageExactCol (Sseq k) (srcseq k) u i +
+            stageExactCol (Sseq k) (srcseq k) v i
+        unfold stageExactCol
+        have hpair : (∑ pq ∈ Sseq k,
+              (pairExactCol pq (srcseq k) (fun j => u j + v j) i -
+                (u i + v i))) =
+            (∑ pq ∈ Sseq k, (pairExactCol pq (srcseq k) u i - u i)) +
+              ∑ pq ∈ Sseq k, (pairExactCol pq (srcseq k) v i - v i) := by
+          rw [← Finset.sum_add_distrib]
+          exact Finset.sum_congr rfl (fun pq _ =>
+            pairExactCol_sub_id_add pq (srcseq k) u v i)
+        rw [hpair]
+        ring)
+      (by
+        intro k hk v
+        exact stageExactCol_preserves_norm (Sseq k) (hdisj k hk)
+          (srcseq k) v (hnz k hk))
+      (by
+        intro k _hk
+        rfl)
+      (by
+        intro k hk
+        exact H19_Lemma19_9_disjoint_stage_column_backward_error_gamma6 fp
+          (Sseq k) (hdisj k hk) (srcseq k)
+          (fl_givensDisjointScheduleColumn fp Sseq srcseq a0 k)
+          (hnz k hk) hvalid)
+  simpa [gammaTildeDimIndepGamma6,
+    fl_givensDisjointScheduleColumn] using hacc
+
+/-- Closed-form equation (19.25) for the concrete rounded disjoint executor. -/
+theorem eq19_25_actual_disjoint_executor_gamma6_closed_form {m n : ℕ}
+    (fp : FPModel)
+    (Sseq : ℕ → Finset (Fin m × Fin m))
+    (srcseq : ℕ → StageSrc m)
+    (hn : 0 < n) (hnm : n ≤ m)
+    (hvalid : gammaValid fp 6)
+    (hdisj : ∀ k : ℕ, k < givensQRStageCount m n → DisjointPairs (Sseq k))
+    (hnz : ∀ k : ℕ, k < givensQRStageCount m n →
+      ∀ pq ∈ Sseq k, (srcseq k pq).1 ^ 2 + (srcseq k pq).2 ^ 2 ≠ 0)
+    (a0 : Fin m → ℝ) :
+    vecNorm2
+        (fun i =>
+          fl_givensDisjointScheduleColumn fp Sseq srcseq a0
+              (givensQRStageCount m n) i -
+            stageChainExact
+              (fun k v => stageExactCol (Sseq k) (srcseq k) v) a0
+              (givensQRStageCount m n) i) ≤
+      ((1 + Real.sqrt 2 * gamma fp 6) ^ givensQRStageCount m n - 1) *
+        vecNorm2 a0 := by
+  rw [← gammaTildeDimIndepGamma6_closed_form]
+  exact H19_Theorem19_10_actual_disjoint_executor_gamma6 fp Sseq srcseq
+    hn hnm hvalid hdisj hnz a0
 
 /-- The Theorem 19.10 coefficient obtained from the Lemma 19.9 disjoint-sweep
     analysis: the `r`-stage fold of the dimension-and-stage-size-independent

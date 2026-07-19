@@ -1021,6 +1021,290 @@ theorem higham19_6_sourceConstructed_actual_closed
     sourceConstructedPivotedStoredQRdA_abs_le_coxHigham
       fp hn hmn A hvalid hgammaHalf⟩
 
+/-! ## Linear-in-`m` source-rate closure
+
+The unrestricted endpoint above retains the exact rounded pivot-growth power.
+For the standard first-order regime, the usual smallness condition makes that
+power at most two.  The transport coefficient then becomes a fixed multiple of
+the local `gamma_{11m+23}` radius and compresses to a genuine `gamma_{c m}`
+constant, rather than the `gamma_{O(m^2)}` bound obtained by blindly absorbing
+the unrestricted power. -/
+
+/-- Standard smallness condition ensuring that the cumulative rounded
+    pivot-scale growth stays in the first-order regime. -/
+def sourceConstructedPivotedStoredQRPivotGrowthSmall
+    (fp : FPModel) (m : ℕ) : Prop :=
+  (m : ℝ) *
+      (fp.u + 2 * Real.sqrt 2 * gamma fp (11 * m + 23)) ≤ (1 : ℝ) / 2
+
+/-- Linear-rate replacement for the unrestricted growth transport. -/
+noncomputable def sourceConstructedPivotedStoredQRLinearTransportEta
+    (fp : FPModel) (m : ℕ) : ℝ :=
+  2 * sourceConstructedPivotedStoredQRResidualNormCoeff fp m
+
+/-- Printed-rate `gammaTilde`: local error plus the fixed, linearly bounded
+    transport contribution. -/
+noncomputable def sourceConstructedPivotedStoredQRLinearGammaTilde
+    (fp : FPModel) (m : ℕ) : ℝ :=
+  sourceConstructedPivotedStoredQRLocalCoeff fp m +
+    2 * sourceConstructedPivotedStoredQRLinearTransportEta fp m
+
+theorem sourceConstructedPivotedStoredQRLinearTransportEta_nonneg
+    (fp : FPModel) (m : ℕ)
+    (hvalid : gammaValid fp (11 * m + 23)) :
+    0 ≤ sourceConstructedPivotedStoredQRLinearTransportEta fp m := by
+  unfold sourceConstructedPivotedStoredQRLinearTransportEta
+  exact mul_nonneg (by norm_num)
+    (sourceConstructedPivotedStoredQRResidualNormCoeff_nonneg fp m hvalid)
+
+theorem sourceConstructedPivotedStoredQRLinearGammaTilde_nonneg
+    (fp : FPModel) (m : ℕ)
+    (hvalid : gammaValid fp (11 * m + 23)) :
+    0 ≤ sourceConstructedPivotedStoredQRLinearGammaTilde fp m := by
+  unfold sourceConstructedPivotedStoredQRLinearGammaTilde
+  exact add_nonneg
+    (sourceConstructedPivotedStoredQRLocalCoeff_nonneg fp m hvalid)
+    (mul_nonneg (by norm_num)
+      (sourceConstructedPivotedStoredQRLinearTransportEta_nonneg fp m hvalid))
+
+/-- Under the explicit first-order smallness guard, all `n ≤ m` rounded
+    pivot-growth factors together enlarge a pivot scale by at most two. -/
+theorem sourceConstructedPivotedStoredQRGrowthFactor_pow_le_two
+    (fp : FPModel) (m n : ℕ) (hmn : n ≤ m)
+    (hvalid : gammaValid fp (11 * m + 23))
+    (hsmall : sourceConstructedPivotedStoredQRPivotGrowthSmall fp m) :
+    sourceConstructedPivotedStoredQRGrowthFactor fp m ^ n ≤ 2 := by
+  let d : ℝ := fp.u + 2 * Real.sqrt 2 * gamma fp (11 * m + 23)
+  have hg : 0 ≤ gamma fp (11 * m + 23) := gamma_nonneg fp hvalid
+  have hd : 0 ≤ d := by
+    dsimp [d]
+    exact add_nonneg fp.u_nonneg
+      (mul_nonneg (mul_nonneg (by norm_num) (Real.sqrt_nonneg 2)) hg)
+  have hnmR : (n : ℝ) ≤ (m : ℝ) := by exact_mod_cast hmn
+  have hnsmall : (n : ℝ) * d ≤ (1 : ℝ) / 2 := by
+    exact (mul_le_mul_of_nonneg_right hnmR hd).trans (by
+      simpa [sourceConstructedPivotedStoredQRPivotGrowthSmall, d] using hsmall)
+  have hpow := one_add_pow_sub_one_le_two_mul_nat_mul_of_nat_mul_le_half
+    n hd hnsmall
+  have htwice : 2 * ((n : ℝ) * d) ≤ 1 := by linarith
+  change (1 + d) ^ n ≤ 2
+  linarith
+
+/-- The unrestricted transport eta collapses to the fixed linear eta under
+    the first-order pivot-growth guard. -/
+theorem sourceConstructedPivotedStoredQRTransportEta_le_linear
+    (fp : FPModel) (m n : ℕ) (hmn : n ≤ m)
+    (hvalid : gammaValid fp (11 * m + 23))
+    (hsmall : sourceConstructedPivotedStoredQRPivotGrowthSmall fp m) :
+    sourceConstructedPivotedStoredQRTransportEta fp m n ≤
+      sourceConstructedPivotedStoredQRLinearTransportEta fp m := by
+  have hD := sourceConstructedPivotedStoredQRResidualNormCoeff_nonneg fp m hvalid
+  have hpow := sourceConstructedPivotedStoredQRGrowthFactor_pow_le_two
+    fp m n hmn hvalid hsmall
+  unfold sourceConstructedPivotedStoredQRTransportEta
+  unfold sourceConstructedPivotedStoredQRLinearTransportEta
+  simpa [mul_comm] using mul_le_mul_of_nonneg_left hpow hD
+
+/-- Each actual transported stage coefficient has the printed Cox--Higham
+    shape with the linear-rate `gammaTilde`. -/
+theorem sourceConstructedPivotedStoredQRStageCoeff_le_coxHigham_linear
+    (fp : FPModel) (m n k : ℕ) (hmn : n ≤ m)
+    (hvalid : gammaValid fp (11 * m + 23))
+    (hsmall : sourceConstructedPivotedStoredQRPivotGrowthSmall fp m) :
+    sourceConstructedPivotedStoredQRStageCoeff fp m n k ≤
+      (1 + 4 * ((k : ℝ) + 1)) *
+        sourceConstructedPivotedStoredQRLinearGammaTilde fp m := by
+  let C := sourceConstructedPivotedStoredQRLocalCoeff fp m
+  let etaN := sourceConstructedPivotedStoredQRTransportEta fp m n
+  let etaL := sourceConstructedPivotedStoredQRLinearTransportEta fp m
+  have hC : 0 ≤ C :=
+    sourceConstructedPivotedStoredQRLocalCoeff_nonneg fp m hvalid
+  have hetaN : 0 ≤ etaN :=
+    sourceConstructedPivotedStoredQRTransportEta_nonneg fp m n hvalid
+  have hetaL : 0 ≤ etaL :=
+    sourceConstructedPivotedStoredQRLinearTransportEta_nonneg fp m hvalid
+  have heta : etaN ≤ etaL :=
+    sourceConstructedPivotedStoredQRTransportEta_le_linear
+      fp m n hmn hvalid hsmall
+  have ht : 0 ≤ (k : ℝ) + 1 := by positivity
+  change C + 6 * ((k : ℝ) + 1) * etaN ≤
+    (1 + 4 * ((k : ℝ) + 1)) * (C + 2 * etaL)
+  nlinarith
+
+/-- Literal `(j+1)^2 5 gammaTilde` Cox--Higham bound for the actual rounded
+    trace, now with a genuinely linear-in-`m` gamma-tilde coefficient. -/
+theorem sourceConstructedPivotedStoredQRdA_abs_le_coxHigham_linear
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * m + 23))
+    (hgammaHalf : gamma fp (m + 1) ≤ (1 : ℝ) / 2)
+    (hsmall : sourceConstructedPivotedStoredQRPivotGrowthSmall fp m)
+    (i : Fin m) (j : Fin n) :
+    |sourceConstructedPivotedStoredQRdA fp hn hmn A i j| ≤
+      ((j.val : ℝ) + 1) ^ 2 *
+        (5 * sourceConstructedPivotedStoredQRLinearGammaTilde fp m) *
+          sourceConstructedPivotedStoredQRPrintedAlphaScale fp hn hmn A i := by
+  let Pseq := sourceConstructedPivotedStoredQRPseqTotal fp hn hmn A
+  let Sseq := sourceConstructedPivotedStoredQRSwapSeqTotal fp hn hmn A
+  let Eseq := sourceConstructedPivotedStoredQREseqTotal fp hn hmn A
+  let alpha := sourceConstructedPivotedStoredQRPrintedAlphaScale fp hn hmn A
+  let gammaTilde := sourceConstructedPivotedStoredQRLinearGammaTilde fp m
+  apply pivotDAacc_coxHigham_rowwise_bound Pseq Sseq Eseq alpha gammaTilde
+    (sourceConstructedPivotedStoredQRLinearGammaTilde_nonneg fp m hvalid)
+    (sourceConstructedPivotedStoredQRPrintedAlphaScale_nonneg fp hn hmn A)
+  · intro k col hcol
+    by_cases hk : k < n
+    · simp only [Sseq, sourceConstructedPivotedStoredQRSwapSeqTotal,
+        if_pos hk]
+      exact sourceConstructedPivotedStoredQRSwapSeq_fix_prefix
+        fp hn hmn A k col hcol
+    · simp [Sseq, sourceConstructedPivotedStoredQRSwapSeqTotal, hk]
+  · intro k col hcol
+    by_cases hk : k < n
+    · simp only [Sseq, sourceConstructedPivotedStoredQRSwapSeqTotal,
+        if_pos hk]
+      exact sourceConstructedPivotedStoredQRSwapSeq_maps_active
+        fp hn hmn A k col hcol
+    · simp [Sseq, sourceConstructedPivotedStoredQRSwapSeqTotal, hk]
+      exact hcol
+  · intro k r col hcol
+    exact sourceConstructedPivotedStoredQR_QaccE_completed_column_zero
+      fp hn hmn A k r col hcol
+  · intro k r col
+    have hstage := sourceConstructedPivotedStoredQR_stageImage_entrywise_le
+      fp hn hmn A hvalid hgammaHalf k r col
+    have hcoeff := sourceConstructedPivotedStoredQRStageCoeff_le_coxHigham_linear
+      fp m n k hmn hvalid hsmall
+    have halpha := sourceConstructedPivotedStoredQRPrintedAlphaScale_nonneg
+      fp hn hmn A r
+    exact hstage.trans
+      (mul_le_mul_of_nonneg_right hcoeff halpha)
+
+/-- **Higham Theorem 19.6, actual rounded full-swap executor, printed
+    linear-rate endpoint.**  This removes `StageDataReady` and
+    `StrongStageModel`: the concrete source-constructed pivoted stored-QR trace
+    itself supplies the exact reflector, local rounded residual, pivot schedule,
+    factorization, and the literal row-growth scale. -/
+theorem higham19_6_sourceConstructed_actual_closed_linearRate
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * m + 23))
+    (hgammaHalf : gamma fp (m + 1) ≤ (1 : ℝ) / 2)
+    (hsmall : sourceConstructedPivotedStoredQRPivotGrowthSmall fp m) :
+    let Q := sourceConstructedPivotedStoredQRQ fp hn hmn A
+    let R := fl_sourceConstructedPivotedStoredQRMatrixSeq fp hn hmn A n
+    let pi := sourceConstructedPivotedStoredQRPi fp hn hmn A
+    let dA := sourceConstructedPivotedStoredQRdA fp hn hmn A
+    IsOrthogonal m Q ∧
+      IsUpperTrapezoidal m n R ∧
+      (∀ i j, R i j =
+        matMulRect m m n (matTranspose Q)
+          (fun a b => Wave13.columnPermuteMatrix A pi a b + dA a b) i j) ∧
+      (∀ i j, Wave13.columnPermuteMatrix A pi i j + dA i j =
+        matMulRect m m n Q R i j) ∧
+      ∀ i j, |dA i j| ≤
+        ((j.val : ℝ) + 1) ^ 2 *
+          (5 * sourceConstructedPivotedStoredQRLinearGammaTilde fp m) *
+            sourceConstructedPivotedStoredQRPrintedAlphaScale
+              fp hn hmn A i := by
+  dsimp only
+  rcases fl_sourceConstructedPivotedStoredQR_actual_factorization
+    fp hn hmn A with ⟨hQ, hR, hTel, hRec⟩
+  exact ⟨hQ, hR, hTel, hRec,
+    sourceConstructedPivotedStoredQRdA_abs_le_coxHigham_linear
+      fp hn hmn A hvalid hgammaHalf hsmall⟩
+
+/-- The new coefficient is literally a Higham `gamma_{c m}` radius: the fixed
+    index `33 * (11m+23)` absorbs all local construction, application, and
+    bounded transport terms. -/
+theorem sourceConstructedPivotedStoredQRLinearGammaTilde_le_gamma
+    (fp : FPModel) (m : ℕ)
+    (hvalid : gammaValid fp (33 * (11 * m + 23))) :
+    sourceConstructedPivotedStoredQRLinearGammaTilde fp m ≤
+      gamma fp (33 * (11 * m + 23)) := by
+  let K : ℕ := 11 * m + 23
+  have hKpos : 0 < K := by dsimp [K]; omega
+  have hKle : K ≤ 33 * K := by omega
+  have hvalidK : gammaValid fp K :=
+    gammaValid_mono fp hKle (by simpa [K] using hvalid)
+  have hg : 0 ≤ gamma fp K := gamma_nonneg fp hvalidK
+  have hu : fp.u ≤ gamma fp K := u_le_gamma fp hKpos hvalidK
+  have hmK : m + 1 ≤ K := by dsimp [K]; omega
+  have hgm : gamma fp (m + 1) ≤ gamma fp K :=
+    gamma_mono fp hmK hvalidK
+  have hsqrt : Real.sqrt 2 ≤ (2 : ℝ) := by
+    nlinarith [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 2),
+      Real.sqrt_nonneg 2]
+  have hsqrtGamma : Real.sqrt 2 * gamma fp K ≤ 2 * gamma fp K :=
+    mul_le_mul_of_nonneg_right hsqrt hg
+  have hC : sourceConstructedPivotedStoredQRLocalCoeff fp m ≤
+      9 * gamma fp K := by
+    unfold sourceConstructedPivotedStoredQRLocalCoeff
+    change 2 * gamma fp (m + 1) + fp.u +
+        3 * Real.sqrt 2 * gamma fp K ≤ 9 * gamma fp K
+    nlinarith
+  have hD : sourceConstructedPivotedStoredQRResidualNormCoeff fp m ≤
+      6 * gamma fp K := by
+    unfold sourceConstructedPivotedStoredQRResidualNormCoeff
+    change gamma fp (m + 1) + fp.u +
+        2 * Real.sqrt 2 * gamma fp K ≤ 6 * gamma fp K
+    nlinarith
+  have hlinear : sourceConstructedPivotedStoredQRLinearGammaTilde fp m ≤
+      33 * gamma fp K := by
+    unfold sourceConstructedPivotedStoredQRLinearGammaTilde
+    unfold sourceConstructedPivotedStoredQRLinearTransportEta
+    nlinarith
+  have h33 := gamma_nsmul_le fp 33 K (by norm_num)
+    (by simpa [K] using hvalid)
+  exact hlinear.trans (by simpa [K] using h33)
+
+/-- Fully explicit source-rate version: the actual rounded full-swap trace has
+    the printed `(j+1)^2 * 5 * gamma_{c m} * alpha_i` envelope. -/
+theorem higham19_6_sourceConstructed_actual_closed_gammaRate
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ)
+    (hvalid : gammaValid fp (33 * (11 * m + 23)))
+    (hgammaHalf : gamma fp (m + 1) ≤ (1 : ℝ) / 2)
+    (hsmall : sourceConstructedPivotedStoredQRPivotGrowthSmall fp m) :
+    let Q := sourceConstructedPivotedStoredQRQ fp hn hmn A
+    let R := fl_sourceConstructedPivotedStoredQRMatrixSeq fp hn hmn A n
+    let pi := sourceConstructedPivotedStoredQRPi fp hn hmn A
+    let dA := sourceConstructedPivotedStoredQRdA fp hn hmn A
+    IsOrthogonal m Q ∧
+      IsUpperTrapezoidal m n R ∧
+      (∀ i j, R i j =
+        matMulRect m m n (matTranspose Q)
+          (fun a b => Wave13.columnPermuteMatrix A pi a b + dA a b) i j) ∧
+      (∀ i j, Wave13.columnPermuteMatrix A pi i j + dA i j =
+        matMulRect m m n Q R i j) ∧
+      ∀ i j, |dA i j| ≤
+        ((j.val : ℝ) + 1) ^ 2 *
+          (5 * gamma fp (33 * (11 * m + 23))) *
+            sourceConstructedPivotedStoredQRPrintedAlphaScale
+              fp hn hmn A i := by
+  dsimp only
+  have hvalidLocal : gammaValid fp (11 * m + 23) :=
+    gammaValid_mono fp (by omega) hvalid
+  rcases higham19_6_sourceConstructed_actual_closed_linearRate
+    fp hn hmn A hvalidLocal hgammaHalf hsmall with
+      ⟨hQ, hR, hTel, hRec, hbound⟩
+  refine ⟨hQ, hR, hTel, hRec, ?_⟩
+  intro i j
+  have hG := sourceConstructedPivotedStoredQRLinearGammaTilde_le_gamma
+    fp m hvalid
+  have hsq : 0 ≤ ((j.val : ℝ) + 1) ^ 2 := sq_nonneg _
+  have ha := sourceConstructedPivotedStoredQRPrintedAlphaScale_nonneg
+    fp hn hmn A i
+  have h5 : 5 * sourceConstructedPivotedStoredQRLinearGammaTilde fp m ≤
+      5 * gamma fp (33 * (11 * m + 23)) :=
+    mul_le_mul_of_nonneg_left hG (by norm_num)
+  have hpref : ((j.val : ℝ) + 1) ^ 2 *
+        (5 * sourceConstructedPivotedStoredQRLinearGammaTilde fp m) ≤
+      ((j.val : ℝ) + 1) ^ 2 *
+        (5 * gamma fp (33 * (11 * m + 23))) :=
+    mul_le_mul_of_nonneg_left h5 hsq
+  exact (hbound i j).trans (mul_le_mul_of_nonneg_right hpref ha)
+
 /-! ## Two-scale transport for the paired right-hand side -/
 
 /-- Cox--Higham prefix transport with separate matrix-row and RHS-row scales.

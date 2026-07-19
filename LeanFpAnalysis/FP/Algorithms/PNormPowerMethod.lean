@@ -32,13 +32,14 @@
 -- instances (`pNormPair_two`, `pNormPair_one`), so the concrete Lemma 15.2 and
 -- the genuine operator-norm lower bounds `gammaSeq_le_opP` hold unconditionally.
 --
--- General-p residual.  For arbitrary real p ∈ (1, ∞) Mathlib currently lacks a
--- packaged mixed-p vector dual norm together with its operator p-norm and the
--- general Hölder duality with attained `dualp`.  The abstract tier is stated so
--- that supplying that data (the four printed dual/Hölder/operator facts) yields
--- the full Lemma 15.2 immediately; the two endpoint instances p = 1, 2 are
--- built here from repository/Mathlib tooling.  This residual is *only* the
--- construction of the general-p `dualp`, not any part of Lemma 15.2's logic.
+-- General-p interface.  For arbitrary real p ∈ (1, ∞) Mathlib currently lacks
+-- a packaged mixed-p vector dual norm together with its operator p-norm and the
+-- general Hölder duality with attained `dualp`.  Below, `SmoothPNormPair`
+-- faithfully refines `PNormPair` by recording conjugate exponents p,q > 1, the
+-- exact unit-q normalization of `dualp` away from zero, norm positivity, and
+-- the standard derivative of the p-norm.  Equations (15.2), (15.3), and (15.5)
+-- are derived at this general source strength.  Concrete mixed-p construction
+-- remains an interface boundary; the p = 2 instance is discharged here.
 --
 -- IMPORT-ONLY.  This file adds correctly Chapter-15-labelled theorems.  It
 -- reuses (never edits) `Algorithms/CondEstimation.lean` (its `oneNormVec`,
@@ -53,6 +54,9 @@ import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Data.Fintype.BigOperators
+import Mathlib.Analysis.SpecialFunctions.Sqrt
+import Mathlib.Analysis.Calculus.Deriv.Add
+import Mathlib.Analysis.Calculus.LocalExtr.Basic
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
@@ -111,6 +115,12 @@ structure PNormPair (n : ℕ) where
   holder      : ∀ u v, (∑ i : Fin n, u i * v i) ≤ qN u * pN v
   /-- Operator-norm bound: `‖A v‖_p ≤ ‖A‖_p ‖v‖_p`. -/
   op_bound    : ∀ v, pN (fun i => ∑ j : Fin n, A i j * v j) ≤ opP * pN v
+
+/-- Convex-analytic subgradient predicate used in equations (15.2) and (15.5):
+`g ∈ ∂f(x)` iff `f(x) + gᵀ(v-x) ≤ f(v)` for every `v`. -/
+def IsSubgradient {n : ℕ} (f : (Fin n → ℝ) → ℝ)
+    (x g : Fin n → ℝ) : Prop :=
+  ∀ v, f x + (∑ i : Fin n, g i * (v i - x i)) ≤ f v
 
 namespace PNormPair
 
@@ -200,6 +210,64 @@ lemma z_dot (x v : Fin n → ℝ) :
   rw [Finset.mul_sum]
   refine Finset.sum_congr rfl (fun j _ => ?_)
   ring
+
+/-- Linearity of the matrix action in the difference form needed by the
+subgradient chain rule. -/
+lemma yof_sub (v x : Fin n → ℝ) :
+    P.yof (fun i => v i - x i) = fun i => P.yof v i - P.yof x i := by
+  funext i
+  simp only [yof, mul_sub, Finset.sum_sub_distrib]
+
+/-- The norming functional `dualp(x)` is a subgradient of the vector norm.
+This derives the displayed subgradient inequality from Hölder attainment and
+the unit dual-norm bound; it is not assumed as part of `PNormPair`. -/
+theorem dp_isSubgradient (x : Fin n → ℝ) :
+    IsSubgradient P.pN x (P.dp x) := by
+  intro v
+  have hdual : (∑ i : Fin n, P.dp x i * v i) ≤ P.pN v := by
+    calc
+      (∑ i : Fin n, P.dp x i * v i) ≤ P.qN (P.dp x) * P.pN v :=
+        P.holder _ _
+      _ ≤ 1 * P.pN v :=
+        mul_le_mul_of_nonneg_right (P.dp_qunit _) (P.pN_nonneg _)
+      _ = P.pN v := one_mul _
+  calc
+    P.pN x + (∑ i : Fin n, P.dp x i * (v i - x i))
+        = ∑ i : Fin n, P.dp x i * v i := by
+          rw [← P.dp_attains x]
+          simp_rw [mul_sub]
+          rw [Finset.sum_sub_distrib]
+          ring
+    _ ≤ P.pN v := hdual
+
+/-- **Equation (15.2), constructive subgradient direction.**  The vector
+`Aᵀ dualp(Ax)` computed by Algorithm 15.1 is a subgradient of
+`x ↦ ‖Ax‖ₚ`.  For full-rank `A`, `1<p<∞`, and `x≠0`, differentiability makes
+this subgradient unique, giving the source singleton formula. -/
+theorem eq15_2_zof_isSubgradient (x : Fin n → ℝ) :
+    IsSubgradient (fun v => P.pN (P.yof v)) x (P.zof x) := by
+  intro v
+  have hsub := P.dp_isSubgradient (P.yof x) (P.yof v)
+  unfold IsSubgradient at hsub
+  have hdot : (∑ i : Fin n, P.zof x i * (v i - x i)) =
+      ∑ i : Fin n, P.dp (P.yof x) i * (P.yof v i - P.yof x i) := by
+    rw [P.z_dot x (fun i => v i - x i)]
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [show (∑ j : Fin n, P.A i j * (v j - x j)) =
+        P.yof v i - P.yof x i from congrFun (P.yof_sub v x) i]
+  change P.pN (P.yof x) + (∑ i : Fin n, P.zof x i * (v i - x i)) ≤
+    P.pN (P.yof v)
+  rw [hdot]
+  exact hsub
+
+/-- **Equation (15.5).**  Written with the source names `u`, `v`, and `g`,
+the subgradient inequality for `F(x)=‖Ax‖ₚ` follows unconditionally for the
+specific subgradient `g=Aᵀ dualp(Au)` used by the power method. -/
+theorem eq15_5_subgradient_inequality (u v : Fin n → ℝ) :
+    P.pN (P.yof u) + (∑ i : Fin n, P.zof u i * (v i - u i)) ≤
+      P.pN (P.yof v) :=
+  P.eq15_2_zof_isSubgradient u v
 
 /-- **Lemma 15.2 (a)** (Higham §15.2, p. 290).
 
@@ -476,6 +544,521 @@ theorem gammaSeq_two_mono {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
     (x0 : Fin n → ℝ) (hx0 : vecNorm2 x0 = 1) (k : ℕ) :
     (pNormPair_two hn A).gammaSeq x0 k ≤ (pNormPair_two hn A).gammaSeq x0 (k + 1) :=
   (pNormPair_two hn A).gammaSeq_mono x0 hx0 k
+
+/-! ### Equation (15.3): the concrete Euclidean gradient -/
+
+/-- A finite-dimensional scalar function has directional gradient `g` at `x`
+when every line through `x` has derivative `gᵀh` in direction `h`.  This is the
+exact content needed for Higham's displayed gradient formula (15.3). -/
+def HasDirectionalGradientAt {n : ℕ} (f : (Fin n → ℝ) → ℝ)
+    (g x : Fin n → ℝ) : Prop :=
+  ∀ h : Fin n → ℝ, HasDerivAt (fun t : ℝ => f (fun i => x i + t * h i))
+    (∑ i : Fin n, g i * h i) 0
+
+/-- Away from zero, the Euclidean norm has directional gradient
+`x / ‖x‖₂ = normalize2 x`. -/
+theorem vecNorm2_hasDirectionalGradientAt {n : ℕ} (hn : 0 < n)
+    (x : Fin n → ℝ) (hx : x ≠ 0) :
+    HasDirectionalGradientAt vecNorm2 (normalize2 hn x) x := by
+  unfold HasDirectionalGradientAt
+  intro h
+  have hsq : HasDerivAt
+      (fun t : ℝ => ∑ i : Fin n, (x i + t * h i) ^ 2)
+      (2 * ∑ i : Fin n, x i * h i) 0 := by
+    have hterms : ∀ i ∈ (Finset.univ : Finset (Fin n)),
+        HasDerivAt (fun t : ℝ => (x i + t * h i) ^ 2) (2 * x i * h i) 0 := by
+      intro i _
+      have ha : HasDerivAt (fun t : ℝ => x i + t * h i) (h i) 0 := by
+        have ha' := (hasDerivAt_const (x := (0 : ℝ)) (x i)).add
+          ((hasDerivAt_id (𝕜 := ℝ) 0).const_mul (h i))
+        convert ha' using 1
+        · funext t
+          simp only [Pi.add_apply, id_eq]
+          ring
+        · ring
+      simpa using ha.fun_pow 2
+    convert HasDerivAt.fun_sum hterms using 1
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro i _
+    ring
+  have hnormpos : 0 < vecNorm2 x := vecNorm2_pos_of_ne x hx
+  have hsum_ne : (∑ i : Fin n, x i ^ 2) ≠ 0 := by
+    intro hzero
+    unfold vecNorm2 vecNorm2Sq at hnormpos
+    rw [hzero, Real.sqrt_zero] at hnormpos
+    exact (lt_irrefl 0 hnormpos)
+  have hsqrtAt : HasDerivAt (fun u : ℝ => Real.sqrt u)
+      (1 / (2 * Real.sqrt (∑ i : Fin n, x i ^ 2)))
+      (∑ i : Fin n, (x i + 0 * h i) ^ 2) := by
+    simpa using Real.hasDerivAt_sqrt hsum_ne
+  have hsqrt := hsqrtAt.comp 0 hsq
+  change HasDerivAt
+    (fun t : ℝ => Real.sqrt (∑ i : Fin n, (x i + t * h i) ^ 2))
+    (∑ i : Fin n, normalize2 hn x i * h i) 0
+  convert hsqrt using 1
+  unfold normalize2 vecNorm2 vecNorm2Sq
+  rw [if_neg hx]
+  have hsqrtpos : 0 < Real.sqrt (∑ i : Fin n, x i ^ 2) := by
+    simpa [vecNorm2, vecNorm2Sq] using hnormpos
+  rw [show (∑ i : Fin n,
+      (Real.sqrt (∑ j : Fin n, x j ^ 2))⁻¹ * x i * h i) =
+      (Real.sqrt (∑ j : Fin n, x j ^ 2))⁻¹ *
+        (∑ i : Fin n, x i * h i) by
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro i _
+    ring]
+  field_simp [ne_of_gt hsqrtpos]
+
+/-! ### Equations (15.2), (15.3), and (15.5) for general `1 < p < ∞` -/
+
+/-- A global subgradient at a differentiability point is the gradient.
+
+This finite-dimensional line-restriction lemma is the uniqueness step behind
+the singleton subdifferential in Higham's equation (15.2). -/
+theorem unique_subgradient_of_directional_gradient {n : ℕ}
+    (f : (Fin n → ℝ) → ℝ) (x grad g : Fin n → ℝ)
+    (hgrad : HasDirectionalGradientAt f grad x)
+    (hg : IsSubgradient f x g) :
+    g = grad := by
+  have hdot : ∀ d : Fin n → ℝ,
+      (∑ i : Fin n, g i * d i) = ∑ i : Fin n, grad i * d i := by
+    intro d
+    let gd : ℝ := ∑ i : Fin n, g i * d i
+    let hd : ℝ := ∑ i : Fin n, grad i * d i
+    let φ : ℝ → ℝ := fun t =>
+      f (fun i => x i + t * d i) - f x - t * gd
+    have hφ_nonneg : ∀ t, 0 ≤ φ t := by
+      intro t
+      have hsub := hg (fun i => x i + t * d i)
+      have hsum : (∑ i : Fin n, g i * ((x i + t * d i) - x i)) = t * gd := by
+        dsimp [gd]
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl
+        intro i _
+        ring
+      dsimp [φ]
+      rw [hsum] at hsub
+      linarith
+    have hφ0 : φ 0 = 0 := by simp [φ]
+    have hlocal : IsLocalMin φ 0 := by
+      unfold IsLocalMin IsMinFilter
+      exact Filter.Eventually.of_forall (fun t => by
+        rw [hφ0]
+        exact hφ_nonneg t)
+    have hline := hgrad d
+    have hlinear : HasDerivAt (fun t : ℝ => t * gd) gd 0 := by
+      simpa using (hasDerivAt_id (𝕜 := ℝ) 0).mul_const gd
+    have hφderiv : HasDerivAt φ (hd - gd) 0 := by
+      dsimp [φ, hd]
+      exact (hline.sub_const (f x)).sub hlinear
+    have hzero : hd - gd = 0 := hlocal.hasDerivAt_eq_zero hφderiv
+    dsimp [gd, hd] at hzero ⊢
+    linarith
+  funext j
+  have hj := hdot (fun i => if i = j then 1 else 0)
+  simpa using hj
+
+/-- The source-strength smooth interior (`1 < p,q < ∞`) refinement of
+`PNormPair` used for Higham's equations (15.2), (15.3), and (15.5).
+
+The inherited `PNormPair` fields give Hölder duality and attainment.  The new
+fields record the printed conjugate-exponent regime, exact normalized `dualp`
+away from zero, positivity of the p-norm, and the standard fact that
+`dualp(x)` is its gradient at every nonzero `x`.  Thus the displayed equations
+below are consequences of the normalized p/q-dual interface, not fields of the
+structure. -/
+structure SmoothPNormPair (n : ℕ) where
+  /-- The underlying matrix, p/q norms, operator norm, and normalized duals. -/
+  P : PNormPair n
+  /-- The primal exponent. -/
+  p : ℝ
+  /-- The conjugate exponent. -/
+  q : ℝ
+  /-- Higham's smooth-interior hypothesis on the primal exponent. -/
+  one_lt_p : 1 < p
+  /-- The corresponding smooth-interior hypothesis on the dual exponent. -/
+  one_lt_q : 1 < q
+  /-- Conjugacy: `1/p + 1/q = 1`. -/
+  conjugate : p⁻¹ + q⁻¹ = 1
+  /-- The primal norm vanishes at zero. -/
+  pN_zero : P.pN 0 = 0
+  /-- The primal norm is positive away from zero. -/
+  pN_pos : ∀ x, x ≠ 0 → 0 < P.pN x
+  /-- Higham's normalized convention: `‖dualp(x)‖_q = 1` for `x ≠ 0`. -/
+  dp_qnorm_one : ∀ x, x ≠ 0 → P.qN (P.dp x) = 1
+  /-- Away from zero, the gradient of `‖x‖_p` is `dualp(x)`. -/
+  pN_gradient : ∀ x, x ≠ 0 → HasDirectionalGradientAt P.pN (P.dp x) x
+
+namespace SmoothPNormPair
+
+variable {n : ℕ} (S : SmoothPNormPair n)
+
+/-- The chain rule gives `Aᵀ dualp(Ax)` as the gradient of `x ↦ ‖Ax‖_p`. -/
+theorem composite_hasDirectionalGradientAt (x : Fin n → ℝ)
+    (hy : S.P.yof x ≠ 0) :
+    HasDirectionalGradientAt (fun v => S.P.pN (S.P.yof v))
+      (S.P.zof x) x := by
+  intro h
+  have hbase := S.pN_gradient (S.P.yof x) hy (S.P.yof h)
+  have haffine : ∀ t : ℝ,
+      S.P.yof (fun i => x i + t * h i) =
+        fun i => S.P.yof x i + t * S.P.yof h i := by
+    intro t
+    funext i
+    simp only [PNormPair.yof, mul_add, Finset.sum_add_distrib,
+      Finset.mul_sum]
+    congr 1
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  convert hbase using 1
+  · funext t
+    change S.P.pN (S.P.yof (fun i => x i + t * h i)) = _
+    rw [haffine t]
+  · simpa [PNormPair.yof] using S.P.z_dot x h
+
+/-- **Equation (15.2), general `1 < p < ∞` source strength.**
+
+If `A` has full column rank and `x ≠ 0`, the subdifferential of
+`x ↦ ‖Ax‖_p` is exactly the singleton `{Aᵀ dualp(Ax)}`. -/
+theorem eq15_2_subdifferential_singleton (x : Fin n → ℝ)
+    (hfull : Function.Injective S.P.yof) (hx : x ≠ 0) :
+    ∀ g, IsSubgradient (fun v => S.P.pN (S.P.yof v)) x g ↔
+      g = S.P.zof x := by
+  have hy : S.P.yof x ≠ 0 := by
+    intro hy0
+    apply hx
+    apply hfull
+    rw [hy0]
+    ext i
+    simp [PNormPair.yof]
+  have hgrad := S.composite_hasDirectionalGradientAt x hy
+  intro g
+  constructor
+  · intro hg
+    exact unique_subgradient_of_directional_gradient
+      (fun v => S.P.pN (S.P.yof v)) x (S.P.zof x) g hgrad hg
+  · intro hg
+    subst g
+    exact S.P.eq15_2_zof_isSubgradient x
+
+/-- Higham's homogeneous quotient `F(x) = ‖Ax‖_p / ‖x‖_p` in (15.3). -/
+noncomputable def eq15_3_F (x : Fin n → ℝ) : ℝ :=
+  S.P.pN (S.P.yof x) / S.P.pN x
+
+/-- The general normalized-dual gradient displayed in equation (15.3). -/
+noncomputable def eq15_3_gradient (x : Fin n → ℝ) : Fin n → ℝ :=
+  fun j => S.P.zof x j / S.P.pN x -
+    (S.P.pN (S.P.yof x) / S.P.pN x ^ 2) * S.P.dp x j
+
+/-- **Equation (15.3), general `1 < p < ∞` source strength.**
+
+At nonzero `x` and `Ax`, the quotient `F(x)=‖Ax‖_p/‖x‖_p` has the
+directional gradient printed by Higham. -/
+theorem eq15_3_directional (x : Fin n → ℝ)
+    (hx : x ≠ 0) (hy : S.P.yof x ≠ 0) :
+    HasDirectionalGradientAt S.eq15_3_F (S.eq15_3_gradient x) x := by
+  intro h
+  have hnum := S.composite_hasDirectionalGradientAt x hy h
+  have hden := S.pN_gradient x hx h
+  have hxnorm : S.P.pN x ≠ 0 := ne_of_gt (S.pN_pos x hx)
+  have hxnorm0 : S.P.pN (fun i => x i + 0 * h i) ≠ 0 := by
+    simpa using hxnorm
+  have hquot := hnum.div hden hxnorm0
+  change HasDerivAt
+    (fun t : ℝ => S.eq15_3_F (fun i => x i + t * h i))
+    (∑ i : Fin n, S.eq15_3_gradient x i * h i) 0
+  convert hquot using 1
+  simp only [zero_mul, add_zero]
+  unfold eq15_3_gradient
+  simp_rw [sub_mul]
+  rw [Finset.sum_sub_distrib]
+  rw [show (∑ i : Fin n, S.P.zof x i / S.P.pN x * h i) =
+        (∑ i : Fin n, S.P.zof x i * h i) / S.P.pN x by
+    calc
+      (∑ i : Fin n, S.P.zof x i / S.P.pN x * h i) =
+          (S.P.pN x)⁻¹ * (∑ i : Fin n, S.P.zof x i * h i) := by
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl
+        intro i _
+        rw [div_eq_mul_inv]
+        ring
+      _ = (∑ i : Fin n, S.P.zof x i * h i) / S.P.pN x := by
+        rw [div_eq_mul_inv]
+        ring]
+  rw [show (∑ i : Fin n,
+        S.P.pN (S.P.yof x) / S.P.pN x ^ 2 * S.P.dp x i * h i) =
+        (S.P.pN (S.P.yof x) / S.P.pN x ^ 2) *
+          (∑ i : Fin n, S.P.dp x i * h i) by
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro i _
+    ring]
+  field_simp [hxnorm]
+
+/-- Under Higham's full-rank hypothesis, `Ax ≠ 0` follows from `x ≠ 0`, so
+equation (15.3) needs only the hypotheses stated in the source. -/
+theorem eq15_3_directional_of_full_rank (x : Fin n → ℝ)
+    (hfull : Function.Injective S.P.yof) (hx : x ≠ 0) :
+    HasDirectionalGradientAt S.eq15_3_F (S.eq15_3_gradient x) x := by
+  apply S.eq15_3_directional x hx
+  intro hy0
+  apply hx
+  apply hfull
+  rw [hy0]
+  ext i
+  simp [PNormPair.yof]
+
+/-- **Equation (15.5), general `1 < p < ∞` source strength.**
+
+The tangent with normal `z(u)=Aᵀ dualp(Au)` globally supports `‖A·‖_p`.
+This is stronger than the displayed unit-ball specialization. -/
+theorem eq15_5_subgradient_inequality (u v : Fin n → ℝ) :
+    S.P.pN (S.P.yof u) +
+      (∑ i : Fin n, S.P.zof u i * (v i - u i)) ≤
+      S.P.pN (S.P.yof v) :=
+  S.P.eq15_5_subgradient_inequality u v
+
+/-- The concrete Euclidean instance of the smooth conjugate p/q interface. -/
+noncomputable def two {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) : SmoothPNormPair n where
+  P := pNormPair_two hn A
+  p := 2
+  q := 2
+  one_lt_p := by norm_num
+  one_lt_q := by norm_num
+  conjugate := by norm_num
+  pN_zero := by simpa using (vecNorm2_zero (n := n))
+  pN_pos := vecNorm2_pos_of_ne
+  dp_qnorm_one := fun x _hx => normalize2_unit hn x
+  pN_gradient := vecNorm2_hasDirectionalGradientAt hn
+
+end SmoothPNormPair
+
+/-- The Euclidean specialization of Higham's quotient
+`F(x) = ‖Ax‖₂ / ‖x‖₂` from equation (15.3). -/
+noncomputable def eq15_3_F_two {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) : ℝ :=
+  vecNorm2 ((pNormPair_two hn A).yof x) / vecNorm2 x
+
+/-- The right-hand side of equation (15.3) at `p=q=2`, with
+`z = Aᵀ normalize₂(Ax)`. -/
+noncomputable def eq15_3_gradient_two {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) : Fin n → ℝ :=
+  fun j =>
+    (pNormPair_two hn A).zof x j / vecNorm2 x -
+      (vecNorm2 ((pNormPair_two hn A).yof x) / vecNorm2 x ^ 2) *
+        normalize2 hn x j
+
+/-- **Equation (15.3), concrete source-strength `p=2` endpoint.**
+
+For `x ≠ 0` and `Ax ≠ 0`, the quotient `F(x)=‖Ax‖₂/‖x‖₂` has directional
+gradient
+`Aᵀ normalize₂(Ax)/‖x‖₂ - (‖Ax‖₂/‖x‖₂²) normalize₂(x)`.
+Both nonzero conditions are exactly the differentiability conditions used by
+the displayed formula; no gradient conclusion is assumed. -/
+theorem eq15_3_directional_two {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (hx : x ≠ 0) (hy : (pNormPair_two hn A).yof x ≠ 0) :
+    HasDirectionalGradientAt (eq15_3_F_two hn A)
+      (eq15_3_gradient_two hn A x) x := by
+  unfold HasDirectionalGradientAt
+  intro h
+  let P := pNormPair_two hn A
+  have haffine : ∀ t : ℝ,
+      P.yof (fun i => x i + t * h i) =
+        fun i => P.yof x i + t * P.yof h i := by
+    intro t
+    funext i
+    simp only [PNormPair.yof, mul_add, Finset.sum_add_distrib,
+      Finset.mul_sum]
+    congr 1
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  have hnum0 := vecNorm2_hasDirectionalGradientAt hn (P.yof x) hy (P.yof h)
+  have hnum : HasDerivAt
+      (fun t : ℝ => vecNorm2 (P.yof (fun i => x i + t * h i)))
+      (∑ i : Fin n, normalize2 hn (P.yof x) i * P.yof h i) 0 := by
+    convert hnum0 using 1
+    funext t
+    rw [haffine t]
+  have hden := vecNorm2_hasDirectionalGradientAt hn x hx h
+  have hxnorm : vecNorm2 x ≠ 0 := ne_of_gt (vecNorm2_pos_of_ne x hx)
+  have hxnorm0 : vecNorm2 (fun i => x i + 0 * h i) ≠ 0 := by
+    simpa using hxnorm
+  have hquot := hnum.div hden hxnorm0
+  change HasDerivAt
+    (fun t : ℝ => eq15_3_F_two hn A (fun i => x i + t * h i))
+    (∑ i : Fin n, eq15_3_gradient_two hn A x i * h i) 0
+  convert hquot using 1
+  simp only [zero_mul, add_zero]
+  have hz : (∑ i : Fin n, normalize2 hn (P.yof x) i * P.yof h i) =
+        ∑ i : Fin n, P.zof x i * h i := by
+    change (∑ i : Fin n, P.dp (P.yof x) i *
+      (∑ j : Fin n, P.A i j * h j)) = _
+    exact (P.z_dot x h).symm
+  rw [hz]
+  unfold eq15_3_gradient_two
+  change (∑ i : Fin n,
+      (P.zof x i / vecNorm2 x -
+        vecNorm2 (P.yof x) / vecNorm2 x ^ 2 * normalize2 hn x i) * h i) = _
+  simp_rw [sub_mul]
+  rw [Finset.sum_sub_distrib]
+  rw [show (∑ i : Fin n, P.zof x i / vecNorm2 x * h i) =
+        (∑ i : Fin n, P.zof x i * h i) / vecNorm2 x by
+    calc
+      (∑ i : Fin n, P.zof x i / vecNorm2 x * h i) =
+          (vecNorm2 x)⁻¹ * (∑ i : Fin n, P.zof x i * h i) := by
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl
+        intro i _
+        rw [div_eq_mul_inv]
+        ring
+      _ = (∑ i : Fin n, P.zof x i * h i) / vecNorm2 x := by
+        rw [div_eq_mul_inv]
+        ring]
+  rw [show (∑ i : Fin n,
+        vecNorm2 (P.yof x) / vecNorm2 x ^ 2 * normalize2 hn x i * h i) =
+        (vecNorm2 (P.yof x) / vecNorm2 x ^ 2) *
+          (∑ i : Fin n, normalize2 hn x i * h i) by
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro i _
+    ring]
+  field_simp [hxnorm]
+
+/-! ### Literal equation (15.4): exact normalized-dual obstruction -/
+
+/-- The one-dimensional matrix `[2]` used to audit the literal coefficient in
+equation (15.4). -/
+noncomputable def eq15_4_counterexampleA : Fin 1 → Fin 1 → ℝ := fun _ _ => 2
+
+/-- The unit vector `[1]` in the equation-(15.4) audit. -/
+noncomputable def eq15_4_counterexampleX : Fin 1 → ℝ := fun _ => 1
+
+lemma eq15_4_counterexampleX_norm : vecNorm2 eq15_4_counterexampleX = 1 := by
+  simp [eq15_4_counterexampleX, vecNorm2, vecNorm2Sq]
+
+lemma eq15_4_counterexample_y :
+    (pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).yof
+      eq15_4_counterexampleX = (fun _ : Fin 1 => 2) := by
+  funext i
+  change (∑ j : Fin 1, eq15_4_counterexampleA i j * eq15_4_counterexampleX j) = 2
+  simp [eq15_4_counterexampleA, eq15_4_counterexampleX]
+
+lemma eq15_4_normalize2_two :
+    normalize2 (by omega : 0 < 1) (fun _ : Fin 1 => (2 : ℝ)) =
+      (fun _ => 1) := by
+  have hne : (fun _ : Fin 1 => (2 : ℝ)) ≠ 0 := by
+    intro h
+    have hh := congrFun h (0 : Fin 1)
+    norm_num at hh
+  rw [normalize2, if_neg hne]
+  funext i
+  simp [vecNorm2, vecNorm2Sq]
+
+lemma eq15_4_counterexample_z :
+    (pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).zof
+      eq15_4_counterexampleX = (fun _ : Fin 1 => 2) := by
+  have hdp : (pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).dp
+      ((pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).yof
+        eq15_4_counterexampleX) = (fun _ : Fin 1 => 1) := by
+    change normalize2 (by omega : 0 < 1)
+      ((pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).yof
+        eq15_4_counterexampleX) = _
+    rw [eq15_4_counterexample_y]
+    exact eq15_4_normalize2_two
+  funext j
+  change (∑ i : Fin 1, eq15_4_counterexampleA i j *
+    (pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).dp
+      ((pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).yof
+        eq15_4_counterexampleX) i) = 2
+  rw [hdp]
+  simp [eq15_4_counterexampleA]
+
+lemma eq15_4_normalize2_one :
+    normalize2 (by omega : 0 < 1) (fun _ : Fin 1 => (1 : ℝ)) =
+      (fun _ => 1) := by
+  have hne : (fun _ : Fin 1 => (1 : ℝ)) ≠ 0 := by
+    intro h
+    have hh := congrFun h (0 : Fin 1)
+    norm_num at hh
+  rw [normalize2, if_neg hne]
+  funext i
+  simp [vecNorm2, vecNorm2Sq]
+
+lemma eq15_4_counterexample_y_norm :
+    (pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).pN
+      ((pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).yof
+        eq15_4_counterexampleX) = 2 := by
+  change vecNorm2
+    ((pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).yof
+      eq15_4_counterexampleX) = 2
+  rw [eq15_4_counterexample_y]
+  simp [vecNorm2, vecNorm2Sq]
+
+lemma eq15_4_counterexample_dp_x :
+    (pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).dp
+      eq15_4_counterexampleX = (fun _ : Fin 1 => 1) := by
+  change normalize2 (by omega : 0 < 1) eq15_4_counterexampleX = _
+  change normalize2 (by omega : 0 < 1) (fun _ : Fin 1 => (1 : ℝ)) = _
+  exact eq15_4_normalize2_one
+
+lemma eq15_4_counterexample_dq_z :
+    (pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).dq
+      ((pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).zof
+        eq15_4_counterexampleX) = (fun _ : Fin 1 => 1) := by
+  change normalize2 (by omega : 0 < 1)
+    ((pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).zof
+      eq15_4_counterexampleX) = _
+  rw [eq15_4_counterexample_z]
+  exact eq15_4_normalize2_two
+
+/-- The displayed Kuhn--Tucker equation preceding (15.4) holds exactly for
+`A=[2]`, `x=[1]` in the concrete `p=2` power-method model. -/
+theorem eq15_4_counterexample_satisfies_KKT :
+    (pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).zof
+      eq15_4_counterexampleX =
+      fun i =>
+        ((pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).pN
+          ((pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).yof
+            eq15_4_counterexampleX) /
+        (pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).pN
+          eq15_4_counterexampleX) *
+        (pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).dp
+          eq15_4_counterexampleX i := by
+  rw [eq15_4_counterexample_z, eq15_4_counterexample_y_norm]
+  change (fun _ : Fin 1 => (2 : ℝ)) = fun i =>
+    (2 / vecNorm2 eq15_4_counterexampleX) *
+      (pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).dp
+        eq15_4_counterexampleX i
+  rw [eq15_4_counterexampleX_norm, eq15_4_counterexample_dp_x]
+  norm_num
+
+/-- **Literal equation (15.4) is false for normalized dual maps.**  For the
+same stationary `p=2` example, its printed right-hand side is `[1/2]`, not
+`x=[1]`.  Thus the coefficient `‖x‖ₚ²/‖Ax‖ₚ` cannot be an equality with the
+unit-norm `dualq` used by Algorithm 15.1.  The scale-invariant normalized-dual
+relation is instead `x = ‖x‖ₚ dualq(Aᵀ dualp(Ax))`. -/
+theorem eq15_4_literal_counterexample :
+    eq15_4_counterexampleX ≠ fun i =>
+      ((pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).pN
+          eq15_4_counterexampleX ^ 2 /
+        (pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).pN
+          ((pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).yof
+            eq15_4_counterexampleX)) *
+        (pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).dq
+          ((pNormPair_two (by omega : 0 < 1) eq15_4_counterexampleA).zof
+            eq15_4_counterexampleX) i := by
+  intro heq
+  have h0 := congrFun heq (0 : Fin 1)
+  rw [eq15_4_counterexample_y_norm, eq15_4_counterexample_dq_z] at h0
+  change (1 : ℝ) = (vecNorm2 eq15_4_counterexampleX ^ 2 / 2) * 1 at h0
+  rw [eq15_4_counterexampleX_norm] at h0
+  norm_num at h0
 
 -- ============================================================
 -- §15.2  Concrete instance p = 1 (1-norm / ∞-norm dual)

@@ -33,8 +33,11 @@ factor-identification claims before replacing them with faithful statements.
 
 Higham chapters 1–28, plus the RandNLA case study. Per-chapter status is tracked
 in the ledgers under [`docs/source_coverage/`](docs/source_coverage/). The
-authoritative from-scratch audit is
-[`docs/source_coverage/AUDIT_ch01-28_2026-07-19.md`](docs/source_coverage/AUDIT_ch01-28_2026-07-19.md).
+authoritative from-scratch audit is the PDF-first report
+[`docs/source_coverage/AUDIT_ch01-28_PDF_FIRST_2026-07-19.md`](docs/source_coverage/AUDIT_ch01-28_PDF_FIRST_2026-07-19.md).
+It re-read all 28 chapter PDFs (513 pages), inventoried 165 named body results
+and 585 numbered body equations, and then checked the declaration types and
+cross-chapter consumers independently of the ledger conclusions.
 
 | Ch | Topic | Strict gate |
 |----|-------|-------------|
@@ -44,27 +47,27 @@ authoritative from-scratch audit is
 | 4  | Summation | PASS |
 | 5  | Polynomials (Horner) | PASS |
 | 6  | Norms | PASS |
-| 7  | Perturbation theory for linear systems | PASS |
-| 8  | Triangular systems | PASS |
+| 7  | Perturbation theory for linear systems | PASS / SOURCE-DISCREPANCY |
+| 8  | Triangular systems | PASS / SOURCE-DISCREPANCY |
 | 9  | LU factorization and linear equations | PASS |
 | 10 | Cholesky factorization | PASS / SOURCE-DISCREPANCY |
 | 11 | Symmetric indefinite / skew-symmetric systems | PASS / SOURCE-DISCREPANCY |
 | 12 | Iterative refinement | PASS |
 | 13 | Block LU factorization | PASS |
-| 14 | Matrix inversion | PASS |
-| 15 | Condition number estimation | PASS |
+| 14 | Matrix inversion | PASS / SOURCE-DISCREPANCY |
+| 15 | Condition number estimation | PASS / SOURCE-DISCREPANCY |
 | 16 | The Sylvester equation | PASS |
 | 17 | Stationary iterative methods | PASS |
 | 18 | Matrix powers | PASS |
 | 19 | QR factorization | PASS (explicit domain) |
-| 20 | The least squares problem | PASS (explicit domain) |
-| 21 | Underdetermined systems | PASS |
+| 20 | The least squares problem | PASS / SOURCE-DISCREPANCY (explicit domain) |
+| 21 | Underdetermined systems | PASS / SOURCE-DISCREPANCY |
 | 22 | Vandermonde systems | PASS |
 | 23 | Fast matrix multiplication | PASS |
 | 24 | The FFT and applications | PASS |
 | 25 | Nonlinear systems and Newton's method | PASS / SOURCE-DISCREPANCY |
-| 26 | Automatic error analysis | PASS |
-| 27 | Software issues in floating point | PASS |
+| 26 | Automatic error analysis | PASS / SOURCE-DISCREPANCY |
+| 27 | Software issues in floating point | PASS / SOURCE-DISCREPANCY |
 | 28 | A gallery of test matrices | PASS / SOURCE-DISCREPANCY |
 
 Fresh result: **28 PASS, 0 FAIL, 0 BLOCKED**.
@@ -78,23 +81,38 @@ hypothesis. Unparameterized higher-order notation, qualitative observations,
 visual tables, and unspecified algorithms are explicitly inventoried and
 deferred rather than converted into arbitrary propositions.
 
-- **Chapter 11:** Theorems 11.3, 11.4, and the literal support-aware 11.7 path
-  are closed. Theorem 11.8 is false as printed because it gives a zero norm
-  radius at `n=1`; the actual scalar Aasen execution refutes that clause and the
-  sharp correction has backward error `u/(1+u) ≤ γ_1`.
+- **Chapter 11:** A bounded-search exact rook trace now constructs its schedule,
+  permutations, `L`, and block-diagonal `D`, and proves the printed multiplier,
+  pivot-block, growth, and Theorem 11.4 product bounds without caller-supplied
+  rook certificates. Two compiled examples show why that exact growth statement
+  cannot be attached unchanged to the present rounded mixed-pivot executor: its
+  terminal `2 x 2` predicate is too weak, and even an aligned legal division
+  rounding can exceed the exact bound. Theorem 11.8 is separately false as
+  printed at `n=1`; the actual scalar Aasen execution and sharp corrected bound
+  close that discrepancy.
 - **Chapters 19 and 20:** literal rounded MGS and pivoted stored-QR / least-
-  squares executors close the source-rate endpoints. Computed nonbreakdown is
-  stated as the natural domain implicit in the source's “computed matrices” and
-  “computed solution” language, not assumed as an error budget.
-- **Chapters 10, 25, and 28:** false printed formulas remain visible as checked
-  source discrepancies with corrected theorems. Chapter 10's operational
-  Cholesky chain and sharpness results, Chapter 25's multiplicity-one bordered
-  eigenproblem, and Chapter 28's exact Hilbert rate and Gaussian-QR Haar law are
-  otherwise closed.
+  squares executors close their source-rate endpoints. Theorem 19.10 now starts
+  from the canonical Givens matrix stage-fold and constructs orthogonal `Q`,
+  `Rhat`, and `DeltaA` with the PDF's `m+n-2` columnwise coefficient. Computed
+  nonbreakdown is stated only where it is the natural domain implicit in the
+  source's “computed matrices” and “computed solution” language, not assumed as
+  an error budget.
+- **Chapters 10, 25, 26, and 28:** false printed formulas remain visible as checked
+  source discrepancies with corrected theorems. Chapter 10 now includes the
+  literal pivoted-Cholesky success/error chain, the premise-free Mathias
+  completion theorem for (10.29), and an internally constructed complex
+  no-pivot LU trace with exact growth `< 3`. The following unquantified
+  qualitative backward-stability sentence is deferred, and a compiled complex
+  `γ_n` counterexample prevents substituting a stronger real-field claim.
+  Chapter 25's multiplicity-one bordered eigenproblem is closed. Chapter 26
+  constructs the complex cube roots in Cardano's formula and proves the
+  nonzero-branch handoff to the original cubic; a zero-branch counterexample
+  records the missing qualification in the sentence after (26.5). Chapter 28's
+  exact Hilbert rate and Gaussian-QR Haar law are otherwise closed.
 - **Chapters 4, 8, 14, 15, 20, and 22:** the fresh repairs add the missing
-  literal finite-format/executor, fan-in, finalized Gauss-Jordan, probability,
-  pivoted least-squares, and monomial-stage bridges instead of relying on
-  target-bearing readiness or residual premises.
+  literal finite-format/executor, fan-in, finalized Gauss-Jordan, concrete
+  rectangular general-`p` calculus, pivoted least-squares, and monomial-stage
+  bridges instead of relying on target-bearing readiness or residual premises.
 
 The **RandNLA case study**
 ([`FP/Algorithms/RandNLA/`](LeanFpAnalysis/FP/Algorithms/RandNLA), 17 modules)
@@ -109,13 +127,13 @@ Snapshot of the current `LeanFpAnalysis/` tree:
 
 | | |
 |---|---|
-| Lean files | **558** |
-| Lines of Lean | **~1.31 million** |
-| Theorems + lemmas proved | **~37,300** (35,433 `theorem` + 1,830 `lemma`) |
-| Definitions | **8,282** `def`, 170 `abbrev` |
-| Structures / instances | 367 `structure`, 79 `instance` |
+| Lean files | **574** |
+| Lines of Lean | **~1.38 million** (1,384,987 physical lines) |
+| Theorems + lemmas proved | **37,733** (35,833 `theorem` + 1,900 `lemma`) |
+| Definitions | **8,452** `def`, 232 `abbrev` |
+| Structures / instances | 380 `structure`, 79 `instance` |
 | `sorry` / `admit` / `axiom` declarations | **0** |
-| Full serialized `lake build` | **4,387 jobs** |
+| Full serialized `lake build` | **4,405 jobs** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
 the standard `[propext, Classical.choice, Quot.sound]` axioms. (Declaration
@@ -130,7 +148,7 @@ clone:
 
 ```bash
 lake exe cache get   # download prebuilt Mathlib oleans — skipping this makes the build very slow
-lake build           # 4387 build jobs in the audited tree
+lake build           # 4405 build jobs in the audited tree
 ```
 
 Build a single module, e.g.:

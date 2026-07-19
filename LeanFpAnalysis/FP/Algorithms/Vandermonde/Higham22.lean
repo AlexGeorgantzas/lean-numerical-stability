@@ -4625,6 +4625,91 @@ theorem higham22_one_add_ne_zero_of_norm_lt_one {δ : ℂ}
   rw [hδeq] at hδ
   norm_num at hδ
 
+/-! ### Operational division nonbreakdown for rounded Algorithm 22.2 -/
+
+/-- A nonzero exact difference remains nonzero after the actual rounded
+subtraction primitive.  This is the key operational fact needed before that
+rounded difference is passed to `flDiv` in the distinct-node branch. -/
+theorem higham22_flSub_ne_zero_of_ne
+    (rm : Higham22ScalarRoundModel) (huround : rm.u < 1)
+    {x y : ℂ} (hxy : x ≠ y) :
+    rm.flSub x y ≠ 0 := by
+  rw [Higham22ScalarRoundModel.flSub_eq]
+  exact mul_ne_zero (sub_ne_zero.mpr hxy)
+    (higham22_one_add_ne_zero_of_norm_lt_one
+      ((rm.subError_bound x y).trans_lt huround))
+
+/-- The denominator selected by one active Stage-I row of the literal rounded
+executor.  Equal nodes use the exact positive integer `k+1`; distinct nodes
+use the actually rounded node difference. -/
+noncomputable def higham22RoundedAlgorithm22_2StageIDenominator
+    (rm : Higham22ScalarRoundModel) (alpha : ℕ → ℂ) (k j : ℕ) : ℂ :=
+  if alpha j = alpha (j - k - 1) then
+    (k + 1 : ℂ)
+  else
+    rm.flSub (alpha j) (alpha (j - k - 1))
+
+/-- Every Stage-I denominator selected by the actual rounded branch graph is
+nonzero when `u < 1`. -/
+theorem higham22RoundedAlgorithm22_2StageIDenominator_ne_zero
+    (rm : Higham22ScalarRoundModel) (huround : rm.u < 1)
+    (alpha : ℕ → ℂ) (k j : ℕ) :
+    higham22RoundedAlgorithm22_2StageIDenominator rm alpha k j ≠ 0 := by
+  by_cases heq : alpha j = alpha (j - k - 1)
+  · simp only [higham22RoundedAlgorithm22_2StageIDenominator, heq, if_true]
+    exact_mod_cast Nat.succ_ne_zero k
+  · simp only [higham22RoundedAlgorithm22_2StageIDenominator, heq, if_false]
+    exact higham22_flSub_ne_zero_of_ne rm huround heq
+
+/-- Complete inventory of the exact recurrence-coefficient denominators that
+can be supplied to `flDiv` by one Stage-II sweep.  The two `interior` fields
+correspond to `theta (j-1)` and `theta (j+1)` with `j=i-k`; the last two fields
+are the printed terminal-row denominators. -/
+structure Higham22RoundedStageIIDivisorsNonzero
+    (theta : ℕ → ℂ) (n k : ℕ) : Prop where
+  thetaOne : theta 1 ≠ 0
+  thetaInteriorLeft : ∀ i, theta (i - k - 1) ≠ 0
+  thetaInteriorRight : ∀ i, theta (i - k + 1) ≠ 0
+  thetaTerminalPrev : theta (n - k - 2) ≠ 0
+  thetaTerminalLast : theta (n - k - 1) ≠ 0
+
+/-- A nowhere-zero recurrence coefficient sequence discharges the complete
+Stage-II divisor inventory. -/
+theorem higham22RoundedStageIIDivisorsNonzero_of_theta
+    {theta : ℕ → ℂ} (htheta : ∀ j, theta j ≠ 0) (n k : ℕ) :
+    Higham22RoundedStageIIDivisorsNonzero theta n k where
+  thetaOne := htheta 1
+  thetaInteriorLeft i := htheta (i - k - 1)
+  thetaInteriorRight i := htheta (i - k + 1)
+  thetaTerminalPrev := htheta (n - k - 2)
+  thetaTerminalLast := htheta (n - k - 1)
+
+/-- End-to-end nonbreakdown certificate for every division reached by the
+finite rounded Algorithm 22.2 executor. -/
+def Higham22RoundedAlgorithm22_2DivisionsNonzero
+    (rm : Higham22ScalarRoundModel) (theta : ℕ → ℂ) {n : ℕ}
+    (alpha : Fin (n + 1) → ℂ) : Prop :=
+  (∀ k, k < n → ∀ i : Fin (n + 1),
+      higham22RoundedAlgorithm22_2StageIDenominator rm
+        (higham22FinExtend alpha) k i ≠ 0) ∧
+    (∀ k, k < n → Higham22RoundedStageIIDivisorsNonzero theta n k)
+
+/-- The source smallness condition and the printed `theta_j ≠ 0` assumption
+derive operational nonbreakdown; it is not assumed as an opaque executor
+precondition. -/
+theorem higham22RoundedAlgorithm22_2_divisions_nonzero
+    (rm : Higham22SourceRoundModel) (huround : rm.u < 1)
+    (theta : ℕ → ℂ) (htheta : ∀ j, theta j ≠ 0) {n : ℕ}
+    (alpha : Fin (n + 1) → ℂ) :
+    Higham22RoundedAlgorithm22_2DivisionsNonzero
+      rm.toHigham22ScalarRoundModel theta alpha := by
+  constructor
+  · intro k _hk i
+    exact higham22RoundedAlgorithm22_2StageIDenominator_ne_zero
+      rm.toHigham22ScalarRoundModel huround (higham22FinExtend alpha) k i
+  · intro k _hk
+    exact higham22RoundedStageIIDivisorsNonzero_of_theta htheta n k
+
 noncomputable def higham22StageIRowMultiplier {N : ℕ}
     (rm : Higham22SourceRoundModel) (alpha c : Fin N → ℂ) (k : ℕ)
     (i : Fin N) : ℂ :=
@@ -6081,6 +6166,31 @@ theorem higham22_theorem22_4_actual_factor_product_bound
   rw [higham22_exactAlgorithm22_2FactorSeq_product,
     higham22_factorRelativeBudget_product] at hij
   simpa [higham22Theorem22_4Coefficient] using hij
+
+/-- Operational form of Theorem 22.4.  In addition to the printed sharp
+factor-product bound, this endpoint certifies that every division in the
+literal rounded Algorithm 22.2 graph has a nonzero denominator.  In
+particular, nonbreakdown is derived from `u < 1`, node branching, and the
+source recurrence hypothesis `theta_j ≠ 0`; it is not hidden by Lean's total
+division. -/
+theorem higham22_theorem22_4_actual_factor_product_bound_and_nonbreakdown
+    (rm : Higham22SourceRoundModel) (huround : rm.u < 1)
+    (theta beta gamma : ℕ → ℂ) (htheta : ∀ j, theta j ≠ 0) {n : ℕ}
+    (alpha f : Fin (n + 1) → ℂ) :
+    Higham22RoundedAlgorithm22_2DivisionsNonzero
+        rm.toHigham22ScalarRoundModel theta alpha ∧
+      ∀ i j,
+        ‖higham22ComplexMatSeqProd (n + 1) (n + n)
+              (higham22RoundedAlgorithm22_2FactorSeq rm theta beta gamma alpha f) i j -
+            higham22Algorithm22_2FactorProduct theta beta gamma alpha i j‖ ≤
+          higham22Theorem22_4Coefficient n rm.u *
+            matSeqProd (n + 1) (n + n)
+              (fun r => higham22NormMatrix
+                (higham22ExactAlgorithm22_2FactorSeq theta beta gamma alpha r)) i j := by
+  exact ⟨higham22RoundedAlgorithm22_2_divisions_nonzero
+      rm huround theta htheta alpha,
+    higham22_theorem22_4_actual_factor_product_bound
+      rm huround theta beta gamma alpha f⟩
 
 /-- Equation (22.18), for the actual rounded executor. -/
 theorem higham22_eq22_18_actual_forward_error

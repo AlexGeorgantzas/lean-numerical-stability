@@ -45,7 +45,32 @@ Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter10.lean`
 (10.18) counterexample matrix `higham10_18_matrix` / `higham10_18_w_arbitrarily_large`;
 (10.20) Kahan-matrix family; (10.26)(10.27)(10.28) termination criteria
 `higham10_26_nonpositivePivotCriterion`, `higham10_27_*`, `higham10_28_relativeDiagonalStopCriterion`;
-(10.29)(10.30) §10.4 positive-definite-symmetric-part `higham10_29_*`, `higham10_30_complexPositiveDefiniteForm`.
+(10.29)(10.30) §10.4 positive-definite-symmetric-part `higham10_29_*`,
+with literal operator-norm endpoint
+`higham10_29_source_lu_growth_bound_opNorm2`, and
+`higham10_30_complexPositiveDefiniteForm`.
+
+### Post-(10.30) complex-symmetric growth and rounded-stability audit
+
+The printed hypothesis has now been source-corrected to require **both** real
+and imaginary parts to be real symmetric positive definite. The source-facing
+closure in `Ch10ComplexPositiveDefiniteSourceClosure.lean` proves internally:
+nonsingularity and all leading principal minors, existence of exact no-pivot
+LU, a source-derived elimination/Schur trace, and the exact max-entry growth
+bound `rho_n < 3`. No success, trace, or growth premise is supplied by the
+caller. The tempting weakening in which the imaginary part is merely
+symmetric is refuted by a checked `2 x 2` example with growth `17/4 > 3`.
+
+The final printed sentence on p. 209 is qualitative: after stating `rho_n < 3`
+it says only that no-pivot LU is "perfectly normwise backward stable"; it gives
+no rounded executor or perturbation constant there. A literal real-component
+complex Doolittle executor is now formalized. The theorem
+`higham10_30_literalComplexGE_gamma_n_certificate_source_discrepancy` proves
+that importing the real Theorem-9.3 radius `gamma_n` verbatim is false for that
+model: an admissible `n = 2`, `u = 1/10` execution with both parts SPD and
+`gammaValid` needs certificate radius at least `40/121`, while `gamma_2 = 1/4`.
+The older certificate-to-backward-error theorem remains explicitly conditional
+and is no longer reported as a literal rounded source closure.
 
 ## Skipped items (reason codes)
 | Source location | Summary | Reason |

@@ -6,6 +6,9 @@ Authors: QED
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 import LeanFpAnalysis.FP.Analysis.FloatingPointArithmetic
 import Mathlib.Tactic.FieldSimp
+import Mathlib.FieldTheory.IsAlgClosed.Basic
+import Mathlib.Analysis.Complex.Polynomial.Basic
+import Mathlib.Analysis.Calculus.FDeriv.Basic
 
 namespace LeanFpAnalysis.FP
 
@@ -34,6 +37,74 @@ def DirectSearchSpec {α : Type*} (search : (α → ℝ) → α) : Prop :=
 directions relative-increase stopping test. -/
 def adConverged (tol fPrev fNow : ℝ) : Prop :=
   fNow - fPrev ≤ tol * |fPrev|
+
+/-! ### Alternating-directions executor (Section 26.2) -/
+
+/-- The point on the coordinate line through `x` in direction `e_i` with
+scalar displacement `alpha`. -/
+def adCoordinateLinePoint {n : Nat} (x : RVec n) (i : Fin n)
+    (alpha : Real) : RVec n :=
+  fun j => if j = i then x j + alpha else x j
+
+@[simp] theorem adCoordinateLinePoint_zero {n : Nat}
+    (x : RVec n) (i : Fin n) :
+    adCoordinateLinePoint x i 0 = x := by
+  funext j
+  by_cases hji : j = i <;> simp [adCoordinateLinePoint, hji]
+
+/-- Contract of the exact one-dimensional maximization used by Higham's
+alternating-directions pseudocode.  Existence of such a maximizer is an honest
+domain condition on the objective; no global maximizer in `Real^n` is assumed. -/
+def ADExactLineSearch {n : Nat}
+    (f : RVec n -> Real) (search : RVec n -> Fin n -> Real) : Prop :=
+  forall x i alpha,
+    f (adCoordinateLinePoint x i alpha) <=
+      f (adCoordinateLinePoint x i (search x i))
+
+/-- Apply one exact coordinate-line maximization selected by `search`. -/
+def adCoordinateStep {n : Nat} (search : RVec n -> Fin n -> Real)
+    (x : RVec n) (i : Fin n) : RVec n :=
+  adCoordinateLinePoint x i (search x i)
+
+/-- One complete alternating-directions sweep, in source coordinate order
+`0,...,n-1`. -/
+def adSweep {n : Nat} (search : RVec n -> Fin n -> Real)
+    (x : RVec n) : RVec n :=
+  (List.ofFn (fun i : Fin n => i)).foldl (adCoordinateStep search) x
+
+/-- A completed exact coordinate step cannot decrease the objective. -/
+theorem adCoordinateStep_nondecreasing {n : Nat}
+    (f : RVec n -> Real) (search : RVec n -> Fin n -> Real)
+    (hsearch : ADExactLineSearch f search) (x : RVec n) (i : Fin n) :
+    f x <= f (adCoordinateStep search x i) := by
+  have h := hsearch x i 0
+  simpa [adCoordinateStep] using h
+
+/-- Operational trace for the alternating-directions method.  A trace stops
+exactly at the printed relative-increase test (26.2); otherwise it performs a
+full coordinate sweep and repeats. -/
+inductive ADSearchTrace {n : Nat} (tol : Real) (f : RVec n -> Real)
+    (search : RVec n -> Fin n -> Real) : RVec n -> RVec n -> Prop where
+  | stop (x : RVec n)
+      (hstop : adConverged tol (f x) (f (adSweep search x))) :
+      ADSearchTrace tol f search x (adSweep search x)
+  | next {x output : RVec n}
+      (hcontinue : Not (adConverged tol (f x) (f (adSweep search x))))
+      (htail : ADSearchTrace tol f search (adSweep search x) output) :
+      ADSearchTrace tol f search x output
+
+/-- Finite-fuel observation of the same control flow.  `none` means only that
+the observation budget ended before (26.2) held. -/
+noncomputable def adRun {n : Nat} (fuel : Nat) (tol : Real) (f : RVec n -> Real)
+    (search : RVec n -> Fin n -> Real) (x : RVec n) : Option (RVec n) := by
+  classical
+  cases fuel with
+  | zero => exact none
+  | succ remaining =>
+      let next := adSweep search x
+      exact if adConverged tol (f x) (f next) then some next
+        else adRun remaining tol f search next
+termination_by fuel
 
 /-- The finite-dimensional vector 1-norm used in equation (26.3). -/
 noncomputable def vecOneNorm {n : ℕ} (x : RVec n) : ℝ :=
@@ -294,9 +365,229 @@ theorem stableCubicWCube_quadratic (p q : ℝ) (h : 0 ≤ cubicRadicand p q) :
   · exact cubicWCubeMinus_quadratic p q h
   · exact cubicWCubePlus_quadratic p q h
 
+/-! ### Complex form of Cardano's branches -/
+
+/-- A choice of square root in the algebraically closed field of complex
+numbers.  Unlike `Real.sqrt`, this is defined for every radicand. -/
+noncomputable def algebraicComplexSqrt (z : Complex) : Complex :=
+  Classical.choose (IsAlgClosed.exists_pow_nat_eq z (by norm_num : 0 < 2))
+
+theorem algebraicComplexSqrt_sq (z : Complex) :
+    algebraicComplexSqrt z ^ 2 = z :=
+  Classical.choose_spec (IsAlgClosed.exists_pow_nat_eq z (by norm_num : 0 < 2))
+
+/-- The radicand in (26.5), now coerced to the source's complex root domain. -/
+noncomputable def cubicRadicandComplex (p q : Real) : Complex :=
+  (q : Complex) ^ 2 / 4 + (p : Complex) ^ 3 / 27
+
+noncomputable def cubicWCubePlusComplex (p q : Real) : Complex :=
+  -(q : Complex) / 2 + algebraicComplexSqrt (cubicRadicandComplex p q)
+
+noncomputable def cubicWCubeMinusComplex (p q : Real) : Complex :=
+  -(q : Complex) / 2 - algebraicComplexSqrt (cubicRadicandComplex p q)
+
+/-- Both signs in (26.5) solve the quadratic for `w^3` for every real `p,q`,
+including the negative-radicand case omitted by the real-only implementation. -/
+theorem cubicWCubePlusComplex_quadratic (p q : Real) :
+    cubicWCubePlusComplex p q ^ 2 + (q : Complex) * cubicWCubePlusComplex p q -
+        (p : Complex) ^ 3 / 27 = 0 := by
+  have hs := algebraicComplexSqrt_sq (cubicRadicandComplex p q)
+  calc
+    cubicWCubePlusComplex p q ^ 2 +
+          (q : Complex) * cubicWCubePlusComplex p q -
+          (p : Complex) ^ 3 / 27 =
+        algebraicComplexSqrt (cubicRadicandComplex p q) ^ 2 -
+          cubicRadicandComplex p q := by
+            unfold cubicWCubePlusComplex cubicRadicandComplex
+            ring
+    _ = 0 := by rw [hs]; ring
+
+theorem cubicWCubeMinusComplex_quadratic (p q : Real) :
+    cubicWCubeMinusComplex p q ^ 2 + (q : Complex) * cubicWCubeMinusComplex p q -
+        (p : Complex) ^ 3 / 27 = 0 := by
+  have hs := algebraicComplexSqrt_sq (cubicRadicandComplex p q)
+  calc
+    cubicWCubeMinusComplex p q ^ 2 +
+          (q : Complex) * cubicWCubeMinusComplex p q -
+          (p : Complex) ^ 3 / 27 =
+        algebraicComplexSqrt (cubicRadicandComplex p q) ^ 2 -
+          cubicRadicandComplex p q := by
+            unfold cubicWCubeMinusComplex cubicRadicandComplex
+            ring
+    _ = 0 := by rw [hs]; ring
+
+/-- Complex version of the cancellation-avoiding sign choice (26.6). -/
+noncomputable def stableCubicWCubeComplex (p q : Real) : Complex :=
+  -(q : Complex) / 2 - (stableSign q : Complex) *
+    algebraicComplexSqrt (cubicRadicandComplex p q)
+
+theorem stableCubicWCubeComplex_eq_branch (p q : Real) :
+    stableCubicWCubeComplex p q =
+      if 0 <= q then cubicWCubeMinusComplex p q else cubicWCubePlusComplex p q := by
+  by_cases hq : 0 <= q <;>
+    simp [stableCubicWCubeComplex, stableSign, cubicWCubeMinusComplex,
+      cubicWCubePlusComplex, hq]
+
+theorem stableCubicWCubeComplex_quadratic (p q : Real) :
+    stableCubicWCubeComplex p q ^ 2 +
+        (q : Complex) * stableCubicWCubeComplex p q -
+        (p : Complex) ^ 3 / 27 = 0 := by
+  rw [stableCubicWCubeComplex_eq_branch]
+  split_ifs
+  . exact cubicWCubeMinusComplex_quadratic p q
+  . exact cubicWCubePlusComplex_quadratic p q
+
+/-- A constructed complex cube root, available for every value of either
+branch in (26.5). -/
+noncomputable def algebraicComplexCubeRoot (z : Complex) : Complex :=
+  Classical.choose (IsAlgClosed.exists_pow_nat_eq z (by norm_num : 0 < 3))
+
+theorem algebraicComplexCubeRoot_cube (z : Complex) :
+    algebraicComplexCubeRoot z ^ 3 = z :=
+  Classical.choose_spec (IsAlgClosed.exists_pow_nat_eq z (by norm_num : 0 < 3))
+
+theorem algebraicComplexCubeRoot_ne_zero {z : Complex} (hz : z ≠ 0) :
+    algebraicComplexCubeRoot z ≠ 0 := by
+  intro hw
+  apply hz
+  rw [← algebraicComplexCubeRoot_cube z, hw]
+  norm_num
+
+/-- Vieta's substitution maps every nonzero cube root of either quadratic
+branch back to a root of the depressed cubic. -/
+theorem vietaSubstitution_complex_root
+    (p q w t : Complex) (hw : Not (w = 0))
+    (hcube : w ^ 3 = t)
+    (hquad : t ^ 2 + q * t - p ^ 3 / 27 = 0) :
+    (w - p / (3 * w)) ^ 3 + p * (w - p / (3 * w)) + q = 0 := by
+  subst t
+  field_simp [hw] at hquad
+  field_simp [hw]
+  ring_nf at hquad
+  ring_nf
+  exact hquad
+
 /-- The monic cubic used in the residual objective (26.7). -/
 def monicCubic (a b c : ℝ) (z : ℂ) : ℂ :=
   z ^ 3 + a * z ^ 2 + b * z + c
+
+/-- The complex version of the `x = y - a/3` handoff used immediately after
+(26.5). -/
+theorem depressedCubic_complex_root_to_monicCubic
+    (a b c : ℝ) (y : ℂ)
+    (hy : y ^ 3 + (depressedCubicP a b : ℂ) * y +
+      (depressedCubicQ a b c : ℂ) = 0) :
+    monicCubic a b c (y - (a : ℂ) / 3) = 0 := by
+  calc
+    monicCubic a b c (y - (a : ℂ) / 3) =
+        y ^ 3 + (depressedCubicP a b : ℂ) * y +
+          (depressedCubicQ a b c : ℂ) := by
+            unfold monicCubic depressedCubicP depressedCubicQ
+            push_cast
+            ring
+    _ = 0 := hy
+
+/-- Every *nonzero* cube root of the plus branch of (26.5) yields a root of
+the original cubic after both source substitutions.  The universal quantifier
+over `w` covers all three cube roots when the branch is nonzero. -/
+theorem higham26_5_plus_every_nonzeroCubeRoot_monicCubic
+    (a b c : ℝ) (w : ℂ)
+    (hcube : w ^ 3 = cubicWCubePlusComplex
+      (depressedCubicP a b) (depressedCubicQ a b c))
+    (hw : w ≠ 0) :
+    monicCubic a b c
+      (w - (depressedCubicP a b : ℂ) / (3 * w) - (a : ℂ) / 3) = 0 := by
+  apply depressedCubic_complex_root_to_monicCubic
+  exact vietaSubstitution_complex_root
+    (depressedCubicP a b : ℂ) (depressedCubicQ a b c : ℂ) w
+    (cubicWCubePlusComplex (depressedCubicP a b) (depressedCubicQ a b c))
+    hw hcube
+    (cubicWCubePlusComplex_quadratic
+      (depressedCubicP a b) (depressedCubicQ a b c))
+
+/-- The corresponding all-cube-roots theorem for the minus branch of (26.5). -/
+theorem higham26_5_minus_every_nonzeroCubeRoot_monicCubic
+    (a b c : ℝ) (w : ℂ)
+    (hcube : w ^ 3 = cubicWCubeMinusComplex
+      (depressedCubicP a b) (depressedCubicQ a b c))
+    (hw : w ≠ 0) :
+    monicCubic a b c
+      (w - (depressedCubicP a b : ℂ) / (3 * w) - (a : ℂ) / 3) = 0 := by
+  apply depressedCubic_complex_root_to_monicCubic
+  exact vietaSubstitution_complex_root
+    (depressedCubicP a b : ℂ) (depressedCubicQ a b c : ℂ) w
+    (cubicWCubeMinusComplex (depressedCubicP a b) (depressedCubicQ a b c))
+    hw hcube
+    (cubicWCubeMinusComplex_quadratic
+      (depressedCubicP a b) (depressedCubicQ a b c))
+
+/-- Turnkey plus-branch Cardano endpoint: a cube root is constructed rather
+than requested from the caller. -/
+theorem higham26_5_plus_chosenCubeRoot_monicCubic
+    (a b c : ℝ)
+    (hbranch : cubicWCubePlusComplex
+      (depressedCubicP a b) (depressedCubicQ a b c) ≠ 0) :
+    let w := algebraicComplexCubeRoot (cubicWCubePlusComplex
+      (depressedCubicP a b) (depressedCubicQ a b c))
+    monicCubic a b c
+      (w - (depressedCubicP a b : ℂ) / (3 * w) - (a : ℂ) / 3) = 0 := by
+  dsimp only
+  apply higham26_5_plus_every_nonzeroCubeRoot_monicCubic
+  · exact algebraicComplexCubeRoot_cube _
+  · exact algebraicComplexCubeRoot_ne_zero hbranch
+
+/-- Turnkey minus-branch Cardano endpoint. -/
+theorem higham26_5_minus_chosenCubeRoot_monicCubic
+    (a b c : ℝ)
+    (hbranch : cubicWCubeMinusComplex
+      (depressedCubicP a b) (depressedCubicQ a b c) ≠ 0) :
+    let w := algebraicComplexCubeRoot (cubicWCubeMinusComplex
+      (depressedCubicP a b) (depressedCubicQ a b c))
+    monicCubic a b c
+      (w - (depressedCubicP a b : ℂ) / (3 * w) - (a : ℂ) / 3) = 0 := by
+  dsimp only
+  apply higham26_5_minus_every_nonzeroCubeRoot_monicCubic
+  · exact algebraicComplexCubeRoot_cube _
+  · exact algebraicComplexCubeRoot_ne_zero hbranch
+
+/-- The printed sentence after (26.5) needs a nonzero-branch qualification.
+For `p = 0, q = 1`, one of its two signs is zero; its only cube root is zero,
+and Vieta's division formula does not produce a depressed-cubic root. -/
+theorem higham26_5_printed_eitherSign_zeroBranch_discrepancy :
+    ∃ t : ℂ,
+      (t = cubicWCubePlusComplex 0 1 ∨ t = cubicWCubeMinusComplex 0 1) ∧
+      (0 : ℂ) ^ 3 = t ∧
+      (0 - (0 : ℂ) / (3 * 0)) ^ 3 +
+          0 * (0 - (0 : ℂ) / (3 * 0)) + 1 ≠ 0 := by
+  have hs := algebraicComplexSqrt_sq (cubicRadicandComplex 0 1)
+  have hs' : algebraicComplexSqrt (cubicRadicandComplex 0 1) ^ 2 =
+      (1 : ℂ) / 4 := by
+    simpa [cubicRadicandComplex] using hs
+  have hprod : cubicWCubePlusComplex 0 1 *
+      cubicWCubeMinusComplex 0 1 = 0 := by
+    calc
+      cubicWCubePlusComplex 0 1 * cubicWCubeMinusComplex 0 1 =
+          (1 : ℂ) / 4 -
+            algebraicComplexSqrt (cubicRadicandComplex 0 1) ^ 2 := by
+              unfold cubicWCubePlusComplex cubicWCubeMinusComplex
+              norm_num
+              ring
+      _ = 0 := by rw [hs']; ring
+  rcases mul_eq_zero.mp hprod with hplus | hminus
+  · refine ⟨0, Or.inl hplus.symm, by norm_num, ?_⟩
+    intro hzero
+    apply (one_ne_zero : (1 : ℂ) ≠ 0)
+    calc
+      (1 : ℂ) = (0 - (0 : ℂ) / (3 * 0)) ^ 3 +
+          0 * (0 - (0 : ℂ) / (3 * 0)) + 1 := by norm_num; rfl
+      _ = 0 := hzero
+  · refine ⟨0, Or.inr hminus.symm, by norm_num, ?_⟩
+    intro hzero
+    apply (one_ne_zero : (1 : ℂ) ≠ 0)
+    calc
+      (1 : ℂ) = (0 - (0 : ℂ) / (3 * 0)) ^ 3 +
+          0 * (0 - (0 : ℂ) / (3 * 0)) + 1 := by norm_num; rfl
+      _ = 0 := hzero
 
 /-- Higham, 2nd ed., Section 26.3.3, p. 481, equation (26.7): normalized
 backward-residual objective for three computed roots. -/
@@ -305,6 +596,59 @@ noncomputable def cubicRootResidualMeasure (a b c : ℝ) (z : Fin 3 → ℂ) : �
     ‖monicCubic a b c (z i)‖ /
       (max (max (max |a| |b|) |c|) 1 *
         (∑ j : Fin 4, ‖z i ^ (j : ℕ)‖))‖
+
+/-! ## Linearized forward error (26.8) -/
+
+/-- The coordinate form of the derivative contribution in (26.8).  The
+coefficient at coordinate `k` is the derivative applied to the `k`th unit
+vector, and `delta k` is that elementary operation's local rounding error. -/
+noncomputable def linearizedForwardError26_8 {N : Nat}
+    (derivative : (Fin N → ℝ) →L[ℝ] ℝ)
+    (delta : Fin N -> Real) : Real :=
+  Finset.univ.sum (fun k => derivative (Pi.single k 1) * delta k)
+
+/-- A linear functional on a finite real coordinate space is exactly the sum
+of its coordinate derivatives. -/
+theorem linearizedForwardError26_8_eq {N : Nat}
+    (derivative : (Fin N → ℝ) →L[ℝ] ℝ)
+    (delta : Fin N -> Real) :
+    linearizedForwardError26_8 derivative delta = derivative delta := by
+  classical
+  have hdecomp : delta =
+      Finset.univ.sum (fun k : Fin N => delta k • (Pi.single k 1 : Fin N -> Real)) := by
+    funext i
+    simp [Pi.single_apply]
+  calc
+    linearizedForwardError26_8 derivative delta =
+        Finset.univ.sum (fun k => delta k * derivative (Pi.single k 1)) := by
+      simp [linearizedForwardError26_8, mul_comm]
+    _ = derivative (Finset.univ.sum
+        (fun k : Fin N => delta k • (Pi.single k 1 : Fin N -> Real))) := by
+      rw [map_sum]
+      simp [map_smul, smul_eq_mul]
+    _ = derivative delta := by rw [← hdecomp]
+
+/-- Precise first-order meaning of Higham's equation (26.8).  The omitted
+terms form a little-o remainder in the vector of elementary rounding errors. -/
+theorem eq26_8_linearized_forward_error {N : Nat}
+    (g : (Fin N -> Real) -> Real) (D : Fin N -> Real)
+    (derivative : (Fin N → ℝ) →L[ℝ] ℝ)
+    (hg : HasFDerivAt g derivative D) :
+    (fun delta =>
+      g (D + delta) - g D - linearizedForwardError26_8 derivative delta)
+        =o[nhds 0] (fun delta : Fin N -> Real => delta) := by
+  simpa only [linearizedForwardError26_8_eq] using
+    (hasFDerivAt_iff_isLittleO_nhds_zero.mp hg)
+
+/-- For the source's class of linear evaluation algorithms, the linearized
+formula is exact rather than merely first order. -/
+theorem eq26_8_exact_of_affine_increment {N : Nat}
+    (g : (Fin N -> Real) -> Real) (D delta : Fin N -> Real)
+    (derivative : (Fin N → ℝ) →L[ℝ] ℝ)
+    (haffine : g (D + delta) = g D + derivative delta) :
+    g (D + delta) - g D = linearizedForwardError26_8 derivative delta := by
+  rw [haffine, linearizedForwardError26_8_eq]
+  ring
 
 /-! ## Exact interval arithmetic from Section 26.4 -/
 

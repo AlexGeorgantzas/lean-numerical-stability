@@ -11,6 +11,7 @@ import LeanFpAnalysis.FP.Algorithms.QR.HouseholderSpec
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderApply
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderOneStep
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
+import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQRSupport
 import LeanFpAnalysis.FP.Algorithms.QR.GivensSpec
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
 import LeanFpAnalysis.FP.Analysis.Rounding
@@ -742,8 +743,59 @@ theorem H19_Theorem19_5_qr_solve_columnwise_backward_error (fp : FPModel)
     fp n A b hn hvalid hdiag
 
 -- ============================================================
--- Lemma 19.3 (sequence of reflectors), square normwise form
+-- Lemma 19.3 (sequence of reflectors)
 -- ============================================================
+
+/-- **Lemma 19.3, concrete rectangular columnwise form.**  A sequence of
+    calls to the rounded compact Householder panel and vector kernels has one
+    common exact orthogonal factor.  Each matrix column has its own backward
+    perturbation, as in the printed rectangular statement, while the same
+    factor also represents the transformed right-hand side.
+
+    This source-numbered wrapper is deliberately stated for the actual
+    `fl_householderApplyCompactPanel` / `fl_householderApplyCompact`
+    executors.  It closes the gap between the abstract rectangular sequence
+    lemma and the square Frobenius wrapper below. -/
+theorem H19_Lemma19_3_rectangular_columnwise_sequence_backward_error
+    (fp : FPModel) (m n r : ℕ)
+    (v : ℕ → Fin m → ℝ) (β : ℕ → ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (A_hat : ℕ → Fin m → Fin n → ℝ)
+    (b_hat : ℕ → Fin m → ℝ)
+    (c : ℝ) (hc : 0 ≤ c)
+    (hm : gammaValid fp m)
+    (hInitA : A_hat 0 = A)
+    (hInitb : b_hat 0 = b)
+    (hStepA : ∀ k, k < r →
+      A_hat (k + 1) =
+        fl_householderApplyCompactPanel fp m n (v k) (β k) (A_hat k))
+    (hStepb : ∀ k, k < r →
+      b_hat (k + 1) =
+        fl_householderApplyCompact fp m (v k) (β k) (b_hat k))
+    (horth : ∀ k, k < r → IsOrthogonal m (householder m (v k) (β k)))
+    (hA_budget : ∀ k, k < r → ∀ j : Fin n,
+      vecNorm2 (fun i : Fin m =>
+        householderCompactComponentBudget fp m (v k) (β k)
+          (fun a => A_hat k a j) i) ≤
+        c * vecNorm2 (fun i : Fin m => A_hat k i j))
+    (hb_budget : ∀ k, k < r →
+      vecNorm2 (fun i : Fin m =>
+        householderCompactComponentBudget fp m (v k) (β k) (b_hat k) i) ≤
+        c * vecNorm2 (b_hat k)) :
+    ∃ (Q : Fin m → Fin m → ℝ)
+        (ΔA : Fin m → Fin n → ℝ) (Δb : Fin m → ℝ),
+      IsOrthogonal m Q ∧
+      (∀ i j, A_hat r i j =
+        matMulRectLeft (matTranspose Q) (fun a b => A a b + ΔA a b) i j) ∧
+      (∀ i, b_hat r i =
+        matMulVec m (matTranspose Q) (fun a => b a + Δb a) i) ∧
+      (∀ j : Fin n,
+        vecNorm2 (fun i => ΔA i j) ≤
+          ((1 + c) ^ r - 1) * vecNorm2 (fun i => A i j)) ∧
+      vecNorm2 Δb ≤ ((1 + c) ^ r - 1) * vecNorm2 b :=
+  fl_householderApplyCompactPanel_rect_orthogonal_columnwise_vector_sequence_geometric
+    fp m n r v β A b A_hat b_hat c hc hm hInitA hInitb
+      hStepA hStepb horth hA_budget hb_budget
 
 /-- **Lemma 19.3, square normwise form** (Higham, Accuracy and Stability of
     Numerical Algorithms, 2nd ed., §19.3, p. 359): after a sequence of `r`

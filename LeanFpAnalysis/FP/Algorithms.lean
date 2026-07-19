@@ -47,13 +47,29 @@ import LeanFpAnalysis.FP.Algorithms.HighamChapter9
 import LeanFpAnalysis.FP.Algorithms.HighamChapter9DoolittleClosure
 import LeanFpAnalysis.FP.Algorithms.HighamChapter10
 import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham10Theorem10_7Source
+import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham1014SourceSuccess
+import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham1014SourceError
+import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham1029Source
+import LeanFpAnalysis.FP.Algorithms.Cholesky.HighamMathiasFirstBreakdown
+-- Noncircular Mathias closure: exact f(A)/kappa_H, literal rounded Schur error,
+-- matrix perturbation/reindexing, recursive child conditions, and execution
+-- success under the printed source hypothesis.
+import LeanFpAnalysis.FP.Algorithms.Cholesky.HighamMathiasSource
 import LeanFpAnalysis.FP.Algorithms.Ch10KahanSharpness
 import LeanFpAnalysis.FP.Algorithms.Ch10ActualSourceClosure
 import LeanFpAnalysis.FP.Algorithms.Ch10KahanSharpnessSource
 import LeanFpAnalysis.FP.Algorithms.Ch10Lemma1011Source
 import LeanFpAnalysis.FP.Algorithms.Ch10Theorem108Source
 import LeanFpAnalysis.FP.Algorithms.Ch10Theorem108Componentwise
+import LeanFpAnalysis.FP.Algorithms.Ch10PivotedPSDSourceClosure
+import LeanFpAnalysis.FP.Algorithms.Ch10ComplexPositiveDefiniteSourceClosure
 import LeanFpAnalysis.FP.Algorithms.HighamChapter11
+import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham11RookSourceClosure
+-- Rounded mixed-executor support, exact bounded-search closure, and the formal
+-- boundary showing why the exact growth exponent does not transfer unchanged.
+import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham11RookExecutorAdapter
+import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham11RookExactTrace
+import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham11RookRoundedGap
 import LeanFpAnalysis.FP.Algorithms.HighamChapter12
 import LeanFpAnalysis.FP.Algorithms.LU.GaussianElimination
 import LeanFpAnalysis.FP.Algorithms.LU.LUSolve
@@ -158,6 +174,8 @@ import LeanFpAnalysis.FP.Algorithms.NeumaierCompensatedFiniteFormat
 import LeanFpAnalysis.FP.Algorithms.PriestAccuracy
 import LeanFpAnalysis.FP.Algorithms.PriestDefectBounded
 import LeanFpAnalysis.FP.Algorithms.PriestFiniteFormat
+import LeanFpAnalysis.FP.Algorithms.HighamChapters1To9SourceClosure
+import LeanFpAnalysis.FP.Algorithms.Higham726Rump
 import LeanFpAnalysis.FP.Algorithms.Ch5DerivativeError
 import LeanFpAnalysis.FP.Algorithms.Ch5NewtonForm
 import LeanFpAnalysis.FP.Algorithms.Ch5SourceClosure
@@ -166,6 +184,7 @@ import LeanFpAnalysis.FP.Analysis.Higham6Asides
 import LeanFpAnalysis.FP.Algorithms.CondEstimation
 import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCond
 import LeanFpAnalysis.FP.Algorithms.PNormPowerMethod
+import LeanFpAnalysis.FP.Algorithms.PNormPowerMethodGeneralP
 import LeanFpAnalysis.FP.Algorithms.Chapter15CondEst
 import LeanFpAnalysis.FP.Algorithms.Ch15CondEstimators
 import LeanFpAnalysis.FP.Algorithms.Ch15DixonProbability
@@ -239,6 +258,7 @@ import LeanFpAnalysis.FP.Analysis.SemiconvergentExistenceFull
 import LeanFpAnalysis.FP.Analysis.SemiconvergentExistenceComplete
 import LeanFpAnalysis.FP.Analysis.SemiconvergentRealSpectrumComplete
 import LeanFpAnalysis.FP.Analysis.SemiconvergentLimitGeneral
+import LeanFpAnalysis.FP.Analysis.Ch17SemiconvergentBlockFormSourceClosure
 import LeanFpAnalysis.FP.Analysis.MatrixPowersLp185Primary
 import LeanFpAnalysis.FP.Analysis.HenriciSharpConstant
 import LeanFpAnalysis.FP.Analysis.HenriciSharpConstantExact
@@ -266,6 +286,7 @@ import LeanFpAnalysis.FP.Algorithms.QR.Higham19StoredLoopStrongModel
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19StoredLoopAllPivots
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Lemma7Gamma4
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Lemma9DisjointSweep
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Theorem10ActualMatrix
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Alg11CGSRounded
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Alg12MGSRounded
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Alg12MGSRepair
