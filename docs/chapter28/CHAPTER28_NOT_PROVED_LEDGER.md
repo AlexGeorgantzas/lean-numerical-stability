@@ -13,7 +13,6 @@ and hence the premise-free `ch28gf_realGinibreExpectedCountLimit`
 |---|---|---|---|
 | 28-A1, p. 514 | `κ₂(H_n) ∼ exp(3.5n)` and explicit statement of exponential growth | `hilbertConditionTwo` and the unproved recorded proposition `HilbertConditionAsymptotic`; shifted-Hilbert norm clause is proved | A corrected source-faithful growth theorem, e.g. `log(κ₂(H_n))/n → 4 log(1+√2)`. The rounded decimal makes literal ratio equivalence false/inappropriate, but does not make the central exponential-rate claim under-specified. |
 | 28-PQR, p. 517 | Positive-diagonal QR of iid `N(0,σ²)` square data yields Haar `Q` for every variance | Stewart's different Householder-product Haar theorem | A measurable normalized-QR producer and push-forward proof for the Gaussian matrix law. |
-| 28-P4g, p. 520 | General construction `X=ZDZ⁻¹`, `D²=I`, `A=XᵀX` gives SPD determinant-one matrices with reciprocal roots | Pascal-specific involution and reciprocal eigenpair theorems | General matrix algebra, determinant, positive-definiteness, similarity/inverse, and reciprocal-spectrum theorem for the printed symbolic family. |
 
 ## Formerly-open selected row 28-P3 (now CLOSED)
 
@@ -42,6 +41,7 @@ feeding `ch28gf_realGinibreFiniteExpectationFormula`.
 | 28-P3d single-Householder warning | `singleHouseholder_randsvd_eq_diagonal_add_rankTwo`, `singleHouseholder_randsvd_correction_rank_le_two` | PASS |
 | 28-P3e symmetric randsvd | `symmetricRandsvdMatrix`, `symmetricRandsvdMatrix_transpose`, `symmetricRandsvdMatrix_column_eigenpair` | PASS |
 | 28-P4m Hilbert/Pascal moment representations | `intervalMomentMatrix_quadraticForm`, `intervalMomentMatrix_quadraticForm_re_nonneg`, `intervalMomentMatrix_quadraticForm_re_pos`, `hilbertMatrix_eq_intervalMomentMatrix`, `pascalMoment_integral`, `pascalMatrix_eq_intervalMomentMatrix`, `pascal_circleAverage`, `pascal_circleMoment_normalized`, `pascal_circleMoment` | PASS |
+| 28-P4g general reciprocal-spectrum SPD family and triangular-factor clause | `higham28ReciprocalInvolution_sq`, `higham28ReciprocalSPD_det_one`, `higham28ReciprocalSPD_isSymPosDef_explicit`, `higham28ReciprocalSPD_reciprocal_eigenpair`, `higham28ReciprocalInvolution_lower_and_diag`, `higham28ReciprocalSPD_row_sign_factorization`, `higham28ReciprocalSPD_transpose_column_sign_factorization`, `higham28ReciprocalSPD_lower_reverseCholeskyFactor`, `higham28ColumnScalingCounter_right_scaling_fails` | PASS for the core and corrected `DX`/`XᵀD` factor identities; terminal SOURCE-DISCREPANCY for literal column scaling `XD` and the lower-versus-upper Cholesky orientation |
 | 28-P4c Pascal characteristic polynomial | `pascal_charpoly_reciprocal`, `pascal_charpoly_palindromic_of_even` | PASS for the parity-corrected theorem; terminal SOURCE-DISCREPANCY for the sign-free all-order source sentence |
 | 28-P4a Pascal optimal perturbation | `pascalOptimalSingularizingPerturbation_mulVec`, `pascalOptimalPerturbation_has_nonzero_kernel`, `opNorm2_pascalOptimalSingularizingPerturbation`, `pascalOptimalPerturbation_is_operator2_minimal` | PASS |
 | 28-P4b Pascal total positivity/oscillation | `pascalMatrix_isStrictlyTotallyPositive`, `pascalSortedEigenvalue_strictAnti`, `pascalSortedEigenvector_hasExactlySignChanges` | PASS |
@@ -62,5 +62,10 @@ feeding `ch28gf_realGinibreFiniteExpectationFormula`.
   qualitative Perron-root separation, p. 518 randsvd cost discussion, and
   p. 522 LU-diagonal/cyclic-reduction prose are terminally deferred because
   the source does not determine a unique quantitative theorem.
+- The final p. 520 sentence about lower-triangular `Z` is precise but
+  algebraically misoriented: `XD` generally does not preserve `XᵀX`.
+  `DX` does, and `XᵀD` is the equivalent transpose-column scaling. The
+  compiled two-by-two family witness makes this a terminal SOURCE-DISCREPANCY,
+  not an open proof obligation.
 - Table 28.1 is an excluded software catalogue. Problems 28.1-28.2 are
   optional and not selected.

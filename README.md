@@ -43,7 +43,7 @@ authoritative from-scratch audit is
 | 2  | Floating point arithmetic | PASS |
 | 3  | Basics (dot products, `γ(n)`) | PASS |
 | 4  | Summation | FAIL |
-| 5  | Polynomials (Horner) | FAIL |
+| 5  | Polynomials (Horner) | PASS |
 | 6  | Norms | PASS |
 | 7  | Perturbation theory for linear systems | PASS |
 | 8  | Triangular systems | FAIL |
@@ -68,7 +68,7 @@ authoritative from-scratch audit is
 | 27 | Software issues in floating point | PASS |
 | 28 | A gallery of test matrices | FAIL |
 
-Fresh result: **14 PASS, 13 FAIL, 1 BLOCKED**. A failed gate can still contain
+Fresh result: **15 PASS, 12 FAIL, 1 BLOCKED**. A failed gate can still contain
 substantial verified material; it means at least one selected printed-strength
 producer or bridge remains open.
 
@@ -95,9 +95,16 @@ stronger source row pass.
 - **Chapter 22** now has a genuine Chapter 5 residual bridge, but its actual
   monomial Stage-II factor producer, refinement contraction, and precise Table
   22.1 V1--V6 claims remain open.
-- **Chapters 25 and 28** retain precise-prose gaps: the bordered eigenproblem
-  specialization in Chapter 25, and the exact Hilbert log rate, Gaussian-QR Haar
-  bridge, and general reciprocal-spectrum SPD construction in Chapter 28.
+- **Chapter 25** now has the bordered Jacobian, literal rounded residual, and a
+  kernel theorem from an explicit simple-eigenpair certificate. Its strict gap
+  is the producer from algebraic multiplicity one to that certificate. The
+  printed coefficient `2‖A‖` is separately refuted at `A=0` and corrected to
+  the universal infinity-norm coefficient `2`.
+- **Chapter 28** remains open only at the exact Hilbert condition-number log
+  rate and the normalized-Gaussian-QR-to-Haar producer. Its general
+  reciprocal-spectrum SPD construction is now formalized; the printed final
+  column-scaling clause is refuted and replaced by the correct row/transpose
+  scaling identity.
 
 The **RandNLA case study**
 ([`FP/Algorithms/RandNLA/`](LeanFpAnalysis/FP/Algorithms/RandNLA), 17 modules)
@@ -112,11 +119,11 @@ Snapshot of the current `LeanFpAnalysis/` tree:
 
 | | |
 |---|---|
-| Lean files | **512** |
-| Lines of Lean | **~1.33 million** |
-| Theorems + lemmas proved | **~34,400** (32,605 `theorem` + 1,794 `lemma`) |
-| Definitions | **7,890** `def`, 229 `abbrev` |
-| Structures / instances | 346 `structure`, 131 `instance` |
+| Lean files | **524** |
+| Lines of Lean | **~1.34 million** |
+| Theorems + lemmas proved | **~34,300** (32,455 `theorem` + 1,820 `lemma`) |
+| Definitions | **7,994** `def`, 229 `abbrev` |
+| Structures / instances | 348 `structure`, 131 `instance` |
 | `sorry` / `admit` / `axiom` declarations | **0** |
 | Full `lake build` | **~4,300** jobs |
 

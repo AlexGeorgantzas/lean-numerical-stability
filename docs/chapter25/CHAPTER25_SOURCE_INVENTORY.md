@@ -29,11 +29,15 @@ map derivative as `-F_x⁻¹ F_d`, and evaluates the literal shrinking-ball
 literal rounded evaluation order, is also proved. Theorems
 25.1 and 25.2 cannot be stated at source strength without
 defining the printed `≈` relation and “decreases until” event, so the skill's
-`DEFER-MISSING-PRECISE-STATEMENT` rule applies. The gate fails instead on the
-precise p. 463 eigenproblem specialization after (25.10): the displayed bordered
-Jacobian, the printed Lipschitz coefficient, simple-eigenvalue nonsingularity,
-and the residual-evaluation `ψ` formula do not yet have source-strength Lean
-producers. No replacement theorem is invented.
+`DEFER-MISSING-PRECISE-STATEMENT` rule applies. The precise p. 463 eigenproblem
+specialization after (25.10) is substantially produced in
+`Higham25EigenClosure.lean`: the bordered matrix and exact Taylor identity,
+kernel triviality from an explicit left/right/eigenspace certificate, and the
+literal rounded residual `ψ` bound are proved. The remaining strict gap is a
+producer from the source's standard simple-eigenvalue hypothesis (algebraic
+multiplicity one) to that certificate. The printed Lipschitz coefficient
+`2‖A‖` is independently false for `A=0`; Lean proves that counterexample and
+the corrected universal infinity-norm coefficient `2`.
 
 ## Named results
 
@@ -70,7 +74,7 @@ producers. No replacement theorem is invented.
 | Lipschitz Jacobian premise | p. 461 / PDF 3 | FORMALIZE_CORE | Accounted for in theorem-premise inventory; no named limit theorem is falsely asserted. |
 | Iterative refinement special case | pp. 462-463 / PDFs 4-5 | FORMALIZE_CORE / CORE-PRECISE-PROSE | `higham25_linearSystem_newtonCorrection_iff_refinementCorrection` proves the exact Newton/refinement correction equivalence; `higham25_linearSystemJacobian_constant` and `higham25_linearSystemJacobian_lipschitz_zero` close the constant-Jacobian/`β=0` claim; `higham25_linearSystem_actualResidual_bridge_ch12` instantiates the actual `fl_residual` evaluator and the printed `γ_(n+1)` componentwise bound. The printed `F=b-Ax, J=A` has a sign inconsistency; Lean uses the correct derivative `J=-A`, whose sign cancels in the Newton equation. **PASS / SOURCE-DISCREPANCY**. |
 | Linear-system condition specialization below (25.11) | p. 466 / PDF 8 | FORMALIZE_CORE / CORE-PRECISE-PROSE | `higham25_linearSystemDataDerivativeFrob_eq` proves `‖A⁻¹[x₁I … xₙI]‖_F=‖A⁻¹‖_F‖x‖₂`; `higham25_linearSystem_condition_frobenius` proves the printed relative condition identity `‖A⁻¹‖_F‖A‖_F`. **PASS**. |
-| Eigenproblem bordered Jacobian, Lipschitz coefficient, simple-eigenvalue nonsingularity, and residual `ψ` formula | p. 463 / PDF 5, immediately after (25.10) | FORMALIZE_CORE / CORE-PRECISE-PROSE and CORE-SYMBOLIC-EXAMPLE | The exact claims are central mathematical parts of the already-selected eigenproblem example, not decimal experiment output. `higham25EigenResidual` and `higham25_eq25_10_zero_iff` do not prove these four statements. **OPEN**. |
+| Eigenproblem bordered Jacobian, Lipschitz coefficient, simple-eigenvalue nonsingularity, and residual `ψ` formula | p. 463 / PDF 5, immediately after (25.10) | FORMALIZE_CORE / CORE-PRECISE-PROSE and CORE-SYMBOLIC-EXAMPLE | `higham25EigenJacobian`, `higham25EigenJacobian_mulVec_eq_action`, and the exact Taylor identities produce the displayed derivative. `higham25EigenJacobian_kernel_eq_zero_of_simple` proves nonsingularity from an explicit left/right/eigenspace certificate, but no theorem derives that certificate from a standard algebraic-multiplicity-one hypothesis. `higham25EigenRoundedResidual_error_bound` proves the literal primitive-operation evaluator satisfies (25.3) with `ψ = γ_(n+1)(‖A‖∞+|λ|)‖x‖∞`. `higham25EigenJacobian_source_lipschitz_counterexample` refutes the unqualified printed `2‖A‖` coefficient at `A=0`; `higham25EigenJacobian_lipschitz_two_inf` proves the corrected coefficient `2`. **PARTIAL / SOURCE-DISCREPANCY**. |
 | Figure 25.1 / Frank-matrix MATLAB experiment | pp. 463-465 / PDFs 5-7 | EXCLUDED-EMPIRICAL | Accounted for; exact data and script are not printed. |
 | First-order perturbation relation before (25.11) | pp. 464-466 / PDFs 6-8 | FORMALIZE_CORE | `higham25_eq25_11_first_order`. **PASS** for exact linearized algebra. |
 | Sensitivity calculation and condition `1/2` after (25.13) | p. 466 / PDF 8 | FORMALIZE_CORE | `higham25_eq25_13_sensitivity_direction`, `higham25_eq25_13_condition_half`. **PASS**. |

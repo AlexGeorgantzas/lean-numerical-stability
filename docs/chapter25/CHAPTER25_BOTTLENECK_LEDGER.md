@@ -2,15 +2,26 @@
 
 ## Gate
 
-The Chapter 25 core selected-scope gate is **FAIL** under the strict precise-
-prose audit. The former bottleneck,
+The Chapter 25 core selected-scope gate is **FAIL** under
+the strict precise-prose audit. The former bottleneck,
 equation (25.11) together with the implicit-function/Taylor prose on printed
 pp. 464-466 (PDFs 6-8), is closed.
 
-The active selected bottleneck is the exact p. 463 eigenproblem specialization
-following (25.10): the displayed bordered Jacobian, printed Lipschitz
-coefficient, simple-eigenvalue nonsingularity implication, and actual rounded
-residual evaluator producing the stated `ψ` bound.
+The p. 463 eigenproblem bottleneck is reduced but not fully closed by
+`Higham25EigenClosure.lean`. The module proves the bordered Jacobian, exact
+Taylor identity, rounded residual budget, and kernel triviality from
+`Higham25SimpleEigenpairCertificate`. It does not derive that certificate from
+the source's bare algebraic simple-eigenvalue hypothesis. The printed `2‖A‖`
+Lipschitz coefficient is separately false without a scaling assumption; the
+module proves a zero-matrix counterexample and the corrected coefficient `2`,
+so that part is a terminal source discrepancy rather than a hidden premise.
+
+## Remaining selected bridge
+
+Construct the left eigenvector/nonorthogonality and one-dimensional eigenspace
+certificate from a standard characteristic-polynomial root of multiplicity one
+(or prove an equivalent generalized-eigenspace formulation), then apply
+`higham25EigenJacobian_kernel_eq_zero_of_simple`.
 
 ## Equation (25.11)
 

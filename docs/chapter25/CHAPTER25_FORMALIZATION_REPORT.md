@@ -27,10 +27,14 @@ invented propositions.
 The p. 462-463 linear-system specialization is now closed by exact
 Newton/refinement, constant-Jacobian, actual-residual, derivative-product, and
 condition-number theorems. The source sentence `F=b-Ax, J=A` has a sign typo;
-the implementation uses the correct derivative `J=-A`. The remaining selected
-gap is the precise p. 463 eigenproblem prose following (25.10): bordered
-Jacobian, Lipschitz coefficient, simple-eigenvalue nonsingularity, and the
-actual rounded residual `ψ` producer.
+the implementation uses the correct derivative `J=-A`. The precise p. 463
+eigenproblem prose has an actual bordered Jacobian, an exact Taylor identity,
+certificate-based kernel triviality, and a rounded `ψ` producer. The remaining
+gap is the bridge from a standard algebraic simple-eigenvalue hypothesis to the
+constructive left/right/eigenspace certificate consumed by the kernel proof.
+The printed eigen-Jacobian Lipschitz coefficient `2‖A‖` is false at `A=0`;
+the formal development records the counterexample and proves the corrected
+universal infinity-norm coefficient `2`.
 
 ## Lean deliverables
 
@@ -62,6 +66,11 @@ actual rounded residual `ψ` producer.
   - fixed-point consequence of (25.15)
   - invariant ball and strict descent outside the ball
   - geometric envelope, boundedness, and the subsequential-limit bound
+- `LeanFpAnalysis/FP/Algorithms/Nonlinear/Higham25EigenClosure.lean`
+  - displayed bordered Jacobian and exact derivative/Taylor bridge
+  - algebraic simple-eigenpair certificate and kernel-triviality theorem
+  - literal `n+1`-term rounded residual evaluator and printed `ψ` budget
+  - corrected Lipschitz coefficient `2` and formal counterexample to `2‖A‖`
 
 ## Source-index repairs
 
@@ -88,11 +97,11 @@ and 25.2; Appendix solution 25.1 spans printed pp. 569-570 / Appendix PDFs 43-44
 
 ## Open selected rows
 
-- The p. 463 eigenproblem specialization after (25.10): bordered Jacobian,
-  printed Lipschitz coefficient, simple-eigenvalue nonsingularity, and actual
-  residual-evaluation `ψ` producer.
-
-The former (25.11) bottleneck and the linear-system specialization are closed.
+The p. 463 simple-eigenvalue sentence remains open only at the producer from
+algebraic multiplicity one to `Higham25SimpleEigenpairCertificate`. The bordered
+Jacobian, exact Taylor identity, rounded residual producer, and kernel theorem
+from that certificate are compiled. The false eigen-Jacobian coefficient is a
+separate recorded terminal source discrepancy.
 
 ## Deferred source rows
 

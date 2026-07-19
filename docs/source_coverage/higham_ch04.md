@@ -1,10 +1,14 @@
 # Higham Chapter 4 Source Coverage Ledger
 
-> **Fresh strict audit (2026-07-18): gate FAIL.** Algorithm 4.3 accuracy and
-> equations (4.8)-(4.10) retain exact-step or target-scale defect hypotheses not
-> produced by the rounded finite-format algorithms. A documented obstruction or
-> partial does not make the selected row pass. See
-> `AUDIT_ch01-28_2026-07-18.md`.
+> **Fresh strict audit and primary-source check (2026-07-18): gate FAIL.**
+> Algorithm 4.3 accuracy and equations (4.8)-(4.10) retain exact-step,
+> step-order/range, or target-scale defect hypotheses not produced by their
+> rounded finite-format executors. Priest's 1992 thesis was recovered and read
+> directly: its §4.1 proof assumes faithful rounding together with arithmetic
+> properties A1, A2, and S4, then uses the sorted input order and
+> `n ≤ β^(t-3)`. Those properties and the resulting accumulation lemma are not
+> yet represented and instantiated by the repository's finite-format model. A
+> documented reduction is not closure. See `AUDIT_ch01-28_2026-07-18.md`.
 
 ## Source and Scope
 
@@ -27,17 +31,14 @@
   `fl_alternativeCompensatedSum_backward_error_source_bound_of_exact_steps_higham_cap`,
   `wilkinsonProblem42_ieeeDouble_abs_error_eq_defect` — all
   `[propext, Classical.choice, Quot.sound]`.
-- **Selected-scope gate: PASS for the primary-label/equation scope, with ONE evidenced
-  research-grade residual** (updated 2026-07-14 audit-closure). The Kahan (4.8)/(4.9)/(4.10)
-  backward/forward bounds are now CLOSED in the finite binary round-to-even format in
-  `LeanFpAnalysis/FP/Algorithms/KahanCompensatedFiniteFormat.lean` (`kahanFF_kahanSum_backward_error`,
-  `kahanFF_kahanSum_forward_error`, `kahanFF_alternativeCompensatedSum_backward_error`), via the repo's
-  two-sum exactness (4.7) — resolving the bare-FPModel impossibility by moving to the finite-format model,
-  exactly as the printed source requires. The one remaining open row is Algorithm 4.3 (Priest)
-  `|s_n−ŝ_n| ≤ 2u|s_n|`: `LeanFpAnalysis/FP/Algorithms/PriestAccuracy.lean` reduces the full theorem to a
-  SINGLE named lemma `PriestAllStepsExact` (faithful-rounding accumulation, Priest 1992 thesis §4.1) — a
-  genuine research-grade obstruction, honestly documented (not smuggled), an allowed BLOCKED terminal
-  residual under core-mode.
+- **Historical 2026-07-14 selected-scope PASS — superseded.** The finite-format
+  Kahan wrappers reproduce the printed constants, but their types still require
+  per-step representability/order/range or exact-correction premises. The fresh
+  executor audit therefore does not count (4.8)-(4.10) as closed. Algorithm 4.3
+  is reduced in `PriestAccuracy.lean` and `PriestDefectBounded.lean`, but neither
+  the stronger `PriestAllStepsExact` premise nor the weaker accumulated
+  `priestDB_defectBudget` is produced from the source's faithful-arithmetic
+  assumptions and size cap. The current strict gate is FAIL.
 
 ## Primary labels
 
@@ -45,7 +46,7 @@
 |---|---|---|---|---|
 | Algorithm 4.1 (§4.2) | General pairing summation: repeatedly remove two elements of `S`, add their rounded sum back; n−1 additions; recursive/pairwise/insertion are special cases | VERIFIED | `SumTree` (inductive), `SumTree.eval`, `SumTree.numAdds_eq` (n−1 additions), `SumTree.chainTreeSucc_eval_eq_recursiveSum` (recursive instance), `PairwiseSum.pairwiseSixTree`/`fl_pairwiseSum` (pairwise instance), `InsertionScheduleTree.toSumTree` (insertion instance) | Arbitrary binary summation tree = arbitrary Algorithm 4.1 execution order. All three named methods are proved instances. |
 | Algorithm 4.2 (§4.3, Kahan compensated summation) | The 4-line compensated loop with `e = (temp − s) + y` evaluated in displayed order; satisfies (4.8) | PARTIAL | Transcription: `kahanStepTrace`, `fl_kahanState`, `fl_kahanSum` (displayed order enforced step-by-step); final-corrected p. 85 variant `fl_kahanFinalCorrectedSum`; no-guard modified p. 86 variant `fl_kahanModifiedNoGuardSum` (0.46 trick transcribed). Analysis: see (4.8)/(4.9) rows | Algorithm transcription VERIFIED at printed strength. The attached accuracy result (4.8) is conditional only — see equations table. |
-| Algorithm 4.3 (§4.3, Priest doubly compensated summation) | Sort by decreasing magnitude; 7-assignment loop; if n ≤ β^(t−3) the computed sum satisfies \|s_n − ŝ_n\| ≤ 2u\|s_n\| | PARTIAL | Transcription: `priestSortedByDecreasingAbs`, `PriestState`, `priestStepTrace` (all 7 assignments in displayed parenthesized order), `fl_priestSum`, `fl_priestCorrection`; sanity: `fl_priestSum_exactWithUnitRoundoff` | Algorithm transcription VERIFIED. **Priest's accuracy theorem \|s_n − ŝ_n\| ≤ 2u\|s_n\| under n ≤ β^(t−3) is MISSING** — no error analysis of the Priest recurrence exists (only the exact-arithmetic sanity check). This is the headline open row of the chapter. |
+| Algorithm 4.3 (§4.3, Priest doubly compensated summation) | Sort by decreasing magnitude; 7-assignment loop; if n ≤ β^(t−3) the computed sum satisfies \|s_n − ŝ_n\| ≤ 2u\|s_n\| | PARTIAL | Transcription: `priestSortedByDecreasingAbs`, `PriestState`, `priestStepTrace` (all 7 assignments in displayed parenthesized order), `fl_priestSum`, `fl_priestCorrection`; reductions: `PriestAccuracy.lean`, `PriestDefectBounded.lean` | The algorithm and algebraic/defect invariants are compiled, but the endpoint still assumes `PriestAllStepsExact` or `priestDB_defectBudget`. The recovered primary proof identifies the missing non-target source bridge precisely: faithful rounding plus A1/A2/S4 and `n ≤ β^(t−3)` must imply the accumulated defect budget. |
 
 ## Numbered equations
 
@@ -125,7 +126,10 @@
 - Docstring citations were checked against attached statements for every row
   above; no docstring-only coverage was counted.
 
-## Selected-scope gate: PASS (primary-label/equation scope) with ONE evidenced residual
+## Superseded 2026-07-14 assessment (historically reported PASS with one residual)
+
+The stricter 2026-07-18 source-strength gate at the top of this ledger replaces
+this historical assessment and is `FAIL`.
 
 **Update (2026-07-14 audit-closure):**
 

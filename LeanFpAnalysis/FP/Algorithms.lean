@@ -142,6 +142,7 @@ import LeanFpAnalysis.FP.Algorithms.PriestAccuracy
 import LeanFpAnalysis.FP.Algorithms.PriestDefectBounded
 import LeanFpAnalysis.FP.Algorithms.Ch5DerivativeError
 import LeanFpAnalysis.FP.Algorithms.Ch5NewtonForm
+import LeanFpAnalysis.FP.Algorithms.Ch5SourceClosure
 import LeanFpAnalysis.FP.Algorithms.HighamLemma88Entrywise
 import LeanFpAnalysis.FP.Analysis.Higham6Asides
 import LeanFpAnalysis.FP.Algorithms.CondEstimation
@@ -151,6 +152,7 @@ import LeanFpAnalysis.FP.Algorithms.Chapter15CondEst
 import LeanFpAnalysis.FP.Algorithms.Ch15CondEstimators
 import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCondCh15
 import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCondCh15Closure
+import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCondCh15IkebeClosure
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterSpec
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterBackward
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterPerturbation
@@ -311,6 +313,7 @@ import LeanFpAnalysis.FP.Algorithms.Circulant.Higham24LiteralSolver
 import LeanFpAnalysis.FP.Algorithms.Circulant.Higham24BackwardStability
 import LeanFpAnalysis.FP.Algorithms.Circulant.Higham24Structured
 import LeanFpAnalysis.FP.Algorithms.Nonlinear.Higham25
+import LeanFpAnalysis.FP.Algorithms.Nonlinear.Higham25EigenClosure
 import LeanFpAnalysis.FP.Algorithms.Nonlinear.Higham25Problem25_1
 import LeanFpAnalysis.FP.Algorithms.AutomaticErrorAnalysis.Higham26
 import LeanFpAnalysis.FP.Algorithms.SoftwareIssues.Higham27
@@ -360,6 +363,7 @@ import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28PascalSpectral
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28PascalCondition
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28PascalOscillationExact
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28Contracts
+import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28ReciprocalSPD
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28GinibreFiniteFormula
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28Cauchy
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28Moments

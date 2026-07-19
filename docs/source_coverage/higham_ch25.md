@@ -11,9 +11,14 @@
   rounded-evaluation producer for (25.13) is also proved. The p. 462-463 linear-
   system specialization is now closed end to end, including the actual Chapter
   12 residual evaluator and the Frobenius condition identity. The precise
-  eigenproblem specialization following (25.10) remains open: its bordered
-  Jacobian, printed Lipschitz coefficient, simple-eigenvalue nonsingularity
-  implication, and actual residual-evaluation `ψ` producer are not yet proved. See
+  eigenproblem specialization following (25.10) is now produced by
+  `Higham25EigenClosure.lean`: it proves the bordered Jacobian/Taylor identity,
+  kernel-triviality from a constructive left/right/eigenspace certificate, and
+  a literal rounded residual evaluator with the printed `ψ` budget. The bridge
+  from a standard algebraic-multiplicity-one (simple-root) hypothesis to that
+  certificate is not yet produced. The source's coefficient `2‖A‖` is also false without a
+  scaling hypothesis (`A=0` is a formal counterexample); the correct universal
+  infinity-norm coefficient `2` is proved instead. See
   `docs/chapter25/CHAPTER25_SOURCE_INVENTORY.md`.
 
 ## Coverage map
@@ -39,8 +44,9 @@
   `higham25_linearSystemDataDerivativeFrob_eq`, and
   `higham25_linearSystem_condition_frobenius`. The source's `F=b-Ax, J=A`
   sentence has a sign typo; Lean uses the derivative `J=-A`, whose sign cancels
-  in the Newton equation. The p. 463 eigen-specialization prose remains a
-  selected open row rather than being hidden inside the excluded experiment.
+  in the Newton equation. The p. 463 eigen-specialization prose is otherwise
+  closed, with its false Lipschitz coefficient recorded as a terminal source
+  discrepancy; the simple-eigenvalue bridge keeps the strict gate at `FAIL`.
 - Problem 25.2: accounted-for research problem, excluded.
 - Source audit corrected the section count to six, placed Theorems 25.1-25.2 in
   §25.2, and corrected the problem count to two.
