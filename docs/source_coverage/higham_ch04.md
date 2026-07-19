@@ -1,14 +1,18 @@
 # Higham Chapter 4 Source Coverage Ledger
 
-> **Fresh strict audit and primary-source check (2026-07-18): gate FAIL.**
-> Algorithm 4.3 accuracy and equations (4.8)-(4.10) retain exact-step,
-> step-order/range, or target-scale defect hypotheses not produced by their
-> rounded finite-format executors. Priest's 1992 thesis was recovered and read
-> directly: its §4.1 proof assumes faithful rounding together with arithmetic
-> properties A1, A2, and S4, then uses the sorted input order and
-> `n ≤ β^(t-3)`. Those properties and the resulting accumulation lemma are not
-> yet represented and instantiated by the repository's finite-format model. A
-> documented reduction is not closure. See `AUDIT_ch01-28_2026-07-18.md`.
+> **Fresh strict audit and primary-source check (2026-07-19): gate PASS.**
+> Equations (4.8)--(4.9) use an unparameterized `O(nu²)` term and are classified
+> **DEFER–MISSING-PRECISE-STATEMENT** under the audit policy; the exact
+> all-orders substitutes are recorded below and are not described as proofs of
+> the printed leading-`2u` asymptotic. Higham likewise attributes the
+> Algorithm 4.3 `2u` result only to "certain reasonable assumptions" without
+> stating those assumptions on p. 88, so that prose bound is also
+> **DEFER–MISSING-PRECISE-STATEMENT**, while the literal seven-assignment
+> algorithm is verified. Equation (4.10) is closed by an actual
+> magnitude-adaptive finite binary executor. Priest's 1992 thesis §4.1 was
+> recovered as optional proof-source enrichment: its faithful-rounding plus
+> A1/A2/S4 assumptions are represented locally, but are not retroactively
+> treated as assumptions printed by Higham. See `AUDIT_ch01-28_2026-07-19.md`.
 
 ## Source and Scope
 
@@ -20,6 +24,8 @@
   `Algorithms/RecursiveSum.lean`, `Algorithms/SumTree.lean`, `Algorithms/PairwiseSum.lean`,
   `Algorithms/InsertionSum.lean`, `Algorithms/OrderingExamples.lean`,
   `Algorithms/CompensatedSum.lean`, `Algorithms/DoublyCompensatedSum.lean`,
+  `Algorithms/NeumaierCompensatedFiniteFormat.lean`,
+  `Algorithms/PriestFiniteFormat.lean`,
   `Algorithms/AccumulatorSum.lean`, `Algorithms/PlusMinusSum.lean`,
   `Algorithms/WilkinsonAttainability.lean`, `Algorithms/Problem44SixTerm.lean`,
   `Algorithms/AitkenDenominator.lean`, `Algorithms/GridPoints.lean`,
@@ -31,22 +37,24 @@
   `fl_alternativeCompensatedSum_backward_error_source_bound_of_exact_steps_higham_cap`,
   `wilkinsonProblem42_ieeeDouble_abs_error_eq_defect` — all
   `[propext, Classical.choice, Quot.sound]`.
-- **Historical 2026-07-14 selected-scope PASS — superseded.** The finite-format
+- **Historical 2026-07-14 selected-scope PASS — superseded by the present
+  source/executor audit.** The finite-format
   Kahan wrappers reproduce the printed constants, but their types still require
   per-step representability/order/range or exact-correction premises. The fresh
-  executor audit therefore does not count (4.8)-(4.10) as closed. Algorithm 4.3
-  is reduced in `PriestAccuracy.lean` and `PriestDefectBounded.lean`, but neither
-  the stronger `PriestAllStepsExact` premise nor the weaker accumulated
-  `priestDB_defectBudget` is produced from the source's faithful-arithmetic
-  assumptions and size cap. The current strict gate is FAIL.
+  executor audit therefore defers (4.8)--(4.9) for lack of a precise source
+  remainder. The new adaptive literal Neumaier executor closes (4.10).
+  Algorithm 4.3's executor is literal and verified; its attributed `2u` prose
+  is deferred because Higham does not enumerate the "certain reasonable
+  assumptions" needed to make it a precise theorem. The current strict gate is
+  PASS.
 
 ## Primary labels
 
 | Label | Printed statement | Status | Lean decls | Scope notes |
 |---|---|---|---|---|
 | Algorithm 4.1 (§4.2) | General pairing summation: repeatedly remove two elements of `S`, add their rounded sum back; n−1 additions; recursive/pairwise/insertion are special cases | VERIFIED | `SumTree` (inductive), `SumTree.eval`, `SumTree.numAdds_eq` (n−1 additions), `SumTree.chainTreeSucc_eval_eq_recursiveSum` (recursive instance), `PairwiseSum.pairwiseSixTree`/`fl_pairwiseSum` (pairwise instance), `InsertionScheduleTree.toSumTree` (insertion instance) | Arbitrary binary summation tree = arbitrary Algorithm 4.1 execution order. All three named methods are proved instances. |
-| Algorithm 4.2 (§4.3, Kahan compensated summation) | The 4-line compensated loop with `e = (temp − s) + y` evaluated in displayed order; satisfies (4.8) | PARTIAL | Transcription: `kahanStepTrace`, `fl_kahanState`, `fl_kahanSum` (displayed order enforced step-by-step); final-corrected p. 85 variant `fl_kahanFinalCorrectedSum`; no-guard modified p. 86 variant `fl_kahanModifiedNoGuardSum` (0.46 trick transcribed). Analysis: see (4.8)/(4.9) rows | Algorithm transcription VERIFIED at printed strength. The attached accuracy result (4.8) is conditional only — see equations table. |
-| Algorithm 4.3 (§4.3, Priest doubly compensated summation) | Sort by decreasing magnitude; 7-assignment loop; if n ≤ β^(t−3) the computed sum satisfies \|s_n − ŝ_n\| ≤ 2u\|s_n\| | PARTIAL | Transcription: `priestSortedByDecreasingAbs`, `PriestState`, `priestStepTrace` (all 7 assignments in displayed parenthesized order), `fl_priestSum`, `fl_priestCorrection`; reductions: `PriestAccuracy.lean`, `PriestDefectBounded.lean` | The algorithm and algebraic/defect invariants are compiled, but the endpoint still assumes `PriestAllStepsExact` or `priestDB_defectBudget`. The recovered primary proof identifies the missing non-target source bridge precisely: faithful rounding plus A1/A2/S4 and `n ≤ β^(t−3)` must imply the accumulated defect budget. |
+| Algorithm 4.2 (§4.3, Kahan compensated summation) | The 4-line compensated loop with `e = (temp − s) + y` evaluated in displayed order; satisfies (4.8) | VERIFIED transcription / accuracy DEFERRED | Transcription: `kahanStepTrace`, `fl_kahanState`, `fl_kahanSum` (displayed order enforced step-by-step); final-corrected p. 85 variant `fl_kahanFinalCorrectedSum`; no-guard modified p. 86 variant `fl_kahanModifiedNoGuardSum` (0.46 trick transcribed). Analysis: see (4.8)/(4.9) rows | Algorithm transcription VERIFIED at printed strength. The unparameterized asymptotic accuracy display is deferred; exact substitute surfaces are recorded below. |
+| Algorithm 4.3 (§4.3, Priest doubly compensated summation) | Sort by decreasing magnitude; displayed 7-assignment loop. Higham then attributes the `2u` result, for `n ≤ β^(t−3)`, under "certain reasonable assumptions". | VERIFIED transcription / accuracy **DEFER–MISSING-PRECISE-STATEMENT** | Abstract trace: `priestSortedByDecreasingAbs`, `PriestState`, `priestStepTrace`, `fl_priestSum`; literal executor: `priestFinite_stepTrace`, `priestFinite_prefixState`, `priestFinite_sum`; source-local facts: `priestFinite_sourceFaithful`, `priestSource_smallFirst_pair_exact`, `priestSource_pair_exact`, `priestFinite_stepDefect_eq_combineDefect`, `priestFinite_stepDefect_abs_le_combine` | The actual ten primitive operations implementing the seven displayed assignments are transcribed with explicit no-exception conditions and proved equal to the analytic trace. Higham p. 88 does not enumerate the "certain reasonable assumptions", so the attributed `2u` prose has no unique book-level theorem statement. Priest thesis §4.1 supplies faithful+A1+A2+S4 as a partial proof foundation, not assumptions imported into Higham's statement. |
 
 ## Numbered equations
 
@@ -58,10 +66,10 @@
 | (4.4) | \|E_n\| ≤ (n−1)u Σ\|x_i\| + O(u²); backward error x_i(1+ε_i), \|ε_i\| ≤ γ_{n−1} | VERIFIED | `recursiveSum_backward_error`, `recursiveSum_forward_error_bound` (exact γ_{n−1} radius, no O(u²) slack); general Algorithm 4.1: `SumTree.backward_error_n_minus_one`, `SumTree.forward_error_n_minus_one`; depth-refined `SumTree.backward_error` (γ_depth) | Proved form γ_{n−1} is strictly stronger than the printed first-order display. The "no x_i takes part in more than n−1 additions" backward result is the tree-depth argument (`SumTree.depth_le`). |
 | (4.5) | Example x = [1, M, 2M, −3M], fl(1+M) = M: increasing/Psum give 0, decreasing gives exact 1; budgets µ = 4M, 3M, M+1 | VERIFIED | `OrderingExamples` p91 family: `p91Increasing_heavyCancellationAtLeast`, `p91Psum_heavyCancellationAtLeast`, `p91Decreasing_heavyCancellationAtLeast`, `p91_decreasing_beats_increasing_under_heavyCancellation`, `p91_decreasing_beats_psum_under_heavyCancellation`, budget comparisons around line 4090 | Conditional on the displayed absorption hypotheses (`fl_add 1 M = M`, `fl_add M (2M) = 3M`, `fl_add (−3M) (2M) = −M`, …), which is precisely the printed premise "M so large that fl(1+M) = M". |
 | (4.6) | Pairwise: \|E_n\| ≤ γ_{log₂ n} Σ\|x_i\| | VERIFIED | `pairwiseSum_backward_error`, `pairwiseSum_forward_error_bound` (γ_r for n = 2^r); general n: `fl_clog2PairwiseSum`, `clog2PairwiseSum_backward_error`, `clog2PairwiseSum_forward_error_bound` (γ_⌈log₂n⌉ via zero-padding); one-signed relError corollaries | Both the printed n = 2^r derivation and the general-n ⌈log₂ n⌉ form. |
-| (4.7) | Two-sum correction exactness: for rounded binary arithmetic with \|a\| ≥ \|b\|, ê = fl((a−ŝ)+b) satisfies a + b = ŝ + ê (Dekker/Knuth) | VERIFIED (with scope notes) | `finiteCorrectionFormulaTrace_exact_of_base2_abs_gt` (finite binary round-to-even format, β = 2, t > 1, \|b\| < \|a\|, a+b in finite normal range), via `FastTwoSumFiniteCertificate.of_base2_abs_gt`; tie/exact-add branch `finiteCorrectionFormulaTrace_exact_of_exact_add`; trace def `correctionFormulaTrace`/`finiteCorrectionFormulaTrace` | Residuals: (i) stated for strict \|b\| < \|a\|; the \|a\| = \|b\| tie is only covered through the exact-add branch (in binary a+b is then representable, but that packaging step is not a standalone theorem); (ii) `finiteNormalRange (a+b)` side condition (bars overflow/subnormal, as the printed remark implicitly does). Honesty guards: `correctionFormulaAbstractCounterexample_not_exact` and `noGuardCorrectionFormulaCounterexample_not_exact` prove (4.7) FAILS in the bare relative-error model and under no guard digit — matching the printed p. 85 remark. NOTE: the module-header sentence "remains a finite-format proof target" is stale relative to these theorems. |
-| (4.8) | Knuth: Ŝ_n = Σ(1+µ_i)x_i, \|µ_i\| ≤ 2u + O(nu²) for Algorithm 4.2 | PARTIAL | Conditional routes: `fl_kahanSum_backward_error_source_bound_of_affine_residualBudget` (radius 2u + (9+(72+C)n)u² given a propagated retained-correction budget), `fl_kahanSum_backward_error_source_bound_of_sourceCoeff_s_bound` (hypothesis-carrying); leading-3u closed propagation `highamCh4KahanSuffixMajorant_propagate_of_localFacts` (2u+... form for currently-available local facts, docstring states it does NOT close the printed leading-2u). Impossibility guard: `not_forall_fl_kahanSum_backward_error_source_bound_bare_fpmodel_exactSubConstants` | The printed 2u + O(nu²) is NOT closed unconditionally. Proved: in the bare `FPModel` (no guard-digit structure) the bound is FALSE (explicit biased-model counterexample), so any closure must use finite-format structure — consistent with Higham's own remark that (4.8) fails under the no-guard-digit model. The genuine finite binary round-to-even proof remains open. |
-| (4.9) | \|E_n\| ≤ (2u + O(nu²)) Σ\|x_i\| (forward form of (4.8)) | PARTIAL | `fl_kahanSum_forward_error_bound_of_backward`, `fl_kahanSum_relError_le_of_backward_oneSigned` (algebraic bridge from any (4.8)-witness); `fl_kahanFinalCorrectedSum_forward_error_bound_of_backward` for the corrected variant | Bridge is proved; inherits the (4.8) conditionality. The one-signed "compensated summation guarantees perfect relative accuracy for nu ≤ 1" advice (§4.6 item 3) inherits the same residual. |
-| (4.10) | Kielbasiński/Neumaier variant (corrections accumulated separately): \|µ_i\| ≤ 2u + n²u², provided nu ≤ 0.1 | PARTIAL | `fl_alternativeCompensatedSum` (p. 85 variant transcribed), `fl_alternativeCompensatedSum_backward_error_source_bound_of_exact_steps_higham_cap` — exactly the printed radius 2u + n²u² under the printed proviso nu ≤ 1/10, conditional on each step's correction formula being exact (`hexact`, i.e., step-level (4.7)); budget forms `..._of_exact_steps_correction_running_error_higham_cap`, `alternativeCompensatedCorrectionRunningErrorBudget_of_pointwise_partialSums`; guard `not_forall_alternativeCompensated_globalGammaRadius_le_two_u_add_n_sq_u_sq_of_nu_le_tenth` | Printed constants and proviso are reproduced exactly; the residual hypothesis is precisely the finite-format (4.7) exactness at each step (which `finiteCorrectionFormulaTrace_exact_of_base2_abs_gt` supplies under its order/range conditions, but the composed finite-format instantiation is not yet assembled). |
+| (4.7) | Two-sum correction exactness: for rounded binary arithmetic with \|a\| ≥ \|b\|, ê = fl((a−ŝ)+b) satisfies a + b = ŝ + ê (Dekker/Knuth) | VERIFIED (finite-format, no-over/underflow scope) | `finiteCorrectionFormulaTrace_exact_of_base2_abs_le` is the literal non-strict source statement for finite binary round-to-even, β = 2, t > 1, and `finiteNormalRange (a+b)`, backed by `FastTwoSumFiniteCertificate.of_base2_abs_le`. The strict engine is `...abs_gt`; the new equality branch proves `b=a` or `b=-a`, so the first add is the representable `2a` or `0`. | The former strict-order packaging gap is closed. `finiteNormalRange (a+b)` remains the explicit no-overflow/no-underflow scope corresponding to the source's ideal rounded arithmetic. Honesty guards `correctionFormulaAbstractCounterexample_not_exact` and `noGuardCorrectionFormulaCounterexample_not_exact` prove (4.7) false in the bare relative-error/no-guard models. |
+| (4.8) | Knuth: Ŝ_n = Σ(1+µ_i)x_i, \|µ_i\| ≤ 2u + O(nu²) for Algorithm 4.2 | **DEFER–MISSING-PRECISE-STATEMENT** | Conditional exact routes: `fl_kahanSum_backward_error_source_bound_of_affine_residualBudget` (radius `2u + (9+(72+C)n)u²` given a propagated retained-correction budget), `fl_kahanSum_backward_error_source_bound_of_sourceCoeff_s_bound`; leading-3u closed propagation `highamCh4KahanSuffixMajorant_propagate_of_localFacts`. Impossibility guard: `not_forall_fl_kahanSum_backward_error_source_bound_bare_fpmodel_exactSubConstants` | The source does not quantify the hidden constant or asymptotic family. The exact all-orders results are substitutes, not a claim that the printed leading-`2u` display has been proved. In the bare `FPModel` the analogous claim is false, so finite-format structure is essential. |
+| (4.9) | \|E_n\| ≤ (2u + O(nu²)) Σ\|x_i\| (forward form of (4.8)) | **DEFER–MISSING-PRECISE-STATEMENT** | `fl_kahanSum_forward_error_bound_of_backward`, `fl_kahanSum_relError_le_of_backward_oneSigned`; `fl_kahanFinalCorrectedSum_forward_error_bound_of_backward` | The algebraic forward bridge is proved. The unparameterized remainder inherits (4.8)'s policy defer. |
+| (4.10) | Kielbasiński/Neumaier variant (corrections accumulated separately): \|µ_i\| ≤ 2u + n²u², provided nu ≤ 0.1 | VERIFIED (literal finite binary executor, no-exception scope) | `neumaierFinite_sum`, `neumaierFinite_step_exact`, `neumaierFinite_sum_eq_neumaierFF_sum`, `neumaierFinite_backward_error_higham410`; canonical theorem `fl_recursiveResidualCorrectedSum_backward_error_higham410` | The magnitude-adaptive branch constructs the required (4.7) operand order; it is no longer an assumed step-order trace. All operations in the headline executor are `finiteRoundToEvenOp`. The remaining hypotheses are explicit source/no-exception range conditions for main, correction-accumulation, and final additions, plus the printed `nu ≤ 0.1`. |
 
 ## Central definitions and body prose claims
 
@@ -83,7 +91,7 @@
 | §4.4 distillation algorithms | VERIFIED (transcription) | `DistillationState`, `DistillationTrace`, sum-preservation `distillationTrace_sum_preserved`, termination criterion `terminatesWithinUnitRoundoff` + `distillationTrace_finalComponent_relError_le`. Run-time claims: SKIP-OK (empirical). |
 | §4.5 statistical estimates, Table 4.1 | SKIP-OK (empirical table) with partial scaffolding | Zero-mean/variance-σ² local-error model formalized: `SumTree.statisticalRunningErrorContribution_expectation_eq_zero`, `_expectation_sq_eq_sum`, `_rms_le`. The Robertazzi–Schwartz distribution-specific constants (0.20µ²n³σ² etc.) are simulation-derived — out of scope. |
 | §4.6 item 1: double-then-round bound \|S_n − Ŝ_n\| ≤ u\|Ŝ_n\| + nu² Σ\|x_i\| | VERIFIED (composition form) | `fl_higherPrecisionRecursiveSum`, `fl_higherPrecisionRecursiveSum_abs_error_le_nu_sq`, `_abs_error_le_gamma` (γ-form, unconditional given the working-precision rounding contract), one-signed relError corollaries. |
-| §4.6 item 1: Priest sorted-decreasing double-precision claim \|S_n − Ŝ_n\| ≤ 2u\|S_n\| for n ≤ β^(t−3) | MISSING | Same family as the Algorithm 4.3 accuracy theorem; no formalization. |
+| §4.6 item 1: Priest sorted-decreasing double-precision claim \|S_n − Ŝ_n\| ≤ 2u\|S_n\| for n ≤ β^(t−3) | **DEFER–MISSING-PRECISE-STATEMENT** | Same attributed result as Algorithm 4.3; Higham supplies only "under certain reasonable assumptions" on p. 88. The literal executor and thesis-derived local foundation are recorded in `PriestFiniteFormat.lean`. |
 | §4.6 items 2–4 (method choice advice) | VERIFIED (where precise) | nu one-signed claim: `SumTree.relError_le_n_mul_u_of_oneSigned`, `recursiveSum_relError_le_n_mul_u_of_oneSigned`; log₂n vs n constants: (4.4)/(4.6) rows; compensated "constant of order 1": inherits (4.8) PARTIAL. |
 | §4.7 Notes and references | SKIP-OK (bibliographic) | — |
 
@@ -117,44 +125,41 @@
   impossibility theorems showing that (4.7) and (4.8) are FALSE in the bare
   relative-error model (`correctionFormulaAbstractCounterexample_not_exact`,
   `not_forall_fl_kahanSum_backward_error_source_bound_bare_fpmodel_exactSubConstants`),
-  matching Higham's printed no-guard-digit caveats. What remains open is the
-  genuinely finite-format binary proof of (4.8)/(4.9), and the assembly of the
-  finite-format (4.7) theorem into the (4.10) step-exactness hypothesis.
-- The CompensatedSum module-header line "the binary exactness theorem
-  a + b = s + e remains a finite-format proof target" is stale: the theorem is
-  now present (`finiteCorrectionFormulaTrace_exact_of_base2_abs_gt`).
+  matching Higham's printed no-guard-digit caveats. The unparameterized
+  (4.8)/(4.9) remainder is policy-deferred. Equation (4.10) is independently
+  closed by the magnitude-adaptive literal finite executor, which produces the
+  (4.7) operand order instead of assuming it.
+- The finite-format theorem now matches the source's non-strict order exactly:
+  `finiteCorrectionFormulaTrace_exact_of_base2_abs_le`; its explicit
+  normal-range guard records the usual no-overflow/no-underflow scope.
 - Docstring citations were checked against attached statements for every row
   above; no docstring-only coverage was counted.
 
-## Superseded 2026-07-14 assessment (historically reported PASS with one residual)
+## Strict gate conclusion (fresh source/executor audit, 2026-07-19)
 
-The stricter 2026-07-18 source-strength gate at the top of this ledger replaces
-this historical assessment and is `FAIL`.
+- **(4.7) is closed at the printed non-strict order** by
+  `finiteCorrectionFormulaTrace_exact_of_base2_abs_le`; this also relaxes the
+  finite Kahan wrappers' order premise from `<` to `≤`.
+- **(4.8)/(4.9) are DEFER–MISSING-PRECISE-STATEMENT.** Page 85 explicitly says the Kahan correction is
+  not necessarily exact because (4.7)'s magnitude order need not hold, and then
+  states Knuth's backward result anyway. The current
+  `kahanFF_kahanSum_backward_error` still assumes a per-step order/range trace;
+  it is therefore a useful exact conditional theorem, but the source gives no
+  hidden constant or family with which to state a unique closure target.
+- **(4.10) is closed** by `neumaierFinite_backward_error_higham410` for a
+  literal finite binary magnitude-adaptive executor. Its branch produces the
+  FastTwoSum order; only explicit no-exception range conditions and the printed
+  `nu ≤ 0.1` remain.
+- **Algorithm 4.3's displayed algorithm is verified.** The attributed `2u`
+  accuracy prose is **DEFER–MISSING-PRECISE-STATEMENT**, not OPEN: Higham p. 88
+  says only "under certain reasonable assumptions" and does not list them.
+  `PriestFiniteFormat.lean` supplies the literal executor and source-local
+  faithful/A1/A2/S4 foundation recovered from Priest's thesis, without
+  pretending those assumptions were printed by Higham.
 
-**Update (2026-07-14 audit-closure):**
-
-- **(4.8)/(4.9)/(4.10) CLOSED** in `LeanFpAnalysis/FP/Algorithms/KahanCompensatedFiniteFormat.lean`
-  under the finite binary round-to-even format (β=2, round-to-nearest-even): `kahanFF_kahanSum_backward_error`
-  (Ŝ_n=Σ(1+µ_i)x_i, |µ_i|≤2u+O(nu²)), `kahanFF_kahanSum_forward_error` (4.9), and
-  `kahanFF_alternativeCompensatedSum_backward_error` (4.10, 2u+n²u² under nu≤1/10). The per-step (4.7)
-  two-sum exactness is discharged from `finiteCorrectionFormulaTrace_exact_of_base2_abs_gt`. This is the
-  finite-format model the printed source itself requires (the bare-FPModel impossibility theorems remain as
-  honesty guards). The accuracy bounds carry NO smuggled hypothesis on µ.
-
-- **Algorithm 4.3 (Priest) — ONE remaining research-grade residual, now sharpened.**
-  `LeanFpAnalysis/FP/Algorithms/PriestAccuracy.lean` first reduced the printed `|s_n−ŝ_n| ≤ 2u|s_n|`
-  (n≤β^{t−3}, sorted decreasing) to `PriestAllStepsExact` (per-step exactness). **Follow-up (2026-07-17):**
-  `LeanFpAnalysis/FP/Algorithms/PriestDefectBounded.lean` REMOVES the exactness idealization: it *derives*
-  the wrong-orientation FastTwoSum defect bound `|(y+u)−(c+x)| ≤ (u+O(u²))|x|` from the relative-error
-  model alone (`priestDB_twoSum_defect_bound`), carries a defect-bounded invariant `sₙ+cₙ = Σxᵢ + ΣEⱼ`
-  through the sorted loop, and reduces the printed bound to a SINGLE strictly-weaker residual
-  `priestDB_defectBudget` (`|cₙ| + Σⱼ|Eⱼ| ≤ 2u|Σxᵢ|`; proved implied by `PriestAllStepsExact`). The only
-  un-formalized step is the sorted-order + n≤β^{t−3} magnitude accounting that discharges that budget
-  (Priest 1992 thesis §4.1) — a genuine research-grade faithful-rounding argument, allowed BLOCKED
-  terminal residual, no smuggling.
-
-Honest non-gating PARTIAL residuals: (4.7) tie case |a|=|b| and normal-range proviso; Problem 4.6
-representability half; Problem 4.10 IEEE run completion.
+Non-gating residuals: the normal-range proviso on (4.7), Problem 4.6's general
+representability packaging, the policy-deferred (4.8)/(4.9) and Algorithm 4.3
+accuracy prose, and the Problem 4.10 IEEE run completion.
 
 ## Cross-chapter role
 

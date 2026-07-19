@@ -389,6 +389,89 @@ def TriGrowthData (fp : FPModel) (M0 : ℝ) :
         BunchTridiagonalPivotChoice M0 (A 0 0) (A (oneIdx n) 0) PivotSize.two ∧
         TriGrowthData fp M0 s (flSchurCompl2 n fp A)) := Iff.rfl
 
+/-! ## The actual Algorithm 11.6 schedule
+
+`TriGrowthData` records a completed run, but the schedule itself need not be an
+input.  The following function performs the printed threshold test at every
+rounded Schur complement.  The accompanying theorem proves that this computed
+schedule carries `TriGrowthData`; its only extra premise is scalar-pivot
+nonbreakdown on the branches on which the printed test selects a `1 × 1`
+pivot.  This is a domain-of-definition condition, not a stability conclusion.
+-/
+
+/-- The pivot-size schedule computed by Higham's Algorithm 11.6, using the
+fixed initial scale `M0` at every rounded Schur-complement stage. -/
+noncomputable def bunchTridiagonalSchedule (fp : FPModel) (M0 : ℝ) :
+    {n : ℕ} → (Fin n → Fin n → ℝ) → PivotSchedule n
+  | 0, _ => .nil
+  | 1, _ => .consOne .nil
+  | n + 2, A =>
+      if M0 * |A 0 0| ≥ bunchTridiagonalAlpha * (A (oneIdx n) 0) ^ 2 then
+        .consOne (bunchTridiagonalSchedule fp M0 (flSchurCompl (n + 1) fp A))
+      else
+        .consTwo (bunchTridiagonalSchedule fp M0 (flSchurCompl2 n fp A))
+
+/-- Scalar-pivot nonbreakdown for a specified mixed-pivot run.  Two-by-two
+pivots need no clause here: Algorithm 11.6 plus the stage entry bound proves
+their exact nonsingularity separately. -/
+def BunchTridiagonalScalarNoBreakdown (fp : FPModel) :
+    {n : ℕ} → PivotSchedule n → (Fin n → Fin n → ℝ) → Prop
+  | 0, .nil, _ => True
+  | n + 1, .consOne s, A =>
+      A 0 0 ≠ 0 ∧
+        BunchTridiagonalScalarNoBreakdown fp s (flSchurCompl n fp A)
+  | n + 2, .consTwo s, A =>
+      BunchTridiagonalScalarNoBreakdown fp s (flSchurCompl2 n fp A)
+
+/-- The schedule producer satisfies the fixed-scale Algorithm 11.6 run
+predicate.  In a tridiagonal matrix the non-corner entries of the first column
+are zero, so a selected `1 × 1` test against the first subdiagonal automatically
+certifies the same branch predicate for every trailing row. -/
+theorem TriGrowthData_bunchTridiagonalSchedule (fp : FPModel) (M0 : ℝ)
+    (hM0 : 0 ≤ M0) : ∀ {n : ℕ} (A : Fin n → Fin n → ℝ),
+      IsSymTridiagonal n A →
+      BunchTridiagonalScalarNoBreakdown fp (bunchTridiagonalSchedule fp M0 A) A →
+      TriGrowthData fp M0 (bunchTridiagonalSchedule fp M0 A) A
+  | 0, A, _, _ => True.intro
+  | 1, A, hA, hnb => by
+      rw [show bunchTridiagonalSchedule fp M0 A = (.nil : PivotSchedule 0).consOne by
+        rfl]
+      refine ⟨hA, ?_, ?_, True.intro⟩
+      · exact hnb.1
+      · intro i
+        exact Fin.elim0 i
+  | n + 2, A, hA, hnb => by
+      by_cases htest :
+          M0 * |A 0 0| ≥ bunchTridiagonalAlpha * (A (oneIdx n) 0) ^ 2
+      · rw [bunchTridiagonalSchedule, if_pos htest]
+        rw [bunchTridiagonalSchedule, if_pos htest] at hnb
+        refine ⟨hA, hnb.1, ?_, ?_⟩
+        · intro i
+          by_cases hi : i.val = 0
+          · have hi0 : i = 0 := Fin.ext hi
+            subst hi0
+            exact bunch_tridiagonal_pivot_choice_one_of_threshold M0 (A 0 0)
+              (A (oneIdx n) 0) htest
+          · have hzero : A i.succ 0 = 0 := by
+              apply hA.2
+              right
+              simp only [Fin.val_succ, Fin.val_zero]
+              omega
+            apply bunch_tridiagonal_pivot_choice_one_of_threshold
+            rw [hzero, zero_pow (by norm_num : (2 : ℕ) ≠ 0), mul_zero]
+            exact mul_nonneg hM0 (abs_nonneg _)
+        · exact TriGrowthData_bunchTridiagonalSchedule fp M0 hM0
+            (flSchurCompl (n + 1) fp A)
+            (flSchurCompl_isSymTridiagonal fp A hA hnb.1) hnb.2
+      · rw [bunchTridiagonalSchedule, if_neg htest]
+        rw [bunchTridiagonalSchedule, if_neg htest] at hnb
+        refine ⟨hA, ?_, ?_⟩
+        · exact bunch_tridiagonal_pivot_choice_two_of_threshold M0 (A 0 0)
+            (A (oneIdx n) 0) (lt_of_not_ge htest)
+        · exact TriGrowthData_bunchTridiagonalSchedule fp M0 hM0
+            (flSchurCompl2 n fp A)
+            (flSchurCompl2_isSymTridiagonal fp A hA) hnb
+
 /-! ## Session 4 — decoupled 2x2 product-path arithmetic cores
 (σ = fixed test scale M0; τ ≥ σ = entry bound; adapted from the coupled
 `corner_quadform_core` / `corner_rowcol_le_core` via the decoupled determinant

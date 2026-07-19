@@ -5381,6 +5381,244 @@ theorem higham8_12_lowerColumnProduct_eq (n : ℕ)
   have hj : j.val < n := j.isLt
   simp [hj]
 
+/-- **Equation (8.13)**: the exact inverse `M_k = L_k⁻¹` of a lower-column
+factor.  Outside column `k` it is the identity; column `k` is divided by the
+diagonal pivot and its strict-lower entries change sign. -/
+noncomputable def higham8_13_lowerColumnInverseFactor (n : ℕ)
+    (L : Fin n → Fin n → ℝ) (k : Fin n) : Fin n → Fin n → ℝ :=
+  fun i j =>
+    if j = k then
+      if i = k then 1 / L k k else -(L i k) / L k k
+    else if i = j then 1 else 0
+
+/-- The displayed `M_k` is a right inverse of the source column factor `L_k`.
+This is the first exact bridge needed by the fan-in argument; no rounded or
+target-scale hypothesis is used. -/
+theorem higham8_13_lowerColumnFactor_mul_inverseFactor (n : ℕ)
+    (L : Fin n → Fin n → ℝ) (k : Fin n) (hkk : L k k ≠ 0) :
+    matMul n (higham8_12_lowerColumnFactor n L k)
+        (higham8_13_lowerColumnInverseFactor n L k) = idMatrix n := by
+  funext i j
+  unfold matMul
+  by_cases hj : j = k
+  · subst j
+    by_cases hi : i = k
+    · subst i
+      rw [Finset.sum_eq_single k]
+      · simp [higham8_12_lowerColumnFactor,
+          higham8_13_lowerColumnInverseFactor, hkk, idMatrix]
+      · intro r _ hr
+        simp [higham8_12_lowerColumnFactor,
+          higham8_13_lowerColumnInverseFactor, hr, Ne.symm hr]
+      · intro hk
+        exact (hk (Finset.mem_univ k)).elim
+    · rw [Finset.sum_eq_add_sum_diff_singleton (s := Finset.univ) k
+          (fun r : Fin n =>
+            higham8_12_lowerColumnFactor n L k i r *
+              higham8_13_lowerColumnInverseFactor n L k r k) (by simp)]
+      rw [Finset.sum_eq_single i]
+      · simp [higham8_12_lowerColumnFactor,
+          higham8_13_lowerColumnInverseFactor, hi, idMatrix]
+        field_simp
+        ring
+      · intro r hr hri
+        have hrk : r ≠ k := by simpa using hr
+        simp [higham8_12_lowerColumnFactor,
+          higham8_13_lowerColumnInverseFactor, hrk, Ne.symm hri]
+      · intro hi_mem
+        exact (hi_mem (by simp [hi])).elim
+  · rw [Finset.sum_eq_single j]
+    · simp [higham8_12_lowerColumnFactor,
+        higham8_13_lowerColumnInverseFactor, hj, idMatrix]
+    · intro r _ hr
+      simp [higham8_13_lowerColumnInverseFactor, hj, hr]
+    · intro hj_mem
+      exact (hj_mem (Finset.mem_univ j)).elim
+
+/-- The displayed `M_k` is also a left inverse of `L_k`; hence it is the
+genuine two-sided inverse used in (8.13). -/
+theorem higham8_13_inverseFactor_mul_lowerColumnFactor (n : ℕ)
+    (L : Fin n → Fin n → ℝ) (k : Fin n) (hkk : L k k ≠ 0) :
+    matMul n (higham8_13_lowerColumnInverseFactor n L k)
+        (higham8_12_lowerColumnFactor n L k) = idMatrix n := by
+  funext i j
+  unfold matMul
+  by_cases hj : j = k
+  · subst j
+    by_cases hi : i = k
+    · subst i
+      rw [Finset.sum_eq_single k]
+      · simp [higham8_12_lowerColumnFactor,
+          higham8_13_lowerColumnInverseFactor, hkk, idMatrix]
+      · intro r _ hr
+        simp [higham8_13_lowerColumnInverseFactor, hr, Ne.symm hr]
+      · intro hk
+        exact (hk (Finset.mem_univ k)).elim
+    · rw [Finset.sum_eq_add_sum_diff_singleton (s := Finset.univ) k
+          (fun r : Fin n =>
+            higham8_13_lowerColumnInverseFactor n L k i r *
+              higham8_12_lowerColumnFactor n L k r k) (by simp)]
+      rw [Finset.sum_eq_single i]
+      · simp [higham8_12_lowerColumnFactor,
+          higham8_13_lowerColumnInverseFactor, hi, hkk, idMatrix]
+      · intro r hr hri
+        have hrk : r ≠ k := by simpa using hr
+        simp [higham8_13_lowerColumnInverseFactor, hrk, Ne.symm hri]
+      · intro hi_mem
+        exact (hi_mem (by simp [hi])).elim
+  · rw [Finset.sum_eq_single j]
+    · simp [higham8_12_lowerColumnFactor,
+        higham8_13_lowerColumnInverseFactor, hj, idMatrix]
+    · intro r _ hr
+      simp [higham8_12_lowerColumnFactor, hj, hr]
+    · intro hj_mem
+      exact (hj_mem (Finset.mem_univ j)).elim
+
+/-- `L_k` and the explicit `M_k` form an exact two-sided inverse pair. -/
+theorem higham8_13_lowerColumnFactor_inverse (n : ℕ)
+    (L : Fin n → Fin n → ℝ) (k : Fin n) (hkk : L k k ≠ 0) :
+    IsInverse n (higham8_12_lowerColumnFactor n L k)
+      (higham8_13_lowerColumnInverseFactor n L k) := by
+  constructor
+  · intro i j
+    simpa [matMul, idMatrix] using congrFun₂
+      (higham8_13_inverseFactor_mul_lowerColumnFactor n L k hkk) i j
+  · intro i j
+    simpa [matMul, idMatrix] using congrFun₂
+      (higham8_13_lowerColumnFactor_mul_inverseFactor n L k hkk) i j
+
+/-- Taking entrywise absolute values of `M_k` is exactly the inverse column
+factor associated with the comparison matrix `M(L)`. -/
+theorem higham8_13_abs_lowerColumnInverseFactor (n : ℕ)
+    (L : Fin n → Fin n → ℝ) (k : Fin n) :
+    absMatrix n (higham8_13_lowerColumnInverseFactor n L k) =
+      higham8_13_lowerColumnInverseFactor n (comparisonMatrix n L) k := by
+  funext i j
+  by_cases hj : j = k
+  · subst j
+    by_cases hi : i = k
+    · subst i
+      simp [absMatrix, higham8_13_lowerColumnInverseFactor,
+        comparisonMatrix]
+    · simp [absMatrix, higham8_13_lowerColumnInverseFactor,
+        comparisonMatrix, hi, abs_div]
+  · by_cases hij : i = j
+    · subst i
+      simp [absMatrix, higham8_13_lowerColumnInverseFactor, hj]
+    · simp [absMatrix, higham8_13_lowerColumnInverseFactor, hj, hij]
+
+/-- Reverse prefix product `M_r ⋯ M_1` of the exact inverse column factors.
+This is the exact-arithmetic product evaluated by the fan-in tree. -/
+noncomputable def higham8_13_inverseColumnProductPrefix (n : ℕ)
+    (L : Fin n → Fin n → ℝ) :
+    (r : ℕ) → r ≤ n → Fin n → Fin n → ℝ
+  | 0, _ => idMatrix n
+  | r + 1, hr =>
+      matMul n (higham8_13_lowerColumnInverseFactor n L ⟨r, hr⟩)
+        (higham8_13_inverseColumnProductPrefix n L r (Nat.le_of_succ_le hr))
+
+/-- Full reverse product `M_n ⋯ M_1`. -/
+noncomputable def higham8_13_inverseColumnProduct (n : ℕ)
+    (L : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  higham8_13_inverseColumnProductPrefix n L n (le_refl n)
+
+/-- Every exact lower-column prefix times the matching reverse inverse prefix
+is the identity. -/
+theorem higham8_13_lowerColumnProductPrefix_mul_inversePrefix (n : ℕ)
+    (L : Fin n → Fin n → ℝ)
+    (hdiag : ∀ k : Fin n, L k k ≠ 0) :
+    ∀ (r : ℕ) (hr : r ≤ n),
+      matMul n (higham8_12_lowerColumnProductPrefix n L r hr)
+          (higham8_13_inverseColumnProductPrefix n L r hr) = idMatrix n := by
+  intro r
+  induction r with
+  | zero =>
+      intro hr
+      simp [higham8_12_lowerColumnProductPrefix,
+        higham8_13_inverseColumnProductPrefix, matMul_id_left]
+  | succ r ih =>
+      intro hr
+      unfold higham8_12_lowerColumnProductPrefix
+      unfold higham8_13_inverseColumnProductPrefix
+      rw [matMul_assoc]
+      rw [← matMul_assoc n
+        (higham8_12_lowerColumnFactor n L ⟨r, hr⟩)
+        (higham8_13_lowerColumnInverseFactor n L ⟨r, hr⟩)]
+      rw [higham8_13_lowerColumnFactor_mul_inverseFactor n L ⟨r, hr⟩
+        (hdiag ⟨r, hr⟩)]
+      rw [matMul_id_left]
+      exact ih (Nat.le_of_succ_le hr)
+
+/-- Conversely, each reverse inverse prefix times its lower-column prefix is
+the identity. -/
+theorem higham8_13_inversePrefix_mul_lowerColumnProductPrefix (n : ℕ)
+    (L : Fin n → Fin n → ℝ)
+    (hdiag : ∀ k : Fin n, L k k ≠ 0) :
+    ∀ (r : ℕ) (hr : r ≤ n),
+      matMul n (higham8_13_inverseColumnProductPrefix n L r hr)
+          (higham8_12_lowerColumnProductPrefix n L r hr) = idMatrix n := by
+  intro r
+  induction r with
+  | zero =>
+      intro hr
+      simp [higham8_12_lowerColumnProductPrefix,
+        higham8_13_inverseColumnProductPrefix, matMul_id_left]
+  | succ r ih =>
+      intro hr
+      unfold higham8_12_lowerColumnProductPrefix
+      unfold higham8_13_inverseColumnProductPrefix
+      rw [matMul_assoc]
+      rw [← matMul_assoc n
+        (higham8_13_inverseColumnProductPrefix n L r (Nat.le_of_succ_le hr))
+        (higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr))]
+      rw [ih (Nat.le_of_succ_le hr)]
+      rw [matMul_id_left]
+      exact higham8_13_inverseFactor_mul_lowerColumnFactor n L ⟨r, hr⟩
+        (hdiag ⟨r, hr⟩)
+
+/-- The reverse product of the `M_k` factors is a two-sided inverse of `L`.
+This discharges the exact `M_i=L_i⁻¹` producer/solve bridge in (8.13). -/
+theorem higham8_13_inverseColumnProduct_inverse (n : ℕ)
+    (L : Fin n → Fin n → ℝ)
+    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hdiag : ∀ k : Fin n, L k k ≠ 0) :
+    IsInverse n L (higham8_13_inverseColumnProduct n L) := by
+  have hprod : higham8_12_lowerColumnProduct n L = L :=
+    higham8_12_lowerColumnProduct_eq n L hLT
+  have hleft := higham8_13_inversePrefix_mul_lowerColumnProductPrefix
+    n L hdiag n (le_refl n)
+  have hright := higham8_13_lowerColumnProductPrefix_mul_inversePrefix
+    n L hdiag n (le_refl n)
+  change matMul n (higham8_13_inverseColumnProduct n L)
+    (higham8_12_lowerColumnProduct n L) = idMatrix n at hleft
+  change matMul n (higham8_12_lowerColumnProduct n L)
+    (higham8_13_inverseColumnProduct n L) = idMatrix n at hright
+  rw [hprod] at hleft hright
+  constructor
+  · intro i j
+    simpa [matMul, idMatrix] using congrFun₂ hleft i j
+  · intro i j
+    simpa [matMul, idMatrix] using congrFun₂ hright i j
+
+/-- A left inverse and a right inverse of the same finite square matrix agree.
+Kept local to the Chapter-8 surface so the inverse-column-factor bridge does
+not depend on a later chapter. -/
+theorem higham8_13_leftInverse_eq_rightInverse {n : ℕ}
+    (A X Y : Fin n → Fin n → ℝ)
+    (hX : IsLeftInverse n A X) (hY : IsRightInverse n A Y) : X = Y := by
+  have hXA : matMul n X A = idMatrix n := by
+    funext i j
+    exact hX i j
+  have hAY : matMul n A Y = idMatrix n := by
+    funext i j
+    exact hY i j
+  calc
+    X = matMul n X (idMatrix n) := (matMul_id_right n X).symm
+    _ = matMul n X (matMul n A Y) := by rw [hAY]
+    _ = matMul n (matMul n X A) Y := (matMul_assoc n X A Y).symm
+    _ = matMul n (idMatrix n) Y := by rw [hXA]
+    _ = Y := matMul_id_left n Y
+
 /-- **Equation (8.13)**, source's displayed `n = 7` fan-in matrix product
 shape before rounding errors are introduced. -/
 noncomputable def higham8_13_fanIn7Matrix (n : ℕ)
@@ -5419,6 +5657,65 @@ theorem higham8_13_fanIn7Matrix_eq_sequential7Matrix (n : ℕ)
     (matMul n M3 M2) M1]
   rw [← matMul_assoc n (matMul n (matMul n M7 M6) (matMul n M5 M4)) M3 M2]
   rw [← matMul_assoc n (matMul n M7 M6) M5 M4]
+
+/-- For seven source column factors, the balanced fan-in parenthesization is
+exactly the full reverse inverse-column product `M₇⋯M₁`. -/
+theorem higham8_13_fanIn7InverseMatrix_eq
+    (L : Fin 7 → Fin 7 → ℝ) :
+    higham8_13_fanIn7Matrix 7
+        (higham8_13_lowerColumnInverseFactor 7 L 0)
+        (higham8_13_lowerColumnInverseFactor 7 L 1)
+        (higham8_13_lowerColumnInverseFactor 7 L 2)
+        (higham8_13_lowerColumnInverseFactor 7 L 3)
+        (higham8_13_lowerColumnInverseFactor 7 L 4)
+        (higham8_13_lowerColumnInverseFactor 7 L 5)
+        (higham8_13_lowerColumnInverseFactor 7 L 6) =
+      higham8_13_inverseColumnProduct 7 L := by
+  simp [higham8_13_fanIn7Matrix, higham8_13_inverseColumnProduct,
+    higham8_13_inverseColumnProductPrefix, matMul_assoc, matMul_id_right]
+
+/-- The exact seven-factor fan-in application genuinely solves `Lx=b`; the
+former free `hsolve` premise is produced from the source lower-triangular and
+nonsingular-diagonal hypotheses. -/
+theorem higham8_13_fanIn7InverseApply_solves
+    (L : Fin 7 → Fin 7 → ℝ) (b : Fin 7 → ℝ)
+    (hLT : ∀ i j : Fin 7, i.val < j.val → L i j = 0)
+    (hdiag : ∀ k : Fin 7, L k k ≠ 0) :
+    matMulVec 7 L
+        (higham8_13_fanIn7Apply 7
+          (higham8_13_lowerColumnInverseFactor 7 L 0)
+          (higham8_13_lowerColumnInverseFactor 7 L 1)
+          (higham8_13_lowerColumnInverseFactor 7 L 2)
+          (higham8_13_lowerColumnInverseFactor 7 L 3)
+          (higham8_13_lowerColumnInverseFactor 7 L 4)
+          (higham8_13_lowerColumnInverseFactor 7 L 5)
+          (higham8_13_lowerColumnInverseFactor 7 L 6) b) = b := by
+  have hInv := higham8_13_inverseColumnProduct_inverse 7 L hLT hdiag
+  have hmat :
+      matMul 7 L
+          (higham8_13_fanIn7Matrix 7
+            (higham8_13_lowerColumnInverseFactor 7 L 0)
+            (higham8_13_lowerColumnInverseFactor 7 L 1)
+            (higham8_13_lowerColumnInverseFactor 7 L 2)
+            (higham8_13_lowerColumnInverseFactor 7 L 3)
+            (higham8_13_lowerColumnInverseFactor 7 L 4)
+            (higham8_13_lowerColumnInverseFactor 7 L 5)
+            (higham8_13_lowerColumnInverseFactor 7 L 6)) = idMatrix 7 := by
+    rw [higham8_13_fanIn7InverseMatrix_eq]
+    funext i j
+    exact hInv.2 i j
+  ext i
+  unfold higham8_13_fanIn7Apply
+  rw [← matMulVec_matMul 7 L
+    (higham8_13_fanIn7Matrix 7
+      (higham8_13_lowerColumnInverseFactor 7 L 0)
+      (higham8_13_lowerColumnInverseFactor 7 L 1)
+      (higham8_13_lowerColumnInverseFactor 7 L 2)
+      (higham8_13_lowerColumnInverseFactor 7 L 3)
+      (higham8_13_lowerColumnInverseFactor 7 L 4)
+      (higham8_13_lowerColumnInverseFactor 7 L 5)
+      (higham8_13_lowerColumnInverseFactor 7 L 6)) b i]
+  rw [hmat, matMulVec_id]
 
 /-- **Equation (8.14)**, rounded `n = 7` fan-in matrix expression.
 
@@ -5931,6 +6228,56 @@ noncomputable def higham8_18_fanIn7AbsMatrix (n : ℕ)
       (matMul n (absMatrix n M3) (absMatrix n M2))
       (absMatrix n M1))
 
+/-- For the genuine inverse column factors, the `(8.18)` product of absolute
+matrices is exactly the inverse of the comparison matrix `M(L)`.  This is the
+source identity `|M₇|⋯|M₁| = M(L)⁻¹`, now derived from the literal
+`M_k=L_k⁻¹` producers. -/
+theorem higham8_18_fanIn7AbsMatrix_eq_comparisonInverse
+    (L C_inv : Fin 7 → Fin 7 → ℝ)
+    (hLT : ∀ i j : Fin 7, i.val < j.val → L i j = 0)
+    (hdiag : ∀ k : Fin 7, L k k ≠ 0)
+    (hCright : IsRightInverse 7 (comparisonMatrix 7 L) C_inv) :
+    higham8_18_fanIn7AbsMatrix 7
+        (higham8_13_lowerColumnInverseFactor 7 L 0)
+        (higham8_13_lowerColumnInverseFactor 7 L 1)
+        (higham8_13_lowerColumnInverseFactor 7 L 2)
+        (higham8_13_lowerColumnInverseFactor 7 L 3)
+        (higham8_13_lowerColumnInverseFactor 7 L 4)
+        (higham8_13_lowerColumnInverseFactor 7 L 5)
+        (higham8_13_lowerColumnInverseFactor 7 L 6) = C_inv := by
+  have hCLT : ∀ i j : Fin 7, i.val < j.val →
+      comparisonMatrix 7 L i j = 0 := by
+    intro i j hij
+    have hne : i ≠ j := by omega
+    simp [comparisonMatrix, hne, hLT i j hij]
+  have hCdiag : ∀ k : Fin 7, comparisonMatrix 7 L k k ≠ 0 := by
+    intro k
+    simp [comparisonMatrix, hdiag k]
+  have hCleft : IsLeftInverse 7 (comparisonMatrix 7 L)
+      (higham8_13_inverseColumnProduct 7 (comparisonMatrix 7 L)) :=
+    (higham8_13_inverseColumnProduct_inverse 7 (comparisonMatrix 7 L)
+      hCLT hCdiag).1
+  change higham8_13_fanIn7Matrix 7
+      (absMatrix 7 (higham8_13_lowerColumnInverseFactor 7 L 0))
+      (absMatrix 7 (higham8_13_lowerColumnInverseFactor 7 L 1))
+      (absMatrix 7 (higham8_13_lowerColumnInverseFactor 7 L 2))
+      (absMatrix 7 (higham8_13_lowerColumnInverseFactor 7 L 3))
+      (absMatrix 7 (higham8_13_lowerColumnInverseFactor 7 L 4))
+      (absMatrix 7 (higham8_13_lowerColumnInverseFactor 7 L 5))
+      (absMatrix 7 (higham8_13_lowerColumnInverseFactor 7 L 6)) = C_inv
+  rw [higham8_13_abs_lowerColumnInverseFactor,
+    higham8_13_abs_lowerColumnInverseFactor,
+    higham8_13_abs_lowerColumnInverseFactor,
+    higham8_13_abs_lowerColumnInverseFactor,
+    higham8_13_abs_lowerColumnInverseFactor,
+    higham8_13_abs_lowerColumnInverseFactor,
+    higham8_13_abs_lowerColumnInverseFactor]
+  rw [higham8_13_fanIn7InverseMatrix_eq]
+  exact higham8_13_leftInverse_eq_rightInverse
+    (comparisonMatrix 7 L)
+    (higham8_13_inverseColumnProduct 7 (comparisonMatrix 7 L)) C_inv
+    hCleft hCright
+
 /-- The `(8.18)` source majorant `|M7|⋯|M1||b|`, with the same harmless
 fan-in parenthesization as the literal executor. -/
 noncomputable def higham8_18_fanIn7AbsApply (n : ℕ)
@@ -5938,6 +6285,40 @@ noncomputable def higham8_18_fanIn7AbsApply (n : ℕ)
     (b : Fin n → ℝ) : Fin n → ℝ :=
   matMulVec n (higham8_18_fanIn7AbsMatrix n M1 M2 M3 M4 M5 M6 M7)
     (absVec n b)
+
+/-- Exact quadratic-and-higher coefficient hidden by the `O(u²)` in the
+seven-operation fan-in bound.  Writing `a = n*u` and `g = gamma_n`, this is
+`7*a²/(1-a)` (the higher-order part of `7*g`) plus the degree-two-through-seven
+terms of `(1+g)^7`. -/
+noncomputable def higham8_18_fanIn7CoefficientRemainder
+    (fp : FPModel) (n : ℕ) : ℝ :=
+  let a := (n : ℝ) * fp.u
+  let g := gamma fp n
+  7 * (a ^ 2 / (1 - a)) +
+    21 * g ^ 2 + 35 * g ^ 3 + 35 * g ^ 4 +
+      21 * g ^ 5 + 7 * g ^ 6 + g ^ 7
+
+theorem higham8_18_fanIn7Coefficient_eq_first_order_add_remainder
+    (fp : FPModel) (n : ℕ) (hn : gammaValid fp n) :
+    (1 + gamma fp n) ^ 7 - 1 =
+      7 * (n : ℝ) * fp.u +
+        higham8_18_fanIn7CoefficientRemainder fp n := by
+  have hg := gamma_eq_linear_plus_quadratic_remainder fp n hn
+  unfold higham8_18_fanIn7CoefficientRemainder
+  dsimp only
+  rw [hg]
+  ring
+
+theorem higham8_18_fanIn7CoefficientRemainder_nonneg
+    (fp : FPModel) (n : ℕ) (hn : gammaValid fp n) :
+    0 ≤ higham8_18_fanIn7CoefficientRemainder fp n := by
+  have hden : 0 < 1 - (n : ℝ) * fp.u := by
+    unfold gammaValid at hn
+    linarith
+  have hg : 0 ≤ gamma fp n := gamma_nonneg fp hn
+  unfold higham8_18_fanIn7CoefficientRemainder
+  dsimp only
+  positivity
 
 /-- **Equation (8.18), literal-executor all-orders form.**  The actual seven
 rounded operations satisfy the source's product-of-absolute-matrices forward
@@ -6036,6 +6417,27 @@ theorem higham8_18_fanIn7Executor_forward_componentwise_bound
   intro i
   have herr := hxhat.2.2.1 i
   simpa [xhat, higham8_14_fanIn7Executor, hx, he, q] using herr
+
+/-- **Equation (8.18), literal first-order-plus-remainder form.**  The actual
+fan-in executor coefficient is split into the source's `7*n*u` first-order
+term and a named, nonnegative exact remainder.  No relative error of a
+cancellation-prone intermediate product is assumed. -/
+theorem higham8_18_fanIn7Executor_forward_first_order_remainder_bound
+    (fp : FPModel) (n : ℕ)
+    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (hn : gammaValid fp n) :
+    ∀ i : Fin n,
+      |higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b i -
+        higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b i| ≤
+      (7 * (n : ℝ) * fp.u) *
+          higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b i +
+        higham8_18_fanIn7CoefficientRemainder fp n *
+          higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b i := by
+  intro i
+  have h := higham8_18_fanIn7Executor_forward_componentwise_bound
+    fp n M1 M2 M3 M4 M5 M6 M7 b hn i
+  rw [higham8_18_fanIn7Coefficient_eq_first_order_add_remainder fp n hn] at h
+  nlinarith
 
 /-- **Equation (8.19), literal-executor relative `∞`-norm form.** -/
 theorem higham8_19_fanIn7Executor_forward_relative_infNorm_bound
@@ -6268,8 +6670,10 @@ theorem higham8_15_residual_componentwise_of_forward_error (n : ℕ)
 /-- **Equation (8.15), literal-executor all-orders residual form.**  Composing
 the actual `(8.14)` executor with the exact `(8.18)` envelope gives the raw
 residual majorant `|L| (((1+γₙ)^7-1)|M₇|⋯|M₁||b|)`.  Rewriting its
-first-order part as the five-factor source cube requires the separate
-inverse-column-factor expansion documented by the cancellation theorem above. -/
+first-order part directly as the five-factor source cube is not valid in
+general; `HighamChapter8FanInClosure` gives an exact order-seven counterexample.
+The source obtains its displayed asymptotic cube from a local perturbation
+expansion before placing cross terms in `O(u²)`. -/
 theorem higham8_15_fanIn7Executor_residual_componentwise_bound
     (fp : FPModel) (n : ℕ)
     (L M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
@@ -6292,6 +6696,40 @@ theorem higham8_15_fanIn7Executor_residual_componentwise_bound
         higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j)
     hsolve
     (higham8_18_fanIn7Executor_forward_componentwise_bound
+      fp n M1 M2 M3 M4 M5 M6 M7 b hn)
+
+/-- **Equation (8.15), literal raw-envelope first-order split.**  This closes
+the scalar expansion for the exact all-orders substitute: the first-order raw
+residual is `7*n*u` times `|L| |M7|⋯|M1| |b|`, and the rest is the named
+exact nonnegative coefficient remainder applied to the same majorant.  This
+global raw split is not Higham's local first-order expansion and is not claimed
+to reduce pointwise to the printed five-factor cube. -/
+theorem higham8_15_fanIn7Executor_residual_first_order_remainder_bound
+    (fp : FPModel) (n : ℕ)
+    (L M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (hn : gammaValid fp n)
+    (hsolve :
+      matMulVec n L
+        (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) = b) :
+    ∀ i : Fin n,
+      |b i - matMulVec n L
+        (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) i| ≤
+        matMulVec n (absMatrix n L)
+          (fun j =>
+            (7 * (n : ℝ) * fp.u) *
+                higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j +
+              higham8_18_fanIn7CoefficientRemainder fp n *
+                higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j) i := by
+  exact higham8_15_residual_componentwise_of_forward_error n L
+    (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b)
+    (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) b
+    (fun j =>
+      (7 * (n : ℝ) * fp.u) *
+          higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j +
+        higham8_18_fanIn7CoefficientRemainder fp n *
+          higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j)
+    hsolve
+    (higham8_18_fanIn7Executor_forward_first_order_remainder_bound
       fp n M1 M2 M3 M4 M5 M6 M7 b hn)
 
 /-- **Equation (8.16), literal-executor all-orders norm form.** -/
@@ -6567,8 +7005,10 @@ theorem higham8_20_forward_relative_infNorm_of_residual_bound (n : ℕ)
 /-- **Equation (8.20), literal-executor residual-transfer form.**  This is the
 fully connected all-orders conclusion obtained from the actual `(8.14)`
 executor: multiply the literal residual envelope by `|L⁻¹|`.  Its envelope is
-deliberately left unreduced; identifying its first-order part with the printed
-condition cube requires the inverse-column-factor expansion. -/
+deliberately left unreduced.  The exact five-factor-to-condition-cube transfer
+is proved separately below; producing the source's five-factor asymptotic
+premise uses its local perturbation expansion, not a direct reduction of this
+global raw envelope. -/
 theorem higham8_20_fanIn7Executor_forward_from_residual_componentwise_bound
     (fp : FPModel) (n : ℕ)
     (L L_inv M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)

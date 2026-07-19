@@ -8,7 +8,8 @@ the normalized eigenproblem, first-order conditioning algebra, the structured
 two-variable example, the stopping estimate, and all mathematical parts of
 Problem 25.1 are formalized.
 
-The chapter gate is **FAIL** under the strict precise-prose audit. Equation
+The chapter gate is **PASS / SOURCE-DISCREPANCY** under the strict
+precise-prose audit. Equation
 (25.11) is derived directly from the
 source's smoothness and nonsingularity assumptions. The source-facing theorem
 instantiates Mathlib's implicit-function theorem, produces local data and
@@ -29,9 +30,9 @@ Newton/refinement, constant-Jacobian, actual-residual, derivative-product, and
 condition-number theorems. The source sentence `F=b-Ax, J=A` has a sign typo;
 the implementation uses the correct derivative `J=-A`. The precise p. 463
 eigenproblem prose has an actual bordered Jacobian, an exact Taylor identity,
-certificate-based kernel triviality, and a rounded `ψ` producer. The remaining
-gap is the bridge from a standard algebraic simple-eigenvalue hypothesis to the
-constructive left/right/eigenspace certificate consumed by the kernel proof.
+kernel triviality directly from characteristic-polynomial root multiplicity
+one, a nonzero determinant theorem for the displayed bordered matrix, and a
+rounded `ψ` producer.
 The printed eigen-Jacobian Lipschitz coefficient `2‖A‖` is false at `A=0`;
 the formal development records the counterexample and proves the corrected
 universal infinity-norm coefficient `2`.
@@ -68,7 +69,9 @@ universal infinity-norm coefficient `2`.
   - geometric envelope, boundedness, and the subsequential-limit bound
 - `LeanFpAnalysis/FP/Algorithms/Nonlinear/Higham25EigenClosure.lean`
   - displayed bordered Jacobian and exact derivative/Taylor bridge
-  - algebraic simple-eigenpair certificate and kernel-triviality theorem
+  - algebraic simple-eigenpair certificate and its kernel-triviality theorem
+  - direct generalized-eigenspace bridge from root multiplicity one to kernel
+    triviality and nonzero determinant of the displayed bordered matrix
   - literal `n+1`-term rounded residual evaluator and printed `ψ` budget
   - corrected Lipschitz coefficient `2` and formal counterexample to `2‖A‖`
 
@@ -86,22 +89,23 @@ and 25.2; Appendix solution 25.1 spans printed pp. 569-570 / Appendix PDFs 43-44
 
 ## Verification
 
-- Direct compilation of `Higham25.lean` passed, and the focused module build
-  passed (`2345/2345` jobs) with the new source-facing implicit-function
-  producer. Repository-level verification is recorded in the Split 4 report.
+- Direct compilation of `Higham25.lean` passed. The fresh focused
+  `Higham25EigenClosure` build passed (`3001/3001` jobs) with the direct
+  algebraic-simple-eigenvalue producer. Repository-level verification is
+  recorded in the Split 4 report.
 - Forbidden-token scan found no `sorry`, `admit`, `axiom`, `unsafe`, or
   `opaque` declarations.
 - `git diff --check` passed for the Chapter 25 files.
-- `#print axioms higham25_eq25_11_of_implicitFunction` reports only `propext`,
-  `Classical.choice`, and `Quot.sound`.
+- `#print axioms` for both new algebraic-simple-eigenvalue endpoints reports
+  only `propext`, `Classical.choice`, and `Quot.sound`; the same audit for
+  `higham25_eq25_11_of_implicitFunction` has the identical standard basis.
 
 ## Open selected rows
 
-The p. 463 simple-eigenvalue sentence remains open only at the producer from
-algebraic multiplicity one to `Higham25SimpleEigenpairCertificate`. The bordered
-Jacobian, exact Taylor identity, rounded residual producer, and kernel theorem
-from that certificate are compiled. The false eigen-Jacobian coefficient is a
-separate recorded terminal source discrepancy.
+None. The p. 463 simple-eigenvalue sentence is closed directly from algebraic
+multiplicity one, without constructing `Higham25SimpleEigenpairCertificate`.
+The false eigen-Jacobian coefficient is a separate recorded terminal source
+discrepancy.
 
 ## Deferred source rows
 

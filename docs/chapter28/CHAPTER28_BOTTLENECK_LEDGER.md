@@ -1,11 +1,12 @@
 # Chapter 28 Bottleneck Ledger
 
-The selected-scope gate is **FAIL** under the fresh strict precise-prose audit.
+The selected-scope gate is **PASS** under the fresh strict precise-prose audit.
 The former 28-P3 headline bottleneck is CLOSED by the premise-free, axiom-clean
 `ch28gf_realGinibreFiniteExpectationFormula` /
 `ch28gf_realGinibreExpectedCountLimit` (`Higham28GinibreFiniteFormula.lean`).
-This ledger distinguishes that former proof bottleneck from the active Hilbert
-and Gaussian-QR gaps. The general reciprocal-spectrum construction is closed;
+The former Gaussian-QR bottleneck is now closed by
+`gaussianQRQLawOfScale_eq_normalizedOrthogonalHaar`. The former Hilbert gap is closed by
+`hilbertConditionTwo_log_rate`. The general reciprocal-spectrum construction is closed;
 its final factor-scaling clause is terminally repaired as a SOURCE-DISCREPANCY.
 
 ## Hilbert and Cauchy subgroup
@@ -16,7 +17,7 @@ its final factor-scaling clause is terminally repaired as a SOURCE-DISCREPANCY.
 | (28.1)-(28.4) | `factorInverseGram_eq_hilbertInverseFormula`, `hilbert_inverse_formula`, `hilbert_inverse_formula_left`, `hilbert_det_formula`, `hilbertMatrix_eq_choleskyGram`, `hilbertCholeskyFactor_mul_inverse`, `hilbertCholeskyFactorInverse_mul` | none | PASS |
 | `det(H_n) ~ 2^{-2n²}` in leading-exponential sense | `log_hilbert_det_eq_sum`, `hilbertDetLeadingLogRate_proved` | none for the faithful leading-log interpretation | PASS |
 | `‖H̃_n‖₂ = π + O(1/log n)` | `opNorm2_shiftedHilbert_le_pi`, `pi_sub_sixteen_div_log_succ_le_opNorm2_shiftedHilbert`, `shiftedHilbert_norm_asymptotic` | none | PASS |
-| `κ₂(H_n) ~ exp(3.5n)` | exact Hilbert definitions and unproved recorded `HilbertConditionAsymptotic` | prove the corrected log-growth rate `4 log(1+√2)` (approximately `3.5255`); rounded `3.5` rules out literal ratio equivalence but does not erase the precise exponential-growth claim | **OPEN** |
+| `κ₂(H_n) ~ exp(3.5n)` | `hilbertCentralDelannoy_log_rate`, finite inverse-norm sandwiches, `opNorm2_hilbertInverseFormula_log_rate`, `hilbertConditionTwo_log_rate` | none for the faithful exact log rate `4 log(1+√2)`; literal ratio equivalence to rounded `3.5` is intentionally not asserted | PASS |
 | Cauchy determinant/inverse/LU/entry sum/total positivity | `cauchyMatrix_det_eq_formula`, `cauchyMatrix_mul_cauchyInverseFormula`, `cauchyInverseFormula_mul_cauchyMatrix`, `cauchyLower_mul_cauchyUpper`, `sum_cauchyInverseFormula`, `cauchy_ordered_minor_det_formula`, `cauchyMatrix_isStrictlyTotallyPositive` | none | PASS |
 
 The Cauchy proofs use pivot/Schur induction, Lagrange interpolation/residues,
@@ -60,7 +61,7 @@ almost-everywhere section hypothesis, so 28-P3 is fully closed.
 | Source conclusion | Production evidence | Exact remaining foundation | Status |
 |---|---|---|---|
 | Theorem 28.1: Stewart output is Haar | `stewartOrthogonalGroupLaw_eq_normalizedOrthogonalHaar`, `stewartTheorem28_1HaarConclusion` | none | PASS |
-| Positive-diagonal Gaussian QR output is Haar | no matching QR-law producer found | measurable normalized QR and Gaussian push-forward proof; Stewart's producer is algorithmically different | **OPEN** |
+| Positive-diagonal Gaussian QR output is Haar | `modifiedGramSchmidt_positiveDiagonalQR_of_det_ne_zero`, `gaussianColumnMatrixMeasureOfScale_det_ne_zero_ae`, `gaussianQRQ_orthogonalLeftMul_of_det_ne_zero`, `gaussianQRQLawOfScale_eq_normalizedOrthogonalHaar` (`Higham28GaussianQRHaar.lean`) | none for nonzero `σ`; the degenerate zero-variance law is necessarily excluded | **PASS** |
 | Prescribed randsvd spectrum | `randsvdMatrix_transpose_mul_self`, `randsvdMatrix_rightGram_column_eigenpair`, `randsvdMatrix_rightSingularVectors_orthonormal` | none, under explicit orthogonality hypotheses | PASS |
 | Schedule parameter `alpha = kappa_2(A)` | `kappa2_randsvdMatrix_eq_of_attained_bounds`, `randsvd_oneLarge_kappa2_eq_alpha`, `randsvd_oneSmall_kappa2_eq_alpha`, `randsvd_geometric_kappa2_eq_alpha`, `randsvd_arithmetic_kappa2_eq_alpha` | none, under explicit positivity/order/nonzero hypotheses | PASS |
 | Single-Householder diagonal-plus-rank-2 warning | `singleHouseholder_randsvd_eq_diagonal_add_rankTwo`, `singleHouseholder_randsvd_correction_rank_le_two` | none | PASS |
@@ -93,6 +94,7 @@ almost-everywhere section hypothesis, so 28-P3 is fully closed.
 
 ## Gate conclusion
 
-The 28-P3 headline expectation/limit endpoint and proportion corollary are
-closed at build level, but the two strict precise-prose rows above remain
-open. The selected-scope gate is FAIL.
+The 28-P3 headline expectation/limit endpoint, the Hilbert condition rate,
+and the Gaussian positive-diagonal QR Haar producer are all closed at build
+level. No selected precise-prose row remains open; the selected-scope gate is
+PASS.

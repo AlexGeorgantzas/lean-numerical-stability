@@ -4280,6 +4280,12 @@ difference is subsequently used as a divisor: it contributes a bounded
 structure Higham22SourceRoundModel extends Higham22ScalarRoundModel where
   sub_model_div : ∀ x y, ∃ δ : ℂ, ‖δ‖ ≤ u ∧
     flSub x y = (x - y) / (1 + δ)
+  /-- Negation is exact in the source floating-point model. -/
+  flSub_zero_left : ∀ x, flSub 0 x = -x
+  /-- Adding an exact zero to a stored floating-point value is exact. -/
+  flAdd_zero_right : ∀ x, flAdd x 0 = x
+  /-- Division of a stored floating-point value by the exact unit is exact. -/
+  flDiv_one : ∀ x, flDiv x 1 = x
 
 namespace Higham22ScalarRoundModel
 
@@ -4307,6 +4313,9 @@ noncomputable def exact : Higham22SourceRoundModel where
   toHigham22ScalarRoundModel := Higham22ScalarRoundModel.exact
   sub_model_div x y := ⟨0, by simp [Higham22ScalarRoundModel.exact],
     by simp [Higham22ScalarRoundModel.exact]⟩
+  flSub_zero_left x := by simp [Higham22ScalarRoundModel.exact]
+  flAdd_zero_right x := by simp [Higham22ScalarRoundModel.exact]
+  flDiv_one x := by simp [Higham22ScalarRoundModel.exact]
 
 end Higham22SourceRoundModel
 
@@ -4456,48 +4465,84 @@ theorem higham22RoundedAlgorithm22_2_exact
 namespace Higham22ScalarRoundModel
 
 noncomputable def addError (rm : Higham22ScalarRoundModel) (x y : ℂ) : ℂ :=
-  Classical.choose (rm.add_model x y)
+  if x + y = 0 then 0 else Classical.choose (rm.add_model x y)
 
 theorem addError_bound (rm : Higham22ScalarRoundModel) (x y : ℂ) :
     ‖rm.addError x y‖ ≤ rm.u :=
-  (Classical.choose_spec (rm.add_model x y)).1
+  by
+    by_cases h : x + y = 0
+    · simp [addError, h, rm.u_nonneg]
+    · simpa [addError, h] using (Classical.choose_spec (rm.add_model x y)).1
 
 theorem flAdd_eq (rm : Higham22ScalarRoundModel) (x y : ℂ) :
     rm.flAdd x y = (x + y) * (1 + rm.addError x y) :=
-  (Classical.choose_spec (rm.add_model x y)).2
+  by
+    by_cases h : x + y = 0
+    · have hs := (Classical.choose_spec (rm.add_model x y)).2
+      have hz : rm.flAdd x y = 0 :=
+        hs.trans (mul_eq_zero.mpr (Or.inl h))
+      simp [addError, h, hz]
+    · simpa [addError, h] using (Classical.choose_spec (rm.add_model x y)).2
 
 noncomputable def subError (rm : Higham22ScalarRoundModel) (x y : ℂ) : ℂ :=
-  Classical.choose (rm.sub_model x y)
+  if x - y = 0 then 0 else Classical.choose (rm.sub_model x y)
 
 theorem subError_bound (rm : Higham22ScalarRoundModel) (x y : ℂ) :
     ‖rm.subError x y‖ ≤ rm.u :=
-  (Classical.choose_spec (rm.sub_model x y)).1
+  by
+    by_cases h : x - y = 0
+    · simp [subError, h, rm.u_nonneg]
+    · simpa [subError, h] using (Classical.choose_spec (rm.sub_model x y)).1
 
 theorem flSub_eq (rm : Higham22ScalarRoundModel) (x y : ℂ) :
     rm.flSub x y = (x - y) * (1 + rm.subError x y) :=
-  (Classical.choose_spec (rm.sub_model x y)).2
+  by
+    by_cases h : x - y = 0
+    · have hs := (Classical.choose_spec (rm.sub_model x y)).2
+      have hz : rm.flSub x y = 0 :=
+        hs.trans (mul_eq_zero.mpr (Or.inl h))
+      simp [subError, h, hz]
+    · simpa [subError, h] using (Classical.choose_spec (rm.sub_model x y)).2
 
 noncomputable def mulError (rm : Higham22ScalarRoundModel) (x y : ℂ) : ℂ :=
-  Classical.choose (rm.mul_model x y)
+  if x * y = 0 then 0 else Classical.choose (rm.mul_model x y)
 
 theorem mulError_bound (rm : Higham22ScalarRoundModel) (x y : ℂ) :
     ‖rm.mulError x y‖ ≤ rm.u :=
-  (Classical.choose_spec (rm.mul_model x y)).1
+  by
+    by_cases h : x * y = 0
+    · simp [mulError, h, rm.u_nonneg]
+    · simpa [mulError, h] using (Classical.choose_spec (rm.mul_model x y)).1
 
 theorem flMul_eq (rm : Higham22ScalarRoundModel) (x y : ℂ) :
     rm.flMul x y = (x * y) * (1 + rm.mulError x y) :=
-  (Classical.choose_spec (rm.mul_model x y)).2
+  by
+    by_cases h : x * y = 0
+    · have hs := (Classical.choose_spec (rm.mul_model x y)).2
+      have hz : rm.flMul x y = 0 :=
+        hs.trans (mul_eq_zero.mpr (Or.inl h))
+      simp [mulError, h, hz]
+    · simpa [mulError, h] using (Classical.choose_spec (rm.mul_model x y)).2
 
 noncomputable def divError (rm : Higham22ScalarRoundModel) (x y : ℂ) : ℂ :=
-  Classical.choose (rm.div_model x y)
+  if x / y = 0 then 0 else Classical.choose (rm.div_model x y)
 
 theorem divError_bound (rm : Higham22ScalarRoundModel) (x y : ℂ) :
     ‖rm.divError x y‖ ≤ rm.u :=
-  (Classical.choose_spec (rm.div_model x y)).1
+  by
+    by_cases h : x / y = 0
+    · simp [divError, h, rm.u_nonneg]
+    · simpa [divError, h] using (Classical.choose_spec (rm.div_model x y)).1
 
 theorem flDiv_eq (rm : Higham22ScalarRoundModel) (x y : ℂ) :
     rm.flDiv x y = (x / y) * (1 + rm.divError x y) :=
-  (Classical.choose_spec (rm.div_model x y)).2
+  by
+    by_cases h : x / y = 0
+    · have hs := (Classical.choose_spec (rm.div_model x y)).2
+      have hz : rm.flDiv x y = 0 :=
+        hs.trans (mul_eq_zero.mpr (Or.inl h))
+      simp [divError, h, hz]
+    · simpa [divError, h] using (Classical.choose_spec (rm.div_model x y)).2
 
 end Higham22ScalarRoundModel
 

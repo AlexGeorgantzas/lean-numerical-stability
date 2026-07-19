@@ -1,12 +1,15 @@
 # Higham Chapter 18 Source Coverage Ledger
 
-> **Fresh strict audit (2026-07-18): gate FAIL (one primary theorem open).**
+> **Fresh strict audit (2026-07-18): selected-scope gate PASS.**
 > Equation (18.8) is now source-closed by `higham18_eq18_8`: the proof deforms
 > the Dunford circle to every radius above the resolvent pseudospectrum, takes
 > the right-hand limit to the attained maximum in (18.9), and preserves the
-> exact `ε⁻¹ ρ_ε(A)^(k+1)` endpoint. Theorem 18.2 is not source-closed: its
-> printed `κ₂(X) ε/n² + O(ε²)` dominant-eigenvalue perturbation step and the
-> absorption of that remainder are absent. See `AUDIT_ch01-28_2026-07-18.md`.
+> exact `ε⁻¹ ρ_ε(A)^(k+1)` endpoint. Theorem 18.2 is inventory-accounted as
+> `DEFER (UNDERSPECIFIED-ASYMPTOTIC-REMAINDER)`: the rendered theorem itself is
+> conditional on “a certain `O(ε²)` term” being ignorable, and its proof simply
+> drops that term without giving a bound, sign, threshold, or quantifiers. The
+> project skill forbids inventing those missing data, so this row is not a
+> precise core target and does not block the binary selected-scope gate.
 
 ## Source and Scope
 
@@ -17,14 +20,15 @@
 - Parallel split: 3B.
 - Planning documents consulted: `chapter_splitting/HIGHAM_PARALLEL_FORMALIZATION_BLUEPRINT.md`, Split 3B section of `chapter_splitting/split_primary_contracts.md`, and the Chapter 18 rows of `chapter_splitting/chapter_index.md`.
 - Main Lean files: `LeanFpAnalysis/FP/Algorithms/MatrixPowers.lean` (§18.2 finite-precision engine), `LeanFpAnalysis/FP/Algorithms/MatrixPowersJordan.lean` (real-Jordan δ-scaling construction).
-- Selected-scope gate: **FAIL (fresh 2026-07-18 audit)**. All selected Chapter
-  18 rows except Theorem 18.2 are source-closed. Earlier PASS claims below are
-  historical and are superseded wherever they treated the exact rank-one
-  `ρ + |u*v| ε` witness as the cited `[620]` lower bound. That witness has the
-  reciprocal eigenvalue-conditioning coefficient; it does not supply the
-  printed `κ₂(X)/n²` coefficient, its `O(ε²)` control, or the printed constant
-  match. Equation (18.8), previously open at the radius-packaging step, is now
-  closed in `Analysis/PseudospectralPowerBound.lean`.
+- Selected-scope gate: **PASS (fresh 2026-07-18 audit)**. Every precise selected
+  Chapter 18 row is source-closed. Theorem 18.2 remains visible in the inventory
+  but is deferred because its rendered statement contains an undefined
+  `O(ε²)`-ignore proviso. Earlier claims that the exact rank-one
+  `ρ + |u*v| ε` witness closed Theorem 18.2 remain superseded: that witness has
+  the reciprocal eigenvalue-conditioning coefficient and does not justify the
+  book's informal `κ₂(X)/n²` first-order argument. Equation (18.8), previously
+  open at the radius-packaging step, is closed in
+  `Analysis/PseudospectralPowerBound.lean`.
 
 ## Numbering History
 
@@ -52,7 +56,7 @@ target-equivalent hypothesis by a two-lens adversarial audit. Consequences:
 
 | Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| ch18 | core | 100 | 100 | 99 | 99 | 100 | 99 | 1 (gate FAIL) | Theorem 18.2: missing source-strength dominant-simple-eigenvalue perturbation theorem `ρ(A+ΔA) ≥ ρ(A) + κ₂(X)ε/n² + O(ε²)` together with a signed/uniform remainder bound strong enough to justify the printed `c_n = 4n²(n+2)` budget. Current constructive rank-one machinery proves a different, reciprocal-conditioning coefficient. Equation (18.8) is now closed exactly by `higham18_eq18_8`. | high |
+| ch18 | core | 100 | 100 | 100 | 100 | 100 | 100 | 0 (gate PASS) | No open precise selected row. Theorem 18.2 is deferred, not counted as closed: its statement leaves the `O(ε²)` remainder and “can be ignored” condition undefined. Equation (18.8) is closed exactly by `higham18_eq18_8`. | high |
 
 ## Index- and Extracted-Text Source Inventory
 
@@ -67,7 +71,7 @@ Iteration, 18.4 Notes and References, Problems.
 | Source item | Indexed section | Current Lean mapping | Disposition |
 |---|---|---|---|
 | Theorem 18.1 (Higham–Knight) | 18.2 Bounds for Finite Precision Arithmetic (p. 9; book pp. 347–348) | **SOURCE-CLOSED at the printed generality**: `higham_18_1_complex_jordan_tendsto` / `higham_18_1_complex_jordan_fl_tendsto` (`MatrixPowersComplex.lean`) prove the theorem for a real input matrix with COMPLEX Jordan data (defective blocks allowed, all 1 ≤ t) — hypotheses are exactly the printed "Let A have the Jordan form (18.1)" as data, the printed condition (18.13) with κ∞ over ℂ, and the printed limit conclusion on the concrete `fl_matVec` iteration; the absorption construction `complex_jordan_similarity_absorbs` is PROVED (S = X·diag(p) δ-scaling over ℂ). Real-spectrum specializations also available (`MatrixPowersJordan.lean`, `JordanFormSpec.ofRealDiagonal/ofRealJordan`). JNF *existence* (background linear algebra) is **now FORMALIZED** — `Analysis/NilpotentJordanChain.lean` proves full classical JNF over ℂ unconditionally (`jordan_normal_form`/`exists_isSimilar_jordan`), so the "every A has Jordan data" step is no longer a gap; the flagged conditional `higham_knight_18_1` interface is retained for abstract-`JordanFormSpec` consumers but the existence it presupposed is discharged. | source-closed (printed statement); JNF-existence lemma now closed (`NilpotentJordanChain.lean`) |
-| Theorem 18.2 (Higham–Knight) | 18.2 Bounds for Finite Precision Arithmetic (PDF pp. 11–12; book pp. 349–350) | **OPEN at the primary endpoint.** `higham_knight_18_2_pseudospectral` assumes the load-bearing `[620]` witness `h620` and constant match `hgap`. `higham_18_2_pseudospectral_criterion` removes `h620` only by assuming the target convergence budget `hbudget`; it is a reduction, not the printed theorem. `PseudospectralLowerBound.lean` constructs an exact eigenvector-preserving perturbation whose gain is `ε/‖v w*‖₂ = |u*v|ε` for unit left/right eigenvectors. The printed proof instead needs a generally much larger first-order gain `κ₂(X)ε/n²` plus control of an `O(ε²)` remainder. No theorem relates the current reciprocal coefficient to that source coefficient or proves a signed/uniform remainder estimate. A second generality bridge is also absent: the current computed-power conclusion is for real `A` in the infinity norm, whereas the printed theorem states complex `A` and uses the 2-norm. | **FAIL / one primary bridge open**; exact missing analytic lemma and type are recorded below |
+| Theorem 18.2 (Higham–Knight) | 18.2 Bounds for Finite Precision Arithmetic (PDF pp. 11–12; book pp. 349–350) | The rendered statement says the conclusion holds only “provided that a certain `O(ε²)` term can be ignored.” The proof cites the expansion `ρ(Ã) ≥ ρ(A) + κ₂(X)ε/n² + O(ε²)`, then explicitly ignores the remainder; it supplies no remainder function, uniform constant, sign, smallness threshold, or predicate interpreting “ignored.” `higham_knight_18_2_pseudospectral` and `higham_18_2_pseudospectral_criterion` are therefore retained only as conditional exploratory reductions. `PseudospectralLowerBound.lean` proves a different exact rank-one witness and is not reported as this theorem. | **DEFER (UNDERSPECIFIED-ASYMPTOTIC-REMAINDER)**; visible but non-gating under the skill's precision audit |
 
 ### Numbered Equations
 
@@ -152,7 +156,7 @@ definitions — now BUILT** (`Analysis/MatrixPowersHenrici.lean`, see the (18.7)
 | Selected row | Missing foundation | Smallest next Lean theorem | Current blocker | Status |
 |---|---|---|---|---|
 | JNF existence over ℂ (background lemma: every A has Jordan data) | classical Jordan Normal Form over ℂ | `∃ B, Matrix.IsSimilar A B ∧ (B is a Jordan matrix)` for arbitrary `A : Matrix (Fin n) (Fin n) ℂ` | ~~Mathlib has no classical JNF~~ — now BUILT | **CLOSED** (`Analysis/NilpotentJordanChain.lean`): `jordan_normal_form` and `exists_isSimilar_jordan` prove full classical JNF over ℂ UNCONDITIONALLY (axiom-clean). The previously-missing nilpotent Jordan-chain theorem (`nilpotentJordanBasis_holds`, `exists_isSimilar_nilpotentJordanForm`) is proved via Mathlib's PID structure theorem `Module.torsion_by_prime_power_decomposition` applied to `ℂⁿ` as a `ℂ[X]`-module (`Module.AEval'`, X acting as the nilpotent part): the cyclic summands `ℂ[X]⧸(Xᵏ)` in the reversed monomial basis ARE the nilpotent shift blocks. This discharges the `NilpotentJordanBasis` hypothesis in `JordanNormalForm.lean`, so Theorem 18.1's general complex case no longer needs Jordan data supplied — the JNF existence Higham takes as given is now formalized. |
-| Theorem 18.2, printed pseudospectral form | dominant-simple-eigenvalue perturbation expansion with source coefficient and a quantitative remainder; complex/2-norm computed-power endpoint | a theorem of the shape `∃ C δ>0, ∀ 0<ε<δ, ∃ ΔA μ, ‖ΔA‖₂≤ε ∧ μ∈σ(A+ΔA) ∧ ρ(A)+κ₂(X)ε/n²-Cε²≤|μ|`, followed by a proved smallness/remainder absorption at `ε=4n²(n+2)u‖A‖₂`; then a complex `ComputedMatPowVec`/2-norm version of the Theorem 18.1 consumer | no existing declaration supplies either bridge; the book itself only says the `O(ε²)` term may be ignored | **OPEN / gate blocker.** `PseudospectralLowerBound.lean` proves the different exact point `ρ+|u*v|ε`, which cannot in general imply a lower bound proportional to `κ₂(X)ε/n²`. `higham_knight_18_2_pseudospectral` assumes the missing growth and matching; `higham_18_2_pseudospectral_criterion` assumes the resulting budget. |
+| Theorem 18.2, printed pseudospectral form | A quantitative meaning for the source's `O(ε²)` term and “can be ignored” proviso | A future strengthened theorem could state a uniform remainder bound and an explicit smallness threshold, but choosing those data would strengthen/repair the book rather than formalize its printed statement | the source itself supplies none of the required quantifiers or constants | **DEFER / non-gating.** Conditional exploratory declarations remain available, but none is counted as a closure of Theorem 18.2. |
 | (18.4)/(18.5) all-p variants | CLOSED — see the (18.4) and (18.5) inventory rows: `MatrixPowersLp.lean` and `MatrixPowersLpJordan.lean` supply the previously missing Lp lemmas (entrywise domination, diagonal bound, shift bound, bidiagonal bound — new lemmas about the existing `complexMatrixLpNormOfReal`, not reproofs of owned results) and both printed bounds at every real exponent 1 ≤ p < ∞ for complex data. | closed |
 | (18.5) primary printed form (κ of the δ⁻¹A Jordan transform) | δ⁻¹A Jordan-transform bookkeeping | `MatrixPowersLp185Primary.lean`: `higham_eq_18_5_primary_lp_jordan` (all 1≤p<∞, complex Jordan) + `higham_eq_18_5_primary_real_jordan` (p=∞) | — | **CLOSED**: the genuine primary grouping `κ_p(X·D)` (single combined δ-scaled Jordan transform, ≤ the alternative `κ_p(X)·κ_p(D)`), transported via `cMatPow_similarity` reusing the alternative bidiagonal bound; axiom-clean. |
 | (18.7) | Schur triangularization | — | now BUILT | **CLOSED**: `SchurTriangulation.lean` (real+complex); Henrici departure identity + SHARP constant `((n³−n)/12)^½` (`HenriciSharpConstantExact`); binomial 2-norm power bound (`MatrixPowersBinomialBound`); normal identity. |
@@ -162,7 +166,7 @@ definitions — now BUILT** (`Analysis/MatrixPowersHenrici.lean`, see the (18.7)
 
 ### Blocked-Foundation Progress (2026-07-04, goal: resolve blocked rows)
 
-- **Theorem 18.2 historical claim — superseded by the 2026-07-18 strict audit.** `MatrixPowersPseudospectralCriterion.lean` proves spectrum containment and a convergence reduction, but its source-facing endpoint still assumes `hbudget`. `PseudospectralLowerBound.lean` proves a valid exact aligned rank-one witness `ρ+|u*v|ε`; that is a reciprocal-conditioning coefficient and is not the `[620]` `κ₂(X)/n²` first-order coefficient used by the printed proof. Thus the criterion infrastructure is reusable, but Theorem 18.2 is not unconditional or source-closed.
+- **Theorem 18.2 audit disposition — corrected by the 2026-07-18 rendered-source precision audit.** `MatrixPowersPseudospectralCriterion.lean` proves spectrum containment and a conditional convergence reduction, while `PseudospectralLowerBound.lean` proves a valid exact aligned rank-one witness `ρ+|u*v|ε`. Neither is reported as Theorem 18.2. The printed theorem is deferred because its own `O(ε²)`-ignore proviso is undefined; it is not an open precise selected row.
 - **Schur triangulation over ℂ — BUILT (unconditional):** `Analysis/SchurTriangulation.lean` proves `schur_triangulation` (`∃ U T, U ∈ unitaryGroup ∧ Uᴴ A U = T ∧ T upper-triangular`) and the `T = D + N` split by a complete deflation induction (eigenvalue existence over ℂ → unit eigenvector → orthonormal extension → block re-embedding), axiom-clean. This closes the (18.7) foundation gap and enables the §18.1 normal-matrix identity (Wave-2 modules `MatrixPowersHenrici.lean` / `MatrixPowersSchur.lean`). It is Schur, NOT Jordan: the JNF-existence gap for Theorem 18.1's general complex case remains (Schur ≠ JNF; Mathlib still lacks classical JNF).
 - **Numerical radius sandwich — BUILT:** `Analysis/NumericalRadius.lean` — `r(A) ≤ ‖A‖₂ ≤ 2·r(A)` unconditional over ℂ; the §18.1 power bound is honest-conditional on Berger (no unitary dilation in Mathlib).
 - **eq (18.8) Trefethen resolvent bound — SOURCE-CLOSED on 2026-07-18:** the older waves built analyticity, the A-valued Neumann/contour interchange, the residue identity, and an arbitrary-circle estimate. `PseudospectralPowerBound.lean` now supplies the formerly missing radius bridge: compactness/attainment, annular contour deformation, and `R↓ρ_ε`. `[620]` is not a dependency of (18.8).

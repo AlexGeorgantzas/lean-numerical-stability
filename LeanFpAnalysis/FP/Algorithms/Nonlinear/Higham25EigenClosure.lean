@@ -5,6 +5,7 @@ Authors: QED
 -/
 import LeanFpAnalysis.FP.Algorithms.Nonlinear.Higham25
 import LeanFpAnalysis.FP.Algorithms.DotProduct
+import Mathlib.LinearAlgebra.Eigenspace.Zero
 
 namespace LeanFpAnalysis.FP
 
@@ -408,6 +409,150 @@ theorem higham25EigenJacobian_kernel_eq_zero_of_simple
   · rw [hc, hc0]
     simp
   · simp [hdlambda]
+
+/-- Higham, 2nd ed., p. 463, prose after (25.10): an algebraically simple
+eigenvalue makes the bordered Jacobian nonsingular at a normalized eigenpair.
+
+Unlike `higham25EigenJacobian_kernel_eq_zero_of_simple`, this theorem starts
+from the standard source meaning of "simple": the root multiplicity of
+`lambda` in `A.charpoly` is one.  The proof uses Mathlib's equality between
+that root multiplicity and the dimension of the maximal generalized
+eigenspace.  Thus no left eigenvector or nonorthogonality certificate is
+assumed. -/
+theorem higham25EigenJacobian_kernel_eq_zero_of_algebraically_simple
+    (A : Matrix (Fin n) (Fin n) ℝ) (s : Fin n)
+    (x : Fin n → ℝ) (lambda : ℝ)
+    (hnormalized : x s = 1)
+    (hrightEigen : ∀ i, ∑ j : Fin n, A i j * x j = lambda * x i)
+    (hsimple : A.charpoly.rootMultiplicity lambda = 1)
+    (dv : (Fin n → ℝ) × ℝ)
+    (hkernel : higham25EigenJacobianAction A s x lambda dv = (0, 0)) :
+    dv = (0, 0) := by
+  let phi : Module.End ℝ (Fin n → ℝ) := Matrix.toLin' A
+  let T : Module.End ℝ (Fin n → ℝ) :=
+    phi - lambda • (1 : Module.End ℝ (Fin n → ℝ))
+  have hx_ne : x ≠ 0 := by
+    intro hx
+    have hs := congrFun hx s
+    simp [hnormalized] at hs
+  have hphi_x : phi x = lambda • x := by
+    funext i
+    simpa [phi, Matrix.toLin'_apply, Matrix.mulVec, Pi.smul_apply,
+      smul_eq_mul] using hrightEigen i
+  have hx_eigenspace : x ∈ phi.eigenspace lambda :=
+    Module.End.mem_eigenspace_iff.mpr hphi_x
+  have hx_max : x ∈ phi.maxGenEigenspace lambda :=
+    Module.End.eigenspace_le_maxGenEigenspace hx_eigenspace
+  have hmax_finrank :
+      Module.finrank ℝ (phi.maxGenEigenspace lambda) = 1 := by
+    calc
+      Module.finrank ℝ (phi.maxGenEigenspace lambda) =
+          phi.charpoly.rootMultiplicity lambda :=
+        LinearMap.finrank_maxGenEigenspace_eq phi lambda
+      _ = A.charpoly.rootMultiplicity lambda := by
+        rw [Matrix.charpoly_toLin']
+      _ = 1 := hsimple
+  have hspan_eq : ℝ ∙ x = phi.maxGenEigenspace lambda := by
+    apply Submodule.eq_of_le_of_finrank_eq
+    · exact (Submodule.span_singleton_le_iff_mem x _).mpr hx_max
+    · rw [finrank_span_singleton hx_ne, hmax_finrank]
+  have hfirstFun := congrArg Prod.fst hkernel
+  have hlast := congrArg Prod.snd hkernel
+  have hfirst : ∀ i : Fin n,
+      (∑ j : Fin n, A i j * dv.1 j) - lambda * dv.1 i =
+        dv.2 * x i := by
+    intro i
+    have hi := congrFun hfirstFun i
+    simp only [higham25EigenJacobianAction, Pi.zero_apply] at hi
+    linarith
+  have hT_x : T x = 0 := by
+    rw [show T x = phi x - lambda • x by rfl, hphi_x, sub_self]
+  have hT_dx : T dv.1 = dv.2 • x := by
+    funext i
+    simpa [T, phi, Matrix.toLin'_apply, Matrix.mulVec, Pi.smul_apply,
+      smul_eq_mul] using hfirst i
+  have hdx_max : dv.1 ∈ phi.maxGenEigenspace lambda := by
+    rw [Module.End.mem_maxGenEigenspace]
+    refine ⟨2, ?_⟩
+    change (T ^ 2) dv.1 = 0
+    rw [pow_two, Module.End.mul_apply, hT_dx, map_smul, hT_x, smul_zero]
+  have hdx_span : dv.1 ∈ ℝ ∙ x := by
+    rw [hspan_eq]
+    exact hdx_max
+  obtain ⟨c, hc⟩ := Submodule.mem_span_singleton.mp hdx_span
+  have hdlambda_smul : dv.2 • x = 0 := by
+    calc
+      dv.2 • x = T dv.1 := hT_dx.symm
+      _ = T (c • x) := by rw [hc]
+      _ = c • T x := map_smul T c x
+      _ = 0 := by rw [hT_x, smul_zero]
+  have hdlambda : dv.2 = 0 := by
+    have hs := congrFun hdlambda_smul s
+    simpa [Pi.smul_apply, smul_eq_mul, hnormalized] using hs
+  have hdxs : dv.1 s = 0 := by
+    simpa [higham25EigenJacobianAction] using hlast
+  have hc_zero : c = 0 := by
+    have hs := congrFun hc s
+    rw [Pi.smul_apply, smul_eq_mul, hnormalized, mul_one, hdxs] at hs
+    exact hs
+  apply Prod.ext
+  · rw [← hc, hc_zero]
+    simp
+  · simp [hdlambda]
+
+/-- Determinant form of the source's nonsingularity claim.  Algebraic
+simplicity is supplied directly as characteristic-polynomial root
+multiplicity one; the conclusion is about the displayed bordered matrix
+itself, not merely its product-space presentation. -/
+theorem higham25EigenJacobian_det_ne_zero_of_algebraically_simple
+    (A : Matrix (Fin n) (Fin n) ℝ) (s : Fin n)
+    (x : Fin n → ℝ) (lambda : ℝ)
+    (hnormalized : x s = 1)
+    (hrightEigen : ∀ i, ∑ j : Fin n, A i j * x j = lambda * x i)
+    (hsimple : A.charpoly.rootMultiplicity lambda = 1) :
+    Matrix.det (higham25EigenJacobian A s x lambda) ≠ 0 := by
+  let J := higham25EigenJacobian A s x lambda
+  have hJinj : Function.Injective J.mulVec := by
+    intro u v huv
+    have hzero : J.mulVec (u - v) = 0 := by
+      rw [Matrix.mulVec_sub, huv, sub_self]
+    let dx : Fin n → ℝ := fun i => (u - v) i.castSucc
+    let dlambda : ℝ := (u - v) (Fin.last n)
+    have hrepr : Fin.lastCases dlambda dx = u - v := by
+      funext r
+      refine Fin.lastCases ?_ (fun i => ?_) r
+      · simp [dlambda]
+      · simp [dx]
+    have hout :
+        (Fin.lastCases
+            (higham25EigenJacobianAction A s x lambda (dx, dlambda)).2
+            (higham25EigenJacobianAction A s x lambda (dx, dlambda)).1 :
+          Fin (n + 1) → ℝ) = 0 := by
+      rw [← higham25EigenJacobian_mulVec_eq_action A s x dx lambda dlambda,
+        hrepr]
+      exact hzero
+    have haction :
+        higham25EigenJacobianAction A s x lambda (dx, dlambda) = (0, 0) := by
+      apply Prod.ext
+      · funext i
+        have hi := congrFun hout i.castSucc
+        simpa using hi
+      · have hlast := congrFun hout (Fin.last n)
+        simpa using hlast
+    have hpair : (dx, dlambda) = (0, 0) :=
+      higham25EigenJacobian_kernel_eq_zero_of_algebraically_simple
+        A s x lambda hnormalized hrightEigen hsimple (dx, dlambda) haction
+    have hdx : dx = 0 := congrArg Prod.fst hpair
+    have hdlambda : dlambda = 0 := congrArg Prod.snd hpair
+    apply sub_eq_zero.mp
+    rw [← hrepr]
+    funext r
+    refine Fin.lastCases ?_ (fun i => ?_) r
+    · simp [hdlambda]
+    · simp [hdx]
+  have hJunit : IsUnit J := Matrix.mulVec_injective_iff_isUnit.mp hJinj
+  have hdetUnit : IsUnit J.det := (Matrix.isUnit_iff_isUnit_det J).mp hJunit
+  exact isUnit_iff_ne_zero.mp hdetUnit
 
 /-- Literal infinity-norm reading of the printed claim that the bordered
 Jacobian has Lipschitz constant `2 ‖A‖`. -/

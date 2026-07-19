@@ -853,6 +853,169 @@ theorem breakdownCounter_no_roundedRowPolicy (gammaTilde : ℝ) :
   rw [breakdownCounter_sigma1] at h
   norm_num at h
 
+/-! ### Stored-diagonal obstruction for the printed raw-vector row field
+
+The source algorithm stores the signed pivot value on the diagonal.  The
+literal recursion used above instead retains the rounded compact-update
+diagonal.  These are not interchangeable for the printed row-growth scale.
+The following one-column trace has full source rank, valid gamma depths, a
+positive executed pivot, and a nonzero returned diagonal, but its legal
+rounded diagonal is too small to pay for the raw reflector vector.  Thus even
+adding explicit computed nonbreakdown cannot produce the current rounded row
+policy; the executor/scale mismatch must be repaired first.
+-/
+
+/-- A legal quarter-unit-roundoff model whose multiplications attain relative
+error `-1/4`; every other primitive operation is exact. -/
+noncomputable def rawRowMulDeflatedQuarterFPModel : FPModel where
+  u := (1 : ℝ) / 4
+  u_nonneg := by norm_num
+  fl_add := fun x y => x + y
+  fl_sub := fun x y => x - y
+  fl_mul := fun x y => (x * y) * (3 / 4 : ℝ)
+  fl_div := fun x y => x / y
+  fl_sqrt := fun x => Real.sqrt x
+  fl_add_zero := by intro x; ring
+  model_add := by
+    intro x y
+    exact ⟨0, by norm_num, by ring⟩
+  model_sub := by
+    intro x y
+    exact ⟨0, by norm_num, by ring⟩
+  model_mul := by
+    intro x y
+    exact ⟨-(1 : ℝ) / 4, by norm_num, by ring⟩
+  model_div := by
+    intro x y _hy
+    exact ⟨0, by norm_num, by ring⟩
+  model_sqrt := by
+    intro x _hx
+    exact ⟨0, by norm_num, by ring⟩
+
+/-- Full-column-rank one-column source whose signed raw vector is `(1,1)`. -/
+noncomputable def rawRowCounterA : Fin 2 → Fin 1 → ℝ
+  | ⟨0, _⟩, _ => 0
+  | ⟨1, _⟩, _ => 1
+
+theorem rawRowCounterA_mulVec_injective :
+    Function.Injective (rectMatMulVec rawRowCounterA) := by
+  intro x y hxy
+  funext j
+  have hj : j = (0 : Fin 1) := Subsingleton.elim _ _
+  subst j
+  simpa [rectMatMulVec, rawRowCounterA] using congrFun hxy (1 : Fin 2)
+
+theorem rawRowCounter_gammaValid_two :
+    gammaValid rawRowMulDeflatedQuarterFPModel 2 := by
+  norm_num [gammaValid, rawRowMulDeflatedQuarterFPModel]
+
+theorem rawRowCounter_pivot0 :
+    householderActiveMaxPivotColumn (0 : Fin 2) (0 : Fin 1)
+      rawRowCounterA = 0 := by
+  exact Subsingleton.elim _ _
+
+theorem rawRowCounter_swap0 :
+    pivotedStoredQRSwappedPanel rawRowMulDeflatedQuarterFPModel
+      (m := 2) (n := 1) (by omega) rawRowCounterA 0 = rawRowCounterA := by
+  funext i j
+  simp [pivotedStoredQRSwappedPanel, pivotedStoredQRSwapSeq,
+    fl_pivotedStoredQRMatrixSeq, pivotedQRActiveRow, pivotedQRActiveCol,
+    rawRowCounter_pivot0, Wave13.columnPermuteMatrix]
+
+theorem rawRowCounter_rawVector0 :
+    pivotedStoredQRRawVector rawRowMulDeflatedQuarterFPModel
+      (m := 2) (n := 1) (by omega) rawRowCounterA 0 =
+        fun _ => (1 : ℝ) := by
+  funext i
+  fin_cases i <;>
+    norm_num [pivotedStoredQRRawVector, pivotedQRActiveRow,
+      pivotedQRActiveCol, rawRowCounter_swap0,
+      householderTrailingActiveVector, householderActiveVector,
+      householderTrailingPart, householderTrailingNorm2Sq, vecNorm2Sq,
+      Fin.sum_univ_two, signedHouseholderAlpha, rawRowCounterA]
+
+theorem rawRowCounter_beta0 :
+    pivotedStoredQRBeta rawRowMulDeflatedQuarterFPModel
+      (m := 2) (n := 1) (by omega) rawRowCounterA 0 = 1 := by
+  norm_num [pivotedStoredQRBeta, rawRowCounter_rawVector0,
+    householderBetaSpec, Fin.sum_univ_two]
+
+theorem rawRowCounter_A1_00 :
+    fl_pivotedStoredQRMatrixSeq rawRowMulDeflatedQuarterFPModel
+      (m := 2) (n := 1) (by omega) rawRowCounterA 1
+      (0 : Fin 2) (0 : Fin 1) = -(27 / 64 : ℝ) := by
+  rw [fl_pivotedStoredQRMatrixSeq_succ_of_lt
+    rawRowMulDeflatedQuarterFPModel (m := 2) (n := 1)
+    (by omega) rawRowCounterA 0 (by omega)]
+  rw [rawRowCounter_rawVector0, rawRowCounter_beta0, rawRowCounter_swap0]
+  norm_num [fl_householderStoredPanelStep,
+    fl_householderApplyCompactPanel, fl_householderApplyCompact,
+    fl_dotProduct, Fin.foldl_succ, rawRowCounterA,
+    rawRowMulDeflatedQuarterFPModel]
+  all_goals ring_nf
+  all_goals simp
+  all_goals rfl
+
+theorem rawRowCounter_sigma0 :
+    pivotedStoredQRSigma rawRowMulDeflatedQuarterFPModel
+      (m := 2) (n := 1) (by omega) rawRowCounterA 0 = 1 := by
+  norm_num [pivotedStoredQRSigma, pivotedQRActiveRow, pivotedQRActiveCol,
+    rawRowCounter_swap0, householderTrailingColumnNorm2Sq,
+    householderTrailingNorm2Sq, householderTrailingPart,
+    vecNorm2Sq, Fin.sum_univ_two, rawRowCounterA]
+
+theorem rawRowCounter_topR_diag :
+    pivotedStoredQRTopR rawRowMulDeflatedQuarterFPModel
+      (m := 2) (n := 1) (by omega) rawRowCounterA
+      (0 : Fin 1) (0 : Fin 1) = -(27 / 64 : ℝ) := by
+  exact rawRowCounter_A1_00
+
+theorem rawRowCounter_rowInftyNorm_zero :
+    Wave18D.rowInftyNorm rawRowCounterA (0 : Fin 2) = 0 := by
+  simp [Wave18D.rowInftyNorm, rawRowCounterA]
+
+theorem rawRowCounter_rowInftyNorm_one :
+    Wave18D.rowInftyNorm
+        (fl_pivotedStoredQRMatrixSeq rawRowMulDeflatedQuarterFPModel
+          (m := 2) (n := 1) (by omega) rawRowCounterA 1)
+        (0 : Fin 2) = 27 / 64 := by
+  simp [Wave18D.rowInftyNorm, rawRowCounter_A1_00]
+  norm_num
+
+theorem rawRowCounter_printedAlphaScale_zero :
+    pivotedStoredQRPrintedAlphaScale rawRowMulDeflatedQuarterFPModel
+      (m := 2) (n := 1) (by omega) rawRowCounterA (0 : Fin 2) =
+        27 / 64 := by
+  unfold pivotedStoredQRPrintedAlphaScale Wave18D.rowInftyGrowthFactor
+  apply le_antisymm
+  · apply ciSup_le
+    intro t
+    fin_cases t
+    · simpa [fl_pivotedStoredQRMatrixSeq,
+        rawRowCounter_rowInftyNorm_zero] using
+        (show (0 : ℝ) ≤ 27 / 64 by norm_num)
+    · simpa [rawRowCounter_rowInftyNorm_one]
+  · have h := le_ciSup
+      (Finite.bddAbove_range (fun t : Fin 2 =>
+        Wave18D.rowInftyNorm
+          (fl_pivotedStoredQRMatrixSeq rawRowMulDeflatedQuarterFPModel
+            (by omega) rawRowCounterA t.val) (0 : Fin 2)))
+      (1 : Fin 2)
+    simpa [rawRowCounter_rowInftyNorm_one] using h
+
+/-- Even with full source rank, valid arithmetic depths, positive executed
+pivot, and a nonzero returned diagonal, no coefficient can inhabit the
+current rounded policy: its coefficient-free `raw_vector_row` field is false.
+This rules out a genuine producer bridge for the present executor and scale. -/
+theorem rawRowCounter_no_roundedRowPolicy (gammaTilde : ℝ) :
+    ¬ PivotedStoredQRCoxHighamRoundedRowPolicy
+      rawRowMulDeflatedQuarterFPModel (m := 2) (n := 1)
+      (by omega) (by omega) rawRowCounterA gammaTilde := by
+  intro policy
+  have h := policy.raw_vector_row 0 (by omega) (0 : Fin 2)
+  rw [rawRowCounter_rawVector0, rawRowCounter_printedAlphaScale_zero] at h
+  norm_num at h
+
 /-- A one-by-one nonzero exact trace used to certify that the corrected policy
 is genuinely inhabitable (unlike the refuted legacy exact-tail policy). -/
 noncomputable def roundedPolicyExactOneA : Fin 1 → Fin 1 → ℝ := fun _ _ => 1

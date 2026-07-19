@@ -14,11 +14,11 @@ Source: Higham, 2nd ed., Chapter 28, printed pp. 511-526. Mode: core.
 | Equations (28.3)-(28.4) | PASS | `hilbertMatrix_eq_choleskyGram`, `hilbertCholeskyFactor_mul_inverse`, `hilbertCholeskyFactorInverse_mul` |
 | Hilbert/Pascal moment-matrix representations | PASS | `intervalMomentMatrix_quadraticForm`, `intervalMomentMatrix_quadraticForm_re_pos`, `hilbertMatrix_eq_intervalMomentMatrix`, `pascalMoment_integral`, `pascalMatrix_eq_intervalMomentMatrix`, `pascal_circleAverage`, `pascal_circleMoment_normalized`, and `pascal_circleMoment` close the positive-weight and two source instances |
 | Hilbert determinant leading asymptotic | PASS | `hilbertDetLeadingLogRate_proved : HilbertDetLeadingLogRate` proves `log(det(H_n))/n² -> -2 log 2`, the faithful leading-exponential interpretation of (28.2) |
-| Hilbert condition/shifted-norm prose | **OPEN** / PASS | `shiftedHilbert_norm_asymptotic` proves `‖H̃_n‖₂ = π + O(1/log n)`. The condition sentence is central precise prose: it explicitly asserts exponential growth and prints `κ₂(H_n) ∼ exp(3.5n)`. Since `3.5` is rounded, literal ratio equivalence is not the right repair; a corrected log-growth theorem (exact rate `4 log(1+√2)`, approximately `3.5255`) is required. `HilbertConditionAsymptotic` merely records the literal surface and is unproved. |
+| Hilbert condition/shifted-norm prose | PASS | `hilbertConditionTwo_log_rate` proves the source-faithful exact statement `log(κ₂(H_n))/n → 4 log(1+√2)` (approximately `3.5255`) by a finite central-Delannoy sandwich; `shiftedHilbert_norm_asymptotic` proves `‖H̃_n‖₂ = π + O(1/log n)`. The recorded literal ratio surface `HilbertConditionAsymptotic` remains intentionally unasserted because `3.5` is rounded. |
 | Cauchy formulas | PASS | `cauchyMatrix_det_eq_formula`, `cauchyMatrix_mul_cauchyInverseFormula`, `cauchyInverseFormula_mul_cauchyMatrix`, `cauchyLower_mul_cauchyUpper`, `sum_cauchyInverseFormula`, `cauchy_ordered_minor_det_formula`, `cauchyMatrix_isStrictlyTotallyPositive` |
 | Equations (28.5)-(28.11) | DEFER-MISSING-PRECISE-STATEMENT | source `approx` leaves convergence/error semantics unspecified |
 | Randsvd definition and schedules | PASS | `randsvdMatrix`, four schedules, paired Stewart producer, exact right-Gram identity, and the proved Haar law for each Stewart factor |
-| Gaussian QR Haar generator on p. 517 | **OPEN** | No producer was found for the separate precise statement that positive-diagonal QR of an iid `N(0,σ²)` square matrix yields a Haar `Q` for every variance. Stewart's Householder-product theorem is a different algorithm. |
+| Gaussian QR Haar generator on p. 517 | **PASS** | `Higham28GaussianQRHaar.lean` constructs the iid `N(0,σ²)` column-product law, proves almost-sure nonsingularity, exact positive-diagonal MGS QR, measurable left-equivariant `Q`, and `gaussianQRQLawOfScale_eq_normalizedOrthogonalHaar` for every nonzero scale `σ` (equivalently every nondegenerate variance `σ²`). |
 | Randsvd prescribed singular values and `alpha = kappa_2(A)` | PASS | `randsvdMatrix_rightGram_column_eigenpair`, `randsvdMatrix_rightSingularVectors_orthonormal`, `kappa2_randsvdMatrix_eq_of_attained_bounds`, `randsvd_oneLarge_kappa2_eq_alpha`, `randsvd_oneSmall_kappa2_eq_alpha`, `randsvd_geometric_kappa2_eq_alpha`, and `randsvd_arithmetic_kappa2_eq_alpha` close the row under explicit positivity/order hypotheses |
 | Randsvd single-Householder rank-2 warning | PASS | `singleHouseholder_randsvd_eq_diagonal_add_rankTwo` and `singleHouseholder_randsvd_correction_rank_le_two` give the exact rectangular factorization and rank bound |
 | Symmetric randsvd adaptation | PASS | `symmetricRandsvdMatrix`, `symmetricRandsvdMatrix_transpose`, and `symmetricRandsvdMatrix_column_eigenpair` give the symmetric construction and prescribed eigenbasis |
@@ -42,7 +42,7 @@ Source: Higham, 2nd ed., Chapter 28, printed pp. 511-526. Mode: core.
 | Companion normality classification | PASS / SOURCE-DISCREPANCY | `companion_orderTwo_isStarNormal_iff` and `companion_orderAtLeastThree_isStarNormal_iff` prove the correct order-sensitive classification. The printed `a_0=1`, all-higher-zero iff is false over `ℂ`, at order two, and at order one. |
 | Problems 28.1-28.2 | EXCLUDED | optional research rows not selected |
 
-Aggregate selected-scope status: **FAIL** under the fresh strict precise-prose
+Aggregate selected-scope status: **PASS** under the fresh strict precise-prose
 audit. Row 28-P3's headline limit is closed by
 `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28GinibreFiniteFormula.lean`, which
 proves the premise-free `ch28gf_realGinibreFiniteExpectationFormula`
@@ -52,9 +52,12 @@ by supplying the missing measure-theoretic kernel-transfer link
 (`ch28gf_kernelTransfer`) that completes the incidence chain and feeding the
 formerly-conditional bridge `realGinibreExpectedCountLimit_of_finiteExpectationFormula`.
 Both headline theorems take no hypotheses and are axiom-clean
-(`[propext, Classical.choice, Quot.sound]`, full transitive closure). The gate
-still fails on the Hilbert condition log rate, Gaussian-QR Haar statement, and
-the two remaining rows. See
+(`[propext, Classical.choice, Quot.sound]`, full transitive closure). The new
+`Higham28HilbertCondition.lean` closes the former Hilbert-rate gap with
+`hilbertConditionTwo_log_rate`. `Higham28GaussianQRHaar.lean` closes the final
+Gaussian-QR producer with a computed positive-diagonal QR map and the
+all-nondegenerate-variance Haar push-forward theorem
+`gaussianQRQLawOfScale_eq_normalizedOrthogonalHaar`. See
 `docs/chapter28/CHAPTER28_NOT_PROVED_LEDGER.md`.
 
 Verification targets are `Higham28`, `Higham28Exact`, `Higham28Stewart`,
@@ -68,5 +71,6 @@ Verification targets are `Higham28`, `Higham28Exact`, `Higham28Stewart`,
 `Higham28Moments`, `Higham28ToeplitzGeneral`, `Higham28ToeplitzSpectrum`,
 `Higham28ToeplitzCondition`, `Higham28Companion`,
 `Higham28CompanionSpectral`, `Higham28HilbertAsymptotic`,
+`Higham28HilbertCondition`, `Higham28GaussianQRHaar`,
 `Higham28ShiftedHilbert`, and `Higham28Contracts`, plus the Algorithms umbrella.
 Forbidden-token hygiene and representative axiom audits are required at handoff.

@@ -2,17 +2,37 @@
 
 ## Gate
 
-The Chapter 20 core selected-scope gate is **FAIL** after the fresh 2026-07-18
-source-strength audit. The sole named-result blocker is Theorem 20.7.
+The Chapter 20 core selected-scope gate is **PASS** after the fresh 2026-07-19
+actual-trace audit and repair. There are no open selected-scope rows.
 
 The authoritative row-by-row accounting is
 `docs/chapter20/CHAPTER20_SOURCE_INVENTORY.md`.
 
 ## Open selected-scope rows
 
-| Source row | Exact open obligation | Current evidence |
-|---|---|---|
-| Theorem 20.7, p. 395 | Produce the literal rounded pivoted-QR forward row/prefix estimates and the four matrix/RHS component-budget estimates at a data-independent gamma-tilde-class coefficient, then feed them to the compiled minimizer endpoint. | `fl_pivotedStoredQR_returnedX_pivotPosition_of_roundedCoxHigham` is only conditional on `PivotedStoredQRCoxHighamRoundedRowPolicy` and `PivotedStoredQRCoxHighamComponentBudgets`. `PivotedStoredQRCoxHighamRoundedRowPolicy.of_trace_envelope` proves the automatic final-`R` row and final multiplier fields, but only with an explicitly a-posteriori coefficient. `breakdownCounter_no_roundedRowPolicy` proves that source full rank plus `gammaValid` cannot produce `sigma_pos`; computed nonbreakdown must remain explicit. With it granted, `raw_vector_row` is the first unproduced field, followed by `prefix_vector_row` and the four component-budget fields. |
+None.
+
+## Closed during the 2026-07-19 actual-trace repair
+
+- `higham20_7_sourceConstructed_actual_closed` in
+  `Higham20Theorem20_7ActualBackSub.lean` closes Theorem 20.7 for the literal
+  rounded pivoted stored-QR, paired RHS transformation, and `fl_backSub`
+  execution. It constructs the back-substitution perturbation `dR`, proves the
+  actual returned source-coordinate vector is an exact minimizer for the
+  perturbed data, and proves both printed uniform source-order `n^2` envelopes.
+- The proof derives the completed pivot-row bound, raw-vector and prefix-row
+  growth estimates, literal matrix/RHS compact-operation budgets, the direct
+  `Q Delta R` multiplier estimate, and the source-coordinate permutation
+  transport from the execution. None of these appear as readiness, policy,
+  residual, target-bound, or component-budget premises of the final theorem.
+- One common explicit nonnegative coefficient,
+  `sourceConstructedPivotedStoredQRFinalGammaTilde fp m`, is used for both
+  perturbations and depends only on the floating-point model and `m`, as the
+  printed hidden dimension-only coefficient requires.
+- Nonzero computed diagonal remains a visible algorithm-domain premise. This
+  is necessary rather than target-bearing: `breakdownCounter_no_roundedRowPolicy`
+  proves that source full rank plus bare `gammaValid` does not imply computed
+  nonbreakdown.
 
 ## Audited source boundaries that do not fail the gate
 
@@ -65,13 +85,14 @@ The authoritative row-by-row accounting is
   once, and proving the printed matrix/RHS envelopes with an explicit
   dimension-only `gammaTilde`.
 - `fl_pivotedStoredQR_returnedX_pivotPosition_of_roundedCoxHigham` closes only
-  the conditional assembly from forward-row/component-budget packages. It is
-  retained as useful infrastructure, not counted as source closure.
-- The 2026-07-18 bounded repair proves nonnegativity of both literal local
-  budget families and produces the rounded policy's direct multiplier field
-  from a finite a-posteriori envelope. It also proves the exact full-rank
-  rounded-breakdown counterexample described in the open table. These changes
-  localize the remaining numerical analysis but do not justify PASS.
+  the historical conditional assembly from forward-row/component-budget
+  packages. It remains useful infrastructure but is superseded as gate
+  evidence by the 2026-07-19 actual producer above.
+- The 2026-07-18 bounded repair proved nonnegativity of both literal local
+  budget families, a finite a-posteriori direct-multiplier envelope, and the
+  exact full-rank rounded-breakdown counterexample. Its then-current conclusion
+  that the actual producer was still missing is historical and is superseded
+  by `higham20_7_sourceConstructed_actual_closed`.
 - `GeneralizedQRFactorization.exists_theorem20_9_exact_householder` proves
   unconditional Theorem 20.9 existence for arbitrary source dimensions
   `m + p >= n >= p`; rank assumptions are used only for the theorem's separate
@@ -123,9 +144,8 @@ The authoritative row-by-row accounting is
   algorithm.
 - A conditional transfer theorem remains `PARTIAL` whenever its assumptions
   merely restate an accumulated perturbation, minimizer, or target bound. The
-  corrected Theorem 20.7 assembler constructs its accumulated perturbations
-  and minimizer conclusion from local trace-operation budgets, but those
-  numerical budget estimates are still open. The older conditional
-  `PivotedStoredQRCoxHighamRowSortingCaps` is not used as evidence for row 27;
-  the independent executable producer and invariance proof are in
-  `Higham20RowSorting.lean`.
+  older Theorem 20.7 conditional assembler is therefore not closure evidence;
+  the new actual-trace endpoint proves its numerical estimates directly. The
+  conditional `PivotedStoredQRCoxHighamRowSortingCaps` is likewise not used as
+  evidence for row 27; the independent executable producer and invariance proof
+  are in `Higham20RowSorting.lean`.

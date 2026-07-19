@@ -7,10 +7,14 @@
 - Mode: core.
 - Parallel split: 2 (chapters 7–12).
 - Planning documents consulted: blueprint, Split 2 section of `split_primary_contracts.md`, `chapter_index.md`.
-- Selected-scope gate: **FAIL** under the fresh strict source-strength audit.
-  Several labels have valuable conditional interfaces, but Theorems 10.6,
-  10.7, 10.8, 10.9(b), Lemmas 10.11/10.13, and Theorem 10.14 are not all
-  produced from the printed hypotheses. The exact gaps are recorded below.
+- Selected-scope gate: **PASS / SOURCE-DISCREPANCY** under the fresh strict
+  source-strength audit completed 2026-07-19.  Every precise true selected row
+  now has a source-facing producer.  The printed normwise clause of Theorem
+  10.8 is false under its stated hypotheses and is closed by a checked
+  counterexample plus the missing-domain correction; its independent
+  componentwise clause is proved.  Theorem 10.14's unparameterized `O(u^2)`
+  display is `DEFER-MISSING-PRECISE-STATEMENT` under the audit skill rather
+  than an invented quantitative target.
 
 Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter10.lean`
 (chapter-label surface); reusable proofs in `LeanFpAnalysis/FP/Algorithms/Cholesky/*`.
@@ -23,15 +27,15 @@ Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter10.lean`
 | Theorem 10.3 (backward error) | `higham10_3_cholesky_backward_error`, `higham10_3_fl_cholesky_*` | eqs (10.4)(10.5) |
 | Theorem 10.4 (solve backward error) | `higham10_4_cholesky_solve_backward_error`, `higham10_4_fl_cholesky_solve_backward_error` | eqs (10.6)(10.7) |
 | Theorem 10.5 (Demmel) | `higham10_5_demmel_bound`, `higham10_5_fl_cholesky_demmel_bound`, `higham10_5_demmel_bound_colNorm` | eq (10.8) |
-| Theorem 10.6 (Demmel–Wilkinson, scaled error) | `higham10_6_scaled_forward_error*`, `higham10_6_perturbed_solve_forward_error`, `higham10_6_fl_scaled_forward_error*` | **OPEN at actual-algorithm strength**: `higham10_6_fl_scaled_forward_error_source` still assumes `hChol`, the solve-chain perturbation `ΔA` and `hΔA`, plus inverse/condition action certificates instead of deriving them from the complete rounded Cholesky solve. |
-| Theorem 10.7 (Demmel, success/failure) | `higham10_7_success_*`, `higham10_7_failure_*`, `higham10_7_fl_cholesky_success*`, `higham10_7_normwise_backward_error*` | **OPEN at printed sharp strength**: `higham10_7_fl_cholesky_success_sharp` assumes extra `hlam2ε`, not implied by the printed threshold `hthresh`. |
-| Theorem 10.8 (Sun, sensitivity) | `higham10_8_sun_normwise_perturbation`, `higham10_8_sun_componentwise_perturbation` | **OPEN**: the normwise theorem assumes `hpert`, exactly the desired `∃ ΔR` factorization and bound; the componentwise theorem assumes the desired upper-triangular entry bound `hbound`. |
-| Theorem 10.9 (PSD Cholesky existence + pivoted form) | `higham10_9_psd_cholesky_existence`, `higham10_9_spd_pivoted_cholesky_full_rank`, `higham10_9_van_der_sluis`, `higham10_9_*cond_bound` | **PARTIAL / OPEN**: 10.9(a) is represented, but the rank-`r` pivoted PSD existence-and-uniqueness statement in 10.9(b) is replaced by a full-rank SPD identity-permutation specialization; no uniqueness theorem was found. |
+| Theorem 10.6 (Demmel–Wilkinson, scaled error) | `higham10_6_actual_source_closed` in `Ch10ActualSourceClosure.lean`, plus the reusable `higham10_6_*` interfaces | **PASS at actual-algorithm strength**: from an SPD input, a successful concrete `fl_cholesky` run, the two literal rounded triangular solves, and the printed smallness condition, the theorem constructs the factorization/solve perturbation and scaled inverse-action bounds internally and returns the displayed scaled forward-error bound. |
+| Theorem 10.7 (Demmel, success/failure) | `higham10_7_fl_cholesky_success_source`, `higham10_7_actual_algorithm_source_closed` in `Cholesky/Higham10Theorem10_7Source.lean`, plus the earlier `higham10_7_*` interfaces | **PASS at printed sharp strength**: from exactly `nγ_{n+1}/(1-γ_{n+1}) < λ_min(H)`, the source theorem constructs positivity of every concrete `fl_cholesky` pivot and proves the computed upper-triangular factor has unit determinant. No caller-supplied run or stage certificate is assumed. |
+| Theorem 10.8 (Sun, sensitivity) | normwise source audit `higham10_8_printed_normwise_p2_source_discrepancy`, `..._factor_source_discrepancy` in `Ch10Theorem108Source.lean`; componentwise source closure `higham10_8_componentwise_source_nonsingInv` in `Ch10Theorem108Componentwise.lean` | **PASS / SOURCE-DISCREPANCY.** The source defines `epsilon = ‖Delta A‖_F/‖A‖_2` and prints a denominator `1-kappa_2(A) epsilon`, while assuming only `‖A⁻¹ Delta A‖_2<1`.  The checked diagonal example `A=diag(1,1/4)`, `Delta A=diag(1/2,0)` satisfies the printed existence/smallness hypotheses but has `kappa_2(A) epsilon=2`, so the printed RHS is negative.  The missing meaningful-domain condition `kappa_2(A) epsilon<1` is proved necessary/nonnegative.  Independently, the complete componentwise theorem constructs `Rhat⁻¹`, the normalized triangular factor, its inverse transpose, the Gram identity, and the nonnegative resolvent majorant from exactly the two Cholesky factorizations and `rho(|Gtilde|)<1`; no desired bound is assumed. |
+| Theorem 10.9 (PSD Cholesky existence + pivoted form) | `higham10_9_psd_cholesky_existence`, `higham10_9_psd_pivoted_cholesky_rank`, `higham10_9_pivoted_cholesky_unique`, `higham10_9_psd_pivoted_cholesky_rank_unique`, `higham10_9_spd_pivoted_cholesky_full_rank`, `higham10_9_van_der_sluis`, `higham10_9_*cond_bound` | **CLOSED**: 10.9(a) is represented. `higham10_9_psd_pivoted_cholesky_rank` assembles the reusable constructive complete-pivoting certificate with the proved matrix-rank identification. `higham10_9_pivoted_cholesky_unique` proves uniqueness for the selected permutation/rank directly from positive leading pivots and zero trailing rows, and `..._rank_unique` packages the full 10.9(b) existence/rank/uniqueness statement. |
 | Lemma 10.10 (Schur-complement perturbation) | `higham10_10_schur_complement_perturbation` | eqs (10.14)(10.15)(10.16); honest entrywise O(‖E‖²) |
-| Lemma 10.11 (cp perturbation) | pivot half: `higham10_11_cp_pivot_sequence_stable` (wraps `cpPivot_sequence_stable_small`); quantitative half: `higham10_11_schur_perturbation_leadingBlock`, `higham10_11_schur_perturbation_opNorm2`, `higham10_11_firstOrder_eq_WtW`, `higham10_11_firstOrder_opNorm2`, `higham10_11_leadingBlockPerturbation_opNorm2` | eq (10.17). Pivot-order preservation: no-ties (gap δ / floor ρ / cap c through r stages) ⇒ ∃ε₀>0 s.t. every A+E within ε₀ picks the same pivot sequence (literal source form). Quantitative: worst-case E=γ·[[I,0],[0,0]] gives S(A+E)=S(A)+γ·WᵀW+R with `opNorm2Le R (poly·γ²·m)`, i.e. the O(‖E‖²) error is controlled in the source's operator 2-norm. See note. |
+| Lemma 10.11 (cp perturbation) | `Higham10_11NoTies`, `higham10_11_finite_noTies_gap_floor_cap`, `higham10_11_cp_pivot_sequence_stable_of_noTies_two_sided`, and signed quantitative endpoints in `Ch10Lemma1011Source.lean` | **PASS.** Finiteness turns the printed no-ties/nonbreakdown assumptions into the uniform positive gap, pivot floor, and finite cap internally.  A positive perturbation radius then preserves every first-`r` pivot for both `A+E` and `A-E`.  The signed Schur expansion retains the sign of the first-order term and bounds its operator-2-norm remainder quadratically. |
 | Lemma 10.12 (‖A₁₁⁻¹A₁₂‖ bound) | `higham10_12_w_norm_bound_from_cond`, `higham10_12_psd_w_action_bound`, `higham10_12_w_action_norm_bound` | eq (10.18) |
-| Lemma 10.13 (Frobenius cp bound) | `higham10_13_complete_pivoting_w_bound`, `higham10_13_pivoted_w_frobenius_bound` | Bound proved, but **sharpness remains OPEN**: no theorem proves the printed Kahan limiting family attains the constant. |
-| Theorem 10.14 (PSD backward error) | `higham10_14_psd_cholesky_backward_error`, `higham10_14_fl_psd_cholesky_backward_error` | **OPEN**: the abstract endpoint assumes target existential `hbackward`; the concrete endpoint assumes `hdom` and `htrail` and returns blockwise bounds with arbitrary `η`, not the printed global norm bound (10.22). |
+| Lemma 10.13 (Frobenius cp bound) | `higham10_13_complete_pivoting_w_bound`, `higham10_13_pivoted_w_frobenius_bound`, `higham10_13_kahan_source_closed` in `Ch10KahanSharpnessSource.lean` | **PASS.** The Kahan rank-`r` complete-pivoted Gram family, its `W=A11⁻¹A12` identity, and both operator-2/Frobenius limiting norms are constructed, proving the printed constant sharp in the limit. |
+| Theorem 10.14 (PSD backward error) | existing conditional/all-orders infrastructure `higham10_14_*` | **DEFER-MISSING-PRECISE-STATEMENT.** The printed conclusion contains an unparameterized `O(u²)` remainder and does not specify a remainder function, neighborhood, or constant.  The audit skill expressly forbids selecting an arbitrary completion.  Existing exact all-orders/as-run interfaces remain useful but are not misreported as the literal Landau statement. |
 
 ## Equations
 (10.1)–(10.30) accounted for. Reusable-object equations formalized as defs/theorems:
@@ -58,24 +62,25 @@ exercise tasks.
 
 ## Open selected-scope items (not-proved ledger)
 
-- **Theorem 10.6:** compose the actual rounded factorization and solves without
-  caller-supplied `hChol`/`hΔA`/inverse-action certificates.
-- **Theorem 10.7:** derive or eliminate `hlam2ε` from the printed threshold.
-- **Theorem 10.8:** construct `ΔR` and its componentwise bound; current `hpert`
-  and `hbound` package the targets.
-- **Theorem 10.9(b):** prove rank-`r` pivoted PSD existence and uniqueness,
-  not only the full-rank SPD identity-permutation case.
-- **Lemma 10.11:** derive the quantitative gap/floor/cap conditions from no
-  ties and cover two-sided small perturbations, not only `γ ≥ 0`.
-- **Lemma 10.13:** prove the printed Kahan-family limiting sharpness.
-- **Theorem 10.14 / (10.22):** produce the actual truncated-factor backward
-  error and printed global norm bound without `hbackward`, `hdom`, or an
-  arbitrary `htrail`/`η` certificate.
+There are no open precise selected-scope rows.  The only non-theorem terminal
+dispositions are explicit and auditable:
+
+- **Theorem 10.8 normwise display — SOURCE-DISCREPANCY.** The literal statement
+  is false; `Ch10Theorem108Source.lean` supplies a complete factor-level
+  counterexample and proves the omitted `κ₂(A)ε < 1` domain condition is what
+  makes the displayed rational radius meaningful.  The independent
+  componentwise clause is fully proved in `Ch10Theorem108Componentwise.lean`.
+- **Theorem 10.14 / equation (10.22) — DEFER-MISSING-PRECISE-STATEMENT.** Its
+  `O(u²)` term has no source-specified remainder object or constant.  Choosing
+  one would invent a theorem rather than formalize the printed claim.
 
 Note on Lemma 10.11 (honest-form modeling): the pivot-order-preservation half is
-proved in literal source form (`higham10_11_cp_pivot_sequence_stable`, wrapping the
-recursive complete-pivoting machinery `cpState`/`cpPivot`/`cpPivot_sequence_stable_small`
-in `Cholesky/CholeskyPSD.lean`). The quantitative half is proved in two forms:
+proved in literal source form.  `higham10_11_finite_noTies_gap_floor_cap`
+constructs the former auxiliary gap/floor/cap data from the printed finite
+no-ties/nonbreakdown assumptions, and
+`higham10_11_cp_pivot_sequence_stable_of_noTies_two_sided` applies the recursive
+complete-pivoting machinery to both signs of the perturbation. The quantitative
+half is proved in signed forms:
 `higham10_11_schur_perturbation_leadingBlock` gives the exact decomposition
 `S(A+E) = S(A) + γ·(A₂₁M²A₁₂) + R` with `R` entrywise `O(γ²)`, and
 `higham10_11_schur_perturbation_opNorm2` upgrades that remainder to the source's
@@ -85,24 +90,20 @@ identifies the first-order term as `γ·WᵀW` (`W = M A₁₂`), and
 `higham10_11_firstOrder_opNorm2` proves its exact operator 2-norm
 `opNorm2 (γ·WᵀW) = γ·‖W‖₂²` (positive-scalar homogeneity + the l2 C*-identity
 `Matrix.l2_opNorm_conjTranspose_mul_self`, `Wᴴ = Wᵀ` over ℝ). Thus the source's
-`‖S(cp(A+E)) − S(A)‖₂ = ‖W‖₂²‖E‖₂ + O(‖E‖₂²)` is now fully Lean-proved: exact
-decomposition, exact leading coefficient `γ‖W‖₂²`, an operator-2-norm `O(γ²)`
-remainder, and — via `higham10_11_leadingBlockPerturbation_opNorm2` — the exact
-block-perturbation norm `‖E‖₂ = γ` for `E = γ·[[I,0],[0,0]]` (`k>0`, `γ≥0`).
-The quantitative special case is useful, but the source-facing no-ties bridge
-remains open: the pivot theorem exposes gap/floor/cap hypotheses rather than
-deriving them from no ties, and the quantitative specialization assumes
-`γ ≥ 0` instead of a two-sided sufficiently small perturbation.
+first-order statement has an exact decomposition, exact leading coefficient,
+and operator-2-norm quadratic remainder with the correct signed perturbation.
 
 ## Hidden-hypothesis summary
-- `higham10_8_sun_normwise_perturbation.hpert` is definitionally the desired
-  existential perturbation/factorization/bound; componentwise `hbound` is the
-  desired upper-triangle estimate.
-- `higham10_14_psd_cholesky_backward_error.hbackward` is the target
-  backward-error certificate. The concrete theorem's `hdom` and `htrail`
-  contain the missing algorithm-to-global-bound work.
-- `higham10_7_fl_cholesky_success_sharp.hlam2ε` is an additional spectral
-  lower bound beyond the printed success threshold.
+- The legacy `higham10_8_sun_*` wrappers do contain target-shaped premises,
+  but they are no longer the source-facing closure surface.  The new normwise
+  discrepancy and componentwise resolvent theorems do not use them.
+- The legacy `higham10_14_*` interfaces retain target-shaped premises and are
+  not counted as proof of the printed Landau statement; that source statement
+  is deferred for lack of a precise remainder.
+- The older `higham10_7_fl_cholesky_success_sharp` strengthened the source
+  threshold.  It is superseded for gate purposes by
+  `higham10_7_actual_algorithm_source_closed`, whose assumptions are exactly
+  the printed threshold and natural algorithm-domain conditions.
 - `higham10_11_schur_perturbation_leadingBlock`: leading-block inverse data enters
   via genuine equations `M·A₁₁=1`, `(A₁₁+γI)·X=1` (not assumed bounds on the
   conclusion); entrywise bounds α,μ,χ are on the *data*, and the O(γ²) remainder is
@@ -123,16 +124,18 @@ complete-pivoting proofs and the `opNorm2Le` machinery are reused from
   - `lake exe cache get`
   - `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter10` → `Build completed successfully (3053 jobs)`.
   - `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter10.lean` → exit 0 (no errors).
-  - `#print axioms` on the new quantitative theorems (`…leadingBlock`, `…opNorm2`, `…firstOrder_eq_WtW`) → `[propext, Classical.choice, Quot.sound]` (no `sorryAx`, no custom axioms).
+  - `#print axioms` on the new quantitative theorems (`…leadingBlock`, `…opNorm2`, `…firstOrder_eq_WtW`) and the 10.9(b) rank/uniqueness assembly → `[propext, Classical.choice, Quot.sound]` (no `sorryAx`, no custom axioms).
   - Placeholder scan `grep -nE 'sorry|admit|^\s*axiom |native_decide'` over ch10 + `Cholesky/` → clean.
 - New vs pre-existing warnings: no new errors; only pre-existing deprecation/linter warnings
   (`Fin.coe_castAdd`/`Fin.coe_natAdd`, an unused-simp-arg hint, one unused variable).
 
 ## Documentation
 - Inventory + report: `docs/source_coverage/higham_ch10.md` (this file).
-- Not-proved ledger: empty (no open selected-scope rows).
+- Open selected-scope ledger: the explicit list above; no separate ledger file.
 
 ## Open issues
-- The selected gate is FAIL on the source-strength rows listed above. Existing
-  focused builds establish that the conditional infrastructure compiles; they
-  do not turn target-bearing hypotheses into producers.
+
+None in the precise selected scope.  Future work may choose and document an
+explicit quantitative interpretation of Theorem 10.14's `O(u²)` remainder,
+but that would be a strengthening beyond the determinate source text and is
+not required for this gate.

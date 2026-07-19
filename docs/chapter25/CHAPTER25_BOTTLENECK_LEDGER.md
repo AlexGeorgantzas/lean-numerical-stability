@@ -2,26 +2,32 @@
 
 ## Gate
 
-The Chapter 25 core selected-scope gate is **FAIL** under
+The Chapter 25 core selected-scope gate is **PASS / SOURCE-DISCREPANCY** under
 the strict precise-prose audit. The former bottleneck,
 equation (25.11) together with the implicit-function/Taylor prose on printed
 pp. 464-466 (PDFs 6-8), is closed.
 
-The p. 463 eigenproblem bottleneck is reduced but not fully closed by
+The p. 463 eigenproblem bottleneck is closed by
 `Higham25EigenClosure.lean`. The module proves the bordered Jacobian, exact
-Taylor identity, rounded residual budget, and kernel triviality from
-`Higham25SimpleEigenpairCertificate`. It does not derive that certificate from
-the source's bare algebraic simple-eigenvalue hypothesis. The printed `2‖A‖`
+Taylor identity, rounded residual budget, and kernel triviality directly from
+the standard algebraic-simple hypothesis
+`A.charpoly.rootMultiplicity lambda = 1`. It also proves nonzero determinant
+of the displayed bordered matrix. The printed `2‖A‖`
 Lipschitz coefficient is separately false without a scaling assumption; the
 module proves a zero-matrix counterexample and the corrected coefficient `2`,
 so that part is a terminal source discrepancy rather than a hidden premise.
 
-## Remaining selected bridge
+## Closed selected bridge
 
-Construct the left eigenvector/nonorthogonality and one-dimensional eigenspace
-certificate from a standard characteristic-polynomial root of multiplicity one
-(or prove an equivalent generalized-eigenspace formulation), then apply
-`higham25EigenJacobian_kernel_eq_zero_of_simple`.
+`higham25EigenJacobian_kernel_eq_zero_of_algebraically_simple` uses Mathlib's
+identity between characteristic-polynomial root multiplicity and the finrank
+of the maximal generalized eigenspace. Root multiplicity one makes every
+generalized eigenvector a scalar multiple of the normalized eigenvector,
+which forces both components of a Jacobian-kernel vector to vanish.
+`higham25EigenJacobian_det_ne_zero_of_algebraically_simple` transfers that
+product-space result to the displayed `Fin (n+1)` matrix and proves its
+determinant is nonzero. No left-eigenvector certificate or endpoint-bearing
+hypothesis is consumed.
 
 ## Equation (25.11)
 

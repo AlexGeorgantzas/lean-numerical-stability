@@ -52,7 +52,7 @@ throughout the summation; the completion is never exercised on the actual trace.
 
 The per-step hypothesis `kahanFF_stepCondition` is exactly the applicability of
 (4.7) at each partial sum: the current term is representable, and either the
-Dekker magnitude order `|xᵢ| < |sᵢ|` holds with `sᵢ + xᵢ` in normal range, or
+Dekker magnitude order `|xᵢ| ≤ |sᵢ|` holds with `sᵢ + xᵢ` in normal range, or
 the running add is already exact.  This is faithful to Higham's own caveat that
 (4.7) "is based on the assumption that `|a| ≥ |b|`" (p. 85).
 
@@ -203,7 +203,7 @@ normal range (the abstract (4.7) hypothesis), or the running add is already
 exact (which covers, in particular, the first add from `a = 0`). -/
 def kahanFF_stepCondition (fmt : FloatingPointFormat) (a b : ℝ) : Prop :=
   fmt.finiteSystem b ∧
-    ((fmt.finiteSystem a ∧ |b| < |a| ∧ fmt.finiteNormalRange (a + b)) ∨
+    ((fmt.finiteSystem a ∧ |b| ≤ |a| ∧ fmt.finiteNormalRange (a + b)) ∨
       fmt.finiteRoundToEvenOp BasicOp.add a b = a + b)
 
 /-- Equation (4.7) for the safe-completion model at one step.
@@ -228,7 +228,7 @@ theorem kahanFF_step_exact
   -- Finite FastTwoSum certificate for `(a, b)`.
   have hcert : FastTwoSumFiniteCertificate fmt a b := by
     rcases hmain with ⟨ha, hab, hrange⟩ | hexadd
-    · exact FastTwoSumFiniteCertificate.of_base2_abs_gt fmt hbeta ht ha hb hab hrange
+    · exact FastTwoSumFiniteCertificate.of_base2_abs_le fmt hbeta ht ha hb hab hrange
     · exact FastTwoSumFiniteCertificate.of_exact_add fmt a b hb hexadd
   -- The running add is in normal range or exact (feeds the main-add bridge).
   have hdisj :
@@ -318,7 +318,7 @@ bound (4.9), are packaged in the repository as
 The residual of that theorem is exactly the exactness of the displayed
 `temp - s` subtraction at each Kahan step, which is a finite-format
 correction-formula fact (4.7).  We discharge it for the safe-completion model
-using the same `FastTwoSumFiniteCertificate.of_base2_abs_gt` certificate as for
+using the same `FastTwoSumFiniteCertificate.of_base2_abs_le` certificate as for
 (4.10): the certificate's `finite_a_sub_s` field makes `temp - s` representable,
 whence the safe completion computes the subtraction exactly.  (The
 `KahanAddSubFiniteRoundToEvenRealization` route in the repository requires
@@ -329,8 +329,8 @@ no magnitude order, so the per-step hypothesis is a disjunction. -/
 /-- Per-step exact correction subtraction for the safe-completion model's Kahan
 trace, discharged from finite equation (4.7).
 
-For each step either the Dekker magnitude order `|yᵢ| < |tempᵢ|` holds with
-`tempᵢ + yᵢ` in normal range (so `FastTwoSumFiniteCertificate.of_base2_abs_gt`
+For each step either the Dekker magnitude order `|yᵢ| ≤ |tempᵢ|` holds with
+`tempᵢ + yᵢ` in normal range (so `FastTwoSumFiniteCertificate.of_base2_abs_le`
 makes `tempᵢ - sᵢ` representable), or `tempᵢ = 0` (first step / cancellation, so
 `sᵢ = yᵢ` and `tempᵢ - sᵢ = -yᵢ` is representable). -/
 theorem kahanFF_kahan_correctionSub_exact
@@ -340,7 +340,7 @@ theorem kahanFF_kahan_correctionSub_exact
       fmt.finiteSystem (kahanTrace (kahanFF_model fmt) v i).y)
     (hstep : ∀ i : Fin n,
       (fmt.finiteSystem (kahanTrace (kahanFF_model fmt) v i).temp ∧
-        |(kahanTrace (kahanFF_model fmt) v i).y| <
+        |(kahanTrace (kahanFF_model fmt) v i).y| ≤
           |(kahanTrace (kahanFF_model fmt) v i).temp| ∧
         fmt.finiteNormalRange
           ((kahanTrace (kahanFF_model fmt) v i).temp +
@@ -368,7 +368,7 @@ theorem kahanFF_kahan_correctionSub_exact
         FastTwoSumFiniteCertificate fmt
           (kahanTrace (kahanFF_model fmt) v i).temp
           (kahanTrace (kahanFF_model fmt) v i).y :=
-      FastTwoSumFiniteCertificate.of_base2_abs_gt fmt hbeta ht htemp_fin
+      FastTwoSumFiniteCertificate.of_base2_abs_le fmt hbeta ht htemp_fin
         (hY i) horder hrange
     have hsub_fin :
         fmt.finiteSystem
@@ -411,7 +411,7 @@ theorem kahanFF_kahanSum_backward_error
       fmt.finiteSystem (kahanTrace (kahanFF_model fmt) v i).y)
     (hstep : ∀ i : Fin n,
       (fmt.finiteSystem (kahanTrace (kahanFF_model fmt) v i).temp ∧
-        |(kahanTrace (kahanFF_model fmt) v i).y| <
+        |(kahanTrace (kahanFF_model fmt) v i).y| ≤
           |(kahanTrace (kahanFF_model fmt) v i).temp| ∧
         fmt.finiteNormalRange
           ((kahanTrace (kahanFF_model fmt) v i).temp +
@@ -446,7 +446,7 @@ theorem kahanFF_kahanSum_forward_error
       fmt.finiteSystem (kahanTrace (kahanFF_model fmt) v i).y)
     (hstep : ∀ i : Fin n,
       (fmt.finiteSystem (kahanTrace (kahanFF_model fmt) v i).temp ∧
-        |(kahanTrace (kahanFF_model fmt) v i).y| <
+        |(kahanTrace (kahanFF_model fmt) v i).y| ≤
           |(kahanTrace (kahanFF_model fmt) v i).temp| ∧
         fmt.finiteNormalRange
           ((kahanTrace (kahanFF_model fmt) v i).temp +

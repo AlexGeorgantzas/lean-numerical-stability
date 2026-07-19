@@ -1,18 +1,17 @@
 # Chapter 28 Not-Proved Ledger
 
-The Chapter 28 selected-scope gate is **FAIL** under the fresh strict precise-
+The Chapter 28 selected-scope gate is **PASS** under the fresh strict precise-
 prose audit. Row 28-P3's headline limit is CLOSED. `Higham28GinibreFiniteFormula.lean`
 proves the premise-free, axiom-clean `ch28gf_realGinibreFiniteExpectationFormula`
 (`∀ n, 0 < n → expectedRealEigenvalueCount n = realGinibreExpectedCountClosedForm n`)
 and hence the premise-free `ch28gf_realGinibreExpectedCountLimit`
-(`E_n/√n → √(2/π)`). The remaining selected gaps are listed below.
+(`E_n/√n → √(2/π)`). The former Hilbert condition-rate gap is also
+closed by `hilbertConditionTwo_log_rate`, and the final Gaussian-QR gap is
+closed by `gaussianQRQLawOfScale_eq_normalizedOrthogonalHaar`.
 
 ## Open selected rows
 
-| ID | Printed claim | Existing evidence | Exact missing production |
-|---|---|---|---|
-| 28-A1, p. 514 | `κ₂(H_n) ∼ exp(3.5n)` and explicit statement of exponential growth | `hilbertConditionTwo` and the unproved recorded proposition `HilbertConditionAsymptotic`; shifted-Hilbert norm clause is proved | A corrected source-faithful growth theorem, e.g. `log(κ₂(H_n))/n → 4 log(1+√2)`. The rounded decimal makes literal ratio equivalence false/inappropriate, but does not make the central exponential-rate claim under-specified. |
-| 28-PQR, p. 517 | Positive-diagonal QR of iid `N(0,σ²)` square data yields Haar `Q` for every variance | Stewart's different Householder-product Haar theorem | A measurable normalized-QR producer and push-forward proof for the Gaussian matrix law. |
+None.
 
 ## Formerly-open selected row 28-P3 (now CLOSED)
 
@@ -32,7 +31,9 @@ feeding `ch28gf_realGinibreFiniteExpectationFormula`.
 
 | ID / source group | Terminal evidence | Status |
 |---|---|---|
+| 28-PQR Gaussian QR Haar generator | `modifiedGramSchmidt_positiveDiagonalQR_of_det_ne_zero`, `gaussianColumnMatrixMeasureOfScale_det_ne_zero_ae`, `gaussianQRQ_orthogonalLeftMul_of_det_ne_zero`, `gaussianQRQLawOfScale_eq_normalizedOrthogonalHaar` | PASS for every nonzero scale `σ`, hence every nondegenerate variance `σ²` |
 | 28.2 Hilbert determinant asymptotic | `hilbert_det_formula`, `log_hilbert_det_eq_sum`, `hilbertDetLeadingLogRate_proved` | PASS on the faithful leading-log interpretation |
+| 28-A1 Hilbert condition growth | `hilbertCentralDelannoy_log_rate`, `opNorm2_hilbertInverseFormula_log_rate`, `hilbertConditionTwo_log_rate` | PASS for the source-faithful exact rate `4 log(1+√2)`; the rounded literal ratio reading is intentionally not asserted |
 | 28-A1 shifted Hilbert norm | `opNorm2_shiftedHilbert_le_pi`, `pi_sub_sixteen_div_log_succ_le_opNorm2_shiftedHilbert`, `shiftedHilbert_norm_asymptotic` | PASS |
 | 28-P1 / 28-P2 Hilbert and Cauchy total positivity/formulas | `hilbertMatrix_isStrictlyTotallyPositive`, `cauchyMatrix_det_eq_formula`, `cauchyMatrix_mul_cauchyInverseFormula`, `cauchyInverseFormula_mul_cauchyMatrix`, `cauchyLower_mul_cauchyUpper`, `sum_cauchyInverseFormula`, `cauchyMatrix_isStrictlyTotallyPositive` | PASS |
 | 28-P3a uniform/Perron | `uniformUnitIntervalMatrixMeasure_strictlyPositive`, `hasPositiveDominantEigenvalue_of_strictlyPositive`, `uniformPositivePerronAlmostSure` | PASS |
@@ -53,9 +54,9 @@ feeding `ch28gf_realGinibreFiniteExpectationFormula`.
 
 ## Terminal non-proof dispositions
 
-- The rounded `kappa_2(H_n) ~ exp(3.5n)` clause is no longer treated as a
-  terminal deferral. It is an open precise-prose row requiring a corrected
-  exact log-growth theorem; the shifted-Hilbert clause in the same row is PASS.
+- The rounded `kappa_2(H_n) ~ exp(3.5n)` clause is closed at its faithful
+  precision by `hilbertConditionTwo_log_rate`, which proves the exact rate
+  `4 log(1+√2)`. Literal ratio equivalence to the rounded decimal is not claimed.
 - Equations (28.5)-(28.11) are `DEFER-MISSING-PRECISE-STATEMENT`: `approx`
   is printed without a convergence mode, error term, or event.
 - The pp. 512-513 GE/Cholesky componentwise-stability prose, p. 517

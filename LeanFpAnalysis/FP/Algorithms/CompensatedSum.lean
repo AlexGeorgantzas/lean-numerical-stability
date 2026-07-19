@@ -1486,6 +1486,43 @@ theorem FastTwoSumFiniteCertificate.of_base2_abs_gt
       FastTwoSumFiniteCertificate.of_base2_abs_gt_of_inexact_add
         fmt hbeta ht ha hb hab habRange hadd
 
+/-- Base-2 FastTwoSum certificate with Higham's non-strict order
+`|b| ≤ |a|`.  Equal magnitudes force `b = a` or `b = -a`, so the first
+addition is exact (`2a` or `0`) when overflow is excluded by `habRange`. -/
+theorem FastTwoSumFiniteCertificate.of_base2_abs_le
+    (fmt : FloatingPointFormat)
+    (hbeta : fmt.beta = 2) (ht : 1 < fmt.t)
+    {a b : ℝ}
+    (ha : fmt.finiteSystem a) (hb : fmt.finiteSystem b)
+    (hab : |b| ≤ |a|)
+    (habRange : fmt.finiteNormalRange (a + b)) :
+    FastTwoSumFiniteCertificate fmt a b := by
+  rcases lt_or_eq_of_le hab with hlt | heq
+  · exact FastTwoSumFiniteCertificate.of_base2_abs_gt
+      fmt hbeta ht ha hb hlt habRange
+  · rcases abs_eq_abs.mp heq with hba | hba
+    · subst b
+      have hfin : fmt.finiteSystem (a + a) := by
+        have htwo := fmt.finiteSystem_two_mul_of_abs_le_maxFiniteMagnitude
+          hbeta ha (by simpa [two_mul] using habRange.2)
+        simpa [two_mul] using htwo
+      have hadd :
+          fmt.finiteRoundToEvenOp BasicOp.add a a = a + a := by
+        simpa [BasicOp.exact] using
+          fmt.finiteRoundToEvenOp_eq_exact_of_finiteSystem
+            (op := BasicOp.add) (x := a) (y := a) hfin
+      exact FastTwoSumFiniteCertificate.of_exact_add fmt a a ha hadd
+    · subst b
+      have hfin : fmt.finiteSystem (a + -a) := by
+        simpa using fmt.finiteSystem_zero
+      have hadd :
+          fmt.finiteRoundToEvenOp BasicOp.add a (-a) = a + -a := by
+        simpa [BasicOp.exact] using
+          fmt.finiteRoundToEvenOp_eq_exact_of_finiteSystem
+            (op := BasicOp.add) (x := a) (y := -a) hfin
+      exact FastTwoSumFiniteCertificate.of_exact_add fmt a (-a)
+        (fmt.finiteSystem_neg ha) hadd
+
 /-- If the finite FastTwoSum certificate supplies representability of the
 intermediate subtraction and the true local error, then Higham equation
 (4.7)'s exactness conclusion follows for the finite round-to-even trace. -/
@@ -1547,6 +1584,28 @@ theorem finiteCorrectionFormulaTrace_exact_of_base2_abs_gt
   finiteCorrectionFormulaTrace_exact_of_fastTwoSumFiniteCertificate
     fmt a b
     (FastTwoSumFiniteCertificate.of_base2_abs_gt
+      fmt hbeta ht ha hb hab habRange)
+
+/-- Higham equation (4.7) with the source's non-strict magnitude hypothesis
+`|a| ≥ |b|`.
+
+The strict branch is `finiteCorrectionFormulaTrace_exact_of_base2_abs_gt`.
+When the magnitudes tie, `b = a` or `b = -a`: the first sum is respectively
+`2a` or `0`, hence is exactly representable (the normal-range hypothesis rules
+out overflow in the doubling branch), and the exact-add certificate closes the
+displayed correction trace.  This packages the equality case that was formerly
+only documented as an informal side branch. -/
+theorem finiteCorrectionFormulaTrace_exact_of_base2_abs_le
+    (fmt : FloatingPointFormat)
+    (hbeta : fmt.beta = 2) (ht : 1 < fmt.t)
+    {a b : ℝ}
+    (ha : fmt.finiteSystem a) (hb : fmt.finiteSystem b)
+    (hab : |b| ≤ |a|)
+    (habRange : fmt.finiteNormalRange (a + b)) :
+    CorrectionFormulaTrace.exact a b
+      (finiteCorrectionFormulaTrace fmt a b) :=
+  finiteCorrectionFormulaTrace_exact_of_fastTwoSumFiniteCertificate fmt a b
+    (FastTwoSumFiniteCertificate.of_base2_abs_le
       fmt hbeta ht ha hb hab habRange)
 
 /-- A deliberately coarse abstract `FPModel` showing that the standard
@@ -12785,7 +12844,7 @@ theorem problem49PriestInput_t24_first_sum_ieeeSingle_rounds_to_67108864 :
     · norm_num [x, fmt, FloatingPointFormat.ieeeSingleFormat,
         FloatingPointFormat.maxFiniteMagnitude, FloatingPointFormat.betaR,
         zpow_neg]
-      exact Nat.cast_le.mpr (by native_decide)
+      exact Nat.cast_le.mpr (by norm_num)
   have hpolicy :
       fmt.sourceRoundToEvenEvidence x (fmt.finiteRoundToEven x) :=
     fmt.finiteRoundToEven_sourceRoundToEvenEvidence_of_finiteNormalRange

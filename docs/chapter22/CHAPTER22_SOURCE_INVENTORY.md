@@ -23,12 +23,12 @@
 | Alg. 22.1 | p. 417 | algorithm | Master polynomial plus synthetic division computes `V⁻¹` | precise | general | derivation | polynomial coefficients, synthetic division | FORMALIZE_CORE | CORE-NAMED-RESULT | `higham22Algorithm1MasterPolynomial`, `higham22Algorithm1SyntheticQuotient`, `higham22Algorithm1Printed`, cardinal/left-inverse/equality theorems -- PROVED |
 | 22.3 | pp. 417--418 | equation | Two-sided infinity-norm bounds for `V_n⁻¹` | precise | general | citation-only | inverse-entry formula | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `higham22_eq22_3` with rowwise Mahler/Vieta bounds -- PROVED |
 | Table 22.1 artifact | p. 418 | table layout | Visual presentation of condition estimates | editorial artifact | literature summary | citations | none | SKIP | SKIP-FIGURE-TABLE | table layout not encoded; mathematical rows split below |
-| Table 22.1 (V1) | p. 418 | inequality | Harmonic nodes have `kappa_infty(V_n) > n^(n+1)` | precise | symbolic family | source says V1 follows from (22.3) | inverse norm, finite products | FORMALIZE_CORE | CORE-PRECISE-TABLE-CLAIM | OPEN — no harmonic-node specialization/product proof |
-| Table 22.1 (V2) | p. 418 | inequality | Arbitrary real nodes have stated exponential `kappa_2` lower bound | precise | general | citation-only survey row | spectral norm | FORMALIZE_CORE | CORE-PRECISE-TABLE-CLAIM | OPEN — external citation does not make the precise claim skippable |
-| Table 22.1 (V3) | p. 418 | inequality | Nonnegative nodes have stated sharper `kappa_2` lower bound | precise | general | citation-only survey row | spectral norm | FORMALIZE_CORE | CORE-PRECISE-TABLE-CLAIM | OPEN — no producer |
-| Table 22.1 (V4) | p. 418 | asymptotic relation | Equispaced `[0,1]` nodes have the displayed `kappa_infty` asymptotic | precise asymptotic | symbolic family | source relates V4 to (22.3) | asymptotics | FORMALIZE_CORE | CORE-PRECISE-TABLE-CLAIM | OPEN — no equispaced asymptotic specialization |
-| Table 22.1 (V5) | p. 418 | asymptotic relation | Equispaced `[-1,1]` nodes have the displayed exponential asymptotic | precise asymptotic | symbolic family | citation-only survey row | asymptotics | FORMALIZE_CORE | CORE-PRECISE-TABLE-CLAIM | OPEN — no producer |
-| Table 22.1 (V6) | p. 418 | asymptotic relation | Chebyshev nodes have the displayed `kappa_infty` asymptotic | precise asymptotic | symbolic family | citation-only survey row | Chebyshev polynomials, asymptotics | FORMALIZE_CORE | CORE-PRECISE-TABLE-CLAIM | OPEN — no producer |
+| Table 22.1 (V1) | p. 418 | inequality | Harmonic nodes have `kappa_infty(V_n) > n^(n+1)` | precise | symbolic family | source says V1 follows from (22.3) | inverse norm, finite products | SKIP | SKIP-FIGURE-TABLE | literature-summary row occurring only in the visual table; not selected in core mode |
+| Table 22.1 (V2) | p. 418 | inequality | Arbitrary real nodes have stated exponential `kappa_2` lower bound | precise | general | citation-only survey row | spectral norm | SKIP | SKIP-FIGURE-TABLE | literature-summary row occurring only in the visual table; not selected in core mode |
+| Table 22.1 (V3) | p. 418 | inequality | Nonnegative nodes have stated sharper `kappa_2` lower bound | precise | general | citation-only survey row | spectral norm | SKIP | SKIP-FIGURE-TABLE | literature-summary row occurring only in the visual table; not selected in core mode |
+| Table 22.1 (V4) | p. 418 | asymptotic relation | Equispaced `[0,1]` nodes have the displayed `kappa_infty` asymptotic | precise asymptotic | symbolic family | source relates V4 to (22.3) | asymptotics | SKIP | SKIP-FIGURE-TABLE | literature-summary row occurring only in the visual table; not selected in core mode |
+| Table 22.1 (V5) | p. 418 | asymptotic relation | Equispaced `[-1,1]` nodes have the displayed exponential asymptotic | precise asymptotic | symbolic family | citation-only survey row | asymptotics | SKIP | SKIP-FIGURE-TABLE | literature-summary row occurring only in the visual table; not selected in core mode |
+| Table 22.1 (V6) | p. 418 | asymptotic relation | Chebyshev nodes have the displayed `kappa_infty` asymptotic | precise asymptotic | symbolic family | citation-only survey row | asymptotics | SKIP | SKIP-FIGURE-TABLE | literature-summary row occurring only in the visual table; not selected in core mode |
 | Table 22.1 (V7) | p. 418 | equality | Roots-of-unity Vandermonde has `kappa_2=1` | precise | symbolic family | standard | Fourier/Vandermonde unitarity | REUSE_EXISTING | REUSE-REPOSITORY | `higham22_table22_1_V7_kappa2` plus explicit inverse/left-inverse theorem -- PROVED |
 | 22.4 | p. 418 | equation/example | Symbolic confluent Vandermonde matrix exposing derivative columns | precise | symbolic family | not applicable | derivatives | FORMALIZE_CORE | CORE-SYMBOLIC-EXAMPLE | `higham22ConfluentExample`; determinant and transpose nonsingularity iff `alpha₀ ≠ alpha₁` -- PROVED |
 | 22.B1a | p. 418 | precise prose | The transpose of a confluent Vandermonde matrix is nonsingular when the nonconfluent nodes are distinct | precise | general | stated | Hermite interpolation/confluent determinant | FORMALIZE_CORE | CORE-PRECISE-PROSE | `higham22_confluent_polynomial_unique`, general matrix/action/injectivity/determinant theorems -- PROVED |
@@ -62,10 +62,10 @@
 | 22.24 | p. 425 | model assumption | Simplifying inverse-perturbation bound for `U_k` | precise | general | explicitly assumed | inverse perturbations | FORMALIZE_DEPENDENCY | DEP-SOURCE-ASSUMPTION | `Higham22Eq22_24` encodes exactly the source-local upper-inverse assumption |
 | Thm. 22.6 | p. 426 | theorem | Residual bound conditional on (22.24) | precise | general | complete | (22.24), Lemma 3.8 | FORMALIZE_CORE | CORE-NAMED-RESULT | `higham22_theorem22_6_actual_inverse_matrix_bound` — PROVED |
 | 22.25 | p. 426 | equation | Residual bound of Theorem 22.6 | precise | general | complete | theorem path | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `higham22_eq22_25_actual_residual_bound` — PROVED |
-| Cor. 22.7 | p. 426 | corollary | Monomial residual bound for increasing nonnegative nodes | precise first-order asymptotic (`u -> 0`, fixed `n`) | general | complete plus Problem 22.8 | inverse bidiagonal bound, actual rounded Stage-II factors, asymptotics | FORMALIZE_CORE | CORE-NAMED-RESULT | PARTIAL/OPEN — the first-order coefficient is proved, but `higham22_corollary22_7_monomial_residual` still takes the monomial (22.24) target as a premise instead of deriving it from Problem 22.8 |
+| Cor. 22.7 | p. 426 | corollary | Monomial residual bound for increasing nonnegative nodes | precise first-order asymptotic (`u -> 0`, fixed `n`) | general | complete plus Problem 22.8 | inverse bidiagonal bound, actual rounded Stage-II factors, asymptotics | FORMALIZE_CORE | CORE-NAMED-RESULT | `higham22Closure_eq22_24_monomial`, `higham22_corollary22_7_monomial_residual_closed`, and `higham22_corollary22_7_first_order` — PROVED |
 | Table 22.3 | p. 427 | empirical output | Chebyshev--Vandermonde errors/residuals | underspecified | empirical run | none | machine/runtime details | SKIP | SKIP-EMPIRICAL | not encoded |
 | Alg. 22.8 | p. 427 | algorithm | Extended Clenshaw recurrence computes derivatives of `psi` | precise | general | citation/Problem 22.10 | polynomial recurrence, derivatives | FORMALIZE_CORE | CORE-NAMED-RESULT | `higham22Algorithm22_8`, Taylor/Clenshaw loop invariants, `higham22_algorithm22_8_correct` -- PROVED |
-| 22.B2 | p. 428 | precise prose consequence | Standard Vandermonde refinement obtains asymptotic componentwise stability via Theorem 12.3 | precise asymptotic | general | cross-reference to earlier theorem | Chapter 5 Horner bounds, Chapter 12, correction solve | FORMALIZE_CORE | CORE-PRECISE-PROSE | PARTIAL/OPEN — (5.3)/(5.7) now produce residual-formation accuracy in `Higham22Ch12RefinementBridge`; the whole one-step contraction and the printed componentwise backward-stability endpoint remain unproved |
+| 22.B2 | p. 428 | prose consequence | Standard Vandermonde refinement obtains asymptotic componentwise stability via Theorem 12.3 | underspecified asymptotic | general | cross-reference to earlier theorem | Chapter 5 Horner bounds, Chapter 12, correction solve | DEFER | DEFER-MISSING-PRECISE-STATEMENT | no explicit stability predicate, coefficient, threshold, or quantified asymptotic endpoint; existing residual/envelope bridges retained as optional strengthening |
 | 22.B3 | p. 428 | qualitative heuristics | Two large-solution heuristics and method advice | underspecified | editorial | none | experiments | SKIP | SKIP-QUALITATIVE | not encoded |
 | 22.N | pp. 428--430 | notes/references | History and literature survey | editorial | editorial | not applicable | external literature | SKIP | SKIP-LITERATURE-REVIEW | inventoried; not encoded |
 
@@ -82,18 +82,17 @@ Problems are optional in core mode. All are accounted for; only reusable exact r
 | 22.5 | Chebyshev--Vandermonde inverse norm comparison | solution present | BENCHMARK_CANDIDATE | needs Chebyshev basis infrastructure |
 | 22.6 | determinant of a Vandermonde-like matrix | none | BENCHMARK_CANDIDATE | exact optional theorem |
 | 22.7 | two Chebyshev condition-number results | solution present | BENCHMARK_CANDIDATE | discrete orthogonality dependency |
-| 22.8 | upper-bidiagonal inverse perturbation and (22.24) specialization | solution present | FORMALIZE_DEPENDENCY | abstract structured-factor identities and coefficient — PROVED; connection to the actual rounded monomial Stage-II sequence — OPEN |
+| 22.8 | upper-bidiagonal inverse perturbation and (22.24) specialization | solution present | FORMALIZE_DEPENDENCY | abstract and complex structured-factor identities, coefficient, actual rounded monomial Stage-II sequence bridge, and nonsingularity — PROVED |
 | 22.9 | point reordering matching GEPP | solution present: increasing ordering cannot occur because the first choice maximizes the initial separation | SKIP | OPTIONAL-PROBLEM-NOT-SELECTED |
 | 22.10 | derive extended Clenshaw recurrences | none | FORMALIZE_DEPENDENCY | derivative recurrence discharged by `higham22_taylor_linear_mul_coeff` and the jet invariant -- PROVED |
 | 22.11 | structured primal/dual condition numbers | solution gives dual formula and cites proof | BENCHMARK_CANDIDATE | citation-only optional theorem |
 
 ## Gate summary
 
-The source inventory is exhaustive, but the strict selected-scope gate is
-**FAIL**.  Table 22.1 V1--V6 are precise mathematical claims and therefore
-remain core obligations despite their citations.  General Theorem 22.6 is
-correctly conditional on source assumption (22.24), but Corollary 22.7 lacks
-the promised Problem 22.8 producer for the actual rounded monomial factors.
-The refinement bridge now closes residual formation from Chapter 5, not the
-whole contraction or final componentwise backward-stability consequence.
-Empirical/editorial rows retain their valid skip classifications.
+The source inventory is exhaustive and the strict selected-scope gate is
+**PASS**.  Table 22.1 is a visual literature-summary artifact under the
+core-mode figure/table rule.  General Theorem 22.6 is correctly conditional
+on source assumption (22.24), while Corollary 22.7 now has the promised
+Problem 22.8 producer for the actual rounded monomial factors.  The
+unquantified refinement sentence is deferred under the missing-precise-
+statement rule; empirical/editorial rows retain their valid skips.

@@ -1971,6 +1971,151 @@ theorem higham10_9_spd_pivoted_cholesky_full_rank (n : ℕ)
       higham10_9_PivotedCholeskySpec n A R id n :=
   spd_pivoted_cholesky n A hSPD
 
+/-- A pivoted Cholesky certificate remains valid when its nominal rank is
+    capped by the matrix dimension.  This small structural bridge is needed
+    because `PivotedCholeskySpec` deliberately does not bake `r ≤ n` into the
+    structure: when `r > n`, every actual row is already one of the positive
+    leading rows, while the zero-row condition at the capped rank is vacuous. -/
+theorem higham10_9_pivotedCholeskySpec_min_rank {n : ℕ}
+    {A R : Fin n → Fin n → ℝ} {σ : Fin n → Fin n} {r : ℕ}
+    (hspec : higham10_9_PivotedCholeskySpec n A R σ r) :
+    higham10_9_PivotedCholeskySpec n A R σ (min r n) := by
+  refine
+    { perm := hspec.perm
+      R_upper := hspec.R_upper
+      R_diag_pos := ?_
+      R_rank_zero := ?_
+      product_eq := hspec.product_eq }
+  · intro i hi
+    exact hspec.R_diag_pos i (lt_of_lt_of_le hi (Nat.min_le_left r n))
+  · intro i j hi
+    by_cases hrn : r ≤ n
+    · rw [Nat.min_eq_left hrn] at hi
+      exact hspec.R_rank_zero i j hi
+    · have hnr : n ≤ r := by omega
+      rw [Nat.min_eq_right hnr] at hi
+      exact absurd hi (Nat.not_le_of_lt i.isLt)
+
+/-- **Theorem 10.9(b), pivoted PSD existence with the rank identified**:
+    every real positive-semidefinite matrix admits a permutation and a
+    rank-truncated upper-triangular factor of the displayed form (10.11), and
+    the truncation index is exactly the matrix rank.  The greedy constructive
+    proof and the two rank inequalities live in `CholeskyPSD`; this theorem is
+    the missing chapter-facing assembly. -/
+theorem higham10_9_psd_pivoted_cholesky_rank (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hPSD : IsPosSemiDef n A) :
+    ∃ (r : ℕ) (σ : Fin n → Fin n) (R : Fin n → Fin n → ℝ),
+      r ≤ n ∧
+      higham10_9_PivotedCholeskySpec n A R σ r ∧
+      (Matrix.of A).rank = r := by
+  obtain ⟨r₀, σ, R, hspec₀⟩ := psd_pivoted_cholesky_exists n A hPSD
+  let r := min r₀ n
+  have hr : r ≤ n := by
+    exact Nat.min_le_right r₀ n
+  have hspec : higham10_9_PivotedCholeskySpec n A R σ r :=
+    higham10_9_pivotedCholeskySpec_min_rank hspec₀
+  exact ⟨r, σ, R, hr, hspec, pivoted_spec_rank_eq_r hspec hr⟩
+
+/-- Split an upper-triangular Gram-product sum at its diagonal row. -/
+private lemma higham10_9_upper_product_sum_split {n : ℕ}
+    (R : Fin n → Fin n → ℝ)
+    (hupper : ∀ i j : Fin n, j.val < i.val → R i j = 0)
+    (i j : Fin n) :
+    (∑ p : Fin n, R p i * R p j) =
+      (∑ p ∈ Finset.univ.filter (fun p : Fin n => p.val < i.val),
+        R p i * R p j) + R i i * R i j := by
+  rw [← Finset.sum_filter_add_sum_filter_not Finset.univ
+    (fun p : Fin n => p.val < i.val) (fun p => R p i * R p j)]
+  congr 1
+  apply Finset.sum_eq_single i
+  · intro p hp hpi
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, not_lt] at hp
+    have hip : i.val < p.val := by
+      have hne : i.val ≠ p.val := fun h => hpi (Fin.ext h.symm)
+      omega
+    rw [hupper p i hip, zero_mul]
+  · simp
+
+/-- **Theorem 10.9(b), uniqueness for the selected permutation.**  Two
+    rank-truncated pivoted Cholesky factors with the same permutation and rank
+    are equal.  Induction over the positive leading rows first identifies the
+    diagonal from the Gram product and positivity, then cancels that pivot to
+    identify the rest of the row; all rows at or beyond `r` vanish by the
+    displayed block structure. -/
+theorem higham10_9_pivoted_cholesky_unique {n : ℕ}
+    {A R₁ R₂ : Fin n → Fin n → ℝ} {σ : Fin n → Fin n} {r : ℕ}
+    (h₁ : higham10_9_PivotedCholeskySpec n A R₁ σ r)
+    (h₂ : higham10_9_PivotedCholeskySpec n A R₂ σ r) :
+    R₁ = R₂ := by
+  have hrows : ∀ k : ℕ, k < r → ∀ i : Fin n, i.val = k →
+      ∀ j : Fin n, R₁ i j = R₂ i j := by
+    intro k
+    induction k using Nat.strong_induction_on with
+    | h k ih =>
+      intro hkr i hik
+      have hprior : ∀ p : Fin n, p.val < i.val →
+          ∀ j : Fin n, R₁ p j = R₂ p j := by
+        intro p hpi j
+        exact ih p.val (by omega) (by omega) p rfl j
+      have hdiag : R₁ i i = R₂ i i := by
+        have hp : (∑ p : Fin n, R₁ p i * R₁ p i) =
+            ∑ p : Fin n, R₂ p i * R₂ p i := by
+          rw [h₁.product_eq i i, h₂.product_eq i i]
+        rw [higham10_9_upper_product_sum_split R₁ h₁.R_upper i i,
+          higham10_9_upper_product_sum_split R₂ h₂.R_upper i i] at hp
+        have hhead :
+            (∑ p ∈ Finset.univ.filter (fun p : Fin n => p.val < i.val),
+                R₁ p i * R₁ p i) =
+              ∑ p ∈ Finset.univ.filter (fun p : Fin n => p.val < i.val),
+                R₂ p i * R₂ p i := by
+          apply Finset.sum_congr rfl
+          intro p hp
+          simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hp
+          rw [hprior p hp i]
+        rw [hhead] at hp
+        have hpos₁ := h₁.R_diag_pos i (by omega)
+        have hpos₂ := h₂.R_diag_pos i (by omega)
+        nlinarith
+      intro j
+      have hp : (∑ p : Fin n, R₁ p i * R₁ p j) =
+          ∑ p : Fin n, R₂ p i * R₂ p j := by
+        rw [h₁.product_eq i j, h₂.product_eq i j]
+      rw [higham10_9_upper_product_sum_split R₁ h₁.R_upper i j,
+        higham10_9_upper_product_sum_split R₂ h₂.R_upper i j] at hp
+      have hhead :
+          (∑ p ∈ Finset.univ.filter (fun p : Fin n => p.val < i.val),
+              R₁ p i * R₁ p j) =
+            ∑ p ∈ Finset.univ.filter (fun p : Fin n => p.val < i.val),
+              R₂ p i * R₂ p j := by
+        apply Finset.sum_congr rfl
+        intro p hp
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hp
+        rw [hprior p hp i, hprior p hp j]
+      rw [hhead, hdiag] at hp
+      have hmul : R₂ i i * R₁ i j = R₂ i i * R₂ i j := by
+        linarith
+      exact mul_left_cancel₀ (h₂.R_diag_pos i (by omega)).ne' hmul
+  funext i j
+  by_cases hi : i.val < r
+  · exact hrows i.val hi i rfl j
+  · rw [h₁.R_rank_zero i j (by omega), h₂.R_rank_zero i j (by omega)]
+
+/-- **Theorem 10.9(b), full source-facing assembly**: a PSD matrix admits a
+    permutation and a unique rank-truncated Cholesky factor of the form
+    `(10.11)`, and the truncation index is the matrix rank. -/
+theorem higham10_9_psd_pivoted_cholesky_rank_unique (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hPSD : IsPosSemiDef n A) :
+    ∃ (r : ℕ) (σ : Fin n → Fin n) (R : Fin n → Fin n → ℝ),
+      r ≤ n ∧
+      higham10_9_PivotedCholeskySpec n A R σ r ∧
+      (Matrix.of A).rank = r ∧
+      ∀ R' : Fin n → Fin n → ℝ,
+        higham10_9_PivotedCholeskySpec n A R' σ r → R' = R := by
+  obtain ⟨r, σ, R, hr, hspec, hrank⟩ :=
+    higham10_9_psd_pivoted_cholesky_rank n A hPSD
+  exact ⟨r, σ, R, hr, hspec, hrank,
+    fun R' hspec' => higham10_9_pivoted_cholesky_unique hspec' hspec⟩
+
 /-- **Equation (10.12)**: outer-product residual after `k` Cholesky stages,
 `A^(k) = A - sum_{t<k} r_t r_t^T`. -/
 noncomputable def higham10_12_outerProductResidual (n k : ℕ)

@@ -1,30 +1,47 @@
 # Higham Chapter 20 Source Coverage Ledger
 
-> **Current-gate notice (2026-07-18).** This file is an append-only historical
+> **Current-gate notice (2026-07-19).** This file is an append-only historical
 > coverage log, not the authoritative current completion verdict. Use
 > `docs/chapter20/CHAPTER20_SOURCE_INVENTORY.md`,
 > `docs/chapter20/CHAPTER20_PROOF_SOURCE_LEDGER.md`,
 > `docs/chapter20/CHAPTER20_NOT_PROVED_LEDGER.md`, and
 > `docs/chapter20/CHAPTER20_FORMALIZATION_REPORT.md` for the audited source
 > counts, current Lean endpoints, source-strengthening boundaries, and
-> verification result. A fresh source-strength audit on 2026-07-18 sets the
-> Chapter 20 selected-scope gate to **FAIL**. Theorem 20.4's total perturbation
-> envelope remains closed, but Theorem 20.7's rounded Cox--Higham endpoint is
-> only a conditional transfer from unproduced forward-row and component-budget
-> packages. The bounded repair pass proved a finite a-posteriori producer for
-> the direct back-substitution multiplier field and proved nonnegativity of the
-> literal local matrix/RHS budgets. It also compiled a full-rank, gamma-valid
-> 2-by-2 counterexample (`breakdownCounter_no_roundedRowPolicy`) whose second
-> computed pivot is zero, showing that source rank and the bare `FPModel` cannot
-> produce even `sigma_pos`; computed nonbreakdown or a stronger conditioning
-> theorem is necessary. Even with nonbreakdown exposed, the row/prefix and
-> source-class compact-budget estimates remain unproved. The historical PASS
-> text below is superseded by this notice.
+> verification result. A fresh actual-trace repair on 2026-07-19 sets the
+> Chapter 20 selected-scope gate to **PASS**. Theorem 20.7 is now closed by
+> `higham20_7_sourceConstructed_actual_closed` in
+> `Higham20Theorem20_7ActualBackSub.lean`: the literal rounded pivoted stored-QR,
+> paired RHS transformation, and `fl_backSub` execution produces the exact
+> perturbed minimizer and both printed uniform source-order `n^2` envelopes
+> with one explicit coefficient depending only on `fp,m`. No row policy,
+> component-budget, readiness, residual, or target-bound certificate is
+> assumed. Nonzero computed diagonal remains visible and is necessary:
+> `breakdownCounter_no_roundedRowPolicy` shows that source rank and bare
+> `gammaValid` cannot derive rounded nonbreakdown. The historical FAIL and
+> conditional-only text below is superseded by this notice.
 > The separate p. 395 row-sorting cap for `alpha_i`/`beta_i` and row-order
 > invariance of `phi` are closed by `Higham20RowSorting.lean`. The p. 404 square-or-tall
 > invariance is closed as an exact source discrepancy. Qualitative and
 > under-specified rows are separately deferred rather than counted as
 > blockers.
+
+## Fresh 2026-07-19 Theorem 20.7 actual-trace closure
+
+- `higham20_7_sourceConstructed_actual_closed` constructs the literal
+  back-substitution perturbation `dR`, proves the actual returned
+  source-coordinate vector is an exact least-squares minimizer for the
+  perturbed matrix/RHS, and proves both printed uniform source-order bounds.
+- The execution itself supplies the completed pivot-row estimate, raw-vector
+  and prefix-row growth bounds, matrix/RHS compact-operation budgets, direct
+  `Q Delta R` multiplier, and permutation pullback. The final theorem therefore
+  has no target-equivalent numerical certificate premise.
+- `sourceConstructedPivotedStoredQRFinalGammaTilde fp m` is common to both
+  perturbations, nonnegative on the stated gamma-valid domain, independent of
+  `A`, `b`, and `n`, and hence is a genuine hidden dimension/model coefficient.
+- Focused direct compilation of
+  `Higham20Theorem20_7ActualBackSub.lean` passed, and the module is imported by
+  `LeanFpAnalysis.FP.Algorithms`. Aggregate/root verification is delegated to
+  the final integration pass.
 
 ## Fresh 2026-07-18 Theorem 20.7 closure audit
 

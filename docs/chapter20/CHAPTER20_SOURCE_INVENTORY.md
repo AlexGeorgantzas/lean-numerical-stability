@@ -2,7 +2,7 @@
 
 ## Audit Basis
 
-- Audit date: 2026-07-16
+- Audit date: 2026-07-19
 - Primary source: `References/1.9780898718027.ch20.pdf`
 - SHA-256: `7CA85D5CAF3FFD5AE90FB315E9B4E00912E174881BCF969E7BA0A7B3CE9EC814`
 - Book: Nicholas J. Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed. (SIAM, 2002)
@@ -27,11 +27,13 @@
 - `GAP`: no adequate local theorem was identified.
 - `EXCLUDED` / `DEFERRED`: the row is accounted for but intentionally outside selected core scope for the stated stable reason.
 
-The Chapter 20 core selected-scope gate is **FAIL**. The named Theorem 20.7
-rounded-trace declaration is a conditional assembly theorem whose row-policy
-and component-budget packages are not yet produced from source assumptions.
-Precise prose row 27 is closed independently by the executable exact trace in
-`Higham20RowSorting.lean`; that separate result does not close Theorem 20.7.
+The Chapter 20 core selected-scope gate is **PASS**. The fresh actual-trace
+repair closes Theorem 20.7 from the literal rounded pivoted stored-QR, paired
+RHS transformation, and rounded back-substitution execution. Its only
+algorithm-domain premise beyond the dimension and gamma hypotheses is nonzero
+computed diagonal; no readiness, row-policy, target-bound, residual, or
+component-budget certificate is assumed. Precise prose row 27 remains closed
+independently by the executable exact trace in `Higham20RowSorting.lean`.
 
 ## Named Results
 
@@ -43,7 +45,7 @@ Precise prose row 27 is closed independently by the executable exact trace in
 | 4 | Theorem 20.4, QR solution of the arbitrary augmented system (20.15) | pp. 389-390 / PDFs 9-10 | Exact componentwise perturbation form with hidden dimension-only `gamma_tilde_m` | Proof explicitly omitted | FORMALIZE_CORE / CORE-NAMED-RESULT | `LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_theorem20_4_printed_total_perturbations` exposes the actual totals `DeltaA_i = DeltaA + Q[DeltaR_i;0]`, transports both triangular terms through the exact QR relation, sums and normalizes one common nonnegative witness, proves the printed matrix/RHS envelopes with explicit dimension-only `lsTheorem20_4ConcreteGammaTildeTotal`, and returns the exact perturbed system. **PASS (EXPLICIT-DOMAIN)**. |
 | 5 | Theorem 20.5, Walden-Karlson-Sun normwise backward-error formula | pp. 392-393 / PDFs 12-13 | Exact finite-`theta` formula, eigenvalue branch, and matrix-only `theta = infinity` interpretation | Attribution/statement in chapter; alternative formula proved by Problem 20.9 | FORMALIZE_CORE / CORE-NAMED-RESULT | `theorem20_5_wks_finite_formula_and_eigenvalue` handles both exact-minimizer and nonminimizer branches for arbitrary printed-shape `A`, and `theorem20_5_wks_formula_eigenvalue_and_matrixOnly_limit` adds the `theta -> infinity` matrix-only limit. Full row rank of the tall source matrix is no longer assumed. **PASS**. |
 | 6 | Lemma 20.6, one symmetric perturbation from two augmented-system perturbations | pp. 393-394 / PDFs 13-14 | Exact; Frobenius and operator-2 norm bounds | Full proof in chapter | FORMALIZE_CORE / CORE-NAMED-RESULT | `higham20_lemma20_6_exists_symmetric_perturbation_minimizer_and_norm_bounds` and `lsLemma20_6Perturbation_*`. **PASS**. |
-| 7 | Theorem 20.7, Powell-Reid/Cox-Higham row-wise weighted-LS QR stability | p. 395 / PDF 15 | Exact row-local perturbation envelopes; row-growth ratios and sorting constant | Citation-only; chapter gives no proof | FORMALIZE_CORE / CORE-NAMED-RESULT | `fl_pivotedStoredQR_returnedX_pivotPosition_of_roundedCoxHigham` is a conditional assembly theorem from unproduced `PivotedStoredQRCoxHighamRoundedRowPolicy` and `PivotedStoredQRCoxHighamComponentBudgets`. The bounded repair proves that the final-`R` row field is automatic, produces the policy's final multiplier fields through the explicitly a-posteriori `pivotedStoredQRBackSubMultiplierEnvelope`, and proves local budget nonnegativity. `breakdownCounter_no_roundedRowPolicy` is a full-rank gamma-valid 2-by-2 counterexample to deriving `sigma_pos` from source rank. With computed nonbreakdown explicit, `raw_vector_row`, `prefix_vector_row`, the source-class multiplier estimate, and all four component-budget estimates remain open. **FAIL**. |
+| 7 | Theorem 20.7, Powell-Reid/Cox-Higham row-wise weighted-LS QR stability | p. 395 / PDF 15 | Exact row-local perturbation envelopes; row-growth ratios and sorting constant | Citation-only; chapter gives no proof | FORMALIZE_CORE / CORE-NAMED-RESULT | `higham20_7_sourceConstructed_actual_closed` in `Higham20Theorem20_7ActualBackSub.lean` executes the literal rounded pivoted stored-QR, paired RHS transformation, and `fl_backSub` trace. It constructs the triangular-solve perturbation and exact perturbed least-squares minimizer, transports the actual `Q Delta R` correction back to source coordinates, and proves the printed uniform source-order `n^2` matrix/RHS envelopes with one explicit nonnegative coefficient `sourceConstructedPivotedStoredQRFinalGammaTilde fp m` depending only on `fp,m`. **PASS (EXPLICIT-DOMAIN)** under gamma validity, `gamma fp (m+1) <= 1/2`, and nonzero computed diagonal. The historical conditional policy endpoint is not closure evidence; `breakdownCounter_no_roundedRowPolicy` correctly shows why computed nonbreakdown cannot be derived from bare source rank and `gammaValid`. |
 | 8 | Theorem 20.8, Elden-Cox-Higham LSE first-order perturbation bound (20.25) | p. 396 / PDF 16 | First-order statement with `O(epsilon^2)`; full-row-rank and stacked-rank conditions | Citation-only in chapter | FORMALIZE_CORE / CORE-NAMED-RESULT | `Theorem20_8.source_facing_firstOrder_plus_eps_sq_of_finalSmallnessThreshold` constructs a rank-tolerant `(AP)^+`, derives both perturbed rank conditions from one source-only threshold, and bounds the actual relative minimizer displacement by the printed first-order coefficient plus an explicit `epsilon^2` term with an `epsilon`-independent coefficient. **PASS (EXPLICIT-DOMAIN)** in the local reciprocal neighborhood made explicit by `finalSmallnessThreshold`. |
 | 9 | Theorem 20.9, generalized QR existence, block shapes, and rank/nonsingularity equivalence | pp. 397-398 / PDFs 17-18 | Exact for `m + p >= n >= p`, including tall and wide cases | Full proof in chapter | FORMALIZE_CORE / CORE-NAMED-RESULT | `GeneralizedQRFactorization.exists_theorem20_9_exact_householder` proves unconditional GQR existence for arbitrary `A,B` under only the printed dimensions. Tall/wide shapes and `fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero` separately prove the rank/nonsingularity equivalence. **PASS**. |
 | 10 | Theorem 20.10, finite-precision GQR method stability, parts (a) and (b) | pp. 398-399 / PDFs 18-19 | Exact mixed/backward perturbation shapes with hidden `gamma_tilde` constants | Citation-only; no chapter proof | FORMALIZE_CORE / CORE-NAMED-RESULT | `computedX_partA_mixed_stability` and `computedX_partB_backward_error` cover positive blocks. The genuine rounded boundaries are `computedX_emptyConstraints_partA_mixed_stability` / `...partB_backward_error` for `p=0,q>0` and `computedX_fullConstraints_partA_mixed_stability` / `...partB_backward_error` for `q=0,p>0`; both derive nonbreakdown from source rank plus an explicit threshold. **PASS (EXPLICIT-DOMAIN)**. |
@@ -201,9 +203,9 @@ Precise prose row 27 is closed independently by the executable exact trace in
 
 ## Gate Summary
 
-The Chapter 20 core selected-scope gate is **FAIL**. Named Theorem 20.4 is
-terminal, but Theorem 20.7 remains conditional on unproduced numerical policy
-and budget packages. Precise selected prose row 27 is closed separately by the
-executable row-sorted exact trace and QR-certificate permutation proof.
-Deferred underspecified statements and properly classified empirical outputs
-remain outside the core gate.
+The Chapter 20 core selected-scope gate is **PASS**. All 12 named results now
+have source-facing or honest explicit-domain endpoints. Theorem 20.7 is closed
+by `higham20_7_sourceConstructed_actual_closed`; the separate p. 395 row-sorting
+cap and `phi` invariance remain closed by the executable exact trace and
+QR-certificate permutation proof. Deferred underspecified statements and
+properly classified empirical outputs remain outside the core gate.

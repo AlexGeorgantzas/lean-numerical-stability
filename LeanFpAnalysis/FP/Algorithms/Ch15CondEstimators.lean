@@ -29,9 +29,9 @@
 --     We formalise (i) the algebraic identity underlying Dixon's estimate,
 --         xᵀ(AAᵀ)⁻¹x = ‖A⁻¹x‖₂²      (via `(AAᵀ)⁻¹ = (A⁻¹)ᵀ A⁻¹`),
 --     and (ii) the deterministic left inequality at full strength.  The genuinely
---     *probabilistic* tail bound `1 − 0.8 θ^{−k/2} n^{1/2}` is documented as an
---     obstruction (see the note at the end of the file) naming the exact missing
---     Mathlib measure-theory API.
+--     *probabilistic* tail bound `1 − 0.8 θ^{−k/2} n^{1/2}` is closed in the
+--     follow-on modules `Ch15DixonProbability` and `Ch15DixonClosure`; their
+--     public source-shaped endpoint is `higham15_6_dixon_closed`.
 --
 -- IMPORT-ONLY.  This file creates new Chapter-15-labelled results; it never edits
 -- existing modules.  It reuses, unchanged, the operator-norm and estimator
@@ -601,49 +601,15 @@ theorem dixon_sqrt_quadForm_le_opNorm2 {n : ℕ} (B : Fin n → Fin n → ℝ)
   exact dixon_left_inequality B hx
 
 -- ============================================================
--- Theorem 15.6 (Dixon): the PROBABILISTIC part — obstruction
+-- Theorem 15.6 (Dixon): probabilistic completion
 -- ============================================================
---
--- The right-hand inequality of (15.7),
---     ‖A⁻¹‖₂ ≤ θ (xᵀ(AAᵀ)⁻ᵏx)^{1/2k},
--- is the genuinely probabilistic content: it holds only with probability
---     ≥ 1 − 0.8 θ^{−k/2} n^{1/2}
--- for `x` drawn from the UNIFORM distribution on the unit sphere
--- `Sⁿ = {y ∈ ℝⁿ : yᵀy = 1}` (Higham §15.5, Theorem 15.6, p. 298; Dixon (1983)).
--- This is NOT formalised here, and the reason is a concrete, nameable gap in
--- Mathlib's measure/probability library rather than a shortcut:
---
---   (1) The proof measures the event `{x : (uᵀx)² < ε}` for a fixed unit vector
---       `u` (a right-singular vector of `A`).  Under the uniform measure on `Sⁿ⁻¹`
---       the pushforward of `x ↦ (uᵀx)²` is the `Beta(1/2, (n−1)/2)` distribution.
---       Mathlib has `MeasureTheory.Measure.toSphere` (the Haar→sphere / polar
---       construction, a rotation-invariant finite measure on `sphere 0 1`) and,
---       separately, `ProbabilityTheory.betaPDF` / `betaMeasure` with
---       `isProbabilityMeasureBeta`.  What is MISSING is the theorem linking them:
---       that the law of a single squared coordinate (equivalently `(uᵀx)²`) of a
---       uniform point on `Sⁿ⁻¹` IS this Beta law
---       (`Measure.map (fun x => (u ⬝ᵥ x)^2) (toSphere volume).normalized
---          = betaMeasure (1/2) ((n-1)/2)`).  No such marginal/pushforward lemma
---       exists in Mathlib.
---
---   (2) The tail estimate then needs a CDF bound for that Beta law near 0,
---       `∫₀^ε betaPDF (1/2) ((n-1)/2) ≤ c·√ε·√n` — i.e. `Beta.cdf` and an explicit
---       small-argument bound.  Mathlib's `Beta.lean` provides only the pdf,
---       `lintegral_betaPDF_eq_one`, and measurability; it has NO CDF and NO tail
---       inequality.
---
---   (3) Finally the bound is assembled over the `n` singular directions with a
---       union bound (`measure_iUnion_le`), which Mathlib does have — but it is
---       moot without (1) and (2).
---
--- Thus the probabilistic half of Theorem 15.6 is an EVIDENCED_OBSTRUCTION whose
--- exact missing ingredients are: (a) the uniform-sphere → Beta marginal law of a
--- coordinate, and (b) a Beta CDF small-argument tail bound.  Everything that is
--- deterministic and always-true in Theorem 15.6 — the left inequality of (15.7)
--- for `k = 1` and the algebraic identity `xᵀ(AAᵀ)⁻¹x = ‖A⁻¹x‖₂²` underlying it —
--- is proved above at full strength (`dixon_left_inequality`,
--- `dixon_quadForm_gram_eq`, `dixon_sqrt_quadForm_le_opNorm2`,
--- `gram_inv_of_isInverse`).
+-- The declarations above are the original `k = 1` deterministic substrate.
+-- `Ch15DixonProbability.lean` now proves the required uniform-sphere
+-- one-coordinate small-ball estimate directly from normalized independent
+-- Gaussians, including the printed `4/5` constant.  `Ch15DixonClosure.lean`
+-- supplies the actual Gram spectral producer for every positive `k`, derives
+-- both powered inequalities, and exposes the complete probability statement as
+-- `higham15_6_dixon_closed`.  No Beta-marginal or tail-bound premise remains.
 
 end Ch15
 

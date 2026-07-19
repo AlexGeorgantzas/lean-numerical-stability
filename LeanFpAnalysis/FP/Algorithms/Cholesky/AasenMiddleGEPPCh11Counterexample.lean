@@ -356,6 +356,20 @@ noncomputable def middleAccumCounterU : Fin 3 → Fin 3 → ℝ
   | ⟨2, _⟩, ⟨1, _⟩ => 0
   | ⟨2, _⟩, ⟨2, _⟩ => 1101 / 1100
 
+/-- First active Schur complement in the literal adjacent-pivot GEPP run. -/
+noncomputable def middleAccumCounterS1 : Fin 2 → Fin 2 → ℝ
+  | ⟨0, _⟩, ⟨0, _⟩ => 1
+  | ⟨0, _⟩, ⟨1, _⟩ => -(99 / 100)
+  | ⟨1, _⟩, ⟨0, _⟩ => 11 / 10
+  | ⟨1, _⟩, ⟨1, _⟩ => -(219 / 100)
+
+/-- Tail upper factor after the second adjacent pivot. -/
+noncomputable def middleAccumCounterU2 : Fin 2 → Fin 2 → ℝ
+  | ⟨0, _⟩, ⟨0, _⟩ => 11 / 10
+  | ⟨0, _⟩, ⟨1, _⟩ => -(219 / 100)
+  | ⟨1, _⟩, ⟨0, _⟩ => 0
+  | ⟨1, _⟩, ⟨1, _⟩ => 1101 / 1100
+
 def middleAccumCounterSigma : Fin 3 → Fin 3
   | ⟨0, _⟩ => 1
   | ⟨1, _⟩ => 2
@@ -410,5 +424,124 @@ theorem middleAccumCounter_not_infNorm_le_two :
     ¬ infNorm middleAccumCounterL ≤ 2 := by
   rw [middleAccumCounterL_infNorm]
   norm_num
+
+/-- The three-by-three counterexample is produced by the literal recursive
+partial-pivoting GEPP trace: the first active column selects row one, and the
+first active column of the Schur complement again selects row one.  Thus the
+failed `‖M‖∞ ≤ 2` step occurs for the algorithmic adjacent-pivot schedule, not
+merely for an arbitrary permuted LU factorization. -/
+theorem middleAccumCounter_GEPP_trace :
+    higham9_7_PartialPivotGEPPUTrace 3
+      middleAccumCounterT middleAccumCounterU := by
+  have hchoice0 :
+      higham9_1_partialPivotChoice middleAccumCounterT 0 (1 : Fin 3) := by
+    constructor
+    · norm_num
+    · intro i hi
+      fin_cases i <;> norm_num [middleAccumCounterT]
+  have hpivot0 : middleAccumCounterT (1 : Fin 3) 0 ≠ 0 := by
+    norm_num [middleAccumCounterT]
+  have hstage1 :
+      luFirstSchurComplement
+          (higham9_2_rowPermutedMatrix middleAccumCounterT
+            (higham9_7_firstPivotRowSwap (1 : Fin 3))) =
+        middleAccumCounterS1 := by
+    funext i j
+    fin_cases i <;> fin_cases j <;>
+      norm_num [luFirstSchurComplement, higham9_2_rowPermutedMatrix,
+        higham9_7_firstPivotRowSwap, middleAccumCounterT,
+        middleAccumCounterS1]
+    all_goals
+      simp only [if_neg (by decide : (2 : Fin 3) ≠ 0),
+        if_neg (by decide : (2 : Fin 3) ≠ 1)] <;>
+      norm_num
+  have hchoice1 :
+      higham9_1_partialPivotChoice middleAccumCounterS1 0 (1 : Fin 2) := by
+    constructor
+    · norm_num
+    · intro i hi
+      fin_cases i <;> norm_num [middleAccumCounterS1]
+  have hpivot1 : middleAccumCounterS1 (1 : Fin 2) 0 ≠ 0 := by
+    norm_num [middleAccumCounterS1]
+  have hstage2 :
+      luFirstSchurComplement
+          (higham9_2_rowPermutedMatrix middleAccumCounterS1
+            (higham9_7_firstPivotRowSwap (1 : Fin 2))) =
+        (fun _ _ : Fin 1 => (1101 / 1100 : ℝ)) := by
+    funext i j
+    fin_cases i
+    fin_cases j
+    norm_num [luFirstSchurComplement, higham9_2_rowPermutedMatrix,
+      higham9_7_firstPivotRowSwap, middleAccumCounterS1]
+  have hchoice2 :
+      higham9_1_partialPivotChoice
+        (fun _ _ : Fin 1 => (1101 / 1100 : ℝ)) 0 0 := by
+    constructor
+    · norm_num
+    · intro i hi
+      fin_cases i
+      norm_num
+  have hpivot2 : (fun _ _ : Fin 1 => (1101 / 1100 : ℝ)) 0 0 ≠ 0 := by
+    norm_num
+  have htail1 :
+      higham9_7_PartialPivotGEPPUTrace 1
+        (fun _ _ : Fin 1 => (1101 / 1100 : ℝ))
+        (fun _ _ : Fin 1 => (1101 / 1100 : ℝ)) := by
+    have hzero :
+        higham9_7_PartialPivotGEPPUTrace 0
+          (luFirstSchurComplement
+            (higham9_2_rowPermutedMatrix
+              (fun _ _ : Fin 1 => (1101 / 1100 : ℝ))
+              (higham9_7_firstPivotRowSwap (0 : Fin 1))))
+          (fun i => Fin.elim0 i) :=
+      higham9_7_PartialPivotGEPPUTrace.done
+    have h := higham9_7_PartialPivotGEPPUTrace.step hchoice2 hpivot2 hzero
+    convert h using 1 <;>
+      funext i j <;> fin_cases i <;> fin_cases j <;>
+      norm_num [luFirstStepU, higham9_2_rowPermutedMatrix,
+        higham9_7_firstPivotRowSwap]
+  have htail2 :
+      higham9_7_PartialPivotGEPPUTrace 2
+        middleAccumCounterS1 middleAccumCounterU2 := by
+    have hnext :
+        higham9_7_PartialPivotGEPPUTrace 1
+          (luFirstSchurComplement
+            (higham9_2_rowPermutedMatrix middleAccumCounterS1
+              (higham9_7_firstPivotRowSwap (1 : Fin 2))))
+          (fun _ _ : Fin 1 => (1101 / 1100 : ℝ)) := by
+      rw [hstage2]
+      exact htail1
+    have h := higham9_7_PartialPivotGEPPUTrace.step hchoice1 hpivot1 hnext
+    convert h using 1 <;>
+      funext i j <;> fin_cases i <;> fin_cases j <;>
+      norm_num [middleAccumCounterU2, luFirstStepU,
+        higham9_2_rowPermutedMatrix, higham9_7_firstPivotRowSwap,
+        middleAccumCounterS1]
+  have hnext :
+      higham9_7_PartialPivotGEPPUTrace 2
+        (luFirstSchurComplement
+          (higham9_2_rowPermutedMatrix middleAccumCounterT
+            (higham9_7_firstPivotRowSwap (1 : Fin 3))))
+        middleAccumCounterU2 := by
+    rw [hstage1]
+    exact htail2
+  have h := higham9_7_PartialPivotGEPPUTrace.step hchoice0 hpivot0 hnext
+  convert h using 1 <;>
+    funext i j <;> fin_cases i <;> fin_cases j <;>
+    norm_num [middleAccumCounterU, middleAccumCounterU2, luFirstStepU,
+      higham9_2_rowPermutedMatrix, higham9_7_firstPivotRowSwap,
+      middleAccumCounterT]
+
+/-- Compact source-discrepancy certificate: a genuine two-adjacent-swap GEPP
+trace has the displayed exact permuted LU factors, yet its accumulated lower
+factor violates the `∞`-norm-two step used in the cited proof of Theorem 11.8. -/
+theorem middleAccumCounter_actual_GEPP_refutes_infNorm_two :
+    higham9_7_PartialPivotGEPPUTrace 3
+      middleAccumCounterT middleAccumCounterU ∧
+    higham9_2_PermutedLUFactSpec 3 middleAccumCounterT
+      middleAccumCounterL middleAccumCounterU middleAccumCounterSigma ∧
+    ¬ infNorm middleAccumCounterL ≤ 2 :=
+  ⟨middleAccumCounter_GEPP_trace, middleAccumCounter_exact_permuted_lu,
+    middleAccumCounter_not_infNorm_le_two⟩
 
 end LeanFpAnalysis.FP.Ch11Closure.AasenDirect

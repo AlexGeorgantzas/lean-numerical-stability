@@ -1,7 +1,8 @@
 # Higham Chapter 8 Formalization Report — "Triangular Systems"
 
-> **Fresh strict audit (2026-07-18): gate FAIL (one source-specific asymptotic
-> bridge).**  The audit re-read the chapter PDF and rebuilt the dependency
+> **Fresh strict audit (2026-07-19, corrected): gate PASS; the remaining
+> asymptotic compression is policy-deferred.**
+> The audit re-read the chapter PDF and rebuilt the dependency
 > path from the literal `fl_matMul`/`fl_matVec` fan-in executor.  Equations
 > (8.14)--(8.20) are now connected by exact all-orders theorems: the seven
 > rounded operations have forward coefficient `((1 + gamma_n)^7 - 1)`, that
@@ -9,15 +10,34 @@
 > perturbation, and through `|L^{-1}|` to a forward bound.  No relative bound
 > on a cancellation-prone intermediate product is assumed.
 >
-> The sole remaining strict-source gap is the printed *first-order*
-> identification of the raw residual envelope with
-> `d_n u |L||L^{-1}||L||L^{-1}||L||x| + O(u^2)` in (8.15), and hence the
-> printed condition cube in (8.20).  The module now proves a concrete 2-by-2
+> The formerly missing exact source objects are now constructed:
+> `higham8_13_lowerColumnInverseFactor` is proved to be the two-sided inverse
+> `M_k=L_k^{-1}`, its reverse product is a two-sided inverse of `L`, the
+> balanced seven-factor fan-in application is proved to solve `Lx=b`, and
+> `higham8_18_fanIn7AbsMatrix_eq_comparisonInverse` proves the source identity
+> `|M_7|...|M_1|=M(L)^{-1}`.
+>
+> The previous audit incorrectly proposed reducing the executor's *global raw*
+> first-order majorant directly to the five-factor cube. That reduction is not
+> in Higham and is false: the exact order-seven certificate
+> `higham8_15_raw_inverse_factor_envelope_not_le_source_cube` has raw entry
+> `32` and five-factor entry `24`, using the literal inverse column factors and
+> genuine `L^{-1}`. Higham instead expands the local perturbations before
+> discarding their cross terms into `O(u^2)`.
+>
+> The scalar asymptotic bookkeeping for the exact all-orders substitute is
+> explicit: `higham8_18_fanIn7CoefficientRemainder` splits
+> `((1+gamma_n)^7-1)` exactly into `7 n u` plus a named nonnegative
+> quadratic-and-higher remainder, and the split is propagated to the actual
+> residual.  The module also proves a concrete 2-by-2
 > cancellation witness showing why the older relative-factor bridge cannot
-> supply this step.  Closing it requires formal inverse column factors plus an
-> explicit first-order/remainder expansion for the source's `O(u^2)` notation;
-> it cannot be obtained from the current local hypotheses by division through
-> an exact intermediate product.  No other missing chapter bridge was found.
+> supply the source's local expansion by division through an exact intermediate
+> product.
+> The source does not specify `d_n` or the hidden `O(u²)` constant/family, so
+> that local first-order compression is
+> **DEFER–MISSING-PRECISE-STATEMENT** under the audit policy, with the literal
+> all-orders executor theorem recorded as its exact substitute. No other
+> missing chapter bridge was found.
 > See `AUDIT_ch01-28_2026-07-18.md`.
 
 ## Source and scope
@@ -26,8 +46,10 @@
 - Source file: `higham-split/sources/chapter-pdfs/1.9780898718027.ch8.pdf`.
 - Mode: core.
 - Parallel split: 2 (chapters 7–12).
-- Fresh selected-scope gate: **FAIL** on the one first-order bridge described
-  above.  All named primary labels remain closed.  The older 2026-07-11 PASS
+- Fresh selected-scope gate: **PASS**. The exact inverse-factor/product/solve
+  bridge is closed. The unparameterized `d_n/O(u²)` local first-order clause is
+  **DEFER–MISSING-PRECISE-STATEMENT**, with an exact all-orders substitute.
+  All named primary labels remain closed. The older 2026-07-11 PASS
   certification predated literal-producer/source-bridge checking and is
   superseded by this strict audit.  A separate **policy flag on
   benchmark-reserved Problems** remains recorded below.
@@ -62,14 +84,14 @@ producer/bridge audit gives the following finer status for the fan-in chain:
 
 | Source row | Fresh status | Literal bridge / evidence |
 |---|---|---|
-| (8.1)--(8.13) | **CLOSED** | Existing chapter surfaces; (8.12)--(8.13) include the exact lower-column product and fan-in parenthesization. |
+| (8.1)--(8.13) | **CLOSED** | Existing chapter surfaces; (8.12)--(8.13) now include the exact lower-column product, literal two-sided inverse factors `M_k=L_k^{-1}`, their reverse-product inverse, the fan-in parenthesization, and an exact fan-in solve producer. |
 | (8.14) | **CLOSED** | `higham8_14_fanIn7Executor`, `higham8_14_fanIn7Executor_eq_roundedApply`; all five displayed perturbations are produced by the literal rounded tree with local envelopes. |
-| (8.15) | **PARTIAL** | `higham8_15_fanIn7Executor_residual_componentwise_bound` proves the actual all-orders raw residual envelope.  The displayed first-order five-factor residual cube plus `O(u^2)` is not yet derived. |
-| (8.16) | **CLOSED for the actual raw envelope** | `higham8_16_fanIn7Executor_residual_infNorm_bound`.  Its printed first-order specialization inherits the (8.15) gap. |
+| (8.15) | **DEFER–MISSING-PRECISE-STATEMENT at printed asymptotic form; exact substitute CLOSED** | `higham8_15_fanIn7Executor_residual_componentwise_bound` proves the actual all-orders raw residual envelope and `_first_order_remainder_bound` gives an exact `7 n u` split with named nonnegative remainder. The exact inverse-column identities are closed. Higham leaves `d_n` and `O(u²)` unparameterized and reaches the cube by a local perturbation expansion, not by the formally refuted global-raw reduction. |
+| (8.16) | **CLOSED exact substitute / printed asymptotic deferred** | `higham8_16_fanIn7Executor_residual_infNorm_bound`; the exact scalar first-order/remainder split is available from (8.15). |
 | (8.17) | **CLOSED** | `higham8_17_fanIn7Executor_backward_error_bound` constructs the backward perturbation from the literal residual bound. |
 | (8.18) | **CLOSED** | `higham8_18_fanIn7Executor_forward_componentwise_bound` proves `|xhat-x| <= ((1+gamma_n)^7-1)|M7|...|M1||b|`, retaining all higher-order terms. |
 | (8.19) | **CLOSED** | `higham8_19_fanIn7Executor_forward_relative_infNorm_bound`. |
-| (8.20) | **PARTIAL** | `higham8_20_fanIn7Executor_forward_from_residual_componentwise_bound` and `_relative_infNorm_bound` connect the actual residual through `|L^{-1}|`; the printed first-order condition-cube identification inherits the (8.15) gap. |
+| (8.20) | **CLOSED exact transfer / printed asymptotic deferred** | `higham8_20_fanIn7Executor_forward_from_residual_componentwise_bound` and `_relative_infNorm_bound` connect the actual residual through `|L^{-1}|`; `higham8_20_condition_cubing_*` proves the exact five-factor-to-condition-cube transfer. The unparameterized `d_n/O(u²)` producer form inherited from (8.15) is policy-deferred. |
 
 The sharp obstruction to reusing the older relative-intermediate-product
 route is formalized by
@@ -78,7 +100,10 @@ entry is zero, its product-of-absolute-matrices entry is two, and a nonzero
 local perturbation obeys the latter envelope while obeying no scalar relative
 bound by the former.  This does not refute Higham's asymptotic argument; it
 pinpoints the missing formal object, namely the first-order expansion that
-places cross terms in an explicit second-order remainder.
+places cross terms in an explicit second-order remainder.  The stronger
+order-seven certificate in `HighamChapter8FanInClosure` additionally proves
+that the formerly proposed global-raw reduction is false (`32 > 24`); this
+corrects the audit plan and does not contradict Higham's local expansion.
 
 ## Naming caveat (informational)
 The `higham8_N_` prefix is overloaded across item kinds sharing the number N
@@ -113,20 +138,24 @@ deletion performed.
 
 ## Verification (fresh 2026-07-18 audit)
 - Direct `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter8.lean`:
-  **PASS** after the literal bridge additions.
+  **PASS** after the literal inverse-factor bridge additions.
+- Direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter8FanInClosure.lean`:
+  **PASS**, including the exact order-seven honesty certificate.
 - `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter8`: **PASS**.
 - Hygiene: no `sorry`/`admit`/new `axiom` in `HighamChapter8.lean`.
-- `#print axioms` on the literal executor, actual (8.15)--(8.20) bridge
-  theorems, and the cancellation witness: `[propext, Classical.choice,
+- `#print axioms` on the literal executor, inverse-factor/reverse-product
+  producers, coefficient remainder split, actual (8.15)--(8.20) bridge
+  theorems, and both honesty witnesses: `[propext, Classical.choice,
   Quot.sound]` only.
 
 ## Open selected-scope items
-1. Define and prove the inverse lower-column factors `M_i = L_i^{-1}` used in
-   the source's fan-in argument.
-2. Expand the literal local errors through the residual to first order, with
-   all cross terms collected in a formally bounded second-order remainder.
-3. Use those identities to derive the exact printed five-factor residual cube
-   in (8.15), then instantiate the existing condition-cube transfer in (8.20).
+None. The unparameterized `d_n/O(u²)` local first-order compression is
+**DEFER–MISSING-PRECISE-STATEMENT** and is not an additional producer
+obligation. Its exact all-orders substitute, the inverse-column-factor
+identities, and the exact five-factor-to-condition-cube transfer are all
+closed. The previously requested global raw-majorant reduction is formally
+false and was never a source claim.
 
 The benchmark-reserved Problem formalizations flagged above remain a separate
 policy decision, not proof work.

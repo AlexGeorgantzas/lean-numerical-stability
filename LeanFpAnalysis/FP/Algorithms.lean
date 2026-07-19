@@ -42,9 +42,17 @@ import LeanFpAnalysis.FP.Algorithms.TriangularArbitraryOrder
 import LeanFpAnalysis.FP.Algorithms.TriangularNoGuard
 import LeanFpAnalysis.FP.Algorithms.MMatrix
 import LeanFpAnalysis.FP.Algorithms.HighamChapter8
+import LeanFpAnalysis.FP.Algorithms.HighamChapter8FanInClosure
 import LeanFpAnalysis.FP.Algorithms.HighamChapter9
 import LeanFpAnalysis.FP.Algorithms.HighamChapter9DoolittleClosure
 import LeanFpAnalysis.FP.Algorithms.HighamChapter10
+import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham10Theorem10_7Source
+import LeanFpAnalysis.FP.Algorithms.Ch10KahanSharpness
+import LeanFpAnalysis.FP.Algorithms.Ch10ActualSourceClosure
+import LeanFpAnalysis.FP.Algorithms.Ch10KahanSharpnessSource
+import LeanFpAnalysis.FP.Algorithms.Ch10Lemma1011Source
+import LeanFpAnalysis.FP.Algorithms.Ch10Theorem108Source
+import LeanFpAnalysis.FP.Algorithms.Ch10Theorem108Componentwise
 import LeanFpAnalysis.FP.Algorithms.HighamChapter11
 import LeanFpAnalysis.FP.Algorithms.HighamChapter12
 import LeanFpAnalysis.FP.Algorithms.LU.GaussianElimination
@@ -83,6 +91,9 @@ import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchTridiagonalFactorBoundCh11Clos
 import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchTridiagonalGrowthInvariantCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchTridiagonalCapstoneCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchTridiagonalHFactorCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchTridiagonalActualSolveCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchTridiagonalSparseSolveCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchTridiagonalSparseFactorCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenGrowthCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenFactorNormCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.BlockLDLTSolveBackwardCh11Closure
@@ -91,8 +102,13 @@ import LeanFpAnalysis.FP.Algorithms.Cholesky.BunchKaufmanSolveCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenCoupledFpCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenTridiagGEPPCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenFactorResidualCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenSourceSharpFactorResidualCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenDirect118Ch11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenMiddleGEPPCh11Counterexample
+import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenAdjacentPivotTridiagForwardCounterexampleCh11
+import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenPrintedCoefficientAlgebraCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenUnitOuterSolveCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenTheorem118ScalarEdgeCh11Discrepancy
 import LeanFpAnalysis.FP.Algorithms.IterativeRefinement
 import LeanFpAnalysis.FP.Algorithms.MatrixInversion
 import LeanFpAnalysis.FP.Algorithms.GaussJordan
@@ -138,8 +154,10 @@ import LeanFpAnalysis.FP.Algorithms.Ch14MethodDProductDischarge
 import LeanFpAnalysis.FP.Algorithms.Chapter06Lemma66
 import LeanFpAnalysis.FP.Algorithms.Ch10Ch14Lemma66Op2Bridge
 import LeanFpAnalysis.FP.Algorithms.KahanCompensatedFiniteFormat
+import LeanFpAnalysis.FP.Algorithms.NeumaierCompensatedFiniteFormat
 import LeanFpAnalysis.FP.Algorithms.PriestAccuracy
 import LeanFpAnalysis.FP.Algorithms.PriestDefectBounded
+import LeanFpAnalysis.FP.Algorithms.PriestFiniteFormat
 import LeanFpAnalysis.FP.Algorithms.Ch5DerivativeError
 import LeanFpAnalysis.FP.Algorithms.Ch5NewtonForm
 import LeanFpAnalysis.FP.Algorithms.Ch5SourceClosure
@@ -150,6 +168,8 @@ import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCond
 import LeanFpAnalysis.FP.Algorithms.PNormPowerMethod
 import LeanFpAnalysis.FP.Algorithms.Chapter15CondEst
 import LeanFpAnalysis.FP.Algorithms.Ch15CondEstimators
+import LeanFpAnalysis.FP.Algorithms.Ch15DixonProbability
+import LeanFpAnalysis.FP.Algorithms.Ch15DixonClosure
 import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCondCh15
 import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCondCh15Closure
 import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCondCh15IkebeClosure
@@ -249,6 +269,9 @@ import LeanFpAnalysis.FP.Algorithms.QR.Higham19Lemma9DisjointSweep
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Alg11CGSRounded
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Alg12MGSRounded
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Alg12MGSRepair
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Alg12MGSClosure
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Alg12MGSPaddedClosure
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Alg12MGSSourceRate
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6Pivoted
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6Elementwise
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6ElementwiseEntry
@@ -289,6 +312,7 @@ import LeanFpAnalysis.FP.Algorithms.LeastSquares.Higham20Theorem20_7
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.Higham20Theorem20_7QdR
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.Higham20Theorem20_7Contract
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.Higham20Theorem20_7Runtime
+import LeanFpAnalysis.FP.Algorithms.LeastSquares.Higham20Theorem20_7ActualBackSub
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.Higham20EliminationActual
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.Higham20RowSorting
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.Higham20Theorem20_8
@@ -302,6 +326,7 @@ import LeanFpAnalysis.FP.Algorithms.Underdetermined.UnderdeterminedSpec
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.UnderdeterminedSolve
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21
 import LeanFpAnalysis.FP.Algorithms.Vandermonde.Higham22
+import LeanFpAnalysis.FP.Algorithms.Vandermonde.Higham22MonomialClosure
 import LeanFpAnalysis.FP.Algorithms.Vandermonde.Higham22Ch12RefinementBridge
 import LeanFpAnalysis.FP.Algorithms.FFT.Higham24
 import LeanFpAnalysis.FP.Algorithms.FFT.Higham24Radix2
@@ -373,6 +398,8 @@ import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28ToeplitzCondition
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28Companion
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28CompanionSpectral
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28HilbertAsymptotic
+import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28HilbertCondition
+import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28GaussianQRHaar
 import LeanFpAnalysis.FP.Algorithms.TestMatrices.Higham28ShiftedHilbert
 import LeanFpAnalysis.FP.Algorithms.FastMatMul
 import LeanFpAnalysis.FP.Algorithms.FastMatMul.Higham23

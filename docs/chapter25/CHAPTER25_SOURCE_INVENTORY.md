@@ -2,7 +2,7 @@
 
 ## Audit basis
 
-- Audit date: 2026-07-16.
+- Audit date: 2026-07-18 (fresh source and theorem-surface recheck).
 - Primary source: `References/1.9780898718027.ch25.pdf`, SHA-256 `E5534965F8A5AA8744021D446BA7F349D8DAEBC5C1D49B0090C51D2984E06A57`.
 - Appendix source: `References/1.9780898718027.appa.pdf`, SHA-256 `8D4A7F7E99A95E19AD0F589342E287ECA469453F448535B718C1F805115101A2`.
 - Book: Nicholas J. Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed. (SIAM, 2002).
@@ -18,7 +18,8 @@
 - The Problems page has **two** rows, Problems 25.1 and 25.2, printed p. 469 / PDF 11. The former count of one problem was incorrect.
 - Appendix A provides a solution for Problem 25.1 on printed pp. 569-570.
 
-The selected-scope gate is **FAIL** under the strict precise-prose audit.
+The selected-scope gate is **PASS / SOURCE-DISCREPANCY** under the strict
+precise-prose audit.
 Equation (25.11) is derived from the
 hypotheses printed on pp. 464-466. The new source-facing chain instantiates
 Mathlib's implicit-function theorem from smoothness of `F` and an invertible
@@ -30,12 +31,11 @@ literal rounded evaluation order, is also proved. Theorems
 25.1 and 25.2 cannot be stated at source strength without
 defining the printed `≈` relation and “decreases until” event, so the skill's
 `DEFER-MISSING-PRECISE-STATEMENT` rule applies. The precise p. 463 eigenproblem
-specialization after (25.10) is substantially produced in
-`Higham25EigenClosure.lean`: the bordered matrix and exact Taylor identity,
-kernel triviality from an explicit left/right/eigenspace certificate, and the
-literal rounded residual `ψ` bound are proved. The remaining strict gap is a
-producer from the source's standard simple-eigenvalue hypothesis (algebraic
-multiplicity one) to that certificate. The printed Lipschitz coefficient
+specialization after (25.10) is produced in `Higham25EigenClosure.lean`: the
+bordered matrix and exact Taylor identity, kernel triviality directly from
+algebraic multiplicity one, nonzero determinant of the displayed bordered
+matrix, and the literal rounded residual `ψ` bound are proved. The printed
+Lipschitz coefficient
 `2‖A‖` is independently false for `A=0`; Lean proves that counterexample and
 the corrected universal infinity-norm coefficient `2`.
 
@@ -74,7 +74,7 @@ the corrected universal infinity-norm coefficient `2`.
 | Lipschitz Jacobian premise | p. 461 / PDF 3 | FORMALIZE_CORE | Accounted for in theorem-premise inventory; no named limit theorem is falsely asserted. |
 | Iterative refinement special case | pp. 462-463 / PDFs 4-5 | FORMALIZE_CORE / CORE-PRECISE-PROSE | `higham25_linearSystem_newtonCorrection_iff_refinementCorrection` proves the exact Newton/refinement correction equivalence; `higham25_linearSystemJacobian_constant` and `higham25_linearSystemJacobian_lipschitz_zero` close the constant-Jacobian/`β=0` claim; `higham25_linearSystem_actualResidual_bridge_ch12` instantiates the actual `fl_residual` evaluator and the printed `γ_(n+1)` componentwise bound. The printed `F=b-Ax, J=A` has a sign inconsistency; Lean uses the correct derivative `J=-A`, whose sign cancels in the Newton equation. **PASS / SOURCE-DISCREPANCY**. |
 | Linear-system condition specialization below (25.11) | p. 466 / PDF 8 | FORMALIZE_CORE / CORE-PRECISE-PROSE | `higham25_linearSystemDataDerivativeFrob_eq` proves `‖A⁻¹[x₁I … xₙI]‖_F=‖A⁻¹‖_F‖x‖₂`; `higham25_linearSystem_condition_frobenius` proves the printed relative condition identity `‖A⁻¹‖_F‖A‖_F`. **PASS**. |
-| Eigenproblem bordered Jacobian, Lipschitz coefficient, simple-eigenvalue nonsingularity, and residual `ψ` formula | p. 463 / PDF 5, immediately after (25.10) | FORMALIZE_CORE / CORE-PRECISE-PROSE and CORE-SYMBOLIC-EXAMPLE | `higham25EigenJacobian`, `higham25EigenJacobian_mulVec_eq_action`, and the exact Taylor identities produce the displayed derivative. `higham25EigenJacobian_kernel_eq_zero_of_simple` proves nonsingularity from an explicit left/right/eigenspace certificate, but no theorem derives that certificate from a standard algebraic-multiplicity-one hypothesis. `higham25EigenRoundedResidual_error_bound` proves the literal primitive-operation evaluator satisfies (25.3) with `ψ = γ_(n+1)(‖A‖∞+|λ|)‖x‖∞`. `higham25EigenJacobian_source_lipschitz_counterexample` refutes the unqualified printed `2‖A‖` coefficient at `A=0`; `higham25EigenJacobian_lipschitz_two_inf` proves the corrected coefficient `2`. **PARTIAL / SOURCE-DISCREPANCY**. |
+| Eigenproblem bordered Jacobian, Lipschitz coefficient, simple-eigenvalue nonsingularity, and residual `ψ` formula | p. 463 / PDF 5, immediately after (25.10) | FORMALIZE_CORE / CORE-PRECISE-PROSE and CORE-SYMBOLIC-EXAMPLE | `higham25EigenJacobian`, `higham25EigenJacobian_mulVec_eq_action`, and the exact Taylor identities produce the displayed derivative. `higham25EigenJacobian_kernel_eq_zero_of_algebraically_simple` derives kernel triviality from the standard hypothesis `A.charpoly.rootMultiplicity λ = 1`, using the maximal generalized eigenspace; `higham25EigenJacobian_det_ne_zero_of_algebraically_simple` proves nonsingularity of the displayed matrix itself. `higham25EigenRoundedResidual_error_bound` proves the literal primitive-operation evaluator satisfies (25.3) with `ψ = γ_(n+1)(‖A‖∞+|λ|)‖x‖∞`. `higham25EigenJacobian_source_lipschitz_counterexample` refutes the unqualified printed `2‖A‖` coefficient at `A=0`; `higham25EigenJacobian_lipschitz_two_inf` proves the corrected coefficient `2`. **PASS / SOURCE-DISCREPANCY**. |
 | Figure 25.1 / Frank-matrix MATLAB experiment | pp. 463-465 / PDFs 5-7 | EXCLUDED-EMPIRICAL | Accounted for; exact data and script are not printed. |
 | First-order perturbation relation before (25.11) | pp. 464-466 / PDFs 6-8 | FORMALIZE_CORE | `higham25_eq25_11_first_order`. **PASS** for exact linearized algebra. |
 | Sensitivity calculation and condition `1/2` after (25.13) | p. 466 / PDF 8 | FORMALIZE_CORE | `higham25_eq25_13_sensitivity_direction`, `higham25_eq25_13_condition_half`. **PASS**. |
