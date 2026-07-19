@@ -157,6 +157,43 @@ theorem H15_Algorithm15_3_spec {n : ℕ} (hn : 0 < n)
   ⟨H15_Algorithm15_3_lower_bound hn A fuel,
    H15_Algorithm15_3_norm_eq hn A fuel⟩
 
+/-- The scalar stored by the bounded implementation of Algorithm 15.3 is
+    always the 1-norm of `A w` for some normalized iterate `w`.
+
+    On a nonconverged step the state stores the norm computed at the previous
+    iterate while replacing its `x` field by a basis vector.  Consequently the
+    witness need not be the final stored `x`; this theorem records exactly the
+    provenance needed by Algorithm 15.4 when it selects the power-method arm. -/
+theorem H15_Algorithm15_3_stored_gamma_realized {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (fuel : ℕ) :
+    ∃ w : Fin n → ℝ,
+      oneNormVec w = 1 ∧
+      oneNormVec (fun i => ∑ j : Fin n, A i j * w j) =
+        (oneNormPowerMethod hn A fuel).γ := by
+  induction fuel with
+  | zero =>
+    refine ⟨fun _ => (1 : ℝ) / n, initial_vec_oneNorm hn, ?_⟩
+    rfl
+  | succ fuel ih =>
+    simp only [oneNormPowerMethod]
+    set prev := oneNormPowerMethod hn A fuel with hprev
+    rw [show (let prev := oneNormPowerMethod hn A fuel;
+              let next := oneNormStep hn A prev;
+              if next.2 = true then prev else next.1) =
+             if (oneNormStep hn A prev).2 = true then prev
+             else (oneNormStep hn A prev).1 from rfl]
+    split_ifs with hconv
+    · exact ih
+    · refine ⟨prev.x, ?_, ?_⟩
+      · simpa [prev, H15_Algorithm15_3_x] using
+          H15_Algorithm15_3_x_oneNorm_eq_one hn A fuel
+      · have hstep :
+            (oneNormStep hn A prev).1.γ =
+              oneNormVec (fun i => ∑ j : Fin n, A i j * prev.x j) := by
+          simp only [oneNormStep]
+          split_ifs <;> rfl
+        exact hstep.symm
+
 -- ============================================================
 -- §15.3  Algorithm 15.4 (LAPACK norm estimator)
 -- ============================================================
@@ -179,20 +216,51 @@ theorem H15_Algorithm15_4_lower_bound {n : ℕ} (hn : 0 < n)
     H15_Algorithm15_4_gamma hn A ≤ oneNorm A :=
   lapackNormEstimator_lower_bound hn A
 
-/-- **Algorithm 15.4 — the estimate is a realized ratio `‖v‖₁/‖w‖₁` with
-    `v = Aw`** (Higham §15.3, Algorithm 15.4, p. 293).
+/-- **Algorithm 15.4 — exact returned-ratio guarantee** (Higham §15.3,
+    Algorithm 15.4, p. 293).
 
-    The printed spec says the estimator "computes γ and `v = Aw` … with
-    `‖v‖₁/‖w‖₁ = γ` (w is not returned)".  For `n > 1` the alternating-vector
-    component of `lapackNormEstimator` is, by construction, exactly the ratio
-    `‖Ab‖₁/‖b‖₁` for the fixed vector `b = lapackAltVec` (Higham §15.3, p. 293:
-    `bᵢ = (−1)^{i+1}(1 + (i−1)/(n−1))`, `c = Ab`).  We exhibit that genuine
-    `(w, v) = (b, Ab)` witness: `v = Aw` holds definitionally, and the realized
-    ratio `‖v‖₁/‖w‖₁` is a lower bound on the returned estimate `γ` (it is one
-    of the two arguments of the `max`), hence `≤ ‖A‖₁`.
+    The estimator returns the maximum of its power-method estimate and the
+    alternating-vector estimate.  If the power arm wins,
+    `H15_Algorithm15_3_stored_gamma_realized` supplies the normalized iterate
+    at which that stored estimate was computed.  If the alternating arm wins,
+    take `w = lapackAltVec` directly.  Thus in either branch there are genuine
+    vectors `w` and `v = A w` satisfying the printed equality
+    `‖v‖₁ / ‖w‖₁ = γ`, together with `γ ≤ ‖A‖₁`. -/
+theorem H15_Algorithm15_4_exact_ratio_witness {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) :
+    ∃ (w v : Fin n → ℝ),
+      (∀ i, v i = ∑ j : Fin n, A i j * w j) ∧
+      oneNormVec v / oneNormVec w = H15_Algorithm15_4_gamma hn A ∧
+      H15_Algorithm15_4_gamma hn A ≤ oneNorm A := by
+  obtain ⟨wPower, hwPower, hpower⟩ :=
+    H15_Algorithm15_3_stored_gamma_realized hn A 5
+  let powerEst : ℝ := (oneNormPowerMethod hn A 5).γ
+  by_cases h1n : 1 < n
+  · let b : Fin n → ℝ := lapackAltVec h1n
+    let altEst : ℝ :=
+      oneNormVec (fun i => ∑ j : Fin n, A i j * b j) / oneNormVec b
+    have hgamma :
+        H15_Algorithm15_4_gamma hn A = max powerEst altEst := by
+      simp [H15_Algorithm15_4_gamma, lapackNormEstimator, h1n,
+        powerEst, altEst, b]
+    by_cases hle : powerEst ≤ altEst
+    · refine ⟨b, fun i => ∑ j : Fin n, A i j * b j, fun _ => rfl, ?_,
+          H15_Algorithm15_4_lower_bound hn A⟩
+      rw [hgamma, max_eq_right hle]
+    · have halt : altEst ≤ powerEst := (lt_of_not_ge hle).le
+      refine ⟨wPower, fun i => ∑ j : Fin n, A i j * wPower j, fun _ => rfl, ?_,
+          H15_Algorithm15_4_lower_bound hn A⟩
+      rw [hgamma, max_eq_left halt, hwPower, div_one]
+      simpa [powerEst] using hpower
+  · have hgamma : H15_Algorithm15_4_gamma hn A = powerEst := by
+      simp [H15_Algorithm15_4_gamma, lapackNormEstimator, h1n, powerEst]
+    refine ⟨wPower, fun i => ∑ j : Fin n, A i j * wPower j, fun _ => rfl, ?_,
+        H15_Algorithm15_4_lower_bound hn A⟩
+    rw [hgamma, hwPower, div_one]
+    simpa [powerEst] using hpower
 
-    This is the honest `v = Aw` / ratio-realization that the existing
-    "Chapter-14" lower-bound lemma does not expose. -/
+/-- Compatibility corollary retaining the older `≤ γ` witness surface.  The
+    equality is supplied by `H15_Algorithm15_4_exact_ratio_witness`. -/
 theorem H15_Algorithm15_4_ratio_witness {n : ℕ} (h1n : 1 < n)
     (A : Fin n → Fin n → ℝ) :
     ∃ (w v : Fin n → ℝ),
@@ -202,13 +270,9 @@ theorem H15_Algorithm15_4_ratio_witness {n : ℕ} (h1n : 1 < n)
       H15_Algorithm15_4_gamma (Nat.lt_of_lt_of_le Nat.zero_lt_one
         (le_of_lt h1n)) A ≤ oneNorm A := by
   set hn : 0 < n := Nat.lt_of_lt_of_le Nat.zero_lt_one (le_of_lt h1n) with hhn
-  refine ⟨lapackAltVec h1n,
-          fun i => ∑ j : Fin n, A i j * lapackAltVec h1n j,
-          fun _ => rfl, ?_, H15_Algorithm15_4_lower_bound hn A⟩
-  -- The realized ratio equals the `alt_est` argument of the `max`, hence ≤ γ.
-  unfold H15_Algorithm15_4_gamma lapackNormEstimator
-  rw [dif_pos h1n]
-  exact le_max_right _ _
+  obtain ⟨w, v, hv, hratio, hlower⟩ :=
+    H15_Algorithm15_4_exact_ratio_witness hn A
+  exact ⟨w, v, hv, hratio.le, hlower⟩
 
 -- ============================================================
 -- §15.1  1-norm condition number κ₁(A) = ‖A‖₁‖A⁻¹‖₁ (eq. (15.1))

@@ -31,4 +31,5 @@ import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21SNERemainderBounds
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21SNESigned
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21SNEUniform
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21Theorem21_3Attainment
+import LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21Theorem214SourceClosure
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQApply

@@ -15,7 +15,7 @@
 |---|---|---|
 | Sec. 27.1 | `FPException`, `ExceptionFlags`, `raiseException_mono`, `clearException` | reusable sticky-flag specification |
 | Secs. 27.5, 27.7.1, 27.7.4 | `ArithmeticParameters`, `PortableArithmeticModel` | reusable portable-model vocabulary |
-| Sec. 27.8, p. 499 | `twoPassScaledNorm`, `twoPassScaledNorm_sq`, `twoPassRoundedScaledSum_bounds_and_safe` | exact squared-output correctness plus a concrete conditional round-to-even no-overflow trace |
+| Sec. 27.8, p. 499 | `twoPassScaledNorm`, `twoPassScaledNorm_sq`, `twoPassRoundedScaledNorm`, `higham27_twoPassRoundedScaledNorm_trace_safe` | exact squared-output correctness plus a literal conditional round-to-even returned-norm trace |
 | Sec. 27.8 / Appendix 27.5 | `scaledSumSqStep`, fold/nonnegativity invariants, `higham27_problem27_5_scaled_norm_correct_sq` | end-to-end exact-arithmetic correctness of the one-pass scaled norm |
 | Sec. 27.8, p. 500 | repository `complexVecOneNorm`, `higham27BlasComplexPseudoOneNorm`, comparison theorem | both printed complex one-norm formulas, kept distinct; true norm reused from `Analysis.Norms` |
 | (27.1) | `smithDivReal_eq`, `smithDivImag_eq`, `higham27_eq27_1_smith_complex_division` | exact Smith branch identity with explicit `c != 0` domain |
@@ -24,9 +24,15 @@
 
 ## Honest boundary
 
-The printed two-pass algorithm now has a concrete finite round-to-even trace;
-its representable-integer and final dimension-capacity premises are explicit
-format/input conditions, not assumptions of the conclusion.  Smith's two
+The printed two-pass algorithm now has a literal finite round-to-even executor:
+its zero-scale branch returns before division, while its nonzero branch rounds
+the quotient, square, accumulator addition, square root, and final multiply.
+Its finite-input, representable-integer, representable-square-root-envelope,
+and final-capacity premises are explicit format/input conditions, not
+assumptions of trace safety.  The proved certificate records nonzero division
+and nonnegative square-root domains as well as every overflow-sensitive exact
+pre-round value.  It does not claim that underflow or inexact rounding is
+absent.  Smith's two
 rounded branches likewise have proved pre-division range traces.  The source's
 unrestricted Smith suggestion cannot hold literally: the printed denominator
 equals twice the largest finite magnitude when `c=d=maxFiniteMagnitude`, and

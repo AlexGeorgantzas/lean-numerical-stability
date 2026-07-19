@@ -1,8 +1,8 @@
 /-
 Algorithms/Cholesky/AasenDirect118Ch11Closure.lean
 
-Chapter 11 closure, **module #4** — the final assembly of the faithful
-Theorem-11.8 (Aasen backward error) closure.
+Chapter 11 closure, **module #4** — a conditional assembly of the
+Theorem-11.8 (Aasen backward error) argument.
 
 This file composes the three completed pieces of the faithful 11.8 tower:
 
@@ -26,7 +26,8 @@ residual (#3) with the repository's rounded Aasen solve chain
 (`fl_forwardSub L̂ · (Pb)`, a tridiagonal solve of `T̂`, `fl_backSub L̂ᵀ ·`) via
 the generic combiner
 `higham11_8_aasen_source_backward_error_of_factor_and_solve_residuals`, giving
-the honest Higham-11.8 conclusion for the **computed** Aasen factors:
+the Higham-11.8 conclusion for the **computed** Aasen factors, conditional on
+the extra coefficient-one middle-factor norm hypothesis described below:
 
   * componentwise `|ΔA| ≤ B_factor + B_solve` (`B_factor` is the *derived* direct
     residual budget `γ_{3n} |L̂| |T̂| |L̂ᵀ|`, `B_solve` the closed solve-chain
@@ -43,12 +44,12 @@ residual is on the computed factors with none of the usual crutches.
 The **middle solve** is routed through a tridiagonal factorisation
 `T̂ = L_T̂ U_T̂` (supplied as algorithm data with the Chapter-9 eq. (9.20)
 perturbation model `h20`).  Its factor-norm growth enters only through the
-single hypothesis `hmiddle_factors : ‖L_T̂‖∞ ‖U_T̂‖∞ ≤ ‖T̂‖∞` — the standard
-`O(1)` tridiagonal-solve growth guarantee, the exact analogue of the explicit
-partial-pivoting cap `|L̂ i j| ≤ 1` used for the outer factor.  This is the same
-middle-solve reduction used by the existing endpoint
-`Aasen118ReducedCh11Closure.higham11_8_aasen_normwise_backward_error_of_reduced`
-(there written with a parameter `κmidLU ≤ 1`).
+single hypothesis `hmiddle_factors : ‖L_T̂‖∞ ‖U_T̂‖∞ ≤ ‖T̂‖∞`.  Higham's
+printed Theorem 11.8 does **not** state this coefficient-one inequality, and it
+is false even for an exact 2-by-2 symmetric-tridiagonal GEPP factorization; see
+the imported `middleCoeffOneCounter_actual_GEPP`.  Thus this hypothesis is a genuine
+strengthening, not a derived tridiagonal growth fact.  The existing reduced
+endpoint makes the same reduction through a parameter `κmidLU ≤ 1`.
 
 The dominance-free Bunch route (module #1,
 `bunch_tridiag_absFactor_infNorm_le_infNorm`) discharges this middle-solve growth
@@ -57,7 +58,11 @@ The dominance-free Bunch route (module #1,
 *linear* radius `γ_{15n+25}` by a quadratic one, so it is not used inside the
 linear-radius endpoint below.  The Bunch bound is re-exported here
 (`bunch_middle_absFactor_infNorm_le`) so the dominance-free discharge remains
-available to callers who accept the quadratic radius.
+available to callers who accept the quadratic radius.  The actual exact-GEPP
+trace API also gives the unconditional bound
+`‖L_T̂‖∞ ‖U_T̂‖∞ ≤ 2 n² ‖T̂‖∞`
+(`tridiag_GEPP_exists_factor_infNorm_product_le_two_n_sq`), which likewise does
+not recover the printed linear radius.
 
 Constant note.  The printed Theorem 11.8 displays `γ_{3n+1}` (factor) and a
 solve constant; the assembled radius here is the repository's canonical
@@ -72,6 +77,7 @@ already-closed pieces and the `infNorm`/`gamma` arithmetic machinery.
 import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenFactorResidualCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenTridiagGEPPCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenFactorNormCh11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenMiddleGEPPCh11Counterexample
 
 open scoped BigOperators
 
@@ -154,7 +160,7 @@ theorem bunch_middle_absFactor_infNorm_le
 
 /-! ### Module #4 — the assembled direct Aasen backward error (Theorem 11.8) -/
 
-/-- **Theorem 11.8 (Aasen), faithful direct assembly.**
+/-- **Theorem 11.8 (Aasen), conditional direct assembly.**
 
 For the computed floating-point Aasen factors `L̂ = (flAasen fp n A).Lhat`,
 `T̂ = (flAasen fp n A).That`, run the Aasen solve chain
@@ -172,9 +178,12 @@ computed `L̂`, `L̂ᵀ`; middle tridiagonal solve of `T̂` via its factors
 Hypotheses: `A` symmetric; the nonzero-pivot predicate `FlAasenPivots`; the
 explicit partial-pivoting cap `|L̂ i j| ≤ 1`; the middle tridiagonal solve
 factors `L_T̂, U_T̂` with the Chapter-9 eq. (9.20) perturbation model `h20`, their
-triangular shape, and the `O(1)` middle-solve factor-norm growth guarantee
-`hmiddle_factors : ‖L_T̂‖∞ ‖U_T̂‖∞ ≤ ‖T̂‖∞`; and `gammaValid fp (15 n + 25)`.  No
-diagonal dominance and no no-cancellation are assumed. -/
+triangular shape, and the additional coefficient-one condition
+`hmiddle_factors : ‖L_T̂‖∞ ‖U_T̂‖∞ ≤ ‖T̂‖∞`; and `gammaValid fp (15 n + 25)`.
+The coefficient-one condition is not printed by Higham and cannot be derived
+from tridiagonality plus GEPP; `middleCoeffOneCounter_actual_GEPP` makes this endpoint
+strictly conditional.  No diagonal dominance and no no-cancellation are
+assumed. -/
 theorem higham11_8_aasen_backward_error_direct
     (fp : FPModel) (n : ℕ) (hn : 2 ≤ n)
     (A Pmat : Fin n → Fin n → ℝ) (b : Fin n → ℝ)

@@ -1,5 +1,11 @@
 # Higham Chapter 19 Source Coverage Ledger
 
+> **Fresh strict audit (2026-07-18): NOT CLOSED / BLOCKED.** Theorem 19.6 is
+> restricted to an exact-arithmetic strong-stage route, and Theorem 19.13 is not
+> the actual rounded MGS output. In-tree counterexamples rule out the naive
+> bare-`FPModel` identification. This is an evidenced model/algorithm blocker,
+> not a passing selected row. See `AUDIT_ch01-28_2026-07-18.md`.
+
 ## Source and Scope
 
 - Edition: Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed. (SIAM, 2002), inferred from the repository's SIAM DOI chapter PDF path and the shared chapter index. Local `pdfinfo` is not installed in this environment.

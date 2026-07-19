@@ -7067,6 +7067,253 @@ theorem eq_7_16_rowEquilibrated_bounds
   ⟨problem7_3_rowEquilibrated_lower_bound n hn A A_inv d dInv hd hdInv hrow,
     condSkeel_le_kappaInf n hn A A_inv⟩
 
+-- ============================================================
+-- Equation (7.17): Kahan's symbolic 3 × 3 example
+-- ============================================================
+
+/-- The matrix `A` in Kahan's parameterized example (7.17). -/
+noncomputable def ch7KahanMatrix (ε : ℝ) (i j : Fin 3) : ℝ :=
+  if i = 0 then
+    if j = 0 then 2 else if j = 1 then -1 else 1
+  else if i = 1 then
+    if j = 0 then -1 else ε
+  else
+    if j = 0 then 1 else ε
+
+/-- The right-hand side `b` in Kahan's parameterized example (7.17). -/
+noncomputable def ch7KahanRhs (ε : ℝ) (i : Fin 3) : ℝ :=
+  if i = 0 then 2 * (1 + ε) else if i = 1 then -ε else ε
+
+/-- The exact solution `x = [ε, -1, 1]ᵀ` following (7.17). -/
+noncomputable def ch7KahanSolution (ε : ℝ) (i : Fin 3) : ℝ :=
+  if i = 0 then ε else if i = 1 then -1 else 1
+
+/-- The inverse of `ch7KahanMatrix ε` for `ε ≠ 0`. -/
+noncomputable def ch7KahanInverse (ε : ℝ) (i j : Fin 3) : ℝ :=
+  if i = 0 then
+    if j = 0 then 0 else if j = 1 then -(1 / 2 : ℝ) else (1 / 2 : ℝ)
+  else if i = 1 then
+    if j = 0 then -(1 / 2 : ℝ)
+    else if j = 1 then (1 - 2 * ε) / (4 * ε)
+    else (2 * ε + 1) / (4 * ε)
+  else
+    if j = 0 then (1 / 2 : ℝ)
+    else if j = 1 then (2 * ε + 1) / (4 * ε)
+    else (1 - 2 * ε) / (4 * ε)
+
+/-- The displayed matrix `|A⁻¹||A|` following Kahan's example (7.17). -/
+noncomputable def ch7KahanAbsInverseMulAbsMatrix (ε : ℝ)
+    (i j : Fin 3) : ℝ :=
+  if i = 0 then
+    if j = 0 then 1 else ε
+  else
+    if j = 0 then (2 * ε + 1) / (2 * ε) else 1
+
+private theorem ch7_kahan_solution (ε : ℝ) :
+    matMulVec 3 (ch7KahanMatrix ε) (ch7KahanSolution ε) = ch7KahanRhs ε := by
+  ext i
+  fin_cases i <;>
+    simp [matMulVec, ch7KahanMatrix, ch7KahanSolution, ch7KahanRhs,
+      Fin.sum_univ_three] <;> ring
+
+private theorem ch7_kahan_inverse (ε : ℝ) (hε : 0 < ε) :
+    IsInverse 3 (ch7KahanMatrix ε) (ch7KahanInverse ε) := by
+  have hε0 : ε ≠ 0 := ne_of_gt hε
+  constructor <;> intro i j <;> fin_cases i <;> fin_cases j <;>
+    simp [ch7KahanMatrix, ch7KahanInverse, Fin.sum_univ_three] <;>
+    field_simp <;> ring
+
+private theorem ch7_kahan_abs_inverse_mul_abs_matrix
+    (ε : ℝ) (hε : 0 < ε) (hεhalf : ε ≤ 1 / 2) :
+    matMul 3 (absMatrix 3 (ch7KahanInverse ε))
+        (absMatrix 3 (ch7KahanMatrix ε)) =
+      ch7KahanAbsInverseMulAbsMatrix ε := by
+  have hε0 : 0 ≤ ε := le_of_lt hε
+  have h1 : 0 ≤ 1 - 2 * ε := by linarith
+  have h2 : 0 ≤ 2 * ε + 1 := by positivity
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [matMul, absMatrix, ch7KahanMatrix, ch7KahanInverse,
+      ch7KahanAbsInverseMulAbsMatrix, Fin.sum_univ_three,
+      abs_of_nonneg hε0, abs_of_nonneg h1, abs_of_nonneg h2,
+      abs_div, abs_mul] <;>
+    field_simp <;> ring
+
+private theorem ch7_kahan_matrix_infNorm
+    (ε : ℝ) (hε : 0 < ε) (hεhalf : ε ≤ 1 / 2) :
+    infNorm (ch7KahanMatrix ε) = 4 := by
+  have hε0 : 0 ≤ ε := le_of_lt hε
+  apply le_antisymm
+  · apply infNorm_le_of_row_sum_le
+    · intro i
+      fin_cases i <;>
+        simp [ch7KahanMatrix, Fin.sum_univ_three, abs_of_nonneg hε0] <;>
+        linarith
+    · norm_num
+  · have h := row_sum_le_infNorm (ch7KahanMatrix ε) (0 : Fin 3)
+    simp [ch7KahanMatrix, Fin.sum_univ_three,
+      show (2 : Fin 3) ≠ 0 by decide,
+      show (2 : Fin 3) ≠ 1 by decide] at h
+    norm_num at h
+    exact h
+
+private theorem ch7_kahan_inverse_infNorm
+    (ε : ℝ) (hε : 0 < ε) (hεhalf : ε ≤ 1 / 2) :
+    infNorm (ch7KahanInverse ε) = (1 + ε) / (2 * ε) := by
+  have h1 : 0 ≤ 1 - 2 * ε := by linarith
+  have h2 : 0 ≤ 2 * ε + 1 := by positivity
+  have hden : 0 ≤ 4 * ε := by positivity
+  apply le_antisymm
+  · apply infNorm_le_of_row_sum_le
+    · intro i
+      fin_cases i <;>
+        simp [ch7KahanInverse, Fin.sum_univ_three,
+          abs_of_nonneg h1, abs_of_nonneg h2, abs_of_nonneg hden,
+          abs_div] <;>
+        field_simp <;> nlinarith
+    · positivity
+  · have h := row_sum_le_infNorm (ch7KahanInverse ε) (1 : Fin 3)
+    simp [ch7KahanInverse, Fin.sum_univ_three,
+      abs_of_nonneg h1, abs_of_nonneg h2, abs_of_nonneg hden,
+      abs_div] at h
+    field_simp at h ⊢
+    nlinarith
+
+private theorem ch7_kahan_kappaInf
+    (ε : ℝ) (hε : 0 < ε) (hεhalf : ε ≤ 1 / 2) :
+    kappaInf 3 (by norm_num) (ch7KahanMatrix ε) (ch7KahanInverse ε) =
+      2 * (1 + ε⁻¹) := by
+  rw [kappaInf_eq_infNorm_mul_infNorm,
+    ch7_kahan_matrix_infNorm ε hε hεhalf,
+    ch7_kahan_inverse_infNorm ε hε hεhalf]
+  field_simp
+  ring
+
+private theorem ch7_kahan_condSkeel
+    (ε : ℝ) (hε : 0 < ε) (hεhalf : ε ≤ 1 / 2) :
+    condSkeel 3 (by norm_num) (ch7KahanMatrix ε) (ch7KahanInverse ε) =
+      3 + (2 * ε)⁻¹ := by
+  have hε0 : 0 ≤ ε := le_of_lt hε
+  have h1 : 0 ≤ 1 - 2 * ε := by linarith
+  have h2 : 0 ≤ 2 * ε + 1 := by positivity
+  have hden : 0 ≤ 4 * ε := by positivity
+  unfold condSkeel
+  apply le_antisymm
+  · apply Finset.sup'_le
+    intro i _hi
+    fin_cases i <;>
+      simp [ch7KahanMatrix, ch7KahanInverse, Fin.sum_univ_three,
+        abs_of_nonneg hε0, abs_of_nonneg h1, abs_of_nonneg h2,
+        abs_of_nonneg hden, abs_div] <;>
+      field_simp <;> nlinarith
+  · have h := Finset.le_sup'
+        (fun i : Fin 3 =>
+          ∑ j : Fin 3, |ch7KahanInverse ε i j| *
+            ∑ k : Fin 3, |ch7KahanMatrix ε j k|)
+        (Finset.mem_univ (1 : Fin 3))
+    have hrow :
+        (∑ j : Fin 3, |ch7KahanInverse ε (1 : Fin 3) j| *
+          ∑ k : Fin 3, |ch7KahanMatrix ε j k|) =
+            3 + (2 * ε)⁻¹ := by
+      simp [ch7KahanMatrix, ch7KahanInverse, Fin.sum_univ_three,
+        abs_of_nonneg hε0, abs_of_nonneg h1, abs_of_nonneg h2,
+        abs_of_nonneg hden, abs_div]
+      field_simp
+      ring
+    rw [hrow] at h
+    exact h
+
+private theorem ch7_kahan_solution_infNorm
+    (ε : ℝ) (hε : 0 < ε) (hεhalf : ε ≤ 1 / 2) :
+    infNormVec (ch7KahanSolution ε) = 1 := by
+  have hε0 : 0 ≤ ε := le_of_lt hε
+  apply le_antisymm
+  · apply infNormVec_le_of_abs_le
+    · intro i
+      fin_cases i <;>
+        simp [ch7KahanSolution, abs_of_nonneg hε0] <;> linarith
+    · norm_num
+  · have h := abs_le_infNormVec (ch7KahanSolution ε) (1 : Fin 3)
+    simpa [ch7KahanSolution] using h
+
+private theorem ch7_kahan_cond_at_solution
+    (ε : ℝ) (hε : 0 < ε) (hεhalf : ε ≤ 1 / 2) :
+    ch7SkeelCondAtSolutionInf 3 (by norm_num)
+      (ch7KahanMatrix ε) (ch7KahanInverse ε) (ch7KahanSolution ε) =
+        5 / 2 + ε := by
+  have hε0 : 0 ≤ ε := le_of_lt hε
+  have h1 : 0 ≤ 1 - 2 * ε := by linarith
+  have h2 : 0 ≤ 2 * ε + 1 := by positivity
+  have hden : 0 ≤ 4 * ε := by positivity
+  unfold ch7SkeelCondAtSolutionInf ch7CondEFAtSolutionInf
+  rw [ch7_kahan_solution_infNorm ε hε hεhalf, div_one]
+  unfold ch7ForwardBoundEF
+  apply le_antisymm
+  · apply Finset.sup'_le
+    intro i _hi
+    fin_cases i <;>
+      simp [ch7AmplifiedRhsEF, ch7KahanMatrix, ch7KahanInverse,
+        ch7KahanSolution, Fin.sum_univ_three, abs_of_nonneg hε0,
+        abs_of_nonneg h1, abs_of_nonneg h2, abs_of_nonneg hden,
+        abs_div] <;>
+      field_simp <;> nlinarith
+  · have h := Finset.le_sup'
+        (ch7AmplifiedRhsEF 3 (ch7KahanInverse ε)
+          (fun i j => |ch7KahanMatrix ε i j|) (fun _ => 0)
+          (ch7KahanSolution ε))
+        (Finset.mem_univ (1 : Fin 3))
+    have hrow :
+        ch7AmplifiedRhsEF 3 (ch7KahanInverse ε)
+          (fun i j => |ch7KahanMatrix ε i j|) (fun _ => 0)
+          (ch7KahanSolution ε) (1 : Fin 3) = 5 / 2 + ε := by
+      simp [ch7AmplifiedRhsEF, ch7KahanMatrix, ch7KahanInverse,
+        ch7KahanSolution, Fin.sum_univ_three, abs_of_nonneg hε0,
+        abs_of_nonneg h1, abs_of_nonneg h2, abs_of_nonneg hden,
+        abs_div]
+      field_simp
+      ring
+    rw [hrow] at h
+    exact h
+
+/-- Equation (7.17), Kahan's exact symbolic example.  The source assumption
+`0 < ε ≪ 1` is represented by the explicit sufficient range
+`0 < ε ≤ 1/2`.  In this range the displayed matrix and right-hand side have
+the stated exact solution; the supplied inverse produces the printed
+`|A⁻¹||A|`; and the three condition numbers have the source values
+`κ∞(A) = 2(1 + ε⁻¹)`, `cond(A) = 3 + (2ε)⁻¹`, and
+`cond(A,x) = 5/2 + ε`.  The final strict chain is the precise content behind
+the source's qualitative contrast. -/
+theorem eq_7_17_kahan_symbolic_example
+    (ε : ℝ) (hε : 0 < ε) (hεhalf : ε ≤ 1 / 2) :
+    matMulVec 3 (ch7KahanMatrix ε) (ch7KahanSolution ε) = ch7KahanRhs ε ∧
+    IsInverse 3 (ch7KahanMatrix ε) (ch7KahanInverse ε) ∧
+    kappaInf 3 (by norm_num) (ch7KahanMatrix ε) (ch7KahanInverse ε) =
+      2 * (1 + ε⁻¹) ∧
+    matMul 3 (absMatrix 3 (ch7KahanInverse ε))
+        (absMatrix 3 (ch7KahanMatrix ε)) =
+      ch7KahanAbsInverseMulAbsMatrix ε ∧
+    condSkeel 3 (by norm_num) (ch7KahanMatrix ε) (ch7KahanInverse ε) =
+      3 + (2 * ε)⁻¹ ∧
+    ch7SkeelCondAtSolutionInf 3 (by norm_num)
+        (ch7KahanMatrix ε) (ch7KahanInverse ε) (ch7KahanSolution ε) =
+      5 / 2 + ε ∧
+    ch7SkeelCondAtSolutionInf 3 (by norm_num)
+        (ch7KahanMatrix ε) (ch7KahanInverse ε) (ch7KahanSolution ε) <
+      condSkeel 3 (by norm_num) (ch7KahanMatrix ε) (ch7KahanInverse ε) ∧
+    condSkeel 3 (by norm_num) (ch7KahanMatrix ε) (ch7KahanInverse ε) <
+      kappaInf 3 (by norm_num) (ch7KahanMatrix ε) (ch7KahanInverse ε) := by
+  have hkappa := ch7_kahan_kappaInf ε hε hεhalf
+  have hcond := ch7_kahan_condSkeel ε hε hεhalf
+  have hcondx := ch7_kahan_cond_at_solution ε hε hεhalf
+  refine ⟨ch7_kahan_solution ε, ch7_kahan_inverse ε hε, hkappa,
+    ch7_kahan_abs_inverse_mul_abs_matrix ε hε hεhalf, hcond, hcondx, ?_, ?_⟩
+  · rw [hcondx, hcond]
+    field_simp
+    nlinarith
+  · rw [hcond, hkappa]
+    field_simp
+    nlinarith
+
 /-- The values `κ∞(DA)` over positive diagonal row scalings.  This is the
 positive-scaling infimum model for the source minimum in `(7.15)`. -/
 noncomputable def ch7PositiveRowScaledKappaInfSet
@@ -21392,6 +21639,52 @@ theorem problem7_10b_irreducible_products_scaledInfKappaSet_sInf_eq_spectralRadi
   exact ⟨mu, z, x, y, hz_ne, hx_ne, hx_nonneg, hy_pos, heig, hrad,
     hsubx, heig_real, hsInf⟩
 
+/-- Problem 7.10(b) / **Theorem 7.8 (Bauer)**, genuine attained-minimum form.
+Under the source irreducibility hypotheses, Perron--Frobenius supplies a
+positive right eigenvector at the spectral radius.  The canonical diagonal
+scalings built from that vector therefore attain the least value of the
+two-sided scaled infinity-norm condition numbers. -/
+theorem problem7_10b_irreducible_products_scaledInfKappaSet_isLeast_spectralRadius
+    {n : ℕ} (hn : 0 < n)
+    (A A_inv : Fin n → Fin n → ℝ)
+    (hBC : Matrix.IsIrreducible
+      (Matrix.of (matMul n (absMatrix n A) (absMatrix n A_inv)) :
+        Matrix (Fin n) (Fin n) ℝ))
+    (hCB : Matrix.IsIrreducible
+      (Matrix.of (matMul n (absMatrix n A_inv) (absMatrix n A)) :
+        Matrix (Fin n) (Fin n) ℝ)) :
+    ∃ mu : ℂ, ∃ z : CVec n, ∃ x : Fin n → ℝ, ∃ y : Fin n → ℝ,
+      z ≠ 0 ∧ x ≠ 0 ∧ (∀ i : Fin n, 0 ≤ x i) ∧
+      (∀ i : Fin n, 0 < y i) ∧
+      (∀ i : Fin n,
+        complexMatrixVecMul
+            (realRectToCMatrix
+              (matMul n (absMatrix n A) (absMatrix n A_inv))) z i =
+          mu * z i) ∧
+      (nnnorm mu : ENNReal) =
+        spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (matMul n (absMatrix n A) (absMatrix n A_inv)))) ∧
+      (∀ i : Fin n,
+        ‖mu‖ * x i ≤
+          matMulVec n (matMul n (absMatrix n A) (absMatrix n A_inv)) x i) ∧
+      (∀ i : Fin n,
+        matMulVec n (matMul n (absMatrix n A) (absMatrix n A_inv)) y i =
+          ‖mu‖ * y i) ∧
+      IsLeast (ch7TwoSidedScaledInfKappaSet A A_inv) ‖mu‖ := by
+  obtain ⟨mu, z, x, y, hz_ne, hx_ne, hx_nonneg, hy_pos, heig, hrad,
+    hsubx, heig_real⟩ :=
+    problem7_10b_abs_product_exists_spectralRadius_attaining_positive_eigenvector
+      hn A A_inv hBC
+  have hleast :
+      IsLeast (ch7TwoSidedScaledInfKappaSet A A_inv) ‖mu‖ :=
+    problem7_10b_irreducible_products_scaledInfKappaSet_isLeast_perron
+      hn A A_inv ‖mu‖ y hBC hCB hy_pos heig_real
+  exact ⟨mu, z, x, y, hz_ne, hx_ne, hx_nonneg, hy_pos, heig, hrad,
+    hsubx, heig_real, hleast⟩
+
 /-- Problem 7.10(e), transpose-side positive Perron vector for
 `|A|ᵀ|A⁻¹|ᵀ` from irreducibility of `|A⁻¹||A|`. -/
 theorem problem7_10e_abs_transpose_product_exists_spectralRadius_attaining_positive_eigenvector
@@ -25724,6 +26017,155 @@ theorem problem7_13_relative_infNorm_bound (fp : FPModel) (n : ℕ)
   exact div_le_div_of_nonneg_right hnorm (le_of_lt hy)
 
 -- ============================================================
+-- Equation (7.32): perturbation theory by calculus
+-- ============================================================
+
+/-- Equation (7.32) after differentiating `A(t)x(t) = b(t)`, in the source's
+arbitrary subordinate-norm form.  Here `A`, `Ainv`, and `A_dot` denote their
+values at the point under consideration, while `x_dot` and `b_dot` are the
+corresponding derivatives.  The hypothesis `hdiff` is the differentiated
+system `A_dot*x + A*x_dot = b_dot`.  If `a`, `s`, and `d` are the exact
+subordinate norm values of `A`, `Ainv`, and `A_dot`, the conclusion is the
+complete inequality-and-equality chain printed in (7.32). -/
+theorem eq_7_32_subordinate_from_differentiated_system
+    {n : ℕ} (hn : 0 < n) {ν : CVec n → ℝ} (hν : IsComplexVectorNorm ν)
+    {A Ainv A_dot : CMatrix n n} {a s d : ℝ}
+    {x x_dot b_dot : CVec n}
+    (hA : IsMixedSubordinateMatrixNormValue ν ν A a)
+    (hAinv : IsMixedSubordinateMatrixNormValue ν ν Ainv s)
+    (hAdot : IsMixedSubordinateMatrixNormValue ν ν A_dot d)
+    (hInv : IsComplexMatrixLeftInverse A Ainv)
+    (hx : 0 < ν x)
+    (hdiff : ∀ i : Fin n,
+      complexMatrixVecMul A_dot x i + complexMatrixVecMul A x_dot i = b_dot i) :
+    ν x_dot / ν x ≤ s * d + s * ν b_dot / ν x ∧
+      s * d + s * ν b_dot / ν x =
+        (a * s) * (d / a + ν b_dot / (a * ν x)) := by
+  have hAxdot :
+      complexMatrixVecMul A x_dot =
+        fun i => b_dot i - complexMatrixVecMul A_dot x i := by
+    ext i
+    exact eq_sub_of_add_eq' (hdiff i)
+  have hidentity :
+      x_dot = complexMatrixVecMul Ainv
+        (fun i => b_dot i - complexMatrixVecMul A_dot x i) := by
+    calc
+      x_dot = complexMatrixVecMul Ainv (complexMatrixVecMul A x_dot) :=
+        (hInv x_dot).symm
+      _ = complexMatrixVecMul Ainv
+          (fun i => b_dot i - complexMatrixVecMul A_dot x i) := by rw [hAxdot]
+  have hs : 0 ≤ s :=
+    mixedSubordinateNormValue_nonneg_of_nonempty hn hν hν hAinv
+  have ha : 0 < a := by
+    have ha0 : 0 ≤ a :=
+      mixedSubordinateNormValue_nonneg_of_nonempty hn hν hν hA
+    refine lt_of_le_of_ne ha0 ?_
+    intro ha_zero
+    obtain ⟨u, hu⟩ := exists_unit_complexVectorNorm hν hn
+    have hAu_le := hA.1 u
+    rw [← ha_zero, zero_mul] at hAu_le
+    have hAu_norm_zero : ν (complexMatrixVecMul A u) = 0 :=
+      le_antisymm hAu_le (hν.nonneg _)
+    have hAu_zero : complexMatrixVecMul A u = 0 :=
+      (hν.eq_zero_iff _).mp hAu_norm_zero
+    have hu_zero : u = 0 := by
+      have hi := hInv u
+      rw [hAu_zero] at hi
+      calc
+        u = complexMatrixVecMul Ainv (0 : CVec n) := hi.symm
+        _ = 0 := by
+          ext i
+          simp [complexMatrixVecMul]
+    have hνzero : ν (0 : CVec n) = 0 := (hν.eq_zero_iff _).2 rfl
+    rw [hu_zero, hνzero] at hu
+    norm_num at hu
+  have htri :
+      ν (fun i => b_dot i - complexMatrixVecMul A_dot x i) ≤
+        ν b_dot + ν (complexMatrixVecMul A_dot x) := by
+    calc
+      ν (fun i => b_dot i - complexMatrixVecMul A_dot x i) =
+          ν (complexVecAdd b_dot
+            (complexVecSMul (-1) (complexMatrixVecMul A_dot x))) := by
+              congr 1
+              ext i
+              simp [complexVecAdd, complexVecSMul, sub_eq_add_neg]
+      _ ≤ ν b_dot + ν (complexVecSMul (-1) (complexMatrixVecMul A_dot x)) :=
+        hν.add_le _ _
+      _ = ν b_dot + ν (complexMatrixVecMul A_dot x) := by
+        rw [hν.smul]
+        norm_num
+  have hnum :
+      ν x_dot ≤ (s * d) * ν x + s * ν b_dot := by
+    calc
+      ν x_dot = ν (complexMatrixVecMul Ainv
+          (fun i => b_dot i - complexMatrixVecMul A_dot x i)) := by rw [hidentity]
+      _ ≤ s * ν (fun i => b_dot i - complexMatrixVecMul A_dot x i) :=
+        hAinv.1 _
+      _ ≤ s * (ν b_dot + ν (complexMatrixVecMul A_dot x)) :=
+        mul_le_mul_of_nonneg_left htri hs
+      _ ≤ s * (ν b_dot + d * ν x) :=
+        mul_le_mul_of_nonneg_left (add_le_add_right (hAdot.1 x) _) hs
+      _ = (s * d) * ν x + s * ν b_dot := by ring
+  constructor
+  · rw [div_le_iff₀ hx]
+    calc
+      ν x_dot ≤ (s * d) * ν x + s * ν b_dot := hnum
+      _ = (s * d + s * ν b_dot / ν x) * ν x := by
+        field_simp [ne_of_gt hx]
+  · field_simp [ne_of_gt ha, ne_of_gt hx]
+
+/-- Equation (7.32), end-to-end calculus form.  Coordinatewise derivative
+witnesses for the continuously differentiable source functions and the exact
+identity `A(t)x(t) = b(t)` yield `A_dot*x + A*x_dot = b_dot` by the finite-sum
+product rule.  The theorem then returns the complete arbitrary
+subordinate-norm chain from the printed display.  `HasDerivAt` is the local
+property needed by (7.32); global continuous differentiability is a stronger
+source assumption that supplies these witnesses. -/
+theorem eq_7_32_subordinate_differentiable_system
+    {n : ℕ} (hn : 0 < n) {ν : CVec n → ℝ} (hν : IsComplexVectorNorm ν)
+    {A : ℝ → CMatrix n n} {x b : ℝ → CVec n} {t : ℝ}
+    {A_dot : CMatrix n n} {x_dot b_dot : CVec n}
+    {Ainv : CMatrix n n} {a s d : ℝ}
+    (hAderiv : ∀ i j, HasDerivAt (fun τ => A τ i j) (A_dot i j) t)
+    (hxderiv : ∀ j, HasDerivAt (fun τ => x τ j) (x_dot j) t)
+    (hbderiv : ∀ i, HasDerivAt (fun τ => b τ i) (b_dot i) t)
+    (hsystem : ∀ τ, complexMatrixVecMul (A τ) (x τ) = b τ)
+    (hA : IsMixedSubordinateMatrixNormValue ν ν (A t) a)
+    (hAinv : IsMixedSubordinateMatrixNormValue ν ν Ainv s)
+    (hAdot : IsMixedSubordinateMatrixNormValue ν ν A_dot d)
+    (hInv : IsComplexMatrixLeftInverse (A t) Ainv)
+    (hx : 0 < ν (x t)) :
+    ν x_dot / ν (x t) ≤ s * d + s * ν b_dot / ν (x t) ∧
+      s * d + s * ν b_dot / ν (x t) =
+        (a * s) * (d / a + ν b_dot / (a * ν (x t))) := by
+  have hdiff : ∀ i : Fin n,
+      complexMatrixVecMul A_dot (x t) i +
+          complexMatrixVecMul (A t) x_dot i = b_dot i := by
+    intro i
+    have hprod :
+        HasDerivAt
+          (fun τ => complexMatrixVecMul (A τ) (x τ) i)
+          (Finset.univ.sum (fun j : Fin n =>
+            (A_dot i j) * (x t j) + (A t i j) * (x_dot j))) t := by
+      unfold complexMatrixVecMul
+      have hsum :=
+        HasDerivAt.sum (u := Finset.univ)
+          (fun j _hj => (hAderiv i j).mul (hxderiv j))
+      convert hsum using 1
+      ext τ
+      simp
+    have heq :
+        (fun τ => complexMatrixVecMul (A τ) (x τ) i) =
+          fun τ => b τ i := by
+      funext τ
+      exact congrFun (hsystem τ) i
+    rw [heq] at hprod
+    have hvalue := hprod.unique (hbderiv i)
+    simpa [complexMatrixVecMul, Finset.sum_add_distrib] using hvalue
+  exact eq_7_32_subordinate_from_differentiated_system
+    hn hν hA hAinv hAdot hInv hx hdiff
+
+-- ============================================================
 -- Equation (7.33): stochastic matrices
 -- ============================================================
 
@@ -25761,5 +26203,11 @@ Alias of
 `problem7_10b_irreducible_products_scaledInfKappaSet_sInf_eq_spectralRadius`. -/
 alias theorem7_8_bauer_scaledInfKappaSet_sInf_eq_spectralRadius :=
   problem7_10b_irreducible_products_scaledInfKappaSet_sInf_eq_spectralRadius
+
+/-- **Theorem 7.8 (Bauer), eq. (7.24)** — attained-minimum form:
+the spectral-radius witness is the least element of the two-sided diagonally
+scaled infinity-norm condition numbers. -/
+alias theorem7_8_bauer_scaledInfKappaSet_isLeast_spectralRadius :=
+  problem7_10b_irreducible_products_scaledInfKappaSet_isLeast_spectralRadius
 
 end LeanFpAnalysis.FP

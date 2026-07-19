@@ -1,5 +1,13 @@
 # Higham Chapter 9 Formalization Report - "LU Factorization and Linear Equations"
 
+> **Fresh strict audit (2026-07-18): gate PASS.** The literal rounded
+> Doolittle loop now derives Higham's prefix-plus-stored-term residual bound
+> directly and therefore proves Theorem 9.3 from run-to-completion/nonzero
+> pivots and `gammaValid`, without the cancellation-sensitive
+> `hU_budget_le`/`hL_budget_le` compression premises. The resulting certificate
+> is composed into the executable forms of Theorems 9.4, 9.5, and 9.14. See
+> `AUDIT_ch01-28_2026-07-18.md`.
+
 ## Source and scope
 - Edition: Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed. (SIAM, 2002).
 - Chapter: 9, "LU Factorization and Linear Equations" (printed pp. 157-193).
@@ -54,19 +62,46 @@
   documentation-honesty rule that a citation is not a proof and a conditional
   transfer does not close a stronger source row.)
 
-Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean`
-(chapter-label surface); reusable LU, triangular solve, growth-factor,
+Primary Lean modules: `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` and
+`LeanFpAnalysis/FP/Algorithms/HighamChapter9DoolittleClosure.lean`
+(source-shaped executable closure); reusable LU, triangular solve, growth-factor,
 tridiagonal, and special-matrix foundations are imported from the `LU/*` modules
 and shared analysis files.
+
+## Fresh executable-source closure (2026-07-18)
+
+The disputed pages were reread from the source (printed pp. 163-164; PDF pp.
+7-8). For an upper entry, Lemma 8.4 gives a residual bounded by `gamma_k`
+times the absolute prefix products plus the stored `U_kj`; the lower-entry
+formula analogously ends with the stored product `L_ik U_kk`. These are exactly
+the two triangular pieces of the corresponding component of
+`|Lhat||Uhat|`. They are not bounds by the stored output alone.
+
+`higham9_2_flMulSubFold_source_residual_abs_le` and
+`higham9_2_flMulSubFold_div_source_residual_abs_le` derive those estimates from
+the actual sequential `fl_mul`/`fl_sub`/`fl_div` operations. The literal loop
+certificate `higham9_2_rectRoundedLoopSourceCertificate` feeds
+`higham9_3_rectRoundedLoop_source_backward_error` and the standard square and
+permuted `LUBackwardError` adapters. The no-budget executable consumers are:
+
+- `higham9_4_rectRoundedLoop_square_lu_solve_backward_error_source`;
+- `higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace_rectRoundedLoop_source`;
+- the `higham9_14_*rectRoundedLoop_square_sourceResidual*` `f(u)` and `h(u)`
+  families.
+
+The older budget-compression declarations remain available as conditional
+compatibility surfaces, but they are no longer used to claim the source
+theorems. `higham9_3_outputOnlyCompression_fails_under_cancellation` formally
+records the smallest cancellation obstruction to that obsolete adapter shape.
 
 ## Completed selected targets (primary labels)
 | Source label | Lean declaration(s) | Notes |
 |---|---|---|
 | Theorem 9.1 (LU existence/uniqueness and pivot foundations) | `higham9_1_*`, `higham9_2_DoolittleLU`, `higham9_2_exactDoolittle_recurrences_to_LUFactSpec`, `higham9_1_lu_unique_of_pivots_ne_zero` | determinant/pivot product, Schur complement, and exact LU interfaces |
-| Algorithm 9.2 (Gaussian elimination / Doolittle variants) | `higham9_2_*DenseLoop*`, `higham9_2_*AbsBudget*`, `higham9_2_rectRounded*`, `higham9_2_*Permuted*` | square, rectangular, partial-pivot, and complete-pivot loop certificates |
-| Theorem 9.3 (GE backward error) | `higham9_3_lu_backward_error_gamma`, `higham9_3_exactDoolittle_recurrences_backward_error_gamma`, `higham9_3_rectRoundedLoop_backward_error`, `higham9_3_*permuted*backward_error*` | exact and rounded Doolittle backward-error surfaces |
-| Theorem 9.4 (LU solve backward error) | `higham9_4_lu_solve_backward_error`, `higham9_4_exactDoolittle_recurrences_lu_solve_backward_error`, `higham9_4_rectRoundedLoop_square_lu_solve_backward_error` | triangular solve handoff |
-| Theorem 9.5 (Wilkinson-type solve bound) | `higham9_5_wilkinson_source_bound_of_entry_growth`, `higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace`, `higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace`, plus dense/abs-budget/rounded-loop variants | growth-factor-to-solve-error bridge |
+| Algorithm 9.2 (Gaussian elimination / Doolittle variants) | `higham9_2_*DenseLoop*`, `higham9_2_*AbsBudget*`, `higham9_2_rectRounded*`, `higham9_2_rectRoundedLoopSourceCertificate`, `higham9_2_*Permuted*` | square, rectangular, partial-pivot, and complete-pivot loop certificates; literal source residual producer |
+| Theorem 9.3 (GE backward error) | `higham9_3_lu_backward_error_gamma`, `higham9_3_exactDoolittle_recurrences_backward_error_gamma`, `higham9_3_rectRoundedLoop_source_backward_error`, `higham9_3_rectRoundedLoop_square_to_LUBackwardError_source`, `higham9_3_rectRoundedLoop_permuted_to_PermutedLUBackwardError_source` | exact and literal rounded Doolittle backward error without output-only compression assumptions |
+| Theorem 9.4 (LU solve backward error) | `higham9_4_lu_solve_backward_error`, `higham9_4_exactDoolittle_recurrences_lu_solve_backward_error`, `higham9_4_rectRoundedLoop_square_lu_solve_backward_error_source` | actual-loop factorization plus triangular-solve handoff |
+| Theorem 9.5 (Wilkinson-type solve bound) | `higham9_5_wilkinson_source_bound_of_entry_growth`, `higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace`, `higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace_rectRoundedLoop_source`, `higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace` | growth-factor-to-solve-error bridge, including the no-budget executable row-pivoted loop |
 | Lemma 9.6 (growth and reduced-matrix support) | `higham9_6_absLU_infNorm_le_source_constant_of_noPivotReducedGrowthFactor_exists_hAmax`, `higham9_6_growthFactorEntry_le_one_of_totalNonnegative_det_ne_zero_exists_hAmax`, `higham9_6_lu_exists_nonnegative_of_totalNonnegative_det_ne_zero` | no-pivot growth, reduced entries, and total-nonnegative support |
 | Theorem 9.8 (complete pivoting lower-bound families) | `higham9_8_growth_factor_ge_theta_real`, `higham9_8_exists_completePivoting_growth_factor_ge_theta_real`, `higham9_8_exists_completePivoting_growth_factor_ge_theta_nonsingInv`, `higham9_8_*checkerboard*`; section-9.4 illustrations: `higham9_12_sineMatrix_theta_candidate_ge_half_succ` (S_n), `higham9_13_fourierVandermonde_complexGrowthFactorEntry_ge_card` (V_n), `higham9_8_hadamard_theta_candidate_eq_card` / `higham9_8_hadamard_growthFactorEntry_ge_card_of_lu_right_inverse` (Hadamard `rho_n >= n`) | real and checkerboard-conjugate witnesses; the theta = n Hadamard bound applies Theorem 9.8 with alpha = 1, beta = 1/n via the scaled-transpose inverse `higham9_8_hadamardInv` |
 | Theorem 9.9 (diagonal dominance) | `higham9_9_colDiagDominant_exists_LUFactSpec_growthFactorEntry_le_two_of_le_two`, `higham9_9_rowDiagDominant_exists_LUFactSpec_growthFactorEntry_le_two_of_le_two`, `higham9_9_*wilkinson_source_bound_exists*` | column/row diagonal dominance and small-dimension endpoint wrappers |
@@ -74,7 +109,7 @@ and shared analysis files.
 | Theorem 9.11 (banded matrices) | `higham9_11_bohteBound*`, `higham9_11_bohte_banded_solve_tight*`, `higham9_11_matrix_bohte_banded_solve_tight*`, `higham9_11_matrix_tridiag_data_bohte_solve_tight*` | Bohte constants, bandwidth-specialized wrappers, and Matrix APIs |
 | Theorem 9.12 (special classes with no growth) | `higham9_12_spd_*`, `higham9_12_nonneg_lu_*`, `higham9_12_mmatrix_lu_*`, `higham9_12_sign_equiv_*`, `higham9_12_totalNonnegative_*`, and the `higham9_12_matrix_*` wrappers | SPD tridiagonal, nonnegative LU, M-matrix, sign-equivalent, total-nonnegative, and Matrix-facing surfaces |
 | Theorem 9.13 (tridiagonal diagonal dominance) | `higham9_13_colDiagDom_*`, `higham9_13_rowDiagDom_*`, `higham9_13_tridiag_builder_*`, `higham9_13_matrix_colDiagDom_*`, `higham9_13_matrix_rowDiagDom_*` | `rho <= 3` and componentwise growth packages |
-| Theorem 9.14 (growth-factor consequences and special solves) | `higham9_14_f`, `higham9_14_f_mono_nonneg`, `higham9_14_h`, `higham9_14_source_*`, `higham9_14_matrix_source_*`, `higham9_14_tridiag_*`, `higham9_14_totalNonnegative_*`, `higham9_14_checkerboard_*` | source `f(u)`/`h(u)` bounds, monotonicity of `f` on nonnegative reals, and special-class endpoints |
+| Theorem 9.14 (growth-factor consequences and special solves) | `higham9_14_f`, `higham9_14_f_mono_nonneg`, `higham9_14_h`, `higham9_14_source_*`, `higham9_14_*rectRoundedLoop_square_sourceResidual*`, `higham9_14_matrix_source_*`, `higham9_14_tridiag_*`, `higham9_14_totalNonnegative_*`, `higham9_14_checkerboard_*` | source `f(u)`/`h(u)` bounds, no-budget actual-loop consumers, monotonicity, and special-class endpoints |
 | Theorem 9.15 (LU sensitivity) | `higham9_15_lu_perturbation_identity`, `higham9_15_lu_perturbation_relative_bound`, `higham9_15_lu_perturbation_forward_bound`, `higham9_15_chi*`, `higham9_15_normalized_G*`, `higham9_15_componentwise_source_firstOrder*` | condition-chain, resolvent, first-order, and componentwise sensitivity APIs |
 
 ## Equations
@@ -147,8 +182,9 @@ pivot-choice property of complete pivoting, not a growth assumption.
 - Exact factorization wrappers state determinant, pivot, diagonal-dominance,
   tridiagonal, SPD, nonnegative, M-matrix, sign-equivalence, or trace
   certificate hypotheses explicitly rather than deriving them silently.
-- Rounded GE/solve wrappers expose the loop certificate or budget certificate
-  supplying the floating-point local-error model.
+- The source-facing rounded GE/solve wrappers derive their local residual
+  model from the literal loop. Older budget-certificate wrappers remain
+  explicitly conditional compatibility APIs and are not used for closure.
 - Theorem 9.14 source `f(u)`/`h(u)` endpoints separate model assumptions from
   actual triangular-solve wrappers; gamma-specialized wrappers record the
   required `gammaValid` hypotheses.
@@ -158,6 +194,7 @@ pivot-choice property of complete pivoting, not a growth assumption.
 
 ## Verification
 - Recent commands:
+  - 2026-07-18 source-residual closure: `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter9DoolittleClosure.lean` passed; `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9DoolittleClosure` passed (`Build completed successfully (3046 jobs)`). `#print axioms` for the fold/divide residual lemmas, literal-loop certificate, 9.3 standard/permuted adapters, 9.4, 9.5, both principal 9.14 endpoints, and the cancellation theorem reported only `[propext, Classical.choice, Quot.sound]`. The focused placeholder/escape scan and scoped `git diff --check` were clean; only pre-existing upstream linter warnings were replayed.
   - `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` passed after the final Theorem 9.13 Matrix-wrapper increment.
   - `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` passed: `Build completed successfully (3045 jobs)`.
   - `lake env lean --tstack=131072 examples/LibraryLookup.lean` passed after the final lookup additions.

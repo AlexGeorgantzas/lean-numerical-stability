@@ -7159,9 +7159,11 @@ theorem higham22_problem22_8_source_coefficient
 The exact Hermite factorization, the actual rounded factor-product analysis,
 the checkerboard specializations, Problem 22.8, and the conditional residual
 chain are producer theorems in this module.  Equation (22.24) remains explicit
-as the source's simplifying upper-inverse assumption; it is not replaced by a
-target-bearing certificate.  The monomial specialization records both the
-Problem 22.8 coefficient and the printed `n(n+4)` derivative at zero. -/
+as the source's simplifying upper-inverse assumption for general Theorem 22.6;
+it is not replaced by a target-bearing certificate.  The abstract Problem 22.8
+coefficient and the printed `n(n+4)` derivative at zero are recorded below,
+but a producer connecting Problem 22.8 to the actual state-dependent rounded
+monomial Stage-II factor sequence is still required for Corollary 22.7. -/
 
 section SignAndRefinement
 /-- Exact scalar model of refinement when the verified residual solve contracts
@@ -8048,8 +8050,11 @@ theorem higham22_corollary22_7_first_order (n : ℕ) :
   convert hfinal using 1
   all_goals simp [a] <;> push_cast <;> ring
 
-/-- Corollary 22.7, with Problem 22.8 supplying (22.24) at dimension
-`n+1`.  The following derivative theorem records the printed
+/-- Conditional monomial residual specialization at the coefficient stated by
+Corollary 22.7.  The explicit `h22_24` argument marks the remaining producer
+gap: the source invokes Problem 22.8 to supply this specialization at dimension
+`n+1`, whereas the current theorem does not yet derive it from the actual
+rounded Stage-II factors.  The derivative theorem above records the printed
 `n(n+4)u + O(u²)` first-order coefficient. -/
 theorem higham22_corollary22_7_monomial_residual
     (rm : Higham22SourceRoundModel) (huround : rm.u < 1)

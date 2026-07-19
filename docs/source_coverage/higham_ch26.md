@@ -12,7 +12,7 @@ Source: Higham, 2nd ed., Chapter 26, printed pp. 471-487. Mode: core.
 | (26.5) cubic branches | VERIFIED | `cubicWCubePlus_quadratic`, `cubicWCubeMinus_quadratic` |
 | (26.6) stable cubic branch | VERIFIED | `stableCubicWCube_quadratic` |
 | (26.7) residual objective | PRESENT | `cubicRootResidualMeasure`; no stronger empirical claim |
-| Section 26.4 interval arithmetic | VERIFIED | endpoint definitions and `add_contains`, `sub_contains`, `mul_contains`, `reciprocal_contains`, `div_contains` |
+| Section 26.4 interval arithmetic | VERIFIED | endpoint definitions; `add_contains`, `sub_contains`, `mul_contains`, `reciprocal_contains`, `div_contains`; and the exact dependency-widening examples `dependency_sub_example` and `dependency_div_example` |
 | Section 26.4 computed directed-rounding enclosure | VERIFIED | concrete finite-range `outwardAdd/Sub/Mul/Div` producers and containment theorems use repository directed selectors |
 | (26.8) first-order survey formula | EXCLUDED | deferred: no precise remainder/asymptotic semantics |
 | Problems / Appendix | EXCLUDED | optional rows not selected; see inventory |

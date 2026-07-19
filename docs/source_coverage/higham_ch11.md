@@ -1,5 +1,61 @@
 # Higham Chapter 11 Formalization Report — "Symmetric Indefinite and Skew-Symmetric Systems"
 
+> **Fresh strict audit (2026-07-18): gate FAIL.** Theorem 11.8 still assumes
+> the coefficient-one middle-factor bound `hmiddle_factors`; the source does not.
+> That inequality is now formally refuted by an exact 2-by-2 Aasen/GEPP
+> instance. The strongest estimate exposed by the current exact-GEPP trace API
+> is `2 n²`; the proved Bunch alternative has an order-`n` coefficient. Neither
+> closes the printed radius. All later `PASS`/`CLOSED` descriptions of Theorem
+> 11.8 are historical and superseded by this audit. See
+> `AUDIT_ch01-28_2026-07-18.md`.
+
+### Fresh Theorem 11.8 middle-solve audit (2026-07-18)
+
+The printed theorem (source PDF page 12, printed p. 224) says that the middle
+tridiagonal system is solved by GEPP and gives the componentwise perturbation
+bound for `Π T̂ ≈ M̂ Û`. It does **not** assert
+`‖M̂‖∞ ‖Û‖∞ ≤ ‖T̂‖∞`. The direct Lean endpoint
+`higham11_8_aasen_backward_error_direct` still consumes exactly that additional
+coefficient-one inequality as `hmiddle_factors`, using it with `κ = 1` to fold
+the middle solve into `γ_(15n+25)`.
+
+The coefficient-one claim is false even in exact arithmetic. The new checked
+counterexample uses
+
+```text
+T = [[1, 1], [1, -1]],
+M = [[1, 0], [1,  1]],
+U = [[1, 1], [0, -2]].
+```
+
+Here `T` is symmetric tridiagonal, `M U = T`, the multipliers are unit-bounded,
+and the formal recursive partial-pivoting trace accepts the first-row pivot
+(the first-column magnitudes tie). Moreover the exact floating-point Aasen
+sweep produces this same `T` as its computed `That`, and equation (9.20) holds
+with zero perturbation. Nevertheless
+`‖T‖∞ = 2`, `‖M‖∞ = 2`, and `‖U‖∞ = 2`, so the factor-norm product is
+`4 > 2`. The declarations are grouped under the
+`middleCoeffOneCounter_*` / `middleCoeffOneCounter_actual_GEPP` names in
+`AasenMiddleGEPPCh11Counterexample.lean`.
+
+The strongest unconditional estimate currently derivable from the reusable
+exact trace interfaces is
+
+```text
+‖M‖∞ ‖U‖∞ ≤ 2 n² ‖T‖∞.
+```
+
+`tridiag_GEPP_exists_factor_infNorm_product_le_two_n_sq` derives this from the
+actual partial-pivoting trace, the proved multiplier bound `|M_ij| ≤ 1`, and the
+proved tridiagonal GEPP growth bound `max |U_ij| ≤ 2 max |T_ij|`. The two
+factors of `n` are the row-sum conversions required by the currently exposed
+certificate API; no target-scale premise is assumed. A sharper constant would
+require formal factor-support information (the band/fill pattern) or a rounded
+pivoted-GEPP producer. The separate dominance-free Bunch route proves an
+order-`n` bound for a different middle factorization and also cannot be folded
+into the printed linear gamma radius. Therefore Theorem 11.8 remains
+**conditional / gate FAIL**.
+
 ## Source and scope
 - Edition: Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed. (SIAM, 2002).
 - Chapter: 11, "Symmetric Indefinite and Skew-Symmetric Systems" (printed pp. 213–229).
@@ -12901,13 +12957,12 @@ The gate is restored to **PASS**.
 Separate closure modules under `LeanFpAnalysis/FP/Algorithms/Cholesky/` derive
 the selected theorem rows that the older primary interfaces left as
 `h : P ⊢ P`. Each selected closure derives its bound from the floating-point
-model or from Higham's stated theorem inputs, builds, and is axiom-clean
-`[propext, Classical.choice, Quot.sound]` (no Lean proof holes). **Closure status
-(corrected 2026-07-18 audit): 11.3 and 11.4 CLOSED; 11.8 CLOSED at sanctioned-
-assumption strength (one disclosed `hmiddle_factors` idealization); 11.7
-CONDITIONAL — its bounded-growth core (`hfactor`) is assumed via `TriPivotData`,
-not derived. All rows are build- and axiom-clean; the 11.7 gap is
-hypothesis-strength.**
+model or from explicitly displayed inputs and is axiom-clean
+`[propext, Classical.choice, Quot.sound]` (no Lean proof holes). **Fresh closure
+status (corrected 2026-07-18 audit): 11.3, 11.4, and 11.7 are CLOSED; 11.8 is
+CONDITIONAL / gate FAIL. Its `hmiddle_factors` coefficient-one inequality is
+not a source premise and is formally false for an exact 2-by-2 Aasen/GEPP
+instance.**
 
 | Source item | Result (Lean) | Module | Honest strength |
 |---|---|---|---|
@@ -12919,11 +12974,11 @@ hypothesis-strength.**
 
 | Thm 11.3/11.7 solve-side | `higham11_3_block_ldlt_solve_backward_error`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise`, `higham11_3_block_ldlt_solve_backward_error_of_diagonal_middle`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_diagonal_middle`, `middleBlockDiagConsOne_solve_assemble`, `middleBlockDiagConsTwo_solve_assemble`, `mixedMiddleDFromSchedule_solve_of_blocks`, `mixedMiddleDFromSchedule_eq_flMixedD`, `flMixedD_solve_of_blocks`, `MixedMiddleSolveHigham115Blocks`, `MixedMiddleSolveBlocks_of_higham115_blocks`, `flMixedD_solve_of_higham115_blocks`, `higham11_3_block_ldlt_solve_backward_error_of_higham115_middle`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise_of_higham115_middle`, `higham11_7_bunch_tridiagonal_solve_backward_error_normwise_unconditional_of_higham115_middle`, `higham11_7_bunch_tridiagonal_backward_error_printed_of_higham115_middle`, `higham11_7_bunch_tridiagonal_backward_error_scalar_radius_of_higham115_middle` | `BlockLDLTSolveBackwardCh11Closure` | `(A+ΔA₂)x̂=b` for a **concrete** `x̂` (`fl_forwardSub`/`fl_backSub`), `ΔA₂=ΔA₁+ΔM`. Outer triangular solves, the 3-step collapse, and the fold with the derived factorization residual are all **derived**. The base mixed endpoint still accepts a global (11.5) block-diagonal middle solve `hmid : (D̂+ΔD)ŵ=ẑ, |ΔD|≤γ_mid|D̂|`; diagonal/all-1×1 and schedule-local Higham-(11.5) wrappers derive that middle solve internally. The new 11.7 combined wrapper also discharges `hfactor` via `hfactor_bound`; scalar-radius adapters expose either the exact solve-chain radius or any caller-proved `C u Amax` collapse explicitly. |
 | **Thm 11.4** (Bunch–Kaufman normwise solve) | `higham11_4_bunch_kaufman_solve_backward_error_of_growth`, `higham11_4_bunch_kaufman_solve_backward_error_printed` | `BunchKaufmanSolveCh11Closure` | Full normwise **solve** backward error `(A+ΔA)x̂=b`, `‖ΔA‖_M ≤ p(n)ρₙu‖A‖_M` with the explicit **quadratic** `p(n)=1100n²+20n` (printed form, under `n·u≤1/100`, `ρₙ≥1`), matching Higham's Theorem 11.4 ("`p` a quadratic", the `O(u²)` absorbed into the coefficient). The fl factorization + solve derivation is inherited from `BlockLDLTSolveBackwardCh11Closure` (generic in the factor-norm coefficient `c₀`); the **only** source hypotheses are exactly Higham's own: (i) his **cited** [608, 1997] growth bound `‖\|L̂\|\|D̂\|\|L̂ᵀ\|‖_M ≤ 36nρₙ‖A‖_M` (`hgrowth`, i.e. `c₀=36nρₙ`), and (ii) the "2×2 pivots solved by GEPP or the explicit inverse" (11.5) middle solve `hmid`/`hΔD`. This is **not** a `h : P ⊢ P` interface — it runs the actual fl solve. |
-| **Thm 11.8** (Aasen full backward error, coupled fp route) | `higham11_8_aasen_backward_error_direct`, `fl_aasen_factorization_residual`, `flAasen` | `AasenCoupledFp / AasenFactorResidual / AasenTridiagGEPP / AasenDirect118 Ch11Closure` | The **coupled** fp Aasen factorization `flAasen` computes `L̂,Ĥ,T̂` from `A` on the actual computed prior columns (the `T̂` fl model — the former blocker — now exists, `flAasen_recurrences` holding by definition). Direct factorization residual `\|L̂T̂L̂ᵀ−A\| ≤ γ_{3n}\|L̂\|\|T̂\|\|L̂ᵀ\|` (tighter than the printed `γ_{3n+1}`), never comparing to exact `L,T` (so no no-cancellation hypothesis). `higham11_8_aasen_backward_error_direct` assembles componentwise `(A+ΔA)x̂=b` + normwise `‖ΔA‖∞ ≤ (n−1)²γ_{15n+25}‖T̂‖∞`. The inner tridiagonal solve `T̂y=z` is routed through the closed Bunch method (a Higham-sanctioned alternative to GEPP; the clean GEPP `\|M̂\|\|Û\|≤3\|T̂\|` is **provably false** under partial pivoting). Hypotheses are only Higham's own algorithm guarantees (A symmetric, `FlAasenPivots`, `\|L̂\|≤1`, the tridiagonal middle-solve model + `hmiddle_factors`, `gammaValid`). Build + axiom-clean. |
+| **Thm 11.8** (Aasen full backward error, coupled fp route) | `higham11_8_aasen_backward_error_direct`, `fl_aasen_factorization_residual`, `flAasen` | `AasenCoupledFp / AasenFactorResidual / AasenMiddleGEPP / AasenTridiagGEPP / AasenDirect118 Ch11Closure` | **CONDITIONAL / gate FAIL.** The coupled fp Aasen factorization and its direct residual are derived, but the displayed normwise radius additionally assumes `hmiddle_factors : ‖M̂‖∞‖Û‖∞≤‖T̂‖∞`. Higham does not print that coefficient-one claim, and `middleCoeffOneCounter_actual_GEPP` formally refutes it for an exact Aasen output and genuine recursive GEPP trace. The unconditional exact-trace result currently available is `‖M‖∞‖U‖∞≤2n²‖T‖∞`, which cannot close the printed radius. |
 
 **Closed confirmations and non-selected follow-up after these modules:**
 - **Mixed block-diagonal middle solve** for 11.3/11.7 solve-side: the diagonal/all-1×1 case now derives `hmid` from scalar `fl_div`; generic 1×1/2×2 head/tail block-diagonal assembly, a schedule-level fold, the bridge from that constructor factor to `flMixedD`, and the endpoint wrappers from schedule-local Higham-(11.5) data are proved. The remaining boundary is exactly the per-2×2 local residual data itself, which is the sanctioned (11.5) 2×2 solve hypothesis rather than an assumed global solve conclusion.
-- **Thm 11.8 full backward error** `‖ΔA‖∞≤(n−1)²γ_{15n+25}‖T̂‖∞`: **CLOSED** via the coupled fp route (the `AasenDirect118` row above) — the `T̂` fl model, formerly the blocker, is now constructed (`flAasen`). A *separate, parallel reduced-wrapper route* (concurrent contributor) is also nearly there: `Aasen118ReducedCh11Closure` provides `higham11_8_aasen_normwise_backward_error_of_reduced`, which **derives** (from the honest `|L|≤1`/`|L̂|≤1`, eliminating the `(1+γ)²` inflation cheat) the four outer-factor norm caps, the exact product `A=LTLᵀ`, and the printed `(n−1)²γ_{15n+25}` coefficient — reducing the endpoint's assumptions to `{T̂ accuracy (hThat), hLhat_entry, h20 (Ch9 model), lemma-B middle cap}`. The local computed-`H` recurrence model defines the rounded diagonal/subdiagonal source-prefix path for the intermediate `H = T Lᵀ` entries, proves local additive error laws, exposes direct `|H_hat-H|` residual-budget wrappers, feeds subdiagonal scalar budgets into the global computed-`T_hat` reducer, and derives the first diagonal `T_hat` bound from the computed-`H` diagonal budget. The successor-diagonal `(11.11)` scalar recovery now has explicit absolute-error and relative-budget wrappers; the remaining scientific gap is to close the concrete scalar relative-budget comparisons and feed their norm consequences into the reduced endpoint.
+- **Thm 11.8 full backward error** `‖ΔA‖∞≤(n−1)²γ_{15n+25}‖T̂‖∞`: **CONDITIONAL / gate FAIL**. The coupled fp route constructs `T̂` and derives the factorization residual, but its printed-radius fold still assumes `hmiddle_factors : ‖M̂‖∞‖Û‖∞≤‖T̂‖∞`. That coefficient-one premise is not printed by Higham and is refuted by `middleCoeffOneCounter_actual_GEPP`. The strongest result exposed by the current exact trace API is the `2n²` factor-norm bound; it does not close the displayed radius. The separate reduced-wrapper route retains the same unresolved middle-factor boundary.
 - **Thm 11.4** (Bunch–Kaufman `36nρₙ` normwise): **CLOSED** — see the
   `BunchKaufmanSolveCh11Closure` row above. The full normwise solve backward
   error `(A+ΔA)x̂=b`, `‖ΔA‖_M ≤ (1100n²+20n)ρₙu‖A‖_M`, is derived from the fl

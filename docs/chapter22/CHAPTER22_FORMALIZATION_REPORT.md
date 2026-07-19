@@ -2,11 +2,12 @@
 
 ## Outcome
 
-The selected-scope gate is **PASS**.  The chapter now has an end-to-end exact
-Hermite/Vandermonde-like factorization, actual rounded forward analysis,
-checkerboard specializations, and the conditional residual analysis through
-Corollary 22.7.  Citation-only literature-summary rows in Table 22.1 are
-stably classified rather than represented by synthetic assumptions.
+The strict selected-scope gate is **FAIL**.  The exact factorization, rounded
+forward analysis, checkerboard specializations, and general residual theorem
+conditional on source assumption (22.24) are present.  Three source-strength
+gaps remain: Table 22.1 V1--V6, the actual monomial Stage-II producer required
+by Corollary 22.7, and the whole-contraction/final-stability part of the
+refinement prose.
 
 ## Principal endpoints
 
@@ -19,23 +20,28 @@ stably classified rather than represented by synthetic assumptions.
 | Theorem 22.4 / (22.18) | `higham22_theorem22_4_actual_factor_product_bound`, `higham22_eq22_18_actual_forward_error` |
 | Corollary 22.5 / (22.22) | full factor-sequence checkerboard proof and `higham22_corollary22_5_named_bases` |
 | (22.23)--(22.25), Theorem 22.6 | exact/rounded reverse inverse factors, `Higham22Eq22_24`, `higham22_theorem22_6_actual_inverse_matrix_bound`, `higham22_eq22_25_actual_residual_bound` |
-| Problem 22.8 / Corollary 22.7 | structured bidiagonal inverse-entry producer, `higham22_corollary22_7_monomial_residual`, and `higham22_corollary22_7_first_order` |
+| Problem 22.8 / Corollary 22.7 | abstract structured bidiagonal inverse-entry producer and `higham22_corollary22_7_first_order`; actual factor-sequence bridge OPEN |
 | Algorithm 22.8 | `higham22_algorithm22_8_correct` |
-| Refinement prose 22.B2 | Chapter 12 `higham12_3_exact_one_step_residual_bound` plus `higham22_refinement_converges` |
+| Refinement prose 22.B2 | Chapter 5 residual-formation producers plus Chapter 12 one-step envelope; whole contraction/final backward-stability endpoint OPEN |
 
 ## Assumption discipline
 
 `Higham22Eq22_24` is the source's explicit simplifying assumption about each
-rounded upper-factor inverse.  It includes nonsingularity, which is implicit
-in the book's ordinary inverse notation, and its componentwise relative
-bound.  All lower inverse-factor bounds, product bounds, product
-nonsingularity, and the final residual identity are derived locally.
+rounded upper-factor inverse in general Theorem 22.6.  It includes
+nonsingularity, which is implicit in the book's ordinary inverse notation,
+and its componentwise relative bound.  Corollary 22.7 is different: Appendix
+A Problem 22.8 is supposed to discharge this assumption for monomials.  The
+current corollary still accepts it as a premise, so it is not a closed source
+endpoint.
 
 ## Verification
 
-- `lake build LeanFpAnalysis.FP.Algorithms.Vandermonde.Higham22`: PASS.
+- Fresh focused build through
+  `LeanFpAnalysis.FP.Algorithms.Vandermonde.Higham22Ch12RefinementBridge`:
+  PASS (3402 jobs), including `Higham22`, `Horner`, and `HighamChapter12`.
 - `lake env lean examples/LibraryLookup.lean`: chapter endpoints checked.
 - The Chapter 22 module contains no `sorry`, `admit`, `axiom`, `unsafe`, or
   target-bearing explicit-domain closure object.
-- Source checked against `References/1.9780898718027.ch22.pdf` and the owned
-  Appendix A solution to Problem 22.8.
+- Source checked from scratch against `References/1.9780898718027.ch22.pdf`
+  and the owned Appendix A solution to Problem 22.8.  That re-check is what
+  exposed the open actual-factor bridge and the precise Table 22.1 rows.

@@ -256,4 +256,103 @@ theorem clog2PairwiseDotProduct_error_bound (fp : FPModel) (n : ℕ)
     sum_finZeroPad_abs_mul_eq hpad x y
   simpa [fl_clog2PairwiseDotProduct, r, hsum, habs] using hbound
 
+/-- Higham (3.4) for any binary-tree order of evaluation.
+
+Every `SumTree n` performs the same rounded products and then combines them in
+an arbitrary binary order.  Since `depth t + 1 ≤ n`, one multiplication plus
+all additions on a root-to-leaf path fit inside the printed `γ_n` radius.  The
+same per-component witness is packaged as a perturbation of either input. -/
+theorem sumTreeDotProduct_backward_stable_any_order (fp : FPModel) {n : ℕ}
+    (t : SumTree n) (x y : Fin n → ℝ) (hγ : gammaValid fp n) :
+    ∃ Δx Δy : Fin n → ℝ,
+      (∀ i, |Δx i| ≤ gamma fp n * |x i|) ∧
+      (∀ i, |Δy i| ≤ gamma fp n * |y i|) ∧
+      fl_sumTreeDotProduct fp t x y =
+        ∑ i : Fin n, (x i + Δx i) * y i ∧
+      fl_sumTreeDotProduct fp t x y =
+        ∑ i : Fin n, x i * (y i + Δy i) := by
+  have hdepth : t.depth + 1 ≤ n := by
+    have ht := SumTree.depth_le t
+    have hn := t.n_pos
+    omega
+  have hγdepth : gammaValid fp (t.depth + 1) :=
+    gammaValid_mono fp hdepth hγ
+  obtain ⟨η, hη, hfl⟩ :=
+    sumTreeDotProduct_backward_error fp t x y hγdepth
+  have hηn : ∀ i, |η i| ≤ gamma fp n := by
+    intro i
+    exact le_trans (hη i) (gamma_mono fp hdepth hγ)
+  let Δx : Fin n → ℝ := fun i => x i * η i
+  let Δy : Fin n → ℝ := fun i => y i * η i
+  refine ⟨Δx, Δy, ?_, ?_, ?_, ?_⟩
+  · intro i
+    rw [show |Δx i| = |x i| * |η i| by simp [Δx, abs_mul],
+      mul_comm (gamma fp n)]
+    exact mul_le_mul_of_nonneg_left (hηn i) (abs_nonneg (x i))
+  · intro i
+    rw [show |Δy i| = |y i| * |η i| by simp [Δy, abs_mul],
+      mul_comm (gamma fp n)]
+    exact mul_le_mul_of_nonneg_left (hηn i) (abs_nonneg (y i))
+  · rw [hfl]
+    apply Finset.sum_congr rfl
+    intro i _hi
+    simp only [Δx]
+    ring
+  · rw [hfl]
+    apply Finset.sum_congr rfl
+    intro i _hi
+    simp only [Δy]
+    ring
+
+/-- Fully permuted form of Higham (3.4).
+
+The permutation chooses the order in which the products enter the arbitrary
+summation tree.  The resulting perturbations are transported back to the
+original coordinates, so the conclusion is stated for the original `x` and
+`y`, not for their reordered copies. -/
+theorem sumTreeDotProduct_backward_stable_any_permuted_order
+    (fp : FPModel) {n : ℕ} (t : SumTree n) (σ : Equiv.Perm (Fin n))
+    (x y : Fin n → ℝ) (hγ : gammaValid fp n) :
+    ∃ Δx Δy : Fin n → ℝ,
+      (∀ i, |Δx i| ≤ gamma fp n * |x i|) ∧
+      (∀ i, |Δy i| ≤ gamma fp n * |y i|) ∧
+      fl_sumTreeDotProduct fp t (fun i => x (σ i)) (fun i => y (σ i)) =
+        ∑ i : Fin n, (x i + Δx i) * y i ∧
+      fl_sumTreeDotProduct fp t (fun i => x (σ i)) (fun i => y (σ i)) =
+        ∑ i : Fin n, x i * (y i + Δy i) := by
+  obtain ⟨δx, δy, hδx, hδy, heqx, heqy⟩ :=
+    sumTreeDotProduct_backward_stable_any_order fp t
+      (fun i => x (σ i)) (fun i => y (σ i)) hγ
+  let Δx : Fin n → ℝ := fun i => δx (σ.symm i)
+  let Δy : Fin n → ℝ := fun i => δy (σ.symm i)
+  refine ⟨Δx, Δy, ?_, ?_, ?_, ?_⟩
+  · intro i
+    simpa [Δx] using hδx (σ.symm i)
+  · intro i
+    simpa [Δy] using hδy (σ.symm i)
+  · calc
+      fl_sumTreeDotProduct fp t (fun i => x (σ i)) (fun i => y (σ i))
+          = ∑ i : Fin n, (x (σ i) + δx i) * y (σ i) := heqx
+      _ = ∑ i : Fin n, (x i + Δx i) * y i := by
+        calc
+          (∑ i : Fin n, (x (σ i) + δx i) * y (σ i)) =
+              ∑ i : Fin n, (x (σ i) + Δx (σ i)) * y (σ i) := by
+                apply Finset.sum_congr rfl
+                intro i _hi
+                simp [Δx]
+          _ = ∑ i : Fin n, (x i + Δx i) * y i :=
+                Equiv.sum_comp σ (fun i => (x i + Δx i) * y i)
+  · calc
+      fl_sumTreeDotProduct fp t (fun i => x (σ i)) (fun i => y (σ i))
+          = ∑ i : Fin n, x (σ i) * (y (σ i) + δy i) := heqy
+      _ = ∑ i : Fin n, x i * (y i + Δy i) := by
+        calc
+          (∑ i : Fin n, x (σ i) * (y (σ i) + δy i)) =
+              ∑ i : Fin n, x (σ i) * (y (σ i) + Δy (σ i)) := by
+                apply Finset.sum_congr rfl
+                intro i _hi
+                simp [Δy]
+          _ = ∑ i : Fin n, x i * (y i + Δy i) :=
+                Equiv.sum_comp σ (fun i => x i * (y i + Δy i))
+
 end LeanFpAnalysis.FP

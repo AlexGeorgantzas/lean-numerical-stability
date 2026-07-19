@@ -2,16 +2,17 @@
 
 ## Gate
 
-The Chapter 20 core selected-scope gate is **PASS** as of 2026-07-16. Every
-selected precise row is terminal at its documented API. Implementation-facing
-results continue to expose their rounded-trace and nonbreakdown domains.
+The Chapter 20 core selected-scope gate is **FAIL** after the fresh 2026-07-18
+source-strength audit. The sole named-result blocker is Theorem 20.7.
 
 The authoritative row-by-row accounting is
 `docs/chapter20/CHAPTER20_SOURCE_INVENTORY.md`.
 
 ## Open selected-scope rows
 
-None.
+| Source row | Exact open obligation | Current evidence |
+|---|---|---|
+| Theorem 20.7, p. 395 | Produce the literal rounded pivoted-QR forward row/prefix estimates and the four matrix/RHS component-budget estimates at a data-independent gamma-tilde-class coefficient, then feed them to the compiled minimizer endpoint. | `fl_pivotedStoredQR_returnedX_pivotPosition_of_roundedCoxHigham` is only conditional on `PivotedStoredQRCoxHighamRoundedRowPolicy` and `PivotedStoredQRCoxHighamComponentBudgets`. `PivotedStoredQRCoxHighamRoundedRowPolicy.of_trace_envelope` proves the automatic final-`R` row and final multiplier fields, but only with an explicitly a-posteriori coefficient. `breakdownCounter_no_roundedRowPolicy` proves that source full rank plus `gammaValid` cannot produce `sigma_pos`; computed nonbreakdown must remain explicit. With it granted, `raw_vector_row` is the first unproduced field, followed by `prefix_vector_row` and the four component-budget fields. |
 
 ## Audited source boundaries that do not fail the gate
 
@@ -63,16 +64,14 @@ None.
   triangular-solve perturbations, normalizing their summed nonnegative witness
   once, and proving the printed matrix/RHS envelopes with an explicit
   dimension-only `gammaTilde`.
-- `fl_pivotedStoredQR_returnedX_pivotPosition_of_roundedCoxHigham` closes the
-  named Theorem 20.7 endpoint for the literal pivoted stored-QR, paired RHS, and actual
-  `fl_backSub` trace on explicit forward-row/component-budget and nonbreakdown
-  conditions. It constructs the numerical contract internally, proves the
-  exact perturbed minimizer, retains the pivot-position `(j+1)^2` factor with
-  matrix coefficient `16 gammaTilde`, and proves the RHS coefficient
-  `5 gammaTilde`. `roundedPolicy_exact_one_nonempty` gives a concrete nonempty
-  instance. The old `topR_tail` counterexample remains as documentation of the
-  route that was rejected. The separate p. 395 row-sorting-cap and
-  `phi`-invariance prose row is closed by `Higham20RowSorting.lean`.
+- `fl_pivotedStoredQR_returnedX_pivotPosition_of_roundedCoxHigham` closes only
+  the conditional assembly from forward-row/component-budget packages. It is
+  retained as useful infrastructure, not counted as source closure.
+- The 2026-07-18 bounded repair proves nonnegativity of both literal local
+  budget families and produces the rounded policy's direct multiplier field
+  from a finite a-posteriori envelope. It also proves the exact full-rank
+  rounded-breakdown counterexample described in the open table. These changes
+  localize the remaining numerical analysis but do not justify PASS.
 - `GeneralizedQRFactorization.exists_theorem20_9_exact_householder` proves
   unconditional Theorem 20.9 existence for arbitrary source dimensions
   `m + p >= n >= p`; rank assumptions are used only for the theorem's separate
@@ -124,8 +123,9 @@ None.
   algorithm.
 - A conditional transfer theorem remains `PARTIAL` whenever its assumptions
   merely restate an accumulated perturbation, minimizer, or target bound. The
-  corrected named Theorem 20.7 producer constructs its accumulated
-  perturbations and minimizer conclusion from local trace-operation budgets.
-  The older conditional `PivotedStoredQRCoxHighamRowSortingCaps` is not used as
-  evidence for row 27; the independent executable producer and invariance proof
-  are in `Higham20RowSorting.lean`.
+  corrected Theorem 20.7 assembler constructs its accumulated perturbations
+  and minimizer conclusion from local trace-operation budgets, but those
+  numerical budget estimates are still open. The older conditional
+  `PivotedStoredQRCoxHighamRowSortingCaps` is not used as evidence for row 27;
+  the independent executable producer and invariance proof are in
+  `Higham20RowSorting.lean`.

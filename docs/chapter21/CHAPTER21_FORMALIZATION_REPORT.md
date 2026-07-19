@@ -9,12 +9,13 @@
 - Mode: core
 - Parallel split: 4
 - Planning documents: blueprint, Split 4 contract, chapter index
-- Selected-scope gate: **PASS**
+- Selected-scope gate: **PASS** under the strict source-strength audit
 
 The source inventory contains 27 rows: 21 selected mathematical or
-algorithmic rows and six intentional exclusions. All selected rows pass. The
-Givens, scalar-boundary, and SNE fragile surfaces received focused compilation,
-source-shape review, and standard-axiom checks.
+algorithmic rows and six intentional exclusions. All 21 selected rows pass.
+Theorem 21.4 now has source-facing Householder and retained-trace Givens
+endpoints whose computed nonbreakdown and replay-smallness facts are derived
+from full row rank, gamma validity, and the printed-form smallness condition.
 
 ## Completed Selected Targets
 
@@ -25,8 +26,8 @@ source-shape review, and standard-axiom checks.
 | Projector and scaling prose | `Higham21ProjectorNorm.lean`, `Higham21Condition.lean` | Exact complement-projector norm and row-scaling invariance |
 | Lemma 21.2 | `UnderdeterminedSolve.lean` | Single perturbation, minimum-norm recovery, and printed square-sum bounds |
 | Theorem 21.3 | `UnderdeterminedSolve.lean`, `Higham21Theorem21_3Attainment.lean` | Correct infimum formula, lower/upper constructions, exact/closure attainment, and nonattainment witness |
-| Equation (21.10) and Householder Theorem 21.4 | `UnderdeterminedSolve.lean`, Chapter 19 QR interfaces | Actual rounded panel, solve, Q action, row-wise perturbation, and gamma coefficient |
-| Givens Theorem 21.4 | `Higham21Givens.lean`, `Higham21GivensRounded.lean`, `Higham21GivensClosure.lean` | Actual staged QR, one retained rotation trace, rounded replay, row-wise perturbation, and `omegaR` bound without a supplied replay bridge |
+| Equation (21.10) and Householder Theorem 21.4 | `UnderdeterminedSolve.lean`, Chapter 19 QR interfaces, `Higham21Theorem214SourceClosure.lean` | Actual rounded panel/solve/action endpoint; `Higham21QMethodFullRowRankComputedQRDomain.of_source_smallness` derives computed top-block nonbreakdown by QR perturbation and full-rank stability |
+| Givens Theorem 21.4 | `Higham21Givens.lean`, `Higham21GivensRounded.lean`, `Higham21GivensClosure.lean`, `Higham21Theorem214SourceClosure.lean` | Actual retained-trace endpoint; source producers derive computed diagonal nonbreakdown and bound the complete replay recurrence below one from one operational gamma-validity index |
 | Q method equation (21.11) | `Higham21Equation21_11.lean`, `Higham21Eq21_11Uniform.lean`, `Higham21Equation21_11Scalar.lean` | Relative forward bound, fixed-radius refinement, and the remaining square scalar boundary |
 | SNE equation (21.11) | `Higham21SNEForward.lean`, `Higham21SNEActualOutput.lean`, `Higham21SNESigned.lean`, `Higham21SNEConditionTransfer.lean`, `Higham21SNEQRMajorant.lean`, `Higham21SNERemainderBounds.lean`, `Higham21SNEClosure.lean`, `Higham21SNEUniform.lean` | Actual Householder panel, two rounded triangular solves, rounded `Aᵀŷ` formation, relative `xhat` versus canonical `x`, original `cond2(A)` first-order term, fixed-radius uniform quadratic coefficient, and explicit `fp.u²` remainder |
 | Corrected MGS recurrence | `Higham21MGS.lean`, `Higham21MGSRounded.lean` | Exact repair algebra and rounded local operations |
@@ -51,6 +52,7 @@ The exact row-to-declaration map is in `CHAPTER21_SOURCE_INVENTORY.md`.
 | `Higham21Eq21_11Uniform.lean` | Uniform Q-method remainder | Q side of (21.11) | COMPLETE FOR ITS RECORDED DOMAIN |
 | `Higham21Equation21_11Scalar.lean` | Close the square scalar boundary | Q side of (21.11) | COMPLETE |
 | `Higham21GivensClosure.lean` | Connect staged rotations to the actual rounded replay | Givens side of Theorem 21.4 | COMPLETE |
+| `Higham21Theorem214SourceClosure.lean` | Derive Householder/Givens top-block nonbreakdown and actual Givens replay smallness | Both branches of Theorem 21.4 | COMPLETE |
 | `Higham21SNESigned.lean` | Preserve factorwise QR cancellation | SNE side of (21.11) | COMPLETE |
 | `Higham21SNEConditionTransfer.lean` | Fixed-radius pseudoinverse, condition, and solution transfer | SNE side of (21.11) | COMPLETE |
 | `Higham21SNEQRMajorant.lean` | Componentwise QR-action/source majorants | SNE side of (21.11) | COMPLETE |
@@ -83,6 +85,16 @@ The detailed trust record is in `CHAPTER21_PROOF_SOURCE_LEDGER.md`.
 |---|---|---|---|---|
 | p. 413, Table 21.1 | `cond₂(A)=7.6e12`, orthogonality `9e-3`, and four backward-error values | exact program, arithmetic path, platform, library/compiler, and decimal I/O | symbolic Q/SNE/MGS algorithms and stability theorems | SKIP-EMPIRICAL |
 
+## Selected-row closure
+
+- No selected row is open. For Theorem 21.4,
+  `Higham21QMethodFullRowRankComputedQRDomain.of_source_smallness` derives the
+  Householder computed-QR nonbreakdown predicate;
+  `higham21_givens_actual_topBlock_nonbreakdown_of_source_smallness` and
+  `Higham21GivensActualReplayEtaQ_lt_one_of_operational_gammaValid` derive the
+  Givens `hdiag` and `hQsmall` premises. The two source-facing rowwise endpoints
+  consume these derived guards.
+
 ## Deferred And Benchmark Items
 
 - No selected mathematical row is intentionally deferred.
@@ -111,6 +123,9 @@ The detailed trust record is in `CHAPTER21_PROOF_SOURCE_LEDGER.md`.
 - Rejected suspicious artifacts: target-shaped SNE transfer premises,
   supplied Givens replay certificates, and fixed-precision tautological
   quadratic constants.
+- Theorem 21.4's computed triangular nonbreakdown and Givens replay-smallness
+  facts are now internal conclusions. Only explicit operation-count
+  `gammaValid` premises remain on the source-facing rounded endpoints.
 
 ## Weak-Component And Bottleneck Summary
 
@@ -119,8 +134,8 @@ The detailed trust record is in `CHAPTER21_PROOF_SOURCE_LEDGER.md`.
 | Theorem 21.1 and equations (21.6)–(21.9) | Focused builds/type review | source constants, rank, and remainder audit | PASS |
 | Lemma 21.2 | source-bundle review | assumption/axiom audit | PASS |
 | Theorem 21.3 | formula and attainment builds | boundary/source correction audit | PASS |
-| Householder Theorem 21.4 | actual rounded path review | domain and axiom audit | PASS WITH EXPLICIT DOMAIN |
-| Givens Theorem 21.4 | stored replay review | concrete replay-operation and standard-axiom audit | PASS |
+| Householder Theorem 21.4 | actual rounded path review | source wrapper derives embedded `lsTheorem20_4ComputedQRNonbreakdown` by QR perturbation and rank stability | PASS |
+| Givens Theorem 21.4 | stored replay review | source wrapper derives `hdiag` and `hQsmall` from source smallness and the operational schedule index | PASS |
 | Q method (21.11) | main/uniform theorem review | scalar boundary and standard-axiom audit | PASS |
 | SNE (21.11) | fixed-radius and explicit `fp.u²` source-facing theorems focused compile | actual-object, original-condition first-order term, source-defined quadratic coefficient, and public smallness-assumption audit | PASS |
 
@@ -132,6 +147,8 @@ The focused Chapter 21 verification results are:
 lake env lean LeanFpAnalysis/FP/Algorithms/Underdetermined/Higham21SNEUniform.lean  PASS
 higham21_sne_householder_actual_output_source_relative_q_uniform                  COMPILED
 higham21_sne_householder_actual_output_source_relative_unit_roundoff_sq           COMPILED
+lake build LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21Theorem214SourceClosure
+                                                                                  PASS (3,084 jobs)
 lake build LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21                  PASS (3,108 jobs)
 lake build LeanFpAnalysis.FP.Algorithms                                           PASS (3,848 jobs)
 lake build                                                                         PASS (3,901 jobs)
@@ -151,6 +168,6 @@ modules; the new Chapter 21 modules compile without warnings.
 
 ## Selected-Scope Disposition
 
-No selected Chapter 21 row remains unresolved. The six intentional exclusions
-remain classified in the inventory and not-proved ledger; they are not proof
-gaps and are unchanged by the selected-scope pass.
+All 21 selected rows, including both branches of Theorem 21.4, are closed at
+source strength. The six intentional exclusions remain classified in the
+inventory and not-proved ledger; they are not proof gaps.

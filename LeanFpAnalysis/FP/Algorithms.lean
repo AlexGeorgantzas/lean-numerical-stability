@@ -43,6 +43,7 @@ import LeanFpAnalysis.FP.Algorithms.TriangularNoGuard
 import LeanFpAnalysis.FP.Algorithms.MMatrix
 import LeanFpAnalysis.FP.Algorithms.HighamChapter8
 import LeanFpAnalysis.FP.Algorithms.HighamChapter9
+import LeanFpAnalysis.FP.Algorithms.HighamChapter9DoolittleClosure
 import LeanFpAnalysis.FP.Algorithms.HighamChapter10
 import LeanFpAnalysis.FP.Algorithms.HighamChapter11
 import LeanFpAnalysis.FP.Algorithms.HighamChapter12
@@ -91,6 +92,7 @@ import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenCoupledFpCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenTridiagGEPPCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenFactorResidualCh11Closure
 import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenDirect118Ch11Closure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.AasenMiddleGEPPCh11Counterexample
 import LeanFpAnalysis.FP.Algorithms.IterativeRefinement
 import LeanFpAnalysis.FP.Algorithms.MatrixInversion
 import LeanFpAnalysis.FP.Algorithms.GaussJordan
@@ -129,6 +131,7 @@ import LeanFpAnalysis.FP.Algorithms.Ch14GaussJordanSourceClosure
 import LeanFpAnalysis.FP.Algorithms.Ch14GJESourceAccumulationBridge
 import LeanFpAnalysis.FP.Algorithms.Ch14GJEPrintedEnvelopeClosure
 import LeanFpAnalysis.FP.Algorithms.Ch14GJETheorem145SourceClosure
+import LeanFpAnalysis.FP.Algorithms.Ch14GJEOperationalBridge
 import LeanFpAnalysis.FP.Algorithms.Ch14Corollary146SourceClosure
 import LeanFpAnalysis.FP.Algorithms.Ch14Corollary147SourceClosure
 import LeanFpAnalysis.FP.Algorithms.Ch14MethodDProductDischarge
@@ -158,6 +161,7 @@ import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16SpectrumMinimizers
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Psi
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Lyapunov
 import LeanFpAnalysis.FP.Algorithms.StationaryIteration
+import LeanFpAnalysis.FP.Algorithms.StationaryIterationRounded
 import LeanFpAnalysis.FP.Algorithms.MatrixPowers
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersJordan
 import LeanFpAnalysis.FP.Algorithms.MatrixPowersSpectral
@@ -179,6 +183,7 @@ import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16HessenbergSchur
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16RoundedTriangular
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Eq9Assembly
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16Eq9EndToEnd
+import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16RoundedExecutor
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16QuasiRoundedSolve
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16QuasiRoundedSylvester
 import LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16QuasiQuasiRounded
@@ -206,6 +211,7 @@ import LeanFpAnalysis.FP.Analysis.RealInvariantSubspace
 import LeanFpAnalysis.FP.Analysis.ResolventFunctionalCalculus
 import LeanFpAnalysis.FP.Analysis.RealQuasiSchur
 import LeanFpAnalysis.FP.Analysis.DunfordResidue
+import LeanFpAnalysis.FP.Analysis.PseudospectralPowerBound
 import LeanFpAnalysis.FP.Analysis.SemiconvergentBlockFormExists
 import LeanFpAnalysis.FP.Analysis.SemiconvergentExistenceFull
 import LeanFpAnalysis.FP.Analysis.SemiconvergentExistenceComplete

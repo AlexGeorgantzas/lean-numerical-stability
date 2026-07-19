@@ -10,7 +10,7 @@
 - Mode: core, plus intentionally selected precise Problems
 - Parallel split: 3A
 - Planning documents: blueprint, Split 3A contract, chapter index
-- Selected-scope gate: **PASS**
+- Selected-scope gate: **FAIL**
 
 The complete source audit contains 78 rows: 68 selected and 10 intentionally excluded. The old 76-row startup inventory omitted empirical Tables 14.1 and 14.6; both are now recorded.
 
@@ -23,8 +23,8 @@ The complete source audit contains 78 rows: 68 selected and 10 intentionally exc
 | Triangular Methods 1, 2, 1B, 2B, 2C | `Ch14Method2Loop.lean`, `Ch14Method1BWhole.lean`, `MatrixInversionMethod2BInstance.lean`, `Ch14Method2CWhole.lean` | Concrete loops and block recursions; Method 2B instability is retained rather than normalized away |
 | General inverse Methods A-D | `MatrixInversion.lean`, `Ch14MethodsBC.lean`, `Ch14MethodDProductDischarge.lean` | Doolittle/triangular-operation routes to (14.15)-(14.24), including Method D normwise bound |
 | Algorithm 14.4 and (14.25)-(14.30) | `GaussJordanPivoting.lean`, `Ch14GaussJordanSourceClosure.lean`, `Ch14GJESourceAccumulationBridge.lean` | Successful-run correctness, source-active masked recurrences, literal accumulated error sums, and the source (14.29) bridge |
-| Theorem 14.5 and (14.31)-(14.33) | `Ch14GaussJordanQConstruction.lean`, `Ch14GJETheorem145SourceClosure.lean` | Exact printed factors/constants, explicit `O(u^2)` remainders, and derived `Pabs`, `Q`, and `Xabs` boundedness under a genuine vanishing family |
-| Corollaries 14.6 and 14.7 | `Ch14Corollary146SourceClosure.lean`, `Ch14Corollary147SourceClosure.lean` | Source-active SPD and row-dominant endpoints with the printed constants, explicit `O(u^2)` remainders, and no assumed final residual/forward conclusion |
+| Theorem 14.5 and (14.31)-(14.33) | `Ch14GaussJordanQConstruction.lean`, `Ch14GJETheorem145SourceClosure.lean`, `Ch14GJEOperationalBridge.lean` | Exact printed factors/constants and `O(u^2)` remainders under a conditional family; canonical output/inverse/solve witnesses are now constructed, but rounded-trace finalization remains open |
+| Corollaries 14.6 and 14.7 | `Ch14Corollary146SourceClosure.lean`, `Ch14Corollary147SourceClosure.lean` | Exact printed constants under unconstructed SPD and row-dominant source-run families |
 | Determinant section | `MatrixInversion.lean`, `Ch14HymanDeterminant.lean`, `Ch14SourceCorrections.lean` | GEPP determinant formula, Hyman backward error, scaling invariance, and corrected Hadamard condition-number sign |
 | Selected Problems | `MatrixInversion.lean`, `Ch14Problem142Families.lean`, `Ch14AsymptoticFamilies.lean`, `Ch14Problem1413Boundary.lean`, `Chapter14Problem1415Weyl.lean` | Problems 14.2-14.5, 14.7-14.8, and 14.10-14.15, including all positive dimensions for (14.37) |
 
@@ -49,6 +49,7 @@ The exact row-to-declaration map is in `CHAPTER14_SOURCE_INVENTORY.md`.
 | `Ch14Problem142Families.lean` | Family forms of (13.4)/(13.5) | Problem 14.2 | COMPLETE |
 | `Ch14GJESourceAccumulationBridge.lean` | Connect source-active local recurrences to (14.29) | Algorithm 14.4 / Theorem 14.5 | COMPLETE |
 | `Ch14GJETheorem145SourceClosure.lean` | Derive the printed (14.30)-(14.32) family endpoints from the masked trace | Theorem 14.5 | COMPLETE |
+| `Ch14GJEOperationalBridge.lean` | Construct output/inverse/solve witnesses and test rounded finalization | Theorem 14.5 and corollaries | COMPLETE bridge; exposes remaining executor blocker |
 | `Ch14Corollary146Closure.lean` | SPD norm, condition-number proximity, bootstrap, and asymptotic helper machinery | Corollary 14.6 | COMPLETE |
 | `Ch14Corollary146SourceClosure.lean` | Instantiate the SPD closure on the masked Algorithm 14.4 source trace | Corollary 14.6 | COMPLETE |
 | `Ch14Corollary147SourceClosure.lean` | Derive factor/inverse proximity and absorb the forward solution ratio | Corollary 14.7 | COMPLETE |
@@ -76,11 +77,23 @@ The mathematical Method 2B instability phenomenon and the abstract fast-operatio
 
 ## Selected-Scope Result
 
-The gate is closed. Of the 78 source rows, 66 are `PASS`, two are `SOURCE-ERROR/CORRECTED`, and ten are intentional exclusions. No selected theorem remains open.
+The strict gate remains open. Of the 78 source rows, 57 are `PASS`, nine are
+`PARTIAL`, two are `SOURCE-ERROR/CORRECTED`, and ten are intentional
+exclusions. The partial rows are the finalization-dependent equations
+(14.27), (14.29)-(14.32), the fixed-matrix addendum to (14.30), Theorem 14.5,
+and Corollaries 14.6-14.7.
 
-The generic helper in `Ch14GJEPrintedEnvelopeClosure.lean` was not accepted as the final source closure because its older family contract did not encode the masked Algorithm 14.4 trace and carried an `Xabs = O(1)` premise. The accepted endpoint is the source-active theorem in `Ch14GJETheorem145SourceClosure.lean`, where the required boundedness is derived from the finite stages.
+The generic helper in `Ch14GJEPrintedEnvelopeClosure.lean` is not a final
+source closure because its older family contract does not encode the masked
+Algorithm 14.4 trace. The newer endpoint in
+`Ch14GJETheorem145SourceClosure.lean` derives `Pabs`, `Q`, and `Xabs`
+boundedness from finite-stage fields, but the family itself still has no
+producer from the rounded executor.
 
-The first Corollary 14.6 candidate likewise depended on the older unmasked recurrence. The final reconciliation rejected that overclaim, and `Ch14Corollary146SourceClosure.lean` now derives the same printed SPD constants directly from `ch14ext_gjeSourceTrace`.
+The first Corollary 14.6 candidate likewise depended on the older unmasked
+recurrence. `Ch14Corollary146SourceClosure.lean` now derives the printed SPD
+constants from `ch14ext_gjeSourceTrace`, but only after an unconstructed
+`Ch14Cor146SourceRunFamily` is supplied.
 
 ## Hidden-Hypothesis Summary
 
@@ -89,8 +102,8 @@ The first Corollary 14.6 candidate likewise depended on the older unmasked recur
 | Source assumptions | nonsingularity, SPD, row diagonal dominance, (13.4)/(13.5) operation models | Preserved explicitly |
 | Domain assumptions | positive dimension, nonzero denominators, positive exact solution norm | Mathematically necessary and visible |
 | FP/model validity | `gammaValid`, successful nonzero/positive pivots, small operation budget | Visible operational/model guards; no error conclusion is assumed |
-| Uniform asymptotic regularity | source-level `O(1)` inputs and Chapter 9 perturbation contracts | Used only to make Landau constants independent of precision index; GJE `Pabs`, `Q`, and `Xabs` bounds are derived |
-| Suspicious proof artifacts | rounded dominance, final residual/forward bounds, `x_hat=x+O(u)` | None is assumed; factor/inverse proximity, forward bootstrap, and ratio absorption are proved locally |
+| Uniform asymptotic regularity | source-level `O(1)` inputs and Chapter 9 perturbation contracts | Some downstream products are derived, but stage/inverse and SPD regularity fields remain inputs to unconstructed families |
+| Suspicious proof artifacts | rounded-trace finalization | Confirmed: `final_matrix = I` is assumed by the headline family and is false for the current rounded executor under a legal multiplication-biased `FPModel` |
 
 ## Weak-Component Audit
 
@@ -100,9 +113,9 @@ The first Corollary 14.6 candidate likewise depended on the older unmasked recur
 | (14.3), (14.6), (14.7), Problem 14.5 asymptotics | Genuine filter-indexed theorem types | Remainder expansion and source comparison | PASS |
 | Methods B-D | Concrete operation path and build | No target-shaped residual hypotheses | PASS |
 | Problem 14.2 | Family theorem types and build | Operation contracts compared with (13.4)/(13.5) | PASS |
-| Algorithm 14.4 through Theorem 14.5 | Source-active recurrence build | Independent rows 40-53 source/type/axiom audit | PASS |
-| Corollary 14.6 | Masked source-trace family theorem and standard-axiom audit | Independent exact-constant, recurrence, proximity, bootstrap, and remainder comparison | PASS |
-| Corollary 14.7 | Source-active family theorem and standard-axiom audit | Independent factor-induction, ratio-absorption, and remainder comparison | PASS |
+| Algorithm 14.4 through Theorem 14.5 | Source-active recurrence build | Producer audit plus executable 2-by-2 finalization counterexample | FAIL: missing corrected rounded executor |
+| Corollary 14.6 | Exact-constant conditional theorem | Family-constructor audit | FAIL: no producer |
+| Corollary 14.7 | Exact-constant conditional theorem | Family-constructor audit | FAIL: no producer |
 | Source corrections | Rendered-page inspection | Checked Lean witnesses | PASS |
 
 ## Source Corrections
@@ -112,7 +125,8 @@ The first Corollary 14.6 candidate likewise depended on the older unmasked recur
 
 ## Verification
 
-Completed at the final gate:
+The earlier conditional endpoint batch had passed the following checks before
+this fresh producer audit:
 
 ```text
 lake build LeanFpAnalysis.FP.Algorithms
@@ -131,7 +145,15 @@ placeholder and conflict scans
 headline #print axioms audits
 ```
 
-Results: all focused, umbrella, full, and lookup builds pass. Changed Chapter 14 files have no placeholders or conflict markers; the three final headline declarations depend only on `propext`, `Classical.choice`, and `Quot.sound`. Warnings shown by the builds are pre-existing deprecation/linter warnings.
+Those historical checks establish that the conditional theorems compile; they
+do not establish an Algorithm 14.4 producer. The fresh audit additionally
+checks `Ch14GJEOperationalBridge.lean`, its finalization counterexample, and
+the relevant headline axioms. The focused build
+`lake build LeanFpAnalysis.FP.Algorithms.Ch14GJEOperationalBridge` passes all
+3061 jobs with no warning in the new module. The five audited bridge and
+counterexample headlines depend only on `propext`, `Classical.choice`, and
+`Quot.sound`. Placeholder/conflict hygiene and `git diff --check` pass; the
+only text scan hit is the report phrase `standard-axiom audit`.
 
 ## Documentation
 

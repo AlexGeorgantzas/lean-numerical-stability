@@ -10909,4 +10909,229 @@ theorem neumann_exact_scalar_resolution (n : ℕ) (hn : 0 < n)
   intro i
   exact le_trans (hW_ge i) hW_final
 
+-- ============================================================
+-- Chapter 3 source-facing Frobenius/operator-2 bridges
+-- ============================================================
+
+open scoped Matrix.Norms.L2Operator
+
+/-- Exact rectangular matrix 2-norm, using mathlib's Euclidean operator norm.
+
+This is the rectangular companion of `opNorm2`. -/
+noncomputable def rectOpNorm2 {m n : ℕ}
+    (M : Fin m → Fin n → ℝ) : ℝ :=
+  @norm (Matrix (Fin m) (Fin n) ℝ)
+    Matrix.instL2OpNormedAddCommGroup.toNorm
+    (M : Matrix (Fin m) (Fin n) ℝ)
+
+/-- The exact rectangular operator 2-norm is nonnegative. -/
+theorem rectOpNorm2_nonneg {m n : ℕ} (M : Fin m → Fin n → ℝ) :
+    0 ≤ rectOpNorm2 M := by
+  unfold rectOpNorm2
+  rw [Matrix.l2_opNorm_def]
+  exact norm_nonneg _
+
+/-- The exact rectangular operator norm supplies its vector-action
+certificate. -/
+theorem rectOpNorm2Le_rectOpNorm2 {m n : ℕ}
+    (M : Fin m → Fin n → ℝ) :
+    rectOpNorm2Le M (rectOpNorm2 M) := by
+  intro x
+  have h :=
+    Matrix.l2_opNorm_mulVec
+      (A := (M : Matrix (Fin m) (Fin n) ℝ))
+      (x := WithLp.toLp 2 x)
+  have hxnorm : ‖WithLp.toLp 2 x‖ = vecNorm2 x := by
+    unfold vecNorm2 vecNorm2Sq
+    rw [EuclideanSpace.norm_eq]
+    simp [Real.norm_eq_abs, sq_abs]
+  have hynorm :
+      ‖WithLp.toLp 2
+          (Matrix.mulVec (M : Matrix (Fin m) (Fin n) ℝ) x)‖ =
+        vecNorm2 (rectMatMulVec M x) := by
+    unfold vecNorm2 vecNorm2Sq rectMatMulVec
+    rw [EuclideanSpace.norm_eq]
+    simp [Matrix.mulVec, dotProduct, Real.norm_eq_abs, sq_abs]
+  simpa [rectOpNorm2, rectOpNorm2Le, rectMatMulVec, hynorm, hxnorm] using h
+
+/-- The exact rectangular operator 2-norm is invariant under transpose. -/
+theorem rectOpNorm2_finiteTranspose {m n : ℕ}
+    (M : Fin m → Fin n → ℝ) :
+    rectOpNorm2 (finiteTranspose M) = rectOpNorm2 M := by
+  have htranspose :
+      (finiteTranspose M : Matrix (Fin n) (Fin m) ℝ) =
+        Matrix.conjTranspose (M : Matrix (Fin m) (Fin n) ℝ) := by
+    ext i j
+    simp [finiteTranspose, Matrix.conjTranspose_apply]
+  unfold rectOpNorm2
+  rw [htranspose, Matrix.l2_opNorm_conjTranspose]
+
+/-- Column aggregation: an operator-2 certificate bounds squared Frobenius
+norm by the number of columns times the squared certificate radius. -/
+theorem frobNormSqRect_le_card_mul_sq_of_rectOpNorm2Le {m n : ℕ}
+    (M : Fin m → Fin n → ℝ) {c : ℝ} (hc : 0 ≤ c)
+    (hM : rectOpNorm2Le M c) :
+    frobNormSqRect M ≤ (n : ℝ) * c ^ 2 := by
+  rw [frobNormSqRect_eq_sum_vecNorm2Sq_cols]
+  calc
+    (∑ j : Fin n, vecNorm2Sq (fun i : Fin m => M i j))
+        ≤ ∑ _j : Fin n, c ^ 2 := by
+          apply Finset.sum_le_sum
+          intro j _hj
+          let e : Fin n → ℝ := finiteBasisVec j
+          have hcol : rectMatMulVec M e = fun i : Fin m => M i j := by
+            ext i
+            unfold rectMatMulVec e finiteBasisVec
+            simp [Finset.sum_ite_eq', Finset.mem_univ]
+          have hbound := hM e
+          have henorm : vecNorm2 e = 1 := by
+            simpa [e] using vecNorm2_finiteBasisVec j
+          rw [hcol, henorm, mul_one] at hbound
+          rw [← vecNorm2_sq]
+          nlinarith [vecNorm2_nonneg (fun i : Fin m => M i j)]
+    _ = (n : ℝ) * c ^ 2 := by simp
+
+/-- Lemma 6.6(a), squared form: `‖A‖_F²` is at most
+`min(m,n) ‖A‖₂²`. -/
+theorem frobNormSqRect_le_min_mul_sq_rectOpNorm2 {m n : ℕ}
+    (M : Fin m → Fin n → ℝ) :
+    frobNormSqRect M ≤ (Nat.min m n : ℝ) * rectOpNorm2 M ^ 2 := by
+  have hc : 0 ≤ rectOpNorm2 M := rectOpNorm2_nonneg M
+  by_cases hmn : m ≤ n
+  · have ht :
+        frobNormSqRect (finiteTranspose M) ≤
+          (m : ℝ) * rectOpNorm2 (finiteTranspose M) ^ 2 :=
+      frobNormSqRect_le_card_mul_sq_of_rectOpNorm2Le
+        (finiteTranspose M) (rectOpNorm2_nonneg (finiteTranspose M))
+        (rectOpNorm2Le_rectOpNorm2 (finiteTranspose M))
+    rw [frobNormSqRect_finiteTranspose, rectOpNorm2_finiteTranspose] at ht
+    simpa [Nat.min_eq_left hmn] using ht
+  · have hnm : n ≤ m := Nat.le_of_not_ge hmn
+    have h := frobNormSqRect_le_card_mul_sq_of_rectOpNorm2Le M hc
+      (rectOpNorm2Le_rectOpNorm2 M)
+    simpa [Nat.min_eq_right hnm] using h
+
+/-- Lemma 6.6(a), norm form:
+`‖A‖_F ≤ sqrt(min(m,n)) ‖A‖₂`. -/
+theorem frobNormRect_le_sqrt_min_mul_rectOpNorm2 {m n : ℕ}
+    (M : Fin m → Fin n → ℝ) :
+    frobNormRect M ≤ Real.sqrt (Nat.min m n : ℝ) * rectOpNorm2 M := by
+  have hsq0 := frobNormSqRect_le_min_mul_sq_rectOpNorm2 M
+  have hmin : 0 ≤ (Nat.min m n : ℝ) := by positivity
+  have hc : 0 ≤ rectOpNorm2 M := rectOpNorm2_nonneg M
+  have hsq :
+      frobNormSqRect M ≤
+        (Real.sqrt (Nat.min m n : ℝ) * rectOpNorm2 M) ^ 2 := by
+    calc
+      frobNormSqRect M
+          ≤ (Nat.min m n : ℝ) * rectOpNorm2 M ^ 2 := hsq0
+      _ = (Real.sqrt (Nat.min m n : ℝ) * rectOpNorm2 M) ^ 2 := by
+        rw [mul_pow, Real.sq_sqrt hmin]
+  have hsqrt := Real.sqrt_le_sqrt hsq
+  have hrhs : 0 ≤ Real.sqrt (Nat.min m n : ℝ) * rectOpNorm2 M :=
+    mul_nonneg (Real.sqrt_nonneg _) hc
+  change Real.sqrt (frobNormSqRect M) ≤ _
+  rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hrhs] at hsqrt
+  exact hsqrt
+
+/-- Triangle inequality for the exact square operator 2-norm. -/
+theorem opNorm2_add_le {n : ℕ}
+    (A B : Fin n → Fin n → ℝ) :
+    opNorm2 (fun i j => A i j + B i j) ≤ opNorm2 A + opNorm2 B := by
+  simpa only [opNorm2, Matrix.add_apply] using
+    (@norm_add_le
+      (Matrix (Fin n) (Fin n) ℝ)
+      (@SeminormedAddCommGroup.toSeminormedAddGroup
+        (Matrix (Fin n) (Fin n) ℝ)
+        (@NormedAddCommGroup.toSeminormedAddCommGroup
+          (Matrix (Fin n) (Fin n) ℝ)
+          (Matrix.instL2OpNormedAddCommGroup
+            (m := Fin n) (n := Fin n) (𝕜 := ℝ))))
+      (A : Matrix (Fin n) (Fin n) ℝ)
+      (B : Matrix (Fin n) (Fin n) ℝ))
+
+/-- The exact square operator 2-norm of the identity is at most one, including
+the empty-dimensional case. -/
+theorem opNorm2_id_le_one (n : ℕ) :
+    opNorm2 (idMatrix n) ≤ 1 := by
+  apply opNorm2_le_of_opNorm2Le (idMatrix n) zero_le_one
+  intro x
+  unfold matMulVec
+  rw [idMatrix_mulVec]
+  simpa only [one_mul] using (le_refl (vecNorm2 x))
+
+/-- Submultiplicativity of the exact square operator 2-norm. -/
+theorem opNorm2_matMul_le {n : ℕ}
+    (A B : Fin n → Fin n → ℝ) :
+    opNorm2 (matMul n A B) ≤ opNorm2 A * opNorm2 B := by
+  simpa [opNorm2, matMul, Matrix.mul_apply] using
+    (Matrix.l2_opNorm_mul
+      (A := (A : Matrix (Fin n) (Fin n) ℝ))
+      (B := (B : Matrix (Fin n) (Fin n) ℝ)))
+
+/-- The exact square operator 2-norm is bounded by the Frobenius norm. -/
+theorem opNorm2_le_frobNorm {n : ℕ}
+    (A : Fin n → Fin n → ℝ) :
+    opNorm2 A ≤ frobNorm A :=
+  opNorm2_le_of_opNorm2Le A (frobNorm_nonneg A)
+    (opNorm2Le_of_frobNorm_self A)
+
+/-- Problem 6.5's left mixed product inequality in the square exact-norm API:
+`‖AB‖_F ≤ ‖A‖₂ ‖B‖_F`. -/
+theorem frobNorm_matMul_le_opNorm2_mul {n : ℕ}
+    (A B : Fin n → Fin n → ℝ) :
+    frobNorm (matMul n A B) ≤ opNorm2 A * frobNorm B := by
+  have hArect : rectOpNorm2Le A (opNorm2 A) := by
+    intro x
+    simpa [rectOpNorm2Le, opNorm2Le, rectMatMulVec, matMulVec] using
+      (opNorm2Le_opNorm2 A x)
+  simpa [rectMatMul, frobNormRect_eq_frobNormFn] using
+    (frobNormRect_rectMatMul_le_mul_of_rectOpNorm2Le
+      A B (opNorm2_nonneg A) hArect)
+
+/-- Problem 6.5's right mixed product inequality in the square exact-norm API:
+`‖AB‖_F ≤ ‖A‖_F ‖B‖₂`. -/
+theorem frobNorm_matMul_le_mul_opNorm2 {n : ℕ}
+    (A B : Fin n → Fin n → ℝ) :
+    frobNorm (matMul n A B) ≤ frobNorm A * opNorm2 B := by
+  have hBt : opNorm2Le (matTranspose B) (opNorm2 B) :=
+    opNorm2Le_transpose B (opNorm2_nonneg B) (opNorm2Le_opNorm2 B)
+  have hBtrect : rectOpNorm2Le (finiteTranspose B) (opNorm2 B) := by
+    intro x
+    simpa [rectOpNorm2Le, opNorm2Le, finiteTranspose, matTranspose,
+      rectMatMulVec, matMulVec] using hBt x
+  simpa [rectMatMul, frobNormRect_eq_frobNormFn] using
+    (frobNormRect_rectMatMul_le_mul_of_transpose_rectOpNorm2Le
+      A B (opNorm2_nonneg B) hBtrect)
+
+/-- Higham Chapter 3, Lemma 3.7, concrete Frobenius/spectral instantiation.
+
+The sole perturbation hypothesis is the one printed in the source,
+`‖ΔX_j‖_F ≤ δ_j ‖X_j‖₂`.  In particular, no separate spectral perturbation
+bound is assumed: it is derived internally from `‖ΔX_j‖₂ ≤ ‖ΔX_j‖_F`. -/
+theorem lemma3_7_frobenius_spectral_perturbation_bound (n m : ℕ)
+    (X ΔX : Fin m → Fin n → Fin n → ℝ) (δ : Fin m → ℝ)
+    (hδ : ∀ r, 0 ≤ δ r)
+    (hΔF : ∀ r, frobNorm (ΔX r) ≤ δ r * opNorm2 (X r)) :
+    frobNorm (fun i j =>
+      matSeqProd n m (fun r i j => X r i j + ΔX r i j) i j -
+        matSeqProd n m X i j) ≤
+      (scalarSeqProd m (fun r => 1 + δ r) - 1) *
+        scalarSeqProd m (fun r => opNorm2 (X r)) := by
+  apply matSeqProd_mixed_normwise_perturbation_bound n m
+    frobNorm opNorm2
+  · rw [frobNorm_eq_sqrt_frobNormSq]
+    simp [frobNormSq]
+  · exact frobNorm_add_le
+  · exact frobNorm_matMul_le_opNorm2_mul
+  · exact frobNorm_matMul_le_mul_opNorm2
+  · exact opNorm2_nonneg
+  · exact opNorm2_id_le_one n
+  · exact opNorm2_add_le
+  · exact opNorm2_matMul_le
+  · exact hδ
+  · exact hΔF
+  · intro r
+    exact le_trans (opNorm2_le_frobNorm (ΔX r)) (hΔF r)
+
 end LeanFpAnalysis.FP

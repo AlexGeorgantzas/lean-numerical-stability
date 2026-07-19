@@ -7,7 +7,7 @@ remains open.
 
 | Source location | Claim | Lean disposition |
 |---|---|---|
-| Sec. 27.8, p. 499 | The printed two-pass scaled norm avoids overflow | `twoPassRoundedScaledSum_bounds_and_safe` verifies an actual finite round-to-even quotient, square, accumulation, and final-product trace under explicit integer-representability and dimension-capacity conditions. |
+| Sec. 27.8, p. 499 | The printed two-pass scaled norm avoids overflow | `twoPassRoundedScaledNorm` is the literal executor and `higham27_twoPassRoundedScaledNorm_trace_safe` verifies its explicit zero branch and its rounded quotient, square, accumulation, square-root, and final-multiplication path under finite-input, representability, and final-capacity conditions.  The theorem rules out divide-by-zero, invalid square root, and intermediate overflow; it does not rule out underflow or inexact rounding. |
 | Sec. 27.8, p. 500 | Smith's branched scaled division avoids overflow before the final quotient divisions | `smith_first_branch_preDivision_safe` and `smith_symmetric_branch_preDivision_safe` verify both rounded branches under explicit input/capacity conditions. |
 | Sec. 27.8, p. 500 | Unrestricted Smith wording | An unconditional theorem would be false: `smith_scaledDenominator_overflows_at_maxFiniteMagnitude` proves that `c=d=maxFiniteMagnitude` makes the printed scaled denominator overflow.  The ledger therefore records the scoped theorem and the counterexample, not a stronger invented claim. |
 

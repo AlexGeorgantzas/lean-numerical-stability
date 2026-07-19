@@ -561,6 +561,41 @@ theorem ch28gf_realGinibreExpectedCountLimit :
   realGinibreExpectedCountLimit_of_finiteExpectationFormula
     ch28gf_realGinibreFiniteExpectationFormula
 
+/-- **Higham, 2nd ed., p. 517.**  The printed consequence that the expected
+proportion of real eigenvalues tends to zero. -/
+theorem ch28gf_realGinibreExpectedProportionLimit :
+    Tendsto (fun n : ℕ => expectedRealEigenvalueCount n / (n : ℝ))
+      atTop (nhds 0) := by
+  have hsqrt :
+      Tendsto (fun n : ℕ => Real.sqrt (n : ℝ)) atTop atTop :=
+    Real.tendsto_sqrt_atTop.comp tendsto_natCast_atTop_atTop
+  have hinv :
+      Tendsto (fun n : ℕ => (Real.sqrt (n : ℝ))⁻¹) atTop (nhds 0) :=
+    tendsto_inv_atTop_zero.comp hsqrt
+  have hmain :
+      Tendsto
+        (fun n : ℕ => expectedRealEigenvalueCount n / Real.sqrt n)
+        atTop (nhds (Real.sqrt (2 / Real.pi))) :=
+    ch28gf_realGinibreExpectedCountLimit
+  have hproduct := hmain.mul hinv
+  convert hproduct using 1
+  · funext n
+    by_cases hn : n = 0
+    · subst n
+      simp
+    · have hnpos : (0 : ℝ) < n := by
+        exact_mod_cast Nat.pos_of_ne_zero hn
+      have hnroot : (n : ℝ) = Real.sqrt n * Real.sqrt n :=
+        (Real.mul_self_sqrt hnpos.le).symm
+      calc
+        expectedRealEigenvalueCount n / (n : ℝ) =
+            expectedRealEigenvalueCount n / (Real.sqrt n * Real.sqrt n) :=
+          congrArg (fun d : ℝ => expectedRealEigenvalueCount n / d) hnroot
+        _ = (expectedRealEigenvalueCount n / Real.sqrt n) *
+            (Real.sqrt n)⁻¹ := by
+          simp only [div_eq_mul_inv, mul_inv_rev, mul_assoc]
+  · simp
+
 end
 
 end LeanFpAnalysis.FP

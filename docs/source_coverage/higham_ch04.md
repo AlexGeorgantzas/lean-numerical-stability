@@ -1,5 +1,11 @@
 # Higham Chapter 4 Source Coverage Ledger
 
+> **Fresh strict audit (2026-07-18): gate FAIL.** Algorithm 4.3 accuracy and
+> equations (4.8)-(4.10) retain exact-step or target-scale defect hypotheses not
+> produced by the rounded finite-format algorithms. A documented obstruction or
+> partial does not make the selected row pass. See
+> `AUDIT_ch01-28_2026-07-18.md`.
+
 ## Source and Scope
 
 - Edition: Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed. (SIAM, 2002).

@@ -6375,6 +6375,22 @@ def normalizedValue (fmt : FloatingPointFormat) (negative : Bool) (m : ℕ)
     (e : ℤ) : ℝ :=
   fmt.signValue negative * (m : ℝ) * fmt.betaR ^ (e - (fmt.t : ℤ))
 
+/-- Integer coefficient carrying the sign of a normalized mantissa.  This is
+the common-lattice form used to reconstruct exact subtraction results from
+their operand representations, without assuming a representation of the
+result itself. -/
+def signedMantissaCoeff
+    (_fmt : FloatingPointFormat) (negative : Bool) (m : ℕ) : ℤ :=
+  if negative then -(m : ℤ) else (m : ℤ)
+
+theorem normalizedValue_eq_signedMantissaCoeff
+    (fmt : FloatingPointFormat) (negative : Bool) (m : ℕ) (e : ℤ) :
+    fmt.normalizedValue negative m e =
+      (fmt.signedMantissaCoeff negative m : ℝ) *
+        fmt.betaR ^ (e - (fmt.t : ℤ)) := by
+  cases negative <;>
+    simp [normalizedValue, signValue, signedMantissaCoeff]
+
 /-- Subnormal value form `+- m * beta^(emin-t)`. -/
 def subnormalValue (fmt : FloatingPointFormat) (negative : Bool) (m : ℕ) : ℝ :=
   fmt.signValue negative * (m : ℝ) * fmt.betaR ^ (fmt.emin - (fmt.t : ℤ))
@@ -6443,6 +6459,34 @@ def fergusonExponentConditionLe
     fmt.normalizedExponentRepresentation y ey ∧
     fmt.normalizedExponentRepresentation (x - y) ez ∧
     ez ≤ min ex ey
+
+/-- Magnitude/exponent form of Higham Theorem 2.4's printed condition.
+
+For a nonunderflowing nonzero result, `e(x-y) ≤ min(e(x),e(y))` is
+equivalent to the strict magnitude bound
+`|x-y| < beta ^ min(e(x),e(y))`.  Unlike `fergusonExponentConditionLe`, this
+predicate carries normalized exponent representations only for the two source
+operands: it does not assume that `x-y` is representable. -/
+def fergusonMagnitudeExponentConditionLe
+    (fmt : FloatingPointFormat) (x y : ℝ) : Prop :=
+  ∃ ex ey : ℤ,
+    fmt.normalizedExponentRepresentation x ex ∧
+    fmt.normalizedExponentRepresentation y ey ∧
+    |x - y| < fmt.betaR ^ min ex ey
+
+theorem fergusonMagnitudeExponentConditionLe_left_normalized
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (h : fmt.fergusonMagnitudeExponentConditionLe x y) :
+    fmt.normalizedSystem x := by
+  rcases h with ⟨_ex, _ey, hx, _hy, _hmag⟩
+  exact fmt.normalizedExponentRepresentation_normalizedSystem hx
+
+theorem fergusonMagnitudeExponentConditionLe_right_normalized
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (h : fmt.fergusonMagnitudeExponentConditionLe x y) :
+    fmt.normalizedSystem y := by
+  rcases h with ⟨_ex, _ey, _hx, hy, _hmag⟩
+  exact fmt.normalizedExponentRepresentation_normalizedSystem hy
 
 theorem fergusonExponentCondition_left_normalized
     {fmt : FloatingPointFormat} {x y : ℝ}
@@ -8252,6 +8296,19 @@ theorem normalizedExponentRepresentation_abs_lt_beta_pow
   rcases h with ⟨negative, m, hm, _he, rfl⟩
   exact fmt.normalizedValue_abs_lt_beta_pow hm
 
+/-- The older representation-form inclusive Ferguson condition implies the
+new magnitude/exponent condition.  This bridge is one-way because the latter
+deliberately does not assume a representation of the subtraction result. -/
+theorem fergusonExponentConditionLe_fergusonMagnitudeExponentConditionLe
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (h : fmt.fergusonExponentConditionLe x y) :
+    fmt.fergusonMagnitudeExponentConditionLe x y := by
+  rcases h with ⟨ex, ey, ez, hx, hy, hz, hle⟩
+  refine ⟨ex, ey, hx, hy, ?_⟩
+  exact lt_of_lt_of_le
+    (fmt.normalizedExponentRepresentation_abs_lt_beta_pow hz)
+    (fmt.betaR_zpow_le_zpow_of_le hle)
+
 theorem fergusonExponentCondition_sub_not_finiteUnderflowRange
     {fmt : FloatingPointFormat} {x y : ℝ}
     (h : fmt.fergusonExponentCondition x y) :
@@ -9075,6 +9132,102 @@ theorem scaledIntegerValue_finiteSystem_of_natAbs_lt_mantissaBound
               (negative := true) (m := k.natAbs) (shift := q)
               (e := e) hq_endpoint]
             simp [normalizedValue, signValue, hk_abs_real]⟩)
+
+/-- If two normalized-value expressions are aligned on the lower exponent
+lattice and their exact difference has magnitude below the next binade, then
+the difference is finite representable.  The proof derives the signed integer
+coefficient bound from the real magnitude bound and invokes the generic finite
+lattice selector; it does not assume any representation of the difference. -/
+theorem normalizedValue_sub_orderedExponent_finiteSystem_of_abs_lt_beta_pow
+    {fmt : FloatingPointFormat} {negativeX negativeY : Bool}
+    {mx my : ℕ} {ex ey : ℤ}
+    (hey : fmt.exponentInRange ey)
+    (hle : ey ≤ ex)
+    (hmag :
+      |fmt.normalizedValue negativeX mx ex -
+        fmt.normalizedValue negativeY my ey| < fmt.betaR ^ ey) :
+    fmt.finiteSystem
+      (fmt.normalizedValue negativeX mx ex -
+        fmt.normalizedValue negativeY my ey) := by
+  let q : ℕ := Int.toNat (ex - ey)
+  have hq_cast : ((q : ℕ) : ℤ) = ex - ey := by
+    have hnonneg : 0 ≤ ex - ey := sub_nonneg.mpr hle
+    simpa [q] using Int.toNat_of_nonneg hnonneg
+  have hq_endpoint : ex - (q : ℤ) = ey := by
+    omega
+  have hshift :
+      fmt.normalizedValue negativeX (mx * fmt.beta ^ q) ey =
+        fmt.normalizedValue negativeX mx ex := by
+    have h := fmt.normalizedValue_mul_beta_pow_subExponent_eq
+      (negative := negativeX) (m := mx) (shift := q) (e := ex)
+    rw [hq_endpoint] at h
+    exact h
+  let k : ℤ :=
+    fmt.signedMantissaCoeff negativeX (mx * fmt.beta ^ q) -
+      fmt.signedMantissaCoeff negativeY my
+  have hrepr :
+      fmt.normalizedValue negativeX mx ex -
+          fmt.normalizedValue negativeY my ey =
+        (k : ℝ) * fmt.betaR ^ (ey - (fmt.t : ℤ)) := by
+    rw [← hshift,
+      fmt.normalizedValue_eq_signedMantissaCoeff,
+      fmt.normalizedValue_eq_signedMantissaCoeff]
+    simp [k]
+    ring
+  let s : ℝ := fmt.betaR ^ (ey - (fmt.t : ℤ))
+  have hs : 0 < s := fmt.betaR_zpow_pos _
+  have hbase : fmt.betaR ≠ 0 := ne_of_gt fmt.betaR_pos
+  have hpow :
+      fmt.betaR ^ ey = fmt.betaR ^ (fmt.t : ℤ) * s := by
+    dsimp [s]
+    rw [← zpow_add₀ hbase]
+    congr 1
+    ring
+  have hk_real : |(k : ℝ)| < fmt.betaR ^ (fmt.t : ℤ) := by
+    rw [hrepr, abs_mul, abs_of_pos hs, hpow] at hmag
+    exact lt_of_mul_lt_mul_right hmag (le_of_lt hs)
+  have hk_natabs_cast : ((k.natAbs : ℕ) : ℝ) = |(k : ℝ)| := by
+    norm_num [Int.cast_abs]
+  have hbeta_cast :
+      ((fmt.beta ^ fmt.t : ℕ) : ℝ) = fmt.betaR ^ (fmt.t : ℤ) := by
+    simp [betaR]
+  have hk_natabs_real :
+      ((k.natAbs : ℕ) : ℝ) < ((fmt.beta ^ fmt.t : ℕ) : ℝ) := by
+    rw [hk_natabs_cast, hbeta_cast]
+    exact hk_real
+  have hk : k.natAbs < fmt.beta ^ fmt.t := by
+    exact_mod_cast hk_natabs_real
+  have hfin := fmt.scaledIntegerValue_finiteSystem_of_natAbs_lt_mantissaBound
+    (negative := false) (k := k) (e := ey) hey hk
+  simpa [signValue, hrepr] using hfin
+
+/-- Higham Theorem 2.4's magnitude/exponent condition itself forces the exact
+subtraction onto a finite radix lattice.  In particular, representability of
+`x-y` is a conclusion rather than part of the hypothesis. -/
+theorem fergusonMagnitudeExponentConditionLe_sub_finiteSystem
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (h : fmt.fergusonMagnitudeExponentConditionLe x y) :
+    fmt.finiteSystem (x - y) := by
+  rcases h with ⟨ex, ey, hx, hy, hmag⟩
+  rcases hx with ⟨negativeX, mx, _hmx, _hex, rfl⟩
+  rcases hy with ⟨negativeY, my, _hmy, hey, rfl⟩
+  by_cases hle : ey ≤ ex
+  · have hmin : min ex ey = ey := min_eq_right hle
+    apply fmt.normalizedValue_sub_orderedExponent_finiteSystem_of_abs_lt_beta_pow
+      hey hle
+    simpa [hmin] using hmag
+  · have hex_le : ex ≤ ey := le_of_not_ge hle
+    have hmin : min ex ey = ex := min_eq_left hex_le
+    have hfin :
+        fmt.finiteSystem
+          (fmt.normalizedValue negativeY my ey -
+            fmt.normalizedValue negativeX mx ex) := by
+      apply fmt.normalizedValue_sub_orderedExponent_finiteSystem_of_abs_lt_beta_pow
+        _hex hex_le
+      simpa [hmin, abs_sub_comm] using hmag
+    have hneg := fmt.finiteSystem_neg hfin
+    convert hneg using 1
+    ring
 
 /-- Same-lattice signed scaled-integer subtraction is finite when the integer
 coefficient difference has fewer than `t` radix digits.
@@ -41491,21 +41644,58 @@ theorem finiteRoundToEvenOp_sub_eq_exact_of_fergusonCondition
     (fmt.finiteRoundToEvenOp_eq_exact_of_finiteSystem
       (op := BasicOp.sub) (x := x) (y := y) hfin)
 
-/-- Source-shaped inclusive form of Higham Theorem 2.4 (Ferguson) for the
-concrete finite round-to-even operation wrapper. -/
+/-- Under the printed Ferguson magnitude condition and the source's explicit
+no-underflow proviso, the internally reconstructed exact difference is a
+normalized finite value. -/
+theorem fergusonMagnitudeExponentConditionLe_sub_normalized_of_not_finiteUnderflowRange
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (hcond : fmt.fergusonMagnitudeExponentConditionLe x y)
+    (hnoUnderflow : ¬ fmt.finiteUnderflowRange (x - y)) :
+    fmt.normalizedSystem (x - y) := by
+  have hfin : fmt.finiteSystem (x - y) :=
+    fmt.fergusonMagnitudeExponentConditionLe_sub_finiteSystem hcond
+  rcases hfin with hzero | hnormal | hsubnormal
+  · exfalso
+    apply hnoUnderflow
+    rw [hzero]
+    simpa [finiteUnderflowRange] using fmt.minNormalMagnitude_pos
+  · exact hnormal
+  · exfalso
+    exact hnoUnderflow (fmt.subnormalSystem_finiteUnderflowRange hsubnormal)
+
+/-- Source-facing Higham Theorem 2.4 (Ferguson): the hypotheses are the
+printed magnitude/exponent condition and the separate no-underflow proviso.
+The representation of `x-y` is derived internally from the common radix
+lattice before exactness of the concrete finite round-to-even operation is
+invoked. -/
+theorem finiteRoundToEvenOp_sub_eq_exact_of_fergusonMagnitudeExponentConditionLe
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (hcond : fmt.fergusonMagnitudeExponentConditionLe x y)
+    (hnoUnderflow : ¬ fmt.finiteUnderflowRange (x - y)) :
+    fmt.finiteRoundToEvenOp BasicOp.sub x y = x - y := by
+  have hnormal : fmt.normalizedSystem (x - y) :=
+    fmt.fergusonMagnitudeExponentConditionLe_sub_normalized_of_not_finiteUnderflowRange
+      hcond hnoUnderflow
+  have hfin : fmt.finiteSystem (BasicOp.exact BasicOp.sub x y) := by
+    simpa [BasicOp.exact] using
+      (Or.inr (Or.inl hnormal) : fmt.finiteSystem (x - y))
+  simpa [BasicOp.exact] using
+    (fmt.finiteRoundToEvenOp_eq_exact_of_finiteSystem
+      (op := BasicOp.sub) (x := x) (y := y) hfin)
+
+/-- Compatibility theorem for the older representation-form inclusive
+Ferguson condition.  Its proof now factors through the source-facing
+magnitude theorem above. -/
 theorem finiteRoundToEvenOp_sub_eq_exact_of_fergusonConditionLe
     {fmt : FloatingPointFormat} {x y : ℝ}
     (hcond : fmt.fergusonExponentConditionLe x y) :
     fmt.finiteRoundToEvenOp BasicOp.sub x y = x - y := by
-  have hfin :
-      fmt.finiteSystem (BasicOp.exact BasicOp.sub x y) := by
-    simpa [BasicOp.exact] using
-      (Or.inr (Or.inl
-        (fmt.fergusonExponentConditionLe_sub_normalized hcond)) :
-        fmt.finiteSystem (x - y))
-  simpa [BasicOp.exact] using
-    (fmt.finiteRoundToEvenOp_eq_exact_of_finiteSystem
-      (op := BasicOp.sub) (x := x) (y := y) hfin)
+  exact
+    fmt.finiteRoundToEvenOp_sub_eq_exact_of_fergusonMagnitudeExponentConditionLe
+      (fmt.fergusonExponentConditionLe_fergusonMagnitudeExponentConditionLe
+        hcond)
+      (fmt.normalizedSystem_not_finiteUnderflowRange
+        (fmt.fergusonExponentConditionLe_sub_normalized hcond))
 
 /-- Ferguson's exponent condition places the exact subtraction result in the
 finite-normal range.  This is the source's "assuming `x-y` does not underflow
@@ -41525,6 +41715,18 @@ theorem fergusonExponentConditionLe_sub_finiteNormalRange
     fmt.finiteNormalRange (x - y) :=
   fmt.normalizedSystem_finiteNormalRange
     (fmt.fergusonExponentConditionLe_sub_normalized hcond)
+
+/-- The source-facing magnitude Ferguson condition plus its no-underflow
+proviso places the internally reconstructed exact result in the finite-normal
+range. -/
+theorem fergusonMagnitudeExponentConditionLe_sub_finiteNormalRange
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (hcond : fmt.fergusonMagnitudeExponentConditionLe x y)
+    (hnoUnderflow : ¬ fmt.finiteUnderflowRange (x - y)) :
+    fmt.finiteNormalRange (x - y) :=
+  fmt.normalizedSystem_finiteNormalRange
+    (fmt.fergusonMagnitudeExponentConditionLe_sub_normalized_of_not_finiteUnderflowRange
+      hcond hnoUnderflow)
 
 /-- IEEE-facing nearest/even version of Ferguson exact subtraction.  Under the
 source-shaped Ferguson condition, the primitive subtraction wrapper takes the
@@ -41561,8 +41763,48 @@ theorem ieeeRoundToNearestEvenOpResult_sub_toReal?_of_fergusonCondition
     hcond]
   exact IeeeOperationResult.finiteNoFlags_toReal? _
 
-/-- IEEE-facing nearest/even version of the inclusive Ferguson exact
-subtraction theorem. -/
+/-- IEEE-facing nearest/even form of the source-facing Ferguson theorem.  The
+same magnitude/exponent and no-underflow hypotheses give the normal/no-flags
+branch and the exact real subtraction value. -/
+theorem ieeeRoundToNearestEvenOpResult_sub_eq_finiteNoFlags_of_fergusonMagnitudeExponentConditionLe
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (hcond : fmt.fergusonMagnitudeExponentConditionLe x y)
+    (hnoUnderflow : ¬ fmt.finiteUnderflowRange (x - y)) :
+    fmt.ieeeRoundToNearestEvenOpResult BasicOp.sub x y =
+      IeeeOperationResult.finiteNoFlags (x - y) := by
+  have hnormal :
+      fmt.finiteNormalRange (BasicOp.exact BasicOp.sub x y) := by
+    simpa [BasicOp.exact] using
+      fmt.fergusonMagnitudeExponentConditionLe_sub_finiteNormalRange
+        hcond hnoUnderflow
+  have hbranch :=
+    fmt.ieeeRoundToNearestEvenOpResult_eq_finiteNoFlags_of_finiteNormalRange
+      (op := BasicOp.sub) (x := x) (y := y) hnormal
+  rw [fmt.finiteRoundToEvenOp_sub_eq_exact_of_fergusonMagnitudeExponentConditionLe
+    hcond hnoUnderflow] at hbranch
+  exact hbranch
+
+theorem ieeeRoundToNearestEvenOpResult_sub_noFlags_of_fergusonMagnitudeExponentConditionLe
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (hcond : fmt.fergusonMagnitudeExponentConditionLe x y)
+    (hnoUnderflow : ¬ fmt.finiteUnderflowRange (x - y)) :
+    (fmt.ieeeRoundToNearestEvenOpResult BasicOp.sub x y).noFlags := by
+  rw [fmt.ieeeRoundToNearestEvenOpResult_sub_eq_finiteNoFlags_of_fergusonMagnitudeExponentConditionLe
+    hcond hnoUnderflow]
+  exact IeeeOperationResult.finiteNoFlags_noFlags _
+
+theorem ieeeRoundToNearestEvenOpResult_sub_toReal?_of_fergusonMagnitudeExponentConditionLe
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (hcond : fmt.fergusonMagnitudeExponentConditionLe x y)
+    (hnoUnderflow : ¬ fmt.finiteUnderflowRange (x - y)) :
+    (fmt.ieeeRoundToNearestEvenOpResult BasicOp.sub x y).value.toReal? =
+      some (x - y) := by
+  rw [fmt.ieeeRoundToNearestEvenOpResult_sub_eq_finiteNoFlags_of_fergusonMagnitudeExponentConditionLe
+    hcond hnoUnderflow]
+  exact IeeeOperationResult.finiteNoFlags_toReal? _
+
+/-- Compatibility IEEE theorem for the older representation-form inclusive
+Ferguson condition. -/
 theorem ieeeRoundToNearestEvenOpResult_sub_eq_finiteNoFlags_of_fergusonConditionLe
     {fmt : FloatingPointFormat} {x y : ℝ}
     (hcond : fmt.fergusonExponentConditionLe x y) :

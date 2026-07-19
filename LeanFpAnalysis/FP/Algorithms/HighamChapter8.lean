@@ -14,6 +14,7 @@ import LeanFpAnalysis.FP.Algorithms.TriangularArbitraryOrder
 import LeanFpAnalysis.FP.Algorithms.TriangularNoGuard
 import LeanFpAnalysis.FP.Algorithms.MMatrix
 import LeanFpAnalysis.FP.Algorithms.LU.GrowthFactor
+import LeanFpAnalysis.FP.Algorithms.MatMul
 import LeanFpAnalysis.FP.Analysis.HighamChapter7
 import Mathlib.Data.Finset.Max
 import Mathlib.Data.Matrix.Basis
@@ -5447,6 +5448,635 @@ noncomputable def higham8_14_fanIn7RoundedApply (n : ℕ)
       M1 M2 M3 M4 M5 M6 M7 Δ1 Δ32 Δ54 Δ76 Δ7654)
     b
 
+/-- The literal rounded fan-in executor underlying the source's displayed
+`n = 7` tree.  Matrix products at the four internal matrix nodes and all three
+matrix-vector actions are evaluated by the repository floating-point model. -/
+noncomputable def higham8_14_fanIn7Executor (fp : FPModel) (n : ℕ)
+    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ) (b : Fin n → ℝ) :
+    Fin n → ℝ :=
+  let C76 := fl_matMul fp n n n M7 M6
+  let C54 := fl_matMul fp n n n M5 M4
+  let C7654 := fl_matMul fp n n n C76 C54
+  let C32 := fl_matMul fp n n n M3 M2
+  let v1 := fl_matVec fp n n M1 b
+  let v321 := fl_matVec fp n n C32 v1
+  fl_matVec fp n n C7654 v321
+
+/-- **Equation (8.14), producer bridge.**  The literal rounded fan-in executor
+has exactly the source's perturbation-tree form.  In addition to constructing
+all five perturbations, the theorem exposes certified local envelopes.  The
+two composite envelopes retain the harmless higher-order terms explicitly:
+the matrix-product residual plus the backward error of the subsequent
+matrix-vector action.
+
+This theorem removes the former gap between the symbolic `(8.14)` expression
+and an actual sequence of `fl_matMul`/`fl_matVec` operations. -/
+theorem higham8_14_fanIn7Executor_eq_roundedApply (fp : FPModel) (n : ℕ)
+    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hn : gammaValid fp n) :
+    ∃ Δ1 Δ32 Δ54 Δ76 Δ7654 : Fin n → Fin n → ℝ,
+      higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b =
+        higham8_14_fanIn7RoundedApply n
+          M1 M2 M3 M4 M5 M6 M7 Δ1 Δ32 Δ54 Δ76 Δ7654 b ∧
+      (∀ i j, |Δ1 i j| ≤ gamma fp n * |M1 i j|) ∧
+      (∀ i j,
+        |Δ32 i j| ≤
+          gamma fp n * (∑ k : Fin n, |M3 i k| * |M2 k j|) +
+            gamma fp n * |fl_matMul fp n n n M3 M2 i j|) ∧
+      (∀ i j,
+        |Δ54 i j| ≤ gamma fp n * (∑ k : Fin n, |M5 i k| * |M4 k j|)) ∧
+      (∀ i j,
+        |Δ76 i j| ≤ gamma fp n * (∑ k : Fin n, |M7 i k| * |M6 k j|)) ∧
+      (∀ i j,
+        |Δ7654 i j| ≤
+          gamma fp n *
+              (∑ k : Fin n,
+                |fl_matMul fp n n n M7 M6 i k| *
+                  |fl_matMul fp n n n M5 M4 k j|) +
+            gamma fp n *
+              |fl_matMul fp n n n
+                (fl_matMul fp n n n M7 M6)
+                (fl_matMul fp n n n M5 M4) i j|) := by
+  let C76 : Fin n → Fin n → ℝ := fl_matMul fp n n n M7 M6
+  let C54 : Fin n → Fin n → ℝ := fl_matMul fp n n n M5 M4
+  let C7654 : Fin n → Fin n → ℝ := fl_matMul fp n n n C76 C54
+  let C32 : Fin n → Fin n → ℝ := fl_matMul fp n n n M3 M2
+  let v1 : Fin n → ℝ := fl_matVec fp n n M1 b
+  let v321 : Fin n → ℝ := fl_matVec fp n n C32 v1
+  let xhat : Fin n → ℝ := fl_matVec fp n n C7654 v321
+  obtain ⟨Δ1, hΔ1, hv1⟩ := matVec_backward_error fp n n M1 b hn
+  obtain ⟨E32, hE32, hv321⟩ := matVec_backward_error fp n n C32 v1 hn
+  obtain ⟨E7654, hE7654, hxhat⟩ :=
+    matVec_backward_error fp n n C7654 v321 hn
+  let Δ76 : Fin n → Fin n → ℝ := fun i j => C76 i j - matMul n M7 M6 i j
+  let Δ54 : Fin n → Fin n → ℝ := fun i j => C54 i j - matMul n M5 M4 i j
+  let Δ32 : Fin n → Fin n → ℝ :=
+    fun i j => C32 i j - matMul n M3 M2 i j + E32 i j
+  let Δ7654 : Fin n → Fin n → ℝ :=
+    fun i j => C7654 i j - matMul n C76 C54 i j + E7654 i j
+  have hv1' : v1 = matMulVec n (fun i j => M1 i j + Δ1 i j) b := by
+    ext i
+    simpa [v1, matMulVec] using hv1 i
+  have hv321' : v321 = matMulVec n (fun i j => C32 i j + E32 i j) v1 := by
+    ext i
+    simpa [v321, matMulVec] using hv321 i
+  have hxhat' : xhat = matMulVec n (fun i j => C7654 i j + E7654 i j) v321 := by
+    ext i
+    simpa [xhat, matMulVec] using hxhat i
+  have h76 : (fun i j => matMul n M7 M6 i j + Δ76 i j) = C76 := by
+    funext i j
+    simp [Δ76]
+  have h54 : (fun i j => matMul n M5 M4 i j + Δ54 i j) = C54 := by
+    funext i j
+    simp [Δ54]
+  have h32 :
+      (fun i j => matMul n M3 M2 i j + Δ32 i j) =
+        (fun i j => C32 i j + E32 i j) := by
+    funext i j
+    dsimp [Δ32]
+    ring
+  have h7654 :
+      (fun i j => matMul n C76 C54 i j + Δ7654 i j) =
+        (fun i j => C7654 i j + E7654 i j) := by
+    funext i j
+    dsimp [Δ7654]
+    ring
+  refine ⟨Δ1, Δ32, Δ54, Δ76, Δ7654, ?_, hΔ1, ?_, ?_, ?_, ?_⟩
+  · calc
+      higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b = xhat := rfl
+      _ = matMulVec n (fun i j => C7654 i j + E7654 i j) v321 := hxhat'
+      _ = matMulVec n (fun i j => matMul n C76 C54 i j + Δ7654 i j) v321 := by
+        rw [h7654]
+      _ = matMulVec n (fun i j => matMul n C76 C54 i j + Δ7654 i j)
+            (matMulVec n (fun i j => C32 i j + E32 i j) v1) := by
+        rw [hv321']
+      _ = matMulVec n (fun i j => matMul n C76 C54 i j + Δ7654 i j)
+            (matMulVec n (fun i j => matMul n M3 M2 i j + Δ32 i j) v1) := by
+        rw [h32]
+      _ = matMulVec n (fun i j => matMul n C76 C54 i j + Δ7654 i j)
+            (matMulVec n (fun i j => matMul n M3 M2 i j + Δ32 i j)
+              (matMulVec n (fun i j => M1 i j + Δ1 i j) b)) := by
+        rw [hv1']
+      _ = higham8_14_fanIn7RoundedApply n
+            M1 M2 M3 M4 M5 M6 M7 Δ1 Δ32 Δ54 Δ76 Δ7654 b := by
+        unfold higham8_14_fanIn7RoundedApply higham8_14_fanIn7RoundedMatrix
+        rw [h76, h54]
+        ext i
+        symm
+        calc
+          matMulVec n
+              (matMul n (fun i j => matMul n C76 C54 i j + Δ7654 i j)
+                (matMul n (fun i j => matMul n M3 M2 i j + Δ32 i j)
+                  (fun i j => M1 i j + Δ1 i j))) b i =
+              matMulVec n (fun i j => matMul n C76 C54 i j + Δ7654 i j)
+                (matMulVec n
+                  (matMul n (fun i j => matMul n M3 M2 i j + Δ32 i j)
+                    (fun i j => M1 i j + Δ1 i j)) b) i :=
+            matMulVec_matMul n
+              (fun i j => matMul n C76 C54 i j + Δ7654 i j)
+              (matMul n (fun i j => matMul n M3 M2 i j + Δ32 i j)
+                (fun i j => M1 i j + Δ1 i j)) b i
+          _ = matMulVec n (fun i j => matMul n C76 C54 i j + Δ7654 i j)
+                (matMulVec n (fun i j => matMul n M3 M2 i j + Δ32 i j)
+                  (matMulVec n (fun i j => M1 i j + Δ1 i j) b)) i := by
+            congr 1
+            funext j
+            exact matMulVec_matMul n
+              (fun i j => matMul n M3 M2 i j + Δ32 i j)
+              (fun i j => M1 i j + Δ1 i j) b j
+  · intro i j
+    calc
+      |Δ32 i j| = |(C32 i j - matMul n M3 M2 i j) + E32 i j| := by rfl
+      _ ≤ |C32 i j - matMul n M3 M2 i j| + |E32 i j| := abs_add_le _ _
+      _ ≤ gamma fp n * (∑ k : Fin n, |M3 i k| * |M2 k j|) +
+          gamma fp n * |C32 i j| := by
+        exact add_le_add
+          (by simpa [C32, matMul] using matMul_error_bound fp n n n M3 M2 hn i j)
+          (hE32 i j)
+      _ = gamma fp n * (∑ k : Fin n, |M3 i k| * |M2 k j|) +
+          gamma fp n * |fl_matMul fp n n n M3 M2 i j| := by rfl
+  · intro i j
+    simpa [Δ54, C54, matMul] using matMul_error_bound fp n n n M5 M4 hn i j
+  · intro i j
+    simpa [Δ76, C76, matMul] using matMul_error_bound fp n n n M7 M6 hn i j
+  · intro i j
+    calc
+      |Δ7654 i j| = |(C7654 i j - matMul n C76 C54 i j) + E7654 i j| := by rfl
+      _ ≤ |C7654 i j - matMul n C76 C54 i j| + |E7654 i j| := abs_add_le _ _
+      _ ≤ gamma fp n * (∑ k : Fin n, |C76 i k| * |C54 k j|) +
+          gamma fp n * |C7654 i j| := by
+        exact add_le_add
+          (by simpa [C7654, matMul] using matMul_error_bound fp n n n C76 C54 hn i j)
+          (hE7654 i j)
+      _ = gamma fp n *
+              (∑ k : Fin n,
+                |fl_matMul fp n n n M7 M6 i k| *
+                  |fl_matMul fp n n n M5 M4 k j|) +
+            gamma fp n *
+              |fl_matMul fp n n n
+                (fl_matMul fp n n n M7 M6)
+                (fl_matMul fp n n n M5 M4) i j| := by rfl
+
+/-! ### Exact all-orders envelope calculus for the literal fan-in tree -/
+
+/-- An entrywise matrix envelope with scale `s`.  It records a nonnegative
+majorant `E` for the exact matrix and an `(s-1)E` forward-error majorant for
+its approximation.  This form composes through actual matrix products without
+requiring a relative perturbation of a cancellation-prone intermediate. -/
+def higham8_18MatrixEnvelope (n : ℕ)
+    (Ahat A E : Fin n → Fin n → ℝ) (s : ℝ) : Prop :=
+  (∀ i j, 0 ≤ E i j) ∧
+    (∀ i j, |A i j| ≤ E i j) ∧
+    (∀ i j, |Ahat i j - A i j| ≤ (s - 1) * E i j) ∧
+    1 ≤ s
+
+/-- Vector analogue of `higham8_18MatrixEnvelope`. -/
+def higham8_18VectorEnvelope (n : ℕ)
+    (xhat x E : Fin n → ℝ) (s : ℝ) : Prop :=
+  (∀ i, 0 ≤ E i) ∧
+    (∀ i, |x i| ≤ E i) ∧
+    (∀ i, |xhat i - x i| ≤ (s - 1) * E i) ∧
+    1 ≤ s
+
+theorem higham8_18MatrixEnvelope_exact (n : ℕ)
+    (A : Fin n → Fin n → ℝ) :
+    higham8_18MatrixEnvelope n A A (absMatrix n A) 1 := by
+  refine ⟨?_, ?_, ?_, le_rfl⟩
+  · intro i j
+    simp [absMatrix]
+  · intro i j
+    simp [absMatrix]
+  · intro i j
+    simp
+
+theorem higham8_18VectorEnvelope_exact (n : ℕ) (x : Fin n → ℝ) :
+    higham8_18VectorEnvelope n x x (absVec n x) 1 := by
+  refine ⟨?_, ?_, ?_, le_rfl⟩
+  · intro i
+    simp [absVec]
+  · intro i
+    simp [absVec]
+  · intro i
+    simp
+
+theorem higham8_18MatrixEnvelope_abs_approx_le {n : ℕ}
+    {Ahat A E : Fin n → Fin n → ℝ} {s : ℝ}
+    (h : higham8_18MatrixEnvelope n Ahat A E s) :
+    ∀ i j, |Ahat i j| ≤ s * E i j := by
+  intro i j
+  calc
+    |Ahat i j| = |(Ahat i j - A i j) + A i j| := by ring_nf
+    _ ≤ |Ahat i j - A i j| + |A i j| := abs_add_le _ _
+    _ ≤ (s - 1) * E i j + E i j :=
+      add_le_add (h.2.2.1 i j) (h.2.1 i j)
+    _ = s * E i j := by ring
+
+theorem higham8_18VectorEnvelope_abs_approx_le {n : ℕ}
+    {xhat x E : Fin n → ℝ} {s : ℝ}
+    (h : higham8_18VectorEnvelope n xhat x E s) :
+    ∀ i, |xhat i| ≤ s * E i := by
+  intro i
+  calc
+    |xhat i| = |(xhat i - x i) + x i| := by ring_nf
+    _ ≤ |xhat i - x i| + |x i| := abs_add_le _ _
+    _ ≤ (s - 1) * E i + E i := add_le_add (h.2.2.1 i) (h.2.1 i)
+    _ = s * E i := by ring
+
+/-- Matrix envelopes compose through a literal rounded matrix product. -/
+theorem higham8_18MatrixEnvelope_fl_matMul (fp : FPModel) (n : ℕ)
+    (Ahat A EA Bhat B EB : Fin n → Fin n → ℝ) (sA sB : ℝ)
+    (hn : gammaValid fp n)
+    (hA : higham8_18MatrixEnvelope n Ahat A EA sA)
+    (hB : higham8_18MatrixEnvelope n Bhat B EB sB) :
+    higham8_18MatrixEnvelope n
+      (fl_matMul fp n n n Ahat Bhat)
+      (matMul n A B)
+      (matMul n EA EB)
+      ((1 + gamma fp n) * sA * sB) := by
+  let g := gamma fp n
+  have hg : 0 ≤ g := gamma_nonneg fp hn
+  have hsA : 0 ≤ sA := le_trans zero_le_one hA.2.2.2
+  have hsB : 0 ≤ sB := le_trans zero_le_one hB.2.2.2
+  have hAhat := higham8_18MatrixEnvelope_abs_approx_le hA
+  have hBhat := higham8_18MatrixEnvelope_abs_approx_le hB
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro i j
+    exact Finset.sum_nonneg (fun k _ => mul_nonneg (hA.1 i k) (hB.1 k j))
+  · intro i j
+    unfold matMul
+    calc
+      |∑ k : Fin n, A i k * B k j| ≤
+          ∑ k : Fin n, |A i k * B k j| := Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ k : Fin n, |A i k| * |B k j| := by
+        apply Finset.sum_congr rfl
+        intro k _
+        rw [abs_mul]
+      _ ≤ ∑ k : Fin n, EA i k * EB k j := by
+        apply Finset.sum_le_sum
+        intro k _
+        exact mul_le_mul (hA.2.1 i k) (hB.2.1 k j)
+          (abs_nonneg _) (hA.1 i k)
+  · intro i j
+    let Phat := matMul n Ahat Bhat
+    let P := matMul n A B
+    have hlocal :
+        |fl_matMul fp n n n Ahat Bhat i j - Phat i j| ≤
+          g * (sA * sB) * matMul n EA EB i j := by
+      have hraw := matMul_error_bound fp n n n Ahat Bhat hn i j
+      calc
+        |fl_matMul fp n n n Ahat Bhat i j - Phat i j| ≤
+            g * ∑ k : Fin n, |Ahat i k| * |Bhat k j| := by
+              simpa [Phat, matMul, g] using hraw
+        _ ≤ g * ∑ k : Fin n, (sA * EA i k) * (sB * EB k j) := by
+              apply mul_le_mul_of_nonneg_left _ hg
+              apply Finset.sum_le_sum
+              intro k _
+              exact mul_le_mul (hAhat i k) (hBhat k j)
+                (abs_nonneg _) (mul_nonneg hsA (hA.1 i k))
+        _ = g * (sA * sB) * matMul n EA EB i j := by
+              unfold matMul
+              rw [Finset.mul_sum, Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro k _
+              ring
+    have hprop :
+        |Phat i j - P i j| ≤
+          (sA * sB - 1) * matMul n EA EB i j := by
+      unfold Phat P matMul
+      calc
+        |(∑ k : Fin n, Ahat i k * Bhat k j) -
+            ∑ k : Fin n, A i k * B k j| =
+            |∑ k : Fin n,
+              ((Ahat i k - A i k) * Bhat k j +
+                A i k * (Bhat k j - B k j))| := by
+                  congr 1
+                  rw [← Finset.sum_sub_distrib]
+                  apply Finset.sum_congr rfl
+                  intro k _
+                  ring
+        _ ≤ ∑ k : Fin n,
+            |(Ahat i k - A i k) * Bhat k j +
+              A i k * (Bhat k j - B k j)| :=
+                Finset.abs_sum_le_sum_abs _ _
+        _ ≤ ∑ k : Fin n,
+            (((sA - 1) * EA i k) * (sB * EB k j) +
+              EA i k * ((sB - 1) * EB k j)) := by
+                apply Finset.sum_le_sum
+                intro k _
+                calc
+                  |(Ahat i k - A i k) * Bhat k j +
+                      A i k * (Bhat k j - B k j)| ≤
+                      |Ahat i k - A i k| * |Bhat k j| +
+                        |A i k| * |Bhat k j - B k j| := by
+                          rw [← abs_mul, ← abs_mul]
+                          exact abs_add_le _ _
+                  _ ≤ ((sA - 1) * EA i k) * (sB * EB k j) +
+                        EA i k * ((sB - 1) * EB k j) := by
+                          exact add_le_add
+                            (mul_le_mul (hA.2.2.1 i k) (hBhat k j)
+                              (abs_nonneg _)
+                              (mul_nonneg (sub_nonneg.mpr hA.2.2.2) (hA.1 i k)))
+                            (mul_le_mul (hA.2.1 i k) (hB.2.2.1 k j)
+                              (abs_nonneg _) (hA.1 i k))
+        _ = (sA * sB - 1) * ∑ k : Fin n, EA i k * EB k j := by
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro k _
+              ring
+    calc
+      |fl_matMul fp n n n Ahat Bhat i j - matMul n A B i j| =
+          |(fl_matMul fp n n n Ahat Bhat i j - Phat i j) +
+            (Phat i j - P i j)| := by
+              dsimp [P]
+              congr 1
+              ring
+      _ ≤ |fl_matMul fp n n n Ahat Bhat i j - Phat i j| +
+          |Phat i j - P i j| := abs_add_le _ _
+      _ ≤ g * (sA * sB) * matMul n EA EB i j +
+          (sA * sB - 1) * matMul n EA EB i j := add_le_add hlocal hprop
+      _ = ((1 + gamma fp n) * sA * sB - 1) * matMul n EA EB i j := by
+          dsimp [g]
+          ring
+  · have hone : 1 ≤ 1 + gamma fp n := by linarith
+    exact le_trans (by norm_num : (1 : ℝ) ≤ 1 * 1 * 1)
+      (mul_le_mul (mul_le_mul hone hA.2.2.2 zero_le_one (by linarith))
+        hB.2.2.2 zero_le_one (mul_nonneg (by linarith) hsA))
+
+/-- Matrix and vector envelopes compose through a literal rounded
+matrix-vector product. -/
+theorem higham8_18VectorEnvelope_fl_matVec (fp : FPModel) (n : ℕ)
+    (Ahat A EA : Fin n → Fin n → ℝ)
+    (xhat x Ex : Fin n → ℝ) (sA sx : ℝ)
+    (hn : gammaValid fp n)
+    (hA : higham8_18MatrixEnvelope n Ahat A EA sA)
+    (hx : higham8_18VectorEnvelope n xhat x Ex sx) :
+    higham8_18VectorEnvelope n
+      (fl_matVec fp n n Ahat xhat)
+      (matMulVec n A x)
+      (matMulVec n EA Ex)
+      ((1 + gamma fp n) * sA * sx) := by
+  let g := gamma fp n
+  have hg : 0 ≤ g := gamma_nonneg fp hn
+  have hsA : 0 ≤ sA := le_trans zero_le_one hA.2.2.2
+  have hsx : 0 ≤ sx := le_trans zero_le_one hx.2.2.2
+  have hAhat := higham8_18MatrixEnvelope_abs_approx_le hA
+  have hxhat := higham8_18VectorEnvelope_abs_approx_le hx
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro i
+    exact Finset.sum_nonneg (fun k _ => mul_nonneg (hA.1 i k) (hx.1 k))
+  · intro i
+    unfold matMulVec
+    calc
+      |∑ k : Fin n, A i k * x k| ≤
+          ∑ k : Fin n, |A i k * x k| := Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ k : Fin n, |A i k| * |x k| := by
+        apply Finset.sum_congr rfl
+        intro k _
+        rw [abs_mul]
+      _ ≤ ∑ k : Fin n, EA i k * Ex k := by
+        apply Finset.sum_le_sum
+        intro k _
+        exact mul_le_mul (hA.2.1 i k) (hx.2.1 k) (abs_nonneg _) (hA.1 i k)
+  · intro i
+    let phat := matMulVec n Ahat xhat
+    let p := matMulVec n A x
+    have hlocal :
+        |fl_matVec fp n n Ahat xhat i - phat i| ≤
+          g * (sA * sx) * matMulVec n EA Ex i := by
+      have hraw := matVec_error_bound fp n n Ahat xhat hn i
+      calc
+        |fl_matVec fp n n Ahat xhat i - phat i| ≤
+            g * ∑ k : Fin n, |Ahat i k| * |xhat k| := by
+              simpa [phat, matMulVec, g] using hraw
+        _ ≤ g * ∑ k : Fin n, (sA * EA i k) * (sx * Ex k) := by
+              apply mul_le_mul_of_nonneg_left _ hg
+              apply Finset.sum_le_sum
+              intro k _
+              exact mul_le_mul (hAhat i k) (hxhat k)
+                (abs_nonneg _) (mul_nonneg hsA (hA.1 i k))
+        _ = g * (sA * sx) * matMulVec n EA Ex i := by
+              unfold matMulVec
+              rw [Finset.mul_sum, Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro k _
+              ring
+    have hprop :
+        |phat i - p i| ≤
+          (sA * sx - 1) * matMulVec n EA Ex i := by
+      unfold phat p matMulVec
+      calc
+        |(∑ k : Fin n, Ahat i k * xhat k) - ∑ k : Fin n, A i k * x k| =
+            |∑ k : Fin n,
+              ((Ahat i k - A i k) * xhat k + A i k * (xhat k - x k))| := by
+                congr 1
+                rw [← Finset.sum_sub_distrib]
+                apply Finset.sum_congr rfl
+                intro k _
+                ring
+        _ ≤ ∑ k : Fin n,
+            |(Ahat i k - A i k) * xhat k + A i k * (xhat k - x k)| :=
+              Finset.abs_sum_le_sum_abs _ _
+        _ ≤ ∑ k : Fin n,
+            (((sA - 1) * EA i k) * (sx * Ex k) +
+              EA i k * ((sx - 1) * Ex k)) := by
+                apply Finset.sum_le_sum
+                intro k _
+                calc
+                  |(Ahat i k - A i k) * xhat k + A i k * (xhat k - x k)| ≤
+                      |Ahat i k - A i k| * |xhat k| +
+                        |A i k| * |xhat k - x k| := by
+                          rw [← abs_mul, ← abs_mul]
+                          exact abs_add_le _ _
+                  _ ≤ ((sA - 1) * EA i k) * (sx * Ex k) +
+                        EA i k * ((sx - 1) * Ex k) := by
+                          exact add_le_add
+                            (mul_le_mul (hA.2.2.1 i k) (hxhat k)
+                              (abs_nonneg _)
+                              (mul_nonneg (sub_nonneg.mpr hA.2.2.2) (hA.1 i k)))
+                            (mul_le_mul (hA.2.1 i k) (hx.2.2.1 k)
+                              (abs_nonneg _) (hA.1 i k))
+        _ = (sA * sx - 1) * ∑ k : Fin n, EA i k * Ex k := by
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro k _
+              ring
+    calc
+      |fl_matVec fp n n Ahat xhat i - matMulVec n A x i| =
+          |(fl_matVec fp n n Ahat xhat i - phat i) + (phat i - p i)| := by
+            dsimp [p]
+            congr 1
+            ring
+      _ ≤ |fl_matVec fp n n Ahat xhat i - phat i| + |phat i - p i| :=
+        abs_add_le _ _
+      _ ≤ g * (sA * sx) * matMulVec n EA Ex i +
+          (sA * sx - 1) * matMulVec n EA Ex i := add_le_add hlocal hprop
+      _ = ((1 + gamma fp n) * sA * sx - 1) * matMulVec n EA Ex i := by
+        dsimp [g]
+        ring
+  · have hone : 1 ≤ 1 + gamma fp n := by linarith
+    exact le_trans (by norm_num : (1 : ℝ) ≤ 1 * 1 * 1)
+      (mul_le_mul (mul_le_mul hone hA.2.2.2 zero_le_one (by linarith))
+        hx.2.2.2 zero_le_one (mul_nonneg (by linarith) hsA))
+
+/-- Product-of-absolute-matrices majorant in the parenthesization of the
+source's seven-factor fan-in tree. -/
+noncomputable def higham8_18_fanIn7AbsMatrix (n : ℕ)
+    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  matMul n
+    (matMul n
+      (matMul n (absMatrix n M7) (absMatrix n M6))
+      (matMul n (absMatrix n M5) (absMatrix n M4)))
+    (matMul n
+      (matMul n (absMatrix n M3) (absMatrix n M2))
+      (absMatrix n M1))
+
+/-- The `(8.18)` source majorant `|M7|⋯|M1||b|`, with the same harmless
+fan-in parenthesization as the literal executor. -/
+noncomputable def higham8_18_fanIn7AbsApply (n : ℕ)
+    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) : Fin n → ℝ :=
+  matMulVec n (higham8_18_fanIn7AbsMatrix n M1 M2 M3 M4 M5 M6 M7)
+    (absVec n b)
+
+/-- **Equation (8.18), literal-executor all-orders form.**  The actual seven
+rounded operations satisfy the source's product-of-absolute-matrices forward
+envelope.  The exact coefficient `(1+γₙ)^7-1` retains all higher-order terms;
+its first-order term is `7γₙ`, matching the source's `d'ₙ u + O(u²)` form.
+
+No relative perturbation of an intermediate product is assumed, so exact
+cancellation in `M3*M2`, `M5*M4`, or `M7*M6` is allowed. -/
+theorem higham8_18_fanIn7Executor_forward_componentwise_bound
+    (fp : FPModel) (n : ℕ)
+    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (hn : gammaValid fp n) :
+    ∀ i : Fin n,
+      |higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b i -
+        higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b i| ≤
+      ((1 + gamma fp n) ^ 7 - 1) *
+        higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b i := by
+  let q : ℝ := 1 + gamma fp n
+  let P76 := matMul n M7 M6
+  let P54 := matMul n M5 M4
+  let P7654 := matMul n P76 P54
+  let P32 := matMul n M3 M2
+  let x1 := matMulVec n M1 b
+  let x321 := matMulVec n P32 x1
+  let x := matMulVec n P7654 x321
+  let E76 := matMul n (absMatrix n M7) (absMatrix n M6)
+  let E54 := matMul n (absMatrix n M5) (absMatrix n M4)
+  let E7654 := matMul n E76 E54
+  let E32 := matMul n (absMatrix n M3) (absMatrix n M2)
+  let e1 := matMulVec n (absMatrix n M1) (absVec n b)
+  let e321 := matMulVec n E32 e1
+  let e := matMulVec n E7654 e321
+  let C76 := fl_matMul fp n n n M7 M6
+  let C54 := fl_matMul fp n n n M5 M4
+  let C7654 := fl_matMul fp n n n C76 C54
+  let C32 := fl_matMul fp n n n M3 M2
+  let v1 := fl_matVec fp n n M1 b
+  let v321 := fl_matVec fp n n C32 v1
+  let xhat := fl_matVec fp n n C7654 v321
+  have hM1 := higham8_18MatrixEnvelope_exact n M1
+  have hM2 := higham8_18MatrixEnvelope_exact n M2
+  have hM3 := higham8_18MatrixEnvelope_exact n M3
+  have hM4 := higham8_18MatrixEnvelope_exact n M4
+  have hM5 := higham8_18MatrixEnvelope_exact n M5
+  have hM6 := higham8_18MatrixEnvelope_exact n M6
+  have hM7 := higham8_18MatrixEnvelope_exact n M7
+  have hb := higham8_18VectorEnvelope_exact n b
+  have h76 : higham8_18MatrixEnvelope n C76 P76 E76 q := by
+    simpa [C76, P76, E76, q] using
+      higham8_18MatrixEnvelope_fl_matMul fp n M7 M7 (absMatrix n M7)
+        M6 M6 (absMatrix n M6) 1 1 hn hM7 hM6
+  have h54 : higham8_18MatrixEnvelope n C54 P54 E54 q := by
+    simpa [C54, P54, E54, q] using
+      higham8_18MatrixEnvelope_fl_matMul fp n M5 M5 (absMatrix n M5)
+        M4 M4 (absMatrix n M4) 1 1 hn hM5 hM4
+  have h7654 :
+      higham8_18MatrixEnvelope n C7654 P7654 E7654 (q * q * q) := by
+    simpa [C7654, P7654, E7654, q] using
+      higham8_18MatrixEnvelope_fl_matMul fp n C76 P76 E76 C54 P54 E54
+        q q hn h76 h54
+  have h32 : higham8_18MatrixEnvelope n C32 P32 E32 q := by
+    simpa [C32, P32, E32, q] using
+      higham8_18MatrixEnvelope_fl_matMul fp n M3 M3 (absMatrix n M3)
+        M2 M2 (absMatrix n M2) 1 1 hn hM3 hM2
+  have hv1 : higham8_18VectorEnvelope n v1 x1 e1 q := by
+    simpa [v1, x1, e1, q] using
+      higham8_18VectorEnvelope_fl_matVec fp n M1 M1 (absMatrix n M1)
+        b b (absVec n b) 1 1 hn hM1 hb
+  have hv321 :
+      higham8_18VectorEnvelope n v321 x321 e321 (q * q * q) := by
+    simpa [v321, x321, e321, q] using
+      higham8_18VectorEnvelope_fl_matVec fp n C32 P32 E32 v1 x1 e1
+        q q hn h32 hv1
+  have hxhat0 :
+      higham8_18VectorEnvelope n xhat x e
+        (q * (q * q * q) * (q * q * q)) := by
+    simpa [xhat, x, e, q] using
+      higham8_18VectorEnvelope_fl_matVec fp n C7654 P7654 E7654
+        v321 x321 e321 (q * q * q) (q * q * q) hn h7654 hv321
+  have hscale : q * (q * q * q) * (q * q * q) = q ^ 7 := by ring
+  have hxhat : higham8_18VectorEnvelope n xhat x e (q ^ 7) := by
+    simpa [hscale] using hxhat0
+  have hmv (A B : Fin n → Fin n → ℝ) (v : Fin n → ℝ) :
+      matMulVec n (matMul n A B) v = matMulVec n A (matMulVec n B v) := by
+    funext i
+    exact matMulVec_matMul n A B v i
+  have hx : x = higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b := by
+    ext i
+    simp [x, x321, x1, P7654, P76, P54, P32,
+      higham8_13_fanIn7Apply, higham8_13_fanIn7Matrix, hmv]
+  have he : e = higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b := by
+    ext i
+    simp [e, e321, e1, E7654, E76, E54, E32,
+      higham8_18_fanIn7AbsApply, higham8_18_fanIn7AbsMatrix,
+      hmv]
+  intro i
+  have herr := hxhat.2.2.1 i
+  simpa [xhat, higham8_14_fanIn7Executor, hx, he, q] using herr
+
+/-- **Equation (8.19), literal-executor relative `∞`-norm form.** -/
+theorem higham8_19_fanIn7Executor_forward_relative_infNorm_bound
+    (fp : FPModel) (n : ℕ)
+    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (hn : gammaValid fp n)
+    (hx : 0 < infNormVec
+      (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b)) :
+    infNormVec
+        (fun i =>
+          higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b i -
+            higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b i) /
+        infNormVec (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) ≤
+      infNormVec
+        (fun i =>
+          ((1 + gamma fp n) ^ 7 - 1) *
+            higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b i) /
+        infNormVec (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) := by
+  have hnorm :
+      infNormVec
+          (fun i =>
+            higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b i -
+              higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b i) ≤
+        infNormVec
+          (fun i =>
+            ((1 + gamma fp n) ^ 7 - 1) *
+              higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b i) := by
+    apply infNormVec_le_of_abs_le
+    · intro i
+      exact le_trans
+        (higham8_18_fanIn7Executor_forward_componentwise_bound
+          fp n M1 M2 M3 M4 M5 M6 M7 b hn i)
+        (le_trans (le_abs_self _)
+          (abs_le_infNormVec
+            (fun j =>
+              ((1 + gamma fp n) ^ 7 - 1) *
+                higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j)
+            i))
+    · exact infNormVec_nonneg _
+  exact div_le_div_of_nonneg_right hnorm (le_of_lt hx)
+
 /-- **Equation (8.18), finite-product form**: a componentwise perturbation
 bound for the fan-in product gives a componentwise forward-error bound after
 applying the product to `b`. -/
@@ -5547,6 +6177,60 @@ theorem higham8_19_fanIn_forward_relative_infNorm_bound (n m : ℕ)
     · exact infNormVec_nonneg _
   exact div_le_div_of_nonneg_right hnorm (le_of_lt hx)
 
+/-! ### Why the local `(8.14)` envelopes cannot be made relative to a
+cancelled intermediate product
+
+The source bounds the local product errors by sums containing `|A||B|` and
+`|AB|`.  The finite-product bridge above instead asks for a scalar relative
+bound by `|AB|` alone.  The following literal two-by-two witness records the
+sharp obstruction: `AB` cancels to zero while `|A||B|` is nonzero. -/
+
+private def higham8_14_cancellationLeft : Fin 2 → Fin 2 → ℝ :=
+  fun i _ => if i = 0 then 1 else 0
+
+private def higham8_14_cancellationRight : Fin 2 → Fin 2 → ℝ :=
+  fun k j => if j = 0 then (if k = 0 then 1 else -1) else 0
+
+private def higham8_14_cancellationDelta : Fin 2 → Fin 2 → ℝ :=
+  fun i j => if i = 0 ∧ j = 0 then 1 else 0
+
+/-- **Sharp bridge blocker for (8.14)--(8.15).**  A perturbation can obey the
+actual local product-of-absolute-matrices envelope while no finite scalar
+relative perturbation bound by the cancelled exact intermediate product is
+possible.  Thus `higham8_15_fanIn_residual_componentwise_bound` cannot be
+instantiated from the local `(8.14)` hypotheses without an additional
+first-order expansion (whose cross terms belong to the source's `O(u²)`). -/
+theorem higham8_14_local_envelope_not_relative_after_cancellation :
+    matMul 2 higham8_14_cancellationLeft higham8_14_cancellationRight 0 0 = 0 ∧
+    matMul 2
+        (absMatrix 2 higham8_14_cancellationLeft)
+        (absMatrix 2 higham8_14_cancellationRight) 0 0 = 2 ∧
+    |higham8_14_cancellationDelta 0 0| ≤
+        (1 / 2 : ℝ) *
+          (matMul 2
+              (absMatrix 2 higham8_14_cancellationLeft)
+              (absMatrix 2 higham8_14_cancellationRight) 0 0 +
+            |matMul 2 higham8_14_cancellationLeft
+              higham8_14_cancellationRight 0 0|) ∧
+    ∀ δ : ℝ,
+      ¬ |higham8_14_cancellationDelta 0 0| ≤
+        δ * |matMul 2 higham8_14_cancellationLeft
+          higham8_14_cancellationRight 0 0| := by
+  constructor
+  · norm_num [matMul, higham8_14_cancellationLeft,
+      higham8_14_cancellationRight, Fin.sum_univ_two]
+  constructor
+  · norm_num [matMul, absMatrix, higham8_14_cancellationLeft,
+      higham8_14_cancellationRight, Fin.sum_univ_two]
+  constructor
+  · norm_num [matMul, absMatrix, higham8_14_cancellationLeft,
+      higham8_14_cancellationRight, higham8_14_cancellationDelta,
+      Fin.sum_univ_two]
+  · intro δ h
+    norm_num [matMul, higham8_14_cancellationLeft,
+      higham8_14_cancellationRight, higham8_14_cancellationDelta,
+      Fin.sum_univ_two] at h
+
 /-- **Equation (8.15), residual transfer**: any componentwise forward-error
 envelope `E` gives a componentwise residual envelope after multiplying by
 `|L|`. -/
@@ -5580,6 +6264,64 @@ theorem higham8_15_residual_componentwise_of_forward_error (n : ℕ)
           (by simpa [abs_sub_comm] using hE j) (abs_nonneg (L i j))
     _ = matMulVec n (absMatrix n L) E i := by
         simp [matMulVec, absMatrix]
+
+/-- **Equation (8.15), literal-executor all-orders residual form.**  Composing
+the actual `(8.14)` executor with the exact `(8.18)` envelope gives the raw
+residual majorant `|L| (((1+γₙ)^7-1)|M₇|⋯|M₁||b|)`.  Rewriting its
+first-order part as the five-factor source cube requires the separate
+inverse-column-factor expansion documented by the cancellation theorem above. -/
+theorem higham8_15_fanIn7Executor_residual_componentwise_bound
+    (fp : FPModel) (n : ℕ)
+    (L M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (hn : gammaValid fp n)
+    (hsolve :
+      matMulVec n L
+        (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) = b) :
+    ∀ i : Fin n,
+      |b i - matMulVec n L
+        (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) i| ≤
+        matMulVec n (absMatrix n L)
+          (fun j =>
+            ((1 + gamma fp n) ^ 7 - 1) *
+              higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j) i := by
+  exact higham8_15_residual_componentwise_of_forward_error n L
+    (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b)
+    (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) b
+    (fun j =>
+      ((1 + gamma fp n) ^ 7 - 1) *
+        higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j)
+    hsolve
+    (higham8_18_fanIn7Executor_forward_componentwise_bound
+      fp n M1 M2 M3 M4 M5 M6 M7 b hn)
+
+/-- **Equation (8.16), literal-executor all-orders norm form.** -/
+theorem higham8_16_fanIn7Executor_residual_infNorm_bound
+    (fp : FPModel) (n : ℕ)
+    (L M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (hn : gammaValid fp n)
+    (hsolve :
+      matMulVec n L
+        (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) = b) :
+    infNormVec
+        (fun i => b i - matMulVec n L
+          (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) i) ≤
+      infNormVec
+        (matMulVec n (absMatrix n L)
+          (fun j =>
+            ((1 + gamma fp n) ^ 7 - 1) *
+              higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j)) := by
+  apply infNormVec_le_of_abs_le
+  · intro i
+    exact le_trans
+      (higham8_15_fanIn7Executor_residual_componentwise_bound
+        fp n L M1 M2 M3 M4 M5 M6 M7 b hn hsolve i)
+      (le_trans (le_abs_self _)
+        (abs_le_infNormVec
+          (matMulVec n (absMatrix n L)
+            (fun j =>
+              ((1 + gamma fp n) ^ 7 - 1) *
+                higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j)) i))
+  · exact infNormVec_nonneg _
 
 /-- **Equations (8.15)--(8.16), fan-in residual bound**: applying the
 finite-product forward envelope from (8.18) to `L x = b` yields the
@@ -5715,6 +6457,36 @@ theorem higham8_17_backward_error_from_residual_infNorm_bound (n : ℕ)
             ring_nf
   · exact le_trans (higham8_17_rankOneBackwardDelta_infNorm_le r xhat j0) hρ
 
+/-- **Equation (8.17), literal-executor all-orders backward-error form.**  The
+actual `(8.14)` executor and `(8.16)` residual norm bound construct a rank-one
+backward perturbation with the corresponding explicit raw envelope. -/
+theorem higham8_17_fanIn7Executor_backward_error_bound
+    (fp : FPModel) (n : ℕ)
+    (L M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (hn : gammaValid fp n)
+    (hsolve :
+      matMulVec n L
+        (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) = b)
+    (j0 : Fin n)
+    (hxj0 :
+      higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b j0 ≠ 0) :
+    ∃ ΔL : Fin n → Fin n → ℝ,
+      matMulVec n (fun i j => L i j + ΔL i j)
+          (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) = b ∧
+        infNorm ΔL ≤
+          infNormVec
+              (matMulVec n (absMatrix n L)
+                (fun k =>
+                  ((1 + gamma fp n) ^ 7 - 1) *
+                    higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b k)) /
+            |higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b j0| := by
+  apply higham8_17_backward_error_from_residual_infNorm_bound n L
+    (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) b j0 hxj0
+  exact div_le_div_of_nonneg_right
+    (higham8_16_fanIn7Executor_residual_infNorm_bound
+      fp n L M1 M2 M3 M4 M5 M6 M7 b hn hsolve)
+    (abs_nonneg _)
+
 /-- **Equation (8.20) support**: the source residual envelope before the final
 left multiplication by `|L⁻¹|`, namely `|L||L⁻¹||L||L⁻¹||L|`. -/
 noncomputable def higham8_15_residualCubeBase (n : ℕ)
@@ -5791,6 +6563,72 @@ theorem higham8_20_forward_relative_infNorm_of_residual_bound (n : ℕ)
         (le_trans (le_abs_self _) (abs_le_infNormVec _ i))
     · exact infNormVec_nonneg _
   exact div_le_div_of_nonneg_right hnorm (le_of_lt hx)
+
+/-- **Equation (8.20), literal-executor residual-transfer form.**  This is the
+fully connected all-orders conclusion obtained from the actual `(8.14)`
+executor: multiply the literal residual envelope by `|L⁻¹|`.  Its envelope is
+deliberately left unreduced; identifying its first-order part with the printed
+condition cube requires the inverse-column-factor expansion. -/
+theorem higham8_20_fanIn7Executor_forward_from_residual_componentwise_bound
+    (fp : FPModel) (n : ℕ)
+    (L L_inv M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (hn : gammaValid fp n)
+    (hLeft : IsLeftInverse n L L_inv)
+    (hsolve :
+      matMulVec n L
+        (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) = b) :
+    ∀ i : Fin n,
+      |higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b i -
+        higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b i| ≤
+        matMulVec n (absMatrix n L_inv)
+          (matMulVec n (absMatrix n L)
+            (fun k =>
+              ((1 + gamma fp n) ^ 7 - 1) *
+                higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b k)) i := by
+  exact higham8_20_forward_componentwise_of_residual_bound n L L_inv
+    (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b)
+    (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) b
+    (matMulVec n (absMatrix n L)
+      (fun k =>
+        ((1 + gamma fp n) ^ 7 - 1) *
+          higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b k))
+    hLeft hsolve
+    (higham8_15_fanIn7Executor_residual_componentwise_bound
+      fp n L M1 M2 M3 M4 M5 M6 M7 b hn hsolve)
+
+/-- **Equation (8.20), literal-executor relative `∞`-norm transfer form.** -/
+theorem higham8_20_fanIn7Executor_forward_from_residual_relative_infNorm_bound
+    (fp : FPModel) (n : ℕ)
+    (L L_inv M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ) (hn : gammaValid fp n)
+    (hLeft : IsLeftInverse n L L_inv)
+    (hsolve :
+      matMulVec n L
+        (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) = b)
+    (hx : 0 < infNormVec
+      (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b)) :
+    infNormVec
+        (fun i =>
+          higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b i -
+            higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b i) /
+        infNormVec (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) ≤
+      infNormVec
+        (matMulVec n (absMatrix n L_inv)
+          (matMulVec n (absMatrix n L)
+            (fun k =>
+              ((1 + gamma fp n) ^ 7 - 1) *
+                higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b k))) /
+        infNormVec (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) := by
+  exact higham8_20_forward_relative_infNorm_of_residual_bound n L L_inv
+    (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b)
+    (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) b
+    (matMulVec n (absMatrix n L)
+      (fun k =>
+        ((1 + gamma fp n) ^ 7 - 1) *
+          higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b k))
+    hLeft hsolve
+    (higham8_15_fanIn7Executor_residual_componentwise_bound
+      fp n L M1 M2 M3 M4 M5 M6 M7 b hn hsolve) hx
 
 /-- **Equation (8.20) support**: moving the residual scalar through the final
 left multiplication exposes the explicit condition-cubing matrix. -/

@@ -18,9 +18,7 @@
   `BlockLUSPDFamilies`, `BlockLUComputationSourceClosure`,
   `BlockLUFirstOrderFamilies`, `BlockLUPointRowGrowthSourceClosure`,
   `BlockLUScalarGrowthBridge`, `BlockLUVarying`, `BlockLUTable13_1Families`.
-- **Selected-scope gate: PASS** (0 open primary rows; two honest PARTIAL
-  equation rows — (13.22)/(13.23) and their Problem-13.4 inputs — are faithful
-  to the source's growth-factor parametrization; see notes).
+- **Selected-scope gate: PASS** (0 open primary or numbered-equation rows).
 
 This audit is statement-level: I verified each Lean statement against the
 printed row for honest strength (no hidden target-equivalent hypothesis,
@@ -72,8 +70,8 @@ overcount; (13.26) is the last, appearing in Problem 13.4).
 | (13.19) | max‖Aij‖ ≤ ‖A‖ ≤ Σ‖Aij‖ | VERIFIED | `higham13_eq13_19`, `..._block_le_norm`, `..._norm_le_sum` |
 | (13.20) | General r×r partition | VERIFIED | `higham13_eq13_20_partition` |
 | (13.21) | ‖U‖ ≤ ρₙ‖A‖ (block max-norm) | VERIFIED | `higham13_eq13_21_blockMaxNorm_bound*`, `SchurStageUpperBlockBound13_21` |
-| (13.22) | ‖L‖‖U‖ ≤ nρₙ³κ(A)‖A‖ (arbitrary) | PARTIAL | `block_lu_normLU_bound_general_higham_13_22`, `higham13_eq13_22_*`, `higham13_problem13_4_A21A11inv_rectOpNorm2Le_from_full_A_certificate` — algebraic assembly proved; the growth-factor operator inputs (‖A11⁻¹‖≤‖A⁻¹‖, ‖A21‖≤ρₙ‖A‖) are explicit certificates, faithful to the source's ρₙ parametrization |
-| (13.23) | Point-row: ‖L‖‖U‖ ≤ 8nκ(A)‖A‖ | PARTIAL | `higham13_eq13_23_*`, `higham13_table13_1_point_row_backward_error_from_growth`; point-row growth ≤2 closed in `BlockLUPointRowGrowthSourceClosure` (mirrors Thm 9.9); the ρₙ→2 specialization uses the same conditional inputs as (13.22) |
+| (13.22) | ‖L‖‖U‖ ≤ nρₙ³κ(A)‖A‖ (arbitrary) | VERIFIED | `higham13_problem13_4_eq13_22_exists_blockLUFact_succ_of_pivot_right_inverse` — exact Algorithm-13.3 pivot-right-inverse data, nonsingularity, and the dimension budget construct the block factors and full recursive endpoint; no factor-norm or target-scale premise. |
+| (13.23) | Point-row: ‖L‖‖U‖ ≤ 8nκ(A)‖A‖ | VERIFIED | `higham13_problem13_4_eq13_23_exists_blockLUFact_succ_of_pointRow`, using `higham13_algorithm13_3_active_entry_eq_noPivotReducedStage` and `..._matrixStageHistory_le_noPivotReducedHistory` — point-row dominance constructs scalar no-pivot LU with `ρₙ≤2`, transfers that bound to every active block-Schur stage, and invokes the global (13.22) aggregation. |
 | (13.24) | SPD ‖L‖₂‖U‖₂ ≤ √m(1+m√κ₂)‖A‖₂ | VERIFIED | `higham13_eq13_24_algorithm13_3_spd` (from Lemmas 13.9–13.10, no factor-norm premises) |
 | (13.25) | SPD backward error cₙ√m u‖A‖₂(2+m√κ₂) | VERIFIED (as Thm-13.6 corollary) | `higham13_eq13_25_spd_firstOrder_from_eq13_24`, `higham13_eq13_25_algorithm13_3_spd`, family forms in `BlockLUSPDFamilies` — conditional on the Theorem 13.6 conclusion, exactly the source's "It follows from Theorem 13.6 …" |
 | (13.26) | Problem 13.4 partition | VERIFIED | `higham13_eq13_26_partition` |
@@ -98,7 +96,7 @@ overcount; (13.26) is the last, appearing in Problem 13.4).
 | 13.1 (Varah) | Block tridiagonal ‖Li,i−1‖, ‖Uii‖ bounds, col & row | VERIFIED | `higham13_problem13_1_column_step_bounds`, `..._row_step_bounds` |
 | 13.2 | Diag dom ⇏ block diag dom and vice versa (1-,∞-norms) | VERIFIED | `higham13_problem13_2_*` counterexample defs + `higham13_problem13_2_incomparability` |
 | 13.3 | Symmetric + positive diag + block-row-BDD ⇒ posdef? (No) | VERIFIED | `higham13_problem13_3_counterexample` (+ symmetric/positive-diag/row-BDD/singular/not-SPD witnesses) |
-| 13.4 | ‖A21A11⁻¹‖ ≤ nρₙκ(A); κ(S) ≤ ρₙκ(A) | PARTIAL | `higham13_problem13_4_A21A11inv_rectOpNorm2Le_from_*`, `..._schur_kappa_bound_from_operator_certificates`; unconditional posdef `S⁻¹` route `..._Sinv_finiteOpNorm2Le_from_source_posDef_block_inverse`. Growth-factor (ρₙ) operator inputs kept explicit — see honest-strength note |
+| 13.4 | ‖A21A11⁻¹‖ ≤ nρₙκ(A); κ(S) ≤ ρₙκ(A) | VERIFIED | Local source-growth forms `higham13_problem13_4_maxEntry_bounds_from_source_growthFactorEntry_exact_kappa`, `..._L21_eq13_22_premise_from_source_growthFactorEntry_exact_kappa`; recursive active-suffix assembly and factor endpoint `higham13_problem13_4_eq13_22_exists_blockLUFact_succ_of_pivot_right_inverse`. The source's data-dependent `ρₙ` remains the defined growth factor, not an assumed target bound. |
 | 13.5 | Point-col-BDD ⇒ ‖A21A11⁻¹‖₁ ≤ 1 | VERIFIED | `higham13_problem13_5_oneNormRect_bound` (+ tail/diag chain) |
 | 13.6 | Ax=b and AX=B backward error under Thm 13.5 conditions | VERIFIED | `higham13_problem13_6_single_rhs_backward_error_*`, `..._multiple_rhs_residual_*` (identities + first-order) |
 | 13.7 | det(X)=det(A)det(D−CA⁻¹B); commuting-block corollary | VERIFIED | `higham13_problem13_7_det_schur`, `..._det_commuting_AC` |
@@ -107,16 +105,15 @@ overcount; (13.26) is the last, appearing in Problem 13.4).
 
 ## Honest-strength notes
 
-- **(13.22)/(13.23) and Problem 13.4 are PARTIAL, not overstated.** The book
-  derives the "Arbitrary" and "point-row" rows through the growth factor ρₙ for
-  GE without pivoting (Problem 13.4), which is a data-dependent quantity the
-  source itself carries as a parameter. The Lean proves the exact algebraic
-  combination (`nρₙ²κ` × `ρₙ‖A‖` = `nρₙ³κ‖A‖`; ρₙ≤2 ⟹ `8nκ‖A‖`) and derives the
-  multiplier/Schur operator bounds *conditionally* on the growth-factor
-  certificates (e.g. `normA21 ≤ ρₙ·normA`, `normA11inv ≤ normAinv`). The
-  crux `‖A11⁻¹‖ ≤ ‖A⁻¹‖`/condition-number tie-in is kept as a visible
-  hypothesis, and the docstrings say so explicitly. This is faithful PARTIAL
-  coverage, not a hidden closure.
+- **(13.22)/(13.23) and Problem 13.4 are source-closed.** The arbitrary route
+  constructs the full recursive block-factor witness from Algorithm 13.3 pivot
+  right inverses and the actual finite matrix-stage growth object. For the
+  point-row row, `BlockLUPointRowGrowthSourceClosure` constructs exact scalar
+  no-pivot LU factors and proves the scalar equation-(9.5) history has
+  `ρₙ ≤ 2`. `BlockLUScalarGrowthBridge` proves that every active block Schur
+  entry at stage `k` is the scalar reduced entry after `k*r` pivots, so the
+  complete block history is dominated by the scalar history. The final
+  `8nκ(A)‖A‖` theorem has no growth, factor-norm, or target-scale hypothesis.
 - **Theorem 13.6 exceeds the book.** The source omits the proof; the Lean
   supplies both an assumption-level derivation and an Implementation-1 endpoint
   whose (13.14)/(13.15) perturbations are *derived* from the conventional
@@ -132,25 +129,27 @@ overcount; (13.26) is the last, appearing in Problem 13.4).
 - Table 13.1 (empirical summary table) is formalized as product/backward-error
   families per row in `BlockLUTable13_1Families.lean` and
   `higham13_table13_1_*` (col-BDD, point-col-BDD, block-row-BDD, point-row,
-  arbitrary, SPD); the SPD/BDD rows are unconditional, the ρₙ rows inherit the
-  (13.22)/(13.23) PARTIAL status.
+  arbitrary, SPD); the arbitrary row uses the actual matrix-stage `ρₙ`, and the
+  point-row row inherits the source-closed (13.23) specialization.
 
 ## Axiom spot-check
 
-`#print axioms` (via `lake env lean` against the cached oleans; throwaway
-deleted) on eight load-bearing declarations — Theorem 13.7 column & CLM
-endpoints, Theorem 13.8 column endpoint, (13.24) SPD, Theorem 13.2 iff,
-Theorem 13.5 from-computation, Lemma 13.9 SPD endpoint, Problem 13.9 Woodbury —
-each reports only `[propext, Classical.choice, Quot.sound]`. No `sorry`, no
-custom axioms.
+`lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLUScalarGrowthBridge` passes
+(3053 jobs). `#print axioms` on the new active-entry identity, whole-history
+domination, point-row block-history `ρ≤2`, and final source-facing (13.23)
+factor witness each reports only `[propext, Classical.choice, Quot.sound]`.
+The earlier eight load-bearing checks (Theorems 13.2, 13.5, 13.7–13.8,
+(13.24), Lemma 13.9, and Problem 13.9) report the same. No `sorry` or custom
+axioms.
 
 ## Cross-chapter role
 
 - **Consumes:** Chapter 9 Gaussian elimination — the growth factor ρₙ for GE
   without pivoting, and the point-diagonal-dominance growth bound ρₙ≤2
   (Theorem 9.9), which underpin (13.21)–(13.23) and the Table 13.1 point/block
-  rows (`BlockLUPointRowGrowthSourceClosure` mirrors the Thm-9.9 argument
-  block-wise). The conventional level-3 BLAS and triangular-solve error models
+  rows (`BlockLUPointRowGrowthSourceClosure` supplies the scalar Thm-9.9 route;
+  `BlockLUScalarGrowthBridge` transfers its history to every Algorithm-13.3
+  block stage). The conventional level-3 BLAS and triangular-solve error models
   behind (13.4)/(13.5)/(13.14)/(13.15) reuse the inner-product / substitution
   roundoff machinery (Chapters 3, 8) via `FPModel`/`gamma`; the SPD lemmas
   reuse Cholesky existence (Chapter 10). Chapter 12 (iterative refinement) is
@@ -165,15 +164,8 @@ custom axioms.
 
 ## Selected-scope gate
 
-**PASS.** All ten primary labels VERIFIED; central definitions VERIFIED; the
-important numbered equations VERIFIED except the two honestly-PARTIAL
-growth-factor rows (13.22)/(13.23) (with Problem 13.4), which faithfully carry
-the source's ρₙ parametrization and are disclosed as conditional. No MISSING or
-BLOCKED primary rows.
-
-Open (non-blocking) rows carried as honest PARTIAL:
-- (13.22) arbitrary-matrix `nρₙ³κ(A)‖A‖` product bound — growth-factor operator
-  inputs are explicit certificates.
-- (13.23) point-row `8nκ(A)‖A‖` bound — same conditional inputs.
-- Problem 13.4 `‖A21A11⁻¹‖ ≤ nρₙκ(A)` / `κ(S) ≤ ρₙκ(A)` — algebraic assembly
-  proved; `‖A11⁻¹‖≤‖A⁻¹‖` growth tie-in kept as hypothesis.
+**PASS.** All ten primary labels, all numbered equations (13.1)–(13.26), the
+central definitions, and Problems 13.1–13.9 are VERIFIED. In particular,
+(13.22) constructs the arbitrary-matrix `nρₙ³κ(A)‖A‖` factor witness, and
+(13.23) constructs the point-row `8nκ(A)‖A‖` witness after deriving `ρₙ≤2`
+from the actual scalar no-pivot history. No MISSING, PARTIAL, or BLOCKED rows.

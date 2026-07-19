@@ -2,7 +2,7 @@
 
 ## Audit Basis
 
-- Audit date: 2026-07-15
+- Audit date: 2026-07-18 (fresh strict producer audit)
 - Source: `References/1.9780898718027.ch14.pdf`
 - Book: Nicholas J. Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed. (SIAM, 2002)
 - Chapter: 14, "Matrix Inversion", printed pp. 259-285
@@ -18,7 +18,8 @@ There are **78 source rows**:
 
 - 68 intentionally selected mathematical rows.
 - 10 policy exclusions: five empirical/figure/table rows, two expository/literature rows, and three optional Problems.
-- Final selected-scope result: 66 selected rows are `PASS` and two are `SOURCE-ERROR/CORRECTED`.
+- Final selected-scope result: 57 selected rows are `PASS`, nine are `PARTIAL`,
+  and two are `SOURCE-ERROR/CORRECTED`; strict gate `FAIL`.
 - The ten excluded rows remain explicitly accounted for below.
 
 ## Inventory
@@ -68,18 +69,18 @@ There are **78 source rows**:
 | 41 | Equation (14.25a) | p. 274 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14GaussJordanSourceClosure.lean`: source-active matrix recurrence |
 | 42 | Equation (14.25b) | p. 274 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14GaussJordanSourceClosure.lean`: local `gamma_3` matrix error |
 | 43 | Equation (14.26) | p. 274 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14GaussJordanSourceClosure.lean`: local RHS recurrence and error |
-| 44 | Equation (14.27) | p. 274 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14GaussJordanSourceClosure.lean`: literal unpropagated matrix sum |
+| 44 | Equation (14.27) | p. 274 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PARTIAL | The literal accumulated matrix identity is proved conditionally on the rounded trace finishing at `I`; `Ch14GJEOperationalBridge.lean` shows current pivot success does not produce that finalization. |
 | 45 | Equation (14.28) | p. 274 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14GaussJordanSourceClosure.lean`: literal unpropagated RHS sum |
-| 46 | Equation (14.29) | p. 275 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14GJESourceAccumulationBridge.lean`: `ch14ext_gjeSourceTrace_stage2_forward_error_14_29` |
-| 47 | Equations (14.30a-c) | p. 275 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14GJETheorem145SourceClosure.lean`: `ch14ext_gjeSourceTrace_stage2_backward_error_14_30abc`, printed family endpoint |
-| 48 | Fixed-matrix addendum to (14.30) | p. 275 | FORMALIZE_DEPENDENCY / DEP-REQUIRED | PASS | `Ch14GJETheorem145SourceClosure.lean`: `ch14ext_gjeSourceTrace_14_30abc_printed_vanishing_family_endpoint` |
+| 46 | Equation (14.29) | p. 275 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PARTIAL | `ch14ext_gjeSourceTrace_stage2_forward_error_14_29` is conditional on the unproduced final-identity field. |
+| 47 | Equations (14.30a-c) | p. 275 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PARTIAL | `ch14ext_gjeSourceTrace_stage2_backward_error_14_30abc` is conditional on the unproduced final-identity field. |
+| 48 | Fixed-matrix addendum to (14.30) | p. 275 | FORMALIZE_DEPENDENCY / DEP-REQUIRED | PARTIAL | The printed family endpoint additionally consumes unconstructed uniform regularity fields. |
 | 49 | Table 14.6 | p. 276 | SKIP / SKIP-EMPIRICAL | EXCLUDED | GJE backward-error output for the example family; machine path is incomplete. |
-| 50 | Theorem 14.5 | p. 276 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS | `Ch14GJETheorem145SourceClosure.lean`: `ch14ext_gjeSourceTrace_theorem14_5_printed_vanishing_family_endpoint` |
-| 51 | Equation (14.31) | p. 276 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14GJETheorem145SourceClosure.lean`: `ch14ext_gjeSourceTrace_residual_14_31_printed_vanishing_family_endpoint` |
-| 52 | Equation (14.32) | p. 276 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14GJETheorem145SourceClosure.lean`: `ch14ext_gjeSourceTrace_forward_14_32_printed_vanishing_family_endpoint`; `Xabs`, `Pabs`, and `Q` boundedness are derived |
+| 50 | Theorem 14.5 | p. 276 | FORMALIZE_CORE / CORE-NAMED-RESULT | PARTIAL | `Ch14GJETheorem145SourceClosure.lean` proves a conditional family endpoint. `Ch14GJEOperationalBridge.lean` constructs output/inverse/solve witnesses, but its checked 2-by-2 counterexample shows that the current rounded executor does not imply the assumed `final_matrix = I` field. |
+| 51 | Equation (14.31) | p. 276 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PARTIAL | The exact printed endpoint is proved only after an unconstructed `Ch14GJETheorem145SourceFamily` is supplied. |
+| 52 | Equation (14.32) | p. 276 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PARTIAL | `Xabs`, `Pabs`, and `Q` boundedness are derived from family fields, but the family and its finalization/regularity fields are not produced by the rounded executor. |
 | 53 | Equation (14.33) | p. 276 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14GaussJordanQConstruction.lean`: exact residual decomposition, used by the source-active Theorem 14.5 closure |
-| 54 | Corollary 14.6 | p. 277 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS | `Ch14Corollary146SourceClosure.lean`: `ch14ext_cor146Source_vanishing_family_endpoint`, masked Algorithm 14.4 trace, exact `8 n^3` residual and `8 n^(5/2)` relative-forward constants with explicit `O(u^2)` remainders |
-| 55 | Corollary 14.7 | p. 277 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS | `Ch14Corollary147SourceClosure.lean`: `ch14ext_cor147Source_vanishing_family_endpoint`, exact `32 n^2` residual and `4 n^3 (kappa_inf(A)+3)` relative-forward constants with explicit `O(u^2)` remainders |
+| 54 | Corollary 14.6 | p. 277 | FORMALIZE_CORE / CORE-NAMED-RESULT | PARTIAL | `Ch14Corollary146SourceClosure.lean` proves the exact constants conditionally on an unconstructed source-run family with finalization, scaled-inverse, solve, and uniform-inverse fields. |
+| 55 | Corollary 14.7 | p. 277 | FORMALIZE_CORE / CORE-NAMED-RESULT | PARTIAL | `Ch14Corollary147SourceClosure.lean` proves the exact constants conditionally on an unconstructed source-run family with finalization and uniform stage/inverse regularity fields. |
 | 56 | Parallel inversion methods | p. 278 | DEFER / DEFER-MISSING-PRECISE-STATEMENT | EXCLUDED | Literature survey, complexity discussion, and qualitative stability observations; future benchmark material. |
 | 57 | Hadamard condition number `psi(A)` | p. 279 | FORMALIZE_CORE / CORE-PRECISE-PROSE | SOURCE-ERROR/CORRECTED | Printed `det(D)/det(A)` can be negative. `MatrixInversion.lean` uses `abs(det A)`; `Ch14SourceCorrections.lean` proves the `[-1]` witness. |
 | 58 | Equation (14.34) | p. 279 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `MatrixInversion.lean`: signed and absolute GEPP determinant products |

@@ -1,6 +1,6 @@
 -- Analysis/Monotonicity.lean
 --
--- Local monotonicity foundations for Higham Chapter 2, §2.9.
+-- Monotonicity foundations for Higham Chapter 2, §2.9.
 
 import Mathlib.Tactic.Linarith
 import LeanFpAnalysis.FP.Analysis.FloatingPointArithmetic
@@ -13,14 +13,13 @@ noncomputable section
 namespace FloatingPointFormat
 
 /-!
-# Local monotonicity of correctly rounded adjacent rounding
+# Monotonicity of correctly rounded finite rounding
 
 Higham Chapter 2, §2.9 notes monotonicity as a useful property of correctly
-rounded arithmetic.  This file proves the local adjacent-bracket foundation for
-the source-facing round-to-even selector: on a fixed ordered adjacent bracket,
-moving the exact real input to the right cannot move the rounded output to the
-left.  This is not full IEEE operation monotonicity; it is the finite-format
-rounding-policy lemma that such a theorem can reuse.
+rounded arithmetic.  The local theorems below treat individual adjacent,
+underflow, and overflow selectors.  The final theorem proves monotonicity of
+the total finite round-to-even selector directly from its global nearest-finite
+specification, thereby covering every within-branch and cross-branch case.
 -/
 
 theorem nearestAdjacentRoundToEven_eq_left_or_right
@@ -900,6 +899,53 @@ theorem finiteRoundToMode_monotone_on_overflow_branch
   · exact fmt.finiteRoundTowardZero_monotone_on_overflow_branch hx hy hxy
   · exact fmt.finiteRoundTowardPositive_monotone_on_overflow_branch hx hy hxy
   · exact fmt.finiteRoundTowardNegative_monotone_on_overflow_branch hx hy hxy
+
+/-- The total finite round-to-even selector is globally monotone.
+
+The proof uses only the selector's nearest-finite specification.  If ordered
+inputs `x < y` rounded in reverse order to finite values `a > b`, nearestness
+would put `x` on or to the right of the midpoint of `a,b` and `y` on or to its
+left, a contradiction.  Because this argument does not unfold the selector's
+dispatch, it includes underflow-to-normal, normal-to-overflow, and direct
+underflow-to-overflow crossings as well as all same-branch cases. -/
+theorem finiteRoundToEven_monotone
+    (fmt : FloatingPointFormat) :
+    Monotone fmt.finiteRoundToEven := by
+  intro x y hxy
+  by_cases hEq : x = y
+  · subst y
+    exact le_rfl
+  have hxy_lt : x < y := lt_of_le_of_ne hxy hEq
+  let a := fmt.finiteRoundToEven x
+  let b := fmt.finiteRoundToEven y
+  have hxround : fmt.nearestRoundingToFinite x a := by
+    simpa [a] using fmt.finiteRoundToEven_nearestRoundingToFinite x
+  have hyround : fmt.nearestRoundingToFinite y b := by
+    simpa [b] using fmt.finiteRoundToEven_nearestRoundingToFinite y
+  by_contra hnot
+  have hba : b < a := lt_of_not_ge hnot
+  have hxnear : |x - a| ≤ |x - b| :=
+    nearestRoundingIn_minimal hxround (nearestRoundingIn_mem hyround)
+  have hynear : |y - b| ≤ |y - a| :=
+    nearestRoundingIn_minimal hyround (nearestRoundingIn_mem hxround)
+  have hxsq : (x - a) ^ 2 ≤ (x - b) ^ 2 := (sq_le_sq).2 hxnear
+  have hysq : (y - b) ^ 2 ≤ (y - a) ^ 2 := (sq_le_sq).2 hynear
+  have hprod : 0 < (a - b) * (y - x) :=
+    mul_pos (sub_pos.mpr hba) (sub_pos.mpr hxy_lt)
+  nlinarith
+
+/-- Correctly rounded products preserve the ordering needed in Higham's
+discriminant example: if the exact products satisfy `a*c ≤ b*b`, their two
+rounded values have a nonnegative difference. -/
+theorem finiteRoundToEvenOp_mul_self_sub_mul_nonneg
+    {fmt : FloatingPointFormat} {a b c : ℝ}
+    (hprod : a * c ≤ b * b) :
+    0 ≤
+      fmt.finiteRoundToEvenOp BasicOp.mul b b -
+        fmt.finiteRoundToEvenOp BasicOp.mul a c := by
+  apply sub_nonneg.mpr
+  simpa [finiteRoundToEvenOp, BasicOp.exact] using
+    fmt.finiteRoundToEven_monotone hprod
 
 end FloatingPointFormat
 

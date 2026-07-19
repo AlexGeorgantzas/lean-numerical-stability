@@ -8,7 +8,8 @@ the normalized eigenproblem, first-order conditioning algebra, the structured
 two-variable example, the stopping estimate, and all mathematical parts of
 Problem 25.1 are formalized.
 
-The chapter gate is **PASS**. Equation (25.11) is derived directly from the
+The chapter gate is **FAIL** under the strict precise-prose audit. Equation
+(25.11) is derived directly from the
 source's smoothness and nonsingularity assumptions. The source-facing theorem
 instantiates Mathlib's implicit-function theorem, produces local data and
 solution neighborhoods with existence and uniqueness, proves that the
@@ -23,10 +24,25 @@ Rheinboldt's under-specified max/min quotient and the cited local
 residual/error constants are likewise deferred rather than converted into
 invented propositions.
 
+The p. 462-463 linear-system specialization is now closed by exact
+Newton/refinement, constant-Jacobian, actual-residual, derivative-product, and
+condition-number theorems. The source sentence `F=b-Ax, J=A` has a sign typo;
+the implementation uses the correct derivative `J=-A`. The remaining selected
+gap is the precise p. 463 eigenproblem prose following (25.10): bordered
+Jacobian, Lipschitz coefficient, simple-eigenvalue nonsingularity, and the
+actual rounded residual `ψ` producer.
+
 ## Lean deliverables
 
 - `LeanFpAnalysis/FP/Algorithms/Nonlinear/Higham25.lean`
   - exact and rounded Newton-step models for (25.1)-(25.2)
+  - `higham25_linearSystem_newtonCorrection_iff_refinementCorrection`,
+    `higham25_linearSystemJacobian_constant`,
+    `higham25_linearSystemJacobian_lipschitz_zero`, and
+    `higham25_linearSystem_actualResidual_bridge_ch12` for the linear-system
+    special case
+  - `higham25_linearSystemDataDerivativeFrob_eq` and
+    `higham25_linearSystem_condition_frobenius` for the exact condition identity
   - exact scalar predicates for (25.3)-(25.7)
   - `higham25EigenResidual` and the zero/eigenpair equivalence (25.10)
   - literal feasible sets/supremums, exact linearized sSup, local and global
@@ -72,8 +88,11 @@ and 25.2; Appendix solution 25.1 spans printed pp. 569-570 / Appendix PDFs 43-44
 
 ## Open selected rows
 
-None. The former (25.11) bottleneck is recorded as closed in
-`docs/chapter25/CHAPTER25_BOTTLENECK_LEDGER.md`.
+- The p. 463 eigenproblem specialization after (25.10): bordered Jacobian,
+  printed Lipschitz coefficient, simple-eigenvalue nonsingularity, and actual
+  residual-evaluation `ψ` producer.
+
+The former (25.11) bottleneck and the linear-system specialization are closed.
 
 ## Deferred source rows
 

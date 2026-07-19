@@ -483,6 +483,486 @@ private theorem noPivotReducedHistory_maxEntryNorm_castFin {n n' : ℕ}
   subst n
   rfl
 
+/-- On the active suffix, Algorithm 13.3's matrix stage is the input block
+minus the contributions of the already completed block columns.  This is the
+block-prefix invariant needed to compare a whole matrix-stage history with the
+scalar equation (9.5) history at block-boundary steps. -/
+private theorem higham13_algorithm13_3_schurStageMatrixBlock_eq_input_sub_prefix
+    {m r : ℕ}
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ) :
+    ∀ k : ℕ, ∀ i j : Fin m, k ≤ i.val → k ≤ j.val →
+      higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j =
+        A i j -
+          ((Finset.univ : Finset (Fin m)).filter (fun q => q.val < k)).sum
+            (fun q =>
+              higham13_algorithm13_3_lowerFromMatrixStages A pivotInv i q *
+                higham13_algorithm13_3_upperFromMatrixStages A pivotInv q j) := by
+  classical
+  intro k
+  induction k with
+  | zero =>
+      intro i j _hi _hj
+      simp [higham13_algorithm13_3_schurStageMatrixBlock,
+        higham13_algorithm13_3_schurStageBlock]
+  | succ k ih =>
+      intro i j hi hj
+      have hk : k < m := by omega
+      let kk : Fin m := ⟨k, hk⟩
+      have hki : k ≤ i.val := by omega
+      have hkj : k ≤ j.val := by omega
+      have hupdate :
+          higham13_algorithm13_3_schurStageMatrixBlock A pivotInv (k + 1) i j =
+            higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j -
+              higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i kk *
+                pivotInv k *
+                higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k kk j := by
+        simpa [kk, higham13_algorithm13_3_schurStageMatrixBlock] using
+          (higham13_algorithm13_3_schurStageBlock_exact_update A pivotInv
+            k hk i j hi hj)
+      have hL :
+          higham13_algorithm13_3_lowerFromMatrixStages A pivotInv i kk =
+            higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i kk *
+              pivotInv k := by
+        have hkki : kk.val < i.val := by
+          dsimp [kk]
+          omega
+        simpa [kk] using
+          (higham13_algorithm13_3_lowerFromMatrixStages_eq_of_lt A pivotInv
+            (i := i) (j := kk) hkki)
+      have hU :
+          higham13_algorithm13_3_upperFromMatrixStages A pivotInv kk j =
+            higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k kk j := by
+        have hkkj : kk.val ≤ j.val := by
+          dsimp [kk]
+          omega
+        simpa [kk] using
+          (higham13_algorithm13_3_upperFromMatrixStages_eq_of_le A pivotInv
+            (i := kk) (j := j) hkkj)
+      have hfilter :
+          (Finset.univ : Finset (Fin m)).filter (fun q => q.val < k + 1) =
+            insert kk
+              ((Finset.univ : Finset (Fin m)).filter (fun q => q.val < k)) := by
+        ext q
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and,
+          Finset.mem_insert]
+        constructor
+        · intro hq
+          by_cases hqk : q.val = k
+          · left
+            exact Fin.ext hqk
+          · right
+            omega
+        · rintro (hq | hq)
+          · subst q
+            simp [kk]
+          · omega
+      have hnotmem :
+          kk ∉ (Finset.univ : Finset (Fin m)).filter (fun q => q.val < k) := by
+        simp [kk]
+      rw [hupdate, ih i j hki hkj, hfilter, Finset.sum_insert hnotmem, hL, hU]
+      abel
+
+/-- Under the exact Algorithm 13.3 block factorization, an active stage block
+is the product of the trailing block rows and columns of the assembled factors.
+Unlike the final-upper bridge, this identity retains every active Schur entry. -/
+private theorem higham13_algorithm13_3_schurStageMatrixBlock_eq_factor_tail_sum
+    {m r : ℕ}
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hBlock : BlockLUFactSpec m r A
+      (higham13_algorithm13_3_lowerFromMatrixStages A pivotInv)
+      (higham13_algorithm13_3_upperFromMatrixStages A pivotInv))
+    (k : ℕ) (i j : Fin m) (hi : k ≤ i.val) (hj : k ≤ j.val) :
+    higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j =
+      ((Finset.univ : Finset (Fin m)).filter (fun q => k ≤ q.val)).sum
+        (fun q =>
+          higham13_algorithm13_3_lowerFromMatrixStages A pivotInv i q *
+            higham13_algorithm13_3_upperFromMatrixStages A pivotInv q j) := by
+  classical
+  let f : Fin m → Matrix (Fin r) (Fin r) ℝ := fun q =>
+    higham13_algorithm13_3_lowerFromMatrixStages A pivotInv i q *
+      higham13_algorithm13_3_upperFromMatrixStages A pivotInv q j
+  have hprod : (Finset.univ : Finset (Fin m)).sum f = A i j := by
+    ext s t
+    simpa [f, Matrix.mul_apply, Matrix.sum_apply, Finset.sum_apply] using
+      hBlock.product_eq i j s t
+  have hsuffix :
+      (Finset.univ : Finset (Fin m)).filter (fun q => ¬ q.val < k) =
+        (Finset.univ : Finset (Fin m)).filter (fun q => k ≤ q.val) := by
+    ext q
+    simp
+  have hsplit :
+      ((Finset.univ : Finset (Fin m)).filter (fun q => q.val < k)).sum f +
+          ((Finset.univ : Finset (Fin m)).filter (fun q => k ≤ q.val)).sum f =
+        A i j := by
+    rw [← hsuffix, Finset.sum_filter_add_sum_filter_not, hprod]
+  rw [higham13_algorithm13_3_schurStageMatrixBlock_eq_input_sub_prefix
+    A pivotInv k i j hi hj]
+  change A i j -
+      ((Finset.univ : Finset (Fin m)).filter (fun q => q.val < k)).sum f = _
+  rw [← hsplit]
+  abel
+
+private theorem fin_tail_filter_matrix_sum_eq {m r k : ℕ} (hk : k ≤ m)
+    (F : Fin m → Matrix (Fin r) (Fin r) ℝ) :
+    ((Finset.univ : Finset (Fin m)).filter (fun q => k ≤ q.val)).sum F =
+      ∑ t : Fin (m - k), F ⟨k + t.val, by omega⟩ := by
+  classical
+  refine (Finset.sum_bij'
+    (i := fun (t : Fin (m - k))
+      (_ : t ∈ (Finset.univ : Finset (Fin (m - k)))) =>
+        (⟨k + t.val, by omega⟩ : Fin m))
+    (j := fun (q : Fin m)
+      (hq : q ∈ (Finset.univ.filter (fun q => k ≤ q.val))) =>
+        (⟨q.val - k, by
+          have hkq := (Finset.mem_filter.mp hq).2
+          omega⟩ : Fin (m - k)))
+    ?_ ?_ ?_ ?_ ?_).symm
+  · intro t _ht
+    exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, by simp⟩
+  · intro q _hq
+    exact Finset.mem_univ _
+  · intro t _ht
+    apply Fin.ext
+    simp
+  · intro q hq
+    apply Fin.ext
+    have hkq := (Finset.mem_filter.mp hq).2
+    change k + (q.val - k) = q.val
+    omega
+  · intro t _ht
+    rfl
+
+/-- Every active scalar entry of the matrix-product Algorithm 13.3 block stage
+is the equation (9.5) scalar no-pivot reduced entry after the corresponding
+whole-block prefix.  This is the source-strength history bridge needed for the
+point-row specialization of equation (13.23). -/
+theorem higham13_algorithm13_3_active_entry_eq_noPivotReducedStage
+    {m r : ℕ} (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (Ls Us : Matrix (Fin (m * r)) (Fin (m * r)) ℝ)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k))
+    (hScalar : LUFactSpec (m * r) (blockMatrixFlatFin A) Ls Us)
+    (hdet : Matrix.det (blockMatrixFlatFin A) ≠ 0)
+    (k : ℕ) (hk : k ≤ m) (i j : Fin m)
+    (hi : k ≤ i.val) (hj : k ≤ j.val) (a b : Fin r) :
+    higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j a b =
+      higham9_5_rectGEReducedEntry (blockMatrixFlatFin A) Ls Us (k * r)
+        (finProdFinEquiv (i, a)) (finProdFinEquiv (j, b)) := by
+  classical
+  have hklt : k < m := by omega
+  let tailBlocks := m - k
+  let cut := k * r
+  let suffix := tailBlocks * r
+  have hTailBlocks : 0 < tailBlocks := by
+    simpa [tailBlocks] using Nat.sub_pos_of_lt hklt
+  have hSuffix : 0 < suffix := Nat.mul_pos hTailBlocks hr
+  have hsplit : k + tailBlocks = m := by
+    exact Nat.add_sub_of_le hk
+  have hdim : cut + suffix = m * r := by
+    calc
+      cut + suffix = k * r + tailBlocks * r := rfl
+      _ = (k + tailBlocks) * r := by rw [Nat.add_mul]
+      _ = m * r := by rw [hsplit]
+  let Lb := higham13_algorithm13_3_lowerFromMatrixStages A pivotInv
+  let Ub := higham13_algorithm13_3_upperFromMatrixStages A pivotInv
+  have hBlock : BlockLUFactSpec m r A Lb Ub := by
+    simpa [Lb, Ub] using
+      higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivot_right_inverse
+        A pivotInv hPivotRight
+  let Ac : Matrix (Fin (cut + suffix)) (Fin (cut + suffix)) ℝ :=
+    fun p q => blockMatrixFlatFin A (Fin.cast hdim p) (Fin.cast hdim q)
+  let Lbc : Matrix (Fin (cut + suffix)) (Fin (cut + suffix)) ℝ :=
+    fun p q => blockMatrixFlatFin Lb (Fin.cast hdim p) (Fin.cast hdim q)
+  let Ubc : Matrix (Fin (cut + suffix)) (Fin (cut + suffix)) ℝ :=
+    fun p q => blockMatrixFlatFin Ub (Fin.cast hdim p) (Fin.cast hdim q)
+  let Lsc : Matrix (Fin (cut + suffix)) (Fin (cut + suffix)) ℝ :=
+    fun p q => Ls (Fin.cast hdim p) (Fin.cast hdim q)
+  let Usc : Matrix (Fin (cut + suffix)) (Fin (cut + suffix)) ℝ :=
+    fun p q => Us (Fin.cast hdim p) (Fin.cast hdim q)
+  have hScalarC : LUFactSpec (cut + suffix) Ac Lsc Usc := by
+    simpa [Ac, Lsc, Usc] using LUFactSpec.castFin hdim hScalar
+  have hBlockProduct : ∀ p q : Fin (m * r),
+      blockMatrixFlatFin A p q =
+        ∑ x : Fin (m * r),
+          blockMatrixFlatFin Lb p x * blockMatrixFlatFin Ub x q :=
+    hBlock.blockMatrixFlatFin_product_eq
+  have hBlockProductC : ∀ p q : Fin (cut + suffix),
+      Ac p q = ∑ x, Lbc p x * Ubc x q := by
+    simpa [Ac, Lbc, Ubc] using factor_product_castFin hdim hBlockProduct
+  let bi : Fin m := ⟨k, hklt⟩
+  have hLbc12 : ∀ p : Fin cut, ∀ q : Fin suffix,
+      Lbc (leadFin p) (tailFin q) = 0 := by
+    intro p q
+    apply blockMatrixFlatFin_lower_leading_trailing_zero hr hBlock bi
+    · simpa [cut, bi, leadFin, Nat.mul_comm] using p.isLt
+    · simp [cut, bi, tailFin, Nat.mul_comm]
+  have hUbc21 : ∀ p : Fin suffix, ∀ q : Fin cut,
+      Ubc (tailFin p) (leadFin q) = 0 := by
+    intro p q
+    apply blockMatrixFlatFin_upper_trailing_leading_zero hr hBlock bi
+    · simp [cut, bi, tailFin, Nat.mul_comm]
+    · simpa [cut, bi, leadFin, Nat.mul_comm] using q.isLt
+  have hdetC : Matrix.det Ac ≠ 0 := by
+    simpa [Ac] using det_castFin_ne_zero hdim hdet
+  have hLeadDet : Matrix.det (leadingBlock Ac) ≠ 0 :=
+    leadingBlock_det_ne_zero_of_lu_det_ne_zero hScalarC hdetC
+  letI : Invertible (Matrix.det (leadingBlock Ac)) := invertibleOfNonzero hLeadDet
+  letI : Invertible (leadingBlock Ac) :=
+    Matrix.invertibleOfDetInvertible (leadingBlock Ac)
+  have hTailProducts : trailingBlock Lbc * trailingBlock Ubc =
+      trailingBlock Lsc * trailingBlock Usc := by
+    rw [← factor_schur_eq_trailing_product hBlockProductC hLbc12 hUbc21]
+    rw [← lu_schur_eq_trailing_product hScalarC]
+  let it : Fin tailBlocks := ⟨i.val - k, by omega⟩
+  let jt : Fin tailBlocks := ⟨j.val - k, by omega⟩
+  let ia : Fin suffix := finProdFinEquiv (it, a)
+  let ja : Fin suffix := finProdFinEquiv (jt, b)
+  have hiMul : k * r + (i.val - k) * r = i.val * r := by
+    rw [← Nat.add_mul, Nat.add_sub_of_le hi]
+  have hjMul : k * r + (j.val - k) * r = j.val * r := by
+    rw [← Nat.add_mul, Nat.add_sub_of_le hj]
+  have hiMul' : k * r + r * (i.val - k) = r * i.val := by
+    calc
+      k * r + r * (i.val - k) = k * r + (i.val - k) * r := by
+        rw [Nat.mul_comm r (i.val - k)]
+      _ = i.val * r := hiMul
+      _ = r * i.val := Nat.mul_comm _ _
+  have hjMul' : k * r + r * (j.val - k) = r * j.val := by
+    calc
+      k * r + r * (j.val - k) = k * r + (j.val - k) * r := by
+        rw [Nat.mul_comm r (j.val - k)]
+      _ = j.val * r := hjMul
+      _ = r * j.val := Nat.mul_comm _ _
+  have hia : Fin.cast hdim (tailFin ia) = finProdFinEquiv (i, a) := by
+    apply Fin.ext
+    change cut + (a.val + r * (i.val - k)) = a.val + r * i.val
+    dsimp [cut]
+    omega
+  have hja : Fin.cast hdim (tailFin ja) = finProdFinEquiv (j, b) := by
+    apply Fin.ext
+    change cut + (b.val + r * (j.val - k)) = b.val + r * j.val
+    dsimp [cut]
+    omega
+  let ambient : Fin tailBlocks → Fin m := fun q => ⟨k + q.val, by omega⟩
+  have hstageMatrix :=
+    higham13_algorithm13_3_schurStageMatrixBlock_eq_factor_tail_sum
+      A pivotInv hBlock k i j hi hj
+  rw [fin_tail_filter_matrix_sum_eq hk] at hstageMatrix
+  have hstageEntry :
+      higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j a b =
+        ∑ q : Fin tailBlocks, ∑ l : Fin r,
+          Lb i (ambient q) a l * Ub (ambient q) j l b := by
+    have h := congrFun (congrFun hstageMatrix a) b
+    simpa [Lb, Ub, ambient, Matrix.sum_apply, Finset.sum_apply,
+      Matrix.mul_apply] using h
+  have hblockTailEntry :
+      (trailingBlock Lbc * trailingBlock Ubc) ia ja =
+        ∑ q : Fin tailBlocks, ∑ l : Fin r,
+          Lb i (ambient q) a l * Ub (ambient q) j l b := by
+    rw [Matrix.mul_apply]
+    calc
+      (∑ x : Fin suffix,
+          trailingBlock Lbc ia x * trailingBlock Ubc x ja) =
+          ∑ ql : Fin tailBlocks × Fin r,
+            Lb i (ambient ql.1) a ql.2 *
+              Ub (ambient ql.1) j ql.2 b := by
+        rw [Fintype.sum_equiv finProdFinEquiv]
+        intro ql
+        have hq : Fin.cast hdim (tailFin (finProdFinEquiv ql)) =
+            finProdFinEquiv (ambient ql.1, ql.2) := by
+          apply Fin.ext
+          change cut + (ql.2.val + r * ql.1.val) =
+            ql.2.val + r * (k + ql.1.val)
+          dsimp [cut]
+          rw [Nat.mul_add, Nat.mul_comm r k]
+          omega
+        simp only [trailingBlock, Lbc, Ubc]
+        rw [hia, hja, hq]
+        rw [blockMatrixFlatFin_apply, blockMatrixFlatFin_apply]
+      _ = ∑ q : Fin tailBlocks, ∑ l : Fin r,
+          Lb i (ambient q) a l * Ub (ambient q) j l b := by
+        rw [Fintype.sum_prod_type]
+  have hscalarTailEntry :
+      (trailingBlock Lsc * trailingBlock Usc) ia ja =
+        higham9_5_rectGEReducedEntry (blockMatrixFlatFin A) Ls Us cut
+          (finProdFinEquiv (i, a)) (finProdFinEquiv (j, b)) := by
+    have hReducedC := lu_reduced_tail_eq_trailing_product hScalarC ia ja
+    have hcastReduced := higham9_5_rectGEReducedEntry_castFin
+      hdim (blockMatrixFlatFin A) Ls Us cut (tailFin ia) (tailFin ja)
+    calc
+      (trailingBlock Lsc * trailingBlock Usc) ia ja =
+          higham9_5_rectGEReducedEntry Ac Lsc Usc cut (tailFin ia) (tailFin ja) :=
+        hReducedC.symm
+      _ = higham9_5_rectGEReducedEntry (blockMatrixFlatFin A) Ls Us cut
+          (Fin.cast hdim (tailFin ia)) (Fin.cast hdim (tailFin ja)) := by
+        simpa [Ac, Lsc, Usc] using hcastReduced
+      _ = higham9_5_rectGEReducedEntry (blockMatrixFlatFin A) Ls Us cut
+          (finProdFinEquiv (i, a)) (finProdFinEquiv (j, b)) := by
+        rw [hia, hja]
+  calc
+    higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j a b =
+        (trailingBlock Lbc * trailingBlock Ubc) ia ja := by
+      rw [hstageEntry, hblockTailEntry]
+    _ = (trailingBlock Lsc * trailingBlock Usc) ia ja := by rw [hTailProducts]
+    _ = higham9_5_rectGEReducedEntry (blockMatrixFlatFin A) Ls Us cut
+        (finProdFinEquiv (i, a)) (finProdFinEquiv (j, b)) := hscalarTailEntry
+    _ = higham9_5_rectGEReducedEntry (blockMatrixFlatFin A) Ls Us (k * r)
+        (finProdFinEquiv (i, a)) (finProdFinEquiv (j, b)) := by rfl
+
+/-- The complete finite Algorithm 13.3 matrix-stage history is max-entry
+dominated by the actual scalar no-pivot equation (9.5) history. -/
+theorem higham13_algorithm13_3_matrixStageHistory_le_noPivotReducedHistory
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (Ls Us : Matrix (Fin (m * r)) (Fin (m * r)) ℝ)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k))
+    (hScalar : LUFactSpec (m * r) (blockMatrixFlatFin A) Ls Us)
+    (hdet : Matrix.det (blockMatrixFlatFin A) ≠ 0) :
+    maxEntryNorm (Nat.mul_pos hm hr)
+        (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+          (Nat.mul_pos hm hr) hm hr A pivotInv) ≤
+      maxEntryNorm (Nat.mul_pos hm hr)
+        (higham13_noPivotReducedHistoryGrowthMatrix
+          (Nat.mul_pos hm hr) (blockMatrixFlatFin A) Ls Us) := by
+  apply higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_le_of_active_bound
+  intro k i j hk hi hj
+  rw [← maxEntryNormRect_eq_maxEntryNorm hr]
+  apply maxEntryNormRect_le_of_entry_abs_le hr hr
+  intro a b
+  rw [higham13_algorithm13_3_active_entry_eq_noPivotReducedStage
+    hr A pivotInv Ls Us hPivotRight hScalar hdet k hk i j hi hj a b]
+  have hklt : k < m := by omega
+  have hstep : k * r < m * r := Nat.mul_lt_mul_of_pos_right hklt hr
+  let step : Fin (m * r) := ⟨k * r, hstep⟩
+  exact le_trans
+    (entry_le_maxEntryNorm (Nat.mul_pos hm hr)
+      (fun p q : Fin (m * r) =>
+        higham9_5_rectGEReducedEntry (blockMatrixFlatFin A) Ls Us
+          step.val p q)
+      (finProdFinEquiv (i, a)) (finProdFinEquiv (j, b)))
+    (by
+      simpa [step] using
+        higham13_noPivotReducedHistoryGrowthMatrix_contains_stage
+          (Nat.mul_pos hm hr) (blockMatrixFlatFin A) Ls Us step)
+
+/-- Point-row diagonal dominance transfers the scalar no-pivot `ρ ≤ 2` bound
+to the complete matrix-product Algorithm 13.3 stage history. -/
+theorem higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_pointRow
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (Ls Us : Matrix (Fin (m * r)) (Fin (m * r)) ℝ)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k))
+    (hScalar : LUFactSpec (m * r) (blockMatrixFlatFin A) Ls Us)
+    (hRow : IsRowDiagDominant (m * r) (blockMatrixFlatFin A))
+    (hdet : Matrix.det (blockMatrixFlatFin A) ≠ 0)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A)) :
+    growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+        (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+          (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤ 2 := by
+  let Gblock := higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+    (Nat.mul_pos hm hr) hm hr A pivotInv
+  let Gscalar := higham13_noPivotReducedHistoryGrowthMatrix
+    (Nat.mul_pos hm hr) (blockMatrixFlatFin A) Ls Us
+  have hGrowth : maxEntryNorm (Nat.mul_pos hm hr) Gblock ≤
+      maxEntryNorm (Nat.mul_pos hm hr) Gscalar := by
+    simpa [Gblock, Gscalar] using
+      higham13_algorithm13_3_matrixStageHistory_le_noPivotReducedHistory
+        hm hr A pivotInv Ls Us hPivotRight hScalar hdet
+  have hCompare :
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A) Gblock hApos ≤
+        growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A) Gscalar hApos := by
+    exact growthFactorEntry_le_of_growth_le_of_base_le
+      (Nat.mul_pos hm hr) (Nat.mul_pos hm hr)
+      (blockMatrixFlatFin A) Gblock (blockMatrixFlatFin A) Gscalar
+      hApos hApos hGrowth (le_refl _)
+  exact le_trans hCompare (by
+    simpa [Gscalar] using
+      higham13_eq13_23_pointRow_historyGrowthFactorEntry_le_two
+        (Nat.mul_pos hm hr) hRow hdet hScalar hApos)
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23), source closure.
+
+For a point-row diagonally dominant matrix on which exact block Algorithm 13.3
+succeeds, the scalar no-pivot producer supplies the `ρ ≤ 2` history bound; the
+scalar/block active-stage bridge above transfers it to the global recursive
+Problem 13.4 aggregation.  No growth, factor-norm, or target-scale premise is
+required from the caller. -/
+theorem higham13_problem13_4_eq13_23_exists_blockLUFact_succ_of_pointRow
+    {m r n : ℕ} (hr : 0 < r)
+    (A : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) →
+      Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < (m + 1) + 1,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k))
+    (hRow : IsRowDiagDominant (((m + 1) + 1) * r) (blockMatrixFlatFin A))
+    (hdet : Matrix.det (blockMatrixFirstSplitFlat A :
+      Matrix (Fin (r + (m + 1) * r)) (Fin (r + (m + 1) * r)) ℝ) ≠ 0)
+    (hFulln : (((((m + 1) + 1) * r : ℕ) : ℝ) ≤ (n : ℝ))) :
+    ∃ L U : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) →
+        Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec ((m + 1) + 1) r A L U ∧
+        blockMaxNorm (Nat.succ_pos (m + 1)) hr L *
+            blockMaxNorm (Nat.succ_pos (m + 1)) hr U ≤
+          8 * (n : ℝ) *
+            (maxEntryNormRect (Nat.add_pos_left hr ((m + 1) * r))
+                (Nat.add_pos_left hr ((m + 1) * r))
+                (blockMatrixFirstSplitFlat A) *
+              maxEntryNormRect (Nat.add_pos_left hr ((m + 1) * r))
+                (Nat.add_pos_left hr ((m + 1) * r))
+                (nonsingInv (r + (m + 1) * r)
+                  (blockMatrixFirstSplitFlat A))) *
+            maxEntryNormRect (Nat.add_pos_left hr ((m + 1) * r))
+              (Nat.add_pos_left hr ((m + 1) * r))
+              (blockMatrixFirstSplitFlat A) := by
+  let hm : 0 < (m + 1) + 1 := Nat.succ_pos (m + 1)
+  let hFlat : 0 < ((m + 1) + 1) * r := Nat.mul_pos hm hr
+  have hdetFlat : Matrix.det (blockMatrixFlatFin A) ≠ 0 := by
+    rw [← det_blockMatrixFirstSplitFlat_eq_blockMatrixFlatFin A]
+    exact hdet
+  rcases higham13_eq13_23_pointRow_exists_exactNoPivotLU_growthFactor_le_two
+      hFlat (blockMatrixFlatFin A) hRow hdetFlat with
+    ⟨Ls, Us, hScalar, hApos, _hScalarRho⟩
+  have hRhoFlat :
+      growthFactorEntry hFlat (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hFlat hm hr A pivotInv) hApos ≤ 2 := by
+    simpa [hm, hFlat] using
+      higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_pointRow
+        hm hr A pivotInv Ls Us hPivotRight hScalar hRow hdetFlat hApos
+  let hSplit : 0 < r + (m + 1) * r := Nat.add_pos_left hr ((m + 1) * r)
+  let hSplitPos : 0 < maxEntryNorm hSplit (blockMatrixFirstSplitFlat A) :=
+    maxEntryNorm_pos_of_det_ne_zero hSplit (blockMatrixFirstSplitFlat A) hdet
+  have hRhoSplit :
+      growthFactorEntry hSplit (blockMatrixFirstSplitFlat A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hSplit hm hr A pivotInv) hSplitPos ≤ 2 := by
+    rw [growthFactorEntry_blockMatrixFirstSplitFlat_eq_blockMatrixFlatFin
+      (Nat.succ_pos m) hr A pivotInv hSplitPos hApos]
+    exact hRhoFlat
+  simpa [hm, hSplit, hSplitPos] using
+    higham13_problem13_4_eq13_23_exists_blockLUFact_succ_of_pivot_right_inverse
+      hr A pivotInv hPivotRight hdet hFulln hRhoSplit
+
 /-- Every entry of the upper factor in a uniform exact block LU certificate
 occurs at a block-boundary stage of the scalar equation (9.5) reduced
 history.  Thus an independently supplied scalar no-pivot LU certificate for

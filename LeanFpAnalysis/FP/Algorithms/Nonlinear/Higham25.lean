@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: QED
 -/
 import LeanFpAnalysis.FP.Analysis.Rounding
+import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
+import LeanFpAnalysis.FP.Algorithms.IterativeRefinement
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.Calculus.ImplicitContDiff
 import Mathlib.Analysis.Normed.Operator.NNNorm
@@ -95,6 +97,130 @@ def higham25Eq25_7 (beta invJStarNorm initialError : ℝ) : Prop :=
   beta * invJStarNorm * initialError ≤ (1 : ℝ) / 8
 
 end NewtonStep
+
+section LinearSystemSpecialization
+
+variable {n : ℕ}
+
+/-- The exact residual used by iterative refinement, viewed as the nonlinear
+function `F(x) = b - A x` from Higham Section 25.3. -/
+noncomputable def higham25LinearSystemResidual
+    (A : Fin n → Fin n → ℝ) (b x : Fin n → ℝ) : Fin n → ℝ :=
+  fun i ↦ b i - ∑ j : Fin n, A i j * x j
+
+/-- A Newton correction for `F(x) = b - A x` is exactly the usual iterative
+refinement correction `A d = b - A x`.  The Jacobian of the displayed `F` is
+`-A`; the minus sign cancels the minus sign in the Newton equation. -/
+theorem higham25_linearSystem_newtonCorrection_iff_refinementCorrection
+    (A : Fin n → Fin n → ℝ) (b x d : Fin n → ℝ) :
+    higham25NewtonEquation (fun i j ↦ -A i j)
+        (higham25LinearSystemResidual A b x) d ↔
+      ∀ i : Fin n,
+        ∑ j : Fin n, A i j * d j = higham25LinearSystemResidual A b x i := by
+  unfold higham25NewtonEquation higham25LinearSystemResidual
+  constructor
+  · intro h i
+    have hi := congrArg Neg.neg (h i)
+    simpa only [neg_mul, Finset.sum_neg_distrib, neg_neg] using hi
+  · intro h i
+    have hi := congrArg Neg.neg (h i)
+    simpa only [neg_mul, Finset.sum_neg_distrib, neg_neg] using hi
+
+/-- The Jacobian of the linear residual is constant. -/
+noncomputable def higham25LinearSystemJacobian
+    (A : Fin n → Fin n → ℝ) (_x : Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j ↦ -A i j
+
+theorem higham25_linearSystemJacobian_constant
+    (A : Fin n → Fin n → ℝ) (x y : Fin n → ℝ) :
+    higham25LinearSystemJacobian A x = higham25LinearSystemJacobian A y := by
+  rfl
+
+/-- Consequently the Lipschitz constant in Section 25.3 can be chosen to be
+zero (shown here in the Frobenius/Euclidean norm pair). -/
+theorem higham25_linearSystemJacobian_lipschitz_zero
+    (A : Fin n → Fin n → ℝ) (x y : Fin n → ℝ) :
+    frobNorm (fun i j ↦
+        higham25LinearSystemJacobian A x i j -
+          higham25LinearSystemJacobian A y i j) ≤
+      0 * vecNorm2 (fun i ↦ x i - y i) := by
+  have hz : frobNorm (fun i j ↦
+      higham25LinearSystemJacobian A x i j -
+        higham25LinearSystemJacobian A y i j) = 0 := by
+    rw [frobNorm_eq_zero_iff]
+    intro i j
+    simp [higham25LinearSystemJacobian]
+  simp [hz]
+
+/-- Genuine Chapter 12 bridge for the Section 25.3 specialization: the actual
+rounded residual evaluator satisfies the conventional `gamma_(n+1)` bound for
+the nonlinear residual `F(x) = b - A x`. -/
+theorem higham25_linearSystem_actualResidual_bridge_ch12
+    (fp : FPModel) (A : Fin n → Fin n → ℝ) (x b : Fin n → ℝ)
+    (hn : gammaValid fp n) (hn1 : gammaValid fp (n + 1)) :
+    ∀ i : Fin n,
+      |fl_residual fp n A x b i - higham25LinearSystemResidual A b x i| ≤
+        gamma fp (n + 1) *
+          (|b i| + ∑ j : Fin n, |A i j| * |x j|) := by
+  simpa [higham25LinearSystemResidual] using
+    conventional_residual_error fp n A x b hn hn1
+
+/-- Frobenius norm of the derivative product
+`A⁻¹ [x₁ I  x₂ I  ⋯  xₙ I]` in the linear-system specialization of
+equation (25.11), written as its literal three-index sum. -/
+noncomputable def higham25LinearSystemDataDerivativeFrob
+    (Ainv : Fin n → Fin n → ℝ) (x : Fin n → ℝ) : ℝ :=
+  Real.sqrt (∑ i : Fin n, ∑ p : Fin n, ∑ q : Fin n,
+    (Ainv i p * x q) ^ 2)
+
+/-- The block derivative product has Frobenius norm
+`||A⁻¹||_F ||x||₂`, which is the calculation printed below (25.11). -/
+theorem higham25_linearSystemDataDerivativeFrob_eq
+    (Ainv : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
+    higham25LinearSystemDataDerivativeFrob Ainv x =
+      frobNorm Ainv * vecNorm2 x := by
+  have hfactor :
+      (∑ i : Fin n, ∑ p : Fin n, ∑ q : Fin n,
+          (Ainv i p * x q) ^ 2) =
+        frobNormSq Ainv * vecNorm2Sq x := by
+    simp_rw [mul_pow]
+    calc
+      (∑ i : Fin n, ∑ p : Fin n, ∑ q : Fin n,
+          Ainv i p ^ 2 * x q ^ 2) =
+          ∑ i : Fin n, ∑ p : Fin n,
+            Ainv i p ^ 2 * (∑ q : Fin n, x q ^ 2) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              apply Finset.sum_congr rfl
+              intro p _
+              rw [Finset.mul_sum]
+      _ = ∑ i : Fin n,
+            (∑ p : Fin n, Ainv i p ^ 2) *
+              (∑ q : Fin n, x q ^ 2) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              rw [Finset.sum_mul]
+      _ = (∑ i : Fin n, ∑ p : Fin n, Ainv i p ^ 2) *
+            (∑ q : Fin n, x q ^ 2) := by
+              rw [Finset.sum_mul]
+      _ = frobNormSq Ainv * vecNorm2Sq x := by
+              rfl
+  unfold higham25LinearSystemDataDerivativeFrob
+  rw [hfactor, Real.sqrt_mul (frobNormSq_nonneg Ainv)]
+  simp [frobNorm_eq_sqrt_frobNormSq, vecNorm2]
+
+/-- Therefore the relative condition number in (25.11), with data
+`d = vec(A)` and Frobenius norms, is exactly `||A⁻¹||_F ||A||_F`. -/
+theorem higham25_linearSystem_condition_frobenius
+    (A Ainv : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (hx : vecNorm2 x ≠ 0) :
+    higham25LinearSystemDataDerivativeFrob Ainv x *
+        frobNorm A / vecNorm2 x =
+      frobNorm Ainv * frobNorm A := by
+  rw [higham25_linearSystemDataDerivativeFrob_eq]
+  field_simp [hx]
+
+end LinearSystemSpecialization
 
 section Eigenproblem
 

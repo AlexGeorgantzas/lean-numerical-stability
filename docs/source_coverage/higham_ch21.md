@@ -10,11 +10,14 @@
 - Core primary labels: Theorem 21.1, Lemma 21.2, Theorem 21.3, and
   Theorem 21.4.
 - Core numbered equations: (21.1)-(21.11).
-- Current aggregate status: **CORE VERIFIED (selected-scope gate PASS)**.
-  All 21 selected Chapter 21 mathematical and algorithmic rows are verified,
-  including both branches of Theorem 21.4 and both methods in (21.11). The
-  corrected-MGS recurrence is represented; its qualitative stability sentence
-  is classified separately below.
+- Current aggregate status: **PASS** under the strict source-strength audit.
+  All 21 selected rows are verified. Theorem 21.4 now has source-facing
+  Householder and retained-trace Givens producers that derive computed
+  triangular nonbreakdown, and the Givens producer also derives replay
+  smallness, from full row rank, gamma validity, and the printed-form smallness
+  condition. Both methods in (21.11) and the corrected-MGS recurrence are
+  represented; its qualitative stability sentence is classified separately
+  below.
 
 Status language in this ledger:
 
@@ -32,7 +35,7 @@ Status language in this ledger:
 | Theorem 21.1 | **VERIFIED** | `higham21_theorem21_1_relative_asymptotic_bound_of_gram_det_ne_zero`, `higham21_theorem21_1_finite_error_relative_bound`, and the first-order majorant theorems in `Higham21Perturbation.lean`; rank preservation in `Higham21RankStability.lean`; Holder attainability in `Higham21Attainability.lean` | The arbitrary absolute-norm coefficient in (21.6) is represented, and the remainder is proved `O(t^2)` through an explicit fixed-radius bound on perturbed Gram inverses. The caller-facing finite theorem derives perturbed full row rank from `||Aplus DeltaA||_2 < 1`. The local inverse bound used to make the quadratic constant finite is explicit rather than hidden in big-O notation. |
 | Lemma 21.2 | **VERIFIED** | `undetLemma21_2SinglePerturbation`, `higham21_lemma21_2_rowwise_backward_error_bound_of_pseudoinverse_products`, `higham21_lemma21_2_single_perturbation_frob_bound`, and `higham21_lemma21_2_single_perturbation_op_bound` | Covers the two perturbed equations, the printed `3 * max` pseudoinverse-product smallness condition, the zero/nonzero construction of one perturbation, minimum-norm recovery, and the printed `p = 2, F` square-sum norm bounds. Row-wise bounds used by Theorem 21.4 are also present. |
 | Theorem 21.3 | **VERIFIED (documented source correction)** | `higham21_theorem21_3_nonzero_normwise_backward_error_formula`, `higham21_theorem21_3_normwise_backward_error_formula`, and `Higham21Theorem21_3Attainment.lean` | The printed unconditional `min` is not valid in the zero-system boundary case. Lean proves the mathematically correct Sun-Sun infimum formula, including `eta_F(0) = theta ||b||_2`, the nonzero branch with `sigma_m(A(I-yy+))`, the lower bound for every feasible perturbation, and an epsilon-attaining upper construction. Exact attainment is proved under the sharp nonzero-pairing condition, and closure attainment is unconditional. A verified scalar example witnesses nonattainment. |
-| Theorem 21.4 | **VERIFIED** | `higham21_theorem21_4_computed_qhat_rowwise_backward_stable_gamma`, `higham21_theorem21_4_givens_actual_rounded_rowwise_backward_stable`, and `higham21_theorem21_4_givens_actual_rounded_omegaR_le` | The Householder theorem applies to the actual rounded panel, triangular solve, and `Q_hat` action. The Givens theorem reconstructs one concrete retained rotation trace from the staged QR tasks and uses that same trace for the exact QR factor and the actual rounded transpose replay; it needs no supplied replay/application certificate or target-equivalence bridge. Both branches return the source row-wise perturbation statement, and the Givens branch also closes the printed `omegaR` criterion. `Higham21QMethodRoundedGammaIndex` realizes the source `gamma-tilde` coefficient. The repository domain explicitly carries full row rank and computed top-block nonbreakdown. |
+| Theorem 21.4 | **VERIFIED** | `Higham21QMethodFullRowRankComputedQRDomain.of_source_smallness`, `higham21_theorem21_4_computed_qhat_rowwise_backward_stable_source`, `Higham21GivensActualReplayEtaQ_lt_one_of_operational_gammaValid`, `higham21_givens_actual_topBlock_nonbreakdown_of_source_smallness`, and `higham21_theorem21_4_givens_actual_rounded_rowwise_backward_stable_source` in `Higham21Theorem214SourceClosure.lean` | For Householder QR, the source wrapper combines the Chapter 19 rowwise QR perturbation with the Chapter 21 right inverse and rank-stability bridge to prove the computed top block nonsingular, then supplies the formerly hidden `lsTheorem20_4ComputedQRNonbreakdown` field. For retained-trace Givens QR, one operational gamma-validity index supplies the local kernels and solve, bounds the complete replay recurrence below one, and the same perturbation/rank argument derives every top diagonal entry nonzero. Thus neither `hdiag` nor `hQsmall` remains a caller-supplied execution conclusion. |
 
 ## Equation Ledger
 
@@ -85,6 +88,11 @@ of the right-inverse and Moore-Penrose certificates.
 
 - The actual rounded Q-method output has a Theorem 21.4 row-wise backward
   stability certificate for both Householder and retained-trace Givens QR.
+  `Higham21QMethodFullRowRankComputedQRDomain.of_source_smallness` derives the
+  complete Householder domain, and
+  `higham21_theorem21_4_givens_actual_rounded_rowwise_backward_stable_source`
+  derives the Givens nonbreakdown and replay-smallness guards rather than
+  accepting them from the caller.
   Equation (21.11) is closed by the dimension-at-least-two theorem together
   with the square scalar theorem in `Higham21Equation21_11Scalar.lean`.
 - The SNE analysis reaches the actual two-triangular-solve normal vector and
@@ -127,7 +135,12 @@ rotation trace from the staged QR tasks, uses the same exact rotation product
 for the QR certificate and actual rounded transpose replay, proves the
 equation-(21.10) action estimate, and derives both the row-wise theorem and its
 `omegaR` bound. No supplied replay/application certificate or target-equivalence
-bridge is used.
+bridge is used. `Higham21Theorem214SourceClosure.lean` closes the remaining
+source bridge: `Higham21GivensActualReplayEtaQ_lt_one_of_operational_gammaValid`
+bounds the actual replay recurrence below one, while
+`higham21_givens_actual_topBlock_nonbreakdown_of_source_smallness` derives the
+computed diagonal nonbreakdown from full row rank and the QR perturbation
+smallness. The source-facing row-wise endpoint consumes both derived facts.
 
 ## Module Map
 
@@ -174,6 +187,9 @@ bridge is used.
 - `Higham21Givens.lean`, `Higham21GivensRounded.lean`, and
   `Higham21GivensClosure.lean`: Givens Q-method construction, rounded replay,
   actual retained-trace action estimate, Theorem 21.4, and `omegaR` closure.
+- `Higham21Theorem214SourceClosure.lean`: source-level Householder/Givens
+  Theorem 21.4 producers, including derived top-block nonbreakdown and actual
+  retained-trace replay smallness.
 - `Higham21MGS.lean` and `Higham21MGSRounded.lean`: the stable corrected
   MGS recurrence and its rounded transfer interfaces.
 - `Higham21RowwiseMeasure.lean`: the printed row-wise backward-error measure.
@@ -182,9 +198,10 @@ bridge is used.
 
 ## Honest Scope Exclusions
 
-- The Givens branch of Theorem 21.4 and the square scalar Q-method case of
-  (21.11), together with the SNE equation-(21.11) endpoint, are selected source
-  rows and are verified, not exclusions.
+- The Householder and Givens branches of Theorem 21.4 are selected verified
+  rows, not exclusions. Their source-facing producers derive the operational
+  nonbreakdown/replay guards; the square scalar Q-method case and SNE
+  equation-(21.11) endpoint are likewise selected verified rows.
 - The qualitative warning that SNE has no Theorem-21.4 analogue and no general
   small-residual guarantee is `SKIP-QUALITATIVE`. Consistently, no stronger SNE
   backward-stability or residual theorem is claimed.
@@ -211,6 +228,9 @@ bridge is used.
   relative endpoint and explicit `fp.u²` corollary: **PASS**.
 - Compile `Higham21GivensClosure.lean` and its actual retained-trace action,
   row-wise, and `omegaR` theorems through the umbrella: **PASS**.
+- Focused build of `Higham21Theorem214SourceClosure.lean`, including the
+  Householder and Givens source producers and their derived guards:
+  **PASS** (3,084 jobs).
 - Compile `Higham21Equation21_11Scalar.lean`,
   `Higham21SNEConditionTransfer.lean`, `Higham21SNEQRMajorant.lean`, and
   `Higham21SNERemainderBounds.lean` through the umbrella: **PASS**.
@@ -224,4 +244,5 @@ bridge is used.
 - `#print axioms` for
   `higham21_sne_householder_actual_output_source_relative_unit_roundoff_sq`:
   **PASS**, with only `[propext, Classical.choice, Quot.sound]`.
-- The Chapter 21 selected-scope gate is **PASS**.
+- The Chapter 21 selected-scope gate is **PASS**: all 21 selected rows are
+  source-closed, with six intentional exclusions recorded separately.

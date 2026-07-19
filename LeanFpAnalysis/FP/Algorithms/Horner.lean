@@ -398,6 +398,122 @@ theorem hornerHigherDerivativeOutputs_apply
       polyDescHigherDeriv alpha i.val coeffsDesc := by
   rfl
 
+/-! ### All-order identification and rounded Algorithm 5.2
+
+The function-valued state above stores Taylor coefficients, rather than the
+derivatives themselves.  The next recurrence is independent: it is obtained
+by differentiating `x * q(x) + a` and therefore carries the factor `i + 1`
+in derivative order `i + 1`.  Relating the two recurrences identifies every
+order, including the orders `i ≥ 2` that are not covered by the earlier
+value/first-derivative specialization. -/
+
+/-- One differentiated Horner update on the *scaled* formal derivatives.
+If `deriv i` is `q^(i)(alpha)`, the successor branch is the product-rule
+identity `(x*q)^(i+1) = x*q^(i+1) + (i+1)*q^i`. -/
+noncomputable def hornerFormalDerivativeFunctionStep
+    (alpha a : ℝ) (deriv : ℕ → ℝ) : ℕ → ℝ
+  | 0 => alpha * deriv 0 + a
+  | i + 1 => alpha * deriv (i + 1) + (i + 1 : ℝ) * deriv i
+
+/-- All formal derivatives produced by repeatedly differentiating the Horner
+recurrence.  This is the scaled, source-level interpretation of Algorithm 5.2. -/
+noncomputable def hornerFormalDerivativeFunctionDesc
+    (alpha : ℝ) : List ℝ → ℕ → ℝ
+  | [] => fun _ => 0
+  | a :: rest =>
+      rest.foldl
+        (fun deriv b => hornerFormalDerivativeFunctionStep alpha b deriv)
+        (fun
+          | 0 => a
+          | _ + 1 => 0)
+
+lemma hornerFormalDerivativeFunctionStep_factorial_taylor
+    (alpha a : ℝ) (coeff : ℕ → ℝ) (i : ℕ) :
+    hornerFormalDerivativeFunctionStep alpha a
+        (fun j => (Nat.factorial j : ℝ) * coeff j) i =
+      (Nat.factorial i : ℝ) *
+        hornerTaylorFunctionStep alpha a coeff i := by
+  cases i with
+  | zero =>
+      simp [hornerFormalDerivativeFunctionStep, hornerTaylorFunctionStep]
+  | succ i =>
+      simp only [hornerFormalDerivativeFunctionStep,
+        hornerTaylorFunctionStep, Nat.factorial_succ, Nat.cast_mul,
+        Nat.cast_add, Nat.cast_one]
+      ring
+
+lemma hornerFormalDerivativeFunctionFold_factorial_taylor
+    (alpha : ℝ) :
+    ∀ (rest : List ℝ) (coeff : ℕ → ℝ) (i : ℕ),
+      rest.foldl
+          (fun deriv b => hornerFormalDerivativeFunctionStep alpha b deriv)
+          (fun j => (Nat.factorial j : ℝ) * coeff j) i =
+        (Nat.factorial i : ℝ) *
+          (rest.foldl
+            (fun c b => hornerTaylorFunctionStep alpha b c) coeff) i := by
+  intro rest
+  induction rest with
+  | nil =>
+      intro coeff i
+      rfl
+  | cons a rest ih =>
+      intro coeff i
+      simp only [List.foldl]
+      rw [show
+        hornerFormalDerivativeFunctionStep alpha a
+            (fun j => (Nat.factorial j : ℝ) * coeff j) =
+          fun j => (Nat.factorial j : ℝ) *
+            hornerTaylorFunctionStep alpha a coeff j by
+              funext j
+              exact hornerFormalDerivativeFunctionStep_factorial_taylor
+                alpha a coeff j]
+      exact ih (hornerTaylorFunctionStep alpha a coeff) i
+
+/-- End-to-end all-order identification for Algorithm 5.2: after the final
+factorial scaling, its Taylor-state output is exactly the formal derivative
+obtained by differentiating every Horner update.  There are no order-specific
+premises. -/
+theorem polyDescHigherDeriv_eq_hornerFormalDerivativeFunctionDesc
+    (alpha : ℝ) (i : ℕ) (coeffsDesc : List ℝ) :
+    polyDescHigherDeriv alpha i coeffsDesc =
+      hornerFormalDerivativeFunctionDesc alpha coeffsDesc i := by
+  cases coeffsDesc with
+  | nil =>
+      simp [polyDescHigherDeriv, hornerTaylorFunctionDesc,
+        hornerFormalDerivativeFunctionDesc]
+  | cons a rest =>
+      let coeff : ℕ → ℝ := fun
+        | 0 => a
+        | _ + 1 => 0
+      have h :=
+        hornerFormalDerivativeFunctionFold_factorial_taylor
+          alpha rest coeff i
+      have hinit :
+          (fun j => (Nat.factorial j : ℝ) * coeff j) = coeff := by
+        funext j
+        cases j <;> simp [coeff]
+      rw [hinit] at h
+      simpa [polyDescHigherDeriv, hornerTaylorFunctionDesc,
+        hornerFormalDerivativeFunctionDesc, coeff] using h.symm
+
+/-- The independent all-order formal recurrence agrees with the existing
+displayed polynomial at order zero. -/
+theorem hornerFormalDerivativeFunctionDesc_zero_eq_polyDesc
+    (alpha : ℝ) (coeffsDesc : List ℝ) :
+    hornerFormalDerivativeFunctionDesc alpha coeffsDesc 0 =
+      polyDesc alpha coeffsDesc := by
+  rw [← polyDescHigherDeriv_eq_hornerFormalDerivativeFunctionDesc]
+  exact polyDescHigherDeriv_zero_eq_polyDesc alpha coeffsDesc
+
+/-- The independent all-order formal recurrence agrees with the existing
+displayed formal derivative at order one. -/
+theorem hornerFormalDerivativeFunctionDesc_one_eq_polyDescDeriv
+    (alpha : ℝ) (coeffsDesc : List ℝ) :
+    hornerFormalDerivativeFunctionDesc alpha coeffsDesc 1 =
+      polyDescDeriv alpha coeffsDesc := by
+  rw [← polyDescHigherDeriv_eq_hornerFormalDerivativeFunctionDesc]
+  exact polyDescHigherDeriv_one_eq_polyDescDeriv alpha coeffsDesc
+
 /-- Coefficients of the synthetic-division quotient generated while Horner's
 method evaluates the current accumulator `y` against the remaining descending
 coefficient list. -/
@@ -4326,6 +4442,206 @@ theorem fl_hornerDerivativeStep_forward_local_error_bounds
   · simpa [fl_hornerDerivativeStep]
       using fl_hornerStep_forward_local_error_bound fp x state.2 state.1
 
+/-! ### Rounded all-order Algorithm 5.2 -/
+
+/-- One rounded all-order Taylor-coefficient update from Algorithm 5.2.
+All successor entries read the old state, matching the source's descending
+inner loop.  Each entry performs the same rounded multiply-then-add sequence
+as `fl_hornerStep`. -/
+noncomputable def fl_hornerTaylorFunctionStep
+    (fp : FPModel) (alpha a : ℝ) (coeff : ℕ → ℝ) : ℕ → ℝ
+  | 0 => fl_hornerStep fp alpha (coeff 0) a
+  | i + 1 => fl_hornerStep fp alpha (coeff (i + 1)) (coeff i)
+
+/-- The actual rounded all-order Horner/Taylor state before factorial scaling. -/
+noncomputable def fl_hornerTaylorFunctionDesc
+    (fp : FPModel) (alpha : ℝ) : List ℝ → ℕ → ℝ
+  | [] => fun _ => 0
+  | a :: rest =>
+      rest.foldl
+        (fun coeff b => fl_hornerTaylorFunctionStep fp alpha b coeff)
+        (fun
+          | 0 => a
+          | _ + 1 => 0)
+
+/-- One forward-error budget update for the rounded all-order state.  It
+contains both primitive-operation residuals and propagation of the incoming
+state errors. -/
+noncomputable def fl_hornerTaylorFunctionForwardBudgetStep
+    (fp : FPModel) (alpha a : ℝ)
+    (coeffHat budget : ℕ → ℝ) : ℕ → ℝ
+  | 0 =>
+      fp.u * |fp.fl_mul alpha (coeffHat 0) + a| +
+        fp.u * |alpha * coeffHat 0| + |alpha| * budget 0
+  | i + 1 =>
+      fp.u * |fp.fl_mul alpha (coeffHat (i + 1)) + coeffHat i| +
+        fp.u * |alpha * coeffHat (i + 1)| +
+          |alpha| * budget (i + 1) + budget i
+
+/-- Propagate the all-order budget through a remaining descending coefficient
+list, alongside the actual rounded state that determines each local residual. -/
+noncomputable def fl_hornerTaylorFunctionForwardBudgetFold
+    (fp : FPModel) (alpha : ℝ) :
+    List ℝ → (ℕ → ℝ) → (ℕ → ℝ) → ℕ → ℝ
+  | [], _coeffHat, budget => budget
+  | a :: rest, coeffHat, budget =>
+      fl_hornerTaylorFunctionForwardBudgetFold fp alpha rest
+        (fl_hornerTaylorFunctionStep fp alpha a coeffHat)
+        (fl_hornerTaylorFunctionForwardBudgetStep fp alpha a coeffHat budget)
+
+/-- End-to-end all-order forward budget, initialized at the exactly represented
+leading coefficient and zero higher-order entries. -/
+noncomputable def fl_hornerTaylorFunctionForwardBudgetDesc
+    (fp : FPModel) (alpha : ℝ) : List ℝ → ℕ → ℝ
+  | [] => fun _ => 0
+  | a :: rest =>
+      fl_hornerTaylorFunctionForwardBudgetFold fp alpha rest
+        (fun
+          | 0 => a
+          | _ + 1 => 0)
+        (fun _ => 0)
+
+lemma fl_hornerTaylorFunctionStep_error_bound
+    (fp : FPModel) (alpha a : ℝ)
+    (coeffHat coeff budget : ℕ → ℝ)
+    (hbound : ∀ i, |coeffHat i - coeff i| ≤ budget i) :
+    ∀ i,
+      |fl_hornerTaylorFunctionStep fp alpha a coeffHat i -
+          hornerTaylorFunctionStep alpha a coeff i| ≤
+        fl_hornerTaylorFunctionForwardBudgetStep
+          fp alpha a coeffHat budget i := by
+  intro i
+  cases i with
+  | zero =>
+      have hmul :=
+        fl_mul_error_of_operand_error fp alpha
+          (coeffHat 0) (coeff 0) (budget 0) (hbound 0)
+      have hadd :=
+        fl_add_error_of_operand_errors fp
+          (fp.fl_mul alpha (coeffHat 0)) (alpha * coeff 0)
+          a a
+          (fp.u * |alpha * coeffHat 0| + |alpha| * budget 0) 0
+          hmul (by simp)
+      simpa [fl_hornerTaylorFunctionStep, hornerTaylorFunctionStep,
+        fl_hornerStep, fl_hornerTaylorFunctionForwardBudgetStep,
+        add_assoc] using hadd
+  | succ i =>
+      have hmul :=
+        fl_mul_error_of_operand_error fp alpha
+          (coeffHat (i + 1)) (coeff (i + 1)) (budget (i + 1))
+          (hbound (i + 1))
+      have hadd :=
+        fl_add_error_of_operand_errors fp
+          (fp.fl_mul alpha (coeffHat (i + 1))) (alpha * coeff (i + 1))
+          (coeffHat i) (coeff i)
+          (fp.u * |alpha * coeffHat (i + 1)| +
+            |alpha| * budget (i + 1))
+          (budget i) hmul (hbound i)
+      simpa [fl_hornerTaylorFunctionStep, hornerTaylorFunctionStep,
+        fl_hornerStep, fl_hornerTaylorFunctionForwardBudgetStep,
+        add_assoc] using hadd
+
+lemma fl_hornerTaylorFunctionFold_error_bound
+    (fp : FPModel) (alpha : ℝ) :
+    ∀ (rest : List ℝ)
+      (coeffHat coeff budget : ℕ → ℝ),
+      (∀ i, |coeffHat i - coeff i| ≤ budget i) →
+      ∀ i,
+        |(rest.foldl
+              (fun c b => fl_hornerTaylorFunctionStep fp alpha b c)
+              coeffHat) i -
+            (rest.foldl
+              (fun c b => hornerTaylorFunctionStep alpha b c)
+              coeff) i| ≤
+          fl_hornerTaylorFunctionForwardBudgetFold
+            fp alpha rest coeffHat budget i := by
+  intro rest
+  induction rest with
+  | nil =>
+      intro coeffHat coeff budget hbound i
+      simpa [fl_hornerTaylorFunctionForwardBudgetFold] using hbound i
+  | cons a rest ih =>
+      intro coeffHat coeff budget hbound i
+      simp only [List.foldl,
+        fl_hornerTaylorFunctionForwardBudgetFold]
+      exact ih
+        (fl_hornerTaylorFunctionStep fp alpha a coeffHat)
+        (hornerTaylorFunctionStep alpha a coeff)
+        (fl_hornerTaylorFunctionForwardBudgetStep
+          fp alpha a coeffHat budget)
+        (fl_hornerTaylorFunctionStep_error_bound
+          fp alpha a coeffHat coeff budget hbound) i
+
+/-- A genuine executor-to-specification error theorem for every derivative
+order.  The left side is the rounded Algorithm 5.2 state; the right side is
+the exact Taylor recurrence, and the budget is generated from the same
+rounded execution. -/
+theorem fl_hornerTaylorFunctionDesc_error_bound
+    (fp : FPModel) (alpha : ℝ) (coeffsDesc : List ℝ) (i : ℕ) :
+    |fl_hornerTaylorFunctionDesc fp alpha coeffsDesc i -
+        hornerTaylorFunctionDesc alpha coeffsDesc i| ≤
+      fl_hornerTaylorFunctionForwardBudgetDesc fp alpha coeffsDesc i := by
+  cases coeffsDesc with
+  | nil =>
+      simp [fl_hornerTaylorFunctionDesc, hornerTaylorFunctionDesc,
+        fl_hornerTaylorFunctionForwardBudgetDesc]
+  | cons a rest =>
+      apply fl_hornerTaylorFunctionFold_error_bound fp alpha rest
+      intro j
+      cases j <;> simp
+
+/-- Rounded Algorithm 5.2 output at order `i`.  The integer factorial is the
+exact loop counter represented as a real input; the final scale multiplication
+is a floating-point operation. -/
+noncomputable def fl_hornerHigherDerivativeOutput
+    (fp : FPModel) (alpha : ℝ) (coeffsDesc : List ℝ) (i : ℕ) : ℝ :=
+  fp.fl_mul (Nat.factorial i : ℝ)
+    (fl_hornerTaylorFunctionDesc fp alpha coeffsDesc i)
+
+/-- Finite `i = 0:k` rounded output surface for Algorithm 5.2. -/
+noncomputable def fl_hornerHigherDerivativeOutputs
+    (fp : FPModel) (alpha : ℝ) (k : ℕ)
+    (coeffsDesc : List ℝ) : Fin (k + 1) → ℝ :=
+  fun i => fl_hornerHigherDerivativeOutput fp alpha coeffsDesc i.val
+
+/-- End-to-end rounded error bound for every Algorithm 5.2 output order,
+including the final factorial scaling multiplication. -/
+theorem fl_hornerHigherDerivativeOutput_error_bound
+    (fp : FPModel) (alpha : ℝ) (coeffsDesc : List ℝ) (i : ℕ) :
+    |fl_hornerHigherDerivativeOutput fp alpha coeffsDesc i -
+        hornerFormalDerivativeFunctionDesc alpha coeffsDesc i| ≤
+      fp.u * |(Nat.factorial i : ℝ) *
+          fl_hornerTaylorFunctionDesc fp alpha coeffsDesc i| +
+        (Nat.factorial i : ℝ) *
+          fl_hornerTaylorFunctionForwardBudgetDesc
+            fp alpha coeffsDesc i := by
+  have hstate :=
+    fl_hornerTaylorFunctionDesc_error_bound fp alpha coeffsDesc i
+  have hscale :=
+    fl_mul_error_of_operand_error fp (Nat.factorial i : ℝ)
+      (fl_hornerTaylorFunctionDesc fp alpha coeffsDesc i)
+      (hornerTaylorFunctionDesc alpha coeffsDesc i)
+      (fl_hornerTaylorFunctionForwardBudgetDesc fp alpha coeffsDesc i)
+      hstate
+  rw [← polyDescHigherDeriv_eq_hornerFormalDerivativeFunctionDesc]
+  simpa [fl_hornerHigherDerivativeOutput, polyDescHigherDeriv,
+    abs_of_nonneg (show (0 : ℝ) ≤ (Nat.factorial i : ℝ) by positivity)]
+    using hscale
+
+/-- Finite-vector form of the all-order rounded output bound. -/
+theorem fl_hornerHigherDerivativeOutputs_error_bound
+    (fp : FPModel) (alpha : ℝ) (k : ℕ)
+    (coeffsDesc : List ℝ) (i : Fin (k + 1)) :
+    |fl_hornerHigherDerivativeOutputs fp alpha k coeffsDesc i -
+        hornerFormalDerivativeFunctionDesc alpha coeffsDesc i.val| ≤
+      fp.u * |(Nat.factorial i.val : ℝ) *
+          fl_hornerTaylorFunctionDesc fp alpha coeffsDesc i.val| +
+        (Nat.factorial i.val : ℝ) *
+          fl_hornerTaylorFunctionForwardBudgetDesc
+            fp alpha coeffsDesc i.val := by
+  exact fl_hornerHigherDerivativeOutput_error_bound
+    fp alpha coeffsDesc i.val
+
 private lemma fl_hornerDerivativeStep_backward_algebra_nil
     (x d y deltaDMul deltaDAdd thetaDTail thetaD thetaCarry : ℝ)
     (hD :
@@ -6494,6 +6810,166 @@ theorem fl_hornerDerivativeDesc_exactWithUnitRoundoff
   | cons a rest =>
       simpa [fl_hornerDerivativeDesc, hornerDerivativeDesc]
         using fl_hornerDerivativeExactFold_eq u0 hu0 x rest a 0
+
+/-! ## Higham (5.14): the three complex matrix-polynomial forms -/
+
+/-- Higham (5.14), `P₁(X) = a₀I + a₁X + ⋯ + aₙXⁿ`, with complex
+scalar coefficients stored in descending order. -/
+noncomputable def complexMatrixPolyP1Desc (n : ℕ)
+    (X : Matrix (Fin n) (Fin n) ℂ) :
+    List ℂ → Matrix (Fin n) (Fin n) ℂ
+  | [] => 0
+  | a :: rest => a • X ^ rest.length + complexMatrixPolyP1Desc n X rest
+
+/-- One exact matrix Horner step for `P₁`; a scalar coefficient is inserted
+as the scalar matrix `aI`. -/
+noncomputable def complexMatrixHornerP1Step (n : ℕ)
+    (X Y : Matrix (Fin n) (Fin n) ℂ) (a : ℂ) :
+    Matrix (Fin n) (Fin n) ℂ :=
+  Y * X + a • (1 : Matrix (Fin n) (Fin n) ℂ)
+
+/-- Exact Horner evaluator for the `P₁` form in (5.14). -/
+noncomputable def complexMatrixHornerP1Desc (n : ℕ)
+    (X : Matrix (Fin n) (Fin n) ℂ) :
+    List ℂ → Matrix (Fin n) (Fin n) ℂ
+  | [] => 0
+  | a :: rest =>
+      rest.foldl (complexMatrixHornerP1Step n X)
+        (a • (1 : Matrix (Fin n) (Fin n) ℂ))
+
+lemma complexMatrixHornerP1Fold_eq_acc_mul_pow_add_poly
+    (n : ℕ) (X : Matrix (Fin n) (Fin n) ℂ) :
+    ∀ (rest : List ℂ) (Y : Matrix (Fin n) (Fin n) ℂ),
+      rest.foldl (complexMatrixHornerP1Step n X) Y =
+        Y * X ^ rest.length + complexMatrixPolyP1Desc n X rest := by
+  intro rest
+  induction rest with
+  | nil =>
+      intro Y
+      simp [complexMatrixPolyP1Desc]
+  | cons a rest ih =>
+      intro Y
+      rw [List.foldl, ih]
+      simp only [complexMatrixPolyP1Desc, List.length_cons]
+      rw [pow_succ']
+      simp [complexMatrixHornerP1Step, add_mul, mul_assoc]
+      ac_rfl
+
+/-- Exact Horner evaluation realizes the full complex `P₁` expression in
+(5.14). -/
+theorem complexMatrixHornerP1Desc_eq_complexMatrixPolyP1Desc
+    (n : ℕ) (X : Matrix (Fin n) (Fin n) ℂ) (coeffsDesc : List ℂ) :
+    complexMatrixHornerP1Desc n X coeffsDesc =
+      complexMatrixPolyP1Desc n X coeffsDesc := by
+  cases coeffsDesc with
+  | nil => rfl
+  | cons a rest =>
+      simpa [complexMatrixHornerP1Desc, complexMatrixPolyP1Desc]
+        using complexMatrixHornerP1Fold_eq_acc_mul_pow_add_poly
+          n X rest (a • (1 : Matrix (Fin n) (Fin n) ℂ))
+
+/-- Higham (5.14), `P₂(α) = A₀ + A₁α + ⋯ + Aₙαⁿ`, with complex
+matrix coefficients stored in descending order. -/
+noncomputable def complexMatrixPolyP2Desc (n : ℕ) (α : ℂ) :
+    List (Matrix (Fin n) (Fin n) ℂ) → Matrix (Fin n) (Fin n) ℂ
+  | [] => 0
+  | A :: rest =>
+      (α ^ rest.length) • A + complexMatrixPolyP2Desc n α rest
+
+/-- One exact Horner step for the scalar-argument/matrix-coefficient `P₂`
+form in (5.14). -/
+noncomputable def complexMatrixHornerP2Step (n : ℕ) (α : ℂ)
+    (Y A : Matrix (Fin n) (Fin n) ℂ) : Matrix (Fin n) (Fin n) ℂ :=
+  α • Y + A
+
+/-- Exact Horner evaluator for the `P₂` form in (5.14). -/
+noncomputable def complexMatrixHornerP2Desc (n : ℕ) (α : ℂ) :
+    List (Matrix (Fin n) (Fin n) ℂ) → Matrix (Fin n) (Fin n) ℂ
+  | [] => 0
+  | A :: rest => rest.foldl (complexMatrixHornerP2Step n α) A
+
+lemma complexMatrixHornerP2Fold_eq_pow_smul_acc_add_poly
+    (n : ℕ) (α : ℂ) :
+    ∀ (rest : List (Matrix (Fin n) (Fin n) ℂ))
+      (Y : Matrix (Fin n) (Fin n) ℂ),
+      rest.foldl (complexMatrixHornerP2Step n α) Y =
+        (α ^ rest.length) • Y + complexMatrixPolyP2Desc n α rest := by
+  intro rest
+  induction rest with
+  | nil =>
+      intro Y
+      simp [complexMatrixPolyP2Desc]
+  | cons A rest ih =>
+      intro Y
+      rw [List.foldl, ih]
+      simp only [complexMatrixPolyP2Desc, List.length_cons]
+      rw [pow_succ']
+      ext i j
+      simp [complexMatrixHornerP2Step]
+      ring
+
+/-- Exact Horner evaluation realizes the full complex `P₂` expression in
+(5.14). -/
+theorem complexMatrixHornerP2Desc_eq_complexMatrixPolyP2Desc
+    (n : ℕ) (α : ℂ)
+    (coeffsDesc : List (Matrix (Fin n) (Fin n) ℂ)) :
+    complexMatrixHornerP2Desc n α coeffsDesc =
+      complexMatrixPolyP2Desc n α coeffsDesc := by
+  cases coeffsDesc with
+  | nil => rfl
+  | cons A rest =>
+      simpa [complexMatrixHornerP2Desc, complexMatrixPolyP2Desc]
+        using complexMatrixHornerP2Fold_eq_pow_smul_acc_add_poly
+          n α rest A
+
+/-- Higham (5.14), `P₃(X) = A₀ + A₁X + ⋯ + AₙXⁿ`, over complex
+matrices, with descending matrix coefficients. -/
+noncomputable def complexMatrixPolyP3Desc (n : ℕ)
+    (X : Matrix (Fin n) (Fin n) ℂ) :
+    List (Matrix (Fin n) (Fin n) ℂ) → Matrix (Fin n) (Fin n) ℂ
+  | [] => 0
+  | A :: rest =>
+      A * X ^ rest.length + complexMatrixPolyP3Desc n X rest
+
+/-- Exact complex matrix Horner evaluator for `P₃` in (5.14). -/
+noncomputable def complexMatrixHornerP3Desc (n : ℕ)
+    (X : Matrix (Fin n) (Fin n) ℂ) :
+    List (Matrix (Fin n) (Fin n) ℂ) → Matrix (Fin n) (Fin n) ℂ
+  | [] => 0
+  | A :: rest => rest.foldl (fun Y B => Y * X + B) A
+
+lemma complexMatrixHornerP3Fold_eq_acc_mul_pow_add_poly
+    (n : ℕ) (X : Matrix (Fin n) (Fin n) ℂ) :
+    ∀ (rest : List (Matrix (Fin n) (Fin n) ℂ))
+      (Y : Matrix (Fin n) (Fin n) ℂ),
+      rest.foldl (fun Z B => Z * X + B) Y =
+        Y * X ^ rest.length + complexMatrixPolyP3Desc n X rest := by
+  intro rest
+  induction rest with
+  | nil =>
+      intro Y
+      simp [complexMatrixPolyP3Desc]
+  | cons A rest ih =>
+      intro Y
+      rw [List.foldl, ih]
+      simp only [complexMatrixPolyP3Desc, List.length_cons]
+      rw [pow_succ']
+      simp [add_mul, mul_assoc]
+      abel
+
+/-- Exact Horner evaluation realizes the full complex `P₃` expression in
+(5.14), completing the three displayed complex forms. -/
+theorem complexMatrixHornerP3Desc_eq_complexMatrixPolyP3Desc
+    (n : ℕ) (X : Matrix (Fin n) (Fin n) ℂ)
+    (coeffsDesc : List (Matrix (Fin n) (Fin n) ℂ)) :
+    complexMatrixHornerP3Desc n X coeffsDesc =
+      complexMatrixPolyP3Desc n X coeffsDesc := by
+  cases coeffsDesc with
+  | nil => rfl
+  | cons A rest =>
+      simpa [complexMatrixHornerP3Desc, complexMatrixPolyP3Desc]
+        using complexMatrixHornerP3Fold_eq_acc_mul_pow_add_poly
+          n X rest A
 
 /-! ## Matrix polynomials -/
 

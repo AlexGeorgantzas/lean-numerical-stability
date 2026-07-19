@@ -2,17 +2,24 @@
 
 ## Selected-Scope Gate
 
-**PASS.** All 21 selected mathematical and algorithmic source rows are proved.
-The Givens alternative in Theorem 21.4, square scalar Q-method boundary, and
-actual Householder SNE equation (21.11) each passed focused compilation and
-source/axiom review. The SNE row is closed by the fixed-radius theorem
+**PASS.** All 21 selected mathematical and algorithmic source rows are proved
+at literal source strength. The Householder and Givens alternatives in Theorem
+21.4, square scalar Q-method boundary, and actual Householder SNE equation
+(21.11) each passed focused compilation and source/axiom review. The SNE row is
+closed by the fixed-radius theorem
 `higham21_sne_householder_actual_output_source_relative_q_uniform` and its
 explicit unit-roundoff-squared corollary
 `higham21_sne_householder_actual_output_source_relative_unit_roundoff_sq`, not
 by a conditional replay certificate, target-shaped transferred-envelope
 premise, or fixed-precision tautological remainder. This ledger now records
-only the intentional exclusions and honest model boundaries below; no selected
-row is unproved.
+the intentional exclusions and honest model boundaries below. There is no
+open selected row.
+
+## Closed selected bridge
+
+| Source row | Source-facing endpoints | Derived bridge |
+|---|---|---|
+| Theorem 21.4, p. 411 | `higham21_theorem21_4_computed_qhat_rowwise_backward_stable_source`; `higham21_theorem21_4_givens_actual_rounded_rowwise_backward_stable_source` | `Higham21QMethodFullRowRankComputedQRDomain.of_source_smallness` derives the Householder computed-QR nonbreakdown field from source full rank and the QR perturbation smallness. For Givens, `higham21_givens_actual_topBlock_nonbreakdown_of_source_smallness` derives `hdiag`, and `Higham21GivensActualReplayEtaQ_lt_one_of_operational_gammaValid` derives `hQsmall` from the operational gamma-validity index. No execution conclusion is supplied by the caller. |
 
 ## Intentional Exclusions
 
@@ -27,6 +34,10 @@ row is unproved.
 
 - `FPModel` is the repository’s abstract rounded-operation semantics, not a
   reconstruction of the historical experiment.
+- The source-facing Theorem 21.4 endpoints retain `gammaValid` premises for
+  their explicit operation-count indices. Computed top-factor nonbreakdown and
+  actual Givens replay smallness are derived conclusions, not model boundaries
+  or caller-supplied error certificates.
 - For the final SNE relative theorem, `hm`, `hn`, `hdet`, and `hb` are
   source/domain assumptions: positive and sufficient dimensions, full row
   rank through Gram nonsingularity, and a nonzero right-hand side for relative

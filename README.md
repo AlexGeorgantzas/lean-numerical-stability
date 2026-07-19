@@ -5,16 +5,13 @@ Nicholas J. Higham's *Accuracy and Stability of Numerical Algorithms*
 (2nd ed., SIAM, 2002), together with a randomized numerical linear algebra
 (RandNLA) case study.
 
-The library covers material from **all 28 chapters** of Higham. Every result is
-machine-checked against Mathlib: the tree contains **no `sorry`, `admit`, or
-`axiom` declarations**, and sampled headline theorems depend only on the standard
-`[propext, Classical.choice, Quot.sound]` axioms. Bounds use tight constants
-matching Higham where the full local analysis is proved (e.g. `γ(n)`, not
-`γ(n+1)`, for the dot-product bound). Some higher-chapter results are stated at an
-honest, documented strength — abstract interfaces whose hypotheses spell out the
-remaining local analysis, or an exact-arithmetic model where the general rounded
-statement is provably out of reach; these are recorded per chapter under
-[`docs/source_coverage/`](docs/source_coverage/).
+The library contains machine-checked material from **all 28 chapters** of
+Higham. The tree contains **no `sorry`, `admit`, or `axiom` declarations**, and
+sampled headline theorems depend only on the standard
+`[propext, Classical.choice, Quot.sound]` axioms. That proof hygiene is distinct
+from source-strength closure: several selected rows remain conditional, partial,
+or tied to an exact-arithmetic model. The strict per-chapter gates below count
+only results proved at the printed strength.
 
 ## Floating-point model
 
@@ -36,58 +33,71 @@ identities cannot hold over the abstract model.
 ## What's covered
 
 Higham chapters 1–28, plus the RandNLA case study. Per-chapter status is tracked
-in the ledgers under [`docs/source_coverage/`](docs/source_coverage/); the
-cross-chapter re-audit of Chapters 12–28 is in
-[`docs/source_coverage/AUDIT_ch12-28_2026-07.md`](docs/source_coverage/AUDIT_ch12-28_2026-07.md).
+in the ledgers under [`docs/source_coverage/`](docs/source_coverage/). The
+authoritative from-scratch audit is
+[`docs/source_coverage/AUDIT_ch01-28_2026-07-18.md`](docs/source_coverage/AUDIT_ch01-28_2026-07-18.md).
 
-| Ch | Topic | Gate |
-|----|-------|------|
-| 1  | Principles of finite precision | ✅ |
-| 2  | Floating point arithmetic | ✅ |
-| 3  | Basics (dot products, `γ(n)`) | ✅ |
-| 4  | Summation | ✅ |
-| 5  | Polynomials (Horner) | ✅ |
-| 6  | Norms | ✅ |
-| 7  | Perturbation theory for linear systems | ✅ |
-| 8  | Triangular systems | ✅ |
-| 9  | LU factorization and linear equations | ✅ |
-| 10 | Cholesky factorization | ✅ |
-| 11 | Symmetric indefinite / skew-symmetric systems | ✅ |
-| 12 | Iterative refinement | ✅ |
-| 13 | Block LU factorization | ✅ |
-| 14 | Matrix inversion | ✅ |
-| 15 | Condition number estimation | ✅ |
-| 16 | The Sylvester equation | ✅ |
-| 17 | Stationary iterative methods | ✅ |
-| 18 | Matrix powers | ✅ |
-| 19 | QR factorization | ⚠️ terminal `BLOCKED` (see below) |
-| 20 | The least squares problem | ✅ |
-| 21 | Underdetermined systems | ✅ |
-| 22 | Vandermonde systems | ✅ |
-| 23 | Fast matrix multiplication | ✅ |
-| 24 | The FFT and applications | ✅ |
-| 25 | Nonlinear systems and Newton's method | ✅ |
-| 26 | Automatic error analysis | ✅ |
-| 27 | Software issues in floating point | ✅ |
-| 28 | A gallery of test matrices | ✅ |
+| Ch | Topic | Strict gate |
+|----|-------|-------------|
+| 1  | Principles of finite precision | PASS |
+| 2  | Floating point arithmetic | PASS |
+| 3  | Basics (dot products, `γ(n)`) | PASS |
+| 4  | Summation | FAIL |
+| 5  | Polynomials (Horner) | FAIL |
+| 6  | Norms | PASS |
+| 7  | Perturbation theory for linear systems | PASS |
+| 8  | Triangular systems | FAIL |
+| 9  | LU factorization and linear equations | PASS |
+| 10 | Cholesky factorization | FAIL |
+| 11 | Symmetric indefinite / skew-symmetric systems | FAIL |
+| 12 | Iterative refinement | PASS |
+| 13 | Block LU factorization | PASS |
+| 14 | Matrix inversion | FAIL |
+| 15 | Condition number estimation | FAIL |
+| 16 | The Sylvester equation | FAIL |
+| 17 | Stationary iterative methods | PASS |
+| 18 | Matrix powers | FAIL |
+| 19 | QR factorization | BLOCKED |
+| 20 | The least squares problem | FAIL |
+| 21 | Underdetermined systems | PASS |
+| 22 | Vandermonde systems | FAIL |
+| 23 | Fast matrix multiplication | PASS |
+| 24 | The FFT and applications | PASS |
+| 25 | Nonlinear systems and Newton's method | FAIL |
+| 26 | Automatic error analysis | PASS |
+| 27 | Software issues in floating point | PASS |
+| 28 | A gallery of test matrices | FAIL |
 
-✅ = selected-scope gate passes (every selected theorem/lemma/equation is verified
-at printed strength, or is an honest, documented partial). A ✅ chapter may still
-carry a small number of source-faithful residuals, noted in its ledger.
+Fresh result: **14 PASS, 13 FAIL, 1 BLOCKED**. A failed gate can still contain
+substantial verified material; it means at least one selected printed-strength
+producer or bridge remains open.
+
+`PASS` means every selected theorem, lemma, equation, and implementation-facing
+claim is verified at printed strength. An honest `PARTIAL`, conditional transfer,
+or exact-arithmetic subcase remains useful formalization, but does not make the
+stronger source row pass.
 
 - **Chapter 19** is a documented terminal `BLOCKED`: Theorems 19.6 and 19.13 hold
   only under an exact-arithmetic strong model, and the bare-`FPModel` versions are
   *proven impossible* by an in-tree counterexample. Every other Chapter 19 result
   (Lemmas 19.1–19.3, 19.7–19.9; Theorems 19.4, 19.5, 19.10) is verified.
-- **Chapter 11**'s four primary theorems are now derived from the floating-point
-  model in dedicated closure modules
-  ([`FP/Algorithms/Cholesky/*Ch11Closure.lean`](LeanFpAnalysis/FP/Algorithms/Cholesky)),
-  each assuming only Higham's own inputs (the eq. (11.5) 2×2-solve family). Theorems
-  11.3, 11.4, and 11.7 are closed at printed / source-faithful strength; for the
-  Bunch symmetric-tridiagonal method (11.7) the bounded element growth is *derived*
-  from Algorithm 11.6's fixed-scale pivoting, not assumed. Theorem 11.8 (Aasen) is
-  closed with one disclosed middle-solve idealization (`hmiddle_factors`), recorded
-  in the ledger.
+- **Chapter 11** has Theorems 11.3, 11.4, and 11.7 closed, but Theorem 11.8 is
+  conditional on `hmiddle_factors`, which is not a source hypothesis. A concrete
+  2-by-2 Aasen/GEPP trace now refutes its coefficient-one inequality; the library
+  also proves the strongest currently available unconditional `2 n²` replacement.
+- **Chapter 20** is not closed merely by importing Chapter 19. Its Theorem 20.7
+  policy and component-budget records are not produced by the rounded pivoted-QR
+  executor; a legal full-rank 2-by-2 trace additionally demonstrates rounded
+  breakdown in the bare model.
+- **Chapter 10** has several target-bearing perturbation/backward-error premises,
+  an extra Theorem 10.7 spectral premise, and no source-strength rank-deficient
+  10.9(b), Kahan sharpness, or (10.22) producer.
+- **Chapter 22** now has a genuine Chapter 5 residual bridge, but its actual
+  monomial Stage-II factor producer, refinement contraction, and precise Table
+  22.1 V1--V6 claims remain open.
+- **Chapters 25 and 28** retain precise-prose gaps: the bordered eigenproblem
+  specialization in Chapter 25, and the exact Hilbert log rate, Gaussian-QR Haar
+  bridge, and general reciprocal-spectrum SPD construction in Chapter 28.
 
 The **RandNLA case study**
 ([`FP/Algorithms/RandNLA/`](LeanFpAnalysis/FP/Algorithms/RandNLA), 17 modules)
@@ -201,10 +211,10 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 
 ## Roadmap
 
-Deepen the remaining honest-partial rows toward full printed strength (notably
-Chapter 19 under a faithful rounded model, and discharging Chapter 11's Theorem
-11.8 middle-solve idealization). Issues and contributions for specific algorithms
-or results are welcome.
+Deepen the remaining strict-fail rows listed in the fresh audit, notably Chapter
+19 under a faithful rounded model and Chapter 11's Theorem 11.8 middle-solve
+idealization. Issues and contributions for specific algorithms or results are
+welcome.
 
 ## License
 

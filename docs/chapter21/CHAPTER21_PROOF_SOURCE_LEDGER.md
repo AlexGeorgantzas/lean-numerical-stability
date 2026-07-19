@@ -2,7 +2,7 @@
 
 ## Scope
 
-This ledger records nontrivial proof sources used for the 2026-07-15 Chapter
+This ledger records nontrivial proof sources used for the 2026-07-18 Chapter
 21 audit. External prose or a second-model suggestion is never treated as a
 Lean proof.
 
@@ -24,8 +24,8 @@ Lean proof.
 | Theorem 21.1 and (21.6)–(21.9) | Full proof/sketch in the chapter | Proved with exact finite-radius remainders and rank preservation |
 | Lemma 21.2 | Full proof | Proved locally, including source bundle and norm bounds |
 | Theorem 21.3 | Statement with external attribution | Proved locally; source boundary case corrected and witnessed |
-| Theorem 21.4, Householder | Chapter proof using earlier QR results | Actual rounded panel/solve/action theorem proved under explicit domain guards |
-| Theorem 21.4, Givens | Included in the printed alternative | Proved for the actual staged QR, retained rotations, triangular solve, and rounded replay; no supplied apply bridge remains |
+| Theorem 21.4, Householder | Chapter proof using earlier QR results | `Higham21QMethodFullRowRankComputedQRDomain.of_source_smallness` derives computed top-block nonbreakdown from the rowwise QR perturbation, source right inverse, and rank stability; `higham21_theorem21_4_computed_qhat_rowwise_backward_stable_source` closes the actual rounded panel/solve/action theorem |
+| Theorem 21.4, Givens | Included in the printed alternative | `Higham21GivensActualReplayEtaQ_lt_one_of_operational_gammaValid` derives replay smallness from the complete operation schedule, `higham21_givens_actual_topBlock_nonbreakdown_of_source_smallness` derives `hdiag`, and `higham21_theorem21_4_givens_actual_rounded_rowwise_backward_stable_source` closes the actual staged QR/replay theorem |
 | Equation (21.11), Q method | Derived in chapter text | Proved through row-wise backward error and (21.7), including the square scalar boundary |
 | Equation (21.11), SNE | Citation to Demmel–Higham analysis | Proved for the actual Householder panel, two rounded triangular solves, and rounded `Aᵀŷ` formation; relative error is against canonical `x`, with original `cond2(A)` first-order dependence and an explicit `fp.u²` remainder whose fixed-radius coefficient depends only on `A`, `b`, the dimensions, and `tau` |
 | Corrected MGS stability sentence | Citation-only and qualitative | Recurrence proved; stability sentence excluded as `SKIP-QUALITATIVE` |
@@ -46,7 +46,7 @@ Lean proof.
 | Theorem 21.1 / (21.6)–(21.9) | Focused module builds and theorem-type review | Direction-envelope, rank, remainder, and source-constant comparison | PASS |
 | Lemma 21.2 | Source bundle and component theorem review | Assumption and axiom audit | PASS |
 | Theorem 21.3 | Formula/attainment modules compile | Boundary witness and theorem-type comparison | PASS WITH CORRECTION |
-| Theorem 21.4, Householder | Actual computed path review | Domain/nonbreakdown and standard-axiom audit | PASS WITH EXPLICIT DOMAIN |
-| Theorem 21.4, Givens | Stored-replay theorem review | Actual-operation bridge and standard-axiom audit | PASS |
+| Theorem 21.4, Householder | Actual computed path review | Fresh source wrapper derives `lsTheorem20_4ComputedQRNonbreakdown` by perturbation/rank stability; focused closure-module build passed | PASS |
+| Theorem 21.4, Givens | Stored-replay theorem review | Fresh source wrapper derives `hdiag` and `hQsmall` from source rank, smallness, and one operational gamma-validity index; focused closure-module build passed | PASS |
 | Equation (21.11), Q method | Main, uniform, and scalar endpoints compile | Dimension-boundary, source, and standard-axiom audit | PASS |
 | Equation (21.11), SNE | Signed identities, condition transfer, QR majorants, remainder bounds, actual-output closure, and fixed-radius uniform closure compile | Concrete actual-object, original-condition first-order term, source-defined coefficient independent of active computation data, explicit `fp.u²` remainder, public smallness assumptions, and standard-axiom audit | PASS |

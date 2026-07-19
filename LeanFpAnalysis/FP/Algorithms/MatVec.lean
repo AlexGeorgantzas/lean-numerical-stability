@@ -322,4 +322,72 @@ theorem matVec_row_isRelBackwardStable (fp : FPModel) (n : ℕ)
       (gamma fp n) :=
   dotProduct_isRelBackwardStable fp n hn
 
+/-- Higham Chapter 3's printed rectangular matrix-vector 2-norm bound:
+
+`‖Ax - fl(Ax)‖₂ ≤ sqrt(min(m,n)) γ_n ‖A‖₂ ‖x‖₂`.
+
+The proof starts from the concrete row-wise backward error `ΔA`, derives its
+Frobenius bound from the componentwise estimate, and then uses Lemma 6.6(a)
+to convert `‖A‖_F` to the exact rectangular operator 2-norm. -/
+theorem matVec_error_bound_twoNormRect (fp : FPModel) (m n : ℕ)
+    (A : Fin m → Fin n → ℝ) (x : Fin n → ℝ)
+    (hn : gammaValid fp n) :
+    vecNorm2
+        (fun i : Fin m =>
+          (∑ j : Fin n, A i j * x j) - fl_matVec fp m n A x i) ≤
+      Real.sqrt (Nat.min m n : ℝ) * gamma fp n * rectOpNorm2 A *
+        vecNorm2 x := by
+  obtain ⟨ΔA, hΔA, hfl⟩ := matVec_backward_error fp m n A x hn
+  let e : Fin m → ℝ := fun i =>
+    fl_matVec fp m n A x i - ∑ j : Fin n, A i j * x j
+  have he : e = rectMatMulVec ΔA x := by
+    ext i
+    dsimp [e]
+    rw [hfl i]
+    unfold rectMatMulVec
+    rw [← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intro j _hj
+    ring
+  have hγnonneg : 0 ≤ gamma fp n := gamma_nonneg fp hn
+  let B : Fin m → Fin n → ℝ := fun i j => gamma fp n * |A i j|
+  have hBnonneg : ∀ i j, 0 ≤ B i j := by
+    intro i j
+    exact mul_nonneg hγnonneg (abs_nonneg (A i j))
+  have hΔFraw : frobNormRect ΔA ≤ frobNormRect B :=
+    frobNormRect_le_of_entry_abs_le ΔA B hBnonneg hΔA
+  have hBF : frobNormRect B = gamma fp n * frobNormRect A := by
+    calc
+      frobNormRect B = |gamma fp n| *
+          frobNormRect (fun i j => |A i j|) := by
+            simpa [B] using
+              (frobNormRect_smul (gamma fp n) (fun i j => |A i j|))
+      _ = gamma fp n * frobNormRect A := by
+            rw [abs_of_nonneg hγnonneg, frobNormRect_abs]
+  have hΔF : frobNormRect ΔA ≤ gamma fp n * frobNormRect A := by
+    rw [← hBF]
+    exact hΔFraw
+  have hsource_neg :
+      (fun i : Fin m =>
+        (∑ j : Fin n, A i j * x j) - fl_matVec fp m n A x i) =
+        fun i => -e i := by
+    ext i
+    simp only [e]
+    ring
+  rw [hsource_neg, vecNorm2_neg, he]
+  calc
+    vecNorm2 (rectMatMulVec ΔA x)
+        ≤ frobNormRect ΔA * vecNorm2 x :=
+          vecNorm2_rectMatMulVec_le_frobNormRect_mul ΔA x
+    _ ≤ (gamma fp n * frobNormRect A) * vecNorm2 x :=
+          mul_le_mul_of_nonneg_right hΔF (vecNorm2_nonneg x)
+    _ ≤ (gamma fp n *
+          (Real.sqrt (Nat.min m n : ℝ) * rectOpNorm2 A)) * vecNorm2 x := by
+          exact mul_le_mul_of_nonneg_right
+            (mul_le_mul_of_nonneg_left
+              (frobNormRect_le_sqrt_min_mul_rectOpNorm2 A) hγnonneg)
+            (vecNorm2_nonneg x)
+    _ = Real.sqrt (Nat.min m n : ℝ) * gamma fp n * rectOpNorm2 A *
+          vecNorm2 x := by ring
+
 end LeanFpAnalysis.FP

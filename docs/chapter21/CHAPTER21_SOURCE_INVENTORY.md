@@ -2,7 +2,7 @@
 
 ## Audit Basis
 
-- Audit date: 2026-07-15
+- Audit date: 2026-07-18
 - Source: `References/1.9780898718027.ch21.pdf`
 - Book: Nicholas J. Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed. (SIAM, 2002)
 - Chapter: 21, “Underdetermined Systems,” printed pp. 407–414
@@ -14,8 +14,9 @@
 ## Counts
 
 This audit separates 27 source rows: 21 selected mathematical or algorithmic
-rows and six intentional exclusions. The selected-scope result is maintained
-in `CHAPTER21_NOT_PROVED_LEDGER.md`; exclusions below are not proof gaps.
+rows and six intentional exclusions. All 21 selected rows pass at source
+strength. The selected-scope result is maintained in
+`CHAPTER21_NOT_PROVED_LEDGER.md`; exclusions below are not proof gaps.
 
 ## Inventory
 
@@ -38,8 +39,8 @@ in `CHAPTER21_NOT_PROVED_LEDGER.md`; exclusions below are not proof gaps.
 | 15 | Theorem 21.3 square specialization | p. 411 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `higham21_theorem21_3_square_nonzero_etaF_eq_phi` |
 | 16 | Row-wise backward-error measure `ωᴿ` and `O(u)` criterion | p. 411 | FORMALIZE_DEPENDENCY / DEP-REQUIRED | PASS (quantitative gamma form) | `Higham21RowwiseMeasure.lean`; the Lean index is correctly `i=1:m`, repairing the printed `i=1:n` typo |
 | 17 | Equation (21.10), rounded Q-action formation | p. 411 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `higham21_eq21_10_*` family and Householder gamma wrappers |
-| 18 | Theorem 21.4, Householder branch | p. 411 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS WITH EXPLICIT NONBREAKDOWN DOMAIN | `higham21_theorem21_4_computed_qhat_rowwise_backward_stable_gamma` for the actual panel, solve, and Q action |
-| 19 | Theorem 21.4, Givens branch | p. 411 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS | `higham21_theorem21_4_givens_actual_rounded_rowwise_backward_stable` and `higham21_theorem21_4_givens_actual_rounded_omegaR_le`; the staged QR and rounded replay use one concrete retained rotation trace |
+| 18 | Theorem 21.4, Householder branch | p. 411 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS | `Higham21QMethodFullRowRankComputedQRDomain.of_source_smallness` derives the complete computed-QR domain from full row rank, gamma validity, and the printed-form smallness condition. It proves top-block nonbreakdown by combining the Chapter 19 rowwise QR perturbation with the Chapter 21 right inverse/rank-stability bridge. `higham21_theorem21_4_computed_qhat_rowwise_backward_stable_source` then applies the actual panel, solve, and Q-action endpoint. |
+| 19 | Theorem 21.4, Givens branch | p. 411 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS | `Higham21GivensActualReplayEtaQ_lt_one_of_operational_gammaValid` derives replay smallness from one operational schedule index; `higham21_givens_actual_topBlock_nonbreakdown_of_source_smallness` derives every computed top diagonal entry nonzero from source rank and QR smallness; `higham21_theorem21_4_givens_actual_rounded_rowwise_backward_stable_source` supplies both facts to the concrete retained-trace endpoint. |
 | 20 | Equation (21.11), Q method | p. 412 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | Uniform dimension-at-least-two theorem plus `higham21_eq21_11_computed_qhat_relative_forward_error_quadratic_scalar` for the remaining square scalar branch |
 | 21 | Equation (21.11), SNE method | p. 412 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `higham21_sne_householder_actual_output_source_relative_unit_roundoff_sq`: actual Householder panel, two rounded triangular solves, and rounded `Aᵀŷ` formation; relative `xhat` versus canonical `x`, the original `cond2(A)` first-order term, and an explicit `fp.u²` remainder with a fixed-radius coefficient depending only on `A`, `b`, the dimensions, and `tau` |
 | 22 | SNE has no Theorem-21.4 analogue and no general small-residual guarantee | p. 412 | SKIP / SKIP-QUALITATIVE | EXCLUDED | Negative qualitative warning; no stronger backward-stability or residual theorem is claimed |
@@ -66,9 +67,13 @@ in `CHAPTER21_NOT_PROVED_LEDGER.md`; exclusions below are not proof gaps.
 2. Theorem 21.3’s unconditional printed minimum needs a zero-system boundary
    correction. Lean proves the correct infimum formula, exact attainment under
    the sharp nonzero-pairing condition, and unconditional closure attainment.
-3. Theorem 21.4’s operational surface exposes computed top-factor
-   nonbreakdown. This is a model/domain guard, not an assumed error conclusion,
-   and is recorded rather than hidden.
+3. Theorem 21.4’s lower-level operational surfaces expose computed top-factor
+   nonbreakdown and, for Givens, replay smallness. The source-facing producers
+   in `Higham21Theorem214SourceClosure.lean` now derive those execution facts:
+   Householder and Givens top-block nonsingularity follow from the QR rowwise
+   perturbation plus full-row-rank stability, while the actual Givens replay
+   recurrence is bounded below one from one operational gamma-validity index.
+   They are not assumptions of the final source-facing endpoints.
 4. The final SNE relative endpoint exposes `hm`, `hn`, `hdet`, and `hb` as
    source/domain assumptions; `hvalidQR` and `hmGamma` as floating-point
    validity; `hdiag` as triangular nonbreakdown; and `hrho_pos` as positivity

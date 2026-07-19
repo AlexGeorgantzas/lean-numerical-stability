@@ -1,10 +1,17 @@
 # Higham, *Accuracy and Stability of Numerical Algorithms* (2nd ed.) — Chapter 3 "Basics"
 
+> **Fresh strict audit (2026-07-18): gate PASS.** The concrete Lemma 3.7
+> Frobenius/spectral instantiation, fully permuted arbitrary-tree form of (3.4),
+> arbitrary-length pairwise dot-product bound, and printed rectangular 2-norm
+> matrix-vector corollary are all proved at source strength. No selected-scope
+> bridge remains open.
+
 - **Edition/pages:** 2nd ed., pp. 61–78 (Chapter 3, including Problems 3.1–3.12).
 - **Audit mode:** core (primary labels + numbered equations + central definitions + precise body prose claims; problems recorded but optional for the gate).
 - **Ownership:** Chapter 3 is the shared error-analysis foundation layer (theta_n/gamma_n calculus). Its modules are consumed by every later chapter in all splits; no single-split lane owns it.
-- **Audit date:** 2026-07-16 (branch `formalize/split4-claude`, worktree `ch18-split3-claude-...`).
-- **Axiom spot-check:** `prod_signed_error_bound`, `gamma_div_le_branch`, `dotProduct_backward_error`, `fl_complexDiv_rel_error_model`, `matSeqProd_normwise_perturbation_bound`, `fl_rankOneUpdate_componentwise_error_bound`, `prod_one_add_delta_eq_one_add_eta_bound_101_le` — all depend only on `[propext, Classical.choice, Quot.sound]`.
+- **Source audited:** `References/1.9780898718027.ch3.pdf`, checked directly against pp. 61–78.
+- **Audit date:** 2026-07-18 (fresh main-branch closure audit).
+- **Axiom spot-check:** `lemma3_7_frobenius_spectral_perturbation_bound`, `sumTreeDotProduct_backward_stable_any_permuted_order`, `clog2PairwiseDotProduct_error_bound`, `frobNormRect_le_sqrt_min_mul_rectOpNorm2`, and `matVec_error_bound_twoNormRect` all depend only on `[propext, Classical.choice, Quot.sound]`; the earlier core surfaces have the same axiom set.
 
 All Lean names below are in namespace `LeanFpAnalysis.FP`. Module paths are relative to `LeanFpAnalysis/FP/`.
 
@@ -18,7 +25,7 @@ All Lean names below are in namespace `LeanFpAnalysis.FP`. Module paths are rela
 | Lemma 3.4 | If \|δᵢ\| ≤ u, nu ≤ 0.01, then ∏(1+δᵢ) = 1+ηₙ, \|ηₙ\| ≤ 1.01nu | **VERIFIED** | `prod_one_add_delta_eq_one_add_eta_bound_101` (strict local errors), `prod_one_add_delta_eq_one_add_eta_bound_101_le` (repo's non-strict \|δᵢ\| ≤ u with 0 < u); envelope lemmas `prod_one_add_delta_bounds`, `prod_one_add_delta_abs_sub_one_le_exp_sub_one`, `real_exp_sub_one_lt_101_mul_of_pos_of_lt_cent` in `Analysis/RoundingProductBounds.lean` | Constant 101/100 exact; guard nu < 1/100 exact. Proof follows the printed exp-envelope argument. |
 | Lemma 3.5 | Complex arithmetic under (3.14): fl(x±y) = (x±y)(1+δ), \|δ\| ≤ u; fl(xy) = xy(1+δ), \|δ\| ≤ √2·γ₂; fl(x/y) = (x/y)(1+δ), \|δ\| ≤ √2·γ₄ | **VERIFIED** | `complexRelErrorModel`, `fl_complexAdd_rel_error_model`, `fl_complexSub_rel_error_model`, `fl_complexMul_rel_error_model` (√2·γ₂), `fl_complexDiv_rel_error_model` (√2·γ₄, hypothesis y ≠ 0) in `Analysis/ComplexArithmetic.lean` | δ is a complex number bounded in modulus, matching the printed caveat that real/imaginary parts are not individually accurate. Page-73 remark on the overflow-avoiding formula (27.1): `fl_smithComplexDiv_rel_error_model` gives the printed √2·γ₇ radius (both Smith branches proved). |
 | Lemma 3.6 | ‖∏(Xⱼ+ΔXⱼ) − ∏Xⱼ‖ ≤ (∏(1+δⱼ)−1)∏‖Xⱼ‖ for a consistent norm, ‖ΔXⱼ‖ ≤ δⱼ‖Xⱼ‖ | **VERIFIED** | `matSeqProd_normwise_perturbation_bound` (+ size lemma `matSeqProd_norm_perturbed_le_scalar`) in `Analysis/MatrixAlgebra.lean` | Stated for an abstract norm functional with exactly the consistent-norm axioms the printed induction uses (nonneg, N(0) ≤ 0, N(I) ≤ 1, subadditive, submultiplicative); concrete `oneNorm`/`infNorm`/`frobNorm` instances satisfy these. Finite-sequence indexing `Fin m` vs. printed j = 0..m is pure reindexing. |
-| Lemma 3.7 | Same with ‖ΔXⱼ‖_F ≤ δⱼ‖Xⱼ‖₂, error in ‖·‖_F, factor sizes in ‖·‖₂ | **PARTIAL** | `matSeqProd_mixed_normwise_perturbation_bound` in `Analysis/MatrixAlgebra.lean` | The mixed-norm induction core is fully proved, with hypotheses that are precisely the Problem 6.5 inequalities (NF(AB) ≤ NS(A)·NF(B) and NF(AB) ≤ NF(A)·NS(B)) plus consistent-norm axioms for NS. **Residual:** no single packaged ch3 theorem instantiates NF = Frobenius, NS = spectral norm; concrete instantiations live at call sites (e.g., ch19 Householder modules). |
+| Lemma 3.7 | Same with ‖ΔXⱼ‖_F ≤ δⱼ‖Xⱼ‖₂, error in ‖·‖_F, factor sizes in ‖·‖₂ | **VERIFIED** | `lemma3_7_frobenius_spectral_perturbation_bound` in `Analysis/MatrixAlgebra.lean`; induction core `matSeqProd_mixed_normwise_perturbation_bound` | The public theorem assumes only the printed Frobenius perturbation hypothesis. It derives `‖ΔXⱼ‖₂ ≤ ‖ΔXⱼ‖_F` internally, then applies the proved mixed inequalities `frobNorm_matMul_le_opNorm2_mul` and `frobNorm_matMul_le_mul_opNorm2`; no target-equivalent spectral perturbation premise is exposed. |
 | Lemma 3.8 | Componentwise: \|∏(Xⱼ+ΔXⱼ) − ∏Xⱼ\| ≤ (∏(1+δⱼ)−1)∏\|Xⱼ\| when \|ΔXⱼ\| ≤ δⱼ\|Xⱼ\| | **VERIFIED** | `matSeqProd_componentwise_perturbation_bound` (+ `matSeqProd_abs_perturbed_le_scalar_abs`) in `Analysis/MatrixAlgebra.lean` | Exact printed shape, componentwise, entrywise absolute-value matrices. |
 | Lemma 3.9 | ŷ = fl(x − a(bᵀx)) satisfies ŷ = y + Δy, \|Δy\| ≤ γₙ₊₃(I + \|a\|\|bᵀ\|)\|x\|, hence ‖Δy‖₂ ≤ γₙ₊₃(1+‖a‖₂‖b‖₂)‖x‖₂ | **VERIFIED** | `fl_rankOneUpdate` (concrete routine: rounded dot product, rounded scalar multiply, rounded subtraction), `fl_rankOneUpdate_componentwise_error_bound`, `fl_rankOneUpdate_error_bound_vecNorm2`, coefficient lemma `rankOneUpdate_scalar_coeff_le_gamma` in `Algorithms/RankOneUpdate.lean` | Both printed displays at printed strength; the γₙ + u(1+γₙ) + … ≤ γₙ₊₃ coefficient chase is derived, not assumed. |
 
@@ -28,7 +35,7 @@ All Lean names below are in namespace `LeanFpAnalysis.FP`. Module paths are rela
 |---|---|---|---|
 | (3.1)–(3.2) | Local-factor expansion of the sequential inner product | **VERIFIED** | `dotProduct_factor_expansion_succ`, `dotProduct_factor_expansion_sum_succ` (`Algorithms/DotProduct.lean`): exact expansion with per-term multiplication factor and suffix addition-factor products, before any gamma compression. |
 | (3.3) | ŝₙ = Σ xᵢyᵢ(1+ηᵢ), backward form with graded θ's | **VERIFIED** | `dotProduct_backward_error`: each \|ηᵢ\| ≤ γₙ (the uniform bound the printed interpretation uses). The graded subscripts (θₙ, θₙ₊₁₋ᵢ, …) are recoverable from the (3.1)–(3.2) suffix expansion but not restated with graded gamma indices. |
-| (3.4) | fl(xᵀy) = (x+Δx)ᵀy = xᵀ(y+Δy), \|Δx\| ≤ γₙ\|x\|, \|Δy\| ≤ γₙ\|y\| | **VERIFIED** (analyzed order) | `dotProduct_backward_stable_x`, `dotProduct_backward_stable_y`; stability-predicate form `dotProduct_isRelBackwardStable` (§3.2 connection). **Residual:** the printed "for any order of evaluation" generality is not stated as a ch3 theorem (general-order summation machinery is ch4's `SumTree`). |
+| (3.4) | fl(xᵀy) = (x+Δx)ᵀy = xᵀ(y+Δy), \|Δx\| ≤ γₙ\|x\|, \|Δy\| ≤ γₙ\|y\| | **VERIFIED** | Sequential forms `dotProduct_backward_stable_x`, `dotProduct_backward_stable_y`; arbitrary association `sumTreeDotProduct_backward_stable_any_order`; fully permuted arbitrary-tree form `sumTreeDotProduct_backward_stable_any_permuted_order` (`Algorithms/TreeDotProduct.lean`). The latter transports perturbations back to the original coordinates, proving the printed “for any order of evaluation” statement. |
 | (3.5) | \|xᵀy − fl(xᵀy)\| ≤ γₙ Σ\|xᵢyᵢ\| = γₙ\|x\|ᵀ\|y\| | **VERIFIED** | `dotProduct_error_bound` (`Algorithms/DotProduct.lean`). |
 | (3.6) | Outer product: Â = xyᵀ + Δ, \|Δ\| ≤ u\|xyᵀ\| | **VERIFIED** | `outerProduct_error_bound`, `outerProduct_error_decomposition` (`Algorithms/OuterProduct.lean`). Prose "not backward stable / Â not rank-1": `fl_outerProduct_counterexample_not_global_backward` with an explicit valid `FPModel` and non-rank-1 computed matrix. |
 | (3.7) | First-order form nu\|x\|ᵀ\|y\| + O(u²) | **VERIFIED** (concrete-remainder form) | O(u²) is not a formal object; the honest counterpart is `gamma_eq_linear_plus_quadratic_remainder` (`Analysis/Rounding.lean`): γₙ = nu + (nu)²/(1−nu) exactly, composable with (3.5). Also `n_mul_u_le_gamma`, `gamma_le_two_mul_n_u_of_nu_le_half` for the standard regime conversions. |
@@ -36,7 +43,7 @@ All Lean names below are in namespace `LeanFpAnalysis.FP`. Module paths are rela
 | (3.9) | \|xᵀy − fl(xᵀy)\| ≤ 1.01nu\|x\|ᵀ\|y\| | **VERIFIED** | `dotProduct_error_bound_101_succ` (`Algorithms/DotProduct.lean`), via `dotProductLocalFactor_abs_sub_one_le_101`. Non-strict ≤ on the repo's non-strict primitive model; strictness noted in docstring. |
 | (3.10) | Stewart relative-error counter <k> and rules <j><k> = <j+k>, <j>/<k> = <j+k> | **VERIFIED** | `relErrorCounter`, `relErrorCounter_mul`, `relErrorCounter_inv`, `relErrorCounter_div`, bound `relErrorCounter_abs_sub_one_le_gamma` (`Analysis/Rounding.lean`). |
 | (3.11) | ŷ = (A+ΔA)x, \|ΔA\| ≤ γₙ\|A\| | **VERIFIED** | `matVec_backward_error` (`Algorithms/MatVec.lean`). (Docstring cites "equation 3.10" — a label slip in the comment only; the statement is (3.11).) |
-| (3.12) | \|y − ŷ\| ≤ γₙ\|A\|\|x\| | **VERIFIED** | `matVec_error_bound`. Normwise corollaries p = 1, ∞ (square and rectangular): `matVec_error_bound_oneNorm(Rect)`, `matVec_error_bound_infNorm(Rect)`. **Residual:** the unnumbered 2-norm display ‖y−ŷ‖₂ ≤ min(m,n)^{1/2}γₙ‖A‖₂‖x‖₂ (via Lemma 6.6) is not formalized; only certificate-style operator-2 majorants exist (`matMul_error_bound_rectOpNorm2Le_majorant`). |
+| (3.12) | \|y − ŷ\| ≤ γₙ\|A\|\|x\| | **VERIFIED** | `matVec_error_bound`. Normwise corollaries p = 1, ∞ (square and rectangular): `matVec_error_bound_oneNorm(Rect)`, `matVec_error_bound_infNorm(Rect)`. The printed unnumbered 2-norm display is `matVec_error_bound_twoNormRect`, using the exact rectangular norm `rectOpNorm2` and proved Lemma 6.6(a) bridge `frobNormRect_le_sqrt_min_mul_rectOpNorm2`. |
 | (3.13) | \|C − Ĉ\| ≤ γₙ\|A\|\|B\| | **VERIFIED** | `matMul_error_bound` (`Algorithms/MatMul.lean`); per-column backward error (body display ĉⱼ = (A+ΔAⱼ)bⱼ): `matMul_backward_error_col`; normwise p = 1, ∞, F: `matMul_error_bound_oneNorm(Rect)`, `_infNormRect`, `_frobNorm(Rect)`, `_frobNorm_majorant`. Prose "whole Ĉ has no small backward error": counterexample `fl_matMul_counterexample_not_global_backward_A(_gamma)`. Prose sharpness "\|(A+ΔA)B − AB\|ᵢⱼ = u(\|A\|\|B\|)ᵢⱼ attainable": `matMul_forward_bound_sharp_A`, `matMul_forward_bound_sharp_B`. |
 | (3.14a–c) | Complex add/mul/div implementation formulas | **VERIFIED** | `fl_complexAdd`, `fl_complexSub`, `fl_complexMul`, `fl_complexDiv` in `Analysis/ComplexArithmetic.lean` implement exactly (3.14a–c) from rounded real ops (some docstrings cite "(3.13x)" — 1st-ed label slip in comments only). |
 
@@ -45,7 +52,7 @@ All Lean names below are in namespace `LeanFpAnalysis.FP`. Module paths are rela
 | Item | Status | Notes |
 |---|---|---|
 | Blocked inner product: \|sₙ−ŝₙ\| ≤ γ_{n/2+1}\|x\|ᵀ\|y\| (two pieces), γ_{n/k+k−1} (k pieces), minimum 2√n−1 at k = √n | **VERIFIED** | `Algorithms/BlockDotProduct.lean`: `blockDotProduct_error_bound` (radius `gamma (b+q)`; with k = q+1 blocks of length b and n = bk this is γ_{n/k+k−1}), `twoPieceDotProduct_error_bound`, `blockDotProduct_real_index_ge_optimum`, `blockDotProduct_real_index_at_sqrt`. |
-| Pairwise-summation dot product bound γ_{⌈log₂n⌉+1}\|x\|ᵀ\|y\| | **MISSING** (as ch3 display) | Depth-based summation-tree bounds exist in `Algorithms/SumTree.lean` (ch4 machinery, `gamma fp t.depth`); no packaged pairwise dot-product wrapper. |
+| Pairwise-summation dot product bound γ_{⌈log₂n⌉+1}\|x\|ᵀ\|y\| | **VERIFIED** | `clog2PairwiseDotProduct_error_bound` (`Algorithms/TreeDotProduct.lean`) zero-pads an arbitrary length to `2^(Nat.clog 2 n)`, evaluates a perfect balanced tree, and proves exactly `gamma fp (Nat.clog 2 n + 1)`; `Nat.clog 2 n` is the natural ceiling of log₂ n. |
 | Extended precision: \|xᵀy − fl(flₑ(xᵀy))\| ≤ u\|xᵀy\| + (nuₑ/(1−nuₑ))(1+u)\|x\|ᵀ\|y\| | **VERIFIED** | `Algorithms/ExtendedPrecisionDotProduct.lean`: `extendedDotProduct_error_bound` (abstract `FinalRoundingModel` for the working-precision final round, inner `FPModel` at uₑ); parenthetical "subscripts reduced by 1 if multiplications exact": `exactMulDotProduct_backward_error` (γ_{n−1}). |
 | sdot/saxpy rounding-error equivalence (§3.5) | **VERIFIED** | `fl_matVecSaxpy_eq_sdot` (`Algorithms/MatVec.lean`): exact equality of the computed vectors, the strongest possible form of "exactly the same rounding errors". |
 | §3.2 purpose of rounding error analysis | **SKIP-OK** (editorial) | The formal backward-stability predicate connection is `dotProduct_isRelBackwardStable` (`Analysis/Stability.lean` predicate). |
@@ -74,19 +81,21 @@ All Lean names below are in namespace `LeanFpAnalysis.FP`. Module paths are rela
 
 1. **Non-strict primitive model.** The repository `FPModel` uses \|δ\| ≤ u (non-strict). Where Higham's displays are strict (Lemma 3.4, Problem 3.2), the Lean theorems either assume strict local errors or add `0 < u` and recover the strict product radius; both variants exist and are labeled.
 2. **Algorithm 3.2 / model (2.5).** The executable running-error theorem is conditional on per-operation inverse-model witnesses (Higham (2.5)). This mirrors the printed derivation, which is itself conducted in model (2.5); (2.5) is an independent model assumption not derivable from the (2.4)-only `FPModel`.
-3. **Lemmas 3.6–3.8 are abstract-norm inductions.** Hypotheses are exactly the "consistent norm" (resp. Problem 6.5 mixed-norm) properties the printed proofs use. This is the honest general form; Lemma 3.7's concrete Frobenius/spectral instantiation is the one genuinely deferred item among the primary labels.
+3. **Lemmas 3.6–3.8 and concrete Lemma 3.7.** The reusable induction cores retain their honest abstract-norm hypotheses. `lemma3_7_frobenius_spectral_perturbation_bound` now packages the printed concrete norms and derives the spectral perturbation estimate from the source's Frobenius hypothesis rather than assuming it.
 4. **Uniform vs. graded gamma subscripts in (3.3).** The formal backward error bounds every perturbation by γₙ (the bound the source itself extracts); the finer graded structure is available from the factor-expansion theorems.
 5. **Comment-label slips.** A few docstrings cite 1st-edition/off-by-one equation numbers ((3.10) for (3.11), (3.13a) for (3.14a)); the attached statements match the 2nd-edition content audited here.
 
 ## Selected-scope gate: **PASS**
 
-All nine primary labels are VERIFIED at printed strength except Lemma 3.7, which is honestly PARTIAL (abstract mixed-norm core proved; concrete ‖·‖_F/‖·‖₂ instantiation deferred to call sites). All numbered equations (3.1)–(3.14) are covered. Open residual rows (none gate-blocking):
+All nine primary labels, all numbered equations (3.1)–(3.14), and the selected
+central body displays are verified at printed strength. The four bridges found
+missing by the fresh audit—concrete Lemma 3.7, any-order (3.4), the
+`γ_{⌈log₂n⌉+1}` pairwise display, and the rectangular 2-norm matvec display—are
+closed. No selected-scope residual remains.
 
-- Lemma 3.7: no packaged concrete Frobenius/spectral-norm instantiation in a ch3 module.
-- (3.4): "any order of evaluation" generality not restated (left-to-right order proved; general-order machinery lives in ch4).
-- §3.5 unnumbered 2-norm corollary ‖y−ŷ‖₂ ≤ min(m,n)^{1/2}γₙ‖A‖₂‖x‖₂: MISSING (only certificate-style 2-norm majorants).
-- Pairwise dot-product display γ_{⌈log₂n⌉+1}: MISSING as a packaged ch3 statement.
-- Problems 3.3, 3.7, 3.10, 3.11: honestly PARTIAL as recorded above (optional in core mode).
+Problems 3.3, 3.7, 3.10, and 3.11 remain honestly PARTIAL as recorded above;
+problems are optional in this ledger's core audit mode and are not bridge
+dependencies for Chapters 1–28.
 
 ## Cross-chapter role
 

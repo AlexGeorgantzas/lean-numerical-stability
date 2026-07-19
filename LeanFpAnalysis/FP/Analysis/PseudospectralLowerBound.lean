@@ -1,18 +1,18 @@
 -- Analysis/PseudospectralLowerBound.lean
 --
 -- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
--- Chapter 18, §18.2 — the ACHIEVABILITY (outward-growth) direction of the
--- ε-pseudospectral radius that Theorem 18.2 cites to [620, 1995] without
--- proof, discharged here CONSTRUCTIVELY by an explicit rank-one perturbation.
+-- Chapter 18, §18.2 — a constructive outward-growth direction for the
+-- ε-pseudospectral radius.  This exact eigenvector-preserving rank-one route is
+-- useful infrastructure, but it is weaker than the [620, 1995] perturbation
+-- expansion used in Theorem 18.2 and does not discharge that cited step.
 --
 -- CONTEXT.  `Algorithms/MatrixPowersPseudospectral.lean` packages Theorem 18.2
 -- through the `h620` witness — the eigenvalue-perturbation lower bound the
 -- printed proof leaves unproved — and `MatrixPowersPseudospectralCriterion.lean`
 -- isolates the *upper* half of the criterion (spectrum ⊆ pseudospectrum ⊆ unit
 -- disc), explicitly recording the achievability *lower* bound as the one
--- ingredient it could not remove.  This module supplies exactly that missing
--- lower bound, WITHOUT the external paper, by the standard first-order
--- pseudospectral construction.
+-- ingredient it could not remove.  This module supplies a strictly positive
+-- exact lower bound, not the source-strength `κ₂(X)ε/n² + O(ε²)` lower bound.
 --
 -- THE ROUTE (constructive, no external paper).  Given a right eigenpair
 -- `A v = λ v` with `v ≠ 0` and a dual covector `w` with `∑_j w_j v_j = 1`
@@ -29,8 +29,10 @@
 -- (first-order OUTWARD growth of the modulus).  The admissible `s` is read off
 -- from `Nm E_t ≤ ε`; with `s = c·ε` this needs `c ≤ 1/Nm(v wᵀ)`, and the
 -- reciprocal condition number `c = |u* v|` is the value for the 2-norm
--- (`‖v uᵀ‖₂ = ‖v‖₂‖u‖₂ = 1` for unit v,u), matching the textbook first-order
--- law `ρ_ε ≈ ρ + ε/|u* v|`.
+-- (`‖v uᵀ‖₂ = ‖v‖₂‖u‖₂ = 1` for unit v,u).  This is deliberately distinguished
+-- from the optimal eigenvalue first-order coefficient
+-- `κ(λ) = 1/|u* v|`, which requires a non-eigenvector-preserving perturbation
+-- and a controlled `O(ε²)` expansion.
 --
 -- WHAT IS UNCONDITIONAL / HONEST HERE:
 --   * `pseudospectrum_mem_of_aligned_rankOne_perturbation` — the core: for ANY
@@ -49,7 +51,7 @@
 --   * `pseudospectralRadius_ge_entrywiseSum` — a FULLY CLOSED instantiation with
 --       ZERO norm hypotheses, using the repo's concrete entrywise-sum norm, giving
 --       the explicit constant `c = 1/(‖v‖₁ ‖w‖₁)`.
---   * `pseudospectralRadius_reciprocalCondNumber_growth` — the faithful
+--   * `pseudospectralRadius_reciprocalCondNumber_growth` — the exact
 --       `c = |u* v|` corollary under the CLEARLY DISCLOSED 2-norm normalization
 --       identity `Nm(v uᵀ) = ‖v‖₂ ‖u‖₂ = 1` (a genuine, standard fact about the
 --       spectral norm, supplied as a hypothesis, NOT smuggled).
@@ -229,19 +231,18 @@ theorem alignedShift_rankOne_perturbation_size {n : ℕ}
     ring
   rw [hrw, hom, norm_alignedShift lam hlam s hs]
 
-/-- **First-order achievability lower bound `ρ_ε(A) ≥ ρ + c·ε` with explicit
-    `c = 1/Nm(v wᵀ)`** (Higham §18.2, the first-order pseudospectral growth
-    `ρ_ε ≈ ρ + ε/|u* v|`, 2nd ed. p. 349, discharged constructively).
+/-- **Exact aligned-rank-one lower bound `ρ_ε(A) ≥ ρ + c·ε` with explicit
+    `c = 1/Nm(v wᵀ)`.**
 
     Data: a dominant eigenpair (`A v = λ v`, `v ≠ 0`, `λ ≠ 0`, `‖λ‖ = ρ`), a
     dual covector `w` (`∑_j w_j v_j = 1`), an absolutely homogeneous norm `Nm`
     with `Nm(v wᵀ) > 0`, and `ε ≥ 0`.  With the explicit constant
     `c = 1/Nm(v wᵀ)` and the outward shift `s = c·ε`, the aligned perturbation
     has Nm-size `s·Nm(v wᵀ) = ε` (exactly admissible), so the point `ρ + c·ε`
-    lies in the ε-pseudospectrum.  This is the honest content of the textbook
-    first-order law `ρ_ε ≈ ρ + ε/|u* v|`: the homogeneity of `Nm` (a genuine
-    matrix norm — disclosed as the hypothesis `hom`, not smuggled) is all that
-    is used beyond the eigenpair. -/
+    lies in the ε-pseudospectrum.  This exact construction should not be
+    confused with the optimal first-order perturbation law: after normalizing a
+    left eigenvector, it produces the reciprocal coefficient `|u*v|`, whereas
+    the optimal derivative has coefficient `1/|u*v|` and an `O(ε²)` remainder. -/
 theorem pseudospectralRadius_ge_first_order {n : ℕ}
     (Nm : CMatrix n n → ℝ) (ε : ℝ) (hε : 0 ≤ ε) (A : CMatrix n n)
     (lam : ℂ) (v w : CVec n) (hv : v ≠ 0) (hlam : lam ≠ 0)
@@ -374,12 +375,10 @@ theorem pseudospectralRadius_gt_entrywiseSum {n : ℕ}
     ρ ((1 / (complexVecOneNorm v * complexVecOneNorm w)) * ε) r hspos hpt hlt
 
 -- ============================================================
--- §18.2  Faithful  c = |u*v|  reciprocal-condition-number corollary
+-- §18.2  Exact c = |u*v| eigenvector-preserving corollary
 -- ============================================================
 
-/-- **Reciprocal-condition-number growth `ρ_ε(A) ≥ ρ + |u* v| · ε`** (Higham
-    §18.2, the standard first-order law `ρ_ε ≈ ρ + ε/κ(λ) = ρ + ε·|u* v|` for
-    unit eigenvectors, 2nd ed. p. 349, discharged constructively).
+/-- **Eigenvector-preserving growth `ρ_ε(A) ≥ ρ + |u* v| · ε`.**
 
     Data: a dominant eigenpair (`A v = λ v`, `v ≠ 0`, `λ ≠ 0`, `‖λ‖ = ρ`), a
     left eigenvector packaged as the dual covector `w = uᵀ/(u* v)` so that
@@ -393,7 +392,9 @@ theorem pseudospectralRadius_gt_entrywiseSum {n : ℕ}
     1`) and `w = uᵀ/(u* v)`, one has `‖v wᵀ‖₂ = ‖v‖₂‖w‖₂ = ‖u‖₂/|u* v| =
     1/|u* v|`.  It is DISCLOSED here rather than smuggled — and it holds for the
     real object (the 2-norm), which is the norm the book uses.  Under it, the
-    point `ρ + |u* v| · ε` lands in the ε-pseudospectrum. -/
+    point `ρ + |u* v| · ε` lands in the ε-pseudospectrum.  This is a valid but
+    non-optimal lower bound; it does not imply Higham's cited
+    `κ₂(X)ε/n² + O(ε²)` estimate for Theorem 18.2. -/
 theorem pseudospectralRadius_reciprocalCondNumber_growth {n : ℕ}
     (Nm : CMatrix n n → ℝ) (ε : ℝ) (hε : 0 ≤ ε) (A : CMatrix n n)
     (lam : ℂ) (v w : CVec n) (hv : v ≠ 0) (hlam : lam ≠ 0)

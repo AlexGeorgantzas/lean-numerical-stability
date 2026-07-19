@@ -18,7 +18,7 @@
 | (26.4) | `inverseResidualStabilityMeasure` | exact maximum-row-sum residual definition |
 | (26.5)-(26.6) | `depressedCubic_identity`, `cubicWCubePlus_quadratic`, `cubicWCubeMinus_quadratic`, `stableCubicWCube_quadratic` | end-to-end exact cubic algebra |
 | (26.7) | `monicCubic`, `cubicRootResidualMeasure` | exact residual objective only; no empirical accuracy claim |
-| Section 26.4 | `RealInterval` operations and `*_contains` theorems | exact endpoint definitions and set-soundness for `+,-,*,/` |
+| Section 26.4 | `RealInterval` operations, `*_contains` theorems, `dependency_sub_example`, `dependency_div_example` | exact endpoint definitions, set-soundness for `+,-,*,/`, and both printed dependency-widening examples |
 | Section 26.4 computed endpoints | `outwardRounded`, `outwardAdd/Sub/Mul/Div` and containment theorems | concrete finite-range IEEE directed-rounding enclosure |
 
 ## Computed directed-rounding closure

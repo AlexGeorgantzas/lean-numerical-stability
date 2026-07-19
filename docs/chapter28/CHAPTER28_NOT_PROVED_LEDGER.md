@@ -1,14 +1,19 @@
 # Chapter 28 Not-Proved Ledger
 
-The Chapter 28 selected-scope gate is now **PASS** (previously FAIL): row
-28-P3 — the last open row — is now CLOSED. `Higham28GinibreFiniteFormula.lean`
+The Chapter 28 selected-scope gate is **FAIL** under the fresh strict precise-
+prose audit. Row 28-P3's headline limit is CLOSED. `Higham28GinibreFiniteFormula.lean`
 proves the premise-free, axiom-clean `ch28gf_realGinibreFiniteExpectationFormula`
 (`∀ n, 0 < n → expectedRealEigenvalueCount n = realGinibreExpectedCountClosedForm n`)
 and hence the premise-free `ch28gf_realGinibreExpectedCountLimit`
-(`E_n/√n → √(2/π)`). Every selected non-Ginibre mathematical row is PASS or
-has a terminal source-imprecision/source-discrepancy disposition. Theorem
-28.1, the uniform/Perron row, and all selected Hilbert, Cauchy, randsvd,
-Pascal, Toeplitz, and companion endpoints are terminal.
+(`E_n/√n → √(2/π)`). The remaining selected gaps are listed below.
+
+## Open selected rows
+
+| ID | Printed claim | Existing evidence | Exact missing production |
+|---|---|---|---|
+| 28-A1, p. 514 | `κ₂(H_n) ∼ exp(3.5n)` and explicit statement of exponential growth | `hilbertConditionTwo` and the unproved recorded proposition `HilbertConditionAsymptotic`; shifted-Hilbert norm clause is proved | A corrected source-faithful growth theorem, e.g. `log(κ₂(H_n))/n → 4 log(1+√2)`. The rounded decimal makes literal ratio equivalence false/inappropriate, but does not make the central exponential-rate claim under-specified. |
+| 28-PQR, p. 517 | Positive-diagonal QR of iid `N(0,σ²)` square data yields Haar `Q` for every variance | Stewart's different Householder-product Haar theorem | A measurable normalized-QR producer and push-forward proof for the Gaussian matrix law. |
+| 28-P4g, p. 520 | General construction `X=ZDZ⁻¹`, `D²=I`, `A=XᵀX` gives SPD determinant-one matrices with reciprocal roots | Pascal-specific involution and reciprocal eigenpair theorems | General matrix algebra, determinant, positive-definiteness, similarity/inverse, and reciprocal-spectrum theorem for the printed symbolic family. |
 
 ## Formerly-open selected row 28-P3 (now CLOSED)
 
@@ -16,7 +21,7 @@ Pascal, Toeplitz, and companion endpoints are terminal.
 |---|---|---|---|---|
 | 28-P3 | For a real `n × n` Ginibre matrix, `E_n / sqrt(n) -> sqrt(2/pi)` | `measurable_realEigenvalueCount` and `integrable_realEigenvalueCount` close the actual count's measurability and integrability. `lintegral_ginibreIncidence_regular_eq_rootCount`, `lintegral_ginibreIncidence_gaussian_eq_rootCount`, and `lintegral_ginibreIncidence_gaussian_eq_expected` close the multiplicity/coarea/incidence-to-expectation chain. `realGinibreExpectedCountClosedForm_limit` proves the closed-form sequence's limit; `expectedRealEigenvalueCount_eq_closedForm_one` and `expectedRealEigenvalueCount_eq_closedForm_two` prove dimensions one and two. The determinant/projective/characteristic-product modules supply further unconditional reductions. | NOW SUPPLIED: `ch28gf_realGinibreFiniteExpectationFormula` proves the premise-free all-positive-dimension `∀ n, 0 < n → expectedRealEigenvalueCount n = realGinibreExpectedCountClosedForm n`, and `ch28gf_realGinibreExpectedCountLimit` proves the premise-free `E_n/√n → √(2/π)` (both axiom-clean, `Higham28GinibreFiniteFormula.lean`), completing the incidence chain via the new kernel-transfer link `ch28gf_kernelTransfer` and feeding the formerly-conditional bridge `realGinibreExpectedCountLimit_of_finiteExpectationFormula`. | **CLOSED** (previously OPEN) |
 
-There is no remaining gap. The former bottleneck — the all-positive-dimension
+The former Ginibre bottleneck — the all-positive-dimension
 scalar evaluation of the exact expectation/determinant integral (equivalently,
 the all-positive-dimension absolute-characteristic-moment evaluation or
 recurrence needed to identify it with the proved EKS closed form) — is now
@@ -48,9 +53,9 @@ feeding `ch28gf_realGinibreFiniteExpectationFormula`.
 
 ## Terminal non-proof dispositions
 
-- The rounded `kappa_2(H_n) ~ exp(3.5n)` clause is
-  `DEFER-MISSING-PRECISE-STATEMENT`; the precise shifted-Hilbert clause in
-  the same row is PASS.
+- The rounded `kappa_2(H_n) ~ exp(3.5n)` clause is no longer treated as a
+  terminal deferral. It is an open precise-prose row requiring a corrected
+  exact log-growth theorem; the shifted-Hilbert clause in the same row is PASS.
 - Equations (28.5)-(28.11) are `DEFER-MISSING-PRECISE-STATEMENT`: `approx`
   is printed without a convergence mode, error term, or event.
 - The pp. 512-513 GE/Cholesky componentwise-stability prose, p. 517

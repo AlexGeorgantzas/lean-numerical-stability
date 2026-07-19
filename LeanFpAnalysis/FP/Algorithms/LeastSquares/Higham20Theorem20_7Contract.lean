@@ -225,6 +225,20 @@ noncomputable def pivotedStoredQRRhsComponentBudget (fp : FPModel) {m n : ℕ}
     (pivotedStoredQRBeta fp hmn A k)
     (fl_pivotedStoredQRRhsSeq fp hmn A b k) i
 
+/-- The literal local RHS arithmetic budget is nonnegative. -/
+theorem pivotedStoredQRRhsComponentBudget_nonneg
+    (fp : FPModel) {m n : ℕ} (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (hm : gammaValid fp m) (k : ℕ) (i : Fin m) :
+    0 ≤ pivotedStoredQRRhsComponentBudget fp hmn A b k i := by
+  by_cases hi : i.val < k
+  · simp [pivotedStoredQRRhsComponentBudget, hi]
+  · simp only [pivotedStoredQRRhsComponentBudget, if_neg hi]
+    exact householderCompactComponentBudget_nonneg fp m
+      (pivotedStoredQRRawVector fp hmn A k)
+      (pivotedStoredQRBeta fp hmn A k)
+      (fl_pivotedStoredQRRhsSeq fp hmn A b k) hm i
+
 /-- The actual RHS stage residual is controlled by the explicit local compact
 budget. -/
 theorem pivotedStoredQRRhsEseq_abs_le_componentBudget
@@ -330,6 +344,30 @@ def PivotedStoredQRCoxHighamRowPolicy.toForward
   raw_vector_row := policy.raw_vector_row
   prefix_vector_row := policy.prefix_vector_row
   topR_row := policy.topR_row
+
+/-- Build the forward policy from exactly its three nonautomatic trace
+obligations.  The final-`R` row field is always available because the printed
+alpha scale already takes a maximum over every stage through the final one. -/
+theorem PivotedStoredQRCoxHighamForwardRowPolicy.of_trace_core
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ)
+    (hsigma : ∀ k, k < n → 0 < |pivotedStoredQRSigma fp hmn A k|)
+    (hraw : ∀ k, k < n → ∀ i,
+      |pivotedStoredQRRawVector fp hmn A k i| ≤
+        2 * pivotedStoredQRPrintedAlphaScale fp hmn A i)
+    (hprefix : ∀ k, k < n → ∀ i,
+      |Wave19.applyProd
+          (fun q => householder m
+            (pivotedStoredQRRawVector fp hmn A q)
+            (pivotedStoredQRBeta fp hmn A q)) 0 k
+          (pivotedStoredQRRawVector fp hmn A k) i| ≤
+        (1 + 4 * (k : ℝ)) * 2 *
+          pivotedStoredQRPrintedAlphaScale fp hmn A i) :
+    PivotedStoredQRCoxHighamForwardRowPolicy fp hn hmn A where
+  sigma_pos := hsigma
+  raw_vector_row := hraw
+  prefix_vector_row := hprefix
+  topR_row := pivotedStoredQRTopR_abs_le_printedAlphaScale fp hmn A
 
 /-- Build the primitive row policy from its genuinely numerical trace
 obligations.  The final-`R` row bound is discharged internally from the
@@ -561,6 +599,260 @@ theorem pivotedStoredQR_backSub_direct_multiplier_le_of_roundedPolicy
     _ ≤ gammaTilde := by
       simpa [v, topR] using policy.backSub_multiplier_budget k hk j
 
+/-- Finite a-posteriori envelope of the direct triangular-correction
+multipliers.  This is useful for separating a genuinely difficult
+source-class coefficient estimate from mere existence of a finite bound.  It
+is deliberately not advertised as Higham's data-independent
+`gammaTilde`-class constant. -/
+noncomputable def pivotedStoredQRBackSubMultiplierEnvelope
+    (fp : FPModel) {m n : ℕ} (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) : ℝ :=
+  max (gamma fp n)
+    (⨆ k : Fin n, ⨆ j : Fin n,
+      |pivotedStoredQRBeta fp hmn A k.val| *
+        (∑ s : Fin m,
+          |pivotedStoredQRRawVector fp hmn A k.val s| *
+            (gamma fp n *
+              |rectTopBlock (m := m)
+                (pivotedStoredQRTopR fp hmn A) s j|)))
+
+/-- Every local direct multiplier is bounded by the finite envelope, without
+assuming a transported perturbation or final backward-error conclusion. -/
+theorem pivotedStoredQR_backSub_multiplier_le_envelope
+    (fp : FPModel) {m n : ℕ} (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (k : ℕ) (hk : k < n) (j : Fin n) :
+    |pivotedStoredQRBeta fp hmn A k| *
+        (∑ s : Fin m,
+          |pivotedStoredQRRawVector fp hmn A k s| *
+            (gamma fp n *
+              |rectTopBlock (m := m)
+                (pivotedStoredQRTopR fp hmn A) s j|)) ≤
+      pivotedStoredQRBackSubMultiplierEnvelope fp hmn A := by
+  let kf : Fin n := ⟨k, hk⟩
+  let f : Fin n → Fin n → ℝ := fun q r =>
+    |pivotedStoredQRBeta fp hmn A q.val| *
+      (∑ s : Fin m,
+        |pivotedStoredQRRawVector fp hmn A q.val s| *
+          (gamma fp n *
+            |rectTopBlock (m := m)
+              (pivotedStoredQRTopR fp hmn A) s r|))
+  have hj : f kf j ≤ ⨆ r : Fin n, f kf r :=
+    le_ciSup (Finite.bddAbove_range (f kf)) j
+  have hkf : (⨆ r : Fin n, f kf r) ≤
+      ⨆ q : Fin n, ⨆ r : Fin n, f q r :=
+    le_ciSup
+      (Finite.bddAbove_range (fun q : Fin n => ⨆ r : Fin n, f q r)) kf
+  exact (show f kf j ≤
+      pivotedStoredQRBackSubMultiplierEnvelope fp hmn A from
+    (hj.trans hkf).trans (le_max_right _ _))
+
+/-- Once the four forward-row fields are available, all three extra fields of
+the rounded-feedback policy have an unconditional finite producer.  The
+resulting coefficient is the a-posteriori envelope above; obtaining Higham's
+data-independent `gammaTilde`-class estimate remains a separate numerical
+analysis obligation. -/
+theorem PivotedStoredQRCoxHighamRoundedRowPolicy.of_forward_envelope
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (hgammaN : gammaValid fp n)
+    (forward : PivotedStoredQRCoxHighamForwardRowPolicy fp hn hmn A) :
+    PivotedStoredQRCoxHighamRoundedRowPolicy fp hn hmn A
+      (pivotedStoredQRBackSubMultiplierEnvelope fp hmn A) where
+  toPivotedStoredQRCoxHighamForwardRowPolicy := forward
+  gamma_nonneg :=
+    (LeanFpAnalysis.FP.gamma_nonneg fp hgammaN).trans (le_max_left _ _)
+  gamma_n_le := le_max_left _ _
+  backSub_multiplier_budget := fun k hk j =>
+    pivotedStoredQR_backSub_multiplier_le_envelope fp hmn A k hk j
+
+/-- Fully factor the rounded policy into the three genuine forward-trace
+obligations.  The final-`R` row bound, coefficient nonnegativity, gamma
+domination, and direct back-substitution multiplier field are all produced
+internally.  The coefficient remains the finite a-posteriori envelope, not a
+source-class dimension-only constant. -/
+theorem PivotedStoredQRCoxHighamRoundedRowPolicy.of_trace_envelope
+    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (hgammaN : gammaValid fp n)
+    (hsigma : ∀ k, k < n → 0 < |pivotedStoredQRSigma fp hmn A k|)
+    (hraw : ∀ k, k < n → ∀ i,
+      |pivotedStoredQRRawVector fp hmn A k i| ≤
+        2 * pivotedStoredQRPrintedAlphaScale fp hmn A i)
+    (hprefix : ∀ k, k < n → ∀ i,
+      |Wave19.applyProd
+          (fun q => householder m
+            (pivotedStoredQRRawVector fp hmn A q)
+            (pivotedStoredQRBeta fp hmn A q)) 0 k
+          (pivotedStoredQRRawVector fp hmn A k) i| ≤
+        (1 + 4 * (k : ℝ)) * 2 *
+          pivotedStoredQRPrintedAlphaScale fp hmn A i) :
+    PivotedStoredQRCoxHighamRoundedRowPolicy fp hn hmn A
+      (pivotedStoredQRBackSubMultiplierEnvelope fp hmn A) :=
+  PivotedStoredQRCoxHighamRoundedRowPolicy.of_forward_envelope
+    fp hn hmn A hgammaN
+      (PivotedStoredQRCoxHighamForwardRowPolicy.of_trace_core
+        fp hn hmn A hsigma hraw hprefix)
+
+/-! ### Source-rank obstruction for an unconditional rounded-policy producer
+
+The standard relative-error `FPModel` and source full column rank do not imply
+that the rounded recursion has a nonzero pivot at every stage.  In the legal
+two-by-two example below, multiplication rounds upward by the allowed factor
+`5/4`.  The first compact update cancels the second stored pivot exactly even
+though the source matrix is injective.  Hence `sigma_pos`, the first field of
+the forward policy, cannot be produced from source rank and `gammaValid`
+alone.  An explicit computed-nonbreakdown hypothesis or a stronger
+conditioning theorem is mathematically necessary.
+-/
+
+/-- Legal quarter-unit-roundoff model whose multiplications attain relative
+error `1/4`; every other primitive operation is exact. -/
+noncomputable def breakdownMulInflatedQuarterFPModel : FPModel where
+  u := (1 : ℝ) / 4
+  u_nonneg := by norm_num
+  fl_add := fun x y => x + y
+  fl_sub := fun x y => x - y
+  fl_mul := fun x y => (x * y) * (5 / 4 : ℝ)
+  fl_div := fun x y => x / y
+  fl_sqrt := fun x => Real.sqrt x
+  fl_add_zero := by intro x; ring
+  model_add := by
+    intro x y
+    exact ⟨0, by norm_num, by ring⟩
+  model_sub := by
+    intro x y
+    exact ⟨0, by norm_num, by ring⟩
+  model_mul := by
+    intro x y
+    exact ⟨(1 : ℝ) / 4, by norm_num, by ring⟩
+  model_div := by
+    intro x y _hy
+    exact ⟨0, by norm_num, by ring⟩
+  model_sqrt := by
+    intro x _hx
+    exact ⟨0, by norm_num, by ring⟩
+
+/-- Full-rank source matrix for the rounded-breakdown counterexample.  Its
+first column has norm one and is selected first; the second column is chosen
+so the inflated compact multiplications cancel its remaining entry. -/
+noncomputable def breakdownCounterA : Fin 2 → Fin 2 → ℝ
+  | ⟨0, _⟩, ⟨0, _⟩ => 0
+  | ⟨1, _⟩, ⟨0, _⟩ => 1
+  | ⟨0, _⟩, ⟨1, _⟩ => -(61 / 250 : ℝ)
+  | ⟨1, _⟩, ⟨1, _⟩ => 1 / 2
+
+theorem breakdownCounterA_mulVec_injective :
+    Function.Injective (rectMatMulVec breakdownCounterA) := by
+  intro x y hxy
+  funext j
+  have h0 := congrFun hxy (0 : Fin 2)
+  have h1 := congrFun hxy (1 : Fin 2)
+  fin_cases j <;>
+    norm_num [rectMatMulVec, breakdownCounterA, Fin.sum_univ_two] at h0 h1 ⊢ <;>
+    linarith
+
+theorem breakdownCounter_gammaValid_two :
+    gammaValid breakdownMulInflatedQuarterFPModel 2 := by
+  norm_num [gammaValid, breakdownMulInflatedQuarterFPModel]
+
+theorem breakdownCounter_pivot0 :
+    householderActiveMaxPivotColumn (0 : Fin 2) (0 : Fin 2)
+      breakdownCounterA = 0 := by
+  let q := householderActiveMaxPivotColumn (0 : Fin 2) (0 : Fin 2)
+    breakdownCounterA
+  have hmax := householderActiveMaxPivotColumn_pivot_max
+    (0 : Fin 2) (0 : Fin 2) breakdownCounterA (0 : Fin 2) (by norm_num)
+  change q = 0
+  have hqv : q.val = 0 := by
+    by_contra hne
+    have hq1 : q.val = 1 := by omega
+    have hqeq : q = (1 : Fin 2) := Fin.ext hq1
+    change householderTrailingColumnNorm2Sq (0 : Fin 2) breakdownCounterA 0 ≤
+      householderTrailingColumnNorm2Sq (0 : Fin 2) breakdownCounterA q at hmax
+    rw [hqeq] at hmax
+    norm_num [householderTrailingColumnNorm2Sq,
+      householderTrailingNorm2Sq, breakdownCounterA,
+      householderTrailingPart, vecNorm2Sq] at hmax
+  exact Fin.ext hqv
+
+theorem breakdownCounter_swap0 :
+    pivotedStoredQRSwappedPanel breakdownMulInflatedQuarterFPModel
+      (m := 2) (n := 2) (by omega) breakdownCounterA 0 =
+        breakdownCounterA := by
+  funext i j
+  simp [pivotedStoredQRSwappedPanel, pivotedStoredQRSwapSeq,
+    fl_pivotedStoredQRMatrixSeq, pivotedQRActiveRow, pivotedQRActiveCol,
+    breakdownCounter_pivot0, Wave13.columnPermuteMatrix]
+
+theorem breakdownCounter_rawVector0 :
+    pivotedStoredQRRawVector breakdownMulInflatedQuarterFPModel
+      (m := 2) (n := 2) (by omega) breakdownCounterA 0 =
+        fun _ => (1 : ℝ) := by
+  funext i
+  fin_cases i <;>
+    norm_num [pivotedStoredQRRawVector, pivotedQRActiveRow,
+      pivotedQRActiveCol, breakdownCounter_swap0,
+      householderTrailingActiveVector, householderActiveVector,
+      householderTrailingPart, householderTrailingNorm2Sq, vecNorm2Sq,
+      Fin.sum_univ_two, signedHouseholderAlpha, breakdownCounterA]
+
+theorem breakdownCounter_beta0 :
+    pivotedStoredQRBeta breakdownMulInflatedQuarterFPModel
+      (m := 2) (n := 2) (by omega) breakdownCounterA 0 = 1 := by
+  norm_num [pivotedStoredQRBeta, breakdownCounter_rawVector0,
+    householderBetaSpec, Fin.sum_univ_two]
+
+theorem breakdownCounter_A1_11 :
+    fl_pivotedStoredQRMatrixSeq breakdownMulInflatedQuarterFPModel
+      (m := 2) (n := 2) (by omega) breakdownCounterA 1
+      (1 : Fin 2) (1 : Fin 2) = 0 := by
+  rw [fl_pivotedStoredQRMatrixSeq_succ_of_lt
+    breakdownMulInflatedQuarterFPModel (m := 2) (n := 2)
+    (by omega) breakdownCounterA 0 (by omega)]
+  rw [breakdownCounter_rawVector0, breakdownCounter_beta0,
+    breakdownCounter_swap0]
+  norm_num [fl_householderStoredPanelStep,
+    fl_householderApplyCompactPanel, fl_householderApplyCompact,
+    fl_dotProduct, Fin.foldl_succ, breakdownCounterA,
+    breakdownMulInflatedQuarterFPModel]
+  all_goals rfl
+
+theorem breakdownCounter_pivot1 :
+    householderActiveMaxPivotColumn (1 : Fin 2) (1 : Fin 2)
+      (fl_pivotedStoredQRMatrixSeq breakdownMulInflatedQuarterFPModel
+        (by omega) breakdownCounterA 1) = 1 := by
+  apply Fin.ext
+  have hge := householderActiveMaxPivotColumn_ge
+    (1 : Fin 2) (1 : Fin 2)
+    (fl_pivotedStoredQRMatrixSeq breakdownMulInflatedQuarterFPModel
+      (by omega) breakdownCounterA 1)
+  omega
+
+theorem breakdownCounter_swap1_11 :
+    pivotedStoredQRSwappedPanel breakdownMulInflatedQuarterFPModel
+      (m := 2) (n := 2) (by omega) breakdownCounterA 1
+      (1 : Fin 2) (1 : Fin 2) = 0 := by
+  simp [pivotedStoredQRSwappedPanel, pivotedStoredQRSwapSeq,
+    pivotedQRActiveRow, pivotedQRActiveCol, breakdownCounter_pivot1,
+    Wave13.columnPermuteMatrix, breakdownCounter_A1_11]
+
+theorem breakdownCounter_sigma1 :
+    pivotedStoredQRSigma breakdownMulInflatedQuarterFPModel
+      (m := 2) (n := 2) (by omega) breakdownCounterA 1 = 0 := by
+  norm_num [pivotedStoredQRSigma, pivotedQRActiveRow, pivotedQRActiveCol,
+    householderTrailingColumnNorm2Sq, householderTrailingNorm2Sq,
+    householderTrailingPart, vecNorm2Sq, Fin.sum_univ_two,
+    breakdownCounter_swap1_11]
+
+/-- Full source rank and valid gamma depth do not produce the rounded row
+policy for any coefficient: its first `sigma_pos` obligation is false. -/
+theorem breakdownCounter_no_roundedRowPolicy (gammaTilde : ℝ) :
+    ¬ PivotedStoredQRCoxHighamRoundedRowPolicy
+      breakdownMulInflatedQuarterFPModel (m := 2) (n := 2)
+      (by omega) (by omega) breakdownCounterA gammaTilde := by
+  intro policy
+  have h := policy.sigma_pos 1 (by omega)
+  rw [breakdownCounter_sigma1] at h
+  norm_num at h
+
 /-- A one-by-one nonzero exact trace used to certify that the corrected policy
 is genuinely inhabitable (unlike the refuted legacy exact-tail policy). -/
 noncomputable def roundedPolicyExactOneA : Fin 1 → Fin 1 → ℝ := fun _ _ => 1
@@ -680,6 +972,20 @@ structure PivotedStoredQRCoxHighamRowSortingCaps (fp : FPModel) {m n : ℕ}
   rowSortCoeff_le_printed :
     rowSortCoeff ≤ Real.sqrt (m : ℝ) *
       (1 + Real.sqrt 2) ^ (n - 1)
+
+/-- The literal local matrix arithmetic budget is nonnegative. -/
+theorem pivotedStoredQRComponentBudget_nonneg
+    (fp : FPModel) {m n : ℕ} (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (hm : gammaValid fp m)
+    (k : ℕ) (i : Fin m) (j : Fin n) :
+    0 ≤ pivotedStoredQRComponentBudget fp hmn A k i j := by
+  by_cases hj : j.val < k
+  · simp [pivotedStoredQRComponentBudget, hj]
+  · simp only [pivotedStoredQRComponentBudget, if_neg hj]
+    exact householderCompactComponentBudget_nonneg fp m
+      (pivotedStoredQRRawVector fp hmn A k)
+      (pivotedStoredQRBeta fp hmn A k)
+      (fun r => pivotedStoredQRSwappedPanel fp hmn A k r j) hm i
 
 /-- Primitive local compact-operation obligations.  They bound the explicit
 matrix/RHS component budgets at each stage.  Matrix transport uses the (2.12)

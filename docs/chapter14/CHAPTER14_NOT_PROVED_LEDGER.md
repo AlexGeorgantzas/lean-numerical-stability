@@ -2,21 +2,33 @@
 
 ## Selected-Scope Gate
 
-**Current status: CLOSED.**
+**Current status: OPEN (strict gate FAIL).**
 
-The 78-row source inventory is the authoritative accounting document. All 68 selected rows are discharged: 66 are `PASS` and two are `SOURCE-ERROR/CORRECTED`. There are no selected proof obligations remaining.
+The 78-row source inventory remains the authoritative accounting document.
+Theorem 14.5 and Corollaries 14.6-14.7 are open because their exact-constant
+theorems consume source-family structures that no rounded Algorithm 14.4
+execution constructs.
 
-The final source-active endpoints are:
+| Source location | Exact selected claim | Current Lean status | Why the current result does not close it | Smallest missing producer | Blocking final gate? |
+|---|---|---|---|---|---|
+| Theorem 14.5, (14.31)-(14.33) | Printed residual and forward bounds for a successful computed GJE solution | Conditional family endpoint | `ch14ext_gjeSourceTrace_theorem14_5_printed_vanishing_family_endpoint` assumes `Ch14GJETheorem145SourceFamily`; in particular, its rounded trace is assumed to finish at `I` and its stage/inverse families are assumed `O(1)` | A rounded executor with structural zeroing and final diagonal scaling, plus a constructor proving the family fields for that same trace | YES |
+| Corollary 14.6 | SPD residual and relative-forward constants | Conditional family endpoint | `Ch14Cor146SourceRunFamily` is unconstructed and additionally contains scaled-inverse and uniform-inverse regularity fields | Construct it from the corrected rounded executor and SPD/positive-pivot hypotheses | YES |
+| Corollary 14.7 | Row-diagonally-dominant residual and relative-forward constants | Conditional family endpoint | `Ch14Cor147SourceFamily` is unconstructed and contains finalization and uniform stage/inverse regularity fields | Construct it from the corrected rounded executor and row-dominance hypotheses | YES |
 
-| Source group | Final closure |
-|---|---|
-| Algorithm 14.4 through Theorem 14.5 | `Ch14GJETheorem145SourceClosure.lean`: `ch14ext_gjeSourceTrace_theorem14_5_printed_vanishing_family_endpoint` |
-| Corollary 14.6 | `Ch14Corollary146SourceClosure.lean`: `ch14ext_cor146Source_vanishing_family_endpoint` |
-| Corollary 14.7 | `Ch14Corollary147SourceClosure.lean`: `ch14ext_cor147Source_vanishing_family_endpoint` |
+`Ch14GJEOperationalBridge.lean` discharges the tractable witness fields:
+`ch14ext_gjeSourceComputedOutput` is definitionally the trace output, while
+`ch14ext_gjeCanonicalUpperInverse_isInverse` and
+`ch14ext_gjeCanonicalUpperSolve_exact` construct the exact analysis-only
+inverse and solve from nonsingularity. The family solve is `O(1)` once the
+canonical inverse and RHS are `O(1)`.
 
-`Ch14GJEPrintedEnvelopeClosure.lean` is a generic algebraic helper. Its older unmasked-family endpoint is not used as the final Chapter 14 closure; the source-active masked trace and derived boundedness live in `Ch14GJETheorem145SourceClosure.lean`.
-
-Likewise, `Ch14Corollary146Closure.lean` retains the older unmasked fixed-run helper route, but the accepted Corollary 14.6 endpoint is the masked source-trace theorem in `Ch14Corollary146SourceClosure.lean`.
+The same module also rules out the missing bridge for the current executor.
+`ch14ext_finalizationCounter_all_local_guards_but_not_identity` proves both
+gamma-validity guards and operational pivot success for a normalized 2-by-2
+trace, while the same legal `FPModel` leaves the eliminated entry equal to
+`-u`. Thus all current local guards still cannot prove
+the old `final_matrix = I` field; a structural-zero/final-scaling executor is
+required.
 
 ## Intentional Exclusions
 

@@ -18,7 +18,8 @@
 - The Problems page has **two** rows, Problems 25.1 and 25.2, printed p. 469 / PDF 11. The former count of one problem was incorrect.
 - Appendix A provides a solution for Problem 25.1 on printed pp. 569-570.
 
-The selected-scope gate is **PASS**. Equation (25.11) is now derived from the
+The selected-scope gate is **FAIL** under the strict precise-prose audit.
+Equation (25.11) is derived from the
 hypotheses printed on pp. 464-466. The new source-facing chain instantiates
 Mathlib's implicit-function theorem from smoothness of `F` and an invertible
 solution partial `F_x`, produces genuine local data and solution
@@ -28,8 +29,11 @@ map derivative as `-F_x⁻¹ F_d`, and evaluates the literal shrinking-ball
 literal rounded evaluation order, is also proved. Theorems
 25.1 and 25.2 cannot be stated at source strength without
 defining the printed `≈` relation and “decreases until” event, so the skill's
-`DEFER-MISSING-PRECISE-STATEMENT` rule applies; deferred rows do not fail the
-gate. No replacement theorem is invented.
+`DEFER-MISSING-PRECISE-STATEMENT` rule applies. The gate fails instead on the
+precise p. 463 eigenproblem specialization after (25.10): the displayed bordered
+Jacobian, the printed Lipschitz coefficient, simple-eigenvalue nonsingularity,
+and the residual-evaluation `ψ` formula do not yet have source-strength Lean
+producers. No replacement theorem is invented.
 
 ## Named results
 
@@ -64,7 +68,9 @@ gate. No replacement theorem is invented.
 | Two-line Newton implementation after (25.1) | p. 460 / PDF 2 | FORMALIZE_CORE | Included in `higham25ExactNewtonStep`. **PASS**. |
 | Addition-error bound after (25.4) | p. 461 / PDF 3 | FORMALIZE_CORE | `higham25AdditionErrorBound`. **PASS**. |
 | Lipschitz Jacobian premise | p. 461 / PDF 3 | FORMALIZE_CORE | Accounted for in theorem-premise inventory; no named limit theorem is falsely asserted. |
-| Iterative refinement special case | pp. 462-463 / PDFs 4-5 | REUSE | Existing `IterativeRefinement.lean` supplies exact contraction infrastructure; no duplicate chapter theorem. |
+| Iterative refinement special case | pp. 462-463 / PDFs 4-5 | FORMALIZE_CORE / CORE-PRECISE-PROSE | `higham25_linearSystem_newtonCorrection_iff_refinementCorrection` proves the exact Newton/refinement correction equivalence; `higham25_linearSystemJacobian_constant` and `higham25_linearSystemJacobian_lipschitz_zero` close the constant-Jacobian/`β=0` claim; `higham25_linearSystem_actualResidual_bridge_ch12` instantiates the actual `fl_residual` evaluator and the printed `γ_(n+1)` componentwise bound. The printed `F=b-Ax, J=A` has a sign inconsistency; Lean uses the correct derivative `J=-A`, whose sign cancels in the Newton equation. **PASS / SOURCE-DISCREPANCY**. |
+| Linear-system condition specialization below (25.11) | p. 466 / PDF 8 | FORMALIZE_CORE / CORE-PRECISE-PROSE | `higham25_linearSystemDataDerivativeFrob_eq` proves `‖A⁻¹[x₁I … xₙI]‖_F=‖A⁻¹‖_F‖x‖₂`; `higham25_linearSystem_condition_frobenius` proves the printed relative condition identity `‖A⁻¹‖_F‖A‖_F`. **PASS**. |
+| Eigenproblem bordered Jacobian, Lipschitz coefficient, simple-eigenvalue nonsingularity, and residual `ψ` formula | p. 463 / PDF 5, immediately after (25.10) | FORMALIZE_CORE / CORE-PRECISE-PROSE and CORE-SYMBOLIC-EXAMPLE | The exact claims are central mathematical parts of the already-selected eigenproblem example, not decimal experiment output. `higham25EigenResidual` and `higham25_eq25_10_zero_iff` do not prove these four statements. **OPEN**. |
 | Figure 25.1 / Frank-matrix MATLAB experiment | pp. 463-465 / PDFs 5-7 | EXCLUDED-EMPIRICAL | Accounted for; exact data and script are not printed. |
 | First-order perturbation relation before (25.11) | pp. 464-466 / PDFs 6-8 | FORMALIZE_CORE | `higham25_eq25_11_first_order`. **PASS** for exact linearized algebra. |
 | Sensitivity calculation and condition `1/2` after (25.13) | p. 466 / PDF 8 | FORMALIZE_CORE | `higham25_eq25_13_sensitivity_direction`, `higham25_eq25_13_condition_half`. **PASS**. |

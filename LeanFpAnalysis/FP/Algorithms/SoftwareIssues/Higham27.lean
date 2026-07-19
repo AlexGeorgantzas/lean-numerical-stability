@@ -298,8 +298,10 @@ noncomputable def twoPassRoundedScaledSum
     (fmt : FloatingPointFormat) {n : ℕ} (x : RVec n) : ℝ :=
   roundedScaledSum fmt (List.ofFn (fun i => x i / infNormVec x))
 
-/-- Overflow-safety predicate for the complete concrete trace, including the
-exact input to the final rounded multiply. -/
+/-- Compatibility predicate for the rounded second-pass accumulator and the
+exact, unrounded final expression.  The literal returned-norm executor below
+uses `TwoPassRoundedNormTraceSafe`, which also models the rounded square root,
+the rounded final multiplication, and the zero-scale control-flow branch. -/
 def TwoPassRoundedTraceSafe
     (fmt : FloatingPointFormat) {n : ℕ} (x : RVec n) : Prop :=
   RoundedScaledSumTraceSafe fmt
@@ -307,10 +309,9 @@ def TwoPassRoundedTraceSafe
   ¬ fmt.finiteOverflowRange
     (infNormVec x * Real.sqrt (twoPassRoundedScaledSum fmt x))
 
-/-- The printed two-pass norm has a concrete finite round-to-even trace with
-no overflow, provided the integer accumulation bounds are representable and
-the natural dimension-based final-product bound fits.  These are input/format
-conditions, not an assumption of trace safety. -/
+/-- Compatibility theorem for the rounded second-pass accumulator.  It is a
+useful range lemma for the literal executor below, but by itself does not model
+the rounded square-root or rounded final multiplication. -/
 theorem twoPassRoundedScaledSum_bounds_and_safe
     (fmt : FloatingPointFormat) (hone : fmt.finiteSystem 1)
     {n : ℕ} (x : RVec n)
@@ -347,6 +348,147 @@ theorem twoPassRoundedScaledSum_bounds_and_safe
     exact not_lt_of_ge hprodBound
   simpa [twoPassRoundedScaledSum, TwoPassRoundedTraceSafe, us] using
     ⟨hs0, hsn', hsafe, hfinalNo⟩
+
+/-! ### Literal rounded two-pass returned-norm executor -/
+
+/-- Higham, Section 27.8, p. 499: a literal finite round-to-even executor for
+the returned norm.  The zero-scale branch returns zero before constructing any
+normalized quotient, so the implementation never evaluates `0 / 0`.  On a
+nonzero scale it rounds every quotient, square, accumulator addition, the
+square root, and the final multiplication. -/
+noncomputable def twoPassRoundedScaledNorm
+    (fmt : FloatingPointFormat) {n : ℕ} (x : RVec n) : ℝ :=
+  let t := infNormVec x
+  if t = 0 then
+    0
+  else
+    let s := twoPassRoundedScaledSum fmt x
+    let r := fmt.finiteRoundToEvenSqrt s
+    fmt.finiteRoundToEvenOp BasicOp.mul t r
+
+/-- The explicit domain/range certificate for the literal two-pass executor.
+The left disjunct is the operation-free zero branch.  The right disjunct
+records finite inputs and scale, a nonzero division denominator, nonnegative
+square-root input, and absence of overflow at every exact pre-round value,
+including the square root and final multiplication.  Underflow and inexact
+rounding are deliberately not ruled out. -/
+def TwoPassRoundedNormTraceSafe
+    (fmt : FloatingPointFormat) {n : ℕ} (x : RVec n) : Prop :=
+  let t := infNormVec x
+  let s := twoPassRoundedScaledSum fmt x
+  (t = 0 ∧ twoPassRoundedScaledNorm fmt x = 0) ∨
+    (t ≠ 0 ∧
+      (∀ i : Fin n, fmt.finiteSystem (x i)) ∧
+      fmt.finiteSystem t ∧
+      RoundedScaledSumTraceSafe fmt
+        (List.ofFn (fun i => x i / t)) ∧
+      0 ≤ s ∧
+      ¬ fmt.finiteOverflowRange (Real.sqrt s) ∧
+      ¬ fmt.finiteOverflowRange
+        (t * fmt.finiteRoundToEvenSqrt s) ∧
+      fmt.finiteSystem (twoPassRoundedScaledNorm fmt x))
+
+/-- The literal executor takes its operation-free zero branch whenever the
+first-pass scale is zero. -/
+theorem twoPassRoundedScaledNorm_eq_zero_of_infNormVec_eq_zero
+    (fmt : FloatingPointFormat) {n : ℕ} (x : RVec n)
+    (hzero : infNormVec x = 0) :
+    twoPassRoundedScaledNorm fmt x = 0 := by
+  simp [twoPassRoundedScaledNorm, hzero]
+
+/-- On a nonzero scale, the literal executor is exactly a rounded square root
+followed by a rounded multiplication. -/
+theorem twoPassRoundedScaledNorm_eq_of_infNormVec_ne_zero
+    (fmt : FloatingPointFormat) {n : ℕ} (x : RVec n)
+    (hscale : infNormVec x ≠ 0) :
+    twoPassRoundedScaledNorm fmt x =
+      fmt.finiteRoundToEvenOp BasicOp.mul (infNormVec x)
+        (fmt.finiteRoundToEvenSqrt (twoPassRoundedScaledSum fmt x)) := by
+  simp [twoPassRoundedScaledNorm, hscale]
+
+/-- Higham, Section 27.8, p. 499: the literal two-pass scaled-norm executor has
+no divide-by-zero, invalid-square-root, or intermediate-overflow path for
+finite input data.  `sqrtCap` is an explicit representable upper envelope for
+`sqrt n`; the final hypothesis says that the worst-case rounded-root envelope
+fits after rescaling.  These input/format capacity conditions are independent
+of the trace-safety conclusion and honestly allow underflow and inexact flags.
+-/
+theorem higham27_twoPassRoundedScaledNorm_trace_safe
+    (fmt : FloatingPointFormat) (hone : fmt.finiteSystem 1)
+    {n : ℕ} (x : RVec n)
+    (hxFinite : ∀ i : Fin n, fmt.finiteSystem (x i))
+    (hnat : ∀ k : ℕ, k ≤ n → fmt.finiteSystem (k : ℝ))
+    (sqrtCap : ℝ) (hsqrtCap : fmt.finiteSystem sqrtCap)
+    (hsqrtBound : Real.sqrt n ≤ sqrtCap)
+    (hfinal : infNormVec x * sqrtCap ≤ fmt.maxFiniteMagnitude) :
+    TwoPassRoundedNormTraceSafe fmt x := by
+  by_cases hzero : infNormVec x = 0
+  · left
+    exact ⟨hzero,
+      twoPassRoundedScaledNorm_eq_zero_of_infNormVec_eq_zero fmt x hzero⟩
+  · have hnpos : 0 < n := by
+      apply Nat.pos_of_ne_zero
+      intro hn
+      subst n
+      have hxzero : x = 0 := Subsingleton.elim _ _
+      subst x
+      exact hzero (by simp [infNormVec])
+    have hscaleFinite : fmt.finiteSystem (infNormVec x) := by
+      obtain ⟨j, hj⟩ := infNormVec_exists_abs_eq hnpos x
+      rw [hj]
+      by_cases hxj : 0 ≤ x j
+      · simpa [abs_of_nonneg hxj] using hxFinite j
+      · have hneg := fmt.finiteSystem_neg (hxFinite j)
+        simpa [abs_of_neg (lt_of_not_ge hxj)] using hneg
+    have hsqrtCapNonneg : 0 ≤ sqrtCap :=
+      (Real.sqrt_nonneg n).trans hsqrtBound
+    have hlegacyFinal :
+        infNormVec x * Real.sqrt n ≤ fmt.maxFiniteMagnitude :=
+      (mul_le_mul_of_nonneg_left hsqrtBound (infNormVec_nonneg x)).trans hfinal
+    rcases twoPassRoundedScaledSum_bounds_and_safe fmt hone x hnat hlegacyFinal with
+      ⟨hs0, hsn, hlegacySafe⟩
+    have hsqrtLeCap :
+        Real.sqrt (twoPassRoundedScaledSum fmt x) ≤ sqrtCap :=
+      (Real.sqrt_le_sqrt hsn).trans hsqrtBound
+    have hroundedRootBounds :
+        0 ≤ fmt.finiteRoundToEvenSqrt (twoPassRoundedScaledSum fmt x) ∧
+          fmt.finiteRoundToEvenSqrt (twoPassRoundedScaledSum fmt x) ≤ sqrtCap := by
+      simpa [FloatingPointFormat.finiteRoundToEvenSqrt] using
+        finiteRoundToEven_mem_Icc_of_finiteSystem_bounds
+          fmt.finiteSystem_zero hsqrtCap
+          (Real.sqrt_nonneg _) hsqrtLeCap
+    have hsqrtNoOverflow :
+        ¬ fmt.finiteOverflowRange
+          (Real.sqrt (twoPassRoundedScaledSum fmt x)) := by
+      rw [FloatingPointFormat.finiteOverflowRange,
+        abs_of_nonneg (Real.sqrt_nonneg _)]
+      exact not_lt_of_ge
+        (hsqrtLeCap.trans
+          (by simpa [abs_of_nonneg hsqrtCapNonneg] using
+            fmt.finiteSystem_abs_le_maxFiniteMagnitude hsqrtCap))
+    have hproductNonneg :
+        0 ≤ infNormVec x *
+          fmt.finiteRoundToEvenSqrt (twoPassRoundedScaledSum fmt x) :=
+      mul_nonneg (infNormVec_nonneg x) hroundedRootBounds.1
+    have hproductBound :
+        infNormVec x *
+            fmt.finiteRoundToEvenSqrt (twoPassRoundedScaledSum fmt x) ≤
+          fmt.maxFiniteMagnitude :=
+      (mul_le_mul_of_nonneg_left hroundedRootBounds.2
+        (infNormVec_nonneg x)).trans hfinal
+    have hproductNoOverflow :
+        ¬ fmt.finiteOverflowRange
+          (infNormVec x *
+            fmt.finiteRoundToEvenSqrt (twoPassRoundedScaledSum fmt x)) := by
+      rw [FloatingPointFormat.finiteOverflowRange,
+        abs_of_nonneg hproductNonneg]
+      exact not_lt_of_ge hproductBound
+    have houtputFinite : fmt.finiteSystem (twoPassRoundedScaledNorm fmt x) := by
+      rw [twoPassRoundedScaledNorm_eq_of_infNormVec_ne_zero fmt x hzero]
+      exact fmt.finiteRoundToEvenOp_finiteSystem _ _ _
+    right
+    exact ⟨hzero, hxFinite, hscaleFinite, hlegacySafe.1, hs0,
+      hsqrtNoOverflow, hproductNoOverflow, houtputFinite⟩
 
 /-- Higham, p. 500: the BLAS `xCASUM` pseudo-one-norm, which sums absolute real
 and imaginary parts separately. -/

@@ -2,9 +2,15 @@
 
 ## Gate
 
-The Chapter 25 core selected-scope gate is **PASS**. The former bottleneck,
+The Chapter 25 core selected-scope gate is **FAIL** under the strict precise-
+prose audit. The former bottleneck,
 equation (25.11) together with the implicit-function/Taylor prose on printed
 pp. 464-466 (PDFs 6-8), is closed.
+
+The active selected bottleneck is the exact p. 463 eigenproblem specialization
+following (25.10): the displayed bordered Jacobian, printed Lipschitz
+coefficient, simple-eigenvalue nonsingularity implication, and actual rounded
+residual evaluator producing the stated `ψ` bound.
 
 ## Equation (25.11)
 

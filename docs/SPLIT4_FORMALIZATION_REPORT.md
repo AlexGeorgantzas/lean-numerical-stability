@@ -1,5 +1,13 @@
 # Higham Split 4 Formalization Report
 
+## 2026-07-18 strict-audit supersession
+
+This file preserves the 2026-07-16 Split 4 audit. Its aggregate and per-chapter
+gate claims are superseded by the [fresh Chapters 1–28 audit](source_coverage/AUDIT_ch01-28_2026-07-18.md).
+Current Split 4 status is **FAIL**: Chapters 20, 22, 25, and 28 are **FAIL**;
+Chapters 21, 23, 24, 26, and 27 are **PASS**. The historical report below
+remains for provenance and must not be treated as the current closure gate.
+
 ## Scope and audit basis
 
 Split 4 owns Chapters 20-28 of Nicholas J. Higham, *Accuracy and Stability of

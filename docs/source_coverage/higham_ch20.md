@@ -1,20 +1,57 @@
 # Higham Chapter 20 Source Coverage Ledger
 
-> **Current-gate notice (2026-07-16).** This file is an append-only historical
+> **Current-gate notice (2026-07-18).** This file is an append-only historical
 > coverage log, not the authoritative current completion verdict. Use
 > `docs/chapter20/CHAPTER20_SOURCE_INVENTORY.md`,
 > `docs/chapter20/CHAPTER20_PROOF_SOURCE_LEDGER.md`,
 > `docs/chapter20/CHAPTER20_NOT_PROVED_LEDGER.md`, and
 > `docs/chapter20/CHAPTER20_FORMALIZATION_REPORT.md` for the audited source
 > counts, current Lean endpoints, source-strengthening boundaries, and
-> verification result. The Chapter 20 selected-scope gate is **PASS**.
-> Theorem 20.4's total perturbation envelope and Theorem 20.7's rounded
-> Cox--Higham producer are closed with visible implementation domains, but the
-> separate p. 395 row-sorting cap for `alpha_i`/`beta_i` and row-order
+> verification result. A fresh source-strength audit on 2026-07-18 sets the
+> Chapter 20 selected-scope gate to **FAIL**. Theorem 20.4's total perturbation
+> envelope remains closed, but Theorem 20.7's rounded Cox--Higham endpoint is
+> only a conditional transfer from unproduced forward-row and component-budget
+> packages. The bounded repair pass proved a finite a-posteriori producer for
+> the direct back-substitution multiplier field and proved nonnegativity of the
+> literal local matrix/RHS budgets. It also compiled a full-rank, gamma-valid
+> 2-by-2 counterexample (`breakdownCounter_no_roundedRowPolicy`) whose second
+> computed pivot is zero, showing that source rank and the bare `FPModel` cannot
+> produce even `sigma_pos`; computed nonbreakdown or a stronger conditioning
+> theorem is necessary. Even with nonbreakdown exposed, the row/prefix and
+> source-class compact-budget estimates remain unproved. The historical PASS
+> text below is superseded by this notice.
+> The separate p. 395 row-sorting cap for `alpha_i`/`beta_i` and row-order
 > invariance of `phi` are closed by `Higham20RowSorting.lean`. The p. 404 square-or-tall
 > invariance is closed as an exact source discrepancy. Qualitative and
 > under-specified rows are separately deferred rather than counted as
 > blockers.
+
+## Fresh 2026-07-18 Theorem 20.7 closure audit
+
+- `PivotedStoredQRCoxHighamForwardRowPolicy.of_trace_core` proves the automatic
+  final-`R` row field from the printed alpha scale. Then
+  `PivotedStoredQRCoxHighamRoundedRowPolicy.of_trace_envelope` produces
+  `gamma_nonneg`, `gamma_n_le`, and `backSub_multiplier_budget` from exactly
+  the three genuine forward-trace obligations using a finite a-posteriori
+  multiplier envelope. This is deliberately not mislabeled as Higham's
+  data-independent gamma-tilde class.
+- `pivotedStoredQRComponentBudget_nonneg` and
+  `pivotedStoredQRRhsComponentBudget_nonneg` prove that the literal local
+  compact-operation budgets are nonnegative.
+- `breakdownCounterA_mulVec_injective`,
+  `breakdownCounter_gammaValid_two`, `breakdownCounter_sigma1`, and
+  `breakdownCounter_no_roundedRowPolicy` prove that full source rank plus
+  `gammaValid` does not imply a nonzero rounded pivot.
+- After adding the already-visible computed-nonbreakdown domain, the first
+  still-unproduced forward field is `raw_vector_row`; `prefix_vector_row` and
+  all four source-class `PivotedStoredQRCoxHighamComponentBudgets` fields also
+  remain open. Therefore the printed Theorem 20.7 row is not closed.
+- Fresh direct compilation and the focused
+  `LeanFpAnalysis.FP.Algorithms.LeastSquares.Higham20Theorem20_7Contract`
+  target build passed (3082 jobs). A focused axiom audit of the two policy
+  constructors, source-rank witness, and no-policy counterexample reported
+  only `propext`, `Classical.choice`, and `Quot.sound`; placeholder,
+  conflict-marker, and diff checks passed.
 
 ## Source and Scope
 

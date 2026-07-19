@@ -1,5 +1,15 @@
 # Higham Chapter 16 Source Coverage Ledger
 
+> **Fresh strict audit (2026-07-18): gate FAIL, with one isolated blocker.**
+> `Higham16RoundedExecutor.lean` now closes the entire post-factor (16.9)
+> path for both triangular and general real quasi-Schur factors: the RHS
+> transform, 1/2/4-block solve, and reconstruction are literal `FPModel`
+> computations, and the source-scale residual theorem derives all budgets.
+> The sole remaining implementation gap is a rounded QR/real-Schur producer
+> that computes the supplied factors from `A` and `B`.  Higham's footnote 13
+> explicitly places the QR backward-stability proof outside this book. See
+> `AUDIT_ch01-28_2026-07-18.md`.
+
 ## Source and Scope
 
 - Edition: Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed. (SIAM, 2002), verified from `pdfinfo` title metadata and source DOI path.
@@ -7,6 +17,12 @@
 - Printed pages read: 305-319.
 - Source file: `References/1.9780898718027.ch16.pdf`.
 - Mode: core.
+- Fresh-audit repair: `Higham16RoundedExecutor.lean` defines
+  `flBartelsStewartSuppliedRealSchurRounded` and proves
+  `H16_eq16_9_flBartelsStewartSuppliedRealSchurRounded_residual_bound` with an
+  explicit absorbed coefficient and no caller-supplied transform, solve, or
+  reconstruction error budget.  Its exact Schur factors remain visibly
+  supplied; no rounded QR/Schur factorization algorithm exists in the tree.
 - Parallel split: 3B.
 - Planning documents consulted: `chapter_splitting/HIGHAM_PARALLEL_FORMALIZATION_BLUEPRINT.md`, the Split 3B section of `chapter_splitting/split_primary_contracts.md`, and the Chapter 16 rows of `chapter_splitting/chapter_index.md`.
 - Selected-scope gate: PASS (2026-07-12). Every selected ch16 row is closed (see the closure notes on each row below). The five clusters that were the last "FAIL" remainder are all now closed: (i) rounded Schur/Bartels-Stewart residual arithmetic — the full chain (16.6)/(16.7)/(16.8) in strictly-triangular, R-quasi/S-triangular, and quasi-quasi settings + (16.9) end-to-end (Wave-14/15/16); (ii) exact automatic condition-number formulas (16.23-16.28) — `Higham16AutoCondition.lean` proves sigma_min(P)>0 from det(P)!=0 (nonsingular ⟹ Gram positive-definite ⟹ least eigenvalue > 0) and hence the structured/phi/Lyapunov/aposteriori condition bounds from NoCommonComplexRightEigenvalue ALONE, no supplied inverse; (iii) LAPACK-style estimator — `Higham16NormEstimator.lean` wires the norm-1 estimator into the (16.29) practical bound as an honest computable LOWER bound (the "can underestimate" caveat stated precisely); (iv) Hessenberg-Schur surfaces — exact handoff (`Higham16HessenbergSchur`) plus rounded column-solve backward error (`Higham16HessenbergRounded`); (v) automatic/unsupplied real-Schur traversal under NoCommonComplexRightEigenvalue (`Higham16Spectrum` + `H16_eq16_4_8_auto_realSchur_*`). All axiom-clean; constants honest gamma-class with explicit indices. HISTORY (superseded FAIL note): Several central square-Frobenius results, the rectangular vec/Kronecker formulation, the diagonal (16.3) coefficient/solution foundation including separated coefficient bijectivity, common-entry singularity, sigma-min bounds, Gram-eigenvalue lower-bound certificates, determinant/nonsingularity consequences, and the concrete-left-inverse/op-norm route to coefficient/operator lower bounds are proved, including general Sylvester concrete-left-inverse and finite-Gram-eigenvalue routes to `SepLowerBound` and exact `sylvesterSepInf`. Conditional exact Schur-coordinate transform plus supplied diagonal-factor and triangular-factor solve/vectorized-coefficient/determinant bridges are proved, the real quasi-Schur factor existence and exact transform solution-equivalence surfaces are recorded, and the real quasi-triangular route now has a supplied adjacent two-column exact block-system lemma, block-vector coefficient equivalence, supplied inverse/left-inverse certificates for the two active block columns, previous-column recurrence uniqueness wrappers, right-inverse/left-inverse solve uniqueness wrappers, inverse-consistency wrappers, determinant/surjectivity/bijectivity consequences, and an active-block unique-solve theorem. The named (16.3) determinant/eigenvalue-separation iff is now proved for the real vec/Kronecker coefficient via complexification, and both the arbitrary complex coefficient and the complexified real coefficient have shifted determinant spectrum/difference characterizations. The Frobenius/`vec` norm bridge, coefficient sigma-min wrappers, product-index Gram-eigenvalue bridges for Sylvester and Lyapunov operators, exact Sylvester and Lyapunov `sylvesterSepInf` condition routes from both left-inverse and Gram data, supplied spectral-diagonal Lyapunov operator/coefficient/Gram lower-bound and `sep(A,-A^T)` lower-bound/source-shaped condition routes, the concrete-left-inverse and Gram Lyapunov sigma-min, sep, exact-infimum, first-order condition, condition-certificate witness, first-order wrappers, entrywise-gap first-order wrappers, and perturbation routes, the Sylvester Psi Gram certificate witness, the Lyapunov structured eta feasible-set/infimum model, the two-sided Lyapunov eta/xi infimum bridge plus attained minimizer, and the (16.29) practical max-entry/computed-residual budget bridge including raw and packaged monotone budget wrappers, scalar cap wrappers, generic residual-error-model wrappers, arbitrary-coefficient floating-point residual wrappers from supplied inverse certificates, a separated-diagonal floating-point scalar wrapper plus componentwise, monotone, and monotone scalar caps, and supplied diagonal/Schur-diagonal/Schur-triangular exact-inverse subcases with raw-budget, scalar, monotone, and monotone-scalar caps are proved. The full core pass still has open selected rows for automatic/unsupplied real-Schur block determinant and separation certificates, Hessenberg-Schur surfaces, rounded Schur residual arithmetic, exact automatic condition-number formulas, and LAPACK-style estimator paths.
@@ -751,6 +767,13 @@
 ## Open Selected-Scope Items
 
 > **RESOLVED (2026-07-12, gate PASS).** Every item in this section is now closed by the Split-3B ch16 waves; the notes below are retained as history. Rounded Schur/Bartels–Stewart residual arithmetic — Wave-14/15/16 (`Higham16RoundedTriangular`, `Higham16QuasiRoundedSolve`/`Sylvester`, `Higham16QuasiQuasiRounded`/`Sylvester`, `Higham16Eq9Assembly`/`Eq9EndToEnd`), covering (16.6)/(16.7)/(16.8) in strictly-triangular, R-quasi/S-triangular, and quasi-quasi settings plus the (16.9) end-to-end residual guarantee. Automatic exact Gram/eigenvalue lower bound / inverse certificate for arbitrary nondiagonal coefficients (the recurring "without supplied spectral factors / diagonal Schur factors" residual on (16.21)/(16.23)/(16.24)/(16.27)/(16.28)) — Wave-17 `Higham16AutoCondition.lean`: `finiteMatrixGram_eigenvalues_pos_of_det_ne_zero` gives σ_min(P)>0 from det≠0, so every condition-number bound follows from `NoCommonComplexRightEigenvalue` alone. LAPACK-style estimator production for (16.29) — Wave-17 `Higham16NormEstimator.lean` (honest lower-bound estimate + the guaranteed practical bound via the true |P⁻¹| budget). Automatic real-Schur traversal — the internally-chosen no-common schedule (`Higham16Spectrum`) + `Higham16HessenbergRounded.H16_eq16_4_8_auto_realSchur_*`. All axiom-clean.
+
+> **2026-07-18 strict correction.** The historical PASS above was for the
+> supplied-factor selected scope.  The new rounded executor closes every
+> operation *after* those factors, including the general real quasi/quasi
+> path, but it deliberately does not relabel exact Schur existence as a
+> floating-point QR/Schur algorithm.  Therefore the automatic computed-factor
+> reading of (16.9) remains open only at that producer boundary.
 
 | Source location | Exact claim | Current Lean status | Missing foundation | Next theorem |
 |---|---|---|---|---|
@@ -1754,6 +1777,12 @@ Post-source-sep real-Schur update: `sylvester_realQuasiSchur_factors_twoBlockSpe
   - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16HessenbergSchur.lean`, the Lean-file placeholder scan, and `git diff --check -- LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16HessenbergSchur.lean docs/source_coverage/higham_ch16.md`: passed after adding the concrete vec-coefficient sigma-min, finite-Gram, and left-inverse finite-op-norm Hessenberg-Schur solve/trace-growth wrappers and aliases.
   - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`, `rg -n "\b(sorry|admit|axiom|unsafe|opaque|placeholder|TODO|FIXME)\b" LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`, and `git diff --check -- LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: passed after adding the source-numbered recursive generated-prefix and column-family packaging aliases; the only Lean warnings were the same two existing-style `unnecessarySimpa` suggestions in `Higham16Spectrum.lean`. After merging incoming Chapter 20 work, `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean` and `lake env lean LeanFpAnalysis/FP/Algorithms/LeastSquares/LSE.lean` both passed before publishing.
   - `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`, `rg -n "\b(sorry|admit|axiom|unsafe|opaque|placeholder|TODO|FIXME)\b" LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`, and `git diff --check -- LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16Spectrum.lean`: passed after adding the monotone and monotone-scalar no-common Schur-residual practical wrappers plus their `H16_eq16_29_*` aliases; the only Lean warnings were the same two existing-style `unnecessarySimpa` suggestions in `Higham16Spectrum.lean`.
+
+  - Fresh strict-audit validation (2026-07-18):
+    `lake env lean LeanFpAnalysis/FP/Algorithms/Sylvester/Higham16RoundedExecutor.lean`
+    passed after adding the literal triangular and quasi/quasi post-factor
+    executors, their Frobenius residual assembly, and the absorbed (16.9)
+    endpoints.  Placeholder and axiom checks are recorded in the global audit.
 
 ## Git and Local-Only Notes
 

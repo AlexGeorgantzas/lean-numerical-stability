@@ -32,14 +32,16 @@ row 0 = `[d0, c0, 0]`).  Then
 so the componentwise `≤ 3|(Π·T̂)|` claim is violated.  The correct partial-pivot
 statement is *normwise* (`‖ |M̂||Û| ‖∞ ≤ κ ‖T̂‖∞`), and its honest constant is
 `κ ≈ 12`, **not** `3` (each `Û` row has ≤ 3 nonzeros of size ≤ `2·maxEntry`, and
-`|M̂| ≤ 1` doubles the row); moreover deriving the growth-factor `ρ ≤ 2` requires
-modelling the fp elimination *step by step with interchanges*, since the bare
-multiplier bound `|M̂| ≤ 1` plus banding only yields an accumulating `O(n)` (or
-`2^n`) factor, not the constant `ρ ≤ 2`.  Building that pivoted fp model from
-scratch is out of scope here (the reusable rounded Doolittle loop
-`higham9_2_rectRoundedLoop*` performs **no** pivoting).
+`|M̂| ≤ 1` doubles the row).  The repository now has an **exact** recursive
+partial-pivoting trace and a proof of the tridiagonal growth factor `ρ ≤ 2`.
+The trace-level certificate API does not expose the factor band/fill support,
+however, so the unconditional reusable consequence proved below is the weaker
+row-sum estimate `‖M̂‖∞‖Û‖∞ ≤ 2n²‖T̂‖∞`.  There is still no rounded
+pivoted-GEPP producer (the reusable rounded Doolittle loop
+`higham9_2_rectRoundedLoop*` performs **no** pivoting), so this exact result does
+not by itself discharge the computed middle solve in Theorem 11.8.
 
-## Delivered route: the §11.1.4 Bunch symmetric-tridiagonal factorisation
+## Delivered routes: exact GEPP bound and the §11.1.4 Bunch factorisation
 
 Per the task's explicit fallback, we instead supply the middle-solve factor-norm
 input from Bunch's method (Algorithm 11.6), whose factor-norm growth is
@@ -161,5 +163,68 @@ theorem bunch_tridiag_absLDLTProduct_infNorm_le
         (flMixedL fp s T) (flMixedD fp s T) i j).symm
   rw [heq]
   exact bunch_tridiag_absFactor_infNorm_le fp hval T s Amax hAmax0 hdata
+
+/-! ### Exact tridiagonal-GEPP factor-norm consequence
+
+The Chapter-9 trace now proves the source growth fact `max |U| ≤ 2 max |T|`
+and constructs an exact permuted `LU` certificate with `|L i j| ≤ 1`.  The
+available certificate API does not yet expose the sharper band support of the
+factors, so converting both max-entry estimates to row-sum norms costs two
+factors of `n`. -/
+
+/-- **Unconditional exact-GEPP factor-norm bound available from the current
+trace API.**  Every exact partial-pivoting trace for a tridiagonal `T` supplies
+permuted factors with
+
+    `‖L‖∞ ‖U‖∞ ≤ 2 n² ‖T‖∞`.
+
+This is derived only from the actual GEPP trace, its unit multiplier bound, and
+the proved tridiagonal growth factor `rho ≤ 2`; it is not a target-scale
+hypothesis.  It records the strongest bound exposed by those reusable APIs.
+The coefficient is too large to replace the coefficient-one hypothesis in the
+linear-radius Theorem-11.8 wrapper. -/
+theorem tridiag_GEPP_exists_factor_infNorm_product_le_two_n_sq
+    {n : ℕ} (hn : 0 < n) (T Utrace : Fin n → Fin n → ℝ)
+    (hTri : IsTridiagonal n T)
+    (htrace : higham9_7_PartialPivotGEPPUTrace n T Utrace) :
+    ∃ L U : Fin n → Fin n → ℝ, ∃ sigma : Fin n → Fin n,
+      higham9_2_PermutedLUFactSpec n T L U sigma ∧
+      (∀ i j : Fin n, |L i j| ≤ 1) ∧
+      infNorm L * infNorm U ≤
+        (2 * (n : ℝ) ^ 2) * infNorm T := by
+  obtain ⟨L, U, sigma, hLU, hLentry, hUtrace⟩ :=
+    higham9_7_PartialPivotGEPPUTrace_exists_PermutedLUFactSpec_L_bound_maxEntryNorm_le
+      htrace
+  refine ⟨L, U, sigma, hLU, hLentry, ?_⟩
+  have hcast_nonneg : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+  have hLnorm : infNorm L ≤ (n : ℝ) := by
+    apply infNorm_le_of_row_sum_le
+    · intro i
+      calc
+        ∑ j : Fin n, |L i j| ≤ ∑ _j : Fin n, (1 : ℝ) := by
+          exact Finset.sum_le_sum (fun j _ => hLentry i j)
+        _ = (n : ℝ) := by simp
+    · exact hcast_nonneg
+  have htraceMax : maxEntryNorm hn Utrace ≤ 2 * maxEntryNorm hn T := by
+    apply maxEntryNorm_le_of_entry_le_bound
+    intro i j
+    exact higham9_11_tridiag_GEPPUTrace_entry_abs_le_two_mul hn T Utrace
+      hTri htrace i j
+  have hUnorm : infNorm U ≤ (n : ℝ) * (2 * infNorm T) := by
+    calc
+      infNorm U ≤ (n : ℝ) * maxEntryNorm hn U :=
+        infNorm_le_card_mul_maxEntryNorm hn U
+      _ ≤ (n : ℝ) * maxEntryNorm hn Utrace :=
+        mul_le_mul_of_nonneg_left (hUtrace hn) hcast_nonneg
+      _ ≤ (n : ℝ) * (2 * maxEntryNorm hn T) :=
+        mul_le_mul_of_nonneg_left htraceMax hcast_nonneg
+      _ ≤ (n : ℝ) * (2 * infNorm T) := by
+        gcongr
+        exact maxEntryNorm_le_infNorm hn T
+  calc
+    infNorm L * infNorm U
+        ≤ (n : ℝ) * ((n : ℝ) * (2 * infNorm T)) :=
+          mul_le_mul hLnorm hUnorm (infNorm_nonneg U) hcast_nonneg
+    _ = (2 * (n : ℝ) ^ 2) * infNorm T := by ring
 
 end LeanFpAnalysis.FP.Ch11Closure.AasenDirect

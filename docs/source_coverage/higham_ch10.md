@@ -7,10 +7,10 @@
 - Mode: core.
 - Parallel split: 2 (chapters 7–12).
 - Planning documents consulted: blueprint, Split 2 section of `split_primary_contracts.md`, `chapter_index.md`.
-- Selected-scope gate: PASS. All 14 primary labels, eqs (10.1)–(10.30), and the
-  benchmark-reserved Problems are accounted for. Lemma 10.11 is covered in both halves
-  (pivot-order preservation and quantitative norm change); see the note under its row
-  for the honest-form modeling of the O(‖E‖²) term.
+- Selected-scope gate: **FAIL** under the fresh strict source-strength audit.
+  Several labels have valuable conditional interfaces, but Theorems 10.6,
+  10.7, 10.8, 10.9(b), Lemmas 10.11/10.13, and Theorem 10.14 are not all
+  produced from the printed hypotheses. The exact gaps are recorded below.
 
 Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter10.lean`
 (chapter-label surface); reusable proofs in `LeanFpAnalysis/FP/Algorithms/Cholesky/*`.
@@ -23,15 +23,15 @@ Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter10.lean`
 | Theorem 10.3 (backward error) | `higham10_3_cholesky_backward_error`, `higham10_3_fl_cholesky_*` | eqs (10.4)(10.5) |
 | Theorem 10.4 (solve backward error) | `higham10_4_cholesky_solve_backward_error`, `higham10_4_fl_cholesky_solve_backward_error` | eqs (10.6)(10.7) |
 | Theorem 10.5 (Demmel) | `higham10_5_demmel_bound`, `higham10_5_fl_cholesky_demmel_bound`, `higham10_5_demmel_bound_colNorm` | eq (10.8) |
-| Theorem 10.6 (Demmel–Wilkinson, scaled error) | `higham10_6_scaled_forward_error*`, `higham10_6_perturbed_solve_forward_error`, `higham10_6_fl_scaled_forward_error*` | eqs (10.9)(10.10) |
-| Theorem 10.7 (Demmel, success/failure) | `higham10_7_success_*`, `higham10_7_failure_*`, `higham10_7_fl_cholesky_success*`, `higham10_7_normwise_backward_error*` | λ_min(H) criterion |
-| Theorem 10.8 (Sun, sensitivity) | `higham10_8_sun_normwise_perturbation`, `higham10_8_sun_componentwise_perturbation` | |
-| Theorem 10.9 (PSD Cholesky existence + pivoted form) | `higham10_9_psd_cholesky_existence`, `higham10_9_spd_pivoted_cholesky_full_rank`, `higham10_9_van_der_sluis`, `higham10_9_*cond_bound` | eq (10.11) |
+| Theorem 10.6 (Demmel–Wilkinson, scaled error) | `higham10_6_scaled_forward_error*`, `higham10_6_perturbed_solve_forward_error`, `higham10_6_fl_scaled_forward_error*` | **OPEN at actual-algorithm strength**: `higham10_6_fl_scaled_forward_error_source` still assumes `hChol`, the solve-chain perturbation `ΔA` and `hΔA`, plus inverse/condition action certificates instead of deriving them from the complete rounded Cholesky solve. |
+| Theorem 10.7 (Demmel, success/failure) | `higham10_7_success_*`, `higham10_7_failure_*`, `higham10_7_fl_cholesky_success*`, `higham10_7_normwise_backward_error*` | **OPEN at printed sharp strength**: `higham10_7_fl_cholesky_success_sharp` assumes extra `hlam2ε`, not implied by the printed threshold `hthresh`. |
+| Theorem 10.8 (Sun, sensitivity) | `higham10_8_sun_normwise_perturbation`, `higham10_8_sun_componentwise_perturbation` | **OPEN**: the normwise theorem assumes `hpert`, exactly the desired `∃ ΔR` factorization and bound; the componentwise theorem assumes the desired upper-triangular entry bound `hbound`. |
+| Theorem 10.9 (PSD Cholesky existence + pivoted form) | `higham10_9_psd_cholesky_existence`, `higham10_9_spd_pivoted_cholesky_full_rank`, `higham10_9_van_der_sluis`, `higham10_9_*cond_bound` | **PARTIAL / OPEN**: 10.9(a) is represented, but the rank-`r` pivoted PSD existence-and-uniqueness statement in 10.9(b) is replaced by a full-rank SPD identity-permutation specialization; no uniqueness theorem was found. |
 | Lemma 10.10 (Schur-complement perturbation) | `higham10_10_schur_complement_perturbation` | eqs (10.14)(10.15)(10.16); honest entrywise O(‖E‖²) |
 | Lemma 10.11 (cp perturbation) | pivot half: `higham10_11_cp_pivot_sequence_stable` (wraps `cpPivot_sequence_stable_small`); quantitative half: `higham10_11_schur_perturbation_leadingBlock`, `higham10_11_schur_perturbation_opNorm2`, `higham10_11_firstOrder_eq_WtW`, `higham10_11_firstOrder_opNorm2`, `higham10_11_leadingBlockPerturbation_opNorm2` | eq (10.17). Pivot-order preservation: no-ties (gap δ / floor ρ / cap c through r stages) ⇒ ∃ε₀>0 s.t. every A+E within ε₀ picks the same pivot sequence (literal source form). Quantitative: worst-case E=γ·[[I,0],[0,0]] gives S(A+E)=S(A)+γ·WᵀW+R with `opNorm2Le R (poly·γ²·m)`, i.e. the O(‖E‖²) error is controlled in the source's operator 2-norm. See note. |
 | Lemma 10.12 (‖A₁₁⁻¹A₁₂‖ bound) | `higham10_12_w_norm_bound_from_cond`, `higham10_12_psd_w_action_bound`, `higham10_12_w_action_norm_bound` | eq (10.18) |
-| Lemma 10.13 (Frobenius cp bound) | `higham10_13_complete_pivoting_w_bound`, `higham10_13_pivoted_w_frobenius_bound` | eqs (10.19)(10.20): ‖W‖²_F ≤ (n−r)(4ʳ−1)/3 |
-| Theorem 10.14 (PSD backward error) | `higham10_14_psd_cholesky_backward_error`, `higham10_14_fl_psd_cholesky_backward_error` | eqs (10.21)–(10.25) |
+| Lemma 10.13 (Frobenius cp bound) | `higham10_13_complete_pivoting_w_bound`, `higham10_13_pivoted_w_frobenius_bound` | Bound proved, but **sharpness remains OPEN**: no theorem proves the printed Kahan limiting family attains the constant. |
+| Theorem 10.14 (PSD backward error) | `higham10_14_psd_cholesky_backward_error`, `higham10_14_fl_psd_cholesky_backward_error` | **OPEN**: the abstract endpoint assumes target existential `hbackward`; the concrete endpoint assumes `hdom` and `htrail` and returns blockwise bounds with arbitrary `η`, not the printed global norm bound (10.22). |
 
 ## Equations
 (10.1)–(10.30) accounted for. Reusable-object equations formalized as defs/theorems:
@@ -57,7 +57,20 @@ Some independent, reusable SPD/growth lemmas carry `higham10_problem_10_*` names
 exercise tasks.
 
 ## Open selected-scope items (not-proved ledger)
-None. All 14 primary labels are formalized.
+
+- **Theorem 10.6:** compose the actual rounded factorization and solves without
+  caller-supplied `hChol`/`hΔA`/inverse-action certificates.
+- **Theorem 10.7:** derive or eliminate `hlam2ε` from the printed threshold.
+- **Theorem 10.8:** construct `ΔR` and its componentwise bound; current `hpert`
+  and `hbound` package the targets.
+- **Theorem 10.9(b):** prove rank-`r` pivoted PSD existence and uniqueness,
+  not only the full-rank SPD identity-permutation case.
+- **Lemma 10.11:** derive the quantitative gap/floor/cap conditions from no
+  ties and cover two-sided small perturbations, not only `γ ≥ 0`.
+- **Lemma 10.13:** prove the printed Kahan-family limiting sharpness.
+- **Theorem 10.14 / (10.22):** produce the actual truncated-factor backward
+  error and printed global norm bound without `hbackward`, `hdom`, or an
+  arbitrary `htrail`/`η` certificate.
 
 Note on Lemma 10.11 (honest-form modeling): the pivot-order-preservation half is
 proved in literal source form (`higham10_11_cp_pivot_sequence_stable`, wrapping the
@@ -76,9 +89,20 @@ identifies the first-order term as `γ·WᵀW` (`W = M A₁₂`), and
 decomposition, exact leading coefficient `γ‖W‖₂²`, an operator-2-norm `O(γ²)`
 remainder, and — via `higham10_11_leadingBlockPerturbation_opNorm2` — the exact
 block-perturbation norm `‖E‖₂ = γ` for `E = γ·[[I,0],[0,0]]` (`k>0`, `γ≥0`).
-Nothing about Lemma 10.11 remains as an unproven reading.
+The quantitative special case is useful, but the source-facing no-ties bridge
+remains open: the pivot theorem exposes gap/floor/cap hypotheses rather than
+deriving them from no ties, and the quantitative specialization assumes
+`γ ≥ 0` instead of a two-sided sufficiently small perturbation.
 
 ## Hidden-hypothesis summary
+- `higham10_8_sun_normwise_perturbation.hpert` is definitionally the desired
+  existential perturbation/factorization/bound; componentwise `hbound` is the
+  desired upper-triangle estimate.
+- `higham10_14_psd_cholesky_backward_error.hbackward` is the target
+  backward-error certificate. The concrete theorem's `hdom` and `htrail`
+  contain the missing algorithm-to-global-bound work.
+- `higham10_7_fl_cholesky_success_sharp.hlam2ε` is an additional spectral
+  lower bound beyond the printed success threshold.
 - `higham10_11_schur_perturbation_leadingBlock`: leading-block inverse data enters
   via genuine equations `M·A₁₁=1`, `(A₁₁+γI)·X=1` (not assumed bounds on the
   conclusion); entrywise bounds α,μ,χ are on the *data*, and the O(γ²) remainder is
@@ -109,5 +133,6 @@ complete-pivoting proofs and the `opNorm2Le` machinery are reused from
 - Not-proved ledger: empty (no open selected-scope rows).
 
 ## Open issues
-- None. All 14 primary labels are formalized; Lemma 10.11's O(‖E‖²) quantitative half
-  uses the same entrywise-honest modeling convention as Lemma 10.10 (noted above).
+- The selected gate is FAIL on the source-strength rows listed above. Existing
+  focused builds establish that the conditional infrastructure compiles; they
+  do not turn target-bearing hypotheses into producers.
