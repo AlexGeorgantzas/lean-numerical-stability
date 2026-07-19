@@ -9,6 +9,38 @@
 > 11.8 are historical and superseded by this audit. See
 > `AUDIT_ch01-28_2026-07-18.md`.
 
+### Recovered proof source and disposition (2026-07-18)
+
+The audit also checked Higham's detailed Aasen analysis in *Notes on Accuracy
+and Stability of Algorithms in Numerical Linear Algebra*, Chapter 3,
+§3.2.1, pp. 13--14
+([official Manchester report PDF](https://nhigham.com/wp-content/uploads/2023/10/high99n.pdf)).
+Equations (3.9)--(3.11) and Theorem 3.6 give the exact factorization/solve
+budgets used by the book: the tridiagonal GEPP factor residual is `γ₂`, the
+forward multiplier application is `γ₁`, the bandwidth-two upper solve is
+`γ₃`, and these combine to `γ₆`.  Those constants are accepted as the correct
+source route, not replaced by a generic dense triangular-solve budget.
+
+The report's final norm step, however, says that the accumulated lower GEPP
+factor has infinity norm at most two.  Its preceding structural fact is only
+that there is at most one entry below the diagonal in each *column*.  Later
+adjacent interchanges move earlier multipliers into a common row, so the
+infinity-norm inference is invalid.  For the concrete two-adjacent-swap
+example, the formal exact permuted-LU certificate
+`middleAccumCounter_exact_permuted_lu` has
+`middleAccumCounterL_infNorm : ‖M‖∞ = 309/110`; hence
+`middleAccumCounter_not_infNorm_le_two` proves `¬ ‖M‖∞ ≤ 2`.  This is a
+proof-source defect, not a missing algebraic wrapper.
+
+The other half of the printed norm step is now proved:
+`tridiag_GEPPUTrace_infNorm_le_three_mul_infNorm` derives
+`‖U‖∞ ≤ 3‖T‖∞` from the actual recursive partial-pivot trace and the active
+tridiagonal support invariant, with no free growth/support hypothesis.  A
+faithful completion must analyze the implementation's interleaved adjacent
+pivots and multiplier applications directly (or establish an equivalent
+constant-size perturbation), rather than use the refuted accumulated-factor
+shortcut.  No rounded pivoted tridiagonal producer currently exists.
+
 ### Fresh Theorem 11.8 middle-solve audit (2026-07-18)
 
 The printed theorem (source PDF page 12, printed p. 224) says that the middle

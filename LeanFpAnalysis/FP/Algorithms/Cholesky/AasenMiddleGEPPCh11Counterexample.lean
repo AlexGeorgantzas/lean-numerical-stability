@@ -308,4 +308,107 @@ theorem middleCoeffOneCounter_actual_GEPP :
   rw [middleCoeffOneCounter_flAasen_That]
   exact middleCoeffOneCounter_not_le
 
+/-! ## The accumulated lower factor does not have infinity norm at most two
+
+The detailed proof cited for Theorem 11.8 argues that the tridiagonal GEPP
+lower factor has entries bounded by one and therefore has infinity norm at
+most two.  That inference would require at most one off-diagonal entry in
+*each row*.  Adjacent row interchanges only give at most one such entry in
+each column: earlier multipliers move when a later interchange is accumulated
+into the conventional lower-triangular factor.
+
+The following exact three-by-three factorization records the smallest useful
+instance.  GEPP interchanges rows at both stages.  Consequently the last row
+of the accumulated lower factor contains both earlier multipliers and has row
+sum `1 + 9/10 + 10/11 = 309/110 > 2`.
+-/
+
+noncomputable def middleAccumCounterT : Fin 3 → Fin 3 → ℝ
+  | ⟨0, _⟩, ⟨0, _⟩ => 9 / 10
+  | ⟨0, _⟩, ⟨1, _⟩ => 1
+  | ⟨0, _⟩, ⟨2, _⟩ => 0
+  | ⟨1, _⟩, ⟨0, _⟩ => 1
+  | ⟨1, _⟩, ⟨1, _⟩ => 0
+  | ⟨1, _⟩, ⟨2, _⟩ => 11 / 10
+  | ⟨2, _⟩, ⟨0, _⟩ => 0
+  | ⟨2, _⟩, ⟨1, _⟩ => 11 / 10
+  | ⟨2, _⟩, ⟨2, _⟩ => -(219 / 100)
+
+noncomputable def middleAccumCounterL : Fin 3 → Fin 3 → ℝ
+  | ⟨0, _⟩, ⟨0, _⟩ => 1
+  | ⟨0, _⟩, ⟨1, _⟩ => 0
+  | ⟨0, _⟩, ⟨2, _⟩ => 0
+  | ⟨1, _⟩, ⟨0, _⟩ => 0
+  | ⟨1, _⟩, ⟨1, _⟩ => 1
+  | ⟨1, _⟩, ⟨2, _⟩ => 0
+  | ⟨2, _⟩, ⟨0, _⟩ => 9 / 10
+  | ⟨2, _⟩, ⟨1, _⟩ => 10 / 11
+  | ⟨2, _⟩, ⟨2, _⟩ => 1
+
+noncomputable def middleAccumCounterU : Fin 3 → Fin 3 → ℝ
+  | ⟨0, _⟩, ⟨0, _⟩ => 1
+  | ⟨0, _⟩, ⟨1, _⟩ => 0
+  | ⟨0, _⟩, ⟨2, _⟩ => 11 / 10
+  | ⟨1, _⟩, ⟨0, _⟩ => 0
+  | ⟨1, _⟩, ⟨1, _⟩ => 11 / 10
+  | ⟨1, _⟩, ⟨2, _⟩ => -(219 / 100)
+  | ⟨2, _⟩, ⟨0, _⟩ => 0
+  | ⟨2, _⟩, ⟨1, _⟩ => 0
+  | ⟨2, _⟩, ⟨2, _⟩ => 1101 / 1100
+
+def middleAccumCounterSigma : Fin 3 → Fin 3
+  | ⟨0, _⟩ => 1
+  | ⟨1, _⟩ => 2
+  | ⟨2, _⟩ => 0
+
+theorem middleAccumCounter_exact_permuted_lu :
+    higham9_2_PermutedLUFactSpec 3 middleAccumCounterT
+      middleAccumCounterL middleAccumCounterU middleAccumCounterSigma := by
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · constructor
+    · intro a b hab
+      fin_cases a <;> fin_cases b <;>
+        simp_all [middleAccumCounterSigma]
+    · intro b
+      fin_cases b
+      · exact ⟨(2 : Fin 3), rfl⟩
+      · exact ⟨(0 : Fin 3), rfl⟩
+      · exact ⟨(1 : Fin 3), rfl⟩
+  · intro i
+    fin_cases i <;> norm_num [middleAccumCounterL]
+  · intro i j hij
+    fin_cases i <;> fin_cases j <;> simp_all [middleAccumCounterL]
+  · intro i j hij
+    fin_cases i <;> fin_cases j <;> simp_all [middleAccumCounterU]
+  · intro i j
+    fin_cases i <;> fin_cases j
+    all_goals
+      norm_num [middleAccumCounterT, middleAccumCounterL,
+        middleAccumCounterU, middleAccumCounterSigma, Fin.sum_univ_three,
+        zero_add, add_zero]
+    case refine_5.«0».«1» => rfl
+    case refine_5.«2».«1» =>
+      change (0 : ℝ) + 1 = 1
+      norm_num
+    case refine_5.«2».«2» => rfl
+
+theorem middleAccumCounterL_infNorm :
+    infNorm middleAccumCounterL = 309 / 110 := by
+  apply le_antisymm
+  · apply infNorm_le_of_row_sum_le
+    · intro i
+      fin_cases i <;>
+        norm_num [middleAccumCounterL, Fin.sum_univ_three, abs_of_nonneg]
+    · norm_num
+  · have h := row_sum_le_infNorm middleAccumCounterL (2 : Fin 3)
+    norm_num [middleAccumCounterL, Fin.sum_univ_three, abs_of_nonneg] at h
+    exact h
+
+/-- Formal refutation of the `‖M‖∞ ≤ 2` shortcut for the conventional
+accumulated lower-triangular factor of adjacent-pivot tridiagonal GEPP. -/
+theorem middleAccumCounter_not_infNorm_le_two :
+    ¬ infNorm middleAccumCounterL ≤ 2 := by
+  rw [middleAccumCounterL_infNorm]
+  norm_num
+
 end LeanFpAnalysis.FP.Ch11Closure.AasenDirect

@@ -1,24 +1,40 @@
 /-
 Algorithms/Cholesky/AasenTridiagGEPPCh11Closure.lean
 
-Chapter 11 closure, **Piece D** of the faithful Theorem-11.8 (Aasen) closure:
-the *middle-factor* backward-error input needed by the Aasen solve chain.
+Chapter 11 audit, **Piece D** of the attempted faithful Theorem-11.8 (Aasen)
+closure: the *middle-factor* backward-error input needed by the Aasen solve
+chain.
 
 For `P A Pᵀ = L̂ T̂ L̂ᵀ` (Aasen's method), the middle solve `T̂ y = z` for the
 symmetric tridiagonal factor `T̂` must be discharged with a factorisation whose
 *factor-norm growth* is controlled by `‖T̂‖∞` — **without** a diagonal-dominance
 hypothesis (Aasen's `T̂` need not be diagonally dominant).
 
-## Why the naive tridiagonal-GEPP growth route (`≤ 3|(Π·T̂)|`) does not close
+## What the printed GEPP norm argument actually requires
 
-The task's primary target #3 asked for the componentwise partial-pivoting growth
-bound
+Higham's detailed analysis first obtains the componentwise middle perturbation
+`|ΔT₁| ≤ γ₆ Πᵀ|M̂||Û|`.  The printed normwise conclusion then uses
+
+    `‖M̂‖∞ ≤ 2`  and  `‖Û‖∞ ≤ 3 ‖T̂‖∞`.
+
+The second inequality is valid and is proved below from the actual recursive
+tridiagonal partial-pivoting trace.  The first shortcut is not valid for the
+conventional accumulated lower-triangular GEPP factor.  The source observes
+that `M̂` has at most one nonzero below the diagonal in each *column* and that
+all multipliers are unit-bounded; this gives a column-norm bound, not the stated
+infinity-norm bound.  When a later adjacent interchange is accumulated into
+`M̂`, earlier multipliers can move into the same row.  The exact three-by-three
+certificate `middleAccumCounter_exact_permuted_lu` in
+`AasenMiddleGEPPCh11Counterexample` has
+
+    `‖M̂‖∞ = 1 + 9/10 + 10/11 = 309/110 > 2`.
+
+There is a second tempting replacement,
 
     `∀ i j, ∑ k, |M̂ i k| · |Û k j| ≤ 3 · |(Π·T̂) i j|`
 
-for a tridiagonal GEPP factorisation `M̂ Û = Π·T̂`.  This componentwise bound is
-**false** for genuine tridiagonal partial pivoting, because a row interchange
-creates *fill* at a position where the permuted matrix is zero.  Concretely, for
+but it too is false for genuine tridiagonal partial pivoting, because a row
+interchange creates fill where the permuted input is zero.  Concretely, for
 
     T̂ = [[d0, c0, 0 ], [a1, d1, c1], [0, a2, d2]]   with |a1| > |d0|,
 
@@ -29,19 +45,19 @@ row 0 = `[d0, c0, 0]`).  Then
 
     (|M̂||Û|)_{1,2} = |m1|·|c1| + 1·|m1·c1| = 2|m1||c1| > 0 = 3·|(Π·T̂)_{1,2}|,
 
-so the componentwise `≤ 3|(Π·T̂)|` claim is violated.  The correct partial-pivot
-statement is *normwise* (`‖ |M̂||Û| ‖∞ ≤ κ ‖T̂‖∞`), and its honest constant is
-`κ ≈ 12`, **not** `3` (each `Û` row has ≤ 3 nonzeros of size ≤ `2·maxEntry`, and
-`|M̂| ≤ 1` doubles the row).  The repository now has an **exact** recursive
-partial-pivoting trace and a proof of the tridiagonal growth factor `ρ ≤ 2`.
-The trace-level certificate API does not expose the factor band/fill support,
-however, so the unconditional reusable consequence proved below is the weaker
-row-sum estimate `‖M̂‖∞‖Û‖∞ ≤ 2n²‖T̂‖∞`.  There is still no rounded
-pivoted-GEPP producer (the reusable rounded Doolittle loop
-`higham9_2_rectRoundedLoop*` performs **no** pivoting), so this exact result does
-not by itself discharge the computed middle solve in Theorem 11.8.
+so the componentwise claim is violated.
 
-## Delivered routes: exact GEPP bound and the §11.1.4 Bunch factorisation
+The repository now has an exact recursive partial-pivoting trace, the
+tridiagonal growth factor `ρ ≤ 2`, and the source-sharp upper-factor row bound
+`‖Û‖∞ ≤ 3‖T̂‖∞`.  The certificate API still exposes only entrywise bounds for
+the accumulated lower factor, yielding the valid but weaker reusable estimate
+`‖M̂‖∞‖Û‖∞ ≤ 2n²‖T̂‖∞`.  More importantly, there is no rounded pivoted-GEPP
+producer: the reusable rounded Doolittle loop performs no pivoting.  A faithful
+closure therefore needs an operational adjacent-pivot/multiplier solve analysis
+(the storage scheme used by tridiagonal solvers), rather than the invalid
+accumulated-factor shortcut.
+
+## Additional valid fallback: the §11.1.4 Bunch factorisation
 
 Per the task's explicit fallback, we instead supply the middle-solve factor-norm
 input from Bunch's method (Algorithm 11.6), whose factor-norm growth is
@@ -55,9 +71,9 @@ that per-entry bound to the normwise factor-norm bound the Aasen assembly needs:
 
     `‖ |L̂||D̂||L̂ᵀ| ‖∞ ≤ (n · c₀) · ‖T̂‖∞`   (no dominance),
 
-so the Aasen middle solve can be routed through the Bunch factorisation of `T̂`
-(the assembly's componentwise budget then reads `|L̂||L_B||D_B||L_Bᵀ||L̂ᵀ|`, the
-same normwise class as the printed `(n−1)² γ_{15n+25} ‖T̂‖∞`).
+This is a useful dominance-free alternative factorization bound.  Its order-`n`
+coefficient does not, however, fit the printed `γ_(15n+25)` radius, so it is not
+advertised as a closure of Theorem 11.8.
 
 No `sorry`/`admit`/`axiom`/`native_decide`; everything below is derived from the
 already-closed Bunch factor-norm bound and the `infNorm` row-sum machinery.
@@ -163,6 +179,158 @@ theorem bunch_tridiag_absLDLTProduct_infNorm_le
         (flMixedL fp s T) (flMixedD fp s T) i j).symm
   rw [heq]
   exact bunch_tridiag_absFactor_infNorm_le fp hval T s Amax hAmax0 hdata
+
+/-! ### Source-sharp upper-factor row bound for tridiagonal GEPP
+
+The detailed proof behind Higham's Theorem 11.8 uses the special tridiagonal
+GEPP estimate `‖Û‖∞ ≤ 3 ‖T̂‖∞`.  A max-entry growth estimate alone loses an
+extra factor: the sharp row bound also uses that the pivot row of every active
+tridiagonal stage has at most three entries.  The Chapter-9 active-stage
+invariant already records exactly the facts needed for that row count.
+-/
+
+private theorem tridiag_active_row_zero_sum_le_three_mul
+    {m : ℕ} {S : Fin (m + 1) → Fin (m + 1) → ℝ} {M : ℝ}
+    (hM : 0 ≤ M)
+    (hS : higham9_11_TridiagActiveBound (m + 1) M S) :
+    (∑ j : Fin (m + 1), |S 0 j|) ≤ 3 * M := by
+  cases m with
+  | zero =>
+      have h := hS.2.1 (0 : Fin 1) (0 : Fin 1) rfl rfl
+      have h23 : 2 * M ≤ 3 * M := by linarith
+      rw [Fin.sum_univ_one]
+      exact le_trans h h23
+  | succ k =>
+      rw [Fin.sum_univ_succ]
+      have h00 : |S (0 : Fin (k + 2)) 0| ≤ 2 * M :=
+        hS.2.1 0 0 rfl rfl
+      have htail : (∑ j : Fin (k + 1), |S 0 j.succ|) ≤ M := by
+        cases k with
+        | zero =>
+            simpa using hS.2.2 (0 : Fin 2) (1 : Fin 2) (by simp)
+        | succ l =>
+            rw [Fin.sum_univ_succ]
+            have hrest : (∑ j : Fin (l + 1), |S 0 j.succ.succ|) = 0 := by
+              apply Finset.sum_eq_zero
+              intro j _
+              rw [hS.1 0 j.succ.succ]
+              · simp
+              · left
+                simp
+            rw [hrest, add_zero]
+            exact hS.2.2 (0 : Fin (l + 3)) (1 : Fin (l + 3)) (by simp)
+      linarith
+
+private theorem tridiag_active_row_one_sum_le_three_mul
+    {m : ℕ} {S : Fin (m + 2) → Fin (m + 2) → ℝ} {M : ℝ}
+    (hM : 0 ≤ M)
+    (hS : higham9_11_TridiagActiveBound (m + 2) M S) :
+    (∑ j : Fin (m + 2), |S 1 j|) ≤ 3 * M := by
+  rw [Fin.sum_univ_succ, Fin.sum_univ_succ]
+  have h0 : |S (1 : Fin (m + 2)) 0| ≤ M := hS.2.2 1 0 (by simp)
+  have h1 : |S (1 : Fin (m + 2)) 1| ≤ M := hS.2.2 1 1 (by simp)
+  cases m with
+  | zero =>
+      simp
+      linarith
+  | succ l =>
+      rw [Fin.sum_univ_succ]
+      have h2 : |S (1 : Fin (l + 3)) 2| ≤ M := hS.2.2 1 2 (by simp)
+      have hrest : (∑ j : Fin l, |S 1 j.succ.succ.succ|) = 0 := by
+        apply Finset.sum_eq_zero
+        intro j _
+        rw [hS.1 1 j.succ.succ.succ]
+        · simp
+        · left
+          simp
+      rw [hrest]
+      simp only [add_zero]
+      norm_num at h0 h1 h2 ⊢
+      linarith
+
+/-- Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed.,
+Theorem 11.8 proof (and Higham's detailed symmetric-indefinite analysis,
+Theorem 3.6): every row exposed by an exact tridiagonal GEPP trace has absolute
+row sum at most three times the original active-stage scale.
+
+Unlike the coarser max-entry conversion, this proof follows the actual pivot
+row through the recursive trace.  A tridiagonal first-column pivot is in row
+zero or one; its exposed row therefore contains at most two or three nonzeros,
+respectively. -/
+theorem tridiag_GEPPUTrace_row_sum_le_three_mul :
+    ∀ {n : ℕ} {A U : Fin n → Fin n → ℝ},
+      higham9_7_PartialPivotGEPPUTrace n A U →
+      ∀ M : ℝ, 0 ≤ M →
+        higham9_11_TridiagActiveBound n M A →
+        ∀ i : Fin n, (∑ j : Fin n, |U i j|) ≤ 3 * M := by
+  intro n A U htrace
+  induction htrace with
+  | done =>
+      intro M _hM _hA i
+      exact Fin.elim0 i
+  | step hchoice hpivot hnext ih =>
+      rename_i m A r U₁
+      intro M hM hA i
+      let sigma := higham9_7_firstPivotRowSwap r
+      let Aperm := higham9_2_rowPermutedMatrix A sigma
+      have htail :=
+        higham9_11_tridiagActive_schur_preserved hM hA hchoice hpivot
+      by_cases hi : i = 0
+      · subst i
+        have hr : r.val ≤ 1 :=
+          higham9_11_tridiag_pivot_val_le_one hA.1 hpivot
+        have hrow : (∑ j : Fin (m + 1), |A r j|) ≤ 3 * M := by
+          rcases Nat.le_one_iff_eq_zero_or_eq_one.mp hr with hr0 | hr1
+          · have hre : r = 0 := Fin.ext hr0
+            subst r
+            exact tridiag_active_row_zero_sum_le_three_mul hM hA
+          · cases m with
+            | zero =>
+                have : r.val = 0 := by omega
+                omega
+            | succ k =>
+                have hre : r = (1 : Fin (k + 2)) := Fin.ext hr1
+                subst r
+                exact tridiag_active_row_one_sum_le_three_mul hM hA
+        simpa [luFirstStepU, Aperm, sigma, higham9_2_rowPermutedMatrix,
+          higham9_7_firstPivotRowSwap] using hrow
+      · have hrec := ih M hM htail (i.pred hi)
+        rw [Fin.sum_univ_succ]
+        simpa [luFirstStepU, hi] using hrec
+
+/-- Higham Theorem 11.8's source-sharp tridiagonal-GEPP upper-factor estimate:
+
+`‖Û‖∞ ≤ 3 ‖T̂‖∞`.
+
+This is obtained from the actual recursive partial-pivoting trace and the
+Chapter-9 tridiagonal active-stage invariant, with no free growth or support
+hypothesis. -/
+theorem tridiag_GEPPUTrace_infNorm_le_three_mul_infNorm
+    {n : ℕ} (T U : Fin n → Fin n → ℝ)
+    (hTri : IsTridiagonal n T)
+    (htrace : higham9_7_PartialPivotGEPPUTrace n T U) :
+    infNorm U ≤ 3 * infNorm T := by
+  have hactive : higham9_11_TridiagActiveBound n (infNorm T) T := by
+    refine ⟨hTri, ?_, ?_⟩
+    · intro i j _hi _hj
+      have hentry : |T i j| ≤ infNorm T := by
+        calc
+          |T i j| ≤ ∑ k : Fin n, |T i k| :=
+            Finset.single_le_sum (fun k _ => abs_nonneg (T i k))
+              (Finset.mem_univ j)
+          _ ≤ infNorm T := row_sum_le_infNorm T i
+      have hnonneg := infNorm_nonneg T
+      linarith
+    · intro i j _hij
+      calc
+        |T i j| ≤ ∑ k : Fin n, |T i k| :=
+          Finset.single_le_sum (fun k _ => abs_nonneg (T i k))
+            (Finset.mem_univ j)
+        _ ≤ infNorm T := row_sum_le_infNorm T i
+  apply infNorm_le_of_row_sum_le
+  · exact tridiag_GEPPUTrace_row_sum_le_three_mul htrace
+      (infNorm T) (infNorm_nonneg T) hactive
+  · exact mul_nonneg (by norm_num) (infNorm_nonneg T)
 
 /-! ### Exact tridiagonal-GEPP factor-norm consequence
 
