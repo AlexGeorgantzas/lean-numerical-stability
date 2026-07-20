@@ -6,7 +6,7 @@ using Python's standard-library conversion to IEEE-like binary32 after each
 displayed primitive operation.
 
 The corresponding theorem-bearing Lean facts are recorded in
-LeanFpAnalysis/FP/Algorithms/CompensatedSum.lean and in the Chapter 4 ledgers.
+NumStability/Algorithms/CompensatedSum.lean and in the Chapter 4 ledgers.
 """
 
 from __future__ import annotations

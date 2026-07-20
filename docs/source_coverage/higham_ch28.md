@@ -44,7 +44,7 @@ Source: Higham, 2nd ed., Chapter 28, printed pp. 511-526. Mode: core.
 
 Aggregate selected-scope status: **PASS** under the fresh strict precise-prose
 audit. Row 28-P3's headline limit is closed by
-`LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28GinibreFiniteFormula.lean`, which
+`NumStability/Algorithms/TestMatrices/Higham28GinibreFiniteFormula.lean`, which
 proves the premise-free `ch28gf_realGinibreFiniteExpectationFormula`
 (`∀ n, 0 < n → expectedRealEigenvalueCount n = realGinibreExpectedCountClosedForm n`)
 and hence the premise-free `ch28gf_realGinibreExpectedCountLimit` (`E_n/√n → √(2/π)`),

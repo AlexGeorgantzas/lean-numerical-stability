@@ -64,7 +64,7 @@ semantics for "to first order". Problems 26.1-26.4, including Appendix solution
 
 ## Verification
 
-- Target build: `lake build LeanFpAnalysis.FP.Algorithms.AutomaticErrorAnalysis.Higham26` - PASS.
+- Target build: `lake build NumStability.Algorithms.AutomaticErrorAnalysis.Higham26` - PASS.
 - Public import audit: `examples/LibraryLookup.lean` checks `MDSSimplex`, its
   best-vertex ordering theorem, `iteration`, `IterationSpec`, and `SearchTrace`
   and compiles - PASS.

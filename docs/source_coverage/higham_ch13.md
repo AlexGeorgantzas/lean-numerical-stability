@@ -11,7 +11,7 @@
 - Mode: core.
 - Parallel split: 3A (Block LU / Matrix Inversion / Condition Estimation
   cluster, Chapters 13-15).
-- Primary Lean modules (`LeanFpAnalysis/FP/Algorithms/LU/`):
+- Primary Lean modules (`NumStability/Algorithms/LU/`):
   `BlockLU.lean` (monolithic core, ~82k lines), plus the source-closure and
   family layers `BlockLUSourceClosure`, `BlockLURowSourceClosure`,
   `BlockLUArbitraryNormSourceClosure`, `BlockLUSPDSourceClosure`,
@@ -134,7 +134,7 @@ overcount; (13.26) is the last, appearing in Problem 13.4).
 
 ## Axiom spot-check
 
-`lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLUScalarGrowthBridge` passes
+`lake build NumStability.Algorithms.LU.BlockLUScalarGrowthBridge` passes
 (3053 jobs). `#print axioms` on the new active-entry identity, whole-history
 domination, point-row block-history `ρ≤2`, and final source-facing (13.23)
 factor witness each reports only `[propext, Classical.choice, Quot.sound]`.

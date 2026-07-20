@@ -238,7 +238,7 @@ smallness. The source-facing row-wise endpoint consumes both derived facts.
   `sorry`, `admit`, new axioms, unsafe shortcuts, and opaque placeholders:
   **PASS**.
 - Build the Chapter 21 umbrella: **PASS** (3,108 jobs).
-- Build `LeanFpAnalysis.FP.Algorithms`: **PASS** (3,848 jobs).
+- Build `NumStability.Algorithms`: **PASS** (3,848 jobs).
 - Build the full repository: **PASS** (3,901 jobs). Replayed warnings are
   inherited from pre-existing modules; the new Chapter 21 modules are clean.
 - `#print axioms` for

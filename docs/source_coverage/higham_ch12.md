@@ -28,10 +28,10 @@ decomposition, correction/Neumann machinery, sigma bridge, conditional printed
 conclusion, and solver-derived non-asymptotic stability companion are proved.
 
 Primary Lean module:
-`LeanFpAnalysis/FP/Algorithms/HighamChapter12.lean`; reusable refinement
-infrastructure: `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean`;
+`NumStability/Algorithms/HighamChapter12.lean`; reusable refinement
+infrastructure: `NumStability/Algorithms/IterativeRefinement.lean`;
 actual Chapter 9 solver handoff:
-`LeanFpAnalysis/FP/Algorithms/HighamChapter12Ch9SolverBridge.lean`.
+`NumStability/Algorithms/HighamChapter12Ch9SolverBridge.lean`.
 
 ### Equation (12.6) / actual Chapter 9 solver bridge (2026-07-20 rerun)
 
@@ -171,29 +171,29 @@ No repeated blocker or red bottleneck remains.
 ## Verification
 
 - Fresh (12.6) bridge checks (2026-07-20):
-  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter12Ch9SolverBridge.lean`
+  `lake env lean NumStability/Algorithms/HighamChapter12Ch9SolverBridge.lean`
   and
-  `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter12Ch9SolverBridge`
+  `lake build NumStability.Algorithms.HighamChapter12Ch9SolverBridge`
   both passed. `#print axioms` for
   `higham12_6_u_mul_rectRoundedLoopW_eq` and
   `higham12_6_rectRoundedLoop_lu_solve_SolverWBound_source` reported only
   `propext`, `Classical.choice`, and `Quot.sound`.
 - Fresh-worktree baseline:
-  `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter12` — PASS, 3373 jobs.
+  `lake build NumStability.Algorithms.HighamChapter12` — PASS, 3373 jobs.
   The only messages were pre-existing lints/deprecations in untouched
   `CholeskyFl.lean`, `HighamChapter9.lean`, and `HighamChapter10.lean`.
 - Focused changed-file check:
-  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter12.lean` — PASS on
+  `lake env lean NumStability/Algorithms/HighamChapter12.lean` — PASS on
   the narrowed import surface.
 - Focused target after the audit batch:
-  `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter12` — PASS.
+  `lake build NumStability.Algorithms.HighamChapter12` — PASS.
 - Post-merge chapter-level aggregate gate:
-  `lake build LeanFpAnalysis.FP` — PASS, 4315 jobs. The emitted diagnostics
+  `lake build NumStability` — PASS, 4315 jobs. The emitted diagnostics
   were pre-existing linter/deprecation warnings in untouched modules from
   Chapters 9-10, 14, 16, and 19-21, plus Cholesky, QR, matrix-power,
   FastMatMul, and test-matrix modules; no diagnostic came from Chapter 12.
 - Public-surface consumer check: a minimal scratch consumer importing
-  `LeanFpAnalysis.FP` and checking `higham12_10_exact_q_bound` and
+  `NumStability` and checking `higham12_10_exact_q_bound` and
   `higham12_4_from_solver` — PASS. The monolithic
   `examples/LibraryLookup.lean` reaches a process stack overflow while
   rendering its pre-existing thousands of `#check` messages, including with a

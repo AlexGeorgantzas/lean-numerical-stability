@@ -187,8 +187,8 @@ The repair set adds or strengthens the following compiled producers.
 ## Cross-chapter bridges
 
 The root-import graph was recomputed independently of the ledgers.  At the
-audit working tree it contains 576 Lean modules under `LeanFpAnalysis`; 574 are
-reachable from `LeanFpAnalysis.FP`.  The only unreachable files are the two
+audit working tree it contains 576 Lean modules under `NumStability`; 574 are
+reachable from `NumStability`.  The only unreachable files are the two
 pre-existing untracked scratch experiments
 `TestMatrices/Higham28GinibreSignedIntegrability.lean` and
 `TestMatrices/ScratchSigned.lean`.  They are not production modules and are not
@@ -220,8 +220,8 @@ The final frozen tree passed all required gates:
 Chapter 11 exact-rook/rounded-gap focused build       3,060 jobs  PASS
 Chapter 15 concrete general-p focused build           3,014 jobs  PASS
 Chapter 19 actual matrix Theorem 19.10 focused build  3,077 jobs  PASS
-LeanFpAnalysis.FP.Algorithms                          4,356 jobs  PASS
-LeanFpAnalysis.FP                                     4,403 jobs  PASS
+NumStability.Algorithms                          4,356 jobs  PASS
+NumStability                                     4,403 jobs  PASS
 lake build (whole package)                            4,405 jobs  PASS
 ```
 
@@ -232,8 +232,8 @@ Every declaration reported exactly the standard Mathlib axioms `propext`,
 `sorryAx`.  Declaration scans found no `sorry`, `admit`, `axiom`, `opaque`, or
 `unsafe` declaration in the production tree.
 
-The root-import recomputation found 576 Lean files under `LeanFpAnalysis`, 574
-reachable from `LeanFpAnalysis.FP`, and precisely the two pre-existing untracked
+The root-import recomputation found 576 Lean files under `NumStability`, 574
+reachable from `NumStability`, and precisely the two pre-existing untracked
 Chapter 28 scratch experiments unreachable.  Thus all 574 production modules
 are root-reachable.  The exact staging-set diff check passed, and a final remote
 fetch immediately before commit confirmed that `origin/main` still named the

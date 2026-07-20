@@ -69,14 +69,14 @@
   \BenchSubhead{Condition A setup}
   Exercise prompt plus only the neutral Lean scaffold needed to state the task:
   basic types, notation, and algorithm definitions if required.  No
-  LeanFpAnalysis imports, source ledger, stability bounds, proof lemmas, or
+  NumStability imports, source ledger, stability bounds, proof lemmas, or
   proof logic.
 
   \BenchSubhead{Condition A generated theorem and proof}
   \LeanTODO{-- TODO: paste model output from natural-language Condition A run}
 
   \BenchSubhead{Condition C setup}
-  Same exercise prompt, but with LeanFpAnalysis imports, source-oriented library
+  Same exercise prompt, but with NumStability imports, source-oriented library
   documentation, and available project context.
 
   \BenchSubhead{Condition C generated theorem and proof}
@@ -101,7 +101,7 @@
   \LeanTODO{-- TODO: generated proof from fixed Lean theorem with minimal statement scaffold}
 
   \BenchSubhead{Condition C library context}
-  \LeanTODO{-- TODO: LeanFpAnalysis imports/docs/lemmas made visible for Condition C}
+  \LeanTODO{-- TODO: NumStability imports/docs/lemmas made visible for Condition C}
 
   \BenchSubhead{Condition C proof}
   \LeanTODO{-- TODO: generated proof from the exact same fixed Lean theorem with library context}
@@ -116,7 +116,7 @@
 }
 
 \title{Higham Exercise Benchmark Candidates}
-\author{LeanFpAnalysis Benchmarking}
+\author{NumStability Benchmarking}
 \date{\today}
 
 \begin{document}
@@ -124,10 +124,10 @@
 
 \section{Purpose}
 
-This document collects candidate exercises for the LeanFpAnalysis benchmark.
+This document collects candidate exercises for the NumStability benchmark.
 It is a benchmark ledger, not a source-coverage ledger.
 
-The benchmark goal is to test whether access to the LeanFpAnalysis library
+The benchmark goal is to test whether access to the NumStability library
 makes formalizing floating-point stability-analysis tasks faster and more
 reliable than working from a minimal statement scaffold.  Preferred exercises ask for
 perturbation bounds, backward-error bounds, forward-error bounds, residual
@@ -153,7 +153,7 @@ the prompt text identifies the intended exercise content.
   It must not include stability bounds, source-derived proof lemmas, or proof
   logic.
   \item[Condition C] The same task file and the same neutral statement scaffold,
-  plus the LeanFpAnalysis library context and documentation.
+  plus the NumStability library context and documentation.
 \end{description}
 
 Each exercise is evaluated in two layers.
@@ -161,7 +161,7 @@ Each exercise is evaluated in two layers.
 \paragraph{Layer 1: natural-language discovery}
 Both conditions receive the exercise prompt and, if needed, the same neutral
 statement scaffold.  Condition A has no stability-library help, while Condition
-C sees the LeanFpAnalysis library and documentation.  This tests whether library
+C sees the NumStability library and documentation.  This tests whether library
 context helps the model choose a good Lean formalization and prove it.  The
 result is inherently noisy because the two runs may choose different theorem
 statements.
@@ -170,7 +170,7 @@ statements.
 A canonical Lean theorem statement is prepared and frozen before benchmarking.
 Both conditions receive exactly this theorem.  Condition A receives the minimal
 statement scaffold only; Condition C receives the same theorem and scaffold plus
-LeanFpAnalysis context.  This is the primary benchmark because it tests proof
+NumStability context.  This is the primary benchmark because it tests proof
 support without theorem-selection drift.
 
 For both layers, paste the generated proof under the corresponding condition.

@@ -14,7 +14,7 @@
 - **Audit date:** 2026-07-18 (fresh main-branch closure audit).
 - **Axiom spot-check:** `lemma3_7_frobenius_spectral_perturbation_bound`, `sumTreeDotProduct_backward_stable_any_permuted_order`, `clog2PairwiseDotProduct_error_bound`, `frobNormRect_le_sqrt_min_mul_rectOpNorm2`, and `matVec_error_bound_twoNormRect` all depend only on `[propext, Classical.choice, Quot.sound]`; the earlier core surfaces have the same axiom set.
 
-All Lean names below are in namespace `LeanFpAnalysis.FP`. Module paths are relative to `LeanFpAnalysis/FP/`.
+All Lean names below are in namespace `NumStability`. Module paths are relative to `NumStability/`.
 
 ## Primary labels
 

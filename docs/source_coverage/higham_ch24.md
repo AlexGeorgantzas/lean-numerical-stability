@@ -7,30 +7,30 @@
 
 ## Coverage map
 
-- DFT and inverse DFT: `LeanFpAnalysis/FP/Algorithms/FFT/Higham24.lean`.
+- DFT and inverse DFT: `NumStability/Algorithms/FFT/Higham24.lean`.
 - Roots-of-unity inverse proof reused from:
-  `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean`.
+  `NumStability/Algorithms/HighamChapter9.lean`.
 - Weight model and scalar (24.5) accumulation bound:
-  `LeanFpAnalysis/FP/Algorithms/FFT/Higham24.lean`.
+  `NumStability/Algorithms/FFT/Higham24.lean`.
 - Literal exact/rounded radix-2 recursion, source butterfly/Kronecker stages,
   complete (24.3) norm identities, computed-weight stage perturbation (24.4),
   bit-reversal DFT correctness, and the literal Theorem 24.2 proof:
-  `LeanFpAnalysis/FP/Algorithms/FFT/Higham24Radix2.lean`.
+  `NumStability/Algorithms/FFT/Higham24Radix2.lean`.
 - Produced input-dependent rank-one form of (24.6), including the zero case,
   and both literal forward stages of (24.7):
-  `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24ForwardPerturbation.lean`.
+  `NumStability/Algorithms/Circulant/Higham24ForwardPerturbation.lean`.
 - Literal complex-division diagonal scaling, conjugated-forward inverse FFT,
   and the composed actual four-stage rounded solver:
-  `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24Rounded.lean`,
+  `NumStability/Algorithms/Circulant/Higham24Rounded.lean`,
   `Higham24InverseFFT.lean`, and `Higham24LiteralSolver.lean`.
 - Exact DFT norm scaling and the quantitative backward-stability consequence:
-  `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24BackwardStability.lean`.
+  `NumStability/Algorithms/Circulant/Higham24BackwardStability.lean`.
 - Produced structured perturbations, exact rational radii, the printed
   first-order radius, and an explicit quadratic remainder coefficient:
-  `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24Structured.lean`.
+  `NumStability/Algorithms/Circulant/Higham24Structured.lean`.
 - Circulant structure, exact DFT diagonalization, the exact four-stage solver,
   and exact (24.8) algebra:
-  `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24.lean`.
+  `NumStability/Algorithms/Circulant/Higham24.lean`.
 - Theorem 24.1: PASS; `higham24_theorem24_1_stage_factorization` is the literal
   ordered stage-product/bit-reversal equality.
 - Theorem 24.2: PASS for the literal rounded recursive executor.

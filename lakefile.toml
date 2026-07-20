@@ -1,14 +1,10 @@
-name = "LeanFpAnalysis"
+name = "numStability"
 version = "0.1.0"
-defaultTargets = ["LeanFpAnalysis"]
+defaultTargets = ["NumStability"]
 weakLeanArgs = ["-j", "1"]
 
 [[lean_lib]]
-name = "LeanFpAnalysis"
-
-[[lean_exe]]
-name = "leanfpanalysis"
-root = "Main"
+name = "NumStability"
 
 [[require]]
 name = "mathlib"

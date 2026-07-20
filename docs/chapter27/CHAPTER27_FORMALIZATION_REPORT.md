@@ -52,7 +52,7 @@ exact scaled-norm invariant proved above.
 
 ## Verification
 
-- Target build: `lake build LeanFpAnalysis.FP.Algorithms.SoftwareIssues.Higham27` - PASS.
+- Target build: `lake build NumStability.Algorithms.SoftwareIssues.Higham27` - PASS.
 - Hygiene scan for `sorry`, `admit`, `axiom`, `unsafe`, and `opaque` - PASS (no matches).
 - Representative `#print axioms` checks report only Mathlib's standard
   `propext`, `Classical.choice`, and `Quot.sound` axioms.

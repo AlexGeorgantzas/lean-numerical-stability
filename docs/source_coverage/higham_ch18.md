@@ -19,7 +19,7 @@
 - Mode: core.
 - Parallel split: 3B.
 - Planning documents consulted: `chapter_splitting/HIGHAM_PARALLEL_FORMALIZATION_BLUEPRINT.md`, Split 3B section of `chapter_splitting/split_primary_contracts.md`, and the Chapter 18 rows of `chapter_splitting/chapter_index.md`.
-- Main Lean files: `LeanFpAnalysis/FP/Algorithms/MatrixPowers.lean` (§18.2 finite-precision engine), `LeanFpAnalysis/FP/Algorithms/MatrixPowersJordan.lean` (real-Jordan δ-scaling construction).
+- Main Lean files: `NumStability/Algorithms/MatrixPowers.lean` (§18.2 finite-precision engine), `NumStability/Algorithms/MatrixPowersJordan.lean` (real-Jordan δ-scaling construction).
 - Selected-scope gate: **PASS (fresh 2026-07-18 audit)**. Every precise selected
   Chapter 18 row is source-closed. Theorem 18.2 remains visible in the inventory
   but is deferred because its rendered statement contains an undefined
@@ -208,6 +208,6 @@ Every previously "allowed-BLOCKED" item was genuinely ATTEMPTED (not a-priori di
 
 | Command | Result | Notes |
 |---|---|---|
-| `lake env lean LeanFpAnalysis/FP/Algorithms/MatrixPowers.lean` | PASS | after each increment |
+| `lake env lean NumStability/Algorithms/MatrixPowers.lean` | PASS | after each increment |
 | `#print axioms` on all new source-facing theorems | `[propext, Classical.choice, Quot.sound]` | no sorry/new axiom |
 | hygiene scan (`sorry\|admit\|axiom\|unsafe\|opaque`) | clean | comment mentions of "axiom" are prose flags on `similarity_absorbs` |

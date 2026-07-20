@@ -36,7 +36,7 @@ factor sequence, so the public closed corollary has no target-bearing premise.
 ## Verification
 
 - Fresh focused build of
-  `LeanFpAnalysis.FP.Algorithms.Vandermonde.Higham22MonomialClosure`:
+  `NumStability.Algorithms.Vandermonde.Higham22MonomialClosure`:
   PASS (3078 jobs).
 - Axiom audit of the (22.24) producer and closed Corollary 22.7: only
   `propext`, `Classical.choice`, and `Quot.sound`.

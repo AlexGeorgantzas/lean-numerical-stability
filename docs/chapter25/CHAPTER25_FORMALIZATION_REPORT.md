@@ -39,7 +39,7 @@ universal infinity-norm coefficient `2`.
 
 ## Lean deliverables
 
-- `LeanFpAnalysis/FP/Algorithms/Nonlinear/Higham25.lean`
+- `NumStability/Algorithms/Nonlinear/Higham25.lean`
   - exact and rounded Newton-step models for (25.1)-(25.2)
   - `higham25_linearSystem_newtonCorrection_iff_refinementCorrection`,
     `higham25_linearSystemJacobian_constant`,
@@ -62,12 +62,12 @@ universal infinity-norm coefficient `2`.
   - the three-error target predicate, literal rounded evaluator, end-to-end
     `u,u,gamma₃` producer, solution, and sensitivity facts for (25.12)-(25.13)
   - denominator and step-squared stopping bounds supporting (25.14)
-- `LeanFpAnalysis/FP/Algorithms/Nonlinear/Higham25Problem25_1.lean`
+- `NumStability/Algorithms/Nonlinear/Higham25Problem25_1.lean`
   - Appendix equation (A.15)
   - fixed-point consequence of (25.15)
   - invariant ball and strict descent outside the ball
   - geometric envelope, boundedness, and the subsequential-limit bound
-- `LeanFpAnalysis/FP/Algorithms/Nonlinear/Higham25EigenClosure.lean`
+- `NumStability/Algorithms/Nonlinear/Higham25EigenClosure.lean`
   - displayed bordered Jacobian and exact derivative/Taylor bridge
   - algebraic simple-eigenpair certificate and its kernel-triviality theorem
   - direct generalized-eigenspace bridge from root multiplicity one to kernel

@@ -176,8 +176,8 @@ constant remains correctly deferred.
 
 - Baseline direct compiles passed for `LSPerturbation.lean`, `LSQRSolve.lean`,
   `LSNormalEquations.lean`, and `LSE.lean`.
-- Baseline aggregate builds passed for `LeanFpAnalysis.FP.Algorithms`,
-  `LeanFpAnalysis.FP`, and the root target (3931 jobs at the audited baseline).
+- Baseline aggregate builds passed for `NumStability.Algorithms`,
+  `NumStability`, and the root target (3931 jobs at the audited baseline).
 - `examples/LibraryLookup.lean` compiled after the public-navigation addition.
 - Baseline forbidden-token, merge-marker, whitespace, import-coverage, and
   representative `#print axioms` audits passed. The representative theorems
@@ -202,14 +202,14 @@ constant remains correctly deferred.
 - The 2026-07-19 `Higham20Theorem20_7ActualBackSub.lean` repair passed focused
   direct compilation. Its source-facing endpoint is
   `higham20_7_sourceConstructed_actual_closed`; the new module is imported by
-  `LeanFpAnalysis.FP.Algorithms`. A fresh aggregate/root build is left to the
+  `NumStability.Algorithms`. A fresh aggregate/root build is left to the
   final integration pass rather than inferred from the earlier baseline.
-- Final post-repair builds passed for `LeanFpAnalysis.FP.Algorithms` (3878
-  jobs), `LeanFpAnalysis.FP` (3929 jobs), and the root target (3931 jobs).
+- Final post-repair builds passed for `NumStability.Algorithms` (3878
+  jobs), `NumStability` (3929 jobs), and the root target (3931 jobs).
   `examples/LibraryLookup.lean` also passed after rebuilding the aggregate
   imports and correcting the fully qualified public names.
 - All 32 least-squares modules are imported by
-  `LeanFpAnalysis.FP.Algorithms`. A 12-endpoint final axiom audit, covering
+  `NumStability.Algorithms`. A 12-endpoint final axiom audit, covering
   every repaired proof family, reported only `propext`, `Classical.choice`,
   and `Quot.sound`. Added-line forbidden-token, conflict-marker,
   source-count, and `git diff --check` audits passed.

@@ -34,9 +34,9 @@ algebraic form.
 
 ## Verification
 
-- `lake build LeanFpAnalysis.FP.Algorithms.FastMatMul.Higham23Bini`: PASS.
-- `lake build LeanFpAnalysis.FP.Algorithms.FastMatMul.Higham23ThreeMStrassen`: PASS.
-- `lake build LeanFpAnalysis.FP.Algorithms`: PASS.
+- `lake build NumStability.Algorithms.FastMatMul.Higham23Bini`: PASS.
+- `lake build NumStability.Algorithms.FastMatMul.Higham23ThreeMStrassen`: PASS.
+- `lake build NumStability.Algorithms`: PASS.
 - `lake env lean examples/LibraryLookup.lean`: PASS.
 - Axiom audits for the Miller, Winograd--Strassen, Bini--Lotti, and combined
   3M--Strassen endpoints report only `propext`, `Classical.choice`, and

@@ -54,7 +54,7 @@
   superseded by this strict audit.  A separate **policy flag on
   benchmark-reserved Problems** remains recorded below.
 
-Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter8.lean`
+Primary Lean module: `NumStability/Algorithms/HighamChapter8.lean`
 (7.4k lines); proofs in the focused modules TriangularSolve, ForwardSub,
 TriangularSolveCombined, TriangularForwardBound, InverseBounds,
 TriangularForwardComparison, TriangularArbitraryOrder, TriangularNoGuard,
@@ -137,12 +137,12 @@ deletion performed.
 | epigraphs, motivating prose | quotations | editorial |
 
 ## Verification (fresh 2026-07-18 audit)
-- Direct `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter8.lean`:
+- Direct `lake env lean NumStability/Algorithms/HighamChapter8.lean`:
   **PASS** after the literal inverse-factor bridge additions.
 - Direct
-  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter8FanInClosure.lean`:
+  `lake env lean NumStability/Algorithms/HighamChapter8FanInClosure.lean`:
   **PASS**, including the exact order-seven honesty certificate.
-- `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter8`: **PASS**.
+- `lake build NumStability.Algorithms.HighamChapter8`: **PASS**.
 - Hygiene: no `sorry`/`admit`/new `axiom` in `HighamChapter8.lean`.
 - `#print axioms` on the literal executor, inverse-factor/reverse-product
   producers, coefficient remainder split, actual (8.15)--(8.20) bridge

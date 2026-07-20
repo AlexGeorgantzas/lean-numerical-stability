@@ -12,7 +12,7 @@ consulted only after the source inventory and declaration-type audit.
 
 ## Frozen baseline and source corpus
 
-- Repository: `https://github.com/AlexGeorgantzas/lean-fp-analysis.git`
+- Repository: `https://github.com/AlexGeorgantzas/lean-numerical-stability.git`
 - Audited branch: `origin/main`
 - Frozen baseline commit: `78cda8ba9debad7af00d2dd6a1b01f096551a488`
 - Local branch at freeze: `main`, exactly equal to `origin/main`
@@ -371,7 +371,7 @@ Algebra*, Lemma 8.2.11, not references to Higham Chapter 8. A code literal
 - Every repaired module passed a focused build.  The broad repaired import cone
   passed 3,525 jobs; the strict Chapter 11 source route passed 3,063 jobs; and
   the Chapter 12 solver bridge passed 3,366 jobs.
-- A clean production-root build of `LeanFpAnalysis.FP.Algorithms` passed all
+- A clean production-root build of `NumStability.Algorithms` passed all
   4,380 jobs.  The final repository-wide `lake build` then passed all 4,429
   jobs.  An earlier high-parallelism pass encountered Windows process exits in
   unchanged legacy modules; each affected module compiled successfully alone,
@@ -380,7 +380,7 @@ Algebra*, Lemma 8.2.11, not references to Higham Chapter 8. A code literal
   endpoints spanning Chapters 3, 9, 11, 12, 14, 15, 19, and 22.  Every endpoint
   reported exactly `[propext, Classical.choice, Quot.sound]`.
 - All 22 new production modules are reachable from
-  `LeanFpAnalysis.FP.Algorithms` (twenty directly and two transitively).
+  `NumStability.Algorithms` (twenty directly and two transitively).
 - The 29 changed production Lean files contain no `sorry`, `admit`, axiom
   declarations, `unsafe`, `opaque`, or `native_decide`; the complete production
   declaration scan likewise reports zero `sorry`, `admit`, or `axiom`

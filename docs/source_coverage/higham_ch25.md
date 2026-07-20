@@ -27,9 +27,9 @@
 
 - Equations (25.1)-(25.7), (25.10), (25.12), (25.14), exact Newton models,
   eigenproblem, conditioning algebra helpers, example, and stopping bounds:
-  `LeanFpAnalysis/FP/Algorithms/Nonlinear/Higham25.lean`.
+  `NumStability/Algorithms/Nonlinear/Higham25.lean`.
 - Problem 25.1 and Appendix (A.15):
-  `LeanFpAnalysis/FP/Algorithms/Nonlinear/Higham25Problem25_1.lean`.
+  `NumStability/Algorithms/Nonlinear/Higham25Problem25_1.lean`.
 - Theorems 25.1/(25.8) and 25.2/(25.9):
   DEFER-MISSING-PRECISE-STATEMENT; no invented interpretation of `≈` or
   “decreases until.”

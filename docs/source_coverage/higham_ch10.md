@@ -16,8 +16,8 @@
   display is `DEFER-MISSING-PRECISE-STATEMENT` under the audit skill rather
   than an invented quantitative target.
 
-Primary Lean module: `LeanFpAnalysis/FP/Algorithms/HighamChapter10.lean`
-(chapter-label surface); reusable proofs in `LeanFpAnalysis/FP/Algorithms/Cholesky/*`.
+Primary Lean module: `NumStability/Algorithms/HighamChapter10.lean`
+(chapter-label surface); reusable proofs in `NumStability/Algorithms/Cholesky/*`.
 
 ## Completed selected targets (primary labels)
 | Source label | Lean declaration(s) | Notes |
@@ -147,8 +147,8 @@ complete-pivoting proofs and the `opNorm2Le` machinery are reused from
 ## Verification
 - Commands:
   - `lake exe cache get`
-  - `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter10` → `Build completed successfully (3053 jobs)`.
-  - `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter10.lean` → exit 0 (no errors).
+  - `lake build NumStability.Algorithms.HighamChapter10` → `Build completed successfully (3053 jobs)`.
+  - `lake env lean NumStability/Algorithms/HighamChapter10.lean` → exit 0 (no errors).
   - `#print axioms` on the new quantitative theorems (`…leadingBlock`, `…opNorm2`, `…firstOrder_eq_WtW`) and the 10.9(b) rank/uniqueness assembly → `[propext, Classical.choice, Quot.sound]` (no `sorryAx`, no custom axioms).
   - Placeholder scan `grep -nE 'sorry|admit|^\s*axiom |native_decide'` over ch10 + `Cholesky/` → clean.
 - New vs pre-existing warnings: no new errors; only pre-existing deprecation/linter warnings

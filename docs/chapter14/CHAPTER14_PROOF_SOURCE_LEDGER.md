@@ -10,7 +10,7 @@ This ledger records every nontrivial proof source used during the 2026-07-15 fro
 | Higham, Appendix A, Chapter 14 solutions, pp. 558-561 | Proof routes and missing details for selected Problems 14.2-14.5, 14.7-14.8, and 14.10-14.15 | Used as mathematical guidance; every adopted step is proved locally | ADOPTED AND FORMALIZED |
 | Higham Chapters 3, 8, 9, and 13 | Source-cited matrix product, triangular solve, LU, condition, and BLAS assumptions | Reused existing repository declarations; no chapter-crossing axiom added | REUSED |
 | Mathlib finite matrices, determinants, norms, topology, and asymptotics | Standard algebra, determinant continuity, l2 operator norm, singular values, and Landau calculus | Imported through normal modules; headline axiom audits show only `propext`, `Classical.choice`, and `Quot.sound` | REUSED |
-| Existing `LeanFpAnalysis` matrix algebra and FP model | `fl_matMul`, triangular solves, LU certificates, exact matrix norms, inverse identities, and Chapter 9 bounds | Reused rather than duplicated; new Chapter 14 wrappers instantiate these paths | REUSED |
+| Existing `NumStability` matrix algebra and FP model | `fl_matMul`, triangular solves, LU certificates, exact matrix norms, inverse identities, and Chapter 9 bounds | Reused rather than duplicated; new Chapter 14 wrappers instantiate these paths | REUSED |
 | Rendered chapter and Appendix pages in `tmp/pdfs/` | Visual verification of formulas, labels, signs, denominators, and omitted empirical rows | Audit evidence only; never staged or pushed | ADVISORY |
 | Oracle / GPT-5.5 Pro review attempt | Requested second-model review of difficult closure points | Session stalled without a substantive mathematical answer; no claim or proof was adopted | REJECTED / NO OUTPUT |
 

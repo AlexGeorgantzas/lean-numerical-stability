@@ -59,11 +59,11 @@ The original Chapter-15 relabeling wrappers reuse those proofs under the correct
 
 ## Verification
 
-- 2026-07-18 Theorem 15.6 probabilistic closure: focused builds of `LeanFpAnalysis.FP.Algorithms.Ch15DixonProbability` and `LeanFpAnalysis.FP.Algorithms.Ch15DixonClosure` succeeded. The public endpoint is `higham15_6_dixon_closed`; a focused axiom audit is recorded in the top-level Chapters 1–28 audit report.
-- 2026-07-18 Theorem 15.9 source-hypothesis closure: focused `lake build LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCondCh15IkebeClosure` — success (2992 jobs); focused `#print axioms Ch15IkebeClosure.H15_Theorem15_9_of_irreducible_rightInverse` reported only `[propext, Classical.choice, Quot.sound]`; placeholder/hygiene scan and `git diff --check` passed for the new Lean module and this ledger.
-- 2026-07-18 Algorithm 15.4 exact-ratio closure: focused `lake env lean LeanFpAnalysis/FP/Algorithms/Chapter15CondEst.lean` — success; focused `#print axioms` reported only `[propext, Classical.choice, Quot.sound]`; placeholder scan and `git diff --check` passed for the changed Lean file and this ledger.
-- `lake build LeanFpAnalysis.FP.Algorithms.PNormPowerMethod LeanFpAnalysis.FP.Algorithms.Chapter15CondEst LeanFpAnalysis.FP.Algorithms.Ch15CondEstimators LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCondCh15` — success.
-- Full `lake build` after wiring the four modules into `LeanFpAnalysis/FP/Algorithms.lean` — success.
+- 2026-07-18 Theorem 15.6 probabilistic closure: focused builds of `NumStability.Algorithms.Ch15DixonProbability` and `NumStability.Algorithms.Ch15DixonClosure` succeeded. The public endpoint is `higham15_6_dixon_closed`; a focused axiom audit is recorded in the top-level Chapters 1–28 audit report.
+- 2026-07-18 Theorem 15.9 source-hypothesis closure: focused `lake build NumStability.Algorithms.LU.TridiagonalCondCh15IkebeClosure` — success (2992 jobs); focused `#print axioms Ch15IkebeClosure.H15_Theorem15_9_of_irreducible_rightInverse` reported only `[propext, Classical.choice, Quot.sound]`; placeholder/hygiene scan and `git diff --check` passed for the new Lean module and this ledger.
+- 2026-07-18 Algorithm 15.4 exact-ratio closure: focused `lake env lean NumStability/Algorithms/Chapter15CondEst.lean` — success; focused `#print axioms` reported only `[propext, Classical.choice, Quot.sound]`; placeholder scan and `git diff --check` passed for the changed Lean file and this ledger.
+- `lake build NumStability.Algorithms.PNormPowerMethod NumStability.Algorithms.Chapter15CondEst NumStability.Algorithms.Ch15CondEstimators NumStability.Algorithms.LU.TridiagonalCondCh15` — success.
+- Full `lake build` after wiring the four modules into `NumStability/Algorithms.lean` — success.
 - `#print axioms` on every headline declaration — `[propext, Classical.choice, Quot.sound]`.
 - No `sorry`/`admit`/`axiom`/`unsafe`/`opaque`/`native_decide`/`set_option` in any of the four new files.
 - Adversarial verification of all four modules: ACCEPT (T1, T4), ACCEPT_WITH_NOTES (T2, T3, notes as documented above).

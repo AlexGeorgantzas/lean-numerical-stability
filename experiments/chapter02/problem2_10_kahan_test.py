@@ -8,7 +8,7 @@ the full quantified theorem.
 The replay uses the host Python `float` path for a small source-prefix sample of
 allowable denominators and integer numerators satisfying the binary64
 `|m| < 2^(t-1)` side condition.  Machine-independent finite-selector subclaims
-from earlier work are archived in `LeanFpAnalysis/FP/Analysis/Problem2_10.lean`
+from earlier work are archived in `NumStability/Analysis/Problem2_10.lean`
 and the Chapter 2 ledgers, but this computer-test exercise is closed as an
 experiment rather than a theorem gate.
 """

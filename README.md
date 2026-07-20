@@ -1,4 +1,4 @@
-# LeanFpAnalysis
+# NumStability
 
 A Lean 4 library for formally verified floating-point error analysis, following
 Nicholas J. Higham's *Accuracy and Stability of Numerical Algorithms*
@@ -15,7 +15,7 @@ false, with a theorem-level counterexample and a faithful corrected theorem.
 ## Floating-point model
 
 The library uses an **abstract** floating-point model
-([`FP/Model.lean`](LeanFpAnalysis/FP/Model.lean)), not a concrete IEEE-754
+([`FloatingPoint/Model.lean`](NumStability/FloatingPoint/Model.lean)), not a concrete IEEE-754
 representation. An `FPModel` carries a unit roundoff `u` and rounding operations
 `fl_add / fl_sub / fl_mul / fl_div / fl_sqrt`, each satisfying the standard model
 
@@ -160,7 +160,7 @@ deferred rather than converted into arbitrary propositions.
   exact-label graph.
 
 The **RandNLA case study**
-([`FP/Algorithms/RandNLA/`](LeanFpAnalysis/FP/Algorithms/RandNLA), 17 modules)
+([`NumStability/Algorithms/RandNLA/`](NumStability/Algorithms/RandNLA), 17 modules)
 formalizes the meta-algorithms of Drineas and Mahoney's CACM survey
 ["RandNLA: Randomized Numerical Linear Algebra"](https://dl.acm.org/doi/10.1145/2842602)
 — row/elementwise/leverage-score sampling, matrix concentration, low-rank
@@ -168,7 +168,7 @@ approximation, and least-squares preconditioning.
 
 ## Project statistics
 
-Snapshot of the current `LeanFpAnalysis/` tree:
+Snapshot of the current `NumStability/` tree:
 
 | | |
 |---|---|
@@ -182,7 +182,7 @@ Snapshot of the current `LeanFpAnalysis/` tree:
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
 the standard `[propext, Classical.choice, Quot.sound]` axioms. (Declaration
-counts are declaration-line matches across `LeanFpAnalysis/**/*.lean`; the line
+counts are declaration-line matches across `NumStability/**/*.lean`; the line
 count is total physical lines, including comments and blanks.)
 
 ## Building
@@ -199,7 +199,7 @@ lake build           # 4429 build jobs in the audited tree
 Build a single module, e.g.:
 
 ```bash
-lake build LeanFpAnalysis.FP.Algorithms.GaussJordan
+lake build NumStability.Algorithms.GaussJordan
 ```
 
 If a fresh build fails fetching ProofWidgets, drop its release build in place:
@@ -215,16 +215,16 @@ Add to your `lakefile.toml`:
 
 ```toml
 [[require]]
-name = "LeanFpAnalysis"
-git = "https://github.com/AlexGeorgantzas/lean-fp-analysis"
+name = "numStability"
+git = "https://github.com/AlexGeorgantzas/lean-numerical-stability"
 rev = "main"
 ```
 
-then `import LeanFpAnalysis.FP`.
+then `import NumStability`.
 
 ```lean
-import LeanFpAnalysis.FP
-open LeanFpAnalysis.FP
+import NumStability
+open NumStability
 
 variable (fp : FPModel) (n : ℕ)
 
@@ -237,16 +237,17 @@ variable (fp : FPModel) (n : ℕ)
 ## Project structure
 
 ```
-LeanFpAnalysis/
-  FP.lean                     -- top-level aggregate (import this)
-  FP/
-    Model.lean                -- the abstract floating-point model
-    Analysis/                 -- perturbation theory, matrix algebra, norms,
-                              --   concentration, probability (foundations)
-    Analysis/MatrixAlgebra.lean  -- shared exact matrix-algebra layer
-    Algorithms/               -- algorithm formalizations, per chapter, with
-                              --   clusters LU/ QR/ Cholesky/ FFT/ Vandermonde/
-                              --   Nonlinear/ RandNLA/ and TestMatrices/
+NumStability.lean              -- complete public library (import NumStability)
+NumStability/
+  FloatingPoint.lean           -- floating-point foundations umbrella
+  FloatingPoint/
+    Model.lean                 -- the abstract floating-point model
+  Analysis.lean                -- reusable error-analysis umbrella
+  Analysis/                    -- stability, perturbation theory, matrix algebra,
+                               --   norms, concentration, and probability
+  Algorithms.lean              -- numerical-algorithm umbrella
+  Algorithms/                  -- algorithm formalizations, with clusters such as
+                               --   LU, QR, Cholesky, FFT, RandNLA, and TestMatrices
 docs/
   source_coverage/            -- per-chapter coverage ledgers + fresh ch01–28 audit
   chapterNN/                  -- detailed source inventories / proof ledgers

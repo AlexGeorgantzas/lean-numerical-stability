@@ -27,14 +27,14 @@ premise.
 
 ## Lean deliverables
 
-- `LeanFpAnalysis/FP/Algorithms/FFT/Higham24.lean`
+- `NumStability/Algorithms/FFT/Higham24.lean`
   - `higham24DFT`, `higham24DFTInverse`
   - `higham24_dftInverse_mul_dft`, `higham24_dft_mul_dftInverse`
   - `higham24_inverse_after_forward`, `higham24_forward_after_inverse`
   - `Higham24WeightApproximation`, `higham24_eq24_2_error_bound`
   - `higham24Eta`, `higham24RelativeFFTBound`
   - `higham24_eq24_5_product_bound`, `higham24Eq24_6Bound`
-- `LeanFpAnalysis/FP/Algorithms/FFT/Higham24Radix2.lean`
+- `NumStability/Algorithms/FFT/Higham24Radix2.lean`
   - recursive binary indices and little-/big-endian value equivalences
   - literal exact radix-2 recursion and proof that it computes the canonical DFT
   - transparent binary top stages and block lifts, their ordered product,
@@ -62,7 +62,7 @@ premise.
     rounded recursive executor
   - nonvacuous explicit stage execution contract and
     `higham24_theorem24_2_explicitDomain`
-- `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24.lean`
+- `NumStability/Algorithms/Circulant/Higham24.lean`
   - `higham24Circulant`, generator injectivity and first-column recovery
   - addition, multiplication, and commutativity of circulants
   - `higham24_dft_mul_circulant`, `higham24_circulant_diagonalization`
@@ -72,7 +72,7 @@ premise.
   - `Higham24MixedStabilityExecutionFamily` and
     `higham24_theorem24_3_explicitDomain`, including the `O(u²)` remainder
   - `higham24_eq24_8_matrix_identity`, `higham24_eq24_8`
-- `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24ForwardPerturbation.lean`
+- `NumStability/Algorithms/Circulant/Higham24ForwardPerturbation.lean`
   - ordinary-index wrapper `higham24RoundedRadix2FFTFin` and exact DFT bridge
   - the zero-safe rank-one `higham24LiteralForwardPerturbation`, with its
     exact error action and `‖ΔF‖₂≤√n·tη/(1-tη)` proof
@@ -80,23 +80,23 @@ premise.
     (24.6)
   - `higham24LiteralEq24_7Execution`, instantiating both literal forward FFTs
     in (24.7)
-- `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24Rounded.lean`
+- `NumStability/Algorithms/Circulant/Higham24Rounded.lean`
   - literal componentwise `higham24RoundedDiagonalSolve`
   - produced diagonal `higham24DiagonalSolvePerturbation`
   - exact `(I+E)D⁻¹g` representation and `‖E‖₂≤√2γ₄`
-- `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24InverseFFT.lean`
+- `NumStability/Algorithms/Circulant/Higham24InverseFFT.lean`
   - norm-preserving entrywise conjugation and the exact scaled-conjugate DFT identity
   - `higham24RoundedInverseRadix2FFTFin` and explicit `higham24LiteralInversePerturbation`
   - exact inverse-stage representation and sharp `n⁻¹f(n,u)` bound
-- `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24LiteralSolver.lean`
+- `NumStability/Algorithms/Circulant/Higham24LiteralSolver.lean`
   - `higham24LiteralRoundedCirculantSolve`, the actual four-stage rounded executor
   - `higham24LiteralRoundedCirculantSolveExecution`, produced from all local operations
   - `higham24_literalRoundedCirculantSolve_composed`, the exact end-to-end matrix expression
-- `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24BackwardStability.lean`
+- `NumStability/Algorithms/Circulant/Higham24BackwardStability.lean`
   - exact forward/inverse DFT Euclidean scaling and `‖Fₙ⁻¹‖₂=1/√n`
   - equal relative input/output perturbation norms
   - `higham24_literalFFT_backward_stable`
-- `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24Structured.lean`
+- `NumStability/Algorithms/Circulant/Higham24Structured.lean`
   - genuine inverse factors for `(I+E)` and `(I+Δ₃F)`, with norm bounds
   - algorithmically produced generator, right-hand-side, and solution perturbations
   - `higham24_literalStructuredMixedStability_identity`

@@ -69,51 +69,51 @@ Source-coverage summaries are under `docs/source_coverage/higham_chNN.md`.
 
 ## New public Lean modules
 
-- `LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20Theorem20_4Absorption.lean`
-- `LeanFpAnalysis/FP/Algorithms/LeastSquares/Higham20MinimumNormBackwardError.lean`
-- `LeanFpAnalysis/FP/Algorithms/Vandermonde/Higham22.lean`
-- `LeanFpAnalysis/FP/Algorithms/FastMatMul/Higham23.lean`
-- `LeanFpAnalysis/FP/Algorithms/FFT/Higham24.lean`
-- `LeanFpAnalysis/FP/Algorithms/FFT/Higham24Radix2.lean`
-- `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24.lean`
-- `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24ForwardPerturbation.lean`
-- `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24Rounded.lean`
-- `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24InverseFFT.lean`
-- `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24LiteralSolver.lean`
-- `LeanFpAnalysis/FP/Algorithms/Circulant/Higham24BackwardStability.lean`
-- `LeanFpAnalysis/FP/Algorithms/Nonlinear/Higham25.lean`
-- `LeanFpAnalysis/FP/Algorithms/Nonlinear/Higham25Problem25_1.lean`
-- `LeanFpAnalysis/FP/Algorithms/AutomaticErrorAnalysis/Higham26.lean`
-- `LeanFpAnalysis/FP/Algorithms/SoftwareIssues/Higham27.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Exact.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Probability.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Asymptotics.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Ginibre.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28GinibreMeasure.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28GinibreIncidence.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28GinibreExpectationGlue.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28GinibreDeterminantMoment.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28GinibreCharacteristicProduct.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Contracts.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Stewart.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Cauchy.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28RandsvdNorm.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Pascal.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28PascalCondition.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28PascalTotalPositivity.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28PascalSpectral.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28PascalOscillation.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28PascalOscillationCore.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28PascalDualFlag.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28PascalOscillationExact.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28ToeplitzGeneral.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28ToeplitzSpectrum.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28ToeplitzCondition.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28Companion.lean`
-- `LeanFpAnalysis/FP/Algorithms/TestMatrices/Higham28CompanionSpectral.lean`
+- `NumStability/Algorithms/LeastSquares/Higham20Theorem20_4Absorption.lean`
+- `NumStability/Algorithms/LeastSquares/Higham20MinimumNormBackwardError.lean`
+- `NumStability/Algorithms/Vandermonde/Higham22.lean`
+- `NumStability/Algorithms/FastMatMul/Higham23.lean`
+- `NumStability/Algorithms/FFT/Higham24.lean`
+- `NumStability/Algorithms/FFT/Higham24Radix2.lean`
+- `NumStability/Algorithms/Circulant/Higham24.lean`
+- `NumStability/Algorithms/Circulant/Higham24ForwardPerturbation.lean`
+- `NumStability/Algorithms/Circulant/Higham24Rounded.lean`
+- `NumStability/Algorithms/Circulant/Higham24InverseFFT.lean`
+- `NumStability/Algorithms/Circulant/Higham24LiteralSolver.lean`
+- `NumStability/Algorithms/Circulant/Higham24BackwardStability.lean`
+- `NumStability/Algorithms/Nonlinear/Higham25.lean`
+- `NumStability/Algorithms/Nonlinear/Higham25Problem25_1.lean`
+- `NumStability/Algorithms/AutomaticErrorAnalysis/Higham26.lean`
+- `NumStability/Algorithms/SoftwareIssues/Higham27.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28Exact.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28Probability.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28Asymptotics.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28Ginibre.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28GinibreMeasure.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28GinibreIncidence.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28GinibreExpectationGlue.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28GinibreDeterminantMoment.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28GinibreCharacteristicProduct.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28Contracts.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28Stewart.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28Cauchy.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28RandsvdNorm.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28Pascal.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28PascalCondition.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28PascalTotalPositivity.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28PascalSpectral.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28PascalOscillation.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28PascalOscillationCore.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28PascalDualFlag.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28PascalOscillationExact.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28ToeplitzGeneral.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28ToeplitzSpectrum.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28ToeplitzCondition.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28Companion.lean`
+- `NumStability/Algorithms/TestMatrices/Higham28CompanionSpectral.lean`
 
-All are re-exported by `LeanFpAnalysis.FP.Algorithms`; representative entry
+All are re-exported by `NumStability.Algorithms`; representative entry
 points are checked by `examples/LibraryLookup.lean`.
 
 ## Source-ledger corrections

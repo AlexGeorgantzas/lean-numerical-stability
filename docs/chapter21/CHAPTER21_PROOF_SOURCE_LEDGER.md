@@ -13,7 +13,7 @@ Lean proof.
 | Kielbasiński and Schwetlick result cited by Lemma 21.2 | Source attribution for one-perturbation symmetrization | The construction and norm bounds are proved locally in `higham21_lemma21_2_source_bundle`; no citation-only axiom remains | ADOPTED AND FORMALIZED |
 | Sun–Sun result cited by Theorem 21.3 | Source attribution for the normwise backward-error formula | Equality, lower bound, epsilon-attaining construction, attainment boundary, and scalar witness are proved locally | ADOPTED AND FORMALIZED WITH BOUNDARY CORRECTION |
 | Higham Chapter 19 Householder analysis | QR backward error, orthogonality, and rounded Q-action dependencies | Existing repository declarations are instantiated by Chapter 21 wrappers | REUSED |
-| Mathlib and `LeanFpAnalysis` norms, inverses, QR, triangular solves, and rounding | Standard foundations and implementation-backed certificates | Reused through normal imports; no parallel axiom API introduced | REUSED |
+| Mathlib and `NumStability` norms, inverses, QR, triangular solves, and rounding | Standard foundations and implementation-backed certificates | Reused through normal imports; no parallel axiom API introduced | REUSED |
 | Rendered chapter/paper pages under `tmp/pdfs/` | Formula, label, sign, dimension, and citation verification | Audit evidence only; never staged | ADVISORY |
 | Oracle / GPT-5.5 Pro, session `chapter21-sne-proof-review` | Requested independent theorem-design review of the SNE closure | Session stalled after an introductory sentence; no mathematical claim or code was adopted | REJECTED / NO SUBSTANTIVE OUTPUT |
 

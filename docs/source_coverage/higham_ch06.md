@@ -12,9 +12,9 @@
 - **Edition / pages:** 2nd ed., pp. 105–117.
 - **Audit mode:** core (primary labels + numbered equations + central definitions + precise body prose; Problems recorded but optional).
 - **Ownership:** Chapter 6 is the NORM FOUNDATION LAYER for the whole formalization. Primary home:
-  `LeanFpAnalysis/FP/Analysis/Norms.lean` (~23.6k lines, source-facing `CVec`/`CMatrix` norm infrastructure).
-  Secondary homes: `LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` (real rectangular `rectOpNorm2Le`
-  transfer layer, Lemma 6.6(b)–(d) predicate forms), `LeanFpAnalysis/FP/Algorithms/MatrixPowersLp.lean`
+  `NumStability/Analysis/Norms.lean` (~23.6k lines, source-facing `CVec`/`CMatrix` norm infrastructure).
+  Secondary homes: `NumStability/Analysis/MatrixAlgebra.lean` (real rectangular `rectOpNorm2Le`
+  transfer layer, Lemma 6.6(b)–(d) predicate forms), `NumStability/Algorithms/MatrixPowersLp.lean`
   and `Analysis/MatrixPowersLp185Primary.lean` (downstream consumers). Consumers cite the Lemma 6.6 chain
   from `Algorithms/HighamChapter10.lean` and `Algorithms/Ch14GaussJordanSPDCorollary.lean`.
 - **Audit date:** 2026-07-16 (branch `formalize/split4-claude`, worktree `ch18-split3-claude-...044646`).
@@ -122,7 +122,7 @@
 ## Selected-scope gate: PASS (primary labels + numbered equations)
 
 **Update (2026-07-14 audit-closure):** Lemma 6.6(a) and (c) are now CLOSED at printed strength in
-`LeanFpAnalysis/FP/Algorithms/Chapter06Lemma66.lean` (axiom-clean, adversarially verified):
+`NumStability/Algorithms/Chapter06Lemma66.lean` (axiom-clean, adversarially verified):
 `lemma66_a_frobenius_le` (a.i `‖A‖_F ≤ ‖B‖_F`), `lemma66_a_op2_le` (a.ii `‖A‖₂ ≤ √rank(B)‖B‖₂`),
 `lemma66_a_abs_entry_le` (a.iii `|A| ≤ ee^T|B|`), `lemma66_c_op2_le` (c), plus `lemma66_a_op2_sharp`
 (rank-1 equality witness showing √rank is attained). This clears the two primary-label blockers.
@@ -132,7 +132,7 @@ printed strength, and all numbered equations (6.1)–(6.24) have statement-level
 coverage. **Gate = PASS for the strict primary-label + numbered-equation +
 central-definition scope.**
 
-**Follow-up (2026-07-17):** the norm asides are now closed in `LeanFpAnalysis/FP/Analysis/Higham6Asides.lean`
+**Follow-up (2026-07-17):** the norm asides are now closed in `NumStability/Analysis/Higham6Asides.lean`
 (axiom-clean): `ch6aside_conditionNumber_ge_one` (`κ(X) ≥ 1` for any submultiplicative/definite norm; `κ_F ≥ √n`),
 the two-sided unitary invariance `‖UAV‖₂ = ‖A‖₂`, `‖UAV‖_F = ‖A‖_F`, and the max-norm inconsistency bound
 `‖AB‖_M ≤ n‖A‖_M‖B‖_M` with all-ones equality. The block-antidiagonal `‖[[0,A],[A^*,0]]‖₂ = ‖A‖₂` is proved
@@ -146,7 +146,7 @@ sharpness witness (A=ee^T, B=√n·I).
 `lemma66_a_op2_le` / `lemma66_c_op2_le` were previously ORPHANED (zero consumers repo-wide — the
 `CMatrix` op2 layer of this file was never reached by the Ch.10/Ch.14 modules, which carried their
 Lemma-6.6 usage through the separate real componentwise (b)/(d) chain in `MatrixAlgebra.lean`). They are
-now genuinely consumed by `LeanFpAnalysis/FP/Algorithms/Ch10Ch14Lemma66Op2Bridge.lean` (axiom-clean),
+now genuinely consumed by `NumStability/Algorithms/Ch10Ch14Lemma66Op2Bridge.lean` (axiom-clean),
 which applies `lemma66_c_op2_le` to prove the printed 2-norm step cited from Lemma 6.6 in BOTH chapters:
 `lemma66c_absMatrix_op2_le_sqrt_card` (`‖ |B| ‖₂ ≤ √n‖B‖₂`), `lemma66c_ch10_absFactor_op2Sq_le`
 (Ch.10 (10.7) key inequality `‖ |R| ‖₂² ≤ n‖R‖₂²`), and `lemma66c_ch14_residual_op2_le_sqrt_card`

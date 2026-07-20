@@ -129,15 +129,15 @@ The earlier conditional endpoint batch had passed the following checks before
 this fresh producer audit:
 
 ```text
-lake build LeanFpAnalysis.FP.Algorithms
-lake build LeanFpAnalysis.FP.Algorithms.Ch14ProductErrorNotation
-lake build LeanFpAnalysis.FP.Algorithms.Ch14AsymptoticFamilies
-lake build LeanFpAnalysis.FP.Algorithms.Ch14GJEAsymptoticFamilies
-lake build LeanFpAnalysis.FP.Algorithms.Ch14Problem142Families
-lake build LeanFpAnalysis.FP.Algorithms.Ch14GJETheorem145SourceClosure
-lake build LeanFpAnalysis.FP.Algorithms.Ch14Corollary146Closure
-lake build LeanFpAnalysis.FP.Algorithms.Ch14Corollary146SourceClosure
-lake build LeanFpAnalysis.FP.Algorithms.Ch14Corollary147SourceClosure
+lake build NumStability.Algorithms
+lake build NumStability.Algorithms.Ch14ProductErrorNotation
+lake build NumStability.Algorithms.Ch14AsymptoticFamilies
+lake build NumStability.Algorithms.Ch14GJEAsymptoticFamilies
+lake build NumStability.Algorithms.Ch14Problem142Families
+lake build NumStability.Algorithms.Ch14GJETheorem145SourceClosure
+lake build NumStability.Algorithms.Ch14Corollary146Closure
+lake build NumStability.Algorithms.Ch14Corollary146SourceClosure
+lake build NumStability.Algorithms.Ch14Corollary147SourceClosure
 lake build
 lake env lean examples/LibraryLookup.lean
 git diff --check
@@ -149,7 +149,7 @@ Those historical checks establish that the conditional theorems compile; they
 do not establish an Algorithm 14.4 producer. The fresh audit additionally
 checks `Ch14GJEOperationalBridge.lean`, its finalization counterexample, and
 the relevant headline axioms. The focused build
-`lake build LeanFpAnalysis.FP.Algorithms.Ch14GJEOperationalBridge` passes all
+`lake build NumStability.Algorithms.Ch14GJEOperationalBridge` passes all
 3061 jobs with no warning in the new module. The five audited bridge and
 counterexample headlines depend only on `propext`, `Classical.choice`, and
 `Quot.sound`. Placeholder/conflict hygiene and `git diff --check` pass; the

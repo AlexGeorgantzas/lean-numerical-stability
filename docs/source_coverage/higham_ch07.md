@@ -13,9 +13,9 @@
   theorem. This supersedes the 2026-07-11 certification, which had classified
   (7.17) and (7.32) as skips contrary to the core-mode selection rule.
 
-Primary Lean module: `LeanFpAnalysis/FP/Analysis/HighamChapter7.lean`
+Primary Lean module: `NumStability/Analysis/HighamChapter7.lean`
 (~26k lines, ~895 declarations); heavy perturbation proofs in
-`LeanFpAnalysis/FP/Analysis/PerturbationTheory.lean`.
+`NumStability/Analysis/PerturbationTheory.lean`.
 
 ## Primary labels (9)
 | Source label | Status | Lean declaration(s) | Notes |
@@ -78,7 +78,7 @@ aliases. These declarations predate the benchmark policy; recorded for
 coordinator awareness, no action required.
 
 ## Verification (2026-07-18 repair)
-- `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7`: PASS (3025 jobs);
+- `lake build NumStability.Analysis.HighamChapter7`: PASS (3025 jobs);
   the attained-minimum Theorem 7.8 surface and the new (7.17)/(7.32)
   declarations type-check in the focused module rebuild.
 - Hygiene: no `sorry`/`admit`/`axiom` in `HighamChapter7.lean` or

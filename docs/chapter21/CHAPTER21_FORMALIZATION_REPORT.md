@@ -144,13 +144,13 @@ The detailed trust record is in `CHAPTER21_PROOF_SOURCE_LEDGER.md`.
 The focused Chapter 21 verification results are:
 
 ```text
-lake env lean LeanFpAnalysis/FP/Algorithms/Underdetermined/Higham21SNEUniform.lean  PASS
+lake env lean NumStability/Algorithms/Underdetermined/Higham21SNEUniform.lean  PASS
 higham21_sne_householder_actual_output_source_relative_q_uniform                  COMPILED
 higham21_sne_householder_actual_output_source_relative_unit_roundoff_sq           COMPILED
-lake build LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21Theorem214SourceClosure
+lake build NumStability.Algorithms.Underdetermined.Higham21Theorem214SourceClosure
                                                                                   PASS (3,084 jobs)
-lake build LeanFpAnalysis.FP.Algorithms.Underdetermined.Higham21                  PASS (3,108 jobs)
-lake build LeanFpAnalysis.FP.Algorithms                                           PASS (3,848 jobs)
+lake build NumStability.Algorithms.Underdetermined.Higham21                  PASS (3,108 jobs)
+lake build NumStability.Algorithms                                           PASS (3,848 jobs)
 lake build                                                                         PASS (3,901 jobs)
 #print axioms higham21_sne_householder_actual_output_source_relative_unit_roundoff_sq
   [propext, Classical.choice, Quot.sound]

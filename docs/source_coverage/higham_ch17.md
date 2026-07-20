@@ -123,7 +123,7 @@
 
 | Source label | Lean declaration | File | Theorem surface | Notes |
 |---|---|---|---|---|
-| stationary splitting setup | `SplittingSpec`, `iterMatrix`, `dualIterMatrix` | `LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean` | Structure/definitions | Models `A = M - N`, `G = M^{-1}N`, and `H = NM^{-1}` in the repository's finite function-shaped matrix API. |
+| stationary splitting setup | `SplittingSpec`, `iterMatrix`, `dualIterMatrix` | `NumStability/Algorithms/StationaryIteration.lean` | Structure/definitions | Models `A = M - N`, `G = M^{-1}N`, and `H = NM^{-1}` in the repository's finite function-shaped matrix API. |
 | (17.1), source sign | `SourceComputedIteration`, `computedIteration_of_sourceComputedIteration` | `StationaryIteration.lean` | Structure/theorem | Adds the source-sign convention `M xhat_{k+1} = N xhat_k + b - xi_k` and bridges it to the legacy internal `+ xi_k` convention by negating the local error term. |
 | (17.3), computed finite-sum recurrence | `sourceComputedIteration_step_affine`, `sourceComputedIteration_finite_sum` | `StationaryIteration.lean` | Theorems | Applies the left-inverse certificate for `M` to (17.1), then unrolls the time-varying affine recurrence to the source-sign finite-sum formula. |
 | one-step error dependency | `one_step_error`, `one_step_error_source` | `StationaryIteration.lean` | Theorems | Proves the one-step error recurrence for the legacy and source-sign conventions; this is dependency infrastructure for (17.5). |
@@ -203,12 +203,12 @@
 
 | Source concept/result | Existing declaration | File/module |
 |---|---|---|
-| Function-shaped real matrix multiplication and powers | `matMul`, `matMulVec`, `matPow`, `matSub_id`, `idMatrix` | `LeanFpAnalysis.FP.Analysis.MatrixAlgebra` |
-| Infinity norms and monotone bounds | `infNorm`, `infNormVec`, `infNorm_matMul_le`, `infNorm_matPow_le`, `row_sum_le_infNorm`, `abs_le_infNormVec` | `LeanFpAnalysis.FP.Analysis.MatrixAlgebra` |
-| Matrix inverse certificates | `IsLeftInverse`, `IsRightInverse` | `LeanFpAnalysis.FP.Analysis.MatrixAlgebra` |
+| Function-shaped real matrix multiplication and powers | `matMul`, `matMulVec`, `matPow`, `matSub_id`, `idMatrix` | `NumStability.Analysis.MatrixAlgebra` |
+| Infinity norms and monotone bounds | `infNorm`, `infNormVec`, `infNorm_matMul_le`, `infNorm_matPow_le`, `row_sum_le_infNorm`, `abs_le_infNormVec` | `NumStability.Analysis.MatrixAlgebra` |
+| Matrix inverse certificates | `IsLeftInverse`, `IsRightInverse` | `NumStability.Analysis.MatrixAlgebra` |
 | Finite sums and real algebra | `Finset` big operators, `linarith`, `ring`, `field_simp` | Mathlib |
-| Chapter 7 normwise backward-error theorem | `theorem7_1_subordinate`, `theorem7_1_subordinate_sufficient`, `theorem7_1_subordinate_necessary` | `LeanFpAnalysis.FP.Analysis.HighamChapter7` |
-| Chapter 7 componentwise backward-error theorem | `oettli_prager`, `oettli_prager_sufficient`, `oettli_prager_necessary` | `LeanFpAnalysis.FP.Analysis.PerturbationTheory` |
+| Chapter 7 normwise backward-error theorem | `theorem7_1_subordinate`, `theorem7_1_subordinate_sufficient`, `theorem7_1_subordinate_necessary` | `NumStability.Analysis.HighamChapter7` |
+| Chapter 7 componentwise backward-error theorem | `oettli_prager`, `oettli_prager_sufficient`, `oettli_prager_necessary` | `NumStability.Analysis.PerturbationTheory` |
 
 ## New Dependencies
 
@@ -324,160 +324,160 @@
 
 ## Verification
 
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after correcting the source labels and adding the source-sign equation (17.1) wrapper.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after the Chapter 17 source-label and wrapper update.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean docs/source_coverage/higham_ch17.md`: no matches.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after correcting the source labels and adding the source-sign equation (17.1) wrapper.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after the Chapter 17 source-label and wrapper update.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean docs/source_coverage/higham_ch17.md`: no matches.
 - `#print axioms` for `computedIteration_of_sourceComputedIteration` and `one_step_error_source`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `stationary_solution_fixed_point`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding `stationary_solution_fixed_point`.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `stationary_solution_fixed_point`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding `stationary_solution_fixed_point`.
 - `#print axioms` for `stationary_solution_fixed_point`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding `stationary_solution_fixed_point`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `affine_fixed_point_unroll` and `stationary_solution_finite_sum`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding `stationary_solution_finite_sum` and again after the latest `origin/main` merge.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding `stationary_solution_finite_sum`.
-- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `stationary_solution_finite_sum`, with only the usual CRLF normalization warning before the commit.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding `stationary_solution_fixed_point`.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `affine_fixed_point_unroll` and `stationary_solution_finite_sum`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding `stationary_solution_finite_sum` and again after the latest `origin/main` merge.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding `stationary_solution_finite_sum`.
+- `git diff --check -- NumStability/Algorithms/StationaryIteration.lean`: passed after adding `stationary_solution_finite_sum`, with only the usual CRLF normalization warning before the commit.
 - `#print axioms` for `affine_fixed_point_unroll` and `stationary_solution_finite_sum`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- Post-merge broad check note: `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration LeanFpAnalysis.FP.Algorithms.HighamChapter9` exceeded the local timeout while compiling the incoming Chapter 9 side; the lingering Lean/lake processes were stopped. The standalone Chapter 17 file and module checks above passed after the merge.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding the source-sign computed finite-sum recurrence for (17.3).
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding `sourceComputedIteration_finite_sum`.
-- Merge rebuild after synchronizing with `origin/main`: `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation` passed; the second target covered the incoming Chapter 20 merge.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding `sourceComputedIteration_finite_sum`.
-- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `sourceComputedIteration_finite_sum`, with only the usual CRLF normalization warning before the commit.
+- Post-merge broad check note: `lake build NumStability.Algorithms.StationaryIteration NumStability.Algorithms.HighamChapter9` exceeded the local timeout while compiling the incoming Chapter 9 side; the lingering Lean/lake processes were stopped. The standalone Chapter 17 file and module checks above passed after the merge.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding the source-sign computed finite-sum recurrence for (17.3).
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding `sourceComputedIteration_finite_sum`.
+- Merge rebuild after synchronizing with `origin/main`: `lake build NumStability.Algorithms.StationaryIteration NumStability.Algorithms.LeastSquares.LSPerturbation` passed; the second target covered the incoming Chapter 20 merge.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding `sourceComputedIteration_finite_sum`.
+- `git diff --check -- NumStability/Algorithms/StationaryIteration.lean`: passed after adding `sourceComputedIteration_finite_sum`, with only the usual CRLF normalization warning before the commit.
 - `#print axioms` for `matMulVec_finset_sum_right`, `affine_recurrence_unroll`, `sourceComputedIteration_step_affine`, and `sourceComputedIteration_finite_sum`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `sourceComputedIteration_error_finite_sum`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding `sourceComputedIteration_error_finite_sum`.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `sourceComputedIteration_error_finite_sum`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding `sourceComputedIteration_error_finite_sum`.
 - `#print axioms` for `sourceComputedIteration_error_finite_sum`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `residual_finite_sum`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding `residual_finite_sum` and again after synchronizing with the latest `origin/main`.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding `residual_finite_sum`.
-- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `residual_finite_sum`, with only the usual CRLF normalization warning before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `residual_finite_sum`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding `residual_finite_sum` and again after synchronizing with the latest `origin/main`.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding `residual_finite_sum`.
+- `git diff --check -- NumStability/Algorithms/StationaryIteration.lean`: passed after adding `residual_finite_sum`, with only the usual CRLF normalization warning before the commit.
 - `#print axioms` for `residual_finite_sum`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `normwise_residual_sigma_finite_bound`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding `normwise_residual_sigma_finite_bound` and again after the latest `origin/main` merge.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding `normwise_residual_sigma_finite_bound`.
-- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `normwise_residual_sigma_finite_bound`, with only the usual CRLF normalization warning before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `normwise_residual_sigma_finite_bound`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding `normwise_residual_sigma_finite_bound` and again after the latest `origin/main` merge.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding `normwise_residual_sigma_finite_bound`.
+- `git diff --check -- NumStability/Algorithms/StationaryIteration.lean`: passed after adding `normwise_residual_sigma_finite_bound`, with only the usual CRLF normalization warning before the commit.
 - `#print axioms` for `normwise_residual_sigma_finite_bound`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- Final merge validation for the same milestone: `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration LeanFpAnalysis.FP.Algorithms.HighamChapter9 LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve` passed at synchronized commit `32fb112b`; `lake env lean examples/LibraryLookup.lean` also passed.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean LeanFpAnalysis/FP/Algorithms/LeastSquares/LSPerturbation.lean LeanFpAnalysis/FP/Algorithms/LeastSquares/LSQRSolve.lean examples/LibraryLookup.lean`: one inspected false-positive prose occurrence of `admit` in an incoming least-squares docstring; no unfinished proof or unsafe placeholder found.
+- Final merge validation for the same milestone: `lake build NumStability.Algorithms.StationaryIteration NumStability.Algorithms.HighamChapter9 NumStability.Algorithms.LeastSquares.LSPerturbation NumStability.Algorithms.LeastSquares.LSQRSolve` passed at synchronized commit `32fb112b`; `lake env lean examples/LibraryLookup.lean` also passed.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean NumStability/Algorithms/HighamChapter9.lean NumStability/Algorithms/LeastSquares/LSPerturbation.lean NumStability/Algorithms/LeastSquares/LSQRSolve.lean examples/LibraryLookup.lean`: one inspected false-positive prose occurrence of `admit` in an incoming least-squares docstring; no unfinished proof or unsafe placeholder found.
 - `git diff --check` over the final merge range passed for the incoming Chapter 9, least-squares, lookup, and Chapter 20 documentation files.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding the (17.7)/(17.9) growth-constant supremum surfaces and bound wrappers.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding the (17.7)/(17.9) growth-constant supremum surfaces and bound wrappers.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the growth-constant surfaces.
-- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding the growth-constant surfaces, with only the usual CRLF normalization warning before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding the (17.7)/(17.9) growth-constant supremum surfaces and bound wrappers.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding the (17.7)/(17.9) growth-constant supremum surfaces and bound wrappers.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the growth-constant surfaces.
+- `git diff --check -- NumStability/Algorithms/StationaryIteration.lean`: passed after adding the growth-constant surfaces, with only the usual CRLF normalization warning before the commit.
 - `#print axioms` for `normwiseIterateGrowthBound_of_sSup` and `componentwiseIterateGrowthBound_of_sSup`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- Merge validation after concurrent `origin/main` movement: `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration LeanFpAnalysis.FP.Algorithms.LeastSquares.LSE` passed, then `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration LeanFpAnalysis.FP.Algorithms.LeastSquares.LSE LeanFpAnalysis.FP.Algorithms.Sylvester.Higham16` passed after a second merge; both builds replayed only pre-existing QR unused-simp warnings.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `finiteForwardCorrection`, `mainForwardBoundVector`, `finiteForwardCorrection_norm_bound`, and `finite_norm_form_forward_bound`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding the finite correction/norm-form surfaces.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the finite correction/norm-form surfaces.
-- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding the finite correction/norm-form surfaces, with only the usual CRLF normalization warning before the commit.
+- Merge validation after concurrent `origin/main` movement: `lake build NumStability.Algorithms.StationaryIteration NumStability.Algorithms.LeastSquares.LSE` passed, then `lake build NumStability.Algorithms.StationaryIteration NumStability.Algorithms.LeastSquares.LSE NumStability.Algorithms.Sylvester.Higham16` passed after a second merge; both builds replayed only pre-existing QR unused-simp warnings.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `finiteForwardCorrection`, `mainForwardBoundVector`, `finiteForwardCorrection_norm_bound`, and `finite_norm_form_forward_bound`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding the finite correction/norm-form surfaces.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the finite correction/norm-form surfaces.
+- `git diff --check -- NumStability/Algorithms/StationaryIteration.lean`: passed after adding the finite correction/norm-form surfaces, with only the usual CRLF normalization warning before the commit.
 - `#print axioms` for `finiteForwardCorrection_le_mainForwardBoundVector`, `finiteForwardCorrection_norm_bound`, and `finite_norm_form_forward_bound`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- Merge validation after synchronizing with `origin/main`: `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterPerturbation` passed.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `jacobiForwardBoundVector`, `mainForwardBoundVector_eq_jacobiForwardBoundVector`, and `finite_norm_form_jacobi_forward_bound`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding the finite Jacobi norm-form specialization.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the finite Jacobi norm-form specialization.
-- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding the finite Jacobi norm-form specialization, with only the usual CRLF normalization warning before the commit.
+- Merge validation after synchronizing with `origin/main`: `lake build NumStability.Algorithms.StationaryIteration NumStability.Algorithms.LeastSquares.LSPerturbation NumStability.Algorithms.Sylvester.SylvesterPerturbation` passed.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `jacobiForwardBoundVector`, `mainForwardBoundVector_eq_jacobiForwardBoundVector`, and `finite_norm_form_jacobi_forward_bound`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding the finite Jacobi norm-form specialization.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the finite Jacobi norm-form specialization.
+- `git diff --check -- NumStability/Algorithms/StationaryIteration.lean`: passed after adding the finite Jacobi norm-form specialization, with only the usual CRLF normalization warning before the commit.
 - `#print axioms` for `mainForwardBoundVector_eq_jacobiForwardBoundVector` and `finite_norm_form_jacobi_forward_bound`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `sorForwardFactor`, `mainForwardBoundVector_norm_le_sorForwardBoundVector`, and `finite_norm_form_sor_forward_bound`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding the finite SOR norm-form specialization.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the finite SOR norm-form specialization.
-- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding the finite SOR norm-form specialization, with only the usual CRLF normalization warning before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `sorForwardFactor`, `mainForwardBoundVector_norm_le_sorForwardBoundVector`, and `finite_norm_form_sor_forward_bound`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding the finite SOR norm-form specialization.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the finite SOR norm-form specialization.
+- `git diff --check -- NumStability/Algorithms/StationaryIteration.lean`: passed after adding the finite SOR norm-form specialization, with only the usual CRLF normalization warning before the commit.
 - `#print axioms` for `mainForwardBoundVector_le_sorForwardBoundVector`, `mainForwardBoundVector_norm_le_sorForwardBoundVector`, and `finite_norm_form_sor_forward_bound`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `sorForwardFactor_one` and `finite_norm_form_gaussSeidel_forward_bound`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding the finite Gauss-Seidel norm-form specialization.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the finite Gauss-Seidel norm-form specialization.
-- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding the finite Gauss-Seidel norm-form specialization, with only the usual CRLF normalization warning before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `sorForwardFactor_one` and `finite_norm_form_gaussSeidel_forward_bound`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding the finite Gauss-Seidel norm-form specialization.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the finite Gauss-Seidel norm-form specialization.
+- `git diff --check -- NumStability/Algorithms/StationaryIteration.lean`: passed after adding the finite Gauss-Seidel norm-form specialization, with only the usual CRLF normalization warning before the commit.
 - `#print axioms` for `sorForwardFactor_one` and `finite_norm_form_gaussSeidel_forward_bound`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `finiteResidualSigmaMatrix`, `finiteResidualSigma`, and `finiteResidualSigma_le_diagonalizable_bound`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding the finite source-sigma diagonalization certificate.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the finite source-sigma diagonalization certificate.
-- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding the finite source-sigma diagonalization certificate, with only the usual CRLF normalization warning before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `finiteResidualSigmaMatrix`, `finiteResidualSigma`, and `finiteResidualSigma_le_diagonalizable_bound`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding the finite source-sigma diagonalization certificate.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the finite source-sigma diagonalization certificate.
+- `git diff --check -- NumStability/Algorithms/StationaryIteration.lean`: passed after adding the finite source-sigma diagonalization certificate, with only the usual CRLF normalization warning before the commit.
 - `#print axioms` for `finiteResidualSigma_le_diagonalizable_bound`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `diagonalResidualRatioMax`, `diagonalResidualRatio_le_max`, `diagonalResidualRatioMax_nonneg`, and `finiteResidualSigma_le_diagonalizable_max_bound`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding the finite-maximum wrapper for (17.20).
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the finite-maximum wrapper.
-- `git diff --check -- README.md docs/source_coverage/higham_ch17.md LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after the finite-maximum proof and report updates, with only the usual CRLF normalization warnings before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `diagonalResidualRatioMax`, `diagonalResidualRatio_le_max`, `diagonalResidualRatioMax_nonneg`, and `finiteResidualSigma_le_diagonalizable_max_bound`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding the finite-maximum wrapper for (17.20).
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the finite-maximum wrapper.
+- `git diff --check -- README.md docs/source_coverage/higham_ch17.md NumStability/Algorithms/StationaryIteration.lean`: passed after the finite-maximum proof and report updates, with only the usual CRLF normalization warnings before the commit.
 - `#print axioms` for `finiteResidualSigma_le_diagonalizable_max_bound`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `ResidualSigmaValues`, `residualSigmaSup`, `residualSigmaSup_le_of_finiteResidualSigma_le`, and `residualSigmaSup_le_diagonalizable_max_bound`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding the residual-sigma supremum wrapper.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the residual-sigma supremum wrapper.
-- `git diff --check -- README.md docs/source_coverage/higham_ch17.md LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after the residual-sigma supremum proof and report updates, with only the usual CRLF normalization warnings before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `ResidualSigmaValues`, `residualSigmaSup`, `residualSigmaSup_le_of_finiteResidualSigma_le`, and `residualSigmaSup_le_diagonalizable_max_bound`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding the residual-sigma supremum wrapper.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the residual-sigma supremum wrapper.
+- `git diff --check -- README.md docs/source_coverage/higham_ch17.md NumStability/Algorithms/StationaryIteration.lean`: passed after the residual-sigma supremum proof and report updates, with only the usual CRLF normalization warnings before the commit.
 - `#print axioms` for `residualSigmaSup_le_diagonalizable_max_bound`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `stopping_test_rhs_backward_subordinate`, `stopping_test_matrix_backward_subordinate`, and `stopping_test_mixed_backward_subordinate`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding the Chapter 17 stopping-test wrappers.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the stopping-test wrappers and report update.
-- `git diff --check -- README.md docs/source_coverage/higham_ch17.md LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after the stopping-test proof and report updates, with only the usual CRLF normalization warnings before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `stopping_test_rhs_backward_subordinate`, `stopping_test_matrix_backward_subordinate`, and `stopping_test_mixed_backward_subordinate`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding the Chapter 17 stopping-test wrappers.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the stopping-test wrappers and report update.
+- `git diff --check -- README.md docs/source_coverage/higham_ch17.md NumStability/Algorithms/StationaryIteration.lean`: passed after the stopping-test proof and report updates, with only the usual CRLF normalization warnings before the commit.
 - `#print axioms` for `stopping_test_rhs_backward_subordinate`, `stopping_test_matrix_backward_subordinate`, and `stopping_test_mixed_backward_subordinate`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `stopping_test_rhs_backward_componentwise`, `stopping_test_matrix_backward_componentwise`, and `stopping_test_mixed_backward_componentwise`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration LeanFpAnalysis.FP.Algorithms.HighamChapter9 LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyPerturbation`: passed after merging latest `origin/main` and adding the componentwise stopping-test wrappers.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the componentwise stopping-test wrappers.
-- `git diff --check -- README.md docs/source_coverage/higham_ch17.md LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after the componentwise stopping-test proof and report updates, with only the usual CRLF normalization warnings before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `stopping_test_rhs_backward_componentwise`, `stopping_test_matrix_backward_componentwise`, and `stopping_test_mixed_backward_componentwise`.
+- `lake build NumStability.Algorithms.StationaryIteration NumStability.Algorithms.HighamChapter9 NumStability.Algorithms.Cholesky.CholeskyPerturbation`: passed after merging latest `origin/main` and adding the componentwise stopping-test wrappers.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the componentwise stopping-test wrappers.
+- `git diff --check -- README.md docs/source_coverage/higham_ch17.md NumStability/Algorithms/StationaryIteration.lean`: passed after the componentwise stopping-test proof and report updates, with only the usual CRLF normalization warnings before the commit.
 - `#print axioms` for `stopping_test_rhs_backward_componentwise`, `stopping_test_matrix_backward_componentwise`, and `stopping_test_mixed_backward_componentwise`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `singular_stationary_iterate_finite_sum`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding `singular_stationary_iterate_finite_sum`.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding `singular_stationary_iterate_finite_sum`.
-- `git diff --check -- README.md docs/source_coverage/higham_ch17.md LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after the singular exact-iterate proof and report updates, with only the usual CRLF normalization warnings before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `singular_stationary_iterate_finite_sum`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding `singular_stationary_iterate_finite_sum`.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding `singular_stationary_iterate_finite_sum`.
+- `git diff --check -- README.md docs/source_coverage/higham_ch17.md NumStability/Algorithms/StationaryIteration.lean`: passed after the singular exact-iterate proof and report updates, with only the usual CRLF normalization warnings before the commit.
 - `#print axioms` for `singular_stationary_iterate_finite_sum`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `matMulVec_neumannSum_range`, `singular_consistent_source_term_eq_I_sub_G`, `singular_consistent_second_term_telescope`, and `singular_stationary_iterate_consistent_split`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding and documenting the singular consistent-source telescoping group.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration LeanFpAnalysis.FP.Algorithms.HighamChapter9 LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyPerturbation LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve`: passed after the first post-proof merge with `origin/main`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed again after the later `origin/main` merge that moved Chapter 9/20 files.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the singular consistent-source telescoping group.
-- `git diff --check -- README.md docs/source_coverage/higham_ch17.md LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after the singular telescoping proof and report updates, with only the usual CRLF normalization warnings before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `matMulVec_neumannSum_range`, `singular_consistent_source_term_eq_I_sub_G`, `singular_consistent_second_term_telescope`, and `singular_stationary_iterate_consistent_split`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding and documenting the singular consistent-source telescoping group.
+- `lake build NumStability.Algorithms.StationaryIteration NumStability.Algorithms.HighamChapter9 NumStability.Algorithms.Cholesky.CholeskyPerturbation NumStability.Algorithms.LeastSquares.LSPerturbation NumStability.Algorithms.LeastSquares.LSQRSolve`: passed after the first post-proof merge with `origin/main`.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed again after the later `origin/main` merge that moved Chapter 9/20 files.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the singular consistent-source telescoping group.
+- `git diff --check -- README.md docs/source_coverage/higham_ch17.md NumStability/Algorithms/StationaryIteration.lean`: passed after the singular telescoping proof and report updates, with only the usual CRLF normalization warnings before the commit.
 - `#print axioms` for `matMulVec_neumannSum_range`, `singular_consistent_source_term_eq_I_sub_G`, `singular_consistent_second_term_telescope`, and `singular_stationary_iterate_consistent_split`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `matMulVec_add_complement_apply`, `matPow_fixed_of_matMulVec_fixed`, `singularErrorSourceTerm`, and `singular_error_split_finite`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding and documenting the finite (17.27) source split and (17.28) source-term definition.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the finite (17.27) source split group.
-- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean README.md docs/source_coverage/higham_ch17.md`: passed after the finite source-split proof and report updates, with only the usual CRLF normalization warnings before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `matMulVec_add_complement_apply`, `matPow_fixed_of_matMulVec_fixed`, `singularErrorSourceTerm`, and `singular_error_split_finite`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding and documenting the finite (17.27) source split and (17.28) source-term definition.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the finite (17.27) source split group.
+- `git diff --check -- NumStability/Algorithms/StationaryIteration.lean README.md docs/source_coverage/higham_ch17.md`: passed after the finite source-split proof and report updates, with only the usual CRLF normalization warnings before the commit.
 - `#print axioms` for `matMulVec_add_complement_apply`, `matPow_fixed_of_matMulVec_fixed`, `singularErrorSourceTerm`, and `singular_error_split_finite`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `stationaryLocalErrorSourceVector`, `singularErrorSourceNormSum`, `singularErrorSourceComponentBound`, `singularErrorSourceTerm_norm_bound`, `singularErrorSourceTerm_componentwise_bound`, and `singularErrorSourceTerm_componentwise_bound_of_local_error`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after committing, merging current `origin/main`, and documenting the finite (17.29) `S_m` bound surfaces.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the finite (17.29) source-bound group.
-- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean README.md docs/source_coverage/higham_ch17.md`: passed after the finite (17.29) proof/report updates, with only the usual CRLF normalization warnings before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `stationaryLocalErrorSourceVector`, `singularErrorSourceNormSum`, `singularErrorSourceComponentBound`, `singularErrorSourceTerm_norm_bound`, `singularErrorSourceTerm_componentwise_bound`, and `singularErrorSourceTerm_componentwise_bound_of_local_error`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after committing, merging current `origin/main`, and documenting the finite (17.29) `S_m` bound surfaces.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the finite (17.29) source-bound group.
+- `git diff --check -- NumStability/Algorithms/StationaryIteration.lean README.md docs/source_coverage/higham_ch17.md`: passed after the finite (17.29) proof/report updates, with only the usual CRLF normalization warnings before the commit.
 - `#print axioms` for `stationaryLocalErrorSourceVector`, `singularErrorSourceNormSum`, `singularErrorSourceComponentBound`, `singularErrorSourceTerm_norm_bound`, `singularErrorSourceTerm_componentwise_bound`, and `singularErrorSourceTerm_componentwise_bound_of_local_error`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `local_error_normwise_simplified` and `singularErrorSourceTerm_norm_bound_of_local_error`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding the normwise local-error wrapper and after merging current `origin/main`.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the normwise (17.29) local-error wrapper.
-- `git diff --check -- README.md docs/source_coverage/higham_ch17.md LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after the normwise proof/report update, with only the usual CRLF normalization warnings before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `local_error_normwise_simplified` and `singularErrorSourceTerm_norm_bound_of_local_error`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding the normwise local-error wrapper and after merging current `origin/main`.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the normwise (17.29) local-error wrapper.
+- `git diff --check -- README.md docs/source_coverage/higham_ch17.md NumStability/Algorithms/StationaryIteration.lean`: passed after the normwise proof/report update, with only the usual CRLF normalization warnings before the commit.
 - `#print axioms` for `local_error_normwise_simplified` and `singularErrorSourceTerm_norm_bound_of_local_error`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding the p.327 scale-independence algebraic core.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after committing the scale-independence algebraic core and merging current `origin/main`.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the scale-independence algebraic core.
-- `git diff --check -- README.md docs/source_coverage/higham_ch17.md LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after the scale-independence report update, with only the usual CRLF normalization warnings before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding the p.327 scale-independence algebraic core.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after committing the scale-independence algebraic core and merging current `origin/main`.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the scale-independence algebraic core.
+- `git diff --check -- README.md docs/source_coverage/higham_ch17.md NumStability/Algorithms/StationaryIteration.lean`: passed after the scale-independence report update, with only the usual CRLF normalization warnings before the commit.
 - `#print axioms` for `stationaryRowColumnScale_splittingSpec` and `stationaryScaledIterMatrix_similarity`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `stationaryScaledIterMatrix_charpoly_eq`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after adding and documenting `stationaryScaledIterMatrix_charpoly_eq`.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the characteristic-polynomial wrapper.
-- `git diff --check -- README.md docs/source_coverage/higham_ch17.md LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after the characteristic-polynomial report update, with only the usual CRLF normalization warnings before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `stationaryScaledIterMatrix_charpoly_eq`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after adding and documenting `stationaryScaledIterMatrix_charpoly_eq`.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the characteristic-polynomial wrapper.
+- `git diff --check -- README.md docs/source_coverage/higham_ch17.md NumStability/Algorithms/StationaryIteration.lean`: passed after the characteristic-polynomial report update, with only the usual CRLF normalization warnings before the commit.
 - `#print axioms` for `stationaryScaledIterMatrix_charpoly_eq`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `residualSigmaTsumMatrix`, `residualSigmaTsum`, and the `HasSum`/row-sum wrappers.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after committing the `tsum` sigma surface and after merging current `origin/main`.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the `tsum` sigma surface.
-- `git diff --check -- README.md docs/source_coverage/higham_ch17.md LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after the `tsum` sigma report update, with only the usual CRLF normalization warnings before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `residualSigmaTsumMatrix`, `residualSigmaTsum`, and the `HasSum`/row-sum wrappers.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after committing the `tsum` sigma surface and after merging current `origin/main`.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the `tsum` sigma surface.
+- `git diff --check -- README.md docs/source_coverage/higham_ch17.md NumStability/Algorithms/StationaryIteration.lean`: passed after the `tsum` sigma report update, with only the usual CRLF normalization warnings before the commit.
 - `#print axioms` for `residualSigmaTsumMatrix_eq_of_hasSum`, `residualSigmaTsum_eq_infNorm_of_hasSum`, and `residualSigmaTsum_le_of_row_sum_le`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `residualSigmaTsum_le_diagonalizable_bound` and `residualSigmaTsum_le_diagonalizable_max_bound_direct`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after committing the literal `tsum` diagonalizable sigma bound and after merging current `origin/main`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIterationSeries`: passed after resolving the theorem-name collision with the incoming series bridge.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after adding the literal `tsum` diagonalizable sigma bound.
-- `git diff --check -- README.md docs/source_coverage/higham_ch17.md LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after the literal `tsum` bound report update, with only the usual CRLF normalization warnings before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `residualSigmaTsum_le_diagonalizable_bound` and `residualSigmaTsum_le_diagonalizable_max_bound_direct`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after committing the literal `tsum` diagonalizable sigma bound and after merging current `origin/main`.
+- `lake build NumStability.Algorithms.StationaryIterationSeries`: passed after resolving the theorem-name collision with the incoming series bridge.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after adding the literal `tsum` diagonalizable sigma bound.
+- `git diff --check -- README.md docs/source_coverage/higham_ch17.md NumStability/Algorithms/StationaryIteration.lean`: passed after the literal `tsum` bound report update, with only the usual CRLF normalization warnings before the commit.
 - `#print axioms` for `residualSigmaTsum_le_diagonalizable_bound` and `residualSigmaTsum_le_diagonalizable_max_bound_direct`: only `propext`, `Classical.choice`, and `Quot.sound`.
 - `#print axioms` for the series bridge `residualSigmaTsum_le_diagonalizable_max_bound_of_infNorm_bound`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `IndexOneDrazinInverse`, the Drazin range/fixed projectors, the fixed-projector algebra, and `singular_error_split_finite_of_indexOneDrazin_projector`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed for the Drazin-projector code milestone before synchronizing with `origin/main`.
-- Post-merge rebuild after synchronizing with incoming `origin/main`: `lake build LeanFpAnalysis.FP.Algorithms.StationaryIterationSeries` passed.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after the Drazin-projector proof group.
-- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after the Drazin-projector proof group, with only the usual CRLF normalization warning before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `IndexOneDrazinInverse`, the Drazin range/fixed projectors, the fixed-projector algebra, and `singular_error_split_finite_of_indexOneDrazin_projector`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed for the Drazin-projector code milestone before synchronizing with `origin/main`.
+- Post-merge rebuild after synchronizing with incoming `origin/main`: `lake build NumStability.Algorithms.StationaryIterationSeries` passed.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after the Drazin-projector proof group.
+- `git diff --check -- NumStability/Algorithms/StationaryIteration.lean`: passed after the Drazin-projector proof group, with only the usual CRLF normalization warning before the commit.
 - `#print axioms` for `stationaryDrazinRangeProjector_idempotent`, `stationaryDrazinFixedProjector_fixed_by_G`, `stationaryDrazinRangeProjector_null_component_fixed`, and `singular_error_split_finite_of_indexOneDrazin_projector`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `matPow_mul_fixed_of_matMul_fixed`, the Drazin range absorption theorems, complementary projector zero-products, fixed-projector idempotence, and `stationaryDrazinFixedProjector_matPow_fixed`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after the Drazin projector algebra extension.
-- Post-merge rebuild after synchronizing with incoming `origin/main`: `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration LeanFpAnalysis.FP.Algorithms.LeastSquares.LSE` passed at the pushed merge head; only pre-existing QR `GivensSpec` unused-simp warnings were reported.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after the Drazin projector algebra extension.
-- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after the Drazin projector algebra extension, with only the usual CRLF normalization warning before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `matPow_mul_fixed_of_matMul_fixed`, the Drazin range absorption theorems, complementary projector zero-products, fixed-projector idempotence, and `stationaryDrazinFixedProjector_matPow_fixed`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after the Drazin projector algebra extension.
+- Post-merge rebuild after synchronizing with incoming `origin/main`: `lake build NumStability.Algorithms.StationaryIteration NumStability.Algorithms.LeastSquares.LSE` passed at the pushed merge head; only pre-existing QR `GivensSpec` unused-simp warnings were reported.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after the Drazin projector algebra extension.
+- `git diff --check -- NumStability/Algorithms/StationaryIteration.lean`: passed after the Drazin projector algebra extension, with only the usual CRLF normalization warning before the commit.
 - `#print axioms` for `matPow_mul_fixed_of_matMul_fixed`, `stationaryDrazinRangeProjector_matSub_id_mul_left`, `stationaryDrazinRangeProjector_matSub_id_mul_right`, `stationaryDrazinRangeProjector_mul_fixedProjector_eq_zero`, `stationaryDrazinFixedProjector_mul_rangeProjector_eq_zero`, `stationaryDrazinFixedProjector_idempotent`, and `stationaryDrazinFixedProjector_matPow_fixed`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- `lake env lean LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after adding `matPow_comm_of_matMul_comm`, `stationaryDrazinRangeProjector_commutes_with_G`, `stationaryDrazinRangeProjector_commutes_with_matPow`, and `stationaryDrazinRangeProjector_matPow_sandwich`.
-- `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration`: passed after the Drazin range-commutation extension.
-- Post-merge rebuild after synchronizing with incoming `origin/main`: `lake build LeanFpAnalysis.FP.Algorithms.StationaryIteration LeanFpAnalysis.FP.Algorithms.LeastSquares.LSE` passed at the pushed merge head; only pre-existing QR `GivensSpec` unused-simp warnings were reported.
-- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: no matches after the Drazin range-commutation extension.
-- `git diff --check -- LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean`: passed after the Drazin range-commutation extension, with only the usual CRLF normalization warning before the commit.
+- `lake env lean NumStability/Algorithms/StationaryIteration.lean`: passed after adding `matPow_comm_of_matMul_comm`, `stationaryDrazinRangeProjector_commutes_with_G`, `stationaryDrazinRangeProjector_commutes_with_matPow`, and `stationaryDrazinRangeProjector_matPow_sandwich`.
+- `lake build NumStability.Algorithms.StationaryIteration`: passed after the Drazin range-commutation extension.
+- Post-merge rebuild after synchronizing with incoming `origin/main`: `lake build NumStability.Algorithms.StationaryIteration NumStability.Algorithms.LeastSquares.LSE` passed at the pushed merge head; only pre-existing QR `GivensSpec` unused-simp warnings were reported.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" NumStability/Algorithms/StationaryIteration.lean`: no matches after the Drazin range-commutation extension.
+- `git diff --check -- NumStability/Algorithms/StationaryIteration.lean`: passed after the Drazin range-commutation extension, with only the usual CRLF normalization warning before the commit.
 - `#print axioms` for `matPow_comm_of_matMul_comm`, `stationaryDrazinRangeProjector_commutes_with_G`, `stationaryDrazinRangeProjector_commutes_with_matPow`, and `stationaryDrazinRangeProjector_matPow_sandwich`: only `propext`, `Classical.choice`, and `Quot.sound`.
 
 ## Git and Local-Only Notes

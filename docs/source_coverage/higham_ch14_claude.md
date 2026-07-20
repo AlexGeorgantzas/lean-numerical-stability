@@ -1,7 +1,7 @@
 # Higham Chapter 14 — Claude Coverage Note (Split 3A)
 
 Chapter 14 "Matrix Inversion" is Split 3A. This note tracks the rows closed by the
-Claude agent, in NEW import-only modules (namespace `LeanFpAnalysis.FP.Ch14Ext`,
+Claude agent, in NEW import-only modules (namespace `NumStability.Ch14Ext`,
 `ch14ext_`-prefixed) that reuse the existing `higham14_*` / `gje_*` / `triInv_*`
 certificate routes. The detailed per-row ledgers under `docs/chapter14/` are the
 canonical inventory; this note records the Claude-authored closures.

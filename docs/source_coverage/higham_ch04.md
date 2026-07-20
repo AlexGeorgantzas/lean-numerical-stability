@@ -20,7 +20,7 @@
 - Chapter: 4, "Summation" (book pp. 79–92).
 - Source text audited: full extracted chapter text (`ch04.txt`, pp. 79–92 including Problems 4.1–4.10).
 - Mode: core. Ownership: foundational chapter, shared infrastructure for all later chapters (no split contract; audited standalone).
-- Main Lean files (all under `LeanFpAnalysis/FP/`):
+- Main Lean files (all under `NumStability/`):
   `Algorithms/RecursiveSum.lean`, `Algorithms/SumTree.lean`, `Algorithms/PairwiseSum.lean`,
   `Algorithms/InsertionSum.lean`, `Algorithms/OrderingExamples.lean`,
   `Algorithms/CompensatedSum.lean`, `Algorithms/DoublyCompensatedSum.lean`,

@@ -3,7 +3,7 @@
 > **Fresh strict audit and repair (2026-07-18): gate PASS.** The literal
 > operational matrix forms (5.5)-(5.6), all three displayed inverse-product
 > matrices, and the concrete rounded inverse-unwind producer for (5.12) are now
-> closed in `LeanFpAnalysis/FP/Algorithms/Ch5SourceClosure.lean`. See
+> closed in `NumStability/Algorithms/Ch5SourceClosure.lean`. See
 > `AUDIT_ch01-28_2026-07-18.md` for the cross-chapter audit.
 
 ## Source and Scope
@@ -15,8 +15,8 @@
 - Mode: core.
 - Split ownership: pre-split foundational chapter (Chapters 1–6 band); audited from the Split 3B/4 worktree
   (`formalize/split4-claude`, worktree `ch18-split3-claude-claude-ch18-split3-20260703044646`).
-- Main Lean files: `LeanFpAnalysis/FP/Algorithms/Horner.lean` and the fresh
-  source-facing closure module `LeanFpAnalysis/FP/Algorithms/Ch5SourceClosure.lean`.
+- Main Lean files: `NumStability/Algorithms/Horner.lean` and the fresh
+  source-facing closure module `NumStability/Algorithms/Ch5SourceClosure.lean`.
 - Audit date: 2026-07-18. Audit type: strict statement-level source verification and repair.
 - Axiom spot-check (9 load-bearing decls, throwaway `#print axioms`, deleted after): all
   `[propext, Classical.choice, Quot.sound]` — axiom-clean. Checked:
@@ -39,7 +39,7 @@
   2026-07-18 strict audit below). Both primary labels (Algorithm 5.1
   Horner, Algorithm 5.2 derivative evaluation) are VERIFIED at printed strength; the previously-MISSING
   Algorithm 5.2 rounding analysis + the ψ(p,x) sign-pattern corollary are now closed in
-  `LeanFpAnalysis/FP/Algorithms/Ch5DerivativeError.lean` (`ch5deriv_*` value/derivative forward+backward
+  `NumStability/Algorithms/Ch5DerivativeError.lean` (`ch5deriv_*` value/derivative forward+backward
   bounds; `ch5psi_*` nonneg / alternating-sign perfect-relative-accuracy corollaries), axiom-clean.
   Remaining MISSING rows (Newton-form §5.3 evaluation error; monotone-node-ordering corollary to
   (5.11)/(5.12); the Alg 5.1 complex-data remark) are precise body-prose asides, recorded as optional
@@ -116,14 +116,14 @@
 ## Selected-scope gate: PASS (fresh strict audit and repair, 2026-07-18)
 
 **Update (2026-07-14 audit-closure):** row 2 below (ψ sign-pattern) and the Algorithm 5.2 derivative
-rounding analysis are now CLOSED in `LeanFpAnalysis/FP/Algorithms/Ch5DerivativeError.lean`
+rounding analysis are now CLOSED in `NumStability/Algorithms/Ch5DerivativeError.lean`
 (`ch5deriv_value_forward_error_bound`, `ch5deriv_derivative_forward_error_bound`,
 `ch5deriv_derivative_backward_error_coefficients`, `ch5deriv_pair_forward_error_bound`;
 `ch5psi_*` for the nonneg / strictly-alternating perfect-relative-accuracy corollaries), axiom-clean.
 Both primary labels are VERIFIED.
 
 **Follow-up (2026-07-17):** the Newton-form §5.3 analysis and the monotone-ordering corollary are now
-CLOSED in `LeanFpAnalysis/FP/Algorithms/Ch5NewtonForm.lean` (`ch5newton_backward_error` = the `<3n>`
+CLOSED in `NumStability/Algorithms/Ch5NewtonForm.lean` (`ch5newton_backward_error` = the `<3n>`
 backward result for the rounded generalized-Horner Newton-form evaluator; `ch5newton_forward_error_bound`;
 plus the strictly-increasing-node corollary `|L_{n-1}|...|L_0| = |L|`), axiom-clean.
 
@@ -132,7 +132,7 @@ Remaining optional non-gating residual (precise body-prose aside):
 
 **Follow-up (2026-07-18 strict repair):** the selected residuals at (5.5),
 (5.6), and (5.12) are CLOSED in
-`LeanFpAnalysis/FP/Algorithms/Ch5SourceClosure.lean`. The new proofs instantiate
+`NumStability/Algorithms/Ch5SourceClosure.lean`. The new proofs instantiate
 both rounded bidiagonal solves, prove all three displayed inverse-product
 matrices, and give the printed exact-`q`/exact-`r` first-order terms with named
 quadratic propagation and cross remainders. The actual divided-difference

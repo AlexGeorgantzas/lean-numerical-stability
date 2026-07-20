@@ -101,8 +101,8 @@
 
 ## Verification
 
-- `lake build LeanFpAnalysis.FP.Algorithms.Ch14Cor146UniformInverseBridge
-  LeanFpAnalysis.FP.Algorithms.Ch14Cor147SourceDomainConstructor` succeeds on
+- `lake build NumStability.Algorithms.Ch14Cor146UniformInverseBridge
+  NumStability.Algorithms.Ch14Cor147SourceDomainConstructor` succeeds on
   2026-07-19. `#print axioms` on both constructors and the new continuity
   bridge reports only `[propext, Classical.choice, Quot.sound]`.
 - Fresh finalized-trace declarations compile directly on 2026-07-19;

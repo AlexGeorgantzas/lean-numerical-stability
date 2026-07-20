@@ -13,7 +13,7 @@
 
 **Numbering gotcha (recorded for future auditors).** Several `Problem2_N.lean` modules follow a numbering that is offset from the 2nd-edition problem list from 2.19 onward (module `Problem2_19` = printed 2.20, `Problem2_20` = 2.21, `Problem2_21` = 2.22, `Problem2_22` = 2.23, `Problem2_23` = 2.24, `Problem2_24` = 2.25, `Problem2_25` = 2.27, `Problem2_27` = 2.28; module `Problem2_17` and `Problem2_26` cover §2.6 body claims, not the printed problems of those numbers). Some module headers also cite first-edition-style section numbers (e.g. "§2.9" for notes-material that is §2.12 in the 2nd ed., "§2.5" for the §2.7 logarithmic distribution). The tables below are keyed to the **2nd-edition** rows.
 
-Main modules: `LeanFpAnalysis/FP/Model.lean`, `LeanFpAnalysis/FP/Analysis/FloatingPointArithmetic.lean` (finite formats, rounding selectors, IEEE value/flag layer, Ferguson/Sterbenz), `Analysis/Error.lean` (witness surfaces for (2.4)–(2.6), (2.8)), plus per-topic modules cited per row. All declarations below live under `LeanFpAnalysis.FP` (most in namespace `FloatingPointFormat`).
+Main modules: `NumStability/FloatingPoint/Model.lean`, `NumStability/Analysis/FloatingPointArithmetic.lean` (finite formats, rounding selectors, IEEE value/flag layer, Ferguson/Sterbenz), `Analysis/Error.lean` (witness surfaces for (2.4)–(2.6), (2.8)), plus per-topic modules cited per row. All declarations below live under `NumStability` (most in namespace `FloatingPointFormat`).
 
 ## Primary labels
 
