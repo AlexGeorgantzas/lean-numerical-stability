@@ -44,7 +44,7 @@ NumStability/
 - [x] Run a complete build and root-import smoke test.
 - [x] Rename the GitHub repository and update the local remote.
 - [x] Validate the pushed migration from a clean checkout.
-- [ ] Create the first release after the migration reaches `main` under the new identity.
+- [x] Create the first release after the migration reaches `main` under the new identity.
 
 ## Decisions
 
@@ -74,6 +74,7 @@ NumStability/
 | Full validation | Passed | `lake build NumStability`: 4,429 jobs; `lake env lean examples/LibraryLookup.lean` |
 | Clean checkout | Passed | Clean clone of `b532d4164`; locked `lake build NumStability`: 4,429 jobs |
 | Repository rename | Passed | GitHub and local `origin`: `AlexGeorgantzas/lean-numerical-stability` |
+| First release | Passed | Annotated tag `v0.1.0`; Lake package version `0.1.0` |
 
 ## Migration log
 
@@ -99,3 +100,5 @@ NumStability/
 - 2026-07-21: Renamed the GitHub repository to `lean-numerical-stability`,
   verified the old URL redirects, and updated local `origin` to the canonical
   SSH URL.
+- 2026-07-21: Fast-forwarded the completed migration to `main` and created the
+  first release under the new identity as annotated tag `v0.1.0`.
