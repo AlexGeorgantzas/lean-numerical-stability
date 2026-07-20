@@ -1,5 +1,40 @@
 # Higham Chapter 9 Formalization Report - "LU Factorization and Linear Equations"
 
+> **PDF-first rerun (2026-07-19): selected-scope gate PASS after repair.**
+> The local PDF has **15**, not 14, named items: Algorithm 9.2, Lemma 9.6,
+> and Theorems 9.1, 9.3--9.5, 9.7--9.15.  The previous summary silently
+> omitted Theorem 9.7 and described the real developments for Theorems
+> 9.8--9.11 as if they covered the source's complex domain.  The rerun adds
+> `HighamChapter9Theorem97Classification.lean` (the exact real extremal
+> classification, including the reduced-matrix growth history, the printed
+> `D M [T | alpha d]` form, the tie convention, no-interchange conclusion,
+> and an executable trace-existence theorem),
+> `HighamChapter9Theorem99Closure.lean` (the complete no-pivot reduced-history
+> statement for the real diagonal-dominance subdomain), and the complex
+> source-domain closure modules for Theorems 9.8--9.11.  In particular,
+> Theorem 9.8 is universal over arbitrary admissible row/column permutations;
+> 9.9 includes row/column diagonal dominance, no-pivot LU, the full (9.5)
+> reduced history and the column-dominant multiplier bound; and 9.10--9.11
+> construct genuine complex GEPP traces rather than taking the growth result
+> as a premise.  The historical status text below is retained for provenance
+> and is superseded wherever it conflicts with this notice.
+
+> **PDF-first rerun repair (2026-07-20): equation (9.14) now closes from the
+> actual recursive GECP trace, including the full reduced-matrix history in
+> the source growth-factor definition preceding Theorem 9.5.**
+> `HighamChapter9CompletePivotSharpClosure.lean` proves the
+> consecutive-pivot Hadamard constraints directly from
+> `higham9_8_CompletePivotGECPUTrace`, derives Wilkinson's sharp product bound
+> without a caller-supplied pivot sequence or target inequality, and defines
+> `higham9_14_completePivotReducedHistoryGrowthFactor` as the supremum of the
+> max-entry norms of exactly the initial matrix and every recursively stored
+> Schur complement.  The headline
+> `higham9_14_CompletePivotGECPUTrace_reducedHistoryGrowthFactor_le_wilkinsonBound`
+> bounds that PDF-faithful `rho_n^c`; the `higham9_14_exists_*reducedHistory*`
+> endpoint constructs the actual trace and denominator from nonsingularity.
+> This supersedes every historical statement below that calls the GECP trace
+> bridge optional, deferred, or model-level only.
+
 > **Fresh strict audit (2026-07-18): gate PASS.** The literal rounded
 > Doolittle loop now derives Higham's prefix-plus-stored-term residual bound
 > directly and therefore proves Theorem 9.3 from run-to-completion/nonzero
@@ -45,7 +80,7 @@
   bound `rho_n^c ≤ √n·(2·3^{1/2}⋯n^{1/(n-1)})^{1/2}` is proved both for the
   final-`U` max-entry growth factor
   (`higham9_14_completePivot_growthFactorEntry_le_wilkinsonBound`) and in the
-  all-iterates form matching Definition 9.6
+  all-iterates form matching the source growth-factor definition
   (`higham9_14_completePivot_iterate_entry_le_wilkinsonBound_mul`). The
   complete-pivoting invariant and pivot-nonzeroness are explicit hypotheses of
   record (they encode "the factorization was produced by complete pivoting on
@@ -147,7 +182,7 @@ not close these rows.
 
 | Selected row | Source (no book proof) | Missing foundation | Honest surfaces present | Smallest next Lean target | Status |
 |---|---|---|---|---|---|
-| GECP executable-trace bridge for eq. (9.14) (optional bookkeeping) | — (model-fidelity bookkeeping, not a book claim) | executable complete-pivoting GE trace (analog of `higham9_7_PartialPivotGEPPUTrace`) producing an `LUFactSpec` whose iterates satisfy the complete-pivoting invariant `hCP` | the closed (9.14) theorems below; per-stage pivot-choice lemmas `higham9_1_completePivot*` | define a complete-pivoting GE trace and prove it satisfies `hCP` stage by stage | DEFER (the source row (9.14) is closed at the model level; this bridge connects the algorithmic trace to the model invariant and is not required by the book statement) |
+| GECP executable-trace bridge for eq. (9.14), including the source growth-factor definition's reduced-matrix history | Higham printed pp. 164 and 169: growth-factor definition preceding Theorem 9.5 and eq. (9.14) | none | `higham9_14_CompletePivotGECPUTrace_segment_diagonal_bound`, `higham9_14_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound`, `higham9_14_completePivotReducedHistoryGrowthFactor`, `higham9_14_CompletePivotGECPUTrace_reducedHistoryGrowthFactor_le_wilkinsonBound`, `higham9_14_exists_CompletePivotGECPUTrace_reducedHistoryGrowthFactor_le_wilkinsonBound` | — | **CLOSED (2026-07-20): actual recursive GECP trace; all reduced matrices; no target-equivalent premise** |
 | Eq. (9.16), rook-pivoting growth bound `rho_n <= 1.5 n^{(3/4)log n}` | Foster [435, 1997]; Higham gives no proof | Foster's rook-pivoting stage analysis | rook-pivoting dense/rounded-loop `2^{n-1}` bridges | acquire Foster (1997) proof or derive stage bound | CLOSED at M25 (2026-07-09): Foster [435, 1997] delivered and formalized end-to-end — Thm 1 (`higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterT`), Lemma 2 (`higham9_16_foster_lemma2`), Thm 3 (`higham9_16_fosterT_le_exp`), final `higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterBound*` |
 | Theorem 9.11, banded GEPP growth (Bohte constant) | Bohte [146, 1975]; Higham gives no proof | Bohte banded-GEPP growth theorem for general `p >= 2` | `higham9_11_bohteBound*`, conditional solve wrappers `higham9_11_bohte_banded_solve_tight*` (take the growth bound as a hypothesis); **`p = 1` CLOSED (2026-07-08)**: the tridiagonal GEPP growth bound `rho <= 2` is proved unconditionally at the exact-trace level (`higham9_11_tridiag_GEPPUTrace_growthFactorEntry_le_two`, via the band-tracked invariant `higham9_11_TridiagActiveBound` and its one-step preservation `higham9_11_tridiagActive_schur_preserved`), with the Bohte-named wrapper `..._le_bohteBound` and the Theorem 9.5 solve endpoint `higham9_11_tridiag_wilkinson_source_bound_of_PartialPivotGEPPUTrace` | acquire Bohte (1975) proof (OUP PDF returns Cloudflare challenge; unavailable); the printed `p = 2` value `7` is the next accessible band case but the general-`p` argument is the cited content | OPEN for general `p >= 2` (citation-blocked: paper unavailable); `p = 1` proved |
 | Theorem 9.15, full Barrlund-Sun normwise/spectral sensitivity | Barrlund; Sun (cited); book proof omitted | derive the self-majorant inequality `W <= |G| + |G| W` (Schur-induction step) from first principles | componentwise identity/bounds proved (`higham9_15_lu_perturbation_*`); spectral-radius => nonnegative resolvent derived (`higham9_15_nonnegative_resolvent_nonsingInv_of_spectralRadius_lt_one`); self-majorant still a free hypothesis; **perturbed-leading-minor engine PROVED (2026-07-07)**: `higham9_15_leadingSubmatrix_mul_of_lower_left`/`_upper_right` (leading blocks factor through triangular products), `higham9_15_leadingSubmatrix_det_triple`, and `higham9_15_perturbed_leading_minor_eq` (`det B_k(A+ΔA) = det B_k(I+G)·∏ first-k pivots` with `G = L⁻¹ΔA U⁻¹`) — the existence leg of the Barrlund homotopy (leading minors of `A+tΔA` stay nonsingular when `‖G‖₂<1`); **nonsingularity leg PROVED (same pass)**: `higham9_15_opNorm2Le_leadingSubmatrix` (operator-2-norm bounds transfer to leading blocks by zero-padding), `higham9_15_det_one_add_ne_zero_of_opNorm2Le_lt_one` (`det(I+B) ≠ 0` under a sub-unit 2-norm bound), `higham9_15_perturbed_leading_minor_ne_zero` (all leading minors of `A+ΔA` nonzero under `opNorm2Le G c`, `c<1` — so the perturbed matrix retains an LU factorization; applied to `t·ΔA` this covers the whole homotopy path); **branch-selection leg PROVED (same pass)**: `higham9_15_selfMajorant_band_avoidance` (points with `s ≤ g + s²`, `g < 1/4`, avoid the open band between the roots of `x²-x+g`) and `higham9_15_selfMajorant_path_small_branch` (a continuous self-majorized path with `s 0 = 0` ends on the small branch `s 1 ≤ (1-√(1-4g))/2`, via IVT) — the connectedness leg of the rigorous homotopy bound; **pivot-transfer leg PROVED (same pass)**: `higham9_1_LUFactSpec_pivots_ne_zero_of_leading_minors_ne_zero` (any LU certificate over nonvanishing leading minors has nonzero pivots) and `higham9_15_perturbed_LUFactSpec_pivots_ne_zero` (any LU certificate of `A+ΔA` has nonzero pivots under Barrlund's smallness, feeding `higham9_1_lu_unique_of_pivots_ne_zero` along the path); **existence leg PROVED (same pass)**: `higham9_1_det_eq_pivot_mul_firstSchurComplement_det` (Schur determinant identity via one exact elimination step + first-column Laplace), `higham9_1_leadingSubmatrix_det_eq_pivot_mul_schur`, `higham9_1_lu_exists_of_leading_minors_ne_zero` (Theorem 9.1 existence direction: nonvanishing leading minors ⟹ exact LU certificate, by Schur-complement induction), and `higham9_15_perturbed_lu_exists` (the whole Barrlund path `A+t·ΔA` carries LU factorizations, unique with nonzero pivots); **pivot-continuity leg PROVED (same pass)**: `higham9_15_leading_minor_path_continuous` (each leading minor is continuous in `t` along `A+t·ΔA`), `higham9_15_pivot_ratio_path_continuousOn` (consecutive-minor ratios continuous where the denominator minor is nonvanishing), `higham9_1_pivot_eq_leading_minor_ratio` (each pivot of an exact LU certificate equals the consecutive-minor ratio) — so the PIVOTS of the factorization path are continuous in `t`; **U-entry bordered-minor formula PROVED (same pass)**: `higham9_15_leadingRows_mul_of_lower_left`, `higham9_15_borderedCols*`, `higham9_15_borderedU_det`, `higham9_15_borderedMinor_eq_pivots_mul_U` (`det A([0..k],[0..k-1,j]) = (∏ first-k pivots)·U_{k,j}` — so every `U` entry is a minor ratio, hence continuous along the path); **L-entry bordered-minor formula PROVED (same pass)**: `higham9_15_leadingCols_mul_of_upper_right`, `higham9_15_borderedRows*`, `higham9_15_borderedL_det`, `higham9_15_borderedMinor_eq_L_mul_pivots` (`det A([0..k-1,i],[0..k]) = L_{i,k}·∏ first-(k+1) pivots`) — both factor entries are now minor ratios; **entry-continuity toolkit COMPLETE (same pass)**: `higham9_15_minor_path_continuous` (arbitrary minors continuous in `t`), `higham9_15_U/L_entry_path_continuousOn` (the minor-ratio entry maps are `ContinuousOn` where the denominators are nonvanishing — supplied by the perturbed-minor nonsingularity), `higham9_15_U/L_entry_eq_minor_ratio` (the ratios equal the actual factor entries of any exact certificate over nonvanishing minors); **RIGOROUS ENDPOINT BOUND PROVED (same pass)**: the full assembly is complete — `higham9_15_pathL/U_entry_continuousOn`, `higham9_15_pathS_continuousOn`, `higham9_15_rigorous_pathS_endpoint_bound`, and the source-facing `higham9_15_rigorous_lu_perturbation_combined_bound`: for ANY exact LU certificate `A+ΔA = L'U'`, `‖L⁻¹(L'−L) + (U'−U)U⁻¹‖_F ≤ (1−√(1−4‖G‖_F))/2` under `opNorm2Le G c`, `c<1`, `‖G‖_F < 1/4` (Barrlund-homotopy proof: path existence/uniqueness, entrywise minor-ratio continuity, quadratic self-majorant, IVT branch selection). This is the rigorous quadratic-form variant of (9.27) (Chang-Stehlé-type); the EXACT book form `‖G‖_F/(1−‖G‖₂)` under only `‖G‖₂<1` still requires Barrlund's min-factor control and the row stays OPEN with that residual gap | prove the self-majorant inequality or route it through an equivalent Ch6/7 spectral surface | CLOSED (2026-07-07, Barrlund [90, 1991] delivered): exact book (9.27) form proved as `higham9_15_barrlund_deltaL_bound` / `higham9_15_barrlund_deltaU_bound` (`‖ΔL‖_F ≤ ‖L‖₂‖G‖_F/(1−‖G‖₂)`, `‖ΔU‖_F ≤ ‖U‖₂‖G‖_F/(1−‖G‖₂)` under `‖G‖₂<1`); the rigorous quadratic-form homotopy variant `higham9_15_rigorous_lu_perturbation_combined_bound` is retained as a stronger-hypothesis companion |
@@ -172,7 +207,7 @@ from the stage-entry bound) → final source-facing theorems
 `higham9_14_completePivot_growthFactorEntry_le_wilkinsonBound` (max-entry
 growth factor of the final `U`) and
 `higham9_14_completePivot_iterate_entry_le_wilkinsonBound_mul` (every entry of
-every reduced matrix — the all-iterates growth factor of Definition 9.6).
+every reduced matrix — the all-iterates source growth factor).
 Hypotheses of record: `LUFactSpec` for the (permuted) matrix, nonzero pivots,
 and the complete-pivoting invariant `hCP` (every entry of the stage-`m`
 reduced matrix bounded by the stage pivot `|U_{m,m}|`) — the defining
@@ -343,7 +378,10 @@ SUPERSEDED (2026-07-09): both residuals below were subsequently closed — (9.16
   residual is exactly the general-`p >= 2` growth constant whose only source is
   the unavailable Bohte paper.
 
-Eq. (9.14) is CLOSED at the model level; Theorem 9.1 existence-from-minors,
+Eq. (9.14) is CLOSED from the actual recursive GECP trace, both for the
+exposed `U` entries and for the source definition's maximum over every reduced
+matrix;
+Theorem 9.1 existence-from-minors,
 the exact Barrlund (9.27) normwise form (Thm 9.15), and the rigorous
 quadratic-form variant are all CLOSED. No `sorry`, `admit`, or new `axiom` is
 used anywhere in the chapter; open rows are kept honest as partial/conditional

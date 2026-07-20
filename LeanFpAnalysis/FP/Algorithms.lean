@@ -64,6 +64,13 @@ import LeanFpAnalysis.FP.Algorithms.Ch10Theorem108Componentwise
 import LeanFpAnalysis.FP.Algorithms.Ch10PivotedPSDSourceClosure
 import LeanFpAnalysis.FP.Algorithms.Ch10ComplexPositiveDefiniteSourceClosure
 import LeanFpAnalysis.FP.Algorithms.HighamChapter11
+-- Equation (11.7): exact Chapter-9-style forward-error handoff, literal
+-- permuted LDL^T factor envelope, and the condition-product second line.
+import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham11Chapter9BridgeClosure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham11Chapter9ActualExecutorBridge
+import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham11BunchSharpGrowthBridge
+import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham11BunchActualSharpGrowthClosure
+import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham11BunchTraceHadamard
 import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham11RookSourceClosure
 -- Rounded mixed-executor support, exact bounded-search closure, and the formal
 -- boundary showing why the exact growth exponent does not transfer unchanged.
@@ -71,6 +78,7 @@ import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham11RookExecutorAdapter
 import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham11RookExactTrace
 import LeanFpAnalysis.FP.Algorithms.Cholesky.Higham11RookRoundedGap
 import LeanFpAnalysis.FP.Algorithms.HighamChapter12
+import LeanFpAnalysis.FP.Algorithms.HighamChapter12Ch9SolverBridge
 import LeanFpAnalysis.FP.Algorithms.LU.GaussianElimination
 import LeanFpAnalysis.FP.Algorithms.LU.LUSolve
 import LeanFpAnalysis.FP.Algorithms.LU.GrowthFactor
@@ -87,6 +95,13 @@ import LeanFpAnalysis.FP.Algorithms.LU.BlockLUSPDFamilies
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLUTable13_1Families
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLUArbitraryNormSourceClosure
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLUPointRowGrowthSourceClosure
+import LeanFpAnalysis.FP.Algorithms.HighamChapter9Theorem97Classification
+import LeanFpAnalysis.FP.Algorithms.HighamChapter9Theorem99Closure
+import LeanFpAnalysis.FP.Algorithms.HighamChapter9ComplexClosure
+import LeanFpAnalysis.FP.Algorithms.HighamChapter9Theorem99ComplexClosure
+import LeanFpAnalysis.FP.Algorithms.HighamChapter9CompletePivotSharpClosure
+import LeanFpAnalysis.FP.Algorithms.HighamChapter15Ch7PracticalBoundBridge
+import LeanFpAnalysis.FP.Algorithms.HighamChapter3NoGuardDotBridge
 import LeanFpAnalysis.FP.Algorithms.LU.BlockLUScalarGrowthBridge
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySpec
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySolve
@@ -166,6 +181,11 @@ import LeanFpAnalysis.FP.Algorithms.Ch14GJETheorem145SourceClosure
 import LeanFpAnalysis.FP.Algorithms.Ch14GJEOperationalBridge
 import LeanFpAnalysis.FP.Algorithms.Ch14Corollary146SourceClosure
 import LeanFpAnalysis.FP.Algorithms.Ch14Corollary147SourceClosure
+import LeanFpAnalysis.FP.Algorithms.Ch14GJEFinalDivisionClosure
+import LeanFpAnalysis.FP.Algorithms.Ch14Cor146UniformInverseBridge
+import LeanFpAnalysis.FP.Algorithms.Ch14GJEActualDoolittleAdapter
+import LeanFpAnalysis.FP.Algorithms.Ch14Cor147FinalDivisionFamilyClosure
+import LeanFpAnalysis.FP.Algorithms.Ch14Cor147SourceDomainConstructor
 import LeanFpAnalysis.FP.Algorithms.Ch14MethodDProductDischarge
 import LeanFpAnalysis.FP.Algorithms.Chapter06Lemma66
 import LeanFpAnalysis.FP.Algorithms.Ch10Ch14Lemma66Op2Bridge
@@ -279,6 +299,7 @@ import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidt
 import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidtPolar
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19WYApplicationClosure
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderConstruction2
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19FormedQ
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19StoredLoop
@@ -307,6 +328,7 @@ import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6ColPivotFull
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6Final
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Thm6StrongModel
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19Labels
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19Theorem5SourceClosure
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSNormalEquations

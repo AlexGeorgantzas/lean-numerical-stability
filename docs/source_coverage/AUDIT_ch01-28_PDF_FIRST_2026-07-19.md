@@ -1,5 +1,15 @@
 # Higham Chapters 1–28 — PDF-first closure audit (2026-07-19)
 
+> **SUPERSEDED.** This report audited baseline
+> `4d5f7ae00c1d45edadd7cab9dc7ce9f59caa6d40`, and its final `28 PASS`
+> conclusion is not the result of the new independent rerun requested against
+> remote `main`.  That rerun found obligations this report missed: the literal
+> Theorem 9.7 classification, the complex source domains of Theorems
+> 9.8--9.11, Algorithm 14.4's final divisions, Theorem 19.5's columnwise
+> statement and (19.14), and a circular Chapter 12-to-22 refinement handoff.
+> See `AUDIT_ch01-28_PDF_FIRST_RERUN_2026-07-19.md` for the authoritative
+> corpus fingerprint, repairs, bridge audit, and verification record.
+
 ## Result
 
 **Final gate: 28 PASS, 0 FAIL, 0 BLOCKED.**

@@ -7532,8 +7532,8 @@ fold-level algebra needed for the modified Lemma 8.2 row proof. -/
 theorem higham8_problem8_1_noGuard_sub_fold_unroll (fp : NoGuardFPModel)
     (m : ℕ) (a : Fin m → ℝ) (c : ℝ) :
     ∃ (α β : Fin m → ℝ),
-      (∀ k, |α k| < fp.u) ∧
-      (∀ k, |β k| < fp.u) ∧
+      (∀ k, |α k| ≤ fp.u) ∧
+      (∀ k, |β k| ≤ fp.u) ∧
       Fin.foldl m (fun acc t => fp.fl_sub acc (a t)) c =
         c * ∏ k : Fin m, (1 + α k) -
           ∑ t : Fin m, a t * (1 + β t) *

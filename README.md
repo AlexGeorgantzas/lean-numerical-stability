@@ -33,11 +33,15 @@ factor-identification claims before replacing them with faithful statements.
 
 Higham chapters 1–28, plus the RandNLA case study. Per-chapter status is tracked
 in the ledgers under [`docs/source_coverage/`](docs/source_coverage/). The
-authoritative from-scratch audit is the PDF-first report
-[`docs/source_coverage/AUDIT_ch01-28_PDF_FIRST_2026-07-19.md`](docs/source_coverage/AUDIT_ch01-28_PDF_FIRST_2026-07-19.md).
-It re-read all 28 chapter PDFs (513 pages), inventoried 165 named body results
-and 585 numbered body equations, and then checked the declaration types and
-cross-chapter consumers independently of the ledger conclusions.
+authoritative from-scratch audit is the independent PDF-first rerun
+[`docs/source_coverage/AUDIT_ch01-28_PDF_FIRST_RERUN_2026-07-19.md`](docs/source_coverage/AUDIT_ch01-28_PDF_FIRST_RERUN_2026-07-19.md).
+It froze remote `main` at
+`78cda8ba9debad7af00d2dd6a1b01f096551a488`, re-read all 28 chapter PDFs
+(513 pages; corpus fingerprint recorded in the report), inventoried 165 named
+body results and 585 numbered body equations, and then checked declaration
+types and 60 exact-label producer-to-consumer chapter pairs independently of the
+ledger conclusions. The older same-date report is retained but marked
+superseded because the rerun found additional source-strength gaps.
 
 | Ch | Topic | Strict gate |
 |----|-------|-------------|
@@ -62,7 +66,7 @@ cross-chapter consumers independently of the ledger conclusions.
 | 19 | QR factorization | PASS (explicit domain) |
 | 20 | The least squares problem | PASS / SOURCE-DISCREPANCY (explicit domain) |
 | 21 | Underdetermined systems | PASS / SOURCE-DISCREPANCY |
-| 22 | Vandermonde systems | PASS |
+| 22 | Vandermonde systems | PASS / SOURCE-DISCREPANCY |
 | 23 | Fast matrix multiplication | PASS |
 | 24 | The FFT and applications | PASS |
 | 25 | Nonlinear systems and Newton's method | PASS / SOURCE-DISCREPANCY |
@@ -89,14 +93,37 @@ deferred rather than converted into arbitrary propositions.
   terminal `2 x 2` predicate is too weak, and even an aligned legal division
   rounding can exceed the exact bound. Theorem 11.8 is separately false as
   printed at `n=1`; the actual scalar Aasen execution and sharp corrected bound
-  close that discrepancy.
+  close that discrepancy. For Algorithm 11.1 complete pivoting, the new
+  block-atomic sharp analysis proves Bunch's printed
+  `3.07 (n-1)^0.446` comparison with the Chapter 9 (9.14) bound, exposes its
+  separate order-one defect, and now closes the strict source-to-result route.
+  Every symmetric nonsingular source matrix constructs an exact complete-
+  search/symmetric-permutation/Schur trace; selected principal-minor
+  determinant recurrences identify every whole-block pivot product, and
+  Hadamard's inequality is derived for every contiguous whole-block segment.
+  Thus
+  `higham11_1_exists_exactBunchTrace_all_stageRatio_le_maxEntryNorm` returns
+  the all-stage sharp ratio bound without caller-supplied trace, determinant,
+  Hadamard, growth, or target certificates. Displayed equation (11.7) is also
+  composed from the actual mixed block-LDLT/triangular-solve executor into the
+  Chapter 9 (9.23) forward-error route.
+- **Chapter 9:** the corrected 15-item PDF inventory includes the previously
+  omitted Theorem 9.7. Its exact real extremal classification now starts from
+  a constructed leading-row-on-ties GEPP trace and uses the full reduced-matrix
+  growth history. Equation (9.14) likewise now bounds the supremum over the
+  original matrix and every actual recursively generated GECP reduced stage,
+  rather than only the exposed final upper factor. Theorems 9.8--9.11 now also have their printed complex-domain
+  endpoints, including genuine complex GEPP traces and a full no-pivot
+  diagonal-dominance history for Theorem 9.9.
 - **Chapters 19 and 20:** literal rounded MGS and pivoted stored-QR / least-
   squares executors close their source-rate endpoints. Theorem 19.10 now starts
   from the canonical Givens matrix stage-fold and constructs orthogonal `Q`,
   `Rhat`, and `DeltaA` with the PDF's `m+n-2` columnwise coefficient. Computed
   nonbreakdown is stated only where it is the natural domain implicit in the
   source's “computed matrices” and “computed solution” language, not assumed as
-  an error budget.
+  an error budget. Theorem 19.5 is now genuinely columnwise for the actual QR
+  solve, (19.14) exposes its hidden inverse domain, and the Section 19.7
+  componentwise residual is obtained by a direct Chapter 6 Lemma 6.6 bridge.
 - **Chapters 10, 25, 26, and 28:** false printed formulas remain visible as checked
   source discrepancies with corrected theorems. Chapter 10 now includes the
   literal pivoted-Cholesky success/error chain, the premise-free Mathias
@@ -113,6 +140,24 @@ deferred rather than converted into arbitrary propositions.
   literal finite-format/executor, fan-in, finalized Gauss-Jordan, concrete
   rectangular general-`p` calculus, pivoted least-squares, and monomial-stage
   bridges instead of relying on target-bearing readiness or residual premises.
+  The Chapter 14 result now includes Algorithm 14.4's literal rounded
+  Doolittle phase, final divisions, derived uniform-inverse regularity, and
+  source-domain constructor. The Chapter 12-to-22 refinement bridge now starts
+  from the actual rounded real/complex differentiated-Horner residual instead
+  of assuming a contraction conclusion; a compiled counterexample terminates
+  the false literal (12.9) coefficient and the corrected route proves finite
+  (12.8)--(12.10).
+- **Cross-chapter bridges:** a second, exact-label projection corrected the
+  initial mixed bridge count and exposed five additional composition gaps.
+  The tree now gives the literal boundary-inclusive no-guard model (2.6) an
+  actual dot-product path to (3.3)--(3.5), composes the concrete (7.31) safety
+  vector with (15.1), connects
+  the Chapter 9 complete-pivoting and forward-error producers to the precise
+  Chapter 11 claims, gives the actual Chapter 9 LU solve a finite Chapter 12
+  forward-error handoff, and supplies the Chapter 13 matrix-product handoff used by
+  the block-WY analysis (19.17)--(19.22). Earlier-Problem and qualitative
+  references are listed separately in the audit instead of inflating the
+  exact-label graph.
 
 The **RandNLA case study**
 ([`FP/Algorithms/RandNLA/`](LeanFpAnalysis/FP/Algorithms/RandNLA), 17 modules)
@@ -127,13 +172,13 @@ Snapshot of the current `LeanFpAnalysis/` tree:
 
 | | |
 |---|---|
-| Lean files | **574** |
-| Lines of Lean | **~1.38 million** (1,384,987 physical lines) |
-| Theorems + lemmas proved | **37,733** (35,833 `theorem` + 1,900 `lemma`) |
-| Definitions | **8,452** `def`, 232 `abbrev` |
-| Structures / instances | 380 `structure`, 79 `instance` |
+| Lean files | **596** |
+| Lines of Lean | **~1.40 million** (1,404,856 physical lines) |
+| Theorems + lemmas proved | **38,227** (36,258 `theorem` + 1,969 `lemma`) |
+| Definitions | **8,629** `def`, 236 `abbrev` |
+| Structures / instances | 395 `structure`, 79 `instance` |
 | `sorry` / `admit` / `axiom` declarations | **0** |
-| Full serialized `lake build` | **4,405 jobs** |
+| Full `lake build` | **4,429 jobs** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
 the standard `[propext, Classical.choice, Quot.sound]` axioms. (Declaration
@@ -148,7 +193,7 @@ clone:
 
 ```bash
 lake exe cache get   # download prebuilt Mathlib oleans — skipping this makes the build very slow
-lake build           # 4405 build jobs in the audited tree
+lake build           # 4429 build jobs in the audited tree
 ```
 
 Build a single module, e.g.:

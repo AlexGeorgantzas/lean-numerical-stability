@@ -1,10 +1,11 @@
 # Higham, *Accuracy and Stability of Numerical Algorithms* (2nd ed.) — Chapter 3 "Basics"
 
-> **Fresh strict audit (2026-07-18): gate PASS.** The concrete Lemma 3.7
+> **PDF-first rerun (2026-07-19): gate PASS.** The concrete Lemma 3.7
 > Frobenius/spectral instantiation, fully permuted arbitrary-tree form of (3.4),
 > arbitrary-length pairwise dot-product bound, and printed rectangular 2-norm
-> matrix-vector corollary are all proved at source strength. No selected-scope
-> bridge remains open.
+> matrix-vector corollary are all proved at source strength. The rerun also
+> closed the precise Chapter 2-to-3 claim that (3.3)--(3.5) remain valid under
+> no-guard model (2.6), including every permuted binary evaluation tree.
 
 - **Edition/pages:** 2nd ed., pp. 61–78 (Chapter 3, including Problems 3.1–3.12).
 - **Audit mode:** core (primary labels + numbered equations + central definitions + precise body prose claims; problems recorded but optional for the gate).
@@ -34,9 +35,9 @@ All Lean names below are in namespace `LeanFpAnalysis.FP`. Module paths are rela
 | Eq(s) | Content | Status | Lean decls / notes |
 |---|---|---|---|
 | (3.1)–(3.2) | Local-factor expansion of the sequential inner product | **VERIFIED** | `dotProduct_factor_expansion_succ`, `dotProduct_factor_expansion_sum_succ` (`Algorithms/DotProduct.lean`): exact expansion with per-term multiplication factor and suffix addition-factor products, before any gamma compression. |
-| (3.3) | ŝₙ = Σ xᵢyᵢ(1+ηᵢ), backward form with graded θ's | **VERIFIED** | `dotProduct_backward_error`: each \|ηᵢ\| ≤ γₙ (the uniform bound the printed interpretation uses). The graded subscripts (θₙ, θₙ₊₁₋ᵢ, …) are recoverable from the (3.1)–(3.2) suffix expansion but not restated with graded gamma indices. |
-| (3.4) | fl(xᵀy) = (x+Δx)ᵀy = xᵀ(y+Δy), \|Δx\| ≤ γₙ\|x\|, \|Δy\| ≤ γₙ\|y\| | **VERIFIED** | Sequential forms `dotProduct_backward_stable_x`, `dotProduct_backward_stable_y`; arbitrary association `sumTreeDotProduct_backward_stable_any_order`; fully permuted arbitrary-tree form `sumTreeDotProduct_backward_stable_any_permuted_order` (`Algorithms/TreeDotProduct.lean`). The latter transports perturbations back to the original coordinates, proving the printed “for any order of evaluation” statement. |
-| (3.5) | \|xᵀy − fl(xᵀy)\| ≤ γₙ Σ\|xᵢyᵢ\| = γₙ\|x\|ᵀ\|y\| | **VERIFIED** | `dotProduct_error_bound` (`Algorithms/DotProduct.lean`). |
+| (3.3) | ŝₙ = Σ xᵢyᵢ(1+ηᵢ), backward form with graded θ's | **VERIFIED** | Standard model: `dotProduct_backward_error`. No-guard model (2.6): actual executor/factor expansion `fl_noGuardDotProduct`, `noGuardDot_factor_expansion_succ`, and endpoint `higham3_3_3_4_noGuard_backward_error` in `Algorithms/HighamChapter3NoGuardDotBridge.lean`. The exact expansion records the printed graded factor counts before the uniform `γₙ` compression. |
+| (3.4) | fl(xᵀy) = (x+Δx)ᵀy = xᵀ(y+Δy), \|Δx\| ≤ γₙ\|x\|, \|Δy\| ≤ γₙ\|y\| | **VERIFIED** | Standard model: sequential `dotProduct_backward_stable_x/_y` and fully permuted arbitrary-tree `sumTreeDotProduct_backward_stable_any_permuted_order`. No-guard model (2.6): `SumTree.noGuardEval`, `fl_noGuardDotProductTree`, and `higham3_4_noGuard_any_order_backward_error` cover every binary association and input permutation, while `higham3_3_3_4_noGuard_backward_error` is the concrete sequential specialization. |
+| (3.5) | \|xᵀy − fl(xᵀy)\| ≤ γₙ Σ\|xᵢyᵢ\| = γₙ\|x\|ᵀ\|y\| | **VERIFIED** | Standard model: `dotProduct_error_bound`. No-guard model (2.6): `higham3_5_noGuard_any_order_forward_error` and concrete sequential `higham3_5_noGuard_forward_error`, both derived from actual executors without target-shaped premises. |
 | (3.6) | Outer product: Â = xyᵀ + Δ, \|Δ\| ≤ u\|xyᵀ\| | **VERIFIED** | `outerProduct_error_bound`, `outerProduct_error_decomposition` (`Algorithms/OuterProduct.lean`). Prose "not backward stable / Â not rank-1": `fl_outerProduct_counterexample_not_global_backward` with an explicit valid `FPModel` and non-rank-1 computed matrix. |
 | (3.7) | First-order form nu\|x\|ᵀ\|y\| + O(u²) | **VERIFIED** (concrete-remainder form) | O(u²) is not a formal object; the honest counterpart is `gamma_eq_linear_plus_quadratic_remainder` (`Analysis/Rounding.lean`): γₙ = nu + (nu)²/(1−nu) exactly, composable with (3.5). Also `n_mul_u_le_gamma`, `gamma_le_two_mul_n_u_of_nu_le_half` for the standard regime conversions. |
 | (3.8) | γ̃ₖ = cku/(1−cku) notation | **SKIP-OK** (notational device) | No central `gammaTilde` definition; the repository's discipline is explicit constants `gamma fp (c*k)`, whose algebra is Lemma 3.3 rule 4 (`gamma_nsmul_le`) and `gamma_mul_index_le_two_mul_nat_mul_gamma`. Chapter-local γ̃ instances appear downstream (ch19–21 modules) where the source uses them. |
@@ -91,7 +92,9 @@ All nine primary labels, all numbered equations (3.1)–(3.14), and the selected
 central body displays are verified at printed strength. The four bridges found
 missing by the fresh audit—concrete Lemma 3.7, any-order (3.4), the
 `γ_{⌈log₂n⌉+1}` pairwise display, and the rectangular 2-norm matvec display—are
-closed. No selected-scope residual remains.
+closed. The PDF-first rerun additionally closes the model-(2.6) no-guard
+analogue of (3.3)--(3.5), including the exact any-order prose. No
+selected-scope residual remains.
 
 Problems 3.3, 3.7, 3.10, and 3.11 remain honestly PARTIAL as recorded above;
 problems are optional in this ledger's core audit mode and are not bridge

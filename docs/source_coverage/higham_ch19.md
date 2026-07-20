@@ -1,5 +1,55 @@
 # Higham Chapter 19 Source Coverage Ledger
 
+> **PDF-first rerun correction (2026-07-19): selected-scope gate PASS after
+> repair.**  The earlier declaration
+> `H19_Theorem19_5_qr_solve_columnwise_backward_error` was normwise despite its
+> name and therefore did not prove the column-by-column statement printed in
+> Theorem 19.5.  `Higham19Theorem5SourceClosure.lean` supersedes that surface:
+> `higham19_theorem19_5_actual_columnwise_backward_error` starts at the actual
+> `fl_householderQR_solve`, constructs matrix and right-hand-side
+> perturbations, and bounds each matrix column separately.  A direct Euclidean
+> induction over the implemented zero-aware reflector sequence gives the RHS
+> coefficient
+> `gamma fp (n * householderConstructApplyGammaIndex n)`, where the inner
+> index is `3*(11*n+23)`.  This is an explicit `O(n^2)` gamma index and hence a
+> proved representative of the book's `tilde-gamma_(n^2)` rate class; no sharp
+> hidden constant is claimed.  The same module closes (19.14)
+> for nonzero right-hand sides under the explicit bounded-inverse domain that
+> the PDF's `(Q+DeltaQ)^(-T)` proof silently needs, and separately closes the
+> zero-right-hand-side case without that condition.  Finally,
+> `higham19_section19_7_lemma66_residual_bridge` directly applies the Chapter 6
+> Lemma 6.6 entry bound to obtain the exact componentwise residual formula.
+> The subsequent Theorem 12.4 prose uses undefined `approximately` and
+> “small” relations and remains `DEFER-MISSING-PRECISE-STATEMENT`, not a
+> missing formal bridge.  Historical text below is superseded wherever it
+> describes Theorem 19.5 or (19.14) as already closed by the old normwise
+> surface.
+
+### Section 19.5 / Chapter 13 bridge (2026-07-19 rerun)
+
+`QR/Higham19WYApplicationClosure.lean` closes the determinate WY content that
+the previous ledger omitted:
+
+- `ch19ext_eq19_17_base` and `ch19ext_eq19_17_recurrence` prove the literal WY
+  initialization and recurrence, including
+  `Q_i = (I-v_i v_i^T) Q_(i-1)`;
+- `ch19ext_eq19_18_left`, `ch19ext_eq19_18_right`, and
+  `ch19ext_wyMatrix_apply` formalize the partition and exact block update;
+- `Higham13Op2MatMulFamilySpec` is the operator-2-norm specialization of the
+  general matrix-multiplication contract (13.4) that the PDF explicitly invokes;
+  and
+- `ch19ext_eq19_22_family` constructs the actual accumulated `DeltaC`, proves
+  both printed equalities, and derives the exact leading coefficient
+  `1+d1+d2*d3*(1+cInner+cOuter)` with a named uniform `O(u^2)` remainder.
+
+Equations (19.17)--(19.18) are **CLOSED**.  The construction estimates
+(19.19)--(19.21) expose named source contracts but their unspecified “modest”
+functions remain `DEFER-MISSING-PRECISE-STATEMENT`; the PDF supplies neither a
+concrete rounded construction nor numerical functions to prove.  Equation
+(19.22) is **CLOSED conditionally and non-vacuously** from exactly those
+construction contracts and the two source (13.4) operation contracts.  No
+application-error conclusion or equivalent perturbation budget is assumed.
+
 > **Fresh strict audit (2026-07-19): selected-scope gate PASS.** Theorem 19.6 is
 > closed for the literal actual per-stage pivoted stored-QR trace by
 > `higham19_6_sourceConstructed_actual_closed` in

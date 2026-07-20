@@ -62,7 +62,7 @@ input perturbations from the two rounded operations. -/
 theorem problem2_23_noGuardY_error_formula
     (fp : NoGuardFPModel) (x : ℝ) :
     ∃ α β γ η : ℝ,
-      |α| < fp.u ∧ |β| < fp.u ∧ |γ| < fp.u ∧ |η| < fp.u ∧
+      |α| ≤ fp.u ∧ |β| ≤ fp.u ∧ |γ| ≤ fp.u ∧ |η| ≤ fp.u ∧
         problem2_23_noGuardY fp x - x =
           x * (α + β + 2 * γ + α * γ + β * γ - η) := by
   rcases fp.model_add x x with ⟨α, β, hadd⟩

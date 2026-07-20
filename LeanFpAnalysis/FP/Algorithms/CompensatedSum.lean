@@ -13172,6 +13172,7 @@ All operations are exact except the two additions used in the second Kahan
 step's ordinary correction formula. -/
 noncomputable def kahanNoGuardCounterexampleModel : NoGuardFPModel where
   u := 1 / 4
+  unit_roundoff_pos := by norm_num
   fl_add := fun x y =>
     if x = 1 ∧ y = -7 / 8 then 1 / 4
     else if x = 3 / 4 ∧ y = -7 / 8 then 0

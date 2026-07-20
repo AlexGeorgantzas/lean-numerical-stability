@@ -73,26 +73,26 @@ def strictAdditiveUnderflowModelWitness
 -- ============================================================
 
 /-- Higham Chapter 2 no-guard add model (2.6a):
-`fl(x + y) = x * (1 + α) + y * (1 + β)`, with strict component
-perturbation bounds carried by the witness. -/
+`fl(x + y) = x * (1 + α) + y * (1 + β)`, with the literal source
+componentwise bounds `|α|, |β| ≤ u`. -/
 def noGuardAddWitness
     (computed x y u α β : ℝ) : Prop :=
-  |α| < u ∧ |β| < u ∧
+  |α| ≤ u ∧ |β| ≤ u ∧
     computed = x * (1 + α) + y * (1 + β)
 
 /-- Higham Chapter 2 no-guard subtraction model (2.6a):
-`fl(x - y) = x * (1 + α) - y * (1 + β)`, with strict component
-perturbation bounds carried by the witness. -/
+`fl(x - y) = x * (1 + α) - y * (1 + β)`, with the literal source
+componentwise bounds `|α|, |β| ≤ u`. -/
 def noGuardSubWitness
     (computed x y u α β : ℝ) : Prop :=
-  |α| < u ∧ |β| < u ∧
+  |α| ≤ u ∧ |β| ≤ u ∧
     computed = x * (1 + α) - y * (1 + β)
 
 /-- Higham Chapter 2 no-guard multiply/divide branch (2.6b): multiplication
-and division retain the ordinary strict relative-error model. -/
+and division retain the ordinary source relative-error bound `|δ| ≤ u`. -/
 def noGuardMulDivWitness
     (computed exact u δ : ℝ) : Prop :=
-  |δ| < u ∧ signedRelErrorWitness computed exact δ
+  |δ| ≤ u ∧ signedRelErrorWitness computed exact δ
 
 /-- Unified per-operation witness for the no-guard model (2.6a,b).
 Addition and subtraction use separate perturbations on the two input terms;
@@ -113,13 +113,13 @@ def noGuardBasicOpWitness
 theorem noGuardAddWitness_alpha_bound
     {computed x y u α β : ℝ}
     (h : noGuardAddWitness computed x y u α β) :
-    |α| < u :=
+    |α| ≤ u :=
   h.1
 
 theorem noGuardAddWitness_beta_bound
     {computed x y u α β : ℝ}
     (h : noGuardAddWitness computed x y u α β) :
-    |β| < u :=
+    |β| ≤ u :=
   h.2.1
 
 theorem noGuardAddWitness_value
@@ -140,13 +140,13 @@ theorem noGuardAddWitness_error_eq
 theorem noGuardSubWitness_alpha_bound
     {computed x y u α β : ℝ}
     (h : noGuardSubWitness computed x y u α β) :
-    |α| < u :=
+    |α| ≤ u :=
   h.1
 
 theorem noGuardSubWitness_beta_bound
     {computed x y u α β : ℝ}
     (h : noGuardSubWitness computed x y u α β) :
-    |β| < u :=
+    |β| ≤ u :=
   h.2.1
 
 theorem noGuardSubWitness_value
@@ -167,7 +167,7 @@ theorem noGuardSubWitness_error_eq
 theorem noGuardMulDivWitness_delta_bound
     {computed exact u δ : ℝ}
     (h : noGuardMulDivWitness computed exact u δ) :
-    |δ| < u :=
+    |δ| ≤ u :=
   h.1
 
 theorem noGuardMulDivWitness_signedRelErrorWitness
@@ -178,7 +178,7 @@ theorem noGuardMulDivWitness_signedRelErrorWitness
 
 theorem noGuardMulDivWitness_of_signedRelErrorWitness
     {computed exact u δ : ℝ}
-    (hδ : |δ| < u)
+    (hδ : |δ| ≤ u)
     (h : signedRelErrorWitness computed exact δ) :
     noGuardMulDivWitness computed exact u δ :=
   ⟨hδ, h⟩
@@ -244,10 +244,11 @@ theorem noGuardBinaryT3_truncated_relError_eq_one :
 
 /-- Abstract no-guard floating-point model for Higham Chapter 2 equation
 (2.6a,b).  This is intentionally separate from `FPModel`: add/sub use the
-weaker two-input perturbation model, while mul/div retain the ordinary strict
-relative-error model. -/
+weaker two-input perturbation model, while mul/div retain the ordinary
+boundary-inclusive relative-error model. -/
 structure NoGuardFPModel where
   u : ℝ
+  unit_roundoff_pos : 0 < u
   fl_add : ℝ → ℝ → ℝ
   fl_sub : ℝ → ℝ → ℝ
   fl_mul : ℝ → ℝ → ℝ
@@ -277,11 +278,11 @@ def round (fp : NoGuardFPModel) : BasicOp → ℝ → ℝ → ℝ
   | BasicOp.div, x, y => fp.fl_div x y
 
 /-- Exact arithmetic packaged as a no-guard model with a positive advertised
-unit roundoff.  The strict no-guard witness bounds require `0 < u0`, even
-though every operation is exact. -/
+unit roundoff. -/
 noncomputable def exactWithUnitRoundoff (u0 : ℝ) (hu0 : 0 < u0) :
     NoGuardFPModel where
   u := u0
+  unit_roundoff_pos := hu0
   fl_add := fun x y => x + y
   fl_sub := fun x y => x - y
   fl_mul := fun x y => x * y
@@ -290,38 +291,37 @@ noncomputable def exactWithUnitRoundoff (u0 : ℝ) (hu0 : 0 < u0) :
     intro x y
     refine ⟨0, 0, ?_⟩
     constructor
-    · simpa using hu0
+    · simpa using le_of_lt hu0
     constructor
-    · simpa using hu0
+    · simpa using le_of_lt hu0
     · ring
   model_sub := by
     intro x y
     refine ⟨0, 0, ?_⟩
     constructor
-    · simpa using hu0
+    · simpa using le_of_lt hu0
     constructor
-    · simpa using hu0
+    · simpa using le_of_lt hu0
     · ring
   model_mul := by
     intro x y
     refine ⟨0, ?_⟩
     constructor
-    · simpa using hu0
+    · simpa using le_of_lt hu0
     · unfold signedRelErrorWitness
       ring
   model_div := by
     intro x y _hy
     refine ⟨0, ?_⟩
     constructor
-    · simpa using hu0
+    · simpa using le_of_lt hu0
     · unfold signedRelErrorWitness
       ring
 
-/-- The strict unit roundoff of a populated no-guard model is positive. -/
+/-- The unit roundoff of a no-guard model is positive. -/
 theorem u_pos (fp : NoGuardFPModel) :
-    0 < fp.u := by
-  rcases fp.model_add 0 0 with ⟨α, β, h⟩
-  exact lt_of_le_of_lt (abs_nonneg α) h.1
+    0 < fp.u :=
+  fp.unit_roundoff_pos
 
 /-- Unified operation witness for a no-guard model. -/
 theorem model_basicOp
@@ -348,7 +348,7 @@ theorem model_basicOp
 theorem model_add_error_eq
     (fp : NoGuardFPModel) (x y : ℝ) :
     ∃ α β : ℝ,
-      |α| < fp.u ∧ |β| < fp.u ∧
+      |α| ≤ fp.u ∧ |β| ≤ fp.u ∧
         fp.fl_add x y - (x + y) = x * α + y * β := by
   rcases fp.model_add x y with ⟨α, β, h⟩
   exact
@@ -359,27 +359,27 @@ theorem model_add_error_eq
 theorem model_sub_error_eq
     (fp : NoGuardFPModel) (x y : ℝ) :
     ∃ α β : ℝ,
-      |α| < fp.u ∧ |β| < fp.u ∧
+      |α| ≤ fp.u ∧ |β| ≤ fp.u ∧
         fp.fl_sub x y - (x - y) = x * α - y * β := by
   rcases fp.model_sub x y with ⟨α, β, h⟩
   exact
     ⟨α, β, h.1, h.2.1, noGuardSubWitness_error_eq h⟩
 
-/-- Multiplication keeps the ordinary strict standard-model witness under the
+/-- Multiplication keeps the ordinary source standard-model witness under the
 no-guard model. -/
 theorem model_mul_signedRelErrorWitness
     (fp : NoGuardFPModel) (x y : ℝ) :
     ∃ δ : ℝ,
-      |δ| < fp.u ∧ signedRelErrorWitness (fp.fl_mul x y) (x * y) δ := by
+      |δ| ≤ fp.u ∧ signedRelErrorWitness (fp.fl_mul x y) (x * y) δ := by
   rcases fp.model_mul x y with ⟨δ, h⟩
   exact ⟨δ, h.1, h.2⟩
 
-/-- Division keeps the ordinary strict standard-model witness under the
+/-- Division keeps the ordinary source standard-model witness under the
 no-guard model, with the usual nonzero denominator side condition. -/
 theorem model_div_signedRelErrorWitness
     (fp : NoGuardFPModel) (x y : ℝ) (hy : y ≠ 0) :
     ∃ δ : ℝ,
-      |δ| < fp.u ∧ signedRelErrorWitness (fp.fl_div x y) (x / y) δ := by
+      |δ| ≤ fp.u ∧ signedRelErrorWitness (fp.fl_div x y) (x / y) δ := by
   rcases fp.model_div x y hy with ⟨δ, h⟩
   exact ⟨δ, h.1, h.2⟩
 

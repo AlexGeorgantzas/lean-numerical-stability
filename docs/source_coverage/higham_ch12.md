@@ -29,7 +29,31 @@ conclusion, and solver-derived non-asymptotic stability companion are proved.
 
 Primary Lean module:
 `LeanFpAnalysis/FP/Algorithms/HighamChapter12.lean`; reusable refinement
-infrastructure: `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean`.
+infrastructure: `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean`;
+actual Chapter 9 solver handoff:
+`LeanFpAnalysis/FP/Algorithms/HighamChapter12Ch9SolverBridge.lean`.
+
+### Equation (12.6) / actual Chapter 9 solver bridge (2026-07-20 rerun)
+
+The PDF states that Theorem 9.4 permits the concrete choice
+`uW = gamma_(3n) |L_hat||U_hat|` in (12.6). Merely listing the Chapter 9
+solver theorem beside the abstract (12.1) predicate did not compile that
+composition. The new bridge closes it explicitly:
+
+- `higham12_6_rectRoundedLoopW` is the displayed weight
+  `3n/(1-3nu) |L_hat||U_hat|` for the literal rounded Doolittle factors;
+- `higham12_6_u_mul_rectRoundedLoopW_eq` proves the exact (12.6) identity,
+  including the valid `u = 0` case without dividing by `u`; and
+- `higham12_6_rectRoundedLoop_lu_solve_SolverWBound_source` runs the actual
+  rounded Doolittle loop and actual forward/back substitutions, consumes
+  `higham9_4_rectRoundedLoop_square_lu_solve_backward_error_source`, and
+  returns `higham12_1_SolverWBound` for the computed solution and concrete
+  weight.
+
+The public endpoint assumes only nonzero computed pivots and the two ordinary
+`gammaValid` guards required by Theorem 9.4. It assumes no residual,
+execution trace, perturbation, backward-error envelope, or solver-bound
+conclusion.
 
 ## Progress snapshot
 
@@ -53,6 +77,7 @@ infrastructure: `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean`.
 | (12.1) | `higham12_1_SolverWBound` | `HighamChapter12.lean` | Abstract solver backward-error model | Source/model assumption |
 | (12.2) | `higham12_2_residual_delta_bound` | `HighamChapter12.lean` | Exact componentwise residual-computation bound | Full source algebra |
 | (12.4)-(12.5) | `higham12_5_forward_error_identity`, `higham12_5_forward_error_bound` | `HighamChapter12.lean` | Exact inverse-free one-step forward-error identity and bound | Avoids the source's `O(u^2)` inverse expansion |
+| (12.6), Theorem 9.4 to (12.1) | `higham12_6_rectRoundedLoopW`, `higham12_6_u_mul_rectRoundedLoopW_eq`, `higham12_6_rectRoundedLoop_lu_solve_SolverWBound_source` | `HighamChapter12Ch9SolverBridge.lean` | Actual rounded Doolittle factors and triangular solves satisfy the Chapter 12 solver model with `uW = gamma_(3n)|L_hat||U_hat|` | No caller-supplied residual, execution, or backward-error certificate |
 | (12.5) consequence | `higham12_forward_error_linear_contraction`, `higham12_forward_error_steady_state` | `HighamChapter12.lean` | Exact scalar affine recurrence and finite bound | Quantitative replacement for Theorems 12.1-12.2 summaries |
 | (12.7)-(12.9) | `higham12_7_initialResidualBound`, `higham12_8_residualComputationBound`, `higham12_9_conventional_residual_error` | `HighamChapter12.lean` | Initial-solve and residual-computation models | (12.9) reuses the existing residual theorem |
 | Theorem 12.3 / (12.10), (12.14) | `higham12_10_exact_q_bound`, `higham12_3_exact_one_step_residual_bound`, `higham12_14_residual_identity`, `higham12_14_residual_bound` | `HighamChapter12.lean` | Exact finite one-step residual theorem, including the displayed `q` decomposition | New audit wrapper closes the former (12.10)/(12.14) documentation mismatch |
@@ -67,7 +92,7 @@ infrastructure: `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean`.
 | Exact one-step refinement algebra and residual assembly | `IterativeRefinement.lean`: `one_step_refinement_error_identity`, `thm_11_3_*`, `eq_11_15`-`eq_11_18` |
 | Conventional residual evaluation | `conventional_residual_error` |
 | Affine contraction | `linear_contraction`, `linear_contraction_steady_state` |
-| GE solve model for (12.6) | Chapter 9 `higham9_4_*` surfaces |
+| GE solve model for (12.6) | `higham9_4_rectRoundedLoop_square_lu_solve_backward_error_source`, composed by `higham12_6_rectRoundedLoop_lu_solve_SolverWBound_source` |
 | GEPP power-of-two growth bound | Chapter 9 `higham9_7_*growthFactorEntry_le_pow_two*` surfaces |
 | Finite sums, absolute values, extrema, and matrix norm infrastructure | Mathlib and existing `infNorm` compatibility layer |
 
@@ -106,6 +131,11 @@ are in `docs/chapter12/CHAPTER12_SOURCE_INVENTORY.md`.
 
 ## Hidden-hypothesis audit
 
+- `higham12_6_rectRoundedLoop_lu_solve_SolverWBound_source`: the literal
+  rounded factors and triangular-solve outputs are definitions in the theorem
+  conclusion. The only hypotheses are pivot nonbreakdown and `gammaValid`;
+  the perturbation and its `uW` bound are constructed by the Chapter 9
+  producer and the exact (12.6) coefficient identity.
 - `higham12_10_exact_q_bound`: `hr`, `hy`, `hf1`, `hDeltaR`, and `hf2` are the
   source residual/solver/update assumptions. It assumes neither the residual
   conclusion nor the `q` rearrangement.
@@ -140,6 +170,14 @@ No repeated blocker or red bottleneck remains.
 
 ## Verification
 
+- Fresh (12.6) bridge checks (2026-07-20):
+  `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter12Ch9SolverBridge.lean`
+  and
+  `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter12Ch9SolverBridge`
+  both passed. `#print axioms` for
+  `higham12_6_u_mul_rectRoundedLoopW_eq` and
+  `higham12_6_rectRoundedLoop_lu_solve_SolverWBound_source` reported only
+  `propext`, `Classical.choice`, and `Quot.sound`.
 - Fresh-worktree baseline:
   `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter12` — PASS, 3373 jobs.
   The only messages were pre-existing lints/deprecations in untouched

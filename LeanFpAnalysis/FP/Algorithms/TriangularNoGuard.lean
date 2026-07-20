@@ -46,8 +46,8 @@ and only the later accumulator factors:
 lemma noGuard_sub_fold_unroll (fp : NoGuardFPModel) (m : ℕ)
     (a : Fin m → ℝ) (c : ℝ) :
     ∃ (α β : Fin m → ℝ),
-      (∀ k, |α k| < fp.u) ∧
-      (∀ k, |β k| < fp.u) ∧
+      (∀ k, |α k| ≤ fp.u) ∧
+      (∀ k, |β k| ≤ fp.u) ∧
       Fin.foldl m (fun acc t => fp.fl_sub acc (a t)) c =
         c * ∏ k : Fin m, (1 + α k) -
           ∑ t : Fin m, a t * (1 + β t) *
@@ -184,11 +184,11 @@ theorem noGuard_mulSub_div_row_tight (fp : NoGuardFPModel) (m : ℕ)
   obtain ⟨α, β, hα_lt, hβ_lt, hfold_eq⟩ := noGuard_sub_fold_unroll fp m a_vals c
   have hα_bd : ∀ k, |α k| ≤ gfp.u := fun k => by
     rw [hgfp_u]
-    exact le_of_lt (hα_lt k)
+    exact hα_lt k
   have hβ_bd : ∀ k, |β k| ≤ gfp.u := fun k => by
     rw [hgfp_u]
-    exact le_of_lt (hβ_lt k)
-  -- Rounded products in the no-guard model still satisfy the ordinary strict
+    exact hβ_lt k
+  -- Rounded products in the no-guard model still satisfy the ordinary
   -- relative-error law.
   have hmul : ∀ t : Fin m, ∃ ε, |ε| ≤ gfp.u ∧
       a_vals t = a t * x t * (1 + ε) := by
@@ -197,7 +197,7 @@ theorem noGuard_mulSub_div_row_tight (fp : NoGuardFPModel) (m : ℕ)
       fp.model_mul_signedRelErrorWitness (a t) (x t)
     refine ⟨ε, ?_, ?_⟩
     · rw [hgfp_u]
-      exact le_of_lt hε_lt
+      exact hε_lt
     · exact hε_eq
   let ε : Fin m → ℝ := fun t => Classical.choose (hmul t)
   have hε_bd : ∀ t, |ε t| ≤ gfp.u := fun t =>
@@ -209,7 +209,7 @@ theorem noGuard_mulSub_div_row_tight (fp : NoGuardFPModel) (m : ℕ)
     fp.model_div_signedRelErrorWitness fold bk hbk
   have hδd_bd : |δd| ≤ gfp.u := by
     rw [hgfp_u]
-    exact le_of_lt hδd_lt
+    exact hδd_lt
   have hbk_y : bk * fp.fl_div fold bk = fold * (1 + δd) := by
     rw [hδd_eq]
     field_simp [hbk]
@@ -219,7 +219,7 @@ theorem noGuard_mulSub_div_row_tight (fp : NoGuardFPModel) (m : ℕ)
     rw [hP_def]
     exact prod_pos_of_u_bound gfp m α hα_bd hu_gfp
   have hδd_pos : (0 : ℝ) < 1 + δd := by
-    linarith [neg_abs_le δd, hδd_lt, hu]
+    linarith [neg_abs_le δd, hδd_bd, hu_gfp]
   have hQ_pos : (0 : ℝ) < Q := by
     rw [hQ_def]
     exact mul_pos hP_pos hδd_pos
