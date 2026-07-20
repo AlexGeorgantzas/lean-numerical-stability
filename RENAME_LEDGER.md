@@ -42,7 +42,7 @@ NumStability/
 - [x] Update documentation, scripts, workflows, and repository-facing metadata.
 - [x] Verify no unintended references to the old identity remain.
 - [x] Run a complete build and root-import smoke test.
-- [ ] Rename the GitHub repository and update the local remote.
+- [x] Rename the GitHub repository and update the local remote.
 - [x] Validate the pushed migration from a clean checkout.
 - [ ] Create the first release after the migration reaches `main` under the new identity.
 
@@ -73,7 +73,7 @@ NumStability/
 | Category builds | Passed | `FloatingPoint`: 1,467 jobs; `Analysis`: 3,085 jobs; `Algorithms` covered by the full root build |
 | Full validation | Passed | `lake build NumStability`: 4,429 jobs; `lake env lean examples/LibraryLookup.lean` |
 | Clean checkout | Passed | Clean clone of `b532d4164`; locked `lake build NumStability`: 4,429 jobs |
-| Repository rename | Pending | |
+| Repository rename | Passed | GitHub and local `origin`: `AlexGeorgantzas/lean-numerical-stability` |
 
 ## Migration log
 
@@ -96,3 +96,6 @@ NumStability/
   `import NumStability` lookup smoke test.
 - 2026-07-20: Cloned the pushed migration branch at `b532d4164` into a clean
   temporary checkout and replayed the locked 4,429-job root build successfully.
+- 2026-07-21: Renamed the GitHub repository to `lean-numerical-stability`,
+  verified the old URL redirects, and updated local `origin` to the canonical
+  SSH URL.
