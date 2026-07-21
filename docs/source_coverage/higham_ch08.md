@@ -75,8 +75,21 @@ MMatrix.
 | Theorem 8.10 | `higham8_10_forwardSub_forward_error_mu_bound` | exact μ recurrence |
 | Corollary 8.11 (M-matrix) | `higham8_11_mmatrix_forwardSub_relative_error` | |
 | Theorem 8.12 | `higham8_12_abs_inv_le_comparison_inv` + `higham8_12_{infNorm,oneNorm,opNorm2,absolute_norm_vector}_chain`, `higham8_12_comparisonInv_le_WInv`, `higham8_12_WInv_le_ZInvFormula` | |
-| Algorithm 8.13 | `higham8_13_inverse_bound_from_comparison` + `higham8_13_mu`/`_y`/recurrence | |
+| Algorithm 8.13 | **SOURCE-DISCREPANCY / corrected mathematics closed.** The printed loop assigns `y_i = y_i/|u_ii|` although `y_i` has not been initialized; the accumulated variable is `s`, so the literal program is undefined. `higham8_13_y` and `higham8_13_comparison_inverse_row_recurrence` formalize the mathematically determined correction `y_i = s/|u_ii|`, and `higham8_13_inverse_bound_from_comparison` proves the advertised bound. The literal malformed program is `DEFER-UNDEFINED-SOURCE`, not silently treated as an executable algorithm. |
 | Theorem 8.14 | `higham8_14_full_norm_chain` + six upper/lower bound pieces | |
+
+### Lemma 8.8 printed-condition correction
+
+The PDF reverses the row-diagonal-dominance inequality immediately before
+Lemma 8.8. This is now terminally classified, not silently corrected.
+`higham8_8_printedRowDominanceCounterU = [[1/2,1],[0,1]]` satisfies the
+literal printed predicate, its displayed inverse is proved two-sided, and
+`higham8_8_printedRowDominanceCounter_condSkeel_eq` computes its Skeel
+condition number as `5 > 3 = 2*2-1`. The existential terminal certificate is
+`higham8_8_printed_rowDominance_condSkeel_claim_false`; the intended opposite
+inequality remains closed by
+`higham8_8_rowDiagDominantUpper_condSkeel_bound` and the entrywise Lemma 8.8
+module.
 
 ## Equations (8.1)–(8.20)
 All 20 have Lean surfaces under the `higham8_N_*` convention.  The fresh

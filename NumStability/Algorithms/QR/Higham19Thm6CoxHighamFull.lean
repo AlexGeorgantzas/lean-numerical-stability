@@ -1,6 +1,7 @@
 import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
 import NumStability.Algorithms.QR.Higham19Thm6ElementwiseEntry
 import NumStability.Algorithms.QR.HouseholderMatrixStep
+import NumStability.Algorithms.QR.Higham19Problem6ActualStep
 
 /-!
 # Higham, Theorem 19.6 = Cox–Higham (1998) Theorem 2.3 — the last mile:
@@ -117,7 +118,8 @@ theorem fl_householderApplyMatrixRect_entrywise_backward_error
   -- Wave18B's target is `(colⱼ) i − 1·v_i·(vᵀ colⱼ)`; identical.
   simpa using hW18B
 
-/-- **Row-growth collapse of the concrete per-step error (Lemma 2.2's `γ̃·Ωe`).**
+/-- **Row-growth collapse of the concrete per-step error (Lemma 2.2's
+`gamma-tilde * Omega e`).**
 
 With the column-pivoting magnitude invariants at every coordinate — `|A s j| ≤ α_s`
 (the `Ω`-bound, `α` the forward row-growth factor) and `|v s| ≤ 2·α_s` (eq. 2.10,

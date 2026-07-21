@@ -14,12 +14,15 @@
 
 ## Counts
 
-There are **78 source rows**:
+There are **79 source rows** after separating Section 14.5's precise Schulz
+claims from its surrounding survey prose:
 
-- 68 intentionally selected mathematical rows.
+- 69 intentionally selected mathematical rows.
 - 10 policy exclusions: five empirical/figure/table rows, two expository/literature rows, and three optional Problems.
-- Final selected-scope result: 57 selected rows are `PASS`, nine are `PARTIAL`,
-  and two are `SOURCE-ERROR/CORRECTED`; strict gate `FAIL`.
+- Final selected-scope result: 66 selected rows close at determinate source
+  strength, one is `DEFER-MISSING-PRECISE-STATEMENT`, and two are
+  `SOURCE-ERROR/CORRECTED`; strict gate `PASS`, with every row terminally
+  classified.
 - The ten excluded rows remain explicitly accounted for below.
 
 ## Inventory
@@ -69,19 +72,20 @@ There are **78 source rows**:
 | 41 | Equation (14.25a) | p. 274 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14GaussJordanSourceClosure.lean`: source-active matrix recurrence |
 | 42 | Equation (14.25b) | p. 274 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14GaussJordanSourceClosure.lean`: local `gamma_3` matrix error |
 | 43 | Equation (14.26) | p. 274 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14GaussJordanSourceClosure.lean`: local RHS recurrence and error |
-| 44 | Equation (14.27) | p. 274 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PARTIAL | The literal accumulated matrix identity is proved conditionally on the rounded trace finishing at `I`; `Ch14GJEOperationalBridge.lean` shows current pivot success does not produce that finalization. |
+| 44 | Equation (14.27) | p. 274 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | The structural-finalization producer writes eliminated dead-storage entries as zero, produces the actual final diagonal, and proves the literal accumulated matrix identity (with `I` for the source-normalized unit-diagonal case). |
 | 45 | Equation (14.28) | p. 274 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14GaussJordanSourceClosure.lean`: literal unpropagated RHS sum |
-| 46 | Equation (14.29) | p. 275 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PARTIAL | `ch14ext_gjeSourceTrace_stage2_forward_error_14_29` is conditional on the unproduced final-identity field. |
-| 47 | Equations (14.30a-c) | p. 275 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PARTIAL | `ch14ext_gjeSourceTrace_stage2_backward_error_14_30abc` is conditional on the unproduced final-identity field. |
-| 48 | Fixed-matrix addendum to (14.30) | p. 275 | FORMALIZE_DEPENDENCY / DEP-REQUIRED | PARTIAL | The printed family endpoint additionally consumes unconstructed uniform regularity fields. |
+| 46 | Equation (14.29) | p. 275 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `ch14ext_gjeFinalizedSourceTrace_stage2_forward_error_14_29_with_final_division` proves the source forward-error identity for the literal final-division output. |
+| 47 | Equations (14.30a-c) | p. 275 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `ch14ext_gjeFinalizedSourceTrace_stage2_backward_error_14_30abc_with_final_division` proves the componentwise backward-error identities for the literal final-division output. |
+| 48 | Fixed-matrix addendum to (14.30) | p. 275 | DEFER / DEFER-MISSING-PRECISE-STATEMENT | DEFER-MISSING-PRECISE-STATEMENT | The qualitative statement that a general final diagonal scaling has a "negligible effect" supplies neither a rounded scaling operation nor a quantitative transfer bound; inventing one would strengthen the source. |
 | 49 | Table 14.6 | p. 276 | SKIP / SKIP-EMPIRICAL | EXCLUDED | GJE backward-error output for the example family; machine path is incomplete. |
-| 50 | Theorem 14.5 | p. 276 | FORMALIZE_CORE / CORE-NAMED-RESULT | PARTIAL | `Ch14GJETheorem145SourceClosure.lean` proves a conditional family endpoint. `Ch14GJEOperationalBridge.lean` constructs output/inverse/solve witnesses, but its checked 2-by-2 counterexample shows that the current rounded executor does not imply the assumed `final_matrix = I` field. |
-| 51 | Equation (14.31) | p. 276 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PARTIAL | The exact printed endpoint is proved only after an unconstructed `Ch14GJETheorem145SourceFamily` is supplied. |
-| 52 | Equation (14.32) | p. 276 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PARTIAL | `Xabs`, `Pabs`, and `Q` boundedness are derived from family fields, but the family and its finalization/regularity fields are not produced by the rounded executor. |
+| 50 | Theorem 14.5 | p. 276 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS (DETERMINATE CONTENT) | `Ch14GJEFinalDivisionClosure.lean` proves the exact actual-output residual and forward envelopes and literal first-order constants. Its explicit vanishing-roundoff realization proves the named remainders are `O(u^2)`; the PDF's unparameterized `O(u^2)` prose remains a terminal, non-gating deferral. |
+| 51 | Equation (14.31) | p. 276 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | The exact residual envelope and its actual final-division remainder are proved from the structurally finalized trace. |
+| 52 | Equation (14.32) | p. 276 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | The exact forward envelope is proved for the literal final-division output, with the required boundedness obtained in the displayed family realization rather than from an unproduced executor family. |
 | 53 | Equation (14.33) | p. 276 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14GaussJordanQConstruction.lean`: exact residual decomposition, used by the source-active Theorem 14.5 closure |
-| 54 | Corollary 14.6 | p. 277 | FORMALIZE_CORE / CORE-NAMED-RESULT | PARTIAL | `Ch14Corollary146SourceClosure.lean` proves the exact constants conditionally on an unconstructed source-run family with finalization, scaled-inverse, solve, and uniform-inverse fields. |
-| 55 | Corollary 14.7 | p. 277 | FORMALIZE_CORE / CORE-NAMED-RESULT | PARTIAL | `Ch14Corollary147SourceClosure.lean` proves the exact constants conditionally on an unconstructed source-run family with finalization and uniform stage/inverse regularity fields. |
-| 56 | Parallel inversion methods | p. 278 | DEFER / DEFER-MISSING-PRECISE-STATEMENT | EXCLUDED | Literature survey, complexity discussion, and qualitative stability observations; future benchmark material. |
+| 54 | Corollary 14.6 | p. 277 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS (DETERMINATE CONTENT) | `ch14ext_cor146Finalized_vanishing_family_endpoint` proves the printed `8 n^3` residual and `8 n^(5/2)` relative-forward coefficients for the literal final-division output. `Ch14Cor146UniformInverseBridge.lean` constructs the scaled inverse and regularity from the visible SPD policy; the source's unparameterized `O(u^2)` prose is terminally deferred. |
+| 55 | Corollary 14.7 | p. 277 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS (DETERMINATE CONTENT) | `ch14ext_cor147Finalized_vanishing_family_endpoint` proves the printed `32 n^2` residual and `4 n^3 (kappa_inf(A)+3)` forward coefficients for the literal final-division output, while `Ch14Cor147SourceDomainConstructor.lean` constructs the row-dominant domain witnesses; the source's unparameterized `O(u^2)` prose is terminally deferred. |
+| 56a | Schulz inverse iteration | p. 278 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `Ch14SchulzIteration.lean`: both exact update forms, left/right residual squaring, `E_k = E_0^(2^k)`, quadratic/double-exponential norm bounds, residual and inverse convergence, and the printed `X_0 = alpha A^T`, `0 < alpha < 2/||A||_2^2` criterion. |
+| 56b | Remaining parallel inversion discussion | p. 278 | DEFER / DEFER-MISSING-PRECISE-STATEMENT | EXCLUDED | Csanky's method, processor/complexity comparisons, acceleration suggestions, and qualitative floating-point stability observations; future benchmark material. |
 | 57 | Hadamard condition number `psi(A)` | p. 279 | FORMALIZE_CORE / CORE-PRECISE-PROSE | SOURCE-ERROR/CORRECTED | Printed `det(D)/det(A)` can be negative. `MatrixInversion.lean` uses `abs(det A)`; `Ch14SourceCorrections.lean` proves the `[-1]` witness. |
 | 58 | Equation (14.34) | p. 279 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `MatrixInversion.lean`: signed and absolute GEPP determinant products |
 | 59 | Hyman determinant method | p. 280 | FORMALIZE_DEPENDENCY / DEP-REQUIRED | PASS | `Ch14HymanDeterminant.lean` |
@@ -112,4 +116,4 @@ There are **78 source rows**:
 
 ## Exclusion Accounting
 
-The ten excluded rows are source-visible and intentional. None is being counted as an unproved mathematical theorem. Tables 14.1, 14.2, 14.3-14.5, Table 14.6, and Figure 14.1 are empirical artifacts; the parallel-method and notes rows are literature/exposition; Problems 14.1, 14.6, and 14.9 are optional and not selected.
+The ten excluded rows are source-visible and intentional. None is being counted as an unproved mathematical theorem. Tables 14.1, 14.2, 14.3-14.5, Table 14.6, and Figure 14.1 are empirical artifacts; the remaining parallel-method prose and notes rows are literature/exposition; Problems 14.1, 14.6, and 14.9 are optional and not selected.

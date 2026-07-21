@@ -1,11 +1,17 @@
 # Higham Chapters 1--28 -- independent PDF-first rerun (2026-07-19)
 
+> **Superseded.**  The fresh 2026-07-21 PDF-first source-strength audit found
+> additional precise-prose, traceability, hidden-nonbreakdown, and source-
+> discrepancy rows.  Use
+> [`AUDIT_ch01-28_PDF_FIRST_2026-07-21.md`](AUDIT_ch01-28_PDF_FIRST_2026-07-21.md)
+> as the authoritative report.  This file is retained as historical evidence.
+
 ## Result
 
 **28 PASS, 0 FAIL, 0 BLOCKED.**  Every core-mode source row and every
 exact-label inter-chapter composition gate is terminal under the rules below.
 
-This is the authoritative rerun requested against remote `main`.  It was
+This was the prior rerun requested against remote `main`.  It was
 performed independently of the conclusions in the coverage ledgers and the
 earlier 2026-07-19 report.  The PDFs were the source of truth; ledgers were
 consulted only after the source inventory and declaration-type audit.

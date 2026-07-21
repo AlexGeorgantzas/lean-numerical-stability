@@ -4,6 +4,7 @@
 |---|---|---|
 | (23.1)--(23.2) | conventional multiplication; Winograd identity | REUSED / PROVED |
 | (23.3)--(23.4) | exact block model and Strassen evaluator | PROVED |
+| p. 442 small-entry example | `higham23_strassen_small_entry_example` proves the literal order-one cancellation formula for the `ε²` lower-right entry | PROVED exact algebra; the unquantified `O(u/ε²)` sentence is DEFER-MISSING-PRECISE-STATEMENT |
 | (23.5) | executable cost recurrence and closed forms | PROVED |
 | (23.6) | exact Winograd--Strassen evaluator | PROVED |
 | (23.7a)--(23.7b) | exact one-level bilinear evaluator | PROVED |

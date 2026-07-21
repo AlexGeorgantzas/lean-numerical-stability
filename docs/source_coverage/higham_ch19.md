@@ -1,5 +1,46 @@
 # Higham Chapter 19 Source Coverage Ledger
 
+> **Authoritative PDF-first correction (2026-07-21).**  This notice
+> supersedes every later historical sentence that says “no blockers” or calls
+> the rank-only literal-MGS form of Theorem 19.13 closed.
+>
+> - **Lemma 19.3.** `Higham19Lemma3ActualSequence.lean` connects the actual
+>   stored panel/RHS recurrence to the deterministic compact-kernel budget
+>   producer.  `higham19_lemma19_3_actual_stored_sequence_backward_error`
+>   asks for no caller-supplied matrix/RHS error budgets, and
+>   `higham19_lemma19_3_actual_stored_sequence_gamma_bound_of_sourceDen_stepOps`
+>   produces and collapses the local bounds to one explicit
+>   `gamma fp (n*stepOps)` bound.  The remaining signed-stage denominator and
+>   gamma guards are source/domain conditions, not target error assumptions.
+> - **Theorem 19.5 and (19.14).**
+>   `Higham19Theorem5Nonbreakdown.lean` derives every actual computed `R_ii ≠
+>   0` upstream of the solve from the actual Theorem-19.4 QR perturbation,
+>   source injectivity, and the explicit sufficient condition
+>   `sqrt(n)*gamma*κ₂(A)<1`.  Its Theorem-19.5 and both (19.14) wrappers no
+>   longer ask the caller for `hdiag`.  This is the precise version of the
+>   sufficient nonsingularity regime stated immediately before Theorem 19.5;
+>   `higham19QRSourceKappa2_eq_kappa2_nonsingInv_of_injective` identifies the
+>   canonical left-inverse expression with the book's printed
+>   `||A||₂ ||A⁻¹||₂` notation.
+> - **Theorem 19.6.** `Higham19Theorem6ActualSource.lean` now gives canonical
+>   Chapter-19 exports of the actual, fully swap-aware, bare-`FPModel` trace
+>   proved in `Higham20Theorem20_7ActualAssembly.lean`.  This route has no
+>   `StageDataReady`, `StrongStageModel`, or target-bearing policy premise.
+> - **Theorem 19.13.** The existing successful literal-MGS source-rate
+>   certificate still assumes that the actual computed pivots are nonzero.
+>   `Higham19Alg12MGSNonbreakdown.lean` gives the correct source-facing
+>   success-or-breakdown endpoint and a concrete full-rank `2×2` standard-model
+>   execution (`u=1/16`, exact add/sub/mul/sqrt, admissibly rounded division)
+>   whose second computed pivot is exactly zero.  Thus source rank plus routine
+>   gamma/model smallness does **not** imply unrestricted operational
+>   nonbreakdown for the abstract `FPModel`.  This is a terminal
+>   **SOURCE-DISCREPANCY**: the printed rank-only operational reading is false
+>   for the formal floating-point interface, while the successful-run theorem
+>   and the success-or-breakdown correction are proved.  The counterexample
+>   lies outside the stronger conditioning threshold; deriving nonbreakdown
+>   from that extra threshold would be a useful strengthening, not a remaining
+>   source-audit blocker.
+
 > **PDF-first rerun correction (2026-07-19): selected-scope gate PASS after
 > repair.**  The earlier declaration
 > `H19_Theorem19_5_qr_solve_columnwise_backward_error` was normwise despite its
@@ -390,7 +431,13 @@ extracted-source row and keeps it open for Lean mapping.
 Latest dependency update: the explicit normalized-loop surface now has named zero/one/two-step constructors, an equivalence with `storedSignedSequenceTwiceTrailingFullStageSourceClosureData`, absolute recursive-tail rungs consuming the original loop's stage-four/stage-five full-stage facts after two pivots are peeled, a one-entry computed-normalized-vector self-dot counterexample, a positive exact-arithmetic computed-normalized-vector self-dot theorem, exact full-stage two-/three-zero self-dot lifts, exact `householderBetaSpec = 1` wrappers for the normalized vector and its two-/three-zero embeddings, beta extractors from the full-stage fact records, determinant extractors from stage-local leading-block nonbreakdown, direct current full-stage/normalized-loop constructors that consume the leading-block nonbreakdown hypothesis instead of bespoke determinant premises, tail-local normalized full-stage/normalized-loop constructors that reconstruct the current full pivot-2 and pivot-3 zero-prefix fields structurally, named tail-local normalized-fact records that the current and recursive-tail normalized-loop constructors now consume, exact constructors proving those named record surfaces in `FPModel.exactWithUnitRoundoff` from tail-vector equalities plus determinant/nonbreakdown data, explicit zero/one/two-step constructors for the exact and arbitrary-model recursive tail-vector equality packages, a recursive all-stage tail-local normalized record package that assembles `storedSignedSequenceFullStageNormalizedLoopFacts` and source-closure data from the named records at every twice-trailing stage, a raw all-stage tail-local normalized facts package that assembles the named record package and the same normalized-loop/source-closure handoffs from per-stage vector equality and self-dot fields, direct final-closed and final-panel endpoints for both the record and raw tail-normalized packages, recursive tail-local full-stage/normalized-loop constructors that reconstruct the absolute stage-four/stage-five recursive-tail full-stage facts from the original loop's tail-local facts, tail-local final-panel wrappers that consume the same recursive-tail facts directly, exact current-layer and recursive-tail full-stage/normalized-loop constructors that derive self-dot from zero-prefix equality plus determinant nonbreakdown under `FPModel.exactWithUnitRoundoff`, matching leading-block constructors for the absolute stage-four/stage-five recursive-tail rungs, odd/even final-panel wrappers that consume the same leading-block hypothesis instead of exposing recursive-tail determinant premises, exact odd/even final-panel wrappers that also internalize the recursive-tail self-dot and exact-copy premises, exact first-reflector final-panel wrappers that internalize the stage-zero/stage-one self-dot and exact-copy premises, exact-subtraction final-closure wrappers for the source-closure, tail-normalized, source-faithful, stronger-normalization-model, and full-stage endpoints, exact-subtraction final-panel wrappers for the source-closure, tail-normalized, source-faithful, stronger-normalization-model, and full-stage equality endpoints, and tail-leading-block successor betaSpec QR recursion wrappers that remove the separate successor nonzero-column premise. This is hidden-hypothesis audit and exact-subcase evidence for the listed stored-loop induction target; it does not derive the rounded raw tail-local normalized vector equality/self-dot facts from `halpha`/`hsign` or close Theorem 19.13.
 
 
-## Completed Primary-Label Source Inventory (rendered-PDF audit, 2026-07-04)
+## HISTORICAL — SUPERSEDED: Primary-Label Source Inventory (2026-07-04)
+
+The row statuses in this section are preserved as an audit-time snapshot and
+must not be read as current. In particular, later actual-producer closures and
+the compiled MGS rank-only nonbreakdown counterexample/correction in the
+authoritative 2026-07-21 notice at the top supersede its `FAIL`, `PARTIAL`, and
+“open” cells.
 
 Row-by-row audit of every primary label against the rendered chapter pages (pdftoppm, 150dpi), with exact printed hypotheses/conclusions compared to the existing Lean declarations. Match quality is honest: `conditional/weaker` records exact constant or hypothesis differences; nothing partial is upgraded.
 

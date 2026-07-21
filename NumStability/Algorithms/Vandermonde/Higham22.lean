@@ -2685,6 +2685,23 @@ noncomputable def higham22Algorithm22_2FactorProduct
   higham22StageIIUpperProduct theta beta gamma alpha n *
     higham22StageILowerProduct alpha n
 
+/-- Higham (22.22): for four nodes (`n = 3`), the generic factor product
+    specializes to the six displayed factors `U₀ U₁ U₂ L₂ L₁ L₀`.
+    The entries of these factors are the definitions immediately preceding
+    (22.17), so this theorem is the source-label bridge for the displayed
+    four-by-four example rather than a second factorization assumption. -/
+theorem higham22_eq22_22_four_node_six_factor
+    (theta beta gamma : ℕ → ℂ) (alpha : Fin 4 → ℂ) :
+    higham22Algorithm22_2FactorProduct theta beta gamma alpha =
+      ((higham22StageIIUpperFactor theta beta gamma alpha 0 *
+          higham22StageIIUpperFactor theta beta gamma alpha 1) *
+          higham22StageIIUpperFactor theta beta gamma alpha 2) *
+        (higham22StageILowerFactor alpha 2 *
+          (higham22StageILowerFactor alpha 1 *
+            higham22StageILowerFactor alpha 0)) := by
+  simp [higham22Algorithm22_2FactorProduct,
+    higham22StageIIUpperProduct, higham22StageILowerProduct]
+
 /-- Algorithmic half of equation (22.17): the loop-derived finite product
 acts exactly as the implemented Algorithm 22.2. -/
 theorem higham22_eq22_17_algorithm_product

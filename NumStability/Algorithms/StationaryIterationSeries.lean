@@ -195,6 +195,41 @@ theorem summable_infNorm_matPow_of_spectralRadius (n : ℕ)
   exact (summable_nat_add_iff
     (f := fun k => infNorm (matPow n B k)) K).mp hshift
 
+/-- Higham, Problem 17.1, in the exact form consumed by (17.8), (17.11),
+    and (17.29): if the spectral radius of `B` is strictly below one, then
+    every entry of the matrix series `∑ |B^k|` and the scalar series
+    `∑ ‖B^k‖∞` are summable.  The first conjunct is the finite-dimensional
+    meaning of convergence of the entrywise-absolute matrix series; the
+    second uses the repository's matrix infinity norm. -/
+theorem higham17_problem17_1 (n : ℕ)
+    (B : Fin n → Fin n → ℝ)
+    (hspec : spectralRadius ℂ ((Matrix.of B).map Complex.ofReal) < 1) :
+    (∀ i j : Fin n, Summable (fun k => |matPow n B k i j|)) ∧
+      Summable (fun k => infNorm (matPow n B k)) := by
+  obtain ⟨r, _hr0', hrspec, hr1'⟩ := ENNReal.lt_iff_exists_real_btwn.mp hspec
+  have hr0 : 0 < r := by
+    by_contra h
+    push_neg at h
+    rw [ENNReal.ofReal_of_nonpos h] at hrspec
+    exact (not_lt_bot hrspec).elim
+  have hr1 : r < 1 := by
+    rw [show (1 : ENNReal) = ENNReal.ofReal 1 by simp] at hr1'
+    exact (ENNReal.ofReal_lt_ofReal_iff one_pos).mp hr1'
+  have hnorm : Summable (fun k => infNorm (matPow n B k)) :=
+    summable_infNorm_matPow_of_spectralRadius n B r hr0.le hr1
+      (le_of_lt hrspec)
+  refine ⟨?_, hnorm⟩
+  intro i j
+  exact Summable.of_nonneg_of_le
+    (fun _ => abs_nonneg _)
+    (fun k =>
+      le_trans
+        (Finset.single_le_sum
+          (fun l _ => abs_nonneg (matPow n B k i l))
+          (Finset.mem_univ j))
+        (row_sum_le_infNorm (matPow n B k) i))
+    hnorm
+
 -- ============================================================
 -- §17.2  B. The literal c(A) series surface of eq (17.12)
 -- ============================================================

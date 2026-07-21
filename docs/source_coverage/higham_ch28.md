@@ -11,6 +11,7 @@ Source: Higham, 2nd ed., Chapter 28, printed pp. 511-526. Mode: core.
 | Table 28.1 MATLAB generator catalogue | EXCLUDED | software/literature table, explicitly accounted for |
 | Equation (28.1) | PASS | `factorInverseGram_eq_hilbertInverseFormula`, `hilbert_inverse_formula`, `hilbert_inverse_formula_left` |
 | Exact part of (28.2) | PASS | `hilbert_det_formula` for every order |
+| Literal ratio reading of (28.2) | SOURCE-DISCREPANCY / CORRECTED | `higham28_not_HilbertDetAsymptotic` proves the recorded ratio-`IsEquivalent` surface false: the normalized ratio is at least `4^n` and tends to `+∞`. `hilbertDetLeadingLogRate_proved` retains the valid leading-log correction. |
 | Equations (28.3)-(28.4) | PASS | `hilbertMatrix_eq_choleskyGram`, `hilbertCholeskyFactor_mul_inverse`, `hilbertCholeskyFactorInverse_mul` |
 | Hilbert/Pascal moment-matrix representations | PASS | `intervalMomentMatrix_quadraticForm`, `intervalMomentMatrix_quadraticForm_re_pos`, `hilbertMatrix_eq_intervalMomentMatrix`, `pascalMoment_integral`, `pascalMatrix_eq_intervalMomentMatrix`, `pascal_circleAverage`, `pascal_circleMoment_normalized`, and `pascal_circleMoment` close the positive-weight and two source instances |
 | Hilbert determinant leading asymptotic | PASS | `hilbertDetLeadingLogRate_proved : HilbertDetLeadingLogRate` proves `log(det(H_n))/n² -> -2 log 2`, the faithful leading-exponential interpretation of (28.2) |

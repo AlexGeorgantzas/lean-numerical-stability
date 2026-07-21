@@ -2,33 +2,29 @@
 
 ## Selected-Scope Gate
 
-**Current status: OPEN (strict gate FAIL).**
+**Current status: CLOSED (strict gate PASS).**
 
-The 78-row source inventory remains the authoritative accounting document.
-Theorem 14.5 and Corollaries 14.6-14.7 are open because their exact-constant
-theorems consume source-family structures that no rounded Algorithm 14.4
-execution constructs.
+The **79-row** source inventory is the authoritative accounting document.
+There are no remaining precise selected-source proof obligations. The rows
+formerly blocked by the pre-division trace are closed by structural
+finalization and the literal componentwise final-division analysis.
 
-| Source location | Exact selected claim | Current Lean status | Why the current result does not close it | Smallest missing producer | Blocking final gate? |
-|---|---|---|---|---|---|
-| Theorem 14.5, (14.31)-(14.33) | Printed residual and forward bounds for a successful computed GJE solution | Conditional family endpoint | `ch14ext_gjeSourceTrace_theorem14_5_printed_vanishing_family_endpoint` assumes `Ch14GJETheorem145SourceFamily`; in particular, its rounded trace is assumed to finish at `I` and its stage/inverse families are assumed `O(1)` | A rounded executor with structural zeroing and final diagonal scaling, plus a constructor proving the family fields for that same trace | YES |
-| Corollary 14.6 | SPD residual and relative-forward constants | Conditional family endpoint | `Ch14Cor146SourceRunFamily` is unconstructed and additionally contains scaled-inverse and uniform-inverse regularity fields | Construct it from the corrected rounded executor and SPD/positive-pivot hypotheses | YES |
-| Corollary 14.7 | Row-diagonally-dominant residual and relative-forward constants | Conditional family endpoint | `Ch14Cor147SourceFamily` is unconstructed and contains finalization and uniform stage/inverse regularity fields | Construct it from the corrected rounded executor and row-dominance hypotheses | YES |
+| Source location | Selected claim | Current Lean status | Terminal accounting | Blocking final gate? |
+|---|---|---|---|---|
+| (14.27), (14.29)-(14.30) | Accumulated matrix/RHS identities and componentwise forward/backward errors | CLOSED | The finalized source trace writes eliminated dead-storage entries as structural zeros, produces the actual final diagonal, and feeds the accumulation endpoints; `Ch14GJEFinalDivisionClosure.lean` carries them through the printed divisions | NO |
+| Theorem 14.5, (14.31)-(14.33) | Printed residual and forward bounds for the actual computed GJE solution | CLOSED at determinate source strength | Exact all-orders envelopes and literal first-order constants are proved for `ch14ext_gjeFinalizedDivOutput`; the PDF's bare `O(u^2)` wording is terminally deferred because it specifies no family or uniformity hypotheses | NO |
+| Corollary 14.6 | SPD residual and relative-forward constants | CLOSED at determinate source strength | `Ch14Cor146UniformInverseBridge.lean` constructs the scaled inverse and its regularity under the visible symmetry-exploiting SPD policy; the unparameterized `O(u^2)` wording is terminally deferred | NO |
+| Corollary 14.7 | Row-diagonally-dominant residual and relative-forward constants | CLOSED at determinate source strength | `Ch14Cor147FinalDivisionFamilyClosure.lean` proves the actual-output constants and `Ch14Cor147SourceDomainConstructor.lean` constructs the exact domain witnesses; the unparameterized `O(u^2)` wording is terminally deferred | NO |
+| Fixed-matrix addendum to (14.30) | General final diagonal scaling has a "negligible effect" | `DEFER-MISSING-PRECISE-STATEMENT` | The PDF provides neither a rounded scaling operation nor a quantitative transfer bound, so inventing one would strengthen the source | NO |
 
-`Ch14GJEOperationalBridge.lean` discharges the tractable witness fields:
-`ch14ext_gjeSourceComputedOutput` is definitionally the trace output, while
-`ch14ext_gjeCanonicalUpperInverse_isInverse` and
-`ch14ext_gjeCanonicalUpperSolve_exact` construct the exact analysis-only
-inverse and solve from nonsingularity. The family solve is `O(1)` once the
-canonical inverse and RHS are `O(1)`.
-
-The same module also rules out the missing bridge for the current executor.
-`ch14ext_finalizationCounter_all_local_guards_but_not_identity` proves both
-gamma-validity guards and operational pivot success for a normalized 2-by-2
-trace, while the same legal `FPModel` leaves the eliminated entry equal to
-`-u`. Thus all current local guards still cannot prove
-the old `final_matrix = I` field; a structural-zero/final-scaling executor is
-required.
+`Ch14GJEOperationalBridge.lean` remains part of the audit trail. Its checked
+2-by-2 counterexample shows why the old literal-storage trace could not imply
+`final_matrix = I`: a legal `FPModel` can leave an eliminated dead entry equal
+to `-u`. The canonical structural-finalization producer repairs exactly this
+modeling defect, ends at the actual diagonal `D` (and at `I` for the
+source-normalized unit-diagonal case), and the final-division closure analyzes
+the literal Algorithm 14.4 output. Thus the counterexample is a superseded
+blocker diagnosis, not a current open obligation.
 
 ## Intentional Exclusions
 
@@ -37,7 +33,7 @@ The following are not proof gaps and do not fail the selected gate:
 | Category | Rows | Reason |
 |---|---|---|
 | Empirical figures/tables | Table 14.1, Figure 14.1, Table 14.2, Tables 14.3-14.5, Table 14.6 | Historical machine output or plots without a uniquely specified execution |
-| Exposition/literature | Parallel inversion methods; Section 14.7 notes | Literature review, qualitative observations, and benchmark material |
+| Exposition/literature | Remaining parallel inversion prose; Section 14.7 notes | Csanky/processor/complexity discussion, acceleration and qualitative stability observations, bibliographic material, and benchmarks. The precise Schulz recurrence and convergence claims are proved in `Ch14SchulzIteration.lean`. |
 | Optional Problems | Problems 14.1, 14.6, 14.9 | Not selected in this core pass; Problem 14.1 is not a precise theorem |
 
 ## Honest Model Boundaries

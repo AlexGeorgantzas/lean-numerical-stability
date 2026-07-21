@@ -8,9 +8,10 @@ Nicholas J. Higham's *Accuracy and Stability of Numerical Algorithms*
 The library contains machine-checked material from **all 28 chapters** of
 Higham. The tree contains **no `sorry`, `admit`, or `axiom` declarations**, and
 sampled headline theorems depend only on the standard
-`[propext, Classical.choice, Quot.sound]` axioms. The fresh audit closes every
-selected core row either at source strength or, when the printed statement is
-false, with a theorem-level counterexample and a faithful corrected theorem.
+`[propext, Classical.choice, Quot.sound]` axioms. The fresh audit makes every
+selected core row terminal: precise claims are proved at source strength,
+false claims have theorem-level counterexamples and faithful corrections, and
+source text that does not determine a proposition is explicitly deferred.
 
 ## Floating-point model
 
@@ -33,15 +34,17 @@ factor-identification claims before replacing them with faithful statements.
 
 Higham chapters 1–28, plus the RandNLA case study. Per-chapter status is tracked
 in the ledgers under [`docs/source_coverage/`](docs/source_coverage/). The
-authoritative from-scratch audit is the independent PDF-first rerun
-[`docs/source_coverage/AUDIT_ch01-28_PDF_FIRST_RERUN_2026-07-19.md`](docs/source_coverage/AUDIT_ch01-28_PDF_FIRST_RERUN_2026-07-19.md).
+authoritative from-scratch audit is the fresh PDF-first source-strength audit
+[`docs/source_coverage/AUDIT_ch01-28_PDF_FIRST_2026-07-21.md`](docs/source_coverage/AUDIT_ch01-28_PDF_FIRST_2026-07-21.md).
 It froze remote `main` at
-`78cda8ba9debad7af00d2dd6a1b01f096551a488`, re-read all 28 chapter PDFs
+`2bb76d004b7dddd0e6dfb61f84c0be8e6816fa19`, re-read all 28 chapter PDFs
 (513 pages; corpus fingerprint recorded in the report), inventoried 165 named
 body results and 585 numbered body equations, and then checked declaration
 types and 60 exact-label producer-to-consumer chapter pairs independently of the
-ledger conclusions. The older same-date report is retained but marked
-superseded because the rerun found additional source-strength gaps.
+ledger conclusions. It distinguishes source-strength proofs, compiled source
+counterexamples, undefined source statements, and external-citation deferrals.
+Older reports are retained as historical records but are superseded by this
+rerun, which found additional source-strength and traceability gaps.
 
 | Ch | Topic | Strict gate |
 |----|-------|-------------|
@@ -50,31 +53,33 @@ superseded because the rerun found additional source-strength gaps.
 | 3  | Basics (dot products, `γ(n)`) | PASS |
 | 4  | Summation | PASS |
 | 5  | Polynomials (Horner) | PASS |
-| 6  | Norms | PASS |
+| 6  | Norms | PASS / SOURCE-DISCREPANCY |
 | 7  | Perturbation theory for linear systems | PASS / SOURCE-DISCREPANCY |
-| 8  | Triangular systems | PASS / SOURCE-DISCREPANCY |
+| 8  | Triangular systems | PASS / SOURCE-DISCREPANCY / DEFER |
 | 9  | LU factorization and linear equations | PASS |
 | 10 | Cholesky factorization | PASS / SOURCE-DISCREPANCY |
 | 11 | Symmetric indefinite / skew-symmetric systems | PASS / SOURCE-DISCREPANCY |
-| 12 | Iterative refinement | PASS |
+| 12 | Iterative refinement | PASS / DEFER |
 | 13 | Block LU factorization | PASS |
-| 14 | Matrix inversion | PASS / SOURCE-DISCREPANCY |
-| 15 | Condition number estimation | PASS / SOURCE-DISCREPANCY |
-| 16 | The Sylvester equation | PASS |
+| 14 | Matrix inversion | PASS / SOURCE-DISCREPANCY / DEFER |
+| 15 | Condition number estimation | PASS / SOURCE-DISCREPANCY / DEFER |
+| 16 | The Sylvester equation | PASS / DEFER |
 | 17 | Stationary iterative methods | PASS |
-| 18 | Matrix powers | PASS |
-| 19 | QR factorization | PASS (explicit domain) |
-| 20 | The least squares problem | PASS / SOURCE-DISCREPANCY (explicit domain) |
+| 18 | Matrix powers | PASS / DEFER |
+| 19 | QR factorization | PASS / SOURCE-DISCREPANCY / DEFER (explicit domain) |
+| 20 | The least squares problem | PASS / SOURCE-DISCREPANCY / DEFER (explicit domain) |
 | 21 | Underdetermined systems | PASS / SOURCE-DISCREPANCY |
 | 22 | Vandermonde systems | PASS / SOURCE-DISCREPANCY |
-| 23 | Fast matrix multiplication | PASS |
+| 23 | Fast matrix multiplication | PASS / DEFER |
 | 24 | The FFT and applications | PASS |
-| 25 | Nonlinear systems and Newton's method | PASS / SOURCE-DISCREPANCY |
-| 26 | Automatic error analysis | PASS / SOURCE-DISCREPANCY |
-| 27 | Software issues in floating point | PASS / SOURCE-DISCREPANCY |
-| 28 | A gallery of test matrices | PASS / SOURCE-DISCREPANCY |
+| 25 | Nonlinear systems and Newton's method | PASS / SOURCE-DISCREPANCY / DEFER |
+| 26 | Automatic error analysis | PASS / SOURCE-DISCREPANCY / DEFER |
+| 27 | Software issues in floating point | PASS / SOURCE-DISCREPANCY / DEFER |
+| 28 | A gallery of test matrices | PASS / SOURCE-DISCREPANCY / DEFER |
 
-Fresh result: **28 PASS, 0 FAIL, 0 BLOCKED**.
+Fresh result: **28 chapters terminal, 0 unresolved precise core rows**.
+The explicit `DEFER` entries are source-level indeterminacy or external-citation
+boundaries, not hidden proof holes.
 
 `PASS` means every precise selected theorem, lemma, equation, and
 implementation-facing claim is terminal under the audit rules. A
@@ -172,13 +177,13 @@ Snapshot of the current `NumStability/` tree:
 
 | | |
 |---|---|
-| Lean files | **596** |
-| Lines of Lean | **~1.40 million** (1,404,856 physical lines) |
-| Theorems + lemmas proved | **38,227** (36,258 `theorem` + 1,969 `lemma`) |
-| Definitions | **8,629** `def`, 236 `abbrev` |
+| Lean files | **608** |
+| Lines of Lean | **~1.41 million** (1,408,851 physical lines) |
+| Theorems + lemmas proved | **37,625** (35,658 `theorem` + 1,967 `lemma`) |
+| Definitions | **8,674** `def`, 236 `abbrev` |
 | Structures / instances | 395 `structure`, 79 `instance` |
 | `sorry` / `admit` / `axiom` declarations | **0** |
-| Full `lake build` | **4,429 jobs** |
+| Full `lake build` | **4,443 jobs** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
 the standard `[propext, Classical.choice, Quot.sound]` axioms. (Declaration
@@ -193,7 +198,7 @@ clone:
 
 ```bash
 lake exe cache get   # download prebuilt Mathlib oleans — skipping this makes the build very slow
-lake build           # 4429 build jobs in the audited tree
+lake build           # 4443 build jobs in the audited tree
 ```
 
 Build a single module, e.g.:

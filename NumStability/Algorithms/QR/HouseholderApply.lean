@@ -362,6 +362,136 @@ theorem householderApplyDeltaMatrix_normalized_entry_gamma
   rw [hfact i j, hprod]
   ring
 
+/-- Componentwise form of the implementation-backed normalized Householder
+    application error.
+
+    This keeps the two terms that appear in Higham's equation (19.40)
+    separate: the final subtraction contributes `u * |b_i|`, while all
+    errors in constructing and applying the normalized reflector contribute
+    a rank-one term
+
+    `gamma(2a+n+3) * |v_i| * sum_j |v_j| |b_j|`.
+
+    Unlike `fl_householderApply_normalized_appError`, this result is
+    componentwise and therefore does not introduce a Frobenius-norm or
+    `sqrt n` loss. -/
+theorem fl_householderApply_normalized_entrywise_error
+    (fp : FPModel) (a n : ℕ)
+    (v v_hat : Fin n → ℝ) (eps : ℝ) (b : Fin n → ℝ)
+    (hvec : HouseholderVectorError n v v_hat eps)
+    (heps_nonneg : 0 ≤ eps)
+    (heps_bound : eps ≤ gamma fp a)
+    (hvalid : gammaValid fp (2 * a + n + 3))
+    (i : Fin n) :
+    |fl_householderApply fp n v_hat 1 b i -
+        matMulVec n (householder n v 1) b i| ≤
+      fp.u * |b i| +
+        gamma fp (2 * a + n + 3) * |v i| *
+          (∑ j : Fin n, |v j| * |b j|) := by
+  classical
+  have hn : gammaValid fp n :=
+    gammaValid_mono fp (by omega) hvalid
+  obtain ⟨η, δw, δmul, δsub, hη, hδw, hδmul, hδsub, hmatrix⟩ :=
+    fl_householderApply_matrix_unroll fp n v_hat 1 b hn
+  have hentry :=
+    householderApplyDeltaMatrix_normalized_entry_gamma fp a n
+      v v_hat eps η δw δmul δsub hvec heps_nonneg heps_bound
+      hη hδw hδmul hδsub hvalid
+  let θ : Fin n → ℝ := fun j => Classical.choose (hentry i j)
+  have hθ : ∀ j : Fin n, |θ j| ≤ gamma fp (2 * a + n + 3) := by
+    intro j
+    exact (Classical.choose_spec (hentry i j)).1
+  have hdelta : ∀ j : Fin n,
+      householderApplyDeltaMatrix n (householder n v 1) v_hat 1
+          η δw δmul δsub i j =
+        idMatrix n i j * δsub i - v i * v j * θ j := by
+    intro j
+    exact (Classical.choose_spec (hentry i j)).2
+  have hdiff :
+      fl_householderApply fp n v_hat 1 b i -
+          matMulVec n (householder n v 1) b i =
+        ∑ j : Fin n,
+          (idMatrix n i j * δsub i - v i * v j * θ j) * b j := by
+    calc
+      fl_householderApply fp n v_hat 1 b i -
+          matMulVec n (householder n v 1) b i =
+        matMulVec n
+            (householderApplyRoundedMatrix n v_hat 1 η δw δmul δsub) b i -
+          matMulVec n (householder n v 1) b i := by
+            rw [congr_fun hmatrix i]
+      _ = ∑ j : Fin n,
+          householderApplyDeltaMatrix n (householder n v 1) v_hat 1
+            η δw δmul δsub i j * b j := by
+            unfold matMulVec householderApplyDeltaMatrix
+            rw [← Finset.sum_sub_distrib]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+      _ = ∑ j : Fin n,
+          (idMatrix n i j * δsub i - v i * v j * θ j) * b j := by
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [hdelta j]
+  have hdiag :
+      (∑ j : Fin n, |idMatrix n i j * δsub i * b j|) ≤
+        fp.u * |b i| := by
+    calc
+      (∑ j : Fin n, |idMatrix n i j * δsub i * b j|) =
+          |δsub i| * |b i| := by
+            unfold idMatrix
+            rw [Finset.sum_eq_single i]
+            · simp [abs_mul]
+            · intro j _ hji
+              simp [Ne.symm hji]
+            · simp
+      _ ≤ fp.u * |b i| :=
+        mul_le_mul_of_nonneg_right (hδsub i) (abs_nonneg (b i))
+  have houter :
+      (∑ j : Fin n, |v i * v j * θ j * b j|) ≤
+        gamma fp (2 * a + n + 3) * |v i| *
+          (∑ j : Fin n, |v j| * |b j|) := by
+    calc
+      (∑ j : Fin n, |v i * v j * θ j * b j|) ≤
+          ∑ j : Fin n,
+            (gamma fp (2 * a + n + 3) * |v i|) *
+              (|v j| * |b j|) := by
+            apply Finset.sum_le_sum
+            intro j _
+            calc
+              |v i * v j * θ j * b j| =
+                  |θ j| * (|v i| * (|v j| * |b j|)) := by
+                    simp only [abs_mul]
+                    ring
+              _ ≤ gamma fp (2 * a + n + 3) *
+                    (|v i| * (|v j| * |b j|)) :=
+                  mul_le_mul_of_nonneg_right (hθ j) (by positivity)
+              _ = (gamma fp (2 * a + n + 3) * |v i|) *
+                    (|v j| * |b j|) := by ring
+      _ = gamma fp (2 * a + n + 3) * |v i| *
+          (∑ j : Fin n, |v j| * |b j|) := by
+            rw [Finset.mul_sum]
+  rw [hdiff]
+  calc
+    |∑ j : Fin n,
+        (idMatrix n i j * δsub i - v i * v j * θ j) * b j| ≤
+        ∑ j : Fin n,
+          |(idMatrix n i j * δsub i - v i * v j * θ j) * b j| :=
+      Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ j : Fin n,
+        (|idMatrix n i j * δsub i * b j| +
+          |v i * v j * θ j * b j|) := by
+          apply Finset.sum_le_sum
+          intro j _
+          rw [sub_mul]
+          exact abs_sub _ _
+    _ = (∑ j : Fin n, |idMatrix n i j * δsub i * b j|) +
+        ∑ j : Fin n, |v i * v j * θ j * b j| :=
+      Finset.sum_add_distrib
+    _ ≤ fp.u * |b i| +
+        gamma fp (2 * a + n + 3) * |v i| *
+          (∑ j : Fin n, |v j| * |b j|) :=
+      add_le_add hdiag houter
+
 /-- Frobenius bound for the diagonal matrix produced by the final componentwise
     subtraction roundoff in a Householder application. -/
 theorem householderApply_sub_error_frob_bound (fp : FPModel) (n : ℕ)

@@ -18,6 +18,15 @@
 > actual output's `O(u)` error.  Historical text below that calls the
 > pre-division vector the literal Algorithm 14.4 output is superseded.
 
+> **Section 14.5 scoped update (2026-07-21): precise Schulz claims VERIFIED.**
+> `Ch14SchulzIteration.lean` formalizes the two printed update forms, both
+> exact residual-square recurrences, `E_k = E_0^(2^k)`, the resulting
+> double-exponential operator-norm bound and convergence criterion, and the
+> source initialization `X_0 = alpha A^T`,
+> `0 < alpha < 2 / ||A||_2^2`, for nonsingular real square matrices. The
+> surrounding processor-count, complexity, acceleration, and qualitative
+> floating-point stability discussion remains intentionally deferred.
+
 > **Fresh strict audit (updated 2026-07-19): selected-scope gate PASS.** The
 > concrete structural-finalization producer is built and feeds the determinate
 > (14.25)--(14.30) accumulation endpoints. The exact all-orders envelopes and
@@ -48,6 +57,7 @@
 | **Theorem 14.5** / (14.31)–(14.33) — overall GJE residual + forward error | VERIFIED (determinate content); unparameterized source `O(u^2)` prose DEFER | `Ch14GJEFinalDivisionClosure.lean` begins with the literal componentwise `fl_div` output, derives (14.29), (14.30a-c), the exact (14.31)/(14.32) envelopes and (14.33) residual identity, and gives an explicit vanishing-roundoff family realization in which the named remainders are `O(u^2)`. The PDF itself does not state that family or its regularity hypotheses. |
 | **Corollary 14.6** — SPD GJE forward stability | VERIFIED (determinate constants, symmetry-exploiting policy); unparameterized source `O(u^2)` prose DEFER | `ch14ext_cor146Finalized_vanishing_family_endpoint` proves the printed `8 n^3 u ‖A‖₂ ‖x‖₂` residual (exact solution norm) and `8 n^(5/2)` relative-forward coefficients for the literal final-division output. `Ch14Cor146UniformInverseBridge.lean` constructs the scaled-upper inverse from triangularity and positive pivots and derives its required `O(1)` regularity from SPD nonsingularity, the proved `O(u)` matrix perturbation, and continuity of finite-dimensional inversion; neither fact remains an independent family premise. The PDF's stated “symmetry is exploited” mode remains an explicit `symmetric_factor_relation` policy premise. |
 | **Corollary 14.7** — row diagonally dominant GJE | VERIFIED (determinate constants); unparameterized source `O(u^2)` prose DEFER | `Ch14Cor147FinalDivisionFamilyClosure.lean` proves the printed `32 n^2` rowwise residual and `4 n^3 (kappa_inf(A)+3)` relative-forward coefficients for the literal final-division output; the computed/exact norm ratio is removed by an eventual bootstrap and both actual terminal remainders are `O(u^2)` under the displayed family hypotheses. `Ch14Cor147SourceDomainConstructor.lean` derives the fixed exact `L`, `U`, and `U⁻¹` witnesses directly from row diagonal dominance, nonsingularity, and dimension via the Chapter 9 Theorem 9.9 closure and the canonical upper-triangular inverse, so those witnesses are no longer extra source-domain inputs. |
+| **Section 14.5 Schulz inverse iteration** — exact recurrence and convergence | VERIFIED (precise mathematical content) | `Ch14SchulzIteration.lean`: exact update equivalence, left/right `E_(k+1)=E_k^2`, closed form `E_k=E_0^(2^k)`, quadratic/double-exponential norm bounds, residual and iterate convergence, and the printed `alpha A^T` initialization criterion. |
 | **Problem 14.14** — Hyman determinant backward error | VERIFIED | `ch14ext_hyman_flDet_backward_error_original`, `Ch14HymanDeterminant.lean` — exact fl-Hyman det of `H+ΔH`, `\|ΔH\| ≤ γ_{2n-1}\|H\|` |
 | **Problem 14.15** — determinant perturbation bound | VERIFIED | `ch14ext_problem14_15_abs_det_add_rel_le_of_kappa2_opNorm2_inv_card_guard`, `Chapter14Problem1415Weyl.lean` — built the all-index Weyl singular-value perturbation bound from scratch |
 

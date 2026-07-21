@@ -1,5 +1,14 @@
 # Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed. — Chapter 6 (Norms)
 
+> **Fresh PDF-first repair (2026-07-21): terminal SOURCE-DISCREPANCY.** The precise prose omitted by the
+> previous ledger is now closed. `Higham6Asides.lean` contains a compiled
+> counterexample to the book's false claim that the Euclidean norm is
+> differentiable at zero, the corrected nonzero Fréchet derivative, and the
+> finite Hölder equality theorem from the magnitude-power/common-ray
+> conditions together with explicit endpoint equality witnesses.
+> `Higham6BlockAntidiag.lean` proves the full finite-conjugate-exponent identity
+> `‖[[0,A],[Aᴴ,0]]‖ₚ = max(‖A‖ₚ,‖A‖q)` without the former `hblock` premise.
+
 > **Fresh strict audit and repair (2026-07-18): gate PASS.** The new
 > `MixedInverseAmbientRelativeAmplificationRadiusSet` uses the book's common
 > ambient-radius denominator, and
@@ -44,7 +53,7 @@
 
 | Eq. | Content | Status | Lean decls |
 |---|---|---|---|
-| (6.1) | Hölder inequality `\|x^*y\| ≤ ‖x‖_p‖y‖_q` | VERIFIED | `complexVecLpNorm_holder` (l.598, finite conjugate exponents); endpoint 1/∞ forms (l.1640, l.1658); Cauchy–Schwarz is the `p=q=2` case. Equality-condition prose (linear dependence of `(\|x_i\|^p)`, `(\|y_i\|^q)` + ray condition) NOT formalized. |
+| (6.1) | Hölder inequality `\|x^*y\| ≤ ‖x‖_p‖y‖_q` and equality prose | VERIFIED | `complexVecLpNorm_holder`; endpoint 1/∞ forms; `higham6_holder_equality_of_powerProfile_sameRay` proves equality from the stated power-profile linear dependence and common complex ray; `higham6_holder_endpoint_equality_standardBasis` supplies both endpoint witnesses. |
 | (6.2) | Dual norm `‖x‖_D = max_{z≠0} \|z^*x\|/‖z‖` | VERIFIED | `IsDualFunctionalNormValue` least-bound predicate (l.2418) shown equal to unit-vector max (l.18993) and nonzero-ratio max (l.19006). Duality theorem (dual of dual = original) is cited-out by Higham himself; not formalized (SKIP-OK: proof deferred to Horn–Johnson in print). |
 | (6.3) | Existence of dual vector: `z^*y = ‖z‖_D‖y‖ = 1` | VERIFIED | `IsNormingFunctionalAt` (l.2406); existence `NormedCVec.exists_normingFunctionalAt_of_unit_vector` (Hahn–Banach bridge); least-bound form (l.2727). |
 | (6.4) | `‖x‖_{p₂} ≤ ‖x‖_{p₁} ≤ n^{1/p₁−1/p₂}‖x‖_{p₂}`, attainable | VERIFIED | l.1522 / ~l.1358 + all-ones witness (l.555). |
@@ -69,13 +78,13 @@
 | Claim | Status | Notes |
 |---|---|---|
 | Vector norm axioms; 1/2/∞ norms as Hölder p-norm cases | VERIFIED | `IsComplexVectorNorm` (l.88), `complexVecLpNorm` family. |
-| 2-norm unitary invariance + gradient `∇‖x‖₂ = x/‖x‖₂` | PARTIAL | Euclidean invariance under orthogonal/unitary action present in fragments (MatrixAlgebra l.8073–8108 real; SVD layer complex); the gradient/differentiability remark is not formalized (analytic aside). |
+| 2-norm unitary invariance + gradient `∇‖x‖₂ = x/‖x‖₂` | SOURCE-CORRECTED | `higham6_euclideanNorm_not_differentiableAt_zero` refutes the literal “for all x” sentence; `higham6_euclideanNorm_hasFDerivAt_of_ne_zero` proves the corrected real Fréchet derivative at every nonzero complex vector. The unitary invariance results remain in `Higham6Asides.lean`. |
 | `‖A‖_∞ = ‖\|A\|e‖_∞` | VERIFIED (equivalent form) | `complexMatrixInfNorm_absMatrix_eq` (l.3415) + row-sum characterization (l.9482); the literal ones-vector form is not stated but the content is identical. |
 | Frobenius norm consistent; all subordinate norms consistent | VERIFIED | Matrix p-norm submultiplicativity (l.8515), (6.7) composition (l.18808); Frobenius product bounds in the Problem 6.5 operator-ideal block (l.12020–12130). |
-| Max norm `‖A‖_M` not consistent; best bound `‖AB‖ ≤ n‖A‖_M‖B‖_M` with equality at all-ones | MISSING | No formalization of the inconsistency example or the `n`-factor bound. |
-| Unitary invariance of 2- and F-norms; `‖A^*‖ = ‖A‖`; `‖QEQ^*‖₂ = ‖E‖₂` vs `‖XEX^{-1}‖₂ ≤ κ₂(X)‖E‖₂` | PARTIAL | `complexMatrixOp2_adjoint_eq` (l.11822), Frobenius adjoint/transpose invariance (MatrixAlgebra l.1736ff), real orthogonal left/right Frobenius invariance (MatrixAlgebra l.9411–9672); a named complex two-sided `‖UAV‖ = ‖A‖` theorem for arbitrary unitary `U, V` was not found; the `κ₂(X)` similarity bound is derivable from submultiplicativity but not stated. |
-| `κ(X) ≥ 1` and `κ_F(X) ≥ √n` | MISSING | Not found in any module. |
-| `‖[[0, A], [A^*, 0]]‖_p = max(‖A‖_p, ‖A‖_q)` (unnumbered display) | MISSING | Block antidiagonal p-norm identity not found. |
+| Max norm `‖A‖_M` not consistent; best bound `‖AB‖ ≤ n‖A‖_M‖B‖_M` with equality at all-ones | VERIFIED | `ch6aside_maxNorm_mul_le`, `ch6aside_maxNorm_allOnes_mul`, `ch6aside_maxNorm_equality_allOnes`, and `ch6aside_maxNorm_not_consistent` in `Higham6Asides.lean`. |
+| Unitary invariance of 2- and F-norms; `‖A^*‖ = ‖A‖`; `‖QEQ^*‖₂ = ‖E‖₂` vs `‖XEX^{-1}‖₂ ≤ κ₂(X)‖E‖₂` | VERIFIED | `ch6aside_op2_two_sided_unitary_invariant` and `ch6aside_frobenius_two_sided_unitary_invariant` give the complex two-sided invariance; adjoint invariance and the similarity bound follow from the named adjoint results and submultiplicativity. |
+| `κ(X) ≥ 1` and `κ_F(X) ≥ √n` | VERIFIED | `ch6aside_conditionNumber_ge_one`, `ch6aside_op2_conditionNumber_ge_one`, and `ch6aside_conditionF_ge_sqrt_n` in `Higham6Asides.lean`. |
+| `‖[[0, A], [A^*, 0]]‖_p = max(‖A‖_p, ‖A‖_q)` (unnumbered display) | VERIFIED | `ch6aside_blockAntidiag_lp_eq` in `Higham6BlockAntidiag.lean`; `ch6aside_blockAntidiagLpCLM_components` proves the canonical `PiLp` block action and `ch6aside_withLpBlockSwapCLM_norm` proves the general max-norm identity. No residual block-norm premise. |
 | `log ‖A‖_p` convex in `1/p` (Riesz–Thorin) | VERIFIED (as consequence) | Embodied in the (6.18) interpolation development; the convexity statement itself is the same inequality re-parametrized. |
 | (6.16)/(6.17) estimate `‖A‖_p` within factor `n^{1/4}` from `‖A‖₁,‖A‖₂,‖A‖_∞` | SKIP-OK | Editorial consequence; the underlying inequalities are formalized. Figure 6.1: SKIP-OK (plot). |
 
@@ -107,10 +116,11 @@
    size. Its final theorem constructs the sharp boundary perturbation and all
    inverse/norm witnesses internally. The older self-normalized set is retained
    as a useful companion formulation but is not cited for source closure.
-2. **Lemma 6.6(a)** (columnwise 2-norm domination ⇒ `‖A‖_F ≤ ‖B‖_F`, `‖A‖₂ ≤ √rank(B)‖B‖₂`,
-   `|A| ≤ ee^T|B|`) is entirely missing, as is the sharpness remark. (b), (d) are at printed strength
-   with genuine `rank` (number of nonzero singular values); (c) is available only by composing
-   `rectOpNorm2Le_of_abs_entry_le_abs` with the `|B|` rank chain.
+2. **Lemma 6.6(a) and (c) are closed at printed strength.** The imported
+   `Algorithms/Chapter06Lemma66.lean` supplies the columnwise Frobenius,
+   operator-2, and entrywise conclusions, the genuine-rank (c) bound, and the
+   first printed sharpness witness. The optional second sharpness witness
+   `A = eeᵀ`, `B = √n I` is not part of the selected core gate.
 3. Hölder/duality/rank-one machinery ((6.1)–(6.3), Lemma 6.3, (6.14)) is done for **general abstract
    complex vector norms**, exceeding the p-norm-only reading, with a finite-dimensional Hahn–Banach
    norming-functional bridge replacing the cited duality theorem.
@@ -138,9 +148,11 @@ the two-sided unitary invariance `‖UAV‖₂ = ‖A‖₂`, `‖UAV‖_F = ‖
 `‖AB‖_M ≤ n‖A‖_M‖B‖_M` with all-ones equality. The block-antidiagonal `‖[[0,A],[A^*,0]]‖₂ = ‖A‖₂` is proved
 conditional on one explicit standard hypothesis (block-diagonal l2 op-norm = max of block norms).
 
-Remaining optional documented residuals (unnumbered body-prose; non-gating): the block-diagonal-op-norm
-hypothesis for the antidiagonal identity; the (6.1) equality-condition sentence; the second Lemma 6.6(a)
-sharpness witness (A=ee^T, B=√n·I).
+The former block-diagonal-op-norm hypothesis and the (6.1) equality-condition
+residual are superseded by the 2026-07-21 theorems above. The older conditional
+`ch6aside_blockAntidiag_op2_eq` is retained only as a historical reduction, not
+as the source-closure endpoint. The second Lemma 6.6(a) sharpness witness
+`A=ee^T, B=√n·I` remains optional in core mode.
 
 **De-orphaning (2026-07-17, bridge B5(b)):** the `Chapter06Lemma66.lean` operator-2-norm theorems
 `lemma66_a_op2_le` / `lemma66_c_op2_le` were previously ORPHANED (zero consumers repo-wide — the

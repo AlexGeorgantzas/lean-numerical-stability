@@ -5,6 +5,13 @@
 > matrices, and the concrete rounded inverse-unwind producer for (5.12) are now
 > closed in `NumStability/Algorithms/Ch5SourceClosure.lean`. See
 > `AUDIT_ch01-28_2026-07-18.md` for the cross-chapter audit.
+>
+> **Complex Algorithm 5.1 closure (2026-07-21).**
+> `HighamChapter5ComplexAlgorithm51.lean` now constructs the actual complex
+> Horner executor from `fl_complexMul` and `fl_complexAdd`, derives its local
+> output-relative error bound, and proves the printed
+> `sqrt(2)*gamma_2*(2*mu-|y|)` running bound. No target error expansion is
+> assumed.
 
 ## Source and Scope
 
@@ -41,15 +48,16 @@
   Algorithm 5.2 rounding analysis + the ψ(p,x) sign-pattern corollary are now closed in
   `NumStability/Algorithms/Ch5DerivativeError.lean` (`ch5deriv_*` value/derivative forward+backward
   bounds; `ch5psi_*` nonneg / alternating-sign perfect-relative-accuracy corollaries), axiom-clean.
-  Remaining MISSING rows (Newton-form §5.3 evaluation error; monotone-node-ordering corollary to
-  (5.11)/(5.12); the Alg 5.1 complex-data remark) are precise body-prose asides, recorded as optional
-  non-gating residuals.
+  At that historical checkpoint, the Newton-form §5.3 evaluation error,
+  monotone-node-ordering corollary to (5.11)/(5.12), and Algorithm 5.1
+  complex-data remark were recorded as optional residuals; all three have
+  since been closed.
 
 ## Primary Labels
 
 | Label | Printed statement (summary) | Status | Lean decls | Scope notes |
 |---|---|---|---|---|
-| Algorithm 5.1 (Horner with running error bound, §5.1) | Evaluate `y = fl(p(x))` by Horner's rule and a quantity `mu = u*(2*mu' - \|y\|)` with `\|y - p(x)\| <= mu`; derivation via (5.4) and the `f_i`/`pi_i`/`mu_i` recurrences | **VERIFIED** (real data) | `fl_hornerRunningStep`, `fl_hornerRunningState`, `fl_hornerRunningBound`, `fl_hornerRunningState_fst_eq_fl_hornerDesc`, `fl_hornerDesc_running_error_bound_of_inverseLocal`; local model `hornerStepInverseLocalError` discharged concretely by `finiteRoundToEvenOp_hornerStep_inverseLocalError_of_finiteNormalRange` | The a posteriori bound `\|fl_hornerDesc - polyDesc\| <= fl_hornerRunningBound` is proved under the (5.4) inverse local step estimate, which is NOT smuggled: it is a named predicate, proved outright for the concrete round-to-even format under finite-normal-range side conditions (exactly the applicability domain of Higham's models (2.4)/(2.5)). The `mu` recurrence is carried in exact arithmetic over the rounded `y`-iterates, matching the printed derivation (the printed algorithm's own rounding of `mu` is not modeled — same idealization as the source analysis). Exact-arithmetic sanity reductions: `fl_hornerDesc_exactWithUnitRoundoff`. **Complex-data remark (Lemma 3.5 variant, `sqrt(2)*gamma_2` final line) NOT formalized** — real coefficients/argument only. |
+| Algorithm 5.1 (Horner with running error bound, §5.1) | Evaluate `y = fl(p(x))` by Horner's rule and a quantity `mu = u*(2*mu' - \|y\|)` with `\|y - p(x)\| <= mu`; for complex data replace `u` by `sqrt(2)*gamma_2` | **VERIFIED** (real and complex data) | Real surface: `fl_hornerRunningStep`, `fl_hornerRunningState`, `fl_hornerRunningBound`, `fl_hornerDesc_running_error_bound_of_inverseLocal`; concrete round-to-even discharge: `finiteRoundToEvenOp_hornerStep_inverseLocalError_of_finiteNormalRange`. Complex actual-executor surface: `fl_complexHornerStep`, `fl_complexHornerRunningState`, `fl_complexHornerRunningBound`, `fl_complexHornerStep_inverse_error_bound`, `fl_complexHornerDesc_running_error_bound`. | The real theorem uses the source (5.4) inverse local estimate, concretely discharged under finite-normal-range conditions. The complex theorem has only `gammaValid fp 2`: it derives the local estimate directly from the actual Chapter 3 rounded complex addition/multiplication error theorems and carries the same exact-real accumulator idealization as the source. |
 | Algorithm 5.2 (polynomial and first k derivatives at alpha, §5.2) | `y_i = p^(i)(alpha)`, `i = 0:k`, by repeated synthetic division + factorial scaling; error analysis (5.5)–(5.7) for the first derivative | **VERIFIED** | Exact all-order identification: `polyDescHigherDeriv_eq_hornerFormalDerivativeFunctionDesc`; actual rounded all-order executor/budget: `fl_hornerTaylorFunctionDesc`, `fl_hornerHigherDerivativeOutput(s)`, `fl_hornerTaylorFunctionDesc_error_bound`, `fl_hornerHigherDerivativeOutput(s)_error_bound`; operational matrix route in `Ch5SourceClosure.lean`; first-derivative chain below | Every order is identified with the independently differentiated Horner recurrence, and every rounded factorial-scaled output is bounded from the same actual execution, including its final rounded scale multiplication. The literal (5.5)–(5.6) two-sweep matrix route and final (5.7) bound are both closed. |
 
 ## Numbered Equations
@@ -106,10 +114,11 @@
 3. **Conventions**: coefficient lists are descending `[a_n, ..., a_0]` (`polyDesc`) or ascending (`polyAsc`,
    Problems 5.2/5.3); `p'` is the formal coefficient derivative (`polyDescDeriv`), which is the printed
    object; divided differences use function-indexed nodes with `Fin (n+1)` finite columns.
-4. **Scalar/complex scope**: the scalar Horner error analysis remains over `R`, so the
-   Algorithm 5.1 complex-data aside via Lemma 3.5 is not covered. Equation (5.14),
-   however, is now formalized over complex matrices for all three `P1`/`P2`/`P3`
-   orientations, with exact Horner realizations.
+4. **Scalar/complex scope**: the original scalar Horner development remains over
+   `R`; `HighamChapter5ComplexAlgorithm51.lean` supplies the distinct actual
+   complex Algorithm 5.1 executor and the Lemma 3.5 `sqrt(2)*gamma_2` running
+   bound. Equation (5.14) is formalized over complex matrices for all three
+   `P1`/`P2`/`P3` orientations, with exact Horner realizations.
 5. A docstring citation without an attached genuine theorem was NOT counted anywhere in this ledger; every
    VERIFIED row above names the theorem whose statement was read and matched against the printed row.
 
@@ -127,8 +136,9 @@ CLOSED in `NumStability/Algorithms/Ch5NewtonForm.lean` (`ch5newton_backward_erro
 backward result for the rounded generalized-Horner Newton-form evaluator; `ch5newton_forward_error_bound`;
 plus the strictly-increasing-node corollary `|L_{n-1}|...|L_0| = |L|`), axiom-clean.
 
-Remaining optional non-gating residual (precise body-prose aside):
-- Algorithm 5.1 complex-data remark (`sqrt(2)*gamma_2*(2*mu - |y|)` via Lemma 3.5).
+The former Algorithm 5.1 complex-data residual is CLOSED by
+`fl_complexHornerDesc_running_error_bound`, with the actual executor and the
+literal `sqrt(2)*gamma_2*(2*mu - |y|)` coefficient.
 
 **Follow-up (2026-07-18 strict repair):** the selected residuals at (5.5),
 (5.6), and (5.12) are CLOSED in

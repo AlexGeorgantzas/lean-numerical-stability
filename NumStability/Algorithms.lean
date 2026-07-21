@@ -24,6 +24,7 @@ import NumStability.Algorithms.AitkenDenominator
 import NumStability.Algorithms.LogExpProduct
 import NumStability.Algorithms.GridPoints
 import NumStability.Algorithms.Horner
+import NumStability.Algorithms.HighamChapter5ComplexAlgorithm51
 import NumStability.Algorithms.Norm2
 import NumStability.Algorithms.OuterProduct
 import NumStability.Algorithms.MatVec
@@ -142,6 +143,7 @@ import NumStability.Algorithms.Cholesky.AasenUnitOuterSolveCh11Closure
 import NumStability.Algorithms.Cholesky.AasenTheorem118ScalarEdgeCh11Discrepancy
 import NumStability.Algorithms.IterativeRefinement
 import NumStability.Algorithms.MatrixInversion
+import NumStability.Algorithms.Ch14SchulzIteration
 import NumStability.Algorithms.GaussJordan
 import NumStability.Algorithms.Ch14ForwardErrorEndpoint
 import NumStability.Algorithms.Ch14AsymptoticFamilies
@@ -200,11 +202,14 @@ import NumStability.Algorithms.Ch5DerivativeError
 import NumStability.Algorithms.Ch5NewtonForm
 import NumStability.Algorithms.Ch5SourceClosure
 import NumStability.Algorithms.HighamLemma88Entrywise
+import NumStability.Algorithms.HighamChapter8Lemma88SourceDiscrepancy
 import NumStability.Analysis.Higham6Asides
+import NumStability.Analysis.Higham6BlockAntidiag
 import NumStability.Algorithms.CondEstimation
 import NumStability.Algorithms.LU.TridiagonalCond
 import NumStability.Algorithms.PNormPowerMethod
 import NumStability.Algorithms.PNormPowerMethodGeneralP
+import NumStability.Algorithms.HighamChapter15ConvergenceProse
 import NumStability.Algorithms.Chapter15CondEst
 import NumStability.Algorithms.Ch15CondEstimators
 import NumStability.Algorithms.Ch15DixonProbability
@@ -249,6 +254,7 @@ import NumStability.Algorithms.Sylvester.Higham16QuasiRoundedSolve
 import NumStability.Algorithms.Sylvester.Higham16QuasiRoundedSylvester
 import NumStability.Algorithms.Sylvester.Higham16QuasiQuasiRounded
 import NumStability.Algorithms.Sylvester.Higham16QuasiQuasiSylvester
+import NumStability.Algorithms.Sylvester.Higham16PivotedSmallBlocks
 import NumStability.Algorithms.Sylvester.Higham16AutoCondition
 import NumStability.Algorithms.Sylvester.Higham16NormEstimator
 import NumStability.Algorithms.Sylvester.Higham16HessenbergRounded
@@ -306,6 +312,7 @@ import NumStability.Algorithms.QR.Higham19StoredLoop
 import NumStability.Algorithms.QR.Higham19StoredLoopStrongModel
 import NumStability.Algorithms.QR.Higham19StoredLoopAllPivots
 import NumStability.Algorithms.QR.Higham19Lemma7Gamma4
+import NumStability.Algorithms.QR.Higham19Lemma3ActualSequence
 import NumStability.Algorithms.QR.Higham19Lemma9DisjointSweep
 import NumStability.Algorithms.QR.Higham19Theorem10ActualMatrix
 import NumStability.Algorithms.QR.Higham19Alg11CGSRounded
@@ -314,6 +321,7 @@ import NumStability.Algorithms.QR.Higham19Alg12MGSRepair
 import NumStability.Algorithms.QR.Higham19Alg12MGSClosure
 import NumStability.Algorithms.QR.Higham19Alg12MGSPaddedClosure
 import NumStability.Algorithms.QR.Higham19Alg12MGSSourceRate
+import NumStability.Algorithms.QR.Higham19Alg12MGSNonbreakdown
 import NumStability.Algorithms.QR.Higham19Thm6Pivoted
 import NumStability.Algorithms.QR.Higham19Thm6Elementwise
 import NumStability.Algorithms.QR.Higham19Thm6ElementwiseEntry
@@ -327,8 +335,10 @@ import NumStability.Algorithms.QR.Higham19Thm6ColPivot
 import NumStability.Algorithms.QR.Higham19Thm6ColPivotFull
 import NumStability.Algorithms.QR.Higham19Thm6Final
 import NumStability.Algorithms.QR.Higham19Thm6StrongModel
+import NumStability.Algorithms.QR.Higham19Theorem6ActualSource
 import NumStability.Algorithms.QR.Higham19Labels
 import NumStability.Algorithms.QR.Higham19Theorem5SourceClosure
+import NumStability.Algorithms.QR.Higham19Theorem5Nonbreakdown
 import NumStability.Algorithms.LeastSquares.LSPerturbation
 import NumStability.Algorithms.LeastSquares.LSQRSolve
 import NumStability.Algorithms.LeastSquares.LSNormalEquations
@@ -441,6 +451,7 @@ import NumStability.Algorithms.TestMatrices.Higham28ToeplitzCondition
 import NumStability.Algorithms.TestMatrices.Higham28Companion
 import NumStability.Algorithms.TestMatrices.Higham28CompanionSpectral
 import NumStability.Algorithms.TestMatrices.Higham28HilbertAsymptotic
+import NumStability.Algorithms.TestMatrices.Higham28HilbertRatioDiscrepancy
 import NumStability.Algorithms.TestMatrices.Higham28HilbertCondition
 import NumStability.Algorithms.TestMatrices.Higham28GaussianQRHaar
 import NumStability.Algorithms.TestMatrices.Higham28ShiftedHilbert

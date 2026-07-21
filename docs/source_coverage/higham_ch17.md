@@ -110,8 +110,10 @@
   |Reλ|+|Imλ|≥1 (proven) but is now UNNECESSARY (the limit is proved directly), and the
   book's `ρ(Γ)<1` object is the correct general one. The
   `hne`/certificate hypotheses documented per-row (each
-  mirrors an implicit assumption of the printed text); and the
-  benchmark-reserved Problem 17.1 / Appendix A 17.1 rows.
+  mirrors an implicit assumption of the printed text). Problem 17.1 is not
+  optional here because the chapter explicitly consumes it in (17.8),
+  (17.11), and (17.29); `higham17_problem17_1` now proves both consumed
+  convergence conclusions directly from `ρ(B) < 1`.
 
 ## Progress Snapshot
 
@@ -196,8 +198,8 @@
 | H17.Eq17_33c.stop_mixed_backward | p.336, (17.33c) | equivalence | Residual stopping test equivalent to perturbing both `A` and `b`. | precise | subordinate norm | cites Theorem 7.1 | Ch7 backward-error theorem | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | `stopping_test_mixed_backward_subordinate`; thin wrapper over `theorem7_1_subordinate` with `f = b`. |
 | H17.Sec17_5.componentwise_stopping_variants | p.336, prose after (17.33) | precise prose | The inequalities in (17.33a)-(17.33c) remain true with norms replaced by absolute values. | precise | componentwise real API | cites Theorem 7.3 | Ch7 Oettli-Prager theorem | FORMALIZE_CORE | CORE-PRECISE-PROSE | `stopping_test_rhs_backward_componentwise`, `stopping_test_matrix_backward_componentwise`, and `stopping_test_mixed_backward_componentwise`; real-valued absolute-value wrappers. |
 | H17.Tables17_1_17_3_Figure17_1 | pp.322-329 | table/figure/empirical output | Historical dates and MATLAB/SOR/Jacobi plotted or tabulated runs. | empirical/historical | machine-specific | not applicable | MATLAB details, rounding path, random start | SKIP | SKIP-EMPIRICAL | Not encoded in core; mathematical method surfaces remain inventoried above. |
-| H17.Problem17_1 | p.337 | problem | benchmark-reserved; statement not transcribed | precise | benchmark | not applicable | none | BENCHMARK_CANDIDATE | BENCHMARK-RESERVED | not encoded. |
-| H17.AppA17_1 | Appendix A split ledger | appendix solution | benchmark-reserved; statement not transcribed | precise | benchmark | not applicable | none | BENCHMARK_CANDIDATE | BENCHMARK-RESERVED | not encoded. |
+| H17.Problem17_1 | p.337 | consumed problem | If `ρ(B) < 1`, then both `∑ |B^k|` and `∑ ‖B^k‖` converge. | precise | real square matrices | explicitly invoked after (17.8), (17.11), and (17.29) | Gelfand power bound | FORMALIZE_CORE | CORE-CONSUMED-DEPENDENCY | `higham17_problem17_1` proves entrywise summability of `∑ |B^k|` and summability of `∑ ‖B^k‖∞` from the literal spectral-radius condition. |
+| H17.AppA17_1 | Appendix A split ledger | appendix solution | solution of the consumed Problem 17.1 | precise | appendix proof | Problem 17.1 | same local Gelfand argument | REUSE | CORE-CONSUMED-DEPENDENCY | Replaced by the stronger compiled local theorem `higham17_problem17_1`; no appendix text is assumed. |
 
 ## Reused from Repository or Mathlib
 

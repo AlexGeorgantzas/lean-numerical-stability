@@ -608,6 +608,25 @@ theorem higham23_eq23_4_strassen_correct (A B : Higham23Block2 (R := R)) :
     simp [higham23Strassen2, higham23BlockMul] <;>
     noncomm_ring
 
+/-- The symbolic small-entry example on p. 442.  Conventional multiplication
+    produces `ε²` in the lower-right entry, while Strassen's literal operation
+    graph forms the displayed cancellation of four order-one terms.  This is
+    the exact algebraic content of the example; the following `O(u/ε²)` prose
+    requires a quantified floating-point family and is intentionally separate. -/
+theorem higham23_strassen_small_entry_example (ε : ℝ) :
+    let A : Higham23Block2 (R := ℝ) :=
+      { c11 := 1, c12 := 0, c21 := 0, c22 := 1 }
+    let B : Higham23Block2 (R := ℝ) :=
+      { c11 := 1, c12 := ε, c21 := ε, c22 := ε ^ 2 }
+    (higham23BlockMul A B).c22 = ε ^ 2 ∧
+      (higham23Strassen2 A B).c22 =
+        2 * (1 + ε ^ 2) + (ε - ε ^ 2) - 1 - (1 + ε) ∧
+      2 * (1 + ε ^ 2) + (ε - ε ^ 2) - 1 - (1 + ε) = ε ^ 2 := by
+  dsimp [higham23BlockMul, higham23Strassen2]
+  constructor
+  · ring
+  constructor <;> ring
+
 /-- Equation (23.6): Winograd's 15-addition variant of Strassen's method. -/
 def higham23WinogradStrassen2
     (A B : Higham23Block2 (R := R)) : Higham23Block2 (R := R) :=

@@ -12,7 +12,7 @@
 | (22.5)--(22.17), Algorithm 22.2 | PROVED; repeated-node Hermite factorization and final solve |
 | Algorithm 22.3 | PROVED for the separate printed natural-indexed executor via `higham22_algorithm22_3_eq_factorized`, with literal primal solve `higham22Hermite_algorithm22_3_solve` |
 | (22.18)--(22.21), Theorem 22.4 | PROVED from the actual primitive rounded graph |
-| (22.22), Corollary 22.5 | PROVED for all four named source bases |
+| (22.22), Corollary 22.5 | PROVED: `higham22_eq22_22_four_node_six_factor` is the literal four-node `U₀U₁U₂L₂L₁L₀` display, and the generic checkerboard/no-cancellation result is proved for all four named source bases |
 | (22.23)--(22.25), Theorem 22.6 | PROVED conditional exactly on the source's general simplifying assumption (22.24) |
 | Problem 22.8, Corollary 22.7 | PROVED: `higham22Closure_eq22_24_monomial` identifies every actual state-dependent rounded monomial Stage-II factor with the structured complex bidiagonal perturbation, proves nonsingularity and the inverse-entry coefficient, and `higham22_corollary22_7_monomial_residual_closed` supplies the source-facing residual endpoint without a target-bearing premise |
 | Algorithm 22.8 / Problem 22.10 | PROVED |
