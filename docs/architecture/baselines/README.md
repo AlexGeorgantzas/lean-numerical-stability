@@ -9,10 +9,28 @@ Each capture consists of:
 - a Markdown file presenting the review-relevant summary and the definitions
   needed to interpret it safely.
 
+## Recorded evidence
+
+- `2026-07-22.{json,md}` is the historical start-of-migration capture at
+  `9a4067d5`. It deliberately records the dirty source paths already involved
+  in the first migration slice, so it is not presented as a clean checkout.
+- `2026-07-22-post-migration.{json,md}` is the clean-source capture at the
+  implementation checkpoint `975d08cc`, after the entry points, canonical
+  paths, compatibility shims, and tests were in place.
+- `2026-07-22-build.md` records the passing build gates, controlled warm and
+  endpoint-incremental timings, environment, and the explicit clean-build
+  deferral.
+
 Regenerate a named baseline from the repository root with:
 
 ```text
 python tools/architecture/generate_baseline.py --name YYYY-MM-DD
+```
+
+Verify a committed capture's stable measurements and canonical rendering with:
+
+```text
+python tools/architecture/generate_baseline.py --no-build --check --name YYYY-MM-DD
 ```
 
 The capture records the exact Git commit and also lists any dirty
