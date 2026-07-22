@@ -1,5 +1,13 @@
 # Higham Chapter 16 Source Coverage Ledger
 
+> **Final PDF-first notes closure (2026-07-22).**
+> `Sylvester/Higham16VecPermutationNotes.lean` constructs the exact
+> commutation permutation on printed p. 317, proves its explicit matrix-unit
+> sum, and proves `(B ⊗ A) Π = Π (A ⊗ B)` entrywise. The Chu generalized
+> Sylvester paragraph remains a literature-review extension whose regular
+> pencil/spectral machinery is not specified in this chapter; it is recorded
+> as source-deferred rather than counted as a missing in-book producer.
+
 > **Fresh strict correction (2026-07-21): the unconditional rounded-suffix
 > claim below is superseded.** `Higham16PivotedSmallBlocks.lean` now gives an
 > actual complete-pivot 1/2/4-block `Option` executor for the supplied-Schur

@@ -334,7 +334,54 @@ theorem ch5newton_forward_error_bound (fp : FPModel) (x : ℝ)
   exact hforward
 
 /-! ###########################################################################
-    PART (ii): monotone-node-ordering corollary of (5.11)/(5.12).
+    PART (ii): sharpness of the data-rounding scale preceding (5.12).
+    ########################################################################### -/
+
+/-- **Higham, 2nd ed., Section 5.3, p. 100, data-rounding sharpness.**
+
+For a fixed output coordinate `i`, componentwise relative perturbations
+`f_j ↦ f_j * (1 + δ_j)`, `|δ_j| ≤ u`, can attain exactly the row majorant
+`u * ∑ j, |L i j| * |f j|`.  The quantifier over `δ` is inside the quantifier
+over `i`: the source's componentwise phrase "as large as" does not assert that
+one common perturbation simultaneously attains every output coordinate.
+
+This is a source-facing specialization of `matMul_forward_bound_sharp_B`; no
+new sharpness argument is assumed. -/
+theorem ch5newton_data_rounding_error_componentwise_sharp
+    {n : ℕ} (u : ℝ) (hu : 0 ≤ u)
+    (L : Fin n → Fin n → ℝ) (f : Fin n → ℝ) (i : Fin n) :
+    ∃ delta : Fin n → ℝ,
+      (∀ j, |delta j| ≤ u) ∧
+      |(∑ j : Fin n, L i j * (f j * (1 + delta j))) -
+          ∑ j : Fin n, L i j * f j| =
+        u * ∑ j : Fin n, |L i j| * |f j| := by
+  let fColumn : Fin n → Fin 1 → ℝ := fun j _ => f j
+  obtain ⟨DeltaF, hDeltaF, hsharp⟩ :=
+    matMul_forward_bound_sharp_B u hu L fColumn i (0 : Fin 1)
+  let delta : Fin n → ℝ := fun j =>
+    if f j = 0 then 0 else DeltaF j (0 : Fin 1) / f j
+  have hdelta : ∀ j, |delta j| ≤ u := by
+    intro j
+    by_cases hfj : f j = 0
+    · simp [delta, hfj, hu]
+    · simp only [delta, if_neg hfj, abs_div]
+      apply (div_le_iff₀ (abs_pos.mpr hfj)).2
+      simpa [fColumn] using hDeltaF j (0 : Fin 1)
+  have hrelative : ∀ j, f j * (1 + delta j) = f j + DeltaF j (0 : Fin 1) := by
+    intro j
+    by_cases hfj : f j = 0
+    · have hDeltaZero : DeltaF j (0 : Fin 1) = 0 := by
+        have hbound := hDeltaF j (0 : Fin 1)
+        simp [fColumn, hfj] at hbound
+        exact hbound
+      simp [delta, hfj, hDeltaZero]
+    · simp only [delta, if_neg hfj]
+      field_simp [hfj]
+  refine ⟨delta, hdelta, ?_⟩
+  simpa only [fColumn, hrelative] using hsharp
+
+/-! ###########################################################################
+    PART (iii): monotone-node-ordering corollary of (5.11)/(5.12).
     ###########################################################################
 
 We prove the no-cancellation identity `|L_{n-1}| ... |L_0| = |L|` for strictly

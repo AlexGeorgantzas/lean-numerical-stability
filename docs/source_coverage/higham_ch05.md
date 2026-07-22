@@ -12,6 +12,14 @@
 > output-relative error bound, and proves the printed
 > `sqrt(2)*gamma_2*(2*mu-|y|)` running bound. No target error expansion is
 > assumed.
+>
+> **PDF-first Paterson--Stockmeyer correction (2026-07-22).** The former
+> classification of the printed p. 102 matrix-polynomial complexity claim as
+> editorial `SKIP-OK` was too weak under the tightened audit rule. The PDF gives
+> exact coefficient/matrix dimensions and quantitative asymptotic claims.
+> `Higham5PatersonStockmeyer.lean` now supplies the literal block-Horner
+> evaluator, proves exact equality to P1, and connects the operational baby-step
+> plus Horner schedule to exact multiplication and stored-element bounds.
 
 ## Source and Scope
 
@@ -22,9 +30,11 @@
 - Mode: core.
 - Split ownership: pre-split foundational chapter (Chapters 1–6 band); audited from the Split 3B/4 worktree
   (`formalize/split4-claude`, worktree `ch18-split3-claude-claude-ch18-split3-20260703044646`).
-- Main Lean files: `NumStability/Algorithms/Horner.lean` and the fresh
-  source-facing closure module `NumStability/Algorithms/Ch5SourceClosure.lean`.
-- Audit date: 2026-07-18. Audit type: strict statement-level source verification and repair.
+- Main Lean files: `NumStability/Algorithms/Horner.lean`, the source-facing
+  closure module `NumStability/Algorithms/Ch5SourceClosure.lean`, and
+  `NumStability/Algorithms/Higham5PatersonStockmeyer.lean`.
+- Audit date: 2026-07-22 (original strict repair 2026-07-18). Audit type:
+  strict statement-level, PDF-first source verification and repair.
 - Axiom spot-check (9 load-bearing decls, throwaway `#print axioms`, deleted after): all
   `[propext, Classical.choice, Quot.sound]` — axiom-clean. Checked:
   `fl_hornerDesc_backward_error_coefficients`, `fl_hornerDesc_forward_error_bound`,
@@ -41,6 +51,11 @@
   `[propext, Classical.choice, Quot.sound]`. This includes the explicit inverse
   and matrix-product declarations, both operational two-sweep theorems, and the
   actual rounded inverse-unwind/residual theorem for (5.12).
+
+- Paterson--Stockmeyer focused build: PASS (3123 jobs). The dedicated
+  `Ch5PatersonStockmeyerAxiomAudit.lean` reports no nonstandard axioms for the
+  executable equality, operational count split, exact count, storage formula
+  and bound, or packaged p. 102 source theorem.
 
 - **Historical selected-scope gate: PASS** (2026-07-14, superseded by the
   2026-07-18 strict audit below). Both primary labels (Algorithm 5.1
@@ -82,7 +97,7 @@
 | (5.12) | Residual unwind: `\|f - L^{-1} chat\| <= ((1-3u)^{-n} - 1)\|L_0^{-1}\|...\|L_{n-1}^{-1}\|\|chat\|` | **VERIFIED** | `fl_dividedDifferenceStep_entry_inverse_gamma3` derives the inverse factor for each actual rounded recurrence entry; `fl_dividedDifferenceFiniteCoeffs_succ_exists_unwind_gamma3` and `fl_dividedDifferenceFiniteCoeffs_exists_inverse_unwind_gamma3` construct and compose the concrete inverse steps. The final `fl_dividedDifferenceFiniteCoeffs_residual_error_bound_gamma3` now requires only exact nonzero denominators and `gammaValid fp 3`: `fl_sub_ne_zero_of_exact_ne_zero_of_gammaValid_three` derives every rounded denominator's nonbreakdown from `fl_sub = (exact subtraction)(1+delta)`, `|delta| <= u < 1`. The endpoint has the exact `(1+gamma_3)^m-1 = (1-3u)^{-m}-1` constant and printed absolute inverse-product majorant. |
 | Newton-evaluation displays (unnumbered, §5.3 end) | Generalized Horner for the Newton form: `qhat_0 = c_0<1> + (x-alpha_0)c_1<4> + ... + (...)c_n<3n>`; forward bound `gamma_3n * sum \|c_i\| prod \|x - alpha_j\|` | **VERIFIED** | `ch5newton_fleval`, `ch5newton_backward_error`, and `ch5newton_forward_error_bound` in `Ch5NewtonForm.lean` give the actual rounded generalized-Horner evaluator, `<3n>` backward representation, and `gamma_3n` forward bound. |
 | (5.13a,b) | Leja ordering: `\|alpha_0\| = max`, prefix-product maximization | **VERIFIED** (definition + spec) | `lejaPrefixProduct` (+ lemmas), `IsLejaOrdering`, accessors `IsLejaOrdering.first_abs_max`/`step_product_max`; greedy construction certificate `LejaGreedyFirstChoice/StepChoice`, `IsLejaGreedyTrace`, `IsLejaGreedyTrace.isLejaOrdering`. |
-| (5.14) | Matrix polynomials `P1`, `P2`, `P3(X) = A_0 + A_1 X + ... + A_n X^n` | **VERIFIED** | Complex definitions and exact Horner realizations: `complexMatrixPolyP1Desc` / `complexMatrixHornerP1Desc_eq_complexMatrixPolyP1Desc`, the corresponding `P2` pair, and the corresponding `P3` pair. The older real `P3` stability development remains available for Problem 5.6. Paterson–Stockmeyer discussion is editorial (SKIP-OK). |
+| (5.14) and preceding p. 102 fast-evaluation paragraph | Matrix polynomials `P1`, `P2`, `P3(X) = A_0 + A_1 X + ... + A_n X^n`; Paterson--Stockmeyer evaluates P1 with matrix multiplications proportional to `√n` and extra storage proportional to `m²√n` elements | **VERIFIED** | Complex definitions and exact Horner realizations: `complexMatrixPolyP1Desc` / `complexMatrixHornerP1Desc_eq_complexMatrixPolyP1Desc`, the corresponding `P2` pair, and the corresponding `P3` pair. `higham5PatersonStockmeyerHorner` is the source-dimensional `Fin (n+1) → ℂ`, `m×m` block-Horner evaluator; `higham5_patersonStockmeyerHorner_eq_P1` proves exact equality. `higham5_ps_matrix_multiplications_operational` connects the actual baby-power/Horner phases, `higham5_ps_matrix_multiplications_exact` gives exactly `2⌊√n⌋`, and `higham5_ps_stored_elements_le` gives `(⌊√n⌋+4)m² ≤ 5m²⌊√n⌋` for `n>0`. The older real `P3` stability development remains available for Problem 5.6. |
 
 ## Problems (optional in core mode)
 
@@ -118,7 +133,11 @@
    `R`; `HighamChapter5ComplexAlgorithm51.lean` supplies the distinct actual
    complex Algorithm 5.1 executor and the Lemma 3.5 `sqrt(2)*gamma_2` running
    bound. Equation (5.14) is formalized over complex matrices for all three
-   `P1`/`P2`/`P3` orientations, with exact Horner realizations.
+   `P1`/`P2`/`P3` orientations, with exact Horner realizations. The separate
+   Paterson--Stockmeyer closure also uses the literal complex scalar
+   coefficients and complex `m×m` matrix dimensions; its resource theorem is
+   attached to the operational power-chain and block-Horner phases rather than
+   to the unrelated scalar quartic evaluator.
 5. A docstring citation without an attached genuine theorem was NOT counted anywhere in this ledger; every
    VERIFIED row above names the theorem whose statement was read and matched against the printed row.
 
@@ -168,6 +187,6 @@ producer closes (5.12). The selected-scope gate is PASS.**
   the (5.9)–(5.12) machinery formalized here is the natural substrate for the ch22 error analyses.
 - **Matrix-function chapters / P1 evaluation**: the (5.14)/Problem 5.6 matrix-Horner engine (norm-level matmul
   error propagation, `ptilde_3` majorants) is reusable wherever matrix polynomials are evaluated
-  (Paterson–Stockmeyer contexts, cf. [509, Chap. 11] citations in the source).
+  (including the now-closed Paterson--Stockmeyer P1 evaluator; cf. [509, Chap. 11] citations in the source).
 - **Chapter 28.6 / zero-finding**: Algorithm 5.1's stopping-criterion use for polynomial zero-finders is
   editorial here; no ch28 consumer yet.

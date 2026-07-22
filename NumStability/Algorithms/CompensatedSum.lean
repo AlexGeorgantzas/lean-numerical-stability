@@ -9549,6 +9549,172 @@ theorem not_exists_fl_kahanSum_biasedSmallCounterexample_twoStep_source_bound_of
     nlinarith
   nlinarith [hupper', hCu_sq, hpos_tail, hu_pos]
 
+/-- For every nonnegative proposed second-order constant and every positive
+unit-roundoff neighbourhood, there is a positive unit roundoff in that
+neighbourhood for which C*u is at most one half.  This packages the
+quantifier step needed to turn the parametric Kahan counterexample into a
+genuine first-order source discrepancy. -/
+theorem exists_kahanBiasedSmallCounterexample_unitRoundoff
+    {C epsilon : Real} (hC : 0 <= C) (hepsilon : 0 < epsilon) :
+    exists u : Real,
+      0 <= u /\ 0 < u /\ u < 1 /\ u <= epsilon /\ C * u <= 1 / 2 := by
+  let d : Real := 4 * (C + 1) * (epsilon + 1)
+  have hC1 : 0 < C + 1 := by linarith
+  have hepsilon1 : 0 < epsilon + 1 := by linarith
+  have hd : 0 < d := by
+    dsimp [d]
+    positivity
+  have hd_one : 1 <= d := by
+    dsimp [d]
+    nlinarith [mul_nonneg hC (le_of_lt hepsilon)]
+  let u : Real := epsilon / d
+  have hu_pos : 0 < u := by
+    dsimp [u]
+    exact div_pos hepsilon hd
+  have hu : 0 <= u := le_of_lt hu_pos
+  have hu_lt_one : u < 1 := by
+    dsimp [u]
+    rw [div_lt_one hd]
+    dsimp [d]
+    nlinarith [mul_nonneg hC (le_of_lt hepsilon)]
+  have hu_le_epsilon : u <= epsilon := by
+    dsimp [u]
+    rw [div_le_iff₀ hd]
+    have hmul :=
+      mul_le_mul_of_nonneg_left hd_one (le_of_lt hepsilon)
+    simpa using hmul
+  have hCu : C * u <= 1 / 2 := by
+    dsimp [u]
+    rw [← mul_div_assoc]
+    rw [div_le_iff₀ hd]
+    dsimp [d]
+    nlinarith [mul_nonneg hC (le_of_lt hepsilon)]
+  exact ⟨u, hu, hu_pos, hu_lt_one, hu_le_epsilon, hCu⟩
+
+/-- Uniform two-term formulation of the printed first-order content of
+Higham (4.8) over the bare floating-point model.  A fixed C is allowed to
+absorb the O(u^2) term, and the assertion is required only in a positive
+neighbourhood of zero. -/
+def Higham48BareFPModelTwoTermSecondOrderBound
+    (C epsilon : Real) : Prop :=
+  forall (fp : FPModel), 0 < fp.u -> fp.u <= epsilon ->
+    exists mu : Fin 2 -> Real,
+      (forall i, |mu i| <= 2 * fp.u + C * fp.u ^ 2) /\
+      fl_kahanSum fp 2 kahanBiasedTwoStepInput =
+        Finset.univ.sum
+          (fun i : Fin 2 => kahanBiasedTwoStepInput i * (1 + mu i))
+
+/-- Model-strength discrepancy terminal for Higham (4.8) in the repository's bare
+floating-point model: even for n=2, no fixed second-order constant makes the
+printed leading-2*u backward-error assertion true on any neighbourhood of
+u=0.  The countermodels have arbitrarily small positive unit roundoff.
+
+This result concerns only the abstract FPModel contract.  In particular, it
+does not by itself refute the printed claim for correctly rounded finite
+arithmetic, whose representable-result coherence excludes this family. -/
+theorem not_exists_higham48BareFPModelTwoTermSecondOrderBound :
+    Not (exists C epsilon : Real,
+      0 <= C /\ 0 < epsilon /\
+        Higham48BareFPModelTwoTermSecondOrderBound C epsilon) := by
+  rintro ⟨C, epsilon, hC, hepsilon, hclaim⟩
+  obtain ⟨u, hu, hu_pos, hu_lt_one, hu_le_epsilon, hCu⟩ :=
+    exists_kahanBiasedSmallCounterexample_unitRoundoff hC hepsilon
+  let fp := kahanBiasedSmallCounterexampleFPModel u hu
+  have hfp_pos : 0 < fp.u := by
+    simpa [fp, kahanBiasedSmallCounterexampleFPModel] using hu_pos
+  have hfp_le : fp.u <= epsilon := by
+    simpa [fp, kahanBiasedSmallCounterexampleFPModel] using hu_le_epsilon
+  rcases hclaim fp hfp_pos hfp_le with ⟨mu, hmu, hsum⟩
+  apply
+    not_exists_fl_kahanSum_biasedSmallCounterexample_twoStep_source_bound_of_Cu_le_half
+      hu hu_pos hu_lt_one hCu
+  refine ⟨mu, ?_, ?_⟩
+  · intro i
+    simpa [fp, kahanBiasedSmallCounterexampleFPModel] using hmu i
+  · simpa [fp] using hsum
+
+/-- Pointwise forward-error obstruction corresponding to the biased Kahan
+countermodel.  Its returned error has leading coefficient 3, so a proposed
+leading-2 bound plus C*u^2 fails whenever C*u is at most one half. -/
+theorem
+    not_fl_kahanSum_biasedSmallCounterexample_twoStep_forward_bound_of_Cu_le_half
+    {u C : Real} (hu : 0 <= u) (hu_pos : 0 < u) (hu_lt_one : u < 1)
+    (hCu : C * u <= 1 / 2) :
+    Not
+      (|fl_kahanSum (kahanBiasedSmallCounterexampleFPModel u hu) 2
+            kahanBiasedTwoStepInput -
+          Finset.univ.sum (fun i : Fin 2 => kahanBiasedTwoStepInput i)| <=
+        (2 * u + C * u ^ 2) *
+          Finset.univ.sum (fun i : Fin 2 => |kahanBiasedTwoStepInput i|)) := by
+  intro hbound
+  have hsum_closed :
+      fl_kahanSum (kahanBiasedSmallCounterexampleFPModel u hu) 2
+          kahanBiasedTwoStepInput =
+        1 + 3 * u + 4 * u ^ 2 + 3 * u ^ 3 + u ^ 4 :=
+    fl_kahanSum_biasedSmallCounterexample_twoStep_of_pos_lt_one
+      hu hu_pos hu_lt_one
+  have hsum_exact :
+      Finset.univ.sum (fun i : Fin 2 => kahanBiasedTwoStepInput i) = 1 := by
+    norm_num [kahanBiasedTwoStepInput]
+  have habs_exact :
+      Finset.univ.sum (fun i : Fin 2 => |kahanBiasedTwoStepInput i|) = 1 := by
+    norm_num [kahanBiasedTwoStepInput]
+  rw [hsum_closed, hsum_exact, habs_exact, mul_one] at hbound
+  have hu2 : 0 <= u ^ 2 := sq_nonneg u
+  have hu3 : 0 <= u ^ 3 := by nlinarith [hu, hu2]
+  have hu4 : 0 <= u ^ 4 := by nlinarith [hu2]
+  have herror_nonneg :
+      0 <= 3 * u + 4 * u ^ 2 + 3 * u ^ 3 + u ^ 4 := by
+    nlinarith
+  have herror :
+      3 * u + 4 * u ^ 2 + 3 * u ^ 3 + u ^ 4 <=
+        2 * u + C * u ^ 2 := by
+    rw [show
+      1 + 3 * u + 4 * u ^ 2 + 3 * u ^ 3 + u ^ 4 - 1 =
+        3 * u + 4 * u ^ 2 + 3 * u ^ 3 + u ^ 4 by ring,
+      abs_of_nonneg herror_nonneg] at hbound
+    exact hbound
+  have hCu_sq : C * u ^ 2 <= (1 / 2) * u := by
+    have hmul := mul_le_mul_of_nonneg_right hCu hu
+    nlinarith
+  have htail : 0 <= 4 * u ^ 2 + 3 * u ^ 3 + u ^ 4 := by
+    nlinarith
+  nlinarith [herror, hCu_sq, htail, hu_pos]
+
+/-- Uniform two-term formulation of the printed first-order content of
+Higham (4.9) over the bare floating-point model. -/
+def Higham49BareFPModelTwoTermSecondOrderBound
+    (C epsilon : Real) : Prop :=
+  forall (fp : FPModel), 0 < fp.u -> fp.u <= epsilon ->
+    |fl_kahanSum fp 2 kahanBiasedTwoStepInput -
+        Finset.univ.sum (fun i : Fin 2 => kahanBiasedTwoStepInput i)| <=
+      (2 * fp.u + C * fp.u ^ 2) *
+        Finset.univ.sum (fun i : Fin 2 => |kahanBiasedTwoStepInput i|)
+
+/-- Model-strength discrepancy terminal for Higham (4.9) in the repository's bare
+floating-point model: no fixed second-order constant repairs the printed
+leading-2*u forward bound near u=0, already for the two-term input [1,0].
+
+As above, this is a limitation theorem for FPModel, not a finite-format
+counterexample to the source statement. -/
+theorem not_exists_higham49BareFPModelTwoTermSecondOrderBound :
+    Not (exists C epsilon : Real,
+      0 <= C /\ 0 < epsilon /\
+        Higham49BareFPModelTwoTermSecondOrderBound C epsilon) := by
+  rintro ⟨C, epsilon, hC, hepsilon, hclaim⟩
+  obtain ⟨u, hu, hu_pos, hu_lt_one, hu_le_epsilon, hCu⟩ :=
+    exists_kahanBiasedSmallCounterexample_unitRoundoff hC hepsilon
+  let fp := kahanBiasedSmallCounterexampleFPModel u hu
+  have hfp_pos : 0 < fp.u := by
+    simpa [fp, kahanBiasedSmallCounterexampleFPModel] using hu_pos
+  have hfp_le : fp.u <= epsilon := by
+    simpa [fp, kahanBiasedSmallCounterexampleFPModel] using hu_le_epsilon
+  have hbound := hclaim fp hfp_pos hfp_le
+  apply
+    not_fl_kahanSum_biasedSmallCounterexample_twoStep_forward_bound_of_Cu_le_half
+      hu hu_pos hu_lt_one hCu
+  simpa [fp, kahanBiasedSmallCounterexampleFPModel] using hbound
+
 /-- The small-unit-roundoff biased model rejects the common false shortcut
 that the source-shaped returned-Kahan theorem follows from the bare `FPModel`
 contract with the exact-subtraction-route constants.
@@ -13008,6 +13174,38 @@ theorem fl_kahanSum_forward_error_bound_correctedReturnedMajorant
     fl_kahanSum_forward_error_bound_of_backward fp n v
       (fl_kahanSum_backward_error_source_bound_correctedReturnedMajorant
         fp n v hu64 hm)
+
+/-- Corrected terminal corresponding to Higham (4.8) after the bare-model
+strength discrepancy above: actual returned Kahan admits a componentwise
+backward representation with leading constant 3 and an explicit
+n-dependent second- and third-order majorant. -/
+theorem highamCh4_equation48_modelStrengthCorrection_bareFPModel
+    (fp : FPModel) (n : Nat) (v : Fin n -> Real)
+    (hu64 : fp.u <= 1 / 64)
+    (hm : (n : Real) * fp.u ^ 2 <= 1 / 16) :
+    exists mu : Fin n -> Real,
+      (forall i,
+        |mu i| <=
+          3 * fp.u + (14 + 13 * (n : Real)) * fp.u ^ 2 +
+            (12 + 13 * (n : Real)) * fp.u ^ 3) /\
+      fl_kahanSum fp n v =
+        Finset.univ.sum (fun i : Fin n => v i * (1 + mu i)) :=
+  fl_kahanSum_backward_error_source_bound_correctedReturnedMajorant
+    fp n v hu64 hm
+
+/-- Corrected terminal corresponding to Higham (4.9) after the bare-model
+strength discrepancy above: the actual returned Kahan error has the matching
+explicit leading-3 absolute forward bound. -/
+theorem highamCh4_equation49_modelStrengthCorrection_bareFPModel
+    (fp : FPModel) (n : Nat) (v : Fin n -> Real)
+    (hu64 : fp.u <= 1 / 64)
+    (hm : (n : Real) * fp.u ^ 2 <= 1 / 16) :
+    |fl_kahanSum fp n v - Finset.univ.sum (fun i : Fin n => v i)| <=
+      (3 * fp.u + (14 + 13 * (n : Real)) * fp.u ^ 2 +
+        (12 + 13 * (n : Real)) * fp.u ^ 3) *
+        Finset.univ.sum (fun i : Fin n => |v i|) :=
+  fl_kahanSum_forward_error_bound_correctedReturnedMajorant
+    fp n v hu64 hm
 
 /-- One-signed relative-error consequence of a supplied ordinary Kahan
 backward-error representation. -/

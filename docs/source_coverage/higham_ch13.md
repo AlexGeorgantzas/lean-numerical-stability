@@ -1,5 +1,15 @@
 # Higham Chapter 13 Formalization Report — "Block LU Factorization"
 
+> **Final PDF-first notes closure (2026-07-22).**
+> `LU/Higham13DemmelSharpMultiplier.lean` proves Demmel's strengthened notes
+> bound
+> `||A21 A11⁻¹||₂ ≤ (sqrt(kappa₂(A)) - 1/sqrt(kappa₂(A)))/2`
+> from an actual SPD matrix, canonical inverses, and the Loewner spectral
+> interval. It also constructs an explicit rational `2 × 2` SPD equality
+> witness, so the book's statement that the bound is attainable is formalized
+> rather than merely cited. This supersedes the older parenthetical below
+> that said the stronger notes bound was not claimed.
+
 ## Source and scope
 
 - Edition: Nicholas J. Higham, *Accuracy and Stability of Numerical
@@ -37,7 +47,7 @@ build. Load-bearing declarations were axiom-checked.
 | Theorem 13.6 (Demmel, Higham & Schreiber) | Block LU + solve backward error (13.16): ‖ΔAᵢ‖ ≤ dₙu(‖A‖+‖L̂‖‖Û‖)+O(u²) | VERIFIED | `higham13_theorem13_6_eq13_16_from_factor_solve_estimates`, `..._firstOrder_...`, DHS path `demmelHighamSchreiber13_6_*`, and computation-derived `higham13_theorem13_6_implementation1_family_from_partitioned_computation_and_conventional_recursive_solve` | Book omits its proof (cites DHS [326]). Lean gives (a) a structured derivation from assumptions (13.4),(13.14),(13.15) and (b) a genuine Implementation-1 endpoint that derives the conventional BLAS/solve constants from the FP roundoff model — at or above source strength. |
 | Theorem 13.7 (DHS) | Block-diagonally-dominant A has block LU; Schur complements inherit the dominance | VERIFIED | `higham13_theorem13_7_algorithm13_3_opNorm2_column`, `..._row`, `higham13_theorem13_7_and_13_8_clm_column_source_closure`, `..._clm_row_...` | Constructs the whole pivot table from source hypotheses (full nonsingularity + BDD); no all-leading-prefix or prebuilt-pivot assumption. Column & row, Euclidean and arbitrary subordinate operator norm. |
 | Theorem 13.8 (DHS) | For BDD A, max active Schur block norm ≤ 2·max block norm of A | VERIFIED | `higham13_theorem13_8_algorithm13_3_opNorm2_column`, `..._row`, arbitrary-norm halves in `..._clm_column/row_source_closure` | Printed `2·max` growth estimate proved on the actual active stages, column & row, Euclidean & arbitrary norm. |
-| Lemma 13.9 (DHS) | SPD ⟹ ‖A21 A11⁻¹‖₂ ≤ κ₂(A)^{1/2} | VERIFIED | `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_spd_leading_nonsingInv_kappa2` | Derives from bare `IsSymPosDef` via `cholesky_existence`; `A11⁻¹` = `R11⁻¹R11⁻ᵀ`, bound `√(κ₂(A))` = `√(‖A‖₂‖A⁻¹‖₂)`. (The book's stronger attainable bound in the Notes is not claimed.) |
+| Lemma 13.9 (DHS) and strengthened attainable notes bound | SPD ⟹ ‖A21 A11⁻¹‖₂ ≤ κ₂(A)^{1/2}; notes sharpen this to `(√κ₂(A) − 1/√κ₂(A))/2` and say it is attainable | VERIFIED | `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_spd_leading_nonsingInv_kappa2`, `higham13_notes_demmel_sharp_multiplier`, `higham13_notes_demmel_sharp_multiplier_attained` | The original lemma follows from bare `IsSymPosDef`. The sharper constant is derived from the actual spectral interval and canonical inverse, and an explicit rational `2 × 2` SPD matrix attains equality. |
 | Lemma 13.10 (DHS) | SPD ⟹ κ₂(S) ≤ κ₂(A) for S = A22 − A21A11⁻¹A21ᵀ | VERIFIED (two operator halves) | `higham13_lemma13_10_schur_opNorm2Le_of_full_operator_bound` (‖S‖₂ ≤ ‖A‖₂ via Loewner) + `higham13_problem13_4_Sinv_finiteOpNorm2Le_from_source_posDef_block_inverse` (‖S⁻¹‖₂ ≤ ‖A⁻¹‖₂) | The two halves multiply to κ₂(S) ≤ κ₂(A); both used in the SPD (13.24) chain. Honest decomposition, no separate monolithic κ₂ theorem needed. |
 
 All ten primary labels: **VERIFIED**.

@@ -1,5 +1,14 @@
 # Higham Chapter 26 Source Coverage Ledger
 
+> **Final PDF-first operational closure (2026-07-22).**
+> `AutomaticErrorAnalysis/Higham26SourceSearch.lean` adds the literal crude
+> alternating-directions producer from pp. 475–476: the `10⁻⁴ x_i` trial with
+> zero-coordinate fallback, sign reversal, and at-most-25 doublings, together
+> with coordinate/sweep monotonicity. It also constructs both printed MDS
+> initial simplexes and proves the exact Euclidean edge-length and
+> orthogonality/equi-edge claims. Thus the direct-search rows below are backed
+> by executable finite producers, not only relational specifications.
+
 Source: Higham, 2nd ed., Chapter 26, printed pp. 471-487. Mode: core.
 
 | Source group | Status | Lean evidence |

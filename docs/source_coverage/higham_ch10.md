@@ -1,5 +1,13 @@
 # Higham Chapter 10 Formalization Report — "Cholesky Factorization"
 
+> **Final PDF-first closure (2026-07-22): CORE-CLOSED.**
+> `Cholesky/Higham1014Equation1022.lean` derives equation (10.22) from the
+> literal truncated Cholesky executor and the printed (10.21) success
+> condition. Its source-facing family theorem has the exact leading
+> matrix-2-norm term and a genuine uniform `O(u^2)` remainder; no final
+> residual or trailing-Schur bound is assumed. This notice records the final
+> disposition of the formerly open/defer equation-(10.22) row.
+
 ## Source and scope
 - Edition: Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed. (SIAM, 2002).
 - Chapter: 10, "Cholesky Factorization" (printed pp. 195–208).
@@ -12,9 +20,10 @@
   now has a source-facing producer.  The printed normwise clause of Theorem
   10.8 is false under its stated hypotheses and is closed by a checked
   counterexample plus the missing-domain correction; its independent
-  componentwise clause is proved.  Theorem 10.14's unparameterized `O(u^2)`
-  display is `DEFER-MISSING-PRECISE-STATEMENT` under the audit skill rather
-  than an invented quantitative target.
+  componentwise clause is proved.  `Higham1014Equation1022.lean` closes
+  Theorem 10.14's equation (10.22) from the literal truncated executor and
+  (10.21), with the exact leading matrix-2-norm term and a quantified uniform
+  `O(u^2)` remainder.
 
 Primary Lean module: `NumStability/Algorithms/HighamChapter10.lean`
 (chapter-label surface); reusable proofs in `NumStability/Algorithms/Cholesky/*`.
@@ -35,7 +44,7 @@ Primary Lean module: `NumStability/Algorithms/HighamChapter10.lean`
 | Lemma 10.11 (cp perturbation) | `Higham10_11NoTies`, `higham10_11_finite_noTies_gap_floor_cap`, `higham10_11_cp_pivot_sequence_stable_of_noTies_two_sided`, and signed quantitative endpoints in `Ch10Lemma1011Source.lean` | **PASS.** Finiteness turns the printed no-ties/nonbreakdown assumptions into the uniform positive gap, pivot floor, and finite cap internally.  A positive perturbation radius then preserves every first-`r` pivot for both `A+E` and `A-E`.  The signed Schur expansion retains the sign of the first-order term and bounds its operator-2-norm remainder quadratically. |
 | Lemma 10.12 (‖A₁₁⁻¹A₁₂‖ bound) | `higham10_12_w_norm_bound_from_cond`, `higham10_12_psd_w_action_bound`, `higham10_12_w_action_norm_bound` | eq (10.18) |
 | Lemma 10.13 (Frobenius cp bound) | `higham10_13_complete_pivoting_w_bound`, `higham10_13_pivoted_w_frobenius_bound`, `higham10_13_kahan_source_closed` in `Ch10KahanSharpnessSource.lean` | **PASS.** The Kahan rank-`r` complete-pivoted Gram family, its `W=A11⁻¹A12` identity, and both operator-2/Frobenius limiting norms are constructed, proving the printed constant sharp in the limit. |
-| Theorem 10.14 (PSD backward error) | existing conditional/all-orders infrastructure `higham10_14_*` | **DEFER-MISSING-PRECISE-STATEMENT.** The printed conclusion contains an unparameterized `O(u²)` remainder and does not specify a remainder function, neighborhood, or constant.  The audit skill expressly forbids selecting an arbitrary completion.  Existing exact all-orders/as-run interfaces remain useful but are not misreported as the literal Landau statement. |
+| Theorem 10.14 (PSD backward error), including (10.22) | `higham10_14_equation_10_22_family_of_success`, `higham10_14_equation_10_22_family`, plus the existing `higham10_14_*` infrastructure | **CLOSED.** The literal truncated executor supplies the source error and trailing Schur block; (10.21) produces successful pivots; the matrix-2-norm leading term is the printed `2 r gamma_(r+1) ||A||₂ (||W||₂+1)^2`; and the remainder satisfies the repository's quantified uniform family-level `O(u²)` predicate. |
 
 ## Equations
 (10.1)–(10.30) accounted for. Reusable-object equations formalized as defs/theorems:
@@ -85,19 +94,21 @@ Some independent, reusable SPD/growth lemmas carry `higham10_problem_10_*` names
 (pre-existing); they wrap general SPD facts and are not transcriptions of the
 exercise tasks.
 
-## Open selected-scope items (not-proved ledger)
+## Terminal selected-scope dispositions
 
-There are no open precise selected-scope rows.  The only non-theorem terminal
-dispositions are explicit and auditable:
+There are no open precise selected-scope rows.  The terminal dispositions are
+explicit and auditable:
 
 - **Theorem 10.8 normwise display — SOURCE-DISCREPANCY.** The literal statement
   is false; `Ch10Theorem108Source.lean` supplies a complete factor-level
   counterexample and proves the omitted `κ₂(A)ε < 1` domain condition is what
   makes the displayed rational radius meaningful.  The independent
   componentwise clause is fully proved in `Ch10Theorem108Componentwise.lean`.
-- **Theorem 10.14 / equation (10.22) — DEFER-MISSING-PRECISE-STATEMENT.** Its
-  `O(u²)` term has no source-specified remainder object or constant.  Choosing
-  one would invent a theorem rather than formalize the printed claim.
+- **Theorem 10.14 / equation (10.22) — CLOSED.**
+  `higham10_14_equation_10_22_family_of_success` and
+  `higham10_14_equation_10_22_family` derive the printed leading term and a
+  quantified uniform family-level `O(u²)` remainder from the literal truncated
+  executor and (10.21).
 
 Note on Lemma 10.11 (honest-form modeling): the pivot-order-preservation half is
 proved in literal source form.  `higham10_11_finite_noTies_gap_floor_cap`
@@ -123,8 +134,9 @@ and operator-2-norm quadratic remainder with the correct signed perturbation.
   but they are no longer the source-facing closure surface.  The new normwise
   discrepancy and componentwise resolvent theorems do not use them.
 - The legacy `higham10_14_*` interfaces retain target-shaped premises and are
-  not counted as proof of the printed Landau statement; that source statement
-  is deferred for lack of a precise remainder.
+  not counted as closure evidence.  The new family endpoints in
+  `Higham1014Equation1022.lean` close the source statement without those
+  premises.
 - The older `higham10_7_fl_cholesky_success_sharp` strengthened the source
   threshold.  It is superseded for gate purposes by
   `higham10_7_actual_algorithm_source_closed`, whose assumptions are exactly
@@ -156,11 +168,9 @@ complete-pivoting proofs and the `opNorm2Le` machinery are reused from
 
 ## Documentation
 - Inventory + report: `docs/source_coverage/higham_ch10.md` (this file).
-- Open selected-scope ledger: the explicit list above; no separate ledger file.
+- Selected-scope terminal ledger: the explicit list above; no separate ledger file.
 
 ## Open issues
 
-None in the precise selected scope.  Future work may choose and document an
-explicit quantitative interpretation of Theorem 10.14's `O(u²)` remainder,
-but that would be a strengthening beyond the determinate source text and is
-not required for this gate.
+None in the precise selected scope.  Equation (10.22) is closed by the explicit
+uniform family-level remainder theorem described above.

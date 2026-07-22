@@ -315,6 +315,70 @@ theorem prod_one_add_delta_eq_one_add_eta_bound_101_le (n : ℕ) {u : ℝ}
     _ < (101 / 100 : ℝ) * ((n : ℝ) * u) := hexp_lt
     _ = (101 / 100 : ℝ) * (n : ℝ) * u := by ring
 
+/-- Numerical exponential cap for the Wilkinson variant quoted in Higham's
+Chapter 3 notes: for `0 < x < 0.1`, `exp(x) - 1 < 1.06*x`.
+
+The proof uses the already checked Padé envelope
+`exp(x) - 1 < x / (1 - x/2)`.  On `x < 0.1`, its multiplicative factor is
+strictly smaller than `1 / 0.95 < 1.06`. -/
+theorem real_exp_sub_one_lt_106_mul_of_pos_of_lt_tenth {x : ℝ}
+    (hx0 : 0 < x) (hxsmall : x < (1 / 10 : ℝ)) :
+    Real.exp x - 1 < (53 / 50 : ℝ) * x := by
+  have hpade : Real.exp x - 1 < x / (1 - x / 2) :=
+    real_exp_sub_one_lt_div_one_sub_half_of_pos_of_lt_two hx0 (by nlinarith)
+  have hden_pos : 0 < 1 - x / 2 := by nlinarith
+  have hratio : x / (1 - x / 2) < (53 / 50 : ℝ) * x := by
+    rw [div_lt_iff₀ hden_pos]
+    nlinarith
+  exact hpade.trans hratio
+
+/-- Wilkinson's slightly different version of Higham Chapter 3, Lemma 3.4,
+quoted in the chapter notes: if `|delta_i| <= u` and `n*u < 0.1`, then
+the product is `1 + eta` with `|eta| <= 1.06*n*u`.
+
+Unlike a wrapper around the generic `gamma_n` bound, this theorem derives the
+printed constant from the proved product/exponential envelope.  The zero-`u`
+case is handled separately so that the source's non-strict conclusion holds
+without an unnecessary positivity assumption. -/
+theorem prod_one_add_delta_eq_one_add_eta_bound_106 (n : ℕ) {u : ℝ}
+    (hnpos : 0 < n) (delta : Fin n → ℝ)
+    (hdelta : ∀ i : Fin n, |delta i| ≤ u)
+    (hnu : (n : ℝ) * u < (1 / 10 : ℝ)) :
+    ∃ eta : ℝ,
+      |eta| ≤ (53 / 50 : ℝ) * (n : ℝ) * u ∧
+        (∏ i : Fin n, (1 + delta i)) = 1 + eta := by
+  by_cases hu_zero : u = 0
+  · subst u
+    have hdelta_zero : ∀ i : Fin n, delta i = 0 := by
+      intro i
+      exact abs_eq_zero.mp (le_antisymm (hdelta i) (abs_nonneg _))
+    refine ⟨0, by norm_num, ?_⟩
+    simp [hdelta_zero]
+  · set P : ℝ := ∏ i : Fin n, (1 + delta i)
+    refine ⟨P - 1, ?_, by ring⟩
+    have hnposR : 0 < (n : ℝ) := by exact_mod_cast hnpos
+    have hu0 : 0 ≤ u :=
+      (abs_nonneg (delta ⟨0, hnpos⟩)).trans (hdelta ⟨0, hnpos⟩)
+    have hu_pos : 0 < u := lt_of_le_of_ne hu0 (Ne.symm hu_zero)
+    have hxpos : 0 < (n : ℝ) * u := mul_pos hnposR hu_pos
+    have hn_one_le : (1 : ℝ) ≤ n := by
+      exact_mod_cast (Nat.succ_le_iff.mpr hnpos)
+    have hu_le_nu : u ≤ (n : ℝ) * u := by
+      simpa [one_mul] using mul_le_mul_of_nonneg_right hn_one_le hu0
+    have hu1 : u ≤ 1 := by nlinarith
+    have hprod_exp :
+        |P - 1| ≤ Real.exp ((n : ℝ) * u) - 1 := by
+      simpa [P] using
+        prod_one_add_delta_abs_sub_one_le_exp_sub_one n hu0 hu1 delta hdelta
+    have hexp_lt :
+        Real.exp ((n : ℝ) * u) - 1 <
+          (53 / 50 : ℝ) * ((n : ℝ) * u) :=
+      real_exp_sub_one_lt_106_mul_of_pos_of_lt_tenth hxpos hnu
+    calc
+      |P - 1| ≤ Real.exp ((n : ℝ) * u) - 1 := hprod_exp
+      _ ≤ (53 / 50 : ℝ) * ((n : ℝ) * u) := le_of_lt hexp_lt
+      _ = (53 / 50 : ℝ) * (n : ℝ) * u := by ring
+
 /-- Higham Chapter 3, Problem 3.2, all-positive-factor product form.
 
 If every exponent in Lemma 3.1 is `+1`, the product admits the stronger

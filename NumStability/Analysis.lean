@@ -16,9 +16,16 @@ import NumStability.Analysis.Error
 import NumStability.Analysis.CramersRule
 import NumStability.Analysis.FloatingPointArithmetic
 import NumStability.Analysis.FusedMultiplyAdd
+import NumStability.Analysis.HighamChapter2ElementaryFunctions
+import NumStability.Analysis.HighamChapter2FmaDiscriminant
+import NumStability.Analysis.HighamChapter2Tablemaker
+import NumStability.Analysis.HighamChapter2Lindemann
+import NumStability.Analysis.HighamChapter2PowerLeadingDigits
+import NumStability.Analysis.HighamChapter2GradualUnderflowExact
 import NumStability.Analysis.Heron
 import NumStability.Analysis.IncreasingPrecision
 import NumStability.Analysis.InstabilityWithoutCancellation
+import NumStability.Analysis.BrentBaseOptimality
 import NumStability.Analysis.LeadingDigitDistribution
 import NumStability.Analysis.Problem2_2
 import NumStability.Analysis.Problem2_3
@@ -66,6 +73,7 @@ import NumStability.Analysis.NearInteger
 import NumStability.Analysis.Nonassociativity
 import NumStability.Analysis.NonrandomRounding
 import NumStability.Analysis.Norms
+import NumStability.Analysis.HighamChapter6Duality
 import NumStability.Analysis.Midpoint
 import NumStability.Analysis.CStarMatrixBridge
 import NumStability.Analysis.CStarMatrixTrace
@@ -75,3 +83,4 @@ import NumStability.Analysis.LiebTrace
 import NumStability.Analysis.MatrixConcentration
 import NumStability.Analysis.PerturbationTheory
 import NumStability.Analysis.HighamChapter7
+import NumStability.Analysis.HighamChapter7Rectangular

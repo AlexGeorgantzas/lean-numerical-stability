@@ -751,6 +751,122 @@ theorem higham27_problem27_5_scaled_norm_correct_sq (xs : List ℝ) :
   simpa [ScaledSumSqState.valueSq] using
     scaledSumSqFold_invariant xs ⟨0, 1⟩ (by norm_num)
 
+/-! ### Problem 27.5: IEEE zero-input discrepancy and corrected producer -/
+
+/-- The pseudocode printed in Problem 27.5 is not an IEEE-safe producer as
+written.  At its initial state `t = 0`, an initial datum `x₁ = 0` takes the
+`else` branch and asks IEEE arithmetic to evaluate `0/0`.  The modeled IEEE
+result is a NaN carrying the invalid-operation flag.  Thus the exact theorem
+above, which uses Lean's totalized real division, does not by itself justify
+the literal floating-point execution. -/
+theorem higham27_problem27_5_printed_initial_zero_ieee_discrepancy :
+    ∃ r : IeeeOperationResult,
+      ieeePrimitiveSpecialValueResult? BasicOp.div
+          (IeeeValue.finite 0) (IeeeValue.finite 0) = some r ∧
+        r.value = IeeeValue.nan ∧
+        r.hasFlag IeeeExceptionFlag.invalidOperation := by
+  refine ⟨ieeeInvalidOperationDefaultResult,
+    ieeePrimitiveSpecialValueResult?_div_finite_zero_finite_zero,
+    ieeeInvalidOperationDefaultResult_value,
+    ieeeInvalidOperationDefaultResult_hasInvalidOperationFlag⟩
+
+/-- Corrected one-pass update: a zero datum is skipped before either quotient
+is formed.  For nonzero data this is exactly the printed branch structure.
+This is the minimal control-flow repair needed to make the initial/all-zero
+cases meaningful under IEEE division. -/
+noncomputable def scaledSumSqStepSkipZero
+    (s : ScaledSumSqState) (x : ℝ) : ScaledSumSqState :=
+  if x = 0 then s else scaledSumSqStep s x
+
+/-- Over exact reals, the zero-skipping repair agrees with the source formula.
+The hypothesis is the natural invariant of the algorithm's scale. -/
+theorem scaledSumSqStepSkipZero_eq_scaledSumSqStep
+    (s : ScaledSumSqState) (x : ℝ) (hscale : 0 ≤ s.scale) :
+    scaledSumSqStepSkipZero s x = scaledSumSqStep s x := by
+  by_cases hx : x = 0
+  · subst x
+    simp [scaledSumSqStepSkipZero, scaledSumSqStep, hscale]
+  · simp [scaledSumSqStepSkipZero, hx]
+
+/-- Every division that the corrected update actually executes has a nonzero
+denominator.  The three alternatives are, respectively: the operation-free
+zero branch, the new-maximum branch dividing by `x`, and the old-maximum branch
+dividing by the current scale. -/
+theorem scaledSumSqStepSkipZero_denominators_nonzero
+    (s : ScaledSumSqState) (x : ℝ) :
+    x = 0 ∨
+      (|x| > s.scale ∧ x ≠ 0) ∨
+      (¬ |x| > s.scale ∧ s.scale ≠ 0) := by
+  by_cases hx : x = 0
+  · exact Or.inl hx
+  · by_cases hbranch : |x| > s.scale
+    · exact Or.inr (Or.inl ⟨hbranch, hx⟩)
+    · refine Or.inr (Or.inr ⟨hbranch, ?_⟩)
+      intro hscaleZero
+      have hxAbsLe : |x| ≤ 0 := by
+        simpa [hscaleZero] using le_of_not_gt hbranch
+      have hxAbs : |x| = 0 := le_antisymm hxAbsLe (abs_nonneg x)
+      exact hx (abs_eq_zero.mp hxAbs)
+
+/-- Fold the corrected zero-skipping update over a complete input list. -/
+noncomputable def scaledSumSqFoldSkipZero :
+    List ℝ → ScaledSumSqState → ScaledSumSqState
+  | [], s => s
+  | x :: xs, s => scaledSumSqFoldSkipZero xs (scaledSumSqStepSkipZero s x)
+
+/-- Recursive certificate that every quotient denominator selected by the
+corrected producer is nonzero. -/
+def ScaledSumSqSkipZeroDenominatorsSafe :
+    List ℝ → ScaledSumSqState → Prop
+  | [], _ => True
+  | x :: xs, s =>
+      (x = 0 ∨
+        (|x| > s.scale ∧ x ≠ 0) ∨
+        (¬ |x| > s.scale ∧ s.scale ≠ 0)) ∧
+      ScaledSumSqSkipZeroDenominatorsSafe xs (scaledSumSqStepSkipZero s x)
+
+/-- The corrected producer supplies its own denominator-safety certificate;
+it does not assume one from the caller. -/
+theorem scaledSumSqFoldSkipZero_denominators_safe
+    (xs : List ℝ) (s : ScaledSumSqState) (hscale : 0 ≤ s.scale) :
+    ScaledSumSqSkipZeroDenominatorsSafe xs s := by
+  induction xs generalizing s with
+  | nil => simp [ScaledSumSqSkipZeroDenominatorsSafe]
+  | cons x xs ih =>
+      have hstep := scaledSumSqStepSkipZero_denominators_nonzero s x
+      have hstepEq := scaledSumSqStepSkipZero_eq_scaledSumSqStep s x hscale
+      have hnextScale : 0 ≤ (scaledSumSqStepSkipZero s x).scale := by
+        rw [hstepEq]
+        exact scaledSumSqStep_scale_nonneg s x hscale
+      exact ⟨hstep, ih (scaledSumSqStepSkipZero s x) hnextScale⟩
+
+/-- The corrected fold is extensionally equal to the exact-real fold used in
+equation (A.16), while having executable denominator-safe control flow. -/
+theorem scaledSumSqFoldSkipZero_eq_scaledSumSqFold
+    (xs : List ℝ) (s : ScaledSumSqState) (hscale : 0 ≤ s.scale) :
+    scaledSumSqFoldSkipZero xs s = scaledSumSqFold xs s := by
+  induction xs generalizing s with
+  | nil => rfl
+  | cons x xs ih =>
+      rw [scaledSumSqFoldSkipZero, scaledSumSqFold,
+        scaledSumSqStepSkipZero_eq_scaledSumSqStep s x hscale]
+      exact ih (scaledSumSqStep s x)
+        (scaledSumSqStep_scale_nonneg s x hscale)
+
+/-- Corrected closure of the body-cited Problem 27.5 dependency: starting
+from `t = 0, s = 1`, the produced state represents the exact sum of squares,
+and the complete producer trace never selects a zero divisor. -/
+theorem higham27_problem27_5_corrected_producer_closure (xs : List ℝ) :
+    let initial : ScaledSumSqState := ⟨0, 1⟩
+    let final := scaledSumSqFoldSkipZero xs initial
+    scaledNormOutput final ^ 2 = listSumSq xs ∧
+      ScaledSumSqSkipZeroDenominatorsSafe xs initial := by
+  dsimp only
+  constructor
+  · rw [scaledSumSqFoldSkipZero_eq_scaledSumSqFold xs ⟨0, 1⟩ (by norm_num)]
+    exact higham27_problem27_5_scaled_norm_correct_sq xs
+  · exact scaledSumSqFoldSkipZero_denominators_safe xs ⟨0, 1⟩ (by norm_num)
+
 /-! ## Smith complex division, equation (27.1) -/
 
 /-- Absolute value preserves finite representability in a sign-symmetric

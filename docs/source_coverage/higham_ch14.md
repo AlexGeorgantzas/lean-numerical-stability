@@ -1,5 +1,15 @@
 # Higham Chapter 14 Source Coverage Ledger
 
+> **Final PDF-first closure (2026-07-22): CORE-CLOSED.** The forgotten
+> `formalize/ch14-split3a-codex-audit` work was audited declaration by
+> declaration and ported under the current namespace as
+> `Ch14SchulzRectangular.lean` and `Ch14SchulzSpectralConvergence.lean`.
+> The modules construct an arbitrary-rank real compact SVD and canonical
+> Moore–Penrose inverse, prove both rectangular residual-square recurrences,
+> and derive entrywise convergence of `X₀ = α Aᵀ` to that inverse under the
+> printed `0 < α < 2 / ||A||₂²` condition. No square-only surrogate or
+> caller-supplied convergence certificate remains.
+
 > **PDF-first rerun correction (2026-07-19): selected-scope gate PASS after
 > repair.**  The previous operational bridge stopped before Algorithm 14.4's
 > literal final componentwise divisions, so its “computed output” was not the

@@ -10,6 +10,8 @@ import NumStability.Algorithms.PlusMinusSum
 import NumStability.Algorithms.Problem44SixTerm
 import NumStability.Algorithms.WilkinsonAttainability
 import NumStability.Algorithms.CompensatedSum
+import NumStability.Algorithms.Ch4KahanFiniteFamily
+import NumStability.Algorithms.HighamChapter4KaoWangScope
 import NumStability.Algorithms.DoublyCompensatedSum
 import NumStability.Algorithms.AccumulatorSum
 import NumStability.Algorithms.DotProduct
@@ -24,6 +26,9 @@ import NumStability.Algorithms.AitkenDenominator
 import NumStability.Algorithms.LogExpProduct
 import NumStability.Algorithms.GridPoints
 import NumStability.Algorithms.Horner
+import NumStability.Algorithms.Ch5LejaProducer
+import NumStability.Algorithms.Higham5FastPolynomialEvaluation
+import NumStability.Algorithms.Higham5PatersonStockmeyer
 import NumStability.Algorithms.HighamChapter5ComplexAlgorithm51
 import NumStability.Algorithms.Norm2
 import NumStability.Algorithms.OuterProduct
@@ -46,11 +51,17 @@ import NumStability.Algorithms.HighamChapter8
 import NumStability.Algorithms.HighamChapter8FanInClosure
 import NumStability.Algorithms.HighamChapter9
 import NumStability.Algorithms.HighamChapter9DoolittleClosure
+import NumStability.Algorithms.HighamChapter9ComputedCorrection
+import NumStability.Algorithms.HighamChapter9Theorem914Primitive
+import NumStability.Algorithms.HighamChapter9Theorem914Actual
+import NumStability.Algorithms.HighamChapter9Theorem914DiagDominant
 import NumStability.Algorithms.HighamChapter10
 import NumStability.Algorithms.Cholesky.Higham10Theorem10_7Source
 import NumStability.Algorithms.Cholesky.Higham1014SourceSuccess
 import NumStability.Algorithms.Cholesky.Higham1014SourceError
+import NumStability.Algorithms.Cholesky.Higham1014Equation1022
 import NumStability.Algorithms.Cholesky.Higham1029Source
+import NumStability.Algorithms.Cholesky.Higham10Problem10_3
 import NumStability.Algorithms.Cholesky.HighamMathiasFirstBreakdown
 -- Noncircular Mathias closure: exact f(A)/kappa_H, literal rounded Schur error,
 -- matrix perturbation/reindexing, recursive child conditions, and execution
@@ -64,6 +75,7 @@ import NumStability.Algorithms.Ch10Theorem108Source
 import NumStability.Algorithms.Ch10Theorem108Componentwise
 import NumStability.Algorithms.Ch10PivotedPSDSourceClosure
 import NumStability.Algorithms.Ch10ComplexPositiveDefiniteSourceClosure
+import NumStability.Algorithms.Ch10Theorem107FailureVacuity
 import NumStability.Algorithms.HighamChapter11
 -- Equation (11.7): exact Chapter-9-style forward-error handoff, literal
 -- permuted LDL^T factor envelope, and the condition-product second line.
@@ -80,6 +92,9 @@ import NumStability.Algorithms.Cholesky.Higham11RookExactTrace
 import NumStability.Algorithms.Cholesky.Higham11RookRoundedGap
 import NumStability.Algorithms.HighamChapter12
 import NumStability.Algorithms.HighamChapter12Ch9SolverBridge
+import NumStability.Algorithms.HighamChapter12Ch9GenericSolverBridge
+import NumStability.Algorithms.HighamChapter12Problem12_2
+import NumStability.Algorithms.HighamChapter12OmegaDiscontinuity
 import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LU.LUSolve
 import NumStability.Algorithms.LU.GrowthFactor
@@ -96,6 +111,7 @@ import NumStability.Algorithms.LU.BlockLUSPDFamilies
 import NumStability.Algorithms.LU.BlockLUTable13_1Families
 import NumStability.Algorithms.LU.BlockLUArbitraryNormSourceClosure
 import NumStability.Algorithms.LU.BlockLUPointRowGrowthSourceClosure
+import NumStability.Algorithms.LU.Higham13DemmelSharpMultiplier
 import NumStability.Algorithms.HighamChapter9Theorem97Classification
 import NumStability.Algorithms.HighamChapter9Theorem99Closure
 import NumStability.Algorithms.HighamChapter9ComplexClosure
@@ -130,6 +146,22 @@ import NumStability.Algorithms.Cholesky.AasenGrowthCh11Closure
 import NumStability.Algorithms.Cholesky.AasenFactorNormCh11Closure
 import NumStability.Algorithms.Cholesky.BlockLDLTSolveBackwardCh11Closure
 import NumStability.Algorithms.Cholesky.Aasen118ReducedCh11Closure
+import NumStability.Algorithms.Cholesky.Higham11BunchKaufmanActualSelector
+import NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExactTrace
+import NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExactGrowth
+import NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedBridge
+import NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedSolve
+import NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedGrowth
+import NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedGrowthSolve
+import NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedMiddleSolve
+import NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedTerminal
+import NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedTerminalClosedForm
+import NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExplicitInverseSolve
+import NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExplicitInverseTerminalClosedForm
+import NumStability.Algorithms.Cholesky.Higham11BunchKaufmanSourceCorrection
+import NumStability.Algorithms.Cholesky.Higham11SkewActualSelector
+import NumStability.Algorithms.Cholesky.Higham11SkewSourceCorrection
+import NumStability.Algorithms.Cholesky.Higham11SkewExactTrace
 import NumStability.Algorithms.Cholesky.BunchKaufmanSolveCh11Closure
 import NumStability.Algorithms.Cholesky.AasenCoupledFpCh11Closure
 import NumStability.Algorithms.Cholesky.AasenTridiagGEPPCh11Closure
@@ -138,12 +170,18 @@ import NumStability.Algorithms.Cholesky.AasenSourceSharpFactorResidualCh11Closur
 import NumStability.Algorithms.Cholesky.AasenDirect118Ch11Closure
 import NumStability.Algorithms.Cholesky.AasenMiddleGEPPCh11Counterexample
 import NumStability.Algorithms.Cholesky.AasenAdjacentPivotTridiagForwardCounterexampleCh11
+import NumStability.Algorithms.Cholesky.AasenAdjacentPivotOperationalMiddleCh11
+import NumStability.Algorithms.Cholesky.AasenAdjacentPivotSourceResidualCh11Closure
+import NumStability.Algorithms.Cholesky.AasenPermutationSourceCorrectionCh11
+import NumStability.Algorithms.Cholesky.AasenOriginalCoordinateCorrectionCh11
 import NumStability.Algorithms.Cholesky.AasenPrintedCoefficientAlgebraCh11Closure
 import NumStability.Algorithms.Cholesky.AasenUnitOuterSolveCh11Closure
 import NumStability.Algorithms.Cholesky.AasenTheorem118ScalarEdgeCh11Discrepancy
 import NumStability.Algorithms.IterativeRefinement
 import NumStability.Algorithms.MatrixInversion
 import NumStability.Algorithms.Ch14SchulzIteration
+import NumStability.Algorithms.Ch14SchulzRectangular
+import NumStability.Algorithms.Ch14SchulzSpectralConvergence
 import NumStability.Algorithms.GaussJordan
 import NumStability.Algorithms.Ch14ForwardErrorEndpoint
 import NumStability.Algorithms.Ch14AsymptoticFamilies
@@ -209,7 +247,18 @@ import NumStability.Algorithms.CondEstimation
 import NumStability.Algorithms.LU.TridiagonalCond
 import NumStability.Algorithms.PNormPowerMethod
 import NumStability.Algorithms.PNormPowerMethodGeneralP
+import NumStability.Algorithms.PNormPowerMethodRect
 import NumStability.Algorithms.HighamChapter15ConvergenceProse
+import NumStability.Algorithms.HighamChapter15RectTermination
+import NumStability.Algorithms.HighamChapter15BoydBridges
+import NumStability.Algorithms.HighamChapter15BoydUniqueness
+import NumStability.Algorithms.HighamChapter15BoydLocalStability
+import NumStability.Algorithms.HighamChapter15BoydSourceLocal
+import NumStability.Algorithms.HighamChapter15BoydConcreteLemma3
+import NumStability.Algorithms.HighamChapter15BoydSourceClosure
+import NumStability.Algorithms.LU.Higham15Problem15_6Closure
+import NumStability.Algorithms.LU.Higham15Problem15_6Operational
+import NumStability.Algorithms.LU.Higham15Problem15_4
 import NumStability.Algorithms.Chapter15CondEst
 import NumStability.Algorithms.Ch15CondEstimators
 import NumStability.Algorithms.Ch15DixonProbability
@@ -221,11 +270,13 @@ import NumStability.Algorithms.Sylvester.SylvesterSpec
 import NumStability.Algorithms.Sylvester.SylvesterBackward
 import NumStability.Algorithms.Sylvester.SylvesterPerturbation
 import NumStability.Algorithms.Sylvester.Higham16
+import NumStability.Algorithms.Sylvester.Higham16VecPermutationNotes
 import NumStability.Algorithms.Sylvester.Higham16Minimizers
 import NumStability.Algorithms.Sylvester.Higham16Spectrum
 import NumStability.Algorithms.Sylvester.Higham16SpectrumMinimizers
 import NumStability.Algorithms.Sylvester.Higham16Psi
 import NumStability.Algorithms.Sylvester.Higham16Lyapunov
+import NumStability.Algorithms.Sylvester.Higham16Problem16_2
 import NumStability.Algorithms.StationaryIteration
 import NumStability.Algorithms.StationaryIterationRounded
 import NumStability.Algorithms.MatrixPowers
@@ -263,6 +314,7 @@ import NumStability.Analysis.SchurTriangulation
 import NumStability.Analysis.MatrixPowersHenrici
 import NumStability.Analysis.MatrixPowersSchur
 import NumStability.Analysis.MatrixPowersHenriciNormal
+import NumStability.Analysis.MatrixPowersLaszlo
 import NumStability.Analysis.SylvesterSchurExistence
 import NumStability.Analysis.MatrixPowersBinomialBound
 import NumStability.Analysis.SemiconvergentSpectral
@@ -279,6 +331,8 @@ import NumStability.Analysis.ResolventFunctionalCalculus
 import NumStability.Analysis.RealQuasiSchur
 import NumStability.Analysis.DunfordResidue
 import NumStability.Analysis.PseudospectralPowerBound
+import NumStability.Analysis.MatrixPowersBaiDemmelGu
+import NumStability.Analysis.MatrixPowersBaiDemmelGuDistance
 import NumStability.Analysis.SemiconvergentBlockFormExists
 import NumStability.Analysis.SemiconvergentExistenceFull
 import NumStability.Analysis.SemiconvergentExistenceComplete
@@ -286,6 +340,12 @@ import NumStability.Analysis.SemiconvergentRealSpectrumComplete
 import NumStability.Analysis.SemiconvergentLimitGeneral
 import NumStability.Analysis.Ch17SemiconvergentBlockFormSourceClosure
 import NumStability.Analysis.MatrixPowersLp185Primary
+import NumStability.Analysis.MatrixPowersGautschi
+import NumStability.Analysis.MatrixPowersKreiss
+import NumStability.Analysis.MatrixPowersKreissSpijker
+import NumStability.Analysis.MatrixPowersSpijkerRational
+import NumStability.Analysis.MatrixPowersSpijkerPlanar
+import NumStability.Analysis.MatrixPowersSpijkerClosure
 import NumStability.Analysis.HenriciSharpConstant
 import NumStability.Analysis.HenriciSharpConstantExact
 import NumStability.Analysis.PseudospectralLowerBound
@@ -303,11 +363,18 @@ import NumStability.Algorithms.QR.HouseholderQR
 import NumStability.Algorithms.QR.GivensQR
 import NumStability.Algorithms.QR.GramSchmidt
 import NumStability.Algorithms.QR.GramSchmidtPolar
+import NumStability.Algorithms.QR.Higham19PolarNearest
+import NumStability.Algorithms.QR.Higham19TurnbullAitken
 import NumStability.Algorithms.QR.QRSolve
 import NumStability.Algorithms.QR.Higham19
 import NumStability.Algorithms.QR.Higham19WYApplicationClosure
+import NumStability.Algorithms.QR.Higham19SunBischof
 import NumStability.Algorithms.QR.HouseholderConstruction2
 import NumStability.Algorithms.QR.Higham19FormedQ
+import NumStability.Algorithms.QR.Higham19Sensitivity
+import NumStability.Algorithms.QR.Higham19SensitivityClosure
+import NumStability.Algorithms.QR.Higham19Problem19_9
+import NumStability.Algorithms.QR.Higham19Problem19_10
 import NumStability.Algorithms.QR.Higham19StoredLoop
 import NumStability.Algorithms.QR.Higham19StoredLoopStrongModel
 import NumStability.Algorithms.QR.Higham19StoredLoopAllPivots
@@ -381,6 +448,7 @@ import NumStability.Algorithms.Underdetermined.Higham21
 import NumStability.Algorithms.Vandermonde.Higham22
 import NumStability.Algorithms.Vandermonde.Higham22MonomialClosure
 import NumStability.Algorithms.Vandermonde.Higham22Ch12RefinementBridge
+import NumStability.Algorithms.Vandermonde.Higham22Problem22_7
 import NumStability.Algorithms.FFT.Higham24
 import NumStability.Algorithms.FFT.Higham24Radix2
 import NumStability.Algorithms.Circulant.Higham24
@@ -390,11 +458,14 @@ import NumStability.Algorithms.Circulant.Higham24InverseFFT
 import NumStability.Algorithms.Circulant.Higham24LiteralSolver
 import NumStability.Algorithms.Circulant.Higham24BackwardStability
 import NumStability.Algorithms.Circulant.Higham24Structured
+import NumStability.Algorithms.Circulant.Higham24ForwardError
 import NumStability.Algorithms.Nonlinear.Higham25
 import NumStability.Algorithms.Nonlinear.Higham25EigenClosure
 import NumStability.Algorithms.Nonlinear.Higham25Problem25_1
 import NumStability.Algorithms.AutomaticErrorAnalysis.Higham26
+import NumStability.Algorithms.AutomaticErrorAnalysis.Higham26SourceSearch
 import NumStability.Algorithms.SoftwareIssues.Higham27
+import NumStability.Algorithms.SoftwareIssues.Higham27Pythag
 import NumStability.Algorithms.TestMatrices.Higham28
 import NumStability.Algorithms.TestMatrices.Higham28Exact
 import NumStability.Algorithms.TestMatrices.Higham28Probability
@@ -461,4 +532,5 @@ import NumStability.Algorithms.FastMatMul.Higham23Recursive
 import NumStability.Algorithms.FastMatMul.Higham23Remaining
 import NumStability.Algorithms.FastMatMul.Higham23Bini
 import NumStability.Algorithms.FastMatMul.Higham23ThreeMStrassen
+import NumStability.Algorithms.FastMatMul.Higham23Problem23_8
 import NumStability.Algorithms.RandNLA

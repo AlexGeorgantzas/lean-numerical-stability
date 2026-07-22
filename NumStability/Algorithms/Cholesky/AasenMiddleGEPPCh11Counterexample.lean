@@ -334,6 +334,20 @@ noncomputable def middleAccumCounterT : Fin 3 → Fin 3 → ℝ
   | ⟨2, _⟩, ⟨1, _⟩ => 11 / 10
   | ⟨2, _⟩, ⟨2, _⟩ => -(219 / 100)
 
+/-- The accumulated-factor counterexample lies in the exact source domain:
+it is symmetric, not merely an arbitrary matrix admitted by a GEPP API. -/
+theorem middleAccumCounterT_symm :
+    ∀ i j : Fin 3, middleAccumCounterT i j = middleAccumCounterT j i := by
+  intro i j
+  fin_cases i <;> fin_cases j <;> rfl
+
+/-- The same source-domain witness is tridiagonal. -/
+theorem middleAccumCounterT_tridiagonal :
+    IsTridiagonal 3 middleAccumCounterT := by
+  intro i j hij
+  fin_cases i <;> fin_cases j <;>
+    simp_all [middleAccumCounterT]
+
 noncomputable def middleAccumCounterL : Fin 3 → Fin 3 → ℝ
   | ⟨0, _⟩, ⟨0, _⟩ => 1
   | ⟨0, _⟩, ⟨1, _⟩ => 0
@@ -542,6 +556,23 @@ theorem middleAccumCounter_actual_GEPP_refutes_infNorm_two :
       middleAccumCounterL middleAccumCounterU middleAccumCounterSigma ∧
     ¬ infNorm middleAccumCounterL ≤ 2 :=
   ⟨middleAccumCounter_GEPP_trace, middleAccumCounter_exact_permuted_lu,
+    middleAccumCounter_not_infNorm_le_two⟩
+
+/-- Source-domain form of the proof discrepancy in the analysis cited for
+Theorem 11.8.  A symmetric tridiagonal matrix following the literal adjacent-
+pivot GEPP path has the displayed exact accumulated lower factor, yet that
+factor violates the claimed infinity-norm bound `‖M‖∞ ≤ 2`. -/
+theorem middleAccumCounter_source_domain_refutes_infNorm_two :
+    (∀ i j : Fin 3,
+      middleAccumCounterT i j = middleAccumCounterT j i) ∧
+    IsTridiagonal 3 middleAccumCounterT ∧
+    higham9_7_PartialPivotGEPPUTrace 3
+      middleAccumCounterT middleAccumCounterU ∧
+    higham9_2_PermutedLUFactSpec 3 middleAccumCounterT
+      middleAccumCounterL middleAccumCounterU middleAccumCounterSigma ∧
+    ¬ infNorm middleAccumCounterL ≤ 2 :=
+  ⟨middleAccumCounterT_symm, middleAccumCounterT_tridiagonal,
+    middleAccumCounter_GEPP_trace, middleAccumCounter_exact_permuted_lu,
     middleAccumCounter_not_infNorm_le_two⟩
 
 end NumStability.Ch11Closure.AasenDirect

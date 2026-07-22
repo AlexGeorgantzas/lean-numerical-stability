@@ -1,5 +1,16 @@
 # Higham Chapter 19 Source Coverage Ledger
 
+> **Final PDF-first closure (2026-07-22): CORE-CLOSED.** Problems 19.9/19.10
+> and the sensitivity repairs are closed. `Higham19SunBischof.lean` now
+> constructs `Q=I-Y S Yᵀ` for every real orthogonal `Q`, with at most `n`
+> columns and triangular `S`; `Higham19TurnbullAitken.lean` constructs the
+> equal-norm rank-one unitary/orthogonal map; and
+> `Higham19PolarNearest.lean` constructs the rank-tolerant tall polar factor
+> and proves its nearestness against every orthonormal-column competitor in
+> both exact matrix 2- and Frobenius norms. The square all-unitarily-invariant
+> Fan–Hoffman extension and the Chandrasekaran–Ipsen comparison are explicit
+> literature-review boundaries, not in-book algorithm producers.
+
 > **Authoritative PDF-first correction (2026-07-21).**  This notice
 > supersedes every later historical sentence that says “no blockers” or calls
 > the rank-only literal-MGS form of Theorem 19.13 closed.
