@@ -4,7 +4,8 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Data.Nat.Log
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
-import NumStability.Algorithms.SumTree
+import NumStability.Algorithms.Summation.Tree.Balanced
+import NumStability.Algorithms.Summation.Tree.Core
 
 namespace NumStability
 

@@ -6,6 +6,9 @@ weakLeanArgs = ["-j", "1"]
 [[lean_lib]]
 name = "NumStability"
 
+[[lean_lib]]
+name = "NumStabilityTest"
+
 [[require]]
 name = "mathlib"
 scope = "leanprover-community"

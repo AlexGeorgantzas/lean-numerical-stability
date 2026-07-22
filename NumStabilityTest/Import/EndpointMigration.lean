@@ -1,0 +1,23 @@
+import NumStability.Algorithms.Ch14SourceCorrections
+import NumStability.Algorithms.LU.BlockLUTable13_1Families
+import NumStability.Algorithms.LeastSquares.Higham20SourceAliases
+import NumStability.Algorithms.TriangularSolveCombined
+import NumStability.Analysis.Problem2_22
+import NumStability.Analysis.Problem2_4
+import NumStability.Analysis.Problem2_7
+
+/-!
+# Historical endpoint-path smoke test
+
+The historical compatibility paths must expose the migrated declarations
+without help from co-imported canonical modules.
+-/
+
+#check NumStability.higham14_hadamardConditionNumberRaw_negative_one_counterexample
+#check NumStability.higham13_table13_1_col_bdd_product_family_from_source_norms
+#check NumStability.higham20_eq20_32_Bplus_residual_eq_crossProjection
+#check NumStability.triangularSolve_backward_error
+#check NumStability.problem2_22_guard_digit_a_sub_b_exact
+#check NumStability.FloatingPointFormat.problem2_4_theorem2_3_nearest_finite
+#check NumStability.FloatingPointFormat.finiteRoundToEvenOp_add_comm
+#check NumStability.FloatingPointFormat.problem2_7_statement5_add_associativity_false

@@ -1,0 +1,18 @@
+import NumStability.Analysis.NonrandomRounding.Conclusions
+import NumStability.Analysis.NonrandomRounding.Core
+import NumStability.Analysis.NonrandomRounding.GridVariation
+import NumStability.Analysis.NonrandomRounding.SourceInterval
+import NumStability.Analysis.NonrandomRounding.StoredGrid
+
+/-!
+# Canonical nonrandom-rounding paths smoke test
+
+Every semantic layer is imported directly, independently of the historical
+complete-path wrapper.
+-/
+
+#check NumStability.kahanRationalFunction
+#check NumStability.ieeeDoubleKahanNumeratorNormalTrace_of_source_interval
+#check NumStability.kahanRationalFunction_grid_variation_from_first_lt
+#check NumStability.ieeeDoubleKahanStoredGridRationalFunction_175_eq
+#check NumStability.not_forall_ieeeDoubleKahanStoredGridError_eq_on_source_grid

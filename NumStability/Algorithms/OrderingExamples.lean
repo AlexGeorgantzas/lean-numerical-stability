@@ -6,9 +6,9 @@ import Mathlib.Tactic.Ring
 import Mathlib.Data.Nat.Log
 import Batteries.Data.RBMap.Depth
 import Batteries.Data.RBMap.Lemmas
-import NumStability.Algorithms.InsertionSum
-import NumStability.Algorithms.RecursiveSum
-import NumStability.Algorithms.SumTree
+import NumStability.Algorithms.Summation.Insertion
+import NumStability.Algorithms.Summation.Recursive
+import NumStability.Algorithms.Summation.Tree.Core
 
 namespace NumStability
 

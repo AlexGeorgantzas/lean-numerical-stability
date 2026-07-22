@@ -1,0 +1,35 @@
+name: Lean CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lean-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check architecture source graph and Python tooling
+        run: |
+          python -m py_compile tools/architecture/generate_baseline.py tools/architecture/check_compatibility.py tools/benchmark/run.py
+          python tools/architecture/check_compatibility.py
+          python tools/architecture/generate_baseline.py --skip-declarations --strict-source --output-dir benchmark-results/ci-architecture --name source
+      - name: Build library and smoke tests
+        uses: leanprover/lean-action@v1
+        with:
+          build: true
+          build-args: NumStability NumStabilityTest
+          test: false
+          lint: false

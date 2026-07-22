@@ -1,4 +1,4 @@
-import NumStability.Algorithms.CompensatedSum
+import NumStability.Algorithms.Summation.Compensated
 
 namespace NumStability
 

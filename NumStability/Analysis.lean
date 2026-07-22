@@ -29,10 +29,8 @@ import NumStability.Analysis.BrentBaseOptimality
 import NumStability.Analysis.LeadingDigitDistribution
 import NumStability.Analysis.Problem2_2
 import NumStability.Analysis.Problem2_3
-import NumStability.Analysis.Problem2_4
 import NumStability.Analysis.Problem2_5
 import NumStability.Analysis.Problem2_6
-import NumStability.Analysis.Problem2_7
 import NumStability.Analysis.Problem2_10
 import NumStability.Analysis.Problem2_11
 import NumStability.Analysis.Problem2_12
@@ -44,7 +42,6 @@ import NumStability.Analysis.Problem2_18
 import NumStability.Analysis.Problem2_19
 import NumStability.Analysis.Problem2_20
 import NumStability.Analysis.Problem2_21
-import NumStability.Analysis.Problem2_22
 import NumStability.Analysis.Problem2_23
 import NumStability.Analysis.Problem2_24
 import NumStability.Analysis.Problem2_25
@@ -71,7 +68,7 @@ import NumStability.Analysis.MullerRecurrence
 import NumStability.Analysis.Monotonicity
 import NumStability.Analysis.NearInteger
 import NumStability.Analysis.Nonassociativity
-import NumStability.Analysis.NonrandomRounding
+import NumStability.Analysis.NonrandomRounding.Conclusions
 import NumStability.Analysis.Norms
 import NumStability.Analysis.HighamChapter6Duality
 import NumStability.Analysis.Midpoint

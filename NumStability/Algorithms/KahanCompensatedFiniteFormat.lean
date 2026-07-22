@@ -3,7 +3,7 @@
 import Mathlib.Data.Real.Basic
 import NumStability.FloatingPoint.Model
 import NumStability.Analysis.FloatingPointArithmetic
-import NumStability.Algorithms.CompensatedSum
+import NumStability.Algorithms.Summation.Compensated
 
 open Classical
 

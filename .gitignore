@@ -1,13 +1,14 @@
 /.lake
 /.venv/
 .DS_Store
+__pycache__/
 /.agents/
 /.codex/
-/.github/workflows/
 
 # Local auto-formalization workspace. Do not commit or push.
 /chapter_splitting/
 /benchmark/
+/benchmark-results/
 /docs/chapter13/
 /scratch/
 /tmp/

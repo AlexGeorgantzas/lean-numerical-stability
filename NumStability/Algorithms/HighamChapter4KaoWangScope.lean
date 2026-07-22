@@ -1,4 +1,4 @@
-import NumStability.Algorithms.InsertionSum
+import NumStability.Algorithms.Summation.Insertion
 
 namespace NumStability
 

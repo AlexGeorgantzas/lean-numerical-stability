@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "tiers": [
+    "reusable",
+    "source",
+    "internal",
+    "mixed",
+    "compatibility",
+    "aggregate"
+  ],
+  "exact": {
+    "NumStability": "aggregate",
+    "NumStability.Algorithms": "aggregate",
+    "NumStability.All": "aggregate",
+    "NumStability.Analysis": "aggregate",
+    "NumStability.Core": "reusable",
+    "NumStability.Algorithms.Summation": "aggregate",
+    "NumStability.Algorithms.Summation.Accumulator": "mixed",
+    "NumStability.Algorithms.Summation.Compensated": "mixed",
+    "NumStability.Algorithms.Summation.DoublyCompensated": "mixed",
+    "NumStability.Algorithms.Summation.Insertion": "mixed",
+    "NumStability.Algorithms.Summation.Pairwise": "mixed",
+    "NumStability.Algorithms.Summation.PlusMinus": "mixed",
+    "NumStability.Algorithms.Summation.Recursive": "mixed",
+    "NumStability.Algorithms.Summation.Tree": "aggregate",
+    "NumStability.Algorithms.Summation.Tree.Balanced": "reusable",
+    "NumStability.Algorithms.Summation.Tree.Core": "reusable",
+    "NumStability.Algorithms.Summation.Tree.RecursiveBridge": "mixed",
+    "NumStability.Algorithms.AccumulatorSum": "compatibility",
+    "NumStability.Algorithms.Ch14SourceCorrections": "compatibility",
+    "NumStability.Algorithms.Cholesky.BunchTridiagonalCapstoneCh11Closure": "compatibility",
+    "NumStability.Algorithms.Cholesky.Higham10Theorem10_7Source": "compatibility",
+    "NumStability.Algorithms.CompensatedSum": "compatibility",
+    "NumStability.Algorithms.DoublyCompensatedSum": "compatibility",
+    "NumStability.Algorithms.HighamChapter12Ch9GenericSolverBridge": "compatibility",
+    "NumStability.Algorithms.HighamChapter12Ch9SolverBridge": "compatibility",
+    "NumStability.Algorithms.HighamChapter15Ch7PracticalBoundBridge": "compatibility",
+    "NumStability.Algorithms.HighamChapter3NoGuardDotBridge": "compatibility",
+    "NumStability.Algorithms.HighamChapter8Lemma88SourceDiscrepancy": "compatibility",
+    "NumStability.Algorithms.InsertionSum": "compatibility",
+    "NumStability.Algorithms.LU.BlockLUTable13_1Families": "compatibility",
+    "NumStability.Algorithms.LeastSquares.Higham20SourceAliases": "compatibility",
+    "NumStability.Algorithms.PairwiseSum": "compatibility",
+    "NumStability.Algorithms.PlusMinusSum": "compatibility",
+    "NumStability.Algorithms.RecursiveSum": "compatibility",
+    "NumStability.Algorithms.SumTree": "compatibility",
+    "NumStability.Algorithms.TriangularSolveCombined": "compatibility",
+    "NumStability.Analysis.NonrandomRounding": "compatibility",
+    "NumStability.Analysis.Problem2_22": "compatibility",
+    "NumStability.Analysis.Problem2_4": "compatibility",
+    "NumStability.Analysis.Problem2_7": "compatibility"
+  },
+  "prefixes": [
+    {
+      "prefix": "NumStability.Analysis.NonrandomRounding",
+      "tier": "source"
+    },
+    {
+      "prefix": "NumStability.Algorithms.LinearSystems.Triangular",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.FloatingPoint",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Higham",
+      "tier": "source"
+    }
+  ]
+}

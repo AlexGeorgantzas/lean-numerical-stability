@@ -16,7 +16,7 @@
 -- which is exactly Higham's "divide through by the shared `(1 + δ)` factors"
 -- step and is what keeps the constant at `gamma (n-1)` rather than `gamma (2n)`.
 
-import NumStability.Algorithms.SumTree
+import NumStability.Algorithms.Summation.Tree.Core
 
 namespace NumStability
 

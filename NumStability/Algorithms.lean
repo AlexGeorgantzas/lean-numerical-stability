@@ -1,19 +1,12 @@
 -- Algorithms.lean
 -- Re-exports all modules in the NumStability.Algorithms submodule.
 
-import NumStability.Algorithms.RecursiveSum
-import NumStability.Algorithms.PairwiseSum
-import NumStability.Algorithms.InsertionSum
+import NumStability.Algorithms.Summation
 import NumStability.Algorithms.OrderingExamples
-import NumStability.Algorithms.SumTree
-import NumStability.Algorithms.PlusMinusSum
 import NumStability.Algorithms.Problem44SixTerm
 import NumStability.Algorithms.WilkinsonAttainability
-import NumStability.Algorithms.CompensatedSum
 import NumStability.Algorithms.Ch4KahanFiniteFamily
 import NumStability.Algorithms.HighamChapter4KaoWangScope
-import NumStability.Algorithms.DoublyCompensatedSum
-import NumStability.Algorithms.AccumulatorSum
 import NumStability.Algorithms.DotProduct
 import NumStability.Algorithms.BlockDotProduct
 import NumStability.Algorithms.ExtendedPrecisionDotProduct
@@ -40,7 +33,7 @@ import NumStability.Algorithms.KahanAbsolute
 import NumStability.Algorithms.RankOneUpdate
 import NumStability.Algorithms.TriangularSolve
 import NumStability.Algorithms.ForwardSub
-import NumStability.Algorithms.TriangularSolveCombined
+import NumStability.Algorithms.LinearSystems.Triangular.Combined
 import NumStability.Algorithms.TriangularForwardBound
 import NumStability.Algorithms.InverseBounds
 import NumStability.Algorithms.TriangularForwardComparison
@@ -56,7 +49,6 @@ import NumStability.Algorithms.HighamChapter9Theorem914Primitive
 import NumStability.Algorithms.HighamChapter9Theorem914Actual
 import NumStability.Algorithms.HighamChapter9Theorem914DiagDominant
 import NumStability.Algorithms.HighamChapter10
-import NumStability.Algorithms.Cholesky.Higham10Theorem10_7Source
 import NumStability.Algorithms.Cholesky.Higham1014SourceSuccess
 import NumStability.Algorithms.Cholesky.Higham1014SourceError
 import NumStability.Algorithms.Cholesky.Higham1014Equation1022
@@ -91,8 +83,6 @@ import NumStability.Algorithms.Cholesky.Higham11RookExecutorAdapter
 import NumStability.Algorithms.Cholesky.Higham11RookExactTrace
 import NumStability.Algorithms.Cholesky.Higham11RookRoundedGap
 import NumStability.Algorithms.HighamChapter12
-import NumStability.Algorithms.HighamChapter12Ch9SolverBridge
-import NumStability.Algorithms.HighamChapter12Ch9GenericSolverBridge
 import NumStability.Algorithms.HighamChapter12Problem12_2
 import NumStability.Algorithms.HighamChapter12OmegaDiscontinuity
 import NumStability.Algorithms.LU.GaussianElimination
@@ -108,7 +98,6 @@ import NumStability.Algorithms.LU.BlockLUSPDSourceClosure
 import NumStability.Algorithms.LU.BlockLUFirstOrderFamilies
 import NumStability.Algorithms.LU.BlockLUComputationSourceClosure
 import NumStability.Algorithms.LU.BlockLUSPDFamilies
-import NumStability.Algorithms.LU.BlockLUTable13_1Families
 import NumStability.Algorithms.LU.BlockLUArbitraryNormSourceClosure
 import NumStability.Algorithms.LU.BlockLUPointRowGrowthSourceClosure
 import NumStability.Algorithms.LU.Higham13DemmelSharpMultiplier
@@ -117,8 +106,6 @@ import NumStability.Algorithms.HighamChapter9Theorem99Closure
 import NumStability.Algorithms.HighamChapter9ComplexClosure
 import NumStability.Algorithms.HighamChapter9Theorem99ComplexClosure
 import NumStability.Algorithms.HighamChapter9CompletePivotSharpClosure
-import NumStability.Algorithms.HighamChapter15Ch7PracticalBoundBridge
-import NumStability.Algorithms.HighamChapter3NoGuardDotBridge
 import NumStability.Algorithms.LU.BlockLUScalarGrowthBridge
 import NumStability.Algorithms.Cholesky.CholeskySpec
 import NumStability.Algorithms.Cholesky.CholeskySolve
@@ -137,7 +124,6 @@ import NumStability.Algorithms.Cholesky.BlockLDLTBunchTridiagonalCh11Closure
 import NumStability.Algorithms.Cholesky.BunchTridiagonalGrowthCh11Closure
 import NumStability.Algorithms.Cholesky.BunchTridiagonalFactorBoundCh11Closure
 import NumStability.Algorithms.Cholesky.BunchTridiagonalGrowthInvariantCh11Closure
-import NumStability.Algorithms.Cholesky.BunchTridiagonalCapstoneCh11Closure
 import NumStability.Algorithms.Cholesky.BunchTridiagonalHFactorCh11Closure
 import NumStability.Algorithms.Cholesky.BunchTridiagonalActualSolveCh11Closure
 import NumStability.Algorithms.Cholesky.BunchTridiagonalSparseSolveCh11Closure
@@ -185,7 +171,6 @@ import NumStability.Algorithms.Ch14SchulzSpectralConvergence
 import NumStability.Algorithms.GaussJordan
 import NumStability.Algorithms.Ch14ForwardErrorEndpoint
 import NumStability.Algorithms.Ch14AsymptoticFamilies
-import NumStability.Algorithms.Ch14SourceCorrections
 import NumStability.Algorithms.Ch14ProductErrorNotation
 import NumStability.Algorithms.Chapter14Problem1415Weyl
 import NumStability.Algorithms.Ch14HymanDeterminant
@@ -240,7 +225,6 @@ import NumStability.Algorithms.Ch5DerivativeError
 import NumStability.Algorithms.Ch5NewtonForm
 import NumStability.Algorithms.Ch5SourceClosure
 import NumStability.Algorithms.HighamLemma88Entrywise
-import NumStability.Algorithms.HighamChapter8Lemma88SourceDiscrepancy
 import NumStability.Analysis.Higham6Asides
 import NumStability.Analysis.Higham6BlockAntidiag
 import NumStability.Algorithms.CondEstimation
@@ -410,7 +394,6 @@ import NumStability.Algorithms.LeastSquares.LSPerturbation
 import NumStability.Algorithms.LeastSquares.LSQRSolve
 import NumStability.Algorithms.LeastSquares.LSNormalEquations
 import NumStability.Algorithms.LeastSquares.LSE
-import NumStability.Algorithms.LeastSquares.Higham20SourceAliases
 import NumStability.Algorithms.LeastSquares.Higham20Equations
 import NumStability.Algorithms.LeastSquares.Higham20Refinement
 import NumStability.Algorithms.LeastSquares.Higham20Theorem20_4Absorption

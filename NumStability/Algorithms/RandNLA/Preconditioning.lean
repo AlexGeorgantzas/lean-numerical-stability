@@ -15,7 +15,7 @@ import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Series
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.MatMul
-import NumStability.Algorithms.SumTree
+import NumStability.Algorithms.Summation.Tree.Core
 import NumStability.Analysis.FiniteProbability
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixConcentration

@@ -1,4 +1,4 @@
-import NumStability.Algorithms.Cholesky.Higham10Theorem10_7Source
+import NumStability.Higham.Chapter10.Theorem10_7
 
 namespace NumStability
 

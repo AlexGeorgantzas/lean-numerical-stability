@@ -1,6 +1,6 @@
 -- Algorithms/PriestAccuracy.lean
 
-import NumStability.Algorithms.DoublyCompensatedSum
+import NumStability.Algorithms.Summation.DoublyCompensated
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Positivity
 

@@ -6,7 +6,7 @@
 
 import NumStability.Algorithms.TriangularSolve
 import NumStability.Algorithms.ForwardSub
-import NumStability.Algorithms.TriangularSolveCombined
+import NumStability.Algorithms.LinearSystems.Triangular.Combined
 import NumStability.Algorithms.TriangularForwardBound
 import NumStability.Algorithms.InverseBounds
 import NumStability.Algorithms.TriangularForwardComparison

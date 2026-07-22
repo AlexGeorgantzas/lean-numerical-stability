@@ -17,8 +17,9 @@ plus two products), yielding the dimension-independent componentwise budget
 `gamma 3`.  A structural induction on `TriGrowthData` proves that the computed
 `flMixedL` factor has precisely the required lower bandwidth two.
 -/
-import NumStability.Algorithms.TriangularArbitraryOrder
 import NumStability.Algorithms.Cholesky.BunchTridiagonalActualSolveCh11Closure
+import NumStability.Algorithms.Summation.Tree.RecursiveBridge
+import NumStability.Algorithms.TriangularArbitraryOrder
 
 open scoped BigOperators
 

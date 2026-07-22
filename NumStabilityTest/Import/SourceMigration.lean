@@ -1,0 +1,21 @@
+import NumStability.Algorithms.Cholesky.BunchTridiagonalCapstoneCh11Closure
+import NumStability.Algorithms.Cholesky.Higham10Theorem10_7Source
+import NumStability.Algorithms.HighamChapter15Ch7PracticalBoundBridge
+import NumStability.Algorithms.HighamChapter3NoGuardDotBridge
+import NumStability.Algorithms.HighamChapter8Lemma88SourceDiscrepancy
+import NumStabilityTest.Import.Compatibility.Source.Chapter09To12GenericSolver
+import NumStabilityTest.Import.Compatibility.Source.Chapter09To12Solver
+
+/-!
+# Historical source-correspondence path smoke test
+
+Every historical source path must expose its declarations during the
+compatibility window without help from the canonical Higham entry point.
+-/
+
+#check NumStability.higham8_8_printed_rowDominance_condSkeel_claim_false
+#check NumStability.higham10_7_fl_cholesky_success_source
+#check NumStability.Ch11Closure.TriGrowthInv.higham11_7_bunch_tridiagonal_support_aware
+#check NumStability.higham12_6_lu_solve_SolverWBound
+#check NumStability.higham15_1_eq_7_31_practical_bound_bridge
+#check NumStability.higham3_5_noGuard_any_order_forward_error
