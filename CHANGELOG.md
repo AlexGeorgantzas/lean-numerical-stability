@@ -20,6 +20,9 @@ follows semantic versioning for its public module paths and declaration API.
 - Reusable `Summation.Recursive.Core`, `Summation.Pairwise.Core`, and
   `Summation.Tree.Chain` modules with complete family umbrellas and isolated
   import tests.
+- Reusable insertion-summation `ActiveList`, `Executor`, `Schedule`,
+  `RunningError`, and `ScheduleExecution` leaves, plus a canonical Chapter 4
+  Section 4.1 insertion-example source module.
 - A complete, declaration-free `NumStability.Algorithms.Sylvester` family
   aggregate and isolated aggregate/import smoke tests.
 - Architecture, naming, compatibility, and layout checks for repository
@@ -36,6 +39,9 @@ follows semantic versioning for its public module paths and declaration API.
   classified as reusable rather than mixed.
 - The historical `Summation.Tree.RecursiveBridge` path now forwards to the
   semantic `Summation.Tree.Chain` module.
+- `Summation.Insertion` is now a declaration-free complete family aggregate;
+  production consumers import its narrow reusable layers, while the historical
+  `InsertionSum` path retains the complete reusable and source surface.
 - The Algorithms aggregate imports the Sylvester family through one umbrella,
   reducing its direct imports from 490 to 463, and its imports are sorted and
   deduplicated by a repository-owned formatter.

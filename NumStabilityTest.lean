@@ -26,6 +26,7 @@ import NumStabilityTest.Import.PublicApi
 import NumStabilityTest.Import.Root
 import NumStabilityTest.Import.Source
 import NumStabilityTest.Import.Source.Chapter04
+import NumStabilityTest.Import.Source.Chapter04.InsertionExamples
 import NumStabilityTest.Import.Source.Chapter14
 import NumStabilityTest.Import.Source.Chapter24
 import NumStabilityTest.Import.Source.Chapter25
@@ -36,6 +37,12 @@ import NumStabilityTest.Import.SummationAnalysis
 import NumStabilityTest.Import.SummationAggregate
 import NumStabilityTest.Import.SummationCanonical
 import NumStabilityTest.Import.SummationErrorBounds
+import NumStabilityTest.Import.SummationInsertionActiveList
+import NumStabilityTest.Import.SummationInsertionExecutor
+import NumStabilityTest.Import.SummationInsertionFamily
+import NumStabilityTest.Import.SummationInsertionRunningError
+import NumStabilityTest.Import.SummationInsertionSchedule
+import NumStabilityTest.Import.SummationInsertionScheduleExecution
 import NumStabilityTest.Import.SummationMigration
 import NumStabilityTest.Import.SummationPairwiseCore
 import NumStabilityTest.Import.SummationPairwiseFamily

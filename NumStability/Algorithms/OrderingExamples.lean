@@ -6,7 +6,7 @@ import Mathlib.Tactic.Ring
 import Mathlib.Data.Nat.Log
 import Batteries.Data.RBMap.Depth
 import Batteries.Data.RBMap.Lemmas
-import NumStability.Algorithms.Summation.Insertion
+import NumStability.Algorithms.Summation.Insertion.ActiveList
 import NumStability.Algorithms.Summation.Recursive.Core
 import NumStability.Algorithms.Summation.Tree.Core
 

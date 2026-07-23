@@ -27,8 +27,14 @@
   `Algorithms/Summation/Tree/Balanced.lean`,
   `Algorithms/Summation/Tree/Chain.lean`,
   `Algorithms/Summation/Pairwise/Core.lean`,
+  `Algorithms/Summation/Insertion/ActiveList.lean`,
+  `Algorithms/Summation/Insertion/Executor.lean`,
+  `Algorithms/Summation/Insertion/Schedule.lean`,
+  `Algorithms/Summation/Insertion/RunningError.lean`,
+  `Algorithms/Summation/Insertion/ScheduleExecution.lean`,
+  `Source/Higham/Chapter04/Section01/InsertionExamples.lean`,
   `Source/Higham/Chapter04/Section01/PairwiseSixTerm.lean`,
-  `Algorithms/Summation/Insertion.lean`, `Algorithms/OrderingExamples.lean`,
+  `Algorithms/OrderingExamples.lean`,
   `Algorithms/Summation/Compensated.lean`,
   `Algorithms/Summation/DoublyCompensated.lean`,
   `Algorithms/NeumaierCompensatedFiniteFormat.lean`,
@@ -85,7 +91,7 @@
 |---|---|---|
 | Recursive summation loop (§4.1) | VERIFIED | `fl_recursiveSum` (Fin.foldl, first add exact via `fl_add_zero`). |
 | Pairwise/cascade summation (§4.1), ⌈log₂ n⌉ stages | VERIFIED | `fl_pairwiseSum` (n = 2^r), `pairwiseCarryTree`/`fl_clog2PairwiseSum` (general n); depth facts `pairwiseCarryTree_depth`, `clog2_le_pred`. |
-| Insertion method (§4.1), incl. 1-2-4-8 → recursive example and sorted-inputs → pairwise example | VERIFIED | `fl_insertionSumList`, `insertIncreasingAbs`, `insertionStep`; powers-of-two trace `1248 → 348 → 78 → 15` (`Algorithms/Summation/Insertion.lean`) with its backward/forward/running bounds. |
+| Insertion method (§4.1), incl. 1-2-4-8 → recursive example and sorted-inputs → pairwise example | VERIFIED | Reusable loop: `fl_insertionSumList`, `insertIncreasingAbs`, `insertionStep` under `Algorithms/Summation/Insertion/`; source examples: powers-of-two trace `1248 → 348 → 78 → 15` in `Source/Higham/Chapter04/Section01/InsertionExamples.lean`, with backward/forward/running bounds. |
 | Backward result ε_i ≤ γ_{n−1} (after (4.4)) | VERIFIED | `recursiveSum_backward_error`, `SumTree.backward_error_n_minus_one`. |
 | Design criterion "minimize Σ\|T̂_i\|" | SKIP-OK (editorial) | Embodied by `runningErrorBudget` machinery; NP-hardness citation [708] not in scope. |
 | Psum ordering (greedy min partial sums), O(n log n) comparisons | VERIFIED | `psumOrder`, `PsumGreedyOrderFrom.head_min`, `psumOrderComparisonCost` (OrderingExamples). |

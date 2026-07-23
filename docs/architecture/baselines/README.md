@@ -32,6 +32,11 @@ Each capture consists of:
   source leaves, and the narrowed production-import graph.
 - `2026-07-23-organization-phase2-build.md` records the corresponding full
   test run, focused rebuilds, and architecture gates.
+- `2026-07-23-organization-phase3.{json,md}` captures the insertion-summation
+  split into five reusable layers and a Chapter 4 source leaf, leaving one
+  reviewed mixed module in the summation family.
+- `2026-07-23-organization-phase3-build.md` records the corresponding full
+  test run, focused rebuilds, declaration extraction, and architecture gates.
 
 Regenerate a named baseline from the repository root with:
 

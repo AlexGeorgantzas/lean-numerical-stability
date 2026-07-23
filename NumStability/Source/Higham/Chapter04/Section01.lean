@@ -1,3 +1,4 @@
+import NumStability.Source.Higham.Chapter04.Section01.InsertionExamples
 import NumStability.Source.Higham.Chapter04.Section01.PairwiseSixTerm
 
 /-!

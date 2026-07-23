@@ -4,6 +4,7 @@
     "NumStability.Algorithms": "NumStability.Algorithms.",
     "NumStability.Algorithms.LinearSystems.Triangular": "NumStability.Algorithms.LinearSystems.Triangular.",
     "NumStability.Algorithms.Summation": "NumStability.Algorithms.Summation.",
+    "NumStability.Algorithms.Summation.Insertion": "NumStability.Algorithms.Summation.Insertion.",
     "NumStability.Algorithms.Summation.Pairwise": "NumStability.Algorithms.Summation.Pairwise.",
     "NumStability.Algorithms.Summation.Recursive": "NumStability.Algorithms.Summation.Recursive.",
     "NumStability.Algorithms.Summation.Tree": "NumStability.Algorithms.Summation.Tree.",
@@ -262,8 +263,7 @@
       "NumStability.FloatingPoint.Model"
     ],
     "mixed_modules": [
-      "NumStability.Algorithms.Summation.Compensated",
-      "NumStability.Algorithms.Summation.Insertion"
+      "NumStability.Algorithms.Summation.Compensated"
     ],
     "noncanonical_modules": [
       "NumStability.Algorithms.AutomaticErrorAnalysis.Higham26",

@@ -6,8 +6,8 @@ Nicholas J. Higham's *Accuracy and Stability of Numerical Algorithms*
 (RandNLA) case study.
 
 The library contains machine-checked material from **all 28 chapters** of
-Higham. The tree contains **no `sorry`, `admit`, or `axiom` declarations**, and
-sampled headline theorems depend only on the standard
+Higham. The tree contains **no `sorry` or `admit`, and no source-level `axiom`
+or `constant` commands**. Sampled headline theorems depend only on the standard
 `[propext, Classical.choice, Quot.sound]` axioms. The fresh audit makes every
 selected core row terminal: precise claims are proved at source strength,
 false claims have theorem-level counterexamples and faithful corrections, and
@@ -178,16 +178,16 @@ architecture scanner:
 
 | | |
 |---|---|
-| Lean modules | **779** (778 below `NumStability/` plus the root entry point) |
-| Lines of Lean | **1,465,525** physical lines |
-| Direct imports | **3,406** |
-| Internal direct-import edges | **2,140** |
+| Lean modules | **785** (784 below `NumStability/` plus the root entry point) |
+| Lines of Lean | **1,465,616** physical lines |
+| Direct imports | **3,429** |
+| Internal direct-import edges | **2,154** |
 | Import cycles | **0** |
-| `sorry` / `admit` / `axiom` declarations | **0** |
+| `sorry` / `admit` / source-level `axiom` or `constant` commands | **0** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
 the standard `[propext, Classical.choice, Quot.sound]` axioms. The versioned
-[`2026-07-23 organization Phase 2 baseline`](docs/architecture/baselines/2026-07-23-organization-phase2.md)
+[`2026-07-23 organization Phase 3 baseline`](docs/architecture/baselines/2026-07-23-organization-phase3.md)
 records the full source, import, signature-dependency, and proof/body-dependency
 metrics and the exact counting definitions.
 
@@ -224,8 +224,11 @@ Choose the narrowest entry point that matches the material you need:
   analysis infrastructure.
 - `NumStability.Algorithms.Summation` is the public umbrella for the summation
   algorithm family. Reusable recursive and pairwise consumers should choose
-  `Summation.Recursive.Core` or `Summation.Pairwise.Core`; the broad family
-  modules also preserve their supported Chapter 4 source declarations.
+  `Summation.Recursive.Core` or `Summation.Pairwise.Core`. Reusable insertion
+  consumers should choose `Insertion.ActiveList`, `Insertion.Executor`,
+  `Insertion.Schedule`, `Insertion.RunningError`, or
+  `Insertion.ScheduleExecution`; the broad family modules also preserve their
+  supported Chapter 4 source declarations.
 - `NumStability.Algorithms.LinearSystems.Triangular` is the reusable umbrella
   for forward/back substitution and triangular-system error bounds.
 - `NumStability.Analysis.Summation` is the complete summation-analysis umbrella;
@@ -260,7 +263,7 @@ dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
 corpus is already Mathlib-style. The current ratchet records 652 unclassified
-modules, 2 reviewed mixed modules, 227 missing module docs, and 455 historical
+modules, 1 reviewed mixed module, 227 missing module docs, and 455 historical
 naming exceptions. CI prevents those queues from growing while each
 dependency-contained family is migrated.
 
@@ -311,6 +314,10 @@ NumStability/
   Algorithms.lean              -- numerical-algorithm umbrella
   Algorithms/                  -- algorithm formalizations, with clusters such as
                                --   LU, QR, Cholesky, RandNLA, and TestMatrices
+    Summation.lean             -- complete summation-family umbrella
+    Summation/
+      Insertion.lean           -- complete insertion-family umbrella
+      Insertion/               -- active list, executor, schedule, and error layers
   Source.lean                  -- canonical source-faithful umbrella
   Source/
     Higham.lean                -- Higham source umbrella
@@ -346,7 +353,7 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 
 The selected formalization core scope is closed; the repository-organization
 migration is not. The next batches classify and split the remaining 652
-unclassified and 2 mixed modules, replace the 455 historical source/proof-stage
+unclassified and 1 mixed module, replace the 455 historical source/proof-stage
 names with semantic canonical paths plus compatibility shims, document the 227
 remaining modules, and review the giant-file outliers. The sequence and safety
 gates are tracked in
