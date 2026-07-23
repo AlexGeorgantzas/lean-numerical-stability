@@ -10,15 +10,17 @@ namespace NumStability
 open scoped BigOperators
 
 /-!
-# Priest Doubly Compensated Summation (Higham Chapter 4, Algorithm 4.3)
+# Doubly Compensated Summation
 
-This file records the source-level rounded trace for Higham's Algorithm 4.3.
-The input is assumed to have already been sorted in decreasing magnitude, as
-specified in the source.  All binary expressions are evaluated using the
-parentheses displayed in the algorithm.
+Reusable state, ordering, and rounded-trace APIs for Priest-style doubly
+compensated summation. `PriestState`, `PriestStepTrace`, `priestStepTrace`,
+`priestTrace`, and `fl_priestSum` expose every nested floating-point operation
+and keep the decreasing-magnitude input condition explicit.
 
-Priest's full-precision guarantee under finite base-`β`, `t`-digit arithmetic
-and the condition `n < β^(t-3)` remains a separate proof target.
+The trace follows Priest's method as presented by Higham in Algorithm 4.3
+(§4.3). The attributed `2u` accuracy result for `n < β^(t-3)` depends on a
+concrete finite-arithmetic model and additional assumptions, so it is not part
+of this source-independent trace API.
 -/
 
 /-- Source-side weak ordering predicate for Algorithm 4.3: the supplied input

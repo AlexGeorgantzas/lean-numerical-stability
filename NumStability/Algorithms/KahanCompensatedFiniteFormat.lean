@@ -16,9 +16,10 @@ This file closes Higham 2nd ed. equation (4.10) (Kielbasiński [731, 1994] and
 Neumaier [883, 1974]) for the *finite binary round-to-even* format, not merely
 the abstract `FPModel`.
 
-Higham warns (p. 85, and again pp. 94--95) that the correction-formula
-exactness (4.7) fails under the no-guard-digit model, and the repository
-records a concrete `FPModel` counterexample
+Higham notes the magnitude-order caveat on printed p. 85 and, later in §4.3
+(printed pp. 85--86), explains that the correction-formula exactness (4.7)
+fails under the no-guard-digit model. The repository records a concrete
+`FPModel` counterexample
 (`not_forall_fl_kahanSum_backward_error_source_bound_bare_fpmodel_exactSubConstants`).
 The finite-format exactness of (4.7) is however available: it is
 `finiteCorrectionFormulaTrace_exact_of_base2_abs_gt` (equivalently the
@@ -54,7 +55,7 @@ The per-step hypothesis `kahanFF_stepCondition` is exactly the applicability of
 (4.7) at each partial sum: the current term is representable, and either the
 Dekker magnitude order `|xᵢ| ≤ |sᵢ|` holds with `sᵢ + xᵢ` in normal range, or
 the running add is already exact.  This is faithful to Higham's own caveat that
-(4.7) "is based on the assumption that `|a| ≥ |b|`" (p. 85).
+(4.7) "is based on the assumption that `|a| ≥ |b|`" (§4.3, printed p. 85).
 
 Namespace `NumStability`, declaration prefix `kahanFF_`.
 -/
@@ -278,7 +279,7 @@ noncomputable def kahanFF_prefix (fmt : FloatingPointFormat) {n : ℕ}
 
 /-- **Higham equation (4.10)** in the finite binary round-to-even format.
 
-For the p. 94 alternative compensated-summation variant (corrections
+For the alternative compensated-summation variant on printed p. 85 (corrections
 accumulated separately by recursive summation, then added back), computed in the
 safe-completion finite model `kahanFF_model fmt` with base `beta = 2` and
 precision `1 < t`, if the correction formula (4.7) applies at every step

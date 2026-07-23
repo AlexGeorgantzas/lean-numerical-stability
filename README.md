@@ -178,16 +178,16 @@ architecture scanner:
 
 | | |
 |---|---|
-| Lean modules | **772** (771 below `NumStability/` plus the root entry point) |
-| Lines of Lean | **1,465,427** physical lines |
-| Direct imports | **3,392** |
-| Internal direct-import edges | **2,126** |
+| Lean modules | **779** (778 below `NumStability/` plus the root entry point) |
+| Lines of Lean | **1,465,525** physical lines |
+| Direct imports | **3,406** |
+| Internal direct-import edges | **2,140** |
 | Import cycles | **0** |
 | `sorry` / `admit` / `axiom` declarations | **0** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
 the standard `[propext, Classical.choice, Quot.sound]` axioms. The versioned
-[`2026-07-22 organization baseline`](docs/architecture/baselines/2026-07-22-organization-final.md)
+[`2026-07-23 organization Phase 2 baseline`](docs/architecture/baselines/2026-07-23-organization-phase2.md)
 records the full source, import, signature-dependency, and proof/body-dependency
 metrics and the exact counting definitions.
 
@@ -223,13 +223,15 @@ Choose the narrowest entry point that matches the material you need:
 - `NumStability.Core` contains the foundational floating-point model and core
   analysis infrastructure.
 - `NumStability.Algorithms.Summation` is the public umbrella for the summation
-  algorithm family; individual algorithms also have canonical modules below
-  `NumStability.Algorithms.Summation`.
+  algorithm family. Reusable recursive and pairwise consumers should choose
+  `Summation.Recursive.Core` or `Summation.Pairwise.Core`; the broad family
+  modules also preserve their supported Chapter 4 source declarations.
 - `NumStability.Algorithms.LinearSystems.Triangular` is the reusable umbrella
   for forward/back substitution and triangular-system error bounds.
 - `NumStability.Analysis.Summation` is the complete summation-analysis umbrella;
   `NumStability.Analysis.Summation.Signs` is its reusable sign/absolute-value
-  leaf, while `ErrorBounds` retains the Higham-facing mixed results.
+  leaf, while `ErrorBounds` contains the reusable conditioning and rounded-fold
+  error theory.
 - `NumStability.Algorithms.Sylvester` is the complete historical Sylvester and
   Higham Chapter 16 family umbrella; consumers should still prefer its narrow
   leaf modules when they need only part of that surface.
@@ -258,7 +260,7 @@ dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
 corpus is already Mathlib-style. The current ratchet records 652 unclassified
-modules, 9 reviewed mixed modules, 227 missing module docs, and 456 historical
+modules, 2 reviewed mixed modules, 227 missing module docs, and 455 historical
 naming exceptions. CI prevents those queues from growing while each
 dependency-contained family is migrated.
 
@@ -305,7 +307,7 @@ NumStability/
     Summation.lean             -- import-only summation-analysis umbrella
     Summation/
       Signs.lean               -- reusable sign and absolute-sum API
-      ErrorBounds.lean         -- transitional mixed error-bound layer
+      ErrorBounds.lean         -- reusable conditioning and error-bound layer
   Algorithms.lean              -- numerical-algorithm umbrella
   Algorithms/                  -- algorithm formalizations, with clusters such as
                                --   LU, QR, Cholesky, RandNLA, and TestMatrices
@@ -313,6 +315,7 @@ NumStability/
   Source/
     Higham.lean                -- Higham source umbrella
     Higham/
+      Chapter04/               -- summation examples and numbered problems
       Chapter14/               -- source discrepancy correspondence
       Chapter24/               -- FFT and circulant-system correspondence
       Chapter25/               -- nonlinear-system correspondence
@@ -343,7 +346,7 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 
 The selected formalization core scope is closed; the repository-organization
 migration is not. The next batches classify and split the remaining 652
-unclassified and 9 mixed modules, replace the 456 historical source/proof-stage
+unclassified and 2 mixed modules, replace the 455 historical source/proof-stage
 names with semantic canonical paths plus compatibility shims, document the 227
 remaining modules, and review the giant-file outliers. The sequence and safety
 gates are tracked in

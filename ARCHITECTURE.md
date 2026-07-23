@@ -58,16 +58,17 @@ split from the reusable library.
 - `NumStability.Core` is the deliberately small reusable foundation entry point.
 - `NumStability.Algorithms.LinearSystems.Triangular` is a reviewed reusable
   algorithm-family entry point.
-- `NumStability.Algorithms.Summation` is the canonical summation family path,
-  but remains a mixed migration surface until its Chapter 4 declarations are
-  extracted.
+- `NumStability.Algorithms.Summation` is the complete published summation
+  surface. Its `Recursive` and `Pairwise` family umbrellas preserve source
+  reachability, while reusable consumers import their `.Core` leaves.
 - `NumStability.Source` is the canonical source-correspondence entry point.
 - `NumStability.Analysis.Summation` is an import-only family aggregate split
-  into reusable `Signs` and mixed source-facing `ErrorBounds` leaves.
+  into reusable `Signs` and `ErrorBounds` leaves.
 - `NumStability.Algorithms.Sylvester` is a complete family-discovery umbrella,
   not a claim that every Chapter 16 declaration is reusable mathematics.
 - `NumStability.Source.Higham` is the canonical Higham correspondence entry
-  point while the remaining historical modules are migrated chapter by chapter.
+  point. Chapter 4 now has a canonical chapter umbrella alongside Chapters 14,
+  24, and 25 while remaining historical modules are migrated incrementally.
 - `NumStability.Higham` is a compatibility entry point forwarding to
   `NumStability.Source.Higham`.
 - `NumStability.All` is the explicit complete-tree entry point.

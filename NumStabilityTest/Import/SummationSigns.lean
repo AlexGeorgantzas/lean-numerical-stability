@@ -3,8 +3,8 @@ import NumStability.Analysis.Summation.Signs
 /-!
 # Reusable summation-sign import smoke test
 
-This test imports the generic sign API without the mixed Chapter 4 summation
-module, protecting the reusable-to-source boundary.
+This test imports the generic sign API without the broader error-bound layer,
+protecting the narrow reusable import boundary.
 -/
 
 #check NumStability.OneSigned

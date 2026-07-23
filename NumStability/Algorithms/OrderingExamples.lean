@@ -7,13 +7,13 @@ import Mathlib.Data.Nat.Log
 import Batteries.Data.RBMap.Depth
 import Batteries.Data.RBMap.Lemmas
 import NumStability.Algorithms.Summation.Insertion
-import NumStability.Algorithms.Summation.Recursive
+import NumStability.Algorithms.Summation.Recursive.Core
 import NumStability.Algorithms.Summation.Tree.Core
 
 namespace NumStability
 
 /-!
-# Ordering Examples for Recursive Summation (Higham Chapter 4, p. 91)
+# Ordering Examples for Recursive Summation (Higham Chapter 4, printed p. 83)
 
 Higham's cancellation example (4.5) compares increasing, Psum, and decreasing
 recursive summation orderings for the data `[1, M, 2M, -3M]`, under the
@@ -420,7 +420,7 @@ theorem increasingAbsSort_recursiveExactPrefixBudgetFrom_le :
             simp [recursiveExactPrefixBudgetFrom]
             exact hrec
 
-/-- Higham p. 91 nonnegative ordering claim in exact a priori form: replacing
+/-- Higham printed p. 83 nonnegative ordering claim in exact a priori form: replacing
 any supplied nonnegative recursive-summation order by increasing magnitude does
 not increase the exact prefix-sum bound. -/
 theorem increasingAbsSort_recursiveExactPrefixBudget_le (xs : List ℝ)
@@ -711,7 +711,7 @@ theorem psumOrder_perm (xs : List ℝ) :
   exact psumOrderFrom_perm 0 xs
 
 /-- For nonnegative data and a nonnegative accumulated sum, the fuelled Psum
-order is an increasing-absolute-value order.  This formalizes the p. 91
+order is an increasing-absolute-value order.  This formalizes the printed p. 83
 same-sign equivalence up to permutation/tie behavior. -/
 theorem psumOrderFromFuel_increasingAbs_of_nonnegative :
     ∀ (fuel : ℕ) (acc : ℝ) (xs : List ℝ),
@@ -3590,7 +3590,7 @@ theorem psumOrderVector_recursiveRoundedPrefixBudget_exactWithUnitRoundoff_le
   exact increasingAbsSortVector_recursiveRoundedPrefixBudget_exactWithUnitRoundoff_le
     u0 hu0 v hnonneg
 
-/-- Four-leaf left chain used for the p. 91 recursive-ordering examples. -/
+/-- Four-leaf left chain used for the printed p. 83 recursive-ordering examples. -/
 def p91RecursiveFourTree : SumTree 4 :=
   SumTree.node
     (SumTree.node
@@ -3598,22 +3598,22 @@ def p91RecursiveFourTree : SumTree 4 :=
       SumTree.leaf)
     SumTree.leaf
 
-/-- Increasing-magnitude order for Higham's p. 91 example:
+/-- Increasing-magnitude order for Higham's printed p. 83 example:
 `[1, M, 2M, -3M]`. -/
 noncomputable def p91IncreasingInput (M : ℝ) : Fin 4 → ℝ
   := ![1, M, 2 * M, -(3 * M)]
 
-/-- Psum order for Higham's p. 91 example:
+/-- Psum order for Higham's printed p. 83 example:
 `[1, M, -3M, 2M]`. -/
 noncomputable def p91PsumInput (M : ℝ) : Fin 4 → ℝ
   := ![1, M, -(3 * M), 2 * M]
 
-/-- Decreasing-magnitude order for Higham's p. 91 example:
+/-- Decreasing-magnitude order for Higham's printed p. 83 example:
 `[-3M, 2M, M, 1]`. -/
 noncomputable def p91DecreasingInput (M : ℝ) : Fin 4 → ℝ
   := ![-(3 * M), 2 * M, M, 1]
 
-/-- The rounded operations assumed by Higham's displayed p. 91 cancellation
+/-- The rounded operations assumed by Higham's displayed printed p. 83 cancellation
 example.  The first field is the source condition `fl(1 + M) = M`; the
 remaining fields record the exact scaled additions used in the display. -/
 structure P91CancellationRounding (fp : FPModel) (M : ℝ) : Prop where
@@ -3631,15 +3631,15 @@ lemma fl_add_eq_zero_of_add_eq_zero (fp : FPModel) {x y : ℝ}
   rw [hfl, hxy]
   ring
 
-/-- Recursive floating-point sum in the p. 91 increasing order. -/
+/-- Recursive floating-point sum in the printed p. 83 increasing order. -/
 noncomputable def fl_p91Increasing (fp : FPModel) (M : ℝ) : ℝ :=
   fl_recursiveSum fp 4 (p91IncreasingInput M)
 
-/-- Recursive floating-point sum in the p. 91 Psum order. -/
+/-- Recursive floating-point sum in the printed p. 83 Psum order. -/
 noncomputable def fl_p91Psum (fp : FPModel) (M : ℝ) : ℝ :=
   fl_recursiveSum fp 4 (p91PsumInput M)
 
-/-- Recursive floating-point sum in the p. 91 decreasing order. -/
+/-- Recursive floating-point sum in the printed p. 83 decreasing order. -/
 noncomputable def fl_p91Decreasing (fp : FPModel) (M : ℝ) : ℝ :=
   fl_recursiveSum fp 4 (p91DecreasingInput M)
 
@@ -3661,7 +3661,7 @@ theorem p91Decreasing_exact_sum (M : ℝ) :
   norm_num [p91DecreasingInput, Fin.sum_univ_succ]
   ring
 
-/-- The sum of magnitudes for the p. 91 increasing-order data is `1 + 6M`
+/-- The sum of magnitudes for the printed p. 83 increasing-order data is `1 + 6M`
 when `M` is nonnegative. -/
 theorem p91Increasing_sum_abs_eq {M : ℝ} (hM : 0 ≤ M) :
     (∑ i : Fin 4, |p91IncreasingInput M i|) = 1 + 6 * M := by
@@ -3672,7 +3672,7 @@ theorem p91Increasing_sum_abs_eq {M : ℝ} (hM : 0 ≤ M) :
     abs_of_nonneg hM, abs_of_nonneg h2M, abs_of_nonpos hneg3M]
   ring
 
-/-- The sum of magnitudes for the p. 91 Psum-order data is `1 + 6M`
+/-- The sum of magnitudes for the printed p. 83 Psum-order data is `1 + 6M`
 when `M` is nonnegative. -/
 theorem p91Psum_sum_abs_eq {M : ℝ} (hM : 0 ≤ M) :
     (∑ i : Fin 4, |p91PsumInput M i|) = 1 + 6 * M := by
@@ -3683,7 +3683,7 @@ theorem p91Psum_sum_abs_eq {M : ℝ} (hM : 0 ≤ M) :
     abs_of_nonneg hM, abs_of_nonneg h2M, abs_of_nonpos hneg3M]
   ring
 
-/-- The sum of magnitudes for the p. 91 decreasing-order data is `1 + 6M`
+/-- The sum of magnitudes for the printed p. 83 decreasing-order data is `1 + 6M`
 when `M` is nonnegative. -/
 theorem p91Decreasing_sum_abs_eq {M : ℝ} (hM : 0 ≤ M) :
     (∑ i : Fin 4, |p91DecreasingInput M i|) = 1 + 6 * M := by
@@ -3694,7 +3694,7 @@ theorem p91Decreasing_sum_abs_eq {M : ℝ} (hM : 0 ≤ M) :
     abs_of_nonneg hM, abs_of_nonneg h2M, abs_of_nonpos hneg3M]
   ring
 
-/-- Higham's p. 91 increasing-order data have cancellation amplification
+/-- Higham's printed p. 83 increasing-order data have cancellation amplification
 exactly matching the ratio `1 + 6M` in the nonnegative `M` regime. -/
 theorem p91Increasing_heavyCancellationAtLeast {M : ℝ} (hM : 0 ≤ M) :
     HeavyCancellationAtLeast (p91IncreasingInput M) (1 + 6 * M) := by
@@ -3702,7 +3702,7 @@ theorem p91Increasing_heavyCancellationAtLeast {M : ℝ} (hM : 0 ≤ M) :
   rw [p91Increasing_exact_sum, p91Increasing_sum_abs_eq hM]
   norm_num
 
-/-- Higham's p. 91 Psum-order data have the same cancellation amplification
+/-- Higham's printed p. 83 Psum-order data have the same cancellation amplification
 ratio as the source ordering. -/
 theorem p91Psum_heavyCancellationAtLeast {M : ℝ} (hM : 0 ≤ M) :
     HeavyCancellationAtLeast (p91PsumInput M) (1 + 6 * M) := by
@@ -3710,7 +3710,7 @@ theorem p91Psum_heavyCancellationAtLeast {M : ℝ} (hM : 0 ≤ M) :
   rw [p91Psum_exact_sum, p91Psum_sum_abs_eq hM]
   norm_num
 
-/-- Higham's p. 91 decreasing-order data preserve the same cancellation
+/-- Higham's printed p. 83 decreasing-order data preserve the same cancellation
 amplification ratio while changing the rounded recursive-summation outcome. -/
 theorem p91Decreasing_heavyCancellationAtLeast {M : ℝ} (hM : 0 ≤ M) :
     HeavyCancellationAtLeast (p91DecreasingInput M) (1 + 6 * M) := by
@@ -3718,7 +3718,7 @@ theorem p91Decreasing_heavyCancellationAtLeast {M : ℝ} (hM : 0 ≤ M) :
   rw [p91Decreasing_exact_sum, p91Decreasing_sum_abs_eq hM]
   norm_num
 
-/-- Higham p. 91: increasing order computes `0`. -/
+/-- Higham printed p. 83: increasing order computes `0`. -/
 theorem fl_p91Increasing_eq_zero (fp : FPModel) (M : ℝ)
     (h : P91CancellationRounding fp M) :
     fl_p91Increasing fp M = 0 := by
@@ -3728,7 +3728,7 @@ theorem fl_p91Increasing_eq_zero (fp : FPModel) (M : ℝ)
   norm_num [fl_p91Increasing, fl_recursiveSum, p91IncreasingInput,
     Fin.foldl_succ, fp.fl_add_zero, h.one_add_M, h.M_add_twoM, hcancel]
 
-/-- Higham p. 91: Psum order computes `0`. -/
+/-- Higham printed p. 83: Psum order computes `0`. -/
 theorem fl_p91Psum_eq_zero (fp : FPModel) (M : ℝ)
     (h : P91CancellationRounding fp M) :
     fl_p91Psum fp M = 0 := by
@@ -3739,7 +3739,7 @@ theorem fl_p91Psum_eq_zero (fp : FPModel) (M : ℝ)
     Fin.foldl_succ, fp.fl_add_zero, h.one_add_M, h.M_add_negThreeM,
     hcancel]
 
-/-- Higham p. 91: decreasing order computes the exact answer `1`. -/
+/-- Higham printed p. 83: decreasing order computes the exact answer `1`. -/
 theorem fl_p91Decreasing_eq_one (fp : FPModel) (M : ℝ)
     (h : P91CancellationRounding fp M) :
     fl_p91Decreasing fp M = 1 := by
@@ -3749,7 +3749,7 @@ theorem fl_p91Decreasing_eq_one (fp : FPModel) (M : ℝ)
   norm_num [fl_p91Decreasing, fl_recursiveSum, p91DecreasingInput,
     Fin.foldl_succ, fp.fl_add_zero, h.negThreeM_add_twoM, hcancel]
 
-/-- Higham p. 91: increasing order has relative error `1`. -/
+/-- Higham printed p. 83: increasing order has relative error `1`. -/
 theorem p91Increasing_relError_eq_one (fp : FPModel) (M : ℝ)
     (h : P91CancellationRounding fp M) :
     relError (fl_p91Increasing fp M) (∑ i : Fin 4, p91IncreasingInput M i) =
@@ -3758,7 +3758,7 @@ theorem p91Increasing_relError_eq_one (fp : FPModel) (M : ℝ)
   norm_num [relError]
   rfl
 
-/-- Higham p. 91: Psum order has relative error `1`. -/
+/-- Higham printed p. 83: Psum order has relative error `1`. -/
 theorem p91Psum_relError_eq_one (fp : FPModel) (M : ℝ)
     (h : P91CancellationRounding fp M) :
     relError (fl_p91Psum fp M) (∑ i : Fin 4, p91PsumInput M i) = 1 := by
@@ -3766,7 +3766,7 @@ theorem p91Psum_relError_eq_one (fp : FPModel) (M : ℝ)
   norm_num [relError]
   rfl
 
-/-- Higham p. 91: decreasing order computes the exact sum. -/
+/-- Higham printed p. 83: decreasing order computes the exact sum. -/
 theorem fl_p91Decreasing_eq_exact_sum (fp : FPModel) (M : ℝ)
     (h : P91CancellationRounding fp M) :
     fl_p91Decreasing fp M = ∑ i : Fin 4, p91DecreasingInput M i := by
@@ -3807,7 +3807,7 @@ theorem relError_le_of_abs_sub_le_mul_abs {computed exact ε : ℝ}
   rw [div_le_iff₀ hden]
   exact hbound
 
-/-- General post-cancellation comparison surface for the p. 99 advice:
+/-- General post-cancellation comparison surface for the §4.6 (printed p. 89) advice:
 heavy cancellation marks the source regime, but the accuracy conclusion comes
 from checkable computed outcomes.  If the decreasing/post-cancellation method
 has an explicit absolute-error certificate with relative radius `ε`, and the
@@ -3836,7 +3836,7 @@ theorem heavyCancellation_postCancellation_bound_beats_competitor
     relError_le_of_abs_sub_le_mul_abs hnz haccurateOther
   exact ⟨hheavy, hrel, lt_of_le_of_lt hrel hother⟩
 
-/-- General conditional heavy-cancellation comparison surface for the p. 91
+/-- General conditional heavy-cancellation comparison surface for the printed p. 83
 advice: when two orderings represent the same nonzero exact sum, one ordering
 computes that exact sum, and the competing ordering is inexact, the exact
 ordering has strictly smaller relative error.  The heavy-cancellation
@@ -3868,7 +3868,7 @@ theorem heavyCancellation_exact_result_beats_inexact_result
   · rw [hcomputedExact, relError_exact_eq_zero]
     exact relError_pos_of_ne_exact hnz hinexact
 
-/-- Conditional heavy-cancellation comparison surface for the p. 91 advice:
+/-- Conditional heavy-cancellation comparison surface for the printed p. 83 advice:
 when two orderings represent the same nonzero exact sum, one ordering computes
 that exact sum, and the other collapses to zero, the exact ordering has
 strictly smaller relative error.  The heavy-cancellation hypothesis is carried
@@ -3902,7 +3902,7 @@ theorem heavyCancellation_exact_result_beats_zero_result
       relError_zero_eq_one_of_ne_zero hnz]
     norm_num
 
-/-- In Higham's p. 91 heavy-cancellation example, the decreasing order has
+/-- In Higham's printed p. 83 heavy-cancellation example, the decreasing order has
 strictly smaller relative error than increasing order: decreasing computes the
 common exact sum, while increasing order collapses to zero. -/
 theorem p91_decreasing_beats_increasing_under_heavyCancellation
@@ -3931,7 +3931,7 @@ theorem p91_decreasing_beats_increasing_under_heavyCancellation
   · exact fl_p91Decreasing_eq_exact_sum fp M h
   · exact fl_p91Increasing_eq_zero fp M h
 
-/-- In Higham's p. 91 heavy-cancellation example, the decreasing order has
+/-- In Higham's printed p. 83 heavy-cancellation example, the decreasing order has
 strictly smaller relative error than Psum order: decreasing computes the common
 exact sum, while Psum collapses to zero. -/
 theorem p91_decreasing_beats_psum_under_heavyCancellation
@@ -3960,7 +3960,7 @@ theorem p91_decreasing_beats_psum_under_heavyCancellation
   · exact fl_p91Decreasing_eq_exact_sum fp M h
   · exact fl_p91Psum_eq_zero fp M h
 
-/-- The p. 91 decreasing-order computation also fits the checkable
+/-- The printed p. 83 decreasing-order computation also fits the checkable
 post-cancellation certificate route: the decreasing result has zero absolute
 error, while increasing order has relative error one. -/
 theorem p91_decreasing_postCancellation_bound_beats_increasing
@@ -3991,7 +3991,7 @@ theorem p91_decreasing_postCancellation_bound_beats_increasing
     norm_num
 
 /-- The same checkable post-cancellation route compares decreasing order
-against the Psum collapse in Higham's p. 91 example. -/
+against the Psum collapse in Higham's printed p. 83 example. -/
 theorem p91_decreasing_postCancellation_bound_beats_psum
     (fp : FPModel) {M : ℝ} (hM : 0 ≤ M)
     (h : P91CancellationRounding fp M) :
@@ -4019,7 +4019,7 @@ theorem p91_decreasing_postCancellation_bound_beats_psum
   · rw [p91Psum_relError_eq_one fp M h]
     norm_num
 
-/-- The left-chain tree agrees with recursive summation for the p. 91
+/-- The left-chain tree agrees with recursive summation for the printed p. 83
 increasing order. -/
 theorem p91RecursiveFourTree_eval_increasing_eq (fp : FPModel) (M : ℝ) :
     p91RecursiveFourTree.eval fp (p91IncreasingInput M) =
@@ -4028,7 +4028,7 @@ theorem p91RecursiveFourTree_eval_increasing_eq (fp : FPModel) (M : ℝ) :
     fl_recursiveSum, p91IncreasingInput, Fin.foldl_succ, fp.fl_add_zero,
     Fin.castAdd, Fin.natAdd, Fin.addNat, Fin.castLE]
 
-/-- The left-chain tree agrees with recursive summation for the p. 91 Psum
+/-- The left-chain tree agrees with recursive summation for the printed p. 83 Psum
 order. -/
 theorem p91RecursiveFourTree_eval_psum_eq (fp : FPModel) (M : ℝ) :
     p91RecursiveFourTree.eval fp (p91PsumInput M) = fl_p91Psum fp M := by
@@ -4036,7 +4036,7 @@ theorem p91RecursiveFourTree_eval_psum_eq (fp : FPModel) (M : ℝ) :
     p91PsumInput, Fin.foldl_succ, fp.fl_add_zero, Fin.castAdd, Fin.natAdd,
     Fin.addNat, Fin.castLE]
 
-/-- The left-chain tree agrees with recursive summation for the p. 91
+/-- The left-chain tree agrees with recursive summation for the printed p. 83
 decreasing order. -/
 theorem p91RecursiveFourTree_eval_decreasing_eq (fp : FPModel) (M : ℝ) :
     p91RecursiveFourTree.eval fp (p91DecreasingInput M) =
@@ -4045,7 +4045,7 @@ theorem p91RecursiveFourTree_eval_decreasing_eq (fp : FPModel) (M : ℝ) :
     fl_recursiveSum, p91DecreasingInput, Fin.foldl_succ, fp.fl_add_zero,
     Fin.castAdd, Fin.natAdd, Fin.addNat, Fin.castLE]
 
-/-- Higham p. 91: the running-error budget `µ` for increasing order is `4M`. -/
+/-- Higham printed p. 83: the running-error budget `µ` for increasing order is `4M`. -/
 theorem p91Increasing_runningErrorBudget_eq (fp : FPModel) {M : ℝ}
     (hM : 0 ≤ M) (h : P91CancellationRounding fp M) :
     SumTree.runningErrorBudget fp p91RecursiveFourTree
@@ -4059,7 +4059,7 @@ theorem p91Increasing_runningErrorBudget_eq (fp : FPModel) {M : ℝ}
     abs_of_nonneg hM, abs_of_nonneg h3M]
   ring
 
-/-- Higham p. 91: the running-error budget `µ` for Psum order is `3M`. -/
+/-- Higham printed p. 83: the running-error budget `µ` for Psum order is `3M`. -/
 theorem p91Psum_runningErrorBudget_eq (fp : FPModel) {M : ℝ}
     (hM : 0 ≤ M) (h : P91CancellationRounding fp M) :
     SumTree.runningErrorBudget fp p91RecursiveFourTree (p91PsumInput M) =
@@ -4073,7 +4073,7 @@ theorem p91Psum_runningErrorBudget_eq (fp : FPModel) {M : ℝ}
     abs_of_nonneg hM, abs_of_nonpos hneg2M]
   ring
 
-/-- Higham p. 91: the running-error budget `µ` for decreasing order is
+/-- Higham printed p. 83: the running-error budget `µ` for decreasing order is
 `M + 1`. -/
 theorem p91Decreasing_runningErrorBudget_eq (fp : FPModel) {M : ℝ}
     (hM : 0 ≤ M) (h : P91CancellationRounding fp M) :

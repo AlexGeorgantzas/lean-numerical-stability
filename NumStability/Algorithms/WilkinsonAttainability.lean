@@ -2,7 +2,7 @@
 
 import Mathlib.Tactic
 import NumStability.Analysis.Problem2_10
-import NumStability.Algorithms.Summation.Recursive
+import NumStability.Algorithms.Summation.Recursive.Core
 
 namespace NumStability
 

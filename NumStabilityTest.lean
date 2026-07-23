@@ -25,6 +25,7 @@ import NumStabilityTest.Import.NonrandomRoundingMigration
 import NumStabilityTest.Import.PublicApi
 import NumStabilityTest.Import.Root
 import NumStabilityTest.Import.Source
+import NumStabilityTest.Import.Source.Chapter04
 import NumStabilityTest.Import.Source.Chapter14
 import NumStabilityTest.Import.Source.Chapter24
 import NumStabilityTest.Import.Source.Chapter25
@@ -32,9 +33,16 @@ import NumStabilityTest.Import.Source.Higham
 import NumStabilityTest.Import.SourceCanonical
 import NumStabilityTest.Import.SourceMigration
 import NumStabilityTest.Import.SummationAnalysis
+import NumStabilityTest.Import.SummationAggregate
 import NumStabilityTest.Import.SummationCanonical
+import NumStabilityTest.Import.SummationErrorBounds
 import NumStabilityTest.Import.SummationMigration
+import NumStabilityTest.Import.SummationPairwiseCore
+import NumStabilityTest.Import.SummationPairwiseFamily
+import NumStabilityTest.Import.SummationRecursiveCore
+import NumStabilityTest.Import.SummationRecursiveFamily
 import NumStabilityTest.Import.SummationSigns
+import NumStabilityTest.Import.SummationTreeChain
 import NumStabilityTest.Import.Sylvester
 import NumStabilityTest.Import.TriangularCanonical
 import NumStabilityTest.Import.TriangularMigration

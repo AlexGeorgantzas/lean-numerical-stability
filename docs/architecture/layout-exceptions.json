@@ -3,9 +3,11 @@
     "NumStability": "NumStability.",
     "NumStability.Algorithms": "NumStability.Algorithms.",
     "NumStability.Algorithms.LinearSystems.Triangular": "NumStability.Algorithms.LinearSystems.Triangular.",
-    "NumStability.Algorithms.Sylvester": "NumStability.Algorithms.Sylvester.",
     "NumStability.Algorithms.Summation": "NumStability.Algorithms.Summation.",
+    "NumStability.Algorithms.Summation.Pairwise": "NumStability.Algorithms.Summation.Pairwise.",
+    "NumStability.Algorithms.Summation.Recursive": "NumStability.Algorithms.Summation.Recursive.",
     "NumStability.Algorithms.Summation.Tree": "NumStability.Algorithms.Summation.Tree.",
+    "NumStability.Algorithms.Sylvester": "NumStability.Algorithms.Sylvester.",
     "NumStability.All": "NumStability.",
     "NumStability.Analysis": "NumStability.Analysis.",
     "NumStability.Analysis.Summation": "NumStability.Analysis.Summation.",
@@ -13,14 +15,16 @@
     "NumStability.Higham": "NumStability.Higham.",
     "NumStability.Source": "NumStability.Source.",
     "NumStability.Source.Higham": "NumStability.Source.Higham.",
+    "NumStability.Source.Higham.Chapter04": "NumStability.Source.Higham.Chapter04.",
+    "NumStability.Source.Higham.Chapter04.Section01": "NumStability.Source.Higham.Chapter04.Section01.",
     "NumStability.Source.Higham.Chapter14": "NumStability.Source.Higham.Chapter14.",
     "NumStability.Source.Higham.Chapter24": "NumStability.Source.Higham.Chapter24.",
     "NumStability.Source.Higham.Chapter25": "NumStability.Source.Higham.Chapter25."
   },
   "direct_import_ceilings": {
     "NumStability.Algorithms": {
-      "NumStability.Analysis.": 45,
       "NumStability.": 463,
+      "NumStability.Analysis.": 45,
       "NumStability.Source.": 2
     }
   },
@@ -258,15 +262,8 @@
       "NumStability.FloatingPoint.Model"
     ],
     "mixed_modules": [
-      "NumStability.Algorithms.Summation.Accumulator",
       "NumStability.Algorithms.Summation.Compensated",
-      "NumStability.Algorithms.Summation.DoublyCompensated",
-      "NumStability.Algorithms.Summation.Insertion",
-      "NumStability.Algorithms.Summation.Pairwise",
-      "NumStability.Algorithms.Summation.PlusMinus",
-      "NumStability.Algorithms.Summation.Recursive",
-      "NumStability.Algorithms.Summation.Tree.RecursiveBridge",
-      "NumStability.Analysis.Summation.ErrorBounds"
+      "NumStability.Algorithms.Summation.Insertion"
     ],
     "noncanonical_modules": [
       "NumStability.Algorithms.AutomaticErrorAnalysis.Higham26",
@@ -542,7 +539,6 @@
       "NumStability.Algorithms.QR.HouseholderSpecSupport",
       "NumStability.Algorithms.SoftwareIssues.Higham27",
       "NumStability.Algorithms.SoftwareIssues.Higham27Pythag",
-      "NumStability.Algorithms.Summation.Tree.RecursiveBridge",
       "NumStability.Algorithms.Sylvester.Higham16",
       "NumStability.Algorithms.Sylvester.Higham16AutoCondition",
       "NumStability.Algorithms.Sylvester.Higham16Eq9Assembly",

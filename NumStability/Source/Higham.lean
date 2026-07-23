@@ -10,6 +10,7 @@ import NumStability.Higham.CrossChapter.Chapter02To03NoGuardDot
 import NumStability.Higham.CrossChapter.Chapter07To15PracticalBound
 import NumStability.Higham.CrossChapter.Chapter09To12GenericSolver
 import NumStability.Higham.CrossChapter.Chapter09To12Solver
+import NumStability.Source.Higham.Chapter04
 import NumStability.Source.Higham.Chapter14
 import NumStability.Source.Higham.Chapter24
 import NumStability.Source.Higham.Chapter25

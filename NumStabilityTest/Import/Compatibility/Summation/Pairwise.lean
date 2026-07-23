@@ -1,3 +1,4 @@
 import NumStability.Algorithms.PairwiseSum
 
 #check NumStability.pairwiseSum_backward_error
+#check NumStability.fl_pairwiseSumSixDisplayed

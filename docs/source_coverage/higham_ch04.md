@@ -21,15 +21,23 @@
 - Source text audited: full extracted chapter text (`ch04.txt`, pp. 79–92 including Problems 4.1–4.10).
 - Mode: core. Ownership: foundational chapter, shared infrastructure for all later chapters (no split contract; audited standalone).
 - Main Lean files (all under `NumStability/`):
-  `Algorithms/RecursiveSum.lean`, `Algorithms/SumTree.lean`, `Algorithms/PairwiseSum.lean`,
-  `Algorithms/InsertionSum.lean`, `Algorithms/OrderingExamples.lean`,
-  `Algorithms/CompensatedSum.lean`, `Algorithms/DoublyCompensatedSum.lean`,
+  `Algorithms/Summation/Recursive/Core.lean`,
+  `Source/Higham/Chapter04/Problem03.lean`,
+  `Algorithms/Summation/Tree/Core.lean`,
+  `Algorithms/Summation/Tree/Balanced.lean`,
+  `Algorithms/Summation/Tree/Chain.lean`,
+  `Algorithms/Summation/Pairwise/Core.lean`,
+  `Source/Higham/Chapter04/Section01/PairwiseSixTerm.lean`,
+  `Algorithms/Summation/Insertion.lean`, `Algorithms/OrderingExamples.lean`,
+  `Algorithms/Summation/Compensated.lean`,
+  `Algorithms/Summation/DoublyCompensated.lean`,
   `Algorithms/NeumaierCompensatedFiniteFormat.lean`,
   `Algorithms/PriestFiniteFormat.lean`,
-  `Algorithms/AccumulatorSum.lean`, `Algorithms/PlusMinusSum.lean`,
+  `Algorithms/Summation/Accumulator.lean`,
+  `Algorithms/Summation/PlusMinus.lean`,
   `Algorithms/WilkinsonAttainability.lean`, `Algorithms/Problem44SixTerm.lean`,
   `Algorithms/AitkenDenominator.lean`, `Algorithms/GridPoints.lean`,
-  `Algorithms/LogExpProduct.lean`, `Analysis/Summation.lean`,
+  `Algorithms/LogExpProduct.lean`, `Analysis/Summation/ErrorBounds.lean`,
   `Analysis/FloatingPointArithmetic.lean` (two-sum / Problem 4.6 kernels).
 - Axiom spot-check (2026-07-16): `recursiveSum_running_error_bound`,
   `SumTree.backward_error`, `pairwiseSum_forward_error_bound`,
@@ -52,7 +60,7 @@
 
 | Label | Printed statement | Status | Lean decls | Scope notes |
 |---|---|---|---|---|
-| Algorithm 4.1 (§4.2) | General pairing summation: repeatedly remove two elements of `S`, add their rounded sum back; n−1 additions; recursive/pairwise/insertion are special cases | VERIFIED | `SumTree` (inductive), `SumTree.eval`, `SumTree.numAdds_eq` (n−1 additions), `SumTree.chainTreeSucc_eval_eq_recursiveSum` (recursive instance), `PairwiseSum.pairwiseSixTree`/`fl_pairwiseSum` (pairwise instance), `InsertionScheduleTree.toSumTree` (insertion instance) | Arbitrary binary summation tree = arbitrary Algorithm 4.1 execution order. All three named methods are proved instances. |
+| Algorithm 4.1 (§4.2) | General pairing summation: repeatedly remove two elements of `S`, add their rounded sum back; n−1 additions; recursive/pairwise/insertion are special cases | VERIFIED | `SumTree` (inductive), `SumTree.eval`, `SumTree.numAdds_eq` (n−1 additions), `SumTree.chainTreeSucc_eval_eq_recursiveSum` (recursive instance), `pairwiseSixTree` (`Source.Higham.Chapter04.Section01.PairwiseSixTerm`) / `fl_pairwiseSum` (`Algorithms.Summation.Pairwise.Core`) (pairwise instances), `InsertionScheduleTree.toSumTree` (insertion instance) | Arbitrary binary summation tree = arbitrary Algorithm 4.1 execution order. All three named methods are proved instances. |
 | Algorithm 4.2 (§4.3, Kahan compensated summation) | The 4-line compensated loop with `e = (temp − s) + y` evaluated in displayed order; satisfies (4.8) | VERIFIED transcription / accuracy DEFERRED | Transcription: `kahanStepTrace`, `fl_kahanState`, `fl_kahanSum` (displayed order enforced step-by-step); final-corrected p. 85 variant `fl_kahanFinalCorrectedSum`; no-guard modified p. 86 variant `fl_kahanModifiedNoGuardSum` (0.46 trick transcribed). Analysis: see (4.8)/(4.9) rows | Algorithm transcription VERIFIED at printed strength. The unparameterized asymptotic accuracy display is deferred; exact substitute surfaces are recorded below. |
 | Algorithm 4.3 (§4.3, Priest doubly compensated summation) | Sort by decreasing magnitude; displayed 7-assignment loop. Higham then attributes the `2u` result, for `n ≤ β^(t−3)`, under "certain reasonable assumptions". | VERIFIED transcription / accuracy **DEFER–MISSING-PRECISE-STATEMENT** | Abstract trace: `priestSortedByDecreasingAbs`, `PriestState`, `priestStepTrace`, `fl_priestSum`; literal executor: `priestFinite_stepTrace`, `priestFinite_prefixState`, `priestFinite_sum`; source-local facts: `priestFinite_sourceFaithful`, `priestSource_smallFirst_pair_exact`, `priestSource_pair_exact`, `priestFinite_stepDefect_eq_combineDefect`, `priestFinite_stepDefect_abs_le_combine` | The actual ten primitive operations implementing the seven displayed assignments are transcribed with explicit no-exception conditions and proved equal to the analytic trace. Higham p. 88 does not enumerate the "certain reasonable assumptions", so the attributed `2u` prose has no unique book-level theorem statement. Priest thesis §4.1 supplies faithful+A1+A2+S4 as a partial proof foundation, not assumptions imported into Higham's statement. |
 
@@ -77,7 +85,7 @@
 |---|---|---|
 | Recursive summation loop (§4.1) | VERIFIED | `fl_recursiveSum` (Fin.foldl, first add exact via `fl_add_zero`). |
 | Pairwise/cascade summation (§4.1), ⌈log₂ n⌉ stages | VERIFIED | `fl_pairwiseSum` (n = 2^r), `pairwiseCarryTree`/`fl_clog2PairwiseSum` (general n); depth facts `pairwiseCarryTree_depth`, `clog2_le_pred`. |
-| Insertion method (§4.1), incl. 1-2-4-8 → recursive example and sorted-inputs → pairwise example | VERIFIED | `fl_insertionSumList`, `insertIncreasingAbs`, `insertionStep`; powers-of-two trace `1248 → 348 → 78 → 15` (InsertionSum ~11349–11499) with its backward/forward/running bounds. |
+| Insertion method (§4.1), incl. 1-2-4-8 → recursive example and sorted-inputs → pairwise example | VERIFIED | `fl_insertionSumList`, `insertIncreasingAbs`, `insertionStep`; powers-of-two trace `1248 → 348 → 78 → 15` (`Algorithms/Summation/Insertion.lean`) with its backward/forward/running bounds. |
 | Backward result ε_i ≤ γ_{n−1} (after (4.4)) | VERIFIED | `recursiveSum_backward_error`, `SumTree.backward_error_n_minus_one`. |
 | Design criterion "minimize Σ\|T̂_i\|" | SKIP-OK (editorial) | Embodied by `runningErrorBudget` machinery; NP-hardness citation [708] not in scope. |
 | Psum ordering (greedy min partial sums), O(n log n) comparisons | VERIFIED | `psumOrder`, `PsumGreedyOrderFrom.head_min`, `psumOrderComparisonCost` (OrderingExamples). |
@@ -99,11 +107,11 @@
 
 | Problem | Status | Lean decls / notes |
 |---|---|---|
-| 4.1 (condition number of summation) | VERIFIED | `summationConditionNumber` (= Σ\|x_i\|/\|Σx_i\|), `summationConditionNumber_eq`, `summationConditionNumber_eq_one_of_oneSigned` (value 1 iff one-signed data), perturbation lemma `summationComponentwisePerturbation_abs_error_le` (Analysis/Summation). |
+| 4.1 (condition number of summation) | VERIFIED | `summationConditionNumber` (= Σ\|x_i\|/\|Σx_i\|), `summationConditionNumber_eq`, `summationConditionNumber_eq_one_of_oneSigned` (value 1 iff one-signed data), perturbation lemma `summationComponentwisePerturbation_abs_error_le` (`Analysis/Summation/ErrorBounds.lean`). |
 | 4.2 (Wilkinson: (4.3)/(4.4) nearly attainable) | VERIFIED | `WilkinsonAttainability.lean`: exact Wilkinson input family (`wilkinsonProblem42Input`), IEEE-double machine-checked run `wilkinsonProblem42_ieeeDouble_finiteRecursiveSum_eq_pow`, attained error `wilkinsonProblem42_ieeeDouble_abs_error_eq_defect` with closed form, first-order bound within factor 3 + u (`wilkinsonProblem42_ieeeDouble_first_order_bound_le_three_abs_error_plus_u`). Axiom-clean. |
 | 4.3 (variable-γ expansion of recursive summation; best ordering) | VERIFIED | `recursiveSum_problem43_variableGamma` (displayed θ-expansion with \|θ_k\| ≤ γ_k = ku/(1−ku)), `recursiveSum_problem43_abs_error_bound` (displayed bound), ordering answer `recursiveSum_problem43_increasingAbs_weightedBound_le_perm` (increasing \|x_i\| minimizes, via rearrangement). |
 | 4.4 (six terms {1,2,3,4,M,−M}, fl(10+M) = M) | VERIFIED | `Problem44SixTerm.lean`: exhaustive answer `problem44_outputs_exactly_Icc` / `problem44PossibleOutputs_eq_Icc` — possible outputs are precisely {0,1,…,10}, both containment and attainability over all 6! orders, in the absorbing-large-M model matching the printed premise. |
-| 4.5 (± method pros/cons) | VERIFIED (discussion problem) | `PlusMinusSum.lean`: `fl_plusMinusRecursiveSum`, pro: `plusMinusPositive_conditionNumber_eq_one` (each half perfectly conditioned), error composition `plusMinus_final_add_error_bound`, `fl_plusMinusRecursiveSum_relError_bound` (con: final cancellation governs). |
+| 4.5 (± method pros/cons) | VERIFIED (discussion problem) | `Algorithms/Summation/PlusMinus.lean`: `fl_plusMinusRecursiveSum`, pro: `plusMinusPositive_conditionNumber_eq_one` (each half perfectly conditioned), error composition `plusMinus_final_add_error_bound`, `fl_plusMinusRecursiveSum_relError_bound` (con: final cancellation governs). |
 | 4.6 (Shewchuk: \|err(a,b)\| ≤ min(\|a\|,\|b\|); err is a fp number) | VERIFIED (min half) / PARTIAL (representability half) | Min bound at printed strength: `nearestRoundingToFinite_add_abs_error_le_min_of_finiteSystem`, `finiteRoundToEvenOp_add_abs_error_le_min_of_finiteSystem` (any correctly rounded nearest addition). Representability: delivered by the `FastTwoSumFiniteCertificate` `finite_error` field, constructed unconditionally only under \|b\| < \|a\| + normal range (`of_base2_abs_gt`); the symmetric/WLOG packaging of "err(a,b) is always representable" is not a standalone theorem. |
 | 4.7 (Aitken Δ² denominator: which expression) | VERIFIED | `AitkenDenominator.lean`: all three forms (a)/(b)/(c) with backward errors and majorant bounds; answer `aitkenDenominator_recommended_route_b`. |
 | 4.8 (S_n = log Π e^{x_i} accuracy) | VERIFIED | `LogExpProduct.lean`: `logExpProductTrace`, `logExpProduct_final_error_eq`, `logExpProduct_composed_error` (error analysis of the exp/product/log route). |
@@ -165,7 +173,7 @@ accuracy prose, and the Problem 4.10 IEEE run completion.
 
 Chapter 4 is load-bearing infrastructure for essentially every later chapter:
 
-- `Analysis/Summation.lean` (`fl_sum_error`, `fl_sum_error_tight`,
+- `Analysis/Summation/ErrorBounds.lean` (`fl_sum_error`, `fl_sum_error_tight`,
   `summationConditionNumber`) is the core input to Chapter 3/5 dot-product and
   polynomial kernels (`DotProduct.lean`, `Horner.lean`) and hence to the
   Chapters 7–19 matrix-algorithm error analyses (MatVec, MatMul, LU, QR,

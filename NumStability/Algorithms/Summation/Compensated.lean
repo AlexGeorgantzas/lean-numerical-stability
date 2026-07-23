@@ -6,7 +6,7 @@ import NumStability.FloatingPoint.Model
 import NumStability.Analysis.Error
 import NumStability.Analysis.FloatingPointArithmetic
 import NumStability.Analysis.Summation.ErrorBounds
-import NumStability.Algorithms.Summation.Recursive
+import NumStability.Algorithms.Summation.Recursive.Core
 
 namespace NumStability
 
@@ -30,7 +30,7 @@ The assignment to `e` is represented in the displayed evaluation order.  The
 Knuth/Kahan backward and forward error bounds (Higham equations (4.8)--(4.9))
 remain separate proof targets.
 
-The p. 93 final-correction variant appends `s = s + e` to Algorithm 4.2; this
+The printed p. 85 final-correction variant appends `s = s + e` to Algorithm 4.2; this
 file records that final rounded add as a separate returned value.
 
 It also records the source-level correction formula trace behind equation
@@ -39,7 +39,7 @@ displayed parenthesized order.  The binary exactness theorem
 `a + b = s + e` remains a finite-format proof target.
 
 The same file also records Kahan's no-guard-digit modified correction from
-Higham p. 94:
+Higham §4.3 (printed p. 86):
 
 ```
 f = 0
@@ -47,7 +47,7 @@ if sign(temp) = sign(y), f = (0.46 * s - s) + s, end
 e = ((temp - f) - (s - f)) + y
 ```
 
-Finally, it records the p. 94 alternative compensated-summation trace in which
+Finally, it records the printed p. 85 alternative compensated-summation trace in which
 local corrections are accumulated separately by recursive summation before the
 global correction is added to the computed sum.
 -/
@@ -12781,13 +12781,13 @@ theorem fl_kahanSum_add_correction_eq_sum_of_exact_steps
   simpa [fl_kahanSum, fl_kahanCorrection] using
     fl_kahanState_compensated_total_eq_sum_of_exact_steps fp n v hexact
 
-/-- Final-correction variant described on p. 93: append `s = s + e` after
+/-- Final-correction variant described on printed p. 85: append `s = s + e` after
 Algorithm 4.2. -/
 noncomputable def fl_kahanFinalCorrectedSum (fp : FPModel) (n : ℕ)
     (v : Fin n → ℝ) : ℝ :=
   fp.fl_add (fl_kahanSum fp n v) (fl_kahanCorrection fp n v)
 
-/-- The p. 93 appended final correction is the rounded add of final `s` and
+/-- The printed p. 85 appended final correction is the rounded add of final `s` and
 final `e`. -/
 theorem fl_kahanFinalCorrectedSum_eq_add_correction (fp : FPModel) (n : ℕ)
     (v : Fin n → ℝ) :
@@ -12851,7 +12851,7 @@ theorem fl_kahanCorrection_exactWithUnitRoundoff (u0 : ℝ) (hu0 : 0 ≤ u0)
   have hstate := fl_kahanState_exactWithUnitRoundoff u0 hu0 n v
   simpa [fl_kahanCorrection] using congrArg KahanState.e hstate
 
-/-- Under exact arithmetic, the p. 93 final-correction variant also returns
+/-- Under exact arithmetic, the printed p. 85 final-correction variant also returns
 the exact source sum. -/
 theorem fl_kahanFinalCorrectedSum_exactWithUnitRoundoff
     (u0 : ℝ) (hu0 : 0 ≤ u0) (n : ℕ) (v : Fin n → ℝ) :
@@ -13453,7 +13453,7 @@ theorem kahanNoGuardCounterexample_exactSum_eq :
 
 /-- Ordinary Kahan compensated summation can have relative error exactly one
 under the no-guard model.  This records the algorithm-level failure mode behind
-Higham's pp. 94--95 warning that the no-guard model does not guarantee the
+Higham's §4.3 (printed p. 86) warning that the no-guard model does not guarantee the
 standard compensated-summation bound. -/
 theorem kahanNoGuardCounterexample_relError_eq_one :
     relError
@@ -13466,7 +13466,7 @@ theorem kahanNoGuardCounterexample_relError_eq_one :
 
 /-! ## Alternative compensated summation with separately accumulated corrections -/
 
-/-- One step of the p. 94 alternative compensated-summation variant.  The main
+/-- One step of the printed p. 85 alternative compensated-summation variant.  The main
 sum is updated without immediately feeding the correction back into the next
 input; the local correction is stored separately. -/
 structure AlternativeCompensatedStepTrace where
@@ -13515,7 +13515,7 @@ theorem alternativeCompensatedStepTrace_e
         x := by
   rfl
 
-/-- The local correction pair in one step of the p. 94 alternative variant is
+/-- The local correction pair in one step of the printed p. 85 alternative variant is
 exactly the Chapter 4 equation-(4.7) correction-formula trace applied to
 `temp` and the current input. -/
 theorem alternativeCompensatedStepTrace_correctionFormulaTrace
@@ -13527,7 +13527,7 @@ theorem alternativeCompensatedStepTrace_correctionFormulaTrace
         (alternativeCompensatedStepTrace fp x sum).temp x := by
   simp [alternativeCompensatedStepTrace, correctionFormulaTrace]
 
-/-- If the local correction formula is exact for one step of the p. 94
+/-- If the local correction formula is exact for one step of the printed p. 85
 alternative variant, then that step's main sum plus stored correction equals
 the previous main sum plus the current input. -/
 theorem alternativeCompensatedStepTrace_main_plus_correction_eq_of_correction
@@ -13565,7 +13565,7 @@ noncomputable def alternativeCompensatedCorrections (fp : FPModel) {n : ℕ}
     (v : Fin n → ℝ) : Fin n → ℝ :=
   fun i => (alternativeCompensatedTrace fp v i).e
 
-/-- The main prefix in the p. 94 alternative compensated-summation variant is
+/-- The main prefix in the printed p. 85 alternative compensated-summation variant is
 ordinary left-to-right recursive summation on the processed prefix. -/
 theorem alternativeCompensatedPrefixSum_eq_fl_recursiveSum_prefix
     (fp : FPModel) {n : ℕ} (v : Fin n → ℝ)
@@ -13576,7 +13576,7 @@ theorem alternativeCompensatedPrefixSum_eq_fl_recursiveSum_prefix
   simp [alternativeCompensatedPrefixSum, fl_recursiveSum,
     alternativeCompensatedStepTrace, AlternativeCompensatedStepTrace.nextSum]
 
-/-- The local pre-rounding main-add input in the p. 94 alternative variant is
+/-- The local pre-rounding main-add input in the printed p. 85 alternative variant is
 the same `fl_partialSums` quantity used in Higham §4.2's running-error bound
 for ordinary recursive summation. -/
 theorem alternativeCompensatedTrace_main_add_input_eq_fl_partialSums
@@ -13596,7 +13596,7 @@ noncomputable def alternativeCompensatedPrefixCorrection
       (alternativeCompensatedPrefixSum fp v i.val
         (Nat.le_trans (Nat.le_of_lt i.isLt) hk))).e
 
-/-- Prefix invariant for the p. 94 alternative compensated-summation trace.
+/-- Prefix invariant for the printed p. 85 alternative compensated-summation trace.
 
 If every local correction formula is exact, then the main prefix sum plus the
 exact sum of the stored local corrections equals the exact source prefix sum. -/
@@ -13686,7 +13686,7 @@ noncomputable def fl_alternativeCompensatedGlobalCorrection
     (fp : FPModel) (n : ℕ) (v : Fin n → ℝ) : ℝ :=
   fl_recursiveSum fp n (alternativeCompensatedCorrections fp v)
 
-/-- Final value of the p. 94 alternative compensated-summation variant: add
+/-- Final value of the printed p. 85 alternative compensated-summation variant: add
 the recursively accumulated global correction to the computed main sum. -/
 noncomputable def fl_alternativeCompensatedSum
     (fp : FPModel) (n : ℕ) (v : Fin n → ℝ) : ℝ :=
@@ -13717,7 +13717,7 @@ theorem fl_alternativeCompensatedSum_eq_add_globalCorrection
         (fl_alternativeCompensatedGlobalCorrection fp n v) := by
   rfl
 
-/-- Full-length form of the exact-step invariant for the p. 94 alternative
+/-- Full-length form of the exact-step invariant for the printed p. 85 alternative
 compensated-summation trace.  If each local correction formula is exact, then
 the final main sum plus the exact sum of stored corrections is the exact
 source sum. -/
@@ -13739,7 +13739,7 @@ theorem fl_alternativeCompensatedMainSum_add_exact_corrections_eq_sum_of_exact_s
     alternativeCompensatedPrefixSum_add_corrections_eq_sum_of_exact_steps
       fp v n (Nat.le_refl n) hexact
 
-/-- Prefix correction sums in the p. 94 alternative compensated-summation
+/-- Prefix correction sums in the printed p. 85 alternative compensated-summation
 variant are controlled by the ordinary recursive-summation forward-error bound.
 
 For a `k`-step prefix, exact local correction formulas imply
@@ -14340,7 +14340,7 @@ theorem alternativeCompensatedCorrectionRunningErrorBudget_of_exact_steps
 
 /-- If each local correction formula is exact, the recursive accumulation of
 stored corrections is exact, and the final main-plus-correction add is exact,
-then the p. 94 alternative compensated-summation value equals the exact source
+then the printed p. 85 alternative compensated-summation value equals the exact source
 sum. -/
 theorem fl_alternativeCompensatedSum_eq_sum_of_exact_steps_and_exact_correction_sum
     (fp : FPModel) (n : ℕ) (v : Fin n → ℝ)
@@ -14365,7 +14365,7 @@ theorem fl_alternativeCompensatedSum_eq_sum_of_exact_steps_and_exact_correction_
     fl_alternativeCompensatedMainSum_add_exact_corrections_eq_sum_of_exact_steps
       fp n v hexact
 
-/-- Under exact arithmetic, the main sum in the p. 94 alternative compensated
+/-- Under exact arithmetic, the main sum in the printed p. 85 alternative compensated
 variant is the exact source sum. -/
 theorem fl_alternativeCompensatedMainSum_exactWithUnitRoundoff
     (u0 : ℝ) (hu0 : 0 ≤ u0) :
@@ -14393,7 +14393,7 @@ theorem fl_alternativeCompensatedMainSum_exactWithUnitRoundoff
         AlternativeCompensatedStepTrace.nextSum,
         FPModel.exactWithUnitRoundoff, Fin.sum_univ_castSucc, add_comm]
 
-/-- Under exact arithmetic, every stored local correction in the p. 94
+/-- Under exact arithmetic, every stored local correction in the printed p. 85
 alternative variant is zero. -/
 theorem alternativeCompensatedCorrections_exactWithUnitRoundoff
     (u0 : ℝ) (hu0 : 0 ≤ u0) {n : ℕ} (v : Fin n → ℝ) :
@@ -14405,7 +14405,7 @@ theorem alternativeCompensatedCorrections_exactWithUnitRoundoff
     alternativeCompensatedStepTrace, FPModel.exactWithUnitRoundoff]
 
 /-- Under exact arithmetic, the recursively accumulated global correction in
-the p. 94 alternative variant is zero. -/
+the printed p. 85 alternative variant is zero. -/
 theorem fl_alternativeCompensatedGlobalCorrection_exactWithUnitRoundoff
     (u0 : ℝ) (hu0 : 0 ≤ u0) (n : ℕ) (v : Fin n → ℝ) :
     fl_alternativeCompensatedGlobalCorrection
@@ -14414,7 +14414,7 @@ theorem fl_alternativeCompensatedGlobalCorrection_exactWithUnitRoundoff
   rw [fl_recursiveSum_exactWithUnitRoundoff]
   simp [alternativeCompensatedCorrections_exactWithUnitRoundoff u0 hu0 v]
 
-/-- Under exact arithmetic, the p. 94 alternative compensated-summation
+/-- Under exact arithmetic, the printed p. 85 alternative compensated-summation
 variant returns the exact source sum. -/
 theorem fl_alternativeCompensatedSum_exactWithUnitRoundoff
     (u0 : ℝ) (hu0 : 0 ≤ u0) (n : ℕ) (v : Fin n → ℝ) :
@@ -14428,7 +14428,7 @@ theorem fl_alternativeCompensatedSum_exactWithUnitRoundoff
 
 /-- Higham, 2nd ed., Chapter 4, Section 4.3, equation (4.10) transfer layer.
 
-For the p. 94 alternative compensated-summation variant, the local exact
+For the printed p. 85 alternative compensated-summation variant, the local exact
 correction invariant reduces the source-shaped backward-error theorem to one
 remaining correction-transfer obligation.  If the recursive summation error on
 the stored correction list can be rewritten as source perturbations bounded by
@@ -14685,7 +14685,7 @@ theorem fl_alternativeCompensatedSum_backward_error_source_bound_of_exact_steps_
       fp n v hexact hgamma hD_nonneg hcorrAbs
   exact ⟨μ, fun i => le_trans (hμ i) hbudget, hsum⟩
 
-/-- Pointwise local-budget form for the stored corrections in the p. 94
+/-- Pointwise local-budget form for the stored corrections in the printed p. 85
 alternative compensated-summation variant.
 
 When the local correction formula is exact, the stored correction `e_i` is
@@ -14753,7 +14753,7 @@ theorem alternativeCompensatedTrace_main_add_residual_le_unit_roundoff
   simpa [trace] using hres
 
 /-- Local main-add residual budgets imply an absolute bound on the stored
-correction list for the p. 94 alternative compensated-summation variant. -/
+correction list for the printed p. 85 alternative compensated-summation variant. -/
 theorem alternativeCompensatedCorrections_abs_sum_le_of_local_main_add_residual_budget
     (fp : FPModel) {n : ℕ} (v : Fin n → ℝ)
     (hexact :
@@ -14960,7 +14960,7 @@ theorem fl_alternativeCompensatedSum_backward_error_source_bound_of_exact_steps_
         fp v hexact hmain hbudget)
 
 /-- Capped source-shaped backward-error theorem from local main-add residual
-budgets for the p. 94 alternative compensated-summation variant. -/
+budgets for the printed p. 85 alternative compensated-summation variant. -/
 theorem fl_alternativeCompensatedSum_backward_error_source_bound_of_exact_steps_local_main_add_residual_budget_cap
     (fp : FPModel) (n : ℕ) (v : Fin n → ℝ)
     (hexact :
@@ -15219,7 +15219,7 @@ theorem fl_alternativeCompensatedSum_backward_error_source_bound_of_exact_steps_
     fl_alternativeCompensatedSum_backward_error_source_bound_of_exact_steps_correction_running_error_budget_cap
       fp n v hexact hC_nonneg hbudget hcap
 
-/-- Higham Chapter 4 equation (4.10) for the p. 94 alternative compensated
+/-- Higham Chapter 4 equation (4.10) for the printed p. 85 alternative compensated
 summation variant, with the correction-list running-error budget discharged
 from the exact local correction formulas and `n*u <= 0.1`. -/
 theorem fl_alternativeCompensatedSum_backward_error_source_bound_of_exact_steps_higham_cap
@@ -15400,7 +15400,7 @@ theorem not_forall_alternativeCompensated_globalGammaRadius_le_two_u_add_n_sq_u_
   have hineq := h fp 100 hvalid hsmall
   norm_num [fp, FPModel.exactWithUnitRoundoff, gamma] at hineq
 
-/-- If the final p. 94 alternative compensated-summation value satisfies a
+/-- If the final printed p. 85 alternative compensated-summation value satisfies a
 backward-error representation with componentwise perturbation bound `B`, then
 it satisfies the corresponding absolute forward-error bound.  This is the
 algebraic part of turning an equation-(4.10)-style witness into a forward
@@ -15416,7 +15416,7 @@ theorem fl_alternativeCompensatedSum_forward_error_bound_of_backward
       B * ∑ i : Fin n, |v i| :=
   kahan_backward_error_forward_bound_core v hback
 
-/-- One-signed relative-error consequence of a supplied p. 94 alternative
+/-- One-signed relative-error consequence of a supplied printed p. 85 alternative
 compensated-summation backward-error representation. -/
 theorem fl_alternativeCompensatedSum_relError_le_of_backward_oneSigned
     (fp : FPModel) (n : ℕ) (v : Fin n → ℝ) {B : ℝ}

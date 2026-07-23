@@ -5,8 +5,8 @@ import Mathlib.Data.List.Permutation
 import Mathlib.Tactic.FinCases
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
-import NumStability.Algorithms.Summation.Pairwise
-import NumStability.Algorithms.Summation.Recursive
+import NumStability.Algorithms.Summation.Pairwise.Core
+import NumStability.Algorithms.Summation.Recursive.Core
 import NumStability.Algorithms.Summation.Tree.Balanced
 import NumStability.Algorithms.Summation.Tree.Core
 import NumStability.Analysis.Summation.Signs
@@ -14,12 +14,12 @@ import NumStability.Analysis.Summation.Signs
 namespace NumStability
 
 /-!
-# Insertion Summation Examples (Higham Chapter 4, pp. 88--89)
+# Insertion Summation Examples (Higham Chapter 4, §4.1 (printed pp. 80--81))
 
 Higham introduces insertion summation by sorting the active list by increasing
 magnitude, summing the first two entries, and reinserting the new sum while
 maintaining the order.  This file records the two displayed four-entry
-examples from pp. 88--89 as explicit `SumTree` specializations:
+examples from §4.1 (printed pp. 80--81) as explicit `SumTree` specializations:
 
 * `1, 2, 4, 8` reduces to the left-to-right recursive parenthesization.
 * `1, 1 + eps, 1 + 2 eps, 1 + 3 eps`, with `0 < eps < 1/2`, reduces to the
@@ -116,7 +116,7 @@ theorem insertion_first_two_exact_sum_le_tail_pair_sum_of_nonnegative
 /-- Local nonnegative optimality of the insertion choice: among admissible
 pairs from a nonnegative active list sorted by increasing absolute value, the
 first two entries minimize the next exact intermediate sum.  This is the
-one-step foundation for Higham's p. 91 insertion optimality claim. -/
+one-step foundation for Higham's printed p. 83 insertion optimality claim. -/
 theorem insertion_first_two_exact_sum_le_pair_sum_of_nonnegative
     {a b x y : ℝ} {rest : List ℝ}
     (hsorted : IncreasingAbsList (a :: b :: rest))
@@ -606,7 +606,7 @@ noncomputable def weightedLeafDepthCost :
         weightedLeafDepthCost (depth + 1) right
 
 /-- Leaf depths paired with their leaf weights, starting from a supplied root
-depth.  This list form is the rearrangement surface for the p. 91 nonnegative
+depth.  This list form is the rearrangement surface for the printed p. 83 nonnegative
 insertion-optimality argument. -/
 def leafDepthWeights :
     ℕ → InsertionScheduleTree → List (ℕ × ℝ)
@@ -1346,7 +1346,7 @@ theorem weightedDepthPairsCost_pair_contract_eq
 
 /-- Structural contraction of one sibling leaf pair into its parent leaf.  This
 is the tree-level relation needed by the Huffman-style induction behind the
-p. 91 insertion-optimality claim. -/
+printed p. 83 insertion-optimality claim. -/
 inductive SiblingLeafContract :
     InsertionScheduleTree → InsertionScheduleTree → ℝ → ℝ → Prop
   | here (a b : ℝ) :
@@ -10126,7 +10126,7 @@ theorem exactMergeCost_node_of_nonnegative
 
 /-- For nonnegative leaves, exact merge cost is the weighted external path
 length of the schedule tree.  This is the weighted-path-length form of the
-p. 91 insertion optimality objective. -/
+printed p. 83 insertion optimality objective. -/
 theorem exactMergeCost_eq_weightedLeafDepthCost_of_leaves_nonnegative
     (tree : InsertionScheduleTree)
     (hnonneg : ∀ x ∈ tree.leaves, 0 ≤ x) :
@@ -10238,7 +10238,7 @@ namespace SumTree
 /-- Materialize a dependent `SumTree n` with its source vector as a
 list-shaped insertion schedule tree.  This is the bridge from arbitrary
 Algorithm 4.1 instances into the explicit leaf-list/weighted-cost layer used
-for the p. 91 insertion-optimality objective. -/
+for the printed p. 83 insertion-optimality objective. -/
 noncomputable def toInsertionScheduleTree :
     (t : SumTree n) → (Fin n → ℝ) → InsertionScheduleTree
   | .leaf, v => InsertionScheduleTree.leaf (v ⟨0, by norm_num⟩)

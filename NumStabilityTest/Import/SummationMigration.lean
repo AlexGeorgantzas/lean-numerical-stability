@@ -5,6 +5,7 @@ import NumStabilityTest.Import.Compatibility.Summation.Insertion
 import NumStabilityTest.Import.Compatibility.Summation.Pairwise
 import NumStabilityTest.Import.Compatibility.Summation.PlusMinus
 import NumStabilityTest.Import.Compatibility.Summation.Recursive
+import NumStabilityTest.Import.Compatibility.Summation.RecursiveBridge
 import NumStabilityTest.Import.Compatibility.Summation.Tree
 
 /-!

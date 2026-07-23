@@ -1,4 +1,5 @@
 import NumStability.Algorithms.KahanCompensatedFiniteFormat
+import NumStability.Algorithms.Summation.Recursive.Core
 import Mathlib.Tactic.GCongr
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum

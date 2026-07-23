@@ -27,6 +27,11 @@ Each capture consists of:
   candidate-worktree capture for this organization phase.
 - `2026-07-22-organization-build.md` records the branch-wide build, test, and
   architecture-gate evidence for the same final graph.
+- `2026-07-23-organization-phase2.{json,md}` captures the summation Phase 2
+  semantic split, including the reusable recursive/pairwise cores, Chapter 4
+  source leaves, and the narrowed production-import graph.
+- `2026-07-23-organization-phase2-build.md` records the corresponding full
+  test run, focused rebuilds, and architecture gates.
 
 Regenerate a named baseline from the repository root with:
 

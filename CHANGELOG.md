@@ -10,11 +10,16 @@ follows semantic versioning for its public module paths and declaration API.
 - Canonical `NumStability.Source` and `NumStability.Source.Higham` entry points.
 - Canonical Chapter 14, Chapter 24, and Chapter 25 source trees with
   independently compiled compatibility imports.
+- A canonical Chapter 4 source tree for the §4.1 six-term pairwise example and
+  Problem 4.3.
 - A reusable `NumStability.Algorithms.LinearSystems.Triangular` family entry
   point.
-- A reusable `NumStability.Analysis.Summation.Signs` leaf, a transitional
-  `Summation.ErrorBounds` leaf, and a declaration-free summation-analysis
+- Reusable `NumStability.Analysis.Summation.Signs` and
+  `Summation.ErrorBounds` leaves, and a declaration-free summation-analysis
   umbrella.
+- Reusable `Summation.Recursive.Core`, `Summation.Pairwise.Core`, and
+  `Summation.Tree.Chain` modules with complete family umbrellas and isolated
+  import tests.
 - A complete, declaration-free `NumStability.Algorithms.Sylvester` family
   aggregate and isolated aggregate/import smoke tests.
 - Architecture, naming, compatibility, and layout checks for repository
@@ -27,7 +32,10 @@ follows semantic versioning for its public module paths and declaration API.
 - Historical source and triangular-system paths are now import-only forwarding
   modules. They remain supported until a declared breaking release.
 - `NumStability.Analysis.Summation` is now an import-only complete aggregate;
-  reusable consumers import `Summation.Signs` directly.
+  reusable consumers import its semantic leaves directly. `ErrorBounds` is now
+  classified as reusable rather than mixed.
+- The historical `Summation.Tree.RecursiveBridge` path now forwards to the
+  semantic `Summation.Tree.Chain` module.
 - The Algorithms aggregate imports the Sylvester family through one umbrella,
   reducing its direct imports from 490 to 463, and its imports are sorted and
   deduplicated by a repository-owned formatter.

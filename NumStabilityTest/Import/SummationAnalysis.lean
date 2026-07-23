@@ -3,7 +3,7 @@ import NumStability.Analysis.Summation
 /-!
 # Summation-analysis aggregate smoke test
 
-The family umbrella must expose both the reusable sign API and the mixed
+The family umbrella must expose both the reusable sign API and the reusable
 floating-point error layer.
 -/
 

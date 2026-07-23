@@ -3,7 +3,9 @@
 -- Higham Chapter 4, Problem 4.5.
 
 import Mathlib.Tactic
-import NumStability.Algorithms.Summation.Recursive
+import NumStability.Algorithms.Summation.Recursive.Core
+import NumStability.Analysis.Summation.ErrorBounds
+import NumStability.Analysis.Summation.Signs
 
 namespace NumStability
 
@@ -12,18 +14,14 @@ open scoped BigOperators
 /-!
 # The Plus/Minus Summation Method
 
-Higham Chapter 4, Problem 4.5 asks for the advantages and disadvantages of
-the method that separately sums the positive and nonpositive terms and then
-adds the two partial sums.  The formal surface below turns that discussion
-into precise facts:
+Reusable APIs for splitting inputs into positive and nonpositive parts,
+summing each one-signed part recursively, and bounding their final rounded
+recombination. The file proves exact preservation of the real sum, unit
+condition number for each nonzero one-signed partial sum, and forward- and
+relative-error bounds that expose cancellation in the final addition.
 
-* the split is exact over the reals;
-* each separated input is one-signed, so its summation condition number is one
-  whenever its exact sum is nonzero;
-* the concrete recursive plus/minus method has a forward-error bound consisting of
-  the two one-sided summation errors plus the final rounded-add error;
-* the relative-error corollary exposes the disadvantage: if the final positive
-  and nonpositive sums nearly cancel, the denominator `|sum x_i|` can be small.
+This method is the subject of Higham, Chapter 4, Problem 4.5. That provenance
+motivates the API, while the definitions and theorems are source-independent.
 -/
 
 /-- Positive part of a scalar for the plus/minus method. -/

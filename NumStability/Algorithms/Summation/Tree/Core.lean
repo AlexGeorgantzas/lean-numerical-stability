@@ -684,7 +684,7 @@ theorem relError_le_two_mul_n_minus_one_u_of_oneSigned
 
 /-- Source-shaped `nu` corollary for one-signed Algorithm 4.1 sums.
 
-Higham's method-choice advice on p. 99 says one-signed data give a relative
+Higham's method-choice advice in §4.6 (printed p. 89) says one-signed data give a relative
 error at most `nu`.  This theorem derives that displayed form from the exact
 `gamma (n - 1)` bound under the explicit smallness side condition
 `n * (n - 1) * u ≤ 1`, which is the condition needed for

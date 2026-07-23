@@ -10,6 +10,9 @@ import NumStability.Algorithms.Summation.Tree
 /-!
 # Summation algorithms
 
-This module re-exports the canonical recursive, tree-based, insertion,
-compensated, and accumulator summation families.
+This complete published surface re-exports the canonical recursive, pairwise,
+tree-based, insertion, compensated, and accumulator summation families.
+Reusable code should prefer narrow semantic leaves such as `Recursive.Core`,
+`Pairwise.Core`, and `Tree.Chain`; the broad family umbrellas intentionally
+retain supported Chapter 4 source declarations.
 -/

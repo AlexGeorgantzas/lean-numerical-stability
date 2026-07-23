@@ -5,6 +5,7 @@ import NumStability.Source.Higham
 -/
 
 #check NumStability.higham8_8_printed_rowDominance_condSkeel_claim_false
+#check NumStability.recursiveSum_problem43_abs_error_bound
 #check NumStability.higham14_hadamardConditionNumberRaw_negative_one_counterexample
 #check NumStability.higham24_theorem24_3_literal_forward_error_multiple_kappa_u
 #check NumStability.higham25EigenRoundedResidual

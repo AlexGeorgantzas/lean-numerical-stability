@@ -20,7 +20,7 @@ plus two products), yielding the dimension-independent componentwise budget
 `flMixedL` factor has precisely the required lower bandwidth two.
 -/
 import NumStability.Algorithms.Cholesky.BunchTridiagonalActualSolveCh11Closure
-import NumStability.Algorithms.Summation.Tree.RecursiveBridge
+import NumStability.Algorithms.Summation.Tree.Chain
 import NumStability.Algorithms.TriangularArbitraryOrder
 
 open scoped BigOperators

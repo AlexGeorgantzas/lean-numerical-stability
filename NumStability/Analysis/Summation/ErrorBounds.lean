@@ -12,8 +12,9 @@ import NumStability.Analysis.Summation.Signs
 /-!
 # Summation condition numbers and rounding-error bounds
 
-Higham-facing condition-number results and floating-point summation error
-theorems. Generic finite-sum sign identities live in the reusable
+Reusable condition-number results and floating-point summation error theorems.
+Source citations record provenance, but every declaration has a semantic,
+source-independent API. Generic finite-sum sign identities live in the sibling
 `NumStability.Analysis.Summation.Signs` module.
 -/
 
@@ -21,7 +22,7 @@ namespace NumStability
 
 open scoped BigOperators
 
-/-! ## Problem 4.1: condition number for summation -/
+/-! ## Componentwise condition number for summation -/
 
 /-- Componentwise relative perturbation model for the exact summation map. -/
 def SummationComponentwisePerturbation {ι : Type*} (v Δ : ι → ℝ) (ε : ℝ) : Prop :=

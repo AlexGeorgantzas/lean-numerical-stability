@@ -14,6 +14,7 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.PairwiseSum` | `NumStability.Algorithms.Summation.Pairwise` |
 | `NumStability.Algorithms.InsertionSum` | `NumStability.Algorithms.Summation.Insertion` |
 | `NumStability.Algorithms.SumTree` | `NumStability.Algorithms.Summation.Tree` |
+| `NumStability.Algorithms.Summation.Tree.RecursiveBridge` | `NumStability.Algorithms.Summation.Tree.Chain` |
 | `NumStability.Algorithms.PlusMinusSum` | `NumStability.Algorithms.Summation.PlusMinus` |
 | `NumStability.Algorithms.CompensatedSum` | `NumStability.Algorithms.Summation.Compensated` |
 | `NumStability.Algorithms.DoublyCompensatedSum` | `NumStability.Algorithms.Summation.DoublyCompensated` |

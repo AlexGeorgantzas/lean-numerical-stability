@@ -1,5 +1,5 @@
 import NumStability.Analysis.Error
-import NumStability.Algorithms.Summation.Recursive
+import NumStability.Algorithms.Summation.Recursive.Core
 import NumStability.FloatingPoint
 
 /-!

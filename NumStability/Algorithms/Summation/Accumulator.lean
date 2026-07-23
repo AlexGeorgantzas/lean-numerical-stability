@@ -4,25 +4,25 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import NumStability.FloatingPoint.Model
 import NumStability.Analysis.Error
-import NumStability.Algorithms.Summation.Recursive
+import NumStability.Algorithms.Summation.Recursive.Core
 
 namespace NumStability
 
 open scoped BigOperators
 
 /-!
-# Accumulator Summation Methods (Higham Chapter 4, §4.4)
+# Accumulator and Distillation Summation
 
-Higham describes Wolfe/Malcolm/Ross accumulator methods only at a high level:
-terms are added to a lowest-level accumulator, overflow cascades the accumulated
-value to the next higher level while resetting the overflowing level to zero,
-and Malcolm's final step sums the accumulators recursively in decreasing
-absolute value.
+Reusable APIs for overflow-driven accumulator cascades and sum-preserving
+distillation traces. The principal surfaces are `AccumulatorState`,
+`accumulatorCascadeFrom`, `fl_accumulatorSum`, `DistillationState`, and
+`DistillationTrace`; overflow detection and final accumulator order remain
+explicit parameters so the API is independent of a particular machine.
 
-The methods are explicitly described as machine dependent.  This file therefore
-records the portable source-level control structure with an abstract overflow
-test and an abstract final accumulator order.  Malcolm's relative-error
-guarantee of order `u` remains a separate finite-machine proof target.
+The design follows the Wolfe--Malcolm--Ross accumulator methods and the
+distillation discussion in Higham, Chapter 4, §4.4. Their machine-specific
+overflow rules, and Malcolm's relative-error guarantee of order `u`, require a
+separate concrete finite-machine model.
 -/
 
 /-- A finite bank of `levels + 1` accumulators. -/
