@@ -23,7 +23,7 @@ import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 import NumStability.FloatingPoint.Model
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.SubtractionFold
-import NumStability.Analysis.Summation
+import NumStability.Analysis.Summation.ErrorBounds
 import NumStability.Algorithms.Cholesky.CholeskyDemmel
 
 namespace NumStability

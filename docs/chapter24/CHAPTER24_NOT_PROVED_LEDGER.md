@@ -2,7 +2,7 @@
 
 | Source item | Classification | Exact missing dependency | Evidence needed to close |
 |---|---|---|---|
-| Forward-error prose after Theorem 24.3 | DEFER-MISSING-PRECISE-STATEMENT | “A multiple of `kappa_2(C)u`” has no printed multiplier or quantified neighborhood | Select a precise sourced perturbation theorem before adding an endpoint. |
+| Source-specific constant in the forward-error prose after Theorem 24.3 | SOURCE-CONSTANT-DEFERRED | “A multiple of `kappa_2(C)u`” has no printed multiplier or quantified neighborhood | A precise sourced multiplier is needed before claiming exact correspondence. The local finite endpoint `higham24_theorem24_3_literal_forward_error_multiple_kappa_u` is already proved with its assumptions and coefficient explicit. |
 
 Theorem 24.3 is closed for the literal four-stage rounded solver by
 `higham24_theorem24_3_literal_firstOrder` and

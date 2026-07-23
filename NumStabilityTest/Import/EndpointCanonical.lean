@@ -4,7 +4,7 @@ import NumStability.Higham.Chapter02.Problem04
 import NumStability.Higham.Chapter02.Problem07
 import NumStability.Higham.Chapter02.Problem22
 import NumStability.Higham.Chapter13.Table13_1
-import NumStability.Higham.Chapter14.Discrepancies
+import NumStability.Source.Higham.Chapter14.Discrepancies
 import NumStability.Higham.Chapter20.SourceAliases
 
 /-!

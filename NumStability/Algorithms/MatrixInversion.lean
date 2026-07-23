@@ -25,8 +25,8 @@ import NumStability.Analysis.ForwardError
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Algorithms.MatVec
 import NumStability.Algorithms.MatMul
-import NumStability.Algorithms.ForwardSub
-import NumStability.Algorithms.TriangularSolve
+import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LU.LUSolve
 import NumStability.Algorithms.LU.GrowthFactor

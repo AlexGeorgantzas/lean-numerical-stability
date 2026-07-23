@@ -27,14 +27,14 @@ premise.
 
 ## Lean deliverables
 
-- `NumStability/Algorithms/FFT/Higham24.lean`
+- `NumStability/Source/Higham/Chapter24/FourierTransform.lean`
   - `higham24DFT`, `higham24DFTInverse`
   - `higham24_dftInverse_mul_dft`, `higham24_dft_mul_dftInverse`
   - `higham24_inverse_after_forward`, `higham24_forward_after_inverse`
   - `Higham24WeightApproximation`, `higham24_eq24_2_error_bound`
   - `higham24Eta`, `higham24RelativeFFTBound`
   - `higham24_eq24_5_product_bound`, `higham24Eq24_6Bound`
-- `NumStability/Algorithms/FFT/Higham24Radix2.lean`
+- `NumStability/Source/Higham/Chapter24/Radix2FFT.lean`
   - recursive binary indices and little-/big-endian value equivalences
   - literal exact radix-2 recursion and proof that it computes the canonical DFT
   - transparent binary top stages and block lifts, their ordered product,
@@ -62,7 +62,7 @@ premise.
     rounded recursive executor
   - nonvacuous explicit stage execution contract and
     `higham24_theorem24_2_explicitDomain`
-- `NumStability/Algorithms/Circulant/Higham24.lean`
+- `NumStability/Source/Higham/Chapter24/CirculantSystems.lean`
   - `higham24Circulant`, generator injectivity and first-column recovery
   - addition, multiplication, and commutativity of circulants
   - `higham24_dft_mul_circulant`, `higham24_circulant_diagonalization`
@@ -72,7 +72,7 @@ premise.
   - `Higham24MixedStabilityExecutionFamily` and
     `higham24_theorem24_3_explicitDomain`, including the `O(u²)` remainder
   - `higham24_eq24_8_matrix_identity`, `higham24_eq24_8`
-- `NumStability/Algorithms/Circulant/Higham24ForwardPerturbation.lean`
+- `NumStability/Source/Higham/Chapter24/ForwardFFTPerturbation.lean`
   - ordinary-index wrapper `higham24RoundedRadix2FFTFin` and exact DFT bridge
   - the zero-safe rank-one `higham24LiteralForwardPerturbation`, with its
     exact error action and `‖ΔF‖₂≤√n·tη/(1-tη)` proof
@@ -80,29 +80,33 @@ premise.
     (24.6)
   - `higham24LiteralEq24_7Execution`, instantiating both literal forward FFTs
     in (24.7)
-- `NumStability/Algorithms/Circulant/Higham24Rounded.lean`
+- `NumStability/Source/Higham/Chapter24/RoundedDiagonalSolve.lean`
   - literal componentwise `higham24RoundedDiagonalSolve`
   - produced diagonal `higham24DiagonalSolvePerturbation`
   - exact `(I+E)D⁻¹g` representation and `‖E‖₂≤√2γ₄`
-- `NumStability/Algorithms/Circulant/Higham24InverseFFT.lean`
+- `NumStability/Source/Higham/Chapter24/InverseFFT.lean`
   - norm-preserving entrywise conjugation and the exact scaled-conjugate DFT identity
   - `higham24RoundedInverseRadix2FFTFin` and explicit `higham24LiteralInversePerturbation`
   - exact inverse-stage representation and sharp `n⁻¹f(n,u)` bound
-- `NumStability/Algorithms/Circulant/Higham24LiteralSolver.lean`
+- `NumStability/Source/Higham/Chapter24/RoundedCirculantSolver.lean`
   - `higham24LiteralRoundedCirculantSolve`, the actual four-stage rounded executor
   - `higham24LiteralRoundedCirculantSolveExecution`, produced from all local operations
   - `higham24_literalRoundedCirculantSolve_composed`, the exact end-to-end matrix expression
-- `NumStability/Algorithms/Circulant/Higham24BackwardStability.lean`
+- `NumStability/Source/Higham/Chapter24/FFTBackwardStability.lean`
   - exact forward/inverse DFT Euclidean scaling and `‖Fₙ⁻¹‖₂=1/√n`
   - equal relative input/output perturbation norms
   - `higham24_literalFFT_backward_stable`
-- `NumStability/Algorithms/Circulant/Higham24Structured.lean`
+- `NumStability/Source/Higham/Chapter24/StructuredMixedStability.lean`
   - genuine inverse factors for `(I+E)` and `(I+Δ₃F)`, with norm bounds
   - algorithmically produced generator, right-hand-side, and solution perturbations
   - `higham24_literalStructuredMixedStability_identity`
   - `higham24_theorem24_3_literal_exactRadii`
   - `higham24_theorem24_3_literal_firstOrder`
   - `higham24_theorem24_3_literal_quadraticRemainder`
+- `NumStability/Source/Higham/Chapter24/CirculantForwardError.lean`
+  - `higham24_theorem24_3_literal_forward_error_multiple_kappa_u`
+  - a finite condition-number refinement of the source's qualitative
+    forward-error observation, with its coefficient and hypotheses explicit
 
 The DFT proof deliberately reuses the already proved Chapter 9 Fourier
 Vandermonde Gram and scaled-adjoint inverse theorems instead of duplicating a
@@ -111,7 +115,8 @@ second roots-of-unity development.
 ## Verification
 
 - Focused Lean checks passed for all Chapter 24 modules.
-- The combined target build covering all nine public Chapter 24 modules passed.
+- The combined target build covering all ten canonical Chapter 24 modules
+  passed.
 - Forbidden-token scan over the new modules found no `sorry`, `admit`, `axiom`,
   `unsafe`, or `opaque` declarations.
 - `git diff --check` passed for the Chapter 24 files.
@@ -121,6 +126,9 @@ second roots-of-unity development.
 
 ## Remaining boundary
 
-All selected Chapter 24 claims are closed.  The under-specified “a multiple of
-`kappa_2(C)u`” prose is stably deferred, and Problem 24.1 remains an optional
-excluded exercise.
+All selected Chapter 24 claims are closed. The finite local theorem
+`higham24_theorem24_3_literal_forward_error_multiple_kappa_u` makes the
+condition-number dependence explicit. Identifying its coefficient with a
+specific source-printed constant remains impossible because the prose only
+says “a multiple of `kappa_2(C)u`”. Problem 24.1 remains an optional excluded
+exercise.

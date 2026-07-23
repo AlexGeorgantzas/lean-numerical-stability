@@ -6,8 +6,8 @@
 
 import NumStability.Algorithms.StationaryIteration
 import NumStability.Algorithms.MatVec
-import NumStability.Algorithms.ForwardSub
-import NumStability.Algorithms.TriangularSolve
+import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 
 namespace NumStability
 

@@ -1,5 +1,22 @@
 import NumStabilityTest.Import.All
+import NumStabilityTest.Import.Algorithms
+import NumStabilityTest.Import.Analysis
 import NumStabilityTest.Import.Core
+import NumStabilityTest.Import.Compatibility.Source.Chapter14.AlgorithmsCh14SourceCorrections
+import NumStabilityTest.Import.Compatibility.Source.Chapter14.Discrepancies
+import NumStabilityTest.Import.Compatibility.Source.Chapter24.CirculantForwardError
+import NumStabilityTest.Import.Compatibility.Source.Chapter24.CirculantSystems
+import NumStabilityTest.Import.Compatibility.Source.Chapter24.FFTBackwardStability
+import NumStabilityTest.Import.Compatibility.Source.Chapter24.ForwardFFTPerturbation
+import NumStabilityTest.Import.Compatibility.Source.Chapter24.FourierTransform
+import NumStabilityTest.Import.Compatibility.Source.Chapter24.InverseFFT
+import NumStabilityTest.Import.Compatibility.Source.Chapter24.Radix2FFT
+import NumStabilityTest.Import.Compatibility.Source.Chapter24.RoundedCirculantSolver
+import NumStabilityTest.Import.Compatibility.Source.Chapter24.RoundedDiagonalSolve
+import NumStabilityTest.Import.Compatibility.Source.Chapter24.StructuredMixedStability
+import NumStabilityTest.Import.Compatibility.Source.Chapter25.Eigenproblem
+import NumStabilityTest.Import.Compatibility.Source.Chapter25.NonlinearSystems
+import NumStabilityTest.Import.Compatibility.Source.Chapter25.Problem01
 import NumStabilityTest.Import.EndpointCanonical
 import NumStabilityTest.Import.EndpointMigration
 import NumStabilityTest.Import.Higham
@@ -7,10 +24,20 @@ import NumStabilityTest.Import.NonrandomRoundingCanonical
 import NumStabilityTest.Import.NonrandomRoundingMigration
 import NumStabilityTest.Import.PublicApi
 import NumStabilityTest.Import.Root
+import NumStabilityTest.Import.Source
+import NumStabilityTest.Import.Source.Chapter14
+import NumStabilityTest.Import.Source.Chapter24
+import NumStabilityTest.Import.Source.Chapter25
+import NumStabilityTest.Import.Source.Higham
 import NumStabilityTest.Import.SourceCanonical
 import NumStabilityTest.Import.SourceMigration
+import NumStabilityTest.Import.SummationAnalysis
 import NumStabilityTest.Import.SummationCanonical
 import NumStabilityTest.Import.SummationMigration
+import NumStabilityTest.Import.SummationSigns
+import NumStabilityTest.Import.Sylvester
+import NumStabilityTest.Import.TriangularCanonical
+import NumStabilityTest.Import.TriangularMigration
 
 /-!
 # NumStability test suite

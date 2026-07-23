@@ -33,7 +33,7 @@ import Mathlib.Tactic.Ring
 import NumStability.FloatingPoint.Model
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Algorithms.ForwardSub
+import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 import NumStability.Algorithms.DotProduct
 import NumStability.Algorithms.MatrixInversion
 

@@ -19,6 +19,13 @@ import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
 import NumStability.Analysis.ForwardError
 
+/-!
+# Perturbation theory for linear systems
+
+Reusable residual, componentwise perturbation, and condition-number bounds for
+exact and approximate solutions of linear systems.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

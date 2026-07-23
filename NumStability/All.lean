@@ -1,7 +1,7 @@
 import NumStability.Algorithms
 import NumStability.Analysis
 import NumStability.FloatingPoint
-import NumStability.Higham
+import NumStability.Source
 
 /-!
 # Complete NumStability tree

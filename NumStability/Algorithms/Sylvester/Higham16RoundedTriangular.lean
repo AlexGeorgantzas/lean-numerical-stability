@@ -61,7 +61,7 @@
 --   treated; the quasi-triangular 2x2-block variant of (16.7) remains open.
 
 import NumStability.Algorithms.Sylvester.Higham16Spectrum
-import NumStability.Algorithms.TriangularSolve
+import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import Mathlib.LinearAlgebra.Matrix.Block
 import Mathlib.Logic.Equiv.Fin.Basic
 import Mathlib.Data.Fin.Rev

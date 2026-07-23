@@ -19,7 +19,7 @@ import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Algorithms.TriangularSolve
+import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.QR.HouseholderQR
 
 namespace NumStability

@@ -178,29 +178,29 @@ architecture scanner:
 
 | | |
 |---|---|
-| Lean modules | **744** (743 below `NumStability/` plus the root entry point) |
-| Lines of Lean | **1,464,843** physical lines |
-| Direct imports | **3,344** |
-| Internal direct-import edges | **2,082** |
+| Lean modules | **772** (771 below `NumStability/` plus the root entry point) |
+| Lines of Lean | **1,465,427** physical lines |
+| Direct imports | **3,392** |
+| Internal direct-import edges | **2,126** |
 | Import cycles | **0** |
 | `sorry` / `admit` / `axiom` declarations | **0** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
 the standard `[propext, Classical.choice, Quot.sound]` axioms. The versioned
-JSON and Markdown reports under
-[`docs/architecture/baselines/`](docs/architecture/baselines/) record the full
-source, import, signature-dependency, and proof/body-dependency metrics and the
-exact counting definitions.
+[`2026-07-22 organization baseline`](docs/architecture/baselines/2026-07-22-organization-final.md)
+records the full source, import, signature-dependency, and proof/body-dependency
+metrics and the exact counting definitions.
 
 ## Building
 
-Requires [`elan`](https://github.com/leanprover/elan) (which pins Lean/Lake from
-`lean-toolchain`: `leanprover/lean4:v4.29.0-rc3`, Mathlib `v4.29.0`). From a
-clone:
+Requires [`elan`](https://github.com/leanprover/elan). The repository pins
+Lean/Lake in `lean-toolchain` (`leanprover/lean4:v4.29.0-rc3`) and pins Mathlib
+to the exact revision recorded in `lake-manifest.json`. From a clone:
 
 ```bash
 lake exe cache get   # download prebuilt Mathlib oleans — skipping this makes the build very slow
-lake build NumStability NumStabilityTest
+lake build NumStability
+lake test
 ```
 
 Build a single module, e.g.:
@@ -225,19 +225,42 @@ Choose the narrowest entry point that matches the material you need:
 - `NumStability.Algorithms.Summation` is the public umbrella for the summation
   algorithm family; individual algorithms also have canonical modules below
   `NumStability.Algorithms.Summation`.
-- `NumStability.Higham` collects source-facing chapter results and explicit
+- `NumStability.Algorithms.LinearSystems.Triangular` is the reusable umbrella
+  for forward/back substitution and triangular-system error bounds.
+- `NumStability.Analysis.Summation` is the complete summation-analysis umbrella;
+  `NumStability.Analysis.Summation.Signs` is its reusable sign/absolute-value
+  leaf, while `ErrorBounds` retains the Higham-facing mixed results.
+- `NumStability.Algorithms.Sylvester` is the complete historical Sylvester and
+  Higham Chapter 16 family umbrella; consumers should still prefer its narrow
+  leaf modules when they need only part of that surface.
+- `NumStability.Source` is the canonical umbrella for source-faithful material.
+- `NumStability.Source.Higham` collects Higham chapter results and explicit
   cross-chapter bridges.
+- `NumStability.Higham` is the historical compatibility entry point; new code
+  should import `NumStability.Source.Higham`.
 - `NumStability.All` exposes the complete supported library surface.
 - `NumStability` currently remains a compatibility entry point for
   `NumStability.All`.
 
-New code should import canonical semantic paths. Historical paths retained by
-this migration are import-only compatibility shims, not preferred APIs. See
+New code should import canonical semantic paths. Historical paths listed in
+the compatibility manifest are import-only shims, not preferred APIs; retained
+aggregates continue to provide their documented broad surfaces. See
 [`ARCHITECTURE.md`](ARCHITECTURE.md) for the layer contract,
+[`docs/architecture/NAMING.md`](docs/architecture/NAMING.md) for naming and
+module-placement rules, [`CONTRIBUTING.md`](CONTRIBUTING.md) for the required
+checks,
 [`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md) for the
 evidence-gated migration sequence, and
 [`docs/architecture/COMPATIBILITY.md`](docs/architecture/COMPATIBILITY.md) for
-the old-to-new path map and removal policy.
+the old-to-new path map and removal policy. The
+[`docs/README.md`](docs/README.md) index distinguishes current policy from
+dated audit evidence.
+
+This is an enforced migration state, not a claim that the whole historical
+corpus is already Mathlib-style. The current ratchet records 652 unclassified
+modules, 9 reviewed mixed modules, 227 missing module docs, and 456 historical
+naming exceptions. CI prevents those queues from growing while each
+dependency-contained family is migrated.
 
 ## Use as a dependency
 
@@ -250,7 +273,9 @@ git = "https://github.com/AlexGeorgantzas/lean-numerical-stability"
 rev = "main"
 ```
 
-then `import NumStability`.
+For a narrow dependency, import the canonical family or leaf named above. The
+following deliberately uses `import NumStability`, the historical complete
+compatibility surface, to make all supported declarations available:
 
 ```lean
 import NumStability
@@ -267,17 +292,31 @@ variable (fp : FPModel) (n : ℕ)
 ## Project structure
 
 ```
-NumStability.lean              -- complete public library (import NumStability)
+NumStability.lean              -- historical complete compatibility entry point
 NumStability/
+  Core.lean                    -- foundational reusable entry point
+  All.lean                     -- complete supported library surface
   FloatingPoint.lean           -- floating-point foundations umbrella
   FloatingPoint/
     Model.lean                 -- the abstract floating-point model
-  Analysis.lean                -- reusable error-analysis umbrella
+  Analysis.lean                -- complete analysis aggregate, including legacy work
   Analysis/                    -- stability, perturbation theory, matrix algebra,
                                --   norms, concentration, and probability
+    Summation.lean             -- import-only summation-analysis umbrella
+    Summation/
+      Signs.lean               -- reusable sign and absolute-sum API
+      ErrorBounds.lean         -- transitional mixed error-bound layer
   Algorithms.lean              -- numerical-algorithm umbrella
   Algorithms/                  -- algorithm formalizations, with clusters such as
-                               --   LU, QR, Cholesky, FFT, RandNLA, and TestMatrices
+                               --   LU, QR, Cholesky, RandNLA, and TestMatrices
+  Source.lean                  -- canonical source-faithful umbrella
+  Source/
+    Higham.lean                -- Higham source umbrella
+    Higham/
+      Chapter14/               -- source discrepancy correspondence
+      Chapter24/               -- FFT and circulant-system correspondence
+      Chapter25/               -- nonlinear-system correspondence
+  Higham.lean                  -- historical import-only compatibility entry point
 docs/
   source_coverage/            -- per-chapter coverage ledgers + fresh ch01–28 audit
   chapterNN/                  -- detailed source inventories / proof ledgers
@@ -302,11 +341,20 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 
 ## Roadmap
 
-The selected core scope is closed. Natural follow-up work includes optional
-Problems, additional quantitative versions of prose that the source leaves
-unparameterized, and stronger corrected variants of source-discrepancy rows.
-Issues and contributions for specific algorithms or results are welcome.
+The selected formalization core scope is closed; the repository-organization
+migration is not. The next batches classify and split the remaining 652
+unclassified and 9 mixed modules, replace the 456 historical source/proof-stage
+names with semantic canonical paths plus compatibility shims, document the 227
+remaining modules, and review the giant-file outliers. The sequence and safety
+gates are tracked in
+[`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md).
 
 ## License
 
-MIT.
+Except where an individual file states otherwise, NumStability is licensed
+under the [MIT License](LICENSE). Files carrying an Apache-2.0 notice are
+licensed under the [Apache License, Version 2.0](LICENSES/Apache-2.0.txt).
+Third-party attribution and upstream references are recorded in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+Citation metadata is available in [`CITATION.cff`](CITATION.cff).

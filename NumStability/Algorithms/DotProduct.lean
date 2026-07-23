@@ -8,7 +8,7 @@ import NumStability.Analysis.Error
 import NumStability.Analysis.FloatingPointArithmetic
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.RoundingProductBounds
-import NumStability.Analysis.Summation
+import NumStability.Analysis.Summation.ErrorBounds
 import NumStability.Analysis.Stability
 
 namespace NumStability

@@ -19,8 +19,8 @@ import Mathlib.Tactic.FieldSimp
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Algorithms.LU.GrowthFactor
 import NumStability.Algorithms.LU.TridiagonalRecurrence
-import NumStability.Algorithms.InverseBounds
-import NumStability.Algorithms.TriangularForwardBound
+import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
 
 namespace NumStability
 

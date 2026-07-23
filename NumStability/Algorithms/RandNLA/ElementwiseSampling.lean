@@ -18,7 +18,7 @@ import NumStability.FloatingPoint.Model
 import NumStability.Analysis.FiniteProbability
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding
-import NumStability.Analysis.Summation
+import NumStability.Analysis.Summation.ErrorBounds
 
 namespace NumStability
 

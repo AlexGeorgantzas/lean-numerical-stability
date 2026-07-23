@@ -20,6 +20,13 @@ Each capture consists of:
 - `2026-07-22-build.md` records the passing build gates, controlled warm and
   endpoint-incremental timings, environment, and the explicit clean-build
   deferral.
+- `2026-07-22-organization-phase1.{json,md}` is the 750-module intermediate
+  checkpoint for the organization branch based on `11a5241c`; it is retained
+  as dated evidence rather than presented as the current graph.
+- `2026-07-22-organization-final.{json,md}` is the declaration-bearing final
+  candidate-worktree capture for this organization phase.
+- `2026-07-22-organization-build.md` records the branch-wide build, test, and
+  architecture-gate evidence for the same final graph.
 
 Regenerate a named baseline from the repository root with:
 
@@ -27,15 +34,19 @@ Regenerate a named baseline from the repository root with:
 python tools/architecture/generate_baseline.py --name YYYY-MM-DD
 ```
 
-Verify a committed capture's stable measurements and canonical rendering with:
+Verify a clean capture's stable measurements and canonical rendering from the
+exact implementation revision recorded by that capture with:
 
 ```text
 python tools/architecture/generate_baseline.py --no-build --check --name YYYY-MM-DD
 ```
 
-The capture records the exact Git commit and also lists any dirty
-`NumStability` source paths included in the measurement. For a pre-migration
-baseline, capture before semantic source moves and review that list explicitly.
+Every capture records the current Git commit and lists any dirty
+`NumStability` source paths included in the measurement. A clean capture is
+reproducible from its recorded commit. A dirty capture, including the final
+candidate-worktree capture above, requires the exact captured worktree; its
+base commit alone is insufficient. For a pre-migration baseline, capture
+before semantic source moves and review the dirty-path list explicitly.
 
 Do not infer that an apparent declaration leaf or module endpoint is unused.
 External consumers are not present in the project graph, and many final

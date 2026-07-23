@@ -3,7 +3,7 @@
 -- Higham Chapter 4, Problem 4.9.
 
 import Mathlib.Tactic
-import NumStability.Analysis.Summation
+import NumStability.Analysis.Summation.ErrorBounds
 
 namespace NumStability
 

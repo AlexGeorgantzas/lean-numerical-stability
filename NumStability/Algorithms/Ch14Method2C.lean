@@ -41,7 +41,7 @@ import Mathlib.Tactic.Ring
 import Mathlib.Tactic.LinearCombination
 import Mathlib.Algebra.BigOperators.Fin
 import NumStability.Algorithms.MatMul
-import NumStability.Algorithms.TriangularSolve
+import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.MatrixInversion
 import NumStability.Algorithms.Ch14BlockTriInverse
 

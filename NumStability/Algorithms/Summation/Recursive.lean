@@ -8,7 +8,7 @@ import Mathlib.Tactic.Linarith
 import NumStability.Analysis.Error
 import NumStability.FloatingPoint.Model
 import NumStability.Analysis.Rounding
-import NumStability.Analysis.Summation
+import NumStability.Analysis.Summation.ErrorBounds
 
 namespace NumStability
 

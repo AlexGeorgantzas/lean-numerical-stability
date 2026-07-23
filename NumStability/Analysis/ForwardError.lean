@@ -15,8 +15,15 @@ import Mathlib.Tactic.FieldSimp
 import NumStability.FloatingPoint.Model
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Algorithms.TriangularSolve
-import NumStability.Algorithms.ForwardSub
+import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
+
+/-!
+# Forward-error analysis for triangular systems
+
+Reusable componentwise forward-error bounds obtained from backward-error
+certificates and an explicit inverse.
+-/
 
 namespace NumStability
 

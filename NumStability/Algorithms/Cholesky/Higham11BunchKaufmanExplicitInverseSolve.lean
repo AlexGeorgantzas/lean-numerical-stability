@@ -1,5 +1,7 @@
 /-
 Copyright (c) 2026. Released under Apache 2.0.
+SPDX-License-Identifier: Apache-2.0
+See LICENSES/Apache-2.0.txt.
 
 # Higham Chapter 11: the scaled explicit-inverse 2 x 2 pivot solve
 

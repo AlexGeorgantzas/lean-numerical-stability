@@ -1,6 +1,8 @@
 /-
 Copyright (c) 2026 NumStability contributors. All rights reserved.
 Released under Apache 2.0 license.
+SPDX-License-Identifier: Apache-2.0
+See LICENSES/Apache-2.0.txt.
 -/
 import NumStability.Algorithms.HighamChapter9
 

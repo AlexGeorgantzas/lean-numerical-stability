@@ -442,8 +442,19 @@ def audit_tiers(root: Path, modules: Sequence[SourceModule]) -> dict[str, Any] |
             paths.append({"source": start, "target": target, "path": path})
         return paths
 
+    reusable_entrypoints = manifest.get("reusable_entrypoints", [])
+    if not isinstance(reusable_entrypoints, list) or not all(
+        isinstance(name, str) for name in reusable_entrypoints
+    ):
+        raise BaselineError("tier manifest `reusable_entrypoints` must be a list of strings")
+    missing_entrypoints = sorted(set(reusable_entrypoints) - set(by_name))
+    if missing_entrypoints:
+        raise BaselineError(
+            "reusable entry points missing modules: " + ", ".join(missing_entrypoints)
+        )
     reusable_modules = sorted(
-        name for name, tier in assignment.items() if tier == "reusable"
+        {name for name, tier in assignment.items() if tier == "reusable"}
+        | set(reusable_entrypoints)
     )
     reusable_to_source_paths = [
         path
@@ -502,6 +513,7 @@ def audit_tiers(root: Path, modules: Sequence[SourceModule]) -> dict[str, Any] |
         "unclassified_modules": unclassified,
         "classification_complete": complete,
         "tier_separation_complete": separation_complete,
+        "reusable_entrypoints": sorted(reusable_entrypoints),
         "physical_source_target_gate_satisfied": (
             separation_complete
             and not reusable_to_source_paths

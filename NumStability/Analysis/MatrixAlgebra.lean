@@ -32,6 +32,13 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
 
+/-!
+# Matrix-algebra infrastructure
+
+Reusable exact matrix multiplication, norm, inverse, and Neumann-series
+infrastructure, including compatibility bridges for function-shaped matrices.
+-/
+
 namespace NumStability
 
 open scoped BigOperators NNReal Matrix.Norms.Frobenius

@@ -1,7 +1,8 @@
 # Physical Higham target decision
 
-Decision: **keep the logical `NumStability.Higham` layer in the existing Lake
-library for this migration**.
+Decision: **keep the logical `NumStability.Source.Higham` layer in the existing
+Lake library for this migration**. `NumStability.Higham` remains a forwarding
+entry point during the compatibility window.
 
 A separate physical library is premature because:
 

@@ -5,7 +5,7 @@ import Mathlib.Tactic.FinCases
 import NumStability.FloatingPoint.Model
 import NumStability.Analysis.Error
 import NumStability.Analysis.FloatingPointArithmetic
-import NumStability.Analysis.Summation
+import NumStability.Analysis.Summation.ErrorBounds
 import NumStability.Algorithms.Summation.Recursive
 
 namespace NumStability

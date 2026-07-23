@@ -11,7 +11,7 @@ import NumStability.Analysis.Error
 import NumStability.Analysis.FloatingPointArithmetic
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.StatisticalRounding
-import NumStability.Analysis.Summation
+import NumStability.Analysis.Summation.Signs
 
 namespace NumStability
 

@@ -14,6 +14,13 @@ import Mathlib.Tactic.FieldSimp
 import NumStability.FloatingPoint.Model
 import NumStability.Analysis.Rounding
 
+/-!
+# Rounded subtraction folds
+
+Reusable error lemmas for repeated rounded subtraction, shared by forward and
+back substitution.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

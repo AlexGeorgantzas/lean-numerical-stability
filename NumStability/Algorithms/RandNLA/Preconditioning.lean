@@ -19,7 +19,7 @@ import NumStability.Algorithms.Summation.Tree.Core
 import NumStability.Analysis.FiniteProbability
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixConcentration
-import NumStability.Analysis.Summation
+import NumStability.Analysis.Summation.ErrorBounds
 import NumStability.Algorithms.RandNLA.RowSamplingLeverage
 import NumStability.Algorithms.RandNLA.UniformRowSampling
 

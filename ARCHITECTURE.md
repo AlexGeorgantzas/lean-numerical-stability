@@ -56,9 +56,24 @@ split from the reusable library.
 ## Entry points
 
 - `NumStability.Core` is the deliberately small reusable foundation entry point.
-- `NumStability.Higham` is the book-correspondence entry point while the current
-  corpus is migrated.
+- `NumStability.Algorithms.LinearSystems.Triangular` is a reviewed reusable
+  algorithm-family entry point.
+- `NumStability.Algorithms.Summation` is the canonical summation family path,
+  but remains a mixed migration surface until its Chapter 4 declarations are
+  extracted.
+- `NumStability.Source` is the canonical source-correspondence entry point.
+- `NumStability.Analysis.Summation` is an import-only family aggregate split
+  into reusable `Signs` and mixed source-facing `ErrorBounds` leaves.
+- `NumStability.Algorithms.Sylvester` is a complete family-discovery umbrella,
+  not a claim that every Chapter 16 declaration is reusable mathematics.
+- `NumStability.Source.Higham` is the canonical Higham correspondence entry
+  point while the remaining historical modules are migrated chapter by chapter.
+- `NumStability.Higham` is a compatibility entry point forwarding to
+  `NumStability.Source.Higham`.
 - `NumStability.All` is the explicit complete-tree entry point.
+- `NumStability.Algorithms` preserves its historical complete algorithm-layer
+  surface, including source correspondence; it is not the pure reusable entry
+  point.
 - `NumStability` retains its historical complete-tree behavior through the
   compatibility window.
 
@@ -85,6 +100,11 @@ was discovered.
 
 `Defs`, `Basic`, `Lemmas`, and `Internal` are not mandatory folder templates.
 Use them only when they express a real dependency boundary.
+
+Canonical path spelling and the target mathematical/source hierarchy are
+defined in [`docs/architecture/NAMING.md`](docs/architecture/NAMING.md).
+Historical spellings are permitted only for forwarding modules listed in the
+compatibility manifest.
 
 ## Imports and module boundaries
 

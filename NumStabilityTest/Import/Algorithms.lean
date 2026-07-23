@@ -1,0 +1,14 @@
+import NumStability.Algorithms
+
+/-!
+# Algorithms entry-point smoke test
+
+Checks representative arithmetic, factorization, and randomized-linear-
+algebra declarations through the historical Algorithms aggregate.
+-/
+
+#check NumStability.fl_recursiveSum
+#check NumStability.higham24_theorem24_3_literal_forward_error_multiple_kappa_u
+#check NumStability.higham25NewtonEquation
+#check NumStability.OrthogonalSequenceBackwardError
+#check NumStability.RectRankFactorization

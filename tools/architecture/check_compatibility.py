@@ -100,6 +100,26 @@ def main() -> int:
             if target in historical_names:
                 failures.append(f"{name}: production import uses historical path {target}")
 
+    test_imports: set[str] = set()
+    test_paths = [ROOT / "NumStabilityTest.lean"]
+    test_paths.extend(sorted((ROOT / "NumStabilityTest").rglob("*.lean")))
+    for path in test_paths:
+        text = path.read_text(encoding="utf-8-sig", errors="replace")
+        test_imports.update(IMPORT_RE.findall(remove_lean_comments(text)))
+    canonical_names = {target for targets in mappings.values() for target in targets}
+    missing_historical_tests = sorted(historical_names - test_imports)
+    missing_canonical_tests = sorted(canonical_names - test_imports)
+    if missing_historical_tests:
+        failures.append(
+            "historical paths without a direct test import: "
+            + ", ".join(missing_historical_tests)
+        )
+    if missing_canonical_tests:
+        failures.append(
+            "canonical targets without a direct test import: "
+            + ", ".join(missing_canonical_tests)
+        )
+
     if failures:
         for failure in failures:
             print(f"error: {failure}", file=sys.stderr)

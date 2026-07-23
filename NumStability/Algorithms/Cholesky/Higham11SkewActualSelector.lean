@@ -1,5 +1,7 @@
 /-
 Copyright (c) 2026. Released under Apache 2.0.
+SPDX-License-Identifier: Apache-2.0
+See LICENSES/Apache-2.0.txt.
 
 # Higham Algorithm 11.9: actual skew-pivot argmax and permutation
 

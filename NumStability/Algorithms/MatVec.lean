@@ -6,7 +6,7 @@ import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import NumStability.FloatingPoint.Model
 import NumStability.Analysis.Error
 import NumStability.Analysis.Rounding
-import NumStability.Analysis.Summation
+import NumStability.Analysis.Summation.ErrorBounds
 import NumStability.Analysis.Stability
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Algorithms.DotProduct

@@ -11,6 +11,11 @@ book-formalization migration. The generator has two layers:
 - `check_compatibility.py` verifies that every old path documented in the
   compatibility table is an import-only wrapper around exactly its stated
   canonical targets, and that production code does not import old paths.
+- `check_layout.py` enforces the naming, classification, aggregate, generated-
+  artifact, and documentation ratchet recorded in
+  `docs/architecture/layout-exceptions.json`.
+- `check_provenance.py` validates license pointers and exact upstream evidence.
+- `sort_aggregate_imports.py` mechanically normalizes import-only umbrellas.
 
 Run the complete capture from the repository root:
 
@@ -23,6 +28,42 @@ Check the compatibility contract independently:
 ```text
 python tools/architecture/check_compatibility.py
 ```
+
+Sort and deduplicate an import-only aggregate mechanically:
+
+```text
+python tools/architecture/sort_aggregate_imports.py NumStability/Algorithms.lean --write
+```
+
+Check that no architectural debt has increased:
+
+```text
+python tools/architecture/check_layout.py
+```
+
+Check license pointers and evidenced upstream attribution:
+
+```text
+python tools/architecture/check_provenance.py
+```
+
+The reviewed one-time normalizer for legacy Apache notices is dry-run by
+default. `--write` adds the canonical SPDX identifier and license path while
+preserving copyright and author lines:
+
+```text
+python tools/architecture/normalize_apache_notices.py
+python tools/architecture/normalize_apache_notices.py --write
+```
+
+`--write-baseline` is a review-only bootstrap/update operation. It records the
+exact current legacy exception sets; ordinary CI requires equality so a debt
+reduction must update the reviewed baseline and cannot silently regress at the
+same path later. Never use it to make an unexplained regression pass.
+
+The layout check also rejects production or test modules containing `sorry`,
+`admit`, or top-level `axiom`/`constant` commands. This is a zero-debt gate, not
+a grandfathered warning count.
 
 The command builds `NumStability`, then writes matching JSON and Markdown files
 under `docs/architecture/baselines/`. The JSON is the machine-readable source

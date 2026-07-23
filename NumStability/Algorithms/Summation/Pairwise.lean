@@ -12,7 +12,7 @@ import NumStability.FloatingPoint.Model
 import NumStability.Algorithms.Summation.Tree.Balanced
 import NumStability.Algorithms.Summation.Tree.Core
 import NumStability.Analysis.Rounding
-import NumStability.Analysis.Summation
+import NumStability.Analysis.Summation.Signs
 
 namespace NumStability
 

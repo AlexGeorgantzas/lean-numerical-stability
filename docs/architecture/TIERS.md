@@ -32,3 +32,9 @@ When a module is reviewed:
 mathematical declarations. `mixed` marks a reviewed module that still contains
 more than one declaration tier; it is an explicit split queue, not a permanent
 architecture category.
+
+Because structural aggregates do not themselves own declarations,
+`reusable_entrypoints` separately lists aggregates whose entire reachable
+surface must obey the reusable-to-source dependency gate. This keeps structural
+role and dependency semantics distinct: `Core` and `FloatingPoint` remain
+import-only aggregates while still seeding the transitive forbidden-edge audit.

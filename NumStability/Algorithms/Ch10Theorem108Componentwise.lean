@@ -1,5 +1,5 @@
 import NumStability.Algorithms.HighamChapter9
-import NumStability.Algorithms.InverseBounds
+import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
 import NumStability.Algorithms.Cholesky.CholeskySpec
 
 namespace NumStability

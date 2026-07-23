@@ -9,7 +9,7 @@ import NumStability.Algorithms.Summation.Pairwise
 import NumStability.Algorithms.Summation.Recursive
 import NumStability.Algorithms.Summation.Tree.Balanced
 import NumStability.Algorithms.Summation.Tree.Core
-import NumStability.Analysis.Summation
+import NumStability.Analysis.Summation.Signs
 
 namespace NumStability
 

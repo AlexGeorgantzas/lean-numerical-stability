@@ -39,7 +39,7 @@ This ledger records every nontrivial proof source used during the 2026-07-15 fro
 
 | Printed item | Evidence | Repair |
 |---|---|---|
-| `psi(A)=det(D)/det(A)` followed by `psi(A)>=1` | The one-by-one matrix `[-1]` gives raw value `-1` | Keep a raw signed definition, use `det(D)/|det(A)|` for the condition number, and prove the witness in `Ch14SourceCorrections.lean` |
+| `psi(A)=det(D)/det(A)` followed by `psi(A)>=1` | The one-by-one matrix `[-1]` gives raw value `-1` | Keep a raw signed definition, use `det(D)/|det(A)|` for the condition number, and prove the witness in `Source/Higham/Chapter14/Discrepancies.lean` |
 | Problem 14.15 assumes only `x<1` while the bound divides by `1-nx` | At `n=2`, `x=3/4`, the displayed right side is negative | Prove the corrected card guard `x<1/n` and retain the checked scalar specialization in `Chapter14Problem1415Weyl.lean` |
 
 ## Trust Result

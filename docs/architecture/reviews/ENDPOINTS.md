@@ -8,7 +8,7 @@ move pilot.
 
 | Historical module | Classification | Canonical destination | Action |
 | --- | --- | --- | --- |
-| `Algorithms.Ch14SourceCorrections` | Higham §14.6 source discrepancy | `Higham.Chapter14.Discrepancies` | Move; retain old import wrapper. |
+| `Algorithms.Ch14SourceCorrections` | Higham §14.6 source discrepancy | `Source.Higham.Chapter14.Discrepancies` | Moved; both historical paths remain import-only wrappers. |
 | `Algorithms.LU.BlockLUTable13_1Families` | Higham Table 13.1 and Equation 13.25 capstone | `Higham.Chapter13.Table13_1` | Move; retain old import wrapper. |
 | `Algorithms.LeastSquares.Higham20SourceAliases` | Higham 20.32, Lemma 20.6, and Theorem 20.1 aliases | `Higham.Chapter20.SourceAliases` | Move aliases; retain old import wrapper. Reusable perturbation results remain under algorithms. |
 | `Algorithms.TriangularSolveCombined` | Reusable combined triangular-solve theorem | `Algorithms.LinearSystems.Triangular.Combined` | Move into the reusable API; retain old import wrapper. |

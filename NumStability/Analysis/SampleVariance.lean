@@ -15,7 +15,7 @@ import Mathlib.Topology.Basic
 import NumStability.Analysis.Error
 import NumStability.Analysis.FloatingPointArithmetic
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Analysis.Summation
+import NumStability.Analysis.Summation.ErrorBounds
 
 namespace NumStability
 

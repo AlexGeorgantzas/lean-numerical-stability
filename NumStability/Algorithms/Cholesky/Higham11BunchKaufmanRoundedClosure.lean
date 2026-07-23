@@ -1,5 +1,7 @@
 /-
 Copyright (c) 2026. Released under Apache 2.0.
+SPDX-License-Identifier: Apache-2.0
+See LICENSES/Apache-2.0.txt.
 
 # Higham Algorithm 11.2 and Theorems 11.3--11.4: rounded closure
 

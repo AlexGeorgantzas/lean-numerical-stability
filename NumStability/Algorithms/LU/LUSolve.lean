@@ -15,8 +15,8 @@ import Mathlib.Tactic.FieldSimp
 import NumStability.FloatingPoint.Model
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.ForwardError
-import NumStability.Algorithms.TriangularSolve
-import NumStability.Algorithms.ForwardSub
+import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 import NumStability.Algorithms.LU.GaussianElimination
 
 namespace NumStability

@@ -9,13 +9,12 @@ __pycache__/
 /chapter_splitting/
 /benchmark/
 /benchmark-results/
-/docs/chapter13/
 /scratch/
 /tmp/
 *.aux
 *.log
 *.out
+/docs/benchmarking/higham_exercise_candidates.pdf
 thesis/
 references/
 References/
-/scripts/

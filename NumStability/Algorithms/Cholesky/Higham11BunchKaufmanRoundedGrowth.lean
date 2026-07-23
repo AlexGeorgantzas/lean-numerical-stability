@@ -1,5 +1,7 @@
 /-
 Copyright (c) 2026. Released under Apache 2.0.
+SPDX-License-Identifier: Apache-2.0
+See LICENSES/Apache-2.0.txt.
 
 # Product growth for the literal rounded Bunch--Kaufman execution
 

@@ -14,7 +14,7 @@
   system specialization is now closed end to end, including the actual Chapter
   12 residual evaluator and the Frobenius condition identity. The precise
   eigenproblem specialization following (25.10) is now produced by
-  `Higham25EigenClosure.lean`: it proves the bordered Jacobian/Taylor identity,
+  `NumStability/Source/Higham/Chapter25/Eigenproblem.lean`: it proves the bordered Jacobian/Taylor identity,
   derives kernel triviality directly from characteristic-polynomial root
   multiplicity one, proves the displayed bordered matrix has nonzero
   determinant, and supplies a literal rounded residual evaluator with the
@@ -27,9 +27,9 @@
 
 - Equations (25.1)-(25.7), (25.10), (25.12), (25.14), exact Newton models,
   eigenproblem, conditioning algebra helpers, example, and stopping bounds:
-  `NumStability/Algorithms/Nonlinear/Higham25.lean`.
+  `NumStability/Source/Higham/Chapter25/NonlinearSystems.lean`.
 - Problem 25.1 and Appendix (A.15):
-  `NumStability/Algorithms/Nonlinear/Higham25Problem25_1.lean`.
+  `NumStability/Source/Higham/Chapter25/Problem01.lean`.
 - Theorems 25.1/(25.8) and 25.2/(25.9):
   DEFER-MISSING-PRECISE-STATEMENT; no invented interpretation of `≈` or
   “decreases until.”

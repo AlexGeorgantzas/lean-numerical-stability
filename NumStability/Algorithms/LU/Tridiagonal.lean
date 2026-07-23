@@ -16,8 +16,8 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.FloatingPoint.Model
 import NumStability.Analysis.Rounding
-import NumStability.Algorithms.TriangularSolve
-import NumStability.Algorithms.ForwardSub
+import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LU.LUSolve
 

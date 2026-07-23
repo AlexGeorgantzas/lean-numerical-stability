@@ -24,9 +24,9 @@ import NumStability.Analysis.Norms
 import NumStability.Analysis.PerturbationTheory
 import NumStability.Algorithms.QR.QRSolve
 import NumStability.Algorithms.QR.HouseholderQRSupport
-import NumStability.Algorithms.TriangularSolve
-import NumStability.Algorithms.ForwardSub
-import NumStability.Algorithms.InverseBounds
+import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
+import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
 import NumStability.Algorithms.RandNLA.LowRankApprox
 import NumStability.Algorithms.LeastSquares.LSPerturbation
 

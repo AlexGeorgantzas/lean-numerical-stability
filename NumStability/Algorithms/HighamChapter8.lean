@@ -4,12 +4,7 @@
 -- The detailed proofs remain in the focused triangular-system modules; this
 -- file provides stable chapter labels and light wrappers around those results.
 
-import NumStability.Algorithms.TriangularSolve
-import NumStability.Algorithms.ForwardSub
-import NumStability.Algorithms.LinearSystems.Triangular.Combined
-import NumStability.Algorithms.TriangularForwardBound
-import NumStability.Algorithms.InverseBounds
-import NumStability.Algorithms.TriangularForwardComparison
+import NumStability.Algorithms.LinearSystems.Triangular
 import NumStability.Algorithms.TriangularArbitraryOrder
 import NumStability.Algorithms.TriangularNoGuard
 import NumStability.Algorithms.MMatrix

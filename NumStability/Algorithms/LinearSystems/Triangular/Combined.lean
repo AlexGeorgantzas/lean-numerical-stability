@@ -2,8 +2,8 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import NumStability.FloatingPoint.Model
 import NumStability.Analysis.Rounding
-import NumStability.Algorithms.TriangularSolve
-import NumStability.Algorithms.ForwardSub
+import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 
 namespace NumStability
 

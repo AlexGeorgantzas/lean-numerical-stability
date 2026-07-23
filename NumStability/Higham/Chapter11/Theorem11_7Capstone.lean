@@ -4,6 +4,8 @@ import NumStability.Algorithms.Cholesky.BunchTridiagonalSparseFactorCh11Closure
 
 /-!
 Copyright (c) 2026. Released under Apache 2.0.
+SPDX-License-Identifier: Apache-2.0
+See LICENSES/Apache-2.0.txt.
 
 # Theorem 11.7 (Bunch, symmetric tridiagonal) — the unconditional growth-derived capstone
 
