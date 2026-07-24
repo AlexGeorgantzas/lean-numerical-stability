@@ -9,9 +9,9 @@ committed before implementation as
 
 Candidate-worktree validation and clean-commit validation are recorded
 separately. The declaration-bearing architecture capture was made from the
-candidate worktree. Its source, import, declaration, toolchain, and Mathlib
-measurements will be reproduced from the clean implementation revision before
-push.
+candidate worktree and reproduced from the clean implementation revision
+`d21a4ed5b91008a8a5bc60741765f27fcdf86edf`. This evidence-only update changes
+no Lean source, architecture manifest, test, or captured baseline.
 
 ## Environment
 
@@ -121,8 +121,25 @@ modules, zero declaration-bearing umbrellas, and zero unsorted aggregates.
 
 ## Clean-commit verification
 
-Pending the implementation commit. This section will record the exact clean
-revision and rerun results before the branch is pushed to `main`.
+The worktree at revision `d21a4ed5b91008a8a5bc60741765f27fcdf86edf`
+was clean before validation. The following results therefore validate the
+committed implementation rather than an uncommitted candidate:
+
+| Command or gate | Result |
+| --- | --- |
+| Initial `git status --short` | passed: no output |
+| `lake test` | passed; 5,169 jobs |
+| `lake build NumStability NumStabilityTest` | passed; 5,171 jobs |
+| `lake env lean examples/LibraryLookup.lean` | passed |
+| `generate_baseline.py --no-build --check` | passed: exact reproduction |
+| Layout and exact legacy-debt contract | passed: 957 modules |
+| Compatibility contract | passed: 89 wrappers, 187 direct targets |
+| Provenance contract | passed: 207 Apache files, five upstream modules |
+| Strict-source baseline | passed |
+| Aggregate ordering | passed for all 63 classified aggregates |
+| Apache normalization dry run | passed: zero files require changes |
+| Architecture Python syntax validation | passed |
+| Architecture JSON validation | passed: 15 files |
 
 ## Captured artifacts
 
@@ -131,4 +148,5 @@ revision and rerun results before the branch is pushed to `main`.
 - [Phase 10A migration and ownership record](../migrations/2026-07-24-higham-chapter14-section05-phase10.md)
 
 The baseline records the exact production paths included in the candidate
-capture. A clean implementation-revision reproduction is required before push.
+capture. Its source, import, declaration, toolchain, and Mathlib measurements
+were reproduced exactly from the clean implementation commit before push.
