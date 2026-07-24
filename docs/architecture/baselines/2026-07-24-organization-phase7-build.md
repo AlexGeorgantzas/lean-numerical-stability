@@ -6,9 +6,9 @@ This record covers the FastMatMul and Higham Chapter 23 migration developed on
 
 Candidate-worktree validation and clean-checkout validation are recorded
 separately. The declaration-bearing architecture capture was made from the
-candidate worktree. A follow-up evidence-only commit will finalize the exact
-implementation revision and clean-checkout rerun before this checkpoint is
-pushed; until then, this record makes no clean-checkout claim.
+candidate worktree and reproduced from the clean implementation revision
+`9162a3f7d84edad68d25bbb2ef23caef31c88e67`. This evidence-only update changes
+no Lean source, architecture manifest, test, or captured baseline.
 
 ## Environment
 
@@ -71,9 +71,9 @@ shared entry-point smokes exercise the canonical hierarchy.
 | FastMatMul recurrence and complete-aggregate tests | passed |
 | Wrapper, FastMatMul, and `Source.Higham` integration build | passed; 3,631 jobs |
 | Nine shared entry-point import smokes | passed; 4,801 jobs |
-| Registered `NumStabilityTest` target | passed before the final internal-surface smoke; final clean result recorded below |
+| Registered `NumStabilityTest` target | passed; final clean result recorded below |
 | `lake test` | passed |
-| `lake build NumStability NumStabilityTest` | passed before the final internal-surface smoke; final clean result recorded below |
+| `lake build NumStability NumStabilityTest` | passed; final clean result recorded below |
 | `lake env lean examples/LibraryLookup.lean` | passed |
 | Full architecture-baseline production build | passed; 4,773 jobs |
 | Compiled declaration extraction | passed |
@@ -134,11 +134,30 @@ modules, zero declaration-bearing umbrellas, and zero unsorted aggregates.
 
 ## Clean-checkout verification
 
-The implementation revision and its clean-checkout command results are
-intentionally deferred to the evidence-only follow-up described above. That
-follow-up will record a clean status before validation, `lake test`, the full
-production/test build, the library lookup example, baseline reproducibility,
-and the final static-gate rerun.
+Revision `9162a3f7d84edad68d25bbb2ef23caef31c88e67` was checked out with a clean
+worktree before validation. The following results therefore validate the
+committed implementation rather than an uncommitted candidate:
+
+| Command or gate | Result |
+| --- | --- |
+| Initial `git status --short` | passed: no output |
+| `lake test` | passed; 5,099 jobs |
+| `lake build NumStability NumStabilityTest` | passed; 5,101 jobs |
+| `lake env lean examples/LibraryLookup.lean` | passed |
+| `generate_baseline.py --no-build --check` | passed: exact reproduction |
+| Layout and exact legacy-debt contract | passed: 931 modules |
+| Compatibility contract | passed: 70 wrappers, 168 direct targets |
+| Provenance contract | passed: 205 Apache files, five upstream modules |
+| Strict-source baseline | passed |
+| Aggregate ordering | passed for all 56 classified aggregates |
+| Apache normalization dry run | passed: zero files require changes |
+| Architecture Python syntax validation | passed |
+| Architecture JSON validation | passed: 12 files |
+
+The final static-gate rerun retained the exact debt ceilings of 637
+unclassified modules, 224 missing module docstrings, and 431 naming
+exceptions, with zero mixed modules, declaration-bearing umbrellas, or
+unsorted aggregates.
 
 ## Captured artifacts
 
@@ -146,7 +165,6 @@ and the final static-gate rerun.
 - [Machine-readable architecture baseline](2026-07-24-organization-phase7.json)
 - [Phase 7 migration record](../migrations/2026-07-24-fastmatmul-chapter23-phase7.md)
 
-The baseline records the exact dirty production paths included in the
-candidate capture. Its stable source, import, declaration, toolchain, and
-Mathlib measurements will be reproduced from the clean implementation
-checkout before push.
+The baseline records the exact production paths included in the candidate
+capture. Its source, import, declaration, toolchain, and Mathlib measurements
+were reproduced exactly from the clean implementation checkout before push.
