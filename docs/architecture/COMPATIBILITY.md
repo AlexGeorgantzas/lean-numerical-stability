@@ -116,6 +116,15 @@ canonical chapter aggregates are discovery entry points, not wrapper targets:
 The compatibility inventory now contains 94 wrappers with 192 direct canonical
 targets.
 
+`NumStability.Source.Higham.Chapter02.Problem22` has one temporary
+canonical-side compatibility exception: in addition to locating the reusable
+Problem 2.22 API, it re-exports `Source.Higham.Chapter02.Problem23` because the
+Heron surface was previously published from the incorrectly numbered Problem
+22 path. This extra import may be removed only in a planned breaking release,
+after the release notes identify `Problem23` as the replacement and downstream
+users have had a migration window. It is not a precedent for new canonical
+modules to re-export adjacent source problems.
+
 The historical nonrandom-rounding path remains the complete compatibility
 import for the canonical Section 1.17 aggregate. Its five historical child
 paths are exact import-only wrappers for the corresponding semantic leaves;
