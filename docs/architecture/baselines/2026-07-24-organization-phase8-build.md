@@ -7,8 +7,10 @@ committed before implementation as
 `64158516786c59ced1cf892741669fe908876752`.
 
 Candidate-worktree validation and clean-checkout validation are recorded
-separately. The implementation revision is filled in by the evidence-only
-follow-up after the committed candidate is validated from a clean worktree.
+separately. The declaration-bearing architecture capture was made from the
+candidate worktree and reproduced from the clean implementation revision
+`6b46dcde444dc2bd7934e808992daa7792877064`. This evidence-only update changes
+no Lean source, architecture manifest, test, or captured baseline.
 
 ## Environment
 
@@ -120,10 +122,30 @@ modules, zero declaration-bearing umbrellas, and zero unsorted aggregates.
 
 ## Clean-checkout verification
 
-The implementation revision and its clean-checkout results are recorded in
-an evidence-only follow-up commit after the candidate implementation is
-committed. No Lean source, architecture manifest, test, or generated baseline
-will change in that follow-up.
+Revision `6b46dcde444dc2bd7934e808992daa7792877064` was checked out with a clean
+worktree before validation. The following results therefore validate the
+committed implementation rather than an uncommitted candidate:
+
+| Command or gate | Result |
+| --- | --- |
+| Initial `git status --short` | passed: no output |
+| `lake test` | passed; 5,117 jobs |
+| `lake build NumStability NumStabilityTest` | passed; 5,119 jobs |
+| `lake env lean examples/LibraryLookup.lean` | passed |
+| `generate_baseline.py --no-build --check` | passed: exact reproduction |
+| Layout and exact legacy-debt contract | passed: 938 modules |
+| Compatibility contract | passed: 75 wrappers, 173 direct targets |
+| Provenance contract | passed: 205 Apache files, five upstream modules |
+| Strict-source baseline | passed |
+| Aggregate ordering | passed for all 58 classified aggregates |
+| Apache normalization dry run | passed: zero files require changes |
+| Architecture Python syntax validation | passed |
+| Architecture JSON validation | passed: 13 files |
+
+The final static-gate rerun retained the exact debt ceilings of 637
+unclassified modules, 224 missing module docstrings, and 430 naming
+exceptions, with zero mixed modules, declaration-bearing umbrellas, or
+unsorted aggregates.
 
 ## Captured artifacts
 
@@ -133,4 +155,4 @@ will change in that follow-up.
 
 The baseline records the exact production paths included in the candidate
 capture. Its source, import, declaration, toolchain, and Mathlib measurements
-must reproduce exactly from the clean implementation checkout before push.
+were reproduced exactly from the clean implementation checkout before push.
