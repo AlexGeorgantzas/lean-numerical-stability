@@ -11,6 +11,11 @@
   checked on printed pp. 570-571. Solution 27.4 is the historical random-number
   generator/underflow diagnosis and remains an unselected optional row.
 - Primary named labels: none. Numbered equation ledger: (27.1).
+- Canonical owners: `NumStability.Source.Higham.Chapter27.SoftwareEnvironment`
+  for the software-model/norm/division rows and
+  `NumStability.Source.Higham.Chapter27.Problem06` for Problem 27.6. The
+  `NumStability.Algorithms.SoftwareIssues.Higham27*` paths are compatibility
+  imports only.
 
 ## Inventory
 
@@ -41,7 +46,7 @@
 | 27-P3 | p. 506; App. A p. 570 | problem/solution | Malcolm base/precision discovery algorithm | software-specific | Appendix explanation | compiler/register semantics | SKIP | OPTIONAL-PROBLEM-NOT-SELECTED | not encoded |
 | 27-P4 | pp. 506-507; App. A p. 571 | problem/solution | Defective random generator and underflow trace | empirical machine run | Appendix diagnosis | historical Fortran/RNG | SKIP | OPTIONAL-PROBLEM-NOT-SELECTED | not encoded |
 | 27-P5 | p. 507; App. A p. 571 | problem/solution | Prove scaled `xNRM2` invariant and correctness | precise / general | complete Appendix proof | exact real algebra | FORMALIZE_CORE | CORE-PRECISE-PROSE | `scaledSumSqStep_invariant`, `scaledSumSqFold_invariant`, `higham27_problem27_5_scaled_norm_correct_sq` / PASS |
-| 27-P6 | pp. 507-509 | problem | Moler-Morrison/Halley Pythagorean iteration | precise optional exercise plus FP claims | exercise | nonlinear iteration | BENCHMARK_CANDIDATE | OPTIONAL-PROBLEM-NOT-SELECTED | not encoded |
+| 27-P6 | pp. 507-509 | problem | Moler-Morrison/Halley Pythagorean iteration | precise exact real-arithmetic exercise plus machine-specific stopping claim | exercise | nonlinear iteration | FORMALIZE_CORE for exact algebra; DEFER machine stopping | CORE-PRECISE-PROSE / DEFER-MACHINE-SPECIFIC | `higham27_problem27_6_halley_specialization`, `_pair_step_eq_halley`, `_pair_step_invariant`, `_matlab_scaled_step`, `_cubic_error_identity`, `_monotone_enclosure`, and `_cubic_error_bound` / exact algebra PASS; MATLAB `r + 4 == 4` stopping in at most three iterations deferred |
 | 27-P7 | p. 509; App. A p. 571 | problem/solution | Skew-symmetric square root and matrix Pythagorean iteration | precise optional exercise; research part | Appendix solves only part (a) | matrix square roots | SKIP | OPTIONAL-PROBLEM-NOT-SELECTED | not encoded |
 | 27-P8 | p. 509; App. A p. 571 | problem/solution | Prefer `sqrt(|x|)/sqrt(3)` to `sqrt(|x|/3)` for robustness | implementation-facing optional observation | short Appendix answer | underflow model | SKIP | OPTIONAL-PROBLEM-NOT-SELECTED | not encoded |
 
@@ -55,3 +60,4 @@
 | Complex one-norms | true complex moduli or separate absolute real/imaginary parts | comparison between the two sums | both printed definitions and `true ≤ xCASUM` encoded |
 | Smith division | rounded `d/c`, products, scaled denominator, two components | conventional quotient components | exact identity and scoped pre-division rounded trace encoded; unconditional wording refuted at max-finite endpoints |
 | Symmetric Smith division | rounded `c/d`, swapped products/denominator, two components | conventional quotient components | exact identity and scoped pre-division rounded trace encoded |
+| Problem 27.6 `pythag` | exact scaled `x`/`y` recurrence | Halley specialization, preserved Pythagorean sum, monotone enclosure, and cubic error identity/bound | exact real-arithmetic path encoded; only the machine-dependent MATLAB stopping-test claim remains deferred |

@@ -8,6 +8,10 @@
 - Mode / split: core / Split 4.
 - Planning documents: full blueprint, Split 4 contract, chapter index.
 - Selected-scope gate: **PASS**.
+- Canonical entry point: `NumStability.Source.Higham.Chapter27`; the
+  declaration-bearing owners are `Chapter27.SoftwareEnvironment` and
+  `Chapter27.Problem06`. The former `Algorithms.SoftwareIssues.Higham27*`
+  paths are compatibility imports only.
 
 ## Completed selected targets
 
@@ -21,6 +25,7 @@
 | (27.1) | `smithDivReal_eq`, `smithDivImag_eq`, `higham27_eq27_1_smith_complex_division` | exact Smith branch identity with explicit `c != 0` domain |
 | p. 500 symmetric Smith branch | `smithDivRealSymmetric_eq`, `smithDivImagSymmetric_eq`, `higham27_smith_complex_division_symmetric` | exact analogous identity with explicit `d != 0` domain |
 | p. 500 Smith range behavior | both `smith_*_branch_preDivision_safe` theorems and `smith_scaledDenominator_overflows_at_maxFiniteMagnitude` | scoped rounded safety for both branches; unconditional max-finite wording refuted |
+| Problem 27.6 | `higham27_problem27_6_halley_specialization`, `_pair_step_eq_halley`, `_pair_step_invariant`, `_matlab_scaled_step`, `_cubic_error_identity`, `_monotone_enclosure`, `_cubic_error_bound` | exact Moler--Morrison/Halley specialization, scaled recurrence, Pythagorean invariant, monotone enclosure, and cubic error algebra |
 
 ## Honest boundary
 
@@ -50,9 +55,19 @@ Appendix 27.4's defective-generator and underflow trace is an optional,
 historical machine-specific row and is not selected; Appendix 27.5 supplies the
 exact scaled-norm invariant proved above.
 
+Problem 27.6's exact real-arithmetic content is therefore closed. The only
+deferred part is the source's machine-dependent assertion that MATLAB's
+`r + 4 == 4` test stops within three iterations; that needs a concrete format
+and expression-evaluation semantics.
+
 ## Verification
 
-- Target build: `lake build NumStability.Algorithms.SoftwareIssues.Higham27` - PASS.
+- Historical pre-migration target build:
+  `lake build NumStability.Algorithms.SoftwareIssues.Higham27` - PASS. That
+  path is now a compatibility wrapper; the canonical targets are
+  `NumStability.Source.Higham.Chapter27`,
+  `NumStability.Source.Higham.Chapter27.SoftwareEnvironment`, and
+  `NumStability.Source.Higham.Chapter27.Problem06`.
 - Hygiene scan for `sorry`, `admit`, `axiom`, `unsafe`, and `opaque` - PASS (no matches).
 - Representative `#print axioms` checks report only Mathlib's standard
   `propext`, `Classical.choice`, and `Quot.sound` axioms.

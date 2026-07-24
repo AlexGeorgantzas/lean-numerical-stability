@@ -151,9 +151,6 @@ import NumStability.Algorithms.Higham5PatersonStockmeyer
 import NumStability.Algorithms.Higham726Rump
 import NumStability.Algorithms.HighamChapter10
 import NumStability.Algorithms.HighamChapter11
-import NumStability.Algorithms.HighamChapter12
-import NumStability.Algorithms.HighamChapter12OmegaDiscontinuity
-import NumStability.Algorithms.HighamChapter12Problem12_2
 import NumStability.Algorithms.HighamChapter15BoydBridges
 import NumStability.Algorithms.HighamChapter15BoydConcreteLemma3
 import NumStability.Algorithms.HighamChapter15BoydLocalStability
@@ -230,7 +227,6 @@ import NumStability.Algorithms.LU.BlockLUVarying
 import NumStability.Algorithms.LU.Doolittle
 import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LU.GrowthFactor
-import NumStability.Algorithms.LU.Higham13DemmelSharpMultiplier
 import NumStability.Algorithms.LU.Higham15Problem15_4
 import NumStability.Algorithms.LU.Higham15Problem15_6Closure
 import NumStability.Algorithms.LU.Higham15Problem15_6Operational
@@ -324,8 +320,6 @@ import NumStability.Algorithms.QR.QRSolve
 import NumStability.Algorithms.Quadrature
 import NumStability.Algorithms.RandNLA
 import NumStability.Algorithms.RankOneUpdate
-import NumStability.Algorithms.SoftwareIssues.Higham27
-import NumStability.Algorithms.SoftwareIssues.Higham27Pythag
 import NumStability.Algorithms.SquareDifference
 import NumStability.Algorithms.StationaryIteration
 import NumStability.Algorithms.StationaryIterationDrazin
@@ -400,10 +394,6 @@ import NumStability.Algorithms.TriangularNoGuard
 import NumStability.Algorithms.Underdetermined.Higham21
 import NumStability.Algorithms.Underdetermined.UnderdeterminedSolve
 import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
-import NumStability.Algorithms.Vandermonde.Higham22
-import NumStability.Algorithms.Vandermonde.Higham22Ch12RefinementBridge
-import NumStability.Algorithms.Vandermonde.Higham22MonomialClosure
-import NumStability.Algorithms.Vandermonde.Higham22Problem22_7
 import NumStability.Algorithms.WilkinsonAttainability
 import NumStability.Analysis.BergerGeneral
 import NumStability.Analysis.BergerInequality
@@ -450,10 +440,14 @@ import NumStability.Analysis.SemiconvergentRealSpectrumComplete
 import NumStability.Analysis.SemiconvergentSpectral
 import NumStability.Analysis.SylvesterSchurExistence
 import NumStability.Source.Higham.Chapter04
+import NumStability.Source.Higham.Chapter12
+import NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier
 import NumStability.Source.Higham.Chapter17
+import NumStability.Source.Higham.Chapter22
 import NumStability.Source.Higham.Chapter24
 import NumStability.Source.Higham.Chapter25
 import NumStability.Source.Higham.Chapter26
+import NumStability.Source.Higham.Chapter27
 
 /-!
 # Historical algorithms aggregate

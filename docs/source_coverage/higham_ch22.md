@@ -3,6 +3,13 @@
 - Source: `References/1.9780898718027.ch22.pdf`, printed pp. 415--431.
 - Core status: **PASS (fresh strict re-audit)**.
 - Exhaustive row inventory: `docs/chapter22/CHAPTER22_SOURCE_INVENTORY.md`.
+- Canonical source entry point: `NumStability/Source/Higham/Chapter22.lean`.
+  Its declaration-bearing leaves are `VandermondeSystems.lean`,
+  `MonomialResidual.lean`, `Problem07.lean`, and the two refinement leaves
+  grouped by the declaration-free `Chapter22/Section03.lean` aggregate:
+  `RealRefinement.lean` and `ComplexConfluentRefinement.lean`. The five former
+  `Algorithms/Vandermonde/Higham22*.lean` owners are compatibility imports
+  only.
 
 | Source | Status and Lean surface |
 |---|---|
@@ -20,7 +27,8 @@
 
 The source's *general* simplifying assumption (22.24) is represented by
 `Higham22Eq22_24`, which is appropriate for conditional Theorem 22.6.  For
-monomials, the new closure module derives that assumption from the actual
+monomials, the canonical `Chapter22/MonomialResidual.lean` leaf derives that
+assumption from the actual
 primitive rounded execution and Problem 22.8.  Table 22.1 remains a visual
 literature-summary artifact under the core-mode figure/table rule, while the
 unquantified refinement sentence is deferred rather than promoted into an

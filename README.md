@@ -173,23 +173,30 @@ approximation, and least-squares preconditioning.
 
 ## Project statistics
 
-Latest generated checkpoint of the production source surface, including the
-Phase 8 canonical Higham Chapter 1 Section 1.17 migration:
+Current reviewed Phase 9 structure for the production source surface, after
+the compatibility-preserving Higham Chapters 12, 13, 22, and 27 migration:
 
 | | |
 |---|---|
-| Lean modules | **938** (937 below `NumStability/` plus the root entry point) |
-| Lines of Lean | **1,467,799** physical lines |
-| Direct imports | **3,984** |
-| Internal direct-import edges | **2,617** |
+| Lean modules | **953** |
+| Lines of Lean | **1,467,961** |
+| Direct imports | **4,004** |
+| Internal import edges | **2,637** |
 | Import cycles | **0** |
-| `sorry` / `admit` / source-level `axiom` or `constant` commands | **0** |
+| Classified modules | **327** |
+| Unclassified modules | **626** |
+| Source modules | **123** |
+| Aggregate modules | **62** |
+| Compatibility modules | **86** |
+| Missing module docs | **222** |
+| Legacy naming exceptions | **419** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
-the standard `[propext, Classical.choice, Quot.sound]` axioms. The versioned
-[`2026-07-24 organization Phase 8 baseline`](docs/architecture/baselines/2026-07-24-organization-phase8.md)
-records the full source, import, signature-dependency, and proof/body-dependency
-metrics and the exact counting definitions.
+the standard `[propext, Classical.choice, Quot.sound]` axioms. The latest
+generated detailed checkpoint is the versioned
+[`2026-07-24 organization Phase 9 baseline`](docs/architecture/baselines/2026-07-24-organization-phase9.md),
+with full source, import, signature-dependency, and proof/body-dependency
+metrics. The live ratchet values above are enforced by the reviewed manifests.
 
 ## Building
 
@@ -254,7 +261,15 @@ Choose the narrowest entry point that matches the material you need:
   `Analysis.NonrandomRounding*` paths are import-only compatibility shims. For
   fast matrix multiplication, import
   `NumStability.Source.Higham.Chapter23` or one of its semantic theorem,
-  equation, algorithm, or problem leaves.
+  equation, algorithm, or problem leaves. Chapters 12, 22, and 27 now have
+  complete declaration-free aggregates at
+  `NumStability.Source.Higham.Chapter12`,
+  `NumStability.Source.Higham.Chapter22`, and
+  `NumStability.Source.Higham.Chapter27`;
+  Chapter 22's real and complex refinement leaves are grouped by the
+  declaration-free `NumStability.Source.Higham.Chapter22.Section03` aggregate.
+  Demmel's sharp Chapter 13 multiplier result is the canonical
+  `NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier` leaf.
 - `NumStability.Higham` is the historical compatibility entry point; new code
   should import `NumStability.Source.Higham`.
 - `NumStability.All` exposes the complete supported library surface.
@@ -276,11 +291,11 @@ the old-to-new path map and removal policy. The
 dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
-corpus is already Mathlib-style. After the Chapter 1 Section 1.17 ownership
-split, the current ratchet records 637 unclassified modules, no reviewed mixed
-modules, 224 missing module docs, 430 historical naming exceptions, and no
-declaration-bearing umbrella. CI prevents those queues from growing while each
-dependency-contained family is migrated.
+corpus is already Mathlib-style. After the Phase 9 ownership moves, the current
+ratchet records 626 unclassified modules, no reviewed mixed modules, 222
+missing module docs, 419 historical naming exceptions, and no declaration-
+bearing umbrella. CI prevents those queues from growing while each dependency-
+contained family is migrated.
 
 ## Use as a dependency
 
@@ -343,9 +358,9 @@ NumStability/
   Source/
     Higham.lean                -- Higham source umbrella
     Higham/
-      Chapter02/, Chapter04/, Chapter08/, Chapter10/, Chapter11/
-      Chapter13/, Chapter14/, Chapter17/, Chapter20/, Chapter23/, Chapter24/
-      Chapter25/, Chapter26/
+      Chapter02/, Chapter04/, Chapter08/, Chapter10/, Chapter11/, Chapter12/
+      Chapter13/, Chapter14/, Chapter17/, Chapter20/, Chapter22/, Chapter23/
+      Chapter24/, Chapter25/, Chapter26/, Chapter27/
                                -- canonical numbered source correspondence
       CrossChapter/            -- explicitly cross-chapter source bridges
   Higham.lean                  -- historical import-only compatibility entry point
@@ -374,10 +389,10 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 ## Roadmap
 
 The selected formalization core scope is closed; the repository-organization
-migration is not. The next batches classify the remaining 637 unclassified
-modules while keeping the mixed-module count at zero, replace the 430
+migration is not. The next batches classify the remaining 626 unclassified
+modules while keeping the mixed-module count at zero, replace the 419
 historical source/proof-stage names with semantic canonical paths plus
-compatibility shims, document the 224 remaining modules, and review the
+compatibility shims, document the 222 remaining modules, and review the
 giant-file outliers. The sequence and safety
 gates are tracked in
 [`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md).

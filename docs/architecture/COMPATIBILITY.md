@@ -44,10 +44,19 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.HighamChapter8Lemma88SourceDiscrepancy` | `NumStability.Source.Higham.Chapter08.Lemma08Discrepancy` |
 | `NumStability.Algorithms.Cholesky.Higham10Theorem10_7Source` | `NumStability.Source.Higham.Chapter10.Theorem07` |
 | `NumStability.Algorithms.Cholesky.BunchTridiagonalCapstoneCh11Closure` | `NumStability.Source.Higham.Chapter11.Theorem07` |
+| `NumStability.Algorithms.HighamChapter12` | `NumStability.Source.Higham.Chapter12.IterativeRefinement` |
+| `NumStability.Algorithms.HighamChapter12OmegaDiscontinuity` | `NumStability.Source.Higham.Chapter12.OmegaDiscontinuity` |
+| `NumStability.Algorithms.HighamChapter12Problem12_2` | `NumStability.Source.Higham.Chapter12.Problem02` |
 | `NumStability.Algorithms.LU.BlockLUTable13_1Families` | `NumStability.Source.Higham.Chapter13.Equation25` and `NumStability.Source.Higham.Chapter13.Table01` |
+| `NumStability.Algorithms.LU.Higham13DemmelSharpMultiplier` | `NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier` |
 | `NumStability.Algorithms.Ch14SourceCorrections` | `NumStability.Source.Higham.Chapter14.Discrepancies` |
 | `NumStability.Algorithms.Ch4KahanFiniteFamily` | `NumStability.Source.Higham.Chapter04.Equation08.FiniteFamily` |
 | `NumStability.Algorithms.LeastSquares.Higham20SourceAliases` | `NumStability.Source.Higham.Chapter20.Equation32`, `NumStability.Source.Higham.Chapter20.Lemma06`, and `NumStability.Source.Higham.Chapter20.Theorem01` |
+| `NumStability.Algorithms.Vandermonde.Higham22` | `NumStability.Source.Higham.Chapter22.VandermondeSystems` |
+| `NumStability.Algorithms.Vandermonde.Higham22MonomialClosure` | `NumStability.Source.Higham.Chapter22.MonomialResidual` |
+| `NumStability.Algorithms.Vandermonde.Higham22Problem22_7` | `NumStability.Source.Higham.Chapter22.Problem07` |
+| `NumStability.Algorithms.Vandermonde.Higham22Ch12RefinementBridge` | `NumStability.Source.Higham.Chapter22.Section03.RealRefinement` |
+| `NumStability.Algorithms.Vandermonde.Higham22ComplexConfluentRefinementBridge` | `NumStability.Source.Higham.Chapter22.Section03.ComplexConfluentRefinement` |
 | `NumStability.Algorithms.FastMatMul.Higham23` | `NumStability.Algorithms.FastMatMul.Internal.LegacyBounds`, `NumStability.Source.Higham.Chapter23.BalancedScaling`, `NumStability.Source.Higham.Chapter23.BilinearAlgorithm`, `NumStability.Source.Higham.Chapter23.BlockAlgorithms`, `NumStability.Source.Higham.Chapter23.ConventionalMultiplication`, `NumStability.Source.Higham.Chapter23.ErrorRecurrences`, `NumStability.Source.Higham.Chapter23.GammaAsymptotics`, `NumStability.Source.Higham.Chapter23.ThreeM`, and `NumStability.Source.Higham.Chapter23.WinogradInnerProduct` |
 | `NumStability.Algorithms.FastMatMul.Higham23Bini` | `NumStability.Algorithms.FastMatMul.Internal.LegacyBounds`, `NumStability.Source.Higham.Chapter23.BalancedScaling`, `NumStability.Source.Higham.Chapter23.BilinearAlgorithm`, `NumStability.Source.Higham.Chapter23.BiniLotti`, `NumStability.Source.Higham.Chapter23.BlockAlgorithms`, `NumStability.Source.Higham.Chapter23.ConventionalMultiplication`, `NumStability.Source.Higham.Chapter23.Equation11`, `NumStability.Source.Higham.Chapter23.ErrorRecurrences`, `NumStability.Source.Higham.Chapter23.GammaAsymptotics`, `NumStability.Source.Higham.Chapter23.Theorem02`, `NumStability.Source.Higham.Chapter23.Theorem03`, `NumStability.Source.Higham.Chapter23.ThreeM`, and `NumStability.Source.Higham.Chapter23.WinogradInnerProduct` |
 | `NumStability.Algorithms.FastMatMul.Higham23Problem23_8` | `NumStability.Algorithms.FastMatMul.Internal.LegacyBounds`, `NumStability.Source.Higham.Chapter23.BalancedScaling`, `NumStability.Source.Higham.Chapter23.BilinearAlgorithm`, `NumStability.Source.Higham.Chapter23.BlockAlgorithms`, `NumStability.Source.Higham.Chapter23.ConventionalMultiplication`, `NumStability.Source.Higham.Chapter23.ErrorRecurrences`, `NumStability.Source.Higham.Chapter23.GammaAsymptotics`, `NumStability.Source.Higham.Chapter23.Problem08`, `NumStability.Source.Higham.Chapter23.Theorem02`, `NumStability.Source.Higham.Chapter23.Theorem03.Execution`, `NumStability.Source.Higham.Chapter23.ThreeM`, and `NumStability.Source.Higham.Chapter23.WinogradInnerProduct` |
@@ -67,6 +76,8 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.Nonlinear.Higham25` | `NumStability.Source.Higham.Chapter25.NonlinearSystems` |
 | `NumStability.Algorithms.Nonlinear.Higham25EigenClosure` | `NumStability.Source.Higham.Chapter25.Eigenproblem` |
 | `NumStability.Algorithms.Nonlinear.Higham25Problem25_1` | `NumStability.Source.Higham.Chapter25.Problem01` |
+| `NumStability.Algorithms.SoftwareIssues.Higham27` | `NumStability.Source.Higham.Chapter27.SoftwareEnvironment` |
+| `NumStability.Algorithms.SoftwareIssues.Higham27Pythag` | `NumStability.Source.Higham.Chapter27.Problem06` |
 | `NumStability.Algorithms.HighamChapter3NoGuardDotBridge` | `NumStability.Algorithms.Arithmetic.DotProduct.NoGuard` and `NumStability.Source.Higham.CrossChapter.NoGuardDotProduct` |
 | `NumStability.Algorithms.HighamChapter15Ch7PracticalBoundBridge` | `NumStability.Source.Higham.CrossChapter.PracticalConditionBound` |
 | `NumStability.Algorithms.HighamChapter12Ch9GenericSolverBridge` | `NumStability.Source.Higham.CrossChapter.LUSolverWeights.Factorization` |
@@ -83,6 +94,15 @@ the table remains an import-only forwarding module.
 | `NumStability.Analysis.NonrandomRounding.GridVariation` | `NumStability.Source.Higham.Chapter01.Section17.GridVariation` |
 | `NumStability.Analysis.NonrandomRounding.SourceInterval` | `NumStability.Source.Higham.Chapter01.Section17.SourceInterval` |
 | `NumStability.Analysis.NonrandomRounding.StoredGrid` | `NumStability.Source.Higham.Chapter01.Section17.StoredGrid` |
+
+The eleven Chapter 12, 13, 22, and 27 rows above are exact one-to-one
+forwarders. The canonical chapter aggregates are discovery entry points, not
+wrapper targets: `NumStability.Source.Higham.Chapter12`,
+`NumStability.Source.Higham.Chapter22`,
+`NumStability.Source.Higham.Chapter22.Section03`, and
+`NumStability.Source.Higham.Chapter27` contain only documentation and imports.
+The compatibility inventory now contains 86 wrappers with 184 direct canonical
+targets.
 
 The historical nonrandom-rounding path remains the complete compatibility
 import for the canonical Section 1.17 aggregate. Its five historical child

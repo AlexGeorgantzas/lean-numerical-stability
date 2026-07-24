@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 See LICENSES/Apache-2.0.txt.
 -/
 
-import NumStability.Algorithms.HighamChapter12
+import NumStability.Source.Higham.Chapter12.IterativeRefinement
 import NumStability.Algorithms.HighamChapter9DoolittleClosure
 
 /-!

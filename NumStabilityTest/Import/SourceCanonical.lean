@@ -7,6 +7,10 @@ import NumStability.Source.Higham.Chapter04.Section02.KaoWangCitationDiscrepancy
 import NumStability.Source.Higham.Chapter08.Lemma08Discrepancy
 import NumStability.Source.Higham.Chapter10.Theorem07
 import NumStability.Source.Higham.Chapter11.Theorem07
+import NumStability.Source.Higham.Chapter12.IterativeRefinement
+import NumStability.Source.Higham.Chapter12.OmegaDiscontinuity
+import NumStability.Source.Higham.Chapter12.Problem02
+import NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier
 import NumStability.Source.Higham.Chapter17.Equation08
 import NumStability.Source.Higham.Chapter17.Equation12
 import NumStability.Source.Higham.Chapter17.Equation15
@@ -15,6 +19,11 @@ import NumStability.Source.Higham.Chapter17.Equation17
 import NumStability.Source.Higham.Chapter17.Equation20
 import NumStability.Source.Higham.Chapter17.Equation22
 import NumStability.Source.Higham.Chapter17.Problem01
+import NumStability.Source.Higham.Chapter22.MonomialResidual
+import NumStability.Source.Higham.Chapter22.Problem07
+import NumStability.Source.Higham.Chapter22.Section03.ComplexConfluentRefinement
+import NumStability.Source.Higham.Chapter22.Section03.RealRefinement
+import NumStability.Source.Higham.Chapter22.VandermondeSystems
 import NumStability.Source.Higham.Chapter23.BiniLotti.FirstOrder
 import NumStability.Source.Higham.Chapter23.Equation11
 import NumStability.Source.Higham.Chapter23.ErrorRecurrences
@@ -26,6 +35,8 @@ import NumStability.Source.Higham.Chapter26.AlternatingDirections.CrudeLineSearc
 import NumStability.Source.Higham.Chapter26.Equation08
 import NumStability.Source.Higham.Chapter26.IntervalArithmetic.DirectedRounding
 import NumStability.Source.Higham.Chapter26.MultidirectionalSearch.RegularSimplex
+import NumStability.Source.Higham.Chapter27.Problem06
+import NumStability.Source.Higham.Chapter27.SoftwareEnvironment
 import NumStability.Source.Higham.CrossChapter.LUSolverWeights.Doolittle
 import NumStability.Source.Higham.CrossChapter.LUSolverWeights.Factorization
 import NumStability.Source.Higham.CrossChapter.NoGuardDotProduct
@@ -46,6 +57,9 @@ historical forwarding paths and the aggregate Higham entry point.
 #check NumStability.higham8_8_printed_rowDominance_condSkeel_claim_false
 #check NumStability.higham10_7_fl_cholesky_success_source
 #check NumStability.Ch11Closure.TriGrowthInv.higham11_7_bunch_tridiagonal_support_aware
+#check NumStability.higham12_problem12_2_two_step_recurrence
+#check NumStability.higham12_exists_arbitrarily_small_component_perturb_with_omega_ge_one
+#check NumStability.higham13_demmel_sharp_multiplier_of_spectral_interval
 #check NumStability.higham12_6_lu_solve_SolverWBound
 #check NumStability.higham12_6_rectRoundedLoop_lu_solve_SolverWBound_source
 #check NumStability.higham15_1_eq_7_31_practical_bound_bridge
@@ -58,6 +72,10 @@ historical forwarding paths and the aggregate Higham entry point.
 #check NumStability.literal_norm_form_gaussSeidel_forward_bound
 #check NumStability.residualSigmaTsum_le_diagonalizable_max_bound_of_infNorm_bound
 #check NumStability.higham17_22_exists_blockForm_spectralRadius_lt_one_of_forall_orbit_tendsto
+#check NumStability.higham22_corollary22_7_monomial_residual_closed
+#check NumStability.higham22_problem22_7_extrema_kappa2_le_two
+#check NumStability.Ch22B.ch22b_refinement_converges_via_ch12
+#check NumStability.Ch22B.ch22bComplexConfluent_theorem12_3_exact_q_bound
 #check NumStability.higham23_winogradStrassen_error_step
 #check NumStability.higham23_theorem23_2_strassen_closedCoefficient_firstOrder
 #check NumStability.higham23_theorem23_3_winograd_closedCoefficient_firstOrder
@@ -69,3 +87,5 @@ historical forwarding paths and the aggregate Higham entry point.
 #check NumStability.eq26_8_linearized_forward_error
 #check NumStability.RealInterval.outwardMul_contains
 #check NumStability.higham26RegularSimplex_other_edge_length
+#check NumStability.higham27_smith_complex_division_symmetric
+#check NumStability.higham27_problem27_6_cubic_error_bound

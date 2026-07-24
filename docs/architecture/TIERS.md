@@ -40,6 +40,18 @@ six historical `NumStability.Analysis.NonrandomRounding*` paths use exact
 `compatibility` rules; there is deliberately no source-tier prefix rule for
 that historical directory.
 
+Phase 9 applies the same rule to Higham Chapters 12, 13, 22, and 27. Exact
+`aggregate` rules cover `Chapter12`, `Chapter22`, `Chapter22.Section03`, and
+`Chapter27`; the existing `Chapter13` aggregate keeps that role. The eleven
+canonical implementation leaves inherit `source`, while their eleven former
+`Algorithms*` owners now have exact `compatibility` rules. Consequently 327 of
+953 production modules are classified: 123 as source, 62 as aggregate, 86 as
+compatibility, and the remainder in the other reviewed tiers. The explicit
+unclassified queue is 626 modules and the mixed queue remains empty.
+The `NumStability.Algorithms` direct-import ceilings are 447 imports below
+`NumStability`, including 9 below `NumStability.Source` and 44 below
+`NumStability.Analysis`.
+
 Because structural aggregates do not themselves own declarations,
 `reusable_entrypoints` separately lists aggregates whose entire reachable
 surface must obey the reusable-to-source dependency gate. This keeps structural

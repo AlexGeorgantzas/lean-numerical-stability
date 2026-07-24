@@ -27,11 +27,15 @@ as exact Lean theorems. The exact finite recurrence, Theorem 12.3 `q`
 decomposition, correction/Neumann machinery, sigma bridge, conditional printed
 conclusion, and solver-derived non-asymptotic stability companion are proved.
 
-Primary Lean module:
-`NumStability/Algorithms/HighamChapter12.lean`; reusable refinement
-infrastructure: `NumStability/Algorithms/IterativeRefinement.lean`;
-actual Chapter 9 solver handoff:
-`NumStability/Algorithms/HighamChapter12Ch9SolverBridge.lean`.
+Canonical source entry point:
+`NumStability/Source/Higham/Chapter12.lean`. Its source leaves are
+`IterativeRefinement.lean`, `OmegaDiscontinuity.lean`, and `Problem02.lean`.
+Reusable refinement infrastructure remains in
+`NumStability/Algorithms/IterativeRefinement.lean`; the actual Chapter 9
+solver handoff is canonical at
+`NumStability/Source/Higham/CrossChapter/LUSolverWeights/Doolittle.lean`.
+The former `Algorithms/HighamChapter12*.lean` owners are compatibility imports
+only.
 
 ### Equation (12.6) / actual Chapter 9 solver bridge (2026-07-20 rerun)
 
@@ -74,16 +78,17 @@ conclusion.
 
 | Source label | Lean declaration | File | Theorem surface | Notes |
 |---|---|---|---|---|
-| (12.1) | `higham12_1_SolverWBound` | `HighamChapter12.lean` | Abstract solver backward-error model | Source/model assumption |
-| (12.2) | `higham12_2_residual_delta_bound` | `HighamChapter12.lean` | Exact componentwise residual-computation bound | Full source algebra |
-| (12.4)-(12.5) | `higham12_5_forward_error_identity`, `higham12_5_forward_error_bound` | `HighamChapter12.lean` | Exact inverse-free one-step forward-error identity and bound | Avoids the source's `O(u^2)` inverse expansion |
-| (12.6), Theorem 9.4 to (12.1) | `higham12_6_rectRoundedLoopW`, `higham12_6_u_mul_rectRoundedLoopW_eq`, `higham12_6_rectRoundedLoop_lu_solve_SolverWBound_source` | `HighamChapter12Ch9SolverBridge.lean` | Actual rounded Doolittle factors and triangular solves satisfy the Chapter 12 solver model with `uW = gamma_(3n)|L_hat||U_hat|` | No caller-supplied residual, execution, or backward-error certificate |
-| (12.5) consequence | `higham12_forward_error_linear_contraction`, `higham12_forward_error_steady_state` | `HighamChapter12.lean` | Exact scalar affine recurrence and finite bound | Quantitative replacement for Theorems 12.1-12.2 summaries |
-| (12.7)-(12.9) | `higham12_7_initialResidualBound`, `higham12_8_residualComputationBound`, `higham12_9_conventional_residual_error` | `HighamChapter12.lean` | Initial-solve and residual-computation models | (12.9) reuses the existing residual theorem |
-| Theorem 12.3 / (12.10), (12.14) | `higham12_10_exact_q_bound`, `higham12_3_exact_one_step_residual_bound`, `higham12_14_residual_identity`, `higham12_14_residual_bound` | `HighamChapter12.lean` | Exact finite one-step residual theorem, including the displayed `q` decomposition | New audit wrapper closes the former (12.10)/(12.14) documentation mismatch |
-| (12.17)-(12.21) | `higham12_17_update_bound`, `higham12_18_residual_abs_bound`, `higham12_19_combined_coefficients`, `higham12_21_correction_infNorm_bound` | `HighamChapter12.lean` | Exact update, residual, coefficient, and Neumann correction bounds | Printed approximate simplifications remain excluded |
-| Theorem 12.4 / (12.22) | `higham12_4_conditional_two_gamma_bound`, `higham12_4_from_solver`, `higham12_22_infNorm_skew_apply` | `HighamChapter12.lean` | Exact conditional printed conclusion and fully solver-derived non-asymptotic `+ abs(b)` companion | Strength distinction is explicit in code and inventory |
-| Problem/Appendix 12.1 | `higham12_problem_12_1_square` | `HighamChapter12.lean` | Square sigma/infinity-norm inequality used in (12.22) | Printed rectangular form is dimensionally inconsistent; square main-proof form proved |
+| (12.1) | `higham12_1_SolverWBound` | `Chapter12/IterativeRefinement.lean` | Abstract solver backward-error model | Source/model assumption |
+| (12.2) | `higham12_2_residual_delta_bound` | `Chapter12/IterativeRefinement.lean` | Exact componentwise residual-computation bound | Full source algebra |
+| (12.4)-(12.5) | `higham12_5_forward_error_identity`, `higham12_5_forward_error_bound` | `Chapter12/IterativeRefinement.lean` | Exact inverse-free one-step forward-error identity and bound | Avoids the source's `O(u^2)` inverse expansion |
+| (12.6), Theorem 9.4 to (12.1) | `higham12_6_rectRoundedLoopW`, `higham12_6_u_mul_rectRoundedLoopW_eq`, `higham12_6_rectRoundedLoop_lu_solve_SolverWBound_source` | `CrossChapter/LUSolverWeights/Doolittle.lean` | Actual rounded Doolittle factors and triangular solves satisfy the Chapter 12 solver model with `uW = gamma_(3n)|L_hat||U_hat|` | No caller-supplied residual, execution, or backward-error certificate |
+| (12.5) consequence | `higham12_forward_error_linear_contraction`, `higham12_forward_error_steady_state` | `Chapter12/IterativeRefinement.lean` | Exact scalar affine recurrence and finite bound | Quantitative replacement for Theorems 12.1-12.2 summaries |
+| (12.7)-(12.9) | `higham12_7_initialResidualBound`, `higham12_8_residualComputationBound`, `higham12_9_conventional_residual_error` | `Chapter12/IterativeRefinement.lean` | Initial-solve and residual-computation models | (12.9) reuses the existing residual theorem |
+| Theorem 12.3 / (12.10), (12.14) | `higham12_10_exact_q_bound`, `higham12_3_exact_one_step_residual_bound`, `higham12_14_residual_identity`, `higham12_14_residual_bound` | `Chapter12/IterativeRefinement.lean` | Exact finite one-step residual theorem, including the displayed `q` decomposition | New audit wrapper closes the former (12.10)/(12.14) documentation mismatch |
+| (12.17)-(12.21) | `higham12_17_update_bound`, `higham12_18_residual_abs_bound`, `higham12_19_combined_coefficients`, `higham12_21_correction_infNorm_bound` | `Chapter12/IterativeRefinement.lean` | Exact update, residual, coefficient, and Neumann correction bounds | Printed approximate simplifications remain excluded |
+| Theorem 12.4 / (12.22) | `higham12_4_conditional_two_gamma_bound`, `higham12_4_from_solver`, `higham12_22_infNorm_skew_apply` | `Chapter12/IterativeRefinement.lean` | Exact conditional printed conclusion and fully solver-derived non-asymptotic `+ abs(b)` companion | Strength distinction is explicit in code and inventory |
+| Problem/Appendix 12.1 | `higham12_problem_12_1_square` | `Chapter12/IterativeRefinement.lean` | Square sigma/infinity-norm inequality used in (12.22) | Printed rectangular form is dimensionally inconsistent; square main-proof form proved |
+| Problem/Appendix 12.2 | `higham12_problem12_2_two_step_recurrence`, `higham12_problem12_2_forward_error_multiple_cond_u`, `higham12_problem12_2_from_solver_exists_forward_error_multiple_cond_u` | `Chapter12/Problem02.lean` | Exact two-step recurrence and finite forward-error multiple of `cond(A,x)u` | The source's unspecified asymptotic comparisons remain qualitative; the exact algebra and existence conclusion are proved |
 
 ## Reused from the repository or Mathlib
 
@@ -121,7 +126,7 @@ is triggered.
 | (12.3), (12.16), (12.18), and Theorem 12.4 `f` characterization | `O(u^2)`, dropped `b` terms, approximate gamma replacement, and approximate sufficient condition | DEFER / DEFER-MISSING-PRECISE-STATEMENT; exact finite companions proved |
 | Tables 12.1-12.3 and surrounding "usually/typically/most tried" prose | GEPP/GE/QR outputs and observations | SKIP / SKIP-EMPIRICAL |
 | §12.3 notes/history and §12.3.1 LAPACK catalogue/termination policy | Literature, named software, and implementation advice | SKIP-LITERATURE-REVIEW / SKIP-PROGRAMMING-LANGUAGE |
-| Problem/Appendix 12.2 | Optional `cond(A,x)u` consequence with an unspecified multiple | SKIP-OPTIONAL-PROBLEM |
+| Problem/Appendix 12.2 approximate `≈`/`≲` simplifications | The exact recurrence and finite `cond(A,x)u` consequence are proved in `Chapter12/Problem02.lean`; only the source's unspecified asymptotic comparisons lack a literal exact statement | SKIP / SKIP-QUALITATIVE for those comparisons only |
 | Problem 12.3 | Empirical investigation | SKIP-EMPIRICAL |
 | Problem 12.4 | Conventional-versus-fast multiplication refinement comparison | BENCHMARK-COMPARISON |
 | Problem 12.5 | Open research problem for Cholesky and symmetric-indefinite solvers | SKIP-OPTIONAL-PROBLEM |
@@ -169,6 +174,11 @@ are in `docs/chapter12/CHAPTER12_SOURCE_INVENTORY.md`.
 No repeated blocker or red bottleneck remains.
 
 ## Verification
+
+The dated commands below preserve the historical audit record and therefore
+name the pre-migration modules. Those paths now test compatibility wrappers;
+the canonical build targets are `NumStability.Source.Higham.Chapter12` and its
+three leaves.
 
 - Fresh (12.6) bridge checks (2026-07-20):
   `lake env lean NumStability/Algorithms/HighamChapter12Ch9SolverBridge.lean`

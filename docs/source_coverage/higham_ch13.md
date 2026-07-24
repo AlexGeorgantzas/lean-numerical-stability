@@ -1,7 +1,7 @@
 # Higham Chapter 13 Formalization Report — "Block LU Factorization"
 
 > **Final PDF-first notes closure (2026-07-22).**
-> `LU/Higham13DemmelSharpMultiplier.lean` proves Demmel's strengthened notes
+> `Source/Higham/Chapter13/DemmelSharpMultiplier.lean` proves Demmel's strengthened notes
 > bound
 > `||A21 A11⁻¹||₂ ≤ (sqrt(kappa₂(A)) - 1/sqrt(kappa₂(A)))/2`
 > from an actual SPD matrix, canonical inverses, and the Loewner spectral
@@ -21,13 +21,18 @@
 - Mode: core.
 - Parallel split: 3A (Block LU / Matrix Inversion / Condition Estimation
   cluster, Chapters 13-15).
-- Primary Lean modules (`NumStability/Algorithms/LU/`):
+- Canonical source entry point: `NumStability/Source/Higham/Chapter13.lean`,
+  whose source leaves are `DemmelSharpMultiplier.lean`, `Equation25.lean`, and
+  `Table01.lean`. The former `LU/Higham13DemmelSharpMultiplier.lean` and
+  `LU/BlockLUTable13_1Families.lean` paths are compatibility imports only.
+- Remaining Chapter 13 implementation modules (`NumStability/Algorithms/LU/`):
   `BlockLU.lean` (monolithic core, ~82k lines), plus the source-closure and
   family layers `BlockLUSourceClosure`, `BlockLURowSourceClosure`,
   `BlockLUArbitraryNormSourceClosure`, `BlockLUSPDSourceClosure`,
   `BlockLUSPDFamilies`, `BlockLUComputationSourceClosure`,
   `BlockLUFirstOrderFamilies`, `BlockLUPointRowGrowthSourceClosure`,
-  `BlockLUScalarGrowthBridge`, `BlockLUVarying`, `BlockLUTable13_1Families`.
+  `BlockLUScalarGrowthBridge` and `BlockLUVarying`. Their later semantic split
+  is outside this path-only migration.
 - **Selected-scope gate: PASS** (0 open primary or numbered-equation rows).
 
 This audit is statement-level: I verified each Lean statement against the
@@ -137,7 +142,8 @@ overcount; (13.26) is the last, appearing in Problem 13.4).
   computed factors plus the source's explicit exact/computed product
   comparison — matching the printed "It follows from Theorem 13.6 …".
 - Table 13.1 (empirical summary table) is formalized as product/backward-error
-  families per row in `BlockLUTable13_1Families.lean` and
+  families per row in canonical `Source/Higham/Chapter13/Table01.lean` and
+  `Source/Higham/Chapter13/Equation25.lean`, including
   `higham13_table13_1_*` (col-BDD, point-col-BDD, block-row-BDD, point-row,
   arbitrary, SPD); the arbitrary row uses the actual matrix-stage `ρₙ`, and the
   point-row row inherits the source-closed (13.23) specialization.

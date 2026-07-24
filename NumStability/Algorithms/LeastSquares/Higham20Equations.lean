@@ -7,7 +7,7 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LeastSquares.LSNormalEquations
 import NumStability.Algorithms.LeastSquares.LSQRSolve
-import NumStability.Algorithms.HighamChapter12
+import NumStability.Source.Higham.Chapter12.IterativeRefinement
 
 namespace NumStability
 

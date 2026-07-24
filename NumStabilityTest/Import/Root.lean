@@ -29,6 +29,10 @@ example : (fp : FPModel) → (n : ℕ) → (Fin n → ℝ) → ℝ :=
 #check higham20_eq20_32_Bplus_residual_eq_crossProjection
 #check problem44_outputs_exactly_Icc
 #check higham17_problem17_1
+#check higham12_problem12_2_two_step_recurrence
+#check higham13_demmel_sharp_multiplier_of_spectral_interval
+#check Ch22B.ch22b_refinement_converges_via_ch12
+#check higham27_problem27_6_cubic_error_bound
 #check StrassenRecurrence
 #check higham23_problem23_8_power_exponent
 #check higham26ADCrudeSweep_nondecreasing

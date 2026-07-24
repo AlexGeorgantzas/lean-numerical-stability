@@ -75,6 +75,18 @@ split from the reusable library.
   `NumStability.Source.Higham.Chapter01.Section17`, with five semantic source
   leaves and declaration-free chapter and section aggregates. Historical
   `Analysis.NonrandomRounding*` paths are compatibility wrappers only.
+  Chapter 12 uses the declaration-free
+  `NumStability.Source.Higham.Chapter12` aggregate over the source leaves
+  `IterativeRefinement`, `OmegaDiscontinuity`, and `Problem02`. Chapter 13's
+  `DemmelSharpMultiplier` is a source leaf beside `Equation25` and `Table01`
+  under the existing declaration-free `Chapter13` aggregate. Chapter 22 uses
+  a declaration-free `Chapter22` aggregate over `VandermondeSystems`,
+  `MonomialResidual`, `Problem07`, and the declaration-free `Section03`
+  aggregate; that section owns the `RealRefinement` and
+  `ComplexConfluentRefinement` source leaves. Chapter 27 uses a declaration-
+  free `Chapter27` aggregate over `SoftwareEnvironment` and `Problem06`.
+  The eleven corresponding historical `Algorithms*` paths are compatibility
+  wrappers only.
   Chapter 23 is organized under
   `NumStability.Source.Higham.Chapter23`, with semantic base leaves and
   declaration-free Theorem 23.2, Theorem 23.3, Bini--Lotti, and combined

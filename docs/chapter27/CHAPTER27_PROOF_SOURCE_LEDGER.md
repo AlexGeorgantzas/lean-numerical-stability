@@ -10,6 +10,7 @@
 | Smith division (27.1) | direct algebra in Sec. 27.8 | Smith [1052, 1962] cited for algorithm, not needed for proof | formalized directly | `higham27_eq27_1_smith_complex_division` |
 | Analogous `|d| >= |c|` Smith branch | stated by symmetry after (27.1) | Smith [1052, 1962] | formalized directly | `higham27_smith_complex_division_symmetric` |
 | Smith overflow avoidance (with possible underflow) | implementation explanation surrounding (27.1) | Smith [1052, 1962] | both scoped rounded pre-division traces formalized; unconditional reading refuted | `smith_first_branch_preDivision_safe`, `smith_symmetric_branch_preDivision_safe`, `smith_scaledDenominator_overflows_at_maxFiniteMagnitude` |
+| Problem 27.6 Moler--Morrison/Halley `pythag` iteration | direct exercise on pp. 507--509 | none needed for the exact algebra | Halley specialization, scaled recurrence, invariant, monotone enclosure, and cubic error identity/bound formalized; the concrete MATLAB stopping-test claim is deferred | `higham27_problem27_6_halley_specialization`, `_pair_step_eq_halley`, `_pair_step_invariant`, `_matlab_scaled_step`, `_cubic_error_identity`, `_monotone_enclosure`, `_cubic_error_bound` |
 
 No unproved external theorem is used by a completed Chapter 27 surface.  No
 selected precise body row remains open.

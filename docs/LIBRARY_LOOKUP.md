@@ -5142,9 +5142,12 @@ Core iterative-refinement module:
 - `thm_11_4_self_contained`
 - `lu_refinement_thm_11_4`
 
-Source-facing Chapter 12 wrappers:
+Canonical Chapter 12 source surface:
 
-- `NumStability.Algorithms.HighamChapter12`
+- `NumStability.Source.Higham.Chapter12` (complete declaration-free aggregate)
+- `NumStability.Source.Higham.Chapter12.IterativeRefinement`
+- `NumStability.Source.Higham.Chapter12.OmegaDiscontinuity`
+- `NumStability.Source.Higham.Chapter12.Problem02`
 - `higham12_1_SolverWBound`
 - `higham12_2_residual_delta_bound`
 - `higham12_forward_error_linear_contraction`
@@ -5173,6 +5176,15 @@ Source-facing Chapter 12 wrappers:
 - `higham12_vectorAbsSkew_entry_bound`
 - `higham12_problem_12_1_square`
 - `higham12_22_infNorm_skew_apply`
+- `higham12_problem12_2_two_step_recurrence`
+- `higham12_problem12_2_forward_error_multiple_cond_u`
+- `higham12_problem12_2_exists_forward_error_multiple_cond_u`
+- `higham12_problem12_2_from_solver_exists_forward_error_multiple_cond_u`
+
+The former `NumStability.Algorithms.HighamChapter12*` owner paths are
+compatibility imports only. Problem 12.2's exact finite recurrence and
+`cond(A,x)u` existence conclusion are formalized; only its unspecified
+asymptotic comparisons remain qualitative.
 
 Chapter 12 formalization status and source inventory:
 
@@ -5183,7 +5195,10 @@ Chapter 12 formalization status and source inventory:
 
 ## Higham Chapter 22: Vandermonde Systems
 
-- Import: `NumStability.Algorithms.Vandermonde.Higham22`
+- Import: `NumStability.Source.Higham.Chapter22`. Its canonical leaves are
+  `VandermondeSystems`, `MonomialResidual`, `Problem07`, and the
+  `Section03` aggregate over `RealRefinement` and
+  `ComplexConfluentRefinement`.
 - Exact factorization/solves: `higham22Hermite_eq22_17_inverse`,
   `higham22Hermite_algorithm22_2Printed_solve`,
   `higham22_algorithm22_3_eq_factorized`,
@@ -5891,14 +5906,21 @@ When a theorem almost matches a goal, compare:
 This section is a human-readable companion to `examples/LibraryLookup.lean`
 for the Chapter 13 declarations.
 
-Primary modules: `NumStability/Algorithms/LU/BlockLU.lean`,
+Canonical source entry: `NumStability/Source/Higham/Chapter13.lean`.
+Demmel's strengthened sharp multiplier bound and equality witness are owned by
+`NumStability/Source/Higham/Chapter13/DemmelSharpMultiplier.lean`; the
+historical `Algorithms/LU/Higham13DemmelSharpMultiplier.lean` path is an
+import-only compatibility wrapper.
+
+Remaining implementation modules: `NumStability/Algorithms/LU/BlockLU.lean`,
 `NumStability/Algorithms/LU/BlockLUVarying.lean`,
 `NumStability/Algorithms/LU/BlockLUSourceClosure.lean`,
 `NumStability/Algorithms/LU/BlockLURowSourceClosure.lean`, and
 `NumStability/Algorithms/LU/BlockLUSPDSourceClosure.lean`, with the final
 uniform composition endpoints in
-`NumStability/Algorithms/LU/BlockLUComputationSourceClosure.lean` and
-`NumStability/Algorithms/LU/BlockLUTable13_1Families.lean`.
+`NumStability/Algorithms/LU/BlockLUComputationSourceClosure.lean` and the
+canonical source leaves `NumStability/Source/Higham/Chapter13/Table01.lean`
+and `NumStability/Source/Higham/Chapter13/Equation25.lean`.
 
 Some rows below document older conditional or optional Problem 13.4 APIs and
 therefore describe premises that remain explicit at those particular wrapper
@@ -6322,13 +6344,19 @@ remains PARTIAL/OPEN. Chapters 20-27 are `PASS` with no selected open row.
 | Chapter/topic | Public module(s) | Audit report |
 |---|---|---|
 | 21, underdetermined systems | [`Underdetermined/Higham21.lean`](../NumStability/Algorithms/Underdetermined/Higham21.lean) | [`chapter21/CHAPTER21_FORMALIZATION_REPORT.md`](chapter21/CHAPTER21_FORMALIZATION_REPORT.md) |
-| 22, Vandermonde systems | [`Vandermonde/Higham22.lean`](../NumStability/Algorithms/Vandermonde/Higham22.lean) | [`chapter22/CHAPTER22_FORMALIZATION_REPORT.md`](chapter22/CHAPTER22_FORMALIZATION_REPORT.md) |
+| 22, Vandermonde systems | [`Source/Higham/Chapter22.lean`](../NumStability/Source/Higham/Chapter22.lean) | [`chapter22/CHAPTER22_FORMALIZATION_REPORT.md`](chapter22/CHAPTER22_FORMALIZATION_REPORT.md) |
 | 23, fast matrix multiplication | [`Source/Higham/Chapter23.lean`](../NumStability/Source/Higham/Chapter23.lean) | [`chapter23/CHAPTER23_FORMALIZATION_REPORT.md`](chapter23/CHAPTER23_FORMALIZATION_REPORT.md) |
 | 24, FFT and circulants | [`Source/Higham/Chapter24.lean`](../NumStability/Source/Higham/Chapter24.lean) | [`chapter24/CHAPTER24_FORMALIZATION_REPORT.md`](chapter24/CHAPTER24_FORMALIZATION_REPORT.md) |
 | 25, nonlinear systems | [`Source/Higham/Chapter25.lean`](../NumStability/Source/Higham/Chapter25.lean) | [`chapter25/CHAPTER25_FORMALIZATION_REPORT.md`](chapter25/CHAPTER25_FORMALIZATION_REPORT.md) |
 | 26, automatic error analysis | [`Source/Higham/Chapter26.lean`](../NumStability/Source/Higham/Chapter26.lean) | [`chapter26/CHAPTER26_FORMALIZATION_REPORT.md`](chapter26/CHAPTER26_FORMALIZATION_REPORT.md) |
-| 27, software issues | [`SoftwareIssues/Higham27.lean`](../NumStability/Algorithms/SoftwareIssues/Higham27.lean) | [`chapter27/CHAPTER27_FORMALIZATION_REPORT.md`](chapter27/CHAPTER27_FORMALIZATION_REPORT.md) |
+| 27, software issues | [`Source/Higham/Chapter27.lean`](../NumStability/Source/Higham/Chapter27.lean) | [`chapter27/CHAPTER27_FORMALIZATION_REPORT.md`](chapter27/CHAPTER27_FORMALIZATION_REPORT.md) |
 | 28, test matrices | [`TestMatrices/Higham28.lean`](../NumStability/Algorithms/TestMatrices/Higham28.lean), [`Higham28Exact.lean`](../NumStability/Algorithms/TestMatrices/Higham28Exact.lean), [`Higham28Probability.lean`](../NumStability/Algorithms/TestMatrices/Higham28Probability.lean), [`Higham28Asymptotics.lean`](../NumStability/Algorithms/TestMatrices/Higham28Asymptotics.lean), [`Higham28GinibreMeasure.lean`](../NumStability/Algorithms/TestMatrices/Higham28GinibreMeasure.lean), [`Higham28GinibreIncidence.lean`](../NumStability/Algorithms/TestMatrices/Higham28GinibreIncidence.lean), [`Higham28GinibreExpectationGlue.lean`](../NumStability/Algorithms/TestMatrices/Higham28GinibreExpectationGlue.lean), [`Higham28RandsvdNorm.lean`](../NumStability/Algorithms/TestMatrices/Higham28RandsvdNorm.lean), [`Higham28Stewart.lean`](../NumStability/Algorithms/TestMatrices/Higham28Stewart.lean), [`Higham28Pascal.lean`](../NumStability/Algorithms/TestMatrices/Higham28Pascal.lean), [`Higham28PascalCondition.lean`](../NumStability/Algorithms/TestMatrices/Higham28PascalCondition.lean), [`Higham28ToeplitzGeneral.lean`](../NumStability/Algorithms/TestMatrices/Higham28ToeplitzGeneral.lean), [`Higham28ToeplitzCondition.lean`](../NumStability/Algorithms/TestMatrices/Higham28ToeplitzCondition.lean), [`Higham28Companion.lean`](../NumStability/Algorithms/TestMatrices/Higham28Companion.lean), [`Higham28CompanionSpectral.lean`](../NumStability/Algorithms/TestMatrices/Higham28CompanionSpectral.lean) | [`chapter28/CHAPTER28_FORMALIZATION_REPORT.md`](chapter28/CHAPTER28_FORMALIZATION_REPORT.md) |
+
+Chapter 27 Problem 27.6 is available from
+`NumStability.Source.Higham.Chapter27.Problem06`. Its exact Halley
+specialization, scaled recurrence, invariant, monotone enclosure, and cubic
+error identity/bound are proved; only the machine-dependent MATLAB stopping
+claim remains deferred.
 
 Chapter 28's Toeplitz/companion exact entry points include
 `symmetricToeplitz_orthogonal_diagonalization`,
