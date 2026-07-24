@@ -17,8 +17,14 @@
 | Theorem 23.4 / (23.19) | literal recursive bilinear evaluator; explicit tensor-dependent `alpha`,`beta` | PROVED; remainder is `O(u²)` |
 | (23.20)--(23.24), scaling | actual rounded conventional/3M complex paths | PROVED |
 | 23.B3 / Problem 23.6 | literal rounded input sums, three recursive Strassen products, and rounded 3M outputs | PROVED with source `6*(c+4)` coefficient and `O(u²)` remainders |
+| Problems 23.8--23.9 | noncommutative block inverse, upper-triangular specialization, exact inversion-cost recurrence, and power-law exponent | PROVED |
 
 The exhaustive row inventory is
 `docs/chapter23/CHAPTER23_SOURCE_INVENTORY.md`.  The selected-scope gate is
 **PASS**; all selected rows are backed by actual rounded evaluators rather
 than synthetic target-bearing expansion witnesses.
+
+Use `import NumStability.Source.Higham.Chapter23` for the complete canonical
+chapter surface, or import a semantic leaf below that path. The six
+`NumStability.Algorithms.FastMatMul.Higham23*` modules are retained only as
+import-only compatibility wrappers.

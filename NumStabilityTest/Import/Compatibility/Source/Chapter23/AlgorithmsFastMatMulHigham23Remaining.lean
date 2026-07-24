@@ -1,0 +1,11 @@
+import NumStability.Algorithms.FastMatMul.Higham23Remaining
+
+/-!
+# Historical Chapter 23 import
+-/
+
+#check NumStability.StrassenErrorBound
+#check NumStability.higham23_winogradStrassen_error_step
+#check NumStability.higham23_theorem23_2_strassen_closedCoefficient_firstOrder
+#check NumStability.higham23_theorem23_3_winograd_closedCoefficient_firstOrder
+#check NumStability.higham23_eq23_11_miller_normwise

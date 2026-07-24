@@ -66,9 +66,16 @@ split from the reusable library.
   into reusable `Signs` and `ErrorBounds` leaves.
 - `NumStability.Algorithms.Sylvester` is a complete family-discovery umbrella,
   not a claim that every Chapter 16 declaration is reusable mathematics.
+- `NumStability.Algorithms.FastMatMul.Recurrences` is the reusable fast-
+  multiplication recurrence leaf. `NumStability.Algorithms.FastMatMul` is the
+  declaration-free complete-family aggregate retained for historical
+  discovery; its internal legacy-bounds leaf is not supported downstream API.
 - `NumStability.Source.Higham` is the canonical Higham correspondence entry
-  point. Chapter 4 now has a canonical chapter umbrella alongside Chapters 14,
-  24, and 25 while remaining historical modules are migrated incrementally.
+  point. Chapter 23 is organized under
+  `NumStability.Source.Higham.Chapter23`, with semantic base leaves and
+  declaration-free Theorem 23.2, Theorem 23.3, Bini--Lotti, and combined
+  3M--Strassen family aggregates. Historical `FastMatMul.Higham23*` paths are
+  compatibility wrappers only.
 - `NumStability.Higham` is a compatibility entry point forwarding to
   `NumStability.Source.Higham`.
 - `NumStability.All` is the explicit complete-tree entry point.

@@ -6,6 +6,15 @@ The selected-scope gate is **PASS**. All source-facing stability results are
 proved from actual rounded evaluators, including the four rows that were
 previously open.
 
+The canonical complete entry point is
+`NumStability.Source.Higham.Chapter23`. Its 26 declaration-bearing modules are
+split by mathematical role, equation, named theorem, algorithm family, and
+problem. Five declaration-free aggregates provide the complete chapter and
+the Theorem 23.2, Theorem 23.3, Bini--Lotti, and combined 3M--Strassen family
+surfaces. The six historical `NumStability.Algorithms.FastMatMul.Higham23*`
+paths remain import-only compatibility wrappers; new code should not import
+them.
+
 ## Proved source-facing work
 
 | Source | Lean surface | Result |
@@ -24,6 +33,7 @@ previously open.
 | Theorem 23.4 / (23.19) | `higham23BiniFlEvaluate` | explicit algorithm-dependent `alpha`,`beta`, source envelope, and `O(u²)` remainder proved |
 | (23.20)--(23.24) | actual rounded conventional and 3M complex paths | componentwise, scaling, and induced-infinity bounds proved |
 | 23.B3 / Problem 23.6 | `higham23FlThreeMStrassen` | rounded input sums, three recursive Strassen products, rounded outputs, source `6*(c+4)` coefficient, and `O(u²)` remainders proved |
+| Problems 23.8--23.9 | `higham23Problem23_8Candidate`, `higham23_problem23_8_block_inverse` | noncommutative block inverse, upper-triangular specialization, exact cost recurrence, and power-law exponent proved |
 
 ## Source correction
 
@@ -34,14 +44,19 @@ algebraic form.
 
 ## Verification
 
-- `lake build NumStability.Algorithms.FastMatMul.Higham23Bini`: PASS.
-- `lake build NumStability.Algorithms.FastMatMul.Higham23ThreeMStrassen`: PASS.
-- `lake build NumStability.Algorithms`: PASS.
-- `lake env lean examples/LibraryLookup.lean`: PASS.
+- `lake build NumStability.Source.Higham.Chapter23` is the canonical complete
+  chapter gate.
+- Independent builds cover all 26 canonical declaration leaves and all five
+  canonical aggregates.
+- Six old-only import tests cover the historical
+  `NumStability.Algorithms.FastMatMul.Higham23*` compatibility surfaces without
+  co-importing the canonical chapter aggregate.
+- `lake build NumStability.Algorithms` and
+  `lake env lean examples/LibraryLookup.lean` remain integration gates.
 - Axiom audits for the Miller, Winograd--Strassen, Bini--Lotti, and combined
   3M--Strassen endpoints report only `propext`, `Classical.choice`, and
   `Quot.sound`.
-- The new modules contain no `sorry`, `admit`, `axiom`, `unsafe`, or `opaque`
-  declaration.
+- The canonical modules contain no `sorry`, `admit`, `axiom`, `unsafe`, or
+  `opaque` declaration.
 
 See the inventory and proof-source ledger for row-level routes.

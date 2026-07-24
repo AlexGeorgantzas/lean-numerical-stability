@@ -1,0 +1,21 @@
+import NumStability.Algorithms.FastMatMul
+
+/-!
+# Fast-matrix-multiplication import surface
+-/
+
+#check NumStability.StrassenRecurrence
+#check NumStability.strassen_recurrence_monotone
+#check NumStability.WinogradStrassenRecurrence
+#check NumStability.StrassenErrorBound
+#check NumStability.WinogradStrassenErrorBound
+#check NumStability.conventional_componentwise_implies_cubic
+#check NumStability.WinogradInnerProductError
+#check NumStability.BilinearAlgorithmError
+#check NumStability.ThreeMMethodError
+#check NumStability.higham23_winogradStrassen_error_step
+#check NumStability.higham23_theorem23_2_strassen_closedCoefficient_firstOrder
+#check NumStability.higham23_eq23_11_miller_normwise
+#check NumStability.higham23_biniLotti_scaledRemainder_isBigO_u_sq
+#check NumStability.higham23_threeMStrassen_sourceCoefficient
+#check NumStability.higham23_problem23_8_power_exponent

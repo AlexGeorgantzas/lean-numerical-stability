@@ -1,0 +1,12 @@
+import NumStability.Source.Higham.Chapter23
+
+/-!
+# Canonical Chapter 23 import
+-/
+
+#check NumStability.higham23_winogradStrassen_error_step
+#check NumStability.higham23_theorem23_2_strassen_closedCoefficient_firstOrder
+#check NumStability.higham23_eq23_11_miller_normwise
+#check NumStability.higham23_biniLotti_scaledRemainder_isBigO_u_sq
+#check NumStability.higham23_threeMStrassen_sourceCoefficient
+#check NumStability.higham23_problem23_8_power_exponent

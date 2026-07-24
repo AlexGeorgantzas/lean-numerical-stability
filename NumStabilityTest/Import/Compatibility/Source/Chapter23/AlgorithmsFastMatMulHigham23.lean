@@ -1,0 +1,15 @@
+import NumStability.Algorithms.FastMatMul.Higham23
+
+/-!
+# Historical Chapter 23 import
+-/
+
+#check NumStability.StrassenErrorBound
+#check NumStability.higham23_winograd_componentwise_error
+#check NumStability.higham23_balanced_winograd_error
+#check NumStability.higham23_error_bound_gamma_split
+#check NumStability.higham23_eq23_17_conventional_normwise
+#check NumStability.higham23_eq23_5_strassen_costs
+#check NumStability.higham23_bilinearEvaluate_correct
+#check NumStability.higham23_eq23_24_threeM_imaginary_normwise_firstOrder
+#check NumStability.higham23_winogradStrassen_error_step

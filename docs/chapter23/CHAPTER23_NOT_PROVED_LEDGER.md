@@ -16,6 +16,10 @@ Empirical experiments, literature review, and optional benchmark problems
 remain skipped under the chapter skill; they are not selected-scope proof
 obligations.
 
+Problems 23.8--23.9 are no longer in that optional queue: their exact block
+inverse, upper-triangular specialization, recurrence, and exponent results are
+proved in `NumStability.Source.Higham.Chapter23.Problem08`.
+
 The removed synthetic first-order expansion and zero-error witness surfaces
 remain excluded. Every stability endpoint above is derived from a literal
 rounded evaluator.

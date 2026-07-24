@@ -71,8 +71,8 @@
 | 23.5 | compare two scalar formulas | solution present | SKIP | OPTIONAL-PROBLEM-NOT-SELECTED |
 | 23.6 | 3M plus Strassen error bound | none | FORMALIZE_DEPENDENCY | `higham23_threeMStrassen_sourceCoefficient` — PROVED on the literal combined evaluator |
 | 23.7 | compare two fast complex approaches | brief Appendix reference | SKIP | qualitative speed/storage exercise |
-| 23.8 | recursive Strassen inversion | none | BENCHMARK_CANDIDATE | exact algorithm; cross-chapter dependency |
-| 23.9 | block upper-triangular inverse reduces multiplication to inversion | solution present | BENCHMARK_CANDIDATE | exact optional theorem |
+| 23.8 | recursive Strassen inversion | none | FORMALIZE_DEPENDENCY | `NumStability.Source.Higham.Chapter23.Problem08`; noncommutative block inverse, exact recurrence, and exponent bound -- PROVED |
+| 23.9 | block upper-triangular inverse reduces multiplication to inversion | solution present | FORMALIZE_DEPENDENCY | `higham23_problem23_8_upper_triangular_specialization` -- PROVED |
 | 23.10 | extensive numerical experiments | none | SKIP | SKIP-EMPIRICAL |
 
 ## Gate summary
@@ -83,3 +83,5 @@ use literal rounded conventional, Strassen, Winograd--Strassen, bilinear,
 Miller, and combined 3M--Strassen evaluators, with explicit first-order
 coefficients and genuine `O(u²)` remainder families.  Synthetic
 target-bearing expansion domains and zero-error witnesses are not counted.
+The complete canonical import is `NumStability.Source.Higham.Chapter23`; the
+historical `Algorithms.FastMatMul.Higham23*` paths are compatibility wrappers.

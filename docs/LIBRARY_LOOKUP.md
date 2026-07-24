@@ -6323,7 +6323,7 @@ remains PARTIAL/OPEN. Chapters 20-27 are `PASS` with no selected open row.
 |---|---|---|
 | 21, underdetermined systems | [`Underdetermined/Higham21.lean`](../NumStability/Algorithms/Underdetermined/Higham21.lean) | [`chapter21/CHAPTER21_FORMALIZATION_REPORT.md`](chapter21/CHAPTER21_FORMALIZATION_REPORT.md) |
 | 22, Vandermonde systems | [`Vandermonde/Higham22.lean`](../NumStability/Algorithms/Vandermonde/Higham22.lean) | [`chapter22/CHAPTER22_FORMALIZATION_REPORT.md`](chapter22/CHAPTER22_FORMALIZATION_REPORT.md) |
-| 23, fast matrix multiplication | [`FastMatMul/Higham23.lean`](../NumStability/Algorithms/FastMatMul/Higham23.lean) | [`chapter23/CHAPTER23_FORMALIZATION_REPORT.md`](chapter23/CHAPTER23_FORMALIZATION_REPORT.md) |
+| 23, fast matrix multiplication | [`Source/Higham/Chapter23.lean`](../NumStability/Source/Higham/Chapter23.lean) | [`chapter23/CHAPTER23_FORMALIZATION_REPORT.md`](chapter23/CHAPTER23_FORMALIZATION_REPORT.md) |
 | 24, FFT and circulants | [`Source/Higham/Chapter24.lean`](../NumStability/Source/Higham/Chapter24.lean) | [`chapter24/CHAPTER24_FORMALIZATION_REPORT.md`](chapter24/CHAPTER24_FORMALIZATION_REPORT.md) |
 | 25, nonlinear systems | [`Source/Higham/Chapter25.lean`](../NumStability/Source/Higham/Chapter25.lean) | [`chapter25/CHAPTER25_FORMALIZATION_REPORT.md`](chapter25/CHAPTER25_FORMALIZATION_REPORT.md) |
 | 26, automatic error analysis | [`Source/Higham/Chapter26.lean`](../NumStability/Source/Higham/Chapter26.lean) | [`chapter26/CHAPTER26_FORMALIZATION_REPORT.md`](chapter26/CHAPTER26_FORMALIZATION_REPORT.md) |

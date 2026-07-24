@@ -143,12 +143,6 @@ import NumStability.Algorithms.ContinuedFraction
 import NumStability.Algorithms.DotProduct
 import NumStability.Algorithms.ExtendedPrecisionDotProduct
 import NumStability.Algorithms.FastMatMul
-import NumStability.Algorithms.FastMatMul.Higham23
-import NumStability.Algorithms.FastMatMul.Higham23Bini
-import NumStability.Algorithms.FastMatMul.Higham23Problem23_8
-import NumStability.Algorithms.FastMatMul.Higham23Recursive
-import NumStability.Algorithms.FastMatMul.Higham23Remaining
-import NumStability.Algorithms.FastMatMul.Higham23ThreeMStrassen
 import NumStability.Algorithms.GaussJordan
 import NumStability.Algorithms.GaussJordanPivoting
 import NumStability.Algorithms.GridPoints

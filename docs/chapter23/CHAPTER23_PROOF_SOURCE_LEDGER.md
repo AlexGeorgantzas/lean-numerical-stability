@@ -16,9 +16,14 @@
 | Theorem 23.4 / (23.19) | p. 443; Bini--Lotti citation | literal rounded recursive tensor evaluator; explicit algorithm-dependent `alpha`,`beta` envelope | PROVED with `O(u²)` remainder |
 | (23.20)--(23.24) and scaling | pp. 445--446 | actual conventional/3M rounded evaluators and row-sum norms | PROVED |
 | 23.B3 / Problem 23.6 | pp. 446, 449 | rounded complex input sums, three actual recursive Strassen products, rounded output subtractions | PROVED with source `6*(c+4)` coefficient and two `O(u²)` component remainders |
+| Problems 23.8--23.9 | p. 449; Appendix solution | noncommutative block inverse, upper-triangular specialization, exact cost recurrence, and logarithmic exponent identity | PROVED |
 
 The proof source was the rendered local PDF
 `References/1.9780898718027.ch23.pdf`, especially pp. 438, 440, 442--443.
 Exact algebra was checked with Lean's noncommutative ring normalization.
 No synthetic first-order expansion or zero-error witness is counted as a
 proof source.
+
+These proof surfaces are owned by semantic modules below the canonical
+`NumStability.Source.Higham.Chapter23` entry point. Historical
+`Algorithms.FastMatMul.Higham23*` modules only forward imports.

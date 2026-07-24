@@ -10,6 +10,7 @@ import NumStability.Source.Higham.Chapter14.Discrepancies
 import NumStability.Source.Higham.Chapter20.Equation32
 import NumStability.Source.Higham.Chapter20.Lemma06
 import NumStability.Source.Higham.Chapter20.Theorem01
+import NumStability.Source.Higham.Chapter23.Problem08
 
 /-!
 # Canonical endpoint-path smoke test
@@ -30,3 +31,4 @@ historical forwarding paths.
 #check NumStability.FloatingPointFormat.finiteRoundToEvenOp_add_comm
 #check NumStability.FloatingPointFormat.problem2_7_statement5_add_associativity_false
 #check NumStability.problem44_outputs_exactly_Icc
+#check NumStability.higham23_problem23_8_power_exponent

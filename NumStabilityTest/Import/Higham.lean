@@ -15,6 +15,8 @@ Ensure the historical Higham entry point forwards the complete canonical
 #check NumStability.higham14_hadamardConditionNumberRaw_negative_one_counterexample
 #check NumStability.higham17_problem17_1
 #check NumStability.higham20_eq20_32_Bplus_residual_eq_crossProjection
+#check NumStability.higham23_winogradStrassen_error_step
+#check NumStability.higham23_problem23_8_power_exponent
 #check NumStability.higham24_theorem24_3_literal_forward_error_multiple_kappa_u
 #check NumStability.higham25NewtonEquation
 #check NumStability.eq26_8_linearized_forward_error

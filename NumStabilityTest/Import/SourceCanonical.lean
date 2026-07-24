@@ -10,6 +10,13 @@ import NumStability.Source.Higham.Chapter17.Equation17
 import NumStability.Source.Higham.Chapter17.Equation20
 import NumStability.Source.Higham.Chapter17.Equation22
 import NumStability.Source.Higham.Chapter17.Problem01
+import NumStability.Source.Higham.Chapter23.BiniLotti.FirstOrder
+import NumStability.Source.Higham.Chapter23.Equation11
+import NumStability.Source.Higham.Chapter23.ErrorRecurrences
+import NumStability.Source.Higham.Chapter23.Problem08
+import NumStability.Source.Higham.Chapter23.Theorem02.ErrorBound
+import NumStability.Source.Higham.Chapter23.Theorem03.ErrorBound
+import NumStability.Source.Higham.Chapter23.ThreeMStrassen.FirstOrder
 import NumStability.Source.Higham.Chapter26.AlternatingDirections.CrudeLineSearch
 import NumStability.Source.Higham.Chapter26.Equation08
 import NumStability.Source.Higham.Chapter26.IntervalArithmetic.DirectedRounding
@@ -41,6 +48,13 @@ historical forwarding paths and the aggregate Higham entry point.
 #check NumStability.literal_norm_form_gaussSeidel_forward_bound
 #check NumStability.residualSigmaTsum_le_diagonalizable_max_bound_of_infNorm_bound
 #check NumStability.higham17_22_exists_blockForm_spectralRadius_lt_one_of_forall_orbit_tendsto
+#check NumStability.higham23_winogradStrassen_error_step
+#check NumStability.higham23_theorem23_2_strassen_closedCoefficient_firstOrder
+#check NumStability.higham23_theorem23_3_winograd_closedCoefficient_firstOrder
+#check NumStability.higham23_eq23_11_miller_normwise
+#check NumStability.higham23_biniLotti_scaledRemainder_isBigO_u_sq
+#check NumStability.higham23_threeMStrassen_sourceCoefficient
+#check NumStability.higham23_problem23_8_power_exponent
 #check NumStability.higham26ADCrudeSweep_nondecreasing
 #check NumStability.eq26_8_linearized_forward_error
 #check NumStability.RealInterval.outwardMul_contains

@@ -3,6 +3,7 @@
     "NumStability": "NumStability.",
     "NumStability.Algorithms": "NumStability.Algorithms.",
     "NumStability.Algorithms.Arithmetic.DotProduct.NoGuard": "NumStability.Algorithms.Arithmetic.DotProduct.NoGuard.",
+    "NumStability.Algorithms.FastMatMul": "NumStability.Algorithms.FastMatMul.",
     "NumStability.Algorithms.LinearSystems.Triangular": "NumStability.Algorithms.LinearSystems.Triangular.",
     "NumStability.Algorithms.Summation": "NumStability.Algorithms.Summation.",
     "NumStability.Algorithms.Summation.Compensated": "NumStability.Algorithms.Summation.Compensated.",
@@ -39,6 +40,11 @@
     "NumStability.Source.Higham.Chapter14": "NumStability.Source.Higham.Chapter14.",
     "NumStability.Source.Higham.Chapter17": "NumStability.Source.Higham.Chapter17.",
     "NumStability.Source.Higham.Chapter20": "NumStability.Source.Higham.Chapter20.",
+    "NumStability.Source.Higham.Chapter23": "NumStability.Source.Higham.Chapter23.",
+    "NumStability.Source.Higham.Chapter23.BiniLotti": "NumStability.Source.Higham.Chapter23.BiniLotti.",
+    "NumStability.Source.Higham.Chapter23.Theorem02": "NumStability.Source.Higham.Chapter23.Theorem02.",
+    "NumStability.Source.Higham.Chapter23.Theorem03": "NumStability.Source.Higham.Chapter23.Theorem03.",
+    "NumStability.Source.Higham.Chapter23.ThreeMStrassen": "NumStability.Source.Higham.Chapter23.ThreeMStrassen.",
     "NumStability.Source.Higham.Chapter24": "NumStability.Source.Higham.Chapter24.",
     "NumStability.Source.Higham.Chapter25": "NumStability.Source.Higham.Chapter25.",
     "NumStability.Source.Higham.Chapter26": "NumStability.Source.Higham.Chapter26.",
@@ -52,15 +58,13 @@
   },
   "direct_import_ceilings": {
     "NumStability.Algorithms": {
-      "NumStability.": 459,
+      "NumStability.": 453,
       "NumStability.Analysis.": 44,
       "NumStability.Source.": 5
     }
   },
   "legacy": {
-    "declaration_bearing_umbrellas": [
-      "NumStability.Algorithms.FastMatMul"
-    ],
+    "declaration_bearing_umbrellas": [],
     "missing_module_docstrings": [
       "NumStability.Algorithms.Ch10Theorem107FailureVacuity",
       "NumStability.Algorithms.Ch14BlockTriInverse",
@@ -113,7 +117,6 @@
       "NumStability.Algorithms.Cholesky.Higham11SkewSourceCorrection",
       "NumStability.Algorithms.CondEstimation",
       "NumStability.Algorithms.DotProduct",
-      "NumStability.Algorithms.FastMatMul",
       "NumStability.Algorithms.GaussJordan",
       "NumStability.Algorithms.GaussJordanPivoting",
       "NumStability.Algorithms.HighamChapter12Problem12_2",
@@ -419,12 +422,6 @@
       "NumStability.Algorithms.Cholesky.Higham11SkewSourceCorrection",
       "NumStability.Algorithms.Cholesky.HighamMathiasSource",
       "NumStability.Algorithms.Cholesky.TwoByTwoSchurStepCh11Closure",
-      "NumStability.Algorithms.FastMatMul.Higham23",
-      "NumStability.Algorithms.FastMatMul.Higham23Bini",
-      "NumStability.Algorithms.FastMatMul.Higham23Problem23_8",
-      "NumStability.Algorithms.FastMatMul.Higham23Recursive",
-      "NumStability.Algorithms.FastMatMul.Higham23Remaining",
-      "NumStability.Algorithms.FastMatMul.Higham23ThreeMStrassen",
       "NumStability.Algorithms.Higham5FastPolynomialEvaluation",
       "NumStability.Algorithms.Higham5PatersonStockmeyer",
       "NumStability.Algorithms.Higham726Rump",
@@ -879,13 +876,6 @@
       "NumStability.Algorithms.ContinuedFraction",
       "NumStability.Algorithms.DotProduct",
       "NumStability.Algorithms.ExtendedPrecisionDotProduct",
-      "NumStability.Algorithms.FastMatMul",
-      "NumStability.Algorithms.FastMatMul.Higham23",
-      "NumStability.Algorithms.FastMatMul.Higham23Bini",
-      "NumStability.Algorithms.FastMatMul.Higham23Problem23_8",
-      "NumStability.Algorithms.FastMatMul.Higham23Recursive",
-      "NumStability.Algorithms.FastMatMul.Higham23Remaining",
-      "NumStability.Algorithms.FastMatMul.Higham23ThreeMStrassen",
       "NumStability.Algorithms.GaussJordan",
       "NumStability.Algorithms.GaussJordanPivoting",
       "NumStability.Algorithms.GridPoints",
