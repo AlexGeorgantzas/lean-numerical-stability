@@ -1,5 +1,8 @@
 import NumStability.Algorithms.AutomaticErrorAnalysis.Higham26
 import NumStability.Algorithms.AutomaticErrorAnalysis.Higham26SourceSearch
+import NumStability.Algorithms.Ch14SchulzIteration
+import NumStability.Algorithms.Ch14SchulzRectangular
+import NumStability.Algorithms.Ch14SchulzSpectralConvergence
 import NumStability.Algorithms.Cholesky.BunchTridiagonalCapstoneCh11Closure
 import NumStability.Algorithms.Cholesky.Higham10Theorem10_7Source
 import NumStability.Algorithms.FastMatMul.Higham23
@@ -75,3 +78,5 @@ compatibility window without help from the canonical Higham entry point.
 #check NumStability.higham26ADCrudeSweep_nondecreasing
 #check NumStability.higham27_smith_complex_division_symmetric
 #check NumStability.higham27_problem27_6_cubic_error_bound
+#check NumStability.higham14SchulzStep
+#check NumStability.Ch14Ext.ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq

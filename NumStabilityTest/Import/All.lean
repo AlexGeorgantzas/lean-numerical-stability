@@ -28,6 +28,8 @@ example :
 #check NumStability.StrassenRecurrence
 #check NumStability.higham23_problem23_8_power_exponent
 #check NumStability.higham26ADCrudeSweep_nondecreasing
+#check NumStability.higham14SchulzStep
+#check NumStability.Ch14Ext.ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq
 
 end
 

@@ -26,3 +26,5 @@ Ensure the historical Higham entry point forwards the complete canonical
 #check NumStability.eq26_8_linearized_forward_error
 #check NumStability.higham27_problem27_6_cubic_error_bound
 #check NumStability.higham15_1_eq_7_31_practical_bound_bridge
+#check NumStability.higham14SchulzStep
+#check NumStability.Ch14Ext.ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq

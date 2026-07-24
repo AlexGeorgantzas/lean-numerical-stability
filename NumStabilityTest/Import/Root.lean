@@ -36,6 +36,8 @@ example : (fp : FPModel) → (n : ℕ) → (Fin n → ℝ) → ℝ :=
 #check StrassenRecurrence
 #check higham23_problem23_8_power_exponent
 #check higham26ADCrudeSweep_nondecreasing
+#check higham14SchulzStep
+#check Ch14Ext.ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq
 
 end
 

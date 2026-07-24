@@ -26,3 +26,5 @@ canonical source entry point.
 #check NumStability.higham26ADCrudeSweep_nondecreasing
 #check NumStability.higham27_problem27_6_cubic_error_bound
 #check NumStability.higham12_6_lu_solve_SolverWBound
+#check NumStability.higham14SchulzStep
+#check NumStability.Ch14Ext.ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq

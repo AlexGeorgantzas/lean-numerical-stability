@@ -54,9 +54,6 @@ import NumStability.Algorithms.Ch14Problem142
 import NumStability.Algorithms.Ch14Problem142Families
 import NumStability.Algorithms.Ch14Problem142Method2B
 import NumStability.Algorithms.Ch14ProductErrorNotation
-import NumStability.Algorithms.Ch14SchulzIteration
-import NumStability.Algorithms.Ch14SchulzRectangular
-import NumStability.Algorithms.Ch14SchulzSpectralConvergence
 import NumStability.Algorithms.Ch15CondEstimators
 import NumStability.Algorithms.Ch15DixonClosure
 import NumStability.Algorithms.Ch15DixonProbability
@@ -442,6 +439,7 @@ import NumStability.Analysis.SylvesterSchurExistence
 import NumStability.Source.Higham.Chapter04
 import NumStability.Source.Higham.Chapter12
 import NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier
+import NumStability.Source.Higham.Chapter14.Section05
 import NumStability.Source.Higham.Chapter17
 import NumStability.Source.Higham.Chapter22
 import NumStability.Source.Higham.Chapter24

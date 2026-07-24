@@ -35,3 +35,5 @@ algebra declarations through the historical Algorithms aggregate.
 #check NumStability.higham23_problem23_8_power_exponent
 #check NumStability.higham26ADCrudeSweep_nondecreasing
 #check NumStability.eq26_8_linearized_forward_error
+#check NumStability.higham14SchulzStep
+#check NumStability.Ch14Ext.ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq

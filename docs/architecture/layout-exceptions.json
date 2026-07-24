@@ -41,6 +41,7 @@
     "NumStability.Source.Higham.Chapter12": "NumStability.Source.Higham.Chapter12.",
     "NumStability.Source.Higham.Chapter13": "NumStability.Source.Higham.Chapter13.",
     "NumStability.Source.Higham.Chapter14": "NumStability.Source.Higham.Chapter14.",
+    "NumStability.Source.Higham.Chapter14.Section05": "NumStability.Source.Higham.Chapter14.Section05.",
     "NumStability.Source.Higham.Chapter17": "NumStability.Source.Higham.Chapter17.",
     "NumStability.Source.Higham.Chapter20": "NumStability.Source.Higham.Chapter20.",
     "NumStability.Source.Higham.Chapter22": "NumStability.Source.Higham.Chapter22.",
@@ -64,9 +65,9 @@
   },
   "direct_import_ceilings": {
     "NumStability.Algorithms": {
-      "NumStability.": 447,
+      "NumStability.": 445,
       "NumStability.Analysis.": 44,
-      "NumStability.Source.": 9
+      "NumStability.Source.": 10
     }
   },
   "legacy": {
@@ -347,9 +348,6 @@
       "NumStability.Algorithms.Ch14Problem142Families",
       "NumStability.Algorithms.Ch14Problem142Method2B",
       "NumStability.Algorithms.Ch14ProductErrorNotation",
-      "NumStability.Algorithms.Ch14SchulzIteration",
-      "NumStability.Algorithms.Ch14SchulzRectangular",
-      "NumStability.Algorithms.Ch14SchulzSpectralConvergence",
       "NumStability.Algorithms.Ch15CondEstimators",
       "NumStability.Algorithms.Ch15DixonClosure",
       "NumStability.Algorithms.Ch15DixonProbability",
@@ -770,9 +768,6 @@
       "NumStability.Algorithms.Ch14Problem142Families",
       "NumStability.Algorithms.Ch14Problem142Method2B",
       "NumStability.Algorithms.Ch14ProductErrorNotation",
-      "NumStability.Algorithms.Ch14SchulzIteration",
-      "NumStability.Algorithms.Ch14SchulzRectangular",
-      "NumStability.Algorithms.Ch14SchulzSpectralConvergence",
       "NumStability.Algorithms.Ch15CondEstimators",
       "NumStability.Algorithms.Ch15DixonClosure",
       "NumStability.Algorithms.Ch15DixonProbability",

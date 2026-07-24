@@ -31,6 +31,9 @@ import NumStabilityTest.Import.Compatibility.Source.Chapter12.AlgorithmsHighamCh
 import NumStabilityTest.Import.Compatibility.Source.Chapter13.AlgorithmsBlockLUTable13_1Families
 import NumStabilityTest.Import.Compatibility.Source.Chapter13.AlgorithmsLUHigham13DemmelSharpMultiplier
 import NumStabilityTest.Import.Compatibility.Source.Chapter13.HighamTable13_1
+import NumStabilityTest.Import.Compatibility.Source.Chapter14.AlgorithmsCh14SchulzIteration
+import NumStabilityTest.Import.Compatibility.Source.Chapter14.AlgorithmsCh14SchulzRectangular
+import NumStabilityTest.Import.Compatibility.Source.Chapter14.AlgorithmsCh14SchulzSpectralConvergence
 import NumStabilityTest.Import.Compatibility.Source.Chapter14.AlgorithmsCh14SourceCorrections
 import NumStabilityTest.Import.Compatibility.Source.Chapter14.Discrepancies
 import NumStabilityTest.Import.Compatibility.Source.Chapter17.AlgorithmsStationaryIterationSeries
@@ -138,6 +141,10 @@ import NumStabilityTest.Import.Source.Chapter13.DemmelSharpMultiplier
 import NumStabilityTest.Import.Source.Chapter13.Equation25
 import NumStabilityTest.Import.Source.Chapter13.Table01
 import NumStabilityTest.Import.Source.Chapter14
+import NumStabilityTest.Import.Source.Chapter14.Section05
+import NumStabilityTest.Import.Source.Chapter14.Section05.RectangularIteration
+import NumStabilityTest.Import.Source.Chapter14.Section05.SpectralConvergence
+import NumStabilityTest.Import.Source.Chapter14.Section05.SquareIteration
 import NumStabilityTest.Import.Source.Chapter17
 import NumStabilityTest.Import.Source.Chapter17.Equation08
 import NumStabilityTest.Import.Source.Chapter17.Equation12

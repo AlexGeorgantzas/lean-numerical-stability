@@ -11,6 +11,9 @@ import NumStability.Source.Higham.Chapter12.IterativeRefinement
 import NumStability.Source.Higham.Chapter12.OmegaDiscontinuity
 import NumStability.Source.Higham.Chapter12.Problem02
 import NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier
+import NumStability.Source.Higham.Chapter14.Section05.RectangularIteration
+import NumStability.Source.Higham.Chapter14.Section05.SpectralConvergence
+import NumStability.Source.Higham.Chapter14.Section05.SquareIteration
 import NumStability.Source.Higham.Chapter17.Equation08
 import NumStability.Source.Higham.Chapter17.Equation12
 import NumStability.Source.Higham.Chapter17.Equation15
@@ -89,3 +92,5 @@ historical forwarding paths and the aggregate Higham entry point.
 #check NumStability.higham26RegularSimplex_other_edge_length
 #check NumStability.higham27_smith_complex_division_symmetric
 #check NumStability.higham27_problem27_6_cubic_error_bound
+#check NumStability.higham14SchulzStep
+#check NumStability.Ch14Ext.ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq

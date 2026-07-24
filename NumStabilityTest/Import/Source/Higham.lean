@@ -33,3 +33,5 @@ import NumStability.Source.Higham
 #check NumStability.eq26_8_linearized_forward_error
 #check NumStability.higham27_problem27_6_cubic_error_bound
 #check NumStability.higham3_5_noGuard_any_order_forward_error
+#check NumStability.higham14SchulzStep
+#check NumStability.Ch14Ext.ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq

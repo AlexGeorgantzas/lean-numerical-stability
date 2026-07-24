@@ -73,6 +73,12 @@ Each capture consists of:
 - `2026-07-24-organization-phase9-build.md` records the corresponding compiled
   declaration-preservation audit, isolated import tests, full builds, and
   architecture gates.
+- `2026-07-24-organization-phase10a.{json,md}` captures the canonical Higham
+  Chapter 14 Section 14.5 Schulz-iteration family, its declaration-free
+  aggregate, and the three historical forwarding paths.
+- `2026-07-24-organization-phase10a-build.md` records the corresponding source
+  and compiled-graph preservation audits, isolated import tests, full builds,
+  and architecture gates.
 
 Regenerate a named baseline from the repository root with:
 

@@ -49,6 +49,9 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.HighamChapter12Problem12_2` | `NumStability.Source.Higham.Chapter12.Problem02` |
 | `NumStability.Algorithms.LU.BlockLUTable13_1Families` | `NumStability.Source.Higham.Chapter13.Equation25` and `NumStability.Source.Higham.Chapter13.Table01` |
 | `NumStability.Algorithms.LU.Higham13DemmelSharpMultiplier` | `NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier` |
+| `NumStability.Algorithms.Ch14SchulzIteration` | `NumStability.Source.Higham.Chapter14.Section05.SquareIteration` |
+| `NumStability.Algorithms.Ch14SchulzRectangular` | `NumStability.Source.Higham.Chapter14.Section05.RectangularIteration` |
+| `NumStability.Algorithms.Ch14SchulzSpectralConvergence` | `NumStability.Source.Higham.Chapter14.Section05.SpectralConvergence` |
 | `NumStability.Algorithms.Ch14SourceCorrections` | `NumStability.Source.Higham.Chapter14.Discrepancies` |
 | `NumStability.Algorithms.Ch4KahanFiniteFamily` | `NumStability.Source.Higham.Chapter04.Equation08.FiniteFamily` |
 | `NumStability.Algorithms.LeastSquares.Higham20SourceAliases` | `NumStability.Source.Higham.Chapter20.Equation32`, `NumStability.Source.Higham.Chapter20.Lemma06`, and `NumStability.Source.Higham.Chapter20.Theorem01` |
@@ -95,13 +98,14 @@ the table remains an import-only forwarding module.
 | `NumStability.Analysis.NonrandomRounding.SourceInterval` | `NumStability.Source.Higham.Chapter01.Section17.SourceInterval` |
 | `NumStability.Analysis.NonrandomRounding.StoredGrid` | `NumStability.Source.Higham.Chapter01.Section17.StoredGrid` |
 
-The eleven Chapter 12, 13, 22, and 27 rows above are exact one-to-one
+The fourteen Chapter 12, 13, 14, 22, and 27 rows above are exact one-to-one
 forwarders. The canonical chapter aggregates are discovery entry points, not
 wrapper targets: `NumStability.Source.Higham.Chapter12`,
+`NumStability.Source.Higham.Chapter14.Section05`,
 `NumStability.Source.Higham.Chapter22`,
 `NumStability.Source.Higham.Chapter22.Section03`, and
 `NumStability.Source.Higham.Chapter27` contain only documentation and imports.
-The compatibility inventory now contains 86 wrappers with 184 direct canonical
+The compatibility inventory now contains 89 wrappers with 187 direct canonical
 targets.
 
 The historical nonrandom-rounding path remains the complete compatibility
