@@ -34,6 +34,7 @@
   `Algorithms/Summation/Insertion/ScheduleExecution.lean`,
   `Source/Higham/Chapter04/Section01/InsertionExamples.lean`,
   `Source/Higham/Chapter04/Section01/PairwiseSixTerm.lean`,
+  `Source/Higham/Chapter04/Section02/KaoWangCitationDiscrepancy.lean`,
   `Algorithms/OrderingExamples.lean`,
   `Algorithms/Summation/Compensated.lean`,
   `Algorithms/Summation/DoublyCompensated.lean`,
@@ -41,7 +42,8 @@
   `Algorithms/PriestFiniteFormat.lean`,
   `Algorithms/Summation/Accumulator.lean`,
   `Algorithms/Summation/PlusMinus.lean`,
-  `Algorithms/WilkinsonAttainability.lean`, `Algorithms/Problem44SixTerm.lean`,
+  `Algorithms/WilkinsonAttainability.lean`,
+  `Source/Higham/Chapter04/Problem04.lean`,
   `Algorithms/AitkenDenominator.lean`, `Algorithms/GridPoints.lean`,
   `Algorithms/LogExpProduct.lean`, `Analysis/Summation/ErrorBounds.lean`,
   `Analysis/FloatingPointArithmetic.lean` (two-sum / Problem 4.6 kernels).
@@ -93,7 +95,7 @@
 | Pairwise/cascade summation (§4.1), ⌈log₂ n⌉ stages | VERIFIED | `fl_pairwiseSum` (n = 2^r), `pairwiseCarryTree`/`fl_clog2PairwiseSum` (general n); depth facts `pairwiseCarryTree_depth`, `clog2_le_pred`. |
 | Insertion method (§4.1), incl. 1-2-4-8 → recursive example and sorted-inputs → pairwise example | VERIFIED | Reusable loop: `fl_insertionSumList`, `insertIncreasingAbs`, `insertionStep` under `Algorithms/Summation/Insertion/`; source examples: powers-of-two trace `1248 → 348 → 78 → 15` in `Source/Higham/Chapter04/Section01/InsertionExamples.lean`, with backward/forward/running bounds. |
 | Backward result ε_i ≤ γ_{n−1} (after (4.4)) | VERIFIED | `recursiveSum_backward_error`, `SumTree.backward_error_n_minus_one`. |
-| Design criterion "minimize Σ\|T̂_i\|" | SKIP-OK (editorial) | Embodied by `runningErrorBudget` machinery; NP-hardness citation [708] not in scope. |
+| Design criterion "minimize Σ\|T̂_i\|" | PARTIAL (citation scope clarified) | `Source.Higham.Chapter04.Section02.KaoWangCitationDiscrepancy`: `HighamChapter4KaoWang.higham43_runningBudget_exactArithmetic_eq_kaoWangCost` identifies the exact-arithmetic bridge, while `higham43_computedBudget_ne_kaoWangExactCost_witness` proves that the rounded (4.3) objective differs in a general `FPModel`. No NP-hardness theorem is asserted. |
 | Psum ordering (greedy min partial sums), O(n log n) comparisons | VERIFIED | `psumOrder`, `PsumGreedyOrderFrom.head_min`, `psumOrderComparisonCost` (OrderingExamples). |
 | Increasing ordering optimal a-priori bound for one-signed data | VERIFIED (first-order scope) | `increasingAbsSort_recursiveExactPrefixBudget_le`, `recursiveSum_problem43_increasingAbs_weightedBound_le_perm` (rearrangement/Antivary argument); budgets compared at exact intermediate sums, the printed first-order reading. |
 | Decreasing ordering attractive under heavy cancellation (extrapolated from (4.5)) | VERIFIED (example-level) | p91 theorems above; `heavyCancellation_postCancellation_bound_beats_competitor`. The general prose extrapolation is heuristic — example-level formalization is the printed content. |
@@ -116,7 +118,7 @@
 | 4.1 (condition number of summation) | VERIFIED | `summationConditionNumber` (= Σ\|x_i\|/\|Σx_i\|), `summationConditionNumber_eq`, `summationConditionNumber_eq_one_of_oneSigned` (value 1 iff one-signed data), perturbation lemma `summationComponentwisePerturbation_abs_error_le` (`Analysis/Summation/ErrorBounds.lean`). |
 | 4.2 (Wilkinson: (4.3)/(4.4) nearly attainable) | VERIFIED | `WilkinsonAttainability.lean`: exact Wilkinson input family (`wilkinsonProblem42Input`), IEEE-double machine-checked run `wilkinsonProblem42_ieeeDouble_finiteRecursiveSum_eq_pow`, attained error `wilkinsonProblem42_ieeeDouble_abs_error_eq_defect` with closed form, first-order bound within factor 3 + u (`wilkinsonProblem42_ieeeDouble_first_order_bound_le_three_abs_error_plus_u`). Axiom-clean. |
 | 4.3 (variable-γ expansion of recursive summation; best ordering) | VERIFIED | `recursiveSum_problem43_variableGamma` (displayed θ-expansion with \|θ_k\| ≤ γ_k = ku/(1−ku)), `recursiveSum_problem43_abs_error_bound` (displayed bound), ordering answer `recursiveSum_problem43_increasingAbs_weightedBound_le_perm` (increasing \|x_i\| minimizes, via rearrangement). |
-| 4.4 (six terms {1,2,3,4,M,−M}, fl(10+M) = M) | VERIFIED | `Problem44SixTerm.lean`: exhaustive answer `problem44_outputs_exactly_Icc` / `problem44PossibleOutputs_eq_Icc` — possible outputs are precisely {0,1,…,10}, both containment and attainability over all 6! orders, in the absorbing-large-M model matching the printed premise. |
+| 4.4 (six terms {1,2,3,4,M,−M}, fl(10+M) = M) | VERIFIED | `Source.Higham.Chapter04.Problem04`: exhaustive answer `problem44_outputs_exactly_Icc` / `problem44PossibleOutputs_eq_Icc` — possible outputs are precisely {0,1,…,10}, both containment and attainability over all 6! orders, in the absorbing-large-M model matching the printed premise. |
 | 4.5 (± method pros/cons) | VERIFIED (discussion problem) | `Algorithms/Summation/PlusMinus.lean`: `fl_plusMinusRecursiveSum`, pro: `plusMinusPositive_conditionNumber_eq_one` (each half perfectly conditioned), error composition `plusMinus_final_add_error_bound`, `fl_plusMinusRecursiveSum_relError_bound` (con: final cancellation governs). |
 | 4.6 (Shewchuk: \|err(a,b)\| ≤ min(\|a\|,\|b\|); err is a fp number) | VERIFIED (min half) / PARTIAL (representability half) | Min bound at printed strength: `nearestRoundingToFinite_add_abs_error_le_min_of_finiteSystem`, `finiteRoundToEvenOp_add_abs_error_le_min_of_finiteSystem` (any correctly rounded nearest addition). Representability: delivered by the `FastTwoSumFiniteCertificate` `finite_error` field, constructed unconditionally only under \|b\| < \|a\| + normal range (`of_base2_abs_gt`); the symmetric/WLOG packaging of "err(a,b) is always representable" is not a standalone theorem. |
 | 4.7 (Aitken Δ² denominator: which expression) | VERIFIED | `AitkenDenominator.lean`: all three forms (a)/(b)/(c) with backward errors and majorant bounds; answer `aitkenDenominator_recommended_route_b`. |

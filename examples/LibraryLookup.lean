@@ -23,7 +23,7 @@ import NumStability.Algorithms.QR.Higham19Labels
 import NumStability.Algorithms.QR.Higham19Thm6Pivoted
 import NumStability.Algorithms.QR.QRSolve
 import NumStability.Algorithms.StationaryIterationDrazin
-import NumStability.Algorithms.StationaryIterationSeries
+import NumStability.Source.Higham.Chapter17
 import NumStability.Algorithms.Sylvester.Higham16Minimizers
 import NumStability.Algorithms.Sylvester.Higham16Spectrum
 import NumStability.Algorithms.Sylvester.Higham16Psi
@@ -16357,7 +16357,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check complexMatrixLpNormOfReal_bidiagonal_le
 #check higham_eq_18_5_alt_lp_jordan
 
--- Higham Chapter 17 infinite-series surfaces (StationaryIterationSeries).
+-- Higham Chapter 17 infinite-series surfaces.
 #check summable_infNorm_matPow
 #check tsum_infNorm_matPow_le
 #check summable_infNorm_matPow_of_spectralRadius

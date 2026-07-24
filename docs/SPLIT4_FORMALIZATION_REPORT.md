@@ -86,7 +86,7 @@ Source-coverage summaries are under `docs/source_coverage/higham_chNN.md`.
 - `NumStability/Source/Higham/Chapter25/NonlinearSystems.lean`
 - `NumStability/Source/Higham/Chapter25/Eigenproblem.lean`
 - `NumStability/Source/Higham/Chapter25/Problem01.lean`
-- `NumStability/Algorithms/AutomaticErrorAnalysis/Higham26.lean`
+- `NumStability/Source/Higham/Chapter26.lean`
 - `NumStability/Algorithms/SoftwareIssues/Higham27.lean`
 - `NumStability/Algorithms/TestMatrices/Higham28.lean`
 - `NumStability/Algorithms/TestMatrices/Higham28Exact.lean`

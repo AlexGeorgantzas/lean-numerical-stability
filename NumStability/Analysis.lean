@@ -7,7 +7,6 @@ import NumStability.Analysis.BergerInequality
 import NumStability.Analysis.BrentBaseOptimality
 import NumStability.Analysis.CalculatorWords
 import NumStability.Analysis.CancellationOfRoundingErrors
-import NumStability.Analysis.Ch17SemiconvergentBlockFormSourceClosure
 import NumStability.Analysis.Chopping
 import NumStability.Analysis.ComplexArithmetic
 import NumStability.Analysis.ComplexSqrt
@@ -97,6 +96,7 @@ import NumStability.Analysis.Summation
 import NumStability.Analysis.SylvesterSchurExistence
 import NumStability.Analysis.TieRules
 import NumStability.Analysis.TrigCancellation
+import NumStability.Source.Higham.Chapter17.Equation22
 
 /-!
 # NumStability analysis

@@ -30,9 +30,12 @@ discovery and existing consumers may continue to import the family umbrellas.
 The extracted Chapter 4 correspondence is canonical at:
 
 - `Source.Higham.Chapter04.Problem03`;
+- `Source.Higham.Chapter04.Problem04`;
 - `Source.Higham.Chapter04.Section01.InsertionExamples`;
 - `Source.Higham.Chapter04.Section01.PairwiseSixTerm`;
-- import-only `Source.Higham.Chapter04.Section01` and `Chapter04` umbrellas.
+- `Source.Higham.Chapter04.Section02.KaoWangCitationDiscrepancy`;
+- import-only `Source.Higham.Chapter04.Section01`, `Section02`, and `Chapter04`
+  umbrellas.
 
 Every former root-level algorithm path remains an import-only compatibility
 module. Production consumers use semantic canonical paths, and isolated tests
@@ -66,7 +69,8 @@ The former insertion monolith is now layered by dependency:
 The two displayed Higham Section 4.1 examples are source-owned. This removes
 recursive, pairwise, and balanced-tree imports from the reusable insertion
 layers. `OrderingExamples` imports only `ActiveList`, while the Kao--Wang scope
-module imports only `RunningError`.
+leaf at `Source.Higham.Chapter04.Section02.KaoWangCitationDiscrepancy` imports
+only `RunningError`.
 
 The dependency audit also established that `Accumulator`,
 `DoublyCompensated`, `PlusMinus`, and `Analysis.Summation.ErrorBounds` have

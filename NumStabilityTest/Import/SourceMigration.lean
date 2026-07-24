@@ -1,10 +1,16 @@
+import NumStability.Algorithms.AutomaticErrorAnalysis.Higham26
+import NumStability.Algorithms.AutomaticErrorAnalysis.Higham26SourceSearch
 import NumStability.Algorithms.Cholesky.BunchTridiagonalCapstoneCh11Closure
 import NumStability.Algorithms.Cholesky.Higham10Theorem10_7Source
 import NumStability.Algorithms.HighamChapter12Ch9GenericSolverBridge
 import NumStability.Algorithms.HighamChapter12Ch9SolverBridge
 import NumStability.Algorithms.HighamChapter15Ch7PracticalBoundBridge
 import NumStability.Algorithms.HighamChapter3NoGuardDotBridge
+import NumStability.Algorithms.HighamChapter4KaoWangScope
 import NumStability.Algorithms.HighamChapter8Lemma88SourceDiscrepancy
+import NumStability.Algorithms.Problem44SixTerm
+import NumStability.Algorithms.StationaryIterationSeries
+import NumStability.Analysis.Ch17SemiconvergentBlockFormSourceClosure
 
 /-!
 # Historical source-correspondence path smoke test
@@ -19,3 +25,9 @@ compatibility window without help from the canonical Higham entry point.
 #check NumStability.higham12_6_lu_solve_SolverWBound
 #check NumStability.higham15_1_eq_7_31_practical_bound_bridge
 #check NumStability.higham3_5_noGuard_any_order_forward_error
+#check NumStability.problem44_outputs_exactly_Icc
+#check NumStability.HighamChapter4KaoWang.higham43_computedBudget_ne_kaoWangExactCost_witness
+#check NumStability.higham17_problem17_1
+#check NumStability.higham17_22_exists_blockForm_spectralRadius_lt_one_of_forall_orbit_tendsto
+#check NumStability.eq26_8_linearized_forward_error
+#check NumStability.higham26ADCrudeSweep_nondecreasing

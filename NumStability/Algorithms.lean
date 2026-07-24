@@ -3,8 +3,6 @@
 
 import NumStability.Algorithms.AitkenDenominator
 import NumStability.Algorithms.Arithmetic.DotProduct.NoGuard
-import NumStability.Algorithms.AutomaticErrorAnalysis.Higham26
-import NumStability.Algorithms.AutomaticErrorAnalysis.Higham26SourceSearch
 import NumStability.Algorithms.BlockDotProduct
 import NumStability.Algorithms.Ch10ActualSourceClosure
 import NumStability.Algorithms.Ch10Ch14Lemma66Op2Bridge
@@ -170,7 +168,6 @@ import NumStability.Algorithms.HighamChapter15BoydSourceLocal
 import NumStability.Algorithms.HighamChapter15BoydUniqueness
 import NumStability.Algorithms.HighamChapter15ConvergenceProse
 import NumStability.Algorithms.HighamChapter15RectTermination
-import NumStability.Algorithms.HighamChapter4KaoWangScope
 import NumStability.Algorithms.HighamChapter5ComplexAlgorithm51
 import NumStability.Algorithms.HighamChapter8
 import NumStability.Algorithms.HighamChapter8FanInClosure
@@ -276,7 +273,6 @@ import NumStability.Algorithms.PNormPowerMethodRect
 import NumStability.Algorithms.PriestAccuracy
 import NumStability.Algorithms.PriestDefectBounded
 import NumStability.Algorithms.PriestFiniteFormat
-import NumStability.Algorithms.Problem44SixTerm
 import NumStability.Algorithms.QR.GivensMatrixStep
 import NumStability.Algorithms.QR.GivensQR
 import NumStability.Algorithms.QR.GivensSpec
@@ -342,7 +338,6 @@ import NumStability.Algorithms.StationaryIterationDrazin
 import NumStability.Algorithms.StationaryIterationRounded
 import NumStability.Algorithms.StationaryIterationSemiconvergent
 import NumStability.Algorithms.StationaryIterationSemiconvergentExistence
-import NumStability.Algorithms.StationaryIterationSeries
 import NumStability.Algorithms.Summation
 import NumStability.Algorithms.Sylvester
 import NumStability.Algorithms.TestMatrices.Higham28
@@ -419,7 +414,6 @@ import NumStability.Algorithms.WilkinsonAttainability
 import NumStability.Analysis.BergerGeneral
 import NumStability.Analysis.BergerInequality
 import NumStability.Analysis.BergerResolvent
-import NumStability.Analysis.Ch17SemiconvergentBlockFormSourceClosure
 import NumStability.Analysis.ConditionEstimatorLowerBound
 import NumStability.Analysis.DunfordResidue
 import NumStability.Analysis.HenriciExtremal
@@ -462,8 +456,10 @@ import NumStability.Analysis.SemiconvergentRealSpectrumComplete
 import NumStability.Analysis.SemiconvergentSpectral
 import NumStability.Analysis.SylvesterSchurExistence
 import NumStability.Source.Higham.Chapter04
+import NumStability.Source.Higham.Chapter17
 import NumStability.Source.Higham.Chapter24
 import NumStability.Source.Higham.Chapter25
+import NumStability.Source.Higham.Chapter26
 
 /-!
 # Historical algorithms aggregate

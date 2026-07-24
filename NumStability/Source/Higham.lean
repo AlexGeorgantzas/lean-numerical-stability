@@ -5,9 +5,11 @@ import NumStability.Source.Higham.Chapter10
 import NumStability.Source.Higham.Chapter11
 import NumStability.Source.Higham.Chapter13
 import NumStability.Source.Higham.Chapter14
+import NumStability.Source.Higham.Chapter17
 import NumStability.Source.Higham.Chapter20
 import NumStability.Source.Higham.Chapter24
 import NumStability.Source.Higham.Chapter25
+import NumStability.Source.Higham.Chapter26
 import NumStability.Source.Higham.CrossChapter
 
 /-!

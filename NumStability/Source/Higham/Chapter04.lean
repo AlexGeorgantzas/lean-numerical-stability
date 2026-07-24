@@ -1,6 +1,8 @@
 import NumStability.Source.Higham.Chapter04.Problem03
+import NumStability.Source.Higham.Chapter04.Problem04
 import NumStability.Source.Higham.Chapter04.Problem10
 import NumStability.Source.Higham.Chapter04.Section01
+import NumStability.Source.Higham.Chapter04.Section02
 import NumStability.Source.Higham.Chapter04.Section03
 
 /-!

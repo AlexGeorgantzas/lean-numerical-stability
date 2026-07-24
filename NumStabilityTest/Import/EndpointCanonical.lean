@@ -3,6 +3,7 @@ import NumStability.FloatingPoint.OperationLaws
 import NumStability.Source.Higham.Chapter02.Problem04
 import NumStability.Source.Higham.Chapter02.Problem07
 import NumStability.Source.Higham.Chapter02.Problem22
+import NumStability.Source.Higham.Chapter04.Problem04
 import NumStability.Source.Higham.Chapter13.Equation25
 import NumStability.Source.Higham.Chapter13.Table01
 import NumStability.Source.Higham.Chapter14.Discrepancies
@@ -28,3 +29,4 @@ historical forwarding paths.
 #check NumStability.FloatingPointFormat.problem2_4_theorem2_3_nearest_finite
 #check NumStability.FloatingPointFormat.finiteRoundToEvenOp_add_comm
 #check NumStability.FloatingPointFormat.problem2_7_statement5_add_associativity_false
+#check NumStability.problem44_outputs_exactly_Icc

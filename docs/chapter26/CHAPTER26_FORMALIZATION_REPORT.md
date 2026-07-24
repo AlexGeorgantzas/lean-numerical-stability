@@ -3,44 +3,56 @@
 ## Source and scope
 
 - Edition: 2nd ed., SIAM, 2002.
-- Chapter: 26, "Automatic Error Analysis", printed pp. 471-487.
+- Chapter: 26, "Automatic Error Analysis", printed pp. 471–487.
 - Source file: `References/1.9780898718027.ch26.pdf`.
 - Mode / split: core / Split 4.
 - Planning documents: full blueprint, Split 4 contract, chapter index.
+- Canonical entry point: `NumStability.Source.Higham.Chapter26`.
+- Historical compatibility paths:
+  `NumStability.Algorithms.AutomaticErrorAnalysis.Higham26` and
+  `NumStability.Algorithms.AutomaticErrorAnalysis.Higham26SourceSearch`.
 - Selected-scope gate: **PASS**.
+
+The implementation is organized into 23 declaration-bearing canonical leaves
+and six documented declaration-free aggregates. The leaves own exactly 141
+public declarations and five private proof helpers. The private crude-fold,
+ordered-iteration, two regular-simplex sums, and fixed-multiplication-bound
+helpers remain atomic with the declarations that use them.
 
 ## Completed selected targets
 
 | Source | Lean declarations | Theorem surface |
 |---|---|---|
-| (26.1)-(26.2) | `IsGlobalMax`, `adConverged` | exact optimization problem and AD stopping predicate; the optional `DirectSearchSpec` global postcondition is not used to specify an algorithm |
-| Sec. 26.2 MDS method / (26.3) | `MDSSimplex`, `MDSSimplex.reorderBest`, `reflect`, `expand`, `contract`, `iteration`, `IterationSpec`, `SearchTrace`, `Converged` | actual general simplex transition and finite execution semantics, including contraction retries and the printed stopping test; no optimizer-correctness or termination assumption |
+| (26.1)–(26.2) | `IsGlobalMax`, `DirectSearchSpec`, `adConverged` | exact optimization vocabulary and AD stopping predicate; the optional global postcondition is not used to specify an algorithm |
+| Sec. 26.2 alternating directions | `ADExactLineSearch`, `ADSearchTrace`, `adRun`, `higham26ADCrudeSearch` and monotonicity results | exact coordinate execution and the finite crude producer printed on p. 475 |
+| Sec. 26.2 MDS method / (26.3) | `MDSSimplex`, `reorderBest`, `reflect`, `expand`, `contract`, `iteration`, `IterationSpec`, `SearchTrace`, `Converged` | general simplex transitions and finite execution semantics, including contraction retries and the printed stopping test; no optimizer-correctness or termination assumption |
+| Sec. 26.2 initial simplexes | `higham26RightAngledSimplex`, `higham26RegularSimplex` and their geometry theorems | both page 476 constructors and exact edge geometry |
 | (26.4) | `inverseResidualStabilityMeasure` | exact maximum-row-sum residual definition |
-| (26.5)-(26.6) | `depressedCubic_identity`, `cubicWCubePlus_quadratic`, `cubicWCubeMinus_quadratic`, `stableCubicWCube_quadratic` | end-to-end exact cubic algebra |
+| (26.5)–(26.6) | depressed/monic cubic identities, real and complex branches, Cardano endpoints, stable branches, and the zero-branch discrepancy | end-to-end exact cubic algebra with the necessary nonzero and real-radicand qualifications exposed |
 | (26.7) | `monicCubic`, `cubicRootResidualMeasure` | exact residual objective only; no empirical accuracy claim |
-| Section 26.4 | `RealInterval` operations, `*_contains` theorems, `dependency_sub_example`, `dependency_div_example` | exact endpoint definitions, set-soundness for `+,-,*,/`, and both printed dependency-widening examples |
+| (26.8) | `linearizedForwardError26_8`, `linearizedForwardError26_8_eq`, `eq26_8_linearized_forward_error`, `eq26_8_exact_of_affine_increment` | explicit finite-dimensional Fréchet-derivative/little-o interpretation and affine exactness; this adds semantics omitted by the terse printed display and is not claimed to be its unique reading |
+| Section 26.4 | `RealInterval` operations, containment theorems, and dependency examples | exact endpoint definitions, set-soundness for `+,-,*,/`, and both printed dependency-widening examples |
 | Section 26.4 computed endpoints | `outwardRounded`, `outwardAdd/Sub/Mul/Div` and containment theorems | concrete finite-range IEEE directed-rounding enclosure |
 
 ## Computed directed-rounding closure
 
-Page 481 also states an implementation-facing theorem: compute left endpoints
-with rounding toward `-infinity` and right endpoints toward `+infinity`, so the
-result contains the corresponding interval operation. `outwardRounded` now uses
-the repository's concrete `FloatingPointFormat.finiteRoundTowardNegative` and
+Page 481 states that left endpoints are computed with rounding toward
+`-infinity` and right endpoints toward `+infinity`, so the result contains
+the corresponding interval operation. `outwardRounded` uses the repository's
+`FloatingPointFormat.finiteRoundTowardNegative` and
 `finiteRoundTowardPositive` selectors. The four computed operation producers
 and their containment theorems close this claim for finite real endpoints. The
 explicit endpoint-range evidence excludes only IEEE overflow results, whose
-infinities live in the repository's separate `IeeeValue` layer rather than in a
-finite `RealInterval`.
+infinities live in the separate `IeeeValue` layer.
 
 ## Reuse and assumptions
 
-The module reuses `RVec`, `infNorm`, `matMul`, and `idMatrix` from
-`FP.Analysis.MatrixAlgebra`, plus Mathlib's real square root, finite sums,
+The canonical leaves reuse `RVec`, `infNorm`, `matMul`, and `idMatrix`
+from `Analysis.MatrixAlgebra`, plus Mathlib's real square root, finite sums,
 absolute values, and ordered-field lemmas. There are no suspicious assumptions:
-the cubic root theorems expose the necessary nonnegative-radicand hypothesis,
-and exact-real interval division exposes `0` not belonging to the denominator
-interval. The new computed enclosure theorems reuse the repository's proved
+the cubic root theorems expose the necessary nonnegative-radicand or nonzero
+branch hypotheses, and exact-real interval division exposes `0` not belonging
+to the denominator interval. The computed enclosure theorems reuse proved
 directed-rounding inequalities rather than adding rounding assumptions.
 
 The MDS transition uses `Finite.exists_max` only to choose the best of the
@@ -51,26 +63,33 @@ repeat-until-(26.3) control flow. No theorem assumes that MDS returns a local or
 global maximizer, that a limit point is stationary, or that an iteration or run
 terminates.
 
-## Exclusions
+## Exclusions and interpretive boundary
 
 Historical MATLAB matrices, decimal outputs, figures, iteration counts, and
-machine observations are `SKIP-EMPIRICAL`. The partly specified AD line-search
-implementation, the unprinted Nelder--Mead transitions, and estimator
-comparisons are benchmark candidates; the printed MDS transition is core and
-is encoded. The cited pattern-search convergence sentence and (26.8) are
-deferred because the printed statements omit the technical conditions or a
-semantics for "to first order". Problems 26.1-26.4, including Appendix solution
-26.2, were not selected.
+machine observations are `SKIP-EMPIRICAL`. The printed finite crude AD search,
+MDS transition, and both printed initial-simplex constructions are encoded.
+The unprinted Nelder–Mead transitions and estimator comparisons remain
+benchmark candidates. The cited pattern-search convergence sentence remains
+deferred because its technical hypotheses are not printed.
+
+Equation (26.8) is no longer listed as unencoded: the repository records the
+explicit Fréchet-derivative interpretation described above while preserving
+the caveat that Higham does not state those formal semantics. Problems
+26.1–26.4, including Appendix solution 26.2, were not selected.
 
 ## Verification
 
-- Target build: `lake build NumStability.Algorithms.AutomaticErrorAnalysis.Higham26` - PASS.
-- Public import audit: `examples/LibraryLookup.lean` checks `MDSSimplex`, its
-  best-vertex ordering theorem, `iteration`, `IterationSpec`, and `SearchTrace`
-  and compiles - PASS.
-- Hygiene scan for `sorry`, `admit`, `axiom`, `unsafe`, and `opaque` - PASS (no matches).
-- `#print axioms MDSSimplex.reorderBest_orderedFor` and the representative
-  chapter checks report only Mathlib's standard
+- Canonical target build:
+  `lake build NumStability.Source.Higham.Chapter26` — PASS.
+- Both historical wrapper builds — PASS.
+- Isolated imports: 23 declaration-bearing leaves, six declaration-free
+  aggregates, and two old-only compatibility smokes — PASS.
+- Public declaration ownership: 141 public declarations occur exactly once in
+  canonical declaration-bearing leaves; five private helper clusters remain
+  with their dependents.
+- Hygiene scan for `sorry`, `admit`, `axiom`, `unsafe`, and `opaque` —
+  PASS (no matches).
+- Representative axiom checks report only Mathlib's standard
   `propext`, `Classical.choice`, and `Quot.sound` axioms.
 
 ## Documentation

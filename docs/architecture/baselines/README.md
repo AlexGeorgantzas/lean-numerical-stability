@@ -49,6 +49,12 @@ Each capture consists of:
 - `2026-07-24-organization-phase5-build.md` records the exact body/ownership
   audits, isolated wrapper builds, full tests, and architecture gates for that
   graph.
+- `2026-07-24-organization-phase6.{json,md}` captures the canonical Higham
+  Chapter 04, 17, and 26 source endpoints, their semantic family aggregates,
+  and the six direct compatibility wrappers left at historical import paths.
+- `2026-07-24-organization-phase6-build.md` records the exact declaration and
+  body-preservation audits, all 47 isolated import tests, full builds, and
+  architecture gates for that graph.
 
 Regenerate a named baseline from the repository root with:
 

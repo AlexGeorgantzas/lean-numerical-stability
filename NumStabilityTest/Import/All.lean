@@ -18,6 +18,9 @@ example :
 #check NumStability.higham14_hadamardConditionNumberRaw_negative_one_counterexample
 #check NumStability.fl_noGuardDotProduct
 #check NumStability.higham20_eq20_32_Bplus_residual_eq_crossProjection
+#check NumStability.problem44_outputs_exactly_Icc
+#check NumStability.higham17_problem17_1
+#check NumStability.higham26ADCrudeSweep_nondecreasing
 
 end
 

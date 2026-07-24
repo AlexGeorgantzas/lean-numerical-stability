@@ -178,16 +178,16 @@ architecture scanner:
 
 | | |
 |---|---|
-| Lean modules | **857** (856 below `NumStability/` plus the root entry point) |
-| Lines of Lean | **1,466,496** physical lines |
-| Direct imports | **3,680** |
-| Internal direct-import edges | **2,348** |
+| Lean modules | **898** (897 below `NumStability/` plus the root entry point) |
+| Lines of Lean | **1,467,171** physical lines |
+| Direct imports | **3,801** |
+| Internal direct-import edges | **2,443** |
 | Import cycles | **0** |
 | `sorry` / `admit` / source-level `axiom` or `constant` commands | **0** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
 the standard `[propext, Classical.choice, Quot.sound]` axioms. The versioned
-[`2026-07-24 organization Phase 5 baseline`](docs/architecture/baselines/2026-07-24-organization-phase5.md)
+[`2026-07-24 organization Phase 6 baseline`](docs/architecture/baselines/2026-07-24-organization-phase6.md)
 records the full source, import, signature-dependency, and proof/body-dependency
 metrics and the exact counting definitions.
 
@@ -265,8 +265,8 @@ the old-to-new path map and removal policy. The
 dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
-corpus is already Mathlib-style. The current ratchet records 650 unclassified
-modules, no reviewed mixed modules, 227 missing module docs, and 442 historical
+corpus is already Mathlib-style. The current ratchet records 644 unclassified
+modules, no reviewed mixed modules, 225 missing module docs, and 437 historical
 naming exceptions. CI prevents those queues from growing while each
 dependency-contained family is migrated.
 
@@ -328,7 +328,8 @@ NumStability/
     Higham.lean                -- Higham source umbrella
     Higham/
       Chapter02/, Chapter04/, Chapter08/, Chapter10/, Chapter11/
-      Chapter13/, Chapter14/, Chapter20/, Chapter24/, Chapter25/
+      Chapter13/, Chapter14/, Chapter17/, Chapter20/, Chapter24/
+      Chapter25/, Chapter26/
                                -- canonical numbered source correspondence
       CrossChapter/            -- explicitly cross-chapter source bridges
   Higham.lean                  -- historical import-only compatibility entry point
@@ -357,10 +358,10 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 ## Roadmap
 
 The selected formalization core scope is closed; the repository-organization
-migration is not. The next batches classify the remaining 650 unclassified
-modules while keeping the mixed-module count at zero, replace the 442
+migration is not. The next batches classify the remaining 644 unclassified
+modules while keeping the mixed-module count at zero, replace the 437
 historical source/proof-stage names with semantic canonical paths plus
-compatibility shims, document the 227
+compatibility shims, document the 225
 remaining modules, and review the giant-file outliers. The sequence and safety
 gates are tracked in
 [`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md).
