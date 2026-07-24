@@ -79,6 +79,13 @@ Each capture consists of:
 - `2026-07-24-organization-phase10a-build.md` records the corresponding source
   and compiled-graph preservation audits, isolated import tests, full builds,
   and architecture gates.
+- `2026-07-24-organization-phase10b.{json,md}` captures the canonical Higham
+  Chapter 2 Problem 2.2, Chapter 14 Problem 14.13, Chapter 21 row-scaling
+  invariant, reusable Gaussian absolute-moment API, and four historical
+  forwarding paths.
+- `2026-07-24-organization-phase10b-build.md` records the four exact compiled-
+  ownership audits, eleven isolated import tests, clean baseline capture, full
+  builds, and architecture gates for that graph.
 
 Regenerate a named baseline from the repository root with:
 
