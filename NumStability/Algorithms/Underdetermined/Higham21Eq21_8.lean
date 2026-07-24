@@ -2,7 +2,7 @@
 -- The Euclidean componentwise perturbation bound in equation (21.8).
 
 import NumStability.Algorithms.Underdetermined.Higham21PerturbationRadius
-import NumStability.Algorithms.Underdetermined.Higham21Condition
+import NumStability.Source.Higham.Chapter21.RowScalingInvariance
 
 namespace NumStability
 

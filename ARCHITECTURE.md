@@ -64,6 +64,9 @@ split from the reusable library.
 - `NumStability.Source` is the canonical source-correspondence entry point.
 - `NumStability.Analysis.Summation` is an import-only family aggregate split
   into reusable `Signs` and `ErrorBounds` leaves.
+- `NumStability.Analysis.Probability` is the reusable probability-analysis
+  entry point. Its declaration-free `Probability.Gaussian` aggregate exposes
+  the source-neutral `Probability.Gaussian.AbsoluteMoment` leaf.
 - `NumStability.Algorithms.Sylvester` is a complete family-discovery umbrella,
   not a claim that every Chapter 16 declaration is reusable mathematics.
 - `NumStability.Algorithms.FastMatMul.Recurrences` is the reusable fast-
@@ -75,6 +78,12 @@ split from the reusable library.
   `NumStability.Source.Higham.Chapter01.Section17`, with five semantic source
   leaves and declaration-free chapter and section aggregates. Historical
   `Analysis.NonrandomRounding*` paths are compatibility wrappers only.
+  Chapter 2's Problem 2.2 surface lives in the canonical `Chapter02.Problem02`
+  leaf. Chapter 14 owns `Problem13` and the declaration-free `Section05`
+  aggregate for its Schulz-iteration leaves. The currently canonicalized
+  Chapter 21 subset is the declaration-free `Chapter21` aggregate over
+  `RowScalingInvariance`; the comprehensive historical Chapter 21 discovery
+  surface remains `Algorithms.Underdetermined.Higham21` during migration.
   Chapter 12 uses the declaration-free
   `NumStability.Source.Higham.Chapter12` aggregate over the source leaves
   `IterativeRefinement`, `OmegaDiscontinuity`, and `Problem02`. Chapter 13's
@@ -85,8 +94,8 @@ split from the reusable library.
   aggregate; that section owns the `RealRefinement` and
   `ComplexConfluentRefinement` source leaves. Chapter 27 uses a declaration-
   free `Chapter27` aggregate over `SoftwareEnvironment` and `Problem06`.
-  The eleven corresponding historical `Algorithms*` paths are compatibility
-  wrappers only.
+  Corresponding historical paths are compatibility wrappers listed in the
+  executable compatibility map.
   Chapter 23 is organized under
   `NumStability.Source.Higham.Chapter23`, with semantic base leaves and
   declaration-free Theorem 23.2, Theorem 23.3, Bini--Lotti, and combined

@@ -3,6 +3,7 @@ import NumStability.Source.Higham.Chapter01.Section17.GridVariation
 import NumStability.Source.Higham.Chapter01.Section17.HornerEvaluation
 import NumStability.Source.Higham.Chapter01.Section17.SourceInterval
 import NumStability.Source.Higham.Chapter01.Section17.StoredGrid
+import NumStability.Source.Higham.Chapter02.Problem02
 import NumStability.Source.Higham.Chapter04.Section02.KaoWangCitationDiscrepancy
 import NumStability.Source.Higham.Chapter08.Lemma08Discrepancy
 import NumStability.Source.Higham.Chapter10.Theorem07
@@ -11,6 +12,7 @@ import NumStability.Source.Higham.Chapter12.IterativeRefinement
 import NumStability.Source.Higham.Chapter12.OmegaDiscontinuity
 import NumStability.Source.Higham.Chapter12.Problem02
 import NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier
+import NumStability.Source.Higham.Chapter14.Problem13
 import NumStability.Source.Higham.Chapter14.Section05.RectangularIteration
 import NumStability.Source.Higham.Chapter14.Section05.SpectralConvergence
 import NumStability.Source.Higham.Chapter14.Section05.SquareIteration
@@ -22,6 +24,7 @@ import NumStability.Source.Higham.Chapter17.Equation17
 import NumStability.Source.Higham.Chapter17.Equation20
 import NumStability.Source.Higham.Chapter17.Equation22
 import NumStability.Source.Higham.Chapter17.Problem01
+import NumStability.Source.Higham.Chapter21.RowScalingInvariance
 import NumStability.Source.Higham.Chapter22.MonomialResidual
 import NumStability.Source.Higham.Chapter22.Problem07
 import NumStability.Source.Higham.Chapter22.Section03.ComplexConfluentRefinement
@@ -94,3 +97,6 @@ historical forwarding paths and the aggregate Higham entry point.
 #check NumStability.higham27_problem27_6_cubic_error_bound
 #check NumStability.higham14SchulzStep
 #check NumStability.Ch14Ext.ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq
+#check NumStability.FloatingPointFormat.problem2_2_lemma2_1_spacing_bounds
+#check NumStability.ch14ext_problem14_13_gej_bound_fin_one
+#check NumStability.higham21Cond2With_row_scaling

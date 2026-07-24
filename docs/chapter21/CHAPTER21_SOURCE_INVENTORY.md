@@ -33,7 +33,7 @@ strength. The selected-scope result is maintained in
 | 9 | `‖I-A⁺A‖₂ = min{1,n-m}` | p. 409 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `higham21_projector_complement_opNorm2_eq_min_one_sub_of_gram_det_ne_zero` in `Higham21ProjectorNorm.lean` |
 | 10 | Equation (21.8), componentwise perturbation specialization | p. 409 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Higham21Eq21_8.lean`, explicit fixed-radius quadratic remainder |
 | 11 | Equation (21.9), normwise specialization | p. 409 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Higham21Eq21_9.lean`, explicit fixed-radius quadratic remainder |
-| 12 | Row-scaling invariance of `cond₂` | p. 410 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `higham21Cond2With_row_scaling` in `Higham21Condition.lean` |
+| 12 | Row-scaling invariance of `cond₂` | p. 410 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `higham21Cond2With_row_scaling` in `Source/Higham/Chapter21/RowScalingInvariance.lean` |
 | 13 | Lemma 21.2, one-perturbation symmetrization | p. 410 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS | `higham21_lemma21_2_source_bundle` and component lemmas in `UnderdeterminedSolve.lean` |
 | 14 | Theorem 21.3, Sun–Sun normwise backward-error formula | pp. 410–411 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS WITH DOCUMENTED SOURCE BOUNDARY CORRECTION | `higham21_theorem21_3_normwise_backward_error_formula`; exact/closure attainment in `Higham21Theorem21_3Attainment.lean` |
 | 15 | Theorem 21.3 square specialization | p. 411 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `higham21_theorem21_3_square_nonzero_etaF_eq_phi` |

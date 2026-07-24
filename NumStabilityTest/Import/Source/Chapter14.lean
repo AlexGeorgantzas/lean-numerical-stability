@@ -8,6 +8,7 @@ Section 14.5 Schulz family.
 -/
 
 #check NumStability.higham14_hadamardConditionNumberRaw_negative_one_counterexample
+#check NumStability.ch14ext_problem14_13_gej_bound_fin_one
 #check NumStability.higham14SchulzStep
 #check NumStability.Ch14Ext.ch14ext_rectSchulzStep
 #check NumStability.Ch14Ext.ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq

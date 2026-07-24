@@ -33,7 +33,7 @@ This ledger records every nontrivial proof source used during the 2026-07-15 fro
 | Method 2B instability under (13.4)/(13.5) | Chapter 14 and Appendix A, Problem 14.2 | `Ch14Problem142Method2B.lean`, `Ch14Problem142Families.lean` |
 | All-index singular-value perturbation needed by Problem 14.15 | Weyl/Mirsky route used by the Appendix argument | `Chapter14Problem1415Weyl.lean`; no spectral inequality remains assumed at the final endpoint |
 | Hadamard inequality equality case | Problem 14.11 / standard determinant theory | `MatrixInversion.lean`: inequality and orthogonal-row equivalence |
-| Positive-dimension boundary in Problem 14.13 | Appendix AM-GM proof starts at dimension two | `Ch14Problem1413Boundary.lean` separately proves `n=1` and combines it with the general result |
+| Positive-dimension boundary in Problem 14.13 | Appendix AM-GM proof starts at dimension two | `Source/Higham/Chapter14/Problem13.lean` separately proves `n=1` and combines it with the general result |
 
 ## Source Errors
 

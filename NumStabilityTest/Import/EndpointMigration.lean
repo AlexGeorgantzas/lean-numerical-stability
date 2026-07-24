@@ -1,7 +1,11 @@
+import NumStability.Algorithms.Ch14Problem1413Boundary
 import NumStability.Algorithms.Ch14SourceCorrections
 import NumStability.Algorithms.LU.BlockLUTable13_1Families
 import NumStability.Algorithms.LeastSquares.Higham20SourceAliases
+import NumStability.Algorithms.TestMatrices.Higham28GaussianAbsoluteMoment
 import NumStability.Algorithms.TriangularSolveCombined
+import NumStability.Algorithms.Underdetermined.Higham21Condition
+import NumStability.Analysis.Problem2_2
 import NumStability.Analysis.Problem2_22
 import NumStability.Analysis.Problem2_4
 import NumStability.Analysis.Problem2_7
@@ -21,3 +25,7 @@ without help from co-imported canonical modules.
 #check NumStability.FloatingPointFormat.problem2_4_theorem2_3_nearest_finite
 #check NumStability.FloatingPointFormat.finiteRoundToEvenOp_add_comm
 #check NumStability.FloatingPointFormat.problem2_7_statement5_add_associativity_false
+#check NumStability.FloatingPointFormat.problem2_2_lemma2_1_spacing_bounds
+#check NumStability.ch14ext_problem14_13_gej_bound_fin_one
+#check NumStability.higham21Cond2With_row_scaling
+#check NumStability.integral_abs_standardGaussian_difference

@@ -6,7 +6,7 @@ See LICENSES/Apache-2.0.txt.
 Authors: QED
 -/
 import NumStability.Algorithms.TestMatrices.Higham28Probability
-import NumStability.Algorithms.TestMatrices.Higham28GaussianAbsoluteMoment
+import NumStability.Analysis.Probability.Gaussian.AbsoluteMoment
 import Mathlib.MeasureTheory.Measure.Prod
 
 /-! # Higham Chapter 28: the Ginibre absolute characteristic moment

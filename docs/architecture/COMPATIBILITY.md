@@ -38,6 +38,7 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.InverseBounds` | `NumStability.Algorithms.LinearSystems.Triangular.InverseBounds` |
 | `NumStability.Algorithms.TriangularForwardComparison` | `NumStability.Algorithms.LinearSystems.Triangular.ComparisonBounds` |
 | `NumStability.Algorithms.TriangularSolveCombined` | `NumStability.Algorithms.LinearSystems.Triangular.Combined` |
+| `NumStability.Analysis.Problem2_2` | `NumStability.Source.Higham.Chapter02.Problem02` |
 | `NumStability.Analysis.Problem2_4` | `NumStability.Source.Higham.Chapter02.Problem04` |
 | `NumStability.Analysis.Problem2_7` | `NumStability.FloatingPoint.OperationLaws` and `NumStability.Source.Higham.Chapter02.Problem07` |
 | `NumStability.Analysis.Problem2_22` | `NumStability.Source.Higham.Chapter02.Problem22` |
@@ -49,12 +50,14 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.HighamChapter12Problem12_2` | `NumStability.Source.Higham.Chapter12.Problem02` |
 | `NumStability.Algorithms.LU.BlockLUTable13_1Families` | `NumStability.Source.Higham.Chapter13.Equation25` and `NumStability.Source.Higham.Chapter13.Table01` |
 | `NumStability.Algorithms.LU.Higham13DemmelSharpMultiplier` | `NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier` |
+| `NumStability.Algorithms.Ch14Problem1413Boundary` | `NumStability.Source.Higham.Chapter14.Problem13` |
 | `NumStability.Algorithms.Ch14SchulzIteration` | `NumStability.Source.Higham.Chapter14.Section05.SquareIteration` |
 | `NumStability.Algorithms.Ch14SchulzRectangular` | `NumStability.Source.Higham.Chapter14.Section05.RectangularIteration` |
 | `NumStability.Algorithms.Ch14SchulzSpectralConvergence` | `NumStability.Source.Higham.Chapter14.Section05.SpectralConvergence` |
 | `NumStability.Algorithms.Ch14SourceCorrections` | `NumStability.Source.Higham.Chapter14.Discrepancies` |
 | `NumStability.Algorithms.Ch4KahanFiniteFamily` | `NumStability.Source.Higham.Chapter04.Equation08.FiniteFamily` |
 | `NumStability.Algorithms.LeastSquares.Higham20SourceAliases` | `NumStability.Source.Higham.Chapter20.Equation32`, `NumStability.Source.Higham.Chapter20.Lemma06`, and `NumStability.Source.Higham.Chapter20.Theorem01` |
+| `NumStability.Algorithms.Underdetermined.Higham21Condition` | `NumStability.Source.Higham.Chapter21.RowScalingInvariance` |
 | `NumStability.Algorithms.Vandermonde.Higham22` | `NumStability.Source.Higham.Chapter22.VandermondeSystems` |
 | `NumStability.Algorithms.Vandermonde.Higham22MonomialClosure` | `NumStability.Source.Higham.Chapter22.MonomialResidual` |
 | `NumStability.Algorithms.Vandermonde.Higham22Problem22_7` | `NumStability.Source.Higham.Chapter22.Problem07` |
@@ -81,6 +84,7 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.Nonlinear.Higham25Problem25_1` | `NumStability.Source.Higham.Chapter25.Problem01` |
 | `NumStability.Algorithms.SoftwareIssues.Higham27` | `NumStability.Source.Higham.Chapter27.SoftwareEnvironment` |
 | `NumStability.Algorithms.SoftwareIssues.Higham27Pythag` | `NumStability.Source.Higham.Chapter27.Problem06` |
+| `NumStability.Algorithms.TestMatrices.Higham28GaussianAbsoluteMoment` | `NumStability.Analysis.Probability.Gaussian.AbsoluteMoment` |
 | `NumStability.Algorithms.HighamChapter3NoGuardDotBridge` | `NumStability.Algorithms.Arithmetic.DotProduct.NoGuard` and `NumStability.Source.Higham.CrossChapter.NoGuardDotProduct` |
 | `NumStability.Algorithms.HighamChapter15Ch7PracticalBoundBridge` | `NumStability.Source.Higham.CrossChapter.PracticalConditionBound` |
 | `NumStability.Algorithms.HighamChapter12Ch9GenericSolverBridge` | `NumStability.Source.Higham.CrossChapter.LUSolverWeights.Factorization` |
@@ -98,14 +102,16 @@ the table remains an import-only forwarding module.
 | `NumStability.Analysis.NonrandomRounding.SourceInterval` | `NumStability.Source.Higham.Chapter01.Section17.SourceInterval` |
 | `NumStability.Analysis.NonrandomRounding.StoredGrid` | `NumStability.Source.Higham.Chapter01.Section17.StoredGrid` |
 
-The fourteen Chapter 12, 13, 14, 22, and 27 rows above are exact one-to-one
-forwarders. The canonical chapter aggregates are discovery entry points, not
-wrapper targets: `NumStability.Source.Higham.Chapter12`,
+The single-target chapter rows above are exact one-to-one forwarders. The
+canonical chapter aggregates are discovery entry points, not wrapper targets:
+`NumStability.Source.Higham.Chapter12`,
+`NumStability.Source.Higham.Chapter14`,
 `NumStability.Source.Higham.Chapter14.Section05`,
+`NumStability.Source.Higham.Chapter21`,
 `NumStability.Source.Higham.Chapter22`,
 `NumStability.Source.Higham.Chapter22.Section03`, and
 `NumStability.Source.Higham.Chapter27` contain only documentation and imports.
-The compatibility inventory now contains 89 wrappers with 187 direct canonical
+The compatibility inventory now contains 93 wrappers with 191 direct canonical
 targets.
 
 The historical nonrandom-rounding path remains the complete compatibility

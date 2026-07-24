@@ -25,9 +25,9 @@ The complete source audit contains 79 rows: 69 selected and 10 intentionally exc
 | Algorithm 14.4 and (14.25)-(14.30) | `GaussJordanPivoting.lean`, `Ch14GaussJordanSourceClosure.lean`, `Ch14GJESourceAccumulationBridge.lean` | Successful-run correctness, source-active masked recurrences, literal accumulated error sums, and the source (14.29) bridge |
 | Theorem 14.5 and (14.31)-(14.33) | `Ch14GaussJordanQConstruction.lean`, `Ch14GJEOperationalBridge.lean`, `Ch14GJEFinalDivisionClosure.lean` | Structural finalization and the literal componentwise final divisions construct the actual Algorithm 14.4 output and prove the exact printed envelopes and first-order constants; the PDF's unparameterized `O(u^2)` prose is retained as a terminal deferral |
 | Corollaries 14.6 and 14.7 | `Ch14GJEFinalDivisionClosure.lean`, `Ch14Cor146UniformInverseBridge.lean`, `Ch14Cor147FinalDivisionFamilyClosure.lean`, `Ch14Cor147SourceDomainConstructor.lean` | Exact printed constants for the actual final-division output, with the SPD and row-dominant source-domain witnesses constructed rather than postulated; unparameterized source `O(u^2)` prose remains explicitly deferred |
-| Section 14.5 Schulz iteration | `Ch14SchulzIteration.lean` | Exact update equivalence; left/right residual squaring; `E_k=E_0^(2^k)`; quadratic/double-exponential residual bounds; residual and inverse convergence; printed `alpha A^T` initialization criterion |
+| Section 14.5 Schulz iteration | `Source/Higham/Chapter14/Section05/SquareIteration.lean` | Exact update equivalence; left/right residual squaring; `E_k=E_0^(2^k)`; quadratic/double-exponential residual bounds; residual and inverse convergence; printed `alpha A^T` initialization criterion |
 | Determinant section | `MatrixInversion.lean`, `Ch14HymanDeterminant.lean`, `Source/Higham/Chapter14/Discrepancies.lean` | GEPP determinant formula, Hyman backward error, scaling invariance, and corrected Hadamard condition-number sign |
-| Selected Problems | `MatrixInversion.lean`, `Ch14Problem142Families.lean`, `Ch14AsymptoticFamilies.lean`, `Ch14Problem1413Boundary.lean`, `Chapter14Problem1415Weyl.lean` | Problems 14.2-14.5, 14.7-14.8, and 14.10-14.15, including all positive dimensions for (14.37) |
+| Selected Problems | `MatrixInversion.lean`, `Ch14Problem142Families.lean`, `Ch14AsymptoticFamilies.lean`, `Source/Higham/Chapter14/Problem13.lean`, `Chapter14Problem1415Weyl.lean` | Problems 14.2-14.5, 14.7-14.8, and 14.10-14.15, including all positive dimensions for (14.37) |
 
 The exact row-to-declaration map is in `CHAPTER14_SOURCE_INVENTORY.md`.
 
@@ -57,7 +57,7 @@ The exact row-to-declaration map is in `CHAPTER14_SOURCE_INVENTORY.md`.
 | `Ch14Corollary146Closure.lean` | SPD norm, condition-number proximity, bootstrap, and asymptotic helper machinery | Corollary 14.6 | COMPLETE |
 | `Ch14Corollary146SourceClosure.lean` | Instantiate the SPD closure on the masked Algorithm 14.4 source trace | Corollary 14.6 | COMPLETE |
 | `Ch14Corollary147SourceClosure.lean` | Derive factor/inverse proximity and absorb the forward solution ratio | Corollary 14.7 | COMPLETE |
-| `Ch14SchulzIteration.lean` | Formalize the determinate mathematical claims in the parallel-inversion paragraph | Section 14.5, p. 278 | COMPLETE |
+| `Source/Higham/Chapter14/Section05/SquareIteration.lean` | Formalize the determinate mathematical claims in the parallel-inversion paragraph | Section 14.5, p. 278 | COMPLETE |
 
 ## External Proof Sources
 

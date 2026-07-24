@@ -59,6 +59,7 @@ import NumStability.Analysis.Nonassociativity
 import NumStability.Analysis.Norms
 import NumStability.Analysis.OperatorLog
 import NumStability.Analysis.PerturbationTheory
+import NumStability.Analysis.Probability
 import NumStability.Analysis.Problem2_10
 import NumStability.Analysis.Problem2_11
 import NumStability.Analysis.Problem2_12
@@ -68,7 +69,6 @@ import NumStability.Analysis.Problem2_15_16
 import NumStability.Analysis.Problem2_17
 import NumStability.Analysis.Problem2_18
 import NumStability.Analysis.Problem2_19
-import NumStability.Analysis.Problem2_2
 import NumStability.Analysis.Problem2_20
 import NumStability.Analysis.Problem2_21
 import NumStability.Analysis.Problem2_23

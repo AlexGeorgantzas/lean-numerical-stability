@@ -30,6 +30,10 @@ example :
 #check NumStability.higham26ADCrudeSweep_nondecreasing
 #check NumStability.higham14SchulzStep
 #check NumStability.Ch14Ext.ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq
+#check NumStability.FloatingPointFormat.problem2_2_lemma2_1_spacing_bounds
+#check NumStability.ch14ext_problem14_13_gej_bound_fin_one
+#check NumStability.higham21Cond2With_row_scaling
+#check NumStability.integral_abs_standardGaussian_difference
 
 end
 

@@ -30,3 +30,32 @@ move pilot.
   the generic round-to-even identities belong below the Higham layer, while the
   numbered problem and counterexamples belong in it.
 - Compatibility wrappers preserve historical imports during the migration.
+
+## Historical follow-up: Phase 10B small frontiers
+
+Phase 10B re-ran the endpoint review at execution base
+`21e130ac8355de8ec1a74f22a73bf103e00bc48f` using the compiled
+signature/body graph. Three additional source-facing owners had zero external
+declaration consumers and were moved into the source hierarchy:
+
+| Historical module | Compiled consumer result | Canonical destination | Historical outcome |
+| --- | --- | --- | --- |
+| `Analysis.Problem2_2` | Zero external declaration consumers. | `Source.Higham.Chapter02.Problem02` | Moved as source material; the historical path remains an exact one-import compatibility wrapper. |
+| `Algorithms.Ch14Problem1413Boundary` | Zero incoming external declaration consumers. | `Source.Higham.Chapter14.Problem13` | Moved as source material; the historical path remains an exact one-import compatibility wrapper. |
+| `Algorithms.Underdetermined.Higham21Condition` | Zero incoming external declaration consumers; its direct importers were organizational or source-family surfaces. | `Source.Higham.Chapter21.RowScalingInvariance` | Moved as source material; the historical path remains an exact one-import compatibility wrapper. |
+
+### Low fan-in is not an endpoint criterion
+
+`Algorithms.TestMatrices.Higham28GaussianAbsoluteMoment` was reviewed in the
+same batch, but it was not an endpoint. Its declarations have one compiled
+external consumer, `realGinibreAbsoluteCharacteristicMoment_one` in
+`Algorithms.TestMatrices.Higham28GinibreDeterminantMoment`. More importantly,
+the declarations form a source-neutral Gaussian probability API. They were
+moved to the reusable module `Analysis.Probability.Gaussian.AbsoluteMoment`,
+while the historical path became an exact one-import compatibility wrapper.
+This reinforces that semantic role, rather than fan-in alone, determines
+whether a module is a source endpoint or reusable library code.
+
+The original ten-module introduction, table, and conclusions above remain the
+historical record of the initial endpoint-review pilot; this follow-up records
+the later Phase 10B decisions without rewriting that earlier assessment.

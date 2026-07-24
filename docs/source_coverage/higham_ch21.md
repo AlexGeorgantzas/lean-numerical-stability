@@ -79,10 +79,11 @@ This is an explicit dimension-only realization of the source phrase
 ### Row Scaling
 
 **VERIFIED.**
+In `Source/Higham/Chapter21/RowScalingInvariance.lean`,
 `higham21Cond2With_row_scaling` proves
 `cond2(D A) = cond2(A)` for a nonsingular diagonal row scaling and the
-correspondingly transformed pseudoinverse. The same module proves preservation
-of the right-inverse and Moore-Penrose certificates.
+correspondingly transformed pseudoinverse. The same canonical module proves
+preservation of the right-inverse and Moore-Penrose certificates.
 
 ### Q Method and SNE
 
@@ -156,7 +157,8 @@ smallness. The source-facing row-wise endpoint consumes both derived facts.
 - `Higham21Attainability.lean`: Holder first-order upper and lower witnesses.
 - `Higham21Theorem21_3Attainment.lean`: exact/closure attainment and the
   scalar nonattainment witness for Theorem 21.3.
-- `Higham21Condition.lean`: row-scaling invariance of `cond2`.
+- `Source/Higham/Chapter21/RowScalingInvariance.lean`: row-scaling invariance
+  of `cond2`.
 - `Higham21Eq21_8.lean`: equation (21.8).
 - `Higham21Eq21_9.lean`: equation (21.9).
 - `Higham21ProjectorNorm.lean`: exact complement-projector norm identities
@@ -193,8 +195,12 @@ smallness. The source-facing row-wise endpoint consumes both derived facts.
 - `Higham21MGS.lean` and `Higham21MGSRounded.lean`: the stable corrected
   MGS recurrence and its rounded transfer interfaces.
 - `Higham21RowwiseMeasure.lean`: the printed row-wise backward-error measure.
-- `Higham21.lean`: Chapter 21 umbrella module importing the complete module
-  set above.
+- `Algorithms/Underdetermined/Higham21.lean`: historical comprehensive Chapter
+  21 umbrella importing the complete legacy module set above and the canonical
+  row-scaling aggregate.
+- `Source/Higham/Chapter21.lean`: narrow canonical aggregate for the currently
+  migrated Chapter 21 row-scaling surface; it does not yet replace the
+  comprehensive historical umbrella.
 
 ## Honest Scope Exclusions
 

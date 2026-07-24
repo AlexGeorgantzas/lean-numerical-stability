@@ -38,6 +38,10 @@ example : (fp : FPModel) → (n : ℕ) → (Fin n → ℝ) → ℝ :=
 #check higham26ADCrudeSweep_nondecreasing
 #check higham14SchulzStep
 #check Ch14Ext.ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq
+#check FloatingPointFormat.problem2_2_lemma2_1_spacing_bounds
+#check ch14ext_problem14_13_gej_bound_fin_one
+#check higham21Cond2With_row_scaling
+#check integral_abs_standardGaussian_difference
 
 end
 

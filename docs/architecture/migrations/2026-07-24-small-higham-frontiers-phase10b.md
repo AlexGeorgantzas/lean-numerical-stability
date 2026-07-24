@@ -154,23 +154,26 @@ Canonical leaves retain those mathematical dependencies unchanged.
 
 The immutable direct production importers and their exact retargeting are:
 
-- `Analysis` drops historical `Analysis.Problem2_2`; the declaration moves
-  behind `Source.Higham.Chapter02`;
+- `Analysis` drops historical `Analysis.Problem2_2`; the source-specific leaf
+  moves behind `Source.Higham.Chapter02`, matching the aggregate's canonical-
+  descendant contract;
 - `Algorithms` replaces historical Problem 14.13 and its direct Chapter 14
   Section 5 import with the complete `Source.Higham.Chapter14` aggregate;
 - `Algorithms.Underdetermined.Higham21` replaces the historical condition leaf
   with the complete `Source.Higham.Chapter21` aggregate;
 - `Algorithms.Underdetermined.Higham21Eq21_8` replaces the historical condition
-  leaf with canonical `Source.Higham.Chapter21.RowScalingInvariance`;
+  leaf with canonical `Source.Higham.Chapter21.RowScalingInvariance`, preserving
+  its prior direct-import surface even though its own declarations do not
+  consume the row-scaling API;
 - `Algorithms.TestMatrices.Higham28GinibreDeterminantMoment` imports canonical
   `Analysis.Probability.Gaussian.AbsoluteMoment`; and
 - `Algorithms` replaces the historical Gaussian leaf with the same canonical
   reusable leaf.
 
 Problem 2.2 and Problem 14.13 have no declaration consumer. The Chapter 21
-leaf likewise has no external declaration consumer; its two direct importers
-are organizational/source-family surfaces. The Gaussian leaf's one compiled
-consumer is preserved by the direct canonical import above.
+leaf likewise has no external declaration consumer; its broad historical
+aggregate and `Higham21Eq21_8` import are both retargeted. The Gaussian leaf's
+one compiled consumer is preserved by the direct canonical import above.
 
 ## Preservation audit
 
@@ -208,8 +211,8 @@ The tier manifest records the four historical leaves as `compatibility`, the
 three source leaves as `source`, the Gaussian leaf as `reusable`, and the three
 new umbrellas as `aggregate`. The compatibility table records all four exact
 maps. The layout manifest removes all four historical paths from unclassified
-and noncanonical debt, adds the three complete-aggregate contracts, and adds
-`Analysis.Probability` as a reusable entry point.
+and noncanonical debt and adds the three complete-aggregate contracts. The
+tier manifest records `Analysis.Probability` as a reusable public entry point.
 
 Before incidental line-count changes, the expected structural ratchet is:
 
@@ -224,7 +227,7 @@ Before incidental line-count changes, the expected structural ratchet is:
 | Reusable modules | 49 | 50 |
 | Source modules | 126 | 129 |
 | Upstream modules | 5 | 5 |
-| Missing module docs | 222 | 221 |
+| Missing module docs | 222 | 220 |
 | Legacy naming exceptions | 416 | 412 |
 | Mixed modules | 0 | 0 |
 | Declaration-bearing umbrellas | 0 | 0 |
@@ -246,8 +249,17 @@ The implementation updates:
   ledger, and formalization report;
 - the row-scaling paths in the Chapter 21 source inventory, formalization
   report, and source-coverage ledger; and
-- the public reusable-entry-point descriptions in `README.md` and
-  `docs/ARCHITECTURE.md` for the new probability API.
+- the public reusable-entry-point descriptions in `README.md` and root
+  `ARCHITECTURE.md` for the new probability API.
+
+## Post-map documentation ratchet
+
+The immutable source inventory and ownership map above remain unchanged. The
+touched historical `Higham21` aggregate also receives a missing module doc,
+improving the expected missing-module-doc count from 221 to 220. Its
+`Higham21Eq21_8` descendant retains the old condition module's import surface
+through the canonical row-scaling leaf; this intentionally preserves import
+compatibility even though no Eq. 21.8 declaration consumes that leaf.
 
 Archived baselines remain immutable, and no Chapter 28 ledger currently names
 the historical Gaussian path.

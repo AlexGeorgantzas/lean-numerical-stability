@@ -173,28 +173,29 @@ approximation, and least-squares preconditioning.
 
 ## Project statistics
 
-Current reviewed Phase 9 structure for the production source surface, after
-the compatibility-preserving Higham Chapters 12, 13, 22, and 27 migration:
+Current reviewed Phase 10B structure for the production source surface, after
+the compatibility-preserving small-frontier migrations for Higham Chapters 2,
+14, 21, and 28:
 
 | | |
 |---|---|
-| Lean modules | **953** |
-| Lines of Lean | **1,467,961** |
-| Direct imports | **4,004** |
-| Internal import edges | **2,637** |
+| Lean modules | **964** |
+| Lines of Lean | **1,468,075** |
+| Direct imports | **4,018** |
+| Internal import edges | **2,651** |
 | Import cycles | **0** |
-| Classified modules | **327** |
-| Unclassified modules | **626** |
-| Source modules | **123** |
-| Aggregate modules | **62** |
-| Compatibility modules | **86** |
-| Missing module docs | **222** |
-| Legacy naming exceptions | **419** |
+| Classified modules | **345** |
+| Unclassified modules | **619** |
+| Source modules | **129** |
+| Aggregate modules | **66** |
+| Compatibility modules | **93** |
+| Missing module docs | **220** |
+| Legacy naming exceptions | **412** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
 the standard `[propext, Classical.choice, Quot.sound]` axioms. The latest
 generated detailed checkpoint is the versioned
-[`2026-07-24 organization Phase 9 baseline`](docs/architecture/baselines/2026-07-24-organization-phase9.md),
+[`2026-07-24 organization Phase 10B baseline`](docs/architecture/baselines/2026-07-24-organization-phase10b.md),
 with full source, import, signature-dependency, and proof/body-dependency
 metrics. The live ratchet values above are enforced by the reviewed manifests.
 
@@ -245,6 +246,10 @@ Choose the narrowest entry point that matches the material you need:
   `NumStability.Analysis.Summation.Signs` is its reusable sign/absolute-value
   leaf, while `ErrorBounds` contains the reusable conditioning and rounded-fold
   error theory.
+- `NumStability.Analysis.Probability` is the reusable probability-analysis
+  umbrella. Its `Probability.Gaussian` aggregate currently exposes
+  `Probability.Gaussian.AbsoluteMoment`, the source-neutral Gaussian first-
+  absolute-moment API used by the Chapter 28 Ginibre development.
 - `NumStability.Algorithms.Sylvester` is the complete historical Sylvester and
   Higham Chapter 16 family umbrella; consumers should still prefer its narrow
   leaf modules when they need only part of that surface.
@@ -259,6 +264,14 @@ Choose the narrowest entry point that matches the material you need:
   separate Horner evaluation, interval propagation, grid variation, stored
   IEEE-double inputs, and the final error-spread result. The historical
   `Analysis.NonrandomRounding*` paths are import-only compatibility shims. For
+  Chapter 2, Problem 2.2 is the canonical
+  `NumStability.Source.Higham.Chapter02.Problem02` leaf. Chapter 14 contains
+  `Problem13` and the declaration-free `Section05` Schulz family aggregate.
+  The currently canonicalized Chapter 21 subset is
+  `NumStability.Source.Higham.Chapter21`, containing the
+  `RowScalingInvariance` leaf; the comprehensive historical Chapter 21
+  discovery surface remains `NumStability.Algorithms.Underdetermined.Higham21`
+  during migration. For
   fast matrix multiplication, import
   `NumStability.Source.Higham.Chapter23` or one of its semantic theorem,
   equation, algorithm, or problem leaves. Chapters 12, 22, and 27 now have
@@ -291,9 +304,9 @@ the old-to-new path map and removal policy. The
 dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
-corpus is already Mathlib-style. After the Phase 9 ownership moves, the current
-ratchet records 626 unclassified modules, no reviewed mixed modules, 222
-missing module docs, 419 historical naming exceptions, and no declaration-
+corpus is already Mathlib-style. After the Phase 10B ownership moves, the
+current ratchet records 619 unclassified modules, no reviewed mixed modules,
+220 missing module docs, 412 historical naming exceptions, and no declaration-
 bearing umbrella. CI prevents those queues from growing while each dependency-
 contained family is migrated.
 
@@ -337,6 +350,10 @@ NumStability/
   Analysis.lean                -- complete analysis aggregate, including legacy work
   Analysis/                    -- stability, perturbation theory, matrix algebra,
                                --   norms, concentration, and probability
+    Probability.lean           -- reusable probability-analysis umbrella
+    Probability/
+      Gaussian.lean            -- Gaussian-analysis umbrella
+      Gaussian/AbsoluteMoment.lean -- reusable Gaussian moment API
     Summation.lean             -- import-only summation-analysis umbrella
     Summation/
       Signs.lean               -- reusable sign and absolute-sum API
@@ -358,9 +375,9 @@ NumStability/
   Source/
     Higham.lean                -- Higham source umbrella
     Higham/
-      Chapter02/, Chapter04/, Chapter08/, Chapter10/, Chapter11/, Chapter12/
-      Chapter13/, Chapter14/, Chapter17/, Chapter20/, Chapter22/, Chapter23/
-      Chapter24/, Chapter25/, Chapter26/, Chapter27/
+      Chapter01/, Chapter02/, Chapter04/, Chapter08/, Chapter10/, Chapter11/
+      Chapter12/, Chapter13/, Chapter14/, Chapter17/, Chapter20/, Chapter21/
+      Chapter22/, Chapter23/, Chapter24/, Chapter25/, Chapter26/, Chapter27/
                                -- canonical numbered source correspondence
       CrossChapter/            -- explicitly cross-chapter source bridges
   Higham.lean                  -- historical import-only compatibility entry point
@@ -389,10 +406,10 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 ## Roadmap
 
 The selected formalization core scope is closed; the repository-organization
-migration is not. The next batches classify the remaining 626 unclassified
-modules while keeping the mixed-module count at zero, replace the 419
+migration is not. The next batches classify the remaining 619 unclassified
+modules while keeping the mixed-module count at zero, replace the 412
 historical source/proof-stage names with semantic canonical paths plus
-compatibility shims, document the 222 remaining modules, and review the
+compatibility shims, document the 220 remaining modules, and review the
 giant-file outliers. The sequence and safety
 gates are tracked in
 [`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md).

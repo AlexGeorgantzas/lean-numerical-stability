@@ -1,4 +1,5 @@
 import NumStability.Source.Higham.Chapter14.Discrepancies
+import NumStability.Source.Higham.Chapter14.Problem13
 import NumStability.Source.Higham.Chapter14.Section05
 
 /-!

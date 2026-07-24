@@ -8,6 +8,7 @@ canonical source entry point.
 -/
 
 #check NumStability.not_forall_ieeeDoubleKahanStoredGridError_eq_on_source_grid
+#check NumStability.FloatingPointFormat.problem2_2_lemma2_1_spacing_bounds
 #check NumStability.FloatingPointFormat.problem2_4_theorem2_3_nearest_finite
 #check NumStability.fl_pairwiseSumSixDisplayed
 #check NumStability.problem44_outputs_exactly_Icc
@@ -16,8 +17,10 @@ canonical source entry point.
 #check NumStability.higham13_table13_1_col_bdd_product_family_from_source_norms
 #check NumStability.higham13_demmel_sharp_multiplier_of_spectral_interval
 #check NumStability.higham14_hadamardConditionNumberRaw_negative_one_counterexample
+#check NumStability.ch14ext_problem14_13_gej_bound_fin_one
 #check NumStability.higham17_problem17_1
 #check NumStability.higham20_eq20_32_Bplus_residual_eq_crossProjection
+#check NumStability.higham21Cond2With_row_scaling
 #check NumStability.Ch22B.ch22bComplexConfluent_theorem12_3_exact_q_bound
 #check NumStability.higham23_winogradStrassen_error_step
 #check NumStability.higham23_problem23_8_power_exponent

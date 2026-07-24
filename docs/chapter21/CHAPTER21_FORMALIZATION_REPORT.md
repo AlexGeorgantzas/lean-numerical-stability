@@ -23,7 +23,7 @@ from full row rank, gamma validity, and the printed-form smallness condition.
 |---|---|---|
 | Equations (21.1)–(21.5) | `UnderdeterminedSpec.lean`, `UnderdeterminedSolve.lean`, `Higham21QRFoundations.lean` | Exact block QR, minimum-norm, pseudoinverse, and SNE Gram algebra |
 | Theorem 21.1 and (21.6)–(21.9) | `Higham21Perturbation*.lean`, `Higham21Eq21_8.lean`, `Higham21Eq21_9.lean` | Exact first-order terms, rank stability, fixed-radius finite remainders, and genuine `O(t²)` forms |
-| Projector and scaling prose | `Higham21ProjectorNorm.lean`, `Higham21Condition.lean` | Exact complement-projector norm and row-scaling invariance |
+| Projector and scaling prose | `Higham21ProjectorNorm.lean`, `Source/Higham/Chapter21/RowScalingInvariance.lean` | Exact complement-projector norm and row-scaling invariance |
 | Lemma 21.2 | `UnderdeterminedSolve.lean` | Single perturbation, minimum-norm recovery, and printed square-sum bounds |
 | Theorem 21.3 | `UnderdeterminedSolve.lean`, `Higham21Theorem21_3Attainment.lean` | Correct infimum formula, lower/upper constructions, exact/closure attainment, and nonattainment witness |
 | Equation (21.10) and Householder Theorem 21.4 | `UnderdeterminedSolve.lean`, Chapter 19 QR interfaces, `Higham21Theorem214SourceClosure.lean` | Actual rounded panel/solve/action endpoint; `Higham21QMethodFullRowRankComputedQRDomain.of_source_smallness` derives computed top-block nonbreakdown by QR perturbation and full-rank stability |

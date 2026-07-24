@@ -49,7 +49,6 @@ import NumStability.Algorithms.Ch14MethodDLeftResidual
 import NumStability.Algorithms.Ch14MethodDProductDischarge
 import NumStability.Algorithms.Ch14MethodDUpperCertificate
 import NumStability.Algorithms.Ch14MethodsBC
-import NumStability.Algorithms.Ch14Problem1413Boundary
 import NumStability.Algorithms.Ch14Problem142
 import NumStability.Algorithms.Ch14Problem142Families
 import NumStability.Algorithms.Ch14Problem142Method2B
@@ -332,7 +331,6 @@ import NumStability.Algorithms.TestMatrices.Higham28Companion
 import NumStability.Algorithms.TestMatrices.Higham28CompanionSpectral
 import NumStability.Algorithms.TestMatrices.Higham28Contracts
 import NumStability.Algorithms.TestMatrices.Higham28Exact
-import NumStability.Algorithms.TestMatrices.Higham28GaussianAbsoluteMoment
 import NumStability.Algorithms.TestMatrices.Higham28GaussianQRHaar
 import NumStability.Algorithms.TestMatrices.Higham28Ginibre
 import NumStability.Algorithms.TestMatrices.Higham28GinibreAbsoluteDetRecurrence
@@ -420,6 +418,7 @@ import NumStability.Analysis.MatrixPowersSpijkerPlanar
 import NumStability.Analysis.MatrixPowersSpijkerRational
 import NumStability.Analysis.NilpotentJordanChain
 import NumStability.Analysis.NumericalRadius
+import NumStability.Analysis.Probability.Gaussian.AbsoluteMoment
 import NumStability.Analysis.PseudospectralLowerBound
 import NumStability.Analysis.PseudospectralPowerBound
 import NumStability.Analysis.PseudospectralResolvent
@@ -439,7 +438,7 @@ import NumStability.Analysis.SylvesterSchurExistence
 import NumStability.Source.Higham.Chapter04
 import NumStability.Source.Higham.Chapter12
 import NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier
-import NumStability.Source.Higham.Chapter14.Section05
+import NumStability.Source.Higham.Chapter14
 import NumStability.Source.Higham.Chapter17
 import NumStability.Source.Higham.Chapter22
 import NumStability.Source.Higham.Chapter24

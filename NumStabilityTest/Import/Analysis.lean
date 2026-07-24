@@ -16,3 +16,4 @@ the narrower source paths directly.
 #check NumStability.higham17_22_exists_blockForm_spectralRadius_lt_one_of_forall_orbit_tendsto
 #check NumStability.complexSylvesterOp
 #check NumStability.not_forall_ieeeDoubleKahanStoredGridError_eq_on_source_grid
+#check NumStability.integral_abs_standardGaussian_difference

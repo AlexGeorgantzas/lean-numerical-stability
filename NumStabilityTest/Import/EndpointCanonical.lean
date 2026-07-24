@@ -1,5 +1,7 @@
 import NumStability.Algorithms.LinearSystems.Triangular.Combined
+import NumStability.Analysis.Probability.Gaussian.AbsoluteMoment
 import NumStability.FloatingPoint.OperationLaws
+import NumStability.Source.Higham.Chapter02.Problem02
 import NumStability.Source.Higham.Chapter02.Problem04
 import NumStability.Source.Higham.Chapter02.Problem07
 import NumStability.Source.Higham.Chapter02.Problem22
@@ -7,9 +9,11 @@ import NumStability.Source.Higham.Chapter04.Problem04
 import NumStability.Source.Higham.Chapter13.Equation25
 import NumStability.Source.Higham.Chapter13.Table01
 import NumStability.Source.Higham.Chapter14.Discrepancies
+import NumStability.Source.Higham.Chapter14.Problem13
 import NumStability.Source.Higham.Chapter20.Equation32
 import NumStability.Source.Higham.Chapter20.Lemma06
 import NumStability.Source.Higham.Chapter20.Theorem01
+import NumStability.Source.Higham.Chapter21.RowScalingInvariance
 import NumStability.Source.Higham.Chapter23.Problem08
 
 /-!
@@ -32,3 +36,7 @@ historical forwarding paths.
 #check NumStability.FloatingPointFormat.problem2_7_statement5_add_associativity_false
 #check NumStability.problem44_outputs_exactly_Icc
 #check NumStability.higham23_problem23_8_power_exponent
+#check NumStability.FloatingPointFormat.problem2_2_lemma2_1_spacing_bounds
+#check NumStability.ch14ext_problem14_13_gej_bound_fin_one
+#check NumStability.higham21Cond2With_row_scaling
+#check NumStability.integral_abs_standardGaussian_difference
