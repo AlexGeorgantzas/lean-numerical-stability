@@ -77,23 +77,12 @@
   },
   "metadata": {
     "branch": "codex/organization-phase-10c-higham-chapter02",
-    "commit": "6894545fa196371a11857089a3fb863ce7949ca6",
-    "commit_date": "2026-07-24T15:00:33-04:00",
+    "commit": "7f7d1e63d78293c1d64187d6419dd41bfc91cc27",
+    "commit_date": "2026-07-24T15:32:34-04:00",
     "lean_toolchain": "leanprover/lean4:v4.29.0-rc3",
     "lean_version": "Lean (version 4.29.0-rc3, x86_64-w64-windows-gnu, commit 5d86aa4032284a5242470e95fbe25f1ff506763d, Release)",
-    "library_source_clean": false,
-    "library_source_dirty_paths": [
-      "NumStability/Analysis.lean",
-      "NumStability/Analysis/Problem2_21.lean",
-      "NumStability/Analysis/Problem2_22.lean",
-      "NumStability/FloatingPoint.lean",
-      "NumStability/FloatingPoint/IEEE.lean",
-      "NumStability/FloatingPoint/IEEE/NaiveMaximum.lean",
-      "NumStability/Higham/Chapter02/Problem22.lean",
-      "NumStability/Source/Higham/Chapter02.lean",
-      "NumStability/Source/Higham/Chapter02/Problem22.lean",
-      "NumStability/Source/Higham/Chapter02/Problem23.lean"
-    ],
+    "library_source_clean": true,
+    "library_source_dirty_paths": [],
     "mathlib_input_revision": "e8ea1afc32790ce1d4e1a4e45cc412ba9388716b",
     "mathlib_revision": "e8ea1afc32790ce1d4e1a4e45cc412ba9388716b",
     "origin": "https://github.com/AlexGeorgantzas/lean-numerical-stability.git"
