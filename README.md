@@ -262,8 +262,8 @@ the old-to-new path map and removal policy. The
 dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
-corpus is already Mathlib-style. The current ratchet records 652 unclassified
-modules, 1 reviewed mixed module, 227 missing module docs, and 455 historical
+corpus is already Mathlib-style. The current ratchet records 650 unclassified
+modules, no reviewed mixed modules, 227 missing module docs, and 454 historical
 naming exceptions. CI prevents those queues from growing while each
 dependency-contained family is migrated.
 
@@ -352,9 +352,10 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 ## Roadmap
 
 The selected formalization core scope is closed; the repository-organization
-migration is not. The next batches classify and split the remaining 652
-unclassified and 1 mixed module, replace the 455 historical source/proof-stage
-names with semantic canonical paths plus compatibility shims, document the 227
+migration is not. The next batches classify the remaining 650 unclassified
+modules while keeping the mixed-module count at zero, replace the 454
+historical source/proof-stage names with semantic canonical paths plus
+compatibility shims, document the 227
 remaining modules, and review the giant-file outliers. The sequence and safety
 gates are tracked in
 [`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md).

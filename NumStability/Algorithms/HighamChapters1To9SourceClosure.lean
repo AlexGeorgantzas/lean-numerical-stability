@@ -7,6 +7,7 @@ Authors: QED94 contributors
 -/
 
 import NumStability.Algorithms.PriestFiniteFormat
+import NumStability.Algorithms.Summation.Compensated.FiniteFormat
 import NumStability.Analysis.FirstOrder
 import NumStability.Analysis.HighamChapter7
 import NumStability.Algorithms.HighamChapter8FanInClosure

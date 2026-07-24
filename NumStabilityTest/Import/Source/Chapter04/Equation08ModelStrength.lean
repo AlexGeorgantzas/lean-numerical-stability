@@ -1,0 +1,17 @@
+import NumStability.Source.Higham.Chapter04.Equation08.ModelStrength
+
+/-!
+# Higham equation (4.8) bare-model source-leaf smoke test
+-/
+
+#check NumStability.kahanBiasedSmallCounterexampleFPModel
+#check NumStability.kahanBiasedTwoStepInput
+#check NumStability.not_kahanAffine_residualBudget_inputMajorant_one_of_Cu_le_one
+#check NumStability.not_exists_kahanAffine_residualBudget_inputMajorant_fixed_C
+#check NumStability.fl_kahanSum_biasedSmallCounterexample_twoStep
+#check NumStability.fl_kahanSum_biasedSmallCounterexample_twoStep_of_pos_lt_one
+#check NumStability.not_exists_fl_kahanSum_biasedSmallCounterexample_twoStep_source_bound_of_Cu_le_half
+#check NumStability.exists_kahanBiasedSmallCounterexample_unitRoundoff
+#check NumStability.Higham48BareFPModelTwoTermSecondOrderBound
+#check NumStability.not_exists_higham48BareFPModelTwoTermSecondOrderBound
+#check NumStability.not_forall_fl_kahanSum_backward_error_source_bound_bare_fpmodel_exactSubConstants

@@ -1,0 +1,15 @@
+import NumStability.Source.Higham.Chapter04.Equation08.ReturnedSum
+
+/-!
+# Higham equation (4.8) returned-sum source-leaf smoke test
+-/
+
+#check NumStability.highamCh4KahanReturnedCounterexampleP5Format
+#check NumStability.highamCh4KahanReturnedCounterexampleP5_rounding
+#check NumStability.highamCh4KahanReturnedCounterexampleState_eq_of_rounding
+#check NumStability.highamCh4KahanSuffixCounterexampleLocalFacts
+#check NumStability.highamCh4KahanSuffixMajorant_propagate_of_localFacts
+#check NumStability.kahanCoupledCoeffSteps_sourceCoeff_s_abs_sub_one_le_correctedReturnedMajorant
+#check NumStability.fl_kahanSum_backward_error_source_bound_correctedReturnedMajorant
+#check NumStability.highamCh4KahanReturnedCounterexampleP5_no_source_bound_one_sixteenth_actual
+#check NumStability.highamCh4_equation48_modelStrengthCorrection_bareFPModel

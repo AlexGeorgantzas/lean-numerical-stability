@@ -1,5 +1,26 @@
 import NumStability.Algorithms.Summation.Accumulator
 import NumStability.Algorithms.Summation.Compensated
+import NumStability.Algorithms.Summation.Compensated.Alternative
+import NumStability.Algorithms.Summation.Compensated.Alternative.Core
+import NumStability.Algorithms.Summation.Compensated.Alternative.ErrorBounds
+import NumStability.Algorithms.Summation.Compensated.CorrectionFormula
+import NumStability.Algorithms.Summation.Compensated.FastTwoSum
+import NumStability.Algorithms.Summation.Compensated.FiniteFormat
+import NumStability.Algorithms.Summation.Compensated.Kahan
+import NumStability.Algorithms.Summation.Compensated.Kahan.Coefficients
+import NumStability.Algorithms.Summation.Compensated.Kahan.Coefficients.Affine
+import NumStability.Algorithms.Summation.Compensated.Kahan.Coefficients.Coupled
+import NumStability.Algorithms.Summation.Compensated.Kahan.Core
+import NumStability.Algorithms.Summation.Compensated.Kahan.ErrorBounds
+import NumStability.Algorithms.Summation.Compensated.Kahan.Exactness
+import NumStability.Algorithms.Summation.Compensated.Kahan.Finite
+import NumStability.Algorithms.Summation.Compensated.Kahan.FiniteErrorBounds
+import NumStability.Algorithms.Summation.Compensated.Kahan.FiniteFormat
+import NumStability.Algorithms.Summation.Compensated.Kahan.LocalCoefficients
+import NumStability.Algorithms.Summation.Compensated.Kahan.Majorants
+import NumStability.Algorithms.Summation.Compensated.NoGuard.CorrectionFormula
+import NumStability.Algorithms.Summation.Compensated.NoGuard.Modified
+import NumStability.Algorithms.Summation.Compensated.NoGuard.Ordinary
 import NumStability.Algorithms.Summation.DoublyCompensated
 import NumStability.Algorithms.Summation.Insertion
 import NumStability.Algorithms.Summation.Insertion.ActiveList
@@ -17,6 +38,13 @@ import NumStability.Algorithms.Summation.Tree.Balanced
 import NumStability.Algorithms.Summation.Tree.Core
 import NumStability.Algorithms.Summation.Tree.Chain
 import NumStability.Source.Higham.Chapter04.Problem03
+import NumStability.Source.Higham.Chapter04.Problem10
+import NumStability.Source.Higham.Chapter04.Equation07.NoGuardCounterexample
+import NumStability.Source.Higham.Chapter04.Equation07.SterbenzCounterexamples
+import NumStability.Source.Higham.Chapter04.Equation08.FiniteRouteLimitations
+import NumStability.Source.Higham.Chapter04.Equation08.ReturnedSum
+import NumStability.Source.Higham.Chapter04.Equation09.Correction
+import NumStability.Source.Higham.Chapter04.Equation10.AbstractModel
 import NumStability.Source.Higham.Chapter04.Section01.InsertionExamples
 import NumStability.Source.Higham.Chapter04.Section01.PairwiseSixTerm
 
@@ -29,6 +57,16 @@ independently of the historical forwarding paths.
 
 #check NumStability.fl_recursiveSum
 #check NumStability.fl_kahanSum
+#check NumStability.FastTwoSumFiniteCertificate
+#check NumStability.kahanFF_model
+#check NumStability.kahanFF_kahan_correctionSub_exact
+#check NumStability.NoGuardCorrectionFormulaTrace
+#check NumStability.kahanNoGuardStepTrace
+#check NumStability.fl_kahanModifiedNoGuardCorrection_exactWithUnitRoundoff
+#check NumStability.AlternativeCompensatedStepTrace
+#check NumStability.alternativeCompensatedCorrectionRunningErrorBudget_of_exact_steps
+#check NumStability.fl_alternativeCompensatedSum_backward_error_source_bound_of_exact_steps_higham_cap
+#check NumStability.noGuardCorrectionFormulaCounterexample_not_exact
 #check NumStability.fl_insertionSumList
 #check NumStability.InsertionScheduleTree.GreedyInsertionTree.exactMergeCost_le
 #check NumStability.fl_insertionPowersFour_eq_recursiveSum
@@ -36,4 +74,9 @@ independently of the historical forwarding paths.
 #check NumStability.SumTree.balancedTree
 #check NumStability.SumTree.chainTreeSucc_eval_eq_recursiveSum
 #check NumStability.recursiveSum_problem43_abs_error_bound
+#check NumStability.problem410PriestInput_sum_eq_two
 #check NumStability.fl_pairwiseSumSixDisplayed
+#check NumStability.highamCh4_equation48_modelStrengthCorrection_bareFPModel
+#check NumStability.highamCh4_equation49_modelStrengthCorrection_bareFPModel
+#check NumStability.not_forall_finiteKahanTrace_tail_abs_order
+#check NumStability.finiteKahanTrace_tail_direct_sub_finiteNormalRange_not_finiteSystem_counterexample

@@ -1,5 +1,6 @@
 import NumStability.Algorithms.PriestDefectBounded
-import NumStability.Algorithms.KahanCompensatedFiniteFormat
+import NumStability.Algorithms.Summation.Compensated.FastTwoSum
+import NumStability.Algorithms.Summation.Compensated.FiniteFormat
 import Mathlib.Tactic.Linarith
 
 namespace NumStability

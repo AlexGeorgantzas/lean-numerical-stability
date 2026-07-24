@@ -1,0 +1,23 @@
+import NumStability.Algorithms.Summation.Compensated.Kahan.Coefficients.Affine
+
+/-!
+# Kahan affine-coefficient smoke test
+
+Checks the canonical affine algebra and Kahan residual-bound API without
+importing coefficient-existence bridges, the Coupled engine, finite-format
+layers, or source modules.
+-/
+
+#check NumStability.KahanAffineCoeffStep
+#check NumStability.KahanAffineCoeffStep.source
+#check NumStability.kahanAffineResidualFold
+#check NumStability.kahanAffineCorrectionIndexedBudget
+#check NumStability.kahanAffineCorrectionAbsUnroll_le_indexedBudget
+#check NumStability.kahanAffineCoeffStepOfIndex
+#check NumStability.kahanAffineCoeffSteps
+#check NumStability.kahanAffineInputCoeffProductRadius
+#check NumStability.kahanAffineInputCoeffProductRadius_le_two_u_plus
+#check NumStability.kahanAffineCoeffSteps_fold_eq_finFold
+#check NumStability.kahanAffineCoeffSteps_prefixTotal_sub_sum_inputCoeff_abs_le_inputMajorantBudget
+#check NumStability.kahanAffineCoeffSteps_prefixSum_sub_sum_inputCoeff_abs_le_inputMajorantBudget
+#check NumStability.kahanAffineCoeffSteps_fold_zero_eq_final_total

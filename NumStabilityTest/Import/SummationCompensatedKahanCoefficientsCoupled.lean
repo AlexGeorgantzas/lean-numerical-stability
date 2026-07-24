@@ -1,0 +1,25 @@
+import NumStability.Algorithms.Summation.Compensated.Kahan.Coefficients.Coupled
+
+/-!
+# Kahan coupled-coefficient smoke test
+
+Checks the canonical coupled actual-trace and supplied-witness coefficient
+APIs without importing the Affine engine, finite-format layer, or source
+modules.
+-/
+
+#check NumStability.KahanCoupledCoeffStep
+#check NumStability.KahanCoupledCoeffStep.next
+#check NumStability.KahanCoupledCoeffStep.propagateTotalCorrection
+#check NumStability.kahanCoupledCoeffFold
+#check NumStability.kahanCoupledSourceUnroll
+#check NumStability.kahanCoupledPairedCoeffMajorant
+#check NumStability.kahanCoupledCoeffStepOfWitness
+#check NumStability.kahanCoupledCoeffStepOfIndex
+#check NumStability.kahanCoupledCoeffSteps
+#check NumStability.kahanCoupledCoeffStepsExactSub
+#check NumStability.kahanCoupledCoeffSteps_sourceCoeff_s_abs_sub_one_le_two_u_plus_exactSubMajorant
+#check NumStability.kahanCoupledCoeffStepsOfWitnesses
+#check NumStability.kahanCoupledCoeffStepsOfWitnessesExactSub
+#check NumStability.kahanCoupledCoeffStepsOfWitnesses_fold_eq_finFold
+#check NumStability.kahanCoupledCoeffStepsOfWitnesses_prefixState_total_eq_sum_sourceTotalCoeff

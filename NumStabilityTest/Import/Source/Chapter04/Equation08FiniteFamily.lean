@@ -1,0 +1,22 @@
+import NumStability.Source.Higham.Chapter04.Equation08.FiniteFamily
+
+/-!
+# Higham equations (4.8)--(4.9) finite-family source-leaf smoke test
+-/
+
+#check NumStability.highamCh4KahanFiniteFamilyFormat
+#check NumStability.highamCh4KahanFiniteFamilyP
+#check NumStability.highamCh4KahanFiniteFamilyP_pos
+#check NumStability.highamCh4KahanFiniteFamilyP_ge_32
+#check NumStability.highamCh4KahanFiniteFamilyP_eq
+#check NumStability.highamCh4KahanFiniteFamily_minNormalMantissa
+#check NumStability.highamCh4KahanFiniteFamily_maxNormalMantissa
+#check NumStability.highamCh4KahanFiniteFamily_round_twoP_add_26
+#check NumStability.highamCh4KahanFiniteFamily_round_twoP_add_2
+#check NumStability.highamCh4KahanFiniteFamily_round_eightP_sub_4
+#check NumStability.highamCh4KahanFiniteFamily_round_tenP_add_24
+#check NumStability.highamCh4KahanFiniteFamily_round_eightP_add_8
+#check NumStability.highamCh4KahanFiniteFamily_rounding
+#check NumStability.highamCh4KahanFiniteFamily_unitRoundoff
+#check NumStability.highamCh4_equation48_finiteFamily_no_fixed_secondOrderConstant
+#check NumStability.highamCh4_equation49_finiteFamily_no_fixed_secondOrderConstant

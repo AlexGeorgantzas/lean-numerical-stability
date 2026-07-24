@@ -905,7 +905,7 @@ def render_markdown(data: dict[str, Any]) -> str:
                 f"| Reusable/source reachable pairs | {tier_audit['reusable_to_source_reachability_count']:,} |",
                 f"| Reusable/mixed reachable pairs | {tier_audit['reusable_to_mixed_reachability_count']:,} |",
                 f"| Classification complete | `{str(tier_audit['classification_complete']).lower()}` |",
-                f"| Tier separation complete (no `mixed` modules) | `{str(tier_audit['tier_separation_complete']).lower()}` |",
+                f"| Tier separation complete (100% classified and no `mixed` modules) | `{str(tier_audit['tier_separation_complete']).lower()}` |",
                 f"| Physical source-target gate satisfied | `{str(tier_audit['physical_source_target_gate_satisfied']).lower()}` |",
                 "",
                 "A zero forbidden-edge count is conclusive only at 100% classification coverage "

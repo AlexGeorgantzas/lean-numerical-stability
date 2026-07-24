@@ -20,16 +20,23 @@ def parse_args() -> argparse.Namespace:
 
 def sorted_aggregate(text: str) -> str:
     lines = text.splitlines()
-    import_indexes = [i for i, line in enumerate(lines) if line.startswith("import ")]
-    if not import_indexes:
+    try:
+        first = next(i for i, line in enumerate(lines) if line.startswith("import "))
+    except StopIteration:
         raise ValueError("no Lean imports found")
 
-    first, last = import_indexes[0], import_indexes[-1]
-    unexpected = [
-        line for line in lines[first : last + 1] if line and not line.startswith("import ")
-    ]
-    if unexpected:
-        raise ValueError("the import block is not contiguous")
+    # Lean imports form the initial contiguous command block.  Stop at its first
+    # nonblank, non-import line so prose such as "import the narrow leaf" in a
+    # later module docstring is never mistaken for another import command.
+    import_indexes: list[int] = []
+    for i in range(first, len(lines)):
+        line = lines[i]
+        if line.startswith("import "):
+            import_indexes.append(i)
+        elif line:
+            break
+
+    last = import_indexes[-1]
 
     imports = sorted({lines[i] for i in import_indexes}, key=str.casefold)
     result = lines[:first] + imports + lines[last + 1 :]

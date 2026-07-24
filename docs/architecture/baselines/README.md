@@ -37,6 +37,12 @@ Each capture consists of:
   reviewed mixed module in the summation family.
 - `2026-07-23-organization-phase3-build.md` records the corresponding full
   test run, focused rebuilds, declaration extraction, and architecture gates.
+- `2026-07-24-organization-phase4.{json,md}` captures the complete compensated-
+  summation split, including the reusable Kahan, Alternative, no-guard, and
+  finite-format families and their Chapter 4 source correspondence.
+- `2026-07-24-organization-phase4-build.md` records the exact public-surface
+  audit, full builds, declaration extraction, and architecture gates for that
+  graph.
 
 Regenerate a named baseline from the repository root with:
 

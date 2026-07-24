@@ -1,0 +1,27 @@
+import NumStability.Algorithms.Summation.Compensated.Kahan.LocalCoefficients
+
+/-!
+# Kahan local-coefficient smoke test
+
+Checks the source-independent local roundoff witness and coefficient API
+without importing finite-format, majorant, coefficient-engine, or source
+modules.
+-/
+
+#check NumStability.KahanStepDeltaWitness
+#check NumStability.kahanStepTrace_deltaWitness
+#check NumStability.kahanStepTrace_deltaWitnessOfExactSub
+#check NumStability.kahanTotalStateCoeff
+#check NumStability.kahanTotalInputCoeff
+#check NumStability.kahanCorrectionStateCoeff
+#check NumStability.kahanStepDeltaWitness_e_abs_le_split
+#check NumStability.kahanStepDeltaWitness_total_compensated_total_coefficients
+#check NumStability.kahanTrace_deltaWitness
+#check NumStability.kahanTrace_deltaWitness_total_compensated_total_coefficients
+#check NumStability.KahanPrefixDeltaWitnessFamily
+#check NumStability.KahanPrefixCorrectionSubExact
+#check NumStability.kahanPrefixDeltaWitnessFamilyOfExactSub
+#check NumStability.kahanTrace_deltaWitness_deltaY_bound
+#check NumStability.kahanTrace_deltaWitness_deltaS_bound
+#check NumStability.kahanTrace_deltaWitness_deltaSub_bound
+#check NumStability.kahanTrace_deltaWitness_deltaE_bound

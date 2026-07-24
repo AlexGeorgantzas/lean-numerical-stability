@@ -1,0 +1,12 @@
+import NumStability.Source.Higham.Chapter04.Equation08.FiniteRouteLimitations
+
+/-!
+# Higham equation (4.8) finite-route limitation source-leaf smoke test
+-/
+
+#check NumStability.not_forall_finiteKahanTrace_tail_abs_order
+#check NumStability.not_forall_finiteKahanTrace_tail_sterbenzLe
+#check NumStability.not_forall_finiteKahanTrace_tail_fergusonLe
+#check NumStability.not_forall_finiteKahanTrace_tail_direct_sub_finite
+#check NumStability.finiteKahanTrace_decimal_tail_direct_sub_eq_neg_eightynine
+#check NumStability.finiteKahanTrace_tail_direct_sub_finiteNormalRange_not_finiteSystem_counterexample

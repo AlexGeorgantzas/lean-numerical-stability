@@ -4,6 +4,11 @@
     "NumStability.Algorithms": "NumStability.Algorithms.",
     "NumStability.Algorithms.LinearSystems.Triangular": "NumStability.Algorithms.LinearSystems.Triangular.",
     "NumStability.Algorithms.Summation": "NumStability.Algorithms.Summation.",
+    "NumStability.Algorithms.Summation.Compensated": "NumStability.Algorithms.Summation.Compensated.",
+    "NumStability.Algorithms.Summation.Compensated.Alternative": "NumStability.Algorithms.Summation.Compensated.Alternative.",
+    "NumStability.Algorithms.Summation.Compensated.Kahan": "NumStability.Algorithms.Summation.Compensated.Kahan.",
+    "NumStability.Algorithms.Summation.Compensated.Kahan.Coefficients": "NumStability.Algorithms.Summation.Compensated.Kahan.Coefficients.",
+    "NumStability.Algorithms.Summation.Compensated.NoGuard": "NumStability.Algorithms.Summation.Compensated.NoGuard.",
     "NumStability.Algorithms.Summation.Insertion": "NumStability.Algorithms.Summation.Insertion.",
     "NumStability.Algorithms.Summation.Pairwise": "NumStability.Algorithms.Summation.Pairwise.",
     "NumStability.Algorithms.Summation.Recursive": "NumStability.Algorithms.Summation.Recursive.",
@@ -17,7 +22,13 @@
     "NumStability.Source": "NumStability.Source.",
     "NumStability.Source.Higham": "NumStability.Source.Higham.",
     "NumStability.Source.Higham.Chapter04": "NumStability.Source.Higham.Chapter04.",
+    "NumStability.Source.Higham.Chapter04.Algorithm02": "NumStability.Source.Higham.Chapter04.Algorithm02.",
+    "NumStability.Source.Higham.Chapter04.Equation07": "NumStability.Source.Higham.Chapter04.Equation07.",
+    "NumStability.Source.Higham.Chapter04.Equation08": "NumStability.Source.Higham.Chapter04.Equation08.",
+    "NumStability.Source.Higham.Chapter04.Equation09": "NumStability.Source.Higham.Chapter04.Equation09.",
+    "NumStability.Source.Higham.Chapter04.Equation10": "NumStability.Source.Higham.Chapter04.Equation10.",
     "NumStability.Source.Higham.Chapter04.Section01": "NumStability.Source.Higham.Chapter04.Section01.",
+    "NumStability.Source.Higham.Chapter04.Section03": "NumStability.Source.Higham.Chapter04.Section03.",
     "NumStability.Source.Higham.Chapter14": "NumStability.Source.Higham.Chapter14.",
     "NumStability.Source.Higham.Chapter24": "NumStability.Source.Higham.Chapter24.",
     "NumStability.Source.Higham.Chapter25": "NumStability.Source.Higham.Chapter25."
@@ -26,7 +37,7 @@
     "NumStability.Algorithms": {
       "NumStability.": 463,
       "NumStability.Analysis.": 45,
-      "NumStability.Source.": 2
+      "NumStability.Source.": 3
     }
   },
   "legacy": {
@@ -262,9 +273,7 @@
       "NumStability.FloatingPoint",
       "NumStability.FloatingPoint.Model"
     ],
-    "mixed_modules": [
-      "NumStability.Algorithms.Summation.Compensated"
-    ],
+    "mixed_modules": [],
     "noncanonical_modules": [
       "NumStability.Algorithms.AutomaticErrorAnalysis.Higham26",
       "NumStability.Algorithms.AutomaticErrorAnalysis.Higham26SourceSearch",
@@ -324,7 +333,6 @@
       "NumStability.Algorithms.Ch15CondEstimators",
       "NumStability.Algorithms.Ch15DixonClosure",
       "NumStability.Algorithms.Ch15DixonProbability",
-      "NumStability.Algorithms.Ch4KahanFiniteFamily",
       "NumStability.Algorithms.Ch5DerivativeError",
       "NumStability.Algorithms.Ch5LejaProducer",
       "NumStability.Algorithms.Ch5NewtonForm",
@@ -783,7 +791,6 @@
       "NumStability.Algorithms.Ch15CondEstimators",
       "NumStability.Algorithms.Ch15DixonClosure",
       "NumStability.Algorithms.Ch15DixonProbability",
-      "NumStability.Algorithms.Ch4KahanFiniteFamily",
       "NumStability.Algorithms.Ch5DerivativeError",
       "NumStability.Algorithms.Ch5LejaProducer",
       "NumStability.Algorithms.Ch5NewtonForm",
@@ -926,7 +933,6 @@
       "NumStability.Algorithms.Horner",
       "NumStability.Algorithms.IterativeRefinement",
       "NumStability.Algorithms.KahanAbsolute",
-      "NumStability.Algorithms.KahanCompensatedFiniteFormat",
       "NumStability.Algorithms.LU.BlockLU",
       "NumStability.Algorithms.LU.BlockLUArbitraryNormSourceClosure",
       "NumStability.Algorithms.LU.BlockLUComputationSourceClosure",

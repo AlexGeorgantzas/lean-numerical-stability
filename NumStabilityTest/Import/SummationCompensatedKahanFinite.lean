@@ -1,0 +1,27 @@
+import NumStability.Algorithms.Summation.Compensated.Kahan.Finite
+
+/-!
+# Kahan finite-format smoke test
+
+Checks the canonical finite execution, closure, realization, and
+correction-subtraction certificate API without importing reusable error bounds
+or Higham source audits.
+-/
+
+#check NumStability.finiteKahanStepTrace
+#check NumStability.finiteKahanStep
+#check NumStability.finiteKahanStepTrace_e
+#check NumStability.finiteKahanStep_zero_of_finiteSystem
+#check NumStability.finiteKahanPrefixState
+#check NumStability.finiteKahanPrefixState_one_of_finiteSystem
+#check NumStability.finiteKahanTrace
+#check NumStability.finiteKahanState
+#check NumStability.finiteKahanSum
+#check NumStability.finiteKahanCorrection
+#check NumStability.finiteKahanPrefixState_finiteSystem
+#check NumStability.KahanAddSubFiniteRoundToEvenRealization
+#check NumStability.kahanTrace_eq_finiteKahanTrace_of_addSubFiniteRoundToEven
+#check NumStability.FiniteKahanPrefixCorrectionSubFinite
+#check NumStability.KahanPrefixFastTwoSumFiniteCertificates
+#check NumStability.FiniteKahanPrefixCorrectionSubFinite.of_fastTwoSumCertificates
+#check NumStability.KahanPrefixCorrectionSubExact.of_finiteRoundToEven_fastTwoSumCertificates

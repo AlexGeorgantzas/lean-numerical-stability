@@ -61,7 +61,6 @@ import NumStability.Algorithms.Ch14SchulzSpectralConvergence
 import NumStability.Algorithms.Ch15CondEstimators
 import NumStability.Algorithms.Ch15DixonClosure
 import NumStability.Algorithms.Ch15DixonProbability
-import NumStability.Algorithms.Ch4KahanFiniteFamily
 import NumStability.Algorithms.Ch5DerivativeError
 import NumStability.Algorithms.Ch5LejaProducer
 import NumStability.Algorithms.Ch5NewtonForm
@@ -190,7 +189,6 @@ import NumStability.Algorithms.HighamLemma88Entrywise
 import NumStability.Algorithms.Horner
 import NumStability.Algorithms.IterativeRefinement
 import NumStability.Algorithms.KahanAbsolute
-import NumStability.Algorithms.KahanCompensatedFiniteFormat
 import NumStability.Algorithms.LeastSquares.Higham20Algorithms
 import NumStability.Algorithms.LeastSquares.Higham20AlternativeBound
 import NumStability.Algorithms.LeastSquares.Higham20CrossProductExample
@@ -462,6 +460,7 @@ import NumStability.Analysis.SemiconvergentLimitGeneral
 import NumStability.Analysis.SemiconvergentRealSpectrumComplete
 import NumStability.Analysis.SemiconvergentSpectral
 import NumStability.Analysis.SylvesterSchurExistence
+import NumStability.Source.Higham.Chapter04
 import NumStability.Source.Higham.Chapter24
 import NumStability.Source.Higham.Chapter25
 

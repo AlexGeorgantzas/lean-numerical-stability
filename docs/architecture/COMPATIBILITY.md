@@ -17,6 +17,7 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.Summation.Tree.RecursiveBridge` | `NumStability.Algorithms.Summation.Tree.Chain` |
 | `NumStability.Algorithms.PlusMinusSum` | `NumStability.Algorithms.Summation.PlusMinus` |
 | `NumStability.Algorithms.CompensatedSum` | `NumStability.Algorithms.Summation.Compensated` |
+| `NumStability.Algorithms.KahanCompensatedFiniteFormat` | `NumStability.Source.Higham.Chapter04.Section03.FiniteFormat` |
 | `NumStability.Algorithms.DoublyCompensatedSum` | `NumStability.Algorithms.Summation.DoublyCompensated` |
 | `NumStability.Algorithms.AccumulatorSum` | `NumStability.Algorithms.Summation.Accumulator` |
 | `NumStability.Algorithms.TriangularSolve` | `NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution` |
@@ -33,6 +34,7 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.Cholesky.BunchTridiagonalCapstoneCh11Closure` | `NumStability.Higham.Chapter11.Theorem11_7Capstone` |
 | `NumStability.Algorithms.LU.BlockLUTable13_1Families` | `NumStability.Higham.Chapter13.Table13_1` |
 | `NumStability.Algorithms.Ch14SourceCorrections` | `NumStability.Source.Higham.Chapter14.Discrepancies` |
+| `NumStability.Algorithms.Ch4KahanFiniteFamily` | `NumStability.Source.Higham.Chapter04.Equation08.FiniteFamily` |
 | `NumStability.Algorithms.LeastSquares.Higham20SourceAliases` | `NumStability.Higham.Chapter20.SourceAliases` |
 | `NumStability.Algorithms.FFT.Higham24` | `NumStability.Source.Higham.Chapter24.FourierTransform` |
 | `NumStability.Algorithms.FFT.Higham24Radix2` | `NumStability.Source.Higham.Chapter24.Radix2FFT` |

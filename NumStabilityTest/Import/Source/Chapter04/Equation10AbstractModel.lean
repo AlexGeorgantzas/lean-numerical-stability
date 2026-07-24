@@ -1,0 +1,10 @@
+import NumStability.Source.Higham.Chapter04.Equation10.AbstractModel
+
+/-!
+# Higham equation (4.10) abstract-model source-leaf smoke test
+-/
+
+#check NumStability.fl_alternativeCompensatedSum_backward_error_source_bound_of_exact_steps_correction_transfer
+#check NumStability.fl_alternativeCompensatedSum_backward_error_source_bound_of_exact_steps_higham_cap
+#check NumStability.not_forall_alternativeCompensated_globalGammaRadius_le_two_u_add_n_sq_u_sq_of_nu_le_tenth
+#check NumStability.fl_alternativeCompensatedSum_relError_le_of_backward_oneSigned

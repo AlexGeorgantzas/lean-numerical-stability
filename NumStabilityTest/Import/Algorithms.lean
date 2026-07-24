@@ -14,3 +14,5 @@ algebra declarations through the historical Algorithms aggregate.
 #check NumStability.higham25NewtonEquation
 #check NumStability.OrthogonalSequenceBackwardError
 #check NumStability.RectRankFactorization
+#check NumStability.highamCh4_equation48_finiteFamily_no_fixed_secondOrderConstant
+#check NumStability.highamCh4_equation49_finiteFamily_no_fixed_secondOrderConstant

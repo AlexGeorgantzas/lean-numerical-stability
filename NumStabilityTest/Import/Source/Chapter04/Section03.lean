@@ -1,0 +1,15 @@
+import NumStability.Source.Higham.Chapter04.Section03
+
+/-!
+# Higham Section 4.3 source-entry-point smoke test
+-/
+
+#check NumStability.kahanStep_abstractCounterexample_zero_ne_exact
+#check NumStability.correctionFormulaAbstractCounterexample_not_exact
+#check NumStability.highamCh4_equation48_modelStrengthCorrection_bareFPModel
+#check NumStability.highamCh4_equation49_modelStrengthCorrection_bareFPModel
+#check NumStability.kahanNoGuardCounterexample_relError_eq_one
+#check NumStability.fl_alternativeCompensatedSum_backward_error_source_bound_of_exact_steps_higham_cap
+#check NumStability.kahanFF_kahanSum_backward_error
+#check NumStability.kahanFF_kahanSum_forward_error
+#check NumStability.kahanFF_alternativeCompensatedSum_backward_error
