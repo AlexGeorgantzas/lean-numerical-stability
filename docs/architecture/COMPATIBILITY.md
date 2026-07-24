@@ -77,11 +77,17 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.Problem44SixTerm` | `NumStability.Source.Higham.Chapter04.Problem04` |
 | `NumStability.Algorithms.StationaryIterationSeries` | `NumStability.Source.Higham.Chapter17.Equation08`, `NumStability.Source.Higham.Chapter17.Equation12`, `NumStability.Source.Higham.Chapter17.Equation15`, `NumStability.Source.Higham.Chapter17.Equation16`, `NumStability.Source.Higham.Chapter17.Equation17`, `NumStability.Source.Higham.Chapter17.Equation20`, and `NumStability.Source.Higham.Chapter17.Problem01` |
 | `NumStability.Analysis.Ch17SemiconvergentBlockFormSourceClosure` | `NumStability.Source.Higham.Chapter17.Equation22` |
-| `NumStability.Analysis.NonrandomRounding` | `NumStability.Analysis.NonrandomRounding.Conclusions` |
+| `NumStability.Analysis.NonrandomRounding` | `NumStability.Source.Higham.Chapter01.Section17` |
+| `NumStability.Analysis.NonrandomRounding.Conclusions` | `NumStability.Source.Higham.Chapter01.Section17.ErrorSpread` |
+| `NumStability.Analysis.NonrandomRounding.Core` | `NumStability.Source.Higham.Chapter01.Section17.HornerEvaluation` |
+| `NumStability.Analysis.NonrandomRounding.GridVariation` | `NumStability.Source.Higham.Chapter01.Section17.GridVariation` |
+| `NumStability.Analysis.NonrandomRounding.SourceInterval` | `NumStability.Source.Higham.Chapter01.Section17.SourceInterval` |
+| `NumStability.Analysis.NonrandomRounding.StoredGrid` | `NumStability.Source.Higham.Chapter01.Section17.StoredGrid` |
 
 The historical nonrandom-rounding path remains the complete compatibility
-import through the transitive layer chain; new code may select its narrower
-semantic submodules.
+import for the canonical Section 1.17 aggregate. Its five historical child
+paths are exact import-only wrappers for the corresponding semantic leaves;
+new code should import the canonical Chapter 1 paths directly.
 
 CI runs `tools/architecture/check_compatibility.py` to require that every
 tabled historical file contains only its documented imports and that

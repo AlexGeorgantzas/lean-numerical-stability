@@ -71,7 +71,11 @@ split from the reusable library.
   declaration-free complete-family aggregate retained for historical
   discovery; its internal legacy-bounds leaf is not supported downstream API.
 - `NumStability.Source.Higham` is the canonical Higham correspondence entry
-  point. Chapter 23 is organized under
+  point. Chapter 1 Section 1.17 is organized under
+  `NumStability.Source.Higham.Chapter01.Section17`, with five semantic source
+  leaves and declaration-free chapter and section aggregates. Historical
+  `Analysis.NonrandomRounding*` paths are compatibility wrappers only.
+  Chapter 23 is organized under
   `NumStability.Source.Higham.Chapter23`, with semantic base leaves and
   declaration-free Theorem 23.2, Theorem 23.3, Bini--Lotti, and combined
   3M--Strassen family aggregates. Historical `FastMatMul.Higham23*` paths are

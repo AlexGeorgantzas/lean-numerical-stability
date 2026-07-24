@@ -23,6 +23,7 @@ example : ℝ → ℝ → ℝ := absError
 example : (fp : FPModel) → (n : ℕ) → (Fin n → ℝ) → ℝ :=
   fl_recursiveSum
 
+#check not_forall_ieeeDoubleKahanStoredGridError_eq_on_source_grid
 #check higham14_hadamardConditionNumberRaw_negative_one_counterexample
 #check fl_noGuardDotProduct
 #check higham20_eq20_32_Bplus_residual_eq_crossProjection

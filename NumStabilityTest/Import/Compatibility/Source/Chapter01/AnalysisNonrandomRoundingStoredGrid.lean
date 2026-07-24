@@ -1,0 +1,10 @@
+import NumStability.Analysis.NonrandomRounding.StoredGrid
+
+/-!
+# Historical nonrandom-rounding stored-grid import
+-/
+
+#check NumStability.ieeeDoubleKahanRationalFunction_eq_errorEval_of_finiteNormal
+#check NumStability.ieeeDoubleKahanRationalFunction_eq_errorEval_on_source_interval
+#check NumStability.ieeeDoubleKahanRationalFunction_175_289_error_spread_gt_of_output_spread
+#check NumStability.ieeeDoubleKahanStoredGridRationalFunction_289_eq

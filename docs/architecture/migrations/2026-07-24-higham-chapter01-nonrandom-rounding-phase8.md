@@ -172,6 +172,39 @@ The two legacy top-level `NonrandomRoundingCanonical` and
 canonical/compatibility test layout, so the test tree follows the production
 hierarchy without retaining another naming exception.
 
+## Measured migration result
+
+The completed candidate implements the ownership map above without a
+declaration split. The five canonical leaves contain the exact historical
+declaration bodies, and the two new entry points are documented, sorted,
+declaration-free aggregates. All six historical modules are now one-import
+compatibility wrappers, and no production module imports one of those old
+paths. `NumStability.Analysis` intentionally imports the canonical Section
+1.17 aggregate to retain its historical transitive public surface.
+
+An isolated audit compiled the five immutable execution-base modules and the
+five canonical modules independently. Both environments contain exactly 242
+owned constants with the same per-owner distribution: 164 public, 65
+internal, and 13 private. After normalizing only the five owner paths and the
+two allowed `_private` owner prefixes, the sorted inventories have zero
+missing, added, or mismatched constants across names, owners, declaration
+kinds, visibility, normalized type structural hashes, and normalized
+body/proof structural hashes. There is no generated-helper delta.
+
+The source audit counted the same 147 explicit declaration blocks, including
+all 13 private blocks. Four canonical files are byte-identical to their
+immutable owners from `namespace NumStability` onward. The fifth differs only
+by removal of the orphan trailing module-section comment identified in the
+pre-edit inventory, so every declaration block is byte-identical.
+
+Thirteen isolated import tests cover the five declaration leaves, both
+canonical aggregates, and all six old-only compatibility imports. Shared
+`Analysis`, `All`, `Higham`, root, `Source`, `Source.Higham`, canonical-source,
+and migration smokes exercise the changed entry-point surfaces. The final
+candidate passed `lake test`, the combined production-and-test build, the
+library-lookup example, baseline generation and reproduction, and every
+architecture gate listed below.
+
 ## Architecture and validation gates
 
 The new canonical leaves and aggregates are classified at creation; all six

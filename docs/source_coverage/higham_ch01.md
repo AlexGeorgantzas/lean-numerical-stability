@@ -21,6 +21,12 @@
   error, stability and conditioning definitions, Lemma 1.1, and the worked
   cancellation/variance/quadratic analyses). Editorial passages are
   classified SKIP-OK below with reason codes.
+- Canonical source entry point: `NumStability.Source.Higham.Chapter01`.
+  Section 1.17 is the complete
+  `NumStability.Source.Higham.Chapter01.Section17` family, split into the
+  `HornerEvaluation`, `SourceInterval`, `GridVariation`, `StoredGrid`, and
+  `ErrorSpread` leaves. The former `NumStability.Analysis.NonrandomRounding*`
+  paths are compatibility imports only.
 - Current aggregate status: **CORE VERIFIED (selected-scope gate PASS)**.
 
 Status language:
@@ -88,7 +94,7 @@ all report exactly `[propext, Classical.choice, Quot.sound]`.
 | S1.14.2 Givens QR cancellation example (Figure 1.5) | **SKIP-OK(empirical example; cross-chapter anchors)** | The precise anchors are Theorem 19.10 (backward stability of Givens QR) and (19.35a) (QR perturbation), which belong to Chapter 19's ledger (`higham_ch19.md`). The specially constructed 10x6 matrix experiment is machine output. |
 | S1.15 rounding errors can be beneficial (power method, inverse iteration) | **VERIFIED** (mechanism) | `NumStability/Analysis/BeneficialRounding.lean`: `powerMethodStep`/`powerMethodIterate`, `IsRightEigenpair`; the non-representability mechanism proved exactly (`one_fifth/two_thirds/one_seventh_not_binaryTerminating` and their exclusion from IEEE single/double finite systems, plus round-to-even storage values of every entry of the displayed matrix); inverse iteration formalized through the Lemma 1.1 rank-one backward-error certificate (`inverseIterationShiftedRankOneBackwardError_*`). The Parlett/Golub-Van Loan claim that the inverse-iteration error lies along the eigenvector is a citation in the source, not a Chapter 1 obligation. |
 | S1.16 stability depends on the problem (Hessenberg determinant vs. solve); Table 1.3 | **VERIFIED** | `NumStability/Analysis/ProblemDependentStability.lean`: the source-shaped rounded diagonal-update identity with the three `(1+eps)` factors, the nearby-matrix construction (diagonal and subdiagonal entries perturbed by exactly the displayed factors), the mixed forward-backward determinant conclusion in the sense of (1.2) (determinant-product bridge with `gamma fp n` relative factor), Table 1.3 encoded exactly, and the `alpha = 10^-7` instance. The MGS least-squares/orthonormal-basis contrast is a S19.8/S20.3 pointer (other chapters' scope). |
-| S1.17 rounding errors are not random (Kahan rational function) | **VERIFIED** (error structure) / **SKIP-OK(empirical)** Figure 1.6 | `NumStability/Analysis/NonrandomRounding.lean`: `kahanRationalFunction`, Horner numerator/denominator rounded traces with exact error-evaluation forms (`flKahanRationalFunction_eq_errorEval`), continued-fraction reference form, and concrete IEEE-double finite round-to-even normal traces. The plotted 361-point pattern is machine output. |
+| S1.17 rounding errors are not random (Kahan rational function) | **VERIFIED** (error structure) / **SKIP-OK(empirical)** Figure 1.6 | `NumStability/Source/Higham/Chapter01/Section17.lean` is the complete source aggregate. Its `HornerEvaluation.lean` leaf defines `kahanRationalFunction`, the Horner numerator/denominator rounded traces and exact error-evaluation forms (`flKahanRationalFunction_eq_errorEval`), and the continued-fraction reference form; `SourceInterval.lean`, `GridVariation.lean`, `StoredGrid.lean`, and `ErrorSpread.lean` supply the interval, grid, concrete IEEE-double finite round-to-even, and certified spread layers. The plotted 361-point pattern is machine output. |
 | S1.18 designing stable algorithms (six guidelines) | **SKIP-OK(advice/editorial)** | Design guidance; the load-bearing instances (GE, summation, MGS, iterative refinement) are other chapters' obligations. |
 | S1.19 misconceptions list | **SKIP-OK(editorial summary)** | Each listed misconception is the summary of a section already audited above. |
 | S1.20 rounding errors in numerical analysis | **SKIP-OK(editorial survey)** | Literature pointers. |

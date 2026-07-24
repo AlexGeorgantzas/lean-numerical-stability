@@ -1,3 +1,8 @@
+import NumStability.Source.Higham.Chapter01.Section17.ErrorSpread
+import NumStability.Source.Higham.Chapter01.Section17.GridVariation
+import NumStability.Source.Higham.Chapter01.Section17.HornerEvaluation
+import NumStability.Source.Higham.Chapter01.Section17.SourceInterval
+import NumStability.Source.Higham.Chapter01.Section17.StoredGrid
 import NumStability.Source.Higham.Chapter04.Section02.KaoWangCitationDiscrepancy
 import NumStability.Source.Higham.Chapter08.Lemma08Discrepancy
 import NumStability.Source.Higham.Chapter10.Theorem07
@@ -33,6 +38,11 @@ Every extracted source target is imported directly, independently of the
 historical forwarding paths and the aggregate Higham entry point.
 -/
 
+#check NumStability.ieeeDoubleKahanRationalFunction_eq_errorEval_of_finiteNormal
+#check NumStability.ieeeDoubleKahanRationalFunction_eq_errorEval_on_source_interval
+#check NumStability.ieeeDoubleKahanRationalFunction_175_289_error_spread_gt_of_output_spread
+#check NumStability.ieeeDoubleKahanStoredGridRationalFunction_289_eq
+#check NumStability.not_forall_ieeeDoubleKahanStoredGridError_eq_on_source_grid
 #check NumStability.higham8_8_printed_rowDominance_condSkeel_claim_false
 #check NumStability.higham10_7_fl_cholesky_success_source
 #check NumStability.Ch11Closure.TriGrowthInv.higham11_7_bunch_tridiagonal_support_aware

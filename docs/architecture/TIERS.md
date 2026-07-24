@@ -33,6 +33,13 @@ mathematical declarations. `mixed` marks a reviewed module that still contains
 more than one declaration tier; it is an explicit split queue, not a permanent
 architecture category.
 
+The Chapter 1 Section 1.17 migration uses exact `aggregate` rules for
+`NumStability.Source.Higham.Chapter01` and its `Section17` child. The five
+canonical leaves inherit `source` from the `NumStability.Source` prefix. The
+six historical `NumStability.Analysis.NonrandomRounding*` paths use exact
+`compatibility` rules; there is deliberately no source-tier prefix rule for
+that historical directory.
+
 Because structural aggregates do not themselves own declarations,
 `reusable_entrypoints` separately lists aggregates whose entire reachable
 surface must obey the reusable-to-source dependency gate. This keeps structural

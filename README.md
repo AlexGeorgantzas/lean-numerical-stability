@@ -174,20 +174,20 @@ approximation, and least-squares preconditioning.
 ## Project statistics
 
 Latest generated checkpoint of the production source surface, including the
-Phase 7 FastMatMul and canonical Chapter 23 migration:
+Phase 8 canonical Higham Chapter 1 Section 1.17 migration:
 
 | | |
 |---|---|
-| Lean modules | **931** (930 below `NumStability/` plus the root entry point) |
-| Lines of Lean | **1,467,718** physical lines |
-| Direct imports | **3,972** |
-| Internal direct-import edges | **2,605** |
+| Lean modules | **938** (937 below `NumStability/` plus the root entry point) |
+| Lines of Lean | **1,467,799** physical lines |
+| Direct imports | **3,984** |
+| Internal direct-import edges | **2,617** |
 | Import cycles | **0** |
 | `sorry` / `admit` / source-level `axiom` or `constant` commands | **0** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
 the standard `[propext, Classical.choice, Quot.sound]` axioms. The versioned
-[`2026-07-24 organization Phase 7 baseline`](docs/architecture/baselines/2026-07-24-organization-phase7.md)
+[`2026-07-24 organization Phase 8 baseline`](docs/architecture/baselines/2026-07-24-organization-phase8.md)
 records the full source, import, signature-dependency, and proof/body-dependency
 metrics and the exact counting definitions.
 
@@ -247,7 +247,12 @@ Choose the narrowest entry point that matches the material you need:
   from that path live in `FastMatMul.Internal.LegacyBounds`.
 - `NumStability.Source` is the canonical umbrella for source-faithful material.
 - `NumStability.Source.Higham` collects Higham chapter results and explicit
-  cross-chapter bridges. For fast matrix multiplication, import
+  cross-chapter bridges. The complete nonrandom-rounding correspondence is
+  `NumStability.Source.Higham.Chapter01.Section17`; its five semantic leaves
+  separate Horner evaluation, interval propagation, grid variation, stored
+  IEEE-double inputs, and the final error-spread result. The historical
+  `Analysis.NonrandomRounding*` paths are import-only compatibility shims. For
+  fast matrix multiplication, import
   `NumStability.Source.Higham.Chapter23` or one of its semantic theorem,
   equation, algorithm, or problem leaves.
 - `NumStability.Higham` is the historical compatibility entry point; new code
@@ -271,9 +276,9 @@ the old-to-new path map and removal policy. The
 dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
-corpus is already Mathlib-style. After the Chapter 23 ownership split, the
-current ratchet records 637 unclassified modules, no reviewed mixed modules,
-224 missing module docs, 431 historical naming exceptions, and no
+corpus is already Mathlib-style. After the Chapter 1 Section 1.17 ownership
+split, the current ratchet records 637 unclassified modules, no reviewed mixed
+modules, 224 missing module docs, 430 historical naming exceptions, and no
 declaration-bearing umbrella. CI prevents those queues from growing while each
 dependency-contained family is migrated.
 
@@ -370,7 +375,7 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 
 The selected formalization core scope is closed; the repository-organization
 migration is not. The next batches classify the remaining 637 unclassified
-modules while keeping the mixed-module count at zero, replace the 431
+modules while keeping the mixed-module count at zero, replace the 430
 historical source/proof-stage names with semantic canonical paths plus
 compatibility shims, document the 224 remaining modules, and review the
 giant-file outliers. The sequence and safety

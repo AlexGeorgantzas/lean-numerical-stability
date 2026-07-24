@@ -7,6 +7,7 @@ Ensure the historical Higham entry point forwards the complete canonical
 `NumStability.Source.Higham` tree.
 -/
 
+#check NumStability.not_forall_ieeeDoubleKahanStoredGridError_eq_on_source_grid
 #check NumStability.FloatingPointFormat.problem2_4_theorem2_3_nearest_finite
 #check NumStability.recursiveSum_problem43_abs_error_bound
 #check NumStability.problem44_outputs_exactly_Icc

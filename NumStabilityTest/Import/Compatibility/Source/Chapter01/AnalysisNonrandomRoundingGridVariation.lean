@@ -1,0 +1,9 @@
+import NumStability.Analysis.NonrandomRounding.GridVariation
+
+/-!
+# Historical nonrandom-rounding grid-variation import
+-/
+
+#check NumStability.ieeeDoubleKahanRationalFunction_eq_errorEval_of_finiteNormal
+#check NumStability.ieeeDoubleKahanRationalFunction_eq_errorEval_on_source_interval
+#check NumStability.ieeeDoubleKahanRationalFunction_175_289_error_spread_gt_of_output_spread

@@ -61,6 +61,12 @@ Each capture consists of:
 - `2026-07-24-organization-phase7-build.md` records the root and Chapter 23
   declaration/body-preservation audits, canonical-only and old-only import
   tests, full builds, and architecture gates for that graph.
+- `2026-07-24-organization-phase8.{json,md}` captures the canonical
+  Higham Chapter 1 Section 1.17 hierarchy, its five source leaves, two complete
+  aggregates, and the six historical nonrandom-rounding forwarding paths.
+- `2026-07-24-organization-phase8-build.md` records the corresponding
+  declaration/body-preservation audit, isolated import tests, full builds, and
+  architecture gates.
 
 Regenerate a named baseline from the repository root with:
 

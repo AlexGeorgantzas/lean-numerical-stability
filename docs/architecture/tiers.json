@@ -40,6 +40,8 @@
     "NumStability.Higham.CrossChapter.Chapter09To12Solver": "compatibility",
     "NumStability.Source": "aggregate",
     "NumStability.Source.Higham": "aggregate",
+    "NumStability.Source.Higham.Chapter01": "aggregate",
+    "NumStability.Source.Higham.Chapter01.Section17": "aggregate",
     "NumStability.Source.Higham.Chapter02": "aggregate",
     "NumStability.Source.Higham.Chapter04": "aggregate",
     "NumStability.Source.Higham.Chapter04.Algorithm02": "aggregate",
@@ -184,6 +186,11 @@
     "NumStability.Analysis.Summation.Signs": "reusable",
     "NumStability.Analysis.Ch17SemiconvergentBlockFormSourceClosure": "compatibility",
     "NumStability.Analysis.NonrandomRounding": "compatibility",
+    "NumStability.Analysis.NonrandomRounding.Conclusions": "compatibility",
+    "NumStability.Analysis.NonrandomRounding.Core": "compatibility",
+    "NumStability.Analysis.NonrandomRounding.GridVariation": "compatibility",
+    "NumStability.Analysis.NonrandomRounding.SourceInterval": "compatibility",
+    "NumStability.Analysis.NonrandomRounding.StoredGrid": "compatibility",
     "NumStability.Analysis.Problem2_22": "compatibility",
     "NumStability.Analysis.Problem2_4": "compatibility",
     "NumStability.Analysis.Problem2_7": "compatibility"
@@ -196,10 +203,6 @@
     {
       "prefix": "NumStability.Upstream",
       "tier": "upstream"
-    },
-    {
-      "prefix": "NumStability.Analysis.NonrandomRounding",
-      "tier": "source"
     },
     {
       "prefix": "NumStability.Algorithms.LinearSystems.Triangular",

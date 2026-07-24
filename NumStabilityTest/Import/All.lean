@@ -15,6 +15,7 @@ example :
     (fp : NumStability.FPModel) → (n : ℕ) → (Fin n → ℝ) → ℝ :=
   NumStability.fl_recursiveSum
 
+#check NumStability.not_forall_ieeeDoubleKahanStoredGridError_eq_on_source_grid
 #check NumStability.higham14_hadamardConditionNumberRaw_negative_one_counterexample
 #check NumStability.fl_noGuardDotProduct
 #check NumStability.higham20_eq20_32_Bplus_residual_eq_crossProjection

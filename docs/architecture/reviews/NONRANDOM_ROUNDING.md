@@ -39,38 +39,44 @@ not a stable versioned artifact.
 
 ## Decision
 
-Split the file by mathematical role while retaining
-`NumStability.Analysis.NonrandomRounding` as a compatibility umbrella:
+The initial performance split established a one-way chain of five compiled
+layers. The subsequent architecture review classified the complete family as
+source correspondence for Higham Section 1.17, not reusable analysis. Its
+canonical ownership is therefore:
 
-1. `Core` — rational/Horner definitions and abstract local-error traces.
-2. `SourceInterval` — finite-normal and interval propagation results.
+1. `HornerEvaluation` — rational/Horner definitions and abstract local-error
+   traces.
+2. `SourceInterval` — finite-normal and interval-propagation results.
 3. `GridVariation` — the exact reference curve and variation bounds.
 4. `StoredGrid` — concrete IEEE-double numerator and denominator certificates.
-5. `Conclusions` — the final error-spread and nonrandomness endpoints.
+5. `ErrorSpread` — the final error-spread and nonrandomness endpoints.
 
-The reusable analytic layers must not import the concrete stored-grid
-certificate. This improves import precision and isolates expensive edits. A
-split alone is not expected to reduce the sum of clean elaboration times: the
-large exact certificates and four long interval proofs remain genuine work.
-Further proof refactoring should extract reusable interval-propagation lemmas
-and should be accepted only after a second profile shows a reduction.
+The dependency chain remains one-way, so narrower imports continue to isolate
+expensive edits. No leaf is classified reusable merely because some of its
+lemmas are abstract: every declaration in this batch supports the particular
+Kahan example and its Higham source correspondence. Any later extraction of
+generic interval-propagation theory requires a separate API review and profile.
 
 ## Implemented result
 
-The compatibility module now re-exports five compiled layers:
+The two canonical aggregates are declaration-free and complete. All six old
+paths remain exact import-only compatibility wrappers:
 
-| Layer | Lines | Initial build result |
-| --- | ---: | ---: |
-| `Core` | 526 | pass (18 s) |
-| `SourceInterval` | 972 | pass (328 s) |
-| `GridVariation` | 622 | pass (33 s) |
-| `StoredGrid` | 1,755 | pass (37 s) |
-| `Conclusions` | 115 | pass (24 s) |
+| Historical path | Canonical path |
+| --- | --- |
+| `NumStability.Analysis.NonrandomRounding` | `NumStability.Source.Higham.Chapter01.Section17` |
+| `NumStability.Analysis.NonrandomRounding.Core` | `NumStability.Source.Higham.Chapter01.Section17.HornerEvaluation` |
+| `NumStability.Analysis.NonrandomRounding.SourceInterval` | `NumStability.Source.Higham.Chapter01.Section17.SourceInterval` |
+| `NumStability.Analysis.NonrandomRounding.GridVariation` | `NumStability.Source.Higham.Chapter01.Section17.GridVariation` |
+| `NumStability.Analysis.NonrandomRounding.StoredGrid` | `NumStability.Source.Higham.Chapter01.Section17.StoredGrid` |
+| `NumStability.Analysis.NonrandomRounding.Conclusions` | `NumStability.Source.Higham.Chapter01.Section17.ErrorSpread` |
 
-These first-build times were observed while a disjoint clean-cache Chapter 9
-build was also running, so they are validation evidence rather than a controlled
-before/after benchmark. They nevertheless localize the dominant cost in the
-four interval-propagation proofs: the concrete stored-grid certificate is not
-the principal bottleneck once the layers are measured separately. The next
-proof-engineering pilot should therefore target reusable interval propagation,
-not further pathname splitting.
+The original isolated first-build observations were 18 seconds for `Core`,
+328 seconds for `SourceInterval`, 33 seconds for `GridVariation`, 37 seconds
+for `StoredGrid`, and 24 seconds for `Conclusions`. They were collected while a
+disjoint clean-cache Chapter 9 build was also running, so they are validation
+evidence rather than a controlled before/after benchmark. They nevertheless
+localize the dominant cost in the interval-propagation proofs: the concrete
+stored-grid certificate is not the principal bottleneck. The next performance
+pilot should target reusable interval-propagation proof techniques, not further
+pathname splitting.

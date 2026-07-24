@@ -4,6 +4,7 @@ import NumStability.Source.Higham
 # Canonical Higham entry-point smoke test
 -/
 
+#check NumStability.not_forall_ieeeDoubleKahanStoredGridError_eq_on_source_grid
 #check NumStability.FloatingPointFormat.problem2_4_theorem2_3_nearest_finite
 #check NumStability.higham8_8_printed_rowDominance_condSkeel_claim_false
 #check NumStability.higham10_7_actual_algorithm_source_closed
