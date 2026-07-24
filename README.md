@@ -178,16 +178,16 @@ architecture scanner:
 
 | | |
 |---|---|
-| Lean modules | **785** (784 below `NumStability/` plus the root entry point) |
-| Lines of Lean | **1,465,616** physical lines |
-| Direct imports | **3,429** |
-| Internal direct-import edges | **2,154** |
+| Lean modules | **857** (856 below `NumStability/` plus the root entry point) |
+| Lines of Lean | **1,466,496** physical lines |
+| Direct imports | **3,680** |
+| Internal direct-import edges | **2,348** |
 | Import cycles | **0** |
 | `sorry` / `admit` / source-level `axiom` or `constant` commands | **0** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
 the standard `[propext, Classical.choice, Quot.sound]` axioms. The versioned
-[`2026-07-23 organization Phase 3 baseline`](docs/architecture/baselines/2026-07-23-organization-phase3.md)
+[`2026-07-24 organization Phase 5 baseline`](docs/architecture/baselines/2026-07-24-organization-phase5.md)
 records the full source, import, signature-dependency, and proof/body-dependency
 metrics and the exact counting definitions.
 
@@ -222,6 +222,9 @@ Choose the narrowest entry point that matches the material you need:
 
 - `NumStability.Core` contains the foundational floating-point model and core
   analysis infrastructure.
+- `NumStability.Algorithms.Arithmetic.DotProduct.NoGuard` is the reusable
+  no-guard dot-product surface; its `Core` and `Tree` leaves avoid importing
+  source-specific Higham correspondence.
 - `NumStability.Algorithms.Summation` is the public umbrella for the summation
   algorithm family. Reusable recursive and pairwise consumers should choose
   `Summation.Recursive.Core` or `Summation.Pairwise.Core`. Reusable insertion
@@ -263,7 +266,7 @@ dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
 corpus is already Mathlib-style. The current ratchet records 650 unclassified
-modules, no reviewed mixed modules, 227 missing module docs, and 454 historical
+modules, no reviewed mixed modules, 227 missing module docs, and 442 historical
 naming exceptions. CI prevents those queues from growing while each
 dependency-contained family is migrated.
 
@@ -314,6 +317,8 @@ NumStability/
   Algorithms.lean              -- numerical-algorithm umbrella
   Algorithms/                  -- algorithm formalizations, with clusters such as
                                --   LU, QR, Cholesky, RandNLA, and TestMatrices
+    Arithmetic/DotProduct/
+      NoGuard.lean             -- reusable no-guard dot-product umbrella
     Summation.lean             -- complete summation-family umbrella
     Summation/
       Insertion.lean           -- complete insertion-family umbrella
@@ -322,10 +327,10 @@ NumStability/
   Source/
     Higham.lean                -- Higham source umbrella
     Higham/
-      Chapter04/               -- summation examples and numbered problems
-      Chapter14/               -- source discrepancy correspondence
-      Chapter24/               -- FFT and circulant-system correspondence
-      Chapter25/               -- nonlinear-system correspondence
+      Chapter02/, Chapter04/, Chapter08/, Chapter10/, Chapter11/
+      Chapter13/, Chapter14/, Chapter20/, Chapter24/, Chapter25/
+                               -- canonical numbered source correspondence
+      CrossChapter/            -- explicitly cross-chapter source bridges
   Higham.lean                  -- historical import-only compatibility entry point
 docs/
   source_coverage/            -- per-chapter coverage ledgers + fresh ch01–28 audit
@@ -353,7 +358,7 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 
 The selected formalization core scope is closed; the repository-organization
 migration is not. The next batches classify the remaining 650 unclassified
-modules while keeping the mixed-module count at zero, replace the 454
+modules while keeping the mixed-module count at zero, replace the 442
 historical source/proof-stage names with semantic canonical paths plus
 compatibility shims, document the 227
 remaining modules, and review the giant-file outliers. The sequence and safety

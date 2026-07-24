@@ -2,6 +2,7 @@
   "complete_aggregates": {
     "NumStability": "NumStability.",
     "NumStability.Algorithms": "NumStability.Algorithms.",
+    "NumStability.Algorithms.Arithmetic.DotProduct.NoGuard": "NumStability.Algorithms.Arithmetic.DotProduct.NoGuard.",
     "NumStability.Algorithms.LinearSystems.Triangular": "NumStability.Algorithms.LinearSystems.Triangular.",
     "NumStability.Algorithms.Summation": "NumStability.Algorithms.Summation.",
     "NumStability.Algorithms.Summation.Compensated": "NumStability.Algorithms.Summation.Compensated.",
@@ -21,6 +22,7 @@
     "NumStability.Higham": "NumStability.Higham.",
     "NumStability.Source": "NumStability.Source.",
     "NumStability.Source.Higham": "NumStability.Source.Higham.",
+    "NumStability.Source.Higham.Chapter02": "NumStability.Source.Higham.Chapter02.",
     "NumStability.Source.Higham.Chapter04": "NumStability.Source.Higham.Chapter04.",
     "NumStability.Source.Higham.Chapter04.Algorithm02": "NumStability.Source.Higham.Chapter04.Algorithm02.",
     "NumStability.Source.Higham.Chapter04.Equation07": "NumStability.Source.Higham.Chapter04.Equation07.",
@@ -29,9 +31,16 @@
     "NumStability.Source.Higham.Chapter04.Equation10": "NumStability.Source.Higham.Chapter04.Equation10.",
     "NumStability.Source.Higham.Chapter04.Section01": "NumStability.Source.Higham.Chapter04.Section01.",
     "NumStability.Source.Higham.Chapter04.Section03": "NumStability.Source.Higham.Chapter04.Section03.",
+    "NumStability.Source.Higham.Chapter08": "NumStability.Source.Higham.Chapter08.",
+    "NumStability.Source.Higham.Chapter10": "NumStability.Source.Higham.Chapter10.",
+    "NumStability.Source.Higham.Chapter11": "NumStability.Source.Higham.Chapter11.",
+    "NumStability.Source.Higham.Chapter13": "NumStability.Source.Higham.Chapter13.",
     "NumStability.Source.Higham.Chapter14": "NumStability.Source.Higham.Chapter14.",
+    "NumStability.Source.Higham.Chapter20": "NumStability.Source.Higham.Chapter20.",
     "NumStability.Source.Higham.Chapter24": "NumStability.Source.Higham.Chapter24.",
-    "NumStability.Source.Higham.Chapter25": "NumStability.Source.Higham.Chapter25."
+    "NumStability.Source.Higham.Chapter25": "NumStability.Source.Higham.Chapter25.",
+    "NumStability.Source.Higham.CrossChapter": "NumStability.Source.Higham.CrossChapter.",
+    "NumStability.Source.Higham.CrossChapter.LUSolverWeights": "NumStability.Source.Higham.CrossChapter.LUSolverWeights."
   },
   "direct_import_ceilings": {
     "NumStability.Algorithms": {
@@ -716,19 +725,7 @@
       "NumStability.Analysis.Problem2_27",
       "NumStability.Analysis.Problem2_3",
       "NumStability.Analysis.Problem2_5",
-      "NumStability.Analysis.Problem2_6",
-      "NumStability.Higham.Chapter02.Problem04",
-      "NumStability.Higham.Chapter02.Problem07",
-      "NumStability.Higham.Chapter02.Problem22",
-      "NumStability.Higham.Chapter08.Lemma8_8Discrepancy",
-      "NumStability.Higham.Chapter10.Theorem10_7",
-      "NumStability.Higham.Chapter11.Theorem11_7Capstone",
-      "NumStability.Higham.Chapter13.Table13_1",
-      "NumStability.Higham.Chapter20.SourceAliases",
-      "NumStability.Higham.CrossChapter.Chapter02To03NoGuardDot",
-      "NumStability.Higham.CrossChapter.Chapter07To15PracticalBound",
-      "NumStability.Higham.CrossChapter.Chapter09To12GenericSolver",
-      "NumStability.Higham.CrossChapter.Chapter09To12Solver"
+      "NumStability.Analysis.Problem2_6"
     ],
     "unclassified_modules": [
       "NumStability.Algorithms.AitkenDenominator",

@@ -1,0 +1,6 @@
+import NumStability.Source.Higham.CrossChapter.NoGuardDotProduct
+
+#check NumStability.higham3_4_noGuard_any_order_backward_error
+#check NumStability.higham3_5_noGuard_any_order_forward_error
+#check NumStability.higham3_3_3_4_noGuard_backward_error
+#check NumStability.higham3_5_noGuard_forward_error

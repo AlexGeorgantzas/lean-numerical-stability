@@ -24,6 +24,8 @@ example : (fp : FPModel) → (n : ℕ) → (Fin n → ℝ) → ℝ :=
   fl_recursiveSum
 
 #check higham14_hadamardConditionNumberRaw_negative_one_counterexample
+#check fl_noGuardDotProduct
+#check higham20_eq20_32_Bplus_residual_eq_crossProjection
 
 end
 

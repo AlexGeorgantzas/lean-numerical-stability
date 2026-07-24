@@ -9,7 +9,19 @@ the table remains an import-only forwarding module.
 | Historical path | Canonical path |
 | --- | --- |
 | `NumStability.Higham` | `NumStability.Source.Higham` |
+| `NumStability.Higham.Chapter02.Problem04` | `NumStability.Source.Higham.Chapter02.Problem04` |
+| `NumStability.Higham.Chapter02.Problem07` | `NumStability.Source.Higham.Chapter02.Problem07` |
+| `NumStability.Higham.Chapter02.Problem22` | `NumStability.Source.Higham.Chapter02.Problem22` |
+| `NumStability.Higham.Chapter08.Lemma8_8Discrepancy` | `NumStability.Source.Higham.Chapter08.Lemma08Discrepancy` |
+| `NumStability.Higham.Chapter10.Theorem10_7` | `NumStability.Source.Higham.Chapter10.Theorem07` |
+| `NumStability.Higham.Chapter11.Theorem11_7Capstone` | `NumStability.Source.Higham.Chapter11.Theorem07` |
+| `NumStability.Higham.Chapter13.Table13_1` | `NumStability.Source.Higham.Chapter13.Equation25` and `NumStability.Source.Higham.Chapter13.Table01` |
 | `NumStability.Higham.Chapter14.Discrepancies` | `NumStability.Source.Higham.Chapter14.Discrepancies` |
+| `NumStability.Higham.Chapter20.SourceAliases` | `NumStability.Source.Higham.Chapter20.Equation32`, `NumStability.Source.Higham.Chapter20.Lemma06`, and `NumStability.Source.Higham.Chapter20.Theorem01` |
+| `NumStability.Higham.CrossChapter.Chapter02To03NoGuardDot` | `NumStability.Algorithms.Arithmetic.DotProduct.NoGuard` and `NumStability.Source.Higham.CrossChapter.NoGuardDotProduct` |
+| `NumStability.Higham.CrossChapter.Chapter07To15PracticalBound` | `NumStability.Source.Higham.CrossChapter.PracticalConditionBound` |
+| `NumStability.Higham.CrossChapter.Chapter09To12GenericSolver` | `NumStability.Source.Higham.CrossChapter.LUSolverWeights.Factorization` |
+| `NumStability.Higham.CrossChapter.Chapter09To12Solver` | `NumStability.Source.Higham.CrossChapter.LUSolverWeights.Doolittle` |
 | `NumStability.Algorithms.RecursiveSum` | `NumStability.Algorithms.Summation.Recursive` |
 | `NumStability.Algorithms.PairwiseSum` | `NumStability.Algorithms.Summation.Pairwise` |
 | `NumStability.Algorithms.InsertionSum` | `NumStability.Algorithms.Summation.Insertion` |
@@ -26,16 +38,16 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.InverseBounds` | `NumStability.Algorithms.LinearSystems.Triangular.InverseBounds` |
 | `NumStability.Algorithms.TriangularForwardComparison` | `NumStability.Algorithms.LinearSystems.Triangular.ComparisonBounds` |
 | `NumStability.Algorithms.TriangularSolveCombined` | `NumStability.Algorithms.LinearSystems.Triangular.Combined` |
-| `NumStability.Analysis.Problem2_4` | `NumStability.Higham.Chapter02.Problem04` |
-| `NumStability.Analysis.Problem2_7` | `NumStability.FloatingPoint.OperationLaws` and `NumStability.Higham.Chapter02.Problem07` |
-| `NumStability.Analysis.Problem2_22` | `NumStability.Higham.Chapter02.Problem22` |
-| `NumStability.Algorithms.HighamChapter8Lemma88SourceDiscrepancy` | `NumStability.Higham.Chapter08.Lemma8_8Discrepancy` |
-| `NumStability.Algorithms.Cholesky.Higham10Theorem10_7Source` | `NumStability.Higham.Chapter10.Theorem10_7` |
-| `NumStability.Algorithms.Cholesky.BunchTridiagonalCapstoneCh11Closure` | `NumStability.Higham.Chapter11.Theorem11_7Capstone` |
-| `NumStability.Algorithms.LU.BlockLUTable13_1Families` | `NumStability.Higham.Chapter13.Table13_1` |
+| `NumStability.Analysis.Problem2_4` | `NumStability.Source.Higham.Chapter02.Problem04` |
+| `NumStability.Analysis.Problem2_7` | `NumStability.FloatingPoint.OperationLaws` and `NumStability.Source.Higham.Chapter02.Problem07` |
+| `NumStability.Analysis.Problem2_22` | `NumStability.Source.Higham.Chapter02.Problem22` |
+| `NumStability.Algorithms.HighamChapter8Lemma88SourceDiscrepancy` | `NumStability.Source.Higham.Chapter08.Lemma08Discrepancy` |
+| `NumStability.Algorithms.Cholesky.Higham10Theorem10_7Source` | `NumStability.Source.Higham.Chapter10.Theorem07` |
+| `NumStability.Algorithms.Cholesky.BunchTridiagonalCapstoneCh11Closure` | `NumStability.Source.Higham.Chapter11.Theorem07` |
+| `NumStability.Algorithms.LU.BlockLUTable13_1Families` | `NumStability.Source.Higham.Chapter13.Equation25` and `NumStability.Source.Higham.Chapter13.Table01` |
 | `NumStability.Algorithms.Ch14SourceCorrections` | `NumStability.Source.Higham.Chapter14.Discrepancies` |
 | `NumStability.Algorithms.Ch4KahanFiniteFamily` | `NumStability.Source.Higham.Chapter04.Equation08.FiniteFamily` |
-| `NumStability.Algorithms.LeastSquares.Higham20SourceAliases` | `NumStability.Higham.Chapter20.SourceAliases` |
+| `NumStability.Algorithms.LeastSquares.Higham20SourceAliases` | `NumStability.Source.Higham.Chapter20.Equation32`, `NumStability.Source.Higham.Chapter20.Lemma06`, and `NumStability.Source.Higham.Chapter20.Theorem01` |
 | `NumStability.Algorithms.FFT.Higham24` | `NumStability.Source.Higham.Chapter24.FourierTransform` |
 | `NumStability.Algorithms.FFT.Higham24Radix2` | `NumStability.Source.Higham.Chapter24.Radix2FFT` |
 | `NumStability.Algorithms.Circulant.Higham24` | `NumStability.Source.Higham.Chapter24.CirculantSystems` |
@@ -49,10 +61,10 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.Nonlinear.Higham25` | `NumStability.Source.Higham.Chapter25.NonlinearSystems` |
 | `NumStability.Algorithms.Nonlinear.Higham25EigenClosure` | `NumStability.Source.Higham.Chapter25.Eigenproblem` |
 | `NumStability.Algorithms.Nonlinear.Higham25Problem25_1` | `NumStability.Source.Higham.Chapter25.Problem01` |
-| `NumStability.Algorithms.HighamChapter3NoGuardDotBridge` | `NumStability.Higham.CrossChapter.Chapter02To03NoGuardDot` |
-| `NumStability.Algorithms.HighamChapter15Ch7PracticalBoundBridge` | `NumStability.Higham.CrossChapter.Chapter07To15PracticalBound` |
-| `NumStability.Algorithms.HighamChapter12Ch9GenericSolverBridge` | `NumStability.Higham.CrossChapter.Chapter09To12GenericSolver` |
-| `NumStability.Algorithms.HighamChapter12Ch9SolverBridge` | `NumStability.Higham.CrossChapter.Chapter09To12Solver` |
+| `NumStability.Algorithms.HighamChapter3NoGuardDotBridge` | `NumStability.Algorithms.Arithmetic.DotProduct.NoGuard` and `NumStability.Source.Higham.CrossChapter.NoGuardDotProduct` |
+| `NumStability.Algorithms.HighamChapter15Ch7PracticalBoundBridge` | `NumStability.Source.Higham.CrossChapter.PracticalConditionBound` |
+| `NumStability.Algorithms.HighamChapter12Ch9GenericSolverBridge` | `NumStability.Source.Higham.CrossChapter.LUSolverWeights.Factorization` |
+| `NumStability.Algorithms.HighamChapter12Ch9SolverBridge` | `NumStability.Source.Higham.CrossChapter.LUSolverWeights.Doolittle` |
 | `NumStability.Analysis.NonrandomRounding` | `NumStability.Analysis.NonrandomRounding.Conclusions` |
 
 The historical nonrandom-rounding path remains the complete compatibility

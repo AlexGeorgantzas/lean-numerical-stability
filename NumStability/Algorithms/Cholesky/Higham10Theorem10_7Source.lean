@@ -1,8 +1,8 @@
-import NumStability.Higham.Chapter10.Theorem10_7
+import NumStability.Source.Higham.Chapter10.Theorem07
 
 /-!
 # Compatibility import
 
 The canonical source-correspondence module is
-`NumStability.Higham.Chapter10.Theorem10_7`.
+`NumStability.Source.Higham.Chapter10.Theorem07`.
 -/

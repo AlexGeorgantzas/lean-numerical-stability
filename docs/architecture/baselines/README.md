@@ -43,6 +43,12 @@ Each capture consists of:
 - `2026-07-24-organization-phase4-build.md` records the exact public-surface
   audit, full builds, declaration extraction, and architecture gates for that
   graph.
+- `2026-07-24-organization-phase5.{json,md}` captures the canonical Higham
+  chapter and cross-chapter ownership migration, together with the reusable
+  no-guard dot-product split and direct compatibility wrappers.
+- `2026-07-24-organization-phase5-build.md` records the exact body/ownership
+  audits, isolated wrapper builds, full tests, and architecture gates for that
+  graph.
 
 Regenerate a named baseline from the repository root with:
 

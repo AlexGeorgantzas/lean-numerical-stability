@@ -1,0 +1,5 @@
+import NumStability.Algorithms.HighamChapter3NoGuardDotBridge
+
+#check NumStability.fl_noGuardDotProduct
+#check NumStability.SumTree.noGuard_backward_error
+#check NumStability.higham3_5_noGuard_forward_error

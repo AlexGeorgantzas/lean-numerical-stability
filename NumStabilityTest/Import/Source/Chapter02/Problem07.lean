@@ -1,0 +1,15 @@
+import NumStability.Source.Higham.Chapter02.Problem07
+
+/-!
+# Higham Chapter 2, Problem 2.7 source-entry-point smoke test
+-/
+
+#check NumStability.FloatingPointFormat.problem2_7_statement1_add_comm
+#check NumStability.FloatingPointFormat.problem2_7_statement1_mul_comm
+#check NumStability.FloatingPointFormat.problem2_7_statement2_sub_sign_symmetry_of_exact_finiteSystem
+#check NumStability.FloatingPointFormat.problem2_7_statement2_sub_sign_symmetry_of_not_finiteNormalRange
+#check NumStability.FloatingPointFormat.problem2_7_statement2_sub_sign_symmetry
+#check NumStability.FloatingPointFormat.problem2_7_statement3_add_self_eq_mul_two
+#check NumStability.FloatingPointFormat.problem2_7_statement4_half_mul_eq_div_two
+#check NumStability.FloatingPointFormat.problem2_7_statement5_add_associativity_false
+#check NumStability.FloatingPointFormat.problem2_7_statement6_midpoint_strict_between_false

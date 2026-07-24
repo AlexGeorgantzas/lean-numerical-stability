@@ -1,0 +1,11 @@
+import NumStability.Algorithms.Arithmetic.DotProduct.NoGuard.Core
+
+#check NumStability.fl_noGuardDotProduct
+#check NumStability.noGuard_add_fold_unroll
+#check NumStability.noGuardDot_factor_expansion_succ
+#check NumStability.noGuardDotGammaProxy
+#check NumStability.noGuardDotGamma
+#check NumStability.noGuardDotGammaValid
+#check NumStability.noGuardDotLocalFactor
+#check NumStability.noGuardDot_factor_expansion_sum_succ
+#check NumStability.noGuardDotLocalFactor_abs_sub_one_le

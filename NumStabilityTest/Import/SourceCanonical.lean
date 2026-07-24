@@ -1,10 +1,10 @@
-import NumStability.Higham.Chapter08.Lemma8_8Discrepancy
-import NumStability.Higham.Chapter10.Theorem10_7
-import NumStability.Higham.Chapter11.Theorem11_7Capstone
-import NumStability.Higham.CrossChapter.Chapter02To03NoGuardDot
-import NumStability.Higham.CrossChapter.Chapter07To15PracticalBound
-import NumStability.Higham.CrossChapter.Chapter09To12GenericSolver
-import NumStability.Higham.CrossChapter.Chapter09To12Solver
+import NumStability.Source.Higham.Chapter08.Lemma08Discrepancy
+import NumStability.Source.Higham.Chapter10.Theorem07
+import NumStability.Source.Higham.Chapter11.Theorem07
+import NumStability.Source.Higham.CrossChapter.LUSolverWeights.Doolittle
+import NumStability.Source.Higham.CrossChapter.LUSolverWeights.Factorization
+import NumStability.Source.Higham.CrossChapter.NoGuardDotProduct
+import NumStability.Source.Higham.CrossChapter.PracticalConditionBound
 
 /-!
 # Canonical source-correspondence path smoke test

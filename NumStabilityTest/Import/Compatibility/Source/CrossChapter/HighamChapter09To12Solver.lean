@@ -1,0 +1,3 @@
+import NumStability.Higham.CrossChapter.Chapter09To12Solver
+
+#check NumStability.higham12_6_rectRoundedLoop_lu_solve_SolverWBound_source

@@ -1,11 +1,14 @@
 import NumStability.Algorithms.LinearSystems.Triangular.Combined
 import NumStability.FloatingPoint.OperationLaws
-import NumStability.Higham.Chapter02.Problem04
-import NumStability.Higham.Chapter02.Problem07
-import NumStability.Higham.Chapter02.Problem22
-import NumStability.Higham.Chapter13.Table13_1
+import NumStability.Source.Higham.Chapter02.Problem04
+import NumStability.Source.Higham.Chapter02.Problem07
+import NumStability.Source.Higham.Chapter02.Problem22
+import NumStability.Source.Higham.Chapter13.Equation25
+import NumStability.Source.Higham.Chapter13.Table01
 import NumStability.Source.Higham.Chapter14.Discrepancies
-import NumStability.Higham.Chapter20.SourceAliases
+import NumStability.Source.Higham.Chapter20.Equation32
+import NumStability.Source.Higham.Chapter20.Lemma06
+import NumStability.Source.Higham.Chapter20.Theorem01
 
 /-!
 # Canonical endpoint-path smoke test
@@ -16,7 +19,10 @@ historical forwarding paths.
 
 #check NumStability.higham14_hadamardConditionNumberRaw_negative_one_counterexample
 #check NumStability.higham13_table13_1_col_bdd_product_family_from_source_norms
+#check NumStability.higham13_eq13_25_implementation1_spd_family_from_partitioned_computation
 #check NumStability.higham20_eq20_32_Bplus_residual_eq_crossProjection
+#check NumStability.higham20_lemma20_6_exists_symmetric_perturbation_minimizer_and_norm_bounds
+#check NumStability.higham20_theorem20_1_solution_and_residualRelativeRHS_le_of_one_rhs_budget
 #check NumStability.triangularSolve_backward_error
 #check NumStability.problem2_22_guard_digit_a_sub_b_exact
 #check NumStability.FloatingPointFormat.problem2_4_theorem2_3_nearest_finite

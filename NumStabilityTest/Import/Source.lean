@@ -3,12 +3,16 @@ import NumStability.Source
 /-!
 # Source entry-point smoke test
 
-Checks both the transitional pre-`Source` correspondence and a canonically
-placed chapter through the new source entry point.
+Checks representative numbered and cross-chapter correspondence through the
+canonical source entry point.
 -/
 
 #check NumStability.FloatingPointFormat.problem2_4_theorem2_3_nearest_finite
 #check NumStability.fl_pairwiseSumSixDisplayed
+#check NumStability.higham10_7_actual_algorithm_source_closed
+#check NumStability.higham13_table13_1_col_bdd_product_family_from_source_norms
 #check NumStability.higham14_hadamardConditionNumberRaw_negative_one_counterexample
+#check NumStability.higham20_eq20_32_Bplus_residual_eq_crossProjection
 #check NumStability.higham24_theorem24_3_literal_forward_error_multiple_kappa_u
 #check NumStability.higham25NewtonEquation
+#check NumStability.higham12_6_lu_solve_SolverWBound

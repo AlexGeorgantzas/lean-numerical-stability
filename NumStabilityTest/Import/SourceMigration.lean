@@ -1,10 +1,10 @@
 import NumStability.Algorithms.Cholesky.BunchTridiagonalCapstoneCh11Closure
 import NumStability.Algorithms.Cholesky.Higham10Theorem10_7Source
+import NumStability.Algorithms.HighamChapter12Ch9GenericSolverBridge
+import NumStability.Algorithms.HighamChapter12Ch9SolverBridge
 import NumStability.Algorithms.HighamChapter15Ch7PracticalBoundBridge
 import NumStability.Algorithms.HighamChapter3NoGuardDotBridge
 import NumStability.Algorithms.HighamChapter8Lemma88SourceDiscrepancy
-import NumStabilityTest.Import.Compatibility.Source.Chapter09To12GenericSolver
-import NumStabilityTest.Import.Compatibility.Source.Chapter09To12Solver
 
 /-!
 # Historical source-correspondence path smoke test

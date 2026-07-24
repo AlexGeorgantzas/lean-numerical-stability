@@ -1,0 +1,9 @@
+import NumStability.Source.Higham.CrossChapter.LUSolverWeights.Factorization
+
+#check NumStability.higham12_6_luW
+#check NumStability.higham12_6_u_mul_luW_eq
+#check NumStability.higham12_6_lu_solve_SolverWBound
+#check NumStability.higham12_6_rowPermutedLUW
+#check NumStability.higham12_6_rowPermuted_lu_solve_SolverWBound
+#check NumStability.higham12_6_completePermutedLUW
+#check NumStability.higham12_6_completePermuted_lu_solve_SolverWBound

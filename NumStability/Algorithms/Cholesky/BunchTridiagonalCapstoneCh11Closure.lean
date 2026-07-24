@@ -1,8 +1,8 @@
-import NumStability.Higham.Chapter11.Theorem11_7Capstone
+import NumStability.Source.Higham.Chapter11.Theorem07
 
 /-!
 # Compatibility import for the Theorem 11.7 capstone
 
 The canonical source-correspondence module is
-`NumStability.Higham.Chapter11.Theorem11_7Capstone`.
+`NumStability.Source.Higham.Chapter11.Theorem07`.
 -/

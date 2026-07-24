@@ -1,0 +1,3 @@
+import NumStability.Higham.CrossChapter.Chapter09To12GenericSolver
+
+#check NumStability.higham12_6_completePermuted_lu_solve_SolverWBound

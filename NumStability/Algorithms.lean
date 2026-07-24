@@ -2,6 +2,7 @@
 -- Re-exports all modules in the NumStability.Algorithms submodule.
 
 import NumStability.Algorithms.AitkenDenominator
+import NumStability.Algorithms.Arithmetic.DotProduct.NoGuard
 import NumStability.Algorithms.AutomaticErrorAnalysis.Higham26
 import NumStability.Algorithms.AutomaticErrorAnalysis.Higham26SourceSearch
 import NumStability.Algorithms.BlockDotProduct

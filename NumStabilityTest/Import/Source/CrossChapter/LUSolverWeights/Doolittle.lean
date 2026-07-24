@@ -1,0 +1,5 @@
+import NumStability.Source.Higham.CrossChapter.LUSolverWeights.Doolittle
+
+#check NumStability.higham12_6_rectRoundedLoopW
+#check NumStability.higham12_6_u_mul_rectRoundedLoopW_eq
+#check NumStability.higham12_6_rectRoundedLoop_lu_solve_SolverWBound_source
