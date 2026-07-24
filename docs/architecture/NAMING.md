@@ -84,9 +84,9 @@ Reusable modules must not directly or transitively import source modules.
    `Actual`, `Bridge`, `Closure`, `Endpoint`, `Operational`, `Prose`,
    `Remaining`, generic `Source`, `Support`, and `Whole`.
 5. Use no underscores in canonical filenames.
-6. Use the established acronym allowlist: `LU`, `QR`, `FFT`, `SVD`, `FMA`,
-   `SPD`, `PSD`, `MGS`, and `LSQR`. Spell out project-local abbreviations unless
-   this document is amended to standardize them.
+6. Use the established acronym allowlist: `IEEE`, `LU`, `QR`, `FFT`, `SVD`,
+   `FMA`, `SPD`, `PSD`, `MGS`, and `LSQR`. Spell out project-local abbreviations
+   unless this document is amended to standardize them.
 
 When a banned word names a genuine mathematical concept, document the exception
 in the module docstring and architecture review. Otherwise choose a semantic

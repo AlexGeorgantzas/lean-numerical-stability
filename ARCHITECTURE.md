@@ -56,6 +56,10 @@ split from the reusable library.
 ## Entry points
 
 - `NumStability.Core` is the deliberately small reusable foundation entry point.
+- `NumStability.FloatingPoint` is the complete reusable floating-point entry
+  point. Its declaration-free `FloatingPoint.IEEE` aggregate exposes reusable
+  operations over the IEEE value-level model, beginning with
+  `IEEE.NaiveMaximum`.
 - `NumStability.Algorithms.LinearSystems.Triangular` is a reviewed reusable
   algorithm-family entry point.
 - `NumStability.Algorithms.Summation` is the complete published summation
@@ -79,7 +83,11 @@ split from the reusable library.
   leaves and declaration-free chapter and section aggregates. Historical
   `Analysis.NonrandomRounding*` paths are compatibility wrappers only.
   Chapter 2's Problem 2.2 surface lives in the canonical `Chapter02.Problem02`
-  leaf. Chapter 14 owns `Problem13` and the declaration-free `Section05`
+  leaf. Printed Problem 2.22 is the `Chapter02.Problem22` source locator for
+  reusable `FloatingPoint.IEEE.NaiveMaximum`; printed Problem 2.23 is the
+  `Chapter02.Problem23` Heron leaf. The former Problem 22 canonical path
+  temporarily re-exports Problem 23 to preserve its published import surface.
+  Chapter 14 owns `Problem13` and the declaration-free `Section05`
   aggregate for its Schulz-iteration leaves. The currently canonicalized
   Chapter 21 subset is the declaration-free `Chapter21` aggregate over
   `RowScalingInvariance`; the comprehensive historical Chapter 21 discovery

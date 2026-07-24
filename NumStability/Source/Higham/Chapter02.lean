@@ -2,6 +2,7 @@ import NumStability.Source.Higham.Chapter02.Problem02
 import NumStability.Source.Higham.Chapter02.Problem04
 import NumStability.Source.Higham.Chapter02.Problem07
 import NumStability.Source.Higham.Chapter02.Problem22
+import NumStability.Source.Higham.Chapter02.Problem23
 
 /-!
 # Higham Chapter 2

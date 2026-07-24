@@ -346,6 +346,9 @@ NumStability/
   All.lean                     -- complete supported library surface
   FloatingPoint.lean           -- floating-point foundations umbrella
   FloatingPoint/
+    IEEE.lean                  -- IEEE-facing operations umbrella
+    IEEE/
+      NaiveMaximum.lean        -- reusable maximum/NaN comparison API
     Model.lean                 -- the abstract floating-point model
   Analysis.lean                -- complete analysis aggregate, including legacy work
   Analysis/                    -- stability, perturbation theory, matrix algebra,

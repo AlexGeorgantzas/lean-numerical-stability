@@ -5140,7 +5140,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check FloatingPointFormat.problem2_20_decimalOneDigitThreeExponent_trace_not_noSquareUnderflowInputs
 #check FloatingPointFormat.problem2_20_decimalOneDigitThreeExponent_trace_exceeds_one_but_fails_source_audit
 
--- Higham Chapter 2 Problem 2.21 naive IEEE max and NaN asymmetry.
+-- Higham Chapter 2 Problem 2.22 naive IEEE max and NaN asymmetry.
 #check ieeeNaiveMax
 #check ieeeNaiveMax_eq_left_of_ieeeGt
 #check ieeeNaiveMax_eq_right_of_not_ieeeGt
@@ -5157,11 +5157,11 @@ small enough to serve as a smoke check for representative public declarations.
 #check ieeeNaiveMax_not_nan_propagating
 #check ieeeNaiveMax_finite_correct_but_not_nan_propagating
 
--- Higham Chapter 2 Problem 2.22 Kahan Heron guard-digit accuracy.
+-- Higham Chapter 2 Problem 2.23 Kahan Heron guard-digit accuracy.
 #check problem2_22_guard_digit_a_sub_b_exact
 #check problem2_22_kahanHeronArea_relError_le_gamma9_unitRoundoff
 
--- Higham Chapter 2 Problem 2.23 guard-digit versus no-guard sequence.
+-- Higham Chapter 2 Problem 2.24 guard-digit versus no-guard sequence.
 #check problem2_23_guardDigitY
 #check problem2_23_guardDigitY_eq_x_of_finiteSystem
 #check problem2_23_noGuardY

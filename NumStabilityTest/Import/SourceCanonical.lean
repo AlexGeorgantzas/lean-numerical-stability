@@ -4,6 +4,8 @@ import NumStability.Source.Higham.Chapter01.Section17.HornerEvaluation
 import NumStability.Source.Higham.Chapter01.Section17.SourceInterval
 import NumStability.Source.Higham.Chapter01.Section17.StoredGrid
 import NumStability.Source.Higham.Chapter02.Problem02
+import NumStability.Source.Higham.Chapter02.Problem22
+import NumStability.Source.Higham.Chapter02.Problem23
 import NumStability.Source.Higham.Chapter04.Section02.KaoWangCitationDiscrepancy
 import NumStability.Source.Higham.Chapter08.Lemma08Discrepancy
 import NumStability.Source.Higham.Chapter10.Theorem07
@@ -98,5 +100,7 @@ historical forwarding paths and the aggregate Higham entry point.
 #check NumStability.higham14SchulzStep
 #check NumStability.Ch14Ext.ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq
 #check NumStability.FloatingPointFormat.problem2_2_lemma2_1_spacing_bounds
+#check NumStability.ieeeNaiveMax_not_nan_propagating
+#check NumStability.problem2_22_guard_digit_a_sub_b_exact
 #check NumStability.ch14ext_problem14_13_gej_bound_fin_one
 #check NumStability.higham21Cond2With_row_scaling

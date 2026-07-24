@@ -16,7 +16,8 @@
     "NumStability.Analysis.Probability",
     "NumStability.Analysis.Summation",
     "NumStability.Core",
-    "NumStability.FloatingPoint"
+    "NumStability.FloatingPoint",
+    "NumStability.FloatingPoint.IEEE"
   ],
   "exact": {
     "NumStability": "aggregate",
@@ -25,6 +26,8 @@
     "NumStability.Analysis": "aggregate",
     "NumStability.Core": "aggregate",
     "NumStability.FloatingPoint": "aggregate",
+    "NumStability.FloatingPoint.IEEE": "aggregate",
+    "NumStability.FloatingPoint.IEEE.NaiveMaximum": "reusable",
     "NumStability.Higham": "compatibility",
     "NumStability.Higham.Chapter02.Problem04": "compatibility",
     "NumStability.Higham.Chapter02.Problem07": "compatibility",
@@ -222,6 +225,7 @@
     "NumStability.Analysis.NonrandomRounding.SourceInterval": "compatibility",
     "NumStability.Analysis.NonrandomRounding.StoredGrid": "compatibility",
     "NumStability.Analysis.Problem2_2": "compatibility",
+    "NumStability.Analysis.Problem2_21": "compatibility",
     "NumStability.Analysis.Problem2_22": "compatibility",
     "NumStability.Analysis.Problem2_4": "compatibility",
     "NumStability.Analysis.Problem2_7": "compatibility"

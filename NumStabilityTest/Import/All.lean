@@ -34,6 +34,8 @@ example :
 #check NumStability.ch14ext_problem14_13_gej_bound_fin_one
 #check NumStability.higham21Cond2With_row_scaling
 #check NumStability.integral_abs_standardGaussian_difference
+#check NumStability.ieeeNaiveMax_not_nan_propagating
+#check NumStability.problem2_22_guard_digit_a_sub_b_exact
 
 end
 

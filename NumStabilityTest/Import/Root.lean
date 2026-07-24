@@ -42,6 +42,8 @@ example : (fp : FPModel) → (n : ℕ) → (Fin n → ℝ) → ℝ :=
 #check ch14ext_problem14_13_gej_bound_fin_one
 #check higham21Cond2With_row_scaling
 #check integral_abs_standardGaussian_difference
+#check ieeeNaiveMax_not_nan_propagating
+#check problem2_22_guard_digit_a_sub_b_exact
 
 end
 

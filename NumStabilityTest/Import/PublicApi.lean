@@ -20,6 +20,8 @@ example : Type := FPModel
 
 example : BasicOp := BasicOp.add
 
+example : IeeeValue → IeeeValue → IeeeValue := ieeeNaiveMax
+
 example : ℝ → ℝ → ℝ := absError
 
 example : ℝ → ℝ → ℝ := relError

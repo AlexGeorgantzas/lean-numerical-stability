@@ -70,7 +70,6 @@ import NumStability.Analysis.Problem2_17
 import NumStability.Analysis.Problem2_18
 import NumStability.Analysis.Problem2_19
 import NumStability.Analysis.Problem2_20
-import NumStability.Analysis.Problem2_21
 import NumStability.Analysis.Problem2_23
 import NumStability.Analysis.Problem2_24
 import NumStability.Analysis.Problem2_25

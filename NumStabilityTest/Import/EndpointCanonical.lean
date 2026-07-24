@@ -1,10 +1,12 @@
 import NumStability.Algorithms.LinearSystems.Triangular.Combined
 import NumStability.Analysis.Probability.Gaussian.AbsoluteMoment
+import NumStability.FloatingPoint.IEEE.NaiveMaximum
 import NumStability.FloatingPoint.OperationLaws
 import NumStability.Source.Higham.Chapter02.Problem02
 import NumStability.Source.Higham.Chapter02.Problem04
 import NumStability.Source.Higham.Chapter02.Problem07
 import NumStability.Source.Higham.Chapter02.Problem22
+import NumStability.Source.Higham.Chapter02.Problem23
 import NumStability.Source.Higham.Chapter04.Problem04
 import NumStability.Source.Higham.Chapter13.Equation25
 import NumStability.Source.Higham.Chapter13.Table01
@@ -30,6 +32,7 @@ historical forwarding paths.
 #check NumStability.higham20_lemma20_6_exists_symmetric_perturbation_minimizer_and_norm_bounds
 #check NumStability.higham20_theorem20_1_solution_and_residualRelativeRHS_le_of_one_rhs_budget
 #check NumStability.triangularSolve_backward_error
+#check NumStability.ieeeNaiveMax_not_nan_propagating
 #check NumStability.problem2_22_guard_digit_a_sub_b_exact
 #check NumStability.FloatingPointFormat.problem2_4_theorem2_3_nearest_finite
 #check NumStability.FloatingPointFormat.finiteRoundToEvenOp_add_comm

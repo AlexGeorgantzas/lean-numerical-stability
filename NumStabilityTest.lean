@@ -17,6 +17,7 @@ import NumStabilityTest.Import.Compatibility.Source.Chapter01.AnalysisNonrandomR
 import NumStabilityTest.Import.Compatibility.Source.Chapter02.AnalysisProblem02
 import NumStabilityTest.Import.Compatibility.Source.Chapter02.AnalysisProblem04
 import NumStabilityTest.Import.Compatibility.Source.Chapter02.AnalysisProblem07
+import NumStabilityTest.Import.Compatibility.Source.Chapter02.AnalysisProblem21
 import NumStabilityTest.Import.Compatibility.Source.Chapter02.AnalysisProblem22
 import NumStabilityTest.Import.Compatibility.Source.Chapter02.HighamProblem04
 import NumStabilityTest.Import.Compatibility.Source.Chapter02.HighamProblem07
@@ -90,6 +91,9 @@ import NumStabilityTest.Import.EndpointMigration
 import NumStabilityTest.Import.FastMatMulAggregate
 import NumStabilityTest.Import.FastMatMulLegacyBounds
 import NumStabilityTest.Import.FastMatMulRecurrences
+import NumStabilityTest.Import.FloatingPoint
+import NumStabilityTest.Import.FloatingPoint.IEEE
+import NumStabilityTest.Import.FloatingPoint.IEEE.NaiveMaximum
 import NumStabilityTest.Import.Higham
 import NumStabilityTest.Import.PublicApi
 import NumStabilityTest.Import.Root
@@ -106,6 +110,7 @@ import NumStabilityTest.Import.Source.Chapter02.Problem02
 import NumStabilityTest.Import.Source.Chapter02.Problem04
 import NumStabilityTest.Import.Source.Chapter02.Problem07
 import NumStabilityTest.Import.Source.Chapter02.Problem22
+import NumStabilityTest.Import.Source.Chapter02.Problem23
 import NumStabilityTest.Import.Source.Chapter04
 import NumStabilityTest.Import.Source.Chapter04.Algorithm02
 import NumStabilityTest.Import.Source.Chapter04.Algorithm02InitializationModelLimitations

@@ -6,6 +6,7 @@ import NumStability.Algorithms.TestMatrices.Higham28GaussianAbsoluteMoment
 import NumStability.Algorithms.TriangularSolveCombined
 import NumStability.Algorithms.Underdetermined.Higham21Condition
 import NumStability.Analysis.Problem2_2
+import NumStability.Analysis.Problem2_21
 import NumStability.Analysis.Problem2_22
 import NumStability.Analysis.Problem2_4
 import NumStability.Analysis.Problem2_7
@@ -21,6 +22,7 @@ without help from co-imported canonical modules.
 #check NumStability.higham13_table13_1_col_bdd_product_family_from_source_norms
 #check NumStability.higham20_eq20_32_Bplus_residual_eq_crossProjection
 #check NumStability.triangularSolve_backward_error
+#check NumStability.ieeeNaiveMax_not_nan_propagating
 #check NumStability.problem2_22_guard_digit_a_sub_b_exact
 #check NumStability.FloatingPointFormat.problem2_4_theorem2_3_nearest_finite
 #check NumStability.FloatingPointFormat.finiteRoundToEvenOp_add_comm

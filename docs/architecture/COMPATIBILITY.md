@@ -11,7 +11,7 @@ the table remains an import-only forwarding module.
 | `NumStability.Higham` | `NumStability.Source.Higham` |
 | `NumStability.Higham.Chapter02.Problem04` | `NumStability.Source.Higham.Chapter02.Problem04` |
 | `NumStability.Higham.Chapter02.Problem07` | `NumStability.Source.Higham.Chapter02.Problem07` |
-| `NumStability.Higham.Chapter02.Problem22` | `NumStability.Source.Higham.Chapter02.Problem22` |
+| `NumStability.Higham.Chapter02.Problem22` | `NumStability.Source.Higham.Chapter02.Problem23` |
 | `NumStability.Higham.Chapter08.Lemma8_8Discrepancy` | `NumStability.Source.Higham.Chapter08.Lemma08Discrepancy` |
 | `NumStability.Higham.Chapter10.Theorem10_7` | `NumStability.Source.Higham.Chapter10.Theorem07` |
 | `NumStability.Higham.Chapter11.Theorem11_7Capstone` | `NumStability.Source.Higham.Chapter11.Theorem07` |
@@ -41,7 +41,8 @@ the table remains an import-only forwarding module.
 | `NumStability.Analysis.Problem2_2` | `NumStability.Source.Higham.Chapter02.Problem02` |
 | `NumStability.Analysis.Problem2_4` | `NumStability.Source.Higham.Chapter02.Problem04` |
 | `NumStability.Analysis.Problem2_7` | `NumStability.FloatingPoint.OperationLaws` and `NumStability.Source.Higham.Chapter02.Problem07` |
-| `NumStability.Analysis.Problem2_22` | `NumStability.Source.Higham.Chapter02.Problem22` |
+| `NumStability.Analysis.Problem2_21` | `NumStability.Source.Higham.Chapter02.Problem22` |
+| `NumStability.Analysis.Problem2_22` | `NumStability.Source.Higham.Chapter02.Problem23` |
 | `NumStability.Algorithms.HighamChapter8Lemma88SourceDiscrepancy` | `NumStability.Source.Higham.Chapter08.Lemma08Discrepancy` |
 | `NumStability.Algorithms.Cholesky.Higham10Theorem10_7Source` | `NumStability.Source.Higham.Chapter10.Theorem07` |
 | `NumStability.Algorithms.Cholesky.BunchTridiagonalCapstoneCh11Closure` | `NumStability.Source.Higham.Chapter11.Theorem07` |
@@ -104,6 +105,7 @@ the table remains an import-only forwarding module.
 
 The single-target chapter rows above are exact one-to-one forwarders. The
 canonical chapter aggregates are discovery entry points, not wrapper targets:
+`NumStability.Source.Higham.Chapter02`,
 `NumStability.Source.Higham.Chapter12`,
 `NumStability.Source.Higham.Chapter14`,
 `NumStability.Source.Higham.Chapter14.Section05`,
@@ -111,7 +113,7 @@ canonical chapter aggregates are discovery entry points, not wrapper targets:
 `NumStability.Source.Higham.Chapter22`,
 `NumStability.Source.Higham.Chapter22.Section03`, and
 `NumStability.Source.Higham.Chapter27` contain only documentation and imports.
-The compatibility inventory now contains 93 wrappers with 191 direct canonical
+The compatibility inventory now contains 94 wrappers with 192 direct canonical
 targets.
 
 The historical nonrandom-rounding path remains the complete compatibility
