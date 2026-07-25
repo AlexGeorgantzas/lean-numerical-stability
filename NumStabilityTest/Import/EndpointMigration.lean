@@ -5,6 +5,9 @@ import NumStability.Algorithms.LeastSquares.Higham20SourceAliases
 import NumStability.Algorithms.TestMatrices.Higham28GaussianAbsoluteMoment
 import NumStability.Algorithms.TriangularSolveCombined
 import NumStability.Algorithms.Underdetermined.Higham21Condition
+import NumStability.Analysis.HighamChapter2PowerLeadingDigits
+import NumStability.Analysis.LeadingDigitDistribution
+import NumStability.Analysis.Problem2_11
 import NumStability.Analysis.Problem2_2
 import NumStability.Analysis.Problem2_21
 import NumStability.Analysis.Problem2_22
@@ -31,3 +34,10 @@ without help from co-imported canonical modules.
 #check NumStability.ch14ext_problem14_13_gej_bound_fin_one
 #check NumStability.higham21Cond2With_row_scaling
 #check NumStability.integral_abs_standardGaussian_difference
+#check NumStability.finUniformProbability
+#check NumStability.problem2_11_decimalLeadingDigit
+#check NumStability.problem2_11_empiricalDigitProbability
+#check NumStability.logarithmicLeadingDigitMass
+#check NumStability.orbit_mem_decimalDigitArc_iff
+#check NumStability.problem2_11EmpiricalSource
+#check NumStability.higham2_power_decimalLeadingDigit_frequency_tendsto

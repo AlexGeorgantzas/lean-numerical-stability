@@ -40,18 +40,23 @@ six historical `NumStability.Analysis.NonrandomRounding*` paths use exact
 `compatibility` rules; there is deliberately no source-tier prefix rule for
 that historical directory.
 
-Through Phase 10C, reviewed source families cover the canonicalized Higham
+Through Phase 10D, reviewed source families cover the canonicalized Higham
 frontiers in Chapters 1, 2, 4, 8, 10--14, 17, 20--27, and cross-chapter
 locators. Exact `aggregate` rules identify every declaration-free chapter and
 family umbrella; canonical leaves inherit `source` from the Source prefix and
 historical owners use exact `compatibility` rules. Reusable extractions include
-the floating-point operation laws, IEEE naive maximum, summation families,
+the floating-point operation laws, IEEE naive maximum, AddCircle
+equidistribution, decimal leading-digit analysis, summation families,
 triangular solves, fast-multiplication recurrences, probability analysis, and
-the reviewed foundational leaves recorded in `tiers.json`.
+the reviewed foundational leaves recorded in `tiers.json`. Canonical Problem
+2.11 owns only its source samples while re-exporting the reusable decimal,
+empirical-histogram, and logarithmic-distribution APIs needed for its complete
+source locator; the Section 2.7 power-frequency conclusion has a separate
+source leaf.
 
-The Phase 10C ratchet classifies 349 of 967 production modules: 130 as source,
-67 as aggregate, 94 as compatibility, 51 as reusable, 2 as internal, and 5 as
-upstream. The explicit unclassified queue is 618 modules and the mixed queue
+The Phase 10D ratchet classifies 362 of 977 production modules: 132 as source,
+70 as aggregate, 97 as compatibility, 56 as reusable, 2 as internal, and 5 as
+upstream. The explicit unclassified queue is 615 modules and the mixed queue
 remains empty. The `NumStability.Algorithms` direct-import ceilings are 444
 imports below `NumStability`, including 10 below `NumStability.Source` and 45
 below `NumStability.Analysis`.
@@ -59,6 +64,7 @@ below `NumStability.Analysis`.
 Because structural aggregates do not themselves own declarations,
 `reusable_entrypoints` separately lists aggregates whose entire reachable
 surface must obey the reusable-to-source dependency gate. This keeps structural
-role and dependency semantics distinct: `Core`, `FloatingPoint`, and
-`FloatingPoint.IEEE` remain import-only aggregates while still seeding the
+role and dependency semantics distinct: `Core`, `FloatingPoint`,
+`FloatingPoint.IEEE`, `Analysis.Equidistribution`, and
+`Analysis.LeadingDigits` remain import-only aggregates while still seeding the
 transitive forbidden-edge audit.

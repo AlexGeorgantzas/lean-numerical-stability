@@ -44,6 +44,9 @@ example : (fp : FPModel) → (n : ℕ) → (Fin n → ℝ) → ℝ :=
 #check integral_abs_standardGaussian_difference
 #check ieeeNaiveMax_not_nan_propagating
 #check problem2_22_guard_digit_a_sub_b_exact
+#check problem2_11_decimalLeadingDigit
+#check problem2_11EmpiricalSource
+#check higham2_power_decimalLeadingDigit_frequency_tendsto
 
 end
 

@@ -60,3 +60,24 @@ whether a module is a source endpoint or reusable library code.
 The original ten-module introduction, table, and conclusions above remain the
 historical record of the initial endpoint-review pilot; this follow-up records
 the later Phase 10B decisions without rewriting that earlier assessment.
+
+## Historical follow-up: Phase 10D leading-digit family
+
+Phase 10D reviewed the three flat Chapter 2 leading-digit owners against the
+Phase 10C compiled signature/body graph. No declaration outside this
+three-module family consumed their APIs, but the declarations were not dead:
+they formed two reusable analysis families and two supported Higham source
+surfaces.
+
+| Historical module | Semantic result | Canonical destinations | Historical outcome |
+| --- | --- | --- | --- |
+| `Analysis.LeadingDigitDistribution` | Reusable logarithmic leading-digit probability law. | `Analysis.LeadingDigits.LogarithmicDistribution` | Moved intact; the old path remains an import-only compatibility wrapper. |
+| `Analysis.Problem2_11` | Mixed reusable decimal predicates and empirical histograms with source-specific power, factorial, and survey samples. | `Analysis.LeadingDigits.Decimal`, `Analysis.LeadingDigits.Empirical`, and `Source.Higham.Chapter02.Problem11` | Split by role; canonical Problem 11 re-exports the reusable analysis needed to preserve the complete old import surface. |
+| `Analysis.HighamChapter2PowerLeadingDigits` | Mixed reusable AddCircle equidistribution and decimal-power reductions with one Section 2.7 source conclusion. | `Analysis.Equidistribution.AddCircle`, `Analysis.LeadingDigits.DecimalPowers`, and `Source.Higham.Chapter02.Section07.PowerLeadingDigits` | Split by role; the old path forwards to canonical Problem 11 and the Section 2.7 leaf so its transitive historical surface remains complete. |
+
+The review preserves all 172 compiled constants and their public names. It
+also illustrates why endpoint status cannot determine placement: the generic
+Fourier/Haar convergence and decimal-distribution APIs belong in reusable
+analysis even though they currently have no consumer outside their source
+family, while the empirical sample catalog and final Higham conclusion belong
+under the source hierarchy.

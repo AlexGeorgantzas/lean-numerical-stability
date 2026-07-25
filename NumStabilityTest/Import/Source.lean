@@ -12,6 +12,9 @@ canonical source entry point.
 #check NumStability.FloatingPointFormat.problem2_4_theorem2_3_nearest_finite
 #check NumStability.ieeeNaiveMax_not_nan_propagating
 #check NumStability.problem2_22_guard_digit_a_sub_b_exact
+#check NumStability.problem2_11EmpiricalSource
+#check NumStability.problem2_11_powerSample_two_pos
+#check NumStability.higham2_power_decimalLeadingDigit_frequency_tendsto
 #check NumStability.fl_pairwiseSumSixDisplayed
 #check NumStability.problem44_outputs_exactly_Icc
 #check NumStability.higham10_7_actual_algorithm_source_closed

@@ -36,6 +36,9 @@ example :
 #check NumStability.integral_abs_standardGaussian_difference
 #check NumStability.ieeeNaiveMax_not_nan_propagating
 #check NumStability.problem2_22_guard_digit_a_sub_b_exact
+#check NumStability.problem2_11_decimalLeadingDigit
+#check NumStability.problem2_11EmpiricalSource
+#check NumStability.higham2_power_decimalLeadingDigit_frequency_tendsto
 
 end
 

@@ -1,4 +1,6 @@
 import NumStability.Analysis.Error
+import NumStability.Analysis.Equidistribution
+import NumStability.Analysis.LeadingDigits
 import NumStability.Algorithms.Summation.Recursive.Core
 import NumStability.FloatingPoint
 
@@ -21,6 +23,12 @@ example : Type := FPModel
 example : BasicOp := BasicOp.add
 
 example : IeeeValue → IeeeValue → IeeeValue := ieeeNaiveMax
+
+example : ℝ → Fin 9 → Prop := problem2_11_decimalLeadingDigit
+
+#check problem2_11_empiricalDigitProbability
+#check logarithmicLeadingDigitMass
+#check orbit_halfOpenArc_frequency_tendsto
 
 example : ℝ → ℝ → ℝ := absError
 

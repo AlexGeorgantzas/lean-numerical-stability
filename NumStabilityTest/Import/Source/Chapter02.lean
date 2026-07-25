@@ -7,5 +7,8 @@ import NumStability.Source.Higham.Chapter02
 #check NumStability.FloatingPointFormat.problem2_2_lemma2_1_spacing_bounds
 #check NumStability.FloatingPointFormat.problem2_4_theorem2_3_nearest_finite
 #check NumStability.FloatingPointFormat.problem2_7_statement1_add_comm
+#check NumStability.problem2_11EmpiricalSource
+#check NumStability.problem2_11_empiricalDigitProbability
+#check NumStability.higham2_power_decimalLeadingDigit_frequency_tendsto
 #check NumStability.ieeeNaiveMax_not_nan_propagating
 #check NumStability.problem2_22_guard_digit_a_sub_b_exact

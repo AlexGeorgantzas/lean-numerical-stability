@@ -17,6 +17,7 @@ import NumStability.Analysis.CStarMatrixBridge
 import NumStability.Analysis.CStarMatrixExpectation
 import NumStability.Analysis.CStarMatrixTrace
 import NumStability.Analysis.DoubleRounding
+import NumStability.Analysis.Equidistribution
 import NumStability.Analysis.Error
 import NumStability.Analysis.FiniteProbability
 import NumStability.Analysis.FirstOrder
@@ -32,7 +33,6 @@ import NumStability.Analysis.HighamChapter2ElementaryFunctions
 import NumStability.Analysis.HighamChapter2FmaDiscriminant
 import NumStability.Analysis.HighamChapter2GradualUnderflowExact
 import NumStability.Analysis.HighamChapter2Lindemann
-import NumStability.Analysis.HighamChapter2PowerLeadingDigits
 import NumStability.Analysis.HighamChapter2Tablemaker
 import NumStability.Analysis.HighamChapter6Duality
 import NumStability.Analysis.HighamChapter7
@@ -40,7 +40,7 @@ import NumStability.Analysis.HighamChapter7Rectangular
 import NumStability.Analysis.IncreasingPrecision
 import NumStability.Analysis.InstabilityWithoutCancellation
 import NumStability.Analysis.InverseOpNorm2
-import NumStability.Analysis.LeadingDigitDistribution
+import NumStability.Analysis.LeadingDigits
 import NumStability.Analysis.LiebTrace
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixConcentration
@@ -61,7 +61,6 @@ import NumStability.Analysis.OperatorLog
 import NumStability.Analysis.PerturbationTheory
 import NumStability.Analysis.Probability
 import NumStability.Analysis.Problem2_10
-import NumStability.Analysis.Problem2_11
 import NumStability.Analysis.Problem2_12
 import NumStability.Analysis.Problem2_13
 import NumStability.Analysis.Problem2_14

@@ -3065,6 +3065,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check FiniteProbability.eventProb_nat_le_ge_one_sub_expectationNat_div_succ
 #check FiniteProbability.eventProb_abs_sub_le_ge_one_sub_of_second_moment
 #check FiniteProbability.exists_prob_pos
+
+-- Reusable logarithmic leading-digit distribution (Higham Chapter 2 §2.7 support).
 #check leadingDigitOfIndex
 #check logarithmicLeadingDigitMass
 #check logarithmicLeadingDigitMass_eq_log_div
@@ -3085,6 +3087,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check decimalLogarithmicLeadingDigitProbability_prob_eq_log_one_add_inv
 #check decimalLogarithmicLeadingDigitProbability_first_gt_last
 #check decimalLogarithmicLeadingDigitProbability_nonuniform
+
+-- Canonical Higham Problem 2.11 source samples and reusable classifiers.
 #check problem2_11EmpiricalSource
 #check problem2_11EmpiricalSource_exhaustive
 #check problem2_11_decimalLeadingDigit
@@ -3117,6 +3121,22 @@ small enough to serve as a smoke check for representative public declarations.
 #check problem2_11_empiricalDigitProbability
 #check problem2_11_empiricalDigitProbability_prob_eq_frequency
 #check problem2_11_empiricalDigitProbability_prob_le_one
+
+-- Reusable AddCircle equidistribution and decimal-power reduction APIs.
+#check finUniformProbability
+#check empiricalProbability
+#check empiricalProbability_tendsto_haar
+#check halfOpenArc
+#check orbit_halfOpenArc_frequency_tendsto
+#check IsRationalPowerOfTen
+#check addOrderOf_logb_ten_eq_zero
+#check decimalDigitArc
+#check problem2_11_decimalLeadingDigit_iff_logb_sub_int
+#check orbit_mem_decimalDigitArc_iff
+
+-- Canonical Higham Chapter 2 §2.7 power-frequency conclusion.
+#check higham2_power_decimalLeadingDigit_frequency_tendsto
+
 #check statisticalRoundingErrorSum
 #check StatisticalRoundingErrorModel
 #check StatisticalRoundingErrorModel.expectation_sum_eq_zero
@@ -3124,7 +3144,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check StatisticalRoundingErrorModel.expectation_sum_sq_le_card_mul_unit_sq
 #check StatisticalRoundingErrorModel.rms_sum_le_sqrt_card_mul_unit
 
--- Higham Chapter 2 §2.7 level-index arithmetic representation.
+-- Higham Chapter 2 §2.9 level-index arithmetic representation.
 #check levelIndexForward
 #check levelIndexBackward
 #check levelIndexBackward_forward

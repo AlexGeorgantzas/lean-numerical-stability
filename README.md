@@ -246,6 +246,12 @@ Choose the narrowest entry point that matches the material you need:
   `NumStability.Analysis.Summation.Signs` is its reusable sign/absolute-value
   leaf, while `ErrorBounds` contains the reusable conditioning and rounded-fold
   error theory.
+- `NumStability.Analysis.Equidistribution` is the reusable equidistribution
+  umbrella. Its `AddCircle` leaf provides finite-orbit measures, Fourier/Haar
+  convergence, and ball and half-open-arc frequency theorems.
+- `NumStability.Analysis.LeadingDigits` is the reusable leading-digit umbrella
+  over decimal predicates, decimal powers, empirical histograms, and the
+  logarithmic distribution.
 - `NumStability.Analysis.Probability` is the reusable probability-analysis
   umbrella. Its `Probability.Gaussian` aggregate currently exposes
   `Probability.Gaussian.AbsoluteMoment`, the source-neutral Gaussian first-
@@ -265,8 +271,13 @@ Choose the narrowest entry point that matches the material you need:
   IEEE-double inputs, and the final error-spread result. The historical
   `Analysis.NonrandomRounding*` paths are import-only compatibility shims. For
   Chapter 2, Problem 2.2 is the canonical
-  `NumStability.Source.Higham.Chapter02.Problem02` leaf. Chapter 14 contains
-  `Problem13` and the declaration-free `Section05` Schulz family aggregate.
+  `NumStability.Source.Higham.Chapter02.Problem02` leaf. Problem 2.11's source
+  samples are in `Chapter02.Problem11`, with reusable decimal and empirical
+  support under `Analysis.LeadingDigits`. The Section 2.7 power-frequency
+  conclusion is `Chapter02.Section07.PowerLeadingDigits`; its reusable
+  AddCircle and decimal-power development lives under `Analysis`. Chapter 14
+  contains `Problem13` and the declaration-free `Section05` Schulz family
+  aggregate.
   The currently canonicalized Chapter 21 subset is
   `NumStability.Source.Higham.Chapter21`, containing the
   `RowScalingInvariance` leaf; the comprehensive historical Chapter 21
@@ -304,9 +315,9 @@ the old-to-new path map and removal policy. The
 dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
-corpus is already Mathlib-style. After the Phase 10B ownership moves, the
-current ratchet records 619 unclassified modules, no reviewed mixed modules,
-220 missing module docs, 412 historical naming exceptions, and no declaration-
+corpus is already Mathlib-style. After the Phase 10D ownership moves, the
+current ratchet records 615 unclassified modules, no reviewed mixed modules,
+219 missing module docs, 409 historical naming exceptions, and no declaration-
 bearing umbrella. CI prevents those queues from growing while each dependency-
 contained family is migrated.
 
@@ -353,6 +364,15 @@ NumStability/
   Analysis.lean                -- complete analysis aggregate, including legacy work
   Analysis/                    -- stability, perturbation theory, matrix algebra,
                                --   norms, concentration, and probability
+    Equidistribution.lean      -- reusable equidistribution umbrella
+    Equidistribution/
+      AddCircle.lean           -- Fourier/Haar orbit equidistribution API
+    LeadingDigits.lean         -- reusable leading-digit umbrella
+    LeadingDigits/
+      Decimal.lean             -- decimal leading-digit predicate
+      DecimalPowers.lean       -- powers, logarithms, and decimal arcs
+      Empirical.lean           -- finite empirical digit histograms
+      LogarithmicDistribution.lean -- logarithmic leading-digit law
     Probability.lean           -- reusable probability-analysis umbrella
     Probability/
       Gaussian.lean            -- Gaussian-analysis umbrella
@@ -378,7 +398,12 @@ NumStability/
   Source/
     Higham.lean                -- Higham source umbrella
     Higham/
-      Chapter01/, Chapter02/, Chapter04/, Chapter08/, Chapter10/, Chapter11/
+      Chapter01/
+      Chapter02/
+        Problem11.lean         -- Problem 2.11 source samples and locator
+        Section07.lean         -- declaration-free Section 2.7 aggregate
+        Section07/PowerLeadingDigits.lean -- power-frequency source conclusion
+      Chapter04/, Chapter08/, Chapter10/, Chapter11/
       Chapter12/, Chapter13/, Chapter14/, Chapter17/, Chapter20/, Chapter21/
       Chapter22/, Chapter23/, Chapter24/, Chapter25/, Chapter26/, Chapter27/
                                -- canonical numbered source correspondence
@@ -409,10 +434,10 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 ## Roadmap
 
 The selected formalization core scope is closed; the repository-organization
-migration is not. The next batches classify the remaining 619 unclassified
-modules while keeping the mixed-module count at zero, replace the 412
+migration is not. The next batches classify the remaining 615 unclassified
+modules while keeping the mixed-module count at zero, replace the 409
 historical source/proof-stage names with semantic canonical paths plus
-compatibility shims, document the 220 remaining modules, and review the
+compatibility shims, document the 219 remaining modules, and review the
 giant-file outliers. The sequence and safety
 gates are tracked in
 [`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md).

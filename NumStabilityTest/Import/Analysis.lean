@@ -17,3 +17,9 @@ the narrower source paths directly.
 #check NumStability.complexSylvesterOp
 #check NumStability.not_forall_ieeeDoubleKahanStoredGridError_eq_on_source_grid
 #check NumStability.integral_abs_standardGaussian_difference
+#check NumStability.finUniformProbability
+#check NumStability.orbit_halfOpenArc_frequency_tendsto
+#check NumStability.problem2_11_decimalLeadingDigit
+#check NumStability.problem2_11_empiricalDigitProbability
+#check NumStability.logarithmicLeadingDigitMass
+#check NumStability.orbit_mem_decimalDigitArc_iff

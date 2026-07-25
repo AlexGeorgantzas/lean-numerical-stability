@@ -38,6 +38,9 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.InverseBounds` | `NumStability.Algorithms.LinearSystems.Triangular.InverseBounds` |
 | `NumStability.Algorithms.TriangularForwardComparison` | `NumStability.Algorithms.LinearSystems.Triangular.ComparisonBounds` |
 | `NumStability.Algorithms.TriangularSolveCombined` | `NumStability.Algorithms.LinearSystems.Triangular.Combined` |
+| `NumStability.Analysis.HighamChapter2PowerLeadingDigits` | `NumStability.Source.Higham.Chapter02.Problem11` and `NumStability.Source.Higham.Chapter02.Section07.PowerLeadingDigits` |
+| `NumStability.Analysis.LeadingDigitDistribution` | `NumStability.Analysis.LeadingDigits.LogarithmicDistribution` |
+| `NumStability.Analysis.Problem2_11` | `NumStability.Source.Higham.Chapter02.Problem11` |
 | `NumStability.Analysis.Problem2_2` | `NumStability.Source.Higham.Chapter02.Problem02` |
 | `NumStability.Analysis.Problem2_4` | `NumStability.Source.Higham.Chapter02.Problem04` |
 | `NumStability.Analysis.Problem2_7` | `NumStability.FloatingPoint.OperationLaws` and `NumStability.Source.Higham.Chapter02.Problem07` |
@@ -113,7 +116,12 @@ canonical chapter aggregates are discovery entry points, not wrapper targets:
 `NumStability.Source.Higham.Chapter22`,
 `NumStability.Source.Higham.Chapter22.Section03`, and
 `NumStability.Source.Higham.Chapter27` contain only documentation and imports.
-The compatibility inventory now contains 94 wrappers with 192 direct canonical
+The reusable `NumStability.Analysis.Equidistribution` and
+`NumStability.Analysis.LeadingDigits` aggregates and the source
+`NumStability.Source.Higham.Chapter02.Section07` aggregate are likewise
+declaration-free discovery entry points.
+
+The compatibility inventory now contains 97 wrappers with 196 direct canonical
 targets.
 
 `NumStability.Source.Higham.Chapter02.Problem22` has one temporary

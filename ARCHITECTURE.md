@@ -68,6 +68,12 @@ split from the reusable library.
 - `NumStability.Source` is the canonical source-correspondence entry point.
 - `NumStability.Analysis.Summation` is an import-only family aggregate split
   into reusable `Signs` and `ErrorBounds` leaves.
+- `NumStability.Analysis.Equidistribution` is the reusable equidistribution
+  entry point. Its `AddCircle` leaf contains the finite-orbit, Fourier, Haar,
+  ball-frequency, and half-open-arc APIs.
+- `NumStability.Analysis.LeadingDigits` is the reusable leading-digit entry
+  point over `Decimal`, `DecimalPowers`, `Empirical`, and
+  `LogarithmicDistribution`.
 - `NumStability.Analysis.Probability` is the reusable probability-analysis
   entry point. Its declaration-free `Probability.Gaussian` aggregate exposes
   the source-neutral `Probability.Gaussian.AbsoluteMoment` leaf.
@@ -87,6 +93,13 @@ split from the reusable library.
   reusable `FloatingPoint.IEEE.NaiveMaximum`; printed Problem 2.23 is the
   `Chapter02.Problem23` Heron leaf. The former Problem 22 canonical path
   temporarily re-exports Problem 23 to preserve its published import surface.
+  Problem 2.11's source samples live in `Chapter02.Problem11`, while its
+  reusable classifier and empirical-distribution support live below
+  `Analysis.LeadingDigits`. The Section 2.7 power-frequency conclusion is the
+  `Chapter02.Section07.PowerLeadingDigits` leaf beneath a declaration-free
+  `Section07` aggregate; its AddCircle and decimal-power machinery remains in
+  reusable analysis. The former flat leading-digit Analysis paths are
+  compatibility wrappers only.
   Chapter 14 owns `Problem13` and the declaration-free `Section05`
   aggregate for its Schulz-iteration leaves. The currently canonicalized
   Chapter 21 subset is the declaration-free `Chapter21` aggregate over
