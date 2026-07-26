@@ -105,6 +105,13 @@ Each capture consists of:
 - `2026-07-26-organization-phase10e-build.md` records the corresponding exact
   compiled-ownership audit, isolated import tests, independent reviews, clean
   baseline capture, full builds, and architecture gates.
+- `2026-07-26-organization-phase10f.{json,md}` captures the reusable
+  Weyl--Mirsky API, the Chapter 14 Problem 14.15, Chapter 21 Theorem 21.4, and
+  Chapter 28 equation (28.2) source frontiers, and the three historical
+  forwarding paths.
+- `2026-07-26-organization-phase10f-build.md` records the corresponding exact
+  compiled-ownership audit, isolated import tests, independent reviews, clean
+  baseline capture, full builds, and architecture gates.
 
 Regenerate a named baseline from the repository root with:
 
