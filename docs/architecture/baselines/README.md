@@ -86,6 +86,25 @@ Each capture consists of:
 - `2026-07-24-organization-phase10b-build.md` records the four exact compiled-
   ownership audits, eleven isolated import tests, clean baseline capture, full
   builds, and architecture gates for that graph.
+- `2026-07-24-organization-phase10c.{json,md}` captures the canonical Higham
+  Chapter 2 Problems 2.22 and 2.23 source leaves and their historical
+  forwarding paths.
+- `2026-07-24-organization-phase10c-build.md` records the corresponding exact
+  compiled-ownership audit, isolated import tests, clean baseline capture,
+  full builds, and architecture gates.
+- `2026-07-24-organization-phase10d.{json,md}` captures the reusable
+  leading-digit and equidistribution families, the Chapter 2 Problem 2.11 and
+  Section 2.7 source leaves, and the three historical forwarding paths.
+- `2026-07-24-organization-phase10d-build.md` records the corresponding exact
+  compiled-ownership audit, isolated import tests, clean baseline capture,
+  full builds, and architecture gates.
+- `2026-07-26-organization-phase10e.{json,md}` captures the Chapter 14 Problem
+  14.14 and Chapter 21 Theorem 21.3 source frontiers, the reusable Haar
+  homogeneous-space uniqueness API, and the three historical forwarding
+  paths.
+- `2026-07-26-organization-phase10e-build.md` records the corresponding exact
+  compiled-ownership audit, isolated import tests, independent reviews, clean
+  baseline capture, full builds, and architecture gates.
 
 Regenerate a named baseline from the repository root with:
 
