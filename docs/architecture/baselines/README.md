@@ -112,6 +112,13 @@ Each capture consists of:
 - `2026-07-26-organization-phase10f-build.md` records the corresponding exact
   compiled-ownership audit, isolated import tests, independent reviews, clean
   baseline capture, full builds, and architecture gates.
+- `2026-07-26-organization-phase11a.{json,md}` captures the transitional
+  unclassified residual norms core, the canonical Higham Chapter 6 Theorem
+  6.4 source leaf, the Chapter 6 aggregate, and the historical two-target norms
+  facade.
+- `2026-07-26-organization-phase11a-build.md` records the corresponding exact
+  compiled-graph preservation audit, isolated import tests, independent
+  reviews, clean baseline capture, full builds, and architecture gates.
 
 Regenerate a named baseline from the repository root with:
 
