@@ -81,3 +81,20 @@ Fourier/Haar convergence and decimal-distribution APIs belong in reusable
 analysis even though they currently have no consumer outside their source
 family, while the empirical sample catalog and final Higham conclusion belong
 under the source hierarchy.
+
+## Historical follow-up: Phase 10E Higham frontiers
+
+Phase 10E selected three independent ownership frontiers from Chapters 14,
+21, and 28. The Phase 10D declaration graph again distinguishes source
+endpoints from a reusable low-fan-in API:
+
+| Historical module | Compiled consumer result | Canonical destination | Historical outcome |
+| --- | --- | --- | --- |
+| `Algorithms.Ch14HymanDeterminant` | Zero incoming declaration edges from outside the owner. | `Source.Higham.Chapter14.Problem14` | Moved as Problem 14.14 source material; the old path remains an exact one-import compatibility wrapper. |
+| `Algorithms.Underdetermined.Higham21Theorem21_3Attainment` | Zero incoming declaration edges from outside the owner. | `Source.Higham.Chapter21.Theorem03.Attainment` | Moved as Theorem 21.3 source material below a declaration-free `Theorem03` aggregate; the old path remains an exact one-import compatibility wrapper. |
+| `Algorithms.TestMatrices.Higham28HaarFibers` | Three incoming compiled edges, from `Higham28OrthogonalFibers`, `Higham28OrthogonalCoordinates`, and `Higham28StewartRawFiber`; all are downstream of the sole direct importer, `Higham28OrthogonalSphere`. | `Analysis.Probability.Haar.HomogeneousSpaceUniqueness` | Moved to reusable probability analysis and its direct consumer retargeted; the old path remains an exact one-import compatibility wrapper. |
+
+The batch preserves all 72 compiled constants owned by these modules. The Haar
+case is deliberately not placed below `Source.Higham.Chapter28`: its three
+measure-uniqueness theorems are generic homogeneous-space results, and
+their existing Chapter 28 consumers do not make the API source-specific.

@@ -2,6 +2,16 @@
 
 Source: Higham, 2nd ed., Chapter 28, printed pp. 511-526. Mode: core.
 
+Organization note: the three-theorem homogeneous-space measure-uniqueness API
+supporting the Stewart development now lives in the reusable module
+`NumStability.Analysis.Probability.Haar.HomogeneousSpaceUniqueness`, exposed by
+the declaration-free `Analysis.Probability.Haar` aggregate. The historical
+`Algorithms.TestMatrices.Higham28HaarFibers` path is an import-only wrapper.
+This is reusable support, not a `Source.Higham.Chapter28` leaf: the theorems
+have no Chapter 28 locator or source-specific statement. The broader Hilbert,
+Cauchy, randsvd/Stewart, Gaussian/Haar, Ginibre, Pascal, Toeplitz, companion,
+moment, probability, and contract families remain an incomplete migration.
+
 | Source group | Terminal status | Lean evidence / dependency |
 |---|---|---|
 | Hilbert definition and symmetry | PASS | `hilbertMatrix`, `hilbertMatrix_transpose` |
@@ -24,7 +34,7 @@ Source: Higham, 2nd ed., Chapter 28, printed pp. 511-526. Mode: core.
 | Randsvd single-Householder rank-2 warning | PASS | `singleHouseholder_randsvd_eq_diagonal_add_rankTwo` and `singleHouseholder_randsvd_correction_rank_le_two` give the exact rectangular factorization and rank bound |
 | Symmetric randsvd adaptation | PASS | `symmetricRandsvdMatrix`, `symmetricRandsvdMatrix_transpose`, and `symmetricRandsvdMatrix_column_eigenpair` give the symmetric construction and prescribed eigenbasis |
 | Randsvd cost discussion | DEFER-MISSING-PRECISE-STATEMENT | no concrete operation graph, flop convention, or selected asymptotic-cost proposition is printed |
-| Theorem 28.1 | PASS | normalized product-Gaussian inputs, exact Householder reduction, source-ordered `P_i`, `D`, `Q`, samplewise orthogonality, the dimension-step recursion, Gaussian rotation, Haar-fiber uniqueness, and `stewartOrthogonalGroupLaw_eq_normalizedOrthogonalHaar` are compiled |
+| Theorem 28.1 | PASS | normalized product-Gaussian inputs, exact Householder reduction, source-ordered `P_i`, `D`, `Q`, samplewise orthogonality, the dimension-step recursion, Gaussian rotation, reusable Haar-fiber uniqueness from `Analysis.Probability.Haar.HomogeneousSpaceUniqueness`, and `stewartOrthogonalGroupLaw_eq_normalizedOrthogonalHaar` are compiled |
 | Real-Ginibre expected-count limit (28-P3) | **PASS** (2026-07-17) | Prior infrastructure (measurability, coarea/incidence chain, closed-form sequence limit, dims 1–2) is now completed by `ch28gf_kernelTransfer` → `ch28gf_realGinibreFiniteExpectationFormula` (premise-free) → `ch28gf_realGinibreExpectedCountLimit` (premise-free `E_n/√n → √(2/π)`), all axiom-clean, in `Higham28GinibreFiniteFormula.lean`. |
 | Real-Ginibre proportion corollary | **PASS** | `ch28gf_realGinibreExpectedProportionLimit` derives the next printed sentence `E_n/n → 0`; the serialized focused target build passed (3,288 jobs), and the final axiom harness reports only `propext`, `Classical.choice`, and `Quot.sound`. |
 | Uniform positive random matrix | PASS | `uniformUnitIntervalMatrixMeasure_strictlyPositive` proves boundary-null strict positivity, `hasPositiveDominantEigenvalue_of_strictlyPositive` supplies the deterministic Perron bridge, and `uniformPositivePerronAlmostSure` proves the concrete full-measure intersection event |

@@ -18,6 +18,14 @@
   condition. Both methods in (21.11) and the corrected-MGS recurrence are
   represented; its qualitative stability sentence is classified separately
   below.
+- Current organization frontier: the exact/closure attainment and scalar
+  nonattainment refinements for Theorem 21.3 are canonically owned by
+  `NumStability.Source.Higham.Chapter21.Theorem03.Attainment`, reached through
+  the declaration-free `Theorem03` aggregate. The former
+  `Algorithms.Underdetermined.Higham21Theorem21_3Attainment` path is an
+  import-only wrapper. The equations, perturbation, Givens/MGS, SNE, and
+  Theorem 21.4 families remain in their historical locations, so Chapter 21 is
+  not yet a complete physical migration.
 
 Status language in this ledger:
 
@@ -34,7 +42,7 @@ Status language in this ledger:
 | --- | --- | --- | --- |
 | Theorem 21.1 | **VERIFIED** | `higham21_theorem21_1_relative_asymptotic_bound_of_gram_det_ne_zero`, `higham21_theorem21_1_finite_error_relative_bound`, and the first-order majorant theorems in `Higham21Perturbation.lean`; rank preservation in `Higham21RankStability.lean`; Holder attainability in `Higham21Attainability.lean` | The arbitrary absolute-norm coefficient in (21.6) is represented, and the remainder is proved `O(t^2)` through an explicit fixed-radius bound on perturbed Gram inverses. The caller-facing finite theorem derives perturbed full row rank from `||Aplus DeltaA||_2 < 1`. The local inverse bound used to make the quadratic constant finite is explicit rather than hidden in big-O notation. |
 | Lemma 21.2 | **VERIFIED** | `undetLemma21_2SinglePerturbation`, `higham21_lemma21_2_rowwise_backward_error_bound_of_pseudoinverse_products`, `higham21_lemma21_2_single_perturbation_frob_bound`, and `higham21_lemma21_2_single_perturbation_op_bound` | Covers the two perturbed equations, the printed `3 * max` pseudoinverse-product smallness condition, the zero/nonzero construction of one perturbation, minimum-norm recovery, and the printed `p = 2, F` square-sum norm bounds. Row-wise bounds used by Theorem 21.4 are also present. |
-| Theorem 21.3 | **VERIFIED (documented source correction)** | `higham21_theorem21_3_nonzero_normwise_backward_error_formula`, `higham21_theorem21_3_normwise_backward_error_formula`, and `Higham21Theorem21_3Attainment.lean` | The printed unconditional `min` is not valid in the zero-system boundary case. Lean proves the mathematically correct Sun-Sun infimum formula, including `eta_F(0) = theta ||b||_2`, the nonzero branch with `sigma_m(A(I-yy+))`, the lower bound for every feasible perturbation, and an epsilon-attaining upper construction. Exact attainment is proved under the sharp nonzero-pairing condition, and closure attainment is unconditional. A verified scalar example witnesses nonattainment. |
+| Theorem 21.3 | **VERIFIED (documented source correction)** | `higham21_theorem21_3_nonzero_normwise_backward_error_formula`, `higham21_theorem21_3_normwise_backward_error_formula`, and `Source/Higham/Chapter21/Theorem03/Attainment.lean` | The printed unconditional `min` is not valid in the zero-system boundary case. Lean proves the mathematically correct Sun-Sun infimum formula, including `eta_F(0) = theta ||b||_2`, the nonzero branch with `sigma_m(A(I-yy+))`, the lower bound for every feasible perturbation, and an epsilon-attaining upper construction. Exact attainment is proved under the sharp nonzero-pairing condition, and closure attainment is unconditional. A verified scalar example witnesses nonattainment. The former `Higham21Theorem21_3Attainment.lean` path forwards to the canonical source leaf. |
 | Theorem 21.4 | **VERIFIED** | `Higham21QMethodFullRowRankComputedQRDomain.of_source_smallness`, `higham21_theorem21_4_computed_qhat_rowwise_backward_stable_source`, `Higham21GivensActualReplayEtaQ_lt_one_of_operational_gammaValid`, `higham21_givens_actual_topBlock_nonbreakdown_of_source_smallness`, and `higham21_theorem21_4_givens_actual_rounded_rowwise_backward_stable_source` in `Higham21Theorem214SourceClosure.lean` | For Householder QR, the source wrapper combines the Chapter 19 rowwise QR perturbation with the Chapter 21 right inverse and rank-stability bridge to prove the computed top block nonsingular, then supplies the formerly hidden `lsTheorem20_4ComputedQRNonbreakdown` field. For retained-trace Givens QR, one operational gamma-validity index supplies the local kernels and solve, bounds the complete replay recurrence below one, and the same perturbation/rank argument derives every top diagonal entry nonzero. Thus neither `hdiag` nor `hQsmall` remains a caller-supplied execution conclusion. |
 
 ## Equation Ledger
@@ -155,8 +163,11 @@ smallness. The source-facing row-wise endpoint consumes both derived facts.
 - `Higham21PerturbationRadius.lean`: concrete fixed-radius inverse and
   remainder certificates for Theorem 21.1.
 - `Higham21Attainability.lean`: Holder first-order upper and lower witnesses.
-- `Higham21Theorem21_3Attainment.lean`: exact/closure attainment and the
-  scalar nonattainment witness for Theorem 21.3.
+- `Source/Higham/Chapter21/Theorem03.lean`: declaration-free Theorem 21.3
+  source aggregate.
+- `Source/Higham/Chapter21/Theorem03/Attainment.lean`: exact/closure
+  attainment and the scalar nonattainment witness for Theorem 21.3. The former
+  `Higham21Theorem21_3Attainment.lean` path is a compatibility wrapper.
 - `Source/Higham/Chapter21/RowScalingInvariance.lean`: row-scaling invariance
   of `cond2`.
 - `Higham21Eq21_8.lean`: equation (21.8).
@@ -196,11 +207,11 @@ smallness. The source-facing row-wise endpoint consumes both derived facts.
   MGS recurrence and its rounded transfer interfaces.
 - `Higham21RowwiseMeasure.lean`: the printed row-wise backward-error measure.
 - `Algorithms/Underdetermined/Higham21.lean`: historical comprehensive Chapter
-  21 umbrella importing the complete legacy module set above and the canonical
-  row-scaling aggregate.
+  21 umbrella exposing the complete historical surface above together with the
+  canonical row-scaling and Theorem 21.3 aggregates.
 - `Source/Higham/Chapter21.lean`: narrow canonical aggregate for the currently
-  migrated Chapter 21 row-scaling surface; it does not yet replace the
-  comprehensive historical umbrella.
+  migrated row-scaling and Theorem 21.3 attainment surfaces; it does not yet
+  replace the comprehensive historical umbrella.
 
 ## Honest Scope Exclusions
 

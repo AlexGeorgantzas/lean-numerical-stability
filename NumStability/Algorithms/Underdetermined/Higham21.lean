@@ -33,8 +33,8 @@ import NumStability.Algorithms.Underdetermined.Higham21SNERemainderBounds
 import NumStability.Algorithms.Underdetermined.Higham21SNESigned
 import NumStability.Algorithms.Underdetermined.Higham21SNEUniform
 import NumStability.Algorithms.Underdetermined.Higham21Theorem214SourceClosure
-import NumStability.Algorithms.Underdetermined.Higham21Theorem21_3Attainment
 import NumStability.Source.Higham.Chapter21
+import NumStability.Source.Higham.Chapter21.Theorem03
 
 /-!
 # Historical Higham Chapter 21 aggregate

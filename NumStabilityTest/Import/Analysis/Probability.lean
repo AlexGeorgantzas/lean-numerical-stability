@@ -5,3 +5,4 @@ import NumStability.Analysis.Probability
 -/
 
 #check NumStability.integral_abs_standardGaussian_difference
+#check MeasureTheory.measure_eq_of_invariant_probability_of_pretransitive

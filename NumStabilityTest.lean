@@ -14,7 +14,10 @@ import NumStabilityTest.Import.Analysis.LeadingDigits.LogarithmicDistribution
 import NumStabilityTest.Import.Analysis.Probability
 import NumStabilityTest.Import.Analysis.Probability.Gaussian
 import NumStabilityTest.Import.Analysis.Probability.Gaussian.AbsoluteMoment
+import NumStabilityTest.Import.Analysis.Probability.Haar
+import NumStabilityTest.Import.Analysis.Probability.Haar.HomogeneousSpaceUniqueness
 import NumStabilityTest.Import.Compatibility.Analysis.Probability.AlgorithmsTestMatricesHigham28GaussianAbsoluteMoment
+import NumStabilityTest.Import.Compatibility.Analysis.Probability.AlgorithmsTestMatricesHigham28HaarFibers
 import NumStabilityTest.Import.Compatibility.Source.Chapter01.AnalysisNonrandomRounding
 import NumStabilityTest.Import.Compatibility.Source.Chapter01.AnalysisNonrandomRoundingConclusions
 import NumStabilityTest.Import.Compatibility.Source.Chapter01.AnalysisNonrandomRoundingCore
@@ -47,6 +50,7 @@ import NumStabilityTest.Import.Compatibility.Source.Chapter12.AlgorithmsHighamCh
 import NumStabilityTest.Import.Compatibility.Source.Chapter13.AlgorithmsBlockLUTable13_1Families
 import NumStabilityTest.Import.Compatibility.Source.Chapter13.AlgorithmsLUHigham13DemmelSharpMultiplier
 import NumStabilityTest.Import.Compatibility.Source.Chapter13.HighamTable13_1
+import NumStabilityTest.Import.Compatibility.Source.Chapter14.AlgorithmsCh14HymanDeterminant
 import NumStabilityTest.Import.Compatibility.Source.Chapter14.AlgorithmsCh14Problem1413Boundary
 import NumStabilityTest.Import.Compatibility.Source.Chapter14.AlgorithmsCh14SchulzIteration
 import NumStabilityTest.Import.Compatibility.Source.Chapter14.AlgorithmsCh14SchulzRectangular
@@ -58,6 +62,7 @@ import NumStabilityTest.Import.Compatibility.Source.Chapter17.AnalysisCh17Semico
 import NumStabilityTest.Import.Compatibility.Source.Chapter20.AlgorithmsHigham20SourceAliases
 import NumStabilityTest.Import.Compatibility.Source.Chapter20.HighamSourceAliases
 import NumStabilityTest.Import.Compatibility.Source.Chapter21.AlgorithmsUnderdeterminedHigham21Condition
+import NumStabilityTest.Import.Compatibility.Source.Chapter21.AlgorithmsUnderdeterminedHigham21Theorem21_3Attainment
 import NumStabilityTest.Import.Compatibility.Source.Chapter22.AlgorithmsVandermondeHigham22
 import NumStabilityTest.Import.Compatibility.Source.Chapter22.AlgorithmsVandermondeHigham22Ch12RefinementBridge
 import NumStabilityTest.Import.Compatibility.Source.Chapter22.AlgorithmsVandermondeHigham22ComplexConfluentRefinementBridge
@@ -168,6 +173,7 @@ import NumStabilityTest.Import.Source.Chapter13.Equation25
 import NumStabilityTest.Import.Source.Chapter13.Table01
 import NumStabilityTest.Import.Source.Chapter14
 import NumStabilityTest.Import.Source.Chapter14.Problem13
+import NumStabilityTest.Import.Source.Chapter14.Problem14
 import NumStabilityTest.Import.Source.Chapter14.Section05
 import NumStabilityTest.Import.Source.Chapter14.Section05.RectangularIteration
 import NumStabilityTest.Import.Source.Chapter14.Section05.SpectralConvergence
@@ -187,6 +193,8 @@ import NumStabilityTest.Import.Source.Chapter20.Lemma06
 import NumStabilityTest.Import.Source.Chapter20.Theorem01
 import NumStabilityTest.Import.Source.Chapter21
 import NumStabilityTest.Import.Source.Chapter21.RowScalingInvariance
+import NumStabilityTest.Import.Source.Chapter21.Theorem03
+import NumStabilityTest.Import.Source.Chapter21.Theorem03.Attainment
 import NumStabilityTest.Import.Source.Chapter22
 import NumStabilityTest.Import.Source.Chapter22.MonomialResidual
 import NumStabilityTest.Import.Source.Chapter22.Problem07

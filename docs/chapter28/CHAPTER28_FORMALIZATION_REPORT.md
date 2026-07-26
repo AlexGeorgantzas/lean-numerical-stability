@@ -1,5 +1,13 @@
 # Higham Chapter 28 Formalization Report
 
+The Stewart proof's homogeneous-space measure-uniqueness layer is now
+canonically reusable at
+`NumStability.Analysis.Probability.Haar.HomogeneousSpaceUniqueness`.
+`NumStability.Algorithms.TestMatrices.Higham28HaarFibers` is an import-only
+historical wrapper. No `Source.Higham.Chapter28` leaf is introduced: these
+generic theorems have no source locator, and the broader Chapter 28 families
+remain an incomplete organization migration.
+
 ## Source and scope
 
 - Edition: 2nd ed., SIAM, 2002.

@@ -1,4 +1,5 @@
 import NumStability.Analysis.Probability.Gaussian
+import NumStability.Analysis.Probability.Haar
 
 /-!
 # Probability analysis

@@ -40,8 +40,11 @@ example : (fp : FPModel) → (n : ℕ) → (Fin n → ℝ) → ℝ :=
 #check Ch14Ext.ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq
 #check FloatingPointFormat.problem2_2_lemma2_1_spacing_bounds
 #check ch14ext_problem14_13_gej_bound_fin_one
+#check Ch14Ext.ch14ext_hyman_flDet_backward_error_original
 #check higham21Cond2With_row_scaling
+#check higham21_theorem21_3_exact_attainment_or_pairing_obstruction
 #check integral_abs_standardGaussian_difference
+#check MeasureTheory.measure_eq_of_invariant_probability_of_pretransitive
 #check ieeeNaiveMax_not_nan_propagating
 #check problem2_22_guard_digit_a_sub_b_exact
 #check problem2_11_decimalLeadingDigit

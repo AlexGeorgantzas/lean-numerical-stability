@@ -88,9 +88,9 @@ claims from its surrounding survey prose:
 | 56b | Remaining parallel inversion discussion | p. 278 | DEFER / DEFER-MISSING-PRECISE-STATEMENT | EXCLUDED | Csanky's method, processor/complexity comparisons, acceleration suggestions, and qualitative floating-point stability observations; future benchmark material. |
 | 57 | Hadamard condition number `psi(A)` | p. 279 | FORMALIZE_CORE / CORE-PRECISE-PROSE | SOURCE-ERROR/CORRECTED | Printed `det(D)/det(A)` can be negative. `MatrixInversion.lean` uses `abs(det A)`; `Source/Higham/Chapter14/Discrepancies.lean` proves the `[-1]` witness. |
 | 58 | Equation (14.34) | p. 279 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `MatrixInversion.lean`: signed and absolute GEPP determinant products |
-| 59 | Hyman determinant method | p. 280 | FORMALIZE_DEPENDENCY / DEP-REQUIRED | PASS | `Ch14HymanDeterminant.lean` |
-| 60 | Equation (14.35) | p. 280 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14HymanDeterminant.lean` |
-| 61 | Equation (14.36) | p. 280 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Ch14HymanDeterminant.lean` |
+| 59 | Hyman determinant method | p. 280 | FORMALIZE_DEPENDENCY / DEP-REQUIRED | PASS | `Source/Higham/Chapter14/Problem14.lean` |
+| 60 | Equation (14.35) | p. 280 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Source/Higham/Chapter14/Problem14.lean` |
+| 61 | Equation (14.36) | p. 280 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Source/Higham/Chapter14/Problem14.lean` |
 | 62 | Section 14.7 notes | pp. 281-282 | SKIP / SKIP-LITERATURE-REVIEW | EXCLUDED | Bibliographic and historical notes. |
 | 63 | Problem 14.1 | p. 283 | SKIP / OPTIONAL-PROBLEM-NOT-SELECTED | EXCLUDED | Reflective historical anecdote, not a precise theorem. |
 | 64 | Problem 14.2 | p. 283; App. A p. 558 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `Ch14Problem142Families.lean`: uniform (13.4)/(13.5) family analysis for Methods 1B, 2C, and Method 2B obstruction |
@@ -106,7 +106,7 @@ claims from its surrounding survey prose:
 | 74 | Problem 14.12 | p. 284; App. A p. 560 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `MatrixInversion.lean`: QR/row-scaling identities |
 | 75 | Problem 14.13 | p. 284; App. A p. 560 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `Source/Higham/Chapter14/Problem13.lean`: all positive dimensions, including `n=1` |
 | 76 | Equation (14.37) | p. 284 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Source/Higham/Chapter14/Problem13.lean` |
-| 77 | Problem 14.14 | p. 285; App. A p. 560 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `Ch14HymanDeterminant.lean`: `gamma_(2n-1)` backward error and scaling invariance |
+| 77 | Problem 14.14 | p. 285; App. A p. 560 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `Source/Higham/Chapter14/Problem14.lean`: `gamma_(2n-1)` backward error and scaling invariance; `Ch14HymanDeterminant.lean` is the historical wrapper |
 | 78 | Problem 14.15 | p. 285; App. A pp. 560-561 | FORMALIZE_CORE / CORE-PRECISE-PROSE | SOURCE-ERROR/CORRECTED | Printed guard `< 1` does not keep `1-nx` positive. `Chapter14Problem1415Weyl.lean` proves the corrected `< 1/n` theorem and a checked `n=2, x=3/4` counterexample. |
 
 ## Source Corrections

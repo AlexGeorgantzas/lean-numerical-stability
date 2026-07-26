@@ -40,7 +40,7 @@ six historical `NumStability.Analysis.NonrandomRounding*` paths use exact
 `compatibility` rules; there is deliberately no source-tier prefix rule for
 that historical directory.
 
-Through Phase 10D, reviewed source families cover the canonicalized Higham
+Through Phase 10E, reviewed source families cover the canonicalized Higham
 frontiers in Chapters 1, 2, 4, 8, 10--14, 17, 20--27, and cross-chapter
 locators. Exact `aggregate` rules identify every declaration-free chapter and
 family umbrella; canonical leaves inherit `source` from the Source prefix and
@@ -52,14 +52,19 @@ the reviewed foundational leaves recorded in `tiers.json`. Canonical Problem
 2.11 owns only its source samples while re-exporting the reusable decimal,
 empirical-histogram, and logarithmic-distribution APIs needed for its complete
 source locator; the Section 2.7 power-frequency conclusion has a separate
-source leaf.
+source leaf. Phase 10E additionally assigns the Hyman determinant development
+to Chapter 14 Problem 14.14, the attainment and nonattainment refinements to
+Chapter 21 Theorem 21.3, and generic homogeneous-space measure
+uniqueness to reusable Haar probability analysis.
 
-The Phase 10D ratchet classifies 362 of 977 production modules: 132 as source,
-70 as aggregate, 97 as compatibility, 56 as reusable, 2 as internal, and 5 as
-upstream. The explicit unclassified queue is 615 modules and the mixed queue
-remains empty. The `NumStability.Algorithms` direct-import ceilings are 444
+The Phase 10E ratchet classifies 370 of 982 production modules: 134 as source,
+72 as aggregate, 100 as compatibility, 57 as reusable, 2 as internal, and 5 as
+upstream. The explicit unclassified queue is 612 modules and the mixed queue
+remains empty. The `NumStability.Algorithms` direct-import ceilings are 443
 imports below `NumStability`, including 10 below `NumStability.Source` and 45
-below `NumStability.Analysis`.
+below `NumStability.Analysis`. The exact remaining layout debt is 218 missing
+module docstrings and 406 noncanonical historical module names; the
+compatibility inventory contains 100 wrappers with 199 direct targets.
 
 Because structural aggregates do not themselves own declarations,
 `reusable_entrypoints` separately lists aggregates whose entire reachable

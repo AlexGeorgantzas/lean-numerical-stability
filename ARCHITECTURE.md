@@ -76,7 +76,11 @@ split from the reusable library.
   `LogarithmicDistribution`.
 - `NumStability.Analysis.Probability` is the reusable probability-analysis
   entry point. Its declaration-free `Probability.Gaussian` aggregate exposes
-  the source-neutral `Probability.Gaussian.AbsoluteMoment` leaf.
+  the source-neutral `Probability.Gaussian.AbsoluteMoment` leaf. Its
+  declaration-free `Probability.Haar` aggregate exposes
+  `Probability.Haar.HomogeneousSpaceUniqueness`, whose generic Haar-fiber and
+  invariant-probability uniqueness theorems support the Chapter 28 Stewart
+  development without becoming source correspondence.
 - `NumStability.Algorithms.Sylvester` is a complete family-discovery umbrella,
   not a claim that every Chapter 16 declaration is reusable mathematics.
 - `NumStability.Algorithms.FastMatMul.Recurrences` is the reusable fast-
@@ -100,11 +104,19 @@ split from the reusable library.
   `Section07` aggregate; its AddCircle and decimal-power machinery remains in
   reusable analysis. The former flat leading-digit Analysis paths are
   compatibility wrappers only.
-  Chapter 14 owns `Problem13` and the declaration-free `Section05`
-  aggregate for its Schulz-iteration leaves. The currently canonicalized
-  Chapter 21 subset is the declaration-free `Chapter21` aggregate over
-  `RowScalingInvariance`; the comprehensive historical Chapter 21 discovery
-  surface remains `Algorithms.Underdetermined.Higham21` during migration.
+  Chapter 14 owns `Problem13`, `Problem14` for Problem 14.14's Hyman
+  determinant result, and the declaration-free `Section05` aggregate for its
+  Schulz-iteration leaves. The currently canonicalized Chapter 21 subset is
+  the declaration-free `Chapter21` aggregate over `RowScalingInvariance` and
+  the declaration-free `Theorem03` aggregate; `Theorem03.Attainment` owns the
+  exact/closure attainment and scalar nonattainment refinements. The
+  comprehensive historical Chapter 21 discovery surface remains
+  `Algorithms.Underdetermined.Higham21` during migration. Chapter 28 does not
+  yet have a canonical source aggregate: its migrated homogeneous-space
+  uniqueness support belongs to reusable `Analysis.Probability.Haar`, while
+  its source-specific Stewart and test-matrix modules remain historical.
+  These Chapter 14, 21, and 28 frontiers do not claim that the broader chapter
+  families are fully migrated.
   Chapter 12 uses the declaration-free
   `NumStability.Source.Higham.Chapter12` aggregate over the source leaves
   `IterativeRefinement`, `OmegaDiscontinuity`, and `Problem02`. Chapter 13's

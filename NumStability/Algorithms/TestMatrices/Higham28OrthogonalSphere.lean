@@ -6,7 +6,7 @@ See LICENSES/Apache-2.0.txt.
 Authors: QED
 -/
 import NumStability.Algorithms.TestMatrices.Higham28GaussianOrthogonal
-import NumStability.Algorithms.TestMatrices.Higham28HaarFibers
+import NumStability.Analysis.Probability.Haar.HomogeneousSpaceUniqueness
 import Mathlib.Analysis.InnerProductSpace.Projection.Reflection
 
 namespace NumStability

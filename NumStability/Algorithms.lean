@@ -40,7 +40,6 @@ import NumStability.Algorithms.Ch14GJEOperationalBridge
 import NumStability.Algorithms.Ch14GJEPrintedEnvelopeClosure
 import NumStability.Algorithms.Ch14GJESourceAccumulationBridge
 import NumStability.Algorithms.Ch14GJETheorem145SourceClosure
-import NumStability.Algorithms.Ch14HymanDeterminant
 import NumStability.Algorithms.Ch14Method1BWhole
 import NumStability.Algorithms.Ch14Method2C
 import NumStability.Algorithms.Ch14Method2CWhole

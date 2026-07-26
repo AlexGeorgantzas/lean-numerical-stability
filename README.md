@@ -173,31 +173,34 @@ approximation, and least-squares preconditioning.
 
 ## Project statistics
 
-Current reviewed Phase 10B structure for the production source surface, after
-the compatibility-preserving small-frontier migrations for Higham Chapters 2,
-14, 21, and 28:
+Current Phase 10E structure for the production source surface, after the
+compatibility-preserving ownership frontiers for Higham Chapters 14, 21, and
+28:
 
 | | |
 |---|---|
-| Lean modules | **964** |
-| Lines of Lean | **1,468,075** |
-| Direct imports | **4,018** |
-| Internal import edges | **2,651** |
+| Lean modules | **982** |
+| Lines of Lean | **1,468,334** |
+| Direct imports | **4,048** |
+| Internal import edges | **2,680** |
 | Import cycles | **0** |
-| Classified modules | **345** |
-| Unclassified modules | **619** |
-| Source modules | **129** |
-| Aggregate modules | **66** |
-| Compatibility modules | **93** |
-| Missing module docs | **220** |
-| Legacy naming exceptions | **412** |
+| Classified modules | **370** |
+| Unclassified modules | **612** |
+| Source modules | **134** |
+| Aggregate modules | **72** |
+| Compatibility modules | **100** |
+| Missing module docs | **218** |
+| Legacy naming exceptions | **406** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
-the standard `[propext, Classical.choice, Quot.sound]` axioms. The latest
-generated detailed checkpoint is the versioned
-[`2026-07-24 organization Phase 10B baseline`](docs/architecture/baselines/2026-07-24-organization-phase10b.md),
-with full source, import, signature-dependency, and proof/body-dependency
-metrics. The live ratchet values above are enforced by the reviewed manifests.
+the standard `[propext, Classical.choice, Quot.sound]` axioms. The clean
+pre-frontier checkpoint is the versioned
+[`2026-07-24 organization Phase 10D baseline`](docs/architecture/baselines/2026-07-24-organization-phase10d.md),
+and the exact Phase 10E ownership and validation contract is recorded in the
+[`Higham frontiers migration map`](docs/architecture/migrations/2026-07-24-higham-frontiers-phase10e.md).
+These records include source, import, signature-dependency, and
+proof/body-dependency metrics; the live ratchet values above are enforced by
+the reviewed manifests.
 
 ## Building
 
@@ -253,9 +256,12 @@ Choose the narrowest entry point that matches the material you need:
   over decimal predicates, decimal powers, empirical histograms, and the
   logarithmic distribution.
 - `NumStability.Analysis.Probability` is the reusable probability-analysis
-  umbrella. Its `Probability.Gaussian` aggregate currently exposes
+  umbrella. Its `Probability.Gaussian` aggregate exposes
   `Probability.Gaussian.AbsoluteMoment`, the source-neutral Gaussian first-
-  absolute-moment API used by the Chapter 28 Ginibre development.
+  absolute-moment API used by the Chapter 28 Ginibre development. Its
+  `Probability.Haar` aggregate exposes
+  `Probability.Haar.HomogeneousSpaceUniqueness`, the generic Haar-fiber and
+  invariant-probability uniqueness API used by the Chapter 28 Stewart proof.
 - `NumStability.Algorithms.Sylvester` is the complete historical Sylvester and
   Higham Chapter 16 family umbrella; consumers should still prefer its narrow
   leaf modules when they need only part of that surface.
@@ -276,13 +282,17 @@ Choose the narrowest entry point that matches the material you need:
   support under `Analysis.LeadingDigits`. The Section 2.7 power-frequency
   conclusion is `Chapter02.Section07.PowerLeadingDigits`; its reusable
   AddCircle and decimal-power development lives under `Analysis`. Chapter 14
-  contains `Problem13` and the declaration-free `Section05` Schulz family
-  aggregate.
-  The currently canonicalized Chapter 21 subset is
-  `NumStability.Source.Higham.Chapter21`, containing the
-  `RowScalingInvariance` leaf; the comprehensive historical Chapter 21
-  discovery surface remains `NumStability.Algorithms.Underdetermined.Higham21`
-  during migration. For
+  contains `Problem13`, the canonical `Problem14` owner for Problem 14.14's
+  Hyman determinant result, and the declaration-free `Section05` Schulz family
+  aggregate. Chapter 21 now contains `RowScalingInvariance` and the
+  declaration-free `Theorem03` aggregate over `Theorem03.Attainment`; the
+  comprehensive historical Chapter 21 discovery surface remains
+  `NumStability.Algorithms.Underdetermined.Higham21` during migration. These
+  are dependency-contained frontiers, not completed migrations of either
+  chapter. Chapter 28 likewise has no canonical source aggregate yet: its
+  homogeneous-space uniqueness lemmas are source-independent and therefore
+  live under `Analysis.Probability.Haar`, while the broader historical
+  test-matrix and Stewart families remain to be migrated. For
   fast matrix multiplication, import
   `NumStability.Source.Higham.Chapter23` or one of its semantic theorem,
   equation, algorithm, or problem leaves. Chapters 12, 22, and 27 now have
@@ -315,11 +325,13 @@ the old-to-new path map and removal policy. The
 dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
-corpus is already Mathlib-style. After the Phase 10D ownership moves, the
-current ratchet records 615 unclassified modules, no reviewed mixed modules,
-219 missing module docs, 409 historical naming exceptions, and no declaration-
+corpus is already Mathlib-style. After the Phase 10E ownership moves, the
+current ratchet records 612 unclassified modules, no reviewed mixed modules,
+218 missing module docs, 406 historical naming exceptions, and no declaration-
 bearing umbrella. CI prevents those queues from growing while each dependency-
-contained family is migrated.
+contained family is migrated. In particular, the Chapter 14, Chapter 21, and
+Chapter 28 moves above establish only their documented frontiers; their broader
+historical families remain in the migration queue.
 
 ## Use as a dependency
 
@@ -377,6 +389,8 @@ NumStability/
     Probability/
       Gaussian.lean            -- Gaussian-analysis umbrella
       Gaussian/AbsoluteMoment.lean -- reusable Gaussian moment API
+      Haar.lean                -- reusable Haar-analysis umbrella
+      Haar/HomogeneousSpaceUniqueness.lean -- invariant-measure uniqueness
     Summation.lean             -- import-only summation-analysis umbrella
     Summation/
       Signs.lean               -- reusable sign and absolute-sum API
@@ -404,7 +418,12 @@ NumStability/
         Section07.lean         -- declaration-free Section 2.7 aggregate
         Section07/PowerLeadingDigits.lean -- power-frequency source conclusion
       Chapter04/, Chapter08/, Chapter10/, Chapter11/
-      Chapter12/, Chapter13/, Chapter14/, Chapter17/, Chapter20/, Chapter21/
+      Chapter12/, Chapter13/, Chapter17/, Chapter20/
+      Chapter14/
+        Problem14.lean         -- Problem 14.14 Hyman determinant result
+      Chapter21/
+        Theorem03.lean         -- declaration-free Theorem 21.3 aggregate
+        Theorem03/Attainment.lean -- attainment and nonattainment boundary
       Chapter22/, Chapter23/, Chapter24/, Chapter25/, Chapter26/, Chapter27/
                                -- canonical numbered source correspondence
       CrossChapter/            -- explicitly cross-chapter source bridges
@@ -434,10 +453,10 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 ## Roadmap
 
 The selected formalization core scope is closed; the repository-organization
-migration is not. The next batches classify the remaining 615 unclassified
-modules while keeping the mixed-module count at zero, replace the 409
+migration is not. The next batches classify the remaining 612 unclassified
+modules while keeping the mixed-module count at zero, replace the 406
 historical source/proof-stage names with semantic canonical paths plus
-compatibility shims, document the 219 remaining modules, and review the
+compatibility shims, document the 218 remaining modules, and review the
 giant-file outliers. The sequence and safety
 gates are tracked in
 [`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md).

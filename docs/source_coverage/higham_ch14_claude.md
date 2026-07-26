@@ -16,7 +16,7 @@ and adversarially verified.
 |---|---|---|---|
 | **(14.3)** §14.1 | `\|A⁻¹−Y\| ≤ ε\|A⁻¹\|\|A\|\|A⁻¹\| + O(ε²)` for `Y=(A+ΔA)⁻¹`, `\|ΔA\|≤ε\|A\|` | **CLOSED** | `Ch14ForwardErrorEndpoint.lean` — `ch14ext_eq14_3_forward_error_endpoint` (O(ε²) made rigorous as an explicit `ε²·(≥0)` term; uses the exact identity `A⁻¹−Y=A⁻¹ΔA Y` + Codex's `higham14_eq14_3_forward_error_firstorder_plus_remainder`) |
 | **Problem 14.15** | `κ₂(A)‖ΔA‖₂/‖A‖₂ < 1 ⟹ \|det(A+ΔA)/det(A) − 1\| ≤ nκ₂·(‖ΔA‖₂/‖A‖₂)/(1−nκ₂·‖ΔA‖₂/‖A‖₂)` | **CLOSED** | `Chapter14Problem1415Weyl.lean` — `ch14ext_problem14_15_abs_det_add_rel_le_of_kappa2_opNorm2_inv_card_guard`. Built a **Courant–Fischer min-max + all-index Weyl/Mirsky singular-value perturbation bound** `\|σ_i(A+Δ)−σ_i(A)\| ≤ ‖Δ‖₂` from scratch (Mathlib/repo had only top+min index). Uses the corrected `<1/n` smallness guard (the repo had proved Higham's literal `<1` insufficient). |
-| **Problem 14.14** | Hyman's method computes exact `det(H+ΔH)`, `\|ΔH\| ≤ γ_{2n-1}\|H\|`, + diagonal-similarity effect | **CLOSED** | `Ch14HymanDeterminant.lean` — `ch14ext_hyman_flDet_backward_error_original`. Exact `γ_{2n-1}` derived from the fl back-substitution + inner-product model; stronger than printed (exact det identity). |
+| **Problem 14.14** | Hyman's method computes exact `det(H+ΔH)`, `\|ΔH\| ≤ γ_{2n-1}\|H\|`, + diagonal-similarity effect | **CLOSED** | `Source/Higham/Chapter14/Problem14.lean` — `ch14ext_hyman_flDet_backward_error_original`. Exact `γ_{2n-1}` derived from the fl back-substitution + inner-product model; stronger than printed (exact det identity). The former `Ch14HymanDeterminant.lean` path is a compatibility wrapper. |
 
 ## Reusable infrastructure added (potentially useful elsewhere)
 
