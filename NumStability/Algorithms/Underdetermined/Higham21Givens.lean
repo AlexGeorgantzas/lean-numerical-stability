@@ -1,7 +1,7 @@
 -- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Chapter 21.
 -- Theorem 21.4 through the concrete staged Givens QR factorization of A^T.
 
-import NumStability.Algorithms.Underdetermined.Higham21RowwiseMeasure
+import NumStability.Source.Higham.Chapter21.Theorem04.RowwiseBackwardError
 
 namespace NumStability
 

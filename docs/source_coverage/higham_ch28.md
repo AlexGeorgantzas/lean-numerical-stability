@@ -7,10 +7,17 @@ supporting the Stewart development now lives in the reusable module
 `NumStability.Analysis.Probability.Haar.HomogeneousSpaceUniqueness`, exposed by
 the declaration-free `Analysis.Probability.Haar` aggregate. The historical
 `Algorithms.TestMatrices.Higham28HaarFibers` path is an import-only wrapper.
-This is reusable support, not a `Source.Higham.Chapter28` leaf: the theorems
-have no Chapter 28 locator or source-specific statement. The broader Hilbert,
-Cauchy, randsvd/Stewart, Gaussian/Haar, Ginibre, Pascal, Toeplitz, companion,
-moment, probability, and contract families remain an incomplete migration.
+This remains reusable support rather than a Chapter 28 source leaf: the
+theorems have no Chapter 28 locator or source-specific statement. Phase 10F
+separately adds the declaration-free `Source.Higham.Chapter28` and
+`Source.Higham.Chapter28.Equation02` aggregates for the source-specific
+`Equation02.RatioDiscrepancy` leaf. The former
+`Algorithms.TestMatrices.Higham28HilbertRatioDiscrepancy` path is an import-only
+wrapper. The canonical leaf deliberately retains its direct dependency on the
+historical `Higham28HilbertAsymptotic` owner until the broader Hilbert family
+moves. The other Cauchy, randsvd/Stewart, Gaussian/Haar, Ginibre, Pascal,
+Toeplitz, companion, moment, probability, and contract families remain an
+incomplete migration.
 
 | Source group | Terminal status | Lean evidence / dependency |
 |---|---|---|
@@ -21,7 +28,7 @@ moment, probability, and contract families remain an incomplete migration.
 | Table 28.1 MATLAB generator catalogue | EXCLUDED | software/literature table, explicitly accounted for |
 | Equation (28.1) | PASS | `factorInverseGram_eq_hilbertInverseFormula`, `hilbert_inverse_formula`, `hilbert_inverse_formula_left` |
 | Exact part of (28.2) | PASS | `hilbert_det_formula` for every order |
-| Literal ratio reading of (28.2) | SOURCE-DISCREPANCY / CORRECTED | `higham28_not_HilbertDetAsymptotic` proves the recorded ratio-`IsEquivalent` surface false: the normalized ratio is at least `4^n` and tends to `+∞`. `hilbertDetLeadingLogRate_proved` retains the valid leading-log correction. |
+| Literal ratio reading of (28.2) | SOURCE-DISCREPANCY / CORRECTED | `higham28_not_HilbertDetAsymptotic` and `higham28NormalizedHilbertDet_tendsto_atTop` in `Source/Higham/Chapter28/Equation02/RatioDiscrepancy.lean` prove the recorded ratio-`IsEquivalent` surface false: the normalized ratio is at least `4^n` and tends to `+∞`. `hilbertDetLeadingLogRate_proved` retains the valid leading-log correction. The former `Algorithms/TestMatrices/Higham28HilbertRatioDiscrepancy.lean` path is an import-only wrapper. |
 | Equations (28.3)-(28.4) | PASS | `hilbertMatrix_eq_choleskyGram`, `hilbertCholeskyFactor_mul_inverse`, `hilbertCholeskyFactorInverse_mul` |
 | Hilbert/Pascal moment-matrix representations | PASS | `intervalMomentMatrix_quadraticForm`, `intervalMomentMatrix_quadraticForm_re_pos`, `hilbertMatrix_eq_intervalMomentMatrix`, `pascalMoment_integral`, `pascalMatrix_eq_intervalMomentMatrix`, `pascal_circleAverage`, `pascal_circleMoment_normalized`, and `pascal_circleMoment` close the positive-weight and two source instances |
 | Hilbert determinant leading asymptotic | PASS | `hilbertDetLeadingLogRate_proved : HilbertDetLeadingLogRate` proves `log(det(H_n))/n² -> -2 log 2`, the faithful leading-exponential interpretation of (28.2) |
@@ -82,6 +89,8 @@ Verification targets are `Higham28`, `Higham28Exact`, `Higham28Stewart`,
 `Higham28Moments`, `Higham28ToeplitzGeneral`, `Higham28ToeplitzSpectrum`,
 `Higham28ToeplitzCondition`, `Higham28Companion`,
 `Higham28CompanionSpectral`, `Higham28HilbertAsymptotic`,
-`Higham28HilbertCondition`, `Higham28GaussianQRHaar`,
+`Higham28HilbertCondition`,
+`NumStability.Source.Higham.Chapter28.Equation02.RatioDiscrepancy`,
+`Higham28GaussianQRHaar`,
 `Higham28ShiftedHilbert`, and `Higham28Contracts`, plus the Algorithms umbrella.
 Forbidden-token hygiene and representative axiom audits are required at handoff.

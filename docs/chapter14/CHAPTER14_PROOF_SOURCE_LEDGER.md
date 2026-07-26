@@ -31,7 +31,7 @@ This ledger records every nontrivial proof source used during the 2026-07-15 fro
 |---|---|---|
 | Arbitrary-order compatible matrix product error | Chapter 14 notation plus Chapter 3 matrix-product model | `Ch14ProductErrorNotation.lean`: rectangular typed trees and operation-budget `gamma_p` theorem |
 | Method 2B instability under (13.4)/(13.5) | Chapter 14 and Appendix A, Problem 14.2 | `Ch14Problem142Method2B.lean`, `Ch14Problem142Families.lean` |
-| All-index singular-value perturbation needed by Problem 14.15 | Weyl/Mirsky route used by the Appendix argument | `Chapter14Problem1415Weyl.lean`; no spectral inequality remains assumed at the final endpoint |
+| All-index singular-value perturbation needed by Problem 14.15 | Weyl/Mirsky route used by the Appendix argument | `Analysis/SingularValues/WeylMirsky.lean` owns the reusable perturbation core, and `Source/Higham/Chapter14/Problem15.lean` specializes it to the source endpoint; no spectral inequality remains assumed |
 | Hadamard inequality equality case | Problem 14.11 / standard determinant theory | `MatrixInversion.lean`: inequality and orthogonal-row equivalence |
 | Positive-dimension boundary in Problem 14.13 | Appendix AM-GM proof starts at dimension two | `Source/Higham/Chapter14/Problem13.lean` separately proves `n=1` and combines it with the general result |
 
@@ -40,7 +40,7 @@ This ledger records every nontrivial proof source used during the 2026-07-15 fro
 | Printed item | Evidence | Repair |
 |---|---|---|
 | `psi(A)=det(D)/det(A)` followed by `psi(A)>=1` | The one-by-one matrix `[-1]` gives raw value `-1` | Keep a raw signed definition, use `det(D)/|det(A)|` for the condition number, and prove the witness in `Source/Higham/Chapter14/Discrepancies.lean` |
-| Problem 14.15 assumes only `x<1` while the bound divides by `1-nx` | At `n=2`, `x=3/4`, the displayed right side is negative | Prove the corrected card guard `x<1/n` and retain the checked scalar specialization in `Chapter14Problem1415Weyl.lean` |
+| Problem 14.15 assumes only `x<1` while the bound divides by `1-nx` | At `n=2`, `x=3/4`, the displayed right side is negative | Prove the corrected card guard `x<1/n` and retain the checked scalar specialization in `Source/Higham/Chapter14/Problem15.lean`; the former Algorithms path is an import-only wrapper |
 
 ## Trust Result
 

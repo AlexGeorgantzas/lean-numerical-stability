@@ -17,6 +17,13 @@ Theorem 21.4 now has source-facing Householder and retained-trace Givens
 endpoints whose computed nonbreakdown and replay-smallness facts are derived
 from full row rank, gamma validity, and the printed-form smallness condition.
 
+The Phase 10F organization frontier moves the row-wise backward-error measure
+and its quantitative Theorem 21.4 criterion to
+`NumStability.Source.Higham.Chapter21.Theorem04.RowwiseBackwardError`, beneath
+the declaration-free `Theorem04` aggregate. The former
+`NumStability.Algorithms.Underdetermined.Higham21RowwiseMeasure` path is an
+import-only compatibility wrapper.
+
 ## Completed Selected Targets
 
 | Source group | Main Lean declarations/modules | Theorem surface |
@@ -26,6 +33,7 @@ from full row rank, gamma validity, and the printed-form smallness condition.
 | Projector and scaling prose | `Higham21ProjectorNorm.lean`, `Source/Higham/Chapter21/RowScalingInvariance.lean` | Exact complement-projector norm and row-scaling invariance |
 | Lemma 21.2 | `UnderdeterminedSolve.lean` | Single perturbation, minimum-norm recovery, and printed square-sum bounds |
 | Theorem 21.3 | `UnderdeterminedSolve.lean`, `Source/Higham/Chapter21/Theorem03/Attainment.lean` | Correct infimum formula, lower/upper constructions, exact/closure attainment, and nonattainment witness; the former `Higham21Theorem21_3Attainment.lean` path is a compatibility wrapper |
+| Row-wise backward error and Theorem 21.4 criterion | `Source/Higham/Chapter21/Theorem04/RowwiseBackwardError.lean` | Printed `omegaR` measure, fixed-`b` feasibility certificates, and `higham21_theorem21_4_computed_qhat_omegaR_le_gamma`; the former `Higham21RowwiseMeasure.lean` path is a compatibility wrapper |
 | Equation (21.10) and Householder Theorem 21.4 | `UnderdeterminedSolve.lean`, Chapter 19 QR interfaces, `Higham21Theorem214SourceClosure.lean` | Actual rounded panel/solve/action endpoint; `Higham21QMethodFullRowRankComputedQRDomain.of_source_smallness` derives computed top-block nonbreakdown by QR perturbation and full-rank stability |
 | Givens Theorem 21.4 | `Higham21Givens.lean`, `Higham21GivensRounded.lean`, `Higham21GivensClosure.lean`, `Higham21Theorem214SourceClosure.lean` | Actual retained-trace endpoint; source producers derive computed diagonal nonbreakdown and bound the complete replay recurrence below one from one operational gamma-validity index |
 | Q method equation (21.11) | `Higham21Equation21_11.lean`, `Higham21Eq21_11Uniform.lean`, `Higham21Equation21_11Scalar.lean` | Relative forward bound, fixed-radius refinement, and the remaining square scalar boundary |

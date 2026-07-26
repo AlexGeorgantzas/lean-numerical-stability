@@ -13,3 +13,4 @@ Section 14.5 Schulz family.
 #check NumStability.higham14SchulzStep
 #check NumStability.Ch14Ext.ch14ext_rectSchulzStep
 #check NumStability.Ch14Ext.ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq
+#check NumStability.Ch14Ext.ch14ext_problem14_15_det_add_rel_le_of_kappa2_opNorm2_inv_card_guard

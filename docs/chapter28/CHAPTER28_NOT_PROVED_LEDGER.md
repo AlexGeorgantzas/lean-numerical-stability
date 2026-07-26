@@ -32,7 +32,7 @@ feeding `ch28gf_realGinibreFiniteExpectationFormula`.
 | ID / source group | Terminal evidence | Status |
 |---|---|---|
 | 28-PQR Gaussian QR Haar generator | `modifiedGramSchmidt_positiveDiagonalQR_of_det_ne_zero`, `gaussianColumnMatrixMeasureOfScale_det_ne_zero_ae`, `gaussianQRQ_orthogonalLeftMul_of_det_ne_zero`, `gaussianQRQLawOfScale_eq_normalizedOrthogonalHaar` | PASS for every nonzero scale `σ`, hence every nondegenerate variance `σ²` |
-| 28.2 Hilbert determinant asymptotic | `hilbert_det_formula`, `log_hilbert_det_eq_sum`, `hilbertDetLeadingLogRate_proved` | PASS on the faithful leading-log interpretation |
+| 28.2 Hilbert determinant asymptotic | `hilbert_det_formula`, `log_hilbert_det_eq_sum`, `hilbertDetLeadingLogRate_proved`, and the canonical `Source/Higham/Chapter28/Equation02/RatioDiscrepancy.lean` witnesses `higham28NormalizedHilbertDet_tendsto_atTop` and `higham28_not_HilbertDetAsymptotic` | PASS on the faithful leading-log interpretation; SOURCE-DISCREPANCY for the literal ratio reading |
 | 28-A1 Hilbert condition growth | `hilbertCentralDelannoy_log_rate`, `opNorm2_hilbertInverseFormula_log_rate`, `hilbertConditionTwo_log_rate` | PASS for the source-faithful exact rate `4 log(1+√2)`; the rounded literal ratio reading is intentionally not asserted |
 | 28-A1 shifted Hilbert norm | `opNorm2_shiftedHilbert_le_pi`, `pi_sub_sixteen_div_log_succ_le_opNorm2_shiftedHilbert`, `shiftedHilbert_norm_asymptotic` | PASS |
 | 28-P1 / 28-P2 Hilbert and Cauchy total positivity/formulas | `hilbertMatrix_isStrictlyTotallyPositive`, `cauchyMatrix_det_eq_formula`, `cauchyMatrix_mul_cauchyInverseFormula`, `cauchyInverseFormula_mul_cauchyMatrix`, `cauchyLower_mul_cauchyUpper`, `sum_cauchyInverseFormula`, `cauchyMatrix_isStrictlyTotallyPositive` | PASS |

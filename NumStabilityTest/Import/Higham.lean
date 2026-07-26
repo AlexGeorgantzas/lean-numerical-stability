@@ -23,6 +23,7 @@ Ensure the historical Higham entry point forwards the complete canonical
 #check NumStability.higham17_problem17_1
 #check NumStability.higham20_eq20_32_Bplus_residual_eq_crossProjection
 #check NumStability.higham21Cond2With_row_scaling
+#check NumStability.higham21_theorem21_4_computed_qhat_omegaR_le_gamma
 #check NumStability.Ch22B.ch22bComplexConfluent_theorem12_3_exact_q_bound
 #check NumStability.higham23_winogradStrassen_error_step
 #check NumStability.higham23_problem23_8_power_exponent
@@ -33,3 +34,6 @@ Ensure the historical Higham entry point forwards the complete canonical
 #check NumStability.higham15_1_eq_7_31_practical_bound_bridge
 #check NumStability.higham14SchulzStep
 #check NumStability.Ch14Ext.ch14ext_schulzIter_tendsto_inverse_of_lt_two_div_norm_sq
+#check NumStability.Ch14Ext.ch14ext_problem14_15_det_add_rel_le_of_kappa2_opNorm2_inv_card_guard
+#check NumStability.higham28NormalizedHilbertDet_tendsto_atTop
+#check NumStability.higham28_not_HilbertDetAsymptotic

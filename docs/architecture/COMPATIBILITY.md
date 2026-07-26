@@ -60,9 +60,11 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.Ch14SchulzRectangular` | `NumStability.Source.Higham.Chapter14.Section05.RectangularIteration` |
 | `NumStability.Algorithms.Ch14SchulzSpectralConvergence` | `NumStability.Source.Higham.Chapter14.Section05.SpectralConvergence` |
 | `NumStability.Algorithms.Ch14SourceCorrections` | `NumStability.Source.Higham.Chapter14.Discrepancies` |
+| `NumStability.Algorithms.Chapter14Problem1415Weyl` | `NumStability.Source.Higham.Chapter14.Problem15` |
 | `NumStability.Algorithms.Ch4KahanFiniteFamily` | `NumStability.Source.Higham.Chapter04.Equation08.FiniteFamily` |
 | `NumStability.Algorithms.LeastSquares.Higham20SourceAliases` | `NumStability.Source.Higham.Chapter20.Equation32`, `NumStability.Source.Higham.Chapter20.Lemma06`, and `NumStability.Source.Higham.Chapter20.Theorem01` |
 | `NumStability.Algorithms.Underdetermined.Higham21Condition` | `NumStability.Source.Higham.Chapter21.RowScalingInvariance` |
+| `NumStability.Algorithms.Underdetermined.Higham21RowwiseMeasure` | `NumStability.Source.Higham.Chapter21.Theorem04.RowwiseBackwardError` |
 | `NumStability.Algorithms.Underdetermined.Higham21Theorem21_3Attainment` | `NumStability.Source.Higham.Chapter21.Theorem03.Attainment` |
 | `NumStability.Algorithms.Vandermonde.Higham22` | `NumStability.Source.Higham.Chapter22.VandermondeSystems` |
 | `NumStability.Algorithms.Vandermonde.Higham22MonomialClosure` | `NumStability.Source.Higham.Chapter22.MonomialResidual` |
@@ -92,6 +94,7 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.SoftwareIssues.Higham27Pythag` | `NumStability.Source.Higham.Chapter27.Problem06` |
 | `NumStability.Algorithms.TestMatrices.Higham28GaussianAbsoluteMoment` | `NumStability.Analysis.Probability.Gaussian.AbsoluteMoment` |
 | `NumStability.Algorithms.TestMatrices.Higham28HaarFibers` | `NumStability.Analysis.Probability.Haar.HomogeneousSpaceUniqueness` |
+| `NumStability.Algorithms.TestMatrices.Higham28HilbertRatioDiscrepancy` | `NumStability.Source.Higham.Chapter28.Equation02.RatioDiscrepancy` |
 | `NumStability.Algorithms.HighamChapter3NoGuardDotBridge` | `NumStability.Algorithms.Arithmetic.DotProduct.NoGuard` and `NumStability.Source.Higham.CrossChapter.NoGuardDotProduct` |
 | `NumStability.Algorithms.HighamChapter15Ch7PracticalBoundBridge` | `NumStability.Source.Higham.CrossChapter.PracticalConditionBound` |
 | `NumStability.Algorithms.HighamChapter12Ch9GenericSolverBridge` | `NumStability.Source.Higham.CrossChapter.LUSolverWeights.Factorization` |
@@ -117,16 +120,20 @@ canonical chapter aggregates are discovery entry points, not wrapper targets:
 `NumStability.Source.Higham.Chapter14.Section05`,
 `NumStability.Source.Higham.Chapter21`,
 `NumStability.Source.Higham.Chapter21.Theorem03`,
+`NumStability.Source.Higham.Chapter21.Theorem04`,
 `NumStability.Source.Higham.Chapter22`,
-`NumStability.Source.Higham.Chapter22.Section03`, and
-`NumStability.Source.Higham.Chapter27` contain only documentation and imports.
+`NumStability.Source.Higham.Chapter22.Section03`,
+`NumStability.Source.Higham.Chapter27`,
+`NumStability.Source.Higham.Chapter28`, and
+`NumStability.Source.Higham.Chapter28.Equation02` contain only documentation and imports.
 The reusable `NumStability.Analysis.Equidistribution` and
 `NumStability.Analysis.LeadingDigits` aggregates, the reusable
-`NumStability.Analysis.Probability.Haar` aggregate, and the source
+`NumStability.Analysis.Probability.Haar` and
+`NumStability.Analysis.SingularValues` aggregates, and the source
 `NumStability.Source.Higham.Chapter02.Section07` aggregate are likewise
 declaration-free discovery entry points.
 
-The compatibility inventory now contains 100 wrappers with 199 direct canonical
+The compatibility inventory now contains 103 wrappers with 202 direct canonical
 targets.
 
 `NumStability.Source.Higham.Chapter02.Problem22` has one temporary

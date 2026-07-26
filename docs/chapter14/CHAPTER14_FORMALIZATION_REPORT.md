@@ -14,6 +14,14 @@
 
 The complete source audit contains 79 rows: 69 selected and 10 intentionally excluded. The precise Schulz claims on p. 278 are separated from the remaining parallel-inversion survey prose.
 
+The Phase 10F organization frontier splits the former combined Problem 14.15
+owner by semantic role. Generic all-index singular-value perturbation now lives
+in `NumStability.Analysis.SingularValues.WeylMirsky`, while the determinant
+bound, sign consequences, and printed-guard counterexample live in
+`NumStability.Source.Higham.Chapter14.Problem15`. The former
+`NumStability.Algorithms.Chapter14Problem1415Weyl` path is an import-only
+compatibility wrapper.
+
 ## Completed Selected Targets
 
 | Source group | Main Lean declarations/modules | Theorem surface |
@@ -27,7 +35,7 @@ The complete source audit contains 79 rows: 69 selected and 10 intentionally exc
 | Corollaries 14.6 and 14.7 | `Ch14GJEFinalDivisionClosure.lean`, `Ch14Cor146UniformInverseBridge.lean`, `Ch14Cor147FinalDivisionFamilyClosure.lean`, `Ch14Cor147SourceDomainConstructor.lean` | Exact printed constants for the actual final-division output, with the SPD and row-dominant source-domain witnesses constructed rather than postulated; unparameterized source `O(u^2)` prose remains explicitly deferred |
 | Section 14.5 Schulz iteration | `Source/Higham/Chapter14/Section05/SquareIteration.lean` | Exact update equivalence; left/right residual squaring; `E_k=E_0^(2^k)`; quadratic/double-exponential residual bounds; residual and inverse convergence; printed `alpha A^T` initialization criterion |
 | Determinant section | `MatrixInversion.lean`, `Source/Higham/Chapter14/Problem14.lean`, `Source/Higham/Chapter14/Discrepancies.lean` | GEPP determinant formula, Hyman backward error, scaling invariance, and corrected Hadamard condition-number sign; the former `Ch14HymanDeterminant.lean` path is a compatibility wrapper |
-| Selected Problems | `MatrixInversion.lean`, `Ch14Problem142Families.lean`, `Ch14AsymptoticFamilies.lean`, `Source/Higham/Chapter14/Problem13.lean`, `Chapter14Problem1415Weyl.lean` | Problems 14.2-14.5, 14.7-14.8, and 14.10-14.15, including all positive dimensions for (14.37) |
+| Selected Problems | `MatrixInversion.lean`, `Ch14Problem142Families.lean`, `Ch14AsymptoticFamilies.lean`, `Source/Higham/Chapter14/Problem13.lean`, `Source/Higham/Chapter14/Problem15.lean` | Problems 14.2-14.5, 14.7-14.8, and 14.10-14.15, including all positive dimensions for (14.37); reusable Weyl--Mirsky support is in `Analysis/SingularValues/WeylMirsky.lean` |
 
 The exact row-to-declaration map is in `CHAPTER14_SOURCE_INVENTORY.md`.
 
@@ -38,7 +46,7 @@ The exact row-to-declaration map is in `CHAPTER14_SOURCE_INVENTORY.md`.
 | Floating-point operations | `FPModel`, `fl_matMul`, rounded triangular solve operations, `gamma`, `gammaValid` |
 | Matrix algebra | finite matrices, exact multiplication, determinants, inverse predicates, vector and matrix norms |
 | Factorization analysis | Chapter 8/9 triangular solve and LU backward-error declarations |
-| Analysis | Mathlib finite sums, continuity, l2 operator norm, singular values, and asymptotic filters |
+| Analysis | Mathlib finite sums, continuity, l2 operator norm, asymptotic filters, and the reusable all-index perturbation API in `Analysis/SingularValues/WeylMirsky.lean` |
 
 ## New Dependencies
 

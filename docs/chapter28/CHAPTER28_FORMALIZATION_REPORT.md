@@ -4,9 +4,13 @@ The Stewart proof's homogeneous-space measure-uniqueness layer is now
 canonically reusable at
 `NumStability.Analysis.Probability.Haar.HomogeneousSpaceUniqueness`.
 `NumStability.Algorithms.TestMatrices.Higham28HaarFibers` is an import-only
-historical wrapper. No `Source.Higham.Chapter28` leaf is introduced: these
-generic theorems have no source locator, and the broader Chapter 28 families
-remain an incomplete organization migration.
+historical wrapper. Phase 10F separately introduces the declaration-free
+`NumStability.Source.Higham.Chapter28` and `Chapter28.Equation02` aggregates for
+the source-specific `Equation02.RatioDiscrepancy` leaf. Its former
+`NumStability.Algorithms.TestMatrices.Higham28HilbertRatioDiscrepancy` path is
+an import-only wrapper. The ratio-discrepancy leaf deliberately retains its
+historical `Higham28HilbertAsymptotic` dependency; the broader Chapter 28
+families remain an incomplete organization migration.
 
 ## Source and scope
 
@@ -25,6 +29,13 @@ remain an incomplete organization migration.
   terminal SOURCE-DISCREPANCY witness.
 
 ## Compiled coverage
+
+The equation (28.2) discrepancy declarations
+`higham28NormalizedHilbertDet_tendsto_atTop` and
+`higham28_not_HilbertDetAsymptotic` are owned by
+`Source/Higham/Chapter28/Equation02/RatioDiscrepancy.lean`. The valid
+leading-log theorem remains in the deliberately retained historical
+`Higham28HilbertAsymptotic` dependency.
 
 | Source group | Principal production declarations | Honest status |
 |---|---|---|

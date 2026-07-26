@@ -18,6 +18,12 @@ rows and six intentional exclusions. All 21 selected rows pass at source
 strength. The selected-scope result is maintained in
 `CHAPTER21_NOT_PROVED_LEDGER.md`; exclusions below are not proof gaps.
 
+The Phase 10F owner for the row-wise measure and its quantitative Theorem 21.4
+criterion is `Source/Higham/Chapter21/Theorem04/RowwiseBackwardError.lean`,
+beneath the declaration-free `Theorem04` aggregate. The former
+`Algorithms/Underdetermined/Higham21RowwiseMeasure.lean` path is an import-only
+wrapper.
+
 ## Inventory
 
 | # | Source row | Location | Decision / reason | Audit status | Primary Lean evidence |
@@ -37,7 +43,7 @@ strength. The selected-scope result is maintained in
 | 13 | Lemma 21.2, one-perturbation symmetrization | p. 410 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS | `higham21_lemma21_2_source_bundle` and component lemmas in `UnderdeterminedSolve.lean` |
 | 14 | Theorem 21.3, Sun–Sun normwise backward-error formula | pp. 410–411 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS WITH DOCUMENTED SOURCE BOUNDARY CORRECTION | `higham21_theorem21_3_normwise_backward_error_formula`; exact/closure attainment in `Source/Higham/Chapter21/Theorem03/Attainment.lean` |
 | 15 | Theorem 21.3 square specialization | p. 411 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `higham21_theorem21_3_square_nonzero_etaF_eq_phi` in `Source/Higham/Chapter21/Theorem03/Attainment.lean` |
-| 16 | Row-wise backward-error measure `ωᴿ` and `O(u)` criterion | p. 411 | FORMALIZE_DEPENDENCY / DEP-REQUIRED | PASS (quantitative gamma form) | `Higham21RowwiseMeasure.lean`; the Lean index is correctly `i=1:m`, repairing the printed `i=1:n` typo |
+| 16 | Row-wise backward-error measure `ωᴿ` and `O(u)` criterion | p. 411 | FORMALIZE_DEPENDENCY / DEP-REQUIRED | PASS (quantitative gamma form) | `Source/Higham/Chapter21/Theorem04/RowwiseBackwardError.lean`; the Lean index is correctly `i=1:m`, repairing the printed `i=1:n` typo; `Algorithms/Underdetermined/Higham21RowwiseMeasure.lean` is the historical wrapper |
 | 17 | Equation (21.10), rounded Q-action formation | p. 411 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `higham21_eq21_10_*` family and Householder gamma wrappers |
 | 18 | Theorem 21.4, Householder branch | p. 411 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS | `Higham21QMethodFullRowRankComputedQRDomain.of_source_smallness` derives the complete computed-QR domain from full row rank, gamma validity, and the printed-form smallness condition. It proves top-block nonbreakdown by combining the Chapter 19 rowwise QR perturbation with the Chapter 21 right inverse/rank-stability bridge. `higham21_theorem21_4_computed_qhat_rowwise_backward_stable_source` then applies the actual panel, solve, and Q-action endpoint. |
 | 19 | Theorem 21.4, Givens branch | p. 411 | FORMALIZE_CORE / CORE-NAMED-RESULT | PASS | `Higham21GivensActualReplayEtaQ_lt_one_of_operational_gammaValid` derives replay smallness from one operational schedule index; `higham21_givens_actual_topBlock_nonbreakdown_of_source_smallness` derives every computed top diagonal entry nonzero from source rank and QR smallness; `higham21_theorem21_4_givens_actual_rounded_rowwise_backward_stable_source` supplies both facts to the concrete retained-trace endpoint. |

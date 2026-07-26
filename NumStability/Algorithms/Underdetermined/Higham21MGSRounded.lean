@@ -3,7 +3,7 @@
 
 import NumStability.Algorithms.RankOneUpdate
 import NumStability.Algorithms.Underdetermined.Higham21MGS
-import NumStability.Algorithms.Underdetermined.Higham21RowwiseMeasure
+import NumStability.Source.Higham.Chapter21.Theorem04.RowwiseBackwardError
 
 namespace NumStability
 

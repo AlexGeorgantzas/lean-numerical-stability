@@ -74,6 +74,10 @@ split from the reusable library.
 - `NumStability.Analysis.LeadingDigits` is the reusable leading-digit entry
   point over `Decimal`, `DecimalPowers`, `Empirical`, and
   `LogarithmicDistribution`.
+- `NumStability.Analysis.SingularValues` is the declaration-free reusable
+  singular-value entry point. Its `SingularValues.WeylMirsky` leaf owns the
+  source-neutral all-index perturbation API shared by Chapter 14 Problem 14.15
+  and reusable least-squares analysis.
 - `NumStability.Analysis.Probability` is the reusable probability-analysis
   entry point. Its declaration-free `Probability.Gaussian` aggregate exposes
   the source-neutral `Probability.Gaussian.AbsoluteMoment` leaf. Its
@@ -105,16 +109,24 @@ split from the reusable library.
   reusable analysis. The former flat leading-digit Analysis paths are
   compatibility wrappers only.
   Chapter 14 owns `Problem13`, `Problem14` for Problem 14.14's Hyman
-  determinant result, and the declaration-free `Section05` aggregate for its
-  Schulz-iteration leaves. The currently canonicalized Chapter 21 subset is
-  the declaration-free `Chapter21` aggregate over `RowScalingInvariance` and
-  the declaration-free `Theorem03` aggregate; `Theorem03.Attainment` owns the
-  exact/closure attainment and scalar nonattainment refinements. The
-  comprehensive historical Chapter 21 discovery surface remains
-  `Algorithms.Underdetermined.Higham21` during migration. Chapter 28 does not
-  yet have a canonical source aggregate: its migrated homogeneous-space
-  uniqueness support belongs to reusable `Analysis.Probability.Haar`, while
-  its source-specific Stewart and test-matrix modules remain historical.
+  determinant result, `Problem15` for Problem 14.15's determinant bound and
+  discrepancy witness, and the declaration-free `Section05` aggregate for its
+  Schulz-iteration leaves. Generic Weyl--Mirsky support lives in reusable
+  `Analysis.SingularValues.WeylMirsky`; the former combined Algorithms path is
+  a compatibility wrapper. The currently canonicalized Chapter 21 subset is
+  the declaration-free `Chapter21` aggregate over `RowScalingInvariance`, the
+  declaration-free `Theorem03` aggregate, and the declaration-free `Theorem04`
+  aggregate. `Theorem03.Attainment` owns the exact/closure attainment and
+  scalar nonattainment refinements; `Theorem04.RowwiseBackwardError` owns the
+  printed row-wise measure and quantitative gamma criterion. The comprehensive
+  historical Chapter 21 discovery surface remains
+  `Algorithms.Underdetermined.Higham21` during migration. Chapter 28 now has a
+  declaration-free canonical source aggregate. Its declaration-free
+  `Equation02` aggregate exposes the source-specific `RatioDiscrepancy` leaf;
+  that leaf deliberately retains its historical `Higham28HilbertAsymptotic`
+  dependency until the wider Hilbert family moves. The migrated homogeneous-
+  space uniqueness support remains reusable `Analysis.Probability.Haar`, while
+  the other source-specific Stewart and test-matrix modules remain historical.
   These Chapter 14, 21, and 28 frontiers do not claim that the broader chapter
   families are fully migrated.
   Chapter 12 uses the declaration-free

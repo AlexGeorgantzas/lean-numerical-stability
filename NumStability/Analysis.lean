@@ -86,6 +86,7 @@ import NumStability.Analysis.RoundingProductBounds
 import NumStability.Analysis.SampleVariance
 import NumStability.Analysis.SemiconvergentRealSpectrumComplete
 import NumStability.Analysis.SemiconvergentSpectral
+import NumStability.Analysis.SingularValues
 import NumStability.Analysis.Stability
 import NumStability.Analysis.StatisticalRounding
 import NumStability.Analysis.SubtractionFold

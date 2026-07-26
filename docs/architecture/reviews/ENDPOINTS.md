@@ -98,3 +98,21 @@ The batch preserves all 72 compiled constants owned by these modules. The Haar
 case is deliberately not placed below `Source.Higham.Chapter28`: its three
 measure-uniqueness theorems are generic homogeneous-space results, and
 their existing Chapter 28 consumers do not make the API source-specific.
+
+## Historical follow-up: Phase 10F Higham source frontiers
+
+Phase 10F reviewed the next three Chapter 14, 21, and 28 owners against the
+Phase 10E compiled signature/body graph. The result is one semantic split and
+two source-owner moves:
+
+| Historical module | Compiled consumer result | Canonical destination | Historical outcome |
+| --- | --- | --- | --- |
+| `Algorithms.Chapter14Problem1415Weyl` | The generic singular-value layer has reusable least-squares consumers; the determinant endpoint is source-specific and has one cross-split body dependency on that generic layer. | `Analysis.SingularValues.WeylMirsky` and `Source.Higham.Chapter14.Problem15` | Split by semantic role. The reusable leaf owns the all-index Weyl--Mirsky API; the source leaf owns the Problem 14.15 determinant bound and counterexample. The old path is an exact one-import wrapper to `Problem15`, whose import surface re-exports the reusable declarations. |
+| `Algorithms.Underdetermined.Higham21RowwiseMeasure` | The direct consumers are the historical Chapter 21 Givens/MGS family and its discovery umbrella; the declarations state the printed row-wise measure and Theorem 21.4 criterion. | `Source.Higham.Chapter21.Theorem04.RowwiseBackwardError` | Moved intact below a declaration-free `Theorem04` aggregate; direct consumers were retargeted and the old path remains an exact one-import wrapper. |
+| `Algorithms.TestMatrices.Higham28HilbertRatioDiscrepancy` | No incoming compiled declaration consumers. Its declarations are the equation (28.2) ratio interpretation, growth proof, and source-discrepancy witness. | `Source.Higham.Chapter28.Equation02.RatioDiscrepancy` | Moved intact below declaration-free Chapter 28 and `Equation02` aggregates; the old path remains an exact one-import wrapper. |
+
+The Chapter 28 leaf deliberately retains its direct import of the historical
+`Algorithms.TestMatrices.Higham28HilbertAsymptotic` owner. That dependency is
+recorded debt, not evidence that the broader Hilbert family has already moved.
+Likewise, the Chapter 14 split establishes a reusable singular-value API and a
+source endpoint without migrating the remaining Chapter 14 proof families.

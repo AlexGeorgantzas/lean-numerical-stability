@@ -22,7 +22,6 @@ import NumStability.Algorithms.Underdetermined.Higham21PerturbationRadius
 import NumStability.Algorithms.Underdetermined.Higham21ProjectorNorm
 import NumStability.Algorithms.Underdetermined.Higham21QRFoundations
 import NumStability.Algorithms.Underdetermined.Higham21RankStability
-import NumStability.Algorithms.Underdetermined.Higham21RowwiseMeasure
 import NumStability.Algorithms.Underdetermined.Higham21SNEActualOutput
 import NumStability.Algorithms.Underdetermined.Higham21SNEClosure
 import NumStability.Algorithms.Underdetermined.Higham21SNEConditionTransfer
@@ -35,6 +34,7 @@ import NumStability.Algorithms.Underdetermined.Higham21SNEUniform
 import NumStability.Algorithms.Underdetermined.Higham21Theorem214SourceClosure
 import NumStability.Source.Higham.Chapter21
 import NumStability.Source.Higham.Chapter21.Theorem03
+import NumStability.Source.Higham.Chapter21.Theorem04
 
 /-!
 # Historical Higham Chapter 21 aggregate

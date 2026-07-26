@@ -43,6 +43,11 @@ example : (fp : FPModel) → (n : ℕ) → (Fin n → ℝ) → ℝ :=
 #check Ch14Ext.ch14ext_hyman_flDet_backward_error_original
 #check higham21Cond2With_row_scaling
 #check higham21_theorem21_3_exact_attainment_or_pairing_obstruction
+#check Ch14Ext.ch14ext_singularValue_abs_sub_le_of_euclideanLin_diff_bound
+#check Ch14Ext.ch14ext_problem14_15_det_add_rel_le_of_kappa2_opNorm2_inv_card_guard
+#check higham21_theorem21_4_computed_qhat_omegaR_le_gamma
+#check higham28NormalizedHilbertDet_tendsto_atTop
+#check higham28_not_HilbertDetAsymptotic
 #check integral_abs_standardGaussian_difference
 #check MeasureTheory.measure_eq_of_invariant_probability_of_pretransitive
 #check ieeeNaiveMax_not_nan_propagating

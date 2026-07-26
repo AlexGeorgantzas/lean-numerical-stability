@@ -173,31 +173,35 @@ approximation, and least-squares preconditioning.
 
 ## Project statistics
 
-Current Phase 10E structure for the production source surface, after the
-compatibility-preserving ownership frontiers for Higham Chapters 14, 21, and
-28:
+Current Phase 10F structure for the production source surface, after the
+compatibility-preserving Chapter 14 semantic split and the Chapter 21 and 28
+source-owner moves:
 
 | | |
 |---|---|
-| Lean modules | **982** |
-| Lines of Lean | **1,468,334** |
-| Direct imports | **4,048** |
-| Internal import edges | **2,680** |
+| Lean modules | **990** |
+| Direct imports | **4,063** |
+| Internal import edges | **2,694** |
+| External import edges | **1,369** |
 | Import cycles | **0** |
-| Classified modules | **370** |
-| Unclassified modules | **612** |
-| Source modules | **134** |
-| Aggregate modules | **72** |
-| Compatibility modules | **100** |
-| Missing module docs | **218** |
-| Legacy naming exceptions | **406** |
+| Classified modules | **381 (38.485%)** |
+| Unclassified modules | **609** |
+| Source modules | **137** |
+| Aggregate modules | **76** |
+| Compatibility modules | **103** |
+| Reusable modules | **58** |
+| Internal / upstream / mixed modules | **2 / 5 / 0** |
+| Compatibility wrappers / direct targets | **103 / 202** |
+| Missing module docs | **217** |
+| Legacy naming exceptions | **403** |
+| Provenance contract | **207 Apache files / 5 upstream modules** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
 the standard `[propext, Classical.choice, Quot.sound]` axioms. The clean
 pre-frontier checkpoint is the versioned
-[`2026-07-24 organization Phase 10D baseline`](docs/architecture/baselines/2026-07-24-organization-phase10d.md),
-and the exact Phase 10E ownership and validation contract is recorded in the
-[`Higham frontiers migration map`](docs/architecture/migrations/2026-07-24-higham-frontiers-phase10e.md).
+[`2026-07-26 organization Phase 10E baseline`](docs/architecture/baselines/2026-07-26-organization-phase10e.md),
+and the exact Phase 10F ownership and validation contract is recorded in the
+[`Higham source-frontiers migration map`](docs/architecture/migrations/2026-07-26-higham-source-frontiers-phase10f.md).
 These records include source, import, signature-dependency, and
 proof/body-dependency metrics; the live ratchet values above are enforced by
 the reviewed manifests.
@@ -255,6 +259,10 @@ Choose the narrowest entry point that matches the material you need:
 - `NumStability.Analysis.LeadingDigits` is the reusable leading-digit umbrella
   over decimal predicates, decimal powers, empirical histograms, and the
   logarithmic distribution.
+- `NumStability.Analysis.SingularValues` is the reusable singular-value
+  umbrella. Its `SingularValues.WeylMirsky` leaf owns the generic all-index
+  Weyl--Mirsky perturbation API used by Higham Chapter 14 Problem 14.15 and by
+  reusable least-squares analysis.
 - `NumStability.Analysis.Probability` is the reusable probability-analysis
   umbrella. Its `Probability.Gaussian` aggregate exposes
   `Probability.Gaussian.AbsoluteMoment`, the source-neutral Gaussian first-
@@ -283,16 +291,25 @@ Choose the narrowest entry point that matches the material you need:
   conclusion is `Chapter02.Section07.PowerLeadingDigits`; its reusable
   AddCircle and decimal-power development lives under `Analysis`. Chapter 14
   contains `Problem13`, the canonical `Problem14` owner for Problem 14.14's
-  Hyman determinant result, and the declaration-free `Section05` Schulz family
-  aggregate. Chapter 21 now contains `RowScalingInvariance` and the
-  declaration-free `Theorem03` aggregate over `Theorem03.Attainment`; the
-  comprehensive historical Chapter 21 discovery surface remains
-  `NumStability.Algorithms.Underdetermined.Higham21` during migration. These
-  are dependency-contained frontiers, not completed migrations of either
-  chapter. Chapter 28 likewise has no canonical source aggregate yet: its
-  homogeneous-space uniqueness lemmas are source-independent and therefore
-  live under `Analysis.Probability.Haar`, while the broader historical
-  test-matrix and Stewart families remain to be migrated. For
+  Hyman determinant result, `Problem15` for the source-specific determinant
+  bound and counterexample, and the declaration-free `Section05` Schulz family
+  aggregate. The generic singular-value perturbation support for Problem 14.15
+  lives in reusable `Analysis.SingularValues.WeylMirsky`; the former
+  `Algorithms.Chapter14Problem1415Weyl` path is an import-only wrapper. Chapter
+  21 now contains `RowScalingInvariance`, the declaration-free `Theorem03`
+  aggregate over `Theorem03.Attainment`, and the declaration-free `Theorem04`
+  aggregate over `Theorem04.RowwiseBackwardError`. The former
+  `Algorithms.Underdetermined.Higham21RowwiseMeasure` path is an import-only
+  wrapper. The comprehensive historical Chapter 21 discovery surface remains
+  `NumStability.Algorithms.Underdetermined.Higham21` during migration. Chapter
+  28 now has a declaration-free canonical aggregate; its `Equation02`
+  aggregate exposes the source-specific `RatioDiscrepancy` leaf, while the
+  former `Algorithms.TestMatrices.Higham28HilbertRatioDiscrepancy` path is an
+  import-only wrapper. That leaf deliberately still imports the historical
+  `Higham28HilbertAsymptotic` dependency until the wider Hilbert family moves.
+  The homogeneous-space uniqueness lemmas remain source-independent under
+  `Analysis.Probability.Haar`. These are dependency-contained frontiers, not
+  completed migrations of the broader chapter families. For
   fast matrix multiplication, import
   `NumStability.Source.Higham.Chapter23` or one of its semantic theorem,
   equation, algorithm, or problem leaves. Chapters 12, 22, and 27 now have
@@ -325,9 +342,9 @@ the old-to-new path map and removal policy. The
 dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
-corpus is already Mathlib-style. After the Phase 10E ownership moves, the
-current ratchet records 612 unclassified modules, no reviewed mixed modules,
-218 missing module docs, 406 historical naming exceptions, and no declaration-
+corpus is already Mathlib-style. After the Phase 10F ownership moves, the
+current ratchet records 609 unclassified modules, no reviewed mixed modules,
+217 missing module docs, 403 historical naming exceptions, and no declaration-
 bearing umbrella. CI prevents those queues from growing while each dependency-
 contained family is migrated. In particular, the Chapter 14, Chapter 21, and
 Chapter 28 moves above establish only their documented frontiers; their broader
@@ -453,10 +470,10 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 ## Roadmap
 
 The selected formalization core scope is closed; the repository-organization
-migration is not. The next batches classify the remaining 612 unclassified
-modules while keeping the mixed-module count at zero, replace the 406
+migration is not. The next batches classify the remaining 609 unclassified
+modules while keeping the mixed-module count at zero, replace the 403
 historical source/proof-stage names with semantic canonical paths plus
-compatibility shims, document the 218 remaining modules, and review the
+compatibility shims, document the 217 remaining modules, and review the
 giant-file outliers. The sequence and safety
 gates are tracked in
 [`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md).

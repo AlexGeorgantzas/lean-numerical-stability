@@ -21,11 +21,15 @@
 - Current organization frontier: the exact/closure attainment and scalar
   nonattainment refinements for Theorem 21.3 are canonically owned by
   `NumStability.Source.Higham.Chapter21.Theorem03.Attainment`, reached through
-  the declaration-free `Theorem03` aggregate. The former
-  `Algorithms.Underdetermined.Higham21Theorem21_3Attainment` path is an
-  import-only wrapper. The equations, perturbation, Givens/MGS, SNE, and
-  Theorem 21.4 families remain in their historical locations, so Chapter 21 is
-  not yet a complete physical migration.
+  the declaration-free `Theorem03` aggregate. The row-wise backward-error
+  measure and quantitative Theorem 21.4 criterion are canonically owned by
+  `NumStability.Source.Higham.Chapter21.Theorem04.RowwiseBackwardError`, reached
+  through the declaration-free `Theorem04` aggregate. The former
+  `Algorithms.Underdetermined.Higham21Theorem21_3Attainment` and
+  `Algorithms.Underdetermined.Higham21RowwiseMeasure` paths are import-only
+  wrappers. The remaining equations, perturbation, Givens/MGS, SNE, and
+  Theorem 21.4 closure families remain in their historical locations, so
+  Chapter 21 is not yet a complete physical migration.
 
 Status language in this ledger:
 
@@ -205,13 +209,16 @@ smallness. The source-facing row-wise endpoint consumes both derived facts.
   retained-trace replay smallness.
 - `Higham21MGS.lean` and `Higham21MGSRounded.lean`: the stable corrected
   MGS recurrence and its rounded transfer interfaces.
-- `Higham21RowwiseMeasure.lean`: the printed row-wise backward-error measure.
+- `Source/Higham/Chapter21/Theorem04/RowwiseBackwardError.lean`: the printed
+  row-wise backward-error measure and quantitative Theorem 21.4 criterion;
+  `Algorithms/Underdetermined/Higham21RowwiseMeasure.lean` is its historical
+  import-only wrapper.
 - `Algorithms/Underdetermined/Higham21.lean`: historical comprehensive Chapter
   21 umbrella exposing the complete historical surface above together with the
-  canonical row-scaling and Theorem 21.3 aggregates.
+  canonical row-scaling, Theorem 21.3, and Theorem 21.4 aggregates.
 - `Source/Higham/Chapter21.lean`: narrow canonical aggregate for the currently
-  migrated row-scaling and Theorem 21.3 attainment surfaces; it does not yet
-  replace the comprehensive historical umbrella.
+  migrated row-scaling, Theorem 21.3 attainment, and Theorem 21.4 row-wise
+  surfaces; it does not yet replace the comprehensive historical umbrella.
 
 ## Honest Scope Exclusions
 

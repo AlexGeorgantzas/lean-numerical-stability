@@ -16,6 +16,7 @@ import NumStability.Source.Higham.Chapter24
 import NumStability.Source.Higham.Chapter25
 import NumStability.Source.Higham.Chapter26
 import NumStability.Source.Higham.Chapter27
+import NumStability.Source.Higham.Chapter28
 import NumStability.Source.Higham.CrossChapter
 
 /-!

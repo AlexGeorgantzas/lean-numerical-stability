@@ -40,8 +40,8 @@ six historical `NumStability.Analysis.NonrandomRounding*` paths use exact
 `compatibility` rules; there is deliberately no source-tier prefix rule for
 that historical directory.
 
-Through Phase 10E, reviewed source families cover the canonicalized Higham
-frontiers in Chapters 1, 2, 4, 8, 10--14, 17, 20--27, and cross-chapter
+Through Phase 10F, reviewed source families cover the canonicalized Higham
+frontiers in Chapters 1, 2, 4, 8, 10--14, 17, 20--28, and cross-chapter
 locators. Exact `aggregate` rules identify every declaration-free chapter and
 family umbrella; canonical leaves inherit `source` from the Source prefix and
 historical owners use exact `compatibility` rules. Reusable extractions include
@@ -54,17 +54,24 @@ empirical-histogram, and logarithmic-distribution APIs needed for its complete
 source locator; the Section 2.7 power-frequency conclusion has a separate
 source leaf. Phase 10E additionally assigns the Hyman determinant development
 to Chapter 14 Problem 14.14, the attainment and nonattainment refinements to
-Chapter 21 Theorem 21.3, and generic homogeneous-space measure
-uniqueness to reusable Haar probability analysis.
+Chapter 21 Theorem 21.3, and generic homogeneous-space measure uniqueness to
+reusable Haar probability analysis. Phase 10F separates the generic
+Weyl--Mirsky API into reusable singular-value analysis from its Chapter 14
+Problem 14.15 source endpoint, assigns the row-wise backward-error measure to
+Chapter 21 Theorem 21.4, and assigns the literal Hilbert determinant ratio
+discrepancy to Chapter 28 equation (28.2).
 
-The Phase 10E ratchet classifies 370 of 982 production modules: 134 as source,
-72 as aggregate, 100 as compatibility, 57 as reusable, 2 as internal, and 5 as
-upstream. The explicit unclassified queue is 612 modules and the mixed queue
-remains empty. The `NumStability.Algorithms` direct-import ceilings are 443
-imports below `NumStability`, including 10 below `NumStability.Source` and 45
-below `NumStability.Analysis`. The exact remaining layout debt is 218 missing
-module docstrings and 406 noncanonical historical module names; the
-compatibility inventory contains 100 wrappers with 199 direct targets.
+The Phase 10F ratchet classifies 381 of 990 production modules (38.485%): 137
+as source, 76 as aggregate, 103 as compatibility, 58 as reusable, 2 as
+internal, and 5 as upstream. The explicit unclassified queue is 609 modules,
+and the mixed queue remains empty. The `NumStability.Algorithms` direct-import
+ceilings are 442
+imports below `NumStability`, including 11 below `NumStability.Source` and 45
+below `NumStability.Analysis`. The complete graph contains 4,063 direct imports
+(2,694 internal and 1,369 external). The exact remaining layout debt is 217
+missing module docstrings and 403 noncanonical historical module names; the
+compatibility inventory contains 103 wrappers with 202 direct targets. The
+provenance contract remains 207 Apache-marked files and five upstream modules.
 
 Because structural aggregates do not themselves own declarations,
 `reusable_entrypoints` separately lists aggregates whose entire reachable

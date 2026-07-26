@@ -23,3 +23,4 @@ the narrower source paths directly.
 #check NumStability.problem2_11_empiricalDigitProbability
 #check NumStability.logarithmicLeadingDigitMass
 #check NumStability.orbit_mem_decimalDigitArc_iff
+#check NumStability.Ch14Ext.ch14ext_singularValue_abs_sub_le_of_euclideanLin_diff_bound

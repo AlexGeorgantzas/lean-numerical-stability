@@ -4,6 +4,7 @@ import NumStability.Algorithms.Ch14Problem1413Boundary
 import NumStability.Algorithms.Ch14SchulzIteration
 import NumStability.Algorithms.Ch14SchulzRectangular
 import NumStability.Algorithms.Ch14SchulzSpectralConvergence
+import NumStability.Algorithms.Chapter14Problem1415Weyl
 import NumStability.Algorithms.Cholesky.BunchTridiagonalCapstoneCh11Closure
 import NumStability.Algorithms.Cholesky.Higham10Theorem10_7Source
 import NumStability.Algorithms.FastMatMul.Higham23
@@ -26,7 +27,9 @@ import NumStability.Algorithms.Problem44SixTerm
 import NumStability.Algorithms.SoftwareIssues.Higham27
 import NumStability.Algorithms.SoftwareIssues.Higham27Pythag
 import NumStability.Algorithms.StationaryIterationSeries
+import NumStability.Algorithms.TestMatrices.Higham28HilbertRatioDiscrepancy
 import NumStability.Algorithms.Underdetermined.Higham21Condition
+import NumStability.Algorithms.Underdetermined.Higham21RowwiseMeasure
 import NumStability.Algorithms.Vandermonde.Higham22
 import NumStability.Algorithms.Vandermonde.Higham22Ch12RefinementBridge
 import NumStability.Algorithms.Vandermonde.Higham22ComplexConfluentRefinementBridge
@@ -101,3 +104,6 @@ compatibility window without help from the canonical Higham entry point.
 #check NumStability.higham2_power_decimalLeadingDigit_frequency_tendsto
 #check NumStability.ch14ext_problem14_13_gej_bound_fin_one
 #check NumStability.higham21Cond2With_row_scaling
+#check NumStability.Ch14Ext.ch14ext_problem14_15_det_add_rel_le_of_kappa2_opNorm2_inv_card_guard
+#check NumStability.higham21_theorem21_4_computed_qhat_omegaR_le_gamma
+#check NumStability.higham28_not_HilbertDetAsymptotic

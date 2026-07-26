@@ -60,7 +60,6 @@ import NumStability.Algorithms.Ch5LejaProducer
 import NumStability.Algorithms.Ch5NewtonForm
 import NumStability.Algorithms.Ch5SourceClosure
 import NumStability.Algorithms.Chapter06Lemma66
-import NumStability.Algorithms.Chapter14Problem1415Weyl
 import NumStability.Algorithms.Chapter15CondEst
 import NumStability.Algorithms.Cholesky.Aasen118ReducedCh11Closure
 import NumStability.Algorithms.Cholesky.AasenAdjacentPivotOperationalMiddleCh11
@@ -368,7 +367,6 @@ import NumStability.Algorithms.TestMatrices.Higham28GinibreTraceDensity
 import NumStability.Algorithms.TestMatrices.Higham28GinibreTruncatedIncidence
 import NumStability.Algorithms.TestMatrices.Higham28HilbertAsymptotic
 import NumStability.Algorithms.TestMatrices.Higham28HilbertCondition
-import NumStability.Algorithms.TestMatrices.Higham28HilbertRatioDiscrepancy
 import NumStability.Algorithms.TestMatrices.Higham28Moments
 import NumStability.Algorithms.TestMatrices.Higham28Pascal
 import NumStability.Algorithms.TestMatrices.Higham28PascalCondition
@@ -444,6 +442,7 @@ import NumStability.Source.Higham.Chapter24
 import NumStability.Source.Higham.Chapter25
 import NumStability.Source.Higham.Chapter26
 import NumStability.Source.Higham.Chapter27
+import NumStability.Source.Higham.Chapter28
 
 /-!
 # Historical algorithms aggregate

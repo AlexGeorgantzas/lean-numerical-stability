@@ -27,7 +27,7 @@ are listed at the end of the file.
 -/
 import NumStability.Algorithms.GaussJordan
 import NumStability.Algorithms.HighamChapter10
-import NumStability.Algorithms.Chapter14Problem1415Weyl
+import NumStability.Source.Higham.Chapter14.Problem15
 
 namespace NumStability.Ch14Ext
 

@@ -17,6 +17,12 @@
 There are **79 source rows** after separating Section 14.5's precise Schulz
 claims from its surrounding survey prose:
 
+The Phase 10F owner for Problem 14.15 is
+`Source/Higham/Chapter14/Problem15.lean`; its source-neutral all-index
+Weyl--Mirsky dependency is owned by
+`Analysis/SingularValues/WeylMirsky.lean`. The former
+`Algorithms/Chapter14Problem1415Weyl.lean` path is an import-only wrapper.
+
 - 69 intentionally selected mathematical rows.
 - 10 policy exclusions: five empirical/figure/table rows, two expository/literature rows, and three optional Problems.
 - Final selected-scope result: 66 selected rows close at determinate source
@@ -107,7 +113,7 @@ claims from its surrounding survey prose:
 | 75 | Problem 14.13 | p. 284; App. A p. 560 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `Source/Higham/Chapter14/Problem13.lean`: all positive dimensions, including `n=1` |
 | 76 | Equation (14.37) | p. 284 | FORMALIZE_CORE / CORE-NUMBERED-EQUATION | PASS | `Source/Higham/Chapter14/Problem13.lean` |
 | 77 | Problem 14.14 | p. 285; App. A p. 560 | FORMALIZE_CORE / CORE-PRECISE-PROSE | PASS | `Source/Higham/Chapter14/Problem14.lean`: `gamma_(2n-1)` backward error and scaling invariance; `Ch14HymanDeterminant.lean` is the historical wrapper |
-| 78 | Problem 14.15 | p. 285; App. A pp. 560-561 | FORMALIZE_CORE / CORE-PRECISE-PROSE | SOURCE-ERROR/CORRECTED | Printed guard `< 1` does not keep `1-nx` positive. `Chapter14Problem1415Weyl.lean` proves the corrected `< 1/n` theorem and a checked `n=2, x=3/4` counterexample. |
+| 78 | Problem 14.15 | p. 285; App. A pp. 560-561 | FORMALIZE_CORE / CORE-PRECISE-PROSE | SOURCE-ERROR/CORRECTED | Printed guard `< 1` does not keep `1-nx` positive. `Source/Higham/Chapter14/Problem15.lean` proves the corrected `< 1/n` theorem and a checked `n=2, x=3/4` counterexample, using the reusable all-index perturbation API from `Analysis/SingularValues/WeylMirsky.lean`; `Algorithms/Chapter14Problem1415Weyl.lean` is the historical wrapper. |
 
 ## Source Corrections
 

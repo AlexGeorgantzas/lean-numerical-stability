@@ -15,6 +15,7 @@ import NumStability.Source.Higham.Chapter12.OmegaDiscontinuity
 import NumStability.Source.Higham.Chapter12.Problem02
 import NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier
 import NumStability.Source.Higham.Chapter14.Problem13
+import NumStability.Source.Higham.Chapter14.Problem15
 import NumStability.Source.Higham.Chapter14.Section05.RectangularIteration
 import NumStability.Source.Higham.Chapter14.Section05.SpectralConvergence
 import NumStability.Source.Higham.Chapter14.Section05.SquareIteration
@@ -27,6 +28,7 @@ import NumStability.Source.Higham.Chapter17.Equation20
 import NumStability.Source.Higham.Chapter17.Equation22
 import NumStability.Source.Higham.Chapter17.Problem01
 import NumStability.Source.Higham.Chapter21.RowScalingInvariance
+import NumStability.Source.Higham.Chapter21.Theorem04.RowwiseBackwardError
 import NumStability.Source.Higham.Chapter22.MonomialResidual
 import NumStability.Source.Higham.Chapter22.Problem07
 import NumStability.Source.Higham.Chapter22.Section03.ComplexConfluentRefinement
@@ -45,6 +47,7 @@ import NumStability.Source.Higham.Chapter26.IntervalArithmetic.DirectedRounding
 import NumStability.Source.Higham.Chapter26.MultidirectionalSearch.RegularSimplex
 import NumStability.Source.Higham.Chapter27.Problem06
 import NumStability.Source.Higham.Chapter27.SoftwareEnvironment
+import NumStability.Source.Higham.Chapter28.Equation02.RatioDiscrepancy
 import NumStability.Source.Higham.CrossChapter.LUSolverWeights.Doolittle
 import NumStability.Source.Higham.CrossChapter.LUSolverWeights.Factorization
 import NumStability.Source.Higham.CrossChapter.NoGuardDotProduct
@@ -104,3 +107,6 @@ historical forwarding paths and the aggregate Higham entry point.
 #check NumStability.problem2_22_guard_digit_a_sub_b_exact
 #check NumStability.ch14ext_problem14_13_gej_bound_fin_one
 #check NumStability.higham21Cond2With_row_scaling
+#check NumStability.Ch14Ext.ch14ext_problem14_15_det_add_rel_le_of_kappa2_opNorm2_inv_card_guard
+#check NumStability.higham21_theorem21_4_computed_qhat_omegaR_le_gamma
+#check NumStability.higham28_not_HilbertDetAsymptotic

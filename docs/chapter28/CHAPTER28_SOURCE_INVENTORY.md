@@ -22,7 +22,7 @@
 | 28-P1 | pp. 512-513 | property | Hilbert matrix is SPD and totally positive | precise / general | citation/prose | Cholesky and total-minor theory | FORMALIZE_CORE | CORE-PRECISE-PROSE | PASS: SPD is `hilbertMatrix_isSymPosDef_explicit`; total positivity is `hilbertMatrix_isStrictlyTotallyPositive`, obtained by specializing the proved ordered Cauchy-minor determinant formula |
 | 28-P1a | pp. 512-513 | qualitative algorithmic prose | Total positivity guarantees small componentwise relative backward error for Gaussian elimination without pivoting, as does Cholesky factorization | qualitative implementation-facing claim | explanatory prose | finite-precision GE/Cholesky analysis | DEFER | DEFER-MISSING-PRECISE-STATEMENT | Accounted for, but no coefficient, normwise denominator convention, arithmetic model, or quantified bound is printed; no theorem is invented |
 | 28.1 | p. 513 | equation | Closed formula for entries of `H_n^{-1}` | precise / general | citation-only | factorial telescoping | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | PASS: `factorInverseGram_eq_hilbertInverseFormula`, `hilbert_inverse_formula`, and `hilbert_inverse_formula_left` prove the printed inverse on both sides. |
-| 28.2 | p. 513 | equation | Closed determinant formula and printed shorthand `det(H_n) ~ 2^{-2n^2}` as `n -> infinity` | precise exact formula plus leading-exponential asymptotic shorthand | citation-only | Cholesky product; logarithmic/Barnes-product asymptotics | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | PASS: `hilbert_det_formula` proves the exact formula, and `log_hilbert_det_eq_sum` plus `hilbertDetLeadingLogRate_proved : HilbertDetLeadingLogRate` prove the source-faithful leading-log statement `log(det(H_n))/n^2 -> -2 log 2`. The stronger literal ratio-`IsEquivalent` reading is not claimed. |
+| 28.2 | p. 513 | equation | Closed determinant formula and printed shorthand `det(H_n) ~ 2^{-2n^2}` as `n -> infinity` | precise exact formula plus leading-exponential asymptotic shorthand | citation-only | Cholesky product; logarithmic/Barnes-product asymptotics | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | PASS / SOURCE-DISCREPANCY: `hilbert_det_formula` proves the exact formula, and `log_hilbert_det_eq_sum` plus `hilbertDetLeadingLogRate_proved : HilbertDetLeadingLogRate` prove the source-faithful leading-log statement `log(det(H_n))/n^2 -> -2 log 2`. `Source/Higham/Chapter28/Equation02/RatioDiscrepancy.lean` proves the stronger literal ratio-`IsEquivalent` reading false via `higham28NormalizedHilbertDet_tendsto_atTop` and `higham28_not_HilbertDetAsymptotic`; the former Algorithms path is an import-only wrapper. |
 | 28.3 | p. 513 | equation | Upper Cholesky factor `R` in `H_n=R^T R` | precise / general | citation-only | factorial telescoping | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | PASS: `hilbertMatrix_eq_choleskyGram` |
 | 28.4 | p. 513 | equation | Explicit inverse Cholesky-factor entries | precise / general | citation-only | alternating binomial identity | FORMALIZE_CORE | CORE-NUMBERED-EQUATION | PASS: `hilbertCholeskyFactor_mul_inverse` and `hilbertCholeskyFactorInverse_mul` prove both products. |
 | 28-A1 | p. 514 | asymptotic prose | `kappa_2(H_n) ~ exp(3.5n)` and `‖H~_n‖_2 = pi + O(1/log n)` as `n -> infinity` | rounded exponential-rate shorthand plus precise Big-O remainder | citation-only | spectral/asymptotic theory | FORMALIZE_CORE | CORE-PRECISE-PROSE | **PASS**: `hilbertConditionTwo_log_rate` proves `log(κ₂(H_n))/n → 4 log(1+√2)` from exact inverse entries and a central-Delannoy exponential sandwich; `opNorm2_shiftedHilbert_le_pi`, `pi_sub_sixteen_div_log_succ_le_opNorm2_shiftedHilbert`, and `shiftedHilbert_norm_asymptotic` prove the shifted-norm clause. Literal ratio equivalence to `exp(3.5n)` is intentionally not claimed because the decimal is rounded. |
@@ -76,9 +76,15 @@
 
 The homogeneous-space uniqueness module is reusable mathematical support, not
 a Chapter 28 source leaf. `Algorithms.TestMatrices.Higham28HaarFibers` remains
-only as an import-compatible historical path. This ownership correction is one
-frontier of an incomplete Chapter 28 migration; the source-specific Stewart
-and test-matrix families remain in their historical modules.
+only as an import-compatible historical path. Separately, the source-specific
+equation (28.2) ratio discrepancy is canonically owned by
+`Source.Higham.Chapter28.Equation02.RatioDiscrepancy`, below declaration-free
+Chapter 28 and `Equation02` aggregates;
+`Algorithms.TestMatrices.Higham28HilbertRatioDiscrepancy` is its historical
+wrapper. The canonical leaf deliberately retains a direct dependency on the
+historical `Higham28HilbertAsymptotic` module. These ownership corrections are
+frontiers of an incomplete Chapter 28 migration; the other source-specific
+Stewart and test-matrix families remain in their historical modules.
 
 ## Selected-scope gate
 

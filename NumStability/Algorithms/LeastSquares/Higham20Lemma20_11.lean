@@ -1,5 +1,6 @@
-import NumStability.Algorithms.Chapter14Problem1415Weyl
+import NumStability.Algorithms.LeastSquares.LSPerturbation
 import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+import NumStability.Analysis.SingularValues.WeylMirsky
 
 /-!
 # Higham Chapter 20, Lemma 20.11: arbitrary positive equal rank
