@@ -4,7 +4,7 @@ SPDX-License-Identifier: MIT
 
 import NumStability.Algorithms.MatrixInversion
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Analysis.Norms
+import NumStability.Analysis.Norms.Core
 import NumStability.Analysis.SingularValues.WeylMirsky
 
 /-!

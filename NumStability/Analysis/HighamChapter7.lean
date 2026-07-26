@@ -7,7 +7,7 @@
 -- infinity-norm or practical-error corollary of those componentwise results.
 
 import NumStability.Analysis.PerturbationTheory
-import NumStability.Analysis.Norms
+import NumStability.Analysis.Norms.Core
 import NumStability.Analysis.Summation.Signs
 import Mathlib.Algebra.Order.GroupWithZero.Finset
 import Mathlib.LinearAlgebra.Basis.VectorSpace

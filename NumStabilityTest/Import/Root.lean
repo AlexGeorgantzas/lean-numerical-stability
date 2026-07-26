@@ -52,6 +52,8 @@ example : (fp : FPModel) → (n : ℕ) → (Fin n → ℝ) → ℝ :=
 #check MeasureTheory.measure_eq_of_invariant_probability_of_pretransitive
 #check ieeeNaiveMax_not_nan_propagating
 #check problem2_22_guard_digit_a_sub_b_exact
+#check complexMatrixLpNorm
+#check mixedInverseAmbientRelativeAmplificationRadiusSup_tendsto_conditionNumberProduct_of_positive_radii
 #check problem2_11_decimalLeadingDigit
 #check problem2_11EmpiricalSource
 #check higham2_power_decimalLeadingDigit_frequency_tendsto

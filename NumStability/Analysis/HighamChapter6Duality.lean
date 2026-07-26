@@ -3,7 +3,7 @@
 -- The duality theorem used in Higham, Chapter 6, equation (6.2).
 
 import Mathlib.Analysis.Normed.Module.Dual
-import NumStability.Analysis.Norms
+import NumStability.Analysis.Norms.Core
 
 namespace NumStability
 

@@ -12,6 +12,8 @@ canonical source entry point.
 #check NumStability.FloatingPointFormat.problem2_4_theorem2_3_nearest_finite
 #check NumStability.ieeeNaiveMax_not_nan_propagating
 #check NumStability.problem2_22_guard_digit_a_sub_b_exact
+#check NumStability.complexMatrixLpNorm
+#check NumStability.mixedInverseAmbientRelativeAmplificationRadiusSup_tendsto_conditionNumberProduct_of_positive_radii
 #check NumStability.problem2_11EmpiricalSource
 #check NumStability.problem2_11_powerSample_two_pos
 #check NumStability.higham2_power_decimalLeadingDigit_frequency_tendsto

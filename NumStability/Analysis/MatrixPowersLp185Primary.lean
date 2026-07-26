@@ -21,7 +21,7 @@
 -- `complexVecLpNorm_shift_le`, the bidiagonal L^p bound
 -- `complexMatrixLpNormOfReal_bidiagonal_le`, and the submultiplicative
 -- power bound `complexMatrixLpNormOfReal_cMatPow_le`) and the similarity
--- transport / inverse-pair lemmas of `Norms.lean` /
+-- transport / inverse-pair lemmas of `Analysis/Norms/Core.lean` /
 -- `Algorithms/MatrixPowersLp.lean`.  Nothing is re-proved; the primary
 -- grouping `κ_p(X_δ)·(ρ+β)^k` is assembled fresh.
 --
@@ -34,7 +34,7 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.Linarith
-import NumStability.Analysis.Norms
+import NumStability.Analysis.Norms.Core
 import NumStability.Algorithms.MatrixPowersLp
 import NumStability.Algorithms.MatrixPowersLpJordan
 import NumStability.Algorithms.MatrixPowersJordan

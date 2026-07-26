@@ -7,7 +7,7 @@ Authors: QED
 -/
 import NumStability.Algorithms.QR.Higham19Sensitivity
 import NumStability.Analysis.MatrixSpectral
-import NumStability.Analysis.Norms
+import NumStability.Analysis.Norms.Core
 import NumStability.Analysis.HighamChapter7
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Cotangent
 

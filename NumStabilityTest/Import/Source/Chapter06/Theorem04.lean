@@ -1,0 +1,11 @@
+import NumStability.Source.Higham.Chapter06.Theorem04
+
+/-!
+# Canonical Higham Theorem 6.4 import smoke test
+-/
+
+#check NumStability.MixedInverseAmbientRelativeAmplificationRadiusSet
+#check NumStability.mixedInverseAmbientRelativeAmplificationRadiusSup
+#check NumStability.mixedInverseAmbientRelativeAmplificationRadius_value_le
+#check NumStability.mixedInverseAmbientRelativeAmplificationRadius_sup_lower_le_of_linearized
+#check NumStability.mixedInverseAmbientRelativeAmplificationRadiusSup_tendsto_conditionNumberProduct_of_positive_radii

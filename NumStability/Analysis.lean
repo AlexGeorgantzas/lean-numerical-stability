@@ -56,7 +56,7 @@ import NumStability.Analysis.MullerRecurrence
 import NumStability.Analysis.NearInteger
 import NumStability.Analysis.NilpotentJordanChain
 import NumStability.Analysis.Nonassociativity
-import NumStability.Analysis.Norms
+import NumStability.Analysis.Norms.Core
 import NumStability.Analysis.OperatorLog
 import NumStability.Analysis.PerturbationTheory
 import NumStability.Analysis.Probability
@@ -95,6 +95,7 @@ import NumStability.Analysis.SylvesterSchurExistence
 import NumStability.Analysis.TieRules
 import NumStability.Analysis.TrigCancellation
 import NumStability.Source.Higham.Chapter01.Section17
+import NumStability.Source.Higham.Chapter06.Theorem04
 import NumStability.Source.Higham.Chapter17.Equation22
 
 /-!

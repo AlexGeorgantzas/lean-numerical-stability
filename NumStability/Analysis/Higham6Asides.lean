@@ -3,7 +3,7 @@ Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed.,
 Chapter 6 (Norms), §6.1-6.2: unnumbered body-prose asides.
 
 This file closes four body-prose asides as named theorems, importing and
-reusing the existing norm layer (`NumStability.Analysis.Norms`,
+reusing the existing norm layer (`NumStability.Analysis.Norms.Core`,
 `MatrixAlgebra`) plus Mathlib's `l2` operator-norm and unitary-group API.
 It edits no existing file.
 
@@ -24,7 +24,7 @@ import Mathlib.Analysis.CStarAlgebra.Matrix
 import Mathlib.Analysis.Calculus.FDeriv.Norm
 import Mathlib.Analysis.InnerProductSpace.Calculus
 import Mathlib.Analysis.SpecialFunctions.Sqrt
-import NumStability.Analysis.Norms
+import NumStability.Analysis.Norms.Core
 
 namespace NumStability
 

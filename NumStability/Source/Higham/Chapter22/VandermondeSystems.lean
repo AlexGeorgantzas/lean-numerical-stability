@@ -20,7 +20,7 @@ import Mathlib.Analysis.Polynomial.MahlerMeasure
 import Mathlib.RingTheory.Polynomial.Basic
 import Mathlib.RingTheory.Polynomial.Vieta
 import Mathlib.RingTheory.Coprime.Lemmas
-import NumStability.Analysis.Norms
+import NumStability.Analysis.Norms.Core
 import NumStability.Algorithms.LU.TridiagonalCond
 import Mathlib.Topology.Basic
 

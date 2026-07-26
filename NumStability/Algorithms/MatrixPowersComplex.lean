@@ -14,19 +14,19 @@
 -- (`MatrixPowersJordan.lean`): the moduli arguments are identical because
 -- `‖·‖` on ℂ is multiplicative and satisfies the triangle inequality.
 --
--- Complex matrix infrastructure is REUSED from `Analysis/Norms.lean`
+-- Complex matrix infrastructure is REUSED from `Analysis/Norms/Core.lean`
 -- (source traceability):
---   `CVec`, `CMatrix`                  — Norms.lean (abbrevs)
+--   `CVec`, `CMatrix`                  — Norms/Core.lean (abbrevs)
 --   `complexVecInfNorm` (+ nonneg / coord_le / le_of_coord_le)
---                                      — Norms.lean ~1580
+--                                      — Norms/Core.lean
 --   `complexMatrixInfNorm` (+ nonneg / row_sum_le / le_of_row_sum_le)
---                                      — Norms.lean ~3379  («cInfNorm»:
+--                                      — Norms/Core.lean  («cInfNorm»:
 --                                        max row sum of entry norms)
 --   `complexMatrixMul`, `complexMatrixMul_assoc`
---                                      — Norms.lean ~3068
+--                                      — Norms/Core.lean
 --   `complexMatrixVecMul`, `complexMatrixVecMul_mul`
---                                      — Norms.lean ~3022
---   `IsComplexMatrixRightInverse`      — Norms.lean ~3033
+--                                      — Norms/Core.lean
+--   `IsComplexMatrixRightInverse`      — Norms/Core.lean
 -- Scalar margin lemmas are REUSED from `MatrixPowersJordan.lean`
 -- (`jordanBeta`, `jordanBeta_pos`, `jordanBeta_lt_one`, `jordanBeta_add_eq`,
 -- `higham_scaling_margin`) and the run-length machinery from the same file
@@ -41,7 +41,7 @@ import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Analysis.SpecificLimits.Basic
-import NumStability.Analysis.Norms
+import NumStability.Analysis.Norms.Core
 import NumStability.Algorithms.MatrixPowersJordan
 
 namespace NumStability
@@ -52,7 +52,7 @@ open scoped BigOperators
 -- Missing pieces of the complex ∞-norm lemma suite
 -- (complexMatrixInfNorm = the max-row-sum «cInfNorm»; the definition and
 --  the nonneg / row_sum_le / le_of_row_sum_le lemmas are reused from
---  Analysis/Norms.lean)
+--  Analysis/Norms/Core.lean)
 -- ============================================================
 
 /-- Matrix–vector ∞-norm bound over ℂ:

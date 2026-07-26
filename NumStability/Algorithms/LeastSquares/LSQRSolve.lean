@@ -20,7 +20,7 @@ import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Analysis.Norms
+import NumStability.Analysis.Norms.Core
 import NumStability.Analysis.PerturbationTheory
 import NumStability.Algorithms.QR.QRSolve
 import NumStability.Algorithms.QR.HouseholderQRSupport

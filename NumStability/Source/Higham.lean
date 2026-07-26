@@ -1,6 +1,7 @@
 import NumStability.Source.Higham.Chapter01
 import NumStability.Source.Higham.Chapter02
 import NumStability.Source.Higham.Chapter04
+import NumStability.Source.Higham.Chapter06
 import NumStability.Source.Higham.Chapter08
 import NumStability.Source.Higham.Chapter10
 import NumStability.Source.Higham.Chapter11

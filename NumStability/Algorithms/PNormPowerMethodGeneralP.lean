@@ -4,7 +4,7 @@
 -- equations (15.2) and (15.3), in the smooth range 1 < p < infinity.
 
 import Mathlib.Analysis.InnerProductSpace.NormPow
-import NumStability.Analysis.Norms
+import NumStability.Analysis.Norms.Core
 import NumStability.Algorithms.PNormPowerMethod
 
 namespace NumStability

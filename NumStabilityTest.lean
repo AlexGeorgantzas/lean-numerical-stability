@@ -11,6 +11,7 @@ import NumStabilityTest.Import.Analysis.LeadingDigits.Decimal
 import NumStabilityTest.Import.Analysis.LeadingDigits.DecimalPowers
 import NumStabilityTest.Import.Analysis.LeadingDigits.Empirical
 import NumStabilityTest.Import.Analysis.LeadingDigits.LogarithmicDistribution
+import NumStabilityTest.Import.Analysis.Norms.Core
 import NumStabilityTest.Import.Analysis.Probability
 import NumStabilityTest.Import.Analysis.Probability.Gaussian
 import NumStabilityTest.Import.Analysis.Probability.Gaussian.AbsoluteMoment
@@ -18,6 +19,7 @@ import NumStabilityTest.Import.Analysis.Probability.Haar
 import NumStabilityTest.Import.Analysis.Probability.Haar.HomogeneousSpaceUniqueness
 import NumStabilityTest.Import.Analysis.SingularValues
 import NumStabilityTest.Import.Analysis.SingularValues.WeylMirsky
+import NumStabilityTest.Import.Compatibility.Analysis.Norms
 import NumStabilityTest.Import.Compatibility.Analysis.Probability.AlgorithmsTestMatricesHigham28GaussianAbsoluteMoment
 import NumStabilityTest.Import.Compatibility.Analysis.Probability.AlgorithmsTestMatricesHigham28HaarFibers
 import NumStabilityTest.Import.Compatibility.Source.Chapter01.AnalysisNonrandomRounding
@@ -162,6 +164,8 @@ import NumStabilityTest.Import.Source.Chapter04.Section02KaoWangCitationDiscrepa
 import NumStabilityTest.Import.Source.Chapter04.Section03
 import NumStabilityTest.Import.Source.Chapter04.Section03FiniteFormat
 import NumStabilityTest.Import.Source.Chapter04.Section03NoGuardKahanCounterexample
+import NumStabilityTest.Import.Source.Chapter06
+import NumStabilityTest.Import.Source.Chapter06.Theorem04
 import NumStabilityTest.Import.Source.Chapter08
 import NumStabilityTest.Import.Source.Chapter08.Lemma08Discrepancy
 import NumStabilityTest.Import.Source.Chapter10

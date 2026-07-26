@@ -1,6 +1,6 @@
 import NumStability
 import NumStability.Analysis.HighamChapter7
-import NumStability.Analysis.Norms
+import NumStability.Analysis.Norms.Core
 import NumStability.Analysis.RoundingProductBounds
 import NumStability.Algorithms.Horner
 import NumStability.Algorithms.HighamChapter8

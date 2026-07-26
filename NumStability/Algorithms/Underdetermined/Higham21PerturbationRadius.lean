@@ -9,7 +9,7 @@ open scoped BigOperators Matrix.Norms.Frobenius
 
 /-- The exact Euclidean operator norm of a real rectangular matrix, routed
     through the operator norm of its complexification.  The real/complex
-    bridge in `Norms.lean` shows that this is also the sharp radius for the
+    bridge in `Analysis/Norms/Core.lean` shows that this is also the sharp radius for the
     repository predicate `rectOpNorm2Le`. -/
 noncomputable def higham21RectOpNorm2 {m n : Nat}
     (A : Fin m -> Fin n -> Real) : Real :=

@@ -40,6 +40,7 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.TriangularSolveCombined` | `NumStability.Algorithms.LinearSystems.Triangular.Combined` |
 | `NumStability.Analysis.HighamChapter2PowerLeadingDigits` | `NumStability.Source.Higham.Chapter02.Problem11` and `NumStability.Source.Higham.Chapter02.Section07.PowerLeadingDigits` |
 | `NumStability.Analysis.LeadingDigitDistribution` | `NumStability.Analysis.LeadingDigits.LogarithmicDistribution` |
+| `NumStability.Analysis.Norms` | `NumStability.Analysis.Norms.Core` and `NumStability.Source.Higham.Chapter06.Theorem04` |
 | `NumStability.Analysis.Problem2_11` | `NumStability.Source.Higham.Chapter02.Problem11` |
 | `NumStability.Analysis.Problem2_2` | `NumStability.Source.Higham.Chapter02.Problem02` |
 | `NumStability.Analysis.Problem2_4` | `NumStability.Source.Higham.Chapter02.Problem04` |
@@ -133,8 +134,16 @@ The reusable `NumStability.Analysis.Equidistribution` and
 `NumStability.Source.Higham.Chapter02.Section07` aggregate are likewise
 declaration-free discovery entry points.
 
-The compatibility inventory now contains 103 wrappers with 202 direct canonical
+The compatibility inventory now contains 104 wrappers with 204 direct canonical
 targets.
+
+The historical `NumStability.Analysis.Norms` path is a two-target facade. It
+re-exports the transitional core implementation and the literal Higham
+Theorem 6.4 ambient-radius source leaf, preserving both halves of its former
+surface. Production consumers import `NumStability.Analysis.Norms.Core` or
+`NumStability.Source.Higham.Chapter06.Theorem04` directly. The Core owner
+remains explicitly unclassified until Phase 11B separates its reusable
+mathematics from the remaining source-shaped Problem 6.x declarations.
 
 `NumStability.Source.Higham.Chapter02.Problem22` has one temporary
 canonical-side compatibility exception: in addition to locating the reusable

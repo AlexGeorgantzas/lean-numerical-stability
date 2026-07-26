@@ -116,3 +116,20 @@ The Chapter 28 leaf deliberately retains its direct import of the historical
 recorded debt, not evidence that the broader Hilbert family has already moved.
 Likewise, the Chapter 14 split establishes a reusable singular-value API and a
 source endpoint without migrating the remaining Chapter 14 proof families.
+
+## Phase 11A follow-up: Higham Theorem 6.4 source tail
+
+The compiled signature/body graph found 21 declarations in the ambient-radius
+tail of the former `Analysis.Norms` implementation, with no incoming
+declaration edge from outside that tail. They are not dead code: together they
+realize the literal source statement and closure of Higham's Theorem 6.4, so
+Phase 11A moved them to the canonical
+`Source.Higham.Chapter06.Theorem04` leaf.
+
+The split retains 166 one-way cross-owner dependencies from the source leaf to
+`Analysis.Norms.Core`: 67 occur in declaration signatures and 99 in bodies.
+There is no reverse dependency from the core into the source leaf. The old
+`Analysis.Norms` path is now a two-target compatibility facade, production
+consumers use the canonical owners, and `Analysis.Norms.Core` remains
+explicitly unclassified until the signature-graph-guided Phase 11B semantic
+split separates its generic and source-shaped declarations.

@@ -173,35 +173,35 @@ approximation, and least-squares preconditioning.
 
 ## Project statistics
 
-Current Phase 10F structure for the production source surface, after the
-compatibility-preserving Chapter 14 semantic split and the Chapter 21 and 28
-source-owner moves:
+Current Phase 11A structure for the production source surface, after the
+compatibility-preserving extraction of Higham Theorem 6.4's ambient-radius
+layer from the transitional norm core:
 
 | | |
 |---|---|
-| Lean modules | **990** |
-| Direct imports | **4,063** |
-| Internal import edges | **2,694** |
+| Lean modules | **993** |
+| Direct imports | **4,069** |
+| Internal import edges | **2,700** |
 | External import edges | **1,369** |
 | Import cycles | **0** |
-| Classified modules | **381 (38.485%)** |
+| Classified modules | **384 (38.671%)** |
 | Unclassified modules | **609** |
-| Source modules | **137** |
-| Aggregate modules | **76** |
-| Compatibility modules | **103** |
+| Source modules | **138** |
+| Aggregate modules | **77** |
+| Compatibility modules | **104** |
 | Reusable modules | **58** |
 | Internal / upstream / mixed modules | **2 / 5 / 0** |
-| Compatibility wrappers / direct targets | **103 / 202** |
+| Compatibility wrappers / direct targets | **104 / 204** |
 | Missing module docs | **217** |
 | Legacy naming exceptions | **403** |
 | Provenance contract | **207 Apache files / 5 upstream modules** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
 the standard `[propext, Classical.choice, Quot.sound]` axioms. The clean
-pre-frontier checkpoint is the versioned
-[`2026-07-26 organization Phase 10E baseline`](docs/architecture/baselines/2026-07-26-organization-phase10e.md),
-and the exact Phase 10F ownership and validation contract is recorded in the
-[`Higham source-frontiers migration map`](docs/architecture/migrations/2026-07-26-higham-source-frontiers-phase10f.md).
+pre-Phase-11A checkpoint is the versioned
+[`2026-07-26 organization Phase 10F baseline`](docs/architecture/baselines/2026-07-26-organization-phase10f.md),
+and the exact Phase 11A ownership and validation contract is recorded in the
+[`Analysis norms source-tail migration map`](docs/architecture/migrations/2026-07-26-analysis-norms-source-tail-phase11a.md).
 These records include source, import, signature-dependency, and
 proof/body-dependency metrics; the live ratchet values above are enforced by
 the reviewed manifests.
@@ -263,6 +263,15 @@ Choose the narrowest entry point that matches the material you need:
   umbrella. Its `SingularValues.WeylMirsky` leaf owns the generic all-index
   Weyl--Mirsky perturbation API used by Higham Chapter 14 Problem 14.15 and by
   reusable least-squares analysis.
+- `NumStability.Analysis.Norms.Core` is the canonical Phase 11A implementation
+  path for the existing vector- and matrix-norm infrastructure. Phase 11A
+  reviewed only the extracted tail seam, so the residual owner remains
+  unclassified until Phase 11B assigns every declaration to reusable or
+  source leaves. Its absence from the reviewed `mixed` queue is therefore
+  inconclusive, not a claim that the file is tier-uniform. The historical
+  `NumStability.Analysis.Norms` path is an
+  import-only facade over Core and
+  `NumStability.Source.Higham.Chapter06.Theorem04`.
 - `NumStability.Analysis.Probability` is the reusable probability-analysis
   umbrella. Its `Probability.Gaussian` aggregate exposes
   `Probability.Gaussian.AbsoluteMoment`, the source-neutral Gaussian first-
@@ -289,7 +298,11 @@ Choose the narrowest entry point that matches the material you need:
   samples are in `Chapter02.Problem11`, with reusable decimal and empirical
   support under `Analysis.LeadingDigits`. The Section 2.7 power-frequency
   conclusion is `Chapter02.Section07.PowerLeadingDigits`; its reusable
-  AddCircle and decimal-power development lives under `Analysis`. Chapter 14
+  AddCircle and decimal-power development lives under `Analysis`. The
+  declaration-free `Chapter06` aggregate currently exposes the literal
+  ambient-radius form of Higham Theorem 6.4 through `Chapter06.Theorem04`.
+  This is complete over the chapter aggregate's current physical descendants,
+  not a claim that all Chapter 6 source material has moved. Chapter 14
   contains `Problem13`, the canonical `Problem14` owner for Problem 14.14's
   Hyman determinant result, `Problem15` for the source-specific determinant
   bound and counterexample, and the declaration-free `Section05` Schulz family
@@ -343,7 +356,7 @@ dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
 corpus is already Mathlib-style. After the Phase 10F ownership moves, the
-current ratchet records 609 unclassified modules, no reviewed mixed modules,
+current ratchet records 609 unclassified modules, no fully classified mixed modules,
 217 missing module docs, 403 historical naming exceptions, and no declaration-
 bearing umbrella. CI prevents those queues from growing while each dependency-
 contained family is migrated. In particular, the Chapter 14, Chapter 21, and
@@ -402,6 +415,9 @@ NumStability/
       DecimalPowers.lean       -- powers, logarithms, and decimal arcs
       Empirical.lean           -- finite empirical digit histograms
       LogarithmicDistribution.lean -- logarithmic leading-digit law
+    Norms.lean                 -- historical two-target compatibility facade
+    Norms/
+      Core.lean                -- transitional norm implementation
     Probability.lean           -- reusable probability-analysis umbrella
     Probability/
       Gaussian.lean            -- Gaussian-analysis umbrella
@@ -434,7 +450,10 @@ NumStability/
         Problem11.lean         -- Problem 2.11 source samples and locator
         Section07.lean         -- declaration-free Section 2.7 aggregate
         Section07/PowerLeadingDigits.lean -- power-frequency source conclusion
-      Chapter04/, Chapter08/, Chapter10/, Chapter11/
+      Chapter04/
+      Chapter06.lean           -- current Chapter 6 aggregate
+      Chapter06/Theorem04.lean -- literal ambient-radius Theorem 6.4
+      Chapter08/, Chapter10/, Chapter11/
       Chapter12/, Chapter13/, Chapter17/, Chapter20/
       Chapter14/
         Problem14.lean         -- Problem 14.14 Hyman determinant result
@@ -470,11 +489,13 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 ## Roadmap
 
 The selected formalization core scope is closed; the repository-organization
-migration is not. The next batches classify the remaining 609 unclassified
-modules while keeping the mixed-module count at zero, replace the 403
-historical source/proof-stage names with semantic canonical paths plus
-compatibility shims, document the 217 remaining modules, and review the
-giant-file outliers. The sequence and safety
+migration is not. Phase 11B first splits the transitional
+`Analysis.Norms.Core` owner into semantic reusable and Chapter 6 source leaves.
+The subsequent batches classify the remaining 609 unclassified modules while
+splitting any mixed-content owners they expose, replace the 403 historical
+source/proof-stage names with semantic canonical paths plus compatibility
+shims, document the 217 remaining modules, and review the other giant-file
+outliers. The sequence and safety
 gates are tracked in
 [`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md).
 

@@ -7,6 +7,7 @@ import NumStability.Source.Higham.Chapter02.Problem02
 import NumStability.Source.Higham.Chapter02.Problem22
 import NumStability.Source.Higham.Chapter02.Problem23
 import NumStability.Source.Higham.Chapter04.Section02.KaoWangCitationDiscrepancy
+import NumStability.Source.Higham.Chapter06.Theorem04
 import NumStability.Source.Higham.Chapter08.Lemma08Discrepancy
 import NumStability.Source.Higham.Chapter10.Theorem07
 import NumStability.Source.Higham.Chapter11.Theorem07
@@ -65,6 +66,8 @@ historical forwarding paths and the aggregate Higham entry point.
 #check NumStability.ieeeDoubleKahanRationalFunction_175_289_error_spread_gt_of_output_spread
 #check NumStability.ieeeDoubleKahanStoredGridRationalFunction_289_eq
 #check NumStability.not_forall_ieeeDoubleKahanStoredGridError_eq_on_source_grid
+#check NumStability.complexMatrixLpNorm
+#check NumStability.mixedInverseAmbientRelativeAmplificationRadiusSup_tendsto_conditionNumberProduct_of_positive_radii
 #check NumStability.higham8_8_printed_rowDominance_condSkeel_claim_false
 #check NumStability.higham10_7_fl_cholesky_success_source
 #check NumStability.Ch11Closure.TriGrowthInv.higham11_7_bunch_tridiagonal_support_aware

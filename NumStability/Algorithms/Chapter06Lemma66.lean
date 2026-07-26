@@ -1,4 +1,4 @@
-import NumStability.Analysis.Norms
+import NumStability.Analysis.Norms.Core
 
 /-!
 # Higham, "Accuracy and Stability of Numerical Algorithms" (2nd ed.)
@@ -21,7 +21,7 @@ Higham's own proof of (a)(ii) is the chain `‖A‖₂ ≤ ‖A‖_F ≤ ‖B‖
 columnwise 2-norm domination hypothesis of (a).
 
 We work in the complex layer (`CMatrix`, which contains the real case), matching
-the pre-existing building blocks in `Norms.lean`:
+the pre-existing building blocks in `Analysis/Norms/Core.lean`:
 `complexMatrixOp2_le_complexMatrixFrobenius`,
 `complexMatrixFrobenius_le_sqrt_rank_mul_complexMatrixOp2`,
 `complexMatrixFrobeniusSq_eq_entrywise_sum`, plus the Mathlib inequality
@@ -128,7 +128,8 @@ theorem lemma66_a_abs_entry_le {m n : ℕ} (A B : CMatrix m n)
 
     Proof by Higham's chain `‖A‖₂ ≤ ‖A‖_F ≤ ‖B‖_F ≤ sqrt(rank B) ‖B‖₂`.
     The `0 < n` hypothesis is the (non-degenerate column count) condition
-    carried by the underlying `‖A‖₂ ≤ ‖A‖_F` step in `Norms.lean`. -/
+    carried by the underlying `‖A‖₂ ≤ ‖A‖_F` step in
+    `Analysis/Norms/Core.lean`. -/
 theorem lemma66_a_op2_le {m n : ℕ} (hn : 0 < n) (A B : CMatrix m n)
     (h : ∀ j, lemma66_colNorm2 A j ≤ lemma66_colNorm2 B j) :
     complexMatrixOp2 A ≤ Real.sqrt (complexMatrixRank B : ℝ) * complexMatrixOp2 B :=

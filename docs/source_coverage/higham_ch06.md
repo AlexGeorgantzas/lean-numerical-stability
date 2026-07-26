@@ -20,9 +20,13 @@
 
 - **Edition / pages:** 2nd ed., pp. 105–117.
 - **Audit mode:** core (primary labels + numbered equations + central definitions + precise body prose; Problems recorded but optional).
-- **Ownership:** Chapter 6 is the NORM FOUNDATION LAYER for the whole formalization. Primary home:
-  `NumStability/Analysis/Norms.lean` (~23.6k lines, source-facing `CVec`/`CMatrix` norm infrastructure).
-  Secondary homes: `NumStability/Analysis/MatrixAlgebra.lean` (real rectangular `rectOpNorm2Le`
+- **Ownership:** Chapter 6 is the NORM FOUNDATION LAYER for the whole formalization. The transitional
+  norm implementation is `NumStability/Analysis/Norms/Core.lean`; the literal ambient-radius Theorem
+  6.4 owner is `NumStability/Source/Higham/Chapter06/Theorem04.lean`. The historical
+  `NumStability/Analysis/Norms.lean` path is a two-target compatibility facade. The declaration-free
+  `Source.Higham.Chapter06` aggregate is complete over its current physical descendants only; the
+  remaining Chapter 6 owner migrations are Phase 11B work. Secondary homes:
+  `NumStability/Analysis/MatrixAlgebra.lean` (real rectangular `rectOpNorm2Le`
   transfer layer, Lemma 6.6(b)–(d) predicate forms), `NumStability/Algorithms/MatrixPowersLp.lean`
   and `Analysis/MatrixPowersLp185Primary.lean` (downstream consumers). Consumers cite the Lemma 6.6 chain
   from `Algorithms/HighamChapter10.lean` and `Algorithms/Ch14GaussJordanSPDCorollary.lean`.
@@ -38,12 +42,12 @@
 
 ## Primary labels
 
-| Label | Printed statement (summary) | Status | Lean decls (Norms.lean unless noted) | Scope notes |
+| Label | Printed statement (summary) | Status | Lean declarations (`Norms.Core` unless noted; retained `l.` anchors are frozen pre-Phase-11A positions, with current Core positions equal to anchor + 9) | Scope notes |
 |---|---|---|---|---|
 | Def. 6.1 | Monotone (`\|x\| ≤ \|y\| ⇒ ‖x‖ ≤ ‖y‖`) and absolute (`‖ \|x\| ‖ = ‖x‖`) norms on C^n | VERIFIED | `IsMonotoneComplexVectorNorm`, `IsAbsoluteComplexVectorNorm` (~l.635) | Abstract norms on `CVec n` via `IsComplexVectorNorm`. |
 | Thm. 6.2 (Bauer–Stoer–Witzgall) | A norm on C^n is monotone iff absolute | VERIFIED | `monotone_iff_absolute_complexVectorNorm` (l.799), `absolute_norm_iff_monotone_norm` (l.814); easy direction `absolute_of_monotone_complexVectorNorm` (l.787) | Proved from scratch (coordinate-contraction argument), not imported as hypothesis; printed strength (arbitrary norm on C^n). Higham himself defers the proof to Horn–Johnson / Stewart–Sun. |
 | Lemma 6.3 | For unit `x` (α-norm), unit `y` (β-norm) there is `B` with `‖B‖_{α,β} = 1`, `Bx = y` | VERIFIED | `exists_rankOneCMatrix_isMixedSubordinateMatrixNormValue_one` (l.19799); map form `exists_rankOne_isMixedSubordinateNormValue_one` (l.19783); rank-one core (l.19741) | General complex vector norms; the dual/norming functional `z` is produced by a finite-dimensional Hahn–Banach bridge (`NormedCVec.exists_normingFunctionalAt_of_unit_vector`), matching the printed dual-vector proof. |
-| Thm. 6.4 | `κ_{α,β}(A) := lim_{ε→0} sup_{‖ΔA‖_{α,β} ≤ ε‖A‖_{α,β}} ‖(A+ΔA)^{-1} − A^{-1}‖_{β,α} / (ε‖A^{-1}‖_{β,α}) = ‖A‖_{α,β}‖A^{-1}‖_{β,α}` | VERIFIED | `MixedInverseAmbientRelativeAmplificationRadiusSet`, `mixedInverseAmbientRelativeAmplificationRadiusSup`, and `mixedInverseAmbientRelativeAmplificationRadiusSup_tendsto_conditionNumberProduct_of_positive_radii` | The feasible value is literally `(e/s)/rho` for every `0 < d ≤ rho*a`. The proof derives the endpoint resolvent upper bound, chooses the sharp perturbation on the boundary `d = rho*a`, constructs perturbed right inverses and norm witnesses, realizes the actual `sSup`, and squeezes it to `a*s`. The small-invertibility guard is eventual and immaterial in the `rho → 0` limit. |
+| Thm. 6.4 | `κ_{α,β}(A) := lim_{ε→0} sup_{‖ΔA‖_{α,β} ≤ ε‖A‖_{α,β}} ‖(A+ΔA)^{-1} − A^{-1}‖_{β,α} / (ε‖A^{-1}‖_{β,α}) = ‖A‖_{α,β}‖A^{-1}‖_{β,α}` | VERIFIED | `MixedInverseAmbientRelativeAmplificationRadiusSet`, `mixedInverseAmbientRelativeAmplificationRadiusSup`, and `mixedInverseAmbientRelativeAmplificationRadiusSup_tendsto_conditionNumberProduct_of_positive_radii` in `Source.Higham.Chapter06.Theorem04` | The feasible value is literally `(e/s)/rho` for every `0 < d ≤ rho*a`. The proof derives the endpoint resolvent upper bound, chooses the sharp perturbation on the boundary `d = rho*a`, constructs perturbed right inverses and norm witnesses, realizes the actual `sSup`, and squeezes it to `a*s`. The small-invertibility guard is eventual and immaterial in the `rho → 0` limit. |
 | Thm. 6.5 (Gastinel, Kahan) | `dist_{α,β}(A) = (‖A‖_{α,β}‖A^{-1}‖_{β,α})^{-1} = κ_{α,β}(A)^{-1}` | VERIFIED | `complexMatrix_relativeSingularDistance_min_eq_inv_conditionNumberProduct` (l.20505), `..._min_eq_inv_norm_mul_inverse_norm` (l.20488); map level (l.20430–20483); lower bound (l.20194), attaining singular perturbation via Lemma 6.3 (l.20241, l.20296) | General norms; distance stated as attained minimum (`IsMinimumMixedRelativeSingularDistance`), matching the printed min. Both directions proved: every singular `A+ΔA` obeys `‖ΔA‖/‖A‖ ≥ κ^{-1}`, and a rank-one `ΔA = B/‖x‖_α` attains it with `(A+ΔA)A^{-1}y = 0`. |
 | Lemma 6.6 | (a) columnwise `‖a_j‖₂ ≤ ‖b_j‖₂` ⇒ `‖A‖_F ≤ ‖B‖_F`, `‖A‖₂ ≤ √rank(B)‖B‖₂`, `\|A\| ≤ ee^T\|B\|`; (b) `\|A\| ≤ B ⇒ ‖A‖₂ ≤ ‖B‖₂`; (c) `\|A\| ≤ \|B\| ⇒ ‖A‖₂ ≤ √rank(B)‖B‖₂`; (d) `‖A‖₂ ≤ ‖\|A\|‖₂ ≤ √rank(A)‖A‖₂` | VERIFIED | Imported `Algorithms/Chapter06Lemma66.lean`: (a) `Lemma66.lemma66_a_frobenius_le`, `Lemma66.lemma66_a_op2_le`, `Lemma66.lemma66_a_abs_entry_le`; (c) `Lemma66.lemma66_c_op2_le`; sharpness `Lemma66.lemma66_a_op2_sharp`. (b)/(d): `rectOpNorm2Le_of_abs_entry_le`, `complexMatrixLpNormOfReal_two_absMatrix_bounds`, `complexMatrixOp2_absMatrix_bounds`, and the real rectangular transfer `rectOpNorm2Le_absMatrixRect_sqrt_rank_mul_of_rectOpNorm2Le`. | Every printed implication is present at source strength. The previous PARTIAL row was a stale search/mapping error, not a missing theorem. |
 | Table 6.1 | Attainable constants `α_pq` with `‖x‖_p ≤ α_pq ‖x‖_q` (1, 2, ∞) | VERIFIED | Via eq. (6.4) both directions: `complexVecLpNorm_le_complexVecLpNorm_of_exponent_le` (l.1522), `complexVecLpNorm_le_card_rpow_mul_complexVecLpNorm_of_exponent_le` (~l.1358); all-ones sharpness witness `complexVecLpNorm_const_one_ofReal` (l.555); ∞ endpoints by dedicated endpoint lemmas | Finite real exponents general `p₁ ≤ p₂`; table entries are specializations. |
@@ -59,7 +63,7 @@
 | (6.4) | `‖x‖_{p₂} ≤ ‖x‖_{p₁} ≤ n^{1/p₁−1/p₂}‖x‖_{p₂}`, attainable | VERIFIED | l.1522 / ~l.1358 + all-ones witness (l.555). |
 | (6.5)/(6.6) | Subordinate and mixed subordinate matrix norm (max/ratio forms); `‖A‖₁` max col sum, `‖A‖_∞` max row sum, `‖A‖₂ = σ_max` | VERIFIED | Least-bound carrier `IsMixedSubordinateMatrixNormValue` with max forms (l.18424–19123); p=1 and p=∞ explicit formulas (l.16873, 16925, 19332–19441); `complexMatrixOp2_eq_top_singularValue` (l.11933); `‖A^*A‖₂ = ‖A‖₂²` (l.11846). |
 | (6.7) | `‖AB‖_{α,β} ≤ ‖A‖_{γ,β}‖B‖_{α,γ}` | VERIFIED | l.18808 (bound form), l.18822 (value form); consistency of matrix p-norms (l.8515). |
-| (6.8) | `κ_{α,β}(A) = ‖A‖_{α,β}‖A^{-1}‖_{β,α}` | VERIFIED | `mixedInverseAmbientRelativeAmplificationRadiusSup_tendsto_conditionNumberProduct_of_positive_radii` returns the product predicate and the printed ambient-radius limit at the same value. |
+| (6.8) | `κ_{α,β}(A) = ‖A‖_{α,β}‖A^{-1}‖_{β,α}` | VERIFIED | `mixedInverseAmbientRelativeAmplificationRadiusSup_tendsto_conditionNumberProduct_of_positive_radii` in `Source.Higham.Chapter06.Theorem04` returns the product predicate and the printed ambient-radius limit at the same value. |
 | (6.9)/(6.10) | Proof steps: `sup_{‖ΔA‖≤1}‖A^{-1}ΔAA^{-1}‖ = ‖A^{-1}‖²` and the lower-bound chain | VERIFIED | Upper: `mixedSubordinate_inverseSandwich_bound` (l.20525) and value form (l.20540); lower/attainment: sharp linearized family (l.20777ff), Lemma-6.3-based step (l.18835). |
 | (6.11) | Matrix p-norm definition | VERIFIED | Carrier + p=1/∞ max forms (l.16838–16925). |
 | (6.12)/(6.13) | `max_j‖A(:,j)‖_p ≤ ‖A‖_p ≤ n^{1−1/p}max_j‖A(:,j)‖_p`; row analogue with `m^{1/p}` and exponent `p/(p−1)` | VERIFIED | Upper halves l.7381/7414 and l.17433/17481; lower halves l.16643/16658; source-facing bundles l.16754 and l.17496; concrete-function forms l.17677/17694. |
@@ -90,7 +94,7 @@
 
 ## Problems (optional in core mode)
 
-| Problem | Status | Lean anchors (Norms.lean) |
+| Problem | Status | Lean anchors (`Norms.Core`; retained `l.` anchors are frozen pre-Phase-11A positions, with current Core positions equal to anchor + 9) |
 |---|---|---|
 | 6.1 (prove Tables 6.1/6.2, attainability, Hadamard/Vandermonde S/2 equality) | SUBSTANTIAL | Rank-one witness family + profiles (l.13714–14150), all-quotient package (l.14346); real Hadamard S/2 witness (l.17806), complex roots-of-unity Vandermonde witness (l.18325); flat-entry/equal-singular-value equality analysis (l.13411–13611). The full "iff scalar multiple of Hadamard" only-if direction is characterized via the equality-case analysis (l.13599 notes the square full-rank real Hadamard iff as corollary); recorded as substantial rather than literal. |
 | 6.2 (`‖xy^*‖ = ‖x‖‖y‖_D` subordinate) | VERIFIED | l.19667 (functional form), l.19700 (concrete matrix form). |
@@ -111,7 +115,8 @@
 
 ## Honest-strength notes
 
-1. **Theorem 6.4 is now literal.** The ambient-radius feasible set divides every
+1. **Theorem 6.4 is now literal.** Its canonical owner is
+   `Source.Higham.Chapter06.Theorem04`. The ambient-radius feasible set divides every
    relative inverse change by the common `rho`, not by the perturbation's own
    size. Its final theorem constructs the sharp boundary perturbation and all
    inverse/norm witnesses internally. The older self-normalized set is retained

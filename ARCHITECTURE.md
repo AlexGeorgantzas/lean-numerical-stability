@@ -78,6 +78,14 @@ split from the reusable library.
   singular-value entry point. Its `SingularValues.WeylMirsky` leaf owns the
   source-neutral all-index perturbation API shared by Chapter 14 Problem 14.15
   and reusable least-squares analysis.
+- `NumStability.Analysis.Norms.Core` is the transitional Phase 11A owner of the
+  remaining norm implementation. Phase 11A classifies only the extracted tail;
+  declaration-level classification of the residual owner is deferred until the
+  generic API and source-shaped Problem 6.x developments are separated in
+  Phase 11B. Its unclassified status must not be read as a tier-uniformity
+  claim. The historical `NumStability.Analysis.Norms` path is an import-only
+  compatibility facade over that core and the canonical Chapter 6 Theorem 6.4
+  source leaf.
 - `NumStability.Analysis.Probability` is the reusable probability-analysis
   entry point. Its declaration-free `Probability.Gaussian` aggregate exposes
   the source-neutral `Probability.Gaussian.AbsoluteMoment` leaf. Its
@@ -108,6 +116,12 @@ split from the reusable library.
   `Section07` aggregate; its AddCircle and decimal-power machinery remains in
   reusable analysis. The former flat leading-digit Analysis paths are
   compatibility wrappers only.
+  Chapter 6 has a declaration-free `Chapter06` aggregate over the canonical
+  `Chapter06.Theorem04` source leaf, which owns the literal ambient-radius
+  statement of Higham's Theorem 6.4. The aggregate is complete over its current
+  physical descendants only: the remaining Chapter 6 source-shaped material
+  still interleaved in `Analysis.Norms.Core` and the other historical Chapter 6
+  owners is deferred to Phase 11B.
   Chapter 14 owns `Problem13`, `Problem14` for Problem 14.14's Hyman
   determinant result, `Problem15` for Problem 14.15's determinant bound and
   discrepancy witness, and the declaration-free `Section05` aggregate for its
