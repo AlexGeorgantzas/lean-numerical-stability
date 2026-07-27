@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate and check the frozen BlockLU Phase 12 ownership partition.
+"""Generate and check the BlockLU Phase 12 semantic ownership partition.
 
 The ownership manifest has the following tab-separated schema::
 
@@ -13,14 +13,17 @@ map.  A route map starts with ``format\t1`` and accepts these row shapes::
     exact\thistorical_module\tlogical_name\t-\tdestination_module
 
 Source lines are one-based and inclusive.  Range routing resolves compiled
-constants through declaration source locations in the historical module's
-``.ilean`` file.  Exact routes take precedence and cover compiler-generated
-constants that have no usable source declaration root.  The checker never
-invents a destination.
+declarations through source locations in the historical module's
+``.ilean`` file.  Exact routes take precedence and cover reviewed declarations
+that have no usable source declaration root.  The declaration graph extractor
+omits Lean-reserved and compiler-generated internal details and contracts paths
+through them onto reachable authored project declarations.  This produces a
+stable semantic graph whose rows must compare exactly after ownership and
+private-name normalization.  The checker never invents a destination.
 
 Lean private names encode their owning module and therefore necessarily change
 when a declaration moves.  Post-migration mode requires an explicit companion
-map for every selected private constant::
+map for every selected private declaration::
 
     format\t1
     logical_name\thistorical_actual_name\tcandidate_actual_name
@@ -53,9 +56,9 @@ ENTRYWISE_MAXIMUM = "NumStability.Analysis.MatrixNorms.EntrywiseMaximum"
 HISTORICAL_MODULES = {BLOCKLU, FIRST_ORDER, GROWTH_FACTOR}
 COMPLETE_HISTORICAL_MODULES = {BLOCKLU, FIRST_ORDER}
 EXPECTED_HISTORICAL_COUNTS = {
-    BLOCKLU: 2_378,
-    FIRST_ORDER: 41,
-    GROWTH_FACTOR: 13,
+    BLOCKLU: 1_942,
+    FIRST_ORDER: 37,
+    GROWTH_FACTOR: 11,
 }
 EXPECTED_MANIFEST_ROWS = sum(EXPECTED_HISTORICAL_COUNTS.values())
 
@@ -67,8 +70,6 @@ GROWTH_FACTOR_SELECTION = {
     "NumStability.entry_le_maxEntryNorm",
     "NumStability.infNorm_le_card_mul_maxEntryNorm",
     "NumStability.maxEntryNorm",
-    "NumStability.maxEntryNorm._proof_1",
-    "NumStability.maxEntryNorm.congr_simp",
     "NumStability.maxEntryNorm_le_infNorm",
     "NumStability.maxEntryNorm_le_of_entry_abs_le",
     "NumStability.maxEntryNorm_le_of_entry_le_bound",
@@ -79,11 +80,11 @@ GROWTH_FACTOR_SELECTION = {
 }
 
 BASELINE_TSV_SHA256 = (
-    "AEBEAB80F4D98177960A830BB965F392DE2D9FD9463CDE7EFCACB7DE1570055E"
+    "FD37F73D83F0206E40291576E1F9496185F09C21928ABED147B5CE2A6EF83AED"
 )
 
 DEFAULT_MANIFEST = Path(
-    "docs/architecture/declaration-ownership/blocklu-phase12.tsv"
+    "docs/architecture/declaration-ownership/blocklu-phase12-v2.tsv"
 )
 DEFAULT_PRIVATE_REWRITES = Path(
     "docs/architecture/declaration-ownership/"
@@ -117,33 +118,6 @@ REUSABLE_DESTINATION_PREFIXES = (
     "NumStability.Algorithms.LinearSystems.",
 )
 SOURCE_DESTINATION_PREFIX = "NumStability.Source.Higham."
-
-# In the historical monolith, Lean reused ``blockMaxNorm._proof_1`` for the
-# two structurally identical nonempty-Finset proof obligations below.  That is
-# an elaboration-order artifact, not a mathematical dependency of the generic
-# rectangular max-entry norm on BlockLU block matrices.  Pre/staged DAG checks
-# ignore exactly these two frozen *body* edges.  Post graph comparison requires
-# them to be replaced by EntrywiseMaximum-owned generated proof target(s), and
-# permits no other graph drift.
-BASELINE_ENTRYWISE_PROOF_ARTIFACTS = {
-    (
-        "body",
-        "NumStability.maxEntryNormRect",
-        "NumStability.blockMaxNorm._proof_1",
-    ),
-    (
-        "body",
-        "NumStability.maxEntryNormRect_le_of_entry_abs_le",
-        "NumStability.blockMaxNorm._proof_1",
-    ),
-}
-ENTRYWISE_PROOF_ARTIFACT_SOURCES = {
-    source for _, source, _ in BASELINE_ENTRYWISE_PROOF_ARTIFACTS
-}
-REGENERATED_ENTRYWISE_PROOF = re.compile(
-    r"^NumStability\.maxEntryNormRect(?:_le_of_entry_abs_le)?\._proof_[1-9][0-9]*$"
-)
-
 
 @dataclass(frozen=True)
 class Declaration:
@@ -339,7 +313,7 @@ def selected_baseline_declarations(
         )
     if len(records) != EXPECTED_MANIFEST_ROWS:
         raise ValueError(
-            f"expected {EXPECTED_MANIFEST_ROWS} selected constants, "
+            f"expected {EXPECTED_MANIFEST_ROWS} selected declarations, "
             f"found {len(records)}"
         )
     return records
@@ -651,7 +625,7 @@ def generate_manifest(
             ]
             if not candidates:
                 raise ValueError(
-                    f"unrouted compiled constant {logical}; add an exact route"
+                    f"unrouted semantic declaration {logical}; add an exact route"
                 )
             root = max(candidates, key=len)
             source_line = roots_by_module[declaration.module][root]
@@ -682,7 +656,7 @@ def generate_manifest(
         raise ValueError(f"unused exact routes: {unused_exact[:20]}")
     unused_ranges = [route for route in ranges if not range_use[route]]
     if unused_ranges:
-        raise ValueError(f"ranges route no selected constants: {unused_ranges[:20]}")
+        raise ValueError(f"ranges route no selected declarations: {unused_ranges[:20]}")
     validate_manifest_shape(generated)
     return generated
 
@@ -744,12 +718,9 @@ def validate_destination_graph(
     declarations: list[Declaration],
     actual_to_logical: dict[str, str],
     records: dict[str, ManifestRow],
-    ignored_edges: set[tuple[str, str, str]] | None = None,
 ) -> tuple[int, int]:
     """Enforce the selected declaration DAG and reusable/source boundary."""
 
-    ignored = ignored_edges or set()
-    ignored_seen: Counter[tuple[str, str, str]] = Counter()
     module_by_name = {
         declaration.name: declaration.module for declaration in declarations
     }
@@ -759,19 +730,6 @@ def validate_destination_graph(
     forbidden: list[str] = []
 
     for edge in iter_dependency_edges(dependency_tsv):
-        edge_tuple = (edge.kind, edge.source, edge.target)
-        if edge_tuple in ignored:
-            if (
-                edge.source not in actual_to_logical
-                or edge.target not in actual_to_logical
-            ):
-                raise ValueError(
-                    "configured DAG artifact is not internal to the selected family: "
-                    f"{edge_tuple}"
-                )
-            ignored_seen[edge_tuple] += 1
-            continue
-
         source_logical = actual_to_logical.get(edge.source)
         if source_logical is None:
             continue
@@ -803,14 +761,6 @@ def validate_destination_graph(
                 f"{edge.source} -> {edge.target}"
             )
 
-    expected_ignored = Counter({edge: 1 for edge in ignored})
-    if ignored_seen != expected_ignored:
-        missing = sorted((expected_ignored - ignored_seen).elements())
-        duplicates = sorted((ignored_seen - expected_ignored).elements())
-        raise ValueError(
-            "DAG artifact edge coverage differs: "
-            f"missing={missing}; duplicate={duplicates}"
-        )
     if forbidden:
         raise ValueError(
             "reusable destinations depend on source declarations: "
@@ -949,10 +899,10 @@ def check_candidate_ownership(
             )
         candidate_actual_to_logical[candidate_name] = logical
 
-    # Reject alternate private encodings and any selected logical constant in
+    # Reject alternate private encodings and any selected logical declaration in
     # a module other than its stage-appropriate owner.  Public names are global
     # and therefore already fail the exact metadata check above; this scan is
-    # primarily the one-to-one guard for module-encoded private constants.
+    # primarily the one-to-one guard for module-encoded private declarations.
     selected_modules = HISTORICAL_MODULES | {
         row.destination_module for row in records.values()
     }
@@ -1224,9 +1174,9 @@ def compare_full_graph(
     baseline: dict[str, Declaration],
     candidate_actual_to_logical: dict[str, str],
     records: dict[str, ManifestRow],
-    candidate_declarations: list[Declaration],
-    completed_destinations: set[str],
 ) -> None:
+    """Require exact equality of the contracted semantic declaration graphs."""
+
     if sha256_file(baseline_tsv) != BASELINE_TSV_SHA256:
         raise ValueError("baseline TSV hash differs from frozen Phase 11B2 input")
 
@@ -1239,87 +1189,15 @@ def compare_full_graph(
         for candidate, logical in candidate_actual_to_logical.items()
     }
 
-    replacement_sources = {
-        source
-        for source in ENTRYWISE_PROOF_ARTIFACT_SOURCES
-        if records[source].destination_module in completed_destinations
-    }
-    regenerated_proofs = {
-        declaration.name
-        for declaration in candidate_declarations
-        if REGENERATED_ENTRYWISE_PROOF.fullmatch(declaration.name)
-    }
-    if replacement_sources:
-        if not (1 <= len(regenerated_proofs) <= 2):
-            raise ValueError(
-                "completed EntrywiseMaximum must own one or two regenerated "
-                f"rectangular max-norm proofs, found {sorted(regenerated_proofs)}"
-            )
-        declaration_by_name = {
-            declaration.name: declaration for declaration in candidate_declarations
-        }
-        for proof in regenerated_proofs:
-            declaration = declaration_by_name[proof]
-            metadata = (
-                declaration.module,
-                declaration.kind,
-                declaration.visibility,
-            )
-            expected = (ENTRYWISE_MAXIMUM, "theorem", "internal")
-            if metadata != expected:
-                raise ValueError(
-                    f"regenerated proof {proof} has metadata {metadata}, "
-                    f"expected {expected}"
-                )
-            if proof in candidate_actual_to_logical:
-                raise ValueError(
-                    f"regenerated proof unexpectedly replaces a frozen constant: {proof}"
-                )
-    elif regenerated_proofs:
-        raise ValueError(
-            "rectangular max-norm generated proofs appeared before their "
-            f"destination completed: {sorted(regenerated_proofs)}"
-        )
-
-    replaced_artifacts = {
-        edge
-        for edge in BASELINE_ENTRYWISE_PROOF_ARTIFACTS
-        if edge[1] in replacement_sources
-    }
-    replacement_counts: Counter[str] = Counter()
-    used_regenerated_proofs: set[str] = set()
-
     delta: Counter[str] = Counter()
     with baseline_tsv.open(encoding="utf-8") as stream:
         for raw in stream:
             row = raw.rstrip("\r\n")
-            fields = row.split("\t")
-            if (
-                len(fields) == 4
-                and tuple(fields[1:]) in replaced_artifacts
-            ):
-                continue
             delta[row] += 1
 
     with candidate_tsv.open(encoding="utf-8") as stream:
         for raw in stream:
             fields = raw.rstrip("\r\n").split("\t")
-            if (
-                len(fields) == 5
-                and fields[0] == "declaration"
-                and fields[1] in regenerated_proofs
-            ):
-                continue
-            if (
-                len(fields) == 4
-                and fields[0] == "edge"
-                and fields[3] in regenerated_proofs
-                and fields[1] == "body"
-                and fields[2] in replacement_sources
-            ):
-                replacement_counts[fields[2]] += 1
-                used_regenerated_proofs.add(fields[3])
-                continue
             if (
                 len(fields) == 5
                 and fields[0] == "declaration"
@@ -1336,20 +1214,6 @@ def compare_full_graph(
             if delta[row] == 0:
                 del delta[row]
 
-    expected_replacements = Counter({source: 1 for source in replacement_sources})
-    if replacement_counts != expected_replacements:
-        raise ValueError(
-            "EntrywiseMaximum proof-artifact replacements differ: "
-            f"expected {dict(expected_replacements)}, "
-            f"found {dict(replacement_counts)}"
-        )
-    if used_regenerated_proofs != regenerated_proofs:
-        raise ValueError(
-            "unused or unrecognized regenerated EntrywiseMaximum proofs: "
-            f"generated={sorted(regenerated_proofs)}, "
-            f"used={sorted(used_regenerated_proofs)}"
-        )
-
     if delta:
         missing = sum(count for count in delta.values() if count > 0)
         extra = -sum(count for count in delta.values() if count < 0)
@@ -1357,7 +1221,7 @@ def compare_full_graph(
             f"{count:+d} {row}" for row, count in sorted(delta.items())[:20]
         )
         raise ValueError(
-            f"normalized full graph differs: missing={missing}, extra={extra}; "
+            f"normalized contracted graph differs: missing={missing}, extra={extra}; "
             f"{details}"
         )
 
@@ -1552,11 +1416,10 @@ def main() -> int:
             declarations,
             baseline_actual_to_logical(baseline),
             records,
-            BASELINE_ENTRYWISE_PROOF_ARTIFACTS,
         )
         print(
             "BlockLU Phase 12 pre-migration ownership passed: "
-            f"{len(records)} constants, canonical manifest {digest}, "
+            f"{len(records)} declarations, canonical manifest {digest}, "
             f"acyclic {destination_nodes}-destination graph with "
             f"{cross_edges} cross-owner edges"
         )
@@ -1614,7 +1477,6 @@ def main() -> int:
         baseline_declarations,
         baseline_actual_to_logical(baseline),
         records,
-        BASELINE_ENTRYWISE_PROOF_ARTIFACTS,
     )
 
     completed_logicals = {
@@ -1636,17 +1498,11 @@ def main() -> int:
         rewrites,
         completed_destinations,
     )
-    residual_artifacts = {
-        edge
-        for edge in BASELINE_ENTRYWISE_PROOF_ARTIFACTS
-        if records[edge[1]].destination_module not in completed_destinations
-    }
     destination_nodes, cross_edges = validate_destination_graph(
         args.dependency_tsv,
         candidate_declarations,
         candidate_map,
         records,
-        residual_artifacts,
     )
 
     required_structural_modules = (
@@ -1685,26 +1541,23 @@ def main() -> int:
         baseline,
         candidate_map,
         records,
-        candidate_declarations,
-        completed_destinations,
     )
     if args.mode == "stage":
         print(
             "BlockLU Phase 12 staged ownership passed: "
-            f"{len(completed_logicals)} of {len(records)} constants moved across "
+            f"{len(completed_logicals)} of {len(records)} declarations moved across "
             f"{len(completed_destinations)} completed destinations, canonical "
             f"manifest {digest}, acyclic {destination_nodes}-destination graph "
-            f"with {cross_edges} cross-owner edges, and exact normalized full "
-            "graph preserved modulo applicable audited EntrywiseMaximum proof "
-            "artifacts"
+            f"with {cross_edges} cross-owner edges, and exact normalized "
+            "contracted graph preserved"
         )
         return 0
     print(
         "BlockLU Phase 12 post-migration ownership passed: "
-        f"{len(records)} constants, canonical manifest {digest}, "
+        f"{len(records)} declarations, canonical manifest {digest}, "
         f"acyclic {destination_nodes}-destination graph with "
-        f"{cross_edges} cross-owner edges, and exact normalized full graph "
-        "preserved modulo the two audited EntrywiseMaximum proof artifacts"
+        f"{cross_edges} cross-owner edges, and exact normalized contracted "
+        "graph preserved"
     )
     return 0
 

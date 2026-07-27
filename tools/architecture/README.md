@@ -6,8 +6,11 @@ book-formalization migration. The generator has two layers:
 - `generate_baseline.py` scans Lean sources and the direct-import graph using
   only the Python standard library.
 - `declaration_dependencies.lean` loads the compiled `NumStability`
-  environment and separates references found in declaration signatures from
-  references found only in definition bodies or theorem proofs.
+  environment, separates signature references from body/proof references, and
+  contracts Lean-reserved or compiler-generated declarations onto the authored
+  project declarations reachable through them. Authored private declarations
+  remain in the graph; unstable `_proof_*`, `_simp_*`, `match_*`, flat
+  constructors, unfold helpers, and similar implementation details do not.
 - `check_compatibility.py` verifies that every old path documented in the
   compatibility table is an import-only wrapper around exactly its stated
   canonical targets, and that production code does not import old paths.
@@ -19,6 +22,10 @@ book-formalization migration. The generator has two layers:
   normalized declaration/signature/body graph preservation contract.
 - `check_chapter06_phase11b2_ownership.py` checks the frozen 69-constant
   Chapter 6 source-tail ownership partition and its incident dependency graph.
+- `check_blocklu_phase12_ownership.py` enforces the frozen 1,990-declaration
+  Block LU semantic route map, staged destination ownership, private-name
+  rewrites, structural aggregates, destination DAG, and exactly normalized
+  contracted graph.
 - `check_provenance.py` validates license pointers and exact upstream evidence.
 - `sort_aggregate_imports.py` mechanically normalizes import-only umbrellas.
 
@@ -70,6 +77,27 @@ python tools/architecture/check_chapter06_phase11b2_ownership.py \
   --dependency-tsv benchmark-results/architecture/phase11b2-declarations.tsv \
   --baseline-tsv benchmark-results/architecture/phase11b1-declarations.tsv
 ```
+
+Check the immutable Phase 12 Block LU input and reviewed route map:
+
+```text
+python tools/architecture/check_blocklu_phase12_ownership.py --self-test
+python tools/architecture/check_blocklu_phase12_ownership.py \
+  --mode pre \
+  --dependency-tsv benchmark-results/architecture/phase11b2-declarations-v2.tsv \
+  --routes docs/architecture/declaration-ownership/blocklu-phase12-v2-routes.tsv \
+  --manifest docs/architecture/declaration-ownership/blocklu-phase12-v2.tsv \
+  --expected-manifest-sha256 \
+    90F28D568A611035DE20839F2C30CB2800B75F2FC1DF2CE1373E9FFDD3D11287
+```
+
+During an incremental extraction, use `--mode stage` with the fresh dependency
+TSV, the frozen Phase 11B2 format-2 TSV as `--baseline-tsv`, the current sorted
+private-rewrite file, one `--completed-destination` per fully moved owner, and
+one `--structural-module` per completed wrapper or aggregate. Phase 12A moves
+no authored private declaration, so its rewrite file is header-only. Final
+`--mode post` requires all destinations and all 19 reviewed authored-private
+name rewrites.
 
 Sort and deduplicate an import-only aggregate mechanically:
 
@@ -161,10 +189,11 @@ JSON.
 The import graph contains an edge `A -> B` when module `A` directly imports
 module `B`.
 
-The declaration graph contains an edge `A -> B` when the elaborated signature,
-body, or proof of declaration `A` directly contains constant `B`. Signature and
-body/proof edges are retained separately. An edge appearing in both sets is
-counted once in the union graph.
+The semantic declaration graph contains an edge `A -> B` when the elaborated
+signature, body, or proof of authored declaration `A` reaches authored project
+declaration `B` through zero or more excluded compiler-generated project
+details. Signature and body/proof edges are retained separately. An edge
+appearing in both sets is counted once in the union graph.
 
 - An **apparent leaf** has no incoming project declaration edge.
 - A **project-foundational declaration** has no outgoing project declaration

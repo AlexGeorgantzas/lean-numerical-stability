@@ -7,6 +7,99 @@ No Phase 12 production, test, entry-point, tier, or compatibility edit precedes
 this record. The only Phase 12 artifacts prepared with it are the reviewed
 route map, its generated ownership manifest, and their checker.
 
+## Format-2 semantic graph amendment
+
+The original format-1 record below is retained verbatim as forensic evidence
+of the first compiled inventory. Before the first production extraction was
+committed, however, staged comparison proved that its generated-constant rows
+were not a durable ownership contract. Lean can realize reserved equation
+theorems in a downstream importing module, cache an `_proof_*` obligation under
+an unrelated declaration, and renumber `match_*` or `_simp_*` auxiliaries after
+an otherwise semantics-preserving move. The old 2,432-row counts, exact routes,
+private rewrites, and two proof-artifact exceptions are therefore historical;
+the format-2 contract in this section supersedes them for every operational
+Phase 12 gate.
+
+The format-2 extractor was established in commits `77c11767a`, `7590f571c`,
+and `115c7a0ff`. It:
+
+- omits names recognized by Lean as reserved;
+- strips private module encodings before excluding unforgeable leading-`_`,
+  numeric, and compiler `match_<ordinal>` components and their descendants;
+- retains authored private helpers and authored source names such as
+  `eq_11_15`; and
+- contracts every dependency path through omitted project declarations onto
+  the authored project declarations reachable through that path, preserving
+  signature and body/proof edge kinds separately.
+
+Contracting, rather than dropping or prefix-normalizing generated targets, is
+essential. It preserves real dependencies hidden in auxiliary bodies without
+inventing a dependency from the textual parent of a cached `_proof_*`. The
+extractor self-test covers reserved names, shifted `_simp_*` ordinals, private
+prefix removal, match descendants, and the authored `eq_11_15` counterexample.
+Its SHA-256 is
+`04AE8E46F66A0B8D2FED1FDB83904D8A60398F9B61A3EC4A10ADB3DF2352D771`.
+
+The authoritative semantic input is
+`benchmark-results/architecture/phase11b2-declarations-v2.tsv`: 115,717,110
+bytes, SHA-256
+`FD37F73D83F0206E40291576E1F9496185F09C21928ABED147B5CE2A6EF83AED`.
+It contains 56,898 authored declarations, 266,373 signature edges, 382,855
+body/proof edges, and 424,065 union edges. Independent contraction of the
+original raw stream and direct extraction agree; normalized pre/post Phase 12A
+comparison covers all 649,228 typed edges exactly.
+
+The semantic Phase 12 selection contains 1,990 declarations:
+
+| Historical owner | Semantic declarations |
+| --- | ---: |
+| `NumStability.Algorithms.LU.BlockLU` | 1,942 |
+| `NumStability.Analysis.FirstOrder` | 37 |
+| selected family in `NumStability.Algorithms.LU.GrowthFactor` | 11 |
+| **Total** | **1,990** |
+
+The kind partition is 1,665 theorems, 205 definitions, 48 constructors, 36
+inductives, and 36 recursors. Visibility is 1,971 public and 19 authored
+private declarations; no generated/internal declaration is frozen. Reusable
+destinations own 284 declarations in 14 modules, and source destinations own
+1,706 declarations in 69 modules.
+
+The reviewed semantic route map
+`docs/architecture/declaration-ownership/blocklu-phase12-v2-routes.tsv` is
+15,414 bytes with 137 ranges, no exact route, and SHA-256
+`D36A1AFAB0B5B1D216BCE0415813A8D35FC3518237766F1DB07826D9812CF7F5`.
+The generated semantic manifest
+`docs/architecture/declaration-ownership/blocklu-phase12-v2.tsv` is 417,901
+bytes with 1,990 rows and SHA-256
+`90F28D568A611035DE20839F2C30CB2800B75F2FC1DF2CE1373E9FFDD3D11287`.
+Its row payload alone has SHA-256
+`A044489211F341F7F724284140CCD8A5103C71419454AC404734BAD804DE8243`.
+
+Under this contract Phase 12A moves exactly 173 public declarations:
+
+| Destination | Source commands | Semantic declarations |
+| --- | ---: | ---: |
+| `Analysis.FirstOrder.AsymptoticFamilies` | 22 | 37 |
+| `Analysis.FirstOrder.FixedPrecision` | 12 | 12 |
+| `Analysis.MatrixNorms.EntrywiseMaximum` | 33 | 33 |
+| `Algorithms.LinearSystems.LU.BlockLU.BlockMatrices` | 19 | 19 |
+| `Algorithms.LinearSystems.LU.BlockLU.FirstOrderModels` | 13 | 61 |
+| `Source.Higham.Chapter13.Theorem05.Recurrences` | 11 | 11 |
+| **Total** | **110** | **173** |
+
+No authored private declaration moves in Phase 12A, so its rewrite map is
+header-only. After this slice, 1,817 declarations remain: 122 reusable and
+1,695 source-owned, including all 19 authored private declarations. The fresh
+Phase 12A semantic stream is 115,721,129 bytes with SHA-256
+`E553EDA4343EFD695C68DE392463DAFE67B38C1E9347A5BB0E7FFC49F0DE1EB7`;
+after owner/private normalization, its complete contracted graph equals the
+frozen input exactly.
+
+All commands and completion criteria later in this document are read with
+these format-2 paths, counts, hashes, and exact-graph semantics. The original
+format-1 tables remain useful for explaining why the amendment was required,
+but they no longer define acceptance.
+
 The batch separates reusable block-LU mathematics from Higham Chapter 13
 correspondence. The canonical reusable family is
 `NumStability.Algorithms.LinearSystems.LU.BlockLU`, as promised by the committed
@@ -29,7 +122,7 @@ internal declaration names, namespaces, kinds, visibility, types, and proofs
 remain stable. Lean private names necessarily encode their physical owner; the
 post-migration private-name map may change only that reviewed owner encoding.
 
-## Frozen baseline
+## Original format-1 frozen baseline
 
 The authoritative compiled input is
 `benchmark-results/architecture/phase11b2-declarations.tsv` (131,969,104
@@ -70,7 +163,7 @@ constructors, 36 inductives, and 36 recursors. Their visibility partition is
 own 385 constants in 14 modules; the source destinations own 2,047 constants
 in 69 modules.
 
-## Reviewed route and ownership artifacts
+## Original format-1 route and ownership artifacts
 
 The route map
 `docs/architecture/declaration-ownership/blocklu-phase12-routes.tsv` is 24,685
@@ -192,7 +285,7 @@ The table sums to exactly 1,748 commands and 2,432 constants. Any destination
 count or digest change invalidates this record and requires a new reviewed map
 before production movement continues.
 
-## Phase 12A foundation extraction
+## Original format-1 Phase 12A inventory
 
 The first implementation slice is deliberately dependency-contained. An
 early audit reported 223 compiled constants. Exhaustive compiler-generated
@@ -312,7 +405,7 @@ does not require the terminal determinant and one-step leaves. The umbrella
 imports all supported terminal branches instead of imposing an artificial
 linear chain.
 
-## Dependency boundary and the two audited artifacts
+## Original format-1 dependency boundary and audited artifacts
 
 The frozen selected-owner graph has 83 destination nodes and 440 typed
 cross-owner edges. After exactly two reviewed body-only elaboration artifacts
@@ -360,7 +453,7 @@ sorted unique imports.
   `Problem04.GlobalTableauProducts` imports its three named children; and
   `Problem04` imports those two umbrellas plus its other 21 leaves.
 - `NumStability.Source.Higham.Chapter13.BlockLU` imports every source leaf in
-  this 2,432-row migration and no historical path.
+  this 1,990-declaration semantic migration and no historical path.
 - `NumStability.Source.Higham.Chapter13` imports `Chapter13.BlockLU` and the
   independently existing canonical `DemmelSharpMultiplier` surface without
   duplicating BlockLU descendants.
@@ -404,18 +497,18 @@ The declaration-bearing sibling files
 `BlockLURowSourceClosure`, `BlockLUScalarGrowthBridge`,
 `BlockLUSourceClosure`, `BlockLUSPDFamilies`, `BlockLUSPDSourceClosure`, and
 `BlockLUVarying` are consumers in this record; their own constants are not
-silently absorbed into the 2,432-row partition. Before those declarations
+silently absorbed into the 1,990-declaration semantic partition. Before those declarations
 move, a second committed ownership map must assign them to Chapter 13 source
 leaves or reusable owners. `BlockLUTable13_1Families` is already a documented
 compatibility facade.
 
 ## Staged implementation sequence
 
-1. Commit this record, the route map, the 2,432-row manifest, and the checker
+1. Commit this record, the route map, the 1,990-row semantic manifest, and the checker
    before moving production Lean code.
 2. Implement Phase 12A's six dependency-contained destinations and their
    aggregates. Retarget immediate imports, run canonical-only and legacy
-   surface tests, and commit only after the exact 227-constant staged gate
+   surface tests, and commit only after the exact 173-declaration staged gate
    passes.
 3. Extract the remaining reusable leaves in dependency order, keeping
    declaration names and proofs unchanged and making hidden imports explicit.
@@ -444,10 +537,10 @@ Phase 12 is complete only after all applicable gates pass:
    python tools/architecture/check_blocklu_phase12_ownership.py --self-test
    python tools/architecture/check_blocklu_phase12_ownership.py \
      --mode pre \
-     --dependency-tsv benchmark-results/architecture/phase11b2-declarations.tsv \
-     --routes docs/architecture/declaration-ownership/blocklu-phase12-routes.tsv \
-     --manifest docs/architecture/declaration-ownership/blocklu-phase12.tsv \
-     --expected-manifest-sha256 AF49C544D0885ADE41A797F8401EAFF307FBC381E49477ED103B4648BF6E41F1
+     --dependency-tsv benchmark-results/architecture/phase11b2-declarations-v2.tsv \
+     --routes docs/architecture/declaration-ownership/blocklu-phase12-v2-routes.tsv \
+     --manifest docs/architecture/declaration-ownership/blocklu-phase12-v2.tsv \
+     --expected-manifest-sha256 90F28D568A611035DE20839F2C30CB2800B75F2FC1DF2CE1373E9FFDD3D11287
    ```
 
 2. every declaration-bearing canonical destination builds in isolation and has
@@ -457,11 +550,10 @@ Phase 12 is complete only after all applicable gates pass:
 4. reusable, source, Problem04, Lemma10, theorem-family, chapter, and historical
    entry-point tests prove the documented aggregate reachability contracts;
 5. the staged checker proves exact ownership for the completed subset after
-   each slice, and post mode proves all 2,432 constant destinations plus all 74
-   explicit private-name rewrites;
-6. the final generated declaration TSV matches the frozen full declaration and
-   dependency graph after owner normalization, with only the two audited
-   EntrywiseMaximum proof-artifact replacements;
+   each slice, and post mode proves all 1,990 semantic declaration destinations
+   plus all 19 explicit authored-private name rewrites;
+6. the final generated declaration TSV matches the frozen complete contracted
+   declaration and dependency graph exactly after owner/private normalization;
 7. the final destination graph is acyclic, and reusable destinations have zero
    direct or transitive source dependency;
 8. no production declaration-bearing module imports a historical wrapper, and
@@ -491,7 +583,7 @@ allowed proof-body regeneration is the exact two-edge artifact documented
 above.
 
 The sibling BlockLU declaration migration is explicitly outside this first
-2,432-row partition but inside the overall BlockLU phase. It requires its own
+1,990-declaration semantic partition but inside the overall BlockLU phase. It requires its own
 pre-edit map and all the same compatibility gates. After that work, the strict
 repository order proceeds to LSQRSolve, LSE/GQR/KKT, QR and Chapters 19--20,
 the smaller source/outlier queues, the Chapter 9 and Chapter 11 monoliths, and
