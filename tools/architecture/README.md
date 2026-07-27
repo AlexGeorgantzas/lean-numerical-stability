@@ -99,6 +99,12 @@ no authored private declaration, so its rewrite file is header-only. Final
 `--mode post` requires all destinations and all 19 reviewed authored-private
 name rewrites.
 
+Route-map validation normally belongs to pre mode. Stage and post invocations
+omit `--routes` because live `.ilean` files no longer preserve historical
+source ranges after extraction. If route validation is deliberately repeated
+later, every routed historical module must be supplied through a frozen
+pre-migration `.ilean` override with `--ilean HISTORICAL_MODULE=PATH`.
+
 Sort and deduplicate an import-only aggregate mechanically:
 
 ```text
