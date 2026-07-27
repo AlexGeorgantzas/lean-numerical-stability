@@ -127,6 +127,13 @@ Each capture consists of:
   1,783-constant ownership and full-graph preservation audit, isolated import
   tests, axiom and library-lookup checks, clean baseline reproduction, full
   builds, and architecture gates.
+- `2026-07-27-organization-phase11b2.{json,md}` captures the canonical split
+  of the remaining 69 Chapter 6 constants into nine source leaves and two
+  family aggregates, with four historical paths retained as exact wrappers.
+- `2026-07-27-organization-phase11b2-build.md` records the corresponding exact
+  ownership and full-graph preservation audit, fifteen isolated import tests,
+  independent review corrections, axiom and library-lookup checks, clean
+  baseline reproduction, full builds, and architecture gates.
 
 Regenerate a named baseline from the repository root with:
 
