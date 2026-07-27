@@ -17,6 +17,8 @@ book-formalization migration. The generator has two layers:
 - `check_norms_phase11b_ownership.py` enforces the immutable Phase 11B1
   declaration-ownership manifest, owner DAG, direct-import allowlist, and
   normalized declaration/signature/body graph preservation contract.
+- `check_chapter06_phase11b2_ownership.py` checks the frozen 69-constant
+  Chapter 6 source-tail ownership partition and its incident dependency graph.
 - `check_provenance.py` validates license pointers and exact upstream evidence.
 - `sort_aggregate_imports.py` mechanically normalizes import-only umbrellas.
 
@@ -50,6 +52,14 @@ Run `--mode pre` from the Phase 11A checkout, or pass `--source` a retained copy
 of the frozen Phase 11A `Analysis/Norms/Core.lean`; the live Phase 11B1 Core is
 the declaration-free aggregate and intentionally fails the frozen pre-split
 source hash.
+
+Check the frozen Phase 11B2 input against its tracked ownership manifest:
+
+```text
+python tools/architecture/check_chapter06_phase11b2_ownership.py \
+  --mode pre \
+  --dependency-tsv benchmark-results/architecture/phase11b1-declarations.tsv
+```
 
 Sort and deduplicate an import-only aggregate mechanically:
 
