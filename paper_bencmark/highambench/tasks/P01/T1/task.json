@@ -1,0 +1,87 @@
+{
+  "schema_version": "highambench-task-0.2",
+  "task_id": "P01-T1",
+  "paper_id": "P01",
+  "tier": "T1",
+  "tier_label": "direct use",
+  "classification_frozen_before_runs": true,
+  "paper_version": "journal version; volume 14, issue 4, July 1993, printed pages 783-799",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/THE ACCURACY OF FLOATING POINT SUMMATION.pdf",
+    "sha256": "d5ad99fac5022da54dbe02721ea57116df3cec15badddd7c96c344328718fea7"
+  },
+  "source_locations": [
+    {
+      "role": "finite-product estimate used by the exact gamma bound",
+      "section": "2. Orderings of Recursive Summation",
+      "anchor": "unnumbered display immediately after equation (2.2)",
+      "pdf_page": 2,
+      "printed_page": 784
+    },
+    {
+      "role": "main pairwise error bound",
+      "section": "3. Other Methods",
+      "equation": "(3.6)",
+      "pdf_page": 6,
+      "printed_page": 788
+    },
+    {
+      "role": "nonnegative-input simplification",
+      "section": "2. Orderings of Recursive Summation",
+      "anchor": "paragraph after equation (2.6)",
+      "pdf_page": 3,
+      "printed_page": 785
+    }
+  ],
+  "context_file": "paper_bencmark/highambench/tasks/P01/T1/context.md",
+  "formal_statement": {
+    "namespace": "HighamBench",
+    "theorem_name": "p01_t1_pairwise_nonnegative",
+    "target_file": "paper_bencmark/highambench/tasks/P01/T1/Target.lean",
+    "lean_header": "theorem p01_t1_pairwise_nonnegative\n    (fp : StandardAddModel) (r : ℕ) (v : Fin (2 ^ r) → ℝ)\n    (hvalid : GammaValid fp.u r)\n    (hv : ∀ i, 0 ≤ v i) :\n    |pairwiseSum fp.fl_add r v - ∑ i : Fin (2 ^ r), v i| ≤\n      gamma fp.u r * ∑ i : Fin (2 ^ r), v i",
+    "plain_language": "For nonnegative inputs, the pairwise summation error is no larger than gamma(u,r) times the ordinary exact sum."
+  },
+  "assumptions": [
+    "There are exactly 2^r real inputs.",
+    "Every input is nonnegative.",
+    "Each rounded addition follows the shared standard addition rule.",
+    "The shared standard model also records exact addition from zero for a source-consistent common interface and for library adapters; the T1 pairwise computation does not use that field.",
+    "r*u < 1, written GammaValid u r.",
+    "Overflow, underflow, and other exceptional machine behavior are outside the mathematical model."
+  ],
+  "informal_statement": "For 2^r nonnegative inputs, the absolute error of balanced pairwise summation is at most gamma(u,r) times their exact sum.",
+  "informal_proof": "Equation (3.6) gives gamma(u,r) times the sum of input absolute values because every input passes through r rounded additions. For nonnegative inputs each absolute value equals the input, so that sum is the ordinary exact sum.",
+  "tier_rationale": "The task is a direct specialization of one general pairwise estimate. It requires finding and applying the general result and simplifying absolute values of nonnegative inputs.",
+  "shared_symbols": [
+    "StandardAddModel",
+    "GammaValid",
+    "gamma",
+    "pairwiseSum"
+  ],
+  "conditions": {
+    "N": "The fixed statement and shared files are present; no NumStability artifact is present.",
+    "L": "The identical fixed statement and shared files are present; the frozen NumStability library is also present."
+  },
+  "limits": {
+    "wall_clock_seconds": 900,
+    "total_model_tokens": 120000
+  },
+  "validation": {
+    "mode": "shared automatic validator",
+    "required_declaration": "HighamBench.p01_t1_pairwise_nonnegative",
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P01/T1/Target.lean",
+    "reject_statement_changes": true,
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true
+  },
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declaration": "NumStability.pairwiseSum_forward_error_bound",
+    "note": "The library result is more general; the exact nonnegative shared-surface target is absent."
+  },
+  "annotation": {
+    "performed_by": "Codex",
+    "kind": "source selection, tier label, and concise paraphrase",
+    "added_mathematical_proof_not_in_paper": false
+  }
+}

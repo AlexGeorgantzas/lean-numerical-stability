@@ -1,0 +1,86 @@
+{
+  "schema_version": "0.1.0",
+  "benchmark_id": "highambench-0.2-p01-pilot",
+  "order_scope": "condition order inside each task-repetition pair",
+  "method": {
+    "name": "sha256_first_byte_parity",
+    "salt": "highambench-0.2-p01-pair-order-v1",
+    "input": "<salt>|<task_id>|<repetition_id>",
+    "rule": "If the first digest byte is even, run N then L; if it is odd, run L then N.",
+    "reason": "This gives a deterministic, auditable choice without calling repetition IDs random seeds."
+  },
+  "pairs": [
+    {
+      "pair_id": "P01-T1-rep-01",
+      "task_id": "P01-T1",
+      "repetition_id": "rep-01",
+      "sha256": "447e498e1e0b5a312efec00be062b0732d512730fbfd54f14e7078d9b43112e3",
+      "condition_order": ["N", "L"],
+      "run_ids": ["P01-T1-rep-01-N", "P01-T1-rep-01-L"]
+    },
+    {
+      "pair_id": "P01-T1-rep-02",
+      "task_id": "P01-T1",
+      "repetition_id": "rep-02",
+      "sha256": "dd5599a05ff045eedaef5abcb7d4fd7254f89324c183d9d3f793d525d82a3a47",
+      "condition_order": ["L", "N"],
+      "run_ids": ["P01-T1-rep-02-L", "P01-T1-rep-02-N"]
+    },
+    {
+      "pair_id": "P01-T1-rep-03",
+      "task_id": "P01-T1",
+      "repetition_id": "rep-03",
+      "sha256": "c0db6b38e885b13da1d411c88c3a3b14ed5e0a21f74e696a669852ff5701410d",
+      "condition_order": ["N", "L"],
+      "run_ids": ["P01-T1-rep-03-N", "P01-T1-rep-03-L"]
+    },
+    {
+      "pair_id": "P01-T2-rep-01",
+      "task_id": "P01-T2",
+      "repetition_id": "rep-01",
+      "sha256": "9bb69b569a750cf0574acc6adfb8f87291ceeb8f4b162bb850ebbaec1e2034d9",
+      "condition_order": ["L", "N"],
+      "run_ids": ["P01-T2-rep-01-L", "P01-T2-rep-01-N"]
+    },
+    {
+      "pair_id": "P01-T2-rep-02",
+      "task_id": "P01-T2",
+      "repetition_id": "rep-02",
+      "sha256": "b61919781500d90b28cca8cd2b787814498bd8a863a05a9ecffb46353d9dd7ad",
+      "condition_order": ["N", "L"],
+      "run_ids": ["P01-T2-rep-02-N", "P01-T2-rep-02-L"]
+    },
+    {
+      "pair_id": "P01-T2-rep-03",
+      "task_id": "P01-T2",
+      "repetition_id": "rep-03",
+      "sha256": "2a52472ab305f981af173b9b7f25e16ee8b39cc7814c8a5bdc7bea17c5ca7475",
+      "condition_order": ["N", "L"],
+      "run_ids": ["P01-T2-rep-03-N", "P01-T2-rep-03-L"]
+    },
+    {
+      "pair_id": "P01-T3-rep-01",
+      "task_id": "P01-T3",
+      "repetition_id": "rep-01",
+      "sha256": "42f25c06bc92ef4a1676b597875a813a5068b421bd729be902e67cff1c57e847",
+      "condition_order": ["N", "L"],
+      "run_ids": ["P01-T3-rep-01-N", "P01-T3-rep-01-L"]
+    },
+    {
+      "pair_id": "P01-T3-rep-02",
+      "task_id": "P01-T3",
+      "repetition_id": "rep-02",
+      "sha256": "87826715f450e041f7f8ae7d9a8f4cc49b27639129f202c85a75a7f016ea900f",
+      "condition_order": ["L", "N"],
+      "run_ids": ["P01-T3-rep-02-L", "P01-T3-rep-02-N"]
+    },
+    {
+      "pair_id": "P01-T3-rep-03",
+      "task_id": "P01-T3",
+      "repetition_id": "rep-03",
+      "sha256": "184c1b174abb0663c09fda9dba54e5066e127214f446e62d28db4e750bf1e5ce",
+      "condition_order": ["N", "L"],
+      "run_ids": ["P01-T3-rep-03-N", "P01-T3-rep-03-L"]
+    }
+  ]
+}

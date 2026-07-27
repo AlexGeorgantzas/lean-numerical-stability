@@ -1,0 +1,138 @@
+{
+  "schema_version": "0.1.0",
+  "benchmark_id": "highambench-0.2-p01-pilot",
+  "configuration_status": "frozen observational-pilot configuration",
+  "frozen_environment": {
+    "lean_toolchain": "leanprover/lean4:v4.29.0-rc3",
+    "lean_commit": "5d86aa4032284a5242470e95fbe25f1ff506763d",
+    "lean_binary_sha256": "3e0d0d3d801675359f2d4cf9815bfdb417b20b92fdd9d48b3b14c95bbae28bbf",
+    "mathlib_repository": "https://github.com/leanprover-community/mathlib4",
+    "mathlib_commit": "e8ea1afc32790ce1d4e1a4e45cc412ba9388716b",
+    "numstability_repository": "https://github.com/AlexGeorgantzas/lean-numerical-stability.git",
+    "numstability_commit": "45813a95dacf577461bae13f033af0dbc985a225",
+    "numstability_commit_role": "source baseline before benchmark task files were added",
+    "lake_package_name": "numStability",
+    "agent_id": "codex-cli",
+    "agent_version": "0.146.0-alpha.3.1",
+    "agent_binary_sha256": "ae77c5e73db36d15c131381c5d620278abed999650867a7490b13384e1f5842d",
+    "model_version": "gpt-5.6-terra",
+    "model_reasoning_effort": "medium",
+    "prompt_sha256": "118749427c471f95f41206473934caab32b194f75317aa2cc950a836ff33a7ee",
+    "allowed_tools": [
+      "workspace file editing",
+      "local shell commands through the no-socket seccomp launcher",
+      "local Lean compiler and local text search"
+    ],
+    "hardware_class": "LXC guest on AMD EPYC 9554; 4 online logical CPUs; 1.1 TiB memory visible",
+    "operating_system": "Linux 6.17.0-35-generic x86_64",
+    "bubblewrap_binary_sha256": "d78807229d616606e339c5988392b9e0ab4a6a6998fa51e4590837f426a12fca",
+    "bubblewrap_version": "bubblewrap 0.6.1",
+    "numstability_source_manifest": "paper_bencmark/highambench/metadata/library_source.json",
+    "numstability_source_manifest_sha256": "8b52061f0fafc283acd2363267ebbee2f9c6eb97360c596723b95b27515c7828",
+    "numstability_compiled_manifest": "paper_bencmark/highambench/metadata/library_olean.json",
+    "numstability_compiled_manifest_sha256": "bbea1e90bc11605bd3c14b28dc39bf49b7bcb64ab5cf2306841f65b803a6ae2a",
+    "compiled_environment_summary": "paper_bencmark/highambench/metadata/packages_olean.json",
+    "compiled_environment_summary_sha256": "ae361f8e83f4e65745249c1b7ce415fe91024b32cbe935be34402598ac1f7844",
+    "packages_runtime_manifest": "paper_bencmark/highambench/metadata/packages_runtime.json",
+    "packages_runtime_manifest_sha256": "a2ee0563bc731aa3dba22ed7af0e9bd1322c8c06b51cd9d01bd573282d9c8c31",
+    "python_version": "3.10.12",
+    "python_binary_sha256": "d6bca2b84e73c7775a0dd5e6a76899cfe4ee62863d7c8f88513811d1fda23f49",
+    "release_manifest": "paper_bencmark/highambench/metadata/release_files.json",
+    "release_manifest_sha256": "d4889169929f629a745207dbe85dc9df179caf3ae11ee5b0a43a1111119b69e2",
+    "environment_id": "highambench-p01-f4b35735854f72ce",
+    "environment_bundle_sha256": "f4b35735854f72ce28fb52300aa7cee67b37d6bca05987a012ebc80e845280a5",
+    "container_image_digest": null,
+    "container_note": "No OCI image is used. Every attempt receives a fresh bubblewrap filesystem and process namespace. The host system folders are read-only but are not one completely fingerprinted image.",
+    "release_blocker_note": "The selected Codex backend exposes no fixed random-seed control, and this setup has no frozen OCI image. Results must therefore be labeled observational and not presented as a reference HighamBench score."
+  },
+  "conditions": {
+    "N": {
+      "label": "no_library",
+      "lean_and_mathlib": "frozen_environment",
+      "task_files": "identical controlled files",
+      "numstability_access": "none",
+      "required_absence": [
+        "source",
+        "compiled files",
+        "documentation",
+        "declaration-name lists",
+        "search-index entries",
+        "cached artifacts"
+      ],
+      "pre_run_leak_check_required": true,
+      "network": "model tools disabled; the Codex control process retains only its required provider connection"
+    },
+    "L": {
+      "label": "with_library",
+      "lean_and_mathlib": "frozen_environment",
+      "task_files": "identical controlled files",
+      "numstability_access": "frozen source and compiled files",
+      "local_file_search": "allowed only inside mounted local files",
+      "network": "model tools disabled; the Codex control process retains only its required provider connection"
+    }
+  },
+  "limits": {
+    "wall_clock_seconds": 900,
+    "total_model_tokens": 120000,
+    "token_definition": "all model input plus output tokens across all calls and retries; cached input counts as input",
+    "failure_scored_time_seconds": 900
+  },
+  "repetitions": [
+    {
+      "id": "rep-01",
+      "backend_seed": null
+    },
+    {
+      "id": "rep-02",
+      "backend_seed": null
+    },
+    {
+      "id": "rep-03",
+      "backend_seed": null
+    }
+  ],
+  "repetition_note": "These are fixed repetition IDs, not random seeds. No backend seed support has been established. Record a real backend seed before evaluation if the chosen backend supports and obeys one.",
+  "planned_counts_per_agent": {
+    "papers": 1,
+    "tasks": 3,
+    "repetitions_per_task": 3,
+    "conditions": 2,
+    "paired_assignments": 9,
+    "runs": 18
+  },
+  "isolation": {
+    "implementation": "fresh bubblewrap filesystem and process namespace per attempt",
+    "fresh_container_per_run": false,
+    "fresh_bubblewrap_namespace_per_run": true,
+    "fresh_conversation_per_run": true,
+    "model_shell_network_disabled": "offline_shell.c installs a seccomp rule that rejects socket operations for every model-generated shell command and descendant",
+    "provider_control_connection": "The Codex control process keeps network access only to communicate with the model provider; web, browser, app, plugin, and search features are disabled.",
+    "filesystem_boundary": "The outer bubblewrap namespace mounts only the task workspace, system tools, frozen Lean and mathlib, and, for condition L only, frozen NumStability source and compiled files.",
+    "temporary_authentication": "A fresh Codex state directory receives the existing authentication file only for startup. The file is removed at thread or turn start, before model shell work, and the state directory is destroyed after the attempt.",
+    "no_oci_image": true,
+    "cross_run_transfer_forbidden": [
+      "messages",
+      "generated files",
+      "build output",
+      "search results",
+      "caches",
+      "human or agent knowledge from the paired run"
+    ]
+  },
+  "stop_conditions": [
+    "first valid proof",
+    "wall-clock limit",
+    "model-token limit",
+    "agent ends the run"
+  ],
+  "failure_reason_priority": [
+    "TIME_LIMIT",
+    "TOKEN_LIMIT",
+    "NO_SUBMISSION",
+    "RULE_VIOLATION",
+    "SYNTAX_OR_ELAB",
+    "PROOF_ERROR",
+    "SYSTEM_ERROR"
+  ],
+  "system_error_policy": "A system fault before useful work starts is not scored. Rerun once under the same assignment and keep the incident log."
+}

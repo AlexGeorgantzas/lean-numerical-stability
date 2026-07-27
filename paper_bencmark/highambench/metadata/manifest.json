@@ -1,0 +1,192 @@
+{
+  "schema_version": "0.1.0",
+  "benchmark_id": "highambench-0.2-p01-pilot",
+  "benchmark_status": "task package frozen; one paper only; measurements pending",
+  "specification": {
+    "title": "HighamBench: A Simple Benchmark for Testing Whether a Formal Library Helps Paper-to-Lean Proofs",
+    "version": "0.2",
+    "local_path": "paper_bencmark/scratch_pad/HighamBench_Simple_Two_Condition_Specification.pdf",
+    "sha256": "25a8a72d62e2ad9d131004b871f5ccc58438d488dbd64afcd0a8839e9e4d78a8",
+    "pdf_pages": 4
+  },
+  "corpus": {
+    "paper_count": 1,
+    "paper_ids": ["P01"],
+    "exclusion_note": "No paper other than P01 is part of this pilot."
+  },
+  "papers": [
+    {
+      "paper_id": "P01",
+      "paper_version": "published journal version, July 1993",
+      "citation": {
+        "author": "Nicholas J. Higham",
+        "title": "The Accuracy of Floating Point Summation",
+        "journal": "SIAM Journal on Scientific Computing",
+        "volume": "14",
+        "issue": "4",
+        "journal_pages": "783-799",
+        "date": "1993-07",
+        "doi": "10.1137/0914050",
+        "canonical_url": "https://doi.org/10.1137/0914050"
+      },
+      "source": {
+        "local_path": "paper_bencmark/reference_papers/THE ACCURACY OF FLOATING POINT SUMMATION.pdf",
+        "sha256": "d5ad99fac5022da54dbe02721ea57116df3cec15badddd7c96c344328718fea7",
+        "pdf_pages": 17,
+        "journal_page_map": "PDF page 1 is journal page 783; PDF page 17 is journal page 799.",
+        "lawful_source_locator": "https://epubs.siam.org/doi/10.1137/0914050",
+        "rights_note": "The local copy was supplied for benchmark construction and displays a SIAM redistribution notice. Permission to redistribute the full PDF is not asserted. Release only locators, hashes, and short lawful excerpts unless permission is confirmed."
+      },
+      "topic": "floating-point summation",
+      "paper_structure_note": "The paper does not label theorem or lemma blocks. Targets are anchored to numbered equations and the nearby prose that explains them.",
+      "targets": [
+        {
+          "task_id": "P01-T1",
+          "tier": "T1",
+          "tier_name": "direct use",
+          "availability": "available",
+          "title": "Pairwise summation bound for nonnegative inputs",
+          "source_locations": [
+            {
+              "section": "3. Other methods",
+              "anchor": "equation (3.6) and its short derivation",
+              "journal_page": 788,
+              "pdf_page": 6,
+              "role": "pairwise forward-error bound for n = 2^r"
+            },
+            {
+              "section": "2. Orderings of recursive summation",
+              "anchor": "paragraph immediately after equation (2.6)",
+              "journal_page": 785,
+              "pdf_page": 3,
+              "role": "for nonnegative inputs, the sum of absolute values equals the sum"
+            }
+          ],
+          "informal_statement_paraphrase": "For a power-of-two list of nonnegative real inputs, the absolute error of pairwise rounded summation is at most gamma at the tree depth times the exact sum.",
+          "informal_proof_paraphrase": "Every input passes through exactly r rounded additions, so the general pairwise bound uses gamma at r. Nonnegative inputs satisfy absolute value x_i equals x_i, which removes the absolute values from the exact sum.",
+          "copyright_note": "This is a benchmark-author paraphrase, not a quotation from the paper.",
+          "lean_target": {
+            "declaration": "p01_t1_pairwise_nonnegative",
+            "file": "paper_bencmark/highambench/tasks/P01/T1/Target.lean",
+            "shared_definitions": "paper_bencmark/highambench/shared/HighamBench/Definitions.lean",
+            "statement_summary": "The shared pairwise result is bounded by gamma u r times the ordinary sum when every input is nonnegative.",
+            "must_compile_without_numstability": true,
+            "controlled_file_sha256": "11a966a96916675045f6965f323e5233f87eb80e2c92aada13a567c9ef677c33",
+            "binding_status": "path, declaration, content hash, and clean N/L target builds fixed"
+          },
+          "tier_reason": "NumStability already proves the general pairwise absolute-value bound. The library-side proof should mainly find that theorem, use an adapter to the shared model, and simplify absolute values using nonnegativity.",
+          "candidate_library_dependencies_for_audit": [
+            "NumStability.pairwiseSum_forward_error_bound",
+            "NumStability.pairwiseSum_forward_error_bound_oneSigned"
+          ],
+          "gold_proof_policy": "A private construction proof may be kept under paper_bencmark/scratch_pad/private_gold/P01/. That path must never be mounted in an evaluation container."
+        },
+        {
+          "task_id": "P01-T2",
+          "tier": "T2",
+          "tier_name": "combine",
+          "availability": "available",
+          "title": "Compare the pairwise and recursive error bounds",
+          "source_locations": [
+            {
+              "section": "2. Orderings of recursive summation",
+              "anchor": "equation (2.6)",
+              "journal_page": 785,
+              "pdf_page": 3,
+              "role": "order-independent recursive summation bound"
+            },
+            {
+              "section": "3. Other methods",
+              "anchor": "equation (3.6) and the paragraph immediately following it",
+              "journal_page": 788,
+              "pdf_page": 6,
+              "role": "pairwise bound and comparison with the recursive bound"
+            }
+          ],
+          "informal_statement_paraphrase": "For n = 2^r inputs, both standard forward-error bounds hold, and the pairwise coefficient gamma at r is no larger than the recursive coefficient gamma at 2^r minus 1.",
+          "informal_proof_paraphrase": "Apply the pairwise and recursive bounds. Then use r at most 2^r minus 1, validity at the larger index, and monotonicity of gamma to compare the two coefficients. The claim compares proven bounds, not the two actual errors on every input.",
+          "copyright_note": "This is a benchmark-author paraphrase, not a quotation from the paper.",
+          "lean_target": {
+            "declaration": "p01_t2_pairwise_vs_recursive_bounds",
+            "file": "paper_bencmark/highambench/tasks/P01/T2/Target.lean",
+            "shared_definitions": "paper_bencmark/highambench/shared/HighamBench/Definitions.lean",
+            "statement_summary": "A conjunction of the pairwise bound, the recursive bound, and gamma u r <= gamma u (2^r - 1).",
+            "must_compile_without_numstability": true,
+            "controlled_file_sha256": "9e21ce9099bf6d68cf794b72e3dddc9c0b2f7f538a32a4a8697f547657552505",
+            "binding_status": "path, declaration, content hash, and clean N/L target builds fixed"
+          },
+          "tier_reason": "The result needs two summation theorems, arithmetic showing r <= 2^r - 1, transfer of the gamma validity condition, and monotonicity of gamma. No one existing declaration states the whole combined result.",
+          "candidate_library_dependencies_for_audit": [
+            "NumStability.pairwiseSum_forward_error_bound",
+            "NumStability.recursiveSum_forward_error_bound",
+            "NumStability.gamma_mono",
+            "NumStability.gammaValid_mono"
+          ],
+          "gold_proof_policy": "A private construction proof may be kept under paper_bencmark/scratch_pad/private_gold/P01/. That path must never be mounted in an evaluation container."
+        },
+        {
+          "task_id": "P01-T3",
+          "tier": "T3",
+          "tier_name": "extend",
+          "availability": "available",
+          "title": "Recursive-summation running error in the no-guard-digit model",
+          "source_locations": [
+            {
+              "section": "5. No guard digit model",
+              "anchor": "equation (5.1)",
+              "journal_page": 793,
+              "pdf_page": 11,
+              "role": "the weaker addition model with separate errors on the two inputs"
+            },
+            {
+              "section": "5. No guard digit model",
+              "anchor": "equation (5.2)",
+              "journal_page": 793,
+              "pdf_page": 11,
+              "role": "recursive-summation error as a sum of local no-guard errors"
+            },
+            {
+              "section": "5. No guard digit model",
+              "anchor": "equation (5.3)",
+              "journal_page": 793,
+              "pdf_page": 11,
+              "role": "absolute running-error bound using computed prefixes and new inputs"
+            }
+          ],
+          "informal_statement_paraphrase": "Under the no-guard addition model, recursive-summation error is at most u times the sum, from the second input onward, of the computed previous-sum size plus the new-input size.",
+          "informal_proof_paraphrase": "At each step, equation (5.1) makes the new error equal to the old error plus the computed prefix times alpha and the new input times beta. Sum these local errors as in (5.2), then use their u bounds and the triangle inequality to obtain (5.3).",
+          "copyright_note": "These are benchmark-author paraphrases of the printed equations, not quotations from the paper.",
+          "lean_target": {
+            "declaration": "p01_t3_noGuard_recursive_running_error_bound",
+            "file": "paper_bencmark/highambench/tasks/P01/T3/Target.lean",
+            "shared_definitions": "paper_bencmark/highambench/shared/HighamBench/Definitions.lean",
+            "shared_model": "NoGuardAddModel",
+            "shared_algorithm": "recursiveSum",
+            "shared_budget": "noGuardRecursiveRunningBudget",
+            "statement_summary": "The shared no-guard recursive sum is bounded by u times equation (5.3)'s computed-prefix running budget.",
+            "must_compile_without_numstability": true,
+            "controlled_file_sha256": "5f2b7112d090c066ade9b11c1f24f363ad6e6e04c6dce5bc804a981441c8a95d",
+            "binding_status": "path, declaration, content hash, and clean N/L target builds fixed"
+          },
+          "tier_reason": "Equation (5.3) depends on actual computed prefix sums. NumStability has no accumulated no-guard recursive running-budget theorem. Condition L has useful pieces, including a one-step no-guard identity and a generic local-error recurrence scaffold, but it still needs new no-guard state, indexing, witness, and budget bridges or a fresh full induction.",
+          "candidate_library_dependencies_for_audit": [
+            "NumStability.recursiveSum_running_error_bound",
+            "NumStability.noGuardAddWitness_error_eq",
+            "NumStability.runningError_bound_from_local_errors",
+            "NumStability.SumTree.noGuard_backward_error",
+            "NumStability.noGuard_add_fold_unroll"
+          ],
+          "gold_proof_policy": "A private construction proof may be kept under paper_bencmark/scratch_pad/private_gold/P01/. That path must never be mounted in an evaluation container."
+        }
+      ]
+    }
+  ],
+  "controlled_shared_files": [
+    {
+      "path": "paper_bencmark/highambench/shared/HighamBench/Definitions.lean",
+      "sha256": "5350985da64d27b8f7f77a275ffdda773b37c15e9f0c504a164edd3b5ede19d7",
+      "status": "content hash fixed; clean N/L builds completed"
+    }
+  ],
+  "release_rule": "The task files are frozen and hashed. Do not present measured results until the complete 18-run matrix, final two-reviewer checks, and result-set validation are complete."
+}

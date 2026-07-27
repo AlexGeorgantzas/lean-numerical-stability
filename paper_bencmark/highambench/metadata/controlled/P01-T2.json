@@ -1,0 +1,27 @@
+{
+  "files": [
+    {
+      "bytes": 1761,
+      "path": "agent_prompt.md",
+      "sha256": "118749427c471f95f41206473934caab32b194f75317aa2cc950a836ff33a7ee"
+    },
+    {
+      "bytes": 3108,
+      "path": "shared/HighamBench/Definitions.lean",
+      "sha256": "5350985da64d27b8f7f77a275ffdda773b37c15e9f0c504a164edd3b5ede19d7"
+    },
+    {
+      "bytes": 661,
+      "path": "tasks/P01/T2/Target.lean",
+      "sha256": "9e21ce9099bf6d68cf794b72e3dddc9c0b2f7f538a32a4a8697f547657552505"
+    },
+    {
+      "bytes": 3335,
+      "path": "tasks/P01/T2/context.md",
+      "sha256": "feee2f423b1a31f74646e9217229cd28bff9227dc45a6bbb98f0d407c8fd1ab4"
+    }
+  ],
+  "kind": "highambench-controlled-files",
+  "label": "P01-T2-controlled",
+  "schema_version": 1
+}

@@ -1,0 +1,84 @@
+{
+  "schema_version": "0.1.0",
+  "kind": "highambench-environment-record",
+  "environment_id": "highambench-p01-f4b35735854f72ce",
+  "environment_bundle_sha256": "f4b35735854f72ce28fb52300aa7cee67b37d6bca05987a012ebc80e845280a5",
+  "environment_bundle_definition": "SHA-256 of UTF-8 canonical JSON with sorted keys and compact separators over an object containing the complete config and environment records, after removing environment_id and environment_bundle_sha256 from their top-level/frozen locations.",
+  "release_manifest": "paper_bencmark/highambench/metadata/release_files.json",
+  "release_manifest_sha256": "d4889169929f629a745207dbe85dc9df179caf3ae11ee5b0a43a1111119b69e2",
+  "lean": {
+    "version": "4.29.0-rc3",
+    "commit": "5d86aa4032284a5242470e95fbe25f1ff506763d",
+    "binary_sha256": "3e0d0d3d801675359f2d4cf9815bfdb417b20b92fdd9d48b3b14c95bbae28bbf",
+    "mathlib_commit": "e8ea1afc32790ce1d4e1a4e45cc412ba9388716b",
+    "numstability_commit": "45813a95dacf577461bae13f033af0dbc985a225",
+    "numstability_source_manifest": "paper_bencmark/highambench/metadata/library_source.json",
+    "numstability_source_manifest_sha256": "8b52061f0fafc283acd2363267ebbee2f9c6eb97360c596723b95b27515c7828",
+    "numstability_compiled_manifest": "paper_bencmark/highambench/metadata/library_olean.json",
+    "numstability_compiled_manifest_sha256": "bbea1e90bc11605bd3c14b28dc39bf49b7bcb64ab5cf2306841f65b803a6ae2a",
+    "compiled_environment_summary": "paper_bencmark/highambench/metadata/packages_olean.json",
+    "compiled_environment_summary_sha256": "ae361f8e83f4e65745249c1b7ce415fe91024b32cbe935be34402598ac1f7844",
+    "shared_definitions_sha256": "5350985da64d27b8f7f77a275ffdda773b37c15e9f0c504a164edd3b5ede19d7",
+    "shared_definitions_olean_sha256": "3dde6a260f4b786ca115ebc1179e99cb830066f8910bb51366b546c23a15c11e"
+  },
+  "agent": {
+    "id": "codex-cli",
+    "version": "0.146.0-alpha.3.1",
+    "binary_sha256": "ae77c5e73db36d15c131381c5d620278abed999650867a7490b13384e1f5842d",
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "medium",
+    "prompt_sha256": "118749427c471f95f41206473934caab32b194f75317aa2cc950a836ff33a7ee",
+    "fresh_mode": [
+      "codex exec --ephemeral",
+      "a new temporary CODEX_HOME for every attempt",
+      "user configuration and project rules ignored"
+    ],
+    "disabled_capabilities": [
+      "web and browser tools",
+      "apps and plugins",
+      "multi-agent work",
+      "memory",
+      "image generation"
+    ]
+  },
+  "isolation": {
+    "kind": "bubblewrap namespace; not an OCI container",
+    "container_image_digest": null,
+    "filesystem_adapter_sha256": "d42b09a39a30cd7c03b313a929bc2c472f1327a69ceaeee334de6897cd6e1094",
+    "lean_adapter_sha256": "aae24febc4bf42802919c027bf6edb1c409903376ae0c37d9d0294d855d895ca",
+    "offline_shell_source_sha256": "2a15af726576647926f639745fb0eb5dbda9ecb0cb9680ded1e1138e1e49fd32",
+    "offline_shell_binary_sha256": "a43df72964e86027ed3c2e66ab4aceda7d02896b6cc2db6befa107d79bb4171c",
+    "runner_sha256": "dd32ade7b548d070793389589fff9d62b3dd55f943bbaf7ede0ab06736bb64c7",
+    "validator_sha256": "2842f43cab220363ba3b6bb66004e3023d15c3eba5a8a6ddbb048aa2507808cb",
+    "dependency_audit_sha256": "0f19d8c9e1a2e6c17f22f0ab38425d0351e4d6cf65c0b03165e06ecb9d718be7",
+    "bubblewrap_binary_sha256": "d78807229d616606e339c5988392b9e0ab4a6a6998fa51e4590837f426a12fca",
+    "bubblewrap_version": "bubblewrap 0.6.1",
+    "network_boundary": "Model-generated shell commands inherit a kernel rule that rejects socket operations and records every denied request. The Codex control process keeps only the provider connection needed for the model. Model web, app, plugin, and search capabilities are disabled.",
+    "condition_n": "NumStability source, compiled files, names, documentation, indexes, and caches are absent. Each complete staged task is scanned and a real import probe must fail before the agent starts.",
+    "condition_l": "Only the frozen NumStability source tree and exact pruned compiled Lean tree are added as read-only mounts.",
+    "package_runtime": "Both conditions receive the same exact pruned package view: Mathlib source and the .olean, .olean.server, .olean.private, and .ir files Lean needs. Git data, traces, hashes, indexes, and other package files are absent.",
+    "gold_proof_policy": "The private construction proofs and source PDFs are never mounted in an evaluated attempt."
+  },
+  "runtime": {
+    "python": {
+      "version": "3.10.12",
+      "binary_sha256": "d6bca2b84e73c7775a0dd5e6a76899cfe4ee62863d7c8f88513811d1fda23f49"
+    },
+    "packages_runtime_manifest": "paper_bencmark/highambench/metadata/packages_runtime.json",
+    "packages_runtime_manifest_sha256": "a2ee0563bc731aa3dba22ed7af0e9bd1322c8c06b51cd9d01bd573282d9c8c31"
+  },
+  "host_class": {
+    "kernel": "Linux 6.17.0-35-generic x86_64",
+    "virtualization": "LXC",
+    "processor": "AMD EPYC 9554 64-Core Processor",
+    "online_logical_cpus": 4,
+    "visible_memory_bytes": 1216761819136
+  },
+  "known_reference_protocol_deviations": [
+    "The Codex backend has no demonstrated fixed random-seed input, so rep-01, rep-02, and rep-03 are repetition IDs only.",
+    "There is no frozen OCI container image; fresh bubblewrap namespaces are used instead.",
+    "The read-only host folders /usr, /bin, /lib, /lib64, and /etc are not one completely fingerprinted operating-system image.",
+    "Exact provider token totals arrive at turn completion and may include a small amount generated after the first valid proof. First-valid wall time is still recorded at validator acceptance.",
+    "The model control process needs its provider connection even though model-accessible shell and web networking are disabled."
+  ]
+}
