@@ -119,6 +119,14 @@ Each capture consists of:
 - `2026-07-26-organization-phase11a-build.md` records the corresponding exact
   compiled-graph preservation audit, isolated import tests, independent
   reviews, clean baseline capture, full builds, and architecture gates.
+- `2026-07-26-organization-phase11b1.{json,md}` captures the semantic split of
+  the historical norms core into twenty reusable analysis leaves and four
+  canonical Higham Chapter 6 problem leaves, with declaration-free family,
+  core, and source aggregates.
+- `2026-07-26-organization-phase11b1-build.md` records the corresponding exact
+  1,783-constant ownership and full-graph preservation audit, isolated import
+  tests, axiom and library-lookup checks, clean baseline reproduction, full
+  builds, and architecture gates.
 
 Regenerate a named baseline from the repository root with:
 
