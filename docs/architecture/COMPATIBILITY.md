@@ -22,6 +22,7 @@ the table remains an import-only forwarding module.
 | `NumStability.Higham.CrossChapter.Chapter07To15PracticalBound` | `NumStability.Source.Higham.CrossChapter.PracticalConditionBound` |
 | `NumStability.Higham.CrossChapter.Chapter09To12GenericSolver` | `NumStability.Source.Higham.CrossChapter.LUSolverWeights.Factorization` |
 | `NumStability.Higham.CrossChapter.Chapter09To12Solver` | `NumStability.Source.Higham.CrossChapter.LUSolverWeights.Doolittle` |
+| `NumStability.Algorithms.Chapter06Lemma66` | `NumStability.Source.Higham.Chapter06.Lemma06` |
 | `NumStability.Algorithms.RecursiveSum` | `NumStability.Algorithms.Summation.Recursive` |
 | `NumStability.Algorithms.PairwiseSum` | `NumStability.Algorithms.Summation.Pairwise` |
 | `NumStability.Algorithms.InsertionSum` | `NumStability.Algorithms.Summation.Insertion` |
@@ -38,7 +39,10 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.InverseBounds` | `NumStability.Algorithms.LinearSystems.Triangular.InverseBounds` |
 | `NumStability.Algorithms.TriangularForwardComparison` | `NumStability.Algorithms.LinearSystems.Triangular.ComparisonBounds` |
 | `NumStability.Algorithms.TriangularSolveCombined` | `NumStability.Algorithms.LinearSystems.Triangular.Combined` |
+| `NumStability.Analysis.Higham6Asides` | `NumStability.Source.Higham.Chapter06.Asides` |
+| `NumStability.Analysis.Higham6BlockAntidiag` | `NumStability.Source.Higham.Chapter06.BlockAntidiagonalNorm.InducedLp` |
 | `NumStability.Analysis.HighamChapter2PowerLeadingDigits` | `NumStability.Source.Higham.Chapter02.Problem11` and `NumStability.Source.Higham.Chapter02.Section07.PowerLeadingDigits` |
+| `NumStability.Analysis.HighamChapter6Duality` | `NumStability.Source.Higham.Chapter06.Equation02` |
 | `NumStability.Analysis.LeadingDigitDistribution` | `NumStability.Analysis.LeadingDigits.LogarithmicDistribution` |
 | `NumStability.Analysis.Norms` | `NumStability.Analysis.Norms.Core` and `NumStability.Source.Higham.Chapter06.Norms` |
 | `NumStability.Analysis.Problem2_11` | `NumStability.Source.Higham.Chapter02.Problem11` |
@@ -137,8 +141,14 @@ also declaration-free and is audited as a reusable entry point for its former
 reusable subset; numbered Chapter 6 results are intentionally exposed through
 the source aggregate and the broader historical `Analysis.Norms` facade.
 
-The compatibility inventory now contains 104 wrappers with 204 direct canonical
+The compatibility inventory now contains 108 wrappers with 208 direct canonical
 targets.
+
+Phase 11B2 adds four exact one-target wrappers for the former Chapter 6
+`Chapter06Lemma66`, `Higham6Asides`, `Higham6BlockAntidiag`, and
+`HighamChapter6Duality` paths. Their declarations now live in the canonical
+`Source.Higham.Chapter06` tree; isolated old-only tests preserve each former
+import surface.
 
 The historical `NumStability.Analysis.Norms` path remains a two-target facade.
 It re-exports the declaration-free reusable Core aggregate and the dedicated
@@ -147,7 +157,9 @@ surface together with Problems 6.1, 6.5, 6.9, and 6.10 and Theorem 6.4. New
 production code imports the narrow semantic family or source leaf it needs;
 no declaration-bearing production module imports the historical facade or
 Core. Core is now classified as an aggregate and owns no declarations. This
-retarget changes neither the 104-wrapper inventory nor its 204 direct targets.
+Phase 11B1 retarget changed neither the then-current 104-wrapper inventory nor
+its 204 direct targets; the four Phase 11B2 wrappers account for the current
+108/208 totals.
 
 `NumStability.Source.Higham.Chapter02.Problem22` has one temporary
 canonical-side compatibility exception: in addition to locating the reusable

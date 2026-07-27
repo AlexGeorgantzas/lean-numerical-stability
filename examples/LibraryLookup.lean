@@ -13,6 +13,7 @@ import NumStability.Algorithms.HighamChapter8
 import NumStability.Algorithms.HighamChapter9
 import NumStability.Algorithms.HighamChapter10
 import NumStability.Algorithms.HighamChapter11
+import NumStability.Source.Higham.Chapter06
 import NumStability.Source.Higham.Chapter12.IterativeRefinement
 import NumStability.Algorithms.LU.BlockLU
 import NumStability.Algorithms.LU.BlockLUSPDSourceClosure
@@ -97,6 +98,17 @@ small enough to serve as a smoke check for representative public declarations.
 #check toLin_spectralRadius_eq_of_spectrum_modulusSet_isGreatest
 #check toLin_spectralRadius_toReal_eq_of_spectrum_modulusSet_isGreatest
 #check complexMatrix_toLin_spectralRadius_eq_of_isMaxComplexMatrixEigenvalueModulus
+
+-- Canonical Higham Chapter 6 source correspondence.
+#check Lemma66.lemma66_a_op2_le
+#check higham6_holder_equality_of_powerProfile_sameRay
+#check higham6_doubleDualEvaluation_isGreatest
+#check higham6_euclideanNorm_hasFDerivAt_of_ne_zero
+#check ch6aside_op2_two_sided_unitary_invariant
+#check ch6aside_conditionF_ge_sqrt_n
+#check ch6aside_maxNorm_not_consistent
+#check ch6aside_blockAntidiag_op2_eq
+#check ch6aside_blockAntidiag_lp_eq
 
 -- Polynomial and QR infrastructure from the updated upstream branch.
 

@@ -48,3 +48,7 @@ surface. Isolated import tests exercise the narrower canonical paths directly.
 #check NumStability.highamProblem69_frobenius_op2_bounds
 #check NumStability.complexMatrixBlockShearOp2_eq_highamProblem610_sourceFormula
 #check NumStability.mixedInverseAmbientRelativeAmplificationRadiusSup_tendsto_conditionNumberProduct_of_positive_radii
+#check NumStability.Lemma66.lemma66_a_frobenius_le
+#check NumStability.higham6_doubleDualEvaluation_isGreatest
+#check NumStability.ch6aside_maxNorm_not_consistent
+#check NumStability.ch6aside_blockAntidiag_lp_eq

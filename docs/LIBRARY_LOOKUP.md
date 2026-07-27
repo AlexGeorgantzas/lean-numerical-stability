@@ -3,6 +3,27 @@
 This file records source-facing entry points that are easy to miss from import
 graphs alone. The executable lookup remains `examples/LibraryLookup.lean`.
 
+## Higham Chapter 6
+
+The canonical source entry point is `NumStability.Source.Higham.Chapter06`.
+The Phase 11B2 source leaves are organized by printed locator and mathematical
+topic:
+
+- `Chapter06.Lemma06`: Lemma 6.6(a)/(c), including
+  `Lemma66.lemma66_a_op2_le` and `Lemma66.lemma66_c_op2_le`;
+- `Chapter06.Equation01`: the equality cases accompanying equation (6.1);
+- `Chapter06.Equation02`: double-dual norm equality after equation (6.2);
+- `Chapter06.Asides.EuclideanNormDifferentiability`: the p. 105
+  counterexample at zero and corrected nonzero derivative;
+- `Chapter06.Asides.UnitaryInvariance`, `ConditionNumberBounds`, and
+  `MaxNormInconsistency`: the independent Section 6.2 norm asides; and
+- `Chapter06.BlockAntidiagonalNorm`: declaration-free aggregate over the
+  operator-2 reduction and complete finite-exponent induced-`Lp` identity.
+
+The former `Algorithms.Chapter06Lemma66`, `Analysis.Higham6Asides`,
+`Analysis.Higham6BlockAntidiag`, and `Analysis.HighamChapter6Duality` paths
+remain import-only compatibility wrappers.
+
 ## Higham Chapter 7
 
 Source PDF: `References/1.9780898718027.ch7.pdf`.

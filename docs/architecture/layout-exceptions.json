@@ -60,6 +60,15 @@
     "NumStability.Source.Higham.Chapter04.Section02": "NumStability.Source.Higham.Chapter04.Section02.",
     "NumStability.Source.Higham.Chapter04.Section03": "NumStability.Source.Higham.Chapter04.Section03.",
     "NumStability.Source.Higham.Chapter06": "NumStability.Source.Higham.Chapter06.",
+    "NumStability.Source.Higham.Chapter06.Asides": [
+      "NumStability.Source.Higham.Chapter06.Asides.ConditionNumberBounds",
+      "NumStability.Source.Higham.Chapter06.Asides.EuclideanNormDifferentiability",
+      "NumStability.Source.Higham.Chapter06.Asides.MaxNormInconsistency",
+      "NumStability.Source.Higham.Chapter06.Asides.UnitaryInvariance",
+      "NumStability.Source.Higham.Chapter06.BlockAntidiagonalNorm.OperatorTwo",
+      "NumStability.Source.Higham.Chapter06.Equation01"
+    ],
+    "NumStability.Source.Higham.Chapter06.BlockAntidiagonalNorm": "NumStability.Source.Higham.Chapter06.BlockAntidiagonalNorm.",
     "NumStability.Source.Higham.Chapter06.Norms": [
       "NumStability.Source.Higham.Chapter06.Problem01",
       "NumStability.Source.Higham.Chapter06.Problem05",
@@ -103,8 +112,8 @@
   "direct_import_ceilings": {
     "NumStability.Algorithms": {
       "NumStability.": 442,
-      "NumStability.Analysis.": 45,
-      "NumStability.Source.": 11
+      "NumStability.Analysis.": 43,
+      "NumStability.Source.": 14
     }
   },
   "legacy": {
@@ -385,7 +394,6 @@
       "NumStability.Algorithms.Ch5LejaProducer",
       "NumStability.Algorithms.Ch5NewtonForm",
       "NumStability.Algorithms.Ch5SourceClosure",
-      "NumStability.Algorithms.Chapter06Lemma66",
       "NumStability.Algorithms.Chapter15CondEst",
       "NumStability.Algorithms.Cholesky.Aasen118ReducedCh11Closure",
       "NumStability.Algorithms.Cholesky.AasenAdjacentPivotOperationalMiddleCh11",
@@ -705,14 +713,11 @@
       "NumStability.Algorithms.Underdetermined.Higham21SNEUniform",
       "NumStability.Algorithms.Underdetermined.Higham21Theorem214SourceClosure",
       "NumStability.Analysis.CStarMatrixBridge",
-      "NumStability.Analysis.Higham6Asides",
-      "NumStability.Analysis.Higham6BlockAntidiag",
       "NumStability.Analysis.HighamChapter2ElementaryFunctions",
       "NumStability.Analysis.HighamChapter2FmaDiscriminant",
       "NumStability.Analysis.HighamChapter2GradualUnderflowExact",
       "NumStability.Analysis.HighamChapter2Lindemann",
       "NumStability.Analysis.HighamChapter2Tablemaker",
-      "NumStability.Analysis.HighamChapter6Duality",
       "NumStability.Analysis.HighamChapter7",
       "NumStability.Analysis.HighamChapter7Rectangular",
       "NumStability.Analysis.MatrixPowersSpijkerClosure",
@@ -792,7 +797,6 @@
       "NumStability.Algorithms.Ch5LejaProducer",
       "NumStability.Algorithms.Ch5NewtonForm",
       "NumStability.Algorithms.Ch5SourceClosure",
-      "NumStability.Algorithms.Chapter06Lemma66",
       "NumStability.Algorithms.Chapter15CondEst",
       "NumStability.Algorithms.Cholesky.Aasen118ReducedCh11Closure",
       "NumStability.Algorithms.Cholesky.AasenAdjacentPivotOperationalMiddleCh11",
@@ -1260,14 +1264,11 @@
       "NumStability.Analysis.HenriciSharpConstant",
       "NumStability.Analysis.HenriciSharpConstantExact",
       "NumStability.Analysis.Heron",
-      "NumStability.Analysis.Higham6Asides",
-      "NumStability.Analysis.Higham6BlockAntidiag",
       "NumStability.Analysis.HighamChapter2ElementaryFunctions",
       "NumStability.Analysis.HighamChapter2FmaDiscriminant",
       "NumStability.Analysis.HighamChapter2GradualUnderflowExact",
       "NumStability.Analysis.HighamChapter2Lindemann",
       "NumStability.Analysis.HighamChapter2Tablemaker",
-      "NumStability.Analysis.HighamChapter6Duality",
       "NumStability.Analysis.HighamChapter7",
       "NumStability.Analysis.HighamChapter7Rectangular",
       "NumStability.Analysis.IncreasingPrecision",

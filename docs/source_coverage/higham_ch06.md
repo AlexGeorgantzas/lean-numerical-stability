@@ -1,12 +1,15 @@
 # Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed. — Chapter 6 (Norms)
 
 > **Fresh PDF-first repair (2026-07-21): terminal SOURCE-DISCREPANCY.** The precise prose omitted by the
-> previous ledger is now closed. `Higham6Asides.lean` contains a compiled
+> previous ledger is now closed. At that date, the declarations were owned by
+> `Higham6Asides.lean`; they now live in the canonical
+> `Source.Higham.Chapter06.Asides.*` leaves. They include a compiled
 > counterexample to the book's false claim that the Euclidean norm is
 > differentiable at zero, the corrected nonzero Fréchet derivative, and the
 > finite Hölder equality theorem from the magnitude-power/common-ray
 > conditions together with explicit endpoint equality witnesses.
-> `Higham6BlockAntidiag.lean` proves the full finite-conjugate-exponent identity
+> The identity formerly owned by `Higham6BlockAntidiag.lean` is now proved in
+> `Source.Higham.Chapter06.BlockAntidiagonalNorm.InducedLp`:
 > `‖[[0,A],[Aᴴ,0]]‖ₚ = max(‖A‖ₚ,‖A‖q)` without the former `hblock` premise.
 
 > **Fresh strict audit and repair (2026-07-18): gate PASS.** The new
@@ -16,26 +19,31 @@
 > derives its actual `sSup` limit at the printed product value. The former
 > self-normalized API remains available but is no longer used as the source gate.
 > The fresh re-audit also corrected a stale ledger mapping: Lemma 6.6(a)/(c)
-> was already closed in the imported `Algorithms/Chapter06Lemma66.lean` module.
+> was already closed in the then-owner `Algorithms/Chapter06Lemma66.lean`;
+> those declarations now live in `Source.Higham.Chapter06.Lemma06`.
 
 - **Edition / pages:** 2nd ed., pp. 105–117.
 - **Audit mode:** core (primary labels + numbered equations + central definitions + precise body prose; Problems recorded but optional).
 - **Ownership:** Chapter 6 is the NORM FOUNDATION LAYER for the whole formalization. Phase 11B1
   separates the reusable API into declaration-free `Analysis.Asymptotics`, `LinearOperators`,
   `OperatorNorms`, `VectorNorms`, `MatrixNorms`, `SingularValues`, and `Conditioning` families.
-  `Analysis.Norms.Core` is now a declaration-free reusable aggregate over the 20 new semantic
-  leaves. The source aggregate `Source.Higham.Chapter06.Norms` contains `Problem01`, `Problem05`,
-  `Problem09`, `Problem10`, and the literal ambient-radius `Theorem04`; the declaration-free
-  `Source.Higham.Chapter06` aggregate imports that family. The historical `Analysis.Norms` path is
-  a two-target compatibility facade over Core and `Chapter06.Norms`. The separately audited
+  `Analysis.Norms.Core` is a declaration-free reusable aggregate over the 20 semantic leaves. The
+  source aggregate `Source.Higham.Chapter06.Norms` contains `Problem01`, `Problem05`, `Problem09`,
+  `Problem10`, and the literal ambient-radius `Theorem04`. Phase 11B2 adds nine declaration-bearing
+  source leaves and the declaration-free `Chapter06.Asides` and `Chapter06.BlockAntidiagonalNorm`
+  family aggregates. The declaration-free `Source.Higham.Chapter06` aggregate imports `Norms`,
+  `Asides`, `BlockAntidiagonalNorm`, `Equation02`, and `Lemma06`. Historical
   `Algorithms.Chapter06Lemma66`, `Analysis.Higham6Asides`, `Analysis.Higham6BlockAntidiag`, and
-  `Analysis.HighamChapter6Duality` owners remain in place for Phase 11B2. Secondary homes:
+  `Analysis.HighamChapter6Duality` are now exact one-target compatibility wrappers. The historical
+  `Analysis.Norms` path remains a two-target compatibility facade over Core and `Chapter06.Norms`.
+  Secondary homes:
   `NumStability/Analysis/MatrixAlgebra.lean` (real rectangular `rectOpNorm2Le`
   transfer layer, Lemma 6.6(b)–(d) predicate forms), `NumStability/Algorithms/MatrixPowersLp.lean`
-  and `Analysis/MatrixPowersLp185Primary.lean` (downstream consumers). Consumers cite the Lemma 6.6 chain
-  from `Algorithms/HighamChapter10.lean` and `Algorithms/Ch14GaussJordanSPDCorollary.lean`.
+  and `Analysis/MatrixPowersLp185Primary.lean` (downstream consumers). Direct declaration consumers
+  of `Lemma06` are `Algorithms.Ch10Ch14Lemma66Op2Bridge` and
+  `Algorithms.QR.Higham19Theorem5SourceClosure`.
 - **Audit date:** 2026-07-16 (branch `formalize/split4-claude`, worktree `ch18-split3-claude-...044646`).
-- **Organization update:** 2026-07-26 Phase 11B1; ownership paths changed, but the mathematical
+- **Organization update:** 2026-07-27 Phase 11B2; ownership paths changed, but the mathematical
   coverage judgments and retained historical source anchors did not.
 - **Axiom spot-check:** `monotone_iff_absolute_complexVectorNorm`,
   `exists_rankOneCMatrix_isMixedSubordinateMatrixNormValue_one`,
@@ -51,15 +59,24 @@
 The retained `l.` references below are frozen pre-Phase-11A source anchors for
 audit traceability; they are not current Core positions. Canonical ownership is:
 
+Phase 11B2 source-tail navigation is deliberately semantic:
+
+- `Chapter06.Lemma06` owns Lemma 6.6(a), (c), and its sharpness result.
+- `Chapter06.Equation01` owns the Hölder equality material, and
+  `Chapter06.Equation02` owns the source-facing dual-of-dual results.
+- `Chapter06.Asides` imports its four semantic children plus `Equation01` and
+  `BlockAntidiagonalNorm.OperatorTwo`, preserving the former six-topic surface.
+- `Chapter06.BlockAntidiagonalNorm` groups `InducedLp` and `OperatorTwo`.
+
 | Ledger rows | Canonical owner modules |
 | --- | --- |
-| Def. 6.1; Thm. 6.2; Table 6.1; (6.1); (6.4) | `Analysis.VectorNorms.Basic` (the source equality aside in (6.1) remains in historical `Analysis.Higham6Asides` until Phase 11B2) |
+| Def. 6.1; Thm. 6.2; Table 6.1; (6.1); (6.4) | `Analysis.VectorNorms.Basic`; the source equality aside in (6.1) is `Source.Higham.Chapter06.Equation01` |
 | Lemma 6.3 | `Analysis.MatrixNorms.Attainment`, `Analysis.OperatorNorms.Attainment`, and `Analysis.VectorNorms.Duality` |
 | Thm. 6.4; (6.8) | `Source.Higham.Chapter06.Theorem04` over `Analysis.Conditioning.InversePerturbation` |
 | Thm. 6.5; (6.9)–(6.10); Problem 6.6 | `Analysis.Conditioning.DistanceToSingularity` |
-| Lemma 6.6 | Historical `Algorithms.Chapter06Lemma66` plus `Analysis.MatrixNorms.Comparisons` and `Analysis.MatrixAlgebra` |
+| Lemma 6.6 | `Source.Higham.Chapter06.Lemma06` plus `Analysis.MatrixNorms.Comparisons` and `Analysis.MatrixAlgebra` |
 | Table 6.2 | `Analysis.MatrixNorms.Comparisons`, `Analysis.MatrixNorms.Hadamard`, and `Source.Higham.Chapter06.Problem01` |
-| (6.2)–(6.3) | `Analysis.VectorNorms.Duality` |
+| (6.2)–(6.3) | `Analysis.VectorNorms.Duality`; source-facing dual-of-dual correspondence in `Source.Higham.Chapter06.Equation02` |
 | (6.5)–(6.6) | `Analysis.MatrixNorms.Basic`, `Analysis.MatrixNorms.Lp`, `Analysis.MatrixNorms.Attainment`, and `Analysis.SingularValues.Basic` |
 | (6.7) | `Analysis.OperatorNorms.Basic` and `Analysis.MatrixNorms.Lp` |
 | (6.11)–(6.13) | `Analysis.MatrixNorms.Lp` and `Analysis.MatrixNorms.Comparisons` |
@@ -89,7 +106,7 @@ audit traceability; they are not current Core positions. Canonical ownership is:
 | Lemma 6.3 | For unit `x` (α-norm), unit `y` (β-norm) there is `B` with `‖B‖_{α,β} = 1`, `Bx = y` | VERIFIED | `exists_rankOneCMatrix_isMixedSubordinateMatrixNormValue_one` (l.19799); map form `exists_rankOne_isMixedSubordinateNormValue_one` (l.19783); rank-one core (l.19741) | General complex vector norms; the dual/norming functional `z` is produced by a finite-dimensional Hahn–Banach bridge (`NormedCVec.exists_normingFunctionalAt_of_unit_vector`), matching the printed dual-vector proof. |
 | Thm. 6.4 | `κ_{α,β}(A) := lim_{ε→0} sup_{‖ΔA‖_{α,β} ≤ ε‖A‖_{α,β}} ‖(A+ΔA)^{-1} − A^{-1}‖_{β,α} / (ε‖A^{-1}‖_{β,α}) = ‖A‖_{α,β}‖A^{-1}‖_{β,α}` | VERIFIED | `MixedInverseAmbientRelativeAmplificationRadiusSet`, `mixedInverseAmbientRelativeAmplificationRadiusSup`, and `mixedInverseAmbientRelativeAmplificationRadiusSup_tendsto_conditionNumberProduct_of_positive_radii` in `Source.Higham.Chapter06.Theorem04` | The feasible value is literally `(e/s)/rho` for every `0 < d ≤ rho*a`. The proof derives the endpoint resolvent upper bound, chooses the sharp perturbation on the boundary `d = rho*a`, constructs perturbed right inverses and norm witnesses, realizes the actual `sSup`, and squeezes it to `a*s`. The small-invertibility guard is eventual and immaterial in the `rho → 0` limit. |
 | Thm. 6.5 (Gastinel, Kahan) | `dist_{α,β}(A) = (‖A‖_{α,β}‖A^{-1}‖_{β,α})^{-1} = κ_{α,β}(A)^{-1}` | VERIFIED | `complexMatrix_relativeSingularDistance_min_eq_inv_conditionNumberProduct` (l.20505), `..._min_eq_inv_norm_mul_inverse_norm` (l.20488); map level (l.20430–20483); lower bound (l.20194), attaining singular perturbation via Lemma 6.3 (l.20241, l.20296) | General norms; distance stated as attained minimum (`IsMinimumMixedRelativeSingularDistance`), matching the printed min. Both directions proved: every singular `A+ΔA` obeys `‖ΔA‖/‖A‖ ≥ κ^{-1}`, and a rank-one `ΔA = B/‖x‖_α` attains it with `(A+ΔA)A^{-1}y = 0`. |
-| Lemma 6.6 | (a) columnwise `‖a_j‖₂ ≤ ‖b_j‖₂` ⇒ `‖A‖_F ≤ ‖B‖_F`, `‖A‖₂ ≤ √rank(B)‖B‖₂`, `\|A\| ≤ ee^T\|B\|`; (b) `\|A\| ≤ B ⇒ ‖A‖₂ ≤ ‖B‖₂`; (c) `\|A\| ≤ \|B\| ⇒ ‖A‖₂ ≤ √rank(B)‖B‖₂`; (d) `‖A‖₂ ≤ ‖\|A\|‖₂ ≤ √rank(A)‖A‖₂` | VERIFIED | Imported `Algorithms/Chapter06Lemma66.lean`: (a) `Lemma66.lemma66_a_frobenius_le`, `Lemma66.lemma66_a_op2_le`, `Lemma66.lemma66_a_abs_entry_le`; (c) `Lemma66.lemma66_c_op2_le`; sharpness `Lemma66.lemma66_a_op2_sharp`. (b)/(d): `rectOpNorm2Le_of_abs_entry_le`, `complexMatrixLpNormOfReal_two_absMatrix_bounds`, `complexMatrixOp2_absMatrix_bounds`, and the real rectangular transfer `rectOpNorm2Le_absMatrixRect_sqrt_rank_mul_of_rectOpNorm2Le`. | Every printed implication is present at source strength. The previous PARTIAL row was a stale search/mapping error, not a missing theorem. |
+| Lemma 6.6 | (a) columnwise `‖a_j‖₂ ≤ ‖b_j‖₂` ⇒ `‖A‖_F ≤ ‖B‖_F`, `‖A‖₂ ≤ √rank(B)‖B‖₂`, `\|A\| ≤ ee^T\|B\|`; (b) `\|A\| ≤ B ⇒ ‖A‖₂ ≤ ‖B‖₂`; (c) `\|A\| ≤ \|B\| ⇒ ‖A‖₂ ≤ √rank(B)‖B‖₂`; (d) `‖A‖₂ ≤ ‖\|A\|‖₂ ≤ √rank(A)‖A‖₂` | VERIFIED | Canonical `Source.Higham.Chapter06.Lemma06`: (a) `Lemma66.lemma66_a_frobenius_le`, `Lemma66.lemma66_a_op2_le`, `Lemma66.lemma66_a_abs_entry_le`; (c) `Lemma66.lemma66_c_op2_le`; sharpness `Lemma66.lemma66_a_op2_sharp`. (b)/(d): `rectOpNorm2Le_of_abs_entry_le`, `complexMatrixLpNormOfReal_two_absMatrix_bounds`, `complexMatrixOp2_absMatrix_bounds`, and the real rectangular transfer `rectOpNorm2Le_absMatrixRect_sqrt_rank_mul_of_rectOpNorm2Le`. | Every printed implication is present at source strength. The previous PARTIAL row was a stale search/mapping error, not a missing theorem. |
 | Table 6.1 | Attainable constants `α_pq` with `‖x‖_p ≤ α_pq ‖x‖_q` (1, 2, ∞) | VERIFIED | Via eq. (6.4) both directions: `complexVecLpNorm_le_complexVecLpNorm_of_exponent_le` (l.1522), `complexVecLpNorm_le_card_rpow_mul_complexVecLpNorm_of_exponent_le` (~l.1358); all-ones sharpness witness `complexVecLpNorm_const_one_ofReal` (l.555); ∞ endpoints by dedicated endpoint lemmas | Finite real exponents general `p₁ ≤ p₂`; table entries are specializations. |
 | Table 6.2 | Attainable constants `α_pq` for matrix norms 1, 2, ∞, F, M, S incl. rank-sensitive `√rank(A)` (F/2) and `√(mn·rank(A))` (S/2) entries | VERIFIED | Entry lemmas l.10123–10307 (S/M, M/F, F/S, S/F, F/M), M/2 (l.13688), rank-sensitive F/2 (l.12935) and S/2 (l.12949–12987); quotient-constant package incl. sharpness witnesses `l.14061–14347` (all entries except S/2, which has its own witnesses); Problem 6.1 rank-one witness family (l.13714–14150, 14346) | Sharp witnesses supplied for every entry; S/2 sharpness realized by real Hadamard (l.17806) and complex roots-of-unity Vandermonde (l.18325) witnesses. |
 
@@ -97,8 +114,8 @@ audit traceability; they are not current Core positions. Canonical ownership is:
 
 | Eq. | Content | Status | Lean decls |
 |---|---|---|---|
-| (6.1) | Hölder inequality `\|x^*y\| ≤ ‖x‖_p‖y‖_q` and equality prose | VERIFIED | `complexVecLpNorm_holder`; endpoint 1/∞ forms; `higham6_holder_equality_of_powerProfile_sameRay` proves equality from the stated power-profile linear dependence and common complex ray; `higham6_holder_endpoint_equality_standardBasis` supplies both endpoint witnesses. |
-| (6.2) | Dual norm `‖x‖_D = max_{z≠0} \|z^*x\|/‖z‖` | VERIFIED | `IsDualFunctionalNormValue` least-bound predicate (l.2418) shown equal to unit-vector max (l.18993) and nonzero-ratio max (l.19006). Duality theorem (dual of dual = original) is cited-out by Higham himself; not formalized (SKIP-OK: proof deferred to Horn–Johnson in print). |
+| (6.1) | Hölder inequality `\|x^*y\| ≤ ‖x‖_p‖y‖_q` and equality prose | VERIFIED | `complexVecLpNorm_holder`; endpoint 1/∞ forms; canonical `Source.Higham.Chapter06.Equation01` owns `higham6_holder_equality_of_powerProfile_sameRay` and the endpoint equality witnesses. |
+| (6.2) | Dual norm `‖x‖_D = max_{z≠0} \|z^*x\|/‖z‖` | VERIFIED | `IsDualFunctionalNormValue` least-bound predicate (l.2418) shown equal to unit-vector max (l.18993) and nonzero-ratio max (l.19006). The source-facing dual-of-dual result following (6.2) is `higham6_doubleDualEvaluation_isGreatest` in `Source.Higham.Chapter06.Equation02`; the general normed-space form is `higham6_dual_of_dual_norm_eq_original`. |
 | (6.3) | Existence of dual vector: `z^*y = ‖z‖_D‖y‖ = 1` | VERIFIED | `IsNormingFunctionalAt` (l.2406); existence `NormedCVec.exists_normingFunctionalAt_of_unit_vector` (Hahn–Banach bridge); least-bound form (l.2727). |
 | (6.4) | `‖x‖_{p₂} ≤ ‖x‖_{p₁} ≤ n^{1/p₁−1/p₂}‖x‖_{p₂}`, attainable | VERIFIED | l.1522 / ~l.1358 + all-ones witness (l.555). |
 | (6.5)/(6.6) | Subordinate and mixed subordinate matrix norm (max/ratio forms); `‖A‖₁` max col sum, `‖A‖_∞` max row sum, `‖A‖₂ = σ_max` | VERIFIED | Least-bound carrier `IsMixedSubordinateMatrixNormValue` with max forms (l.18424–19123); p=1 and p=∞ explicit formulas (l.16873, 16925, 19332–19441); `complexMatrixOp2_eq_top_singularValue` (l.11933); `‖A^*A‖₂ = ‖A‖₂²` (l.11846). |
@@ -122,13 +139,13 @@ audit traceability; they are not current Core positions. Canonical ownership is:
 | Claim | Status | Notes |
 |---|---|---|
 | Vector norm axioms; 1/2/∞ norms as Hölder p-norm cases | VERIFIED | `IsComplexVectorNorm` (l.88), `complexVecLpNorm` family. |
-| 2-norm unitary invariance + gradient `∇‖x‖₂ = x/‖x‖₂` | SOURCE-CORRECTED | `higham6_euclideanNorm_not_differentiableAt_zero` refutes the literal “for all x” sentence; `higham6_euclideanNorm_hasFDerivAt_of_ne_zero` proves the corrected real Fréchet derivative at every nonzero complex vector. The unitary invariance results remain in `Higham6Asides.lean`. |
+| 2-norm unitary invariance + gradient `∇‖x‖₂ = x/‖x‖₂` | SOURCE-CORRECTED | `higham6_euclideanNorm_not_differentiableAt_zero` and `higham6_euclideanNorm_hasFDerivAt_of_ne_zero` are in `Source.Higham.Chapter06.Asides.EuclideanNormDifferentiability`; the unitary invariance results are in `Asides.UnitaryInvariance`. |
 | `‖A‖_∞ = ‖\|A\|e‖_∞` | VERIFIED (equivalent form) | `complexMatrixInfNorm_absMatrix_eq` (l.3415) + row-sum characterization (l.9482); the literal ones-vector form is not stated but the content is identical. |
 | Frobenius norm consistent; all subordinate norms consistent | VERIFIED | Matrix p-norm submultiplicativity (l.8515), (6.7) composition (l.18808); Frobenius product bounds in the Problem 6.5 operator-ideal block (l.12020–12130). |
-| Max norm `‖A‖_M` not consistent; best bound `‖AB‖ ≤ n‖A‖_M‖B‖_M` with equality at all-ones | VERIFIED | `ch6aside_maxNorm_mul_le`, `ch6aside_maxNorm_allOnes_mul`, `ch6aside_maxNorm_equality_allOnes`, and `ch6aside_maxNorm_not_consistent` in `Higham6Asides.lean`. |
-| Unitary invariance of 2- and F-norms; `‖A^*‖ = ‖A‖`; `‖QEQ^*‖₂ = ‖E‖₂` vs `‖XEX^{-1}‖₂ ≤ κ₂(X)‖E‖₂` | VERIFIED | `ch6aside_op2_two_sided_unitary_invariant` and `ch6aside_frobenius_two_sided_unitary_invariant` give the complex two-sided invariance; adjoint invariance and the similarity bound follow from the named adjoint results and submultiplicativity. |
-| `κ(X) ≥ 1` and `κ_F(X) ≥ √n` | VERIFIED | `ch6aside_conditionNumber_ge_one`, `ch6aside_op2_conditionNumber_ge_one`, and `ch6aside_conditionF_ge_sqrt_n` in `Higham6Asides.lean`. |
-| `‖[[0, A], [A^*, 0]]‖_p = max(‖A‖_p, ‖A‖_q)` (unnumbered display) | VERIFIED | `ch6aside_blockAntidiag_lp_eq` in `Higham6BlockAntidiag.lean`; `ch6aside_blockAntidiagLpCLM_components` proves the canonical `PiLp` block action and `ch6aside_withLpBlockSwapCLM_norm` proves the general max-norm identity. No residual block-norm premise. |
+| Max norm `‖A‖_M` not consistent; best bound `‖AB‖ ≤ n‖A‖_M‖B‖_M` with equality at all-ones | VERIFIED | `ch6aside_maxNorm_mul_le`, `ch6aside_maxNorm_allOnes_mul`, `ch6aside_maxNorm_equality_allOnes`, and `ch6aside_maxNorm_not_consistent` in `Source.Higham.Chapter06.Asides.MaxNormInconsistency`. |
+| Unitary invariance of 2- and F-norms; `‖A^*‖ = ‖A‖`; `‖QEQ^*‖₂ = ‖E‖₂` vs `‖XEX^{-1}‖₂ ≤ κ₂(X)‖E‖₂` | VERIFIED | `ch6aside_op2_two_sided_unitary_invariant` and `ch6aside_frobenius_two_sided_unitary_invariant` in `Source.Higham.Chapter06.Asides.UnitaryInvariance` give the complex two-sided invariance; adjoint invariance and the similarity bound follow from the named adjoint results and submultiplicativity. |
+| `κ(X) ≥ 1` and `κ_F(X) ≥ √n` | VERIFIED | `ch6aside_conditionNumber_ge_one`, `ch6aside_op2_conditionNumber_ge_one`, and `ch6aside_conditionF_ge_sqrt_n` in `Source.Higham.Chapter06.Asides.ConditionNumberBounds`. |
+| `‖[[0, A], [A^*, 0]]‖_p = max(‖A‖_p, ‖A‖_q)` (unnumbered display) | VERIFIED | `ch6aside_blockAntidiag_lp_eq`, `ch6aside_blockAntidiagLpCLM_components`, and `ch6aside_withLpBlockSwapCLM_norm` are in `Source.Higham.Chapter06.BlockAntidiagonalNorm.InducedLp`; the operator-2 specialization is in `BlockAntidiagonalNorm.OperatorTwo`. No residual block-norm premise. |
 | `log ‖A‖_p` convex in `1/p` (Riesz–Thorin) | VERIFIED (as consequence) | Embodied in the (6.18) interpolation development; the convexity statement itself is the same inequality re-parametrized. |
 | (6.16)/(6.17) estimate `‖A‖_p` within factor `n^{1/4}` from `‖A‖₁,‖A‖₂,‖A‖_∞` | SKIP-OK | Editorial consequence; the underlying inequalities are formalized. Figure 6.1: SKIP-OK (plot). |
 
@@ -161,8 +178,8 @@ audit traceability; they are not current Core positions. Canonical ownership is:
    size. Its final theorem constructs the sharp boundary perturbation and all
    inverse/norm witnesses internally. The older self-normalized set is retained
    as a useful companion formulation but is not cited for source closure.
-2. **Lemma 6.6(a) and (c) are closed at printed strength.** The imported
-   `Algorithms/Chapter06Lemma66.lean` supplies the columnwise Frobenius,
+2. **Lemma 6.6(a) and (c) are closed at printed strength.** Canonical
+   `Source.Higham.Chapter06.Lemma06` supplies the columnwise Frobenius,
    operator-2, and entrywise conclusions, the genuine-rank (c) bound, and the
    first printed sharpness witness. The optional second sharpness witness
    `A = eeᵀ`, `B = √n I` is not part of the selected core gate.
@@ -176,8 +193,9 @@ audit traceability; they are not current Core positions. Canonical ownership is:
 
 ## Selected-scope gate: PASS (primary labels + numbered equations)
 
-**Update (2026-07-14 audit-closure):** Lemma 6.6(a) and (c) are now CLOSED at printed strength in
-`NumStability/Algorithms/Chapter06Lemma66.lean` (axiom-clean, adversarially verified):
+**Update (2026-07-14 audit-closure):** Lemma 6.6(a) and (c) were CLOSED at printed strength in the
+then-owner `NumStability/Algorithms/Chapter06Lemma66.lean` and now live in
+`NumStability/Source/Higham/Chapter06/Lemma06.lean` (axiom-clean, adversarially verified):
 `lemma66_a_frobenius_le` (a.i `‖A‖_F ≤ ‖B‖_F`), `lemma66_a_op2_le` (a.ii `‖A‖₂ ≤ √rank(B)‖B‖₂`),
 `lemma66_a_abs_entry_le` (a.iii `|A| ≤ ee^T|B|`), `lemma66_c_op2_le` (c), plus `lemma66_a_op2_sharp`
 (rank-1 equality witness showing √rank is attained). This clears the two primary-label blockers.
@@ -187,7 +205,9 @@ printed strength, and all numbered equations (6.1)–(6.24) have statement-level
 coverage. **Gate = PASS for the strict primary-label + numbered-equation +
 central-definition scope.**
 
-**Follow-up (2026-07-17):** the norm asides are now closed in `NumStability/Analysis/Higham6Asides.lean`
+**Follow-up (2026-07-17):** the norm asides were closed in the then-owner
+`NumStability/Analysis/Higham6Asides.lean`; they now live in the canonical
+`Source.Higham.Chapter06.Asides.*` leaves
 (axiom-clean): `ch6aside_conditionNumber_ge_one` (`κ(X) ≥ 1` for any submultiplicative/definite norm; `κ_F ≥ √n`),
 the two-sided unitary invariance `‖UAV‖₂ = ‖A‖₂`, `‖UAV‖_F = ‖A‖_F`, and the max-norm inconsistency bound
 `‖AB‖_M ≤ n‖A‖_M‖B‖_M` with all-ones equality. The block-antidiagonal `‖[[0,A],[A^*,0]]‖₂ = ‖A‖₂` is proved
@@ -199,7 +219,8 @@ residual are superseded by the 2026-07-21 theorems above. The older conditional
 as the source-closure endpoint. The second Lemma 6.6(a) sharpness witness
 `A=ee^T, B=√n·I` remains optional in core mode.
 
-**De-orphaning (2026-07-17, bridge B5(b)):** the `Chapter06Lemma66.lean` operator-2-norm theorems
+**De-orphaning (2026-07-17, bridge B5(b)):** the operator-2-norm theorems now in
+`Source.Higham.Chapter06.Lemma06` (then in `Chapter06Lemma66.lean`):
 `lemma66_a_op2_le` / `lemma66_c_op2_le` were previously ORPHANED (zero consumers repo-wide — the
 `CMatrix` op2 layer of this file was never reached by the Ch.10/Ch.14 modules, which carried their
 Lemma-6.6 usage through the separate real componentwise (b)/(d) chain in `MatrixAlgebra.lean`). They are

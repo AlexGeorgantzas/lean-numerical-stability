@@ -117,14 +117,20 @@ split from the reusable library.
   `Section07` aggregate; its AddCircle and decimal-power machinery remains in
   reusable analysis. The former flat leading-digit Analysis paths are
   compatibility wrappers only.
-  Chapter 6 has a declaration-free `Chapter06.Norms` aggregate over the new
-  `Problem01`, `Problem05`, `Problem09`, and `Problem10` source leaves plus
-  `Theorem04`, which owns the literal ambient-radius statement of Higham's
-  Theorem 6.4. The declaration-free `Chapter06` aggregate imports that family
-  and is complete over its current physical descendants. The separately
-  audited `Algorithms.Chapter06Lemma66`, `Analysis.Higham6Asides`,
-  `Analysis.Higham6BlockAntidiag`, and `Analysis.HighamChapter6Duality` owners
-  remain queued for Phase 11B2 rather than being mislabeled as migrated.
+  Chapter 6 has a declaration-free `Chapter06.Norms` aggregate over
+  `Problem01`, `Problem05`, `Problem09`, `Problem10`, and `Theorem04`. Phase
+  11B2 completed the audited source tail as nine declaration-bearing leaves:
+  `Lemma06`, `Equation01`, `Equation02`, four leaves below `Asides`, and
+  `BlockAntidiagonalNorm.InducedLp` plus
+  `BlockAntidiagonalNorm.OperatorTwo`. The declaration-free `Asides` aggregate
+  preserves its historical six-topic surface by importing its four children,
+  `Equation01`, and `BlockAntidiagonalNorm.OperatorTwo`; the declaration-free
+  `BlockAntidiagonalNorm` aggregate imports both block-norm leaves. The chapter
+  aggregate imports `Norms`, `Asides`, `BlockAntidiagonalNorm`, `Equation02`,
+  and `Lemma06`. Historical `Algorithms.Chapter06Lemma66`,
+  `Analysis.Higham6Asides`, `Analysis.Higham6BlockAntidiag`, and
+  `Analysis.HighamChapter6Duality` are now exact one-target compatibility
+  wrappers.
   Chapter 14 owns `Problem13`, `Problem14` for Problem 14.14's Hyman
   determinant result, `Problem15` for Problem 14.15's determinant bound and
   discrepancy witness, and the declaration-free `Section05` aggregate for its
@@ -168,7 +174,8 @@ split from the reusable library.
 - `NumStability.All` is the explicit complete-tree entry point.
 - `NumStability.Algorithms` preserves its historical complete algorithm-layer
   surface, including source correspondence; it is not the pure reusable entry
-  point.
+  point. Its checked direct-import ceilings are 442 total imports, including 43
+  below `NumStability.Analysis` and 14 below `NumStability.Source`.
 - `NumStability` retains its historical complete-tree behavior through the
   compatibility window.
 

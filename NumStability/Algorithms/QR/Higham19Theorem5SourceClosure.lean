@@ -1,5 +1,5 @@
 import NumStability.Algorithms.QR.Higham19Labels
-import NumStability.Algorithms.Chapter06Lemma66
+import NumStability.Source.Higham.Chapter06.Lemma06
 import NumStability.Algorithms.LeastSquares.Higham20ZeroDeltaB
 
 /-!

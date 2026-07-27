@@ -147,11 +147,31 @@ source path.
 historical `Analysis.Norms` facade imports Core plus the dedicated
 `Source.Higham.Chapter06.Norms` aggregate. Direct production consumers were
 retargeted to their narrow canonical owners; no declaration-bearing production
-module still imports Core. Compatibility remains 104 wrappers and 204 direct
-targets.
+module still imports Core. At the Phase 11B1 checkpoint, compatibility stood at
+104 wrappers and 204 direct targets.
 
-This phase deliberately does not move `Algorithms.Chapter06Lemma66`,
+That phase deliberately did not move `Algorithms.Chapter06Lemma66`,
 `Analysis.Higham6Asides`, `Analysis.Higham6BlockAntidiag`, or
 `Analysis.HighamChapter6Duality`. Those four historically named source owners
-remain in the unclassified/noncanonical queues for the separately bounded
-Phase 11B2 move.
+therefore remained in the unclassified/noncanonical queues for the separately
+bounded Phase 11B2 move.
+
+## Phase 11B2 follow-up: Chapter 6 source tail
+
+Phase 11B2 completed that bounded move. The frozen ownership map assigns all 69
+declarations from the four historical owners to nine declaration-bearing
+source leaves, with no declaration or proof-strength change:
+
+| Historical owner | Canonical ownership | Compatibility target |
+| --- | --- | --- |
+| `Algorithms.Chapter06Lemma66` | `Source.Higham.Chapter06.Lemma06` | `Source.Higham.Chapter06.Lemma06` |
+| `Analysis.Higham6Asides` | `Source.Higham.Chapter06.Asides.ConditionNumberBounds`, `EuclideanNormDifferentiability`, `MaxNormInconsistency`, and `UnitaryInvariance`; sibling `Equation01`; and `BlockAntidiagonalNorm.OperatorTwo` | `Source.Higham.Chapter06.Asides` |
+| `Analysis.Higham6BlockAntidiag` | `Source.Higham.Chapter06.BlockAntidiagonalNorm.InducedLp` | `Source.Higham.Chapter06.BlockAntidiagonalNorm.InducedLp` |
+| `Analysis.HighamChapter6Duality` | `Source.Higham.Chapter06.Equation02` | `Source.Higham.Chapter06.Equation02` |
+
+`Chapter06.Asides` and `Chapter06.BlockAntidiagonalNorm` are declaration-free
+family aggregates; the four historical paths are exact one-target wrappers.
+The two declaration-consuming Lemma 6.6 importers,
+`Algorithms.Ch10Ch14Lemma66Op2Bridge` and
+`Algorithms.QR.Higham19Theorem5SourceClosure`, now import `Lemma06` directly.
+The current compatibility inventory is 108 wrappers and 208 direct targets.

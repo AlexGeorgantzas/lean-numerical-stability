@@ -5,6 +5,7 @@ import NumStability.Algorithms.Ch14SchulzIteration
 import NumStability.Algorithms.Ch14SchulzRectangular
 import NumStability.Algorithms.Ch14SchulzSpectralConvergence
 import NumStability.Algorithms.Chapter14Problem1415Weyl
+import NumStability.Algorithms.Chapter06Lemma66
 import NumStability.Algorithms.Cholesky.BunchTridiagonalCapstoneCh11Closure
 import NumStability.Algorithms.Cholesky.Higham10Theorem10_7Source
 import NumStability.Algorithms.FastMatMul.Higham23
@@ -36,7 +37,10 @@ import NumStability.Algorithms.Vandermonde.Higham22ComplexConfluentRefinementBri
 import NumStability.Algorithms.Vandermonde.Higham22MonomialClosure
 import NumStability.Algorithms.Vandermonde.Higham22Problem22_7
 import NumStability.Analysis.Ch17SemiconvergentBlockFormSourceClosure
+import NumStability.Analysis.Higham6Asides
+import NumStability.Analysis.Higham6BlockAntidiag
 import NumStability.Analysis.HighamChapter2PowerLeadingDigits
+import NumStability.Analysis.HighamChapter6Duality
 import NumStability.Analysis.LeadingDigitDistribution
 import NumStability.Analysis.NonrandomRounding
 import NumStability.Analysis.NonrandomRounding.Conclusions
@@ -70,6 +74,11 @@ compatibility window without help from the canonical Higham entry point.
 #check NumStability.highamProblem69_frobenius_op2_bounds
 #check NumStability.complexMatrixBlockShearOp2_eq_highamProblem610_sourceFormula
 #check NumStability.mixedInverseAmbientRelativeAmplificationRadiusSup_tendsto_conditionNumberProduct_of_positive_radii
+#check NumStability.Lemma66.lemma66_c_op2_le
+#check NumStability.higham6_holder_equality_of_powerProfile_sameRay
+#check NumStability.higham6_doubleDualEvaluation_isGreatest
+#check NumStability.ch6aside_maxNorm_not_consistent
+#check NumStability.ch6aside_blockAntidiag_lp_eq
 #check NumStability.higham8_8_printed_rowDominance_condSkeel_claim_false
 #check NumStability.higham10_7_fl_cholesky_success_source
 #check NumStability.Ch11Closure.TriGrowthInv.higham11_7_bunch_tridiagonal_support_aware

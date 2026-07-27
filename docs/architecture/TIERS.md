@@ -40,7 +40,7 @@ six historical `NumStability.Analysis.NonrandomRounding*` paths use exact
 `compatibility` rules; there is deliberately no source-tier prefix rule for
 that historical directory.
 
-Through Phase 11B1, reviewed source families cover the canonicalized Higham
+Through Phase 11B2, reviewed source families cover the canonicalized Higham
 frontiers in Chapters 1, 2, 4, 6, 8, 10--14, 17, 20--28, and cross-chapter
 locators. Exact `aggregate` rules identify every declaration-free chapter and
 family umbrella; canonical leaves inherit `source` from the Source prefix and
@@ -68,21 +68,24 @@ Phase 11A extracted the literal ambient-radius realization of Higham's Theorem
 reusable semantic leaves or four Chapter 6 Problem leaves. It added seven new
 declaration-free aggregates and made `Analysis.Norms.Core` an eighth newly
 classified aggregate. Core is therefore no longer unclassified and owns no
-declarations. The separately audited `Algorithms.Chapter06Lemma66`,
-`Analysis.Higham6Asides`, `Analysis.Higham6BlockAntidiag`, and
-`Analysis.HighamChapter6Duality` owners remain explicitly unclassified until
-Phase 11B2 relocates them.
+declarations. Phase 11B2 then assigned the 69 declarations from the four
+separately audited Chapter 6 owners to nine canonical source leaves and added
+the declaration-free `Chapter06.Asides` and
+`Chapter06.BlockAntidiagonalNorm` family aggregates. Historical
+`Algorithms.Chapter06Lemma66`, `Analysis.Higham6Asides`,
+`Analysis.Higham6BlockAntidiag`, and `Analysis.HighamChapter6Duality` are exact
+one-target compatibility wrappers.
 
-The Phase 11B1 ratchet classifies 416 of 1,024 production modules (40.625%):
-142 as source, 85 as aggregate, 104 as compatibility, 78 as reusable, 2 as
-internal, and 5 as upstream. The explicit unclassified queue is 608 modules,
+The Phase 11B2 ratchet classifies 431 of 1,035 production modules (41.643%):
+151 as source, 87 as aggregate, 108 as compatibility, 78 as reusable, 2 as
+internal, and 5 as upstream. The explicit unclassified queue is 604 modules,
 and no fully classified module is currently marked mixed. The
 `NumStability.Algorithms` direct-import
-ceilings are 442 imports below `NumStability`, including 11 below
-`NumStability.Source` and 45 below `NumStability.Analysis`. The exact remaining
-layout debt is 217 missing module docstrings and 403 noncanonical
-historical module names; the compatibility inventory contains 104 wrappers
-with 204 direct targets. The provenance contract remains 207 Apache-marked
+ceilings are 442 imports below `NumStability`, including 43 below
+`NumStability.Analysis` and 14 below `NumStability.Source`. The exact remaining
+layout debt is 217 missing module docstrings and 399 noncanonical
+historical module names; the compatibility inventory contains 108 wrappers
+with 208 direct targets. The provenance contract remains 207 Apache-marked
 files and five upstream modules.
 
 Because structural aggregates do not themselves own declarations,

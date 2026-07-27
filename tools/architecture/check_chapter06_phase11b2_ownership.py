@@ -47,6 +47,151 @@ DESTINATIONS = (
     INDUCED_LP,
 )
 
+ASIDES = "NumStability.Source.Higham.Chapter06.Asides"
+BLOCK_ANTIDIAGONAL = (
+    "NumStability.Source.Higham.Chapter06.BlockAntidiagonalNorm"
+)
+CHAPTER06 = "NumStability.Source.Higham.Chapter06"
+CHAPTER06_NORMS = "NumStability.Source.Higham.Chapter06.Norms"
+
+EXPECTED_IMPORT_ONLY = {
+    OLD_LEMMA06: (LEMMA06,),
+    OLD_ASIDES: (ASIDES,),
+    OLD_BLOCK: (INDUCED_LP,),
+    OLD_DUALITY: (EQUATION02,),
+    ASIDES: (
+        CONDITION,
+        EUCLIDEAN,
+        MAX_NORM,
+        UNITARY,
+        OPERATOR_TWO,
+        EQUATION01,
+    ),
+    BLOCK_ANTIDIAGONAL: (INDUCED_LP, OPERATOR_TWO),
+    CHAPTER06: (ASIDES, BLOCK_ANTIDIAGONAL, EQUATION02, LEMMA06, CHAPTER06_NORMS),
+    CHAPTER06_NORMS: (
+        "NumStability.Source.Higham.Chapter06.Problem01",
+        "NumStability.Source.Higham.Chapter06.Problem05",
+        "NumStability.Source.Higham.Chapter06.Problem09",
+        "NumStability.Source.Higham.Chapter06.Problem10",
+        "NumStability.Source.Higham.Chapter06.Theorem04",
+    ),
+}
+STRUCTURAL_MODULES = set(EXPECTED_IMPORT_ONLY)
+
+MATRIX_BASIC = "NumStability.Analysis.MatrixNorms.Basic"
+MATRIX_COMPARISONS = "NumStability.Analysis.MatrixNorms.Comparisons"
+MATRIX_LP = "NumStability.Analysis.MatrixNorms.Lp"
+OPERATOR_BASIC = "NumStability.Analysis.OperatorNorms.Basic"
+SINGULAR_BASIC = "NumStability.Analysis.SingularValues.Basic"
+VECTOR_BASIC = "NumStability.Analysis.VectorNorms.Basic"
+VECTOR_DUALITY = "NumStability.Analysis.VectorNorms.Duality"
+
+ALLOWED_PROJECT_IMPORTS = {
+    LEMMA06: {MATRIX_BASIC, MATRIX_COMPARISONS, SINGULAR_BASIC, VECTOR_BASIC},
+    EQUATION01: {VECTOR_BASIC},
+    EQUATION02: {VECTOR_BASIC, VECTOR_DUALITY},
+    EUCLIDEAN: set(),
+    UNITARY: {MATRIX_BASIC, SINGULAR_BASIC},
+    CONDITION: {MATRIX_BASIC, SINGULAR_BASIC, UNITARY},
+    MAX_NORM: {MATRIX_BASIC, SINGULAR_BASIC},
+    OPERATOR_TWO: {MATRIX_BASIC, SINGULAR_BASIC, UNITARY},
+    INDUCED_LP: {
+        MATRIX_BASIC,
+        MATRIX_COMPARISONS,
+        MATRIX_LP,
+        OPERATOR_BASIC,
+        VECTOR_BASIC,
+    },
+}
+EXPECTED_DIRECT_SOURCE_IMPORTS = {
+    owner: set() for owner in DESTINATIONS
+}
+EXPECTED_DIRECT_SOURCE_IMPORTS[CONDITION] = {UNITARY}
+EXPECTED_DIRECT_SOURCE_IMPORTS[OPERATOR_TWO] = {UNITARY}
+
+ASIDES_EXTERNAL_IMPORTS = {
+    "Mathlib.Analysis.CStarAlgebra.Matrix",
+    "Mathlib.Analysis.Calculus.FDeriv.Norm",
+    "Mathlib.Analysis.InnerProductSpace.Calculus",
+    "Mathlib.Analysis.SpecialFunctions.Sqrt",
+}
+ALLOWED_EXTERNAL_IMPORTS = {
+    LEMMA06: set(),
+    EQUATION01: ASIDES_EXTERNAL_IMPORTS,
+    EQUATION02: {"Mathlib.Analysis.Normed.Module.Dual"},
+    EUCLIDEAN: ASIDES_EXTERNAL_IMPORTS,
+    UNITARY: ASIDES_EXTERNAL_IMPORTS,
+    CONDITION: ASIDES_EXTERNAL_IMPORTS,
+    MAX_NORM: ASIDES_EXTERNAL_IMPORTS,
+    OPERATOR_TWO: ASIDES_EXTERNAL_IMPORTS,
+    INDUCED_LP: {
+        "Mathlib.Analysis.Normed.Lp.PiLp",
+        "Mathlib.Analysis.Normed.Operator.Basic",
+    },
+}
+
+EXPECTED_TEST_IMPORTS = {
+    "NumStabilityTest/Import/Source/Chapter06/AsidesConditionNumberBounds.lean": CONDITION,
+    "NumStabilityTest/Import/Source/Chapter06/AsidesEuclideanNormDifferentiability.lean": EUCLIDEAN,
+    "NumStabilityTest/Import/Source/Chapter06/AsidesMaxNormInconsistency.lean": MAX_NORM,
+    "NumStabilityTest/Import/Source/Chapter06/AsidesUnitaryInvariance.lean": UNITARY,
+    "NumStabilityTest/Import/Source/Chapter06/BlockAntidiagonalNormInducedLp.lean": INDUCED_LP,
+    "NumStabilityTest/Import/Source/Chapter06/BlockAntidiagonalNormOperatorTwo.lean": OPERATOR_TWO,
+    "NumStabilityTest/Import/Source/Chapter06/Equation01.lean": EQUATION01,
+    "NumStabilityTest/Import/Source/Chapter06/Equation02.lean": EQUATION02,
+    "NumStabilityTest/Import/Source/Chapter06/Lemma06.lean": LEMMA06,
+    "NumStabilityTest/Import/Source/Chapter06/Asides.lean": ASIDES,
+    "NumStabilityTest/Import/Source/Chapter06/BlockAntidiagonalNorm.lean": BLOCK_ANTIDIAGONAL,
+    "NumStabilityTest/Import/Compatibility/Source/Chapter06/AlgorithmsChapter06Lemma66.lean": OLD_LEMMA06,
+    "NumStabilityTest/Import/Compatibility/Source/Chapter06/AnalysisHigham6Asides.lean": OLD_ASIDES,
+    "NumStabilityTest/Import/Compatibility/Source/Chapter06/AnalysisHigham6BlockAntidiag.lean": OLD_BLOCK,
+    "NumStabilityTest/Import/Compatibility/Source/Chapter06/AnalysisHighamChapter6Duality.lean": OLD_DUALITY,
+}
+
+EXPECTED_CONSUMER_IMPORTS = {
+    "NumStability/Algorithms/Ch10Ch14Lemma66Op2Bridge.lean": {LEMMA06},
+    "NumStability/Algorithms/QR/Higham19Theorem5SourceClosure.lean": {LEMMA06},
+    "NumStability/Algorithms.lean": {LEMMA06, ASIDES, BLOCK_ANTIDIAGONAL},
+    "NumStability/Analysis.lean": {CHAPTER06},
+}
+
+EXPECTED_CROSS_OWNER_EDGES = Counter(
+    {
+        ("body", CONDITION, UNITARY): 1,
+        ("body", OPERATOR_TWO, UNITARY): 1,
+    }
+)
+EXPECTED_CROSS_EDGE_WITNESSES = Counter(
+    {
+        (
+            "body",
+            "NumStability.ch6aside_op2_mul_le",
+            "NumStability.ch6aside_op2_eq_l2",
+        ): 1,
+        (
+            "body",
+            "NumStability.ch6aside_blockAntidiag_op2_eq",
+            "NumStability.ch6aside_op2_eq_l2",
+        ): 1,
+    }
+)
+
+EXPECTED_PRIVATE_CANDIDATE_NAMES = {
+    "_private.<module>.NumStability.ch6aside_l2_one": (
+        "_private.NumStability.Source.Higham.Chapter06.Asides."
+        "UnitaryInvariance.0.NumStability.ch6aside_l2_one"
+    ),
+    "_private.<module>.NumStability.ch6aside_l2_unitary": (
+        "_private.NumStability.Source.Higham.Chapter06.Asides."
+        "UnitaryInvariance.0.NumStability.ch6aside_l2_unitary"
+    ),
+    "_private.<module>.NumStability.ch6aside_withLpBlockSwapCLM_bound": (
+        "_private.NumStability.Source.Higham.Chapter06.BlockAntidiagonalNorm."
+        "InducedLp.0.NumStability.ch6aside_withLpBlockSwapCLM_bound"
+    ),
+}
+
 BASELINE_TSV_SHA256 = (
     "89A22BFBB70513DE4FEE3734AABC1FDADA3FC7C737164923808CBCD4FC79EB30"
 )
@@ -225,6 +370,171 @@ def read_tsv(path: Path) -> tuple[list[Declaration], list[tuple[str, str, str]]]
     if not saw_format:
         raise ValueError("dependency TSV must start with 'format\\t2'")
     return declarations, edges
+
+
+def strip_lean_comments(lines: list[str]) -> list[str]:
+    """Remove nested block comments and line comments from Lean source."""
+
+    result: list[str] = []
+    depth = 0
+    for source_line in lines:
+        output: list[str] = []
+        index = 0
+        while index < len(source_line):
+            if depth:
+                if source_line.startswith("/-", index):
+                    depth += 1
+                    index += 2
+                elif source_line.startswith("-/", index):
+                    depth -= 1
+                    index += 2
+                else:
+                    index += 1
+            else:
+                if source_line.startswith("--", index):
+                    break
+                if source_line.startswith("/-", index):
+                    depth = 1
+                    index += 2
+                else:
+                    output.append(source_line[index])
+                    index += 1
+        result.append("".join(output))
+    if depth:
+        raise ValueError("unterminated Lean block comment")
+    return result
+
+
+def module_path(project_root: Path, module: str) -> Path:
+    return project_root / (module.replace(".", "/") + ".lean")
+
+
+def ordered_direct_imports(path: Path) -> tuple[str, ...]:
+    if not path.is_file():
+        raise ValueError(f"missing Lean module: {path}")
+    imports: list[str] = []
+    source_lines = path.read_text(encoding="utf-8").splitlines()
+    for original, code in zip(
+        source_lines, strip_lean_comments(source_lines), strict=True
+    ):
+        stripped = code.strip()
+        if not stripped:
+            continue
+        fields = stripped.split()
+        if len(fields) == 2 and fields[0] == "import":
+            imports.append(fields[1])
+        elif len(fields) == 3 and fields[:2] == ["public", "import"]:
+            imports.append(fields[2])
+        elif fields[0] == "import" or (
+            len(fields) > 1 and fields[:2] == ["public", "import"]
+        ):
+            raise ValueError(f"unparsed import command in {path}: {original!r}")
+    return tuple(imports)
+
+
+def validate_import_only(path: Path, expected: tuple[str, ...]) -> None:
+    source = path.read_text(encoding="utf-8")
+    if "/-!" not in source:
+        raise ValueError(f"import-only module lacks a module docstring: {path}")
+    source_lines = source.splitlines()
+    imports: list[str] = []
+    for original, code in zip(
+        source_lines, strip_lean_comments(source_lines), strict=True
+    ):
+        stripped = code.strip()
+        if not stripped:
+            continue
+        fields = stripped.split()
+        if len(fields) == 2 and fields[0] == "import":
+            imports.append(fields[1])
+        elif len(fields) == 3 and fields[:2] == ["public", "import"]:
+            imports.append(fields[2])
+        else:
+            raise ValueError(
+                f"import-only module contains non-import code in {path}: {original!r}"
+            )
+    actual = tuple(imports)
+    if actual != expected:
+        raise ValueError(
+            f"{path}: expected ordered imports {expected}, found {actual}"
+        )
+
+
+def validate_declaration_module_docstring(path: Path) -> None:
+    source_lines = path.read_text(encoding="utf-8").splitlines()
+    namespace_index = next(
+        (
+            index
+            for index, line in enumerate(source_lines)
+            if line.strip().startswith("namespace ")
+        ),
+        len(source_lines),
+    )
+    if "/-!" not in "\n".join(source_lines[:namespace_index]):
+        raise ValueError(
+            f"declaration module lacks a module docstring before its namespace: {path}"
+        )
+
+
+def validate_source_import_contracts(project_root: Path) -> None:
+    for module, expected in EXPECTED_IMPORT_ONLY.items():
+        validate_import_only(module_path(project_root, module), expected)
+
+    for owner in DESTINATIONS:
+        path = module_path(project_root, owner)
+        validate_declaration_module_docstring(path)
+        imports = set(ordered_direct_imports(path))
+        allowed = ALLOWED_PROJECT_IMPORTS[owner] | ALLOWED_EXTERNAL_IMPORTS[owner]
+        unexpected = sorted(imports - allowed)
+        if unexpected:
+            raise ValueError(
+                f"{owner} has imports outside the frozen allowlist: {unexpected}"
+            )
+        actual_source_imports = imports & set(DESTINATIONS)
+        if actual_source_imports != EXPECTED_DIRECT_SOURCE_IMPORTS[owner]:
+            raise ValueError(
+                f"{owner}: expected direct source-owner imports "
+                f"{sorted(EXPECTED_DIRECT_SOURCE_IMPORTS[owner])}, found "
+                f"{sorted(actual_source_imports)}"
+            )
+
+
+def validate_test_import_contracts(project_root: Path) -> None:
+    for relative_path, target in EXPECTED_TEST_IMPORTS.items():
+        path = project_root / relative_path
+        imports = ordered_direct_imports(path)
+        if imports != (target,):
+            raise ValueError(
+                f"{path}: isolated test must import only {target}; found {imports}"
+            )
+
+
+def validate_consumer_retargets(project_root: Path) -> None:
+    historical_imports: list[tuple[Path, str]] = []
+    production_root = project_root / "NumStability"
+    for path in production_root.rglob("*.lean"):
+        for imported in ordered_direct_imports(path):
+            if imported in HISTORICAL_OWNERS:
+                historical_imports.append((path, imported))
+    if historical_imports:
+        rendered = ", ".join(f"{path}: {module}" for path, module in historical_imports)
+        raise ValueError(f"production modules still import historical paths: {rendered}")
+
+    for relative_path, required in EXPECTED_CONSUMER_IMPORTS.items():
+        path = project_root / relative_path
+        imports = set(ordered_direct_imports(path))
+        missing = sorted(required - imports)
+        if missing:
+            raise ValueError(f"{path} lacks canonical imports: {missing}")
+
+    algorithms_imports = set(
+        ordered_direct_imports(project_root / "NumStability/Algorithms.lean")
+    )
+    if EQUATION02 in algorithms_imports or CHAPTER06 in algorithms_imports:
+        raise ValueError(
+            "Algorithms aggregate must preserve the bounded historical surface "
+            "without Equation02 or the complete Chapter06 aggregate"
+        )
 
 
 def manifest_payload(records: dict[str, ManifestRow]) -> bytes:
@@ -424,6 +734,199 @@ def write_manifest(path: Path, records: dict[str, ManifestRow]) -> None:
     path.write_bytes(payload)
 
 
+def validate_cross_owner_graph(
+    edges: list[tuple[str, str, str]],
+    actual_to_logical: dict[str, str],
+    records: dict[str, ManifestRow],
+) -> None:
+    owner_edges: Counter[tuple[str, str, str]] = Counter()
+    witnesses: Counter[tuple[str, str, str]] = Counter()
+    for edge_kind, source, target in edges:
+        source_logical = actual_to_logical.get(source)
+        target_logical = actual_to_logical.get(target)
+        if source_logical is None or target_logical is None:
+            continue
+        source_owner = records[source_logical].expected_module
+        target_owner = records[target_logical].expected_module
+        if source_owner == target_owner:
+            continue
+        owner_edges[(edge_kind, source_owner, target_owner)] += 1
+        witnesses[(edge_kind, source_logical, target_logical)] += 1
+
+    if owner_edges != EXPECTED_CROSS_OWNER_EDGES:
+        raise ValueError(
+            f"cross-owner dependency graph differs: expected "
+            f"{EXPECTED_CROSS_OWNER_EDGES}, found {owner_edges}"
+        )
+    if witnesses != EXPECTED_CROSS_EDGE_WITNESSES:
+        raise ValueError(
+            f"cross-owner edge witnesses differ: expected "
+            f"{EXPECTED_CROSS_EDGE_WITNESSES}, found {witnesses}"
+        )
+
+    graph: dict[str, set[str]] = {owner: set() for owner in DESTINATIONS}
+    for _, source_owner, target_owner in owner_edges:
+        graph[source_owner].add(target_owner)
+    temporary: set[str] = set()
+    permanent: set[str] = set()
+
+    def visit(owner: str) -> None:
+        if owner in permanent:
+            return
+        if owner in temporary:
+            raise ValueError(f"candidate owner cycle through {owner}")
+        temporary.add(owner)
+        for target in graph[owner]:
+            visit(target)
+        temporary.remove(owner)
+        permanent.add(owner)
+
+    for owner in DESTINATIONS:
+        visit(owner)
+
+
+def check_post_ownership(
+    records: dict[str, ManifestRow],
+    declarations: list[Declaration],
+    edges: list[tuple[str, str, str]],
+) -> dict[str, str]:
+    structural = [
+        declaration
+        for declaration in declarations
+        if declaration.module in STRUCTURAL_MODULES
+    ]
+    if structural:
+        raise ValueError(
+            "wrappers or aggregates own declarations: "
+            + ", ".join(declaration.name for declaration in structural[:10])
+        )
+
+    actual_records: dict[str, Declaration] = {}
+    actual_to_logical: dict[str, str] = {}
+    for declaration in declarations:
+        if declaration.module not in DESTINATIONS:
+            continue
+        logical = logical_name(declaration.name, declaration.module)
+        if logical in actual_records:
+            raise ValueError(f"duplicate candidate logical name: {logical}")
+        actual_records[logical] = declaration
+        actual_to_logical[declaration.name] = logical
+
+    if set(actual_records) != set(records):
+        missing = sorted(set(records) - set(actual_records))
+        extra = sorted(set(actual_records) - set(records))
+        raise ValueError(
+            f"candidate ownership set differs: missing={missing[:20]}; "
+            f"extra={extra[:20]}"
+        )
+
+    for logical, expected in records.items():
+        actual = actual_records[logical]
+        actual_metadata = (actual.module, actual.kind, actual.visibility)
+        expected_metadata = (
+            expected.expected_module,
+            expected.kind,
+            expected.visibility,
+        )
+        if actual_metadata != expected_metadata:
+            raise ValueError(
+                f"{logical}: expected {expected_metadata}, found {actual_metadata}"
+            )
+        if expected.visibility == "private":
+            expected_actual_name = EXPECTED_PRIVATE_CANDIDATE_NAMES.get(logical)
+            if expected_actual_name is None or actual.name != expected_actual_name:
+                raise ValueError(
+                    f"{logical}: expected exact private name "
+                    f"{expected_actual_name}, found {actual.name}"
+                )
+
+    if set(EXPECTED_PRIVATE_CANDIDATE_NAMES) != {
+        logical for logical, row in records.items() if row.visibility == "private"
+    }:
+        raise ValueError("private-name contract does not cover the manifest exactly")
+
+    validate_manifest(
+        {
+            logical: ManifestRow(
+                logical,
+                records[logical].historical_module,
+                declaration.module,
+                declaration.kind,
+                declaration.visibility,
+            )
+            for logical, declaration in actual_records.items()
+        }
+    )
+    validate_edge_evidence(edges, actual_to_logical)
+    validate_cross_owner_graph(edges, actual_to_logical, records)
+    return actual_to_logical
+
+
+def compare_full_graph(
+    baseline_tsv: Path,
+    candidate_tsv: Path,
+    candidate_actual_to_logical: dict[str, str],
+    records: dict[str, ManifestRow],
+) -> None:
+    if sha256_file(baseline_tsv) != BASELINE_TSV_SHA256:
+        raise ValueError("baseline TSV is not the frozen Phase 11B1 stream")
+
+    baseline_name_by_logical: dict[str, str] = {}
+    with baseline_tsv.open(encoding="utf-8", newline="") as stream:
+        for row in csv.reader(stream, delimiter="\t"):
+            if len(row) != 5 or row[0] != "declaration":
+                continue
+            name, module = row[1], row[2]
+            if module not in HISTORICAL_OWNERS:
+                continue
+            logical = logical_name(name, module)
+            if logical in baseline_name_by_logical:
+                raise ValueError(f"duplicate baseline logical name: {logical}")
+            baseline_name_by_logical[logical] = name
+    if set(baseline_name_by_logical) != set(records):
+        raise ValueError("baseline ownership set differs from the tracked manifest")
+
+    candidate_name_to_baseline = {
+        actual: baseline_name_by_logical[logical]
+        for actual, logical in candidate_actual_to_logical.items()
+    }
+    candidate_name_to_historical_module = {
+        actual: records[logical].historical_module
+        for actual, logical in candidate_actual_to_logical.items()
+    }
+
+    delta: Counter[str] = Counter()
+    with baseline_tsv.open(encoding="utf-8") as stream:
+        for raw in stream:
+            delta[raw.rstrip("\r\n")] += 1
+
+    with candidate_tsv.open(encoding="utf-8") as stream:
+        for raw in stream:
+            fields = raw.rstrip("\r\n").split("\t")
+            if fields[0] == "declaration" and fields[1] in candidate_name_to_baseline:
+                candidate_name = fields[1]
+                fields[1] = candidate_name_to_baseline[candidate_name]
+                fields[2] = candidate_name_to_historical_module[candidate_name]
+            elif fields[0] == "edge" and len(fields) == 4:
+                fields[2] = candidate_name_to_baseline.get(fields[2], fields[2])
+                fields[3] = candidate_name_to_baseline.get(fields[3], fields[3])
+            row = "\t".join(fields)
+            delta[row] -= 1
+            if delta[row] == 0:
+                del delta[row]
+
+    if delta:
+        missing = sum(count for count in delta.values() if count > 0)
+        extra = -sum(count for count in delta.values() if count < 0)
+        details = "; ".join(
+            f"{count:+d} {row}" for row, count in sorted(delta.items())[:12]
+        )
+        raise ValueError(
+            f"normalized full graph differs: missing={missing}, extra={extra}; "
+            f"{details}"
+        )
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mode", choices=("pre", "post"), required=True)
@@ -440,23 +943,56 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="write the frozen manifest; valid only in pre-migration mode",
     )
+    parser.add_argument(
+        "--baseline-tsv",
+        type=Path,
+        help="frozen Phase 11B1 TSV required for post-migration full-graph comparison",
+    )
+    parser.add_argument(
+        "--project-root",
+        type=Path,
+        default=Path("."),
+        help="repository root used for import, wrapper, consumer, and test checks",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    if args.mode != "pre":
-        raise ValueError("post-migration mode is not available before the map commit")
-    records, _ = generate_manifest(args.dependency_tsv)
-    if args.write_manifest:
-        write_manifest(args.manifest, records)
-    tracked = read_manifest(args.manifest)
-    if tracked != records:
-        raise ValueError("tracked manifest differs from the frozen generator output")
+    if args.write_manifest and args.mode != "pre":
+        raise ValueError("--write-manifest is valid only in pre-migration mode")
+
+    if args.mode == "pre":
+        records, _ = generate_manifest(args.dependency_tsv)
+        if args.write_manifest:
+            write_manifest(args.manifest, records)
+        tracked = read_manifest(args.manifest)
+        if tracked != records:
+            raise ValueError("tracked manifest differs from the frozen generator output")
+        print(
+            "Phase 11B2 pre-migration ownership passed: "
+            f"{len(records)} constants, {EXPECTED_INCIDENT_EDGES} incident edges, "
+            f"inventory {EXPECTED_MANIFEST_SHA256}"
+        )
+        return 0
+
+    if args.baseline_tsv is None:
+        raise ValueError("post-migration mode requires --baseline-tsv")
+    records = read_manifest(args.manifest)
+    declarations, edges = read_tsv(args.dependency_tsv)
+    candidate_actual_to_logical = check_post_ownership(records, declarations, edges)
+    validate_source_import_contracts(args.project_root)
+    validate_test_import_contracts(args.project_root)
+    validate_consumer_retargets(args.project_root)
+    compare_full_graph(
+        args.baseline_tsv,
+        args.dependency_tsv,
+        candidate_actual_to_logical,
+        records,
+    )
     print(
-        "Phase 11B2 pre-migration ownership passed: "
-        f"{len(records)} constants, {EXPECTED_INCIDENT_EDGES} incident edges, "
-        f"inventory {EXPECTED_MANIFEST_SHA256}"
+        "Phase 11B2 post-migration ownership passed: "
+        f"{len(records)} constants and exact full graph preserved"
     )
     return 0
 

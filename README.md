@@ -173,36 +173,37 @@ approximation, and least-squares preconditioning.
 
 ## Project statistics
 
-Current Phase 11B1 structure for the production source surface, after the
-manifest-checked split of the transitional norm core into semantic reusable
-families and Higham Chapter 6 source leaves:
+Current Phase 11B2 structure for the production source surface, after the
+manifest-checked norm-core split and the completed Higham Chapter 6 source-tail
+migration:
 
-The batch adds 20 reusable leaves, four source leaves, and seven declaration-
-free aggregates, and reclassifies the existing Core path as an aggregate.
+Phase 11B2 adds nine declaration-bearing source leaves and two declaration-free
+family aggregates, and reclassifies four historical owners as exact
+compatibility wrappers.
 
 | | |
 |---|---|
-| Lean modules | **1,024** |
+| Lean modules | **1,035** |
 | Import cycles | **0** |
-| Classified modules | **416 (40.625%)** |
-| Unclassified modules | **608** |
-| Source modules | **142** |
-| Aggregate modules | **85** |
-| Compatibility modules | **104** |
+| Classified modules | **431 (41.643%)** |
+| Unclassified modules | **604** |
+| Source modules | **151** |
+| Aggregate modules | **87** |
+| Compatibility modules | **108** |
 | Reusable modules | **78** |
 | Internal / upstream / mixed modules | **2 / 5 / 0** |
-| Compatibility wrappers / direct targets | **104 / 204** |
+| Compatibility wrappers / direct targets | **108 / 208** |
 | Missing module docs | **217** |
-| Legacy naming exceptions | **403** |
+| Legacy naming exceptions | **399** |
 | Provenance contract | **207 Apache files / 5 upstream modules** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
 the standard `[propext, Classical.choice, Quot.sound]` axioms. The immediate
-clean input to Phase 11B1 is the versioned
-[`2026-07-26 organization Phase 11A baseline`](docs/architecture/baselines/2026-07-26-organization-phase11a.md),
-and the exact Phase 11B1 ownership and validation contract is recorded in the
+clean input to Phase 11B2 is the versioned
+[`2026-07-26 organization Phase 11B1 baseline`](docs/architecture/baselines/2026-07-26-organization-phase11b1.md),
+and the exact Phase 11B2 ownership and validation contract is recorded in the
 immutable
-[`Analysis norms semantic-split map`](docs/architecture/migrations/2026-07-26-analysis-norms-semantic-phase11b1.md).
+[`Chapter 6 source-tail map`](docs/architecture/migrations/2026-07-27-chapter06-source-tail-phase11b2.md).
 These records include source, import, signature-dependency, and
 proof/body-dependency metrics; the live ratchet values above are enforced by
 the reviewed manifests.
@@ -303,10 +304,15 @@ Choose the narrowest entry point that matches the material you need:
   conclusion is `Chapter02.Section07.PowerLeadingDigits`; its reusable
   AddCircle and decimal-power development lives under `Analysis`. The
   declaration-free `Chapter06.Norms` aggregate exposes Problems 6.1, 6.5,
-  6.9, and 6.10 together with the literal ambient-radius form of Theorem 6.4;
-  the declaration-free `Chapter06` aggregate imports that family. This is
-  complete over the chapter aggregate's current physical descendants, not a
-  claim that the four Phase 11B2 historical Chapter 6 owners have moved.
+  6.9, and 6.10 together with the literal ambient-radius form of Theorem 6.4.
+  Phase 11B2 adds `Lemma06`, `Equation01`, and `Equation02`; four semantic
+  leaves below `Chapter06.Asides`; and the `BlockAntidiagonalNorm.InducedLp`
+  and `BlockAntidiagonalNorm.OperatorTwo` leaves. The declaration-free
+  `Asides` aggregate preserves the six-topic historical asides surface, while
+  `BlockAntidiagonalNorm` groups its two norm results. The declaration-free
+  `Chapter06` aggregate imports `Norms`, `Asides`, `BlockAntidiagonalNorm`,
+  `Equation02`, and `Lemma06`. The four former Algorithms/Analysis owners are
+  exact compatibility wrappers, not preferred declaration homes.
   Chapter 14
   contains `Problem13`, the canonical `Problem14` owner for Problem 14.14's
   Hyman determinant result, `Problem15` for the source-specific determinant
@@ -360,13 +366,15 @@ the old-to-new path map and removal policy. The
 dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
-corpus is already Mathlib-style. After the Phase 11B1 semantic norm split, the
-current ratchet records 608 unclassified modules, no fully classified mixed modules,
-217 missing module docs, 403 historical naming exceptions, and no declaration-
-bearing umbrella. CI prevents those queues from growing while each dependency-
-contained family is migrated. In particular, the Chapter 14, Chapter 21, and
-Chapter 28 moves above establish only their documented frontiers; their broader
-historical families remain in the migration queue.
+corpus is already Mathlib-style. After Phase 11B2, the current ratchet records
+604 unclassified modules, no fully classified mixed modules, 217 missing module
+docs, 399 historical naming exceptions, and no declaration-bearing umbrella.
+The `NumStability.Algorithms` direct-import ceilings are 442 total imports,
+including 43 below `NumStability.Analysis` and 14 below
+`NumStability.Source`. CI prevents those queues from growing while each
+dependency-contained family is migrated. In particular, the Chapter 14,
+Chapter 21, and Chapter 28 moves above establish only their documented
+frontiers; their broader historical families remain in the migration queue.
 
 ## Use as a dependency
 
@@ -464,12 +472,26 @@ NumStability/
         Section07/PowerLeadingDigits.lean -- power-frequency source conclusion
       Chapter04/
       Chapter06.lean           -- complete current Chapter 6 aggregate
-      Chapter06/Norms.lean     -- Chapter 6 norm-result aggregate
-      Chapter06/Problem01.lean -- Problem 6.1 source closure
-      Chapter06/Problem05.lean -- Problem 6.5 source closure
-      Chapter06/Problem09.lean -- Problem 6.9 source closure
-      Chapter06/Problem10.lean -- Problem 6.10 source closure
-      Chapter06/Theorem04.lean -- literal ambient-radius Theorem 6.4
+      Chapter06/
+        Asides.lean            -- six-topic historical-asides aggregate
+        Asides/
+          ConditionNumberBounds.lean
+          EuclideanNormDifferentiability.lean
+          MaxNormInconsistency.lean
+          UnitaryInvariance.lean
+        BlockAntidiagonalNorm.lean -- induced-Lp/operator-2 family aggregate
+        BlockAntidiagonalNorm/
+          InducedLp.lean
+          OperatorTwo.lean
+        Equation01.lean        -- Hölder equality and endpoint witnesses
+        Equation02.lean        -- dual-of-dual source correspondence
+        Lemma06.lean           -- Lemma 6.6 parts (a), (c), and sharpness
+        Norms.lean             -- numbered norm-result aggregate
+        Problem01.lean         -- Problem 6.1 source closure
+        Problem05.lean         -- Problem 6.5 source closure
+        Problem09.lean         -- Problem 6.9 source closure
+        Problem10.lean         -- Problem 6.10 source closure
+        Theorem04.lean         -- literal ambient-radius Theorem 6.4
       Chapter08/, Chapter10/, Chapter11/
       Chapter12/, Chapter13/, Chapter17/, Chapter20/
       Chapter14/
@@ -508,14 +530,13 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 The selected formalization core scope is closed; the repository-organization
 migration is not. Phase 11B1 split the transitional `Analysis.Norms.Core`
 owner into 20 semantic reusable leaves and four Chapter 6 source leaves, then
-made Core a declaration-free aggregate. Phase 11B2 will relocate the separately
-audited `Algorithms.Chapter06Lemma66`, `Analysis.Higham6Asides`,
-`Analysis.Higham6BlockAntidiag`, and `Analysis.HighamChapter6Duality` owners.
-The subsequent batches classify the remaining 608 unclassified modules while
-splitting any mixed-content owners they expose, replace the 403 historical
-source/proof-stage names with semantic canonical paths plus compatibility
-shims, document the 217 remaining modules, and review the other giant-file
-outliers. The sequence and safety
+made Core a declaration-free aggregate. Phase 11B2 moved the four remaining
+audited Chapter 6 source owners into nine semantic leaves and two family
+aggregates, retaining all four former paths as exact wrappers. Subsequent
+batches classify the remaining 604 unclassified modules while splitting any
+mixed-content owners they expose, replace the 399 historical source/proof-stage
+names with semantic canonical paths plus compatibility shims, document the 217
+remaining modules, and review the other giant-file outliers. The sequence and safety
 gates are tracked in
 [`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md).
 

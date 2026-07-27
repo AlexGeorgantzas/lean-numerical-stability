@@ -61,6 +61,16 @@ python tools/architecture/check_chapter06_phase11b2_ownership.py \
   --dependency-tsv benchmark-results/architecture/phase11b1-declarations.tsv
 ```
 
+After the migration, compare the fresh stream with the complete retained
+Phase 11B1 graph:
+
+```text
+python tools/architecture/check_chapter06_phase11b2_ownership.py \
+  --mode post \
+  --dependency-tsv benchmark-results/architecture/phase11b2-declarations.tsv \
+  --baseline-tsv benchmark-results/architecture/phase11b1-declarations.tsv
+```
+
 Sort and deduplicate an import-only aggregate mechanically:
 
 ```text

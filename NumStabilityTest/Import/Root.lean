@@ -58,6 +58,10 @@ example : (fp : FPModel) → (n : ℕ) → (Fin n → ℝ) → ℝ :=
 #check highamProblem69_frobenius_op2_bounds
 #check complexMatrixBlockShearOp2_eq_highamProblem610_sourceFormula
 #check mixedInverseAmbientRelativeAmplificationRadiusSup_tendsto_conditionNumberProduct_of_positive_radii
+#check Lemma66.lemma66_a_abs_entry_le
+#check higham6_doubleDualEvaluation_isGreatest
+#check ch6aside_maxNorm_not_consistent
+#check ch6aside_blockAntidiag_lp_eq
 #check problem2_11_decimalLeadingDigit
 #check problem2_11EmpiricalSource
 #check higham2_power_decimalLeadingDigit_frequency_tendsto

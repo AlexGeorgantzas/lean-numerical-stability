@@ -1,4 +1,4 @@
-import NumStability.Algorithms.Chapter06Lemma66
+import NumStability.Source.Higham.Chapter06.Lemma06
 import NumStability.Algorithms.HighamChapter10
 
 /-!
@@ -15,7 +15,7 @@ and the same** consequence of Higham Lemma 6.6 (c):
 
     ‖ |B| ‖₂ ≤ √n · ‖B‖₂        (B square, `rank B ≤ n`).
 
-`Chapter06Lemma66.lean` proves the general
+`Source.Higham.Chapter06.Lemma06` proves the general
 `lemma66_c_op2_le : |A| ≤ |B| entrywise → ‖A‖₂ ≤ √(rank B)·‖B‖₂`, but that
 theorem was orphaned: the Lean Ch.10 (Cholesky) and Ch.14 (inversion) modules
 carried the printed analyses in the *real, componentwise / ∞-norm* layer and

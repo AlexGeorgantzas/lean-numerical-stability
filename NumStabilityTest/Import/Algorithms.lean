@@ -48,3 +48,6 @@ algebra declarations through the historical Algorithms aggregate.
 #check NumStability.higham28_not_HilbertDetAsymptotic
 #check NumStability.integral_abs_standardGaussian_difference
 #check MeasureTheory.measure_eq_of_invariant_probability_of_pretransitive
+#check NumStability.Lemma66.lemma66_c_op2_le
+#check NumStability.ch6aside_conditionF_ge_sqrt_n
+#check NumStability.ch6aside_blockAntidiag_lp_eq

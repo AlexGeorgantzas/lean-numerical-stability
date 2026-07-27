@@ -59,7 +59,6 @@ import NumStability.Algorithms.Ch5DerivativeError
 import NumStability.Algorithms.Ch5LejaProducer
 import NumStability.Algorithms.Ch5NewtonForm
 import NumStability.Algorithms.Ch5SourceClosure
-import NumStability.Algorithms.Chapter06Lemma66
 import NumStability.Algorithms.Chapter15CondEst
 import NumStability.Algorithms.Cholesky.Aasen118ReducedCh11Closure
 import NumStability.Algorithms.Cholesky.AasenAdjacentPivotOperationalMiddleCh11
@@ -395,8 +394,6 @@ import NumStability.Analysis.DunfordResidue
 import NumStability.Analysis.HenriciExtremal
 import NumStability.Analysis.HenriciSharpConstant
 import NumStability.Analysis.HenriciSharpConstantExact
-import NumStability.Analysis.Higham6Asides
-import NumStability.Analysis.Higham6BlockAntidiag
 import NumStability.Analysis.InverseOpNorm2
 import NumStability.Analysis.JordanNormalForm
 import NumStability.Analysis.MatrixPowersBaiDemmelGu
@@ -433,6 +430,9 @@ import NumStability.Analysis.SemiconvergentRealSpectrumComplete
 import NumStability.Analysis.SemiconvergentSpectral
 import NumStability.Analysis.SylvesterSchurExistence
 import NumStability.Source.Higham.Chapter04
+import NumStability.Source.Higham.Chapter06.Asides
+import NumStability.Source.Higham.Chapter06.BlockAntidiagonalNorm
+import NumStability.Source.Higham.Chapter06.Lemma06
 import NumStability.Source.Higham.Chapter12
 import NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier
 import NumStability.Source.Higham.Chapter14

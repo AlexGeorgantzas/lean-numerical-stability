@@ -29,14 +29,11 @@ import NumStability.Analysis.ForwardError
 import NumStability.Analysis.FusedMultiplyAdd
 import NumStability.Analysis.HenriciSharpConstantExact
 import NumStability.Analysis.Heron
-import NumStability.Analysis.Higham6Asides
-import NumStability.Analysis.Higham6BlockAntidiag
 import NumStability.Analysis.HighamChapter2ElementaryFunctions
 import NumStability.Analysis.HighamChapter2FmaDiscriminant
 import NumStability.Analysis.HighamChapter2GradualUnderflowExact
 import NumStability.Analysis.HighamChapter2Lindemann
 import NumStability.Analysis.HighamChapter2Tablemaker
-import NumStability.Analysis.HighamChapter6Duality
 import NumStability.Analysis.HighamChapter7
 import NumStability.Analysis.HighamChapter7Rectangular
 import NumStability.Analysis.IncreasingPrecision
