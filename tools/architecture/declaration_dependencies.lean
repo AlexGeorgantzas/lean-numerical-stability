@@ -6,10 +6,18 @@ It deliberately keeps dependencies occurring in declaration signatures separate 
 occurring in values/proofs.  The Python baseline generator consumes this stream and computes the
 architecture metrics.
 
-The format-2 declaration graph treats Lean-reserved declarations as regenerable implementation
-details.  Synthetic `_simp_*` declarations are omitted too, while references to them are attributed
-to their parent declaration.  This keeps graph ownership stable when Lean regenerates auxiliaries in
-a different importing module.
+The format-2 declaration graph treats Lean-reserved declarations and compiler-generated internal
+details as regenerable implementation details.  For private declarations, the private module prefix
+is removed before rejecting components that Lean's frontend cannot assign to authored declarations
+(leading `_` or numeric components), together with compiler `match_<ordinal>` components and their
+descendants.  Authored private helpers and source-facing names such as `eq_11_15` are still retained.
+Generated declarations are contracted out of the graph: a dependency path through one or more such
+declarations becomes a direct dependency on every authored project declaration reachable through
+that path.  In particular, Lean may cache and reuse `_proof_*` declarations under an unrelated
+parent, so attributing those names to their textual prefix would invent semantic edges, while simply
+dropping them would lose real dependencies from their bodies.  This keeps graph ownership stable
+when Lean regenerates auxiliaries in a different importing module without weakening the semantic
+dependency record.
 
 Run it through `tools/architecture/generate_baseline.py`; the TSV format is an implementation
 detail and is not intended to be checked in.
@@ -25,21 +33,21 @@ private def isProjectModule (moduleName : Name) : Bool :=
   let text := moduleName.toString
   text == "NumStability" || text.startsWith "NumStability."
 
-private def isSyntheticSimpAuxiliary (name : Name) : Bool :=
-  name.isStr && name.getString!.startsWith "_simp_"
+private def isGeneratedMatchComponent (part : String) : Bool :=
+  part.startsWith "match_" && (Name.mkSimple part).isInternalDetail
+
+private def hasCompilerGeneratedComponent : Name → Bool
+  | .anonymous => false
+  | .num _ _ => true
+  | .str parent part =>
+      part.startsWith "_" || isGeneratedMatchComponent part ||
+        hasCompilerGeneratedComponent parent
+
+private def isCompilerGeneratedDetail (name : Name) : Bool :=
+  hasCompilerGeneratedComponent (privateToUserName name)
 
 private def shouldIncludeDeclaration (env : Environment) (name : Name) : Bool :=
-  !isReservedName env name && !isSyntheticSimpAuxiliary name
-
-private def normalizeDependencyName? (env : Environment) (name : Name) : Option Name := do
-  guard <| !isReservedName env name
-  return if isSyntheticSimpAuxiliary name then name.getPrefix else name
-
-private def normalizeDependencyTargets (env : Environment) (targets : NameSet) : NameSet :=
-  targets.toArray.foldl (init := {}) fun normalized target =>
-    match normalizeDependencyName? env target with
-    | some target => normalized.insert target
-    | none => normalized
+  !isReservedName env name && !isCompilerGeneratedDetail name
 
 private def declarationKind : ConstantInfo → String
   | .axiomInfo _ => "axiom"
@@ -67,6 +75,32 @@ private def bodyConstants : ConstantInfo → NameSet
       names ++ rule.rhs.getUsedConstantsAsSet
   | _ => {}
 
+private def allConstants (info : ConstantInfo) : NameSet :=
+  info.type.getUsedConstantsAsSet ++ bodyConstants info
+
+/--
+Replace dependency paths through omitted project implementation details with
+their reachable authored project declarations.  Non-project dependencies are
+intentionally terminal because this extractor records only the project graph.
+-/
+private def contractDependencyTargets
+    (env : Environment)
+    (authoredProjectNames allProjectNames targets : NameSet) : NameSet := Id.run do
+  let mut result : NameSet := {}
+  let mut visited : NameSet := {}
+  let mut pending := targets.toArray
+  while !pending.isEmpty do
+    let target := pending.back!
+    pending := pending.pop
+    if !visited.contains target then
+      visited := visited.insert target
+      if authoredProjectNames.contains target then
+        result := result.insert target
+      else if allProjectNames.contains target then
+        if let some info := env.find? target then
+          pending := pending ++ (allConstants info).toArray
+  return result
+
 private structure ProjectDeclaration where
   name : Name
   moduleName : Name
@@ -90,31 +124,36 @@ private def collectProjectDeclarations (env : Environment) : Array ProjectDeclar
       for name in data.constNames, info in data.constants do
         -- Module data may repeat a declaration re-exported through a legacy module.  The
         -- environment's ownership index identifies the unique originating module.
-        if shouldIncludeDeclaration env name && env.getModuleIdxFor? name == some moduleIdx then
+        if env.getModuleIdxFor? name == some moduleIdx then
           result := result.push { name, moduleName, info }
   return result.qsort fun left right => left.name.toString < right.name.toString
 
 private def writeEdges
     (handle : IO.FS.Handle)
     (env : Environment)
-    (projectNames : NameSet)
+    (authoredProjectNames allProjectNames : NameSet)
     (edgeKind : String)
     (source : ProjectDeclaration)
     (targets : NameSet) : IO Unit := do
-  for target in (normalizeDependencyTargets env targets).toArray.qsort (·.toString < ·.toString) do
-    if projectNames.contains target then
-      writeFields handle #[
-        "edge",
-        edgeKind,
-        source.name.toString,
-        target.toString
-      ]
+  for target in
+      (contractDependencyTargets env authoredProjectNames allProjectNames targets).toArray.qsort
+        (·.toString < ·.toString) do
+    writeFields handle #[
+      "edge",
+      edgeKind,
+      source.name.toString,
+      target.toString
+    ]
 
 private unsafe def extract (outputPath : System.FilePath) : IO Unit := do
   initSearchPath (← findSysroot)
   withImportModules #[{ module := `NumStability }] {} fun env => do
-    let declarations := collectProjectDeclarations env
-    let projectNames : NameSet := declarations.foldl (init := {}) fun names declaration =>
+    let allDeclarations := collectProjectDeclarations env
+    let declarations := allDeclarations.filter fun declaration =>
+      shouldIncludeDeclaration env declaration.name
+    let allProjectNames : NameSet := allDeclarations.foldl (init := {}) fun names declaration =>
+      names.insert declaration.name
+    let authoredProjectNames : NameSet := declarations.foldl (init := {}) fun names declaration =>
       names.insert declaration.name
     IO.FS.withFile outputPath IO.FS.Mode.write fun handle => do
       writeFields handle #["format", "2"]
@@ -127,9 +166,9 @@ private unsafe def extract (outputPath : System.FilePath) : IO Unit := do
           declarationVisibility declaration.name
         ]
       for declaration in declarations do
-        writeEdges handle env projectNames "signature" declaration
+        writeEdges handle env authoredProjectNames allProjectNames "signature" declaration
           declaration.info.type.getUsedConstantsAsSet
-        writeEdges handle env projectNames "body" declaration
+        writeEdges handle env authoredProjectNames allProjectNames "body" declaration
           (bodyConstants declaration.info)
 
 private def ensureSelfTest (condition : Bool) (message : String) : IO Unit := do
@@ -141,33 +180,45 @@ private unsafe def selfTest : IO Unit := do
   withImportModules #[{ module := `Lean }] {} fun env => do
     let parent := `NumStabilityArchitecture.selfTestParent
     let syntheticOne := Name.str parent "_simp_1_1"
-    let syntheticTwo := Name.str parent "_simp_1_8"
+    let generatedProof := Name.str parent "_proof_1_2"
+    let generatedMatch := Name.str parent "match_1_3"
+    let generatedMatchDescendant := Name.str generatedMatch "splitter"
+    let authoredEquation := Name.str parent "eq_11_15"
+    let authoredPrivate := mkPrivateNameCore `NumStabilityArchitecture.SelfTest parent
+    let generatedPrivate :=
+      mkPrivateNameCore `NumStabilityArchitecture.SelfTest generatedMatch
     let reserved := Name.str ``List.map "eq_1"
 
-    ensureSelfTest (isSyntheticSimpAuxiliary syntheticOne)
-      "a `_simp_*` suffix was not recognized"
-    ensureSelfTest (!isSyntheticSimpAuxiliary (Name.str parent "simp_1_1"))
-      "a non-synthetic suffix was classified as `_simp_*`"
+    ensureSelfTest (isCompilerGeneratedDetail syntheticOne)
+      "an internal `_simp_*` declaration was not recognized"
+    ensureSelfTest (!isCompilerGeneratedDetail (Name.str parent "simp_1_1"))
+      "a user-spellable suffix was classified as an internal detail"
+    ensureSelfTest (isCompilerGeneratedDetail generatedProof)
+      "an internal `_proof_*` declaration was not recognized"
+    ensureSelfTest (isCompilerGeneratedDetail generatedMatch)
+      "an internal `match_*` declaration was not recognized"
+    ensureSelfTest (isCompilerGeneratedDetail generatedMatchDescendant)
+      "a descendant of an internal `match_*` declaration was not recognized"
+    ensureSelfTest (!isCompilerGeneratedDetail authoredEquation)
+      "an authored source-equation declaration was classified as generated"
+    ensureSelfTest (!isCompilerGeneratedDetail authoredPrivate)
+      "an authored private declaration was classified as an internal detail"
+    ensureSelfTest (isCompilerGeneratedDetail generatedPrivate)
+      "a generated private declaration was not recognized after prefix removal"
     ensureSelfTest (isReservedName env reserved)
       "Lean did not recognize a standard equational theorem name as reserved"
     ensureSelfTest (!shouldIncludeDeclaration env reserved)
       "a Lean-reserved declaration was retained"
     ensureSelfTest (!shouldIncludeDeclaration env syntheticOne)
       "a synthetic `_simp_*` declaration was retained"
+    ensureSelfTest (!shouldIncludeDeclaration env generatedProof)
+      "an internal `_proof_*` declaration was retained"
+    ensureSelfTest (!shouldIncludeDeclaration env generatedPrivate)
+      "a generated private declaration was retained"
+    ensureSelfTest (shouldIncludeDeclaration env authoredPrivate)
+      "an authored private declaration was omitted"
     ensureSelfTest (shouldIncludeDeclaration env parent)
       "an ordinary declaration was omitted"
-    ensureSelfTest (normalizeDependencyName? env reserved == none)
-      "a reserved dependency target was retained"
-    ensureSelfTest (normalizeDependencyName? env syntheticOne == some parent)
-      "a synthetic dependency target was not normalized to its parent"
-    ensureSelfTest (normalizeDependencyName? env parent == some parent)
-      "an ordinary dependency target was changed"
-
-    let targets : NameSet :=
-      ((({} : NameSet).insert parent).insert syntheticOne).insert syntheticTwo |>.insert reserved
-    let normalized := normalizeDependencyTargets env targets
-    ensureSelfTest (normalized.toArray.size == 1 && normalized.contains parent)
-      "normalized dependency targets were not deduplicated"
 
   IO.println "declaration dependency extractor self-test passed"
 
