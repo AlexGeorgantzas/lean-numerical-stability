@@ -23,6 +23,8 @@ algebra declarations through the historical Algorithms aggregate.
 #check NumStability.higham17_22_exists_blockForm_spectralRadius_lt_one_of_forall_orbit_tendsto
 #check NumStability.higham12_problem12_2_two_step_recurrence
 #check NumStability.higham13_demmel_sharp_multiplier_of_spectral_interval
+#check NumStability.blockMaxNorm
+#check NumStability.MatMulFirstOrderSpec
 #check NumStability.Ch22B.ch22bComplexConfluent_theorem12_3_exact_q_bound
 #check NumStability.higham27_problem27_6_cubic_error_bound
 #check NumStability.StrassenRecurrence

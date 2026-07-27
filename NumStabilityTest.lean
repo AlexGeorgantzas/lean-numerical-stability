@@ -2,6 +2,11 @@ import NumStabilityTest.Import.Algorithms
 import NumStabilityTest.Import.Algorithms.Arithmetic.DotProduct.NoGuard
 import NumStabilityTest.Import.Algorithms.Arithmetic.DotProduct.NoGuard.Core
 import NumStabilityTest.Import.Algorithms.Arithmetic.DotProduct.NoGuard.Tree
+import NumStabilityTest.Import.Algorithms.LinearSystems
+import NumStabilityTest.Import.Algorithms.LinearSystems.LU
+import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU
+import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU.BlockMatrices
+import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU.FirstOrderModels
 import NumStabilityTest.Import.All
 import NumStabilityTest.Import.Analysis
 import NumStabilityTest.Import.Analysis.Asymptotics
@@ -11,6 +16,9 @@ import NumStabilityTest.Import.Analysis.Conditioning.DistanceToSingularity
 import NumStabilityTest.Import.Analysis.Conditioning.InversePerturbation
 import NumStabilityTest.Import.Analysis.Equidistribution
 import NumStabilityTest.Import.Analysis.Equidistribution.AddCircle
+import NumStabilityTest.Import.Analysis.FirstOrder
+import NumStabilityTest.Import.Analysis.FirstOrder.AsymptoticFamilies
+import NumStabilityTest.Import.Analysis.FirstOrder.FixedPrecision
 import NumStabilityTest.Import.Analysis.LeadingDigits
 import NumStabilityTest.Import.Analysis.LeadingDigits.Decimal
 import NumStabilityTest.Import.Analysis.LeadingDigits.DecimalPowers
@@ -23,6 +31,7 @@ import NumStabilityTest.Import.Analysis.MatrixNorms
 import NumStabilityTest.Import.Analysis.MatrixNorms.Attainment
 import NumStabilityTest.Import.Analysis.MatrixNorms.Basic
 import NumStabilityTest.Import.Analysis.MatrixNorms.Comparisons
+import NumStabilityTest.Import.Analysis.MatrixNorms.EntrywiseMaximum
 import NumStabilityTest.Import.Analysis.MatrixNorms.Hadamard
 import NumStabilityTest.Import.Analysis.MatrixNorms.Lp
 import NumStabilityTest.Import.Analysis.MatrixNorms.SpectralRadius
@@ -45,6 +54,8 @@ import NumStabilityTest.Import.Analysis.VectorNorms.Attainment
 import NumStabilityTest.Import.Analysis.VectorNorms.Basic
 import NumStabilityTest.Import.Analysis.VectorNorms.Duality
 import NumStabilityTest.Import.Analysis.VectorNorms.Interpolation
+import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLU
+import NumStabilityTest.Import.Compatibility.Algorithms.LU.GrowthFactor
 import NumStabilityTest.Import.Compatibility.Analysis.Norms
 import NumStabilityTest.Import.Compatibility.Analysis.Probability.AlgorithmsTestMatricesHigham28GaussianAbsoluteMoment
 import NumStabilityTest.Import.Compatibility.Analysis.Probability.AlgorithmsTestMatricesHigham28HaarFibers
@@ -226,6 +237,8 @@ import NumStabilityTest.Import.Source.Chapter13
 import NumStabilityTest.Import.Source.Chapter13.DemmelSharpMultiplier
 import NumStabilityTest.Import.Source.Chapter13.Equation25
 import NumStabilityTest.Import.Source.Chapter13.Table01
+import NumStabilityTest.Import.Source.Chapter13.Theorem05
+import NumStabilityTest.Import.Source.Chapter13.Theorem05.Recurrences
 import NumStabilityTest.Import.Source.Chapter14
 import NumStabilityTest.Import.Source.Chapter14.Problem13
 import NumStabilityTest.Import.Source.Chapter14.Problem14

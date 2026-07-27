@@ -1,6 +1,6 @@
 import NumStability.Algorithms.Cholesky.Higham1014SourceError
 import NumStability.Algorithms.HighamChapter10
-import NumStability.Analysis.FirstOrder
+import NumStability.Analysis.FirstOrder.AsymptoticFamilies
 
 namespace NumStability
 

@@ -11,3 +11,6 @@ import NumStability.Analysis.MatrixNorms
 #check NumStability.ComplexMatrixFixedOperatorIdealNorm
 #check NumStability.IsComplexHadamardMatrix
 #check NumStability.ComplexMatrixLpUnitNormSet
+#check NumStability.maxEntryNorm
+#check NumStability.maxEntryNormRect
+#check NumStability.maxEntryNorm_matrix_mul_le_infNorm_mul_maxEntryNorm

@@ -60,8 +60,12 @@ split from the reusable library.
   point. Its declaration-free `FloatingPoint.IEEE` aggregate exposes reusable
   operations over the IEEE value-level model, beginning with
   `IEEE.NaiveMaximum`.
-- `NumStability.Algorithms.LinearSystems.Triangular` is a reviewed reusable
-  algorithm-family entry point.
+- `NumStability.Algorithms.LinearSystems` is the declaration-free reusable
+  linear-systems entry point. It re-exports the reviewed `Triangular` family
+  and the canonical `LU` hierarchy. During Phase 12A,
+  `LinearSystems.LU.BlockLU` exposes the reusable `BlockMatrices` and
+  `FirstOrderModels` foundations; later Block LU slices extend that umbrella
+  without admitting numbered Chapter 13 correspondence.
 - `NumStability.Algorithms.Summation` is the complete published summation
   surface. Its `Recursive` and `Pairwise` family umbrellas preserve source
   reachability, while reusable consumers import their `.Core` leaves.
@@ -79,9 +83,13 @@ split from the reusable library.
   declaration-free reusable entry points produced or completed by the Phase
   11B1 norm split. Their 20 new reusable leaves own the generic asymptotic,
   operator, vector-norm, matrix-norm, singular-value, and conditioning APIs.
+  Phase 12A adds `MatrixNorms.EntrywiseMaximum` as the owner of the reusable
+  square and rectangular max-entry norm API.
   `SingularValues.WeylMirsky` remains the independently extracted
   source-neutral all-index perturbation API shared by Chapter 14 Problem 14.15
   and reusable least-squares analysis.
+- `NumStability.Analysis.FirstOrder` is the declaration-free Phase 12A
+  aggregate over reusable `AsymptoticFamilies` and `FixedPrecision` leaves.
 - `NumStability.Analysis.Norms.Core` is now a declaration-free reusable
   aggregate over those 20 Phase 11B1 owners. The path remains importable for
   the former reusable subset; numbered Chapter 6 results are exposed by the
@@ -155,8 +163,11 @@ split from the reusable library.
   Chapter 12 uses the declaration-free
   `NumStability.Source.Higham.Chapter12` aggregate over the source leaves
   `IterativeRefinement`, `OmegaDiscontinuity`, and `Problem02`. Chapter 13's
-  `DemmelSharpMultiplier` is a source leaf beside `Equation25` and `Table01`
-  under the existing declaration-free `Chapter13` aggregate. Chapter 22 uses
+  `DemmelSharpMultiplier` is a source leaf beside `Equation25`, `Table01`, and
+  the declaration-free `Theorem05` aggregate. Its `Theorem05.Recurrences`
+  leaf owns the source-specific error recurrences extracted in Phase 12A.
+  These modules are exposed by the existing declaration-free `Chapter13`
+  aggregate. Chapter 22 uses
   a declaration-free `Chapter22` aggregate over `VandermondeSystems`,
   `MonomialResidual`, `Problem07`, and the declaration-free `Section03`
   aggregate; that section owns the `RealRefinement` and

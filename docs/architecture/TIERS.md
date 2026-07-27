@@ -76,14 +76,28 @@ the declaration-free `Chapter06.Asides` and
 `Analysis.Higham6BlockAntidiag`, and `Analysis.HighamChapter6Duality` are exact
 one-target compatibility wrappers.
 
-The Phase 11B2 ratchet classifies 431 of 1,035 production modules (41.643%):
-151 as source, 87 as aggregate, 108 as compatibility, 78 as reusable, 2 as
-internal, and 5 as upstream. The explicit unclassified queue is 604 modules,
+Phase 12A begins the Block LU semantic split with six declaration-bearing
+destinations. `Analysis.FirstOrder` is now an aggregate over reusable
+`AsymptoticFamilies` and `FixedPrecision`; `Analysis.MatrixNorms` adds the
+reusable `EntrywiseMaximum` leaf. The new declaration-free
+`Algorithms.LinearSystems.LU.BlockLU` family currently exposes reusable
+`BlockMatrices` and `FirstOrderModels`, while
+`Source.Higham.Chapter13.Theorem05.Recurrences` owns the numbered source
+recurrences. The historical `Algorithms.LU.BlockLU` module remains an
+unclassified residual during this staged extraction. The historical
+`Algorithms.LU.GrowthFactor` module likewise remains declaration-bearing after
+only its generic max-entry family moved. Neither path is described as a
+compatibility wrapper yet; tests under `Import.Compatibility` exercise their
+staged historical import surfaces until the final forwarding facades exist.
+
+The Phase 12A ratchet classifies 442 of 1,045 production modules (42.297%):
+152 as source, 92 as aggregate, 108 as compatibility, 83 as reusable, 2 as
+internal, and 5 as upstream. The explicit unclassified queue is 603 modules,
 and no fully classified module is currently marked mixed. The
 `NumStability.Algorithms` direct-import
 ceilings are 442 imports below `NumStability`, including 43 below
 `NumStability.Analysis` and 14 below `NumStability.Source`. The exact remaining
-layout debt is 217 missing module docstrings and 399 noncanonical
+layout debt is 216 missing module docstrings and 399 noncanonical
 historical module names; the compatibility inventory contains 108 wrappers
 with 208 direct targets. The provenance contract remains 207 Apache-marked
 files and five upstream modules.
@@ -97,4 +111,7 @@ role and dependency semantics distinct. The Phase 11B1 reusable seeds include
 `VectorNorms` family umbrellas. Existing reusable seeds such as `Core`,
 `FloatingPoint`, `FloatingPoint.IEEE`, `Analysis.Equidistribution`, and
 `Analysis.LeadingDigits` remain import-only aggregates while still seeding the
-transitive forbidden-edge audit.
+transitive forbidden-edge audit. Phase 12A additionally seeds
+`Analysis.FirstOrder`, `Algorithms.LinearSystems`,
+`Algorithms.LinearSystems.LU`, and `Algorithms.LinearSystems.LU.BlockLU` so
+that no structural layer can hide a reusable-to-source path.

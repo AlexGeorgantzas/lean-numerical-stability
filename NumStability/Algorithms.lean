@@ -206,7 +206,7 @@ import NumStability.Algorithms.LeastSquares.LSE
 import NumStability.Algorithms.LeastSquares.LSNormalEquations
 import NumStability.Algorithms.LeastSquares.LSPerturbation
 import NumStability.Algorithms.LeastSquares.LSQRSolve
-import NumStability.Algorithms.LinearSystems.Triangular
+import NumStability.Algorithms.LinearSystems
 import NumStability.Algorithms.LogExpProduct
 import NumStability.Algorithms.LU.BlockLU
 import NumStability.Algorithms.LU.BlockLUArbitraryNormSourceClosure
