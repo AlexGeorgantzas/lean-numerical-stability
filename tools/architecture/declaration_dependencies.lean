@@ -141,7 +141,7 @@ private unsafe def selfTest : IO Unit := do
   withImportModules #[{ module := `Lean }] {} fun env => do
     let parent := `NumStabilityArchitecture.selfTestParent
     let syntheticOne := Name.str parent "_simp_1_1"
-    let syntheticTwo := Name.str parent "_simp_2_1"
+    let syntheticTwo := Name.str parent "_simp_1_8"
     let reserved := Name.str ``List.map "eq_1"
 
     ensureSelfTest (isSyntheticSimpAuxiliary syntheticOne)
