@@ -14,6 +14,9 @@ book-formalization migration. The generator has two layers:
 - `check_layout.py` enforces the naming, classification, aggregate, generated-
   artifact, and documentation ratchet recorded in
   `docs/architecture/layout-exceptions.json`.
+- `check_norms_phase11b_ownership.py` enforces the immutable Phase 11B1
+  declaration-ownership manifest, owner DAG, direct-import allowlist, and
+  normalized declaration/signature/body graph preservation contract.
 - `check_provenance.py` validates license pointers and exact upstream evidence.
 - `sort_aggregate_imports.py` mechanically normalizes import-only umbrellas.
 
@@ -29,6 +32,25 @@ Check the compatibility contract independently:
 python tools/architecture/check_compatibility.py
 ```
 
+Check a retained dependency stream against the frozen Phase 11B1 ownership
+manifest. Pre-migration mode validates the Phase 11A Core input; post-migration
+mode validates the 24 semantic owners. Supplying the retained Phase 11A stream
+as `--baseline-tsv` additionally requires an exact normalized full-graph
+comparison:
+
+```text
+python tools/architecture/check_norms_phase11b_ownership.py \
+  --mode pre --dependency-tsv <phase11a-dependencies.tsv>
+python tools/architecture/check_norms_phase11b_ownership.py \
+  --mode post --dependency-tsv <phase11b1-dependencies.tsv> \
+  --baseline-tsv <phase11a-dependencies.tsv>
+```
+
+Run `--mode pre` from the Phase 11A checkout, or pass `--source` a retained copy
+of the frozen Phase 11A `Analysis/Norms/Core.lean`; the live Phase 11B1 Core is
+the declaration-free aggregate and intentionally fails the frozen pre-split
+source hash.
+
 Sort and deduplicate an import-only aggregate mechanically:
 
 ```text
@@ -40,6 +62,11 @@ Check that no architectural debt has increased:
 ```text
 python tools/architecture/check_layout.py
 ```
+
+In `layout-exceptions.json`, a complete-aggregate contract may use a descendant
+prefix string or a nonempty explicit module list. Explicit lists cover curated
+umbrellas whose canonical leaves are siblings rather than descendants of the
+umbrella module name, and they enforce the aggregate's exact direct-import set.
 
 Check license pointers and evidenced upstream attribution:
 

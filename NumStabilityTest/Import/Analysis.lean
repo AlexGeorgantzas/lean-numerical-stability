@@ -3,10 +3,9 @@ import NumStability.Analysis
 /-!
 # Analysis entry-point smoke test
 
-Checks reusable analysis declarations and the temporary canonical Section 1.17
-re-export retained to preserve the historical `import NumStability.Analysis`
-surface. Canonical Chapter 1 tests and isolated old-only wrapper tests exercise
-the narrower source paths directly.
+Checks the canonical reusable analysis families and the source-correspondence
+re-exports retained to preserve the historical `import NumStability.Analysis`
+surface. Isolated import tests exercise the narrower canonical paths directly.
 -/
 
 #check NumStability.RoundoffFamily
@@ -23,6 +22,29 @@ the narrower source paths directly.
 #check NumStability.problem2_11_empiricalDigitProbability
 #check NumStability.logarithmicLeadingDigitMass
 #check NumStability.orbit_mem_decimalDigitArc_iff
-#check NumStability.Ch14Ext.ch14ext_singularValue_abs_sub_le_of_euclideanLin_diff_bound
+#check NumStability.CVec
+#check NumStability.LpConjugateExponents
+#check NumStability.IsComplexLinearForm
+#check NumStability.VectorNormRatioSet
+#check NumStability.ComplexVectorMap
+#check NumStability.basisUpperTriangularizes
+#check NumStability.IsMixedSubordinateNormValue
+#check NumStability.MixedUnitImageNormSet
+#check NumStability.CMatrix
+#check NumStability.ComplexMatrixEigenvalueModulusSet
 #check NumStability.complexMatrixLpNorm
+#check NumStability.IsComplexMatrixSVD
+#check NumStability.euclideanReVec
+#check NumStability.ComplexMatrixFlatEntryNorm
+#check NumStability.ComplexMatrixFixedOperatorIdealNorm
+#check NumStability.IsComplexHadamardMatrix
+#check NumStability.ComplexMatrixLpUnitNormSet
+#check NumStability.MixedRelativeSingularDistanceSet
+#check NumStability.MixedInverseRelativeAmplificationRadiusSet
+#check NumStability.tendsto_const_mul_of_tendsto_zero_of_eventually_abs_le
+#check NumStability.Ch14Ext.ch14ext_singularValue_abs_sub_le_of_euclideanLin_diff_bound
+#check NumStability.HighamProblem61NormQuotientWitness
+#check NumStability.highamProblem65MonomialMatrix
+#check NumStability.highamProblem69_frobenius_op2_bounds
+#check NumStability.complexMatrixBlockShearOp2_eq_highamProblem610_sourceFormula
 #check NumStability.mixedInverseAmbientRelativeAmplificationRadiusSup_tendsto_conditionNumberProduct_of_positive_radii

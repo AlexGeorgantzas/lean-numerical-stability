@@ -3,9 +3,8 @@ Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed.,
 Chapter 6 (Norms), §6.1-6.2: unnumbered body-prose asides.
 
 This file closes four body-prose asides as named theorems, importing and
-reusing the existing norm layer (`NumStability.Analysis.Norms.Core`,
-`MatrixAlgebra`) plus Mathlib's `l2` operator-norm and unitary-group API.
-It edits no existing file.
+reusing the canonical `NumStability.Analysis.SingularValues.Basic` API
+plus Mathlib's `l2` operator-norm and unitary-group API.
 
   (i)   Condition-number lower bounds (p. 108-109):
         `κ(X) = ‖X‖·‖X⁻¹‖ ≥ 1` for any submultiplicative matrix norm, and
@@ -24,7 +23,7 @@ import Mathlib.Analysis.CStarAlgebra.Matrix
 import Mathlib.Analysis.Calculus.FDeriv.Norm
 import Mathlib.Analysis.InnerProductSpace.Calculus
 import Mathlib.Analysis.SpecialFunctions.Sqrt
-import NumStability.Analysis.Norms.Core
+import NumStability.Analysis.SingularValues.Basic
 
 namespace NumStability
 

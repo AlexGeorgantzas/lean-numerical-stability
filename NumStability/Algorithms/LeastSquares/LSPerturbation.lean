@@ -17,7 +17,7 @@
 import Mathlib.Data.Real.Basic
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixSpectral
-import NumStability.Analysis.Norms.Core
+import NumStability.Analysis.SingularValues.Realification
 import NumStability.Analysis.HighamChapter7
 
 namespace NumStability

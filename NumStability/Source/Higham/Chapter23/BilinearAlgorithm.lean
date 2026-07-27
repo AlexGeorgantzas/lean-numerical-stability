@@ -5,12 +5,12 @@ SPDX-License-Identifier: Apache-2.0
 See LICENSES/Apache-2.0.txt.
 Authors: QED
 -/
-import NumStability.Analysis.Norms.Core
+import Mathlib.Data.Matrix.Mul
+import Mathlib.Data.Real.Basic
 
 namespace NumStability
 
-open scoped BigOperators Topology
-open Filter
+open scoped BigOperators
 
 /-!
 # Higham Chapter 23: Bilinear algorithms

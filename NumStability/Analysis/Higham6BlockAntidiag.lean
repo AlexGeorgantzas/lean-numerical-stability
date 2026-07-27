@@ -13,7 +13,7 @@ isometry: its action on `(x,y)` is exactly `(A y, Aᴴ x)`.
 
 import Mathlib.Analysis.Normed.Lp.PiLp
 import Mathlib.Analysis.Normed.Operator.Basic
-import NumStability.Analysis.Norms.Core
+import NumStability.Analysis.MatrixNorms.Comparisons
 
 namespace NumStability
 

@@ -20,17 +20,23 @@
 
 - **Edition / pages:** 2nd ed., pp. 105–117.
 - **Audit mode:** core (primary labels + numbered equations + central definitions + precise body prose; Problems recorded but optional).
-- **Ownership:** Chapter 6 is the NORM FOUNDATION LAYER for the whole formalization. The transitional
-  norm implementation is `NumStability/Analysis/Norms/Core.lean`; the literal ambient-radius Theorem
-  6.4 owner is `NumStability/Source/Higham/Chapter06/Theorem04.lean`. The historical
-  `NumStability/Analysis/Norms.lean` path is a two-target compatibility facade. The declaration-free
-  `Source.Higham.Chapter06` aggregate is complete over its current physical descendants only; the
-  remaining Chapter 6 owner migrations are Phase 11B work. Secondary homes:
+- **Ownership:** Chapter 6 is the NORM FOUNDATION LAYER for the whole formalization. Phase 11B1
+  separates the reusable API into declaration-free `Analysis.Asymptotics`, `LinearOperators`,
+  `OperatorNorms`, `VectorNorms`, `MatrixNorms`, `SingularValues`, and `Conditioning` families.
+  `Analysis.Norms.Core` is now a declaration-free reusable aggregate over the 20 new semantic
+  leaves. The source aggregate `Source.Higham.Chapter06.Norms` contains `Problem01`, `Problem05`,
+  `Problem09`, `Problem10`, and the literal ambient-radius `Theorem04`; the declaration-free
+  `Source.Higham.Chapter06` aggregate imports that family. The historical `Analysis.Norms` path is
+  a two-target compatibility facade over Core and `Chapter06.Norms`. The separately audited
+  `Algorithms.Chapter06Lemma66`, `Analysis.Higham6Asides`, `Analysis.Higham6BlockAntidiag`, and
+  `Analysis.HighamChapter6Duality` owners remain in place for Phase 11B2. Secondary homes:
   `NumStability/Analysis/MatrixAlgebra.lean` (real rectangular `rectOpNorm2Le`
   transfer layer, Lemma 6.6(b)–(d) predicate forms), `NumStability/Algorithms/MatrixPowersLp.lean`
   and `Analysis/MatrixPowersLp185Primary.lean` (downstream consumers). Consumers cite the Lemma 6.6 chain
   from `Algorithms/HighamChapter10.lean` and `Algorithms/Ch14GaussJordanSPDCorollary.lean`.
 - **Audit date:** 2026-07-16 (branch `formalize/split4-claude`, worktree `ch18-split3-claude-...044646`).
+- **Organization update:** 2026-07-26 Phase 11B1; ownership paths changed, but the mathematical
+  coverage judgments and retained historical source anchors did not.
 - **Axiom spot-check:** `monotone_iff_absolute_complexVectorNorm`,
   `exists_rankOneCMatrix_isMixedSubordinateMatrixNormValue_one`,
   `complexMatrix_relativeSingularDistance_min_eq_inv_conditionNumberProduct`,
@@ -40,9 +46,43 @@
   `schneiderStrang_mixedSubordinateMatrixNormRatio_isMax` — all report exactly
   `[propext, Classical.choice, Quot.sound]`.
 
+## Canonical owner index
+
+The retained `l.` references below are frozen pre-Phase-11A source anchors for
+audit traceability; they are not current Core positions. Canonical ownership is:
+
+| Ledger rows | Canonical owner modules |
+| --- | --- |
+| Def. 6.1; Thm. 6.2; Table 6.1; (6.1); (6.4) | `Analysis.VectorNorms.Basic` (the source equality aside in (6.1) remains in historical `Analysis.Higham6Asides` until Phase 11B2) |
+| Lemma 6.3 | `Analysis.MatrixNorms.Attainment`, `Analysis.OperatorNorms.Attainment`, and `Analysis.VectorNorms.Duality` |
+| Thm. 6.4; (6.8) | `Source.Higham.Chapter06.Theorem04` over `Analysis.Conditioning.InversePerturbation` |
+| Thm. 6.5; (6.9)–(6.10); Problem 6.6 | `Analysis.Conditioning.DistanceToSingularity` |
+| Lemma 6.6 | Historical `Algorithms.Chapter06Lemma66` plus `Analysis.MatrixNorms.Comparisons` and `Analysis.MatrixAlgebra` |
+| Table 6.2 | `Analysis.MatrixNorms.Comparisons`, `Analysis.MatrixNorms.Hadamard`, and `Source.Higham.Chapter06.Problem01` |
+| (6.2)–(6.3) | `Analysis.VectorNorms.Duality` |
+| (6.5)–(6.6) | `Analysis.MatrixNorms.Basic`, `Analysis.MatrixNorms.Lp`, `Analysis.MatrixNorms.Attainment`, and `Analysis.SingularValues.Basic` |
+| (6.7) | `Analysis.OperatorNorms.Basic` and `Analysis.MatrixNorms.Lp` |
+| (6.11)–(6.13) | `Analysis.MatrixNorms.Lp` and `Analysis.MatrixNorms.Comparisons` |
+| (6.14)–(6.15) | `Analysis.MatrixNorms.Attainment` |
+| (6.16)–(6.21) | `Analysis.MatrixNorms.Comparisons`; (6.18) also uses `Analysis.VectorNorms.Interpolation` |
+| (6.22) | `Analysis.SingularValues.Basic` |
+| (6.23)–(6.24) | `Analysis.MatrixNorms.Lp` and `Analysis.MatrixNorms.Comparisons` |
+| Problem 6.1 | `Source.Higham.Chapter06.Problem01` over reusable `Analysis.MatrixNorms.Comparisons` and `Analysis.MatrixNorms.Hadamard` |
+| Problems 6.2–6.3 | `Analysis.OperatorNorms.Attainment` and `Analysis.MatrixNorms.Attainment` |
+| Problem 6.4 | `Analysis.MatrixNorms.Comparisons` |
+| Problem 6.5 | `Source.Higham.Chapter06.Problem05` over `Analysis.SingularValues.Basic` and `Analysis.MatrixNorms.UnitarilyInvariant` |
+| Problems 6.7–6.8 | `Analysis.MatrixNorms.SpectralRadius`; Problem 6.8 also uses `Analysis.LinearOperators.Triangularization` |
+| Problem 6.9 | `Source.Higham.Chapter06.Problem09` over `Analysis.SingularValues.Basic` |
+| Problem 6.10 | `Source.Higham.Chapter06.Problem10` |
+| Problem 6.11 | `Analysis.MatrixNorms.Lp`, `Analysis.MatrixNorms.Attainment`, and `Analysis.MatrixNorms.Comparisons` |
+| Problem 6.12 | `Analysis.MatrixNorms.Attainment` |
+| Problem 6.13 | `Analysis.MatrixNorms.Hadamard` |
+| Problems 6.14–6.15 | `Analysis.MatrixNorms.Lp`, `Analysis.MatrixNorms.Basic`, and `Analysis.MatrixNorms.Comparisons` |
+| Problem 6.16 | `Analysis.VectorNorms.Basic`, `Analysis.MatrixNorms.Basic`, and `Analysis.MatrixNorms.Attainment` |
+
 ## Primary labels
 
-| Label | Printed statement (summary) | Status | Lean declarations (`Norms.Core` unless noted; retained `l.` anchors are frozen pre-Phase-11A positions, with current Core positions equal to anchor + 9) | Scope notes |
+| Label | Printed statement (summary) | Status | Lean declarations and frozen historical anchors (canonical owners are indexed above) | Scope notes |
 |---|---|---|---|---|
 | Def. 6.1 | Monotone (`\|x\| ≤ \|y\| ⇒ ‖x‖ ≤ ‖y‖`) and absolute (`‖ \|x\| ‖ = ‖x‖`) norms on C^n | VERIFIED | `IsMonotoneComplexVectorNorm`, `IsAbsoluteComplexVectorNorm` (~l.635) | Abstract norms on `CVec n` via `IsComplexVectorNorm`. |
 | Thm. 6.2 (Bauer–Stoer–Witzgall) | A norm on C^n is monotone iff absolute | VERIFIED | `monotone_iff_absolute_complexVectorNorm` (l.799), `absolute_norm_iff_monotone_norm` (l.814); easy direction `absolute_of_monotone_complexVectorNorm` (l.787) | Proved from scratch (coordinate-contraction argument), not imported as hypothesis; printed strength (arbitrary norm on C^n). Higham himself defers the proof to Horn–Johnson / Stewart–Sun. |
@@ -94,7 +134,7 @@
 
 ## Problems (optional in core mode)
 
-| Problem | Status | Lean anchors (`Norms.Core`; retained `l.` anchors are frozen pre-Phase-11A positions, with current Core positions equal to anchor + 9) |
+| Problem | Status | Lean declarations and frozen historical anchors (canonical owners are indexed above) |
 |---|---|---|
 | 6.1 (prove Tables 6.1/6.2, attainability, Hadamard/Vandermonde S/2 equality) | SUBSTANTIAL | Rank-one witness family + profiles (l.13714–14150), all-quotient package (l.14346); real Hadamard S/2 witness (l.17806), complex roots-of-unity Vandermonde witness (l.18325); flat-entry/equal-singular-value equality analysis (l.13411–13611). The full "iff scalar multiple of Hadamard" only-if direction is characterized via the equality-case analysis (l.13599 notes the square full-rank real Hadamard iff as corollary); recorded as substantial rather than literal. |
 | 6.2 (`‖xy^*‖ = ‖x‖‖y‖_D` subordinate) | VERIFIED | l.19667 (functional form), l.19700 (concrete matrix form). |

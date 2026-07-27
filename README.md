@@ -173,23 +173,23 @@ approximation, and least-squares preconditioning.
 
 ## Project statistics
 
-Current Phase 11A structure for the production source surface, after the
-compatibility-preserving extraction of Higham Theorem 6.4's ambient-radius
-layer from the transitional norm core:
+Current Phase 11B1 structure for the production source surface, after the
+manifest-checked split of the transitional norm core into semantic reusable
+families and Higham Chapter 6 source leaves:
+
+The batch adds 20 reusable leaves, four source leaves, and seven declaration-
+free aggregates, and reclassifies the existing Core path as an aggregate.
 
 | | |
 |---|---|
-| Lean modules | **993** |
-| Direct imports | **4,069** |
-| Internal import edges | **2,700** |
-| External import edges | **1,369** |
+| Lean modules | **1,024** |
 | Import cycles | **0** |
-| Classified modules | **384 (38.671%)** |
-| Unclassified modules | **609** |
-| Source modules | **138** |
-| Aggregate modules | **77** |
+| Classified modules | **416 (40.625%)** |
+| Unclassified modules | **608** |
+| Source modules | **142** |
+| Aggregate modules | **85** |
 | Compatibility modules | **104** |
-| Reusable modules | **58** |
+| Reusable modules | **78** |
 | Internal / upstream / mixed modules | **2 / 5 / 0** |
 | Compatibility wrappers / direct targets | **104 / 204** |
 | Missing module docs | **217** |
@@ -197,11 +197,12 @@ layer from the transitional norm core:
 | Provenance contract | **207 Apache files / 5 upstream modules** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
-the standard `[propext, Classical.choice, Quot.sound]` axioms. The clean
-pre-Phase-11A checkpoint is the versioned
-[`2026-07-26 organization Phase 10F baseline`](docs/architecture/baselines/2026-07-26-organization-phase10f.md),
-and the exact Phase 11A ownership and validation contract is recorded in the
-[`Analysis norms source-tail migration map`](docs/architecture/migrations/2026-07-26-analysis-norms-source-tail-phase11a.md).
+the standard `[propext, Classical.choice, Quot.sound]` axioms. The immediate
+clean input to Phase 11B1 is the versioned
+[`2026-07-26 organization Phase 11A baseline`](docs/architecture/baselines/2026-07-26-organization-phase11a.md),
+and the exact Phase 11B1 ownership and validation contract is recorded in the
+immutable
+[`Analysis norms semantic-split map`](docs/architecture/migrations/2026-07-26-analysis-norms-semantic-phase11b1.md).
 These records include source, import, signature-dependency, and
 proof/body-dependency metrics; the live ratchet values above are enforced by
 the reviewed manifests.
@@ -259,19 +260,21 @@ Choose the narrowest entry point that matches the material you need:
 - `NumStability.Analysis.LeadingDigits` is the reusable leading-digit umbrella
   over decimal predicates, decimal powers, empirical histograms, and the
   logarithmic distribution.
-- `NumStability.Analysis.SingularValues` is the reusable singular-value
-  umbrella. Its `SingularValues.WeylMirsky` leaf owns the generic all-index
-  Weyl--Mirsky perturbation API used by Higham Chapter 14 Problem 14.15 and by
+- The declaration-free reusable norm family entry points are
+  `NumStability.Analysis.Asymptotics`, `LinearOperators`, `OperatorNorms`,
+  `VectorNorms`, `MatrixNorms`, `SingularValues`, and `Conditioning`. Their
+  semantic leaves separate foundational definitions, attainment, duality,
+  interpolation, matrix comparisons and Lp norms, singular values,
+  realification, spectral-radius bounds, and perturbation conditioning.
+  `SingularValues.WeylMirsky` remains the independently extracted generic
+  all-index perturbation API used by Higham Chapter 14 Problem 14.15 and by
   reusable least-squares analysis.
-- `NumStability.Analysis.Norms.Core` is the canonical Phase 11A implementation
-  path for the existing vector- and matrix-norm infrastructure. Phase 11A
-  reviewed only the extracted tail seam, so the residual owner remains
-  unclassified until Phase 11B assigns every declaration to reusable or
-  source leaves. Its absence from the reviewed `mixed` queue is therefore
-  inconclusive, not a claim that the file is tier-uniform. The historical
-  `NumStability.Analysis.Norms` path is an
-  import-only facade over Core and
-  `NumStability.Source.Higham.Chapter06.Theorem04`.
+- `NumStability.Analysis.Norms.Core` is now a declaration-free reusable
+  aggregate over the 20 Phase 11B1 reusable owners. The path remains importable
+  for the former reusable subset, but numbered Chapter 6 results now live under
+  `NumStability.Source.Higham.Chapter06`; the historical
+  `NumStability.Analysis.Norms` path remains an import-only two-target facade
+  over Core and `NumStability.Source.Higham.Chapter06.Norms`.
 - `NumStability.Analysis.Probability` is the reusable probability-analysis
   umbrella. Its `Probability.Gaussian` aggregate exposes
   `Probability.Gaussian.AbsoluteMoment`, the source-neutral Gaussian first-
@@ -299,10 +302,12 @@ Choose the narrowest entry point that matches the material you need:
   support under `Analysis.LeadingDigits`. The Section 2.7 power-frequency
   conclusion is `Chapter02.Section07.PowerLeadingDigits`; its reusable
   AddCircle and decimal-power development lives under `Analysis`. The
-  declaration-free `Chapter06` aggregate currently exposes the literal
-  ambient-radius form of Higham Theorem 6.4 through `Chapter06.Theorem04`.
-  This is complete over the chapter aggregate's current physical descendants,
-  not a claim that all Chapter 6 source material has moved. Chapter 14
+  declaration-free `Chapter06.Norms` aggregate exposes Problems 6.1, 6.5,
+  6.9, and 6.10 together with the literal ambient-radius form of Theorem 6.4;
+  the declaration-free `Chapter06` aggregate imports that family. This is
+  complete over the chapter aggregate's current physical descendants, not a
+  claim that the four Phase 11B2 historical Chapter 6 owners have moved.
+  Chapter 14
   contains `Problem13`, the canonical `Problem14` owner for Problem 14.14's
   Hyman determinant result, `Problem15` for the source-specific determinant
   bound and counterexample, and the declaration-free `Section05` Schulz family
@@ -355,8 +360,8 @@ the old-to-new path map and removal policy. The
 dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
-corpus is already Mathlib-style. After the Phase 10F ownership moves, the
-current ratchet records 609 unclassified modules, no fully classified mixed modules,
+corpus is already Mathlib-style. After the Phase 11B1 semantic norm split, the
+current ratchet records 608 unclassified modules, no fully classified mixed modules,
 217 missing module docs, 403 historical naming exceptions, and no declaration-
 bearing umbrella. CI prevents those queues from growing while each dependency-
 contained family is migrated. In particular, the Chapter 14, Chapter 21, and
@@ -406,6 +411,8 @@ NumStability/
   Analysis.lean                -- complete analysis aggregate, including legacy work
   Analysis/                    -- stability, perturbation theory, matrix algebra,
                                --   norms, concentration, and probability
+    Asymptotics.lean           -- reusable asymptotic-bound umbrella
+    Conditioning.lean          -- reusable conditioning umbrella
     Equidistribution.lean      -- reusable equidistribution umbrella
     Equidistribution/
       AddCircle.lean           -- Fourier/Haar orbit equidistribution API
@@ -415,19 +422,24 @@ NumStability/
       DecimalPowers.lean       -- powers, logarithms, and decimal arcs
       Empirical.lean           -- finite empirical digit histograms
       LogarithmicDistribution.lean -- logarithmic leading-digit law
+    LinearOperators.lean       -- reusable linear-operator umbrella
+    MatrixNorms.lean           -- reusable matrix-norm umbrella
     Norms.lean                 -- historical two-target compatibility facade
     Norms/
-      Core.lean                -- transitional norm implementation
+      Core.lean                -- declaration-free legacy Core surface
+    OperatorNorms.lean         -- reusable operator-norm umbrella
     Probability.lean           -- reusable probability-analysis umbrella
     Probability/
       Gaussian.lean            -- Gaussian-analysis umbrella
       Gaussian/AbsoluteMoment.lean -- reusable Gaussian moment API
       Haar.lean                -- reusable Haar-analysis umbrella
       Haar/HomogeneousSpaceUniqueness.lean -- invariant-measure uniqueness
+    SingularValues.lean        -- reusable singular-value umbrella
     Summation.lean             -- import-only summation-analysis umbrella
     Summation/
       Signs.lean               -- reusable sign and absolute-sum API
       ErrorBounds.lean         -- reusable conditioning and error-bound layer
+    VectorNorms.lean           -- reusable vector-norm umbrella
   Algorithms.lean              -- numerical-algorithm umbrella
   Algorithms/                  -- algorithm formalizations, with clusters such as
                                --   LU, QR, Cholesky, RandNLA, and TestMatrices
@@ -451,7 +463,12 @@ NumStability/
         Section07.lean         -- declaration-free Section 2.7 aggregate
         Section07/PowerLeadingDigits.lean -- power-frequency source conclusion
       Chapter04/
-      Chapter06.lean           -- current Chapter 6 aggregate
+      Chapter06.lean           -- complete current Chapter 6 aggregate
+      Chapter06/Norms.lean     -- Chapter 6 norm-result aggregate
+      Chapter06/Problem01.lean -- Problem 6.1 source closure
+      Chapter06/Problem05.lean -- Problem 6.5 source closure
+      Chapter06/Problem09.lean -- Problem 6.9 source closure
+      Chapter06/Problem10.lean -- Problem 6.10 source closure
       Chapter06/Theorem04.lean -- literal ambient-radius Theorem 6.4
       Chapter08/, Chapter10/, Chapter11/
       Chapter12/, Chapter13/, Chapter17/, Chapter20/
@@ -489,9 +506,12 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 ## Roadmap
 
 The selected formalization core scope is closed; the repository-organization
-migration is not. Phase 11B first splits the transitional
-`Analysis.Norms.Core` owner into semantic reusable and Chapter 6 source leaves.
-The subsequent batches classify the remaining 609 unclassified modules while
+migration is not. Phase 11B1 split the transitional `Analysis.Norms.Core`
+owner into 20 semantic reusable leaves and four Chapter 6 source leaves, then
+made Core a declaration-free aggregate. Phase 11B2 will relocate the separately
+audited `Algorithms.Chapter06Lemma66`, `Analysis.Higham6Asides`,
+`Analysis.Higham6BlockAntidiag`, and `Analysis.HighamChapter6Duality` owners.
+The subsequent batches classify the remaining 608 unclassified modules while
 splitting any mixed-content owners they expose, replace the 403 historical
 source/proof-stage names with semantic canonical paths plus compatibility
 shims, document the 217 remaining modules, and review the other giant-file

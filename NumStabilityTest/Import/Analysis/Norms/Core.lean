@@ -1,18 +1,29 @@
 import NumStability.Analysis.Norms.Core
 
 /-!
-# Transitional norms core import smoke test
+# Reusable norms aggregate import smoke test
 
-Checks representative vector, matrix, singular-value, attainment,
-conditioning, and inverse-perturbation declarations through the extracted
-implementation owner alone. Phase 11B will split and classify this core.
+Checks one representative from every reusable owner collected by this
+declaration-free aggregate.
 -/
 
 #check NumStability.CVec
-#check NumStability.complexVecLpNorm
+#check NumStability.LpConjugateExponents
+#check NumStability.IsComplexLinearForm
+#check NumStability.VectorNormRatioSet
+#check NumStability.ComplexVectorMap
+#check NumStability.basisUpperTriangularizes
+#check NumStability.IsMixedSubordinateNormValue
+#check NumStability.MixedUnitImageNormSet
 #check NumStability.CMatrix
+#check NumStability.ComplexMatrixEigenvalueModulusSet
 #check NumStability.complexMatrixLpNorm
-#check NumStability.complexMatrixSingularValue
-#check NumStability.exists_unit_vector_attaining_mixedSubordinateNormValue
-#check NumStability.complexMatrix_relativeSingularDistance_min_eq_inv_conditionNumberProduct
-#check NumStability.inversePerturbation_firstOrder_remainder_identity
+#check NumStability.IsComplexMatrixSVD
+#check NumStability.euclideanReVec
+#check NumStability.ComplexMatrixFlatEntryNorm
+#check NumStability.ComplexMatrixFixedOperatorIdealNorm
+#check NumStability.IsComplexHadamardMatrix
+#check NumStability.ComplexMatrixLpUnitNormSet
+#check NumStability.MixedRelativeSingularDistanceSet
+#check NumStability.MixedInverseRelativeAmplificationRadiusSet
+#check NumStability.tendsto_const_mul_of_tendsto_zero_of_eventually_abs_le

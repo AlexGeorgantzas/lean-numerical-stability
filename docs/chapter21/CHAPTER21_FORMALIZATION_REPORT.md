@@ -48,7 +48,7 @@ The exact row-to-declaration map is in `CHAPTER21_SOURCE_INVENTORY.md`.
 |---|---|
 | Abstract floating-point operations and gamma calculus | `FPModel`, `Rounding.lean`, rounded matrix-vector and triangular-solve operations |
 | Householder QR and Q application | Chapter 19 QR modules, including panel backward error and rounded action |
-| Finite matrix algebra and norms | `MatrixAlgebra.lean`, `Norms/Core.lean`, Mathlib finite matrices and asymptotics |
+| Finite matrix algebra and norms | `MatrixAlgebra.lean`, semantic `MatrixNorms`/`SingularValues` modules, Mathlib finite matrices and asymptotics |
 | Cholesky/normal-equation intermediates | existing Cholesky solve and backward-error declarations |
 
 ## New Dependencies

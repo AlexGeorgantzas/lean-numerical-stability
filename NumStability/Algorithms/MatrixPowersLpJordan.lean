@@ -21,14 +21,14 @@
 -- Infrastructure REUSED (source traceability):
 --   `CVec`, `CMatrix`, `complexVecLpNorm`,
 --   `complexVecLpNorm_isComplexVectorNorm`,
---   `complexVecLpNorm_ofReal_eq_sum_rpow`     — Analysis/Norms/Core.lean
+--   `complexVecLpNorm_ofReal_eq_sum_rpow`     — Analysis/VectorNorms/Basic.lean
 --   `complexMatrixVecMul`, `complexMatrixMul`, `complexMatrixMul_assoc`,
 --   `complexMatrixVecMul_mul`, `IsComplexMatrixRightInverse`
---                                             — Norms/Core.lean
+--                                             — Analysis/MatrixNorms/Basic.lean
 --   `HasComplexMatrixLpBound`, `hasComplexMatrixLpBound_apply`,
 --   `isComplexMatrixLpNormValue_le_of_hasComplexMatrixLpBound`,
 --   `complexMatrixLpNormOfReal` (+ value/bound/mul_le lemmas)
---                                             — Norms/Core.lean
+--                                             — Analysis/MatrixNorms/Lp.lean
 --   `cDiagMatrix`, `cDiagMatrix_vecMul`, `cDiagMatrix_conj_entry`
 --                                             — Algorithms/MatrixPowersComplex.lean ~366
 --   `cIdMatrix`, `cMatPow` (+_zero/_succ), `cMatPow_similarity`,
@@ -44,7 +44,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.Linarith
-import NumStability.Analysis.Norms.Core
+import NumStability.Analysis.MatrixNorms.Lp
 import NumStability.Algorithms.MatrixPowersLp
 
 namespace NumStability
@@ -283,7 +283,7 @@ theorem complexMatrixLpNormOfReal_cIdMatrix_le {n : ℕ} (hn : 0 < n)
 
 /-- Submultiplicative power bound: `‖M‖_p ≤ c` gives `‖M^k‖_p ≤ c^k` at every
     real exponent `1 ≤ p < ∞`, by induction via
-    `complexMatrixLpNormOfReal_mul_le` (`Analysis/Norms/Core.lean`). -/
+    `complexMatrixLpNormOfReal_mul_le` (`Analysis/MatrixNorms/Lp.lean`). -/
 theorem complexMatrixLpNormOfReal_cMatPow_le {n : ℕ} (hn : 0 < n)
     (p : ℝ) (hp : 1 ≤ p) (M : CMatrix n n) {c : ℝ} (hc : 0 ≤ c)
     (hM : complexMatrixLpNormOfReal hn p hp M ≤ c) (k : ℕ) :

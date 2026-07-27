@@ -7,7 +7,7 @@ two-norm distance to a perturbation having a unit-modulus eigenvalue.
 -/
 
 import NumStability.Analysis.MatrixPowersBaiDemmelGu
-import NumStability.Analysis.Norms.Core
+import NumStability.Analysis.Conditioning.DistanceToSingularity
 
 namespace NumStability
 

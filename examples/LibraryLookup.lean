@@ -1,7 +1,13 @@
 import NumStability
+import NumStability.Analysis.Asymptotics
+import NumStability.Analysis.Conditioning
 import NumStability.Analysis.HighamChapter7
-import NumStability.Analysis.Norms.Core
+import NumStability.Analysis.LinearOperators
+import NumStability.Analysis.MatrixNorms
+import NumStability.Analysis.OperatorNorms
 import NumStability.Analysis.RoundingProductBounds
+import NumStability.Analysis.SingularValues
+import NumStability.Analysis.VectorNorms
 import NumStability.Algorithms.Horner
 import NumStability.Algorithms.HighamChapter8
 import NumStability.Algorithms.HighamChapter9
@@ -56,11 +62,31 @@ small enough to serve as a smoke check for representative public declarations.
 #check prod_error_bound
 #check prod_signed_error_bound
 
--- Error, conditioning, and norm foundations from Split 1.
+-- Error foundations and the canonical norm families.
 #check absError
 #check relError
 #check normwiseBackwardErrorBoundedVec
 #check normwiseConditionNumberBoundedVec
+#check CVec
+#check LpConjugateExponents
+#check IsComplexLinearForm
+#check VectorNormRatioSet
+#check ComplexVectorMap
+#check basisUpperTriangularizes
+#check IsMixedSubordinateNormValue
+#check MixedUnitImageNormSet
+#check CMatrix
+#check ComplexMatrixEigenvalueModulusSet
+#check complexMatrixLpNorm
+#check IsComplexMatrixSVD
+#check euclideanReVec
+#check ComplexMatrixFlatEntryNorm
+#check ComplexMatrixFixedOperatorIdealNorm
+#check IsComplexHadamardMatrix
+#check ComplexMatrixLpUnitNormSet
+#check MixedRelativeSingularDistanceSet
+#check MixedInverseRelativeAmplificationRadiusSet
+#check tendsto_const_mul_of_tendsto_zero_of_eventually_abs_le
 #check complexVecLpNorm
 #check complexVecLpNorm_holder
 #check complexMatrixLpNorm_le_rieszThorin_of_closedCase

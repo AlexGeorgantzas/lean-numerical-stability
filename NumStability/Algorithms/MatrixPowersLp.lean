@@ -16,18 +16,19 @@
 -- `higham_eq_18_4_lower_real_diagonalizable`).
 --
 -- Infrastructure REUSED (source traceability):
---   `CVec`, `CMatrix`, `complexVecLpNorm`      — Analysis/Norms/Core.lean
---   `complexVecLpNorm_isComplexVectorNorm`     — Norms/Core.lean
---   `complexVecLpNorm_ofReal_monotone`         — Norms/Core.lean
+--   `CVec`, `complexVecLpNorm`, its norm proof and monotonicity
+--                                              — Analysis/VectorNorms/Basic.lean
+--   `CMatrix`, matrix multiplication/action, and right inverses
+--                                              — Analysis/MatrixNorms/Basic.lean
 --   `complexMatrixMul`, `complexMatrixVecMul`, `complexMatrixMul_assoc`,
 --   `complexMatrixVecMul_mul`, `IsComplexMatrixRightInverse`
---                                              — Norms/Core.lean
+--                                              — Analysis/MatrixNorms/Basic.lean
 --   `IsComplexMatrixLpNormValue`, `HasComplexMatrixLpBound`,
---   `hasComplexMatrixLpBound_apply`            — Norms/Core.lean
+--   `hasComplexMatrixLpBound_apply`            — Analysis/MatrixNorms/Lp.lean
 --   `isComplexMatrixLpNormValue_le_of_hasComplexMatrixLpBound`
---                                              — Norms/Core.lean
+--                                              — Analysis/MatrixNorms/Lp.lean
 --   `complexMatrixLpNormOfReal` (+ value/eq/mul_le lemmas)
---                                              — Norms/Core.lean
+--                                              — Analysis/MatrixNorms/Lp.lean
 --   `cDiagMatrix`, `cDiagMatrix_vecMul`        — Algorithms/MatrixPowersComplex.lean ~366
 -- The real-case proof skeletons mirrored here are `matPow_diagonal`,
 -- `matPow_similarity`, `higham_eq_18_4_upper_real_diagonalizable`,
@@ -36,7 +37,7 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Tactic.Ring
-import NumStability.Analysis.Norms.Core
+import NumStability.Analysis.MatrixNorms.Lp
 import NumStability.Algorithms.MatrixPowersComplex
 
 namespace NumStability
@@ -47,7 +48,7 @@ open scoped BigOperators
 -- Complex identity matrix and complex matrix powers
 -- ============================================================
 
-/-- Complex identity matrix on `Fin n`.  Neither `Analysis/Norms/Core.lean` nor
+/-- Complex identity matrix on `Fin n`.  Neither `Analysis/MatrixNorms/Basic.lean` nor
     `Algorithms/MatrixPowersComplex.lean` defines one (checked by search), so
     it is introduced here as the complex counterpart of `idMatrix`
     (Analysis/MatrixAlgebra.lean ~70). -/
@@ -76,7 +77,7 @@ theorem complexMatrixMul_cIdMatrix_right {n : ℕ} (A : CMatrix n n) :
   simp [mul_ite, mul_zero, Finset.sum_ite_eq', Finset.mem_univ]
 
 /-- Bridge from the repo's vector-action right-inverse predicate
-    (`IsComplexMatrixRightInverse`, `Analysis/Norms/Core.lean`) to the matrix-level
+    (`IsComplexMatrixRightInverse`, `Analysis/MatrixNorms/Basic.lean`) to the matrix-level
     identity `A · A⁻¹ = I`, obtained by applying the action to the coordinate
     basis vectors. -/
 theorem complexMatrixMul_eq_cIdMatrix_of_rightInverse {n : ℕ}
@@ -120,9 +121,9 @@ theorem cMatPow_succ (n : ℕ) (M : CMatrix n n) (k : ℕ) :
     `‖y‖_p ≤ c · ‖x‖_p` for every real exponent `1 ≤ p < ∞`.
 
     Built on the repo's monotonicity theorem
-    `complexVecLpNorm_ofReal_monotone` (`Analysis/Norms/Core.lean`, itself Higham
+    `complexVecLpNorm_ofReal_monotone` (`Analysis/VectorNorms/Basic.lean`, itself Higham
     Theorem 6.2) and the norm axioms `complexVecLpNorm_isComplexVectorNorm`
-    (also in `Analysis/Norms/Core.lean`); no equivalent single-lemma form was found by search. -/
+    (also in `Analysis/VectorNorms/Basic.lean`); no equivalent single-lemma form was found by search. -/
 theorem complexVecLpNorm_le_mul_of_forall_norm_le {n : ℕ} {p : ℝ} (hp : 1 ≤ p)
     {y x : CVec n} {c : ℝ}
     (h : ∀ i, ‖y i‖ ≤ c * ‖x i‖) (hc : 0 ≤ c) :

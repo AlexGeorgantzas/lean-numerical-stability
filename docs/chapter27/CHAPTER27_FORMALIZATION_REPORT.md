@@ -21,7 +21,7 @@
 | Secs. 27.5, 27.7.1, 27.7.4 | `ArithmeticParameters`, `PortableArithmeticModel` | reusable portable-model vocabulary |
 | Sec. 27.8, p. 499 | `twoPassScaledNorm`, `twoPassScaledNorm_sq`, `twoPassRoundedScaledNorm`, `higham27_twoPassRoundedScaledNorm_trace_safe` | exact squared-output correctness plus a literal conditional round-to-even returned-norm trace |
 | Sec. 27.8 / Appendix 27.5 | `scaledSumSqStep`, fold/nonnegativity invariants, `higham27_problem27_5_scaled_norm_correct_sq` | end-to-end exact-arithmetic correctness of the one-pass scaled norm |
-| Sec. 27.8, p. 500 | repository `complexVecOneNorm`, `higham27BlasComplexPseudoOneNorm`, comparison theorem | both printed complex one-norm formulas, kept distinct; true norm reused from `Analysis.Norms.Core` |
+| Sec. 27.8, p. 500 | repository `complexVecOneNorm`, `higham27BlasComplexPseudoOneNorm`, comparison theorem | both printed complex one-norm formulas, kept distinct; true norm reused from `Analysis.VectorNorms.Basic` |
 | (27.1) | `smithDivReal_eq`, `smithDivImag_eq`, `higham27_eq27_1_smith_complex_division` | exact Smith branch identity with explicit `c != 0` domain |
 | p. 500 symmetric Smith branch | `smithDivRealSymmetric_eq`, `smithDivImagSymmetric_eq`, `higham27_smith_complex_division_symmetric` | exact analogous identity with explicit `d != 0` domain |
 | p. 500 Smith range behavior | both `smith_*_branch_preDivision_safe` theorems and `smith_scaledDenominator_overflows_at_maxFiniteMagnitude` | scoped rounded safety for both branches; unconditional max-finite wording refuted |

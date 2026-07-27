@@ -6,7 +6,7 @@ import Mathlib.Analysis.CStarAlgebra.Module.Constructions
 import Mathlib.LinearAlgebra.Dimension.Constructions
 import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 import Mathlib.Order.Interval.Finset.Fin
-import NumStability.Analysis.Norms.Core
+import NumStability.Analysis.SingularValues.Basic
 
 /-!
 # Weyl--Mirsky singular-value perturbation

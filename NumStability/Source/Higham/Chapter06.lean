@@ -1,4 +1,4 @@
-import NumStability.Source.Higham.Chapter06.Theorem04
+import NumStability.Source.Higham.Chapter06.Norms
 
 /-!
 # Higham Chapter 6 source correspondence

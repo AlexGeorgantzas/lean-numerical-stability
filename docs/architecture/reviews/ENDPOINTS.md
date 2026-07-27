@@ -128,8 +128,30 @@ Phase 11A moved them to the canonical
 
 The split retains 166 one-way cross-owner dependencies from the source leaf to
 `Analysis.Norms.Core`: 67 occur in declaration signatures and 99 in bodies.
-There is no reverse dependency from the core into the source leaf. The old
-`Analysis.Norms` path is now a two-target compatibility facade, production
-consumers use the canonical owners, and `Analysis.Norms.Core` remains
-explicitly unclassified until the signature-graph-guided Phase 11B semantic
-split separates its generic and source-shaped declarations.
+There was no reverse dependency from the core into the source leaf. At the
+Phase 11A checkpoint, the old `Analysis.Norms` path became a two-target
+compatibility facade, production consumers used the canonical owners, and
+`Analysis.Norms.Core` remained explicitly unclassified pending the
+signature-graph-guided Phase 11B semantic split.
+
+## Phase 11B1 follow-up: semantic norm ownership
+
+Phase 11B1 completed that bounded semantic split. The frozen ownership
+manifest maps all 1,783 former Core constants to 24 declaration-bearing
+owners: 20 reusable leaves below semantic Analysis families and four source
+leaves for Higham Problems 6.1, 6.5, 6.9, and 6.10. The normalized declaration
+and signature/body dependency graph is preserved exactly, with no reusable-to-
+source path.
+
+`Analysis.Norms.Core` is now a declaration-free reusable aggregate, and the
+historical `Analysis.Norms` facade imports Core plus the dedicated
+`Source.Higham.Chapter06.Norms` aggregate. Direct production consumers were
+retargeted to their narrow canonical owners; no declaration-bearing production
+module still imports Core. Compatibility remains 104 wrappers and 204 direct
+targets.
+
+This phase deliberately does not move `Algorithms.Chapter06Lemma66`,
+`Analysis.Higham6Asides`, `Analysis.Higham6BlockAntidiag`, or
+`Analysis.HighamChapter6Duality`. Those four historically named source owners
+remain in the unclassified/noncanonical queues for the separately bounded
+Phase 11B2 move.

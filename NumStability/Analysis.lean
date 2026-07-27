@@ -1,6 +1,7 @@
 import NumStability.Analysis.Accumulation
 import NumStability.Analysis.AccuracyTests
 import NumStability.Analysis.AlternativeNumberSystems
+import NumStability.Analysis.Asymptotics
 import NumStability.Analysis.BeneficialRounding
 import NumStability.Analysis.BergerGeneral
 import NumStability.Analysis.BergerInequality
@@ -11,6 +12,7 @@ import NumStability.Analysis.Chopping
 import NumStability.Analysis.ComplexArithmetic
 import NumStability.Analysis.ComplexSqrt
 import NumStability.Analysis.ConditionEstimatorLowerBound
+import NumStability.Analysis.Conditioning
 import NumStability.Analysis.Counting
 import NumStability.Analysis.CramersRule
 import NumStability.Analysis.CStarMatrixBridge
@@ -42,8 +44,10 @@ import NumStability.Analysis.InstabilityWithoutCancellation
 import NumStability.Analysis.InverseOpNorm2
 import NumStability.Analysis.LeadingDigits
 import NumStability.Analysis.LiebTrace
+import NumStability.Analysis.LinearOperators
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixConcentration
+import NumStability.Analysis.MatrixNorms
 import NumStability.Analysis.MatrixPowersBinomialBound
 import NumStability.Analysis.MatrixPowersGautschi
 import NumStability.Analysis.MatrixPowersLaszlo
@@ -56,8 +60,8 @@ import NumStability.Analysis.MullerRecurrence
 import NumStability.Analysis.NearInteger
 import NumStability.Analysis.NilpotentJordanChain
 import NumStability.Analysis.Nonassociativity
-import NumStability.Analysis.Norms.Core
 import NumStability.Analysis.OperatorLog
+import NumStability.Analysis.OperatorNorms
 import NumStability.Analysis.PerturbationTheory
 import NumStability.Analysis.Probability
 import NumStability.Analysis.Problem2_10
@@ -94,8 +98,9 @@ import NumStability.Analysis.Summation
 import NumStability.Analysis.SylvesterSchurExistence
 import NumStability.Analysis.TieRules
 import NumStability.Analysis.TrigCancellation
+import NumStability.Analysis.VectorNorms
 import NumStability.Source.Higham.Chapter01.Section17
-import NumStability.Source.Higham.Chapter06.Theorem04
+import NumStability.Source.Higham.Chapter06
 import NumStability.Source.Higham.Chapter17.Equation22
 
 /-!

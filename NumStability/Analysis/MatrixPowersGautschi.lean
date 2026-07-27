@@ -5,6 +5,7 @@
 
 import NumStability.Algorithms.MatrixPowersComplex
 import NumStability.Algorithms.MatrixPowersLpJordan
+import NumStability.Analysis.MatrixNorms.Comparisons
 
 namespace NumStability
 

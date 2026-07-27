@@ -6,7 +6,7 @@ See LICENSES/Apache-2.0.txt.
 Authors: QED
 -/
 import NumStability.Algorithms.TestMatrices.Higham28
-import NumStability.Analysis.Norms.Core
+import NumStability.Analysis.MatrixNorms.Basic
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.MeasureTheory.Integral.CircleAverage
 

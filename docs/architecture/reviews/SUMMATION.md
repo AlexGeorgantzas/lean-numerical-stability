@@ -79,7 +79,8 @@ they do not make the modules source correspondence. These modules are now
 classified `reusable`.
 
 Across the completed summation batches, the reviewed mixed queue is reduced
-from nine modules to one: `Algorithms.Summation.Compensated`.
+from nine modules to zero. `Algorithms.Summation.Compensated` is now a
+declaration-free aggregate over the reusable implementation leaves.
 
 ## Module-system boundary
 

@@ -313,7 +313,7 @@ def render_summary(debt: dict[str, list[str]], modules: list[SourceModule]) -> s
 def write_baseline(
     path: Path,
     debt: dict[str, list[str]],
-    complete_aggregates: dict[str, str],
+    complete_aggregates: dict[str, Any],
     direct_import_ceilings: dict[str, Any],
 ) -> None:
     data = {
@@ -376,17 +376,47 @@ def check() -> int:
     structural = {
         name for name, tier in assignment.items() if tier in {"aggregate", "compatibility"}
     }
-    for aggregate, prefix in sorted(aggregate_contracts.items()):
+    for aggregate, contract in sorted(aggregate_contracts.items()):
         if aggregate not in by_name:
             failures.append(f"complete aggregate is missing: {aggregate}")
             continue
-        if not isinstance(prefix, str):
-            raise LayoutError(f"aggregate prefix for {aggregate} must be a string")
-        expected = {
-            name
-            for name in by_name
-            if name.startswith(prefix) and name not in structural
-        }
+        if isinstance(contract, str):
+            expected = {
+                name
+                for name in by_name
+                if name.startswith(contract) and name not in structural
+            }
+        elif (
+            isinstance(contract, list)
+            and contract
+            and all(isinstance(name, str) for name in contract)
+        ):
+            expected = set(contract)
+            absent = sorted(expected - set(by_name))
+            if absent:
+                failures.append(
+                    f"{aggregate} names {len(absent)} missing canonical member(s): "
+                    + ", ".join(absent)
+                )
+            actual = set(by_name[aggregate].imports)
+            missing_direct = sorted(expected - actual)
+            extra_direct = sorted(actual - expected)
+            if missing_direct or extra_direct:
+                details: list[str] = []
+                if missing_direct:
+                    details.append("missing " + ", ".join(missing_direct))
+                if extra_direct:
+                    details.append("extra " + ", ".join(extra_direct))
+                failures.append(
+                    f"{aggregate} direct imports differ from its explicit member contract: "
+                    + "; ".join(details)
+                )
+            continue
+        else:
+            raise LayoutError(
+                f"aggregate contract for {aggregate} must be a prefix string "
+                "or a nonempty list of module names"
+            )
         missing = sorted(expected - reachable(aggregate, by_name))
         if missing:
             failures.append(
@@ -437,7 +467,7 @@ def main() -> int:
             )
         if tracked_generated():
             raise LayoutError("refusing to baseline tracked generated artifacts")
-        complete_aggregates: dict[str, str] = {}
+        complete_aggregates: dict[str, Any] = {}
         direct_import_ceilings: dict[str, Any] = {
             "NumStability.Algorithms": {"NumStability.Analysis.": 45}
         }

@@ -6,7 +6,7 @@ See LICENSES/Apache-2.0.txt.
 Authors: QED
 -/
 import Mathlib.Tactic.NoncommRing
-import NumStability.Analysis.Norms.Core
+import NumStability.Analysis.MatrixNorms.Basic
 import NumStability.Source.Higham.Chapter23.GammaAsymptotics
 import NumStability.Source.Higham.Chapter23.WinogradInnerProduct
 

@@ -40,7 +40,7 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.TriangularSolveCombined` | `NumStability.Algorithms.LinearSystems.Triangular.Combined` |
 | `NumStability.Analysis.HighamChapter2PowerLeadingDigits` | `NumStability.Source.Higham.Chapter02.Problem11` and `NumStability.Source.Higham.Chapter02.Section07.PowerLeadingDigits` |
 | `NumStability.Analysis.LeadingDigitDistribution` | `NumStability.Analysis.LeadingDigits.LogarithmicDistribution` |
-| `NumStability.Analysis.Norms` | `NumStability.Analysis.Norms.Core` and `NumStability.Source.Higham.Chapter06.Theorem04` |
+| `NumStability.Analysis.Norms` | `NumStability.Analysis.Norms.Core` and `NumStability.Source.Higham.Chapter06.Norms` |
 | `NumStability.Analysis.Problem2_11` | `NumStability.Source.Higham.Chapter02.Problem11` |
 | `NumStability.Analysis.Problem2_2` | `NumStability.Source.Higham.Chapter02.Problem02` |
 | `NumStability.Analysis.Problem2_4` | `NumStability.Source.Higham.Chapter02.Problem04` |
@@ -127,23 +127,27 @@ canonical chapter aggregates are discovery entry points, not wrapper targets:
 `NumStability.Source.Higham.Chapter27`,
 `NumStability.Source.Higham.Chapter28`, and
 `NumStability.Source.Higham.Chapter28.Equation02` contain only documentation and imports.
-The reusable `NumStability.Analysis.Equidistribution` and
-`NumStability.Analysis.LeadingDigits` aggregates, the reusable
-`NumStability.Analysis.Probability.Haar` and
-`NumStability.Analysis.SingularValues` aggregates, and the source
-`NumStability.Source.Higham.Chapter02.Section07` aggregate are likewise
-declaration-free discovery entry points.
+The reusable `NumStability.Analysis.Equidistribution`, `LeadingDigits`,
+`Asymptotics`, `Conditioning`, `LinearOperators`, `MatrixNorms`,
+`OperatorNorms`, `Probability.Haar`, `SingularValues`, and `VectorNorms`
+aggregates, and the source `NumStability.Source.Higham.Chapter02.Section07` and
+`NumStability.Source.Higham.Chapter06.Norms` aggregates, are likewise
+declaration-free discovery entry points. `NumStability.Analysis.Norms.Core` is
+also declaration-free and is audited as a reusable entry point for its former
+reusable subset; numbered Chapter 6 results are intentionally exposed through
+the source aggregate and the broader historical `Analysis.Norms` facade.
 
 The compatibility inventory now contains 104 wrappers with 204 direct canonical
 targets.
 
-The historical `NumStability.Analysis.Norms` path is a two-target facade. It
-re-exports the transitional core implementation and the literal Higham
-Theorem 6.4 ambient-radius source leaf, preserving both halves of its former
-surface. Production consumers import `NumStability.Analysis.Norms.Core` or
-`NumStability.Source.Higham.Chapter06.Theorem04` directly. The Core owner
-remains explicitly unclassified until Phase 11B separates its reusable
-mathematics from the remaining source-shaped Problem 6.x declarations.
+The historical `NumStability.Analysis.Norms` path remains a two-target facade.
+It re-exports the declaration-free reusable Core aggregate and the dedicated
+`Source.Higham.Chapter06.Norms` aggregate, preserving its former generic
+surface together with Problems 6.1, 6.5, 6.9, and 6.10 and Theorem 6.4. New
+production code imports the narrow semantic family or source leaf it needs;
+no declaration-bearing production module imports the historical facade or
+Core. Core is now classified as an aggregate and owns no declarations. This
+retarget changes neither the 104-wrapper inventory nor its 204 direct targets.
 
 `NumStability.Source.Higham.Chapter02.Problem22` has one temporary
 canonical-side compatibility exception: in addition to locating the reusable

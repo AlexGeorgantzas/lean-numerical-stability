@@ -6,6 +6,7 @@
 -- to the (closed) complex-Jordan Theorem 18.1 with t = 1.
 
 import NumStability.Algorithms.MatrixPowersComplex
+import NumStability.Analysis.MatrixNorms.SpectralRadius
 
 namespace NumStability
 

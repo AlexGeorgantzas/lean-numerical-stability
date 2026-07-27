@@ -1,4 +1,4 @@
-import NumStability.Analysis.Norms.Core
+import NumStability.Analysis.Conditioning.InversePerturbation
 
 namespace NumStability
 

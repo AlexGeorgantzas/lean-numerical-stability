@@ -5,7 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 See LICENSES/Apache-2.0.txt.
 Authors: QED
 -/
-import NumStability.Analysis.Norms.Core
+import NumStability.Analysis.VectorNorms.Basic
+import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.FloatingPointArithmetic
 import NumStability.Analysis.Problem2_24
 import Mathlib.Data.Complex.Basic

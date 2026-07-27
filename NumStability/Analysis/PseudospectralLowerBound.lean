@@ -67,6 +67,7 @@
 -- at all.
 
 import NumStability.Algorithms.MatrixPowersPseudospectralCriterion
+import NumStability.Analysis.SingularValues.Basic
 
 namespace NumStability
 

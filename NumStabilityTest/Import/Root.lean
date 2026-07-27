@@ -53,6 +53,10 @@ example : (fp : FPModel) → (n : ℕ) → (Fin n → ℝ) → ℝ :=
 #check ieeeNaiveMax_not_nan_propagating
 #check problem2_22_guard_digit_a_sub_b_exact
 #check complexMatrixLpNorm
+#check HighamProblem61NormQuotientWitness
+#check highamProblem65MonomialMatrix
+#check highamProblem69_frobenius_op2_bounds
+#check complexMatrixBlockShearOp2_eq_highamProblem610_sourceFormula
 #check mixedInverseAmbientRelativeAmplificationRadiusSup_tendsto_conditionNumberProduct_of_positive_radii
 #check problem2_11_decimalLeadingDigit
 #check problem2_11EmpiricalSource
