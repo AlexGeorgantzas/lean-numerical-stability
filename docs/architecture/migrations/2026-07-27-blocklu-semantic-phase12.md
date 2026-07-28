@@ -798,10 +798,23 @@ and its rendered Markdown is 4,962 bytes with SHA-256
 Layout, compatibility, provenance, source-boundary, placeholder/debt,
 strict-source reproducibility, `git diff --check`, and index checks all pass.
 
-These are pre-commit results. A clean implementation-commit repeat of the
-graph, static, build, test, lookup, downstream, and axiom gates remains
-required before this slice is pushed. The final Phase 12 baseline remains
-reserved for the completed 1,990-declaration migration.
+Implementation commit `88c73e6c0` left the tracked worktree and index clean.
+The clean-commit repeat reproduced the candidate declaration stream
+byte-for-byte and repeated the checker self-test, pinned pre check, cumulative
+stage check, strict-source capture, and every static gate with the same source
+tree hash, counts, and exact graph result recorded above. Its clean JSON
+capture is 95,398 bytes with SHA-256
+`4C690F7A9CACFCF13BCE00CAF1FEF5FA432417143AD8164A54FAAB570B8A5997`,
+and its clean rendered Markdown is 4,500 bytes with SHA-256
+`BD657A4E01DBFFDA79207B4C4B365636E5B46C33C689B867BE68AD3626470C8F`.
+From that clean commit, `lake build NumStability` passed all 4,844 jobs,
+`lake test` passed its 5,372-job graph, and
+`lake build NumStability NumStabilityTest` passed all 5,374 jobs. The
+repository lookup, ten-target downstream build with all 4,706 jobs, and the
+complete `BlockLUFactSpec` API and representative axiom checks also passed
+again. This satisfies the clean-implementation repeat for the safe reusable
+slice; the final Phase 12 baseline remains reserved for the completed
+1,990-declaration migration.
 
 ## Bounded exclusions and completion boundary
 
