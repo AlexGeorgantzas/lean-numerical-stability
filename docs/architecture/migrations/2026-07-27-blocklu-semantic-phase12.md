@@ -854,6 +854,64 @@ completed destinations. All 295 reusable declarations in the frozen partition
 have moved; the remaining 1,695 declarations belong to 68 reviewed source
 destinations.
 
+### Phase 12B recursive-factorization validation evidence
+
+Implementation commit `89f615e76` left the tracked worktree and index clean.
+The fresh
+`benchmark-results/architecture/phase12b-recursive-declarations-v2.tsv`
+stream is 115,724,349 bytes with SHA-256
+`32ADA469E27A971E9B0BB972F29C51E1DCBE99104A1492D4C69549C339825563`.
+The frozen baseline remains 115,717,110 bytes with SHA-256
+`FD37F73D83F0206E40291576E1F9496185F09C21928ABED147B5CE2A6EF83AED`,
+and the frozen 1,990-row manifest digest remains
+`90F28D568A611035DE20839F2C30CB2800B75F2FC1DF2CE1373E9FFDD3D11287`.
+The checker self-test and pinned pre check passed. The cumulative stage check
+passed for 295 declarations across fifteen completed destinations, preserving
+the acyclic 83-destination ownership graph and its 437 cross-owner edges
+exactly except for the four reviewed inlined-private-helper body edges. It
+rejects any additional missing edge, retained reviewed edge, signature change,
+candidate-only edge, or lost self-edge. The two-row private-rewrite TSV has
+SHA-256
+`5B1904133669B884D4EE6B30A877CCF4E9B8E20FB29CCD97CBEF07B3674B61A8`;
+the four-row reviewed-edge TSV has SHA-256
+`8F86D06CE5EAF74E9D0B5A25C46D93289C20BE064E2FDC989ECBA67916A03F40`.
+
+The static gates reported 1,054 production modules: 451 classified and 603
+unclassified, with zero mixed classified modules. Tier coverage is 42.789
+percent, comprising 92 aggregate modules, 108 compatibility modules, two
+internal modules, 92 reusable modules, 152 source modules, and five evidenced
+upstream modules. The import graph has 4,264 direct imports, 2,853 internal and
+1,411 external, with zero unresolved project imports and zero cycles. Within
+the reviewed classified graph there are zero direct or transitive
+reusable-to-source paths. The existing repository-wide queues remain 216
+modules without module documentation and 399 historical naming exceptions;
+there are zero declaration-bearing umbrellas and zero unsorted aggregate
+imports. Compatibility covers 108 wrappers and 208 targets, while provenance
+covers 207 Apache-licensed files plus five evidenced upstream files.
+
+The strict-source tree SHA-256 is
+`C85CDB98B68E7F599B5FC0FE3C0545FEDD2BE0813CE6CD50EAC00BCF870CD527`.
+Its clean JSON capture is 95,408 bytes with SHA-256
+`88DDC4E3C41B1EFF5E4B22780A1B8E152C2A225C45F00A471A0A432D2BEA88CD`,
+and its clean rendered Markdown is 4,500 bytes with SHA-256
+`4C650663FEDD9B9C8D29C32C7AE6676D2286457CDE3DF7B72A1F868779D16BD1`.
+Layout, compatibility, provenance, source-boundary, placeholder/debt,
+strict-source reproducibility, `git diff --check`, and index checks all pass.
+
+From the clean implementation commit, `lake build NumStability` passed all
+4,845 jobs. `lake test` passed all 5,374 jobs, and
+`lake build NumStability NumStabilityTest` passed all 5,376 jobs.
+`lake env lean examples/LibraryLookup.lean` succeeded, as did the explicit
+4,707-job build of the historical entry points and ten direct or downstream
+BlockLU consumers. An external scratch API/axiom probe checked all six public
+declarations in the new leaf plus six representative historical/source
+consumers; all twelve reported exactly the accepted
+`[propext, Classical.choice, Quot.sound]` axiom set. The probe has SHA-256
+`BD6F47DBF6E3EB8D6D4953889D31759131EA123EE84D6C40BF33B5C004A7FAD8`.
+The final tracked worktree and index remained clean throughout this validation
+sequence. This completes the reusable portion of the frozen Phase 12
+partition; the 68-owner source split remains open.
+
 ## Bounded exclusions and completion boundary
 
 This batch does not rename public declarations or namespaces, change
