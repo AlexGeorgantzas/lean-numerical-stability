@@ -4,12 +4,17 @@ import NumStability.Algorithms.LinearSystems.LU.BlockLU
 # Block LU aggregate import smoke test
 
 This test imports only the canonical reusable Block LU aggregate and checks
-representatives from both Phase 12A declaration-bearing children.
+representatives from every declaration-bearing child completed through the
+first Phase 12B wave.
 -/
 
 #check NumStability.idBlock
 #check NumStability.blockMaxNorm
 #check NumStability.blockMaxNorm_le_blockInfNorm
+#check NumStability.IsBlockDiagDomCol
+#check NumStability.BlockLUBackwardError
 #check NumStability.MatMulFirstOrderBound
 #check NumStability.MatMulFirstOrderSpec
 #check NumStability.DiagonalBlockSolveFirstOrderSpec
+#check NumStability.growthFactorEntry_sq_kappa_budget_le_of_growth_le_inv_ratio
+#check NumStability.higham13_maxNorm_vecResidual_lift

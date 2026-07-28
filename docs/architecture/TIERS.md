@@ -79,8 +79,8 @@ one-target compatibility wrappers.
 Phase 12A begins the Block LU semantic split with six declaration-bearing
 destinations. `Analysis.FirstOrder` is now an aggregate over reusable
 `AsymptoticFamilies` and `FixedPrecision`; `Analysis.MatrixNorms` adds the
-reusable `EntrywiseMaximum` leaf. The new declaration-free
-`Algorithms.LinearSystems.LU.BlockLU` family currently exposes reusable
+reusable `EntrywiseMaximum` leaf. In that phase, the new declaration-free
+`Algorithms.LinearSystems.LU.BlockLU` family initially exposed reusable
 `BlockMatrices` and `FirstOrderModels`, while
 `Source.Higham.Chapter13.Theorem05.Recurrences` owns the numbered source
 recurrences. The historical `Algorithms.LU.BlockLU` module remains an
@@ -90,9 +90,15 @@ only its generic max-entry family moved. Neither path is described as a
 compatibility wrapper yet; tests under `Import.Compatibility` exercise their
 staged historical import surfaces until the final forwarding facades exist.
 
-The Phase 12A ratchet classifies 442 of 1,045 production modules (42.297%):
-152 as source, 92 as aggregate, 108 as compatibility, 83 as reusable, 2 as
-internal, and 5 as upstream. The explicit unclassified queue is 603 modules,
+The first Phase 12B wave adds four reusable Block LU leaves:
+`DiagonalDominance`, `FactorizationError`, `GrowthBounds`, and
+`ResidualLifting`. The canonical Block LU aggregate exposes them directly,
+while the historical module imports them to preserve its staged public surface.
+
+The first Phase 12B wave ratchet classifies 446 of 1,049 production modules
+(42.517%): 152 as source, 92 as aggregate, 108 as compatibility, 87 as
+reusable, 2 as internal, and 5 as upstream. The explicit unclassified queue is
+603 modules,
 and no fully classified module is currently marked mixed. The
 `NumStability.Algorithms` direct-import
 ceilings are 442 imports below `NumStability`, including 43 below

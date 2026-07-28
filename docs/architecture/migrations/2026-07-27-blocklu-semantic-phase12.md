@@ -640,9 +640,79 @@ BlockLU consumer (4,698 jobs). A fresh candidate extraction, stage ownership
 check, strict-source capture, and complete static-gate rerun reproduced the
 same hashes and counts recorded above.
 
-This evidence completes only the six-leaf Phase 12A extraction. Phase 12
-remains open for the 1,817 declarations assigned to the other 77 destinations
-and for the sibling BlockLU modules, which require a separate ownership map.
+This evidence completed only the six-leaf Phase 12A extraction. At that
+checkpoint, 1,817 declarations assigned to the other 77 destinations remained,
+together with the sibling BlockLU modules requiring a separate ownership map.
+
+## Phase 12B Wave 1 implementation
+
+The first reusable Phase 12B wave extracts 43 public semantic declarations
+from 35 authored source commands:
+
+| Canonical destination | Commands | Semantic declarations |
+| --- | ---: | ---: |
+| `Algorithms.LinearSystems.LU.BlockLU.DiagonalDominance` | 8 | 8 |
+| `Algorithms.LinearSystems.LU.BlockLU.FactorizationError` | 1 | 9 |
+| `Algorithms.LinearSystems.LU.BlockLU.GrowthBounds` | 10 | 10 |
+| `Algorithms.LinearSystems.LU.BlockLU.ResidualLifting` | 16 | 16 |
+| **Total** | **35** | **43** |
+
+The 806 declaration and attached-comment lines in those leaves are verbatim
+copies of their reviewed current-source spans. Removing those spans plus their
+single shared separator deletes exactly 807 lines from the historical file;
+its complete declaration-bearing namespace tail is otherwise text-identical.
+The historical module imports the four leaves, and the canonical Block LU
+aggregate exposes them without adding a source dependency.
+
+This wave changes no authored-private owner, so the private-rewrite file remains
+header-only. Its cumulative stage target is 216 of 1,990 declarations across
+ten destinations. After it, 1,774 mapped declarations remain: 79 reusable and
+1,695 source-owned across 73 destinations.
+
+### Phase 12B Wave 1 validation evidence
+
+Pre-commit validation reproduced the format-2 graph contract. The fresh
+`benchmark-results/architecture/phase12b-wave1-declarations-v2.tsv` stream is
+115,722,432 bytes with SHA-256
+`645DAC58F4DA835168F8E29EDB6DD0D247EF6BA5F8B8A59D8D46C51928526665`;
+the frozen baseline remains 115,717,110 bytes with SHA-256
+`FD37F73D83F0206E40291576E1F9496185F09C21928ABED147B5CE2A6EF83AED`.
+The ownership-checker self-test and pinned pre check passed for all 1,990
+declarations. The cumulative stage check passed for 216 moved declarations
+across ten destinations, reporting an acyclic 83-destination graph with 437
+cross-owner edges and exact preservation of the complete normalized contracted
+graph.
+
+A focused build of the four new declaration-bearing leaves, the canonical
+Block LU aggregate, their four canonical import tests, and the isolated
+old-only historical BlockLU test passed all 3,003 jobs. Representative
+declarations from every new leaf reported exactly the accepted
+`[propext, Classical.choice, Quot.sound]` axiom set. The full
+`lake build NumStability` passed all 4,840 jobs and a warm repeat exited
+successfully. `lake test` passed all 5,364 jobs, and
+`lake build NumStability NumStabilityTest` passed all 5,366 jobs.
+`lake env lean examples/LibraryLookup.lean` also succeeded. An explicit build
+of every direct or downstream BlockLU consumer listed above passed all 4,702
+jobs, and each target was then warm-confirmed independently.
+
+The static gates reported 1,049 production modules: 446 classified and 603
+unclassified, with zero mixed classified modules and zero direct or transitive
+reusable-to-source paths. The import graph had zero unresolved project imports
+and zero cycles; the layout ratchet had zero declaration-bearing umbrellas and
+zero unsorted aggregate imports. The existing repository-wide queues remain
+216 modules without module documentation and 399 historical naming exceptions.
+Compatibility covered 108 wrappers and 208 targets, while provenance covered
+207 Apache-licensed files plus five evidenced upstream files. The strict-source
+tree SHA-256 was
+`9c2f4a5377b7020899786a31eec353806eec13d848a404efda8814c98cfd4731`.
+Layout, compatibility, provenance, source-boundary, placeholder/debt,
+strict-source reproducibility, and `git diff --check` all passed.
+
+This is pre-commit Wave 1 evidence. Completion gate 15 remains outstanding:
+commit the implementation, repeat the full graph, static, and build validation
+from that clean implementation commit, then record the final baseline and
+evidence commit. Phase 12 remains open for the other 1,774 mapped declarations
+across 73 destinations and for the separately mapped sibling BlockLU modules.
 
 ## Bounded exclusions and completion boundary
 

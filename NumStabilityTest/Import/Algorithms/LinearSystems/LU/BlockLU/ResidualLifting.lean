@@ -1,0 +1,25 @@
+import NumStability.Algorithms.LinearSystems.LU.BlockLU.ResidualLifting
+
+/-!
+# Block LU residual-lifting import smoke test
+
+This test imports only the canonical declaration-bearing leaf and checks all
+sixteen reviewed declarations.
+-/
+
+#check NumStability.dhsBlockBackCurrentBlock_infNormVec_le_suffix
+#check NumStability.dhsBlockBackUpperSuffixColumn
+#check NumStability.dhsBlockBackUpperSuffixVector
+#check NumStability.dhsBlockBackUpperSuffixVector_apply
+#check NumStability.dhsBlockBackUpperTailColumn
+#check NumStability.dhsBlockBackUpperTailColumn_apply
+#check NumStability.dhsBlockBackUpperTailRowFlat
+#check NumStability.dhsBlockBackUpperTailRowFlat_apply
+#check NumStability.dhsBlockBackUpperTailRowFlat_mul_apply
+#check NumStability.dhsBlockBackUpperTailVector
+#check NumStability.dhsBlockBackUpperTailVector_apply
+#check NumStability.dhsBlockBackUpperTail_infNormVec_le_suffix
+#check NumStability.higham13_maxNorm_upperBlockRowResidual_lift
+#check NumStability.higham13_maxNorm_upperBlockSuffixResidual_lift
+#check NumStability.higham13_maxNorm_vecResidual_lift
+#check NumStability.higham13_maxNorm_vecResidual_lift_zero_columns

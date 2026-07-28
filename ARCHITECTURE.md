@@ -62,10 +62,12 @@ split from the reusable library.
   `IEEE.NaiveMaximum`.
 - `NumStability.Algorithms.LinearSystems` is the declaration-free reusable
   linear-systems entry point. It re-exports the reviewed `Triangular` family
-  and the canonical `LU` hierarchy. During Phase 12A,
-  `LinearSystems.LU.BlockLU` exposes the reusable `BlockMatrices` and
-  `FirstOrderModels` foundations; later Block LU slices extend that umbrella
-  without admitting numbered Chapter 13 correspondence.
+  and the canonical `LU` hierarchy. Phase 12A established the reusable
+  `LinearSystems.LU.BlockLU` umbrella with `BlockMatrices` and
+  `FirstOrderModels`. The first Phase 12B wave adds `DiagonalDominance`,
+  `FactorizationError`, `GrowthBounds`, and `ResidualLifting`; later Block LU
+  slices extend that umbrella without admitting numbered Chapter 13
+  correspondence.
 - `NumStability.Algorithms.Summation` is the complete published summation
   surface. Its `Recursive` and `Pairwise` family umbrellas preserve source
   reachability, while reusable consumers import their `.Core` leaves.
