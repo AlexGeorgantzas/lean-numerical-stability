@@ -708,11 +708,19 @@ tree SHA-256 was
 Layout, compatibility, provenance, source-boundary, placeholder/debt,
 strict-source reproducibility, and `git diff --check` all passed.
 
-This is pre-commit Wave 1 evidence. Completion gate 15 remains outstanding:
-commit the implementation, repeat the full graph, static, and build validation
-from that clean implementation commit, then record the final baseline and
-evidence commit. Phase 12 remains open for the other 1,774 mapped declarations
-across 73 destinations and for the separately mapped sibling BlockLU modules.
+Implementation commit `78debf173` left the tracked worktree and index clean.
+The clean-commit repeat then reproduced the candidate declaration stream
+byte-for-byte and repeated the checker self-test, pinned pre check, cumulative
+stage check, strict-source capture, and every static gate with the same hashes,
+counts, and exact graph result recorded above. From that clean commit,
+`lake build NumStability` passed all 4,840 jobs, `lake test` exited successfully
+with 5,364 planned jobs, and `lake build NumStability NumStabilityTest` passed
+all 5,366 jobs. The repository lookup, eight-target downstream build with all
+4,702 jobs, and representative axiom checks also passed again. This satisfies
+the clean-implementation repeat for Wave 1; the final Phase 12 baseline remains
+reserved for the completed 1,990-declaration migration. Phase 12 remains open
+for the other 1,774 mapped declarations across 73 destinations and for the
+separately mapped sibling BlockLU modules.
 
 ## Bounded exclusions and completion boundary
 
