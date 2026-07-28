@@ -65,9 +65,10 @@ split from the reusable library.
   and the canonical `LU` hierarchy. Phase 12A established the reusable
   `LinearSystems.LU.BlockLU` umbrella with `BlockMatrices` and
   `FirstOrderModels`. The first Phase 12B wave adds `DiagonalDominance`,
-  `FactorizationError`, `GrowthBounds`, and `ResidualLifting`; later Block LU
-  slices extend that umbrella without admitting numbered Chapter 13
-  correspondence.
+  `FactorizationError`, `GrowthBounds`, and `ResidualLifting`; the next safe
+  reusable slice adds `Factorization`, `PositiveDefinite`, `SchurComplement`,
+  and `SolveError`. Later Block LU slices extend that umbrella without
+  admitting numbered Chapter 13 correspondence.
 - `NumStability.Algorithms.Summation` is the complete published summation
   surface. Its `Recursive` and `Pairwise` family umbrellas preserve source
   reachability, while reusable consumers import their `.Core` leaves.

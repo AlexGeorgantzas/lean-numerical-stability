@@ -25,10 +25,14 @@ algebra declarations through the historical Algorithms aggregate.
 #check NumStability.higham13_demmel_sharp_multiplier_of_spectral_interval
 #check NumStability.blockMaxNorm
 #check NumStability.IsBlockDiagDomCol
+#check NumStability.BlockLUFactSpec
 #check NumStability.BlockLUBackwardError
 #check NumStability.MatMulFirstOrderSpec
 #check NumStability.growthFactorEntry_sq_kappa_budget_le_of_growth_le_inv_ratio
+#check NumStability.blockMatrixNonsingular_of_posDef_flat
 #check NumStability.higham13_maxNorm_vecResidual_lift
+#check NumStability.blockSchur
+#check NumStability.dhsBlockForwardConventionalSolution
 #check NumStability.Ch22B.ch22bComplexConfluent_theorem12_3_exact_q_bound
 #check NumStability.higham27_problem27_6_cubic_error_bound
 #check NumStability.StrassenRecurrence

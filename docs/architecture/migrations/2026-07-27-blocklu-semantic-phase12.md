@@ -722,6 +722,87 @@ reserved for the completed 1,990-declaration migration. Phase 12 remains open
 for the other 1,774 mapped declarations across 73 destinations and for the
 separately mapped sibling BlockLU modules.
 
+## Phase 12B safe reusable slice implementation
+
+The next dependency-contained reusable slice extracts 71 public semantic
+declarations from 63 authored source commands. `Factorization` moves first;
+the other three leaves depend on it but not on one another.
+
+| Canonical destination | Commands | Semantic declarations |
+| --- | ---: | ---: |
+| `Algorithms.LinearSystems.LU.BlockLU.Factorization` | 49 | 57 |
+| `Algorithms.LinearSystems.LU.BlockLU.PositiveDefinite` | 7 | 7 |
+| `Algorithms.LinearSystems.LU.BlockLU.SchurComplement` | 4 | 4 |
+| `Algorithms.LinearSystems.LU.BlockLU.SolveError` | 3 | 3 |
+| **Total** | **63** | **71** |
+
+The 1,161 declaration and attached-comment lines in these leaves are verbatim
+copies of their frozen reviewed source spans. The historical module imports the
+four leaves, and the canonical Block LU aggregate exposes them without adding
+a source dependency. One-import leaf tests check every public declaration,
+including the generated `BlockLUFactSpec` constructor, projections, recursor,
+and eliminators.
+
+This slice changes no authored-private owner and deliberately leaves the eight
+`RecursiveFactorization` declarations in the historical module. The cumulative
+stage target is now 287 of 1,990 declarations across fourteen completed
+destinations. The remaining mapped partition contains 1,703 declarations
+across 69 destinations: eight reusable declarations assigned to
+`RecursiveFactorization` and 1,695 source-owned declarations across 68 source
+destinations.
+
+### Phase 12B safe reusable slice validation evidence
+
+Pre-commit validation reproduced the format-2 graph contract. The fresh
+`benchmark-results/architecture/phase12b-safe-reusable-declarations-v2.tsv`
+stream is 115,724,440 bytes with SHA-256
+`7572D4BDF1939E0FCF36CE21CA1BFB43E7512FC59D24045D74F9AF2A23B1D42F`;
+the frozen baseline remains 115,717,110 bytes with SHA-256
+`FD37F73D83F0206E40291576E1F9496185F09C21928ABED147B5CE2A6EF83AED`.
+The ownership-checker self-test and pinned pre check passed for all 1,990
+declarations. The cumulative stage check passed for 287 moved declarations
+across fourteen destinations, reporting an acyclic 83-destination graph with
+437 cross-owner edges and exact preservation of the complete normalized
+contracted graph. The only seven structural owners are the expected canonical
+LinearSystems/LU, FirstOrder, MatrixNorms, and Chapter 13 umbrellas; no
+structural module is in the broad `NumStability.Algorithms` namespace.
+
+Standalone and focused aggregate builds covered every declaration in the four
+new leaves and passed up to 3,004 planned jobs. The full
+`lake build NumStability` passed all 4,844 jobs. `lake test` passed all 5,372
+jobs, and `lake build NumStability NumStabilityTest` passed all 5,374 jobs.
+`lake env lean examples/LibraryLookup.lean` also succeeded. An explicit build
+of the historical entry point and all ten direct or downstream BlockLU
+consumers passed all 4,706 jobs. The ignored API/axiom probe verified the
+`BlockLUFactSpec` structure, fields, constructor, cases, and recursors; each
+representative theorem reported exactly the accepted
+`[propext, Classical.choice, Quot.sound]` axiom set.
+
+The static gates reported 1,053 production modules: 450 classified and 603
+unclassified, with zero mixed classified modules and zero direct or transitive
+reusable-to-source paths. Tier coverage is 42.735 percent, comprising 92
+aggregate modules, 108 compatibility modules, two internal modules, 91
+reusable modules, 152 source modules, and five evidenced upstream modules.
+The import graph has 4,258 direct imports, zero unresolved project imports,
+and zero cycles; the layout ratchet has zero declaration-bearing umbrellas and
+zero unsorted aggregate imports. The existing repository-wide queues remain
+216 modules without module documentation and 399 historical naming
+exceptions. Compatibility covers 108 wrappers and 208 targets, while
+provenance covers 207 Apache-licensed files plus five evidenced upstream
+files. The strict-source tree SHA-256 is
+`48DE4005B319B0F437E736F1A37177D6D9C619AA88D4D9B036638954C86BE73B`;
+its JSON capture is 95,825 bytes with SHA-256
+`F6F2AD0261E6C2DA8EEA49258C4BA005114ECCEE7BC3E367070FD9A2E5484648`,
+and its rendered Markdown is 4,962 bytes with SHA-256
+`DCA002BE59D250D9E85458954064B3DA719BC772FC8F388D6A68A18A6F124C15`.
+Layout, compatibility, provenance, source-boundary, placeholder/debt,
+strict-source reproducibility, `git diff --check`, and index checks all pass.
+
+These are pre-commit results. A clean implementation-commit repeat of the
+graph, static, build, test, lookup, downstream, and axiom gates remains
+required before this slice is pushed. The final Phase 12 baseline remains
+reserved for the completed 1,990-declaration migration.
+
 ## Bounded exclusions and completion boundary
 
 This batch does not rename public declarations or namespaces, change

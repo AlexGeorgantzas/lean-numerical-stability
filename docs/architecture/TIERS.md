@@ -95,8 +95,13 @@ The first Phase 12B wave adds four reusable Block LU leaves:
 `ResidualLifting`. The canonical Block LU aggregate exposes them directly,
 while the historical module imports them to preserve its staged public surface.
 
-The first Phase 12B wave ratchet classifies 446 of 1,049 production modules
-(42.517%): 152 as source, 92 as aggregate, 108 as compatibility, 87 as
+The next safe reusable slice adds `Factorization`, `PositiveDefinite`,
+`SchurComplement`, and `SolveError`. The recursive factorization owner remains
+in the historical module until its reviewed private-helper contract is handled
+separately.
+
+The safe Phase 12B reusable-slice ratchet classifies 450 of 1,053 production
+modules (42.735%): 152 as source, 92 as aggregate, 108 as compatibility, 91 as
 reusable, 2 as internal, and 5 as upstream. The explicit unclassified queue is
 603 modules,
 and no fully classified module is currently marked mixed. The
