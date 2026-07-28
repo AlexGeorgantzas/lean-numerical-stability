@@ -40,10 +40,11 @@ import hashlib
 import json
 import re
 import sys
+import tempfile
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Callable, Iterable
 
 
 BLOCKLU = "NumStability.Algorithms.LU.BlockLU"
@@ -52,6 +53,31 @@ GROWTH_FACTOR = "NumStability.Algorithms.LU.GrowthFactor"
 
 ASYMPTOTIC_FAMILIES = "NumStability.Analysis.FirstOrder.AsymptoticFamilies"
 ENTRYWISE_MAXIMUM = "NumStability.Analysis.MatrixNorms.EntrywiseMaximum"
+RECURSIVE_FACTORIZATION = (
+    "NumStability.Algorithms.LinearSystems.LU.BlockLU.RecursiveFactorization"
+)
+
+REVIEWED_BODY_EDGE_DROP_REASON = "private-helper-proof-inlined"
+FROZEN_REVIEWED_BODY_EDGE_DROPS = frozenset(
+    {
+        (
+            "NumStability.BlockLUFactSpec.firstColumnBelow_eq_of_right_inverse",
+            "_private.<module>.NumStability.sum_ite_eq_val_right",
+        ),
+        (
+            "NumStability.BlockLUFactSpec.firstRow_eq",
+            "_private.<module>.NumStability.sum_ite_eq_val",
+        ),
+        (
+            "NumStability.block_lu_one_step_explicit",
+            "_private.<module>.NumStability.sum_ite_eq_val",
+        ),
+        (
+            "NumStability.block_lu_one_step_explicit",
+            "_private.<module>.NumStability.sum_ite_eq_val_right",
+        ),
+    }
+)
 
 HISTORICAL_MODULES = {BLOCKLU, FIRST_ORDER, GROWTH_FACTOR}
 COMPLETE_HISTORICAL_MODULES = {BLOCKLU, FIRST_ORDER}
@@ -149,6 +175,15 @@ class PrivateRewrite:
     logical_name: str
     historical_actual_name: str
     candidate_actual_name: str
+
+
+@dataclass(frozen=True)
+class ReviewedBodyEdgeDrop:
+    action: str
+    kind: str
+    source_logical_name: str
+    target_logical_name: str
+    reason: str
 
 
 @dataclass(frozen=True)
@@ -854,6 +889,109 @@ def read_private_rewrites(
     return rewrites
 
 
+def read_reviewed_body_edge_drops(
+    path: Path,
+    records: dict[str, ManifestRow],
+    baseline: dict[str, Declaration],
+    baseline_tsv: Path,
+) -> frozenset[ReviewedBodyEdgeDrop]:
+    """Read the fixed RecursiveFactorization body-edge amendment.
+
+    These four edges disappear only because the historical private finite-sum
+    helper proofs are inlined at their cross-owner call sites.  The file is a
+    reviewed exception list, not a general graph-difference allowlist.
+    """
+
+    with path.open(encoding="utf-8", newline="") as stream:
+        rows = list(csv.reader(stream, delimiter="\t"))
+    if not rows or rows[0] != ["format", "1"]:
+        raise ValueError(
+            f"{path}: reviewed body-edge drops must start with 'format\\t1'"
+        )
+
+    drops: list[ReviewedBodyEdgeDrop] = []
+    pairs: list[tuple[str, str]] = []
+    seen_pairs: set[tuple[str, str]] = set()
+    for line_number, row in enumerate(rows[1:], 2):
+        if len(row) != 5:
+            raise ValueError(
+                f"{path}:{line_number}: reviewed body-edge drops require five columns"
+            )
+        drop = ReviewedBodyEdgeDrop(*row)
+        if drop.action != "drop":
+            raise ValueError(
+                f"{path}:{line_number}: expected reviewed action 'drop'"
+            )
+        if drop.kind != "body":
+            raise ValueError(
+                f"{path}:{line_number}: only body edges may be reviewed drops"
+            )
+        if drop.reason != REVIEWED_BODY_EDGE_DROP_REASON:
+            raise ValueError(
+                f"{path}:{line_number}: expected reason "
+                f"{REVIEWED_BODY_EDGE_DROP_REASON!r}"
+            )
+        pair = (drop.source_logical_name, drop.target_logical_name)
+        if pair in seen_pairs:
+            raise ValueError(
+                f"{path}:{line_number}: duplicate reviewed body-edge drop {pair}"
+            )
+        seen_pairs.add(pair)
+        pairs.append(pair)
+        drops.append(drop)
+
+    if pairs != sorted(pairs):
+        raise ValueError(f"{path}: reviewed body-edge drop rows must be sorted")
+    if set(pairs) != FROZEN_REVIEWED_BODY_EDGE_DROPS:
+        missing = sorted(FROZEN_REVIEWED_BODY_EDGE_DROPS - set(pairs))
+        extra = sorted(set(pairs) - FROZEN_REVIEWED_BODY_EDGE_DROPS)
+        raise ValueError(
+            "reviewed body-edge drop set differs from the frozen four: "
+            f"missing={missing}; extra={extra}"
+        )
+
+    actual_pairs: set[tuple[str, str]] = set()
+    for drop in drops:
+        source_logical = drop.source_logical_name
+        target_logical = drop.target_logical_name
+        if source_logical not in records or target_logical not in records:
+            raise ValueError(
+                f"{path}: reviewed edge endpoints must both occur in the manifest: "
+                f"{source_logical} -> {target_logical}"
+            )
+        target = records[target_logical]
+        if (
+            target.visibility != "private"
+            or target.destination_module != RECURSIVE_FACTORIZATION
+        ):
+            raise ValueError(
+                f"{path}: reviewed target must be private and owned by "
+                f"{RECURSIVE_FACTORIZATION}: {target_logical}"
+            )
+        if source_logical not in baseline or target_logical not in baseline:
+            raise ValueError(
+                f"{path}: reviewed edge endpoints must both occur in the frozen "
+                f"baseline: {source_logical} -> {target_logical}"
+            )
+        actual_pairs.add(
+            (baseline[source_logical].name, baseline[target_logical].name)
+        )
+
+    occurrences: Counter[tuple[str, str]] = Counter()
+    for edge in iter_dependency_edges(baseline_tsv):
+        pair = (edge.source, edge.target)
+        if edge.kind == "body" and pair in actual_pairs:
+            occurrences[pair] += 1
+    for pair in sorted(actual_pairs):
+        if occurrences[pair] != 1:
+            raise ValueError(
+                f"{path}: frozen reviewed body edge must occur exactly once, "
+                f"found {occurrences[pair]}: {pair[0]} -> {pair[1]}"
+            )
+
+    return frozenset(drops)
+
+
 def check_candidate_ownership(
     records: dict[str, ManifestRow],
     baseline: dict[str, Declaration],
@@ -1168,17 +1306,14 @@ def validate_structural_modules(
         validate_import_only_module(project_root, module, expected)
 
 
-def compare_full_graph(
+def normalized_graph_delta(
     baseline_tsv: Path,
     candidate_tsv: Path,
     baseline: dict[str, Declaration],
     candidate_actual_to_logical: dict[str, str],
     records: dict[str, ManifestRow],
-) -> None:
-    """Require exact equality of the contracted semantic declaration graphs."""
-
-    if sha256_file(baseline_tsv) != BASELINE_TSV_SHA256:
-        raise ValueError("baseline TSV hash differs from frozen Phase 11B2 input")
+) -> Counter[str]:
+    """Return baseline rows minus normalized candidate rows as a multiset."""
 
     candidate_to_baseline_name = {
         candidate: baseline[logical].name
@@ -1214,16 +1349,72 @@ def compare_full_graph(
             if delta[row] == 0:
                 del delta[row]
 
-    if delta:
-        missing = sum(count for count in delta.values() if count > 0)
-        extra = -sum(count for count in delta.values() if count < 0)
-        details = "; ".join(
-            f"{count:+d} {row}" for row, count in sorted(delta.items())[:20]
+    return delta
+
+
+def reviewed_body_edge_drop_delta(
+    baseline: dict[str, Declaration],
+    reviewed_body_edge_drops: frozenset[ReviewedBodyEdgeDrop],
+) -> Counter[str]:
+    return Counter(
+        "\t".join(
+            (
+                "edge",
+                "body",
+                baseline[drop.source_logical_name].name,
+                baseline[drop.target_logical_name].name,
+            )
         )
-        raise ValueError(
-            f"normalized contracted graph differs: missing={missing}, extra={extra}; "
-            f"{details}"
-        )
+        for drop in reviewed_body_edge_drops
+    )
+
+
+def validate_normalized_graph_delta(
+    delta: Counter[str], expected_delta: Counter[str]
+) -> None:
+    if delta == expected_delta:
+        return
+
+    unexpected = delta.copy()
+    unexpected.subtract(expected_delta)
+    unexpected = Counter(
+        {row: count for row, count in unexpected.items() if count != 0}
+    )
+    missing = sum(count for count in unexpected.values() if count > 0)
+    extra = -sum(count for count in unexpected.values() if count < 0)
+    details = "; ".join(
+        f"{count:+d} {row}" for row, count in sorted(unexpected.items())[:20]
+    )
+    raise ValueError(
+        "normalized contracted graph differs after applying the exact reviewed "
+        f"body-edge delta: missing={missing}, extra={extra}; {details}"
+    )
+
+
+def compare_full_graph(
+    baseline_tsv: Path,
+    candidate_tsv: Path,
+    baseline: dict[str, Declaration],
+    candidate_actual_to_logical: dict[str, str],
+    records: dict[str, ManifestRow],
+    reviewed_body_edge_drops: frozenset[ReviewedBodyEdgeDrop],
+) -> None:
+    """Require the exact contracted graph, modulo the fixed reviewed drops."""
+
+    if sha256_file(baseline_tsv) != BASELINE_TSV_SHA256:
+        raise ValueError("baseline TSV hash differs from frozen Phase 11B2 input")
+
+    delta = normalized_graph_delta(
+        baseline_tsv,
+        candidate_tsv,
+        baseline,
+        candidate_actual_to_logical,
+        records,
+    )
+    expected_delta = reviewed_body_edge_drop_delta(
+        baseline, reviewed_body_edge_drops
+    )
+    validate_normalized_graph_delta(delta, expected_delta)
 
 
 def validate_expected_manifest_digest(
@@ -1242,6 +1433,14 @@ def validate_expected_manifest_digest(
 
 
 def run_self_test() -> None:
+    def expect_value_error(action: Callable[[], object], label: str) -> None:
+        try:
+            action()
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"invalid {label} was accepted")
+
     module = "NumStability.Example.Owner"
     private = "_private.NumStability.Example.Owner.7.NumStability.helper.eq_1"
     assert logical_name(private, module) == (
@@ -1274,12 +1473,278 @@ def run_self_test() -> None:
         "B",
     )
     for bad_imports in (["B", "A"], ["A", "A"]):
-        try:
-            validate_import_sequence(Path("Mock.lean"), bad_imports, None)
-        except ValueError:
-            pass
-        else:
-            raise AssertionError(f"invalid structural imports accepted: {bad_imports}")
+        expect_value_error(
+            lambda bad_imports=bad_imports: validate_import_sequence(
+                Path("Mock.lean"), bad_imports, None
+            ),
+            f"structural imports {bad_imports}",
+        )
+
+    source_destinations = {
+        "NumStability.BlockLUFactSpec.firstColumnBelow_eq_of_right_inverse": (
+            "NumStability.Source.Higham.Chapter13.Theorem02.Uniqueness"
+        ),
+        "NumStability.BlockLUFactSpec.firstRow_eq": (
+            "NumStability.Source.Higham.Chapter13.Theorem02.Uniqueness"
+        ),
+        "NumStability.block_lu_one_step_explicit": (
+            "NumStability.Source.Higham.Chapter13.Algorithm03"
+        ),
+    }
+    private_actual_names = {
+        "_private.<module>.NumStability.sum_ite_eq_val": (
+            "_private.NumStability.Algorithms.LU.BlockLU.0."
+            "NumStability.sum_ite_eq_val"
+        ),
+        "_private.<module>.NumStability.sum_ite_eq_val_right": (
+            "_private.NumStability.Algorithms.LU.BlockLU.0."
+            "NumStability.sum_ite_eq_val_right"
+        ),
+    }
+    test_baseline: dict[str, Declaration] = {}
+    test_records: dict[str, ManifestRow] = {}
+    for logical, destination in source_destinations.items():
+        test_baseline[logical] = Declaration(logical, BLOCKLU, "theorem", "public")
+        test_records[logical] = ManifestRow(
+            logical, BLOCKLU, destination, "theorem", "public"
+        )
+    for logical, actual in private_actual_names.items():
+        test_baseline[logical] = Declaration(actual, BLOCKLU, "theorem", "private")
+        test_records[logical] = ManifestRow(
+            logical,
+            BLOCKLU,
+            RECURSIVE_FACTORIZATION,
+            "theorem",
+            "private",
+        )
+
+    drop_rows = [
+        [
+            "drop",
+            "body",
+            source,
+            target,
+            REVIEWED_BODY_EDGE_DROP_REASON,
+        ]
+        for source, target in sorted(FROZEN_REVIEWED_BODY_EDGE_DROPS)
+    ]
+
+    def dependency_text(rows: list[list[str]]) -> str:
+        return "format\t2\n" + "".join("\t".join(row) + "\n" for row in rows)
+
+    def drop_text(rows: list[list[str]], header: str = "format\t1\n") -> str:
+        return header + "".join("\t".join(row) + "\n" for row in rows)
+
+    reviewed_edge_rows = [
+        [
+            "edge",
+            "body",
+            test_baseline[source].name,
+            test_baseline[target].name,
+        ]
+        for source, target in sorted(FROZEN_REVIEWED_BODY_EDGE_DROPS)
+    ]
+    block_lu = "NumStability.block_lu_one_step_explicit"
+    first_row = "NumStability.BlockLUFactSpec.firstRow_eq"
+    sum_left = private_actual_names[
+        "_private.<module>.NumStability.sum_ite_eq_val"
+    ]
+    retained_rows = [
+        ["edge", "body", first_row, block_lu],
+        ["edge", "body", block_lu, block_lu],
+        ["edge", "signature", block_lu, sum_left],
+    ]
+
+    with tempfile.TemporaryDirectory() as temp_directory:
+        temp = Path(temp_directory)
+        drops_path = temp / "drops.tsv"
+        baseline_path = temp / "baseline.tsv"
+        candidate_path = temp / "candidate.tsv"
+        drops_path.write_text(drop_text(drop_rows), encoding="utf-8", newline="\n")
+        baseline_path.write_text(
+            dependency_text(reviewed_edge_rows + retained_rows),
+            encoding="utf-8",
+            newline="\n",
+        )
+        reviewed_drops = read_reviewed_body_edge_drops(
+            drops_path, test_records, test_baseline, baseline_path
+        )
+        assert {
+            (drop.source_logical_name, drop.target_logical_name)
+            for drop in reviewed_drops
+        } == FROZEN_REVIEWED_BODY_EDGE_DROPS
+
+        def read_drops_with(
+            rows: list[list[str]],
+            *,
+            header: str = "format\t1\n",
+            dependency_path: Path = baseline_path,
+            manifest_records: dict[str, ManifestRow] = test_records,
+            baseline_records: dict[str, Declaration] = test_baseline,
+        ) -> frozenset[ReviewedBodyEdgeDrop]:
+            drops_path.write_text(
+                drop_text(rows, header), encoding="utf-8", newline="\n"
+            )
+            return read_reviewed_body_edge_drops(
+                drops_path,
+                manifest_records,
+                baseline_records,
+                dependency_path,
+            )
+
+        malformed_rows = [row.copy() for row in drop_rows]
+        malformed_rows[0] = malformed_rows[0][:-1]
+        expect_value_error(
+            lambda: read_drops_with(malformed_rows), "malformed drop row"
+        )
+        expect_value_error(
+            lambda: read_drops_with(drop_rows, header="format\t2\n"),
+            "drop format",
+        )
+        expect_value_error(
+            lambda: read_drops_with(drop_rows + [drop_rows[-1].copy()]),
+            "duplicate drop row",
+        )
+        expect_value_error(
+            lambda: read_drops_with(list(reversed(drop_rows))),
+            "unsorted drop rows",
+        )
+        wrong_action = [row.copy() for row in drop_rows]
+        wrong_action[0][0] = "allow"
+        expect_value_error(
+            lambda: read_drops_with(wrong_action), "wrong drop action"
+        )
+        wrong_kind = [row.copy() for row in drop_rows]
+        wrong_kind[0][1] = "signature"
+        expect_value_error(lambda: read_drops_with(wrong_kind), "wrong edge kind")
+        wrong_reason = [row.copy() for row in drop_rows]
+        wrong_reason[0][4] = "unspecified"
+        expect_value_error(
+            lambda: read_drops_with(wrong_reason), "wrong drop reason"
+        )
+        expect_value_error(
+            lambda: read_drops_with(drop_rows[:-1]), "missing frozen drop"
+        )
+        extra_rows = [row.copy() for row in drop_rows]
+        extra_rows.append(
+            [
+                "drop",
+                "body",
+                "NumStability.block_lu_one_step_explicit",
+                "_private.<module>.NumStability.unreviewed",
+                REVIEWED_BODY_EDGE_DROP_REASON,
+            ]
+        )
+        extra_rows.sort(key=lambda fields: (fields[2], fields[3]))
+        expect_value_error(
+            lambda: read_drops_with(extra_rows), "extra frozen drop"
+        )
+
+        missing_manifest_records = dict(test_records)
+        missing_manifest_records.pop(first_row)
+        expect_value_error(
+            lambda: read_drops_with(
+                drop_rows, manifest_records=missing_manifest_records
+            ),
+            "reviewed endpoint missing from manifest",
+        )
+        wrong_target_records = dict(test_records)
+        target_logical = "_private.<module>.NumStability.sum_ite_eq_val"
+        target_record = wrong_target_records[target_logical]
+        wrong_target_records[target_logical] = ManifestRow(
+            target_record.logical_name,
+            target_record.historical_module,
+            target_record.destination_module,
+            target_record.kind,
+            "public",
+        )
+        expect_value_error(
+            lambda: read_drops_with(
+                drop_rows, manifest_records=wrong_target_records
+            ),
+            "nonprivate reviewed target",
+        )
+        missing_baseline_records = dict(test_baseline)
+        missing_baseline_records.pop(first_row)
+        expect_value_error(
+            lambda: read_drops_with(
+                drop_rows, baseline_records=missing_baseline_records
+            ),
+            "reviewed endpoint missing from baseline",
+        )
+
+        missing_baseline_edge_path = temp / "missing-baseline-edge.tsv"
+        missing_baseline_edge_path.write_text(
+            dependency_text(reviewed_edge_rows[:-1] + retained_rows),
+            encoding="utf-8",
+            newline="\n",
+        )
+        expect_value_error(
+            lambda: read_drops_with(
+                drop_rows, dependency_path=missing_baseline_edge_path
+            ),
+            "absent frozen baseline body edge",
+        )
+        duplicate_baseline_edge_path = temp / "duplicate-baseline-edge.tsv"
+        duplicate_baseline_edge_path.write_text(
+            dependency_text(
+                reviewed_edge_rows + [reviewed_edge_rows[0]] + retained_rows
+            ),
+            encoding="utf-8",
+            newline="\n",
+        )
+        expect_value_error(
+            lambda: read_drops_with(
+                drop_rows, dependency_path=duplicate_baseline_edge_path
+            ),
+            "duplicate frozen baseline body edge",
+        )
+
+        candidate_map = {
+            declaration.name: logical
+            for logical, declaration in test_baseline.items()
+        }
+        expected_delta = reviewed_body_edge_drop_delta(
+            test_baseline, reviewed_drops
+        )
+
+        def validate_candidate(rows: list[list[str]]) -> None:
+            candidate_path.write_text(
+                dependency_text(rows), encoding="utf-8", newline="\n"
+            )
+            delta = normalized_graph_delta(
+                baseline_path,
+                candidate_path,
+                test_baseline,
+                candidate_map,
+                test_records,
+            )
+            validate_normalized_graph_delta(delta, expected_delta)
+
+        validate_candidate(retained_rows)
+        expect_value_error(
+            lambda: validate_candidate(retained_rows + [reviewed_edge_rows[0]]),
+            "candidate retaining one reviewed edge",
+        )
+        expect_value_error(
+            lambda: validate_candidate(retained_rows[1:]),
+            "fifth missing body edge",
+        )
+        expect_value_error(
+            lambda: validate_candidate([retained_rows[0], retained_rows[2]]),
+            "missing block_lu_one_step self-edge",
+        )
+        expect_value_error(
+            lambda: validate_candidate(retained_rows[:2]),
+            "missing signature edge",
+        )
+        expect_value_error(
+            lambda: validate_candidate(
+                retained_rows
+                + [["edge", "body", block_lu, "NumStability.candidateOnly"]]
+            ),
+            "candidate-only edge",
+        )
 
 
 def parse_args() -> argparse.Namespace:
@@ -1323,6 +1788,14 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=DEFAULT_PRIVATE_REWRITES,
         help="explicit private-name rewrite map required in stage/post mode",
+    )
+    parser.add_argument(
+        "--reviewed-body-edge-drops",
+        type=Path,
+        help=(
+            "fixed reviewed body-edge amendment; required exactly when "
+            "RecursiveFactorization is complete"
+        ),
     )
     parser.add_argument(
         "--expected-manifest-sha256",
@@ -1382,6 +1855,8 @@ def main() -> int:
         raise ValueError("--write-manifest is valid only in pre mode")
     if args.write_manifest and args.routes is None:
         raise ValueError("--write-manifest requires an explicit --routes file")
+    if args.mode == "pre" and args.reviewed_body_edge_drops is not None:
+        raise ValueError("--reviewed-body-edge-drops is invalid in pre mode")
 
     ilean_overrides = parse_ilean_overrides(args.ilean)
 
@@ -1469,6 +1944,24 @@ def main() -> int:
             )
         completed_destinations = all_destinations
 
+    recursive_factorization_complete = (
+        RECURSIVE_FACTORIZATION in completed_destinations
+    )
+    has_reviewed_body_edge_drops = args.reviewed_body_edge_drops is not None
+    if args.mode == "stage":
+        if recursive_factorization_complete and not has_reviewed_body_edge_drops:
+            raise ValueError(
+                "stage mode requires --reviewed-body-edge-drops when "
+                "RecursiveFactorization is completed"
+            )
+        if has_reviewed_body_edge_drops and not recursive_factorization_complete:
+            raise ValueError(
+                "stage mode permits --reviewed-body-edge-drops only when "
+                "RecursiveFactorization is completed"
+            )
+    elif not has_reviewed_body_edge_drops:
+        raise ValueError("post mode requires --reviewed-body-edge-drops")
+
     # Recheck the final ownership design from the immutable input even in
     # stage/post invocations; a candidate cannot make a cyclic or improperly
     # layered route map acceptable.
@@ -1490,6 +1983,14 @@ def main() -> int:
         baseline,
         completed_logicals if args.mode == "stage" else None,
     )
+    reviewed_body_edge_drops: frozenset[ReviewedBodyEdgeDrop] = frozenset()
+    if args.reviewed_body_edge_drops is not None:
+        reviewed_body_edge_drops = read_reviewed_body_edge_drops(
+            args.reviewed_body_edge_drops,
+            records,
+            baseline,
+            args.baseline_tsv,
+        )
     candidate_declarations = read_dependency_declarations(args.dependency_tsv)
     candidate_map = check_candidate_ownership(
         records,
@@ -1541,23 +2042,27 @@ def main() -> int:
         baseline,
         candidate_map,
         records,
+        reviewed_body_edge_drops,
     )
+    graph_preservation = "exact normalized contracted graph preserved"
+    if reviewed_body_edge_drops:
+        graph_preservation += (
+            " except for exactly four reviewed inlined-private-helper body edges"
+        )
     if args.mode == "stage":
         print(
             "BlockLU Phase 12 staged ownership passed: "
             f"{len(completed_logicals)} of {len(records)} declarations moved across "
             f"{len(completed_destinations)} completed destinations, canonical "
             f"manifest {digest}, acyclic {destination_nodes}-destination graph "
-            f"with {cross_edges} cross-owner edges, and exact normalized "
-            "contracted graph preserved"
+            f"with {cross_edges} cross-owner edges, and {graph_preservation}"
         )
         return 0
     print(
         "BlockLU Phase 12 post-migration ownership passed: "
         f"{len(records)} declarations, canonical manifest {digest}, "
         f"acyclic {destination_nodes}-destination graph with "
-        f"{cross_edges} cross-owner edges, and exact normalized contracted "
-        "graph preserved"
+        f"{cross_edges} cross-owner edges, and {graph_preservation}"
     )
     return 0
 
