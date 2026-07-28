@@ -67,8 +67,9 @@ split from the reusable library.
   `FirstOrderModels`. The first Phase 12B wave adds `DiagonalDominance`,
   `FactorizationError`, `GrowthBounds`, and `ResidualLifting`; the next safe
   reusable slice adds `Factorization`, `PositiveDefinite`, `SchurComplement`,
-  and `SolveError`. Later Block LU slices extend that umbrella without
-  admitting numbered Chapter 13 correspondence.
+  and `SolveError`. `RecursiveFactorization` completes the remaining reviewed
+  reusable one-step factorization owner. Later Block LU slices extend that
+  umbrella without admitting numbered Chapter 13 correspondence.
 - `NumStability.Algorithms.Summation` is the complete published summation
   surface. Its `Recursive` and `Pairwise` family umbrellas preserve source
   reachability, while reusable consumers import their `.Core` leaves.

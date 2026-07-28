@@ -816,16 +816,55 @@ again. This satisfies the clean-implementation repeat for the safe reusable
 slice; the final Phase 12 baseline remains reserved for the completed
 1,990-declaration migration.
 
+## Phase 12B recursive-factorization slice implementation
+
+The final dependency-contained reusable slice moves exactly eight reviewed
+commands and eight semantic declarations into
+`Algorithms.LinearSystems.LU.BlockLU.RecursiveFactorization`: six public
+one-step constructors, factorization, and norm-propagation declarations plus
+the two private finite-sum helpers `sum_ite_eq_val` and
+`sum_ite_eq_val_right`. The leaf imports only `BlockMatrices`, `Factorization`,
+`SchurComplement`, and `Analysis.MatrixNorms.EntrywiseMaximum`. The canonical
+Block LU aggregate now exposes eleven declaration-bearing leaves; the
+historical BlockLU module imports the new leaf and remains a staged
+declaration-bearing residual.
+
+Moving the private helpers would otherwise leave five inaccessible calls in
+three source-owned commands. The exact helper proofs are therefore inlined at
+the three call sites in `block_lu_one_step_explicit` and at the single call
+site in each of `BlockLUFactSpec.firstRow_eq` and
+`BlockLUFactSpec.firstColumnBelow_eq_of_right_inverse`. The three calls inside
+the moved `block_lu_one_step` remain unchanged. No other proof is rewritten.
+Those five call-site changes remove exactly four distinct normalized body
+edges: the explicit theorem had body edges to both helpers, while the two
+uniqueness declarations each had one edge to its corresponding helper.
+
+The reviewed amendment is frozen in
+`blocklu-phase12-reviewed-body-edge-drops.tsv`. The ownership checker accepts
+that file only when `RecursiveFactorization` is a completed destination and
+then requires exactly those four missing body edges, rejecting retained,
+additional, signature, declaration, or candidate-only graph differences. The
+private-rewrite manifest maps both historical private names to their canonical
+`RecursiveFactorization` identities. One-import tests check all six public
+declarations, while canonical aggregate and isolated historical-import tests
+protect both import surfaces.
+
+The cumulative stage target is now 295 of 1,990 declarations across fifteen
+completed destinations. All 295 reusable declarations in the frozen partition
+have moved; the remaining 1,695 declarations belong to 68 reviewed source
+destinations.
+
 ## Bounded exclusions and completion boundary
 
 This batch does not rename public declarations or namespaces, change
 visibility, rewrite proofs for style, adopt a new module-system dialect, remove
 compatibility paths, reorganize Chapter 9 or Chapter 11 monoliths, begin the
-least-squares/QR phases, or create a second physical Lake library. No authored
-proof rewrite is permitted. Compiler-generated auxiliaries may change identity
-or elaboration order, but the format-2 checker requires exact equality of the
-contracted authored signature/body graph after owner and private-name
-normalization.
+least-squares/QR phases, or create a second physical Lake library. Apart from
+the five reviewed private-helper inlinings above, no authored proof rewrite is
+permitted. Compiler-generated auxiliaries may change identity or elaboration
+order, but the format-2 checker requires exact equality of the contracted
+authored signature/body graph after owner and private-name normalization,
+except for exactly the four frozen body edges removed by those inlinings.
 
 The sibling BlockLU declaration migration is explicitly outside this first
 1,990-declaration semantic partition but inside the overall BlockLU phase. It

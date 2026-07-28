@@ -21,6 +21,12 @@ safe reusable Phase 12B slices.
 #check NumStability.blockMatrixNonsingular_of_posDef_flat
 #check NumStability.higham13_maxNorm_vecResidual_lift
 #check NumStability.blockSchur
+#check NumStability.blockLUOneStepL
+#check NumStability.blockLUOneStepU
+#check NumStability.blockLUOneStepL_blockMaxNorm_le_of_firstSplit_tail
+#check NumStability.blockLUOneStepU_blockMaxNorm_le_of_firstRow_tail
+#check NumStability.blockLUOneStep_blockMaxNorm_product_le_of_firstSplit_tail
+#check NumStability.block_lu_one_step
 #check NumStability.dhsBlockForwardConventionalSolution
 #check NumStability.blockErrorDelta
 #check NumStability.higham13_theta_conventional_isBigO_cubic

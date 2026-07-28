@@ -136,6 +136,7 @@
     "NumStability.Algorithms.LinearSystems.LU.BlockLU.FirstOrderModels": "reusable",
     "NumStability.Algorithms.LinearSystems.LU.BlockLU.GrowthBounds": "reusable",
     "NumStability.Algorithms.LinearSystems.LU.BlockLU.PositiveDefinite": "reusable",
+    "NumStability.Algorithms.LinearSystems.LU.BlockLU.RecursiveFactorization": "reusable",
     "NumStability.Algorithms.LinearSystems.LU.BlockLU.ResidualLifting": "reusable",
     "NumStability.Algorithms.LinearSystems.LU.BlockLU.SchurComplement": "reusable",
     "NumStability.Algorithms.LinearSystems.LU.BlockLU.SolveError": "reusable",
