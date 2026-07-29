@@ -20,6 +20,7 @@ import NumStability.Source.Higham.Chapter13.Problem04.MatrixStages
 import NumStability.Source.Higham.Chapter13.Problem04.OneStepProducts
 import NumStability.Source.Higham.Chapter13.Problem04.ProductBounds
 import NumStability.Source.Higham.Chapter13.Problem04.RecursiveBudgetChains
+import NumStability.Source.Higham.Chapter13.Problem04.ScalarGrowthBridge
 import NumStability.Source.Higham.Chapter13.Problem04.StageHistory
 
 /-!

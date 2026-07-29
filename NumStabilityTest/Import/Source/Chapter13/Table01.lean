@@ -29,3 +29,4 @@ import NumStability.Source.Higham.Chapter13.Table01
 #check NumStability.higham13_table13_1_point_col_bdd_backward_error
 #check NumStability.higham13_table13_1_point_row_backward_error_from_growth
 #check NumStability.higham13_table13_1_spd_backward_error
+#check NumStability.higham13_table13_1_family_actual_maxEntry

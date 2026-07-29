@@ -35,3 +35,4 @@ This test imports only `NumStability.Source.Higham.Chapter13.Problem04`.
 #check NumStability.Higham13Eq1322BaseInverseSourceChain
 #check NumStability.Higham13Eq1322InverseRatioSourceChain
 #check NumStability.Higham13Eq1322LowerComparisonSourceChain
+#check NumStability.BlockLUFactSpec.blockMatrixFlatFin_product_eq

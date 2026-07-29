@@ -1,5 +1,11 @@
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks.SchurComplement
 
+/-!
+# Recursive unequal-block LU factorization
+
+Recursive construction and reconstruction results for varying block orders.
+-/
+
 namespace NumStability
 
 open scoped BigOperators Matrix

@@ -58,7 +58,17 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.HighamChapter12OmegaDiscontinuity` | `NumStability.Source.Higham.Chapter12.OmegaDiscontinuity` |
 | `NumStability.Algorithms.HighamChapter12Problem12_2` | `NumStability.Source.Higham.Chapter12.Problem02` |
 | `NumStability.Algorithms.LU.BlockLU` | `NumStability.Algorithms.LinearSystems.LU.BlockLU` and `NumStability.Source.Higham.Chapter13.BlockLU` |
+| `NumStability.Algorithms.LU.BlockLUArbitraryNormSourceClosure` | `NumStability.Algorithms.LinearSystems.LU.BlockLU.ArbitraryNorm` and `NumStability.Source.Higham.Chapter13.Section03.ArbitraryNormDominance` |
+| `NumStability.Algorithms.LU.BlockLUComputationSourceClosure` | `NumStability.Source.Higham.Chapter13.Theorem06.Computation` |
+| `NumStability.Algorithms.LU.BlockLUFirstOrderFamilies` | `NumStability.Algorithms.LinearSystems.LU.BlockLU.FirstOrderFamilies`, `NumStability.Source.Higham.Chapter13.Section01.OperationModelFamilies`, `NumStability.Source.Higham.Chapter13.Table01.Families`, and `NumStability.Source.Higham.Chapter13.Theorem05.FamilyErrorAnalysis` |
+| `NumStability.Algorithms.LU.BlockLUPointRowGrowthSourceClosure` | `NumStability.Source.Higham.Chapter13.Equation23.PointRowGrowth` |
+| `NumStability.Algorithms.LU.BlockLURowSourceClosure` | `NumStability.Source.Higham.Chapter13.Section03.RowDominanceClosure` |
+| `NumStability.Algorithms.LU.BlockLUScalarGrowthBridge` | `NumStability.Source.Higham.Chapter13.Problem04.ScalarGrowthBridge` |
+| `NumStability.Algorithms.LU.BlockLUSourceClosure` | `NumStability.Algorithms.LinearSystems.LU.BlockLU.OperatorTwo` and `NumStability.Source.Higham.Chapter13.Section03.ColumnDominanceClosure` |
+| `NumStability.Algorithms.LU.BlockLUSPDFamilies` | `NumStability.Source.Higham.Chapter13.Equation25.Families` |
+| `NumStability.Algorithms.LU.BlockLUSPDSourceClosure` | `NumStability.Algorithms.LinearSystems.LU.BlockLU.PositiveDefinite`, `NumStability.Algorithms.LinearSystems.LU.BlockLU.PositiveDefiniteFactorBounds`, `NumStability.Source.Higham.Chapter13.Equation25.Factorization`, and `NumStability.Source.Higham.Chapter13.Section03.SPDFactorBounds` |
 | `NumStability.Algorithms.LU.BlockLUTable13_1Families` | `NumStability.Source.Higham.Chapter13.Equation25` and `NumStability.Source.Higham.Chapter13.Table01` |
+| `NumStability.Algorithms.LU.BlockLUVarying` | `NumStability.Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks` |
 | `NumStability.Algorithms.LU.Higham13DemmelSharpMultiplier` | `NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier` |
 | `NumStability.Algorithms.Ch14HymanDeterminant` | `NumStability.Source.Higham.Chapter14.Problem14` |
 | `NumStability.Algorithms.Ch14Problem1413Boundary` | `NumStability.Source.Higham.Chapter14.Problem13` |

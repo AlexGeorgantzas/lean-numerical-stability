@@ -1,4 +1,4 @@
-/-
+/-!
 # Chapter 13 scalar-GE to block-Schur growth bridge
 
 This module identifies the Schur complement of an arbitrary leading scalar

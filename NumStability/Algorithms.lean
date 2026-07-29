@@ -209,14 +209,6 @@ import NumStability.Algorithms.LeastSquares.LSQRSolve
 import NumStability.Algorithms.LinearSystems
 import NumStability.Algorithms.LinearSystems.LU.BlockLU
 import NumStability.Algorithms.LogExpProduct
-import NumStability.Algorithms.LU.BlockLUArbitraryNormSourceClosure
-import NumStability.Algorithms.LU.BlockLUComputationSourceClosure
-import NumStability.Algorithms.LU.BlockLUFirstOrderFamilies
-import NumStability.Algorithms.LU.BlockLUPointRowGrowthSourceClosure
-import NumStability.Algorithms.LU.BlockLUScalarGrowthBridge
-import NumStability.Algorithms.LU.BlockLUSPDFamilies
-import NumStability.Algorithms.LU.BlockLUSPDSourceClosure
-import NumStability.Algorithms.LU.BlockLUVarying
 import NumStability.Algorithms.LU.Doolittle
 import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LU.GrowthFactor

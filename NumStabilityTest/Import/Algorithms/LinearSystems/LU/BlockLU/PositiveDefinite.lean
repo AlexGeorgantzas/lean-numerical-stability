@@ -14,3 +14,4 @@ seven reviewed declarations.
 #check NumStability.isSymPosDef_to_IsSymmetricFiniteMatrix
 #check NumStability.isSymPosDef_to_matrix_posDef
 #check NumStability.matrix_posDef_submatrix_of_injective
+#check NumStability.matrix_posDef_to_isSymPosDef

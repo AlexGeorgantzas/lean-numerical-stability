@@ -1,4 +1,4 @@
-/-
+/-!
   Source/Higham/Chapter13/Section03/ArbitraryNormDominance.lean
 
   Arbitrary-subordinate-norm source correspondence for Higham Theorems 13.7

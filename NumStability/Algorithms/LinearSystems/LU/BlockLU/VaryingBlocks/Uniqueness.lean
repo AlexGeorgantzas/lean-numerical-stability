@@ -1,5 +1,11 @@
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks.RecursiveFactorization
 
+/-!
+# Uniqueness of unequal-block LU factorization
+
+Existence and uniqueness criteria for the reusable varying-block LU model.
+-/
+
 namespace NumStability
 
 open scoped BigOperators Matrix

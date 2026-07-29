@@ -1,5 +1,12 @@
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks.Basic
 
+/-!
+# Algebra for unequal-block LU
+
+Reindexing and block-multiplication identities used by the unequal-order
+factorization API.
+-/
+
 namespace NumStability
 
 open scoped BigOperators Matrix

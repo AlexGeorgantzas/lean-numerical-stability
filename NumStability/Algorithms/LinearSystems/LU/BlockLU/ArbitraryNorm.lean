@@ -1,4 +1,4 @@
-/-
+/-!
   Algorithms/LinearSystems/LU/BlockLU/ArbitraryNorm.lean
 
   Reusable arbitrary-subordinate-norm block-LU foundations.

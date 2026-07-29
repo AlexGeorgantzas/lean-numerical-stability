@@ -1,5 +1,12 @@
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks.Algebra
 
+/-!
+# Schur complements for unequal-block LU
+
+First-block Schur-complement identities for partitions with varying block
+orders.
+-/
+
 namespace NumStability
 
 open scoped BigOperators Matrix

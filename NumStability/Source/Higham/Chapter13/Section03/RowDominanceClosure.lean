@@ -1,4 +1,4 @@
-/-
+/-!
   Source/Higham/Chapter13/Section03/RowDominanceClosure.lean
 
   Row-block-diagonal-dominance closure for Higham, Chapter 13, Theorems

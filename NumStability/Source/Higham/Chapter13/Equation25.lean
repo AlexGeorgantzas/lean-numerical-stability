@@ -12,8 +12,10 @@ import Mathlib.Tactic.FinCases
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
-import NumStability.Algorithms.LU.BlockLUComputationSourceClosure
-import NumStability.Algorithms.LU.BlockLUSPDFamilies
+import NumStability.Source.Higham.Chapter13.Equation25.Families
+import NumStability.Source.Higham.Chapter13.Section03.SPDFactorBounds
+import NumStability.Source.Higham.Chapter13.Theorem05.FamilyErrorAnalysis
+import NumStability.Source.Higham.Chapter13.Theorem06.Computation
 
 namespace NumStability
 

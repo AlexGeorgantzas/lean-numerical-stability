@@ -23,3 +23,13 @@ Phase 12 reusable cutover.
 #check NumStability.blockSchur
 #check NumStability.block_lu_one_step
 #check NumStability.dhsBlockForwardConventionalSolution
+#check NumStability.Higham13CLMBlockNonsingular
+#check NumStability.Higham13BlockSolveFamilySpec
+#check NumStability.higham13_abs_entry_le_opNorm2
+#check NumStability.matrix_posDef_to_isSymPosDef
+#check NumStability.blockLUOneStepL_firstSplit_fromBlocks
+#check NumStability.Higham13PositiveBlockOrders
+#check NumStability.higham13VaryingBlockUnitLower_fromBlocks
+#check NumStability.Higham13VaryingLeadingPrincipalNonsingular.of_det_of_schur
+#check NumStability.Higham13VaryingBlockLUFactSpec.eq_step_of_tail_unique
+#check NumStability.Higham13VaryingBlockLUExistsUnique

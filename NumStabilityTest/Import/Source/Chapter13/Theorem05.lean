@@ -15,3 +15,4 @@ This test imports only the canonical theorem-family aggregate.
 #check NumStability.dhs_schur_update_firstOrder
 #check NumStability.higham13_eq13_10_from_subtraction_spec
 #check NumStability.higham13_eq13_11_from_matmul_subtraction_specs
+#check NumStability.Higham13PartitionedLUFamilySpec

@@ -1,4 +1,4 @@
-/-
+/-!
 # Chapter 13 block LU with unequal block dimensions
 
 Higham's Theorem 13.2 permits the diagonal blocks to have different positive

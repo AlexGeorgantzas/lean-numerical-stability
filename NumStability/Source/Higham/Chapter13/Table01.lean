@@ -13,10 +13,12 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.DiagonalDominance
-import NumStability.Algorithms.LU.BlockLUComputationSourceClosure
 import NumStability.Analysis.FirstOrder.FixedPrecision
 import NumStability.Source.Higham.Chapter13.Equation22
 import NumStability.Source.Higham.Chapter13.Equation23
+import NumStability.Source.Higham.Chapter13.Table01.Families
+import NumStability.Source.Higham.Chapter13.Theorem05.FamilyErrorAnalysis
+import NumStability.Source.Higham.Chapter13.Theorem06.Computation
 
 namespace NumStability
 

@@ -1,4 +1,4 @@
-/-
+/-!
   Source/Higham/Chapter13/Section03/ColumnDominanceClosure.lean
 
   Source-level closure theorems for Higham, Chapter 13, Theorems 13.7 and
