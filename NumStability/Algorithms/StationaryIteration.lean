@@ -1346,6 +1346,94 @@ theorem stationaryDrazinFixedProjector_matPow_fixed (n : ℕ)
     (stationaryDrazinFixedProjector n G D)
     (stationaryDrazinFixedProjector_fixed_by_G n G D hD)
 
+/-- Higham, 2nd ed., Chapter 17, Section 17.4, equations (17.25)-(17.27):
+    finite algebraic split behind the singular-system limiting projector.
+    Every powered vector decomposes into its propagated Drazin range component
+    plus the fixed/null Drazin projector component. -/
+theorem stationaryDrazin_matPow_vec_split (n : ℕ)
+    (G D : Fin n → Fin n → ℝ)
+    (hD : IndexOneDrazinInverse n (matSub_id n G) D)
+    (v : Fin n → ℝ) (m : ℕ) :
+    ∀ i, matMulVec n (matPow n G m) v i =
+      matMulVec n (matMul n (matPow n G m)
+        (stationaryDrazinRangeProjector n G D)) v i +
+      matMulVec n (stationaryDrazinFixedProjector n G D) v i := by
+  intro i
+  let E := stationaryDrazinRangeProjector n G D
+  let C := stationaryDrazinFixedProjector n G D
+  have hsplit : v = fun j => matMulVec n E v j + matMulVec n C v j := by
+    ext j
+    simpa [E, C, stationaryDrazinFixedProjector] using
+      (matMulVec_add_complement_apply n E v j).symm
+  have hfixedMat : matMul n (matPow n G m) C = C := by
+    simpa [C] using stationaryDrazinFixedProjector_matPow_fixed n G D hD m
+  calc
+    matMulVec n (matPow n G m) v i =
+        matMulVec n (matPow n G m)
+          (fun j => matMulVec n E v j + matMulVec n C v j) i := by
+          exact congrArg (fun w => matMulVec n (matPow n G m) w i) hsplit
+    _ = matMulVec n (matPow n G m) (matMulVec n E v) i +
+        matMulVec n (matPow n G m) (matMulVec n C v) i := by
+          simpa using congrFun
+            (matMulVec_add_right n (matPow n G m)
+              (matMulVec n E v) (matMulVec n C v)) i
+    _ = matMulVec n (matMul n (matPow n G m) E) v i +
+        matMulVec n (matMul n (matPow n G m) C) v i := by
+          rw [← matMulVec_matMul n (matPow n G m) E v i]
+          rw [← matMulVec_matMul n (matPow n G m) C v i]
+    _ = matMulVec n (matMul n (matPow n G m) E) v i +
+        matMulVec n C v i := by
+          rw [hfixedMat]
+    _ = matMulVec n (matMul n (matPow n G m)
+          (stationaryDrazinRangeProjector n G D)) v i +
+        matMulVec n (stationaryDrazinFixedProjector n G D) v i := by
+          rfl
+
+/-- Conditional limiting form of `stationaryDrazin_matPow_vec_split`: if the
+    Drazin range component decays to zero, then `G^m v` tends coordinatewise
+    to the fixed/null Drazin projector component.  This records the formal
+    dependency used by the semiconvergent singular-system discussion without
+    asserting semiconvergence or Drazin existence. -/
+theorem stationaryDrazin_matPow_vec_tendsto_fixedProjector_of_range_tendsto_zero
+    (n : ℕ) (G D : Fin n → Fin n → ℝ)
+    (hD : IndexOneDrazinInverse n (matSub_id n G) D)
+    (v : Fin n → ℝ)
+    (hRange : ∀ i, Filter.Tendsto
+      (fun m : ℕ => matMulVec n (matMul n (matPow n G m)
+        (stationaryDrazinRangeProjector n G D)) v i)
+      Filter.atTop (nhds 0)) :
+    ∀ i, Filter.Tendsto
+      (fun m : ℕ => matMulVec n (matPow n G m) v i)
+      Filter.atTop
+      (nhds (matMulVec n (stationaryDrazinFixedProjector n G D) v i)) := by
+  intro i
+  let E := stationaryDrazinRangeProjector n G D
+  let C := stationaryDrazinFixedProjector n G D
+  have hRangeE : Filter.Tendsto
+      (fun m : ℕ => matMulVec n (matMul n (matPow n G m) E) v i)
+      Filter.atTop (nhds 0) := by
+    simpa [E] using hRange i
+  have hlimSplit : Filter.Tendsto
+      (fun m : ℕ =>
+        matMulVec n (matMul n (matPow n G m) E) v i +
+          matMulVec n C v i)
+      Filter.atTop (nhds (0 + matMulVec n C v i)) := by
+    exact hRangeE.add tendsto_const_nhds
+  have hcongr :
+      (fun m : ℕ =>
+        matMulVec n (matMul n (matPow n G m) E) v i +
+          matMulVec n C v i) =ᶠ[Filter.atTop]
+      (fun m : ℕ => matMulVec n (matPow n G m) v i) := by
+    exact Filter.Eventually.of_forall fun m => by
+      have hsplit := stationaryDrazin_matPow_vec_split n G D hD v m i
+      simpa [E, C] using hsplit.symm
+  exact Filter.Tendsto.congr'
+    (f₁ := fun m : ℕ =>
+      matMulVec n (matMul n (matPow n G m) E) v i + matMulVec n C v i)
+    (f₂ := fun m : ℕ => matMulVec n (matPow n G m) v i)
+    hcongr
+    (by simpa [C] using hlimSplit)
+
 /-- Vector-action form of `stationaryDrazinFixedProjector_fixed_by_G`. -/
 theorem stationaryDrazinFixedProjector_matMulVec_fixed (n : ℕ)
     (G D : Fin n → Fin n → ℝ)

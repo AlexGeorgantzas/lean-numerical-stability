@@ -26,6 +26,7 @@ import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks
 import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks.RecursiveFactorization
 import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks.SchurComplement
 import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks.Uniqueness
+import NumStabilityTest.Import.Algorithms.StationaryIteration
 import NumStabilityTest.Import.All
 import NumStabilityTest.Import.Analysis
 import NumStabilityTest.Import.Analysis.Asymptotics
