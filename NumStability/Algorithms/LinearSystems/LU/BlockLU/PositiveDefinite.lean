@@ -103,4 +103,24 @@ theorem finitePSD_of_isSymPosDef {n : ℕ}
   · push_neg at hx
     simp [hx]
 
+/-- Mathlib positive definiteness implies the repository's finite real SPD
+    predicate. -/
+theorem matrix_posDef_to_isSymPosDef {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hA : Matrix.PosDef (A : Matrix (Fin n) (Fin n) ℝ)) :
+    IsSymPosDef n A := by
+  constructor
+  · intro i j
+    have hherm := hA.1.eq
+    have hij := congrArg (fun M : Matrix (Fin n) (Fin n) ℝ => M i j) hherm
+    simpa using hij.symm
+  · intro x hx
+    have hxne : x ≠ 0 := by
+      intro hzero
+      obtain ⟨i, hi⟩ := hx
+      exact hi (congr_fun hzero i)
+    have hpos := hA.dotProduct_mulVec_pos hxne
+    simpa [dotProduct, Matrix.mulVec, Finset.mul_sum,
+      Finset.sum_mul, mul_assoc] using hpos
+
 end NumStability
