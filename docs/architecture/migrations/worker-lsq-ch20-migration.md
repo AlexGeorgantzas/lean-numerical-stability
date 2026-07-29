@@ -6,6 +6,12 @@ Frozen base: `6487fc33088523b8f27ecde9ad613515b78f9977`
 Branch: `codex/org-lsq-ch20` (local only; never pushed)
 Worktree: `C:\Users\qed_s\higham-worktrees\lsq-ch20-claude`
 
+Contract audit repair: branch `codex/review-lsq-contract-repair`, worktree
+`C:\Users\qed_s\higham-worktrees\lsq-contract-repair`, based exactly on
+`7d876bc241d46e7192be2acaf46bb148aec76908`. The repair changes only contract,
+checker, artifact, and report files; the preserved dirty Wave 1 worktree above
+was not modified.
+
 This document is the reviewed lane contract required before any production
 move. It records the measured baseline, the frozen declaration selection, the
 reviewed declaration routes with their evidence, the destination topology, the
@@ -71,11 +77,11 @@ Restricted to the 42 historical owners:
 | --- | --- |
 | Selected declarations | **5,129** |
 | of which private | **151** (require reviewed name rewrites) |
-| Authored source spans owning them | 4,693 |
+| Authoritative compiler source-command groups owning them | 4,694 |
 | Outgoing typed edges from lane declarations | 82,645 |
 | Incoming typed edges from outside the lane | 1,722 |
 
-The gap between 5,129 selected declarations and 4,693 authored spans is
+The gap between 5,129 selected declarations and 4,694 authored command groups is
 entirely Lean-generated material — structure field projections, `casesOn`,
 `recOn`, `ctorIdx`, `mk.inj*`, `noConfusion`, `sizeOf_spec`, and equation
 lemmas. Every one was attributed to its parent authored span; there are zero
@@ -319,32 +325,41 @@ scanner had hidden:
   while its `.mk`, `.recOn`, `.casesOn` and several field projections were routed
   to `Source.Higham.Chapter20.Theorem07`. That is physically impossible to emit.
 
-The contract now enforces, as an invariant of the partition, that every
-declaration sharing a span shares its tier and destination. Where a span
-straddles tiers, the **most restrictive** tier wins: if any member must be
-source because it reaches source material, the whole span is source. That rule
-is monotone, so it is interleaved with the two dependency fixpoints and
-converges; after convergence **0** spans straddle a tier and **0** straddle a
-destination.
+The repaired format-2 route contract now records one row for every selected
+declaration: its historical actual name, authoritative authored root, all eight
+`.ilean` coordinates, `authored` or `compiler_generated` provenance, exact
+LF-normalized source-command SHA-256, and destination. All 5,129 rows are
+therefore compiler-span-bound; there is no `exact` row form that can bypass the
+compiler evidence. The 4,694 authored rows own 435 co-generated rows.
+
+The checker enforces that every declaration sharing a compiler command shares
+its tier, destination, span and command hash. Where a command initially
+straddled tiers, the **most restrictive** tier won: if any member had to be
+source because it reached source material, the whole command moved to source.
+That rule was monotone, was interleaved with the two dependency fixpoints, and
+converged to **0** command groups straddling a destination.
 
 Correcting this moved 248 declarations relative to the first manifest, of which
 39 moved from a reusable tier into `Source/Higham/Chapter20` precisely because a
 structure's projections forced their span up. The remaining 209 are within-tier
 consolidations.
 
-An independent cross-check confirms the result: for all **5,129** declarations,
-the source line Lean records for the declaration falls inside the span this
-lane assigned it, and the spans tile every historical file — no source line is
-dropped and none is duplicated, verified across all 42 files.
+An independent cross-check confirms that every authored root has exactly the
+committed `.ilean` span and that all 5,129 declarations resolve to one of those
+roots. Pre mode re-hashes all 42 frozen sources and all 41 `.ilean` files. Stage
+and post mode then locate every authored root in the candidate owner's `.ilean`
+and hash the candidate source command. Consequently a same-kind, same-edge edit
+to a declaration body or type is rejected even when the declaration and typed
+dependency streams would otherwise look unchanged.
 
 ### 4.4 Frozen historical owners
 
 All 42 pristine historical sources were copied to the external, non-repository
-directory `PACKET_ROOT/runtime/frozen-owners`. Each row of
-`frozen-owners/frozen-owners.tsv` records the module, repository path, Git blob
+directory `PACKET_ROOT/runtime/frozen-owners`. The committed
+`lsq-ch20-frozen-owners.tsv` records the module, repository path, Git blob
 ID re-verified against the frozen base, source SHA-256, physical and non-blank
-line counts, and the compiled `.ilean` SHA-256 and size. Manifest SHA-256:
-`99DA51FDBEC5858378A1A2B72DC4BA523E807CF70F87DBBDBEA15EBA8FC97ACF`.
+line counts, and the compiled `.ilean` SHA-256 and size. Its SHA-256 is
+`1B56CB65B129D7CCA113CECFE7324A2FEB22C301037A77537BB4ECA65252A524`.
 
 41 of the 42 owners have a frozen `.ilean`. `Higham20SourceAliases` has none
 because no production module imports it — only the isolated historical import
@@ -372,35 +387,42 @@ removed only in a future declared breaking release, never in this lane.
 
 ### 5.1 Cross-lane contract
 
-The 19 frozen `LS_TO_QR` rows and four `QR_TO_LS` rows of
-`KNOWN_CROSS_LANE_EDGES.tsv` are frozen as checker inputs. Three of the 19
-(`LSE → QR.GramSchmidtPolar`, `LSE → QR.Higham19Thm6ColPivot`,
-`Higham20ZeroDeltaB → QR.Higham19Labels`) carry no declaration-level edge at
-the base and are import-level dependencies; the remaining 16 carry
-declaration-level edges. After owner normalization the checker requires, for
-each row, that some destination owning a declaration of that historical module
-directly imports the QR target and that the historical path still reaches it.
-No QR or Chapter 19 file is edited or substituted. The four QR consumers keep
-their historical least-squares imports and are built, never edited.
+The 19 frozen `LS_TO_QR` and four `QR_TO_LS` direct imports are expanded into a
+4,224-row machine-readable normalization contract: 4,221 exact typed
+declaration edges and three import-only edges. It records the known LS
+destination on every row and either the stable QR owner or an explicit
+`@QR_OWNER_REQUIRED:*` token.
+
+The QR lane's canonical owner map is not available at this base. Therefore
+1,628 rows remain intentionally unresolved, representing 68 exact QR
+declarations and one import-only carrier. This is a hard post-mode failure, not
+a waiver: the integrator must fill those owners from the QR lane's generated
+ownership result. Once filled, post mode checks each QR declaration's actual
+owner, requires the normalized direct imports in both directions, and rejects
+all production imports of LS or Higham19 compatibility wrappers. The four QR
+reverse consumers therefore migrate to canonical LS destinations; they do not
+retain their historical LS imports.
 
 ## 6. Lane ownership checker
 
 `tools/architecture/check_lsq_ch20_ownership.py` implements the lane contract
 with `--mode pre`, `--mode stage`, `--mode post` and `--self-test`.
 
-- `pre` verifies the frozen stream digest, selects exactly the 5,129
-  declarations with the frozen per-module counts, generates the manifest from
-  the reviewed route map through the historical `.ilean` source ranges,
-  compares it against the committed manifest, validates the destination DAG and
-  the reusable/source boundary, validates proposed tier coverage, and checks the
-  cross-lane contract.
+- `pre` verifies the frozen stream digest, all source and `.ilean` hashes, all
+  5,129 compiler-span routes and command fingerprints, the unchanged ownership
+  manifest, the 244-edge typed destination DAG, all 46 exact wrapper/aggregate
+  import contracts, the 121-module tier surface, all 23 base cross-lane imports
+  and their 4,221 typed edges, and the 203 exact coordinator patch rows.
 - `stage` accepts a partially migrated tree: it takes the completed
   destinations, requires reviewed private-name rewrites only for those, proves
-  candidate ownership, and requires exact normalized graph equality.
+  candidate ownership, re-hashes every candidate source command, requires exact
+  normalized graph equality, and checks each completed destination's exact
+  direct lane-DAG imports and each completed wrapper/aggregate's exact imports.
 - `post` additionally requires all destinations complete, all 151 reviewed
-  private rewrites, and proves that no reusable destination transitively
-  reaches a `Source.*`, `Higham.*`, legacy least-squares, or
-  `Analysis.HighamChapter7` module.
+  private rewrites, every wrapper and aggregate, resolved canonical QR owners,
+  all coordinator imports/root tests/tier rows/compatibility rows, and proves
+  that no reusable destination transitively reaches a `Source.*`, `Higham.*`,
+  legacy least-squares, or `Analysis.HighamChapter7` module.
 
 `--self-test` passes and rejects each of these mutations:
 
@@ -420,44 +442,58 @@ with `--mode pre`, `--mode stage`, `--mode post` and `--self-test`.
 14. a baseline stream whose digest changed;
 15. a reusable module importing a canonical source leaf;
 16. a reusable module transitively reaching `Analysis.HighamChapter7`;
-17. a dropped `LS_TO_QR` dependency;
-18. a `QR_TO_LS` consumer that lost its historical import;
-19. a wrapper that still owns a compiled declaration;
-20. a wrapper containing non-import code, an unsorted import list, or no module
+17. a missing or extra direct destination-DAG import;
+18. a dropped normalized cross-lane import;
+19. an unresolved QR canonical owner;
+20. a final production import of a compatibility wrapper;
+21. a wrapper that still owns a compiled declaration;
+22. a wrapper whose exact import set drifted, contains non-import code, has an
+    unsorted import list, or has no module
     docstring;
-21. proposed tier rows that do not match the lane surface, contradict a
-    destination role, or declare a `mixed` tier;
-22. overlapping route ranges and a declaration outside every reviewed range;
-23. a manifest digest mismatch.
+23. proposed tier rows that omit wrappers/umbrellas, contradict a destination
+    role, or declare a `mixed` tier;
+24. an unapplied coordinator consumer/root/tier/compatibility patch;
+25. a format-1 exact route attempting to bypass compiler spans;
+26. co-generated declarations split from their source command;
+27. compiler coordinates differing from the frozen `.ilean`;
+28. a same-kind, same-edge source-command semantic edit; and
+29. a manifest digest mismatch.
 
 ## 7. Integrator requests
 
-None required so far. The Chapter 7 inversion is resolved entirely inside the
-lane by routing the 21 affected declarations to the source tier, so no shared
-file needs editing. Global `docs/architecture/tiers.json`,
-`layout-exceptions.json`, `COMPATIBILITY.md` and the root aggregates remain
-integrator-owned; the lane records its proposed tiers in
-`docs/architecture/declaration-ownership/lsq-ch20-tiers.tsv` and will capture
-any sole remaining registration delta as an exact proposed patch in
-`PACKET_ROOT/INTEGRATOR_REQUEST.md` rather than editing those files.
+Shared edits are required. The exact request is
+`docs/architecture/migrations/worker-lsq-ch20-integrator-request.md`; its
+machine-readable authority is `lsq-ch20-coordinator-patches.tsv` (203 rows,
+SHA-256
+`75E210F086105D5E1C2E61FD974A5022BA2A51FB602C21C6FE3E2DF6AD3FAB63`).
+It covers root/registration aggregates, all five non-lane/root production
+consumers, 44 exact and two prefix tier registrations, all 41 new
+`COMPATIBILITY.md` rows, three root-test imports, and the final layout ratchet.
+The QR-owned edits remain blocked on its canonical owner map and are frozen as
+rejecting placeholders rather than guessed paths.
 
 ## 8. Committed contract artifacts
 
 | Path | Content |
 | --- | --- |
 | `tools/architecture/check_lsq_ch20_ownership.py` | lane checker, pre/stage/post modes plus self-test |
-| `docs/architecture/declaration-ownership/lsq-ch20-routes.tsv` | 5,129 reviewed `exact` routes |
-| `docs/architecture/declaration-ownership/lsq-ch20-ownership.tsv` | generated ownership manifest, 5,129 rows |
-| `docs/architecture/declaration-ownership/lsq-ch20-tiers.tsv` | 78 proposed module tiers (44 source, 32 reusable, 2 compatibility) |
-| `docs/architecture/declaration-ownership/lsq-ch20-private-rewrites.tsv` | 151 reviewed private-name rewrites |
+| `docs/architecture/declaration-ownership/lsq-ch20-routes.tsv` | 5,129 compiler-span routes; SHA-256 `4B6079A931A0986B7455F24228F68B88BDCB165234BBF3BE556E48E6412DDD0E` |
+| `docs/architecture/declaration-ownership/lsq-ch20-frozen-owners.tsv` | 42 frozen source/blob rows and 41 `.ilean` hashes; SHA-256 `1B56CB65B129D7CCA113CECFE7324A2FEB22C301037A77537BB4ECA65252A524` |
+| `docs/architecture/declaration-ownership/lsq-ch20-ownership.tsv` | unchanged 5,129-row ownership allocation; SHA-256 `288CA74AD3534B6B7E39D38B11BDF831738643392F4C13A4C898BA0309722D63` |
+| `docs/architecture/declaration-ownership/lsq-ch20-tiers.tsv` | exact 121-module surface: 44 source, 34 reusable, 43 compatibility; SHA-256 `39EFB2528AC96A28A12DB9EDFC1E11F60695F90929F3C47EC8D19F8C8FB96CA4` |
+| `docs/architecture/declaration-ownership/lsq-ch20-structural-imports.tsv` | exact 175 imports for 43 wrappers and 3 aggregates; SHA-256 `93114D5CF9B1100D9F87C8E0A8D1F4ADE574CD845DBD91C296A854DDD2B0620F` |
+| `docs/architecture/declaration-ownership/lsq-ch20-destination-dag.tsv` | exact 244 typed destination edges; SHA-256 `6F1D0003429EF4C8F3327B837B811660D2875A86B87F90C75D8BC7975CFD1420` |
+| `docs/architecture/declaration-ownership/lsq-ch20-cross-lane-normalization.tsv` | 4,224 base/final QR-LS normalization rows; SHA-256 `056DA202B1D8C3FC6F6ED540B6064D094D89455A43848FBEA175C06DAFE8384F` |
+| `docs/architecture/declaration-ownership/lsq-ch20-coordinator-patches.tsv` | 203 exact shared-file patches; SHA-256 `75E210F086105D5E1C2E61FD974A5022BA2A51FB602C21C6FE3E2DF6AD3FAB63` |
+| `docs/architecture/declaration-ownership/lsq-ch20-private-rewrites.tsv` | 151 reviewed private-name rewrites; SHA-256 `4DC6977FE8DA3DA01940FEEEBC5D79D6F3970B7CA9E75CF3362237DE3DB4FAC8` |
 | `docs/architecture/migrations/worker-lsq-ch20-migration.md` | this contract |
+| `docs/architecture/migrations/worker-lsq-ch20-integrator-request.md` | exact human-readable coordinator handoff |
 
-The route map uses `exact` routes throughout rather than source line ranges.
-The reviewed partition is declaration-level and deliberately non-contiguous —
-54 declarations were relocated across sibling leaves to break cycles — so an
-exact route per declaration is the faithful representation and is strictly more
-precise than a range. It also makes the contract independent of source layout,
-which is what the later waves rewrite.
+The ownership allocation is byte-identical to `7d876bc`; only its evidence and
+enforcement were repaired. All 5,129 route rows now name their compiler command
+and fingerprint. Co-generated declarations cannot be routed separately, and
+candidate source text cannot change while hiding behind the same declaration
+kind and dependency edges.
 
 Gate command and result:
 
@@ -467,23 +503,27 @@ python tools/architecture/check_lsq_ch20_ownership.py --mode pre \
   --routes docs/architecture/declaration-ownership/lsq-ch20-routes.tsv \
   --manifest docs/architecture/declaration-ownership/lsq-ch20-ownership.tsv \
   --tiers docs/architecture/declaration-ownership/lsq-ch20-tiers.tsv \
-  --skip-cross-lane --project-root .
--> pre mode passed: 5129 declarations, 72 destinations, 244 owner edges,
-   manifest sha256 288CA74AD3534B6B7E39D38B11BDF831738643392F4C13A4C898BA0309722D63
+  --frozen-source-dir <PACKET_ROOT>/runtime/frozen-owners/source \
+  --frozen-ilean-dir <PACKET_ROOT>/runtime/frozen-owners/ilean \
+  --project-root .
+-> pre mode passed: 5129 declarations, 4694 compiler command groups,
+   72 destinations, 244 owner edges, 19 LS-to-QR and 4 QR-to-LS base imports
+   (4221 typed edges), manifest sha256
+   288CA74AD3534B6B7E39D38B11BDF831738643392F4C13A4C898BA0309722D63
 ```
 
-`--skip-cross-lane` is used in `pre` mode only, because at the frozen base the
-destination modules do not exist yet, so no destination can yet carry the
-frozen QR imports. The cross-lane contract is enforced unconditionally in
-`stage` and `post` mode.
+There is no cross-lane skip option. Pre validates the exact base edges; post
+validates their fully canonical normalization and fails on every unresolved QR
+owner placeholder.
 
 ## 9. Remaining lane work
 
 1. ~~Base `lake build NumStability` and the `.ilean` freeze~~ — done, see §4.5.
 2. Wave group 1 — `LSQRSolve` and `LSPerturbation`.
 3. Wave group 2 — the normal-equations family.
-4. Wave group 3 — `LSE`, GQR and KKT, with the seven frozen QR imports retained
-   and QR-dependent Chapter 20 tails in separate late commits.
+4. Wave group 3 — `LSE`, GQR and KKT, with QR-dependent Chapter 20 tails in
+   separate late commits and every QR import normalized through the resolved
+   cross-lane owner contract.
 5. Wave group 4 — every remaining Chapter 20 owner in dependency order.
 6. Wrappers, canonical and source aggregates, isolated canonical-only and
    old-only tests, then the full static, focused, downstream and global gates.
