@@ -1,9 +1,12 @@
-import NumStability.Source.Higham.Chapter20
+import NumStabilityTest.Import.Source.Chapter20.Equation32
+import NumStabilityTest.Import.Source.Chapter20.Lemma06
+import NumStabilityTest.Import.Source.Chapter20.Lemma11.Support
+import NumStabilityTest.Import.Source.Chapter20.Theorem01
+import NumStabilityTest.Import.Source.Chapter20.Theorem03.QRSolve
 
 /-!
-# Higham Chapter 20 source-entry-point smoke test
--/
+# Higham Chapter 20 import-test umbrella
 
-#check NumStability.higham20_eq20_32_Bplus_residual_eq_crossProjection
-#check NumStability.higham20_lemma20_6_exists_symmetric_perturbation_minimizer_and_norm_bounds
-#check NumStability.higham20_theorem20_1_solution_and_residualRelativeRHS_le_of_one_rhs_budget
+Imports every currently migrated Chapter 20 source test, including the
+isolated Lemma 20.11 support and Theorem 20.3 QR-solve modules.
+-/

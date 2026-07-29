@@ -10,8 +10,13 @@
 
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.FiniteProbability
-import NumStability.Algorithms.LeastSquares.LSNormalEquations
-import NumStability.Algorithms.LeastSquares.LSQRSolve
+import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
+import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
+import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+import NumStability.Analysis.Perturbation.LeastSquares.BackwardError
+import NumStability.Analysis.Perturbation.LeastSquares.Basic
+import NumStability.Analysis.Perturbation.LeastSquares.NormalEquations
+import NumStability.Source.Higham.Chapter20.Theorem03.QRSolve
 import NumStability.Algorithms.RandNLA.RowSamplingLeverage
 import NumStability.Algorithms.RandNLA.RowSamplingLeverageMGF
 import Mathlib.Analysis.InnerProductSpace.PiL2

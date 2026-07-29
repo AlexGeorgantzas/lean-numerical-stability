@@ -3,6 +3,7 @@ import NumStabilityTest.Import.Algorithms.Arithmetic.DotProduct.NoGuard
 import NumStabilityTest.Import.Algorithms.Arithmetic.DotProduct.NoGuard.Core
 import NumStabilityTest.Import.Algorithms.Arithmetic.DotProduct.NoGuard.Tree
 import NumStabilityTest.Import.Algorithms.LinearSystems
+import NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares
 import NumStabilityTest.Import.Algorithms.LinearSystems.LU
 import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU
 import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU.ArbitraryNorm
@@ -60,6 +61,7 @@ import NumStabilityTest.Import.Analysis.Norms.Core
 import NumStabilityTest.Import.Analysis.OperatorNorms
 import NumStabilityTest.Import.Analysis.OperatorNorms.Attainment
 import NumStabilityTest.Import.Analysis.OperatorNorms.Basic
+import NumStabilityTest.Import.Analysis.Perturbation.LeastSquares
 import NumStabilityTest.Import.Analysis.Probability
 import NumStabilityTest.Import.Analysis.Probability.Gaussian
 import NumStabilityTest.Import.Analysis.Probability.Gaussian.AbsoluteMoment
@@ -74,6 +76,7 @@ import NumStabilityTest.Import.Analysis.VectorNorms.Attainment
 import NumStabilityTest.Import.Analysis.VectorNorms.Basic
 import NumStabilityTest.Import.Analysis.VectorNorms.Duality
 import NumStabilityTest.Import.Analysis.VectorNorms.Interpolation
+import NumStabilityTest.Import.Compatibility.Algorithms.LeastSquares
 import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLU
 import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUArbitraryNormSourceClosure
 import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUComputationSourceClosure

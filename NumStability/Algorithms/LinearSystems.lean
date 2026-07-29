@@ -1,3 +1,4 @@
+import NumStability.Algorithms.LinearSystems.LeastSquares
 import NumStability.Algorithms.LinearSystems.LU
 import NumStability.Algorithms.LinearSystems.Triangular
 

@@ -138,6 +138,7 @@
     "NumStability.Algorithms.FastMatMul.Internal.LegacyBounds": "internal",
     "NumStability.Algorithms.FastMatMul.Recurrences": "reusable",
     "NumStability.Algorithms.LinearSystems": "aggregate",
+    "NumStability.Algorithms.LinearSystems.LeastSquares": "aggregate",
     "NumStability.Algorithms.LinearSystems.LU": "aggregate",
     "NumStability.Algorithms.LinearSystems.LU.BlockLU": "aggregate",
     "NumStability.Algorithms.LinearSystems.LU.BlockLU.ArbitraryNorm": "reusable",
@@ -329,6 +330,8 @@
     "NumStability.Analysis.OperatorNorms": "aggregate",
     "NumStability.Analysis.OperatorNorms.Attainment": "reusable",
     "NumStability.Analysis.OperatorNorms.Basic": "reusable",
+    "NumStability.Analysis.Perturbation": "aggregate",
+    "NumStability.Analysis.Perturbation.LeastSquares": "aggregate",
     "NumStability.Analysis.PerturbationTheory": "reusable",
     "NumStability.Analysis.Probability": "aggregate",
     "NumStability.Analysis.Probability.Gaussian": "aggregate",
@@ -374,7 +377,15 @@
       "tier": "upstream"
     },
     {
+      "prefix": "NumStability.Algorithms.LinearSystems.LeastSquares",
+      "tier": "reusable"
+    },
+    {
       "prefix": "NumStability.Algorithms.LinearSystems.Triangular",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Analysis.Perturbation.LeastSquares",
       "tier": "reusable"
     },
     {

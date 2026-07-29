@@ -2467,9 +2467,14 @@ def validate_coordinator_patches_applied(
             tier_failures.append(
                 f"tiers.json exact {subject}={exact.get(subject)!r}, expected {value!r}"
             )
-        elif action == "global_tier_prefix" and prefix_map.get(subject) != value:
+        elif (
+            action == "global_tier_prefix"
+            and prefix_map.get(subject.removesuffix(".")) != value
+        ):
             tier_failures.append(
-                f"tiers.json prefix {subject}={prefix_map.get(subject)!r}, expected {value!r}"
+                "tiers.json prefix "
+                f"{subject.removesuffix('.')}="
+                f"{prefix_map.get(subject.removesuffix('.'))!r}, expected {value!r}"
             )
     if tier_failures:
         raise ValueError(
@@ -4662,7 +4667,7 @@ def run_self_test() -> None:
                 {
                     "exact": {SELF_HISTORICAL_A: "compatibility"},
                     "prefixes": [
-                        {"prefix": "NumStability.Self.", "tier": "reusable"}
+                        {"prefix": "NumStability.Self", "tier": "reusable"}
                     ],
                 }
             ),

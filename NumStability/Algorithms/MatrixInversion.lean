@@ -32,7 +32,7 @@ import NumStability.Algorithms.LU.LUSolve
 import NumStability.Algorithms.LU.GrowthFactor
 import NumStability.Algorithms.HighamChapter8
 import NumStability.Algorithms.HighamChapter9
-import NumStability.Algorithms.LeastSquares.LSPerturbation
+import NumStability.Analysis.Perturbation.LeastSquares.Wedin
 
 namespace NumStability
 

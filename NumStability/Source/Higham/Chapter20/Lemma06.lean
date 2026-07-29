@@ -1,4 +1,6 @@
-import NumStability.Algorithms.LeastSquares.LSQRSolve
+import NumStability.Algorithms.LinearSystems.LeastSquares.AugmentedSystem
+import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
+import NumStability.Source.Higham.Chapter20.Theorem03.QRSolve
 
 namespace NumStability
 

@@ -26,7 +26,11 @@ import NumStability.Algorithms.Cholesky.CholeskySpec
 import NumStability.Algorithms.Cholesky.CholeskySolve
 import NumStability.Algorithms.QR.Higham19
 import NumStability.Algorithms.QR.GramSchmidt
-import NumStability.Algorithms.LeastSquares.LSQRSolve
+import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
+import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+import NumStability.Analysis.Perturbation.LeastSquares.Normwise
+import NumStability.Analysis.Perturbation.LeastSquares.Wedin
+import NumStability.Source.Higham.Chapter20.Theorem03.QRSolve
 import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
 
 namespace NumStability

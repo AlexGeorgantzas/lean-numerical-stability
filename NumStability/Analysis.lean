@@ -59,6 +59,7 @@ import NumStability.Analysis.NilpotentJordanChain
 import NumStability.Analysis.Nonassociativity
 import NumStability.Analysis.OperatorLog
 import NumStability.Analysis.OperatorNorms
+import NumStability.Analysis.Perturbation
 import NumStability.Analysis.PerturbationTheory
 import NumStability.Analysis.Probability
 import NumStability.Analysis.Problem2_10

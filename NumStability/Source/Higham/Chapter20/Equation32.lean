@@ -1,4 +1,4 @@
-import NumStability.Algorithms.LeastSquares.LSQRSolve
+import NumStability.Analysis.Perturbation.LeastSquares.Wedin
 
 namespace NumStability
 
