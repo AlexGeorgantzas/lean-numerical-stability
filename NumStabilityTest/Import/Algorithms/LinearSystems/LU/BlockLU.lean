@@ -4,8 +4,8 @@ import NumStability.Algorithms.LinearSystems.LU.BlockLU
 # Block LU aggregate import smoke test
 
 This test imports only the canonical reusable Block LU aggregate and checks
-representatives from every declaration-bearing child completed through the
-safe reusable Phase 12B slices.
+representatives from all eleven declaration-bearing children completed by the
+Phase 12 reusable cutover.
 -/
 
 #check NumStability.idBlock

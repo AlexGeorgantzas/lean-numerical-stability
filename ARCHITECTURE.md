@@ -67,8 +67,11 @@ split from the reusable library.
   `DiagonalDominance`, `Factorization`, `FactorizationError`,
   `FirstOrderModels`, `GrowthBounds`, `PositiveDefinite`,
   `RecursiveFactorization`, `ResidualLifting`, `SchurComplement`, and
-  `SolveError`. Numbered Chapter 13 correspondence is excluded from this
-  reusable surface and lives below `Source.Higham.Chapter13.BlockLU`.
+  `SolveError`. The 1,695 source declarations cut over from the historical
+  `Algorithms.LU.BlockLU` owner live below
+  `Source.Higham.Chapter13.BlockLU`. Ten separately scoped declaration-bearing
+  siblings remain at historical `Algorithms.LU` paths pending their own
+  migration.
 - `NumStability.Algorithms.Summation` is the complete published summation
   surface. Its `Recursive` and `Pairwise` family umbrellas preserve source
   reachability, while reusable consumers import their `.Core` leaves.
@@ -181,7 +184,9 @@ split from the reusable library.
   `ComplexConfluentRefinement` source leaves. Chapter 27 uses a declaration-
   free `Chapter27` aggregate over `SoftwareEnvironment` and `Problem06`.
   Corresponding historical paths are compatibility wrappers listed in the
-  executable compatibility map.
+  executable compatibility map. The BlockLU facade statement is bounded to the
+  former monolith; the ten declaration-bearing sibling owners require a second
+  committed ownership map before they move.
   Chapter 23 is organized under
   `NumStability.Source.Higham.Chapter23`, with semantic base leaves and
   declaration-free Theorem 23.2, Theorem 23.3, Bini--Lotti, and combined
@@ -192,8 +197,8 @@ split from the reusable library.
 - `NumStability.All` is the explicit complete-tree entry point.
 - `NumStability.Algorithms` preserves its historical complete algorithm-layer
   surface, including source correspondence; it is not the pure reusable entry
-  point. Its checked direct-import ceilings are 442 total imports, including 43
-  below `NumStability.Analysis` and 14 below `NumStability.Source`.
+  point. Its checked direct-import ceilings are 443 total imports, including 43
+  below `NumStability.Analysis` and 15 below `NumStability.Source`.
 - `NumStability` retains its historical complete-tree behavior through the
   compatibility window.
 

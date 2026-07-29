@@ -3,9 +3,11 @@
 
   Source-faithful family-level first-order contracts for Higham Chapter 13.
 
-  The legacy `FirstOrderLe` API in `BlockLU` is a useful pointwise envelope,
-  but its existential coefficient is selected after fixing `u`; it therefore
-  does not express the source's uniform `O(u^2)` remainder.  This module uses
+  The fixed-roundoff API is now distributed across reusable
+  `FirstOrderModels` and the canonical Chapter 13 operation, error, and theorem
+  leaves. The legacy `FirstOrderLe` pointwise envelope selects its existential
+  coefficient after fixing `u`, so it does not express the source's uniform
+  `O(u^2)` remainder. This sibling uses
   `FamilyFirstOrderLe` and ties every scalar norm in equations (13.4)--(13.7),
   (13.14), and (13.15) to the matrix occurring in the corresponding equation.
 -/

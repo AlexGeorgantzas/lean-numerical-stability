@@ -173,40 +173,40 @@ approximation, and least-squares preconditioning.
 
 ## Project statistics
 
-Current Phase 11B2 structure for the production source surface, after the
-manifest-checked norm-core split and the completed Higham Chapter 6 source-tail
-migration:
+Current Phase 12 source-cutover structure for the production surface, after the
+manifest-checked reusable and source partition of the historical Chapter 13
+Block LU declaration owner:
 
-Phase 11B2 adds nine declaration-bearing source leaves and two declaration-free
-family aggregates, and reclassifies four historical owners as exact
-compatibility wrappers.
+The cutover assigns all 1,990 contracted declarations to semantic owners. Its
+source portion moves 1,695 declarations into 68 Chapter 13 owners; together
+with the previously extracted `Theorem05.Recurrences` leaf, the declaration-free
+`Chapter13.BlockLU` aggregate exposes 69 declaration-bearing source owners.
 
 | | |
 |---|---|
-| Lean modules | **1,035** |
+| Lean modules | **1,131** |
 | Import cycles | **0** |
-| Classified modules | **431 (41.643%)** |
-| Unclassified modules | **604** |
-| Source modules | **151** |
-| Aggregate modules | **87** |
-| Compatibility modules | **108** |
-| Reusable modules | **78** |
+| Classified modules | **529 (46.773%)** |
+| Unclassified modules | **602** |
+| Source modules | **218** |
+| Aggregate modules | **103** |
+| Compatibility modules | **109** |
+| Reusable modules | **92** |
 | Internal / upstream / mixed modules | **2 / 5 / 0** |
-| Compatibility wrappers / direct targets | **108 / 208** |
-| Missing module docs | **217** |
+| Compatibility wrappers / direct targets | **109 / 210** |
+| Missing module docs | **216** |
 | Legacy naming exceptions | **399** |
 | Provenance contract | **207 Apache files / 5 upstream modules** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
-the standard `[propext, Classical.choice, Quot.sound]` axioms. The immediate
-clean input to Phase 11B2 is the versioned
+the standard `[propext, Classical.choice, Quot.sound]` axioms. The versioned
 [`2026-07-26 organization Phase 11B1 baseline`](docs/architecture/baselines/2026-07-26-organization-phase11b1.md),
-and the exact Phase 11B2 ownership and validation contract is recorded in the
-immutable
-[`Chapter 6 source-tail map`](docs/architecture/migrations/2026-07-27-chapter06-source-tail-phase11b2.md).
-These records include source, import, signature-dependency, and
-proof/body-dependency metrics; the live ratchet values above are enforced by
-the reviewed manifests.
+followed by the Phase 11B2 Chapter 6 migration, is the retained input history.
+The exact current ownership and validation contract is recorded in the
+[`Phase 12 BlockLU semantic migration`](docs/architecture/migrations/2026-07-27-blocklu-semantic-phase12.md).
+These records include source, import, signature-dependency, and proof/body
+dependency metrics; the live ratchet values above are enforced by the reviewed
+manifests.
 
 ## Building
 
@@ -352,7 +352,10 @@ Choose the narrowest entry point that matches the material you need:
   independent `DemmelSharpMultiplier` leaf. The historical
   `NumStability.Algorithms.LU.BlockLU` path remains importable as a two-target
   compatibility facade; new code should choose the reusable or source path
-  explicitly.
+  explicitly. This cutover covers the declarations formerly owned by the
+  historical `Algorithms.LU.BlockLU` monolith. Ten declaration-bearing sibling
+  modules remain at historical `Algorithms.LU` paths pending a separate
+  ownership map and migration.
 - `NumStability.Higham` is the historical compatibility entry point; new code
   should import `NumStability.Source.Higham`.
 - `NumStability.All` exposes the complete supported library surface.
@@ -374,12 +377,12 @@ the old-to-new path map and removal policy. The
 dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
-corpus is already Mathlib-style. After Phase 11B2, the current ratchet records
-604 unclassified modules, no fully classified mixed modules, 217 missing module
-docs, 399 historical naming exceptions, and no declaration-bearing umbrella.
-The `NumStability.Algorithms` direct-import ceilings are 442 total imports,
-including 43 below `NumStability.Analysis` and 14 below
-`NumStability.Source`. CI prevents those queues from growing while each
+corpus is already Mathlib-style. After the Phase 12 BlockLU source cutover, the
+current ratchet records 602 unclassified modules, no fully classified mixed
+modules, 216 missing module docs, 399 historical naming exceptions, and no
+declaration-bearing umbrella. The `NumStability.Algorithms` direct-import
+ceilings are 443 total imports, including 43 below `NumStability.Analysis` and
+15 below `NumStability.Source`. CI prevents those queues from growing while each
 dependency-contained family is migrated. In particular, the Chapter 14,
 Chapter 21, and Chapter 28 moves above establish only their documented
 frontiers; their broader historical families remain in the migration queue.
@@ -537,15 +540,15 @@ and reuse Mathlib's norms — they are not independent norm definitions.
 
 The selected formalization core scope is closed; the repository-organization
 migration is not. Phase 11B1 split the transitional `Analysis.Norms.Core`
-owner into 20 semantic reusable leaves and four Chapter 6 source leaves, then
-made Core a declaration-free aggregate. Phase 11B2 moved the four remaining
-audited Chapter 6 source owners into nine semantic leaves and two family
-aggregates, retaining all four former paths as exact wrappers. Subsequent
-batches classify the remaining 604 unclassified modules while splitting any
-mixed-content owners they expose, replace the 399 historical source/proof-stage
-names with semantic canonical paths plus compatibility shims, document the 217
-remaining modules, and review the other giant-file outliers. The sequence and safety
-gates are tracked in
+owner, and Phase 11B2 moved the remaining audited Chapter 6 source owners.
+Phase 12 has now split the historical 82k-line `Algorithms.LU.BlockLU`
+declaration owner into reusable and 68-owner Chapter 13 source surfaces while
+preserving the old import as a two-target facade. A separately mapped migration
+of the ten declaration-bearing BlockLU sibling modules remains mandatory.
+Subsequent batches classify the remaining 602 unclassified modules, replace the
+399 historical source/proof-stage names with semantic canonical paths plus
+compatibility shims, document the 216 remaining modules, and review the other
+giant-file outliers. The sequence and safety gates are tracked in
 [`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md).
 
 ## License

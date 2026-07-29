@@ -3,8 +3,9 @@
 
   Computation-derived source endpoint for Higham Theorem 13.6.
 
-  The earlier conventional-solve theorem executed both triangular solves but
-  accepted a completed `PartitionedLUFirstOrderSpec` for the factorization.
+  The earlier conventional-solve theorem, now owned by
+  `Source.Higham.Chapter13.Theorem06.FactorAndSolve`, executed both triangular
+  solves but accepted a completed `PartitionedLUFirstOrderSpec` for the factorization.
   The theorem below closes that gap: it consumes the recursive Algorithm 13.1
   computation certificate, derives its Theorem 13.5 residual, and only then
   executes the conventional Algorithm 13.3 solve path.
@@ -20,8 +21,9 @@ open scoped Topology
 
 /-! ## Uniformly usable bounds for the concrete DHS solve
 
-The legacy concrete solve theorem in `BlockLU` records several estimates with
-`FirstOrderLe` at one fixed unit roundoff.  That is useful for a pointwise
+The earlier concrete solve theorem in
+`Source.Higham.Chapter13.Theorem06.FactorAndSolve` records several estimates
+with `FirstOrderLe` at one fixed unit roundoff. That is useful for a pointwise
 calculation, but it cannot be lifted to a family theorem: the hidden
 quadratic coefficient may depend on the family index.  The lemmas in this
 section retain direct linear inequalities from the actual rounded

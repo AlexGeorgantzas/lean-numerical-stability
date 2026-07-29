@@ -76,7 +76,8 @@ the declaration-free `Chapter06.Asides` and
 `Analysis.Higham6BlockAntidiag`, and `Analysis.HighamChapter6Duality` are exact
 one-target compatibility wrappers.
 
-Phase 12 completes the Block LU semantic split. The reusable
+Phase 12 completes the semantic split of the historical
+`Algorithms.LU.BlockLU` declaration owner. The reusable
 `Algorithms.LinearSystems.LU.BlockLU` aggregate exposes eleven reusable leaves,
 including the final `RecursiveFactorization` owner and its two reviewed private
 helpers. The source cutover moves the remaining 1,695 semantic declarations
@@ -93,6 +94,11 @@ no declaration-bearing production module imports that facade. The private-name
 normalization contract contains the two recursive-factorization identities and
 the 17 source-owner identities required by `Theorem02.Factorization` and
 `Theorem02.Uniqueness`.
+
+This does not migrate the ten declaration-bearing sibling BlockLU modules
+enumerated in the Phase 12 migration record. They remain unclassified until a
+second committed ownership map assigns each declaration to a reusable or
+Chapter 13 source owner.
 
 The final Phase 12 source-cutover ratchet classifies 529 of 1,131 production
 modules (46.773%): 218 as source, 103 as aggregate, 109 as compatibility, 92 as

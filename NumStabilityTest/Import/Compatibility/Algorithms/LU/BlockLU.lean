@@ -4,9 +4,9 @@ import NumStability.Algorithms.LU.BlockLU
 # Historical BlockLU old-only import smoke test
 
 This test deliberately imports only the historical BlockLU path. It verifies
-that Phase 12A extraction preserves representatives from every migrated
-surface formerly declared by or available through that module, including the
-safe reusable Phase 12B slices.
+the complete two-target Phase 12 facade over the reusable and Chapter 13 source
+aggregates, preserving representatives formerly declared by or available
+through the monolith.
 -/
 
 #check NumStability.FirstOrderLe

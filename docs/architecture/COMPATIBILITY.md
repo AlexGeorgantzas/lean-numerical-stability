@@ -145,12 +145,15 @@ the source aggregate and the broader historical `Analysis.Norms` facade.
 The compatibility inventory now contains 109 wrappers with 210 direct canonical
 targets.
 
-Phase 12 completes the historical `NumStability.Algorithms.LU.BlockLU`
-cutover. That path is now a declaration-free two-target facade over the
+Phase 12 completes the cutover of the historical
+`NumStability.Algorithms.LU.BlockLU` declaration owner. That path is now a
+declaration-free two-target facade over the
 canonical reusable `NumStability.Algorithms.LinearSystems.LU.BlockLU` family
 and the source-facing `NumStability.Source.Higham.Chapter13.BlockLU` family.
 Production consumers use those semantic owners directly; the old-only import
-test preserves the complete historical surface.
+test preserves the complete historical surface. This does not yet move the ten
+declaration-bearing sibling BlockLU modules covered by the follow-on ownership
+contract.
 
 Phase 11B2 adds four exact one-target wrappers for the former Chapter 6
 `Chapter06Lemma66`, `Higham6Asides`, `Higham6BlockAntidiag`, and
@@ -165,9 +168,9 @@ surface together with Problems 6.1, 6.5, 6.9, and 6.10 and Theorem 6.4. New
 production code imports the narrow semantic family or source leaf it needs;
 no declaration-bearing production module imports the historical facade or
 Core. Core is now classified as an aggregate and owns no declarations. This
-Phase 11B1 retarget changed neither the then-current 104-wrapper inventory nor
-its 204 direct targets; the four Phase 11B2 wrappers account for the current
-108/208 totals.
+Phase 11B1 retained 104 wrappers with 204 direct targets. The four Phase 11B2
+wrappers produced 108/208; the Phase 12 two-target `Algorithms.LU.BlockLU`
+facade produces the current 109/210 totals.
 
 `NumStability.Source.Higham.Chapter02.Problem22` has one temporary
 canonical-side compatibility exception: in addition to locating the reusable

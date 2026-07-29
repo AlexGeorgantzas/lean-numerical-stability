@@ -13,8 +13,8 @@ import NumStability.Algorithms.LinearSystems.LU.BlockLU.SolveError
 /-!
 # Block LU algorithms
 
-Declaration-free aggregate for the reusable Block LU foundations extracted in
-Phase 12A and the completed reusable Phase 12B slices, including recursive
-one-step factorization. Later Phase 12 slices extend this family without
-introducing numbered-source correspondence into the reusable import surface.
+Declaration-free aggregate for the eleven reviewed reusable Block LU owners
+completed in Phase 12. Numbered Chapter 13 correspondence is excluded; use
+`NumStability.Source.Higham.Chapter13.BlockLU`. The historical
+`NumStability.Algorithms.LU.BlockLU` facade imports both aggregates.
 -/

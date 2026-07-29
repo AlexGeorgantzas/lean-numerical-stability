@@ -414,8 +414,9 @@ theorem higham13_clmBlockSchur_blockDiagDomRow
 
 /-- The recursively generated Schur-stage table on the first tail is the
 tail of the original table.  This is the block-type-generic form of the
-matrix-only tail-shift theorem in `BlockLU`; in particular it applies to
-continuous linear maps for every induced operator norm. -/
+matrix-only tail-shift theorem in
+`Source.Higham.Chapter13.Section03.SchurStageAnalysis`; in particular it
+applies to continuous linear maps for every induced operator norm. -/
 theorem higham13_algorithm13_3_schurStageBlock_tail_shift_generic
     {m : ℕ} {α : Type*} [Sub α] [Mul α]
     (A : Fin (m + 1) → Fin (m + 1) → α)

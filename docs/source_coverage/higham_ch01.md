@@ -178,8 +178,10 @@ Chapter 1 is the repository's foundation layer; later chapters consume:
   `mixedForwardBackwardErrorBounded`, `isNumericallyStable`,
   condition-number surfaces, and the rule-of-thumb bridge
   `forward_from_backward` — consumed by, e.g., Chapter 7 perturbation
-  theory, Chapter 9/13 LU stability (`Algorithms/LU/BlockLU.lean` uses the
-  Chapter 13 vocabulary built on these), and Chapter 16-21 backward-error
+  theory, Chapter 9/13 LU stability (the reusable
+  `Algorithms.LinearSystems.LU.BlockLU` and source
+  `Source.Higham.Chapter13.BlockLU` aggregates expose the Chapter 13
+  vocabulary built on these), and Chapter 16-21 backward-error
   chapters.
 - Lemma 1.1 and `relativeResidual2` (`PerturbationTheory.lean`): the
   normwise backward-error interpretation of residuals reused by Chapter 7

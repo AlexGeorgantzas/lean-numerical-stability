@@ -21,18 +21,21 @@
 - Mode: core.
 - Parallel split: 3A (Block LU / Matrix Inversion / Condition Estimation
   cluster, Chapters 13-15).
-- Canonical source entry point: `NumStability/Source/Higham/Chapter13.lean`,
-  whose source leaves are `DemmelSharpMultiplier.lean`, `Equation25.lean`, and
-  `Table01.lean`. The former `LU/Higham13DemmelSharpMultiplier.lean` and
-  `LU/BlockLUTable13_1Families.lean` paths are compatibility imports only.
-- Remaining Chapter 13 implementation modules (`NumStability/Algorithms/LU/`):
-  `BlockLU.lean` (monolithic core, ~82k lines), plus the source-closure and
-  family layers `BlockLUSourceClosure`, `BlockLURowSourceClosure`,
+- Canonical source entry point: `NumStability.Source.Higham.Chapter13`. Its
+  declaration-free `BlockLU` aggregate directly imports 69 declaration-bearing
+  owners: the 68-owner, 1,695-declaration Phase 12 cutover plus the previously
+  extracted `Theorem05.Recurrences` owner. Eleven declaration-free family
+  aggregates provide narrower discovery paths. The chapter aggregate also
+  imports the independent `DemmelSharpMultiplier` leaf. The historical
+  `Algorithms.LU.BlockLU` module is now an exact two-import compatibility
+  facade over the eleven-leaf reusable aggregate and this source aggregate.
+- The Phase 12 cutover is bounded to the former monolith. These ten
+  declaration-bearing sibling modules remain under `Algorithms/LU` pending a
+  separate ownership map: `BlockLUSourceClosure`, `BlockLURowSourceClosure`,
   `BlockLUArbitraryNormSourceClosure`, `BlockLUSPDSourceClosure`,
   `BlockLUSPDFamilies`, `BlockLUComputationSourceClosure`,
   `BlockLUFirstOrderFamilies`, `BlockLUPointRowGrowthSourceClosure`,
-  `BlockLUScalarGrowthBridge` and `BlockLUVarying`. Their later semantic split
-  is outside this path-only migration.
+  `BlockLUScalarGrowthBridge`, and `BlockLUVarying`.
 - **Selected-scope gate: PASS** (0 open primary or numbered-equation rows).
 
 This audit is statement-level: I verified each Lean statement against the
@@ -102,7 +105,7 @@ overcount; (13.26) is the last, appearing in Problem 13.4).
   `blockSchur`, `higham13_clmBlockSchur` (arbitrary-norm).
 - Varying block dimensions ("the blocks can be of different dimensions",
   p. 247): `Higham13VaryingBlockLUFactSpec` and its step/uniqueness lemmas in
-  `BlockLUVarying.lean`.
+  the deferred legacy sibling `BlockLUVarying.lean`.
 
 ## Problems accounting (13.1–13.9)
 

@@ -71,5 +71,8 @@ import NumStability.Source.Higham.Chapter13.Theorem08.OneStep
 /-!
 # Higham Chapter 13: BlockLU
 
-Declaration-free source aggregate for the Chapter 13 `BlockLU` family.
+Declaration-free aggregate importing the 69 reviewed declaration-bearing
+owners of the migrated Chapter 13 BlockLU surface: 68 final-cutover owners plus
+`Theorem05.Recurrences`. It does not claim migration of the ten historical
+sibling owners.
 -/
