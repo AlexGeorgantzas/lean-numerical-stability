@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the frozen P01 N/L matrix in its recorded order.
+"""Run the frozen HighamBench N/L matrix in its recorded order.
 
 The orchestrator deliberately separates *assignments* from *attempts*.  A
 SYSTEM_ERROR is kept as an incident and retried once, as required by the
@@ -15,6 +15,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+from pathlib import PurePosixPath
 import platform
 import re
 import shutil
@@ -31,17 +32,10 @@ except ImportError:  # Direct script execution.
     from hashes import load_manifest, verify_manifest  # type: ignore
 
 
-PAPER_SHA256 = "d5ad99fac5022da54dbe02721ea57116df3cec15badddd7c96c344328718fea7"
-TARGETS = {
-    "P01-T1": "p01_t1_pairwise_nonnegative",
-    "P01-T2": "p01_t2_pairwise_vs_recursive_bounds",
-    "P01-T3": "p01_t3_noGuard_recursive_running_error_bound",
-}
-
 # A release manifest must cover the complete benchmark tree.  These entries are
 # also named explicitly so a truncated manifest cannot silently omit a runtime
 # component while still verifying the files it happens to list.
-REQUIRED_RELEASE_FILES = {
+REQUIRED_RUNTIME_RELEASE_FILES = {
     "agent_prompt.md",
     "metadata/library_olean.json",
     "metadata/library_source.json",
@@ -49,20 +43,7 @@ REQUIRED_RELEASE_FILES = {
     "metadata/packages_olean.json",
     "metadata/packages_runtime.json",
     "metadata/run_order.json",
-    "metadata/controlled/P01-T1.json",
-    "metadata/controlled/P01-T2.json",
-    "metadata/controlled/P01-T3.json",
     "shared/HighamBench/Definitions.lean",
-    "tasks/P01/T1/Target.lean",
-    "tasks/P01/T1/context.md",
-    "tasks/P01/T1/task.json",
-    "tasks/P01/T2/Target.lean",
-    "tasks/P01/T2/context.md",
-    "tasks/P01/T2/task.json",
-    "tasks/P01/T3/Target.lean",
-    "tasks/P01/T3/context.md",
-    "tasks/P01/T3/task.json",
-    "tasks/P01/paper.json",
     "tools/codex_isolated.py",
     "tools/__init__.py",
     "tools/analyze.py",
@@ -170,6 +151,224 @@ def canonical_document_digest(value: Mapping[str, Any]) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def _nonempty_string(value: Any, label: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise BenchmarkToolError(f"{label} must be a nonempty string")
+    return value
+
+
+def _sha256_value(value: Any, label: str) -> str:
+    digest = _nonempty_string(value, label)
+    if not re.fullmatch(r"[0-9a-f]{64}", digest):
+        raise BenchmarkToolError(f"{label} must be a lowercase SHA-256 digest")
+    return digest
+
+
+def _manifest_papers(manifest: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    raw_papers = manifest.get("papers")
+    if not isinstance(raw_papers, list) or not raw_papers:
+        raise BenchmarkToolError("benchmark manifest must contain a nonempty papers list")
+    papers = [_mapping(value, f"manifest.papers[{index}]") for index, value in enumerate(raw_papers)]
+    paper_ids = [
+        _nonempty_string(paper.get("paper_id"), f"manifest.papers[{index}].paper_id")
+        for index, paper in enumerate(papers)
+    ]
+    if len(set(paper_ids)) != len(paper_ids):
+        raise BenchmarkToolError("benchmark manifest repeats a paper_id")
+    for paper_id in paper_ids:
+        if re.fullmatch(r"P[0-9]+", paper_id) is None:
+            raise BenchmarkToolError(f"invalid paper_id in benchmark manifest: {paper_id!r}")
+
+    corpus = _mapping(manifest.get("corpus"), "manifest.corpus")
+    corpus_ids = corpus.get("paper_ids")
+    if corpus_ids != paper_ids:
+        raise BenchmarkToolError(
+            "manifest.corpus.paper_ids must equal the ordered manifest paper IDs"
+        )
+    if corpus.get("paper_count") != len(papers):
+        raise BenchmarkToolError("manifest.corpus.paper_count disagrees with papers")
+    return papers
+
+
+def corpus_slug(manifest: Mapping[str, Any]) -> str:
+    """Return the ordered, filesystem-safe corpus identity used in run metadata."""
+
+    return "-".join(str(paper["paper_id"]).lower() for paper in _manifest_papers(manifest))
+
+
+def _available_manifest_targets(
+    manifest: Mapping[str, Any],
+) -> list[tuple[Mapping[str, Any], Mapping[str, Any]]]:
+    available: list[tuple[Mapping[str, Any], Mapping[str, Any]]] = []
+    seen: set[str] = set()
+    for paper in _manifest_papers(manifest):
+        paper_id = str(paper["paper_id"])
+        targets = paper.get("targets")
+        if not isinstance(targets, list):
+            raise BenchmarkToolError(f"manifest paper {paper_id} has no targets list")
+        for index, raw_target in enumerate(targets):
+            target = _mapping(raw_target, f"manifest target {paper_id}[{index}]")
+            if target.get("availability") != "available":
+                continue
+            task_id = _nonempty_string(target.get("task_id"), "manifest target task_id")
+            if task_id in seen:
+                raise BenchmarkToolError(f"benchmark manifest repeats task {task_id}")
+            seen.add(task_id)
+            tier = _nonempty_string(target.get("tier"), f"manifest target {task_id} tier")
+            if task_id != f"{paper_id}-{tier}":
+                raise BenchmarkToolError(
+                    f"manifest task {task_id} disagrees with paper {paper_id} and tier {tier}"
+                )
+            available.append((paper, target))
+    if not available:
+        raise BenchmarkToolError("benchmark manifest contains no available tasks")
+    return available
+
+
+def required_release_files(manifest: Mapping[str, Any]) -> set[str]:
+    """Return runtime files plus every paper/task file named by the manifest."""
+
+    required = set(REQUIRED_RUNTIME_RELEASE_FILES)
+    for paper in _manifest_papers(manifest):
+        required.add(f"tasks/{paper['paper_id']}/paper.json")
+    for paper, target in _available_manifest_targets(manifest):
+        paper_id = str(paper["paper_id"])
+        tier = str(target["tier"])
+        task_id = str(target["task_id"])
+        required.add(f"metadata/controlled/{task_id}.json")
+        required.update(
+            {
+                f"tasks/{paper_id}/{tier}/Target.lean",
+                f"tasks/{paper_id}/{tier}/context.md",
+                f"tasks/{paper_id}/{tier}/task.json",
+            }
+        )
+    return required
+
+
+def _declared_benchmark_path(value: Any, expected: str, label: str) -> str:
+    declared = PurePosixPath(_nonempty_string(value, label))
+    if declared.is_absolute() or ".." in declared.parts:
+        raise BenchmarkToolError(f"{label} is not a safe benchmark path")
+    expected_path = PurePosixPath(expected)
+    project_path = PurePosixPath("paper_bencmark/highambench") / expected_path
+    if declared not in (expected_path, project_path):
+        raise BenchmarkToolError(
+            f"{label} must name {project_path.as_posix()}, not {declared.as_posix()}"
+        )
+    return expected_path.as_posix()
+
+
+def load_task_catalog(
+    root: Path, manifest: Mapping[str, Any] | None = None
+) -> dict[str, dict[str, str]]:
+    """Load execution identities from mutually checked manifest and task records."""
+
+    root = root.resolve()
+    manifest = manifest or _mapping(
+        read_json(root / "metadata" / "manifest.json"), "benchmark manifest"
+    )
+    catalog: dict[str, dict[str, str]] = {}
+    for paper, target in _available_manifest_targets(manifest):
+        paper_id = str(paper["paper_id"])
+        tier = str(target["tier"])
+        task_id = str(target["task_id"])
+        target_dir = f"tasks/{paper_id}/{tier}"
+        target_file = f"{target_dir}/Target.lean"
+        context_file = f"{target_dir}/context.md"
+        task_file = f"{target_dir}/task.json"
+
+        paper_source = _mapping(paper.get("source"), f"manifest paper {paper_id} source")
+        paper_sha256 = _sha256_value(
+            paper_source.get("sha256"), f"manifest paper {paper_id} source SHA-256"
+        )
+        paper_record = _mapping(
+            read_json(_require_file(root / f"tasks/{paper_id}/paper.json", f"{paper_id} paper record")),
+            f"{paper_id} paper record",
+        )
+        if paper_record.get("paper_id") != paper_id:
+            raise BenchmarkToolError(f"{paper_id} paper record has the wrong paper_id")
+        recorded_paper_source = _mapping(
+            paper_record.get("source"), f"{paper_id} paper record source"
+        )
+        if recorded_paper_source.get("sha256") != paper_sha256:
+            raise BenchmarkToolError(f"{paper_id} paper SHA-256 disagrees across metadata")
+
+        task = _mapping(
+            read_json(_require_file(root / task_file, f"{task_id} task record")),
+            f"{task_id} task record",
+        )
+        for field, expected in (
+            ("task_id", task_id),
+            ("paper_id", paper_id),
+            ("tier", tier),
+        ):
+            if task.get(field) != expected:
+                raise BenchmarkToolError(
+                    f"{task_id} task record {field}={task.get(field)!r}, expected {expected!r}"
+                )
+        task_source = _mapping(task.get("paper_source"), f"{task_id}.paper_source")
+        if task_source.get("sha256") != paper_sha256:
+            raise BenchmarkToolError(f"{task_id} paper SHA-256 disagrees across metadata")
+        _declared_benchmark_path(task.get("context_file"), context_file, f"{task_id} context_file")
+
+        formal = _mapping(task.get("formal_statement"), f"{task_id}.formal_statement")
+        namespace = _nonempty_string(formal.get("namespace"), f"{task_id} namespace")
+        theorem_name = _nonempty_string(
+            formal.get("theorem_name"), f"{task_id} theorem_name"
+        )
+        _declared_benchmark_path(
+            formal.get("target_file"), target_file, f"{task_id} formal target_file"
+        )
+        lean_target = _mapping(target.get("lean_target"), f"manifest target {task_id}.lean_target")
+        if lean_target.get("declaration") != theorem_name:
+            raise BenchmarkToolError(f"{task_id} theorem name disagrees across metadata")
+        _declared_benchmark_path(
+            lean_target.get("file"), target_file, f"manifest target {task_id} file"
+        )
+        required_declaration = f"{namespace}.{theorem_name}"
+        validation = _mapping(task.get("validation"), f"{task_id}.validation")
+        if validation.get("required_declaration") != required_declaration:
+            raise BenchmarkToolError(f"{task_id} validation declaration disagrees")
+        _declared_benchmark_path(
+            validation.get("controlled_target_file"),
+            target_file,
+            f"{task_id} controlled target_file",
+        )
+
+        for relative, label in (
+            (target_file, f"{task_id} target"),
+            (context_file, f"{task_id} context"),
+            (f"metadata/controlled/{task_id}.json", f"{task_id} controlled manifest"),
+        ):
+            _require_file(root / relative, label)
+        catalog[task_id] = {
+            "task_id": task_id,
+            "paper_id": paper_id,
+            "paper_sha256": paper_sha256,
+            "tier": tier,
+            "theorem_name": theorem_name,
+            "required_declaration": required_declaration,
+            "target_dir": target_dir,
+            "target_file": target_file,
+            "context_file": context_file,
+        }
+
+    for paper in _manifest_papers(manifest):
+        paper_id = str(paper["paper_id"])
+        paper_record = _mapping(
+            read_json(root / f"tasks/{paper_id}/paper.json"), f"{paper_id} paper record"
+        )
+        expected = [
+            task_id for task_id, task in catalog.items() if task["paper_id"] == paper_id
+        ]
+        if paper_record.get("included_tasks") != expected:
+            raise BenchmarkToolError(
+                f"{paper_id} paper record included_tasks disagrees with the manifest"
+            )
+    return catalog
+
+
 def _command_output(command: list[str], label: str) -> str:
     try:
         completed = subprocess.run(
@@ -266,7 +465,10 @@ def _verify_release_manifest(root: Path, raw_path: Path | None) -> dict[str, Any
     release = load_manifest(path)
     listed = {entry["path"] for entry in release["files"]}
     actual = _release_tree_files(root)
-    missing_required = sorted(REQUIRED_RELEASE_FILES - listed)
+    benchmark_manifest = _mapping(
+        read_json(root / "metadata" / "manifest.json"), "benchmark manifest"
+    )
+    missing_required = sorted(required_release_files(benchmark_manifest) - listed)
     if missing_required:
         raise BenchmarkToolError(
             "global release manifest omits required runtime files: "
@@ -676,7 +878,8 @@ def verify_frozen_run_environment(
         raise BenchmarkToolError(
             "environment_bundle_sha256 does not match the canonical config/environment payload"
         )
-    if environment_id != f"highambench-p01-{bundle_digest[:16]}":
+    expected_environment_id = f"highambench-{corpus_slug(manifest)}-{bundle_digest[:16]}"
+    if environment_id != expected_environment_id:
         raise BenchmarkToolError("environment_id is not derived from the frozen bundle SHA-256")
 
     agent_id = _fixed_value("agent id", frozen.get("agent_id"), agent.get("id"))
@@ -1076,50 +1279,190 @@ def _rebuild_jsonl(
     temporary.replace(output)
 
 
-def assignments_from_order(order: dict[str, Any]) -> list[dict[str, Any]]:
+def configured_repetition_ids(config: Mapping[str, Any]) -> list[str]:
+    repetitions = config.get("repetitions")
+    if not isinstance(repetitions, list) or not repetitions:
+        raise BenchmarkToolError("config must contain a nonempty repetitions list")
+    result: list[str] = []
+    for index, raw in enumerate(repetitions):
+        repetition = _mapping(raw, f"config.repetitions[{index}]")
+        repetition_id = _nonempty_string(
+            repetition.get("id"), f"config.repetitions[{index}].id"
+        )
+        if repetition_id in result:
+            raise BenchmarkToolError(f"config repeats repetition {repetition_id}")
+        result.append(repetition_id)
+    return result
+
+
+def _validate_planned_counts(
+    config: Mapping[str, Any],
+    task_catalog: Mapping[str, Mapping[str, str]],
+    repetition_ids: list[str],
+) -> None:
+    planned = config.get("planned_counts_per_agent")
+    if planned is None:
+        return
+    planned = _mapping(planned, "config.planned_counts_per_agent")
+    paper_count = len({task["paper_id"] for task in task_catalog.values()})
+    expected = {
+        "papers": paper_count,
+        "tasks": len(task_catalog),
+        "repetitions_per_task": len(repetition_ids),
+        "conditions": 2,
+        "paired_assignments": len(task_catalog) * len(repetition_ids),
+        "runs": len(task_catalog) * len(repetition_ids) * 2,
+    }
+    for field, value in expected.items():
+        if planned.get(field) != value:
+            raise BenchmarkToolError(
+                f"planned count {field}={planned.get(field)!r}, expected {value}"
+            )
+
+
+def assignments_from_order(
+    order: Mapping[str, Any],
+    task_catalog: Mapping[str, Mapping[str, str]] | None = None,
+    repetition_ids: Iterable[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Expand paired run order and, when supplied, prove exact task coverage."""
+
     assignments: list[dict[str, Any]] = []
-    for pair in order.get("pairs", []):
-        if not isinstance(pair, dict):
+    raw_pairs = order.get("pairs")
+    if not isinstance(raw_pairs, list):
+        raise BenchmarkToolError("run order must contain a pairs list")
+    seen_pairs: set[str] = set()
+    seen_runs: set[str] = set()
+    seen_task_repetitions: set[tuple[str, str]] = set()
+    configured_repetitions = (
+        list(repetition_ids) if repetition_ids is not None else None
+    )
+    if configured_repetitions is not None and len(set(configured_repetitions)) != len(
+        configured_repetitions
+    ):
+        raise BenchmarkToolError("configured repetition IDs are not unique")
+
+    for raw_pair in raw_pairs:
+        if not isinstance(raw_pair, Mapping):
             raise BenchmarkToolError("run-order pairs must be objects")
+        pair = raw_pair
+        pair_id = _nonempty_string(pair.get("pair_id"), "run-order pair_id")
+        task_id = _nonempty_string(
+            pair.get("task_id"), f"run-order pair {pair_id} task_id"
+        )
+        repetition_id = _nonempty_string(
+            pair.get("repetition_id"), f"run-order pair {pair_id} repetition_id"
+        )
+        if pair_id != f"{task_id}-{repetition_id}":
+            raise BenchmarkToolError(
+                f"run-order pair_id {pair_id!r} does not match task and repetition"
+            )
+        if pair_id in seen_pairs:
+            raise BenchmarkToolError(f"run order repeats pair_id {pair_id}")
+        seen_pairs.add(pair_id)
+        task_repetition = (task_id, repetition_id)
+        if task_repetition in seen_task_repetitions:
+            raise BenchmarkToolError(
+                f"run order repeats task/repetition pair {task_id}/{repetition_id}"
+            )
+        seen_task_repetitions.add(task_repetition)
+
+        if task_catalog is not None:
+            task = task_catalog.get(task_id)
+            if task is None:
+                raise BenchmarkToolError(f"unknown task in run order: {task_id}")
+            task_identity = dict(task)
+        else:
+            match = re.fullmatch(r"(P[0-9]+)-(T[123])", task_id)
+            if match is None:
+                raise BenchmarkToolError(f"malformed task in run order: {task_id}")
+            task_identity = {
+                "task_id": task_id,
+                "paper_id": match.group(1),
+                "tier": match.group(2),
+            }
+        if configured_repetitions is not None and repetition_id not in configured_repetitions:
+            raise BenchmarkToolError(
+                f"run-order pair {pair_id} names unknown repetition {repetition_id}"
+            )
+
         condition_order = pair.get("condition_order")
         run_ids = pair.get("run_ids")
         if condition_order not in (["N", "L"], ["L", "N"]):
-            raise BenchmarkToolError(f"bad condition order for {pair.get('pair_id')}")
+            raise BenchmarkToolError(f"bad condition order for {pair_id}")
         if not isinstance(run_ids, list) or len(run_ids) != 2:
-            raise BenchmarkToolError(f"bad run IDs for {pair.get('pair_id')}")
-        task_id = str(pair.get("task_id"))
-        if task_id not in TARGETS:
-            raise BenchmarkToolError(f"unknown task in run order: {task_id}")
+            raise BenchmarkToolError(f"bad run IDs for {pair_id}")
         for index, condition in enumerate(condition_order):
-            expected = f"{pair['pair_id']}-{condition}"
+            expected = f"{pair_id}-{condition}"
             if run_ids[index] != expected:
                 raise BenchmarkToolError(
-                    f"run ID/order mismatch for {pair['pair_id']}: {run_ids[index]} != {expected}"
+                    f"run ID/order mismatch for {pair_id}: {run_ids[index]} != {expected}"
                 )
+            if expected in seen_runs:
+                raise BenchmarkToolError(f"run order repeats run_id {expected}")
+            seen_runs.add(expected)
             assignments.append(
                 {
-                    "pair_id": pair["pair_id"],
-                    "task_id": task_id,
-                    "tier": task_id.rsplit("-", 1)[-1],
-                    "repetition_id": pair["repetition_id"],
+                    **task_identity,
+                    "pair_id": pair_id,
+                    "repetition_id": repetition_id,
                     "condition": condition,
-                    "condition_order": condition_order,
+                    "condition_order": list(condition_order),
                     "order_index": index + 1,
                     "run_id": run_ids[index],
                 }
             )
+
+    if task_catalog is not None and configured_repetitions is not None:
+        expected_pairs = {
+            (task_id, repetition_id)
+            for task_id in task_catalog
+            for repetition_id in configured_repetitions
+        }
+        if seen_task_repetitions != expected_pairs:
+            missing = sorted(expected_pairs - seen_task_repetitions)
+            unexpected = sorted(seen_task_repetitions - expected_pairs)
+            raise BenchmarkToolError(
+                "run order is not the exact task/repetition matrix "
+                f"(missing={missing[:8]}, unexpected={unexpected[:8]})"
+            )
     return assignments
+
+
+def _assignment_task_identity(
+    root: Path, assignment: Mapping[str, Any]
+) -> Mapping[str, str]:
+    required = {
+        "task_id",
+        "paper_id",
+        "paper_sha256",
+        "tier",
+        "theorem_name",
+        "required_declaration",
+        "target_dir",
+        "target_file",
+        "context_file",
+    }
+    if required.issubset(assignment):
+        return {field: str(assignment[field]) for field in required}
+    task_id = _nonempty_string(assignment.get("task_id"), "assignment task_id")
+    task = load_task_catalog(root).get(task_id)
+    if task is None:
+        raise BenchmarkToolError(f"assignment names unknown task {task_id}")
+    return task
 
 
 def runner_command(args: argparse.Namespace, assignment: dict[str, Any], attempt_jsonl: Path,
                    attempt_output: Path, base_workspace: Path) -> list[str]:
     root = args.benchmark_root.resolve()
     project = args.project_root.resolve()
-    task_id = assignment["task_id"]
-    tier = assignment["tier"]
+    task = _assignment_task_identity(root, assignment)
+    task_id = task["task_id"]
+    paper_id = task["paper_id"]
+    paper_sha256 = task["paper_sha256"]
+    tier = task["tier"]
     condition = assignment["condition"]
-    theorem = TARGETS[task_id]
-    target_dir = f"tasks/P01/{tier}"
+    target_declaration = task["required_declaration"]
     common_adapter = [
         sys.executable,
         str(root / "tools" / "codex_isolated.py"),
@@ -1130,9 +1473,9 @@ def runner_command(args: argparse.Namespace, assignment: dict[str, Any], attempt
         "--prompt-file",
         "{workspace}/task/agent_prompt.md",
         "--context-file",
-        f"{{workspace}}/task/{target_dir}/context.md",
+        f"{{workspace}}/task/{task['context_file']}",
         "--target-file",
-        f"{{workspace}}/task/{target_dir}/Target.lean",
+        f"{{workspace}}/task/{task['target_file']}",
         "--usage-output",
         "{workspace}/usage.json",
         "--codex",
@@ -1190,7 +1533,7 @@ def runner_command(args: argparse.Namespace, assignment: dict[str, Any], attempt
         "--source", "{checked_submission}",
         "--audit-helper", str((root / "tools" / "dependency_audit.lean").resolve()),
         "--submission-module", "{submission_module}",
-        "--target-theorem", f"HighamBench.{theorem}",
+        "--target-theorem", target_declaration,
         "--expected-module", "{expected_module}",
         "--expected-theorem", "{expected_theorem}",
         "--local-modules-file", "{local_modules_file}",
@@ -1202,8 +1545,8 @@ def runner_command(args: argparse.Namespace, assignment: dict[str, Any], attempt
         str((root / "tools" / "runner.py").resolve()),
         "--condition", condition,
         "--task-id", task_id,
-        "--paper-id", "P01",
-        "--paper-sha256", PAPER_SHA256,
+        "--paper-id", paper_id,
+        "--paper-sha256", paper_sha256,
         "--tier", tier,
         "--repetition-id", assignment["repetition_id"],
         "--pair-id", assignment["pair_id"],
@@ -1224,8 +1567,8 @@ def runner_command(args: argparse.Namespace, assignment: dict[str, Any], attempt
         "--logs-dir", str((args.results_root / "logs").resolve()),
         "--raw-jsonl", str(attempt_jsonl),
         "--submission-relative", "Submission.lean",
-        "--canonical-relative", f"task/{target_dir}/Target.lean",
-        "--target-theorem", f"HighamBench.{theorem}",
+        "--canonical-relative", f"task/{task['target_file']}",
+        "--target-theorem", target_declaration,
         "--submission-module", "Submission",
         "--audit-helper", str((root / "tools" / "dependency_audit.lean").resolve()),
         "--prompt-relative", "task/agent_prompt.md",
@@ -1270,10 +1613,21 @@ def run(args: argparse.Namespace) -> int:
     ):
         _require_dir(path, label)
     freeze_check = verify_frozen_run_environment(args, root)
-    order = read_json(root / "metadata" / "run_order.json")
-    assignments = assignments_from_order(order)
-    if len(assignments) != 18:
-        raise BenchmarkToolError(f"expected 18 assignments, found {len(assignments)}")
+    manifest = _mapping(
+        read_json(root / "metadata" / "manifest.json"), "benchmark manifest"
+    )
+    config = _mapping(read_json(root / "metadata" / "config.json"), "config")
+    task_catalog = load_task_catalog(root, manifest)
+    repetition_ids = configured_repetition_ids(config)
+    _validate_planned_counts(config, task_catalog, repetition_ids)
+    order = _mapping(read_json(root / "metadata" / "run_order.json"), "run order")
+    assignments = assignments_from_order(order, task_catalog, repetition_ids)
+    expected_runs = len(task_catalog) * len(repetition_ids) * 2
+    if len(assignments) != expected_runs:
+        raise BenchmarkToolError(
+            f"expected {expected_runs} assignments from frozen metadata, "
+            f"found {len(assignments)}"
+        )
 
     results = args.results_root.resolve()
     records = results / "records"

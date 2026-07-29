@@ -51,6 +51,43 @@ class ConstructionCheckTests(unittest.TestCase):
         shared.parent.mkdir(parents=True)
         shared.write_text("namespace HighamBench\nend HighamBench\n", encoding="utf-8")
 
+        self.target_names = {
+            "P01-T1": "p01_t1_pairwise_nonnegative",
+            "P01-T2": "p01_t2_pairwise_vs_recursive_bounds",
+            "P01-T3": "p01_t3_noGuard_recursive_running_error_bound",
+            "P02-T1": "p02_t1_vecSum_preserves_sum",
+            "P02-T2": "p02_t2_sum2_error_bound",
+            "P02-T3": "p02_t3_dotK_error_bound",
+        }
+        metadata = self.benchmark / "metadata"
+        metadata.mkdir()
+        central_manifest = {
+            "papers": [
+                {
+                    "paper_id": paper_id,
+                    "targets": [
+                        {
+                            "task_id": f"{paper_id}-{tier}",
+                            "tier": tier,
+                            "availability": "available",
+                            "lean_target": {
+                                "declaration": self.target_names[f"{paper_id}-{tier}"],
+                                "file": (
+                                    "paper_bencmark/highambench/tasks/"
+                                    f"{paper_id}/{tier}/Target.lean"
+                                ),
+                            },
+                        }
+                        for tier in ("T1", "T2", "T3")
+                    ],
+                }
+                for paper_id in ("P01", "P02")
+            ]
+        }
+        (metadata / "manifest.json").write_text(
+            json.dumps(central_manifest), encoding="utf-8"
+        )
+
         self.private_gold = self.root / "private_gold"
         private_paper = self.private_gold / "P01"
         private_paper.mkdir(parents=True)
@@ -61,12 +98,12 @@ class ConstructionCheckTests(unittest.TestCase):
             "theorem commonL : True := by trivial\n", encoding="utf-8"
         )
 
-        controlled = self.benchmark / "metadata" / "controlled"
+        controlled = metadata / "controlled"
         controlled.mkdir(parents=True)
-        for spec in construction_specs():
+        for spec in construction_specs(self.benchmark):
             if spec.condition != "N":
                 continue
-            task = self.benchmark / "tasks" / "P01" / spec.tier
+            task = self.benchmark / "tasks" / spec.paper_id / spec.tier
             task.mkdir(parents=True)
             simple = spec.target_theorem.rsplit(".", 1)[-1]
             target = (
@@ -82,18 +119,19 @@ class ConstructionCheckTests(unittest.TestCase):
                 requested=[
                     "agent_prompt.md",
                     "shared/HighamBench/Definitions.lean",
-                    f"tasks/P01/{spec.tier}/Target.lean",
-                    f"tasks/P01/{spec.tier}/context.md",
+                    f"tasks/{spec.paper_id}/{spec.tier}/Target.lean",
+                    f"tasks/{spec.paper_id}/{spec.tier}/context.md",
                 ],
                 label=f"{spec.task_id}-controlled",
             )
             (controlled / f"{spec.task_id}.json").write_text(
                 json.dumps(manifest), encoding="utf-8"
             )
-            for condition in ("N", "L"):
-                (private_paper / f"{spec.tier}_{condition}.lean").write_text(
-                    target.replace("sorry", "trivial"), encoding="utf-8"
-                )
+            if spec.paper_id == "P01":
+                for condition in ("N", "L"):
+                    (private_paper / f"{spec.tier}_{condition}.lean").write_text(
+                        target.replace("sorry", "trivial"), encoding="utf-8"
+                    )
 
         self.toolchain = self.root / "toolchain"
         self.packages = self.root / "packages"
@@ -141,7 +179,6 @@ class ConstructionCheckTests(unittest.TestCase):
             b"test Mathlib private data"
         )
         package_olean.with_name("Mathlib.ir").write_bytes(b"test Mathlib IR")
-        metadata = self.benchmark / "metadata"
         (metadata / "library_source.json").write_text(
             json.dumps(
                 create_manifest(
@@ -173,6 +210,8 @@ class ConstructionCheckTests(unittest.TestCase):
                     str(self.benchmark),
                     "--private-gold",
                     str(self.private_gold),
+                    "--paper-id",
+                    "P01",
                     "--toolchain-root",
                     str(self.toolchain),
                     "--packages-root",
@@ -281,8 +320,8 @@ class ConstructionCheckTests(unittest.TestCase):
             },
         }
 
-    def test_matrix_has_exactly_six_proofs_and_only_t1_t2_use_helpers(self) -> None:
-        specs = construction_specs()
+    def test_p01_selector_keeps_exact_six_proof_matrix_and_helpers(self) -> None:
+        specs = construction_specs(self.benchmark, paper_ids=["P01"])
         self.assertEqual(
             [(item.task_id, item.condition) for item in specs],
             [
@@ -298,6 +337,100 @@ class ConstructionCheckTests(unittest.TestCase):
         self.assertTrue(
             all(item.helper_filename is None for item in specs if item.tier == "T3")
         )
+
+    def test_manifest_discovery_includes_p02_task_specific_theorems(self) -> None:
+        specs = construction_specs(self.benchmark)
+        self.assertEqual(len(specs), 12)
+        self.assertEqual(
+            [(item.task_id, item.condition) for item in specs],
+            [
+                (f"{paper_id}-{tier}", condition)
+                for paper_id in ("P01", "P02")
+                for tier in ("T1", "T2", "T3")
+                for condition in ("N", "L")
+            ],
+        )
+        for spec in specs:
+            self.assertEqual(
+                spec.target_theorem,
+                f"HighamBench.{self.target_names[spec.task_id]}",
+            )
+            self.assertEqual(
+                spec.canonical_relative,
+                f"tasks/{spec.paper_id}/{spec.tier}/Target.lean",
+            )
+        p02_specs = [item for item in specs if item.paper_id == "P02"]
+        self.assertTrue(all(item.helper_filename is None for item in p02_specs))
+
+    def test_p02_spec_drives_validator_paths_with_synthetic_unit_source(self) -> None:
+        spec = next(
+            item
+            for item in construction_specs(self.benchmark, paper_ids=["P02"])
+            if item.task_id == "P02-T2" and item.condition == "N"
+        )
+        private_p02 = self.private_gold / "P02"
+        private_p02.mkdir()
+        (private_p02 / spec.gold_filename).write_text(
+            "namespace HighamBench\n"
+            f"theorem {self.target_names[spec.task_id]} : True := by trivial\n"
+            "end HighamBench\n",
+            encoding="utf-8",
+        )
+        captured = []
+
+        def fake_validator(config):
+            captured.append(config)
+            return self.successful_validation(config)
+
+        result = check_one(
+            self.environment,
+            spec,
+            validator_fn=fake_validator,
+            preflight_fn=self.successful_preflight,
+        )
+        self.assertTrue(result["pass"], result)
+        self.assertEqual(result["paper_id"], "P02")
+        self.assertEqual(result["target_theorem"], "HighamBench.p02_t2_sum2_error_bound")
+        self.assertEqual(len(captured), 1)
+        self.assertEqual(
+            captured[0].canonical_relative,
+            "task/tasks/P02/T2/Target.lean",
+        )
+        self.assertEqual(
+            captured[0].target_theorem,
+            "HighamBench.p02_t2_sum2_error_bound",
+        )
+
+    def test_default_full_scope_rejects_missing_p02_gold(self) -> None:
+        arguments = make_parser().parse_args(
+            [
+                "--project-root",
+                str(self.project),
+                "--benchmark-root",
+                str(self.benchmark),
+                "--private-gold",
+                str(self.private_gold),
+                "--toolchain-root",
+                str(self.toolchain),
+                "--packages-root",
+                str(self.packages),
+                "--shared-olean-root",
+                str(self.shared_olean),
+                "--library-source",
+                str(self.library_source),
+                "--library-root-file",
+                str(self.library_root),
+                "--library-olean",
+                str(self.library_olean),
+                "--bwrap",
+                str(self.bwrap),
+            ]
+        )
+        with self.assertRaisesRegex(
+            BenchmarkToolError,
+            r"private construction material is missing.*P02-T1/N proof.*P02-T3/L proof",
+        ):
+            resolve_environment(arguments)
 
     def test_fresh_staging_helper_build_and_n_l_commands(self) -> None:
         helper_commands: list[list[str]] = []
@@ -339,8 +472,27 @@ class ConstructionCheckTests(unittest.TestCase):
         )
         self.assertTrue(evidence["pass"], evidence)
         self.assertEqual(evidence["summary"]["passed"], 6)
+        self.assertEqual(evidence["summary"]["expected"], 6)
+        self.assertEqual(
+            evidence["scope"]["manifest_available_task_ids"],
+            ["P01-T1", "P01-T2", "P01-T3", "P02-T1", "P02-T2", "P02-T3"],
+        )
+        self.assertEqual(evidence["scope"]["selected_paper_ids"], ["P01"])
+        self.assertEqual(
+            evidence["scope"]["selected_task_ids"],
+            ["P01-T1", "P01-T2", "P01-T3"],
+        )
+        self.assertFalse(evidence["scope"]["complete_manifest_scope"])
         self.assertEqual(len(helper_commands), 4)
         self.assertEqual(len(validation_configs), 6)
+        self.assertEqual(
+            {config.canonical_relative for config in validation_configs},
+            {
+                "task/tasks/P01/T1/Target.lean",
+                "task/tasks/P01/T2/Target.lean",
+                "task/tasks/P01/T3/Target.lean",
+            },
+        )
         basis = evidence["verification_basis"]
         self.assertEqual(
             set(basis["tools"]),
@@ -532,7 +684,7 @@ class ConstructionCheckTests(unittest.TestCase):
     def test_failed_complete_n_preflight_blocks_private_proof_validation(self) -> None:
         spec = next(
             item
-            for item in construction_specs()
+            for item in construction_specs(self.benchmark, paper_ids=["P01"])
             if item.task_id == "P01-T3" and item.condition == "N"
         )
         validator_called = False
@@ -568,7 +720,7 @@ class ConstructionCheckTests(unittest.TestCase):
     def test_real_validator_rejects_private_placeholder_sources_before_bubblewrap(self) -> None:
         spec = next(
             item
-            for item in construction_specs()
+            for item in construction_specs(self.benchmark, paper_ids=["P01"])
             if item.task_id == "P01-T3" and item.condition == "N"
         )
         source = self.private_gold / "P01" / spec.gold_filename

@@ -140,6 +140,26 @@ def _environment_bundle_digest(
     return _document_digest({"config": config_copy, "environment": environment_copy})
 
 
+def _expected_environment_id(
+    manifest: Mapping[str, Any], bundle_digest: str
+) -> str | None:
+    """Derive the environment ID from the ordered benchmark corpus and bundle."""
+
+    papers = manifest.get("papers")
+    if not isinstance(papers, list) or not papers:
+        return None
+    paper_ids: list[str] = []
+    for paper in papers:
+        if not isinstance(paper, Mapping):
+            return None
+        paper_id = paper.get("paper_id")
+        if not isinstance(paper_id, str) or not paper_id:
+            return None
+        paper_ids.append(paper_id.lower())
+    corpus_id = "-".join(paper_ids)
+    return f"highambench-{corpus_id}-{bundle_digest[:16]}"
+
+
 def _contains_text(value: Any, needle: str) -> bool:
     if isinstance(value, str):
         return needle.lower() in value.lower()
@@ -402,12 +422,21 @@ def _metadata_readiness(
             errors.append(f"frozen {field} is not a lowercase SHA-256")
     environment_id = frozen.get("environment_id")
     bundle_digest = frozen.get("environment_bundle_sha256")
+    expected_environment_id = (
+        _expected_environment_id(manifest, bundle_digest)
+        if _hex_digest(bundle_digest)
+        else None
+    )
     if (
         isinstance(environment_id, str)
-        and _hex_digest(bundle_digest)
-        and environment_id != f"highambench-p01-{bundle_digest[:16]}"
+        and expected_environment_id is not None
+        and environment_id != expected_environment_id
     ):
-        errors.append("frozen environment_id is not derived from environment_bundle_sha256")
+        errors.append(
+            "frozen environment_id is not derived from the ordered manifest paper IDs "
+            "and environment_bundle_sha256; "
+            f"expected {expected_environment_id!r}"
+        )
     for field in ("mathlib_commit", "numstability_commit"):
         commit = frozen.get(field)
         if commit is not None and (

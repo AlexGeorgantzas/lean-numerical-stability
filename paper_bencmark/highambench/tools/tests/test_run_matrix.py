@@ -16,7 +16,7 @@ TOOLS = Path(__file__).resolve().parents[1]
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
-from common import sha256_file, write_json  # noqa: E402
+from common import read_json, sha256_file, write_json  # noqa: E402
 from hashes import create_manifest, stage_manifest_files  # noqa: E402
 import run_matrix  # noqa: E402
 
@@ -24,12 +24,98 @@ import run_matrix  # noqa: E402
 LEAN_COMMIT = "1" * 40
 MATHLIB_COMMIT = "2" * 40
 NUMSTABILITY_COMMIT = "3" * 40
+P01_PAPER_SHA256 = "4" * 64
+P02_PAPER_SHA256 = "5" * 64
 
 
 def _executable(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
     path.chmod(path.stat().st_mode | stat.S_IXUSR)
+
+
+def _write_two_paper_task_records(root: Path) -> list[str]:
+    papers = []
+    task_ids: list[str] = []
+    for paper_id, paper_sha256 in (
+        ("P01", P01_PAPER_SHA256),
+        ("P02", P02_PAPER_SHA256),
+    ):
+        targets = []
+        included_tasks = []
+        for tier in ("T1", "T2", "T3"):
+            task_id = f"{paper_id}-{tier}"
+            theorem_name = f"{paper_id.lower()}_{tier.lower()}_fixture"
+            target_dir = root / "tasks" / paper_id / tier
+            target_dir.mkdir(parents=True, exist_ok=True)
+            (target_dir / "Target.lean").write_text(
+                f"theorem {theorem_name} : True := by trivial\n", encoding="utf-8"
+            )
+            (target_dir / "context.md").write_text("fixture context\n", encoding="utf-8")
+            declared_target = (
+                f"paper_bencmark/highambench/tasks/{paper_id}/{tier}/Target.lean"
+            )
+            write_json(
+                target_dir / "task.json",
+                {
+                    "task_id": task_id,
+                    "paper_id": paper_id,
+                    "tier": tier,
+                    "paper_source": {"sha256": paper_sha256},
+                    "context_file": (
+                        f"paper_bencmark/highambench/tasks/{paper_id}/{tier}/context.md"
+                    ),
+                    "formal_statement": {
+                        "namespace": "HighamBench",
+                        "theorem_name": theorem_name,
+                        "target_file": declared_target,
+                    },
+                    "validation": {
+                        "required_declaration": f"HighamBench.{theorem_name}",
+                        "controlled_target_file": declared_target,
+                    },
+                },
+            )
+            controlled = root / "metadata" / "controlled" / f"{task_id}.json"
+            controlled.parent.mkdir(parents=True, exist_ok=True)
+            write_json(controlled, {"task_id": task_id})
+            targets.append(
+                {
+                    "task_id": task_id,
+                    "tier": tier,
+                    "availability": "available",
+                    "lean_target": {
+                        "declaration": theorem_name,
+                        "file": declared_target,
+                    },
+                }
+            )
+            included_tasks.append(task_id)
+            task_ids.append(task_id)
+        write_json(
+            root / "tasks" / paper_id / "paper.json",
+            {
+                "paper_id": paper_id,
+                "source": {"sha256": paper_sha256},
+                "included_tasks": included_tasks,
+            },
+        )
+        papers.append(
+            {
+                "paper_id": paper_id,
+                "source": {"sha256": paper_sha256},
+                "targets": targets,
+            }
+        )
+    write_json(
+        root / "metadata" / "manifest.json",
+        {
+            "benchmark_id": "two-paper-fixture",
+            "corpus": {"paper_count": 2, "paper_ids": ["P01", "P02"]},
+            "papers": papers,
+        },
+    )
+    return task_ids
 
 
 class FrozenEnvironmentFixture:
@@ -49,6 +135,28 @@ class FrozenEnvironmentFixture:
         self._make_files()
 
     def _make_files(self) -> None:
+        benchmark_manifest = {
+            "schema_version": "0.1.0",
+            "benchmark_id": "test-benchmark",
+            "corpus": {"paper_count": 1, "paper_ids": ["P01"]},
+            "papers": [
+                {
+                    "paper_id": "P01",
+                    "source": {"sha256": P01_PAPER_SHA256},
+                    "targets": [
+                        {
+                            "task_id": "P01-T1",
+                            "tier": "T1",
+                            "availability": "available",
+                            "lean_target": {
+                                "declaration": "p01_t1_fixture",
+                                "file": "paper_bencmark/highambench/tasks/P01/T1/Target.lean",
+                            },
+                        }
+                    ],
+                }
+            ],
+        }
         _executable(
             self.codex,
             "#!/bin/sh\n"
@@ -92,7 +200,7 @@ class FrozenEnvironmentFixture:
         self.offline_shell.write_bytes(b"offline")
         self.auth.write_text("{}\n", encoding="utf-8")
 
-        for relative in run_matrix.REQUIRED_RELEASE_FILES:
+        for relative in run_matrix.required_release_files(benchmark_manifest):
             path = self.root / relative
             if path.exists():
                 continue
@@ -104,9 +212,33 @@ class FrozenEnvironmentFixture:
             else:
                 path.write_text(f"fixture {relative}\n", encoding="utf-8")
 
+        write_json(self.metadata / "manifest.json", benchmark_manifest)
         write_json(
-            self.metadata / "manifest.json",
-            {"schema_version": 1, "benchmark_id": "test-benchmark"},
+            self.root / "tasks" / "P01" / "paper.json",
+            {
+                "paper_id": "P01",
+                "source": {"sha256": P01_PAPER_SHA256},
+                "included_tasks": ["P01-T1"],
+            },
+        )
+        write_json(
+            self.root / "tasks" / "P01" / "T1" / "task.json",
+            {
+                "task_id": "P01-T1",
+                "paper_id": "P01",
+                "tier": "T1",
+                "paper_source": {"sha256": P01_PAPER_SHA256},
+                "context_file": "paper_bencmark/highambench/tasks/P01/T1/context.md",
+                "formal_statement": {
+                    "namespace": "HighamBench",
+                    "theorem_name": "p01_t1_fixture",
+                    "target_file": "paper_bencmark/highambench/tasks/P01/T1/Target.lean",
+                },
+                "validation": {
+                    "required_declaration": "HighamBench.p01_t1_fixture",
+                    "controlled_target_file": "paper_bencmark/highambench/tasks/P01/T1/Target.lean",
+                },
+            },
         )
         write_json(
             self.metadata / "run_order.json",
@@ -378,14 +510,21 @@ class RunMatrixTests(unittest.TestCase):
             run_matrix.verify_frozen_run_environment(command_args, fixture.root)
             command_args.freeze_check_json = "{}"
             assignment = {
-                "pair_id": "P01-T1-rep-01",
-                "task_id": "P01-T1",
+                "pair_id": "P02-T1-rep-01",
+                "task_id": "P02-T1",
+                "paper_id": "P02",
+                "paper_sha256": P02_PAPER_SHA256,
                 "tier": "T1",
+                "theorem_name": "p02_t1_fixture",
+                "required_declaration": "HighamBench.p02_t1_fixture",
+                "target_dir": "tasks/P02/T1",
+                "target_file": "tasks/P02/T1/Target.lean",
+                "context_file": "tasks/P02/T1/context.md",
                 "repetition_id": "rep-01",
                 "condition": "L",
                 "condition_order": ["N", "L"],
                 "order_index": 2,
-                "run_id": "P01-T1-rep-01-L",
+                "run_id": "P02-T1-rep-01-L",
             }
             command = run_matrix.runner_command(
                 command_args,
@@ -413,6 +552,18 @@ class RunMatrixTests(unittest.TestCase):
             )
             self.assertTrue(command_args.token_control_verified)
             self.assertIn("--token-enforced", command)
+            self.assertEqual(command[command.index("--paper-id") + 1], "P02")
+            self.assertEqual(
+                command[command.index("--paper-sha256") + 1], P02_PAPER_SHA256
+            )
+            self.assertEqual(
+                command[command.index("--canonical-relative") + 1],
+                "task/tasks/P02/T1/Target.lean",
+            )
+            self.assertEqual(
+                command[command.index("--target-theorem") + 1],
+                "HighamBench.p02_t1_fixture",
+            )
 
             config_path = fixture.metadata / "config.json"
             changed_config = json.loads(config_path.read_text(encoding="utf-8"))
@@ -482,9 +633,25 @@ class RunMatrixTests(unittest.TestCase):
         for path in (self.base / "codex", self.base / "auth", self.base / "offline", self.base / "root.lean"):
             path.write_text("fixture\n", encoding="utf-8")
 
+        task_ids = _write_two_paper_task_records(root)
+        repetitions = ("rep-01", "rep-02", "rep-03")
+        write_json(
+            root / "metadata" / "config.json",
+            {
+                "repetitions": [{"id": repetition} for repetition in repetitions],
+                "planned_counts_per_agent": {
+                    "papers": 2,
+                    "tasks": 6,
+                    "repetitions_per_task": 3,
+                    "conditions": 2,
+                    "paired_assignments": 18,
+                    "runs": 36,
+                },
+            },
+        )
         pairs = []
-        for task in run_matrix.TARGETS:
-            for repetition in ("rep-01", "rep-02", "rep-03"):
+        for task in task_ids:
+            for repetition in repetitions:
                 pair_id = f"{task}-{repetition}"
                 pairs.append(
                     {
@@ -496,6 +663,25 @@ class RunMatrixTests(unittest.TestCase):
                     }
                 )
         write_json(root / "metadata" / "run_order.json", {"pairs": pairs})
+        manifest = read_json(root / "metadata" / "manifest.json")
+        catalog = run_matrix.load_task_catalog(root, manifest)
+        self.assertEqual(run_matrix.corpus_slug(manifest), "p01-p02")
+        self.assertEqual(len(catalog), 6)
+        expanded = run_matrix.assignments_from_order(
+            {"pairs": pairs}, catalog, repetitions
+        )
+        self.assertEqual(len(expanded), 36)
+        p02_assignment = next(
+            assignment
+            for assignment in expanded
+            if assignment["task_id"] == "P02-T1"
+        )
+        self.assertEqual(p02_assignment["paper_sha256"], P02_PAPER_SHA256)
+        self.assertEqual(p02_assignment["target_file"], "tasks/P02/T1/Target.lean")
+        with self.assertRaisesRegex(Exception, "exact task/repetition matrix"):
+            run_matrix.assignments_from_order(
+                {"pairs": pairs[:-1]}, catalog, repetitions
+            )
         post_use_system_run = pairs[0]["run_ids"][1]
         args = argparse.Namespace(
             benchmark_root=root,
@@ -566,8 +752,8 @@ class RunMatrixTests(unittest.TestCase):
             self.assertEqual(run_matrix.run(args), 0)
 
         rows = [json.loads(line) for line in (results / "runs.jsonl").read_text().splitlines()]
-        self.assertEqual(len(rows), 19)
-        self.assertEqual(len({row["run_id"] for row in rows}), 19)
+        self.assertEqual(len(rows), 37)
+        self.assertEqual(len({row["run_id"] for row in rows}), 37)
         self.assertEqual(rows[0]["failure_code"], "SYSTEM_ERROR")
         self.assertEqual(rows[0]["planned_run_id"], pairs[0]["run_ids"][0])
         self.assertEqual(rows[1]["run_id"], pairs[0]["run_ids"][0])

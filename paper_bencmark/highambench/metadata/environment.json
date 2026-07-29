@@ -1,11 +1,11 @@
 {
   "schema_version": "0.1.0",
   "kind": "highambench-environment-record",
-  "environment_id": "highambench-p01-f4b35735854f72ce",
-  "environment_bundle_sha256": "f4b35735854f72ce28fb52300aa7cee67b37d6bca05987a012ebc80e845280a5",
+  "environment_id": "highambench-p01-p02-0eb2caca70acb6c8",
+  "environment_bundle_sha256": "0eb2caca70acb6c88052e5b0a079d3fc724babd47bb30ef1e092b53d7bb9de37",
   "environment_bundle_definition": "SHA-256 of UTF-8 canonical JSON with sorted keys and compact separators over an object containing the complete config and environment records, after removing environment_id and environment_bundle_sha256 from their top-level/frozen locations.",
   "release_manifest": "paper_bencmark/highambench/metadata/release_files.json",
-  "release_manifest_sha256": "d4889169929f629a745207dbe85dc9df179caf3ae11ee5b0a43a1111119b69e2",
+  "release_manifest_sha256": "5e6f25d1a066e914647cc4dbe531157211726c6ab15465b533eb42625dae7568",
   "lean": {
     "version": "4.29.0-rc3",
     "commit": "5d86aa4032284a5242470e95fbe25f1ff506763d",
@@ -18,8 +18,8 @@
     "numstability_compiled_manifest_sha256": "bbea1e90bc11605bd3c14b28dc39bf49b7bcb64ab5cf2306841f65b803a6ae2a",
     "compiled_environment_summary": "paper_bencmark/highambench/metadata/packages_olean.json",
     "compiled_environment_summary_sha256": "ae361f8e83f4e65745249c1b7ce415fe91024b32cbe935be34402598ac1f7844",
-    "shared_definitions_sha256": "5350985da64d27b8f7f77a275ffdda773b37c15e9f0c504a164edd3b5ede19d7",
-    "shared_definitions_olean_sha256": "3dde6a260f4b786ca115ebc1179e99cb830066f8910bb51366b546c23a15c11e"
+    "shared_definitions_sha256": "a38c8441b28dc9b3806f08394fb4d2d55bbe7171b72f97ab6781c8b8ac6e4861",
+    "shared_definitions_olean_sha256": "5e71d7b12e7d4648013600fa0f257c1eb8bfdfd7c32ea2710595df4f2672e851"
   },
   "agent": {
     "id": "codex-cli",

@@ -1,0 +1,93 @@
+{
+  "schema_version": "highambench-paper-0.2",
+  "paper_id": "P02",
+  "short_name": "Ogita, Rump, Oishi (2005)",
+  "title": "Accurate Sum and Dot Product",
+  "authors": [
+    "Takeshi Ogita",
+    "Siegfried M. Rump",
+    "Shin'ichi Oishi"
+  ],
+  "publication": {
+    "journal": "SIAM Journal on Scientific Computing",
+    "volume": 26,
+    "issue": 6,
+    "year": 2005,
+    "printed_pages": "1955-1988",
+    "doi": "10.1137/030601818"
+  },
+  "paper_version": "journal version; volume 26, issue 6, 2005, printed pages 1955-1988",
+  "source": {
+    "local_path": "paper_bencmark/reference_papers/ACCURATE SUM AND DOT PRODUCT.pdf",
+    "sha256": "e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d",
+    "pdf_pages": 34,
+    "page_map": "PDF page 1 is printed page 1955; add 1954 to a PDF page number to get the printed page number.",
+    "lawful_source_locator": "https://doi.org/10.1137/030601818",
+    "rights_note": "The local PDF was supplied for benchmark construction and shows a SIAM redistribution notice. The benchmark should publish its locator, hash, and short paraphrases unless redistribution permission is confirmed."
+  },
+  "benchmark_specification": {
+    "name": "HighamBench Simple Two-Condition Specification",
+    "version": "0.2",
+    "local_path": "paper_bencmark/scratch_pad/HighamBench_Simple_Two_Condition_Specification.pdf",
+    "sha256": "25a8a72d62e2ad9d131004b871f5ccc58438d488dbd64afcd0a8839e9e4d78a8"
+  },
+  "annotation": {
+    "performed_by": "Codex",
+    "reason": "The benchmark specification calls for source review and labeling. The project owner explicitly asked Codex to perform every such intervention for this entry.",
+    "method": "Codex read the complete local paper, surveyed its theorem, lemma, proposition, corollary, and algorithm blocks, checked overlap with the frozen NumStability source, fixed all three tier labels before any evaluated run, and recorded exact PDF-page, printed-page, section, and numbered-result anchors.",
+    "not_human_reviewer": true
+  },
+  "selection_policy": [
+    "Use a claim made or derived in this paper.",
+    "Avoid a result whose proof is primarily delegated to an earlier source.",
+    "Do not use experimental or flop-count claims as proof targets.",
+    "Prefer exact finite bounds to informal asymptotic terms.",
+    "Keep the condition-neutral formal setting to the local arithmetic contracts and algorithms actually used.",
+    "Do not select an exact target already present in mathlib or NumStability."
+  ],
+  "result_survey": {
+    "T1": {
+      "available": true,
+      "task_id": "P02-T1",
+      "theorem_name": "p02_t1_vecSum_preserves_sum",
+      "decision": "Use the VecSum exact-sum invariant in equation (4.7)(i). It is a loop-level direct application of error-free local corrections and is close to existing compensated-prefix exactness results."
+    },
+    "T2": {
+      "available": true,
+      "task_id": "P02-T2",
+      "theorem_name": "p02_t2_sum2_error_bound",
+      "decision": "Use Proposition 4.5, equation (4.8), which combines the error-free invariant, low-component and recursive-summation bounds, final rounding, and paper-specific cancellation."
+    },
+    "T3": {
+      "available": true,
+      "task_id": "P02-T3",
+      "theorem_name": "p02_t3_dotK_error_bound",
+      "decision": "Use the no-multiplication-underflow absolute bound in Proposition 5.11. It needs new iterated VecSum, transformed-product, absolute-mass, and gamma-comparison infrastructure absent from NumStability."
+    }
+  },
+  "rejected_candidates": [
+    {
+      "candidate": "Theorem 3.4",
+      "reason": "The TwoSum and TwoProduct exactness proofs are chiefly delegated to Knuth and Dekker; their contracts are instead part of the minimal shared setting."
+    },
+    {
+      "candidate": "Proposition 4.10",
+      "reason": "It is a valid SumK extension candidate, but Proposition 5.11 also captures the paper's dot-product contribution and lies further beyond the current library."
+    },
+    {
+      "candidate": "relative-error and condition-number corollaries",
+      "reason": "They mostly divide the selected absolute bounds by a nonzero exact result and would add a nonzero assumption without adding the central algorithmic argument."
+    },
+    {
+      "candidate": "underflow branch and computed-error estimators",
+      "reason": "They require a substantially larger neutral machine setting for eta, inexact product transforms, rounded division, and algorithm failure guards."
+    }
+  ],
+  "classification_frozen_before_runs": true,
+  "included_tasks": [
+    "P02-T1",
+    "P02-T2",
+    "P02-T3"
+  ],
+  "excluded_papers": "All papers other than P01 and P02 are intentionally outside this release."
+}

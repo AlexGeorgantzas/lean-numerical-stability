@@ -1,7 +1,7 @@
 {
   "schema_version": "0.1.0",
-  "benchmark_id": "highambench-0.2-p01-pilot",
-  "configuration_status": "frozen observational-pilot configuration",
+  "benchmark_id": "highambench-0.2-p01-p02-pilot",
+  "configuration_status": "two-paper observational-pilot task package frozen; private construction validation and measurements pending",
   "frozen_environment": {
     "lean_toolchain": "leanprover/lean4:v4.29.0-rc3",
     "lean_commit": "5d86aa4032284a5242470e95fbe25f1ff506763d",
@@ -38,12 +38,13 @@
     "python_version": "3.10.12",
     "python_binary_sha256": "d6bca2b84e73c7775a0dd5e6a76899cfe4ee62863d7c8f88513811d1fda23f49",
     "release_manifest": "paper_bencmark/highambench/metadata/release_files.json",
-    "release_manifest_sha256": "d4889169929f629a745207dbe85dc9df179caf3ae11ee5b0a43a1111119b69e2",
-    "environment_id": "highambench-p01-f4b35735854f72ce",
-    "environment_bundle_sha256": "f4b35735854f72ce28fb52300aa7cee67b37d6bca05987a012ebc80e845280a5",
+    "release_manifest_sha256": "5e6f25d1a066e914647cc4dbe531157211726c6ab15465b533eb42625dae7568",
+    "environment_id": "highambench-p01-p02-0eb2caca70acb6c8",
+    "environment_bundle_sha256": "0eb2caca70acb6c88052e5b0a079d3fc724babd47bb30ef1e092b53d7bb9de37",
     "container_image_digest": null,
     "container_note": "No OCI image is used. Every attempt receives a fresh bubblewrap filesystem and process namespace. The host system folders are read-only but are not one completely fingerprinted image.",
-    "release_blocker_note": "The selected Codex backend exposes no fixed random-seed control, and this setup has no frozen OCI image. Results must therefore be labeled observational and not presented as a reference HighamBench score."
+    "release_blocker_note": "The selected Codex backend exposes no fixed random-seed control, and this setup has no frozen OCI image. Results must therefore be labeled observational and not presented as a reference HighamBench score.",
+    "construction_status_note": "All six public fixed statements elaborate in both isolated conditions. The P02 private N/L construction proofs and a fresh complete six-task hidden-validation record are still required before measured runs."
   },
   "conditions": {
     "N": {
@@ -93,12 +94,12 @@
   ],
   "repetition_note": "These are fixed repetition IDs, not random seeds. No backend seed support has been established. Record a real backend seed before evaluation if the chosen backend supports and obeys one.",
   "planned_counts_per_agent": {
-    "papers": 1,
-    "tasks": 3,
+    "papers": 2,
+    "tasks": 6,
     "repetitions_per_task": 3,
     "conditions": 2,
-    "paired_assignments": 9,
-    "runs": 18
+    "paired_assignments": 18,
+    "runs": 36
   },
   "isolation": {
     "implementation": "fresh bubblewrap filesystem and process namespace per attempt",

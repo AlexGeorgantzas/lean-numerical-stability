@@ -1,29 +1,36 @@
-# HighamBench P01 pilot
+# HighamBench P01--P02 pilot
 
-This directory contains a one-paper benchmark for testing whether access to the
+This directory contains a two-paper benchmark for testing whether access to the
 NumStability Lean library helps an agent finish fixed Lean proofs. A fixed proof
 means that the theorem statement is chosen before a run and the agent may change
 only the proof.
 
-This pilot contains only P01:
+This pilot contains exactly P01 and P02. No other candidate paper is included:
 
 > Nicholas J. Higham, "The Accuracy of Floating Point Summation," *SIAM Journal
 > on Scientific Computing* 14(4), 783--799, July 1993.
 > <https://doi.org/10.1137/0914050>
 
+> Takeshi Ogita, Siegfried M. Rump, and Shin'ichi Oishi, "Accurate Sum and Dot
+> Product," *SIAM Journal on Scientific Computing* 26(6), 1955--1988, 2005.
+> <https://doi.org/10.1137/030601818>
+
 The local paper PDF is used only as the recorded source copy. It is covered by
 the publisher's terms. The benchmark metadata uses short paraphrases rather than
 copying long passages from the paper.
 
-## The three tasks
+## The six tasks
 
-The paper supports all three task types in the HighamBench 0.2 specification.
+Both papers support all three task types in the HighamBench 0.2 specification.
 
 | Task | Type | Chosen result | Exact paper location |
 | --- | --- | --- | --- |
 | `P01-T1` | T1, direct use | Pairwise summation bound for nonnegative inputs | Equation (3.6), journal p. 788 / PDF p. 6; nonnegative observation after (2.6), journal p. 785 / PDF p. 3 |
 | `P01-T2` | T2, combine | Pairwise and recursive bounds, including the comparison of their bound factors | Equation (2.6), journal p. 785 / PDF p. 3; equation (3.6) and the following comparison, journal p. 788 / PDF p. 6 |
 | `P01-T3` | T3, extend | Recursive-summation running-error bound under the no-guard-digit model | Equations (5.1), (5.2), and (5.3), journal p. 793 / PDF p. 11 |
+| `P02-T1` | T1, direct use | `VecSum` preserves the exact sum | Equation (4.7)(i) and Algorithm 4.3, journal p. 1965 / PDF p. 11 |
+| `P02-T2` | T2, combine | `Sum2` doubled-working-precision absolute-error bound | Proposition 4.5, equation (4.8), journal p. 1965 / PDF p. 11; proof on journal pp. 1966--1967 / PDF pp. 12--13 |
+| `P02-T3` | T3, extend | Optimized `DotK` K-fold absolute-error bound without multiplication underflow | Algorithm 5.10, journal p. 1977 / PDF p. 23; equation (5.10) and Proposition 5.11, journal p. 1978 / PDF p. 24 |
 
 T1 is close to one existing NumStability theorem. T2 needs several existing
 results and extra arithmetic. T3 formalizes equation (5.3), whose right side
@@ -38,6 +45,16 @@ The T1 and T2 statements use an exact `gamma` bound. Here `gamma` is the usual
 closed formula that safely collects several small rounding errors. T3 instead
 uses the exact finite bound printed in (5.3), so it needs no `gamma` condition
 and no informal `O(u^2)` term.
+
+For P02, T1 is a direct iteration of the local error-free `TwoSum` identity.
+T2 combines that invariant with the low-component budget, ordinary recursive
+summation, final rounding, and gamma arithmetic. T3 adds error-free products,
+iterated `VecSum`, a transformed dot-product mass estimate, and the gamma
+comparisons in Proposition 5.11. NumStability has nearby compensated-summation
+and extended-dot-product ingredients, but no `VecSum`, `SumK`, or `DotK`
+theorem. The T3 statement selects the paper's no-multiplication-underflow
+absolute bound; this keeps the shared setting neutral and avoids adding an
+underflow-unit and rounded-division model that the selected claim does not need.
 
 ## Two conditions
 
@@ -84,9 +101,9 @@ claimed because this repository does not currently have proof that the selected
 agent backend accepts and obeys a seed. If a backend with real seed support is
 used later, its seed values must be added to the raw run record before evaluation.
 
-There are 18 planned runs:
+There are 36 planned runs:
 
-`3 tasks x 3 repetitions x 2 conditions = 18 runs`.
+`6 tasks x 3 repetitions x 2 conditions = 36 runs`.
 
 The first condition in each pair was selected by the fixed SHA-256 rule recorded
 in `metadata/run_order.json`. SHA-256 is a repeatable text-to-number calculation.
@@ -97,18 +114,25 @@ seeds.
 
 - `IMPLEMENTATION_PLAN.md` explains the construction decisions and the checks
   required before measured runs.
-- `metadata/manifest.json` records the one paper, its hash, the specification
-  hash, all three tasks, and their exact source locations.
+- `metadata/manifest.json` records exactly two papers, their hashes, the
+  specification hash, all six tasks, and their exact source locations.
 - `metadata/config.json` freezes the environment and run limits.
 - `metadata/run_order.json` fixes the order of N and L for every paired
   repetition.
-- `metadata/reviews/reviewer_1.json` is the source-and-mathematics review.
-- `metadata/reviews/reviewer_2.json` is the formal-interface-and-protocol review.
+- `metadata/reviews/reviewer_1.json` and `reviewer_2.json` are the historical
+  P01 reviews.
+- `metadata/reviews/P02_reviewer_1.json` and `P02_reviewer_2.json` are the two
+  current Codex review passes for the new paper entry.
 
 The review files distinguish completed checks from pending checks. A pending
-check is not a pass. The fixed Lean files now build in both conditions and their
-hashes are in the manifest. Final reviewer approval and the complete measured
-matrix are still required before the benchmark report is complete.
+check is not a pass. The expanded shared setting and all six public target
+skeletons have been rebuilt in both isolated conditions, and condition N was
+rescanned after complete controlled staging. The six P01 private N/L proofs
+also passed fresh hidden validation against the expanded shared file; that
+regression record is `metadata/evidence/construction_validation_P01_shared_regression.json`.
+Fresh private construction proofs for P02 and a complete twelve-proof,
+six-task construction record are still required before release. The complete
+measured matrix is also still required.
 
 ## Frozen source versions
 
@@ -116,16 +140,18 @@ matrix are still required before the benchmark report is complete.
 - mathlib: `e8ea1afc32790ce1d4e1a4e45cc412ba9388716b`
 - NumStability source baseline:
   `45813a95dacf577461bae13f033af0dbc985a225`
-- Paper PDF SHA-256:
+- P01 paper PDF SHA-256:
   `d5ad99fac5022da54dbe02721ea57116df3cec15badddd7c96c344328718fea7`
+- P02 paper PDF SHA-256:
+  `e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d`
 - Specification PDF SHA-256:
   `25a8a72d62e2ad9d131004b871f5ccc58438d488dbd64afcd0a8839e9e4d78a8`
 
 ## What a result may say
 
 This pilot may show whether library access changed proof success, time, token
-use, or actual library use for these three fixed tasks and one fixed agent setup.
-It does not test translation from English into Lean, and one paper cannot stand
-for all numerical analysis papers. A 95 percent range made by resampling whole
-papers has no useful spread with only one paper; the analysis must say this
-plainly rather than suggesting that the range gives broad certainty.
+use, or actual library use for these six fixed tasks and one fixed agent setup.
+It does not test translation from English into Lean, and two papers cannot stand
+for all numerical analysis papers. Any 95 percent range made by resampling only
+these two whole papers has very limited resolution and must not be presented as
+broad certainty.

@@ -11,17 +11,17 @@
       "sha256": "a38c8441b28dc9b3806f08394fb4d2d55bbe7171b72f97ab6781c8b8ac6e4861"
     },
     {
-      "bytes": 465,
-      "path": "tasks/P01/T1/Target.lean",
-      "sha256": "11a966a96916675045f6965f323e5233f87eb80e2c92aada13a567c9ef677c33"
+      "bytes": 568,
+      "path": "tasks/P02/T3/Target.lean",
+      "sha256": "d1e0f8186e63c672549dd3b8a3d25c3d684ea5787f37db954708190e224e2373"
     },
     {
-      "bytes": 2999,
-      "path": "tasks/P01/T1/context.md",
-      "sha256": "343b81790e07535416fd7083b076aeb137674520c61f0834fd859c272ea0f044"
+      "bytes": 3379,
+      "path": "tasks/P02/T3/context.md",
+      "sha256": "ad1fe84bb536ceace88a5edd24bacf48669f4e3431c2684ed1d976451d3c061f"
     }
   ],
   "kind": "highambench-controlled-files",
-  "label": "P01-T1-controlled",
+  "label": "P02-T3-controlled",
   "schema_version": 1
 }

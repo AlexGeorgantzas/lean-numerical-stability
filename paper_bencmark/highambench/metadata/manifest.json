@@ -1,7 +1,7 @@
 {
   "schema_version": "0.1.0",
-  "benchmark_id": "highambench-0.2-p01-pilot",
-  "benchmark_status": "task package frozen; one paper only; measurements pending",
+  "benchmark_id": "highambench-0.2-p01-p02-pilot",
+  "benchmark_status": "two-paper task package under construction; measurements pending",
   "specification": {
     "title": "HighamBench: A Simple Benchmark for Testing Whether a Formal Library Helps Paper-to-Lean Proofs",
     "version": "0.2",
@@ -10,9 +10,9 @@
     "pdf_pages": 4
   },
   "corpus": {
-    "paper_count": 1,
-    "paper_ids": ["P01"],
-    "exclusion_note": "No paper other than P01 is part of this pilot."
+    "paper_count": 2,
+    "paper_ids": ["P01", "P02"],
+    "exclusion_note": "Only P01 and P02 are part of this release; no other candidate paper is included."
   },
   "papers": [
     {
@@ -179,14 +179,185 @@
           "gold_proof_policy": "A private construction proof may be kept under paper_bencmark/scratch_pad/private_gold/P01/. That path must never be mounted in an evaluation container."
         }
       ]
+    },
+    {
+      "paper_id": "P02",
+      "paper_version": "published journal version, 2005",
+      "citation": {
+        "authors": [
+          "Takeshi Ogita",
+          "Siegfried M. Rump",
+          "Shin'ichi Oishi"
+        ],
+        "title": "Accurate Sum and Dot Product",
+        "journal": "SIAM Journal on Scientific Computing",
+        "volume": "26",
+        "issue": "6",
+        "journal_pages": "1955-1988",
+        "date": "2005",
+        "doi": "10.1137/030601818",
+        "canonical_url": "https://doi.org/10.1137/030601818"
+      },
+      "source": {
+        "local_path": "paper_bencmark/reference_papers/ACCURATE SUM AND DOT PRODUCT.pdf",
+        "sha256": "e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d",
+        "pdf_pages": 34,
+        "journal_page_map": "PDF page 1 is journal page 1955; PDF page 34 is journal page 1988.",
+        "lawful_source_locator": "https://doi.org/10.1137/030601818",
+        "rights_note": "The local copy was supplied for benchmark construction and displays a SIAM redistribution notice. Permission to redistribute the full PDF is not asserted. Release only locators, hashes, and short lawful paraphrases unless permission is confirmed."
+      },
+      "topic": "error-free transformations and accurate summation and dot products",
+      "paper_structure_note": "The paper states numbered lemmas, theorems, propositions, corollaries, algorithms, and equations. Codex selected proof results rather than experiments or operation counts.",
+      "annotation": {
+        "performed_by": "Codex",
+        "not_human_reviewer": true,
+        "instruction_source": "The project owner assigned all benchmark labeling and intervention for this entry to Codex."
+      },
+      "targets": [
+        {
+          "task_id": "P02-T1",
+          "tier": "T1",
+          "tier_name": "direct use",
+          "availability": "available",
+          "title": "VecSum preserves the exact sum",
+          "source_locations": [
+            {
+              "section": "3. Error-free transformations",
+              "anchor": "Theorem 3.4, equation (3.2)",
+              "journal_page": 1962,
+              "pdf_page": 8,
+              "role": "local error-free TwoSum identity"
+            },
+            {
+              "section": "4. Summation",
+              "anchor": "equation (4.7)(i) and Algorithm 4.3",
+              "journal_page": 1965,
+              "pdf_page": 11,
+              "role": "VecSum exact-sum invariant"
+            }
+          ],
+          "informal_statement_paraphrase": "One pass of the error-free vector transformation leaves the exact total unchanged.",
+          "informal_proof_paraphrase": "Each TwoSum step replaces two values by a high and low pair with the same exact sum; iterating this local identity proves the vector invariant.",
+          "copyright_note": "This is a benchmark-author paraphrase, not a quotation from the paper.",
+          "lean_target": {
+            "declaration": "p02_t1_vecSum_preserves_sum",
+            "file": "paper_bencmark/highambench/tasks/P02/T1/Target.lean",
+            "shared_definitions": "paper_bencmark/highambench/shared/HighamBench/Definitions.lean",
+            "statement_summary": "The Fin-sum of the shared VecSum output equals the Fin-sum of its nonempty input.",
+            "must_compile_without_numstability": true,
+            "controlled_file_sha256": "433a0639bd3bd9ff39cd187dbab957e27996f5117c02a717402dae4213d47a41",
+            "binding_status": "path, declaration, content hash, and clean isolated N/L target builds fixed; private construction proof pending"
+          },
+          "tier_reason": "The target is a direct loop-level use of error-free local correction and is close to existing compensated-prefix exactness declarations.",
+          "candidate_library_dependencies_for_audit": [
+            "NumStability.alternativeCompensatedPrefixSum_add_corrections_eq_sum_of_exact_steps",
+            "NumStability.fl_alternativeCompensatedMainSum_add_exact_corrections_eq_sum_of_exact_steps"
+          ],
+          "gold_proof_policy": "A private construction proof may be kept under paper_bencmark/scratch_pad/private_gold/P02/. That path must never be mounted in an evaluation container."
+        },
+        {
+          "task_id": "P02-T2",
+          "tier": "T2",
+          "tier_name": "combine",
+          "availability": "available",
+          "title": "Sum2 doubled-working-precision error bound",
+          "source_locations": [
+            {
+              "section": "4. Summation",
+              "anchor": "Lemma 4.2 and equations (4.4)-(4.7)",
+              "journal_pages": "1964-1965",
+              "pdf_pages": "10-11",
+              "role": "low-component budget and exact invariant"
+            },
+            {
+              "section": "4. Summation",
+              "anchor": "Proposition 4.5, equation (4.8), with proof in (4.10)-(4.12)",
+              "journal_pages": "1965-1967",
+              "pdf_pages": "11-13",
+              "role": "Sum2 absolute forward-error bound and proof"
+            }
+          ],
+          "informal_statement_paraphrase": "Sum2 error is at most unit roundoff times the exact-sum magnitude plus gamma at N minus one squared times the input absolute mass.",
+          "informal_proof_paraphrase": "Combine the low-component budget, ordinary summation of those lows, exact preservation, final rounding, and the paper's gamma inequality.",
+          "copyright_note": "This is a benchmark-author paraphrase, not a quotation from the paper.",
+          "lean_target": {
+            "declaration": "p02_t2_sum2_error_bound",
+            "file": "paper_bencmark/highambench/tasks/P02/T2/Target.lean",
+            "shared_definitions": "paper_bencmark/highambench/shared/HighamBench/Definitions.lean",
+            "statement_summary": "The shared Sum2 result satisfies the exact finite bound in Proposition 4.5 for N=n+1.",
+            "must_compile_without_numstability": true,
+            "controlled_file_sha256": "28e1ba2efb227a2d435c4939643bad09b199440695528346770ff319df6d17a4",
+            "binding_status": "path, declaration, content hash, and clean isolated N/L target builds fixed; private construction proof pending"
+          },
+          "tier_reason": "No single result supplies the target: it combines exact transformation, recursive summation, final-rounding, and gamma facts with a paper-specific cancellation.",
+          "candidate_library_dependencies_for_audit": [
+            "NumStability.alternativeCompensatedPrefixCorrections_abs_le_recursiveSum_forward",
+            "NumStability.recursiveSum_forward_error_bound",
+            "NumStability.finalRound_error_bound",
+            "NumStability.gamma_mono"
+          ],
+          "gold_proof_policy": "A private construction proof may be kept under paper_bencmark/scratch_pad/private_gold/P02/. That path must never be mounted in an evaluation container."
+        },
+        {
+          "task_id": "P02-T3",
+          "tier": "T3",
+          "tier_name": "extend",
+          "availability": "available",
+          "title": "Optimized K-fold dot-product error bound",
+          "source_locations": [
+            {
+              "section": "4. Summation",
+              "anchor": "Proposition 4.10",
+              "journal_page": 1970,
+              "pdf_page": 16,
+              "role": "iterated SumK estimate"
+            },
+            {
+              "section": "5. Dot product",
+              "anchor": "Algorithm 5.10 and its transformed-vector derivation",
+              "journal_page": 1977,
+              "pdf_page": 23,
+              "role": "optimized DotK construction"
+            },
+            {
+              "section": "5. Dot product",
+              "anchor": "equation (5.10) and Proposition 5.11",
+              "journal_page": 1978,
+              "pdf_page": 24,
+              "role": "selected no-multiplication-underflow absolute bound"
+            }
+          ],
+          "informal_statement_paraphrase": "Without multiplication underflow, DotK has an absolute error bounded by the final-rounding term plus a Kth-order transformed-dot-product term.",
+          "informal_proof_paraphrase": "Build the exact length-2N transform and its absolute-mass bound, apply SumK at K minus one, and prove the gamma comparisons leading to equation (5.10).",
+          "copyright_note": "This is a benchmark-author paraphrase, not a quotation from the paper.",
+          "lean_target": {
+            "declaration": "p02_t3_dotK_error_bound",
+            "file": "paper_bencmark/highambench/tasks/P02/T3/Target.lean",
+            "shared_definitions": "paper_bencmark/highambench/shared/HighamBench/Definitions.lean",
+            "shared_model": "ErrorFreeDotModel",
+            "shared_algorithm": "dotK",
+            "statement_summary": "The shared DotK result satisfies the no-multiplication-underflow absolute bound of Proposition 5.11.",
+            "must_compile_without_numstability": true,
+            "controlled_file_sha256": "d1e0f8186e63c672549dd3b8a3d25c3d684ea5787f37db954708190e224e2373",
+            "binding_status": "path, declaration, content hash, and clean isolated N/L target builds fixed; private construction proof pending"
+          },
+          "tier_reason": "The current library lacks VecSum, SumK, TwoProduct-transform, and DotK infrastructure. The target needs new loop invariants, transformed-vector estimates, and gamma arithmetic.",
+          "candidate_library_dependencies_for_audit": [
+            "NumStability.extendedDotProduct_error_bound",
+            "NumStability.exactMulDotProduct_error_bound",
+            "NumStability.finalRound_error_bound"
+          ],
+          "gold_proof_policy": "A private construction proof may be kept under paper_bencmark/scratch_pad/private_gold/P02/. That path must never be mounted in an evaluation container."
+        }
+      ]
     }
   ],
   "controlled_shared_files": [
     {
       "path": "paper_bencmark/highambench/shared/HighamBench/Definitions.lean",
-      "sha256": "5350985da64d27b8f7f77a275ffdda773b37c15e9f0c504a164edd3b5ede19d7",
-      "status": "content hash fixed; clean N/L builds completed"
+      "sha256": "a38c8441b28dc9b3806f08394fb4d2d55bbe7171b72f97ab6781c8b8ac6e4861",
+      "status": "content hash fixed for the two-paper task set; all six target skeletons build cleanly in isolated N and L"
     }
   ],
-  "release_rule": "The task files are frozen and hashed. Do not present measured results until the complete 18-run matrix, final two-reviewer checks, and result-set validation are complete."
+  "release_rule": "Do not present measured results until all six task packages are frozen and hashed, clean N/L builds and reviews are complete, and the full 36-run matrix passes result-set validation."
 }

@@ -1,10 +1,11 @@
-# Implementation plan for the P01 pilot
+# Implementation plan for the P01--P02 pilot
 
 ## 1. Read and classify before writing code
 
-The benchmark specification and all 17 pages of the source paper were read
-before selecting a task. The paper has no numbered theorem blocks. Its main
-formal results are numbered equations and nearby prose statements.
+The benchmark specification, all 17 pages of P01, and all 34 pages of P02 were
+read before selecting the new tasks. P01 has no numbered theorem blocks. P02
+has numbered theorem, lemma, proposition, corollary, algorithm, and equation
+blocks.
 
 The selection rule was:
 
@@ -16,7 +17,7 @@ The selection rule was:
 5. Do not choose a theorem whose exact fixed Lean statement already exists in
    mathlib or NumStability.
 
-This produced one target for every available tier:
+For P01 this produced one target for every tier:
 
 - T1 specializes the existing pairwise bound to nonnegative inputs.
 - T2 combines the pairwise bound, recursive bound, and the comparison between
@@ -27,6 +28,23 @@ This produced one target for every available tier:
   no-guard identity and a generic local-error recurrence scaffold, but still
   needs new no-guard state, witness, indexing, and budget bridges or a fresh
   full induction.
+
+P02 also supports every tier:
+
+- T1 is the exact-sum invariant for `VecSum` in equation (4.7)(i), a direct
+  iteration of the error-free `TwoSum` identity and close to the library's
+  compensated-prefix exactness results.
+- T2 is Proposition 4.5, equation (4.8). It combines the `VecSum` invariant,
+  Lemma 4.2, ordinary recursive summation, final rounding, and a gamma
+  inequality specific to the paper's proof.
+- T3 is the no-multiplication-underflow absolute bound in Proposition 5.11.
+  It requires an iterated `VecSum`/`SumK` analysis, an error-free product
+  transform, its absolute-mass estimate, and new gamma comparisons. The exact
+  `DotK` result is absent from NumStability.
+
+Theorem 3.4 was not selected because its central exactness proof is delegated
+to earlier work. Relative-error corollaries, experiments, operation counts,
+and the larger underflow/error-estimator branches were also not selected.
 
 ## 2. Freeze the meaning of each statement
 
@@ -42,6 +60,10 @@ provide only the small setting required by the targets:
 - the computed-prefix running budget from equation (5.3);
 - `gamma u k = (k * u) / (1 - k * u)` in a suitable real-number form;
 - the validity assumption `k * u < 1`.
+- an abstract error-free `TwoSum` contract;
+- `VecSum`, iterated `VecSum`, `SumK`, and `Sum2`;
+- the no-multiplication-underflow error-free `TwoProduct` contract; and
+- the transformed vector and `DotK` definitions used by Algorithm 5.10.
 
 The word *model* means a small list of rules that an operation must follow. It
 does not claim to describe every detail of a physical IEEE-754 machine.
@@ -51,11 +73,14 @@ The fixed target declarations are:
 - `p01_t1_pairwise_nonnegative`;
 - `p01_t2_pairwise_vs_recursive_bounds`;
 - `p01_t3_noGuard_recursive_running_error_bound`.
+- `p02_t1_vecSum_preserves_sum`;
+- `p02_t2_sum2_error_bound`;
+- `p02_t3_dotK_error_bound`.
 
-Their fixed files are `tasks/P01/T1/Target.lean`,
-`tasks/P01/T2/Target.lean`, and `tasks/P01/T3/Target.lean`. Shared definitions
-are in `shared/HighamBench/Definitions.lean`. All three targets now compile in
-N and L, and the final hashes are recorded in the manifest.
+Their fixed files are under `tasks/P01/` and `tasks/P02/`, with one `Target.lean`
+per tier. Shared definitions are in `shared/HighamBench/Definitions.lean`.
+Every target must compile in clean N and L before the expanded package is
+refrozen; target and controlled-file hashes are then recorded in the manifest.
 
 ## 3. Keep the statement neutral between conditions
 
@@ -147,7 +172,7 @@ rather than an agent omission.
 
 ## 8. Analyze without hiding runs
 
-Report all 18 assignments. Do not choose the best repetition.
+Report all 36 assignments. Do not choose the best repetition.
 
 For N and L, report overall and by T1, T2, and T3:
 
@@ -162,9 +187,8 @@ change and the median of paired time and token changes. Do not combine these
 different measures into one score.
 
 The full specification asks for a 95 percent range by resampling whole papers.
-With only P01, this resampling always selects the same paper, so the range has no
-useful information. Generate it only for format compatibility and label it as a
-single-paper limitation.
+With only P01 and P02, this range has extremely limited resolution. Keep all
+three tiers from a paper together and label the two-paper limitation plainly.
 
 ## 9. Complete two reviews
 
@@ -180,19 +204,19 @@ replace them. A status changes to `pass` only when saved evidence supports it.
 
 ## 10. Completion checklist
 
-- [x] Only P01 is in the manifest.
-- [x] T1, T2, and T3 are selected before evaluation.
+- [x] Exactly P01 and P02, and no other papers, are in the manifest.
+- [x] T1, T2, and T3 are selected for both papers before evaluation.
 - [x] Source and specification PDFs are hashed.
 - [x] Lean, mathlib, and NumStability source versions are frozen.
 - [x] Limits and three repetition IDs are fixed.
 - [x] Pair order is fixed by a repeatable rule.
-- [x] Two preliminary review records cover all tasks.
-- [x] Final fixed Lean statements compile in both clean conditions.
-- [x] Exact task hashes are added; the final release hash remains pending until all tools are stable.
-- [x] N is shown to contain no NumStability artifact.
-- [x] L dependency checking finds real declarations in all three private L construction proofs.
+- [ ] Two review records cover all six tasks against current evidence.
+- [x] All six final fixed Lean statements compile in both clean conditions.
+- [x] Exact controlled task hashes and the expanded construction-package hash are frozen.
+- [x] N is rechecked to contain no NumStability artifact for every task.
+- [ ] L dependency checking finds real declarations in all six private L construction proofs.
 - [x] Agent, model, prompt, tools, and machine class are frozen.
 - [x] The lack of a backend seed and OCI image is recorded as an observational limitation.
 - [ ] Two final independent review records pass against the frozen evidence.
-- [ ] All 18 isolated runs are complete.
+- [ ] All 36 isolated runs are complete.
 - [ ] Raw logs, result tables, and the final plain-language PDF report are built.

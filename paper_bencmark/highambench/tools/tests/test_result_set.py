@@ -37,7 +37,9 @@ def benchmark_documents(
     *,
     backend_seed: int | None = 7,
     bubblewrap: bool = False,
+    paper_ids: tuple[str, ...] = ("P01",),
 ) -> tuple[dict, dict, dict]:
+    corpus_id = "-".join(paper_id.lower() for paper_id in paper_ids)
     config = {
         "schema_version": "0.1.0",
         "benchmark_id": "test-highambench",
@@ -56,7 +58,7 @@ def benchmark_documents(
             "allowed_tools": ["shell", "Lean"],
             "hardware_class": "test-machine",
             "operating_system": "test-os",
-            "environment_id": "highambench-p01-" + SHA_C[:16],
+            "environment_id": f"highambench-{corpus_id}-" + SHA_C[:16],
             "environment_bundle_sha256": SHA_C,
             "bubblewrap_binary_sha256": SHA_B,
             "bubblewrap_version": "bubblewrap 1.0",
@@ -81,12 +83,12 @@ def benchmark_documents(
         },
         "repetitions": [{"id": "rep-01", "backend_seed": backend_seed}],
         "planned_counts_per_agent": {
-            "papers": 1,
-            "tasks": 3,
+            "papers": len(paper_ids),
+            "tasks": 3 * len(paper_ids),
             "repetitions_per_task": 1,
             "conditions": 2,
-            "paired_assignments": 3,
-            "runs": 6,
+            "paired_assignments": 3 * len(paper_ids),
+            "runs": 6 * len(paper_ids),
         },
         "isolation": (
             {
@@ -98,52 +100,67 @@ def benchmark_documents(
             else {"implementation": "frozen OCI container"}
         ),
     }
-    targets = []
-    for tier in ("T1", "T2", "T3"):
-        targets.append(
+    papers = []
+    for paper_index, paper_id in enumerate(paper_ids):
+        targets = []
+        for tier in ("T1", "T2", "T3"):
+            task_id = f"task-{tier}" if paper_index == 0 else f"task-{paper_id}-{tier}"
+            target_file = (
+                f"targets/{tier}.lean"
+                if paper_index == 0
+                else f"targets/{paper_id}/{tier}.lean"
+            )
+            targets.append(
+                {
+                    "task_id": task_id,
+                    "tier": tier,
+                    "lean_target": {
+                        "file": target_file,
+                        "controlled_file_sha256": SHA_B,
+                    },
+                }
+            )
+        papers.append(
             {
-                "task_id": f"task-{tier}",
-                "tier": tier,
-                "lean_target": {
-                    "file": f"targets/{tier}.lean",
-                    "controlled_file_sha256": SHA_B,
+                "paper_id": paper_id,
+                "source": {
+                    "local_path": (
+                        "paper.pdf" if paper_index == 0 else f"paper-{paper_id}.pdf"
+                    ),
+                    "sha256": SHA_C,
                 },
+                "targets": targets,
             }
         )
     manifest = {
         "schema_version": "0.1.0",
         "benchmark_id": "test-highambench",
         "specification": {"local_path": "spec.pdf", "sha256": SHA_A},
-        "papers": [
-            {
-                "paper_id": "paper-1",
-                "source": {"local_path": "paper.pdf", "sha256": SHA_C},
-                "targets": targets,
-            }
-        ],
+        "papers": papers,
         "controlled_shared_files": [
             {"path": "shared/Definitions.lean", "sha256": SHA_A}
         ],
     }
     pairs = []
-    for tier in ("T1", "T2", "T3"):
-        task_id = f"task-{tier}"
-        repetition_id = "rep-01"
-        digest = hashlib.sha256(
-            f"{SALT}|{task_id}|{repetition_id}".encode("utf-8")
-        ).hexdigest()
-        order = ["N", "L"] if int(digest[:2], 16) % 2 == 0 else ["L", "N"]
-        pair_id = f"{task_id}-{repetition_id}"
-        pairs.append(
-            {
-                "pair_id": pair_id,
-                "task_id": task_id,
-                "repetition_id": repetition_id,
-                "sha256": digest,
-                "condition_order": order,
-                "run_ids": [f"{pair_id}-{condition}" for condition in order],
-            }
-        )
+    for paper in papers:
+        for target in paper["targets"]:
+            task_id = target["task_id"]
+            repetition_id = "rep-01"
+            digest = hashlib.sha256(
+                f"{SALT}|{task_id}|{repetition_id}".encode("utf-8")
+            ).hexdigest()
+            order = ["N", "L"] if int(digest[:2], 16) % 2 == 0 else ["L", "N"]
+            pair_id = f"{task_id}-{repetition_id}"
+            pairs.append(
+                {
+                    "pair_id": pair_id,
+                    "task_id": task_id,
+                    "repetition_id": repetition_id,
+                    "sha256": digest,
+                    "condition_order": order,
+                    "run_ids": [f"{pair_id}-{condition}" for condition in order],
+                }
+            )
     run_order = {
         "schema_version": "0.1.0",
         "benchmark_id": "test-highambench",
@@ -160,11 +177,15 @@ def result_records(
     *,
     observational: bool = False,
 ) -> list[dict]:
-    tier_by_task = {
-        target["task_id"]: target["tier"]
-        for target in manifest["papers"][0]["targets"]
+    task_metadata = {
+        target["task_id"]: {
+            "tier": target["tier"],
+            "paper_id": paper["paper_id"],
+            "paper_sha256": paper["source"]["sha256"],
+        }
+        for paper in manifest["papers"]
+        for target in paper["targets"]
     }
-    paper_hash = manifest["papers"][0]["source"]["sha256"]
     seed = config["repetitions"][0]["backend_seed"]
     frozen = config["frozen_environment"]
     freeze_check = {
@@ -268,6 +289,7 @@ def result_records(
     records: list[dict] = []
     epoch = dt.datetime(2026, 7, 25, tzinfo=dt.timezone.utc)
     for pair_number, pair in enumerate(run_order["pairs"]):
+        task = task_metadata[pair["task_id"]]
         pair_start = epoch + dt.timedelta(minutes=pair_number)
         pair_order = "N-first" if pair["condition_order"][0] == "N" else "L-first"
         for order_index, (condition, run_id) in enumerate(
@@ -298,10 +320,10 @@ def result_records(
                     "kind": "highambench-run",
                     "run_id": run_id,
                     "pair_id": pair["pair_id"],
-                    "paper_id": "paper-1",
-                    "paper_sha256": paper_hash,
+                    "paper_id": task["paper_id"],
+                    "paper_sha256": task["paper_sha256"],
                     "task_id": pair["task_id"],
-                    "tier": tier_by_task[pair["task_id"]],
+                    "tier": task["tier"],
                     "condition": condition,
                     "repetition_id": pair["repetition_id"],
                     "backend_seed": seed,
@@ -610,6 +632,70 @@ class ResultSetTests(unittest.TestCase):
         self.assertEqual(check["selected_final_record_count"], 6)
         self.assertEqual(check["expected_pairs_per_agent"], 3)
         require_complete_result_set(check)
+
+    def test_complete_two_paper_matrix_uses_corpus_environment_id(self) -> None:
+        config, manifest, run_order = benchmark_documents(
+            paper_ids=("P01", "P02")
+        )
+        records = result_records(config, manifest, run_order)
+        check = check_result_set(
+            records, run_order=run_order, config=config, manifest=manifest
+        )
+        self.assertTrue(check["ok"], check["errors"])
+        self.assertEqual(
+            config["frozen_environment"]["environment_id"],
+            "highambench-p01-p02-" + SHA_C[:16],
+        )
+        self.assertEqual(check["selected_final_record_count"], 12)
+        self.assertEqual(check["expected_pairs_per_agent"], 6)
+
+    def test_environment_id_rejects_stale_or_reordered_corpus_prefix(self) -> None:
+        config, manifest, run_order = benchmark_documents(
+            paper_ids=("P01", "P02")
+        )
+        records = result_records(config, manifest, run_order)
+
+        stale_config = copy.deepcopy(config)
+        stale_config["frozen_environment"]["environment_id"] = (
+            "highambench-p01-" + SHA_C[:16]
+        )
+        stale_records = copy.deepcopy(records)
+        refresh_freeze_evidence(stale_records, stale_config, manifest, run_order)
+        stale_check = check_result_set(
+            stale_records,
+            run_order=run_order,
+            config=stale_config,
+            manifest=manifest,
+        )
+        self.assertFalse(stale_check["ok"])
+        self.assertTrue(
+            any(
+                "expected 'highambench-p01-p02-" in error
+                for error in stale_check["errors"]
+            ),
+            stale_check,
+        )
+
+        reordered_manifest = copy.deepcopy(manifest)
+        reordered_manifest["papers"].reverse()
+        reordered_records = copy.deepcopy(records)
+        refresh_freeze_evidence(
+            reordered_records, config, reordered_manifest, run_order
+        )
+        reordered_check = check_result_set(
+            reordered_records,
+            run_order=run_order,
+            config=config,
+            manifest=reordered_manifest,
+        )
+        self.assertFalse(reordered_check["ok"])
+        self.assertTrue(
+            any(
+                "expected 'highambench-p02-p01-" in error
+                for error in reordered_check["errors"]
+            ),
+            reordered_check,
+        )
 
     def test_package_runtime_support_count_is_required_and_reconciles(self) -> None:
         config, manifest, run_order, records = self.reference_fixture()

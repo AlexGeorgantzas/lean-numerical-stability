@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
-"""Validate all six private P01 construction proofs in isolated workspaces.
+"""Validate private construction proofs for manifest-available benchmark tasks.
 
 This command is a release check, not a benchmark run.  It stages only one
 released task package in each fresh temporary workspace and copies the matching
 private proof to ``Submission.lean``.  The private source directory is never
 mounted by either the benchmark agent adapter or the isolated Lean adapter.
 
-For T1 and T2, the selected private proof imports one private helper module.
-That helper is copied as source and compiled afresh inside the isolated Lean
-adapter; no private ``.olean`` file is reused.  T3 has no private helper.
-Every submission then goes through the normal hidden validator, including its
-isolated compilation and transitive dependency audit.
+The task matrix and theorem names come from ``metadata/manifest.json``.  P01's
+T1 and T2 construction proofs import one private helper module; that helper is
+copied as source and compiled afresh inside the isolated Lean adapter, so no
+private ``.olean`` file is reused.  Every submission then goes through the
+normal hidden validator, including its isolated compilation and transitive
+dependency audit.
 """
 
 from __future__ import annotations
 
 import argparse
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 import json
 from pathlib import Path
@@ -50,16 +52,11 @@ except ImportError:  # Direct script execution.
     from validator import ValidationConfig, validate  # type: ignore
 
 
-TARGETS = {
-    "T1": "p01_t1_pairwise_nonnegative",
-    "T2": "p01_t2_pairwise_vs_recursive_bounds",
-    "T3": "p01_t3_noGuard_recursive_running_error_bound",
-}
-
-HELPERS = {
+P01_HELPERS = {
     "N": ("CommonN.lean", "CommonN", "HighamBench.GoldN.gammaValid_mono"),
     "L": ("CommonL.lean", "CommonL", "HighamBench.GoldL.standardProxy_u"),
 }
+CENTRAL_MANIFEST_RELATIVE = Path("metadata/manifest.json")
 
 CONSTRUCTION_TOOL_RELATIVES = (
     "tools/check_construction.py",
@@ -86,9 +83,11 @@ PACKAGE_COMPILED_SUPPORT_SUFFIXES = (
 @dataclass(frozen=True)
 class ConstructionSpec:
     task_id: str
+    paper_id: str
     tier: str
     condition: str
     target_theorem: str
+    canonical_relative: str
     gold_filename: str
     helper_filename: str | None
     helper_module: str | None
@@ -99,7 +98,12 @@ class ConstructionSpec:
 class ConstructionEnvironment:
     project_root: Path
     benchmark_root: Path
-    private_gold_paper_root: Path
+    private_gold_root: Path
+    central_manifest: Path
+    specs: tuple[ConstructionSpec, ...]
+    manifest_task_ids: tuple[str, ...]
+    manifest_paper_ids: tuple[str, ...]
+    selected_paper_ids: tuple[str, ...]
     toolchain_root: Path
     packages_root: Path
     shared_olean_root: Path
@@ -122,25 +126,182 @@ Validator = Callable[[ValidationConfig], dict[str, Any]]
 Preflight = Callable[..., dict[str, Any]]
 
 
-def construction_specs() -> list[ConstructionSpec]:
-    """Return the fixed P01 construction matrix in a deterministic order."""
+def _manifest_mapping(value: Any, label: str) -> Mapping[str, Any]:
+    if not isinstance(value, Mapping):
+        raise BenchmarkToolError(f"{label} must be a JSON object")
+    return value
+
+
+def _manifest_list(value: Any, label: str) -> list[Any]:
+    if not isinstance(value, list):
+        raise BenchmarkToolError(f"{label} must be a JSON array")
+    return value
+
+
+def _manifest_string(value: Any, label: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise BenchmarkToolError(f"{label} must be a nonempty string")
+    return value
+
+
+def _canonical_target_relative(
+    target_file: str, *, paper_id: str, tier: str
+) -> str:
+    """Validate the central-manifest target and return its benchmark-relative path."""
+
+    expected = Path("tasks") / paper_id / tier / "Target.lean"
+    parts = Path(target_file).parts
+    suffix = expected.parts
+    if len(parts) < len(suffix) or tuple(parts[-len(suffix) :]) != suffix:
+        raise BenchmarkToolError(
+            f"central manifest target for {paper_id}-{tier} must end in "
+            f"{expected.as_posix()}: {target_file}"
+        )
+    return expected.as_posix()
+
+
+def _helper_for(
+    paper_id: str, tier: str, condition: str
+) -> tuple[str, str, str] | None:
+    # Helpers are private proof implementation details, not benchmark metadata.
+    # Preserve the established P01 construction layout while allowing later
+    # papers to use self-contained proofs by default.
+    if paper_id == "P01" and tier in ("T1", "T2"):
+        return P01_HELPERS[condition]
+    return None
+
+
+def construction_specs(
+    benchmark_root: Path | None = None,
+    *,
+    paper_ids: Iterable[str] | None = None,
+) -> list[ConstructionSpec]:
+    """Discover the N/L construction matrix from the central task manifest.
+
+    Only targets whose manifest ``availability`` is ``"available"`` are
+    included.  Manifest order is preserved, with N immediately before L for
+    each task.  ``paper_ids`` is an explicit partial-check selector; omitting it
+    means every available task in the manifest.
+    """
+
+    root = (
+        Path(__file__).resolve().parents[1]
+        if benchmark_root is None
+        else Path(benchmark_root).resolve()
+    )
+    manifest_path = _required_file(
+        root / CENTRAL_MANIFEST_RELATIVE, "central benchmark manifest"
+    )
+    try:
+        document = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise BenchmarkToolError(
+            f"central benchmark manifest is invalid JSON: {error}"
+        ) from error
+    manifest = _manifest_mapping(document, "central benchmark manifest")
+
+    requested: tuple[str, ...] | None = None
+    if paper_ids is not None:
+        requested = tuple(dict.fromkeys(str(item) for item in paper_ids))
+        if not requested or any(not item for item in requested):
+            raise BenchmarkToolError("paper selector must contain a nonempty paper id")
 
     specs: list[ConstructionSpec] = []
-    for tier, simple_target in TARGETS.items():
-        for condition in ("N", "L"):
-            helper = HELPERS[condition] if tier in ("T1", "T2") else None
-            specs.append(
-                ConstructionSpec(
-                    task_id=f"P01-{tier}",
-                    tier=tier,
-                    condition=condition,
-                    target_theorem=f"HighamBench.{simple_target}",
-                    gold_filename=f"{tier}_{condition}.lean",
-                    helper_filename=helper[0] if helper else None,
-                    helper_module=helper[1] if helper else None,
-                    helper_target=helper[2] if helper else None,
-                )
+    seen_papers: set[str] = set()
+    seen_tasks: set[str] = set()
+    available_papers: set[str] = set()
+    for paper_index, raw_paper in enumerate(
+        _manifest_list(manifest.get("papers"), "central manifest papers")
+    ):
+        paper = _manifest_mapping(raw_paper, f"central manifest paper {paper_index}")
+        paper_id = _manifest_string(
+            paper.get("paper_id"), f"central manifest paper {paper_index} paper_id"
+        )
+        if paper_id in seen_papers:
+            raise BenchmarkToolError(
+                f"central benchmark manifest repeats paper_id {paper_id}"
             )
+        seen_papers.add(paper_id)
+        for target_index, raw_target in enumerate(
+            _manifest_list(
+                paper.get("targets"), f"central manifest {paper_id} targets"
+            )
+        ):
+            target = _manifest_mapping(
+                raw_target, f"central manifest {paper_id} target {target_index}"
+            )
+            if target.get("availability") != "available":
+                continue
+            available_papers.add(paper_id)
+            task_id = _manifest_string(
+                target.get("task_id"),
+                f"central manifest {paper_id} target {target_index} task_id",
+            )
+            tier = _manifest_string(
+                target.get("tier"), f"central manifest {task_id} tier"
+            )
+            if task_id != f"{paper_id}-{tier}":
+                raise BenchmarkToolError(
+                    f"central manifest task identity disagrees: {task_id}, "
+                    f"paper {paper_id}, tier {tier}"
+                )
+            if task_id in seen_tasks:
+                raise BenchmarkToolError(
+                    f"central benchmark manifest repeats task_id {task_id}"
+                )
+            seen_tasks.add(task_id)
+            lean_target = _manifest_mapping(
+                target.get("lean_target"), f"central manifest {task_id} lean_target"
+            )
+            declaration = _manifest_string(
+                lean_target.get("declaration"),
+                f"central manifest {task_id} Lean declaration",
+            )
+            target_file = _manifest_string(
+                lean_target.get("file"), f"central manifest {task_id} target file"
+            )
+            canonical_relative = _canonical_target_relative(
+                target_file, paper_id=paper_id, tier=tier
+            )
+            if requested is not None and paper_id not in requested:
+                continue
+            target_theorem = (
+                declaration if "." in declaration else f"HighamBench.{declaration}"
+            )
+            for condition in ("N", "L"):
+                helper = _helper_for(paper_id, tier, condition)
+                specs.append(
+                    ConstructionSpec(
+                        task_id=task_id,
+                        paper_id=paper_id,
+                        tier=tier,
+                        condition=condition,
+                        target_theorem=target_theorem,
+                        canonical_relative=canonical_relative,
+                        gold_filename=f"{tier}_{condition}.lean",
+                        helper_filename=helper[0] if helper else None,
+                        helper_module=helper[1] if helper else None,
+                        helper_target=helper[2] if helper else None,
+                    )
+                )
+
+    if requested is not None:
+        unknown = [paper_id for paper_id in requested if paper_id not in seen_papers]
+        unavailable = [
+            paper_id
+            for paper_id in requested
+            if paper_id in seen_papers and paper_id not in available_papers
+        ]
+        if unknown:
+            raise BenchmarkToolError(
+                "paper selector names unknown paper ids: " + ", ".join(unknown)
+            )
+        if unavailable:
+            raise BenchmarkToolError(
+                "paper selector has no available tasks: " + ", ".join(unavailable)
+            )
+    if not specs:
+        raise BenchmarkToolError("central benchmark manifest has no selected available tasks")
     return specs
 
 
@@ -160,24 +321,77 @@ def _required_file(path: Path, label: str) -> Path:
     return resolved
 
 
-def _private_paper_root(private_gold_root: Path) -> Path:
-    """Accept either the private-gold root or its P01 child."""
+def _private_gold_root(
+    private_gold_root: Path, selected_paper_ids: tuple[str, ...]
+) -> Path:
+    """Normalize a private-gold root, retaining direct-P01 compatibility."""
 
     root = _required_directory(private_gold_root, "private gold root")
-    paper = root / "P01"
-    if paper.is_dir():
-        return paper.resolve()
-    if root.name == "P01":
-        return root
-    raise BenchmarkToolError(
-        "private gold root must be the P01 directory or contain a P01 directory"
-    )
+    if len(selected_paper_ids) == 1 and root.name == selected_paper_ids[0]:
+        return root.parent.resolve()
+    if root.name in selected_paper_ids:
+        raise BenchmarkToolError(
+            "a direct paper private-gold directory can only be used when that "
+            "single paper is selected"
+        )
+    return root
+
+
+def _task_ids(specs: Iterable[ConstructionSpec]) -> tuple[str, ...]:
+    return tuple(dict.fromkeys(spec.task_id for spec in specs))
+
+
+def _paper_ids(specs: Iterable[ConstructionSpec]) -> tuple[str, ...]:
+    return tuple(dict.fromkeys(spec.paper_id for spec in specs))
+
+
+def _scope_record(
+    *,
+    central_manifest: Path,
+    manifest_task_ids: tuple[str, ...],
+    manifest_paper_ids: tuple[str, ...],
+    selected_specs: Iterable[ConstructionSpec],
+    selected_paper_ids: tuple[str, ...],
+) -> dict[str, Any]:
+    selected_task_ids = _task_ids(selected_specs)
+    return {
+        "central_manifest": CENTRAL_MANIFEST_RELATIVE.as_posix(),
+        "central_manifest_sha256": sha256_file(central_manifest),
+        "manifest_paper_ids": list(manifest_paper_ids),
+        "manifest_available_task_ids": list(manifest_task_ids),
+        "selected_paper_ids": list(selected_paper_ids),
+        "selected_task_ids": list(selected_task_ids),
+        "complete_manifest_scope": (
+            selected_task_ids == manifest_task_ids
+            and selected_paper_ids == manifest_paper_ids
+        ),
+    }
 
 
 def resolve_environment(args: argparse.Namespace) -> ConstructionEnvironment:
     benchmark_root = _required_directory(args.benchmark_root, "benchmark root")
     project_root = _required_directory(args.project_root, "project root")
-    private_paper = _private_paper_root(args.private_gold)
+    all_specs = construction_specs(benchmark_root)
+    # ``measure_validation.py`` predates the selector and is intentionally a
+    # P01-only historical measurement.  Namespaces produced by this module's
+    # parser always have ``paper_id``; a caller without the attribute keeps the
+    # old P01 scope instead of silently expanding that frozen measurement.
+    selected_arg = getattr(args, "paper_id", ("P01",))
+    manifest_paper_ids = _paper_ids(all_specs)
+    if not selected_arg:
+        selected_paper_ids = manifest_paper_ids
+        specs = all_specs
+    else:
+        requested_paper_ids = tuple(
+            dict.fromkeys(str(item) for item in selected_arg)
+        )
+        specs = construction_specs(
+            benchmark_root, paper_ids=requested_paper_ids
+        )
+        selected_paper_ids = _paper_ids(specs)
+    private_gold_root = _private_gold_root(
+        args.private_gold, selected_paper_ids
+    )
     hidden_parent: Path | None = None
     if args.hidden_parent is not None:
         args.hidden_parent.mkdir(parents=True, exist_ok=True)
@@ -186,7 +400,15 @@ def resolve_environment(args: argparse.Namespace) -> ConstructionEnvironment:
     environment = ConstructionEnvironment(
         project_root=project_root,
         benchmark_root=benchmark_root,
-        private_gold_paper_root=private_paper,
+        private_gold_root=private_gold_root,
+        central_manifest=_required_file(
+            benchmark_root / CENTRAL_MANIFEST_RELATIVE,
+            "central benchmark manifest",
+        ),
+        specs=tuple(specs),
+        manifest_task_ids=_task_ids(all_specs),
+        manifest_paper_ids=manifest_paper_ids,
+        selected_paper_ids=selected_paper_ids,
         toolchain_root=_required_directory(args.toolchain_root, "Lean toolchain root"),
         packages_root=_required_directory(args.packages_root, "Lean packages root"),
         shared_olean_root=_required_directory(
@@ -222,20 +444,34 @@ def resolve_environment(args: argparse.Namespace) -> ConstructionEnvironment:
         timeout_seconds=args.timeout_seconds,
     )
 
-    for spec in construction_specs():
+    missing_material: list[str] = []
+    checked_helpers: set[tuple[str, str]] = set()
+    for spec in specs:
         _required_file(
             benchmark_root / "metadata" / "controlled" / f"{spec.task_id}.json",
             f"{spec.task_id} controlled manifest",
         )
-        _required_file(
-            private_paper / spec.gold_filename,
-            f"{spec.task_id}/{spec.condition} private gold proof",
-        )
-        if spec.helper_filename is not None:
-            _required_file(
-                private_paper / spec.helper_filename,
-                f"{spec.condition} private construction helper",
+        gold_path = private_gold_root / spec.paper_id / spec.gold_filename
+        if gold_path.is_symlink() or not gold_path.is_file():
+            missing_material.append(
+                f"{spec.task_id}/{spec.condition} proof ({gold_path})"
             )
+        if spec.helper_filename is not None:
+            helper_key = (spec.paper_id, spec.helper_filename)
+            if helper_key not in checked_helpers:
+                checked_helpers.add(helper_key)
+                helper_path = (
+                    private_gold_root / spec.paper_id / spec.helper_filename
+                )
+                if helper_path.is_symlink() or not helper_path.is_file():
+                    missing_material.append(
+                        f"{spec.paper_id}/{spec.condition} helper ({helper_path})"
+                    )
+    if missing_material:
+        raise BenchmarkToolError(
+            "private construction material is missing for manifest-available "
+            "selected tasks: " + "; ".join(missing_material)
+        )
     return environment
 
 
@@ -683,7 +919,8 @@ def check_one(
         / "controlled"
         / f"{spec.task_id}.json"
     )
-    gold_path = environment.private_gold_paper_root / spec.gold_filename
+    private_paper_root = environment.private_gold_root / spec.paper_id
+    gold_path = private_paper_root / spec.gold_filename
     manifest = load_manifest(manifest_path)
 
     with temporary_directory(
@@ -710,6 +947,7 @@ def check_one(
             if not n_preflight.get("ok"):
                 return {
                     "task_id": spec.task_id,
+                    "paper_id": spec.paper_id,
                     "tier": spec.tier,
                     "condition": spec.condition,
                     "target_theorem": spec.target_theorem,
@@ -735,7 +973,7 @@ def check_one(
         local_sources: list[str] = []
         if spec.helper_filename is not None:
             assert spec.helper_module is not None and spec.helper_target is not None
-            helper_source = environment.private_gold_paper_root / spec.helper_filename
+            helper_source = private_paper_root / spec.helper_filename
             staged_helper = workspace / spec.helper_filename
             shutil.copy2(helper_source, staged_helper)
             helper_digest = sha256_file(staged_helper)
@@ -772,6 +1010,7 @@ def check_one(
             ):
                 return {
                     "task_id": spec.task_id,
+                    "paper_id": spec.paper_id,
                     "tier": spec.tier,
                     "condition": spec.condition,
                     "target_theorem": spec.target_theorem,
@@ -811,7 +1050,7 @@ def check_one(
             ValidationConfig(
                 workspace=workspace,
                 submission_relative="Submission.lean",
-                canonical_relative=f"task/tasks/P01/{spec.tier}/Target.lean",
+                canonical_relative=f"task/{spec.canonical_relative}",
                 target_theorem=spec.target_theorem,
                 compile_command=compile_command,
                 condition=spec.condition,
@@ -832,6 +1071,7 @@ def check_one(
         )
         return {
             "task_id": spec.task_id,
+            "paper_id": spec.paper_id,
             "tier": spec.tier,
             "condition": spec.condition,
             "target_theorem": spec.target_theorem,
@@ -863,7 +1103,7 @@ def run_checks(
 ) -> dict[str, Any]:
     basis = verification_basis(environment)
     results: list[dict[str, Any]] = []
-    for spec in construction_specs():
+    for spec in environment.specs:
         try:
             result = check_one(
                 environment,
@@ -875,6 +1115,7 @@ def run_checks(
         except (OSError, BenchmarkToolError, ValueError) as error:
             result = {
                 "task_id": spec.task_id,
+                "paper_id": spec.paper_id,
                 "tier": spec.tier,
                 "condition": spec.condition,
                 "target_theorem": spec.target_theorem,
@@ -888,13 +1129,21 @@ def run_checks(
     passed = sum(bool(result.get("pass")) for result in results)
     n_results = [result for result in results if result["condition"] == "N"]
     l_results = [result for result in results if result["condition"] == "L"]
+    expected = len(environment.specs)
     return {
         "schema_version": 1,
         "kind": "highambench-private-construction-check",
         "generated_at_utc": utc_now(),
-        "pass": passed == len(results) == 6,
+        "pass": passed == len(results) == expected,
+        "scope": _scope_record(
+            central_manifest=environment.central_manifest,
+            manifest_task_ids=environment.manifest_task_ids,
+            manifest_paper_ids=environment.manifest_paper_ids,
+            selected_specs=environment.specs,
+            selected_paper_ids=environment.selected_paper_ids,
+        ),
         "summary": {
-            "expected": 6,
+            "expected": expected,
             "checked": len(results),
             "passed": passed,
             "condition_n_passed": sum(bool(item.get("pass")) for item in n_results),
@@ -926,7 +1175,18 @@ def make_parser() -> argparse.ArgumentParser:
         dest="private_gold",
         type=Path,
         required=True,
-        help="private_gold directory containing P01, or the P01 directory itself",
+        help=(
+            "private_gold root containing one directory per selected paper; a "
+            "direct paper directory is accepted for a single-paper check"
+        ),
+    )
+    parser.add_argument(
+        "--paper-id",
+        action="append",
+        help=(
+            "limit the construction check to this paper id (repeatable); omitting "
+            "the option requires gold material for every manifest-available task"
+        ),
     )
     parser.add_argument("--toolchain-root", type=Path, required=True)
     parser.add_argument("--packages-root", type=Path, required=True)
@@ -940,6 +1200,28 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--timeout-seconds", type=float, default=180.0)
     parser.add_argument("--output", type=Path)
     return parser
+
+
+def _requested_scope(args: argparse.Namespace) -> dict[str, Any]:
+    """Describe the requested manifest scope even if material resolution fails."""
+
+    benchmark_root = _required_directory(args.benchmark_root, "benchmark root")
+    all_specs = construction_specs(benchmark_root)
+    selected_specs = (
+        all_specs
+        if not args.paper_id
+        else construction_specs(benchmark_root, paper_ids=args.paper_id)
+    )
+    return _scope_record(
+        central_manifest=_required_file(
+            benchmark_root / CENTRAL_MANIFEST_RELATIVE,
+            "central benchmark manifest",
+        ),
+        manifest_task_ids=_task_ids(all_specs),
+        manifest_paper_ids=_paper_ids(all_specs),
+        selected_specs=selected_specs,
+        selected_paper_ids=_paper_ids(selected_specs),
+    )
 
 
 def main() -> int:
@@ -958,6 +1240,12 @@ def main() -> int:
             "pass": False,
             "configuration_error": str(error),
         }
+        try:
+            evidence["scope"] = _requested_scope(args)
+        except (OSError, BenchmarkToolError, ValueError):
+            # The configuration error itself may be a missing or malformed
+            # central manifest, in which case no trustworthy scope exists.
+            pass
         if args.output:
             write_json(args.output, evidence)
         else:
