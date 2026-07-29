@@ -641,3 +641,109 @@ preserves the historical surface.
 
 Superseded pre-contract wave output is retained outside the repository at
 `PACKET_ROOT/runtime/wave1-superseded/` (50 files) rather than discarded.
+
+## 11. Implementation wave 2 — `LSNormalEquations`
+
+Commit `7ba0afda5`. The 38 declarations move to
+`Algorithms.LinearSystems.LeastSquares.NormalEquations` (5 spans: exact
+normal-equation and Cholesky specifications) and
+`Analysis.Perturbation.LeastSquares.NormalEquations` (15 spans: Gram product,
+vector-error and squared-condition analysis). This wave also creates the reusable
+algorithm family aggregate `Algorithms.LinearSystems.LeastSquares`.
+
+Focused build passed with 3110 jobs and exit 0, including the downstream consumer
+`Algorithms.RandNLA.LeastSquaresSketch`.
+
+## 12. Implementation wave 3 — printed Chapter 20 examples
+
+Commit `d1447c099`. `Higham20CrossProductExample` (12 declarations) moves to
+`Source.Higham.Chapter20.Examples.CrossProduct`; `Higham20GeneralWedin` (32)
+splits into `Source.Higham.Chapter20.Examples.GeneralRank` (27 spans of the
+printed general-rank counterexample) and
+`Analysis.Perturbation.LeastSquares.Wedin` (5 spans of generic Wedin
+decomposition).
+
+### Destinations are cumulative, not per wave
+
+Wave 3 adds 5 spans to `Analysis.Perturbation.LeastSquares.Wedin`, which already
+held 216 from wave 1. Emitting only the current wave's spans would have
+overwritten that module and silently dropped wave 1's content. Destinations are
+therefore regenerated from the **cumulative** migrated owner set, and
+byte-preservation is verified across every migrated owner on each wave, not just
+the current one. `Wedin` correctly carries all 221 spans.
+
+## 13. Measured obstructions
+
+Wave 3 was reduced from five dependency-ready owners to two. Both reasons were
+found by building, and neither is visible in the declaration graph alone.
+
+### 13.1 Private declarations may not cross a destination boundary
+
+Lean private names are module-scoped, so a private declaration is invisible
+outside the module that defines it. The committed ownership manifest routes
+**114 private-declaration uses across a destination boundary**:
+
+| Historical owner of the private declaration | Cross-boundary uses |
+| --- | --- |
+| `LSQRSolve` | 62 |
+| `LSE` | 31 |
+| `Higham20Lemma20_11` | 11 |
+| `Higham20Theorem20_4Absorption` | 4 |
+| `Higham20Theorem20_10` | 2 |
+| `Higham20Lemma20_12` | 2 |
+| `Higham20RowSorting` | 1 |
+| `Higham20Equations` | 1 |
+
+For example private `matMulVec_zero` and `finAppend_left_right` are routed to
+`Equality.Basic` while `Equality.GQR` uses them. Migrating
+`Higham20Lemma20_11` and `Higham20Lemma20_12` under this manifest fails to
+compile with unknown-identifier errors on their own private support
+declarations (`singularValue_ne_zero_iff_le_rankIndex`,
+`leadSpan_eq_gramRange_of_rankIndex`,
+`higham20_lemma20_12_rangeProjection_idempotent`, and others).
+
+No current gate detects this. The checker normalizes and re-checks private
+**names** when a declaration moves, but nothing requires a private declaration to
+share a destination with every declaration that uses it. Resolving it requires a
+contract change: co-locate each private declaration with its users, or make the
+required ones non-private, which the lane may not do because visibility is
+preserved by contract.
+
+### 13.2 An exact wrapper does not re-export a transitive import surface
+
+Migrating `Higham20Problem20_3` breaks
+`Source.Higham.Chapter14.Section05.SpectralConvergence` with 74
+unknown-identifier errors (`complexMatrixOp2`, `rectRightGramEigenbasis`,
+`rectRightGramProjectedColumn`, ...). That consumer relied on identifiers reaching
+it transitively through the historical module's wider import surface. An exact
+import-only wrapper deliberately forwards only its destinations, so the surface
+narrows. `SpectralConvergence` is a non-lane file and a required
+`DOWNSTREAM_BUILDS.txt` target, so this needs the consumer retarget already
+scheduled in the integrator patch set.
+
+### 13.3 Owner order is a hard constraint
+
+A destination may only import destinations that already exist, and a reusable
+destination may never import a legacy wrapper. Owner `A` must therefore migrate
+after owner `B` whenever a declaration of `A` uses a declaration of `B`.
+Computing that DAG shows **34 of 41 owners are transitively blocked by
+`LSQRSolve`**, which is itself blocked on the `MatrixInversion` retarget.
+
+## 14. Reachability summary
+
+| Status | Owners | Note |
+| --- | --- | --- |
+| Migrated | 4 | `LSPerturbation`, `LSNormalEquations`, `Higham20CrossProductExample`, `Higham20GeneralWedin` |
+| Blocked by the private-visibility defect (13.1) | 8 | needs a contract change |
+| Blocked by a consumer retarget (13.2) | 1 | `Higham20Problem20_3` |
+| Blocked behind `LSQRSolve` (13.3) | 28 | needs the `MatrixInversion` retarget first |
+
+341 declarations have been relocated byte-identically. Every migrated wave holds
+0 import cycles, 0 scope violations, a clean `git diff --check`, 0 placeholders,
+and a passing focused build including affected downstream consumers.
+
+All **12** axiom probes across the three waves report exactly
+`[propext, Classical.choice, Quot.sound]` (build completed, 3054 jobs, exit 0).
+
+The lane's completion definition cannot be reached from inside the lane's own
+scope until 13.1 and the two scheduled consumer retargets are resolved.
