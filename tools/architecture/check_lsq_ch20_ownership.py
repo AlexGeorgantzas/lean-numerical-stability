@@ -251,10 +251,17 @@ IMPORT_ONLY_LS_DESTINATIONS = {
         f"{LS_PREFIX}.Higham20Theorem20_7",
         "NumStability.Algorithms.QR.HouseholderQRSupport",
     ): f"{SOURCE_ROOT}.Theorem07",
+    # Carrier updated from Equality.GQR to Equality.Basic.  Equality.GQR cannot
+    # exist as a separate module while private visibility is preserved: two
+    # private helper groups straddle the intended equality-constrained-LS / GQR /
+    # KKT split (one spans all three, one spans Basic and GQR), and a Lean private
+    # name is scoped to its defining module.  Duplicating the helpers and widening
+    # their visibility are both forbidden, so the three sub-families share one
+    # destination and Equality.Basic is the carrier.
     (
         f"{LS_PREFIX}.LSE",
         "NumStability.Algorithms.QR.GramSchmidtPolar",
-    ): f"{REUSABLE_ALGORITHM_ROOT}.Equality.GQR",
+    ): f"{REUSABLE_ALGORITHM_ROOT}.Equality.Basic",
     (
         "NumStability.Algorithms.QR.Higham19Alg12MGSSourceRate",
         f"{LS_PREFIX}.Higham20MPProse",
@@ -2281,6 +2288,53 @@ def read_destination_dag(
     if components:
         raise ValueError(f"{path}: destination DAG contains cycles: {components[:3]}")
     return dag
+
+
+def validate_private_colocation(
+    dependency_tsv: Path,
+    declarations: list[Declaration],
+    actual_to_logical: dict[str, str],
+    records: dict[str, ManifestRow],
+) -> int:
+    """Require every private declaration to share its users' destination.
+
+    A Lean private name is scoped to the module that defines it, so a private
+    declaration is invisible outside that module.  If the manifest routes a
+    private declaration away from a declaration that uses it, the migrated tree
+    cannot compile: the user reports an unknown identifier.  Neither escape is
+    open to this lane -- duplicating the declaration is forbidden, and widening
+    its visibility would break the preserve-visibility contract -- so the
+    manifest itself has to co-locate them.
+
+    This is not implied by command-route grouping: a private helper and its user
+    are usually separate source commands, so they can be routed apart while every
+    other gate still passes.
+    """
+
+    visibility = {
+        declaration.name: declaration.visibility for declaration in declarations
+    }
+    offenders: list[str] = []
+    for edge in iter_dependency_edges(dependency_tsv):
+        if visibility.get(edge.target) != "private":
+            continue
+        target_logical = actual_to_logical.get(edge.target)
+        source_logical = actual_to_logical.get(edge.source)
+        if target_logical is None or source_logical is None:
+            continue
+        target_owner = records[target_logical].destination_module
+        source_owner = records[source_logical].destination_module
+        if target_owner != source_owner:
+            offenders.append(
+                f"{edge.target} (private, {target_owner}) used by "
+                f"{edge.source} ({source_owner}) via {edge.kind}"
+            )
+    if offenders:
+        raise ValueError(
+            f"{len(offenders)} private declaration uses cross a destination "
+            "boundary and cannot compile: " + "; ".join(sorted(offenders)[:10])
+        )
+    return sum(1 for value in visibility.values() if value == "private")
 
 
 def validate_destination_dag_contract(
@@ -4683,6 +4737,14 @@ def main() -> int:
             args.dependency_tsv, declarations, actual_to_logical, records
         )
 
+        private_checked = validate_private_colocation(
+            args.dependency_tsv, declarations, actual_to_logical, records
+        )
+        print(
+            f"private co-location: {private_checked} private declarations, "
+            "0 cross-destination uses"
+        )
+
         generated_dag = destination_dag_from_stream(
             args.dependency_tsv, actual_to_logical, records
         )
@@ -4866,6 +4928,9 @@ def main() -> int:
         if declaration.name in candidate_map
     }
     owners, owner_edges = validate_destination_graph(
+        args.dependency_tsv, declarations, actual_to_logical, records
+    )
+    validate_private_colocation(
         args.dependency_tsv, declarations, actual_to_logical, records
     )
     validate_destination_dag_contract(

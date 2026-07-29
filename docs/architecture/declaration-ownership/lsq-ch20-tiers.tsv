@@ -43,13 +43,8 @@ NumStability.Algorithms.LeastSquares.LSPerturbation	compatibility
 NumStability.Algorithms.LeastSquares.LSQRSolve	compatibility
 NumStability.Algorithms.LinearSystems.LeastSquares	reusable
 NumStability.Algorithms.LinearSystems.LeastSquares.AugmentedSystem	reusable
-NumStability.Algorithms.LinearSystems.LeastSquares.Basic	reusable
 NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic	reusable
-NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR	reusable
-NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT	reusable
-NumStability.Algorithms.LinearSystems.LeastSquares.MGS	reusable
-NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations	reusable
-NumStability.Algorithms.LinearSystems.LeastSquares.Projection	reusable
+NumStability.Algorithms.LinearSystems.LeastSquares.GramBasis	reusable
 NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve	reusable
 NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry	reusable
 NumStability.Algorithms.LinearSystems.LeastSquares.Refinement	reusable
@@ -68,6 +63,7 @@ NumStability.Analysis.Perturbation.LeastSquares.Equality.KKTInverse	reusable
 NumStability.Analysis.Perturbation.LeastSquares.Equality.MixedStability	reusable
 NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation	reusable
 NumStability.Analysis.Perturbation.LeastSquares.Equality.RowwiseBackwardError	reusable
+NumStability.Analysis.Perturbation.LeastSquares.GramBasis	reusable
 NumStability.Analysis.Perturbation.LeastSquares.MinimumNorm	reusable
 NumStability.Analysis.Perturbation.LeastSquares.NormalEquations	reusable
 NumStability.Analysis.Perturbation.LeastSquares.Normwise	reusable
