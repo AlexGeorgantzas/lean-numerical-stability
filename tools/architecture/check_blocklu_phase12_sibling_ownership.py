@@ -48,7 +48,7 @@ PHASE12_BASE_STRUCTURAL_CONTRACT_SHA256 = (
     "E259772BA776EC0595600F6F1DD25FACC036ED247995B5AFA1B3C0EFD353769F"
 )
 EXPANDED_PHASE12_STRUCTURAL_CONTRACT_SHA256 = (
-    "06A59060BA12FAC096F4A78F286AA5B205251ACC86A15CDC6A99A91C4E09211B"
+    "211EE1E653987301FDE7E0312EE6702948FB523635052E8A4AB3364DDC63DA06"
 )
 
 DEFAULT_MANIFEST = Path(
@@ -411,7 +411,7 @@ def validate_structural_contract_design(
         )
     for module, imports in POST_INTEGRATION_REQUIRED_IMPORTS.items():
         core.check_module_name(module, "post-integration aggregate")
-        if imports != tuple(sorted(imports)) or len(imports) != len(set(imports)):
+        if imports != tuple(sorted(imports, key=str.casefold)) or len(imports) != len(set(imports)):
             raise ValueError(
                 f"post-integration imports are not unique and sorted for {module}"
             )
@@ -419,7 +419,7 @@ def validate_structural_contract_design(
             core.check_module_name(imported, f"post-integration import for {module}")
     for module, imports in POST_CONSUMER_REQUIRED_IMPORTS.items():
         core.check_module_name(module, "post-integration consumer")
-        if imports != tuple(sorted(imports)) or len(imports) != len(set(imports)):
+        if imports != tuple(sorted(imports, key=str.casefold)) or len(imports) != len(set(imports)):
             raise ValueError(
                 f"post-integration consumer imports are not unique and sorted "
                 f"for {module}"
@@ -461,7 +461,9 @@ def validate_expanded_phase12_contract_derivation(
                 f"sibling integration additions already occur in {module}: "
                 + ", ".join(overlap)
             )
-        expected[module] = tuple(sorted((*base[module], *additions)))
+        expected[module] = tuple(
+            sorted((*base[module], *additions), key=str.casefold)
+        )
 
     expanded_pairs = structural_pair_count(expanded)
     if expanded_pairs != EXPECTED_EXPANDED_PHASE12_STRUCTURAL_PAIRS:

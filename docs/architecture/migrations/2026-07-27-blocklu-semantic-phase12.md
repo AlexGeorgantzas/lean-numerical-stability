@@ -1047,7 +1047,17 @@ The checked-in artifacts are frozen as follows:
   `E259772BA776EC0595600F6F1DD25FACC036ED247995B5AFA1B3C0EFD353769F`;
 - reviewed expanded Phase 12 structural contract: 170 pairs across 19 modules,
   SHA-256
-  `06A59060BA12FAC096F4A78F286AA5B205251ACC86A15CDC6A99A91C4E09211B`.
+  `211EE1E653987301FDE7E0312EE6702948FB523635052E8A4AB3364DDC63DA06`.
+
+An implementation-time audit found that the original expanded artifact used
+Python's case-sensitive ordering for two adjacent `Section03` imports, while
+the repository layout contract requires case-insensitive ordering. The
+reviewed artifact and its live copy therefore swap only
+`SchurStageAnalysis`/`SPDFactorBounds` under the Chapter 13 BlockLU and
+Section03 aggregates. The 19-module, 170-pair set is unchanged; the immutable
+143-pair parent snapshot and the separate sibling-wrapper contract remain
+byte-identical. The structural validators now use the same `casefold` ordering
+as the global layout checker.
 
 The expanded artifact is derived exactly from the separate immutable parent
 snapshot plus the 27 reviewed sibling additions. Pre mode additionally

@@ -1141,7 +1141,7 @@ def validate_import_sequence(
     )
     if duplicates:
         raise ValueError(f"structural module has duplicate imports in {path}: {duplicates}")
-    ordered = tuple(sorted(imports))
+    ordered = tuple(sorted(imports, key=str.casefold))
     if actual != ordered:
         raise ValueError(
             f"structural module imports are not sorted in {path}: "
@@ -1245,7 +1245,7 @@ def read_structural_contract(path: Path) -> dict[str, tuple[str, ...]]:
         seen.add(pair)
     if not pairs:
         raise ValueError(f"{path}: structural contract is empty")
-    if pairs != sorted(pairs):
+    if pairs != sorted(pairs, key=lambda pair: (pair[0], pair[1].casefold())):
         raise ValueError(f"{path}: structural contract rows must be sorted")
 
     imports_by_module: dict[str, list[str]] = defaultdict(list)

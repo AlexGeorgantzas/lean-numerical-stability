@@ -98,8 +98,8 @@ NumStability.Source.Higham.Chapter13.BlockLU	NumStability.Source.Higham.Chapter1
 NumStability.Source.Higham.Chapter13.BlockLU	NumStability.Source.Higham.Chapter13.Section03.ArbitraryNormDominance
 NumStability.Source.Higham.Chapter13.BlockLU	NumStability.Source.Higham.Chapter13.Section03.ColumnDominanceClosure
 NumStability.Source.Higham.Chapter13.BlockLU	NumStability.Source.Higham.Chapter13.Section03.RowDominanceClosure
-NumStability.Source.Higham.Chapter13.BlockLU	NumStability.Source.Higham.Chapter13.Section03.SPDFactorBounds
 NumStability.Source.Higham.Chapter13.BlockLU	NumStability.Source.Higham.Chapter13.Section03.SchurStageAnalysis
+NumStability.Source.Higham.Chapter13.BlockLU	NumStability.Source.Higham.Chapter13.Section03.SPDFactorBounds
 NumStability.Source.Higham.Chapter13.BlockLU	NumStability.Source.Higham.Chapter13.Table01
 NumStability.Source.Higham.Chapter13.BlockLU	NumStability.Source.Higham.Chapter13.Table01.Families
 NumStability.Source.Higham.Chapter13.BlockLU	NumStability.Source.Higham.Chapter13.Theorem02.Factorization
@@ -155,8 +155,8 @@ NumStability.Source.Higham.Chapter13.Section01	NumStability.Source.Higham.Chapte
 NumStability.Source.Higham.Chapter13.Section03	NumStability.Source.Higham.Chapter13.Section03.ArbitraryNormDominance
 NumStability.Source.Higham.Chapter13.Section03	NumStability.Source.Higham.Chapter13.Section03.ColumnDominanceClosure
 NumStability.Source.Higham.Chapter13.Section03	NumStability.Source.Higham.Chapter13.Section03.RowDominanceClosure
-NumStability.Source.Higham.Chapter13.Section03	NumStability.Source.Higham.Chapter13.Section03.SPDFactorBounds
 NumStability.Source.Higham.Chapter13.Section03	NumStability.Source.Higham.Chapter13.Section03.SchurStageAnalysis
+NumStability.Source.Higham.Chapter13.Section03	NumStability.Source.Higham.Chapter13.Section03.SPDFactorBounds
 NumStability.Source.Higham.Chapter13.Theorem02	NumStability.Source.Higham.Chapter13.Theorem02.Factorization
 NumStability.Source.Higham.Chapter13.Theorem02	NumStability.Source.Higham.Chapter13.Theorem02.Uniqueness
 NumStability.Source.Higham.Chapter13.Theorem02	NumStability.Source.Higham.Chapter13.Theorem02.VaryingBlocks
