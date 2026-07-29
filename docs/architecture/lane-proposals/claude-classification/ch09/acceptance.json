@@ -1,0 +1,33 @@
+{
+  "artifact_sha256": {
+    "candidate-modules.tsv": "AC196DE5268D4E1FAEE4230AA1625B8A781D67990F6C2642A46647DA9047AD98",
+    "chapter09-dependencies.tsv": "DFF105BE95C35E6C824A5CE7A228B5991B5E9864CA935C9A5080C4E532F45FB5",
+    "direct-imports.tsv": "26B31DA3D9F7B13F50A7D0FBE1BB938B8F3E20183EAB1298130E4D88B43A87E1",
+    "downstream-consumers.tsv": "D650A32B8E5B4FDC66A11A53E96F7A165BB769F1D20977E5FA75371E55E11DC8",
+    "frozen-owners.tsv": "D09DA70F399D468510D499B10F27BC12DD3AA80867D13D27DEE3433401A6A56F",
+    "owner-dag.tsv": "FF2155B0D172417C4287CFBD101A22FA148905182B61E189E5E4A739F43683A8",
+    "ownership.tsv": "6ED0EDFC34F22DD06D782C35419D0122C874D6BB5DB386E7C8139F623D7652A1",
+    "private-rewrites.tsv": "4C17C1208A6DA23488A806E48D8DF36F9978F9DD53E230EEA7ABADA8DDF89AC5",
+    "routes.tsv": "DC4722E800B743A0C2AB96592179129F3345A8FD11E904A048871891686F180E"
+  },
+  "authored_private_rewrites": 28,
+  "baseline_format2_zip_sha256": "1C2538B428B8EC3610B3C09BBB6A4CF23ECA9F0DB17EE4AE5B63E4F371AECDED",
+  "candidate_modules": 11,
+  "canonical_destinations": 20,
+  "chapter": "09",
+  "chapter09_dependency_rows": 0,
+  "destination_dag_edges": 56,
+  "downstream_consumer_rows": 29,
+  "exact_import_rows": 250,
+  "format2_declarations": 4420,
+  "implementation_status": "BLOCKED_ON_BLOCKLU_INTEGRATION",
+  "integrated_main_refresh": "BLOCKLU_IMPORT_CUTOVER_OBSERVED_AT_6ecc4d5513226e67594bb22985913f6a4a383e5c;INTEGRATOR_GLOBAL_VERIFICATION_STILL_REQUIRED",
+  "ownership_rows": 4420,
+  "packet_base_sha": "6487fc33088523b8f27ecde9ad613515b78f9977",
+  "post_and_stage_status": "NOT_RUN_PROPOSAL_ONLY_NO_PRODUCTION_MOVES",
+  "private_declarations": 28,
+  "public_declarations": 4392,
+  "review_evidence_head": "6ecc4d5513226e67594bb22985913f6a4a383e5c",
+  "route_rows": 4420,
+  "schema_version": 1
+}
