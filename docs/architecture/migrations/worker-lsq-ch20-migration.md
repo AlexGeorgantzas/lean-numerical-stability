@@ -238,8 +238,8 @@ than after theorem numbers, so no reusable module name couples to the book.
 
 ### 4.1 Verified topology
 
-The frozen ownership manifest assigns all 5,129 declarations to **75
-destination modules** with **266 owner edges**. Measured over the whole lane
+The frozen ownership manifest assigns all 5,129 declarations to **72
+destination modules** with **244 owner edges**. Measured over the whole lane
 edge set:
 
 | Property | Result |
@@ -248,7 +248,11 @@ edge set:
 | reusable module → source module edges | 0 |
 | algorithm module → analysis module edges | 0 |
 | destination modules holding more than one tier | 0 |
-| Manifest SHA-256 | `B819660510BC89BFEFC75863609F0E2D8938600E97ACB20BC0DE6331ECB8EE4C` |
+| source spans straddling two destinations | 0 |
+| Manifest SHA-256 | `288CA74AD3534B6B7E39D38B11BDF831738643392F4C13A4C898BA0309722D63` |
+
+Final partition: **1,688** source, **1,234** reusable algorithm, **2,207**
+reusable analysis.
 
 Four sibling cycles appeared in the first assignment and were resolved without
 weakening the partition. Because the declaration-level invariants forbid
@@ -291,14 +295,70 @@ collision before any manifest was committed.
 All **151** private declarations have a reviewed rewrite whose candidate name
 re-encodes the destination module and preserves the declaration suffix exactly.
 
-### 4.3 Frozen historical owners
+### 4.3 Authoritative spans and span coherence
+
+The first version of this contract derived declaration spans with a regex
+scanner. After the base build produced `.ilean` data, the spans were rebuilt
+from the compiler's own records and cross-checked, which found two defects the
+scanner had hidden:
+
+- **Indented top-level declarations.** `LSQRSolve` writes some declarations
+  indented by two spaces. The scanner treated indented lines as proof
+  continuations and missed one declaration head entirely; its name was then
+  silently absorbed by a sibling that happened to share a long prefix. Lean's
+  `.ilean` entry is `[startLine, startCol, endLine, endCol, selStartLine,
+  selStartCol, selEndLine, selEndCol]`, giving both the declaration's full range
+  *including its doc comment* and the exact position of the declared
+  identifier, so no heuristic is needed for attachment, wrapped names or
+  indentation.
+- **Span coherence.** A Lean `structure` or `inductive` emits its constructors,
+  eliminators and field projections from a single source command, so all of them
+  share one span and cannot be separated. The declaration-level classification
+  had split 12 such spans across two tiers — for example
+  `Theorem20_7.PivotedStoredQRRawReady` sat in a reusable trace-kernel module
+  while its `.mk`, `.recOn`, `.casesOn` and several field projections were routed
+  to `Source.Higham.Chapter20.Theorem07`. That is physically impossible to emit.
+
+The contract now enforces, as an invariant of the partition, that every
+declaration sharing a span shares its tier and destination. Where a span
+straddles tiers, the **most restrictive** tier wins: if any member must be
+source because it reaches source material, the whole span is source. That rule
+is monotone, so it is interleaved with the two dependency fixpoints and
+converges; after convergence **0** spans straddle a tier and **0** straddle a
+destination.
+
+Correcting this moved 248 declarations relative to the first manifest, of which
+39 moved from a reusable tier into `Source/Higham/Chapter20` precisely because a
+structure's projections forced their span up. The remaining 209 are within-tier
+consolidations.
+
+An independent cross-check confirms the result: for all **5,129** declarations,
+the source line Lean records for the declaration falls inside the span this
+lane assigned it, and the spans tile every historical file — no source line is
+dropped and none is duplicated, verified across all 42 files.
+
+### 4.4 Frozen historical owners
 
 All 42 pristine historical sources were copied to the external, non-repository
 directory `PACKET_ROOT/runtime/frozen-owners`. Each row of
 `frozen-owners/frozen-owners.tsv` records the module, repository path, Git blob
 ID re-verified against the frozen base, source SHA-256, physical and non-blank
-line counts, and the compiled `.ilean` SHA-256 and size once built. Manifest
-SHA-256: `D86A3497E5F03F1D42025A86AA0CF8DD223F150032F2F39D31C96DEF38881FEB`.
+line counts, and the compiled `.ilean` SHA-256 and size. Manifest SHA-256:
+`99DA51FDBEC5858378A1A2B72DC4BA523E807CF70F87DBBDBEA15EBA8FC97ACF`.
+
+41 of the 42 owners have a frozen `.ilean`. `Higham20SourceAliases` has none
+because no production module imports it — only the isolated historical import
+test `NumStabilityTest.Import.Compatibility.Source.Chapter20.AlgorithmsHigham20SourceAliases`
+does, so `lake build NumStability` never builds it. It owns zero declarations
+and therefore needs no span data; it is a structural compatibility wrapper.
+
+### 4.5 Base build
+
+`lake build NumStability` at the frozen base completed successfully under the
+shared build lock: 4,845 jobs, exit code 0, 944 modules with `.olean`/`.ilean`
+output. Only pre-existing Mathlib-style linter warnings were emitted, none in a
+lane-owned file. This is the "before edits" gate of `ACCEPTANCE_GATES.md` and
+the reference point for every later graph comparison.
 
 ## 5. Compatibility policy
 
@@ -388,7 +448,7 @@ any sole remaining registration delta as an exact proposed patch in
 | `tools/architecture/check_lsq_ch20_ownership.py` | lane checker, pre/stage/post modes plus self-test |
 | `docs/architecture/declaration-ownership/lsq-ch20-routes.tsv` | 5,129 reviewed `exact` routes |
 | `docs/architecture/declaration-ownership/lsq-ch20-ownership.tsv` | generated ownership manifest, 5,129 rows |
-| `docs/architecture/declaration-ownership/lsq-ch20-tiers.tsv` | 81 proposed module tiers (44 source, 35 reusable, 2 compatibility) |
+| `docs/architecture/declaration-ownership/lsq-ch20-tiers.tsv` | 78 proposed module tiers (44 source, 32 reusable, 2 compatibility) |
 | `docs/architecture/declaration-ownership/lsq-ch20-private-rewrites.tsv` | 151 reviewed private-name rewrites |
 | `docs/architecture/migrations/worker-lsq-ch20-migration.md` | this contract |
 
@@ -408,8 +468,8 @@ python tools/architecture/check_lsq_ch20_ownership.py --mode pre \
   --manifest docs/architecture/declaration-ownership/lsq-ch20-ownership.tsv \
   --tiers docs/architecture/declaration-ownership/lsq-ch20-tiers.tsv \
   --skip-cross-lane --project-root .
--> pre mode passed: 5129 declarations, 75 destinations, 266 owner edges,
-   manifest sha256 B819660510BC89BFEFC75863609F0E2D8938600E97ACB20BC0DE6331ECB8EE4C
+-> pre mode passed: 5129 declarations, 72 destinations, 244 owner edges,
+   manifest sha256 288CA74AD3534B6B7E39D38B11BDF831738643392F4C13A4C898BA0309722D63
 ```
 
 `--skip-cross-lane` is used in `pre` mode only, because at the frozen base the
@@ -419,8 +479,7 @@ frozen QR imports. The cross-lane contract is enforced unconditionally in
 
 ## 9. Remaining lane work
 
-1. Finish the base `lake build NumStability` under the shared lock and complete
-   the `.ilean` column of the frozen-owner manifest (6 of 42 present so far).
+1. ~~Base `lake build NumStability` and the `.ilean` freeze~~ — done, see §4.5.
 2. Wave group 1 — `LSQRSolve` and `LSPerturbation`.
 3. Wave group 2 — the normal-equations family.
 4. Wave group 3 — `LSE`, GQR and KKT, with the seven frozen QR imports retained
