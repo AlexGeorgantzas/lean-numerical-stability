@@ -308,7 +308,6 @@
       "NumStability.Algorithms.LeastSquares.Higham20Lemma20_12",
       "NumStability.Algorithms.LeastSquares.Higham20NormalEquationsNorms",
       "NumStability.Algorithms.LeastSquares.Higham20WeightedLimit",
-      "NumStability.Algorithms.LeastSquares.LSE",
       "NumStability.Algorithms.MMatrix",
       "NumStability.Algorithms.MatMul",
       "NumStability.Algorithms.MatVec",
