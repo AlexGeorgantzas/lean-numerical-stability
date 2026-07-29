@@ -5,8 +5,10 @@ This tool is intentionally a *preparation* tool.  It reads the immutable
 pre-migration ``BlockLU.lean`` blob and its matching Lean information file,
 checks the reviewed format-2 ownership contract, and emits a command ledger.
 With ``--output-dir`` it can additionally create 66 non-collision source-leaf
-drafts in a new, explicitly supplied directory outside the repository.  It
-never edits or overwrites a repository file.
+drafts and two complete, deterministic collision shells in a new, explicitly
+supplied directory outside the repository.  Source-ordered collision fragments
+remain available as forensic evidence.  The tool never edits or overwrites a
+repository file.
 
 The three commands that used private recursive-factorization helpers need
 reviewed post-RecursiveFactorization replacements.  Draft generation therefore
@@ -183,6 +185,9 @@ COLLISIONS = {
             "higham13_eq13_25_implementation1_spd_family_from_"
             "partitioned_computation",
         ),
+        "integrated_sha256": (
+            "382A28099BC10BA1A104914F1FD42AF21639A40E87A715742E74DD4B534E1F8A"
+        ),
     },
     "NumStability.Source.Higham.Chapter13.Table01": {
         "path": "NumStability/Source/Higham/Chapter13/Table01.lean",
@@ -202,6 +207,19 @@ COLLISIONS = {
             "higham13_table13_1_spd_product_family_from_eq13_24_source_norms",
             "higham13_table13_1_implementation1_family_from_"
             "partitioned_computation_and_product_transfer",
+        ),
+        "remove_imports": (
+            "NumStability.Algorithms.LU.BlockLUSPDFamilies",
+        ),
+        "prelude_after": (
+            "/-! ## Product transfers derived from the source row data -/"
+        ),
+        "prelude_roots": (
+            "NumStability.higham13_col_bdd_stability_bound",
+            "NumStability.block_lu_stability_point_diagDom_col",
+        ),
+        "integrated_sha256": (
+            "E8064399E0DEACDAE65991CE9AC644E20EE6824527A69128C62025CC95A13432"
         ),
     },
 }
@@ -1240,36 +1258,212 @@ def owner_imports(
     return {owner: tuple(sorted(imports)) for owner, imports in result.items()}
 
 
+def collision_base_payload(
+    baseline_repo: Path, owner: str, recipe: dict[str, object]
+) -> bytes:
+    relative = str(recipe["path"])
+    base_blob = str(
+        run_git(baseline_repo, "rev-parse", f"{BASE_REVISION}:{relative}")
+    ).strip()
+    if base_blob != recipe["blob"]:
+        raise ValueError(
+            f"{owner}: collision base blob differs: expected {recipe['blob']}, "
+            f"found {base_blob}"
+        )
+    payload = run_git(
+        baseline_repo, "cat-file", "blob", str(recipe["blob"]), text=False
+    )
+    assert isinstance(payload, bytes)
+    if git_blob_sha1(payload) != recipe["blob"]:
+        raise ValueError(f"{owner}: collision base payload has the wrong git blob")
+    digest = sha256_bytes(payload)
+    if digest != recipe["sha256"]:
+        raise ValueError(
+            f"{owner}: collision base SHA-256 differs: expected {recipe['sha256']}, "
+            f"found {digest}"
+        )
+    return payload
+
+
+def split_collision_imports(payload: bytes, owner: str) -> tuple[tuple[str, ...], str]:
+    text = payload.decode("utf-8")
+    if "\r" in text:
+        raise ValueError(f"{owner}: collision base is not LF-only")
+    imports: list[str] = []
+    offset = 0
+    for line in text.splitlines(keepends=True):
+        if not line.startswith("import "):
+            break
+        if not line.endswith("\n"):
+            raise ValueError(f"{owner}: unterminated collision import line")
+        module = line.removeprefix("import ").removesuffix("\n")
+        if module.strip() != module or not MODULE_NAME.fullmatch(module):
+            raise ValueError(f"{owner}: malformed collision import {module!r}")
+        imports.append(module)
+        offset += len(line)
+    if not imports:
+        raise ValueError(f"{owner}: collision base has no leading imports")
+    if len(imports) != len(set(imports)):
+        raise ValueError(f"{owner}: collision base has duplicate imports")
+    suffix = text[offset:]
+    if not suffix.startswith("\n"):
+        raise ValueError(f"{owner}: collision import block lacks a blank line")
+    return tuple(imports), suffix
+
+
+def collision_final_imports(
+    base_payload: bytes,
+    owner: str,
+    recipe: dict[str, object],
+    imports: tuple[str, ...],
+    mathlib_imports: tuple[str, ...],
+) -> tuple[str, ...]:
+    base_imports, _ = split_collision_imports(base_payload, owner)
+    removals = tuple(str(item) for item in recipe.get("remove_imports", ()))
+    if len(removals) != len(set(removals)):
+        raise ValueError(f"{owner}: duplicate reviewed import removal")
+    unknown = sorted(set(removals) - set(base_imports))
+    if unknown:
+        raise ValueError(
+            f"{owner}: removed imports are absent from pinned shell: {unknown}"
+        )
+    required = set(imports) | set(mathlib_imports)
+    required_removals = sorted(required & set(removals))
+    if required_removals:
+        raise ValueError(
+            f"{owner}: reviewed import removals are still graph-required: "
+            f"{required_removals}"
+        )
+    final = (set(base_imports) - set(removals)) | required
+    return tuple(sorted(final, key=str.casefold))
+
+
+def partition_collision_payloads(
+    owner: str,
+    commands: list[CommandPayload],
+    prelude_roots: tuple[str, ...],
+) -> tuple[list[CommandPayload], list[CommandPayload]]:
+    command_roots = [payload.span.logical_root for payload in commands]
+    duplicates = sorted(
+        root for root, count in Counter(command_roots).items() if count > 1
+    )
+    if duplicates:
+        raise ValueError(f"{owner}: duplicate collision command roots: {duplicates}")
+    if len(prelude_roots) != len(set(prelude_roots)):
+        raise ValueError(f"{owner}: duplicate collision prelude roots")
+    by_root = {payload.span.logical_root: payload for payload in commands}
+    missing = sorted(set(prelude_roots) - set(by_root))
+    if missing:
+        raise ValueError(f"{owner}: collision prelude roots are missing: {missing}")
+    prelude = [by_root[root] for root in prelude_roots]
+    prelude_set = set(prelude_roots)
+    tail = [
+        payload
+        for payload in commands
+        if payload.span.logical_root not in prelude_set
+    ]
+    partitioned_roots = [payload.span.logical_root for payload in prelude + tail]
+    if Counter(partitioned_roots) != Counter(command_roots):
+        raise ValueError(f"{owner}: collision payload partition changed the root set")
+    return prelude, tail
+
+
+def render_collision_shell(
+    owner: str,
+    recipe: dict[str, object],
+    base_payload: bytes,
+    commands: list[CommandPayload],
+    imports: tuple[str, ...],
+    mathlib_imports: tuple[str, ...],
+    overlays: dict[str, str],
+) -> bytes:
+    _, suffix = split_collision_imports(base_payload, owner)
+    final_imports = collision_final_imports(
+        base_payload, owner, recipe, imports, mathlib_imports
+    )
+    rendered = "".join(f"import {module}\n" for module in final_imports) + suffix
+
+    command_roots = {payload.span.logical_root for payload in commands}
+    collision_overlays = sorted(command_roots & set(overlays))
+    if collision_overlays:
+        raise ValueError(
+            f"{owner}: collision payload overlays would change frozen commands: "
+            f"{collision_overlays}"
+        )
+    prelude_roots = tuple(str(item) for item in recipe.get("prelude_roots", ()))
+    prelude, tail = partition_collision_payloads(owner, commands, prelude_roots)
+    anchor = recipe.get("prelude_after")
+    if prelude:
+        if not isinstance(anchor, str) or not anchor:
+            raise ValueError(f"{owner}: collision prelude has no insertion anchor")
+        if rendered.count(anchor) != 1:
+            raise ValueError(f"{owner}: collision prelude anchor is not unique")
+        insertion = rendered.index(anchor) + len(anchor)
+        rendered = (
+            rendered[:insertion]
+            + rendered_owner_payload(prelude, overlays)
+            + rendered[insertion:]
+        )
+    elif anchor is not None:
+        raise ValueError(f"{owner}: collision prelude anchor has no prelude roots")
+
+    close = "end NumStability\n"
+    if rendered.count(close) != 1 or not rendered.endswith(close):
+        raise ValueError(
+            f"{owner}: collision shell has no unique final namespace close"
+        )
+    tail_fragment = rendered_owner_payload(tail, overlays)
+    if tail_fragment and not tail_fragment.endswith("\n"):
+        tail_fragment += "\n"
+    close_offset = len(rendered) - len(close)
+    rendered = rendered[:close_offset] + tail_fragment + rendered[close_offset:]
+    payload = rendered.encode("utf-8")
+    expected = recipe.get("integrated_sha256")
+    if expected is not None and sha256_bytes(payload) != expected:
+        raise ValueError(
+            f"{owner}: integrated collision SHA-256 differs: expected {expected}, "
+            f"found {sha256_bytes(payload)}"
+        )
+    return payload
+
+
 def validate_collision_recipes(
     project_root: Path,
     baseline_repo: Path,
     owner_payloads: dict[str, list[CommandPayload]],
     manifest: dict[str, ManifestRow],
+    imports: dict[str, tuple[str, ...]],
+    mathlib_imports: tuple[str, ...],
+    overlays: dict[str, str],
 ) -> None:
     for owner, recipe in COLLISIONS.items():
-        relative = str(recipe["path"])
-        base_blob = str(
-            run_git(baseline_repo, "rev-parse", f"{BASE_REVISION}:{relative}")
-        ).strip()
-        if base_blob != recipe["blob"]:
+        base_payload = collision_base_payload(baseline_repo, owner, recipe)
+        mapped_commands = owner_payloads.get(owner, [])
+        if len(mapped_commands) != recipe["mapped_commands"]:
             raise ValueError(
-                f"{owner}: collision base blob differs: expected {recipe['blob']}, "
-                f"found {base_blob}"
+                f"{owner}: expected {recipe['mapped_commands']} mapped commands, "
+                f"found {len(mapped_commands)}"
             )
-        path = project_root / relative
-        payload = path.read_bytes()
-        if git_blob_sha1(payload) != recipe["blob"]:
-            raise ValueError(f"{owner}: current collision file differs from pinned blob")
-        digest = sha256_bytes(payload)
-        if digest != recipe["sha256"]:
+        integrated = render_collision_shell(
+            owner,
+            recipe,
+            base_payload,
+            mapped_commands,
+            imports[owner],
+            mathlib_imports,
+            overlays,
+        )
+        relative = str(recipe["path"])
+        payload = (project_root / relative).read_bytes()
+        if payload not in (base_payload, integrated):
             raise ValueError(
-                f"{owner}: collision SHA-256 differs: expected {recipe['sha256']}, "
-                f"found {digest}"
+                f"{owner}: current collision file differs from both the pinned "
+                f"shell and deterministic integrated shell; found {sha256_bytes(payload)}"
             )
         text = payload.decode("utf-8")
         apis = tuple(recipe["apis"])
         for api in apis:
-            if not re.search(rf"\b{re.escape(api)}\b", text):
+            if not re.search(rf"\b{re.escape(str(api))}\b", text):
                 raise ValueError(f"{owner}: existing API {api} is missing")
         mapped = [
             row for row in manifest.values() if row.destination_module == owner
@@ -1278,12 +1472,6 @@ def validate_collision_recipes(
             raise ValueError(
                 f"{owner}: expected {recipe['mapped_declarations']} mapped "
                 f"declarations, found {len(mapped)}"
-            )
-        mapped_commands = owner_payloads.get(owner, [])
-        if len(mapped_commands) != recipe["mapped_commands"]:
-            raise ValueError(
-                f"{owner}: expected {recipe['mapped_commands']} mapped commands, "
-                f"found {len(mapped_commands)}"
             )
 
 
@@ -1342,19 +1530,35 @@ def module_draft(
 
 
 def collision_recipe_bytes(
+    baseline_repo: Path,
     owner_payloads: dict[str, list[CommandPayload]],
     imports: dict[str, tuple[str, ...]],
+    mathlib_imports: tuple[str, ...],
     overlays: dict[str, str],
 ) -> bytes:
     lines = [
-        "format\t1",
+        "format\t2",
         "module\trepository_path\texisting_blob\texisting_sha256\t"
         "existing_api_count\tmapped_commands\tmapped_declarations\t"
-        "payload_sha256\trequired_imports\tmerge_action",
+        "payload_sha256\trequired_imports\tfinal_imports\tremoved_imports\t"
+        "prelude_after\tprelude_roots\tintegrated_sha256\tmerge_action",
     ]
     for owner in sorted(COLLISIONS):
         recipe = COLLISIONS[owner]
         payload = rendered_owner_payload(owner_payloads[owner], overlays)
+        base_payload = collision_base_payload(baseline_repo, owner, recipe)
+        final_imports = collision_final_imports(
+            base_payload, owner, recipe, imports[owner], mathlib_imports
+        )
+        integrated = render_collision_shell(
+            owner,
+            recipe,
+            base_payload,
+            owner_payloads[owner],
+            imports[owner],
+            mathlib_imports,
+            overlays,
+        )
         lines.append(
             "\t".join(
                 (
@@ -1367,8 +1571,18 @@ def collision_recipe_bytes(
                     str(recipe["mapped_declarations"]),
                     sha256_bytes(payload.encode("utf-8")),
                     ",".join(imports[owner]),
-                    "preserve pinned file and APIs; add required imports; insert "
-                    "fragment immediately before final end NumStability",
+                    ",".join(final_imports),
+                    ",".join(
+                        str(item) for item in recipe.get("remove_imports", ())
+                    ),
+                    str(recipe.get("prelude_after", "")),
+                    ",".join(
+                        str(item) for item in recipe.get("prelude_roots", ())
+                    ),
+                    sha256_bytes(integrated),
+                    "render pinned shell; apply reviewed import set; insert "
+                    "configured dependency prelude; append remaining source-ordered "
+                    "payload immediately before final end NumStability",
                 )
             )
         )
@@ -1450,8 +1664,24 @@ def write_output(
     write_new(output / "project-import-witnesses.tsv", witnesses)
     write_new(
         output / "collision-recipes.tsv",
-        collision_recipe_bytes(owner_payloads, imports, overlays),
+        collision_recipe_bytes(
+            baseline_repo, owner_payloads, imports, mathlib_imports, overlays
+        ),
     )
+    collision_shell_dir = output / "collision-shells"
+    for owner in sorted(COLLISIONS):
+        recipe = COLLISIONS[owner]
+        base_payload = collision_base_payload(baseline_repo, owner, recipe)
+        rendered = render_collision_shell(
+            owner,
+            recipe,
+            base_payload,
+            owner_payloads[owner],
+            imports[owner],
+            mathlib_imports,
+            overlays,
+        )
+        write_new(collision_shell_dir / str(recipe["path"]), rendered)
     collision_dir = output / "collision-fragments"
     for owner in sorted(COLLISIONS):
         fragment = rendered_owner_payload(owner_payloads[owner], overlays)
@@ -1505,6 +1735,121 @@ def run_self_test() -> None:
         "_private.NumStability.Algorithms.LU.BlockLU.7.NumStability.helper",
         BLOCKLU_MODULE,
     ) == "_private.<module>.NumStability.helper"
+
+    collision_owner = "NumStability.Source.Higham.Chapter13.SyntheticCollision"
+
+    def synthetic_payload(root: str, label: str) -> CommandPayload:
+        span = CommandSpan(
+            root=root,
+            logical_root=root,
+            start_line=0,
+            start_column=0,
+            end_line=0,
+            end_column=0,
+            start_offset=0,
+            end_offset=0,
+            owner=collision_owner,
+            declarations=(root,),
+            private_declarations=0,
+        )
+        return CommandPayload(
+            span=span,
+            leading_trivia="\n\n",
+            command=(
+                f"/-- {label}. -/\n"
+                f"theorem {label.lower()} : True := by\n"
+                "  trivial\n"
+            ),
+            trailing_trivia="",
+        )
+
+    tail_command = synthetic_payload("NumStability.synthetic_tail", "Tail")
+    prelude_command = synthetic_payload("NumStability.synthetic_prelude", "Prelude")
+    synthetic_commands = [tail_command, prelude_command]
+    synthetic_recipe: dict[str, object] = {
+        "remove_imports": ("A.Drop",),
+        "prelude_after": "/-! anchor -/",
+        "prelude_roots": ("NumStability.synthetic_prelude",),
+    }
+    synthetic_base = (
+        "import Z.Base\n"
+        "import A.Drop\n"
+        "\n"
+        "namespace NumStability\n"
+        "\n"
+        "/-! anchor -/\n"
+        "\n"
+        "/-- Existing. -/\n"
+        "theorem existing : True := by\n"
+        "  trivial\n"
+        "\n"
+        "end NumStability\n"
+    ).encode("utf-8")
+    synthetic_rendered = render_collision_shell(
+        collision_owner,
+        synthetic_recipe,
+        synthetic_base,
+        synthetic_commands,
+        ("B.Required",),
+        ("Mathlib.Test",),
+        {},
+    )
+    synthetic_expected = (
+        "import B.Required\n"
+        "import Mathlib.Test\n"
+        "import Z.Base\n"
+        "\n"
+        "namespace NumStability\n"
+        "\n"
+        "/-! anchor -/\n"
+        "\n"
+        "/-- Prelude. -/\n"
+        "theorem prelude : True := by\n"
+        "  trivial\n"
+        "\n"
+        "\n"
+        "/-- Existing. -/\n"
+        "theorem existing : True := by\n"
+        "  trivial\n"
+        "\n"
+        "\n"
+        "\n"
+        "/-- Tail. -/\n"
+        "theorem tail : True := by\n"
+        "  trivial\n"
+        "end NumStability\n"
+    ).encode("utf-8")
+    assert synthetic_rendered == synthetic_expected
+    assert b"import A.Drop\n" not in synthetic_rendered
+    prelude, tail = partition_collision_payloads(
+        collision_owner,
+        synthetic_commands,
+        ("NumStability.synthetic_prelude",),
+    )
+    assert Counter(
+        payload.span.logical_root for payload in prelude + tail
+    ) == Counter(payload.span.logical_root for payload in synthetic_commands)
+    for invalid_roots, diagnostic in (
+        (("NumStability.missing",), "missing"),
+        (
+            (
+                "NumStability.synthetic_prelude",
+                "NumStability.synthetic_prelude",
+            ),
+            "duplicate",
+        ),
+    ):
+        try:
+            partition_collision_payloads(
+                collision_owner, synthetic_commands, invalid_roots
+            )
+        except ValueError as error:
+            assert diagnostic in str(error)
+        else:
+            raise AssertionError(
+                f"collision prelude with {diagnostic} roots was accepted"
+            )
+
     with tempfile.TemporaryDirectory(prefix="phase12-source-prep-") as raw_temp:
         temp = Path(raw_temp)
         rows = ["format\t1"]
@@ -1640,13 +1985,18 @@ def main() -> int:
     owner_payloads = leaf_payloads(payloads, owners)
     imports = owner_imports(tsv_witnesses, owners)
     mathlib_imports = direct_mathlib_imports(ilean)
-    validate_collision_recipes(
-        project_root, baseline_repo, owner_payloads, manifest
-    )
-
     overlays: dict[str, str] = {}
     if args.overlay_manifest is not None:
         overlays = parse_overlay_manifest(args.overlay_manifest.resolve())
+    validate_collision_recipes(
+        project_root,
+        baseline_repo,
+        owner_payloads,
+        manifest,
+        imports,
+        mathlib_imports,
+        overlays,
+    )
     if args.output_dir is not None and not overlays:
         raise ValueError(
             "source draft generation requires --overlay-manifest for all three "
