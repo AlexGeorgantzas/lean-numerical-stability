@@ -1,4 +1,5 @@
 import NumStability.Algorithms.LeastSquares.Higham20EliminationActual
+import NumStability.Analysis.Perturbation.LeastSquares.Basic
 
 namespace NumStability
 
@@ -599,83 +600,9 @@ theorem exactBSeq_tail_le_phi_mul_pivotNorm {m n : ℕ}
           exactPivotTailNorm hn hmn A q.val)) kf
   exact (div_le_iff₀ hpivot).mp hratio
 
-/-- Scaled form of the scalar Cox--Higham `sqrt 2` lemma. -/
-lemma abs_two_div_mul_le_sqrt_two_mul_of_abs_le_phi_mul_sqrt_mul_sqrt
-    {S T inner phi : ℝ}
-    (hS : 0 ≤ S) (hT : 0 ≤ T) (hden : 2 * T ≤ S)
-    (hphi : 0 ≤ phi)
-    (hinner : |inner| ≤ phi * (Real.sqrt S * Real.sqrt T)) :
-    |(2 / S) * inner| ≤ Real.sqrt 2 * phi := by
-  by_cases hphi0 : phi = 0
-  · have hinner0 : inner = 0 := by
-      apply abs_eq_zero.mp
-      apply le_antisymm
-      · simpa [hphi0] using hinner
-      · exact abs_nonneg _
-    simp [hphi0, hinner0]
-  · have hphipos : 0 < phi := lt_of_le_of_ne hphi (Ne.symm hphi0)
-    have hscaled : |inner / phi| ≤ Real.sqrt S * Real.sqrt T := by
-      rw [abs_div, abs_of_pos hphipos, div_le_iff₀ hphipos]
-      simpa [mul_assoc, mul_left_comm, mul_comm] using hinner
-    have hcore : |(2 / S) * (inner / phi)| ≤ Real.sqrt 2 :=
-      abs_two_div_mul_le_sqrt_two_of_abs_le_sqrt_mul_sqrt
-        hS hT hden hscaled
-    have hin : inner = phi * (inner / phi) := by
-      field_simp [hphi0]
-    have hmul : (2 / S) * inner =
-        phi * ((2 / S) * (inner / phi)) := by
-      calc
-        (2 / S) * inner = (2 / S) * (phi * (inner / phi)) :=
-          congrArg (fun z : ℝ => (2 / S) * z) hin
-        _ = phi * ((2 / S) * (inner / phi)) := by ring
-    calc
-      |(2 / S) * inner| = phi * |(2 / S) * (inner / phi)| := by
-        rw [hmul]
-        rw [abs_mul, abs_of_pos hphipos]
-      _ ≤ phi * Real.sqrt 2 := mul_le_mul_of_nonneg_left hcore hphi
-      _ = Real.sqrt 2 * phi := by ring
 
-/-- A signed Householder update coefficient is at most `sqrt 2 * phi` when
-the transformed vector's active tail is at most `phi` times the pivot-column
-active norm.  This is the RHS analogue of Cox--Higham Lemma 2.1. -/
-theorem abs_householderBeta_mul_inner_trailingPart_le_sqrt_two_mul
-    (n : ℕ) (p : Fin n) (x y : Fin n → ℝ) (alpha phi : ℝ)
-    (halpha : alpha * alpha = householderTrailingNorm2Sq n p x)
-    (hsign : alpha * x p ≤ 0) (hphi : 0 ≤ phi)
-    (hy : vecNorm2 (householderTrailingPart n p y) ≤
-      phi * Real.sqrt (householderTrailingNorm2Sq n p x)) :
-    |householderBetaSpec n (householderTrailingActiveVector n p x alpha) *
-        (∑ i : Fin n,
-          householderTrailingActiveVector n p x alpha i *
-            householderTrailingPart n p y i)| ≤
-      Real.sqrt 2 * phi := by
-  let v := householderTrailingActiveVector n p x alpha
-  let yTail := householderTrailingPart n p y
-  let T := householderTrailingNorm2Sq n p x
-  let inner := ∑ i : Fin n, v i * yTail i
-  let S := ∑ i : Fin n, v i * v i
-  have hS_nonneg : 0 ≤ S := by
-    simpa [S, vecNorm2Sq, pow_two] using (vecNorm2Sq_nonneg v)
-  have hT_nonneg : 0 ≤ T := by
-    simpa [T, householderTrailingNorm2Sq] using
-      (vecNorm2Sq_nonneg (householderTrailingPart n p x))
-  have hden : 2 * T ≤ S := by
-    simpa [S, T, v] using
-      householderTrailingActiveVector_inner_self_ge_two_trailingNorm2Sq_of_mul_nonpos
-        n p x alpha halpha hsign
-  have hcs : |inner| ≤ Real.sqrt S * vecNorm2 yTail := by
-    simpa [inner, S, v, yTail, vecNorm2, vecNorm2Sq, pow_two] using
-      (abs_vecInnerProduct_le_vecNorm2_mul v yTail)
-  have hinner : |inner| ≤ phi * (Real.sqrt S * Real.sqrt T) := by
-    calc
-      |inner| ≤ Real.sqrt S * vecNorm2 yTail := hcs
-      _ ≤ Real.sqrt S * (phi * Real.sqrt T) :=
-        mul_le_mul_of_nonneg_left (by simpa [T, yTail] using hy)
-          (Real.sqrt_nonneg _)
-      _ = phi * (Real.sqrt S * Real.sqrt T) := by ring
-  simpa [householderBetaSpec, S, inner, v, yTail] using
-    abs_two_div_mul_le_sqrt_two_mul_of_abs_le_phi_mul_sqrt_mul_sqrt
-      hS_nonneg hT_nonneg hden hphi hinner
+
+
 
 /-- A Householder vector with zero prefix preserves the Euclidean norm of
 every suffix beginning no later than that prefix. -/

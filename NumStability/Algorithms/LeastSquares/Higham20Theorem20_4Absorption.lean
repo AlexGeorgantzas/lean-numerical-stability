@@ -1,4 +1,5 @@
 import NumStability.Algorithms.LeastSquares.Higham20Refinement
+import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 
 namespace NumStability
 
@@ -141,42 +142,13 @@ noncomputable def higham20Theorem20_4TotalLeftWitness {m : ℕ}
     c * G i j +
       (eta * K i j + eta * c * matMul m K G i j)
 
-private theorem higham20Theorem20_4_frobNorm_smul_nonneg {m : ℕ}
-    (a : ℝ) (M : Fin m → Fin m → ℝ) (ha : 0 ≤ a) :
-    frobNorm (fun i j => a * M i j) = a * frobNorm M := by
-  rw [← frobNormRect_eq_frobNormFn, frobNormRect_smul,
-    frobNormRect_eq_frobNormFn, abs_of_nonneg ha]
 
-private theorem higham20Theorem20_4_abs_matMulRectLeft_le {m n : ℕ}
-    (L : Fin m → Fin m → ℝ) (B : Fin m → Fin n → ℝ)
-    (i : Fin m) (j : Fin n) :
-    |matMulRectLeft L B i j| ≤
-      matMulRect m m n (fun r s => |L r s|) (fun r s => |B r s|) i j := by
-  unfold matMulRectLeft matMulRect
-  calc
-    |∑ k : Fin m, L i k * B k j| ≤
-        ∑ k : Fin m, |L i k * B k j| := Finset.abs_sum_le_sum_abs _ _
-    _ = ∑ k : Fin m, |L i k| * |B k j| := by simp [abs_mul]
 
-private theorem higham20Theorem20_4_matMulRect_mono_right {m n : ℕ}
-    (L : Fin m → Fin m → ℝ) (B C : Fin m → Fin n → ℝ)
-    (hL : ∀ i j, 0 ≤ L i j) (hBC : ∀ i j, B i j ≤ C i j)
-    (i : Fin m) (j : Fin n) :
-    matMulRect m m n L B i j ≤ matMulRect m m n L C i j := by
-  unfold matMulRect
-  apply Finset.sum_le_sum
-  intro k _hk
-  exact mul_le_mul_of_nonneg_left (hBC k j) (hL i k)
 
-private theorem higham20Theorem20_4_matMulRect_mono_left {m n : ℕ}
-    (L M : Fin m → Fin m → ℝ) (B : Fin m → Fin n → ℝ)
-    (hLM : ∀ i j, L i j ≤ M i j) (hB : ∀ i j, 0 ≤ B i j)
-    (i : Fin m) (j : Fin n) :
-    matMulRect m m n L B i j ≤ matMulRect m m n M B i j := by
-  unfold matMulRect
-  apply Finset.sum_le_sum
-  intro k _hk
-  exact mul_le_mul_of_nonneg_right (hLM i k) (hB k j)
+
+
+
+
 
 theorem higham20Theorem20_4OrthogonalAbsKernel_nonneg {m : ℕ}
     (Q : Fin m → Fin m → ℝ) :

@@ -6,21 +6,14 @@
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LeastSquares.Higham20Equations
+import NumStability.Algorithms.LinearSystems.LeastSquares.Refinement
+import NumStability.Analysis.Perturbation.LeastSquares.Basic
 
 namespace NumStability
 
 open scoped BigOperators
 
-/-- The exact componentwise defect majorant obtained by moving the two
-Theorem 20.4 matrix perturbations and the two right-hand-side perturbations
-back to the unperturbed augmented system. -/
-noncomputable def higham20Eq20_4CorrectionMajorant {m n : ℕ}
-    (E1 E2 : Fin m → Fin n → ℝ)
-    (Deltaf : Fin m → ℝ) (Deltag : Fin n → ℝ)
-    (rhat : Fin m → ℝ) (x : Fin n → ℝ) : Fin (m + n) → ℝ :=
-  Fin.append
-    (fun i => |Deltaf i| + ∑ j : Fin n, |E1 i j| * |x j|)
-    (fun j => |Deltag j| + ∑ i : Fin m, |E2 i j| * |rhat i|)
+
 
 theorem LSAsymmetricAugmentedSystem.unperturbed_defect_abs_le
     {m n : ℕ}
@@ -231,44 +224,17 @@ theorem higham20_eq20_16_of_asymmetric_perturbed_correction
 
 /-! ## Concrete Theorem 20.4 correction solve -/
 
-noncomputable def higham20Eq20_4Q {n k : ℕ} (fp : FPModel)
-    (A : Fin (n + k) → Fin n → ℝ) :
-    Fin (n + k) → Fin (n + k) → ℝ :=
-  fl_householderQRPanel_Q fp (n + k) n A
 
-noncomputable def higham20Eq20_4R {n k : ℕ} (fp : FPModel)
-    (A : Fin (n + k) → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  fun i j => fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) j
 
-noncomputable def higham20Eq20_4TransformedRhs {n k : ℕ} (fp : FPModel)
-    (A : Fin (n + k) → Fin n → ℝ) (f : Fin (n + k) → ℝ) :
-    Fin (n + k) → ℝ :=
-  fl_householderQRPanel_rhs fp (n + k) n A f
 
-noncomputable def higham20Eq20_4ForwardBlock {n k : ℕ} (fp : FPModel)
-    (A : Fin (n + k) → Fin n → ℝ) (g : Fin n → ℝ) :
-    Fin n → ℝ :=
-  fl_forwardSub fp n (matTranspose (higham20Eq20_4R fp A)) g
 
-/-- The actual solution block returned by the Householder-QR augmented solve
-of Theorem 20.4. -/
-noncomputable def higham20Eq20_4CorrectionSolution {n k : ℕ} (fp : FPModel)
-    (A : Fin (n + k) → Fin n → ℝ)
-    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ) : Fin n → ℝ :=
-  fl_backSub fp n (higham20Eq20_4R fp A)
-    (fun i : Fin n =>
-      higham20Eq20_4TransformedRhs fp A f (Fin.castAdd k i) -
-        higham20Eq20_4ForwardBlock fp A g i)
 
-/-- The actual residual block returned by the Householder-QR augmented solve
-of Theorem 20.4. -/
-noncomputable def higham20Eq20_4CorrectionResidual {n k : ℕ} (fp : FPModel)
-    (A : Fin (n + k) → Fin n → ℝ)
-    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ) : Fin (n + k) → ℝ :=
-  matMulVec (n + k) (higham20Eq20_4Q fp A)
-    (Fin.append (higham20Eq20_4ForwardBlock fp A g)
-      (fun i : Fin k =>
-        higham20Eq20_4TransformedRhs fp A f (Fin.natAdd n i)))
+
+
+
+
+
+
 
 /-- All small perturbations supplied by the concrete source-facing Theorem
 20.4 QR solve.  Keeping the normalized weight matrices and triangular-solve

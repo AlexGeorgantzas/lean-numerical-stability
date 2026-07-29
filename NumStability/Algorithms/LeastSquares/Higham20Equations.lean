@@ -8,6 +8,7 @@ import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LeastSquares.LSNormalEquations
 import NumStability.Algorithms.LeastSquares.LSQRSolve
 import NumStability.Source.Higham.Chapter12.IterativeRefinement
+import NumStability.Analysis.Perturbation.LeastSquares.Basic
 
 namespace NumStability
 
@@ -15,18 +16,9 @@ open scoped BigOperators
 
 /-! ## The explicit remainder replacing `O(u^2)` -/
 
-/-- The exact quadratic-and-higher part of `gamma fp k`.
 
-This is a rational expression, not asymptotic notation.  Under
-`gammaValid fp k`, `gamma fp k = k*u + higham20GammaRemainder fp k`. -/
-noncomputable def higham20GammaRemainder (fp : FPModel) (k : ℕ) : ℝ :=
-  (((k : ℝ) * fp.u) ^ 2) / (1 - (k : ℝ) * fp.u)
 
-theorem higham20_gamma_eq_linear_add_remainder (fp : FPModel) (k : ℕ)
-    (hk : gammaValid fp k) :
-    gamma fp k = (k : ℝ) * fp.u + higham20GammaRemainder fp k := by
-  simpa [higham20GammaRemainder] using
-    gamma_eq_linear_plus_quadratic_remainder fp k hk
+
 
 /-- The printed first-order coefficient in (20.13a). -/
 noncomputable def higham20Eq20_13aLeading
@@ -82,29 +74,7 @@ theorem higham20_eq20_13b_gamma_coefficient_exact
 
 /-! ## Equations (20.13a) and (20.13b) from the normal-equations analysis -/
 
-/-- Absorb the expanded Cholesky-solve coefficient used by
-`ls_normal_equations_backward` into `gamma_(3n+1)`. -/
-private theorem higham20_cholesky_coefficient_le_gamma_3n1
-    (fp : FPModel) (n : ℕ) (h3n1 : gammaValid fp (3 * n + 1)) :
-    gamma fp (n + 1) + 2 * gamma fp n + gamma fp n ^ 2 ≤
-      gamma fp (3 * n + 1) := by
-  have hn1 : gammaValid fp (n + 1) :=
-    gammaValid_mono fp (by omega) h3n1
-  have hstep1 :
-      gamma fp n + gamma fp n + gamma fp n * gamma fp n ≤
-        gamma fp (2 * n) := by
-    have h := gamma_sum_le fp n n (gammaValid_mono fp (by omega) h3n1)
-    simpa [show n + n = 2 * n by omega] using h
-  have hstep2 : gamma fp (n + 1) + gamma fp (2 * n) ≤
-      gamma fp (3 * n + 1) := by
-    have heq : (n + 1) + 2 * n = 3 * n + 1 := by omega
-    have h := gamma_sum_le fp (n + 1) (2 * n) (heq ▸ h3n1)
-    have hnn1 : 0 ≤ gamma fp (n + 1) := gamma_nonneg fp hn1
-    have hnn2 : 0 ≤ gamma fp (2 * n) :=
-      gamma_nonneg fp (gammaValid_mono fp (by omega) h3n1)
-    rw [heq] at h
-    linarith [mul_nonneg hnn1 hnn2]
-  nlinarith [hstep1, hstep2]
+
 
 /-- Equations (20.13a)-(20.13b), as a finite theorem built on the concrete
 normal-equations backward-error result.

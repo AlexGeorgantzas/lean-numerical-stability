@@ -1,5 +1,6 @@
 import NumStability.Algorithms.LeastSquares.Higham20AlternativeBound
 import NumStability.Algorithms.LeastSquares.Higham20Theorem20_3
+import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 
 namespace NumStability
 
@@ -625,16 +626,7 @@ theorem higham20_qr_norm_bounds_to_componentwise
   · intro i
     exact (abs_coord_le_vecNorm2 Deltab i).trans hb
 
-/-- Euclidean norm is bounded by the sum of coordinate absolute values. -/
-theorem higham20_vecNorm2_le_sum_abs {d : Nat} (v : Fin d → Real) :
-    vecNorm2 v ≤ ∑ i : Fin d, |v i| := by
-  have hsq : vecNorm2 v ^ 2 ≤ (∑ i : Fin d, |v i|) ^ 2 := by
-    rw [vecNorm2_sq]
-    exact vecNorm2Sq_le_sum_abs_sq v
-  have hv : 0 ≤ vecNorm2 v := vecNorm2_nonneg v
-  have hs : 0 ≤ ∑ i : Fin d, |v i| :=
-    Finset.sum_nonneg (fun i _ => abs_nonneg (v i))
-  nlinarith
+
 
 /-- The literal `e e^T |A|` majorant used in the source residual analysis. -/
 noncomputable def higham20QRSourceDenseMatrixMajorant {m n : Nat}
@@ -700,18 +692,7 @@ theorem higham20QRSourceDense_adjoint_residual_majorant_eq
   congr 1
   rw [Finset.mul_sum]
 
-/-- The repository's complex `L²` norm agrees with `vecNorm2` on embedded
-real vectors. -/
-theorem higham20_complexVecLpNorm_two_realVecToComplex_eq_vecNorm2
-    {d : Nat} (v : Fin d → Real) :
-    complexVecLpNorm (ENNReal.ofReal (2 : Real)) (realVecToComplex v) =
-      vecNorm2 v := by
-  calc
-    complexVecLpNorm (ENNReal.ofReal (2 : Real)) (realVecToComplex v) =
-        norm (WithLp.toLp (2 : ENNReal) (realVecToComplex v)) :=
-      complexVecLpNorm_two_eq_toLp (realVecToComplex v)
-    _ = norm (realVecToEuclidean v) := by rfl
-    _ = vecNorm2 v := realVecToEuclidean_norm v
+
 
 /-- Theorem 20.3's norm bounds imply the exact dense componentwise model
 `|DeltaA| <= eps e e^T |A|`,

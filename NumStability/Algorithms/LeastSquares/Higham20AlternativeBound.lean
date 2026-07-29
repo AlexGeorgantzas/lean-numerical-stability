@@ -2,6 +2,7 @@
 -- bounds following Higham's Theorem 20.2.
 
 import NumStability.Algorithms.LeastSquares.LSQRSolve
+import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 
 namespace NumStability
 
@@ -91,40 +92,11 @@ theorem higham20_alternative_bound_of_componentwise_fixed_point
   have hg_nonneg : 0 <= nu (realVecToComplex g) := hnu.nonneg _
   nlinarith
 
-/-- The entrywise-absolute inverse block displayed after Theorem 20.2:
-`[[|I-AA^+|, |A^+|^T], [|A^+|, |(A^T A)^-1|]]`. -/
-noncomputable def higham20AlternativeAbsInverseBlock {m n : Nat}
-    (A : Fin m -> Fin n -> Real) (Aplus : Fin n -> Fin m -> Real)
-    (gramInv : Fin n -> Fin n -> Real) :
-    Fin (m + n) -> Fin (m + n) -> Real :=
-  Fin.append
-    (fun i : Fin m =>
-      Fin.append
-        (fun k : Fin m => |lsAugmentedProjectionBlock A Aplus i k|)
-        (fun j : Fin n => |Aplus j i|))
-    (fun j : Fin n =>
-      Fin.append
-        (fun i : Fin m => |Aplus j i|)
-        (fun k : Fin n => |gramInv j k|))
 
-/-- The off-diagonal componentwise data block
-`[[0,E],[E^T,0]]` displayed after Theorem 20.2. -/
-noncomputable def higham20AlternativeOffDiagonalBlock {m n : Nat}
-    (E : Fin m -> Fin n -> Real) :
-    Fin (m + n) -> Fin (m + n) -> Real :=
-  Fin.append
-    (fun i : Fin m =>
-      Fin.append (fun _ : Fin m => 0) (fun j : Fin n => E i j))
-    (fun j : Fin n =>
-      Fin.append (fun i : Fin m => E i j) (fun _ : Fin n => 0))
 
-/-- The exact matrix product occurring inside the alternative-bound norm. -/
-noncomputable def higham20AlternativeCouplingMatrix {m n : Nat}
-    (A : Fin m -> Fin n -> Real) (Aplus : Fin n -> Fin m -> Real)
-    (gramInv : Fin n -> Fin n -> Real) (E : Fin m -> Fin n -> Real) :
-    Fin (m + n) -> Fin (m + n) -> Real :=
-  rectMatMul (higham20AlternativeAbsInverseBlock A Aplus gramInv)
-    (higham20AlternativeOffDiagonalBlock E)
+
+
+
 
 theorem higham20AlternativeAbsInverseBlock_mulVec {m n : Nat}
     (A : Fin m -> Fin n -> Real) (Aplus : Fin n -> Fin m -> Real)
@@ -144,19 +116,7 @@ theorem higham20AlternativeAbsInverseBlock_mulVec {m n : Nat}
       Fin.sum_univ_add, lsAugmentedEq20_8Majorant, absMatrixRect,
       absMatrix, matMulVec]
 
-theorem higham20AlternativeOffDiagonalBlock_mulVec {m n : Nat}
-    (E : Fin m -> Fin n -> Real) (u : Fin m -> Real) (v : Fin n -> Real) :
-    rectMatMulVec (higham20AlternativeOffDiagonalBlock E) (Fin.append u v) =
-      Fin.append (rectMatMulVec E v)
-        (fun j => Finset.univ.sum (fun i : Fin m => E i j * u i)) := by
-  ext k
-  refine Fin.addCases ?_ ?_ k
-  · intro i
-    simp [higham20AlternativeOffDiagonalBlock, rectMatMulVec,
-      Fin.sum_univ_add]
-  · intro j
-    simp [higham20AlternativeOffDiagonalBlock, rectMatMulVec,
-      Fin.sum_univ_add]
+
 
 /-- The unperturbed-data vector used by the alternative estimate:
 `[f + E|x|; E^T|r|]`. -/
@@ -176,43 +136,11 @@ noncomputable def higham20AlternativeSourceResponse {m n : Nat}
   rectMatMulVec (higham20AlternativeAbsInverseBlock A Aplus gramInv)
     (higham20AlternativeSourceData E f r x)
 
-theorem higham20AlternativeAbsInverseBlock_nonneg {m n : Nat}
-    (A : Fin m -> Fin n -> Real) (Aplus : Fin n -> Fin m -> Real)
-    (gramInv : Fin n -> Fin n -> Real) :
-    forall i j, 0 <= higham20AlternativeAbsInverseBlock A Aplus gramInv i j := by
-  intro i
-  refine Fin.addCases ?_ ?_ i
-  · intro ii j
-    refine Fin.addCases ?_ ?_ j <;> intro jj <;>
-      simp [higham20AlternativeAbsInverseBlock]
-  · intro ii j
-    refine Fin.addCases ?_ ?_ j <;> intro jj <;>
-      simp [higham20AlternativeAbsInverseBlock]
 
-theorem higham20AlternativeOffDiagonalBlock_nonneg {m n : Nat}
-    {E : Fin m -> Fin n -> Real} (hE : forall i j, 0 <= E i j) :
-    forall i j, 0 <= higham20AlternativeOffDiagonalBlock E i j := by
-  intro i
-  refine Fin.addCases ?_ ?_ i
-  · intro ii j
-    refine Fin.addCases ?_ ?_ j <;> intro jj
-    · simp [higham20AlternativeOffDiagonalBlock]
-    · simpa [higham20AlternativeOffDiagonalBlock] using hE ii jj
-  · intro ii j
-    refine Fin.addCases ?_ ?_ j <;> intro jj
-    · simpa [higham20AlternativeOffDiagonalBlock] using hE jj ii
-    · simp [higham20AlternativeOffDiagonalBlock]
 
-theorem higham20AlternativeCouplingMatrix_nonneg {m n : Nat}
-    (A : Fin m -> Fin n -> Real) (Aplus : Fin n -> Fin m -> Real)
-    (gramInv : Fin n -> Fin n -> Real)
-    {E : Fin m -> Fin n -> Real} (hE : forall i j, 0 <= E i j) :
-    forall i j, 0 <= higham20AlternativeCouplingMatrix A Aplus gramInv E i j := by
-  intro i j
-  unfold higham20AlternativeCouplingMatrix rectMatMul
-  exact Finset.sum_nonneg (fun k _ => mul_nonneg
-    (higham20AlternativeAbsInverseBlock_nonneg A Aplus gramInv i k)
-    (higham20AlternativeOffDiagonalBlock_nonneg hE k j))
+
+
+
 
 theorem higham20AlternativeSourceData_nonneg {m n : Nat}
     {E : Fin m -> Fin n -> Real} {f r : Fin m -> Real}
