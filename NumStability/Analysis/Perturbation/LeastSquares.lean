@@ -1,4 +1,5 @@
 import NumStability.Analysis.Perturbation.LeastSquares.Basic
+import NumStability.Analysis.Perturbation.LeastSquares.NormalEquations
 import NumStability.Analysis.Perturbation.LeastSquares.Wedin
 
 /-!
