@@ -1154,6 +1154,15 @@ Layout, compatibility, provenance, notice normalization, strict-source
 reproduction, checker self-tests, and `git diff --check` all pass without
 increasing a frozen debt set.
 
+The final clean-commit repeat used
+`b4994067e062a62d0fc72bd3906c987f9e819186`. From that exact revision the
+strict-source capture reported a clean production tree and reproduced the
+source digest above; every static gate passed again; the complete
+`NumStability`/`NumStabilityTest` build passed all 5,587 jobs; `lake test`
+passed its 5,585-job plan; the library-lookup consumer passed; and all eight
+axiom probes reproduced the accepted set. The tracked worktree and index were
+clean throughout this publication repeat.
+
 The reproducible PowerShell pre-edit check is below. `$phase12Source` names the
 clean Phase 12 source-cutover worktree whose dependency stream has the pinned
 size and digest above; its ten compiled historical sibling artifacts supply
