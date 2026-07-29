@@ -1001,6 +1001,125 @@ stage and post preserved the exact normalized contracted graph except for
 exactly the four reviewed inlined-private-helper body edges. A clean-commit
 repeat remains a mandatory completion gate before publication.
 
+## Phase 12 sibling pre-edit ownership contract
+
+The ten declaration-bearing Block LU siblings excluded from the original
+Phase 12 partition now have an independent pre-edit ownership contract. It is
+derived from the fresh format-2 dependency stream recorded above: exactly
+287 semantic declarations, comprising 260 public and 27 private declarations.
+The reviewed partition assigns 146 declarations to reusable modules and 141
+to source-owned Chapter 13 modules. Its 22 destination nodes form an acyclic
+graph with 22 destination-pair edges and 305 typed cross-destination edges
+(226 body and 79 signature edges).
+
+The unequal-block theory in `BlockLUVarying` is reusable rather than a source
+closure. Its 55 declarations are divided by dependency layer into
+`VaryingBlocks.Basic` (28), `VaryingBlocks.Algebra` (8),
+`VaryingBlocks.SchurComplement` (4),
+`VaryingBlocks.RecursiveFactorization` (6), and
+`VaryingBlocks.Uniqueness` (9). The historical module will become a
+declaration-free wrapper over a reusable `VaryingBlocks` umbrella; a separate
+declaration-free `Source.Higham.Chapter13.Theorem02.VaryingBlocks` locator
+will expose the same umbrella without owning declarations. The 36-declaration
+`BlockLUScalarGrowthBridge` remains one atomic source owner because public
+signatures depend on its private helpers.
+
+The route map uses frozen declaration roots from the matching `.ilean`
+artifacts, not mutable editor line numbers. Exact-name overrides route the six
+exceptional SPD declarations and the three reusable operator-two declarations.
+All 27 private identities have explicit old-to-candidate rewrites: 25 remain
+local to `Problem04.ScalarGrowthBridge`, while the two unequal-block helpers
+move together to `VaryingBlocks.Uniqueness`. The selected graph contains 126
+edges targeting private declarations, including all eleven public-signature
+edges, and no private target crosses a destination boundary.
+
+The checked-in artifacts are frozen as follows:
+
+- ownership manifest: SHA-256
+  `72D8658C8FAFF2E99276CF5AB9F0658A7089D9BB35BB1E749A00F30EDB606BA8`;
+- reviewed routes: SHA-256
+  `C81E89528999F8A9E4A04B16EA4F1D015BCDEA2B43681F0A9260601BD0627626`;
+- private rewrites: SHA-256
+  `240C4E2C897CB702F4508ABB7725D3FD661F7916F9DE75BACAD543AA8D4F2921`;
+- wrapper, reusable-umbrella, and source-locator structural contract: SHA-256
+  `77249431759AE98B8487941C997E5EC5EE6CDA4CEAC9EEE7D929C034B99DD3E8`;
+- immutable 143-pair parent structural snapshot: SHA-256
+  `E259772BA776EC0595600F6F1DD25FACC036ED247995B5AFA1B3C0EFD353769F`;
+- reviewed expanded Phase 12 structural contract: 170 pairs across 19 modules,
+  SHA-256
+  `06A59060BA12FAC096F4A78F286AA5B205251ACC86A15CDC6A99A91C4E09211B`.
+
+The expanded artifact is derived exactly from the separate immutable parent
+snapshot plus the 27 reviewed sibling additions. Pre mode additionally
+requires the live Phase 12 structural contract to equal that 143-pair snapshot.
+The reusable Block LU aggregate grows from 11 to 16 imports and the source
+Block LU surface from 69 to 82. The declaration-free `Problem04`, `Section01`,
+`Section03`, `Theorem02`, `Theorem05`, and `Theorem06` family aggregates each
+expose their new canonical children. At full-completion stage and post, the
+sibling checker instead requires the mutable live contract to equal the
+expanded artifact and invokes the exact structural validator across every one
+of its 19 modules and 170 direct-import pairs. Self-test and derivation checks
+read the immutable snapshot, so they remain valid after the live contract
+advances to its post state.
+
+The original Phase 12 source-post result remains frozen evidence at the parent
+checkpoint; it is not rerun after the sibling moves. That checker normalizes
+only its original 1,990-declaration selection and would correctly report the
+287 sibling owner/private changes as out-of-contract graph differences. The
+composed sibling post gate therefore owns the exact expanded structural check.
+
+All production consumers must also leave the ten historical sibling imports.
+`Equation25` retargets to `Equation25.Families`,
+`Section03.SPDFactorBounds`, `Theorem05.FamilyErrorAnalysis`, and
+`Theorem06.Computation`; `Table01` retargets to its own `Families` leaf plus
+the same Theorem 05 and Theorem 06 owners. `DemmelSharpMultiplier` imports
+the reusable `PositiveDefinite` leaf and `Lemma10.SchurComplement`, while the
+Chapter 19 WY closure imports `Analysis.FirstOrder.AsymptoticFamilies`
+directly. The broad `Algorithms` aggregate already imports the canonical
+reusable and source Block LU roots and drops its redundant historical sibling
+imports. `examples/LibraryLookup` already imports both canonical roots and
+drops its redundant SPD historical import. The post checker scans the complete
+root `NumStability.lean`, production tree, and example tree for any remaining
+historical sibling import and requires all of these exact replacements. In
+particular, `Table01` must not import `Equation25.Factorization`: the frozen
+body edge runs in the opposite direction, so that import would create a cycle.
+
+`check_blocklu_phase12_sibling_ownership.py` pins the dependency-stream size
+and SHA-256 and regenerates the manifest from the reviewed routes in pre mode.
+Stage and post modes require exact equality of the complete normalized
+declaration, signature, and body graph after owner/private-name normalization;
+this sibling wave has no reviewed edge-drop mechanism. Its negative self-test
+rejects destination-count drift, missing compatibility targets,
+reusable-to-source edges, destination cycles, missing or incorrect private
+rewrites, baseline identity drift, an incorrectly derived 170-pair contract,
+a root-module historical import, and any graph-edge drop. The pre check,
+self-test, and Python compilation passed before any production Lean file was
+moved. Lean/build validation is intentionally deferred to implementation.
+
+The reproducible PowerShell pre-edit check is below. `$phase12Source` names the
+clean Phase 12 source-cutover worktree whose dependency stream has the pinned
+size and digest above; its ten compiled historical sibling artifacts supply
+the declaration roots used by the reviewed line-range routes.
+
+```powershell
+$phase12Source = "C:/path/to/phase12-source-implementation"
+python tools/architecture/check_blocklu_phase12_sibling_ownership.py `
+  --mode pre `
+  --dependency-tsv "$phase12Source/benchmark-results/architecture/phase12-source-declarations-v2.tsv" `
+  --routes docs/architecture/declaration-ownership/blocklu-phase12-siblings-routes.tsv `
+  --expected-manifest-sha256 72D8658C8FAFF2E99276CF5AB9F0658A7089D9BB35BB1E749A00F30EDB606BA8 `
+  --ilean "NumStability.Algorithms.LU.BlockLUArbitraryNormSourceClosure=$phase12Source/.lake/build/lib/lean/NumStability/Algorithms/LU/BlockLUArbitraryNormSourceClosure.ilean" `
+  --ilean "NumStability.Algorithms.LU.BlockLUComputationSourceClosure=$phase12Source/.lake/build/lib/lean/NumStability/Algorithms/LU/BlockLUComputationSourceClosure.ilean" `
+  --ilean "NumStability.Algorithms.LU.BlockLUFirstOrderFamilies=$phase12Source/.lake/build/lib/lean/NumStability/Algorithms/LU/BlockLUFirstOrderFamilies.ilean" `
+  --ilean "NumStability.Algorithms.LU.BlockLUPointRowGrowthSourceClosure=$phase12Source/.lake/build/lib/lean/NumStability/Algorithms/LU/BlockLUPointRowGrowthSourceClosure.ilean" `
+  --ilean "NumStability.Algorithms.LU.BlockLURowSourceClosure=$phase12Source/.lake/build/lib/lean/NumStability/Algorithms/LU/BlockLURowSourceClosure.ilean" `
+  --ilean "NumStability.Algorithms.LU.BlockLUScalarGrowthBridge=$phase12Source/.lake/build/lib/lean/NumStability/Algorithms/LU/BlockLUScalarGrowthBridge.ilean" `
+  --ilean "NumStability.Algorithms.LU.BlockLUSPDFamilies=$phase12Source/.lake/build/lib/lean/NumStability/Algorithms/LU/BlockLUSPDFamilies.ilean" `
+  --ilean "NumStability.Algorithms.LU.BlockLUSPDSourceClosure=$phase12Source/.lake/build/lib/lean/NumStability/Algorithms/LU/BlockLUSPDSourceClosure.ilean" `
+  --ilean "NumStability.Algorithms.LU.BlockLUSourceClosure=$phase12Source/.lake/build/lib/lean/NumStability/Algorithms/LU/BlockLUSourceClosure.ilean" `
+  --ilean "NumStability.Algorithms.LU.BlockLUVarying=$phase12Source/.lake/build/lib/lean/NumStability/Algorithms/LU/BlockLUVarying.ilean"
+```
+
 ## Bounded exclusions and completion boundary
 
 This batch does not rename public declarations or namespaces, change
