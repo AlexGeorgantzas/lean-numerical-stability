@@ -8,5 +8,5 @@ the declarations checked below.
 -/
 
 #check @NumStability.normalEqCholeskyXHat
-#check @NumStability.normalEquationsCrossProductExampleA
-#check @NumStability.normalEquationsCrossProductExample_gram_eq
+#check @NumStability.RectLSNormalEquations
+#check @NumStability.lsAplusOfGramNonsingInv

@@ -7,4 +7,6 @@ Imports exactly one canonical module so no sibling import can supply
 the declarations checked below.
 -/
 
-#check @NumStability.LSAugmentedPerturbation
+#check @NumStability.ls_qr_forward_error
+#check @NumStability.qrStageHorizonBudget
+#check @NumStability.qrSolveFinalRhsBudget

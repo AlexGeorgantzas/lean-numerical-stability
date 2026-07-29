@@ -1,12 +1,16 @@
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.Analysis.Matrix.Spectrum
 import Mathlib.Data.Real.Basic
+import Mathlib.LinearAlgebra.Matrix.Rank
+import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.FinCases
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.Cholesky.CholeskySolve
 import NumStability.Algorithms.Cholesky.CholeskySpec
+import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
@@ -20,11 +24,12 @@ import NumStability.FloatingPoint.Model
 namespace NumStability
 
 open scoped BigOperators
+open scoped BigOperators Matrix.Norms.Frobenius
 
 /-!
 # NormalEquations
 
-Canonical reusable module extracted without change from LSNormalEquations.
+Canonical reusable module extracted without change from LSNormalEquations, LSQRSolve.
 -/
 
 /-- **Error in computing Ĉ = fl(AᵀA)** (Higham §20.4, eq before 20.11).
@@ -389,5 +394,129 @@ theorem ne_forward_error_kappa_squared
       ≤ kappa_gram * eps_backward := hForward
     _ ≤ kappa_A ^ 2 * eps_backward :=
         mul_le_mul_of_nonneg_right hGram hEps
+/-- Induced Gram perturbation from a rectangular data perturbation. -/
+noncomputable def rectLSGramPerturbation {m n : ℕ}
+    (A ΔA : Fin m → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun j k => rectLSGram (fun i l => A i l + ΔA i l) j k - rectLSGram A j k
+/-- Entrywise budget for the Gram perturbation induced by rectangular data
+    perturbations. -/
+noncomputable def rectLSGramPerturbationEntryBudget {m n : ℕ}
+    (A ΔA : Fin m → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun j k => ∑ i : Fin m,
+    (|A i j| * |ΔA i k| + |ΔA i j| * |A i k| + |ΔA i j| * |ΔA i k|)
+/-- Coarse Gram perturbation budget from a Frobenius-norm bound
+    `‖ΔA‖_F ≤ cA`. -/
+noncomputable def rectLSGramPerturbationNormBudget {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (cA : ℝ) : Fin n → Fin n → ℝ :=
+  fun j k => ∑ i : Fin m, (|A i j| * cA + cA * |A i k| + cA * cA)
+theorem rectLSGramPerturbationEntryBudget_nonneg {m n : ℕ}
+    (A ΔA : Fin m → Fin n → ℝ) :
+    ∀ j k : Fin n, 0 ≤ rectLSGramPerturbationEntryBudget A ΔA j k := by
+  intro j k
+  unfold rectLSGramPerturbationEntryBudget
+  apply Finset.sum_nonneg
+  intro i _
+  exact add_nonneg
+    (add_nonneg
+      (mul_nonneg (abs_nonneg _) (abs_nonneg _))
+      (mul_nonneg (abs_nonneg _) (abs_nonneg _)))
+    (mul_nonneg (abs_nonneg _) (abs_nonneg _))
+theorem rectLSGramPerturbationNormBudget_nonneg {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) {cA : ℝ} (hcA : 0 ≤ cA) :
+    ∀ j k : Fin n, 0 ≤ rectLSGramPerturbationNormBudget A cA j k := by
+  intro j k
+  unfold rectLSGramPerturbationNormBudget
+  apply Finset.sum_nonneg
+  intro i _
+  exact add_nonneg
+    (add_nonneg
+      (mul_nonneg (abs_nonneg _) hcA)
+      (mul_nonneg hcA (abs_nonneg _)))
+    (mul_nonneg hcA hcA)
+/-- Expansion of the induced rectangular Gram perturbation. -/
+theorem rectLSGramPerturbation_eq_sum {m n : ℕ}
+    (A ΔA : Fin m → Fin n → ℝ) (j k : Fin n) :
+    rectLSGramPerturbation A ΔA j k =
+      ∑ i : Fin m,
+        (A i j * ΔA i k + ΔA i j * A i k + ΔA i j * ΔA i k) := by
+  unfold rectLSGramPerturbation rectLSGram
+  rw [← Finset.sum_sub_distrib]
+  apply Finset.sum_congr rfl
+  intro i _
+  ring
+/-- The induced Gram perturbation is bounded entrywise by its exact
+    absolute-value expansion budget. -/
+theorem rectLSGramPerturbation_abs_le_entryBudget {m n : ℕ}
+    (A ΔA : Fin m → Fin n → ℝ) :
+    ∀ j k : Fin n,
+      |rectLSGramPerturbation A ΔA j k| ≤
+        rectLSGramPerturbationEntryBudget A ΔA j k := by
+  intro j k
+  rw [rectLSGramPerturbation_eq_sum]
+  unfold rectLSGramPerturbationEntryBudget
+  calc
+    |∑ i : Fin m,
+        (A i j * ΔA i k + ΔA i j * A i k + ΔA i j * ΔA i k)|
+        ≤ ∑ i : Fin m,
+            |A i j * ΔA i k + ΔA i j * A i k + ΔA i j * ΔA i k| := by
+          exact Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ i : Fin m,
+          (|A i j| * |ΔA i k| + |ΔA i j| * |A i k| +
+            |ΔA i j| * |ΔA i k|) := by
+        apply Finset.sum_le_sum
+        intro i _
+        calc
+          |A i j * ΔA i k + ΔA i j * A i k + ΔA i j * ΔA i k|
+              ≤ |A i j * ΔA i k| + |ΔA i j * A i k| +
+                  |ΔA i j * ΔA i k| := by
+                exact abs_add_three _ _ _
+          _ = |A i j| * |ΔA i k| + |ΔA i j| * |A i k| +
+                |ΔA i j| * |ΔA i k| := by
+                rw [abs_mul, abs_mul, abs_mul]
+/-- Frobenius-norm bound for the induced Gram perturbation from the exact
+    entrywise budget. -/
+theorem rectLSGramPerturbation_frobNorm_le_entryBudget {m n : ℕ}
+    (A ΔA : Fin m → Fin n → ℝ) :
+    frobNorm (rectLSGramPerturbation A ΔA) ≤
+      frobNorm (rectLSGramPerturbationEntryBudget A ΔA) := by
+  apply frobNorm_le_of_entry_abs_le
+  · exact rectLSGramPerturbationEntryBudget_nonneg A ΔA
+  · exact rectLSGramPerturbation_abs_le_entryBudget A ΔA
+/-- The induced Gram perturbation is bounded entrywise by the coarse
+    Frobenius-norm data-perturbation budget. -/
+theorem rectLSGramPerturbation_abs_le_normBudget {m n : ℕ}
+    (A ΔA : Fin m → Fin n → ℝ) {cA : ℝ}
+    (hΔA : frobNorm ΔA ≤ cA) :
+    ∀ j k : Fin n,
+      |rectLSGramPerturbation A ΔA j k| ≤
+        rectLSGramPerturbationNormBudget A cA j k := by
+  intro j k
+  have hentry := rectLSGramPerturbation_abs_le_entryBudget A ΔA j k
+  calc
+    |rectLSGramPerturbation A ΔA j k|
+        ≤ rectLSGramPerturbationEntryBudget A ΔA j k := hentry
+    _ ≤ rectLSGramPerturbationNormBudget A cA j k := by
+        unfold rectLSGramPerturbationEntryBudget rectLSGramPerturbationNormBudget
+        apply Finset.sum_le_sum
+        intro i _
+        have hΔAij : |ΔA i j| ≤ cA :=
+          (abs_entry_le_frobNorm ΔA i j).trans hΔA
+        have hΔAik : |ΔA i k| ≤ cA :=
+          (abs_entry_le_frobNorm ΔA i k).trans hΔA
+        exact add_le_add
+          (add_le_add
+            (mul_le_mul_of_nonneg_left hΔAik (abs_nonneg _))
+            (mul_le_mul_of_nonneg_right hΔAij (abs_nonneg _)))
+          (mul_le_mul hΔAij hΔAik (abs_nonneg _) (le_trans (abs_nonneg _) hΔAik))
+/-- Frobenius-norm bound for the induced Gram perturbation from a coarse
+    Frobenius-norm data-perturbation radius. -/
+theorem rectLSGramPerturbation_frobNorm_le_normBudget {m n : ℕ}
+    (A ΔA : Fin m → Fin n → ℝ) {cA : ℝ}
+    (hcA : 0 ≤ cA) (hΔA : frobNorm ΔA ≤ cA) :
+    frobNorm (rectLSGramPerturbation A ΔA) ≤
+      frobNorm (rectLSGramPerturbationNormBudget A cA) := by
+  apply frobNorm_le_of_entry_abs_le
+  · exact rectLSGramPerturbationNormBudget_nonneg A hcA
+  · exact rectLSGramPerturbation_abs_le_normBudget A ΔA hΔA
 
 end NumStability

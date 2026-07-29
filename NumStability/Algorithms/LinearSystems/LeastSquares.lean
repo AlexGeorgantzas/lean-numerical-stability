@@ -1,4 +1,11 @@
+import NumStability.Algorithms.LinearSystems.LeastSquares.AugmentedSystem
+import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
+import NumStability.Algorithms.LinearSystems.LeastSquares.GramBasis
+import NumStability.Algorithms.LinearSystems.LeastSquares.MGS
 import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
+import NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve
+import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
 
 /-!
 # Least squares

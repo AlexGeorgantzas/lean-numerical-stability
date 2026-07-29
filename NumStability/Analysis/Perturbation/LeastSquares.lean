@@ -1,5 +1,10 @@
+import NumStability.Analysis.Perturbation.LeastSquares.AugmentedSystem
+import NumStability.Analysis.Perturbation.LeastSquares.BackwardError
 import NumStability.Analysis.Perturbation.LeastSquares.Basic
+import NumStability.Analysis.Perturbation.LeastSquares.GramBasis
 import NumStability.Analysis.Perturbation.LeastSquares.NormalEquations
+import NumStability.Analysis.Perturbation.LeastSquares.Normwise
+import NumStability.Analysis.Perturbation.LeastSquares.Projection
 import NumStability.Analysis.Perturbation.LeastSquares.Wedin
 
 /-!
