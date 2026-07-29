@@ -15,9 +15,14 @@ was not modified.
 A subsequent soundness review tightened that repair without changing the
 ownership allocation or any production file. The semantic-stream gate is now
 scoped to the exact LS incident contract, so unrelated integrated BlockLU/QR
-module moves do not make post mode impossible, while every declaration row and
-typed edge touching an LS declaration remains exact. The review also made the
-4,224-row cross-lane base freeze deterministic in pre, stage, and post mode.
+module moves do not themselves make eventual post mode impossible, while every
+declaration row and typed edge touching an LS declaration remains exact. The
+review also made the 4,224-row cross-lane base freeze deterministic in pre,
+stage, and post mode.
+A second review closed two further trust-boundary gaps: selected historical
+and canonical owners now contain exactly the 5,129 contracted declarations,
+and QR placeholders cannot be resolved from file/import existence or an
+unreviewed path.
 
 This document is the reviewed lane contract required before any production
 move. It records the measured baseline, the frozen declaration selection, the
@@ -403,21 +408,31 @@ destination on every row and either the stable QR owner or an explicit
 The QR lane's canonical owner map is not available at this base. Therefore
 1,628 rows remain intentionally unresolved, representing 68 exact QR
 declarations and one import-only carrier. This is a hard post-mode failure, not
-a waiver: the integrator must fill those owners from the QR lane's generated
-ownership result. Once filled, post mode checks each QR declaration's actual
-owner, requires the normalized direct imports in both directions, and rejects
-all production imports of LS or Higham19 compatibility wrappers. The four QR
-reverse consumers therefore migrate to canonical LS destinations; they do not
-retain their historical LS imports.
+a waiver. Pre and stage require every placeholder and status to remain byte-for-
+byte unchanged unless the coordinator supplies both `--qr-handoff` and its
+separately reviewed `--qr-handoff-sha256`.
+
+That handoff has 69 exact identities. It records the QR delivery commit and
+ownership-artifact SHA-256, maps each historical QR declaration exactly once,
+and maps the import-only carrier by its complete frozen module pair. Its owner
+rows must equal the generated placeholder identity set with no missing or extra
+row. Post requires the handoff, requires all 1,628 rows resolved exactly as it
+specifies, checks each QR declaration's actual candidate owner, requires the
+normalized direct imports in both directions, and rejects all production
+imports of LS or Higham19 compatibility wrappers. File existence or a matching
+import is never accepted as evidence for the carrier. The four QR reverse
+consumers therefore migrate to canonical LS destinations; they do not retain
+their historical LS imports.
 
 In every checker mode, the complete artifact is regenerated from the
 SHA-pinned 56,898-declaration baseline plus the compiler-span route/ownership
 contract. The checker requires exactly 4,224 immutable base identities, 4,221
 typed edge rows, three import-only rows, and the exact LS destination on every
-row. An already-canonical QR owner is immutable. Only a
-`@QR_OWNER_REQUIRED:*` field and its status may change to a reviewed canonical
-QR owner; deleting a row, replacing an LS owner with another valid destination,
-or changing a stable QR owner is rejected before stage/post graph validation.
+row. An already-canonical QR owner is immutable. An
+`@QR_OWNER_REQUIRED:*` field and its status may change only to the exact owner
+in the hash-pinned handoff; deleting a row, replacing an LS owner with another
+valid destination, inventing a declaration owner or carrier, or changing a
+stable QR owner is rejected before stage/post graph validation.
 
 ## 6. Lane ownership checker
 
@@ -434,14 +449,17 @@ with `--mode pre`, `--mode stage`, `--mode post` and `--self-test`.
   candidate ownership, re-hashes every candidate source command, regenerates
   and verifies the full 4,224-row cross-lane freeze, requires exact normalized
   equality for every LS declaration and every typed edge incident to one, and
-  checks each completed destination's exact direct lane-DAG imports and each
-  completed wrapper/aggregate's exact imports. Declaration/module moves whose
-  endpoints are wholly outside the LS incident graph are deliberately ignored.
+  requires the exact declaration-name set in every LS historical/canonical
+  owner. It also checks each completed destination's exact direct lane-DAG
+  imports and each completed wrapper/aggregate's exact imports.
+  Declaration/module moves whose owners and edge endpoints are wholly outside
+  the LS contract are deliberately ignored.
 - `post` additionally requires all destinations complete, all 151 reviewed
-  private rewrites, every wrapper and aggregate, resolved canonical QR owners,
-  all coordinator imports/root tests/tier rows/compatibility rows, and proves
-  that no reusable destination transitively reaches a `Source.*`, `Higham.*`,
-  legacy least-squares, or `Analysis.HighamChapter7` module.
+  private rewrites, every wrapper and aggregate, the hash-pinned 69-identity QR
+  handoff, all placeholders resolved exactly from it, all coordinator
+  imports/root tests/tier rows/compatibility rows, and proves that no reusable
+  destination transitively reaches a `Source.*`, `Higham.*`, legacy
+  least-squares, or `Analysis.HighamChapter7` module.
 
 `--self-test` passes. It positively proves that an unrelated synthetic
 declaration may move from `Other.Old` to `Other.New` while its non-LS edge is
@@ -482,7 +500,13 @@ unchanged, and rejects each of these mutations:
 30. a truncated cross-lane normalization artifact;
 31. replacement of a frozen LS destination by a different destination that is
     otherwise valid for the same historical owner; and
-32. replacement of an already-canonical QR owner.
+32. replacement of an already-canonical QR owner;
+33. a QR placeholder resolution without a handoff or with a mismatched handoff
+    hash;
+34. a false QR declaration owner or import-only carrier despite a matching
+    file/import shape; and
+35. an edge-free public declaration added to a selected historical/canonical
+    owner.
 
 ## 7. Integrator requests
 
@@ -537,9 +561,11 @@ python tools/architecture/check_lsq_ch20_ownership.py --mode pre \
    288CA74AD3534B6B7E39D38B11BDF831738643392F4C13A4C898BA0309722D63
 ```
 
-There is no cross-lane skip option. Pre validates the exact base edges; post
-validates their fully canonical normalization and fails on every unresolved QR
-owner placeholder.
+There is no cross-lane skip option. Pre validates the exact base edges and,
+because no authoritative QR handoff is committed, all placeholders unchanged.
+Post is deliberately blocked until the QR lane supplies the 69-identity map and
+the coordinator separately records its SHA-256; it then validates the fully
+canonical normalization and fails on every unresolved or mismatched owner.
 
 ## 9. Remaining lane work
 
@@ -548,7 +574,7 @@ owner placeholder.
 3. Wave group 2 — the normal-equations family.
 4. Wave group 3 — `LSE`, GQR and KKT, with QR-dependent Chapter 20 tails in
    separate late commits and every QR import normalized through the resolved
-   cross-lane owner contract.
+   hash-pinned cross-lane handoff contract.
 5. Wave group 4 — every remaining Chapter 20 owner in dependency order.
 6. Wrappers, canonical and source aggregates, isolated canonical-only and
    old-only tests, then the full static, focused, downstream and global gates.
