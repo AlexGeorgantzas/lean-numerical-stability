@@ -747,3 +747,62 @@ All **12** axiom probes across the three waves report exactly
 
 The lane's completion definition cannot be reached from inside the lane's own
 scope until 13.1 and the two scheduled consumer retargets are resolved.
+
+## 15. Corrected blocker partition and critical path
+
+Section 14 assigned some owners to two categories at once. Assigning each
+unmigrated owner exactly one *primary* blocker gives a clean partition of all 41:
+
+| Primary blocker | Owners |
+| --- | --- |
+| Private cross-boundary defect (13.1) | 8 |
+| Ordering behind a blocked owner (13.3) | 28 |
+| Non-lane consumer retarget (13.2) | 1 |
+| Migrated | 4 |
+
+Owners **READY** to migrate right now: **0**.
+
+### The private-visibility defect is the critical path
+
+`LSQRSolve` is itself in the private-defect set, with **62** private-declaration
+uses crossing a destination boundary. It is therefore blocked by the contract
+defect independently of the `MatrixInversion` retarget. Because 28 further owners
+are ordered behind `LSQRSolve` and `LSE` (31 cross-boundary uses of its own), the
+consequence is:
+
+> Applying the two scheduled consumer retargets alone unblocks **no** owner.
+> Fixing private-declaration co-location in the ownership contract is the
+> critical path for **36** of the 41 owners.
+
+Full per-owner counts of cross-boundary private uses:
+
+| Owner | Uses |
+| --- | --- |
+| `LSQRSolve` | 62 |
+| `LSE` | 31 |
+| `Higham20Lemma20_11` | 11 |
+| `Higham20Theorem20_4Absorption` | 4 |
+| `Higham20Lemma20_12` | 2 |
+| `Higham20Theorem20_10` | 2 |
+| `Higham20Equations` | 1 |
+| `Higham20RowSorting` | 1 |
+
+Declaration-level evidence for the two owners that were actually attempted: the
+private declarations `singularValue_ne_zero_iff_le_rankIndex`,
+`pseudoinverse_output_mem_gramRange`, `leadSpan_eq_gramRange_of_rankIndex`,
+`rangeProjection_complex_action_le`, `gramRange_eq_adjointRange`,
+`domainProjection_fixes_adjointRange`,
+`higham20_lemma20_12_rangeProjection_idempotent` and
+`higham20_lemma20_12_rangeProjection_mul_complement_bound` are all routed to
+`…LeastSquares.Projection` while `Source.Higham.Chapter20.Lemma11` and
+`…Lemma12` use them.
+
+### Suggested contract amendment
+
+Add a co-location constraint to the route/ownership generator and to the lane
+checker: for every private declaration `p`, every declaration that uses `p` must
+share `p`'s destination. Equivalently, contract the declaration graph over
+private nodes before assigning destinations, so a private declaration and its
+users form one indivisible unit — the same treatment already given to a
+`structure` and its co-generated projections. This is checkable statically from
+the frozen format-2 stream and needs no build.
