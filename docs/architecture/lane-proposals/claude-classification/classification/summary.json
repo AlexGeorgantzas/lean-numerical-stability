@@ -1,0 +1,254 @@
+{
+  "changed_inventory_blobs_since_packet_base": [
+    {
+      "base_blob": "16c55f505385983fc9b10e426dc1b4e1040cd099",
+      "base_project_imports": [
+        "NumStability.Algorithms.Ch14Method1BWhole",
+        "NumStability.Algorithms.Ch14Method2CWhole",
+        "NumStability.Algorithms.LU.BlockLU"
+      ],
+      "head_blob": "09680f5d1000524225c0329d574cf5e62e100545",
+      "head_project_imports": [
+        "NumStability.Algorithms.Ch14Method1BWhole",
+        "NumStability.Algorithms.Ch14Method2CWhole",
+        "NumStability.Algorithms.LinearSystems.LU.BlockLU.FirstOrderModels",
+        "NumStability.Analysis.FirstOrder.FixedPrecision",
+        "NumStability.Analysis.MatrixNorms.EntrywiseMaximum"
+      ],
+      "module": "NumStability.Algorithms.Ch14Problem142",
+      "path": "NumStability/Algorithms/Ch14Problem142.lean"
+    },
+    {
+      "base_blob": "714585c4069df967e465ce4e1efd08c9f2302e6b",
+      "base_project_imports": [
+        "NumStability.Algorithms.HighamChapter8",
+        "NumStability.Algorithms.LU.GaussianElimination",
+        "NumStability.Algorithms.LU.LUSolve",
+        "NumStability.Algorithms.LU.GrowthFactor",
+        "NumStability.Algorithms.LU.BlockLU",
+        "NumStability.Algorithms.LU.Tridiagonal",
+        "NumStability.Algorithms.LU.TridiagonalRecurrence",
+        "NumStability.Algorithms.LU.SpecialMatrices",
+        "NumStability.Algorithms.LU.Doolittle",
+        "NumStability.Algorithms.LU.TridiagonalCond"
+      ],
+      "head_blob": "35f2078dcaed7444199e0cc6d23dfc5c59267470",
+      "head_project_imports": [
+        "NumStability.Algorithms.HighamChapter8",
+        "NumStability.Algorithms.LU.GaussianElimination",
+        "NumStability.Algorithms.LU.LUSolve",
+        "NumStability.Algorithms.LU.GrowthFactor",
+        "NumStability.Algorithms.LinearSystems.LU.BlockLU.BlockMatrices",
+        "NumStability.Algorithms.LinearSystems.LU.BlockLU.PositiveDefinite",
+        "NumStability.Analysis.FirstOrder.FixedPrecision",
+        "NumStability.Analysis.MatrixNorms.EntrywiseMaximum",
+        "NumStability.Algorithms.LU.Tridiagonal",
+        "NumStability.Algorithms.LU.TridiagonalRecurrence",
+        "NumStability.Algorithms.LU.SpecialMatrices",
+        "NumStability.Algorithms.LU.Doolittle",
+        "NumStability.Algorithms.LU.TridiagonalCond"
+      ],
+      "module": "NumStability.Algorithms.HighamChapter9",
+      "path": "NumStability/Algorithms/HighamChapter9.lean"
+    },
+    {
+      "base_blob": "22575f92f7a266dfeb2c85c25303bf46be8260d3",
+      "base_project_imports": [
+        "NumStability.FloatingPoint.Model",
+        "NumStability.Analysis.Rounding",
+        "NumStability.Analysis.RoundingProductBounds",
+        "NumStability.Analysis.ForwardError",
+        "NumStability.Analysis.MatrixAlgebra",
+        "NumStability.Algorithms.MatVec",
+        "NumStability.Algorithms.MatMul",
+        "NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution",
+        "NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution",
+        "NumStability.Algorithms.LU.GaussianElimination",
+        "NumStability.Algorithms.LU.LUSolve",
+        "NumStability.Algorithms.LU.GrowthFactor",
+        "NumStability.Algorithms.HighamChapter8",
+        "NumStability.Algorithms.HighamChapter9",
+        "NumStability.Algorithms.LeastSquares.LSPerturbation"
+      ],
+      "head_blob": "91dd01ea7be2aa4ac7a69f728fd6b6c9e8ab5dfd",
+      "head_project_imports": [
+        "NumStability.FloatingPoint.Model",
+        "NumStability.Analysis.Rounding",
+        "NumStability.Analysis.RoundingProductBounds",
+        "NumStability.Analysis.ForwardError",
+        "NumStability.Analysis.MatrixAlgebra",
+        "NumStability.Algorithms.MatVec",
+        "NumStability.Algorithms.MatMul",
+        "NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution",
+        "NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution",
+        "NumStability.Algorithms.LU.GaussianElimination",
+        "NumStability.Algorithms.LU.LUSolve",
+        "NumStability.Algorithms.LU.GrowthFactor",
+        "NumStability.Algorithms.HighamChapter8",
+        "NumStability.Algorithms.HighamChapter9",
+        "NumStability.Analysis.Perturbation.LeastSquares.Wedin"
+      ],
+      "module": "NumStability.Algorithms.MatrixInversion",
+      "path": "NumStability/Algorithms/MatrixInversion.lean"
+    },
+    {
+      "base_blob": "41754b827feb4c55fdfcec077ae05c97886e65ee",
+      "base_project_imports": [
+        "NumStability.Analysis.MatrixAlgebra",
+        "NumStability.Algorithms.Ch14Method2Loop",
+        "NumStability.Algorithms.LU.BlockLU",
+        "NumStability.Algorithms.MatMul",
+        "NumStability.Algorithms.MatrixInversion"
+      ],
+      "head_blob": "826109bcaf98b9f4787fb16bf993732c3e7bc0b8",
+      "head_project_imports": [
+        "NumStability.Analysis.MatrixAlgebra",
+        "NumStability.Algorithms.Ch14Method2Loop",
+        "NumStability.Algorithms.LinearSystems.LU.BlockLU.FirstOrderModels",
+        "NumStability.Analysis.FirstOrder.FixedPrecision",
+        "NumStability.Analysis.MatrixNorms.EntrywiseMaximum",
+        "NumStability.Source.Higham.Chapter13.Section01.OperationModels",
+        "NumStability.Algorithms.MatMul",
+        "NumStability.Algorithms.MatrixInversion"
+      ],
+      "module": "NumStability.Algorithms.MatrixInversionMethod2BInstance",
+      "path": "NumStability/Algorithms/MatrixInversionMethod2BInstance.lean"
+    },
+    {
+      "base_blob": "4c7a83beb97b26732db4951bd3b6f1aa853bc1f8",
+      "base_project_imports": [
+        "NumStability.Analysis.MatrixAlgebra",
+        "NumStability.Analysis.FiniteProbability",
+        "NumStability.Algorithms.LeastSquares.LSNormalEquations",
+        "NumStability.Algorithms.LeastSquares.LSQRSolve",
+        "NumStability.Algorithms.RandNLA.RowSamplingLeverage",
+        "NumStability.Algorithms.RandNLA.RowSamplingLeverageMGF"
+      ],
+      "head_blob": "eb25e270ace83b6515d0a9112928bf2be3e775b1",
+      "head_project_imports": [
+        "NumStability.Analysis.MatrixAlgebra",
+        "NumStability.Analysis.FiniteProbability",
+        "NumStability.Algorithms.LinearSystems.LeastSquares.Basic",
+        "NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations",
+        "NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR",
+        "NumStability.Analysis.Perturbation.LeastSquares.BackwardError",
+        "NumStability.Analysis.Perturbation.LeastSquares.Basic",
+        "NumStability.Analysis.Perturbation.LeastSquares.NormalEquations",
+        "NumStability.Source.Higham.Chapter20.Theorem03.QRSolve",
+        "NumStability.Algorithms.RandNLA.RowSamplingLeverage",
+        "NumStability.Algorithms.RandNLA.RowSamplingLeverageMGF"
+      ],
+      "module": "NumStability.Algorithms.RandNLA.LeastSquaresSketch",
+      "path": "NumStability/Algorithms/RandNLA/LeastSquaresSketch.lean"
+    },
+    {
+      "base_blob": "446b8df875feea3c149c564a144a1e90b208f51b",
+      "base_project_imports": [
+        "NumStability.Analysis.MatrixAlgebra",
+        "NumStability.Analysis.HighamChapter7",
+        "NumStability.Algorithms.MatrixPowers"
+      ],
+      "head_blob": "34c1d8e3a7511878e18449282e7928f467009272",
+      "head_project_imports": [
+        "NumStability.Analysis.MatrixAlgebra",
+        "NumStability.Analysis.HighamChapter7",
+        "NumStability.Algorithms.MatrixPowers"
+      ],
+      "module": "NumStability.Algorithms.StationaryIteration",
+      "path": "NumStability/Algorithms/StationaryIteration.lean"
+    }
+  ],
+  "confidence_counts": {
+    "high": 379,
+    "medium": 7
+  },
+  "cross_lane_refresh_rows": [
+    "NumStability.Algorithms.Ch14Problem142",
+    "NumStability.Algorithms.HighamChapter9",
+    "NumStability.Algorithms.MatrixInversion",
+    "NumStability.Algorithms.MatrixInversionMethod2BInstance",
+    "NumStability.Algorithms.RandNLA.LeastSquaresSketch",
+    "NumStability.Algorithms.StationaryIteration"
+  ],
+  "current_declaration_drift": [
+    {
+      "added_public": [
+        "stationaryDrazin_matPow_vec_split",
+        "stationaryDrazin_matPow_vec_tendsto_fixedProjector_of_range_tendsto_zero"
+      ],
+      "module": "NumStability.Algorithms.StationaryIteration",
+      "removed_public": []
+    }
+  ],
+  "extra_modules": [],
+  "format2_uncompressed_bytes": 115724349,
+  "frozen_inventory_base": "6487fc33088523b8f27ecde9ad613515b78f9977",
+  "hashes": {
+    "exclusions_sha256": "8CCBFA4191741B37BD3DD5748079A7505AF008A515077A25BABE9E23825B73C8",
+    "format2_uncompressed_sha256": "32ADA469E27A971E9B0BB972F29C51E1DCBE99104A1492D4C69549C339825563",
+    "input_modules_sha256": "C0B1C88F34461A44305D269C880F7581BDD7F1D9CC69CF9A144EA099C6A6DF54",
+    "modules_sha256": "C86D0C7D7A192CCE4FABA449BDDA76F303DBB3765FEEEF85C027DA5F9EDADAD5",
+    "packet_exclusions_sha256": "8CCBFA4191741B37BD3DD5748079A7505AF008A515077A25BABE9E23825B73C8",
+    "packet_input_modules_sha256": "C0B1C88F34461A44305D269C880F7581BDD7F1D9CC69CF9A144EA099C6A6DF54"
+  },
+  "input_modules": 386,
+  "missing_modules": [],
+  "proposal_rows": 386,
+  "public_declaration_count_basis": "packet format-2 baseline adjusted by source-level public declaration additions/removals through 6ecc4d5513226e67594bb22985913f6a4a383e5c",
+  "review_evidence_head": "6ecc4d5513226e67594bb22985913f6a4a383e5c",
+  "schema_version": 1,
+  "split_queue": [
+    "NumStability.Algorithms.Ch14AsymptoticFamilies",
+    "NumStability.Algorithms.Ch14ProductErrorNotation",
+    "NumStability.Algorithms.Cholesky.AasenAdjacentPivotOperationalMiddleCh11",
+    "NumStability.Algorithms.Cholesky.AasenAdjacentPivotTridiagExecutorCh11Closure",
+    "NumStability.Algorithms.Cholesky.AasenDirect118Ch11Closure",
+    "NumStability.Algorithms.Cholesky.AasenOriginalCoordinateCorrectionCh11",
+    "NumStability.Algorithms.Cholesky.AasenUnitOuterSolveCh11Closure",
+    "NumStability.Algorithms.Cholesky.BlockLDLTBunchTridiagonalCh11Closure",
+    "NumStability.Algorithms.Cholesky.BlockLDLTMixedPivotCh11Closure",
+    "NumStability.Algorithms.Cholesky.BlockLDLTSolveBackwardCh11Closure",
+    "NumStability.Algorithms.Cholesky.BunchTridiagonalActualSolveCh11Closure",
+    "NumStability.Algorithms.Cholesky.BunchTridiagonalHFactorCh11Closure",
+    "NumStability.Algorithms.Cholesky.TwoByTwoSchurStepCh11Closure",
+    "NumStability.Algorithms.HighamChapter10",
+    "NumStability.Algorithms.HighamChapter15BoydBridges",
+    "NumStability.Algorithms.HighamChapter15BoydConcreteLemma3",
+    "NumStability.Algorithms.HighamChapter15BoydLocalStability",
+    "NumStability.Algorithms.HighamChapter15BoydRowwiseDomain",
+    "NumStability.Algorithms.HighamChapter15BoydScalar",
+    "NumStability.Algorithms.HighamChapter15BoydSourceDomain",
+    "NumStability.Algorithms.HighamChapter15BoydSourceLocal",
+    "NumStability.Algorithms.HighamChapter15BoydSourceSecondDerivative",
+    "NumStability.Algorithms.HighamChapter15BoydUniqueness",
+    "NumStability.Algorithms.HighamChapter15ConvergenceProse",
+    "NumStability.Algorithms.HighamChapter15RectTermination",
+    "NumStability.Algorithms.HighamChapter5ComplexAlgorithm51",
+    "NumStability.Algorithms.HighamChapter9Theorem99Closure",
+    "NumStability.Algorithms.HighamChapter9Theorem99ComplexClosure",
+    "NumStability.Algorithms.Horner",
+    "NumStability.Algorithms.MatrixInversion",
+    "NumStability.Algorithms.PNormPowerMethod",
+    "NumStability.Algorithms.PNormPowerMethodGeneralP",
+    "NumStability.Algorithms.PNormPowerMethodRect",
+    "NumStability.Algorithms.StationaryIteration",
+    "NumStability.Algorithms.TestMatrices.Higham28",
+    "NumStability.Algorithms.TestMatrices.Higham28Contracts",
+    "NumStability.Algorithms.TestMatrices.Higham28GinibreProjectiveIntegral",
+    "NumStability.Algorithms.TriangularArbitraryOrder",
+    "NumStability.Algorithms.TriangularNoGuard",
+    "NumStability.Analysis.CancellationOfRoundingErrors",
+    "NumStability.Analysis.FloatingPointArithmetic",
+    "NumStability.Analysis.HighamChapter7",
+    "NumStability.Analysis.IncreasingPrecision",
+    "NumStability.Analysis.InstabilityWithoutCancellation"
+  ],
+  "tier_counts": {
+    "aggregate": 1,
+    "compatibility": 0,
+    "internal": 0,
+    "mixed_pending_split": 44,
+    "reusable": 129,
+    "source": 212
+  }
+}
