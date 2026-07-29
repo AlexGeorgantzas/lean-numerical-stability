@@ -584,3 +584,60 @@ Each wave commits on `codex/org-lsq-ch20` after its own scope, ownership stage,
 focused build, canonical-only/old-only test, axiom and `git diff --check` gates
 pass. The branch is never pushed; the integrator reads it from the shared local
 repository.
+
+## 10. Implementation wave 1 — `LSPerturbation`
+
+This wave consumes the committed lane contract rather than regenerating one: the
+declaration-to-destination map is read straight from
+`docs/architecture/declaration-ownership/lsq-ch20-ownership.tsv`. All 5,129
+manifest rows map onto the authoritative `.ilean` spans with 0 unmatched rows and
+0 spans straddling two destinations.
+
+### Why this wave is `LSPerturbation` alone
+
+Migrating owner `H` replaces it with a wrapper importing `H`'s destinations, so
+every external module that imports `H` comes to depend on those destinations. If a
+destination also depends on such a module, the tree cycles. Simulating the module
+graph for candidate wave sets gives:
+
+- all 41 declaration-bearing owners are migratable **alone** without a cycle;
+- a greedy set of **40** owners is buildable together;
+- exactly **one** owner, `LSQRSolve`, cannot join, because its destinations depend
+  on `Algorithms.RandNLA.LowRankApprox`, which reaches
+  `Algorithms.MatrixInversion`, which imports `LSPerturbation`.
+
+`MatrixInversion` is not in `OWNED_PATHS.txt`, so the lane cannot retarget it. The
+integrator patch set already schedules exactly that retarget, so `LSQRSolve` is
+deferred until it lands. Wave composition is a lane decision, so this wave takes
+the buildable part rather than blocking on a shared edit.
+
+### Result
+
+| Destination | Spans | Content |
+| --- | --- | --- |
+| `Analysis.Perturbation.LeastSquares.Basic` | 1 | structure `LSAugmentedPerturbation` and its members |
+| `Analysis.Perturbation.LeastSquares.Wedin` | 216 | reusable Wedin perturbation analysis |
+| `Source.Higham.Chapter20.Lemma11.Support` | 27 | Lemma 20.11/20.12 source support, including every Chapter 7 user |
+
+`Algorithms.LeastSquares.LSPerturbation` is now an exact import-only wrapper over
+those three modules, with a module docstring and sorted imports.
+
+### Gate results
+
+| Gate | Result |
+| --- | --- |
+| Every declaration span byte-identical to the frozen pristine source | pass (244 spans) |
+| Import cycles in the live tree | **0** (was 7) |
+| `check_scope.py` | pass |
+| `git diff --check` | pass |
+| Placeholder scan (`sorry`/`admit`/`axiom`/`constant`) | 0 hits |
+| Focused build incl. downstream `MatrixInversion`, `RandNLA.LowRankApprox` | pass, 3102 jobs, exit 0 |
+| Canonical-only and isolated old-only tests | pass, 3048 jobs, exit 0 |
+| Axiom probes (5 representatives) | all exactly `[propext, Classical.choice, Quot.sound]` |
+
+The old-only test imports only the historical path and still resolves
+`LSAugmentedPerturbation` and `wedinLemma20_11_sigmaMinCol`, proving the wrapper
+preserves the historical surface.
+
+Superseded pre-contract wave output is retained outside the repository at
+`PACKET_ROOT/runtime/wave1-superseded/` (50 files) rather than discarded.

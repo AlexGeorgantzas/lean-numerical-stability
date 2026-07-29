@@ -1,0 +1,9 @@
+import NumStability.Analysis.Perturbation.LeastSquares.Basic
+import NumStability.Analysis.Perturbation.LeastSquares.Wedin
+
+/-!
+# Least-squares perturbation analysis
+
+Declaration-free aggregate for the canonical reusable least-squares
+perturbation and error analysis family.
+-/
