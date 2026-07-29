@@ -1,12 +1,12 @@
+import NumStability.Algorithms.LinearSystems.LU.BlockLU.OperatorTwo
+import NumStability.Source.Higham.Chapter13.Section03.ColumnDominanceClosure
+
 /-!
   Source/Higham/Chapter13/Section03/RowDominanceClosure.lean
 
   Row-block-diagonal-dominance closure for Higham, Chapter 13, Theorems
   13.7 and 13.8. This complements the canonical column-dominance route.
 -/
-
-import NumStability.Algorithms.LinearSystems.LU.BlockLU.OperatorTwo
-import NumStability.Source.Higham.Chapter13.Section03.ColumnDominanceClosure
 
 namespace NumStability
 

@@ -1,10 +1,3 @@
-/-!
-# Reusable positive-definite block-factor bounds
-
-Reusable operator-norm and block-assembly certificates for positive-definite
-block LU factors.
--/
-
 import Mathlib.Tactic.Nlinarith
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Positivity
@@ -15,6 +8,13 @@ import NumStability.Algorithms.LinearSystems.LU.BlockLU.PositiveDefinite
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.RecursiveFactorization
 import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Analysis.MatrixAlgebra
+
+/-!
+# Reusable positive-definite block-factor bounds
+
+Reusable operator-norm and block-assembly certificates for positive-definite
+block LU factors.
+-/
 
 namespace NumStability
 

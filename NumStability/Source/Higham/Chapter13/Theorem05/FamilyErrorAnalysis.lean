@@ -1,13 +1,13 @@
+import NumStability.Algorithms.LinearSystems.LU.BlockLU.FirstOrderFamilies
+import NumStability.Source.Higham.Chapter13.Theorem05.ErrorAnalysis
+import NumStability.Source.Higham.Chapter13.Theorem05.Recurrences
+
 /-!
 # Higham Theorem 13.5 family error analysis
 
 Source-facing uniform first-order contracts and the family form of equation
 (13.7).
 -/
-
-import NumStability.Algorithms.LinearSystems.LU.BlockLU.FirstOrderFamilies
-import NumStability.Source.Higham.Chapter13.Theorem05.ErrorAnalysis
-import NumStability.Source.Higham.Chapter13.Theorem05.Recurrences
 
 namespace NumStability
 

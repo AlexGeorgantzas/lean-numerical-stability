@@ -1,10 +1,3 @@
-/-!
-# Higham Section 13.3 SPD factor bounds
-
-Source-facing recursive SPD certificates and the concrete equation (13.24)
-factor bounds for Algorithm 13.3.
--/
-
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.PositiveDefinite
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.PositiveDefiniteFactorBounds
 import NumStability.Source.Higham.Chapter13.Equation24
@@ -13,6 +6,13 @@ import NumStability.Source.Higham.Chapter13.Lemma10.SchurComplement
 import NumStability.Source.Higham.Chapter13.Problem04.BlockInverseBounds
 import NumStability.Source.Higham.Chapter13.Problem04.MatrixStages
 import NumStability.Source.Higham.Chapter13.Section03.SchurStageAnalysis
+
+/-!
+# Higham Section 13.3 SPD factor bounds
+
+Source-facing recursive SPD certificates and the concrete equation (13.24)
+factor bounds for Algorithm 13.3.
+-/
 
 namespace NumStability
 

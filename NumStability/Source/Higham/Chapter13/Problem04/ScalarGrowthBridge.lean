@@ -1,3 +1,7 @@
+import NumStability.Source.Higham.Chapter13.Equation23.PointRowGrowth
+import NumStability.Source.Higham.Chapter13.Problem04.FactorizationExistence
+import NumStability.Source.Higham.Chapter13.Problem04.ProductBounds
+
 /-!
 # Chapter 13 scalar-GE to block-Schur growth bridge
 
@@ -10,10 +14,6 @@ The scalar `LUFactSpec` hypothesis is essential: invertible block pivots alone
 need not admit no-pivot scalar LU in the fixed within-block ordering.  The
 point-row source route supplies this scalar certificate independently.
 -/
-
-import NumStability.Source.Higham.Chapter13.Equation23.PointRowGrowth
-import NumStability.Source.Higham.Chapter13.Problem04.FactorizationExistence
-import NumStability.Source.Higham.Chapter13.Problem04.ProductBounds
 
 namespace NumStability
 

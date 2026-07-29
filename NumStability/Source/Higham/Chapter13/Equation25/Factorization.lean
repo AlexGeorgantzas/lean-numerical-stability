@@ -1,12 +1,12 @@
+import NumStability.Source.Higham.Chapter13.Section03.SPDFactorBounds
+import NumStability.Source.Higham.Chapter13.Table01
+
 /-!
 # Higham equation (13.25), concrete SPD factorization
 
 The exact first-order equation (13.25) consequence for the concrete Algorithm
 13.3 factors supplied by the SPD equation (13.24) theorem.
 -/
-
-import NumStability.Source.Higham.Chapter13.Section03.SPDFactorBounds
-import NumStability.Source.Higham.Chapter13.Table01
 
 namespace NumStability
 

@@ -1,3 +1,10 @@
+import Mathlib.Data.Real.Basic
+import Mathlib.LinearAlgebra.Matrix.SchurComplement
+import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
+import Mathlib.Logic.Equiv.Fin.Basic
+import Mathlib.Tactic.Abel
+import Mathlib.Tactic.Push
+
 /-!
 # Chapter 13 block LU with unequal block dimensions
 
@@ -8,13 +15,6 @@ The recursive lower/upper shape predicates split at each cumulative block
 boundary and express unit block-lower and block-upper triangularity without
 imposing a common block order.
 -/
-
-import Mathlib.Data.Real.Basic
-import Mathlib.LinearAlgebra.Matrix.SchurComplement
-import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
-import Mathlib.Logic.Equiv.Fin.Basic
-import Mathlib.Tactic.Abel
-import Mathlib.Tactic.Push
 
 namespace NumStability
 

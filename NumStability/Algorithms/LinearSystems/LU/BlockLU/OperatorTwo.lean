@@ -1,10 +1,10 @@
+import NumStability.Analysis.MatrixAlgebra
+
 /-!
   Algorithms/LinearSystems/LU/BlockLU/OperatorTwo.lean
 
   Reusable Euclidean operator-norm entry and lower-norm bounds for block LU.
 -/
-
-import NumStability.Analysis.MatrixAlgebra
 
 namespace NumStability
 

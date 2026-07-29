@@ -1,12 +1,12 @@
+import Mathlib.Tactic.Ring
+import NumStability.Analysis.FirstOrder.AsymptoticFamilies
+import NumStability.Analysis.MatrixNorms.EntrywiseMaximum
+
 /-!
 # Higham Table 13.1 family composition
 
 Uniform family-level product-transfer results associated with Table 13.1.
 -/
-
-import Mathlib.Tactic.Ring
-import NumStability.Analysis.FirstOrder.AsymptoticFamilies
-import NumStability.Analysis.MatrixNorms.EntrywiseMaximum
 
 namespace NumStability
 

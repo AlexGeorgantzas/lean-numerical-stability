@@ -1,11 +1,11 @@
+import NumStability.Algorithms.LinearSystems.LU.BlockLU.FirstOrderFamilies
+
 /-!
 # Higham equations (13.4)--(13.6), family forms
 
 Source locators exposing the reusable family operation models as the three
 numbered equation conclusions.
 -/
-
-import NumStability.Algorithms.LinearSystems.LU.BlockLU.FirstOrderFamilies
 
 namespace NumStability
 

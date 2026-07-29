@@ -1,3 +1,6 @@
+import NumStability.Algorithms.LinearSystems.LU.BlockLU.ArbitraryNorm
+import NumStability.Source.Higham.Chapter13.Section03.RowDominanceClosure
+
 /-!
   Source/Higham/Chapter13/Section03/ArbitraryNormDominance.lean
 
@@ -5,9 +8,6 @@
   and 13.8. Reusable continuous-linear-map foundations live in
   `NumStability.Algorithms.LinearSystems.LU.BlockLU.ArbitraryNorm`.
 -/
-
-import NumStability.Algorithms.LinearSystems.LU.BlockLU.ArbitraryNorm
-import NumStability.Source.Higham.Chapter13.Section03.RowDominanceClosure
 
 namespace NumStability
 

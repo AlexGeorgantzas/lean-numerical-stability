@@ -1,15 +1,15 @@
+import Mathlib.Tactic.Nlinarith
+import Mathlib.Tactic.NormNum
+import Mathlib.Tactic.Ring
+import NumStability.Analysis.FirstOrder.AsymptoticFamilies
+import NumStability.Source.Higham.Chapter13.Section03.SPDFactorBounds
+
 /-!
 # Higham equation (13.25), uniform families
 
 Uniform source composition of the SPD factor bounds with the family-level
 first-order perturbation model.
 -/
-
-import Mathlib.Tactic.Nlinarith
-import Mathlib.Tactic.NormNum
-import Mathlib.Tactic.Ring
-import NumStability.Analysis.FirstOrder.AsymptoticFamilies
-import NumStability.Source.Higham.Chapter13.Section03.SPDFactorBounds
 
 namespace NumStability
 

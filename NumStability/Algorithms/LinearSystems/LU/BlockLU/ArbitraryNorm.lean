@@ -1,3 +1,7 @@
+import Mathlib.Analysis.Normed.Operator.Banach
+import NumStability.Algorithms.LinearSystems.LU.BlockLU.DiagonalDominance
+import NumStability.Analysis.MatrixAlgebra
+
 /-!
   Algorithms/LinearSystems/LU/BlockLU/ArbitraryNorm.lean
 
@@ -7,10 +11,6 @@
   dimensional normed real space. Their Mathlib operator norm is therefore
   the subordinate norm induced by that chosen vector norm.
 -/
-
-import Mathlib.Analysis.Normed.Operator.Banach
-import NumStability.Algorithms.LinearSystems.LU.BlockLU.DiagonalDominance
-import NumStability.Analysis.MatrixAlgebra
 
 namespace NumStability
 

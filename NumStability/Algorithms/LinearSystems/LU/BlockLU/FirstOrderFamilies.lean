@@ -1,11 +1,11 @@
+import NumStability.Analysis.FirstOrder.AsymptoticFamilies
+import NumStability.Analysis.MatrixNorms.EntrywiseMaximum
+
 /-!
 # Reusable first-order block-LU family contracts
 
 Uniform family-level operation models used by the Chapter 13 source layer.
 -/
-
-import NumStability.Analysis.FirstOrder.AsymptoticFamilies
-import NumStability.Analysis.MatrixNorms.EntrywiseMaximum
 
 namespace NumStability
 

@@ -1,12 +1,12 @@
+import NumStability.Source.Higham.Chapter13.Theorem05.FamilyErrorAnalysis
+import NumStability.Source.Higham.Chapter13.Theorem06.FactorAndSolve
+
 /-!
 # Higham Theorem 13.6 from concrete computation
 
 Computation-derived source endpoint that combines the recursive factorization
 certificate with the conventional Algorithm 13.3 solve path.
 -/
-
-import NumStability.Source.Higham.Chapter13.Theorem05.FamilyErrorAnalysis
-import NumStability.Source.Higham.Chapter13.Theorem06.FactorAndSolve
 
 namespace NumStability
 

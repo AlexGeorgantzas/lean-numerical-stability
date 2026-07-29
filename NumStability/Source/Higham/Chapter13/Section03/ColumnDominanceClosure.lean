@@ -1,15 +1,3 @@
-/-!
-  Source/Higham/Chapter13/Section03/ColumnDominanceClosure.lean
-
-  Source-level closure theorems for Higham, Chapter 13, Theorems 13.7 and
-  13.8.  The main `BlockLU` module develops the one-step Schur estimates and
-  the concrete Algorithm 13.3 stage machinery.  This module closes the
-  missing recursive existence argument: full block nonsingularity and block
-  diagonal dominance construct every active pivot inverse, the block LU
-  factors, inherited Schur-complement dominance, and the `2 * max` growth
-  bound, without an all-leading-prefix or prebuilt-pivot hypothesis.
--/
-
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.DiagonalDominance
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.Factorization
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.OperatorTwo
@@ -21,6 +9,18 @@ import NumStability.Source.Higham.Chapter13.Section03.SchurStageAnalysis
 import NumStability.Source.Higham.Chapter13.Theorem02.Factorization
 import NumStability.Source.Higham.Chapter13.Theorem07.OneStep
 import NumStability.Source.Higham.Chapter13.Theorem07.PivotExistence
+
+/-!
+  Source/Higham/Chapter13/Section03/ColumnDominanceClosure.lean
+
+  Source-level closure theorems for Higham, Chapter 13, Theorems 13.7 and
+  13.8.  The main `BlockLU` module develops the one-step Schur estimates and
+  the concrete Algorithm 13.3 stage machinery.  This module closes the
+  missing recursive existence argument: full block nonsingularity and block
+  diagonal dominance construct every active pivot inverse, the block LU
+  factors, inherited Schur-complement dominance, and the `2 * max` growth
+  bound, without an all-leading-prefix or prebuilt-pivot hypothesis.
+-/
 
 namespace NumStability
 
