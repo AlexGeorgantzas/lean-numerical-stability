@@ -1,5 +1,8 @@
 import NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares.AugmentedSystem
 import NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares.Basic
+import NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares.Equality.Basic
+import NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares.Equality.GQR
+import NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares.Equality.KKT
 import NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares.MGS
 import NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares.QRSolve

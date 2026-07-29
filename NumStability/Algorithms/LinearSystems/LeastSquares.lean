@@ -1,5 +1,8 @@
 import NumStability.Algorithms.LinearSystems.LeastSquares.AugmentedSystem
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
+import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
+import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR
+import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT
 import NumStability.Algorithms.LinearSystems.LeastSquares.MGS
 import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve

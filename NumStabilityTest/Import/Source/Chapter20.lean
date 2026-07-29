@@ -3,6 +3,7 @@ import NumStabilityTest.Import.Source.Chapter20.Lemma06
 import NumStabilityTest.Import.Source.Chapter20.Lemma11.Support
 import NumStabilityTest.Import.Source.Chapter20.Theorem01
 import NumStabilityTest.Import.Source.Chapter20.Theorem03.QRSolve
+import NumStabilityTest.Import.Source.Chapter20.Theorem08.LSE
 
 /-!
 # Higham Chapter 20 import-test umbrella

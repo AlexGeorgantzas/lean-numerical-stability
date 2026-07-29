@@ -1,0 +1,11 @@
+import NumStability.Analysis.Perturbation.LeastSquares.Equality.RowwiseBackwardError
+
+/-!
+# Rowwise backward error for equality-constrained least squares canonical-only import smoke test
+
+Imports exactly one canonical module and checks representative public declarations.
+-/
+
+#check @NumStability.theorem20_7_alpha_le_of_entry_growth
+#check @NumStability.theorem20_7_storedHouseholderQRMatrixSeq_step_diag_nonzero_of_signed_alpha_trailingNorm_pos_component_budget_bound_nat
+#check @NumStability.Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_permuteRows_active_row_geometric_entry_growth_with_relative_error_source_deltab_rows_nonzero_nat

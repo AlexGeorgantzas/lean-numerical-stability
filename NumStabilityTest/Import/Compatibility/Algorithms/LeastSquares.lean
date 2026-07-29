@@ -1,3 +1,4 @@
+import NumStabilityTest.Import.Compatibility.Algorithms.LeastSquares.LSE
 import NumStabilityTest.Import.Compatibility.Algorithms.LeastSquares.LSNormalEquations
 import NumStabilityTest.Import.Compatibility.Algorithms.LeastSquares.LSPerturbation
 import NumStabilityTest.Import.Compatibility.Algorithms.LeastSquares.LSQRSolve

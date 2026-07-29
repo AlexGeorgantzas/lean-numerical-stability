@@ -1,0 +1,11 @@
+import NumStability.Source.Higham.Chapter20.Theorem08.LSE
+
+/-!
+# Higham Chapter 20, Theorem 20.8 -- LSE correspondence canonical-only import smoke test
+
+Imports exactly one canonical module and checks representative public declarations.
+-/
+
+#check @NumStability.theorem20_8_nullspace_reduced_wedinResidualRHS_le_of_lse_minimizers
+#check @NumStability.GeneralizedQRFactorization.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_gqrQ2_reducedGram_BAplus_residual_gap_kappaB_eps_nonneg
+#check @NumStability.IsLSEMinimizer.exists_unique_perturbed_lse_minimizer_and_rank_tolerant_general_gqrQ2_reduced_wedin_solution_difference_and_sourceResidual_kkt_bound_with_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
