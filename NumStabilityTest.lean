@@ -337,8 +337,8 @@ import NumStabilityTest.Import.Source.Chapter13.Section03
 import NumStabilityTest.Import.Source.Chapter13.Section03.ArbitraryNormDominance
 import NumStabilityTest.Import.Source.Chapter13.Section03.ColumnDominanceClosure
 import NumStabilityTest.Import.Source.Chapter13.Section03.RowDominanceClosure
-import NumStabilityTest.Import.Source.Chapter13.Section03.SPDFactorBounds
 import NumStabilityTest.Import.Source.Chapter13.Section03.SchurStageAnalysis
+import NumStabilityTest.Import.Source.Chapter13.Section03.SPDFactorBounds
 import NumStabilityTest.Import.Source.Chapter13.Table01
 import NumStabilityTest.Import.Source.Chapter13.Table01.Families
 import NumStabilityTest.Import.Source.Chapter13.Theorem02

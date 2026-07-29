@@ -9,11 +9,11 @@ import Mathlib.Tactic.Nlinarith
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Positivity
 import Mathlib.Tactic.Ring
-import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.BlockMatrices
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.Factorization
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.PositiveDefinite
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.RecursiveFactorization
+import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Analysis.MatrixAlgebra
 
 namespace NumStability
