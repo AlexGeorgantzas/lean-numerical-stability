@@ -2446,6 +2446,43 @@ def validate_destination_direct_imports(
         )
 
 
+def validate_no_orphaned_destinations(
+    project_root: Path, records: dict[str, ManifestRow]
+) -> int:
+    """Every canonical lane module on disk must own at least one manifest row.
+
+    A retarget can empty a destination an earlier wave already created. The file
+    keeps its copy of declarations that now live elsewhere, the family aggregate
+    imports both, and Lean reports a duplicate declaration -- but only once the
+    build reaches the aggregate, which is far from the change that caused it.
+    The manifest already says which modules should exist, so the orphan is
+    detectable statically.
+    """
+    owned = {row.destination_module for row in records.values()}
+    roots = (REUSABLE_ALGORITHM_ROOT, REUSABLE_ANALYSIS_ROOT, SOURCE_ROOT)
+    orphans: list[str] = []
+    for root in roots:
+        base = project_root / Path(*root.split("."))
+        if not base.is_dir():
+            continue
+        for path in sorted(base.rglob("*.lean")):
+            module = (
+                path.relative_to(project_root).with_suffix("").as_posix().replace("/", ".")
+            )
+            if module in owned or module in PRESERVED_SOURCE_LEAVES:
+                continue
+            if module in DEFAULT_STRUCTURAL_MODULES:
+                continue
+            orphans.append(module)
+    if orphans:
+        raise ValueError(
+            "canonical modules own no manifest declaration (retarget left them "
+            "behind; their declarations are now declared twice): "
+            + ", ".join(orphans[:20])
+        )
+    return len(owned)
+
+
 def read_completed_destinations(path: Path) -> set[str]:
     with path.open(encoding="utf-8", newline="") as stream:
         rows = list(csv.reader(stream, delimiter="\t"))
@@ -4264,6 +4301,22 @@ def run_self_test() -> None:
                 "NumStability.Algorithms.QR.QRSolve",
             )
         }
+        # 15b. A canonical module left behind by a retarget owns nothing and would
+        # duplicate declarations that moved elsewhere.
+        validate_no_orphaned_destinations(project, records)
+        orphan = project / Path(*REUSABLE_ALGORITHM_ROOT.split(".")) / "Orphaned.lean"
+        orphan.parent.mkdir(parents=True, exist_ok=True)
+        orphan.write_text(
+            "/-! Emptied by a retarget. -/\nimport NumStability.Analysis.MatrixAlgebra\n",
+            encoding="utf-8",
+        )
+        expect_value_error(
+            lambda: validate_no_orphaned_destinations(project, records),
+            "a canonical module a retarget left owning nothing",
+        )
+        orphan.unlink()
+        validate_no_orphaned_destinations(project, records)
+
         validate_structural_modules(
             project, moved, {SELF_HISTORICAL_A}, self_structural
         )
@@ -5065,6 +5118,8 @@ def main() -> int:
     validate_tier_coverage(tiers, records, structural_modules)
     import_graph = read_module_imports(args.project_root)
     validate_destination_direct_imports(import_graph, records, dag, completed)
+    owned_destinations = validate_no_orphaned_destinations(args.project_root, records)
+    print(f"canonical modules on disk all owned: {owned_destinations} destinations")
 
     if args.mode == "post":
         if qr_handoff is None:

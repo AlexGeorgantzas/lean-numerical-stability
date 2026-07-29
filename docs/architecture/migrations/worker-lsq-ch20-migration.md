@@ -944,10 +944,27 @@ That inference is false. A straddling co-location group binds **its own members*
 not the sub-families those members happen to belong to. Measured on the frozen
 stream: of the 708 declarations the reviewed assignment sends to
 `Equality.{Basic,GQR,KKT}` there are **581** co-location components, and exactly
-**2** straddle the intended split (one of 20 declarations spanning all three, one
-of 4 spanning Basic and GQR). Confining just those two to the module already
-holding most of each moves **9** declarations and leaves Basic = 400, GQR = 301,
-KKT = 7, with **0** cross-module private uses.
+**2** straddle that trio. Confining just those two to the module already holding
+most of each moves **9** declarations and leaves Basic = 400, GQR = 301, KKT = 7,
+with **0** cross-module private uses.
+
+The two straddlers are:
+
+| Declarations | Private | Spans |
+| --- | --- | --- |
+| 20 | 8 | `Equality.GQR` 12, `Equality.Basic` 6, `Equality.KKT` 2 |
+| 5 | 3 | `Equality.GQR` 3, `Analysis...Equality.Perturbation` 1, `Equality.Basic` 1 |
+
+An earlier draft of this section described the second as "spanning Basic and GQR".
+That was wrong: it also reaches the analysis-tier `Equality.Perturbation`, so it is
+cross-tier. The narrow root of the first is the private theorem
+`rectMatMulVec_zero`, which has 8 public users — 6 GQR-family and 2 KKT-family — so
+module-scoped privacy files those 2 KKT declarations with the GQR cluster.
+
+Both figures above are scoped to the `Equality.{Basic,GQR,KKT}` trio. Lane-wide the
+reviewed assignment has **29** straddling components, which is why co-location
+still has real work to do; the point is only that none of them binds the equality
+sub-families together.
 
 Removing the protection instead let the cycle breaker merge the boundaries away,
 and it took four more destinations with them. Across the whole lane:
@@ -965,21 +982,40 @@ reframes §16.4: `LinearSystems.LeastSquares.NormalEquations` was not legitimate
 emptied, it was collateral damage, and it holds declarations again.
 
 The restored protected set adds the six boundaries the packet's semantic target
-names. `Equality.KKT` is deliberately still absent, for a reason unrelated to
-visibility: `GQR` and `KKT` form a genuine two-destination import cycle that
-relocation cannot break — 35 declarations were relocated `GQR -> KKT` across six
-rounds and the cycle survived. The packet's required parts are "equality-
-constrained LS, GQR, KKT/perturbation, and source correspondence"; KKT and
-perturbation are one item, carried by `Analysis...Equality.Perturbation`, so the
-required boundary is GQR. Folding KKT into GQR breaks the cycle and keeps all four
-required parts:
+names.
+
+A first attempt at this section also dropped `Equality.KKT`, claiming `GQR` and
+`KKT` "form a genuine two-destination import cycle that relocation cannot break".
+That was wrong as well. The reviewed contract has **0** declaration edges between
+the two, in either direction; the cycle is manufactured by the breaker itself,
+which expands every mover to its whole private group and so drags GQR material
+across the boundary, then re-sights the flipped component and calls it symmetric.
+
+`Equality.KKT` is therefore restored, but *after* the breaker rather than by
+protecting it. Protecting it deadlocks the breaker — it may then neither merge the
+pair nor stop relocating between them, and the graph never settles. Restoration
+runs on the settled acyclic graph and returns a rule-assigned member only when its
+entire co-location group is rule-assigned to that leaf, so no straddling group is
+split and no foreign material follows. Six of the eight reviewed KKT members return;
+the two that stay are privacy-forced, sharing the private `rectMatMulVec_zero` with
+six `GeneralizedQRFactorization` users. The ninth reviewed member is private and
+correctly belongs to `Source.Higham.Chapter20.Theorem10`.
+
+All four required parts now exist as separate modules:
 
 | Required part | Destination | Declarations |
 | --- | --- | --- |
 | equality-constrained LS | `Algorithms...Equality.Basic` | 388 |
-| GQR | `Algorithms...Equality.GQR` | 300 |
-| KKT / perturbation | `Analysis...Equality.{Perturbation,MixedStability,RowwiseBackwardError}` | 495 / 218 / 522 |
+| GQR | `Algorithms...Equality.GQR` | 294 |
+| KKT | `Algorithms...Equality.KKT` | 6 |
+| perturbation | `Analysis...Equality.{Perturbation,MixedStability,RowwiseBackwardError}` | 495 / 223 / 522 |
 | source correspondence | `Source.Higham.Chapter20.Theorem08.LSE` | 59 |
+
+Documented residual: two KKT-semantic theorems
+(`LSEKKTSystem.eq_zero_of_homogeneous`,
+`LSEKKTSystem.sourceResidual_of_lagrange_normal_equations`) are filed with GQR.
+Promoting the one utility lemma they share would move them, but promotion is the
+mechanism this lane does not use — see the note below.
 
 The cross-lane carrier for `LSE -> QR.GramSchmidtPolar` returns to `Equality.GQR`,
 where the generalized-QR material that uses the polar factorization lives.
@@ -990,6 +1026,42 @@ Verified state: `pre` mode passes with 5,129 declarations, 4,694 command groups,
 straddling spans, 0 wrapper-induced cycles, 0 reusable-to-source and 0
 algorithm-to-analysis edges, 0 mixed-tier destinations, and manifest SHA-256
 `D4EF42683595A9910A3A0F9AB4A6733D8BCD0898CB33A174992BAD547B4DB9B3`.
+
+### New gate: no orphaned canonical module
+
+The emptied-destination hazard of §16.4 is now a lane gate rather than a lesson.
+`validate_no_orphaned_destinations` requires every canonical module on disk under
+the three lane roots to own at least one manifest declaration, excluding the
+preserved source leaves and the structural aggregates. A destination emptied by a
+retarget is reported by name, statically, instead of surfacing as a duplicate
+declaration once the build reaches the family aggregate — far from the change that
+caused it. It runs in stage and post mode, where the worktree is inspected, and it
+has a self-test case.
+
+### Static verification of the re-emitted wave
+
+Because the corrected contract changes destinations for owners that were already
+migrated, waves 1–3 were re-emitted together with wave 4's owners from the
+cumulative migrated set. Everything checkable without a build:
+
+| Check | Result |
+| --- | --- |
+| Declaration spans byte-identical to the frozen sources | 1,799 / 1,799 |
+| Destinations emitted | 23 |
+| Namespace balance, import sorting, duplicate imports | 23 / 23 clean |
+| Public declarations defined in two modules, lane paths | **0** |
+| `NumStability` imports resolving, whole tree | 4,207 / 4,207 |
+| Test probes reachable from their own imports | 121 / 121 |
+| Import cycles, full 1,534-module graph | 0 |
+| Canonical modules owning no manifest row | 0 |
+| Checker self-test, lane scope contract, `git diff --check` | pass |
+
+The two public names that *are* defined twice in the repository —
+`NumStability.infNorm_add_le` in `Algorithms/Horner.lean` and
+`Algorithms/MatrixPowers.lean`, and
+`FloatingPointFormat.finiteSystem_exists_int_mul_minSubnormalMagnitude` in two
+Chapter 2 modules — are pre-existing at the frozen base and lie entirely outside
+this lane.
 
 ### A note for the integrator on private promotions
 

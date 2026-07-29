@@ -46,6 +46,7 @@ NumStability.Algorithms.LinearSystems.LeastSquares.AugmentedSystem	reusable
 NumStability.Algorithms.LinearSystems.LeastSquares.Basic	reusable
 NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic	reusable
 NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR	reusable
+NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT	reusable
 NumStability.Algorithms.LinearSystems.LeastSquares.GramBasis	reusable
 NumStability.Algorithms.LinearSystems.LeastSquares.MGS	reusable
 NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations	reusable

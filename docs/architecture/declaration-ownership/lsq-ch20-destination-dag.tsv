@@ -7,10 +7,13 @@ edge	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic	NumStabil
 edge	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic	NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve	4	10
 edge	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic	NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry	4	3
 edge	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR	NumStability.Algorithms.LinearSystems.LeastSquares.AugmentedSystem	0	1
-edge	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR	NumStability.Algorithms.LinearSystems.LeastSquares.Basic	7	11
-edge	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic	194	283
+edge	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR	NumStability.Algorithms.LinearSystems.LeastSquares.Basic	4	8
+edge	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic	188	273
+edge	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT	2	1
 edge	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR	NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations	5	11
 edge	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR	NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry	5	13
+edge	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT	NumStability.Algorithms.LinearSystems.LeastSquares.Basic	3	3
+edge	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic	6	10
 edge	NumStability.Algorithms.LinearSystems.LeastSquares.GramBasis	NumStability.Algorithms.LinearSystems.LeastSquares.AugmentedSystem	2	2
 edge	NumStability.Algorithms.LinearSystems.LeastSquares.GramBasis	NumStability.Algorithms.LinearSystems.LeastSquares.Basic	0	1
 edge	NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations	NumStability.Algorithms.LinearSystems.LeastSquares.Basic	8	31
@@ -47,7 +50,8 @@ edge	NumStability.Analysis.Perturbation.LeastSquares.Equality.MixedStability	Num
 edge	NumStability.Analysis.Perturbation.LeastSquares.Equality.MixedStability	NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation	16	73
 edge	NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation	NumStability.Algorithms.LinearSystems.LeastSquares.Basic	206	226
 edge	NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic	1851	1919
-edge	NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR	421	695
+edge	NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR	412	670
+edge	NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT	9	25
 edge	NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation	NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations	1	1
 edge	NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation	NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry	18	18
 edge	NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation	NumStability.Analysis.Perturbation.LeastSquares.Wedin	30	32
@@ -228,7 +232,8 @@ edge	NumStability.Source.Higham.Chapter20.Theorem07.SourceTrace	NumStability.Alg
 edge	NumStability.Source.Higham.Chapter20.Theorem07.SourceTrace	NumStability.Source.Higham.Chapter20.Theorem07	7	41
 edge	NumStability.Source.Higham.Chapter20.Theorem08	NumStability.Algorithms.LinearSystems.LeastSquares.Basic	9	13
 edge	NumStability.Source.Higham.Chapter20.Theorem08	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic	74	105
-edge	NumStability.Source.Higham.Chapter20.Theorem08	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR	5	20
+edge	NumStability.Source.Higham.Chapter20.Theorem08	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR	0	13
+edge	NumStability.Source.Higham.Chapter20.Theorem08	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT	5	7
 edge	NumStability.Source.Higham.Chapter20.Theorem08	NumStability.Analysis.Perturbation.LeastSquares.Equality.KKTInverse	8	21
 edge	NumStability.Source.Higham.Chapter20.Theorem08	NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation	17	88
 edge	NumStability.Source.Higham.Chapter20.Theorem08.LSE	NumStability.Algorithms.LinearSystems.LeastSquares.Basic	68	72

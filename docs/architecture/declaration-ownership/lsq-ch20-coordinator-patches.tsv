@@ -164,6 +164,7 @@ patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSE	-	Mathlib.Tacti
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSE	-	NumStability.Algorithms.LeastSquares.LSQRSolve
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSE	-	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSE	-	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR
+patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSE	-	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSE	-	NumStability.Algorithms.QR.GramSchmidtPolar
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSE	-	NumStability.Algorithms.QR.Higham19
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSE	-	NumStability.Algorithms.QR.Higham19Thm6ColPivot
