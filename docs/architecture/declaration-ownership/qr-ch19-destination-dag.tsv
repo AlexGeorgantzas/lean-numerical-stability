@@ -1,0 +1,435 @@
+format	1
+destination	NumStability.Algorithms.LinearSystems.QR.GivensMatrixStep	reusable	1
+destination	NumStability.Algorithms.LinearSystems.QR.GivensQR	reusable	5
+destination	NumStability.Algorithms.LinearSystems.QR.GivensSpec	reusable	0
+destination	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	reusable	5
+destination	NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar	reusable	6
+destination	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	reusable	1
+destination	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	reusable	2
+destination	NumStability.Algorithms.LinearSystems.QR.HouseholderConstruction2	reusable	2
+destination	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	reusable	3
+destination	NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep	reusable	2
+destination	NumStability.Algorithms.LinearSystems.QR.HouseholderQApply	reusable	5
+destination	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	reusable	4
+destination	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	reusable	4
+destination	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	reusable	1
+destination	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	reusable	0
+destination	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	reusable	1
+destination	NumStability.Algorithms.LinearSystems.QR.QRSolve	reusable	5
+destination	NumStability.Source.Higham.Chapter19.Algorithm11.CGSRounded	source	6
+destination	NumStability.Source.Higham.Chapter19.Algorithm12.MGSClosure	source	8
+destination	NumStability.Source.Higham.Chapter19.Algorithm12.MGSNonbreakdown	source	10
+destination	NumStability.Source.Higham.Chapter19.Algorithm12.MGSPaddedClosure	source	8
+destination	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRepair	source	8
+destination	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	source	7
+destination	NumStability.Source.Higham.Chapter19.Algorithm12.MGSSourceRate	source	9
+destination	NumStability.Source.Higham.Chapter19.Core	source	7
+destination	NumStability.Source.Higham.Chapter19.FormedQ	source	5
+destination	NumStability.Source.Higham.Chapter19.Labels	source	6
+destination	NumStability.Source.Higham.Chapter19.Lemma01.Construction2	source	3
+destination	NumStability.Source.Higham.Chapter19.Lemma03.ActualSequence	source	5
+destination	NumStability.Source.Higham.Chapter19.Lemma07.Gamma4	source	1
+destination	NumStability.Source.Higham.Chapter19.Lemma09.DisjointSweep	source	6
+destination	NumStability.Source.Higham.Chapter19.PolarNearest	source	7
+destination	NumStability.Source.Higham.Chapter19.Problem06.ActualStep	source	4
+destination	NumStability.Source.Higham.Chapter19.Problem09	source	0
+destination	NumStability.Source.Higham.Chapter19.Problem10	source	8
+destination	NumStability.Source.Higham.Chapter19.Sensitivity	source	6
+destination	NumStability.Source.Higham.Chapter19.Sensitivity.Closure	source	7
+destination	NumStability.Source.Higham.Chapter19.StoredLoop	source	5
+destination	NumStability.Source.Higham.Chapter19.StoredLoop.AllPivots	source	5
+destination	NumStability.Source.Higham.Chapter19.StoredLoop.StrongModel	source	6
+destination	NumStability.Source.Higham.Chapter19.SunBischof	source	0
+destination	NumStability.Source.Higham.Chapter19.Theorem05.Nonbreakdown	source	8
+destination	NumStability.Source.Higham.Chapter19.Theorem05.SourceClosure	source	7
+destination	NumStability.Source.Higham.Chapter19.Theorem06.ActualSource	source	9
+destination	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivot	source	11
+destination	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	source	14
+destination	NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham	source	10
+destination	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamAssembly	source	13
+destination	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete	source	11
+destination	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamFull	source	12
+destination	NumStability.Source.Higham.Chapter19.Theorem06.Elementwise	source	9
+destination	NumStability.Source.Higham.Chapter19.Theorem06.ElementwiseEntry	source	9
+destination	NumStability.Source.Higham.Chapter19.Theorem06.ElementwisePackaged	source	9
+destination	NumStability.Source.Higham.Chapter19.Theorem06.Final	source	15
+destination	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	source	8
+destination	NumStability.Source.Higham.Chapter19.Theorem06.RowSpecific	source	9
+destination	NumStability.Source.Higham.Chapter19.Theorem06.StrongModel	source	16
+destination	NumStability.Source.Higham.Chapter19.Theorem10.ActualMatrix	source	8
+destination	NumStability.Source.Higham.Chapter19.TurnbullAitken	source	1
+destination	NumStability.Source.Higham.Chapter19.WYApplicationClosure	source	7
+edge	body	NumStability.Algorithms.LinearSystems.QR.GivensMatrixStep	NumStability.Algorithms.LinearSystems.QR.GivensSpec	51
+edge	body	NumStability.Algorithms.LinearSystems.QR.GivensQR	NumStability.Algorithms.LinearSystems.QR.GivensMatrixStep	35
+edge	body	NumStability.Algorithms.LinearSystems.QR.GivensQR	NumStability.Algorithms.LinearSystems.QR.GivensSpec	57
+edge	body	NumStability.Algorithms.LinearSystems.QR.GivensQR	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	33
+edge	body	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	47
+edge	body	NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	79
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	17
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	27
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	80
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderConstruction2	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	39
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	4
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep	2
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	6
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	12
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	4
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	23
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	10
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderQApply	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	4
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderQApply	NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep	1
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderQApply	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	81
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderQApply	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	6
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderQApply	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	7
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	68
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep	2
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	114
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	78
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	100
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	1
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	12
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	171
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	9
+edge	body	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	19
+edge	body	NumStability.Algorithms.LinearSystems.QR.QRSolve	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	30
+edge	body	NumStability.Algorithms.LinearSystems.QR.QRSolve	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	10
+edge	body	NumStability.Algorithms.LinearSystems.QR.QRSolve	NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep	1
+edge	body	NumStability.Algorithms.LinearSystems.QR.QRSolve	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	303
+edge	body	NumStability.Algorithms.LinearSystems.QR.QRSolve	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	58
+edge	body	NumStability.Algorithms.LinearSystems.QR.QRSolve	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	56
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm11.CGSRounded	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	25
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm11.CGSRounded	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	3
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSClosure	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	4
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSClosure	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	7
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSClosure	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	30
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSNonbreakdown	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	3
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSNonbreakdown	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	21
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSNonbreakdown	NumStability.Source.Higham.Chapter19.Algorithm12.MGSSourceRate	12
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSPaddedClosure	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	78
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSPaddedClosure	NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar	1
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSPaddedClosure	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	3
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSPaddedClosure	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	20
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSPaddedClosure	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	1
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSPaddedClosure	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	13
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSPaddedClosure	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	2
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSPaddedClosure	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	111
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRepair	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	2
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRepair	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	12
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRepair	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	25
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	52
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar	14
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	31
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	NumStability.Source.Higham.Chapter19.Algorithm11.CGSRounded	2
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSSourceRate	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	12
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSSourceRate	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	10
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSSourceRate	NumStability.Source.Higham.Chapter19.Algorithm12.MGSPaddedClosure	46
+edge	body	NumStability.Source.Higham.Chapter19.Algorithm12.MGSSourceRate	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	14
+edge	body	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.GivensQR	14
+edge	body	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.GivensSpec	10
+edge	body	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	330
+edge	body	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar	40
+edge	body	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	2
+edge	body	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	383
+edge	body	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	11
+edge	body	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	1083
+edge	body	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	488
+edge	body	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	362
+edge	body	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	49
+edge	body	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	649
+edge	body	NumStability.Source.Higham.Chapter19.FormedQ	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	2
+edge	body	NumStability.Source.Higham.Chapter19.FormedQ	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	12
+edge	body	NumStability.Source.Higham.Chapter19.FormedQ	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	2
+edge	body	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.GivensSpec	16
+edge	body	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	1
+edge	body	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	3
+edge	body	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	1
+edge	body	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep	1
+edge	body	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	3
+edge	body	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	1
+edge	body	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	5
+edge	body	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	6
+edge	body	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.QRSolve	1
+edge	body	NumStability.Source.Higham.Chapter19.Lemma01.Construction2	NumStability.Algorithms.LinearSystems.QR.HouseholderConstruction2	2
+edge	body	NumStability.Source.Higham.Chapter19.Lemma03.ActualSequence	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	9
+edge	body	NumStability.Source.Higham.Chapter19.Lemma03.ActualSequence	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	8
+edge	body	NumStability.Source.Higham.Chapter19.Lemma03.ActualSequence	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	6
+edge	body	NumStability.Source.Higham.Chapter19.Lemma07.Gamma4	NumStability.Algorithms.LinearSystems.QR.GivensSpec	14
+edge	body	NumStability.Source.Higham.Chapter19.Lemma09.DisjointSweep	NumStability.Algorithms.LinearSystems.QR.GivensQR	8
+edge	body	NumStability.Source.Higham.Chapter19.Lemma09.DisjointSweep	NumStability.Algorithms.LinearSystems.QR.GivensSpec	83
+edge	body	NumStability.Source.Higham.Chapter19.Lemma09.DisjointSweep	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	9
+edge	body	NumStability.Source.Higham.Chapter19.Lemma09.DisjointSweep	NumStability.Source.Higham.Chapter19.Lemma07.Gamma4	1
+edge	body	NumStability.Source.Higham.Chapter19.PolarNearest	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	17
+edge	body	NumStability.Source.Higham.Chapter19.PolarNearest	NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar	5
+edge	body	NumStability.Source.Higham.Chapter19.PolarNearest	NumStability.Source.Higham.Chapter19.Sensitivity	1
+edge	body	NumStability.Source.Higham.Chapter19.Problem06.ActualStep	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	2
+edge	body	NumStability.Source.Higham.Chapter19.Problem06.ActualStep	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	2
+edge	body	NumStability.Source.Higham.Chapter19.Problem06.ActualStep	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	7
+edge	body	NumStability.Source.Higham.Chapter19.Problem06.ActualStep	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	5
+edge	body	NumStability.Source.Higham.Chapter19.Problem10	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	5
+edge	body	NumStability.Source.Higham.Chapter19.Problem10	NumStability.Source.Higham.Chapter19.Algorithm11.CGSRounded	62
+edge	body	NumStability.Source.Higham.Chapter19.Problem10	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	31
+edge	body	NumStability.Source.Higham.Chapter19.Sensitivity	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	17
+edge	body	NumStability.Source.Higham.Chapter19.Sensitivity	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	6
+edge	body	NumStability.Source.Higham.Chapter19.Sensitivity.Closure	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	5
+edge	body	NumStability.Source.Higham.Chapter19.Sensitivity.Closure	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	4
+edge	body	NumStability.Source.Higham.Chapter19.Sensitivity.Closure	NumStability.Source.Higham.Chapter19.Sensitivity	32
+edge	body	NumStability.Source.Higham.Chapter19.StoredLoop	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	5
+edge	body	NumStability.Source.Higham.Chapter19.StoredLoop	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	6
+edge	body	NumStability.Source.Higham.Chapter19.StoredLoop	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	2
+edge	body	NumStability.Source.Higham.Chapter19.StoredLoop.AllPivots	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	23
+edge	body	NumStability.Source.Higham.Chapter19.StoredLoop.AllPivots	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	5
+edge	body	NumStability.Source.Higham.Chapter19.StoredLoop.AllPivots	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	13
+edge	body	NumStability.Source.Higham.Chapter19.StoredLoop.StrongModel	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	6
+edge	body	NumStability.Source.Higham.Chapter19.StoredLoop.StrongModel	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	1
+edge	body	NumStability.Source.Higham.Chapter19.StoredLoop.StrongModel	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	2
+edge	body	NumStability.Source.Higham.Chapter19.StoredLoop.StrongModel	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	12
+edge	body	NumStability.Source.Higham.Chapter19.StoredLoop.StrongModel	NumStability.Source.Higham.Chapter19.StoredLoop	3
+edge	body	NumStability.Source.Higham.Chapter19.Theorem05.Nonbreakdown	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	16
+edge	body	NumStability.Source.Higham.Chapter19.Theorem05.Nonbreakdown	NumStability.Source.Higham.Chapter19.Theorem05.SourceClosure	4
+edge	body	NumStability.Source.Higham.Chapter19.Theorem05.SourceClosure	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem05.SourceClosure	NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem05.SourceClosure	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem05.SourceClosure	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem05.SourceClosure	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	99
+edge	body	NumStability.Source.Higham.Chapter19.Theorem05.SourceClosure	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	3
+edge	body	NumStability.Source.Higham.Chapter19.Theorem05.SourceClosure	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	9
+edge	body	NumStability.Source.Higham.Chapter19.Theorem05.SourceClosure	NumStability.Algorithms.LinearSystems.QR.QRSolve	31
+edge	body	NumStability.Source.Higham.Chapter19.Theorem05.SourceClosure	NumStability.Source.Higham.Chapter19.Labels	2
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivot	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	2
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivot	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	21
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivot	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	4
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivot	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	2
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivot	NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivot	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	8
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	29
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	4
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	NumStability.Source.Higham.Chapter19.Core	6
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivot	3
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamAssembly	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	3
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	2
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	2
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham	NumStability.Source.Higham.Chapter19.Theorem06.RowSpecific	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamAssembly	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamFull	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	4
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete	NumStability.Source.Higham.Chapter19.Core	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete	NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	4
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamFull	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	2
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamFull	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	2
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamFull	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	2
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamFull	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	4
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamFull	NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamFull	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete	3
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamFull	NumStability.Source.Higham.Chapter19.Theorem06.ElementwiseEntry	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamFull	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	2
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.Elementwise	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	15
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.Elementwise	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.Elementwise	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	3
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.Elementwise	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	2
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.Elementwise	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ElementwiseEntry	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	5
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ElementwiseEntry	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ElementwiseEntry	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	3
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ElementwiseEntry	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ElementwisePackaged	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	9
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ElementwisePackaged	NumStability.Source.Higham.Chapter19.Core	2
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.ElementwisePackaged	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	4
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.Final	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	3
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.Final	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	64
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.Final	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	7
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.Final	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	5
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.Final	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	18
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.Final	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	2
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	18
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	2
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	NumStability.Source.Higham.Chapter19.Core	13
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.RowSpecific	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	5
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.RowSpecific	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	2
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.RowSpecific	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	2
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.RowSpecific	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.StrongModel	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	5
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.StrongModel	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	54
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.StrongModel	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	10
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.StrongModel	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	7
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.StrongModel	NumStability.Source.Higham.Chapter19.Core	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.StrongModel	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	3
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.StrongModel	NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.StrongModel	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamFull	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.StrongModel	NumStability.Source.Higham.Chapter19.Theorem06.Final	19
+edge	body	NumStability.Source.Higham.Chapter19.Theorem06.StrongModel	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	1
+edge	body	NumStability.Source.Higham.Chapter19.Theorem10.ActualMatrix	NumStability.Algorithms.LinearSystems.QR.GivensMatrixStep	4
+edge	body	NumStability.Source.Higham.Chapter19.Theorem10.ActualMatrix	NumStability.Algorithms.LinearSystems.QR.GivensQR	146
+edge	body	NumStability.Source.Higham.Chapter19.Theorem10.ActualMatrix	NumStability.Algorithms.LinearSystems.QR.GivensSpec	26
+edge	body	NumStability.Source.Higham.Chapter19.Theorem10.ActualMatrix	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	5
+edge	body	NumStability.Source.Higham.Chapter19.Theorem10.ActualMatrix	NumStability.Source.Higham.Chapter19.Core	2
+edge	body	NumStability.Source.Higham.Chapter19.Theorem10.ActualMatrix	NumStability.Source.Higham.Chapter19.Lemma09.DisjointSweep	10
+edge	body	NumStability.Source.Higham.Chapter19.TurnbullAitken	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	3
+edge	body	NumStability.Source.Higham.Chapter19.WYApplicationClosure	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	7
+edge	body	NumStability.Source.Higham.Chapter19.WYApplicationClosure	NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar	8
+edge	signature	NumStability.Algorithms.LinearSystems.QR.GivensMatrixStep	NumStability.Algorithms.LinearSystems.QR.GivensSpec	30
+edge	signature	NumStability.Algorithms.LinearSystems.QR.GivensQR	NumStability.Algorithms.LinearSystems.QR.GivensMatrixStep	7
+edge	signature	NumStability.Algorithms.LinearSystems.QR.GivensQR	NumStability.Algorithms.LinearSystems.QR.GivensSpec	24
+edge	signature	NumStability.Algorithms.LinearSystems.QR.GivensQR	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	25
+edge	signature	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	55
+edge	signature	NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	55
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	13
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	28
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	58
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderConstruction2	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	10
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	6
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	6
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	1
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	10
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	7
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderQApply	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	1
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderQApply	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	34
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderQApply	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	1
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderQApply	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	1
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	20
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	53
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	34
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	72
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	2
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	10
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	111
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	5
+edge	signature	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	17
+edge	signature	NumStability.Algorithms.LinearSystems.QR.QRSolve	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	11
+edge	signature	NumStability.Algorithms.LinearSystems.QR.QRSolve	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	1
+edge	signature	NumStability.Algorithms.LinearSystems.QR.QRSolve	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	127
+edge	signature	NumStability.Algorithms.LinearSystems.QR.QRSolve	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	19
+edge	signature	NumStability.Algorithms.LinearSystems.QR.QRSolve	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	12
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm11.CGSRounded	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	31
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm11.CGSRounded	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	6
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSClosure	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	5
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSClosure	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	11
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSClosure	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	44
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSNonbreakdown	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	1
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSNonbreakdown	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	13
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSNonbreakdown	NumStability.Source.Higham.Chapter19.Algorithm12.MGSSourceRate	14
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSPaddedClosure	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	29
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSPaddedClosure	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	15
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSPaddedClosure	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	11
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSPaddedClosure	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	1
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSPaddedClosure	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	71
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRepair	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	4
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRepair	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	14
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	37
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar	3
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	22
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSSourceRate	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	11
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSSourceRate	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	10
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSSourceRate	NumStability.Source.Higham.Chapter19.Algorithm12.MGSPaddedClosure	15
+edge	signature	NumStability.Source.Higham.Chapter19.Algorithm12.MGSSourceRate	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	24
+edge	signature	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.GivensQR	15
+edge	signature	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.GivensSpec	7
+edge	signature	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	151
+edge	signature	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	3
+edge	signature	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	379
+edge	signature	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	20
+edge	signature	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	1307
+edge	signature	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	395
+edge	signature	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	351
+edge	signature	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	63
+edge	signature	NumStability.Source.Higham.Chapter19.Core	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	708
+edge	signature	NumStability.Source.Higham.Chapter19.FormedQ	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	2
+edge	signature	NumStability.Source.Higham.Chapter19.FormedQ	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	4
+edge	signature	NumStability.Source.Higham.Chapter19.FormedQ	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	2
+edge	signature	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.GivensSpec	14
+edge	signature	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	1
+edge	signature	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	3
+edge	signature	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	1
+edge	signature	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	4
+edge	signature	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	7
+edge	signature	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	4
+edge	signature	NumStability.Source.Higham.Chapter19.Labels	NumStability.Algorithms.LinearSystems.QR.QRSolve	3
+edge	signature	NumStability.Source.Higham.Chapter19.Lemma01.Construction2	NumStability.Algorithms.LinearSystems.QR.HouseholderConstruction2	4
+edge	signature	NumStability.Source.Higham.Chapter19.Lemma03.ActualSequence	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	4
+edge	signature	NumStability.Source.Higham.Chapter19.Lemma03.ActualSequence	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	1
+edge	signature	NumStability.Source.Higham.Chapter19.Lemma03.ActualSequence	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	6
+edge	signature	NumStability.Source.Higham.Chapter19.Lemma07.Gamma4	NumStability.Algorithms.LinearSystems.QR.GivensSpec	11
+edge	signature	NumStability.Source.Higham.Chapter19.Lemma09.DisjointSweep	NumStability.Algorithms.LinearSystems.QR.GivensQR	6
+edge	signature	NumStability.Source.Higham.Chapter19.Lemma09.DisjointSweep	NumStability.Algorithms.LinearSystems.QR.GivensSpec	28
+edge	signature	NumStability.Source.Higham.Chapter19.Lemma09.DisjointSweep	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	1
+edge	signature	NumStability.Source.Higham.Chapter19.PolarNearest	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	5
+edge	signature	NumStability.Source.Higham.Chapter19.PolarNearest	NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar	2
+edge	signature	NumStability.Source.Higham.Chapter19.Problem06.ActualStep	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	2
+edge	signature	NumStability.Source.Higham.Chapter19.Problem06.ActualStep	NumStability.Algorithms.LinearSystems.QR.HouseholderReflector	6
+edge	signature	NumStability.Source.Higham.Chapter19.Problem06.ActualStep	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	4
+edge	signature	NumStability.Source.Higham.Chapter19.Problem10	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	5
+edge	signature	NumStability.Source.Higham.Chapter19.Problem10	NumStability.Source.Higham.Chapter19.Algorithm11.CGSRounded	26
+edge	signature	NumStability.Source.Higham.Chapter19.Problem10	NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded	17
+edge	signature	NumStability.Source.Higham.Chapter19.Sensitivity	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	9
+edge	signature	NumStability.Source.Higham.Chapter19.Sensitivity	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	10
+edge	signature	NumStability.Source.Higham.Chapter19.Sensitivity.Closure	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	2
+edge	signature	NumStability.Source.Higham.Chapter19.Sensitivity.Closure	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	1
+edge	signature	NumStability.Source.Higham.Chapter19.Sensitivity.Closure	NumStability.Source.Higham.Chapter19.Sensitivity	5
+edge	signature	NumStability.Source.Higham.Chapter19.StoredLoop	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	2
+edge	signature	NumStability.Source.Higham.Chapter19.StoredLoop	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	3
+edge	signature	NumStability.Source.Higham.Chapter19.StoredLoop.AllPivots	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	15
+edge	signature	NumStability.Source.Higham.Chapter19.StoredLoop.AllPivots	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	20
+edge	signature	NumStability.Source.Higham.Chapter19.StoredLoop.StrongModel	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	1
+edge	signature	NumStability.Source.Higham.Chapter19.StoredLoop.StrongModel	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	16
+edge	signature	NumStability.Source.Higham.Chapter19.StoredLoop.StrongModel	NumStability.Source.Higham.Chapter19.StoredLoop	2
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem05.Nonbreakdown	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	7
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem05.Nonbreakdown	NumStability.Algorithms.LinearSystems.QR.QRSolve	3
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem05.Nonbreakdown	NumStability.Source.Higham.Chapter19.Theorem05.SourceClosure	8
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem05.SourceClosure	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	43
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem05.SourceClosure	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	2
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem05.SourceClosure	NumStability.Algorithms.LinearSystems.QR.QRSolve	15
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.ActualSource	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	2
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.ActualSource	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	2
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivot	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	8
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivot	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	4
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	17
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	2
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	NumStability.Source.Higham.Chapter19.Core	1
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	1
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	3
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	2
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamAssembly	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	2
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	3
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	3
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamFull	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	2
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamFull	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	2
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamFull	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	4
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamFull	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete	2
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamFull	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	2
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.Elementwise	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	8
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.Elementwise	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	1
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.Elementwise	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	3
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.Elementwise	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	1
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.Elementwise	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	1
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.ElementwiseEntry	NumStability.Algorithms.LinearSystems.QR.HouseholderApply	4
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.ElementwiseEntry	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	1
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.ElementwiseEntry	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	1
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.ElementwiseEntry	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	1
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.ElementwisePackaged	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	7
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.ElementwisePackaged	NumStability.Source.Higham.Chapter19.Core	1
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.ElementwisePackaged	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	2
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.Final	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	18
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.Final	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	1
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.Final	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	3
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.Final	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	2
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	13
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	5
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	NumStability.Source.Higham.Chapter19.Core	3
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.RowSpecific	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	3
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.RowSpecific	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	2
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.RowSpecific	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	1
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.StrongModel	NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep	1
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.StrongModel	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	17
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.StrongModel	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	3
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.StrongModel	NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivotFull	2
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.StrongModel	NumStability.Source.Higham.Chapter19.Theorem06.Final	11
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem06.StrongModel	NumStability.Source.Higham.Chapter19.Theorem06.Pivoted	1
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem10.ActualMatrix	NumStability.Algorithms.LinearSystems.QR.GivensQR	77
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem10.ActualMatrix	NumStability.Algorithms.LinearSystems.QR.HouseholderQR	4
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem10.ActualMatrix	NumStability.Source.Higham.Chapter19.Core	2
+edge	signature	NumStability.Source.Higham.Chapter19.Theorem10.ActualMatrix	NumStability.Source.Higham.Chapter19.Lemma09.DisjointSweep	6
+edge	signature	NumStability.Source.Higham.Chapter19.TurnbullAitken	NumStability.Algorithms.LinearSystems.QR.HouseholderSpec	1
+edge	signature	NumStability.Source.Higham.Chapter19.WYApplicationClosure	NumStability.Algorithms.LinearSystems.QR.GramSchmidt	1
