@@ -88,7 +88,7 @@ Restricted to the 42 historical owners:
 | Measure | Value |
 | --- | --- |
 | Selected declarations | **5,129** |
-| of which private | **151** (require reviewed name rewrites) |
+| of which private | **151** (96 ordinary rewrites; 55 exact public promotions) |
 | Authoritative compiler source-command groups owning them | 4,694 |
 | Outgoing typed edges from lane declarations | 82,645 |
 | Incoming typed edges from outside the lane | 1,722 |
@@ -310,8 +310,30 @@ suffix collisions within any single module) and stable, because a declaration's
 historical owner never changes. The checker's own `pre` mode caught this
 collision before any manifest was committed.
 
-All **151** private declarations have a reviewed rewrite whose candidate name
-re-encodes the destination module and preserves the declaration suffix exactly.
+Of the **151** private declarations, **96** remain private and have a reviewed
+rewrite whose candidate name re-encodes the destination module and preserves
+the declaration suffix exactly.
+
+The frozen typed graph contains **114 body edges** that cross a reviewed
+destination boundary and target exactly **55** other private declarations.
+Those helpers cannot remain module-private after the split. The committed
+promotion contract derives that set from the frozen graph, maps every helper to
+the public name obtained by dropping only Lean's private owner/ordinal prefix,
+and proves all 55 candidate names are distinct and collide with no frozen
+declaration. Each row records the frozen command hash, the exact byte offset of
+its leading `private ` modifier, and the hash after removing only those eight
+ASCII bytes. The theorem type and body bytes are otherwise identical. Promotion
+rows are excluded from the ordinary private-rewrite map.
+
+Production application is deterministic: locate the frozen authored command by
+the promotion row's logical identity and its format-2 route span; verify the
+frozen command SHA-256; move that complete command to the recorded destination;
+at the recorded byte offset require the exact bytes `private ` and delete those
+eight bytes once; change no other command byte and change no consumer command.
+After compilation, the command root must be the recorded public candidate name,
+and the candidate command slice must have the recorded promoted SHA-256. A
+completed destination that still emits the historical/destination-private name
+fails ownership before graph normalization.
 
 ### 4.3 Authoritative spans and span coherence
 
@@ -329,6 +351,14 @@ scanner had hidden:
   *including its doc comment* and the exact position of the declared
   identifier, so no heuristic is needed for attachment, wrapped names or
   indentation.
+- **Unicode source columns.** Lean's `.ilean` line columns count decoded
+  Unicode characters, not UTF-8 bytes. The earlier slicer used the column as a
+  byte offset and therefore truncated commands whose final line contained a
+  multibyte symbol (for example `∑` or `ℝ`) while still producing a stable but
+  false hash. The corrected slicer converts each decoded character prefix back
+  to its UTF-8 byte length. Coordinates are unchanged; **675 of 5,129 route
+  rows** receive corrected command hashes. A non-ASCII end-line self-test now
+  rejects the old truncation behavior.
 - **Span coherence.** A Lean `structure` or `inductive` emits its constructors,
   eliminators and field projections from a single source command, so all of them
   share one span and cannot be separated. The declaration-level classification
@@ -440,13 +470,17 @@ stable QR owner is rejected before stage/post graph validation.
 with `--mode pre`, `--mode stage`, `--mode post` and `--self-test`.
 
 - `pre` verifies the frozen stream digest, all source and `.ilean` hashes, all
-  5,129 compiler-span routes and command fingerprints, the unchanged ownership
-  manifest, the 244-edge typed destination DAG, all 46 exact wrapper/aggregate
-  import contracts, the 121-module tier surface, all 23 base cross-lane imports
-  and their 4,221 typed edges, and the 203 exact coordinator patch rows.
+  5,129 Unicode-column-correct compiler-span routes and command fingerprints,
+  the exact 55-row/114-edge private-promotion contract and its collision checks,
+  the unchanged ownership manifest, the 244-edge typed destination DAG, all 46
+  exact wrapper/aggregate import contracts, the 121-module tier surface, all 23
+  base cross-lane imports and their 4,221 typed edges, and the 203 exact
+  coordinator patch rows.
 - `stage` accepts a partially migrated tree: it takes the completed
-  destinations, requires reviewed private-name rewrites only for those, proves
-  candidate ownership, re-hashes every candidate source command, regenerates
+  destinations, requires the 96 ordinary private-name rewrites only for those,
+  requires each completed promotion to be public, proves candidate ownership,
+  and re-hashes every candidate source command against either the frozen hash
+  or the exact `private `-removed hash. It regenerates
   and verifies the full 4,224-row cross-lane freeze, requires exact normalized
   equality for every LS declaration and every typed edge incident to one, and
   requires the exact declaration-name set in every LS historical/canonical
@@ -454,8 +488,9 @@ with `--mode pre`, `--mode stage`, `--mode post` and `--self-test`.
   imports and each completed wrapper/aggregate's exact imports.
   Declaration/module moves whose owners and edge endpoints are wholly outside
   the LS contract are deliberately ignored.
-- `post` additionally requires all destinations complete, all 151 reviewed
-  private rewrites, every wrapper and aggregate, the hash-pinned 69-identity QR
+- `post` additionally requires all destinations complete, all 96 ordinary
+  private rewrites and all 55 exact promotions, every wrapper and aggregate,
+  the hash-pinned 69-identity QR
   handoff, all placeholders resolved exactly from it, all coordinator
   imports/root tests/tier rows/compatibility rows, and proves that no reusable
   destination transitively reaches a `Source.*`, `Higham.*`, legacy
@@ -506,7 +541,13 @@ unchanged, and rejects each of these mutations:
 34. a false QR declaration owner or import-only carrier despite a matching
     file/import shape; and
 35. an edge-free public declaration added to a selected historical/canonical
-    owner.
+    owner;
+36. a Unicode `.ilean` end column interpreted as a UTF-8 byte offset;
+37. a missing or extra private promotion;
+38. a wrong or colliding promoted public name;
+39. a completed cross-destination helper left private; and
+40. any promoted theorem body/type edit beyond removal of the exact leading
+    `private ` modifier.
 
 ## 7. Integrator requests
 
@@ -526,7 +567,7 @@ rejecting placeholders rather than guessed paths.
 | Path | Content |
 | --- | --- |
 | `tools/architecture/check_lsq_ch20_ownership.py` | lane checker, pre/stage/post modes plus self-test |
-| `docs/architecture/declaration-ownership/lsq-ch20-routes.tsv` | 5,129 compiler-span routes; SHA-256 `4B6079A931A0986B7455F24228F68B88BDCB165234BBF3BE556E48E6412DDD0E` |
+| `docs/architecture/declaration-ownership/lsq-ch20-routes.tsv` | 5,129 Unicode-column-correct compiler-span routes; SHA-256 `D79040FF5B1C5085D4019FF0BFAB9942F52D95CF326C236DB60C2C1F1179348A` |
 | `docs/architecture/declaration-ownership/lsq-ch20-frozen-owners.tsv` | 42 frozen source/blob rows and 41 `.ilean` hashes; SHA-256 `1B56CB65B129D7CCA113CECFE7324A2FEB22C301037A77537BB4ECA65252A524` |
 | `docs/architecture/declaration-ownership/lsq-ch20-ownership.tsv` | unchanged 5,129-row ownership allocation; SHA-256 `288CA74AD3534B6B7E39D38B11BDF831738643392F4C13A4C898BA0309722D63` |
 | `docs/architecture/declaration-ownership/lsq-ch20-tiers.tsv` | exact 121-module surface: 44 source, 34 reusable, 43 compatibility; SHA-256 `39EFB2528AC96A28A12DB9EDFC1E11F60695F90929F3C47EC8D19F8C8FB96CA4` |
@@ -534,7 +575,8 @@ rejecting placeholders rather than guessed paths.
 | `docs/architecture/declaration-ownership/lsq-ch20-destination-dag.tsv` | exact 244 typed destination edges; SHA-256 `6F1D0003429EF4C8F3327B837B811660D2875A86B87F90C75D8BC7975CFD1420` |
 | `docs/architecture/declaration-ownership/lsq-ch20-cross-lane-normalization.tsv` | 4,224 base/final QR-LS normalization rows; SHA-256 `056DA202B1D8C3FC6F6ED540B6064D094D89455A43848FBEA175C06DAFE8384F` |
 | `docs/architecture/declaration-ownership/lsq-ch20-coordinator-patches.tsv` | 203 exact shared-file patches; SHA-256 `75E210F086105D5E1C2E61FD974A5022BA2A51FB602C21C6FE3E2DF6AD3FAB63` |
-| `docs/architecture/declaration-ownership/lsq-ch20-private-rewrites.tsv` | 151 reviewed private-name rewrites; SHA-256 `4DC6977FE8DA3DA01940FEEEBC5D79D6F3970B7CA9E75CF3362237DE3DB4FAC8` |
+| `docs/architecture/declaration-ownership/lsq-ch20-private-rewrites.tsv` | 96 reviewed ordinary private-name rewrites; SHA-256 `10F690E4C6FB9C0554EE0D17D04B0FB64714AA7FE06D9266E4E78E6E746AABFD` |
+| `docs/architecture/declaration-ownership/lsq-ch20-private-promotions.tsv` | exact 55-helper/114-body-edge public-promotion contract; SHA-256 `8327019F2030BF8885C5FA4929954B5404F8A516F69C030F306619185165DBAF` |
 | `docs/architecture/migrations/worker-lsq-ch20-migration.md` | this contract |
 | `docs/architecture/migrations/worker-lsq-ch20-integrator-request.md` | exact human-readable coordinator handoff |
 
@@ -556,7 +598,8 @@ python tools/architecture/check_lsq_ch20_ownership.py --mode pre \
   --frozen-ilean-dir <PACKET_ROOT>/runtime/frozen-owners/ilean \
   --project-root .
 -> pre mode passed: 5129 declarations, 4694 compiler command groups,
-   72 destinations, 244 owner edges, 19 LS-to-QR and 4 QR-to-LS base imports
+   72 destinations, 244 owner edges, 55 private promotions over 114
+   cross-destination body edges, 19 LS-to-QR and 4 QR-to-LS base imports
    (4221 typed edges), manifest sha256
    288CA74AD3534B6B7E39D38B11BDF831738643392F4C13A4C898BA0309722D63
 ```
