@@ -16,16 +16,13 @@ The ownership manifest has the following tab-separated schema::
     format\t1
     logical_name\thistorical_module\tdestination_module\tkind\tvisibility
 
-Manifest generation is driven by a separately reviewed route map.  A route map
-starts with ``format\t1`` and accepts these row shapes::
-
-    range\thistorical_module\tfirst_line\tlast_line\tdestination_module
-    exact\thistorical_module\tlogical_name\t-\tdestination_module
-
-Source lines are one-based and inclusive.  Range routing resolves compiled
-declarations through source locations in the historical module's ``.ilean``
-file.  Exact routes take precedence and cover reviewed declarations that have
-no usable source declaration root.  The checker never invents a destination.
+Manifest generation is driven by a separately reviewed format-2 route map.
+Every selected declaration has one row naming its authoritative compiler
+source-command root, all eight coordinates from that root's ``.ilean`` entry,
+and the SHA-256 of the exact LF-normalized command text.  Compiler-generated
+declarations name the authored root that generated them.  Rows sharing a
+compiler span must share one destination.  There is no exact-route escape
+hatch that can bypass compiler spans.
 
 Lean private names encode their owning module and therefore necessarily change
 when a declaration moves.  Stage and post modes require an explicit companion
@@ -37,14 +34,12 @@ map for every private declaration owned by a completed destination::
 Only those reviewed private-name rewrites are normalized during the exact
 full-graph comparison.
 
-The lane additionally freezes two cross-lane contracts that the QR lane owns on
-the other side:
-
-* the 19 ``LS_TO_QR`` module dependencies must survive owner normalization, so
-  some destination that owns a declaration of the historical module keeps the
-  QR target as a direct import;
-* the four ``QR_TO_LS`` consumers must keep reaching lane declarations through
-  the retained historical import paths.
+The lane additionally freezes the 19 ``LS_TO_QR`` and four ``QR_TO_LS`` base
+edges together with their final canonical normalization.  A deliberately
+unresolved QR-owner token is accepted as contract data in pre/stage mode but
+is a hard post-mode failure.  This prevents either lane from guessing the
+other lane's final owner while also preventing compatibility-wrapper imports
+from surviving in production after integration.
 
 Proposed tiers live in a lane-owned manifest because the global
 ``docs/architecture/tiers.json`` registration is integrator-owned::
@@ -66,7 +61,7 @@ import re
 import sys
 import tempfile
 from collections import Counter, defaultdict, deque
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Callable, Iterable
 
@@ -136,10 +131,24 @@ EXPECTED_PRIVATE_ROWS = 151
 # The declaration-free members of the historical family and the pre-existing
 # canonical Chapter 20 leaves.  These modules are checked as import-only
 # wrappers or aggregates once the lane declares them complete.
-DEFAULT_STRUCTURAL_MODULES = {
-    f"{LS_PREFIX}.Higham20SourceAliases",
-    f"{HIGHAM_COMPAT_ROOT}.SourceAliases",
+REUSABLE_ALGORITHM_UMBRELLA = REUSABLE_ALGORITHM_ROOT
+REUSABLE_ANALYSIS_UMBRELLA = REUSABLE_ANALYSIS_ROOT
+
+HISTORICAL_DECLARATION_WRAPPERS = frozenset(EXPECTED_HISTORICAL_COUNTS)
+BASE_COMPATIBILITY_WRAPPERS = frozenset(
+    {
+        f"{LS_PREFIX}.Higham20SourceAliases",
+        f"{HIGHAM_COMPAT_ROOT}.SourceAliases",
+    }
+)
+ALL_COMPATIBILITY_WRAPPERS = (
+    HISTORICAL_DECLARATION_WRAPPERS | BASE_COMPATIBILITY_WRAPPERS
+)
+
+DEFAULT_STRUCTURAL_MODULES = set(ALL_COMPATIBILITY_WRAPPERS) | {
     SOURCE_ROOT,
+    REUSABLE_ALGORITHM_UMBRELLA,
+    REUSABLE_ANALYSIS_UMBRELLA,
 }
 
 PRESERVED_SOURCE_LEAVES = {
@@ -225,6 +234,24 @@ FROZEN_QR_TO_LS = frozenset(
     }
 )
 
+# These three frozen direct imports have no typed declaration edge in the base
+# stream.  Their canonical carrier is therefore an explicit reviewed choice,
+# not something inferred by the checker.
+IMPORT_ONLY_LS_DESTINATIONS = {
+    (
+        f"{LS_PREFIX}.Higham20Theorem20_7",
+        "NumStability.Algorithms.QR.HouseholderQRSupport",
+    ): f"{SOURCE_ROOT}.Theorem07",
+    (
+        f"{LS_PREFIX}.LSE",
+        "NumStability.Algorithms.QR.GramSchmidtPolar",
+    ): f"{REUSABLE_ALGORITHM_ROOT}.Equality.GQR",
+    (
+        "NumStability.Algorithms.QR.Higham19Alg12MGSSourceRate",
+        f"{LS_PREFIX}.Higham20MPProse",
+    ): f"{SOURCE_ROOT}.Prose.MoorePenrose",
+}
+
 BASELINE_TSV_SHA256 = (
     "32ADA469E27A971E9B0BB972F29C51E1DCBE99104A1492D4C69549C339825563"
 )
@@ -234,12 +261,72 @@ DEFAULT_MANIFEST = OWNERSHIP_DIR / "lsq-ch20-ownership.tsv"
 DEFAULT_ROUTES = OWNERSHIP_DIR / "lsq-ch20-routes.tsv"
 DEFAULT_PRIVATE_REWRITES = OWNERSHIP_DIR / "lsq-ch20-private-rewrites.tsv"
 DEFAULT_TIERS = OWNERSHIP_DIR / "lsq-ch20-tiers.tsv"
+DEFAULT_FROZEN_OWNERS = OWNERSHIP_DIR / "lsq-ch20-frozen-owners.tsv"
+DEFAULT_STRUCTURAL_IMPORTS = OWNERSHIP_DIR / "lsq-ch20-structural-imports.tsv"
+DEFAULT_DESTINATION_DAG = OWNERSHIP_DIR / "lsq-ch20-destination-dag.tsv"
+DEFAULT_CROSS_LANE = OWNERSHIP_DIR / "lsq-ch20-cross-lane-normalization.tsv"
+DEFAULT_COORDINATOR_PATCHES = OWNERSHIP_DIR / "lsq-ch20-coordinator-patches.tsv"
+
+COORDINATOR_CONSUMER_FINAL_IMPORTS = {
+    "NumStability.Algorithms": {
+        REUSABLE_ALGORITHM_UMBRELLA,
+        REUSABLE_ANALYSIS_UMBRELLA,
+        SOURCE_ROOT,
+    },
+    "NumStability.Algorithms.MatrixInversion": {
+        f"{REUSABLE_ANALYSIS_ROOT}.Wedin",
+    },
+    "NumStability.Algorithms.RandNLA.LeastSquaresSketch": {
+        f"{REUSABLE_ALGORITHM_ROOT}.Basic",
+        f"{REUSABLE_ALGORITHM_ROOT}.NormalEquations",
+        f"{REUSABLE_ALGORITHM_ROOT}.StoredQR",
+        f"{REUSABLE_ANALYSIS_ROOT}.BackwardError",
+        f"{REUSABLE_ANALYSIS_ROOT}.Basic",
+        f"{REUSABLE_ANALYSIS_ROOT}.NormalEquations",
+        f"{SOURCE_ROOT}.Theorem03.QRSolve",
+    },
+    "NumStability.Algorithms.Underdetermined.UnderdeterminedSolve": {
+        f"{REUSABLE_ALGORITHM_ROOT}.Basic",
+        f"{REUSABLE_ALGORITHM_ROOT}.RankGeometry",
+        f"{REUSABLE_ANALYSIS_ROOT}.Normwise",
+        f"{REUSABLE_ANALYSIS_ROOT}.Wedin",
+        f"{SOURCE_ROOT}.Theorem03.QRSolve",
+    },
+    "NumStability.Source.Higham.Chapter14.Section05.SpectralConvergence": {
+        f"{SOURCE_ROOT}.Problem03",
+    },
+}
+
+ROOT_TEST_IMPORTS = {
+    "NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares",
+    "NumStabilityTest.Import.Analysis.Perturbation.LeastSquares",
+    "NumStabilityTest.Import.Compatibility.Algorithms.LeastSquares",
+}
+
+LANE_PRESERVED_FINAL_IMPORTS = {
+    f"{SOURCE_ROOT}.Equation32": {
+        f"{REUSABLE_ANALYSIS_ROOT}.Wedin",
+    },
+    f"{SOURCE_ROOT}.Lemma06": {
+        f"{REUSABLE_ALGORITHM_ROOT}.AugmentedSystem",
+        f"{REUSABLE_ALGORITHM_ROOT}.Basic",
+        f"{SOURCE_ROOT}.Theorem03.QRSolve",
+    },
+    f"{SOURCE_ROOT}.Theorem01": {
+        f"{REUSABLE_ANALYSIS_ROOT}.Wedin",
+        f"{SOURCE_ROOT}.Lemma11.Support",
+    },
+}
 
 HEX_SHA256 = re.compile(r"^[0-9A-Fa-f]{64}$")
 MODULE_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*$")
 EDGE_KINDS = {"body", "signature"}
 TIERS = {"reusable", "source", "compatibility"}
 IMPORT_RE = re.compile(r"^\s*(?:public\s+)?import\s+([A-Za-z_][A-Za-z0-9_.]*)\s*$")
+COMMAND_PROVENANCE = {"authored", "compiler_generated"}
+CROSS_LANE_DIRECTIONS = {"LS_TO_QR", "QR_TO_LS"}
+CROSS_LANE_STATUS = {"resolved", "qr_owner_required"}
+QR_OWNER_PLACEHOLDER = re.compile(r"^@QR_OWNER_REQUIRED:[A-Za-z_][A-Za-z0-9_.]*$")
 
 
 @dataclass(frozen=True)
@@ -265,6 +352,65 @@ class RangeRoute:
     first_line: int
     last_line: int
     destination_module: str
+
+
+@dataclass(frozen=True)
+class CommandRoute:
+    historical_module: str
+    logical_name: str
+    historical_actual_name: str
+    command_root_logical: str
+    command_root_actual_name: str
+    provenance: str
+    start_line: int
+    start_col: int
+    end_line: int
+    end_col: int
+    selection_start_line: int
+    selection_start_col: int
+    selection_end_line: int
+    selection_end_col: int
+    command_sha256: str
+    destination_module: str
+
+    @property
+    def span(self) -> tuple[int, int, int, int, int, int, int, int]:
+        return (
+            self.start_line,
+            self.start_col,
+            self.end_line,
+            self.end_col,
+            self.selection_start_line,
+            self.selection_start_col,
+            self.selection_end_line,
+            self.selection_end_col,
+        )
+
+
+@dataclass(frozen=True)
+class FrozenOwner:
+    module: str
+    path: str
+    git_blob: str
+    source_sha256: str
+    physical_lines: int
+    nonblank_lines: int
+    ilean_sha256: str
+    ilean_bytes: int
+
+
+@dataclass(frozen=True)
+class CrossLaneNormalization:
+    row_type: str
+    direction: str
+    edge_kind: str
+    base_source_module: str
+    base_source_name: str
+    base_target_module: str
+    base_target_name: str
+    ls_destination: str
+    qr_owner: str
+    status: str
 
 
 @dataclass(frozen=True)
@@ -584,80 +730,6 @@ def validate_manifest_against_baseline(
             )
 
 
-def read_routes(
-    path: Path,
-    historical_modules: set[str] | None = None,
-) -> tuple[list[RangeRoute], dict[tuple[str, str], str]]:
-    known = (
-        set(EXPECTED_HISTORICAL_COUNTS)
-        if historical_modules is None
-        else historical_modules
-    )
-    with path.open(encoding="utf-8", newline="") as stream:
-        rows = list(csv.reader(stream, delimiter="\t"))
-    if not rows or rows[0] != ["format", "1"]:
-        raise ValueError(f"{path}: routes must start with 'format\\t1'")
-
-    ranges: list[RangeRoute] = []
-    exact: dict[tuple[str, str], str] = {}
-    for line_number, row in enumerate(rows[1:], 2):
-        if len(row) != 5:
-            raise ValueError(f"{path}:{line_number}: route rows require five columns")
-        route_kind, historical, third, fourth, destination = row
-        if historical not in known:
-            raise ValueError(
-                f"{path}:{line_number}: unexpected historical module {historical}"
-            )
-        check_module_name(destination, f"{path}:{line_number}")
-        if destination in known:
-            raise ValueError(
-                f"{path}:{line_number}: destination is historical: {destination}"
-            )
-        destination_role(destination)
-        if route_kind == "range":
-            try:
-                first_line = int(third)
-                last_line = int(fourth)
-            except ValueError as error:
-                raise ValueError(
-                    f"{path}:{line_number}: non-integer range endpoint"
-                ) from error
-            if first_line < 1 or last_line < first_line:
-                raise ValueError(
-                    f"{path}:{line_number}: invalid inclusive range "
-                    f"{first_line}-{last_line}"
-                )
-            ranges.append(RangeRoute(historical, first_line, last_line, destination))
-        elif route_kind == "exact":
-            if fourth != "-" or not third:
-                raise ValueError(
-                    f"{path}:{line_number}: exact route shape is "
-                    "exact, historical, logical_name, -, destination"
-                )
-            key = (historical, third)
-            if key in exact:
-                raise ValueError(f"{path}:{line_number}: duplicate exact route {key}")
-            exact[key] = destination
-        else:
-            raise ValueError(f"{path}:{line_number}: unknown route kind {route_kind!r}")
-
-    by_module: dict[str, list[RangeRoute]] = defaultdict(list)
-    for route in ranges:
-        by_module[route.historical_module].append(route)
-    for module, module_ranges in by_module.items():
-        ordered = sorted(module_ranges, key=lambda route: route.first_line)
-        for previous, current in zip(ordered, ordered[1:]):
-            if current.first_line <= previous.last_line:
-                raise ValueError(
-                    f"{path}: overlapping {module} ranges "
-                    f"{previous.first_line}-{previous.last_line} and "
-                    f"{current.first_line}-{current.last_line}"
-                )
-    if not ranges and not exact:
-        raise ValueError(f"{path}: route map is empty")
-    return ranges, exact
-
-
 def default_ilean_path(project_root: Path, module: str) -> Path:
     return project_root / ".lake/build/lib/lean" / (module.replace(".", "/") + ".ilean")
 
@@ -675,7 +747,9 @@ def parse_ilean_overrides(values: list[str]) -> dict[str, Path]:
     return result
 
 
-def read_ilean_roots(path: Path, expected_module: str) -> dict[str, int]:
+def read_ilean_entries(
+    path: Path, expected_module: str
+) -> dict[str, tuple[int, int, int, int, int, int, int, int]]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as error:
@@ -688,92 +762,405 @@ def read_ilean_roots(path: Path, expected_module: str) -> dict[str, int]:
     decls = payload.get("decls")
     if not isinstance(decls, dict):
         raise ValueError(f"{path}: .ilean lacks a declaration map")
-    roots: dict[str, int] = {}
+    roots: dict[str, tuple[int, int, int, int, int, int, int, int]] = {}
     for name, source_range in decls.items():
         if (
             not isinstance(name, str)
             or not isinstance(source_range, list)
-            or not source_range
-            or not isinstance(source_range[0], int)
+            or len(source_range) != 8
+            or any(not isinstance(value, int) for value in source_range)
         ):
             raise ValueError(f"{path}: malformed declaration source range")
-        # Lean info-tree lines are zero-based; route files use editor-facing,
-        # one-based inclusive source lines.
-        roots[name] = source_range[0] + 1
+        span = tuple(source_range)
+        if any(value < 0 for value in span):
+            raise ValueError(f"{path}: negative declaration source coordinate")
+        if (span[2], span[3]) < (span[0], span[1]):
+            raise ValueError(f"{path}: reversed declaration source range")
+        roots[name] = span
     return roots
 
 
-def generate_manifest(
+def normalized_source_bytes(path: Path) -> bytes:
+    return path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
+def source_command_bytes(
+    payload: bytes, span: tuple[int, int, int, int, int, int, int, int]
+) -> bytes:
+    """Slice one compiler command using Lean's zero-based UTF-8 coordinates."""
+
+    start_line, start_col, end_line, end_col = span[:4]
+    lines = payload.splitlines(keepends=True)
+    if not lines:
+        lines = [b""]
+    offsets = [0]
+    for line in lines:
+        offsets.append(offsets[-1] + len(line))
+
+    def offset(line: int, column: int) -> int:
+        if line == len(lines) and column == 0:
+            return len(payload)
+        if line >= len(lines):
+            raise ValueError(
+                f"compiler source coordinate line {line} exceeds {len(lines)} lines"
+            )
+        line_payload = lines[line]
+        content_length = len(line_payload.rstrip(b"\n"))
+        if column > content_length:
+            raise ValueError(
+                f"compiler source coordinate column {column} exceeds line length "
+                f"{content_length} on line {line}"
+            )
+        return offsets[line] + column
+
+    start = offset(start_line, start_col)
+    end = offset(end_line, end_col)
+    if end <= start:
+        raise ValueError(f"empty or reversed compiler command span {span}")
+    return payload[start:end]
+
+
+def read_frozen_owners(path: Path) -> dict[str, FrozenOwner]:
+    with path.open(encoding="utf-8", newline="") as stream:
+        rows = list(csv.reader(stream, delimiter="\t"))
+    if not rows or rows[0] != ["format", "1"]:
+        raise ValueError(f"{path}: frozen owners must start with 'format\\t1'")
+    owners: dict[str, FrozenOwner] = {}
+    order: list[str] = []
+    for line_number, row in enumerate(rows[1:], 2):
+        if len(row) != 8:
+            raise ValueError(f"{path}:{line_number}: expected eight owner columns")
+        module, source_path, git_blob, source_hash, physical, nonblank, ilean_hash, ilean_bytes = row
+        check_module_name(module, f"{path}:{line_number}")
+        if module in owners:
+            raise ValueError(f"{path}:{line_number}: duplicate owner {module}")
+        if not re.fullmatch(r"[0-9A-Fa-f]{40}", git_blob):
+            raise ValueError(f"{path}:{line_number}: invalid Git blob ID")
+        if not HEX_SHA256.fullmatch(source_hash):
+            raise ValueError(f"{path}:{line_number}: invalid source SHA-256")
+        if ilean_hash != "-" and not HEX_SHA256.fullmatch(ilean_hash):
+            raise ValueError(f"{path}:{line_number}: invalid .ilean SHA-256")
+        try:
+            physical_count = int(physical)
+            nonblank_count = int(nonblank)
+            ilean_size = int(ilean_bytes)
+        except ValueError as error:
+            raise ValueError(f"{path}:{line_number}: invalid numeric owner field") from error
+        if physical_count < 1 or not (0 <= nonblank_count <= physical_count):
+            raise ValueError(f"{path}:{line_number}: invalid source line counts")
+        if (ilean_hash == "-") != (ilean_size == 0):
+            raise ValueError(f"{path}:{line_number}: inconsistent missing .ilean marker")
+        owners[module] = FrozenOwner(
+            module,
+            source_path,
+            git_blob.lower(),
+            source_hash.upper(),
+            physical_count,
+            nonblank_count,
+            ilean_hash.upper() if ilean_hash != "-" else "-",
+            ilean_size,
+        )
+        order.append(module)
+    expected = set(EXPECTED_HISTORICAL_COUNTS) | {f"{LS_PREFIX}.Higham20SourceAliases"}
+    if set(owners) != expected:
+        raise ValueError(
+            f"{path}: frozen owner coverage differs: "
+            f"missing={sorted(expected - set(owners))}; "
+            f"extra={sorted(set(owners) - expected)}"
+        )
+    if order != sorted(order):
+        raise ValueError(f"{path}: frozen owners must be sorted by module")
+    for module in EXPECTED_HISTORICAL_COUNTS:
+        if owners[module].ilean_sha256 == "-":
+            raise ValueError(f"{path}: declaration owner lacks frozen .ilean: {module}")
+    return owners
+
+
+def frozen_source_path(
+    project_root: Path, owner: FrozenOwner, frozen_source_dir: Path | None
+) -> Path:
+    if frozen_source_dir is None:
+        return project_root / owner.path
+    return frozen_source_dir / f"{owner.module}.lean"
+
+
+def frozen_ilean_path(
+    project_root: Path, module: str, frozen_ilean_dir: Path | None
+) -> Path:
+    if frozen_ilean_dir is None:
+        return default_ilean_path(project_root, module)
+    return frozen_ilean_dir / f"{module}.ilean"
+
+
+def generate_command_routes(
     baseline: dict[str, Declaration],
-    routes_path: Path,
+    records: dict[str, ManifestRow],
     project_root: Path,
-    ilean_overrides: dict[str, Path],
-    expected_counts: dict[str, int] | None = None,
-) -> dict[str, ManifestRow]:
-    known = (
-        set(EXPECTED_HISTORICAL_COUNTS)
-        if expected_counts is None
-        else set(expected_counts)
-    )
-    ranges, exact_routes = read_routes(routes_path, known)
-    ranges_by_module: dict[str, list[RangeRoute]] = defaultdict(list)
-    for route in ranges:
-        ranges_by_module[route.historical_module].append(route)
-
-    roots_by_module: dict[str, dict[str, int]] = {}
-    for module in ranges_by_module:
-        ilean_path = ilean_overrides.get(module, default_ilean_path(project_root, module))
-        roots_by_module[module] = read_ilean_roots(ilean_path, module)
-
-    exact_used: set[tuple[str, str]] = set()
-    range_use: Counter[RangeRoute] = Counter()
-    generated: dict[str, ManifestRow] = {}
-
-    for logical, declaration in baseline.items():
-        exact_key = (declaration.module, logical)
-        if exact_key in exact_routes:
-            destination = exact_routes[exact_key]
-            exact_used.add(exact_key)
-        else:
-            candidates = [
-                root
-                for root in roots_by_module.get(declaration.module, {})
-                if declaration.name == root or declaration.name.startswith(root + ".")
-            ]
-            if not candidates:
-                raise ValueError(
-                    f"unrouted semantic declaration {logical}; add an exact route"
-                )
-            root = max(candidates, key=len)
-            source_line = roots_by_module[declaration.module][root]
-            matching_ranges = [
-                route
-                for route in ranges_by_module[declaration.module]
-                if route.first_line <= source_line <= route.last_line
-            ]
-            if len(matching_ranges) != 1:
-                raise ValueError(
-                    f"{logical}: source root {root} at line {source_line} "
-                    f"matches {len(matching_ranges)} ranges"
-                )
-            route = matching_ranges[0]
-            range_use[route] += 1
-            destination = route.destination_module
-
-        generated[logical] = ManifestRow(
-            logical,
-            declaration.module,
-            destination,
-            declaration.kind,
-            declaration.visibility,
+    owners: dict[str, FrozenOwner],
+    frozen_source_dir: Path | None,
+    frozen_ilean_dir: Path | None,
+) -> dict[str, CommandRoute]:
+    actual_to_logical = baseline_actual_to_logical(baseline)
+    entries_by_module: dict[
+        str, dict[str, tuple[int, int, int, int, int, int, int, int]]
+    ] = {}
+    source_by_module: dict[str, bytes] = {}
+    historical_modules = {declaration.module for declaration in baseline.values()}
+    for module in sorted(historical_modules):
+        entries_by_module[module] = read_ilean_entries(
+            frozen_ilean_path(project_root, module, frozen_ilean_dir), module
+        )
+        source_by_module[module] = normalized_source_bytes(
+            frozen_source_path(project_root, owners[module], frozen_source_dir)
         )
 
-    unused_exact = sorted(set(exact_routes) - exact_used)
-    if unused_exact:
-        raise ValueError(f"unused exact routes: {unused_exact[:20]}")
-    unused_ranges = [route for route in ranges if not range_use[route]]
-    if unused_ranges:
-        raise ValueError(f"ranges route no selected declarations: {unused_ranges[:20]}")
+    generated: dict[str, CommandRoute] = {}
+    for logical, declaration in sorted(baseline.items()):
+        entries = entries_by_module[declaration.module]
+        candidates = [
+            root
+            for root in entries
+            if declaration.name == root or declaration.name.startswith(root + ".")
+        ]
+        if not candidates:
+            raise ValueError(
+                f"{logical}: no authoritative .ilean source-command root"
+            )
+        longest = max(map(len, candidates))
+        roots = [root for root in candidates if len(root) == longest]
+        if len(roots) != 1:
+            raise ValueError(f"{logical}: ambiguous authoritative roots {roots}")
+        root = roots[0]
+        root_logical = actual_to_logical.get(root)
+        if root_logical is None:
+            raise ValueError(
+                f"{logical}: .ilean root {root} is absent from the frozen selection"
+            )
+        span = entries[root]
+        command_hash = sha256_bytes(
+            source_command_bytes(source_by_module[declaration.module], span)
+        )
+        generated[logical] = CommandRoute(
+            declaration.module,
+            logical,
+            declaration.name,
+            root_logical,
+            root,
+            "authored" if declaration.name == root else "compiler_generated",
+            *span,
+            command_hash,
+            records[logical].destination_module,
+        )
+    validate_command_routes(generated, baseline, records)
+    return generated
+
+
+def command_route_bytes(routes: dict[str, CommandRoute]) -> bytes:
+    rows = ["format\t2"]
+    for logical in sorted(routes):
+        route = routes[logical]
+        rows.append(
+            "\t".join(
+                (
+                    "route",
+                    route.historical_module,
+                    route.logical_name,
+                    route.historical_actual_name,
+                    route.command_root_logical,
+                    route.command_root_actual_name,
+                    route.provenance,
+                    *(str(value) for value in route.span),
+                    route.command_sha256,
+                    route.destination_module,
+                )
+            )
+        )
+    return ("\n".join(rows) + "\n").encode("utf-8")
+
+
+def write_command_routes(path: Path, routes: dict[str, CommandRoute]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(command_route_bytes(routes))
+
+
+def read_command_routes(
+    path: Path,
+    baseline: dict[str, Declaration],
+    records: dict[str, ManifestRow],
+) -> dict[str, CommandRoute]:
+    with path.open(encoding="utf-8", newline="") as stream:
+        rows = list(csv.reader(stream, delimiter="\t"))
+    if not rows or rows[0] != ["format", "2"]:
+        raise ValueError(f"{path}: routes must start with 'format\\t2'")
+    routes: dict[str, CommandRoute] = {}
+    order: list[str] = []
+    for line_number, row in enumerate(rows[1:], 2):
+        if len(row) != 17 or row[0] != "route":
+            raise ValueError(
+                f"{path}:{line_number}: expected one 17-column command route"
+            )
+        try:
+            span = tuple(int(value) for value in row[7:15])
+        except ValueError as error:
+            raise ValueError(
+                f"{path}:{line_number}: non-integer compiler coordinate"
+            ) from error
+        route = CommandRoute(
+            row[1], row[2], row[3], row[4], row[5], row[6], *span, row[15], row[16]
+        )
+        if route.logical_name in routes:
+            raise ValueError(
+                f"{path}:{line_number}: duplicate route {route.logical_name}"
+            )
+        routes[route.logical_name] = route
+        order.append(route.logical_name)
+    if order != sorted(order):
+        raise ValueError(f"{path}: command routes must be sorted by logical name")
+    validate_command_routes(routes, baseline, records)
+    return routes
+
+
+def validate_command_routes(
+    routes: dict[str, CommandRoute],
+    baseline: dict[str, Declaration],
+    records: dict[str, ManifestRow],
+) -> None:
+    if set(routes) != set(records) or set(routes) != set(baseline):
+        raise ValueError(
+            "command routes do not exactly cover the 5,129 frozen declarations: "
+            f"missing={sorted(set(records) - set(routes))[:20]}; "
+            f"extra={sorted(set(routes) - set(records))[:20]}"
+        )
+    groups: dict[
+        tuple[str, tuple[int, int, int, int, int, int, int, int]],
+        list[CommandRoute],
+    ] = defaultdict(list)
+    for logical, route in routes.items():
+        declaration = baseline[logical]
+        record = records[logical]
+        if route.logical_name != logical:
+            raise ValueError(f"{logical}: route key/name mismatch")
+        if route.historical_module != declaration.module:
+            raise ValueError(f"{logical}: route historical owner drift")
+        if route.historical_actual_name != declaration.name:
+            raise ValueError(f"{logical}: route historical actual-name drift")
+        root = baseline.get(route.command_root_logical)
+        if root is None or root.module != declaration.module:
+            raise ValueError(f"{logical}: invalid command root logical owner")
+        if route.command_root_actual_name != root.name:
+            raise ValueError(f"{logical}: command root actual-name drift")
+        expected_provenance = (
+            "authored"
+            if route.historical_actual_name == route.command_root_actual_name
+            else "compiler_generated"
+        )
+        if route.provenance not in COMMAND_PROVENANCE or route.provenance != expected_provenance:
+            raise ValueError(f"{logical}: invalid compiler provenance {route.provenance}")
+        if any(value < 0 for value in route.span):
+            raise ValueError(f"{logical}: negative compiler coordinate")
+        if (route.end_line, route.end_col) < (route.start_line, route.start_col):
+            raise ValueError(f"{logical}: reversed compiler span")
+        if not HEX_SHA256.fullmatch(route.command_sha256):
+            raise ValueError(f"{logical}: invalid command SHA-256")
+        if route.destination_module != record.destination_module:
+            raise ValueError(f"{logical}: route destination differs from ownership")
+        groups[(route.historical_module, route.span)].append(route)
+
+    for group, members in groups.items():
+        destinations = {member.destination_module for member in members}
+        hashes = {member.command_sha256.upper() for member in members}
+        roots = {
+            (member.command_root_logical, member.command_root_actual_name)
+            for member in members
+        }
+        if len(destinations) != 1:
+            raise ValueError(
+                f"authoritative compiler span {group} straddles destinations: "
+                f"{sorted(destinations)}"
+            )
+        if len(hashes) != 1:
+            raise ValueError(f"authoritative compiler span {group} has hash drift")
+        if not any(member.provenance == "authored" for member in members):
+            raise ValueError(f"authoritative compiler span {group} lacks an authored root")
+        for root_logical, root_actual in roots:
+            if not any(
+                member.logical_name == root_logical
+                and member.historical_actual_name == root_actual
+                and member.provenance == "authored"
+                for member in members
+            ):
+                raise ValueError(
+                    f"authoritative compiler span {group} references absent root "
+                    f"{root_logical}"
+                )
+
+
+def validate_routes_against_frozen_inputs(
+    routes: dict[str, CommandRoute],
+    owners: dict[str, FrozenOwner],
+    project_root: Path,
+    frozen_source_dir: Path | None,
+    frozen_ilean_dir: Path | None,
+) -> tuple[int, int]:
+    entries_by_module: dict[
+        str, dict[str, tuple[int, int, int, int, int, int, int, int]]
+    ] = {}
+    source_by_module: dict[str, bytes] = {}
+    for module, owner in sorted(owners.items()):
+        source_path = frozen_source_path(project_root, owner, frozen_source_dir)
+        if sha256_file(source_path) != owner.source_sha256:
+            raise ValueError(f"{module}: frozen source SHA-256 differs")
+        source_payload = normalized_source_bytes(source_path)
+        physical = len(source_payload.splitlines())
+        nonblank = sum(bool(line.strip()) for line in source_payload.splitlines())
+        if (physical, nonblank) != (owner.physical_lines, owner.nonblank_lines):
+            raise ValueError(f"{module}: frozen source line counts differ")
+        source_by_module[module] = source_payload
+        if owner.ilean_sha256 == "-":
+            continue
+        ilean_path = frozen_ilean_path(project_root, module, frozen_ilean_dir)
+        if sha256_file(ilean_path) != owner.ilean_sha256:
+            raise ValueError(f"{module}: frozen .ilean SHA-256 differs")
+        if ilean_path.stat().st_size != owner.ilean_bytes:
+            raise ValueError(f"{module}: frozen .ilean byte count differs")
+        entries_by_module[module] = read_ilean_entries(ilean_path, module)
+
+    groups: set[tuple[str, tuple[int, int, int, int, int, int, int, int]]] = set()
+    for logical, route in routes.items():
+        actual_span = entries_by_module[route.historical_module].get(
+            route.command_root_actual_name
+        )
+        if actual_span != route.span:
+            raise ValueError(
+                f"{logical}: committed command span differs from frozen .ilean"
+            )
+        actual_hash = sha256_bytes(
+            source_command_bytes(source_by_module[route.historical_module], route.span)
+        )
+        if actual_hash != route.command_sha256.upper():
+            raise ValueError(
+                f"{logical}: committed command fingerprint differs from frozen source"
+            )
+        groups.add((route.historical_module, route.span))
+    return len(routes), len(groups)
+
+
+def manifest_from_command_routes(
+    routes: dict[str, CommandRoute], baseline: dict[str, Declaration]
+) -> dict[str, ManifestRow]:
+    generated = {
+        logical: ManifestRow(
+            logical,
+            baseline[logical].module,
+            route.destination_module,
+            baseline[logical].kind,
+            baseline[logical].visibility,
+        )
+        for logical, route in routes.items()
+    }
+    expected_counts = dict(
+        Counter(declaration.module for declaration in baseline.values())
+    )
     validate_manifest_shape(generated, expected_counts)
     return generated
 
@@ -805,6 +1192,35 @@ def read_tiers(path: Path) -> dict[str, str]:
     return tiers
 
 
+def generate_tiers(
+    records: dict[str, ManifestRow], structural_modules: set[str]
+) -> dict[str, str]:
+    tiers = {
+        row.destination_module: destination_role(row.destination_module)
+        for row in records.values()
+    }
+    tiers.update({module: "source" for module in PRESERVED_SOURCE_LEAVES})
+    for module in structural_modules:
+        if module == SOURCE_ROOT:
+            tiers[module] = "source"
+        elif module in {
+            REUSABLE_ALGORITHM_UMBRELLA,
+            REUSABLE_ANALYSIS_UMBRELLA,
+        }:
+            tiers[module] = "reusable"
+        else:
+            tiers[module] = "compatibility"
+    validate_tier_coverage(tiers, records, structural_modules)
+    return tiers
+
+
+def write_tiers(path: Path, tiers: dict[str, str]) -> None:
+    rows = ["format\t1"]
+    rows.extend(f"{module}\t{tier}" for module, tier in sorted(tiers.items()))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(("\n".join(rows) + "\n").encode("utf-8"))
+
+
 def validate_tier_coverage(
     tiers: dict[str, str],
     records: dict[str, ManifestRow],
@@ -829,10 +1245,18 @@ def validate_tier_coverage(
                     f"{module}: proposed tier {tier} contradicts destination role {role}"
                 )
         elif module in structural_modules:
-            if module.startswith(SOURCE_DESTINATION_PREFIX) or module == SOURCE_ROOT:
+            if module == SOURCE_ROOT:
                 if tier != "source":
                     raise ValueError(
                         f"{module}: canonical source aggregate must propose tier source"
+                    )
+            elif module in {
+                REUSABLE_ALGORITHM_UMBRELLA,
+                REUSABLE_ANALYSIS_UMBRELLA,
+            }:
+                if tier != "reusable":
+                    raise ValueError(
+                        f"{module}: reusable umbrella must propose tier reusable"
                     )
             elif tier != "compatibility":
                 raise ValueError(
@@ -1140,6 +1564,79 @@ def check_candidate_ownership(
     return candidate_actual_to_logical
 
 
+def validate_candidate_command_fingerprints(
+    project_root: Path,
+    routes: dict[str, CommandRoute],
+    records: dict[str, ManifestRow],
+    candidate_actual_to_logical: dict[str, str],
+    completed_destinations: set[str],
+    ilean_overrides: dict[str, Path],
+) -> int:
+    """Reject same-kind/same-edge edits by comparing exact compiler commands.
+
+    All authored roots of one frozen compiler span must still share one
+    candidate compiler span, and the LF-normalized UTF-8 command bytes must
+    retain the frozen SHA-256.  Compiler-generated declarations are covered by
+    the same group even though Lean does not emit separate ``.ilean`` roots for
+    them.
+    """
+
+    logical_to_candidate = {
+        logical: actual for actual, logical in candidate_actual_to_logical.items()
+    }
+    groups: dict[
+        tuple[str, tuple[int, int, int, int, int, int, int, int]],
+        list[CommandRoute],
+    ] = defaultdict(list)
+    for route in routes.values():
+        groups[(route.historical_module, route.span)].append(route)
+
+    ilean_cache: dict[
+        str, dict[str, tuple[int, int, int, int, int, int, int, int]]
+    ] = {}
+    source_cache: dict[str, bytes] = {}
+    for group, members in sorted(groups.items()):
+        destination = members[0].destination_module
+        owner = (
+            destination
+            if destination in completed_destinations
+            else members[0].historical_module
+        )
+        if owner not in ilean_cache:
+            ilean_path = ilean_overrides.get(owner, default_ilean_path(project_root, owner))
+            ilean_cache[owner] = read_ilean_entries(ilean_path, owner)
+            source_cache[owner] = normalized_source_bytes(module_path(project_root, owner))
+
+        candidate_spans: set[
+            tuple[int, int, int, int, int, int, int, int]
+        ] = set()
+        for root_logical in sorted({member.command_root_logical for member in members}):
+            candidate_root = logical_to_candidate[root_logical]
+            candidate_span = ilean_cache[owner].get(candidate_root)
+            if candidate_span is None:
+                raise ValueError(
+                    f"compiler root {root_logical} is absent from candidate .ilean "
+                    f"owner {owner} ({candidate_root})"
+                )
+            candidate_spans.add(candidate_span)
+        if len(candidate_spans) != 1:
+            raise ValueError(
+                f"frozen source-command group {group} split across candidate spans: "
+                f"{sorted(candidate_spans)}"
+            )
+        candidate_span = next(iter(candidate_spans))
+        candidate_hash = sha256_bytes(
+            source_command_bytes(source_cache[owner], candidate_span)
+        )
+        expected_hashes = {member.command_sha256.upper() for member in members}
+        if expected_hashes != {candidate_hash}:
+            raise ValueError(
+                f"source-command semantic fingerprint changed for {group}: "
+                f"expected {sorted(expected_hashes)}, found {candidate_hash}"
+            )
+    return len(groups)
+
+
 def strip_lean_comments(lines: list[str]) -> list[str]:
     """Blank out block and line comments while preserving line structure."""
 
@@ -1293,6 +1790,564 @@ def read_structural_modules(path: Path) -> set[str]:
     return modules
 
 
+def read_structural_import_contract(
+    path: Path,
+) -> dict[str, tuple[str, ...]]:
+    with path.open(encoding="utf-8", newline="") as stream:
+        rows = list(csv.reader(stream, delimiter="\t"))
+    if not rows or rows[0] != ["format", "1"]:
+        raise ValueError(f"{path}: structural imports must start with 'format\\t1'")
+    allowed_roles = {
+        "compatibility_wrapper",
+        "reusable_aggregate",
+        "source_aggregate",
+    }
+    imports: dict[str, list[str]] = defaultdict(list)
+    roles: dict[str, str] = {}
+    order: list[tuple[str, str]] = []
+    for line_number, row in enumerate(rows[1:], 2):
+        if len(row) != 4 or row[0] != "import":
+            raise ValueError(
+                f"{path}:{line_number}: expected import, module, role, dependency"
+            )
+        _, module, role, dependency = row
+        check_module_name(module, f"{path}:{line_number}")
+        check_module_name(dependency, f"{path}:{line_number}")
+        if role not in allowed_roles:
+            raise ValueError(f"{path}:{line_number}: unknown structural role {role}")
+        if module in roles and roles[module] != role:
+            raise ValueError(f"{path}:{line_number}: conflicting role for {module}")
+        roles[module] = role
+        imports[module].append(dependency)
+        order.append((module, dependency))
+    if order != sorted(order):
+        raise ValueError(f"{path}: structural import rows must be sorted")
+    if set(imports) != DEFAULT_STRUCTURAL_MODULES:
+        raise ValueError(
+            f"{path}: structural surface differs: "
+            f"missing={sorted(DEFAULT_STRUCTURAL_MODULES - set(imports))}; "
+            f"extra={sorted(set(imports) - DEFAULT_STRUCTURAL_MODULES)}"
+        )
+    result: dict[str, tuple[str, ...]] = {}
+    for module, dependencies in sorted(imports.items()):
+        if len(dependencies) != len(set(dependencies)):
+            raise ValueError(f"{path}: duplicate structural import for {module}")
+        if dependencies != sorted(dependencies):
+            raise ValueError(f"{path}: imports for {module} are not sorted")
+        expected_role = (
+            "compatibility_wrapper"
+            if module in ALL_COMPATIBILITY_WRAPPERS
+            else "source_aggregate"
+            if module == SOURCE_ROOT
+            else "reusable_aggregate"
+        )
+        if roles[module] != expected_role:
+            raise ValueError(
+                f"{path}: {module} has role {roles[module]}, expected {expected_role}"
+            )
+        result[module] = tuple(dependencies)
+    return result
+
+
+def generate_structural_import_contract(
+    records: dict[str, ManifestRow]
+) -> dict[str, tuple[str, ...]]:
+    destinations_by_historical: dict[str, set[str]] = defaultdict(set)
+    destinations = {row.destination_module for row in records.values()}
+    for record in records.values():
+        destinations_by_historical[record.historical_module].add(
+            record.destination_module
+        )
+    contract: dict[str, tuple[str, ...]] = {
+        historical: tuple(sorted(destinations_by_historical[historical]))
+        for historical in sorted(HISTORICAL_DECLARATION_WRAPPERS)
+    }
+    preserved = tuple(sorted(PRESERVED_SOURCE_LEAVES))
+    contract[f"{LS_PREFIX}.Higham20SourceAliases"] = preserved
+    contract[f"{HIGHAM_COMPAT_ROOT}.SourceAliases"] = preserved
+    contract[SOURCE_ROOT] = tuple(
+        sorted(
+            PRESERVED_SOURCE_LEAVES
+            | {
+                destination
+                for destination in destinations
+                if destination_role(destination) == "source"
+            }
+        )
+    )
+    contract[REUSABLE_ALGORITHM_UMBRELLA] = tuple(
+        sorted(
+            destination
+            for destination in destinations
+            if destination.startswith(REUSABLE_ALGORITHM_ROOT + ".")
+        )
+    )
+    contract[REUSABLE_ANALYSIS_UMBRELLA] = tuple(
+        sorted(
+            destination
+            for destination in destinations
+            if destination.startswith(REUSABLE_ANALYSIS_ROOT + ".")
+        )
+    )
+    if set(contract) != DEFAULT_STRUCTURAL_MODULES:
+        raise ValueError("generated structural module surface is incomplete")
+    if any(not dependencies for dependencies in contract.values()):
+        raise ValueError("generated structural module has no imports")
+    return contract
+
+
+def structural_import_bytes(
+    contract: dict[str, tuple[str, ...]]
+) -> bytes:
+    rows = ["format\t1"]
+    for module, dependencies in sorted(contract.items()):
+        role = (
+            "compatibility_wrapper"
+            if module in ALL_COMPATIBILITY_WRAPPERS
+            else "source_aggregate"
+            if module == SOURCE_ROOT
+            else "reusable_aggregate"
+        )
+        rows.extend(
+            f"import\t{module}\t{role}\t{dependency}"
+            for dependency in dependencies
+        )
+    return ("\n".join(rows) + "\n").encode("utf-8")
+
+
+def write_structural_import_contract(
+    path: Path, contract: dict[str, tuple[str, ...]]
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(structural_import_bytes(contract))
+
+
+def generate_coordinator_patches(
+    project_root: Path,
+    records: dict[str, ManifestRow],
+    structural_contract: dict[str, tuple[str, ...]],
+) -> set[tuple[str, str, str, str]]:
+    """Freeze every shared-file edit the lane is not allowed to make."""
+
+    graph = read_module_imports(project_root)
+    qr_consumers = {source for source, _ in FROZEN_QR_TO_LS}
+    lane_modules = set(EXPECTED_HISTORICAL_COUNTS) | {
+        f"{LS_PREFIX}.Higham20SourceAliases",
+        *PRESERVED_SOURCE_LEAVES,
+    }
+    discovered_consumers = {
+        module
+        for module, imports in graph.items()
+        if module.startswith("NumStability")
+        and not module.startswith("NumStabilityTest")
+        and module not in lane_modules
+        and module not in qr_consumers
+        and any(dependency in ALL_COMPATIBILITY_WRAPPERS for dependency in imports)
+    }
+    if discovered_consumers != set(COORDINATOR_CONSUMER_FINAL_IMPORTS):
+        raise ValueError(
+            "non-lane least-squares consumers differ from the exact coordinator "
+            f"contract: missing={sorted(set(COORDINATOR_CONSUMER_FINAL_IMPORTS) - discovered_consumers)}; "
+            f"extra={sorted(discovered_consumers - set(COORDINATOR_CONSUMER_FINAL_IMPORTS))}"
+        )
+
+    rows: set[tuple[str, str, str, str]] = set()
+    for consumer, final_imports in COORDINATOR_CONSUMER_FINAL_IMPORTS.items():
+        historical_imports = {
+            dependency
+            for dependency in graph[consumer]
+            if dependency in ALL_COMPATIBILITY_WRAPPERS
+        }
+        if not historical_imports:
+            raise ValueError(f"coordinator consumer has no historical import: {consumer}")
+        rows.update(
+            ("remove_import", consumer, dependency, "-")
+            for dependency in historical_imports
+        )
+        rows.update(
+            ("add_import", consumer, "-", dependency)
+            for dependency in final_imports
+        )
+
+    rows.add(
+        (
+            "add_import",
+            "NumStability.Algorithms.LinearSystems",
+            "-",
+            REUSABLE_ALGORITHM_UMBRELLA,
+        )
+    )
+    rows.add(
+        (
+            "add_import",
+            "NumStability.Analysis",
+            "-",
+            "NumStability.Analysis.Perturbation",
+        )
+    )
+    rows.add(
+        (
+            "new_aggregate",
+            "NumStability.Analysis.Perturbation",
+            "-",
+            REUSABLE_ANALYSIS_UMBRELLA,
+        )
+    )
+
+    for historical in sorted(HISTORICAL_DECLARATION_WRAPPERS):
+        rows.update(
+            ("compatibility_map", historical, "-", canonical)
+            for canonical in structural_contract[historical]
+        )
+
+    rows.update(
+        (
+            "global_tier_exact",
+            historical,
+            "-",
+            "compatibility",
+        )
+        for historical in HISTORICAL_DECLARATION_WRAPPERS
+    )
+    rows.update(
+        {
+            (
+                "global_tier_exact",
+                REUSABLE_ALGORITHM_UMBRELLA,
+                "-",
+                "aggregate",
+            ),
+            (
+                "global_tier_exact",
+                REUSABLE_ANALYSIS_UMBRELLA,
+                "-",
+                "aggregate",
+            ),
+            (
+                "global_tier_exact",
+                "NumStability.Analysis.Perturbation",
+                "-",
+                "aggregate",
+            ),
+            (
+                "global_tier_prefix",
+                REUSABLE_ALGORITHM_ROOT + ".",
+                "-",
+                "reusable",
+            ),
+            (
+                "global_tier_prefix",
+                REUSABLE_ANALYSIS_ROOT + ".",
+                "-",
+                "reusable",
+            ),
+        }
+    )
+    rows.update(
+        ("root_test_import", "NumStabilityTest", "-", module)
+        for module in ROOT_TEST_IMPORTS
+    )
+    return rows
+
+
+def coordinator_patch_bytes(rows: set[tuple[str, str, str, str]]) -> bytes:
+    payload = ["format\t1"]
+    payload.extend("\t".join(("patch", *row)) for row in sorted(rows))
+    return ("\n".join(payload) + "\n").encode("utf-8")
+
+
+def write_coordinator_patches(
+    path: Path, rows: set[tuple[str, str, str, str]]
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(coordinator_patch_bytes(rows))
+
+
+def read_coordinator_patches(
+    path: Path,
+) -> set[tuple[str, str, str, str]]:
+    with path.open(encoding="utf-8", newline="") as stream:
+        raw = list(csv.reader(stream, delimiter="\t"))
+    if not raw or raw[0] != ["format", "1"]:
+        raise ValueError(f"{path}: coordinator patches must start with 'format\\t1'")
+    rows: list[tuple[str, str, str, str]] = []
+    allowed = {
+        "add_import",
+        "remove_import",
+        "new_aggregate",
+        "compatibility_map",
+        "global_tier_exact",
+        "global_tier_prefix",
+        "root_test_import",
+    }
+    for line_number, row in enumerate(raw[1:], 2):
+        if len(row) != 5 or row[0] != "patch":
+            raise ValueError(f"{path}:{line_number}: malformed coordinator patch")
+        value = tuple(row[1:])
+        if value[0] not in allowed or any(not field for field in value):
+            raise ValueError(f"{path}:{line_number}: invalid coordinator patch")
+        rows.append(value)
+    if rows != sorted(rows):
+        raise ValueError(f"{path}: coordinator patches must be sorted")
+    if len(rows) != len(set(rows)):
+        raise ValueError(f"{path}: duplicate coordinator patch")
+    return set(rows)
+
+
+def validate_coordinator_patches_applied(
+    project_root: Path,
+    rows: set[tuple[str, str, str, str]],
+    import_graph: dict[str, list[str]],
+    lane_preserved_final_imports: dict[str, set[str]] | None = None,
+) -> tuple[int, int, int]:
+    failures: list[str] = []
+    for action, subject, old, new in sorted(rows):
+        if action == "add_import":
+            if new not in import_graph.get(subject, []):
+                failures.append(f"{subject} lacks coordinator import {new}")
+        elif action == "remove_import":
+            if old in import_graph.get(subject, []):
+                failures.append(f"{subject} still imports compatibility path {old}")
+        elif action == "new_aggregate":
+            try:
+                validate_import_only_module(project_root, subject, (new,))
+            except ValueError as error:
+                failures.append(str(error))
+        elif action == "root_test_import":
+            if new not in import_graph.get(subject, []):
+                failures.append(f"{subject} lacks root test import {new}")
+    if failures:
+        raise ValueError(
+            "coordinator import/test patches are incomplete: "
+            + "; ".join(failures[:20])
+        )
+
+    tier_path = project_root / "docs/architecture/tiers.json"
+    try:
+        tier_payload = json.loads(tier_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError(f"cannot read global tier manifest {tier_path}: {error}") from error
+    exact = tier_payload.get("exact")
+    prefixes = tier_payload.get("prefixes")
+    if not isinstance(exact, dict) or not isinstance(prefixes, list):
+        raise ValueError("global tier manifest has unexpected exact/prefix schema")
+    prefix_map = {
+        row.get("prefix"): row.get("tier")
+        for row in prefixes
+        if isinstance(row, dict)
+    }
+    tier_failures: list[str] = []
+    for action, subject, _, value in sorted(rows):
+        if action == "global_tier_exact" and exact.get(subject) != value:
+            tier_failures.append(
+                f"tiers.json exact {subject}={exact.get(subject)!r}, expected {value!r}"
+            )
+        elif action == "global_tier_prefix" and prefix_map.get(subject) != value:
+            tier_failures.append(
+                f"tiers.json prefix {subject}={prefix_map.get(subject)!r}, expected {value!r}"
+            )
+    if tier_failures:
+        raise ValueError(
+            "coordinator global-tier patches are incomplete: "
+            + "; ".join(tier_failures[:20])
+        )
+
+    compatibility_path = project_root / "docs/architecture/COMPATIBILITY.md"
+    compatibility_rows: dict[str, set[str]] = {}
+    for line in compatibility_path.read_text(encoding="utf-8").splitlines():
+        if not line.startswith("|"):
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) != 2:
+            continue
+        historical = re.findall(r"`([^`]+)`", cells[0])
+        canonical = re.findall(r"`([^`]+)`", cells[1])
+        if len(historical) == 1 and canonical:
+            compatibility_rows[historical[0]] = set(canonical)
+    expected_compatibility: dict[str, set[str]] = defaultdict(set)
+    for action, historical, _, canonical in rows:
+        if action == "compatibility_map":
+            expected_compatibility[historical].add(canonical)
+    compatibility_failures = [
+        (
+            historical,
+            sorted(expected),
+            sorted(compatibility_rows.get(historical, set())),
+        )
+        for historical, expected in sorted(expected_compatibility.items())
+        if compatibility_rows.get(historical) != expected
+    ]
+    if compatibility_failures:
+        raise ValueError(
+            "COMPATIBILITY.md mappings are incomplete or inexact: "
+            f"{compatibility_failures[:10]}"
+        )
+
+    preserved_contract = (
+        LANE_PRESERVED_FINAL_IMPORTS
+        if lane_preserved_final_imports is None
+        else lane_preserved_final_imports
+    )
+    for module, expected_imports in sorted(preserved_contract.items()):
+        actual_relevant = {
+            dependency
+            for dependency in import_graph.get(module, [])
+            if dependency.startswith(REUSABLE_ALGORITHM_ROOT + ".")
+            or dependency.startswith(REUSABLE_ANALYSIS_ROOT + ".")
+            or dependency.startswith(SOURCE_ROOT + ".")
+            or dependency in ALL_COMPATIBILITY_WRAPPERS
+        }
+        if actual_relevant != expected_imports:
+            raise ValueError(
+                f"lane-owned preserved consumer {module} has imports "
+                f"{sorted(actual_relevant)}, expected {sorted(expected_imports)}"
+            )
+    return (
+        sum(action in {"add_import", "remove_import", "new_aggregate"} for action, *_ in rows),
+        sum(action.startswith("global_tier") for action, *_ in rows),
+        len(expected_compatibility),
+    )
+
+
+def destination_dag_from_stream(
+    dependency_tsv: Path,
+    actual_to_logical: dict[str, str],
+    records: dict[str, ManifestRow],
+) -> dict[tuple[str, str], tuple[int, int]]:
+    counts: dict[tuple[str, str], Counter[str]] = defaultdict(Counter)
+    for edge in iter_dependency_edges(dependency_tsv):
+        source_logical = actual_to_logical.get(edge.source)
+        target_logical = actual_to_logical.get(edge.target)
+        if source_logical is None or target_logical is None:
+            continue
+        source = records[source_logical].destination_module
+        target = records[target_logical].destination_module
+        if source != target:
+            counts[(source, target)][edge.kind] += 1
+    return {
+        pair: (typed["signature"], typed["body"])
+        for pair, typed in sorted(counts.items())
+    }
+
+
+def destination_dag_bytes(
+    dag: dict[tuple[str, str], tuple[int, int]]
+) -> bytes:
+    rows = ["format\t1"]
+    rows.extend(
+        f"edge\t{source}\t{target}\t{signature}\t{body}"
+        for (source, target), (signature, body) in sorted(dag.items())
+    )
+    return ("\n".join(rows) + "\n").encode("utf-8")
+
+
+def write_destination_dag(
+    path: Path, dag: dict[tuple[str, str], tuple[int, int]]
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(destination_dag_bytes(dag))
+
+
+def read_destination_dag(
+    path: Path, records: dict[str, ManifestRow]
+) -> dict[tuple[str, str], tuple[int, int]]:
+    with path.open(encoding="utf-8", newline="") as stream:
+        rows = list(csv.reader(stream, delimiter="\t"))
+    if not rows or rows[0] != ["format", "1"]:
+        raise ValueError(f"{path}: destination DAG must start with 'format\\t1'")
+    destinations = {row.destination_module for row in records.values()}
+    dag: dict[tuple[str, str], tuple[int, int]] = {}
+    order: list[tuple[str, str]] = []
+    for line_number, row in enumerate(rows[1:], 2):
+        if len(row) != 5 or row[0] != "edge":
+            raise ValueError(f"{path}:{line_number}: malformed destination edge")
+        _, source, target, signature, body = row
+        if source not in destinations or target not in destinations or source == target:
+            raise ValueError(f"{path}:{line_number}: invalid destination edge endpoints")
+        try:
+            typed = (int(signature), int(body))
+        except ValueError as error:
+            raise ValueError(f"{path}:{line_number}: invalid typed-edge counts") from error
+        if typed[0] < 0 or typed[1] < 0 or sum(typed) < 1:
+            raise ValueError(f"{path}:{line_number}: empty destination edge")
+        pair = (source, target)
+        if pair in dag:
+            raise ValueError(f"{path}:{line_number}: duplicate destination edge")
+        dag[pair] = typed
+        order.append(pair)
+    if order != sorted(order):
+        raise ValueError(f"{path}: destination edges must be sorted")
+    graph: dict[str, set[str]] = {destination: set() for destination in destinations}
+    for source, target in dag:
+        graph[source].add(target)
+    components = destination_sccs(graph)
+    if components:
+        raise ValueError(f"{path}: destination DAG contains cycles: {components[:3]}")
+    return dag
+
+
+def validate_destination_dag_contract(
+    dependency_tsv: Path,
+    actual_to_logical: dict[str, str],
+    records: dict[str, ManifestRow],
+    expected: dict[tuple[str, str], tuple[int, int]],
+) -> None:
+    actual = destination_dag_from_stream(dependency_tsv, actual_to_logical, records)
+    if actual != expected:
+        missing = sorted(set(expected) - set(actual))
+        extra = sorted(set(actual) - set(expected))
+        changed = sorted(
+            pair
+            for pair in set(actual) & set(expected)
+            if actual[pair] != expected[pair]
+        )
+        raise ValueError(
+            "destination typed-edge DAG differs from its frozen contract: "
+            f"missing={missing[:20]}; extra={extra[:20]}; "
+            f"changed={[(p, expected[p], actual[p]) for p in changed[:20]]}"
+        )
+
+
+def validate_destination_direct_imports(
+    import_graph: dict[str, list[str]],
+    records: dict[str, ManifestRow],
+    dag: dict[tuple[str, str], tuple[int, int]],
+    completed: set[str],
+) -> None:
+    destinations = {row.destination_module for row in records.values()}
+    expected_by_source: dict[str, set[str]] = defaultdict(set)
+    for source, target in dag:
+        expected_by_source[source].add(target)
+    failures: list[str] = []
+    for source in sorted(completed):
+        if source not in destinations:
+            continue
+        if source not in import_graph:
+            failures.append(f"missing destination source {source}")
+            continue
+        imports = import_graph[source]
+        duplicates = sorted(
+            dependency
+            for dependency, count in Counter(imports).items()
+            if count > 1
+        )
+        if duplicates:
+            failures.append(f"{source} has duplicate imports {duplicates}")
+        if imports != sorted(imports):
+            failures.append(f"{source} imports are not sorted")
+        actual_lane = set(imports) & destinations
+        expected_lane = expected_by_source[source]
+        if actual_lane != expected_lane:
+            failures.append(
+                f"{source}: expected lane imports {sorted(expected_lane)}, "
+                f"found {sorted(actual_lane)}"
+            )
+    if failures:
+        raise ValueError(
+            "destination direct-import graph differs: " + "; ".join(failures[:20])
+        )
+
+
 def read_completed_destinations(path: Path) -> set[str]:
     with path.open(encoding="utf-8", newline="") as stream:
         rows = list(csv.reader(stream, delimiter="\t"))
@@ -1341,6 +2396,46 @@ def validate_structural_modules(
 def read_module_imports(project_root: Path) -> dict[str, list[str]]:
     """Read the direct-import graph of every tracked project Lean module."""
 
+    def read_import_prefix(path: Path) -> list[str]:
+        imports: list[str] = []
+        depth = 0
+        with path.open(encoding="utf-8") as stream:
+            for original in stream:
+                out: list[str] = []
+                index = 0
+                while index < len(original):
+                    if depth:
+                        if original.startswith("/-", index):
+                            depth += 1
+                            index += 2
+                        elif original.startswith("-/", index):
+                            depth -= 1
+                            index += 2
+                        else:
+                            index += 1
+                    elif original.startswith("--", index):
+                        break
+                    elif original.startswith("/-", index):
+                        depth = 1
+                        index += 2
+                    else:
+                        out.append(original[index])
+                        index += 1
+                code = "".join(out)
+                if not code.strip():
+                    continue
+                match = IMPORT_RE.match(code)
+                if match:
+                    imports.append(match.group(1))
+                    continue
+                # Lean imports precede declarations/commands.  Stopping here
+                # avoids scanning multi-megabyte proof bodies character by
+                # character while retaining comment-aware import parsing.
+                break
+        if depth:
+            raise ValueError(f"unterminated Lean block comment in import prefix: {path}")
+        return imports
+
     graph: dict[str, list[str]] = {}
     for root in ("NumStability", "NumStabilityTest"):
         base = project_root / root
@@ -1353,21 +2448,10 @@ def read_module_imports(project_root: Path) -> dict[str, list[str]]:
                 .as_posix()
                 .replace("/", ".")
             )
-            lines = path.read_text(encoding="utf-8").splitlines()
-            imports: list[str] = []
-            for code in strip_lean_comments(lines):
-                match = IMPORT_RE.match(code)
-                if match:
-                    imports.append(match.group(1))
-            graph[module] = imports
+            graph[module] = read_import_prefix(path)
         umbrella = project_root / f"{root}.lean"
         if umbrella.is_file():
-            lines = umbrella.read_text(encoding="utf-8").splitlines()
-            graph[root] = [
-                match.group(1)
-                for match in (IMPORT_RE.match(code) for code in strip_lean_comments(lines))
-                if match
-            ]
+            graph[root] = read_import_prefix(umbrella)
     return graph
 
 
@@ -1433,60 +2517,357 @@ def transitive_imports(graph: dict[str, list[str]], start: str) -> set[str]:
     return seen
 
 
-def validate_cross_lane_contract(
-    project_root: Path,
+def cross_lane_pairs() -> dict[tuple[str, str], str]:
+    pairs = {pair: "LS_TO_QR" for pair in FROZEN_LS_TO_QR}
+    pairs.update({pair: "QR_TO_LS" for pair in FROZEN_QR_TO_LS})
+    return pairs
+
+
+def read_cross_lane_normalization(
+    path: Path, records: dict[str, ManifestRow]
+) -> list[CrossLaneNormalization]:
+    with path.open(encoding="utf-8", newline="") as stream:
+        rows = list(csv.reader(stream, delimiter="\t"))
+    if not rows or rows[0] != ["format", "1"]:
+        raise ValueError(f"{path}: cross-lane contract must start with 'format\\t1'")
+    result: list[CrossLaneNormalization] = []
+    order: list[tuple[str, ...]] = []
+    known_pairs = cross_lane_pairs()
+    destinations_by_historical: dict[str, set[str]] = defaultdict(set)
+    for record in records.values():
+        destinations_by_historical[record.historical_module].add(
+            record.destination_module
+        )
+    for line_number, row in enumerate(rows[1:], 2):
+        if len(row) != 11 or row[0] != "normalize":
+            raise ValueError(
+                f"{path}:{line_number}: expected one 11-column normalization row"
+            )
+        contract = CrossLaneNormalization(*row[1:])
+        if contract.row_type not in {"edge", "import"}:
+            raise ValueError(f"{path}:{line_number}: invalid normalization row type")
+        if contract.direction not in CROSS_LANE_DIRECTIONS:
+            raise ValueError(f"{path}:{line_number}: invalid direction")
+        if contract.edge_kind not in EDGE_KINDS | {"import"}:
+            raise ValueError(f"{path}:{line_number}: invalid edge kind")
+        if (contract.row_type == "import") != (contract.edge_kind == "import"):
+            raise ValueError(f"{path}:{line_number}: row type/edge kind mismatch")
+        pair = (contract.base_source_module, contract.base_target_module)
+        if known_pairs.get(pair) != contract.direction:
+            raise ValueError(f"{path}:{line_number}: unknown frozen module edge {pair}")
+        check_module_name(contract.base_source_module, f"{path}:{line_number}")
+        check_module_name(contract.base_target_module, f"{path}:{line_number}")
+        if contract.row_type == "import":
+            if contract.base_source_name != "-" or contract.base_target_name != "-":
+                raise ValueError(f"{path}:{line_number}: import row must use '-' names")
+        elif contract.base_source_name == "-" or contract.base_target_name == "-":
+            raise ValueError(f"{path}:{line_number}: edge row lacks declaration names")
+        check_module_name(contract.ls_destination, f"{path}:{line_number}")
+        historical_ls = (
+            contract.base_source_module
+            if contract.direction == "LS_TO_QR"
+            else contract.base_target_module
+        )
+        if contract.ls_destination not in destinations_by_historical[historical_ls]:
+            raise ValueError(
+                f"{path}:{line_number}: {contract.ls_destination} is not an owner of "
+                f"{historical_ls}"
+            )
+        if contract.status not in CROSS_LANE_STATUS:
+            raise ValueError(f"{path}:{line_number}: invalid normalization status")
+        if contract.status == "resolved":
+            check_module_name(contract.qr_owner, f"{path}:{line_number}")
+            if contract.qr_owner.startswith("NumStability.Algorithms.QR.Higham19"):
+                raise ValueError(
+                    f"{path}:{line_number}: final QR owner is still a Higham19 wrapper"
+                )
+        elif not QR_OWNER_PLACEHOLDER.fullmatch(contract.qr_owner):
+            raise ValueError(
+                f"{path}:{line_number}: unresolved row lacks QR-owner placeholder"
+            )
+        result.append(contract)
+        order.append(tuple(row[1:]))
+    if not result:
+        raise ValueError(f"{path}: empty cross-lane normalization contract")
+    if order != sorted(order):
+        raise ValueError(f"{path}: normalization rows must be sorted")
+    if len(order) != len(set(order)):
+        raise ValueError(f"{path}: duplicate normalization row")
+    return result
+
+
+def expected_cross_lane_edges(
+    dependency_tsv: Path,
+    declarations: list[Declaration],
+    actual_to_logical: dict[str, str],
     records: dict[str, ManifestRow],
+) -> set[tuple[str, str, str, str, str, str, str]]:
+    module_by_name = {
+        declaration.name: declaration.module for declaration in declarations
+    }
+    pairs = cross_lane_pairs()
+    expected: set[tuple[str, str, str, str, str, str, str]] = set()
+    for edge in iter_dependency_edges(dependency_tsv):
+        source_module = module_by_name.get(edge.source)
+        target_module = module_by_name.get(edge.target)
+        direction = pairs.get((source_module, target_module))
+        if direction is None:
+            continue
+        ls_actual = edge.source if direction == "LS_TO_QR" else edge.target
+        ls_logical = actual_to_logical.get(ls_actual)
+        if ls_logical is None:
+            raise ValueError(
+                f"frozen cross-lane edge lacks selected LS declaration: {edge}"
+            )
+        expected.add(
+            (
+                direction,
+                edge.kind,
+                source_module,
+                edge.source,
+                target_module,
+                edge.target,
+                records[ls_logical].destination_module,
+            )
+        )
+    return expected
+
+
+def qr_owner_initial_value(module: str) -> tuple[str, str]:
+    if module.startswith("NumStability.Algorithms.QR.Higham19"):
+        return f"@QR_OWNER_REQUIRED:{module}", "qr_owner_required"
+    return module, "resolved"
+
+
+def generate_cross_lane_normalization(
+    dependency_tsv: Path,
+    declarations: list[Declaration],
+    actual_to_logical: dict[str, str],
+    records: dict[str, ManifestRow],
+) -> list[CrossLaneNormalization]:
+    rows: list[CrossLaneNormalization] = []
+    expected_edges = expected_cross_lane_edges(
+        dependency_tsv, declarations, actual_to_logical, records
+    )
+    pairs_with_edges: set[tuple[str, str]] = set()
+    for (
+        direction,
+        edge_kind,
+        source_module,
+        source_name,
+        target_module,
+        target_name,
+        ls_destination,
+    ) in sorted(expected_edges):
+        qr_module = target_module if direction == "LS_TO_QR" else source_module
+        qr_owner, status = qr_owner_initial_value(qr_module)
+        rows.append(
+            CrossLaneNormalization(
+                "edge",
+                direction,
+                edge_kind,
+                source_module,
+                source_name,
+                target_module,
+                target_name,
+                ls_destination,
+                qr_owner,
+                status,
+            )
+        )
+        pairs_with_edges.add((source_module, target_module))
+
+    for source_module, target_module in sorted(
+        set(cross_lane_pairs()) - pairs_with_edges
+    ):
+        direction = cross_lane_pairs()[(source_module, target_module)]
+        ls_destination = IMPORT_ONLY_LS_DESTINATIONS.get(
+            (source_module, target_module)
+        )
+        if ls_destination is None:
+            raise ValueError(
+                "import-only cross-lane edge lacks a reviewed canonical carrier: "
+                f"{source_module} -> {target_module}"
+            )
+        qr_module = target_module if direction == "LS_TO_QR" else source_module
+        qr_owner, status = qr_owner_initial_value(qr_module)
+        rows.append(
+            CrossLaneNormalization(
+                "import",
+                direction,
+                "import",
+                source_module,
+                "-",
+                target_module,
+                "-",
+                ls_destination,
+                qr_owner,
+                status,
+            )
+        )
+    return sorted(rows, key=lambda row: tuple(row.__dict__.values()))
+
+
+def cross_lane_bytes(contract: list[CrossLaneNormalization]) -> bytes:
+    rows = ["format\t1"]
+    rows.extend(
+        "\t".join(("normalize", *row.__dict__.values())) for row in contract
+    )
+    return ("\n".join(rows) + "\n").encode("utf-8")
+
+
+def write_cross_lane_normalization(
+    path: Path, contract: list[CrossLaneNormalization]
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(cross_lane_bytes(contract))
+
+
+def validate_cross_lane_base_contract(
+    project_root: Path,
+    dependency_tsv: Path,
+    declarations: list[Declaration],
+    actual_to_logical: dict[str, str],
+    records: dict[str, ManifestRow],
+    contract: list[CrossLaneNormalization],
     import_graph: dict[str, list[str]] | None = None,
-    ls_to_qr: frozenset[tuple[str, str]] | None = None,
-    qr_to_ls: frozenset[tuple[str, str]] | None = None,
-) -> tuple[int, int]:
-    """Require the frozen 19 LS-to-QR and four QR-to-LS dependencies."""
-
+) -> tuple[int, int, int]:
     graph = read_module_imports(project_root) if import_graph is None else import_graph
-    forward = FROZEN_LS_TO_QR if ls_to_qr is None else ls_to_qr
-    reverse = FROZEN_QR_TO_LS if qr_to_ls is None else qr_to_ls
-
-    owners_by_historical: dict[str, set[str]] = defaultdict(set)
-    for row in records.values():
-        owners_by_historical[row.historical_module].add(row.destination_module)
-
-    missing_forward: list[str] = []
-    for historical, target in sorted(forward):
-        owners = owners_by_historical.get(historical, set())
-        if not owners:
-            missing_forward.append(f"{historical} has no migrated owner for {target}")
-            continue
-        direct = [owner for owner in sorted(owners) if target in graph.get(owner, [])]
-        if not direct:
-            missing_forward.append(
-                f"no destination of {historical} directly imports {target}"
-            )
-            continue
-        if target not in transitive_imports(graph, historical) and historical in graph:
-            missing_forward.append(
-                f"historical path {historical} no longer reaches {target}"
-            )
-    if missing_forward:
+    pairs = cross_lane_pairs()
+    missing_base_imports = [
+        (source, target)
+        for source, target in sorted(pairs)
+        if target not in graph.get(source, [])
+    ]
+    if missing_base_imports:
         raise ValueError(
-            "frozen LS-to-QR dependencies were not preserved after owner "
-            "normalization: " + "; ".join(missing_forward[:20])
+            "frozen cross-lane direct imports differ at the base: "
+            f"{missing_base_imports[:20]}"
         )
 
-    missing_reverse: list[str] = []
-    for consumer, historical in sorted(reverse):
-        if consumer not in graph:
-            missing_reverse.append(f"missing QR consumer module {consumer}")
-            continue
-        if historical not in graph.get(consumer, []):
-            missing_reverse.append(
-                f"{consumer} no longer directly imports historical {historical}"
-            )
-    if missing_reverse:
-        raise ValueError(
-            "frozen QR-to-LS consumers lost their historical least-squares "
-            "imports: " + "; ".join(missing_reverse[:20])
+    expected_edges = expected_cross_lane_edges(
+        dependency_tsv, declarations, actual_to_logical, records
+    )
+    actual_edges = {
+        (
+            row.direction,
+            row.edge_kind,
+            row.base_source_module,
+            row.base_source_name,
+            row.base_target_module,
+            row.base_target_name,
+            row.ls_destination,
         )
-    return len(forward), len(reverse)
+        for row in contract
+        if row.row_type == "edge"
+    }
+    if actual_edges != expected_edges:
+        raise ValueError(
+            "cross-lane declaration-edge freeze differs: "
+            f"missing={sorted(expected_edges - actual_edges)[:20]}; "
+            f"extra={sorted(actual_edges - expected_edges)[:20]}"
+        )
+
+    pairs_with_edges = {
+        (source_module, target_module)
+        for _, _, source_module, _, target_module, _, _ in expected_edges
+    }
+    expected_import_only = set(pairs) - pairs_with_edges
+    actual_import_only = {
+        (row.base_source_module, row.base_target_module)
+        for row in contract
+        if row.row_type == "import"
+    }
+    if actual_import_only != expected_import_only:
+        raise ValueError(
+            "cross-lane import-only freeze differs: "
+            f"missing={sorted(expected_import_only - actual_import_only)}; "
+            f"extra={sorted(actual_import_only - expected_import_only)}"
+        )
+    return len(FROZEN_LS_TO_QR), len(FROZEN_QR_TO_LS), len(expected_edges)
+
+
+def validate_cross_lane_final_contract(
+    contract: list[CrossLaneNormalization],
+    declarations: list[Declaration],
+    import_graph: dict[str, list[str]],
+    records: dict[str, ManifestRow],
+) -> tuple[int, int]:
+    unresolved = [row for row in contract if row.status != "resolved"]
+    if unresolved:
+        required = sorted(
+            {
+                (row.base_source_module, row.base_source_name)
+                if row.direction == "QR_TO_LS"
+                else (row.base_target_module, row.base_target_name)
+                for row in unresolved
+            }
+        )
+        raise ValueError(
+            "QR canonical ownership is unresolved; post integration is forbidden "
+            f"until the QR lane fills {len(required)} exact owner mappings: "
+            f"{required[:20]}"
+        )
+
+    module_by_name = {
+        declaration.name: declaration.module for declaration in declarations
+    }
+    required_imports: set[tuple[str, str]] = set()
+    compatibility_qr = {
+        row.base_target_module
+        for row in contract
+        if row.direction == "LS_TO_QR"
+        and row.base_target_module.startswith("NumStability.Algorithms.QR.Higham19")
+    } | {
+        row.base_source_module
+        for row in contract
+        if row.direction == "QR_TO_LS"
+        and row.base_source_module.startswith("NumStability.Algorithms.QR.Higham19")
+    }
+    for row in contract:
+        qr_name = (
+            row.base_target_name
+            if row.direction == "LS_TO_QR"
+            else row.base_source_name
+        )
+        if row.row_type == "edge" and module_by_name.get(qr_name) != row.qr_owner:
+            raise ValueError(
+                f"QR declaration {qr_name} is owned by {module_by_name.get(qr_name)}, "
+                f"not contracted owner {row.qr_owner}"
+            )
+        final_source, final_target = (
+            (row.ls_destination, row.qr_owner)
+            if row.direction == "LS_TO_QR"
+            else (row.qr_owner, row.ls_destination)
+        )
+        required_imports.add((final_source, final_target))
+
+    missing = sorted(
+        (source, target)
+        for source, target in required_imports
+        if target not in import_graph.get(source, [])
+    )
+    if missing:
+        raise ValueError(
+            "final canonical cross-lane imports are missing: " f"{missing[:20]}"
+        )
+
+    production_modules = {
+        row.destination_module for row in records.values()
+    } | {row.qr_owner for row in contract}
+    forbidden_wrappers = set(ALL_COMPATIBILITY_WRAPPERS) | compatibility_qr
+    forbidden = sorted(
+        (module, dependency)
+        for module in production_modules
+        for dependency in import_graph.get(module, [])
+        if dependency in forbidden_wrappers
+    )
+    if forbidden:
+        raise ValueError(
+            "final production modules import compatibility wrappers: "
+            f"{forbidden[:20]}"
+        )
+    return len(required_imports), len(production_modules)
 
 
 def normalized_graph_delta(
@@ -1589,13 +2970,19 @@ SELF_HISTORICAL_B = f"{LS_PREFIX}.LSPerturbation"
 SELF_REUSABLE = f"{REUSABLE_ALGORITHM_ROOT}.Residual"
 SELF_ANALYSIS = f"{REUSABLE_ANALYSIS_ROOT}.Wedin"
 SELF_SOURCE = f"{SOURCE_ROOT}.Theorem03"
-SELF_COUNTS = {SELF_HISTORICAL_A: 3, SELF_HISTORICAL_B: 2}
+SELF_COUNTS = {SELF_HISTORICAL_A: 4, SELF_HISTORICAL_B: 2}
 SELF_PRIVATE_LOGICAL = f"_private.{SELF_HISTORICAL_A}.NumStability.lsHelper"
 
 
 def _self_declarations() -> list[Declaration]:
     return [
         Declaration("NumStability.lsResidual", SELF_HISTORICAL_A, "definition", "public"),
+        Declaration(
+            "NumStability.lsResidual.eq_1",
+            SELF_HISTORICAL_A,
+            "theorem",
+            "public",
+        ),
         Declaration(
             "NumStability.lsResidual_permuteRows", SELF_HISTORICAL_A, "theorem", "public"
         ),
@@ -1637,6 +3024,9 @@ def _self_edges() -> list[DependencyEdge]:
         DependencyEdge(
             "signature", "NumStability.wedinLemma20_11_bound", "NumStability.wedinLemma20_11_bound"
         ),
+        DependencyEdge(
+            "body", "NumStability.wedinLemma20_11_bound", "NumStability.lsResidual"
+        ),
         DependencyEdge("body", "NumStability.lsResidual", "NumStability.qrExternal"),
     ]
 
@@ -1645,6 +3035,13 @@ def _self_manifest() -> dict[str, ManifestRow]:
     return {
         "NumStability.lsResidual": ManifestRow(
             "NumStability.lsResidual", SELF_HISTORICAL_A, SELF_REUSABLE, "definition", "public"
+        ),
+        "NumStability.lsResidual.eq_1": ManifestRow(
+            "NumStability.lsResidual.eq_1",
+            SELF_HISTORICAL_A,
+            SELF_REUSABLE,
+            "theorem",
+            "public",
         ),
         "NumStability.lsResidual_permuteRows": ManifestRow(
             "NumStability.lsResidual_permuteRows",
@@ -1689,7 +3086,7 @@ def run_self_test() -> None:
     edges = _self_edges()
     records = _self_manifest()
     baseline = selected_baseline_declarations(declarations, SELF_COUNTS)
-    assert len(baseline) == 5, baseline
+    assert len(baseline) == 6, baseline
     validate_manifest_shape(records, SELF_COUNTS)
     validate_manifest_against_baseline(records, baseline)
 
@@ -1771,6 +3168,23 @@ def run_self_test() -> None:
         )
         assert owners == 3, owners
         assert edge_count >= 1, edge_count
+        self_dag = destination_dag_from_stream(
+            baseline_tsv, actual_to_logical, records
+        )
+        assert len(self_dag) == 2, self_dag
+        validate_destination_dag_contract(
+            baseline_tsv, actual_to_logical, records, self_dag
+        )
+        drifted_dag = dict(self_dag)
+        first_pair = sorted(drifted_dag)[0]
+        signature_count, body_count = drifted_dag[first_pair]
+        drifted_dag[first_pair] = (signature_count, body_count + 1)
+        expect_value_error(
+            lambda: validate_destination_dag_contract(
+                baseline_tsv, actual_to_logical, records, drifted_dag
+            ),
+            "a changed typed destination-DAG count",
+        )
 
         # 7. Forbidden reusable -> source declaration edge.
         inverted = dict(records)
@@ -1839,6 +3253,12 @@ def run_self_test() -> None:
         # Candidate stream after a completed move of both reusable owners.
         moved = [
             Declaration("NumStability.lsResidual", SELF_REUSABLE, "definition", "public"),
+            Declaration(
+                "NumStability.lsResidual.eq_1",
+                SELF_REUSABLE,
+                "theorem",
+                "public",
+            ),
             Declaration("NumStability.lsResidual_permuteRows", SELF_REUSABLE, "theorem", "public"),
             Declaration(
                 f"_private.{SELF_REUSABLE}.0.NumStability.lsHelper",
@@ -1866,6 +3286,9 @@ def run_self_test() -> None:
                 "signature",
                 "NumStability.wedinLemma20_11_bound",
                 "NumStability.wedinLemma20_11_bound",
+            ),
+            DependencyEdge(
+                "body", "NumStability.wedinLemma20_11_bound", "NumStability.lsResidual"
             ),
             DependencyEdge("body", "NumStability.lsResidual", "NumStability.qrExternal"),
         ]
@@ -1901,7 +3324,7 @@ def run_self_test() -> None:
         )
 
         candidate_map = check_candidate_ownership(records, baseline, moved, rewrites)
-        assert len(candidate_map) == 5, candidate_map
+        assert len(candidate_map) == 6, candidate_map
 
         candidate_tsv = root / "candidate.tsv"
         candidate_tsv.write_text(_self_stream(moved, moved_edges), encoding="utf-8")
@@ -2012,6 +3435,31 @@ def run_self_test() -> None:
         graph = read_module_imports(project)
         assert SELF_REUSABLE in graph, sorted(graph)
         assert validate_reusable_isolation(project, records, graph) == 2
+        validate_destination_direct_imports(
+            graph, records, self_dag, {SELF_REUSABLE, SELF_ANALYSIS, SELF_SOURCE}
+        )
+        missing_dag_import = dict(graph)
+        missing_dag_import[SELF_SOURCE] = []
+        expect_value_error(
+            lambda: validate_destination_direct_imports(
+                missing_dag_import,
+                records,
+                self_dag,
+                {SELF_REUSABLE, SELF_ANALYSIS, SELF_SOURCE},
+            ),
+            "a missing direct destination-DAG import",
+        )
+        extra_dag_import = dict(graph)
+        extra_dag_import[SELF_REUSABLE] = graph[SELF_REUSABLE] + [SELF_ANALYSIS]
+        expect_value_error(
+            lambda: validate_destination_direct_imports(
+                extra_dag_import,
+                records,
+                self_dag,
+                {SELF_REUSABLE, SELF_ANALYSIS, SELF_SOURCE},
+            ),
+            "an extra direct destination-DAG import",
+        )
 
         # 14. Forbidden transitive reusable -> source import.
         bad_graph = dict(graph)
@@ -2027,39 +3475,97 @@ def run_self_test() -> None:
             "a reusable module reaching Analysis.HighamChapter7",
         )
 
-        # 15. Cross-lane contract drift.
-        self_forward = frozenset({(SELF_HISTORICAL_A, "NumStability.Algorithms.QR.QRSolve")})
-        self_reverse = frozenset(
-            {("NumStability.Algorithms.QR.Higham19Problem19_10", SELF_HISTORICAL_B)}
-        )
-        (project / "NumStability/Algorithms/QR/Higham19Problem19_10.lean").write_text(
-            "/-! QR consumer. -/\nimport NumStability.Algorithms.LeastSquares.LSPerturbation\n",
+        # 15. Final cross-lane normalization is canonical on both sides.
+        qr_source_owner = "NumStability.Source.Higham.Chapter19.Problem10"
+        qr_source_path = project / "NumStability/Source/Higham/Chapter19/Problem10.lean"
+        qr_source_path.parent.mkdir(parents=True, exist_ok=True)
+        qr_source_path.write_text(
+            "/-! QR source owner. -/\n"
+            "import NumStability.Analysis.Perturbation.LeastSquares.Wedin\n",
             encoding="utf-8",
         )
         graph = read_module_imports(project)
-        assert validate_cross_lane_contract(
-            project, records, graph, self_forward, self_reverse
-        ) == (1, 1)
+        self_cross = [
+            CrossLaneNormalization(
+                "edge",
+                "LS_TO_QR",
+                "body",
+                SELF_HISTORICAL_A,
+                "NumStability.lsResidual",
+                "NumStability.Algorithms.QR.QRSolve",
+                "NumStability.qrExternal",
+                SELF_REUSABLE,
+                "NumStability.Algorithms.QR.QRSolve",
+                "resolved",
+            ),
+            CrossLaneNormalization(
+                "import",
+                "QR_TO_LS",
+                "import",
+                "NumStability.Algorithms.QR.Higham19Problem19_10",
+                "-",
+                SELF_HISTORICAL_B,
+                "-",
+                SELF_ANALYSIS,
+                qr_source_owner,
+                "resolved",
+            ),
+        ]
+        assert validate_cross_lane_final_contract(
+            self_cross, moved, graph, records
+        ) == (2, 5)
 
         dropped = dict(graph)
         dropped[SELF_REUSABLE] = ["NumStability.Algorithms.QR.HouseholderQRSupport"]
         expect_value_error(
-            lambda: validate_cross_lane_contract(
-                project, records, dropped, self_forward, self_reverse
+            lambda: validate_cross_lane_final_contract(
+                self_cross, moved, dropped, records
             ),
-            "a dropped LS-to-QR dependency",
+            "a dropped canonical LS-to-QR dependency",
         )
-        dropped_reverse = dict(graph)
-        dropped_reverse["NumStability.Algorithms.QR.Higham19Problem19_10"] = []
-        expect_value_error(
-            lambda: validate_cross_lane_contract(
-                project, records, dropped_reverse, self_forward, self_reverse
+        unresolved = list(self_cross)
+        unresolved[1] = replace(
+            unresolved[1],
+            qr_owner=(
+                "@QR_OWNER_REQUIRED:"
+                "NumStability.Algorithms.QR.Higham19Problem19_10"
             ),
-            "a QR consumer that lost its historical least-squares import",
+            status="qr_owner_required",
+        )
+        expect_value_error(
+            lambda: validate_cross_lane_final_contract(
+                unresolved, moved, graph, records
+            ),
+            "an unresolved QR canonical owner in post mode",
+        )
+        wrapper_import = dict(graph)
+        wrapper_import[SELF_REUSABLE] = [SELF_HISTORICAL_A]
+        expect_value_error(
+            lambda: validate_cross_lane_final_contract(
+                self_cross, moved, wrapper_import, records
+            ),
+            "a final production import of a compatibility wrapper",
         )
 
         # 16. Structural modules must be import-only and declaration-free.
-        validate_structural_modules(project, moved, {SELF_HISTORICAL_A}, None)
+        self_structural = {
+            SELF_HISTORICAL_A: (
+                SELF_REUSABLE,
+                "NumStability.Algorithms.QR.QRSolve",
+            )
+        }
+        validate_structural_modules(
+            project, moved, {SELF_HISTORICAL_A}, self_structural
+        )
+        expect_value_error(
+            lambda: validate_structural_modules(
+                project,
+                moved,
+                {SELF_HISTORICAL_A},
+                {SELF_HISTORICAL_A: (SELF_REUSABLE,)},
+            ),
+            "a structural wrapper whose exact imports drifted",
+        )
         expect_value_error(
             lambda: validate_structural_modules(
                 project,
@@ -2108,6 +3614,8 @@ def run_self_test() -> None:
             SELF_SOURCE: "source",
             SELF_HISTORICAL_A: "compatibility",
             SOURCE_ROOT: "source",
+            REUSABLE_ALGORITHM_UMBRELLA: "reusable",
+            REUSABLE_ANALYSIS_UMBRELLA: "reusable",
             f"{SOURCE_ROOT}.Equation32": "source",
             f"{SOURCE_ROOT}.Lemma06": "source",
             f"{SOURCE_ROOT}.Theorem01": "source",
@@ -2118,10 +3626,16 @@ def run_self_test() -> None:
             encoding="utf-8",
         )
         tiers = read_tiers(tiers_path)
-        validate_tier_coverage(tiers, records, {SELF_HISTORICAL_A, SOURCE_ROOT})
+        self_tier_structural = {
+            SELF_HISTORICAL_A,
+            SOURCE_ROOT,
+            REUSABLE_ALGORITHM_UMBRELLA,
+            REUSABLE_ANALYSIS_UMBRELLA,
+        }
+        validate_tier_coverage(tiers, records, self_tier_structural)
         expect_value_error(
             lambda: validate_tier_coverage(tiers, records, {SOURCE_ROOT}),
-            "tier rows that do not match the lane surface",
+            "tier rows that omit wrappers or reusable umbrellas",
         )
         mixed_path = root / "mixed.tsv"
         mixed_path.write_text(
@@ -2140,75 +3654,258 @@ def run_self_test() -> None:
         )
         expect_value_error(
             lambda: validate_tier_coverage(
-                read_tiers(contra_path), records, {SELF_HISTORICAL_A, SOURCE_ROOT}
+                read_tiers(contra_path), records, self_tier_structural
             ),
             "a proposed tier contradicting its destination role",
         )
 
-        # 18. Route map shapes.
-        routes_path = root / "routes.tsv"
-        routes_path.write_text(
-            "format\t1\n"
-            f"range\t{SELF_HISTORICAL_A}\t1\t100\t{SELF_REUSABLE}\n"
-            f"exact\t{SELF_HISTORICAL_B}\tNumStability.wedinLemma20_11_bound\t-\t{SELF_ANALYSIS}\n"
-            f"exact\t{SELF_HISTORICAL_B}\tNumStability.theorem20_3_source\t-\t{SELF_SOURCE}\n",
+        # 18. Coordinator-owned imports, root tests, global tiers and
+        # COMPATIBILITY.md rows are executable post gates, not prose requests.
+        coordinator_rows = {
+            ("add_import", "NumStability.Consumer", "-", SELF_REUSABLE),
+            (
+                "remove_import",
+                "NumStability.Consumer",
+                SELF_HISTORICAL_A,
+                "-",
+            ),
+            (
+                "new_aggregate",
+                "NumStability.Analysis.Perturbation",
+                "-",
+                SELF_ANALYSIS,
+            ),
+            (
+                "root_test_import",
+                "NumStabilityTest",
+                "-",
+                "NumStabilityTest.Import.Self",
+            ),
+            (
+                "global_tier_exact",
+                SELF_HISTORICAL_A,
+                "-",
+                "compatibility",
+            ),
+            (
+                "global_tier_prefix",
+                "NumStability.Self.",
+                "-",
+                "reusable",
+            ),
+            (
+                "compatibility_map",
+                SELF_HISTORICAL_A,
+                "-",
+                SELF_REUSABLE,
+            ),
+        }
+        coordinator_path = root / "coordinator.tsv"
+        write_coordinator_patches(coordinator_path, coordinator_rows)
+        assert read_coordinator_patches(coordinator_path) == coordinator_rows
+        perturbation_aggregate = module_path(
+            project, "NumStability.Analysis.Perturbation"
+        )
+        perturbation_aggregate.parent.mkdir(parents=True, exist_ok=True)
+        perturbation_aggregate.write_text(
+            "/-! Perturbation aggregate. -/\n" f"import {SELF_ANALYSIS}\n",
             encoding="utf-8",
         )
-        ranges, exact_routes = read_routes(routes_path, set(SELF_COUNTS))
-        assert len(ranges) == 1 and len(exact_routes) == 2
-
-        overlap_path = root / "overlap.tsv"
-        overlap_path.write_text(
-            "format\t1\n"
-            f"range\t{SELF_HISTORICAL_A}\t1\t100\t{SELF_REUSABLE}\n"
-            f"range\t{SELF_HISTORICAL_A}\t50\t150\t{SELF_ANALYSIS}\n",
-            encoding="utf-8",
-        )
-        expect_value_error(
-            lambda: read_routes(overlap_path, set(SELF_COUNTS)),
-            "overlapping route ranges",
-        )
-
-        ilean_dir = root / "ilean"
-        ilean_dir.mkdir()
-        ilean_path = ilean_dir / "LSQRSolve.ilean"
-        ilean_path.write_text(
+        architecture = project / "docs/architecture"
+        architecture.mkdir(parents=True, exist_ok=True)
+        (architecture / "tiers.json").write_text(
             json.dumps(
                 {
-                    "module": SELF_HISTORICAL_A,
-                    "decls": {
-                        "NumStability.lsResidual": [9, 0],
-                        "NumStability.lsResidual_permuteRows": [19, 0],
-                        f"_private.{SELF_HISTORICAL_A}.0.NumStability.lsHelper": [29, 0],
-                    },
+                    "exact": {SELF_HISTORICAL_A: "compatibility"},
+                    "prefixes": [
+                        {"prefix": "NumStability.Self.", "tier": "reusable"}
+                    ],
                 }
             ),
             encoding="utf-8",
         )
-        generated = generate_manifest(
-            baseline,
-            routes_path,
-            project,
-            {SELF_HISTORICAL_A: ilean_path},
-            SELF_COUNTS,
+        (architecture / "COMPATIBILITY.md").write_text(
+            "| Historical path | Canonical path |\n"
+            "| --- | --- |\n"
+            f"| `{SELF_HISTORICAL_A}` | `{SELF_REUSABLE}` |\n",
+            encoding="utf-8",
         )
-        assert generated == records, sorted(
-            (k, v) for k, v in generated.items() if records.get(k) != v
+        coordinator_graph = {
+            "NumStability.Consumer": [SELF_REUSABLE],
+            "NumStabilityTest": ["NumStabilityTest.Import.Self"],
+        }
+        assert validate_coordinator_patches_applied(
+            project, coordinator_rows, coordinator_graph, {}
+        ) == (3, 2, 1)
+        stale_coordinator_graph = dict(coordinator_graph)
+        stale_coordinator_graph["NumStability.Consumer"] = [SELF_HISTORICAL_A]
+        expect_value_error(
+            lambda: validate_coordinator_patches_applied(
+                project, coordinator_rows, stale_coordinator_graph, {}
+            ),
+            "an unapplied coordinator consumer rewrite",
         )
 
-        outside_path = root / "outside.tsv"
-        outside_path.write_text(
+        # 19. Every route is tied to an authoritative .ilean command span and
+        # exact source-command fingerprint, including compiler-generated rows.
+        frozen_source_dir = root / "frozen-source"
+        frozen_ilean_dir = root / "frozen-ilean"
+        frozen_source_dir.mkdir()
+        frozen_ilean_dir.mkdir()
+        source_a_lines = [
+            b"def NumStability.lsResidual := 0\n",
+            b"theorem NumStability.lsResidual_permuteRows : True := True.intro\n",
+            b"private theorem NumStability.lsHelper : True := True.intro\n",
+        ]
+        source_b_lines = [
+            b"theorem NumStability.wedinLemma20_11_bound : True := True.intro\n",
+            b"theorem NumStability.theorem20_3_source : True := True.intro\n",
+        ]
+        source_paths = {
+            SELF_HISTORICAL_A: frozen_source_dir / f"{SELF_HISTORICAL_A}.lean",
+            SELF_HISTORICAL_B: frozen_source_dir / f"{SELF_HISTORICAL_B}.lean",
+        }
+        source_paths[SELF_HISTORICAL_A].write_bytes(b"".join(source_a_lines))
+        source_paths[SELF_HISTORICAL_B].write_bytes(b"".join(source_b_lines))
+
+        def self_span(line: int, payload: bytes) -> list[int]:
+            width = len(payload.rstrip(b"\n"))
+            return [line, 0, line, width, line, 0, line, width]
+
+        ilean_payloads = {
+            SELF_HISTORICAL_A: {
+                "module": SELF_HISTORICAL_A,
+                "decls": {
+                    "NumStability.lsResidual": self_span(0, source_a_lines[0]),
+                    "NumStability.lsResidual_permuteRows": self_span(
+                        1, source_a_lines[1]
+                    ),
+                    f"_private.{SELF_HISTORICAL_A}.0.NumStability.lsHelper": self_span(
+                        2, source_a_lines[2]
+                    ),
+                },
+            },
+            SELF_HISTORICAL_B: {
+                "module": SELF_HISTORICAL_B,
+                "decls": {
+                    "NumStability.wedinLemma20_11_bound": self_span(
+                        0, source_b_lines[0]
+                    ),
+                    "NumStability.theorem20_3_source": self_span(
+                        1, source_b_lines[1]
+                    ),
+                },
+            },
+        }
+        ilean_paths: dict[str, Path] = {}
+        for module, payload in ilean_payloads.items():
+            path = frozen_ilean_dir / f"{module}.ilean"
+            path.write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
+            ilean_paths[module] = path
+
+        frozen_owners = {
+            module: FrozenOwner(
+                module,
+                f"unused/{module}.lean",
+                "0" * 40,
+                sha256_file(source_paths[module]),
+                len(source_paths[module].read_bytes().splitlines()),
+                len(source_paths[module].read_bytes().splitlines()),
+                sha256_file(ilean_paths[module]),
+                ilean_paths[module].stat().st_size,
+            )
+            for module in SELF_COUNTS
+        }
+        generated_routes = generate_command_routes(
+            baseline,
+            records,
+            project,
+            frozen_owners,
+            frozen_source_dir,
+            frozen_ilean_dir,
+        )
+        assert generated_routes["NumStability.lsResidual.eq_1"].provenance == (
+            "compiler_generated"
+        )
+        routes_path = root / "routes.tsv"
+        write_command_routes(routes_path, generated_routes)
+        committed_routes = read_command_routes(routes_path, baseline, records)
+        assert manifest_from_command_routes(committed_routes, baseline) == records
+        assert validate_routes_against_frozen_inputs(
+            committed_routes,
+            frozen_owners,
+            project,
+            frozen_source_dir,
+            frozen_ilean_dir,
+        ) == (6, 5)
+
+        exact_escape = root / "exact-escape.tsv"
+        exact_escape.write_text(
             "format\t1\n"
-            f"range\t{SELF_HISTORICAL_A}\t1\t5\t{SELF_REUSABLE}\n"
-            f"exact\t{SELF_HISTORICAL_B}\tNumStability.wedinLemma20_11_bound\t-\t{SELF_ANALYSIS}\n"
-            f"exact\t{SELF_HISTORICAL_B}\tNumStability.theorem20_3_source\t-\t{SELF_SOURCE}\n",
+            f"exact\t{SELF_HISTORICAL_A}\tNumStability.lsResidual\t-\t{SELF_REUSABLE}\n",
             encoding="utf-8",
         )
         expect_value_error(
-            lambda: generate_manifest(
-                baseline, outside_path, project, {SELF_HISTORICAL_A: ilean_path}, SELF_COUNTS
+            lambda: read_command_routes(exact_escape, baseline, records),
+            "a format-1 exact route that bypasses compiler spans",
+        )
+
+        split_group = dict(committed_routes)
+        split_group["NumStability.lsResidual.eq_1"] = replace(
+            split_group["NumStability.lsResidual.eq_1"],
+            destination_module=SELF_SOURCE,
+        )
+        expect_value_error(
+            lambda: validate_command_routes(split_group, baseline, records),
+            "co-generated declarations split from their source command",
+        )
+
+        span_drift = {
+            logical: (
+                replace(route, start_col=route.start_col + 1)
+                if route.command_root_logical == "NumStability.lsResidual"
+                else route
+            )
+            for logical, route in committed_routes.items()
+        }
+        expect_value_error(
+            lambda: validate_routes_against_frozen_inputs(
+                span_drift,
+                frozen_owners,
+                project,
+                frozen_source_dir,
+                frozen_ilean_dir,
             ),
-            "a declaration outside every reviewed range",
+            "a route whose compiler coordinates differ from .ilean",
+        )
+
+        # The candidate semantic stream is unchanged; only command text moves
+        # from ':= 0' to ':= 1'.  Kind and typed-edge checks alone would miss it.
+        for module, path in source_paths.items():
+            candidate_path = module_path(project, module)
+            candidate_path.parent.mkdir(parents=True, exist_ok=True)
+            candidate_path.write_bytes(path.read_bytes())
+        baseline_map = baseline_actual_to_logical(baseline)
+        assert validate_candidate_command_fingerprints(
+            project,
+            committed_routes,
+            records,
+            baseline_map,
+            set(),
+            ilean_paths,
+        ) == 5
+        candidate_a = module_path(project, SELF_HISTORICAL_A)
+        candidate_a.write_bytes(candidate_a.read_bytes().replace(b":= 0", b":= 1"))
+        expect_value_error(
+            lambda: validate_candidate_command_fingerprints(
+                project,
+                committed_routes,
+                records,
+                baseline_map,
+                set(),
+                ilean_paths,
+            ),
+            "a same-kind/same-edge semantic command edit",
         )
 
         digest = validate_expected_manifest_digest(records, None)
@@ -2230,15 +3927,29 @@ def parse_args() -> argparse.Namespace:
         help="frozen baseline TSV in pre mode; freshly generated TSV in stage/post mode",
     )
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
-    parser.add_argument(
-        "--routes",
-        type=Path,
-        help="reviewed range/exact route map used to generate or recheck the manifest",
-    )
+    parser.add_argument("--routes", type=Path, default=DEFAULT_ROUTES)
     parser.add_argument(
         "--write-manifest",
         action="store_true",
-        help="generate the manifest from --routes; valid only in pre mode",
+        help="rewrite the manifest from the command routes; valid only in pre mode",
+    )
+    parser.add_argument(
+        "--write-routes",
+        action="store_true",
+        help="rewrite format-2 command routes from frozen source/.ilean inputs",
+    )
+    parser.add_argument(
+        "--frozen-owners", type=Path, default=DEFAULT_FROZEN_OWNERS
+    )
+    parser.add_argument(
+        "--frozen-source-dir",
+        type=Path,
+        help="directory containing frozen files named HISTORICAL_MODULE.lean",
+    )
+    parser.add_argument(
+        "--frozen-ilean-dir",
+        type=Path,
+        help="directory containing frozen files named HISTORICAL_MODULE.ilean",
     )
     parser.add_argument(
         "--ilean",
@@ -2259,6 +3970,23 @@ def parse_args() -> argparse.Namespace:
         help="explicit private-name rewrite map required in stage/post mode",
     )
     parser.add_argument("--tiers", type=Path, default=DEFAULT_TIERS)
+    parser.add_argument("--write-tiers", action="store_true")
+    parser.add_argument(
+        "--structural-imports", type=Path, default=DEFAULT_STRUCTURAL_IMPORTS
+    )
+    parser.add_argument(
+        "--destination-dag", type=Path, default=DEFAULT_DESTINATION_DAG
+    )
+    parser.add_argument("--cross-lane", type=Path, default=DEFAULT_CROSS_LANE)
+    parser.add_argument(
+        "--coordinator-patches", type=Path, default=DEFAULT_COORDINATOR_PATCHES
+    )
+    parser.add_argument(
+        "--write-structural-imports", action="store_true"
+    )
+    parser.add_argument("--write-destination-dag", action="store_true")
+    parser.add_argument("--write-cross-lane", action="store_true")
+    parser.add_argument("--write-coordinator-patches", action="store_true")
     parser.add_argument(
         "--expected-manifest-sha256",
         help="optional canonical LF-normalized manifest digest",
@@ -2270,15 +3998,15 @@ def parse_args() -> argparse.Namespace:
         help="repository root for .ilean defaults and structural-module checks",
     )
     parser.add_argument(
-        "--structural-module",
+        "--completed-structural-module",
         action="append",
         default=[],
-        help="additional completed import-only wrapper or aggregate (repeatable)",
+        help="completed structural module in stage mode (repeatable)",
     )
     parser.add_argument(
-        "--structural-modules",
+        "--completed-structural-modules",
         type=Path,
-        help="optional format-1 one-column file of additional structural modules",
+        help="format-1 one-column completed structural set for stage mode",
     )
     parser.add_argument(
         "--completed-destination",
@@ -2290,11 +4018,6 @@ def parse_args() -> argparse.Namespace:
         "--completed-destinations",
         type=Path,
         help="format-1 one-column completed-destination set for stage mode",
-    )
-    parser.add_argument(
-        "--skip-cross-lane",
-        action="store_true",
-        help="skip the frozen cross-lane import contract (pre mode only)",
     )
     parser.add_argument(
         "--self-test", action="store_true", help="run checker unit smoke tests"
@@ -2310,53 +4033,126 @@ def main() -> int:
         return 0
     if args.mode is None or args.dependency_tsv is None:
         raise ValueError("--mode and --dependency-tsv are required")
-    if args.write_manifest and args.mode != "pre":
-        raise ValueError("--write-manifest is valid only in pre mode")
-    if args.write_manifest and args.routes is None:
-        raise ValueError("--write-manifest requires an explicit --routes file")
-    if args.skip_cross_lane and args.mode != "pre":
-        raise ValueError("--skip-cross-lane is valid only in pre mode")
+    write_flags = (
+        args.write_manifest,
+        args.write_routes,
+        args.write_structural_imports,
+        args.write_destination_dag,
+        args.write_cross_lane,
+        args.write_tiers,
+        args.write_coordinator_patches,
+    )
+    if any(write_flags) and args.mode != "pre":
+        raise ValueError("contract write options are valid only in pre mode")
 
     ilean_overrides = parse_ilean_overrides(args.ilean)
     structural_modules = set(DEFAULT_STRUCTURAL_MODULES)
-    structural_modules.update(args.structural_module)
-    if args.structural_modules is not None:
-        structural_modules.update(read_structural_modules(args.structural_modules))
 
     if args.mode == "pre":
         if sha256_file(args.dependency_tsv) != BASELINE_TSV_SHA256:
             raise ValueError("pre-migration dependency TSV hash differs from the frozen base")
         declarations = read_dependency_declarations(args.dependency_tsv)
         baseline = selected_baseline_declarations(declarations)
-
-        generated: dict[str, ManifestRow] | None = None
-        if args.routes is not None:
-            generated = generate_manifest(
-                baseline, args.routes, args.project_root, ilean_overrides
-            )
-        if args.write_manifest:
-            assert generated is not None
-            write_manifest(args.manifest, generated)
-
         records = read_manifest(args.manifest)
         validate_manifest_against_baseline(records, baseline)
-        if generated is not None and records != generated:
+        frozen_owners = read_frozen_owners(args.frozen_owners)
+        if args.write_routes:
+            generated_routes = generate_command_routes(
+                baseline,
+                records,
+                args.project_root,
+                frozen_owners,
+                args.frozen_source_dir,
+                args.frozen_ilean_dir,
+            )
+            write_command_routes(args.routes, generated_routes)
+        routes = read_command_routes(args.routes, baseline, records)
+        route_rows, command_groups = validate_routes_against_frozen_inputs(
+            routes,
+            frozen_owners,
+            args.project_root,
+            args.frozen_source_dir,
+            args.frozen_ilean_dir,
+        )
+        generated_manifest = manifest_from_command_routes(routes, baseline)
+        if args.write_manifest:
+            write_manifest(args.manifest, generated_manifest)
+            records = read_manifest(args.manifest)
+        if records != generated_manifest:
             raise ValueError(
-                "committed manifest differs from the manifest generated by --routes"
+                "committed manifest differs from the compiler-span routes"
             )
         digest = validate_expected_manifest_digest(records, args.expected_manifest_sha256)
         actual_to_logical = baseline_actual_to_logical(baseline)
         owners, owner_edges = validate_destination_graph(
             args.dependency_tsv, declarations, actual_to_logical, records
         )
+
+        generated_dag = destination_dag_from_stream(
+            args.dependency_tsv, actual_to_logical, records
+        )
+        if args.write_destination_dag:
+            write_destination_dag(args.destination_dag, generated_dag)
+        dag = read_destination_dag(args.destination_dag, records)
+        validate_destination_dag_contract(
+            args.dependency_tsv, actual_to_logical, records, dag
+        )
+
+        generated_structural = generate_structural_import_contract(records)
+        if args.write_structural_imports:
+            write_structural_import_contract(
+                args.structural_imports, generated_structural
+            )
+        structural_contract = read_structural_import_contract(
+            args.structural_imports
+        )
+        if structural_contract != generated_structural:
+            raise ValueError(
+                "committed wrapper/aggregate imports differ from generated contract"
+            )
+
+        generated_coordinator = generate_coordinator_patches(
+            args.project_root, records, structural_contract
+        )
+        if args.write_coordinator_patches:
+            write_coordinator_patches(
+                args.coordinator_patches, generated_coordinator
+            )
+        coordinator_patches = read_coordinator_patches(args.coordinator_patches)
+        if coordinator_patches != generated_coordinator:
+            raise ValueError(
+                "committed coordinator patches differ from the exact base-derived set"
+            )
+
+        generated_cross = generate_cross_lane_normalization(
+            args.dependency_tsv, declarations, actual_to_logical, records
+        )
+        if args.write_cross_lane:
+            write_cross_lane_normalization(args.cross_lane, generated_cross)
+        cross_contract = read_cross_lane_normalization(args.cross_lane, records)
+        if cross_contract != generated_cross:
+            raise ValueError(
+                "committed cross-lane normalization differs from frozen base edges"
+            )
+        forward, reverse, cross_edges = validate_cross_lane_base_contract(
+            args.project_root,
+            args.dependency_tsv,
+            declarations,
+            actual_to_logical,
+            records,
+            cross_contract,
+        )
+        if args.write_tiers:
+            write_tiers(
+                args.tiers, generate_tiers(records, structural_modules)
+            )
         tiers = read_tiers(args.tiers)
         validate_tier_coverage(tiers, records, structural_modules)
-        if not args.skip_cross_lane:
-            forward, reverse = validate_cross_lane_contract(args.project_root, records)
-            print(f"cross-lane contract: {forward} LS-to-QR, {reverse} QR-to-LS")
         print(
-            f"pre mode passed: {len(records)} declarations, {owners} destinations, "
-            f"{owner_edges} owner edges, manifest sha256 {digest}"
+            f"pre mode passed: {len(records)} declarations, {command_groups} compiler "
+            f"command groups, {owners} destinations, {owner_edges} owner edges, "
+            f"{forward} LS-to-QR and {reverse} QR-to-LS base imports "
+            f"({cross_edges} typed edges), manifest sha256 {digest}"
         )
         return 0
 
@@ -2366,6 +4162,11 @@ def main() -> int:
     baseline = selected_baseline_declarations(baseline_declarations)
     records = read_manifest(args.manifest)
     validate_manifest_against_baseline(records, baseline)
+    routes = read_command_routes(args.routes, baseline, records)
+    dag = read_destination_dag(args.destination_dag, records)
+    structural_contract = read_structural_import_contract(args.structural_imports)
+    cross_contract = read_cross_lane_normalization(args.cross_lane, records)
+    coordinator_patches = read_coordinator_patches(args.coordinator_patches)
     digest = validate_expected_manifest_digest(records, args.expected_manifest_sha256)
 
     all_destinations = {row.destination_module for row in records.values()}
@@ -2378,6 +4179,21 @@ def main() -> int:
             raise ValueError(f"completed destinations are not lane owners: {unknown}")
     else:
         completed = all_destinations
+
+    if args.mode == "stage":
+        completed_structural = set(args.completed_structural_module)
+        if args.completed_structural_modules is not None:
+            completed_structural.update(
+                read_structural_modules(args.completed_structural_modules)
+            )
+        unknown_structural = sorted(completed_structural - structural_modules)
+        if unknown_structural:
+            raise ValueError(
+                f"completed structural modules are outside the contract: "
+                f"{unknown_structural}"
+            )
+    else:
+        completed_structural = structural_modules
 
     declarations = read_dependency_declarations(args.dependency_tsv)
     required_private = {
@@ -2397,9 +4213,24 @@ def main() -> int:
     candidate_map = check_candidate_ownership(
         records, baseline, declarations, rewrites, completed
     )
-    validate_structural_modules(
-        args.project_root, declarations, structural_modules, None
+    command_groups = validate_candidate_command_fingerprints(
+        args.project_root,
+        routes,
+        records,
+        candidate_map,
+        completed,
+        ilean_overrides,
     )
+    if completed_structural:
+        validate_structural_modules(
+            args.project_root,
+            declarations,
+            completed_structural,
+            {
+                module: structural_contract[module]
+                for module in completed_structural
+            },
+        )
     compare_full_graph(
         args.baseline_tsv, args.dependency_tsv, baseline, candidate_map, records
     )
@@ -2411,25 +4242,39 @@ def main() -> int:
     owners, owner_edges = validate_destination_graph(
         args.dependency_tsv, declarations, actual_to_logical, records
     )
+    validate_destination_dag_contract(
+        args.dependency_tsv, actual_to_logical, records, dag
+    )
     tiers = read_tiers(args.tiers)
     validate_tier_coverage(tiers, records, structural_modules)
     import_graph = read_module_imports(args.project_root)
-    forward, reverse = validate_cross_lane_contract(
-        args.project_root, records, import_graph
-    )
+    validate_destination_direct_imports(import_graph, records, dag, completed)
 
     if args.mode == "post":
         reusable = validate_reusable_isolation(args.project_root, records, import_graph)
+        normalized_imports, normalized_modules = validate_cross_lane_final_contract(
+            cross_contract, declarations, import_graph, records
+        )
+        coordinator_imports, coordinator_tiers, compatibility_rows = (
+            validate_coordinator_patches_applied(
+                args.project_root, coordinator_patches, import_graph
+            )
+        )
         print(
             f"post mode passed: {len(records)} declarations, {owners} destinations, "
+            f"{command_groups} unchanged compiler command groups, "
             f"{owner_edges} owner edges, {reusable} isolated reusable modules, "
-            f"{forward} LS-to-QR, {reverse} QR-to-LS, manifest sha256 {digest}"
+            f"{normalized_imports} canonical cross-lane imports across "
+            f"{normalized_modules} production modules, {coordinator_imports} shared "
+            f"import patches, {coordinator_tiers} tier registrations, and "
+            f"{compatibility_rows} compatibility rows, manifest sha256 {digest}"
         )
     else:
         print(
             f"stage mode passed: {len(completed)}/{len(all_destinations)} destinations "
-            f"complete, {owner_edges} owner edges, {forward} LS-to-QR, "
-            f"{reverse} QR-to-LS, manifest sha256 {digest}"
+            f"complete, {len(completed_structural)}/{len(structural_modules)} structural "
+            f"modules complete, {command_groups} unchanged compiler command groups, "
+            f"{owner_edges} owner edges, manifest sha256 {digest}"
         )
     return 0
 
