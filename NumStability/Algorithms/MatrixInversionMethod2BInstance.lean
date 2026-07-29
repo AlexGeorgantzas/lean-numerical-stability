@@ -34,7 +34,10 @@ Chapter 14 ("Matrix Inversion"), §14.2.2, equation (14.14), Method 2B
 -/
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Algorithms.Ch14Method2Loop
-import NumStability.Algorithms.LU.BlockLU
+import NumStability.Algorithms.LinearSystems.LU.BlockLU.FirstOrderModels
+import NumStability.Analysis.FirstOrder.FixedPrecision
+import NumStability.Analysis.MatrixNorms.EntrywiseMaximum
+import NumStability.Source.Higham.Chapter13.Section01.OperationModels
 import NumStability.Algorithms.MatMul
 import NumStability.Algorithms.MatrixInversion
 

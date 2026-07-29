@@ -12,6 +12,8 @@ point-row source route supplies this scalar certificate independently.
 -/
 
 import NumStability.Algorithms.LU.BlockLUPointRowGrowthSourceClosure
+import NumStability.Source.Higham.Chapter13.Problem04.FactorizationExistence
+import NumStability.Source.Higham.Chapter13.Problem04.ProductBounds
 
 namespace NumStability
 

@@ -9,7 +9,12 @@ boundary and express unit block-lower and block-upper triangularity without
 imposing a common block order.
 -/
 
-import NumStability.Algorithms.LU.BlockLU
+import Mathlib.LinearAlgebra.Matrix.SchurComplement
+import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
+import Mathlib.Data.Real.Basic
+import Mathlib.Logic.Equiv.Fin.Basic
+import Mathlib.Tactic.Abel
+import Mathlib.Tactic.Push
 
 namespace NumStability
 

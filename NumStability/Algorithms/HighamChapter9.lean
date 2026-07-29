@@ -23,7 +23,10 @@ import NumStability.Algorithms.HighamChapter8
 import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LU.LUSolve
 import NumStability.Algorithms.LU.GrowthFactor
-import NumStability.Algorithms.LU.BlockLU
+import NumStability.Algorithms.LinearSystems.LU.BlockLU.BlockMatrices
+import NumStability.Algorithms.LinearSystems.LU.BlockLU.PositiveDefinite
+import NumStability.Analysis.FirstOrder.FixedPrecision
+import NumStability.Analysis.MatrixNorms.EntrywiseMaximum
 import NumStability.Algorithms.LU.Tridiagonal
 import NumStability.Algorithms.LU.TridiagonalRecurrence
 import NumStability.Algorithms.LU.SpecialMatrices

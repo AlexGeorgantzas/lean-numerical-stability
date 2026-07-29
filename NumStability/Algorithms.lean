@@ -207,8 +207,8 @@ import NumStability.Algorithms.LeastSquares.LSNormalEquations
 import NumStability.Algorithms.LeastSquares.LSPerturbation
 import NumStability.Algorithms.LeastSquares.LSQRSolve
 import NumStability.Algorithms.LinearSystems
+import NumStability.Algorithms.LinearSystems.LU.BlockLU
 import NumStability.Algorithms.LogExpProduct
-import NumStability.Algorithms.LU.BlockLU
 import NumStability.Algorithms.LU.BlockLUArbitraryNormSourceClosure
 import NumStability.Algorithms.LU.BlockLUComputationSourceClosure
 import NumStability.Algorithms.LU.BlockLUFirstOrderFamilies
@@ -434,6 +434,7 @@ import NumStability.Source.Higham.Chapter06.Asides
 import NumStability.Source.Higham.Chapter06.BlockAntidiagonalNorm
 import NumStability.Source.Higham.Chapter06.Lemma06
 import NumStability.Source.Higham.Chapter12
+import NumStability.Source.Higham.Chapter13.BlockLU
 import NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier
 import NumStability.Source.Higham.Chapter14
 import NumStability.Source.Higham.Chapter17

@@ -21,7 +21,9 @@ No final residual inequality is assumed by the operation-level theorems.
 
 import NumStability.Algorithms.Ch14Method1BWhole
 import NumStability.Algorithms.Ch14Method2CWhole
-import NumStability.Algorithms.LU.BlockLU
+import NumStability.Algorithms.LinearSystems.LU.BlockLU.FirstOrderModels
+import NumStability.Analysis.FirstOrder.FixedPrecision
+import NumStability.Analysis.MatrixNorms.EntrywiseMaximum
 
 namespace NumStability.Ch14Ext
 

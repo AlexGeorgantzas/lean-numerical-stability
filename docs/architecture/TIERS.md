@@ -76,44 +76,33 @@ the declaration-free `Chapter06.Asides` and
 `Analysis.Higham6BlockAntidiag`, and `Analysis.HighamChapter6Duality` are exact
 one-target compatibility wrappers.
 
-Phase 12A begins the Block LU semantic split with six declaration-bearing
-destinations. `Analysis.FirstOrder` is now an aggregate over reusable
-`AsymptoticFamilies` and `FixedPrecision`; `Analysis.MatrixNorms` adds the
-reusable `EntrywiseMaximum` leaf. In that phase, the new declaration-free
-`Algorithms.LinearSystems.LU.BlockLU` family initially exposed reusable
-`BlockMatrices` and `FirstOrderModels`, while
-`Source.Higham.Chapter13.Theorem05.Recurrences` owns the numbered source
-recurrences. The historical `Algorithms.LU.BlockLU` module remains an
-unclassified residual during this staged extraction. The historical
-`Algorithms.LU.GrowthFactor` module likewise remains declaration-bearing after
-only its generic max-entry family moved. Neither path is described as a
-compatibility wrapper yet; tests under `Import.Compatibility` exercise their
-staged historical import surfaces until the final forwarding facades exist.
+Phase 12 completes the Block LU semantic split. The reusable
+`Algorithms.LinearSystems.LU.BlockLU` aggregate exposes eleven reusable leaves,
+including the final `RecursiveFactorization` owner and its two reviewed private
+helpers. The source cutover moves the remaining 1,695 semantic declarations
+into 66 new Chapter 13 leaves and the pinned `Equation25` and `Table01` shells;
+the previously extracted `Theorem05.Recurrences` leaf makes the complete
+`Source.Higham.Chapter13.BlockLU` contract an explicit 69-leaf aggregate.
+Eleven declaration-free source family aggregates provide narrower discovery
+surfaces without becoming declaration owners.
 
-The first Phase 12B wave adds four reusable Block LU leaves:
-`DiagonalDominance`, `FactorizationError`, `GrowthBounds`, and
-`ResidualLifting`. The canonical Block LU aggregate exposes them directly,
-while the historical module imports them to preserve its staged public surface.
+The historical `Algorithms.LU.BlockLU` module is now a declaration-free
+two-target compatibility facade over the reusable and source aggregates. All
+nine non-test direct consumers use the semantic owners they actually need, so
+no declaration-bearing production module imports that facade. The private-name
+normalization contract contains the two recursive-factorization identities and
+the 17 source-owner identities required by `Theorem02.Factorization` and
+`Theorem02.Uniqueness`.
 
-The next safe reusable slice adds `Factorization`, `PositiveDefinite`,
-`SchurComplement`, and `SolveError`. The following bounded slice adds
-`RecursiveFactorization`, preserving its two finite-sum helpers as private
-implementation details and inlining those proofs only at the five reviewed
-cross-owner call sites.
-
-The recursive Phase 12B reusable-slice ratchet classifies 451 of 1,054
-production modules (42.789%): 152 as source, 92 as aggregate, 108 as
-compatibility, 92 as
+The final Phase 12 source-cutover ratchet classifies 529 of 1,131 production
+modules (46.773%): 218 as source, 103 as aggregate, 109 as compatibility, 92 as
 reusable, 2 as internal, and 5 as upstream. The explicit unclassified queue is
-603 modules,
-and no fully classified module is currently marked mixed. The
-`NumStability.Algorithms` direct-import
-ceilings are 442 imports below `NumStability`, including 43 below
-`NumStability.Analysis` and 14 below `NumStability.Source`. The exact remaining
-layout debt is 216 missing module docstrings and 399 noncanonical
-historical module names; the compatibility inventory contains 108 wrappers
-with 208 direct targets. The provenance contract remains 207 Apache-marked
-files and five upstream modules.
+602 modules, and no fully classified module is marked mixed. The
+`NumStability.Algorithms` direct-import ceilings are 443 imports below
+`NumStability`, including 43 below `NumStability.Analysis` and 15 below
+`NumStability.Source`. The remaining layout debt is 216 missing module
+docstrings and 399 noncanonical historical module names; the compatibility
+inventory contains 109 wrappers with 210 direct targets.
 
 Because structural aggregates do not themselves own declarations,
 `reusable_entrypoints` separately lists aggregates whose entire reachable

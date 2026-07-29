@@ -1,0 +1,9 @@
+import NumStability.Source.Higham.Chapter13.Problem04.FactorizationProducts.ComparisonUpdates
+
+/-!
+# Higham Chapter 13 Problem04.FactorizationProducts.ComparisonUpdates direct-import smoke test
+
+This test imports only `NumStability.Source.Higham.Chapter13.Problem04.FactorizationProducts.ComparisonUpdates`.
+-/
+
+#check NumStability.higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_first_schur_tail_pivot_right_inverse_pivotInv_eq_nonsingInv_all_leadingBlockPrefixes_blockDiagDomCol_infNorm_diagBound_nonpos_of_det_ne_zero

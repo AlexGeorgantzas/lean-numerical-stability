@@ -1,3 +1,4 @@
+import NumStability.Source.Higham.Chapter13.Theorem05.ErrorAnalysis
 import NumStability.Source.Higham.Chapter13.Theorem05.Recurrences
 
 /-!

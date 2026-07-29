@@ -1,7 +1,5 @@
+import NumStability.Source.Higham.Chapter13.BlockLU
 import NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier
-import NumStability.Source.Higham.Chapter13.Equation25
-import NumStability.Source.Higham.Chapter13.Table01
-import NumStability.Source.Higham.Chapter13.Theorem05
 
 /-!
 # Higham Chapter 13

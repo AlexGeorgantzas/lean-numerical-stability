@@ -343,8 +343,16 @@ Choose the narrowest entry point that matches the material you need:
   `NumStability.Source.Higham.Chapter27`;
   Chapter 22's real and complex refinement leaves are grouped by the
   declaration-free `NumStability.Source.Higham.Chapter22.Section03` aggregate.
-  Demmel's sharp Chapter 13 multiplier result is the canonical
-  `NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier` leaf.
+  Reusable block-LU mathematics is published from
+  `NumStability.Algorithms.LinearSystems.LU.BlockLU`. Higham Chapter 13's
+  numbered block-LU correspondence is published from the declaration-free
+  `NumStability.Source.Higham.Chapter13.BlockLU` aggregate, with narrower
+  section, theorem, lemma, and Problem 13.4 family aggregates below it.
+  `NumStability.Source.Higham.Chapter13` combines that source surface with the
+  independent `DemmelSharpMultiplier` leaf. The historical
+  `NumStability.Algorithms.LU.BlockLU` path remains importable as a two-target
+  compatibility facade; new code should choose the reusable or source path
+  explicitly.
 - `NumStability.Higham` is the historical compatibility entry point; new code
   should import `NumStability.Source.Higham`.
 - `NumStability.All` exposes the complete supported library surface.

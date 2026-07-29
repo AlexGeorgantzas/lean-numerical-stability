@@ -1,5 +1,5 @@
 import NumStability.Algorithms.Ch14Corollary147Closure
-import NumStability.Algorithms.LU.BlockLU
+import NumStability.Analysis.MatrixNorms.EntrywiseMaximum
 
 namespace NumStability
 

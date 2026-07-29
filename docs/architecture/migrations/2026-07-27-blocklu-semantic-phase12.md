@@ -912,6 +912,95 @@ The final tracked worktree and index remained clean throughout this validation
 sequence. This completes the reusable portion of the frozen Phase 12
 partition; the 68-owner source split remains open.
 
+## Phase 12 source cutover implementation
+
+The source cutover was prepared in the isolated
+`codex/phase12-source-implementation` worktree from exact revision
+`89f615e76a188367fab221447c5b6bc5bea3c35e`. Intake rechecked all 66 draft
+files against `draft-manifest.tsv`; replacing the generator's temporary marker
+with permanent semantic module documentation is the only difference from each
+frozen file. Reversing that documentation edit reproduces all 66 manifest
+hashes exactly. Those leaves contain 1,508 commands, 1,671 semantic
+declarations, and 17 private declarations.
+
+The pinned `Equation25` shell retains its original body bytes apart from the
+reviewed direct imports and its exact two-command collision fragment before the
+final namespace close. `Table01` needs a deterministic dependency prelude:
+`higham13_col_bdd_stability_bound` and
+`block_lu_stability_point_diagDom_col` occur immediately after the existing
+product-transfer heading, before the two pinned wrappers that use them. The
+remaining 20 source-ordered commands stay before the final namespace close.
+Its reviewed import set also removes
+`NumStability.Algorithms.LU.BlockLUSPDFamilies`; after the prelude supplies the
+two former transitive names, that import is unnecessary and would create the
+source/SPD-closure cycle.
+
+`prepare_blocklu_phase12_source.py` now renders both complete shells from their
+pinned git blobs under `collision-shells/`, while retaining the original
+source-ordered fragments as forensic output. A full replay against the current
+project reproduced `Equation25` byte-for-byte at 12,927 bytes with SHA-256
+`382A28099BC10BA1A104914F1FD42AF21639A40E87A715742E74DD4B534E1F8A` and
+`Table01` byte-for-byte at 29,718 bytes with SHA-256
+`E8064399E0DEACDAE65991CE9AC644E20EE6824527A69128C62025CC95A13432`;
+both `git diff --no-index --exit-code` comparisons returned zero. The replay
+preserved the frozen command-body, ledger, and import-witness digests, so the
+ordered merge changes no manifest declaration payload. The two collisions add
+24 declarations, completing the reviewed 1,695-declaration, 68-owner source
+partition. The final source surface contains no temporary draft marker. The
+19-row private-rewrite map is the two committed `RecursiveFactorization`
+identities plus the two `Theorem02.Factorization` and 15
+`Theorem02.Uniqueness` identities.
+
+Eleven new declaration-free source aggregates organize Sections 13.1 and 13.3,
+Lemma 13.10, Theorems 13.2 and 13.6--13.8, Problem 13.4 and its two nested
+product families, and the complete Block LU surface. The latter freezes an
+explicit 69-leaf direct-import contract: the 68 source-cutover owners plus
+`Theorem05.Recurrences`. `Chapter13` imports that surface and the independent
+`DemmelSharpMultiplier` leaf. All nine non-test direct consumers of the old
+monolith were retargeted to exact semantic owners; none imports the historical
+path. `Algorithms.LU.BlockLU` is now an exact two-import, declaration-free
+compatibility facade over the reusable and source Block LU aggregates.
+The companion structural contract freezes 143 direct-import pairs across 19
+Phase 12 facades and aggregates; its SHA-256 is
+`E259772BA776EC0595600F6F1DD25FACC036ED247995B5AFA1B3C0EFD353769F`.
+
+The import-test matrix adds 66 isolated leaf tests and eleven isolated
+aggregate tests. Existing Equation 25 and Table 13.1 tests check both and all
+22 newly merged declarations respectively; the theorem-family, chapter,
+historical-facade, Algorithms, and canonical-direct tests cover the new
+surfaces. All 77 new tests are directly reachable from `NumStabilityTest`.
+
+Before any Lean process was allowed, the source-only static repeat passed:
+
+- layout: 1,131 production modules, 602 unclassified, zero mixed, zero
+  declaration-bearing umbrellas, and zero unsorted aggregates;
+- compatibility: 109 forwarding modules and 210 canonical targets;
+- provenance: 207 Apache-marked files and five evidenced upstream modules;
+- ownership-checker and draft-generator self-tests, Python compilation, and
+  the 66-file/collision/facade/test integrity audit;
+- strict-source capture and reproducibility: zero unresolved imports, zero
+  cycles, and zero classified reusable-to-source or reusable-to-mixed reachable
+  pairs, with source-tree SHA-256
+  `9EF428A85F42039071D117CBB8A07BDC48CD4668E8C62B176DF5967DDFF8032A`.
+
+The final source scan contains 1,131 modules and 5,828 direct imports: 3,473
+project imports and 2,355 external imports. The ignored strict-source JSON is
+103,624 bytes with SHA-256
+`ECF3AE5206E1CC4B1B3D96B05A59604982D2C1994FEC5A73C13D506EB0AA9C54`;
+its Markdown rendering is 11,001 bytes with SHA-256
+`1A0D9313F16502D69DAFE182071316407E15B16F781FD817B5F0B9B742432C33`.
+
+Dynamic validation then passed for every declaration-bearing destination, the
+83-target combined wave (3,836 jobs), and the complete production library
+(4,910 jobs). The fresh format-2 semantic dependency stream is 115,774,316
+bytes with SHA-256
+`AC7DB49BEA92D0FFA4753B43851C02FE0306CF8CC4A5EA8B593DE735CCE6E6F5`.
+The pinned pre check and complete stage/post checks each validated all 1,990
+declarations, the acyclic 83-destination graph, and its 437 cross-owner edges;
+stage and post preserved the exact normalized contracted graph except for
+exactly the four reviewed inlined-private-helper body edges. A clean-commit
+repeat remains a mandatory completion gate before publication.
+
 ## Bounded exclusions and completion boundary
 
 This batch does not rename public declarations or namespaces, change

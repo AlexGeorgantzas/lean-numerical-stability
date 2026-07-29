@@ -62,14 +62,13 @@ split from the reusable library.
   `IEEE.NaiveMaximum`.
 - `NumStability.Algorithms.LinearSystems` is the declaration-free reusable
   linear-systems entry point. It re-exports the reviewed `Triangular` family
-  and the canonical `LU` hierarchy. Phase 12A established the reusable
-  `LinearSystems.LU.BlockLU` umbrella with `BlockMatrices` and
-  `FirstOrderModels`. The first Phase 12B wave adds `DiagonalDominance`,
-  `FactorizationError`, `GrowthBounds`, and `ResidualLifting`; the next safe
-  reusable slice adds `Factorization`, `PositiveDefinite`, `SchurComplement`,
-  and `SolveError`. `RecursiveFactorization` completes the remaining reviewed
-  reusable one-step factorization owner. Later Block LU slices extend that
-  umbrella without admitting numbered Chapter 13 correspondence.
+  and the canonical `LU` hierarchy. Phase 12 completes the reusable
+  `LinearSystems.LU.BlockLU` umbrella over `BlockMatrices`,
+  `DiagonalDominance`, `Factorization`, `FactorizationError`,
+  `FirstOrderModels`, `GrowthBounds`, `PositiveDefinite`,
+  `RecursiveFactorization`, `ResidualLifting`, `SchurComplement`, and
+  `SolveError`. Numbered Chapter 13 correspondence is excluded from this
+  reusable surface and lives below `Source.Higham.Chapter13.BlockLU`.
 - `NumStability.Algorithms.Summation` is the complete published summation
   surface. Its `Recursive` and `Pairwise` family umbrellas preserve source
   reachability, while reusable consumers import their `.Core` leaves.
@@ -167,11 +166,15 @@ split from the reusable library.
   Chapter 12 uses the declaration-free
   `NumStability.Source.Higham.Chapter12` aggregate over the source leaves
   `IterativeRefinement`, `OmegaDiscontinuity`, and `Problem02`. Chapter 13's
-  `DemmelSharpMultiplier` is a source leaf beside `Equation25`, `Table01`, and
-  the declaration-free `Theorem05` aggregate. Its `Theorem05.Recurrences`
-  leaf owns the source-specific error recurrences extracted in Phase 12A.
-  These modules are exposed by the existing declaration-free `Chapter13`
-  aggregate. Chapter 22 uses
+  declaration-free `BlockLU` aggregate directly imports the 69 reviewed
+  declaration-bearing source owners: the 68-owner final cutover surface plus
+  the previously extracted `Theorem05.Recurrences` leaf. Eleven
+  declaration-free family umbrellas provide narrower discovery paths for
+  Sections 13.1 and 13.3, Lemma 13.10, Theorems 13.2 and 13.6--13.8, and
+  Problem 13.4. The chapter aggregate exposes `BlockLU` beside the independent
+  `DemmelSharpMultiplier` leaf. The historical `Algorithms.LU.BlockLU` path is
+  a declaration-free two-target compatibility facade over the reusable and
+  source Block LU aggregates. Chapter 22 uses
   a declaration-free `Chapter22` aggregate over `VandermondeSystems`,
   `MonomialResidual`, `Problem07`, and the declaration-free `Section03`
   aggregate; that section owns the `RealRefinement` and

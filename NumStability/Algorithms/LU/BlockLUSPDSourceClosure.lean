@@ -8,6 +8,9 @@
 -/
 
 import NumStability.Algorithms.LU.BlockLURowSourceClosure
+import NumStability.Source.Higham.Chapter13.Equation24
+import NumStability.Source.Higham.Chapter13.Lemma09
+import NumStability.Source.Higham.Chapter13.Table01
 
 namespace NumStability
 

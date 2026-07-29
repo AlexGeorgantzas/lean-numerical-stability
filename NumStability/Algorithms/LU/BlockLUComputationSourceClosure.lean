@@ -11,6 +11,7 @@
 -/
 
 import NumStability.Algorithms.LU.BlockLUFirstOrderFamilies
+import NumStability.Source.Higham.Chapter13.Theorem06.FactorAndSolve
 
 namespace NumStability
 

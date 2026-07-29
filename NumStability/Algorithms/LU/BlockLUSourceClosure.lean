@@ -10,7 +10,16 @@
   bound, without an all-leading-prefix or prebuilt-pivot hypothesis.
 -/
 
-import NumStability.Algorithms.LU.BlockLU
+import NumStability.Algorithms.LinearSystems.LU.BlockLU.DiagonalDominance
+import NumStability.Algorithms.LinearSystems.LU.BlockLU.Factorization
+import NumStability.Algorithms.LinearSystems.LU.BlockLU.SchurComplement
+import NumStability.Source.Higham.Chapter13.Equation18
+import NumStability.Source.Higham.Chapter13.Problem04.ActiveStageBounds
+import NumStability.Source.Higham.Chapter13.Problem04.MatrixStages
+import NumStability.Source.Higham.Chapter13.Section03.SchurStageAnalysis
+import NumStability.Source.Higham.Chapter13.Theorem02.Factorization
+import NumStability.Source.Higham.Chapter13.Theorem07.OneStep
+import NumStability.Source.Higham.Chapter13.Theorem07.PivotExistence
 
 namespace NumStability
 

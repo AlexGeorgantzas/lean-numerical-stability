@@ -57,6 +57,7 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.HighamChapter12` | `NumStability.Source.Higham.Chapter12.IterativeRefinement` |
 | `NumStability.Algorithms.HighamChapter12OmegaDiscontinuity` | `NumStability.Source.Higham.Chapter12.OmegaDiscontinuity` |
 | `NumStability.Algorithms.HighamChapter12Problem12_2` | `NumStability.Source.Higham.Chapter12.Problem02` |
+| `NumStability.Algorithms.LU.BlockLU` | `NumStability.Algorithms.LinearSystems.LU.BlockLU` and `NumStability.Source.Higham.Chapter13.BlockLU` |
 | `NumStability.Algorithms.LU.BlockLUTable13_1Families` | `NumStability.Source.Higham.Chapter13.Equation25` and `NumStability.Source.Higham.Chapter13.Table01` |
 | `NumStability.Algorithms.LU.Higham13DemmelSharpMultiplier` | `NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier` |
 | `NumStability.Algorithms.Ch14HymanDeterminant` | `NumStability.Source.Higham.Chapter14.Problem14` |
@@ -141,8 +142,15 @@ also declaration-free and is audited as a reusable entry point for its former
 reusable subset; numbered Chapter 6 results are intentionally exposed through
 the source aggregate and the broader historical `Analysis.Norms` facade.
 
-The compatibility inventory now contains 108 wrappers with 208 direct canonical
+The compatibility inventory now contains 109 wrappers with 210 direct canonical
 targets.
+
+Phase 12 completes the historical `NumStability.Algorithms.LU.BlockLU`
+cutover. That path is now a declaration-free two-target facade over the
+canonical reusable `NumStability.Algorithms.LinearSystems.LU.BlockLU` family
+and the source-facing `NumStability.Source.Higham.Chapter13.BlockLU` family.
+Production consumers use those semantic owners directly; the old-only import
+test preserves the complete historical surface.
 
 Phase 11B2 adds four exact one-target wrappers for the former Chapter 6
 `Chapter06Lemma66`, `Higham6Asides`, `Higham6BlockAntidiag`, and

@@ -15,7 +15,8 @@ import NumStability.Algorithms.HighamChapter10
 import NumStability.Algorithms.HighamChapter11
 import NumStability.Source.Higham.Chapter06
 import NumStability.Source.Higham.Chapter12.IterativeRefinement
-import NumStability.Algorithms.LU.BlockLU
+import NumStability.Algorithms.LinearSystems.LU.BlockLU
+import NumStability.Source.Higham.Chapter13.BlockLU
 import NumStability.Algorithms.LU.BlockLUSPDSourceClosure
 import NumStability.Algorithms.MatrixInversion
 import NumStability.Algorithms.MatrixPowers
