@@ -4,7 +4,7 @@ import NumStability.Algorithms.LinearSystems.LU.BlockLU.PositiveDefinite
 # Positive-definite block LU import smoke test
 
 This test imports only the canonical positive-definite leaf and checks all
-seven reviewed declarations.
+eight reviewed declarations.
 -/
 
 #check NumStability.blockMatrixNonsingular_of_posDef_flat

@@ -5936,12 +5936,14 @@ Demmel's strengthened sharp multiplier bound and equality witness are owned by
 historical `Algorithms/LU/Higham13DemmelSharpMultiplier.lean` path is an
 import-only compatibility wrapper.
 
-Reusable Block LU foundations are published through the eleven-leaf
-`NumStability.Algorithms.LinearSystems.LU.BlockLU` aggregate. Numbered source
-correspondence is published through the 69-owner
+Reusable Block LU foundations are published through the sixteen-member
+`NumStability.Algorithms.LinearSystems.LU.BlockLU` aggregate: fifteen
+declaration-bearing leaves plus the five-leaf `VaryingBlocks` subaggregate.
+Numbered source correspondence is published through the exact 82-member
 `NumStability.Source.Higham.Chapter13.BlockLU` aggregate. Historical
 `NumStability.Algorithms.LU.BlockLU` is an exact two-import compatibility
-facade over those surfaces. The separately deferred sibling owners are
+facade over those surfaces. The ten scoped sibling paths are now import-only
+compatibility wrappers:
 `BlockLUVarying`, `BlockLUSourceClosure`, `BlockLURowSourceClosure`,
 `BlockLUArbitraryNormSourceClosure`, `BlockLUSPDSourceClosure`,
 `BlockLUSPDFamilies`, `BlockLUComputationSourceClosure`,

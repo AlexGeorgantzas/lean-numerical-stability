@@ -63,15 +63,13 @@ split from the reusable library.
 - `NumStability.Algorithms.LinearSystems` is the declaration-free reusable
   linear-systems entry point. It re-exports the reviewed `Triangular` family
   and the canonical `LU` hierarchy. Phase 12 completes the reusable
-  `LinearSystems.LU.BlockLU` umbrella over `BlockMatrices`,
-  `DiagonalDominance`, `Factorization`, `FactorizationError`,
-  `FirstOrderModels`, `GrowthBounds`, `PositiveDefinite`,
-  `RecursiveFactorization`, `ResidualLifting`, `SchurComplement`, and
-  `SolveError`. The 1,695 source declarations cut over from the historical
-  `Algorithms.LU.BlockLU` owner live below
-  `Source.Higham.Chapter13.BlockLU`. Ten separately scoped declaration-bearing
-  siblings remain at historical `Algorithms.LU` paths pending their own
-  migration.
+  `LinearSystems.LU.BlockLU` umbrella over fifteen direct declaration-bearing
+  leaves plus the `VaryingBlocks` subaggregate, whose five leaves support
+  unequal block orders. The 1,695 source declarations cut over from the
+  historical `Algorithms.LU.BlockLU` owner live below
+  `Source.Higham.Chapter13.BlockLU`. Its follow-on moves 287 declarations from
+  ten separately scoped siblings into 22 semantic destinations; all ten old
+  sibling paths are now declaration-free compatibility wrappers.
 - `NumStability.Algorithms.Summation` is the complete published summation
   surface. Its `Recursive` and `Pairwise` family umbrellas preserve source
   reachability, while reusable consumers import their `.Core` leaves.
@@ -169,10 +167,10 @@ split from the reusable library.
   Chapter 12 uses the declaration-free
   `NumStability.Source.Higham.Chapter12` aggregate over the source leaves
   `IterativeRefinement`, `OmegaDiscontinuity`, and `Problem02`. Chapter 13's
-  declaration-free `BlockLU` aggregate directly imports the 69 reviewed
-  declaration-bearing source owners: the 68-owner final cutover surface plus
-  the previously extracted `Theorem05.Recurrences` leaf. Eleven
-  declaration-free family umbrellas provide narrower discovery paths for
+  declaration-free `BlockLU` aggregate has an exact 82-member direct-import
+  surface: 81 declaration-bearing source owners and the declaration-free
+  `Theorem02.VaryingBlocks` locator. Eleven declaration-free family umbrellas
+  provide narrower discovery paths for
   Sections 13.1 and 13.3, Lemma 13.10, Theorems 13.2 and 13.6--13.8, and
   Problem 13.4. The chapter aggregate exposes `BlockLU` beside the independent
   `DemmelSharpMultiplier` leaf. The historical `Algorithms.LU.BlockLU` path is
@@ -184,9 +182,9 @@ split from the reusable library.
   `ComplexConfluentRefinement` source leaves. Chapter 27 uses a declaration-
   free `Chapter27` aggregate over `SoftwareEnvironment` and `Problem06`.
   Corresponding historical paths are compatibility wrappers listed in the
-  executable compatibility map. The BlockLU facade statement is bounded to the
-  former monolith; the ten declaration-bearing sibling owners require a second
-  committed ownership map before they move.
+  executable compatibility map. The completed BlockLU migration preserves the
+  former monolith and all ten sibling paths as declaration-free compatibility
+  facades while production consumers use exact semantic owners.
   Chapter 23 is organized under
   `NumStability.Source.Higham.Chapter23`, with semantic base leaves and
   declaration-free Theorem 23.2, Theorem 23.3, Bini--Lotti, and combined
@@ -197,7 +195,7 @@ split from the reusable library.
 - `NumStability.All` is the explicit complete-tree entry point.
 - `NumStability.Algorithms` preserves its historical complete algorithm-layer
   surface, including source correspondence; it is not the pure reusable entry
-  point. Its checked direct-import ceilings are 443 total imports, including 43
+  point. Its checked direct-import ceilings are 435 total imports, including 43
   below `NumStability.Analysis` and 15 below `NumStability.Source`.
 - `NumStability` retains its historical complete-tree behavior through the
   compatibility window.

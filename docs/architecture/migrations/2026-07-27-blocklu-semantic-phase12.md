@@ -1017,10 +1017,10 @@ closure. Its 55 declarations are divided by dependency layer into
 `VaryingBlocks.Basic` (28), `VaryingBlocks.Algebra` (8),
 `VaryingBlocks.SchurComplement` (4),
 `VaryingBlocks.RecursiveFactorization` (6), and
-`VaryingBlocks.Uniqueness` (9). The historical module will become a
+`VaryingBlocks.Uniqueness` (9). The historical module is now a
 declaration-free wrapper over a reusable `VaryingBlocks` umbrella; a separate
 declaration-free `Source.Higham.Chapter13.Theorem02.VaryingBlocks` locator
-will expose the same umbrella without owning declarations. The 36-declaration
+exposes the same umbrella without owning declarations. The 36-declaration
 `BlockLUScalarGrowthBridge` remains one atomic source owner because public
 signatures depend on its private helpers.
 
@@ -1078,7 +1078,7 @@ only its original 1,990-declaration selection and would correctly report the
 287 sibling owner/private changes as out-of-contract graph differences. The
 composed sibling post gate therefore owns the exact expanded structural check.
 
-All production consumers must also leave the ten historical sibling imports.
+All production consumers now leave the ten historical sibling imports.
 `Equation25` retargets to `Equation25.Families`,
 `Section03.SPDFactorBounds`, `Theorem05.FamilyErrorAnalysis`, and
 `Theorem06.Computation`; `Table01` retargets to its own `Families` leaf plus
@@ -1104,7 +1104,55 @@ reusable-to-source edges, destination cycles, missing or incorrect private
 rewrites, baseline identity drift, an incorrectly derived 170-pair contract,
 a root-module historical import, and any graph-edge drop. The pre check,
 self-test, and Python compilation passed before any production Lean file was
-moved. Lean/build validation is intentionally deferred to implementation.
+moved. Implementation and pre-publication validation are now complete. The
+final sibling source tree first passed focused compilation of the reusable and
+source Block LU aggregates, the Chapter 19 WY consumer, the Chapter 13 Demmel
+consumer, and all ten historical wrappers in a 3,202-job build. A subsequent
+root test build covered the isolated canonical and old-import tests
+successfully.
+
+The whole-graph post comparison was performed at synthetic validation revision
+`37d38719b678543f402b7087381a28f1cba52f9d`. That revision differs from the
+real public implementation revision
+`dbf974990d61d17bdd19b628395e9c5a750e8b5a` in exactly four independently
+reviewed Chapter 17 Drazin-recovery files, and in no Block LU path. This
+isolation prevents two unrelated recovered declarations from appearing as
+false additions to the sibling contract. The synthetic tree passed a clean
+`lake build NumStability` with 4,923 jobs. Its fresh format-2 stream is
+115,782,596 bytes with SHA-256
+`44F010A729967644DC2B5D77DB79D32DE8637932E4E28910BE9AD3EEDA13C28A`.
+Against the retained 115,774,316-byte parent stream with SHA-256
+`AC7DB49BEA92D0FFA4753B43851C02FE0306CF8CC4A5EA8B593DE735CCE6E6F5`,
+the sibling post gate verified all 287 declarations, all 22 destinations, all
+ten compatibility wrappers, the complete 170-pair composed structural
+surface, an acyclic owner graph, and exact normalized declaration, signature,
+and body/proof edges with zero drops.
+
+After restoring the real public revision, the Drazin-bearing
+`StationaryIteration` target rebuilt successfully with 3,041 jobs. The exact
+14-target downstream set from the integration packet passed, including the
+historical wrappers, `GrowthFactor`, Chapter 9 and Chapter 14 consumers,
+`MatrixInversionMethod2BInstance`, the reusable and source aggregates, and
+both library roots. `lake test` passed its 5,585-job plan, and
+`lake build NumStability NumStabilityTest` passed all 5,587 jobs.
+`lake env lean examples/LibraryLookup.lean` also passed. Representative axiom
+probes across reusable Block LU, varying-block uniqueness, SPD, computation,
+Theorems 13.5--13.6, Problem 13.4, and both recovered Drazin theorems reported
+exactly `[propext, Classical.choice, Quot.sound]`.
+
+The static repeat reports 1,154 production modules, 592 unclassified modules,
+zero mixed modules, 209 missing module docstrings, 392 legacy naming
+exceptions, three reviewed declaration-bearing parents, and zero unsorted
+aggregates. Compatibility covers 119 forwarding modules and 228 canonical
+targets; provenance covers 207 Apache-marked files and five evidenced upstream
+modules. The strict-source capture contains 5,910 direct imports (3,547
+project and 2,363 external), zero unresolved project imports, zero cycles, and
+zero reusable-to-source or reusable-to-mixed direct or reachable edges. Its
+normalized source-tree SHA-256 is
+`EC8B0916B4B3FC8A156A5C5C5D272184616194E1EAC64F0A12608D804CA2522D`.
+Layout, compatibility, provenance, notice normalization, strict-source
+reproduction, checker self-tests, and `git diff --check` all pass without
+increasing a frozen debt set.
 
 The reproducible PowerShell pre-edit check is below. `$phase12Source` names the
 clean Phase 12 source-cutover worktree whose dependency stream has the pinned
@@ -1144,9 +1192,9 @@ except for exactly the four frozen body edges removed by those inlinings.
 
 The sibling BlockLU declaration migration is explicitly outside this first
 1,990-declaration semantic partition but inside the overall BlockLU phase. It
-requires its own pre-edit map and all the same compatibility gates. After that
-work, the strict repository order proceeds to LSQRSolve, LSE/GQR/KKT, QR and
-Chapters 19--20,
+used its own pre-edit map and the same compatibility gates. With that work
+complete, the strict repository order proceeds to LSQRSolve, LSE/GQR/KKT, QR
+and Chapters 19--20,
 the smaller source/outlier queues, the Chapter 9 and Chapter 11 monoliths, and
 the global organization completion gate. No broader repository-complete claim
 is made by this record.

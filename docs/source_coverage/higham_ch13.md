@@ -22,20 +22,20 @@
 - Parallel split: 3A (Block LU / Matrix Inversion / Condition Estimation
   cluster, Chapters 13-15).
 - Canonical source entry point: `NumStability.Source.Higham.Chapter13`. Its
-  declaration-free `BlockLU` aggregate directly imports 69 declaration-bearing
-  owners: the 68-owner, 1,695-declaration Phase 12 cutover plus the previously
-  extracted `Theorem05.Recurrences` owner. Eleven declaration-free family
+  declaration-free `BlockLU` aggregate directly imports 82 members: 81
+  declaration-bearing source owners plus the declaration-free Theorem 13.2
+  varying-block locator. This includes the 68-owner, 1,695-declaration source
+  cutover, the previously extracted `Theorem05.Recurrences` owner, and twelve
+  declaration-bearing sibling destinations. Eleven declaration-free family
   aggregates provide narrower discovery paths. The chapter aggregate also
   imports the independent `DemmelSharpMultiplier` leaf. The historical
-  `Algorithms.LU.BlockLU` module is now an exact two-import compatibility
-  facade over the eleven-leaf reusable aggregate and this source aggregate.
-- The Phase 12 cutover is bounded to the former monolith. These ten
-  declaration-bearing sibling modules remain under `Algorithms/LU` pending a
-  separate ownership map: `BlockLUSourceClosure`, `BlockLURowSourceClosure`,
-  `BlockLUArbitraryNormSourceClosure`, `BlockLUSPDSourceClosure`,
-  `BlockLUSPDFamilies`, `BlockLUComputationSourceClosure`,
-  `BlockLUFirstOrderFamilies`, `BlockLUPointRowGrowthSourceClosure`,
-  `BlockLUScalarGrowthBridge`, and `BlockLUVarying`.
+  `Algorithms.LU.BlockLU` module remains an exact two-import compatibility
+  facade over the reusable and source aggregates.
+- The Phase 12 sibling follow-on is complete. Its ten former
+  declaration-bearing `Algorithms/LU/BlockLU*` modules are now exact
+  import-only wrappers over 22 semantic destinations, with independent
+  canonical-only and old-only tests. Production and examples import only the
+  canonical reusable or Chapter 13 owners.
 - **Selected-scope gate: PASS** (0 open primary or numbered-equation rows).
 
 This audit is statement-level: I verified each Lean statement against the
@@ -91,7 +91,7 @@ overcount; (13.26) is the last, appearing in Problem 13.4).
 | (13.22) | ‖L‖‖U‖ ≤ nρₙ³κ(A)‖A‖ (arbitrary) | VERIFIED | `higham13_problem13_4_eq13_22_exists_blockLUFact_succ_of_pivot_right_inverse` — exact Algorithm-13.3 pivot-right-inverse data, nonsingularity, and the dimension budget construct the block factors and full recursive endpoint; no factor-norm or target-scale premise. |
 | (13.23) | Point-row: ‖L‖‖U‖ ≤ 8nκ(A)‖A‖ | VERIFIED | `higham13_problem13_4_eq13_23_exists_blockLUFact_succ_of_pointRow`, using `higham13_algorithm13_3_active_entry_eq_noPivotReducedStage` and `..._matrixStageHistory_le_noPivotReducedHistory` — point-row dominance constructs scalar no-pivot LU with `ρₙ≤2`, transfers that bound to every active block-Schur stage, and invokes the global (13.22) aggregation. |
 | (13.24) | SPD ‖L‖₂‖U‖₂ ≤ √m(1+m√κ₂)‖A‖₂ | VERIFIED | `higham13_eq13_24_algorithm13_3_spd` (from Lemmas 13.9–13.10, no factor-norm premises) |
-| (13.25) | SPD backward error cₙ√m u‖A‖₂(2+m√κ₂) | VERIFIED (as Thm-13.6 corollary) | `higham13_eq13_25_spd_firstOrder_from_eq13_24`, `higham13_eq13_25_algorithm13_3_spd`, family forms in `BlockLUSPDFamilies` — conditional on the Theorem 13.6 conclusion, exactly the source's "It follows from Theorem 13.6 …" |
+| (13.25) | SPD backward error cₙ√m u‖A‖₂(2+m√κ₂) | VERIFIED (as Thm-13.6 corollary) | `higham13_eq13_25_spd_firstOrder_from_eq13_24`, `higham13_eq13_25_algorithm13_3_spd`, family forms in `Source.Higham.Chapter13.Equation25.Families` — conditional on the Theorem 13.6 conclusion, exactly the source's "It follows from Theorem 13.6 …" |
 | (13.26) | Problem 13.4 partition | VERIFIED | `higham13_eq13_26_partition` |
 
 ## Central definitions
@@ -105,7 +105,9 @@ overcount; (13.26) is the last, appearing in Problem 13.4).
   `blockSchur`, `higham13_clmBlockSchur` (arbitrary-norm).
 - Varying block dimensions ("the blocks can be of different dimensions",
   p. 247): `Higham13VaryingBlockLUFactSpec` and its step/uniqueness lemmas in
-  the deferred legacy sibling `BlockLUVarying.lean`.
+  `Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks` and its five reusable
+  leaves; `Source.Higham.Chapter13.Theorem02.VaryingBlocks` is the
+  declaration-free source locator.
 
 ## Problems accounting (13.1–13.9)
 
@@ -126,11 +128,13 @@ overcount; (13.26) is the last, appearing in Problem 13.4).
 - **(13.22)/(13.23) and Problem 13.4 are source-closed.** The arbitrary route
   constructs the full recursive block-factor witness from Algorithm 13.3 pivot
   right inverses and the actual finite matrix-stage growth object. For the
-  point-row row, `BlockLUPointRowGrowthSourceClosure` constructs exact scalar
-  no-pivot LU factors and proves the scalar equation-(9.5) history has
-  `ρₙ ≤ 2`. `BlockLUScalarGrowthBridge` proves that every active block Schur
-  entry at stage `k` is the scalar reduced entry after `k*r` pivots, so the
-  complete block history is dominated by the scalar history. The final
+  point-row row, `Source.Higham.Chapter13.Equation23.PointRowGrowth`
+  constructs exact scalar no-pivot LU factors and proves the scalar
+  equation-(9.5) history has `ρₙ ≤ 2`.
+  `Source.Higham.Chapter13.Problem04.ScalarGrowthBridge` proves that every
+  active block Schur entry at stage `k` is the scalar reduced entry after
+  `k*r` pivots, so the complete block history is dominated by the scalar
+  history. The final
   `8nκ(A)‖A‖` theorem has no growth, factor-norm, or target-scale hypothesis.
 - **Theorem 13.6 exceeds the book.** The source omits the proof; the Lean
   supplies both an assumption-level derivation and an Implementation-1 endpoint
@@ -153,8 +157,8 @@ overcount; (13.26) is the last, appearing in Problem 13.4).
 
 ## Axiom spot-check
 
-`lake build NumStability.Algorithms.LU.BlockLUScalarGrowthBridge` passes
-(3053 jobs). `#print axioms` on the new active-entry identity, whole-history
+`lake build NumStability.Source.Higham.Chapter13.Problem04.ScalarGrowthBridge`
+passes. `#print axioms` on the new active-entry identity, whole-history
 domination, point-row block-history `ρ≤2`, and final source-facing (13.23)
 factor witness each reports only `[propext, Classical.choice, Quot.sound]`.
 The earlier eight load-bearing checks (Theorems 13.2, 13.5, 13.7–13.8,
@@ -166,8 +170,9 @@ axioms.
 - **Consumes:** Chapter 9 Gaussian elimination — the growth factor ρₙ for GE
   without pivoting, and the point-diagonal-dominance growth bound ρₙ≤2
   (Theorem 9.9), which underpin (13.21)–(13.23) and the Table 13.1 point/block
-  rows (`BlockLUPointRowGrowthSourceClosure` supplies the scalar Thm-9.9 route;
-  `BlockLUScalarGrowthBridge` transfers its history to every Algorithm-13.3
+  rows (`Source.Higham.Chapter13.Equation23.PointRowGrowth` supplies the scalar
+  Thm-9.9 route; `Source.Higham.Chapter13.Problem04.ScalarGrowthBridge`
+  transfers its history to every Algorithm-13.3
   block stage). The conventional level-3 BLAS and triangular-solve error models
   behind (13.4)/(13.5)/(13.14)/(13.15) reuse the inner-product / substitution
   roundoff machinery (Chapters 3, 8) via `FPModel`/`gamma`; the SPD lemmas

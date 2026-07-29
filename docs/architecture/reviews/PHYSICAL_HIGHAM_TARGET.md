@@ -7,7 +7,8 @@ entry point during the compatibility window.
 A separate physical library is premature because:
 
 - source declarations remain embedded in high-fan-in reusable-looking modules,
-  especially `BlockLU`, `LSQRSolve`, and `LSE`;
+  especially `LSQRSolve` and `LSE`; Phase 12 resolved `BlockLU`, but that one
+  completed family is not enough to justify a physical library split;
 - the executable tier inventory covers only part of the tree, so a global zero
   reusable-to-source edge count has not yet been established;
 - the new Higham hierarchy and compatibility imports have not completed a

@@ -78,14 +78,17 @@ one-target compatibility wrappers.
 
 Phase 12 completes the semantic split of the historical
 `Algorithms.LU.BlockLU` declaration owner. The reusable
-`Algorithms.LinearSystems.LU.BlockLU` aggregate exposes eleven reusable leaves,
-including the final `RecursiveFactorization` owner and its two reviewed private
-helpers. The source cutover moves the remaining 1,695 semantic declarations
-into 66 new Chapter 13 leaves and the pinned `Equation25` and `Table01` shells;
-the previously extracted `Theorem05.Recurrences` leaf makes the complete
-`Source.Higham.Chapter13.BlockLU` contract an explicit 69-leaf aggregate.
-Eleven declaration-free source family aggregates provide narrower discovery
-surfaces without becoming declaration owners.
+`Algorithms.LinearSystems.LU.BlockLU` aggregate now has sixteen direct members:
+fifteen declaration-bearing reusable leaves and the declaration-free
+`VaryingBlocks` aggregate over five unequal-order leaves. The source cutover
+moves 1,695 semantic declarations into 66 new Chapter 13 leaves and the pinned
+`Equation25` and `Table01` shells. The sibling follow-on moves another 287
+declarations into 22 semantic destinations. Together with the previously
+extracted `Theorem05.Recurrences` leaf and the declaration-free Theorem 13.2
+varying-block locator, `Source.Higham.Chapter13.BlockLU` has an exact
+82-member direct-import contract. Eleven declaration-free source family
+aggregates provide narrower discovery surfaces without becoming declaration
+owners.
 
 The historical `Algorithms.LU.BlockLU` module is now a declaration-free
 two-target compatibility facade over the reusable and source aggregates. All
@@ -93,22 +96,21 @@ nine non-test direct consumers use the semantic owners they actually need, so
 no declaration-bearing production module imports that facade. The private-name
 normalization contract contains the two recursive-factorization identities and
 the 17 source-owner identities required by `Theorem02.Factorization` and
-`Theorem02.Uniqueness`.
+`Theorem02.Uniqueness`. The sibling contract adds 27 reviewed private
+identities. Its ten historical modules are now exact import-only wrappers with
+isolated old-only tests.
 
-This does not migrate the ten declaration-bearing sibling BlockLU modules
-enumerated in the Phase 12 migration record. They remain unclassified until a
-second committed ownership map assigns each declaration to a reusable or
-Chapter 13 source owner.
-
-The final Phase 12 source-cutover ratchet classifies 529 of 1,131 production
-modules (46.773%): 218 as source, 103 as aggregate, 109 as compatibility, 92 as
+The completed Phase 12 ratchet classifies 562 of 1,154 production modules
+(48.700%): 231 as source, 104 as aggregate, 119 as compatibility, 101 as
 reusable, 2 as internal, and 5 as upstream. The explicit unclassified queue is
-602 modules, and no fully classified module is marked mixed. The
-`NumStability.Algorithms` direct-import ceilings are 443 imports below
+592 modules, and no fully classified module is marked mixed. The
+`NumStability.Algorithms` direct-import ceilings are 435 imports below
 `NumStability`, including 43 below `NumStability.Analysis` and 15 below
-`NumStability.Source`. The remaining layout debt is 216 missing module
-docstrings and 399 noncanonical historical module names; the compatibility
-inventory contains 109 wrappers with 210 direct targets.
+`NumStability.Source`. The remaining layout debt is 209 missing module
+docstrings and 392 noncanonical historical module names; the compatibility
+inventory contains 119 wrappers with 228 direct targets. Three reviewed source
+parents (`Equation23`, `Equation25`, and `Table01`) remain declaration-bearing
+while hosting semantic children.
 
 Because structural aggregates do not themselves own declarations,
 `reusable_entrypoints` separately lists aggregates whose entire reachable

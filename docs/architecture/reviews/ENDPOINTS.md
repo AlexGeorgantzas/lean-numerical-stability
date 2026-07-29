@@ -175,5 +175,6 @@ The two declaration-consuming Lemma 6.6 importers,
 `Algorithms.Ch10Ch14Lemma66Op2Bridge` and
 `Algorithms.QR.Higham19Theorem5SourceClosure`, now import `Lemma06` directly.
 At the Phase 11B2 checkpoint, the compatibility inventory was 108 wrappers and
-208 direct targets. The Phase 12 two-target BlockLU facade brings the current
-inventory to 109 wrappers and 210 direct targets.
+208 direct targets. The Phase 12 two-target BlockLU facade first brought that
+inventory to 109 wrappers and 210 direct targets; the ten sibling wrappers then
+brought the current inventory to 119 wrappers and 228 direct targets.

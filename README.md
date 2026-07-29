@@ -173,29 +173,33 @@ approximation, and least-squares preconditioning.
 
 ## Project statistics
 
-Current Phase 12 source-cutover structure for the production surface, after the
-manifest-checked reusable and source partition of the historical Chapter 13
-Block LU declaration owner:
+Current completed Phase 12 Block LU structure for the production surface,
+after the manifest-checked monolith cutover and sibling-module follow-on:
 
 The cutover assigns all 1,990 contracted declarations to semantic owners. Its
 source portion moves 1,695 declarations into 68 Chapter 13 owners; together
-with the previously extracted `Theorem05.Recurrences` leaf, the declaration-free
-`Chapter13.BlockLU` aggregate exposes 69 declaration-bearing source owners.
+with the previously extracted `Theorem05.Recurrences` leaf, the first cutover
+exposed 69 declaration-bearing source owners. The follow-on moves another 287
+declarations from ten historical siblings into 22 semantic destinations. The
+source `Chapter13.BlockLU` aggregate now has an exact 82-member direct-import
+contract. The former monolith and all ten scoped sibling paths are now
+compatibility facades. Import isolation is exercised by 24 canonical-only and
+10 old-only tests.
 
 | | |
 |---|---|
-| Lean modules | **1,131** |
+| Lean modules | **1,154** |
 | Import cycles | **0** |
-| Classified modules | **529 (46.773%)** |
-| Unclassified modules | **602** |
-| Source modules | **218** |
-| Aggregate modules | **103** |
-| Compatibility modules | **109** |
-| Reusable modules | **92** |
+| Classified modules | **562 (48.700%)** |
+| Unclassified modules | **592** |
+| Source modules | **231** |
+| Aggregate modules | **104** |
+| Compatibility modules | **119** |
+| Reusable modules | **101** |
 | Internal / upstream / mixed modules | **2 / 5 / 0** |
-| Compatibility wrappers / direct targets | **109 / 210** |
-| Missing module docs | **216** |
-| Legacy naming exceptions | **399** |
+| Compatibility wrappers / direct targets | **119 / 228** |
+| Missing module docs | **209** |
+| Legacy naming exceptions | **392** |
 | Provenance contract | **207 Apache files / 5 upstream modules** |
 
 Everything is proved against Mathlib; sampled headline theorems depend only on
@@ -352,10 +356,9 @@ Choose the narrowest entry point that matches the material you need:
   independent `DemmelSharpMultiplier` leaf. The historical
   `NumStability.Algorithms.LU.BlockLU` path remains importable as a two-target
   compatibility facade; new code should choose the reusable or source path
-  explicitly. This cutover covers the declarations formerly owned by the
-  historical `Algorithms.LU.BlockLU` monolith. Ten declaration-bearing sibling
-  modules remain at historical `Algorithms.LU` paths pending a separate
-  ownership map and migration.
+  explicitly. The follow-on sibling migration also reduces the ten former
+  declaration-bearing `Algorithms.LU.BlockLU*` paths to tested compatibility
+  wrappers over 22 reusable and Chapter 13 semantic destinations.
 - `NumStability.Higham` is the historical compatibility entry point; new code
   should import `NumStability.Source.Higham`.
 - `NumStability.All` exposes the complete supported library surface.
@@ -377,11 +380,12 @@ the old-to-new path map and removal policy. The
 dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
-corpus is already Mathlib-style. After the Phase 12 BlockLU source cutover, the
-current ratchet records 602 unclassified modules, no fully classified mixed
-modules, 216 missing module docs, 399 historical naming exceptions, and no
-declaration-bearing umbrella. The `NumStability.Algorithms` direct-import
-ceilings are 443 total imports, including 43 below `NumStability.Analysis` and
+corpus is already Mathlib-style. After the completed Phase 12 BlockLU cutover,
+the current ratchet records 592 unclassified modules, no fully classified mixed
+modules, 209 missing module docs, 392 historical naming exceptions, and three
+reviewed declaration-bearing source parents (`Equation23`, `Equation25`, and
+`Table01`). The `NumStability.Algorithms` direct-import ceilings are 435 total
+imports, including 43 below `NumStability.Analysis` and
 15 below `NumStability.Source`. CI prevents those queues from growing while each
 dependency-contained family is migrated. In particular, the Chapter 14,
 Chapter 21, and Chapter 28 moves above establish only their documented
@@ -542,12 +546,12 @@ The selected formalization core scope is closed; the repository-organization
 migration is not. Phase 11B1 split the transitional `Analysis.Norms.Core`
 owner, and Phase 11B2 moved the remaining audited Chapter 6 source owners.
 Phase 12 has now split the historical 82k-line `Algorithms.LU.BlockLU`
-declaration owner into reusable and 68-owner Chapter 13 source surfaces while
-preserving the old import as a two-target facade. A separately mapped migration
-of the ten declaration-bearing BlockLU sibling modules remains mandatory.
-Subsequent batches classify the remaining 602 unclassified modules, replace the
-399 historical source/proof-stage names with semantic canonical paths plus
-compatibility shims, document the 216 remaining modules, and review the other
+declaration owner into reusable and 68-owner Chapter 13 source surfaces, then
+migrated all ten declaration-bearing BlockLU siblings into 22 semantic owners
+while preserving every old import as a compatibility facade. Subsequent batches
+classify the remaining 592 unclassified modules, replace the 392 historical
+source/proof-stage names with semantic canonical paths plus compatibility
+shims, document the 209 remaining modules, and review the other
 giant-file outliers. The sequence and safety gates are tracked in
 [`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md).
 
