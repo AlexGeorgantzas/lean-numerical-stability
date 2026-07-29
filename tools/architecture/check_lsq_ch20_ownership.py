@@ -40,9 +40,11 @@ worker's contract.
 The lane additionally freezes the 19 ``LS_TO_QR`` and four ``QR_TO_LS`` base
 edges together with their final canonical normalization.  A deliberately
 unresolved QR-owner token is accepted as contract data in pre/stage mode but
-is a hard post-mode failure.  This prevents either lane from guessing the
-other lane's final owner while also preventing compatibility-wrapper imports
-from surviving in production after integration.
+cannot be resolved without a separately hash-pinned QR handoff covering all 68
+declaration identities and the import-only carrier.  Post requires that
+handoff and exact resolution of every placeholder.  This prevents either lane
+from guessing the other lane's final owner while also preventing
+compatibility-wrapper imports from surviving in production after integration.
 
 Proposed tiers live in a lane-owned manifest because the global
 ``docs/architecture/tiers.json`` registration is integrator-owned::
@@ -133,6 +135,7 @@ EXPECTED_PRIVATE_ROWS = 151
 EXPECTED_CROSS_LANE_ROWS = 4224
 EXPECTED_CROSS_LANE_EDGE_ROWS = 4221
 EXPECTED_CROSS_LANE_IMPORT_ROWS = 3
+EXPECTED_QR_HANDOFF_ROWS = 69
 
 # The declaration-free members of the historical family and the pre-existing
 # canonical Chapter 20 leaves.  These modules are checked as import-only
@@ -333,6 +336,7 @@ COMMAND_PROVENANCE = {"authored", "compiler_generated"}
 CROSS_LANE_DIRECTIONS = {"LS_TO_QR", "QR_TO_LS"}
 CROSS_LANE_STATUS = {"resolved", "qr_owner_required"}
 QR_OWNER_PLACEHOLDER = re.compile(r"^@QR_OWNER_REQUIRED:[A-Za-z_][A-Za-z0-9_.]*$")
+GIT_COMMIT_SHA = re.compile(r"^[0-9A-Fa-f]{40}$")
 
 
 @dataclass(frozen=True)
@@ -1530,40 +1534,27 @@ def check_candidate_ownership(
             )
         candidate_actual_to_logical[candidate_name] = logical
 
-    # Reject alternate encodings: any declaration living in a selected module
-    # whose actual name is not the stage-appropriate name of some record.  Public
-    # names are global and already fail the exact metadata check above; this scan
-    # is the one-to-one guard for module-encoded private declarations.
+    # Every historical owner and every canonical destination is exclusive to
+    # this 5,129-declaration contract.  Reject any extra declaration there,
+    # including an edge-free public declaration that the incident graph would
+    # otherwise never observe.  Stage-appropriate private rewrites are already
+    # represented in ``accepted`` and therefore remain one-to-one as well.
     selected_modules = set(EXPECTED_HISTORICAL_COUNTS) | {
         row.destination_module for row in records.values()
     }
     accepted = set(expected_actual_by_logical.values())
-    suffix_owners: dict[tuple[str, str], str] = {}
-    for logical, row in records.items():
-        if row.visibility != "private":
-            continue
-        historical_name = baseline[logical].name
-        suffix = private_suffix(historical_name, row.historical_module)
-        suffix_owners[(row.historical_module, suffix)] = logical
-        suffix_owners[(row.destination_module, suffix)] = logical
-
-    alternates: list[str] = []
-    for declaration in declarations:
-        if declaration.module not in selected_modules:
-            continue
-        if not declaration.name.startswith("_private."):
-            continue
-        try:
-            suffix = private_suffix(declaration.name, declaration.module)
-        except ValueError:
-            continue
-        owner = suffix_owners.get((declaration.module, suffix))
-        if owner is not None and declaration.name not in accepted:
-            alternates.append(f"{declaration.module}:{declaration.name}")
-    if alternates:
+    actual_selected = {
+        declaration.name
+        for declaration in declarations
+        if declaration.module in selected_modules
+    }
+    extra = sorted(actual_selected - accepted)
+    missing = sorted(accepted - actual_selected)
+    if extra or missing:
         raise ValueError(
-            "selected declarations have alternate or stage-inappropriate owners: "
-            + ", ".join(sorted(alternates)[:20])
+            "candidate declarations in selected historical/canonical owners "
+            f"differ from the exact contract: missing={missing[:20]}; "
+            f"extra={extra[:20]}"
         )
     if len(candidate_actual_to_logical) != len(records):
         raise ValueError("candidate selected-name map is not one-to-one")
@@ -2736,10 +2727,149 @@ def cross_lane_base_identity(row: CrossLaneNormalization) -> tuple[str, ...]:
     )
 
 
+def qr_handoff_identity(row: CrossLaneNormalization) -> tuple[str, ...]:
+    """Return one exact QR declaration/carrier identity requiring authority."""
+
+    qr_module, qr_name = (
+        (row.base_target_module, row.base_target_name)
+        if row.direction == "LS_TO_QR"
+        else (row.base_source_module, row.base_source_name)
+    )
+    if row.row_type == "edge":
+        return ("edge", qr_module, qr_name, "-", "-")
+    return (
+        "import",
+        qr_module,
+        "-",
+        row.base_source_module,
+        row.base_target_module,
+    )
+
+
+def required_qr_handoff_identities(
+    expected: list[CrossLaneNormalization],
+) -> set[tuple[str, ...]]:
+    return {
+        qr_handoff_identity(row)
+        for row in expected
+        if row.status == "qr_owner_required"
+    }
+
+
+def read_qr_handoff(
+    path: Path,
+    expected: list[CrossLaneNormalization],
+    expected_sha256: str,
+    *,
+    expected_mappings: int = EXPECTED_QR_HANDOFF_ROWS,
+) -> dict[tuple[str, ...], str]:
+    """Read a review-pinned QR owner/carrier handoff.
+
+    The file hash is supplied independently by the integrator.  Metadata pins
+    the QR delivery commit and its ownership artifact.  Edge mappings name one
+    exact historical QR declaration; import mappings name the complete frozen
+    module pair because an import-only carrier has no declaration witness.
+    """
+
+    if not HEX_SHA256.fullmatch(expected_sha256):
+        raise ValueError("--qr-handoff-sha256 must contain 64 hex digits")
+    payload = path.read_bytes()
+    actual_sha256 = sha256_bytes(payload)
+    if actual_sha256 != expected_sha256.upper():
+        raise ValueError(
+            "QR handoff SHA-256 differs from the separately reviewed digest"
+        )
+
+    try:
+        text = payload.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError(f"{path}: QR handoff is not UTF-8") from error
+    rows = list(csv.reader(text.splitlines(), delimiter="\t"))
+    if len(rows) < 3 or rows[0] != ["format", "1"]:
+        raise ValueError(f"{path}: QR handoff must start with 'format\\t1'")
+    if len(rows[1]) != 2 or rows[1][0] != "qr_commit" or not GIT_COMMIT_SHA.fullmatch(
+        rows[1][1]
+    ):
+        raise ValueError(f"{path}: QR handoff lacks an exact 40-hex qr_commit")
+    if (
+        len(rows[2]) != 2
+        or rows[2][0] != "qr_ownership_sha256"
+        or not HEX_SHA256.fullmatch(rows[2][1])
+    ):
+        raise ValueError(
+            f"{path}: QR handoff lacks a 64-hex qr_ownership_sha256"
+        )
+
+    required = required_qr_handoff_identities(expected)
+    if len(required) != expected_mappings:
+        raise ValueError(
+            "frozen cross-lane contract has an unexpected number of QR "
+            f"handoff identities: {len(required)} != {expected_mappings}"
+        )
+
+    owners: dict[tuple[str, ...], str] = {}
+    order: list[tuple[str, ...]] = []
+    for line_number, row in enumerate(rows[3:], 4):
+        if len(row) != 7 or row[0] != "owner":
+            raise ValueError(
+                f"{path}:{line_number}: expected one seven-column owner row"
+            )
+        row_type, qr_module, qr_name, base_source, base_target, owner = row[1:]
+        if row_type not in {"edge", "import"}:
+            raise ValueError(f"{path}:{line_number}: invalid QR handoff row type")
+        check_module_name(qr_module, f"{path}:{line_number}")
+        check_module_name(owner, f"{path}:{line_number}")
+        if not owner.startswith("NumStability."):
+            raise ValueError(
+                f"{path}:{line_number}: QR owner lies outside NumStability"
+            )
+        if owner.startswith("NumStability.Algorithms.QR.Higham19"):
+            raise ValueError(
+                f"{path}:{line_number}: QR owner is still a Higham19 wrapper"
+            )
+        if row_type == "edge":
+            if qr_name == "-" or base_source != "-" or base_target != "-":
+                raise ValueError(
+                    f"{path}:{line_number}: edge mapping must name one declaration"
+                )
+            identity = (row_type, qr_module, qr_name, "-", "-")
+        else:
+            if qr_name != "-":
+                raise ValueError(
+                    f"{path}:{line_number}: import mapping must use '-' name"
+                )
+            check_module_name(base_source, f"{path}:{line_number}")
+            check_module_name(base_target, f"{path}:{line_number}")
+            identity = (
+                row_type,
+                qr_module,
+                "-",
+                base_source,
+                base_target,
+            )
+        if identity in owners:
+            raise ValueError(f"{path}:{line_number}: duplicate QR handoff identity")
+        owners[identity] = owner
+        order.append(identity)
+
+    if order != sorted(order):
+        raise ValueError(f"{path}: QR handoff owner rows must be sorted")
+    actual = set(owners)
+    if actual != required:
+        raise ValueError(
+            "QR handoff identities differ from the frozen placeholder set: "
+            f"missing={sorted(required - actual)[:20]}; "
+            f"extra={sorted(actual - required)[:20]}"
+        )
+    return owners
+
+
 def validate_cross_lane_artifact_contract(
     expected: list[CrossLaneNormalization],
     committed: list[CrossLaneNormalization],
     *,
+    qr_handoff: dict[tuple[str, ...], str] | None = None,
+    require_qr_resolved: bool = False,
     expected_rows: int = EXPECTED_CROSS_LANE_ROWS,
     expected_edge_rows: int = EXPECTED_CROSS_LANE_EDGE_ROWS,
     expected_import_rows: int = EXPECTED_CROSS_LANE_IMPORT_ROWS,
@@ -2749,8 +2879,9 @@ def validate_cross_lane_artifact_contract(
     The first eight fields (the base edge identity plus ``ls_destination``)
     are regenerated from the hash-pinned baseline and the compiler-span route
     manifest in every mode.  A row whose base QR owner was already canonical
-    is wholly immutable.  Only an explicit ``@QR_OWNER_REQUIRED:*`` owner may
-    be replaced by a non-compatibility QR owner with status ``resolved``.
+    is wholly immutable.  An explicit ``@QR_OWNER_REQUIRED:*`` owner may only
+    change when a separately hash-pinned QR handoff maps its exact declaration
+    or import-only carrier identity to that owner.
     """
 
     expected_types = Counter(row.row_type for row in expected)
@@ -2767,6 +2898,17 @@ def validate_cross_lane_artifact_contract(
         raise ValueError(
             "committed cross-lane normalization row count differs from the "
             f"frozen contract: {len(committed)} != {expected_rows}"
+        )
+
+    required_handoff = required_qr_handoff_identities(expected)
+    if qr_handoff is not None and set(qr_handoff) != required_handoff:
+        raise ValueError(
+            "authoritative QR handoff coverage differs from the frozen "
+            "placeholder identities"
+        )
+    if require_qr_resolved and qr_handoff is None:
+        raise ValueError(
+            "post mode requires a hash-pinned authoritative QR handoff"
         )
 
     expected_by_identity = {
@@ -2822,6 +2964,11 @@ def validate_cross_lane_artifact_contract(
                     "an unresolved QR placeholder changed in the cross-lane "
                     f"contract for {identity}"
                 )
+            if require_qr_resolved:
+                raise ValueError(
+                    "post integration is forbidden while a QR placeholder "
+                    f"remains for {identity}"
+                )
             continue
         if actual.status != "resolved":
             raise ValueError(
@@ -2832,6 +2979,18 @@ def validate_cross_lane_artifact_contract(
             raise ValueError(
                 "resolved cross-lane QR owner is still a Higham19 compatibility "
                 f"wrapper for {identity}"
+            )
+        handoff_identity = qr_handoff_identity(frozen)
+        if qr_handoff is None:
+            raise ValueError(
+                "QR placeholder resolution lacks a hash-pinned authoritative "
+                f"handoff for {handoff_identity}"
+            )
+        if actual.qr_owner != qr_handoff[handoff_identity]:
+            raise ValueError(
+                "resolved QR owner differs from the authoritative handoff for "
+                f"{handoff_identity}: {actual.qr_owner} != "
+                f"{qr_handoff[handoff_identity]}"
             )
 
 
@@ -2911,7 +3070,10 @@ def validate_cross_lane_final_contract(
     declarations: list[Declaration],
     import_graph: dict[str, list[str]],
     records: dict[str, ManifestRow],
+    qr_handoff: dict[tuple[str, ...], str],
 ) -> tuple[int, int]:
+    if not qr_handoff:
+        raise ValueError("final cross-lane validation requires a QR handoff map")
     unresolved = [row for row in contract if row.status != "resolved"]
     if unresolved:
         required = sorted(
@@ -2944,6 +3106,13 @@ def validate_cross_lane_final_contract(
         and row.base_source_module.startswith("NumStability.Algorithms.QR.Higham19")
     }
     for row in contract:
+        handoff_identity = qr_handoff_identity(row)
+        if handoff_identity in qr_handoff and row.qr_owner != qr_handoff[handoff_identity]:
+            raise ValueError(
+                "final QR owner differs from the authoritative handoff for "
+                f"{handoff_identity}: {row.qr_owner} != "
+                f"{qr_handoff[handoff_identity]}"
+            )
         qr_name = (
             row.base_target_name
             if row.direction == "LS_TO_QR"
@@ -3511,6 +3680,23 @@ def run_self_test() -> None:
 
         candidate_map = check_candidate_ownership(records, baseline, moved, rewrites)
         assert len(candidate_map) == 6, candidate_map
+        expect_value_error(
+            lambda: check_candidate_ownership(
+                records,
+                baseline,
+                moved
+                + [
+                    Declaration(
+                        "NumStability.edgeFreeUncontractedDeclaration",
+                        SELF_REUSABLE,
+                        "theorem",
+                        "public",
+                    )
+                ],
+                rewrites,
+            ),
+            "an edge-free public declaration added to a selected owner",
+        )
 
         candidate_tsv = root / "candidate.tsv"
         candidate_tsv.write_text(_self_stream(moved, moved_edges), encoding="utf-8")
@@ -3701,7 +3887,13 @@ def run_self_test() -> None:
             ),
         ]
         frozen_self_cross = [
-            self_cross[0],
+            replace(
+                self_cross[0],
+                qr_owner=(
+                    "@QR_OWNER_REQUIRED:NumStability.Algorithms.QR.QRSolve"
+                ),
+                status="qr_owner_required",
+            ),
             replace(
                 self_cross[1],
                 qr_owner=(
@@ -3711,11 +3903,78 @@ def run_self_test() -> None:
                 status="qr_owner_required",
             ),
         ]
-        # A reviewed QR placeholder resolution is the only mutable part of a
-        # frozen cross-lane row.
+        qr_handoff_path = root / "qr-handoff.tsv"
+        qr_handoff_path.write_text(
+            "format\t1\n"
+            f"qr_commit\t{'A' * 40}\n"
+            f"qr_ownership_sha256\t{'B' * 64}\n"
+            "owner\tedge\tNumStability.Algorithms.QR.QRSolve\t"
+            "NumStability.qrExternal\t-\t-\t"
+            "NumStability.Algorithms.QR.QRSolve\n"
+            "owner\timport\t"
+            "NumStability.Algorithms.QR.Higham19Problem19_10\t-\t"
+            "NumStability.Algorithms.QR.Higham19Problem19_10\t"
+            f"{LS_PREFIX}.Higham20CrossProductExample\t{qr_source_owner}\n",
+            encoding="utf-8",
+        )
+        self_qr_handoff = read_qr_handoff(
+            qr_handoff_path,
+            frozen_self_cross,
+            sha256_file(qr_handoff_path),
+            expected_mappings=2,
+        )
+        expect_value_error(
+            lambda: read_qr_handoff(
+                qr_handoff_path,
+                frozen_self_cross,
+                "0" * 64,
+                expected_mappings=2,
+            ),
+            "a QR handoff whose reviewed hash differs",
+        )
+        incomplete_qr_handoff_path = root / "qr-handoff-incomplete.tsv"
+        incomplete_qr_handoff_path.write_text(
+            "format\t1\n"
+            f"qr_commit\t{'A' * 40}\n"
+            f"qr_ownership_sha256\t{'B' * 64}\n"
+            "owner\tedge\tNumStability.Algorithms.QR.QRSolve\t"
+            "NumStability.qrExternal\t-\t-\t"
+            "NumStability.Algorithms.QR.QRSolve\n",
+            encoding="utf-8",
+        )
+        expect_value_error(
+            lambda: read_qr_handoff(
+                incomplete_qr_handoff_path,
+                frozen_self_cross,
+                sha256_file(incomplete_qr_handoff_path),
+                expected_mappings=2,
+            ),
+            "a QR handoff missing the import-only carrier identity",
+        )
+
+        # Without a QR handoff, pre/stage accept only unchanged placeholders.
+        validate_cross_lane_artifact_contract(
+            frozen_self_cross,
+            frozen_self_cross,
+            expected_rows=2,
+            expected_edge_rows=1,
+            expected_import_rows=1,
+        )
+        expect_value_error(
+            lambda: validate_cross_lane_artifact_contract(
+                frozen_self_cross,
+                self_cross,
+                expected_rows=2,
+                expected_edge_rows=1,
+                expected_import_rows=1,
+            ),
+            "a QR placeholder resolution without an authoritative handoff",
+        )
         validate_cross_lane_artifact_contract(
             frozen_self_cross,
             self_cross,
+            qr_handoff=self_qr_handoff,
+            require_qr_resolved=True,
             expected_rows=2,
             expected_edge_rows=1,
             expected_import_rows=1,
@@ -3759,36 +4018,73 @@ def run_self_test() -> None:
             lambda: validate_cross_lane_artifact_contract(
                 frozen_self_cross,
                 parsed_ls_owner_tamper,
+                qr_handoff=self_qr_handoff,
                 expected_rows=2,
                 expected_edge_rows=1,
                 expected_import_rows=1,
             ),
             "a false LS-owner substitution in the cross-lane artifact",
         )
-        resolved_qr_tamper = list(self_cross)
-        resolved_qr_tamper[0] = replace(
-            resolved_qr_tamper[0],
+        false_qr_owner = list(self_cross)
+        false_qr_owner[0] = replace(
+            false_qr_owner[0],
             qr_owner="NumStability.Algorithms.QR.FalseOwner",
         )
         expect_value_error(
             lambda: validate_cross_lane_artifact_contract(
                 frozen_self_cross,
-                resolved_qr_tamper,
+                false_qr_owner,
+                qr_handoff=self_qr_handoff,
                 expected_rows=2,
                 expected_edge_rows=1,
                 expected_import_rows=1,
             ),
+            "a false QR declaration owner despite an authoritative handoff",
+        )
+        false_qr_carrier = list(self_cross)
+        false_qr_carrier[1] = replace(
+            false_qr_carrier[1],
+            qr_owner="NumStability.Source.Higham.Chapter19.FalseCarrier",
+        )
+        expect_value_error(
+            lambda: validate_cross_lane_artifact_contract(
+                frozen_self_cross,
+                false_qr_carrier,
+                qr_handoff=self_qr_handoff,
+                expected_rows=2,
+                expected_edge_rows=1,
+                expected_import_rows=1,
+            ),
+            "a false import-only QR carrier despite an authoritative handoff",
+        )
+
+        # Already-canonical base owners remain immutable independently of the
+        # handoff mechanism.
+        stable_qr_tamper = [
+            replace(
+                self_cross[0],
+                qr_owner="NumStability.Algorithms.QR.FalseOwner",
+            )
+        ]
+        expect_value_error(
+            lambda: validate_cross_lane_artifact_contract(
+                [self_cross[0]],
+                stable_qr_tamper,
+                expected_rows=1,
+                expected_edge_rows=1,
+                expected_import_rows=0,
+            ),
             "a substitution for an already-canonical QR owner",
         )
         assert validate_cross_lane_final_contract(
-            self_cross, moved, graph, records
+            self_cross, moved, graph, records, self_qr_handoff
         ) == (2, 5)
 
         dropped = dict(graph)
         dropped[SELF_REUSABLE] = ["NumStability.Algorithms.QR.HouseholderQRSupport"]
         expect_value_error(
             lambda: validate_cross_lane_final_contract(
-                self_cross, moved, dropped, records
+                self_cross, moved, dropped, records, self_qr_handoff
             ),
             "a dropped canonical LS-to-QR dependency",
         )
@@ -3803,7 +4099,7 @@ def run_self_test() -> None:
         )
         expect_value_error(
             lambda: validate_cross_lane_final_contract(
-                unresolved, moved, graph, records
+                unresolved, moved, graph, records, self_qr_handoff
             ),
             "an unresolved QR canonical owner in post mode",
         )
@@ -3811,9 +4107,23 @@ def run_self_test() -> None:
         wrapper_import[SELF_REUSABLE] = [SELF_HISTORICAL_A]
         expect_value_error(
             lambda: validate_cross_lane_final_contract(
-                self_cross, moved, wrapper_import, records
+                self_cross, moved, wrapper_import, records, self_qr_handoff
             ),
             "a final production import of a compatibility wrapper",
+        )
+        false_carrier_graph = dict(graph)
+        false_carrier_graph[
+            "NumStability.Source.Higham.Chapter19.FalseCarrier"
+        ] = [SELF_ANALYSIS]
+        expect_value_error(
+            lambda: validate_cross_lane_final_contract(
+                false_qr_carrier,
+                moved,
+                false_carrier_graph,
+                records,
+                self_qr_handoff,
+            ),
+            "a fake import-only carrier with a matching import",
         )
 
         # 16. Structural modules must be import-only and declaration-free.
@@ -4248,6 +4558,18 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--cross-lane", type=Path, default=DEFAULT_CROSS_LANE)
     parser.add_argument(
+        "--qr-handoff",
+        type=Path,
+        help=(
+            "reviewed QR owner/carrier handoff; required with its SHA-256 "
+            "before any placeholder may be resolved"
+        ),
+    )
+    parser.add_argument(
+        "--qr-handoff-sha256",
+        help="separately reviewed SHA-256 of --qr-handoff",
+    )
+    parser.add_argument(
         "--coordinator-patches", type=Path, default=DEFAULT_COORDINATOR_PATCHES
     )
     parser.add_argument(
@@ -4313,6 +4635,10 @@ def main() -> int:
     )
     if any(write_flags) and args.mode != "pre":
         raise ValueError("contract write options are valid only in pre mode")
+    if (args.qr_handoff is None) != (args.qr_handoff_sha256 is None):
+        raise ValueError(
+            "--qr-handoff and --qr-handoff-sha256 must be supplied together"
+        )
 
     ilean_overrides = parse_ilean_overrides(args.ilean)
     structural_modules = set(DEFAULT_STRUCTURAL_MODULES)
@@ -4399,7 +4725,18 @@ def main() -> int:
         if args.write_cross_lane:
             write_cross_lane_normalization(args.cross_lane, generated_cross)
         cross_contract = read_cross_lane_normalization(args.cross_lane, records)
-        validate_cross_lane_artifact_contract(generated_cross, cross_contract)
+        qr_handoff = (
+            None
+            if args.qr_handoff is None
+            else read_qr_handoff(
+                args.qr_handoff,
+                generated_cross,
+                args.qr_handoff_sha256,
+            )
+        )
+        validate_cross_lane_artifact_contract(
+            generated_cross, cross_contract, qr_handoff=qr_handoff
+        )
         forward, reverse, cross_edges = validate_cross_lane_base_contract(
             args.project_root,
             args.dependency_tsv,
@@ -4440,7 +4777,21 @@ def main() -> int:
         baseline_actual_to_logical(baseline),
         records,
     )
-    validate_cross_lane_artifact_contract(generated_cross, cross_contract)
+    qr_handoff = (
+        None
+        if args.qr_handoff is None
+        else read_qr_handoff(
+            args.qr_handoff,
+            generated_cross,
+            args.qr_handoff_sha256,
+        )
+    )
+    validate_cross_lane_artifact_contract(
+        generated_cross,
+        cross_contract,
+        qr_handoff=qr_handoff,
+        require_qr_resolved=args.mode == "post",
+    )
     coordinator_patches = read_coordinator_patches(args.coordinator_patches)
     digest = validate_expected_manifest_digest(records, args.expected_manifest_sha256)
 
@@ -4526,9 +4877,11 @@ def main() -> int:
     validate_destination_direct_imports(import_graph, records, dag, completed)
 
     if args.mode == "post":
+        if qr_handoff is None:
+            raise ValueError("post mode requires an authoritative QR handoff")
         reusable = validate_reusable_isolation(args.project_root, records, import_graph)
         normalized_imports, normalized_modules = validate_cross_lane_final_contract(
-            cross_contract, declarations, import_graph, records
+            cross_contract, declarations, import_graph, records, qr_handoff
         )
         coordinator_imports, coordinator_tiers, compatibility_rows = (
             validate_coordinator_patches_applied(

@@ -6,6 +6,12 @@ Contract repair base: `7d876bc241d46e7192be2acaf46bb148aec76908`
 
 Repair branch: `codex/review-lsq-contract-repair` (local only; never push)
 
+Delivery status: **blocked**. This tracked request is not the active packet
+handoff until the coordinator copies it over the external
+`INTEGRATOR_REQUEST.md` and verifies identical SHA-256 values. The QR
+owner/carrier handoff described below also does not exist yet, so LSQ post mode
+must fail.
+
 This request supersedes the packet's earlier `INTEGRATOR_REQUEST.md`.  The
 authoritative patch set is the machine-readable file
 `docs/architecture/declaration-ownership/lsq-ch20-coordinator-patches.tsv`:
@@ -41,9 +47,10 @@ if ((Get-FileHash -Algorithm SHA256 $trackedRequest).Hash -ne
 }
 ```
 
-The coordinator should perform that external copy only after the follow-up
-contract commit is present. This repository commit intentionally does not edit
-the packet directory.
+The coordinator should perform that external copy only after the latest
+follow-up contract commit is present. Until the two hashes match, do not treat
+the packet as safe and do not run `scripts/deliver_local.ps1`. This repository
+commit intentionally does not edit the packet directory.
 
 ## Shared aggregate edits
 
@@ -139,19 +146,46 @@ base imports, 4,221 typed declaration edges, and 3 import-only edges. It has
 
 Pre, stage, and post deterministically regenerate all 4,224 base rows from the
 hash-pinned semantic stream and compiler-span route/ownership data. They
-require the exact row identities and LS destinations. Only an unresolved
-`qr_owner`/`status` pair may be replaced by a reviewed canonical QR owner;
-truncation, LS-owner substitution, or mutation of an already-stable QR owner
-fails before the final import checks.
+require the exact row identities and LS destinations. Without a QR handoff,
+pre and stage require every unresolved `qr_owner`/`status` pair unchanged; an
+attempted resolution fails. Truncation, LS-owner substitution, or mutation of
+an already-stable QR owner also fails before the final import checks.
 
 The QR lane's canonical declaration-owner map is not present at this base.
 Therefore 1,628 rows intentionally contain `@QR_OWNER_REQUIRED:*`, covering
 68 exact QR declarations plus the import-only
 `Higham19Alg12MGSSourceRate` carrier. Do not replace these by guessing one
 owner per historical module: a single Higham19 module can split across several
-canonical owners. The integrator must fill every row from the QR lane's
-machine-readable ownership result. Post mode deliberately fails while even one
-placeholder remains.
+canonical owners.
+
+The QR lane must instead deliver a separate tab-separated handoff with exactly
+69 sorted owner rows: one for each of the 68 historical QR declarations and one
+for the import-only carrier. Its schema is:
+
+```text
+format  1
+qr_commit  <exact 40-hex QR delivery commit>
+qr_ownership_sha256  <64-hex SHA-256 of the QR ownership artifact>
+owner  edge    <historical_qr_module>  <historical_qr_name>  -  -  <canonical_owner>
+owner  import  <historical_qr_module>  -  <base_source_module>  <base_target_module>  <canonical_carrier>
+```
+
+The owner rows use tab separators and sort by the five identity columns after
+`owner`. The checker regenerates the required identity set, rejects missing,
+extra, duplicate or wrapper-owner rows, and verifies the handoff bytes against
+a digest supplied separately by the coordinator:
+
+```text
+--qr-handoff <reviewed-qr-handoff.tsv> \
+--qr-handoff-sha256 <separately-recorded-sha256>
+```
+
+An edge resolution must also equal the declaration's actual owner in the final
+semantic stream. The import-only carrier has no declaration witness, so its
+identity and owner come only from the hash-pinned handoff; a file or matching
+import is not evidence. Post mode requires the map, requires all 1,628
+placeholder rows resolved exactly from it, and deliberately fails otherwise.
+No authoritative handoff is committed at present.
 
 The four reverse consumers normalize to these known LS targets after their QR
 source owners are supplied:
@@ -163,7 +197,7 @@ source owners are supplied:
 | `Higham19Theorem5SourceClosure` | `NumStability.Source.Higham.Chapter20.Theorem03.ZeroDeltaB` |
 | `Higham19Theorem6ActualSource` | `NumStability.Source.Higham.Chapter20.Theorem07.ActualAssembly`, `NumStability.Source.Higham.Chapter20.Theorem07.ActualClosure`, `NumStability.Source.Higham.Chapter20.Theorem07.ActualTrace` |
 
-Once resolved, the checker verifies each referenced QR declaration actually
-lives in the supplied canonical owner, requires every normalized direct import,
-and rejects production imports of either LS compatibility wrappers or the
-future Higham19 compatibility wrappers.
+Once authoritatively resolved, the checker verifies each referenced QR
+declaration actually lives in the mapped canonical owner, requires every
+normalized direct import, and rejects production imports of either LS
+compatibility wrappers or the future Higham19 compatibility wrappers.
