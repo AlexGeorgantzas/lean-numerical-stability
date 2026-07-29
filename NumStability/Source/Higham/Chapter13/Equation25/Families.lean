@@ -1,4 +1,4 @@
-import Mathlib.Tactic.Nlinarith
+import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
 import NumStability.Analysis.FirstOrder.AsymptoticFamilies
