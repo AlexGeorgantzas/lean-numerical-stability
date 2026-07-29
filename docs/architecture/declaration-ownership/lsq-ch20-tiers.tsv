@@ -21,9 +21,7 @@ NumStability.Analysis.Perturbation.LeastSquares.BackwardError	reusable
 NumStability.Analysis.Perturbation.LeastSquares.Basic	reusable
 NumStability.Analysis.Perturbation.LeastSquares.Conditioning	reusable
 NumStability.Analysis.Perturbation.LeastSquares.Contract	reusable
-NumStability.Analysis.Perturbation.LeastSquares.Equality.GQR	reusable
 NumStability.Analysis.Perturbation.LeastSquares.Equality.KKTInverse	reusable
-NumStability.Analysis.Perturbation.LeastSquares.Equality.Minimizer	reusable
 NumStability.Analysis.Perturbation.LeastSquares.Equality.MixedStability	reusable
 NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation	reusable
 NumStability.Analysis.Perturbation.LeastSquares.Equality.RowwiseBackwardError	reusable
@@ -32,7 +30,6 @@ NumStability.Analysis.Perturbation.LeastSquares.NormalEquations	reusable
 NumStability.Analysis.Perturbation.LeastSquares.Normwise	reusable
 NumStability.Analysis.Perturbation.LeastSquares.Projection	reusable
 NumStability.Analysis.Perturbation.LeastSquares.ResidualQuality	reusable
-NumStability.Analysis.Perturbation.LeastSquares.StoredQRBudget	reusable
 NumStability.Analysis.Perturbation.LeastSquares.Wedin	reusable
 NumStability.Analysis.Perturbation.LeastSquares.WeightedLimit	reusable
 NumStability.Higham.Chapter20.SourceAliases	compatibility
