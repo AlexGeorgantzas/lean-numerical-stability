@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-29T18:34:36.2247432-04:00",
+  "packet_base_sha": "6487fc33088523b8f27ecde9ad613515b78f9977",
+  "evidence_base_sha": "6ecc4d5513226e67594bb22985913f6a4a383e5c",
+  "final_implementation_head_before_evidence_commit": "06a3e2400adff181838807a488ee00dba4943a9d",
+  "branch": "codex/org-classification-prep",
+  "classification": {
+    "input_rows": 386,
+    "exclusion_rows": 217,
+    "authoritative_unclassified_rows": 603,
+    "partition_exact": true,
+    "proposal_rows": 386,
+    "proposal_sha256": "C86D0C7D7A192CCE4FABA449BDDA76F303DBB3765FEEEF85C027DA5F9EDADAD5",
+    "summary_sha256": "B84511D05DAC57F94439BA948CB5A978022B0D4E097BEE09C1EFDB597EB0CBE3",
+    "tier_counts": {
+      "aggregate": 1,
+      "compatibility": 0,
+      "internal": 0,
+      "mixed_pending_split": 44,
+      "reusable": 129,
+      "source": 212
+    }
+  },
+  "chapter09": {
+    "candidate_modules": 11,
+    "declarations": 4420,
+    "public_declarations": 4392,
+    "private_declarations": 28,
+    "owner_dag_edges": 56,
+    "acceptance_sha256": "BFE3D8748732170D4EB4E0E707A11086BCA331D745D64286FF356D26AC1FF251",
+    "pre_status": "PASS",
+    "implementation_status": "BLOCKED_ON_BLOCKLU_INTEGRATION"
+  },
+  "chapter11": {
+    "candidate_modules": 66,
+    "declarations": 6385,
+    "public_declarations": 6239,
+    "private_declarations": 146,
+    "owner_dag_edges": 289,
+    "chapter09_dependency_rows": 61,
+    "acceptance_sha256": "6DEF62361F50B79CCE7A66F1E7B1A5897967985FA4B32DA3AF3026680455B543",
+    "pre_status": "PASS",
+    "implementation_status": "BLOCKED_ON_CH09_INTEGRATION"
+  },
+  "commands": [
+    {
+      "command": "python scripts/verify_packet.py --packet-root . --manifest PACKAGE_MANIFEST.tsv",
+      "exit_code": 0,
+      "status": "PASS",
+      "result": "36 immutable packet files verified"
+    },
+    {
+      "command": "python tools/architecture/lane_claude_classification/check_read_only_inventory.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "result": "386 + 217 is an exact, disjoint partition of 603"
+    },
+    {
+      "command": "python tools/architecture/lane_claude_classification/check_classification_proposal.py --self-test",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/lane_claude_classification/check_classification_proposal.py --check",
+      "exit_code": 0,
+      "status": "PASS",
+      "result": "386 unique sorted rows; evidence and hashes match"
+    },
+    {
+      "command": "python tools/architecture/lane_claude_classification/apply_tier_proposal.py --self-test",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/lane_claude_classification/apply_tier_proposal.py --check",
+      "exit_code": 0,
+      "status": "PASS",
+      "result": "386 proposal rows; shared-manifest overwrite guards exercised"
+    },
+    {
+      "command": "python tools/architecture/lane_claude_classification/check_ch09_contract.py --self-test",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/lane_claude_classification/check_ch09_contract.py --mode pre --baseline-zip <packet>/baseline/parallel-base-declarations-v2.zip",
+      "exit_code": 0,
+      "status": "PASS",
+      "result": "4420 routes and owners; 28 private rewrites; acyclic owner DAG"
+    },
+    {
+      "command": "python tools/architecture/lane_claude_classification/check_ch11_contract.py --self-test",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/lane_claude_classification/check_ch11_contract.py --mode pre --baseline-zip <packet>/baseline/parallel-base-declarations-v2.zip",
+      "exit_code": 0,
+      "status": "PASS",
+      "result": "6385 routes and owners; 146 private rewrites; acyclic owner DAG"
+    },
+    {
+      "command": "python -m py_compile <all nine lane Python files>",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/check_compatibility.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "result": "119 forwarding modules; 228 canonical targets"
+    },
+    {
+      "command": "python tools/architecture/check_layout.py",
+      "exit_code": 1,
+      "status": "EXPECTED_INTEGRATOR_ACTION",
+      "result": "The packet requires three standalone worker smoke modules and forbids editing NumStabilityTest.lean; the shared reachability gate reports exactly those three modules. See INTEGRATOR_REQUEST.md."
+    },
+    {
+      "command": "python tools/architecture/check_provenance.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "result": "207 Apache-marked production files; 5 evidenced upstream modules"
+    },
+    {
+      "command": "rg -n \"^[[:space:]]*(sorry|admit|axiom|constant)\\b\" NumStabilityTest/Worker/ClassificationAudit tools/architecture/lane_claude_classification",
+      "exit_code": 1,
+      "status": "PASS",
+      "result": "zero new trust markers"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "packet check_scope.py against evidence base 6ecc4d5513226e67594bb22985913f6a4a383e5c",
+      "exit_code": 0,
+      "status": "PASS",
+      "result": "43 touched paths, all new and all within the three allowed prefixes; 4 commits inspected"
+    }
+  ],
+  "deferred_commands": [
+    {
+      "commands": "all lake build, lake env lean, lake test, and full semantic extraction commands in DOWNSTREAM_BUILDS.txt",
+      "status": "NOT_RUN",
+      "reason": "Coordinator directed this lane not to start Lean/lake builds while the main CI repair and QR/LSQ work own the shared build mutex. No build result is claimed."
+    },
+    {
+      "commands": "post/stage semantic graph checks",
+      "status": "NOT_APPLICABLE_YET",
+      "reason": "This is proposal-only work and creates no migrated production candidate graph. The interfaces are implemented and require an explicit candidate format-2 archive."
+    }
+  ]
+}
