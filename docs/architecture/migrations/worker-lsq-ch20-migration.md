@@ -12,6 +12,13 @@ Contract audit repair: branch `codex/review-lsq-contract-repair`, worktree
 checker, artifact, and report files; the preserved dirty Wave 1 worktree above
 was not modified.
 
+A subsequent soundness review tightened that repair without changing the
+ownership allocation or any production file. The semantic-stream gate is now
+scoped to the exact LS incident contract, so unrelated integrated BlockLU/QR
+module moves do not make post mode impossible, while every declaration row and
+typed edge touching an LS declaration remains exact. The review also made the
+4,224-row cross-lane base freeze deterministic in pre, stage, and post mode.
+
 This document is the reviewed lane contract required before any production
 move. It records the measured baseline, the frozen declaration selection, the
 reviewed declaration routes with their evidence, the destination topology, the
@@ -403,6 +410,15 @@ all production imports of LS or Higham19 compatibility wrappers. The four QR
 reverse consumers therefore migrate to canonical LS destinations; they do not
 retain their historical LS imports.
 
+In every checker mode, the complete artifact is regenerated from the
+SHA-pinned 56,898-declaration baseline plus the compiler-span route/ownership
+contract. The checker requires exactly 4,224 immutable base identities, 4,221
+typed edge rows, three import-only rows, and the exact LS destination on every
+row. An already-canonical QR owner is immutable. Only a
+`@QR_OWNER_REQUIRED:*` field and its status may change to a reviewed canonical
+QR owner; deleting a row, replacing an LS owner with another valid destination,
+or changing a stable QR owner is rejected before stage/post graph validation.
+
 ## 6. Lane ownership checker
 
 `tools/architecture/check_lsq_ch20_ownership.py` implements the lane contract
@@ -415,16 +431,21 @@ with `--mode pre`, `--mode stage`, `--mode post` and `--self-test`.
   and their 4,221 typed edges, and the 203 exact coordinator patch rows.
 - `stage` accepts a partially migrated tree: it takes the completed
   destinations, requires reviewed private-name rewrites only for those, proves
-  candidate ownership, re-hashes every candidate source command, requires exact
-  normalized graph equality, and checks each completed destination's exact
-  direct lane-DAG imports and each completed wrapper/aggregate's exact imports.
+  candidate ownership, re-hashes every candidate source command, regenerates
+  and verifies the full 4,224-row cross-lane freeze, requires exact normalized
+  equality for every LS declaration and every typed edge incident to one, and
+  checks each completed destination's exact direct lane-DAG imports and each
+  completed wrapper/aggregate's exact imports. Declaration/module moves whose
+  endpoints are wholly outside the LS incident graph are deliberately ignored.
 - `post` additionally requires all destinations complete, all 151 reviewed
   private rewrites, every wrapper and aggregate, resolved canonical QR owners,
   all coordinator imports/root tests/tier rows/compatibility rows, and proves
   that no reusable destination transitively reaches a `Source.*`, `Higham.*`,
   legacy least-squares, or `Analysis.HighamChapter7` module.
 
-`--self-test` passes and rejects each of these mutations:
+`--self-test` passes. It positively proves that an unrelated synthetic
+declaration may move from `Other.Old` to `Other.New` while its non-LS edge is
+unchanged, and rejects each of these mutations:
 
 1. a missing historical declaration;
 2. a duplicated historical declaration;
@@ -436,7 +457,7 @@ with `--mode pre`, `--mode stage`, `--mode post` and `--self-test`.
 8. a destination ownership cycle;
 9. a private rewrite that does not normalize from its destination;
 10. missing private-rewrite coverage;
-11. a lost typed edge;
+11. a lost contracted LS-incident typed edge;
 12. an extra typed edge;
 13. a lost declaration self-edge;
 14. a baseline stream whose digest changed;
@@ -457,7 +478,11 @@ with `--mode pre`, `--mode stage`, `--mode post` and `--self-test`.
 26. co-generated declarations split from their source command;
 27. compiler coordinates differing from the frozen `.ilean`;
 28. a same-kind, same-edge source-command semantic edit; and
-29. a manifest digest mismatch.
+29. a manifest digest mismatch;
+30. a truncated cross-lane normalization artifact;
+31. replacement of a frozen LS destination by a different destination that is
+    otherwise valid for the same historical owner; and
+32. replacement of an already-canonical QR owner.
 
 ## 7. Integrator requests
 

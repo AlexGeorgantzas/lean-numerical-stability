@@ -32,7 +32,10 @@ map for every private declaration owned by a completed destination::
     logical_name\thistorical_actual_name\tcandidate_actual_name
 
 Only those reviewed private-name rewrites are normalized during the exact
-full-graph comparison.
+LS-incident graph comparison.  That graph contains every selected LS
+declaration and every typed edge with at least one selected LS endpoint;
+declaration moves wholly outside the lane are intentionally outside this
+worker's contract.
 
 The lane additionally freezes the 19 ``LS_TO_QR`` and four ``QR_TO_LS`` base
 edges together with their final canonical normalization.  A deliberately
@@ -127,6 +130,9 @@ EXPECTED_HISTORICAL_COUNTS = {
 }
 EXPECTED_MANIFEST_ROWS = sum(EXPECTED_HISTORICAL_COUNTS.values())
 EXPECTED_PRIVATE_ROWS = 151
+EXPECTED_CROSS_LANE_ROWS = 4224
+EXPECTED_CROSS_LANE_EDGE_ROWS = 4221
+EXPECTED_CROSS_LANE_IMPORT_ROWS = 3
 
 # The declaration-free members of the historical family and the pre-existing
 # canonical Chapter 20 leaves.  These modules are checked as import-only
@@ -2716,6 +2722,119 @@ def cross_lane_bytes(contract: list[CrossLaneNormalization]) -> bytes:
     return ("\n".join(rows) + "\n").encode("utf-8")
 
 
+def cross_lane_base_identity(row: CrossLaneNormalization) -> tuple[str, ...]:
+    """Return the immutable identity of one frozen typed/import edge."""
+
+    return (
+        row.row_type,
+        row.direction,
+        row.edge_kind,
+        row.base_source_module,
+        row.base_source_name,
+        row.base_target_module,
+        row.base_target_name,
+    )
+
+
+def validate_cross_lane_artifact_contract(
+    expected: list[CrossLaneNormalization],
+    committed: list[CrossLaneNormalization],
+    *,
+    expected_rows: int = EXPECTED_CROSS_LANE_ROWS,
+    expected_edge_rows: int = EXPECTED_CROSS_LANE_EDGE_ROWS,
+    expected_import_rows: int = EXPECTED_CROSS_LANE_IMPORT_ROWS,
+) -> None:
+    """Freeze every base-derived row while allowing reviewed QR resolution.
+
+    The first eight fields (the base edge identity plus ``ls_destination``)
+    are regenerated from the hash-pinned baseline and the compiler-span route
+    manifest in every mode.  A row whose base QR owner was already canonical
+    is wholly immutable.  Only an explicit ``@QR_OWNER_REQUIRED:*`` owner may
+    be replaced by a non-compatibility QR owner with status ``resolved``.
+    """
+
+    expected_types = Counter(row.row_type for row in expected)
+    required_types = Counter(
+        {"edge": expected_edge_rows, "import": expected_import_rows}
+    )
+    if len(expected) != expected_rows or expected_types != required_types:
+        raise ValueError(
+            "authoritative cross-lane regeneration has unexpected cardinality: "
+            f"rows={len(expected)}/{expected_rows}, "
+            f"types={dict(expected_types)}/{dict(required_types)}"
+        )
+    if len(committed) != expected_rows:
+        raise ValueError(
+            "committed cross-lane normalization row count differs from the "
+            f"frozen contract: {len(committed)} != {expected_rows}"
+        )
+
+    expected_by_identity = {
+        cross_lane_base_identity(row): row for row in expected
+    }
+    committed_by_identity = {
+        cross_lane_base_identity(row): row for row in committed
+    }
+    if len(expected_by_identity) != len(expected):
+        raise ValueError("authoritative cross-lane rows duplicate a base identity")
+    if len(committed_by_identity) != len(committed):
+        raise ValueError("committed cross-lane rows duplicate a base identity")
+
+    expected_identities = set(expected_by_identity)
+    committed_identities = set(committed_by_identity)
+    if committed_identities != expected_identities:
+        raise ValueError(
+            "committed cross-lane row identities differ from the frozen base: "
+            f"missing={sorted(expected_identities - committed_identities)[:20]}; "
+            f"extra={sorted(committed_identities - expected_identities)[:20]}"
+        )
+
+    for identity in sorted(expected_identities):
+        frozen = expected_by_identity[identity]
+        actual = committed_by_identity[identity]
+        if actual.ls_destination != frozen.ls_destination:
+            raise ValueError(
+                "committed cross-lane LS owner differs from the base-derived "
+                f"route for {identity}: {actual.ls_destination} != "
+                f"{frozen.ls_destination}"
+            )
+
+        if frozen.status == "resolved":
+            if (actual.qr_owner, actual.status) != (
+                frozen.qr_owner,
+                frozen.status,
+            ):
+                raise ValueError(
+                    "an already-canonical QR owner changed in the cross-lane "
+                    f"contract for {identity}"
+                )
+            continue
+
+        if frozen.status != "qr_owner_required" or not QR_OWNER_PLACEHOLDER.fullmatch(
+            frozen.qr_owner
+        ):
+            raise ValueError(
+                f"authoritative cross-lane row has invalid QR placeholder: {identity}"
+            )
+        if actual.status == "qr_owner_required":
+            if actual.qr_owner != frozen.qr_owner:
+                raise ValueError(
+                    "an unresolved QR placeholder changed in the cross-lane "
+                    f"contract for {identity}"
+                )
+            continue
+        if actual.status != "resolved":
+            raise ValueError(
+                f"cross-lane QR resolution has invalid status for {identity}"
+            )
+        check_module_name(actual.qr_owner, f"cross-lane QR owner for {identity}")
+        if actual.qr_owner.startswith("NumStability.Algorithms.QR.Higham19"):
+            raise ValueError(
+                "resolved cross-lane QR owner is still a Higham19 compatibility "
+                f"wrapper for {identity}"
+            )
+
+
 def write_cross_lane_normalization(
     path: Path, contract: list[CrossLaneNormalization]
 ) -> None:
@@ -2870,14 +2989,21 @@ def validate_cross_lane_final_contract(
     return len(required_imports), len(production_modules)
 
 
-def normalized_graph_delta(
+def normalized_incident_graph_delta(
     baseline_tsv: Path,
     candidate_tsv: Path,
     baseline: dict[str, Declaration],
     candidate_actual_to_logical: dict[str, str],
     records: dict[str, ManifestRow],
 ) -> Counter[str]:
-    """Return baseline rows minus normalized candidate rows as a multiset."""
+    """Return the selected LS incident graph delta as a row multiset.
+
+    The contract owns all selected LS declaration rows and every typed edge
+    with at least one selected LS endpoint.  Rows wholly outside that incident
+    set belong to other integration lanes and are deliberately ignored.  This
+    lets a QR or BlockLU declaration move modules without weakening any edge
+    entering or leaving an LS declaration.
+    """
 
     candidate_to_baseline_name = {
         candidate: baseline[logical].name
@@ -2887,30 +3013,67 @@ def normalized_graph_delta(
         candidate: records[logical].historical_module
         for candidate, logical in candidate_actual_to_logical.items()
     }
+    baseline_names = {declaration.name for declaration in baseline.values()}
+    candidate_names = set(candidate_actual_to_logical)
 
     delta: Counter[str] = Counter()
-    with baseline_tsv.open(encoding="utf-8") as stream:
-        for raw in stream:
-            delta[raw.rstrip("\r\n")] += 1
+    for declaration in baseline.values():
+        delta[
+            "\t".join(
+                (
+                    "declaration",
+                    declaration.name,
+                    declaration.module,
+                    declaration.kind,
+                    declaration.visibility,
+                )
+            )
+        ] += 1
+    for edge in iter_dependency_edges(baseline_tsv):
+        if edge.source in baseline_names or edge.target in baseline_names:
+            delta[
+                "\t".join(("edge", edge.kind, edge.source, edge.target))
+            ] += 1
 
-    with candidate_tsv.open(encoding="utf-8") as stream:
-        for raw in stream:
-            fields = raw.rstrip("\r\n").split("\t")
-            if (
-                len(fields) == 5
-                and fields[0] == "declaration"
-                and fields[1] in candidate_to_baseline_name
-            ):
-                candidate_name = fields[1]
-                fields[1] = candidate_to_baseline_name[candidate_name]
-                fields[2] = candidate_to_historical_module[candidate_name]
-            elif len(fields) == 4 and fields[0] == "edge":
-                fields[2] = candidate_to_baseline_name.get(fields[2], fields[2])
-                fields[3] = candidate_to_baseline_name.get(fields[3], fields[3])
-            row = "\t".join(fields)
-            delta[row] -= 1
-            if delta[row] == 0:
-                del delta[row]
+    candidate_declarations = {
+        declaration.name: declaration
+        for declaration in read_dependency_declarations(candidate_tsv)
+    }
+    for candidate_name, logical in candidate_actual_to_logical.items():
+        declaration = candidate_declarations.get(candidate_name)
+        if declaration is None:
+            raise ValueError(
+                f"candidate LS declaration is absent from graph: {candidate_name}"
+            )
+        delta[
+            "\t".join(
+                (
+                    "declaration",
+                    candidate_to_baseline_name[candidate_name],
+                    candidate_to_historical_module[candidate_name],
+                    declaration.kind,
+                    declaration.visibility,
+                )
+            )
+        ] -= 1
+
+    # Include historical private names as incident sentinels.  A stale edge
+    # that still names a pre-move private declaration is therefore an extra
+    # contracted edge rather than disappearing into the unrelated graph.
+    candidate_incident_names = candidate_names | baseline_names
+    for edge in iter_dependency_edges(candidate_tsv):
+        if (
+            edge.source not in candidate_incident_names
+            and edge.target not in candidate_incident_names
+        ):
+            continue
+        source = candidate_to_baseline_name.get(edge.source, edge.source)
+        target = candidate_to_baseline_name.get(edge.target, edge.target)
+        delta["\t".join(("edge", edge.kind, source, target))] -= 1
+
+    for row in list(delta):
+        if delta[row] == 0:
+            del delta[row]
 
     return delta
 
@@ -2927,7 +3090,7 @@ def validate_normalized_graph_delta(delta: Counter[str]) -> None:
     )
 
 
-def compare_full_graph(
+def compare_lane_incident_graph(
     baseline_tsv: Path,
     candidate_tsv: Path,
     baseline: dict[str, Declaration],
@@ -2935,12 +3098,12 @@ def compare_full_graph(
     records: dict[str, ManifestRow],
     expected_baseline_sha256: str | None = BASELINE_TSV_SHA256,
 ) -> None:
-    """Require the exact contracted graph after ownership normalization."""
+    """Require the exact LS declaration/incident graph after normalization."""
 
     if expected_baseline_sha256 is not None:
         if sha256_file(baseline_tsv) != expected_baseline_sha256:
             raise ValueError("baseline TSV hash differs from the frozen lane input")
-    delta = normalized_graph_delta(
+    delta = normalized_incident_graph_delta(
         baseline_tsv, candidate_tsv, baseline, candidate_actual_to_logical, records
     )
     validate_normalized_graph_delta(delta)
@@ -2970,6 +3133,10 @@ SELF_HISTORICAL_B = f"{LS_PREFIX}.LSPerturbation"
 SELF_REUSABLE = f"{REUSABLE_ALGORITHM_ROOT}.Residual"
 SELF_ANALYSIS = f"{REUSABLE_ANALYSIS_ROOT}.Wedin"
 SELF_SOURCE = f"{SOURCE_ROOT}.Theorem03"
+SELF_OTHER_NAME = "NumStability.otherDeclaration"
+SELF_OTHER_TARGET = "NumStability.otherDependency"
+SELF_OTHER_OLD = "NumStability.Other.Old"
+SELF_OTHER_NEW = "NumStability.Other.New"
 SELF_COUNTS = {SELF_HISTORICAL_A: 4, SELF_HISTORICAL_B: 2}
 SELF_PRIVATE_LOGICAL = f"_private.{SELF_HISTORICAL_A}.NumStability.lsHelper"
 
@@ -2999,6 +3166,13 @@ def _self_declarations() -> list[Declaration]:
             "NumStability.theorem20_3_source", SELF_HISTORICAL_B, "theorem", "public"
         ),
         Declaration("NumStability.qrExternal", "NumStability.Algorithms.QR.QRSolve", "theorem", "public"),
+        Declaration(SELF_OTHER_NAME, SELF_OTHER_OLD, "theorem", "public"),
+        Declaration(
+            SELF_OTHER_TARGET,
+            "NumStability.Other.Dependency",
+            "theorem",
+            "public",
+        ),
     ]
 
 
@@ -3028,6 +3202,7 @@ def _self_edges() -> list[DependencyEdge]:
             "body", "NumStability.wedinLemma20_11_bound", "NumStability.lsResidual"
         ),
         DependencyEdge("body", "NumStability.lsResidual", "NumStability.qrExternal"),
+        DependencyEdge("body", SELF_OTHER_NAME, SELF_OTHER_TARGET),
     ]
 
 
@@ -3102,7 +3277,7 @@ def run_self_test() -> None:
 
     # 1. Missing declaration.
     expect_value_error(
-        lambda: selected_baseline_declarations(declarations[:-2], SELF_COUNTS),
+        lambda: selected_baseline_declarations(declarations[1:], SELF_COUNTS),
         "a missing historical declaration",
     )
     # 2. Duplicated declaration.
@@ -3271,6 +3446,16 @@ def run_self_test() -> None:
             Declaration(
                 "NumStability.qrExternal", "NumStability.Algorithms.QR.QRSolve", "theorem", "public"
             ),
+            # This other-lane declaration moves modules.  The LS incident
+            # graph must accept it because neither the declaration nor its
+            # edge has an LS endpoint.
+            Declaration(SELF_OTHER_NAME, SELF_OTHER_NEW, "theorem", "public"),
+            Declaration(
+                SELF_OTHER_TARGET,
+                "NumStability.Other.Dependency",
+                "theorem",
+                "public",
+            ),
         ]
         moved_edges = [
             DependencyEdge(
@@ -3291,6 +3476,7 @@ def run_self_test() -> None:
                 "body", "NumStability.wedinLemma20_11_bound", "NumStability.lsResidual"
             ),
             DependencyEdge("body", "NumStability.lsResidual", "NumStability.qrExternal"),
+            DependencyEdge("body", SELF_OTHER_NAME, SELF_OTHER_TARGET),
         ]
         rewrites_path = root / "rewrites.tsv"
         rewrites_path.write_text(
@@ -3328,15 +3514,18 @@ def run_self_test() -> None:
 
         candidate_tsv = root / "candidate.tsv"
         candidate_tsv.write_text(_self_stream(moved, moved_edges), encoding="utf-8")
-        compare_full_graph(
+        # Positive scope test: candidate.tsv contains an unrelated
+        # Other.Old -> Other.New declaration move and an unrelated typed edge.
+        # The LS incident contract accepts both while retaining every LS edge.
+        compare_lane_incident_graph(
             baseline_tsv, candidate_tsv, baseline, candidate_map, records, None
         )
 
-        # 10. Lost typed edge.
+        # 10. Lost contracted LS-incident typed edge.
         lost_tsv = root / "lost.tsv"
         lost_tsv.write_text(_self_stream(moved, moved_edges[1:]), encoding="utf-8")
         expect_value_error(
-            lambda: compare_full_graph(
+            lambda: compare_lane_incident_graph(
                 baseline_tsv, lost_tsv, baseline, candidate_map, records, None
             ),
             "a lost typed edge",
@@ -3356,7 +3545,7 @@ def run_self_test() -> None:
             encoding="utf-8",
         )
         expect_value_error(
-            lambda: compare_full_graph(
+            lambda: compare_lane_incident_graph(
                 baseline_tsv, extra_tsv, baseline, candidate_map, records, None
             ),
             "an extra typed edge",
@@ -3370,14 +3559,14 @@ def run_self_test() -> None:
         self_tsv = root / "selfedge.tsv"
         self_tsv.write_text(_self_stream(moved, without_self), encoding="utf-8")
         expect_value_error(
-            lambda: compare_full_graph(
+            lambda: compare_lane_incident_graph(
                 baseline_tsv, self_tsv, baseline, candidate_map, records, None
             ),
             "a lost declaration self-edge",
         )
         # 13. Baseline digest drift.
         expect_value_error(
-            lambda: compare_full_graph(
+            lambda: compare_lane_incident_graph(
                 baseline_tsv,
                 candidate_tsv,
                 baseline,
@@ -3504,13 +3693,93 @@ def run_self_test() -> None:
                 "import",
                 "NumStability.Algorithms.QR.Higham19Problem19_10",
                 "-",
-                SELF_HISTORICAL_B,
+                f"{LS_PREFIX}.Higham20CrossProductExample",
                 "-",
                 SELF_ANALYSIS,
                 qr_source_owner,
                 "resolved",
             ),
         ]
+        frozen_self_cross = [
+            self_cross[0],
+            replace(
+                self_cross[1],
+                qr_owner=(
+                    "@QR_OWNER_REQUIRED:"
+                    "NumStability.Algorithms.QR.Higham19Problem19_10"
+                ),
+                status="qr_owner_required",
+            ),
+        ]
+        # A reviewed QR placeholder resolution is the only mutable part of a
+        # frozen cross-lane row.
+        validate_cross_lane_artifact_contract(
+            frozen_self_cross,
+            self_cross,
+            expected_rows=2,
+            expected_edge_rows=1,
+            expected_import_rows=1,
+        )
+        expect_value_error(
+            lambda: validate_cross_lane_artifact_contract(
+                frozen_self_cross,
+                self_cross[:-1],
+                expected_rows=2,
+                expected_edge_rows=1,
+                expected_import_rows=1,
+            ),
+            "a truncated cross-lane normalization artifact",
+        )
+
+        # Reproduce the subtle old escape: choose a different LS destination
+        # that is a valid owner of the same historical module.  The parser can
+        # accept that shape, but the regenerated frozen route must reject it.
+        multi_owner_records = dict(records)
+        multi_owner_records["NumStability.lsResidual.eq_1"] = replace(
+            multi_owner_records["NumStability.lsResidual.eq_1"],
+            destination_module=SELF_ANALYSIS,
+        )
+        multi_owner_records["NumStability.syntheticCrossProduct"] = ManifestRow(
+            "NumStability.syntheticCrossProduct",
+            f"{LS_PREFIX}.Higham20CrossProductExample",
+            SELF_ANALYSIS,
+            "theorem",
+            "public",
+        )
+        ls_owner_tamper = list(self_cross)
+        ls_owner_tamper[0] = replace(
+            ls_owner_tamper[0], ls_destination=SELF_ANALYSIS
+        )
+        ls_owner_tamper_path = root / "cross-lane-ls-owner-tamper.tsv"
+        ls_owner_tamper_path.write_bytes(cross_lane_bytes(ls_owner_tamper))
+        parsed_ls_owner_tamper = read_cross_lane_normalization(
+            ls_owner_tamper_path, multi_owner_records
+        )
+        expect_value_error(
+            lambda: validate_cross_lane_artifact_contract(
+                frozen_self_cross,
+                parsed_ls_owner_tamper,
+                expected_rows=2,
+                expected_edge_rows=1,
+                expected_import_rows=1,
+            ),
+            "a false LS-owner substitution in the cross-lane artifact",
+        )
+        resolved_qr_tamper = list(self_cross)
+        resolved_qr_tamper[0] = replace(
+            resolved_qr_tamper[0],
+            qr_owner="NumStability.Algorithms.QR.FalseOwner",
+        )
+        expect_value_error(
+            lambda: validate_cross_lane_artifact_contract(
+                frozen_self_cross,
+                resolved_qr_tamper,
+                expected_rows=2,
+                expected_edge_rows=1,
+                expected_import_rows=1,
+            ),
+            "a substitution for an already-canonical QR owner",
+        )
         assert validate_cross_lane_final_contract(
             self_cross, moved, graph, records
         ) == (2, 5)
@@ -4130,10 +4399,7 @@ def main() -> int:
         if args.write_cross_lane:
             write_cross_lane_normalization(args.cross_lane, generated_cross)
         cross_contract = read_cross_lane_normalization(args.cross_lane, records)
-        if cross_contract != generated_cross:
-            raise ValueError(
-                "committed cross-lane normalization differs from frozen base edges"
-            )
+        validate_cross_lane_artifact_contract(generated_cross, cross_contract)
         forward, reverse, cross_edges = validate_cross_lane_base_contract(
             args.project_root,
             args.dependency_tsv,
@@ -4158,6 +4424,8 @@ def main() -> int:
 
     if args.baseline_tsv is None:
         raise ValueError(f"--baseline-tsv is required in {args.mode} mode")
+    if sha256_file(args.baseline_tsv) != BASELINE_TSV_SHA256:
+        raise ValueError("retained baseline TSV hash differs from the frozen base")
     baseline_declarations = read_dependency_declarations(args.baseline_tsv)
     baseline = selected_baseline_declarations(baseline_declarations)
     records = read_manifest(args.manifest)
@@ -4166,6 +4434,13 @@ def main() -> int:
     dag = read_destination_dag(args.destination_dag, records)
     structural_contract = read_structural_import_contract(args.structural_imports)
     cross_contract = read_cross_lane_normalization(args.cross_lane, records)
+    generated_cross = generate_cross_lane_normalization(
+        args.baseline_tsv,
+        baseline_declarations,
+        baseline_actual_to_logical(baseline),
+        records,
+    )
+    validate_cross_lane_artifact_contract(generated_cross, cross_contract)
     coordinator_patches = read_coordinator_patches(args.coordinator_patches)
     digest = validate_expected_manifest_digest(records, args.expected_manifest_sha256)
 
@@ -4231,7 +4506,7 @@ def main() -> int:
                 for module in completed_structural
             },
         )
-    compare_full_graph(
+    compare_lane_incident_graph(
         args.baseline_tsv, args.dependency_tsv, baseline, candidate_map, records
     )
     actual_to_logical = {

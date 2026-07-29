@@ -23,6 +23,28 @@ Its SHA-256 is
 The LSQ post gate reads this file and rejects an integration tree on which any
 import, root-test, tier, or compatibility mapping is missing or inexact.
 
+## Required packet replacement
+
+The packet's original `INTEGRATOR_REQUEST.md` is stale and
+`scripts/deliver_local.ps1` packages that external file. Before running the
+delivery script, replace the packet file byte-for-byte with this tracked file:
+
+```powershell
+$lsqRepo = 'C:\Users\qed_s\higham-worktrees\lsq-contract-repair'
+$lsqPacket = 'C:\Users\qed_s\OneDrive\Documents\QED 94\.codex\handoffs\four-subscriptions-6487fc33088523b8f27ecde9ad613515b78f9977\03-claude-lsq-ch20'
+$trackedRequest = Join-Path $lsqRepo 'docs\architecture\migrations\worker-lsq-ch20-integrator-request.md'
+$packetRequest = Join-Path $lsqPacket 'INTEGRATOR_REQUEST.md'
+Copy-Item -LiteralPath $trackedRequest -Destination $packetRequest -Force
+if ((Get-FileHash -Algorithm SHA256 $trackedRequest).Hash -ne
+    (Get-FileHash -Algorithm SHA256 $packetRequest).Hash) {
+  throw 'LSQ integrator-request replacement did not verify byte-for-byte'
+}
+```
+
+The coordinator should perform that external copy only after the follow-up
+contract commit is present. This repository commit intentionally does not edit
+the packet directory.
+
 ## Shared aggregate edits
 
 Apply these exact import changes after the corresponding lane modules exist:
@@ -114,6 +136,13 @@ root-imported and remains the lane-owned source test umbrella.
 base imports, 4,221 typed declaration edges, and 3 import-only edges. It has
 4,224 rows and SHA-256
 `056DA202B1D8C3FC6F6ED540B6064D094D89455A43848FBEA175C06DAFE8384F`.
+
+Pre, stage, and post deterministically regenerate all 4,224 base rows from the
+hash-pinned semantic stream and compiler-span route/ownership data. They
+require the exact row identities and LS destinations. Only an unresolved
+`qr_owner`/`status` pair may be replaced by a reviewed canonical QR owner;
+truncation, LS-owner substitution, or mutation of an already-stable QR owner
+fails before the final import checks.
 
 The QR lane's canonical declaration-owner map is not present at this base.
 Therefore 1,628 rows intentionally contain `@QR_OWNER_REQUIRED:*`, covering
