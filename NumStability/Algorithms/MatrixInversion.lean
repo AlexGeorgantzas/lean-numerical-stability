@@ -30,8 +30,8 @@ import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LU.LUSolve
 import NumStability.Algorithms.LU.GrowthFactor
-import NumStability.Algorithms.HighamChapter8
-import NumStability.Algorithms.HighamChapter9
+import NumStability.Algorithms.TestMatrices.UpperTriangularStress
+import NumStability.Analysis.MatrixNorms.HadamardDeterminant
 import NumStability.Analysis.Perturbation.LeastSquares.Wedin
 
 namespace NumStability
@@ -5931,7 +5931,7 @@ theorem higham14_problem14_11_hadamard_det_sq_le_prod_rowNorm2_sq {n : ℕ}
     (Matrix.det (A : Matrix (Fin n) (Fin n) ℝ)) ^ 2 ≤
       ∏ i : Fin n, higham14_rowNorm2 A i ^ 2 := by
   simpa [higham14_rowNorm2, vecNorm2_sq, vecNorm2Sq] using
-    (higham9_hadamard_det_sq_le_prod_row_sq
+    (hadamard_det_sq_le_prod_row_sq
       (A := (A : Matrix (Fin n) (Fin n) ℝ)))
 
 /-- Higham, 2nd ed., Chapter 14, Problem 14.11:
@@ -6765,7 +6765,7 @@ theorem higham14_problem14_13_amgm_prod_le_pow_sum_div_card {n : ℕ} (hn : 0 < 
       change ((n : ℝ) / S) * S = (n : ℝ)
       field_simp [hS]
     have hy_prod_le_one : ∏ i : Fin n, y i ≤ 1 :=
-      higham9_amgm_prod_le_one_of_sum_eq_card hn y hy_nonneg hy_sum
+      geomMean_prod_le_one_of_sum_eq_card hn y hy_nonneg hy_sum
     have hy_prod :
         ∏ i : Fin n, y i = ((n : ℝ) / S) ^ n * ∏ i : Fin n, z i := by
       dsimp [y]

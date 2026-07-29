@@ -28,6 +28,7 @@ import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks
 import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks.SchurComplement
 import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks.Uniqueness
 import NumStabilityTest.Import.Algorithms.StationaryIteration
+import NumStabilityTest.Import.Algorithms.TestMatrices.UpperTriangularStress
 import NumStabilityTest.Import.All
 import NumStabilityTest.Import.Analysis
 import NumStabilityTest.Import.Analysis.Asymptotics
@@ -54,6 +55,7 @@ import NumStabilityTest.Import.Analysis.MatrixNorms.Basic
 import NumStabilityTest.Import.Analysis.MatrixNorms.Comparisons
 import NumStabilityTest.Import.Analysis.MatrixNorms.EntrywiseMaximum
 import NumStabilityTest.Import.Analysis.MatrixNorms.Hadamard
+import NumStabilityTest.Import.Analysis.MatrixNorms.HadamardDeterminant
 import NumStabilityTest.Import.Analysis.MatrixNorms.Lp
 import NumStabilityTest.Import.Analysis.MatrixNorms.SpectralRadius
 import NumStabilityTest.Import.Analysis.MatrixNorms.UnitarilyInvariant
@@ -76,6 +78,7 @@ import NumStabilityTest.Import.Analysis.VectorNorms.Attainment
 import NumStabilityTest.Import.Analysis.VectorNorms.Basic
 import NumStabilityTest.Import.Analysis.VectorNorms.Duality
 import NumStabilityTest.Import.Analysis.VectorNorms.Interpolation
+import NumStabilityTest.Import.Compatibility.Algorithms.HighamChapter8StressUpper
 import NumStabilityTest.Import.Compatibility.Algorithms.LeastSquares
 import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLU
 import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUArbitraryNormSourceClosure

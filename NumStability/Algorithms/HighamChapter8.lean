@@ -10,6 +10,7 @@ import NumStability.Algorithms.TriangularNoGuard
 import NumStability.Algorithms.MMatrix
 import NumStability.Algorithms.LU.GrowthFactor
 import NumStability.Algorithms.MatMul
+import NumStability.Algorithms.TestMatrices.UpperTriangularStress
 import NumStability.Analysis.HighamChapter7
 import Mathlib.Data.Finset.Max
 import Mathlib.Data.Matrix.Basis
@@ -303,14 +304,6 @@ theorem higham8_2_forwardSub_anyOrder_relative_infNorm_bound (fp : FPModel)
   · exact hLx
   · exact hγcond
   · exact hx
-
-/-- **Equation (8.3)**: the upper-triangular stress matrix `U(α)`. -/
-noncomputable def higham8_3_stressUpper (n : ℕ) (α : ℝ) :
-    Fin n → Fin n → ℝ :=
-  fun i j =>
-    if i = j then 1
-    else if i.val < j.val then -α
-    else 0
 
 /-- **Equation (8.4)**: the displayed inverse-entry formula for `U(α)`. -/
 noncomputable def higham8_4_stressUpperInvFormula (n : ℕ) (α : ℝ) :

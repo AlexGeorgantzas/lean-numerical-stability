@@ -10,6 +10,7 @@ import NumStability.Algorithms.Cholesky.CholeskySolve
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Analysis.MatrixAlgebra
+import NumStability.Analysis.MatrixNorms.Comparisons
 
 namespace NumStability
 

@@ -371,6 +371,7 @@ import NumStability.Algorithms.TestMatrices.Higham28StewartRawFiber
 import NumStability.Algorithms.TestMatrices.Higham28ToeplitzCondition
 import NumStability.Algorithms.TestMatrices.Higham28ToeplitzGeneral
 import NumStability.Algorithms.TestMatrices.Higham28ToeplitzSpectrum
+import NumStability.Algorithms.TestMatrices.UpperTriangularStress
 import NumStability.Algorithms.TreeDotProduct
 import NumStability.Algorithms.TriangularArbitraryOrder
 import NumStability.Algorithms.TriangularNoGuard
