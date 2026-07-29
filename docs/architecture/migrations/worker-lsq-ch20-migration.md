@@ -721,6 +721,12 @@ narrows. `SpectralConvergence` is a non-lane file and a required
 `DOWNSTREAM_BUILDS.txt` target, so this needs the consumer retarget already
 scheduled in the integrator patch set.
 
+> **Superseded by §16.2.** This diagnosis was right about the mechanism and wrong
+> about the remedy. The narrowing was self-inflicted: the wrapper generator
+> forwarded only destinations and dropped the historical import list, which the
+> packet contract preserves. Restoring it fixes the case inside the lane, and no
+> consumer retarget is required.
+
 ### 13.3 Owner order is a hard constraint
 
 A destination may only import destinations that already exist, and a reusable
@@ -728,6 +734,13 @@ destination may never import a legacy wrapper. Owner `A` must therefore migrate
 after owner `B` whenever a declaration of `A` uses a declaration of `B`.
 Computing that DAG shows **34 of 41 owners are transitively blocked by
 `LSQRSolve`**, which is itself blocked on the `MatrixInversion` retarget.
+
+> **Partly superseded by §16.1.** The ordering constraint itself is real and still
+> governs the wave schedule. The attribution was wrong: `LSQRSolve` was blocked by
+> the private-visibility defect of §13.1, not by `MatrixInversion`.
+> `MatrixInversion` is a *consumer* of this lane — it appears in the patch set only
+> as an `add_import` row — and no declaration of `LSQRSolve` depends on it. With
+> §13.1 fixed, `LSQRSolve` migrates and the 33 owners behind it schedule normally.
 
 ## 14. Reachability summary
 
@@ -748,6 +761,12 @@ All **12** axiom probes across the three waves report exactly
 The lane's completion definition cannot be reached from inside the lane's own
 scope until 13.1 and the two scheduled consumer retargets are resolved.
 
+> **Superseded by §16.** All three obstructions turned out to be lane-owned. 13.1
+> was a defect in this lane's own ownership contract, and the two "consumer
+> retarget" cases were caused by this lane's wrapper generator dropping the
+> historical import list. Nothing here required work outside the lane, and the
+> reachability table above is void — see §16.3 for the derived schedule.
+
 ## 15. Corrected blocker partition and critical path
 
 Section 14 assigned some owners to two categories at once. Assigning each
@@ -761,6 +780,11 @@ unmigrated owner exactly one *primary* blocker gives a clean partition of all 41
 | Migrated | 4 |
 
 Owners **READY** to migrate right now: **0**.
+
+> **Superseded by §16.3.** Correct under the defective contract, and the section's
+> own conclusion — that private co-location was the critical path for 36 of 41
+> owners — is what turned out to matter. With the contract corrected the count is
+> **37**: every remaining owner is reachable, in 7 waves.
 
 ### The private-visibility defect is the critical path
 
@@ -806,3 +830,174 @@ private nodes before assigning destinations, so a private declaration and its
 users form one indivisible unit — the same treatment already given to a
 `structure` and its co-generated projections. This is checkable statically from
 the frozen format-2 stream and needs no build.
+
+## 16. Correction: the lane was never externally blocked
+
+Sections 13–15 concluded that the lane could not be completed from inside its own
+scope. That conclusion was wrong, and the error was mine in both halves. Both
+obstructions were defects in artifacts this lane owns.
+
+### 16.1 `LSQRSolve` was blocked by §13.1, not by `MatrixInversion`
+
+§13.3 attributed the blockage of 34 owners to `LSQRSolve` "being blocked on the
+`MatrixInversion` retarget". That attribution does not survive checking:
+
+- No declaration of `LSQRSolve` depends on any declaration of
+  `NumStability.Algorithms.MatrixInversion`. `MatrixInversion` is a *consumer* of
+  this lane; it appears in the patch set only as an `add_import` row.
+- §15 had already established the real cause — `LSQRSolve` carried 62 of the 114
+  cross-boundary private uses, so it was blocked by the contract defect
+  "independently of the `MatrixInversion` retarget". §13.3 simply named the wrong
+  one.
+
+The ordering constraint of §13.3 is itself real and still governs the schedule.
+Only the root attribution was wrong.
+
+Confirmation that the fix is the operative one: the two owners that become
+immediately migratable under the corrected contract are exactly
+`Higham20Lemma20_11` and `Higham20Lemma20_12` — the two whose migration had
+previously failed with unknown-identifier errors.
+
+### 16.2 A compatibility wrapper must re-state its historical imports
+
+§13.2 diagnosed the mechanism correctly — an exact import-only wrapper forwards
+only its destinations, so the transitive surface narrows — and then drew the wrong
+conclusion, that a non-lane consumer retarget was required.
+
+The narrowing was self-inflicted. `generate_structural_import_contract` gave each
+wrapper only its destinations and dropped the historical import list, which the
+packet contract preserves alongside declarations, signatures, bodies and
+visibility. `Higham20Problem20_3` has exactly one historical import,
+`Higham20MPProse`; dropping it is what removed `complexMatrixOp2`,
+`rectRightGramEigenbasis` and `rectRightGramProjectedColumn` from
+`SpectralConvergence`'s view. Those three live in
+`NumStability.Analysis.SingularValues.Basic` and
+`NumStability.Algorithms.RandNLA.LowRankApprox`, both reached *through* the
+historical module. Re-stating the historical import restores them.
+
+The wrapper surface is now destinations ∪ frozen historical imports, read from the
+blob-verified pristine copy rather than the worktree — after a wave the worktree
+file is already the wrapper, so reading it back would preserve nothing. Two
+regression cases cover it, and the wrapper emitter was reduced to a single
+authority: the contract artifact.
+
+### 16.3 Derived schedule
+
+With no blocker hardcoded, the owner graph is acyclic and every remaining owner is
+reachable:
+
+| | |
+| --- | --- |
+| Owners | 41 |
+| Migrated before this correction | 4 |
+| Owners with a cross-boundary private use | **0** (was 8) |
+| Owners with no schedulable position | **0** (was 37) |
+| Waves to migrate the remaining 37 | **7** |
+| Declarations still to relocate | 4,788 |
+
+Wave 5 is `LSQRSolve` (1,485 declarations) with `Higham20Lemma20_11`,
+`Higham20Lemma20_12` and `Higham20Problem20_3`; wave 6 is `LSE` (1,982) with nine
+others; waves 7–11 hold the remaining 893.
+
+### 16.4 Applying the corrected contract invalidated the applied waves
+
+One consequence was not anticipated and is worth recording. Co-location moved some
+declarations of already-migrated owners into destinations dominated by a later
+wave — `LSNormalEquations` gained declarations destined for
+`LinearSystems.LeastSquares.AugmentedSystem`, which `LSQRSolve` populates. Writing
+the end-state wrapper contract for a migrated owner therefore produced
+`bad import` for a module that did not exist yet.
+
+`--mode pre` did not catch it because it validates the contract artifact, not the
+files on disk. The rule is that a wrapper may only be written once every
+destination it names exists, so the emitter now refuses to write a wrapper naming
+an absent module, and each wave re-emits the cumulative migrated owner set rather
+than just the new owners.
+
+The same retarget has a second, sharper consequence: it can *empty* a destination
+an earlier wave already created. `LinearSystems.LeastSquares.NormalEquations` was
+created by wave 2, and the corrected contract routes **0** declarations to it — all
+five of its declarations (`normalEquationsCrossProductExampleA`,
+`normalEquationsCrossProductExample_gram_eq`,
+`normalEquationsCrossProductExampleRoundedGram`,
+`normalEquationsCrossProductExampleRoundedGram_singular`, `normalEqCholeskyXHat`)
+now belong to `LinearSystems.LeastSquares.AugmentedSystem`. The old file kept its
+copy, the family aggregate imported both, and Lean would have reported duplicate
+declarations. Emptied destinations are now reported on every apply, checked against
+their declarations' new homes, and removed.
+
+Both hazards share one cause: a contract correction applies to the whole plan,
+while the worktree holds only the waves applied so far. The invariant is that after
+each wave the worktree must equal what the *current* contract prescribes for the
+migrated owner set, not what an earlier contract prescribed.
+
+## 17. Correction: dissolving `Equality.GQR` was an over-correction
+
+§16 fixed the private co-location defect but paid far too much for it. The fix in
+commit `9452c36ea` dropped `Equality.GQR` and `Equality.KKT` from the cycle
+breaker's protected set, justified like this:
+
+> Two private helper groups straddle the intended equality-constrained-LS / GQR /
+> KKT split ... those groups bind the three sub-families into one module.
+
+That inference is false. A straddling co-location group binds **its own members**,
+not the sub-families those members happen to belong to. Measured on the frozen
+stream: of the 708 declarations the reviewed assignment sends to
+`Equality.{Basic,GQR,KKT}` there are **581** co-location components, and exactly
+**2** straddle the intended split (one of 20 declarations spanning all three, one
+of 4 spanning Basic and GQR). Confining just those two to the module already
+holding most of each moves **9** declarations and leaves Basic = 400, GQR = 301,
+KKT = 7, with **0** cross-module private uses.
+
+Removing the protection instead let the cycle breaker merge the boundaries away,
+and it took four more destinations with them. Across the whole lane:
+
+| Contract | Destinations | Cross-boundary private uses | Declarations displaced from the reviewed assignment |
+| --- | --- | --- | --- |
+| Reviewed (`7d876bc24`) | 72 | 114 | 0 |
+| `9452c36ea` (over-merged) | 68 | 0 | 556 |
+| Corrected | **72** | **0** | **161** |
+
+The six destinations `9452c36ea` destroyed — `LinearSystems.LeastSquares.Basic`,
+`Equality.GQR`, `Equality.KKT`, `MGS`, `NormalEquations` and `Projection` — were
+every one of them recoverable by a component-granularity merge. This also
+reframes §16.4: `LinearSystems.LeastSquares.NormalEquations` was not legitimately
+emptied, it was collateral damage, and it holds declarations again.
+
+The restored protected set adds the six boundaries the packet's semantic target
+names. `Equality.KKT` is deliberately still absent, for a reason unrelated to
+visibility: `GQR` and `KKT` form a genuine two-destination import cycle that
+relocation cannot break — 35 declarations were relocated `GQR -> KKT` across six
+rounds and the cycle survived. The packet's required parts are "equality-
+constrained LS, GQR, KKT/perturbation, and source correspondence"; KKT and
+perturbation are one item, carried by `Analysis...Equality.Perturbation`, so the
+required boundary is GQR. Folding KKT into GQR breaks the cycle and keeps all four
+required parts:
+
+| Required part | Destination | Declarations |
+| --- | --- | --- |
+| equality-constrained LS | `Algorithms...Equality.Basic` | 388 |
+| GQR | `Algorithms...Equality.GQR` | 300 |
+| KKT / perturbation | `Analysis...Equality.{Perturbation,MixedStability,RowwiseBackwardError}` | 495 / 218 / 522 |
+| source correspondence | `Source.Higham.Chapter20.Theorem08.LSE` | 59 |
+
+The cross-lane carrier for `LSE -> QR.GramSchmidtPolar` returns to `Equality.GQR`,
+where the generalized-QR material that uses the polar factorization lives.
+
+Verified state: `pre` mode passes with 5,129 declarations, 4,694 command groups,
+**72** destinations, 245 owner edges, all 19 LS-to-QR and 4 QR-to-LS base imports
+(4,221 typed edges), 1,680 private declarations with 0 cross-destination uses, 0
+straddling spans, 0 wrapper-induced cycles, 0 reusable-to-source and 0
+algorithm-to-analysis edges, 0 mixed-tier destinations, and manifest SHA-256
+`D4EF42683595A9910A3A0F9AB4A6733D8BCD0898CB33A174992BAD547B4DB9B3`.
+
+### A note for the integrator on private promotions
+
+The review branch `codex/review-lsq-contract-repair` resolves the same defect
+differently, by promoting 55 authored-private declarations to public under a
+frozen `lsq-ch20-private-promotions.tsv` mapping. That achieves the same split but
+changes visibility, which the packet preserves. The measurement above shows the
+promotions are **not** required: component-granularity co-location reaches 0
+cross-boundary private uses with every private declaration still private, and with
+`Equality.GQR` intact. If the two contracts are reconciled, this lane's version
+needs no visibility change.

@@ -251,17 +251,19 @@ IMPORT_ONLY_LS_DESTINATIONS = {
         f"{LS_PREFIX}.Higham20Theorem20_7",
         "NumStability.Algorithms.QR.HouseholderQRSupport",
     ): f"{SOURCE_ROOT}.Theorem07",
-    # Carrier updated from Equality.GQR to Equality.Basic.  Equality.GQR cannot
-    # exist as a separate module while private visibility is preserved: two
-    # private helper groups straddle the intended equality-constrained-LS / GQR /
-    # KKT split (one spans all three, one spans Basic and GQR), and a Lean private
-    # name is scoped to its defining module.  Duplicating the helpers and widening
-    # their visibility are both forbidden, so the three sub-families share one
-    # destination and Equality.Basic is the carrier.
+    # Carrier is Equality.GQR: the generalized-QR material is what uses the QR
+    # lane's Gram-Schmidt polar factorization, so the import belongs with it.
+    #
+    # This was briefly retargeted to Equality.Basic on the theory that Equality.GQR
+    # could not exist while private visibility was preserved.  That was wrong: of
+    # 708 declarations intended for Basic/GQR/KKT only 2 co-location components
+    # straddle the split, and confining those two leaves Basic and GQR both
+    # non-empty with zero cross-module private uses.  GQR is restored, so the
+    # carrier returns with it.
     (
         f"{LS_PREFIX}.LSE",
         "NumStability.Algorithms.QR.GramSchmidtPolar",
-    ): f"{REUSABLE_ALGORITHM_ROOT}.Equality.Basic",
+    ): f"{REUSABLE_ALGORITHM_ROOT}.Equality.GQR",
     (
         "NumStability.Algorithms.QR.Higham19Alg12MGSSourceRate",
         f"{LS_PREFIX}.Higham20MPProse",
@@ -1853,8 +1855,39 @@ def read_structural_import_contract(
     return result
 
 
+def frozen_historical_imports(
+    project_root: Path,
+    frozen_owners: dict[str, FrozenOwner],
+    frozen_source_dir: Path | None,
+) -> dict[str, tuple[str, ...]]:
+    """Historical import list of every declaration owner, from frozen sources.
+
+    Read from the blob-verified pristine copy rather than the worktree: after a
+    wave the worktree file is already the wrapper, so reading it back would
+    return the wrapper's own imports and preserve nothing.
+    """
+    imports: dict[str, tuple[str, ...]] = {}
+    for module in sorted(HISTORICAL_DECLARATION_WRAPPERS):
+        owner = frozen_owners[module]
+        path = frozen_source_path(project_root, owner, frozen_source_dir)
+        if not path.is_file():
+            raise ValueError(f"missing frozen source for {module}: {path}")
+        declared: list[str] = []
+        for imported in read_import_prefix(path):
+            check_module_name(imported, f"{path}: import")
+            if imported == module:
+                raise ValueError(f"{path}: historical owner imports itself")
+            if imported not in declared:
+                declared.append(imported)
+        if not declared:
+            raise ValueError(f"frozen historical owner declares no imports: {module}")
+        imports[module] = tuple(sorted(declared))
+    return imports
+
+
 def generate_structural_import_contract(
-    records: dict[str, ManifestRow]
+    records: dict[str, ManifestRow],
+    historical_imports: dict[str, tuple[str, ...]],
 ) -> dict[str, tuple[str, ...]]:
     destinations_by_historical: dict[str, set[str]] = defaultdict(set)
     destinations = {row.destination_module for row in records.values()}
@@ -1862,8 +1895,22 @@ def generate_structural_import_contract(
         destinations_by_historical[record.historical_module].add(
             record.destination_module
         )
+    missing = set(HISTORICAL_DECLARATION_WRAPPERS) - set(historical_imports)
+    if missing:
+        raise ValueError(
+            "no frozen historical imports for: " + ", ".join(sorted(missing))
+        )
+    # A wrapper forwards its destinations *and* re-states the historical import
+    # list.  Forwarding destinations alone narrows the transitive surface the
+    # historical module used to offer, which breaks any consumer that reached an
+    # identifier through it; the packet contract preserves historical imports.
     contract: dict[str, tuple[str, ...]] = {
-        historical: tuple(sorted(destinations_by_historical[historical]))
+        historical: tuple(
+            sorted(
+                destinations_by_historical[historical]
+                | set(historical_imports[historical])
+            )
+        )
         for historical in sorted(HISTORICAL_DECLARATION_WRAPPERS)
     }
     preserved = tuple(sorted(PRESERVED_SOURCE_LEAVES))
@@ -2444,48 +2491,55 @@ def validate_structural_modules(
         validate_import_only_module(project_root, module, expected)
 
 
-def read_module_imports(project_root: Path) -> dict[str, list[str]]:
-    """Read the direct-import graph of every tracked project Lean module."""
+def read_import_prefix(path: Path) -> list[str]:
+    """Comment-aware direct-import list of one Lean file.
 
-    def read_import_prefix(path: Path) -> list[str]:
-        imports: list[str] = []
-        depth = 0
-        with path.open(encoding="utf-8") as stream:
-            for original in stream:
-                out: list[str] = []
-                index = 0
-                while index < len(original):
-                    if depth:
-                        if original.startswith("/-", index):
-                            depth += 1
-                            index += 2
-                        elif original.startswith("-/", index):
-                            depth -= 1
-                            index += 2
-                        else:
-                            index += 1
-                    elif original.startswith("--", index):
-                        break
-                    elif original.startswith("/-", index):
-                        depth = 1
+    Shared by the worktree import graph and by the frozen-source reader, so a
+    historical import list is parsed exactly the same way whether it comes from
+    a tracked module or from a pristine frozen copy.
+    """
+    imports: list[str] = []
+    depth = 0
+    with path.open(encoding="utf-8") as stream:
+        for original in stream:
+            out: list[str] = []
+            index = 0
+            while index < len(original):
+                if depth:
+                    if original.startswith("/-", index):
+                        depth += 1
+                        index += 2
+                    elif original.startswith("-/", index):
+                        depth -= 1
                         index += 2
                     else:
-                        out.append(original[index])
                         index += 1
-                code = "".join(out)
-                if not code.strip():
-                    continue
-                match = IMPORT_RE.match(code)
-                if match:
-                    imports.append(match.group(1))
-                    continue
-                # Lean imports precede declarations/commands.  Stopping here
-                # avoids scanning multi-megabyte proof bodies character by
-                # character while retaining comment-aware import parsing.
-                break
-        if depth:
-            raise ValueError(f"unterminated Lean block comment in import prefix: {path}")
-        return imports
+                elif original.startswith("--", index):
+                    break
+                elif original.startswith("/-", index):
+                    depth = 1
+                    index += 2
+                else:
+                    out.append(original[index])
+                    index += 1
+            code = "".join(out)
+            if not code.strip():
+                continue
+            match = IMPORT_RE.match(code)
+            if match:
+                imports.append(match.group(1))
+                continue
+            # Lean imports precede declarations/commands.  Stopping here
+            # avoids scanning multi-megabyte proof bodies character by
+            # character while retaining comment-aware import parsing.
+            break
+    if depth:
+        raise ValueError(f"unterminated Lean block comment in import prefix: {path}")
+    return imports
+
+
+def read_module_imports(project_root: Path) -> dict[str, list[str]]:
+    """Read the direct-import graph of every tracked project Lean module."""
 
     graph: dict[str, list[str]] = {}
     for root in ("NumStability", "NumStabilityTest"):
@@ -3584,6 +3638,29 @@ def run_self_test() -> None:
             "a changed typed destination-DAG count",
         )
 
+        # 6b. A private declaration may not be used across a destination
+        # boundary: a Lean private name is scoped to its defining module, so the
+        # use would be an unknown identifier.  The fixture co-locates the private
+        # helper with its user, and moving only the helper must be rejected.
+        private_checked = validate_private_colocation(
+            baseline_tsv, declarations, actual_to_logical, records
+        )
+        assert private_checked == 1, private_checked
+        split_private = dict(records)
+        split_private[SELF_PRIVATE_LOGICAL] = ManifestRow(
+            SELF_PRIVATE_LOGICAL,
+            SELF_HISTORICAL_A,
+            SELF_ANALYSIS,
+            "theorem",
+            "private",
+        )
+        expect_value_error(
+            lambda: validate_private_colocation(
+                baseline_tsv, declarations, actual_to_logical, split_private
+            ),
+            "a private declaration used from another destination",
+        )
+
         # 7. Forbidden reusable -> source declaration edge.
         inverted = dict(records)
         inverted["NumStability.theorem20_3_source"] = ManifestRow(
@@ -4208,6 +4285,49 @@ def run_self_test() -> None:
             ),
             "a wrapper that still owns a compiled declaration",
         )
+        # 16b. A wrapper's contracted surface is its destinations *plus* its frozen
+        # historical imports.  Forwarding destinations alone narrows the transitive
+        # surface the historical module offered and breaks consumers that reached an
+        # identifier through it, so the generated contract must contain both.
+        frozen_dir = root / "frozen-imports"
+        frozen_dir.mkdir()
+        for owner_module in HISTORICAL_DECLARATION_WRAPPERS:
+            (frozen_dir / f"{owner_module}.lean").write_text(
+                "import Mathlib.Data.Real.Basic\n"
+                "import NumStability.Analysis.MatrixAlgebra\n"
+                "/-! Frozen historical owner. -/\n"
+                "theorem placeholder : True := trivial\n",
+                encoding="utf-8",
+            )
+        self_frozen_owners = {
+            owner_module: FrozenOwner(
+                owner_module, f"{owner_module}.lean", "0" * 40, "0" * 64, 4, 4, "-", 0
+            )
+            for owner_module in HISTORICAL_DECLARATION_WRAPPERS
+        }
+        historical = frozen_historical_imports(
+            project, self_frozen_owners, frozen_dir
+        )
+        assert historical[SELF_HISTORICAL_A] == (
+            "Mathlib.Data.Real.Basic",
+            "NumStability.Analysis.MatrixAlgebra",
+        ), historical[SELF_HISTORICAL_A]
+        widened = generate_structural_import_contract(records, historical)
+        assert SELF_REUSABLE in widened[SELF_HISTORICAL_A], widened[SELF_HISTORICAL_A]
+        assert (
+            "NumStability.Analysis.MatrixAlgebra" in widened[SELF_HISTORICAL_A]
+        ), widened[SELF_HISTORICAL_A]
+        expect_value_error(
+            lambda: generate_structural_import_contract(records, {}),
+            "a structural contract generated without frozen historical imports",
+        )
+        expect_value_error(
+            lambda: frozen_historical_imports(
+                project, self_frozen_owners, root / "absent-frozen-dir"
+            ),
+            "a missing frozen historical source",
+        )
+
         unsorted_wrapper = project / "NumStability/Algorithms/LeastSquares/Unsorted.lean"
         unsorted_wrapper.write_text(
             "/-! Unsorted wrapper. -/\n"
@@ -4755,7 +4875,12 @@ def main() -> int:
             args.dependency_tsv, actual_to_logical, records, dag
         )
 
-        generated_structural = generate_structural_import_contract(records)
+        historical_imports = frozen_historical_imports(
+            args.project_root, frozen_owners, args.frozen_source_dir
+        )
+        generated_structural = generate_structural_import_contract(
+            records, historical_imports
+        )
         if args.write_structural_imports:
             write_structural_import_contract(
                 args.structural_imports, generated_structural
