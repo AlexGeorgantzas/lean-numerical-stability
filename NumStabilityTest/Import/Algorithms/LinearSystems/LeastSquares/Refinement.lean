@@ -7,6 +7,6 @@ Imports exactly one canonical module so no sibling import can supply
 the declarations checked below.
 -/
 
-#check @NumStability.higham20DirectLSRefinementResidual
-#check @NumStability.Higham20AugmentedRefinementStep
-#check @NumStability.Higham20SeminormalEquationsSolve
+#check @NumStability.higham20Eq20_4Q
+#check @NumStability.higham20Eq20_4R
+#check @NumStability.higham20Eq20_4ForwardBlock

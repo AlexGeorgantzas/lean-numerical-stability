@@ -4,9 +4,9 @@ import NumStability.Algorithms.LeastSquares.LSNormalEquations
 # LSNormalEquations historical import smoke test
 
 Imports only the historical path, proving the retained compatibility
-wrapper still resolves declarations from both canonical owners.
+wrapper still resolves its original declarations.
 -/
 
-#check @NumStability.RectLSNormalEquations
+#check @NumStability.GramVecError
 #check @NumStability.GramProductError
-#check @NumStability.normalEqCholeskyGramBound
+#check @NumStability.GramConditionSquared

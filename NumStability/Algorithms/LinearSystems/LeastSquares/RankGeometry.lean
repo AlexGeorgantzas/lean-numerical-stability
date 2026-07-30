@@ -6,15 +6,10 @@ import Mathlib.LinearAlgebra.Matrix.Rank
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
-import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
-import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
-import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
-import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+import NumStability.Algorithms.QR.HouseholderQR
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Analysis.Rounding
 import NumStability.Analysis.SingularValues.Basic
 import NumStability.Analysis.SingularValues.Realification
-import NumStability.FloatingPoint.Model
 
 namespace NumStability
 
@@ -131,81 +126,6 @@ theorem lsRealRectRowSingularValue_antitone {m n : ℕ}
 noncomputable def lsRealRectRowRank {m n : ℕ}
     (A : Fin m → Fin n → ℝ) : ℕ :=
   complexMatrixRank (realRectToCMatrix (finiteTranspose A))
-/-- Full source column rank of the real rectangular least-squares matrix makes
-    the real column-map kernel trivial. -/
-theorem lsRealRectColRank_rectMatMulVec_eq_zero_of_colRank_eq_card {m n : ℕ}
-    (A : Fin m → Fin n → ℝ) (hrank : lsRealRectColRank A = n)
-    {x : Fin n → ℝ} (hx : rectMatMulVec A x = 0) :
-    x = 0 := by
-  have hker_bot :
-      LinearMap.ker (complexMatrixEuclideanLin (realRectToCMatrix A)) = ⊥ :=
-    complexMatrixEuclideanLin_ker_eq_bot_of_rank_eq_card
-      (realRectToCMatrix A) (by simpa [lsRealRectColRank] using hrank)
-  have hxker :
-      complexMatrixEuclideanLin (realRectToCMatrix A) (realVecToEuclidean x) = 0 := by
-    apply norm_eq_zero.mp
-    rw [realRectToCMatrix_euclideanLin_realVecToEuclidean_norm, hx]
-    exact vecNorm2_zero
-  have hxmem :
-      realVecToEuclidean x ∈
-        LinearMap.ker (complexMatrixEuclideanLin (realRectToCMatrix A)) := by
-    simpa [LinearMap.mem_ker] using hxker
-  have hxE_zero : realVecToEuclidean x = 0 := by
-    have hxbot :
-        realVecToEuclidean x ∈
-          (⊥ : Submodule ℂ (EuclideanSpace ℂ (Fin n))) := by
-      simpa [hker_bot] using hxmem
-    simpa using hxbot
-  have hre := congrArg euclideanReVec hxE_zero
-  simpa using hre
-/-- Full source column rank of the real rectangular least-squares matrix makes
-    the real matrix-vector action injective. -/
-theorem lsRealRectColRank_rectMatMulVec_injective_of_colRank_eq_card {m n : ℕ}
-    (A : Fin m → Fin n → ℝ) (hrank : lsRealRectColRank A = n) :
-    Function.Injective (rectMatMulVec A) := by
-  intro x y hxy
-  have hdiff : rectMatMulVec A (fun j : Fin n => x j - y j) = 0 := by
-    rw [rectMatMulVec_sub A x y]
-    ext i
-    exact sub_eq_zero.mpr (congrFun hxy i)
-  have hzero :=
-    lsRealRectColRank_rectMatMulVec_eq_zero_of_colRank_eq_card
-      A hrank hdiff
-  ext j
-  exact sub_eq_zero.mp (congrFun hzero j)
-/-- A nonzero vector annihilating every column of a real rectangular matrix
-    rules out full row rank of the row-side complexified transpose. -/
-theorem lsRealRectRowRank_ne_card_of_leftNull {m n : ℕ}
-    (A : Fin (m + 1) → Fin n → ℝ) (v : Fin (m + 1) → ℝ)
-    (hv : vecNorm2Sq v ≠ 0)
-    (hleft : ∀ k : Fin n, ∑ i : Fin (m + 1), A i k * v i = 0) :
-    lsRealRectRowRank A ≠ m + 1 := by
-  have hTzero : rectMatMulVec (finiteTranspose A) v = 0 := by
-    ext k
-    simpa [rectMatMulVec, finiteTranspose] using hleft k
-  have hker :
-      complexMatrixEuclideanLin (realRectToCMatrix (finiteTranspose A))
-          (realVecToEuclidean v) = 0 := by
-    apply norm_eq_zero.mp
-    rw [realRectToCMatrix_euclideanLin_realVecToEuclidean_norm, hTzero]
-    exact vecNorm2_zero
-  have hvne : realVecToEuclidean v ≠ 0 :=
-    realVecToEuclidean_ne_zero_of_vecNorm2Sq_ne_zero hv
-  simpa [lsRealRectRowRank] using
-    complexMatrixRank_ne_card_of_euclideanLin_ker_nonzero
-      (realRectToCMatrix (finiteTranspose A)) hker hvne
-/-- Full row rank eliminates every real left-null vector.  This is the converse
-    kernel-trivial form paired with `lsRealRectRowRank_ne_card_of_leftNull`. -/
-theorem lsRealRectRowRank_leftNull_eq_zero_of_rowRank_eq_card {m n : ℕ}
-    (A : Fin (m + 1) → Fin n → ℝ)
-    (hrank : lsRealRectRowRank A = m + 1)
-    {v : Fin (m + 1) → ℝ}
-    (hleft : ∀ k : Fin n, ∑ i : Fin (m + 1), A i k * v i = 0) :
-    v = 0 := by
-  by_contra hvne
-  have hv : vecNorm2Sq v ≠ 0 :=
-    ne_of_gt (vecNorm2Sq_pos_of_ne_zero_lsq hvne)
-  exact (lsRealRectRowRank_ne_card_of_leftNull A v hv hleft) hrank
 /-- The row rank is the number of nonzero row-side singular values. -/
 theorem lsRealRectRowRank_eq_card_nonzero_rowSingularValue {m n : ℕ}
     (A : Fin m → Fin n → ℝ) :
@@ -319,19 +239,6 @@ theorem lsRealRectSigmaMinRow_pos_iff_rowRank_eq_card {m n : ℕ}
   constructor
   · exact lsRealRectRowRank_eq_card_of_sigmaMinRow_pos A
   · exact lsRealRectSigmaMinRow_pos_of_rowRank_eq_card A
-/-- A nonzero left-null certificate forces the row-side `sigma_min` of a real
-    rectangular matrix to vanish. -/
-theorem lsRealRectSigmaMinRow_eq_zero_of_leftNull {m n : ℕ}
-    (A : Fin (m + 1) → Fin n → ℝ) (v : Fin (m + 1) → ℝ)
-    (hv : vecNorm2Sq v ≠ 0)
-    (hleft : ∀ k : Fin n, ∑ i : Fin (m + 1), A i k * v i = 0) :
-    lsRealRectSigmaMinRow A = 0 := by
-  by_contra hne
-  have hpos : 0 < lsRealRectSigmaMinRow A :=
-    lt_of_le_of_ne' (lsRealRectSigmaMinRow_nonneg A) hne
-  have hrank : lsRealRectRowRank A = m + 1 :=
-    (lsRealRectSigmaMinRow_pos_iff_rowRank_eq_card A).mp hpos
-  exact (lsRealRectRowRank_ne_card_of_leftNull A v hv hleft) hrank
 theorem lsRealRectSigmaMinRow_le_of_rectOpNorm2Le {m n : ℕ}
     (A : Fin (m + 1) → Fin n → ℝ) {c : ℝ} (hc : 0 ≤ c)
     (hA : rectOpNorm2Le A c) :
@@ -414,36 +321,5 @@ theorem rectTopBlock_add {m n : ℕ}
   · simp [rectTopBlock_top, hi]
   · have hle : n ≤ i.val := le_of_not_gt hi
     simp [rectTopBlock_bottom, hle]
-/-- A floating-point back substitution theorem supplies an exact perturbed
-    top-block solve, hence rectangular normal equations for the corresponding
-    perturbed transformed QR data.
-
-    This closes the triangular-solve handoff part of the rectangular QR route:
-    it still assumes a future concrete QR theorem supplies the transformed
-    top-block shape and the transformed right-hand side. -/
-theorem RectLSNormalEquations.exists_topBlock_of_fl_backSub {m n : ℕ}
-    (fp : FPModel) (R : Fin n → Fin n → ℝ) (c : Fin n → ℝ)
-    (b_hat : Fin m → ℝ)
-    (hdiag : ∀ i : Fin n, R i i ≠ 0)
-    (hupper : ∀ i j : Fin n, j.val < i.val → R i j = 0)
-    (hγ : gammaValid fp n)
-    (hb_top : ∀ (i : Fin m) (hi : i.val < n),
-      b_hat i = c ⟨i.val, hi⟩) :
-    ∃ ΔR : Fin n → Fin n → ℝ,
-      (∀ i j : Fin n, |ΔR i j| ≤ gamma fp n * |R i j|) ∧
-      RectLSNormalEquations
-        (rectTopBlock (fun i j => R i j + ΔR i j)) b_hat
-        (fl_backSub fp n R c) := by
-  rcases backSub_backward_error fp n R c hdiag hupper hγ with
-    ⟨ΔR, hΔR, hsolve⟩
-  refine ⟨ΔR, hΔR, ?_⟩
-  exact
-    RectLSNormalEquations.of_top_solve_zero_bottom
-      (rectTopBlock (fun i j => R i j + ΔR i j)) b_hat
-      (fun i j => R i j + ΔR i j) c (fl_backSub fp n R c)
-      (fun i j hi => rectTopBlock_top (fun i j => R i j + ΔR i j) i j hi)
-      (fun i j hi => rectTopBlock_bottom (fun i j => R i j + ΔR i j) i j hi)
-      hb_top
-      (fun r => by simpa [matMulVec] using hsolve r)
 
 end NumStability

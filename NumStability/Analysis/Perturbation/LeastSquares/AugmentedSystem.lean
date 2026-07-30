@@ -7,13 +7,11 @@ import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LinearSystems.LeastSquares.AugmentedSystem
-import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
-import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
-import NumStability.Algorithms.LinearSystems.QR.QRSolve
-import NumStability.Algorithms.RandNLA.LowRankApprox
+import NumStability.Algorithms.QR.HouseholderQR
+import NumStability.Algorithms.QR.QRSolve
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model
@@ -1278,6 +1276,22 @@ theorem
       hu hv hw hleft hright hnull hAv hATu hATw
       (fun i => lsRealRectColSingularValue_pos_of_colRank_eq_card A hrank i)
       halpha
+private theorem matMulVec_orthogonal_transpose_mul_lsq {m : ℕ}
+    {Q : Fin m → Fin m → ℝ} (hQ : IsOrthogonal m Q)
+    (f : Fin m → ℝ) :
+    matMulVec m (matTranspose Q) (matMulVec m Q f) = f := by
+  ext i
+  calc
+    matMulVec m (matTranspose Q) (matMulVec m Q f) i
+        = matMulVec m (matMul m (matTranspose Q) Q) f i := by
+            exact (matMulVec_matMul m (matTranspose Q) Q f i).symm
+    _ = matMulVec m (idMatrix m) f i := by
+            have hmat : matMul m (matTranspose Q) Q = idMatrix m := by
+              ext a b
+              exact hQ.left_inv a b
+            rw [hmat]
+    _ = f i := by
+            exact congrFun (matMulVec_id m f) i
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.4 exact asymmetric QR handoff.
     Assume `A = Q [R;0]` exactly, `Q^T fpert = [d₁ + Deltaf1; d₂]`,
     and the two triangular solves satisfy perturbed equations with top-block
@@ -2009,274 +2023,5 @@ theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQR
       (householderQRRhsPanelBackwardBound fp (n + k) n A f)
       hQR hRhs (by simpa [Rhat] using hdiag) hγ
   simpa [Q, Rhat, c_hat, K] using hbase
-
-/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
-    source-dimension branch handoff specialized to the existing real
-    right-Gram SVD basis.  The theorem now constructs the singular-vector
-    branches `u` and `v` from `A` itself; the remaining source obligation is
-    the orthonormal left-nullspace branch `w` for the `m-n` zero-left
-    directions. -/
-theorem
-    lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_branch_data
-    {m n : ℕ} [Nonempty (Fin n)] (hmn : n ≤ m)
-    {alpha : ℝ} {A : Fin m → Fin n → ℝ}
-    {w : Fin (m - n) → Fin m → ℝ}
-    (hpos : ∀ i : Fin n, 0 < rectRightGramBasisSingularValue A i)
-    (hw : ∀ k : Fin (m - n), vecNorm2Sq (w k) = 1)
-    (hnull : ∀ k l : Fin (m - n),
-      k ≠ l → (∑ r : Fin m, w k r * w l r) = 0)
-    (hATw : ∀ k : Fin (m - n), ∀ j : Fin n,
-      ∑ r : Fin m, A r j * w k r = 0)
-    (halpha :
-      alpha = lsScaledAugmentedBranchSigmaMin
-        (rectRightGramBasisSingularValue A) / Real.sqrt 2) :
-    Real.sqrt 2 *
-          (lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) /
-            lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A)) ≤
-        kappa2 (lsScaledAugmentedMatrix alpha A)
-          (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
-            (rectRightGramBasisSingularValue A)
-            (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
-            (fun a j => rectRightGramEigenbasis A j a) w) ∧
-      kappa2 (lsScaledAugmentedMatrix alpha A)
-          (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
-            (rectRightGramBasisSingularValue A)
-            (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
-            (fun a j => rectRightGramEigenbasis A j a) w) ≤
-        2 *
-          (lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) /
-            lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A)) := by
-  have hu : ∀ a : Fin n,
-      vecNorm2Sq (fun r : Fin m =>
-        rectRightGramLeftSingularFromEigenbasis A r a) = 1 := by
-    intro a
-    have h :=
-      rectRightGramLeftSingularFromEigenbasis_col_orthonormal_of_pos
-        A hpos a a
-    simpa [vecNorm2Sq, idMatrix, pow_two] using h
-  have hv : ∀ a : Fin n,
-      vecNorm2Sq (fun j : Fin n => rectRightGramEigenbasis A j a) = 1 := by
-    intro a
-    have h := rectRightGramEigenbasis_col_orthonormal A a a
-    simpa [vecNorm2Sq, idMatrix, pow_two] using h
-  have hleft : ∀ a b : Fin n, a ≠ b →
-      (∑ r : Fin m,
-        rectRightGramLeftSingularFromEigenbasis A r a *
-          rectRightGramLeftSingularFromEigenbasis A r b) = 0 := by
-    intro a b hab
-    have h :=
-      rectRightGramLeftSingularFromEigenbasis_col_orthonormal_of_pos
-        A hpos a b
-    simpa [idMatrix, hab] using h
-  have hright : ∀ a b : Fin n, a ≠ b →
-      (∑ j : Fin n,
-        rectRightGramEigenbasis A j a *
-          rectRightGramEigenbasis A j b) = 0 := by
-    intro a b hab
-    have h := rectRightGramEigenbasis_col_orthonormal A a b
-    simpa [idMatrix, hab] using h
-  have hAv : ∀ a : Fin n,
-      rectMatMulVec A (fun j : Fin n => rectRightGramEigenbasis A j a) =
-        fun r : Fin m =>
-          rectRightGramBasisSingularValue A a *
-            rectRightGramLeftSingularFromEigenbasis A r a := by
-    intro a
-    ext r
-    have hf :=
-      rectRightGramLeftSingularFromEigenbasis_factor_column_of_pos
-        A hpos r a
-    simpa [rectMatMulVec, rectRightGramProjectedColumn] using hf.symm
-  have hATu : ∀ a : Fin n,
-      (fun j : Fin n => ∑ r : Fin m,
-        A r j * rectRightGramLeftSingularFromEigenbasis A r a) =
-          fun j =>
-            rectRightGramBasisSingularValue A a *
-              rectRightGramEigenbasis A j a :=
-    rectRightGramLeftSingularFromEigenbasis_transpose_action_of_pos A hpos
-  exact
-    lsScaledAugmentedMatrix_kappa2_bounds_of_source_dimension_branch_data
-      (m := m) (n := n) (hmn := hmn)
-      (alpha := alpha) (A := A)
-      (sigma := rectRightGramBasisSingularValue A)
-      (u := fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
-      (v := fun a j => rectRightGramEigenbasis A j a)
-      (w := w)
-      hu hv hw hleft hright hnull hAv hATu hATw hpos halpha
-/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
-    injective-column-map version of the real right-Gram branch handoff.  Full
-    column rank now supplies positivity of the basis-indexed singular branches;
-    the remaining supplied data are only the orthonormal left-nullspace branch
-    vectors and their transpose-null equations. -/
-theorem
-    lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_branch_data_of_rectMatMulVec_injective
-    {m n : ℕ} [Nonempty (Fin n)] (hmn : n ≤ m)
-    {alpha : ℝ} {A : Fin m → Fin n → ℝ}
-    {w : Fin (m - n) → Fin m → ℝ}
-    (hinj : Function.Injective (rectMatMulVec A))
-    (hw : ∀ k : Fin (m - n), vecNorm2Sq (w k) = 1)
-    (hnull : ∀ k l : Fin (m - n),
-      k ≠ l → (∑ r : Fin m, w k r * w l r) = 0)
-    (hATw : ∀ k : Fin (m - n), ∀ j : Fin n,
-      ∑ r : Fin m, A r j * w k r = 0)
-    (halpha :
-      alpha = lsScaledAugmentedBranchSigmaMin
-        (rectRightGramBasisSingularValue A) / Real.sqrt 2) :
-    Real.sqrt 2 *
-          (lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) /
-            lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A)) ≤
-        kappa2 (lsScaledAugmentedMatrix alpha A)
-          (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
-            (rectRightGramBasisSingularValue A)
-            (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
-            (fun a j => rectRightGramEigenbasis A j a) w) ∧
-      kappa2 (lsScaledAugmentedMatrix alpha A)
-          (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
-            (rectRightGramBasisSingularValue A)
-            (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
-            (fun a j => rectRightGramEigenbasis A j a) w) ≤
-        2 *
-          (lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) /
-            lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A)) := by
-  exact
-    lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_branch_data
-      (m := m) (n := n) (hmn := hmn)
-      (alpha := alpha) (A := A) (w := w)
-      (fun i => rectRightGramBasisSingularValue_pos_of_rectMatMulVec_injective
-        (A := A) hinj i)
-      hw hnull hATw halpha
-/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
-    existential right-Gram condition-number handoff.  Under the source tall
-    dimension condition and real full-column-rank injectivity, the theorem
-    constructs the left-nullspace branch family and returns the balanced
-    two-sided `kappa2` certificate for the corresponding reciprocal-diagonal
-    inverse candidate. -/
-theorem
-    exists_lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_of_rectMatMulVec_injective
-    {m n : ℕ} [Nonempty (Fin n)] (hmn : n ≤ m)
-    {alpha : ℝ} {A : Fin m → Fin n → ℝ}
-    (hinj : Function.Injective (rectMatMulVec A))
-    (halpha :
-      alpha = lsScaledAugmentedBranchSigmaMin
-        (rectRightGramBasisSingularValue A) / Real.sqrt 2) :
-    ∃ w : Fin (m - n) → Fin m → ℝ,
-      (∀ k : Fin (m - n), vecNorm2Sq (w k) = 1) ∧
-        (∀ k l : Fin (m - n),
-          k ≠ l → (∑ r : Fin m, w k r * w l r) = 0) ∧
-        (∀ k : Fin (m - n), ∀ j : Fin n,
-          ∑ r : Fin m, A r j * w k r = 0) ∧
-        Real.sqrt 2 *
-            (lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) /
-              lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A)) ≤
-          kappa2 (lsScaledAugmentedMatrix alpha A)
-            (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
-              (rectRightGramBasisSingularValue A)
-              (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
-              (fun a j => rectRightGramEigenbasis A j a) w) ∧
-        kappa2 (lsScaledAugmentedMatrix alpha A)
-            (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
-              (rectRightGramBasisSingularValue A)
-              (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
-              (fun a j => rectRightGramEigenbasis A j a) w) ≤
-          2 *
-            (lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) /
-              lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A)) := by
-  obtain ⟨w, hw, hnull, hATw⟩ :=
-    exists_rightGram_leftNull_branch_data_of_rectMatMulVec_injective
-      (m := m) (n := n) hmn (A := A) hinj
-  have hbounds :=
-    lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_branch_data_of_rectMatMulVec_injective
-      (m := m) (n := n) (hmn := hmn)
-      (alpha := alpha) (A := A) (w := w)
-      hinj hw hnull hATw halpha
-  exact ⟨w, hw, hnull, hATw, hbounds⟩
-/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
-    source-rank version of the real right-Gram branch handoff.  Full source
-    column rank supplies the real column-map injectivity used by the constructed
-    right-Gram singular branches and left-nullspace tail. -/
-theorem
-    exists_lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_of_colRank_eq_card
-    {m n : ℕ} [Nonempty (Fin n)] (hmn : n ≤ m)
-    {alpha : ℝ} {A : Fin m → Fin n → ℝ}
-    (hrank : lsRealRectColRank A = n)
-    (halpha :
-      alpha = lsScaledAugmentedBranchSigmaMin
-        (rectRightGramBasisSingularValue A) / Real.sqrt 2) :
-    ∃ w : Fin (m - n) → Fin m → ℝ,
-      (∀ k : Fin (m - n), vecNorm2Sq (w k) = 1) ∧
-        (∀ k l : Fin (m - n),
-          k ≠ l → (∑ r : Fin m, w k r * w l r) = 0) ∧
-        (∀ k : Fin (m - n), ∀ j : Fin n,
-          ∑ r : Fin m, A r j * w k r = 0) ∧
-        Real.sqrt 2 *
-              (lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) /
-                lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A)) ≤
-            kappa2 (lsScaledAugmentedMatrix alpha A)
-              (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
-                (rectRightGramBasisSingularValue A)
-                (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
-                (fun a j => rectRightGramEigenbasis A j a) w) ∧
-          kappa2 (lsScaledAugmentedMatrix alpha A)
-              (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
-                (rectRightGramBasisSingularValue A)
-                (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
-                (fun a j => rectRightGramEigenbasis A j a) w) ≤
-            2 *
-              (lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) /
-                lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A)) := by
-  exact
-    exists_lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_of_rectMatMulVec_injective
-      (m := m) (n := n) hmn
-      (A := A) (alpha := alpha)
-      (lsRealRectColRank_rectMatMulVec_injective_of_colRank_eq_card A hrank)
-      halpha
-/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
-    source-rank right-Gram handoff with the bounds and scaling written using the
-    ordered real right-Gram singular values.  The inverse candidate is still the
-    constructed basis-indexed right-Gram candidate; the finite extrema are
-    permutation-invariant under the basis-to-ordered reindexing. -/
-theorem
-    exists_lsScaledAugmentedMatrix_kappa2_bounds_of_rectSingularValue_rightGram_basis_of_colRank_eq_card
-    {m n : ℕ} [Nonempty (Fin n)] (hmn : n ≤ m)
-    {alpha : ℝ} {A : Fin m → Fin n → ℝ}
-    (hrank : lsRealRectColRank A = n)
-    (halpha :
-      alpha = lsScaledAugmentedBranchSigmaMin (rectSingularValue A) /
-        Real.sqrt 2) :
-    ∃ w : Fin (m - n) → Fin m → ℝ,
-      (∀ k : Fin (m - n), vecNorm2Sq (w k) = 1) ∧
-        (∀ k l : Fin (m - n),
-          k ≠ l → (∑ r : Fin m, w k r * w l r) = 0) ∧
-        (∀ k : Fin (m - n), ∀ j : Fin n,
-          ∑ r : Fin m, A r j * w k r = 0) ∧
-        Real.sqrt 2 *
-              (lsScaledAugmentedBranchSigmaMax (rectSingularValue A) /
-                lsScaledAugmentedBranchSigmaMin (rectSingularValue A)) ≤
-            kappa2 (lsScaledAugmentedMatrix alpha A)
-              (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
-                (rectRightGramBasisSingularValue A)
-                (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
-                (fun a j => rectRightGramEigenbasis A j a) w) ∧
-          kappa2 (lsScaledAugmentedMatrix alpha A)
-              (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
-                (rectRightGramBasisSingularValue A)
-                (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
-                (fun a j => rectRightGramEigenbasis A j a) w) ≤
-            2 *
-              (lsScaledAugmentedBranchSigmaMax (rectSingularValue A) /
-                lsScaledAugmentedBranchSigmaMin (rectSingularValue A)) := by
-  have hmin :=
-    lsScaledAugmentedBranchSigmaMin_rectRightGramBasis_eq_rectSingularValue A
-  have hmax :=
-    lsScaledAugmentedBranchSigmaMax_rectRightGramBasis_eq_rectSingularValue A
-  have halpha_basis :
-      alpha = lsScaledAugmentedBranchSigmaMin
-          (rectRightGramBasisSingularValue A) / Real.sqrt 2 := by
-    simpa [hmin] using halpha
-  obtain ⟨w, hw, hnull, hATw, hbounds⟩ :=
-    exists_lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_of_colRank_eq_card
-      (m := m) (n := n) hmn
-      (A := A) (alpha := alpha) hrank halpha_basis
-  refine ⟨w, hw, hnull, hATw, ?_⟩
-  simpa [hmin, hmax] using hbounds
 
 end NumStability

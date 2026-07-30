@@ -5,29 +5,30 @@ import Mathlib.Data.Real.Basic
 import Mathlib.LinearAlgebra.Dual.Lemmas
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+import NumStability.Algorithms.LinearSystems.LeastSquares.AugmentedSystem
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
+import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT
 import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
-import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
-import NumStability.Algorithms.QR.Higham19
-import NumStability.Algorithms.QR.Higham19Thm6ColPivot
-import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
-import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
-import NumStability.Algorithms.QR.Higham19Thm6ElementwisePackaged
-import NumStability.Algorithms.QR.Higham19Thm6RowSpecific
+import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
+import NumStability.Algorithms.QR.GramSchmidt
+import NumStability.Algorithms.QR.HouseholderQR
+import NumStability.Algorithms.QR.QRSolve
 import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+import NumStability.Analysis.MatrixAlgebra
+import NumStability.Analysis.SingularValues.Basic
+import NumStability.Analysis.SingularValues.Realification
+import NumStability.FloatingPoint.Model
 
 namespace NumStability
 
-open scoped BigOperators Matrix.Norms.Frobenius
+open scoped BigOperators
 
 /-!
-# Generalized QR for equality-constrained least squares
+# GQR
 
-Reusable generalized-QR constructions and identities for equality-constrained least squares.
-
-Declarations are extracted command-for-command from the historical least-squares owners; only contracted cross-module private helpers are promoted.
+Canonical reusable module extracted without change from LSE.
 -/
 
 /-- Higham, 2nd ed., Chapter 20, equation (20.27):
@@ -43,14 +44,12 @@ noncomputable def gqrAQBlock {r p q : ℕ}
   Fin.append
     (fun i : Fin r => Fin.append (L11 i) (fun _ : Fin q => 0))
     (fun i : Fin q => Fin.append (L21 i) (L22 i))
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.27):
     the displayed block matrix `[S 0]` for `B Q`. -/
 noncomputable def gqrBQBlock {p q : ℕ}
     (S : Fin p → Fin p → ℝ) :
     Fin p → Fin (p + q) → ℝ :=
   fun i => Fin.append (S i) (fun _ : Fin q => 0)
-
 /-- Matrix-vector multiplication by the `B Q = [S 0]` block in (20.27)
     reduces to the triangular factor `S` acting on the first block of `y`. -/
 theorem gqrBQBlock_mulVec {p q : ℕ}
@@ -62,7 +61,6 @@ theorem gqrBQBlock_mulVec {p q : ℕ}
   unfold rectMatMulVec gqrBQBlock
   rw [Fin.sum_univ_add]
   simp [Fin.append_left, Fin.append_right]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
     reverse both indices of an upper-triangular QR block.  This is the square
     block produced when a standard `[R;0]` QR display is turned into the
@@ -70,7 +68,6 @@ theorem gqrBQBlock_mulVec {p q : ℕ}
 def gqrReverseSquare {n : ℕ} (R : Fin n → Fin n → ℝ) :
     Fin n → Fin n → ℝ :=
   fun i j => R (Fin.rev i) (Fin.rev j)
-
 /-- Reversing both indices turns an upper-triangular QR block into the
     lower-triangular block used in Higham's Chapter 20 GQR display (20.28). -/
 theorem gqrReverseSquare_lowerTriangular_of_upper {n : ℕ}
@@ -80,7 +77,6 @@ theorem gqrReverseSquare_lowerTriangular_of_upper {n : ℕ}
   intro i j hij
   unfold gqrReverseSquare
   exact hR (Fin.rev i) (Fin.rev j) ((Fin.rev_lt_rev).2 hij)
-
 /-- Diagonal nonzeroness is preserved by the index reversal used to convert an
     upper QR block into the lower GQR block. -/
 theorem gqrReverseSquare_diag_ne_zero_iff {n : ℕ}
@@ -93,7 +89,6 @@ theorem gqrReverseSquare_diag_ne_zero_iff {n : ℕ}
     simpa [gqrReverseSquare] using hi
   · intro h i
     simpa [gqrReverseSquare] using h (Fin.rev i)
-
 /-- Square GQR conversion step: if a standard QR transform triangularizes the
     column-reversed square matrix, then reversing the transformed rows produces
     `gqrReverseSquare R`, the lower-triangular block used in (20.28). -/
@@ -109,7 +104,6 @@ theorem gqrReverseRowsOfQRReversedCols {n : ℕ}
   unfold matMulRectLeft matTranspose rectPermuteCols at hentry
   unfold matMulRectLeft matTranspose
   simpa using hentry
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
     a QR transform of a column-reversed square block gives an orthogonal
     left-factor whose transpose sends the original block to a lower-triangular
@@ -136,7 +130,6 @@ theorem exists_orthogonal_gqrReverseSquare_of_qr_reversed_cols {n : ℕ}
           rw [matMulRectLeft_assoc]
       _ = gqrReverseSquare R := by
           simpa [P] using gqrReverseRowsOfQRReversedCols C V R hqr
-
 /-- Exact-MGS version of
     `exists_orthogonal_gqrReverseSquare_of_qr_reversed_cols`: nonzero MGS stages
     for the column-reversed square block supply the orthogonal transform and
@@ -169,7 +162,6 @@ theorem exists_orthogonal_gqrReverseSquare_of_mgs_reversed_cols {n : ℕ}
       C V R hV hRupper hqrR with
     ⟨U, hU, hUeq, hLower⟩
   exact ⟨U, R, hU, hRupper, hUeq, hLower⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
     a supplied tall QR factorization of `Bᵀ` yields the constraint block
     identity `B Q = [Rᵀ 0]` in the GQR display (20.27).
@@ -218,7 +210,6 @@ theorem gqrBQBlock_eq_of_transpose_tall_qr {p q : ℕ}
               intro k _
               ring
       _ = 0 := hentry
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10 computed-constraint algebra:
     if a computed tall QR product has the form `Bhatᵀ = Q*Rhat`, with `Q`
     orthogonal and `Rhat` upper trapezoidal, then the source-side matrix
@@ -274,7 +265,6 @@ theorem gqrBQBlock_eq_of_transpose_product_tall_qr {p q : ℕ}
       gqrBQBlock_eq_of_transpose_tall_qr
         (fun i j => matMulRect (p + q) (p + q) p Q Rhat j i)
         Q R hqr⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
     exact MGS data for `Bᵀ`, plus the remaining MGS orthonormality
     dependency, constructs the GQR constraint block `B Q = [S 0]` with
@@ -297,7 +287,6 @@ theorem exists_gqr_constraint_block_of_mgs_orthonormal {p q : ℕ}
   refine ⟨Q, matTranspose R, hQorth,
     isLowerTriangular_matTranspose_of_isUpperTriangular hRupper, ?_⟩
   exact gqrBQBlock_eq_of_transpose_tall_qr B Q R hqr
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
     exact MGS data for `Bᵀ` with nonzero stage normalizers constructs the GQR
     constraint block `B Q = [S 0]` with `S` lower triangular. -/
@@ -317,7 +306,6 @@ theorem exists_gqr_constraint_block_of_mgs {p q : ℕ}
     modifiedGramSchmidtQ_orthonormal_columns
       (fun j : Fin (p + q) => fun i : Fin p => B i j) hdiag
   exact exists_gqr_constraint_block_of_mgs_orthonormal B hdiag horth
-
 /-- Matrix-vector multiplication by the `U^T A Q` block in (20.27). -/
 theorem gqrAQBlock_mulVec {r p q : ℕ}
     (L11 : Fin r → Fin p → ℝ)
@@ -345,7 +333,6 @@ theorem gqrAQBlock_mulVec {r p q : ℕ}
     unfold rectMatMulVec gqrAQBlock
     rw [Fin.append_right, Fin.append_right, Fin.sum_univ_add]
     simp [Fin.append_left, Fin.append_right]
-
 /-- Candidate lower block `L` reconstructed from the (20.27) GQR block display
 in the tall case `m >= n`, with `r = k + p`. Its first `p` rows are the bottom
 `p` rows of `L11` followed by the zero block, and its last `q` rows are
@@ -358,7 +345,6 @@ noncomputable def gqrAQTallLFromEq20_27 {k p q : ℕ}
   Fin.append
     (fun i : Fin p => Fin.append (L11 (Fin.natAdd k i)) (fun _ : Fin q => 0))
     (fun i : Fin q => Fin.append (L21 i) (L22 i))
-
 /-- Tall (20.28) reconstruction helper: the candidate square block `L`
     recovered from (20.27) is lower triangular once the trailing `p` rows of
     `L11` and the `L22` block have the corresponding lower-triangular patterns.
@@ -401,7 +387,6 @@ theorem gqrAQTallLFromEq20_27_lowerTriangular_of_blocks {k p q : ℕ}
           simpa [gqrAQTallLFromEq20_27] using hL22 i j (by simpa using hij))
         j hij)
     i
-
 /-- Source-facing tall-case link between the (20.27) block display and the
 (20.28) display. If the leading `k` rows of `L11` vanish and the reconstructed
 bottom block is lower triangular, then the row action of (20.27) is exactly
@@ -436,7 +421,6 @@ theorem gqrAQBlock_tall_eq20_28_row_action_of_top_zero {k p q : ℕ}
   · intro y1 y2 i
     unfold rectMatMulVec gqrAQBlock gqrAQTallLFromEq20_27
     rw [Fin.append_right, Fin.append_right]
-
 /-- Tall (20.28) row-action reconstruction from source-shaped block conditions:
     the leading `k` rows vanish, the trailing `p` rows of `L11` are lower
     triangular, and `L22` is lower triangular.
@@ -467,7 +451,6 @@ theorem gqrAQBlock_tall_eq20_28_row_action_of_top_zero_blocks {k p q : ℕ}
           (Fin.natAdd p i)) := by
   exact gqrAQBlock_tall_eq20_28_row_action_of_top_zero L11 L21 L22 hzero
     (gqrAQTallLFromEq20_27_lowerTriangular_of_blocks L11 L21 L22 hL11 hL22)
-
 /-- Leading block `X` reconstructed from the (20.27) GQR block display in the
 wide case `m < n`, with `p = k + r`. It consists of the first `k` columns of
 `L11` and `L21`. -/
@@ -477,7 +460,6 @@ noncomputable def gqrAQWideXFromEq20_27 {k r q : ℕ}
   Fin.append
     (fun i : Fin r => fun j : Fin k => L11 i (Fin.castAdd r j))
     (fun i : Fin q => fun j : Fin k => L21 i (Fin.castAdd r j))
-
 /-- Candidate lower block `L` reconstructed from the (20.27) GQR block display
 in the wide case `m < n`, with `p = k + r`. It consists of the trailing `r`
 columns of `L11` and `L21`, together with the zero block and `L22`;
@@ -490,7 +472,6 @@ noncomputable def gqrAQWideLFromEq20_27 {k r q : ℕ}
     (fun i : Fin r => Fin.append (fun j : Fin r => L11 i (Fin.natAdd k j))
       (fun _ : Fin q => 0))
     (fun i : Fin q => Fin.append (fun j : Fin r => L21 i (Fin.natAdd k j)) (L22 i))
-
 /-- Wide (20.28) reconstruction helper: the candidate trailing square block `L`
     recovered from (20.27) is lower triangular once the trailing `r` columns of
     `L11` and the `L22` block have the corresponding lower-triangular patterns.
@@ -533,7 +514,6 @@ theorem gqrAQWideLFromEq20_27_lowerTriangular_of_blocks {k r q : ℕ}
           simpa [gqrAQWideLFromEq20_27] using hL22 i j (by simpa using hij))
         j hij)
     i
-
 /-- Source-facing wide-case link between the (20.27) block display and the
 (20.28) display. If the reconstructed trailing block is lower triangular, then
 the row action of (20.27) is exactly `[X L]` in the wide case `m < n`. -/
@@ -561,7 +541,6 @@ theorem gqrAQBlock_wide_eq20_28_row_action {k r q : ℕ}
   · intro y0 y1 y2 i
     unfold rectMatMulVec gqrAQBlock gqrAQWideXFromEq20_27 gqrAQWideLFromEq20_27
     simp [Fin.sum_univ_add, Fin.append_left, Fin.append_right, add_assoc]
-
 /-- Wide (20.28) row-action reconstruction from source-shaped block
     conditions: the trailing `r` columns of `L11` and the `L22` block have the
     corresponding lower-triangular patterns.
@@ -590,7 +569,6 @@ theorem gqrAQBlock_wide_eq20_28_row_action_of_blocks {k r q : ℕ}
             (Fin.natAdd r i)) := by
   exact gqrAQBlock_wide_eq20_28_row_action L11 L21 L22
     (gqrAQWideLFromEq20_27_lowerTriangular_of_blocks L11 L21 L22 hL11 hL22)
-
 /-- Associated-row version of the tall (20.28) block `[0; L]` with row type
 `Fin ((k + p) + q)`, matching the row association of (20.27) when
 `r = k + p`. -/
@@ -601,7 +579,6 @@ noncomputable def gqrAQTallBlockAssoc {k p q : ℕ}
     (Fin.append (fun _ : Fin k => fun _ : Fin (p + q) => 0)
       (fun i : Fin p => fun j => L (Fin.castAdd q i) j))
     (fun i : Fin q => fun j => L (Fin.natAdd p i) j)
-
 /-- Vector-action form of the associated-row tall (20.28) block `[0; L]`,
     matching the row association used by (20.27). -/
 theorem gqrAQTallBlockAssoc_mulVec {k p q : ℕ}
@@ -637,7 +614,6 @@ theorem gqrAQTallBlockAssoc_mulVec {k p q : ℕ}
       simp [rectMatMulVec, gqrAQTallBlockAssoc]
   · intro i
     simp [rectMatMulVec, gqrAQTallBlockAssoc]
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.28), associated-row tall-case
     shape for `U^T A Q = [0; L]` in the row association used by (20.27).
 
@@ -651,7 +627,6 @@ structure GQRAQTallAssocCase (k p q : ℕ)
   lowerL : IsLowerTriangular L
   /-- Source block identity `M = [0; L]` with associated rows. -/
   aq_eq : M = gqrAQTallBlockAssoc (k := k) L
-
 /-- Vector-action form of a supplied associated-row tall (20.28) shape. -/
 theorem GQRAQTallAssocCase.mulVec_eq {k p q : ℕ}
     {M : Fin ((k + p) + q) → Fin (p + q) → ℝ}
@@ -664,7 +639,6 @@ theorem GQRAQTallAssocCase.mulVec_eq {k p q : ℕ}
   rcases h with ⟨L, _lowerL, hM⟩
   subst M
   simpa using gqrAQTallBlockAssoc_mulVec (k := k) L y
-
 /-- Tall (20.28)-to-(20.27) extraction: the `L11` block induced by a supplied
     `[0; L]` shape. Its leading `k` rows vanish and its trailing `p` rows are
     the first `p` columns of `L`. -/
@@ -674,21 +648,18 @@ noncomputable def gqrAQTallL11FromEq20_28 {k p q : ℕ}
   Fin.append
     (fun _ : Fin k => fun _ : Fin p => 0)
     (fun i : Fin p => fun j : Fin p => L (Fin.castAdd q i) (Fin.castAdd q j))
-
 /-- Tall (20.28)-to-(20.27) extraction: the `L21` block induced by a supplied
     `[0; L]` shape. -/
 noncomputable def gqrAQTallL21FromEq20_28 {p q : ℕ}
     (L : Fin (p + q) → Fin (p + q) → ℝ) :
     Fin q → Fin p → ℝ :=
   fun i : Fin q => fun j : Fin p => L (Fin.natAdd p i) (Fin.castAdd q j)
-
 /-- Tall (20.28)-to-(20.27) extraction: the trailing `L22` block induced by a
     supplied `[0; L]` shape. -/
 noncomputable def gqrAQTallL22FromEq20_28 {p q : ℕ}
     (L : Fin (p + q) → Fin (p + q) → ℝ) :
     Fin q → Fin q → ℝ :=
   fun i : Fin q => fun j : Fin q => L (Fin.natAdd p i) (Fin.natAdd p j)
-
 /-- The trailing `L22` block extracted from a lower-triangular tall-case
     (20.28) block is lower triangular. -/
 theorem gqrAQTallL22FromEq20_28_lowerTriangular {p q : ℕ}
@@ -698,7 +669,6 @@ theorem gqrAQTallL22FromEq20_28_lowerTriangular {p q : ℕ}
   intro i j hij
   unfold gqrAQTallL22FromEq20_28
   exact hL (Fin.natAdd p i) (Fin.natAdd p j) (by simpa using hij)
-
 /-- Tall-case reverse block packaging: extracting `L11`, `L21`, and `L22`
     from a supplied (20.28) `[0; L]` shape gives the (20.27) `UᵀAQ` block.
 
@@ -776,7 +746,6 @@ theorem gqrAQBlock_eq_tallBlockAssoc_of_eq20_28 {k p q : ℕ}
         simp [gqrAQBlock, gqrAQTallBlockAssoc,
           gqrAQTallL22FromEq20_28])
       j
-
 /-- Matrix form of the tall (20.27)-to-(20.28) reconstruction. If the leading
 `k` rows of `L11` vanish and the reconstructed bottom block is lower
 triangular, then the raw (20.27) matrix is the associated-row `[0; L]` block
@@ -822,7 +791,6 @@ theorem gqrAQBlock_tall_eq20_28_matrix_of_top_zero {k p q : ℕ}
   · intro i
     unfold gqrAQBlock gqrAQTallBlockAssoc gqrAQTallLFromEq20_27
     simp [Fin.append_left, Fin.append_right]
-
 /-- Tall (20.28) matrix reconstruction from source-shaped block conditions:
     the leading `k` rows vanish, the trailing `p` rows of `L11` are lower
     triangular, and `L22` is lower triangular. -/
@@ -838,7 +806,6 @@ theorem gqrAQBlock_tall_eq20_28_matrix_of_top_zero_blocks {k p q : ℕ}
         gqrAQTallBlockAssoc (gqrAQTallLFromEq20_27 L11 L21 L22) := by
   exact gqrAQBlock_tall_eq20_28_matrix_of_top_zero L11 L21 L22 hzero
     (gqrAQTallLFromEq20_27_lowerTriangular_of_blocks L11 L21 L22 hL11 hL22)
-
 /-- Associated-column version of the wide (20.28) block `[X L]` with column
 type `Fin ((k + r) + q)`, matching the column association of (20.27) when
 `p = k + r`. -/
@@ -850,14 +817,12 @@ noncomputable def gqrAQWideBlockAssoc {k r q : ℕ}
     Fin.append
       (Fin.append (X i) (fun j : Fin r => L i (Fin.castAdd q j)))
       (fun j : Fin q => L i (Fin.natAdd r j))
-
 /-- Leading `X` block extracted from an associated-column wide matrix in
     Higham's Chapter 20 display (20.28). -/
 def gqrAQWideAssocX {k r q : ℕ}
     (M : Fin (r + q) → Fin ((k + r) + q) → ℝ) :
     Fin (r + q) → Fin k → ℝ :=
   fun i j => M i (Fin.castAdd q (Fin.castAdd r j))
-
 /-- Trailing square `L` block extracted from an associated-column wide matrix in
     Higham's Chapter 20 display (20.28). -/
 def gqrAQWideAssocL {k r q : ℕ}
@@ -868,7 +833,6 @@ def gqrAQWideAssocL {k r q : ℕ}
       (motive := fun _ : Fin (r + q) => ℝ)
       (fun a : Fin r => M i (Fin.castAdd q (Fin.natAdd k a)))
       (fun b : Fin q => M i (Fin.natAdd (k + r) b)) j
-
 /-- Any associated-column wide matrix is recovered from its leading block and
     trailing square block.  Thus, for the wide case of (20.28), only
     lower-triangularity of the trailing block is a real shape condition. -/
@@ -886,7 +850,6 @@ theorem gqrAQWideBlockAssoc_extract_eq {k r q : ℕ}
       simp [Fin.append_left, Fin.append_right]
   · intro j
     simp [Fin.append_right]
-
 /-- Extracting the trailing associated-column wide block commutes with a square
     left multiplication. -/
 theorem gqrAQWideAssocL_matMulRectLeft {k r q : ℕ}
@@ -901,7 +864,6 @@ theorem gqrAQWideAssocL_matMulRectLeft {k r q : ℕ}
     simp
   · intro j
     simp
-
 /-- Vector-action form of the associated-column wide (20.28) block `[X L]`,
     matching the column association used by (20.27). -/
 theorem gqrAQWideBlockAssoc_mulVec {k r q : ℕ}
@@ -913,7 +875,6 @@ theorem gqrAQWideBlockAssoc_mulVec {k r q : ℕ}
         rectMatMulVec X y0 i + rectMatMulVec L (Fin.append y1 y2) i := by
   ext i
   simp [rectMatMulVec, gqrAQWideBlockAssoc, Fin.sum_univ_add, add_assoc]
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.28), associated-column wide-case
     shape for `U^T A Q = [X L]` in the column association used by (20.27).
 
@@ -929,7 +890,6 @@ structure GQRAQWideAssocCase (k r q : ℕ)
   lowerL : IsLowerTriangular L
   /-- Source block identity `M = [X L]` with associated columns. -/
   aq_eq : M = gqrAQWideBlockAssoc X L
-
 /-- Wide associated-shape constructor for Higham's Chapter 20 display (20.28):
     once the trailing extracted square block is lower triangular, the matrix has
     the required `[X L]` associated-column shape. -/
@@ -939,7 +899,6 @@ def GQRAQWideAssocCase.of_trailing_lower {k r q : ℕ}
     GQRAQWideAssocCase k r q M :=
   ⟨gqrAQWideAssocX M, gqrAQWideAssocL M, hL,
     gqrAQWideBlockAssoc_extract_eq M⟩
-
 /-- Wide associated-shape construction from a QR transform of the column-reversed
     trailing square block.  This removes the abstract associated-shape assumption
     for the wide branch of Higham's Chapter 20 GQR construction whenever that
@@ -967,7 +926,6 @@ theorem GQRAQWideAssocCase.exists_of_trailing_qr_reversed_cols {k r q : ℕ}
   refine ⟨GQRAQWideAssocCase.of_trailing_lower ?_⟩
   rw [hExtract]
   exact hLower
-
 /-- Exact-MGS version of
     `GQRAQWideAssocCase.exists_of_trailing_qr_reversed_cols`: nonzero MGS
     stages for the column-reversed trailing square block construct the
@@ -994,7 +952,6 @@ theorem GQRAQWideAssocCase.exists_of_trailing_mgs_reversed_cols {k r q : ℕ}
   refine ⟨GQRAQWideAssocCase.of_trailing_lower ?_⟩
   rw [hExtract]
   exact hLower
-
 /-- Wide associated-shape construction from exact Householder QR of the
     column-reversed trailing square block.
 
@@ -1022,7 +979,6 @@ theorem GQRAQWideAssocCase.exists_of_trailing_exact_householder_reversed_cols
     (by
       simpa [C] using
         (exactHouseholderQR_R_eq_matMulRectLeft_transpose_Q (r + q) C).symm)
-
 /-- Vector-action form of a supplied associated-column wide (20.28) shape. -/
 theorem GQRAQWideAssocCase.mulVec_eq {k r q : ℕ}
     {M : Fin (r + q) → Fin ((k + r) + q) → ℝ}
@@ -1034,7 +990,6 @@ theorem GQRAQWideAssocCase.mulVec_eq {k r q : ℕ}
   rcases h with ⟨X, L, _lowerL, hM⟩
   subst M
   simpa using gqrAQWideBlockAssoc_mulVec X L y0 y1 y2
-
 /-- Wide (20.28)-to-(20.27) extraction: the `L11` block induced by a supplied
     `[X L]` shape. Its first `k` columns come from `X`, and its trailing `r`
     columns come from the leading columns of `L`. -/
@@ -1046,7 +1001,6 @@ noncomputable def gqrAQWideL11FromEq20_28 {k r q : ℕ}
     Fin.append
       (X (Fin.castAdd q i))
       (fun j : Fin r => L (Fin.castAdd q i) (Fin.castAdd q j))
-
 /-- Wide (20.28)-to-(20.27) extraction: the `L21` block induced by a supplied
     `[X L]` shape. -/
 noncomputable def gqrAQWideL21FromEq20_28 {k r q : ℕ}
@@ -1057,14 +1011,12 @@ noncomputable def gqrAQWideL21FromEq20_28 {k r q : ℕ}
     Fin.append
       (X (Fin.natAdd r i))
       (fun j : Fin r => L (Fin.natAdd r i) (Fin.castAdd q j))
-
 /-- Wide (20.28)-to-(20.27) extraction: the trailing `L22` block induced by a
     supplied `[X L]` shape. -/
 noncomputable def gqrAQWideL22FromEq20_28 {r q : ℕ}
     (L : Fin (r + q) → Fin (r + q) → ℝ) :
     Fin q → Fin q → ℝ :=
   fun i : Fin q => fun j : Fin q => L (Fin.natAdd r i) (Fin.natAdd r j)
-
 /-- The trailing `L22` block extracted from a lower-triangular wide-case
     (20.28) block is lower triangular. -/
 theorem gqrAQWideL22FromEq20_28_lowerTriangular {r q : ℕ}
@@ -1074,7 +1026,6 @@ theorem gqrAQWideL22FromEq20_28_lowerTriangular {r q : ℕ}
   intro i j hij
   unfold gqrAQWideL22FromEq20_28
   exact hL (Fin.natAdd r i) (Fin.natAdd r j) (by simpa using hij)
-
 /-- Wide-case reverse block packaging: extracting `L11`, `L21`, and `L22`
     from a supplied (20.28) `[X L]` shape gives the (20.27) `UᵀAQ` block.
 
@@ -1151,7 +1102,6 @@ theorem gqrAQBlock_eq_wideBlockAssoc_of_eq20_28 {k r q : ℕ}
         j
     · intro j
       simp [gqrAQBlock, gqrAQWideBlockAssoc, gqrAQWideL22FromEq20_28]
-
 /-- Matrix form of the wide (20.27)-to-(20.28) reconstruction. If the
 reconstructed trailing block is lower triangular, then the raw (20.27) matrix is
 the associated-column `[X L]` block from (20.28). -/
@@ -1225,7 +1175,6 @@ theorem gqrAQBlock_wide_eq20_28_matrix {k r q : ℕ}
     · intro j
       unfold gqrAQBlock gqrAQWideBlockAssoc gqrAQWideLFromEq20_27
       simp [Fin.append_left, Fin.append_right]
-
 /-- Wide (20.28) matrix reconstruction from source-shaped block conditions:
     the trailing `r` columns of `L11` and `L22` have the displayed
     lower-triangular patterns. -/
@@ -1242,13 +1191,11 @@ theorem gqrAQBlock_wide_eq20_28_matrix_of_blocks {k r q : ℕ}
           (gqrAQWideLFromEq20_27 L11 L21 L22) := by
   exact gqrAQBlock_wide_eq20_28_matrix L11 L21 L22
     (gqrAQWideLFromEq20_27_lowerTriangular_of_blocks L11 L21 L22 hL11 hL22)
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.28), tall case `m ≥ n`:
     the displayed block `[0; L]`, with `k = m - n` zero rows. -/
 noncomputable def gqrAQTallBlock {k n : ℕ}
     (L : Fin n → Fin n → ℝ) : Fin (k + n) → Fin n → ℝ :=
   Fin.append (fun _ : Fin k => fun _ : Fin n => 0) L
-
 /-- Matrix-vector multiplication by the tall (20.28) block `[0; L]`. -/
 theorem gqrAQTallBlock_mulVec {k n : ℕ}
     (L : Fin n → Fin n → ℝ) (y : Fin n → ℝ) :
@@ -1267,14 +1214,12 @@ theorem gqrAQTallBlock_mulVec {k n : ℕ}
   · intro i
     unfold rectMatMulVec gqrAQTallBlock
     rw [Fin.append_right, Fin.append_right]
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.28), wide case `m < n`:
     the displayed block `[X L]`, with `k = n - m` leading columns. -/
 noncomputable def gqrAQWideBlock {k m : ℕ}
     (X : Fin m → Fin k → ℝ) (L : Fin m → Fin m → ℝ) :
     Fin m → Fin (k + m) → ℝ :=
   fun i => Fin.append (X i) (L i)
-
 /-- Matrix-vector multiplication by the wide (20.28) block `[X L]`. -/
 theorem gqrAQWideBlock_mulVec {k m : ℕ}
     (X : Fin m → Fin k → ℝ) (L : Fin m → Fin m → ℝ)
@@ -1285,7 +1230,6 @@ theorem gqrAQWideBlock_mulVec {k m : ℕ}
   unfold rectMatMulVec gqrAQWideBlock
   rw [Fin.sum_univ_add]
   simp [Fin.append_left, Fin.append_right]
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.28), supplied tall-case
     shape for `U^T A Q = [0; L]`.
 
@@ -1299,7 +1243,6 @@ structure GQRAQTallCase (k n : ℕ)
   lowerL : IsLowerTriangular L
   /-- Source block identity `M = [0; L]`. -/
   aq_eq : M = gqrAQTallBlock L
-
 /-- Vector-action form of a supplied tall (20.28) shape. -/
 theorem GQRAQTallCase.mulVec_eq {k n : ℕ}
     {M : Fin (k + n) → Fin n → ℝ}
@@ -1309,7 +1252,6 @@ theorem GQRAQTallCase.mulVec_eq {k n : ℕ}
   rcases h with ⟨L, _lowerL, hM⟩
   subst M
   simpa using gqrAQTallBlock_mulVec L y
-
 /-- Tall associated-shape construction from a QR factorization of the
     column-reversed block.  If
     `rectPermuteCols Fin.revPerm C = Q2 R` with orthonormal `Q2` columns and
@@ -1474,7 +1416,6 @@ theorem GQRAQTallCase.exists_of_qr_reversed_cols_with_bottom_reversed_columns
             simp [idMatrix]
       _ = gqrAQTallBlock (k := r) L (Fin.natAdd r row) col := by
             simp [gqrAQTallBlock, L, gqrReverseSquare]
-
 /-- Tall associated-shape construction from a QR factorization of the
     column-reversed block.  If
     `rectPermuteCols Fin.revPerm C = Q2 R` with orthonormal `Q2` columns and
@@ -1499,7 +1440,6 @@ theorem GQRAQTallCase.exists_of_qr_reversed_cols {r q : ℕ}
       C Q2 R hQ2 hR hfactor with
     ⟨U, hU, _hUbottom, hCase⟩
   exact ⟨U, hU, hCase⟩
-
 /-- Tall associated-shape construction from a square orthogonal QR-style
     factorization of the column-reversed rectangular block.
 
@@ -1594,7 +1534,6 @@ theorem GQRAQTallCase.exists_of_square_qr_reversed_cols_with_bottom_reversed_col
   intro i j
   have h := hUbottom i j
   simpa [Q2, Q2', Qfull', e, finAddCommEquiv] using h
-
 /-- Tall associated-shape construction from a square orthogonal QR-style
     factorization of the column-reversed rectangular block.
 
@@ -1619,7 +1558,6 @@ theorem GQRAQTallCase.exists_of_square_qr_reversed_cols {r q : ℕ}
       C Qfull Rhat hQfull hRhat hfactor with
     ⟨U, hU, _hUbottom, hCase⟩
   exact ⟨U, hU, hCase⟩
-
 /-- Tall associated-shape construction from exact Householder QR of the
     column-reversed block.
 
@@ -1700,7 +1638,6 @@ theorem GQRAQTallCase.exists_of_exact_householder_reversed_cols {r q : ℕ}
     have hentry := congrFun (congrFun hThin' (e i)) j
     simpa [Crev, C', Q2, rectPermuteCols, matMulRect] using hentry
   exact GQRAQTallCase.exists_of_qr_reversed_cols C Q2 R hQ2 hR hfactor
-
 /-- Associated-row tall (20.28) construction from a QR factorization of the
     column-reversed block.  This is the same construction as
     `GQRAQTallCase.exists_of_qr_reversed_cols`, transported across the finite
@@ -1797,7 +1734,6 @@ theorem GQRAQTallAssocCase.exists_of_qr_reversed_cols {k p q : ℕ}
     _ = gqrAQTallBlock hCase.L (e row) col := by
           simpa using congrFun (congrFun hCase.aq_eq (e row)) col
     _ = gqrAQTallBlockAssoc (k := k) hCase.L row col := hblock_eq
-
 /-- Exact-Householder associated-row tall (20.28) construction.
 
     This is the rank-tolerant analogue of
@@ -1881,7 +1817,6 @@ theorem GQRAQTallAssocCase.exists_of_exact_householder_reversed_cols {k p q : �
     _ = gqrAQTallBlock hCase.L (e row) col := by
           simpa using congrFun (congrFun hCase.aq_eq (e row)) col
     _ = gqrAQTallBlockAssoc (k := k) hCase.L row col := hblock_eq
-
 /-- Exact-MGS associated-row tall (20.28) construction.  Nonzero exact-MGS
     stages for the column-reversed full block supply the QR factorization used
     by `GQRAQTallAssocCase.exists_of_qr_reversed_cols`. -/
@@ -1909,7 +1844,6 @@ theorem GQRAQTallAssocCase.exists_of_mgs_reversed_cols {k p q : ℕ}
       matMulRect ((k + p) + q) (p + q) (p + q) Q2 R := by
     exact modifiedGramSchmidt_exact_factorization Crev hdiag
   exact GQRAQTallAssocCase.exists_of_qr_reversed_cols C Q2 R hQ2 hR hfactor
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.28), supplied wide-case
     shape for `U^T A Q = [X L]`.
 
@@ -1925,7 +1859,6 @@ structure GQRAQWideCase (k m : ℕ)
   lowerL : IsLowerTriangular L
   /-- Source block identity `M = [X L]`. -/
   aq_eq : M = gqrAQWideBlock X L
-
 /-- Vector-action form of a supplied wide (20.28) shape. -/
 theorem GQRAQWideCase.mulVec_eq {k m : ℕ}
     {M : Fin m → Fin (k + m) → ℝ}
@@ -1936,7 +1869,6 @@ theorem GQRAQWideCase.mulVec_eq {k m : ℕ}
   rcases h with ⟨X, L, _lowerL, hM⟩
   subst M
   simpa using gqrAQWideBlock_mulVec X L y1 y2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, exact generalized QR
     factorization data for the block form (20.27).
 
@@ -1975,7 +1907,6 @@ structure GeneralizedQRFactorization (r p q : ℕ)
   lowerL22 : IsLowerTriangular L22
   /-- `S` is lower triangular. -/
   lowerS : IsLowerTriangular S
-
 /-- Source matrix obtained by transporting a supplied GQR transformed `A`
     block back through orthogonal factors `U` and `Q`.
 
@@ -1991,7 +1922,6 @@ noncomputable def gqrSourceAFromBlocks {r p q : ℕ}
     Fin (r + q) → Fin (p + q) → ℝ :=
   matMulRectLeft U
     (matMulRectRight (gqrAQBlock L11 L21 L22) (matTranspose Q))
-
 /-- Source constraint matrix obtained by transporting a supplied GQR constraint
     block `[S,0]` back through the orthogonal factor `Q`. -/
 noncomputable def gqrSourceBFromBlocks {p q : ℕ}
@@ -1999,7 +1929,6 @@ noncomputable def gqrSourceBFromBlocks {p q : ℕ}
     (S : Fin p → Fin p → ℝ) :
     Fin p → Fin (p + q) → ℝ :=
   matMulRectRight (gqrBQBlock S) (matTranspose Q)
-
 /-- Exact GQR factorization built by transporting supplied transformed blocks
     back to source coordinates.
 
@@ -2096,7 +2025,6 @@ noncomputable def GeneralizedQRFactorization.of_source_blocks
             rfl
       _ = C := hCQ
       _ = gqrBQBlock S := rfl
-
 /-- Exact GQR factorization built from transported `A` blocks and an already
     established constraint identity.
 
@@ -2178,7 +2106,6 @@ noncomputable def GeneralizedQRFactorization.of_sourceA_blocks_and_constraint_bl
     _ = rectMatMul (idMatrix (r + q)) M := by rw [hUtU]
     _ = M := rectMatMul_id_left M
     _ = gqrAQBlock L11 L21 L22 := rfl
-
 /-- Tall-case construction wrapper for Higham, 2nd ed., Theorem 20.9.
 
     Given the exact QR-derived constraint identity for `Bᵀ`, a supplied
@@ -2231,7 +2158,6 @@ theorem GeneralizedQRFactorization.exists_of_tall_qr_shapes {k p q : ℕ}
       lowerS := isLowerTriangular_matTranspose_of_isUpperTriangular hR },
     rfl, rfl, rfl, rfl⟩
   rw [hAQ, ← hAQBlock]
-
 /-- Associated-row tall-case construction wrapper for Higham, 2nd ed.,
     Theorem 20.9.
 
@@ -2259,7 +2185,6 @@ theorem GeneralizedQRFactorization.exists_of_tall_qr_assoc_case {k p q : ℕ}
         h.L22 = gqrAQTallL22FromEq20_28 hCase.L := by
   exact GeneralizedQRFactorization.exists_of_tall_qr_shapes
     Q U R hCase.L hQ hU hqrB hR hCase.aq_eq hCase.lowerL
-
 /-- Wide-case construction wrapper for Higham, 2nd ed., Theorem 20.9.
 
     Given the exact QR-derived constraint identity for `Bᵀ`, a supplied
@@ -2314,7 +2239,6 @@ theorem GeneralizedQRFactorization.exists_of_wide_qr_shapes {k r q : ℕ}
       lowerS := isLowerTriangular_matTranspose_of_isUpperTriangular hR },
     rfl, rfl, rfl, rfl⟩
   rw [hAQ, ← hAQBlock]
-
 /-- Associated-column wide-case construction wrapper for Higham, 2nd ed.,
     Theorem 20.9.
 
@@ -2342,7 +2266,6 @@ theorem GeneralizedQRFactorization.exists_of_wide_qr_assoc_case {k r q : ℕ}
         h.L22 = gqrAQWideL22FromEq20_28 hCase.L := by
   exact GeneralizedQRFactorization.exists_of_wide_qr_shapes
     Q U R hCase.X hCase.L hQ hU hqrB hR hCase.aq_eq hCase.lowerL
-
 /-- Tall-case construction wrapper for Higham, 2nd ed., Theorem 20.9:
     exact MGS data for `Bᵀ` supplies the `B Q = [S 0]` side, so the only
     remaining supplied construction is an associated-row shape for `Uᵀ A Q`
@@ -2391,7 +2314,6 @@ theorem GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_assoc_shape
       lowerL22 := gqrAQTallL22FromEq20_28_lowerTriangular hCase.lowerL
       lowerS := hSlower }⟩
   rw [hCase.aq_eq, ← hAQBlock]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 tall-case construction step:
     full row rank of `B` supplies the exact-MGS nonbreakdown hypotheses for
     `Bᵀ`; the remaining supplied construction is the associated-row
@@ -2420,7 +2342,6 @@ theorem GeneralizedQRFactorization.exists_of_tall_fullRowRank_constraint_and_ass
   exact
     GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_assoc_shape
       (A := A) (B := B) hdiagB hAQ
-
 /-- Tall-case exact-MGS construction wrapper for Higham, 2nd ed.,
     Theorem 20.9.
 
@@ -2459,7 +2380,6 @@ theorem GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_full_mgs_as
   exact
     GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_assoc_shape
       (A := A) (B := B) hdiagB hAQ
-
 /-- Tall-case full-row-rank plus full-`AQ` exact-MGS construction wrapper for
     Higham, 2nd ed., Theorem 20.9.
 
@@ -2490,7 +2410,6 @@ theorem GeneralizedQRFactorization.exists_of_tall_fullRowRank_constraint_and_ful
   exact
     GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_full_mgs_assoc_shape
       (A := A) (B := B) hdiagB hdiagAQ
-
 /-- Tall-case exact-Householder construction wrapper for Higham, 2nd ed.,
     Theorem 20.9.
 
@@ -2521,7 +2440,6 @@ theorem GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_exact_house
   exact
     GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_assoc_shape
       (A := A) (B := B) hdiagB hAQ
-
 /-- Tall-case full-row-rank plus exact-Householder associated display wrapper
     for Higham, 2nd ed., Theorem 20.9.
 
@@ -2544,7 +2462,6 @@ theorem GeneralizedQRFactorization.exists_of_tall_fullRowRank_constraint_and_exa
   exact
     GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_exact_householder_assoc_shape
       (A := A) (B := B) hdiagB
-
 /-- Wide-case construction wrapper for Higham, 2nd ed., Theorem 20.9:
     exact MGS data for `Bᵀ` supplies the `B Q = [S 0]` side, so the only
     remaining supplied construction is an associated-column shape for `Uᵀ A Q`
@@ -2593,7 +2510,6 @@ theorem GeneralizedQRFactorization.exists_of_wide_mgs_constraint_and_assoc_shape
       lowerL22 := gqrAQWideL22FromEq20_28_lowerTriangular hCase.lowerL
       lowerS := hSlower }⟩
   rw [hCase.aq_eq, ← hAQBlock]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 wide-case construction step:
     exact MGS data for `Bᵀ` supplies the constraint side, and exact MGS data
     for the column-reversed trailing square block of the actual transformed
@@ -2624,7 +2540,6 @@ theorem GeneralizedQRFactorization.exists_of_wide_mgs_constraint_and_trailing_mg
   exact GQRAQWideAssocCase.exists_of_trailing_mgs_reversed_cols
     (matMulRect (r + q) ((k + r) + q) ((k + r) + q) A Q)
     (hdiagAQ Q hQorth)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 wide-case construction step:
     full row rank of `B` supplies the exact-MGS nonbreakdown hypotheses for
     `Bᵀ`; the only remaining MGS nonbreakdown assumption is for the
@@ -2654,7 +2569,6 @@ theorem GeneralizedQRFactorization.exists_of_wide_fullRowRank_constraint_and_tra
   exact
     GeneralizedQRFactorization.exists_of_wide_mgs_constraint_and_trailing_mgs_assoc_shape
       (A := A) (B := B) hdiagB hdiagAQ
-
 /-- Wide-case exact-Householder construction wrapper for Higham, 2nd ed.,
     Theorem 20.9.
 
@@ -2678,7 +2592,6 @@ theorem GeneralizedQRFactorization.exists_of_wide_mgs_constraint_and_exact_house
   intro Q _hQ
   exact GQRAQWideAssocCase.exists_of_trailing_exact_householder_reversed_cols
     (matMulRect (r + q) ((k + r) + q) ((k + r) + q) A Q)
-
 /-- Wide-case full-row-rank plus exact-Householder associated display wrapper
     for Higham, 2nd ed., Theorem 20.9.
 
@@ -2701,7 +2614,6 @@ theorem GeneralizedQRFactorization.exists_of_wide_fullRowRank_constraint_and_exa
   exact
     GeneralizedQRFactorization.exists_of_wide_mgs_constraint_and_exact_householder_assoc_shape
       (A := A) (B := B) hdiagB
-
 /-- Higham, 2nd ed., Chapter 20, equations (20.27)-(20.28), tall case:
     a supplied `GeneralizedQRFactorization` connects the reconstructed
     `[0; L]` row action to the actual transformed matrix `U^T A Q`.
@@ -2753,7 +2665,6 @@ theorem GeneralizedQRFactorization.tall_eq20_28_row_action_of_top_zero
   · intro y1 y2 i
     rw [h.aq_eq]
     exact hlink.2.2.2 y1 y2 i
-
 /-- Higham, 2nd ed., Chapter 20, equations (20.27)-(20.28), wide case:
     a supplied `GeneralizedQRFactorization` connects the reconstructed
     `[X L]` row action to the actual transformed matrix `U^T A Q`.
@@ -2797,7 +2708,6 @@ theorem GeneralizedQRFactorization.wide_eq20_28_row_action
   · intro y0 y1 y2 i
     rw [h.aq_eq]
     exact hlink.2.2 y0 y1 y2 i
-
 /-- Higham, 2nd ed., Chapter 20, equations (20.27)-(20.28), tall case:
     matrix form of the supplied-GQR reconstruction. Under the explicit
     top-zero and lower-triangular reconstruction hypotheses, the actual
@@ -2819,7 +2729,6 @@ theorem GeneralizedQRFactorization.tall_eq20_28_matrix_of_top_zero
       h.L11 h.L21 h.L22 hzero hlower
   refine ⟨hlink.1, ?_⟩
   rw [h.aq_eq, hlink.2]
-
 /-- Higham, 2nd ed., Chapter 20, equations (20.27)-(20.28), wide case:
     matrix form of the supplied-GQR reconstruction. Under the explicit
     lower-triangular reconstruction hypothesis, the actual transformed matrix
@@ -2839,7 +2748,6 @@ theorem GeneralizedQRFactorization.wide_eq20_28_matrix
   have hlink := gqrAQBlock_wide_eq20_28_matrix h.L11 h.L21 h.L22 hlower
   refine ⟨hlink.1, ?_⟩
   rw [h.aq_eq, hlink.2]
-
 /-- The constraint reduction used by the GQR method after (20.27):
     for `x = Q y` and `y = [y1; y2]`, the constraint becomes `S y1`. -/
 theorem GeneralizedQRFactorization.constraint_eq {r p q : ℕ}
@@ -2859,7 +2767,6 @@ theorem GeneralizedQRFactorization.constraint_eq {r p q : ℕ}
     _ = rectMatMulVec (gqrBQBlock h.S) y := by rw [h.bq_eq]
     _ = rectMatMulVec h.S y1 := by
             simpa [y] using gqrBQBlock_mulVec h.S y1 y2
-
 /-- If the triangular system `S y1 = d` is solved, then `x = Q [y1; y2]`
     satisfies the original equality constraint `B x = d`. -/
 theorem GeneralizedQRFactorization.feasible_of_S_mulVec {r p q : ℕ}
@@ -2873,7 +2780,6 @@ theorem GeneralizedQRFactorization.feasible_of_S_mulVec {r p q : ℕ}
   have hc := congrFun (h.constraint_eq y1 y2) i
   rw [hc]
   exact congrFun hy1 i
-
 /-- The transformed `A` action has exactly the block vector form displayed
     after (20.27). -/
 theorem GeneralizedQRFactorization.transformed_A_mulVec_eq_block {r p q : ℕ}
@@ -2902,7 +2808,6 @@ theorem GeneralizedQRFactorization.transformed_A_mulVec_eq_block {r p q : ℕ}
         (fun i : Fin q => rectMatMulVec h.L21 y1 i +
           rectMatMulVec h.L22 y2 i) := by
             exact gqrAQBlock_mulVec h.L11 h.L21 h.L22 y1 y2
-
 /-- The GQR change of variables preserves the least-squares objective:
     minimizing with `x = Q y` is equivalent to minimizing the transformed
     residual for `U^T A Q` and `U^T b`.
@@ -2937,7 +2842,6 @@ theorem GeneralizedQRFactorization.objective_eq_transformed {r p q : ℕ}
             simpa [matMulVec, rectMatMulVec] using
               lsObjective_matMulRect_right (r + q) (p + q) (p + q)
                 A h.Q b y
-
 /-- Block-form version of `objective_eq_transformed`: after rewriting
     `U^T A Q` by the displayed GQR block in (20.27), the transformed objective
     is still the original objective at `x = Q [y1; y2]`. -/
@@ -2953,59 +2857,48 @@ theorem GeneralizedQRFactorization.objective_eq_block {r p q : ℕ}
       lsObjective A b (matMulVec (p + q) h.Q (Fin.append y1 y2)) := by
   rw [← h.aq_eq]
   exact h.objective_eq_transformed b y1 y2
-
-private theorem lsResidual_gqrAQBlock {r p q : ℕ}
-    (L11 : Fin r → Fin p → ℝ)
-    (L21 : Fin q → Fin p → ℝ)
-    (L22 : Fin q → Fin q → ℝ)
-    (c : Fin (r + q) → ℝ)
-    (y1 : Fin p → ℝ) (y2 : Fin q → ℝ) :
-    lsResidual (gqrAQBlock L11 L21 L22) c (Fin.append y1 y2) =
-      Fin.append
-        (fun i : Fin r => rectMatMulVec L11 y1 i - c (Fin.castAdd q i))
-        (fun i : Fin q =>
-          rectMatMulVec L21 y1 i + rectMatMulVec L22 y2 i -
-            c (Fin.natAdd r i)) := by
+private theorem matMulVec_orthogonal_mul_transpose {n : ℕ}
+    {Q : Fin n → Fin n → ℝ} (hQ : IsOrthogonal n Q)
+    (x : Fin n → ℝ) :
+    matMulVec n Q (matMulVec n (matTranspose Q) x) = x := by
   ext i
-  refine Fin.addCases
-    (motive := fun i : Fin (r + q) =>
-      lsResidual (gqrAQBlock L11 L21 L22) c (Fin.append y1 y2) i =
-        Fin.append
-          (fun i : Fin r => rectMatMulVec L11 y1 i - c (Fin.castAdd q i))
-          (fun i : Fin q =>
-            rectMatMulVec L21 y1 i + rectMatMulVec L22 y2 i -
-              c (Fin.natAdd r i)) i)
-    ?left ?right i
-  · intro i
-    unfold lsResidual
-    rw [gqrAQBlock_mulVec]
-    simp [Fin.append_left]
-  · intro i
-    unfold lsResidual
-    rw [gqrAQBlock_mulVec]
-    simp [Fin.append_right]
-
-private theorem lsObjective_gqrAQBlock_eq {r p q : ℕ}
-    (L11 : Fin r → Fin p → ℝ)
-    (L21 : Fin q → Fin p → ℝ)
-    (L22 : Fin q → Fin q → ℝ)
-    (c : Fin (r + q) → ℝ)
-    (y1 : Fin p → ℝ) (y2 : Fin q → ℝ) :
-    lsObjective (gqrAQBlock L11 L21 L22) c (Fin.append y1 y2) =
-      vecNorm2Sq
-        (fun i : Fin r => rectMatMulVec L11 y1 i - c (Fin.castAdd q i)) +
-      vecNorm2Sq
-        (fun i : Fin q =>
-          rectMatMulVec L21 y1 i + rectMatMulVec L22 y2 i -
-            c (Fin.natAdd r i)) := by
-  unfold lsObjective
-  rw [lsResidual_gqrAQBlock]
-  exact vecNorm2Sq_append
-    (fun i : Fin r => rectMatMulVec L11 y1 i - c (Fin.castAdd q i))
-    (fun i : Fin q =>
-      rectMatMulVec L21 y1 i + rectMatMulVec L22 y2 i -
-        c (Fin.natAdd r i))
-
+  calc
+    matMulVec n Q (matMulVec n (matTranspose Q) x) i
+        = matMulVec n (matMul n Q (matTranspose Q)) x i := by
+            exact (matMulVec_matMul n Q (matTranspose Q) x i).symm
+    _ = matMulVec n (idMatrix n) x i := by
+            have hmat : matMul n Q (matTranspose Q) = idMatrix n := by
+              ext a b
+              exact hQ.right_inv a b
+            rw [hmat]
+    _ = x i := by
+            rw [matMulVec_id]
+private theorem matMulVec_orthogonal_transpose_mul {n : ℕ}
+    {Q : Fin n → Fin n → ℝ} (hQ : IsOrthogonal n Q)
+    (x : Fin n → ℝ) :
+    matMulVec n (matTranspose Q) (matMulVec n Q x) = x := by
+  ext i
+  calc
+    matMulVec n (matTranspose Q) (matMulVec n Q x) i
+        = matMulVec n (matMul n (matTranspose Q) Q) x i := by
+            exact (matMulVec_matMul n (matTranspose Q) Q x i).symm
+    _ = matMulVec n (idMatrix n) x i := by
+            have hmat : matMul n (matTranspose Q) Q = idMatrix n := by
+              ext a b
+              exact hQ.left_inv a b
+            rw [hmat]
+    _ = x i := by
+            rw [matMulVec_id]
+private theorem matMulVec_zero {n : ℕ}
+    (Q : Fin n → Fin n → ℝ) :
+    matMulVec n Q (0 : Fin n → ℝ) = 0 := by
+  ext i
+  simp [matMulVec]
+private theorem rectMatMulVec_zero {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) :
+    rectMatMulVec A (0 : Fin n → ℝ) = 0 := by
+  ext i
+  simp [rectMatMulVec]
 private theorem GeneralizedQRFactorization.transformed_A_action_eq
     {r p q : ℕ}
     {A : Fin (r + q) → Fin (p + q) → ℝ}
@@ -3036,7 +2929,6 @@ private theorem GeneralizedQRFactorization.transformed_A_action_eq
               simpa [matMulRect, matMulVec] using
                 rectMatMulVec_rectMatMul A h.Q y
             rw [hy]
-
 private theorem GeneralizedQRFactorization.transformed_A_zero_of_A_zero
     {r p q : ℕ}
     {A : Fin (r + q) → Fin (p + q) → ℝ}
@@ -3049,7 +2941,6 @@ private theorem GeneralizedQRFactorization.transformed_A_zero_of_A_zero
           (matMulRect (r + q) (p + q) (p + q) A h.Q)) y = 0 := by
   rw [h.transformed_A_action_eq y, hy]
   exact matMulVec_zero (matTranspose h.U)
-
 private theorem GeneralizedQRFactorization.A_zero_of_transformed_A_zero
     {r p q : ℕ}
     {A : Fin (r + q) → Fin (p + q) → ℝ}
@@ -3068,7 +2959,23 @@ private theorem GeneralizedQRFactorization.A_zero_of_transformed_A_zero
       (rectMatMulVec A (matMulVec (p + q) h.Q y))
   rw [hy, matMulVec_zero] at hrecover
   exact hrecover.symm
-
+private theorem finAppend_left_right {p q : ℕ}
+    (y : Fin (p + q) → ℝ) :
+    Fin.append
+        (fun i : Fin p => y (Fin.castAdd q i))
+        (fun i : Fin q => y (Fin.natAdd p i)) =
+      y := by
+  ext i
+  refine Fin.addCases
+    (motive := fun i : Fin (p + q) =>
+      Fin.append
+          (fun i : Fin p => y (Fin.castAdd q i))
+          (fun i : Fin q => y (Fin.natAdd p i)) i = y i)
+    ?left ?right i
+  · intro i
+    simp [Fin.append_left]
+  · intro i
+    simp [Fin.append_right]
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof:
     under the supplied GQR block identity `BQ = [S 0]`, injectivity of `S`
     identifies the nullspace of `B` with the `Q₂` coordinate range.
@@ -3111,7 +3018,6 @@ theorem GeneralizedQRFactorization.null_B_iff_exists_Q2_coord
     have hc := h.constraint_eq (0 : Fin p → ℝ) y2
     rw [hc]
     exact rectMatMulVec_zero h.S
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
     the concrete matrix whose columns are the `Q₂` basis vectors for the
     supplied GQR factorization. -/
@@ -3124,7 +3030,6 @@ noncomputable def GeneralizedQRFactorization.Q2Basis
   fun i j =>
     matMulVec (p + q) h.Q
       (Fin.append (0 : Fin p → ℝ) (finiteBasisVec j)) i
-
 /-- The concrete GQR `Q₂` basis lies in the nullspace of the constraint
     matrix `B`. -/
 theorem GeneralizedQRFactorization.Q2Basis_nullspace
@@ -3138,7 +3043,6 @@ theorem GeneralizedQRFactorization.Q2Basis_nullspace
   have hc := congrFun (h.constraint_eq (0 : Fin p → ℝ) (finiteBasisVec j)) i
   simpa [GeneralizedQRFactorization.Q2Basis, rectMatMul, rectMatMulVec]
     using hc
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) support:
     every source projector `P = I - B^+B` fixes the concrete GQR `Q₂` basis,
     because the `Q₂` columns lie in the nullspace of `B`. -/
@@ -3151,7 +3055,6 @@ theorem GeneralizedQRFactorization.theorem20_8Projection_mul_Q2Basis_eq_self
     rectMatMul (theorem20_8Projection B Bplus) h.Q2Basis = h.Q2Basis :=
   theorem20_8_APplus_projection_range_of_constraint_annihilates
     B Bplus h.Q2Basis h.Q2Basis_nullspace
-
 /-- The concrete GQR `Q₂` basis acts by applying the full orthogonal `Q` to a
     vector with zero leading coordinates. -/
 theorem GeneralizedQRFactorization.Q2Basis_mulVec
@@ -3172,7 +3075,6 @@ theorem GeneralizedQRFactorization.Q2Basis_mulVec
     simp [Fin.append_left, Fin.append_right, finiteBasisVec]
   rw [Fin.sum_univ_add]
   simp [Fin.append_left, Fin.append_right, hinner]
-
 /-- The concrete GQR `Q₂` basis is an isometry on coefficient vectors. -/
 theorem GeneralizedQRFactorization.Q2Basis_vecNorm2
     {r p q : ℕ}
@@ -3184,7 +3086,6 @@ theorem GeneralizedQRFactorization.Q2Basis_vecNorm2
   rw [h.Q2Basis_mulVec y]
   rw [vecNorm2_orthogonal h.Q (Fin.append (0 : Fin p → ℝ) y) h.orthQ]
   exact vecNorm2_zeroLeft_append y
-
 /-- The concrete GQR `Q₂` basis has rectangular operator 2-norm at most one. -/
 theorem GeneralizedQRFactorization.Q2Basis_rectOpNorm2Le_one
     {r p q : ℕ}
@@ -3195,7 +3096,6 @@ theorem GeneralizedQRFactorization.Q2Basis_rectOpNorm2Le_one
   intro y
   rw [h.Q2Basis_vecNorm2 y]
   simp
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
     left multiplication by the concrete GQR `Q₂` basis preserves the vector
     2-norm of every matrix-vector action. -/
@@ -3209,7 +3109,6 @@ theorem GeneralizedQRFactorization.Q2Basis_rectMatMulVec_vecNorm2
       vecNorm2 (rectMatMulVec C x) := by
   rw [rectMatMulVec_rectMatMul]
   exact h.Q2Basis_vecNorm2 (rectMatMulVec C x)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
     rectangular operator-2 certificates are unchanged by left multiplication
     with the concrete GQR `Q₂` basis. -/
@@ -3233,7 +3132,6 @@ theorem GeneralizedQRFactorization.rectOpNorm2Le_rectMatMul_Q2Basis_iff
           = vecNorm2 (rectMatMulVec C x) :=
               h.Q2Basis_rectMatMulVec_vecNorm2 C x
       _ ≤ c * vecNorm2 x := hC x
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
     left multiplication by the concrete GQR `Q₂` basis preserves the exact
     complexified rectangular operator 2-norm. -/
@@ -3270,7 +3168,6 @@ theorem GeneralizedQRFactorization.complexMatrixOp2_realRectToCMatrix_rectMatMul
     exact complexMatrixOp2_realRectToCMatrix_le_of_rectOpNorm2Le C
       (complexMatrixOp2_nonneg
         (realRectToCMatrix (rectMatMul h.Q2Basis C))) hC
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     the trailing `Q₂` coordinate block of the transformed data matrix `A Q`.
 
@@ -3282,7 +3179,6 @@ noncomputable def gqrAQ2Block {r p q : ℕ}
     (Q : Fin (p + q) → Fin (p + q) → ℝ) :
     Fin (r + q) → Fin q → ℝ :=
   fun i j => matMulRect (r + q) (p + q) (p + q) A Q i (Fin.natAdd p j)
-
 /-- Linearity bridge for the trailing `A Q₂` block: perturbing `A` by
     `DeltaA` changes the reduced GQR block by `DeltaA Q₂`. -/
 theorem gqrAQ2Block_add_sub_eq {r p q : ℕ}
@@ -3304,7 +3200,6 @@ theorem gqrAQ2Block_add_sub_eq {r p q : ℕ}
     ring
   rw [hsum]
   ring
-
 /-- Vector-action form of the `A Q₂` block. -/
 theorem gqrAQ2Block_mulVec {r p q : ℕ}
     (A : Fin (r + q) → Fin (p + q) → ℝ)
@@ -3323,7 +3218,6 @@ theorem gqrAQ2Block_mulVec {r p q : ℕ}
     _ = rectMatMulVec A
         (matMulVec (p + q) Q (Fin.append (0 : Fin p → ℝ) y2)) := by
       exact rectMatMulVec_rectMatMul A Q (Fin.append (0 : Fin p → ℝ) y2)
-
 /-- Multiplying `A` by the concrete GQR `Q₂` basis gives the trailing
     transformed block `A Q₂`. -/
 theorem GeneralizedQRFactorization.A_mul_Q2Basis
@@ -3349,7 +3243,6 @@ theorem GeneralizedQRFactorization.A_mul_Q2Basis
           hblock.symm
     _ = gqrAQ2Block A h.Q i j := by
           simpa [gsColumn] using hcol
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
     the lifted reduced-Gram pseudoinverse candidate obtained by applying the
     concrete GQR `Q₂` basis to the Gram pseudoinverse of the trailing `A Q₂`
@@ -3362,7 +3255,6 @@ noncomputable def GeneralizedQRFactorization.liftedReducedGramAPplus
     Fin (p + q) → Fin (r + q) → ℝ :=
   rectMatMul h.Q2Basis
     (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
     lifting the reduced-Gram pseudoinverse through the concrete GQR `Q₂` basis
     preserves its exact complexified rectangular operator 2-norm. -/
@@ -3379,7 +3271,6 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_op2_eq
   simpa [GeneralizedQRFactorization.liftedReducedGramAPplus] using
     h.complexMatrixOp2_realRectToCMatrix_rectMatMul_Q2Basis_eq
       (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source `kappa_B(A)` for the concrete lifted reduced-Gram candidate
     `Q₂(AQ₂)^+`, rewritten in reduced `A Q₂` coordinates.
@@ -3400,7 +3291,6 @@ theorem GeneralizedQRFactorization.theorem20_8KappaB_liftedReducedGramAPplus_eq
   unfold theorem20_8KappaB
   rw [h.liftedReducedGramAPplus_op2_eq]
   ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
     the lifted reduced-Gram `APplus` candidate has all columns in the
     constraint nullspace, because its range is contained in the concrete GQR
@@ -3430,7 +3320,6 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_constraint_annihilate
           ext i j
           unfold rectMatMul
           simp
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
     vector-action form of the lifted reduced-Gram `APplus` range-null
     certificate. -/
@@ -3445,7 +3334,6 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_range_null
   theorem20_8_APplus_range_null_of_constraint_annihilates B
     h.liftedReducedGramAPplus
     h.liftedReducedGramAPplus_constraint_annihilates w
-
 /-- Reduced-operator perturbation bridge for Theorem 20.8:
     a bound stated on the GQR reduced blocks `A Q₂` transfers to the
     nullspace-basis form `A*N` with `N` chosen as the concrete GQR `Q₂` basis. -/
@@ -3464,7 +3352,6 @@ theorem GeneralizedQRFactorization.rectOpNorm2Le_reduced_delta_of_gqrAQ2Block
       (fun i j => rectMatMul Apert hpert.Q2Basis i j -
         rectMatMul A h.Q2Basis i j) c := by
   simpa [h.A_mul_Q2Basis, hpert.A_mul_Q2Basis] using hDelta
-
 /-- The block `[S,0]` used in the GQR constraint equation has the same
     Frobenius norm as `S`. -/
 theorem frobNormRect_gqrBQBlock {p q : ℕ}
@@ -3472,7 +3359,6 @@ theorem frobNormRect_gqrBQBlock {p q : ℕ}
     frobNormRect (gqrBQBlock (q := q) S) = frobNormRect S := by
   simpa [gqrBQBlock] using
     (frobNormRect_zeroRightCols_append (m := p) (p := p) (q := q) S)
-
 /-- With no trailing columns, the displayed GQR constraint block is exactly
     its square triangular block. -/
 theorem gqrBQBlock_zero_eq {p : ℕ} (S : Fin p → Fin p → ℝ) :
@@ -3486,7 +3372,6 @@ theorem gqrBQBlock_zero_eq {p : ℕ} (S : Fin p → Fin p → ℝ) :
       (Fin.append_left (S i) (fun _ : Fin 0 => (0 : ℝ)) k)
   · intro k
     exact Fin.elim0 k
-
 /-- Transporting a displayed constraint block back through an orthogonal
     factor and then forward through the same factor recovers the block. -/
 theorem gqrSourceBFromBlocks_mul_Q {p q : ℕ}
@@ -3503,7 +3388,6 @@ theorem gqrSourceBFromBlocks_mul_Q {p q : ℕ}
           rectMatMul_assoc (gqrBQBlock S) (matTranspose Q) Q
     _ = rectMatMul (gqrBQBlock S) (idMatrix (p + q)) := by rw [hQtQ]
     _ = gqrBQBlock S := rectMatMul_id_right _
-
 /-- An exact constraint identity `BQ=[S,0]` determines `B` as the transported
     source block.  This is the constraint-only form of GQR reconstruction and
     does not require packaging an unrelated least-squares block. -/
@@ -3525,7 +3409,6 @@ theorem gqrSourceBFromBlocks_eq_of_bq_eq {p q : ℕ}
           rectMatMul_assoc B Q (matTranspose Q)
     _ = rectMatMul B (idMatrix (p + q)) := by rw [hQQt]
     _ = B := rectMatMul_id_right B
-
 /-- Orthogonal transport preserves the Frobenius norm of the displayed
     constraint block. -/
 theorem frobNormRect_gqrSourceBFromBlocks {p q : ℕ}
@@ -3537,7 +3420,6 @@ theorem frobNormRect_gqrSourceBFromBlocks {p q : ℕ}
         frobNormRect (gqrBQBlock (q := q) S) := by
           exact frobNormRect_orthogonal_right _ _ hQ.transpose
     _ = frobNormRect S := frobNormRect_gqrBQBlock S
-
 /-- The GQR constraint block is additive in its triangular factor. -/
 theorem gqrBQBlock_add {p q : ℕ}
     (S DeltaS : Fin p → Fin p → ℝ) :
@@ -3553,7 +3435,6 @@ theorem gqrBQBlock_add {p q : ℕ}
     simp [gqrBQBlock, Fin.append_left]
   · intro j
     simp [gqrBQBlock, Fin.append_right]
-
 /-- A supplied GQR factorization reconstructs its original constraint matrix
     from the displayed `[S,0]` block and `Qᵀ`. -/
 theorem GeneralizedQRFactorization.sourceBFromBlocks_eq {r p q : ℕ}
@@ -3577,7 +3458,6 @@ theorem GeneralizedQRFactorization.sourceBFromBlocks_eq {r p q : ℕ}
           rectMatMul_assoc B h.Q (matTranspose h.Q)
     _ = rectMatMul B (idMatrix (p + q)) := by rw [hright]
     _ = B := rectMatMul_id_right B
-
 /-- In a supplied GQR factorization, the Frobenius norm of the displayed
     constraint block `S` is the source Frobenius norm of `B`. -/
 theorem GeneralizedQRFactorization.frobNormRect_S_eq_sourceB {r p q : ℕ}
@@ -3593,7 +3473,6 @@ theorem GeneralizedQRFactorization.frobNormRect_S_eq_sourceB {r p q : ℕ}
       exact (frobNormRect_gqrBQBlock h.S).symm
     _ = frobNormRect (matMulRectRight B h.Q) := by rw [← hbq]
     _ = frobNormRect B := frobNormRect_orthogonal_right B h.Q h.orthQ
-
 /-- The GQR block with only the bottom-right `L22` perturbation nonzero has
     Frobenius norm exactly the Frobenius norm of that perturbation. -/
 theorem frobNormRect_gqrAQBlock_only_L22 {r p q : ℕ}
@@ -3607,7 +3486,6 @@ theorem frobNormRect_gqrAQBlock_only_L22 {r p q : ℕ}
   unfold frobNormSqRect
   rw [Fin.sum_univ_add]
   simp [gqrAQBlock, Fin.append_left, Fin.append_right, Fin.sum_univ_add]
-
 /-- The displayed GQR `UᵀAQ` block is additive in its bottom-right `L22`
     block when all other perturbation blocks are zero. -/
 theorem gqrAQBlock_L22_add {r p q : ℕ}
@@ -3653,7 +3531,6 @@ theorem gqrAQBlock_L22_add {r p q : ℕ}
       simp [gqrAQBlock, Fin.append_right, Fin.append_left]
     · intro j
       simp [gqrAQBlock, Fin.append_right]
-
 /-- The `A Q₂` block has Frobenius norm no larger than `A` when `Q` is
     orthogonal. -/
 theorem frobNormRect_gqrAQ2Block_le
@@ -3676,7 +3553,6 @@ theorem frobNormRect_gqrAQ2Block_le
     _ ≤ frobNormRect AQ := frobNormRect_trailingCols_le AQ
     _ = frobNormRect A := by
           simpa [AQ] using frobNormRect_orthogonal_right A Q hQ
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     if the perturbed GQR record uses the same `Q` as the source record, a
     full-source Frobenius perturbation bound for `DeltaA` supplies the reduced
@@ -3698,7 +3574,6 @@ theorem GeneralizedQRFactorization.gqrAQ2Block_delta_frobNorm_le_of_same_Q
           gqrAQ2Block A h.Q i j) ≤ c := by
   rw [hQsame, gqrAQ2Block_add_sub_eq]
   exact le_trans (frobNormRect_gqrAQ2Block_le DeltaA h.Q h.orthQ) hDeltaA
-
 /-- The bottom-right `L22` block in the displayed GQR `UᵀAQ` matrix has
     Frobenius norm no larger than the full displayed block. -/
 theorem frobNormRect_gqrAQBlock_L22_le {r p q : ℕ}
@@ -3719,7 +3594,6 @@ theorem frobNormRect_gqrAQBlock_L22_le {r p q : ℕ}
     _ ≤ frobNormRect bottom := frobNormRect_trailingCols_le bottom
     _ ≤ frobNormRect (gqrAQBlock L11 L21 L22) :=
           frobNormRect_bottomRows_le (gqrAQBlock L11 L21 L22)
-
 /-- A supplied GQR factorization reconstructs its original data matrix from
     the displayed `UᵀAQ` block and the orthogonal factors `U` and `Qᵀ`. -/
 theorem GeneralizedQRFactorization.sourceAFromBlocks_eq {r p q : ℕ}
@@ -3768,7 +3642,6 @@ theorem GeneralizedQRFactorization.sourceAFromBlocks_eq {r p q : ℕ}
           rectMatMul_assoc A h.Q (matTranspose h.Q)
     _ = rectMatMul A (idMatrix (p + q)) := by rw [hQright]
     _ = A := rectMatMul_id_right A
-
 /-- In a supplied GQR factorization, the bottom-right displayed block `L22`
     has Frobenius norm no larger than the source data matrix `A`. -/
 theorem GeneralizedQRFactorization.frobNormRect_L22_le_sourceA {r p q : ℕ}
@@ -3794,7 +3667,6 @@ theorem GeneralizedQRFactorization.frobNormRect_L22_le_sourceA {r p q : ℕ}
     frobNormRect h.L22 ≤ frobNormRect M :=
       frobNormRect_gqrAQBlock_L22_le h.L11 h.L21 h.L22
     _ = frobNormRect A := hMnorm
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
     the `A Q₂` block has trivial kernel using only the constraint block
     identity `B Q = [S 0]`, orthogonality of `Q`, and the local
@@ -3838,7 +3710,6 @@ theorem gqrAQ2_kernel_trivial_of_constraint_block_nullIntersection
   ext i
   have hi := congrFun hyzero (Fin.natAdd p i)
   simpa [y, Fin.append_right] using hi
-
 /-- Construction-level injectivity of the `A Q₂` rectangular column map from
     the constraint block identity and the local null-intersection condition. -/
 theorem gqrAQ2_rectMatMulVec_injective_of_constraint_block_nullIntersection
@@ -3871,7 +3742,6 @@ theorem gqrAQ2_rectMatMulVec_injective_of_constraint_block_nullIntersection
   have hwi := congrFun hw i
   dsimp [w] at hwi
   linarith
-
 /-- Construction-level exact-MGS nonbreakdown for the smaller `A Q₂` block. -/
 theorem gqrAQ2_mgs_norm_ne_zero_of_constraint_block_nullIntersection
     {r p q : ℕ}
@@ -3889,7 +3759,6 @@ theorem gqrAQ2_mgs_norm_ne_zero_of_constraint_block_nullIntersection
     (gqrAQ2Block A Q)
     (gqrAQ2_rectMatMulVec_injective_of_constraint_block_nullIntersection
       hQ hBQ hnull) j
-
 /-- Construction-level injectivity for the column-reversed smaller `A Q₂`
     block.  This is the precise nonbreakdown route for the QR input that will
     later be converted into the lower-triangular `L₂₂` block in (20.28). -/
@@ -3907,7 +3776,6 @@ theorem gqrAQ2_reversed_rectMatMulVec_injective_of_constraint_block_nullIntersec
   rectMatMulVec_injective_rectPermuteCols Fin.revPerm
     (gqrAQ2_rectMatMulVec_injective_of_constraint_block_nullIntersection
       hQ hBQ hnull)
-
 /-- Construction-level exact-MGS nonbreakdown for the column-reversed smaller
     `A Q₂` block. -/
 theorem gqrAQ2_reversed_mgs_norm_ne_zero_of_constraint_block_nullIntersection
@@ -3927,7 +3795,6 @@ theorem gqrAQ2_reversed_mgs_norm_ne_zero_of_constraint_block_nullIntersection
     (rectPermuteCols Fin.revPerm (gqrAQ2Block A Q))
     (gqrAQ2_reversed_rectMatMulVec_injective_of_constraint_block_nullIntersection
       hQ hBQ hnull) j
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
     full row rank of `B` constructs the constraint block side, while stacked
     full column rank supplies exact-MGS nonbreakdown for the smaller `A Q₂`
@@ -3961,7 +3828,6 @@ theorem exists_gqr_constraint_block_and_A_Q2_mgs_of_fullRowRank_stackedFullColum
   exact
     gqrAQ2_mgs_norm_ne_zero_of_constraint_block_nullIntersection
       hQ hBQ hnull j
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
     full row rank of `B` constructs the constraint block side, while stacked
     full column rank supplies exact-MGS nonbreakdown for the column-reversed
@@ -3991,7 +3857,6 @@ theorem exists_gqr_constraint_block_and_reversed_A_Q2_mgs_of_fullRowRank_stacked
   exact
     gqrAQ2_reversed_mgs_norm_ne_zero_of_constraint_block_nullIntersection
       hQ hBQ hnull j
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
     after constructing the `Bᵀ` constraint block from full row rank of `B`,
     the smaller `A Q₂` block has an exact MGS QR factorization under the
@@ -4028,7 +3893,6 @@ theorem exists_gqr_constraint_block_and_A_Q2_mgs_qr_of_fullRowRank_stackedFullCo
   have hfactor : C = matMulRect (r + q) q q Q2 R2 := by
     exact modifiedGramSchmidt_exact_factorization C hdiagAQ2
   exact ⟨Q, S, Q2, R2, hQ, hS, hBQ, horthQ2, hR2upper, hfactor⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
     after constructing the `Bᵀ` constraint block from full row rank of `B`,
     the column-reversed smaller `A Q₂` block has an exact MGS QR factorization
@@ -4064,7 +3928,6 @@ theorem exists_gqr_constraint_block_and_reversed_A_Q2_mgs_qr_of_fullRowRank_stac
   have hfactor : C = matMulRect (r + q) q q Q2 R2 := by
     exact modifiedGramSchmidt_exact_factorization C hdiagAQ2rev
   exact ⟨Q, S, Q2, R2, hQ, hS, hBQ, horthQ2, hR2upper, hfactor⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
     after constructing the `Bᵀ` constraint block, the smaller `A Q₂` block can
     be put into the tall associated shape `[0; L₂₂]` by an orthogonal row
@@ -4094,7 +3957,6 @@ theorem exists_gqr_constraint_block_and_A_Q2_tall_assoc_of_fullRowRank_stackedFu
       (gqrAQ2Block A Q) Q2 R2 hQ2orth hR2upper hfactor with
     ⟨U, hU, hCase⟩
   exact ⟨Q, S, U, hQ, hS, hBQ, hU, hCase⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
     a constructed constraint block `B Q = [S 0]` plus a tall associated shape
     for the smaller trailing block `A Q₂` packages the full generalized QR
@@ -4191,7 +4053,6 @@ theorem GeneralizedQRFactorization.exists_of_constraint_and_A_Q2_tall_case
     lowerS := hS
   }, rfl, rfl, rfl, rfl⟩
   simpa [M] using hAQ
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, exact GQR existence.
 
     For arbitrary real matrices `A ∈ ℝ^((r+q)×(p+q))` and
@@ -4258,7 +4119,6 @@ theorem GeneralizedQRFactorization.exists_theorem20_9_exact_householder
       (A := A) (B := B) Q S U hQ hS hBQ hU hCase with
     ⟨h, _hQeq, _hUeq, _hSeq, _hL22eq⟩
   exact ⟨h⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction theorem for the
     block form (20.27): source full row rank of `B` and full column rank of the
     stacked matrix `[A; B]` construct exact generalized QR factorization data.
@@ -4282,7 +4142,6 @@ theorem GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
       (A := A) (B := B) Q S U hQ hS hBQ hU hCase with
     ⟨h, _hQeq, _hUeq, _hSeq, _hL22eq⟩
   exact ⟨h⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof:
     on the `Q₂` coordinate range, the equation `A x = 0` is equivalent to
     `L22 y₂ = 0`.
@@ -4340,7 +4199,6 @@ theorem GeneralizedQRFactorization.A_Q2_zero_iff_L22_zero
         have hi := congrFun hL22 i
         simpa [Fin.append_right, rectMatMulVec] using hi
     exact h.A_zero_of_transformed_A_zero hblock
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     under the source null-intersection condition, the `Q₂` coordinate block
     has trivial kernel through `A`.
@@ -4378,7 +4236,6 @@ theorem GeneralizedQRFactorization.A_Q2_kernel_trivial_of_nullIntersectionTrivia
   ext i
   have hi := congrFun hyzero (Fin.natAdd p i)
   simpa [y, Fin.append_right] using hi
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     stacked full column rank gives the same trivial-kernel property for the
     `A Q₂` block, using the repository's equivalence between stacked rank and
@@ -4397,7 +4254,6 @@ theorem GeneralizedQRFactorization.A_Q2_kernel_trivial_of_stackedFullColumnRank
   h.A_Q2_kernel_trivial_of_nullIntersectionTrivial
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
     y2 hAy2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     the `A Q₂` block has injective column map under the local
     null-intersection condition. -/
@@ -4428,7 +4284,6 @@ theorem GeneralizedQRFactorization.A_Q2_rectMatMulVec_injective_of_nullIntersect
   have hwi := congrFun hw i
   dsimp [w] at hwi
   linarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     stacked full column rank gives injectivity of the `A Q₂` column map. -/
 theorem GeneralizedQRFactorization.A_Q2_rectMatMulVec_injective_of_stackedFullColumnRank
@@ -4440,7 +4295,6 @@ theorem GeneralizedQRFactorization.A_Q2_rectMatMulVec_injective_of_stackedFullCo
     Function.Injective (rectMatMulVec (gqrAQ2Block A h.Q)) :=
   h.A_Q2_rectMatMulVec_injective_of_nullIntersectionTrivial
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
     stacked full column rank supplies the concrete Gram-pseudoinverse fields
     for the reduced `A Q₂` block. -/
@@ -4458,7 +4312,6 @@ theorem GeneralizedQRFactorization.A_Q2_reduced_gram_left_inverse_and_projection
   lsAplusOfGramNonsingInv_left_inverse_and_projection_symmetric
     (gqrAQ2Block A h.Q)
     (h.A_Q2_rectMatMulVec_injective_of_stackedFullColumnRank hstack)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
     stacked full column rank makes the concrete reduced Gram pseudoinverse for
     `A Q₂` a nonzero left inverse, hence its operator norm is positive. -/
@@ -4474,7 +4327,6 @@ theorem GeneralizedQRFactorization.A_Q2_reduced_gram_pseudoinverse_op2_pos
   exact complexMatrixOp2_realRectToCMatrix_pos_of_rect_left_inverse
     (gqrAQ2Block A h.Q)
     (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q)) hred.1
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     positivity of the lifted reduced-Gram source `kappa_B(A)` under the source
     stacked-rank condition and positive `||A||_F`. -/
@@ -4488,7 +4340,6 @@ theorem GeneralizedQRFactorization.theorem20_8KappaB_liftedReducedGramAPplus_pos
     0 < theorem20_8KappaB A h.liftedReducedGramAPplus := by
   rw [h.theorem20_8KappaB_liftedReducedGramAPplus_eq]
   exact mul_pos (h.A_Q2_reduced_gram_pseudoinverse_op2_pos hstack) hApos
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8/20.9 support:
     stacked full column rank makes the concrete reduced block `A Q₂` a
     nonzero operator. -/
@@ -4503,7 +4354,6 @@ theorem GeneralizedQRFactorization.A_Q2_reduced_block_op2_pos
   exact complexMatrixOp2_realRectToCMatrix_pos_of_rect_has_left_inverse
     (gqrAQ2Block A h.Q)
     (lsAplusOfGramNonsingInv (gqrAQ2Block A h.Q)) hred.1
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact-MGS A-side bridge:
     the source null-intersection condition supplies every nonzero-stage
     normalizer needed for exact MGS applied to the smaller `A Q₂` block. -/
@@ -4519,7 +4369,6 @@ theorem GeneralizedQRFactorization.A_Q2_mgs_norm_ne_zero_of_nullIntersectionTriv
   modifiedGramSchmidtVectors_norm_ne_zero_of_rectMatMulVec_injective
     (gqrAQ2Block A h.Q)
     (h.A_Q2_rectMatMulVec_injective_of_nullIntersectionTrivial hnull) j
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact-MGS A-side bridge:
     stacked full column rank supplies every exact-MGS nonzero-stage normalizer
     for the smaller `A Q₂` block. -/
@@ -4535,7 +4384,6 @@ theorem GeneralizedQRFactorization.A_Q2_mgs_norm_ne_zero_of_stackedFullColumnRan
   h.A_Q2_mgs_norm_ne_zero_of_nullIntersectionTrivial
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
     j
-
 /-- Exact GQR method handoff for (20.27):
     if the transformed block vector `[y1; y2]` minimizes the transformed
     least-squares objective among all transformed feasible blocks
@@ -4592,95 +4440,6 @@ theorem GeneralizedQRFactorization.isLSEMinimizer_of_transformed_block_minimizer
             exact h.objective_eq_block b z1 z2
     _ = lsObjective A b x := by
             rw [hx_recover]
-
-/-- Exact GQR triangular-solve handoff for the method following (20.27):
-    if `S y1 = d` and the lower block equation
-    `L22 y2 = c2 - L21 y1` is solved, then the recovered vector
-    `x = Q [y1; y2]` is an exact LSE minimizer, provided the displayed
-    triangular constraint factor `S` is injective.
-
-    This formalizes the exact algebraic minimization step after the source's
-    GQR reduction.  It still assumes supplied GQR data and exact solved
-    triangular equations; it does not prove GQR existence, nonsingularity of
-    `S` or `L22`, or floating-point GQR stability. -/
-theorem GeneralizedQRFactorization.isLSEMinimizer_of_triangular_solve
-    {r p q : ℕ}
-    {A : Fin (r + q) → Fin (p + q) → ℝ}
-    {B : Fin p → Fin (p + q) → ℝ}
-    (h : GeneralizedQRFactorization r p q A B)
-    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
-    {y1 : Fin p → ℝ} {y2 : Fin q → ℝ}
-    (hS_inj : Function.Injective (rectMatMulVec h.S))
-    (hy1 : rectMatMulVec h.S y1 = d)
-    (hy2 : rectMatMulVec h.L22 y2 =
-      fun i : Fin q =>
-        matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
-          rectMatMulVec h.L21 y1 i) :
-    IsLSEMinimizer A b B d
-      (matMulVec (p + q) h.Q (Fin.append y1 y2)) := by
-  refine h.isLSEMinimizer_of_transformed_block_minimizer hy1 ?_
-  intro z1 z2 hz1
-  let c : Fin (r + q) → ℝ := matMulVec (r + q) (matTranspose h.U) b
-  have hz1_eq : z1 = y1 := by
-    apply hS_inj
-    rw [hz1, hy1]
-  subst z1
-  have hy_lower_zero :
-      (fun i : Fin q =>
-        rectMatMulVec h.L21 y1 i + rectMatMulVec h.L22 y2 i -
-          c (Fin.natAdd r i)) = 0 := by
-    ext i
-    have hi := congrFun hy2 i
-    dsimp [c] at hi ⊢
-    rw [hi]
-    ring
-  rw [lsObjective_gqrAQBlock_eq, lsObjective_gqrAQBlock_eq, hy_lower_zero]
-  have hnonneg :
-      0 ≤ vecNorm2Sq
-        (fun i : Fin q =>
-          rectMatMulVec h.L21 y1 i + rectMatMulVec h.L22 z2 i -
-            c (Fin.natAdd r i)) :=
-    vecNorm2Sq_nonneg _
-  have hzero : vecNorm2Sq (0 : Fin q → ℝ) = 0 := by
-    simp [vecNorm2Sq]
-  rw [hzero]
-  linarith
-
-/-- Exact GQR method solve-existence handoff:
-    if the displayed constraint block `S` is bijective as a square solve map
-    and the lower block `L22` can solve every right-hand side, then there are
-    block variables `y1`, `y2` satisfying the source equations
-    `S y1 = d` and `L22 y2 = c2 - L21 y1`, and the recovered
-    `x = Q [y1; y2]` is an exact LSE minimizer.
-
-    This is still supplied-factorization, exact-arithmetic algebra.  It does
-    not prove that triangular nonsingularity follows from (20.24), construct
-    the GQR factors, or analyze a computed GQR method. -/
-theorem GeneralizedQRFactorization.exists_isLSEMinimizer_of_solve_maps
-    {r p q : ℕ}
-    {A : Fin (r + q) → Fin (p + q) → ℝ}
-    {B : Fin p → Fin (p + q) → ℝ}
-    (h : GeneralizedQRFactorization r p q A B)
-    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
-    (hS_bij : Function.Bijective (rectMatMulVec h.S))
-    (hL22_surj : Function.Surjective (rectMatMulVec h.L22)) :
-    ∃ y1 : Fin p → ℝ, ∃ y2 : Fin q → ℝ,
-      rectMatMulVec h.S y1 = d ∧
-      rectMatMulVec h.L22 y2 =
-        (fun i : Fin q =>
-          matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
-            rectMatMulVec h.L21 y1 i) ∧
-      IsLSEMinimizer A b B d
-        (matMulVec (p + q) h.Q (Fin.append y1 y2)) := by
-  rcases hS_bij.2 d with ⟨y1, hy1⟩
-  rcases hL22_surj
-      (fun i : Fin q =>
-        matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
-          rectMatMulVec h.L21 y1 i) with
-    ⟨y2, hy2⟩
-  refine ⟨y1, y2, hy1, hy2, ?_⟩
-  exact h.isLSEMinimizer_of_triangular_solve hS_bij.1 hy1 hy2
-
 /-- The lower-triangular GQR constraint block `S` is a bijective solve map when
     its diagonal entries are nonzero.  This is the source-facing triangular
     nonsingularity bridge for Theorem 20.9, under supplied GQR data. -/
@@ -4692,7 +4451,6 @@ theorem GeneralizedQRFactorization.s_bijective_of_diag_ne_zero
     (hdiag : ∀ i : Fin p, h.S i i ≠ 0) :
     Function.Bijective (rectMatMulVec h.S) :=
   rectMatMulVec_bijective_of_lowerTriangular_diag_ne_zero h.lowerS hdiag
-
 /-- The lower-triangular GQR block `L22` is a bijective solve map when its
     diagonal entries are nonzero.  This is the source-facing triangular
     nonsingularity bridge for Theorem 20.9, under supplied GQR data. -/
@@ -4704,7 +4462,6 @@ theorem GeneralizedQRFactorization.l22_bijective_of_diag_ne_zero
     (hdiag : ∀ i : Fin q, h.L22 i i ≠ 0) :
     Function.Bijective (rectMatMulVec h.L22) :=
   rectMatMulVec_bijective_of_lowerTriangular_diag_ne_zero h.lowerL22 hdiag
-
 /-- Converse triangular nonsingularity bridge for the GQR constraint block
     `S`: a bijective square solve map has nonzero diagonal entries. -/
 theorem GeneralizedQRFactorization.s_diag_ne_zero_of_bijective
@@ -4715,7 +4472,6 @@ theorem GeneralizedQRFactorization.s_diag_ne_zero_of_bijective
     (hbij : Function.Bijective (rectMatMulVec h.S)) :
     ∀ i : Fin p, h.S i i ≠ 0 :=
   rectMatMulVec_diag_ne_zero_of_lowerTriangular_bijective h.lowerS hbij
-
 /-- Converse triangular nonsingularity bridge for the GQR lower block `L22`:
     a bijective square solve map has nonzero diagonal entries. -/
 theorem GeneralizedQRFactorization.l22_diag_ne_zero_of_bijective
@@ -4726,7 +4482,6 @@ theorem GeneralizedQRFactorization.l22_diag_ne_zero_of_bijective
     (hbij : Function.Bijective (rectMatMulVec h.L22)) :
     ∀ i : Fin q, h.L22 i i ≠ 0 :=
   rectMatMulVec_diag_ne_zero_of_lowerTriangular_bijective h.lowerL22 hbij
-
 /-- Supplied-GQR lower-triangular nonsingularity equivalence for the
     constraint block `S`: nonzero diagonal entries are equivalent to bijective
     solvability of `S y = d`. -/
@@ -4740,7 +4495,6 @@ theorem GeneralizedQRFactorization.s_bijective_iff_diag_ne_zero
   constructor
   · exact h.s_diag_ne_zero_of_bijective
   · exact h.s_bijective_of_diag_ne_zero
-
 /-- Supplied-GQR lower-triangular nonsingularity equivalence for the lower
     block `L22`: nonzero diagonal entries are equivalent to bijective
     solvability of `L22 y = e`. -/
@@ -4754,36 +4508,6 @@ theorem GeneralizedQRFactorization.l22_bijective_iff_diag_ne_zero
   constructor
   · exact h.l22_diag_ne_zero_of_bijective
   · exact h.l22_bijective_of_diag_ne_zero
-
-/-- Exact GQR method solve-existence handoff from triangular nonsingularity:
-    if the displayed lower-triangular GQR blocks `S` and `L22` have nonzero
-    diagonal entries, then the triangular systems in the method following
-    (20.27) have exact solutions and the recovered `x = Q [y1; y2]` is an LSE
-    minimizer.
-
-    This proves the exact algebraic consequence of the source's nonsingular
-    triangular blocks.  It still assumes supplied GQR factorization data and
-    does not construct the factors or analyze floating-point GQR stability. -/
-theorem GeneralizedQRFactorization.exists_isLSEMinimizer_of_triangular_nonsingular
-    {r p q : ℕ}
-    {A : Fin (r + q) → Fin (p + q) → ℝ}
-    {B : Fin p → Fin (p + q) → ℝ}
-    (h : GeneralizedQRFactorization r p q A B)
-    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
-    (hS_diag : ∀ i : Fin p, h.S i i ≠ 0)
-    (hL22_diag : ∀ i : Fin q, h.L22 i i ≠ 0) :
-    ∃ y1 : Fin p → ℝ, ∃ y2 : Fin q → ℝ,
-      rectMatMulVec h.S y1 = d ∧
-      rectMatMulVec h.L22 y2 =
-        (fun i : Fin q =>
-          matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
-            rectMatMulVec h.L21 y1 i) ∧
-      IsLSEMinimizer A b B d
-        (matMulVec (p + q) h.Q (Fin.append y1 y2)) :=
-  h.exists_isLSEMinimizer_of_solve_maps
-    (h.s_bijective_of_diag_ne_zero hS_diag)
-    (h.l22_bijective_of_diag_ne_zero hL22_diag).2
-
 /-- Supplied-GQR equivalence for the first condition in (20.24):
     the local full-row-rank formulation for `B`, namely surjectivity of
     `x ↦ Bx`, is equivalent to surjectivity of the transformed square solve
@@ -4825,7 +4549,6 @@ theorem GeneralizedQRFactorization.s_surjective_iff_lseFullRowRank
     have hxi' : rectMatMulVec B x i = d i := by
       simpa [lseConstraintLinearMap] using hxi
     exact hc.symm.trans hxi'
-
 /-- Supplied-GQR bijective form of the first condition in (20.24):
     because `S` is square, the local full-row-rank condition for `B` is
     equivalent to bijectivity of the solve map `y1 ↦ S y1`.
@@ -4851,7 +4574,6 @@ theorem GeneralizedQRFactorization.s_bijective_iff_lseFullRowRank
     have hinj : Function.Injective (rectMatMulVec h.S) := by
       simpa [lseConstraintLinearMap] using hlinInj
     exact ⟨hinj, hsurj⟩
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
     `B^+`-parametric form of the lifted reduced-Gram left inverse on
     the homogeneous constraint nullspace.  The proof uses only the nullspace
@@ -4936,7 +4658,6 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_AP_left_inverse_on_nu
     _ = rectMatMulVec h.Q2Basis y2 := by
           rw [hCleft]
     _ = z := hzQ2.symm
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
     under the source rank assumptions, the concrete lifted reduced-Gram
     candidate `Q₂ (A Q₂)^+` left-inverts the reduced operator `AP` on the
@@ -5023,7 +4744,6 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_AP_left_inverse_on_nu
     _ = rectMatMulVec h.Q2Basis y2 := by
           rw [hCleft]
     _ = z := hzQ2.symm
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
     the concrete lifted reduced-Gram candidate realizes the projected action
     `(AP)^+ AP v = P v` for the full-row-rank right-inverse projector. -/
@@ -5043,7 +4763,6 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_projected_action
     (fun z hz =>
       h.liftedReducedGramAPplus_AP_left_inverse_on_nullspace hB hstack z hz)
     v
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
     matrix form of the GQR-specialized projected-action identity
     `Q₂ (A Q₂)^+ AP = P`. -/
@@ -5061,7 +4780,6 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_AP_eq_projection
     A B hB.rightInverse h.liftedReducedGramAPplus hB.rightInverse_spec
     (fun z hz =>
       h.liftedReducedGramAPplus_AP_left_inverse_on_nullspace hB hstack z hz)
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
     the lifted reduced-Gram candidate satisfies the first Penrose reproduction
     equation for the reduced source product `AP`.
@@ -5095,7 +4813,6 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_reproduces_matrix
     _ = theorem20_8AP A B hB.rightInverse :=
           theorem20_8AP_mul_projection_eq_self
             A B hB.rightInverse hB.rightInverse_spec
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
     the lifted reduced-Gram candidate satisfies the second Penrose reproduction
     equation for the reduced source product `AP`.
@@ -5129,7 +4846,6 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_reproduces_pseudoinve
           h.liftedReducedGramAPplus := by
           rw [h.liftedReducedGramAPplus_AP_eq_projection hB hstack]
     _ = h.liftedReducedGramAPplus := hProjFix
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
     the range projection `AP * Q₂(AQ₂)^+` for the lifted reduced-Gram
     candidate is exactly the reduced Gram projection `(AQ₂)(AQ₂)^+`. -/
@@ -5168,7 +4884,6 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_range_projection_eq_r
           rw [← rectMatMul_assoc]
     _ = rectMatMul (gqrAQ2Block A h.Q) Cplus := by
           rw [h.A_mul_Q2Basis]
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
     the range-projection symmetry Penrose field for the lifted reduced-Gram
     candidate follows from the reduced Gram-pseudoinverse symmetry. -/
@@ -5183,7 +4898,6 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_range_projection_symm
       (rectMatMul (theorem20_8AP A B Bplus) h.liftedReducedGramAPplus) := by
   rw [h.liftedReducedGramAPplus_range_projection_eq_reduced Bplus]
   exact (h.A_Q2_reduced_gram_left_inverse_and_projection_symmetric hstack).2
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
     the lifted reduced-Gram candidate realizes the projected action
     `(AP)^+ AP v = P v` for any source right inverse `B^+`. -/
@@ -5206,7 +4920,6 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_projected_action_of_r
       h.liftedReducedGramAPplus_AP_left_inverse_on_nullspace_of_Bplus
         hB hstack Bplus z hz)
     v
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
     matrix form `Q₂(AQ₂)^+ AP = P` for any source right inverse `B^+`. -/
 theorem GeneralizedQRFactorization.liftedReducedGramAPplus_AP_eq_projection_of_rightInverse
@@ -5225,7 +4938,6 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_AP_eq_projection_of_r
     (fun z hz =>
       h.liftedReducedGramAPplus_AP_left_inverse_on_nullspace_of_Bplus
         hB hstack Bplus z hz)
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
     first Penrose reproduction equation for the lifted reduced-Gram candidate
     and any source right inverse `B^+`. -/
@@ -5258,7 +4970,6 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_reproduces_matrix_of_
             hB hstack Bplus hright]
     _ = theorem20_8AP A B Bplus :=
           theorem20_8AP_mul_projection_eq_self A B Bplus hright
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
     second Penrose reproduction equation for the lifted reduced-Gram candidate
     and any source right inverse `B^+`. -/
@@ -5293,7 +5004,6 @@ theorem GeneralizedQRFactorization.liftedReducedGramAPplus_reproduces_pseudoinve
           rw [h.liftedReducedGramAPplus_AP_eq_projection_of_rightInverse
             hB hstack Bplus hright]
     _ = h.liftedReducedGramAPplus := hProjFix
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
     conditional Moore--Penrose certificate for the lifted reduced-Gram
     candidate.  The remaining source-side symmetry obligation is exactly the
@@ -5320,7 +5030,6 @@ theorem
   · rw [h.liftedReducedGramAPplus_AP_eq_projection_of_rightInverse
       hB hstack Bplus hright]
     exact hPsym
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) and Theorem 20.9 support:
     concrete Moore--Penrose certificate for the lifted reduced-Gram candidate
     using the source Gram pseudoinverse `Bᵀ(BBᵀ)⁻¹` as `B^+`. -/
@@ -5340,7 +5049,6 @@ theorem
     (higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_det_ne_zero
       B hB.rectGram_det_ne_zero)
     (theorem20_8Projection_symmetric_of_gram_pseudoinverse B)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     determinant-free existence of a rank-tolerant `(AP)^+` candidate.
 
@@ -5368,7 +5076,6 @@ theorem LSEFullRowRank.exists_theorem20_8_rank_tolerant_APplus_MP_gram_projectio
       h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
         hB hstack,
       h.liftedReducedGramAPplus_constraint_annihilates⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     for supplied GQR data, `B` has full row rank iff the displayed
     lower-triangular constraint block `S` has trivial kernel.
@@ -5410,7 +5117,6 @@ theorem GeneralizedQRFactorization.lseFullRowRank_iff_s_kernel_trivial
     have hS_bij : Function.Bijective (rectMatMulVec h.S) :=
       (h.s_bijective_iff_diag_ne_zero).2 hS_diag
     exact (h.s_bijective_iff_lseFullRowRank).1 hS_bij
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     for supplied GQR data, `B` has full row rank iff the lower-triangular
     constraint block `S` has nonzero diagonal entries.
@@ -5433,7 +5139,6 @@ theorem GeneralizedQRFactorization.lseFullRowRank_iff_s_diag_ne_zero
     have hS_bij : Function.Bijective (rectMatMulVec h.S) :=
       (h.s_bijective_iff_diag_ne_zero).2 hS_diag
     exact (h.s_bijective_iff_lseFullRowRank).1 hS_bij
-
 /-- Supplied-GQR equivalence for the second condition in (20.24):
     once the constraint block `S` is injective, the null-intersection
     condition `null(A) ∩ null(B) = {0}` is equivalent to injectivity of the
@@ -5568,7 +5273,6 @@ theorem GeneralizedQRFactorization.nullIntersectionTrivial_iff_l22_injective
         i
     rw [← hv_recover, hy_zero]
     exact matMulVec_zero h.Q
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     assuming the GQR constraint block `S` is nonsingular, the condition
     `null(A) ∩ null(B) = {0}` is equivalent to the displayed `L22` block
@@ -5607,7 +5311,6 @@ theorem GeneralizedQRFactorization.nullIntersectionTrivial_iff_l22_kernel_trivia
       dsimp [w] at hwi
       linarith
     exact (h.nullIntersectionTrivial_iff_l22_injective hS_inj).2 hL22_inj
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     once the GQR constraint block `S` is nonsingular, the local
     null-intersection condition is equivalent to nonsingularity of the
@@ -5637,7 +5340,272 @@ theorem GeneralizedQRFactorization.nullIntersectionTrivial_iff_l22_diag_ne_zero_
       (h.l22_bijective_iff_diag_ne_zero).2 hL22_diag
     exact (h.nullIntersectionTrivial_iff_l22_injective hS_inj).2
       hL22_bij.1
+/-- Higham, 2nd ed., Chapter 20, equations (20.29)-(20.30):
+    exact minimizer handoff for the elimination method.
 
+    If `x2` minimizes the reduced unconstrained problem obtained after
+    eliminating `x1`, then `[R1^{-1}(qtd - R2 x2); x2]` is an exact minimizer of
+    the equality-constrained least-squares problem with coefficient blocks
+    `[A1 A2]` and constraint blocks `[R1 R2]`. The theorem assumes the inverse
+    action for `R1` is supplied in both orders; it does not construct the
+    pivoted QR factorization or prove `R1` nonsingular. -/
+theorem lseElimination_isLSEMinimizer_of_reduced_minimizer {m p q : ℕ}
+    (A1 : Fin m → Fin p → ℝ) (A2 : Fin m → Fin q → ℝ)
+    (R1 R1inv : Fin p → Fin p → ℝ) (R2 : Fin p → Fin q → ℝ)
+    (qtd : Fin p → ℝ) (b : Fin m → ℝ) (x2 : Fin q → ℝ)
+    (hleft : ∀ v : Fin p → ℝ, rectMatMulVec R1 (rectMatMulVec R1inv v) = v)
+    (hright : ∀ v : Fin p → ℝ, rectMatMulVec R1inv (rectMatMulVec R1 v) = v)
+    (hmin : IsLSEEliminationReducedMinimizer A1 A2 R1inv R2 qtd b x2) :
+    IsLSEMinimizer (lseEliminationBlockMatrix A1 A2) b
+      (lseEliminationBlockMatrix R1 R2) qtd
+      (Fin.append (lseEliminationBackSubstitution R1inv R2 qtd x2) x2) := by
+  refine ⟨?feasible, ?minimal⟩
+  · intro i
+    exact congrFun
+      (lseEliminationBlockConstraint_eq_qtd_of_left_inverse
+        R1 R1inv R2 qtd x2 hleft) i
+  · intro y hy
+    let y1 : Fin p → ℝ := fun i => y (Fin.castAdd q i)
+    let y2 : Fin q → ℝ := fun i => y (Fin.natAdd p i)
+    have hy_append : Fin.append y1 y2 = y := by
+      simpa [y1, y2] using finAppend_left_right (p := p) (q := q) y
+    have hy_constraint :
+        rectMatMulVec (lseEliminationBlockMatrix R1 R2) (Fin.append y1 y2) =
+          qtd := by
+      ext i
+      rw [hy_append]
+      exact hy i
+    have hy1_eq :
+        y1 = lseEliminationBackSubstitution R1inv R2 qtd y2 :=
+      lseEliminationBackSubstitution_eq_of_block_constraint
+        R1 R1inv R2 qtd y1 y2 hright hy_constraint
+    have hy_eq :
+        y = Fin.append (lseEliminationBackSubstitution R1inv R2 qtd y2) y2 := by
+      rw [← hy_append, hy1_eq]
+    calc
+      lsObjective (lseEliminationBlockMatrix A1 A2) b
+          (Fin.append (lseEliminationBackSubstitution R1inv R2 qtd x2) x2)
+          =
+            lseEliminationReducedObjective A1 A2 R1inv R2 qtd b x2 := by
+              exact lseEliminationObjective_eq_reduced A1 A2 R1inv R2 qtd b x2
+      _ ≤ lseEliminationReducedObjective A1 A2 R1inv R2 qtd b y2 :=
+            hmin y2
+      _ =
+          lsObjective (lseEliminationBlockMatrix A1 A2) b
+            (Fin.append (lseEliminationBackSubstitution R1inv R2 qtd y2) y2) := by
+            exact (lseEliminationObjective_eq_reduced
+              A1 A2 R1inv R2 qtd b y2).symm
+      _ = lsObjective (lseEliminationBlockMatrix A1 A2) b y := by
+            rw [hy_eq]
+/-- Higham, 2nd ed., Chapter 20, equations (20.29)-(20.30):
+    original-coordinate form of the elimination minimizer handoff.
+
+    If column pivoting gives `BΠ = [R1 R2]` and `AΠ = [A1 A2]`, then a
+    minimizer of the reduced unconstrained problem in (20.30), combined with
+    the back-substitution in (20.29) and pulled back by `Πᵀ`, is an exact
+    minimizer of the original equality-constrained problem. The theorem uses
+    supplied partition and inverse-action data; it does not construct the
+    pivoted QR factorization or prove `R1` nonsingular. -/
+theorem lseElimination_isLSEMinimizer_original_of_reduced_minimizer
+    {m p q : ℕ} (π : Fin (p + q) ≃ Fin (p + q))
+    (A : Fin m → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (A1 : Fin m → Fin p → ℝ) (A2 : Fin m → Fin q → ℝ)
+    (R1 R1inv : Fin p → Fin p → ℝ) (R2 : Fin p → Fin q → ℝ)
+    (qtd : Fin p → ℝ) (b : Fin m → ℝ) (x2 : Fin q → ℝ)
+    (hAπ : rectPermuteCols π A = lseEliminationBlockMatrix A1 A2)
+    (hBπ : rectPermuteCols π B = lseEliminationBlockMatrix R1 R2)
+    (hleft : ∀ v : Fin p → ℝ, rectMatMulVec R1 (rectMatMulVec R1inv v) = v)
+    (hright : ∀ v : Fin p → ℝ, rectMatMulVec R1inv (rectMatMulVec R1 v) = v)
+    (hmin : IsLSEEliminationReducedMinimizer A1 A2 R1inv R2 qtd b x2) :
+    IsLSEMinimizer A b B qtd
+      (vecPermute π.symm
+        (Fin.append (lseEliminationBackSubstitution R1inv R2 qtd x2) x2)) := by
+  apply IsLSEMinimizer.of_permuteCols π
+  simpa [hAπ, hBπ] using
+    (lseElimination_isLSEMinimizer_of_reduced_minimizer
+      A1 A2 R1 R1inv R2 qtd b x2 hleft hright hmin)
+/-- Homogeneous uniqueness for the source equality-constrained KKT augmented
+    system under Higham's conditions (20.24).
+
+    This is the nonsingularity kernel for the Cox--Higham block-inverse route:
+    with zero data, stationarity, and constraint right-hand sides, the residual,
+    solution, and multiplier components are all zero. -/
+theorem LSEKKTSystem.eq_zero_of_homogeneous {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
+    {dr : Fin m → ℝ} {dx : Fin n → ℝ} {dlambda : Fin p → ℝ}
+    (hsys : LSEKKTSystem A B (0 : Fin m → ℝ) (0 : Fin n → ℝ)
+      (0 : Fin p → ℝ) dr dx dlambda) :
+    dr = 0 ∧ dx = 0 ∧ dlambda = 0 := by
+  rcases hsys with ⟨htop, hstat, hconstr⟩
+  have hA_dot :
+      (∑ j : Fin n, dx j * (∑ i : Fin m, A i j * dr i)) =
+        ∑ i : Fin m, rectMatMulVec A dx i * dr i := by
+    calc
+      (∑ j : Fin n, dx j * (∑ i : Fin m, A i j * dr i))
+          = ∑ j : Fin n, ∑ i : Fin m, dx j * (A i j * dr i) := by
+              apply Finset.sum_congr rfl
+              intro j _
+              rw [Finset.mul_sum]
+      _ = ∑ i : Fin m, ∑ j : Fin n, dx j * (A i j * dr i) := by
+              rw [Finset.sum_comm]
+      _ = ∑ i : Fin m, rectMatMulVec A dx i * dr i := by
+              apply Finset.sum_congr rfl
+              intro i _
+              calc
+                (∑ j : Fin n, dx j * (A i j * dr i))
+                    = ∑ j : Fin n, (A i j * dx j) * dr i := by
+                        apply Finset.sum_congr rfl
+                        intro j _
+                        ring
+                _ = (∑ j : Fin n, A i j * dx j) * dr i := by
+                        rw [Finset.sum_mul]
+                _ = rectMatMulVec A dx i * dr i := rfl
+  have hB_dot :
+      (∑ j : Fin n, dx j * (∑ r : Fin p, B r j * dlambda r)) =
+        ∑ r : Fin p, rectMatMulVec B dx r * dlambda r := by
+    calc
+      (∑ j : Fin n, dx j * (∑ r : Fin p, B r j * dlambda r))
+          = ∑ j : Fin n, ∑ r : Fin p, dx j * (B r j * dlambda r) := by
+              apply Finset.sum_congr rfl
+              intro j _
+              rw [Finset.mul_sum]
+      _ = ∑ r : Fin p, ∑ j : Fin n, dx j * (B r j * dlambda r) := by
+              rw [Finset.sum_comm]
+      _ = ∑ r : Fin p, rectMatMulVec B dx r * dlambda r := by
+              apply Finset.sum_congr rfl
+              intro r _
+              calc
+                (∑ j : Fin n, dx j * (B r j * dlambda r))
+                    = ∑ j : Fin n, (B r j * dx j) * dlambda r := by
+                        apply Finset.sum_congr rfl
+                        intro j _
+                        ring
+                _ = (∑ j : Fin n, B r j * dx j) * dlambda r := by
+                        rw [Finset.sum_mul]
+                _ = rectMatMulVec B dx r * dlambda r := rfl
+  have hstation_sum :
+      (∑ j : Fin n,
+        dx j *
+          ((∑ i : Fin m, A i j * dr i) -
+            (∑ r : Fin p, B r j * dlambda r))) = 0 := by
+    apply Finset.sum_eq_zero
+    intro j _
+    have hj : (∑ i : Fin m, A i j * dr i) -
+        (∑ r : Fin p, B r j * dlambda r) = 0 := by
+      simpa using hstat j
+    rw [hj]
+    ring
+  have hstation_split :
+      (∑ j : Fin n,
+        dx j *
+          ((∑ i : Fin m, A i j * dr i) -
+            (∑ r : Fin p, B r j * dlambda r))) =
+        (∑ j : Fin n, dx j * (∑ i : Fin m, A i j * dr i)) -
+          (∑ j : Fin n, dx j * (∑ r : Fin p, B r j * dlambda r)) := by
+    rw [← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  have hstation_source :
+      (∑ i : Fin m, rectMatMulVec A dx i * dr i) -
+          (∑ r : Fin p, rectMatMulVec B dx r * dlambda r) = 0 := by
+    calc
+      (∑ i : Fin m, rectMatMulVec A dx i * dr i) -
+          (∑ r : Fin p, rectMatMulVec B dx r * dlambda r)
+          = (∑ j : Fin n, dx j * (∑ i : Fin m, A i j * dr i)) -
+              (∑ j : Fin n, dx j * (∑ r : Fin p, B r j * dlambda r)) := by
+              rw [hA_dot, hB_dot]
+      _ = (∑ j : Fin n,
+            dx j *
+              ((∑ i : Fin m, A i j * dr i) -
+                (∑ r : Fin p, B r j * dlambda r))) := by
+              rw [hstation_split]
+      _ = 0 := hstation_sum
+  have hBdot_zero :
+      (∑ r : Fin p, rectMatMulVec B dx r * dlambda r) = 0 := by
+    apply Finset.sum_eq_zero
+    intro r _
+    have hr : rectMatMulVec B dx r = 0 := by
+      simpa using hconstr r
+    rw [hr]
+    ring
+  have hAdot_zero :
+      (∑ i : Fin m, rectMatMulVec A dx i * dr i) = 0 := by
+    linarith
+  have hAdx_neg : ∀ i : Fin m, rectMatMulVec A dx i = -dr i := by
+    intro i
+    have hi : dr i + rectMatMulVec A dx i = 0 := by
+      simpa using htop i
+    linarith
+  have hAdot_eq_neg_sq :
+      (∑ i : Fin m, rectMatMulVec A dx i * dr i) = -vecNorm2Sq dr := by
+    unfold vecNorm2Sq
+    rw [← Finset.sum_neg_distrib]
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [hAdx_neg i]
+    ring
+  have hdrsq : vecNorm2Sq dr = 0 := by
+    linarith
+  have hdrnorm : vecNorm2 dr = 0 := by
+    unfold vecNorm2
+    rw [Real.sqrt_eq_zero (vecNorm2Sq_nonneg dr)]
+    exact hdrsq
+  have hdr_zero : dr = 0 := by
+    ext i
+    exact (vecNorm2_eq_zero_iff dr).mp hdrnorm i
+  have hAdx_zero : rectMatMulVec A dx = 0 := by
+    ext i
+    change rectMatMulVec A dx i = 0
+    have hi : dr i + rectMatMulVec A dx i = 0 := by
+      simpa using htop i
+    have hdri : dr i = 0 := by
+      simpa using congrFun hdr_zero i
+    linarith
+  have hBdx_zero : rectMatMulVec B dx = 0 := by
+    ext r
+    change rectMatMulVec B dx r = 0
+    simpa using hconstr r
+  have hdx_zero : dx = 0 := hnull dx hAdx_zero hBdx_zero
+  have hBt_zero :
+      rectMatMulVec (fun j : Fin n => fun r : Fin p => B r j) dlambda = 0 := by
+    ext j
+    change (∑ r : Fin p, B r j * dlambda r) = 0
+    have hj : (∑ i : Fin m, A i j * dr i) -
+        (∑ r : Fin p, B r j * dlambda r) = 0 := by
+      simpa using hstat j
+    have hArow_zero : (∑ i : Fin m, A i j * dr i) = 0 := by
+      rw [hdr_zero]
+      simp
+    linarith
+  have hdlambda_zero : dlambda = 0 := by
+    apply hB.transpose_rectMatMulVec_injective
+    rw [hBt_zero, rectMatMulVec_zero]
+  exact ⟨hdr_zero, hdx_zero, hdlambda_zero⟩
+/-- A source LSE Lagrange multiplier satisfying the normal equations solves the
+    source KKT system with right-hand side `(r,0,0)`, where
+    `r = b - A*x` is Higham's signed residual. -/
+theorem LSEKKTSystem.sourceResidual_of_lagrange_normal_equations {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {x : Fin n → ℝ}
+    {lambda : Fin p → ℝ}
+    (hnormal : ∀ j : Fin n,
+      ∑ i : Fin m, A i j * lsResidualHigham A b x i =
+        ∑ r : Fin p, B r j * lambda r) :
+    LSEKKTSystem A B (lsResidualHigham A b x) 0 0
+      (lsResidualHigham A b x) 0 lambda := by
+  constructor
+  · intro i
+    rw [congrFun (rectMatMulVec_zero A) i]
+    simp
+  · constructor
+    · intro j
+      rw [hnormal j]
+      simp
+    · intro r
+      rw [congrFun (rectMatMulVec_zero B) r]
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     first lower-triangular solve `S y₁ = d`. -/
 noncomputable def theorem20_10_gqr_y1hat
@@ -5647,7 +5615,6 @@ noncomputable def theorem20_10_gqr_y1hat
     (fp : FPModel) (h : GeneralizedQRFactorization r p q A B)
     (d : Fin p → ℝ) : Fin p → ℝ :=
   fl_forwardSub fp p h.S d
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     right-hand side for the trailing lower-triangular solve. -/
 noncomputable def theorem20_10_gqr_rhs2hat
@@ -5659,7 +5626,6 @@ noncomputable def theorem20_10_gqr_rhs2hat
   fun i : Fin q =>
     matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
       rectMatMulVec h.L21 (theorem20_10_gqr_y1hat fp h d) i
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     second lower-triangular solve `L₂₂ y₂ = Uᵀb - L₂₁y₁`. -/
 noncomputable def theorem20_10_gqr_y2hat
@@ -5669,7 +5635,6 @@ noncomputable def theorem20_10_gqr_y2hat
     (fp : FPModel) (h : GeneralizedQRFactorization r p q A B)
     (b : Fin (r + q) → ℝ) (d : Fin p → ℝ) : Fin q → ℝ :=
   fl_forwardSub fp q h.L22 (theorem20_10_gqr_rhs2hat fp h b d)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     final computed vector `xhat = Q [y₁hat; y₂hat]` for supplied GQR data.
 
@@ -5685,7 +5650,6 @@ noncomputable def theorem20_10_gqr_xhat
     (Fin.append
       (theorem20_10_gqr_y1hat fp h d)
       (theorem20_10_gqr_y2hat fp h b d))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     right-hand side for the trailing lower-triangular solve when the trailing
     transformed vector has already been computed or perturbed.
@@ -5701,7 +5665,6 @@ noncomputable def theorem20_10_gqr_rhs2hat_of_transformed_tail
     (beta : Fin q → ℝ) (d : Fin p → ℝ) : Fin q → ℝ :=
   fun i : Fin q =>
     beta i - rectMatMulVec h.L21 (theorem20_10_gqr_y1hat fp h d) i
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     second lower-triangular solve driven by a supplied trailing transformed
     right-hand side. -/
@@ -5713,7 +5676,6 @@ noncomputable def theorem20_10_gqr_y2hat_of_transformed_tail
     (beta : Fin q → ℝ) (d : Fin p → ℝ) : Fin q → ℝ :=
   fl_forwardSub fp q h.L22
     (theorem20_10_gqr_rhs2hat_of_transformed_tail fp h beta d)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     final vector for the supplied-trailing-RHS computed path. -/
 noncomputable def theorem20_10_gqr_xhat_of_transformed_tail
@@ -5726,7 +5688,6 @@ noncomputable def theorem20_10_gqr_xhat_of_transformed_tail
     (Fin.append
       (theorem20_10_gqr_y1hat fp h d)
       (theorem20_10_gqr_y2hat_of_transformed_tail fp h beta d))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     exact trailing block of the transformed right-hand side `Uᵀ b`.
 
@@ -5740,7 +5701,6 @@ noncomputable def theorem20_10_gqr_exact_transformed_tail
     (b : Fin (r + q) → ℝ) : Fin q → ℝ :=
   fun i : Fin q =>
     matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     the supplied-transformed-tail trailing RHS reduces to the ordinary GQR RHS
     when the supplied tail is the exact trailing block of `Uᵀ b`. -/
@@ -5754,7 +5714,6 @@ theorem theorem20_10_gqr_rhs2hat_of_exact_transformed_tail_eq
         (theorem20_10_gqr_exact_transformed_tail h b) d =
       theorem20_10_gqr_rhs2hat fp h b d := by
   rfl
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     the supplied-transformed-tail second triangular solve reduces to the
     ordinary GQR second solve at the exact tail `Uᵀ b`. -/
@@ -5768,7 +5727,6 @@ theorem theorem20_10_gqr_y2hat_of_exact_transformed_tail_eq
         (theorem20_10_gqr_exact_transformed_tail h b) d =
       theorem20_10_gqr_y2hat fp h b d := by
   rfl
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     the supplied-transformed-tail returned vector reduces to the ordinary
     computed GQR returned vector at the exact tail `Uᵀ b`. -/
@@ -5782,140 +5740,6 @@ theorem theorem20_10_gqr_xhat_of_exact_transformed_tail_eq
         (theorem20_10_gqr_exact_transformed_tail h b) d =
       theorem20_10_gqr_xhat fp h b d := by
   rfl
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
-    exact-minimizer handoff from supplied perturbed triangular factors.
-
-    If a supplied perturbed GQR factorization has the same recovery `Q`, the
-    same lower-left coupling block `L₂₁`, triangular blocks equal to the
-    finite-precision backward-error witnesses `S + ΔS` and `L₂₂ + ΔL₂₂`, and
-    the trailing transformed right-hand side agrees with the computed one, then
-    the named computed vector `xhat = Q [y₁hat; y₂hat]` is an exact LSE
-    minimizer for that supplied perturbed problem.  This bridge does not prove
-    that such a perturbed source factorization exists; it isolates the exact
-    algebra needed once the finite-precision GQR perturbation construction
-    supplies those identities. -/
-theorem theorem20_10_gqr_xhat_isLSEMinimizer_of_supplied_perturbed_triangular_factors
-    {r p q : ℕ} (fp : FPModel)
-    {A : Fin (r + q) → Fin (p + q) → ℝ}
-    {B : Fin p → Fin (p + q) → ℝ}
-    (h : GeneralizedQRFactorization r p q A B)
-    {Apert : Fin (r + q) → Fin (p + q) → ℝ}
-    {Bpert : Fin p → Fin (p + q) → ℝ}
-    (hpert : GeneralizedQRFactorization r p q Apert Bpert)
-    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
-    (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ)
-    (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ)
-    (hQ : hpert.Q = h.Q)
-    (hS : hpert.S = fun i j => h.S i j + DeltaS i j)
-    (hL21 : hpert.L21 = h.L21)
-    (hL22 : hpert.L22 = fun i j => h.L22 i j + DeltaL22 i j)
-    (hd : dpert = d)
-    (hb_tail : ∀ i : Fin q,
-      matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
-        matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i))
-    (hS_inj : Function.Injective (rectMatMulVec hpert.S))
-    (hSeq :
-      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
-        (theorem20_10_gqr_y1hat fp h d) = d)
-    (hL22eq :
-      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
-        (theorem20_10_gqr_y2hat fp h b d) =
-          theorem20_10_gqr_rhs2hat fp h b d) :
-    IsLSEMinimizer Apert bpert Bpert dpert
-      (theorem20_10_gqr_xhat fp h b d) := by
-  let y1hat : Fin p → ℝ := theorem20_10_gqr_y1hat fp h d
-  let y2hat : Fin q → ℝ := theorem20_10_gqr_y2hat fp h b d
-  have hy1 : rectMatMulVec hpert.S y1hat = dpert := by
-    rw [hS, hd]
-    exact hSeq
-  have hy2 :
-      rectMatMulVec hpert.L22 y2hat =
-        fun i : Fin q =>
-          matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
-            rectMatMulVec hpert.L21 y1hat i := by
-    ext i
-    calc
-      rectMatMulVec hpert.L22 y2hat i
-          = rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j) y2hat i := by
-              rw [hL22]
-      _ = theorem20_10_gqr_rhs2hat fp h b d i := by
-              simpa [y2hat] using congrFun hL22eq i
-      _ = matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
-            rectMatMulVec hpert.L21 y1hat i := by
-              simp [theorem20_10_gqr_rhs2hat, y1hat, hL21, hb_tail i]
-  have hmin :
-      IsLSEMinimizer Apert bpert Bpert dpert
-        (matMulVec (p + q) hpert.Q (Fin.append y1hat y2hat)) :=
-    hpert.isLSEMinimizer_of_triangular_solve hS_inj hy1 hy2
-  simpa [theorem20_10_gqr_xhat, y1hat, y2hat, hQ] using hmin
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
-    exact-minimizer handoff for the supplied-trailing-RHS path.
-
-    This is the rounded-RHS analogue of
-    `theorem20_10_gqr_xhat_isLSEMinimizer_of_supplied_perturbed_triangular_factors`.
-    The transformed trailing right-hand side is supplied as `beta`, so the
-    perturbed-factor matching hypothesis asks for `Uᵀ(b + Δb)` to equal `beta`
-    on the trailing block instead of the exact source vector `Uᵀ b`. -/
-theorem theorem20_10_gqr_xhat_of_transformed_tail_isLSEMinimizer_of_supplied_perturbed_triangular_factors
-    {r p q : ℕ} (fp : FPModel)
-    {A : Fin (r + q) → Fin (p + q) → ℝ}
-    {B : Fin p → Fin (p + q) → ℝ}
-    (h : GeneralizedQRFactorization r p q A B)
-    {Apert : Fin (r + q) → Fin (p + q) → ℝ}
-    {Bpert : Fin p → Fin (p + q) → ℝ}
-    (hpert : GeneralizedQRFactorization r p q Apert Bpert)
-    (beta : Fin q → ℝ) (d : Fin p → ℝ)
-    (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ)
-    (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ)
-    (hQ : hpert.Q = h.Q)
-    (hS : hpert.S = fun i j => h.S i j + DeltaS i j)
-    (hL21 : hpert.L21 = h.L21)
-    (hL22 : hpert.L22 = fun i j => h.L22 i j + DeltaL22 i j)
-    (hd : dpert = d)
-    (hb_tail : ∀ i : Fin q,
-      matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
-        beta i)
-    (hS_inj : Function.Injective (rectMatMulVec hpert.S))
-    (hSeq :
-      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
-        (theorem20_10_gqr_y1hat fp h d) = d)
-    (hL22eq :
-      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
-        (theorem20_10_gqr_y2hat_of_transformed_tail fp h beta d) =
-          theorem20_10_gqr_rhs2hat_of_transformed_tail fp h beta d) :
-    IsLSEMinimizer Apert bpert Bpert dpert
-      (theorem20_10_gqr_xhat_of_transformed_tail fp h beta d) := by
-  let y1hat : Fin p → ℝ := theorem20_10_gqr_y1hat fp h d
-  let y2hat : Fin q → ℝ :=
-    theorem20_10_gqr_y2hat_of_transformed_tail fp h beta d
-  have hy1 : rectMatMulVec hpert.S y1hat = dpert := by
-    rw [hS, hd]
-    exact hSeq
-  have hy2 :
-      rectMatMulVec hpert.L22 y2hat =
-        fun i : Fin q =>
-          matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
-            rectMatMulVec hpert.L21 y1hat i := by
-    ext i
-    calc
-      rectMatMulVec hpert.L22 y2hat i
-          = rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j) y2hat i := by
-              rw [hL22]
-      _ = theorem20_10_gqr_rhs2hat_of_transformed_tail fp h beta d i := by
-              simpa [y2hat] using congrFun hL22eq i
-      _ = matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
-            rectMatMulVec hpert.L21 y1hat i := by
-              simp [theorem20_10_gqr_rhs2hat_of_transformed_tail, y1hat,
-                hL21, hb_tail i]
-  have hmin :
-      IsLSEMinimizer Apert bpert Bpert dpert
-        (matMulVec (p + q) hpert.Q (Fin.append y1hat y2hat)) :=
-    hpert.isLSEMinimizer_of_triangular_solve hS_inj hy1 hy2
-  simpa [theorem20_10_gqr_xhat_of_transformed_tail, y1hat, y2hat, hQ]
-    using hmin
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     trailing entries of the rounded Householder RHS transform for the `A Q₂`
     panel. -/
@@ -5927,7 +5751,6 @@ noncomputable def theorem20_10_householder_AQ2_rhs_tail
   fun i : Fin q =>
     fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b
       (Fin.natAdd r i)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     trailing entries of the rounded Householder RHS transform for the
     column-reversed `A Q₂` panel used by the constructed GQR `L₂₂` path. -/
@@ -5940,7 +5763,6 @@ noncomputable def theorem20_10_householder_reversed_AQ2_rhs_tail
     fl_householderQRPanel_rhs fp (r + q) q
         (rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)) b
       (Fin.cast (Nat.add_comm q r) (Fin.castAdd r (Fin.rev j)))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     named proposition for the concrete Householder component Part B route.
 
@@ -6007,7 +5829,6 @@ def Theorem20_10HouseholderComponentPartBRoute
           (fun i => b i + Deltab i)
           (fun i j => B i j + DeltaB i j)
           (fun i => d i + Deltad i) x))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     named proposition for the constructed rounded Householder returned-vector
     route.

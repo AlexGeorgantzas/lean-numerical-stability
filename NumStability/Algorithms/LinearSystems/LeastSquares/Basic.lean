@@ -6,27 +6,27 @@ import Mathlib.LinearAlgebra.Matrix.Rank
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+import NumStability.Algorithms.LinearSystems.LeastSquares.MGS
 import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
-import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
-import NumStability.Algorithms.LinearSystems.QR.QRSolve
-import NumStability.Algorithms.RandNLA.LowRankApprox
+import NumStability.Algorithms.QR.HouseholderQR
+import NumStability.Algorithms.QR.HouseholderQRSupport
+import NumStability.Algorithms.QR.HouseholderSpecSupport
+import NumStability.Algorithms.QR.QRSolve
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Analysis.MatrixNorms.Basic
 import NumStability.Analysis.Rounding
-import NumStability.Analysis.SingularValues.Basic
 import NumStability.Analysis.SingularValues.Realification
+import NumStability.Analysis.VectorNorms.Basic
 import NumStability.FloatingPoint.Model
 
 namespace NumStability
 
+open scoped BigOperators
 open scoped BigOperators Matrix.Norms.Frobenius
 
 /-!
 # Basic
 
-Canonical reusable module extracted without change from LSQRSolve.
+Canonical reusable module extracted without change from Higham20AlternativeBound, Higham20ResidualQuality, LSQRSolve.
 -/
 
 /-- Rectangular normal-equation Gram matrix `Aᵀ A`.  This duplicate of the
@@ -284,37 +284,6 @@ theorem rectLSRhs_permuteRowsCols {m n : ℕ}
       vecPermute π (rectLSRhs A b) := by
   rw [rectLSRhs_permuteRows]
   exact rectLSRhs_permuteCols π A b
-theorem rectLSNormalEquations_residual_sum_eq_diff {m n : ℕ}
-    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (x : Fin n → ℝ)
-    (j : Fin n) :
-    ∑ i : Fin m, A i j * lsResidual A b x i =
-      (∑ k : Fin n, (∑ i : Fin m, A i j * A i k) * x k) -
-        ∑ i : Fin m, A i j * b i := by
-  calc
-    ∑ i : Fin m, A i j * lsResidual A b x i
-        = ∑ i : Fin m, A i j * rectMatMulVec A x i -
-            ∑ i : Fin m, A i j * b i := by
-          simp_rw [lsResidual, mul_sub]
-          rw [Finset.sum_sub_distrib]
-    _ = (∑ k : Fin n, (∑ i : Fin m, A i j * A i k) * x k) -
-        ∑ i : Fin m, A i j * b i := by
-          congr 1
-          calc
-            ∑ i : Fin m, A i j * rectMatMulVec A x i
-                = ∑ i : Fin m, ∑ k : Fin n, A i j * (A i k * x k) := by
-                  unfold rectMatMulVec
-                  apply Finset.sum_congr rfl
-                  intro i _
-                  rw [Finset.mul_sum]
-            _ = ∑ k : Fin n, ∑ i : Fin m, A i j * (A i k * x k) := by
-                  rw [Finset.sum_comm]
-            _ = ∑ k : Fin n, (∑ i : Fin m, A i j * A i k) * x k := by
-                  apply Finset.sum_congr rfl
-                  intro k _
-                  rw [Finset.sum_mul]
-                  apply Finset.sum_congr rfl
-                  intro i _
-                  ring
 /-- Higham's signed least-squares residual `b - A x`.  The shared objective API
     uses `A x - b`; this source-facing alias records the sign convention in
     Chapter 20's augmented system. -/
@@ -352,14 +321,6 @@ theorem IsLeastSquaresMinimizer.of_lsResidualHigham_eq_zero {m n : ℕ}
     unfold lsObjective
     exact vecNorm2Sq_nonneg (lsResidual A b y)
   linarith
-theorem lsResidualHigham_column_sum_eq_neg {m n : ℕ}
-    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (x : Fin n → ℝ)
-    (j : Fin n) :
-    ∑ i : Fin m, A i j * lsResidualHigham A b x i =
-      -∑ i : Fin m, A i j * lsResidual A b x i := by
-  rw [lsResidualHigham_eq_neg_lsResidual A b x]
-  simp_rw [mul_neg]
-  rw [← Finset.sum_neg_distrib]
 /-- Real symmetric-matrix orthogonality for distinct eigenvalues, stated in the
     repository's finite-matrix/vector-action language.  This is spectral
     infrastructure for equation (20.18): once two vectors are eigenvectors of
@@ -445,64 +406,6 @@ noncomputable def lsAugmentedInverseActionBottom {m n : ℕ}
     (Aplus : Fin n → Fin m → ℝ) (gramInv : Fin n → Fin n → ℝ)
     (u : Fin m → ℝ) (v : Fin n → ℝ) : Fin n → ℝ :=
   fun j => rectMatMulVec Aplus u j - matMulVec n gramInv v j
-theorem lsAugmentedInverseAction_Aplus_mul_A {m n : ℕ}
-    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
-    (gramInv : Fin n → Fin n → ℝ)
-    (hAplus : ∀ j i, Aplus j i = ∑ k : Fin n, gramInv j k * A i k)
-    (hGramInv : IsInverse n (rectLSGram A) gramInv) :
-    ∀ j k : Fin n, ∑ i : Fin m, Aplus j i * A i k =
-      if j = k then 1 else 0 := by
-  intro j k
-  calc
-    ∑ i : Fin m, Aplus j i * A i k
-        = ∑ i : Fin m, (∑ p : Fin n, gramInv j p * A i p) * A i k := by
-            apply Finset.sum_congr rfl
-            intro i _
-            rw [hAplus j i]
-    _ = ∑ i : Fin m, ∑ p : Fin n, (gramInv j p * A i p) * A i k := by
-            apply Finset.sum_congr rfl
-            intro i _
-            rw [Finset.sum_mul]
-    _ = ∑ p : Fin n, ∑ i : Fin m, (gramInv j p * A i p) * A i k := by
-            rw [Finset.sum_comm]
-    _ = ∑ p : Fin n, gramInv j p * rectLSGram A p k := by
-            apply Finset.sum_congr rfl
-            intro p _
-            unfold rectLSGram
-            rw [Finset.mul_sum]
-            apply Finset.sum_congr rfl
-            intro i _
-            ring
-    _ = if j = k then 1 else 0 := hGramInv.1 j k
-theorem lsAugmentedInverseAction_gram_mul_Aplus {m n : ℕ}
-    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
-    (gramInv : Fin n → Fin n → ℝ)
-    (hAplus : ∀ j i, Aplus j i = ∑ k : Fin n, gramInv j k * A i k)
-    (hGramInv : IsInverse n (rectLSGram A) gramInv) :
-    ∀ j : Fin n, ∀ i : Fin m,
-      ∑ k : Fin n, rectLSGram A j k * Aplus k i = A i j := by
-  intro j i
-  calc
-    ∑ k : Fin n, rectLSGram A j k * Aplus k i
-        = ∑ k : Fin n, rectLSGram A j k *
-            (∑ p : Fin n, gramInv k p * A i p) := by
-            apply Finset.sum_congr rfl
-            intro k _
-            rw [hAplus k i]
-    _ = ∑ p : Fin n, (∑ k : Fin n, rectLSGram A j k * gramInv k p) * A i p := by
-            simp_rw [Finset.mul_sum, Finset.sum_mul]
-            rw [Finset.sum_comm]
-            apply Finset.sum_congr rfl
-            intro p _
-            apply Finset.sum_congr rfl
-            intro k _
-            ring
-    _ = ∑ p : Fin n, (if j = p then 1 else 0) * A i p := by
-            apply Finset.sum_congr rfl
-            intro p _
-            rw [hGramInv.2 j p]
-    _ = A i j := by
-            simp
 /-- The Gram matrix `A^T A` used in Chapter 20 is symmetric. -/
 theorem rectLSGram_symmetric {m n : ℕ}
     (A : Fin m → Fin n → ℝ) :
@@ -676,45 +579,6 @@ theorem rectLSGram_mulVec_eq_transpose_rectMatMulVec {m n : ℕ}
             apply Finset.sum_congr rfl
             intro k _
             ring
-theorem matMulVec_eq_zero_of_inverse {n : ℕ}
-    (T Tinv : Fin n → Fin n → ℝ) (hInv : IsInverse n T Tinv)
-    {x : Fin n → ℝ} (hx : ∀ i : Fin n, matMulVec n T x i = 0) :
-    x = 0 := by
-  ext i
-  calc
-    x i = matMulVec n (idMatrix n) x i := by rw [matMulVec_id]
-    _ = matMulVec n (matMul n Tinv T) x i := by
-          have hmat : matMul n Tinv T = idMatrix n := by
-            ext a b
-            exact hInv.1 a b
-          rw [hmat]
-    _ = matMulVec n Tinv (matMulVec n T x) i := by
-          exact matMulVec_matMul n Tinv T x i
-    _ = matMulVec n Tinv 0 i := by
-          congr 1
-          ext j
-          exact hx j
-    _ = 0 := by
-          unfold matMulVec
-          simp
-theorem rectMatMulVec_absMatrixRect_nonneg {m n : ℕ}
-    (A : Fin m → Fin n → ℝ) {x : Fin n → ℝ}
-    (hx : ∀ j, 0 ≤ x j) :
-    ∀ i : Fin m, 0 ≤ rectMatMulVec (absMatrixRect A) x i := by
-  intro i
-  unfold rectMatMulVec absMatrixRect
-  exact Finset.sum_nonneg (by
-    intro j _
-    exact mul_nonneg (abs_nonneg (A i j)) (hx j))
-theorem matMulVec_absMatrix_nonneg {n : ℕ}
-    (A : Fin n → Fin n → ℝ) {x : Fin n → ℝ}
-    (hx : ∀ j, 0 ≤ x j) :
-    ∀ i : Fin n, 0 ≤ matMulVec n (absMatrix n A) x i := by
-  intro i
-  unfold matMulVec absMatrix
-  exact Finset.sum_nonneg (by
-    intro j _
-    exact mul_nonneg (abs_nonneg (A i j)) (hx j))
 /-- Dot product of two appended real vectors, split over the source row and
     column blocks used in the scaled augmented matrix `C(alpha)`. -/
 theorem finAppend_sum_mul_eq {m n : ℕ}
@@ -818,53 +682,6 @@ def lsSourceLeftCompletionEmbedding {m n : ℕ} (hmn : n ≤ m) :
               congrArg Fin.val hxy
             have hcd : c.val = d.val := by omega
             exact congrArg Sum.inr (Fin.ext hcd)
-theorem vecNorm2_pos_of_ne_zero_lsq {m : ℕ} {b : Fin m → ℝ}
-    (hb : b ≠ 0) : 0 < vecNorm2 b := by
-  have hbne : vecNorm2 b ≠ 0 := by
-    intro hnorm
-    apply hb
-    ext i
-    exact (vecNorm2_eq_zero_iff b).mp hnorm i
-  exact lt_of_le_of_ne' (vecNorm2_nonneg b) hbne
-theorem vecNorm2Sq_pos_of_ne_zero_lsq {m : ℕ} {b : Fin m → ℝ}
-    (hb : b ≠ 0) : 0 < vecNorm2Sq b := by
-  have hbpos := vecNorm2_pos_of_ne_zero_lsq hb
-  rw [← vecNorm2_sq]
-  exact sq_pos_of_pos hbpos
-theorem frobNormSqRect_rankOne_real {m n : ℕ} (c : ℝ)
-    (r : Fin m → ℝ) (y : Fin n → ℝ) :
-    frobNormSqRect (fun i j => c * r i * y j) =
-      c ^ 2 * vecNorm2Sq r * vecNorm2Sq y := by
-  unfold frobNormSqRect vecNorm2Sq
-  calc
-    (∑ i : Fin m, ∑ j : Fin n, (c * r i * y j) ^ 2)
-        = ∑ i : Fin m, ∑ j : Fin n, (c ^ 2 * r i ^ 2) * y j ^ 2 := by
-            apply Finset.sum_congr rfl
-            intro i _
-            apply Finset.sum_congr rfl
-            intro j _
-            ring
-    _ = ∑ i : Fin m, (c ^ 2 * r i ^ 2) * ∑ j : Fin n, y j ^ 2 := by
-            apply Finset.sum_congr rfl
-            intro i _
-            rw [Finset.mul_sum]
-    _ = (∑ i : Fin m, c ^ 2 * r i ^ 2) * ∑ j : Fin n, y j ^ 2 := by
-            rw [Finset.sum_mul]
-    _ = c ^ 2 * (∑ i : Fin m, r i ^ 2) * ∑ j : Fin n, y j ^ 2 := by
-            congr 1
-            rw [Finset.mul_sum]
-    _ = c ^ 2 * (∑ i : Fin m, r i ^ 2) * (∑ j : Fin n, y j ^ 2) := by
-            ring
-theorem rectMatMulVec_add_matrix_lsq {m n : ℕ}
-    (M N : Fin m → Fin n → ℝ) (x : Fin n → ℝ) :
-    rectMatMulVec (fun i j => M i j + N i j) x =
-      fun i => rectMatMulVec M x i + rectMatMulVec N x i := by
-  ext i
-  unfold rectMatMulVec
-  rw [← Finset.sum_add_distrib]
-  apply Finset.sum_congr rfl
-  intro j _
-  ring
 /-- Generic row-Gram quadratic-form identity:
     `x^T (B B^T) x = ||B^T x||_2^2`. -/
 theorem finiteQuadraticForm_rowGram_transpose_eq_vecNorm2Sq_rectMatMulVec_finiteTranspose
@@ -1007,185 +824,6 @@ theorem lsVecNorm2_right_le_of_sum_coords {n m : ℕ}
     · intro i
       simp [x, w, Fin.append_right]
   simpa [x, w, hz] using hle
-theorem realVecToEuclidean_ne_zero_of_vecNorm2Sq_ne_zero {m : ℕ}
-    {v : Fin m → ℝ} (hv : vecNorm2Sq v ≠ 0) :
-    realVecToEuclidean v ≠ 0 := by
-  intro hvzero
-  have hnorm : vecNorm2 v = 0 := by
-    have hnormE : ‖realVecToEuclidean v‖ = 0 := by
-      simp [hvzero]
-    simpa [realVecToEuclidean_norm] using hnormE
-  have hsq : vecNorm2Sq v = 0 := by
-    rw [← vecNorm2_sq, hnorm]
-    norm_num
-  exact hv hsq
-theorem complexMatrixRank_ne_card_of_euclideanLin_ker_nonzero
-    {m n : ℕ} (A : CMatrix m n) {x : EuclideanSpace ℂ (Fin n)}
-    (hxker : complexMatrixEuclideanLin A x = 0) (hxne : x ≠ 0) :
-    complexMatrixRank A ≠ n := by
-  intro hrank
-  let T : EuclideanSpace ℂ (Fin n) →ₗ[ℂ] EuclideanSpace ℂ (Fin m) :=
-    complexMatrixEuclideanLin A
-  have hrange :
-      Module.finrank ℂ (LinearMap.range T) = n := by
-    simpa [T, complexMatrixRank_eq_finrank_range_euclideanLin A] using hrank
-  have hdomain :
-      Module.finrank ℂ (EuclideanSpace ℂ (Fin n)) = n :=
-    finrank_euclideanSpace_fin (𝕜 := ℂ) (n := n)
-  have hsum :
-      Module.finrank ℂ (LinearMap.range T) +
-          Module.finrank ℂ (LinearMap.ker T) =
-        Module.finrank ℂ (EuclideanSpace ℂ (Fin n)) :=
-    LinearMap.finrank_range_add_finrank_ker T
-  have hker_finrank :
-      Module.finrank ℂ (LinearMap.ker T) = 0 := by
-    omega
-  have hker_bot : LinearMap.ker T = ⊥ := by
-    exact (Submodule.finrank_eq_zero).mp hker_finrank
-  have hxmem : x ∈ LinearMap.ker T := by
-    simpa [T, LinearMap.mem_ker] using hxker
-  have hxzero : x = 0 := by
-    have hxbot : x ∈ (⊥ : Submodule ℂ (EuclideanSpace ℂ (Fin n))) := by
-      simpa [hker_bot] using hxmem
-    simpa using hxbot
-  exact hxne hxzero
-theorem complexMatrixRank_eq_card_of_euclideanLin_ker_eq_bot
-    {m n : ℕ} (A : CMatrix m n)
-    (hker : LinearMap.ker (complexMatrixEuclideanLin A) = ⊥) :
-    complexMatrixRank A = n := by
-  let T : EuclideanSpace ℂ (Fin n) →ₗ[ℂ] EuclideanSpace ℂ (Fin m) :=
-    complexMatrixEuclideanLin A
-  have hsum :
-      Module.finrank ℂ (LinearMap.range T) +
-          Module.finrank ℂ (LinearMap.ker T) =
-        Module.finrank ℂ (EuclideanSpace ℂ (Fin n)) :=
-    LinearMap.finrank_range_add_finrank_ker T
-  have hker0 : Module.finrank ℂ (LinearMap.ker T) = 0 := by
-    change Module.finrank ℂ (LinearMap.ker (complexMatrixEuclideanLin A)) = 0
-    simp [hker]
-  have hdomain : Module.finrank ℂ (EuclideanSpace ℂ (Fin n)) = n :=
-    finrank_euclideanSpace_fin (𝕜 := ℂ) (n := n)
-  have hrange : Module.finrank ℂ (LinearMap.range T) = n := by
-    omega
-  simpa [T, complexMatrixRank_eq_finrank_range_euclideanLin A] using hrange
-theorem complexMatrixEuclideanLin_ker_eq_bot_of_rank_eq_card
-    {m n : ℕ} (A : CMatrix m n)
-    (hrank : complexMatrixRank A = n) :
-    LinearMap.ker (complexMatrixEuclideanLin A) = ⊥ := by
-  rw [LinearMap.ker_eq_bot']
-  intro z hz
-  by_contra hz_ne
-  exact complexMatrixRank_ne_card_of_euclideanLin_ker_nonzero A hz hz_ne hrank
-theorem frobNormSqRect_add_eq_add_of_inner_eq_zero_lsq {m n : ℕ}
-    (A B : Fin m → Fin n → ℝ)
-    (hcross : ∑ i : Fin m, ∑ j : Fin n, A i j * B i j = 0) :
-    frobNormSqRect (fun i j => A i j + B i j) =
-      frobNormSqRect A + frobNormSqRect B := by
-  have hexp : frobNormSqRect (fun i j => A i j + B i j) =
-      frobNormSqRect A +
-        2 * (∑ i : Fin m, ∑ j : Fin n, A i j * B i j) +
-      frobNormSqRect B := by
-    unfold frobNormSqRect
-    simp_rw [show ∀ i : Fin m, ∀ j : Fin n, (A i j + B i j) ^ 2 =
-        A i j ^ 2 + 2 * (A i j * B i j) + B i j ^ 2 from fun i j => by ring,
-      Finset.sum_add_distrib]
-    rw [show ∑ x : Fin m, ∑ x_1 : Fin n, 2 * (A x x_1 * B x x_1) =
-        2 * ∑ x : Fin m, ∑ x_1 : Fin n, A x x_1 * B x x_1 from by
-      rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro i _
-      rw [Finset.mul_sum]]
-  rw [hexp, hcross]
-  ring
-theorem vecNorm2Sq_add_eq_add_of_inner_eq_zero_lsq {m : ℕ}
-    (u v : Fin m → ℝ) (hcross : ∑ i : Fin m, u i * v i = 0) :
-    vecNorm2Sq (fun i => u i + v i) = vecNorm2Sq u + vecNorm2Sq v := by
-  have hexp : vecNorm2Sq (fun i => u i + v i) =
-      vecNorm2Sq u + 2 * (∑ i : Fin m, u i * v i) + vecNorm2Sq v := by
-    unfold vecNorm2Sq
-    simp_rw [show ∀ i : Fin m, (u i + v i) ^ 2 =
-        u i ^ 2 + 2 * (u i * v i) + v i ^ 2 from fun i => by ring,
-      Finset.sum_add_distrib]
-    rw [show ∑ i : Fin m, 2 * (u i * v i) =
-        2 * ∑ i : Fin m, u i * v i from by rw [Finset.mul_sum]]
-  rw [hexp, hcross]
-  ring
-theorem matMulVec_orthogonal_mul_transpose_lsq {m : ℕ}
-    {Q : Fin m → Fin m → ℝ} (hQ : IsOrthogonal m Q)
-    (f : Fin m → ℝ) :
-    matMulVec m Q (matMulVec m (matTranspose Q) f) = f := by
-  ext i
-  calc
-    matMulVec m Q (matMulVec m (matTranspose Q) f) i
-        = matMulVec m (matMul m Q (matTranspose Q)) f i := by
-            exact (matMulVec_matMul m Q (matTranspose Q) f i).symm
-    _ = matMulVec m (idMatrix m) f i := by
-            have hmat : matMul m Q (matTranspose Q) = idMatrix m := by
-              ext a b
-              exact hQ.right_inv a b
-            rw [hmat]
-    _ = f i := by
-            exact congrFun (matMulVec_id m f) i
-theorem matMulVec_orthogonal_transpose_mul_lsq {m : ℕ}
-    {Q : Fin m → Fin m → ℝ} (hQ : IsOrthogonal m Q)
-    (f : Fin m → ℝ) :
-    matMulVec m (matTranspose Q) (matMulVec m Q f) = f := by
-  ext i
-  calc
-    matMulVec m (matTranspose Q) (matMulVec m Q f) i
-        = matMulVec m (matMul m (matTranspose Q) Q) f i := by
-            exact (matMulVec_matMul m (matTranspose Q) Q f i).symm
-    _ = matMulVec m (idMatrix m) f i := by
-            have hmat : matMul m (matTranspose Q) Q = idMatrix m := by
-              ext a b
-              exact hQ.left_inv a b
-            rw [hmat]
-    _ = f i := by
-            exact congrFun (matMulVec_id m f) i
-theorem matMulRectLeft_transpose_action_orthogonal {m n : ℕ}
-    (Q : Fin m → Fin m → ℝ) (B : Fin m → Fin n → ℝ)
-    (y : Fin m → ℝ) (hQ : IsOrthogonal m Q) :
-    (fun j : Fin n =>
-      ∑ i : Fin m, matMulRectLeft Q B i j * matMulVec m Q y i) =
-      fun j : Fin n => ∑ i : Fin m, B i j * y i := by
-  ext j
-  unfold matMulRectLeft matMulVec
-  calc
-    ∑ i : Fin m, (∑ k : Fin m, Q i k * B k j) *
-        (∑ l : Fin m, Q i l * y l)
-        = ∑ i : Fin m, ∑ k : Fin m, ∑ l : Fin m,
-            (Q i k * B k j) * (Q i l * y l) := by
-            apply Finset.sum_congr rfl
-            intro i _
-            rw [Finset.sum_mul]
-            apply Finset.sum_congr rfl
-            intro k _
-            rw [Finset.mul_sum]
-    _ = ∑ k : Fin m, ∑ l : Fin m, ∑ i : Fin m,
-          (Q i k * B k j) * (Q i l * y l) := by
-            rw [Finset.sum_comm]
-            apply Finset.sum_congr rfl
-            intro k _
-            rw [Finset.sum_comm]
-    _ = ∑ k : Fin m, ∑ l : Fin m,
-          (∑ i : Fin m, Q i k * Q i l) * (B k j * y l) := by
-            apply Finset.sum_congr rfl
-            intro k _
-            apply Finset.sum_congr rfl
-            intro l _
-            rw [Finset.sum_mul]
-            apply Finset.sum_congr rfl
-            intro i _
-            ring
-    _ = ∑ k : Fin m, ∑ l : Fin m,
-          (if k = l then 1 else 0) * (B k j * y l) := by
-            apply Finset.sum_congr rfl
-            intro k _
-            apply Finset.sum_congr rfl
-            intro l _
-            rw [hQ.col_orthonormal k l]
-    _ = ∑ k : Fin m, B k j * y k := by
-            simp [Finset.mem_univ]
 /-- The global Householder QR gamma-validity assumption used in Theorem 20.4
     also supplies the triangular-solve gamma-validity assumption. -/
 theorem gammaValid_n_of_householderConstructApplyGammaValid
@@ -1268,38 +906,6 @@ theorem lsObjective_add_direction_eq {m n : ℕ}
         vecNorm2Sq (rectMatMulVec A d) := by
   unfold lsObjective
   rw [lsResidual_add_direction, vecNorm2Sq_add_eq, ls_cross_term_eq]
-theorem sum_smul_finiteBasisVec_mul {n : ℕ}
-    (j : Fin n) (t : ℝ) (c : Fin n → ℝ) :
-    (∑ k : Fin n, (t * finiteBasisVec j k) * c k) = t * c j := by
-  unfold finiteBasisVec
-  rw [Finset.sum_eq_single j]
-  · simp
-  · intro k _ hk
-    simp [hk]
-  · intro hnot
-    exact False.elim (hnot (Finset.mem_univ j))
-theorem linear_term_eq_zero_of_quadratic_nonneg
-    {a c : ℝ} (ha : 0 ≤ a)
-    (hquad : ∀ t : ℝ, 0 ≤ 2 * t * c + t ^ 2 * a) :
-    c = 0 := by
-  by_contra hc
-  let t : ℝ := -c / (a + 1)
-  have hden_pos : 0 < a + 1 := by linarith
-  have hden_ne : a + 1 ≠ 0 := ne_of_gt hden_pos
-  have hc_sq_pos : 0 < c ^ 2 := sq_pos_of_ne_zero hc
-  have hcalc :
-      2 * t * c + t ^ 2 * a =
-        -(c ^ 2 * (a + 2)) / (a + 1) ^ 2 := by
-    dsimp [t]
-    field_simp [hden_ne]
-    ring
-  have hnum_pos : 0 < c ^ 2 * (a + 2) := by nlinarith
-  have hden_sq_pos : 0 < (a + 1) ^ 2 := sq_pos_of_pos hden_pos
-  have hneg : -(c ^ 2 * (a + 2)) / (a + 1) ^ 2 < 0 :=
-    div_neg_of_neg_of_pos (neg_neg_of_pos hnum_pos) hden_sq_pos
-  have ht := hquad t
-  rw [hcalc] at ht
-  linarith
 /-- Perturbed-data expansion of Higham's signed residual:
     `(b + Delta b) - (A + Delta A)y = (b - A y) + Delta b - Delta A y`. -/
 theorem lsResidualHigham_perturbed_eq {m n : ℕ}
@@ -1354,7 +960,7 @@ noncomputable def mgsAugmentedResidualExpansion {m n : ℕ}
     (R : Fin n → Fin n → ℝ) (z x : Fin n → ℝ) (rho : ℝ) :
     Fin m → ℝ :=
   fun i => rectMatMulVec Q1 (mgsAugmentedTopResidual R z x) i - rho * q i
-theorem mgsAugmented_matVec_eq {m n : ℕ}
+private theorem mgsAugmented_matVec_eq {m n : ℕ}
     {A : Fin m → Fin n → ℝ} {Q1 : Fin m → Fin n → ℝ}
     {R : Fin n → Fin n → ℝ} (x : Fin n → ℝ)
     (hA : ∀ i j, A i j = ∑ k : Fin n, Q1 i k * R k j)
@@ -1382,7 +988,7 @@ theorem mgsAugmented_matVec_eq {m n : ℕ}
           apply Finset.sum_congr rfl
           intro j _
           ring
-theorem mgsAugmented_sum_diff {m n : ℕ}
+private theorem mgsAugmented_sum_diff {m n : ℕ}
     (Q1 : Fin m → Fin n → ℝ) (R : Fin n → Fin n → ℝ)
     (z x : Fin n → ℝ) (i : Fin m) :
     (∑ k : Fin n, Q1 i k * matMulVec n R x k) -
@@ -1393,7 +999,23 @@ theorem mgsAugmented_sum_diff {m n : ℕ}
   intro k _
   unfold mgsAugmentedTopResidual
   ring
-theorem vecNorm2Sq_mgsAugmentedResidualExpansion {m n : ℕ}
+/-- Higham, 2nd ed., Chapter 20, Section 20.3:
+    from `[A b] = [Q₁ q] [[R z], [0 ρ]]`,
+    `A x - b = Q₁(Rx-z) - ρq`. -/
+theorem MGSAugmentedLSFactorization.residual_eq {m n : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {Q1 : Fin m → Fin n → ℝ} {q : Fin m → ℝ}
+    {R : Fin n → Fin n → ℝ} {z : Fin n → ℝ} {rho : ℝ}
+    (h : MGSAugmentedLSFactorization A b Q1 q R z rho)
+    (x : Fin n → ℝ) :
+    lsResidual A b x = mgsAugmentedResidualExpansion Q1 q R z x rho := by
+  ext i
+  unfold lsResidual mgsAugmentedResidualExpansion
+  rw [mgsAugmented_matVec_eq x h.A_eq i, h.b_eq i]
+  unfold rectMatMulVec
+  rw [← mgsAugmented_sum_diff Q1 R z x i]
+  ring
+private theorem vecNorm2Sq_mgsAugmentedResidualExpansion {m n : ℕ}
     (Q1 : Fin m → Fin n → ℝ) (q : Fin m → ℝ)
     (R : Fin n → Fin n → ℝ) (z x : Fin n → ℝ) (rho : ℝ)
     (hQ1 : ∀ j k : Fin n, ∑ i : Fin m, Q1 i j * Q1 i k =
@@ -1496,6 +1118,50 @@ theorem vecNorm2Sq_mgsAugmentedResidualExpansion {m n : ℕ}
   rw [hmain, hQnorm, hcrossTerm, hcross, hqnorm']
   unfold vecNorm2Sq
   ring
+/-- Higham, 2nd ed., Chapter 20, Section 20.3:
+    if `[A b] = [Q₁ q] [[R z], [0 ρ]]`, with `q` orthogonal to the columns of
+    `Q₁`, then `||A x - b||₂² = ||R x - z||₂² + ρ²`.  The book writes the
+    equivalent norm of `b - A x`. -/
+theorem MGSAugmentedLSFactorization.objective_eq_top_plus_rho_sq
+    {m n : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {Q1 : Fin m → Fin n → ℝ} {q : Fin m → ℝ}
+    {R : Fin n → Fin n → ℝ} {z : Fin n → ℝ} {rho : ℝ}
+    (h : MGSAugmentedLSFactorization A b Q1 q R z rho)
+    (x : Fin n → ℝ) :
+    lsObjective A b x =
+      vecNorm2Sq (mgsAugmentedTopResidual R z x) + rho ^ 2 := by
+  unfold lsObjective
+  rw [h.residual_eq x]
+  exact
+    vecNorm2Sq_mgsAugmentedResidualExpansion
+      Q1 q R z x rho h.Q1_col_orthonormal h.q_orthogonal h.q_norm
+/-- Higham, 2nd ed., Chapter 20, Section 20.3:
+    the exact augmented-MGS least-squares algebra implies that any solution of
+    `R x = z` is an exact least-squares minimizer for the original problem.
+    This formalizes the source statement "the LS solution is `x = R^{-1} z`"
+    without assuming a concrete inverse for `R`. -/
+theorem MGSAugmentedLSFactorization.isLeastSquaresMinimizer_of_solve
+    {m n : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {Q1 : Fin m → Fin n → ℝ} {q : Fin m → ℝ}
+    {R : Fin n → Fin n → ℝ} {z : Fin n → ℝ} {rho : ℝ}
+    (h : MGSAugmentedLSFactorization A b Q1 q R z rho)
+    {x : Fin n → ℝ}
+    (hsolve : ∀ k : Fin n, matMulVec n R x k = z k) :
+    IsLeastSquaresMinimizer A b x := by
+  intro y
+  rw [h.objective_eq_top_plus_rho_sq x, h.objective_eq_top_plus_rho_sq y]
+  have htop_zero : vecNorm2Sq (mgsAugmentedTopResidual R z x) = 0 := by
+    unfold vecNorm2Sq mgsAugmentedTopResidual
+    apply Finset.sum_eq_zero
+    intro k _
+    rw [hsolve k]
+    ring
+  rw [htop_zero]
+  have hnonneg : 0 ≤ vecNorm2Sq (mgsAugmentedTopResidual R z y) :=
+    vecNorm2Sq_nonneg (mgsAugmentedTopResidual R z y)
+  nlinarith
 /-- Orthogonal row transformations preserve the rectangular Gram matrix. -/
 theorem rectLSGram_matMulRectLeft_orthogonal {m n : ℕ}
     (U : Fin m → Fin m → ℝ) (A : Fin m → Fin n → ℝ)
@@ -1687,248 +1353,6 @@ theorem qrPreviousLeadingBlockTranspose_det_ne_zero_of_diagDominant_leadingBlock
     have hdiag := hDD.2.1 (Fin.castSucc r)
     simpa [qrPreviousLeadingBlockTranspose, qrLeadingBlock, qrPrefixRow,
       qrLeadingRow, qrPreviousColumn, qrLeadingColumn] using hdiag
-
-/-- Equivalence from a right-Gram basis index to the ordered singular-value
-    coordinate selected by the same mathlib Hermitian reindexing. -/
-noncomputable def rectRightGramBasisOrderedEquiv (n : ℕ) : Fin n ≃ Fin n where
-  toFun := rectRightGramBasisOrderedIndex n
-  invFun i := rectRightGramOrderedEigenbasisEquiv n (finCardIndex n i)
-  left_inv := by
-    intro b
-    change rectRightGramOrderedEigenbasisEquiv n
-        (finCardIndex n (rectRightGramBasisOrderedIndex n b)) = b
-    rw [finCardIndex_rectRightGramBasisOrderedIndex]
-    exact (rectRightGramOrderedEigenbasisEquiv n).apply_symm_apply b
-  right_inv := by
-    intro i
-    apply Fin.ext
-    have h :=
-      finCardIndex_rectRightGramBasisOrderedIndex n
-        (rectRightGramOrderedEigenbasisEquiv n (finCardIndex n i))
-    rw [(rectRightGramOrderedEigenbasisEquiv n).symm_apply_apply] at h
-    simpa [finCardIndex] using congrArg Fin.val h
-/-- Positive right-Gram singular branches give the transpose-side singular-pair
-    equation for the real basis-indexed SVD candidates.  This is the missing
-    algebraic half of `u_a = A v_a / sigma_a`, specialized to the finite
-    real-Gram infrastructure already used elsewhere in the repository. -/
-theorem rectRightGramLeftSingularFromEigenbasis_transpose_action_of_pos
-    {m n : ℕ}
-    (A : Fin m → Fin n → ℝ)
-    (hpos : ∀ a : Fin n, 0 < rectRightGramBasisSingularValue A a)
-    (a : Fin n) :
-    (fun j : Fin n => ∑ i : Fin m,
-      A i j * rectRightGramLeftSingularFromEigenbasis A i a) =
-        fun j => rectRightGramBasisSingularValue A a *
-          rectRightGramEigenbasis A j a := by
-  ext j
-  let τ := rectRightGramBasisSingularValue A a
-  have hτ : τ ≠ 0 := ne_of_gt (hpos a)
-  have heig := rectRightGramEigenbasis_eigenvector A a j
-  have hsq := rectRightGramBasisSingularValue_sq_eq A a
-  calc
-    ∑ i : Fin m, A i j * rectRightGramLeftSingularFromEigenbasis A i a
-        = (1 / τ) * ∑ i : Fin m,
-            A i j * rectRightGramProjectedColumn A i a := by
-          unfold rectRightGramLeftSingularFromEigenbasis
-          rw [Finset.mul_sum]
-          apply Finset.sum_congr rfl
-          intro i _
-          ring
-    _ = (1 / τ) * ∑ k : Fin n,
-          rectRightGram A j k * rectRightGramEigenbasis A k a := by
-          congr 1
-          unfold rectRightGramProjectedColumn rectRightGram
-          calc
-            ∑ i : Fin m,
-                A i j * (∑ k : Fin n,
-                  A i k * rectRightGramEigenbasis A k a)
-                = ∑ i : Fin m, ∑ k : Fin n,
-                    A i j * (A i k * rectRightGramEigenbasis A k a) := by
-                    apply Finset.sum_congr rfl
-                    intro i _
-                    rw [Finset.mul_sum]
-            _ = ∑ k : Fin n, ∑ i : Fin m,
-                    A i j * (A i k * rectRightGramEigenbasis A k a) := by
-                    rw [Finset.sum_comm]
-            _ = ∑ k : Fin n, (∑ i : Fin m, A i j * A i k) *
-                    rectRightGramEigenbasis A k a := by
-                    apply Finset.sum_congr rfl
-                    intro k _
-                    rw [Finset.sum_mul]
-                    apply Finset.sum_congr rfl
-                    intro i _
-                    ring
-    _ = (1 / τ) *
-          (rectRightGramEigenvalue A a * rectRightGramEigenbasis A j a) := by
-          rw [heig]
-    _ = τ * rectRightGramEigenbasis A j a := by
-          have hτsq : τ ^ 2 = rectRightGramEigenvalue A a := by
-            simpa [τ] using hsq
-          rw [← hτsq]
-          field_simp [hτ]
-/-- Full column rank in the real column-map sense forces every basis-indexed
-    right-Gram singular value to be positive.  A zero branch would make the
-    corresponding orthonormal right-Gram eigenvector lie in the kernel of `A`. -/
-theorem rectRightGramBasisSingularValue_pos_of_rectMatMulVec_injective
-    {m n : ℕ} {A : Fin m → Fin n → ℝ}
-    (hinj : Function.Injective (rectMatMulVec A)) (a : Fin n) :
-    0 < rectRightGramBasisSingularValue A a := by
-  refine lt_of_le_of_ne' (rectRightGramBasisSingularValue_nonneg A a) ?_
-  intro hzero
-  let v : Fin n → ℝ := fun j => rectRightGramEigenbasis A j a
-  have hAv_zero : rectMatMulVec A v = 0 := by
-    ext i
-    have hp :=
-      rectRightGramProjectedColumn_eq_zero_of_singularValue_eq_zero
-        A a hzero i
-    simpa [v, rectMatMulVec, rectRightGramProjectedColumn] using hp
-  have hv_zero : v = 0 := by
-    apply hinj
-    rw [hAv_zero]
-    ext i
-    simp [rectMatMulVec]
-  have hnorm_one : (∑ j : Fin n, v j * v j) = 1 := by
-    have h := rectRightGramEigenbasis_col_orthonormal A a a
-    simpa [v, idMatrix] using h
-  have hnorm_zero : (∑ j : Fin n, v j * v j) = 0 := by
-    simp [hv_zero]
-  linarith
-/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
-    construction of the `m-n` left-nullspace branch family for the real
-    right-Gram route.  Under `n <= m` and real full-column-rank injectivity,
-    the constructed left singular vectors can be completed to an orthonormal
-    `m`-column table; the added tail columns are orthonormal and annihilated by
-    `A^T`. -/
-theorem exists_rightGram_leftNull_branch_data_of_rectMatMulVec_injective
-    {m n : ℕ} (hmn : n ≤ m) {A : Fin m → Fin n → ℝ}
-    (hinj : Function.Injective (rectMatMulVec A)) :
-    ∃ w : Fin (m - n) → Fin m → ℝ,
-      (∀ k : Fin (m - n), vecNorm2Sq (w k) = 1) ∧
-        (∀ k l : Fin (m - n),
-          k ≠ l → (∑ r : Fin m, w k r * w l r) = 0) ∧
-        (∀ k : Fin (m - n), ∀ j : Fin n,
-          ∑ r : Fin m, A r j * w k r = 0) := by
-  classical
-  let U : Fin m → Fin n → ℝ :=
-    fun r a => rectRightGramLeftSingularFromEigenbasis A r a
-  let Utail₀ : Fin m → Fin (m - n) → ℝ := fun _ _ => 0
-  let s : Set (Fin n ⊕ Fin (m - n)) := fun bc =>
-    match bc with
-    | Sum.inl _ => True
-    | Sum.inr _ => False
-  have hpos : ∀ a : Fin n, 0 < rectRightGramBasisSingularValue A a :=
-    fun a => rectRightGramBasisSingularValue_pos_of_rectMatMulVec_injective
-      (A := A) hinj a
-  have hhead : ∀ a : Fin n, Sum.inl a ∈ s := by
-    intro a
-    exact True.intro
-  have hpartial : ∀ a b : s,
-      (∑ i : Fin m,
-        leftBasisBlock U Utail₀ i a *
-          leftBasisBlock U Utail₀ i b) =
-        if a = b then 1 else 0 := by
-    intro a b
-    rcases a with ⟨bc, hbc⟩
-    rcases b with ⟨bd, hbd⟩
-    cases bc with
-    | inl ca =>
-        cases bd with
-        | inl db =>
-            have horth :=
-              rectRightGramLeftSingularFromEigenbasis_col_orthonormal_of_pos
-                A hpos ca db
-            have hite :
-                idMatrix n ca db =
-                  if (⟨Sum.inl ca, hbc⟩ : s) = ⟨Sum.inl db, hbd⟩ then
-                    1
-                  else
-                    0 := by
-              by_cases hcd : ca = db
-              · subst db
-                simp [idMatrix]
-              · have hsub :
-                    (⟨Sum.inl ca, hbc⟩ : s) ≠ ⟨Sum.inl db, hbd⟩ := by
-                  intro hEq
-                  have hval :
-                      (Sum.inl ca : Fin n ⊕ Fin (m - n)) = Sum.inl db :=
-                    congrArg Subtype.val hEq
-                  exact hcd (Sum.inl.inj hval)
-                simp [idMatrix, hcd, hsub]
-            calc
-              (∑ i : Fin m,
-                leftBasisBlock U Utail₀ i (Sum.inl ca) *
-                  leftBasisBlock U Utail₀ i (Sum.inl db))
-                  = idMatrix n ca db := by
-                    simpa [U, Utail₀, leftBasisBlock] using horth
-              _ = if (⟨Sum.inl ca, hbc⟩ : s) = ⟨Sum.inl db, hbd⟩ then
-                    1
-                  else
-                    0 := hite
-        | inr db =>
-            cases hbd
-    | inr ca =>
-        cases hbc
-  obtain ⟨Utail, _hpreserve, hcols⟩ :=
-    partialLeftBasisBlock_exists_replacement_tail
-      (lsSourceLeftCompletionEmbedding hmn) U Utail₀ s hhead hpartial
-  let w : Fin (m - n) → Fin m → ℝ := fun k r => Utail r k
-  have hfields :=
-    leftBasisBlock_component_orthonormal_fields_of_col_orthonormal
-      U Utail hcols
-  have hw : ∀ k : Fin (m - n), vecNorm2Sq (w k) = 1 := by
-    intro k
-    have h := hfields.2.2 k k
-    simpa [w, vecNorm2Sq, idMatrix, pow_two] using h
-  have hnull : ∀ k l : Fin (m - n),
-      k ≠ l → (∑ r : Fin m, w k r * w l r) = 0 := by
-    intro k l hkl
-    have h := hfields.2.2 k l
-    simpa [w, idMatrix, hkl] using h
-  have hATw : ∀ k : Fin (m - n), ∀ j : Fin n,
-      ∑ r : Fin m, A r j * w k r = 0 := by
-    intro k j
-    have hcross := hfields.2.1
-    calc
-      ∑ r : Fin m, A r j * w k r
-          = ∑ r : Fin m,
-              (∑ a : Fin n,
-                U r a * rectRightGramBasisSingularValue A a *
-                  rectRightGramEigenbasis A j a) * w k r := by
-              apply Finset.sum_congr rfl
-              intro r _
-              rw [rectRightGram_fullPositive_basisSVD_representation A hpos r j]
-      _ = ∑ r : Fin m, ∑ a : Fin n,
-              (U r a * w k r) *
-                (rectRightGramBasisSingularValue A a *
-                  rectRightGramEigenbasis A j a) := by
-              apply Finset.sum_congr rfl
-              intro r _
-              rw [Finset.sum_mul]
-              apply Finset.sum_congr rfl
-              intro a _
-              ring
-      _ = ∑ a : Fin n, ∑ r : Fin m,
-              (U r a * w k r) *
-                (rectRightGramBasisSingularValue A a *
-                  rectRightGramEigenbasis A j a) := by
-              rw [Finset.sum_comm]
-      _ = ∑ a : Fin n,
-              (rectRightGramBasisSingularValue A a *
-                rectRightGramEigenbasis A j a) *
-                (∑ r : Fin m, U r a * w k r) := by
-              apply Finset.sum_congr rfl
-              intro a _
-              rw [Finset.mul_sum]
-              apply Finset.sum_congr rfl
-              intro r _
-              ring
-      _ = 0 := by
-              apply Finset.sum_eq_zero
-              intro a _
-              rw [hcross a k]
-              ring
-  exact ⟨w, hw, hnull, hATw⟩
-
 /-- The entrywise-absolute inverse block displayed after Theorem 20.2:
 `[[|I-AA^+|, |A^+|^T], [|A^+|, |(A^T A)^-1|]]`. -/
 noncomputable def higham20AlternativeAbsInverseBlock {m n : Nat}
@@ -1944,7 +1368,6 @@ noncomputable def higham20AlternativeAbsInverseBlock {m n : Nat}
       Fin.append
         (fun i : Fin m => |Aplus j i|)
         (fun k : Fin n => |gramInv j k|))
-
 /-- The off-diagonal componentwise data block
 `[[0,E],[E^T,0]]` displayed after Theorem 20.2. -/
 noncomputable def higham20AlternativeOffDiagonalBlock {m n : Nat}
@@ -1955,7 +1378,6 @@ noncomputable def higham20AlternativeOffDiagonalBlock {m n : Nat}
       Fin.append (fun _ : Fin m => 0) (fun j : Fin n => E i j))
     (fun j : Fin n =>
       Fin.append (fun i : Fin m => E i j) (fun _ : Fin n => 0))
-
 /-- The exact matrix product occurring inside the alternative-bound norm. -/
 noncomputable def higham20AlternativeCouplingMatrix {m n : Nat}
     (A : Fin m -> Fin n -> Real) (Aplus : Fin n -> Fin m -> Real)
@@ -1963,7 +1385,6 @@ noncomputable def higham20AlternativeCouplingMatrix {m n : Nat}
     Fin (m + n) -> Fin (m + n) -> Real :=
   rectMatMul (higham20AlternativeAbsInverseBlock A Aplus gramInv)
     (higham20AlternativeOffDiagonalBlock E)
-
 theorem higham20AlternativeOffDiagonalBlock_mulVec {m n : Nat}
     (E : Fin m -> Fin n -> Real) (u : Fin m -> Real) (v : Fin n -> Real) :
     rectMatMulVec (higham20AlternativeOffDiagonalBlock E) (Fin.append u v) =
@@ -1977,7 +1398,6 @@ theorem higham20AlternativeOffDiagonalBlock_mulVec {m n : Nat}
   · intro j
     simp [higham20AlternativeOffDiagonalBlock, rectMatMulVec,
       Fin.sum_univ_add]
-
 theorem higham20AlternativeAbsInverseBlock_nonneg {m n : Nat}
     (A : Fin m -> Fin n -> Real) (Aplus : Fin n -> Fin m -> Real)
     (gramInv : Fin n -> Fin n -> Real) :
@@ -1990,7 +1410,6 @@ theorem higham20AlternativeAbsInverseBlock_nonneg {m n : Nat}
   · intro ii j
     refine Fin.addCases ?_ ?_ j <;> intro jj <;>
       simp [higham20AlternativeAbsInverseBlock]
-
 theorem higham20AlternativeOffDiagonalBlock_nonneg {m n : Nat}
     {E : Fin m -> Fin n -> Real} (hE : forall i j, 0 <= E i j) :
     forall i j, 0 <= higham20AlternativeOffDiagonalBlock E i j := by
@@ -2004,7 +1423,6 @@ theorem higham20AlternativeOffDiagonalBlock_nonneg {m n : Nat}
     refine Fin.addCases ?_ ?_ j <;> intro jj
     · simpa [higham20AlternativeOffDiagonalBlock] using hE jj ii
     · simp [higham20AlternativeOffDiagonalBlock]
-
 theorem higham20AlternativeCouplingMatrix_nonneg {m n : Nat}
     (A : Fin m -> Fin n -> Real) (Aplus : Fin n -> Fin m -> Real)
     (gramInv : Fin n -> Fin n -> Real)
@@ -2015,7 +1433,6 @@ theorem higham20AlternativeCouplingMatrix_nonneg {m n : Nat}
   exact Finset.sum_nonneg (fun k _ => mul_nonneg
     (higham20AlternativeAbsInverseBlock_nonneg A Aplus gramInv i k)
     (higham20AlternativeOffDiagonalBlock_nonneg hE k j))
-
 /-- Euclidean norm is bounded by the sum of coordinate absolute values. -/
 theorem higham20_vecNorm2_le_sum_abs {d : Nat} (v : Fin d → Real) :
     vecNorm2 v ≤ ∑ i : Fin d, |v i| := by
@@ -2026,7 +1443,6 @@ theorem higham20_vecNorm2_le_sum_abs {d : Nat} (v : Fin d → Real) :
   have hs : 0 ≤ ∑ i : Fin d, |v i| :=
     Finset.sum_nonneg (fun i _ => abs_nonneg (v i))
   nlinarith
-
 /-- The repository's complex `L²` norm agrees with `vecNorm2` on embedded
 real vectors. -/
 theorem higham20_complexVecLpNorm_two_realVecToComplex_eq_vecNorm2
@@ -2039,42 +1455,5 @@ theorem higham20_complexVecLpNorm_two_realVecToComplex_eq_vecNorm2
       complexVecLpNorm_two_eq_toLp (realVecToComplex v)
     _ = norm (realVecToEuclidean v) := by rfl
     _ = vecNorm2 v := realVecToEuclidean_norm v
-
-theorem higham20Theorem20_4_frobNorm_smul_nonneg {m : ℕ}
-    (a : ℝ) (M : Fin m → Fin m → ℝ) (ha : 0 ≤ a) :
-    frobNorm (fun i j => a * M i j) = a * frobNorm M := by
-  rw [← frobNormRect_eq_frobNormFn, frobNormRect_smul,
-    frobNormRect_eq_frobNormFn, abs_of_nonneg ha]
-
-theorem higham20Theorem20_4_abs_matMulRectLeft_le {m n : ℕ}
-    (L : Fin m → Fin m → ℝ) (B : Fin m → Fin n → ℝ)
-    (i : Fin m) (j : Fin n) :
-    |matMulRectLeft L B i j| ≤
-      matMulRect m m n (fun r s => |L r s|) (fun r s => |B r s|) i j := by
-  unfold matMulRectLeft matMulRect
-  calc
-    |∑ k : Fin m, L i k * B k j| ≤
-        ∑ k : Fin m, |L i k * B k j| := Finset.abs_sum_le_sum_abs _ _
-    _ = ∑ k : Fin m, |L i k| * |B k j| := by simp [abs_mul]
-
-theorem higham20Theorem20_4_matMulRect_mono_right {m n : ℕ}
-    (L : Fin m → Fin m → ℝ) (B C : Fin m → Fin n → ℝ)
-    (hL : ∀ i j, 0 ≤ L i j) (hBC : ∀ i j, B i j ≤ C i j)
-    (i : Fin m) (j : Fin n) :
-    matMulRect m m n L B i j ≤ matMulRect m m n L C i j := by
-  unfold matMulRect
-  apply Finset.sum_le_sum
-  intro k _hk
-  exact mul_le_mul_of_nonneg_left (hBC k j) (hL i k)
-
-theorem higham20Theorem20_4_matMulRect_mono_left {m n : ℕ}
-    (L M : Fin m → Fin m → ℝ) (B : Fin m → Fin n → ℝ)
-    (hLM : ∀ i j, L i j ≤ M i j) (hB : ∀ i j, 0 ≤ B i j)
-    (i : Fin m) (j : Fin n) :
-    matMulRect m m n L B i j ≤ matMulRect m m n M B i j := by
-  unfold matMulRect
-  apply Finset.sum_le_sum
-  intro k _hk
-  exact mul_le_mul_of_nonneg_right (hLM i k) (hB k j)
 
 end NumStability

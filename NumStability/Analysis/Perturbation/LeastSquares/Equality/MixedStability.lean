@@ -7,26 +7,24 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR
-import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
+import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 import NumStability.Algorithms.QR.Higham19
-import NumStability.Algorithms.QR.Higham19Thm6ColPivot
-import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
-import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
-import NumStability.Algorithms.QR.Higham19Thm6ElementwisePackaged
-import NumStability.Algorithms.QR.Higham19Thm6RowSpecific
-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+import NumStability.Algorithms.QR.HouseholderQR
+import NumStability.Algorithms.QR.QRSolve
+import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation
+import NumStability.Analysis.Rounding
+import NumStability.FloatingPoint.Model
 
 namespace NumStability
 
+open scoped BigOperators
 open scoped BigOperators Matrix.Norms.Frobenius
 
 /-!
-# Mixed stability for equality-constrained least squares
+# MixedStability
 
-Reusable mixed-stability certificates for generalized-QR equality-constrained least-squares methods.
-
-Declarations are extracted command-for-command from the historical least-squares owners; only contracted cross-module private helpers are promoted.
+Canonical reusable module extracted without change from Higham20Theorem20_10, LSE.
 -/
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, exact perturbed-data
@@ -72,7 +70,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10
       (A := fun i j => A i j + DeltaA i j)
       (B := fun i j => B i j + DeltaB i j)
       (b := fun i => b i + Deltab i) (d := d) hB hstack
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, exact perturbed-data
     GQR core for the perturbed-constraint-right-hand-side branch.
 
@@ -116,7 +113,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10
       (B := fun i j => B i j + DeltaB i j)
       (b := fun i => b i + Deltab i)
       (d := fun i => d i + Deltad i) hB hstack
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, triangular-solve component:
     the two lower-triangular solves in the exact GQR method have concrete
     finite-precision perturbation witnesses for the actual `fl_forwardSub`
@@ -165,7 +161,6 @@ theorem theorem20_10_gqr_forwardSub_triangular_solve_perturbation_bound
     simpa [rectMatMulVec, y1hat] using hSeq i
   · ext i
     simpa [rectMatMulVec, y2hat, rhs] using hL22eq i
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, triangular-solve component:
     Frobenius-norm version of the concrete GQR triangular-solve perturbation
     witnesses.
@@ -215,7 +210,6 @@ theorem theorem20_10_gqr_forwardSub_triangular_solve_frob_perturbation_bound
   exact
     ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
       hDeltaSfrob, hDeltaL22frob, hSeq, hL22eq⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     the named computed vector carries the same Frobenius-bounded triangular
     perturbation witnesses as the raw `fl_forwardSub` calls.
@@ -259,7 +253,6 @@ theorem theorem20_10_gqr_xhat_triangular_solve_frob_perturbation_bound
   · simpa [theorem20_10_gqr_y1hat] using hSeq
   · simpa [theorem20_10_gqr_y1hat, theorem20_10_gqr_rhs2hat,
       theorem20_10_gqr_y2hat] using hL22eq
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     triangular-solve perturbation witnesses for the supplied-trailing-RHS
     path.
@@ -322,7 +315,137 @@ theorem theorem20_10_gqr_xhat_of_transformed_tail_triangular_solve_frob_perturba
   · ext i
     simpa [rectMatMulVec, rhs, y2hat,
       theorem20_10_gqr_y2hat_of_transformed_tail] using hL22eq i
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    exact-minimizer handoff from supplied perturbed triangular factors.
 
+    If a supplied perturbed GQR factorization has the same recovery `Q`, the
+    same lower-left coupling block `L₂₁`, triangular blocks equal to the
+    finite-precision backward-error witnesses `S + ΔS` and `L₂₂ + ΔL₂₂`, and
+    the trailing transformed right-hand side agrees with the computed one, then
+    the named computed vector `xhat = Q [y₁hat; y₂hat]` is an exact LSE
+    minimizer for that supplied perturbed problem.  This bridge does not prove
+    that such a perturbed source factorization exists; it isolates the exact
+    algebra needed once the finite-precision GQR perturbation construction
+    supplies those identities. -/
+theorem theorem20_10_gqr_xhat_isLSEMinimizer_of_supplied_perturbed_triangular_factors
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+    {Bpert : Fin p → Fin (p + q) → ℝ}
+    (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ)
+    (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ)
+    (hQ : hpert.Q = h.Q)
+    (hS : hpert.S = fun i j => h.S i j + DeltaS i j)
+    (hL21 : hpert.L21 = h.L21)
+    (hL22 : hpert.L22 = fun i j => h.L22 i j + DeltaL22 i j)
+    (hd : dpert = d)
+    (hb_tail : ∀ i : Fin q,
+      matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+        matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i))
+    (hS_inj : Function.Injective (rectMatMulVec hpert.S))
+    (hSeq :
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
+        (theorem20_10_gqr_y1hat fp h d) = d)
+    (hL22eq :
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
+        (theorem20_10_gqr_y2hat fp h b d) =
+          theorem20_10_gqr_rhs2hat fp h b d) :
+    IsLSEMinimizer Apert bpert Bpert dpert
+      (theorem20_10_gqr_xhat fp h b d) := by
+  let y1hat : Fin p → ℝ := theorem20_10_gqr_y1hat fp h d
+  let y2hat : Fin q → ℝ := theorem20_10_gqr_y2hat fp h b d
+  have hy1 : rectMatMulVec hpert.S y1hat = dpert := by
+    rw [hS, hd]
+    exact hSeq
+  have hy2 :
+      rectMatMulVec hpert.L22 y2hat =
+        fun i : Fin q =>
+          matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
+            rectMatMulVec hpert.L21 y1hat i := by
+    ext i
+    calc
+      rectMatMulVec hpert.L22 y2hat i
+          = rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j) y2hat i := by
+              rw [hL22]
+      _ = theorem20_10_gqr_rhs2hat fp h b d i := by
+              simpa [y2hat] using congrFun hL22eq i
+      _ = matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
+            rectMatMulVec hpert.L21 y1hat i := by
+              simp [theorem20_10_gqr_rhs2hat, y1hat, hL21, hb_tail i]
+  have hmin :
+      IsLSEMinimizer Apert bpert Bpert dpert
+        (matMulVec (p + q) hpert.Q (Fin.append y1hat y2hat)) :=
+    hpert.isLSEMinimizer_of_triangular_solve hS_inj hy1 hy2
+  simpa [theorem20_10_gqr_xhat, y1hat, y2hat, hQ] using hmin
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    exact-minimizer handoff for the supplied-trailing-RHS path.
+
+    This is the rounded-RHS analogue of
+    `theorem20_10_gqr_xhat_isLSEMinimizer_of_supplied_perturbed_triangular_factors`.
+    The transformed trailing right-hand side is supplied as `beta`, so the
+    perturbed-factor matching hypothesis asks for `Uᵀ(b + Δb)` to equal `beta`
+    on the trailing block instead of the exact source vector `Uᵀ b`. -/
+theorem theorem20_10_gqr_xhat_of_transformed_tail_isLSEMinimizer_of_supplied_perturbed_triangular_factors
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+    {Bpert : Fin p → Fin (p + q) → ℝ}
+    (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+    (beta : Fin q → ℝ) (d : Fin p → ℝ)
+    (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ)
+    (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ)
+    (hQ : hpert.Q = h.Q)
+    (hS : hpert.S = fun i j => h.S i j + DeltaS i j)
+    (hL21 : hpert.L21 = h.L21)
+    (hL22 : hpert.L22 = fun i j => h.L22 i j + DeltaL22 i j)
+    (hd : dpert = d)
+    (hb_tail : ∀ i : Fin q,
+      matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+        beta i)
+    (hS_inj : Function.Injective (rectMatMulVec hpert.S))
+    (hSeq :
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
+        (theorem20_10_gqr_y1hat fp h d) = d)
+    (hL22eq :
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
+        (theorem20_10_gqr_y2hat_of_transformed_tail fp h beta d) =
+          theorem20_10_gqr_rhs2hat_of_transformed_tail fp h beta d) :
+    IsLSEMinimizer Apert bpert Bpert dpert
+      (theorem20_10_gqr_xhat_of_transformed_tail fp h beta d) := by
+  let y1hat : Fin p → ℝ := theorem20_10_gqr_y1hat fp h d
+  let y2hat : Fin q → ℝ :=
+    theorem20_10_gqr_y2hat_of_transformed_tail fp h beta d
+  have hy1 : rectMatMulVec hpert.S y1hat = dpert := by
+    rw [hS, hd]
+    exact hSeq
+  have hy2 :
+      rectMatMulVec hpert.L22 y2hat =
+        fun i : Fin q =>
+          matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
+            rectMatMulVec hpert.L21 y1hat i := by
+    ext i
+    calc
+      rectMatMulVec hpert.L22 y2hat i
+          = rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j) y2hat i := by
+              rw [hL22]
+      _ = theorem20_10_gqr_rhs2hat_of_transformed_tail fp h beta d i := by
+              simpa [y2hat] using congrFun hL22eq i
+      _ = matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
+            rectMatMulVec hpert.L21 y1hat i := by
+              simp [theorem20_10_gqr_rhs2hat_of_transformed_tail, y1hat,
+                hL21, hb_tail i]
+  have hmin :
+      IsLSEMinimizer Apert bpert Bpert dpert
+        (matMulVec (p + q) hpert.Q (Fin.append y1hat y2hat)) :=
+    hpert.isLSEMinimizer_of_triangular_solve hS_inj hy1 hy2
+  simpa [theorem20_10_gqr_xhat_of_transformed_tail, y1hat, y2hat, hQ]
+    using hmin
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     supplied-trailing-RHS rank and minimizer handoff.
 
@@ -375,7 +498,6 @@ theorem theorem20_10_gqr_xhat_of_transformed_tail_rank_and_minimizer_of_supplied
       fp h hpert beta d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
       hb_tail hS_inj hSeq hL22eq
   exact ⟨hrank.1, hrank.2, hmin⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), computed GQR method:
     zero forward-error witness for the supplied-trailing-RHS path.
 
@@ -432,7 +554,6 @@ theorem theorem20_10_gqr_xhat_of_transformed_tail_zero_deltaX_of_supplied_pertur
     simp [hx_eq]
   · rw [vecNorm2_zero]
     exact mul_nonneg hgammaB_nonneg (vecNorm2_nonneg x)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     bounded triangular-solve witnesses plus exact-minimizer handoff.
 
@@ -485,7 +606,6 @@ theorem theorem20_10_gqr_xhat_supplied_perturbed_factor_minimizer_certificate
     theorem20_10_gqr_xhat_isLSEMinimizer_of_supplied_perturbed_triangular_factors
       fp h hpert b d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
       hb_tail hS_inj hSeq hL22eq
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     supplied perturbed-factor rank and minimizer handoff.
 
@@ -541,7 +661,6 @@ theorem theorem20_10_gqr_xhat_rank_and_minimizer_of_supplied_perturbed_triangula
       fp h hpert b d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
       hb_tail hS_inj hSeq hL22eq
   exact ⟨hrank.1, hrank.2, hmin⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     bounded triangular-solve witnesses plus supplied-factor rank/minimizer
     handoff.
@@ -596,7 +715,6 @@ theorem theorem20_10_gqr_xhat_supplied_perturbed_factor_rank_minimizer_certifica
     theorem20_10_gqr_xhat_rank_and_minimizer_of_supplied_perturbed_triangular_factors
       fp h hpert b d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
       hb_tail hSdiag_pert hL22diag_pert hSeq hL22eq
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), computed GQR method:
     zero forward-error witness from supplied perturbed factors.
 
@@ -654,7 +772,6 @@ theorem theorem20_10_gqr_xhat_zero_deltaX_of_supplied_perturbed_triangular_facto
     simp [hx_eq]
   · rw [vecNorm2_zero]
     exact mul_nonneg hgammaB_nonneg (vecNorm2_nonneg x)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), computed GQR method:
     bounded triangular-solve witnesses plus zero-`DeltaX` handoff.
 
@@ -712,7 +829,6 @@ theorem theorem20_10_gqr_xhat_supplied_perturbed_factor_zero_deltaX_certificate
     theorem20_10_gqr_xhat_zero_deltaX_of_supplied_perturbed_triangular_factors
       fp h hpert b d bpert dpert DeltaS DeltaL22 gammaB hQ hS hL21 hL22 hd
       hb_tail hSdiag_pert hL22diag_pert hSeq hL22eq hgammaB_nonneg hx
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, transformed-tail computed
     GQR method: bounded triangular-solve witnesses plus supplied-factor
     rank/minimizer handoff.
@@ -768,7 +884,6 @@ theorem theorem20_10_gqr_xhat_of_transformed_tail_supplied_perturbed_factor_rank
     theorem20_10_gqr_xhat_of_transformed_tail_rank_and_minimizer_of_supplied_perturbed_triangular_factors
       fp h hpert beta d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
       hb_tail hSdiag_pert hL22diag_pert hSeq hL22eq
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), transformed-tail computed
     GQR method: bounded triangular-solve witnesses plus zero-`DeltaX` handoff.
 
@@ -830,7 +945,6 @@ theorem theorem20_10_gqr_xhat_of_transformed_tail_supplied_perturbed_factor_zero
       fp h hpert beta d bpert dpert DeltaS DeltaL22 gammaB hQ hS hL21
       hL22 hd hb_tail hSdiag_pert hL22diag_pert hSeq hL22eq
       hgammaB_nonneg hx
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), finite-precision
     perturbation certificate for the mixed-stability branch.
 
@@ -878,7 +992,6 @@ structure Theorem20_10PartAPerturbationCertificate
   hDeltab : vecNorm2 Deltab ≤ gammaA * vecNorm2 b
   /-- Source-shaped Frobenius bound for `DeltaB`. -/
   hDeltaB : frobNormRect DeltaB ≤ gammaB * frobNormRect B
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), perturbation-budget
     composition for Part A certificates.
 
@@ -1049,7 +1162,6 @@ def theorem20_10_partA_certificate_compose_source_perturbations
       hDeltaA := hDeltaA
       hDeltab := hDeltab
       hDeltaB := hDeltaB }
-
 /-- Nonempty wrapper for
     `theorem20_10_partA_certificate_compose_source_perturbations`. -/
 theorem theorem20_10_nonempty_partA_certificate_compose_source_perturbations
@@ -1093,7 +1205,6 @@ theorem theorem20_10_nonempty_partA_certificate_compose_source_perturbations
       hgammaA2_nonneg hgammaB2_nonneg
       hDeltaA0 hDeltaB0 hDeltab0
       hgammaA_matrix hgammaA_rhs hgammaB_matrix hgammaB_solution cert⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), supplied-factor
     constructor for the mixed-stability perturbation certificate with a
     supplied transformed trailing right-hand side.
@@ -1177,7 +1288,6 @@ theorem theorem20_10_partA_certificate_of_supplied_perturbed_factor_zero_deltaX_
        hDeltaA := hDeltaA
        hDeltab := hDeltab
        hDeltaB := hDeltaB }⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
     transformed-tail version of the supplied-factor Part A certificate.
 
@@ -1303,7 +1413,6 @@ theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of
        hDeltaA := hDeltaA
        hDeltab := hDeltab
        hDeltaB := hDeltaB }⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), transformed-tail
     constructed-source certificate with triangular preservation and the induced
     source `DeltaA`/`DeltaB` bounds discharged.
@@ -1407,7 +1516,6 @@ theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of
   exact
     hcert hSpert_lower hL22pert_lower hSpert_diag hL22pert_diag
       hDeltaA hDeltab hDeltaB hb_tail
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), supplied-factor
     constructor for the mixed-stability perturbation certificate.
 
@@ -1490,7 +1598,6 @@ theorem theorem20_10_partA_certificate_of_supplied_perturbed_factor_zero_deltaX
        hDeltaA := hDeltaA
        hDeltab := hDeltab
        hDeltaB := hDeltaB }⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
     version of the supplied-factor Part A certificate.
 
@@ -1616,7 +1723,6 @@ theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks
        hDeltaA := hDeltaA
        hDeltab := hDeltab
        hDeltaB := hDeltaB }⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
     certificate with perturbed triangular nonsingularity discharged by
     `gamma < 1`.
@@ -1698,7 +1804,6 @@ theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of
   exact
     hcert hSpert_lower hL22pert_lower hSpert_diag hL22pert_diag
       hDeltaA hDeltab hDeltaB hb_tail
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
     certificate with the `gamma < 1` triangular preservation guards derived
     from doubled `gammaValid` hypotheses.
@@ -1755,7 +1860,6 @@ theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of
       (gammaValid_mono fp (by omega) hvalid2L22)
       (gamma_lt_one fp p hvalid2S)
       (gamma_lt_one fp q hvalid2L22)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
     certificate with the induced source `DeltaA` and `DeltaB` Frobenius bounds
     discharged from the triangular-solve perturbation bounds.
@@ -1840,7 +1944,6 @@ theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of
     exact le_trans hDeltaB_base
       (mul_le_mul_of_nonneg_right hgammaB_ge (frobNormRect_nonneg B))
   exact hcert hDeltaA hDeltab hDeltaB hb_tail
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), exact transformed-RHS
     specialization of the constructed-source certificate.
 
@@ -1895,7 +1998,6 @@ theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of
     intro i
     simp
   exact hcert hDeltab0 hb_tail0
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), certificate-to-exact-core
     handoff.
 
@@ -1954,7 +2056,6 @@ theorem theorem20_10_partA_mixed_stability_of_perturbation_certificate
   refine ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, DeltaX, x, rfl, rfl, rfl,
     hxhat, hDeltaX, cert.hDeltaA, cert.hDeltab, cert.hDeltaB, hx, ?_⟩
   exact ⟨h, hyz, ⟨x, hx, huniq⟩⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), exact transformed-RHS
     mixed-stability theorem for the constructed-source supplied-GQR path.
 
@@ -2033,7 +2134,6 @@ theorem theorem20_10_partA_mixed_stability_of_constructed_source_exact_rhs
   · simpa [hDeltaAeq] using hDeltaA
   · simpa [hDeltabeq] using hDeltab
   · simpa [hDeltaBeq] using hDeltaB
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), finite-precision
     perturbation certificate for the fully backward-stable branch.
 
@@ -2074,7 +2174,6 @@ structure Theorem20_10PartBPerturbationCertificate
       gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat
   /-- Source-shaped constraint right-hand-side perturbation bound. -/
   hDeltad : vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), certificate-to-exact-core
     handoff.
 
@@ -2133,7 +2232,6 @@ theorem theorem20_10_partB_backward_error_of_perturbation_certificate
     ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, cert.Deltad, rfl, rfl, rfl, rfl,
       cert.hDeltaA, cert.hDeltaB, cert.hDeltab, cert.hDeltad,
       ⟨h, hyz, hxuniq⟩⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete Householder QR perturbation bound for the smaller `A Q₂`
     triangularization step in the GQR path.
@@ -2187,7 +2285,6 @@ theorem theorem20_10_householder_AQ2_frob_perturbation_bound
     ⟨DeltaC, hrep, hbound⟩
   refine ⟨DeltaC, hrep, le_trans hbound ?_⟩
   exact mul_le_mul_of_nonneg_right hgamma_le (frobNormRect_nonneg C)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     rounded Householder QR perturbation bound for the column-reversed
     `A Q₂` block.
@@ -2248,7 +2345,6 @@ theorem theorem20_10_householder_reversed_AQ2_frob_perturbation_bound
       (fl_householderQRPanel_R fp (r + q) q Crev) :=
       fl_householderQRPanel_R_upper_trapezoidal fp (r + q) q Crev
   exact ⟨DeltaC, hDeltaCrep, hUrev, hRrev, hDeltaCbound⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     source-coordinate perturbation for the column-reversed `A Q₂`
     Householder QR step.
@@ -2326,7 +2422,6 @@ theorem theorem20_10_householder_reversed_AQ2_full_A_frob_perturbation_bound
     have hDeltaAeq : frobNormRect DeltaA = frobNormRect DeltaCrev := by
       rw [hDeltaAnorm, hpad]
     exact le_trans (le_of_eq hDeltaAeq) hDeltaCrevBound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     source-shaped Frobenius bound for the column-reversed `A Q₂`
     Householder perturbation.
@@ -2383,7 +2478,6 @@ theorem theorem20_10_householder_reversed_AQ2_full_A_source_frob_perturbation_bo
     le_trans hDeltaAraw
       (mul_le_mul_of_nonneg_left hCrev_le_A hgamma_nonneg)
   exact ⟨DeltaA, hDeltaArep, hUrev, hRrev, hDeltaA⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete full-`A` perturbation obtained from the smaller `A Q₂`
     Householder QR backward error.
@@ -2443,7 +2537,6 @@ theorem theorem20_10_householder_AQ2_full_A_frob_perturbation_bound
         H19.Theorem19_4.gamma_tilde_nonneg fp hvalid
     exact le_trans hDeltaA_le_C
       (mul_le_mul_of_nonneg_left hC_le_A hgamma_nonneg)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     generic right-hand-side perturbation for a rectangular Householder panel,
     with the conservative accumulated RHS gamma factor exposed.
@@ -2539,7 +2632,6 @@ theorem theorem20_10_householder_panel_rhs_vecNorm2_perturbation_bound_of_gammaF
     (by
       simpa [gammaCoeff, K] using
         mul_le_mul_of_nonneg_left hcoeff_inf_le_vec hsqrt_nonneg)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete right-hand-side perturbation for the smaller `A Q₂`
     Householder transform used in the GQR path.
@@ -2570,7 +2662,6 @@ theorem theorem20_10_householder_AQ2_rhs_vecNorm2_perturbation_bound
   simpa using
     fl_householderQRPanel_rhs_explicit_vecNorm2_perturbation_bound
       fp (r + q) q (gqrAQ2Block A Q) b hready
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     global-gamma wrapper for the `A Q₂` RHS perturbation certificate.
 
@@ -2600,7 +2691,6 @@ theorem theorem20_10_householder_AQ2_rhs_vecNorm2_perturbation_bound_of_global_g
       fp A Q b
       (HouseholderQRPanelReady_of_global_gammaValid
         fp (r + q) q (r + q) (gqrAQ2Block A Q) le_rfl hvalid)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     conservative source-norm bound for the `A Q₂` RHS perturbation.
 
@@ -2703,7 +2793,6 @@ theorem theorem20_10_householder_AQ2_rhs_vecNorm2_perturbation_bound_of_gammaFac
     (by
       simpa [C, K] using
         mul_le_mul_of_nonneg_left hC_inf_le_vec hsqrt_nonneg)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     conservative perturbation certificate for the column-reversed `A Q₂`
     Householder RHS tail.
@@ -2746,7 +2835,6 @@ theorem theorem20_10_householder_reversed_AQ2_rhs_tail_vecNorm2_perturbation_bou
     simpa [theorem20_10_householder_reversed_AQ2_rhs_tail, Crev] using h.symm
   · simpa [theorem20_10_householder_rhs_conservative_gamma, mul_assoc]
       using hDeltab_raw
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), rounded Householder RHS
     certificate route with the currently proved conservative RHS coefficient.
 
@@ -2828,7 +2916,6 @@ theorem theorem20_10_partA_certificate_of_constructed_source_householder_rhs_con
     ⟨Deltab, hb_tail, hDeltab, DeltaS, DeltaL22,
       hDeltaSbound, hDeltaL22bound, hDeltaSfrob, hDeltaL22frob,
       hcert hDeltab hb_tail⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), rounded Householder RHS
     mixed-stability route with the currently proved conservative RHS
     coefficient.
@@ -2925,7 +3012,6 @@ theorem theorem20_10_partA_mixed_stability_of_constructed_source_householder_rhs
   · simpa [hDeltaAeq] using hDeltaA
   · simpa [hDeltabeq] using hDeltab
   · simpa [hDeltaBeq] using hDeltaB
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), rounded Householder RHS
     mixed-stability route with source-facing conservative gamma coefficients.
 
@@ -3056,7 +3142,6 @@ theorem theorem20_10_partA_mixed_stability_of_constructed_source_householder_rhs
       (theorem20_10_householder_gammaB fp r p q)
       hUfl hq hhalf hgammaB_nonneg hgammaA_ge_matrix hgammaA_ge_rhs
       hgammaB_ge hSdiag hL22diag hvalid2S hvalid2L22
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete Householder QR perturbation bound for the `Bᵀ` triangularization
     step in the GQR path.
@@ -3100,7 +3185,6 @@ theorem theorem20_10_householder_B_transpose_frob_perturbation_bound
     simpa [finiteTranspose] using hrep j i
   · simpa [theorem20_10_householder_gammaB, frobNormRect_finiteTranspose]
       using hbound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, concrete rounded `Bᵀ`
     Householder QR constraint block.
 
@@ -3179,7 +3263,6 @@ theorem theorem20_10_householder_B_transpose_perturbed_constraint_block
     exact congrFun (congrFun hBpert_eq i) j
   · rw [hBpert_eq]
     exact hconstraint.2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, rounded `Bᵀ`
     Householder panel inserted into a GQR record.
 
@@ -3246,7 +3329,6 @@ theorem theorem20_10_householder_B_transpose_constructed_sourceA_gqr_factorizati
   · rfl
   · rfl
   · rfl
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, rounded Householder
     `Bᵀ`/`A Q₂` perturbations assembled into one perturbed GQR record.
 
@@ -3322,7 +3404,6 @@ theorem theorem20_10_householder_constructed_perturbed_gqr_factorization
       Qb S U hQb hS hBQ hU hCase with
     ⟨hpert, hQeq, _hUeq, hSeq, _hL22eq⟩
   exact ⟨DeltaA, DeltaB, hDeltaBrep, hDeltaA, hDeltaB, hpert, hQeq, hSeq⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, rounded Householder
     `Bᵀ`/`A Q₂` perturbations assembled into one perturbed GQR record, retaining
     the concrete bottom-column placement of the constructed `U` factor.
@@ -3411,7 +3492,6 @@ theorem theorem20_10_householder_constructed_perturbed_gqr_factorization_with_U_
       hQeq, hSeq, ?_⟩
   intro i j
   simpa [hUeq] using hUbottom i j
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     constructed rounded Householder GQR record with a matching reversed-panel
     transformed RHS tail.
@@ -3501,7 +3581,6 @@ theorem theorem20_10_householder_constructed_perturbed_gqr_reversed_rhs_tail
           rw [hUtail k j]
     _ = theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b j := by
           simpa [Urev, Crev] using hDeltab_tail j
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     exact method handoff for the constructed rounded Householder GQR record,
     stated with the matching reversed-panel transformed RHS tail.
@@ -3639,7 +3718,6 @@ theorem theorem20_10_householder_constructed_perturbed_gqr_exact_method_of_diago
     ⟨⟨yz, hyz_beta, hyz_beta_unique⟩,
       hpert.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
         (b := bpert) (d := d) hrank.1 hrank.2⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     triangular-solve backward-error witnesses for the constructed rounded
     Householder GQR record and its matching reversed-panel transformed RHS.
@@ -3744,7 +3822,6 @@ theorem theorem20_10_householder_constructed_perturbed_gqr_reversed_rhs_tail_tri
     exact
       theorem20_10_gqr_xhat_of_transformed_tail_triangular_solve_frob_perturbation_bound
         fp hpert beta d hSdiag hL22diag hvalidS hvalidL22
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     second-layer Part A certificate for the constructed rounded Householder GQR
     record with the matching reversed-panel transformed RHS.
@@ -3891,7 +3968,6 @@ theorem theorem20_10_householder_constructed_perturbed_gqr_reversed_rhs_tail_par
     exact
       ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
         hDeltaSfrob, hDeltaL22frob, hcert hDeltab0 hb_tail0⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     original-source Part A certificate for the constructed rounded Householder
     GQR record with the matching reversed-panel transformed RHS.
@@ -4014,7 +4090,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partA_certifi
       DeltaA DeltaB Deltab hgammaq_nonneg hgammap_nonneg
       hDeltaA hDeltaB hDeltab
       hgammaA_matrix hgammaA_rhs hgammaB_matrix hgammaB_solution hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     constructed rounded Householder GQR Part A certificate with named
     conservative composed coefficients.
@@ -4089,7 +4164,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partA_certifi
       (by
         dsimp [theorem20_10_householder_composed_partA_gammaB]
         exact le_rfl)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a):
     constructed rounded Householder GQR Part A mixed-stability core with named
     conservative composed coefficients.
@@ -4213,7 +4287,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partA_mixed_s
   · simpa [hDeltaAeq] using hDeltaA
   · simpa [hDeltabeq] using hDeltab
   · simpa [hDeltaBeq] using hDeltaB
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     rank obstruction for the rounded Householder perturbed GQR record.
 
@@ -4263,7 +4336,6 @@ theorem theorem20_10_householder_constructed_perturbed_gqr_rank_iff_diagonal
   exact
     ⟨DeltaA, DeltaB, hDeltaBrep, hDeltaA, hDeltaB, hpert, hQeq, hSeq,
       hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     exact method handoff for the rounded Householder perturbed GQR record.
 
@@ -4339,7 +4411,6 @@ theorem theorem20_10_householder_constructed_perturbed_gqr_exact_method_of_diago
         (b := b) (d := d) hrank.1 hrank.2,
       hpert.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
         (b := b) (d := d) hrank.1 hrank.2⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     a constraint-matrix perturbation gives the corresponding constraint
     right-hand-side perturbation at a proposed computed vector.
@@ -4368,7 +4439,6 @@ theorem theorem20_10_constraint_rhs_perturbation_bound_of_DeltaB
   · exact le_trans
       (vecNorm2_rectMatMulVec_le_frobNormRect_mul DeltaB xhat)
       (mul_le_mul_of_nonneg_right hDeltaB (vecNorm2_nonneg xhat))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), Part A certificate to
     Part B certificate bridge.
 
@@ -4421,7 +4491,6 @@ theorem theorem20_10_partB_certificate_of_partA_certificate
        hDeltaB := cert.hDeltaB
        hDeltab := hDeltab
        hDeltad := hDeltad }⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), Part A certificate to
     exact Part B backward-error core.
 
@@ -4484,7 +4553,6 @@ theorem theorem20_10_partB_backward_error_of_partA_certificate
   exact
     GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10_perturbed_d
       A cert.DeltaA B cert.DeltaB b cert.Deltab d Deltad cert.hB cert.hstack
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), nonempty Part A
     certificate to exact Part B backward-error core.
 
@@ -4546,7 +4614,6 @@ theorem theorem20_10_partB_backward_error_of_nonempty_partA_certificate
   exact
     ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, Deltad,
       hDeltad_action, hDeltaA, hDeltaB, hDeltab, hDeltad, hmethod⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), nonempty Part A
     certificate to nonempty Part B certificate bridge.
 
@@ -4572,7 +4639,6 @@ theorem theorem20_10_partB_certificate_of_nonempty_partA_certificate
       A B b d xhat hgammaB_nonneg cert with
     ⟨_Deltad, _hDeltad_action, _hDeltad, hcertB⟩
   exact hcertB
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     constructed rounded Householder GQR Part B certificate with named
     conservative composed coefficients.
@@ -4666,7 +4732,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_certifi
     theorem20_10_partB_certificate_of_nonempty_partA_certificate
       A B b d (theorem20_10_gqr_xhat_of_transformed_tail fp hpert beta d)
       hgammaB_nonneg (hcertA hSdiag hL22diag)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     constructed rounded Householder GQR Part B exact core with named
     conservative composed coefficients.
@@ -4787,7 +4852,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_backwar
   · simpa [hDeltaBeq] using hDeltaB
   · simpa [hDeltabeq] using hDeltab
   · simpa [hDeltadeq] using hDeltad
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     constructed rounded Householder GQR Part B theorem with the returned
     transformed-tail vector identified as the exact perturbed minimizer.
@@ -5213,7 +5277,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
   exact
     ⟨DeltaA, DeltaB, Deltab, Deltad, rfl, hDeltaA, hDeltaB,
       hDeltab_partB, hDeltad, hxhat_min, huniq_final⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     constructed rounded Householder GQR Part B theorem with the returned
     transformed-tail vector identified under perturbed rank assumptions.
@@ -5316,7 +5379,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
         (∀ i : Fin q, hpert.L22 i i ≠ 0) :=
     (hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).1 hrank
   exact hdiag_branch hdiag.1 hdiag.2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     constructed rounded Householder GQR Part B theorem with stacked-rank
     preservation derived from a source lower-bound margin.
@@ -5425,7 +5487,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
       (B := B) (DeltaB := DeltaB0)
       hlower hDeltaStack heta
   exact hrank_branch ⟨hB, hstack⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     constructed rounded Householder GQR Part B theorem whose rank branch is
     expressed only through quantitative source lower bounds and strict
@@ -5539,7 +5600,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
     LSEFullRowRank.of_transpose_lower_bound_and_rectOpNorm2Le_lt
       (B := B) (DeltaB := DeltaB0) hBLower hBDelta hBEta
   exact hstack_branch hB hStackLower hStackDelta hStackEta
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     constructed rounded Householder GQR Part B theorem with rank preservation
     reduced to source lower bounds dominating the already proved Frobenius
@@ -5668,7 +5728,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
       hDeltaA0 hDeltaB0
   exact
     hrank_branch hBLower hDeltaBOp hBMargin hStackLower hStackOp hStackMargin
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     constructed rounded Householder GQR Part B theorem with rank preservation
     reduced to source rank plus strict smallness against the induced
@@ -5776,7 +5835,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
       hBMargin
       (LSEStackedFullColumnRank.vecNorm2LowerMargin_lower_bound hStack)
       hStackMargin
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     combined Householder Frobenius budget that controls the rank-preservation
     perturbation radius in the source-rank branch. -/
@@ -5786,7 +5844,6 @@ noncomputable def theorem20_10_householder_sourceRankBudget
     (B : Fin p → Fin (p + q) → ℝ) : ℝ :=
   theorem20_10_householder_gammaA fp r p q * frobNormRect A +
     theorem20_10_householder_gammaB fp r p q * frobNormRect B
-
 /-- Nonnegativity of the combined Householder Frobenius rank budget used in
     the Theorem 20.10(b) source-rank branch. -/
 theorem theorem20_10_householder_sourceRankBudget_nonneg
@@ -5810,7 +5867,6 @@ theorem theorem20_10_householder_sourceRankBudget_nonneg
   exact add_nonneg
     (mul_nonneg hgammaA_nonneg (frobNormRect_nonneg A))
     (mul_nonneg hgammaB_nonneg (frobNormRect_nonneg B))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-rank radius induced by the `Bᵀ` and stacked `[A; B]`
     finite-dimensional lower-bound margins. -/
@@ -5822,7 +5878,6 @@ noncomputable def theorem20_10_householder_sourceRankRadius
     (hStack : LSEStackedFullColumnRank A B) : ℝ :=
   min (LSEFullRowRank.transposeVecNorm2LowerMargin hB)
     (LSEStackedFullColumnRank.vecNorm2LowerMargin hStack)
-
 /-- Positivity of the noncomputable source-rank radius used in the
     Theorem 20.10(b) source-rank branch. -/
 theorem theorem20_10_householder_sourceRankRadius_pos
@@ -5835,7 +5890,6 @@ theorem theorem20_10_householder_sourceRankRadius_pos
   exact lt_min
     (LSEFullRowRank.transposeVecNorm2LowerMargin_pos hB)
     (LSEStackedFullColumnRank.vecNorm2LowerMargin_pos hStack)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     a practical sufficient split of the rank-preservation smallness condition.
     If the `A` and `B` Householder rank budgets are each below half of the
@@ -5857,7 +5911,6 @@ theorem theorem20_10_householder_sourceRankBudget_lt_sourceRankRadius_of_half_bo
       theorem20_10_householder_sourceRankRadius hB hStack := by
   dsimp [theorem20_10_householder_sourceRankBudget]
   nlinarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     a compact sufficient condition for the rank-preservation smallness
     hypothesis.  If the larger of the two Householder gamma coefficients times
@@ -5909,7 +5962,6 @@ theorem theorem20_10_householder_sourceRankBudget_lt_sourceRankRadius_of_max_gam
               (theorem20_10_householder_gammaB fp r p q) *
             (frobNormRect A + frobNormRect B) := by ring
   exact lt_of_le_of_lt hbudget_le hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     positive source-rank gamma threshold for the constructed Householder GQR
     rank-preservation branch.  The `max 1` scale keeps the threshold meaningful
@@ -5922,7 +5974,6 @@ noncomputable def theorem20_10_householder_sourceRankGammaThreshold
     (hStack : LSEStackedFullColumnRank A B) : ℝ :=
   theorem20_10_householder_sourceRankRadius hB hStack /
     max (1 : ℝ) (frobNormRect A + frobNormRect B)
-
 /-- Positivity of the source-rank gamma threshold used to state a nonvacuous
     roundoff-smallness condition for Theorem 20.10(b). -/
 theorem theorem20_10_householder_sourceRankGammaThreshold_pos
@@ -5937,7 +5988,6 @@ theorem theorem20_10_householder_sourceRankGammaThreshold_pos
   have hScale : 0 < max (1 : ℝ) (frobNormRect A + frobNormRect B) :=
     lt_of_lt_of_le zero_lt_one (le_max_left _ _)
   exact div_pos hRadius hScale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     the source-rank gamma threshold implies the compact max-gamma product
     smallness condition. -/
@@ -5990,7 +6040,6 @@ theorem theorem20_10_householder_max_gamma_sum_bound_of_max_gamma_lt_sourceRankG
     lt_of_le_of_lt
       (mul_le_mul_of_nonneg_left hNorm_le_scale hgammaMax_nonneg)
       hscaled
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-rank budget smallness follows from the positive gamma-threshold
     condition. -/
@@ -6015,7 +6064,6 @@ theorem theorem20_10_householder_sourceRankBudget_lt_sourceRankRadius_of_max_gam
       fp A B hB hStack
       (theorem20_10_householder_max_gamma_sum_bound_of_max_gamma_lt_sourceRankGammaThreshold
         fp A B hB hStack hvalidA hvalidB hsmall)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     conservative Householder Frobenius budget for the concrete component route.
 
@@ -6027,7 +6075,6 @@ noncomputable def theorem20_10_householder_componentSourceRankBudget
     (B : Fin p → Fin (p + q) → ℝ) : ℝ :=
   theorem20_10_householder_gammaA_conservativeRhs fp r p q * frobNormRect A +
     theorem20_10_householder_gammaB fp r p q * frobNormRect B
-
 /-- Nonnegativity of the conservative Householder component rank budget used
     by the Theorem 20.10(b) source-rank branch. -/
 theorem theorem20_10_householder_componentSourceRankBudget_nonneg
@@ -6050,7 +6097,6 @@ theorem theorem20_10_householder_componentSourceRankBudget_nonneg
   exact add_nonneg
     (mul_nonneg hgammaA_nonneg (frobNormRect_nonneg A))
     (mul_nonneg hgammaB_nonneg (frobNormRect_nonneg B))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     the printed Householder source-rank budget is dominated by the conservative
     component budget that uses the rounded-RHS `A` coefficient. -/
@@ -6065,7 +6111,6 @@ theorem theorem20_10_householder_sourceRankBudget_le_componentSourceRankBudget
   exact add_le_add
     (mul_le_mul_of_nonneg_right (le_max_left _ _) (frobNormRect_nonneg A))
     le_rfl
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     the conservative component budget is a sufficient rank-radius smallness
     condition for the printed Householder source-rank budget. -/
@@ -6084,7 +6129,6 @@ theorem theorem20_10_householder_sourceRankBudget_lt_sourceRankRadius_of_compone
     (theorem20_10_householder_sourceRankBudget_le_componentSourceRankBudget
       fp A B)
     hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     compact sufficient smallness condition for the conservative concrete
     Householder component rank budget. -/
@@ -6137,7 +6181,6 @@ theorem theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_o
               (theorem20_10_householder_gammaB fp r p q) *
             (frobNormRect A + frobNormRect B) := by ring
   exact lt_of_le_of_lt hbudget_le hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     the existing source-rank gamma threshold also implies the conservative
     component-route max-gamma product smallness condition. -/
@@ -6189,7 +6232,6 @@ theorem theorem20_10_householder_component_max_gamma_sum_bound_of_max_gamma_lt_s
     lt_of_le_of_lt
       (mul_le_mul_of_nonneg_left hNorm_le_scale hgammaMax_nonneg)
       hscaled
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-rank budget smallness for the conservative concrete component route
     follows from the positive gamma-threshold condition. -/
@@ -6214,7 +6256,6 @@ theorem theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_o
       fp A B hB hStack
       (theorem20_10_householder_component_max_gamma_sum_bound_of_max_gamma_lt_sourceRankGammaThreshold
         fp A B hB hStack hvalidA hvalidB hsmall)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     a single conservative component source-rank budget below the radius implies
     both strict margin hypotheses consumed by the component source-rank theorem. -/
@@ -6260,7 +6301,6 @@ theorem theorem20_10_householder_componentSourceRankMargins_of_budget_lt_sourceR
       _ < theorem20_10_householder_sourceRankRadius hB hStack := hsmall
       _ ≤ hStack.vecNorm2LowerMargin := by
             exact min_le_right _ _
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     the compact max-gamma product condition directly supplies the two strict
     source-rank margins needed by the conservative component route. -/
@@ -6288,7 +6328,6 @@ theorem theorem20_10_householder_componentSourceRankMargins_of_max_gamma_sum_bou
       fp A B hB hStack hvalidA
       (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
         fp A B hB hStack hsmall)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     the positive source-rank gamma threshold directly supplies the two strict
     source-rank margins needed by the conservative component route. -/
@@ -6317,7 +6356,6 @@ theorem theorem20_10_householder_componentSourceRankMargins_of_max_gamma_lt_sour
       fp A B hB hStack hvalidA
       (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_lt_sourceRankGammaThreshold
         fp A B hB hStack hvalidA hvalidB hsmall)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     one source-rank-dependent unit-roundoff cap that implies the three
     half-radius gamma guards and the conservative source-rank gamma threshold.
@@ -6342,7 +6380,6 @@ noncomputable def theorem20_10_householder_componentUnitRoundoffSmallnessThresho
           ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℕ) : ℝ))
         (theorem20_10_householder_sourceRankGammaThreshold hB hStack /
           theorem20_10_householder_componentUnitRoundoffCoefficient r p q)))
-
 /-- Positivity of the combined unit-roundoff smallness threshold used by the
     Theorem 20.10(b) source-rank wrappers. -/
 theorem theorem20_10_householder_componentUnitRoundoffSmallnessThreshold_pos
@@ -6415,7 +6452,6 @@ theorem theorem20_10_householder_componentUnitRoundoffSmallnessThreshold_pos
     div_pos hGammaThreshold hCoeff
   dsimp [theorem20_10_householder_componentUnitRoundoffSmallnessThreshold]
   exact lt_min hcapA (lt_min hcapB (lt_min hcapRhs hSourceCap))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     the combined unit-roundoff threshold implies the half-radius guards and
     the linear source-rank gamma threshold used by the conservative component
@@ -6533,7 +6569,6 @@ theorem theorem20_10_householder_component_unit_roundoff_conditions_of_lt_smalln
   · nlinarith [hB_lt]
   · nlinarith [hRhs_lt]
   · nlinarith [hSource_lt]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     explicit linear unit-roundoff threshold implies the conservative component
     gamma-threshold condition used by the source-rank branch. -/
@@ -6564,7 +6599,6 @@ theorem theorem20_10_householder_component_max_gamma_lt_sourceRankGammaThreshold
     (theorem20_10_householder_component_max_gamma_le_componentUnitRoundoffCoefficient_mul_u_of_small
       fp hm hsmallA hsmallB hhalf)
     hunit
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     the single combined unit-roundoff smallness threshold implies the
     conservative component max-gamma source-rank threshold. -/
@@ -6588,7 +6622,6 @@ theorem theorem20_10_householder_component_max_gamma_lt_sourceRankGammaThreshold
   exact
     theorem20_10_householder_component_max_gamma_lt_sourceRankGammaThreshold_of_unit_roundoff_bound
       fp hB hStack (by omega) hsmallA hsmallB hhalf hunit
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     the single combined unit-roundoff smallness threshold supplies the
     conservative component source-rank budget condition. -/
@@ -6621,7 +6654,6 @@ theorem theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_o
       fp A B hBsrc hStack hvalidA hvalidB
       (theorem20_10_householder_component_max_gamma_lt_sourceRankGammaThreshold_of_unit_roundoff_smallnessThreshold
         fp hBsrc hStack hp hq hu)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     the same combined unit-roundoff threshold also supplies the printed
     Householder source-rank budget condition.
@@ -6647,7 +6679,6 @@ theorem theorem20_10_householder_sourceRankBudget_lt_sourceRankRadius_of_unit_ro
       fp A B hBsrc hStack
       (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_unit_roundoff_smallnessThreshold
         fp A B hBsrc hStack hp hq hu)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     the single combined unit-roundoff smallness threshold directly supplies
     both strict source-rank margin hypotheses for the conservative component
@@ -6685,7 +6716,6 @@ theorem theorem20_10_householder_componentSourceRankMargins_of_unit_roundoff_sma
       fp A B hBsrc hStack hvalidA hvalidB
       (theorem20_10_householder_component_max_gamma_lt_sourceRankGammaThreshold_of_unit_roundoff_smallnessThreshold
         fp hBsrc hStack hp hq hu)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-rank margin-radius wrapper for the constructed rounded Householder
     GQR Part B returned-vector theorem.
@@ -6803,7 +6833,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
     theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_source_ranks_frobenius_margins_composed_conservative_gamma
       fp A B b d hp hq hvalidA hvalidB hhalf hB hStack hBMargin
       hStackMargin
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     conservative component-budget wrapper for the constructed rounded
     Householder GQR Part B returned-vector theorem.
@@ -6891,7 +6920,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
       fp A B b d hp hq hvalidA hvalidB hhalf hB hStack
       (theorem20_10_householder_sourceRankBudget_lt_sourceRankRadius_of_componentSourceRankBudget_lt
         fp A B hB hStack hsmall)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     conservative max-gamma wrapper for the constructed rounded Householder GQR
     Part B returned-vector theorem.
@@ -6980,7 +7008,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
       fp A B b d hp hq hvalidA hvalidB hhalf hB hStack
       (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
         fp A B hB hStack hsmall)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     conservative gamma-threshold wrapper for the constructed rounded
     Householder GQR Part B returned-vector theorem.
@@ -7068,7 +7095,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
       fp A B b d hp hq hvalidA hvalidB hhalf hB hStack
       (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_lt_sourceRankGammaThreshold
         fp A B hB hStack hvalidA hvalidB hsmall)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     unit-roundoff threshold wrapper for the constructed rounded Householder
     GQR Part B returned-vector theorem.
@@ -7171,7 +7197,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
   exact
     theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_source_ranks_component_gamma_threshold_composed_conservative_gamma
       fp A B b d hp hq hvalidA hvalidB hhalf hB hStack hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     constructed returned-vector GQR Part B wrapper from one combined
     unit-roundoff smallness threshold.
@@ -7256,7 +7281,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
   exact
     theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_source_ranks_component_unit_roundoff_threshold_composed_conservative_gamma
       fp A B b d hp hq hsmallA hsmallB hhalf hB hStack hunit
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     compact source-rank smallness wrapper for the constructed rounded
     Householder GQR Part B returned-vector theorem.
@@ -7347,7 +7371,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
       fp A B b d hp hq hvalidA hvalidB hhalf hB hStack
       (theorem20_10_householder_sourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
         fp A B hB hStack hsmall)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-rank gamma-threshold wrapper for the constructed rounded
     Householder GQR Part B returned-vector theorem.
@@ -7437,7 +7460,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
       fp A B b d hp hq hvalidA hvalidB hhalf hB hStack
       (theorem20_10_householder_sourceRankBudget_lt_sourceRankRadius_of_max_gamma_lt_sourceRankGammaThreshold
         fp A B hB hStack hvalidA hvalidB hsmall)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-rank-radius returned-vector wrapper for the constructed rounded
     Householder GQR Part B theorem.
@@ -7536,7 +7558,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_exists_
     ⟨xhat, DeltaA0, DeltaB0, Deltab0, hDeltaBrep, hDeltaA0,
       hDeltaB0, hDeltab0, hpert, hQeq, hSeq, hb_tail, rfl, ?_⟩
   simpa [xhat] using hbranch
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     compact source-rank returned-vector witness wrapper for the constructed
     rounded Householder GQR Part B theorem.
@@ -7626,7 +7647,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_exists_
       fp A B b d hp hq hvalidA hvalidB hhalf hB hStack
       (theorem20_10_householder_sourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
         fp A B hB hStack hsmall)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     conservative compact source-rank returned-vector witness wrapper for the
     constructed rounded Householder GQR Part B theorem.
@@ -7717,7 +7737,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_exists_
         fp A B hB hStack
         (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
           fp A B hB hStack hsmall))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     conservative source-rank gamma-threshold returned-vector witness wrapper
     for the constructed rounded Householder GQR Part B theorem.
@@ -7807,7 +7826,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_exists_
         fp A B hB hStack
         (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_lt_sourceRankGammaThreshold
           fp A B hB hStack hvalidA hvalidB hsmall))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     explicit returned-vector wrapper under component unit-roundoff threshold
     premises.
@@ -7909,7 +7927,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_exists_
   exact
     theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_exists_xhat_minimizer_of_source_ranks_component_gamma_threshold_composed_conservative_gamma
       fp A B b d hp hq hvalidA hvalidB hhalf hB hStack hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-facing returned-vector wrapper for the constructed rounded
     Householder GQR Part B theorem.
@@ -8012,7 +8029,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_exists_
     ⟨xhat, DeltaA0, DeltaB0, Deltab0, hDeltaBrep, hDeltaA0,
       hDeltaB0, hDeltab0, hpert, hQeq, hSeq, hb_tail, rfl, ?_⟩
   simpa [xhat] using hbranch
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     explicit returned-vector wrapper under the combined unit-roundoff
     smallness threshold.
@@ -8105,7 +8121,6 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_exists_
     ⟨xhat, DeltaA0, DeltaB0, Deltab0, hDeltaBrep, hDeltaA0,
       hDeltaB0, hDeltab0, hpert, hQeq, hSeq, hb_tail, rfl, ?_⟩
   simpa [xhat] using hbranch
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
     Part B certificate route with the currently proved conservative RHS
     coefficient.
@@ -8157,7 +8172,6 @@ theorem theorem20_10_partB_certificate_of_constructed_source_householder_rhs_con
       (theorem20_10_gqr_xhat_of_transformed_tail fp h
         (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d)
       hgammaB_nonneg hcertA
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
     Part B backward-error core with generic conservative bounds.
 
@@ -8241,7 +8255,6 @@ theorem theorem20_10_partB_backward_error_of_constructed_source_householder_rhs_
       (theorem20_10_gqr_xhat_of_transformed_tail fp h
         (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d)
       hgammaB_nonneg hcertA
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
     Part B certificate route with source-facing conservative gamma
     coefficients.
@@ -8335,7 +8348,6 @@ theorem theorem20_10_partB_certificate_of_constructed_source_householder_rhs_con
       (theorem20_10_householder_gammaB fp r p q)
       hUfl hq hhalf hgammaB_nonneg hgammaA_ge_matrix hgammaA_ge_rhs
       hgammaB_ge hSdiag hL22diag hvalid2S hvalid2L22
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
     Part B backward-error core with source-facing conservative gamma
     coefficients.
@@ -8425,7 +8437,6 @@ theorem theorem20_10_partB_backward_error_of_constructed_source_householder_rhs_
   · simpa [hDeltaBeq] using hDeltaB
   · simpa [hDeltabeq] using hDeltab
   · simpa [hDeltadeq] using hDeltad
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
     Part B certificate route with source rank hypotheses instead of supplied
     triangular diagonal nonzero hypotheses.
@@ -8467,7 +8478,6 @@ theorem theorem20_10_partB_certificate_of_constructed_source_householder_rhs_con
   exact
     theorem20_10_partB_certificate_of_constructed_source_householder_rhs_conservative_gamma
       fp h b d hUfl hq hhalf hdiag.1 hdiag.2 hvalidA hvalidB
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
     Part B backward-error core with source rank hypotheses instead of supplied
     triangular diagonal nonzero hypotheses.
@@ -8540,7 +8550,6 @@ theorem theorem20_10_partB_backward_error_of_constructed_source_householder_rhs_
   exact
     theorem20_10_partB_backward_error_of_constructed_source_householder_rhs_conservative_gamma
       fp h b d hUfl hq hhalf hdiag.1 hdiag.2 hvalidA hvalidB
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete Householder `Bᵀ` perturbation together with the induced
     constraint right-hand-side perturbation bound.
@@ -8579,7 +8588,6 @@ theorem theorem20_10_householder_B_transpose_Deltad_bound
     ⟨Deltad, hDeltadrep, hDeltadbound⟩
   exact ⟨DeltaB, Deltad, hDeltaBrep, hDeltadrep,
     hDeltaBbound, hDeltadbound⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete Householder perturbation components for the computed GQR path.
 
@@ -8655,7 +8663,6 @@ theorem theorem20_10_householder_concrete_perturbation_components_bound
     ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaArep, hDeltaBrep,
       hDeltabrep, hDeltadrep, hDeltaAbound, hDeltaBbound,
       hDeltabbound, hDeltadbound⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
     component package promoted to the backward-error certificate boundary.
 
@@ -8789,7 +8796,6 @@ theorem theorem20_10_partB_certificate_of_householder_components_conservative_ga
        hDeltaB := hDeltaB
        hDeltab := hDeltab
        hDeltad := hDeltad }⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
     component package promoted directly to the exact perturbed GQR core.
 
@@ -8886,7 +8892,6 @@ theorem theorem20_10_partB_backward_error_of_householder_components_conservative
   exact
     GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10_perturbed_d
       A DeltaA B DeltaB b Deltab d Deltad hB hstack
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
     component package promoted to the certificate boundary with source-rank
     margin preservation.
@@ -8982,7 +8987,6 @@ theorem theorem20_10_partB_certificate_of_householder_components_source_ranks_co
     ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaArep, hDeltaBrep,
       hDeltabrep, hDeltadrep, hDeltaA, hDeltaB, hDeltab, hDeltad,
       hcert hcond.1 hcond.2⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     named proposition for the concrete Householder component certificate route.
 
@@ -9030,7 +9034,6 @@ def Theorem20_10HouseholderComponentPartBCertificateRoute
       gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
     vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
     Nonempty (Theorem20_10PartBPerturbationCertificate A B b d xhat gammaA gammaB)
-
 /-- Extract the reusable Part B perturbation certificate from the named
     component certificate route, discarding the concrete Householder component
     identities and norm bounds. -/
@@ -9052,7 +9055,6 @@ theorem Theorem20_10HouseholderComponentPartBCertificateRoute.partB_certificate
     ⟨_DeltaA, _DeltaB, _Deltab, _Deltad, _hAQ, _hB, _hrhs, _hd,
       _hDeltaA, _hDeltaB, _hDeltab, _hDeltad, hcert⟩
   exact hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     explicit-margin wrapper for the named component certificate route. -/
 theorem theorem20_10_householder_component_partB_certificate_route_of_source_ranks_margins_conservative_gamma
@@ -9087,7 +9089,6 @@ theorem theorem20_10_householder_component_partB_certificate_route_of_source_ran
     theorem20_10_partB_certificate_of_householder_components_source_ranks_conservative_gamma
       fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
       hBMargin hStackMargin
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-rank radius wrapper for the component certificate route. -/
 theorem theorem20_10_householder_component_partB_certificate_route_of_source_ranks_rank_radius_conservative_gamma
@@ -9120,7 +9121,6 @@ theorem theorem20_10_householder_component_partB_certificate_route_of_source_ran
     theorem20_10_householder_component_partB_certificate_route_of_source_ranks_margins_conservative_gamma
       fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
       hBMargin hStackMargin
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     max-gamma source-rank radius wrapper for the component certificate route. -/
 theorem theorem20_10_householder_component_partB_certificate_route_of_source_ranks_max_gamma_sum_bound_conservative_gamma
@@ -9152,7 +9152,6 @@ theorem theorem20_10_householder_component_partB_certificate_route_of_source_ran
       fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
       (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
         fp A B hBsrc hStack hsmall)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     conservative source-rank gamma-threshold wrapper for the component
     certificate route. -/
@@ -9184,7 +9183,6 @@ theorem theorem20_10_householder_component_partB_certificate_route_of_source_ran
       fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
       (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_lt_sourceRankGammaThreshold
         fp A B hBsrc hStack hvalidA hvalidB hsmall)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     linear unit-roundoff threshold wrapper for the component certificate route. -/
 theorem theorem20_10_householder_component_partB_certificate_route_of_source_ranks_unit_roundoff_threshold_conservative_gamma
@@ -9229,7 +9227,6 @@ theorem theorem20_10_householder_component_partB_certificate_route_of_source_ran
   exact
     theorem20_10_householder_component_partB_certificate_route_of_source_ranks_gamma_threshold_conservative_gamma
       fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     combined unit-roundoff smallness-threshold wrapper for the component
     certificate route. -/
@@ -9255,7 +9252,6 @@ theorem theorem20_10_householder_component_partB_certificate_route_of_source_ran
   exact
     theorem20_10_householder_component_partB_certificate_route_of_source_ranks_unit_roundoff_threshold_conservative_gamma
       fp A B Q b d xhat hQ hp hq hsmallA hsmallB hhalf hBsrc hStack hunit
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     computed-`Bᵀ` specialization of the component certificate route.
 
@@ -9298,7 +9294,6 @@ theorem theorem20_10_householder_component_partB_certificate_route_of_computed_B
   exact
     theorem20_10_householder_component_partB_certificate_route_of_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
       fp A B Qb b d xhat hQb hp hq hBsrc hStack hu
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
     component package with source-rank margin preservation.
 
@@ -9409,7 +9404,6 @@ theorem theorem20_10_partB_backward_error_of_householder_components_source_ranks
       hDeltabrep, hDeltadrep, hDeltaA, hDeltaB, hDeltab, hDeltad,
       ?_⟩
   exact hmethod hcond.1 hcond.2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
     component package with source-rank radius preservation.
 
@@ -9501,7 +9495,6 @@ theorem theorem20_10_partB_backward_error_of_householder_components_source_ranks
     theorem20_10_partB_backward_error_of_householder_components_source_ranks_conservative_gamma
       fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
       hBMargin hStackMargin
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
     component package from a compact max-gamma source-rank radius condition.
 
@@ -9589,7 +9582,6 @@ theorem theorem20_10_partB_backward_error_of_householder_components_source_ranks
       fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
       (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_sum_bound
         fp A B hBsrc hStack hsmall)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
     component package from the conservative source-rank gamma threshold.
 
@@ -9677,7 +9669,6 @@ theorem theorem20_10_partB_backward_error_of_householder_components_source_ranks
       fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack
       (theorem20_10_householder_componentSourceRankBudget_lt_sourceRankRadius_of_max_gamma_lt_sourceRankGammaThreshold
         fp A B hBsrc hStack hvalidA hvalidB hsmall)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
     component package from a linear unit-roundoff source-rank threshold.
 
@@ -9778,7 +9769,6 @@ theorem theorem20_10_partB_backward_error_of_householder_components_source_ranks
   exact
     theorem20_10_partB_backward_error_of_householder_components_source_ranks_gamma_threshold_conservative_gamma
       fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf hBsrc hStack hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
     component package from one combined unit-roundoff smallness threshold.
 
@@ -9861,7 +9851,6 @@ theorem theorem20_10_partB_backward_error_of_householder_components_source_ranks
   exact
     theorem20_10_partB_backward_error_of_householder_components_source_ranks_unit_roundoff_threshold_conservative_gamma
       fp A B Q b d xhat hQ hp hq hsmallA hsmallB hhalf hBsrc hStack hunit
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
     component package with the `Bᵀ` Householder factor fixed to the actual
     rounded panel `Qb`.
@@ -9959,7 +9948,6 @@ theorem theorem20_10_partB_backward_error_of_householder_components_computed_B_t
   exact
     theorem20_10_partB_backward_error_of_householder_components_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
       fp A B Qb b d xhat hQb hp hq hBsrc hStack hu
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     named component-route wrapper for the source-rank/unit-roundoff theorem. -/
 theorem theorem20_10_householder_component_partB_route_of_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
@@ -9980,7 +9968,6 @@ theorem theorem20_10_householder_component_partB_route_of_source_ranks_unit_roun
   simpa [Theorem20_10HouseholderComponentPartBRoute] using
     theorem20_10_partB_backward_error_of_householder_components_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
       fp A B Q b d xhat hQ hp hq hBsrc hStack hu
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     component-route wrapper with `Q` fixed to the computed `Bᵀ` Householder
     panel. -/
@@ -10003,7 +9990,6 @@ theorem theorem20_10_householder_component_partB_route_of_computed_B_transpose_Q
   simpa [Theorem20_10HouseholderComponentPartBRoute] using
     theorem20_10_partB_backward_error_of_householder_components_computed_B_transpose_Q_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
       fp A B b d xhat hp hq hBsrc hStack hu
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     constructed rounded Householder returned-vector route under the combined
     unit-roundoff smallness threshold, stated via the named route predicate. -/
@@ -10024,7 +10010,6 @@ theorem theorem20_10_constructed_householder_returned_vector_partB_route_exists_
   simpa [Theorem20_10ConstructedHouseholderReturnedVectorPartBRoute] using
     theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_exists_xhat_minimizer_of_source_ranks_component_unit_roundoff_smallnessThreshold_composed_conservative_gamma
       fp A B b d hp hq hB hStack hu
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     returned-vector bridge between the constructed rounded Householder GQR path
     and the computed-`Bᵀ` concrete component route.
@@ -10062,7 +10047,6 @@ theorem theorem20_10_constructed_returned_vector_with_computed_B_transpose_Q_com
   simpa [Theorem20_10HouseholderComponentPartBRoute] using
     theorem20_10_partB_backward_error_of_householder_components_computed_B_transpose_Q_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
       fp A B b d xhat hp hq hB hStack hu
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     returned-vector bridge between the constructed rounded Householder GQR path
     and the computed-`Bᵀ` concrete component certificate route.
@@ -10099,7 +10083,6 @@ theorem theorem20_10_constructed_returned_vector_with_computed_B_transpose_Q_com
   exact
     theorem20_10_householder_component_partB_certificate_route_of_computed_B_transpose_Q_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
       fp A B b d xhat hp hq hB hStack hu
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     a named constructed returned vector for the rounded Householder GQR route.
 
@@ -10122,7 +10105,6 @@ noncomputable def theorem20_10_constructed_householder_returned_xhat
   Classical.choose
     (theorem20_10_constructed_returned_vector_with_computed_B_transpose_Q_component_partB_route_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
       fp A B b d hp hq hB hStack hu)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     specification of the named constructed returned vector.
 
@@ -10154,7 +10136,6 @@ theorem theorem20_10_constructed_householder_returned_xhat_spec
     Classical.choose_spec
       (theorem20_10_constructed_returned_vector_with_computed_B_transpose_Q_component_partB_route_source_ranks_unit_roundoff_smallnessThreshold_conservative_gamma
         fp A B b d hp hq hB hStack hu)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     transformed-tail identity for the named constructed rounded Householder
     returned vector.
@@ -10218,7 +10199,6 @@ theorem theorem20_10_constructed_householder_returned_xhat_eq_transformed_tail_o
   exact
     ⟨DeltaA0, DeltaB0, Deltab0, hDeltaBrep, hDeltaA0, hDeltaB0,
       hDeltab0, hpert, hQeq, hSeq, htail, hxhat⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     triangular-solve perturbation witnesses for the named constructed rounded
     Householder returned vector.
@@ -10337,7 +10317,6 @@ theorem theorem20_10_constructed_householder_returned_xhat_triangular_solve_frob
     ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
       hDeltaSfrob, hDeltaL22frob, hSeqTri, hL22eq,
       hxhat.trans hxhatTail⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     rank-preserved triangular-solve perturbation witnesses for the named
     constructed rounded Householder returned vector.
@@ -10480,7 +10459,6 @@ theorem theorem20_10_constructed_householder_returned_xhat_triangular_solve_frob
       hDeltab0, hpert, hQeq, hSeq, htail, hxhat, hrank,
       DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound, hDeltaSfrob,
       hDeltaL22frob, hSeqTri, hL22eq, hxhatTail⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     named returned-vector triangular-solve and exact perturbed-minimizer
     package under the single source-rank unit-roundoff threshold.
@@ -10621,7 +10599,6 @@ theorem theorem20_10_constructed_householder_returned_xhat_rank_preserved_triang
         hDeltaL22frob, hSeqTri, hL22eq, hxhatTail⟩,
       DeltaA, DeltaB, Deltab, hDeltaA, hDeltaB, hDeltab, hxhatMin,
       hunique⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     certificate specification of the named constructed returned vector.
 
@@ -10662,7 +10639,6 @@ theorem theorem20_10_constructed_householder_returned_xhat_certificate_spec
         (theorem20_10_constructed_householder_returned_xhat
           fp A B b d hp hq hB hStack hu)
         hp hq hB hStack hu
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     direct reusable Part B perturbation certificate for the named constructed
     rounded Householder returned vector. -/
@@ -10688,7 +10664,6 @@ theorem theorem20_10_constructed_householder_returned_xhat_partB_certificate_of_
       (Q := fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
       (theorem20_10_constructed_householder_returned_xhat_certificate_spec
         fp A B b d hp hq hB hStack hu).2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     concise backward-error package for the named constructed rounded
     Householder returned vector.
@@ -10756,7 +10731,6 @@ theorem theorem20_10_partB_backward_error_of_constructed_householder_returned_xh
       GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10_perturbed_d
         A cert.DeltaA B cert.DeltaB b cert.Deltab d cert.Deltad
         cert.hB cert.hstack⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     computed-`Bᵀ` concrete component Part B route for the named constructed
     returned vector.
@@ -10840,7 +10814,6 @@ theorem theorem20_10_partB_backward_error_of_constructed_householder_returned_xh
       fp A B b d hp hq hB hStack hu
   dsimp at hspec
   simpa [Theorem20_10HouseholderComponentPartBRoute] using hspec.2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     exact perturbed minimizer package for the named constructed returned
     vector.
@@ -10899,7 +10872,6 @@ theorem theorem20_10_constructed_householder_returned_xhat_exact_perturbed_minim
       htail⟩
   dsimp at htail
   exact htail
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     source-facing exact perturbed minimizer package for the named constructed
     returned vector.
@@ -10955,7 +10927,6 @@ theorem theorem20_10_constructed_householder_returned_xhat_exact_perturbed_minim
     · simpa [hDeltad] using hx
     · intro y hy
       exact huniq y (by simpa [hDeltad] using hy)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     combined source-rank/unit-roundoff surface for the named constructed
     returned vector.
@@ -11008,7 +10979,6 @@ theorem theorem20_10_constructed_householder_returned_xhat_component_route_and_u
       fp A B b d hp hq hB hStack hu
   dsimp at hspec hclean ⊢
   exact ⟨hspec.2, hclean⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     certificate-route and unperturbed-constraint package for the named
     constructed returned vector.
@@ -11063,7 +11033,6 @@ theorem theorem20_10_constructed_householder_returned_xhat_component_certificate
       fp A B b d hp hq hB hStack hu
   dsimp at hspec hclean ⊢
   exact ⟨hspec.2, hclean⟩
-
 /-- Theorem 20.10(a) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
 theorem theorem20_10_partA_mixed_stability_of_householder_gamma_certificate
@@ -11113,7 +11082,6 @@ theorem theorem20_10_partA_mixed_stability_of_householder_gamma_certificate
           IsLSEMinimizer Apert bpert Bpert d x0)) :=
   theorem20_10_partA_mixed_stability_of_perturbation_certificate
     A B b d xhat cert
-
 /-- Theorem 20.10(a), exact transformed-RHS constructed-source route specialized
     to the Householder `gamma_tilde_mn` and `gamma_tilde_np` coefficients.
 
@@ -11226,7 +11194,6 @@ theorem theorem20_10_partA_mixed_stability_of_constructed_source_exact_rhs_house
       (theorem20_10_householder_gammaB fp r p q)
       hgammaA_nonneg hgammaB_nonneg hgammaA_ge hgammaB_ge
       hSdiag hL22diag hvalid2S hvalid2L22
-
 /-- Theorem 20.10(a), exact transformed-RHS constructed-source certificate
     specialized to the Householder `gamma_tilde_mn` and `gamma_tilde_np`
     coefficients.
@@ -11310,7 +11277,6 @@ theorem theorem20_10_partA_certificate_of_constructed_source_exact_rhs_household
       (theorem20_10_householder_gammaB fp r p q)
       hgammaA_nonneg hgammaB_nonneg hgammaA_ge hgammaB_ge
       hSdiag hL22diag hvalid2S hvalid2L22
-
 /-- Theorem 20.10(b), exact transformed-RHS constructed-source
     backward-error core specialized to the Householder `gamma_tilde_mn` and
     `gamma_tilde_np` coefficients.
@@ -11383,7 +11349,6 @@ theorem theorem20_10_partB_backward_error_of_constructed_source_exact_rhs_househ
     theorem20_10_partB_backward_error_of_nonempty_partA_certificate
       A B b d (theorem20_10_gqr_xhat fp h b d)
       hgammaB_nonneg hcertA
-
 /-- Theorem 20.10(a), exact transformed-RHS constructed-source route with
     source rank hypotheses instead of supplied triangular diagonal hypotheses.
 
@@ -11451,7 +11416,6 @@ theorem theorem20_10_partA_mixed_stability_of_constructed_source_exact_rhs_house
   exact
     theorem20_10_partA_mixed_stability_of_constructed_source_exact_rhs_householder_gamma
       fp h b d hdiag.1 hdiag.2 hvalidA hvalidB
-
 /-- Theorem 20.10(a), exact transformed-RHS constructed-source certificate
     with source rank hypotheses instead of supplied triangular diagonal
     hypotheses.
@@ -11488,7 +11452,6 @@ theorem theorem20_10_partA_certificate_of_constructed_source_exact_rhs_household
   exact
     theorem20_10_partA_certificate_of_constructed_source_exact_rhs_householder_gamma
       fp h b d hdiag.1 hdiag.2 hvalidA hvalidB
-
 /-- Theorem 20.10(b), exact transformed-RHS constructed-source Part B
     certificate with source rank hypotheses.
 
@@ -11527,7 +11490,6 @@ theorem theorem20_10_partB_certificate_of_constructed_source_exact_rhs_household
   exact
     theorem20_10_partB_certificate_of_nonempty_partA_certificate
       A B b d (theorem20_10_gqr_xhat fp h b d) hgammaB_nonneg hcertA
-
 /-- Theorem 20.10(b), exact transformed-RHS constructed-source
     backward-error core with source rank hypotheses instead of supplied
     triangular diagonal hypotheses.
@@ -11592,7 +11554,6 @@ theorem theorem20_10_partB_backward_error_of_constructed_source_exact_rhs_househ
   exact
     theorem20_10_partB_backward_error_of_constructed_source_exact_rhs_householder_gamma
       fp h b d hdiag.1 hdiag.2 hvalidA hvalidB
-
 /-- Theorem 20.10(a), exact transformed-RHS constructed-source mixed
     stability under the combined source-rank unit-roundoff threshold.
 
@@ -11668,7 +11629,6 @@ theorem theorem20_10_partA_mixed_stability_of_constructed_source_exact_rhs_house
   exact
     theorem20_10_partA_mixed_stability_of_constructed_source_exact_rhs_householder_gamma_of_source_ranks
       fp h b d hBsrc hStack hvalidA hvalidB
-
 /-- Theorem 20.10(a), exact transformed-RHS constructed-source certificate
     under the combined source-rank unit-roundoff threshold.
 
@@ -11715,7 +11675,6 @@ theorem theorem20_10_partA_certificate_of_constructed_source_exact_rhs_household
   exact
     theorem20_10_partA_certificate_of_constructed_source_exact_rhs_householder_gamma_of_source_ranks
       fp h b d hBsrc hStack hvalidA hvalidB
-
 /-- Theorem 20.10(b), exact transformed-RHS constructed-source Part B
     certificate under the combined source-rank unit-roundoff threshold.
 
@@ -11754,7 +11713,6 @@ theorem theorem20_10_partB_certificate_of_constructed_source_exact_rhs_household
   exact
     theorem20_10_partB_certificate_of_constructed_source_exact_rhs_householder_gamma_of_source_ranks
       fp h b d hBsrc hStack hvalidA hvalidB
-
 /-- Theorem 20.10(b), exact transformed-RHS constructed-source backward-error
     core under the combined source-rank unit-roundoff threshold.
 
@@ -11826,7 +11784,6 @@ theorem theorem20_10_partB_backward_error_of_constructed_source_exact_rhs_househ
   exact
     theorem20_10_partB_backward_error_of_constructed_source_exact_rhs_householder_gamma_of_source_ranks
       fp h b d hBsrc hStack hvalidA hvalidB
-
 /-- Theorem 20.10(b) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
 theorem theorem20_10_partB_backward_error_of_householder_gamma_certificate
@@ -11878,7 +11835,6 @@ theorem theorem20_10_partB_backward_error_of_householder_gamma_certificate
           IsLSEMinimizer Apert bpert Bpert dpert x)) :=
   theorem20_10_partB_backward_error_of_perturbation_certificate
     A B b d xhat cert
-
 /-- Theorem 20.10(a), nonempty Householder-gamma certificate handoff.
 
 This certificate-free form consumes a nonempty Part A perturbation certificate
@@ -11943,7 +11899,6 @@ theorem theorem20_10_partA_mixed_stability_of_nonempty_householder_gamma_certifi
   exact
     ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, DeltaX, x, hxhat, hDeltaX,
       cert.hDeltaA, cert.hDeltab, cert.hDeltaB, hx, hmethod⟩
-
 /-- Theorem 20.10(b), nonempty Householder-gamma certificate handoff.
 
 This certificate-free form consumes a nonempty Part B perturbation certificate
@@ -12005,14 +11960,12 @@ theorem theorem20_10_partB_backward_error_of_nonempty_householder_gamma_certific
   exact
     ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, cert.Deltad,
       cert.hDeltaA, cert.hDeltaB, cert.hDeltab, cert.hDeltad, hmethod⟩
-
 namespace Theorem20_10
 
 /-- A single gamma horizon for the square constraint panel and its rounded
 forward solve. -/
 def fullConstraintGammaIndex (p : ℕ) : ℕ :=
   max p (p * householderConstructApplyGammaIndex p)
-
 /-- The source rank radius used by the `q = 0` branch.  Retaining both source
 margins mirrors the two assumptions in (20.24), even though square full row
 rank alone already implies stacked full column rank. -/
@@ -12020,7 +11973,6 @@ noncomputable def fullConstraintSourceRankRadius
     {r p : ℕ} {A : Fin r → Fin p → ℝ} {B : Fin p → Fin p → ℝ}
     (hB : LSEFullRowRank B) (hStack : LSEStackedFullColumnRank A B) : ℝ :=
   min hB.transposeVecNorm2LowerMargin hStack.vecNorm2LowerMargin
-
 /-- Positive unit-roundoff threshold for the square constraint-only branch.
 The first cap validates the panel and solve gamma indices; the second keeps
 the composed constraint perturbation below both source rank margins. -/
@@ -12032,7 +11984,6 @@ noncomputable def fullConstraintUnitRoundoffSmallnessThreshold
     (((1 : ℝ) / 2) / (N : ℝ))
     (fullConstraintSourceRankRadius hB hStack /
       ((6 : ℝ) * (N : ℝ) * (1 + frobNormRect B)))
-
 /-- Positivity of the full-constraint threshold for `p > 0`. -/
 theorem fullConstraintUnitRoundoffSmallnessThreshold_pos
     {r p : ℕ} {A : Fin r → Fin p → ℝ} {B : Fin p → Fin p → ℝ}
@@ -12052,7 +12003,6 @@ theorem fullConstraintUnitRoundoffSmallnessThreshold_pos
     positivity
   dsimp [fullConstraintUnitRoundoffSmallnessThreshold]
   exact lt_min (div_pos (by norm_num) hN) (div_pos hradius hden)
-
 /-- The full-constraint threshold validates the literal panel/solve path and
 bounds the composed matrix perturbation strictly below both source margins. -/
 theorem fullConstraint_unit_roundoff_conditions_of_lt_smallnessThreshold

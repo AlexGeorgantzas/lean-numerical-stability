@@ -7,25 +7,16 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
-import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
-import NumStability.Algorithms.QR.Higham19
-import NumStability.Algorithms.QR.Higham19Thm6ColPivot
-import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
-import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
-import NumStability.Algorithms.QR.Higham19Thm6ElementwisePackaged
-import NumStability.Algorithms.QR.Higham19Thm6RowSpecific
-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+import NumStability.Analysis.MatrixAlgebra
 
 namespace NumStability
 
-open scoped BigOperators Matrix.Norms.Frobenius
+open scoped BigOperators
 
 /-!
-# KKT systems for equality-constrained least squares
+# KKT
 
-Reusable Karush--Kuhn--Tucker identities for equality-constrained least squares.
-
-Declarations are extracted command-for-command from the historical least-squares owners; only contracted cross-module private helpers are promoted.
+Canonical reusable module extracted without change from LSE.
 -/
 
 /-- Source augmented KKT system for the equality-constrained least-squares
@@ -43,7 +34,6 @@ def LSEKKTSystem {m n p : ℕ}
     (∑ i : Fin m, A i j * dr i) -
       (∑ r : Fin p, B r j * dlambda r) = g j) ∧
   (∀ r : Fin p, rectMatMulVec B dx r = c r)
-
 /-- The square linear operator behind `LSEKKTSystem`.
 
     It maps `(dr, dx, dlambda)` to the three source augmented KKT rows:
@@ -134,7 +124,6 @@ noncomputable def LSEKKTLinearMap {m n p : ℕ}
               a * rectMatMulVec B u.2.1 r := by
           simpa using congrFun (rectMatMulVec_smul B a u.2.1) r
         exact hmul
-
 /-- Component form of the source KKT linear-map equation. -/
 theorem LSEKKTSystem.iff_linearMap_eq {m n p : ℕ}
     (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
@@ -162,7 +151,6 @@ theorem LSEKKTSystem.iff_linearMap_eq {m n p : ℕ}
         exact congrFun (congrArg Prod.fst (congrArg Prod.snd hmap)) j
       · intro r
         exact congrFun (congrArg Prod.snd (congrArg Prod.snd hmap)) r
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     KKT difference equations for the Cox--Higham augmented-system route.
 
@@ -272,7 +260,6 @@ theorem IsLSEMinimizer.exists_lagrange_kkt_difference_system_of_fullRowRank
     rw [congrFun (rectMatMulVec_mat_add B DeltaB y) r] at hpert_r
     rw [congrFun (rectMatMulVec_sub B y x) r]
     linarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     package the Cox--Higham KKT difference equations as one source augmented
     KKT system.  This is the system to which the later block inverse/norm bound
@@ -309,7 +296,6 @@ theorem IsLSEMinimizer.exists_lagrange_kkt_difference_source_system_of_fullRowRa
   rcases hx.exists_lagrange_kkt_difference_system_of_fullRowRank hy hB hBpert with
     ⟨lambda, mu, htop, hstat, hconstr⟩
   exact ⟨lambda, mu, htop, hstat, hconstr⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the Cox--Higham KKT difference system together with the source normal
     equations for the same source Lagrange multiplier.  This exposes the
@@ -416,216 +402,5 @@ theorem
     rw [congrFun (rectMatMulVec_mat_add B DeltaB y) r] at hpert_r
     rw [congrFun (rectMatMulVec_sub B y x) r]
     linarith
-
-/-- Homogeneous uniqueness for the source equality-constrained KKT augmented
-    system under Higham's conditions (20.24).
-
-    This is the nonsingularity kernel for the Cox--Higham block-inverse route:
-    with zero data, stationarity, and constraint right-hand sides, the residual,
-    solution, and multiplier components are all zero. -/
-theorem LSEKKTSystem.eq_zero_of_homogeneous {m n p : ℕ}
-    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
-    (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
-    {dr : Fin m → ℝ} {dx : Fin n → ℝ} {dlambda : Fin p → ℝ}
-    (hsys : LSEKKTSystem A B (0 : Fin m → ℝ) (0 : Fin n → ℝ)
-      (0 : Fin p → ℝ) dr dx dlambda) :
-    dr = 0 ∧ dx = 0 ∧ dlambda = 0 := by
-  rcases hsys with ⟨htop, hstat, hconstr⟩
-  have hA_dot :
-      (∑ j : Fin n, dx j * (∑ i : Fin m, A i j * dr i)) =
-        ∑ i : Fin m, rectMatMulVec A dx i * dr i := by
-    calc
-      (∑ j : Fin n, dx j * (∑ i : Fin m, A i j * dr i))
-          = ∑ j : Fin n, ∑ i : Fin m, dx j * (A i j * dr i) := by
-              apply Finset.sum_congr rfl
-              intro j _
-              rw [Finset.mul_sum]
-      _ = ∑ i : Fin m, ∑ j : Fin n, dx j * (A i j * dr i) := by
-              rw [Finset.sum_comm]
-      _ = ∑ i : Fin m, rectMatMulVec A dx i * dr i := by
-              apply Finset.sum_congr rfl
-              intro i _
-              calc
-                (∑ j : Fin n, dx j * (A i j * dr i))
-                    = ∑ j : Fin n, (A i j * dx j) * dr i := by
-                        apply Finset.sum_congr rfl
-                        intro j _
-                        ring
-                _ = (∑ j : Fin n, A i j * dx j) * dr i := by
-                        rw [Finset.sum_mul]
-                _ = rectMatMulVec A dx i * dr i := rfl
-  have hB_dot :
-      (∑ j : Fin n, dx j * (∑ r : Fin p, B r j * dlambda r)) =
-        ∑ r : Fin p, rectMatMulVec B dx r * dlambda r := by
-    calc
-      (∑ j : Fin n, dx j * (∑ r : Fin p, B r j * dlambda r))
-          = ∑ j : Fin n, ∑ r : Fin p, dx j * (B r j * dlambda r) := by
-              apply Finset.sum_congr rfl
-              intro j _
-              rw [Finset.mul_sum]
-      _ = ∑ r : Fin p, ∑ j : Fin n, dx j * (B r j * dlambda r) := by
-              rw [Finset.sum_comm]
-      _ = ∑ r : Fin p, rectMatMulVec B dx r * dlambda r := by
-              apply Finset.sum_congr rfl
-              intro r _
-              calc
-                (∑ j : Fin n, dx j * (B r j * dlambda r))
-                    = ∑ j : Fin n, (B r j * dx j) * dlambda r := by
-                        apply Finset.sum_congr rfl
-                        intro j _
-                        ring
-                _ = (∑ j : Fin n, B r j * dx j) * dlambda r := by
-                        rw [Finset.sum_mul]
-                _ = rectMatMulVec B dx r * dlambda r := rfl
-  have hstation_sum :
-      (∑ j : Fin n,
-        dx j *
-          ((∑ i : Fin m, A i j * dr i) -
-            (∑ r : Fin p, B r j * dlambda r))) = 0 := by
-    apply Finset.sum_eq_zero
-    intro j _
-    have hj : (∑ i : Fin m, A i j * dr i) -
-        (∑ r : Fin p, B r j * dlambda r) = 0 := by
-      simpa using hstat j
-    rw [hj]
-    ring
-  have hstation_split :
-      (∑ j : Fin n,
-        dx j *
-          ((∑ i : Fin m, A i j * dr i) -
-            (∑ r : Fin p, B r j * dlambda r))) =
-        (∑ j : Fin n, dx j * (∑ i : Fin m, A i j * dr i)) -
-          (∑ j : Fin n, dx j * (∑ r : Fin p, B r j * dlambda r)) := by
-    rw [← Finset.sum_sub_distrib]
-    apply Finset.sum_congr rfl
-    intro j _
-    ring
-  have hstation_source :
-      (∑ i : Fin m, rectMatMulVec A dx i * dr i) -
-          (∑ r : Fin p, rectMatMulVec B dx r * dlambda r) = 0 := by
-    calc
-      (∑ i : Fin m, rectMatMulVec A dx i * dr i) -
-          (∑ r : Fin p, rectMatMulVec B dx r * dlambda r)
-          = (∑ j : Fin n, dx j * (∑ i : Fin m, A i j * dr i)) -
-              (∑ j : Fin n, dx j * (∑ r : Fin p, B r j * dlambda r)) := by
-              rw [hA_dot, hB_dot]
-      _ = (∑ j : Fin n,
-            dx j *
-              ((∑ i : Fin m, A i j * dr i) -
-                (∑ r : Fin p, B r j * dlambda r))) := by
-              rw [hstation_split]
-      _ = 0 := hstation_sum
-  have hBdot_zero :
-      (∑ r : Fin p, rectMatMulVec B dx r * dlambda r) = 0 := by
-    apply Finset.sum_eq_zero
-    intro r _
-    have hr : rectMatMulVec B dx r = 0 := by
-      simpa using hconstr r
-    rw [hr]
-    ring
-  have hAdot_zero :
-      (∑ i : Fin m, rectMatMulVec A dx i * dr i) = 0 := by
-    linarith
-  have hAdx_neg : ∀ i : Fin m, rectMatMulVec A dx i = -dr i := by
-    intro i
-    have hi : dr i + rectMatMulVec A dx i = 0 := by
-      simpa using htop i
-    linarith
-  have hAdot_eq_neg_sq :
-      (∑ i : Fin m, rectMatMulVec A dx i * dr i) = -vecNorm2Sq dr := by
-    unfold vecNorm2Sq
-    rw [← Finset.sum_neg_distrib]
-    apply Finset.sum_congr rfl
-    intro i _
-    rw [hAdx_neg i]
-    ring
-  have hdrsq : vecNorm2Sq dr = 0 := by
-    linarith
-  have hdrnorm : vecNorm2 dr = 0 := by
-    unfold vecNorm2
-    rw [Real.sqrt_eq_zero (vecNorm2Sq_nonneg dr)]
-    exact hdrsq
-  have hdr_zero : dr = 0 := by
-    ext i
-    exact (vecNorm2_eq_zero_iff dr).mp hdrnorm i
-  have hAdx_zero : rectMatMulVec A dx = 0 := by
-    ext i
-    change rectMatMulVec A dx i = 0
-    have hi : dr i + rectMatMulVec A dx i = 0 := by
-      simpa using htop i
-    have hdri : dr i = 0 := by
-      simpa using congrFun hdr_zero i
-    linarith
-  have hBdx_zero : rectMatMulVec B dx = 0 := by
-    ext r
-    change rectMatMulVec B dx r = 0
-    simpa using hconstr r
-  have hdx_zero : dx = 0 := hnull dx hAdx_zero hBdx_zero
-  have hBt_zero :
-      rectMatMulVec (fun j : Fin n => fun r : Fin p => B r j) dlambda = 0 := by
-    ext j
-    change (∑ r : Fin p, B r j * dlambda r) = 0
-    have hj : (∑ i : Fin m, A i j * dr i) -
-        (∑ r : Fin p, B r j * dlambda r) = 0 := by
-      simpa using hstat j
-    have hArow_zero : (∑ i : Fin m, A i j * dr i) = 0 := by
-      rw [hdr_zero]
-      simp
-    linarith
-  have hdlambda_zero : dlambda = 0 := by
-    apply hB.transpose_rectMatMulVec_injective
-    rw [hBt_zero, rectMatMulVec_zero]
-  exact ⟨hdr_zero, hdx_zero, hdlambda_zero⟩
-
-/-- A source LSE Lagrange multiplier satisfying the normal equations solves the
-    source KKT system with right-hand side `(r,0,0)`, where
-    `r = b - A*x` is Higham's signed residual. -/
-theorem LSEKKTSystem.sourceResidual_of_lagrange_normal_equations {m n p : ℕ}
-    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
-    {B : Fin p → Fin n → ℝ} {x : Fin n → ℝ}
-    {lambda : Fin p → ℝ}
-    (hnormal : ∀ j : Fin n,
-      ∑ i : Fin m, A i j * lsResidualHigham A b x i =
-        ∑ r : Fin p, B r j * lambda r) :
-    LSEKKTSystem A B (lsResidualHigham A b x) 0 0
-      (lsResidualHigham A b x) 0 lambda := by
-  constructor
-  · intro i
-    rw [congrFun (rectMatMulVec_zero A) i]
-    simp
-  · constructor
-    · intro j
-      rw [hnormal j]
-      simp
-    · intro r
-      rw [congrFun (rectMatMulVec_zero B) r]
-
-namespace Theorem20_10
-
-theorem orthogonal_matMulVec_injective {n : ℕ}
-    {U : Fin n → Fin n → ℝ} (hU : IsOrthogonal n U) :
-    Function.Injective (matMulVec n U) := by
-  intro x y hxy
-  ext i
-  calc
-    x i = matMulVec n (idMatrix n) x i :=
-      (congrFun (matMulVec_id n x) i).symm
-    _ = matMulVec n (matMul n (matTranspose U) U) x i := by
-          congr 2
-          ext a b
-          exact (hU.left_inv a b).symm
-    _ = matMulVec n (matTranspose U) (matMulVec n U x) i :=
-          matMulVec_matMul n (matTranspose U) U x i
-    _ = matMulVec n (matTranspose U) (matMulVec n U y) i := by
-          rw [hxy]
-    _ = matMulVec n (matMul n (matTranspose U) U) y i :=
-          (matMulVec_matMul n (matTranspose U) U y i).symm
-    _ = matMulVec n (idMatrix n) y i := by
-          congr 2
-          ext a b
-          exact hU.left_inv a b
-    _ = y i := congrFun (matMulVec_id n y) i
-
-end Theorem20_10
 
 end NumStability

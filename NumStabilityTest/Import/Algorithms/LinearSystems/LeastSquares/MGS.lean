@@ -8,5 +8,3 @@ the declarations checked below.
 -/
 
 #check @NumStability.MGSAugmentedLSFactorization
-#check @NumStability.MGSAugmentedLSFactorization.residual_eq
-#check @NumStability.MGSAugmentedLSFactorization.objective_eq_top_plus_rho_sq

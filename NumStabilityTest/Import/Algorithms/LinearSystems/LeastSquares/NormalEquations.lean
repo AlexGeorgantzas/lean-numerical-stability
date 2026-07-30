@@ -7,6 +7,6 @@ Imports exactly one canonical module so no sibling import can supply
 the declarations checked below.
 -/
 
+#check @NumStability.normalEqCholeskyXHat
 #check @NumStability.RectLSNormalEquations
 #check @NumStability.lsAplusOfGramNonsingInv
-#check @NumStability.RectLSNormalEquations.of_permuteCols

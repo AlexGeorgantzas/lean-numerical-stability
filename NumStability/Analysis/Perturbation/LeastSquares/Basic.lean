@@ -15,18 +15,15 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
 import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
-import NumStability.Algorithms.LinearSystems.QR.QRSolve
+import NumStability.Algorithms.QR.HouseholderApplySupport
+import NumStability.Algorithms.QR.HouseholderQRSupport
+import NumStability.Algorithms.QR.HouseholderSpec
+import NumStability.Algorithms.QR.HouseholderSpecSupport
+import NumStability.Algorithms.QR.QRSolve
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.NormalEquations
-import NumStability.Analysis.Perturbation.LeastSquares.Wedin
 import NumStability.Analysis.PerturbationTheory
 import NumStability.Analysis.Rounding
-import NumStability.Analysis.SingularValues.Basic
-import NumStability.Analysis.SingularValues.Realification
 import NumStability.FloatingPoint.Model
 
 namespace NumStability
@@ -37,7 +34,7 @@ open scoped BigOperators Matrix.Norms.Frobenius
 /-!
 # Basic
 
-Canonical reusable module extracted without change from LSPerturbation, LSQRSolve.
+Canonical reusable module extracted without change from Higham20Algorithms, Higham20Equations, Higham20Refinement, Higham20RowSorting, LSPerturbation, LSQRSolve.
 -/
 
 /-- **Augmented system for the LS problem** (Higham eq 20.3).
@@ -92,90 +89,6 @@ noncomputable def lsComponentwiseDataMajorant {m n : ℕ}
 noncomputable def lsComponentwiseTransposeMajorant {m n : ℕ}
     (E : Fin m → Fin n → ℝ) (s : Fin m → ℝ) : Fin n → ℝ :=
   fun j => ∑ i : Fin m, E i j * |s i|
-theorem lsComponentwiseDataMajorant_nonneg {m n : ℕ}
-    {E : Fin m → Fin n → ℝ} {f : Fin m → ℝ} {y : Fin n → ℝ}
-    (hE : ∀ i j, 0 ≤ E i j) (hf : ∀ i, 0 ≤ f i) :
-    ∀ i : Fin m, 0 ≤ lsComponentwiseDataMajorant E f y i := by
-  intro i
-  unfold lsComponentwiseDataMajorant rectMatMulVec absVec
-  exact add_nonneg (hf i) (Finset.sum_nonneg (by
-    intro j _
-    exact mul_nonneg (hE i j) (abs_nonneg (y j))))
-theorem lsComponentwiseTransposeMajorant_nonneg {m n : ℕ}
-    {E : Fin m → Fin n → ℝ} {s : Fin m → ℝ}
-    (hE : ∀ i j, 0 ≤ E i j) :
-    ∀ j : Fin n, 0 ≤ lsComponentwiseTransposeMajorant E s j := by
-  intro j
-  unfold lsComponentwiseTransposeMajorant
-  exact Finset.sum_nonneg (by
-    intro i _
-    exact mul_nonneg (hE i j) (abs_nonneg (s i)))
-theorem lsEq20_6_rhsTop_abs_le {m n : ℕ}
-    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
-    (E : Fin m → Fin n → ℝ) (f : Fin m → ℝ)
-    (y : Fin n → ℝ) (eps : ℝ)
-    (hDeltaA : ∀ i j, |DeltaA i j| ≤ eps * E i j)
-    (hDeltab : ∀ i, |Deltab i| ≤ eps * f i) :
-    ∀ i : Fin m,
-      |lsEq20_6RhsTop DeltaA Deltab y i| ≤
-        eps * lsComponentwiseDataMajorant E f y i := by
-  intro i
-  have hDeltaAy :
-      |rectMatMulVec DeltaA y i| ≤
-        eps * rectMatMulVec E (absVec n y) i := by
-    calc
-      |rectMatMulVec DeltaA y i|
-          ≤ ∑ j : Fin n, |DeltaA i j| * |y j| :=
-            abs_rectMatMulVec_le DeltaA y i
-      _ ≤ ∑ j : Fin n, (eps * E i j) * |y j| := by
-            apply Finset.sum_le_sum
-            intro j _
-            exact mul_le_mul_of_nonneg_right (hDeltaA i j) (abs_nonneg (y j))
-      _ = eps * rectMatMulVec E (absVec n y) i := by
-            unfold rectMatMulVec absVec
-            rw [Finset.mul_sum]
-            apply Finset.sum_congr rfl
-            intro j _
-            ring
-  unfold lsEq20_6RhsTop lsComponentwiseDataMajorant
-  calc
-    |Deltab i - rectMatMulVec DeltaA y i|
-        ≤ |Deltab i| + |rectMatMulVec DeltaA y i| := by
-          simpa [sub_eq_add_neg, abs_neg] using
-            abs_add_le (Deltab i) (-(rectMatMulVec DeltaA y i))
-    _ ≤ eps * f i + eps * rectMatMulVec E (absVec n y) i :=
-        add_le_add (hDeltab i) hDeltaAy
-    _ = eps * (f i + rectMatMulVec E (absVec n y) i) := by ring
-theorem lsEq20_6_rhsBottom_abs_le {m n : ℕ}
-    (DeltaA : Fin m → Fin n → ℝ) (E : Fin m → Fin n → ℝ)
-    (s : Fin m → ℝ) (eps : ℝ)
-    (hDeltaA : ∀ i j, |DeltaA i j| ≤ eps * E i j) :
-    ∀ j : Fin n,
-      |lsEq20_6RhsBottom DeltaA s j| ≤
-        eps * lsComponentwiseTransposeMajorant E s j := by
-  intro j
-  unfold lsEq20_6RhsBottom lsComponentwiseTransposeMajorant
-  calc
-    |-∑ i : Fin m, DeltaA i j * s i|
-        = |∑ i : Fin m, DeltaA i j * s i| := by rw [abs_neg]
-    _ ≤ ∑ i : Fin m, |DeltaA i j| * |s i| := by
-        calc
-          |∑ i : Fin m, DeltaA i j * s i|
-              ≤ ∑ i : Fin m, |DeltaA i j * s i| :=
-                Finset.abs_sum_le_sum_abs _ _
-          _ = ∑ i : Fin m, |DeltaA i j| * |s i| := by
-                apply Finset.sum_congr rfl
-                intro i _
-                exact abs_mul (DeltaA i j) (s i)
-    _ ≤ ∑ i : Fin m, (eps * E i j) * |s i| := by
-          apply Finset.sum_le_sum
-          intro i _
-          exact mul_le_mul_of_nonneg_right (hDeltaA i j) (abs_nonneg (s i))
-    _ = eps * ∑ i : Fin m, E i j * |s i| := by
-          rw [Finset.mul_sum]
-          apply Finset.sum_congr rfl
-          intro i _
-          ring
 /-- Unit-roundoff threshold that implies the half-radius guard for the
     conservative gamma-factor RHS package in Theorem 20.4. -/
 noncomputable def theorem20_4GammaFactorRhsSmallnessThreshold (n k : ℕ) : ℝ :=
@@ -220,375 +133,6 @@ theorem theorem20_4GammaFactorRhs_half_of_unit_roundoff_lt_smallnessThreshold
     field_simp [ne_of_gt hidx]
   rw [hright] at hmul_lt
   exact le_of_lt hmul_lt
-/-- Higham, 2nd ed., Chapter 20, Wedin perturbation setup:
-    an exact minimizer of the perturbed least-squares problem makes the
-    perturbed Higham residual `s = (b + Delta b) - B*y` orthogonal to every
-    column of `B`. -/
-theorem IsLeastSquaresMinimizer.wedin_perturbed_residual_column_orthogonal
-    {m n : ℕ} {B : Fin m → Fin n → ℝ}
-    {b Deltab s : Fin m → ℝ} {y : Fin n → ℝ}
-    (hmin : IsLeastSquaresMinimizer B (fun i => b i + Deltab i) y)
-    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i) :
-    ∀ j : Fin n, ∑ i : Fin m, B i j * s i = 0 := by
-  exact
-    IsLeastSquaresMinimizer.higham_residual_orthogonal
-      (A := B) (b := fun i => b i + Deltab i) (x := y)
-      hmin (by
-        ext i
-        rw [hs]
-        rfl)
-/-- Higham, 2nd ed., Chapter 20, Wedin perturbation setup:
-    exact least-squares optimality makes the source Higham residual orthogonal
-    to the data columns, hence a symmetric range projector `A*Aplus`
-    annihilates it. -/
-theorem IsLeastSquaresMinimizer.wedin_rangeProjection_higham_residual_eq_zero
-    {m k : ℕ} {A : Fin m → Fin (k + 1) → ℝ}
-    {Aplus : Fin (k + 1) → Fin m → ℝ}
-    {b r : Fin m → ℝ} {x : Fin (k + 1) → ℝ}
-    (hmin : IsLeastSquaresMinimizer A b x)
-    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
-    (hr : r = fun i => b i - rectMatMulVec A x i) :
-    rectMatMulVec (rectMatMul A Aplus) r = 0 := by
-  have horth :
-      ∀ j : Fin (k + 1), ∑ i : Fin m, A i j * r i = 0 :=
-    IsLeastSquaresMinimizer.higham_residual_orthogonal
-      (A := A) (b := b) (x := x) (s := r) hmin
-      (by simpa [lsResidualHigham] using hr)
-  exact
-    wedinTheorem20_1_rangeProjection_perturbed_residual_eq_zero_of_column_orthogonal
-      A Aplus r hSymA horth
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1):
-    source-strength solution-side Wedin bound with perturbed least-squares
-    optimality as the caller-facing hypothesis.
-
-This is the minimizer-facing version of
-`wedinTheorem20_1_solutionRelativeRHS_le_of_residual_definitions_projector_bound_column_orthogonal`.
-It discharges residual column orthogonality from exact optimality.  The
-source-strength projector estimate remains explicit until the full
-Lemma 20.12 equality/min surface is formalized. -/
-theorem IsLeastSquaresMinimizer.wedin_solutionRelativeRHS_le_of_projector_bound_geometry
-    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
-    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
-    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
-    (x y : Fin (k + 1) → ℝ)
-    {Aplus_norm delta eta DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
-    (hPertMin : IsLeastSquaresMinimizer B (fun i => b i + Deltab i) y)
-    (hAplus_pos : 0 < Aplus_norm)
-    (hA_norm_pos : 0 < A_norm)
-    (hx_norm_pos : 0 < vecNorm2 x)
-    (hkappa : kappa = Aplus_norm * A_norm)
-    (hdelta : delta = eps * A_norm)
-    (heta : eta = Aplus_norm * delta)
-    (hsmall : eta < 1)
-    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
-    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
-    (hPBIPA :
-      rectOpNorm2Le
-        (rectMatMul
-          (rectMatMul B Bplus)
-          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
-        (delta * Aplus_norm))
-    (hBplus : rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
-    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
-    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
-    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
-    (hDeltab_norm_budget :
-      Deltab_norm ≤ eps * (A_norm * vecNorm2 x + vecNorm2 r))
-    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
-    (hB : B = fun i j => A i j + DeltaA i j)
-    (hr : r = fun i => b i - rectMatMulVec A x i)
-    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i) :
-    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
-      wedinTheorem20_1SolutionRelativeRHS
-        kappa eps A_norm (vecNorm2 x) (vecNorm2 r) := by
-  have horth_s :
-      ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0 :=
-    IsLeastSquaresMinimizer.wedin_perturbed_residual_column_orthogonal
-      (B := B) (b := b) (Deltab := Deltab) (s := s) (y := y)
-      hPertMin hs
-  exact
-    wedinTheorem20_1_solutionRelativeRHS_le_of_residual_definitions_projector_bound_column_orthogonal
-      A B Aplus Bplus DeltaA b Deltab r s x y hAplus_pos hA_norm_pos
-      hx_norm_pos hkappa hdelta heta hsmall hleftB hSymB hPBIPA hBplus
-      hDeltaA hDeltab hDeltaA_norm_budget hDeltab_norm_budget
-      hrangeA_residual hB hr hs horth_s
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1):
-    minimizer-facing printed solution-side Wedin bound, conditional only on
-    the exact cross-projection norm equality from the open Stewart--Sun/CS
-    route.
-
-This is the caller-facing exact-LS version of
-`wedinTheorem20_1_solutionRelativeRHS_le_of_residual_definitions_crossProjection_eq_column_orthogonal`.
-The perturbed residual column orthogonality is discharged from exact optimality,
-while the exact cross-projection equality remains visible. -/
-theorem IsLeastSquaresMinimizer.wedin_solutionRelativeRHS_le_of_crossProjection_eq_geometry
-    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
-    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
-    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
-    (x y : Fin (k + 1) → ℝ)
-    {Aplus_norm delta eta DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
-    (hPertMin : IsLeastSquaresMinimizer B (fun i => b i + Deltab i) y)
-    (hAplus_pos : 0 < Aplus_norm)
-    (hA_norm_pos : 0 < A_norm)
-    (hx_norm_pos : 0 < vecNorm2 x)
-    (hkappa : kappa = Aplus_norm * A_norm)
-    (hdelta : delta = eps * A_norm)
-    (heta : eta = Aplus_norm * delta)
-    (hsmall : eta < 1)
-    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
-    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
-    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
-    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
-    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
-    (hBplus : rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
-    (hEq :
-      complexMatrixOp2
-          (realRectToCMatrix
-            (rectMatMul
-              (rectMatMul B Bplus)
-              (fun i j => idMatrix m i j - rectMatMul A Aplus i j))) =
-        complexMatrixOp2
-          (realRectToCMatrix
-            (rectMatMul
-              (rectMatMul A Aplus)
-              (fun i j => idMatrix m i j - rectMatMul B Bplus i j))))
-    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
-    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
-    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
-    (hDeltab_norm_budget :
-      Deltab_norm ≤ eps * (A_norm * vecNorm2 x + vecNorm2 r))
-    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
-    (hB : B = fun i j => A i j + DeltaA i j)
-    (hr : r = fun i => b i - rectMatMulVec A x i)
-    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i) :
-    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
-      wedinTheorem20_1SolutionRelativeRHS
-        kappa eps A_norm (vecNorm2 x) (vecNorm2 r) := by
-  have horth_s :
-      ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0 :=
-    IsLeastSquaresMinimizer.wedin_perturbed_residual_column_orthogonal
-      (B := B) (b := b) (Deltab := Deltab) (s := s) (y := y)
-      hPertMin hs
-  exact
-    wedinTheorem20_1_solutionRelativeRHS_le_of_residual_definitions_crossProjection_eq_column_orthogonal
-      A B Aplus Bplus DeltaA b Deltab r s x y hAplus_pos hA_norm_pos
-      hx_norm_pos hkappa hdelta heta hsmall hleftB hSymA hSymB hDelta
-      hAplus hBplus hEq hDeltaA hDeltab hDeltaA_norm_budget
-      hDeltab_norm_budget hrangeA_residual hB hr hs horth_s
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1), conservative
-    solution-side Wedin bound with perturbed least-squares optimality as the
-    caller-facing hypothesis.
-
-This is the minimizer-facing version of
-`wedinTheorem20_1_solutionRelativeRHSConservative_le_of_residual_definitions_column_orthogonal`.
-It discharges residual column orthogonality from exact optimality.  The
-conclusion is conservative, not the printed (20.1) RHS, because it still uses
-the one-sided Lemma 20.12 `Bplus` route. -/
-theorem IsLeastSquaresMinimizer.wedin_solutionRelativeRHSConservative_le_of_Bplus_bound_geometry
-    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
-    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
-    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
-    (x y : Fin (k + 1) → ℝ)
-    {Aplus_norm delta eta DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
-    (hPertMin : IsLeastSquaresMinimizer B (fun i => b i + Deltab i) y)
-    (hAplus_pos : 0 < Aplus_norm)
-    (hA_norm_pos : 0 < A_norm)
-    (hx_norm_pos : 0 < vecNorm2 x)
-    (hkappa : kappa = Aplus_norm * A_norm)
-    (hdelta : delta = eps * A_norm)
-    (heta : eta = Aplus_norm * delta)
-    (hsmall : eta < 1)
-    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
-    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
-    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
-    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
-    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
-    (hBplus : rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
-    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
-    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
-    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
-    (hDeltab_norm_budget :
-      Deltab_norm ≤ eps * (A_norm * vecNorm2 x + vecNorm2 r))
-    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
-    (hB : B = fun i j => A i j + DeltaA i j)
-    (hr : r = fun i => b i - rectMatMulVec A x i)
-    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i) :
-    vecNorm2 (fun j => y j - x j) / vecNorm2 x ≤
-      wedinTheorem20_1SolutionRelativeRHSConservative
-        kappa eps A_norm (vecNorm2 x) (vecNorm2 r) := by
-  have horth_s :
-      ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0 :=
-    IsLeastSquaresMinimizer.wedin_perturbed_residual_column_orthogonal
-      (B := B) (b := b) (Deltab := Deltab) (s := s) (y := y)
-      hPertMin hs
-  exact
-    wedinTheorem20_1_solutionRelativeRHSConservative_le_of_residual_definitions_column_orthogonal
-      A B Aplus Bplus DeltaA b Deltab r s x y hAplus_pos hA_norm_pos
-      hx_norm_pos hkappa hdelta heta hsmall hleftA hleftB hSymA hSymB
-      hDelta hBplus hDeltaA hDeltab hDeltaA_norm_budget
-      hDeltab_norm_budget hrangeA_residual hB hr hs horth_s
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.2):
-    residual-side Wedin bound with perturbed least-squares optimality as the
-    caller-facing hypothesis.
-
-This composes the `IsLeastSquaresMinimizer` normal-equation bridge with the
-current strongest residual-side Wedin wrapper.  The source-strength projector
-estimate `||P_B(I-P_A)|| <= ||Delta A|| ||Aplus||` remains explicit, so the
-full Wedin theorem is still open until the Lemma 20.12 equality/min surface is
-formalized. -/
-theorem IsLeastSquaresMinimizer.wedin_residualRelativeRHS_le_of_projector_bound_geometry
-    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
-    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
-    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
-    (x y : Fin (k + 1) → ℝ)
-    {delta Aplus_norm DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
-    (hPertMin : IsLeastSquaresMinimizer B (fun i => b i + Deltab i) y)
-    (hb_norm_pos : 0 < vecNorm2 b)
-    (hA_norm_nonneg : 0 ≤ A_norm)
-    (heps_nonneg : 0 ≤ eps)
-    (hkappa : kappa = Aplus_norm * A_norm)
-    (hdelta : delta = eps * A_norm)
-    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
-    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
-    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
-    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
-    (hDeltab_norm_budget : Deltab_norm ≤ eps * vecNorm2 b)
-    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
-    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
-    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
-    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
-    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
-    (hPBIPA :
-      rectOpNorm2Le
-        (rectMatMul
-          (rectMatMul B Bplus)
-          (fun i j => idMatrix m i j - rectMatMul A Aplus i j))
-        (delta * Aplus_norm))
-    (hB : B = fun i j => A i j + DeltaA i j)
-    (hr : r = fun i => b i - rectMatMulVec A x i)
-    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i) :
-    vecNorm2 (fun i => r i - s i) / vecNorm2 b ≤
-      wedinTheorem20_1ResidualRelativeRHS kappa eps := by
-  have horth_s :
-      ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0 :=
-    IsLeastSquaresMinimizer.wedin_perturbed_residual_column_orthogonal
-      (B := B) (b := b) (Deltab := Deltab) (s := s) (y := y)
-      hPertMin hs
-  exact
-    wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_projector_bound_geometry_column_orthogonal
-      A B Aplus Bplus DeltaA b Deltab r s x y hb_norm_pos hA_norm_nonneg
-      heps_nonneg hkappa hdelta hAplus hDeltaA hDeltab hDeltaA_norm_budget
-      hDeltab_norm_budget hleftA hleftB hSymA hSymB hrangeA_residual
-      hPBIPA hB hr hs horth_s
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.2):
-    minimizer-facing printed residual-side Wedin bound, conditional only on
-    the exact cross-projection norm equality from the open Stewart--Sun/CS
-    route.
-
-This discharges perturbed residual column orthogonality from exact optimality
-and derives the source-strength projector estimate through the
-`complexMatrixOp2` equality wrapper in the perturbation module. -/
-theorem IsLeastSquaresMinimizer.wedin_residualRelativeRHS_le_of_crossProjection_eq_geometry
-    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
-    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
-    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
-    (x y : Fin (k + 1) → ℝ)
-    {delta Aplus_norm DeltaA_norm Deltab_norm kappa eps A_norm : ℝ}
-    (hPertMin : IsLeastSquaresMinimizer B (fun i => b i + Deltab i) y)
-    (hb_norm_pos : 0 < vecNorm2 b)
-    (hA_norm_nonneg : 0 ≤ A_norm)
-    (heps_nonneg : 0 ≤ eps)
-    (hkappa : kappa = Aplus_norm * A_norm)
-    (hdelta : delta = eps * A_norm)
-    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
-    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
-    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
-    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
-    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
-    (hDeltab_norm_budget : Deltab_norm ≤ eps * vecNorm2 b)
-    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
-    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
-    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
-    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
-    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
-    (hEq :
-      complexMatrixOp2
-          (realRectToCMatrix
-            (rectMatMul
-              (rectMatMul B Bplus)
-              (fun i j => idMatrix m i j - rectMatMul A Aplus i j))) =
-        complexMatrixOp2
-          (realRectToCMatrix
-            (rectMatMul
-              (rectMatMul A Aplus)
-              (fun i j => idMatrix m i j - rectMatMul B Bplus i j))))
-    (hB : B = fun i j => A i j + DeltaA i j)
-    (hr : r = fun i => b i - rectMatMulVec A x i)
-    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i) :
-    vecNorm2 (fun i => r i - s i) / vecNorm2 b ≤
-      wedinTheorem20_1ResidualRelativeRHS kappa eps := by
-  have horth_s :
-      ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0 :=
-    IsLeastSquaresMinimizer.wedin_perturbed_residual_column_orthogonal
-      (B := B) (b := b) (Deltab := Deltab) (s := s) (y := y)
-      hPertMin hs
-  exact
-    wedinTheorem20_1_residualRelativeRHS_le_of_residual_definitions_crossProjection_eq_geometry_column_orthogonal
-      A B Aplus Bplus DeltaA b Deltab r s x y hb_norm_pos hA_norm_nonneg
-      heps_nonneg hkappa hdelta hAplus hDelta hDeltaA hDeltab
-      hDeltaA_norm_budget hDeltab_norm_budget hleftA hleftB hSymA hSymB
-      hrangeA_residual hEq hB hr hs horth_s
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.2), conservative
-    residual-side Wedin bound with perturbed least-squares optimality as the
-    caller-facing hypothesis.
-
-This is the minimizer-facing version of
-`wedinTheorem20_1_residualRelativeRHSConservative_le_of_residual_definitions_Bplus_bound_geometry_column_orthogonal`.
-It discharges residual column orthogonality from exact optimality and uses the
-available one-sided Lemma 20.12 plus a Lemma 20.11-style `Bplus` radius.  The
-conclusion is conservative, not the printed `(1+2*kappa)*eps` RHS. -/
-theorem IsLeastSquaresMinimizer.wedin_residualRelativeRHSConservative_le_of_Bplus_bound_geometry
-    {m k : ℕ} (A B : Fin m → Fin (k + 1) → ℝ)
-    (Aplus Bplus : Fin (k + 1) → Fin m → ℝ)
-    (DeltaA : Fin m → Fin (k + 1) → ℝ) (b Deltab r s : Fin m → ℝ)
-    (x y : Fin (k + 1) → ℝ)
-    {delta Aplus_norm DeltaA_norm Deltab_norm kappa eps A_norm eta : ℝ}
-    (hPertMin : IsLeastSquaresMinimizer B (fun i => b i + Deltab i) y)
-    (hb_norm_pos : 0 < vecNorm2 b)
-    (hA_norm_nonneg : 0 ≤ A_norm)
-    (heps_nonneg : 0 ≤ eps)
-    (hkappa : kappa = Aplus_norm * A_norm)
-    (hdelta : delta = eps * A_norm)
-    (heta : eta = kappa * eps)
-    (hsmall : kappa * eps < 1)
-    (hAplus : rectOpNorm2Le Aplus Aplus_norm)
-    (hBplus : rectOpNorm2Le Bplus (Aplus_norm / (1 - eta)))
-    (hDelta : rectOpNorm2Le (fun i j => B i j - A i j) delta)
-    (hDeltaA : rectOpNorm2Le DeltaA DeltaA_norm)
-    (hDeltab : vecNorm2 Deltab ≤ Deltab_norm)
-    (hDeltaA_norm_budget : DeltaA_norm ≤ eps * A_norm)
-    (hDeltab_norm_budget : Deltab_norm ≤ eps * vecNorm2 b)
-    (hleftA : rectMatMul Aplus A = idMatrix (k + 1))
-    (hleftB : rectMatMul Bplus B = idMatrix (k + 1))
-    (hSymA : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
-    (hSymB : IsSymmetricFiniteMatrix (rectMatMul B Bplus))
-    (hrangeA_residual : rectMatMulVec (rectMatMul A Aplus) r = 0)
-    (hB : B = fun i j => A i j + DeltaA i j)
-    (hr : r = fun i => b i - rectMatMulVec A x i)
-    (hs : s = fun i => (b i + Deltab i) - rectMatMulVec B y i) :
-    vecNorm2 (fun i => r i - s i) / vecNorm2 b ≤
-      wedinTheorem20_1ResidualRelativeRHSConservative kappa eps := by
-  have horth_s :
-      ∀ j : Fin (k + 1), ∑ i : Fin m, B i j * s i = 0 :=
-    IsLeastSquaresMinimizer.wedin_perturbed_residual_column_orthogonal
-      (B := B) (b := b) (Deltab := Deltab) (s := s) (y := y)
-      hPertMin hs
-  exact
-    wedinTheorem20_1_residualRelativeRHSConservative_le_of_residual_definitions_Bplus_bound_geometry_column_orthogonal
-      A B Aplus Bplus DeltaA b Deltab r s x y hb_norm_pos hA_norm_nonneg
-      heps_nonneg hkappa hdelta heta hsmall hAplus hBplus hDelta hDeltaA
-      hDeltab hDeltaA_norm_budget hDeltab_norm_budget hleftA hleftB
-      hSymA hSymB hrangeA_residual hB hr hs horth_s
 /-- Source-shaped bounded perturbation wrapper for Higham, 2nd ed.,
     Chapter 20, Theorem 20.3.  It does not prove the Householder QR
     perturbations; rather, it packages the exact final step once a concrete QR
@@ -23674,7 +23218,12 @@ theorem gram_forward_error_normwise (n : ℕ)
           apply Finset.sum_le_sum; intro k _
           exact mul_le_mul_of_nonneg_right (hΔG_bound j k) (abs_nonneg _)
         linarith [hΔg_bound j]
+/-- The exact quadratic-and-higher part of `gamma fp k`.
 
+This is a rational expression, not asymptotic notation.  Under
+`gammaValid fp k`, `gamma fp k = k*u + higham20GammaRemainder fp k`. -/
+noncomputable def higham20GammaRemainder (fp : FPModel) (k : ℕ) : ℝ :=
+  (((k : ℝ) * fp.u) ^ 2) / (1 - (k : ℝ) * fp.u)
 /-- Translating the correction problem by the current iterate preserves the
 least-squares residual exactly. -/
 theorem higham20_directLSRefinement_residual_translation {m n : ℕ}
@@ -23687,7 +23236,11 @@ theorem higham20_directLSRefinement_residual_translation {m n : ℕ}
     higham20DirectLSRefinementUpdate lsResidualHigham
   rw [congrFun (rectMatMulVec_add A x d) i]
   ring
-
+theorem higham20_gamma_eq_linear_add_remainder (fp : FPModel) (k : ℕ)
+    (hk : gammaValid fp k) :
+    gamma fp k = (k : ℝ) * fp.u + higham20GammaRemainder fp k := by
+  simpa [higham20GammaRemainder] using
+    gamma_eq_linear_plus_quadratic_remainder fp k hk
 /-- The correction objective in step 2 is the original objective evaluated at
 the updated iterate. -/
 theorem higham20_directLSRefinement_objective_translation {m n : ℕ}
@@ -23697,7 +23250,6 @@ theorem higham20_directLSRefinement_objective_translation {m n : ℕ}
       lsObjective A b (higham20DirectLSRefinementUpdate x d) := by
   unfold lsObjective
   rw [higham20_directLSRefinement_residual_translation A b x d]
-
 /-- An exact solve of the correction least-squares problem makes the updated
 iterate an exact minimizer of the original problem. -/
 theorem higham20_directLSRefinement_update_isLeastSquaresMinimizer {m n : ℕ}
@@ -23719,7 +23271,6 @@ theorem higham20_directLSRefinement_update_isLeastSquaresMinimizer {m n : ℕ}
     _ = lsObjective A b (higham20DirectLSRefinementUpdate x e) :=
       higham20_directLSRefinement_objective_translation A b x e
     _ = lsObjective A b y := by rw [hupdate_e]
-
 theorem Higham20DirectLSRefinementStep.updated_isLeastSquaresMinimizer
     {m n : ℕ} {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
     {x : Fin n → ℝ} {r : Fin m → ℝ} {d y : Fin n → ℝ}
@@ -23728,13 +23279,13 @@ theorem Higham20DirectLSRefinementStep.updated_isLeastSquaresMinimizer
   rw [h.update_eq]
   apply higham20_directLSRefinement_update_isLeastSquaresMinimizer A b x d
   simpa [h.residual_eq] using h.correction_minimizer
-
 theorem Higham20DirectLSRefinementRun.successor_isLeastSquaresMinimizer
     {m n steps : ℕ} {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
     (run : Higham20DirectLSRefinementRun A b steps) (k : Fin steps) :
     IsLeastSquaresMinimizer A b (run.iterate k.succ) :=
   (run.step k).updated_isLeastSquaresMinimizer
 
+/-! ## Section 20.5: augmented-system iterative refinement -/
 /-- The exact four-step CSNE update is an exact least-squares minimizer. -/
 theorem Higham20CorrectedSeminormalEquationsStep.updated_isLeastSquaresMinimizer
     {m n : ℕ} {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
@@ -23749,44 +23300,6 @@ theorem Higham20CorrectedSeminormalEquationsStep.updated_isLeastSquaresMinimizer
   rw [h.update_eq]
   apply higham20_directLSRefinement_update_isLeastSquaresMinimizer A b x w
   simpa [h.residual_eq] using hcorr
-
-/-- The exact quadratic-and-higher part of `gamma fp k`.
-
-This is a rational expression, not asymptotic notation.  Under
-`gammaValid fp k`, `gamma fp k = k*u + higham20GammaRemainder fp k`. -/
-noncomputable def higham20GammaRemainder (fp : FPModel) (k : ℕ) : ℝ :=
-  (((k : ℝ) * fp.u) ^ 2) / (1 - (k : ℝ) * fp.u)
-
-theorem higham20_gamma_eq_linear_add_remainder (fp : FPModel) (k : ℕ)
-    (hk : gammaValid fp k) :
-    gamma fp k = (k : ℝ) * fp.u + higham20GammaRemainder fp k := by
-  simpa [higham20GammaRemainder] using
-    gamma_eq_linear_plus_quadratic_remainder fp k hk
-
-/-- Absorb the expanded Cholesky-solve coefficient used by
-`ls_normal_equations_backward` into `gamma_(3n+1)`. -/
-theorem higham20_cholesky_coefficient_le_gamma_3n1
-    (fp : FPModel) (n : ℕ) (h3n1 : gammaValid fp (3 * n + 1)) :
-    gamma fp (n + 1) + 2 * gamma fp n + gamma fp n ^ 2 ≤
-      gamma fp (3 * n + 1) := by
-  have hn1 : gammaValid fp (n + 1) :=
-    gammaValid_mono fp (by omega) h3n1
-  have hstep1 :
-      gamma fp n + gamma fp n + gamma fp n * gamma fp n ≤
-        gamma fp (2 * n) := by
-    have h := gamma_sum_le fp n n (gammaValid_mono fp (by omega) h3n1)
-    simpa [show n + n = 2 * n by omega] using h
-  have hstep2 : gamma fp (n + 1) + gamma fp (2 * n) ≤
-      gamma fp (3 * n + 1) := by
-    have heq : (n + 1) + 2 * n = 3 * n + 1 := by omega
-    have h := gamma_sum_le fp (n + 1) (2 * n) (heq ▸ h3n1)
-    have hnn1 : 0 ≤ gamma fp (n + 1) := gamma_nonneg fp hn1
-    have hnn2 : 0 ≤ gamma fp (2 * n) :=
-      gamma_nonneg fp (gammaValid_mono fp (by omega) h3n1)
-    rw [heq] at h
-    linarith [mul_nonneg hnn1 hnn2]
-  nlinarith [hstep1, hstep2]
-
 /-- The exact componentwise defect majorant obtained by moving the two
 Theorem 20.4 matrix perturbations and the two right-hand-side perturbations
 back to the unperturbed augmented system. -/
@@ -23797,7 +23310,6 @@ noncomputable def higham20Eq20_4CorrectionMajorant {m n : ℕ}
   Fin.append
     (fun i => |Deltaf i| + ∑ j : Fin n, |E1 i j| * |x j|)
     (fun j => |Deltag j| + ∑ i : Fin m, |E2 i j| * |rhat i|)
-
 /-- The actual residual block returned by the Householder-QR augmented solve
 of Theorem 20.4. -/
 noncomputable def higham20Eq20_4CorrectionResidual {n k : ℕ} (fp : FPModel)
@@ -23807,7 +23319,6 @@ noncomputable def higham20Eq20_4CorrectionResidual {n k : ℕ} (fp : FPModel)
     (Fin.append (higham20Eq20_4ForwardBlock fp A g)
       (fun i : Fin k =>
         higham20Eq20_4TransformedRhs fp A f (Fin.natAdd n i)))
-
 namespace Higham20RowSorting
 
 /-- Scaled form of the scalar Cox--Higham `sqrt 2` lemma. -/
@@ -23845,7 +23356,6 @@ lemma abs_two_div_mul_le_sqrt_two_mul_of_abs_le_phi_mul_sqrt_mul_sqrt
         rw [abs_mul, abs_of_pos hphipos]
       _ ≤ phi * Real.sqrt 2 := mul_le_mul_of_nonneg_left hcore hphi
       _ = Real.sqrt 2 * phi := by ring
-
 /-- A signed Householder update coefficient is at most `sqrt 2 * phi` when
 the transformed vector's active tail is at most `phi` times the pivot-column
 active norm.  This is the RHS analogue of Cox--Higham Lemma 2.1. -/

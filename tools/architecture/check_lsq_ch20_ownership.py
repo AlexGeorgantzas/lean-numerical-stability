@@ -26,22 +26,13 @@ hatch that can bypass compiler spans.
 
 Lean private names encode their owning module and therefore necessarily change
 when a declaration moves.  Stage and post modes require an explicit companion
-map for every ordinary private declaration owned by a completed destination::
+map for every private declaration owned by a completed destination::
 
     format\t1
     logical_name\thistorical_actual_name\tcandidate_actual_name
 
-The frozen destination graph additionally exposes 114 body edges that cross a
-destination boundary and target exactly 55 private authored commands.  Those
-helpers cannot remain module-private.  A separate exact promotion contract
-maps each one to the collision-free public name obtained from its private
-suffix, and stores both the frozen command hash and the hash after removing
-only the leading ``private `` modifier.  Completed destinations must expose
-the promoted name publicly; incomplete destinations retain the frozen private
-name.  Promotion rows are excluded from the ordinary private rewrite map.
-
-Only those reviewed private rewrites and promotions are normalized during the
-exact LS-incident graph comparison.  That graph contains every selected LS
+Only those reviewed private-name rewrites are normalized during the exact
+LS-incident graph comparison.  That graph contains every selected LS
 declaration and every typed edge with at least one selected LS endpoint;
 declaration moves wholly outside the lane are intentionally outside this
 worker's contract.
@@ -141,9 +132,6 @@ EXPECTED_HISTORICAL_COUNTS = {
 }
 EXPECTED_MANIFEST_ROWS = sum(EXPECTED_HISTORICAL_COUNTS.values())
 EXPECTED_PRIVATE_ROWS = 151
-EXPECTED_PRIVATE_PROMOTION_ROWS = 55
-EXPECTED_PRIVATE_PROMOTION_EDGE_ROWS = 114
-EXPECTED_ORDINARY_PRIVATE_ROWS = EXPECTED_PRIVATE_ROWS - EXPECTED_PRIVATE_PROMOTION_ROWS
 EXPECTED_CROSS_LANE_ROWS = 4224
 EXPECTED_CROSS_LANE_EDGE_ROWS = 4221
 EXPECTED_CROSS_LANE_IMPORT_ROWS = 3
@@ -263,6 +251,15 @@ IMPORT_ONLY_LS_DESTINATIONS = {
         f"{LS_PREFIX}.Higham20Theorem20_7",
         "NumStability.Algorithms.QR.HouseholderQRSupport",
     ): f"{SOURCE_ROOT}.Theorem07",
+    # Carrier is Equality.GQR: the generalized-QR material is what uses the QR
+    # lane's Gram-Schmidt polar factorization, so the import belongs with it.
+    #
+    # This was briefly retargeted to Equality.Basic on the theory that Equality.GQR
+    # could not exist while private visibility was preserved.  That was wrong: of
+    # 708 declarations intended for Basic/GQR/KKT only 2 co-location components
+    # straddle the split, and confining those two leaves Basic and GQR both
+    # non-empty with zero cross-module private uses.  GQR is restored, so the
+    # carrier returns with it.
     (
         f"{LS_PREFIX}.LSE",
         "NumStability.Algorithms.QR.GramSchmidtPolar",
@@ -281,7 +278,6 @@ OWNERSHIP_DIR = Path("docs/architecture/declaration-ownership")
 DEFAULT_MANIFEST = OWNERSHIP_DIR / "lsq-ch20-ownership.tsv"
 DEFAULT_ROUTES = OWNERSHIP_DIR / "lsq-ch20-routes.tsv"
 DEFAULT_PRIVATE_REWRITES = OWNERSHIP_DIR / "lsq-ch20-private-rewrites.tsv"
-DEFAULT_PRIVATE_PROMOTIONS = OWNERSHIP_DIR / "lsq-ch20-private-promotions.tsv"
 DEFAULT_TIERS = OWNERSHIP_DIR / "lsq-ch20-tiers.tsv"
 DEFAULT_FROZEN_OWNERS = OWNERSHIP_DIR / "lsq-ch20-frozen-owners.tsv"
 DEFAULT_STRUCTURAL_IMPORTS = OWNERSHIP_DIR / "lsq-ch20-structural-imports.tsv"
@@ -441,18 +437,6 @@ class PrivateRewrite:
     logical_name: str
     historical_actual_name: str
     candidate_actual_name: str
-
-
-@dataclass(frozen=True)
-class PrivatePromotion:
-    logical_name: str
-    historical_actual_name: str
-    candidate_public_name: str
-    destination_module: str
-    cross_destination_body_edges: int
-    frozen_command_sha256: str
-    private_token_byte_offset: int
-    promoted_command_sha256: str
 
 
 @dataclass(frozen=True)
@@ -822,13 +806,7 @@ def normalized_source_bytes(path: Path) -> bytes:
 def source_command_bytes(
     payload: bytes, span: tuple[int, int, int, int, int, int, int, int]
 ) -> bytes:
-    """Slice a command using Lean's zero-based Unicode-character columns.
-
-    ``.ilean`` line columns count decoded Unicode characters, not UTF-8 bytes.
-    Converting the column through the decoded line is essential when the final
-    line contains symbols such as ``∑`` or ``ℝ``; treating the column as a byte
-    offset silently truncates the command while still producing a stable hash.
-    """
+    """Slice one compiler command using Lean's zero-based UTF-8 coordinates."""
 
     start_line, start_col, end_line, end_col = span[:4]
     lines = payload.splitlines(keepends=True)
@@ -846,19 +824,13 @@ def source_command_bytes(
                 f"compiler source coordinate line {line} exceeds {len(lines)} lines"
             )
         line_payload = lines[line]
-        content_payload = line_payload.rstrip(b"\n")
-        try:
-            content = content_payload.decode("utf-8")
-        except UnicodeDecodeError as error:
-            raise ValueError(
-                f"source line {line} is not valid UTF-8"
-            ) from error
-        if column > len(content):
+        content_length = len(line_payload.rstrip(b"\n"))
+        if column > content_length:
             raise ValueError(
                 f"compiler source coordinate column {column} exceeds line length "
-                f"{len(content)} on line {line}"
+                f"{content_length} on line {line}"
             )
-        return offsets[line] + len(content[:column].encode("utf-8"))
+        return offsets[line] + column
 
     start = offset(start_line, start_col)
     end = offset(end_line, end_col)
@@ -1450,281 +1422,11 @@ def validate_destination_graph(
     return len(owners), sum(len(dependencies) for dependencies in graph.values())
 
 
-def derive_private_promotion_edge_counts(
-    dependency_tsv: Path,
-    baseline: dict[str, Declaration],
-    records: dict[str, ManifestRow],
-) -> Counter[str]:
-    """Find private declarations used by a different canonical destination.
-
-    A private declaration cannot remain private after its consumers and owner
-    are split into different modules.  The only visibility changes authorized
-    by this contract are therefore the targets of frozen, selected-to-selected
-    body edges whose reviewed destinations differ.
-    """
-
-    actual_to_logical = baseline_actual_to_logical(baseline)
-    counts: Counter[str] = Counter()
-    for edge in iter_dependency_edges(dependency_tsv):
-        if edge.kind != "body":
-            continue
-        source_logical = actual_to_logical.get(edge.source)
-        target_logical = actual_to_logical.get(edge.target)
-        if source_logical is None or target_logical is None:
-            continue
-        source = records[source_logical]
-        target = records[target_logical]
-        if (
-            source.destination_module != target.destination_module
-            and target.visibility == "private"
-        ):
-            counts[target_logical] += 1
-    return counts
-
-
-def remove_private_modifier(command: bytes) -> tuple[bytes, int]:
-    """Remove exactly the leading ``private `` modifier from a Lean command.
-
-    Compiler command spans may begin with doc comments.  This scanner skips
-    only leading whitespace and nested Lean comments, then requires the exact
-    ASCII token and its single separating space.  No theorem type/body byte is
-    normalized or rewritten.
-    """
-
-    index = 0
-    length = len(command)
-    while True:
-        while index < length and command[index] in b" \t\n":
-            index += 1
-        if command.startswith(b"--", index):
-            newline = command.find(b"\n", index + 2)
-            index = length if newline < 0 else newline + 1
-            continue
-        if command.startswith(b"/-", index):
-            depth = 1
-            cursor = index + 2
-            while cursor < length and depth:
-                if command.startswith(b"/-", cursor):
-                    depth += 1
-                    cursor += 2
-                elif command.startswith(b"-/", cursor):
-                    depth -= 1
-                    cursor += 2
-                else:
-                    cursor += 1
-            if depth:
-                raise ValueError("unterminated leading comment in private command")
-            index = cursor
-            continue
-        break
-    if command[index : index + 8] != b"private ":
-        preview = command[index : index + 40]
-        raise ValueError(
-            "promoted command does not begin with the exact 'private ' modifier: "
-            f"{preview!r}"
-        )
-    return command[:index] + command[index + 8 :], index
-
-
-def private_promotion_bytes(promotions: dict[str, PrivatePromotion]) -> bytes:
-    rows = ["format\t1"]
-    for logical in sorted(promotions):
-        row = promotions[logical]
-        rows.append(
-            "\t".join(
-                (
-                    row.logical_name,
-                    row.historical_actual_name,
-                    row.candidate_public_name,
-                    row.destination_module,
-                    str(row.cross_destination_body_edges),
-                    row.frozen_command_sha256,
-                    str(row.private_token_byte_offset),
-                    row.promoted_command_sha256,
-                )
-            )
-        )
-    return ("\n".join(rows) + "\n").encode("utf-8")
-
-
-def write_private_promotions(
-    path: Path, promotions: dict[str, PrivatePromotion]
-) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(private_promotion_bytes(promotions))
-
-
-def read_private_promotions(path: Path) -> dict[str, PrivatePromotion]:
-    with path.open(encoding="utf-8", newline="") as stream:
-        rows = list(csv.reader(stream, delimiter="\t"))
-    if not rows or rows[0] != ["format", "1"]:
-        raise ValueError(f"{path}: private promotions must start with 'format\\t1'")
-
-    promotions: dict[str, PrivatePromotion] = {}
-    order: list[str] = []
-    for line_number, row in enumerate(rows[1:], 2):
-        if len(row) != 8:
-            raise ValueError(
-                f"{path}:{line_number}: private promotions require eight columns"
-            )
-        try:
-            edge_count = int(row[4])
-            token_offset = int(row[6])
-        except ValueError as error:
-            raise ValueError(
-                f"{path}:{line_number}: invalid private-promotion integer"
-            ) from error
-        promotion = PrivatePromotion(
-            row[0], row[1], row[2], row[3], edge_count, row[5], token_offset, row[7]
-        )
-        if promotion.logical_name in promotions:
-            raise ValueError(
-                f"{path}:{line_number}: duplicate promotion {promotion.logical_name}"
-            )
-        promotions[promotion.logical_name] = promotion
-        order.append(promotion.logical_name)
-    if order != sorted(order):
-        raise ValueError(f"{path}: private-promotion rows must be sorted")
-    return promotions
-
-
-def validate_private_promotion_contract(
-    promotions: dict[str, PrivatePromotion],
-    dependency_tsv: Path,
-    all_declarations: list[Declaration],
-    baseline: dict[str, Declaration],
-    records: dict[str, ManifestRow],
-    routes: dict[str, CommandRoute],
-    expected_rows: int | None = EXPECTED_PRIVATE_PROMOTION_ROWS,
-    expected_edges: int | None = EXPECTED_PRIVATE_PROMOTION_EDGE_ROWS,
-) -> Counter[str]:
-    edge_counts = derive_private_promotion_edge_counts(
-        dependency_tsv, baseline, records
-    )
-    if expected_rows is not None and len(edge_counts) != expected_rows:
-        raise ValueError(
-            "derived private-promotion identity count differs: "
-            f"expected {expected_rows}, found {len(edge_counts)}"
-        )
-    if expected_edges is not None and sum(edge_counts.values()) != expected_edges:
-        raise ValueError(
-            "derived private-promotion body-edge count differs: "
-            f"expected {expected_edges}, found {sum(edge_counts.values())}"
-        )
-    if set(promotions) != set(edge_counts):
-        raise ValueError(
-            "private-promotion coverage differs from frozen cross-destination "
-            f"body edges: missing={sorted(set(edge_counts) - set(promotions))[:20]}; "
-            f"extra={sorted(set(promotions) - set(edge_counts))[:20]}"
-        )
-
-    existing_names = {declaration.name for declaration in all_declarations}
-    candidate_names: set[str] = set()
-    group_sizes = Counter((route.historical_module, route.span) for route in routes.values())
-    for logical, promotion in promotions.items():
-        historical = baseline[logical]
-        record = records[logical]
-        route = routes[logical]
-        if historical.visibility != "private" or record.visibility != "private":
-            raise ValueError(f"{logical}: only a frozen private declaration may be promoted")
-        if route.provenance != "authored" or route.command_root_logical != logical:
-            raise ValueError(f"{logical}: promotion is not an authored command root")
-        if group_sizes[(route.historical_module, route.span)] != 1:
-            raise ValueError(
-                f"{logical}: promoted compiler command also generates other declarations"
-            )
-        expected_name = private_suffix(historical.name, historical.module)
-        if promotion.logical_name != logical:
-            raise ValueError(f"{logical}: private-promotion key/name mismatch")
-        if promotion.historical_actual_name != historical.name:
-            raise ValueError(f"{logical}: private-promotion historical name drift")
-        if promotion.candidate_public_name != expected_name:
-            raise ValueError(
-                f"{logical}: public candidate must be the private suffix "
-                f"{expected_name}, found {promotion.candidate_public_name}"
-            )
-        if promotion.destination_module != record.destination_module:
-            raise ValueError(f"{logical}: private-promotion destination drift")
-        if promotion.cross_destination_body_edges != edge_counts[logical]:
-            raise ValueError(f"{logical}: private-promotion body-edge count drift")
-        if promotion.frozen_command_sha256.upper() != route.command_sha256.upper():
-            raise ValueError(f"{logical}: private-promotion frozen command hash drift")
-        if not HEX_SHA256.fullmatch(promotion.promoted_command_sha256):
-            raise ValueError(f"{logical}: invalid promoted command SHA-256")
-        if promotion.private_token_byte_offset < 0:
-            raise ValueError(f"{logical}: negative private-token byte offset")
-        if expected_name in existing_names:
-            raise ValueError(
-                f"{logical}: promoted public name collides with frozen declaration "
-                f"{expected_name}"
-            )
-        if expected_name in candidate_names:
-            raise ValueError(f"{logical}: duplicate promoted public name {expected_name}")
-        candidate_names.add(expected_name)
-    return edge_counts
-
-
-def generate_private_promotions(
-    dependency_tsv: Path,
-    all_declarations: list[Declaration],
-    baseline: dict[str, Declaration],
-    records: dict[str, ManifestRow],
-    routes: dict[str, CommandRoute],
-    owners: dict[str, FrozenOwner],
-    project_root: Path,
-    frozen_source_dir: Path | None,
-    expected_rows: int | None = EXPECTED_PRIVATE_PROMOTION_ROWS,
-    expected_edges: int | None = EXPECTED_PRIVATE_PROMOTION_EDGE_ROWS,
-) -> dict[str, PrivatePromotion]:
-    edge_counts = derive_private_promotion_edge_counts(
-        dependency_tsv, baseline, records
-    )
-    source_cache: dict[str, bytes] = {}
-    generated: dict[str, PrivatePromotion] = {}
-    for logical, edge_count in sorted(edge_counts.items()):
-        declaration = baseline[logical]
-        route = routes[logical]
-        if declaration.module not in source_cache:
-            source_cache[declaration.module] = normalized_source_bytes(
-                frozen_source_path(
-                    project_root, owners[declaration.module], frozen_source_dir
-                )
-            )
-        frozen_command = source_command_bytes(
-            source_cache[declaration.module], route.span
-        )
-        if sha256_bytes(frozen_command) != route.command_sha256.upper():
-            raise ValueError(f"{logical}: frozen command differs while promoting")
-        promoted_command, token_offset = remove_private_modifier(frozen_command)
-        generated[logical] = PrivatePromotion(
-            logical,
-            declaration.name,
-            private_suffix(declaration.name, declaration.module),
-            records[logical].destination_module,
-            edge_count,
-            route.command_sha256.upper(),
-            token_offset,
-            sha256_bytes(promoted_command),
-        )
-    validate_private_promotion_contract(
-        generated,
-        dependency_tsv,
-        all_declarations,
-        baseline,
-        records,
-        routes,
-        expected_rows,
-        expected_edges,
-    )
-    return generated
-
-
 def read_private_rewrites(
     path: Path,
     records: dict[str, ManifestRow],
     baseline: dict[str, Declaration],
     required_logicals: set[str] | None = None,
-    excluded_logicals: set[str] | None = None,
 ) -> dict[str, PrivateRewrite]:
     with path.open(encoding="utf-8", newline="") as stream:
         rows = list(csv.reader(stream, delimiter="\t"))
@@ -1757,17 +1459,11 @@ def read_private_rewrites(
     all_private_logicals = {
         logical for logical, row in records.items() if row.visibility == "private"
     }
-    excluded = set() if excluded_logicals is None else excluded_logicals
-    if not excluded <= all_private_logicals:
-        raise ValueError(
-            "ordinary private-rewrite exclusions are not private declarations: "
-            f"{sorted(excluded - all_private_logicals)[:20]}"
-        )
     expected_logicals = (
         all_private_logicals
         if required_logicals is None
         else all_private_logicals & required_logicals
-    ) - excluded
+    )
     if set(rewrites) != expected_logicals:
         missing = sorted(expected_logicals - set(rewrites))
         extra = sorted(set(rewrites) - expected_logicals)
@@ -1806,7 +1502,6 @@ def check_candidate_ownership(
     declarations: list[Declaration],
     rewrites: dict[str, PrivateRewrite],
     completed_destinations: set[str] | None = None,
-    promotions: dict[str, PrivatePromotion] | None = None,
 ) -> dict[str, str]:
     completed = (
         {row.destination_module for row in records.values()}
@@ -1816,16 +1511,12 @@ def check_candidate_ownership(
     declaration_by_name = {
         declaration.name: declaration for declaration in declarations
     }
-    promoted = {} if promotions is None else promotions
     candidate_actual_to_logical: dict[str, str] = {}
     expected_actual_by_logical: dict[str, str] = {}
 
     for logical, expected in records.items():
         is_completed = expected.destination_module in completed
-        is_promoted = logical in promoted and is_completed
-        if is_promoted:
-            candidate_name = promoted[logical].candidate_public_name
-        elif expected.visibility == "private" and is_completed:
+        if expected.visibility == "private" and is_completed:
             candidate_name = rewrites[logical].candidate_actual_name
         else:
             candidate_name = baseline[logical].name
@@ -1843,7 +1534,7 @@ def check_candidate_ownership(
                 else expected.historical_module
             ),
             expected.kind,
-            "public" if is_promoted else expected.visibility,
+            expected.visibility,
         )
         if actual_metadata != expected_metadata:
             raise ValueError(
@@ -1886,7 +1577,6 @@ def validate_candidate_command_fingerprints(
     candidate_actual_to_logical: dict[str, str],
     completed_destinations: set[str],
     ilean_overrides: dict[str, Path],
-    promotions: dict[str, PrivatePromotion] | None = None,
 ) -> int:
     """Reject same-kind/same-edge edits by comparing exact compiler commands.
 
@@ -1900,7 +1590,6 @@ def validate_candidate_command_fingerprints(
     logical_to_candidate = {
         logical: actual for actual, logical in candidate_actual_to_logical.items()
     }
-    promoted = {} if promotions is None else promotions
     groups: dict[
         tuple[str, tuple[int, int, int, int, int, int, int, int]],
         list[CommandRoute],
@@ -1945,15 +1634,7 @@ def validate_candidate_command_fingerprints(
         candidate_hash = sha256_bytes(
             source_command_bytes(source_cache[owner], candidate_span)
         )
-        expected_hashes = {
-            (
-                promoted[member.command_root_logical].promoted_command_sha256.upper()
-                if member.command_root_logical in promoted
-                and destination in completed_destinations
-                else member.command_sha256.upper()
-            )
-            for member in members
-        }
+        expected_hashes = {member.command_sha256.upper() for member in members}
         if expected_hashes != {candidate_hash}:
             raise ValueError(
                 f"source-command semantic fingerprint changed for {group}: "
@@ -2174,8 +1855,39 @@ def read_structural_import_contract(
     return result
 
 
+def frozen_historical_imports(
+    project_root: Path,
+    frozen_owners: dict[str, FrozenOwner],
+    frozen_source_dir: Path | None,
+) -> dict[str, tuple[str, ...]]:
+    """Historical import list of every declaration owner, from frozen sources.
+
+    Read from the blob-verified pristine copy rather than the worktree: after a
+    wave the worktree file is already the wrapper, so reading it back would
+    return the wrapper's own imports and preserve nothing.
+    """
+    imports: dict[str, tuple[str, ...]] = {}
+    for module in sorted(HISTORICAL_DECLARATION_WRAPPERS):
+        owner = frozen_owners[module]
+        path = frozen_source_path(project_root, owner, frozen_source_dir)
+        if not path.is_file():
+            raise ValueError(f"missing frozen source for {module}: {path}")
+        declared: list[str] = []
+        for imported in read_import_prefix(path):
+            check_module_name(imported, f"{path}: import")
+            if imported == module:
+                raise ValueError(f"{path}: historical owner imports itself")
+            if imported not in declared:
+                declared.append(imported)
+        if not declared:
+            raise ValueError(f"frozen historical owner declares no imports: {module}")
+        imports[module] = tuple(sorted(declared))
+    return imports
+
+
 def generate_structural_import_contract(
-    records: dict[str, ManifestRow]
+    records: dict[str, ManifestRow],
+    historical_imports: dict[str, tuple[str, ...]],
 ) -> dict[str, tuple[str, ...]]:
     destinations_by_historical: dict[str, set[str]] = defaultdict(set)
     destinations = {row.destination_module for row in records.values()}
@@ -2183,8 +1895,22 @@ def generate_structural_import_contract(
         destinations_by_historical[record.historical_module].add(
             record.destination_module
         )
+    missing = set(HISTORICAL_DECLARATION_WRAPPERS) - set(historical_imports)
+    if missing:
+        raise ValueError(
+            "no frozen historical imports for: " + ", ".join(sorted(missing))
+        )
+    # A wrapper forwards its destinations *and* re-states the historical import
+    # list.  Forwarding destinations alone narrows the transitive surface the
+    # historical module used to offer, which breaks any consumer that reached an
+    # identifier through it; the packet contract preserves historical imports.
     contract: dict[str, tuple[str, ...]] = {
-        historical: tuple(sorted(destinations_by_historical[historical]))
+        historical: tuple(
+            sorted(
+                destinations_by_historical[historical]
+                | set(historical_imports[historical])
+            )
+        )
         for historical in sorted(HISTORICAL_DECLARATION_WRAPPERS)
     }
     preserved = tuple(sorted(PRESERVED_SOURCE_LEAVES))
@@ -2467,14 +2193,9 @@ def validate_coordinator_patches_applied(
             tier_failures.append(
                 f"tiers.json exact {subject}={exact.get(subject)!r}, expected {value!r}"
             )
-        elif (
-            action == "global_tier_prefix"
-            and prefix_map.get(subject.removesuffix(".")) != value
-        ):
+        elif action == "global_tier_prefix" and prefix_map.get(subject) != value:
             tier_failures.append(
-                "tiers.json prefix "
-                f"{subject.removesuffix('.')}="
-                f"{prefix_map.get(subject.removesuffix('.'))!r}, expected {value!r}"
+                f"tiers.json prefix {subject}={prefix_map.get(subject)!r}, expected {value!r}"
             )
     if tier_failures:
         raise ValueError(
@@ -2616,6 +2337,53 @@ def read_destination_dag(
     return dag
 
 
+def validate_private_colocation(
+    dependency_tsv: Path,
+    declarations: list[Declaration],
+    actual_to_logical: dict[str, str],
+    records: dict[str, ManifestRow],
+) -> int:
+    """Require every private declaration to share its users' destination.
+
+    A Lean private name is scoped to the module that defines it, so a private
+    declaration is invisible outside that module.  If the manifest routes a
+    private declaration away from a declaration that uses it, the migrated tree
+    cannot compile: the user reports an unknown identifier.  Neither escape is
+    open to this lane -- duplicating the declaration is forbidden, and widening
+    its visibility would break the preserve-visibility contract -- so the
+    manifest itself has to co-locate them.
+
+    This is not implied by command-route grouping: a private helper and its user
+    are usually separate source commands, so they can be routed apart while every
+    other gate still passes.
+    """
+
+    visibility = {
+        declaration.name: declaration.visibility for declaration in declarations
+    }
+    offenders: list[str] = []
+    for edge in iter_dependency_edges(dependency_tsv):
+        if visibility.get(edge.target) != "private":
+            continue
+        target_logical = actual_to_logical.get(edge.target)
+        source_logical = actual_to_logical.get(edge.source)
+        if target_logical is None or source_logical is None:
+            continue
+        target_owner = records[target_logical].destination_module
+        source_owner = records[source_logical].destination_module
+        if target_owner != source_owner:
+            offenders.append(
+                f"{edge.target} (private, {target_owner}) used by "
+                f"{edge.source} ({source_owner}) via {edge.kind}"
+            )
+    if offenders:
+        raise ValueError(
+            f"{len(offenders)} private declaration uses cross a destination "
+            "boundary and cannot compile: " + "; ".join(sorted(offenders)[:10])
+        )
+    return sum(1 for value in visibility.values() if value == "private")
+
+
 def validate_destination_dag_contract(
     dependency_tsv: Path,
     actual_to_logical: dict[str, str],
@@ -2678,6 +2446,43 @@ def validate_destination_direct_imports(
         )
 
 
+def validate_no_orphaned_destinations(
+    project_root: Path, records: dict[str, ManifestRow]
+) -> int:
+    """Every canonical lane module on disk must own at least one manifest row.
+
+    A retarget can empty a destination an earlier wave already created. The file
+    keeps its copy of declarations that now live elsewhere, the family aggregate
+    imports both, and Lean reports a duplicate declaration -- but only once the
+    build reaches the aggregate, which is far from the change that caused it.
+    The manifest already says which modules should exist, so the orphan is
+    detectable statically.
+    """
+    owned = {row.destination_module for row in records.values()}
+    roots = (REUSABLE_ALGORITHM_ROOT, REUSABLE_ANALYSIS_ROOT, SOURCE_ROOT)
+    orphans: list[str] = []
+    for root in roots:
+        base = project_root / Path(*root.split("."))
+        if not base.is_dir():
+            continue
+        for path in sorted(base.rglob("*.lean")):
+            module = (
+                path.relative_to(project_root).with_suffix("").as_posix().replace("/", ".")
+            )
+            if module in owned or module in PRESERVED_SOURCE_LEAVES:
+                continue
+            if module in DEFAULT_STRUCTURAL_MODULES:
+                continue
+            orphans.append(module)
+    if orphans:
+        raise ValueError(
+            "canonical modules own no manifest declaration (retarget left them "
+            "behind; their declarations are now declared twice): "
+            + ", ".join(orphans[:20])
+        )
+    return len(owned)
+
+
 def read_completed_destinations(path: Path) -> set[str]:
     with path.open(encoding="utf-8", newline="") as stream:
         rows = list(csv.reader(stream, delimiter="\t"))
@@ -2723,48 +2528,55 @@ def validate_structural_modules(
         validate_import_only_module(project_root, module, expected)
 
 
-def read_module_imports(project_root: Path) -> dict[str, list[str]]:
-    """Read the direct-import graph of every tracked project Lean module."""
+def read_import_prefix(path: Path) -> list[str]:
+    """Comment-aware direct-import list of one Lean file.
 
-    def read_import_prefix(path: Path) -> list[str]:
-        imports: list[str] = []
-        depth = 0
-        with path.open(encoding="utf-8") as stream:
-            for original in stream:
-                out: list[str] = []
-                index = 0
-                while index < len(original):
-                    if depth:
-                        if original.startswith("/-", index):
-                            depth += 1
-                            index += 2
-                        elif original.startswith("-/", index):
-                            depth -= 1
-                            index += 2
-                        else:
-                            index += 1
-                    elif original.startswith("--", index):
-                        break
-                    elif original.startswith("/-", index):
-                        depth = 1
+    Shared by the worktree import graph and by the frozen-source reader, so a
+    historical import list is parsed exactly the same way whether it comes from
+    a tracked module or from a pristine frozen copy.
+    """
+    imports: list[str] = []
+    depth = 0
+    with path.open(encoding="utf-8") as stream:
+        for original in stream:
+            out: list[str] = []
+            index = 0
+            while index < len(original):
+                if depth:
+                    if original.startswith("/-", index):
+                        depth += 1
+                        index += 2
+                    elif original.startswith("-/", index):
+                        depth -= 1
                         index += 2
                     else:
-                        out.append(original[index])
                         index += 1
-                code = "".join(out)
-                if not code.strip():
-                    continue
-                match = IMPORT_RE.match(code)
-                if match:
-                    imports.append(match.group(1))
-                    continue
-                # Lean imports precede declarations/commands.  Stopping here
-                # avoids scanning multi-megabyte proof bodies character by
-                # character while retaining comment-aware import parsing.
-                break
-        if depth:
-            raise ValueError(f"unterminated Lean block comment in import prefix: {path}")
-        return imports
+                elif original.startswith("--", index):
+                    break
+                elif original.startswith("/-", index):
+                    depth = 1
+                    index += 2
+                else:
+                    out.append(original[index])
+                    index += 1
+            code = "".join(out)
+            if not code.strip():
+                continue
+            match = IMPORT_RE.match(code)
+            if match:
+                imports.append(match.group(1))
+                continue
+            # Lean imports precede declarations/commands.  Stopping here
+            # avoids scanning multi-megabyte proof bodies character by
+            # character while retaining comment-aware import parsing.
+            break
+    if depth:
+        raise ValueError(f"unterminated Lean block comment in import prefix: {path}")
+    return imports
+
+
+def read_module_imports(project_root: Path) -> dict[str, list[str]]:
+    """Read the direct-import graph of every tracked project Lean module."""
 
     graph: dict[str, list[str]] = {}
     for root in ("NumStability", "NumStabilityTest"):
@@ -3497,7 +3309,6 @@ def normalized_incident_graph_delta(
     baseline: dict[str, Declaration],
     candidate_actual_to_logical: dict[str, str],
     records: dict[str, ManifestRow],
-    promoted_logicals: set[str] | None = None,
 ) -> Counter[str]:
     """Return the selected LS incident graph delta as a row multiset.
 
@@ -3518,7 +3329,6 @@ def normalized_incident_graph_delta(
     }
     baseline_names = {declaration.name for declaration in baseline.values()}
     candidate_names = set(candidate_actual_to_logical)
-    promoted = set() if promoted_logicals is None else promoted_logicals
 
     delta: Counter[str] = Counter()
     for declaration in baseline.values():
@@ -3556,11 +3366,7 @@ def normalized_incident_graph_delta(
                     candidate_to_baseline_name[candidate_name],
                     candidate_to_historical_module[candidate_name],
                     declaration.kind,
-                    (
-                        baseline[logical].visibility
-                        if logical in promoted
-                        else declaration.visibility
-                    ),
+                    declaration.visibility,
                 )
             )
         ] -= 1
@@ -3605,7 +3411,6 @@ def compare_lane_incident_graph(
     candidate_actual_to_logical: dict[str, str],
     records: dict[str, ManifestRow],
     expected_baseline_sha256: str | None = BASELINE_TSV_SHA256,
-    promoted_logicals: set[str] | None = None,
 ) -> None:
     """Require the exact LS declaration/incident graph after normalization."""
 
@@ -3613,12 +3418,7 @@ def compare_lane_incident_graph(
         if sha256_file(baseline_tsv) != expected_baseline_sha256:
             raise ValueError("baseline TSV hash differs from the frozen lane input")
     delta = normalized_incident_graph_delta(
-        baseline_tsv,
-        candidate_tsv,
-        baseline,
-        candidate_actual_to_logical,
-        records,
-        promoted_logicals,
+        baseline_tsv, candidate_tsv, baseline, candidate_actual_to_logical, records
     )
     validate_normalized_graph_delta(delta)
 
@@ -3789,31 +3589,6 @@ def run_self_test() -> None:
         "a private name that does not encode its owner",
     )
 
-    # Lean .ilean columns are Unicode-character indices.  A byte-index slice
-    # would silently truncate this command at its non-ASCII final line.
-    unicode_command_text = "theorem unicodeColumn : True := by -- ∑ |R_hat k j|"
-    unicode_command = unicode_command_text.encode("utf-8")
-    unicode_width = len(unicode_command_text)
-    unicode_span = (
-        0,
-        0,
-        0,
-        unicode_width,
-        0,
-        0,
-        0,
-        unicode_width,
-    )
-    assert source_command_bytes(unicode_command, unicode_span) == unicode_command
-    assert unicode_command[:unicode_width] != unicode_command
-    expect_value_error(
-        lambda: source_command_bytes(
-            unicode_command,
-            (0, 0, 0, unicode_width + 1, 0, 0, 0, unicode_width + 1),
-        ),
-        "a Unicode source column past the decoded line end",
-    )
-
     # 1. Missing declaration.
     expect_value_error(
         lambda: selected_baseline_declarations(declarations[1:], SELF_COUNTS),
@@ -3898,6 +3673,29 @@ def run_self_test() -> None:
                 baseline_tsv, actual_to_logical, records, drifted_dag
             ),
             "a changed typed destination-DAG count",
+        )
+
+        # 6b. A private declaration may not be used across a destination
+        # boundary: a Lean private name is scoped to its defining module, so the
+        # use would be an unknown identifier.  The fixture co-locates the private
+        # helper with its user, and moving only the helper must be rejected.
+        private_checked = validate_private_colocation(
+            baseline_tsv, declarations, actual_to_logical, records
+        )
+        assert private_checked == 1, private_checked
+        split_private = dict(records)
+        split_private[SELF_PRIVATE_LOGICAL] = ManifestRow(
+            SELF_PRIVATE_LOGICAL,
+            SELF_HISTORICAL_A,
+            SELF_ANALYSIS,
+            "theorem",
+            "private",
+        )
+        expect_value_error(
+            lambda: validate_private_colocation(
+                baseline_tsv, declarations, actual_to_logical, split_private
+            ),
+            "a private declaration used from another destination",
         )
 
         # 7. Forbidden reusable -> source declaration edge.
@@ -4503,6 +4301,22 @@ def run_self_test() -> None:
                 "NumStability.Algorithms.QR.QRSolve",
             )
         }
+        # 15b. A canonical module left behind by a retarget owns nothing and would
+        # duplicate declarations that moved elsewhere.
+        validate_no_orphaned_destinations(project, records)
+        orphan = project / Path(*REUSABLE_ALGORITHM_ROOT.split(".")) / "Orphaned.lean"
+        orphan.parent.mkdir(parents=True, exist_ok=True)
+        orphan.write_text(
+            "/-! Emptied by a retarget. -/\nimport NumStability.Analysis.MatrixAlgebra\n",
+            encoding="utf-8",
+        )
+        expect_value_error(
+            lambda: validate_no_orphaned_destinations(project, records),
+            "a canonical module a retarget left owning nothing",
+        )
+        orphan.unlink()
+        validate_no_orphaned_destinations(project, records)
+
         validate_structural_modules(
             project, moved, {SELF_HISTORICAL_A}, self_structural
         )
@@ -4524,6 +4338,49 @@ def run_self_test() -> None:
             ),
             "a wrapper that still owns a compiled declaration",
         )
+        # 16b. A wrapper's contracted surface is its destinations *plus* its frozen
+        # historical imports.  Forwarding destinations alone narrows the transitive
+        # surface the historical module offered and breaks consumers that reached an
+        # identifier through it, so the generated contract must contain both.
+        frozen_dir = root / "frozen-imports"
+        frozen_dir.mkdir()
+        for owner_module in HISTORICAL_DECLARATION_WRAPPERS:
+            (frozen_dir / f"{owner_module}.lean").write_text(
+                "import Mathlib.Data.Real.Basic\n"
+                "import NumStability.Analysis.MatrixAlgebra\n"
+                "/-! Frozen historical owner. -/\n"
+                "theorem placeholder : True := trivial\n",
+                encoding="utf-8",
+            )
+        self_frozen_owners = {
+            owner_module: FrozenOwner(
+                owner_module, f"{owner_module}.lean", "0" * 40, "0" * 64, 4, 4, "-", 0
+            )
+            for owner_module in HISTORICAL_DECLARATION_WRAPPERS
+        }
+        historical = frozen_historical_imports(
+            project, self_frozen_owners, frozen_dir
+        )
+        assert historical[SELF_HISTORICAL_A] == (
+            "Mathlib.Data.Real.Basic",
+            "NumStability.Analysis.MatrixAlgebra",
+        ), historical[SELF_HISTORICAL_A]
+        widened = generate_structural_import_contract(records, historical)
+        assert SELF_REUSABLE in widened[SELF_HISTORICAL_A], widened[SELF_HISTORICAL_A]
+        assert (
+            "NumStability.Analysis.MatrixAlgebra" in widened[SELF_HISTORICAL_A]
+        ), widened[SELF_HISTORICAL_A]
+        expect_value_error(
+            lambda: generate_structural_import_contract(records, {}),
+            "a structural contract generated without frozen historical imports",
+        )
+        expect_value_error(
+            lambda: frozen_historical_imports(
+                project, self_frozen_owners, root / "absent-frozen-dir"
+            ),
+            "a missing frozen historical source",
+        )
+
         unsorted_wrapper = project / "NumStability/Algorithms/LeastSquares/Unsorted.lean"
         unsorted_wrapper.write_text(
             "/-! Unsorted wrapper. -/\n"
@@ -4667,7 +4524,7 @@ def run_self_test() -> None:
                 {
                     "exact": {SELF_HISTORICAL_A: "compatibility"},
                     "prefixes": [
-                        {"prefix": "NumStability.Self", "tier": "reusable"}
+                        {"prefix": "NumStability.Self.", "tier": "reusable"}
                     ],
                 }
             ),
@@ -4788,171 +4645,6 @@ def run_self_test() -> None:
             frozen_ilean_dir,
         ) == (6, 5)
 
-        # 20. Cross-destination private helpers have an exact public-promotion
-        # contract.  The synthetic source theorem consumes the reusable
-        # private helper, forcing exactly one promotion over one body edge.
-        private_actual = (
-            f"_private.{SELF_HISTORICAL_A}.0.NumStability.lsHelper"
-        )
-        promotion_edges = edges + [
-            DependencyEdge(
-                "body", "NumStability.theorem20_3_source", private_actual
-            )
-        ]
-        promotion_baseline_tsv = root / "promotion-baseline.tsv"
-        promotion_baseline_tsv.write_text(
-            _self_stream(declarations, promotion_edges), encoding="utf-8"
-        )
-        generated_promotions = generate_private_promotions(
-            promotion_baseline_tsv,
-            declarations,
-            baseline,
-            records,
-            committed_routes,
-            frozen_owners,
-            project,
-            frozen_source_dir,
-            expected_rows=1,
-            expected_edges=1,
-        )
-        assert set(generated_promotions) == {SELF_PRIVATE_LOGICAL}
-        promotion = generated_promotions[SELF_PRIVATE_LOGICAL]
-        assert promotion.candidate_public_name == "NumStability.lsHelper"
-        promotion_path = root / "promotions.tsv"
-        write_private_promotions(promotion_path, generated_promotions)
-        assert read_private_promotions(promotion_path) == generated_promotions
-
-        expect_value_error(
-            lambda: validate_private_promotion_contract(
-                {},
-                promotion_baseline_tsv,
-                declarations,
-                baseline,
-                records,
-                committed_routes,
-                expected_rows=1,
-                expected_edges=1,
-            ),
-            "a missing private promotion",
-        )
-        extra_promotions = dict(generated_promotions)
-        extra_promotions["NumStability.lsResidual"] = replace(
-            promotion, logical_name="NumStability.lsResidual"
-        )
-        expect_value_error(
-            lambda: validate_private_promotion_contract(
-                extra_promotions,
-                promotion_baseline_tsv,
-                declarations,
-                baseline,
-                records,
-                committed_routes,
-                expected_rows=1,
-                expected_edges=1,
-            ),
-            "an extra private promotion",
-        )
-        wrong_public_name = {
-            SELF_PRIVATE_LOGICAL: replace(
-                promotion, candidate_public_name="NumStability.notLsHelper"
-            )
-        }
-        expect_value_error(
-            lambda: validate_private_promotion_contract(
-                wrong_public_name,
-                promotion_baseline_tsv,
-                declarations,
-                baseline,
-                records,
-                committed_routes,
-                expected_rows=1,
-                expected_edges=1,
-            ),
-            "a wrong promoted public name",
-        )
-        expect_value_error(
-            lambda: validate_private_promotion_contract(
-                generated_promotions,
-                promotion_baseline_tsv,
-                declarations
-                + [
-                    Declaration(
-                        "NumStability.lsHelper",
-                        "NumStability.Other.Collision",
-                        "theorem",
-                        "public",
-                    )
-                ],
-                baseline,
-                records,
-                committed_routes,
-                expected_rows=1,
-                expected_edges=1,
-            ),
-            "a promoted public-name collision",
-        )
-
-        # Promoted identities are deliberately absent from the ordinary
-        # private-rewrite contract.
-        assert read_private_rewrites(
-            empty_rewrites,
-            records,
-            baseline,
-            {SELF_PRIVATE_LOGICAL},
-            {SELF_PRIVATE_LOGICAL},
-        ) == {}
-        expect_value_error(
-            lambda: check_candidate_ownership(
-                records,
-                baseline,
-                moved,
-                rewrites,
-                promotions=generated_promotions,
-            ),
-            "an unpromoted cross-destination private helper",
-        )
-
-        promoted_moved = [
-            Declaration(
-                "NumStability.lsHelper", d.module, d.kind, "public"
-            )
-            if d.name == f"_private.{SELF_REUSABLE}.0.NumStability.lsHelper"
-            else d
-            for d in moved
-        ]
-        promoted_map = check_candidate_ownership(
-            records,
-            baseline,
-            promoted_moved,
-            {},
-            promotions=generated_promotions,
-        )
-        promoted_moved_edges = [
-            DependencyEdge(
-                edge.kind,
-                "NumStability.lsHelper" if edge.source.endswith(".lsHelper") else edge.source,
-                "NumStability.lsHelper" if edge.target.endswith(".lsHelper") else edge.target,
-            )
-            for edge in moved_edges
-        ] + [
-            DependencyEdge(
-                "body", "NumStability.theorem20_3_source", "NumStability.lsHelper"
-            )
-        ]
-        promoted_candidate_tsv = root / "promotion-candidate.tsv"
-        promoted_candidate_tsv.write_text(
-            _self_stream(promoted_moved, promoted_moved_edges), encoding="utf-8"
-        )
-        compare_lane_incident_graph(
-            promotion_baseline_tsv,
-            promoted_candidate_tsv,
-            baseline,
-            promoted_map,
-            records,
-            None,
-            {SELF_PRIVATE_LOGICAL},
-        )
-
         exact_escape = root / "exact-escape.tsv"
         exact_escape.write_text(
             "format\t1\n"
@@ -5022,89 +4714,6 @@ def run_self_test() -> None:
             "a same-kind/same-edge semantic command edit",
         )
 
-        # A promoted command is accepted only at the exact frozen bytes with
-        # ``private `` removed.  Its cross-destination consumer stays in the
-        # historical module here, so that consumer command is also re-hashed
-        # unchanged by the same pass.
-        promoted_source_a_lines = [
-            source_a_lines[0],
-            source_a_lines[1],
-            b"theorem NumStability.lsHelper : True := True.intro\n",
-        ]
-        promoted_owner_path = module_path(project, SELF_REUSABLE)
-        promoted_owner_path.parent.mkdir(parents=True, exist_ok=True)
-        promoted_owner_path.write_bytes(b"".join(promoted_source_a_lines))
-        promoted_ilean_payload = {
-            "module": SELF_REUSABLE,
-            "decls": {
-                "NumStability.lsResidual": self_span(0, promoted_source_a_lines[0]),
-                "NumStability.lsResidual_permuteRows": self_span(
-                    1, promoted_source_a_lines[1]
-                ),
-                "NumStability.lsHelper": self_span(2, promoted_source_a_lines[2]),
-            },
-        }
-        promoted_ilean = root / "promoted.ilean"
-        promoted_ilean.write_text(
-            json.dumps(promoted_ilean_payload, sort_keys=True), encoding="utf-8"
-        )
-        promotion_stage_declarations = [
-            Declaration(
-                "NumStability.lsHelper", SELF_REUSABLE, d.kind, "public"
-            )
-            if d.name == private_actual
-            else (
-                Declaration(d.name, SELF_REUSABLE, d.kind, d.visibility)
-                if d.module == SELF_HISTORICAL_A
-                else d
-            )
-            for d in declarations
-        ]
-        promotion_stage_map = check_candidate_ownership(
-            records,
-            baseline,
-            promotion_stage_declarations,
-            {},
-            {SELF_REUSABLE},
-            generated_promotions,
-        )
-        promotion_ilean_overrides = dict(ilean_paths)
-        promotion_ilean_overrides[SELF_REUSABLE] = promoted_ilean
-        assert validate_candidate_command_fingerprints(
-            project,
-            committed_routes,
-            records,
-            promotion_stage_map,
-            {SELF_REUSABLE},
-            promotion_ilean_overrides,
-            generated_promotions,
-        ) == 5
-
-        edited_promoted_line = promoted_source_a_lines[2].replace(
-            b"True.intro", b"by trivial"
-        )
-        promoted_owner_path.write_bytes(
-            b"".join(promoted_source_a_lines[:2] + [edited_promoted_line])
-        )
-        promoted_ilean_payload["decls"]["NumStability.lsHelper"] = self_span(
-            2, edited_promoted_line
-        )
-        promoted_ilean.write_text(
-            json.dumps(promoted_ilean_payload, sort_keys=True), encoding="utf-8"
-        )
-        expect_value_error(
-            lambda: validate_candidate_command_fingerprints(
-                project,
-                committed_routes,
-                records,
-                promotion_stage_map,
-                {SELF_REUSABLE},
-                promotion_ilean_overrides,
-                generated_promotions,
-            ),
-            "a promoted private-helper body edit",
-        )
-
         digest = validate_expected_manifest_digest(records, None)
         assert HEX_SHA256.fullmatch(digest)
         expect_value_error(
@@ -5166,12 +4775,6 @@ def parse_args() -> argparse.Namespace:
         default=DEFAULT_PRIVATE_REWRITES,
         help="explicit private-name rewrite map required in stage/post mode",
     )
-    parser.add_argument(
-        "--private-promotions",
-        type=Path,
-        default=DEFAULT_PRIVATE_PROMOTIONS,
-        help="exact public-promotion contract for cross-destination private helpers",
-    )
     parser.add_argument("--tiers", type=Path, default=DEFAULT_TIERS)
     parser.add_argument("--write-tiers", action="store_true")
     parser.add_argument(
@@ -5201,7 +4804,6 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--write-destination-dag", action="store_true")
     parser.add_argument("--write-cross-lane", action="store_true")
-    parser.add_argument("--write-private-promotions", action="store_true")
     parser.add_argument("--write-coordinator-patches", action="store_true")
     parser.add_argument(
         "--expected-manifest-sha256",
@@ -5255,7 +4857,6 @@ def main() -> int:
         args.write_structural_imports,
         args.write_destination_dag,
         args.write_cross_lane,
-        args.write_private_promotions,
         args.write_tiers,
         args.write_coordinator_patches,
     )
@@ -5295,32 +4896,6 @@ def main() -> int:
             args.frozen_source_dir,
             args.frozen_ilean_dir,
         )
-        generated_promotions = generate_private_promotions(
-            args.dependency_tsv,
-            declarations,
-            baseline,
-            records,
-            routes,
-            frozen_owners,
-            args.project_root,
-            args.frozen_source_dir,
-        )
-        if args.write_private_promotions:
-            write_private_promotions(args.private_promotions, generated_promotions)
-        promotions = read_private_promotions(args.private_promotions)
-        validate_private_promotion_contract(
-            promotions,
-            args.dependency_tsv,
-            declarations,
-            baseline,
-            records,
-            routes,
-        )
-        if promotions != generated_promotions:
-            raise ValueError(
-                "committed private promotions differ from the exact frozen-command "
-                "transformation"
-            )
         generated_manifest = manifest_from_command_routes(routes, baseline)
         if args.write_manifest:
             write_manifest(args.manifest, generated_manifest)
@@ -5335,6 +4910,14 @@ def main() -> int:
             args.dependency_tsv, declarations, actual_to_logical, records
         )
 
+        private_checked = validate_private_colocation(
+            args.dependency_tsv, declarations, actual_to_logical, records
+        )
+        print(
+            f"private co-location: {private_checked} private declarations, "
+            "0 cross-destination uses"
+        )
+
         generated_dag = destination_dag_from_stream(
             args.dependency_tsv, actual_to_logical, records
         )
@@ -5345,7 +4928,12 @@ def main() -> int:
             args.dependency_tsv, actual_to_logical, records, dag
         )
 
-        generated_structural = generate_structural_import_contract(records)
+        historical_imports = frozen_historical_imports(
+            args.project_root, frozen_owners, args.frozen_source_dir
+        )
+        generated_structural = generate_structural_import_contract(
+            records, historical_imports
+        )
         if args.write_structural_imports:
             write_structural_import_contract(
                 args.structural_imports, generated_structural
@@ -5406,9 +4994,6 @@ def main() -> int:
         print(
             f"pre mode passed: {len(records)} declarations, {command_groups} compiler "
             f"command groups, {owners} destinations, {owner_edges} owner edges, "
-            f"{len(promotions)} private promotions over "
-            f"{sum(p.cross_destination_body_edges for p in promotions.values())} "
-            f"cross-destination body edges, "
             f"{forward} LS-to-QR and {reverse} QR-to-LS base imports "
             f"({cross_edges} typed edges), manifest sha256 {digest}"
         )
@@ -5423,15 +5008,6 @@ def main() -> int:
     records = read_manifest(args.manifest)
     validate_manifest_against_baseline(records, baseline)
     routes = read_command_routes(args.routes, baseline, records)
-    promotions = read_private_promotions(args.private_promotions)
-    validate_private_promotion_contract(
-        promotions,
-        args.baseline_tsv,
-        baseline_declarations,
-        baseline,
-        records,
-        routes,
-    )
     dag = read_destination_dag(args.destination_dag, records)
     structural_contract = read_structural_import_contract(args.structural_imports)
     cross_contract = read_cross_lane_normalization(args.cross_lane, records)
@@ -5492,21 +5068,16 @@ def main() -> int:
         if row.visibility == "private" and row.destination_module in completed
     }
     rewrites = read_private_rewrites(
-        args.private_rewrites,
-        records,
-        baseline,
-        required_private,
-        set(promotions),
+        args.private_rewrites, records, baseline, required_private
     )
-    if args.mode == "post" and len(rewrites) != EXPECTED_ORDINARY_PRIVATE_ROWS:
+    if args.mode == "post" and len(rewrites) != EXPECTED_PRIVATE_ROWS:
         raise ValueError(
-            f"post mode requires all {EXPECTED_ORDINARY_PRIVATE_ROWS} ordinary "
-            f"private rewrites after {EXPECTED_PRIVATE_PROMOTION_ROWS} promotions, "
-            f"found {len(rewrites)}"
+            f"post mode requires all {EXPECTED_PRIVATE_ROWS} reviewed private "
+            f"rewrites, found {len(rewrites)}"
         )
 
     candidate_map = check_candidate_ownership(
-        records, baseline, declarations, rewrites, completed, promotions
+        records, baseline, declarations, rewrites, completed
     )
     command_groups = validate_candidate_command_fingerprints(
         args.project_root,
@@ -5515,7 +5086,6 @@ def main() -> int:
         candidate_map,
         completed,
         ilean_overrides,
-        promotions,
     )
     if completed_structural:
         validate_structural_modules(
@@ -5528,16 +5098,7 @@ def main() -> int:
             },
         )
     compare_lane_incident_graph(
-        args.baseline_tsv,
-        args.dependency_tsv,
-        baseline,
-        candidate_map,
-        records,
-        promoted_logicals=set(promotions) & {
-            logical
-            for logical, row in records.items()
-            if row.destination_module in completed
-        },
+        args.baseline_tsv, args.dependency_tsv, baseline, candidate_map, records
     )
     actual_to_logical = {
         declaration.name: candidate_map[declaration.name]
@@ -5547,6 +5108,9 @@ def main() -> int:
     owners, owner_edges = validate_destination_graph(
         args.dependency_tsv, declarations, actual_to_logical, records
     )
+    validate_private_colocation(
+        args.dependency_tsv, declarations, actual_to_logical, records
+    )
     validate_destination_dag_contract(
         args.dependency_tsv, actual_to_logical, records, dag
     )
@@ -5554,6 +5118,8 @@ def main() -> int:
     validate_tier_coverage(tiers, records, structural_modules)
     import_graph = read_module_imports(args.project_root)
     validate_destination_direct_imports(import_graph, records, dag, completed)
+    owned_destinations = validate_no_orphaned_destinations(args.project_root, records)
+    print(f"canonical modules on disk all owned: {owned_destinations} destinations")
 
     if args.mode == "post":
         if qr_handoff is None:

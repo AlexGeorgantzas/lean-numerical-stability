@@ -7,6 +7,6 @@ Imports exactly one canonical module so no sibling import can supply
 the declarations checked below.
 -/
 
-#check @NumStability.rectLSGramPerturbation
-#check @NumStability.rectLSGramPerturbation_eq_sum
-#check @NumStability.rectLSGramPerturbationNormBudget
+#check @NumStability.GramVecError
+#check @NumStability.GramProductError
+#check @NumStability.GramConditionSquared

@@ -1,0 +1,57 @@
+import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
+import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
+import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR
+import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT
+import NumStability.Algorithms.LinearSystems.LeastSquares.Refinement
+import NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
+import NumStability.Analysis.Perturbation.LeastSquares.Absorption
+import NumStability.Analysis.Perturbation.LeastSquares.AlternativeBound
+import NumStability.Analysis.Perturbation.LeastSquares.Basic
+import NumStability.Analysis.Perturbation.LeastSquares.Conditioning
+import NumStability.Analysis.Perturbation.LeastSquares.Contract
+import NumStability.Analysis.Perturbation.LeastSquares.Equality.MixedStability
+import NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation
+import NumStability.Analysis.Perturbation.LeastSquares.Equality.RowwiseBackwardError
+import NumStability.Source.Higham.Chapter20.Equations
+import NumStability.Source.Higham.Chapter20.Problem05.MGSStability
+import NumStability.Source.Higham.Chapter20.Prose
+import NumStability.Source.Higham.Chapter20.Prose.MoorePenrose
+import NumStability.Source.Higham.Chapter20.Section02.Algorithms
+import NumStability.Source.Higham.Chapter20.Theorem02.AlternativeBound
+import NumStability.Source.Higham.Chapter20.Theorem03
+import NumStability.Source.Higham.Chapter20.Theorem04
+import NumStability.Source.Higham.Chapter20.Theorem07
+import NumStability.Source.Higham.Chapter20.Theorem08.LSE
+
+/-!
+# Wave 6 axiom probes
+
+Representative public declarations from each destination this wave created or
+extended. Every probe must report only the accepted axiom set
+`[propext, Classical.choice, Quot.sound]`.
+-/
+
+#print axioms NumStability.higham20AlternativeCouplingMatrix_nonneg
+#print axioms NumStability.lsQRTallBlock_zero
+#print axioms NumStability.gqrBQBlock_add
+#print axioms NumStability.LSEKKTSystem.iff_linearMap_eq
+#print axioms NumStability.Higham20SeminormalEquationsSolve.seminormal_equations
+#print axioms NumStability.Theorem20_7.applyProd_snoc
+#print axioms NumStability.higham20Theorem20_4TotalLeftWitness_nonneg
+#print axioms NumStability.higham20_alternative_bound_of_componentwise_fixed_point
+#print axioms NumStability.higham20_gamma_eq_linear_add_remainder
+#print axioms NumStability.higham20_lambdaStar_neg_of_leftNull_residual_pairing
+#print axioms NumStability.Theorem20_7.rowScaleCounter_pivot0
+#print axioms NumStability.theorem20_10_householder_sourceRankRadius_pos
+#print axioms NumStability.lseWeightedResidual_eq
+#print axioms NumStability.theorem20_7_beta_permuteRows
+#print axioms NumStability.higham20Eq20_16RoundedUpdate_eq
+#print axioms NumStability.Problem20_5.folded_matrix_column_bound
+#print axioms NumStability.higham20_delta_example_normal_equations
+#print axioms NumStability.higham20_fullColumn_gramFormula_entry
+#print axioms NumStability.higham20_qrFactorization_rectLSGram_eq_seminormalGram
+#print axioms NumStability.higham20AlternativeSourceData_nonneg
+#print axioms NumStability.Theorem20_3.householder_qr_fl_backSub_backward_error
+#print axioms NumStability.higham20Theorem20_4NormalizedWitness_nonneg
+#print axioms NumStability.Theorem20_7.sigmaCounter_A1_11
+#print axioms NumStability.theorem20_8_gram_AP_rectGram_det_zero_counterexample

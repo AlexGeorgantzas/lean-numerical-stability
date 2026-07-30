@@ -8,11 +8,12 @@ import NumStability.Analysis.SingularValues.Realification
 namespace NumStability
 
 open scoped BigOperators
+open scoped BigOperators Matrix.Norms.Frobenius
 
 /-!
 # Wedin
 
-Canonical reusable module extracted without change from LSPerturbation.
+Canonical reusable module extracted without change from Higham20GeneralWedin, LSPerturbation.
 -/
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.1, equation (20.1):
@@ -8010,7 +8011,6 @@ structure WedinPerturbationBound (n : ℕ)
 -- ============================================================
 -- §20.1  Theorem 20.2: Componentwise LS perturbation
 -- ============================================================
-
 /-- Exact data/domain-null decomposition for a pseudoinverse solution.
 
 For every `x` (no rank hypothesis is needed),
@@ -8026,7 +8026,6 @@ theorem higham20_wedin_solution_data_domain_null_decomposition
       Bplus * (A - B) - (1 - Bplus * B) := by
   rw [Matrix.mul_sub]
   abel
-
 /-- The data and domain-null pieces in
 `higham20_wedin_solution_data_domain_null_decomposition` are orthogonal.
 
@@ -8090,7 +8089,6 @@ theorem higham20_wedin_solution_data_domain_null_vecNorm2Sq
     simp [IQB, idMatrix, Matrix.one_apply]] at hpyth
   rw [hfirst, hsecond] at hpyth
   simpa [QB, IQB, T, rectMatMul, Matrix.mul_apply] using hpyth.symm
-
 /-- Perturbation-sign form of
 `higham20_wedin_solution_data_domain_null_vecNorm2Sq`, with `E = B-A` as in
 Higham's statement. -/
@@ -8111,7 +8109,6 @@ theorem higham20_wedin_solution_data_domain_null_vecNorm2Sq_sub_rev
     abel
   rw [hsign]
   simp [vecNorm2Sq, rectMatMulVec]
-
 /-- The domain-null term is itself a perturbation term.
 
 With `Q_A = A⁺A` and `Q_B = B⁺B`,
@@ -8164,7 +8161,6 @@ theorem higham20_wedin_domain_null_projection_factorization
     _ = (1 - Bplus * B) * (A.transpose - B.transpose) *
           Aplus.transpose := by
           rw [Matrix.mul_sub]
-
 /-- Wedin's exact Moore--Penrose pseudoinverse-difference decomposition.
 
 For `E = B - A`,
@@ -8305,5 +8301,18 @@ theorem higham20_wedin_pseudoinverse_difference_decomposition
   rw [Matrix.mul_sub, Matrix.mul_one, Matrix.sub_mul, Matrix.one_mul]
   simp only [Matrix.mul_assoc]
   abel
+
+/-!
+## Source audit for the general-rank sentence on printed page 402
+
+The sentence following (20.25) says that, when `rank B = rank A`, Theorem
+20.1 holds unchanged.  The following exact rational example records that the
+literal claim is false for the printed right-hand side of (20.1).  Both
+matrices have rank two, both displayed inverse tables satisfy all four
+Penrose equations, and the perturbations meet the common `eps = 1/20`
+budget.  Nevertheless the relative solution change is strictly larger than
+the printed bound.  Keeping this certificate next to the valid Wedin
+identities above prevents a false endpoint from being used downstream.
+-/
 
 end NumStability

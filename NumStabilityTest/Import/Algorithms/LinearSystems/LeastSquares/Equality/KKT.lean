@@ -1,11 +1,12 @@
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT
 
 /-!
-# KKT systems for equality-constrained least squares canonical-only import smoke test
+# Equality.KKT canonical-only import smoke test
 
-Imports exactly one canonical module and checks representative public declarations.
+Imports exactly one canonical module so no sibling import can supply
+the declarations checked below.
 -/
 
 #check @NumStability.LSEKKTSystem
-#check @NumStability.IsLSEMinimizer.exists_lagrange_kkt_difference_source_system_of_fullRowRank
-#check @NumStability.Theorem20_10.orthogonal_matMulVec_injective
+#check @NumStability.LSEKKTLinearMap
+#check @NumStability.LSEKKTSystem.iff_linearMap_eq

@@ -8,27 +8,35 @@ import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve
-import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
 import NumStability.Algorithms.QR.Higham19
-import NumStability.Algorithms.QR.Higham19Thm6ColPivot
 import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
 import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
 import NumStability.Algorithms.QR.Higham19Thm6ElementwisePackaged
+import NumStability.Algorithms.QR.Higham19Thm6Pivoted
 import NumStability.Algorithms.QR.Higham19Thm6RowSpecific
-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+import NumStability.Algorithms.QR.HouseholderApplySupport
+import NumStability.Algorithms.QR.HouseholderQR
+import NumStability.Algorithms.QR.HouseholderQRSupport
+import NumStability.Algorithms.QR.HouseholderSpec
+import NumStability.Algorithms.QR.HouseholderSpecSupport
+import NumStability.Analysis.MatrixAlgebra
+import NumStability.Analysis.Rounding
+import NumStability.FloatingPoint.Model
 
 namespace NumStability
 
-open scoped BigOperators Matrix.Norms.Frobenius
+open scoped BigOperators
 
 /-!
-# Rowwise backward error for equality-constrained least squares
+# RowwiseBackwardError
 
-Reusable rowwise backward-error analysis for equality-constrained least squares.
-
-Declarations are extracted command-for-command from the historical least-squares owners; only contracted cross-module private helpers are promoted.
+Canonical reusable module extracted without change from LSE.
 -/
 
+private theorem theorem20_7_finRectProdUniv_nonempty_of_pos {m n : ℕ}
+    (hn : 0 < n) (hm : 0 < m) :
+    (Finset.univ : Finset (Fin n × Fin m)).Nonempty :=
+  ⟨(⟨0, hn⟩, ⟨0, hm⟩), by simp⟩
 /-- Pointwise row-growth bounds imply the Theorem 20.7 source ratio bound
     for `α_i`. -/
 theorem theorem20_7_alpha_le_of_entry_growth {m n : ℕ} (hn : 0 < n)
@@ -41,13 +49,11 @@ theorem theorem20_7_alpha_le_of_entry_growth {m n : ℕ} (hn : 0 < n)
   exact
     theorem20_7_alpha_le_of_stageRowMax_le_mul_initial hn Astage A i hden
       (theorem20_7_stageRowMax_le_of_entry_le hn Astage i hgrowth)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     initial weighted row scale `max(φ max_j |a_ij|, |b_i|)`. -/
 noncomputable def theorem20_7_initialWeightedRowMax {m n : ℕ} (hn : 0 < n)
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (phi : ℝ) (i : Fin m) : ℝ :=
   max (phi * theorem20_7_initialRowMax hn A i) |b i|
-
 /-- The initial weighted row scale in Theorem 20.7 is nonnegative when the
     source weight parameter is nonnegative. -/
 theorem theorem20_7_initialWeightedRowMax_nonneg {m n : ℕ} (hn : 0 < n)
@@ -58,7 +64,6 @@ theorem theorem20_7_initialWeightedRowMax_nonneg {m n : ℕ} (hn : 0 < n)
   exact
     (mul_nonneg hphi (theorem20_7_initialRowMax_nonneg hn A i)).trans
       (le_max_left _ _)
-
 /-- A positive source weight and a nonzero source row give a positive weighted
     row normalizer in Theorem 20.7. -/
 theorem theorem20_7_initialWeightedRowMax_pos_of_exists_entry_ne_zero
@@ -71,7 +76,6 @@ theorem theorem20_7_initialWeightedRowMax_pos_of_exists_entry_ne_zero
     (mul_pos hphi
         (theorem20_7_initialRowMax_pos_of_exists_entry_ne_zero hn A i hrow)).trans_le
       (le_max_left _ _)
-
 /-- A nonzero source right-hand-side entry gives a positive weighted row
     normalizer in Theorem 20.7. -/
 theorem theorem20_7_initialWeightedRowMax_pos_of_b_ne_zero {m n : ℕ}
@@ -80,7 +84,6 @@ theorem theorem20_7_initialWeightedRowMax_pos_of_b_ne_zero {m n : ℕ}
     0 < theorem20_7_initialWeightedRowMax hn A b phi i := by
   dsimp [theorem20_7_initialWeightedRowMax]
   exact (abs_pos.mpr hb).trans_le (le_max_right _ _)
-
 /-- The source right-hand-side entry is bounded by the weighted row scale used
     in Theorem 20.7. -/
 theorem theorem20_7_initialWeightedRowMax_abs_b_le {m n : ℕ}
@@ -89,7 +92,6 @@ theorem theorem20_7_initialWeightedRowMax_abs_b_le {m n : ℕ}
     |b i| ≤ theorem20_7_initialWeightedRowMax hn A b phi i := by
   dsimp [theorem20_7_initialWeightedRowMax]
   exact le_max_right _ _
-
 /-- If the source right-hand side is dominated by the scaled row maximum, then
     the weighted row scale collapses to that scaled row maximum. -/
 theorem theorem20_7_initialWeightedRowMax_eq_phi_mul_initialRowMax_of_abs_b_le
@@ -103,7 +105,6 @@ theorem theorem20_7_initialWeightedRowMax_eq_phi_mul_initialRowMax_of_abs_b_le
   intro i
   dsimp [theorem20_7_initialWeightedRowMax]
   exact max_eq_left (hdom i)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     weighted source-row sorting follows from sorting both the source row
     maximum and the source right-hand-side magnitude.
@@ -132,7 +133,6 @@ theorem theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
     max_le_max
       (mul_le_mul_of_nonneg_left (hA k hk s hks) hphi)
       (hb k hk s hks)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     row sorting relabels the weighted source row maximum by the sorting
     permutation, provided `A` and `b` are permuted together. -/
@@ -144,7 +144,6 @@ theorem theorem20_7_initialWeightedRowMax_permuteRows {m n : ℕ} (hn : 0 < n)
       theorem20_7_initialWeightedRowMax hn A b phi (σ i) := by
   simp [theorem20_7_initialWeightedRowMax,
     theorem20_7_initialRowMax_permuteRows]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting bridge:
     sorting `A` and `b` by a common row permutation supplies the weighted
     sorted-source hypothesis used by the row-wise QR handoff. -/
@@ -172,7 +171,6 @@ theorem theorem20_7_initialWeightedRowMax_sorted_of_permuteRows_initialRowMax_ab
       (theorem20_7_initialRowMax_sorted_of_permuteRows_sorted_nat
         hn hnm A σ hσA)
       (theorem20_7_abs_b_sorted_of_permuteRows_sorted_nat hnm b σ hσb)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-scale bridge:
     an explicit row permutation transports the weighted source ratio
     hypothesis to the permuted `A,b` pair. -/
@@ -194,7 +192,6 @@ theorem theorem20_7_initialWeightedRowMax_ratio_of_permuteRows_ratio_nat
   intro k hk r hkr
   simpa [theorem20_7_initialWeightedRowMax_permuteRows] using
     hσratio k hk r hkr
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting bridge:
     the weighted row scale admits a concrete common row permutation of `A`
     and `b` whose displayed active suffixes are sorted. -/
@@ -214,7 +211,6 @@ theorem theorem20_7_exists_initialWeightedRowMax_sorted_permuteRows_nat
   refine ⟨σ, ?_⟩
   intro k hk s hks
   simpa [theorem20_7_initialWeightedRowMax_permuteRows] using hσ k hk s hks
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting policy:
     under the explicit monotonicity compatibility between source row maxima
     and right-hand-side magnitudes, the concrete row-max sorting permutation is
@@ -272,7 +268,6 @@ theorem theorem20_7_exists_initialRowMax_abs_b_sorted_permuteRows_of_abs_b_mono_
     theorem20_7_initialWeightedRowMax_sorted_of_permuteRows_initialRowMax_abs_b_sorted_nat
       hn hnm A b σ hphi hσA hb_raw
   exact ⟨σ, hA, hb, hw⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 QR dependency:
     reduced-space `j^2` row-wise envelope transported to original space through
     Chapter 19's packaged `sqrt(m)` transfer.
@@ -298,7 +293,6 @@ theorem theorem20_7_packaged_original_space_sqrt_m_j_sq_of_reducedDiff_bound
   Wave18C.theorem19_6_packaged_original_space_printed_j_sq
     jbound Q Rhat AP DeltaA gammaTildeClass alpha rowMax
     hγ hα hrowMax hQ hfact hE_reduced i j
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 QR dependency:
     the Chapter 19 row-specific route's concrete pivot-row obstruction exposed
     at the row-wise least-squares boundary.
@@ -316,7 +310,6 @@ theorem theorem20_7_pivot_row_entrywiseBudget_incurs_sqrt_m_of_ch19_row_specific
       |matMulVec m (householder m v β) w p| ≤ K * c :=
   Wave18D.pivotRow_entrywiseBudget_incurs_sqrt_m
     m p v β c w hvprefix horth hc hw
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 QR dependency:
     Cox--Higham's row-wise elementwise column-pivoted Householder QR backward
     error, exposed at the weighted least-squares boundary.
@@ -349,7 +342,6 @@ theorem theorem20_7_coxHigham_rowwise_elementwise_backward_error_no_sqrt_m
       (j.val : ℝ) ^ 2 * (5 * gammaTilde) * alpha i) :=
   Wave19.H19_Theorem19_6_rowwise_elementwise_backward_error
     A π Q Rhat DeltaA alpha gammaTilde hgamma halpha hQ hR hfact hstage
-
 /-- Source-shaped nonzero-row hypotheses discharge both denominator
     positivity side conditions used by the Theorem 20.7 row-growth bridges. -/
 theorem theorem20_7_denominators_pos_of_rows_nonzero {m n : ℕ}
@@ -365,7 +357,6 @@ theorem theorem20_7_denominators_pos_of_rows_nonzero {m n : ℕ}
     exact
       theorem20_7_initialWeightedRowMax_pos_of_exists_entry_ne_zero
         hn A b hphi i (hrows i)
-
 /-- Theorem 20.7 row-scale bridge: an explicit weighted source-row ratio
     bound discharges the `sqrt(m)` domination hypothesis used by the Chapter 19
     accumulated-error transfer for `max(phi * max_j |a_ij|, |b_i|)`. -/
@@ -390,7 +381,6 @@ theorem theorem20_7_initialWeightedRowMax_sqrt_domination_of_ratio_le_nat
     theorem20_7_initialWeightedRowMax_pos_of_exists_entry_ne_zero
       hn A b hphi r (hrows r)
   exact (div_le_iff₀ hden).mp (hratio k hk r hkr)
-
 /-- Theorem 20.7 row-scale bridge: the pointwise weighted `sqrt(m)`
     domination hypothesis implies the corresponding active-suffix weighted
     source-row ratio bound. -/
@@ -415,7 +405,6 @@ theorem theorem20_7_initialWeightedRowMax_ratio_le_of_sqrt_domination_nat
     theorem20_7_initialWeightedRowMax_pos_of_exists_entry_ne_zero
       hn A b hphi r (hrows r)
   exact (div_le_iff₀ hden).mpr (hdom k hk r hkr)
-
 /-- The additive-error accumulator used by the Chapter 19 row-wise QR bridge
     vanishes when every step budget is zero. -/
 theorem theorem20_7_scalarAffineGrowthBudget_zero_stepBudget
@@ -426,7 +415,6 @@ theorem theorem20_7_scalarAffineGrowthBudget_zero_stepBudget
       simp [scalarAffineGrowthBudget]
   | succ steps ih =>
       simp [scalarAffineGrowthBudget, ih]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     numerator scale for the source `β_i` ratio. -/
 noncomputable def theorem20_7_stageWeightedRowMax {m n : ℕ} (hn : 0 < n)
@@ -434,7 +422,6 @@ noncomputable def theorem20_7_stageWeightedRowMax {m n : ℕ} (hn : 0 < n)
     (phi : ℝ) (i : Fin m) : ℝ :=
   max (phi * theorem20_7_stageRowMax hn Astage i)
     (theorem20_7_stageBMax hn bstage i)
-
 /-- Component bounds imply the staged weighted-row bound used for `β_i` in
     Theorem 20.7. -/
 theorem theorem20_7_stageWeightedRowMax_le_of_bounds {m n : ℕ} (hn : 0 < n)
@@ -445,7 +432,6 @@ theorem theorem20_7_stageWeightedRowMax_le_of_bounds {m n : ℕ} (hn : 0 < n)
     theorem20_7_stageWeightedRowMax hn Astage bstage phi i ≤ C := by
   dsimp [theorem20_7_stageWeightedRowMax]
   exact max_le hA hb
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-style ratio `β_i`, written with the finite staged maxima exposed
     above. -/
@@ -455,7 +441,6 @@ noncomputable def theorem20_7_beta {m n : ℕ} (hn : 0 < n)
     (i : Fin m) : ℝ :=
   theorem20_7_stageWeightedRowMax hn Astage bstage phi i /
     theorem20_7_initialWeightedRowMax hn A b phi i
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     common row sorting relabels the staged weighted-row maximum. -/
 theorem theorem20_7_stageWeightedRowMax_permuteRows {m n : ℕ} (hn : 0 < n)
@@ -466,7 +451,6 @@ theorem theorem20_7_stageWeightedRowMax_permuteRows {m n : ℕ} (hn : 0 < n)
       theorem20_7_stageWeightedRowMax hn Astage bstage phi (σ i) := by
   simp [theorem20_7_stageWeightedRowMax,
     theorem20_7_stageRowMax_permuteRows, theorem20_7_stageBMax_permuteRows]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     common row sorting relabels the weighted source ratio `β_i`. -/
 theorem theorem20_7_beta_permuteRows {m n : ℕ} (hn : 0 < n)
@@ -479,7 +463,6 @@ theorem theorem20_7_beta_permuteRows {m n : ℕ} (hn : 0 < n)
       theorem20_7_beta hn Astage A bstage b phi (σ i) := by
   simp [theorem20_7_beta, theorem20_7_stageWeightedRowMax_permuteRows,
     theorem20_7_initialWeightedRowMax_permuteRows]
-
 /-- If the staged weighted-row maximum is at most `C` times the initial
     weighted row maximum, then the Theorem 20.7 source ratio `β_i` is at most
     `C`. -/
@@ -494,7 +477,6 @@ theorem theorem20_7_beta_le_of_stageWeighted_le_mul_initial {m n : ℕ}
     theorem20_7_beta hn Astage A bstage b phi i ≤ C := by
   dsimp [theorem20_7_beta]
   exact (div_le_iff₀ hden).mpr hstage
-
 /-- Component weighted bounds imply the Theorem 20.7 source ratio bound for
     `β_i`. -/
 theorem theorem20_7_beta_le_of_component_bounds {m n : ℕ} (hn : 0 < n)
@@ -514,7 +496,20 @@ theorem theorem20_7_beta_le_of_component_bounds {m n : ℕ} (hn : 0 < n)
       hn Astage A bstage b phi i hden
       (theorem20_7_stageWeightedRowMax_le_of_bounds hn Astage bstage phi i
         hA hb)
-
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-scale support:
+    finite maximum of the active-suffix source-row ratios
+    `max_{k<n, r>=k} amax_k / amax_r`. -/
+noncomputable def theorem20_7_activeInitialRowMaxRatioMax {m n : ℕ}
+    (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) : ℝ :=
+  Finset.sup' (Finset.univ : Finset (Fin n × Fin m))
+    (theorem20_7_finRectProdUniv_nonempty_of_pos hn hm)
+    (fun p =>
+      if _h : p.1.val ≤ p.2.val then
+        theorem20_7_initialRowMax hn A
+            ⟨p.1.val, lt_of_lt_of_le p.1.isLt hnm⟩ /
+          theorem20_7_initialRowMax hn A p.2
+      else 0)
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-scale support:
     finite maximum of the active-suffix weighted source-row ratios
     `max_{k<n, r>=k} wmax_k / wmax_r`. -/
@@ -529,7 +524,23 @@ noncomputable def theorem20_7_activeInitialWeightedRowMaxRatioMax {m n : ℕ}
             ⟨p.1.val, lt_of_lt_of_le p.1.isLt hnm⟩ /
           theorem20_7_initialWeightedRowMax hn A b phi p.2
       else 0)
-
+/-- Pointwise active-suffix source-row ratio bounds give the corresponding
+    finite active-ratio maximum bound. -/
+theorem theorem20_7_activeInitialRowMaxRatioMax_le_of_forall_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) {C : ℝ} (hC : 0 ≤ C)
+    (hpoint :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A
+            ⟨k, lt_of_lt_of_le hk hnm⟩ /
+          theorem20_7_initialRowMax hn A r ≤ C) :
+    theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A ≤ C := by
+  unfold theorem20_7_activeInitialRowMaxRatioMax
+  apply Finset.sup'_le
+  intro p _hp
+  by_cases hpactive : p.1.val ≤ p.2.val
+  · simpa [hpactive] using hpoint p.1.val p.1.isLt p.2 hpactive
+  · simpa [hpactive] using hC
 /-- Pointwise active-suffix weighted source-row ratio bounds give the
     corresponding finite active-ratio maximum bound. -/
 theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_of_forall_nat
@@ -548,7 +559,20 @@ theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_of_forall_nat
   by_cases hpactive : p.1.val ≤ p.2.val
   · simpa [hpactive] using hpoint p.1.val p.1.isLt p.2 hpactive
   · simpa [hpactive] using hC
-
+/-- Pointwise active-suffix source-row ratio bounds at the source `sqrt(m)`
+    scale give the corresponding finite active-ratio maximum bound. -/
+theorem theorem20_7_activeInitialRowMaxRatioMax_le_sqrt_of_forall_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ)
+    (hpoint :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A
+            ⟨k, lt_of_lt_of_le hk hnm⟩ /
+          theorem20_7_initialRowMax hn A r ≤ Real.sqrt (m : ℝ)) :
+    theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A ≤
+      Real.sqrt (m : ℝ) :=
+  theorem20_7_activeInitialRowMaxRatioMax_le_of_forall_nat
+    hm hn hnm A (Real.sqrt_nonneg _) hpoint
 /-- Pointwise active-suffix weighted source-row ratio bounds at the source
     `sqrt(m)` scale give the corresponding finite active-ratio maximum bound. -/
 theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_forall_nat
@@ -564,7 +588,24 @@ theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_forall_nat
       Real.sqrt (m : ℝ) :=
   theorem20_7_activeInitialWeightedRowMaxRatioMax_le_of_forall_nat
     hm hn hnm A b phi (Real.sqrt_nonneg _) hpoint
-
+/-- Pointwise `sqrt(m)` source-row domination over every active suffix gives
+    the finite unweighted active-ratio maximum required by the Theorem 20.7
+    row-sorting wrappers. -/
+theorem theorem20_7_activeInitialRowMaxRatioMax_le_sqrt_of_sqrt_domination_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ)
+    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
+    (hdom :
+      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+        theorem20_7_initialRowMax hn A
+            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
+          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r) :
+    theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A ≤
+      Real.sqrt (m : ℝ) :=
+  theorem20_7_activeInitialRowMaxRatioMax_le_sqrt_of_forall_nat
+    hm hn hnm A
+    (theorem20_7_initialRowMax_ratio_le_of_sqrt_domination_nat
+      hn hnm A hrows hdom)
 /-- Pointwise weighted `sqrt(m)` source-row domination over every active suffix
     gives the finite weighted active-ratio maximum required by the Theorem 20.7
     row-sorting wrappers. -/
@@ -585,7 +626,6 @@ theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_sqrt_dominati
     hm hn hnm A b phi
     (theorem20_7_initialWeightedRowMax_ratio_le_of_sqrt_domination_nat
       hn hnm A b hphi hrows hdom)
-
 /-- If `|b_i|` is dominated by `phi` times the source row maximum, then the
     weighted active-suffix source-row ratios are bounded by the corresponding
     unweighted ratios. -/
@@ -629,7 +669,40 @@ theorem theorem20_7_initialWeightedRowMax_ratio_le_of_initialRowMax_ratio_le_abs
         theorem20_7_initialRowMax hn A r := by
           field_simp [hphi_ne, hr_ne]
     _ ≤ C := hratio k hk r hkr
-
+/-- A finite active-suffix source-row ratio maximum gives every pointwise
+    active-suffix source-row ratio. -/
+theorem theorem20_7_initialRowMax_ratio_le_of_activeRatioMax_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) {C : ℝ}
+    (hmax : theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A ≤ C) :
+    ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+      theorem20_7_initialRowMax hn A
+          ⟨k, lt_of_lt_of_le hk hnm⟩ /
+        theorem20_7_initialRowMax hn A r ≤ C := by
+  intro k hk r hkr
+  let p : Fin n × Fin m := (⟨k, hk⟩, r)
+  have hp :
+      (if _h : p.1.val ≤ p.2.val then
+        theorem20_7_initialRowMax hn A
+            ⟨p.1.val, lt_of_lt_of_le p.1.isLt hnm⟩ /
+          theorem20_7_initialRowMax hn A p.2
+      else 0) ≤ theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A := by
+    unfold theorem20_7_activeInitialRowMaxRatioMax
+    exact
+      Finset.le_sup' (s := (Finset.univ : Finset (Fin n × Fin m)))
+        (f := fun p =>
+          if _h : p.1.val ≤ p.2.val then
+            theorem20_7_initialRowMax hn A
+                ⟨p.1.val, lt_of_lt_of_le p.1.isLt hnm⟩ /
+              theorem20_7_initialRowMax hn A p.2
+          else 0) (Finset.mem_univ p)
+  have hentry :
+      theorem20_7_initialRowMax hn A
+          ⟨k, lt_of_lt_of_le hk hnm⟩ /
+        theorem20_7_initialRowMax hn A r ≤
+          theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A := by
+    simpa [p, hkr] using hp
+  exact hentry.trans hmax
 /-- A finite active-suffix weighted source-row ratio maximum gives every
     pointwise active-suffix weighted source-row ratio. -/
 theorem theorem20_7_initialWeightedRowMax_ratio_le_of_activeRatioMax_le_nat
@@ -666,7 +739,6 @@ theorem theorem20_7_initialWeightedRowMax_ratio_le_of_activeRatioMax_le_nat
           theorem20_7_activeInitialWeightedRowMaxRatioMax hm hn hnm A b phi := by
     simpa [p, hkr] using hp
   exact hentry.trans hmax
-
 /-- A finite unweighted active-ratio maximum bounds the finite weighted
     active-ratio maximum when `|b_i| <= phi * rowMax_i`. -/
 theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
@@ -685,7 +757,6 @@ theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_of_activeInitialRowMa
       hn hnm A b hphi hrows hdom
       (theorem20_7_initialRowMax_ratio_le_of_activeRatioMax_le_nat
         hm hn hnm A hmax))
-
 /-- Source-scale domination of `b` reduces the weighted `sqrt(m)` active-ratio
     obligation to the unweighted active-ratio obligation. -/
 theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
@@ -702,7 +773,6 @@ theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitial
       Real.sqrt (m : ℝ) :=
   theorem20_7_activeInitialWeightedRowMaxRatioMax_le_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
     hm hn hnm A b (Real.sqrt_nonneg _) hphi hrows hdom hmax
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
     on a common row-permuted source, the weighted finite active-ratio
     `sqrt(m)` obligation follows from the unweighted one when each permuted
@@ -725,7 +795,23 @@ theorem theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_permuteRows_a
     (theorem20_7_rows_nonzero_permuteRows A σ hrows)
     (theorem20_7_abs_b_le_phi_initialRowMax_permuteRows hn A b σ hdom)
     hmax
-
+/-- Active-suffix source-row ratio maxima for a row-permuted matrix supply the
+    source-ratio hypothesis stated in the original row labels. -/
+theorem theorem20_7_initialRowMax_ratio_of_permuteRows_activeRatioMax_le_nat
+    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (σ : Fin m ≃ Fin m) {C : ℝ}
+    (hmax :
+      theorem20_7_activeInitialRowMaxRatioMax hm hn hnm
+        (fun r j => A (σ r) j) ≤ C) :
+    ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
+      theorem20_7_initialRowMax hn A
+          (σ ⟨k, lt_of_lt_of_le hk hnm⟩) /
+        theorem20_7_initialRowMax hn A (σ r) ≤ C := by
+  intro k hk r hkr
+  have h :=
+    theorem20_7_initialRowMax_ratio_le_of_activeRatioMax_le_nat
+      hm hn hnm (fun r j => A (σ r) j) hmax k hk r hkr
+  simpa [theorem20_7_initialRowMax_permuteRows] using h
 /-- Active-suffix weighted source-row ratio maxima for a common row permutation
     of `A` and `b` supply the weighted source-ratio hypothesis stated in the
     original row labels. -/
@@ -746,7 +832,6 @@ theorem theorem20_7_initialWeightedRowMax_ratio_of_permuteRows_activeRatioMax_le
       hm hn hnm (fun r j => A (σ r) j) (fun r => b (σ r)) phi
       hmax k hk r hkr
   simpa [theorem20_7_initialWeightedRowMax_permuteRows] using h
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting policy:
     a row-max sorting permutation also supplies the raw and permuted `|b|`
     sorted fields, weighted sorted field, and finite active-ratio pointwise
@@ -836,7 +921,6 @@ theorem theorem20_7_exists_common_sorted_permuteRows_activeRatioMax_fields_of_ab
     exact
       theorem20_7_initialWeightedRowMax_ratio_of_permuteRows_activeRatioMax_le_nat
         hm hn hnm A b phi σ hmax
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
     a displayed row permutation satisfying source row-max sorting and the
     explicit `sqrt(m)` active-suffix row-domination policy supplies the row
@@ -928,7 +1012,6 @@ theorem theorem20_7_activeRatioMax_fields_of_sqrtBalancedRowPolicy_abs_b_mono_na
     theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_permuteRows_activeInitialRowMaxRatioMax_le_abs_b_le_nat
       hm hn hnm A b σ hphi hrows hbdom hrowmax
   exact ⟨hAperm, hbperm, hwperm, hrowmax, hwmax⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
     existential common-sort version of
     `theorem20_7_activeRatioMax_fields_of_sqrtBalancedRowPolicy_abs_b_mono_nat`.
@@ -981,7 +1064,6 @@ theorem theorem20_7_exists_common_sorted_permuteRows_activeRatioMax_fields_of_sq
   exact
     theorem20_7_activeRatioMax_fields_of_sqrtBalancedRowPolicy_abs_b_mono_nat
       hm hn hnm A b σ hphi hrows hσA hσsqrt hcompat hbdom
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     finite version of `max_i {α_i, β_i}`. -/
 noncomputable def theorem20_7_alphaBetaMax {m n : ℕ} (hm : 0 < m)
@@ -991,7 +1073,6 @@ noncomputable def theorem20_7_alphaBetaMax {m n : ℕ} (hm : 0 < m)
   theorem20_7_rowRatioMax hm (fun i =>
     max (theorem20_7_alpha hn Astage A i)
       (theorem20_7_beta hn Astage A bstage b phi i))
-
 /-- Uniform bounds for `α_i` and `β_i` imply the finite
     `max_i {α_i, β_i}` bound from Theorem 20.7. -/
 theorem theorem20_7_alphaBetaMax_le_of_alpha_beta_le {m n : ℕ}
@@ -1005,7 +1086,6 @@ theorem theorem20_7_alphaBetaMax_le_of_alpha_beta_le {m n : ℕ}
   apply theorem20_7_rowRatioMax_le_of_forall
   intro i
   exact max_le (halpha i) (hbeta i)
-
 /-- The finite `max_i {α_i, β_i}` coefficient controls each source `α_i`
     ratio from Theorem 20.7. -/
 theorem theorem20_7_alpha_le_alphaBetaMax {m n : ℕ}
@@ -1020,7 +1100,6 @@ theorem theorem20_7_alpha_le_alphaBetaMax {m n : ℕ}
       (theorem20_7_rowRatioMax_entry_le hm
         (fun i => max (theorem20_7_alpha hn Astage A i)
           (theorem20_7_beta hn Astage A bstage b phi i)) i)
-
 /-- The finite `max_i {α_i, β_i}` coefficient controls each source `β_i`
     ratio from Theorem 20.7. -/
 theorem theorem20_7_beta_le_alphaBetaMax {m n : ℕ}
@@ -1035,7 +1114,6 @@ theorem theorem20_7_beta_le_alphaBetaMax {m n : ℕ}
       (theorem20_7_rowRatioMax_entry_le hm
         (fun i => max (theorem20_7_alpha hn Astage A i)
           (theorem20_7_beta hn Astage A bstage b phi i)) i)
-
 /-- A global finite `max_i {α_i, β_i}` bound gives the corresponding per-row
     `α_i` bound. -/
 theorem theorem20_7_alpha_le_of_alphaBetaMax_le {m n : ℕ}
@@ -1047,7 +1125,6 @@ theorem theorem20_7_alpha_le_of_alphaBetaMax_le {m n : ℕ}
     theorem20_7_alpha hn Astage A i ≤ C :=
   (theorem20_7_alpha_le_alphaBetaMax
     hm hn Astage A bstage b phi i).trans hmax
-
 /-- A global finite `max_i {α_i, β_i}` bound gives the corresponding per-row
     `β_i` bound. -/
 theorem theorem20_7_beta_le_of_alphaBetaMax_le {m n : ℕ}
@@ -1059,7 +1136,6 @@ theorem theorem20_7_beta_le_of_alphaBetaMax_le {m n : ℕ}
     theorem20_7_beta hn Astage A bstage b phi i ≤ C :=
   (theorem20_7_beta_le_alphaBetaMax
     hm hn Astage A bstage b phi i).trans hmax
-
 /-- The staged `b` maximum is bounded by the staged weighted-row maximum used
     in the source `β_i` numerator. -/
 theorem theorem20_7_stageBMax_le_stageWeightedRowMax {m n : ℕ} (hn : 0 < n)
@@ -1069,7 +1145,6 @@ theorem theorem20_7_stageBMax_le_stageWeightedRowMax {m n : ℕ} (hn : 0 < n)
       theorem20_7_stageWeightedRowMax hn Astage bstage phi i := by
   dsimp [theorem20_7_stageWeightedRowMax]
   exact le_max_right _ _
-
 /-- If `β_i ≤ C`, the staged weighted-row maximum is bounded by `C` times the
     initial weighted row scale. -/
 theorem theorem20_7_stageWeightedRowMax_le_mul_initialWeighted_of_beta_le
@@ -1093,7 +1168,6 @@ theorem theorem20_7_stageWeightedRowMax_le_mul_initialWeighted_of_beta_le
             theorem20_7_initialWeightedRowMax hn A b phi i := hEq.symm
     _ ≤ C * theorem20_7_initialWeightedRowMax hn A b phi i :=
         mul_le_mul_of_nonneg_right hbeta hden.le
-
 /-- A finite `max_i {α_i, β_i}` bound controls the staged row maximum. -/
 theorem theorem20_7_stageRowMax_le_mul_initial_of_alphaBetaMax_le {m n : ℕ}
     (hm : 0 < m) (hn : 0 < n)
@@ -1107,7 +1181,6 @@ theorem theorem20_7_stageRowMax_le_mul_initial_of_alphaBetaMax_le {m n : ℕ}
   theorem20_7_stageRowMax_le_mul_initial_of_alpha_le hn Astage A i hden
     (theorem20_7_alpha_le_of_alphaBetaMax_le
       hm hn Astage A bstage b phi i hmax)
-
 /-- A finite `max_i {α_i, β_i}` bound controls the staged weighted-row maximum. -/
 theorem theorem20_7_stageWeightedRowMax_le_mul_initialWeighted_of_alphaBetaMax_le
     {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
@@ -1122,7 +1195,6 @@ theorem theorem20_7_stageWeightedRowMax_le_mul_initialWeighted_of_alphaBetaMax_l
     hn Astage A bstage b phi i hden
     (theorem20_7_beta_le_of_alphaBetaMax_le
       hm hn Astage A bstage b phi i hmax)
-
 /-- A finite `max_i {α_i, β_i}` bound controls each staged matrix entry. -/
 theorem theorem20_7_stageAEntry_le_mul_initial_of_alphaBetaMax_le {m n : ℕ}
     (hm : 0 < m) (hn : 0 < n)
@@ -1135,7 +1207,6 @@ theorem theorem20_7_stageAEntry_le_mul_initial_of_alphaBetaMax_le {m n : ℕ}
   (theorem20_7_stageRowMax_entry_le hn Astage i k j).trans
     (theorem20_7_stageRowMax_le_mul_initial_of_alphaBetaMax_le
       hm hn Astage A bstage b phi i hden hmax)
-
 /-- Nat-indexed version of
     `theorem20_7_stageAEntry_le_mul_initial_of_alphaBetaMax_le`. -/
 theorem theorem20_7_stageAEntry_le_mul_initial_of_alphaBetaMax_le_nat
@@ -1150,7 +1221,6 @@ theorem theorem20_7_stageAEntry_le_mul_initial_of_alphaBetaMax_le_nat
   simpa [kk] using
     theorem20_7_stageAEntry_le_mul_initial_of_alphaBetaMax_le
       hm hn Astage A bstage b phi i kk j hden hmax
-
 /-- A finite `max_i {α_i, β_i}` bound controls each staged right-hand-side
     entry by the source weighted initial row scale. -/
 theorem theorem20_7_stageBEntry_le_mul_initialWeighted_of_alphaBetaMax_le
@@ -1167,7 +1237,6 @@ theorem theorem20_7_stageBEntry_le_mul_initialWeighted_of_alphaBetaMax_le
       hn Astage bstage phi i).trans
       (theorem20_7_stageWeightedRowMax_le_mul_initialWeighted_of_alphaBetaMax_le
         hm hn Astage A bstage b phi i hden hmax))
-
 /-- Nat-indexed version of
     `theorem20_7_stageBEntry_le_mul_initialWeighted_of_alphaBetaMax_le`. -/
 theorem theorem20_7_stageBEntry_le_mul_initialWeighted_of_alphaBetaMax_le_nat
@@ -1183,7 +1252,6 @@ theorem theorem20_7_stageBEntry_le_mul_initialWeighted_of_alphaBetaMax_le_nat
   simpa [kk] using
     theorem20_7_stageBEntry_le_mul_initialWeighted_of_alphaBetaMax_le
       hm hn Astage A bstage b phi i kk hden hmax
-
 /-- Uniform pointwise row-growth and right-hand-side growth bounds imply the
     finite `max_i {α_i, β_i}` bound used in Theorem 20.7.
 
@@ -1235,7 +1303,6 @@ theorem theorem20_7_alphaBetaMax_le_of_uniform_entry_growth {m n : ℕ}
         _ = C * (phi * theorem20_7_initialRowMax hn A i) := by ring
         _ ≤ C * theorem20_7_initialWeightedRowMax hn A b phi i := hscaled
     · exact theorem20_7_stageBMax_le_of_entry_le hn bstage i (hb i)
-
 /-- Nat-indexed version of
     `theorem20_7_alphaBetaMax_le_of_uniform_entry_growth`.
 
@@ -1261,7 +1328,6 @@ theorem theorem20_7_alphaBetaMax_le_of_uniform_entry_growth_nat {m n : ℕ}
       hm hn Astage A bstage b phi hC hphi hdenA hdenW
       (fun i k j => hA i k.val k.isLt j)
       (fun i k => hb i k.val k.isLt)
-
 /-- Geometric Nat-indexed row-growth bounds imply the fixed-horizon
     `max_i {α_i, β_i}` coefficient used in Theorem 20.7.
 
@@ -1299,7 +1365,6 @@ theorem theorem20_7_alphaBetaMax_le_of_uniform_geometric_entry_growth_nat {m n :
       (hb i k hk).trans
         (mul_le_mul_of_nonneg_right hpow
           (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
-
 /-- Theorem 20.7 bridge for the printed row-sorting constant
     `sqrt(m) * (1 + sqrt 2)^(n-1)`.
 
@@ -1372,7 +1437,6 @@ theorem theorem20_7_alphaBetaMax_le_of_row_sorting_geometric_entry_growth_nat
       (hb i k hk).trans
         (mul_le_mul_of_nonneg_right hfactor
           (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
-
 /-- Theorem 20.7 bridge for row-sorting bounds with an accumulated relative
     error coefficient.
 
@@ -1465,7 +1529,6 @@ theorem theorem20_7_alphaBetaMax_le_of_row_sorting_geometric_entry_growth_with_r
       (hb i k hk).trans
         (mul_le_mul_of_nonneg_right hfactorErr
           (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
-
 /-- Theorem 20.7 support: turn a completion-time row bound plus preservation of
     already completed rows into the completed-row bound required by the
     row-sorting split.
@@ -1515,7 +1578,6 @@ theorem theorem20_7_completedA_bound_of_completion_preservation_nat
     (hcomplete i hi_succ_lt j).trans
       (mul_le_mul_of_nonneg_right hfactor
         (theorem20_7_initialRowMax_nonneg hn A i))
-
 /-- Theorem 20.7 support: right-hand-side analogue of
     `theorem20_7_completedA_bound_of_completion_preservation_nat` for the
     weighted row scale used in the row-wise least-squares analysis. -/
@@ -1563,7 +1625,6 @@ theorem theorem20_7_completedB_bound_of_completion_preservation_nat
     (hcomplete i hi_succ_lt).trans
       (mul_le_mul_of_nonneg_right hfactor
         (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
-
 /-- Theorem 20.7 support: stored Householder panel lower-prefix zeros reduce
     completion-time `A` row bounds to active/trailing columns.
 
@@ -1620,7 +1681,6 @@ theorem theorem20_7_completionA_bound_of_stored_panel_lower_zero_and_active_tail
     rw [hzero]
     simpa using hbound_nonneg
   · exact hactiveTail i hi j (le_of_not_gt hji)
-
 /-- Theorem 20.7 support: active/trailing completion-time `A` row bounds from
     the Chapter 19 stored-panel one-step budget interface.
 
@@ -1683,7 +1743,6 @@ theorem theorem20_7_completionA_active_tail_bound_of_h19_stored_panel_step_budge
       (fun hj => hpivot i hi j hj)
       (hexact i hi j hij)).trans
       (hbudget i hi j hij)
-
 /-- Theorem 20.7 support: full completion-time `A` row bounds for stored panel
     sequences from lower-prefix zeros plus the Chapter 19 stored-panel
     one-step budget interface.
@@ -1735,7 +1794,6 @@ theorem theorem20_7_completionA_bound_of_h19_stored_panel_step_budget_nat
       hn fp v beta Astage A err herr hStep
       (theorem20_7_completionA_active_tail_bound_of_h19_stored_panel_step_budget_nat
         hn fp v beta Astage A err B hm hStep hcompleted hpivot hexact hbudget)
-
 /-- Theorem 20.7 support: signed-stage exact same-reflector `A` growth from
     active row and column stage bounds.
 
@@ -1801,7 +1859,6 @@ theorem theorem20_7_signed_stage_exact_completionA_bound_of_active_stage_bounds_
       (fun l hl => hrowBound i hi l hl)
       (fun r hr => hcolBound i hi r hr j hij)
   simpa [H19.Theorem19_6.active_row_growth_factor] using hbase
-
 /-- Theorem 20.7 support: signed-stage exact same-reflector `A` growth from
     row-sorted active stage bounds.
 
@@ -1906,7 +1963,6 @@ theorem theorem20_7_signed_stage_exact_completionA_bound_of_row_sorting_active_s
                 H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
               theorem20_7_initialRowMax hn A i :=
           mul_le_mul_of_nonneg_left hscale hfactor_nonneg
-
 /-- Theorem 20.7 support: signed-stage exact same-reflector `A` growth from
     row-sorted active-tail stage bounds.
 
@@ -2011,7 +2067,6 @@ theorem theorem20_7_signed_stage_exact_completionA_bound_of_row_sorting_active_t
                 H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
               theorem20_7_initialRowMax hn A i :=
           mul_le_mul_of_nonneg_left hscale hfactor_nonneg
-
 /-- Theorem 20.7 support: signed-stage exact same-reflector right-hand-side
     growth from active RHS stage bounds.
 
@@ -2145,7 +2200,6 @@ theorem theorem20_7_signed_stage_exact_completionB_bound_of_active_stage_bounds_
     _ ≤ Real.sqrt (m : ℝ) * B i := htailNorm
     _ ≤ H19.Theorem19_6.active_row_growth_factor m * B i :=
         mul_le_mul_of_nonneg_right hfactor (hB i)
-
 /-- Theorem 20.7 support: signed-stage exact RHS growth from row-sorted active
     RHS stage bounds.
 
@@ -2244,7 +2298,6 @@ theorem theorem20_7_signed_stage_exact_completionB_bound_of_row_sorting_active_s
               H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
             theorem20_7_initialWeightedRowMax hn A b phi i :=
         mul_le_mul_of_nonneg_left hscale hfactor_nonneg
-
 /-- Theorem 20.7 support: active/trailing completion-time `A` row bounds for
     signed stored-QR stages.
 
@@ -2311,7 +2364,6 @@ theorem theorem20_7_completionA_active_tail_bound_of_h19_signed_stage_budget_nat
       (theorem20_7_signed_stage_pivot_column_zero_below_of_trailingNorm_pos_nat
         hnm Astage alpha hAlphaDef htrailingPos)
       hexact hbudget
-
 /-- Theorem 20.7 support: full signed-stage completion-time `A` row bounds
     from active stage bounds.
 
@@ -2387,7 +2439,6 @@ theorem theorem20_7_completionA_bound_of_h19_signed_stage_active_stage_budget_na
         hnm Astage alpha B hAlphaDef htrailingPos hpivotMax hB hrowBound
         hcolBound)
       hbudget
-
 /-- Theorem 20.7 support: signed-stage completion-time `A` row bounds from
     row-sorted active stage bounds.
 
@@ -2522,7 +2573,6 @@ theorem theorem20_7_completionA_bound_of_h19_signed_stage_row_sorting_active_sta
           theorem20_7_initialRowMax hn A i)
       herr hm hStep hAlphaDef htrailingPos hpivotMax hB hrowBound hcolBound
       hbudget
-
 /-- Theorem 20.7 support: signed-stage completion-time `A` row bounds from
     row-sorted active-tail stage bounds.
 
@@ -2658,7 +2708,6 @@ theorem theorem20_7_completionA_bound_of_h19_signed_stage_row_sorting_active_tai
           theorem20_7_initialRowMax hn A i)
       herr hm hStep hAlphaDef htrailingPos hpivotMax hB hrowBound hcolBound
       hbudget
-
 /-- Theorem 20.7 support: full completion-time `A` row bounds for signed
     stored-QR stages.
 
@@ -2723,7 +2772,6 @@ theorem theorem20_7_completionA_bound_of_h19_signed_stage_budget_nat
       (theorem20_7_signed_stage_pivot_column_zero_below_of_trailingNorm_pos_nat
         hnm Astage alpha hAlphaDef htrailingPos)
       hexact hbudget
-
 /-- Theorem 20.7 support: completion-time right-hand-side row bounds from the
     stored Householder RHS one-step budget interface.
 
@@ -2822,7 +2870,6 @@ theorem theorem20_7_completionB_bound_of_h19_stored_rhs_step_budget_nat
           err) *
         theorem20_7_initialWeightedRowMax hn A b phi i :=
           hbudget i hi
-
 /-- Theorem 20.7 support: completion-time right-hand-side row bounds for
     signed stored-QR stages.
 
@@ -2872,7 +2919,6 @@ theorem theorem20_7_completionB_bound_of_h19_signed_stage_budget_nat
       hn fp (fun k => storedQRSignedStageVector hnm Astage alpha k)
       (fun k => storedQRSignedStageBeta hnm Astage alpha k)
       bstage A b phi err B hm hStep hexact hbudget
-
 /-- Theorem 20.7 support: completion-time right-hand-side row bounds for
     signed stored-QR stages from active RHS stage bounds.
 
@@ -2930,7 +2976,6 @@ theorem theorem20_7_completionB_bound_of_h19_signed_stage_active_stage_budget_na
       (theorem20_7_signed_stage_exact_completionB_bound_of_active_stage_bounds_nat
         hnm Astage bstage alpha B hAlphaDef htrailingPos hB hbBound)
       hbudget
-
 /-- Theorem 20.7 support: signed-stage RHS completion bounds from row-sorted
     active RHS stage bounds.
 
@@ -3007,7 +3052,6 @@ theorem theorem20_7_completionB_bound_of_h19_signed_stage_row_sorting_active_sta
         hn hnm Astage bstage A b alpha phi err hphi herr
         hAlphaDef htrailingPos hbactive hbsorted)
       hbudget
-
 /-- Theorem 20.7 support: signed-stage RHS completion bounds from source row
     sorting and right-hand-side magnitude sorting.
 
@@ -3080,7 +3124,6 @@ theorem theorem20_7_completionB_bound_of_h19_signed_stage_row_sorting_active_sta
       (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
         hn hnm A b hphi hAsourceSorted hbAbsSorted)
       hbudget
-
 /-- Theorem 20.7 support: source-row-scale compact-budget domination for the
     matrix completion step from a componentwise compact-budget slack.
 
@@ -3149,7 +3192,6 @@ theorem theorem20_7_completionA_budget_of_signed_stage_component_slack_nat
             H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
           theorem20_7_initialRowMax hn A i :=
           mul_le_mul_of_nonneg_right (hslack i hi) hrow_nonneg
-
 /-- Theorem 20.7 support: weighted source-row-scale compact-budget domination
     for the RHS completion step from a componentwise compact-budget slack.
 
@@ -3219,7 +3261,6 @@ theorem theorem20_7_completionB_budget_of_signed_stage_component_slack_nat
             H19.Theorem19_6.rowwise_step_growth_factor ^ (i.val + 1) + err) *
           theorem20_7_initialWeightedRowMax hn A b phi i :=
           mul_le_mul_of_nonneg_right (hslack i hi) hrow_nonneg
-
 /-- Theorem 20.7 support: source-row-scale compact-budget domination for the
     matrix completion step from an abstract scalar horizon recurrence.
 
@@ -3271,7 +3312,6 @@ theorem theorem20_7_completionA_budget_of_signed_stage_component_slack_horizon_n
           ring
     _ ≤ horizon (i.val + 1) * theorem20_7_initialRowMax hn A i :=
           mul_le_mul_of_nonneg_right (hslack i hi) hrow_nonneg
-
 /-- Theorem 20.7 support: weighted source-row-scale compact-budget domination
     for the RHS completion step from an abstract scalar horizon recurrence.
 
@@ -3328,7 +3368,6 @@ theorem theorem20_7_completionB_budget_of_signed_stage_component_slack_horizon_n
     _ ≤ horizon (i.val + 1) *
           theorem20_7_initialWeightedRowMax hn A b phi i :=
           mul_le_mul_of_nonneg_right (hslack i hi) hrow_nonneg
-
 /-- Theorem 20.7 support: a single compact Householder component budget is
     controlled by the reflector's norm-budget coefficient times the input
     vector norm.
@@ -3366,7 +3405,6 @@ theorem theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_vec
         fp m v beta x hm
     simpa [householderCompactNormBudget] using h
   exact hcomponent_norm.trans hnorm
-
 /-- Theorem 20.7 support: source-row-scale matrix completion-budget domination
     from norm-budget-coefficient slack.
 
@@ -3419,7 +3457,6 @@ theorem theorem20_7_completionA_budget_of_signed_stage_norm_coeff_slack_nat
           (fun r : Fin m => Ahat i.val r j) hm i).trans
           (hcompact i hi j hij))
       hslack
-
 /-- Theorem 20.7 support: weighted RHS completion-budget domination from
     norm-budget-coefficient slack.
 
@@ -3472,7 +3509,6 @@ theorem theorem20_7_completionB_budget_of_signed_stage_norm_coeff_slack_nat
           (bhat i.val) hm i).trans
           (hcompact i hi))
       hslack
-
 /-- Theorem 20.7 support: a zero-prefix reflector sees only the active
     trailing part of the updated vector in a single active component budget.
 
@@ -3502,7 +3538,6 @@ theorem theorem20_7_householderCompactComponentBudget_eq_trailingPart_of_zero_pr
     have hnot : ¬ i.val < p.val := Nat.not_lt.mpr hi
     simp [householderTrailingPart, hnot]
   simp [householderCompactComponentBudget, hS, hbi]
-
 /-- Theorem 20.7 support: a zero-prefix reflector bounds a single active
     component by the compact norm-budget coefficient times the active-tail
     input norm.
@@ -3525,7 +3560,6 @@ theorem theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_tra
   exact
     theorem20_7_householderCompactComponentBudget_le_normBudgetCoeff_mul_vecNorm2
       fp n v beta (householderTrailingPart n p b) hn i
-
 /-- Theorem 20.7 support: matrix completion-budget domination from entrywise
     column bounds and a scalar norm-coefficient slack comparison.
 
@@ -3610,7 +3644,6 @@ theorem theorem20_7_completionA_budget_of_signed_stage_norm_coeff_entry_slack_na
             theorem20_7_initialRowMax hn A i := by ring
     _ ≤ slack i.val * theorem20_7_initialRowMax hn A i :=
         mul_le_mul_of_nonneg_right (hcoeffSlack i hi) hrow_nonneg
-
 /-- Theorem 20.7 support: RHS completion-budget domination from entrywise RHS
     bounds and a scalar norm-coefficient slack comparison.
 
@@ -3694,7 +3727,6 @@ theorem theorem20_7_completionB_budget_of_signed_stage_norm_coeff_entry_slack_na
             theorem20_7_initialWeightedRowMax hn A b phi i := by ring
     _ ≤ slack i.val * theorem20_7_initialWeightedRowMax hn A b phi i :=
         mul_le_mul_of_nonneg_right (hcoeffSlack i hi) hrow_nonneg
-
 /-- Theorem 20.7 support: matrix completion-budget domination from active-tail
     entrywise column bounds and a scalar compact-coefficient slack comparison.
 
@@ -3797,7 +3829,6 @@ theorem theorem20_7_completionA_budget_of_signed_stage_norm_coeff_active_entry_s
             theorem20_7_initialRowMax hn A i := by ring
     _ ≤ slack i.val * theorem20_7_initialRowMax hn A i :=
         mul_le_mul_of_nonneg_right (hcoeffSlack i hi) hrow_nonneg
-
 /-- Theorem 20.7 support: RHS completion-budget domination from active-tail
     RHS entry bounds and a scalar compact-coefficient slack comparison. -/
 theorem theorem20_7_completionB_budget_of_signed_stage_norm_coeff_active_entry_slack_nat
@@ -3893,7 +3924,6 @@ theorem theorem20_7_completionB_budget_of_signed_stage_norm_coeff_active_entry_s
             theorem20_7_initialWeightedRowMax hn A b phi i := by ring
     _ ≤ slack i.val * theorem20_7_initialWeightedRowMax hn A b phi i :=
         mul_le_mul_of_nonneg_right (hcoeffSlack i hi) hrow_nonneg
-
 /-- Theorem 20.7 support: matrix completion-budget domination from active-tail
     entrywise column bounds and an abstract scalar horizon recurrence.
 
@@ -3988,7 +4018,6 @@ theorem theorem20_7_completionA_budget_of_signed_stage_norm_coeff_active_entry_s
             theorem20_7_initialRowMax hn A i := by ring
     _ ≤ slack i.val * theorem20_7_initialRowMax hn A i :=
         mul_le_mul_of_nonneg_right (hcoeffSlack i hi) hrow_nonneg
-
 /-- Theorem 20.7 support: RHS completion-budget domination from active-tail
     RHS entry bounds and an abstract scalar horizon recurrence.
 
@@ -4081,7 +4110,6 @@ theorem theorem20_7_completionB_budget_of_signed_stage_norm_coeff_active_entry_s
             theorem20_7_initialWeightedRowMax hn A b phi i := by ring
     _ ≤ slack i.val * theorem20_7_initialWeightedRowMax hn A b phi i :=
         mul_le_mul_of_nonneg_right (hcoeffSlack i hi) hrow_nonneg
-
 /-- Theorem 20.7 support: matrix completion-budget domination from active-tail
     entry bounds, signed-stage nonbreakdown, and a uniform compact-coefficient
     slack comparison.
@@ -4144,7 +4172,6 @@ theorem theorem20_7_completionA_budget_of_signed_stage_active_entry_trailingNorm
       (theorem20_7_signed_stage_norm_coeff_slack_of_trailingNorm_pos_nat
         hnm fp Ahat alpha C slack hm hC hAlphaDef htrailingPos hcoeffSlack)
       hslack
-
 /-- Theorem 20.7 support: RHS completion-budget domination from active-tail
     RHS entry bounds, signed-stage nonbreakdown, and a uniform
     compact-coefficient slack comparison. -/
@@ -4203,7 +4230,6 @@ theorem theorem20_7_completionB_budget_of_signed_stage_active_entry_trailingNorm
       (theorem20_7_signed_stage_norm_coeff_slack_of_trailingNorm_pos_nat
         hnm fp Ahat alpha C slack hm hC hAlphaDef htrailingPos hcoeffSlack)
       hslack
-
 /-- Theorem 20.7 support: matrix completion-budget domination from active-tail
     entry bounds, signed-stage nonbreakdown, and an abstract scalar horizon
     recurrence.
@@ -4257,7 +4283,6 @@ theorem theorem20_7_completionA_budget_of_signed_stage_active_entry_trailingNorm
       (theorem20_7_signed_stage_norm_coeff_slack_of_trailingNorm_pos_nat
         hnm fp Ahat alpha C slack hm hC hAlphaDef htrailingPos hcoeffSlack)
       hslack
-
 /-- Theorem 20.7 support: RHS completion-budget domination from active-tail
     entry bounds, signed-stage nonbreakdown, and an abstract scalar horizon
     recurrence.
@@ -4313,7 +4338,6 @@ theorem theorem20_7_completionB_budget_of_signed_stage_active_entry_trailingNorm
       (theorem20_7_signed_stage_norm_coeff_slack_of_trailingNorm_pos_nat
         hnm fp Ahat alpha C slack hm hC hAlphaDef htrailingPos hcoeffSlack)
       hslack
-
 /-- Theorem 20.7 support: matrix completion-budget domination from row-sorted
     active-tail stage bounds.
 
@@ -4418,7 +4442,6 @@ theorem theorem20_7_completionA_budget_of_signed_stage_row_sorting_active_tail_t
                 H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
               theorem20_7_initialRowMax hn A i :=
           mul_le_mul_of_nonneg_left hscale hfactor_nonneg
-
 /-- Theorem 20.7 support: RHS completion-budget domination from row-sorted
     active RHS stage bounds.
 
@@ -4522,7 +4545,6 @@ theorem theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_traili
                 H19.Theorem19_6.rowwise_step_growth_factor ^ i.val + err) *
               theorem20_7_initialWeightedRowMax hn A b phi i :=
           mul_le_mul_of_nonneg_left hscale hfactor_nonneg
-
 /-- Theorem 20.7 support: source-sorted RHS completion-budget domination.
 
 This discharges the weighted row-sorting premise of
@@ -4593,7 +4615,6 @@ theorem theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_traili
       (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
         hn hnm A b hphi hAsourceSorted hbAbsSorted)
       hAlphaDef htrailingPos hcoeffSlack hslack
-
 /-- Theorem 20.7 support: matrix completion-budget domination from row-sorted
     active-tail stage bounds and an abstract scalar horizon recurrence.
 
@@ -4667,7 +4688,6 @@ theorem theorem20_7_completionA_budget_of_signed_stage_row_sorting_active_tail_t
         hAactive r i.val hit hir j hij
     _ ≤ horizon i.val * theorem20_7_initialRowMax hn A i :=
         mul_le_mul_of_nonneg_left hscale (hhorizon_nonneg i hi)
-
 /-- Theorem 20.7 support: RHS completion-budget domination from row-sorted
     active RHS stage bounds and an abstract scalar horizon recurrence.
 
@@ -4741,7 +4761,6 @@ theorem theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_traili
         hbactive r i.val hit hir
     _ ≤ horizon i.val * theorem20_7_initialWeightedRowMax hn A b phi i :=
         mul_le_mul_of_nonneg_left hscale (hhorizon_nonneg i hi)
-
 /-- Theorem 20.7 support: source-sorted RHS completion-budget domination from
     an abstract scalar horizon recurrence.
 
@@ -4806,7 +4825,6 @@ theorem theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_traili
       (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
         hn hnm A b hphi hAsourceSorted hbAbsSorted)
       hAlphaDef htrailingPos hcoeffSlack hslack
-
 /-- Theorem 20.7 support: split the staged row-growth obligations into
     completed rows `i < k` and active rows `k <= i`.
 
@@ -4859,7 +4877,6 @@ theorem theorem20_7_alphaBetaMax_le_of_row_sorting_active_completed_entry_growth
     by_cases hcompleted : i.val < k
     · exact hbcompleted i k hk hcompleted
     · exact hbactive i k hk (le_of_not_gt hcompleted)
-
 /-- Theorem 20.7 support: consume the Chapter 19 row-sorting accumulated-error
     entry theorem and repackage its output in the staged `A` entry-growth shape
     used by the Chapter 20 weighted least-squares ratio bridges.
@@ -4944,7 +4961,6 @@ theorem theorem20_7_stageAEntry_bound_of_h19_row_sorting_accumulated_error
     _ = (Real.sqrt (m : ℝ) *
             H19.Theorem19_6.rowwise_step_growth_factor ^ k.val + err) *
           theorem20_7_initialRowMax hn A r := by ring
-
 /-- Theorem 20.7 support: consume the Chapter 19 row-sorting accumulated-error
     entry theorem for the staged right-hand side by viewing `b` as a one-column
     staged matrix.
@@ -5054,7 +5070,6 @@ theorem theorem20_7_stageBEntry_bound_of_h19_row_sorting_accumulated_error
     _ = (Real.sqrt (m : ℝ) *
             H19.Theorem19_6.rowwise_step_growth_factor ^ k.val + err) *
           theorem20_7_initialWeightedRowMax hn A b phi r := by ring
-
 /-- Theorem 20.7 support: active-tail matrix-stage entry bounds from the
     Chapter 19 row-sorting accumulated-error theorem, specialized to the
     natural source row scale `max_j |a_ij|`.
@@ -5120,7 +5135,6 @@ theorem theorem20_7_active_tail_stageA_bound_of_h19_row_sorting_source_initial_a
         exact hAstepErr r j t)
       (hArow0 k hk r hkr)
       (by simpa [kFin] using hAacc k r hkr j)
-
 /-- Theorem 20.7 support: active-suffix right-hand-side stage bounds from the
     Chapter 19 row-sorting accumulated-error theorem, specialized to the
     weighted source row scale `max(φ max_j |a_ij|, |b_i|)`.
@@ -5188,7 +5202,6 @@ theorem theorem20_7_active_tail_stageB_bound_of_h19_row_sorting_source_initial_a
         exact hbstepErr r t)
       (hbrow0 k hk r hkr)
       (by simpa [kFin] using hbacc k r hkr)
-
 /-- Theorem 20.7 support: combine completed-row certificates with the direct
     Chapter 19 accumulated-error active-row theorem to obtain the finite
     `max_i {alpha_i, beta_i}` ratio bound.
@@ -5318,7 +5331,6 @@ theorem theorem20_7_alphaBetaMax_le_of_h19_row_sorting_active_completed_accumula
           exact hbstepErr r t)
         (hbrow0 k hk r hkr)
         (by simpa [kFin] using hbacc k r hkr)
-
 /-- Theorem 20.7 support: variant of the H19 active/completed accumulated-error
     finite-ratio bridge where completed rows are supplied by completion-time
     bounds plus preservation of already completed rows.
@@ -5425,7 +5437,6 @@ theorem theorem20_7_alphaBetaMax_le_of_h19_row_sorting_active_completion_preserv
         hn bhat A b phi err hphi hbcomplete hbpreserve)
       hAsorted hAinitExact hAstepExact hAstepErr hArow0 hAacc
       hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc
-
 /-- Theorem 20.7 support: signed stored-QR completion and preservation
     handoff for the finite row-ratio bound.
 
@@ -5594,7 +5605,6 @@ theorem theorem20_7_alphaBetaMax_le_of_h19_row_sorting_active_signed_stage_compl
         (fun k => storedQRSignedStageBeta hnm Ahat alpha k) bhat hStepB)
       hAsorted hAinitExact hAstepExact hAstepErr hArow0 hAacc
       hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc
-
 /-- Theorem 20.7 support: signed stored-QR finite row-ratio bound with
     row-sorted completion bounds.
 
@@ -5772,7 +5782,6 @@ theorem theorem20_7_alphaBetaMax_le_of_h19_row_sorting_active_signed_stage_row_s
         (fun k => storedQRSignedStageBeta hnm Ahat alpha k) bhat hStepB)
       hAsorted hAinitExact hAstepExact hAstepErr hArow0 hAacc
       hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc
-
 /-- Theorem 20.7 support: signed stored-QR finite row-ratio bound from
     row-sorted active-tail matrix-stage bounds.
 
@@ -5950,7 +5959,6 @@ theorem theorem20_7_alphaBetaMax_le_of_h19_row_sorting_active_tail_signed_stage_
         (fun k => storedQRSignedStageBeta hnm Ahat alpha k) bhat hStepB)
       hAsorted hAinitExact hAstepExact hAstepErr hArow0 hAacc
       hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc
-
 /-- Theorem 20.7 support: signed stored-QR finite row-ratio bound from
     source row-max sorting and right-hand-side magnitude sorting.
 
@@ -6126,7 +6134,6 @@ theorem theorem20_7_alphaBetaMax_le_of_h19_row_sorting_active_signed_stage_row_s
         (fun k => storedQRSignedStageBeta hnm Ahat alpha k) bhat hStepB)
       hAsorted hAinitExact hAstepExact hAstepErr hArow0 hAacc
       hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc
-
 /-- Theorem 20.7 bridge specialized to the Chapter 19.6 active-row Cox--Higham
     growth factor. -/
 theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
@@ -6152,7 +6159,6 @@ theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
       hm hn Astage A bstage b phi
       (H19.Theorem19_6.one_le_active_row_growth_factor m)
       hphi hdenA hdenW hA hb
-
 /-- Theorem 20.7 active-row bridge with an accumulated relative-error
     coefficient.
 
@@ -6220,7 +6226,6 @@ theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_with_re
       (hb i k hk).trans
         (mul_le_mul_of_nonneg_right hfactorErr
           (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
-
 /-- Theorem 20.7 active-row bridge with denominator positivity discharged from
     source-shaped nonzero row hypotheses. -/
 theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_rows_nonzero_nat
@@ -6243,7 +6248,6 @@ theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_rows_no
   exact
     theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
       hm hn Astage A bstage b phi (le_of_lt hphi) hden.1 hden.2 hA hb
-
 /-- Theorem 20.7 active-row accumulated-error bridge with denominator
     positivity discharged from source-shaped nonzero row hypotheses. -/
 theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_with_relative_error_rows_nonzero_nat
@@ -6267,7 +6271,6 @@ theorem theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_with_re
     theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_with_relative_error_nat
       hm hn Astage A bstage b phi err (le_of_lt hphi) herr
       hden.1 hden.2 hA hb
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
     a common source row permutation transports the active-row geometric
     alpha/beta maximum bound to the permuted source problem. -/
@@ -6302,7 +6305,6 @@ theorem theorem20_7_alphaBetaMax_le_of_permuteRows_active_row_geometric_entry_gr
       (by
         intro i k hk
         simpa [theorem20_7_initialWeightedRowMax_permuteRows] using hb i k hk)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
     a common source row permutation transports the active-row accumulated-error
     alpha/beta maximum bound to the permuted source problem. -/
@@ -6337,21 +6339,18 @@ theorem theorem20_7_alphaBetaMax_le_of_permuteRows_active_row_geometric_entry_gr
       (by
         intro i k hk
         simpa [theorem20_7_initialWeightedRowMax_permuteRows] using hb i k hk)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     printed componentwise matrix-perturbation budget
     `j^2 * gamma_tilde_m * alpha_i * max_s |a_is|`. -/
 noncomputable def theorem20_7_deltaAEntryBudget {n : ℕ}
     (gammaTilde alpha rowScale : ℝ) (j : Fin n) : ℝ :=
   theorem20_7_sourceColumnFactor j * gammaTilde * alpha * rowScale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     printed componentwise right-hand-side perturbation budget
     `n^2 * gamma_tilde_m * beta_i * max(phi max_s |a_is|, |b_i|)`. -/
 noncomputable def theorem20_7_deltaBEntryBudget
     (n : ℕ) (gammaTilde beta weightedScale : ℝ) : ℝ :=
   theorem20_7_sourceDimensionFactor n * gammaTilde * beta * weightedScale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 QR dependency:
     Cox--Higham's `sqrt(m)`-free matrix perturbation envelope, converted to
     the Chapter 20.7 `Delta A` entry-budget surface.
@@ -6437,7 +6436,6 @@ theorem theorem20_7_deltaAEntryBudget_of_coxHigham_stageRowMax_no_sqrt_m
           (theorem20_7_alpha hn Astage A i)
           (theorem20_7_initialRowMax hn A i) j := by
         rw [hbudget_eq]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     a zero-based Cox--Higham `j^2` row-scale envelope implies the printed
     one-based `Delta A` entry budget.
@@ -6499,7 +6497,6 @@ theorem theorem20_7_deltaAEntryBudget_of_zeroBased_sq_stageRowMax_no_sqrt_m
           (theorem20_7_alpha hn Astage A i)
           (theorem20_7_initialRowMax hn A i) j := by
         rw [hbudget_eq]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 QR dependency:
     concrete column-pivoted Householder QR supplies a `Delta A` perturbation
     satisfying the printed no-`sqrt(m)` row-wise budget, once the concrete
@@ -6545,7 +6542,6 @@ theorem theorem20_7_exists_deltaAEntryBudget_of_concrete_coxHigham_stageBound_no
     theorem20_7_deltaAEntryBudget_of_zeroBased_sq_stageRowMax_no_sqrt_m
       hn Astage A DeltaA (5 * gammaTilde)
       (mul_nonneg (by norm_num) hgamma) hden hDelta
-
 /-- Monotonicity of the Theorem 20.7 `Delta A` entry budget in the row ratio
     `alpha`. -/
 theorem theorem20_7_deltaAEntryBudget_le_of_alpha_le {n : ℕ}
@@ -6567,7 +6563,6 @@ theorem theorem20_7_deltaAEntryBudget_le_of_alpha_le {n : ℕ}
         mul_le_mul_of_nonneg_left halpha hscale
     _ = theorem20_7_sourceColumnFactor j * gammaTilde * C * rowScale := by
         ring
-
 /-- Monotonicity of the Theorem 20.7 `Delta b` entry budget in the row ratio
     `beta`. -/
 theorem theorem20_7_deltaBEntryBudget_le_of_beta_le
@@ -6591,7 +6586,6 @@ theorem theorem20_7_deltaBEntryBudget_le_of_beta_le
         mul_le_mul_of_nonneg_left hbeta hscale
     _ = theorem20_7_sourceDimensionFactor n * gammaTilde * C *
           weightedScale := by ring
-
 /-- A finite `max_i {alpha_i, beta_i}` bound controls the printed Theorem 20.7
     componentwise `Delta A` budget for each row and column. -/
 theorem theorem20_7_deltaAEntryBudget_le_of_alphaBetaMax_le {m n : ℕ}
@@ -6610,7 +6604,6 @@ theorem theorem20_7_deltaAEntryBudget_le_of_alphaBetaMax_le {m n : ℕ}
     (theorem20_7_initialRowMax_nonneg hn A i)
     (theorem20_7_alpha_le_of_alphaBetaMax_le
       hm hn Astage A bstage b phi i hmax)
-
 /-- A finite `max_i {alpha_i, beta_i}` bound controls the printed Theorem 20.7
     componentwise `Delta b` budget for each row. -/
 theorem theorem20_7_deltaBEntryBudget_le_of_alphaBetaMax_le {m n : ℕ}
@@ -6629,7 +6622,6 @@ theorem theorem20_7_deltaBEntryBudget_le_of_alphaBetaMax_le {m n : ℕ}
     (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i)
     (theorem20_7_beta_le_of_alphaBetaMax_le
       hm hn Astage A bstage b phi i hmax)
-
 /-- A perturbation entry satisfying the printed `alpha_i` budget also satisfies
     the corresponding uniform `C` budget whenever `max_i {alpha_i,beta_i} ≤ C`.
     This is a scalar handoff, not an existence theorem for the QR perturbation. -/
@@ -6651,7 +6643,6 @@ theorem theorem20_7_deltaAEntry_bound_of_alphaBetaMax_le {m n : ℕ}
   hDelta.trans
     (theorem20_7_deltaAEntryBudget_le_of_alphaBetaMax_le
       hm hn Astage A bstage b phi gammaTilde i j hgamma hmax)
-
 /-- A right-hand-side perturbation entry satisfying the printed `beta_i` budget
     also satisfies the corresponding uniform `C` budget whenever
     `max_i {alpha_i,beta_i} ≤ C`. -/
@@ -6673,7 +6664,6 @@ theorem theorem20_7_deltaBEntry_bound_of_alphaBetaMax_le {m n : ℕ}
   hDelta.trans
     (theorem20_7_deltaBEntryBudget_le_of_alphaBetaMax_le
       hm hn Astage A bstage b phi gammaTilde i hphi hgamma hmax)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7, printed page 395:
     source-facing row-wise backward-error certificate for Householder QR
     with row pivoting.  The certificate records perturbations whose printed
@@ -6713,7 +6703,6 @@ structure Theorem20_7RowwiseBackwardError {m n : ℕ} (hn : 0 < n)
         theorem20_7_deltaBEntryBudget n gammaTilde
           (theorem20_7_beta hn Astage A bstage b phi i)
           (theorem20_7_initialWeightedRowMax hn A b phi i)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     package concrete perturbations, exact LS optimality, and the printed
     componentwise bounds into the row-wise backward-error certificate.
@@ -6748,7 +6737,6 @@ def Theorem20_7RowwiseBackwardError.of_exact_perturbations {m n : ℕ}
   exact_solution := hExact
   deltaA_bound := hDeltaA
   deltab_bound := hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 certificate constructor:
     use Cox--Higham's `sqrt(m)`-free QR matrix perturbation envelope for the
     `Delta A` side of the row-wise backward-error certificate.
@@ -6796,7 +6784,6 @@ def Theorem20_7RowwiseBackwardError.of_exact_perturbations_coxHigham_deltaA_no_s
           hfact hstage
       exact hA.2.2.2)
     hDeltab
-
 /-- The exact least-squares minimizer component of a Theorem 20.7 row-wise
     backward-error certificate. -/
 theorem Theorem20_7RowwiseBackwardError.exactSolution {m n : ℕ}
@@ -6810,7 +6797,6 @@ theorem Theorem20_7RowwiseBackwardError.exactSolution {m n : ℕ}
       (fun i j => A i j + hcert.DeltaA i j)
       (fun i => b i + hcert.Deltab i) xhat :=
   hcert.exact_solution
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting bridge:
     a row-wise backward-error certificate for a commonly row-permuted
     `A,b,Astage,bstage` instance transports back to the original row order.
@@ -6866,7 +6852,6 @@ def Theorem20_7RowwiseBackwardError.of_permuteRows {m n : ℕ}
     have h := hcert.deltab_bound (σ.symm i)
     simpa [theorem20_7_beta_permuteRows,
       theorem20_7_initialWeightedRowMax_permuteRows] using h
-
 /-- A Theorem 20.7 row-wise backward-error certificate inherits any uniform
     finite bound on `max_i {alpha_i, beta_i}` for its `Delta A` components. -/
 theorem Theorem20_7RowwiseBackwardError.deltaA_bound_of_alphaBetaMax_le
@@ -6888,7 +6873,6 @@ theorem Theorem20_7RowwiseBackwardError.deltaA_bound_of_alphaBetaMax_le
     theorem20_7_deltaAEntry_bound_of_alphaBetaMax_le
       hm hn Astage A bstage b phi gammaTilde hcert.DeltaA i j
       hgamma hmax (hcert.deltaA_bound i j)
-
 /-- A Theorem 20.7 row-wise backward-error certificate inherits any uniform
     finite bound on `max_i {alpha_i, beta_i}` for its `Delta b` components. -/
 theorem Theorem20_7RowwiseBackwardError.deltab_bound_of_alphaBetaMax_le
@@ -6910,7 +6894,6 @@ theorem Theorem20_7RowwiseBackwardError.deltab_bound_of_alphaBetaMax_le
     theorem20_7_deltaBEntry_bound_of_alphaBetaMax_le
       hm hn Astage A bstage b phi gammaTilde hcert.Deltab i
       hphi hgamma hmax (hcert.deltab_bound i)
-
 /-- A uniform `max_i {alpha_i, beta_i}` bound turns a Theorem 20.7 row-wise
     backward-error certificate into the source-shaped exact perturbed
     least-squares conclusion with uniform componentwise budgets. -/
@@ -6942,7 +6925,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_alphaBetaMax_le
   · exact
       hcert.deltab_bound_of_alphaBetaMax_le
         hm hn A b Astage bstage phi gammaTilde xhat hphi hgamma hmax
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free uniform-budget handoff from concrete perturbation
     witnesses and a proved finite `max_i {alpha_i, beta_i}` bound.
@@ -6994,7 +6976,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_al
   simpa [hcert, Theorem20_7RowwiseBackwardError.of_exact_perturbations] using
     Theorem20_7RowwiseBackwardError.uniform_bounds_of_alphaBetaMax_le
       hm hn A b Astage bstage phi gammaTilde xhat hphi hgamma hmax hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free uniform-budget handoff using Cox--Higham's `sqrt(m)`-free
     `Delta A` perturbation envelope.
@@ -7057,7 +7038,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_co
       Theorem20_7RowwiseBackwardError.uniform_bounds_of_alphaBetaMax_le
         hm hn A b Astage bstage phi (5 * gammaTilde) xhat
         hphi hgamma5 hmax hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     Cox--Higham `Delta A` plus active-row geometric growth gives the uniform
     active-row perturbation budgets without an explicit `alphaBetaMax`
@@ -7125,7 +7105,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_co
       (theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_rows_nonzero_nat
         hm hn Astage A bstage b hphi hrows hA hb)
       hQ hR hfact hstage hExact hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     Cox--Higham `Delta A` plus active-row accumulated-error growth gives the
     uniform active-row perturbation budgets without an explicit `alphaBetaMax`
@@ -7187,7 +7166,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_co
       (theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_with_relative_error_rows_nonzero_nat
         hm hn Astage A bstage b err hphi herr hrows hA hb)
       hQ hR hfact hstage hExact hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
     a row-permuted Cox--Higham `Delta A` perturbation, plus active-row
     geometric growth, transports back to the original source order with the
@@ -7286,7 +7264,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
             intro i k hk
             simpa using hb (σ.symm i) k hk))
         hcertOrig
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
     row-permuted Cox--Higham `Delta A` transport for the accumulated-error
     active-row budget. -/
@@ -7381,7 +7358,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
             intro i k hk
             simpa using hb (σ.symm i) k hk))
         hcertOrig
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
     source-shaped `Delta b` budget version of the row-permuted Cox--Higham
     active-row geometric wrapper. -/
@@ -7447,7 +7423,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
         intro i
         simpa [theorem20_7_beta_permuteRows,
           theorem20_7_initialWeightedRowMax_permuteRows] using hDeltab i)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
     source-shaped `Delta b` budget version of the row-permuted Cox--Higham
     accumulated-error wrapper. -/
@@ -7513,7 +7488,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
         intro i
         simpa [theorem20_7_beta_permuteRows,
           theorem20_7_initialWeightedRowMax_permuteRows] using hDeltab i)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 QR dependency:
     concrete Cox--Higham QR witnesses plus active-row growth give the uniform
     no-`sqrt(m)` `Delta A`/`Delta b` budgets.
@@ -7605,7 +7579,6 @@ theorem Theorem20_7RowwiseBackwardError.exists_uniform_bounds_of_concrete_coxHig
       hbounds.2.1
   · simpa [hcert, Theorem20_7RowwiseBackwardError.of_exact_perturbations] using
       hbounds.2.2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 QR dependency:
     accumulated-error version of the concrete Cox--Higham active-row wrapper.
 
@@ -7696,7 +7669,6 @@ theorem Theorem20_7RowwiseBackwardError.exists_uniform_bounds_of_concrete_coxHig
       hbounds.2.1
   · simpa [hcert, Theorem20_7RowwiseBackwardError.of_exact_perturbations] using
       hbounds.2.2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
     concrete Cox--Higham QR witnesses for a row-sorted source problem transport
     back to source order with active-row no-`sqrt(m)` budgets.
@@ -7824,7 +7796,6 @@ theorem Theorem20_7RowwiseBackwardError.exists_uniform_bounds_of_permuteRows_con
   · simpa [hcertOrig, hcertPerm, Aperm, bperm, AstagePerm, bstagePerm,
       Theorem20_7RowwiseBackwardError.of_permuteRows,
       Theorem20_7RowwiseBackwardError.of_exact_perturbations] using hbounds.2.2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
     accumulated-error version of the row-permuted concrete Cox--Higham witness
     wrapper.
@@ -7952,7 +7923,6 @@ theorem Theorem20_7RowwiseBackwardError.exists_uniform_bounds_of_permuteRows_con
   · simpa [hcertOrig, hcertPerm, Aperm, bperm, AstagePerm, bstagePerm,
       Theorem20_7RowwiseBackwardError.of_permuteRows,
       Theorem20_7RowwiseBackwardError.of_exact_perturbations] using hbounds.2.2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     row-sorting stage bounds with the printed
     `sqrt(m) * (1 + sqrt 2)^(n-1)` coefficient control each `Delta A`
@@ -7987,7 +7957,6 @@ theorem theorem20_7_deltaAEntryBudget_le_of_row_sorting_geometric_entry_growth_n
     hm hn Astage A bstage b phi gammaTilde i j hgamma
     (theorem20_7_alphaBetaMax_le_of_row_sorting_geometric_entry_growth_nat
       hm hn Astage A bstage b phi hphi hdenA hdenW hA hb)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     row-sorting stage bounds with the printed
     `sqrt(m) * (1 + sqrt 2)^(n-1)` coefficient control each `Delta b`
@@ -8022,7 +7991,6 @@ theorem theorem20_7_deltaBEntryBudget_le_of_row_sorting_geometric_entry_growth_n
     hm hn Astage A bstage b phi gammaTilde i hphi hgamma
     (theorem20_7_alphaBetaMax_le_of_row_sorting_geometric_entry_growth_nat
       hm hn Astage A bstage b phi hphi hdenA hdenW hA hb)
-
 /-- A `Delta A` entry satisfying the printed row-ratio budget also satisfies the
     row-sorting uniform budget from the sentence after Theorem 20.7. -/
 theorem theorem20_7_deltaAEntry_bound_of_row_sorting_geometric_entry_growth_nat
@@ -8058,7 +8026,6 @@ theorem theorem20_7_deltaAEntry_bound_of_row_sorting_geometric_entry_growth_nat
     (theorem20_7_deltaAEntryBudget_le_of_row_sorting_geometric_entry_growth_nat
       hm hn Astage A bstage b phi gammaTilde i j hphi hgamma
       hdenA hdenW hA hb)
-
 /-- A `Delta b` entry satisfying the printed row-ratio budget also satisfies the
     row-sorting uniform budget from the sentence after Theorem 20.7. -/
 theorem theorem20_7_deltaBEntry_bound_of_row_sorting_geometric_entry_growth_nat
@@ -8094,7 +8061,6 @@ theorem theorem20_7_deltaBEntry_bound_of_row_sorting_geometric_entry_growth_nat
     (theorem20_7_deltaBEntryBudget_le_of_row_sorting_geometric_entry_growth_nat
       hm hn Astage A bstage b phi gammaTilde i hphi hgamma
       hdenA hdenW hA hb)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     row-sorting stage bounds with accumulated relative error control each
     `Delta A` component budget. -/
@@ -8128,7 +8094,6 @@ theorem theorem20_7_deltaAEntryBudget_le_of_row_sorting_geometric_entry_growth_w
     hm hn Astage A bstage b phi gammaTilde i j hgamma
     (theorem20_7_alphaBetaMax_le_of_row_sorting_geometric_entry_growth_with_relative_error_nat
       hm hn Astage A bstage b phi err hphi herr hdenA hdenW hA hb)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     row-sorting stage bounds with accumulated relative error control each
     `Delta b` component budget. -/
@@ -8162,7 +8127,6 @@ theorem theorem20_7_deltaBEntryBudget_le_of_row_sorting_geometric_entry_growth_w
     hm hn Astage A bstage b phi gammaTilde i hphi hgamma
     (theorem20_7_alphaBetaMax_le_of_row_sorting_geometric_entry_growth_with_relative_error_nat
       hm hn Astage A bstage b phi err hphi herr hdenA hdenW hA hb)
-
 /-- A `Delta A` entry satisfying the printed row-ratio budget also satisfies the
     row-sorting accumulated-error uniform budget. -/
 theorem theorem20_7_deltaAEntry_bound_of_row_sorting_geometric_entry_growth_with_relative_error_nat
@@ -8198,7 +8162,6 @@ theorem theorem20_7_deltaAEntry_bound_of_row_sorting_geometric_entry_growth_with
     (theorem20_7_deltaAEntryBudget_le_of_row_sorting_geometric_entry_growth_with_relative_error_nat
       hm hn Astage A bstage b phi gammaTilde err i j hphi hgamma herr
       hdenA hdenW hA hb)
-
 /-- A `Delta b` entry satisfying the printed row-ratio budget also satisfies the
     row-sorting accumulated-error uniform budget. -/
 theorem theorem20_7_deltaBEntry_bound_of_row_sorting_geometric_entry_growth_with_relative_error_nat
@@ -8234,7 +8197,6 @@ theorem theorem20_7_deltaBEntry_bound_of_row_sorting_geometric_entry_growth_with
     (theorem20_7_deltaBEntryBudget_le_of_row_sorting_geometric_entry_growth_with_relative_error_nat
       hm hn Astage A bstage b phi gammaTilde err i hphi hgamma herr
       hdenA hdenW hA hb)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     completed-row and active-suffix row-sorting bounds with accumulated relative
     error control each `Delta A` component budget. -/
@@ -8283,7 +8245,6 @@ theorem theorem20_7_deltaAEntryBudget_le_of_row_sorting_active_completed_entry_g
     (theorem20_7_alphaBetaMax_le_of_row_sorting_active_completed_entry_growth_with_relative_error_nat
       hm hn Astage A bstage b phi err hphi herr hdenA hdenW
       hAcompleted hbcompleted hAactive hbactive)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     completed-row and active-suffix row-sorting bounds with accumulated relative
     error control each `Delta b` component budget. -/
@@ -8332,7 +8293,6 @@ theorem theorem20_7_deltaBEntryBudget_le_of_row_sorting_active_completed_entry_g
     (theorem20_7_alphaBetaMax_le_of_row_sorting_active_completed_entry_growth_with_relative_error_nat
       hm hn Astage A bstage b phi err hphi herr hdenA hdenW
       hAcompleted hbcompleted hAactive hbactive)
-
 /-- A `Delta A` entry satisfying the printed row-ratio budget also satisfies the
     active/completed row-sorting accumulated-error uniform budget. -/
 theorem theorem20_7_deltaAEntry_bound_of_row_sorting_active_completed_entry_growth_with_relative_error_nat
@@ -8382,7 +8342,6 @@ theorem theorem20_7_deltaAEntry_bound_of_row_sorting_active_completed_entry_grow
     (theorem20_7_deltaAEntryBudget_le_of_row_sorting_active_completed_entry_growth_with_relative_error_nat
       hm hn Astage A bstage b phi gammaTilde err i j hphi hgamma herr
       hdenA hdenW hAcompleted hbcompleted hAactive hbactive)
-
 /-- A `Delta b` entry satisfying the printed row-ratio budget also satisfies the
     active/completed row-sorting accumulated-error uniform budget. -/
 theorem theorem20_7_deltaBEntry_bound_of_row_sorting_active_completed_entry_growth_with_relative_error_nat
@@ -8432,7 +8391,6 @@ theorem theorem20_7_deltaBEntry_bound_of_row_sorting_active_completed_entry_grow
     (theorem20_7_deltaBEntryBudget_le_of_row_sorting_active_completed_entry_growth_with_relative_error_nat
       hm hn Astage A bstage b phi gammaTilde err i hphi hgamma herr
       hdenA hdenW hAcompleted hbcompleted hAactive hbactive)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     direct Chapter 19 accumulated-error active-suffix bounds, together with
     completed-row certificates, control each `Delta A` component budget. -/
@@ -8529,7 +8487,6 @@ theorem theorem20_7_deltaAEntryBudget_le_of_h19_row_sorting_active_completed_acc
       Arow0Bound brow0Bound AstepBudget bstepBudget hphi herr hdenA hdenW
       hAcompleted hbcompleted hAsorted hAinitExact hAstepExact hAstepErr
       hArow0 hAacc hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     direct Chapter 19 accumulated-error active-suffix bounds, together with
     completed-row certificates, control each `Delta b` component budget. -/
@@ -8626,7 +8583,6 @@ theorem theorem20_7_deltaBEntryBudget_le_of_h19_row_sorting_active_completed_acc
       Arow0Bound brow0Bound AstepBudget bstepBudget hphi herr hdenA hdenW
       hAcompleted hbcompleted hAsorted hAinitExact hAstepExact hAstepErr
       hArow0 hAacc hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     completion-time bounds plus completed-row preservation, together with direct
     Chapter 19 accumulated-error active-suffix bounds, control each `Delta A`
@@ -8733,7 +8689,6 @@ theorem theorem20_7_deltaAEntryBudget_le_of_h19_row_sorting_active_completion_pr
       hAcomplete hApreserve hbcomplete hbpreserve hAsorted hAinitExact
       hAstepExact hAstepErr hArow0 hAacc hbsorted hbinitExact hbstepExact
       hbstepErr hbrow0 hbacc)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     completion-time bounds plus completed-row preservation, together with direct
     Chapter 19 accumulated-error active-suffix bounds, control each `Delta b`
@@ -8840,7 +8795,6 @@ theorem theorem20_7_deltaBEntryBudget_le_of_h19_row_sorting_active_completion_pr
       hAcomplete hApreserve hbcomplete hbpreserve hAsorted hAinitExact
       hAstepExact hAstepErr hArow0 hAacc hbsorted hbinitExact hbstepExact
       hbstepErr hbrow0 hbacc)
-
 /-- A `Delta A` entry satisfying the printed row-ratio budget also satisfies the
     direct Chapter 19 accumulated-error uniform budget when completed rows are
     supplied by completion-time bounds and preservation. -/
@@ -8948,7 +8902,6 @@ theorem theorem20_7_deltaAEntry_bound_of_h19_row_sorting_active_completion_prese
       hdenA hdenW hAcomplete hApreserve hbcomplete hbpreserve hAsorted
       hAinitExact hAstepExact hAstepErr hArow0 hAacc hbsorted hbinitExact
       hbstepExact hbstepErr hbrow0 hbacc)
-
 /-- A `Delta b` entry satisfying the printed row-ratio budget also satisfies the
     direct Chapter 19 accumulated-error uniform budget when completed rows are
     supplied by completion-time bounds and preservation. -/
@@ -9056,7 +9009,6 @@ theorem theorem20_7_deltaBEntry_bound_of_h19_row_sorting_active_completion_prese
       hdenA hdenW hAcomplete hApreserve hbcomplete hbpreserve hAsorted
       hAinitExact hAstepExact hAstepErr hArow0 hAacc hbsorted hbinitExact
       hbstepExact hbstepErr hbrow0 hbacc)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     matrix/vector-level packaging of the completion-preservation Chapter 19
     accumulated-error handoff.  If every printed `Delta A` and `Delta b` entry
@@ -9192,7 +9144,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completion_
         herr hdenA hdenW hAcomplete hApreserve hbcomplete hbpreserve
         hAsorted hAinitExact hAstepExact hAstepErr hArow0 hAacc hbsorted
         hbinitExact hbstepExact hbstepErr hbrow0 hbacc (hDeltab i)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     signed stored-QR specialization of the all-entry accumulated-error
     perturbation wrapper.
@@ -9384,7 +9335,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       hAsorted hAinitExact hAstepExact hAstepErr hArow0 hAacc
       hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: signed stored-QR all-entry accumulated-error
     perturbation wrapper with row-sorted completion bounds.
 
@@ -9588,7 +9538,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       hAsorted hAinitExact hAstepExact hAstepErr hArow0 hAacc
       hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: signed stored-QR all-entry accumulated-error
     perturbation wrapper with row-sorted active-tail matrix-stage bounds.
 
@@ -9788,7 +9737,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
       hAsorted hAinitExact hAstepExact hAstepErr hArow0 hAacc
       hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: source-sorted signed stored-QR all-entry
     accumulated-error perturbation wrapper.
 
@@ -9980,7 +9928,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       hbbudgetCompletion hAsorted hAinitExact hAstepExact hAstepErr hArow0
       hAacc hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: source-sorted signed stored-QR all-entry
     accumulated-error perturbation wrapper with active-tail matrix-stage bounds.
 
@@ -10173,7 +10120,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
       hbbudgetCompletion hAsorted hAinitExact hAstepExact hAstepErr hArow0
       hAacc hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc
       hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-shaped row-sorted signed stored-QR all-entry accumulated-error
     perturbation wrapper with denominator positivity discharged from positive
@@ -10366,7 +10312,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       hAbudgetCompletion hbactive hbsourceSorted hbbudgetCompletion hAsorted
       hAinitExact hAstepExact hAstepErr hArow0 hAacc hbsorted hbinitExact
       hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
-
 /-- Theorem 20.7 support: source-sorted row-sorted signed stored-QR all-entry
     perturbation wrapper with positive `phi` and nonzero source rows.
 
@@ -10555,7 +10500,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       hbbudgetCompletion hAsorted hAinitExact hAstepExact hAstepErr hArow0
       hAacc hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: source-sorted row-sorted signed stored-QR all-entry
     perturbation wrapper with active-tail matrix-stage bounds, positive `phi`,
     and nonzero source rows.
@@ -10743,7 +10687,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
       hAbudgetCompletion hbactive hbAbsSorted hbbudgetCompletion hAsorted
       hAinitExact hAstepExact hAstepErr hArow0 hAacc hbsorted hbinitExact
       hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-initial row-sorted signed stored-QR all-entry perturbation wrapper
     with active-tail matrix-stage bounds.
@@ -10933,7 +10876,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
         rw [hbexact0 r]
         exact theorem20_7_initialWeightedRowMax_abs_b_le hn A b phi r)
       hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     active-tail source-initial row-sorted signed stored-QR accumulated-error
     perturbation wrapper with active-stage bounds discharged from the Chapter 19
@@ -11112,7 +11054,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
         hbsortedWeighted hbstepExact hbstepErr hbrow0 hbacc)
       hbbudgetCompletion hAsorted hbAbsSorted hAstepExact hAstepErr hArow0
       hAacc hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     zero-start specialization of the active-tail source-initial active-bound
     discharge wrapper.
@@ -11286,7 +11227,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
           rw [hbhat0 r, hbexact0 r, sub_self, abs_zero]
         simpa [hzero] using hbaccBudget k r hkr)
       hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     active-tail, source-initial all-entry perturbation wrapper with compact
     completion budgets discharged by row-sorted active bounds and concrete
@@ -11461,7 +11401,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
         hslack)
       hAsorted hbAbsSorted hAstepExact hAstepErr hArow0 hAacc
       hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
-
 /-- The concrete compact slack definition discharges the coefficient side of
     the signed-stage compact-budget scalar comparison. -/
 theorem theorem20_7_compactStepSlack_coeff_bound_nat
@@ -11474,7 +11413,6 @@ theorem theorem20_7_compactStepSlack_coeff_bound_nat
         theorem20_7_compactStepSlack fp m err i.val := by
   intro i _hi
   simp [theorem20_7_compactStepSlack]
-
 /-- The active-row growth factor is below the combined active-plus-compact
     factor under the compact Householder roundoff guard. -/
 theorem theorem20_7_active_row_growth_factor_le_compactActiveStepFactor
@@ -11488,7 +11426,6 @@ theorem theorem20_7_active_row_growth_factor_le_compactActiveStepFactor
     nlinarith
   dsimp [theorem20_7_compactActiveStepFactor]
   exact le_add_of_nonneg_right (mul_nonneg hcoeff (Real.sqrt_nonneg _))
-
 /-- The printed rowwise step factor is below the combined active-plus-compact
     factor.  This is the direction needed for an honest larger horizon. -/
 theorem theorem20_7_rowwise_step_growth_factor_le_compactActiveStepFactor
@@ -11505,7 +11442,6 @@ theorem theorem20_7_rowwise_step_growth_factor_le_compactActiveStepFactor
   exact le_trans hrow_active
     (theorem20_7_active_row_growth_factor_le_compactActiveStepFactor
       fp m hmfp)
-
 /-- The combined active-plus-compact factor is at least one. -/
 theorem theorem20_7_one_le_compactActiveStepFactor
     (fp : FPModel) (m : ℕ) (hmfp : gammaValid fp m) :
@@ -11513,7 +11449,6 @@ theorem theorem20_7_one_le_compactActiveStepFactor
   exact le_trans (H19.Theorem19_6.one_le_active_row_growth_factor m)
     (theorem20_7_active_row_growth_factor_le_compactActiveStepFactor
       fp m hmfp)
-
 /-- The printed rowwise coefficient is dominated by the larger compact-active
     horizon.  This is the scalar replacement for the disproved domination of
     the compact factor by `rowwise_step_growth_factor`. -/
@@ -11562,7 +11497,6 @@ theorem theorem20_7_rowwise_horizon_le_compactActiveHorizon
     _ = theorem20_7_compactActiveHorizon fp m err i := by
       simp [theorem20_7_compactActiveHorizon]
       ring
-
 /-- The larger compact-active slack discharges the compact-coefficient side
     for any caller using `theorem20_7_compactActiveHorizon` as the stage
     coefficient. -/
@@ -11580,7 +11514,6 @@ theorem theorem20_7_compactActiveHorizonStepSlack_coeff_bound_nat
           theorem20_7_compactActiveHorizon fp m err i.val) by
         simp [theorem20_7_compactActiveHorizonStepSlack]
         ring]
-
 /-- Theorem 20.7 support: row-sorted matrix completion-budget domination for
     the larger compact-active horizon.
 
@@ -11634,7 +11567,6 @@ theorem theorem20_7_completionA_budget_of_signed_stage_row_sorting_active_tail_t
       hAactive hAsorted hAlphaDef htrailingPos
       (theorem20_7_compactActiveHorizonStepSlack_coeff_bound_nat fp err)
       (theorem20_7_compactActiveHorizonStepSlack_recurrence_nat fp err)
-
 /-- Theorem 20.7 support: row-sorted RHS completion-budget domination for the
     larger compact-active horizon. -/
 theorem theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_compactActiveHorizon_nat
@@ -11686,7 +11618,6 @@ theorem theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_traili
       hbactive hbsorted hAlphaDef htrailingPos
       (theorem20_7_compactActiveHorizonStepSlack_coeff_bound_nat fp err)
       (theorem20_7_compactActiveHorizonStepSlack_recurrence_nat fp err)
-
 /-- Theorem 20.7 support: source-sorted RHS completion-budget domination for
     the larger compact-active horizon. -/
 theorem theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_compactActiveHorizon_of_initialRowMax_abs_b_sorted_nat
@@ -11740,7 +11671,6 @@ theorem theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_traili
       hbactive hAsourceSorted hbAbsSorted hAlphaDef htrailingPos
       (theorem20_7_compactActiveHorizonStepSlack_coeff_bound_nat fp err)
       (theorem20_7_compactActiveHorizonStepSlack_recurrence_nat fp err)
-
 /-- Theorem 20.7 support: the Chapter 19 row-sorting active-tail matrix-stage
     bound also satisfies the larger compact-active horizon. -/
 theorem theorem20_7_active_tail_stageA_bound_of_h19_row_sorting_source_initial_accumulated_error_compactActiveHorizon_nat
@@ -11800,7 +11730,6 @@ theorem theorem20_7_active_tail_stageA_bound_of_h19_row_sorting_source_initial_a
     hprinted.trans
       (mul_le_mul_of_nonneg_right hhorizon
         (theorem20_7_initialRowMax_nonneg hn A r))
-
 /-- Theorem 20.7 support: the Chapter 19 row-sorting active-tail right-hand-side
     bound also satisfies the larger compact-active horizon. -/
 theorem theorem20_7_active_tail_stageB_bound_of_h19_row_sorting_source_initial_accumulated_error_compactActiveHorizon_nat
@@ -11863,7 +11792,6 @@ theorem theorem20_7_active_tail_stageB_bound_of_h19_row_sorting_source_initial_a
     hprinted.trans
       (mul_le_mul_of_nonneg_right hhorizon
         (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi r))
-
 /-- Theorem 20.7 support: compact-active matrix active-tail stage bounds from
     source row-scale ratio hypotheses.
 
@@ -11921,7 +11849,6 @@ theorem theorem20_7_active_tail_stageA_bound_of_h19_row_sorting_source_initial_a
     theorem20_7_active_tail_stageA_bound_of_h19_row_sorting_source_initial_accumulated_error_compactActiveHorizon_nat
       hn hnm fp Ahat Aexact A AstepBudget err hmfp herr hAexact0
       hAsorted hAstepExact hAstepErr hArow0 hAacc
-
 /-- Theorem 20.7 support: compact-active RHS active-tail stage bounds from
     weighted source row-scale ratio hypotheses.
 
@@ -11983,7 +11910,6 @@ theorem theorem20_7_active_tail_stageB_bound_of_h19_row_sorting_source_initial_a
     theorem20_7_active_tail_stageB_bound_of_h19_row_sorting_source_initial_accumulated_error_compactActiveHorizon_nat
       hn hnm fp bhat bexact A b phi bstepBudget err (le_of_lt hphi)
       hmfp herr hbexact0 hbsorted hbstepExact hbstepErr hbrow0 hbacc
-
 /-- The compact-active horizon is monotone in the stage index. -/
 theorem theorem20_7_compactActiveHorizon_le_of_le
     (fp : FPModel) (m : ℕ) (err : ℝ) {i j : ℕ}
@@ -12001,7 +11927,6 @@ theorem theorem20_7_compactActiveHorizon_le_of_le
     pow_le_pow_right₀ hfactor hij
   dsimp [theorem20_7_compactActiveHorizon]
   exact mul_le_mul_of_nonneg_left hpow hbase
-
 /-- Any stage before `n` is bounded by the final compact-active horizon
     coefficient at `n - 1`. -/
 theorem theorem20_7_compactActiveHorizon_le_final_nat
@@ -12011,7 +11936,6 @@ theorem theorem20_7_compactActiveHorizon_le_final_nat
       theorem20_7_compactActiveHorizon fp m err (n - 1) :=
   theorem20_7_compactActiveHorizon_le_of_le fp m err hmfp herr
     (Nat.le_sub_one_of_lt hk)
-
 /-- Theorem 20.7 support: active/completed stage bounds with the larger
     compact-active horizon control the finite `max_i {alpha_i, beta_i}` ratio. -/
 theorem theorem20_7_alphaBetaMax_le_of_active_completed_entry_growth_compactActiveHorizon_nat
@@ -12079,7 +12003,6 @@ theorem theorem20_7_alphaBetaMax_le_of_active_completed_entry_growth_compactActi
           (theorem20_7_compactActiveHorizon_le_final_nat fp m err hmfp
             herr hk)
           (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
-
 /-- Theorem 20.7 support: all-entry perturbation budgets from active/completed
     stage bounds against the larger compact-active horizon. -/
 theorem theorem20_7_deltaEntries_bound_all_of_active_completed_entry_growth_compactActiveHorizon_rows_nonzero_nat
@@ -12161,7 +12084,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_active_completed_entry_growth_comp
       theorem20_7_deltaBEntry_bound_of_alphaBetaMax_le
         hm hn Astage A bstage b phi gammaTilde Deltab i (le_of_lt hphi)
         hgamma hmax (hDeltab i)
-
 /-- Theorem 20.7 support: certificate-level version of the compact-active
     active/completed all-entry budget bridge. -/
 theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_active_completed_entry_growth_compactActiveHorizon_rows_nonzero_nat
@@ -12215,7 +12137,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_active_completed_entry
       hm hn fp Astage A bstage b gammaTilde err hcert.DeltaA hcert.Deltab
       hphi hgamma hmfp herr hrows hAcompleted hbcompleted hAactive hbactive
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: signed-stage exact same-reflector matrix completion
     growth from row-sorted active-tail bounds against the compact-active
     horizon. -/
@@ -12301,7 +12222,6 @@ theorem theorem20_7_signed_stage_exact_completionA_bound_of_row_sorting_active_t
           mul_le_mul_of_nonneg_left hscale
             (theorem20_7_compactActiveHorizon_nonneg fp m err i.val hmfp
               herr)
-
 /-- Theorem 20.7 support: signed-stage exact same-reflector RHS completion
     growth from row-sorted active RHS bounds against the compact-active
     horizon. -/
@@ -12378,7 +12298,6 @@ theorem theorem20_7_signed_stage_exact_completionB_bound_of_row_sorting_active_s
         mul_le_mul_of_nonneg_left hscale
           (theorem20_7_compactActiveHorizon_nonneg fp m err i.val hmfp
             herr)
-
 /-- Theorem 20.7 support: signed stored-QR matrix completion-time rows from
     row-sorted compact-active active-tail bounds.
 
@@ -12483,7 +12402,6 @@ theorem theorem20_7_completionA_bound_of_h19_signed_stage_row_sorting_active_tai
         (theorem20_7_completionA_budget_of_signed_stage_row_sorting_active_tail_trailingNorm_compactActiveHorizon_nat
           hn hnm fp Astage A alpha err hmfp herr hAactive hAsorted
           hAlphaDef htrailingPos i hi j hij)
-
 /-- Theorem 20.7 support: signed stored-QR RHS completion-time rows from
     row-sorted compact-active active RHS bounds.
 
@@ -12638,7 +12556,6 @@ theorem theorem20_7_completionB_bound_of_h19_signed_stage_row_sorting_active_sta
         theorem20_7_completionB_budget_of_signed_stage_row_sorting_active_trailingNorm_compactActiveHorizon_nat
           hn hnm fp Astage bstage A b alpha err hphi hmfp herr
           hbactive hbsorted hAlphaDef htrailingPos i hi
-
 /-- Theorem 20.7 support: turn a compact-active completion-time matrix row
     bound plus preservation of already completed rows into the completed-row
     bound used by the active/completed all-entry bridge. -/
@@ -12671,7 +12588,6 @@ theorem theorem20_7_completedA_bound_of_completion_preservation_compactActiveHor
     (hcomplete i hi_succ_lt j).trans
       (mul_le_mul_of_nonneg_right hhorizon
         (theorem20_7_initialRowMax_nonneg hn A i))
-
 /-- Theorem 20.7 support: RHS analogue of
     `theorem20_7_completedA_bound_of_completion_preservation_compactActiveHorizon_nat`
     for the weighted row scale. -/
@@ -12705,7 +12621,6 @@ theorem theorem20_7_completedB_bound_of_completion_preservation_compactActiveHor
     (hcomplete i hi_succ_lt).trans
       (mul_le_mul_of_nonneg_right hhorizon
         (theorem20_7_initialWeightedRowMax_nonneg hn A b hphi i))
-
 /-- Theorem 20.7 support: signed stored-QR matrix completed rows from
     compact-active completion-time bounds and subtract-zero preservation. -/
 theorem theorem20_7_completedA_bound_of_h19_signed_stage_row_sorting_active_tail_stage_compactActiveHorizon_nat
@@ -12762,7 +12677,6 @@ theorem theorem20_7_completedA_bound_of_h19_signed_stage_row_sorting_active_tail
         hpivotMax hAactive hAsorted)
       (theorem20_7_completedA_preservation_of_signed_stage_subtractZeroExact_nat
         hnm fp Astage alpha hcopy hStep)
-
 /-- Theorem 20.7 support: signed stored-QR RHS completed rows from
     compact-active completion-time bounds and stored RHS prefix preservation. -/
 theorem theorem20_7_completedB_bound_of_h19_signed_stage_row_sorting_active_stage_compactActiveHorizon_nat
@@ -12815,7 +12729,6 @@ theorem theorem20_7_completedB_bound_of_h19_signed_stage_row_sorting_active_stag
         (fun k => storedQRSignedStageVector hnm Astage alpha k)
         (fun k => storedQRSignedStageBeta hnm Astage alpha k)
         bstage hStep)
-
 /-- Theorem 20.7 support: stored lower-prefix zeros extend compact-active
     active-tail matrix bounds to all active-row columns. -/
 theorem theorem20_7_active_stageA_bound_all_of_stored_panel_lower_zero_and_active_tail_compactActiveHorizon_nat
@@ -12854,7 +12767,6 @@ theorem theorem20_7_active_stageA_bound_all_of_stored_panel_lower_zero_and_activ
         (theorem20_7_initialRowMax_nonneg hn A r)
     rw [hzero]
     simpa using hbound_nonneg
-
 /-- Theorem 20.7 support: source-initial Chapter 19 active-tail matrix-stage
     bounds supply all active-row columns for the compact-active horizon. -/
 theorem theorem20_7_active_stageA_bound_all_of_h19_row_sorting_source_initial_accumulated_error_compactActiveHorizon_nat
@@ -12909,7 +12821,6 @@ theorem theorem20_7_active_stageA_bound_all_of_h19_row_sorting_source_initial_ac
       (theorem20_7_active_tail_stageA_bound_of_h19_row_sorting_source_initial_accumulated_error_compactActiveHorizon_nat
         hn hnm fp Ahat Aexact A AstepBudget err hmfp herr hAexact0
         hAsorted hAstepExact hAstepErr hArow0 hAacc)
-
 /-- Theorem 20.7 support: source-initial signed stored-QR all-entry
     perturbation budgets against the compact-active horizon.
 
@@ -13062,7 +12973,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
         hn hnm fp Ahat bhat A b alpha phi err (le_of_lt hphi) hmfp herr
         hStepB hAlphaDef htrailingPos hbactive hbsortedWeighted)
       hAactiveAll hbactive hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level source-initial signed stored-QR
     compact-active perturbation budgets. -/
 theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_of_initialRowMax_abs_b_sorted_nat
@@ -13187,7 +13097,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hcopy hpivotMax hAsorted hbAbsSorted hAstepExact hAstepErr hArow0
       hAacc hbstepExact hbstepErr hbrow0 hbacc hcert.deltaA_bound
       hcert.deltab_bound
-
 /-- Theorem 20.7 support: zero-start specialization of the compact-active
     source-initial signed stored-QR all-entry perturbation wrapper.
 
@@ -13329,7 +13238,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
           rw [hbhat0 r, hbexact0 r, sub_self, abs_zero]
         simpa [hzero] using hbaccBudget k r hkr)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: zero-start, zero-step-budget specialization of the
     compact-active source-initial signed stored-QR all-entry perturbation
     wrapper. -/
@@ -13460,7 +13368,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
         exact mul_nonneg herr
           (theorem20_7_initialWeightedRowMax_nonneg hn A b (le_of_lt hphi) r))
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level zero-start specialization of the
     compact-active source-initial signed stored-QR perturbation budgets. -/
 theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_of_initialRowMax_abs_b_sorted_nat
@@ -13583,7 +13490,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hAlphaDef htrailingPos hcopy hpivotMax hAsorted hbAbsSorted
       hAstepExact hAstepErr hArow0 hAaccBudget hbstepExact hbstepErr
       hbrow0 hbaccBudget hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: certificate-level zero-start, zero-step-budget
     specialization of the compact-active source-initial signed stored-QR
     perturbation budgets. -/
@@ -13695,7 +13601,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hcopy hpivotMax hAsorted hbAbsSorted hAstepExact hAstepErr
       hArow0 hbstepExact hbstepErr hbrow0 hcert.deltaA_bound
       hcert.deltab_bound
-
 /-- Theorem 20.7 support: active-max pivot-choice wrapper for the
     compact-active, source-initial, zero-start, zero-step-budget all-entry
     perturbation budgets.
@@ -13814,7 +13719,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
         hnm Ahat hpivotChoice)
       hAsorted hbAbsSorted hAstepExact hAstepErr hArow0 hbstepExact
       hbstepErr hbrow0 hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level active-max pivot-choice wrapper for
     the compact-active, source-initial, zero-start, zero-step-budget
     perturbation budgets. -/
@@ -13923,7 +13827,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact hAstepErr
       hArow0 hbstepExact hbstepErr hbrow0 hcert.deltaA_bound
       hcert.deltab_bound
-
 /-- Theorem 20.7 support: active-max pivot-choice wrapper with source-row
     ratio hypotheses for the `sqrt(m)` row-scale domination fields.
 
@@ -14054,7 +13957,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
       hbhat0 hbexact0 hStepA hStepB hAlphaDef htrailingPos hcopy
       hpivotChoice hAsorted hbAbsSorted hAstepExact hAstepErr hArow0
       hbstepExact hbstepErr hbrow0 hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level active-max pivot-choice wrapper
     with source-row ratio hypotheses for the `sqrt(m)` domination fields. -/
 theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_row_scale_ratios_nat
@@ -14163,7 +14065,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact hAstepErr
       hArowRatio hbstepExact hbstepErr hbrowRatio hcert.deltaA_bound
       hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR specialization of
     the active-max pivot, compact-active, source-initial zero-start wrapper.
 
@@ -14342,7 +14243,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hbhat0 hbexact0 hStepA hStepB hAlphaDef htrailingPos' hcopy
       hpivotChoice' hAsorted hbAbsSorted hAstepExact hAstepErr'
       hArowRatio hbstepExact hbstepErr' hbrowRatio hDeltaA' hDeltab'
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     specialization of the compact-active active-max pivot wrapper. -/
 theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_row_scale_ratios_nat
@@ -14431,7 +14331,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       htrailingPos hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
       hAstepErr hArowRatio hbstepExact hbstepErr hbrowRatio
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR specialization whose
     active-suffix row-ratio hypotheses are supplied by finite active-ratio
     maxima. -/
@@ -14528,7 +14427,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       (theorem20_7_initialWeightedRowMax_ratio_le_of_activeRatioMax_le_nat
         hm hn hnm A b phi hbrowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     wrapper whose active-suffix row-ratio hypotheses are supplied by finite
     active-ratio maxima. -/
@@ -14613,7 +14511,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       htrailingPos hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
       hAstepErr hArowRatioMax hbstepExact hbstepErr hbrowRatioMax
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR specialization whose
     weighted active-ratio maximum is derived from the unweighted maximum and a
     source RHS domination condition. -/
@@ -14707,7 +14604,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     wrapper whose weighted active-ratio maximum is derived from the unweighted
     maximum and a source RHS domination condition. -/
@@ -14791,7 +14687,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       htrailingPos hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
       hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR specialization whose
     source-row monotonicity compatibility supplies the active-suffix RHS
     ordering used by the sorted-row wrapper. -/
@@ -14886,7 +14781,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hAstepExact hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     wrapper whose source-row monotonicity compatibility supplies the
     active-suffix RHS ordering used by the sorted-row wrapper. -/
@@ -14971,7 +14865,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       htrailingPos hcopy hpivotChoice hAsorted hcompat hAstepExact
       hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR wrapper where local
     leading-block nonsingularity and the previous lower-prefix zero pattern
     supply the positive trailing-norm hypotheses. -/
@@ -15091,7 +14984,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hphi hgamma herr hmfp hrows hAexact0 hbexact0 htrailingPos hcopy
       hpivotChoice hAsorted hbAbsSorted hAstepExact hAstepErr hArowRatio
       hbstepExact hbstepErr hbrowRatio hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     determinant/lower-prefix nonbreakdown wrapper. -/
 theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_leading_block_det_ne_zero_row_scale_ratios_nat
@@ -15192,7 +15084,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hdetPrev hdetLead hlowerPrev hcopy hpivotChoice hAsorted
       hbAbsSorted hAstepExact hAstepErr hArowRatio hbstepExact
       hbstepErr hbrowRatio hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR
     determinant/lower-prefix nonbreakdown wrapper whose active-suffix row-ratio
     hypotheses are supplied by finite active-ratio maxima. -/
@@ -15307,7 +15198,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hphi hgamma herr hmfp hrows hAexact0 hbexact0 htrailingPos hcopy
       hpivotChoice hAsorted hbAbsSorted hAstepExact hAstepErr
       hArowRatioMax hbstepExact hbstepErr hbrowRatioMax hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     determinant/lower-prefix nonbreakdown wrapper whose active-suffix row-ratio
     hypotheses are supplied by finite active-ratio maxima. -/
@@ -15404,7 +15294,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hdetPrev hdetLead hlowerPrev hcopy hpivotChoice hAsorted
       hbAbsSorted hAstepExact hAstepErr hArowRatioMax hbstepExact
       hbstepErr hbrowRatioMax hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR
     determinant/lower-prefix wrapper whose weighted active-ratio maximum is
     derived from the unweighted maximum and source RHS domination. -/
@@ -15510,7 +15399,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     determinant/lower-prefix wrapper whose weighted active-ratio maximum is
     derived from the unweighted maximum and source RHS domination. -/
@@ -15606,7 +15494,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hdetPrev hdetLead hlowerPrev hcopy hpivotChoice hAsorted
       hbAbsSorted hAstepExact hAstepErr hArowRatioMax hbdom
       hbstepExact hbstepErr hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR
     determinant/lower-prefix wrapper whose source-row monotonicity
     compatibility supplies the active-suffix RHS ordering. -/
@@ -15713,7 +15600,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hAstepExact hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     determinant/lower-prefix wrapper whose source-row monotonicity
     compatibility supplies the active-suffix RHS ordering. -/
@@ -15810,7 +15696,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hdetPrev hdetLead hlowerPrev hcopy hpivotChoice hAsorted
       hcompat hAstepExact hAstepErr hArowRatioMax hbdom hbstepExact
       hbstepErr hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR wrapper where
     upper-triangular leading-block shape and nonzero local diagonals supply
     the determinant/lower-prefix nonbreakdown hypotheses. -/
@@ -15947,7 +15832,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hlowerPrev hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
       hAstepErr hArowRatio hbstepExact hbstepErr hbrowRatio hDeltaA
       hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     upper-triangular/diagonal-nonzero nonbreakdown wrapper. -/
 theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_upper_triangular_diag_ne_zero_row_scale_ratios_nat
@@ -16043,7 +15927,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hupper hdiagPrev hdiagLead hcopy hpivotChoice hAsorted
       hbAbsSorted hAstepExact hAstepErr hArowRatio hbstepExact
       hbstepErr hbrowRatio hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR
     upper-triangular/diagonal-nonzero wrapper whose active-suffix row-ratio
     hypotheses are supplied by finite active-ratio maxima. -/
@@ -16175,7 +16058,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hlowerPrev hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
       hAstepErr hArowRatioMax hbstepExact hbstepErr hbrowRatioMax
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     upper-triangular/diagonal-nonzero wrapper whose active-suffix row-ratio
     hypotheses are supplied by finite active-ratio maxima. -/
@@ -16267,7 +16149,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hupper hdiagPrev hdiagLead hcopy hpivotChoice hAsorted
       hbAbsSorted hAstepExact hAstepErr hArowRatioMax hbstepExact
       hbstepErr hbrowRatioMax hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR
     upper-triangular/diagonal-nonzero wrapper whose weighted active-ratio
     maximum is derived from the unweighted maximum and source RHS domination. -/
@@ -16368,7 +16249,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     upper-triangular/diagonal-nonzero wrapper whose weighted active-ratio
     maximum is derived from the unweighted maximum and source RHS domination. -/
@@ -16459,7 +16339,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hupper hdiagPrev hdiagLead hcopy hpivotChoice hAsorted
       hbAbsSorted hAstepExact hAstepErr hArowRatioMax hbdom
       hbstepExact hbstepErr hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR
     upper-triangular/diagonal-nonzero wrapper whose source-row monotonicity
     compatibility supplies the active-suffix RHS ordering. -/
@@ -16561,7 +16440,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hAstepExact hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     upper-triangular/diagonal-nonzero wrapper whose source-row monotonicity
     compatibility supplies the active-suffix RHS ordering. -/
@@ -16653,7 +16531,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hupper hdiagPrev hdiagLead hcopy hpivotChoice hAsorted hcompat
       hAstepExact hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR
     upper-triangular/diagonal-nonzero wrapper where the unweighted
     active-ratio maximum is derived from the explicit `sqrt(m)` active-suffix
@@ -16763,7 +16640,6 @@ theorem
       hphi hgamma herr hmfp hrows hAexact0 hbexact0 hupper hdiagPrev
       hdiagLead hcopy hpivotChoice hAsorted hcompat hAstepExact hAstepErr
       hArowRatioMax hbdom hbstepExact hbstepErr hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     upper-triangular/diagonal-nonzero wrapper where the unweighted
     active-ratio maximum is derived from the explicit `sqrt(m)` active-suffix
@@ -16858,7 +16734,6 @@ theorem
       hdiagPrev hdiagLead hcopy hpivotChoice hAsorted hsqrt hcompat
       hAstepExact hAstepErr hbdom hbstepExact hbstepErr hcert.deltaA_bound
       hcert.deltab_bound
-
 /-- Theorem 20.7 support: certificate-free exact-perturbation version of the
     upper-triangular/diagonal-nonzero `sqrt(m)` active-suffix row-policy
     wrapper.
@@ -16976,7 +16851,6 @@ theorem
       hmfp hrows hAexact0 hbexact0 hupper hdiagPrev hdiagLead hcopy
       hpivotChoice hAsorted hsqrt hcompat hAstepExact hAstepErr hbdom
       hbstepExact hbstepErr hcert
-
 /-- Theorem 20.7 support: the signed-alpha stored QR nonbreakdown route
     supplies the just-written diagonal entry after each completed step. -/
 theorem theorem20_7_storedHouseholderQRMatrixSeq_step_diag_nonzero_of_signed_alpha_trailingNorm_pos_sqrt_budget_nat
@@ -17063,7 +16937,6 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_step_diag_nonzero_of_signed_alp
   have hdiag := hprefixDiag (k + 1) (Nat.succ_le_of_lt hk)
     ⟨k, Nat.lt_succ_self k⟩
   simpa [Ahat] using hdiag
-
 /-- Theorem 20.7 support: a scalar upper bound on the compact component
     budget is enough for the signed-alpha step-diagonal route. -/
 theorem theorem20_7_storedHouseholderQRMatrixSeq_step_diag_nonzero_of_signed_alpha_trailingNorm_pos_component_budget_bound_nat
@@ -17101,7 +16974,6 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_step_diag_nonzero_of_signed_alp
       fp hnm A hmfp htrailingPos ?_
   intro k hk
   exact lt_of_le_of_lt (hbudgetBound k hk) (hbudgetLt k hk)
-
 /-- Theorem 20.7 support: a dimensioned square margin for a scalar diagonal
     budget implies the strict square-root budget used by the signed-alpha
     stored-QR route.
@@ -17157,7 +17029,6 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_diagBudget_lt_sqrt_of_component
       m p
       (fun i => storedHouseholderQRMatrixSeq fp hnm A k i ⟨k, hk⟩)
       (diagBudget k) hdiagBudget_nonneg (by simpa [p] using hmargin k hk)
-
 /-- Theorem 20.7 support: a scalar diagonal budget square margin discharges
     the exact strict compact-budget premise consumed by the direct
     square-root nonbreakdown wrappers. -/
@@ -17204,7 +17075,6 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_budgetSqrt_of_component_budget_
   exact lt_of_le_of_lt (hbudgetBound k hk)
     (theorem20_7_storedHouseholderQRMatrixSeq_diagBudget_lt_sqrt_of_component_budget_bound_sq_nat
       fp hnm A diagBudget hmfp hbudgetBound hmargin k hk)
-
 /-- Theorem 20.7 support: a scalar diagonal budget strictly below the trailing
     norm square root already implies positive trailing norm. -/
 theorem theorem20_7_storedHouseholderQRMatrixSeq_trailingNorm_pos_of_component_budget_bound_nat
@@ -17255,7 +17125,6 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_trailingNorm_pos_of_component_b
       m p
       (fun i => storedHouseholderQRMatrixSeq fp hnm A k i ⟨k, hk⟩)
       (diagBudget k) hdiagBudget_nonneg (hbudgetLt k hk)
-
 /-- Theorem 20.7 support: signed-alpha step diagonal route with trailing-norm
     positivity derived from the scalar component-budget comparison. -/
 theorem theorem20_7_storedHouseholderQRMatrixSeq_step_diag_nonzero_of_signed_alpha_component_budget_bound_nat
@@ -17290,7 +17159,6 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_step_diag_nonzero_of_signed_alp
   exact
     theorem20_7_storedHouseholderQRMatrixSeq_step_diag_nonzero_of_signed_alpha_trailingNorm_pos_component_budget_bound_nat
       fp hnm A diagBudget hmfp htrailingPos hbudgetBound hbudgetLt
-
 /-- Theorem 20.7 support: a scalar diagonal-budget square margin already
     implies positive trailing norm for the signed-alpha stored-QR route. -/
 theorem theorem20_7_storedHouseholderQRMatrixSeq_trailingNorm_pos_of_component_budget_bound_sq_nat
@@ -17325,7 +17193,6 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_trailingNorm_pos_of_component_b
   exact
     theorem20_7_storedHouseholderQRMatrixSeq_trailingNorm_pos_of_component_budget_bound_nat
       fp hnm A diagBudget hmfp hbudgetBound hbudgetLt
-
 /-- Theorem 20.7 support: signed-alpha step diagonal nonzero from a scalar
     diagonal-budget square margin. -/
 theorem theorem20_7_storedHouseholderQRMatrixSeq_step_diag_nonzero_of_signed_alpha_component_budget_bound_sq_nat
@@ -17359,7 +17226,6 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_step_diag_nonzero_of_signed_alp
   exact
     theorem20_7_storedHouseholderQRMatrixSeq_step_diag_nonzero_of_signed_alpha_component_budget_bound_nat
       fp hnm A diagBudget hmfp hbudgetBound hbudgetLt
-
 /-- Theorem 20.7 support: a direct strict square-root compact-budget comparison
     already implies positive trailing norm for the concrete stored-QR diagonal
     route. -/
@@ -17413,7 +17279,6 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_trailingNorm_pos_of_sqrt_budget
       m p
       (fun i => storedHouseholderQRMatrixSeq fp hnm A k i ⟨k, hk⟩)
       budget hbudget_nonneg hbudget_lt
-
 /-- Theorem 20.7 support: signed-alpha step diagonal route with trailing-norm
     positivity derived from the direct strict square-root compact-budget
     comparison. -/
@@ -17447,7 +17312,6 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_step_diag_nonzero_of_signed_alp
   exact
     theorem20_7_storedHouseholderQRMatrixSeq_step_diag_nonzero_of_signed_alpha_trailingNorm_pos_sqrt_budget_nat
       fp hnm A hmfp htrailingPos hbudgetSqrt
-
 /-- Theorem 20.7 support: concrete stored-Householder QR wrapper where the
     stored prefix lower-zero theorem and nonzero local diagonals supply the
     determinant/lower-prefix nonbreakdown hypotheses. -/
@@ -17607,7 +17471,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hlowerPrev hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
       hAstepErr hArowRatio hbstepExact hbstepErr hbrowRatio hDeltaA
       hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     prefix-lower-zero plus diagonal-nonzero nonbreakdown wrapper. -/
 theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_prefix_lower_diag_ne_zero_row_scale_ratios_nat
@@ -17701,7 +17564,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hdiagPrev hdiagLead hcopy hpivotChoice hAsorted hbAbsSorted
       hAstepExact hAstepErr hArowRatio hbstepExact hbstepErr hbrowRatio
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR wrapper where the
     stored prefix lower-zero theorem and nonzero local diagonals supply
     nonbreakdown, with active-suffix row ratios supplied by finite active-ratio
@@ -17857,7 +17719,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hlowerPrev hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
       hAstepErr hArowRatioMax hbstepExact hbstepErr hbrowRatioMax
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     prefix-lower-zero plus diagonal-nonzero wrapper whose active-suffix
     row-ratio hypotheses are supplied by finite active-ratio maxima. -/
@@ -17947,7 +17808,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hdiagPrev hdiagLead hcopy hpivotChoice hAsorted hbAbsSorted
       hAstepExact hAstepErr hArowRatioMax hbstepExact hbstepErr
       hbrowRatioMax hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR
     prefix-lower-zero plus diagonal-nonzero wrapper whose weighted active-ratio
     maximum is derived from the unweighted maximum and source RHS domination. -/
@@ -18046,7 +17906,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     prefix-lower-zero plus diagonal-nonzero wrapper whose weighted active-ratio
     maximum is derived from the unweighted maximum and source RHS domination. -/
@@ -18135,7 +17994,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hdiagPrev hdiagLead hcopy hpivotChoice hAsorted hbAbsSorted
       hAstepExact hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR wrapper where the
     stored prefix lower-zero theorem and leading-block diagonal nonzero facts
     supply the determinant/lower-prefix nonbreakdown hypotheses. -/
@@ -18237,7 +18095,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hdiagLead hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
       hAstepErr hArowRatio hbstepExact hbstepErr hbrowRatio hDeltaA
       hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     prefix-lower-zero plus leading-diagonal nonbreakdown wrapper. -/
 theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_prefix_lower_leading_diag_ne_zero_row_scale_ratios_nat
@@ -18327,7 +18184,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hdiagLead hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
       hAstepErr hArowRatio hbstepExact hbstepErr hbrowRatio
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR wrapper where
     leading-block diagonal nonzero facts supply nonbreakdown and finite
     active-ratio maxima supply the active-suffix row-ratio hypotheses. -/
@@ -18424,7 +18280,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hdiagLead hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
       hAstepErr hArowRatioMax hbstepExact hbstepErr hbrowRatioMax
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     leading-diagonal wrapper whose active-suffix row-ratio hypotheses are
     supplied by finite active-ratio maxima. -/
@@ -18510,7 +18365,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hdiagLead hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
       hAstepErr hArowRatioMax hbstepExact hbstepErr hbrowRatioMax
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR
     prefix-lower-zero plus leading-diagonal wrapper whose weighted active-ratio
     maximum is derived from the unweighted maximum and source RHS domination. -/
@@ -18605,7 +18459,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     prefix-lower-zero plus leading-diagonal wrapper whose weighted active-ratio
     maximum is derived from the unweighted maximum and source RHS domination. -/
@@ -18690,7 +18543,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hdiagLead hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
       hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR
     prefix-lower-zero plus leading-diagonal wrapper whose source-row
     monotonicity compatibility supplies the active-suffix RHS ordering. -/
@@ -18786,7 +18638,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hAstepExact hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     prefix-lower-zero plus leading-diagonal wrapper whose source-row
     monotonicity compatibility supplies the active-suffix RHS ordering. -/
@@ -18872,7 +18723,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hdiagLead hcopy hpivotChoice hAsorted hcompat hAstepExact
       hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR wrapper where the
     signed-alpha nonbreakdown route supplies the completed-step diagonals and
     current-pivot diagonal facts supply the newest leading diagonal entry. -/
@@ -18995,7 +18845,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hphi hgamma herr hmfp hrows hAexact0 hbexact0 hdiagLead hcopy
       hpivotChoice hAsorted hbAbsSorted hAstepExact hAstepErr
       hArowRatio hbstepExact hbstepErr hbrowRatio hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     wrapper using signed-alpha step diagonals plus current-pivot diagonals. -/
 theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_prefix_lower_signed_alpha_step_current_diag_ne_zero_row_scale_ratios_nat
@@ -19110,7 +18959,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hdiagLead hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
       hAstepErr hArowRatio hbstepExact hbstepErr hbrowRatio
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR signed-alpha
     current-diagonal wrapper whose active-suffix row-ratio hypotheses are
     supplied by finite active-ratio maxima. -/
@@ -19228,7 +19076,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       (theorem20_7_initialWeightedRowMax_ratio_le_of_activeRatioMax_le_nat
         hm hn hnm A b phi hbrowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level signed-alpha current-diagonal
     wrapper whose active-suffix row-ratio hypotheses are supplied by finite
     active-ratio maxima. -/
@@ -19337,7 +19184,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       (theorem20_7_initialWeightedRowMax_ratio_le_of_activeRatioMax_le_nat
         hm hn hnm A b phi hbrowRatioMax)
       hcert
-
 /-- Theorem 20.7 support: concrete stored-Householder QR signed-alpha
     current-diagonal wrapper whose weighted active-ratio maximum is derived
     from the unweighted maximum and source RHS domination. -/
@@ -19451,7 +19297,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level signed-alpha current-diagonal
     wrapper whose weighted active-ratio maximum is derived from the unweighted
     maximum and source RHS domination. -/
@@ -19555,7 +19400,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       htrailingPos hbudgetSqrt hcurrentDiag hcopy hpivotChoice hAsorted
       hbAbsSorted hAstepExact hAstepErr hArowRatioMax hbdom
       hbstepExact hbstepErr hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR signed-alpha
     current-diagonal wrapper whose source-row monotonicity compatibility
     supplies the active-suffix RHS ordering. -/
@@ -19670,7 +19514,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hAstepExact hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level signed-alpha current-diagonal
     wrapper whose source-row monotonicity compatibility supplies the
     active-suffix RHS ordering. -/
@@ -19775,7 +19618,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       htrailingPos hbudgetSqrt hcurrentDiag hcopy hpivotChoice hAsorted
       hcompat hAstepExact hAstepErr hArowRatioMax hbdom hbstepExact
       hbstepErr hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: direct signed-alpha square-root budget route with
     current pivots derived from leading-block nonsingularity. -/
 theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_prefix_lower_signed_alpha_sqrt_budget_leading_block_det_ne_zero_row_scale_ratios_nat
@@ -19896,7 +19738,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hbudgetSqrt hcurrentDiag hcopy hpivotChoice hAsorted hbAbsSorted
       hAstepExact hAstepErr hArowRatio hbstepExact hbstepErr hbrowRatio
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level direct signed-alpha square-root
     budget route with current pivots derived from leading-block nonsingularity. -/
 theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_prefix_lower_signed_alpha_sqrt_budget_leading_block_det_ne_zero_row_scale_ratios_nat
@@ -20007,7 +19848,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       herr hmfp hrows hAexact0 hbexact0 htrailingPos hbudgetSqrt
       hcurrentDiag hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
       hAstepErr hArowRatio hbstepExact hbstepErr hbrowRatio hcert
-
 /-- Theorem 20.7 support: direct signed-alpha square-root budget route whose
     active-suffix row-ratio hypotheses are supplied by finite active-ratio
     maxima. -/
@@ -20123,7 +19963,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       (theorem20_7_initialWeightedRowMax_ratio_le_of_activeRatioMax_le_nat
         hm hn hnm A b phi hbrowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level direct square-root budget route
     whose active-suffix row-ratio hypotheses are supplied by finite
     active-ratio maxima. -/
@@ -20229,7 +20068,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       (theorem20_7_initialWeightedRowMax_ratio_le_of_activeRatioMax_le_nat
         hm hn hnm A b phi hbrowRatioMax)
       hcert
-
 /-- Theorem 20.7 support: direct signed-alpha square-root budget route whose
     weighted active-ratio maximum is derived from the unweighted maximum and
     source RHS domination. -/
@@ -20341,7 +20179,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level direct square-root budget route
     whose weighted active-ratio maximum is derived from the unweighted maximum
     and source RHS domination. -/
@@ -20444,7 +20281,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hcert
-
 /-- Theorem 20.7 support: direct signed-alpha square-root budget route whose
     source-row monotonicity compatibility supplies the active-suffix RHS
     ordering. -/
@@ -20557,7 +20393,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hAstepExact hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level direct square-root budget route
     whose source-row monotonicity compatibility supplies the active-suffix RHS
     ordering. -/
@@ -20660,7 +20495,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hbudgetSqrt hdetLead hcopy hpivotChoice hAsorted hcompat
       hAstepExact hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR wrapper where a
     scalar bound on the signed-alpha compact budget supplies the completed-step
     diagonal nonzero facts. -/
@@ -20799,7 +20633,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hbudgetSqrt hcurrentDiag hcopy hpivotChoice hAsorted hbAbsSorted
       hAstepExact hAstepErr hArowRatio hbstepExact hbstepErr hbrowRatio
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level concrete stored-Householder QR
     wrapper using a scalar bound for the signed-alpha diagonal budget. -/
 theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_prefix_lower_signed_alpha_step_current_diag_budget_bound_ne_zero_row_scale_ratios_nat
@@ -20928,7 +20761,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       herr hmfp hrows hAexact0 hbexact0 htrailingPos hbudgetSqrt
       hcurrentDiag hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
       hAstepErr hArowRatio hbstepExact hbstepErr hbrowRatio hcert
-
 /-- Theorem 20.7 support: scalar signed-alpha current-diagonal budget route
     whose active-suffix row-ratio hypotheses are supplied by finite
     active-ratio maxima. -/
@@ -21062,7 +20894,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hbudgetSqrt hcurrentDiag hcopy hpivotChoice hAsorted hbAbsSorted
       hAstepExact hAstepErr hArowRatioMax hbstepExact hbstepErr
       hbrowRatioMax hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level scalar signed-alpha
     current-diagonal budget route whose active-suffix row-ratio hypotheses are
     supplied by finite active-ratio maxima. -/
@@ -21187,7 +21018,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       herr hmfp hrows hAexact0 hbexact0 htrailingPos hbudgetSqrt
       hcurrentDiag hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
       hAstepErr hArowRatioMax hbstepExact hbstepErr hbrowRatioMax hcert
-
 /-- Theorem 20.7 support: scalar signed-alpha current-diagonal budget route
     whose weighted active-ratio maximum is derived from the unweighted maximum
     and source RHS domination. -/
@@ -21304,7 +21134,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level scalar signed-alpha
     current-diagonal budget route whose weighted active-ratio maximum is
     derived from the unweighted maximum and source RHS domination. -/
@@ -21412,7 +21241,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hcert
-
 /-- Theorem 20.7 support: scalar signed-alpha current-diagonal budget route
     whose source-row monotonicity compatibility supplies the active-suffix
     RHS ordering. -/
@@ -21530,7 +21358,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hAstepExact hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level scalar signed-alpha
     current-diagonal budget route whose source-row monotonicity compatibility
     supplies the active-suffix RHS ordering. -/
@@ -21638,7 +21465,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hbexact0 htrailingPos hbudgetBound hbudgetLt hcurrentDiag hcopy
       hpivotChoice hAsorted hcompat hAstepExact hAstepErr hArowRatioMax
       hbdom hbstepExact hbstepErr hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: concrete stored-Householder QR wrapper where the
     signed-alpha budget route obtains current pivots from leading-block
     nonsingularity. -/
@@ -21763,7 +21589,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hbudgetBound hbudgetLt hcurrentDiag hcopy hpivotChoice hAsorted
       hbAbsSorted hAstepExact hAstepErr hArowRatio hbstepExact hbstepErr
       hbrowRatio hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level signed-alpha budget route with
     current pivots derived from leading-block nonsingularity. -/
 theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_prefix_lower_signed_alpha_step_leading_block_det_budget_bound_ne_zero_row_scale_ratios_nat
@@ -21879,7 +21704,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hbudgetLt hcurrentDiag hcopy hpivotChoice hAsorted hbAbsSorted
       hAstepExact hAstepErr hArowRatio hbstepExact hbstepErr hbrowRatio
       hcert
-
 /-- Theorem 20.7 support: scalar signed-alpha budget route with current
     pivots derived from leading-block nonsingularity and active-suffix
     row-ratio hypotheses supplied by finite active-ratio maxima. -/
@@ -21999,7 +21823,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hbudgetBound hbudgetLt hcurrentDiag hcopy hpivotChoice hAsorted
       hbAbsSorted hAstepExact hAstepErr hArowRatioMax hbstepExact
       hbstepErr hbrowRatioMax hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level scalar signed-alpha budget route
     with current pivots derived from leading-block nonsingularity and
     active-suffix row-ratio hypotheses supplied by finite active-ratio maxima. -/
@@ -22111,7 +21934,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hbudgetLt hcurrentDiag hcopy hpivotChoice hAsorted hbAbsSorted
       hAstepExact hAstepErr hArowRatioMax hbstepExact hbstepErr
       hbrowRatioMax hcert
-
 /-- Theorem 20.7 support: scalar signed-alpha leading-block budget route
     whose weighted active-ratio maximum is derived from the unweighted maximum
     and source RHS domination. -/
@@ -22230,7 +22052,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level scalar signed-alpha leading-block
     budget route whose weighted active-ratio maximum is derived from the
     unweighted maximum and source RHS domination. -/
@@ -22340,7 +22161,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hcert
-
 /-- Theorem 20.7 support: scalar signed-alpha leading-block budget route
     whose source-row monotonicity compatibility supplies the active-suffix
     RHS ordering. -/
@@ -22460,7 +22280,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hbudgetBound hbudgetLt hcurrentDiag hcopy hpivotChoice hAsorted
       hcompat hAstepExact hAstepErr hArowRatioMax hbdom hbstepExact
       hbstepErr hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level scalar signed-alpha leading-block
     budget route whose source-row monotonicity compatibility supplies the
     active-suffix RHS ordering. -/
@@ -22572,7 +22391,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hbudgetLt hcurrentDiag hcopy hpivotChoice hAsorted hcompat
       hAstepExact hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr
       hcert
-
 /-- Theorem 20.7 support: concrete stored-Householder QR wrapper where the
     scalar compact-component budget supplies both trailing-norm positivity and
     the completed-step diagonal nonzero facts. -/
@@ -22693,7 +22511,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hbudgetBound hbudgetLt hdetLead hcopy hpivotChoice hAsorted
       hbAbsSorted hAstepExact hAstepErr hArowRatio hbstepExact hbstepErr
       hbrowRatio hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level signed-alpha budget route where
     trailing-norm positivity is derived from the scalar budget comparison. -/
 theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_prefix_lower_signed_alpha_budget_leading_block_det_ne_zero_row_scale_ratios_nat
@@ -22805,7 +22622,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hbudgetLt hdetLead hcopy hpivotChoice hAsorted hbAbsSorted
       hAstepExact hAstepErr hArowRatio hbstepExact hbstepErr hbrowRatio
       hcert
-
 /-- Theorem 20.7 support: concrete stored-Householder QR wrapper where the
     scalar compact-component budget supplies trailing-norm positivity and the
     row-ratio hypotheses are supplied by finite active-ratio maxima. -/
@@ -22921,7 +22737,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hbudgetBound hbudgetLt hdetLead hcopy hpivotChoice hAsorted
       hbAbsSorted hAstepExact hAstepErr hArowRatioMax hbstepExact
       hbstepErr hbrowRatioMax hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level signed-alpha budget route where
     trailing-norm positivity is derived from the scalar budget comparison and
     row-ratio hypotheses are supplied by finite active-ratio maxima. -/
@@ -23029,7 +22844,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hbudgetLt hdetLead hcopy hpivotChoice hAsorted hbAbsSorted
       hAstepExact hAstepErr hArowRatioMax hbstepExact hbstepErr
       hbrowRatioMax hcert
-
 /-- Theorem 20.7 support: direct compact-budget leading-block route whose
     weighted active-ratio maximum is derived from the unweighted maximum and
     source RHS domination. -/
@@ -23143,7 +22957,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level direct compact-budget
     leading-block route whose weighted active-ratio maximum is derived from
     the unweighted maximum and source RHS domination. -/
@@ -23249,7 +23062,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hcert
-
 /-- Theorem 20.7 support: direct compact-budget leading-block route whose
     source-row monotonicity compatibility supplies the active-suffix RHS
     ordering. -/
@@ -23365,7 +23177,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hbudgetBound hbudgetLt hdetLead hcopy hpivotChoice hAsorted hcompat
       hAstepExact hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level direct compact-budget
     leading-block route whose source-row monotonicity compatibility supplies
     the active-suffix RHS ordering. -/
@@ -23472,7 +23283,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hgamma herr hmfp hrows hAexact0 hbexact0 htrailingPos hbudgetBound
       hbudgetLt hdetLead hcopy hpivotChoice hAsorted hcompat hAstepExact
       hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr hcert
-
 /-- Theorem 20.7 support: concrete stored-Householder QR wrapper where a
     scalar diagonal-budget square margin supplies the signed-alpha budget
     route and current pivots come from leading-block nonsingularity. -/
@@ -23592,7 +23402,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       hbudgetLt hdetLead hcopy hpivotChoice hAsorted hbAbsSorted
       hAstepExact hAstepErr hArowRatio hbstepExact hbstepErr hbrowRatio
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level signed-alpha budget route from a
     scalar diagonal-budget square margin and leading-block nonsingularity. -/
 theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_householder_qr_active_tail_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_prefix_lower_signed_alpha_budget_sq_leading_block_det_ne_zero_row_scale_ratios_nat
@@ -23702,7 +23511,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hgamma herr hmfp hrows hAexact0 hbexact0 hbudgetBound hbudgetLt
       hdetLead hcopy hpivotChoice hAsorted hbAbsSorted hAstepExact
       hAstepErr hArowRatio hbstepExact hbstepErr hbrowRatio hcert
-
 /-- Theorem 20.7 support: concrete stored-Householder QR signed-alpha
     square-margin route whose active-suffix row-ratio hypotheses are supplied
     by finite active-ratio maxima. -/
@@ -23819,7 +23627,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       (theorem20_7_initialWeightedRowMax_ratio_le_of_activeRatioMax_le_nat
         hm hn hnm A b phi hbrowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level signed-alpha square-margin route
     whose active-suffix row-ratio hypotheses are supplied by finite
     active-ratio maxima. -/
@@ -23928,7 +23735,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       (theorem20_7_initialWeightedRowMax_ratio_le_of_activeRatioMax_le_nat
         hm hn hnm A b phi hbrowRatioMax)
       hcert
-
 /-- Theorem 20.7 support: concrete stored-Householder QR signed-alpha
     square-margin route whose weighted active-ratio maximum is derived from the
     unweighted maximum and source RHS domination. -/
@@ -24041,7 +23847,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level signed-alpha square-margin route
     whose weighted active-ratio maximum is derived from the unweighted maximum
     and source RHS domination. -/
@@ -24146,7 +23951,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hcert
-
 /-- Theorem 20.7 support: concrete stored-Householder QR signed-alpha
     square-margin route whose source-row monotonicity compatibility supplies
     the active-suffix RHS ordering. -/
@@ -24260,7 +24064,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_concrete_stored_householder_qr_act
       Deltab hphi hgamma herr hmfp hrows hAexact0 hbexact0 hbudgetBound
       hbudgetLt hdetLead hcopy hpivotChoice hAsorted hcompat hAstepExact
       hAstepErr hArowRatioMax hbdom hbstepExact hbstepErr hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level signed-alpha square-margin route
     whose source-row monotonicity compatibility supplies the active-suffix RHS
     ordering. -/
@@ -24366,7 +24169,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_concrete_stored_househ
       hgamma herr hmfp hrows hAexact0 hbexact0 hbudgetBound hbudgetLt
       hdetLead hcopy hpivotChoice hAsorted hcompat hAstepExact hAstepErr
       hArowRatioMax hbdom hbstepExact hbstepErr hcert
-
 /-- Theorem 20.7 row-sorting support: a concrete stored-Householder QR
     certificate proved after an explicit common row permutation of `A` and `b`
     transports back to the original row order with the same source-row budgets.
@@ -24581,7 +24383,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stor
       have h := hbounds.2.2 (σ.symm i)
       simpa [Aperm, bperm, theorem20_7_initialWeightedRowMax_permuteRows]
         using h
-
 /-- Theorem 20.7 row-sorting support: row-permuted concrete stored-Householder
     QR certificate wrapper whose active-suffix row-ratio hypotheses are supplied
     by finite active-ratio maxima for the displayed row order. -/
@@ -24714,7 +24515,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stor
       (theorem20_7_initialWeightedRowMax_ratio_of_permuteRows_activeRatioMax_le_nat
         hm hn hnm A b phi σ hσbrowRatioMax)
       hcert
-
 /-- Theorem 20.7 row-sorting support: row-permuted square-margin certificate
     wrapper whose weighted active-ratio maximum is derived from the unweighted
     maximum and source RHS domination. -/
@@ -24853,7 +24653,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stor
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm Aperm bperm hphi hrowsPerm hbdomPerm hσArowRatioMax)
       hcert
-
 /-- Theorem 20.7 row-sorting support: row-permuted concrete stored-Householder
     QR certificate wrapper for the direct scalar compact-budget route.
 
@@ -25034,7 +24833,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stor
       have h := hbounds.2.2 (σ.symm i)
       simpa [Aperm, bperm, theorem20_7_initialWeightedRowMax_permuteRows]
         using h
-
 /-- Theorem 20.7 row-sorting support: row-permuted direct compact-budget
     active-ratio wrapper whose weighted active-ratio maximum is derived from
     the unweighted maximum and source RHS domination. -/
@@ -25174,7 +24972,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stor
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm Aperm bperm hphi hrowsPerm hbdomPerm hσArowRatioMax)
       hcert
-
 /-- Theorem 20.7 row-sorting policy: direct compact-budget active-ratio
     permuted concrete stored-Householder QR wrapper where the `|b|` sorted
     premise is derived from row-max sorting plus explicit source monotonicity
@@ -25309,7 +25106,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stor
         hn hnm A b σ hcompat hσA)
       hAstepExact hAstepErr hσArowRatioMax hbstepExact hbstepErr
       hσbrowRatioMax hcert
-
 /-- Theorem 20.7 row-sorting policy: direct compact-budget active-ratio
     permuted concrete stored-Householder QR wrapper where the `|b|` sorted
     premise is derived from row-max sorting and the weighted active-ratio
@@ -25442,7 +25238,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stor
         hn hnm A b σ hcompat hσA)
       hAstepExact hAstepErr hσArowRatioMax hbdom hbstepExact hbstepErr
       hcert
-
 /-- Theorem 20.7 row-policy support: fixed-permutation direct compact-budget
     certificate route where the finite active-ratio maximum is derived from
     the explicit `sqrt(m)` active-suffix row-domination policy. -/
@@ -25576,7 +25371,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stor
       hphi hgamma herr hmfp hrows hAexact0 hbexact0 hbudgetBound
       hbudgetLt hdetLead hcopy hpivotChoice hσA hcompat hAstepExact
       hAstepErr hfields.2.2.2.1 hbdom hbstepExact hbstepErr hcert
-
 /-- Theorem 20.7 row-policy support: certificate-free exact-perturbation
     version of the fixed-permutation direct compact-budget route under the
     explicit `sqrt(m)` active-suffix row-domination policy. -/
@@ -25737,7 +25531,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
       hphi hgamma herr hmfp hrows hAexact0 hbexact0 hbudgetBound
       hbudgetLt hdetLead hcopy hpivotChoice hσA hσsqrt hcompat
       hAstepExact hAstepErr hbdom hbstepExact hbstepErr hcert
-
 /-- Theorem 20.7 row-policy support: existential common-sort wrapper for the
     fixed-permutation direct compact-budget route under the explicit
     `sqrt(m)` active-suffix row-domination policy.
@@ -25871,7 +25664,6 @@ theorem Theorem20_7RowwiseBackwardError.exists_common_sorted_permuteRows_uniform
       hphi hgamma herr hmfp hrows hAexact0 hbexact0 hbudgetBound
       hbudgetLt hdetLead hcopy hpivotChoice hσA hσsqrt hcompat
       hAstepExact hAstepErr hbdom hbstepExact hbstepErr hcert
-
 /-- Theorem 20.7 row-policy support: certificate-free exact-perturbation
     version of the existential common-sort direct compact-budget route under
     the explicit `sqrt(m)` active-suffix row-domination policy. -/
@@ -26018,7 +25810,6 @@ theorem Theorem20_7RowwiseBackwardError.exists_common_sorted_permuteRows_uniform
       hbudgetLt hdetLead hcopy hpivotChoice hσA hσsqrt hcompat
       hAstepExact hAstepErr hbdom hbstepExact hbstepErr DeltaAperm
       Deltabperm hExact hDeltaA hDeltab
-
 /-- Theorem 20.7 row-sorting policy: existential common-sort wrapper for the
     direct compact-budget active-ratio concrete stored-Householder QR route.
 
@@ -26150,7 +25941,6 @@ theorem Theorem20_7RowwiseBackwardError.exists_common_sorted_permuteRows_uniform
       hphi hgamma herr hmfp hrows hAexact0 hbexact0 hbudgetBound
       hbudgetLt hdetLead hcopy hpivotChoice hσA hcompat hAstepExact
       hAstepErr hσArowRatioMax hbdom hbstepExact hbstepErr hcert
-
 /-- Theorem 20.7 row-sorting policy: certificate-free exact-perturbation
     wrapper for the direct compact-budget active-ratio route.
 
@@ -26318,7 +26108,6 @@ theorem Theorem20_7RowwiseBackwardError.exists_common_sorted_permuteRows_uniform
       hAstepErr hσArowRatioMax hbdom hbstepExact hbstepErr hcert
   simpa [hcert, Theorem20_7RowwiseBackwardError.of_exact_perturbations]
     using h
-
 /-- Theorem 20.7 row-sorting policy: pointwise-row-ratio permuted concrete
     stored-Householder QR wrapper where the `|b|` sorted premise is derived
     from row-max sorting plus explicit source monotonicity of `|b|`. -/
@@ -26456,7 +26245,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stor
         hn hnm A b σ hcompat hσA)
       hAstepExact hAstepErr hσArowRatio hbstepExact hbstepErr
       hσbrowRatio hcert
-
 /-- Theorem 20.7 row-sorting policy: active-ratio permuted concrete
     stored-Householder QR wrapper where the `|b|` sorted premise is derived
     from row-max sorting plus explicit source monotonicity of `|b|`. -/
@@ -26589,7 +26377,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stor
         hn hnm A b σ hcompat hσA)
       hAstepExact hAstepErr hσArowRatioMax hbstepExact hbstepErr
       hσbrowRatioMax hcert
-
 /-- Theorem 20.7 row-sorting policy: square-margin active-ratio permuted
     concrete stored-Householder QR wrapper whose weighted active-ratio maximum
     is derived from the unweighted maximum and source RHS domination. -/
@@ -26730,7 +26517,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stor
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm Aperm bperm hphi hrowsPerm hbdomPerm hσArowRatioMax)
       hcert
-
 /-- Theorem 20.7 row-policy support: square-margin fixed-permutation route
     where the finite active-ratio maximum is derived from the explicit
     `sqrt(m)` active-suffix row-domination policy. -/
@@ -26863,7 +26649,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuted_concrete_stor
       hphi hgamma herr hmfp hrows hAexact0 hbexact0 hbudgetBound hmargin
       hdetLead hcopy hpivotChoice hσA hcompat hAstepExact hAstepErr
       hfields.2.2.2.1 hbdom hbstepExact hbstepErr hcert
-
 /-- Theorem 20.7 row-policy support: existential common-sort wrapper for the
     square-margin route under the explicit `sqrt(m)` active-suffix
     row-domination policy.
@@ -26995,7 +26780,6 @@ theorem Theorem20_7RowwiseBackwardError.exists_common_sorted_permuteRows_uniform
       hphi hgamma herr hmfp hrows hAexact0 hbexact0 hbudgetBound hmargin
       hdetLead hcopy hpivotChoice hσA hσsqrt hcompat hAstepExact
       hAstepErr hbdom hbstepExact hbstepErr hcert
-
 /-- Theorem 20.7 row-sorting policy: existential common-sort wrapper for the
     square-margin direct compact-budget active-ratio concrete
     stored-Householder QR route.
@@ -27127,7 +26911,6 @@ theorem Theorem20_7RowwiseBackwardError.exists_common_sorted_permuteRows_uniform
       hphi hgamma herr hmfp hrows hAexact0 hbexact0 hbudgetBound hmargin
       hdetLead hcopy hpivotChoice hσA hcompat hAstepExact hAstepErr
       hσArowRatioMax hbdom hbstepExact hbstepErr hcert
-
 /-- Theorem 20.7 row-sorting support: certificate-free form of the permuted
     concrete stored-Householder QR wrapper.
 
@@ -27301,7 +27084,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
       hσArowRatio hbstepExact hbstepErr hσbrowRatio hcert
   simpa [hcert, Theorem20_7RowwiseBackwardError.of_exact_perturbations]
     using h
-
 /-- Theorem 20.7 row-sorting support: certificate-free permuted concrete
     wrapper whose active-suffix row-ratio hypotheses are supplied by finite
     active-ratio maxima for the displayed row order. -/
@@ -27454,7 +27236,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
       (theorem20_7_initialWeightedRowMax_ratio_of_permuteRows_activeRatioMax_le_nat
         hm hn hnm A b phi σ hσbrowRatioMax)
       DeltaAperm Deltabperm hExact hDeltaA hDeltab
-
 /-- Theorem 20.7 row-sorting support: certificate-free permuted square-margin
     wrapper whose weighted active-ratio maximum is derived from the unweighted
     maximum and source RHS domination. -/
@@ -27613,7 +27394,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm Aperm bperm hphi hrowsPerm hbdomPerm hσArowRatioMax)
       DeltaAperm Deltabperm hExact hDeltaA hDeltab
-
 /-- Theorem 20.7 row-sorting policy: certificate-free pointwise-row-ratio
     permuted concrete stored-Householder QR wrapper where the `|b|` sorted
     premise is derived from row-max sorting plus explicit source monotonicity
@@ -27772,7 +27552,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
         hn hnm A b σ hcompat hσA)
       hAstepExact hAstepErr hσArowRatio hbstepExact hbstepErr
       hσbrowRatio DeltaAperm Deltabperm hExact hDeltaA hDeltab
-
 /-- Theorem 20.7 row-sorting policy: certificate-free active-ratio permuted
     concrete stored-Householder QR wrapper where the `|b|` sorted premise is
     derived from row-max sorting plus explicit source monotonicity of `|b|`. -/
@@ -27925,7 +27704,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
         hn hnm A b σ hcompat hσA)
       hAstepExact hAstepErr hσArowRatioMax hbstepExact hbstepErr
       hσbrowRatioMax DeltaAperm Deltabperm hExact hDeltaA hDeltab
-
 /-- Theorem 20.7 row-sorting policy: certificate-free square-margin
     active-ratio wrapper whose weighted active-ratio maximum is derived from
     source RHS domination. -/
@@ -28086,7 +27864,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm Aperm bperm hphi hrowsPerm hbdomPerm hσArowRatioMax)
       DeltaAperm Deltabperm hExact hDeltaA hDeltab
-
 /-- Theorem 20.7 row-policy support: certificate-free square-margin
     fixed-permutation route under the explicit `sqrt(m)` active-suffix
     row-domination policy. -/
@@ -28240,7 +28017,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
       hdetLead hcopy hpivotChoice hσA hcompat hAstepExact hAstepErr
       hfields.2.2.2.1 hbdom hbstepExact hbstepErr DeltaAperm
       Deltabperm hExact hDeltaA hDeltab
-
 /-- Theorem 20.7 row-policy support: existential common-sort wrapper for the
     certificate-free square-margin route under the explicit `sqrt(m)`
     active-suffix row-domination policy. -/
@@ -28386,7 +28162,6 @@ theorem Theorem20_7RowwiseBackwardError.exists_common_sorted_permuteRows_uniform
       hdetLead hcopy hpivotChoice hσA hσsqrt hcompat hAstepExact
       hAstepErr hbdom hbstepExact hbstepErr DeltaAperm Deltabperm
       hExact hDeltaA hDeltab
-
 /-- Theorem 20.7 row-sorting policy: existential common-sort wrapper for the
     certificate-free exact-perturbation square-margin route.
 
@@ -28535,7 +28310,6 @@ theorem Theorem20_7RowwiseBackwardError.exists_common_sorted_permuteRows_uniform
       hdetLead hcopy hpivotChoice hσA hcompat hAstepExact hAstepErr
       hσArowRatioMax hbdom hbstepExact hbstepErr DeltaAperm Deltabperm
       hExact hDeltaA hDeltab
-
 /-- Theorem 20.7 support: active-max pivot stage-swap wrapper for the
     compact-active, source-initial, zero-start, zero-step-budget all-entry
     perturbation budgets.
@@ -28655,7 +28429,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
         hnm Araw Ahat hstageSorted)
       hAsorted hbAbsSorted hAstepExact hAstepErr hArow0 hbstepExact
       hbstepErr hbrow0 hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level active-max pivot stage-swap wrapper
     for the compact-active, source-initial, zero-start, zero-step-budget
     perturbation budgets. -/
@@ -28765,7 +28538,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hcopy hstageSorted hAsorted hbAbsSorted hAstepExact hAstepErr
       hArow0 hbstepExact hbstepErr hbrow0 hcert.deltaA_bound
       hcert.deltab_bound
-
 /-- Theorem 20.7 support: active-max pivot stage-swap wrapper with source-row
     ratio hypotheses for the `sqrt(m)` row-scale domination fields. -/
 theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_stage_swaps_row_scale_ratios_nat
@@ -28893,7 +28665,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
       hbhat0 hbexact0 hStepA hStepB hAlphaDef htrailingPos hcopy
       hstageSorted hAsorted hbAbsSorted hAstepExact hAstepErr hArow0
       hbstepExact hbstepErr hbrow0 hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level active-max pivot stage-swap wrapper
     with source-row ratio hypotheses for the `sqrt(m)` domination fields. -/
 theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_stage_swaps_row_scale_ratios_nat
@@ -29003,7 +28774,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hcopy hstageSorted hAsorted hbAbsSorted hAstepExact hAstepErr
       hArowRatio hbstepExact hbstepErr hbrowRatio hcert.deltaA_bound
       hcert.deltab_bound
-
 /-- Theorem 20.7 support: active-max pivot stage-swap wrapper with source-row
     ratio hypotheses where source `|b|` sorting is derived from row-max sorting
     plus explicit source monotonicity of `|b|`. -/
@@ -29126,7 +28896,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
       hbhat0 hbexact0 hStepA hStepB hAlphaDef htrailingPos hcopy
       hstageSorted hAsorted hbAbsSorted hAstepExact hAstepErr hArowRatio
       hbstepExact hbstepErr hbrowRatio hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level active-max pivot stage-swap wrapper
     with source-row ratio hypotheses, deriving source `|b|` sorting from
     row-max sorting plus source `|b|` monotonicity. -/
@@ -29239,7 +29008,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hcopy hstageSorted hAsorted hcompat hAstepExact hAstepErr
       hArowRatio hbstepExact hbstepErr hbrowRatio hcert.deltaA_bound
       hcert.deltab_bound
-
 /-- Theorem 20.7 support: active-max pivot stage-swap wrapper whose source-row
     ratio hypotheses are supplied by finite active-ratio maxima. -/
 theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_stage_swaps_activeRatioMax_le_nat
@@ -29353,7 +29121,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
       (theorem20_7_initialWeightedRowMax_ratio_le_of_activeRatioMax_le_nat
         hm hn hnm A b phi hbrowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level active-max pivot stage-swap wrapper
     whose source-row ratio hypotheses are supplied by finite active-ratio
     maxima. -/
@@ -29459,7 +29226,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hcopy hstageSorted hAsorted hbAbsSorted hAstepExact hAstepErr
       hArowRatioMax hbstepExact hbstepErr hbrowRatioMax
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: active-max pivot stage-swap wrapper whose weighted
     active-ratio maximum is derived from the unweighted maximum and source RHS
     domination. -/
@@ -29570,7 +29336,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level active-max pivot stage-swap wrapper
     whose weighted active-ratio maximum is derived from source RHS
     domination. -/
@@ -29674,7 +29439,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hcopy hstageSorted hAsorted hbAbsSorted hAstepExact hAstepErr
       hArowRatioMax hbstepExact hbstepErr hbdom
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: active-ratio-max stage-swap wrapper where source
     `|b|` sorting is derived from row-max sorting plus source monotonicity. -/
 theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed_stage_compactActiveHorizon_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_mono_of_activeMaxPivotColumn_stage_swaps_activeRatioMax_le_nat
@@ -29790,7 +29554,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
       (theorem20_7_initialWeightedRowMax_ratio_le_of_activeRatioMax_le_nat
         hm hn hnm A b phi hbrowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level active-ratio-max stage-swap wrapper
     where source `|b|` sorting is derived from row-max sorting plus source
     monotonicity. -/
@@ -29898,7 +29661,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hcopy hstageSorted hAsorted hcompat hAstepExact hAstepErr
       hArowRatioMax hbstepExact hbstepErr hbrowRatioMax
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: active-ratio-max stage-swap wrapper where source
     `|b|` sorting is derived from row-max sorting and the weighted active-ratio
     maximum is derived from source RHS domination. -/
@@ -30011,7 +29773,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hAstepExact hAstepErr hArowRatioMax hbstepExact hbstepErr
       hbdom hDeltaA hDeltab
-
 /-- Theorem 20.7 support: certificate-level active-ratio-max stage-swap wrapper
     where source `|b|` sorting is derived from row-max sorting and the
     weighted active-ratio maximum is derived from source RHS domination. -/
@@ -30117,7 +29878,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hcopy hstageSorted hAsorted hcompat hAstepExact hAstepErr
       hArowRatioMax hbstepExact hbstepErr hbdom
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Theorem 20.7 support: certificate-free exact-perturbation handoff for the
     source-monotone active-tail signed-stage compact-horizon route.
 
@@ -30243,7 +30003,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       hbexact0 hStepA hStepB hAlphaDef htrailingPos hcopy
       hstageSorted hAsorted hcompat hAstepExact hAstepErr hArowRatioMax
       hbstepExact hbstepErr hbdom hcert
-
 /-- The current compact active-step factor cannot be absorbed into the printed
     Cox--Higham rowwise factor in general.
 
@@ -30289,7 +30048,6 @@ theorem theorem20_7_compactActiveStepFactor_not_le_rowwise_step_growth_factor_ni
   have hthree_le_row : 3 ≤ H19.Theorem19_6.rowwise_step_growth_factor :=
     le_trans hactive_ge_three (le_trans hge_active hle)
   linarith
-
 /-- The combined active-plus-compact scalar factor implies the concrete compact
     slack recurrence used by the active-tail all-entry wrapper.
 
@@ -30325,7 +30083,6 @@ theorem theorem20_7_compactStepSlack_recurrence_of_compactActiveStepFactor_bound
     ring
   rw [hleft]
   exact hfactor i hi
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     active-tail source-initial all-entry wrapper with the concrete compact
     scalar slack inlined.
@@ -30475,7 +30232,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
         fp err)
       hcompactStepSlack hAstepExact hAstepErr hArow0 hAacc
       hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     active-tail, source-initial, source-sorted row-sorted signed-stage H19
     wrapper for a row-wise backward-error certificate with explicit
@@ -30652,7 +30408,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hbbudgetCompletion hAsorted hbAbsSorted hAstepExact hAstepErr hArow0
       hAacc hbstepExact hbstepErr hbrow0 hbacc hcert.deltaA_bound
       hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     active-tail, source-initial, source-sorted row-sorted signed-stage H19
     wrapper for a row-wise backward-error certificate with active-stage bounds
@@ -30815,7 +30570,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hcopy hpivotMax hAbudgetCompletion hbbudgetCompletion hAsorted
       hbAbsSorted hAstepExact hAstepErr hArow0 hAacc hbstepExact hbstepErr
       hbrow0 hbacc hcert.deltaA_bound hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     exact-perturbation handoff for the active-tail, source-initial,
     active-bound discharge H19 route.
@@ -30995,7 +30749,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       hpivotMax hAbudgetCompletion hbbudgetCompletion hAsorted
       hbAbsSorted hAstepExact hAstepErr hArow0 hAacc hbstepExact
       hbstepErr hbrow0 hbacc hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     zero-start specialization of the active-tail source-initial row-sorted
     signed stored-QR accumulated-error perturbation wrapper.
@@ -31181,7 +30934,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
           rw [hbhat0 r, hbexact0 r, sub_self, abs_zero]
         simpa [hzero] using hbaccBudget k r hkr)
       hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     active-tail, source-initial, zero-start, zero-step-budget specialization of
     the row-sorted signed stored-QR accumulated-error perturbation wrapper.
@@ -31360,7 +31112,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_tail_signed
         exact mul_nonneg herr
           (theorem20_7_initialWeightedRowMax_nonneg hn A b (le_of_lt hphi) r))
       hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-shaped signed stored-QR all-entry accumulated-error perturbation
     wrapper with denominator positivity discharged from positive `phi` and
@@ -31541,7 +31292,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       hbbudgetCompletion hAsorted hAinitExact hAstepExact hAstepErr hArow0
       hAacc hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc
       hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-shaped completion-preservation all-entry wrapper with denominator
     positivity discharged from positive `phi` and nonzero rows of `A`. -/
@@ -31663,7 +31413,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completion_
       hbcomplete hbpreserve hAsorted hAinitExact hAstepExact hAstepErr hArow0
       hAacc hbsorted hbinitExact hbstepExact hbstepErr hbrow0 hbacc hDeltaA
       hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-shaped completion-preservation all-entry H19 accumulated-error
     wrapper specialized to the natural initial row scales `max_j |a_ij|` and
@@ -31796,7 +31545,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completion_
         rw [hbexact0 r]
         exact theorem20_7_initialWeightedRowMax_abs_b_le hn A b phi r)
       hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-initial row-sorted signed stored-QR all-entry accumulated-error
     perturbation wrapper.
@@ -31987,7 +31735,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
         rw [hbexact0 r]
         exact theorem20_7_initialWeightedRowMax_abs_b_le hn A b phi r)
       hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-initial row-sorted signed stored-QR all-entry perturbation wrapper
     from source row-max sorting and right-hand-side magnitude sorting.
@@ -32168,7 +31915,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
         hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
       hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-initial signed stored-QR all-entry accumulated-error perturbation
     wrapper.
@@ -32355,7 +32101,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
         rw [hbexact0 r]
         exact theorem20_7_initialWeightedRowMax_abs_b_le hn A b phi r)
       hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     zero-start specialization of the source-initial row-sorted signed stored-QR
     accumulated-error perturbation wrapper.
@@ -32544,7 +32289,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
           rw [hbhat0 r, hbexact0 r, sub_self, abs_zero]
         simpa [hzero] using hbaccBudget k r hkr)
       hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     row-sorted zero-start and zero-step-budget specialization of the signed
     stored-QR accumulated-error perturbation wrapper.
@@ -32725,7 +32469,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
         exact mul_nonneg herr
           (theorem20_7_initialWeightedRowMax_nonneg hn A b (le_of_lt hphi) r))
       hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     zero-start specialization of the source-initial signed stored-QR
     accumulated-error perturbation wrapper.
@@ -32909,7 +32652,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
           rw [hbhat0 r, hbexact0 r, sub_self, abs_zero]
         simpa [hzero] using hbaccBudget k r hkr)
       hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     zero-start and zero-step-budget specialization of the source-initial signed
     stored-QR accumulated-error perturbation wrapper.
@@ -33086,7 +32828,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
         exact mul_nonneg herr
           (theorem20_7_initialWeightedRowMax_nonneg hn A b (le_of_lt hphi) r))
       hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-sorted row-sorted zero-start and zero-step-budget specialization of
     the signed stored-QR accumulated-error perturbation wrapper.
@@ -33250,7 +32991,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
         hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
       hbstepExact hbstepErr hbrow0 hDeltaA hDeltab
-
 /-- Theorem 20.7 support: direct active-max specialization of the all-entry
     row-sorted completion-preservation accumulated-error route.
 
@@ -33410,7 +33150,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       hAactive hAbudgetCompletion hbactive hbbudgetCompletion hAsorted
       hAstepExact hAstepErr hArow0 hbAbsSorted hbstepExact hbstepErr
       hbrow0 hDeltaA hDeltab
-
 /-- Theorem 20.7 support: all-entry active-ratio wrapper for the row-sorted
     completion-preservation accumulated-error route.  The rowwise domination
     hypotheses are supplied by finite active-ratio maxima instead of pointwise
@@ -33575,7 +33314,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
         (theorem20_7_initialWeightedRowMax_ratio_le_of_activeRatioMax_le_nat
           hm hn hnm A b phi hbrowRatioMax))
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: all-entry active-ratio wrapper for the row-sorted
     completion-preservation route whose weighted active-ratio maximum is
     derived from source RHS domination. -/
@@ -33731,7 +33469,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: all-entry active-max active-ratio wrapper for the
     row-sorted completion-preservation route.
 
@@ -33887,7 +33624,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       hAactive hAbudgetCompletion hbactive hbbudgetCompletion hAsorted
       hAstepExact hAstepErr hArowRatioMax hbAbsSorted hbstepExact
       hbstepErr hbrowRatioMax hDeltaA hDeltab
-
 /-- Theorem 20.7 support: all-entry active-max active-ratio wrapper whose
     weighted active-ratio maximum is derived from source RHS domination. -/
 theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stage_row_sorted_completion_preservation_accumulated_error_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_activeRatioMax_le_of_abs_b_le_nat
@@ -34039,7 +33775,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: all-entry active-max active-ratio wrapper for the
     completion-preservation route where source `|b|` sorting is derived from
     row-max sorting plus source monotonicity. -/
@@ -34195,7 +33930,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       (fun k hk s hks =>
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hbstepExact hbstepErr hbrowRatioMax hDeltaA hDeltab
-
 /-- Theorem 20.7 support: all-entry active-max active-ratio wrapper for the
     source-monotone RHS route whose weighted active-ratio maximum is derived
     from source RHS domination. -/
@@ -34350,7 +34084,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: all-entry active-max stage-swap specialization of
     the row-sorted completion-preservation accumulated-error route.
 
@@ -34513,7 +34246,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       hAactive hAbudgetCompletion hbactive hbbudgetCompletion hAsorted
       hAstepExact hAstepErr hArow0 hbAbsSorted hbstepExact hbstepErr
       hbrow0 hDeltaA hDeltab
-
 /-- Theorem 20.7 support: all-entry stage-swap active-ratio wrapper for the
     row-sorted completion-preservation route. -/
 theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stage_row_sorted_completion_preservation_accumulated_error_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_stage_swaps_activeRatioMax_le_nat
@@ -34668,7 +34400,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       hAactive hAbudgetCompletion hbactive hbbudgetCompletion hAsorted
       hAstepExact hAstepErr hArowRatioMax hbAbsSorted hbstepExact
       hbstepErr hbrowRatioMax hDeltaA hDeltab
-
 /-- Theorem 20.7 support: all-entry stage-swap active-ratio wrapper whose
     weighted active-ratio maximum is derived from source RHS domination. -/
 theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stage_row_sorted_completion_preservation_accumulated_error_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_sorted_of_activeMaxPivotColumn_stage_swaps_activeRatioMax_le_of_abs_b_le_nat
@@ -34822,7 +34553,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hDeltaA hDeltab
-
 /-- Theorem 20.7 support: all-entry stage-swap active-ratio wrapper for the
     source-monotone RHS route. -/
 theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stage_row_sorted_completion_preservation_accumulated_error_rows_nonzero_source_initial_zero_start_zero_budget_of_initialRowMax_abs_b_mono_of_activeMaxPivotColumn_stage_swaps_activeRatioMax_le_nat
@@ -34980,7 +34710,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       (fun k hk s hks =>
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hbstepExact hbstepErr hbrowRatioMax hDeltaA hDeltab
-
 /-- Theorem 20.7 support: all-entry stage-swap active-ratio wrapper for the
     source-monotone RHS route whose weighted active-ratio maximum is derived
     from source RHS domination. -/
@@ -35137,7 +34866,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_signed_stag
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     signed-stage, source-initial, zero-start, zero-step-budget H19 wrapper for
     a row-wise backward-error certificate.
@@ -35296,7 +35024,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hAbudgetCompletion hbexactCompletion hbbudgetCompletion hAsorted
       hAstepExact hAstepErr hArow0 hbsorted hbstepExact hbstepErr hbrow0
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     row-sorted signed-stage, source-initial, zero-start, zero-step-budget H19
     wrapper for a row-wise backward-error certificate.
@@ -35456,7 +35183,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hcopy hpivotMax hAactive hAbudgetCompletion hbactive
       hbbudgetCompletion hAsorted hAstepExact hAstepErr hArow0 hbsorted
       hbstepExact hbstepErr hbrow0 hcert.deltaA_bound hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-sorted row-sorted signed-stage, source-initial, zero-start,
     zero-step-budget H19 wrapper for a row-wise backward-error certificate.
@@ -35616,7 +35342,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
         hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
       hbstepExact hbstepErr hbrow0 hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     direct active-max specialization of the source-sorted row-sorted
     signed-stage zero-budget certificate wrapper.
@@ -35772,7 +35497,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hAactive hAbudgetCompletion hbactive hbbudgetCompletion hAsorted
       hAstepExact hAstepErr hArow0 hbAbsSorted hbstepExact hbstepErr
       hbrow0 hcert
-
 /-- Theorem 20.7 support: certificate-level active-max wrapper for the
     row-sorted completion-preservation accumulated-error route whose
     source-row ratio hypotheses are supplied by finite active-ratio maxima. -/
@@ -35927,7 +35651,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
         (theorem20_7_initialWeightedRowMax_ratio_le_of_activeRatioMax_le_nat
           hm hn hnm A b phi hbrowRatioMax))
       hcert
-
 /-- Theorem 20.7 support: certificate-level active-ratio wrapper for the
     row-sorted completion-preservation route whose weighted active-ratio
     maximum is derived from the unweighted maximum and source RHS
@@ -36075,7 +35798,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hcert
-
 /-- Theorem 20.7 support: certificate-level direct active-max active-ratio
     wrapper for the completion-preservation route where source `|b|` sorting is
     derived from row-max sorting plus source monotonicity. -/
@@ -36225,7 +35947,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       (fun k hk s hks =>
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hbstepExact hbstepErr hbrowRatioMax hcert
-
 /-- Theorem 20.7 support: certificate-level direct active-ratio wrapper for
     the completion-preservation route where source `|b|` sorting is derived
     from row-max sorting and the weighted active-ratio maximum is derived from
@@ -36374,7 +36095,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       (fun k hk s hks =>
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hbstepExact hbstepErr hbdom hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     active-max stage-swap specialization of the source-sorted row-sorted
     signed-stage zero-budget certificate wrapper.
@@ -36531,7 +36251,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hAactive hAbudgetCompletion hbactive hbbudgetCompletion hAsorted
       hAstepExact hAstepErr hArow0 hbAbsSorted hbstepExact hbstepErr
       hbrow0 hcert
-
 /-- Theorem 20.7 support: certificate-level active-max stage-swap wrapper for
     the row-sorted completion-preservation accumulated-error route whose
     source-row ratio hypotheses are supplied by finite active-ratio maxima. -/
@@ -36687,7 +36406,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
         (theorem20_7_initialWeightedRowMax_ratio_le_of_activeRatioMax_le_nat
           hm hn hnm A b phi hbrowRatioMax))
       hcert
-
 /-- Theorem 20.7 support: certificate-level active-max stage-swap wrapper for
     the row-sorted completion-preservation route whose weighted active-ratio
     maximum is derived from the unweighted maximum and source RHS
@@ -36836,7 +36554,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       (theorem20_7_activeInitialWeightedRowMaxRatioMax_le_sqrt_of_activeInitialRowMaxRatioMax_le_abs_b_le_nat
         hm hn hnm A b hphi hrows hbdom hArowRatioMax)
       hcert
-
 /-- Theorem 20.7 support: certificate-level active-ratio-max stage-swap wrapper
     for the row-sorted completion-preservation route where source `|b|`
     sorting is derived from row-max sorting plus source monotonicity. -/
@@ -36987,7 +36704,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       (fun k hk s hks =>
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hbstepExact hbstepErr hbrowRatioMax hcert
-
 /-- Theorem 20.7 support: certificate-level active-ratio-max stage-swap wrapper
     for the source-monotone row-sorted completion-preservation route whose
     weighted active-ratio maximum is derived from source RHS domination. -/
@@ -37136,7 +36852,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       (fun k hk s hks =>
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hbstepExact hbstepErr hbdom hcert
-
 /-- Theorem 20.7 support: certificate-free exact-perturbation handoff for the
     strongest source-monotone signed-stage zero-budget route currently exposed.
 
@@ -37306,7 +37021,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       hstageSorted hAactive hAbudgetCompletion hbactive
       hbbudgetCompletion hAsorted hAstepExact hAstepErr hArowRatioMax
       hcompat hbstepExact hbstepErr hbdom hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     active-tail, source-sorted row-sorted signed-stage, source-initial,
     zero-start H19 wrapper for a row-wise backward-error certificate with
@@ -37480,7 +37194,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hbactive hbbudgetCompletion hAsorted hbAbsSorted hAstepExact
       hAstepErr hArow0 hAaccBudget hbstepExact hbstepErr hbrow0
       hbaccBudget hcert.deltaA_bound hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     active-tail, source-sorted row-sorted signed-stage, source-initial,
     zero-start, zero-step-budget H19 wrapper for a row-wise backward-error
@@ -37641,7 +37354,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hbbudgetCompletion hAsorted hbAbsSorted hAstepExact hAstepErr
       hArow0 hbstepExact hbstepErr hbrow0 hcert.deltaA_bound
       hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     exact-perturbation handoff for the active-tail, source-sorted,
     zero-start, accumulated-error H19 route.
@@ -37832,7 +37544,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       hbbudgetCompletion hAsorted hbAbsSorted hAstepExact hAstepErr
       hArow0 hAaccBudget hbstepExact hbstepErr hbrow0 hbaccBudget
       hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     exact-perturbation handoff for the active-tail, source-sorted,
     zero-start, zero-step-budget H19 route. -/
@@ -38004,7 +37715,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       hAactive hAbudgetCompletion hbactive hbbudgetCompletion hAsorted
       hbAbsSorted hAstepExact hAstepErr hArow0 hbstepExact hbstepErr
       hbrow0 hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     zero-start specialization of the completion-preservation source-initial
     all-entry H19 accumulated-error wrapper.  When the rounded and exact
@@ -38135,7 +37845,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completion_
           rw [hbhat0 r, hbexact0 r, sub_self, abs_zero]
         simpa [hzero] using hbaccBudget k r hkr)
       hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     zero-start and zero-step-budget specialization of the
     completion-preservation source-initial all-entry H19 accumulated-error
@@ -38260,7 +37969,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completion_
         exact mul_nonneg herr
           (theorem20_7_initialWeightedRowMax_nonneg hn A b (le_of_lt hphi) r))
       hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-sorted specialization of the source-initial, zero-start,
     zero-step-budget completion-preservation H19 accumulated-error all-entry
@@ -38368,7 +38076,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completion_
       (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
         hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
       hbstepExact hbstepErr hbrow0 hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-monotone specialization of the source-initial, zero-start,
     zero-step-budget completion-preservation H19 accumulated-error all-entry
@@ -38478,7 +38185,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completion_
       (fun k hk s hks =>
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hbstepExact hbstepErr hbrow0 hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-sorted specialization of the source-initial completion-preservation
     H19 accumulated-error all-entry wrapper.  The direct weighted row-sorting
@@ -38601,7 +38307,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completion_
       (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
         hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
       hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-sorted specialization of the zero-start completion-preservation H19
     accumulated-error all-entry wrapper with explicit step budgets. -/
@@ -38721,7 +38426,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completion_
       (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
         hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
       hbstepExact hbstepErr hbrow0 hbaccBudget hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-monotone specialization of the source-initial
     completion-preservation H19 accumulated-error all-entry wrapper.  The
@@ -38846,7 +38550,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completion_
       (fun k hk s hks =>
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-monotone specialization of the zero-start
     completion-preservation H19 accumulated-error all-entry wrapper with
@@ -38969,7 +38672,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completion_
       (fun k hk s hks =>
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hbstepExact hbstepErr hbrow0 hbaccBudget hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-initial completion-preservation H19 wrapper for a row-wise
     backward-error certificate.  It packages the exact perturbed
@@ -39092,7 +38794,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hrows hAexact0 hbexact0 hAcomplete hApreserve hbcomplete hbpreserve
       hAsorted hAstepExact hAstepErr hArow0 hAacc hbsorted hbstepExact
       hbstepErr hbrow0 hbacc hcert.deltaA_bound hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-sorted specialization of the source-initial completion-preservation
     H19 wrapper for a row-wise backward-error certificate.  The weighted
@@ -39208,7 +38909,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
         hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
       hbstepExact hbstepErr hbrow0 hbacc hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     zero-start completion-preservation H19 wrapper for a row-wise backward-error
     certificate with explicit accumulated-error step budgets.  It combines the
@@ -39329,7 +39029,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hbcomplete hbpreserve hAsorted hAstepExact hAstepErr hArow0
       hAaccBudget hbsorted hbstepExact hbstepErr hbrow0 hbaccBudget
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-sorted specialization of the zero-start completion-preservation H19
     wrapper for a row-wise backward-error certificate with explicit
@@ -39442,7 +39141,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
         hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
       hbstepExact hbstepErr hbrow0 hbaccBudget hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-monotone specialization of the source-initial
     completion-preservation H19 wrapper for a row-wise backward-error
@@ -39559,7 +39257,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       (fun k hk s hks =>
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hbstepExact hbstepErr hbrow0 hbacc hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-monotone specialization of the zero-start completion-preservation H19
     wrapper for a row-wise backward-error certificate with explicit
@@ -39674,7 +39371,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       (fun k hk s hks =>
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hbstepExact hbstepErr hbrow0 hbaccBudget hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation handoff for the source-sorted
     zero-start completion-preservation H19 accumulated-error route.
@@ -39809,7 +39505,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       hAexact0 hbhat0 hbexact0 hAcomplete hApreserve hbcomplete hbpreserve
       hAsorted hAstepExact hAstepErr hArow0 hAaccBudget hbAbsSorted
       hbstepExact hbstepErr hbrow0 hbaccBudget hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation handoff for the source-monotone
     zero-start completion-preservation H19 accumulated-error route.
@@ -39941,7 +39636,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       (fun k hk s hks =>
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hbstepExact hbstepErr hbrow0 hbaccBudget hExact hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     zero-start, zero-step-budget completion-preservation H19 wrapper for a
     row-wise backward-error certificate.  It combines the exact perturbed
@@ -40048,7 +39742,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hAcomplete hApreserve hbcomplete hbpreserve hAsorted hAstepExact
       hAstepErr hArow0 hbsorted hbstepExact hbstepErr hbrow0
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-sorted specialization of the zero-start, zero-step-budget
     completion-preservation H19 wrapper for a row-wise backward-error
@@ -40147,7 +39840,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hbhat0 hbexact0 hAcomplete hApreserve hbcomplete hbpreserve
       hAsorted hAstepExact hAstepErr hArow0 hbAbsSorted hbstepExact
       hbstepErr hbrow0 hcert.deltaA_bound hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-monotone specialization of the zero-start, zero-step-budget
     completion-preservation H19 wrapper for a row-wise backward-error
@@ -40248,7 +39940,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hbhat0 hbexact0 hAcomplete hApreserve hbcomplete hbpreserve
       hAsorted hAstepExact hAstepErr hArow0 hcompat hbstepExact hbstepErr
       hbrow0 hcert.deltaA_bound hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation handoff for the source-sorted,
     zero-start, zero-step-budget completion-preservation H19 bridge. -/
@@ -40363,7 +40054,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       hphi hgamma herr hrows hAhat0 hAexact0 hbhat0 hbexact0 hAcomplete
       hApreserve hbcomplete hbpreserve hAsorted hAstepExact hAstepErr
       hArow0 hbAbsSorted hbstepExact hbstepErr hbrow0 hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation handoff for the source-monotone,
     zero-start, zero-step-budget completion-preservation H19 bridge. -/
@@ -40480,7 +40170,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       hphi hgamma herr hrows hAhat0 hAexact0 hbhat0 hbexact0 hAcomplete
       hApreserve hbcomplete hbpreserve hAsorted hAstepExact hAstepErr
       hArow0 hcompat hbstepExact hbstepErr hbrow0 hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     finite active-ratio specialization of the source-sorted, zero-start,
     zero-step-budget completion-preservation H19 accumulated-error all-entry
@@ -40607,7 +40296,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completion_
       hphi hgamma herr hrows hAhat0 hAexact0 hbhat0 hbexact0 hAcomplete
       hApreserve hbcomplete hbpreserve hAsorted hAstepExact hAstepErr
       hArow0 hbAbsSorted hbstepExact hbstepErr hbrow0 hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-level finite active-ratio specialization of the source-sorted,
     zero-start, zero-step-budget completion-preservation H19 bridge. -/
@@ -40700,7 +40388,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hAcomplete hApreserve hbcomplete hbpreserve hAsorted hAstepExact
       hAstepErr hArowRatioMax hbAbsSorted hbdom hbstepExact hbstepErr
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-monotone finite active-ratio specialization of the zero-start,
     zero-step-budget completion-preservation H19 all-entry wrapper.
@@ -40808,7 +40495,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completion_
       (fun k hk s hks =>
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hbdom hbstepExact hbstepErr hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-level source-monotone finite active-ratio specialization of
     the zero-start, zero-step-budget completion-preservation H19 bridge. -/
@@ -40903,7 +40589,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hAcomplete hApreserve hbcomplete hbpreserve hAsorted hAstepExact
       hAstepErr hArowRatioMax hcompat hbdom hbstepExact hbstepErr
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation handoff for the source-sorted finite
     active-ratio zero-budget completion-preservation H19 bridge. -/
@@ -41013,7 +40698,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       hphi hgamma herr hrows hAhat0 hAexact0 hbhat0 hbexact0 hAcomplete
       hApreserve hbcomplete hbpreserve hAsorted hAstepExact hAstepErr
       hArowRatioMax hbAbsSorted hbdom hbstepExact hbstepErr hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation handoff for the source-monotone
     finite active-ratio zero-budget completion-preservation H19 bridge. -/
@@ -41125,7 +40809,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       hphi hgamma herr hrows hAhat0 hAexact0 hbhat0 hbexact0 hAcomplete
       hApreserve hbcomplete hbpreserve hAsorted hAstepExact hAstepErr
       hArowRatioMax hcompat hbdom hbstepExact hbstepErr hcert
-
 /-- A `Delta A` entry satisfying the printed row-ratio budget also satisfies the
     direct Chapter 19 active/completed accumulated-error uniform budget. -/
 theorem theorem20_7_deltaAEntry_bound_of_h19_row_sorting_active_completed_accumulated_error_nat
@@ -41224,7 +40907,6 @@ theorem theorem20_7_deltaAEntry_bound_of_h19_row_sorting_active_completed_accumu
       hdenA hdenW hAcompleted hbcompleted hAsorted hAinitExact hAstepExact
       hAstepErr hArow0 hAacc hbsorted hbinitExact hbstepExact hbstepErr
       hbrow0 hbacc)
-
 /-- A `Delta b` entry satisfying the printed row-ratio budget also satisfies the
     direct Chapter 19 active/completed accumulated-error uniform budget. -/
 theorem theorem20_7_deltaBEntry_bound_of_h19_row_sorting_active_completed_accumulated_error_nat
@@ -41323,7 +41005,6 @@ theorem theorem20_7_deltaBEntry_bound_of_h19_row_sorting_active_completed_accumu
       hdenA hdenW hAcompleted hbcompleted hAsorted hAinitExact hAstepExact
       hAstepErr hArow0 hAacc hbsorted hbinitExact hbstepExact hbstepErr
       hbrow0 hbacc)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     matrix/vector-level packaging of the direct Chapter 19 active/completed
     accumulated-error handoff.  If every printed `Delta A` and `Delta b` entry
@@ -41450,7 +41131,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_a
         herr hdenA hdenW hAcompleted hbcompleted hAsorted hAinitExact
         hAstepExact hAstepErr hArow0 hAacc hbsorted hbinitExact hbstepExact
         hbstepErr hbrow0 hbacc (hDeltab i)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-shaped all-entry H19 accumulated-error wrapper with denominator
     positivity discharged from positive `phi` and nonzero rows of `A`. -/
@@ -41563,7 +41243,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_a
       (le_of_lt hphi) hgamma herr hden.1 hden.2 hAcompleted hbcompleted
       hAsorted hAinitExact hAstepExact hAstepErr hArow0 hAacc hbsorted
       hbinitExact hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-shaped all-entry H19 accumulated-error wrapper specialized to the
     natural initial row scales `max_j |a_ij|` and
@@ -41688,7 +41367,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_a
         rw [hbexact0 r]
         exact theorem20_7_initialWeightedRowMax_abs_b_le hn A b phi r)
       hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-initial all-entry H19 accumulated-error wrapper from source row-max
     sorting and right-hand-side magnitude sorting.
@@ -41806,7 +41484,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_a
       (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
         hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
       hbstepExact hbstepErr hbrow0 hbacc hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-initial H19 row-sorting wrapper for a row-wise backward-error
     certificate.  It packages the exact perturbed least-squares minimizer
@@ -41919,7 +41596,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hrows hAexact0 hbexact0 hAcompleted hbcompleted hAsorted hAstepExact
       hAstepErr hArow0 hAacc hbsorted hbstepExact hbstepErr hbrow0 hbacc
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-level source-initial H19 accumulated-error wrapper from source
     row-max sorting and right-hand-side magnitude sorting.
@@ -42030,7 +41706,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
         hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
       hbstepExact hbstepErr hbrow0 hbacc hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation handoff for the source-sorted
     active-completed H19 accumulated-error route.
@@ -42158,7 +41833,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       AstepBudget bstepBudget xhat hphi hgamma herr hrows hAexact0
       hbexact0 hAcompleted hbcompleted hAsorted hbAbsSorted hAstepExact
       hAstepErr hArow0 hAacc hbstepExact hbstepErr hbrow0 hbacc hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation handoff for the source-monotone
     active-completed H19 accumulated-error route.
@@ -42284,7 +41958,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hAstepExact hAstepErr hArow0 hAacc hbstepExact hbstepErr hbrow0
       hbacc hExact hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation handoff for the source-sorted
     completion-preservation H19 accumulated-error route.
@@ -42421,7 +42094,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       hbexact0 hAcomplete hApreserve hbcomplete hbpreserve hAsorted
       hAstepExact hAstepErr hArow0 hAacc hbAbsSorted hbstepExact
       hbstepErr hbrow0 hbacc hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation handoff for the source-monotone
     completion-preservation H19 accumulated-error route.
@@ -42556,7 +42228,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hAstepExact hAstepErr hArow0 hAacc hbstepExact hbstepErr hbrow0
       hbacc hExact hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     zero-start specialization of the source-initial all-entry H19
     accumulated-error wrapper.  When the rounded and exact stage-zero data both
@@ -42678,7 +42349,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_a
           rw [hbhat0 r, hbexact0 r, sub_self, abs_zero]
         simpa [hzero] using hbaccBudget k r hkr)
       hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-sorted zero-start H19 accumulated-error wrapper.
 
@@ -42793,7 +42463,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_a
       (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
         hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
       hbstepExact hbstepErr hbrow0 hbaccBudget hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-initial zero-start H19 row-sorting wrapper for a row-wise
     backward-error certificate with explicit accumulated-error step budgets.
@@ -42906,7 +42575,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hAsorted hAstepExact hAstepErr hArow0 hAaccBudget hbsorted
       hbstepExact hbstepErr hbrow0 hbaccBudget hcert.deltaA_bound
       hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-level source-sorted zero-start H19 accumulated-error wrapper.
 
@@ -43014,7 +42682,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
         hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
       hbstepExact hbstepErr hbrow0 hbaccBudget hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation handoff for the source-sorted
     zero-start active-completed H19 accumulated-error route.
@@ -43141,7 +42808,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       hAexact0 hbhat0 hbexact0 hAcompleted hbcompleted hAsorted
       hbAbsSorted hAstepExact hAstepErr hArow0 hAaccBudget hbstepExact
       hbstepErr hbrow0 hbaccBudget hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation handoff for the source-monotone
     zero-start active-completed H19 accumulated-error route.
@@ -43265,7 +42931,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hAstepExact hAstepErr hArow0 hAaccBudget hbstepExact hbstepErr
       hbrow0 hbaccBudget hExact hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     zero-start and zero-step-budget specialization of the source-initial
     all-entry H19 accumulated-error wrapper.  When the rounded and exact
@@ -43380,7 +43045,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_a
         exact mul_nonneg herr
           (theorem20_7_initialWeightedRowMax_nonneg hn A b (le_of_lt hphi) r))
       hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-sorted specialization of the source-initial, zero-start,
     zero-step-budget H19 accumulated-error all-entry wrapper.  The direct
@@ -43480,7 +43144,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_a
       (theorem20_7_initialWeightedRowMax_sorted_of_initialRowMax_abs_b_sorted
         hn hnm A b (le_of_lt hphi) hAsorted hbAbsSorted)
       hbstepExact hbstepErr hbrow0 hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-monotone specialization of the source-initial, zero-start,
     zero-step-budget active/completed H19 accumulated-error all-entry wrapper.
@@ -43581,7 +43244,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_a
       (fun k hk s hks =>
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hbstepExact hbstepErr hbrow0 hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-initial, zero-start, zero-step-budget H19 row-sorting wrapper for a
     row-wise backward-error certificate.  It combines the exact perturbed
@@ -43680,7 +43342,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hbhat0 hbexact0 hAcompleted hbcompleted hAsorted hAstepExact
       hAstepErr hArow0 hbsorted hbstepExact hbstepErr hbrow0
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-sorted specialization of the zero-start, zero-step-budget
     H19 row-sorting wrapper for a row-wise backward-error certificate. -/
@@ -43770,7 +43431,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hbhat0 hbexact0 hAcompleted hbcompleted hAsorted hAstepExact
       hAstepErr hArow0 hbAbsSorted hbstepExact hbstepErr hbrow0
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-monotone specialization of the zero-start, zero-step-budget
     active/completed H19 wrapper for a row-wise backward-error certificate. -/
@@ -43862,7 +43522,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hbhat0 hbexact0 hAcompleted hbcompleted hAsorted hAstepExact
       hAstepErr hArow0 hcompat hbstepExact hbstepErr hbrow0
       hcert.deltaA_bound hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation handoff for the source-sorted,
     zero-start, zero-step-budget active/completed H19 route.
@@ -43974,7 +43633,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       hphi hgamma herr hrows hAhat0 hAexact0 hbhat0 hbexact0 hAcompleted
       hbcompleted hAsorted hAstepExact hAstepErr hArow0 hbAbsSorted
       hbstepExact hbstepErr hbrow0 hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation handoff for the source-monotone,
     zero-start, zero-step-budget active/completed H19 bridge. -/
@@ -44083,7 +43741,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       hphi hgamma herr hrows hAhat0 hAexact0 hbhat0 hbexact0 hAcompleted
       hbcompleted hAsorted hAstepExact hAstepErr hArow0 hcompat
       hbstepExact hbstepErr hbrow0 hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     finite active-ratio specialization of the source-sorted, zero-start,
     zero-step-budget active/completed H19 accumulated-error all-entry wrapper.
@@ -44201,7 +43858,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_a
       hphi hgamma herr hrows hAhat0 hAexact0 hbhat0 hbexact0 hAcompleted
       hbcompleted hAsorted hAstepExact hAstepErr hArow0 hbAbsSorted
       hbstepExact hbstepErr hbrow0 hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-level finite active-ratio specialization of the source-sorted,
     zero-start, zero-step-budget active/completed H19 accumulated-error bridge. -/
@@ -44286,7 +43942,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hAcompleted hbcompleted hAsorted hAstepExact hAstepErr hArowRatioMax
       hbAbsSorted hbdom hbstepExact hbstepErr hcert.deltaA_bound
       hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation handoff for the source-sorted finite
     active-ratio zero-budget active/completed H19 bridge. -/
@@ -44388,7 +44043,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       hphi hgamma herr hrows hAhat0 hAexact0 hbhat0 hbexact0 hAcompleted
       hbcompleted hAsorted hAstepExact hAstepErr hArowRatioMax hbAbsSorted
       hbdom hbstepExact hbstepErr hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-monotone finite active-ratio specialization of the zero-start,
     zero-step-budget active/completed H19 accumulated-error all-entry wrapper.
@@ -44486,7 +44140,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_h19_row_sorting_active_completed_a
       (fun k hk s hks =>
         hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks))
       hbdom hbstepExact hbstepErr hDeltaA hDeltab
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-level source-monotone finite active-ratio specialization of
     the zero-start, zero-step-budget active/completed H19 bridge. -/
@@ -44573,7 +44226,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_h19_row_sorting_active
       hAcompleted hbcompleted hAsorted hAstepExact hAstepErr hArowRatioMax
       hcompat hbdom hbstepExact hbstepErr hcert.deltaA_bound
       hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation handoff for the source-monotone finite
     active-ratio zero-budget active/completed H19 bridge. -/
@@ -44677,7 +44329,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_h1
       hphi hgamma herr hrows hAhat0 hAexact0 hbhat0 hbexact0 hAcompleted
       hbcompleted hAsorted hAstepExact hAstepErr hArowRatioMax hcompat
       hbdom hbstepExact hbstepErr hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     Chapter 19.6 active-row geometric bounds control each `Delta A`
     component budget. -/
@@ -44708,7 +44359,6 @@ theorem theorem20_7_deltaAEntryBudget_le_of_active_row_geometric_entry_growth_na
     hm hn Astage A bstage b phi gammaTilde i j hgamma
     (theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
       hm hn Astage A bstage b phi hphi hdenA hdenW hA hb)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     Chapter 19.6 active-row geometric bounds control each `Delta b`
     component budget. -/
@@ -44739,7 +44389,6 @@ theorem theorem20_7_deltaBEntryBudget_le_of_active_row_geometric_entry_growth_na
     hm hn Astage A bstage b phi gammaTilde i hphi hgamma
     (theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_nat
       hm hn Astage A bstage b phi hphi hdenA hdenW hA hb)
-
 /-- A `Delta A` entry satisfying the printed row-ratio budget also satisfies
     the active-row uniform budget supplied by the Chapter 19.6 bridge. -/
 theorem theorem20_7_deltaAEntry_bound_of_active_row_geometric_entry_growth_nat
@@ -44772,7 +44421,6 @@ theorem theorem20_7_deltaAEntry_bound_of_active_row_geometric_entry_growth_nat
     (theorem20_7_deltaAEntryBudget_le_of_active_row_geometric_entry_growth_nat
       hm hn Astage A bstage b phi gammaTilde i j hphi hgamma
       hdenA hdenW hA hb)
-
 /-- A `Delta b` entry satisfying the printed row-ratio budget also satisfies
     the active-row uniform budget supplied by the Chapter 19.6 bridge. -/
 theorem theorem20_7_deltaBEntry_bound_of_active_row_geometric_entry_growth_nat
@@ -44805,7 +44453,6 @@ theorem theorem20_7_deltaBEntry_bound_of_active_row_geometric_entry_growth_nat
     (theorem20_7_deltaBEntryBudget_le_of_active_row_geometric_entry_growth_nat
       hm hn Astage A bstage b phi gammaTilde i hphi hgamma
       hdenA hdenW hA hb)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     active-row accumulated-error bounds control each `Delta A` component
     budget. -/
@@ -44836,7 +44483,6 @@ theorem theorem20_7_deltaAEntryBudget_le_of_active_row_geometric_entry_growth_wi
     hm hn Astage A bstage b phi gammaTilde i j hgamma
     (theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_with_relative_error_nat
       hm hn Astage A bstage b phi err hphi herr hdenA hdenW hA hb)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     active-row accumulated-error bounds control each `Delta b` component
     budget. -/
@@ -44867,7 +44513,6 @@ theorem theorem20_7_deltaBEntryBudget_le_of_active_row_geometric_entry_growth_wi
     hm hn Astage A bstage b phi gammaTilde i hphi hgamma
     (theorem20_7_alphaBetaMax_le_of_active_row_geometric_entry_growth_with_relative_error_nat
       hm hn Astage A bstage b phi err hphi herr hdenA hdenW hA hb)
-
 /-- A `Delta A` entry satisfying the printed row-ratio budget also satisfies
     the active-row accumulated-error uniform budget. -/
 theorem theorem20_7_deltaAEntry_bound_of_active_row_geometric_entry_growth_with_relative_error_nat
@@ -44901,7 +44546,6 @@ theorem theorem20_7_deltaAEntry_bound_of_active_row_geometric_entry_growth_with_
     (theorem20_7_deltaAEntryBudget_le_of_active_row_geometric_entry_growth_with_relative_error_nat
       hm hn Astage A bstage b phi gammaTilde err i j hphi hgamma
       herr hdenA hdenW hA hb)
-
 /-- A `Delta b` entry satisfying the printed row-ratio budget also satisfies
     the active-row accumulated-error uniform budget. -/
 theorem theorem20_7_deltaBEntry_bound_of_active_row_geometric_entry_growth_with_relative_error_nat
@@ -44934,7 +44578,6 @@ theorem theorem20_7_deltaBEntry_bound_of_active_row_geometric_entry_growth_with_
     (theorem20_7_deltaBEntryBudget_le_of_active_row_geometric_entry_growth_with_relative_error_nat
       hm hn Astage A bstage b phi gammaTilde err i hphi hgamma herr
       hdenA hdenW hA hb)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     positive `phi` and nonzero source rows discharge the denominator
     assumptions in the active-row geometric `Delta A` budget bridge. -/
@@ -44964,7 +44607,6 @@ theorem theorem20_7_deltaAEntryBudget_le_of_active_row_geometric_entry_growth_ro
     theorem20_7_deltaAEntryBudget_le_of_active_row_geometric_entry_growth_nat
       hm hn Astage A bstage b phi gammaTilde i j (le_of_lt hphi)
       hgamma hden.1 hden.2 hA hb
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     positive `phi` and nonzero source rows discharge the denominator
     assumptions in the active-row geometric `Delta b` budget bridge. -/
@@ -44994,7 +44636,6 @@ theorem theorem20_7_deltaBEntryBudget_le_of_active_row_geometric_entry_growth_ro
     theorem20_7_deltaBEntryBudget_le_of_active_row_geometric_entry_growth_nat
       hm hn Astage A bstage b phi gammaTilde i (le_of_lt hphi) hgamma
       hden.1 hden.2 hA hb
-
 /-- A `Delta A` entry satisfying the printed row-ratio budget also satisfies
     the active-row uniform budget under the source-shaped nonzero-row
     hypotheses. -/
@@ -45026,7 +44667,6 @@ theorem theorem20_7_deltaAEntry_bound_of_active_row_geometric_entry_growth_rows_
   hDelta.trans
     (theorem20_7_deltaAEntryBudget_le_of_active_row_geometric_entry_growth_rows_nonzero_nat
       hm hn Astage A bstage b gammaTilde i j hphi hgamma hrows hA hb)
-
 /-- A `Delta b` entry satisfying the printed row-ratio budget also satisfies
     the active-row uniform budget under the source-shaped nonzero-row
     hypotheses. -/
@@ -45057,7 +44697,6 @@ theorem theorem20_7_deltaBEntry_bound_of_active_row_geometric_entry_growth_rows_
   hDelta.trans
     (theorem20_7_deltaBEntryBudget_le_of_active_row_geometric_entry_growth_rows_nonzero_nat
       hm hn Astage A bstage b gammaTilde i hphi hgamma hrows hA hb)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     all-entry active-row geometric budget bridge with source-shaped
     nonzero-row denominator hypotheses. -/
@@ -45110,7 +44749,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_active_row_geometric_entry_growth_
       theorem20_7_deltaBEntry_bound_of_active_row_geometric_entry_growth_rows_nonzero_nat
         hm hn Astage A bstage b gammaTilde Deltab i hphi hgamma
         hrows hA hb (hDeltab i)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-shaped active-row geometric wrapper for a row-wise backward-error
     certificate.  It packages the exact perturbed least-squares solution with
@@ -45151,7 +44789,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_active_row_geometric_e
     theorem20_7_deltaEntries_bound_all_of_active_row_geometric_entry_growth_rows_nonzero_nat
       hm hn Astage A bstage b gammaTilde hcert.DeltaA hcert.Deltab hphi
       hgamma hrows hA hb hcert.deltaA_bound hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     positive `phi` and nonzero source rows discharge the denominator
     assumptions in the active-row accumulated-error `Delta A` budget bridge. -/
@@ -45181,7 +44818,6 @@ theorem theorem20_7_deltaAEntryBudget_le_of_active_row_geometric_entry_growth_wi
     theorem20_7_deltaAEntryBudget_le_of_active_row_geometric_entry_growth_with_relative_error_nat
       hm hn Astage A bstage b phi gammaTilde err i j (le_of_lt hphi)
       hgamma herr hden.1 hden.2 hA hb
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     positive `phi` and nonzero source rows discharge the denominator
     assumptions in the active-row accumulated-error `Delta b` budget bridge. -/
@@ -45211,7 +44847,6 @@ theorem theorem20_7_deltaBEntryBudget_le_of_active_row_geometric_entry_growth_wi
     theorem20_7_deltaBEntryBudget_le_of_active_row_geometric_entry_growth_with_relative_error_nat
       hm hn Astage A bstage b phi gammaTilde err i (le_of_lt hphi)
       hgamma herr hden.1 hden.2 hA hb
-
 /-- A `Delta A` entry satisfying the printed row-ratio budget also satisfies
     the active-row accumulated-error uniform budget under the source-shaped
     nonzero-row hypotheses. -/
@@ -45244,7 +44879,6 @@ theorem theorem20_7_deltaAEntry_bound_of_active_row_geometric_entry_growth_with_
     (theorem20_7_deltaAEntryBudget_le_of_active_row_geometric_entry_growth_with_relative_error_rows_nonzero_nat
       hm hn Astage A bstage b gammaTilde err i j hphi hgamma herr
       hrows hA hb)
-
 /-- A `Delta b` entry satisfying the printed row-ratio budget also satisfies
     the active-row accumulated-error uniform budget under the source-shaped
     nonzero-row hypotheses. -/
@@ -45276,7 +44910,6 @@ theorem theorem20_7_deltaBEntry_bound_of_active_row_geometric_entry_growth_with_
     (theorem20_7_deltaBEntryBudget_le_of_active_row_geometric_entry_growth_with_relative_error_rows_nonzero_nat
       hm hn Astage A bstage b gammaTilde err i hphi hgamma herr
       hrows hA hb)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     all-entry active-row accumulated-error budget bridge with source-shaped
     nonzero-row denominator hypotheses. -/
@@ -45329,7 +44962,6 @@ theorem theorem20_7_deltaEntries_bound_all_of_active_row_geometric_entry_growth_
       theorem20_7_deltaBEntry_bound_of_active_row_geometric_entry_growth_with_relative_error_rows_nonzero_nat
         hm hn Astage A bstage b gammaTilde err Deltab i hphi
         hgamma herr hrows hA hb (hDeltab i)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source-shaped active-row accumulated-error wrapper for a row-wise
     backward-error certificate. -/
@@ -45369,7 +45001,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_active_row_geometric_e
     theorem20_7_deltaEntries_bound_all_of_active_row_geometric_entry_growth_with_relative_error_rows_nonzero_nat
       hm hn Astage A bstage b gammaTilde err hcert.DeltaA hcert.Deltab
       hphi hgamma herr hrows hA hb hcert.deltaA_bound hcert.deltab_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation version of the active-row geometric
     uniform-budget wrapper. -/
@@ -45427,7 +45058,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_ac
     Theorem20_7RowwiseBackwardError.uniform_bounds_of_active_row_geometric_entry_growth_rows_nonzero_nat
       hm hn Astage A bstage b gammaTilde xhat hphi hgamma hrows hA hb
       hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     certificate-free exact-perturbation version of the active-row accumulated
     error uniform-budget wrapper. -/
@@ -45485,7 +45115,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_ac
     Theorem20_7RowwiseBackwardError.uniform_bounds_of_active_row_geometric_entry_growth_with_relative_error_rows_nonzero_nat
       hm hn Astage A bstage b gammaTilde err xhat hphi hgamma herr hrows
       hA hb hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
     a row-permuted active-row geometric certificate transports back to the
     original source order with the same source-row perturbation budgets. -/
@@ -45541,7 +45170,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuteRows_active_row
         intro i k hk
         simpa using hb (σ.symm i) k hk)
       hcertOrig
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
     certificate-free exact-perturbation version of the row-permuted active-row
     geometric transport wrapper. -/
@@ -45611,7 +45239,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
     Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuteRows_active_row_geometric_entry_growth_rows_nonzero_nat
       hm hn Astage A bstage b σ gammaTilde xhat hphi hgamma hrows hA hb
       hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
     source-shaped `Delta b` budget version of the exact-perturbation,
     row-permuted active-row geometric wrapper. -/
@@ -45672,7 +45299,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
         intro i
         simpa [theorem20_7_beta_permuteRows,
           theorem20_7_initialWeightedRowMax_permuteRows] using hDeltab i)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
     a row-permuted active-row accumulated-error certificate transports back to
     the original source order with the same source-row perturbation budgets. -/
@@ -45728,7 +45354,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuteRows_active_row
         intro i k hk
         simpa using hb (σ.symm i) k hk)
       hcertOrig
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
     certificate-free exact-perturbation version of the row-permuted active-row
     accumulated-error transport wrapper. -/
@@ -45798,7 +45423,6 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
     Theorem20_7RowwiseBackwardError.uniform_bounds_of_permuteRows_active_row_geometric_entry_growth_with_relative_error_rows_nonzero_nat
       hm hn Astage A bstage b σ gammaTilde err xhat hphi hgamma herr hrows
       hA hb hcert
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-policy support:
     source-shaped `Delta b` budget version of the exact-perturbation,
     row-permuted accumulated-error active-row wrapper. -/
@@ -45859,5 +45483,9 @@ theorem Theorem20_7RowwiseBackwardError.uniform_bounds_of_exact_perturbations_pe
         intro i
         simpa [theorem20_7_beta_permuteRows,
           theorem20_7_initialWeightedRowMax_permuteRows] using hDeltab i)
+
+-- ============================================================
+-- §20.9  Equality-constrained least squares
+-- ============================================================
 
 end NumStability

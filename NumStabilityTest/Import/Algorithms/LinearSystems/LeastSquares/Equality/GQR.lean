@@ -1,11 +1,12 @@
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR
 
 /-!
-# Generalized QR for equality-constrained least squares canonical-only import smoke test
+# Equality.GQR canonical-only import smoke test
 
-Imports exactly one canonical module and checks representative public declarations.
+Imports exactly one canonical module so no sibling import can supply
+the declarations checked below.
 -/
 
 #check @NumStability.gqrAQBlock
-#check @NumStability.GeneralizedQRFactorization.Q2Basis_vecNorm2
-#check @NumStability.Theorem20_10ConstructedHouseholderReturnedVectorPartBRoute
+#check @NumStability.gqrBQBlock
+#check @NumStability.gqrAQ2Block

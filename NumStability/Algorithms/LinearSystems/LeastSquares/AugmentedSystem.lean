@@ -9,7 +9,6 @@ import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
-import NumStability.Algorithms.RandNLA.LowRankApprox
 import NumStability.Analysis.MatrixAlgebra
 
 namespace NumStability
@@ -71,37 +70,6 @@ theorem LSAugmentedSystem.iff_augmentedNormalSystem_zero_rhs {m n : ℕ}
     · exact h.1
     · intro j
       simpa using h.2 j
-/-- Higham, 2nd ed., Chapter 20, equation (20.3): using Higham's residual
-    sign convention, the augmented system is equivalent to the rectangular
-    normal equations. -/
-theorem LSAugmentedNormalSystem.iff_rectLSNormalEquations {m n : ℕ}
-    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (x : Fin n → ℝ) :
-    LSAugmentedNormalSystem A b (lsResidualHigham A b x) x ↔
-      RectLSNormalEquations A b x := by
-  constructor
-  · intro h
-    apply RectLSNormalEquations.of_residual_orthogonal
-    intro j
-    have hbook := h.2 j
-    rw [lsResidualHigham_column_sum_eq_neg A b x j] at hbook
-    linarith
-  · intro h
-    constructor
-    · intro i
-      unfold lsResidualHigham
-      ring
-    · intro j
-      have horth := h.residual_orthogonal j
-      rw [lsResidualHigham_column_sum_eq_neg A b x j, horth]
-      ring
-/-- Combining (20.15) with the zero-`g` specialization recovers the exact
-    normal-equation characterization from (20.3). -/
-theorem LSAugmentedSystem.iff_rectLSNormalEquations_zero_rhs {m n : ℕ}
-    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (x : Fin n → ℝ) :
-    LSAugmentedSystem A b (0 : Fin n → ℝ) (lsResidualHigham A b x) x ↔
-      RectLSNormalEquations A b x := by
-  rw [LSAugmentedSystem.iff_augmentedNormalSystem_zero_rhs]
-  exact LSAugmentedNormalSystem.iff_rectLSNormalEquations A b x
 /-- Higham, 2nd ed., Chapter 20, equation (20.4): the perturbed augmented
     least-squares system
     `[I A + DeltaA; (A + DeltaA)^T 0] [s; y] = [b + Deltab; 0]`. -/
@@ -120,19 +88,6 @@ theorem LSPerturbedAugmentedSystem.iff_component {m n : ℕ}
           b i + Deltab i) ∧
       (∀ j : Fin n, ∑ i : Fin m, (A i j + DeltaA i j) * s i = 0) := by
   rfl
-/-- Equation (20.4) with `s = b + Deltab - (A + DeltaA)y` is equivalent to
-    the normal equations for the perturbed least-squares problem. -/
-theorem LSPerturbedAugmentedSystem.iff_rectLSNormalEquations {m n : ℕ}
-    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
-    (y : Fin n → ℝ) :
-    LSPerturbedAugmentedSystem A DeltaA b Deltab
-        (lsResidualHigham (fun i j => A i j + DeltaA i j)
-          (fun i => b i + Deltab i) y) y ↔
-      RectLSNormalEquations (fun i j => A i j + DeltaA i j)
-        (fun i => b i + Deltab i) y := by
-  exact
-    LSAugmentedSystem.iff_rectLSNormalEquations_zero_rhs
-      (fun i j => A i j + DeltaA i j) (fun i => b i + Deltab i) y
 /-- Higham, 2nd ed., Chapter 20, Section 20.5, exact transformed QR solve
     formula for the arbitrary augmented system (20.15): after writing
     `d = [d₁; d₂]`, if `R^T h = g` and `R x = d₁ - h`, then
@@ -659,6 +614,64 @@ theorem LSScaledAugmentedSystem.one_iff_augmentedSystem {m n : ℕ}
     · intro i
       simpa using h.1 i
     · exact h.2
+private theorem lsAugmentedInverseAction_Aplus_mul_A {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (gramInv : Fin n → Fin n → ℝ)
+    (hAplus : ∀ j i, Aplus j i = ∑ k : Fin n, gramInv j k * A i k)
+    (hGramInv : IsInverse n (rectLSGram A) gramInv) :
+    ∀ j k : Fin n, ∑ i : Fin m, Aplus j i * A i k =
+      if j = k then 1 else 0 := by
+  intro j k
+  calc
+    ∑ i : Fin m, Aplus j i * A i k
+        = ∑ i : Fin m, (∑ p : Fin n, gramInv j p * A i p) * A i k := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [hAplus j i]
+    _ = ∑ i : Fin m, ∑ p : Fin n, (gramInv j p * A i p) * A i k := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.sum_mul]
+    _ = ∑ p : Fin n, ∑ i : Fin m, (gramInv j p * A i p) * A i k := by
+            rw [Finset.sum_comm]
+    _ = ∑ p : Fin n, gramInv j p * rectLSGram A p k := by
+            apply Finset.sum_congr rfl
+            intro p _
+            unfold rectLSGram
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+    _ = if j = k then 1 else 0 := hGramInv.1 j k
+private theorem lsAugmentedInverseAction_gram_mul_Aplus {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (gramInv : Fin n → Fin n → ℝ)
+    (hAplus : ∀ j i, Aplus j i = ∑ k : Fin n, gramInv j k * A i k)
+    (hGramInv : IsInverse n (rectLSGram A) gramInv) :
+    ∀ j : Fin n, ∀ i : Fin m,
+      ∑ k : Fin n, rectLSGram A j k * Aplus k i = A i j := by
+  intro j i
+  calc
+    ∑ k : Fin n, rectLSGram A j k * Aplus k i
+        = ∑ k : Fin n, rectLSGram A j k *
+            (∑ p : Fin n, gramInv k p * A i p) := by
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [hAplus k i]
+    _ = ∑ p : Fin n, (∑ k : Fin n, rectLSGram A j k * gramInv k p) * A i p := by
+            simp_rw [Finset.mul_sum, Finset.sum_mul]
+            rw [Finset.sum_comm]
+            apply Finset.sum_congr rfl
+            intro p _
+            apply Finset.sum_congr rfl
+            intro k _
+            ring
+    _ = ∑ p : Fin n, (if j = p then 1 else 0) * A i p := by
+            apply Finset.sum_congr rfl
+            intro p _
+            rw [hGramInv.2 j p]
+    _ = A i j := by
+            simp
 /-- Higham, 2nd ed., Chapter 20, equation (20.6), exact block action:
     if `A^+ = (A^T A)^{-1} A^T`, the supplied Gram inverse is a two-sided
     inverse of `A^T A`, and that inverse is symmetric, then the displayed
@@ -835,6 +848,54 @@ theorem LSAugmentedSystem.of_eq20_6_full_column_rank {m n : ℕ}
   exact
     LSAugmentedSystem.of_eq20_6_nonsing_gram A u v
       (rectLSGram_det_ne_zero_of_rectMatMulVec_injective A hA)
+/-- Full-column-rank Gram pseudoinverse support: a nonzero Gram determinant
+    makes `(AᵀA)^{-1}Aᵀ` a left inverse for `A`. -/
+theorem lsAplusOfGramNonsingInv_mul_self_of_det_ne_zero {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (hdet : Matrix.det (rectLSGram A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    rectMatMul (lsAplusOfGramNonsingInv A) A = idMatrix n := by
+  ext j k
+  have hentry :=
+    lsAugmentedInverseAction_Aplus_mul_A
+      A (lsAplusOfGramNonsingInv A) (lsGramNonsingInv A)
+      (by intro j i; rfl)
+      (lsGramNonsingInv_isInverse_of_det_ne_zero A hdet) j k
+  simpa [rectMatMul, idMatrix] using hentry
+/-- Full-column-rank Gram pseudoinverse package for the reduced Wedin route:
+    injectivity of `x ↦ A*x` supplies both the left inverse and symmetric
+    range-projection fields required by the repository Moore--Penrose-style
+    least-squares interfaces. -/
+theorem lsAplusOfGramNonsingInv_left_inverse_and_projection_symmetric
+    {m n : ℕ} (A : Fin m → Fin n → ℝ)
+    (hA : Function.Injective (rectMatMulVec A)) :
+    rectMatMul (lsAplusOfGramNonsingInv A) A = idMatrix n ∧
+      IsSymmetricFiniteMatrix (rectMatMul A (lsAplusOfGramNonsingInv A)) := by
+  constructor
+  · exact
+      lsAplusOfGramNonsingInv_mul_self_of_det_ne_zero A
+        (rectLSGram_det_ne_zero_of_rectMatMulVec_injective A hA)
+  · exact lsAplusOfGramNonsingInv_projection_symmetric A
+private theorem matMulVec_eq_zero_of_inverse {n : ℕ}
+    (T Tinv : Fin n → Fin n → ℝ) (hInv : IsInverse n T Tinv)
+    {x : Fin n → ℝ} (hx : ∀ i : Fin n, matMulVec n T x i = 0) :
+    x = 0 := by
+  ext i
+  calc
+    x i = matMulVec n (idMatrix n) x i := by rw [matMulVec_id]
+    _ = matMulVec n (matMul n Tinv T) x i := by
+          have hmat : matMul n Tinv T = idMatrix n := by
+            ext a b
+            exact hInv.1 a b
+          rw [hmat]
+    _ = matMulVec n Tinv (matMulVec n T x) i := by
+          exact matMulVec_matMul n Tinv T x i
+    _ = matMulVec n Tinv 0 i := by
+          congr 1
+          ext j
+          exact hx j
+    _ = 0 := by
+          unfold matMulVec
+          simp
 /-- Uniqueness for Higham's augmented least-squares system when `Aᵀ A` has a
     supplied inverse. -/
 theorem LSAugmentedSystem.eq_of_gram_inverse {m n : ℕ}
@@ -3975,6 +4036,66 @@ theorem LSAsymmetricPerturbedAugmentedSystem.to_augmentedSystem_of_s_eq_zero
     simpa using h.1 i
   · intro j
     simp
+private theorem matMulVec_orthogonal_mul_transpose_lsq {m : ℕ}
+    {Q : Fin m → Fin m → ℝ} (hQ : IsOrthogonal m Q)
+    (f : Fin m → ℝ) :
+    matMulVec m Q (matMulVec m (matTranspose Q) f) = f := by
+  ext i
+  calc
+    matMulVec m Q (matMulVec m (matTranspose Q) f) i
+        = matMulVec m (matMul m Q (matTranspose Q)) f i := by
+            exact (matMulVec_matMul m Q (matTranspose Q) f i).symm
+    _ = matMulVec m (idMatrix m) f i := by
+            have hmat : matMul m Q (matTranspose Q) = idMatrix m := by
+              ext a b
+              exact hQ.right_inv a b
+            rw [hmat]
+    _ = f i := by
+            exact congrFun (matMulVec_id m f) i
+private theorem matMulRectLeft_transpose_action_orthogonal {m n : ℕ}
+    (Q : Fin m → Fin m → ℝ) (B : Fin m → Fin n → ℝ)
+    (y : Fin m → ℝ) (hQ : IsOrthogonal m Q) :
+    (fun j : Fin n =>
+      ∑ i : Fin m, matMulRectLeft Q B i j * matMulVec m Q y i) =
+      fun j : Fin n => ∑ i : Fin m, B i j * y i := by
+  ext j
+  unfold matMulRectLeft matMulVec
+  calc
+    ∑ i : Fin m, (∑ k : Fin m, Q i k * B k j) *
+        (∑ l : Fin m, Q i l * y l)
+        = ∑ i : Fin m, ∑ k : Fin m, ∑ l : Fin m,
+            (Q i k * B k j) * (Q i l * y l) := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [Finset.mul_sum]
+    _ = ∑ k : Fin m, ∑ l : Fin m, ∑ i : Fin m,
+          (Q i k * B k j) * (Q i l * y l) := by
+            rw [Finset.sum_comm]
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [Finset.sum_comm]
+    _ = ∑ k : Fin m, ∑ l : Fin m,
+          (∑ i : Fin m, Q i k * Q i l) * (B k j * y l) := by
+            apply Finset.sum_congr rfl
+            intro k _
+            apply Finset.sum_congr rfl
+            intro l _
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+    _ = ∑ k : Fin m, ∑ l : Fin m,
+          (if k = l then 1 else 0) * (B k j * y l) := by
+            apply Finset.sum_congr rfl
+            intro k _
+            apply Finset.sum_congr rfl
+            intro l _
+            rw [hQ.col_orthonormal k l]
+    _ = ∑ k : Fin m, B k j * y k := by
+            simp [Finset.mem_univ]
 /-- Higham, 2nd ed., Chapter 20, Section 20.5: an exact solution of the
     transformed augmented system obtained by applying an orthogonal `Q^T`
     lifts back to an exact solution of the original augmented system.
@@ -4105,58 +4226,5 @@ theorem LSAugmentedSystem.exact_qr_solution_of_factors {n k : ℕ}
   exact
     LSAugmentedSystem.of_transformed_orthogonal Q (lsQRTallBlock R) A f g
       (Fin.append h d2) x hQ hA htrans
-/-- Any zero-right-hand-side augmented least-squares system gives an exact
-    least-squares minimizer, even if the residual vector is supplied abstractly. -/
-theorem LSAugmentedSystem.isLeastSquaresMinimizer_of_zero_rhs {m n : ℕ}
-    (A : Fin m → Fin n → ℝ) (b r : Fin m → ℝ) (x : Fin n → ℝ)
-    (h : LSAugmentedSystem A b (0 : Fin n → ℝ) r x) :
-    IsLeastSquaresMinimizer A b x := by
-  have hr : r = lsResidualHigham A b x := by
-    ext i
-    have htop := h.1 i
-    unfold lsResidualHigham
-    linarith
-  have haug : LSAugmentedSystem A b (0 : Fin n → ℝ) (lsResidualHigham A b x) x := by
-    simpa [← hr] using h
-  exact (RectLSNormalEquations.iff_isLeastSquaresMinimizer A b x).mp
-    ((LSAugmentedSystem.iff_rectLSNormalEquations_zero_rhs A b x).mp haug)
-/-- Exact minimizers of the perturbed least-squares problem satisfy Higham's
-    perturbed augmented system (20.4). -/
-theorem LSPerturbedAugmentedSystem.of_isLeastSquaresMinimizer {m n : ℕ}
-    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
-    (y : Fin n → ℝ)
-    (hmin : IsLeastSquaresMinimizer (fun i j => A i j + DeltaA i j)
-      (fun i => b i + Deltab i) y) :
-    LSPerturbedAugmentedSystem A DeltaA b Deltab
-      (lsResidualHigham (fun i j => A i j + DeltaA i j)
-        (fun i => b i + Deltab i) y) y := by
-  exact
-    (LSPerturbedAugmentedSystem.iff_rectLSNormalEquations
-      A DeltaA b Deltab y).mpr
-      (IsLeastSquaresMinimizer.rectLSNormalEquations hmin)
-
-/-- The finite minimum of the basis-indexed right-Gram singular values is the
-    finite minimum of the ordered real right-Gram singular values. -/
-theorem lsScaledAugmentedBranchSigmaMin_rectRightGramBasis_eq_rectSingularValue
-    {m n : ℕ} [Nonempty (Fin n)] (A : Fin m → Fin n → ℝ) :
-    lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A) =
-      lsScaledAugmentedBranchSigmaMin (rectSingularValue A) := by
-  exact
-    lsScaledAugmentedBranchSigmaMin_eq_of_equiv
-      (rectRightGramBasisSingularValue A) (rectSingularValue A)
-      (rectRightGramBasisOrderedEquiv n)
-      (fun b => rectRightGramBasisSingularValue_eq_orderedIndex A b)
-/-- The finite maximum of the basis-indexed right-Gram singular values is the
-    finite maximum of the ordered real right-Gram singular values. -/
-theorem lsScaledAugmentedBranchSigmaMax_rectRightGramBasis_eq_rectSingularValue
-    {m n : ℕ} [Nonempty (Fin n)] (A : Fin m → Fin n → ℝ) :
-    lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) =
-      lsScaledAugmentedBranchSigmaMax (rectSingularValue A) := by
-  exact
-    lsScaledAugmentedBranchSigmaMax_eq_of_equiv
-      (rectRightGramBasisSingularValue A) (rectSingularValue A)
-      (rectRightGramBasisOrderedEquiv n)
-      (fun b => rectRightGramBasisSingularValue_eq_orderedIndex A b)
-
 
 end NumStability

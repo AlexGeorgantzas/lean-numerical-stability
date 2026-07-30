@@ -11,26 +11,22 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT
 import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
-import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
-import NumStability.Algorithms.QR.Higham19
-import NumStability.Algorithms.QR.Higham19Thm6ColPivot
-import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
-import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
-import NumStability.Algorithms.QR.Higham19Thm6ElementwisePackaged
-import NumStability.Algorithms.QR.Higham19Thm6RowSpecific
+import NumStability.Algorithms.QR.GramSchmidt
+import NumStability.Algorithms.QR.HouseholderQR
 import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Wedin
+import NumStability.Analysis.SingularValues.Basic
+import NumStability.Analysis.SingularValues.Realification
 
 namespace NumStability
 
-open scoped BigOperators Matrix.Norms.Frobenius
+open scoped BigOperators
 
 /-!
-# Perturbation theory for equality-constrained least squares
+# Perturbation
 
-Reusable data-correction, rank, minimizer, and KKT perturbation analysis for equality-constrained least squares.
-
-Declarations are extracted command-for-command from the historical least-squares owners; only contracted cross-module private helpers are promoted.
+Canonical reusable module extracted without change from LSE.
 -/
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
@@ -44,7 +40,6 @@ noncomputable def theorem20_8MaxRelativePerturbation {m n p : ℕ}
     (max (vecNorm2 Deltab / vecNorm2 b)
       (max (frobNormRect DeltaB / frobNormRect B)
         (vecNorm2 Deltad / vecNorm2 d)))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the displayed maximum of relative perturbation sizes is nonnegative when
     the source `A` denominator is positive. -/
@@ -57,7 +52,6 @@ theorem theorem20_8MaxRelativePerturbation_nonneg {m n p : ℕ}
   exact
     (div_nonneg (frobNormRect_nonneg DeltaA) hApos.le).trans
       (le_max_left _ _)
-
 /-- Multiplicative form of the Theorem 20.8 relative perturbation budget,
     avoiding repeated division once the source maximum assumption has been
     unpacked. -/
@@ -69,7 +63,6 @@ def theorem20_8RelativePerturbationBudget {m n p : ℕ}
   vecNorm2 Deltab ≤ eps * vecNorm2 b ∧
   frobNormRect DeltaB ≤ eps * frobNormRect B ∧
   vecNorm2 Deltad ≤ eps * vecNorm2 d
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the displayed maximum condition implies the four individual relative
     perturbation bounds in multiplicative form. -/
@@ -145,7 +138,6 @@ theorem theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
     (div_le_iff₀ hbpos).mp hDeltab_ratio,
     (div_le_iff₀ hBpos).mp hDeltaB_ratio,
     (div_le_iff₀ hdpos).mp hDeltad_ratio⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the relative perturbation budget supplies the operator-2 bound for
     `DeltaA` needed by the residual-correction estimate. -/
@@ -159,7 +151,6 @@ theorem theorem20_8_rectOpNorm2Le_DeltaA_of_relativePerturbationBudget
         eps) :
     rectOpNorm2Le DeltaA (eps * frobNormRect A) := by
   exact rectOpNorm2Le_of_frobNormRect_le DeltaA hbudget.1
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the relative perturbation budget supplies the operator-2 bound for
     `DeltaB` needed by the constraint-defect estimate. -/
@@ -173,7 +164,6 @@ theorem theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
         eps) :
     rectOpNorm2Le DeltaB (eps * frobNormRect B) := by
   exact rectOpNorm2Le_of_frobNormRect_le DeltaB hbudget.2.2.1
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the data-row right-hand side `Deltab - DeltaA*y` in the Cox--Higham KKT
     system is bounded by the source relative perturbation budget. -/
@@ -208,7 +198,6 @@ theorem theorem20_8_vecNorm2_higham_data_forcing_le_of_relativeBudget
             rw [vecNorm2_neg]
     _ ≤ eps * vecNorm2 b + (eps * frobNormRect A) * vecNorm2 y :=
             add_le_add hdata hDeltaAy
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the constraint-row right-hand side `Deltad - DeltaB*y` in the Cox--Higham
     KKT system is bounded by the source relative perturbation budget. -/
@@ -226,7 +215,6 @@ theorem theorem20_8_vecNorm2_constraint_defect_le_of_relativeBudget
     (theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
       A DeltaA b Deltab B DeltaB d Deltad hbudget)
     hbudget.2.2.2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     scale handoff for the Cox--Higham data-row right-hand side. -/
 theorem theorem20_8_vecNorm2_higham_data_forcing_le_of_relativeBudget_scales
@@ -262,7 +250,6 @@ theorem theorem20_8_vecNorm2_higham_data_forcing_le_of_relativeBudget_scales
     _ = (eps * bScale + (eps * frobNormRect A) * yScale) *
           vecNorm2 x := by
             ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     scale handoff for the Cox--Higham constraint-row right-hand side. -/
 theorem theorem20_8_vecNorm2_constraint_defect_le_of_relativeBudget_scales
@@ -298,7 +285,6 @@ theorem theorem20_8_vecNorm2_constraint_defect_le_of_relativeBudget_scales
     _ = (eps * dScale + (eps * frobNormRect B) * yScale) *
           vecNorm2 x := by
             ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     relative-scale bound for the perturbed Higham residual
     `(b+Deltab) - (A+DeltaA)y`. -/
@@ -365,7 +351,6 @@ theorem
     _ = ((1 + eps) * bScale + ((1 + eps) * frobNormRect A) * yScale) *
           vecNorm2 x := by
             ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the stationarity-row right-hand side `DeltaB^T*mu - DeltaA^T*s` in the
     Cox--Higham KKT system is bounded by the source relative perturbation
@@ -394,7 +379,6 @@ theorem theorem20_8_vecNorm2_stationarity_forcing_le_of_relativeBudget
       A DeltaA b Deltab B DeltaB d Deltad hbudget)
     (theorem20_8_rectOpNorm2Le_DeltaA_of_relativePerturbationBudget
       A DeltaA b Deltab B DeltaB d Deltad hbudget)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     scale handoff for the Cox--Higham stationarity-row right-hand side.  Once
     the perturbed multiplier and perturbed residual are bounded relative to the
@@ -446,7 +430,6 @@ theorem theorem20_8_vecNorm2_stationarity_forcing_le_of_relativeBudget_scales
     _ = ((eps * frobNormRect B) * muScale +
           (eps * frobNormRect A) * sScale) * vecNorm2 x := by
             ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     stationarity-row scale with the perturbed residual scale discharged from
     source-sized `b` and `y`.  The remaining caller obligation is a scale bound
@@ -493,7 +476,6 @@ theorem
   exact
     theorem20_8_vecNorm2_stationarity_forcing_le_of_relativeBudget_scales
       A DeltaA b Deltab B DeltaB d Deltad x mu s hbudget hmu hs
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     specialization of the explicit residual-correction bound to the source
     relative perturbation budget. -/
@@ -526,7 +508,6 @@ theorem theorem20_8_vecNorm2_perturbed_residual_correction_le_of_relativeBudget
     (theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
       A DeltaA b Deltab B DeltaB d Deltad hbudget)
     hbudget.2.2.2 hbudget.2.1
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-norm variant of the residual-correction estimate, using the exact
     operator 2-norm of the real product `A*Bplus` as the explicit product
@@ -556,7 +537,6 @@ theorem
     (complexMatrixOp2_nonneg (realRectToCMatrix (rectMatMul A Bplus)))
     (rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
       (rectMatMul A Bplus) le_rfl)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-norm version of the `A B_A^+` constraint-defect bound under the
     displayed relative perturbation budget. -/
@@ -587,7 +567,6 @@ theorem theorem20_8_vecNorm2_A_BAplus_constraint_defect_le_of_relativeBudget_op2
     (theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
       A DeltaA b Deltab B DeltaB d Deltad hbudget)
     hbudget.2.2.2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the source coefficient `kappa_B(A)` is an operator-2 bound for
     `A (AP)^+`. -/
@@ -599,7 +578,6 @@ theorem theorem20_8_rectOpNorm2Le_A_APplus_kappaB {m n : ℕ}
   exact rectOpNorm2Le_rectMatMul A APplus (frobNormRect_nonneg A)
     (rectOpNorm2Le_of_frobNormRect_le A le_rfl)
     (rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le APplus le_rfl)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     applying `A (AP)^+` is bounded by the source coefficient
     `kappa_B(A)`. -/
@@ -610,7 +588,6 @@ theorem theorem20_8_vecNorm2_A_APplus_apply_le {m n : ℕ}
       theorem20_8KappaB A APplus * vecNorm2 z := by
   simpa [rectMatMulVec_rectMatMul] using
     (theorem20_8_rectOpNorm2Le_A_APplus_kappaB A APplus z)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the reduced-problem pseudo-inverse correction created by splitting
     `A B^+` through `B_A^+` is bounded by `kappa_B(A)` times the
@@ -660,7 +637,6 @@ theorem theorem20_8_vecNorm2_A_APplus_ABplus_constraint_defect_le
           (ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y)) :=
             mul_le_mul_of_nonneg_left hABdefect
               (theorem20_8KappaB_nonneg A APplus)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-norm version of the reduced-problem pseudo-inverse correction
     bound under the displayed relative perturbation budget. -/
@@ -690,7 +666,6 @@ theorem theorem20_8_vecNorm2_A_APplus_ABplus_constraint_defect_le_of_relativeBud
     (theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
       A DeltaA b Deltab B DeltaB d Deltad hbudget)
     hbudget.2.2.2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the constraint-defect correction after the `B_A^+` residual split is bounded
     by the reduced-problem correction plus the source `A B_A^+` correction. -/
@@ -750,7 +725,6 @@ theorem theorem20_8_vecNorm2_BAplus_split_constraint_defect_le
       ABAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y)
   exact (vecNorm2_add_le reduced source).trans
     (add_le_add hreduced hsource)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-norm version of the split constraint-defect correction bound under
     the displayed relative perturbation budget. -/
@@ -794,7 +768,6 @@ theorem theorem20_8_vecNorm2_BAplus_split_constraint_defect_le_of_relativeBudget
     (theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
       A DeltaA b Deltab B DeltaB d Deltad hbudget)
     hbudget.2.2.2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the split constraint-defect correction together with `DeltaA*y` and
     `Deltab` is bounded by supplied operator and vector perturbation radii. -/
@@ -888,7 +861,6 @@ theorem theorem20_8_vecNorm2_perturbed_residual_correction_BAplus_split_le
           ABAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y)) +
         DeltaA_norm * vecNorm2 y + Deltab_norm := by
             ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-norm version of the split residual-correction bound under the
     displayed relative perturbation budget. -/
@@ -939,7 +911,6 @@ theorem theorem20_8_vecNorm2_perturbed_residual_correction_BAplus_split_le_of_re
       A DeltaA b Deltab B DeltaB d Deltad hbudget)
     hbudget.2.2.2
     hbudget.2.1
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual-gap estimate obtained directly from the perturbed residual
     decomposition after splitting the constraint correction through
@@ -1044,7 +1015,6 @@ theorem theorem20_8_source_residual_gap_norm_le_of_solution_difference_relativeB
           (eps * frobNormRect A) * vecNorm2 y +
           eps * vecNorm2 b) :=
             add_le_add hap hcorr
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-max-relative perturbation version of the BAplus split residual-gap
     estimate.  The displayed maximum bound supplies the four multiplicative
@@ -1084,7 +1054,6 @@ theorem theorem20_8_source_residual_gap_norm_le_of_solution_difference_maxRelati
     hres
     (theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
       A DeltaA b Deltab B DeltaB d Deltad hApos hbpos hBpos hdpos hmax)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     symmetric source-residual gap norm bound from the BAplus split residual
     decomposition.  This is the same estimate as
@@ -1149,7 +1118,6 @@ theorem theorem20_8_source_residual_gap_norm_le_symm_of_solution_difference_maxR
     simpa using vecNorm2_neg (fun i : Fin m => rHigh i - r i)
   rw [hnorm]
   exact hgapHigh
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the BAplus split residual-gap estimate supplies the
     `(AP)^+`-scaled residual-gap obligation used by the ECH handoff, once the
@@ -1247,7 +1215,6 @@ theorem theorem20_8_source_residual_gap_op2_le_of_solution_difference_maxRelativ
   have hop_nonneg : 0 ≤ complexMatrixOp2 (realRectToCMatrix APplus) :=
     complexMatrixOp2_nonneg (realRectToCMatrix APplus)
   exact (mul_le_mul_of_nonneg_left hgap hop_nonneg).trans hscale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     additive-scale variant of the BAplus split residual-gap handoff.
 
@@ -1346,7 +1313,6 @@ theorem theorem20_8_source_residual_gap_op2_le_of_solution_difference_maxRelativ
     _ ≤ eps * theorem20_8ResidualAmplifier A B APplus
             (theorem20_8BAplus A B Bplus APplus) *
           (vecNorm2 r / frobNormRect A) := hscale
-
 /-- Elementary norm-growth corollary: any relative solution-difference bound
     gives the corresponding perturbed-solution scale. -/
 theorem vecNorm2_le_one_add_relative_bound_mul {n : ℕ}
@@ -1362,7 +1328,6 @@ theorem vecNorm2_le_one_add_relative_bound_mul {n : ℕ}
     simpa [add_comm] using add_le_add_left hrel 1
   exact hbase.trans
     (mul_le_mul_of_nonneg_right hfactor (le_of_lt hxnorm))
-
 /-- Elementary norm-growth corollary in the `eps * solutionRadius` form used
     by Theorem 20.8 first-order plus remainder estimates. -/
 theorem vecNorm2_le_one_add_eps_solutionRadius_mul_of_solution_difference_bound
@@ -1374,7 +1339,6 @@ theorem vecNorm2_le_one_add_eps_solutionRadius_mul_of_solution_difference_bound
     vecNorm2 y ≤ (1 + eps * solutionRadius) * vecNorm2 x := by
   apply vecNorm2_le_one_add_relative_bound_mul x y hxnorm
   exact (div_le_iff₀ hxnorm).2 (by simpa [mul_assoc] using hdiff)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-operator-norm version of the direct `B_A^+` constraint-defect
     correction under the displayed relative perturbation budget. -/
@@ -1402,7 +1366,6 @@ theorem theorem20_8_vecNorm2_BAplus_constraint_defect_le_of_relativeBudget_op2
     (theorem20_8_rectOpNorm2Le_DeltaB_of_relativePerturbationBudget
       A DeltaA b Deltab B DeltaB d Deltad hbudget)
     hbudget.2.2.2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     first-order source-coefficient bound for the reduced-problem data-forcing
     term `(AP)^+ * (DeltaA*x - Deltab)` under the displayed relative
@@ -1471,7 +1434,6 @@ theorem theorem20_8_vecNorm2_APplus_data_forcing_le_of_relativeBudget_firstOrder
         have hmul := mul_le_mul_of_nonneg_left hfirst heps_nonneg
         have hmulx := mul_le_mul_of_nonneg_right hmul (le_of_lt hxpos)
         simpa [mul_assoc] using hmulx
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     first-order source-coefficient bound for the direct solution-side
     `B_A^+ * (Deltad - DeltaB*x)` correction under the displayed relative
@@ -1518,7 +1480,6 @@ theorem theorem20_8_vecNorm2_BAplus_constraint_defect_le_of_relativeBudget_first
         have hmul := mul_le_mul_of_nonneg_left hfirst heps_nonneg
         have hmulx := mul_le_mul_of_nonneg_right hmul (le_of_lt hxpos)
         simpa [mul_assoc] using hmulx
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     norm-dominated variant of the direct solution-side `B_A^+` correction
     bound.  If the perturbed vector used in the constraint defect has
@@ -1578,7 +1539,6 @@ theorem theorem20_8_vecNorm2_BAplus_constraint_defect_le_of_relativeBudget_first
         have hmul := mul_le_mul_of_nonneg_left hfirst heps_nonneg
         have hmulx := mul_le_mul_of_nonneg_right hmul (le_of_lt hxpos)
         simpa [mul_assoc, BAplus] using hmulx
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-radius version of the reduced-problem data-forcing bound, stopping
     at the printed `kappa_B(A)` coefficient before comparison with the full
@@ -1637,7 +1597,6 @@ theorem theorem20_8_vecNorm2_APplus_data_forcing_le_of_relativeBudget_sourceRadi
           (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) * vecNorm2 x :=
             theorem20_8KappaB_dataForcing_sourceTerm_eq A b x APplus
               hApos hxpos
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     norm-dominated version of the reduced-problem data-forcing source-radius
     bound.  If the perturbed vector satisfies `||y||_2 <= ||x||_2`, then the
@@ -1711,7 +1670,6 @@ theorem theorem20_8_vecNorm2_APplus_data_forcing_le_of_relativeBudget_sourceRadi
           (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) * vecNorm2 x :=
             theorem20_8KappaB_dataForcing_sourceTerm_eq A b x APplus
               hApos hxpos
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-radius bound for the corrected Higham-sign reduced data forcing
     `(AP)^+ * (Deltab - DeltaA*y)`. -/
@@ -1738,7 +1696,6 @@ theorem theorem20_8_vecNorm2_APplus_higham_data_forcing_le_of_relativeBudget_sou
     theorem20_8_vecNorm2_APplus_data_forcing_le_of_relativeBudget_sourceRadius_of_vecNorm2_le
       A DeltaA b Deltab B DeltaB d Deltad y x APplus hbudget heps_nonneg
       hApos hxpos hyx
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-radius version of the direct solution-side `B_A^+` correction when
     the constraint defect is evaluated at the source vector `x`. -/
@@ -1771,7 +1728,6 @@ theorem theorem20_8_vecNorm2_BAplus_constraint_defect_le_of_relativeBudget_sourc
           (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) * vecNorm2 x :=
             theorem20_8KappaA_directCorrection_sourceTerm_eq B
               (theorem20_8BAplus A B Bplus APplus) d x hBpos hxpos
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-radius version of the direct `B_A^+` correction when the vector in
     the constraint defect is norm-dominated by the source solution vector. -/
@@ -1820,7 +1776,6 @@ theorem theorem20_8_vecNorm2_BAplus_constraint_defect_le_of_relativeBudget_sourc
           (vecNorm2 d / (frobNormRect B * vecNorm2 x) + 1) * vecNorm2 x :=
             theorem20_8KappaA_directCorrection_sourceTerm_eq B BAplus d x
               hBpos hxpos
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     combined source-radius handoff for the direct solution correction, the
     reduced data-forcing correction, and the residual-amplifier radius. -/
@@ -1895,7 +1850,6 @@ theorem theorem20_8_direct_data_residual_radii_le_firstOrderRHS_scaled
     exact theorem20_8SourceRadiiSum_le_firstOrderRHS_scaled
       A b B d x r APplus BAplus heps_nonneg hApos hxpos
   exact hcomponents.trans hsum
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     source-radius handoff where both direct and reduced data-forcing correction
     vectors are evaluated at the perturbed vector `y`, under the visible
@@ -1972,7 +1926,6 @@ theorem theorem20_8_direct_data_y_residual_radii_le_firstOrderRHS_scaled
     exact theorem20_8SourceRadiiSum_le_firstOrderRHS_scaled
       A b B d x r APplus BAplus heps_nonneg hApos hxpos
   exact hcomponents.trans hsum
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     relative form of the actual-`y` direct/data/residual source-radius handoff
     under the visible norm-domination condition `||y||_2 <= ||x||_2`. -/
@@ -2005,7 +1958,6 @@ theorem theorem20_8_direct_data_y_residual_relative_le_firstOrderRHS
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r hbudget
       heps_nonneg hApos hBpos hxpos hyx
   exact (div_le_iff₀ hxpos).2 (by simpa [mul_assoc] using hscaled)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     actual-`y` direct/data/residual source-radius handoff under the printed
     maximum relative perturbation hypothesis. -/
@@ -2043,7 +1995,6 @@ theorem theorem20_8_direct_data_y_residual_relative_le_firstOrderRHS_of_maxRelat
     theorem20_8_direct_data_y_residual_relative_le_firstOrderRHS
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r hbudget
       heps_nonneg hApos hBpos hxpos hyx
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     triangle-inequality integration of the actual-`y` direct and reduced-data
     correction vectors under norm domination. -/
@@ -2097,7 +2048,6 @@ theorem theorem20_8_direct_data_y_correction_residual_relative_le_firstOrderRHS_
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r heps_nonneg
       hApos hbpos hBpos hdpos hxpos hyx hmax
   exact hdiv.trans (by simpa [direct, data, residual] using hbase)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     actual-`y` direct/data/residual source-radius handoff for the corrected
     Higham-sign reduced data forcing. -/
@@ -2131,7 +2081,6 @@ theorem theorem20_8_direct_higham_data_y_residual_relative_le_firstOrderRHS_of_m
     theorem20_8_direct_data_y_residual_relative_le_firstOrderRHS_of_maxRelativePerturbation
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r heps_nonneg
       hApos hbpos hBpos hdpos hxpos hyx hmax
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     triangle-inequality integration of the corrected Higham-sign direct and
     reduced-data correction vector under norm domination. -/
@@ -2185,7 +2134,6 @@ theorem theorem20_8_direct_higham_data_y_correction_residual_relative_le_firstOr
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r heps_nonneg
       hApos hbpos hBpos hdpos hxpos hyx hmax
   exact hdiv.trans (by simpa [direct, data, residual] using hbase)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     relative-error form of the combined direct, data-forcing, and residual
     source-radius handoff, matching the left normalization by `||x||_2`. -/
@@ -2218,7 +2166,6 @@ theorem theorem20_8_direct_data_residual_relative_le_firstOrderRHS
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r hbudget
       heps_nonneg hApos hBpos hxpos hyx
   exact (div_le_iff₀ hxpos).2 (by simpa [mul_assoc] using hscaled)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     source-vector specialization of the relative direct/data/residual handoff.
     The direct constraint-defect term is evaluated at `x`, matching the
@@ -2252,7 +2199,6 @@ theorem theorem20_8_direct_data_residual_relative_self_le_firstOrderRHS
     theorem20_8_direct_data_residual_relative_le_firstOrderRHS
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x x r hbudget
       heps_nonneg hApos hBpos hxpos (le_refl (vecNorm2 x))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     source-vector relative direct/data/residual handoff under the displayed
     maximum relative perturbation assumption. -/
@@ -2290,7 +2236,6 @@ theorem theorem20_8_direct_data_residual_relative_self_le_firstOrderRHS_of_maxRe
     theorem20_8_direct_data_residual_relative_self_le_firstOrderRHS
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x r hbudget
       heps_nonneg hApos hBpos hxpos
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     triangle-inequality integration of the direct and reduced-data correction
     vectors for a norm-dominated perturbed vector under the displayed maximum
@@ -2350,7 +2295,6 @@ theorem theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_of
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r hbudget
       heps_nonneg hApos hBpos hxpos hyx
   exact hdiv.trans (by simpa [direct, data, residual] using hbase)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the direct `B_A^+` correction changes from the source-vector defect
     `Deltad - DeltaB*x` to the perturbed-vector defect `Deltad - DeltaB*y`
@@ -2428,7 +2372,6 @@ theorem theorem20_8_vecNorm2_BAplus_constraint_defect_difference_le_of_maxRelati
     _ ≤ complexMatrixOp2 (realRectToCMatrix BAplus) *
         ((eps * frobNormRect B) * vecNorm2 diff) :=
           mul_le_mul_of_nonneg_left (hDeltaB diff) hop_nonneg
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the reduced data-forcing correction changes from
     `(AP)^+ * (DeltaA*x - Deltab)` to `(AP)^+ * (DeltaA*y - Deltab)`
@@ -2506,7 +2449,6 @@ theorem theorem20_8_vecNorm2_APplus_data_forcing_difference_le_of_maxRelativePer
     _ ≤ complexMatrixOp2 (realRectToCMatrix APplus) *
         ((eps * frobNormRect A) * vecNorm2 diff) :=
           mul_le_mul_of_nonneg_left (hDeltaA diff) hop_nonneg
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     combined explicit remainder when both first-order correction components
     are evaluated at the perturbed vector `y` instead of the source vector `x`.
@@ -2601,7 +2543,6 @@ theorem theorem20_8_vecNorm2_direct_data_correction_difference_le_of_maxRelative
         complexMatrixOp2 (realRectToCMatrix APplus) *
           ((eps * frobNormRect A) * vecNorm2 (fun j : Fin n => y j - x j)) :=
           add_le_add hdirect hdata
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     triangle-inequality integration of the direct and reduced-data correction
     vectors under the displayed maximum relative perturbation assumption. -/
@@ -2655,7 +2596,6 @@ theorem theorem20_8_direct_data_correction_residual_relative_self_le_firstOrderR
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x r heps_nonneg
       hApos hbpos hBpos hdpos hxpos hmax
   exact hdiv.trans (by simpa [direct, data, residual] using hbase)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     actual-`y` direct/data correction bound with an explicit remainder term.
     This replaces the norm-domination side condition by visible
@@ -2769,7 +2709,6 @@ theorem theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_pl
     _ ≤ eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus +
         remBound / vecNorm2 x :=
         add_le_add hsource (le_refl (remBound / vecNorm2 x))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     if a separate first-order estimate controls `||y-x||_2`, then the
     explicit direct/data remainder is bounded by the corresponding normalized
@@ -2841,7 +2780,6 @@ theorem theorem20_8_combined_remainder_relative_le_of_solution_difference_bound
   have hdiv :=
     div_le_div_of_nonneg_right hsum (le_of_lt hxpos)
   simpa [BAplus, diffNorm, diffBound] using hdiv
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     variant of the combined direct/data remainder bound for callers that have
     a relative solution-difference radius
@@ -2912,7 +2850,6 @@ theorem theorem20_8_combined_remainder_relative_le_of_solution_difference_relati
   have hdiv :=
     div_le_div_of_nonneg_right hsum (le_of_lt hxpos)
   simpa [BAplus, diffNorm, diffBound] using hdiv
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     actual-`y` direct/data correction bound with the explicit remainder
     packaged by a supplied first-order solution-difference estimate.  The
@@ -2966,7 +2903,6 @@ theorem theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_pl
     simpa [BAplus] using
       add_le_add_left hrem
         (eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     actual-`y` direct/data correction bound when a separate route supplies a
     relative solution-difference radius.  The result keeps the radius visible,
@@ -3036,7 +2972,6 @@ theorem theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_pl
     simpa [BAplus] using
       add_le_add_left hrem
         (eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     actual-`y` direct/data correction bound with the explicit remainder
     rewritten as an `eps^2` coefficient.  The needed first-order estimate for
@@ -3084,7 +3019,6 @@ theorem theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_pl
     theorem20_8_quadratic_remainder_relative_eq_eps_sq_coefficient
       A B Bplus APplus x (eps := eps) (solutionRadius := solutionRadius) hxpos
   simpa [BAplus, hquad] using hbase
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-operator-norm residual-explicit solution-difference bound under the
     displayed relative perturbation budget.  The reduced residual forcing still
@@ -3129,7 +3063,6 @@ theorem theorem20_8_vecNorm2_solution_difference_residual_forcing_le_of_relative
       A DeltaA b Deltab B DeltaB d Deltad hbudget)
     hbudget.2.2.2
     hforcing
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-operator-norm residual-explicit solution-difference bound under the
     printed maximum relative perturbation hypothesis.  The reduced residual
@@ -3171,7 +3104,6 @@ theorem theorem20_8_vecNorm2_solution_difference_residual_forcing_le_of_maxRelat
     (theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
       A DeltaA b Deltab B DeltaB d Deltad hApos hbpos hBpos hdpos hmax)
     hforcing
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-residual form of the max-relative residual-explicit solution
     difference bound.  The remaining forcing radius is stated using
@@ -3225,7 +3157,6 @@ theorem theorem20_8_vecNorm2_solution_difference_source_residual_forcing_le_of_m
       (by
         rw [hforcing_vec]
         exact hforcing)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the source-shaped residual forcing is bounded by a supplied residual-gap
     radius plus the displayed relative perturbation budget for `DeltaA` and
@@ -3280,7 +3211,6 @@ theorem theorem20_8_vecNorm2_source_residual_forcing_le_of_residual_gap_relative
     _ = residual_gap_norm + (eps * frobNormRect A) * vecNorm2 y +
           eps * vecNorm2 b := by
             ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     exact same-residual subcase of the source residual-forcing bound.  This
     discharges the residual-gap radius only under the explicit assumption that
@@ -3310,7 +3240,6 @@ theorem theorem20_8_vecNorm2_source_residual_forcing_le_of_same_residual_relativ
       A DeltaA b Deltab B DeltaB d Deltad y r rHigh hbudget
       (residual_gap_norm := 0) hgap
   simpa using h
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     max-relative perturbation form of the residual-explicit solution bound with
     the remaining reduced-residual obligation stated only as a residual-gap
@@ -3357,7 +3286,6 @@ theorem theorem20_8_vecNorm2_solution_difference_source_residual_gap_le_of_maxRe
       hApos hbpos hBpos hdpos hmax hAPleft hx hy hr hres
       (theorem20_8_vecNorm2_source_residual_forcing_le_of_residual_gap_relativeBudget
         A DeltaA b Deltab B DeltaB d Deltad y r rHigh hbudget hgap)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     exact same-residual subcase of the residual-explicit solution-difference
     bound.  The residual gap is not hidden; it is specialized to zero from the
@@ -3403,7 +3331,6 @@ theorem theorem20_8_vecNorm2_solution_difference_same_source_residual_le_of_maxR
       hApos hbpos hBpos hdpos hmax hAPleft hx hy hr hres
       (residual_gap_norm := 0) hgap
   simpa using h
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     same-residual first-order solution-radius handoff.  If the perturbed
     solution is norm-dominated by the source solution, the residual-explicit
@@ -3571,7 +3498,6 @@ theorem
           vecNorm2 x := by
             simpa [residualR, BAplus] using hscaled
   exact hdiff.trans (hsource_y_le_x.trans hsource_x_le_first)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     same-residual relative solution-difference bound using the corrected
     Higham-sign correction vector directly.  This is a source-shaped exact
@@ -3640,7 +3566,6 @@ theorem theorem20_8_solution_difference_relative_le_firstOrderRHS_of_same_higham
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r heps_nonneg
       hApos hbpos hBpos hdpos hxpos hyx hmax
   exact hdiv.trans (by simpa [correction, residual] using hbase)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     same-residual first-order relative bound using only the projected action
     of `(AP)^+ AP` on the actual feasible difference. -/
@@ -3712,7 +3637,6 @@ theorem
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r heps_nonneg
       hApos hbpos hBpos hdpos hxpos hyx hmax
   exact hdiv.trans (by simpa [correction, residual] using hbase)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     final transfer from the printed correction vector to the relative
     solution-difference estimate, assuming the projected-difference equation
@@ -3795,7 +3719,6 @@ theorem theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_co
         A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r
         heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx
   exact hdiv.trans hcorr
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     relative solution-difference transfer with the projected-difference
     equation derived from the reduced `AP` equation and `(AP)^+ AP = P`. -/
@@ -3855,7 +3778,6 @@ theorem theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_co
     theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_projected_difference
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r
       heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy hproj
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     same-residual reduced-equation transfer with the quadratic remainder
     coefficient specialized to `solutionRadius = theorem20_8FirstOrderRHS`.
@@ -3923,7 +3845,6 @@ theorem
         theorem20_8FirstOrderRHS A b B d x r APplus
           (theorem20_8BAplus A B Bplus APplus))
       hyx hx hy hAPleft hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     relative solution-difference transfer with the projected-difference
     equation derived from the reduced `AP` equation and the projected action
@@ -3987,7 +3908,6 @@ theorem theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_co
     theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_projected_difference
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r
       heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy hproj
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     relative solution-difference transfer from the reduced `AP` equation and a
     nullspace left-inverse condition for `(AP)^+`. -/
@@ -4044,7 +3964,6 @@ theorem theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_co
     theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_projected_action_reduced_difference_eq
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r
       heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy hAPaction hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     relative solution-difference transfer from the reduced `AP` equation and a
     left inverse for `AP` on the homogeneous constraint nullspace. -/
@@ -4102,7 +4021,6 @@ theorem theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_co
     theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_projected_action_reduced_difference_eq
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r
       heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy hAPaction hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     relative solution-difference transfer from the reduced `AP` equation and
     Penrose-style reduced-operator hypotheses. -/
@@ -4169,7 +4087,6 @@ theorem theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_co
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r
       heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy hright
       hAPleft_null hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     corrected same-residual relative solution-difference bound with the
     explicit `eps^2` coefficient used for the source `O(eps^2)` remainder.
@@ -4251,7 +4168,6 @@ theorem
               complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
     exact le_add_of_nonneg_right (by simpa [BAplus] using hquad_nonneg)
   exact hbase.trans htail
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     same-residual projected-action relative bound with the explicit `eps^2`
     coefficient used for the source `O(eps^2)` remainder. -/
@@ -4333,7 +4249,6 @@ theorem
               complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
     exact le_add_of_nonneg_right (by simpa [BAplus] using hquad_nonneg)
   exact hbase.trans htail
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-operator-norm residual-explicit solution-difference bound under the
     displayed relative perturbation budget, with only the projected action of
@@ -4381,7 +4296,6 @@ theorem theorem20_8_vecNorm2_solution_difference_residual_forcing_le_of_relative
       A DeltaA b Deltab B DeltaB d Deltad hbudget)
     hbudget.2.2.2
     hforcing
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     printed maximum-relative-perturbation form of the residual-explicit
     solution-difference bound, with only the projected action of `(AP)^+ AP`
@@ -4426,7 +4340,6 @@ theorem theorem20_8_vecNorm2_solution_difference_residual_forcing_le_of_maxRelat
     (theorem20_8RelativePerturbationBudget_of_maxRelativePerturbation_le
       A DeltaA b Deltab B DeltaB d Deltad hApos hbpos hBpos hdpos hmax)
     hforcing
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-residual form of the max-relative residual-explicit bound using
     only the projected action of `(AP)^+ AP` on `y - x`. -/
@@ -4482,7 +4395,6 @@ theorem theorem20_8_vecNorm2_solution_difference_source_residual_forcing_le_of_m
       (by
         rw [hforcing_vec]
         exact hforcing)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual-gap solution-difference bound using only the projected action of
     `(AP)^+ AP` on `y - x`.  The residual-gap radius remains explicit. -/
@@ -4531,7 +4443,6 @@ theorem theorem20_8_vecNorm2_solution_difference_source_residual_gap_le_of_maxRe
       hApos hbpos hBpos hdpos hmax hAPaction hx hy hr hres
       (theorem20_8_vecNorm2_source_residual_forcing_le_of_residual_gap_relativeBudget
         A DeltaA b Deltab B DeltaB d Deltad y r rHigh hbudget hgap)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     a non-circular scaled residual-gap handoff for the `B_A^+` split route.
 
@@ -4653,7 +4564,6 @@ theorem theorem20_8_source_residual_gap_op2_le_of_BAplus_split_small_gain
   have hscaled : APnorm * gap ≤ APnorm * gapRadius :=
     mul_le_mul_of_nonneg_left hgap_bound hAP_nonneg
   exact hscaled.trans (by simpa [APnorm, gapRadius] using hscale)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual-gap first-order handoff using only the projected action of
     `(AP)^+ AP` on the actual feasible difference.  The residual-gap estimate
@@ -4808,7 +4718,6 @@ theorem
           vecNorm2 x :=
     hbase.trans (hcombined.trans hsum)
   exact (div_le_iff₀ hxpos).2 (by simpa [BAplus, mul_assoc] using hscaled)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     convert a reduced residual-relative estimate into the operator-scaled
     residual-gap obligation used by the Eldén--Cox--Higham handoff. -/
@@ -4837,7 +4746,6 @@ theorem theorem20_8_source_residual_gap_op2_le_of_residual_relative_bound
   have hop_nonneg : 0 ≤ complexMatrixOp2 (realRectToCMatrix APplus) :=
     complexMatrixOp2_nonneg (realRectToCMatrix APplus)
   exact (mul_le_mul_of_nonneg_left hgap hop_nonneg).trans hscale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected-action first-order handoff from a residual-relative reduced-LS
     estimate.  The scalar comparison to the Chapter 20.8 residual amplifier is
@@ -4891,7 +4799,6 @@ theorem
       (theorem20_8_source_residual_gap_op2_le_of_residual_relative_bound
         A B APplus (theorem20_8BAplus A B Bplus APplus) r rHigh hrpos
         hrelative hscale)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected-action residual-gap first-order handoff packaged in the
     source-shaped first-order plus explicit `eps^2`-coefficient form. -/
@@ -4978,7 +4885,6 @@ theorem
               complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
     exact le_add_of_nonneg_right (by simpa [BAplus] using hquad_nonneg)
   exact hbase.trans htail
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected-action residual-relative first-order handoff packaged in the
     source-shaped first-order plus explicit `eps^2`-coefficient form. -/
@@ -5038,7 +4944,6 @@ theorem
       (theorem20_8_source_residual_gap_op2_le_of_residual_relative_bound
         A B APplus (theorem20_8BAplus A B Bplus APplus) r rHigh hrpos
         hrelative hscale)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     scalar form of the Wedin residual-RHS comparison.  It factors the source
     residual norm out of the residual-gap scaling obligation, leaving the
@@ -5060,7 +4965,6 @@ theorem theorem20_8_wedinResidualRHS_scaled_residual_le_of_scalar_op2_le
   have hmul :=
     mul_le_mul_of_nonneg_right hscalar (vecNorm2_nonneg r)
   simpa [mul_assoc, mul_left_comm, mul_comm, div_eq_mul_inv] using hmul
-
 /-- Higham, 2nd ed., Chapter 20, Theorems 20.1 and 20.8:
     Wedin's printed residual RHS `(1+2κ)ε` dominates the direct `ε` residual
     radius under the natural nonnegativity assumptions. -/
@@ -5071,7 +4975,6 @@ theorem theorem20_8_eps_le_wedinResidualRHS_of_nonneg {kappa eps : ℝ}
   have hterm : 0 ≤ 2 * kappa * eps := by
     nlinarith [mul_nonneg hkappa_nonneg heps_nonneg]
   nlinarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorems 20.1 and 20.8:
     expanding Wedin's residual RHS `(1 + 2*kappa)*eps` turns the scalar
     residual-amplifier comparison into an `eps`-free coefficient comparison. -/
@@ -5099,7 +5002,6 @@ theorem theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
     _ = eps * theorem20_8ResidualAmplifier A B APplus BAplus /
           frobNormRect A := by
             ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual-gap scaling from an `eps`-free first-order coefficient comparison
     for Wedin's residual RHS. -/
@@ -5120,7 +5022,6 @@ theorem theorem20_8_wedinResidualRHS_scaled_residual_le_of_first_order_coeff_le
     A B APplus BAplus r
     (theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
       A B APplus BAplus heps_nonneg hcoeff)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     after identifying Wedin's reduced-problem condition number with
     `kappa_B(A)`, the first-order residual-amplifier coefficient comparison
@@ -5161,7 +5062,6 @@ theorem theorem20_8_wedinResidualRHS_first_order_coeff_le_of_kappaB_bracket
       dsimp [APnorm, bracket]
       unfold theorem20_8ResidualAmplifier theorem20_8KappaB
       field_simp [ne_of_gt hApos]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the remaining `kappa_B(A)` bracket follows from the sharper residual
     amplifier lower bound
@@ -5202,7 +5102,6 @@ theorem theorem20_8_kappaB_bracket_of_residual_amplifier_factor_lower_bound
           1) := by
       simp [kappa, factor]
       ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-facing form of the residual-amplifier lower-bound side condition.
     If the dimensionless residual factor is at least `1 + 1/kappa_B(A)`, then
@@ -5241,7 +5140,6 @@ theorem theorem20_8_kappaB_bracket_of_residual_amplifier_factor_ge_one_add_inv
   exact
     theorem20_8_kappaB_bracket_of_residual_amplifier_factor_lower_bound
       A B APplus BAplus (by simpa [kappa, factor] using hlower)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     convert a source residual-radius comparison into the scaled
     residual-amplifier obligation once the residual-amplifier lower-bound
@@ -5305,7 +5203,6 @@ theorem theorem20_8_scaled_radius_le_residualAmplifier_of_factor_ge_one_add_inv
   have hAP_nonneg : 0 ≤ complexMatrixOp2 (realRectToCMatrix APplus) :=
     complexMatrixOp2_nonneg (realRectToCMatrix APplus)
   exact (mul_le_mul_of_nonneg_left hradius_wedin hAP_nonneg).trans hwedin_scaled
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected-action first-order handoff when the reduced residual-relative
     estimate has Wedin's Theorem 20.1 residual RHS.  The comparison between
@@ -5356,7 +5253,6 @@ theorem
     A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
     heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hAPaction
     hx hy hr hres hrelative hscale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected-action Wedin-residual-RHS handoff packaged in the source-shaped
     first-order plus explicit `eps^2`-coefficient form. -/
@@ -5412,7 +5308,6 @@ theorem
     A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y r rHigh
     heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hAPaction
     hx hy hr hres hrelative hscale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected-action Wedin-residual-RHS handoff with the residual norm factored
     out of the remaining scalar comparison. -/
@@ -5463,7 +5358,6 @@ theorem
     hx hy hr hres hrelative
     (theorem20_8_wedinResidualRHS_scaled_residual_le_of_scalar_op2_le
       A B APplus (theorem20_8BAplus A B Bplus APplus) r hscale_scalar)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected-action Wedin-residual-RHS handoff with explicit `eps^2`
     coefficient and scalar residual-amplifier comparison. -/
@@ -5521,7 +5415,6 @@ theorem
     hx hy hr hres hrelative
     (theorem20_8_wedinResidualRHS_scaled_residual_le_of_scalar_op2_le
       A B APplus (theorem20_8BAplus A B Bplus APplus) r hscale_scalar)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected-action Wedin-residual-RHS handoff using the source first-order
     coefficient comparison instead of the expanded `eps`-scaled scalar
@@ -5572,7 +5465,6 @@ theorem
     hx hy hr hres hrelative
     (theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
       A B APplus (theorem20_8BAplus A B Bplus APplus) heps_nonneg hcoeff)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected-action Wedin-residual-RHS handoff with explicit `eps^2`
     coefficient, using the source first-order coefficient comparison. -/
@@ -5629,7 +5521,6 @@ theorem
     hx hy hr hres hrelative
     (theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
       A B APplus (theorem20_8BAplus A B Bplus APplus) heps_nonneg hcoeff)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual-gap first-order handoff.  If the missing Wedin/reduced-LS step
     supplies the `(AP)^+`-scaled residual-gap radius in the source residual
@@ -5782,7 +5673,6 @@ theorem
           vecNorm2 x :=
     hbase.trans (hcombined.trans hsum)
   exact (div_le_iff₀ hxpos).2 (by simpa [BAplus, mul_assoc] using hscaled)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual-gap first-order handoff packaged in the source-shaped
     first-order plus explicit `eps^2`-coefficient form.  The residual-gap
@@ -5867,7 +5757,6 @@ theorem
               complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
     exact le_add_of_nonneg_right (by simpa [BAplus] using hquad_nonneg)
   exact hbase.trans htail
-
 /-- Higham, 2nd ed., Chapter 20, Problem 20.11:
     after setting `B = 0` and `d = 0`, the first-order part of (20.25)
     is bounded by the Wedin-style first-order coefficient, provided the
@@ -5921,7 +5810,6 @@ theorem problem20_11_unconstrained_firstOrderRHS_le_wedin_first_order
           (vecNorm2 r / (frobNormRect A * vecNorm2 x))) := by
       dsimp [kappa, rho]
       ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated source-operator-norm bound for the direct
     `B_A^+` constraint-defect correction under the displayed perturbation
@@ -5944,7 +5832,6 @@ theorem
         (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) :=
   _root_.NumStability.theorem20_8_vecNorm2_BAplus_constraint_defect_le_of_relativeBudget_op2
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y hbudget
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated source-operator-norm bound for the
     `A B_A^+` residual correction under the displayed perturbation budget. -/
@@ -5969,7 +5856,6 @@ theorem
         (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) :=
   _root_.NumStability.theorem20_8_vecNorm2_A_BAplus_constraint_defect_le_of_relativeBudget_op2
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y hbudget
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated bound for the split constraint-defect correction
     after `A B^+` is decomposed through `B_A^+`. -/
@@ -6005,7 +5891,6 @@ theorem
           (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y) :=
   _root_.NumStability.theorem20_8_vecNorm2_BAplus_split_constraint_defect_le_of_relativeBudget_op2
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y hbudget
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated residual-correction bound for the split
     `B_A^+` path, including the explicit `DeltaA*y` and `Deltab` terms. -/
@@ -6045,7 +5930,6 @@ theorem
         eps * vecNorm2 b :=
   _root_.NumStability.theorem20_8_vecNorm2_perturbed_residual_correction_BAplus_split_le_of_relativeBudget_op2
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y hbudget
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated high-level direct/data correction bound with the
     explicit remainder rewritten as an `eps^2` coefficient.
@@ -6092,7 +5976,6 @@ theorem
   _root_.NumStability.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_solution_difference_bound
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x r
       heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank residual-explicit norm bound under the displayed
     relative perturbation budget.  The reduced residual forcing still enters
@@ -6131,7 +6014,6 @@ theorem
   _root_.NumStability.theorem20_8_vecNorm2_solution_difference_residual_forcing_le_of_relativeBudget_op2
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y rHigh
     hAPleft hx hy hres hbudget hforcing
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank residual-explicit norm bound under the printed maximum
     relative perturbation hypothesis.  The reduced residual forcing still enters
@@ -6172,7 +6054,6 @@ theorem
   _root_.NumStability.theorem20_8_vecNorm2_solution_difference_residual_forcing_le_of_maxRelativePerturbation_op2
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y rHigh
     hApos hbpos hBpos hdpos hmax hAPleft hx hy hres hforcing
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank residual-explicit norm bound under the printed maximum
     relative perturbation hypothesis, with the source residual `r = b - A*x`
@@ -6214,7 +6095,6 @@ theorem
   _root_.NumStability.theorem20_8_vecNorm2_solution_difference_source_residual_forcing_le_of_maxRelativePerturbation_op2
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y r rHigh
     hApos hbpos hBpos hdpos hmax hAPleft hx hy hr hres hforcing
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank max-relative solution-difference bound with the
     remaining residual obligation stated as the residual-gap radius
@@ -6255,7 +6135,6 @@ theorem
   _root_.NumStability.theorem20_8_vecNorm2_solution_difference_source_residual_gap_le_of_maxRelativePerturbation_op2
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y r rHigh
     hApos hbpos hBpos hdpos hmax hAPleft hx hy hr hres hgap
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank same-residual subcase of the residual-explicit
     solution-difference bound.  This removes the residual-gap radius only under
@@ -6294,7 +6173,6 @@ theorem
   _root_.NumStability.theorem20_8_vecNorm2_solution_difference_same_source_residual_le_of_maxRelativePerturbation_op2
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y r rHigh
     hApos hbpos hBpos hdpos hmax hAPleft hx hy hr hres hsame
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank same-residual first-order solution-radius handoff.
     The perturbed solution is assumed norm-dominated by the source solution,
@@ -6333,7 +6211,6 @@ theorem
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y r rHigh
     heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hmax hAPleft hx hy
     hr hres hsame
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank corrected same-residual relative bound in the
     source-shaped first-order plus explicit `eps^2`-coefficient form.  This is
@@ -6380,7 +6257,6 @@ theorem
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y r rHigh
     heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hmax hAPleft hx hy
     hr hres hsame
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank residual-gap first-order handoff.  The remaining
     residual-gap estimate is explicit as an `(AP)^+`-scaled source-radius
@@ -6423,7 +6299,6 @@ theorem
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y r rHigh
     heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hmax hAPleft hx hy
     hr hres hgap
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank residual-gap handoff packaged with the explicit
     `eps^2` coefficient.  It keeps the Wedin/reduced-LS residual-gap estimate
@@ -6474,7 +6349,6 @@ theorem
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y r rHigh
     heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hmax hAPleft hx hy
     hr hres hgap
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank form of the reduced-`AP` relative solution-difference
     transfer.  This removes the raw `Bplus` argument from the strongest current
@@ -6526,7 +6400,6 @@ theorem
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x r
       heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy
       hAPleft hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank same-residual reduced-equation transfer with the
     quadratic remainder coefficient specialized to the first-order right-hand
@@ -6582,7 +6455,6 @@ theorem
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x r rHigh
     heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hmax hAPleft hx hy
     hr hres hsame hAPdiff
-
 /-- Perturbation form of the full-row-rank side of Higham's Chapter 20 rank
     condition.  A strict operator-2 perturbation of `Bᵀ` below a source
     transpose lower-bound margin preserves full row rank of `B`. -/
@@ -6601,7 +6473,6 @@ theorem LSEFullRowRank.of_transpose_lower_bound_and_rectOpNorm2Le_lt {p n : ℕ}
       (M := fun j : Fin n => fun i : Fin p => B i j)
       (Delta := fun j : Fin n => fun i : Fin p => DeltaB i j)
       hlower hDelta heta
-
 /-- Source full-row rank of `B` supplies a positive Euclidean lower-bound
     margin for the transpose action `Bᵀ`. -/
 theorem LSEFullRowRank.exists_transpose_vecNorm2_lower_bound {p n : ℕ}
@@ -6613,18 +6484,15 @@ theorem LSEFullRowRank.exists_transpose_vecNorm2_lower_bound {p n : ℕ}
             (rectMatMulVec (fun j : Fin n => fun i : Fin p => B i j) y) :=
   exists_pos_rectMatMulVec_vecNorm2_lower_bound_of_injective
     hB.transpose_rectMatMulVec_injective
-
 /-- Noncomputable source margin for the `Bᵀ` lower-bound branch. -/
 noncomputable def LSEFullRowRank.transposeVecNorm2LowerMargin {p n : ℕ}
     {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B) : ℝ :=
   Classical.choose hB.exists_transpose_vecNorm2_lower_bound
-
 /-- Positivity of the noncomputable `Bᵀ` source margin. -/
 theorem LSEFullRowRank.transposeVecNorm2LowerMargin_pos {p n : ℕ}
     {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B) :
     0 < hB.transposeVecNorm2LowerMargin :=
   (Classical.choose_spec hB.exists_transpose_vecNorm2_lower_bound).1
-
 /-- Lower-bound property of the noncomputable `Bᵀ` source margin. -/
 theorem LSEFullRowRank.transposeVecNorm2LowerMargin_lower_bound {p n : ℕ}
     {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B) :
@@ -6633,7 +6501,6 @@ theorem LSEFullRowRank.transposeVecNorm2LowerMargin_lower_bound {p n : ℕ}
         vecNorm2
           (rectMatMulVec (fun j : Fin n => fun i : Fin p => B i j) y) :=
   (Classical.choose_spec hB.exists_transpose_vecNorm2_lower_bound).2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     the relative perturbation budget bounds the operator-2 size of the
     transposed constraint perturbation `DeltaBᵀ`. -/
@@ -6652,7 +6519,6 @@ theorem theorem20_8_rectOpNorm2Le_DeltaB_transpose_of_relativePerturbationBudget
       frobNormRect (finiteTranspose DeltaB) ≤ eps * frobNormRect B := by
     simpa [frobNormRect_finiteTranspose] using hbudget.2.2.1
   simpa [finiteTranspose] using htranspose
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source full row rank of `B` is preserved by a relative perturbation budget
     whose induced `DeltaBᵀ` radius is strictly below the source transpose
@@ -6675,7 +6541,6 @@ theorem LSEFullRowRank.of_relativePerturbationBudget_lt_transposeLowerMargin
     (theorem20_8_rectOpNorm2Le_DeltaB_transpose_of_relativePerturbationBudget
       A DeltaA b Deltab B DeltaB d Deltad hbudget)
     hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source full row rank of `B` is preserved under the displayed maximum
     relative perturbation condition when the induced `DeltaBᵀ` radius is
@@ -6699,7 +6564,6 @@ theorem LSEFullRowRank.of_maxRelativePerturbation_lt_transposeLowerMargin
       A DeltaA b Deltab B DeltaB d Deltad
       hApos hbpos hBpos hdpos hmax)
     hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     strongest current source-full-row-rank relative solution-difference handoff
     with a rank-tolerant Moore--Penrose certificate and direct
@@ -6762,7 +6626,6 @@ theorem
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x r
       heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy
       hB.rightInverse_spec hAPleft_null hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     strongest current source-full-row-rank relative solution-difference handoff
     with a rank-tolerant Moore--Penrose certificate and transpose-range
@@ -6825,7 +6688,6 @@ theorem
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x r
       heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy
       hB.rightInverse_spec hAPleft_null hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     strongest current source-full-row-rank relative solution-difference handoff
     with Moore--Penrose/projector-range certificates replacing the raw
@@ -6887,7 +6749,6 @@ theorem
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x r
       heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy
       hB.rightInverse_spec hAPleft_null hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     strongest current relative solution-difference handoff using the Gram
     pseudoinverse for `B` and an abstract rank-tolerant `(AP)^+`. -/
@@ -6952,7 +6813,6 @@ theorem
       A DeltaA b Deltab B DeltaB (undetAplusOfGramNonsingInv B) APplus
       d Deltad y x r heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx
       hx hy hright hAPleft_null hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     strongest current relative solution-difference handoff specialized to the
     concrete Gram pseudoinverse of `AP`, using `B*(AP)^+ = 0` directly instead
@@ -7030,7 +6890,6 @@ theorem
       d Deltad y x r
       heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy
       hB.rightInverse_spec hAPleft_null hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     strongest current relative solution-difference handoff specialized to the
     concrete Gram pseudoinverse of `AP`, with the range condition reduced to
@@ -7098,7 +6957,6 @@ theorem
     (LSEFullRowRank.theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint
       A hB hBAPt)
     hnull hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     strongest current relative solution-difference handoff specialized to the
     concrete Gram pseudoinverse of `AP`.  This closes the abstract
@@ -7171,7 +7029,6 @@ theorem
       (LSEFullRowRank.theorem20_8_rectMoorePenrosePseudoinverse_AP_of_gram_det_ne_zero
         A hB hdet)
       hProjAPplus hnull hAPdiff
-
 /-- Source stacked full-column rank supplies a positive Euclidean lower-bound
     margin for the stacked action `[A;B]`. -/
 theorem LSEStackedFullColumnRank.exists_vecNorm2_lower_bound {m n p : ℕ}
@@ -7182,20 +7039,17 @@ theorem LSEStackedFullColumnRank.exists_vecNorm2_lower_bound {m n p : ℕ}
         mu * vecNorm2 x ≤
           vecNorm2 (rectMatMulVec (lseStackedMatrix A B) x) :=
   exists_pos_rectMatMulVec_vecNorm2_lower_bound_of_injective hAB
-
 /-- Noncomputable source margin for the stacked `[A;B]` lower-bound branch. -/
 noncomputable def LSEStackedFullColumnRank.vecNorm2LowerMargin {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
     (hAB : LSEStackedFullColumnRank A B) : ℝ :=
   Classical.choose hAB.exists_vecNorm2_lower_bound
-
 /-- Positivity of the noncomputable stacked source margin. -/
 theorem LSEStackedFullColumnRank.vecNorm2LowerMargin_pos {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
     (hAB : LSEStackedFullColumnRank A B) :
     0 < hAB.vecNorm2LowerMargin :=
   (Classical.choose_spec hAB.exists_vecNorm2_lower_bound).1
-
 /-- Lower-bound property of the noncomputable stacked source margin. -/
 theorem LSEStackedFullColumnRank.vecNorm2LowerMargin_lower_bound {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -7204,7 +7058,6 @@ theorem LSEStackedFullColumnRank.vecNorm2LowerMargin_lower_bound {m n p : ℕ}
       hAB.vecNorm2LowerMargin * vecNorm2 x ≤
         vecNorm2 (rectMatMulVec (lseStackedMatrix A B) x) :=
   (Classical.choose_spec hAB.exists_vecNorm2_lower_bound).2
-
 /-- Frobenius bounds on the two blocks give a rectangular operator-2 bound for
     the stacked LSE matrix. -/
 theorem rectOpNorm2Le_lseStackedMatrix_of_frobNormRect_bounds {m n p : ℕ}
@@ -7217,7 +7070,6 @@ theorem rectOpNorm2Le_lseStackedMatrix_of_frobNormRect_bounds {m n p : ℕ}
         ≤ frobNormRect A + frobNormRect B :=
           frobNormRect_lseStackedMatrix_le_add A B
     _ ≤ cA + cB := add_le_add hA hB
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     the relative perturbation budget bounds the operator-2 size of the stacked
     perturbation `[DeltaA; DeltaB]`. -/
@@ -7233,7 +7085,6 @@ theorem theorem20_8_rectOpNorm2Le_lseStackedMatrix_delta_of_relativePerturbation
       (eps * frobNormRect A + eps * frobNormRect B) :=
   rectOpNorm2Le_lseStackedMatrix_of_frobNormRect_bounds
     hbudget.1 hbudget.2.2.1
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24), perturbation rank bridge:
     if the source stack `[A; B]` has a vector-action lower bound `mu`, and the
     stacked perturbation has operator-2 size at most `eta < mu`, then the
@@ -7259,7 +7110,6 @@ theorem LSEStackedFullColumnRank.of_lower_bound_and_rectOpNorm2Le_lt
       (Delta := lseStackedMatrix DeltaA DeltaB)
       hlower hDelta heta
   simpa [LSEStackedFullColumnRank, lseStackedMatrix_add] using hinj
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked full-column rank is preserved by a relative perturbation
     budget whose induced stacked Frobenius radius is strictly below the source
@@ -7285,7 +7135,6 @@ theorem LSEStackedFullColumnRank.of_relativePerturbationBudget_lt_lowerMargin
     (theorem20_8_rectOpNorm2Le_lseStackedMatrix_delta_of_relativePerturbationBudget
       A DeltaA b Deltab B DeltaB d Deltad hbudget)
     hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked full-column rank is preserved under the displayed maximum
     relative perturbation condition when the induced stacked radius is strictly
@@ -7312,7 +7161,6 @@ theorem LSEStackedFullColumnRank.of_maxRelativePerturbation_lt_lowerMargin
       A DeltaA b Deltab B DeltaB d Deltad
       hApos hbpos hBpos hdpos hmax)
     hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     the source rank conditions in (20.24) are preserved by a relative
     perturbation budget whose induced `DeltaBᵀ` and stacked perturbation radii
@@ -7340,7 +7188,6 @@ theorem theorem20_8_conditions20_24_of_relativePerturbationBudget_lt_margins
       hBsrc hbudget hBsmall,
     LSEStackedFullColumnRank.of_relativePerturbationBudget_lt_lowerMargin
       hStack hbudget hStackSmall⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     the displayed maximum relative perturbation condition preserves both source
     rank conditions in (20.24) under strict source-margin smallness. -/
@@ -7371,7 +7218,6 @@ theorem theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
       A DeltaA b Deltab B DeltaB d Deltad
       hApos hbpos hBpos hdpos hmax)
     hBsmall hStackSmall
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24):
     Frobenius-norm perturbation bounds preserve the two LSE rank conditions
     when their induced radii are strictly below the source lower-bound margins.
@@ -7417,7 +7263,6 @@ theorem theorem20_8_conditions20_24_of_frobNormRect_bounds_lt_margins
       (A := A) (DeltaA := DeltaA) (B := B) (DeltaB := DeltaB)
       hStack.vecNorm2LowerMargin_lower_bound hStackOp hStackSmall
   exact ⟨hBpert, hStackPert⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank same-residual first-order relative bound
     for the Moore--Penrose/transpose-range route. -/
@@ -7467,7 +7312,6 @@ theorem
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y
       r rHigh heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hmax
       hAPaction hx hy hr hres hsame
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank same-residual first-order plus explicit
     `eps^2` relative bound for the Moore--Penrose/transpose-range route. -/
@@ -7525,7 +7369,6 @@ theorem
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y
       r rHigh heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hmax
       hAPaction hx hy hr hres hsame
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank residual-gap first-order bound for the
     Moore--Penrose/transpose-range route.  The residual-gap estimate remains
@@ -7582,7 +7425,6 @@ theorem
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y
       r rHigh heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hmax
       hAPaction hx hy hr hres hgap
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank residual-gap first-order plus explicit
     `eps^2` bound for the Moore--Penrose/transpose-range route. -/
@@ -7645,7 +7487,6 @@ theorem
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y
       r rHigh heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hmax
       hAPaction hx hy hr hres hgap
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank residual-relative first-order bound for
     the Moore--Penrose/transpose-range route.  The reduced-LS residual-relative
@@ -7706,7 +7547,6 @@ theorem
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y
       r rHigh heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hrpos
       hmax hAPaction hx hy hr hres hrelative hscale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank residual-relative first-order plus
     explicit `eps^2` bound for the Moore--Penrose/transpose-range route. -/
@@ -7773,7 +7613,6 @@ theorem
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y
       r rHigh heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hrpos
       hmax hAPaction hx hy hr hres hrelative hscale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank Wedin-residual-RHS first-order bound for
     the Moore--Penrose/transpose-range route.  The reduced-LS residual estimate
@@ -7833,7 +7672,6 @@ theorem
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y
       r rHigh heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hrpos
       hmax hAPaction hx hy hr hres hrelative hscale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank Wedin-residual-RHS first-order plus
     explicit `eps^2` bound for the Moore--Penrose/transpose-range route. -/
@@ -7900,7 +7738,6 @@ theorem
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y
       r rHigh heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hrpos
       hmax hAPaction hx hy hr hres hrelative hscale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank Wedin-residual-RHS first-order bound for
     the Moore--Penrose/transpose-range route, with the residual norm factored
@@ -7960,7 +7797,6 @@ theorem
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y
       r rHigh heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hrpos
       hmax hAPaction hx hy hr hres hrelative hscale_scalar
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank Wedin-residual-RHS first-order plus
     explicit `eps^2` bound for the Moore--Penrose/transpose-range route, with
@@ -8028,7 +7864,6 @@ theorem
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y
       r rHigh heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hrpos
       hmax hAPaction hx hy hr hres hrelative hscale_scalar
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank Wedin-residual-RHS first-order bound for
     the Moore--Penrose/transpose-range route, using the source first-order
@@ -8082,7 +7917,6 @@ theorem
       (_root_.NumStability.theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
         A B APplus (theorem20_8BAplus A B hB.rightInverse APplus)
         heps_nonneg hcoeff)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank Wedin-residual-RHS first-order plus
     explicit `eps^2` bound for the Moore--Penrose/transpose-range route,
@@ -8143,7 +7977,6 @@ theorem
     (_root_.NumStability.theorem20_8_wedinResidualRHS_scalar_op2_le_of_first_order_coeff_le
       A B APplus (theorem20_8BAplus A B hB.rightInverse APplus)
       heps_nonneg hcoeff)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank relative solution-difference handoff for
     the Moore--Penrose/transpose-range route. -/
@@ -8198,7 +8031,6 @@ theorem
     hbpos hBpos hdpos hxpos hmax hyx hx hy hMP hBAPt
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
     hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked-full-column-rank form of the strongest current
     rank-tolerant Gram-`B` Moore--Penrose transfer.  This replaces the local
@@ -8255,7 +8087,6 @@ theorem
     heps_nonneg hApos hbpos hBpos hdpos hxpos hmax hyx hx hy hMP
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
     hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked-full-column-rank same-residual first-order relative bound
     for the Gram-`B` rank-tolerant Moore--Penrose route. -/
@@ -8304,7 +8135,6 @@ theorem
       A DeltaA b Deltab B DeltaB (undetAplusOfGramNonsingInv B) APplus
       d Deltad x y r rHigh heps_nonneg hApos hbpos hBpos hdpos hxpos
       hy_norm hmax hAPaction hx hy hr hres hsame
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked-full-column-rank same-residual first-order plus explicit
     `eps^2` relative bound for the Gram-`B` rank-tolerant Moore--Penrose route. -/
@@ -8362,7 +8192,6 @@ theorem
       A DeltaA b Deltab B DeltaB (undetAplusOfGramNonsingInv B) APplus
       d Deltad x y r rHigh heps_nonneg hApos hbpos hBpos hdpos hxpos
       hy_norm hmax hAPaction hx hy hr hres hsame
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked-full-column-rank residual-gap first-order bound for the
     Gram-`B` rank-tolerant Moore--Penrose route.  The residual-gap estimate is
@@ -8418,7 +8247,6 @@ theorem
       A DeltaA b Deltab B DeltaB (undetAplusOfGramNonsingInv B) APplus
       d Deltad x y r rHigh heps_nonneg hApos hbpos hBpos hdpos hxpos
       hy_norm hmax hAPaction hx hy hr hres hgap
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked-full-column-rank residual-gap first-order plus explicit
     `eps^2` bound for the Gram-`B` rank-tolerant Moore--Penrose route. -/
@@ -8481,7 +8309,6 @@ theorem
       A DeltaA b Deltab B DeltaB (undetAplusOfGramNonsingInv B) APplus
       d Deltad x y r rHigh heps_nonneg hApos hbpos hBpos hdpos hxpos
       hy_norm hmax hAPaction hx hy hr hres hgap
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked-full-column-rank residual-relative first-order bound for the
     Gram-`B` rank-tolerant Moore--Penrose route.  The reduced-LS
@@ -8541,7 +8368,6 @@ theorem
       A DeltaA b Deltab B DeltaB (undetAplusOfGramNonsingInv B) APplus
       d Deltad x y r rHigh heps_nonneg hApos hbpos hBpos hdpos hxpos
       hy_norm hrpos hmax hAPaction hx hy hr hres hrelative hscale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked-full-column-rank residual-relative first-order plus explicit
     `eps^2` bound for the Gram-`B` rank-tolerant Moore--Penrose route. -/
@@ -8608,7 +8434,6 @@ theorem
       A DeltaA b Deltab B DeltaB (undetAplusOfGramNonsingInv B) APplus
       d Deltad x y r rHigh heps_nonneg hApos hbpos hBpos hdpos hxpos
       hy_norm hrpos hmax hAPaction hx hy hr hres hrelative hscale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     Gram-`B` source-rank Wedin-residual-RHS first-order bound with a scalar
     residual-amplifier comparison. -/
@@ -8660,7 +8485,6 @@ theorem
         A B APplus
         (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus)
         r hscale_scalar)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     Gram-`B` source-rank Wedin-residual-RHS first-order plus explicit `eps^2`
     bound with a scalar residual-amplifier comparison. -/
@@ -8721,7 +8545,6 @@ theorem
         A B APplus
         (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus)
         r hscale_scalar)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     Gram-`B` source-rank Wedin-residual-RHS first-order bound using the source
     first-order coefficient comparison. -/
@@ -8771,7 +8594,6 @@ theorem
       A B APplus
       (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus)
       heps_nonneg hcoeff)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     Gram-`B` source-rank Wedin-residual-RHS first-order plus explicit `eps^2`
     bound using the source first-order coefficient comparison. -/
@@ -8830,7 +8652,6 @@ theorem
       A B APplus
       (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus)
       heps_nonneg hcoeff)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     rank-tolerant Gram-`B` source-rank residual-factor wrapper.
 
@@ -8949,7 +8770,6 @@ theorem
         (fun i => b i + Deltab i) y)
       heps_nonneg hApos hbpos hBpos hdpos hxpos hy_norm hrpos hmax
       hx.1 hy.1 hMP hstack rfl rfl hrelative hcoeff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     sign-order companion to the rank-tolerant Gram-`B` residual-factor wrapper.
 
@@ -9026,7 +8846,6 @@ theorem
       A DeltaA b Deltab hB DeltaB APplus d Deltad x y hApos hbpos hBpos
       hdpos hxpos hy_norm hrpos hmax hx hy hMP hstack hkappa_pos hres_norm'
       hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     determinant-facing concrete Gram-pseudoinverse version of the
     stacked-rank same-residual relative bound. -/
@@ -9091,7 +8910,6 @@ theorem
     (higham21_eq21_4_rect_moore_penrose_of_gram_det_ne_zero
       (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) hdetAP)
     hstack hr hres hsame
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     determinant-facing concrete Gram-pseudoinverse version of the
     stacked-rank residual-gap relative bound.  The Wedin/reduced-LS
@@ -9169,7 +8987,6 @@ theorem
     (higham21_eq21_4_rect_moore_penrose_of_gram_det_ne_zero
       (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) hdetAP)
     hstack hr hres hgap
-
 /-- Higham, 2nd ed., Chapter 20, equations (20.27)-(20.28), tall case:
     supplied-GQR row-action reconstruction from source-shaped block
     conditions.  The reconstructed lower-triangular block condition is derived
@@ -9208,7 +9025,6 @@ theorem GeneralizedQRFactorization.tall_eq20_28_row_action_of_block_conditions
   exact h.tall_eq20_28_row_action_of_top_zero hzero
     (gqrAQTallLFromEq20_27_lowerTriangular_of_blocks h.L11 h.L21 h.L22
       hL11 h.lowerL22)
-
 /-- Higham, 2nd ed., Chapter 20, equations (20.27)-(20.28), wide case:
     supplied-GQR row-action reconstruction from source-shaped block
     conditions.  The reconstructed lower-triangular block condition is derived
@@ -9244,7 +9060,6 @@ theorem GeneralizedQRFactorization.wide_eq20_28_row_action_of_block_conditions
   exact h.wide_eq20_28_row_action
     (gqrAQWideLFromEq20_27_lowerTriangular_of_blocks h.L11 h.L21 h.L22
       hL11 h.lowerL22)
-
 /-- Higham, 2nd ed., Chapter 20, equations (20.27)-(20.28), tall case:
     supplied-GQR matrix reconstruction from source-shaped block conditions. -/
 theorem GeneralizedQRFactorization.tall_eq20_28_matrix_of_block_conditions
@@ -9262,7 +9077,6 @@ theorem GeneralizedQRFactorization.tall_eq20_28_matrix_of_block_conditions
   exact h.tall_eq20_28_matrix_of_top_zero hzero
     (gqrAQTallLFromEq20_27_lowerTriangular_of_blocks h.L11 h.L21 h.L22
       hL11 h.lowerL22)
-
 /-- Higham, 2nd ed., Chapter 20, equations (20.27)-(20.28), wide case:
     supplied-GQR matrix reconstruction from source-shaped block conditions. -/
 theorem GeneralizedQRFactorization.wide_eq20_28_matrix_of_block_conditions
@@ -9281,20 +9095,23 @@ theorem GeneralizedQRFactorization.wide_eq20_28_matrix_of_block_conditions
   exact h.wide_eq20_28_matrix
     (gqrAQWideLFromEq20_27_lowerTriangular_of_blocks h.L11 h.L21 h.L22
       hL11 h.lowerL22)
-
+private theorem vecNorm2Sq_append {r q : ℕ}
+    (x : Fin r → ℝ) (y : Fin q → ℝ) :
+    vecNorm2Sq (Fin.append x y) = vecNorm2Sq x + vecNorm2Sq y := by
+  unfold vecNorm2Sq
+  rw [Fin.sum_univ_add]
+  simp [Fin.append_left, Fin.append_right]
 /-- Higham, 2nd ed., Chapter 20, equation (20.26): coefficient matrix for the
     weighted unconstrained least-squares problem `[A; mu B]`. -/
 noncomputable def lseWeightedMatrix {m n p : ℕ}
     (mu : ℝ) (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ) :
     Fin (m + p) → Fin n → ℝ :=
   Fin.append A (fun i j => mu * B i j)
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.26): right-hand side `[b; mu d]`
     for the weighted unconstrained least-squares problem. -/
 noncomputable def lseWeightedRhs {m p : ℕ}
     (mu : ℝ) (b : Fin m → ℝ) (d : Fin p → ℝ) : Fin (m + p) → ℝ :=
   Fin.append b (fun i => mu * d i)
-
 /-- Multiplication by the stacked weighted matrix in (20.26) splits into the
     original LS action and the weighted constraint action. -/
 theorem lseWeightedMatrix_mulVec {m n p : ℕ}
@@ -9322,7 +9139,6 @@ theorem lseWeightedMatrix_mulVec {m n p : ℕ}
               ring
       _ = mu * ∑ j : Fin n, B i j * x j := by
               rw [Finset.mul_sum]
-
 /-- The residual of the weighted problem (20.26) is the stacked vector
     `[Ax-b; mu (Bx-d)]`. -/
 theorem lseWeightedResidual_eq {m n p : ℕ}
@@ -9348,7 +9164,6 @@ theorem lseWeightedResidual_eq {m n p : ℕ}
   · intro i
     simp [lseWeightedRhs, lseConstraintResidual, Fin.append_right]
     ring
-
 /-- Exact squared-objective decomposition for the weighted unconstrained
     problem (20.26):
     `||[A; mu B]x - [b; mu d]||_2^2 =
@@ -9363,7 +9178,6 @@ theorem lseWeightedObjective_eq {m n p : ℕ}
       lsObjective A b x + mu ^ 2 * vecNorm2Sq (lseConstraintResidual B d x) := by
   unfold lsObjective
   rw [lseWeightedResidual_eq, vecNorm2Sq_append, vecNorm2Sq_smul]
-
 /-- Feasible points for the constrained problem incur no constraint penalty in
     the weighted objective (20.26). -/
 theorem lseWeightedObjective_eq_of_feasible {m n p : ℕ}
@@ -9378,7 +9192,6 @@ theorem lseWeightedObjective_eq_of_feasible {m n p : ℕ}
     simp [lseConstraintResidual, hfeas i]
   rw [hzero]
   simp [vecNorm2Sq]
-
 /-- Coercivity of the weighted formulation (20.26): the weighted
     unconstrained objective dominates the penalty term
     `mu^2 * ||B x - d||_2^2`.  This is the algebraic reason large weights
@@ -9394,7 +9207,6 @@ theorem lseWeightedConstraintPenalty_le_objective {m n p : ℕ}
     unfold lsObjective
     exact vecNorm2Sq_nonneg (lsResidual A b x)
   linarith
-
 /-- Objective domination for exact minimizers of the weighted formulation
     (20.26): the unweighted least-squares objective at a weighted minimizer is
     no larger than at any feasible constrained comparator.  This is a
@@ -9425,7 +9237,6 @@ theorem lseWeightedMinimizer_objective_le_feasibleObjective {m n p : ℕ}
       0 ≤ mu ^ 2 * vecNorm2Sq (lseConstraintResidual B d x_mu) :=
     mul_nonneg (sq_nonneg mu) (vecNorm2Sq_nonneg (lseConstraintResidual B d x_mu))
   linarith
-
 /-- Specialization of the finite-weight objective domination to an actual LSE
     minimizer used as comparator. -/
 theorem lseWeightedMinimizer_objective_le_lseMinimizer {m n p : ℕ}
@@ -9438,7 +9249,21 @@ theorem lseWeightedMinimizer_objective_le_lseMinimizer {m n p : ℕ}
     lsObjective A b x_mu ≤ lsObjective A b y :=
   lseWeightedMinimizer_objective_le_feasibleObjective
     mu A b B d x_mu y hmin hymin.1
-
+private theorem continuous_lseConstraintResidual_apply {n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ) (r : Fin p) :
+    Continuous (fun x : Fin n → ℝ => lseConstraintResidual B d x r) := by
+  unfold lseConstraintResidual rectMatMulVec
+  exact (continuous_finset_sum _ (fun j _ =>
+    continuous_const.mul (continuous_apply j))).sub continuous_const
+private theorem continuous_lsObjective {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) :
+    Continuous (fun x : Fin n → ℝ => lsObjective A b x) := by
+  unfold lsObjective vecNorm2Sq
+  exact continuous_finset_sum _ (fun i _ => (((by
+    unfold lsResidual rectMatMulVec
+    exact (continuous_finset_sum _ (fun j _ =>
+      continuous_const.mul (continuous_apply j))).sub continuous_const) :
+      Continuous (fun x : Fin n → ℝ => lsResidual A b x i)).pow 2))
 /-- If a candidate for the weighted problem (20.26) has objective at most `R`,
     then its squared equality-constraint residual is at most `R / mu^2`.
     This is a finite-weight approximation bound, not the source's limiting
@@ -9457,7 +9282,6 @@ theorem lseConstraintResidual_normSq_le_of_weightedObjective_le {m n p : ℕ}
   have hmu_sq_pos : 0 < mu ^ 2 := sq_pos_of_ne_zero hmu
   exact (le_div_iff₀ hmu_sq_pos).2 (by
     simpa [mul_comm, mul_left_comm, mul_assoc] using hpen)
-
 /-- Norm form of the finite-weight constraint control for (20.26). -/
 theorem lseConstraintResidual_norm_le_sqrt_div_of_weightedObjective_le
     {m n p : ℕ} {mu R : ℝ} (hmu : mu ≠ 0)
@@ -9470,7 +9294,6 @@ theorem lseConstraintResidual_norm_le_sqrt_div_of_weightedObjective_le
     lseConstraintResidual_normSq_le_of_weightedObjective_le
       hmu A b B d x hobj
   simpa [vecNorm2] using Real.sqrt_le_sqrt hsq
-
 /-- Weighted-minimizer consequence for the method of weighting after (20.26):
     if `x_mu` minimizes the weighted unconstrained problem, then any feasible
     constrained point `y` bounds the squared constraint residual of `x_mu` by
@@ -9497,7 +9320,6 @@ theorem lseWeightedMinimizer_constraintResidual_normSq_le_feasibleObjective_div_
         lseWeightedObjective_eq_of_feasible mu A b B d y hyfeas
   exact lseConstraintResidual_normSq_le_of_weightedObjective_le
     hmu A b B d x_mu hobj
-
 /-- Sequence-level constraint-residual convergence for the method of weighting
     after (20.26).  If the inverse squared weights tend to zero and each
     `x_mu i` is an exact minimizer of the weighted unconstrained problem, then
@@ -9524,7 +9346,6 @@ theorem lseWeightedMinimizer_constraintResidual_normSq_tendsto_zero_of_inv_mu_sq
   · intro i
     exact lseWeightedMinimizer_constraintResidual_normSq_le_feasibleObjective_div_mu_sq
       (hmu i) A b B d (x_mu i) y (hmin i) hyfeas
-
 /-- Norm form of the sequence-level feasibility convergence for the weighted
     method after (20.26).  This remains a constraint-residual theorem only; it
     does not identify the limit of the weighted minimizers. -/
@@ -9544,7 +9365,6 @@ theorem lseWeightedMinimizer_constraintResidual_norm_tendsto_zero_of_inv_mu_sq
     lseWeightedMinimizer_constraintResidual_normSq_tendsto_zero_of_inv_mu_sq
       A b B d mu x_mu y hmu hmin hyfeas hInvSq
   simpa [vecNorm2] using Real.continuous_sqrt.tendsto 0 |>.comp hsq
-
 /-- Conditional limiting handoff for the method of weighting after (20.26).
     If exact weighted minimizers have a convergent branch and their constraint
     residuals converge to zero, then the branch limit is an exact LSE
@@ -9583,7 +9403,6 @@ theorem lseWeightedMinimizer_tendsto_isLSEMinimizer_of_constraintResidual_tendst
     exact le_of_tendsto' hobj_lim (fun i =>
       lseWeightedMinimizer_objective_le_feasibleObjective
         (mu i) A b B d (x_mu i) y (hmin i) hyfeas)
-
 /-- Limiting theorem for the method of weighting after (20.26).  If exact
     minimizers of the weighted problems have a convergent branch, the weights
     satisfy `(mu^2)^{-1} -> 0`, and the constrained problem has a feasible
@@ -9624,7 +9443,56 @@ theorem lseWeightedMinimizer_tendsto_isLSEMinimizer_of_inv_mu_sq
   exact
     lseWeightedMinimizer_tendsto_isLSEMinimizer_of_constraintResidual_tendsto_zero
       A b B d mu x_mu x hlim hres hmin
-
+private theorem lsResidual_gqrAQBlock {r p q : ℕ}
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 : Fin q → Fin q → ℝ)
+    (c : Fin (r + q) → ℝ)
+    (y1 : Fin p → ℝ) (y2 : Fin q → ℝ) :
+    lsResidual (gqrAQBlock L11 L21 L22) c (Fin.append y1 y2) =
+      Fin.append
+        (fun i : Fin r => rectMatMulVec L11 y1 i - c (Fin.castAdd q i))
+        (fun i : Fin q =>
+          rectMatMulVec L21 y1 i + rectMatMulVec L22 y2 i -
+            c (Fin.natAdd r i)) := by
+  ext i
+  refine Fin.addCases
+    (motive := fun i : Fin (r + q) =>
+      lsResidual (gqrAQBlock L11 L21 L22) c (Fin.append y1 y2) i =
+        Fin.append
+          (fun i : Fin r => rectMatMulVec L11 y1 i - c (Fin.castAdd q i))
+          (fun i : Fin q =>
+            rectMatMulVec L21 y1 i + rectMatMulVec L22 y2 i -
+              c (Fin.natAdd r i)) i)
+    ?left ?right i
+  · intro i
+    unfold lsResidual
+    rw [gqrAQBlock_mulVec]
+    simp [Fin.append_left]
+  · intro i
+    unfold lsResidual
+    rw [gqrAQBlock_mulVec]
+    simp [Fin.append_right]
+private theorem lsObjective_gqrAQBlock_eq {r p q : ℕ}
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 : Fin q → Fin q → ℝ)
+    (c : Fin (r + q) → ℝ)
+    (y1 : Fin p → ℝ) (y2 : Fin q → ℝ) :
+    lsObjective (gqrAQBlock L11 L21 L22) c (Fin.append y1 y2) =
+      vecNorm2Sq
+        (fun i : Fin r => rectMatMulVec L11 y1 i - c (Fin.castAdd q i)) +
+      vecNorm2Sq
+        (fun i : Fin q =>
+          rectMatMulVec L21 y1 i + rectMatMulVec L22 y2 i -
+            c (Fin.natAdd r i)) := by
+  unfold lsObjective
+  rw [lsResidual_gqrAQBlock]
+  exact vecNorm2Sq_append
+    (fun i : Fin r => rectMatMulVec L11 y1 i - c (Fin.castAdd q i))
+    (fun i : Fin q =>
+      rectMatMulVec L21 y1 i + rectMatMulVec L22 y2 i -
+        c (Fin.natAdd r i))
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10 transport algebra:
     any perturbation of the trailing `A Q₂` block can be represented by a
     full source-coordinate perturbation of `A`.
@@ -9677,7 +9545,6 @@ theorem gqrAQ2Block_exists_full_perturbation_of_trailing_delta
   · simpa [DeltaA, DeltaAQ] using
       (frobNormRect_orthogonal_right DeltaAQ (matTranspose Q)
         (IsOrthogonal.transpose hQ))
-
 /-- Transporting a perturbation of the GQR `S` block back through `Qᵀ`
     gives the corresponding source-coordinate constraint perturbation. -/
 theorem gqrSourceBFromBlocks_perturbation_eq {p q : ℕ}
@@ -9700,7 +9567,6 @@ theorem gqrSourceBFromBlocks_perturbation_eq {p q : ℕ}
     simpa [gqrSourceBFromBlocks, matMulRectRight, hblock] using hadd
   rw [hsum]
   ring
-
 /-- The source-coordinate constraint perturbation induced by perturbing only
     the GQR `S` block has Frobenius norm exactly `‖DeltaS‖_F`. -/
 theorem gqrSourceBFromBlocks_perturbation_frobNorm_eq {p q : ℕ}
@@ -9723,7 +9589,6 @@ theorem gqrSourceBFromBlocks_perturbation_frobNorm_eq {p q : ℕ}
     _ = frobNormRect (gqrBQBlock (q := q) DeltaS) := by
           exact frobNormRect_orthogonal_right _ _ (IsOrthogonal.transpose hQ)
     _ = frobNormRect DeltaS := frobNormRect_gqrBQBlock DeltaS
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
     `DeltaB` Frobenius bound from a perturbation of the GQR `S` block.
 
@@ -9771,7 +9636,6 @@ theorem GeneralizedQRFactorization.constructed_sourceB_perturbation_frobNorm_bou
         = frobNormRect DeltaS := hnorm
     _ ≤ eta * frobNormRect h.S := hDeltaSfrob
     _ = eta * frobNormRect B := by rw [h.frobNormRect_S_eq_sourceB]
-
 /-- Transporting a perturbation of only the GQR `L22` block back through
     `U` and `Qᵀ` gives the corresponding source-coordinate data perturbation. -/
 theorem gqrSourceAFromBlocks_L22_perturbation_eq {r p q : ℕ}
@@ -9818,7 +9682,6 @@ theorem gqrSourceAFromBlocks_L22_perturbation_eq {r p q : ℕ}
     simpa [gqrSourceAFromBlocks, M, DeltaM, hright] using hleft
   rw [hsum]
   ring
-
 /-- The source-coordinate data perturbation induced by perturbing only the
     GQR `L22` block has Frobenius norm exactly `‖DeltaL22‖_F`. -/
 theorem gqrSourceAFromBlocks_L22_perturbation_frobNorm_eq {r p q : ℕ}
@@ -9852,7 +9715,6 @@ theorem gqrSourceAFromBlocks_L22_perturbation_frobNorm_eq {r p q : ℕ}
           exact frobNormRect_orthogonal_right DeltaM (matTranspose Q)
             (IsOrthogonal.transpose hQ)
     _ = frobNormRect DeltaL22 := frobNormRect_gqrAQBlock_only_L22 DeltaL22
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
     `DeltaA` Frobenius bound from a perturbation of the GQR `L22` block.
 
@@ -9908,7 +9770,6 @@ theorem GeneralizedQRFactorization.constructed_sourceA_L22_perturbation_frobNorm
     _ ≤ eta * frobNormRect h.L22 := hDeltaL22frob
     _ ≤ eta * frobNormRect A :=
           mul_le_mul_of_nonneg_left h.frobNormRect_L22_le_sourceA heta_nonneg
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the concrete reduced GQR `kappa_B(A)` identity, together with stacked full
     column rank, makes the source `kappa_B(A)` positive. -/
@@ -9928,7 +9789,120 @@ theorem GeneralizedQRFactorization.theorem20_8KappaB_pos_of_gqrQ2_reducedGram_ka
   rw [hkappa]
   exact mul_pos (h.A_Q2_reduced_gram_pseudoinverse_op2_pos hstack)
     (h.A_Q2_reduced_block_op2_pos hstack)
+/-- Exact GQR triangular-solve handoff for the method following (20.27):
+    if `S y1 = d` and the lower block equation
+    `L22 y2 = c2 - L21 y1` is solved, then the recovered vector
+    `x = Q [y1; y2]` is an exact LSE minimizer, provided the displayed
+    triangular constraint factor `S` is injective.
 
+    This formalizes the exact algebraic minimization step after the source's
+    GQR reduction.  It still assumes supplied GQR data and exact solved
+    triangular equations; it does not prove GQR existence, nonsingularity of
+    `S` or `L22`, or floating-point GQR stability. -/
+theorem GeneralizedQRFactorization.isLSEMinimizer_of_triangular_solve
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    {y1 : Fin p → ℝ} {y2 : Fin q → ℝ}
+    (hS_inj : Function.Injective (rectMatMulVec h.S))
+    (hy1 : rectMatMulVec h.S y1 = d)
+    (hy2 : rectMatMulVec h.L22 y2 =
+      fun i : Fin q =>
+        matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+          rectMatMulVec h.L21 y1 i) :
+    IsLSEMinimizer A b B d
+      (matMulVec (p + q) h.Q (Fin.append y1 y2)) := by
+  refine h.isLSEMinimizer_of_transformed_block_minimizer hy1 ?_
+  intro z1 z2 hz1
+  let c : Fin (r + q) → ℝ := matMulVec (r + q) (matTranspose h.U) b
+  have hz1_eq : z1 = y1 := by
+    apply hS_inj
+    rw [hz1, hy1]
+  subst z1
+  have hy_lower_zero :
+      (fun i : Fin q =>
+        rectMatMulVec h.L21 y1 i + rectMatMulVec h.L22 y2 i -
+          c (Fin.natAdd r i)) = 0 := by
+    ext i
+    have hi := congrFun hy2 i
+    dsimp [c] at hi ⊢
+    rw [hi]
+    ring
+  rw [lsObjective_gqrAQBlock_eq, lsObjective_gqrAQBlock_eq, hy_lower_zero]
+  have hnonneg :
+      0 ≤ vecNorm2Sq
+        (fun i : Fin q =>
+          rectMatMulVec h.L21 y1 i + rectMatMulVec h.L22 z2 i -
+            c (Fin.natAdd r i)) :=
+    vecNorm2Sq_nonneg _
+  have hzero : vecNorm2Sq (0 : Fin q → ℝ) = 0 := by
+    simp [vecNorm2Sq]
+  rw [hzero]
+  linarith
+/-- Exact GQR method solve-existence handoff:
+    if the displayed constraint block `S` is bijective as a square solve map
+    and the lower block `L22` can solve every right-hand side, then there are
+    block variables `y1`, `y2` satisfying the source equations
+    `S y1 = d` and `L22 y2 = c2 - L21 y1`, and the recovered
+    `x = Q [y1; y2]` is an exact LSE minimizer.
+
+    This is still supplied-factorization, exact-arithmetic algebra.  It does
+    not prove that triangular nonsingularity follows from (20.24), construct
+    the GQR factors, or analyze a computed GQR method. -/
+theorem GeneralizedQRFactorization.exists_isLSEMinimizer_of_solve_maps
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hS_bij : Function.Bijective (rectMatMulVec h.S))
+    (hL22_surj : Function.Surjective (rectMatMulVec h.L22)) :
+    ∃ y1 : Fin p → ℝ, ∃ y2 : Fin q → ℝ,
+      rectMatMulVec h.S y1 = d ∧
+      rectMatMulVec h.L22 y2 =
+        (fun i : Fin q =>
+          matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+            rectMatMulVec h.L21 y1 i) ∧
+      IsLSEMinimizer A b B d
+        (matMulVec (p + q) h.Q (Fin.append y1 y2)) := by
+  rcases hS_bij.2 d with ⟨y1, hy1⟩
+  rcases hL22_surj
+      (fun i : Fin q =>
+        matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+          rectMatMulVec h.L21 y1 i) with
+    ⟨y2, hy2⟩
+  refine ⟨y1, y2, hy1, hy2, ?_⟩
+  exact h.isLSEMinimizer_of_triangular_solve hS_bij.1 hy1 hy2
+/-- Exact GQR method solve-existence handoff from triangular nonsingularity:
+    if the displayed lower-triangular GQR blocks `S` and `L22` have nonzero
+    diagonal entries, then the triangular systems in the method following
+    (20.27) have exact solutions and the recovered `x = Q [y1; y2]` is an LSE
+    minimizer.
+
+    This proves the exact algebraic consequence of the source's nonsingular
+    triangular blocks.  It still assumes supplied GQR factorization data and
+    does not construct the factors or analyze floating-point GQR stability. -/
+theorem GeneralizedQRFactorization.exists_isLSEMinimizer_of_triangular_nonsingular
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hS_diag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22_diag : ∀ i : Fin q, h.L22 i i ≠ 0) :
+    ∃ y1 : Fin p → ℝ, ∃ y2 : Fin q → ℝ,
+      rectMatMulVec h.S y1 = d ∧
+      rectMatMulVec h.L22 y2 =
+        (fun i : Fin q =>
+          matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+            rectMatMulVec h.L21 y1 i) ∧
+      IsLSEMinimizer A b B d
+        (matMulVec (p + q) h.Q (Fin.append y1 y2)) :=
+  h.exists_isLSEMinimizer_of_solve_maps
+    (h.s_bijective_of_diag_ne_zero hS_diag)
+    (h.l22_bijective_of_diag_ne_zero hL22_diag).2
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     determinant-free existence of a rank-tolerant `(AP)^+` candidate with
     positive source `kappa_B(A)`.
@@ -9960,7 +9934,6 @@ theorem
         hB hstack,
       h.liftedReducedGramAPplus_constraint_annihilates,
       h.theorem20_8KappaB_liftedReducedGramAPplus_pos hstack hApos⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     existential rank-tolerant `(AP)^+` handoff for the residual-factor route.
 
@@ -10038,7 +10011,6 @@ theorem
       A DeltaA b Deltab hB DeltaB APplus d Deltad x y hApos hbpos hBpos
       hdpos hxpos hy_norm hrpos hmax hx hy hMP hstack hkappa_pos hres_norm
       hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     relative-residual version of the existential residual-factor handoff.
 
@@ -10132,7 +10104,6 @@ theorem
           (fun i => b i + Deltab i) y i)
       (lsResidualHigham A b x)]
   exact hcore hres_norm hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-shaped first-order handoff for the concrete lifted reduced-Gram
     `APplus` candidate.
@@ -10198,7 +10169,6 @@ theorem
       A DeltaA b Deltab B DeltaB hB.rightInverse h.liftedReducedGramAPplus
       d Deltad x y res resHigh heps_nonneg hApos hbpos hBpos hdpos
       hxpos hyx hmax hAPaction hx hy hres_source hres_pert hgap
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-shaped first-order handoff for the concrete lifted reduced-Gram
     `APplus` candidate, with the residual-gap obligation stated as a relative
@@ -10272,7 +10242,6 @@ theorem
       d Deltad x y res resHigh heps_nonneg hApos hbpos hBpos hdpos
       hxpos hyx hrpos hmax hAPaction hx hy hres_source hres_pert
       hrelative hscale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-shaped first-order handoff for the concrete lifted reduced-Gram
     `APplus` candidate when the residual-relative estimate is stated with
@@ -10345,7 +10314,6 @@ theorem
       d Deltad x y res resHigh heps_nonneg hApos hbpos hBpos hdpos
       hxpos hyx hrpos hmax hAPaction hx hy hres_source hres_pert
       hrelative hscale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     lifted reduced-Gram Wedin-residual handoff with the residual norm factored
     out of the remaining scalar residual-amplifier comparison.
@@ -10417,7 +10385,6 @@ theorem
       d Deltad x y res resHigh heps_nonneg hApos hbpos hBpos hdpos
       hxpos hyx hrpos hmax hAPaction hx hy hres_source hres_pert
       hrelative hscale_scalar
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     lifted reduced-Gram Wedin-residual handoff with the residual-amplifier
     comparison reduced to the source first-order coefficient inequality.
@@ -10489,7 +10456,6 @@ theorem
       d Deltad x y res resHigh heps_nonneg hApos hbpos hBpos hdpos
       hxpos hyx hrpos hmax hAPaction hx hy hres_source hres_pert
       hrelative hcoeff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     lifted reduced-Gram Wedin-residual handoff with the residual-amplifier
     coefficient comparison reduced to the remaining `kappa_B(A)` bracket
@@ -10562,7 +10528,6 @@ theorem
         A B h.liftedReducedGramAPplus
         (theorem20_8BAplus A B hB.rightInverse h.liftedReducedGramAPplus)
         hApos hkappaB hbracket)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     lifted reduced-Gram Wedin-residual handoff with Wedin's residual RHS
     already specialized to the source condition quantity
@@ -10630,7 +10595,6 @@ theorem
     A DeltaA b Deltab hB DeltaB d Deltad x y res resHigh
     heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack hx hy
     hres_source hres_pert hrelative rfl hbracket
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     Gram-projector source-rank Wedin-residual handoff for the concrete lifted
     reduced-Gram table `Q₂(AQ₂)^+`.
@@ -10701,7 +10665,6 @@ theorem
     (h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
       hB hstack)
     hstack hres_source hres_pert hrelative hcoeff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     Gram-projector lifted reduced-Gram Wedin-residual handoff with Wedin's
     residual RHS specialized to the source condition quantity `kappa_B(A)`.
@@ -10778,7 +10741,6 @@ theorem
       (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
         h.liftedReducedGramAPplus)
       hApos rfl hbracket)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     minimizer-facing Gram-projector lifted reduced-Gram Wedin-residual handoff.
 
@@ -10858,7 +10820,6 @@ theorem
         (fun i => b i + Deltab i) y)
       heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack
       hx.1 hy.1 rfl rfl hrelative hbracket
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     minimizer-facing lifted Wedin-residual handoff with the scalar bracket
     replaced by the residual-amplifier lower-bound factor.
@@ -10948,7 +10909,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_wedinResidualRHS_bracket_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hyx hrpos hmax hstack hx hy hrelative hbracket
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     existential rank-tolerant `(AP)^+` handoff for the Wedin residual-relative
     route.
@@ -11042,7 +11002,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_wedinResidualRHS_residualFactor_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hy_norm hrpos hmax hstack hx hy hrelative hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     Gram-projector lifted reduced-Gram handoff with the residual estimate
     stated as the direct source-radius bound `||r-r_high||₂ <= eps ||r||₂`.
@@ -11123,7 +11082,6 @@ theorem
       A DeltaA b Deltab hB DeltaB d Deltad x y res resHigh heps_nonneg
       hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack hx hy
       hres_source hres_pert hrelative hbracket
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     minimizer-facing lifted Gram-projector bracket route with the direct
     source residual-radius premise `||r-r_high||₂ <= eps ||r||₂`.
@@ -11201,7 +11159,6 @@ theorem
         (fun i => b i + Deltab i) y)
       heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack
       hx.1 hy.1 rfl rfl hres_norm hbracket
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     relative-residual version of the minimizer-facing lifted Gram-projector
     source-`kappa_B` bracket route.
@@ -11281,7 +11238,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_source_residual_norm_bracket_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hyx hrpos hmax hstack hx hy hres_norm hbracket
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     existential rank-tolerant `(AP)^+` handoff for the source-`kappa_B`
     bracket route.
@@ -11375,7 +11331,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_source_residual_norm_bracket_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hy_norm hrpos hmax hstack hx hy hres_norm hbracket
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     relative-residual version of the existential source-`kappa_B` bracket
     handoff.
@@ -11467,7 +11422,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_source_residual_relative_bracket_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hy_norm hrpos hmax hstack hx hy hres_relative hbracket
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     Gram-projector lifted reduced-Gram handoff with a direct source residual
     radius and the scalar bracket replaced by the residual-amplifier lower
@@ -11554,7 +11508,6 @@ theorem
       A DeltaA b Deltab hB DeltaB d Deltad x y res resHigh heps_nonneg
       hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack hx hy
       hres_source hres_pert hres_norm hbracket
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     minimizer-facing Gram-projector lifted reduced-Gram handoff with a direct
     source residual-radius premise and the residual-amplifier lower bound.
@@ -11642,7 +11595,6 @@ theorem
         (fun i => b i + Deltab i) y)
       heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack
       hx.1 hy.1 rfl rfl hres_norm_symm hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     minimizer-facing Gram-projector lifted reduced-Gram handoff with the
     source-minus residual-radius order used by the printed Wedin estimate.
@@ -11719,7 +11671,6 @@ theorem
         (fun i => b i + Deltab i) y)
       heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack
       hx.1 hy.1 rfl rfl hres_norm hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     relative-residual version of the direct Gram-projector residual-factor
     minimizer wrapper.
@@ -11797,7 +11748,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_source_residual_norm_residualFactor_source_minus_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hyx hrpos hmax hstack hx hy hres_norm hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     Gram-projector lifted reduced-Gram handoff where the direct residual-radius
     premise is supplied by the existing `B_A^+` split residual-gap estimate.
@@ -11888,7 +11838,6 @@ theorem
       A DeltaA b Deltab hB DeltaB d Deltad x y res resHigh heps_nonneg
       hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack hx hy
       hres_source hres_pert hres_norm hbracket
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     minimizer-facing Gram-projector lifted reduced-Gram BAplus residual-gap
     handoff.  The displayed maximum-relative perturbation bound supplies
@@ -11974,7 +11923,6 @@ theorem
         (fun i => b i + Deltab i) y)
       heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hrpos hmax hstack
       hx.1 hy.1 rfl rfl hgapScale hbracket
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     additive unscaled residual-gap variant of the minimizer-facing bracket
     handoff.
@@ -12081,7 +12029,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_bracket_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hyx hrpos hmax hstack hx hy hgapCombined hbracket
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     minimizer-facing Gram-projector lifted reduced-Gram BAplus residual-gap
     handoff with the scalar bracket replaced by a source-facing residual
@@ -12182,7 +12129,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_bracket_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hyx hrpos hmax hstack hx hy hgapScale hbracket
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     existential rank-tolerant `(AP)^+` handoff for the monolithic `B_A^+`
     residual-gap residual-factor route.
@@ -12286,7 +12232,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_residualFactor_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hy_norm hrpos hmax hstack hx hy hgapScale hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     direct/data correction handoff for the monolithic residual-factor
     `B_A^+` residual-gap route.  The residual-factor solution-difference
@@ -12391,7 +12336,6 @@ theorem
       Deltad y x (lsResidualHigham A b x) heps_nonneg hApos hbpos hBpos
       hdpos hxpos hmax hsolution
   simpa [APplus, BAplus, firstOrder, dataCoeff, solutionRadius] using hdirect
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     existential rank-tolerant `(AP)^+` handoff for the monolithic
     residual-factor direct/data correction route. -/
@@ -12494,7 +12438,6 @@ theorem
     h.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_residualGap_residualFactor_radius_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_residualFactor_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hy_norm hrpos hmax hstack hx hy hgapScale hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     additive unscaled residual-gap variant of the residual-factor handoff.
 
@@ -12598,7 +12541,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_residualFactor_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hyx hrpos hmax hstack hx hy hgapCombined hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     existential rank-tolerant `(AP)^+` handoff for the additive unscaled
     residual-factor route.
@@ -12708,7 +12650,6 @@ theorem
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hy_norm hrpos hmax hstack hx hy hgapAP hgapCorr hgapScale
       hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     direct/data correction handoff for the additive unscaled residual-factor
     `B_A^+` residual-gap route.  The split residual-gap component budgets feed
@@ -12817,7 +12758,6 @@ theorem
       Deltad y x (lsResidualHigham A b x) heps_nonneg hApos hbpos hBpos
       hdpos hxpos hmax hsolution
   simpa [APplus, BAplus, firstOrder, dataCoeff, solutionRadius] using hdirect
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     existential rank-tolerant `(AP)^+` handoff for the additive unscaled
     residual-factor direct/data correction route. -/
@@ -12924,7 +12864,6 @@ theorem
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hy_norm hrpos hmax hstack hx hy hgapAP hgapCorr hgapScale
       hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     minimizer-facing Gram-projector lifted reduced-Gram handoff using the
     proved `B_A^+` split residual-gap estimate directly in the scaled
@@ -13031,7 +12970,6 @@ theorem
       (h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
         hB hstack)
       hstack rfl rfl hgap
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     existential rank-tolerant `(AP)^+` handoff for the monolithic scaled
     `B_A^+` residual-gap route.
@@ -13128,7 +13066,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_scaled_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hy_norm hmax hstack hx hy hgapScale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     direct/data correction handoff for the monolithic scaled `B_A^+`
     residual-gap route. -/
@@ -13227,7 +13164,6 @@ theorem
       Deltad y x (lsResidualHigham A b x) heps_nonneg hApos hbpos hBpos
       hdpos hxpos hmax hsolution
   simpa [APplus, BAplus, firstOrder, dataCoeff, solutionRadius] using hdirect
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     existential rank-tolerant `(AP)^+` handoff for the monolithic scaled
     residual-gap direct/data correction route. -/
@@ -13323,7 +13259,6 @@ theorem
     h.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_scaledResidualGap_radius_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_scaled_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hy_norm hmax hstack hx hy hgapScale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     minimizer-facing Gram-projector lifted reduced-Gram handoff using the
     proved non-circular `B_A^+` split residual-gap estimate.
@@ -13433,7 +13368,6 @@ theorem
       (fun i => b i + Deltab i) y)
       heps_nonneg hApos hbpos hBpos hdpos hxpos hyx hmax hx.1 hy.1 hMP
       hstack rfl rfl hgap
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     direct/data correction handoff for the small-gain scaled `B_A^+`
     residual-gap route. -/
@@ -13520,7 +13454,6 @@ theorem
       Deltad y x (lsResidualHigham A b x) heps_nonneg hApos hbpos hBpos
       hdpos hxpos hmax hsolution
   simpa [APplus, BAplus, firstOrder, dataCoeff, solutionRadius] using hdirect
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     existential rank-tolerant `(AP)^+` handoff for the small-gain scaled
     residual-gap direct/data correction route. -/
@@ -13603,7 +13536,6 @@ theorem
     h.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_smallGainScaledResidualGap_radius_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_small_gain_scaled_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hy_norm hmax hstack hx hy hgain hgapScale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     small-gain residual-gap handoff with the residual-amplifier scalar
     comparison reduced to the source-facing residual-factor lower bound.
@@ -13693,7 +13625,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_small_gain_scaled_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hyx hmax hstack hx hy hgain hgapScale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     existential rank-tolerant `(AP)^+` handoff for the non-circular
     small-gain residual-gap route.
@@ -13785,7 +13716,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_small_gain_residualFactor_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hy_norm hmax hstack hx hy hgain hradius hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     bundled scalar side conditions for the non-circular `B_A^+` residual-gap
     small-gain route.
@@ -13808,7 +13738,6 @@ def theorem20_8BAplusResidualGapSmallGainConditions {m n p : ℕ}
         complexMatrixOp2
           (realRectToCMatrix
             (rectMatMul A (theorem20_8BAplus A B Bplus APplus)))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-radius constructor for the bundled `B_A^+` residual-gap
     small-gain conditions.
@@ -13844,7 +13773,6 @@ theorem theorem20_8BAplusResidualGapSmallGainConditions_of_source_radius
   exact
     (theorem20_8BAplusSmallGainResidualRadius_mono_of_vecNorm2_le
       A b B Bplus APplus d x y heps hyx hgain).trans hradius_source
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     coefficient-bound constructor for the bundled `B_A^+` residual-gap
     small-gain conditions.
@@ -13880,7 +13808,6 @@ theorem theorem20_8BAplusResidualGapSmallGainConditions_of_source_radius_coeff
       (theorem20_8BAplusSmallGainResidualRadius_le_eps_residual_of_coeff_le
         A b B Bplus APplus d x heps hcoeff)
       hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     supplied-GQR small-gain residual-gap handoff using the bundled scalar
     condition predicate. -/
@@ -13933,7 +13860,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_small_gain_residualFactor_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hyx hmax hstack hx hy hgain hradius hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     supplied-GQR small-gain residual-gap handoff with the residual-radius
     scalar bound stated at the source solution `x`.
@@ -14012,7 +13938,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_small_gain_conditions_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hyx hmax hstack hx hy hcond
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     supplied-GQR small-gain residual-gap handoff with the residual-radius
     condition reduced to an `eps`-independent source coefficient bound. -/
@@ -14088,7 +14013,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_small_gain_source_radius_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hyx hmax hstack hx hy hgain hradius_source hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     direct/data correction handoff for the bundled residual-gap small-gain
     route.  The existing residual-gap solution-difference bound supplies the
@@ -14170,7 +14094,6 @@ theorem
       Deltad y x (lsResidualHigham A b x) heps_nonneg hApos hbpos hBpos
       hdpos hxpos hmax hsolution
   simpa [APplus, BAplus, firstOrder, dataCoeff, solutionRadius] using hdirect
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     direct/data correction handoff for the small-gain residual-gap route with
     the residual-radius scalar bound stated at the source solution `x`. -/
@@ -14248,7 +14171,6 @@ theorem
     h.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_residualGapSmallGain_radius_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_small_gain_conditions_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hyx hmax hstack hx hy hcond
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     direct/data correction handoff for the small-gain residual-gap route with
     the residual-radius condition reduced to an `eps`-independent source
@@ -14328,7 +14250,6 @@ theorem
     h.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_residualGapSmallGain_radius_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_small_gain_source_radius_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hyx hmax hstack hx hy hgain hradius_source hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     existential rank-tolerant `(AP)^+` handoff for the bundled small-gain
     residual-gap route. -/
@@ -14389,7 +14310,6 @@ theorem
   intro hcond
   rcases hcond with ⟨hgain, hradius, hresidualFactor⟩
   exact hcore hgain hradius hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     existential rank-tolerant `(AP)^+` handoff for the small-gain
     residual-gap route with the residual-radius scalar bound stated at the
@@ -14471,7 +14391,6 @@ theorem
       A b B (undetAplusOfGramNonsingInv B) APplus d x y heps_nonneg hy_norm
       hgain hradius_source hresidualFactor
   exact hcore hcond
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     existential rank-tolerant `(AP)^+` handoff for the small-gain
     residual-gap route with the residual-radius condition reduced to an
@@ -14553,7 +14472,6 @@ theorem
     theorem20_8BAplusSmallGainResidualRadius_le_eps_residual_of_coeff_le
       A b B (undetAplusOfGramNonsingInv B) APplus d x heps_nonneg hcoeff
   exact hcore hgain hradius_source hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     existential rank-tolerant `(AP)^+` handoff for the residual-gap
     direct/data correction route.
@@ -14636,7 +14554,6 @@ theorem
     h.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_residualGapSmallGain_radius_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_small_gain_conditions_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hy_norm hmax hstack hx hy hcond
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     existential rank-tolerant `(AP)^+` direct/data correction handoff with the
     residual-radius scalar bound stated at the source solution `x`. -/
@@ -14721,7 +14638,6 @@ theorem
       A b B (undetAplusOfGramNonsingInv B) APplus d x y heps_nonneg hy_norm
       hgain hradius_source hresidualFactor
   exact hcore hcond
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     existential rank-tolerant `(AP)^+` direct/data correction handoff with the
     residual-radius condition reduced to an `eps`-independent source
@@ -14807,7 +14723,6 @@ theorem
     theorem20_8BAplusSmallGainResidualRadius_le_eps_residual_of_coeff_le
       A b B (undetAplusOfGramNonsingInv B) APplus d x heps_nonneg hcoeff
   exact hcore hgain hradius_source hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     split-premise direct/data correction handoff for the small-gain
     residual-factor route.  This is the unbundled form of
@@ -14882,7 +14797,6 @@ theorem
     h.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_residualGapSmallGain_radius_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_small_gain_conditions_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hyx hmax hstack hx hy hcond
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     existential rank-tolerant `(AP)^+` handoff for the split-premise
     small-gain residual-factor direct/data correction route. -/
@@ -14972,7 +14886,6 @@ theorem
     h.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_residualGapSmallGain_split_radius_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_small_gain_residualFactor_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hy_norm hmax hstack hx hy hgain hradius hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     additive-radius form of the small-gain residual-factor handoff.
 
@@ -15081,7 +14994,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_small_gain_residualFactor_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hyx hmax hstack hx hy hgain hradius_total hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     direct/data correction handoff for the additive-radius residual-gap
     small-gain route.  The additive residual-radius solution-difference bound
@@ -15189,7 +15101,6 @@ theorem
       Deltad y x (lsResidualHigham A b x) heps_nonneg hApos hbpos hBpos
       hdpos hxpos hmax hsolution
   simpa [APplus, BAplus, firstOrder, dataCoeff, solutionRadius] using hdirect
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     existential rank-tolerant `(AP)^+` handoff for the additive-radius
     small-gain residual-gap route.
@@ -15296,7 +15207,6 @@ theorem
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hy_norm hmax hstack hx hy hgain hradiusAP hradiusCorr hradius
       hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     existential rank-tolerant `(AP)^+` handoff for the additive-radius
     residual-gap direct/data correction route.  The lifted reduced-Gram table
@@ -15404,7 +15314,6 @@ theorem
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hy_norm hmax hstack hx hy hgain hradiusAP hradiusCorr hradius
       hresidualFactor
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     additive-scale variant of the minimizer-facing Gram-projector lifted
     reduced-Gram handoff.
@@ -15516,7 +15425,6 @@ theorem
       (h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
         hB hstack)
       hstack rfl rfl hgap
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     direct/data correction handoff for the additive-scaled residual-gap route.
     The additive-scaled residual-gap theorem supplies the relative
@@ -15623,7 +15531,6 @@ theorem
       Deltad y x (lsResidualHigham A b x) heps_nonneg hApos hbpos hBpos
       hdpos hxpos hmax hsolution
   simpa [APplus, BAplus, firstOrder, dataCoeff, solutionRadius] using hdirect
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     existential rank-tolerant `(AP)^+` handoff for the additive scaled
     residual-gap route.
@@ -15724,7 +15631,6 @@ theorem
     h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_additive_scaled_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hy_norm hmax hstack hx hy hgapScaleAP hgapScaleCorr hgapScale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     existential rank-tolerant `(AP)^+` handoff for the additive-scaled
     residual-gap direct/data correction route. -/
@@ -15824,7 +15730,6 @@ theorem
     h.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_additiveScaledResidualGap_radius_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_additive_scaled_of_minimizers
       A DeltaA b Deltab hB DeltaB d Deltad x y hApos hbpos hBpos hdpos
       hxpos hy_norm hmax hstack hx hy hgapScaleAP hgapScaleCorr hgapScale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     for supplied GQR data, the local conditions (20.24) are equivalent to
     trivial kernels of the displayed triangular blocks `S` and `L22`.
@@ -15855,7 +15760,6 @@ theorem GeneralizedQRFactorization.conditions20_24_iff_s_l22_kernel_trivial
     have hnull : LSENullIntersectionTrivial A B :=
       (h.nullIntersectionTrivial_iff_l22_kernel_trivial hS_bij.1).2 hL22_kernel
     exact ⟨hB, hnull⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, sentence after (20.28):
     for supplied GQR data, the local conditions (20.24) are equivalent to
     nonsingularity of the lower-triangular blocks `S` and `L22`.
@@ -15895,7 +15799,6 @@ theorem GeneralizedQRFactorization.conditions20_24_iff_s_l22_diag_ne_zero
       (h.nullIntersectionTrivial_iff_l22_injective hS_bij.1).2
         hL22_bij.1
     exact ⟨hB, hnull⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, sentence after (20.28):
     the same supplied-GQR local-condition equivalence as
     `conditions20_24_iff_s_l22_diag_ne_zero`, but with nonsingularity stated as
@@ -15927,7 +15830,6 @@ theorem GeneralizedQRFactorization.conditions20_24_iff_s_l22_bijective
       ⟨(h.s_bijective_iff_diag_ne_zero).1 hbij.1,
         (h.l22_bijective_iff_diag_ne_zero).1 hbij.2⟩
     exact (h.conditions20_24_iff_s_l22_diag_ne_zero).2 hdiag
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     for supplied GQR data, full row rank of `B` and full column rank of the
     local vertical stack `[A; B]` are equivalent to trivial kernels of the
@@ -15953,7 +15855,6 @@ theorem GeneralizedQRFactorization.fullRowRank_stackedFullColumnRank_iff_s_l22_k
       (h.conditions20_24_iff_s_l22_kernel_trivial).2 hker
     exact ⟨hcond.1,
       (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).1 hcond.2⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, sentence after (20.28):
     for supplied GQR data, full row rank of `B` and full column rank of the
     local vertical stack `[A; B]` are equivalent to nonzero diagonals of the
@@ -15979,7 +15880,6 @@ theorem GeneralizedQRFactorization.fullRowRank_stackedFullColumnRank_iff_s_l22_d
       (h.conditions20_24_iff_s_l22_diag_ne_zero).2 hdiag
     exact ⟨hcond.1,
       (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).1 hcond.2⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, sentence after (20.28):
     the same supplied-GQR stacked-rank equivalence as
     `fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero`, but with
@@ -16004,7 +15904,6 @@ theorem GeneralizedQRFactorization.fullRowRank_stackedFullColumnRank_iff_s_l22_b
       (h.conditions20_24_iff_s_l22_bijective).2 hbij
     exact ⟨hcond.1,
       (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).1 hcond.2⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, sentence after (20.28):
     source full row rank of `B` and full column rank of `[A; B]` construct
     exact GQR data whose displayed triangular blocks `S` and `L22` have
@@ -16028,7 +15927,6 @@ theorem GeneralizedQRFactorization.exists_with_s_l22_diag_ne_zero_of_fullRowRank
   exact ⟨h,
     (h.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).1
       ⟨hB, hstack⟩⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, sentence after (20.28):
     source full row rank of `B` and full column rank of `[A; B]` construct
     exact GQR data whose displayed triangular blocks `S` and `L22` are
@@ -16052,7 +15950,6 @@ theorem GeneralizedQRFactorization.exists_with_s_l22_bijective_of_fullRowRank_st
   exact ⟨h,
     (h.fullRowRank_stackedFullColumnRank_iff_s_l22_bijective).1
       ⟨hB, hstack⟩⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, exact supplied-GQR solve
     consequence under the local assumptions (20.24).
 
@@ -16083,7 +15980,6 @@ theorem GeneralizedQRFactorization.exists_isLSEMinimizer_of_conditions20_24
     (h.conditions20_24_iff_s_l22_diag_ne_zero).1 ⟨hB, hnull⟩
   exact h.exists_isLSEMinimizer_of_triangular_nonsingular
     hdiag.1 hdiag.2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, exact supplied-GQR solve
     consequence stated at the kernel nonsingularity surface after (20.28).
 
@@ -16111,7 +16007,6 @@ theorem GeneralizedQRFactorization.exists_isLSEMinimizer_of_s_l22_kernel_trivial
     (h.conditions20_24_iff_s_l22_kernel_trivial).2
       ⟨hS_kernel, hL22_kernel⟩
   exact h.exists_isLSEMinimizer_of_conditions20_24 hcond.1 hcond.2
-
 /-- Direct LSE minimizer existence from supplied GQR data and the local
     assumptions (20.24).
 
@@ -16131,7 +16026,6 @@ theorem GeneralizedQRFactorization.exists_lse_minimizer_of_conditions20_24
   rcases h.exists_isLSEMinimizer_of_conditions20_24 hB hnull with
     ⟨y1, y2, _hS, _hL22, hmin⟩
   exact ⟨matMulVec (p + q) h.Q (Fin.append y1 y2), hmin⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, exact supplied-GQR solve
     consequence under the source rank assumptions: full row rank of `B` and
     full column rank of the local vertical stack `[A; B]`.
@@ -16157,7 +16051,6 @@ theorem GeneralizedQRFactorization.exists_isLSEMinimizer_of_fullRowRank_stackedF
         (matMulVec (p + q) h.Q (Fin.append y1 y2)) :=
   h.exists_isLSEMinimizer_of_conditions20_24 hB
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 and the GQR method paragraph:
     under supplied GQR data and the source rank assumptions, the triangular
     solve coordinates `y1`, `y2` used by the exact GQR method exist uniquely.
@@ -16196,7 +16089,6 @@ theorem GeneralizedQRFactorization.exists_unique_solve_coordinates_of_fullRowRan
   have hz2 : z2 = y2 := hbij.2.1 (by rw [hzL22, hL22])
   subst z2
   rfl
-
 /-- Direct LSE minimizer existence from supplied GQR data and the source rank
     assumptions: full row rank of `B` and full column rank of the local vertical
     stack `[A; B]`.
@@ -16216,7 +16108,6 @@ theorem GeneralizedQRFactorization.exists_lse_minimizer_of_fullRowRank_stackedFu
   rcases h.exists_isLSEMinimizer_of_fullRowRank_stackedFullColumnRank hB hstack with
     ⟨y1, y2, _hS, _hL22, hmin⟩
   exact ⟨matMulVec (p + q) h.Q (Fin.append y1 y2), hmin⟩
-
 /-- The source KKT linear map is injective under Higham's conditions (20.24). -/
 theorem LSEKKTLinearMap.injective_of_conditions {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16243,7 +16134,6 @@ theorem LSEKKTLinearMap.injective_of_conditions {m n p : ℕ}
       · exact hdx_zero
       · exact hdlambda_zero
   exact sub_eq_zero.mp hsub_zero
-
 /-- Existence for the source KKT augmented system under Higham's conditions
     (20.24).  This is the finite-dimensional solvability bridge behind the
     Cox--Higham inverse step; it proves existence of a triple for arbitrary
@@ -16263,7 +16153,6 @@ theorem LSEKKTSystem.exists_solution_of_conditions {m n p : ℕ}
   exact
     ⟨z.1, z.2.1, z.2.2,
       (LSEKKTSystem.iff_linearMap_eq A B f g c z.1 z.2.1 z.2.2).2 hz⟩
-
 /-- Uniqueness for the source KKT augmented system under Higham's conditions
     (20.24).  Any two triples solving the same source data, stationarity, and
     constraint right-hand sides agree componentwise. -/
@@ -16289,7 +16178,6 @@ theorem LSEKKTSystem.solution_unique_of_conditions {m n p : ℕ}
     ⟨congrArg Prod.fst htriple,
       congrArg Prod.fst (congrArg Prod.snd htriple),
       congrArg Prod.snd (congrArg Prod.snd htriple)⟩
-
 /-- Unique solvability for the source KKT augmented system under Higham's
     conditions (20.24).  This packages finite-dimensional solvability and the
     homogeneous uniqueness kernel into a single inverse-existence statement. -/
@@ -16309,7 +16197,6 @@ theorem LSEKKTSystem.exists_unique_solution_of_conditions {m n p : ℕ}
   have huniq :=
     LSEKKTSystem.solution_unique_of_conditions hB hnull hsys' hsys
   exact huniq
-
 /-- Canonical noncomputable inverse action for the source KKT augmented system
     under Higham's conditions (20.24).  It is the unique triple mapped to the
     right-hand side `(f,g,c)` by `LSEKKTLinearMap`. -/
@@ -16321,7 +16208,6 @@ noncomputable def LSEKKTInverseTriple {m n p : ℕ}
   Classical.choose
     (((LinearMap.injective_iff_surjective).mp
       (LSEKKTLinearMap.injective_of_conditions hB hnull)) (f, g, c))
-
 /-- The canonical KKT inverse triple maps to the requested right-hand side. -/
 theorem LSEKKTInverseTriple_linearMap_eq {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16333,7 +16219,6 @@ theorem LSEKKTInverseTriple_linearMap_eq {m n p : ℕ}
     Classical.choose_spec
       (((LinearMap.injective_iff_surjective).mp
         (LSEKKTLinearMap.injective_of_conditions hB hnull)) (f, g, c))
-
 /-- Component form of the canonical KKT inverse triple. -/
 theorem LSEKKTInverseTriple_system {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16349,7 +16234,6 @@ theorem LSEKKTInverseTriple_system {m n p : ℕ}
       (LSEKKTInverseTriple hB hnull f g c).2.1
       (LSEKKTInverseTriple hB hnull f g c).2.2).2
       (LSEKKTInverseTriple_linearMap_eq hB hnull f g c)
-
 /-- Any solution of the source KKT system is the canonical inverse triple. -/
 theorem LSEKKTInverseTriple_eq_of_system {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16363,7 +16247,6 @@ theorem LSEKKTInverseTriple_eq_of_system {m n p : ℕ}
   exact
     LSEKKTSystem.solution_unique_of_conditions hB hnull hsys
       (LSEKKTInverseTriple_system hB hnull f g c)
-
 /-- The source KKT operator is a linear equivalence under Higham's conditions
     (20.24).  This is the coordinate-free form of the inverse augmented matrix
     used in the Cox--Higham proof of Theorem 20.8. -/
@@ -16376,7 +16259,6 @@ noncomputable def LSEKKTLinearEquiv {m n p : ℕ}
     ⟨LSEKKTLinearMap.injective_of_conditions hB hnull,
       (LinearMap.injective_iff_surjective).mp
         (LSEKKTLinearMap.injective_of_conditions hB hnull)⟩
-
 /-- The inverse linear map associated with the source KKT augmented system. -/
 noncomputable def LSEKKTInverseLinearMap {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16384,7 +16266,6 @@ noncomputable def LSEKKTInverseLinearMap {m n p : ℕ}
     ((Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ)) →ₗ[ℝ]
       ((Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ)) :=
   (LSEKKTLinearEquiv hB hnull).symm.toLinearMap
-
 /-- The inverse linear map is a right inverse of the source KKT operator. -/
 theorem LSEKKTInverseLinearMap_right_inverse {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16392,7 +16273,6 @@ theorem LSEKKTInverseLinearMap_right_inverse {m n p : ℕ}
     (z : (Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ)) :
     LSEKKTLinearMap A B (LSEKKTInverseLinearMap hB hnull z) = z := by
   simp [LSEKKTInverseLinearMap, LSEKKTLinearEquiv]
-
 /-- The inverse linear map is a left inverse of the source KKT operator. -/
 theorem LSEKKTInverseLinearMap_left_inverse {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16400,7 +16280,6 @@ theorem LSEKKTInverseLinearMap_left_inverse {m n p : ℕ}
     (z : (Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ)) :
     LSEKKTInverseLinearMap hB hnull (LSEKKTLinearMap A B z) = z := by
   simp [LSEKKTInverseLinearMap, LSEKKTLinearEquiv]
-
 /-- The inverse linear map agrees with the canonical inverse triple selected by
     `LSEKKTInverseTriple`. -/
 theorem LSEKKTInverseLinearMap_apply_eq_inverseTriple {m n p : ℕ}
@@ -16412,7 +16291,6 @@ theorem LSEKKTInverseLinearMap_apply_eq_inverseTriple {m n p : ℕ}
   apply LSEKKTLinearMap.injective_of_conditions hB hnull
   rw [LSEKKTInverseLinearMap_right_inverse,
     LSEKKTInverseTriple_linearMap_eq]
-
 /-- Additivity of the source KKT inverse action. -/
 theorem LSEKKTInverseTriple_add {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16429,7 +16307,6 @@ theorem LSEKKTInverseTriple_add {m n p : ℕ}
     LSEKKTInverseLinearMap hB hnull (f₁, g₁, c₁) +
       LSEKKTInverseLinearMap hB hnull (f₂, g₂, c₂)
   exact map_add (LSEKKTInverseLinearMap hB hnull) (f₁, g₁, c₁) (f₂, g₂, c₂)
-
 /-- Homogeneity of the source KKT inverse action. -/
 theorem LSEKKTInverseTriple_smul {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16443,7 +16320,6 @@ theorem LSEKKTInverseTriple_smul {m n p : ℕ}
   change LSEKKTInverseLinearMap hB hnull (a • (f, g, c)) =
     a • LSEKKTInverseLinearMap hB hnull (f, g, c)
   exact map_smul (LSEKKTInverseLinearMap hB hnull) a (f, g, c)
-
 /-- Residual block row of the inverse source KKT operator. -/
 noncomputable def LSEKKTInverseResidualLinearMap {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16451,7 +16327,6 @@ noncomputable def LSEKKTInverseResidualLinearMap {m n p : ℕ}
     ((Fin m → ℝ) × (Fin n → ℝ) × (Fin p → ℝ)) →ₗ[ℝ] (Fin m → ℝ) :=
   (LinearMap.fst ℝ (Fin m → ℝ) ((Fin n → ℝ) × (Fin p → ℝ))).comp
     (LSEKKTInverseLinearMap hB hnull)
-
 /-- Solution block row of the inverse source KKT operator. -/
 noncomputable def LSEKKTInverseSolutionLinearMap {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16460,7 +16335,6 @@ noncomputable def LSEKKTInverseSolutionLinearMap {m n p : ℕ}
   (LinearMap.fst ℝ (Fin n → ℝ) (Fin p → ℝ)).comp
     ((LinearMap.snd ℝ (Fin m → ℝ) ((Fin n → ℝ) × (Fin p → ℝ))).comp
       (LSEKKTInverseLinearMap hB hnull))
-
 /-- Multiplier block row of the inverse source KKT operator. -/
 noncomputable def LSEKKTInverseMultiplierLinearMap {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16469,7 +16343,6 @@ noncomputable def LSEKKTInverseMultiplierLinearMap {m n p : ℕ}
   (LinearMap.snd ℝ (Fin n → ℝ) (Fin p → ℝ)).comp
     ((LinearMap.snd ℝ (Fin m → ℝ) ((Fin n → ℝ) × (Fin p → ℝ))).comp
       (LSEKKTInverseLinearMap hB hnull))
-
 /-- The residual block row returns the first component of the canonical KKT
     inverse triple. -/
 theorem LSEKKTInverseResidualLinearMap_apply {m n p : ℕ}
@@ -16480,7 +16353,6 @@ theorem LSEKKTInverseResidualLinearMap_apply {m n p : ℕ}
       (LSEKKTInverseTriple hB hnull f g c).1 := by
   simp [LSEKKTInverseResidualLinearMap,
     LSEKKTInverseLinearMap_apply_eq_inverseTriple]
-
 /-- The solution block row returns the second component of the canonical KKT
     inverse triple. -/
 theorem LSEKKTInverseSolutionLinearMap_apply {m n p : ℕ}
@@ -16491,7 +16363,6 @@ theorem LSEKKTInverseSolutionLinearMap_apply {m n p : ℕ}
       (LSEKKTInverseTriple hB hnull f g c).2.1 := by
   simp [LSEKKTInverseSolutionLinearMap,
     LSEKKTInverseLinearMap_apply_eq_inverseTriple]
-
 /-- The multiplier block row returns the third component of the canonical KKT
     inverse triple. -/
 theorem LSEKKTInverseMultiplierLinearMap_apply {m n p : ℕ}
@@ -16502,7 +16373,6 @@ theorem LSEKKTInverseMultiplierLinearMap_apply {m n p : ℕ}
       (LSEKKTInverseTriple hB hnull f g c).2.2 := by
   simp [LSEKKTInverseMultiplierLinearMap,
     LSEKKTInverseLinearMap_apply_eq_inverseTriple]
-
 /-- Data-row block of the inverse source KKT solution map. -/
 noncomputable def LSEKKTInverseSolutionDataLinearMap {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16525,7 +16395,6 @@ noncomputable def LSEKKTInverseSolutionDataLinearMap {m n p : ℕ}
         a • (f, (0 : Fin n → ℝ), (0 : Fin p → ℝ)) := by
       ext <;> simp
     rw [h, map_smul]
-
 /-- Stationarity-row block of the inverse source KKT solution map. -/
 noncomputable def LSEKKTInverseSolutionStatLinearMap {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16548,7 +16417,6 @@ noncomputable def LSEKKTInverseSolutionStatLinearMap {m n p : ℕ}
         a • ((0 : Fin m → ℝ), g, (0 : Fin p → ℝ)) := by
       ext <;> simp
     rw [hpair, map_smul]
-
 /-- Constraint-row block of the inverse source KKT solution map. -/
 noncomputable def LSEKKTInverseSolutionConstrLinearMap {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16571,7 +16439,6 @@ noncomputable def LSEKKTInverseSolutionConstrLinearMap {m n p : ℕ}
         a • ((0 : Fin m → ℝ), (0 : Fin n → ℝ), c) := by
       ext <;> simp
     rw [hpair, map_smul]
-
 /-- Canonical Euclidean operator coefficient for the data-row response of the
     inverse source KKT solution block. -/
 noncomputable def LSEKKTInverseSolutionDataCoeff {m n p : ℕ}
@@ -16579,7 +16446,6 @@ noncomputable def LSEKKTInverseSolutionDataCoeff {m n p : ℕ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
   complexMatrixOp2 (realRectToCMatrix
     (linearMapBasisMatrix (LSEKKTInverseSolutionDataLinearMap hB hnull)))
-
 /-- Canonical Euclidean operator coefficient for the stationarity-row response
     of the inverse source KKT solution block. -/
 noncomputable def LSEKKTInverseSolutionStatCoeff {m n p : ℕ}
@@ -16587,7 +16453,6 @@ noncomputable def LSEKKTInverseSolutionStatCoeff {m n p : ℕ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
   complexMatrixOp2 (realRectToCMatrix
     (linearMapBasisMatrix (LSEKKTInverseSolutionStatLinearMap hB hnull)))
-
 /-- Canonical Euclidean operator coefficient for the constraint-row response of
     the inverse source KKT solution block. -/
 noncomputable def LSEKKTInverseSolutionConstrCoeff {m n p : ℕ}
@@ -16595,25 +16460,21 @@ noncomputable def LSEKKTInverseSolutionConstrCoeff {m n p : ℕ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
   complexMatrixOp2 (realRectToCMatrix
     (linearMapBasisMatrix (LSEKKTInverseSolutionConstrLinearMap hB hnull)))
-
 theorem LSEKKTInverseSolutionDataCoeff_nonneg {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
     0 ≤ LSEKKTInverseSolutionDataCoeff hB hnull := by
   exact complexMatrixOp2_nonneg _
-
 theorem LSEKKTInverseSolutionStatCoeff_nonneg {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
     0 ≤ LSEKKTInverseSolutionStatCoeff hB hnull := by
   exact complexMatrixOp2_nonneg _
-
 theorem LSEKKTInverseSolutionConstrCoeff_nonneg {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
     0 ≤ LSEKKTInverseSolutionConstrCoeff hB hnull := by
   exact complexMatrixOp2_nonneg _
-
 theorem LSEKKTInverseSolutionDataLinearMap_vecNorm2_le_coeff {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
@@ -16624,7 +16485,6 @@ theorem LSEKKTInverseSolutionDataLinearMap_vecNorm2_le_coeff {m n p : ℕ}
     LSEKKTInverseSolutionDataLinearMap] using
     linearMap_vecNorm2_le_complexMatrixOp2_basisMatrix
       (LSEKKTInverseSolutionDataLinearMap hB hnull) f
-
 theorem LSEKKTInverseSolutionStatLinearMap_vecNorm2_le_coeff {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
@@ -16635,7 +16495,6 @@ theorem LSEKKTInverseSolutionStatLinearMap_vecNorm2_le_coeff {m n p : ℕ}
     LSEKKTInverseSolutionStatLinearMap] using
     linearMap_vecNorm2_le_complexMatrixOp2_basisMatrix
       (LSEKKTInverseSolutionStatLinearMap hB hnull) g
-
 theorem LSEKKTInverseSolutionConstrLinearMap_vecNorm2_le_coeff {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
@@ -16646,7 +16505,6 @@ theorem LSEKKTInverseSolutionConstrLinearMap_vecNorm2_le_coeff {m n p : ℕ}
     LSEKKTInverseSolutionConstrLinearMap] using
     linearMap_vecNorm2_le_complexMatrixOp2_basisMatrix
       (LSEKKTInverseSolutionConstrLinearMap hB hnull) c
-
 /-- Data-row block of the inverse source KKT multiplier map. -/
 noncomputable def LSEKKTInverseMultiplierDataLinearMap {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16669,7 +16527,6 @@ noncomputable def LSEKKTInverseMultiplierDataLinearMap {m n p : ℕ}
         a • (f, (0 : Fin n → ℝ), (0 : Fin p → ℝ)) := by
       ext <;> simp
     rw [hpair, map_smul]
-
 /-- Stationarity-row block of the inverse source KKT multiplier map. -/
 noncomputable def LSEKKTInverseMultiplierStatLinearMap {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16692,7 +16549,6 @@ noncomputable def LSEKKTInverseMultiplierStatLinearMap {m n p : ℕ}
         a • ((0 : Fin m → ℝ), g, (0 : Fin p → ℝ)) := by
       ext <;> simp
     rw [hpair, map_smul]
-
 /-- Constraint-row block of the inverse source KKT multiplier map. -/
 noncomputable def LSEKKTInverseMultiplierConstrLinearMap {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
@@ -16715,7 +16571,6 @@ noncomputable def LSEKKTInverseMultiplierConstrLinearMap {m n p : ℕ}
         a • ((0 : Fin m → ℝ), (0 : Fin n → ℝ), c) := by
       ext <;> simp
     rw [hpair, map_smul]
-
 /-- Canonical Euclidean operator coefficient for the data-row response of the
     inverse source KKT multiplier block. -/
 noncomputable def LSEKKTInverseMultiplierDataCoeff {m n p : ℕ}
@@ -16723,7 +16578,6 @@ noncomputable def LSEKKTInverseMultiplierDataCoeff {m n p : ℕ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
   complexMatrixOp2 (realRectToCMatrix
     (linearMapBasisMatrix (LSEKKTInverseMultiplierDataLinearMap hB hnull)))
-
 /-- Canonical Euclidean operator coefficient for the stationarity-row response
     of the inverse source KKT multiplier block. -/
 noncomputable def LSEKKTInverseMultiplierStatCoeff {m n p : ℕ}
@@ -16731,7 +16585,6 @@ noncomputable def LSEKKTInverseMultiplierStatCoeff {m n p : ℕ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
   complexMatrixOp2 (realRectToCMatrix
     (linearMapBasisMatrix (LSEKKTInverseMultiplierStatLinearMap hB hnull)))
-
 /-- Canonical Euclidean operator coefficient for the constraint-row response of
     the inverse source KKT multiplier block. -/
 noncomputable def LSEKKTInverseMultiplierConstrCoeff {m n p : ℕ}
@@ -16739,25 +16592,21 @@ noncomputable def LSEKKTInverseMultiplierConstrCoeff {m n p : ℕ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
   complexMatrixOp2 (realRectToCMatrix
     (linearMapBasisMatrix (LSEKKTInverseMultiplierConstrLinearMap hB hnull)))
-
 theorem LSEKKTInverseMultiplierDataCoeff_nonneg {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
     0 ≤ LSEKKTInverseMultiplierDataCoeff hB hnull := by
   exact complexMatrixOp2_nonneg _
-
 theorem LSEKKTInverseMultiplierStatCoeff_nonneg {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
     0 ≤ LSEKKTInverseMultiplierStatCoeff hB hnull := by
   exact complexMatrixOp2_nonneg _
-
 theorem LSEKKTInverseMultiplierConstrCoeff_nonneg {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
     0 ≤ LSEKKTInverseMultiplierConstrCoeff hB hnull := by
   exact complexMatrixOp2_nonneg _
-
 theorem LSEKKTInverseMultiplierDataLinearMap_vecNorm2_le_coeff {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
@@ -16768,7 +16617,6 @@ theorem LSEKKTInverseMultiplierDataLinearMap_vecNorm2_le_coeff {m n p : ℕ}
     LSEKKTInverseMultiplierDataLinearMap] using
     linearMap_vecNorm2_le_complexMatrixOp2_basisMatrix
       (LSEKKTInverseMultiplierDataLinearMap hB hnull) f
-
 theorem LSEKKTInverseMultiplierStatLinearMap_vecNorm2_le_coeff {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
@@ -16779,7 +16627,6 @@ theorem LSEKKTInverseMultiplierStatLinearMap_vecNorm2_le_coeff {m n p : ℕ}
     LSEKKTInverseMultiplierStatLinearMap] using
     linearMap_vecNorm2_le_complexMatrixOp2_basisMatrix
       (LSEKKTInverseMultiplierStatLinearMap hB hnull) g
-
 theorem LSEKKTInverseMultiplierConstrLinearMap_vecNorm2_le_coeff {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B)
@@ -16790,7 +16637,6 @@ theorem LSEKKTInverseMultiplierConstrLinearMap_vecNorm2_le_coeff {m n p : ℕ}
     LSEKKTInverseMultiplierConstrLinearMap] using
     linearMap_vecNorm2_le_complexMatrixOp2_basisMatrix
       (LSEKKTInverseMultiplierConstrLinearMap hB hnull) c
-
 /-- Under Higham's source KKT nonsingularity hypotheses, a source LSE
     Lagrange multiplier satisfying the normal equations is exactly the
     multiplier row of the inverse source KKT operator applied to `(r,0,0)`. -/
@@ -16813,7 +16659,6 @@ theorem theorem20_8_source_lagrange_multiplier_eq_inverseMultiplierLinearMap
   have huniq := LSEKKTInverseTriple_eq_of_system hB hnull hsys
   rw [LSEKKTInverseMultiplierLinearMap_apply]
   exact huniq.2.2
-
 /-- The source LSE multiplier is bounded by the canonical data-row coefficient
     of the source KKT multiplier block times the source residual norm. -/
 theorem theorem20_8_source_lagrange_multiplier_vecNorm2_le_sourceResidual
@@ -16832,7 +16677,6 @@ theorem theorem20_8_source_lagrange_multiplier_vecNorm2_le_sourceResidual
     hB hnull hnormal]
   exact LSEKKTInverseMultiplierDataLinearMap_vecNorm2_le_coeff hB hnull
     (lsResidualHigham A b x)
-
 /-- Source residual-scale form of the source LSE multiplier bound. -/
 theorem theorem20_8_source_lagrange_multiplier_vecNorm2_le_sourceResidualScale
     {m n p : ℕ}
@@ -16862,7 +16706,6 @@ theorem theorem20_8_source_lagrange_multiplier_vecNorm2_le_sourceResidualScale
           (residualScale * vecNorm2 x) := hscale
     _ = (LSEKKTInverseMultiplierDataCoeff hB hnull * residualScale) *
           vecNorm2 x := by ring
-
 /-- Split the multiplier block row of the inverse source KKT operator across
     the data, stationarity, and constraint right-hand-side rows. -/
 theorem LSEKKTInverseMultiplierLinearMap_apply_split {m n p : ℕ}
@@ -16879,7 +16722,6 @@ theorem LSEKKTInverseMultiplierLinearMap_apply_split {m n p : ℕ}
     ext <;> simp
   rw [hsplit]
   rw [map_add, map_add]
-
 /-- Triangle-inequality bound for the split multiplier block row of the
     inverse source KKT operator. -/
 theorem LSEKKTInverseMultiplierLinearMap_vecNorm2_le_split {m n p : ℕ}
@@ -16899,7 +16741,6 @@ theorem LSEKKTInverseMultiplierLinearMap_vecNorm2_le_split {m n p : ℕ}
   have htri2 : vecNorm2 (u + v) ≤ vecNorm2 u + vecNorm2 v :=
     vecNorm2_add_le u v
   nlinarith
-
 /-- Scalar handoff for the split multiplier block row: bounds for the three
     source KKT inverse responses imply a bound for the whole multiplier block
     action. -/
@@ -16920,7 +16761,6 @@ theorem LSEKKTInverseMultiplierLinearMap_vecNorm2_le_of_split_bounds
   have hsplit :=
     LSEKKTInverseMultiplierLinearMap_vecNorm2_le_split hB hnull f g c
   nlinarith
-
 /-- Split the solution block row of the inverse source KKT operator across
     the data, stationarity, and constraint right-hand-side rows. -/
 theorem LSEKKTInverseSolutionLinearMap_apply_split {m n p : ℕ}
@@ -16937,7 +16777,6 @@ theorem LSEKKTInverseSolutionLinearMap_apply_split {m n p : ℕ}
     ext <;> simp
   rw [hsplit]
   rw [map_add, map_add]
-
 /-- Triangle-inequality bound for the split solution block row of the inverse
     source KKT operator. -/
 theorem LSEKKTInverseSolutionLinearMap_vecNorm2_le_split {m n p : ℕ}
@@ -16957,7 +16796,6 @@ theorem LSEKKTInverseSolutionLinearMap_vecNorm2_le_split {m n p : ℕ}
   have htri2 : vecNorm2 (u + v) ≤ vecNorm2 u + vecNorm2 v :=
     vecNorm2_add_le u v
   nlinarith
-
 /-- Scalar handoff for the split solution block row: bounds for the three
     source KKT inverse responses imply a bound for the whole solution block
     action. -/
@@ -16977,7 +16815,6 @@ theorem LSEKKTInverseSolutionLinearMap_vecNorm2_le_of_split_bounds {m n p : ℕ}
   have hsplit :=
     LSEKKTInverseSolutionLinearMap_vecNorm2_le_split hB hnull f g c
   nlinarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the actual residual, solution, and multiplier differences between source
     and perturbed LSE minimizers equal the canonical source KKT inverse action
@@ -17035,7 +16872,6 @@ theorem IsLSEMinimizer.exists_lagrange_kkt_difference_eq_inverseTriple
     ⟨lambda, mu, hsys⟩
   refine ⟨lambda, mu, ?_⟩
   exact LSEKKTInverseTriple_eq_of_system hB hnull hsys
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     inverse-action form of the Cox--Higham KKT bridge, retaining the source
     normal-equation certificate for the same source multiplier. -/
@@ -17096,7 +16932,6 @@ theorem IsLSEMinimizer.exists_lagrange_kkt_difference_eq_inverseTriple_sourceNor
     ⟨lambda, mu, hnormal, hsys⟩
   refine ⟨lambda, mu, hnormal, ?_⟩
   exact LSEKKTInverseTriple_eq_of_system hB hnull hsys
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the actual multiplier difference between source and perturbed LSE
     minimizers is the multiplier block row of the inverse source KKT operator
@@ -17131,7 +16966,6 @@ theorem IsLSEMinimizer.exists_lagrange_kkt_multiplier_difference_eq_inverseMulti
   refine ⟨lambda, mu, ?_⟩
   rw [hdlambda]
   rw [LSEKKTInverseMultiplierLinearMap_apply]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     triangle-inequality split bound for the actual multiplier difference in
     the Cox--Higham KKT inverse action. -/
@@ -17180,7 +17014,6 @@ theorem
               lsResidualHigham (fun i j => A i j + DeltaA i j)
                 (fun i => b i + Deltab i) y i))
       (fun r => Deltad r - rectMatMulVec DeltaB y r)
-
 /-- Scalar multiplier scale produced by the canonical multiplier-row
     small-gain estimate.  The inputs `bScale`, `dScale`, and `yScale` are
     relative scales against `||x||₂` for `b`, `d`, and the perturbed solution. -/
@@ -17199,7 +17032,6 @@ noncomputable def theorem20_8KKTMultiplierSmallGainScale {m n p : ℕ}
       (eps * dScale + (eps * frobNormRect B) * yScale)) /
     (1 - LSEKKTInverseMultiplierStatCoeff hB hnull *
       (eps * frobNormRect B))
-
 /-- The coefficient of the perturbed-solution scale in the canonical
     multiplier-row small-gain bound.  It is separated out so the later coupled
     KKT wrapper can substitute `||y||₂ <= (1 + ||y-x||₂/||x||₂)||x||₂` and
@@ -17215,7 +17047,6 @@ noncomputable def theorem20_8KKTMultiplierSmallGainSelfCoeff {m n p : ℕ}
       (eps * frobNormRect B)) /
     (1 - LSEKKTInverseMultiplierStatCoeff hB hnull *
       (eps * frobNormRect B))
-
 /-- Linear-in-`eps` numerator majorant for the multiplier-row self coefficient
     when `0 <= eps <= 1`. -/
 noncomputable def theorem20_8KKTMultiplierSelfLinearCoeff {m n p : ℕ}
@@ -17225,7 +17056,6 @@ noncomputable def theorem20_8KKTMultiplierSelfLinearCoeff {m n p : ℕ}
     2 * LSEKKTInverseMultiplierStatCoeff hB hnull *
       frobNormRect A * frobNormRect A +
     LSEKKTInverseMultiplierConstrCoeff hB hnull * frobNormRect B
-
 theorem theorem20_8KKTMultiplierSelfLinearCoeff_nonneg {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) :
@@ -17252,7 +17082,6 @@ theorem theorem20_8KKTMultiplierSelfLinearCoeff_nonneg {m n p : ℕ}
     mul_nonneg hconstr_nonneg hB_nonneg
   simpa [theorem20_8KKTMultiplierSelfLinearCoeff] using
     add_nonneg (add_nonneg hdata hstat) hconstr
-
 /-- The multiplier-row self numerator is bounded by its linear-in-`eps`
     majorant for `0 <= eps <= 1`. -/
 theorem theorem20_8KKTMultiplierSelfNumerator_le_linear_of_eps_le_one
@@ -17299,7 +17128,6 @@ theorem theorem20_8KKTMultiplierSelfNumerator_le_linear_of_eps_le_one
     _ = eps * theorem20_8KKTMultiplierSelfLinearCoeff hB hnull := by
         simp [theorem20_8KKTMultiplierSelfLinearCoeff]
         ring
-
 /-- A half-denominator margin converts the multiplier-row self quotient into
     twice the linear-in-`eps` numerator majorant. -/
 theorem theorem20_8KKTMultiplierSmallGainSelfCoeff_le_two_mul_linear_of_eps_le_one_of_gain_le_half
@@ -17364,7 +17192,6 @@ theorem theorem20_8KKTMultiplierSmallGainSelfCoeff_le_two_mul_linear_of_eps_le_o
     rw [div_le_iff₀ hdenpos]
     exact hnum_le.trans hscaled
   simpa [theorem20_8KKTMultiplierSmallGainSelfCoeff] using hquot
-
 /-- A source-facing linear smallness condition discharges the multiplier-row
     self coefficient under the half-denominator margin. -/
 theorem theorem20_8KKTMultiplierSmallGainSelfCoeff_lt_one_of_two_mul_eps_mul_linearCoeff_lt_one
@@ -17380,7 +17207,6 @@ theorem theorem20_8KKTMultiplierSmallGainSelfCoeff_lt_one_of_two_mul_eps_mul_lin
     theorem20_8KKTMultiplierSmallGainSelfCoeff hB hnull eps < 1 :=
   (theorem20_8KKTMultiplierSmallGainSelfCoeff_le_two_mul_linear_of_eps_le_one_of_gain_le_half
     hB hnull heps_nonneg heps_le_one hgain_half).trans_lt hsmall
-
 /-- The multiplier-row small-gain scale is affine in the supplied
     perturbed-solution scale.  This is the scalar bridge used to remove the
     explicit `yScale` assumption in the coupled KKT route. -/
@@ -17405,7 +17231,6 @@ theorem theorem20_8KKTMultiplierSmallGainScale_one_add_eq
     theorem20_8KKTMultiplierSmallGainSelfCoeff
   field_simp [hden]
   ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     canonical multiplier-row response bound with the perturbed multiplier
     self term absorbed.  Given a source multiplier scale and the actual
@@ -17635,7 +17460,6 @@ theorem
     simpa [gain] using hgain
   have habs := real_le_div_one_sub_of_le_mul_add hgain' hrel
   simpa [muRel, gain, base, dataScale, residualScale, constrScale] using habs
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     actual-multiplier wrapper for the canonical multiplier-row small-gain
     scale.  The only remaining source-side multiplier input is a scale bound
@@ -17712,7 +17536,6 @@ theorem
     theorem20_8_perturbed_multiplier_relative_le_of_inverseMultiplierLinearMap_canonical_response_coeffs_relativeBudget_scales
       hB hnull hxnorm hbudget heps_nonneg hb hd hyScale
       (hlambdaScale lambda mu hdlambda) hdlambda hgain
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the solution difference `y - x` is the solution block row of the inverse
     source KKT operator applied to the Cox--Higham perturbation right-hand
@@ -17748,7 +17571,6 @@ theorem IsLSEMinimizer.exists_lagrange_kkt_solution_difference_eq_inverseSolutio
   refine ⟨mu, ?_⟩
   rw [hdx]
   rw [LSEKKTInverseSolutionLinearMap_apply]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     decompose the solution difference into the three source KKT inverse block
     responses to the Cox--Higham data, stationarity, and constraint
@@ -17788,7 +17610,6 @@ theorem IsLSEMinimizer.exists_lagrange_kkt_solution_difference_eq_inverseSolutio
   refine ⟨mu, ?_⟩
   rw [hdx]
   rw [LSEKKTInverseSolutionLinearMap_apply_split]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     triangle-inequality norm bound for the three source KKT inverse block
     responses that make up the Cox--Higham solution difference. -/
@@ -17827,7 +17648,6 @@ theorem IsLSEMinimizer.exists_lagrange_kkt_solution_difference_vecNorm2_le_inver
   refine ⟨mu, ?_⟩
   rw [hdx]
   exact LSEKKTInverseSolutionLinearMap_vecNorm2_le_split hB hnull _ _ _
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     scalar handoff from separate bounds on the three Cox--Higham inverse block
     responses to a total bound on `||y - x||₂`.  The stationarity-row bound is
@@ -17869,7 +17689,6 @@ theorem IsLSEMinimizer.kkt_solution_difference_vecNorm2_le_of_inverseSolutionLin
     ⟨mu, hsplit⟩
   have hstat_mu := hstat mu
   nlinarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     relative-error handoff from separate scalar bounds on the three
     Cox--Higham inverse block responses.  This is the relative form of
@@ -17912,7 +17731,6 @@ theorem
     hx.kkt_solution_difference_vecNorm2_le_of_inverseSolutionLinearMap_split_bounds
       hy hB hBpert hnull dataBound statBound constrBound hdata hstat hconstr
   exact div_le_div_of_nonneg_right habs (le_of_lt hxnorm)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     coefficient-form relative handoff for the Cox--Higham split inverse block
     responses.  If each inverse response is bounded by its coefficient times
@@ -17965,7 +17783,6 @@ theorem
             (constrCoeff * vecNorm2 x)) / vecNorm2 x := hrel
     _ = dataCoeff + statCoeff + constrCoeff := by
         field_simp [hxne]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     compose source-row size estimates with operator-response coefficients for
     the Cox--Higham KKT inverse solution block.
@@ -18098,7 +17915,6 @@ theorem
       hy hB hBpert hnull hxnorm (dataCoeff * dataScale)
       (statCoeff * statScale) (constrCoeff * constrScale)
       hdataBound hstatBound hconstrBound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     Cox--Higham KKT response-coefficient handoff specialized to the source
     relative perturbation budget and the currently available row-scale
@@ -18283,7 +18099,6 @@ theorem
         constrCoeff * (eps * dScale + (eps * frobNormRect B) * yScale) := by
         field_simp [hxne, dataScale, statScale, constrScale]
         ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     specialization of the relative-budget KKT response handoff to the
     canonical Euclidean operator coefficients of the inverse source KKT
@@ -18348,7 +18163,6 @@ theorem
       (LSEKKTInverseSolutionDataLinearMap_vecNorm2_le_coeff hB hnull)
       (LSEKKTInverseSolutionStatLinearMap_vecNorm2_le_coeff hB hnull)
       (LSEKKTInverseSolutionConstrLinearMap_vecNorm2_le_coeff hB hnull)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     canonical-response KKT relative-budget handoff with the source constraint
     right-hand-side scale discharged from feasibility, `B x = d`. -/
@@ -18401,7 +18215,6 @@ theorem
     hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_scales
       hy hB hBpert hnull hxnorm hbudget heps_nonneg hb
       hx.vecNorm2_constraint_rhs_le_frobNormRect_mul hyScale hmuScale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     canonical-response KKT relative-budget handoff with both the source
     constraint right-hand-side scale and the source `b` scale discharged from
@@ -18458,7 +18271,6 @@ theorem
       hy hB hBpert hnull hxnorm hbudget heps_nonneg
       (theorem20_8_vecNorm2_b_le_of_sourceResidualScale A b x hresidual)
       hyScale hmuScale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-residual KKT solution-response handoff for a specified actual
     perturbed multiplier.  This variant avoids the stronger caller obligation
@@ -18656,7 +18468,6 @@ theorem
           (eps * frobNormRect B + (eps * frobNormRect B) * yScale) := by
         field_simp [hxne, dataScale, statScale, constrScale, bScale, dScale]
         ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     actual-multiplier canonical KKT response bound with the perturbed-solution
     scale absorbed by a scalar small-gain condition. -/
@@ -18754,7 +18565,6 @@ theorem
     simpa [yCoeff] using hgain
   have habs := real_le_div_one_sub_of_le_mul_add hgain' hlin
   simpa [E, yCoeff, base] using habs
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     composition of the actual-multiplier solution small-gain theorem with the
     canonical multiplier-row small-gain scale.  The perturbed multiplier scale
@@ -18872,7 +18682,6 @@ theorem
       hB hnull hxnorm hbudget heps_nonneg hresidual mu hdx hmuScale
       hsolGain
   simpa [muScale] using hsol
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     composed KKT multiplier/solution small-gain bound with the source
     multiplier scale discharged from the source residual.  The remaining scale
@@ -18987,7 +18796,6 @@ theorem
       hB hnull hxnorm hbudget heps_nonneg hresidual mu hdx hmuScale
       hsolGain
   simpa [muScale, lambdaScale] using hsol
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-residual KKT small-gain bound where the perturbed-solution scale is
     derived from an explicit relative solution-difference radius. -/
@@ -19051,7 +18859,6 @@ theorem
     hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_sourceResidual_multiplierSmallGain_sourceResidualScale
       hy hB hBpert hnull hxnorm hbudget heps_nonneg hresidual hyScale
       hmultGain hsolGain
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-residual KKT small-gain bound where the perturbed-solution scale is
     derived from an `eps * solutionRadius` solution-difference bound. -/
@@ -19117,7 +18924,6 @@ theorem
     hx.kkt_solution_difference_relative_le_of_inverseSolutionLinearMap_canonical_response_coeffs_relativeBudget_sourceResidual_multiplierSmallGain_sourceResidualScale
       hy hB hBpert hnull hxnorm hbudget heps_nonneg hresidual hyScale
       hmultGain hsolGain
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     coupled KKT multiplier/solution small-gain bound with the source
     multiplier scale discharged from the source residual and the
@@ -19312,7 +19118,6 @@ theorem
   have habs := real_le_div_one_sub_of_le_mul_add hcoupled' hlin
   simpa [E, lambdaScale, muBase, muSelf, solDenom, solMuCoeff, solBase,
     solSelf, solYCoeff] using habs
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-residual-ratio version of the coupled KKT small-gain bound.  This
     instantiates the residual scale with the actual source ratio
@@ -19399,7 +19204,6 @@ theorem
       hy hB hBpert hnull hxnorm hbudget heps_nonneg hresidual hmultGain
       hsolGain hcoupledGain
   simpa [residualScale] using h
-
 /-- Combined self coefficient for the coupled KKT Theorem 20.8 route after the
     multiplier-row and solution-row small-gain absorptions. -/
 noncomputable def theorem20_8KKTCoupledSelfCoeff {m n p : ℕ}
@@ -19414,7 +19218,6 @@ noncomputable def theorem20_8KKTCoupledSelfCoeff {m n p : ℕ}
           ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
         LSEKKTInverseSolutionConstrCoeff hB hnull *
           (eps * frobNormRect B)))
-
 /-- The solution-row self coefficient that must remain below one in the
     source-residual-ratio KKT route for Higham Theorem 20.8. -/
 noncomputable def theorem20_8KKTSolutionSelfCoeff {m n p : ℕ}
@@ -19425,7 +19228,6 @@ noncomputable def theorem20_8KKTSolutionSelfCoeff {m n p : ℕ}
     LSEKKTInverseSolutionStatCoeff hB hnull *
       ((eps * frobNormRect A) * ((1 + eps) * frobNormRect A)) +
     LSEKKTInverseSolutionConstrCoeff hB hnull * (eps * frobNormRect B)
-
 /-- Linear-in-`eps` majorant coefficient for the solution-row self coefficient
     when `0 <= eps <= 1`. -/
 noncomputable def theorem20_8KKTSolutionSelfLinearCoeff {m n p : ℕ}
@@ -19435,7 +19237,6 @@ noncomputable def theorem20_8KKTSolutionSelfLinearCoeff {m n p : ℕ}
     2 * LSEKKTInverseSolutionStatCoeff hB hnull *
       frobNormRect A * frobNormRect A +
     LSEKKTInverseSolutionConstrCoeff hB hnull * frobNormRect B
-
 /-- The solution-row self coefficient is bounded by its linear-in-`eps`
     majorant for `0 <= eps <= 1`. -/
 theorem theorem20_8KKTSolutionSelfCoeff_le_linear_of_eps_le_one
@@ -19480,7 +19281,6 @@ theorem theorem20_8KKTSolutionSelfCoeff_le_linear_of_eps_le_one
     _ = eps * theorem20_8KKTSolutionSelfLinearCoeff hB hnull := by
         simp [theorem20_8KKTSolutionSelfLinearCoeff]
         ring
-
 /-- A source-facing linear smallness condition discharges the solution-row
     small-gain inequality for `0 <= eps <= 1`. -/
 theorem theorem20_8KKTSolutionSelfCoeff_lt_one_of_eps_mul_linearCoeff_lt_one
@@ -19492,7 +19292,6 @@ theorem theorem20_8KKTSolutionSelfCoeff_lt_one_of_eps_mul_linearCoeff_lt_one
     theorem20_8KKTSolutionSelfCoeff hB hnull eps < 1 :=
   (theorem20_8KKTSolutionSelfCoeff_le_linear_of_eps_le_one
     hB hnull heps_nonneg heps_le_one).trans_lt hsmall
-
 /-- The linearized solution-row self coefficient is nonnegative. -/
 theorem theorem20_8KKTSolutionSelfLinearCoeff_nonneg
     {m n p : ℕ}
@@ -19521,7 +19320,6 @@ theorem theorem20_8KKTSolutionSelfLinearCoeff_nonneg
     mul_nonneg hconstr hBnorm
   dsimp [theorem20_8KKTSolutionSelfLinearCoeff]
   exact add_nonneg (add_nonneg hdataTerm hstatTerm) hconstrTerm
-
 /-- Single source-facing linearized KKT smallness coefficient for the current
     Theorem 20.8 source-residual-ratio route.
 
@@ -19538,7 +19336,6 @@ noncomputable def theorem20_8KKTLinearizedGainSmallnessCoeff
     2 * theorem20_8KKTSolutionSelfLinearCoeff hB hnull +
     4 * LSEKKTInverseSolutionStatCoeff hB hnull * frobNormRect B *
       theorem20_8KKTMultiplierSelfLinearCoeff hB hnull
-
 /-- The single linearized KKT smallness coefficient is at least one. -/
 theorem theorem20_8KKTLinearizedGainSmallnessCoeff_ge_one
     {m n p : ℕ}
@@ -19575,7 +19372,6 @@ theorem theorem20_8KKTLinearizedGainSmallnessCoeff_ge_one
     add_nonneg (add_nonneg hmultTerm hsolTerm) hcoupledTerm
   dsimp [theorem20_8KKTLinearizedGainSmallnessCoeff]
   linarith
-
 /-- Reciprocal source-facing threshold for the single linearized KKT smallness
     coefficient in the current Theorem 20.8 route. -/
 noncomputable def theorem20_8KKTLinearizedGainSmallnessThreshold
@@ -19583,7 +19379,6 @@ noncomputable def theorem20_8KKTLinearizedGainSmallnessThreshold
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
     (hB : LSEFullRowRank B) (hnull : LSENullIntersectionTrivial A B) : ℝ :=
   (theorem20_8KKTLinearizedGainSmallnessCoeff hB hnull)⁻¹
-
 /-- The source-facing KKT smallness threshold is positive. -/
 theorem theorem20_8KKTLinearizedGainSmallnessThreshold_pos
     {m n p : ℕ}
@@ -19598,7 +19393,6 @@ theorem theorem20_8KKTLinearizedGainSmallnessThreshold_pos
     linarith
   simpa [theorem20_8KKTLinearizedGainSmallnessThreshold] using
     inv_pos.mpr hcoeff_pos
-
 /-- Source-facing threshold form of the linearized KKT smallness comparison:
     `eps < 1/C` implies `eps*C < 1`. -/
 theorem theorem20_8KKTLinearizedGainSmallnessCoeff_eps_mul_lt_one_of_eps_lt_threshold
@@ -19620,7 +19414,6 @@ theorem theorem20_8KKTLinearizedGainSmallnessCoeff_eps_mul_lt_one_of_eps_lt_thre
   have hmul : eps * C < C⁻¹ * C :=
     mul_lt_mul_of_pos_right heps_lt_inv hC_pos
   simpa [C, inv_mul_cancel₀ (ne_of_gt hC_pos)] using hmul
-
 /-- Bundled scalar small-gain hypotheses for the current source-residual-ratio
     KKT route for Higham Theorem 20.8. -/
 def theorem20_8KKTSourceResidualRatioGainConditions {m n p : ℕ}
@@ -19634,7 +19427,6 @@ def theorem20_8KKTSourceResidualRatioGainConditions {m n p : ℕ}
         LSEKKTInverseSolutionConstrCoeff hB hnull * (eps * frobNormRect B) <
           1 ∧
       theorem20_8KKTCoupledSelfCoeff hB hnull eps < 1
-
 /-- Scalar margin discharge for the bundled source-residual-ratio KKT
     small-gain hypotheses.  The coupled quotient is replaced by the source-side
     inequality that its numerator is below the remaining solution-row margin. -/
@@ -19664,7 +19456,6 @@ theorem theorem20_8KKTSourceResidualRatioGainConditions_of_coupledNumerator_lt_s
       simpa using hcoupledMargin
     simpa [theorem20_8KKTCoupledSelfCoeff, theorem20_8KKTSolutionSelfCoeff]
       using hcoupled
-
 /-- Source-facing scalar discharge for the bundled source-residual-ratio KKT
     small-gain hypotheses: a half-denominator multiplier margin, the
     solution-row linear smallness condition, and a linearized coupled margin
@@ -19725,7 +19516,6 @@ theorem theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_margins
   exact
     theorem20_8KKTSourceResidualRatioGainConditions_of_coupledNumerator_lt_solutionMargin
       hB hnull hmultGain hsolGain hcoupledMargin
-
 /-- A single smallness comparison against
     `theorem20_8KKTLinearizedGainSmallnessCoeff` discharges the bundled
     source-residual-ratio KKT gain predicate. -/
@@ -19837,7 +19627,6 @@ theorem theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessC
     theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_margins
       hB hnull heps_nonneg heps_le_one hmultGainHalf hsolSmall
       hcoupledLinearMargin
-
 /-- Threshold form of
     `theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessCoeff`.
     The public hypothesis is the source-facing `eps < 1/C` comparison. -/
@@ -19855,7 +19644,6 @@ theorem theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessT
       hB hnull hsmall
   exact theorem20_8KKTSourceResidualRatioGainConditions_of_linearized_smallnessCoeff
     hB hnull heps_nonneg hsmall_prod
-
 /-- The scalar right-hand side of the current source-residual-ratio KKT bound
     for Higham Theorem 20.8.  This keeps the public theorem below readable
     while preserving all inverse-block coefficients and gain hypotheses
@@ -19894,7 +19682,6 @@ noncomputable def theorem20_8KKTSourceResidualRatioCoupledBound {m n p : ℕ}
         (eps * frobNormRect B + eps * frobNormRect B)) / solDenom
   let solSelf : ℝ := solMuCoeff * muSelf / solDenom
   solBase / (1 - solSelf)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     named-bound version of the source-residual-ratio coupled KKT estimate. -/
 theorem
@@ -19945,7 +19732,6 @@ theorem
       hy hB hBpert hnull hxnorm hbudget heps_nonneg hmultGain hsolGain
       hcoupledGain'
   simpa [theorem20_8KKTSourceResidualRatioCoupledBound] using h
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     named-bound KKT estimate with the three scalar small-gain hypotheses
     bundled into one source-facing predicate. -/
@@ -19978,7 +19764,6 @@ theorem
     hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound
       hy hB hBpert hnull hxnorm hbudget heps_nonneg hmultGain hsolGain
       hcoupledGain
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     named-bound KKT estimate with the bundled scalar gain predicate discharged
     from source-facing linearized margins. -/
@@ -20022,7 +19807,6 @@ theorem
   exact
     hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_gainConditions
       hy hB hBpert hnull hxnorm hbudget heps_nonneg hgain
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     named-bound KKT estimate with the bundled scalar gain predicate discharged
     by one linearized smallness comparison. -/
@@ -20058,7 +19842,6 @@ theorem
   exact
     hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_gainConditions
       hy hB hBpert hnull hxnorm hbudget heps_nonneg hgain
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     named-bound KKT estimate with the bundled scalar gain predicate discharged
     by the reciprocal linearized smallness threshold. -/
@@ -20094,7 +19877,6 @@ theorem
   exact
     hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_gainConditions
       hy hB hBpert hnull hxnorm hbudget heps_nonneg hgain
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-stacked-rank and displayed maximum-relative-perturbation version of
     the named source-residual-ratio KKT estimate.  This derives the internal
@@ -20168,7 +19950,6 @@ theorem
     hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound
       hy hB hBpert hnull hxnorm hbudget heps_nonneg hmultGain hsolGain
       hcoupledGain
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-ranked maximum-relative-perturbation KKT estimate using the bundled
     small-gain predicate. -/
@@ -20208,7 +19989,6 @@ theorem
     hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank
       hy hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hmultGain
       hsolGain hcoupledGain
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     KKT-to-direct/data correction handoff.  The source-ranked coupled KKT
     radius supplies the relative solution-difference hypothesis for the
@@ -20279,7 +20059,6 @@ theorem
     theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_eps_radius_coefficient_of_solution_difference_relative_bound
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad y x r
       heps_nonneg hApos hbpos hBpos hdpos hxnorm hmax hrelative
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank specialization of the KKT-to-direct/data correction
     handoff.  Full row rank supplies the source right inverse used as `B^+`,
@@ -20339,7 +20118,6 @@ theorem
   hx.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_eps_KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
     hy hB hStack hxnorm hB.rightInverse APplus r hApos hbpos hBpos hdpos
     hmax hBsmall hgain
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-ranked maximum-relative-perturbation KKT estimate with the bundled
     gain predicate discharged by linearized margins. -/
@@ -20410,7 +20188,6 @@ theorem
   exact
     hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
       hy hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hgain
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-ranked maximum-relative-perturbation KKT estimate with the bundled
     gain predicate discharged by one linearized smallness comparison.  This is
@@ -20462,7 +20239,6 @@ theorem
   exact
     hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
       hy hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hgain
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-ranked maximum-relative-perturbation KKT estimate with the bundled
     gain predicate discharged by the reciprocal linearized smallness threshold. -/
@@ -20511,7 +20287,6 @@ theorem
   exact
     hx.kkt_solution_difference_relative_le_theorem20_8KKTSourceResidualRatioCoupledBound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
       hy hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hgain
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     canonical KKT response bound with the perturbed-solution scale absorbed by
     a scalar small-gain condition.  The remaining scale assumptions are the
@@ -20616,7 +20391,6 @@ theorem
     simpa [yCoeff] using hgain
   have habs := real_le_div_one_sub_of_le_mul_add hgain' hlin
   simpa [E, yCoeff, base] using habs
-
 /-- Unique-solution form of the limiting weighting theorem after (20.26).
     Under the local uniqueness condition from (20.24), any supplied convergent
     exact weighted-minimizer branch whose weights satisfy `(mu^2)^{-1} -> 0`
@@ -20640,7 +20414,6 @@ theorem lseWeightedMinimizer_tendsto_unique_lseMinimizer_of_inv_mu_sq
       A b B d mu x_mu x y hlim hmu hmin hy.1 hInvSq
   have hxy : x = y := IsLSEMinimizer.eq_of_nullIntersectionTrivial hnull hx hy
   simpa [hxy] using hlim
-
 /-- Existence-and-uniqueness form of the limiting weighting theorem after
     (20.26).  Under the local consistency and uniqueness assumptions from
     (20.24), a supplied convergent exact weighted-minimizer branch has a unique
@@ -20667,7 +20440,6 @@ theorem lseWeightedMinimizer_exists_unique_lseMinimizer_tendsto_of_inv_mu_sq
   refine ⟨x, ⟨hx, hlim⟩, ?_⟩
   intro y hy
   exact IsLSEMinimizer.eq_of_nullIntersectionTrivial hnull hy.1 hx
-
 /-- Source-facing stacked-rank form of the limiting weighting theorem after
     (20.26).  Under the uniqueness condition stated via the stacked matrix in
     (20.24), any supplied convergent exact weighted-minimizer branch whose
@@ -20692,7 +20464,6 @@ theorem lseWeightedMinimizer_tendsto_unique_lseMinimizer_of_lseStackedFullColumn
     A b B d mu x_mu x y hlim hmu hmin hy
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
     hInvSq
-
 /-- Source-facing existence-and-uniqueness form of the limiting weighting
     theorem after (20.26).  The assumptions are the local full-row-rank
     constraint condition and the stacked full-column-rank uniqueness condition
@@ -20716,7 +20487,6 @@ theorem lseWeightedMinimizer_exists_unique_lseMinimizer_tendsto_of_lseStackedFul
     A b B d mu x_mu x hlim hB
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
     hmu hmin hInvSq
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, exact supplied-GQR
     uniqueness consequence under the local assumptions (20.24).
 
@@ -20738,7 +20508,6 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_conditions20_2
   refine ⟨x, hx, ?_⟩
   intro y hy
   exact IsLSEMinimizer.eq_of_nullIntersectionTrivial hnull hy hx
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, supplied-GQR uniqueness
     consequence in the source stacked-rank wording.
 
@@ -20757,7 +20526,6 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_fullRowRank_st
     ∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x :=
   h.exists_unique_lse_minimizer_of_conditions20_24 hB
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall exact-MGS route:
     nonzero MGS stages for `Bᵀ`, a supplied associated-row `[0; L]` shape for
     the actual transformed `A Q`, and the source rank assumptions give the
@@ -20788,7 +20556,6 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_tall_mgs_const
       (A := A) (B := B) hdiagB hAQ with
     ⟨h⟩
   exact h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall exact-MGS route:
     full row rank of `B` now supplies the exact-MGS nonbreakdown hypotheses for
     `Bᵀ`; together with the source stacked-rank assumption and the remaining
@@ -20815,7 +20582,6 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_tall_fullRowRa
       (A := A) (B := B) hB hAQ with
     ⟨h⟩
   exact h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide exact-MGS route:
     nonzero MGS stages for `Bᵀ` and for the column-reversed trailing block of
     the actual transformed `A Q`, together with the source rank assumptions,
@@ -20847,7 +20613,6 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_wide_mgs_const
       (A := A) (B := B) hdiagB hdiagAQ with
     ⟨h⟩
   exact h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide exact-MGS route:
     full row rank of `B` now supplies the exact-MGS nonbreakdown hypotheses for
     `Bᵀ`; together with the source stacked-rank assumption and the remaining
@@ -20875,7 +20640,6 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_wide_fullRowRa
       (A := A) (B := B) hB hdiagAQ with
     ⟨h⟩
   exact h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9:
     supplied-GQR uniqueness consequence stated at the kernel nonsingularity
     surface after (20.28).
@@ -20897,7 +20661,6 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_s_l22_kernel_t
     (h.conditions20_24_iff_s_l22_kernel_trivial).2
       ⟨hS_kernel, hL22_kernel⟩
   exact h.exists_unique_lse_minimizer_of_conditions20_24 hcond.1 hcond.2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9:
     supplied-GQR uniqueness consequence stated at the triangular nonsingularity
     surface after (20.28).
@@ -20918,7 +20681,6 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_triangular_non
   have hcond : LSEFullRowRank B ∧ LSENullIntersectionTrivial A B :=
     (h.conditions20_24_iff_s_l22_diag_ne_zero).2 ⟨hS_diag, hL22_diag⟩
   exact h.exists_unique_lse_minimizer_of_conditions20_24 hcond.1 hcond.2
-
 /-- Solve-map version of
     `GeneralizedQRFactorization.exists_unique_lse_minimizer_of_triangular_nonsingular`:
     bijectivity of the supplied triangular solve maps for `S` and `L22` implies a
@@ -20939,7 +20701,6 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_s_l22_bijectiv
       (h.l22_bijective_iff_diag_ne_zero).1 hL22_bij⟩
   exact h.exists_unique_lse_minimizer_of_triangular_nonsingular
     hdiag.1 hdiag.2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall associated (20.28)
     supplied-shape nonsingularity equivalence:
     under a supplied exact QR identity for `Bᵀ` and a supplied associated-row
@@ -20995,7 +20756,6 @@ theorem GeneralizedQRFactorization.tall_qr_assoc_case_conditions20_24_iff_diag_n
     · intro i
       rw [hL22]
       simpa [gqrAQTallL22FromEq20_28] using hLdiag i
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide associated (20.28)
     supplied-shape nonsingularity equivalence:
     under a supplied exact QR identity for `Bᵀ` and a supplied
@@ -21052,7 +20812,6 @@ theorem GeneralizedQRFactorization.wide_qr_assoc_case_conditions20_24_iff_diag_n
     · intro i
       rw [hL22]
       simpa [gqrAQWideL22FromEq20_28] using hLdiag i
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall associated (20.28)
     supplied-shape source-rank nonsingularity equivalence:
     under supplied exact QR and associated-row shape data, full row rank of
@@ -21094,7 +20853,6 @@ theorem GeneralizedQRFactorization.tall_qr_assoc_case_fullRowRank_stackedFullCol
         (A := A) (B := B) Q U R hQ hU hqrB hR hCase).2 hdiag
     exact ⟨hcond.1,
       (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).1 hcond.2⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide associated (20.28)
     supplied-shape source-rank nonsingularity equivalence:
     under supplied exact QR and associated-column shape data, full row rank of
@@ -21136,7 +20894,6 @@ theorem GeneralizedQRFactorization.wide_qr_assoc_case_fullRowRank_stackedFullCol
         (A := A) (B := B) Q U R hQ hU hqrB hR hCase).2 hdiag
     exact ⟨hcond.1,
       (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).1 hcond.2⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall supplied-shape
     nonsingular-block case:
     a supplied exact QR identity for `Bᵀ`, a supplied associated-row
@@ -21180,7 +20937,6 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_tall_qr_assoc_
       intro i
       rw [hL22]
       simpa [gqrAQTallL22FromEq20_28] using hLdiag i)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide supplied-shape
     nonsingular-block case:
     a supplied exact QR identity for `Bᵀ`, a supplied associated-column
@@ -21224,7 +20980,6 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_wide_qr_assoc_
       intro i
       rw [hL22]
       simpa [gqrAQWideL22FromEq20_28] using hLdiag i)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall supplied-shape case:
     a supplied exact QR identity for `Bᵀ`, a supplied associated-row
     (20.28) shape `Uᵀ A Q = [0; L]`, and the local assumptions (20.24)
@@ -21258,7 +21013,6 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_tall_qr_assoc_
       (A := A) (B := B) Q U R hQ hU hqrB hR hCase with
     ⟨h, _hQ, _hU, _hS, _hL22⟩
   exact h.exists_unique_lse_minimizer_of_conditions20_24 hB hnull
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide supplied-shape case:
     a supplied exact QR identity for `Bᵀ`, a supplied associated-column
     (20.28) shape `Uᵀ A Q = [X L]`, and the local assumptions (20.24)
@@ -21292,7 +21046,6 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_wide_qr_assoc_
       (A := A) (B := B) Q U R hQ hU hqrB hR hCase with
     ⟨h, _hQ, _hU, _hS, _hL22⟩
   exact h.exists_unique_lse_minimizer_of_conditions20_24 hB hnull
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall supplied-shape
     source-rank case:
     a supplied exact QR identity for `Bᵀ`, a supplied associated-row
@@ -21327,7 +21080,6 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_tall_qr_assoc_
   GeneralizedQRFactorization.exists_unique_lse_minimizer_of_tall_qr_assoc_case_conditions20_24
     (A := A) (B := B) Q U R hQ hU hqrB hR hCase hB
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide supplied-shape
     source-rank case:
     a supplied exact QR identity for `Bᵀ`, a supplied associated-column
@@ -21362,7 +21114,6 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_wide_qr_assoc_
   GeneralizedQRFactorization.exists_unique_lse_minimizer_of_wide_qr_assoc_case_conditions20_24
     (A := A) (B := B) Q U R hQ hU hqrB hR hCase hB
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall associated (20.28)
     supplied-shape method in the source rank wording:
     supplied exact QR and associated-row shape data, full row rank of `B`, and
@@ -21408,7 +21159,6 @@ theorem GeneralizedQRFactorization.exists_isLSEMinimizer_of_tall_qr_assoc_case_f
     ⟨h, hQeq, hUeq, hSeq, hL22eq⟩
   refine ⟨h, hQeq, hUeq, hSeq, hL22eq, ?_⟩
   exact h.exists_isLSEMinimizer_of_fullRowRank_stackedFullColumnRank hB hstack
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide associated (20.28)
     supplied-shape method in the source rank wording:
     supplied exact QR and associated-column shape data, full row rank of `B`,
@@ -21454,7 +21204,6 @@ theorem GeneralizedQRFactorization.exists_isLSEMinimizer_of_wide_qr_assoc_case_f
     ⟨h, hQeq, hUeq, hSeq, hL22eq⟩
   refine ⟨h, hQeq, hUeq, hSeq, hL22eq, ?_⟩
   exact h.exists_isLSEMinimizer_of_fullRowRank_stackedFullColumnRank hB hstack
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall associated (20.28)
     supplied-shape method:
     under the source rank assumptions, the exact triangular GQR solve
@@ -21498,7 +21247,6 @@ theorem GeneralizedQRFactorization.exists_unique_solve_coordinates_of_tall_qr_as
     ⟨h, hQeq, hUeq, hSeq, hL22eq⟩
   refine ⟨h, hQeq, hUeq, hSeq, hL22eq, ?_⟩
   exact h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide associated (20.28)
     supplied-shape method:
     under the source rank assumptions, the exact triangular GQR solve
@@ -21542,7 +21290,6 @@ theorem GeneralizedQRFactorization.exists_unique_solve_coordinates_of_wide_qr_as
     ⟨h, hQeq, hUeq, hSeq, hL22eq⟩
   refine ⟨h, hQeq, hUeq, hSeq, hL22eq, ?_⟩
   exact h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack
-
 /-- Existence-only corollary of the tall associated supplied-shape source-rank
     Theorem 20.9 wrapper. -/
 theorem GeneralizedQRFactorization.exists_lse_minimizer_of_tall_qr_assoc_case_fullRowRank_stackedFullColumnRank
@@ -21569,7 +21316,6 @@ theorem GeneralizedQRFactorization.exists_lse_minimizer_of_tall_qr_assoc_case_fu
       (A := A) (B := B) Q U R hQ hU hqrB hR hCase hB hstack with
     ⟨x, hx, _huniq⟩
   exact ⟨x, hx⟩
-
 /-- Existence-only corollary of the wide associated supplied-shape source-rank
     Theorem 20.9 wrapper. -/
 theorem GeneralizedQRFactorization.exists_lse_minimizer_of_wide_qr_assoc_case_fullRowRank_stackedFullColumnRank
@@ -21596,7 +21342,6 @@ theorem GeneralizedQRFactorization.exists_lse_minimizer_of_wide_qr_assoc_case_fu
       (A := A) (B := B) Q U R hQ hU hqrB hR hCase hB hstack with
     ⟨x, hx, _huniq⟩
   exact ⟨x, hx⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall associated (20.28)
     supplied-shape exact method package:
     supplied exact `Bᵀ` QR data, supplied associated-row shape data for
@@ -21645,7 +21390,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_tall_qr_asso
   refine ⟨h, hQeq, hUeq, hSeq, hL22eq, ?_, ?_⟩
   · exact h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack
   · exact h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide associated (20.28)
     supplied-shape exact method package:
     supplied exact `Bᵀ` QR data, supplied associated-column shape data for
@@ -21694,7 +21438,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_wide_qr_asso
   refine ⟨h, hQeq, hUeq, hSeq, hL22eq, ?_, ?_⟩
   · exact h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack
   · exact h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall exact-MGS method package:
     the exact-MGS constraint construction for `Bᵀ`, a supplied associated-row
     `[0; L]` shape for the actual `A Q`, and the source rank assumptions yield
@@ -21737,7 +21480,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_tall_mgs_con
   exact ⟨h,
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall exact-MGS method package:
     full row rank of `B` discharges the exact-MGS nonbreakdown hypotheses for
     `Bᵀ`; the remaining associated-row `[0; L]` construction for the actual
@@ -21776,7 +21518,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_tall_fullRow
   exact ⟨h,
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall full-associated exact-MGS
     method package.
 
@@ -21821,7 +21562,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_tall_mgs_con
   exact ⟨h,
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall full-row-rank
     full-associated exact-MGS method package.
 
@@ -21861,7 +21601,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_tall_fullRow
   exact ⟨h,
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall exact-Householder method
     package.
 
@@ -21897,7 +21636,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_tall_mgs_con
   exact ⟨h,
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall full-row-rank plus
     exact-Householder method package.
 
@@ -21928,7 +21666,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_tall_fullRow
   exact ⟨h,
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide exact-MGS method package:
     the exact-MGS constraint construction for `Bᵀ`, the exact-MGS trailing-block
     associated-shape construction for the actual `A Q`, and the source rank
@@ -21972,7 +21709,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_wide_mgs_con
   exact ⟨h,
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide exact-MGS method package:
     full row rank of `B` discharges the exact-MGS nonbreakdown hypotheses for
     `Bᵀ`; the remaining trailing-block MGS hypothesis for the actual
@@ -22012,7 +21748,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_wide_fullRow
   exact ⟨h,
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide exact-Householder method
     package.
 
@@ -22048,7 +21783,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_wide_mgs_con
   exact ⟨h,
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide full-row-rank plus
     exact-Householder method package.
 
@@ -22079,7 +21813,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_wide_fullRow
   exact ⟨h,
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall exact-Householder method
     package with the source nonsingularity consequence.
 
@@ -22119,7 +21852,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_with_s_l22_diag
   exact ⟨h, hdiag.1, hdiag.2,
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide exact-Householder method
     package with the source nonsingularity consequence.
 
@@ -22159,7 +21891,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_with_s_l22_diag
   exact ⟨h, hdiag.1, hdiag.2,
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, constructed exact GQR method
     package for the block form (20.27).
 
@@ -22193,7 +21924,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_fullRowRank_
   exact ⟨h,
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, constructed exact GQR method
     package with the associated trailing display used in (20.28).
 
@@ -22238,7 +21968,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_with_A_Q2_tall_
       hB hstack
   · exact h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
       hB hstack
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, constructed exact GQR method
     package with the trailing `A Q₂` display and the source nonsingularity
     consequence for the same constructed factors.
@@ -22277,7 +22006,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_with_A_Q2_tall_
     (h.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).1
       ⟨hB, hstack⟩,
     hyz, hx⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, constructed exact GQR method
     package with the trailing `A Q₂` display and bijective triangular solve
     maps for the same constructed factors.
@@ -22315,7 +22043,6 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_with_A_Q2_tall_
     (h.fullRowRank_stackedFullColumnRank_iff_s_l22_bijective).1
       ⟨hB, hstack⟩
   exact ⟨h, hCase, hbij.1, hbij.2, hyz, hx⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact solvability consequence
     with no supplied GQR factor input.
 
@@ -22335,7 +22062,6 @@ theorem exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
       (A := A) (B := B) (b := b) (d := d) hB hstack with
     ⟨_h, _hyz, hx⟩
   exact hx
-
 /-- Existence-only corollary of
     `exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank`. -/
 theorem exists_lse_minimizer_of_fullRowRank_stackedFullColumnRank
@@ -22350,7 +22076,6 @@ theorem exists_lse_minimizer_of_fullRowRank_stackedFullColumnRank
       (A := A) (B := B) (b := b) (d := d) hB hstack with
     ⟨x, hx, _huniq⟩
   exact ⟨x, hx⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     relative-budget rank-preservation wrapper for the perturbed equality
     constrained least-squares problem.  Source full row rank of `B` and full
@@ -22391,7 +22116,6 @@ theorem theorem20_8_exists_unique_perturbed_lse_minimizer_of_relativePerturbatio
       (B := fun i j => B i j + DeltaB i j)
       (b := fun i => b i + Deltab i)
       (d := fun i => d i + Deltad i) hcond.1 hcond.2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     displayed maximum-relative-perturbation version of the perturbed LSE
     existence and uniqueness wrapper. -/
@@ -22425,7 +22149,6 @@ theorem theorem20_8_exists_unique_perturbed_lse_minimizer_of_maxRelativePerturba
       A DeltaA b Deltab B DeltaB d Deltad
       hApos hbpos hBpos hdpos hmax)
     hBsmall hStackSmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-rank perturbed-minimizer existence plus the rank-tolerant
     residual-gap solution-difference route.
@@ -22526,7 +22249,6 @@ theorem
         hxpos hy_norm hmax hStack hx hy hgain hcoeff hresidualFactor
   · intro z hz
     exact hyuniq z hz.1
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-rank perturbed-minimizer existence plus the rank-tolerant
     residual-gap direct/data correction route.
@@ -22638,7 +22360,6 @@ theorem
         hxpos hy_norm hmax hStack hx hy hgain hcoeff hresidualFactor
   · intro z hz
     exact hyuniq z hz.1
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     GQR-shaped source-rank existence-plus-bound version of the KKT route.
     Source full row rank of `B`, full column rank of `[A; B]`, the displayed
@@ -22716,7 +22437,6 @@ theorem
   refine ⟨y, ⟨hy, hbound⟩, ?_⟩
   intro z hz
   exact hyuniq z hz.1
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     GQR-shaped source-rank existence-plus-bound KKT route with bundled scalar
     small-gain hypotheses. -/
@@ -22761,7 +22481,6 @@ theorem
     hx.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank
       hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hStackSmall
       hmultGain hsolGain hcoupledGain
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     GQR-shaped source-rank existence-plus-bound KKT route with the bundled
     gain predicate discharged by linearized margins. -/
@@ -22837,7 +22556,6 @@ theorem
   exact
     hx.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
       hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hStackSmall hgain
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     GQR-shaped source-rank existence-plus-bound KKT route with the bundled
     gain predicate discharged by one linearized smallness comparison. -/
@@ -22892,7 +22610,6 @@ theorem
   exact
     hx.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
       hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hStackSmall hgain
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     GQR-shaped source-rank existence-plus-bound KKT route with the bundled
     gain predicate discharged by the reciprocal linearized smallness threshold. -/
@@ -22946,7 +22663,6 @@ theorem
   exact
     hx.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
       hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hStackSmall hgain
-
 /-- Single source-facing smallness threshold for the current Theorem 20.8 KKT
     route.  It is the minimum of the two rank-preservation radii and the
     linearized KKT gain threshold. -/
@@ -22958,7 +22674,6 @@ noncomputable def theorem20_8RankKKTSmallnessThreshold {m n p : ℕ}
       (theorem20_8KKTLinearizedGainSmallnessThreshold hB
         ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2
           hStack)))
-
 /-- Positivity of the combined rank-preservation/KKT smallness threshold under
     the source nonzero-norm hypotheses used by the displayed maximum-relative
     perturbation route. -/
@@ -22990,7 +22705,6 @@ theorem theorem20_8RankKKTSmallnessThreshold_pos {m n p : ℕ}
         hStack)
   dsimp [theorem20_8RankKKTSmallnessThreshold]
   exact lt_min hBquota (lt_min hStackQuota hKKT)
-
 /-- A strict comparison with the combined Theorem 20.8 smallness threshold
     discharges both rank-preservation margins and the KKT gain threshold. -/
 theorem theorem20_8_rank_kkt_smallness_conditions_of_eps_lt_threshold
@@ -23047,7 +22761,6 @@ theorem theorem20_8_rank_kkt_smallness_conditions_of_eps_lt_threshold
         hStack.vecNorm2LowerMargin := by
     nlinarith
   exact ⟨hBsmall, hStackSmall, hKKT⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-rank perturbed-minimizer existence plus the additive-scaled
     rank-tolerant residual-gap solution-difference route from one combined
@@ -23163,7 +22876,6 @@ theorem
         hxpos hy_norm hmax hStack hx hy hgapScaleAP hgapScaleCorr hgapScale
   · intro z hz
     exact hyuniq z hz.1
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-rank perturbed-minimizer existence plus the additive-scaled
     rank-tolerant residual-gap direct/data correction route from one combined
@@ -23285,7 +22997,6 @@ theorem
         hxpos hy_norm hmax hStack hx hy hgapScaleAP hgapScaleCorr hgapScale
   · intro z hz
     exact hyuniq z hz.1
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     supplied-GQR one-threshold additive-scaled residual-gap
     solution-difference route.
@@ -23380,7 +23091,6 @@ theorem
         hxpos hy_norm hmax hStack hx hy hgapScaleAP hgapScaleCorr hgapScale
   · intro z hz
     exact hyuniq z hz.1
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     supplied-GQR one-threshold additive-scaled residual-gap direct/data
     correction route.
@@ -23483,7 +23193,6 @@ theorem
         hxpos hy_norm hmax hStack hx hy hgapScaleAP hgapScaleCorr hgapScale
   · intro z hz
     exact hyuniq z hz.1
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     one-threshold version of the rank-tolerant residual-gap coefficient
     solution-difference route.
@@ -23556,7 +23265,6 @@ theorem
   exact
     hx.exists_unique_perturbed_lse_minimizer_and_rank_tolerant_solution_difference_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_residual_gap_coeff
       hB hStack hxpos hApos hbpos hBpos hdpos hmax hBsmall hStackSmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     one-threshold version of the rank-tolerant residual-gap coefficient route.
 
@@ -23641,7 +23349,6 @@ theorem
   exact
     hx.exists_unique_perturbed_lse_minimizer_and_rank_tolerant_direct_data_correction_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_residual_gap_coeff
       hB hStack hxpos hApos hbpos hBpos hdpos hmax hBsmall hStackSmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     supplied-GQR one-threshold residual-gap coefficient solution-difference
     route.
@@ -23721,7 +23428,6 @@ theorem
         hxpos hy_norm hmax hStack hx hy hgain hcoeff hresidualFactor
   · intro z hz
     exact hyuniq z hz.1
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     supplied-GQR one-threshold residual-gap coefficient route.
 
@@ -23811,7 +23517,6 @@ theorem
         hxpos hy_norm hmax hStack hx hy hgain hcoeff hresidualFactor
   · intro z hz
     exact hyuniq z hz.1
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     existing-perturbed-minimizer direct/data correction route from one
     combined rank-preservation and KKT smallness threshold.  This is the
@@ -23881,7 +23586,6 @@ theorem
     hx.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_eps_KKTSourceResidualRatioCoupledBound_sourceRightInverse_of_maxRelativePerturbation_lseStackedFullColumnRank_gainConditions
       hy hB hStack hxnorm APplus r hApos hbpos hBpos hdpos hmax hBsmall
       hgain
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     existing-perturbed-minimizer source-residual specialization of the
     source-right-inverse KKT fallback direct/data correction route.
@@ -23937,7 +23641,6 @@ theorem
   hx.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_eps_KKTSourceResidualRatioCoupledBound_sourceRightInverse_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
     hy hB hStack hxnorm APplus (lsResidualHigham A b x) hApos hbpos hBpos
     hdpos hmax hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     supplied-GQR existing-perturbed-minimizer specialization of the
     source-residual KKT fallback route.
@@ -24001,7 +23704,6 @@ theorem
   hx.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_eps_KKTSourceResidualRatioCoupledBound_sourceRightInverse_sourceResidual_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
     hy hB hStack hxnorm h.liftedReducedGramAPplus hApos hbpos hBpos hdpos
     hmax hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     GQR-shaped source-rank existence-plus-bound KKT route from one combined
     rank-preservation and KKT smallness threshold. -/
@@ -24041,7 +23743,6 @@ theorem
     hx.exists_unique_perturbed_lse_minimizer_and_kkt_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_linearized_smallnessThreshold
       hB hStack hxnorm hApos hbpos hBpos hdpos hmax hBsmall hStackSmall
       hKKTsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     existence-plus-direct/data correction version of the KKT fallback route.
     Under the single combined rank-preservation/KKT smallness threshold, the
@@ -24146,7 +23847,6 @@ theorem
   refine ⟨y, ⟨hy, hdirect⟩, ?_⟩
   intro z hz
   exact hyuniq z hz.1
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank version of the existence-level direct/data correction
     KKT fallback route.  Full row rank supplies the source right inverse used
@@ -24205,7 +23905,6 @@ theorem
   hx.exists_unique_perturbed_lse_minimizer_and_direct_data_correction_bound_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
     hB hStack hxnorm hB.rightInverse APplus res hApos hbpos hBpos hdpos hmax
     hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     GQR-shaped source-right-inverse direct/data correction route specialized
     to the concrete lifted reduced-Gram `(AP)^+ = Q₂(AQ₂)^+` candidate.
@@ -24274,7 +23973,6 @@ theorem
   hx.exists_unique_perturbed_lse_minimizer_and_direct_data_correction_bound_sourceRightInverse_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
     hB hStack hxnorm h.liftedReducedGramAPplus res hApos hbpos hBpos hdpos
     hmax hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-residual specialization of the source-right-inverse KKT fallback
     direct/data correction route.
@@ -24335,7 +24033,6 @@ theorem
   hx.exists_unique_perturbed_lse_minimizer_and_direct_data_correction_bound_sourceRightInverse_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
     hB hStack hxnorm APplus (lsResidualHigham A b x) hApos hbpos hBpos hdpos
     hmax hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     supplied-GQR source-residual specialization of the KKT fallback
     direct/data correction route.
@@ -24402,7 +24099,6 @@ theorem
   hx.exists_unique_perturbed_lse_minimizer_and_direct_data_correction_bound_sourceRightInverse_sourceResidual_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
     hB hStack hxnorm h.liftedReducedGramAPplus hApos hbpos hBpos hdpos
     hmax hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-rank, rank-tolerant KKT fallback route at the source-residual
     surface.
@@ -24488,7 +24184,6 @@ theorem
   exact
     h.exists_unique_perturbed_lse_minimizer_and_direct_data_correction_bound_sourceRightInverse_liftedReducedGram_sourceResidual_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
       hx hB hStack hxnorm hApos hbpos hBpos hdpos hmax hsmall
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     unique-minimizer source-residual-relative package with the source-residual
     KKT fallback.
@@ -24683,1813 +24378,5 @@ theorem
       hbound⟩, ?_⟩
   intro z hz
   exact hyuniq z hz.1
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
-    perturbed-rank witness package for the reduced `AP` problem.
-
-    If the perturbed LSE data satisfy the two rank conditions in (20.24), then
-    there are a perturbed feasible base point, a perturbed LSE minimizer, and
-    the corresponding reduced least-squares minimizer.  The reduced Higham
-    residual is orthogonal to the columns of the perturbed reduced `AP`
-    matrix, which is the exact optimality side needed by the Wedin residual
-    route. -/
-theorem theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_of_conditions20_24
-    {r p q : ℕ}
-    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
-    (b Deltab : Fin (r + q) → ℝ)
-    (B DeltaB : Fin p → Fin (p + q) → ℝ)
-    (d Deltad : Fin p → ℝ)
-    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
-    (hStackPert : LSEStackedFullColumnRank
-      (fun i j => A i j + DeltaA i j)
-      (fun i j => B i j + DeltaB i j)) :
-    ∃ (x0 y : Fin (p + q) → ℝ) (s : Fin (r + q) → ℝ),
-      LSEFeasible (fun i j => B i j + DeltaB i j)
-          (fun i => d i + Deltad i) x0 ∧
-      IsLSEMinimizer
-          (fun i j => A i j + DeltaA i j)
-          (fun i => b i + Deltab i)
-          (fun i j => B i j + DeltaB i j)
-          (fun i => d i + Deltad i) y ∧
-      IsLeastSquaresMinimizer
-          (theorem20_8AP (fun i j => A i j + DeltaA i j)
-            (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-          (fun i =>
-            b i + Deltab i -
-              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
-          (fun j => y j - x0 j) ∧
-      s =
-          (fun i =>
-            b i + Deltab i -
-              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
-              rectMatMulVec
-                (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                  (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-                (fun j => y j - x0 j) i) ∧
-      (∀ j : Fin (p + q),
-        ∑ i : Fin (r + q),
-          theorem20_8AP (fun i j => A i j + DeltaA i j)
-              (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
-            s i = 0) := by
-  rcases hBpert.exists_feasible (fun i => d i + Deltad i) with
-    ⟨x0, hx0⟩
-  rcases exists_lse_minimizer_of_fullRowRank_stackedFullColumnRank
-      (A := fun i j => A i j + DeltaA i j)
-      (B := fun i j => B i j + DeltaB i j)
-      (b := fun i => b i + Deltab i)
-      (d := fun i => d i + Deltad i) hBpert hStackPert with
-    ⟨y, hy⟩
-  let s : Fin (r + q) → ℝ :=
-    fun i =>
-      b i + Deltab i -
-        rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
-        rectMatMulVec
-          (theorem20_8AP (fun i j => A i j + DeltaA i j)
-            (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-          (fun j => y j - x0 j) i
-  have hred :
-      IsLeastSquaresMinimizer
-          (theorem20_8AP (fun i j => A i j + DeltaA i j)
-            (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-          (fun i =>
-            b i + Deltab i -
-              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
-          (fun j => y j - x0 j) :=
-    LSEFullRowRank.theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
-      A DeltaA b Deltab B DeltaB hBpert d Deltad x0 y hx0 hy
-  have horth :
-      ∀ j : Fin (p + q),
-        ∑ i : Fin (r + q),
-          theorem20_8AP (fun i j => A i j + DeltaA i j)
-              (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
-            s i = 0 :=
-    LSEFullRowRank.theorem20_8AP_perturbed_reduced_higham_residual_orthogonal_of_lse_minimizer
-      A DeltaA b Deltab B DeltaB hBpert d Deltad x0 y s hx0 hy rfl
-  exact ⟨x0, y, s, hx0, hy, hred, rfl, horth⟩
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
-    uniqueness-enhanced perturbed-rank witness package for the reduced `AP`
-    problem.
-
-    This is the base same-witness layer for the reduced `AP` route under the
-    perturbed rank assumptions: the feasible base point, reduced
-    least-squares minimizer proof, and reduced residual orthogonality witness
-    are attached to the unique perturbed LSE minimizer. -/
-theorem
-    theorem20_8_exists_unique_perturbed_lse_minimizer_and_reduced_minimizer_orthogonal_of_conditions20_24
-    {r p q : ℕ}
-    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
-    (b Deltab : Fin (r + q) → ℝ)
-    (B DeltaB : Fin p → Fin (p + q) → ℝ)
-    (d Deltad : Fin p → ℝ)
-    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
-    (hStackPert : LSEStackedFullColumnRank
-      (fun i j => A i j + DeltaA i j)
-      (fun i j => B i j + DeltaB i j)) :
-    ∃! y : Fin (p + q) → ℝ,
-      IsLSEMinimizer
-          (fun i j => A i j + DeltaA i j)
-          (fun i => b i + Deltab i)
-          (fun i j => B i j + DeltaB i j)
-          (fun i => d i + Deltad i) y ∧
-        ∃ (x0 : Fin (p + q) → ℝ) (s : Fin (r + q) → ℝ),
-          LSEFeasible (fun i j => B i j + DeltaB i j)
-              (fun i => d i + Deltad i) x0 ∧
-          IsLeastSquaresMinimizer
-              (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-              (fun i =>
-                b i + Deltab i -
-                  rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
-              (fun j => y j - x0 j) ∧
-          s =
-              (fun i =>
-                b i + Deltab i -
-                  rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
-                  rectMatMulVec
-                    (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                      (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-                    (fun j => y j - x0 j) i) ∧
-          (∀ j : Fin (p + q),
-            ∑ i : Fin (r + q),
-              theorem20_8AP (fun i j => A i j + DeltaA i j)
-                  (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
-                s i = 0) := by
-  rcases exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
-      (A := fun i j => A i j + DeltaA i j)
-      (B := fun i j => B i j + DeltaB i j)
-      (b := fun i => b i + Deltab i)
-      (d := fun i => d i + Deltad i) hBpert hStackPert with
-    ⟨_yuniq, _hyuniq, huniq⟩
-  rcases theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_of_conditions20_24
-      A DeltaA b Deltab B DeltaB d Deltad hBpert hStackPert with
-    ⟨x0, y, s, hfeas, hy, hred, hs, horth⟩
-  refine ⟨y, ⟨hy, x0, s, hfeas, hred, hs, horth⟩, ?_⟩
-  intro z hz
-  exact (huniq z hz.1).trans (huniq y hy).symm
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
-    maximum-relative-perturbation version of the reduced `AP` witness package.
-
-    Source rank conditions and strict margin smallness first preserve (20.24)
-    for the perturbed problem; the resulting perturbed rank facts then supply
-    the reduced minimizer and residual orthogonality witnesses. -/
-theorem
-    theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lt_margins
-    {r p q : ℕ}
-    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
-    {b Deltab : Fin (r + q) → ℝ}
-    {B DeltaB : Fin p → Fin (p + q) → ℝ}
-    {d Deltad : Fin p → ℝ} {eps : ℝ}
-    (hBsrc : LSEFullRowRank B)
-    (hStack : LSEStackedFullColumnRank A B)
-    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
-    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
-    (hmax :
-      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
-        ≤ eps)
-    (hBsmall :
-      eps * frobNormRect B < hBsrc.transposeVecNorm2LowerMargin)
-    (hStackSmall :
-      eps * frobNormRect A + eps * frobNormRect B <
-        hStack.vecNorm2LowerMargin) :
-    ∃ (x0 y : Fin (p + q) → ℝ) (s : Fin (r + q) → ℝ),
-      LSEFeasible (fun i j => B i j + DeltaB i j)
-          (fun i => d i + Deltad i) x0 ∧
-      IsLSEMinimizer
-          (fun i j => A i j + DeltaA i j)
-          (fun i => b i + Deltab i)
-          (fun i j => B i j + DeltaB i j)
-          (fun i => d i + Deltad i) y ∧
-      IsLeastSquaresMinimizer
-          (theorem20_8AP (fun i j => A i j + DeltaA i j)
-            (fun i j => B i j + DeltaB i j)
-            (theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
-              hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall).1.rightInverse)
-          (fun i =>
-            b i + Deltab i -
-              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
-          (fun j => y j - x0 j) ∧
-      s =
-          (fun i =>
-            b i + Deltab i -
-              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
-              rectMatMulVec
-                (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                  (fun i j => B i j + DeltaB i j)
-                  (theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
-                    hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall).1.rightInverse)
-                (fun j => y j - x0 j) i) ∧
-      (∀ j : Fin (p + q),
-        ∑ i : Fin (r + q),
-          theorem20_8AP (fun i j => A i j + DeltaA i j)
-              (fun i j => B i j + DeltaB i j)
-              (theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
-                hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall).1.rightInverse i j *
-            s i = 0) := by
-  let hcond :
-      LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
-        LSEStackedFullColumnRank
-          (fun i j => A i j + DeltaA i j)
-          (fun i j => B i j + DeltaB i j) :=
-    theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
-      hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall
-  exact
-    theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_of_conditions20_24
-      A DeltaA b Deltab B DeltaB d Deltad hcond.1 hcond.2
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
-    maximum-relative-perturbation version of the reduced `AP` witness package,
-    with uniqueness of the perturbed LSE minimizer.
-
-    The margin hypotheses preserve the perturbed rank conditions and provide a
-    reduced least-squares witness.  This wrapper ties that reduced witness to
-    the unique perturbed LSE minimizer rather than returning an arbitrary
-    minimizer. -/
-theorem
-    theorem20_8_exists_unique_perturbed_lse_minimizer_and_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lt_margins
-    {r p q : ℕ}
-    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
-    {b Deltab : Fin (r + q) → ℝ}
-    {B DeltaB : Fin p → Fin (p + q) → ℝ}
-    {d Deltad : Fin p → ℝ} {eps : ℝ}
-    (hBsrc : LSEFullRowRank B)
-    (hStack : LSEStackedFullColumnRank A B)
-    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
-    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
-    (hmax :
-      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
-        ≤ eps)
-    (hBsmall :
-      eps * frobNormRect B < hBsrc.transposeVecNorm2LowerMargin)
-    (hStackSmall :
-      eps * frobNormRect A + eps * frobNormRect B <
-        hStack.vecNorm2LowerMargin) :
-    ∃! y : Fin (p + q) → ℝ,
-      IsLSEMinimizer
-          (fun i j => A i j + DeltaA i j)
-          (fun i => b i + Deltab i)
-          (fun i j => B i j + DeltaB i j)
-          (fun i => d i + Deltad i) y ∧
-        ∃ (x0 : Fin (p + q) → ℝ) (s : Fin (r + q) → ℝ),
-          LSEFeasible (fun i j => B i j + DeltaB i j)
-              (fun i => d i + Deltad i) x0 ∧
-          IsLeastSquaresMinimizer
-              (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                (fun i j => B i j + DeltaB i j)
-                (theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
-                  hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall).1.rightInverse)
-              (fun i =>
-                b i + Deltab i -
-                  rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
-              (fun j => y j - x0 j) ∧
-          s =
-              (fun i =>
-                b i + Deltab i -
-                  rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
-                  rectMatMulVec
-                    (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                      (fun i j => B i j + DeltaB i j)
-                      (theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
-                        hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall).1.rightInverse)
-                    (fun j => y j - x0 j) i) ∧
-          (∀ j : Fin (p + q),
-            ∑ i : Fin (r + q),
-              theorem20_8AP (fun i j => A i j + DeltaA i j)
-                  (fun i j => B i j + DeltaB i j)
-                  (theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
-                    hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall).1.rightInverse i j *
-                s i = 0) := by
-  rcases theorem20_8_exists_unique_perturbed_lse_minimizer_of_maxRelativePerturbation_lt_margins
-      (A := A) (DeltaA := DeltaA) (b := b) (Deltab := Deltab)
-      (B := B) (DeltaB := DeltaB) (d := d) (Deltad := Deltad)
-      hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall with
-    ⟨_yuniq, _hyuniq, huniq⟩
-  rcases
-    theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lt_margins
-      (A := A) (DeltaA := DeltaA) (b := b) (Deltab := Deltab)
-      (B := B) (DeltaB := DeltaB) (d := d) (Deltad := Deltad)
-      hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall with
-    ⟨x0, y, s, hfeas, hy, hred, hs, horth⟩
-  refine ⟨y, ⟨hy, x0, s, hfeas, hred, hs, horth⟩, ?_⟩
-  intro z hz
-  exact (huniq z hz.1).trans (huniq y hy).symm
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
-    one-threshold version of the reduced `AP` witness package.
-
-    The combined rank/KKT smallness threshold discharges the two strict
-    rank-preservation margins used to obtain perturbed (20.24).  The conclusion
-    returns those perturbed rank facts together with the feasible base point,
-    perturbed LSE minimizer, reduced `AP` least-squares minimizer proof, and
-    reduced residual orthogonality witness. -/
-theorem
-    theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_with_ranks_of_maxRelativePerturbation_rank_kkt_smallnessThreshold
-    {r p q : ℕ}
-    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
-    {b Deltab : Fin (r + q) → ℝ}
-    {B DeltaB : Fin p → Fin (p + q) → ℝ}
-    {d Deltad : Fin p → ℝ} {eps : ℝ}
-    (hBsrc : LSEFullRowRank B)
-    (hStack : LSEStackedFullColumnRank A B)
-    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
-    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
-    (hmax :
-      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
-        ≤ eps)
-    (hsmall : eps < theorem20_8RankKKTSmallnessThreshold hBsrc hStack) :
-    ∃ hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j),
-    ∃ _hStackPert : LSEStackedFullColumnRank
-        (fun i j => A i j + DeltaA i j)
-        (fun i j => B i j + DeltaB i j),
-    ∃ (x0 y : Fin (p + q) → ℝ) (s : Fin (r + q) → ℝ),
-      LSEFeasible (fun i j => B i j + DeltaB i j)
-          (fun i => d i + Deltad i) x0 ∧
-      IsLSEMinimizer
-          (fun i j => A i j + DeltaA i j)
-          (fun i => b i + Deltab i)
-          (fun i j => B i j + DeltaB i j)
-          (fun i => d i + Deltad i) y ∧
-      IsLeastSquaresMinimizer
-          (theorem20_8AP (fun i j => A i j + DeltaA i j)
-            (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-          (fun i =>
-            b i + Deltab i -
-              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
-          (fun j => y j - x0 j) ∧
-      s =
-          (fun i =>
-            b i + Deltab i -
-              rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
-              rectMatMulVec
-                (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                  (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-                (fun j => y j - x0 j) i) ∧
-      (∀ j : Fin (p + q),
-        ∑ i : Fin (r + q),
-          theorem20_8AP (fun i j => A i j + DeltaA i j)
-              (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
-            s i = 0) := by
-  rcases theorem20_8_rank_kkt_smallness_conditions_of_eps_lt_threshold
-      hBsrc hStack hApos hBpos hsmall with
-    ⟨hBsmall, hStackSmall, _hKKTsmall⟩
-  let hcond :
-      LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
-        LSEStackedFullColumnRank
-          (fun i j => A i j + DeltaA i j)
-          (fun i j => B i j + DeltaB i j) :=
-    theorem20_8_conditions20_24_of_maxRelativePerturbation_lt_margins
-      hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall
-  rcases theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_of_conditions20_24
-      A DeltaA b Deltab B DeltaB d Deltad hcond.1 hcond.2 with
-    ⟨x0, y, s, hfeas, hy, hred, hs, horth⟩
-  exact ⟨hcond.1, hcond.2, x0, y, s, hfeas, hy, hred, hs, horth⟩
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
-    one-threshold unique perturbed-minimizer version of the reduced `AP`
-    witness package.
-
-    This is the base uniqueness layer for the reduced `AP` route: the same
-    perturbed minimizer that carries the feasible base point, reduced
-    least-squares proof, and reduced residual orthogonality is identified as
-    the unique minimizer of the perturbed LSE problem. -/
-theorem
-    theorem20_8_exists_unique_perturbed_lse_minimizer_and_reduced_minimizer_orthogonal_with_ranks_of_maxRelativePerturbation_rank_kkt_smallnessThreshold
-    {r p q : ℕ}
-    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
-    {b Deltab : Fin (r + q) → ℝ}
-    {B DeltaB : Fin p → Fin (p + q) → ℝ}
-    {d Deltad : Fin p → ℝ} {eps : ℝ}
-    (hBsrc : LSEFullRowRank B)
-    (hStack : LSEStackedFullColumnRank A B)
-    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
-    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
-    (hmax :
-      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
-        ≤ eps)
-    (hsmall : eps < theorem20_8RankKKTSmallnessThreshold hBsrc hStack) :
-    ∃! y : Fin (p + q) → ℝ,
-      IsLSEMinimizer
-          (fun i j => A i j + DeltaA i j)
-          (fun i => b i + Deltab i)
-          (fun i j => B i j + DeltaB i j)
-          (fun i => d i + Deltad i) y ∧
-        ∃ hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j),
-        ∃ _hStackPert : LSEStackedFullColumnRank
-            (fun i j => A i j + DeltaA i j)
-            (fun i j => B i j + DeltaB i j),
-        ∃ (x0 : Fin (p + q) → ℝ) (s : Fin (r + q) → ℝ),
-          LSEFeasible (fun i j => B i j + DeltaB i j)
-              (fun i => d i + Deltad i) x0 ∧
-          IsLeastSquaresMinimizer
-              (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-              (fun i =>
-                b i + Deltab i -
-                  rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
-              (fun j => y j - x0 j) ∧
-          s =
-              (fun i =>
-                b i + Deltab i -
-                  rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
-                  rectMatMulVec
-                    (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                      (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-                    (fun j => y j - x0 j) i) ∧
-          (∀ j : Fin (p + q),
-            ∑ i : Fin (r + q),
-              theorem20_8AP (fun i j => A i j + DeltaA i j)
-                  (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
-                s i = 0) := by
-  rcases theorem20_8_rank_kkt_smallness_conditions_of_eps_lt_threshold
-      hBsrc hStack hApos hBpos hsmall with
-    ⟨hBsmall, hStackSmall, _hKKTsmall⟩
-  rcases theorem20_8_exists_unique_perturbed_lse_minimizer_of_maxRelativePerturbation_lt_margins
-      (A := A) (DeltaA := DeltaA) (b := b) (Deltab := Deltab)
-      (B := B) (DeltaB := DeltaB) (d := d) (Deltad := Deltad)
-      hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall with
-    ⟨_yuniq, _hyuniq, huniq⟩
-  rcases
-    theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_with_ranks_of_maxRelativePerturbation_rank_kkt_smallnessThreshold
-      (A := A) (DeltaA := DeltaA) (b := b) (Deltab := Deltab)
-      (B := B) (DeltaB := DeltaB) (d := d) (Deltad := Deltad)
-      hBsrc hStack hApos hbpos hBpos hdpos hmax hsmall with
-    ⟨hBpert, hStackPert, x0, y, s, hfeas, hy, hred, hs, horth⟩
-  refine
-    ⟨y,
-      ⟨hy, hBpert, hStackPert, x0, s, hfeas, hred, hs, horth⟩,
-      ?_⟩
-  intro z hz
-  exact (huniq z hz.1).trans (huniq y hy).symm
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
-    source-rank package tying the perturbed reduced-`AP` witness to the
-    source-residual KKT fallback bound.
-
-    The rank/KKT threshold preserves the perturbed (20.24) ranks, giving a
-    perturbed feasible base point, the perturbed LSE minimizer, the reduced
-    `AP` least-squares minimizer, and reduced residual orthogonality.  The same
-    perturbed minimizer is then used in the source-residual KKT direct/data
-    correction bound with the source lifted reduced-Gram `(AP)^+` candidate. -/
-theorem
-    IsLSEMinimizer.exists_rank_tolerant_sourceResidual_kkt_bound_and_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
-    {r p q : ℕ}
-    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
-    {b Deltab : Fin (r + q) → ℝ}
-    {B DeltaB : Fin p → Fin (p + q) → ℝ}
-    {d Deltad : Fin p → ℝ} {x : Fin (p + q) → ℝ}
-    (hx : IsLSEMinimizer A b B d x)
-    (hBsrc : LSEFullRowRank B)
-    (hStack : LSEStackedFullColumnRank A B)
-    (hxnorm : 0 < vecNorm2 x)
-    {eps : ℝ}
-    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
-    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
-    (hmax :
-      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
-        ≤ eps)
-    (hsmall : eps < theorem20_8RankKKTSmallnessThreshold hBsrc hStack) :
-    ∃ APplus : Fin (p + q) → Fin (r + q) → ℝ,
-      RectMoorePenrosePseudoinverse (r + q) (p + q)
-          (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus ∧
-        rectMatMul B APplus =
-          (fun _i : Fin p => fun _j : Fin (r + q) => 0) ∧
-        ∃ hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j),
-        ∃ _hStackPert : LSEStackedFullColumnRank
-            (fun i j => A i j + DeltaA i j)
-            (fun i j => B i j + DeltaB i j),
-        ∃ (x0 y : Fin (p + q) → ℝ) (s : Fin (r + q) → ℝ),
-          LSEFeasible (fun i j => B i j + DeltaB i j)
-              (fun i => d i + Deltad i) x0 ∧
-          IsLSEMinimizer
-              (fun i j => A i j + DeltaA i j)
-              (fun i => b i + Deltab i)
-              (fun i j => B i j + DeltaB i j)
-              (fun i => d i + Deltad i) y ∧
-          IsLeastSquaresMinimizer
-              (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-              (fun i =>
-                b i + Deltab i -
-                  rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
-              (fun j => y j - x0 j) ∧
-          s =
-              (fun i =>
-                b i + Deltab i -
-                  rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
-                  rectMatMulVec
-                    (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                      (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-                    (fun j => y j - x0 j) i) ∧
-          (∀ j : Fin (p + q),
-            ∑ i : Fin (r + q),
-              theorem20_8AP (fun i j => A i j + DeltaA i j)
-                  (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
-                s i = 0) ∧
-          (vecNorm2
-                (fun j : Fin (p + q) =>
-                  rectMatMulVec (theorem20_8BAplus A B hBsrc.rightInverse APplus)
-                      (fun i : Fin p =>
-                        Deltad i - rectMatMulVec DeltaB y i) j +
-                    rectMatMulVec APplus
-                      (fun i : Fin (r + q) =>
-                        rectMatMulVec DeltaA y i - Deltab i) j) +
-              eps * theorem20_8ResidualAmplifier A B APplus
-                (theorem20_8BAplus A B hBsrc.rightInverse APplus) *
-                (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) /
-              vecNorm2 x ≤
-            eps * theorem20_8FirstOrderRHS A b B d x
-                (lsResidualHigham A b x) APplus
-                (theorem20_8BAplus A B hBsrc.rightInverse APplus) +
-              eps *
-                theorem20_8KKTSourceResidualRatioCoupledBound hBsrc
-                  ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank
-                    A B).2 hStack) b x eps *
-                (complexMatrixOp2
-                    (realRectToCMatrix
-                      (theorem20_8BAplus A B hBsrc.rightInverse APplus)) *
-                    frobNormRect B +
-                  complexMatrixOp2 (realRectToCMatrix APplus) *
-                    frobNormRect A) := by
-  rcases GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
-      (A := A) (B := B) hBsrc hStack with
-    ⟨h⟩
-  have hMP :
-      RectMoorePenrosePseudoinverse (r + q) (p + q)
-        (theorem20_8AP A B (undetAplusOfGramNonsingInv B))
-        h.liftedReducedGramAPplus :=
-    h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
-      hBsrc hStack
-  have hnull :
-      rectMatMul B h.liftedReducedGramAPplus =
-        (fun _i : Fin p => fun _j : Fin (r + q) => 0) :=
-    h.liftedReducedGramAPplus_constraint_annihilates
-  rcases
-    theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_with_ranks_of_maxRelativePerturbation_rank_kkt_smallnessThreshold
-      (A := A) (DeltaA := DeltaA) (b := b) (Deltab := Deltab)
-      (B := B) (DeltaB := DeltaB) (d := d) (Deltad := Deltad)
-      hBsrc hStack hApos hbpos hBpos hdpos hmax hsmall with
-    ⟨hBpert, hStackPert, x0, y, s, hfeas, hy, hred, hs, horth⟩
-  have hbound :
-      (vecNorm2
-            (fun j : Fin (p + q) =>
-              rectMatMulVec
-                  (theorem20_8BAplus A B hBsrc.rightInverse
-                    h.liftedReducedGramAPplus)
-                  (fun i : Fin p =>
-                    Deltad i - rectMatMulVec DeltaB y i) j +
-                rectMatMulVec h.liftedReducedGramAPplus
-                  (fun i : Fin (r + q) =>
-                    rectMatMulVec DeltaA y i - Deltab i) j) +
-          eps * theorem20_8ResidualAmplifier A B h.liftedReducedGramAPplus
-            (theorem20_8BAplus A B hBsrc.rightInverse
-              h.liftedReducedGramAPplus) *
-            (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) /
-          vecNorm2 x ≤
-        eps * theorem20_8FirstOrderRHS A b B d x
-            (lsResidualHigham A b x) h.liftedReducedGramAPplus
-            (theorem20_8BAplus A B hBsrc.rightInverse
-              h.liftedReducedGramAPplus) +
-          eps *
-            theorem20_8KKTSourceResidualRatioCoupledBound hBsrc
-              ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank
-                A B).2 hStack) b x eps *
-            (complexMatrixOp2
-                (realRectToCMatrix
-                  (theorem20_8BAplus A B hBsrc.rightInverse
-                    h.liftedReducedGramAPplus)) *
-                frobNormRect B +
-              complexMatrixOp2
-                  (realRectToCMatrix h.liftedReducedGramAPplus) *
-                frobNormRect A) :=
-    h.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_eps_KKTSourceResidualRatioCoupledBound_sourceRightInverse_liftedReducedGram_sourceResidual_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
-      hx hy hBsrc hStack hxnorm hApos hbpos hBpos hdpos hmax hsmall
-  exact
-    ⟨h.liftedReducedGramAPplus, hMP, hnull, hBpert, hStackPert, x0, y, s,
-      hfeas, hy, hred, hs, horth, hbound⟩
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
-    unique-minimizer reduced-`AP`/source-residual KKT same-witness package.
-
-    This strengthens the reduced-`AP`/KKT package above by using the rank
-    preservation margins to identify the perturbed LSE minimizer as unique.
-    The lifted reduced-Gram `(AP)^+`, reduced `AP` optimality witness,
-    reduced residual orthogonality, and source-residual KKT fallback are all
-    tied to that same unique perturbed minimizer. -/
-theorem
-    IsLSEMinimizer.exists_unique_perturbed_lse_minimizer_and_rank_tolerant_sourceResidual_kkt_bound_and_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
-    {r p q : ℕ}
-    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
-    {b Deltab : Fin (r + q) → ℝ}
-    {B DeltaB : Fin p → Fin (p + q) → ℝ}
-    {d Deltad : Fin p → ℝ} {x : Fin (p + q) → ℝ}
-    (hx : IsLSEMinimizer A b B d x)
-    (hBsrc : LSEFullRowRank B)
-    (hStack : LSEStackedFullColumnRank A B)
-    (hxnorm : 0 < vecNorm2 x)
-    {eps : ℝ}
-    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
-    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
-    (hmax :
-      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
-        ≤ eps)
-    (hsmall : eps < theorem20_8RankKKTSmallnessThreshold hBsrc hStack) :
-    ∃! y : Fin (p + q) → ℝ,
-      IsLSEMinimizer
-          (fun i j => A i j + DeltaA i j)
-          (fun i => b i + Deltab i)
-          (fun i j => B i j + DeltaB i j)
-          (fun i => d i + Deltad i) y ∧
-        ∃ APplus : Fin (p + q) → Fin (r + q) → ℝ,
-          RectMoorePenrosePseudoinverse (r + q) (p + q)
-              (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus ∧
-            rectMatMul B APplus =
-              (fun _i : Fin p => fun _j : Fin (r + q) => 0) ∧
-            ∃ hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j),
-            ∃ _hStackPert : LSEStackedFullColumnRank
-                (fun i j => A i j + DeltaA i j)
-                (fun i j => B i j + DeltaB i j),
-            ∃ (x0 : Fin (p + q) → ℝ) (s : Fin (r + q) → ℝ),
-              LSEFeasible (fun i j => B i j + DeltaB i j)
-                  (fun i => d i + Deltad i) x0 ∧
-              IsLeastSquaresMinimizer
-                  (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                    (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-                  (fun i =>
-                    b i + Deltab i -
-                      rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
-                  (fun j => y j - x0 j) ∧
-              s =
-                  (fun i =>
-                    b i + Deltab i -
-                      rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
-                      rectMatMulVec
-                        (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                          (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-                        (fun j => y j - x0 j) i) ∧
-              (∀ j : Fin (p + q),
-                ∑ i : Fin (r + q),
-                  theorem20_8AP (fun i j => A i j + DeltaA i j)
-                      (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
-                    s i = 0) ∧
-              (vecNorm2
-                    (fun j : Fin (p + q) =>
-                      rectMatMulVec
-                          (theorem20_8BAplus A B hBsrc.rightInverse APplus)
-                          (fun i : Fin p =>
-                            Deltad i - rectMatMulVec DeltaB y i) j +
-                        rectMatMulVec APplus
-                          (fun i : Fin (r + q) =>
-                            rectMatMulVec DeltaA y i - Deltab i) j) +
-                  eps * theorem20_8ResidualAmplifier A B APplus
-                    (theorem20_8BAplus A B hBsrc.rightInverse APplus) *
-                    (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) /
-                  vecNorm2 x ≤
-                eps * theorem20_8FirstOrderRHS A b B d x
-                    (lsResidualHigham A b x) APplus
-                    (theorem20_8BAplus A B hBsrc.rightInverse APplus) +
-                  eps *
-                    theorem20_8KKTSourceResidualRatioCoupledBound hBsrc
-                      ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank
-                        A B).2 hStack) b x eps *
-                    (complexMatrixOp2
-                        (realRectToCMatrix
-                          (theorem20_8BAplus A B hBsrc.rightInverse APplus)) *
-                        frobNormRect B +
-                      complexMatrixOp2 (realRectToCMatrix APplus) *
-                        frobNormRect A) := by
-  rcases
-    theorem20_8_rank_kkt_smallness_conditions_of_eps_lt_threshold
-      hBsrc hStack hApos hBpos hsmall with
-    ⟨hBsmall, hStackSmall, _hKKTsmall⟩
-  rcases theorem20_8_exists_unique_perturbed_lse_minimizer_of_maxRelativePerturbation_lt_margins
-      (A := A) (DeltaA := DeltaA) (b := b) (Deltab := Deltab)
-      (B := B) (DeltaB := DeltaB) (d := d) (Deltad := Deltad)
-      hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall with
-    ⟨_yuniq, _hyuniq, huniq⟩
-  rcases
-    IsLSEMinimizer.exists_rank_tolerant_sourceResidual_kkt_bound_and_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
-      hx hBsrc hStack hxnorm hApos hbpos hBpos hdpos hmax hsmall with
-    ⟨APplus, hMP, hnull, hBpert, hStackPert, x0, y, s, hfeas, hy, hred,
-      hs, horth, hbound⟩
-  refine
-    ⟨y,
-      ⟨hy, APplus, hMP, hnull, hBpert, hStackPert, x0, s, hfeas, hred,
-        hs, horth, hbound⟩,
-      ?_⟩
-  intro z hz
-  exact (huniq z hz.1).trans (huniq y hy).symm
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
-    source-rank package tying the perturbed reduced-`AP` witness to both the
-    additive-scaled residual-gap solution-difference handoff and the
-    source-residual KKT fallback bound.
-
-    This theorem deliberately keeps the residual-gap component estimates
-    explicit.  Its purpose is to ensure that the reduced minimizer, reduced
-    residual orthogonality, rank-tolerant source `(AP)^+`, nonnegative
-    `kappa_B(A)` certificate, solution-difference implication, and KKT fallback
-    bound all refer to the same perturbed minimizer selected from the one
-    combined rank/KKT smallness threshold. -/
-theorem
-    IsLSEMinimizer.exists_rank_tolerant_solution_difference_and_sourceResidual_kkt_bound_with_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
-    {r p q : ℕ}
-    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
-    {b Deltab : Fin (r + q) → ℝ}
-    {B DeltaB : Fin p → Fin (p + q) → ℝ}
-    {d Deltad : Fin p → ℝ} {x : Fin (p + q) → ℝ}
-    (hx : IsLSEMinimizer A b B d x)
-    (hBsrc : LSEFullRowRank B)
-    (hStack : LSEStackedFullColumnRank A B)
-    (hxnorm : 0 < vecNorm2 x)
-    {eps gapAP gapCorr : ℝ}
-    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
-    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
-    (hmax :
-      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
-        ≤ eps)
-    (hsmall : eps < theorem20_8RankKKTSmallnessThreshold hBsrc hStack) :
-    ∃ APplus : Fin (p + q) → Fin (r + q) → ℝ,
-        RectMoorePenrosePseudoinverse (r + q) (p + q)
-          (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus ∧
-        rectMatMul B APplus =
-          (fun _i : Fin p => fun _j : Fin (r + q) => 0) ∧
-        0 ≤ theorem20_8KappaB A APplus ∧
-        ∃ hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j),
-        ∃ _hStackPert : LSEStackedFullColumnRank
-            (fun i j => A i j + DeltaA i j)
-            (fun i j => B i j + DeltaB i j),
-        ∃ (x0 y : Fin (p + q) → ℝ) (s : Fin (r + q) → ℝ),
-          LSEFeasible (fun i j => B i j + DeltaB i j)
-              (fun i => d i + Deltad i) x0 ∧
-          IsLSEMinimizer
-              (fun i j => A i j + DeltaA i j)
-              (fun i => b i + Deltab i)
-              (fun i j => B i j + DeltaB i j)
-              (fun i => d i + Deltad i) y ∧
-          IsLeastSquaresMinimizer
-              (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-              (fun i =>
-                b i + Deltab i -
-                  rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
-              (fun j => y j - x0 j) ∧
-          s =
-              (fun i =>
-                b i + Deltab i -
-                  rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
-                  rectMatMulVec
-                    (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                      (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-                    (fun j => y j - x0 j) i) ∧
-          (∀ j : Fin (p + q),
-            ∑ i : Fin (r + q),
-              theorem20_8AP (fun i j => A i j + DeltaA i j)
-                  (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
-                s i = 0) ∧
-          (vecNorm2 y ≤ vecNorm2 x →
-            (complexMatrixOp2 (realRectToCMatrix APplus) *
-                (complexMatrixOp2
-                    (realRectToCMatrix
-                      (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) *
-                  vecNorm2 (fun j : Fin (p + q) => y j - x j)) ≤
-              gapAP) →
-            (complexMatrixOp2 (realRectToCMatrix APplus) *
-                ((theorem20_8KappaB A APplus *
-                      (complexMatrixOp2
-                          (realRectToCMatrix
-                            (rectMatMul A (undetAplusOfGramNonsingInv B))) *
-                        (eps * vecNorm2 d + (eps * frobNormRect B) *
-                          vecNorm2 y)) +
-                    complexMatrixOp2
-                        (realRectToCMatrix
-                          (rectMatMul A
-                            (theorem20_8BAplus A B
-                              (undetAplusOfGramNonsingInv B) APplus))) *
-                      (eps * vecNorm2 d + (eps * frobNormRect B) *
-                        vecNorm2 y)) +
-                  (eps * frobNormRect A) * vecNorm2 y +
-                  eps * vecNorm2 b) ≤
-              gapCorr) →
-            (gapAP + gapCorr ≤
-              eps * theorem20_8ResidualAmplifier A B APplus
-                  (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
-                    APplus) *
-                (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) →
-            let BAplus :=
-              theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus
-            let firstOrder :=
-              theorem20_8FirstOrderRHS A b B d x
-                (lsResidualHigham A b x) APplus BAplus
-            let dataCoeff :=
-              complexMatrixOp2 (realRectToCMatrix BAplus) * frobNormRect B +
-                complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A
-            vecNorm2 (fun j : Fin (p + q) => y j - x j) / vecNorm2 x ≤
-              eps * firstOrder + eps ^ 2 * firstOrder * dataCoeff) ∧
-          (vecNorm2
-                (fun j : Fin (p + q) =>
-                  rectMatMulVec (theorem20_8BAplus A B hBsrc.rightInverse APplus)
-                      (fun i : Fin p =>
-                        Deltad i - rectMatMulVec DeltaB y i) j +
-                    rectMatMulVec APplus
-                      (fun i : Fin (r + q) =>
-                        rectMatMulVec DeltaA y i - Deltab i) j) +
-              eps * theorem20_8ResidualAmplifier A B APplus
-                (theorem20_8BAplus A B hBsrc.rightInverse APplus) *
-                (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) /
-              vecNorm2 x ≤
-            eps * theorem20_8FirstOrderRHS A b B d x
-                (lsResidualHigham A b x) APplus
-                (theorem20_8BAplus A B hBsrc.rightInverse APplus) +
-              eps *
-                theorem20_8KKTSourceResidualRatioCoupledBound hBsrc
-                  ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank
-                    A B).2 hStack) b x eps *
-                (complexMatrixOp2
-                    (realRectToCMatrix
-                      (theorem20_8BAplus A B hBsrc.rightInverse APplus)) *
-                    frobNormRect B +
-                  complexMatrixOp2 (realRectToCMatrix APplus) *
-                    frobNormRect A) := by
-  rcases GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
-      (A := A) (B := B) hBsrc hStack with
-    ⟨h⟩
-  have hMP :
-      RectMoorePenrosePseudoinverse (r + q) (p + q)
-        (theorem20_8AP A B (undetAplusOfGramNonsingInv B))
-        h.liftedReducedGramAPplus :=
-    h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
-      hBsrc hStack
-  have hnull :
-      rectMatMul B h.liftedReducedGramAPplus =
-        (fun _i : Fin p => fun _j : Fin (r + q) => 0) :=
-    h.liftedReducedGramAPplus_constraint_annihilates
-  have hkappa_nonneg :
-      0 ≤ theorem20_8KappaB A h.liftedReducedGramAPplus :=
-    theorem20_8KappaB_nonneg A h.liftedReducedGramAPplus
-  rcases
-    theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_with_ranks_of_maxRelativePerturbation_rank_kkt_smallnessThreshold
-      (A := A) (DeltaA := DeltaA) (b := b) (Deltab := Deltab)
-      (B := B) (DeltaB := DeltaB) (d := d) (Deltad := Deltad)
-      hBsrc hStack hApos hbpos hBpos hdpos hmax hsmall with
-    ⟨hBpert, hStackPert, x0, y, s, hfeas, hy, hred, hs, horth⟩
-  have hsolution :
-      (vecNorm2 y ≤ vecNorm2 x →
-        (complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
-            (complexMatrixOp2
-                (realRectToCMatrix
-                  (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) *
-              vecNorm2 (fun j : Fin (p + q) => y j - x j)) ≤
-          gapAP) →
-        (complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
-            ((theorem20_8KappaB A h.liftedReducedGramAPplus *
-                  (complexMatrixOp2
-                      (realRectToCMatrix
-                        (rectMatMul A (undetAplusOfGramNonsingInv B))) *
-                    (eps * vecNorm2 d + (eps * frobNormRect B) *
-                      vecNorm2 y)) +
-                complexMatrixOp2
-                    (realRectToCMatrix
-                      (rectMatMul A
-                        (theorem20_8BAplus A B
-                          (undetAplusOfGramNonsingInv B)
-                          h.liftedReducedGramAPplus))) *
-                  (eps * vecNorm2 d + (eps * frobNormRect B) *
-                    vecNorm2 y)) +
-              (eps * frobNormRect A) * vecNorm2 y +
-              eps * vecNorm2 b) ≤
-          gapCorr) →
-        (gapAP + gapCorr ≤
-          eps * theorem20_8ResidualAmplifier A B h.liftedReducedGramAPplus
-              (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
-                h.liftedReducedGramAPplus) *
-            (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) →
-        let BAplus :=
-          theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
-            h.liftedReducedGramAPplus
-        let firstOrder :=
-          theorem20_8FirstOrderRHS A b B d x
-            (lsResidualHigham A b x) h.liftedReducedGramAPplus BAplus
-        let dataCoeff :=
-          complexMatrixOp2 (realRectToCMatrix BAplus) * frobNormRect B +
-            complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
-              frobNormRect A
-        vecNorm2 (fun j : Fin (p + q) => y j - x j) / vecNorm2 x ≤
-          eps * firstOrder + eps ^ 2 * firstOrder * dataCoeff) := by
-    intro hy_norm hgapScaleAP hgapScaleCorr hgapScale
-    dsimp
-    exact
-      h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_additive_scaled_of_minimizers
-        A DeltaA b Deltab hBsrc DeltaB d Deltad x y hApos hbpos hBpos
-        hdpos hxnorm hy_norm hmax hStack hx hy hgapScaleAP hgapScaleCorr
-        hgapScale
-  have hbound :
-      (vecNorm2
-            (fun j : Fin (p + q) =>
-              rectMatMulVec
-                  (theorem20_8BAplus A B hBsrc.rightInverse
-                    h.liftedReducedGramAPplus)
-                  (fun i : Fin p =>
-                    Deltad i - rectMatMulVec DeltaB y i) j +
-                rectMatMulVec h.liftedReducedGramAPplus
-                  (fun i : Fin (r + q) =>
-                    rectMatMulVec DeltaA y i - Deltab i) j) +
-          eps * theorem20_8ResidualAmplifier A B h.liftedReducedGramAPplus
-            (theorem20_8BAplus A B hBsrc.rightInverse
-              h.liftedReducedGramAPplus) *
-            (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) /
-          vecNorm2 x ≤
-        eps * theorem20_8FirstOrderRHS A b B d x
-            (lsResidualHigham A b x) h.liftedReducedGramAPplus
-            (theorem20_8BAplus A B hBsrc.rightInverse
-              h.liftedReducedGramAPplus) +
-          eps *
-            theorem20_8KKTSourceResidualRatioCoupledBound hBsrc
-              ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank
-                A B).2 hStack) b x eps *
-            (complexMatrixOp2
-                (realRectToCMatrix
-                  (theorem20_8BAplus A B hBsrc.rightInverse
-                    h.liftedReducedGramAPplus)) *
-                frobNormRect B +
-              complexMatrixOp2
-                  (realRectToCMatrix h.liftedReducedGramAPplus) *
-                frobNormRect A) :=
-    h.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_eps_KKTSourceResidualRatioCoupledBound_sourceRightInverse_liftedReducedGram_sourceResidual_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
-      hx hy hBsrc hStack hxnorm hApos hbpos hBpos hdpos hmax hsmall
-  exact
-    ⟨h.liftedReducedGramAPplus, hMP, hnull, hkappa_nonneg, hBpert, hStackPert,
-      x0, y, s, hfeas, hy, hred, hs, horth, hsolution, hbound⟩
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
-    unique-minimizer same-witness package for the additive-scaled residual-gap
-    route and source-residual KKT fallback.
-
-    This strengthens the generic same-witness package above by using the rank
-    preservation margins to identify the perturbed LSE minimizer as unique.
-    The lifted reduced-Gram `(AP)^+`, reduced `AP` optimality witness,
-    additive-scaled solution implication, and source-residual KKT fallback are
-    all tied to that same unique perturbed minimizer. -/
-theorem
-    IsLSEMinimizer.exists_unique_perturbed_lse_minimizer_and_rank_tolerant_solution_difference_and_sourceResidual_kkt_bound_with_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
-    {r p q : ℕ}
-    {A DeltaA : Fin (r + q) → Fin (p + q) → ℝ}
-    {b Deltab : Fin (r + q) → ℝ}
-    {B DeltaB : Fin p → Fin (p + q) → ℝ}
-    {d Deltad : Fin p → ℝ} {x : Fin (p + q) → ℝ}
-    (hx : IsLSEMinimizer A b B d x)
-    (hBsrc : LSEFullRowRank B)
-    (hStack : LSEStackedFullColumnRank A B)
-    (hxnorm : 0 < vecNorm2 x)
-    {eps gapAP gapCorr : ℝ}
-    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
-    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
-    (hmax :
-      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
-        ≤ eps)
-    (hsmall : eps < theorem20_8RankKKTSmallnessThreshold hBsrc hStack) :
-    ∃! y : Fin (p + q) → ℝ,
-      IsLSEMinimizer
-          (fun i j => A i j + DeltaA i j)
-          (fun i => b i + Deltab i)
-          (fun i j => B i j + DeltaB i j)
-          (fun i => d i + Deltad i) y ∧
-        ∃ APplus : Fin (p + q) → Fin (r + q) → ℝ,
-          RectMoorePenrosePseudoinverse (r + q) (p + q)
-            (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus ∧
-          rectMatMul B APplus =
-            (fun _i : Fin p => fun _j : Fin (r + q) => 0) ∧
-          0 ≤ theorem20_8KappaB A APplus ∧
-          ∃ hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j),
-          ∃ _hStackPert : LSEStackedFullColumnRank
-              (fun i j => A i j + DeltaA i j)
-              (fun i j => B i j + DeltaB i j),
-          ∃ (x0 : Fin (p + q) → ℝ) (s : Fin (r + q) → ℝ),
-            LSEFeasible (fun i j => B i j + DeltaB i j)
-                (fun i => d i + Deltad i) x0 ∧
-            IsLeastSquaresMinimizer
-                (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                  (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-                (fun i =>
-                  b i + Deltab i -
-                    rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
-                (fun j => y j - x0 j) ∧
-            s =
-                (fun i =>
-                  b i + Deltab i -
-                    rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
-                    rectMatMulVec
-                      (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                        (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-                      (fun j => y j - x0 j) i) ∧
-            (∀ j : Fin (p + q),
-              ∑ i : Fin (r + q),
-                theorem20_8AP (fun i j => A i j + DeltaA i j)
-                    (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
-                  s i = 0) ∧
-            (vecNorm2 y ≤ vecNorm2 x →
-              (complexMatrixOp2 (realRectToCMatrix APplus) *
-                  (complexMatrixOp2
-                      (realRectToCMatrix
-                        (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) *
-                    vecNorm2 (fun j : Fin (p + q) => y j - x j)) ≤
-                gapAP) →
-              (complexMatrixOp2 (realRectToCMatrix APplus) *
-                  ((theorem20_8KappaB A APplus *
-                        (complexMatrixOp2
-                            (realRectToCMatrix
-                              (rectMatMul A (undetAplusOfGramNonsingInv B))) *
-                          (eps * vecNorm2 d + (eps * frobNormRect B) *
-                            vecNorm2 y)) +
-                      complexMatrixOp2
-                          (realRectToCMatrix
-                            (rectMatMul A
-                              (theorem20_8BAplus A B
-                                (undetAplusOfGramNonsingInv B) APplus))) *
-                        (eps * vecNorm2 d + (eps * frobNormRect B) *
-                          vecNorm2 y)) +
-                    (eps * frobNormRect A) * vecNorm2 y +
-                    eps * vecNorm2 b) ≤
-                gapCorr) →
-              (gapAP + gapCorr ≤
-                eps * theorem20_8ResidualAmplifier A B APplus
-                    (theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
-                      APplus) *
-                  (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) →
-              let BAplus :=
-                theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus
-              let firstOrder :=
-                theorem20_8FirstOrderRHS A b B d x
-                  (lsResidualHigham A b x) APplus BAplus
-              let dataCoeff :=
-                complexMatrixOp2 (realRectToCMatrix BAplus) * frobNormRect B +
-                  complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A
-              vecNorm2 (fun j : Fin (p + q) => y j - x j) / vecNorm2 x ≤
-                eps * firstOrder + eps ^ 2 * firstOrder * dataCoeff) ∧
-            (vecNorm2
-                  (fun j : Fin (p + q) =>
-                    rectMatMulVec
-                        (theorem20_8BAplus A B hBsrc.rightInverse APplus)
-                        (fun i : Fin p =>
-                          Deltad i - rectMatMulVec DeltaB y i) j +
-                      rectMatMulVec APplus
-                        (fun i : Fin (r + q) =>
-                          rectMatMulVec DeltaA y i - Deltab i) j) +
-                eps * theorem20_8ResidualAmplifier A B APplus
-                  (theorem20_8BAplus A B hBsrc.rightInverse APplus) *
-                  (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) /
-                vecNorm2 x ≤
-              eps * theorem20_8FirstOrderRHS A b B d x
-                  (lsResidualHigham A b x) APplus
-                  (theorem20_8BAplus A B hBsrc.rightInverse APplus) +
-                eps *
-                  theorem20_8KKTSourceResidualRatioCoupledBound hBsrc
-                    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank
-                      A B).2 hStack) b x eps *
-                  (complexMatrixOp2
-                      (realRectToCMatrix
-                        (theorem20_8BAplus A B hBsrc.rightInverse APplus)) *
-                      frobNormRect B +
-                    complexMatrixOp2 (realRectToCMatrix APplus) *
-                      frobNormRect A) := by
-  rcases
-    theorem20_8_rank_kkt_smallness_conditions_of_eps_lt_threshold
-      hBsrc hStack hApos hBpos hsmall with
-    ⟨hBsmall, hStackSmall, _hKKTsmall⟩
-  rcases theorem20_8_exists_unique_perturbed_lse_minimizer_of_maxRelativePerturbation_lt_margins
-      (A := A) (DeltaA := DeltaA) (b := b) (Deltab := Deltab)
-      (B := B) (DeltaB := DeltaB) (d := d) (Deltad := Deltad)
-      hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall with
-    ⟨_yuniq, _hyuniq, huniq⟩
-  rcases
-    IsLSEMinimizer.exists_rank_tolerant_solution_difference_and_sourceResidual_kkt_bound_with_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
-      (eps := eps) (gapAP := gapAP) (gapCorr := gapCorr)
-      hx hBsrc hStack hxnorm hApos hbpos hBpos hdpos hmax hsmall with
-    ⟨APplus, hMP, hnull, hkappa_nonneg, hBpert, hStackPert, x0, y, s,
-      hfeas, hy, hred, hs, horth, hsolution, hbound⟩
-  refine
-    ⟨y,
-      ⟨hy, APplus, hMP, hnull, hkappa_nonneg, hBpert, hStackPert, x0, s,
-        hfeas, hred, hs, horth, hsolution, hbound⟩,
-      ?_⟩
-  intro z hz
-  exact (huniq z hz.1).trans (huniq y hy).symm
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
-    coefficient residual-gap solution-difference handoff and the
-    source-residual KKT fallback bound, using the same perturbed minimizer.
-
-    This is the nonempty-reduced-block counterpart of the same-witness package
-    above.  It uses the existing coefficient residual-gap route, so the
-    genuinely separate scalar obligations remain explicit: `||y||₂ <= ||x||₂`,
-    the reduced-`AP` small-gain product, the source residual-radius coefficient
-    bound, and the residual-factor lower bound. -/
-theorem
-    IsLSEMinimizer.exists_rank_tolerant_solution_difference_coeff_and_sourceResidual_kkt_bound_with_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
-    {r p k : ℕ}
-    {A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ}
-    {b Deltab : Fin (r + (k + 1)) → ℝ}
-    {B DeltaB : Fin p → Fin (p + (k + 1)) → ℝ}
-    {d Deltad : Fin p → ℝ} {x : Fin (p + (k + 1)) → ℝ}
-    (hx : IsLSEMinimizer A b B d x)
-    (hBsrc : LSEFullRowRank B)
-    (hStack : LSEStackedFullColumnRank A B)
-    (hxnorm : 0 < vecNorm2 x)
-    {eps : ℝ}
-    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
-    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
-    (hmax :
-      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
-        ≤ eps)
-    (hsmall : eps < theorem20_8RankKKTSmallnessThreshold hBsrc hStack) :
-    ∃ APplus : Fin (p + (k + 1)) → Fin (r + (k + 1)) → ℝ,
-        RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
-          (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus ∧
-        rectMatMul B APplus =
-          (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0) ∧
-        0 < theorem20_8KappaB A APplus ∧
-        ∃ hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j),
-        ∃ _hStackPert : LSEStackedFullColumnRank
-            (fun i j => A i j + DeltaA i j)
-            (fun i j => B i j + DeltaB i j),
-        ∃ (x0 y : Fin (p + (k + 1)) → ℝ)
-          (s : Fin (r + (k + 1)) → ℝ),
-          LSEFeasible (fun i j => B i j + DeltaB i j)
-              (fun i => d i + Deltad i) x0 ∧
-          IsLSEMinimizer
-              (fun i j => A i j + DeltaA i j)
-              (fun i => b i + Deltab i)
-              (fun i j => B i j + DeltaB i j)
-              (fun i => d i + Deltad i) y ∧
-          IsLeastSquaresMinimizer
-              (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-              (fun i =>
-                b i + Deltab i -
-                  rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
-              (fun j => y j - x0 j) ∧
-          s =
-              (fun i =>
-                b i + Deltab i -
-                  rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
-                  rectMatMulVec
-                    (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                      (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-                    (fun j => y j - x0 j) i) ∧
-          (∀ j : Fin (p + (k + 1)),
-            ∑ i : Fin (r + (k + 1)),
-              theorem20_8AP (fun i j => A i j + DeltaA i j)
-                  (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
-                s i = 0) ∧
-          (vecNorm2 y ≤ vecNorm2 x →
-            (complexMatrixOp2 (realRectToCMatrix APplus) *
-                complexMatrixOp2
-                  (realRectToCMatrix
-                    (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) <
-              1) →
-            (theorem20_8BAplusSmallGainResidualRadiusCoeff A b B
-                (undetAplusOfGramNonsingInv B) APplus d x ≤
-              vecNorm2 (lsResidualHigham A b x)) →
-            (1 + (theorem20_8KappaB A APplus)⁻¹ ≤
-              (frobNormRect B / frobNormRect A) *
-                complexMatrixOp2
-                  (realRectToCMatrix
-                    (rectMatMul A
-                      (theorem20_8BAplus A B
-                        (undetAplusOfGramNonsingInv B) APplus)))) →
-            let BAplus :=
-              theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus
-            let firstOrder :=
-              theorem20_8FirstOrderRHS A b B d x
-                (lsResidualHigham A b x) APplus BAplus
-            let dataCoeff :=
-              complexMatrixOp2 (realRectToCMatrix BAplus) * frobNormRect B +
-                complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A
-            vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) / vecNorm2 x ≤
-              eps * firstOrder + eps ^ 2 * firstOrder * dataCoeff) ∧
-          (vecNorm2
-                (fun j : Fin (p + (k + 1)) =>
-                  rectMatMulVec (theorem20_8BAplus A B hBsrc.rightInverse APplus)
-                      (fun i : Fin p =>
-                        Deltad i - rectMatMulVec DeltaB y i) j +
-                    rectMatMulVec APplus
-                      (fun i : Fin (r + (k + 1)) =>
-                        rectMatMulVec DeltaA y i - Deltab i) j) +
-              eps * theorem20_8ResidualAmplifier A B APplus
-                (theorem20_8BAplus A B hBsrc.rightInverse APplus) *
-                (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) /
-              vecNorm2 x ≤
-            eps * theorem20_8FirstOrderRHS A b B d x
-                (lsResidualHigham A b x) APplus
-                (theorem20_8BAplus A B hBsrc.rightInverse APplus) +
-              eps *
-                theorem20_8KKTSourceResidualRatioCoupledBound hBsrc
-                  ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank
-                    A B).2 hStack) b x eps *
-                (complexMatrixOp2
-                    (realRectToCMatrix
-                      (theorem20_8BAplus A B hBsrc.rightInverse APplus)) *
-                    frobNormRect B +
-                  complexMatrixOp2 (realRectToCMatrix APplus) *
-                    frobNormRect A) := by
-  rcases GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
-      (A := A) (B := B) hBsrc hStack with
-    ⟨h⟩
-  have hMP :
-      RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
-        (theorem20_8AP A B (undetAplusOfGramNonsingInv B))
-        h.liftedReducedGramAPplus :=
-    h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
-      hBsrc hStack
-  have hnull :
-      rectMatMul B h.liftedReducedGramAPplus =
-        (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0) :=
-    h.liftedReducedGramAPplus_constraint_annihilates
-  have hkappa_pos :
-      0 < theorem20_8KappaB A h.liftedReducedGramAPplus :=
-    h.theorem20_8KappaB_liftedReducedGramAPplus_pos hStack hApos
-  rcases
-    theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_with_ranks_of_maxRelativePerturbation_rank_kkt_smallnessThreshold
-      (A := A) (DeltaA := DeltaA) (b := b) (Deltab := Deltab)
-      (B := B) (DeltaB := DeltaB) (d := d) (Deltad := Deltad)
-      hBsrc hStack hApos hbpos hBpos hdpos hmax hsmall with
-    ⟨hBpert, hStackPert, x0, y, s, hfeas, hy, hred, hs, horth⟩
-  have hsolution :
-      (vecNorm2 y ≤ vecNorm2 x →
-        (complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
-            complexMatrixOp2
-              (realRectToCMatrix
-                (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) <
-          1) →
-        (theorem20_8BAplusSmallGainResidualRadiusCoeff A b B
-            (undetAplusOfGramNonsingInv B) h.liftedReducedGramAPplus d x ≤
-          vecNorm2 (lsResidualHigham A b x)) →
-        (1 + (theorem20_8KappaB A h.liftedReducedGramAPplus)⁻¹ ≤
-          (frobNormRect B / frobNormRect A) *
-            complexMatrixOp2
-              (realRectToCMatrix
-                (rectMatMul A
-                  (theorem20_8BAplus A B
-                    (undetAplusOfGramNonsingInv B)
-                    h.liftedReducedGramAPplus)))) →
-        let BAplus :=
-          theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
-            h.liftedReducedGramAPplus
-        let firstOrder :=
-          theorem20_8FirstOrderRHS A b B d x
-            (lsResidualHigham A b x) h.liftedReducedGramAPplus BAplus
-        let dataCoeff :=
-          complexMatrixOp2 (realRectToCMatrix BAplus) * frobNormRect B +
-            complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
-              frobNormRect A
-        vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) / vecNorm2 x ≤
-          eps * firstOrder + eps ^ 2 * firstOrder * dataCoeff) := by
-    intro hy_norm hgain hcoeff hresidualFactor
-    simpa using
-      h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_BAplus_residual_gap_small_gain_coeff_of_minimizers
-        A DeltaA b Deltab hBsrc DeltaB d Deltad x y hApos hbpos hBpos
-        hdpos hxnorm hy_norm hmax hStack hx hy hgain hcoeff
-        hresidualFactor
-  have hbound :
-      (vecNorm2
-            (fun j : Fin (p + (k + 1)) =>
-              rectMatMulVec
-                  (theorem20_8BAplus A B hBsrc.rightInverse
-                    h.liftedReducedGramAPplus)
-                  (fun i : Fin p =>
-                    Deltad i - rectMatMulVec DeltaB y i) j +
-                rectMatMulVec h.liftedReducedGramAPplus
-                  (fun i : Fin (r + (k + 1)) =>
-                    rectMatMulVec DeltaA y i - Deltab i) j) +
-          eps * theorem20_8ResidualAmplifier A B h.liftedReducedGramAPplus
-            (theorem20_8BAplus A B hBsrc.rightInverse
-              h.liftedReducedGramAPplus) *
-            (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) /
-          vecNorm2 x ≤
-        eps * theorem20_8FirstOrderRHS A b B d x
-            (lsResidualHigham A b x) h.liftedReducedGramAPplus
-            (theorem20_8BAplus A B hBsrc.rightInverse
-              h.liftedReducedGramAPplus) +
-          eps *
-            theorem20_8KKTSourceResidualRatioCoupledBound hBsrc
-              ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank
-                A B).2 hStack) b x eps *
-            (complexMatrixOp2
-                (realRectToCMatrix
-                  (theorem20_8BAplus A B hBsrc.rightInverse
-                    h.liftedReducedGramAPplus)) *
-                frobNormRect B +
-              complexMatrixOp2
-                  (realRectToCMatrix h.liftedReducedGramAPplus) *
-                frobNormRect A) :=
-    h.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_eps_KKTSourceResidualRatioCoupledBound_sourceRightInverse_liftedReducedGram_sourceResidual_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
-      hx hy hBsrc hStack hxnorm hApos hbpos hBpos hdpos hmax hsmall
-  exact
-    ⟨h.liftedReducedGramAPplus, hMP, hnull, hkappa_pos, hBpert, hStackPert,
-      x0, y, s, hfeas, hy, hred, hs, horth, hsolution, hbound⟩
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
-    unique-minimizer reduced-block same-witness package for the coefficient
-    residual-gap route and source-residual KKT fallback.
-
-    This strengthens the coefficient same-witness package by using the rank
-    preservation margins to identify the perturbed LSE minimizer as unique.
-    The lifted reduced-Gram `(AP)^+`, reduced `AP` optimality witness,
-    coefficient-based solution implication, and source-residual KKT fallback
-    are all tied to that same unique perturbed minimizer. -/
-theorem
-    IsLSEMinimizer.exists_unique_perturbed_lse_minimizer_and_rank_tolerant_solution_difference_coeff_and_sourceResidual_kkt_bound_with_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
-    {r p k : ℕ}
-    {A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ}
-    {b Deltab : Fin (r + (k + 1)) → ℝ}
-    {B DeltaB : Fin p → Fin (p + (k + 1)) → ℝ}
-    {d Deltad : Fin p → ℝ} {x : Fin (p + (k + 1)) → ℝ}
-    (hx : IsLSEMinimizer A b B d x)
-    (hBsrc : LSEFullRowRank B)
-    (hStack : LSEStackedFullColumnRank A B)
-    (hxnorm : 0 < vecNorm2 x)
-    {eps : ℝ}
-    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
-    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
-    (hmax :
-      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
-        ≤ eps)
-    (hsmall : eps < theorem20_8RankKKTSmallnessThreshold hBsrc hStack) :
-    ∃! y : Fin (p + (k + 1)) → ℝ,
-      IsLSEMinimizer
-          (fun i j => A i j + DeltaA i j)
-          (fun i => b i + Deltab i)
-          (fun i j => B i j + DeltaB i j)
-          (fun i => d i + Deltad i) y ∧
-        ∃ APplus : Fin (p + (k + 1)) → Fin (r + (k + 1)) → ℝ,
-          RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
-            (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus ∧
-          rectMatMul B APplus =
-            (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0) ∧
-          0 < theorem20_8KappaB A APplus ∧
-          ∃ hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j),
-          ∃ _hStackPert : LSEStackedFullColumnRank
-              (fun i j => A i j + DeltaA i j)
-              (fun i j => B i j + DeltaB i j),
-          ∃ (x0 : Fin (p + (k + 1)) → ℝ)
-            (s : Fin (r + (k + 1)) → ℝ),
-            LSEFeasible (fun i j => B i j + DeltaB i j)
-                (fun i => d i + Deltad i) x0 ∧
-            IsLeastSquaresMinimizer
-                (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                  (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-                (fun i =>
-                  b i + Deltab i -
-                    rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
-                (fun j => y j - x0 j) ∧
-            s =
-                (fun i =>
-                  b i + Deltab i -
-                    rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
-                    rectMatMulVec
-                      (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                        (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-                      (fun j => y j - x0 j) i) ∧
-            (∀ j : Fin (p + (k + 1)),
-              ∑ i : Fin (r + (k + 1)),
-                theorem20_8AP (fun i j => A i j + DeltaA i j)
-                    (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
-                  s i = 0) ∧
-            (vecNorm2 y ≤ vecNorm2 x →
-              (complexMatrixOp2 (realRectToCMatrix APplus) *
-                  complexMatrixOp2
-                    (realRectToCMatrix
-                      (theorem20_8AP A B (undetAplusOfGramNonsingInv B))) <
-                1) →
-              (theorem20_8BAplusSmallGainResidualRadiusCoeff A b B
-                  (undetAplusOfGramNonsingInv B) APplus d x ≤
-                vecNorm2 (lsResidualHigham A b x)) →
-              (1 + (theorem20_8KappaB A APplus)⁻¹ ≤
-                (frobNormRect B / frobNormRect A) *
-                  complexMatrixOp2
-                    (realRectToCMatrix
-                      (rectMatMul A
-                        (theorem20_8BAplus A B
-                          (undetAplusOfGramNonsingInv B) APplus)))) →
-              let BAplus :=
-                theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus
-              let firstOrder :=
-                theorem20_8FirstOrderRHS A b B d x
-                  (lsResidualHigham A b x) APplus BAplus
-              let dataCoeff :=
-                complexMatrixOp2 (realRectToCMatrix BAplus) * frobNormRect B +
-                  complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A
-              vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) /
-                  vecNorm2 x ≤
-                eps * firstOrder + eps ^ 2 * firstOrder * dataCoeff) ∧
-            (vecNorm2
-                  (fun j : Fin (p + (k + 1)) =>
-                    rectMatMulVec
-                        (theorem20_8BAplus A B hBsrc.rightInverse APplus)
-                        (fun i : Fin p =>
-                          Deltad i - rectMatMulVec DeltaB y i) j +
-                      rectMatMulVec APplus
-                        (fun i : Fin (r + (k + 1)) =>
-                          rectMatMulVec DeltaA y i - Deltab i) j) +
-                eps * theorem20_8ResidualAmplifier A B APplus
-                  (theorem20_8BAplus A B hBsrc.rightInverse APplus) *
-                  (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) /
-                vecNorm2 x ≤
-              eps * theorem20_8FirstOrderRHS A b B d x
-                  (lsResidualHigham A b x) APplus
-                  (theorem20_8BAplus A B hBsrc.rightInverse APplus) +
-                eps *
-                  theorem20_8KKTSourceResidualRatioCoupledBound hBsrc
-                    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank
-                      A B).2 hStack) b x eps *
-                  (complexMatrixOp2
-                      (realRectToCMatrix
-                        (theorem20_8BAplus A B hBsrc.rightInverse APplus)) *
-                      frobNormRect B +
-                    complexMatrixOp2 (realRectToCMatrix APplus) *
-                      frobNormRect A) := by
-  rcases
-    theorem20_8_rank_kkt_smallness_conditions_of_eps_lt_threshold
-      hBsrc hStack hApos hBpos hsmall with
-    ⟨hBsmall, hStackSmall, _hKKTsmall⟩
-  rcases theorem20_8_exists_unique_perturbed_lse_minimizer_of_maxRelativePerturbation_lt_margins
-      (A := A) (DeltaA := DeltaA) (b := b) (Deltab := Deltab)
-      (B := B) (DeltaB := DeltaB) (d := d) (Deltad := Deltad)
-      hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall with
-    ⟨yuniq, hyuniq, huniq⟩
-  rcases
-    IsLSEMinimizer.exists_rank_tolerant_solution_difference_coeff_and_sourceResidual_kkt_bound_with_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
-      hx hBsrc hStack hxnorm hApos hbpos hBpos hdpos hmax hsmall with
-    ⟨APplus, hMP, hnull, hkappa_pos, hBpert, hStackPert, x0, y, s, hfeas,
-      hy, hred, hs, horth, hsolution, hbound⟩
-  refine
-    ⟨y,
-      ⟨hy, APplus, hMP, hnull, hkappa_pos, hBpert, hStackPert, x0, s,
-        hfeas, hred, hs, horth, hsolution, hbound⟩,
-      ?_⟩
-  intro z hz
-  exact (huniq z hz.1).trans (huniq y hy).symm
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
-    nonempty reduced-block same-witness package for the direct
-    source-residual-relative solution-difference route and the source-residual
-    KKT fallback.
-
-    This is the direct residual-relative counterpart of the coefficient and
-    reduced-Wedin packages below.  It uses the lifted reduced-Gram `(AP)^+`
-    selected from the source ranks and keeps the same perturbed minimizer and
-    reduced residual orthogonality witness for both the first-order-plus-`eps^2`
-    solution implication and the source-residual KKT fallback.  The residual
-    relative estimate and residual-factor lower bound remain explicit. -/
-theorem
-    IsLSEMinimizer.exists_rank_tolerant_source_residual_relative_solution_difference_and_sourceResidual_kkt_bound_with_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
-    {r p k : ℕ}
-    {A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ}
-    {b Deltab : Fin (r + (k + 1)) → ℝ}
-    {B DeltaB : Fin p → Fin (p + (k + 1)) → ℝ}
-    {d Deltad : Fin p → ℝ} {x : Fin (p + (k + 1)) → ℝ}
-    (hx : IsLSEMinimizer A b B d x)
-    (hBsrc : LSEFullRowRank B)
-    (hStack : LSEStackedFullColumnRank A B)
-    (hxnorm : 0 < vecNorm2 x)
-    {eps : ℝ}
-    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
-    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
-    (hmax :
-      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
-        ≤ eps)
-    (hsmall : eps < theorem20_8RankKKTSmallnessThreshold hBsrc hStack) :
-    ∃ APplus : Fin (p + (k + 1)) → Fin (r + (k + 1)) → ℝ,
-      RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
-          (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus ∧
-        rectMatMul B APplus =
-          (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0) ∧
-        0 < theorem20_8KappaB A APplus ∧
-        ∃ hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j),
-        ∃ _hStackPert : LSEStackedFullColumnRank
-            (fun i j => A i j + DeltaA i j)
-            (fun i j => B i j + DeltaB i j),
-        ∃ (x0 y : Fin (p + (k + 1)) → ℝ)
-          (s : Fin (r + (k + 1)) → ℝ),
-          LSEFeasible (fun i j => B i j + DeltaB i j)
-              (fun i => d i + Deltad i) x0 ∧
-          IsLSEMinimizer
-              (fun i j => A i j + DeltaA i j)
-              (fun i => b i + Deltab i)
-              (fun i j => B i j + DeltaB i j)
-              (fun i => d i + Deltad i) y ∧
-          IsLeastSquaresMinimizer
-              (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-              (fun i =>
-                b i + Deltab i -
-                  rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
-              (fun j => y j - x0 j) ∧
-          s =
-              (fun i =>
-                b i + Deltab i -
-                  rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
-                  rectMatMulVec
-                    (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                      (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-                    (fun j => y j - x0 j) i) ∧
-          (∀ j : Fin (p + (k + 1)),
-            ∑ i : Fin (r + (k + 1)),
-              theorem20_8AP (fun i j => A i j + DeltaA i j)
-                  (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
-                s i = 0) ∧
-          (vecNorm2 y ≤ vecNorm2 x →
-            0 < vecNorm2 (lsResidualHigham A b x) →
-            (vecNorm2
-                (fun i =>
-                  lsResidualHigham A b x i -
-                    lsResidualHigham (fun i j => A i j + DeltaA i j)
-                      (fun i => b i + Deltab i) y i) /
-                vecNorm2 (lsResidualHigham A b x) ≤
-              eps) →
-            (1 + (theorem20_8KappaB A APplus)⁻¹ ≤
-              (frobNormRect B / frobNormRect A) *
-                complexMatrixOp2
-                  (realRectToCMatrix
-                    (rectMatMul A
-                      (theorem20_8BAplus A B
-                        (undetAplusOfGramNonsingInv B) APplus)))) →
-            let BAplus :=
-              theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus
-            let firstOrder :=
-              theorem20_8FirstOrderRHS A b B d x
-                (lsResidualHigham A b x) APplus BAplus
-            let dataCoeff :=
-              complexMatrixOp2 (realRectToCMatrix BAplus) * frobNormRect B +
-                complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A
-            vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) /
-                vecNorm2 x ≤
-              eps * firstOrder + eps ^ 2 * firstOrder * dataCoeff) ∧
-          (vecNorm2
-                (fun j : Fin (p + (k + 1)) =>
-                  rectMatMulVec (theorem20_8BAplus A B hBsrc.rightInverse APplus)
-                      (fun i : Fin p =>
-                        Deltad i - rectMatMulVec DeltaB y i) j +
-                    rectMatMulVec APplus
-                      (fun i : Fin (r + (k + 1)) =>
-                        rectMatMulVec DeltaA y i - Deltab i) j) +
-              eps * theorem20_8ResidualAmplifier A B APplus
-                (theorem20_8BAplus A B hBsrc.rightInverse APplus) *
-                (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) /
-              vecNorm2 x ≤
-            eps * theorem20_8FirstOrderRHS A b B d x
-                (lsResidualHigham A b x) APplus
-                (theorem20_8BAplus A B hBsrc.rightInverse APplus) +
-              eps *
-                theorem20_8KKTSourceResidualRatioCoupledBound hBsrc
-                  ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank
-                    A B).2 hStack) b x eps *
-                (complexMatrixOp2
-                    (realRectToCMatrix
-                      (theorem20_8BAplus A B hBsrc.rightInverse APplus)) *
-                    frobNormRect B +
-                  complexMatrixOp2 (realRectToCMatrix APplus) *
-                    frobNormRect A) := by
-  rcases GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
-      (A := A) (B := B) hBsrc hStack with
-    ⟨h⟩
-  have hMP :
-      RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
-        (theorem20_8AP A B (undetAplusOfGramNonsingInv B))
-        h.liftedReducedGramAPplus :=
-    h.liftedReducedGramAPplus_rectMoorePenrosePseudoinverse_of_gram_projection
-      hBsrc hStack
-  have hnull :
-      rectMatMul B h.liftedReducedGramAPplus =
-        (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0) :=
-    h.liftedReducedGramAPplus_constraint_annihilates
-  have hkappa_pos :
-      0 < theorem20_8KappaB A h.liftedReducedGramAPplus :=
-    h.theorem20_8KappaB_liftedReducedGramAPplus_pos hStack hApos
-  rcases
-    theorem20_8_exists_perturbed_reduced_minimizer_orthogonal_with_ranks_of_maxRelativePerturbation_rank_kkt_smallnessThreshold
-      (A := A) (DeltaA := DeltaA) (b := b) (Deltab := Deltab)
-      (B := B) (DeltaB := DeltaB) (d := d) (Deltad := Deltad)
-      hBsrc hStack hApos hbpos hBpos hdpos hmax hsmall with
-    ⟨hBpert, hStackPert, x0, y, s, hfeas, hy, hred, hs, horth⟩
-  have hsolution :
-      (vecNorm2 y ≤ vecNorm2 x →
-        0 < vecNorm2 (lsResidualHigham A b x) →
-        (vecNorm2
-            (fun i =>
-              lsResidualHigham A b x i -
-                lsResidualHigham (fun i j => A i j + DeltaA i j)
-                  (fun i => b i + Deltab i) y i) /
-            vecNorm2 (lsResidualHigham A b x) ≤
-          eps) →
-        (1 + (theorem20_8KappaB A h.liftedReducedGramAPplus)⁻¹ ≤
-          (frobNormRect B / frobNormRect A) *
-            complexMatrixOp2
-              (realRectToCMatrix
-                (rectMatMul A
-                  (theorem20_8BAplus A B
-                    (undetAplusOfGramNonsingInv B)
-                    h.liftedReducedGramAPplus)))) →
-        let BAplus :=
-          theorem20_8BAplus A B (undetAplusOfGramNonsingInv B)
-            h.liftedReducedGramAPplus
-        let firstOrder :=
-          theorem20_8FirstOrderRHS A b B d x
-            (lsResidualHigham A b x) h.liftedReducedGramAPplus BAplus
-        let dataCoeff :=
-          complexMatrixOp2 (realRectToCMatrix BAplus) * frobNormRect B +
-            complexMatrixOp2 (realRectToCMatrix h.liftedReducedGramAPplus) *
-              frobNormRect A
-        vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) /
-            vecNorm2 x ≤
-          eps * firstOrder + eps ^ 2 * firstOrder * dataCoeff) := by
-    intro hy_norm hrpos hrelative hresidualFactor
-    simpa using
-      h.theorem20_8_solution_difference_relative_le_firstOrderRHS_plus_eps_sq_coefficient_of_liftedReducedGram_sourceKappaB_gramProjection_source_residual_relative_residualFactor_source_minus_of_minimizers
-        A DeltaA b Deltab hBsrc DeltaB d Deltad x y hApos hbpos hBpos
-        hdpos hxnorm hy_norm hrpos hmax hStack hx hy hrelative
-        hresidualFactor
-  have hbound :
-      (vecNorm2
-            (fun j : Fin (p + (k + 1)) =>
-              rectMatMulVec
-                  (theorem20_8BAplus A B hBsrc.rightInverse
-                    h.liftedReducedGramAPplus)
-                  (fun i : Fin p =>
-                    Deltad i - rectMatMulVec DeltaB y i) j +
-                rectMatMulVec h.liftedReducedGramAPplus
-                  (fun i : Fin (r + (k + 1)) =>
-                    rectMatMulVec DeltaA y i - Deltab i) j) +
-          eps * theorem20_8ResidualAmplifier A B h.liftedReducedGramAPplus
-            (theorem20_8BAplus A B hBsrc.rightInverse
-              h.liftedReducedGramAPplus) *
-            (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) /
-          vecNorm2 x ≤
-        eps * theorem20_8FirstOrderRHS A b B d x
-            (lsResidualHigham A b x) h.liftedReducedGramAPplus
-            (theorem20_8BAplus A B hBsrc.rightInverse
-              h.liftedReducedGramAPplus) +
-          eps *
-            theorem20_8KKTSourceResidualRatioCoupledBound hBsrc
-              ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank
-                A B).2 hStack) b x eps *
-            (complexMatrixOp2
-                (realRectToCMatrix
-                  (theorem20_8BAplus A B hBsrc.rightInverse
-                    h.liftedReducedGramAPplus)) *
-                frobNormRect B +
-              complexMatrixOp2
-                  (realRectToCMatrix h.liftedReducedGramAPplus) *
-                frobNormRect A) :=
-    h.theorem20_8_direct_data_correction_residual_relative_le_firstOrderRHS_plus_eps_KKTSourceResidualRatioCoupledBound_sourceRightInverse_liftedReducedGram_sourceResidual_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
-      hx hy hBsrc hStack hxnorm hApos hbpos hBpos hdpos hmax hsmall
-  exact
-    ⟨h.liftedReducedGramAPplus, hMP, hnull, hkappa_pos, hBpert, hStackPert,
-      x0, y, s, hfeas, hy, hred, hs, horth, hsolution, hbound⟩
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
-    unique-minimizer reduced-block same-witness package for the direct
-    source-residual-relative route and source-residual KKT fallback.
-
-    This strengthens the nonempty same-witness package by using the rank
-    preservation margins to identify the perturbed minimizer as unique.  The
-    returned `y` is therefore both the unique perturbed LSE minimizer and the
-    minimizer used by the reduced `AP` optimality witness, the direct
-    source-minus residual-relative implication, and the source-residual KKT
-    fallback. -/
-theorem
-    IsLSEMinimizer.exists_unique_perturbed_lse_minimizer_and_rank_tolerant_source_residual_relative_solution_difference_and_sourceResidual_kkt_bound_with_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
-    {r p k : ℕ}
-    {A DeltaA : Fin (r + (k + 1)) → Fin (p + (k + 1)) → ℝ}
-    {b Deltab : Fin (r + (k + 1)) → ℝ}
-    {B DeltaB : Fin p → Fin (p + (k + 1)) → ℝ}
-    {d Deltad : Fin p → ℝ} {x : Fin (p + (k + 1)) → ℝ}
-    (hx : IsLSEMinimizer A b B d x)
-    (hBsrc : LSEFullRowRank B)
-    (hStack : LSEStackedFullColumnRank A B)
-    (hxnorm : 0 < vecNorm2 x)
-    {eps : ℝ}
-    (hApos : 0 < frobNormRect A) (hbpos : 0 < vecNorm2 b)
-    (hBpos : 0 < frobNormRect B) (hdpos : 0 < vecNorm2 d)
-    (hmax :
-      theorem20_8MaxRelativePerturbation A DeltaA b Deltab B DeltaB d Deltad
-        ≤ eps)
-    (hsmall : eps < theorem20_8RankKKTSmallnessThreshold hBsrc hStack) :
-    ∃! y : Fin (p + (k + 1)) → ℝ,
-      IsLSEMinimizer
-          (fun i j => A i j + DeltaA i j)
-          (fun i => b i + Deltab i)
-          (fun i j => B i j + DeltaB i j)
-          (fun i => d i + Deltad i) y ∧
-        ∃ APplus : Fin (p + (k + 1)) → Fin (r + (k + 1)) → ℝ,
-          RectMoorePenrosePseudoinverse (r + (k + 1)) (p + (k + 1))
-              (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) APplus ∧
-            rectMatMul B APplus =
-              (fun _i : Fin p => fun _j : Fin (r + (k + 1)) => 0) ∧
-            0 < theorem20_8KappaB A APplus ∧
-            ∃ hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j),
-            ∃ _hStackPert : LSEStackedFullColumnRank
-                (fun i j => A i j + DeltaA i j)
-                (fun i j => B i j + DeltaB i j),
-            ∃ (x0 : Fin (p + (k + 1)) → ℝ)
-              (s : Fin (r + (k + 1)) → ℝ),
-              LSEFeasible (fun i j => B i j + DeltaB i j)
-                  (fun i => d i + Deltad i) x0 ∧
-              IsLeastSquaresMinimizer
-                  (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                    (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-                  (fun i =>
-                    b i + Deltab i -
-                      rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
-                  (fun j => y j - x0 j) ∧
-              s =
-                  (fun i =>
-                    b i + Deltab i -
-                      rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
-                      rectMatMulVec
-                        (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                          (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-                        (fun j => y j - x0 j) i) ∧
-              (∀ j : Fin (p + (k + 1)),
-                ∑ i : Fin (r + (k + 1)),
-                  theorem20_8AP (fun i j => A i j + DeltaA i j)
-                      (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
-                    s i = 0) ∧
-              (vecNorm2 y ≤ vecNorm2 x →
-                0 < vecNorm2 (lsResidualHigham A b x) →
-                (vecNorm2
-                    (fun i =>
-                      lsResidualHigham A b x i -
-                        lsResidualHigham (fun i j => A i j + DeltaA i j)
-                          (fun i => b i + Deltab i) y i) /
-                    vecNorm2 (lsResidualHigham A b x) ≤
-                  eps) →
-                (1 + (theorem20_8KappaB A APplus)⁻¹ ≤
-                  (frobNormRect B / frobNormRect A) *
-                    complexMatrixOp2
-                      (realRectToCMatrix
-                        (rectMatMul A
-                          (theorem20_8BAplus A B
-                            (undetAplusOfGramNonsingInv B) APplus)))) →
-                let BAplus :=
-                  theorem20_8BAplus A B (undetAplusOfGramNonsingInv B) APplus
-                let firstOrder :=
-                  theorem20_8FirstOrderRHS A b B d x
-                    (lsResidualHigham A b x) APplus BAplus
-                let dataCoeff :=
-                  complexMatrixOp2 (realRectToCMatrix BAplus) *
-                      frobNormRect B +
-                    complexMatrixOp2 (realRectToCMatrix APplus) *
-                      frobNormRect A
-                vecNorm2 (fun j : Fin (p + (k + 1)) => y j - x j) /
-                    vecNorm2 x ≤
-                  eps * firstOrder + eps ^ 2 * firstOrder * dataCoeff) ∧
-              (vecNorm2
-                    (fun j : Fin (p + (k + 1)) =>
-                      rectMatMulVec
-                          (theorem20_8BAplus A B hBsrc.rightInverse APplus)
-                          (fun i : Fin p =>
-                            Deltad i - rectMatMulVec DeltaB y i) j +
-                        rectMatMulVec APplus
-                          (fun i : Fin (r + (k + 1)) =>
-                            rectMatMulVec DeltaA y i - Deltab i) j) +
-                  eps * theorem20_8ResidualAmplifier A B APplus
-                    (theorem20_8BAplus A B hBsrc.rightInverse APplus) *
-                    (vecNorm2 (lsResidualHigham A b x) / frobNormRect A)) /
-                  vecNorm2 x ≤
-                eps * theorem20_8FirstOrderRHS A b B d x
-                    (lsResidualHigham A b x) APplus
-                    (theorem20_8BAplus A B hBsrc.rightInverse APplus) +
-                  eps *
-                    theorem20_8KKTSourceResidualRatioCoupledBound hBsrc
-                      ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank
-                        A B).2 hStack) b x eps *
-                    (complexMatrixOp2
-                        (realRectToCMatrix
-                          (theorem20_8BAplus A B hBsrc.rightInverse APplus)) *
-                        frobNormRect B +
-                      complexMatrixOp2 (realRectToCMatrix APplus) *
-                        frobNormRect A) := by
-  rcases
-    theorem20_8_rank_kkt_smallness_conditions_of_eps_lt_threshold
-      hBsrc hStack hApos hBpos hsmall with
-    ⟨hBsmall, hStackSmall, _hKKTsmall⟩
-  rcases theorem20_8_exists_unique_perturbed_lse_minimizer_of_maxRelativePerturbation_lt_margins
-      (A := A) (DeltaA := DeltaA) (b := b) (Deltab := Deltab)
-      (B := B) (DeltaB := DeltaB) (d := d) (Deltad := Deltad)
-      hBsrc hStack hApos hbpos hBpos hdpos hmax hBsmall hStackSmall with
-    ⟨yuniq, hyuniq, huniq⟩
-  rcases
-    IsLSEMinimizer.exists_rank_tolerant_source_residual_relative_solution_difference_and_sourceResidual_kkt_bound_with_perturbed_reduced_minimizer_orthogonal_of_maxRelativePerturbation_lseStackedFullColumnRank_rank_kkt_smallnessThreshold
-      hx hBsrc hStack hxnorm hApos hbpos hBpos hdpos hmax hsmall with
-    ⟨APplus, hMP, hnull, hkappa_pos, hBpert, hStackPert, x0, y, s, hfeas,
-      hy, hred, hs, horth, hsolution, hbound⟩
-  refine
-    ⟨y,
-      ⟨hy, APplus, hMP, hnull, hkappa_pos, hBpert, hStackPert, x0, s,
-        hfeas, hred, hs, horth, hsolution, hbound⟩,
-      ?_⟩
-  intro z hz
-  exact (huniq z hz.1).trans (huniq y hy).symm
 
 end NumStability

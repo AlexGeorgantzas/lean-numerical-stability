@@ -5,51 +5,53 @@ import Mathlib.Data.Real.Basic
 import Mathlib.LinearAlgebra.Dual.Lemmas
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+import NumStability.Algorithms.DotProduct
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
-import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
-import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
+import NumStability.Algorithms.QR.GramSchmidt
+import NumStability.Algorithms.QR.GramSchmidtPolar
 import NumStability.Algorithms.QR.Higham19
 import NumStability.Algorithms.QR.Higham19Thm6ColPivot
-import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
-import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
+import NumStability.Algorithms.QR.Higham19Thm6CoxHighamAssembly
 import NumStability.Algorithms.QR.Higham19Thm6ElementwisePackaged
-import NumStability.Algorithms.QR.Higham19Thm6RowSpecific
+import NumStability.Algorithms.QR.Higham19Thm6Pivoted
+import NumStability.Algorithms.QR.HouseholderApplySupport
+import NumStability.Algorithms.QR.HouseholderQR
+import NumStability.Algorithms.QR.HouseholderQRSupport
+import NumStability.Algorithms.QR.HouseholderSpec
+import NumStability.Algorithms.QR.HouseholderSpecSupport
+import NumStability.Algorithms.QR.QRSolve
+import NumStability.Algorithms.RandNLA.LowRankApprox
 import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+import NumStability.Analysis.MatrixAlgebra
+import NumStability.Analysis.Rounding
+import NumStability.Analysis.SingularValues.Basic
+import NumStability.Analysis.SingularValues.Realification
+import NumStability.FloatingPoint.Model
 
 namespace NumStability
 
-open scoped BigOperators Matrix.Norms.Frobenius
+open scoped BigOperators
 
 /-!
-# Equality-constrained least squares basics
+# Basic
 
-Reusable definitions and elementary identities for equality-constrained least squares.
-
-Declarations are extracted command-for-command from the historical least-squares owners; only contracted cross-module private helpers are promoted.
+Canonical reusable module extracted without change from LSE.
 -/
 
 private theorem theorem20_7_finUniv_nonempty_of_pos {n : ℕ} (hn : 0 < n) :
     (Finset.univ : Finset (Fin n)).Nonempty :=
   ⟨⟨0, hn⟩, by simp⟩
-
 private theorem theorem20_7_finProdUniv_nonempty_of_pos {n : ℕ} (hn : 0 < n) :
     (Finset.univ : Finset (Fin n × Fin n)).Nonempty :=
   ⟨(⟨0, hn⟩, ⟨0, hn⟩), by simp⟩
-
-theorem theorem20_7_finRectProdUniv_nonempty_of_pos {m n : ℕ}
-    (hn : 0 < n) (hm : 0 < m) :
-    (Finset.univ : Finset (Fin n × Fin m)).Nonempty :=
-  ⟨(⟨0, hn⟩, ⟨0, hm⟩), by simp⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source row scale `max_j |a_ij|` for a nonempty row. -/
 noncomputable def theorem20_7_initialRowMax {m n : ℕ} (hn : 0 < n)
     (A : Fin m → Fin n → ℝ) (i : Fin m) : ℝ :=
   Finset.sup' (Finset.univ : Finset (Fin n))
     (theorem20_7_finUniv_nonempty_of_pos hn) (fun j => |A i j|)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     finite source maximum `max_{j,k} |a_ij^(k)|` over the modeled QR stages. -/
 noncomputable def theorem20_7_stageRowMax {m n : ℕ} (hn : 0 < n)
@@ -57,7 +59,6 @@ noncomputable def theorem20_7_stageRowMax {m n : ℕ} (hn : 0 < n)
   Finset.sup' (Finset.univ : Finset (Fin n × Fin n))
     (theorem20_7_finProdUniv_nonempty_of_pos hn)
     (fun p => |Astage p.1.val i p.2|)
-
 /-- Each initial row entry is bounded by the source row maximum used in
     Theorem 20.7. -/
 theorem theorem20_7_initialRowMax_entry_le {m n : ℕ} (hn : 0 < n)
@@ -67,7 +68,6 @@ theorem theorem20_7_initialRowMax_entry_le {m n : ℕ} (hn : 0 < n)
   exact
     Finset.le_sup' (s := (Finset.univ : Finset (Fin n)))
       (f := fun j => |A i j|) (Finset.mem_univ j)
-
 /-- The initial row maximum in Theorem 20.7 is nonnegative. -/
 theorem theorem20_7_initialRowMax_nonneg {m n : ℕ} (hn : 0 < n)
     (A : Fin m → Fin n → ℝ) (i : Fin m) :
@@ -76,7 +76,6 @@ theorem theorem20_7_initialRowMax_nonneg {m n : ℕ} (hn : 0 < n)
   exact
     (abs_nonneg (A i j)).trans
       (theorem20_7_initialRowMax_entry_le hn A i j)
-
 /-- A nonzero source row has a positive row maximum in the Theorem 20.7
     normalizer. -/
 theorem theorem20_7_initialRowMax_pos_of_exists_entry_ne_zero {m n : ℕ}
@@ -87,7 +86,6 @@ theorem theorem20_7_initialRowMax_pos_of_exists_entry_ne_zero {m n : ℕ}
   exact
     (abs_pos.mpr hj).trans_le
       (theorem20_7_initialRowMax_entry_le hn A i j)
-
 /-- Each staged row entry is bounded by the staged row maximum used in
     Theorem 20.7. -/
 theorem theorem20_7_stageRowMax_entry_le {m n : ℕ} (hn : 0 < n)
@@ -99,7 +97,6 @@ theorem theorem20_7_stageRowMax_entry_le {m n : ℕ} (hn : 0 < n)
     Finset.le_sup' (s := (Finset.univ : Finset (Fin n × Fin n)))
       (f := fun p => |Astage p.1.val i p.2|)
       (Finset.mem_univ (k, j))
-
 /-- The staged row maximum in Theorem 20.7 is nonnegative. -/
 theorem theorem20_7_stageRowMax_nonneg {m n : ℕ} (hn : 0 < n)
     (Astage : ℕ → Fin m → Fin n → ℝ) (i : Fin m) :
@@ -109,7 +106,6 @@ theorem theorem20_7_stageRowMax_nonneg {m n : ℕ} (hn : 0 < n)
   exact
     (abs_nonneg (Astage k.val i j)).trans
       (theorem20_7_stageRowMax_entry_le hn Astage i k j)
-
 /-- Pointwise staged entry bounds imply the finite staged-row maximum bound
     needed for the `α_i` ratio in Theorem 20.7. -/
 theorem theorem20_7_stageRowMax_le_of_entry_le {m n : ℕ} (hn : 0 < n)
@@ -120,7 +116,6 @@ theorem theorem20_7_stageRowMax_le_of_entry_le {m n : ℕ} (hn : 0 < n)
   apply Finset.sup'_le
   intro p _hp
   exact hbound p.1 p.2
-
 /-- Nat-indexed variant of `theorem20_7_stageRowMax_le_of_entry_le`.
     This is the form produced by the Chapter 19 row-wise QR stage recurrences. -/
 theorem theorem20_7_stageRowMax_le_of_entry_le_nat {m n : ℕ} (hn : 0 < n)
@@ -129,14 +124,12 @@ theorem theorem20_7_stageRowMax_le_of_entry_le_nat {m n : ℕ} (hn : 0 < n)
     theorem20_7_stageRowMax hn Astage i ≤ C := by
   exact theorem20_7_stageRowMax_le_of_entry_le hn Astage i
     (fun k j => hbound k.val k.isLt j)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     the source ratio `α_i = max_{j,k}|a_ij^(k)| / max_j |a_ij|`. -/
 noncomputable def theorem20_7_alpha {m n : ℕ} (hn : 0 < n)
     (Astage : ℕ → Fin m → Fin n → ℝ)
     (A : Fin m → Fin n → ℝ) (i : Fin m) : ℝ :=
   theorem20_7_stageRowMax hn Astage i / theorem20_7_initialRowMax hn A i
-
 /-- If the staged row maximum is at most `C` times the initial row maximum,
     then the Theorem 20.7 source ratio `α_i` is at most `C`. -/
 theorem theorem20_7_alpha_le_of_stageRowMax_le_mul_initial {m n : ℕ}
@@ -149,7 +142,6 @@ theorem theorem20_7_alpha_le_of_stageRowMax_le_mul_initial {m n : ℕ}
     theorem20_7_alpha hn Astage A i ≤ C := by
   dsimp [theorem20_7_alpha]
   exact (div_le_iff₀ hden).mpr hstage
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     every finite row key admits a row permutation that is descending on each
     displayed active suffix.
@@ -168,7 +160,6 @@ theorem theorem20_7_exists_descending_key_permutation_nat {m n : ℕ}
     exact hks
   have hmono := (Tuple.monotone_sort (fun i : Fin m => - key i)) hle
   exact neg_le_neg_iff.mp hmono
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     row sorting relabels the source row maximum by the sorting permutation. -/
 theorem theorem20_7_initialRowMax_permuteRows {m n : ℕ} (hn : 0 < n)
@@ -176,7 +167,6 @@ theorem theorem20_7_initialRowMax_permuteRows {m n : ℕ} (hn : 0 < n)
     theorem20_7_initialRowMax hn (fun r j => A (σ r) j) i =
       theorem20_7_initialRowMax hn A (σ i) := by
   simp [theorem20_7_initialRowMax]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     row sorting relabels the staged row maximum by the same permutation. -/
 theorem theorem20_7_stageRowMax_permuteRows {m n : ℕ} (hn : 0 < n)
@@ -184,7 +174,6 @@ theorem theorem20_7_stageRowMax_permuteRows {m n : ℕ} (hn : 0 < n)
     theorem20_7_stageRowMax hn (fun k r j => Astage k (σ r) j) i =
       theorem20_7_stageRowMax hn Astage (σ i) := by
   simp [theorem20_7_stageRowMax]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     common row sorting relabels the source ratio `α_i`. -/
 theorem theorem20_7_alpha_permuteRows {m n : ℕ} (hn : 0 < n)
@@ -195,7 +184,6 @@ theorem theorem20_7_alpha_permuteRows {m n : ℕ} (hn : 0 < n)
       theorem20_7_alpha hn Astage A (σ i) := by
   simp [theorem20_7_alpha, theorem20_7_stageRowMax_permuteRows,
     theorem20_7_initialRowMax_permuteRows]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting bridge:
     a permutation whose displayed active suffix is sorted by the original row
     maxima supplies the sorted-source hypothesis for the permuted matrix. -/
@@ -213,7 +201,6 @@ theorem theorem20_7_initialRowMax_sorted_of_permuteRows_sorted_nat
           ⟨k, lt_of_lt_of_le hk hnm⟩ := by
   intro k hk s hks
   simpa [theorem20_7_initialRowMax_permuteRows] using hσA k hk s hks
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting bridge:
     a permutation whose displayed active suffix is sorted by the original
     right-hand-side magnitudes supplies the `|b|` sorted-source hypothesis for
@@ -228,7 +215,6 @@ theorem theorem20_7_abs_b_sorted_of_permuteRows_sorted_nat
         |(fun r => b (σ r)) ⟨k, lt_of_lt_of_le hk hnm⟩| := by
   intro k hk s hks
   simpa using hσb k hk s hks
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-scale bridge:
     an explicit row permutation transports the unweighted source ratio
     hypothesis to the permuted matrix. -/
@@ -246,7 +232,6 @@ theorem theorem20_7_initialRowMax_ratio_of_permuteRows_ratio_nat
         theorem20_7_initialRowMax hn (fun s j => A (σ s) j) r ≤ rho := by
   intro k hk r hkr
   simpa [theorem20_7_initialRowMax_permuteRows] using hσratio k hk r hkr
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting bridge:
     the source matrix row scale admits a concrete row permutation whose
     displayed active suffixes are sorted for the permuted matrix. -/
@@ -264,7 +249,6 @@ theorem theorem20_7_exists_initialRowMax_sorted_permuteRows_nat
   exact
     ⟨σ, theorem20_7_initialRowMax_sorted_of_permuteRows_sorted_nat
       hn hnm A σ hσ⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting bridge:
     the source right-hand-side magnitudes have a concrete row permutation
     whose displayed active suffixes are sorted for the permuted vector. -/
@@ -280,7 +264,6 @@ theorem theorem20_7_exists_abs_b_sorted_permuteRows_nat
   refine ⟨σ, ?_⟩
   intro k hk s hks
   simpa using hσ k hk s hks
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting policy:
     if source right-hand-side magnitudes are monotone with the source row
     maxima, a source row-max sorting hypothesis also sorts the source `|b|`
@@ -301,7 +284,6 @@ theorem theorem20_7_abs_b_sorted_of_initialRowMax_sorted_compat_nat
       |b s| ≤ |b ⟨k, lt_of_lt_of_le hk hnm⟩| := by
   intro k hk s hks
   exact hcompat s ⟨k, lt_of_lt_of_le hk hnm⟩ (hAsorted k hk s hks)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-sorting policy:
     if the source right-hand-side magnitudes are monotone with the source row
     maxima, any row-max sorting permutation also sorts the `|b|` key. -/
@@ -324,7 +306,6 @@ theorem theorem20_7_abs_b_sorted_of_permuteRows_initialRowMax_sorted_compat_nat
   exact
     hcompat (σ s) (σ ⟨k, lt_of_lt_of_le hk hnm⟩)
       (hσA k hk s hks)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 QR dependency:
     the raw pivot-maximality field follows from choosing the current active
     column with the finite active-max pivot selector. -/
@@ -347,7 +328,6 @@ theorem theorem20_7_pivotMax_of_activeMaxPivotColumn_nat
     householderActiveMaxPivotColumn_pivot_max
       (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht) (Astage t) l hl
   simpa [← hpivotChoice t ht] using hmax
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 QR dependency:
     after swapping the active-max column into the current displayed pivot
     column, the displayed stage satisfies the raw pivot-maximality field used
@@ -372,7 +352,6 @@ theorem theorem20_7_pivotMax_of_activeMaxPivotColumn_stage_swaps_nat
   exact
     householderSwapColumns_activeMaxPivotColumn_pivot_max
       (Fin.mk t (lt_of_lt_of_le ht hnm)) (Fin.mk t ht) (Araw t) l hl
-
 /-- Theorem 20.7 route audit: source row sorting alone does not imply the
     stronger `sqrt(m)` row-scale domination hypothesis used by the Chapter 19
     accumulated-error transfer.
@@ -405,7 +384,6 @@ theorem theorem20_7_initialRowMax_sorted_not_imp_sqrt_row_domination_two_by_one 
       nlinarith [Real.sq_sqrt (show 0 ≤ (2 : ℝ) by norm_num),
         Real.sqrt_nonneg (2 : ℝ)]
     linarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 QR dependency:
     Chapter 19's packaged original-space pivoted Householder QR backward-error
     result, exposed at the Chapter 20 row-wise least-squares boundary.
@@ -430,7 +408,6 @@ theorem theorem20_7_pivoted_householder_qr_packaged_original_space_column_norm
             columnFrob (Wave13.columnPermuteMatrix A π) j)) :=
   Wave18C.theorem19_6_packaged_original_space_column_norm
     fp m n A hn hnm hvalid
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 QR dependency:
     per-stage column-pivoting discharge of the Cox--Higham recursive
     `hratio` obligation.
@@ -482,7 +459,6 @@ theorem theorem20_7_colPivot_entrywise_recursive_cons_of_sigma
   exact
     Wave19.entrywise_recursive_cons v Eta alpha gammaTilde hvpos hvnorm halpha
       hv2alpha hratio hgamma i j
-
 /-- Theorem 20.7 row-scale bridge: an explicit source-row ratio bound
     discharges the `sqrt(m)` domination hypothesis used by the Chapter 19
     accumulated-error transfer for the unweighted row normalizer. -/
@@ -503,7 +479,6 @@ theorem theorem20_7_initialRowMax_sqrt_domination_of_ratio_le_nat
   have hden : 0 < theorem20_7_initialRowMax hn A r :=
     theorem20_7_initialRowMax_pos_of_exists_entry_ne_zero hn A r (hrows r)
   exact (div_le_iff₀ hden).mp (hratio k hk r hkr)
-
 /-- Theorem 20.7 row-scale bridge: the pointwise `sqrt(m)` domination
     hypothesis for source row maxima implies the corresponding active-suffix
     source-row ratio bound. -/
@@ -524,14 +499,12 @@ theorem theorem20_7_initialRowMax_ratio_le_of_sqrt_domination_nat
   have hden : 0 < theorem20_7_initialRowMax hn A r :=
     theorem20_7_initialRowMax_pos_of_exists_entry_ne_zero hn A r (hrows r)
   exact (div_le_iff₀ hden).mpr (hdom k hk r hkr)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     finite maximum over staged right-hand-side entries. -/
 noncomputable def theorem20_7_stageBMax {m n : ℕ} (hn : 0 < n)
     (bstage : ℕ → Fin m → ℝ) (i : Fin m) : ℝ :=
   Finset.sup' (Finset.univ : Finset (Fin n))
     (theorem20_7_finUniv_nonempty_of_pos hn) (fun k => |bstage k.val i|)
-
 /-- Each staged right-hand-side entry is bounded by the finite staged `b`
     maximum used in the Theorem 20.7 `β_i` denominator bridge. -/
 theorem theorem20_7_stageBMax_entry_le {m n : ℕ} (hn : 0 < n)
@@ -541,7 +514,6 @@ theorem theorem20_7_stageBMax_entry_le {m n : ℕ} (hn : 0 < n)
   exact
     Finset.le_sup' (s := (Finset.univ : Finset (Fin n)))
       (f := fun k => |bstage k.val i|) (Finset.mem_univ k)
-
 /-- Pointwise staged right-hand-side bounds imply the finite staged `b`
     maximum bound used in Theorem 20.7. -/
 theorem theorem20_7_stageBMax_le_of_entry_le {m n : ℕ} (hn : 0 < n)
@@ -552,7 +524,6 @@ theorem theorem20_7_stageBMax_le_of_entry_le {m n : ℕ} (hn : 0 < n)
   apply Finset.sup'_le
   intro k _hk
   exact hbound k
-
 /-- Nat-indexed variant of `theorem20_7_stageBMax_le_of_entry_le`.
     This matches the stage indexing of the Chapter 19 row-wise QR wrappers. -/
 theorem theorem20_7_stageBMax_le_of_entry_le_nat {m n : ℕ} (hn : 0 < n)
@@ -561,7 +532,6 @@ theorem theorem20_7_stageBMax_le_of_entry_le_nat {m n : ℕ} (hn : 0 < n)
     theorem20_7_stageBMax hn bstage i ≤ C := by
   exact theorem20_7_stageBMax_le_of_entry_le hn bstage i
     (fun k => hbound k.val k.isLt)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     row sorting relabels the staged right-hand-side maximum. -/
 theorem theorem20_7_stageBMax_permuteRows {m n : ℕ} (hn : 0 < n)
@@ -569,13 +539,11 @@ theorem theorem20_7_stageBMax_permuteRows {m n : ℕ} (hn : 0 < n)
     theorem20_7_stageBMax hn (fun k r => bstage k (σ r)) i =
       theorem20_7_stageBMax hn bstage (σ i) := by
   simp [theorem20_7_stageBMax]
-
 /-- Finite row maximum for row-indexed Theorem 20.7 ratios. -/
 noncomputable def theorem20_7_rowRatioMax {m : ℕ} (hm : 0 < m)
     (rho : Fin m → ℝ) : ℝ :=
   Finset.sup' (Finset.univ : Finset (Fin m))
     (theorem20_7_finUniv_nonempty_of_pos hm) rho
-
 /-- Each row ratio is bounded by the finite row maximum. -/
 theorem theorem20_7_rowRatioMax_entry_le {m : ℕ} (hm : 0 < m)
     (rho : Fin m → ℝ) (i : Fin m) :
@@ -584,7 +552,6 @@ theorem theorem20_7_rowRatioMax_entry_le {m : ℕ} (hm : 0 < m)
   exact
     Finset.le_sup' (s := (Finset.univ : Finset (Fin m)))
       (f := rho) (Finset.mem_univ i)
-
 /-- Uniform row-ratio bounds imply the finite row maximum bound. -/
 theorem theorem20_7_rowRatioMax_le_of_forall {m : ℕ} (hm : 0 < m)
     (rho : Fin m → ℝ) {C : ℝ} (h : ∀ i : Fin m, rho i ≤ C) :
@@ -593,109 +560,6 @@ theorem theorem20_7_rowRatioMax_le_of_forall {m : ℕ} (hm : 0 < m)
   apply Finset.sup'_le
   intro i _hi
   exact h i
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.7 row-scale support:
-    finite maximum of the active-suffix source-row ratios
-    `max_{k<n, r>=k} amax_k / amax_r`. -/
-noncomputable def theorem20_7_activeInitialRowMaxRatioMax {m n : ℕ}
-    (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
-    (A : Fin m → Fin n → ℝ) : ℝ :=
-  Finset.sup' (Finset.univ : Finset (Fin n × Fin m))
-    (theorem20_7_finRectProdUniv_nonempty_of_pos hn hm)
-    (fun p =>
-      if _h : p.1.val ≤ p.2.val then
-        theorem20_7_initialRowMax hn A
-            ⟨p.1.val, lt_of_lt_of_le p.1.isLt hnm⟩ /
-          theorem20_7_initialRowMax hn A p.2
-      else 0)
-
-/-- Pointwise active-suffix source-row ratio bounds give the corresponding
-    finite active-ratio maximum bound. -/
-theorem theorem20_7_activeInitialRowMaxRatioMax_le_of_forall_nat
-    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
-    (A : Fin m → Fin n → ℝ) {C : ℝ} (hC : 0 ≤ C)
-    (hpoint :
-      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
-        theorem20_7_initialRowMax hn A
-            ⟨k, lt_of_lt_of_le hk hnm⟩ /
-          theorem20_7_initialRowMax hn A r ≤ C) :
-    theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A ≤ C := by
-  unfold theorem20_7_activeInitialRowMaxRatioMax
-  apply Finset.sup'_le
-  intro p _hp
-  by_cases hpactive : p.1.val ≤ p.2.val
-  · simpa [hpactive] using hpoint p.1.val p.1.isLt p.2 hpactive
-  · simpa [hpactive] using hC
-
-/-- Pointwise active-suffix source-row ratio bounds at the source `sqrt(m)`
-    scale give the corresponding finite active-ratio maximum bound. -/
-theorem theorem20_7_activeInitialRowMaxRatioMax_le_sqrt_of_forall_nat
-    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
-    (A : Fin m → Fin n → ℝ)
-    (hpoint :
-      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
-        theorem20_7_initialRowMax hn A
-            ⟨k, lt_of_lt_of_le hk hnm⟩ /
-          theorem20_7_initialRowMax hn A r ≤ Real.sqrt (m : ℝ)) :
-    theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A ≤
-      Real.sqrt (m : ℝ) :=
-  theorem20_7_activeInitialRowMaxRatioMax_le_of_forall_nat
-    hm hn hnm A (Real.sqrt_nonneg _) hpoint
-
-/-- Pointwise `sqrt(m)` source-row domination over every active suffix gives
-    the finite unweighted active-ratio maximum required by the Theorem 20.7
-    row-sorting wrappers. -/
-theorem theorem20_7_activeInitialRowMaxRatioMax_le_sqrt_of_sqrt_domination_nat
-    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
-    (A : Fin m → Fin n → ℝ)
-    (hrows : ∀ i : Fin m, ∃ j : Fin n, A i j ≠ 0)
-    (hdom :
-      ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
-        theorem20_7_initialRowMax hn A
-            ⟨k, lt_of_lt_of_le hk hnm⟩ ≤
-          Real.sqrt (m : ℝ) * theorem20_7_initialRowMax hn A r) :
-    theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A ≤
-      Real.sqrt (m : ℝ) :=
-  theorem20_7_activeInitialRowMaxRatioMax_le_sqrt_of_forall_nat
-    hm hn hnm A
-    (theorem20_7_initialRowMax_ratio_le_of_sqrt_domination_nat
-      hn hnm A hrows hdom)
-
-/-- A finite active-suffix source-row ratio maximum gives every pointwise
-    active-suffix source-row ratio. -/
-theorem theorem20_7_initialRowMax_ratio_le_of_activeRatioMax_le_nat
-    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
-    (A : Fin m → Fin n → ℝ) {C : ℝ}
-    (hmax : theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A ≤ C) :
-    ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
-      theorem20_7_initialRowMax hn A
-          ⟨k, lt_of_lt_of_le hk hnm⟩ /
-        theorem20_7_initialRowMax hn A r ≤ C := by
-  intro k hk r hkr
-  let p : Fin n × Fin m := (⟨k, hk⟩, r)
-  have hp :
-      (if _h : p.1.val ≤ p.2.val then
-        theorem20_7_initialRowMax hn A
-            ⟨p.1.val, lt_of_lt_of_le p.1.isLt hnm⟩ /
-          theorem20_7_initialRowMax hn A p.2
-      else 0) ≤ theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A := by
-    unfold theorem20_7_activeInitialRowMaxRatioMax
-    exact
-      Finset.le_sup' (s := (Finset.univ : Finset (Fin n × Fin m)))
-        (f := fun p =>
-          if _h : p.1.val ≤ p.2.val then
-            theorem20_7_initialRowMax hn A
-                ⟨p.1.val, lt_of_lt_of_le p.1.isLt hnm⟩ /
-              theorem20_7_initialRowMax hn A p.2
-          else 0) (Finset.mem_univ p)
-  have hentry :
-      theorem20_7_initialRowMax hn A
-          ⟨k, lt_of_lt_of_le hk hnm⟩ /
-        theorem20_7_initialRowMax hn A r ≤
-          theorem20_7_activeInitialRowMaxRatioMax hm hn hnm A := by
-    simpa [p, hkr] using hp
-  exact hentry.trans hmax
-
 /-- Source nonzero-row witnesses are preserved by a common row permutation. -/
 theorem theorem20_7_rows_nonzero_permuteRows
     {m n : ℕ} (A : Fin m → Fin n → ℝ) (σ : Fin m ≃ Fin m)
@@ -703,7 +567,6 @@ theorem theorem20_7_rows_nonzero_permuteRows
     ∀ i : Fin m, ∃ j : Fin n, (fun r j => A (σ r) j) i j ≠ 0 := by
   intro i
   exact hrows (σ i)
-
 /-- Source domination of `|b_i|` by `phi * rowMax_i` is preserved by a
     common row permutation. -/
 theorem theorem20_7_abs_b_le_phi_initialRowMax_permuteRows
@@ -717,25 +580,6 @@ theorem theorem20_7_abs_b_le_phi_initialRowMax_permuteRows
           (fun r j => A (σ r) j) i := by
   intro i
   simpa [theorem20_7_initialRowMax_permuteRows] using hdom (σ i)
-
-/-- Active-suffix source-row ratio maxima for a row-permuted matrix supply the
-    source-ratio hypothesis stated in the original row labels. -/
-theorem theorem20_7_initialRowMax_ratio_of_permuteRows_activeRatioMax_le_nat
-    {m n : ℕ} (hm : 0 < m) (hn : 0 < n) (hnm : n ≤ m)
-    (A : Fin m → Fin n → ℝ) (σ : Fin m ≃ Fin m) {C : ℝ}
-    (hmax :
-      theorem20_7_activeInitialRowMaxRatioMax hm hn hnm
-        (fun r j => A (σ r) j) ≤ C) :
-    ∀ k : ℕ, ∀ hk : k < n, ∀ r : Fin m, k ≤ r.val →
-      theorem20_7_initialRowMax hn A
-          (σ ⟨k, lt_of_lt_of_le hk hnm⟩) /
-        theorem20_7_initialRowMax hn A (σ r) ≤ C := by
-  intro k hk r hkr
-  have h :=
-    theorem20_7_initialRowMax_ratio_le_of_activeRatioMax_le_nat
-      hm hn hnm (fun r j => A (σ r) j) hmax k hk r hkr
-  simpa [theorem20_7_initialRowMax_permuteRows] using h
-
 /-- If `α_i ≤ C`, the staged row maximum is bounded by `C` times the initial
     row maximum.  This is the reverse direction needed when a Theorem 20.7
     ratio bound has already been established. -/
@@ -758,7 +602,6 @@ theorem theorem20_7_stageRowMax_le_mul_initial_of_alpha_le {m n : ℕ}
             theorem20_7_initialRowMax hn A i := hEq.symm
     _ ≤ C * theorem20_7_initialRowMax hn A i :=
         mul_le_mul_of_nonneg_right halpha hden.le
-
 /-- Theorem 20.7 support: signed stored-QR stages supply the completed-column
     preservation field needed by the one-step completion-time `A` adapter. -/
 theorem theorem20_7_signed_stage_completed_column_preservation_nat
@@ -798,7 +641,6 @@ theorem theorem20_7_signed_stage_completed_column_preservation_nat
   exact
     H19.Theorem19_6.stored_signed_stage_completed_column_preservation
       hnm fp Astage alpha hStepConcrete i.val hit j hj a
-
 /-- Theorem 20.7 support: signed stored-QR stages supply the pivot-column
     zeroing field needed by the one-step completion-time `A` adapter. -/
 theorem theorem20_7_signed_stage_pivot_column_zero_below_of_trailingNorm_pos_nat
@@ -831,7 +673,6 @@ theorem theorem20_7_signed_stage_pivot_column_zero_below_of_trailingNorm_pos_nat
     H19.Theorem19_6.stored_signed_stage_pivot_column_zero_below_of_trailingNorm_pos
       hnm Astage alpha i.val hit (hAlphaDef i.val hit)
       (htrailingPos i.val hit) a ha
-
 /-- Theorem 20.7 support: a vector whose entries are bounded by a scalar
     multiple of a source row scale has the corresponding `sqrt(m)` norm bound.
 
@@ -848,7 +689,6 @@ theorem theorem20_7_vecNorm2_le_sqrt_card_mul_scale_of_abs_le
     vecNorm2 x ≤ Real.sqrt (m : ℝ) * (C * S) :=
       vecNorm2_le_sqrt_card_mul_of_abs_le x hB hentry
     _ = (Real.sqrt (m : ℝ) * C) * S := by ring
-
 /-- Theorem 20.7 support: the concrete stored signed-stage Householder vector
     has the zero prefix expected of the active trailing reflector. -/
 theorem theorem20_7_storedQRSignedStageVector_zero_prefix_nat
@@ -862,7 +702,6 @@ theorem theorem20_7_storedQRSignedStageVector_zero_prefix_nat
     householderTrailingActiveVector_zero_prefix m
       ⟨t, lt_of_lt_of_le ht hnm⟩
       (fun a => Ahat t a ⟨t, ht⟩) (alpha t) r hr
-
 /-- Theorem 20.7 support: active-tail entry bounds control the norm of the
     trailing part of a vector.
 
@@ -887,7 +726,6 @@ theorem theorem20_7_vecNorm2_trailingPart_le_sqrt_card_mul_scale_of_active_abs_l
       (by
         simpa [householderTrailingPart, hr] using
           hentry r (Nat.le_of_not_gt hr))
-
 /-- Theorem 20.7 support: signed nonbreakdown stages discharge the scalar
     compact-coefficient slack premise for the active-tail completion adapters.
 
@@ -978,7 +816,6 @@ theorem theorem20_7_signed_stage_norm_coeff_slack_of_trailingNorm_pos_nat
   exact
     (mul_le_mul_of_nonneg_right hcoeff hscale_nonneg).trans
       (hcoeffSlack i hi)
-
 /-- Theorem 20.7 support: stored RHS steps preserve completed rows.
 
 Once row `i` has been processed, every later stored RHS step has active pivot
@@ -1021,7 +858,6 @@ theorem theorem20_7_completedB_preservation_of_stored_rhs_steps_nat
           simp [hsucc]
   intro i k hk hik
   exact hprefix k (Nat.le_of_lt hk) i hik
-
 /-- Theorem 20.7 support: sequence-level completed-row preservation for `A`
     from a local stored-panel row-preservation field.
 
@@ -1069,7 +905,6 @@ theorem theorem20_7_completedA_preservation_of_stored_panel_step_row_preservatio
           simp [hsucc]
   intro i k hk hik j
   exact hprefix k (Nat.le_of_lt hk) i hik j
-
 /-- Theorem 20.7 support: signed stored-QR stages preserve rows above the
     active pivot when subtracting zero is an exact copy operation.
 
@@ -1108,7 +943,6 @@ theorem theorem20_7_signed_stage_stored_panel_row_preservation_of_subtractZeroEx
     · have hnotBelow : ¬ k < i.val := Nat.not_lt.mpr (Nat.le_of_lt hik)
       simp [fl_householderStoredPanelStep, hjeq, hnotBelow, hraw]
     · simp [fl_householderStoredPanelStep, hjlt, hjeq, hraw]
-
 /-- Theorem 20.7 support: sequence-level completed-row preservation for the
     signed stored-QR panel under exact subtract-by-zero copying. -/
 theorem theorem20_7_completedA_preservation_of_signed_stage_subtractZeroExact_nat
@@ -1130,19 +964,16 @@ theorem theorem20_7_completedA_preservation_of_signed_stage_subtractZeroExact_na
       Ahat hStep
       (theorem20_7_signed_stage_stored_panel_row_preservation_of_subtractZeroExact_nat
         hnm fp Ahat alpha hcopy)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     one-based source column factor `j^2` in the perturbation bound for
     `Delta a_ij`.  Lean's `Fin` index `j` represents source column `j+1`. -/
 noncomputable def theorem20_7_sourceColumnFactor {n : ℕ} (j : Fin n) : ℝ :=
   ((j.val + 1 : ℕ) : ℝ) ^ 2
-
 /-- The Theorem 20.7 one-based source column factor is nonnegative. -/
 theorem theorem20_7_sourceColumnFactor_nonneg {n : ℕ} (j : Fin n) :
     0 ≤ theorem20_7_sourceColumnFactor j := by
   dsimp [theorem20_7_sourceColumnFactor]
   exact sq_nonneg _
-
 /-- The zero-based Cox--Higham column square is bounded by the one-based
     source column factor used in Higham Theorem 20.7. -/
 theorem theorem20_7_zeroBasedColumnSq_le_sourceColumnFactor {n : ℕ}
@@ -1154,18 +985,15 @@ theorem theorem20_7_zeroBasedColumnSq_le_sourceColumnFactor {n : ℕ}
   have hjle : (j.val : ℝ) ≤ ((j.val + 1 : ℕ) : ℝ) := by
     exact_mod_cast Nat.le_succ j.val
   exact pow_le_pow_left₀ hj0 hjle 2
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     source dimension factor `n^2` in the perturbation bound for `Delta b_i`. -/
 noncomputable def theorem20_7_sourceDimensionFactor (n : ℕ) : ℝ :=
   (n : ℝ) ^ 2
-
 /-- The Theorem 20.7 source dimension factor is nonnegative. -/
 theorem theorem20_7_sourceDimensionFactor_nonneg (n : ℕ) :
     0 ≤ theorem20_7_sourceDimensionFactor n := by
   dsimp [theorem20_7_sourceDimensionFactor]
   exact sq_nonneg _
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     concrete scalar compact slack used by the active-tail signed-stage route.
 
@@ -1179,7 +1007,6 @@ noncomputable def theorem20_7_compactStepSlack
     (Real.sqrt (m : ℝ) *
       (Real.sqrt (m : ℝ) *
         H19.Theorem19_6.rowwise_step_growth_factor ^ i + err))
-
 /-- The concrete compact slack is nonnegative under the usual roundoff guard
     and a nonnegative accumulated-error coefficient. -/
 theorem theorem20_7_compactStepSlack_nonneg
@@ -1205,7 +1032,6 @@ theorem theorem20_7_compactStepSlack_nonneg
           H19.Theorem19_6.rowwise_step_growth_factor ^ i + err) :=
     mul_nonneg (Real.sqrt_nonneg _) hinner
   simpa [theorem20_7_compactStepSlack] using mul_nonneg hcoeff hscale
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     combined exact-growth plus compact-update scalar factor for one active-tail
     signed stored-QR step. -/
@@ -1214,7 +1040,6 @@ noncomputable def theorem20_7_compactActiveStepFactor
   H19.Theorem19_6.active_row_growth_factor m +
     (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
       Real.sqrt (m : ℝ)
-
 /-- The combined active-plus-compact step factor is nonnegative under the usual
     compact Householder roundoff guard. -/
 theorem theorem20_7_compactActiveStepFactor_nonneg
@@ -1229,7 +1054,6 @@ theorem theorem20_7_compactActiveStepFactor_nonneg
     nlinarith
   exact
     add_nonneg hactive (mul_nonneg hcoeff (Real.sqrt_nonneg _))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.7 support:
     honest larger active-tail scalar horizon after the printed rowwise horizon
     is not large enough for the current compact active-step factor.
@@ -1240,14 +1064,12 @@ noncomputable def theorem20_7_compactActiveHorizon
     (fp : FPModel) (m : ℕ) (err : ℝ) (i : ℕ) : ℝ :=
   (Real.sqrt (m : ℝ) + err) *
     theorem20_7_compactActiveStepFactor fp m ^ i
-
 /-- Compact-step slack associated with the larger compact-active horizon. -/
 noncomputable def theorem20_7_compactActiveHorizonStepSlack
     (fp : FPModel) (m : ℕ) (err : ℝ) (i : ℕ) : ℝ :=
   (fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m) *
     Real.sqrt (m : ℝ) *
       theorem20_7_compactActiveHorizon fp m err i
-
 /-- The compact-active horizon is nonnegative under the standard roundoff guard
     and nonnegative accumulated-error coefficient. -/
 theorem theorem20_7_compactActiveHorizon_nonneg
@@ -1262,7 +1084,6 @@ theorem theorem20_7_compactActiveHorizon_nonneg
     theorem20_7_compactActiveStepFactor_nonneg fp m hmfp
   exact
     mul_nonneg hbase (pow_nonneg hfactor _)
-
 /-- The larger compact-active horizon has the exact one-step recurrence needed
     by the active-tail compact-budget route. -/
 theorem theorem20_7_compactActiveHorizonStepSlack_recurrence_nat
@@ -1287,7 +1108,6 @@ theorem theorem20_7_compactActiveHorizonStepSlack_recurrence_nat
   rw [pow_succ]
   ring_nf
   exact le_rfl
-
 /-- Theorem 20.7 support: the concrete stored-Householder QR matrix sequence
     has exact prefix lower zeros at every stage. -/
 theorem theorem20_7_storedHouseholderQRMatrixSeq_prefix_lower_zero_nat
@@ -1315,7 +1135,6 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_prefix_lower_zero_nat
       (fun k => storedQRSignedStageBeta hnm Ahat alpha k)
       Ahat hStep
   simpa [Ahat] using hprefix
-
 /-- Theorem 20.7 support: local previous-prefix diagonal nonzero follows from
     the corresponding leading-block diagonal nonzero hypothesis. -/
 theorem theorem20_7_storedHouseholderQRMatrixSeq_diagPrev_of_diagLead_nat
@@ -1333,7 +1152,6 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_diagPrev_of_diagLead_nat
   intro t ht r
   simpa [qrPrefixRow, qrPreviousColumn, qrLeadingRow, qrLeadingColumn] using
     hdiagLead t ht (Fin.castSucc r)
-
 /-- Theorem 20.7 support: leading-block diagonal nonzero follows from
     completed-step diagonal nonzero plus the current pivot diagonal facts. -/
 theorem theorem20_7_storedHouseholderQRMatrixSeq_diagLead_of_step_diag_and_current_diag_nat
@@ -1388,7 +1206,6 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_diagLead_of_step_diag_and_curre
     have hr_last : r = ⟨t, Nat.lt_succ_self t⟩ := Fin.ext hr_eq
     subst r
     simpa [Ahat, qrLeadingRow, qrLeadingColumn] using hcurrentDiag t ht
-
 /-- Theorem 20.7 support: the stored QR prefix lower-zero invariant plus a
     nonsingular current leading block supplies the current pivot diagonal. -/
 theorem theorem20_7_storedHouseholderQRMatrixSeq_current_diag_nonzero_of_leadingBlock_det_ne_zero_nat
@@ -1429,13 +1246,11 @@ theorem theorem20_7_storedHouseholderQRMatrixSeq_current_diag_nonzero_of_leading
   simpa [Ahat] using
     fl_householderStoredTrailingPanel_sequence_current_pivot_ne_zero_of_leadingBlock_det_ne_zero
       fp hnm Ahat alpha hStep hdetLead'
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.23), feasibility part:
     `B x = d` for the equality-constrained least-squares problem. -/
 def LSEFeasible {p n : ℕ} (B : Fin p → Fin n → ℝ)
     (d : Fin p → ℝ) (x : Fin n → ℝ) : Prop :=
   ∀ i : Fin p, rectMatMulVec B x i = d i
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.23):
     `x` solves `min ||b - A x||_2` subject to `B x = d`.
 
@@ -1446,7 +1261,6 @@ def IsLSEMinimizer {m n p : ℕ} (A : Fin m → Fin n → ℝ)
     (d : Fin p → ℝ) (x : Fin n → ℝ) : Prop :=
   LSEFeasible B d x ∧
   ∀ y : Fin n → ℝ, LSEFeasible B d y → lsObjective A b x ≤ lsObjective A b y
-
 /-- With no constraint rows, equality-constrained least squares is ordinary
     least squares.  This bridge is useful for the `p = 0` boundary of the
     Chapter 20 LSE results. -/
@@ -1461,7 +1275,6 @@ theorem isLSEMinimizer_empty_constraints_iff {m n : ℕ}
     refine ⟨(fun i => Fin.elim0 i), ?_⟩
     intro y _hy
     exact hx y
-
 /-- Feasibility `Bx=d` gives the elementary Frobenius bound
     `||d||₂ <= ||B||_F ||x||₂`. -/
 theorem LSEFeasible.vecNorm2_rhs_le_frobNormRect_mul {p n : ℕ}
@@ -1473,7 +1286,6 @@ theorem LSEFeasible.vecNorm2_rhs_le_frobNormRect_mul {p n : ℕ}
     exact (hx i).symm
   rw [hd_eq]
   exact vecNorm2_rectMatMulVec_le_frobNormRect_mul B x
-
 /-- An exact LSE minimizer's constraint right-hand side is bounded by the
     source constraint matrix acting on the minimizer. -/
 theorem IsLSEMinimizer.vecNorm2_constraint_rhs_le_frobNormRect_mul {m n p : ℕ}
@@ -1483,6 +1295,9 @@ theorem IsLSEMinimizer.vecNorm2_constraint_rhs_le_frobNormRect_mul {m n p : ℕ}
     vecNorm2 d ≤ frobNormRect B * vecNorm2 x :=
   hx.1.vecNorm2_rhs_le_frobNormRect_mul
 
+-- ------------------------------------------------------------
+-- §20.9.1  Perturbation-theory scalar budget support
+-- ------------------------------------------------------------
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     source projector `P = I - B^+ B` used in the LSE perturbation bound.
 
@@ -1493,7 +1308,6 @@ noncomputable def theorem20_8Projection {p n : ℕ}
     (B : Fin p → Fin n → ℝ) (Bplus : Fin n → Fin p → ℝ) :
     Fin n → Fin n → ℝ :=
   fun i j => idMatrix n i j - rectMatMul Bplus B i j
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     if the supplied `Bplus` is a right inverse of `B`, then the source
     projector `P = I - B^+ B` maps every vector into the constraint nullspace. -/
@@ -1525,7 +1339,6 @@ theorem theorem20_8Projection_constraint_zero {p n : ℕ}
     _ = fun _i _j => 0 := by
             ext i j
             ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     vector form of `B(I - B^+B) = 0`. -/
 theorem theorem20_8Projection_constraint_vec_zero {p n : ℕ}
@@ -1538,7 +1351,6 @@ theorem theorem20_8Projection_constraint_vec_zero {p n : ℕ}
   rw [theorem20_8Projection_constraint_zero B Bplus hright]
   ext i
   simp [rectMatMulVec]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the projector `P = I - B^+B` fixes every vector in the nullspace of `B`. -/
 theorem theorem20_8Projection_apply_nullspace {p n : ℕ}
@@ -1562,7 +1374,6 @@ theorem theorem20_8Projection_apply_nullspace {p n : ℕ}
     _ = x i := by
             rw [hBx]
             simp [rectMatMulVec]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     vector idempotence of the nullspace projector `P = I - B^+B`. -/
 theorem theorem20_8Projection_vec_idempotent {p n : ℕ}
@@ -1576,14 +1387,12 @@ theorem theorem20_8Projection_vec_idempotent {p n : ℕ}
     theorem20_8Projection_apply_nullspace B Bplus
       (rectMatMulVec (theorem20_8Projection B Bplus) x)
       (theorem20_8Projection_constraint_vec_zero B Bplus hright x)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     the source product `A P`, where `P = I - B^+ B`. -/
 noncomputable def theorem20_8AP {m n p : ℕ}
     (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
     (Bplus : Fin n → Fin p → ℝ) : Fin m → Fin n → ℝ :=
   rectMatMul A (theorem20_8Projection B Bplus)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     on vectors satisfying the equality constraint's homogeneous equation
     `B x = 0`, the source product `A P` acts as `A`. -/
@@ -1595,7 +1404,6 @@ theorem theorem20_8AP_apply_nullspace {m n p : ℕ}
       rectMatMulVec A x := by
   rw [theorem20_8AP, rectMatMulVec_rectMatMul]
   rw [theorem20_8Projection_apply_nullspace B Bplus x hBx]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the difference of two feasible LSE points lies in the nullspace of `B`. -/
 theorem theorem20_8_feasible_difference_constraint_zero {n p : ℕ}
@@ -1607,7 +1415,6 @@ theorem theorem20_8_feasible_difference_constraint_zero {n p : ℕ}
   ext i
   rw [hx i, hy i]
   simp
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     `P = I - B^+B` fixes feasible differences. -/
 theorem theorem20_8Projection_apply_feasible_difference {n p : ℕ}
@@ -1618,7 +1425,6 @@ theorem theorem20_8Projection_apply_feasible_difference {n p : ℕ}
       (fun j => x j - y j) :=
   theorem20_8Projection_apply_nullspace B Bplus (fun j => x j - y j)
     (theorem20_8_feasible_difference_constraint_zero B d x y hx hy)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     on feasible differences, `A P` acts exactly as `A`. -/
 theorem theorem20_8AP_apply_feasible_difference {m n p : ℕ}
@@ -1630,7 +1436,6 @@ theorem theorem20_8AP_apply_feasible_difference {m n p : ℕ}
       rectMatMulVec A (fun j => x j - y j) :=
   theorem20_8AP_apply_nullspace A B Bplus (fun j => x j - y j)
     (theorem20_8_feasible_difference_constraint_zero B d x y hx hy)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     adding a projected direction `P z` to a feasible point preserves the
     equality constraint. -/
@@ -1652,7 +1457,6 @@ theorem theorem20_8Projection_feasible_step {p n : ℕ}
   have hstep_i := congrFun hstep i
   rw [hx0 i, hstep_i]
   simp
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     exact action of `A` on a feasible nullspace step `x0 + P z`. -/
 theorem theorem20_8AP_feasible_step_action {m n p : ℕ}
@@ -1666,7 +1470,6 @@ theorem theorem20_8AP_feasible_step_action {m n p : ℕ}
           rectMatMulVec (theorem20_8AP A B Bplus) z i := by
   rw [rectMatMulVec_add]
   rw [theorem20_8AP, rectMatMulVec_rectMatMul]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual identity for the nullspace parametrization `x = x0 + P z`.
 
@@ -1685,7 +1488,6 @@ theorem theorem20_8AP_feasible_step_residual {m n p : ℕ}
   have hact := congrFun (theorem20_8AP_feasible_step_action A B Bplus x0 z) i
   rw [hact]
   ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     objective identity for the nullspace parametrization of the LSE problem.
 
@@ -1701,7 +1503,6 @@ theorem theorem20_8AP_feasible_step_objective {m n p : ℕ}
         (fun i => b i - rectMatMulVec A x0 i) z := by
   unfold lsObjective
   rw [theorem20_8AP_feasible_step_residual A b B Bplus x0 z]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     if `x0` and `y` are feasible for the same equality constraint, then the
     nullspace projector reconstructs `y` from the feasible base point `x0`. -/
@@ -1719,7 +1520,6 @@ theorem theorem20_8Projection_feasible_difference_decomp {n p : ℕ}
   have hj := congrFun hproj j
   rw [hj]
   ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     an exact minimizer of the reduced unconstrained problem in the nullspace
     variable lifts to an exact LSE minimizer. -/
@@ -1756,7 +1556,6 @@ theorem theorem20_8AP_unconstrained_minimizer_lifts {m n p : ℕ}
       _ = lsObjective A b y := by
           rw [theorem20_8Projection_feasible_difference_decomp
             B Bplus d x0 y hx0 hy]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     every exact LSE minimizer gives an exact minimizer of the reduced
     unconstrained problem when written relative to a feasible base point. -/
@@ -1798,7 +1597,6 @@ theorem theorem20_8AP_unconstrained_minimizer_of_lse_minimizer {m n p : ℕ}
     _ = lsObjective (theorem20_8AP A B Bplus)
           (fun i => b i - rectMatMulVec A x0 i) z := by
         exact theorem20_8AP_feasible_step_objective A b B Bplus x0 z
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     a minimizer of the perturbed equality-constrained problem gives an exact
     minimizer of the perturbed reduced `AP` least-squares problem, relative to
@@ -1829,60 +1627,6 @@ theorem theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
     (fun i j => A i j + DeltaA i j) (fun i => b i + Deltab i)
     (fun i j => B i j + DeltaB i j) Bpertplus
     (fun i => d i + Deltad i) x0 y hright hx0 hy
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
-    the reduced Higham residual for the perturbed `AP` least-squares problem is
-    orthogonal to every reduced column whenever it comes from an exact
-    perturbed LSE minimizer and a perturbed feasible base point. -/
-theorem theorem20_8AP_perturbed_reduced_higham_residual_orthogonal_of_lse_minimizer
-    {m n p : ℕ}
-    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
-    (B DeltaB : Fin p → Fin n → ℝ) (Bpertplus : Fin n → Fin p → ℝ)
-    (d Deltad : Fin p → ℝ) (x0 y : Fin n → ℝ) (s : Fin m → ℝ)
-    (hright :
-      rectMatMul (fun i j => B i j + DeltaB i j) Bpertplus =
-        idMatrix p)
-    (hx0 : LSEFeasible (fun i j => B i j + DeltaB i j)
-      (fun i => d i + Deltad i) x0)
-    (hy : IsLSEMinimizer
-      (fun i j => A i j + DeltaA i j)
-      (fun i => b i + Deltab i)
-      (fun i j => B i j + DeltaB i j)
-      (fun i => d i + Deltad i) y)
-    (hs :
-      s =
-        fun i =>
-          b i + Deltab i -
-            rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
-            rectMatMulVec
-              (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                (fun i j => B i j + DeltaB i j) Bpertplus)
-              (fun j => y j - x0 j) i) :
-    ∀ j : Fin n,
-      ∑ i : Fin m,
-        theorem20_8AP (fun i j => A i j + DeltaA i j)
-            (fun i j => B i j + DeltaB i j) Bpertplus i j *
-          s i = 0 := by
-  have hred :
-      IsLeastSquaresMinimizer
-        (theorem20_8AP (fun i j => A i j + DeltaA i j)
-          (fun i j => B i j + DeltaB i j) Bpertplus)
-        (fun i =>
-          b i + Deltab i -
-            rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
-        (fun j => y j - x0 j) :=
-    theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
-      A DeltaA b Deltab B DeltaB Bpertplus d Deltad x0 y hright hx0 hy
-  exact
-    IsLeastSquaresMinimizer.higham_residual_orthogonal
-      (A := theorem20_8AP (fun i j => A i j + DeltaA i j)
-        (fun i j => B i j + DeltaB i j) Bpertplus)
-      (b := fun i =>
-        b i + Deltab i -
-          rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i)
-      (x := fun j => y j - x0 j) (s := s)
-      hred (by simpa [lsResidualHigham] using hs)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     an exact LSE minimizer induces an exact unconstrained least-squares
     minimizer in any supplied coordinate basis for homogeneous feasible
@@ -1934,7 +1678,6 @@ theorem IsLSEMinimizer.reduced_nullspace_minimizer {m n p q : ℕ}
         (0 : Fin q → ℝ) = lsObjective A b x := hobj0
     _ ≤ lsObjective A b candidate := hle
     _ = lsObjective (rectMatMul A N) (lsResidualHigham A b x) z := hobjz
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     applying `P = I - B^+B` to a vector with a known constraint residual
     subtracts the supplied `B^+` correction. -/
@@ -1959,7 +1702,6 @@ theorem theorem20_8Projection_apply_of_constraint {p n : ℕ}
             rw [rectMatMulVec_rectMatMul]
     _ = v j - rectMatMulVec Bplus e j := by
             rw [hBv]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     if `x` is feasible for `(B,d)` and `y` is feasible for the perturbed
     constraint `(B + DeltaB)y = d + Deltad`, then the solution difference has
@@ -1982,7 +1724,6 @@ theorem theorem20_8_perturbed_feasible_difference_constraint {n p : ℕ}
     exact hyi
   rw [hdiff, hx i]
   linarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projection of a difference between an original feasible point and a
     perturbed feasible point. -/
@@ -2000,7 +1741,6 @@ theorem theorem20_8Projection_apply_perturbed_feasible_difference {n p : ℕ}
     (fun i => Deltad i - rectMatMulVec DeltaB y i)
     (theorem20_8_perturbed_feasible_difference_constraint
       B DeltaB d Deltad x y hx hy)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the difference between an original feasible point and a perturbed feasible
     point splits into a nullspace-projected part plus the supplied `B^+`
@@ -2022,7 +1762,6 @@ theorem theorem20_8_perturbed_feasible_difference_decomp {n p : ℕ}
   have hj := congrFun hproj j
   rw [hj]
   ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     point form of the perturbed-feasible decomposition. -/
 theorem theorem20_8_perturbed_feasible_point_decomp {n p : ℕ}
@@ -2042,7 +1781,6 @@ theorem theorem20_8_perturbed_feasible_point_decomp {n p : ℕ}
   ext j
   have hj := congrFun hdecomp j
   linarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     action of `A` on a perturbed feasible point after the source nullspace
     decomposition.  The last term is the explicit correction caused by the
@@ -2098,7 +1836,6 @@ theorem theorem20_8_perturbed_feasible_point_action_decomp {m n p : ℕ}
                 (fun l => Deltad l - rectMatMulVec DeltaB y l)) i := by
           ext i
           ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected `AP` step recovered from the action of `A` on a perturbed
     feasible point and the explicit right-inverse constraint correction. -/
@@ -2121,7 +1858,6 @@ theorem theorem20_8_AP_difference_eq_action_minus_constraint_correction {m n p :
   ext i
   have hi := congrFun haction i
   linarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual decomposition for a point feasible for the perturbed constraint.
 
@@ -2153,7 +1889,6 @@ theorem theorem20_8_perturbed_feasible_residual_decomp {m n p : ℕ}
         A B DeltaB Bplus d Deltad x y hx hy) i
   rw [hmat, hA]
   ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     solving the perturbed-residual decomposition for the reduced `AP`
     difference.  The perturbed residual is kept explicit, so this does not
@@ -2183,7 +1918,6 @@ theorem theorem20_8_AP_difference_eq_of_perturbed_residual_eq {m n p : ℕ}
   have hres_i := congrFun hres i
   unfold lsResidual at hdecomp_i hres_i
   linarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-sign version of `theorem20_8_AP_difference_eq_of_perturbed_residual_eq`,
     using Higham's residual convention `b - A*x`. -/
@@ -2213,7 +1947,6 @@ theorem theorem20_8_AP_difference_eq_of_perturbed_higham_residual_eq {m n p : �
   unfold lsResidual at hdecomp_i
   unfold lsResidualHigham at hres_i
   linarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     same-source-residual specialization of the Higham-sign reduced `AP`
     difference identity.  With perturbations written as `A + DeltaA` and
@@ -2246,7 +1979,6 @@ theorem theorem20_8_AP_difference_eq_of_same_higham_residual_eq {m n p : ℕ}
   have hsame_i := congrFun hsame i
   unfold lsResidualHigham at hr_i
   linarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the constraint-defect vector `Deltad - DeltaB*y` is bounded by the
     supplied perturbation radii. -/
@@ -2268,7 +2000,6 @@ theorem theorem20_8_vecNorm2_constraint_defect_le {n p : ℕ}
             rw [vecNorm2_neg]
     _ ≤ Deltad_norm + DeltaB_norm * vecNorm2 y :=
             add_le_add hDeltad (hDeltaB y)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     applying `A*Bplus` to a constraint-defect vector is controlled by an
     operator-2 bound for the product. -/
@@ -2279,7 +2010,6 @@ theorem theorem20_8_vecNorm2_ABplus_apply_le {m n p : ℕ}
     vecNorm2 (rectMatMulVec A (rectMatMulVec Bplus e)) ≤
       ABplus_norm * vecNorm2 e := by
   simpa [rectMatMulVec_rectMatMul] using hABplus e
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the explicit `A*Bplus*(Deltad-DeltaB*y)` correction term is bounded by
     perturbation radii and an operator-2 bound for `A*Bplus`. -/
@@ -2308,7 +2038,6 @@ theorem theorem20_8_vecNorm2_ABplus_constraint_defect_le {m n p : ℕ}
             theorem20_8_vecNorm2_ABplus_apply_le A Bplus defect hABplus
     _ ≤ ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) :=
             mul_le_mul_of_nonneg_left hdefect hABplus_nonneg
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the three explicit correction terms in the perturbed residual decomposition
     are bounded by supplied operator and vector perturbation radii. -/
@@ -2366,7 +2095,6 @@ theorem theorem20_8_vecNorm2_perturbed_residual_correction_le {m n p : ℕ}
     _ = ABplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) +
           DeltaA_norm * vecNorm2 y + Deltab_norm := by
             ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     elementary Euclidean bound for Higham's signed residual `b - A*y`. -/
 theorem theorem20_8_vecNorm2_higham_residual_le {m n : ℕ}
@@ -2387,7 +2115,6 @@ theorem theorem20_8_vecNorm2_higham_residual_le {m n : ℕ}
     _ ≤ vecNorm2 b + frobNormRect A * vecNorm2 y :=
             add_le_add (le_refl (vecNorm2 b))
               (vecNorm2_rectMatMulVec_le_frobNormRect_mul A y)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source right-hand side bounded by the model action plus the source signed
     residual. -/
@@ -2408,7 +2135,6 @@ theorem theorem20_8_vecNorm2_b_le_frobNormRect_mul_x_add_sourceResidual
           vecNorm2_add_le (rectMatMulVec A x) (lsResidualHigham A b x)
     _ ≤ frobNormRect A * vecNorm2 x + vecNorm2 (lsResidualHigham A b x) :=
           add_le_add (vecNorm2_rectMatMulVec_le_frobNormRect_mul A x) le_rfl
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source right-hand-side scale from a source residual scale. -/
 theorem theorem20_8_vecNorm2_b_le_of_sourceResidualScale {m n : ℕ}
@@ -2427,7 +2153,6 @@ theorem theorem20_8_vecNorm2_b_le_of_sourceResidualScale {m n : ℕ}
         add_le_add le_rfl hresidual
     _ = (frobNormRect A + residualScale) * vecNorm2 x := by
         ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the stationarity-row right-hand side `DeltaB^T*mu - DeltaA^T*s` in the
     Cox--Higham KKT system is bounded by supplied operator-2 radii. -/
@@ -2486,7 +2211,6 @@ theorem theorem20_8_vecNorm2_stationarity_forcing_le {m n p : ℕ}
             rw [vecNorm2_neg]
     _ ≤ DeltaB_norm * vecNorm2 mu + DeltaA_norm * vecNorm2 s :=
             add_le_add hB hA
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     source table `B_A^+ = (I - (AP)^+ A)B^+`.
 
@@ -2498,7 +2222,6 @@ noncomputable def theorem20_8BAplus {m n p : ℕ}
     (Bplus : Fin n → Fin p → ℝ) (APplus : Fin n → Fin m → ℝ) :
     Fin n → Fin p → ℝ :=
   rectMatMul (fun i j => idMatrix n i j - rectMatMul APplus A i j) Bplus
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     applying `B_A^+ = (I - (AP)^+ A)B^+` to a vector expands into the
     `B^+` term minus the reduced-problem pseudo-inverse correction. -/
@@ -2548,7 +2271,6 @@ theorem theorem20_8BAplus_apply {m n p : ℕ}
               A x x_1 * (∑ x_2 : Fin p, Bplus x_1 x_2 * e x_2)) := by
     simpa [rectMatMulVec] using hcomp
   rw [hsplit, hid', hcomp']
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the source product `A B_A^+` splits into `A B^+` minus the
     `(AP)^+`-correction term. -/
@@ -2564,7 +2286,6 @@ theorem theorem20_8A_BAplus_apply {m n p : ℕ}
             (rectMatMulVec APplus
               (rectMatMulVec A (rectMatMulVec Bplus e))) i := by
   rw [theorem20_8BAplus_apply, rectMatMulVec_sub]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the `A B^+` constraint-defect correction decomposes into the source
     `A B_A^+` term plus the reduced-problem pseudo-inverse correction. -/
@@ -2583,7 +2304,6 @@ theorem theorem20_8ABplus_eq_A_APplus_A_Bplus_add_A_BAplus {m n p : ℕ}
   have h :=
     congrFun (theorem20_8A_BAplus_apply A B Bplus APplus e) i
   linarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     applying the source product `A B_A^+` is controlled by an operator-2
     bound for that product. -/
@@ -2599,7 +2319,6 @@ theorem theorem20_8_vecNorm2_A_BAplus_apply_le {m n p : ℕ}
           (rectMatMulVec (theorem20_8BAplus A B Bplus APplus) e)) ≤
       ABAplus_norm * vecNorm2 e := by
   simpa [rectMatMulVec_rectMatMul] using hABAplus e
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the source `A B_A^+` constraint-defect correction is bounded by
     perturbation radii and an operator-2 bound for `A B_A^+`. -/
@@ -2639,7 +2358,6 @@ theorem theorem20_8_vecNorm2_A_BAplus_constraint_defect_le {m n p : ℕ}
               defect hABAplus
     _ ≤ ABAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) :=
             mul_le_mul_of_nonneg_left hdefect hABAplus_nonneg
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual decomposition with the constraint-defect correction split through
     the printed source quantity `B_A^+`. -/
@@ -2689,19 +2407,16 @@ theorem theorem20_8_perturbed_feasible_residual_decomp_BAplus {m n p : ℕ}
         rectMatMulVec DeltaA y i -
         Deltab i
   rw [hres, hsplit]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     condition quantity `kappa_B(A) = ||A||_F ||(AP)^+||_2`. -/
 noncomputable def theorem20_8KappaB {m n : ℕ}
     (A : Fin m → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ) : ℝ :=
   frobNormRect A * complexMatrixOp2 (realRectToCMatrix APplus)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     condition quantity `kappa_A(B) = ||B||_F ||B_A^+||_2`. -/
 noncomputable def theorem20_8KappaA {n p : ℕ}
     (B : Fin p → Fin n → ℝ) (BAplus : Fin n → Fin p → ℝ) : ℝ :=
   frobNormRect B * complexMatrixOp2 (realRectToCMatrix BAplus)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8:
     residual multiplier in the first-order coefficient of (20.25),
     `kappa_B(A)^2 * ((||B||_F / ||A||_F) ||A B_A^+||_2 + 1)`. -/
@@ -2711,7 +2426,6 @@ noncomputable def theorem20_8ResidualAmplifier {m n p : ℕ}
   theorem20_8KappaB A APplus ^ 2 *
     ((frobNormRect B / frobNormRect A) *
       complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) + 1)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     the first-order scalar coefficient multiplying `eps`, excluding the
     source's `O(eps^2)` remainder. -/
@@ -2726,7 +2440,6 @@ noncomputable def theorem20_8FirstOrderRHS {m n p : ℕ}
       (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) +
     theorem20_8ResidualAmplifier A B APplus BAplus *
       (vecNorm2 r / (frobNormRect A * vecNorm2 x))
-
 /-- The source quantity `kappa_B(A)` in Theorem 20.8 is nonnegative. -/
 theorem theorem20_8KappaB_nonneg {m n : ℕ}
     (A : Fin m → Fin n → ℝ) (APplus : Fin n → Fin m → ℝ) :
@@ -2734,7 +2447,6 @@ theorem theorem20_8KappaB_nonneg {m n : ℕ}
   unfold theorem20_8KappaB
   exact mul_nonneg (frobNormRect_nonneg A)
     (complexMatrixOp2_nonneg (realRectToCMatrix APplus))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-shaped smallness `eps < 1 / kappa_B(A)` implies the multiplied
     Wedin smallness guard used by the reduced wrapper. -/
@@ -2746,7 +2458,6 @@ theorem theorem20_8KappaB_mul_eps_lt_one_of_eps_lt_inv {m n : ℕ}
     theorem20_8KappaB A APplus * eps < 1 := by
   have hmul := mul_lt_mul_of_pos_left heps hkappa_pos
   rwa [one_div, mul_inv_cancel₀ (ne_of_gt hkappa_pos)] at hmul
-
 /-- Elementary small-gain algebra used by the residual-gap route: from
     `x <= a*x + b` and `a < 1`, absorb the self term. -/
 theorem real_le_div_one_sub_of_le_mul_add {x a b : ℝ}
@@ -2755,7 +2466,6 @@ theorem real_le_div_one_sub_of_le_mul_add {x a b : ℝ}
   have hden : 0 < 1 - a := by linarith
   have hmul : (1 - a) * x ≤ b := by nlinarith
   exact (le_div_iff₀ hden).2 (by simpa [mul_comm] using hmul)
-
 /-- Elementary norm-growth bound used in coupled Theorem 20.8 small-gain
     estimates: the perturbed solution norm is bounded by the source norm times
     one plus the relative solution difference. -/
@@ -2782,7 +2492,6 @@ theorem vecNorm2_le_one_add_relative_difference_mul {n : ℕ}
         (1 + vecNorm2 (fun j : Fin n => y j - x j) / vecNorm2 x) *
           vecNorm2 x := by
         ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the explicit non-residual part of the `B_A^+` split residual-gap estimate.
 
@@ -2804,7 +2513,6 @@ noncomputable def theorem20_8BAplusResidualGapCorrection {m n p : ℕ}
       (eps * vecNorm2 d + (eps * frobNormRect B) * vecNorm2 y)) +
     (eps * frobNormRect A) * vecNorm2 y +
     eps * vecNorm2 b
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the right-hand side obtained after substituting the `B_A^+` residual-gap
     split into the residual-explicit solution-difference inequality, before the
@@ -2820,7 +2528,6 @@ noncomputable def theorem20_8BAplusSmallGainSolutionRHS {m n p : ℕ}
   complexMatrixOp2 (realRectToCMatrix APplus) *
     (theorem20_8BAplusResidualGapCorrection A b B Bplus APplus d y eps +
       ((eps * frobNormRect A) * vecNorm2 y + eps * vecNorm2 b))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the residual-gap radius obtained after small-gain absorption of the
     `||(AP)^+||₂ ||AP||₂ ||y-x||₂` self term. -/
@@ -2836,7 +2543,6 @@ noncomputable def theorem20_8BAplusSmallGainResidualRadius {m n p : ℕ}
             complexMatrixOp2
               (realRectToCMatrix (theorem20_8AP A B Bplus)))) +
     theorem20_8BAplusResidualGapCorrection A b B Bplus APplus d y eps
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     coefficient of the source-solution residual-gap radius after small-gain
     absorption.  The radius is exactly `eps` times this coefficient. -/
@@ -2846,7 +2552,6 @@ noncomputable def theorem20_8BAplusSmallGainResidualRadiusCoeff {m n p : ℕ}
     (APplus : Fin n → Fin m → ℝ) (d : Fin p → ℝ)
     (x : Fin n → ℝ) : ℝ :=
   theorem20_8BAplusSmallGainResidualRadius A b B Bplus APplus d x 1
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the source-solution small-gain residual radius is linear in the perturbation
     parameter. -/
@@ -2864,7 +2569,6 @@ theorem theorem20_8BAplusSmallGainResidualRadius_eq_eps_mul_coeff
     theorem20_8BAplusSmallGainSolutionRHS,
     theorem20_8BAplusResidualGapCorrection]
   ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     a coefficient bound discharges the source residual-radius premise for
     nonnegative perturbation radii. -/
@@ -2882,7 +2586,6 @@ theorem theorem20_8BAplusSmallGainResidualRadius_le_eps_residual_of_coeff_le
       eps * vecNorm2 (lsResidualHigham A b x) := by
   rw [theorem20_8BAplusSmallGainResidualRadius_eq_eps_mul_coeff]
   exact mul_le_mul_of_nonneg_left hcoeff heps
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the non-residual `B_A^+` residual-gap correction is monotone in the
     perturbed-solution norm when the perturbation radius is nonnegative. -/
@@ -2932,7 +2635,6 @@ theorem theorem20_8BAplusResidualGapCorrection_mono_of_vecNorm2_le
     mul_le_mul_of_nonneg_left hyx hAcoeff
   dsimp [theorem20_8BAplusResidualGapCorrection, innerY, innerX, kB, C1, C2]
   linarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the `B_A^+` small-gain solution RHS is monotone in the
     perturbed-solution norm when the perturbation radius is nonnegative. -/
@@ -2988,7 +2690,6 @@ theorem theorem20_8BAplusSmallGainSolutionRHS_mono_of_vecNorm2_le
   dsimp [theorem20_8BAplusSmallGainSolutionRHS, innerY, innerX, CBA, CAP,
     dataY, dataX, corrY, corrX]
   linarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the absorbed `B_A^+` small-gain residual radius is monotone in the
     perturbed-solution norm under the small-gain denominator condition. -/
@@ -3039,7 +2740,6 @@ theorem theorem20_8BAplusSmallGainResidualRadius_mono_of_vecNorm2_le
   dsimp [theorem20_8BAplusSmallGainResidualRadius, APop, APnorm, denom, solY,
     solX, corrY, corrX]
   linarith
-
 /-- The source quantity `kappa_A(B)` in Theorem 20.8 is nonnegative. -/
 theorem theorem20_8KappaA_nonneg {n p : ℕ}
     (B : Fin p → Fin n → ℝ) (BAplus : Fin n → Fin p → ℝ) :
@@ -3047,7 +2747,6 @@ theorem theorem20_8KappaA_nonneg {n p : ℕ}
   unfold theorem20_8KappaA
   exact mul_nonneg (frobNormRect_nonneg B)
     (complexMatrixOp2_nonneg (realRectToCMatrix BAplus))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     applying the source correction matrix `B_A^+` is bounded by its operator
     2-norm. -/
@@ -3057,7 +2756,6 @@ theorem theorem20_8_vecNorm2_BAplus_apply_le {n p : ℕ}
       complexMatrixOp2 (realRectToCMatrix BAplus) * vecNorm2 z := by
   exact
     rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le BAplus le_rfl z
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the direct `B_A^+` constraint-defect correction is bounded by supplied
     operator and perturbation radii. -/
@@ -3088,7 +2786,6 @@ theorem theorem20_8_vecNorm2_BAplus_constraint_defect_le {n p : ℕ}
     _ ≤ BAplus_norm * vecNorm2 defect := hBAplus defect
     _ ≤ BAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) :=
       mul_le_mul_of_nonneg_left hdefect hBAplus_nonneg
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the direct `B_A^+` correction radius has the source-normalized
     `kappa_A(B) * (||d||/(||B||_F ||x||) + 1)` form when the first-order
@@ -3104,7 +2801,6 @@ theorem theorem20_8KappaA_directCorrection_sourceTerm_eq {n p : ℕ}
   unfold theorem20_8KappaA
   field_simp [ne_of_gt hBpos, ne_of_gt hxpos,
     mul_ne_zero (ne_of_gt hBpos) (ne_of_gt hxpos)]
-
 /-- Under the natural nonzero-`A` denominator side condition, the residual
     amplifier in Theorem 20.8's first-order coefficient is nonnegative. -/
 theorem theorem20_8ResidualAmplifier_nonneg {m n p : ℕ}
@@ -3124,7 +2820,6 @@ theorem theorem20_8ResidualAmplifier_nonneg {m n p : ℕ}
           complexMatrixOp2 (realRectToCMatrix (rectMatMul A BAplus)) + 1 := by
     nlinarith [mul_nonneg hratio hop]
   exact mul_nonneg (sq_nonneg _) hinside
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the source-normalized direct `kappa_A(B)` term is one summand of the
     first-order coefficient in (20.25). -/
@@ -3161,7 +2856,6 @@ theorem theorem20_8KappaA_sourceTerm_le_firstOrderRHS {m n p : ℕ}
   unfold theorem20_8FirstOrderRHS
   change termA ≤ termA + termB + termR
   linarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the data-forcing radius through `(AP)^+` has the source-normalized
     `kappa_B(A) * (||b||/(||A||_F ||x||) + 1)` form. -/
@@ -3177,7 +2871,6 @@ theorem theorem20_8KappaB_dataForcing_sourceTerm_eq {m n : ℕ}
   field_simp [ne_of_gt hApos, ne_of_gt hxpos,
     mul_ne_zero (ne_of_gt hApos) (ne_of_gt hxpos)]
   ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the source-normalized `kappa_B(A)` data term is bounded by the full
     first-order coefficient in (20.25). -/
@@ -3224,7 +2917,6 @@ theorem theorem20_8KappaB_dataSourceTerm_le_firstOrderRHS {m n p : ℕ}
   unfold theorem20_8FirstOrderRHS
   change theorem20_8KappaB A APplus * baseB ≤ termA + termB + termR
   linarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     the source-normalized residual-amplification term is one summand of the
     first-order coefficient. -/
@@ -3264,7 +2956,6 @@ theorem theorem20_8Residual_sourceTerm_le_firstOrderRHS {m n p : ℕ}
   unfold theorem20_8FirstOrderRHS
   change termR ≤ termA + termB + termR
   linarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     multiplying the residual-amplification summand by `eps * ||x||_2`
     is bounded by the full first-order coefficient with the same scaling. -/
@@ -3290,7 +2981,6 @@ theorem theorem20_8Residual_sourceTerm_scaled_le_firstOrderRHS {m n p : ℕ}
   have hmul := mul_le_mul_of_nonneg_left hfirst heps_nonneg
   have hmulx := mul_le_mul_of_nonneg_right hmul (le_of_lt hxpos)
   simpa [mul_assoc] using hmulx
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     the scaled residual summand is the same as the source residual radius
     `eps * residualAmplifier * ||r||_2 / ||A||_F`. -/
@@ -3306,7 +2996,6 @@ theorem theorem20_8Residual_sourceTerm_scaled_eq {m n p : ℕ}
         (vecNorm2 r / frobNormRect A) := by
   field_simp [ne_of_gt hApos, ne_of_gt hxpos,
     mul_ne_zero (ne_of_gt hApos) (ne_of_gt hxpos)]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     direct comparison between the source residual radius
     `eps * residualAmplifier * ||r||_2 / ||A||_F` and the full first-order
@@ -3333,7 +3022,6 @@ theorem theorem20_8Residual_sourceRadius_le_firstOrderRHS_scaled {m n p : ℕ}
       APplus BAplus heps_nonneg hApos hBpos hxpos
   simpa [theorem20_8Residual_sourceTerm_scaled_eq A B x r APplus BAplus
     hApos hxpos] using hscaled
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     the sum of the three printed first-order source coefficients is exactly
     the first-order coefficient `theorem20_8FirstOrderRHS`. -/
@@ -3350,7 +3038,6 @@ theorem theorem20_8SourceCoefficientSum_eq_firstOrderRHS {m n p : ℕ}
           (vecNorm2 r / (frobNormRect A * vecNorm2 x)) =
       theorem20_8FirstOrderRHS A b B d x r APplus BAplus := by
   rfl
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     after multiplication by `eps * ||x||_2`, the integrated source coefficient
     sum is still exactly the full first-order coefficient with the same
@@ -3372,7 +3059,6 @@ theorem theorem20_8SourceCoefficientSum_scaled_eq_firstOrderRHS {m n p : ℕ}
       eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus *
         vecNorm2 x := by
   rw [theorem20_8SourceCoefficientSum_eq_firstOrderRHS]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     the sum of the three printed first-order source coefficients is bounded
     by the single first-order coefficient `theorem20_8FirstOrderRHS`. -/
@@ -3409,7 +3095,6 @@ theorem theorem20_8SourceCoefficientSum_le_firstOrderRHS {m n p : ℕ}
   unfold theorem20_8FirstOrderRHS
   change termA + termBsource + termR ≤ termA + termBfull + termR
   linarith
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     after multiplication by `eps * ||x||_2`, the integrated source coefficient
     sum is bounded by the full first-order coefficient with the same scaling. -/
@@ -3444,7 +3129,6 @@ theorem theorem20_8SourceCoefficientSum_scaled_le_firstOrderRHS {m n p : ℕ}
   have hmul := mul_le_mul_of_nonneg_left hcoeff heps_nonneg
   have hmulx := mul_le_mul_of_nonneg_right hmul (le_of_lt hxpos)
   simpa [mul_assoc] using hmulx
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     source-radius form of the integrated direct, data-forcing, and residual
     first-order components, bounded by the full first-order RHS scaling. -/
@@ -3505,7 +3189,6 @@ theorem theorem20_8SourceRadiiSum_le_firstOrderRHS_scaled {m n p : ℕ}
     _ = eps * (termA + termB + termR) * vecNorm2 x := hsum
     _ ≤ eps * theorem20_8FirstOrderRHS A b B d x r APplus BAplus *
         vecNorm2 x := hscaled
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the Higham-sign data forcing `Deltab - DeltaA*y` has the same reduced
     correction norm as the opposite-sign vector used by the older conditional
@@ -3542,7 +3225,6 @@ theorem theorem20_8_vecNorm2_APplus_higham_data_forcing_eq {m n : ℕ}
           (rectMatMulVec APplus
             (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i)) := by
             rfl
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the packaged direct/data remainder has the explicit `eps^2` coefficient
     expected from the source `O(eps^2)` term, once the separate
@@ -3568,7 +3250,6 @@ theorem theorem20_8_quadratic_remainder_relative_eq_eps_sq_coefficient
           frobNormRect B +
         complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
   field_simp [ne_of_gt hxpos]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the relative-radius direct/data remainder has an explicit
     `eps * relativeRadius` coefficient.  This is the algebraic shape needed by
@@ -3594,7 +3275,6 @@ theorem theorem20_8_relative_remainder_eq_eps_radius_coefficient
           frobNormRect B +
         complexMatrixOp2 (realRectToCMatrix APplus) * frobNormRect A) := by
   field_simp [ne_of_gt hxpos]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     if the reduced-problem pseudoinverse equation has supplied the projected
     feasible-difference component, then the full feasible difference is exactly
@@ -3643,7 +3323,6 @@ theorem theorem20_8_solution_difference_eq_BAplus_add_APplus_of_projected_differ
           (fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) j
   rw [hdecomp_j, hproj_j, hBA_j]
   ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual-explicit exact solution-difference identity.  This is the exact
     algebraic counterpart of the printed correction-vector identity before the
@@ -3723,7 +3402,6 @@ theorem theorem20_8_solution_difference_eq_BAplus_add_APplus_of_perturbed_higham
         rectMatMulVec APplus forcing j
   rw [hdecomp_j, hproj_j, hBA_j]
   ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual-explicit norm bound for the exact solution-difference identity.
     The bound keeps the visible Higham-sign residual forcing as a separate
@@ -3796,7 +3474,6 @@ theorem theorem20_8_vecNorm2_solution_difference_residual_forcing_le
     _ ≤ BAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) +
           complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm :=
           add_le_add hdirect hforcing_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the projected-difference equation follows from the reduced `AP` equation
     once `(AP)^+ AP` is identified with the source nullspace projector `P`. -/
@@ -3847,7 +3524,6 @@ theorem theorem20_8_projected_difference_eq_APplus_of_reduced_difference_eq
           rectMatMulVec APplus forcing j -
             rectMatMulVec APplus correction j := by
           rw [rectMatMulVec_sub]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual-explicit projected-difference bridge in Higham's residual sign
     convention.  This is the exact version before the reduced-LS/Wedin route
@@ -3921,7 +3597,6 @@ theorem theorem20_8_projected_difference_eq_APplus_of_perturbed_higham_residual_
                   (fun l : Fin p =>
                     Deltad l - rectMatMulVec DeltaB y l))) j := by
           rfl
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected same-residual bridge in Higham's residual sign convention.
     This is the source-residual specialization of the residual-explicit bridge,
@@ -3992,7 +3667,6 @@ theorem theorem20_8_projected_difference_eq_APplus_of_same_higham_residual_eq
                   (fun l : Fin p =>
                     Deltad l - rectMatMulVec DeltaB y l))) j := by
           rfl
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected same-residual bridge using only the projected action of
     `(AP)^+ AP` on the actual feasible difference.  This is the vector-action
@@ -4064,7 +3738,6 @@ theorem theorem20_8_projected_difference_eq_APplus_of_same_higham_residual_proje
                   (fun l : Fin p =>
                     Deltad l - rectMatMulVec DeltaB y l))) j := by
           rfl
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     exact same-residual solution-difference identity in Higham's residual sign
     convention.  It specializes the residual-explicit identity to equal source
@@ -4115,7 +3788,6 @@ theorem theorem20_8_solution_difference_eq_BAplus_add_APplus_of_same_higham_resi
         rectMatMulVec APplus forcing j
   rw [hdecomp_j, hproj_j, hBA_j]
   ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     exact same-residual solution-difference identity using only the projected
     action of `(AP)^+ AP` on the actual feasible difference. -/
@@ -4167,7 +3839,6 @@ theorem theorem20_8_solution_difference_eq_BAplus_add_APplus_of_same_higham_resi
         rectMatMulVec APplus forcing j
   rw [hdecomp_j, hproj_j, hBA_j]
   ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     a source-shaped sufficient condition for the projected action
     `(AP)^+ AP v = P v`.  It is enough for `(AP)^+` to be a left inverse of
@@ -4195,7 +3866,6 @@ theorem theorem20_8_projected_action_of_nullspace_left_inverse
     rw [theorem20_8AP, rectMatMulVec_rectMatMul]
   rw [hAP]
   exact hleft_null z hz
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-facing projected action from the reduced operator.  It is enough for
     `(AP)^+` to left-invert `AP` on the homogeneous constraint nullspace,
@@ -4225,7 +3895,6 @@ theorem theorem20_8_projected_action_of_AP_left_inverse_on_nullspace
     exact (theorem20_8AP_apply_nullspace A B Bplus z hz).symm
   rw [hAPv]
   exact hAPleft_null z hz
-
 /-- Matrix extensionality through the finite vector action used by the local
     rectangular-matrix API. -/
 theorem rectMatMul_eq_of_forall_rectMatMulVec_eq {m n : ℕ}
@@ -4237,7 +3906,6 @@ theorem rectMatMul_eq_of_forall_rectMatMulVec_eq {m n : ℕ}
   have hMcol := congrFun (rectMatMulVec_finiteBasisVec_gsColumn M j) i
   have hNcol := congrFun (rectMatMulVec_finiteBasisVec_gsColumn N j) i
   simpa [gsColumn] using hMcol.symm.trans (hv.trans hNcol)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the reduced source product `AP = A(I - B^+B)` is fixed on the right by
     the source projector `P = I - B^+B` whenever `B^+` is a right inverse. -/
@@ -4267,7 +3935,6 @@ theorem theorem20_8AP_mul_projection_eq_self {m n p : ℕ}
           rw [theorem20_8Projection_vec_idempotent B Bplus hright x]
     _ = rectMatMulVec (theorem20_8AP A B Bplus) x := by
           rw [theorem20_8AP, rectMatMulVec_rectMatMul]
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24):
     matrix form of the projected action `(AP)^+ AP = P` from the reduced
     operator left-inverse condition on the homogeneous constraint nullspace. -/
@@ -4288,7 +3955,6 @@ theorem theorem20_8_APplus_AP_eq_projection_of_AP_left_inverse_on_nullspace
   simpa [rectMatMulVec_rectMatMul] using
     theorem20_8_projected_action_of_AP_left_inverse_on_nullspace
       A B Bplus APplus hright hAPleft_null v
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     a Penrose-style route to the reduced-operator left-inverse condition on
     the homogeneous constraint nullspace.  If `AP * (AP)^+ * AP = AP`,
@@ -4366,7 +4032,6 @@ theorem theorem20_8_AP_left_inverse_on_nullspace_of_penrose1_range_null_injectiv
   have huj : rectMatMulVec APplus w j - z j = 0 := by
     simpa [u] using congrFun hu j
   exact sub_eq_zero.mp huj
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projected action `(AP)^+ AP v = Pv` from Penrose-style reduced-operator
     hypotheses plus source right-invertibility of `B`. -/
@@ -4403,7 +4068,6 @@ theorem theorem20_8_projected_action_of_AP_penrose1_range_null_injective
   exact
     theorem20_8_projected_action_of_AP_left_inverse_on_nullspace
       A B Bplus APplus hright hAPleft_null v
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the projected-difference equation follows from the reduced `AP` equation
     when the reduced pseudoinverse acts as the source projector on the actual
@@ -4456,7 +4120,6 @@ theorem theorem20_8_projected_difference_eq_APplus_of_projected_action_reduced_d
           rectMatMulVec APplus forcing j -
             rectMatMulVec APplus correction j := by
           rw [rectMatMulVec_sub]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the reduced `AP` equation gives the projected-difference equation when
     `(AP)^+` is a left inverse of `A` on the homogeneous constraint nullspace. -/
@@ -4501,7 +4164,6 @@ theorem theorem20_8_projected_difference_eq_APplus_of_nullspace_left_inverse_red
   exact
     theorem20_8_projected_difference_eq_APplus_of_projected_action_reduced_difference_eq
       A DeltaA Deltab B DeltaB Bplus APplus Deltad y x hAPaction hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the reduced `AP` equation gives the projected-difference equation when
     `(AP)^+` left-inverts `AP` on the homogeneous constraint nullspace. -/
@@ -4547,7 +4209,6 @@ theorem theorem20_8_projected_difference_eq_APplus_of_AP_left_inverse_on_nullspa
   exact
     theorem20_8_projected_difference_eq_APplus_of_projected_action_reduced_difference_eq
       A DeltaA Deltab B DeltaB Bplus APplus Deltad y x hAPaction hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the reduced `AP` equation gives the projected-difference equation when
     the projected action is derived from Penrose-style reduced-operator
@@ -4604,7 +4265,6 @@ theorem theorem20_8_projected_difference_eq_APplus_of_AP_penrose1_range_null_inj
   exact
     theorem20_8_projected_difference_eq_APplus_of_projected_action_reduced_difference_eq
       A DeltaA Deltab B DeltaB Bplus APplus Deltad y x hAPaction hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     exact printed correction-vector identity from the reduced `AP` equation
     and the projected action needed only on the actual feasible difference. -/
@@ -4654,7 +4314,6 @@ theorem theorem20_8_solution_difference_eq_BAplus_add_APplus_of_projected_action
   exact
     theorem20_8_solution_difference_eq_BAplus_add_APplus_of_projected_difference
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y hx hy hproj
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     exact printed correction-vector identity from the reduced `AP` equation
     and a left inverse for `AP` on the homogeneous constraint nullspace. -/
@@ -4705,7 +4364,6 @@ theorem theorem20_8_solution_difference_eq_BAplus_add_APplus_of_AP_left_inverse_
   exact
     theorem20_8_solution_difference_eq_BAplus_add_APplus_of_projected_difference
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y hx hy hproj
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     exact printed correction-vector identity from the reduced `AP` equation
     and Penrose-style reduced-operator hypotheses. -/
@@ -4765,7 +4423,6 @@ theorem theorem20_8_solution_difference_eq_BAplus_add_APplus_of_AP_penrose1_rang
   exact
     theorem20_8_solution_difference_eq_BAplus_add_APplus_of_projected_difference
       A DeltaA b Deltab B DeltaB Bplus APplus d Deltad x y hx hy hproj
-
 /-- Under the natural positive denominator assumptions, the first-order
     coefficient in Theorem 20.8's perturbation bound is nonnegative. -/
 theorem theorem20_8FirstOrderRHS_nonneg {m n p : ℕ}
@@ -4808,7 +4465,6 @@ theorem theorem20_8FirstOrderRHS_nonneg {m n p : ℕ}
           (vecNorm2 r / (frobNormRect A * vecNorm2 x)) :=
     mul_nonneg hres_amp hres_ratio
   exact add_nonneg (add_nonneg hfirst hsecond) hthird
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual-explicit solution-difference identity using only the projected
     action of `(AP)^+ AP` on the actual feasible difference.  This is the
@@ -4889,7 +4545,6 @@ theorem theorem20_8_solution_difference_eq_BAplus_add_APplus_of_perturbed_higham
         rectMatMulVec APplus forcing j
   rw [hdecomp_j, hproj_j, hBA_j]
   ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual-explicit norm bound using only the projected action of
     `(AP)^+ AP` on `y - x`.  The reduced residual forcing remains a supplied
@@ -4965,7 +4620,6 @@ theorem theorem20_8_vecNorm2_solution_difference_residual_forcing_le_projected_a
     _ ≤ BAplus_norm * (Deltad_norm + DeltaB_norm * vecNorm2 y) +
           complexMatrixOp2 (realRectToCMatrix APplus) * forcing_norm :=
           add_le_add hdirect hforcing_bound
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     obstruction to discharging the residual-amplifier factor automatically.
 
@@ -4994,7 +4648,6 @@ theorem theorem20_8_not_residual_amplifier_factor_ge_one_add_inv_of_ABAplus_op2_
       1 + (theorem20_8KappaB A APplus)⁻¹ ≤ 0 := by
     simpa [hABAplus_zero] using hfactor
   exact (not_le_of_gt hleft_pos) hfactor_nonpos
-
 /-- In the zero-residual case, Theorem 20.8's first-order coefficient drops
     its residual-amplification term. -/
 theorem theorem20_8FirstOrderRHS_of_zero_residual {m n p : ℕ}
@@ -5008,7 +4661,6 @@ theorem theorem20_8FirstOrderRHS_of_zero_residual {m n p : ℕ}
         theorem20_8KappaB A APplus *
           (vecNorm2 b / (frobNormRect A * vecNorm2 x) + 1) := by
   simp [theorem20_8FirstOrderRHS, vecNorm2_zero]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8, equation (20.25):
     the first-order coefficient is the zero-residual coefficient plus the
     displayed residual-amplification term. -/
@@ -5023,7 +4675,6 @@ theorem theorem20_8FirstOrderRHS_eq_zero_residual_add_residual_term
         theorem20_8ResidualAmplifier A B APplus BAplus *
           (vecNorm2 r / (frobNormRect A * vecNorm2 x)) := by
   simp [theorem20_8FirstOrderRHS, vecNorm2_zero]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the first-order coefficient in (20.25) is monotone in the residual norm,
     under the natural positive denominator conditions. -/
@@ -5063,7 +4714,6 @@ theorem theorem20_8FirstOrderRHS_le_of_residual_norm_le {m n p : ℕ}
     _ = theorem20_8FirstOrderRHS A b B d x r₂ APplus BAplus :=
       (theorem20_8FirstOrderRHS_eq_zero_residual_add_residual_term
         A b B d x r₂ APplus BAplus).symm
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the zero-residual first-order coefficient is the lower endpoint of the
     residual-dependent coefficient family. -/
@@ -5078,7 +4728,6 @@ theorem theorem20_8FirstOrderRHS_zero_residual_le {m n p : ℕ}
   apply theorem20_8FirstOrderRHS_le_of_residual_norm_le
       A b B d x (fun _i : Fin m => 0) r APplus BAplus hApos hxpos
   simpa [vecNorm2_zero] using vecNorm2_nonneg r
-
 /-- Higham, 2nd ed., Chapter 20, Problem 20.11 support:
     with no equality constraints, the first-order coefficient in (20.25)
     reduces to the unconstrained least-squares data and residual terms. -/
@@ -5101,7 +4750,6 @@ theorem problem20_11_unconstrained_firstOrderRHS_eq {m n : ℕ}
   unfold theorem20_8FirstOrderRHS
   rw [hkA0, hresamp]
   ring
-
 /-- The linear constraint map `x ↦ B x` used in the equality-constrained
     least-squares problem (20.23). -/
 noncomputable def lseConstraintLinearMap {p n : ℕ}
@@ -5113,13 +4761,11 @@ noncomputable def lseConstraintLinearMap {p n : ℕ}
   map_smul' := by
     intro a x
     exact rectMatMulVec_smul B a x
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24), first condition:
     local finite-dimensional formulation of the full-row-rank assumption
     `rank(B)=p` as surjectivity of the constraint map `x ↦ B x`. -/
 def LSEFullRowRank {p n : ℕ} (B : Fin p → Fin n → ℝ) : Prop :=
   Function.Surjective (lseConstraintLinearMap B)
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24), consistency consequence:
     the local full-row-rank condition makes the equality constraint `B x = d`
     feasible for every right-hand side `d`. -/
@@ -5131,7 +4777,6 @@ theorem LSEFullRowRank.exists_feasible {p n : ℕ}
   refine ⟨x, ?_⟩
   intro i
   simpa [lseConstraintLinearMap] using congrFun hx i
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) support:
     a source full-row-rank constraint matrix admits a noncomputable rectangular
     right inverse.  The `i`th column is any solution of `B x = e_i`. -/
@@ -5141,7 +4786,6 @@ noncomputable def LSEFullRowRank.rightInverse {p n : ℕ}
   fun j i =>
     Classical.choose
       (hB (fun k : Fin p => idMatrix p k i)) j
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) support:
     the noncomputable right inverse supplied by full row rank satisfies
     `B * Bplus = I`. -/
@@ -5155,7 +4799,6 @@ theorem LSEFullRowRank.rightInverse_spec {p n : ℕ}
         (hB (fun r : Fin p => idMatrix p r k))) i
   simpa [LSEFullRowRank.rightInverse, lseConstraintLinearMap, rectMatMul]
     using hcol
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) support:
     existential form of the rectangular right inverse obtained from source
     full row rank. -/
@@ -5163,7 +4806,6 @@ theorem LSEFullRowRank.exists_rightInverse {p n : ℕ}
     {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B) :
     ∃ Bplus : Fin n → Fin p → ℝ, rectMatMul B Bplus = idMatrix p :=
   ⟨hB.rightInverse, hB.rightInverse_spec⟩
-
 /-- Higham, 2nd ed., Chapter 20, equations (20.24)-(20.25) support:
     source full row rank instantiates the right-inverse projector
     `P = I - Bplus*B`, so the projected directions lie in `null(B)`.
@@ -5176,7 +4818,6 @@ theorem LSEFullRowRank.theorem20_8Projection_constraint_zero {p n : ℕ}
       (fun _i _j => 0) :=
   _root_.NumStability.theorem20_8Projection_constraint_zero
     B hB.rightInverse hB.rightInverse_spec
-
 /-- Higham, 2nd ed., Chapter 20, equations (20.24)-(20.25) support:
     vector form of the full-row-rank-instantiated identity
     `B(I - Bplus*B) = 0`. -/
@@ -5188,7 +4829,6 @@ theorem LSEFullRowRank.theorem20_8Projection_constraint_vec_zero {p n : ℕ}
       (fun _i => 0) :=
   _root_.NumStability.theorem20_8Projection_constraint_vec_zero B hB.rightInverse
     hB.rightInverse_spec x
-
 /-- Higham, 2nd ed., Chapter 20, equations (20.24)-(20.25) support:
     vector idempotence of the nullspace projector instantiated from source
     full row rank. -/
@@ -5200,7 +4840,6 @@ theorem LSEFullRowRank.theorem20_8Projection_vec_idempotent {p n : ℕ}
       rectMatMulVec (theorem20_8Projection B hB.rightInverse) x :=
   _root_.NumStability.theorem20_8Projection_vec_idempotent B hB.rightInverse
     hB.rightInverse_spec x
-
 /-- Higham, 2nd ed., Chapter 20, equations (20.23)-(20.25) support:
     under source full row rank, adding a projected direction to a feasible
     point preserves the equality constraint. -/
@@ -5213,7 +4852,6 @@ theorem LSEFullRowRank.theorem20_8Projection_feasible_step {p n : ℕ}
         x0 j + rectMatMulVec (theorem20_8Projection B hB.rightInverse) z j) :=
   _root_.NumStability.theorem20_8Projection_feasible_step B hB.rightInverse d x0 z
     hB.rightInverse_spec hx0
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the reduced unconstrained minimizer lifts to an equality-constrained
     minimizer using the right inverse supplied by source full row rank. -/
@@ -5231,7 +4869,6 @@ theorem LSEFullRowRank.theorem20_8AP_unconstrained_minimizer_lifts
         x0 j + rectMatMulVec (theorem20_8Projection B hB.rightInverse) z j) :=
   _root_.NumStability.theorem20_8AP_unconstrained_minimizer_lifts A b B hB.rightInverse
     d x0 z hB.rightInverse_spec hx0 hmin
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     every exact LSE minimizer gives a minimizer of the full-row-rank-instantiated
     reduced unconstrained problem. -/
@@ -5247,7 +4884,6 @@ theorem LSEFullRowRank.theorem20_8AP_unconstrained_minimizer_of_lse_minimizer
       (fun j => x j - x0 j) :=
   _root_.NumStability.theorem20_8AP_unconstrained_minimizer_of_lse_minimizer
     A b B hB.rightInverse d x0 x hB.rightInverse_spec hx0 hx
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     perturbed-data reduced-`AP` minimizer handoff using the right inverse
     supplied by full row rank of the perturbed constraint matrix. -/
@@ -5275,43 +4911,6 @@ theorem
   _root_.NumStability.theorem20_8AP_perturbed_unconstrained_minimizer_of_lse_minimizer
     A DeltaA b Deltab B DeltaB hBpert.rightInverse d Deltad x0 y
     hBpert.rightInverse_spec hx0 hy
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
-    full-row-rank-instantiated reduced residual orthogonality for the
-    perturbed `AP` least-squares problem obtained from a perturbed LSE
-    minimizer. -/
-theorem
-    LSEFullRowRank.theorem20_8AP_perturbed_reduced_higham_residual_orthogonal_of_lse_minimizer
-    {m n p : ℕ}
-    (A DeltaA : Fin m → Fin n → ℝ) (b Deltab : Fin m → ℝ)
-    (B DeltaB : Fin p → Fin n → ℝ)
-    (hBpert : LSEFullRowRank (fun i j => B i j + DeltaB i j))
-    (d Deltad : Fin p → ℝ) (x0 y : Fin n → ℝ) (s : Fin m → ℝ)
-    (hx0 : LSEFeasible (fun i j => B i j + DeltaB i j)
-      (fun i => d i + Deltad i) x0)
-    (hy : IsLSEMinimizer
-      (fun i j => A i j + DeltaA i j)
-      (fun i => b i + Deltab i)
-      (fun i j => B i j + DeltaB i j)
-      (fun i => d i + Deltad i) y)
-    (hs :
-      s =
-        fun i =>
-          b i + Deltab i -
-            rectMatMulVec (fun i j => A i j + DeltaA i j) x0 i -
-            rectMatMulVec
-              (theorem20_8AP (fun i j => A i j + DeltaA i j)
-                (fun i j => B i j + DeltaB i j) hBpert.rightInverse)
-              (fun j => y j - x0 j) i) :
-    ∀ j : Fin n,
-      ∑ i : Fin m,
-        theorem20_8AP (fun i j => A i j + DeltaA i j)
-            (fun i j => B i j + DeltaB i j) hBpert.rightInverse i j *
-          s i = 0 :=
-  _root_.NumStability.theorem20_8AP_perturbed_reduced_higham_residual_orthogonal_of_lse_minimizer
-    A DeltaA b Deltab B DeltaB hBpert.rightInverse d Deltad x0 y s
-    hBpert.rightInverse_spec hx0 hy hs
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated form of applying `P = I - Bplus*B` to a vector
     with a known original-constraint residual. -/
@@ -5323,7 +4922,6 @@ theorem LSEFullRowRank.theorem20_8Projection_apply_of_constraint {p n : ℕ}
       fun j => v j - rectMatMulVec hB.rightInverse e j :=
   _root_.NumStability.theorem20_8Projection_apply_of_constraint
     B hB.rightInverse v e hBv
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     projection of an original/perturbed feasible difference, instantiated by
     the right inverse obtained from source full row rank. -/
@@ -5344,7 +4942,6 @@ theorem
             (fun i => Deltad i - rectMatMulVec DeltaB y i) j :=
   _root_.NumStability.theorem20_8Projection_apply_perturbed_feasible_difference
     B DeltaB hB.rightInverse d Deltad x y hx hy
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank form of the perturbed-feasible difference
     decomposition. -/
@@ -5364,7 +4961,6 @@ theorem LSEFullRowRank.theorem20_8_perturbed_feasible_difference_decomp
             (fun i => Deltad i - rectMatMulVec DeltaB y i) j :=
   _root_.NumStability.theorem20_8_perturbed_feasible_difference_decomp
     B DeltaB hB.rightInverse d Deltad x y hx hy
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank form of the perturbed-feasible point decomposition. -/
 theorem LSEFullRowRank.theorem20_8_perturbed_feasible_point_decomp
@@ -5384,7 +4980,6 @@ theorem LSEFullRowRank.theorem20_8_perturbed_feasible_point_decomp
             (fun i => Deltad i - rectMatMulVec DeltaB y i) j :=
   _root_.NumStability.theorem20_8_perturbed_feasible_point_decomp
     B DeltaB hB.rightInverse d Deltad x y hx hy
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     action of `A` on a perturbed feasible point after the full-row-rank
     right-inverse nullspace decomposition. -/
@@ -5407,7 +5002,6 @@ theorem LSEFullRowRank.theorem20_8_perturbed_feasible_point_action_decomp
               (fun l => Deltad l - rectMatMulVec DeltaB y l)) i :=
   _root_.NumStability.theorem20_8_perturbed_feasible_point_action_decomp
     A B DeltaB hB.rightInverse d Deltad x y hx hy
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank form of the projected `AP` step identity, with the
     constraint right inverse supplied by `rank(B)=p`. -/
@@ -5428,7 +5022,6 @@ theorem LSEFullRowRank.theorem20_8_AP_difference_eq_action_minus_constraint_corr
               (fun l => Deltad l - rectMatMulVec DeltaB y l)) i :=
   _root_.NumStability.theorem20_8_AP_difference_eq_action_minus_constraint_correction
     A B DeltaB hB.rightInverse d Deltad x y hx hy
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     residual decomposition for a point feasible for the perturbed constraint,
     with the constraint right inverse supplied by source full row rank. -/
@@ -5452,7 +5045,6 @@ theorem LSEFullRowRank.theorem20_8_perturbed_feasible_residual_decomp
           Deltab i :=
   _root_.NumStability.theorem20_8_perturbed_feasible_residual_decomp
     A DeltaA b Deltab B DeltaB hB.rightInverse d Deltad x y hx hy
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank form of the reduced `AP` difference solved from an
     explicit perturbed residual vector. -/
@@ -5477,7 +5069,6 @@ theorem LSEFullRowRank.theorem20_8_AP_difference_eq_of_perturbed_residual_eq
           rectMatMulVec DeltaA y i + Deltab i :=
   _root_.NumStability.theorem20_8_AP_difference_eq_of_perturbed_residual_eq
     A DeltaA b Deltab B DeltaB hB.rightInverse d Deltad x y rpert hx hy hres
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank form of the Higham-sign reduced `AP` difference
     identity with an explicit perturbed residual vector. -/
@@ -5503,7 +5094,6 @@ theorem
           rectMatMulVec DeltaA y i + Deltab i :=
   _root_.NumStability.theorem20_8_AP_difference_eq_of_perturbed_higham_residual_eq
     A DeltaA b Deltab B DeltaB hB.rightInverse d Deltad x y rHigh hx hy hres
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank same-residual specialization of the Higham-sign
     reduced `AP` difference identity. -/
@@ -5530,7 +5120,6 @@ theorem LSEFullRowRank.theorem20_8_AP_difference_eq_of_same_higham_residual_eq
   _root_.NumStability.theorem20_8_AP_difference_eq_of_same_higham_residual_eq
     A DeltaA b Deltab B DeltaB hB.rightInverse d Deltad x y r rHigh
     hx hy hr hres hsame
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated residual decomposition with the constraint
     correction split through the printed source quantity `B_A^+`.
@@ -5563,7 +5152,6 @@ theorem LSEFullRowRank.theorem20_8_perturbed_feasible_residual_decomp_BAplus
           Deltab i :=
   _root_.NumStability.theorem20_8_perturbed_feasible_residual_decomp_BAplus
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y hx hy
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated expansion of
     `B_A^+ = (I - (AP)^+ A) B^+` applied to a constraint-defect vector.
@@ -5581,7 +5169,6 @@ theorem LSEFullRowRank.theorem20_8BAplus_apply {m n p : ℕ}
             (rectMatMulVec A (rectMatMulVec hB.rightInverse e)) j :=
   _root_.NumStability.theorem20_8BAplus_apply
     A B hB.rightInverse APplus e
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated expansion of the source product `A B_A^+`. -/
 theorem LSEFullRowRank.theorem20_8A_BAplus_apply {m n p : ℕ}
@@ -5597,7 +5184,6 @@ theorem LSEFullRowRank.theorem20_8A_BAplus_apply {m n p : ℕ}
               (rectMatMulVec A (rectMatMulVec hB.rightInverse e))) i :=
   _root_.NumStability.theorem20_8A_BAplus_apply
     A B hB.rightInverse APplus e
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-instantiated split of the old `A B^+` correction into the
     reduced-problem correction plus the printed `A B_A^+` correction. -/
@@ -5616,7 +5202,6 @@ theorem LSEFullRowRank.theorem20_8ABplus_eq_A_APplus_A_Bplus_add_A_BAplus
               (theorem20_8BAplus A B hB.rightInverse APplus) e) i :=
   _root_.NumStability.theorem20_8ABplus_eq_A_APplus_A_Bplus_add_A_BAplus
     A B hB.rightInverse APplus e
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank form of the reduced-`AP` projected-difference bridge.
 
@@ -5655,7 +5240,6 @@ theorem
   _root_.NumStability.theorem20_8_projected_difference_eq_APplus_of_reduced_difference_eq
       A DeltaA Deltab B DeltaB hB.rightInverse APplus Deltad y x
       hAPleft hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank residual-explicit projected-difference bridge in
     Higham's residual sign convention. -/
@@ -5690,7 +5274,6 @@ theorem
   _root_.NumStability.theorem20_8_projected_difference_eq_APplus_of_perturbed_higham_residual_eq
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x rHigh
     hAPleft hx hy hres
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank projected same-residual bridge in Higham's residual
     sign convention. -/
@@ -5725,7 +5308,6 @@ theorem
   _root_.NumStability.theorem20_8_projected_difference_eq_APplus_of_same_higham_residual_eq
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y r rHigh
     hAPleft hx hy hr hres hsame
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank exact solution-difference identity from the reduced
     `AP` obligations.  The conclusion is the printed correction vector
@@ -5779,7 +5361,6 @@ theorem
     _root_.NumStability.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_projected_difference
       A DeltaA (fun _ : Fin m => 0) Deltab B DeltaB hB.rightInverse APplus
       d Deltad x y hx hy hproj
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank residual-explicit solution-difference identity in
     Higham's residual sign convention. -/
@@ -5810,7 +5391,6 @@ theorem
   _root_.NumStability.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_perturbed_higham_residual_eq
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y rHigh
     hAPleft hx hy hres
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank exact same-residual solution-difference identity in
     Higham's residual sign convention. -/
@@ -5841,7 +5421,6 @@ theorem
   _root_.NumStability.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_same_higham_residual_eq
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y r rHigh
     hAPleft hx hy hr hres hsame
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank residual-explicit solution-difference norm bound. -/
 theorem
@@ -5878,7 +5457,6 @@ theorem
   _root_.NumStability.theorem20_8_vecNorm2_solution_difference_residual_forcing_le
     A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y rHigh
     hAPleft hx hy hres hBAplus_nonneg hBAplus hDeltaB hDeltad hforcing
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 rank bridge:
     full row rank of `B` makes the transpose map `Bᵀ` injective.  This is the
     finite-dimensional algebra used by the exact-MGS GQR route to connect the
@@ -5959,7 +5537,6 @@ theorem LSEFullRowRank.transpose_rectMatMulVec_injective {p n : ℕ}
   have hi : y i - z i = 0 := by
     simpa using congrFun hzero i
   exact sub_eq_zero.mp hi
-
 /-- Converse finite-dimensional rank bridge for the Chapter 20 full-row-rank
     condition: if the transpose action `Bᵀ` is injective, then the constraint
     map `x ↦ Bx` is surjective. -/
@@ -6054,7 +5631,6 @@ theorem LSEFullRowRank.of_transpose_rectMatMulVec_injective {p n : ℕ}
   rcases hC_surjective d with ⟨y, hy⟩
   refine ⟨rectMatMulVec Bt y, ?_⟩
   simpa [C, lseConstraintLinearMap] using hy
-
 /-- Rectangular Gram nonsingularity from injectivity of the transpose action.
     This is the algebraic bridge from a full-row-rank rectangular matrix to
     invertibility of `A Aᵀ`, used by the Chapter 20 Gram-pseudoinverse route. -/
@@ -6173,7 +5749,6 @@ theorem rectGram_det_ne_zero_of_transpose_rectMatMulVec_injective {m n : ℕ}
   have hdetUnit : IsUnit M.det := (Matrix.isUnit_iff_isUnit_det M).mp hunitM
   have hdetNe : M.det ≠ 0 := isUnit_iff_ne_zero.mp hdetUnit
   simpa [M] using hdetNe
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24) support:
     source full row rank makes the Gram matrix `B Bᵀ` nonsingular. -/
 theorem LSEFullRowRank.rectGram_det_ne_zero {p n : ℕ}
@@ -6181,7 +5756,6 @@ theorem LSEFullRowRank.rectGram_det_ne_zero {p n : ℕ}
     Matrix.det (rectGram B : Matrix (Fin p) (Fin p) ℝ) ≠ 0 :=
   rectGram_det_ne_zero_of_transpose_rectMatMulVec_injective B
     hB.transpose_rectMatMulVec_injective
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact-MGS rank bridge:
     full row rank of `B` supplies the stage-0 nonbreakdown fact for MGS applied
     to `Bᵀ`.  This is the first pivot in the rank-to-all-MGS-stages route. -/
@@ -6194,7 +5768,6 @@ theorem LSEFullRowRank.transpose_mgs_stage0_norm_ne_zero {p n : ℕ}
     modifiedGramSchmidtVectors_zero_norm_ne_zero_of_rectMatMulVec_injective
       (fun col : Fin n => fun row : Fin p => B row col)
       hB.transpose_rectMatMulVec_injective j
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact-MGS rank bridge:
     full row rank of `B` supplies every nonzero-stage normalizer needed for
     exact MGS applied to `Bᵀ`. -/
@@ -6207,7 +5780,6 @@ theorem LSEFullRowRank.transpose_mgs_norm_ne_zero {p n : ℕ}
     modifiedGramSchmidtVectors_norm_ne_zero_of_rectMatMulVec_injective
       (fun col : Fin n => fun row : Fin p => B row col)
       hB.transpose_rectMatMulVec_injective j
-
 /-- Column permutations preserve equality-constrained least-squares minimizers.
 
     This is the coordinate-change bridge used by Higham's Chapter 20
@@ -6237,7 +5809,6 @@ theorem IsLSEMinimizer.of_permuteCols {m n p : ℕ} (π : Fin n ≃ Fin n)
     rw [lsObjective_permuteCols π A b (vecPermute π y)] at hineq
     rw [vecPermute_symm_vecPermute] at hineq
     exact hineq
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24), second condition:
     `null(A) ∩ null(B) = {0}`.  The full-row-rank consistency side is
     represented separately by `LSEFullRowRank`. -/
@@ -6247,7 +5818,6 @@ def LSENullIntersectionTrivial {m n p : ℕ}
     rectMatMulVec A v = 0 →
     rectMatMulVec B v = 0 →
     v = 0
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the source condition `null(A) ∩ null(B) = {0}` makes `AP` injective on
     the homogeneous constraint nullspace.  On that nullspace, `AP = A`. -/
@@ -6266,7 +5836,6 @@ theorem theorem20_8_AP_injective_on_nullspace_of_nullIntersectionTrivial
     rw [← theorem20_8AP_apply_nullspace A B Bplus z hz]
     exact hAPz
   exact hnull z hAz hz
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     Penrose1 plus range-in-`null(B)` gives the reduced-operator left inverse
     once the source null-intersection hypothesis supplies injectivity of `AP`
@@ -6292,7 +5861,6 @@ theorem theorem20_8_AP_left_inverse_on_nullspace_of_penrose1_range_null_nullInte
     A B Bplus APplus hPenrose1 hAPplus_range_null
       (theorem20_8_AP_injective_on_nullspace_of_nullIntersectionTrivial
         A B Bplus hnull)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     a matrix-level annihilation certificate `B * (AP)^+ = 0` gives the
     range-in-`null(B)` hypothesis needed by the Penrose-style bridge. -/
@@ -6313,7 +5881,6 @@ theorem theorem20_8_APplus_range_null_of_constraint_annihilates
           ext i
           unfold rectMatMulVec
           simp
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     Penrose1 plus the matrix-level annihilation `B * (AP)^+ = 0` gives the
     reduced-operator left inverse once (20.24)'s null-intersection condition is
@@ -6336,7 +5903,6 @@ theorem theorem20_8_AP_left_inverse_on_nullspace_of_penrose1_matrix_range_null_n
     A B Bplus APplus hPenrose1
       (theorem20_8_APplus_range_null_of_constraint_annihilates B APplus hBAPplus)
       hnull
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the first Penrose equation for the source reduced operator `AP` extracted
     from the repository Moore--Penrose certificate structure. -/
@@ -6351,7 +5917,6 @@ theorem theorem20_8_penrose1_of_rectMoorePenrosePseudoinverse
         (theorem20_8AP A B Bplus) =
       theorem20_8AP A B Bplus :=
   hMP.reproduces_matrix
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     if the columns of `APᵀ` lie in the constraint nullspace and `APplus` is a
     Moore--Penrose pseudoinverse of `AP`, then the columns of `APplus` also lie
@@ -6420,7 +5985,6 @@ theorem theorem20_8_APplus_constraint_annihilates_of_MP_transpose_constraint
         ext i j
         unfold rectMatMul
         simp
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     a Moore--Penrose certificate for `(AP)^+`, the transpose-range certificate
     `B*(AP)^T = 0`, and (20.24)'s null-intersection condition together give the
@@ -6447,7 +6011,6 @@ theorem theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_null
       (theorem20_8_APplus_constraint_annihilates_of_MP_transpose_constraint
         (theorem20_8AP A B Bplus) B APplus hMP hBAPt)
       hnull
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24):
     Moore--Penrose/transpose-range route to the matrix identity
     `(AP)^+ AP = P`.  The source rank conditions enter through the explicit
@@ -6470,7 +6033,6 @@ theorem theorem20_8_APplus_AP_eq_projection_of_MP_transpose_range_nullIntersecti
     A B Bplus APplus hright
     (theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_nullIntersection
       A B Bplus APplus hMP hBAPt hnull)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     a Moore--Penrose certificate for `(AP)^+`, matrix-level annihilation
     `B*(AP)^+ = 0`, and (20.24)'s null-intersection condition together give
@@ -6493,7 +6055,6 @@ theorem theorem20_8_AP_left_inverse_on_nullspace_of_MP_matrix_range_null_nullInt
       (theorem20_8_penrose1_of_rectMoorePenrosePseudoinverse
         A B Bplus APplus hMP)
       hBAPplus hnull
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     if the source projector `P = I - B^+B` fixes the columns of `(AP)^+`,
     then those columns satisfy the constraint nullspace equation. -/
@@ -6517,7 +6078,6 @@ theorem theorem20_8_APplus_constraint_annihilates_of_projection_range
           ext i j
           unfold rectMatMul
           simp
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     if the columns of `(AP)^+` satisfy the constraint nullspace equation, then
     the source projector `P = I - B^+B` fixes those columns. -/
@@ -6550,7 +6110,6 @@ theorem theorem20_8_APplus_projection_range_of_constraint_annihilates
     _ = rectMatMulVec APplus w := by
           exact theorem20_8Projection_apply_nullspace B Bplus
             (rectMatMulVec APplus w) hnull
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     a Moore--Penrose certificate for `AP` plus the transpose-range certificate
     `B*AP^T = 0` gives the projector-range identity
@@ -6568,7 +6127,6 @@ theorem theorem20_8_APplus_projection_range_of_MP_transpose_constraint
     APplus
     (theorem20_8_APplus_constraint_annihilates_of_MP_transpose_constraint
       AP B APplus hMP hBAPt)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source reduced-operator specialization of the MP/transpose-range
     projector-range bridge for `AP = A(I-B^+B)`. -/
@@ -6585,7 +6143,6 @@ theorem theorem20_8_APplus_projection_range_of_MP_transpose_range
     rectMatMul (theorem20_8Projection B Bplus) APplus = APplus :=
   theorem20_8_APplus_projection_range_of_MP_transpose_constraint
     (theorem20_8AP A B Bplus) B Bplus APplus hMP hBAPt
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the reduced-operator left inverse follows from a Moore--Penrose certificate
     for `(AP)^+`, a projector-range certificate `P*(AP)^+ = (AP)^+`, source
@@ -6610,7 +6167,6 @@ theorem theorem20_8_AP_left_inverse_on_nullspace_of_MP_projection_range_nullInte
       (theorem20_8_APplus_constraint_annihilates_of_projection_range
         B Bplus APplus hright hProjAPplus)
       hnull
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source full row rank instantiates the projector-range-to-annihilation bridge
     for the noncomputable right inverse obtained from `rank(B)=p`. -/
@@ -6623,7 +6179,6 @@ theorem LSEFullRowRank.theorem20_8_APplus_constraint_annihilates_of_projection_r
     rectMatMul B APplus = (fun _i : Fin p => fun _j : Fin m => 0) :=
   _root_.NumStability.theorem20_8_APplus_constraint_annihilates_of_projection_range
     B hB.rightInverse APplus hB.rightInverse_spec hProjAPplus
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source full row rank instantiates the annihilation-to-projector-range bridge
     for the noncomputable right inverse obtained from `rank(B)=p`. -/
@@ -6636,7 +6191,6 @@ theorem LSEFullRowRank.theorem20_8_APplus_projection_range_of_constraint_annihil
     rectMatMul (theorem20_8Projection B hB.rightInverse) APplus = APplus :=
   _root_.NumStability.theorem20_8_APplus_projection_range_of_constraint_annihilates
     B hB.rightInverse APplus hBAPplus
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank specialization of the MP/transpose-range
     projector-range bridge for `AP = A(I-B^+B)`. -/
@@ -6654,7 +6208,6 @@ theorem LSEFullRowRank.theorem20_8_APplus_projection_range_of_MP_transpose_range
     rectMatMul (theorem20_8Projection B hB.rightInverse) APplus = APplus :=
   _root_.NumStability.theorem20_8_APplus_projection_range_of_MP_transpose_range
     A B hB.rightInverse APplus hMP hBAPt
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank form of the current Moore--Penrose/projector-range
     reduced-left-inverse route.  The remaining supplied hypotheses are the
@@ -6678,7 +6231,6 @@ theorem
           (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
   _root_.NumStability.theorem20_8_AP_left_inverse_on_nullspace_of_MP_projection_range_nullIntersection
     A B hB.rightInverse APplus hB.rightInverse_spec hMP hProjAPplus hnull
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank form of the Moore--Penrose/matrix-annihilation
     reduced-left-inverse route.  This keeps the rank-tolerant Moore--Penrose
@@ -6702,7 +6254,6 @@ theorem
           (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
   _root_.NumStability.theorem20_8_AP_left_inverse_on_nullspace_of_MP_matrix_range_null_nullIntersection
     A B hB.rightInverse APplus hMP hBAPplus hnull
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank projected-difference handoff from a Moore--Penrose
     certificate, the matrix-annihilation certificate `B*(AP)^+ = 0`,
@@ -6751,7 +6302,6 @@ theorem
     _root_.NumStability.theorem20_8_projected_difference_eq_APplus_of_AP_left_inverse_on_nullspace_reduced_difference_eq
       A DeltaA Deltab B DeltaB hB.rightInverse APplus Deltad y x
       hB.rightInverse_spec hAPleft_null hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank exact correction-vector identity with the reduced
     projector action discharged by a Moore--Penrose certificate and
@@ -6799,7 +6349,6 @@ theorem
     _root_.NumStability.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_AP_left_inverse_on_nullspace_reduced_difference_eq
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x hx hy
       hB.rightInverse_spec hAPleft_null hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank form of the Moore--Penrose/transpose-range
     reduced-left-inverse route.  This replaces the direct matrix-annihilation
@@ -6824,7 +6373,6 @@ theorem
           (rectMatMulVec (theorem20_8AP A B hB.rightInverse) z) = z :=
   _root_.NumStability.theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_nullIntersection
     A B hB.rightInverse APplus hMP hBAPt hnull
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24):
     source-full-row-rank Moore--Penrose/transpose-range route to the matrix
     identity `(AP)^+ AP = P`. -/
@@ -6845,7 +6393,6 @@ theorem
       theorem20_8Projection B hB.rightInverse :=
   _root_.NumStability.theorem20_8_APplus_AP_eq_projection_of_MP_transpose_range_nullIntersection
     A B hB.rightInverse APplus hB.rightInverse_spec hMP hBAPt hnull
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank projected-difference handoff from a Moore--Penrose
     certificate, the transpose-range certificate `B*(AP)^T = 0`, (20.24)'s
@@ -6895,7 +6442,6 @@ theorem
     _root_.NumStability.theorem20_8_projected_difference_eq_APplus_of_AP_left_inverse_on_nullspace_reduced_difference_eq
       A DeltaA Deltab B DeltaB hB.rightInverse APplus Deltad y x
       hB.rightInverse_spec hAPleft_null hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank exact correction-vector identity with the reduced
     projector action discharged by a Moore--Penrose certificate and
@@ -6944,7 +6490,6 @@ theorem
     _root_.NumStability.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_AP_left_inverse_on_nullspace_reduced_difference_eq
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x hx hy
       hB.rightInverse_spec hAPleft_null hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank projected-difference handoff from a Moore--Penrose
     certificate, a projector-range certificate, (20.24)'s null-intersection
@@ -6992,7 +6537,6 @@ theorem
     _root_.NumStability.theorem20_8_projected_difference_eq_APplus_of_AP_left_inverse_on_nullspace_reduced_difference_eq
       A DeltaA Deltab B DeltaB hB.rightInverse APplus Deltad y x
       hB.rightInverse_spec hAPleft_null hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank exact correction-vector identity with the reduced
     projector action discharged by Moore--Penrose/projector-range certificates. -/
@@ -7039,7 +6583,6 @@ theorem
     _root_.NumStability.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_AP_left_inverse_on_nullspace_reduced_difference_eq
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad y x hx hy
       hB.rightInverse_spec hAPleft_null hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     determinant-facing Moore--Penrose certificate for the concrete Gram table
     chosen for `(AP)^+` in the source-full-row-rank route.  This instantiates
@@ -7059,7 +6602,6 @@ theorem
       (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse)) :=
   higham21_eq21_4_rect_moore_penrose_of_gram_det_ne_zero
     (theorem20_8AP A B hB.rightInverse) hdet
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     concrete Gram-table form of the projector-range-to-annihilation bridge.
     The remaining source-specific hypothesis is the projector-range certificate
@@ -7079,7 +6621,6 @@ theorem
   LSEFullRowRank.theorem20_8_APplus_constraint_annihilates_of_projection_range
     hB (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
     hProjAPplus
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     for the concrete Gram pseudoinverse of `AP`, the matrix annihilation
     certificate `B*(AP)^+ = 0` follows from the simpler transpose-range
@@ -7115,7 +6656,6 @@ theorem theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constrain
           ext i j
           unfold rectMatMul
           simp
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     if `P = I - B^+B` is symmetric, then the reduced-operator transpose
     columns lie in the constraint nullspace: `B*(AP)^T = 0`. -/
@@ -7160,7 +6700,6 @@ theorem theorem20_8_AP_transpose_constraint_annihilates_of_projection_symmetric
             have hBPik := congrFun (congrFun hBP i) k
             simpa [rectMatMul] using hBPik]
     _ = 0 := by simp
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank specialization of the transpose-range-to-annihilation
     bridge for the concrete Gram table chosen for `(AP)^+`. -/
@@ -7178,7 +6717,6 @@ theorem
       (fun _i : Fin p => fun _j : Fin m => 0) :=
   _root_.NumStability.theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint
     A B hB.rightInverse hBAPt
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank specialization of the symmetric-projector proof of
     `B*(AP)^T = 0`. -/
@@ -7191,7 +6729,6 @@ theorem LSEFullRowRank.theorem20_8_AP_transpose_constraint_annihilates_of_projec
       (fun _i : Fin p => fun _j : Fin m => 0) :=
   _root_.NumStability.theorem20_8_AP_transpose_constraint_annihilates_of_projection_symmetric
     A B hB.rightInverse hB.rightInverse_spec hPsym
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     `P = I - B^+B` is symmetric whenever the domain projection `B^+B` is
     symmetric. -/
@@ -7213,7 +6750,6 @@ theorem theorem20_8Projection_symmetric_of_domain_projection_symmetric
     _ = idMatrix n j i - rectMatMul Bplus B j i := by
           rw [hid, hDom i j]
     _ = theorem20_8Projection B Bplus j i := rfl
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     the Gram pseudoinverse `B^T(BB^T)^{-1}` gives a symmetric source projector
     `P = I - B^+B`. -/
@@ -7225,7 +6761,6 @@ theorem theorem20_8Projection_symmetric_of_gram_pseudoinverse
   theorem20_8Projection_symmetric_of_domain_projection_symmetric
     B (undetAplusOfGramNonsingInv B)
     (undetAplusOfGramNonsingInv_domain_projection_symmetric B)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     determinant-facing Gram-pseudoinverse version of the source-projector proof
     of `B*(AP)^T = 0`. -/
@@ -7241,7 +6776,6 @@ theorem theorem20_8_AP_transpose_constraint_annihilates_of_gram_projection
     A B (undetAplusOfGramNonsingInv B)
     (higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_det_ne_zero B hdetB)
     (theorem20_8Projection_symmetric_of_gram_pseudoinverse B)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     determinant-facing Gram-pseudoinverse route to the matrix annihilation
     certificate `B*(AP)^+ = 0`, using the Gram pseudoinverse for `B`. -/
@@ -7256,7 +6790,6 @@ theorem theorem20_8_gram_APplus_constraint_annihilates_of_gram_projection
   theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint
     A B (undetAplusOfGramNonsingInv B)
     (theorem20_8_AP_transpose_constraint_annihilates_of_gram_projection A B hdetB)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     determinant-facing reduced left-inverse route using the Gram pseudoinverse
     for `B` and the concrete Gram pseudoinverse for `AP`. -/
@@ -7284,7 +6817,6 @@ theorem theorem20_8_AP_left_inverse_on_nullspace_of_gram_MP_gram_projection_null
       (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) hdetAP)
     (theorem20_8_gram_APplus_constraint_annihilates_of_gram_projection A B hdetB)
     hnull
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     full-row-rank-facing version of the Gram-pseudoinverse reduced left-inverse
     route.  The source rank hypothesis discharges nonsingularity of `B Bᵀ`;
@@ -7308,7 +6840,6 @@ theorem
               (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) z) = z :=
   _root_.NumStability.theorem20_8_AP_left_inverse_on_nullspace_of_gram_MP_gram_projection_nullIntersection
     A B hB.rectGram_det_ne_zero hdetAP hnull
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank reduced left-inverse route using the Gram
     pseudoinverse for `B` and an abstract rank-tolerant Moore--Penrose
@@ -7334,7 +6865,6 @@ theorem
     (theorem20_8_AP_transpose_constraint_annihilates_of_gram_projection
       A B hB.rectGram_det_ne_zero)
     hnull
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank projected-difference handoff using the Gram
     pseudoinverse for `B` and an abstract rank-tolerant `(AP)^+`. -/
@@ -7384,7 +6914,6 @@ theorem
     _root_.NumStability.theorem20_8_projected_difference_eq_APplus_of_AP_left_inverse_on_nullspace_reduced_difference_eq
       A DeltaA Deltab B DeltaB (undetAplusOfGramNonsingInv B) APplus
       Deltad y x hright hAPleft_null hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-full-row-rank exact correction-vector identity using the Gram
     pseudoinverse for `B` and an abstract rank-tolerant `(AP)^+`. -/
@@ -7434,7 +6963,6 @@ theorem
     _root_.NumStability.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_AP_left_inverse_on_nullspace_reduced_difference_eq
       A DeltaA b Deltab B DeltaB (undetAplusOfGramNonsingInv B) APplus
       d Deltad y x hx hy hright hAPleft_null hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     determinant-facing reduced left-inverse route for the concrete Gram
     pseudoinverse of `AP`, using the weaker matrix annihilation certificate
@@ -7464,7 +6992,6 @@ theorem
     (LSEFullRowRank.theorem20_8_rectMoorePenrosePseudoinverse_AP_of_gram_det_ne_zero
       A hB hdet)
     hBAPplus hnull
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     determinant-facing reduced left-inverse route for the concrete Gram
     pseudoinverse of `AP`, reducing matrix annihilation to the transpose-range
@@ -7493,7 +7020,6 @@ theorem
     (LSEFullRowRank.theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint
       A hB hBAPt)
     hnull
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     determinant-facing reduced left-inverse route for the concrete Gram
     pseudoinverse of `AP`.  The Moore--Penrose certificate is now discharged
@@ -7523,7 +7049,6 @@ theorem
       (LSEFullRowRank.theorem20_8_rectMoorePenrosePseudoinverse_AP_of_gram_det_ne_zero
         A hB hdet)
       hProjAPplus hnull
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     concrete Gram-pseudoinverse form of the projected-difference handoff using
     the matrix annihilation certificate `B*(AP)^+ = 0` directly. -/
@@ -7578,7 +7103,6 @@ theorem
       A DeltaA Deltab B DeltaB hB.rightInverse
       (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
       Deltad y x hB.rightInverse_spec hAPleft_null hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     concrete Gram-pseudoinverse projected-difference handoff from the
     transpose-range certificate `B*(AP)^T = 0`. -/
@@ -7624,7 +7148,6 @@ theorem
     (LSEFullRowRank.theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint
       A hB hBAPt)
     hnull hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     concrete Gram-pseudoinverse form of the projected-difference handoff.
     This removes the abstract Moore--Penrose certificate from the final route
@@ -7675,7 +7198,6 @@ theorem
       (LSEFullRowRank.theorem20_8_rectMoorePenrosePseudoinverse_AP_of_gram_det_ne_zero
         A hB hdet)
       hProjAPplus hnull hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     concrete Gram-pseudoinverse exact correction-vector identity using the
     matrix annihilation certificate `B*(AP)^+ = 0` directly. -/
@@ -7732,7 +7254,6 @@ theorem
       A DeltaA b Deltab B DeltaB hB.rightInverse
       (undetAplusOfGramNonsingInv (theorem20_8AP A B hB.rightInverse))
       d Deltad y x hx hy hB.rightInverse_spec hAPleft_null hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     concrete Gram-pseudoinverse exact correction-vector identity from the
     transpose-range certificate `B*(AP)^T = 0`. -/
@@ -7780,7 +7301,6 @@ theorem
     (LSEFullRowRank.theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint
       A hB hBAPt)
     hnull hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     concrete Gram-pseudoinverse form of the exact printed correction-vector
     identity. -/
@@ -7831,14 +7351,12 @@ theorem
       (LSEFullRowRank.theorem20_8_rectMoorePenrosePseudoinverse_AP_of_gram_det_ne_zero
         A hB hdet)
       hProjAPplus hnull hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24): vertical stack
     `[A; B]`, the local representation of `[A^T, B^T]^T`. -/
 noncomputable def lseStackedMatrix {m n p : ℕ}
     (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ) :
     Fin (m + p) → Fin n → ℝ :=
   Fin.append A B
-
 /-- Multiplication by the vertical stack `[A; B]` splits into the two source
     actions `A x` and `B x`. -/
 theorem lseStackedMatrix_mulVec {m n p : ℕ}
@@ -7858,7 +7376,6 @@ theorem lseStackedMatrix_mulVec {m n p : ℕ}
   · intro i
     unfold rectMatMulVec lseStackedMatrix
     simp [Fin.append_right]
-
 /-- Kernel splitting for the stacked matrix `[A; B]` in (20.24). -/
 theorem lseStackedMatrix_mulVec_eq_zero_iff {m n p : ℕ}
     (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ)
@@ -7887,13 +7404,11 @@ theorem lseStackedMatrix_mulVec_eq_zero_iff {m n p : ℕ}
       simpa [Fin.append_left] using congrFun hA i
     · intro i
       simpa [Fin.append_right] using congrFun hB i
-
 /-- Local finite-dimensional formulation of the source statement that
     `[A^T, B^T]^T` has full column rank. -/
 def LSEStackedFullColumnRank {m n p : ℕ}
     (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ) : Prop :=
   Function.Injective (rectMatMulVec (lseStackedMatrix A B))
-
 /-- With no constraint rows, full column rank of the stacked LSE matrix
     `[A; B]` is exactly injectivity of the ordinary least-squares matrix
     action of `A`. -/
@@ -7923,7 +7438,6 @@ theorem lseStackedFullColumnRank_empty_constraints_iff {m n : ℕ}
     rw [congrFun (lseStackedMatrix_mulVec A B x) (Fin.castAdd 0 i),
       congrFun (lseStackedMatrix_mulVec A B y) (Fin.castAdd 0 i)] at hi
     simpa only [Fin.append_left] using hi
-
 /-- For a square constraint matrix, full row rank also makes the constraint
     action injective.  This is the finite square specialization used by the
     `q = 0` boundary of Theorem 20.10. -/
@@ -7953,7 +7467,6 @@ theorem LSEFullRowRank.square_rectMatMulVec_injective {p : ℕ}
       (rectMatMulVec_rectMatMul Binv B y).symm
     _ = rectMatMulVec (idMatrix p) y := by rw [hBinvB]
     _ = y := rectMatMulVec_idMatrix y
-
 /-- A square full-row-rank constraint block alone guarantees the stacked
     full-column-rank condition, independently of the least-squares block. -/
 theorem LSEFullRowRank.square_lseStackedFullColumnRank {m p : ℕ}
@@ -7968,7 +7481,6 @@ theorem LSEFullRowRank.square_lseStackedFullColumnRank {m p : ℕ}
   rw [congrFun (lseStackedMatrix_mulVec A B x) (Fin.natAdd m i),
     congrFun (lseStackedMatrix_mulVec A B y) (Fin.natAdd m i)] at hi
   simpa only [Fin.append_right] using hi
-
 /-- For square full-row-rank constraints, every feasible point is the unique
     feasible point and hence minimizes any least-squares objective. -/
 theorem LSEFullRowRank.isLSEMinimizer_of_square_feasible {m p : ℕ}
@@ -7982,7 +7494,6 @@ theorem LSEFullRowRank.isLSEMinimizer_of_square_feasible {m p : ℕ}
     ext i
     rw [hx i, hy i])
   rw [hxy]
-
 /-- Pointwise perturbations commute with the local stacked LSE matrix
     representation `[A; B]`. -/
 theorem lseStackedMatrix_add {m n p : ℕ}
@@ -8002,7 +7513,6 @@ theorem lseStackedMatrix_add {m n p : ℕ}
     simp [lseStackedMatrix, Fin.append_left]
   · intro i
     simp [lseStackedMatrix, Fin.append_right]
-
 /-- The squared Frobenius norm of the stacked LSE matrix splits across the two
     row blocks. -/
 theorem frobNormSqRect_lseStackedMatrix {m n p : ℕ}
@@ -8012,7 +7522,6 @@ theorem frobNormSqRect_lseStackedMatrix {m n p : ℕ}
   unfold frobNormSqRect lseStackedMatrix
   rw [Fin.sum_univ_add]
   simp [Fin.append_left, Fin.append_right]
-
 /-- The Frobenius norm of the stacked LSE matrix is bounded by the sum of the
     Frobenius norms of the row blocks. -/
 theorem frobNormRect_lseStackedMatrix_le_add {m n p : ℕ}
@@ -8035,7 +7544,6 @@ theorem frobNormRect_lseStackedMatrix_le_add {m n p : ℕ}
     _ = frobNormRect A + frobNormRect B :=
         abs_of_nonneg (add_nonneg (frobNormRect_nonneg A)
           (frobNormRect_nonneg B))
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24), prose after the display:
     the null-intersection condition
     `null(A) ∩ null(B) = {0}` is equivalent to full column rank of
@@ -8068,7 +7576,6 @@ theorem LSENullIntersectionTrivial.iff_lseStackedFullColumnRank {m n p : ℕ}
       ext i
       simp [rectMatMulVec]
     exact hfull hzero_action
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 support:
     source-stacked-full-column-rank form of the Moore--Penrose/transpose-range
     reduced-left-inverse route.  This replaces the local null-intersection
@@ -8093,7 +7600,6 @@ theorem
   LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_null_nullIntersection
     A hB APplus hMP hBAPt
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24):
     source-stacked-full-column-rank Moore--Penrose/transpose-range route to
     the matrix identity `(AP)^+ AP = P`. -/
@@ -8115,7 +7621,6 @@ theorem
   LSEFullRowRank.theorem20_8_APplus_AP_eq_projection_of_MP_transpose_range_nullIntersection
     A hB APplus hMP hBAPt
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank projected action for the
     Moore--Penrose/transpose-range route. -/
@@ -8141,7 +7646,6 @@ theorem
     (LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_transpose_range_lseStackedFullColumnRank
       A hB APplus hMP hBAPt hstack)
     v
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank exact same-residual correction-vector
     identity for the Moore--Penrose/transpose-range route. -/
@@ -8187,7 +7691,6 @@ theorem
     _root_.NumStability.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_same_higham_residual_projected_action
       A DeltaA b Deltab B DeltaB hB.rightInverse APplus d Deltad x y
       r rHigh hAPaction hx hy hr hres hsame
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank projected-difference handoff for the
     Moore--Penrose/transpose-range route. -/
@@ -8228,7 +7731,6 @@ theorem
     A DeltaA Deltab hB DeltaB APplus Deltad y x hMP hBAPt
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
     hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source-stacked-full-column-rank exact correction-vector identity for the
     Moore--Penrose/transpose-range route. -/
@@ -8269,7 +7771,6 @@ theorem
     A DeltaA b Deltab hB DeltaB APplus d Deltad y x hx hy hMP hBAPt
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
     hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked-full-column-rank form of the rank-tolerant Gram-`B`
     Moore--Penrose left-inverse route.  The printed rank condition for
@@ -8292,7 +7793,6 @@ theorem
   LSEFullRowRank.theorem20_8_AP_left_inverse_on_nullspace_of_MP_gram_projection_nullIntersection
     A hB APplus hMP
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked-full-column-rank projected-difference handoff using the
     Gram pseudoinverse for `B` and an abstract rank-tolerant `(AP)^+`. -/
@@ -8330,7 +7830,6 @@ theorem
     A DeltaA Deltab hB DeltaB APplus Deltad y x hMP
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
     hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked-full-column-rank exact correction-vector identity using
     the Gram pseudoinverse for `B` and an abstract rank-tolerant `(AP)^+`. -/
@@ -8368,7 +7867,6 @@ theorem
     A DeltaA b Deltab hB DeltaB APplus d Deltad y x hx hy hMP
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
     hAPdiff
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked-full-column-rank projected action for the Gram-`B`
     rank-tolerant Moore--Penrose route. -/
@@ -8402,7 +7900,6 @@ theorem
   exact
     _root_.NumStability.theorem20_8_projected_action_of_AP_left_inverse_on_nullspace
       A B (undetAplusOfGramNonsingInv B) APplus hright hAPleft_null v
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24):
     source stacked-full-column-rank matrix identity `(AP)^+ AP = P` for the
     Gram-`B` rank-tolerant Moore--Penrose route. -/
@@ -8434,7 +7931,6 @@ theorem
   exact
     _root_.NumStability.theorem20_8_APplus_AP_eq_projection_of_AP_left_inverse_on_nullspace
       A B (undetAplusOfGramNonsingInv B) APplus hright hAPleft_null
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     residual-explicit exact solution-difference identity for the Gram-`B`
     rank-tolerant Moore--Penrose route.
@@ -8480,7 +7976,6 @@ theorem
     _root_.NumStability.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_perturbed_higham_residual_eq
       A DeltaA b Deltab B DeltaB (undetAplusOfGramNonsingInv B) APplus
       d Deltad x y rHigh hAPleft hx hy hres
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24):
     determinant-facing concrete Gram-pseudoinverse matrix identity
     `(AP)^+ AP = P`. -/
@@ -8506,7 +8001,6 @@ theorem
     (higham21_eq21_4_rect_moore_penrose_of_gram_det_ne_zero
       (theorem20_8AP A B (undetAplusOfGramNonsingInv B)) hdetAP)
     hstack
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.8 and equation (20.24):
     source stacked-full-column-rank exact same-residual correction-vector
     identity for the Gram-`B` rank-tolerant Moore--Penrose route. -/
@@ -8551,13 +8045,11 @@ theorem
     _root_.NumStability.theorem20_8_solution_difference_eq_BAplus_add_APplus_of_same_higham_residual_projected_action
       A DeltaA b Deltab B DeltaB (undetAplusOfGramNonsingInv B) APplus
       d Deltad x y r rHigh hAPaction hx hy hr hres hsame
-
 /-- A square finite matrix is lower triangular when all entries above the
     diagonal vanish.  This is the exact triangularity predicate used by
     Higham's generalized QR factorization in (20.27). -/
 def IsLowerTriangular {n : ℕ} (L : Fin n → Fin n → ℝ) : Prop :=
   ∀ i j : Fin n, i.val < j.val → L i j = 0
-
 /-- A relative entrywise perturbation of a lower-triangular matrix is still
     lower triangular.  Above the diagonal the reference entries are zero, so
     the absolute perturbation bound forces the perturbation entries to vanish
@@ -8574,7 +8066,6 @@ theorem IsLowerTriangular.add_of_entrywise_abs_le_mul_abs {n : ℕ}
   have hDeltaij : Delta i j = 0 := by
     exact abs_eq_zero.mp (le_antisymm hbound (abs_nonneg (Delta i j)))
   simp [hTij, hDeltaij]
-
 /-- A relative entrywise perturbation with factor strictly below one preserves
     nonzero diagonal entries. -/
 theorem diag_ne_zero_add_of_entrywise_abs_le_mul_abs_of_factor_lt_one {n : ℕ}
@@ -8592,7 +8083,6 @@ theorem diag_ne_zero_add_of_entrywise_abs_le_mul_abs_of_factor_lt_one {n : ℕ}
     simpa [habs_eq] using hDelta i i
   have hpos : 0 < |T i i| := abs_pos.mpr (hdiag i)
   nlinarith
-
 private theorem isInverse_rectMatMulVec_bijective {n : ℕ}
     (T Tinv : Fin n → Fin n → ℝ) (hInv : IsInverse n T Tinv) :
     Function.Bijective (rectMatMulVec T) := by
@@ -8635,7 +8125,6 @@ private theorem isInverse_rectMatMulVec_bijective {n : ℕ}
               exact hInv.2 a b
             rw [hmat]
       _ = b i := by rw [matMulVec_id]
-
 /-- A finite lower-triangular real matrix with nonzero diagonal is a
     nonsingular square solve map.
 
@@ -8651,7 +8140,6 @@ theorem rectMatMulVec_bijective_of_lowerTriangular_diag_ne_zero {n : ℕ}
     det_ne_zero_of_lower_triangular_diag_ne_zero n T hlower hdiag
   rcases exists_isInverse_of_det_ne_zero n T hdet with ⟨Tinv, hInv⟩
   exact isInverse_rectMatMulVec_bijective T Tinv hInv
-
 /-- A square matrix whose rectangular matrix-vector action is injective has
     nonzero determinant. -/
 theorem rectMatMulVec_det_ne_zero_of_injective {n : ℕ}
@@ -8669,7 +8157,6 @@ theorem rectMatMulVec_det_ne_zero_of_injective {n : ℕ}
   have hdetUnit : IsUnit M.det := (Matrix.isUnit_iff_isUnit_det M).mp hunitM
   have hdetNe : M.det ≠ 0 := isUnit_iff_ne_zero.mp hdetUnit
   simpa [M] using hdetNe
-
 /-- A finite lower-triangular real matrix with nonzero determinant has nonzero
     diagonal entries.  This is the transpose form of
     `diag_ne_zero_of_upper_triangular_det_ne_zero`. -/
@@ -8699,7 +8186,6 @@ theorem diag_ne_zero_of_lower_triangular_det_ne_zero {n : ℕ}
     (fun i j : Fin n => T j i) hupper hdetT
   intro i
   exact hdiagT i
-
 /-- A finite lower-triangular real matrix with injective square solve map has
     nonzero diagonal entries. -/
 theorem rectMatMulVec_diag_ne_zero_of_lowerTriangular_injective {n : ℕ}
@@ -8709,7 +8195,6 @@ theorem rectMatMulVec_diag_ne_zero_of_lowerTriangular_injective {n : ℕ}
     ∀ i : Fin n, T i i ≠ 0 :=
   diag_ne_zero_of_lower_triangular_det_ne_zero hlower
     (rectMatMulVec_det_ne_zero_of_injective hinj)
-
 /-- A finite lower-triangular real matrix with bijective square solve map has
     nonzero diagonal entries. -/
 theorem rectMatMulVec_diag_ne_zero_of_lowerTriangular_bijective {n : ℕ}
@@ -8718,7 +8203,6 @@ theorem rectMatMulVec_diag_ne_zero_of_lowerTriangular_bijective {n : ℕ}
     (hbij : Function.Bijective (rectMatMulVec T)) :
     ∀ i : Fin n, T i i ≠ 0 :=
   rectMatMulVec_diag_ne_zero_of_lowerTriangular_injective hlower hbij.1
-
 /-- The transpose of a square upper-triangular QR block is lower triangular.
 
     This is the first triangularity bridge in Higham's Chapter 20 construction
@@ -8732,13 +8216,11 @@ theorem isLowerTriangular_matTranspose_of_isUpperTriangular {n : ℕ}
   intro i j hij
   unfold matTranspose
   exact hR j i hij
-
 /-- Permutation matrix for a finite index equivalence.  This is the orthogonal
     left-factor used to make the row permutations in the Chapter 20 GQR block
     constructions explicit. -/
 def finPermMatrix {n : ℕ} (σ : Fin n ≃ Fin n) : Fin n → Fin n → ℝ :=
   fun i j => if σ i = j then 1 else 0
-
 /-- Left multiplication by a permutation matrix permutes the rows of a
     rectangular matrix. -/
 theorem matMulRectLeft_finPermMatrix {m n : ℕ}
@@ -8747,7 +8229,6 @@ theorem matMulRectLeft_finPermMatrix {m n : ℕ}
   ext i j
   unfold matMulRectLeft finPermMatrix rectPermuteRows
   simp
-
 /-- A finite permutation matrix is orthogonal. -/
 theorem finPermMatrix_orthogonal {n : ℕ} (σ : Fin n ≃ Fin n) :
     IsOrthogonal n (finPermMatrix σ) := by
@@ -8800,7 +8281,6 @@ theorem finPermMatrix_orthogonal {n : ℕ} (σ : Fin n ≃ Fin n) :
                     intro h
                     exact hij ((Equiv.apply_eq_iff_eq σ).1 h.symm)
                   simp [hij, hsig]
-
 /-- The zero-tail transformed QR block `[R;0]` is just `R`. -/
 theorem lsQRTallBlock_zero {n : ℕ} (R : Fin n → Fin n → ℝ) :
     lsQRTallBlock (k := 0) R = R := by
@@ -8813,7 +8293,6 @@ theorem lsQRTallBlock_zero {n : ℕ} (R : Fin n → Fin n → ℝ) :
     rw [Fin.append_left]
   · intro i
     exact Fin.elim0 i
-
 private theorem isRightInverse_of_isLeftInverse_square {n : ℕ}
     {T Tinv : Fin n → Fin n → ℝ}
     (hLeft : IsLeftInverse n T Tinv) :
@@ -8831,7 +8310,6 @@ private theorem isRightInverse_of_isLeftInverse_square {n : ℕ}
   have hentry := congrArg
     (fun M : Matrix (Fin n) (Fin n) ℝ => M i j) hmatRight
   simpa [Matrix.mul_apply, Matrix.of_apply, idMatrix] using hentry
-
 private theorem isOrthogonal_of_column_orthonormal {n : ℕ}
     {Q : Fin n → Fin n → ℝ}
     (hcols : ∀ a b : Fin n,
@@ -8841,7 +8319,6 @@ private theorem isOrthogonal_of_column_orthonormal {n : ℕ}
     intro a b
     simpa [matTranspose] using hcols a b
   exact ⟨hleft, isRightInverse_of_isLeftInverse_square hleft⟩
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
     a rectangular exact factorization `Bᵀ = Q₁ R` with orthonormal columns can
     be completed to a square orthogonal `Q` satisfying
@@ -9089,7 +8566,6 @@ theorem exists_orthogonal_completion_tall_qr_block {p q : ℕ}
               simp [htail_orth]
         _ = lsQRTallBlock (k := q) R (Fin.natAdd p row) col := by
               simp [lsQRTallBlock]
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
     exact MGS data for `Bᵀ`, once its computed columns are known
     orthonormal, supplies the completed tall QR block `Qᵀ Bᵀ = [R;0]`.
@@ -9126,7 +8602,6 @@ theorem exists_transpose_tall_qr_of_mgs_orthonormal {p q : ℕ}
       (modifiedGramSchmidtQ Bt) R horth hfactor
   refine ⟨Q, R, hQorth, hRupper, ?_⟩
   simpa [Bt] using hblock
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
     exact MGS data for `Bᵀ` with nonzero stage normalizers supplies the
     completed tall QR block `Qᵀ Bᵀ = [R;0]`.
@@ -9151,7 +8626,6 @@ theorem exists_transpose_tall_qr_of_mgs {p q : ℕ}
     modifiedGramSchmidtQ_orthonormal_columns
       (fun j : Fin (p + q) => fun i : Fin p => B i j) hdiag
   exact exists_transpose_tall_qr_of_mgs_orthonormal B hdiag horth
-
 /-- Finite-index associativity equivalence used to pass between Lean's
     `k + (p + q)` row shape and Higham's associated `((k + p) + q)` display. -/
 def finAddAssocEquiv (k p q : ℕ) :
@@ -9166,7 +8640,6 @@ def finAddAssocEquiv (k p q : ℕ) :
     intro i
     ext
     simp [Fin.cast]
-
 /-- Finite-index commutativity equivalence for row reindexing between
     `r + q` and `q + r` shapes.  It preserves the numeric index value. -/
 def finAddCommEquiv (r q : ℕ) : Fin (r + q) ≃ Fin (q + r) where
@@ -9180,7 +8653,6 @@ def finAddCommEquiv (r q : ℕ) : Fin (r + q) ≃ Fin (q + r) where
     intro i
     ext
     simp [Fin.cast]
-
 /-- Orthonormal columns are preserved by a finite row-index equivalence. -/
 theorem GramSchmidtOrthonormalColumns.reindexRowsEquiv {m m' n : ℕ}
     (e : Fin m ≃ Fin m') {Q : Fin m → Fin n → ℝ}
@@ -9195,7 +8667,6 @@ theorem GramSchmidtOrthonormalColumns.reindexRowsEquiv {m m' n : ℕ}
             exact Equiv.sum_comp e.symm
               (fun i : Fin m => Q i a * Q i b)
     _ = idMatrix n a b := hQ a b
-
 /-- Orthogonality is preserved by conjugating rows and columns through a finite
     index equivalence. -/
 theorem IsOrthogonal.reindexRowsColsEquiv {m m' : ℕ}
@@ -9235,7 +8706,6 @@ theorem IsOrthogonal.reindexRowsColsEquiv {m m' : ℕ}
           · have he : e i ≠ e j := fun heq =>
               hij ((Equiv.apply_eq_iff_eq e).1 heq)
             simp [hij, he]
-
 /-- Completion helper for the tall associated (20.28) route: an orthonormal
     rectangular factor can be extended to a square orthogonal matrix whose
     bottom columns are the original columns in reverse order.
@@ -9330,102 +8800,12 @@ theorem exists_orthogonal_completion_bottom_reversed_columns {r q : ℕ}
     apply (Fin.natAdd_inj r).mp
     exact (Classical.choose_spec hcast).symm
   simpa [X, hcast, hchoose] using hp
-
-theorem vecNorm2Sq_append {r q : ℕ}
-    (x : Fin r → ℝ) (y : Fin q → ℝ) :
-    vecNorm2Sq (Fin.append x y) = vecNorm2Sq x + vecNorm2Sq y := by
-  unfold vecNorm2Sq
-  rw [Fin.sum_univ_add]
-  simp [Fin.append_left, Fin.append_right]
-
 /-- Constraint residual `Bx - d`, the lower residual block in the weighted
     problem (20.26). -/
 noncomputable def lseConstraintResidual {p n : ℕ}
     (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ) (x : Fin n → ℝ) :
     Fin p → ℝ :=
   fun i => rectMatMulVec B x i - d i
-
-theorem continuous_lseConstraintResidual_apply {n p : ℕ}
-    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ) (r : Fin p) :
-    Continuous (fun x : Fin n → ℝ => lseConstraintResidual B d x r) := by
-  unfold lseConstraintResidual rectMatMulVec
-  exact (continuous_finset_sum _ (fun j _ =>
-    continuous_const.mul (continuous_apply j))).sub continuous_const
-
-theorem continuous_lsObjective {m n : ℕ}
-    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) :
-    Continuous (fun x : Fin n → ℝ => lsObjective A b x) := by
-  unfold lsObjective vecNorm2Sq
-  exact continuous_finset_sum _ (fun i _ => (((by
-    unfold lsResidual rectMatMulVec
-    exact (continuous_finset_sum _ (fun j _ =>
-      continuous_const.mul (continuous_apply j))).sub continuous_const) :
-      Continuous (fun x : Fin n → ℝ => lsResidual A b x i)).pow 2))
-
-theorem matMulVec_orthogonal_mul_transpose {n : ℕ}
-    {Q : Fin n → Fin n → ℝ} (hQ : IsOrthogonal n Q)
-    (x : Fin n → ℝ) :
-    matMulVec n Q (matMulVec n (matTranspose Q) x) = x := by
-  ext i
-  calc
-    matMulVec n Q (matMulVec n (matTranspose Q) x) i
-        = matMulVec n (matMul n Q (matTranspose Q)) x i := by
-            exact (matMulVec_matMul n Q (matTranspose Q) x i).symm
-    _ = matMulVec n (idMatrix n) x i := by
-            have hmat : matMul n Q (matTranspose Q) = idMatrix n := by
-              ext a b
-              exact hQ.right_inv a b
-            rw [hmat]
-    _ = x i := by
-            rw [matMulVec_id]
-
-theorem matMulVec_orthogonal_transpose_mul {n : ℕ}
-    {Q : Fin n → Fin n → ℝ} (hQ : IsOrthogonal n Q)
-    (x : Fin n → ℝ) :
-    matMulVec n (matTranspose Q) (matMulVec n Q x) = x := by
-  ext i
-  calc
-    matMulVec n (matTranspose Q) (matMulVec n Q x) i
-        = matMulVec n (matMul n (matTranspose Q) Q) x i := by
-            exact (matMulVec_matMul n (matTranspose Q) Q x i).symm
-    _ = matMulVec n (idMatrix n) x i := by
-            have hmat : matMul n (matTranspose Q) Q = idMatrix n := by
-              ext a b
-              exact hQ.left_inv a b
-            rw [hmat]
-    _ = x i := by
-            rw [matMulVec_id]
-
-theorem matMulVec_zero {n : ℕ}
-    (Q : Fin n → Fin n → ℝ) :
-    matMulVec n Q (0 : Fin n → ℝ) = 0 := by
-  ext i
-  simp [matMulVec]
-
-theorem rectMatMulVec_zero {m n : ℕ}
-    (A : Fin m → Fin n → ℝ) :
-    rectMatMulVec A (0 : Fin n → ℝ) = 0 := by
-  ext i
-  simp [rectMatMulVec]
-
-theorem finAppend_left_right {p q : ℕ}
-    (y : Fin (p + q) → ℝ) :
-    Fin.append
-        (fun i : Fin p => y (Fin.castAdd q i))
-        (fun i : Fin q => y (Fin.natAdd p i)) =
-      y := by
-  ext i
-  refine Fin.addCases
-    (motive := fun i : Fin (p + q) =>
-      Fin.append
-          (fun i : Fin p => y (Fin.castAdd q i))
-          (fun i : Fin q => y (Fin.natAdd p i)) i = y i)
-    ?left ?right i
-  · intro i
-    simp [Fin.append_left]
-  · intro i
-    simp [Fin.append_right]
-
 /-- A vector padded by zero leading coordinates has the same Euclidean norm as
     its trailing block. -/
 theorem vecNorm2_zeroLeft_append {p q : ℕ}
@@ -9434,7 +8814,6 @@ theorem vecNorm2_zeroLeft_append {p q : ℕ}
   unfold vecNorm2 vecNorm2Sq
   rw [Fin.sum_univ_add]
   simp [Fin.append_left, Fin.append_right]
-
 /-- Frobenius norm of a rectangular matrix with zero columns prepended. -/
 theorem frobNormRect_zeroLeftCols_append {m p q : ℕ}
     (C : Fin m → Fin q → ℝ) :
@@ -9447,7 +8826,6 @@ theorem frobNormRect_zeroLeftCols_append {m p q : ℕ}
   intro i _
   rw [Fin.sum_univ_add]
   simp [Fin.append_left, Fin.append_right]
-
 /-- Frobenius norm of a rectangular matrix with zero columns appended. -/
 theorem frobNormRect_zeroRightCols_append {m p q : ℕ}
     (C : Fin m → Fin p → ℝ) :
@@ -9460,7 +8838,6 @@ theorem frobNormRect_zeroRightCols_append {m p q : ℕ}
   intro i _
   rw [Fin.sum_univ_add]
   simp [Fin.append_left, Fin.append_right]
-
 /-- Frobenius norm of a rectangular matrix with zero rows prepended. -/
 theorem frobNormRect_zeroTopRows_append {r q n : ℕ}
     (C : Fin q → Fin n → ℝ) :
@@ -9471,7 +8848,6 @@ theorem frobNormRect_zeroTopRows_append {r q n : ℕ}
   unfold frobNormSqRect
   rw [Fin.sum_univ_add]
   simp [Fin.append_left, Fin.append_right]
-
 /-- The bottom row block has Frobenius squared norm no larger than the full
     rectangular matrix. -/
 theorem frobNormSqRect_bottomRows_le {r q n : ℕ}
@@ -9485,7 +8861,6 @@ theorem frobNormSqRect_bottomRows_le {r q n : ℕ}
     exact Finset.sum_nonneg
       (fun i _ => Finset.sum_nonneg (fun j _ => sq_nonneg _))
   linarith
-
 /-- The bottom row block has Frobenius norm no larger than the full
     rectangular matrix. -/
 theorem frobNormRect_bottomRows_le {r q n : ℕ}
@@ -9494,7 +8869,6 @@ theorem frobNormRect_bottomRows_le {r q n : ℕ}
       frobNormRect M := by
   unfold frobNormRect
   exact Real.sqrt_le_sqrt (frobNormSqRect_bottomRows_le M)
-
 /-- The trailing column block has Frobenius norm no larger than the full
     rectangular matrix. -/
 theorem frobNormSqRect_trailingCols_le {m p q : ℕ}
@@ -9513,7 +8887,6 @@ theorem frobNormSqRect_trailingCols_le {m p q : ℕ}
       0 ≤ ∑ j : Fin p, M i (Fin.castAdd q j) ^ 2 := by
     exact Finset.sum_nonneg (fun j _ => sq_nonneg _)
   linarith
-
 /-- The trailing column block has Frobenius norm no larger than the full
     rectangular matrix. -/
 theorem frobNormRect_trailingCols_le {m p q : ℕ}
@@ -9522,7 +8895,6 @@ theorem frobNormRect_trailingCols_le {m p q : ℕ}
       M i (Fin.natAdd p j)) ≤ frobNormRect M := by
   unfold frobNormRect
   exact Real.sqrt_le_sqrt (frobNormSqRect_trailingCols_le M)
-
 /-- Column permutations preserve injectivity of a rectangular matrix-vector
     map.  This is the coordinate-change step needed before applying exact QR
     to the column-reversed `A Q₂` block in the Chapter 20 GQR construction. -/
@@ -9544,7 +8916,6 @@ theorem rectMatMulVec_injective_rectPermuteCols {m n : ℕ}
   have hperm : vecPermute π.symm x = vecPermute π.symm y := hA hxy'
   have hrecover := congrArg (vecPermute π) hperm
   simpa [vecPermute_vecPermute_symm] using hrecover
-
 /-- A real rectangular table with a left inverse has positive complexified
     operator norm on a nonempty domain. -/
 theorem complexMatrixOp2_realRectToCMatrix_pos_of_rect_left_inverse
@@ -9579,7 +8950,6 @@ theorem complexMatrixOp2_realRectToCMatrix_pos_of_rect_left_inverse
     dsimp [op]
     exact complexMatrixOp2_nonneg (realRectToCMatrix Aleft)
   exact lt_of_le_of_ne hop_nonneg (Ne.symm hop_ne)
-
 /-- A real rectangular table with a left inverse has positive complexified
     operator norm on a nonempty domain. -/
 theorem complexMatrixOp2_realRectToCMatrix_pos_of_rect_has_left_inverse
@@ -9627,7 +8997,6 @@ theorem complexMatrixOp2_realRectToCMatrix_pos_of_rect_has_left_inverse
     dsimp [op]
     exact complexMatrixOp2_nonneg (realRectToCMatrix A)
   exact lt_of_le_of_ne hop_nonneg (Ne.symm hop_ne)
-
 /-- Higham, 2nd ed., Chapter 20, equations (20.29)-(20.30): the horizontally
     partitioned matrix `[A1 A2]` that appears after the column-pivoted QR
     partition. -/
@@ -9635,7 +9004,6 @@ noncomputable def lseEliminationBlockMatrix {m p q : ℕ}
     (A1 : Fin m → Fin p → ℝ) (A2 : Fin m → Fin q → ℝ) :
     Fin m → Fin (p + q) → ℝ :=
   fun i => Fin.append (A1 i) (A2 i)
-
 /-- Matrix-vector multiplication by the partitioned matrix `[A1 A2]` in
     (20.30) splits into the two block actions. -/
 theorem lseEliminationBlockMatrix_mulVec {m p q : ℕ}
@@ -9647,7 +9015,6 @@ theorem lseEliminationBlockMatrix_mulVec {m p q : ℕ}
   unfold rectMatMulVec lseEliminationBlockMatrix
   rw [Fin.sum_univ_add]
   simp [Fin.append_left, Fin.append_right]
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.29): with supplied inverse
     action for `R1`, the eliminated leading variables are
     `x1 = R1^{-1}(qtd - R2 x2)`, where `qtd` stands for `Q^T d`. -/
@@ -9655,7 +9022,6 @@ noncomputable def lseEliminationBackSubstitution {p q : ℕ}
     (R1inv : Fin p → Fin p → ℝ) (R2 : Fin p → Fin q → ℝ)
     (qtd : Fin p → ℝ) (x2 : Fin q → ℝ) : Fin p → ℝ :=
   rectMatMulVec R1inv (fun i => qtd i - rectMatMulVec R2 x2 i)
-
 /-- The back-substitution vector from (20.29) satisfies the transformed
     constraint `R1 x1 + R2 x2 = qtd` whenever the supplied `R1inv` is a left
     inverse for the displayed triangular factor `R1`. -/
@@ -9675,7 +9041,6 @@ theorem lseEliminationBlockConstraint_eq_qtd_of_left_inverse {p q : ℕ}
     (hleft (fun k : Fin p => qtd k - rectMatMulVec R2 x2 k)) i
   rw [hi]
   ring
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.30): action of the Schur
     complement coefficient
     `(A2 - A1 R1^{-1} R2) x2`. -/
@@ -9686,14 +9051,12 @@ noncomputable def lseEliminationReducedAction {m p q : ℕ}
   fun i =>
     rectMatMulVec A2 x2 i -
       rectMatMulVec A1 (rectMatMulVec R1inv (rectMatMulVec R2 x2)) i
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.30): right-hand side
     `b - A1 R1^{-1} qtd`, with `qtd = Q^T d`. -/
 noncomputable def lseEliminationReducedRhs {m p : ℕ}
     (A1 : Fin m → Fin p → ℝ) (R1inv : Fin p → Fin p → ℝ)
     (qtd : Fin p → ℝ) (b : Fin m → ℝ) : Fin m → ℝ :=
   fun i => b i - rectMatMulVec A1 (rectMatMulVec R1inv qtd) i
-
 /-- Exact residual reduction for Higham's elimination method in (20.29)-(20.30):
     substituting `x1 = R1^{-1}(qtd - R2 x2)` into `[A1 A2][x1; x2] - b`
     gives the unconstrained residual
@@ -9745,7 +9108,6 @@ theorem lseEliminationResidual_eq_reduced {m p q : ℕ}
             rw [hA1back]
             unfold lseEliminationReducedAction lseEliminationReducedRhs
             ring
-
 /-- Squared objective for the reduced unconstrained problem in (20.30). -/
 noncomputable def lseEliminationReducedObjective {m p q : ℕ}
     (A1 : Fin m → Fin p → ℝ) (A2 : Fin m → Fin q → ℝ)
@@ -9755,7 +9117,6 @@ noncomputable def lseEliminationReducedObjective {m p q : ℕ}
     (fun i : Fin m =>
       lseEliminationReducedAction A1 A2 R1inv R2 x2 i -
         lseEliminationReducedRhs A1 R1inv qtd b i)
-
 /-- Exact squared-objective reduction for Higham's elimination method in
     (20.29)-(20.30). -/
 theorem lseEliminationObjective_eq_reduced {m p q : ℕ}
@@ -9767,7 +9128,6 @@ theorem lseEliminationObjective_eq_reduced {m p q : ℕ}
       lseEliminationReducedObjective A1 A2 R1inv R2 qtd b x2 := by
   unfold lsObjective lseEliminationReducedObjective
   rw [lseEliminationResidual_eq_reduced]
-
 /-- A vector `x2` solves the reduced unconstrained least-squares problem
     displayed in Higham's equation (20.30). -/
 def IsLSEEliminationReducedMinimizer {m p q : ℕ}
@@ -9777,7 +9137,6 @@ def IsLSEEliminationReducedMinimizer {m p q : ℕ}
   ∀ z2 : Fin q → ℝ,
     lseEliminationReducedObjective A1 A2 R1inv R2 qtd b x2 ≤
       lseEliminationReducedObjective A1 A2 R1inv R2 qtd b z2
-
 /-- Conversely to `lseEliminationBlockConstraint_eq_qtd_of_left_inverse`,
     a feasible partitioned vector has its leading block equal to the
     back-substitution value from (20.29), provided the supplied inverse action
@@ -9805,94 +9164,6 @@ theorem lseEliminationBackSubstitution_eq_of_block_constraint {p q : ℕ}
     _ = lseEliminationBackSubstitution R1inv R2 qtd x2 := by
       rw [hR1]
       rfl
-
-/-- Higham, 2nd ed., Chapter 20, equations (20.29)-(20.30):
-    exact minimizer handoff for the elimination method.
-
-    If `x2` minimizes the reduced unconstrained problem obtained after
-    eliminating `x1`, then `[R1^{-1}(qtd - R2 x2); x2]` is an exact minimizer of
-    the equality-constrained least-squares problem with coefficient blocks
-    `[A1 A2]` and constraint blocks `[R1 R2]`. The theorem assumes the inverse
-    action for `R1` is supplied in both orders; it does not construct the
-    pivoted QR factorization or prove `R1` nonsingular. -/
-theorem lseElimination_isLSEMinimizer_of_reduced_minimizer {m p q : ℕ}
-    (A1 : Fin m → Fin p → ℝ) (A2 : Fin m → Fin q → ℝ)
-    (R1 R1inv : Fin p → Fin p → ℝ) (R2 : Fin p → Fin q → ℝ)
-    (qtd : Fin p → ℝ) (b : Fin m → ℝ) (x2 : Fin q → ℝ)
-    (hleft : ∀ v : Fin p → ℝ, rectMatMulVec R1 (rectMatMulVec R1inv v) = v)
-    (hright : ∀ v : Fin p → ℝ, rectMatMulVec R1inv (rectMatMulVec R1 v) = v)
-    (hmin : IsLSEEliminationReducedMinimizer A1 A2 R1inv R2 qtd b x2) :
-    IsLSEMinimizer (lseEliminationBlockMatrix A1 A2) b
-      (lseEliminationBlockMatrix R1 R2) qtd
-      (Fin.append (lseEliminationBackSubstitution R1inv R2 qtd x2) x2) := by
-  refine ⟨?feasible, ?minimal⟩
-  · intro i
-    exact congrFun
-      (lseEliminationBlockConstraint_eq_qtd_of_left_inverse
-        R1 R1inv R2 qtd x2 hleft) i
-  · intro y hy
-    let y1 : Fin p → ℝ := fun i => y (Fin.castAdd q i)
-    let y2 : Fin q → ℝ := fun i => y (Fin.natAdd p i)
-    have hy_append : Fin.append y1 y2 = y := by
-      simpa [y1, y2] using finAppend_left_right (p := p) (q := q) y
-    have hy_constraint :
-        rectMatMulVec (lseEliminationBlockMatrix R1 R2) (Fin.append y1 y2) =
-          qtd := by
-      ext i
-      rw [hy_append]
-      exact hy i
-    have hy1_eq :
-        y1 = lseEliminationBackSubstitution R1inv R2 qtd y2 :=
-      lseEliminationBackSubstitution_eq_of_block_constraint
-        R1 R1inv R2 qtd y1 y2 hright hy_constraint
-    have hy_eq :
-        y = Fin.append (lseEliminationBackSubstitution R1inv R2 qtd y2) y2 := by
-      rw [← hy_append, hy1_eq]
-    calc
-      lsObjective (lseEliminationBlockMatrix A1 A2) b
-          (Fin.append (lseEliminationBackSubstitution R1inv R2 qtd x2) x2)
-          =
-            lseEliminationReducedObjective A1 A2 R1inv R2 qtd b x2 := by
-              exact lseEliminationObjective_eq_reduced A1 A2 R1inv R2 qtd b x2
-      _ ≤ lseEliminationReducedObjective A1 A2 R1inv R2 qtd b y2 :=
-            hmin y2
-      _ =
-          lsObjective (lseEliminationBlockMatrix A1 A2) b
-            (Fin.append (lseEliminationBackSubstitution R1inv R2 qtd y2) y2) := by
-            exact (lseEliminationObjective_eq_reduced
-              A1 A2 R1inv R2 qtd b y2).symm
-      _ = lsObjective (lseEliminationBlockMatrix A1 A2) b y := by
-            rw [hy_eq]
-
-/-- Higham, 2nd ed., Chapter 20, equations (20.29)-(20.30):
-    original-coordinate form of the elimination minimizer handoff.
-
-    If column pivoting gives `BΠ = [R1 R2]` and `AΠ = [A1 A2]`, then a
-    minimizer of the reduced unconstrained problem in (20.30), combined with
-    the back-substitution in (20.29) and pulled back by `Πᵀ`, is an exact
-    minimizer of the original equality-constrained problem. The theorem uses
-    supplied partition and inverse-action data; it does not construct the
-    pivoted QR factorization or prove `R1` nonsingular. -/
-theorem lseElimination_isLSEMinimizer_original_of_reduced_minimizer
-    {m p q : ℕ} (π : Fin (p + q) ≃ Fin (p + q))
-    (A : Fin m → Fin (p + q) → ℝ)
-    (B : Fin p → Fin (p + q) → ℝ)
-    (A1 : Fin m → Fin p → ℝ) (A2 : Fin m → Fin q → ℝ)
-    (R1 R1inv : Fin p → Fin p → ℝ) (R2 : Fin p → Fin q → ℝ)
-    (qtd : Fin p → ℝ) (b : Fin m → ℝ) (x2 : Fin q → ℝ)
-    (hAπ : rectPermuteCols π A = lseEliminationBlockMatrix A1 A2)
-    (hBπ : rectPermuteCols π B = lseEliminationBlockMatrix R1 R2)
-    (hleft : ∀ v : Fin p → ℝ, rectMatMulVec R1 (rectMatMulVec R1inv v) = v)
-    (hright : ∀ v : Fin p → ℝ, rectMatMulVec R1inv (rectMatMulVec R1 v) = v)
-    (hmin : IsLSEEliminationReducedMinimizer A1 A2 R1inv R2 qtd b x2) :
-    IsLSEMinimizer A b B qtd
-      (vecPermute π.symm
-        (Fin.append (lseEliminationBackSubstitution R1inv R2 qtd x2) x2)) := by
-  apply IsLSEMinimizer.of_permuteCols π
-  simpa [hAπ, hBπ] using
-    (lseElimination_isLSEMinimizer_of_reduced_minimizer
-      A1 A2 R1 R1inv R2 qtd b x2 hleft hright hmin)
-
 /-- Feasible points have feasible difference directions. -/
 theorem LSEFeasible.direction_zero {p n : ℕ}
     {B : Fin p → Fin n → ℝ} {d : Fin p → ℝ}
@@ -9903,7 +9174,6 @@ theorem LSEFeasible.direction_zero {p n : ℕ}
   change rectMatMulVec B (fun j => y j - x j) i = 0
   rw [congrFun (rectMatMulVec_sub B y x) i, hy i, hx i]
   ring
-
 /-- Adding a feasible direction, one in the nullspace of `B`, preserves the
     equality constraint. -/
 theorem LSEFeasible.add_null_direction {p n : ℕ}
@@ -9917,7 +9187,6 @@ theorem LSEFeasible.add_null_direction {p n : ℕ}
   rw [congrFun (rectMatMulVec_add B x (fun j => t * v j)) i]
   rw [hx i, congrFun (rectMatMulVec_smul B t v) i, hvi]
   ring
-
 private theorem lse_linear_term_eq_zero_of_quadratic_nonneg
     {a c : ℝ} (ha : 0 ≤ a)
     (hquad : ∀ t : ℝ, 0 ≤ 2 * t * c + t ^ 2 * a) :
@@ -9940,7 +9209,6 @@ private theorem lse_linear_term_eq_zero_of_quadratic_nonneg
   have ht := hquad t
   rw [hcalc] at ht
   linarith
-
 private noncomputable def lseDotDual {n : ℕ}
     (g : Fin n → ℝ) : Module.Dual ℝ (Fin n → ℝ) where
   toFun v := ∑ j : Fin n, g j * v j
@@ -9957,7 +9225,6 @@ private noncomputable def lseDotDual {n : ℕ}
         intro j _
         ring
       _ = (RingHom.id ℝ) a * ∑ j : Fin n, g j * x j := rfl
-
 private theorem lseConstraintLinearMap_basis {p n : ℕ}
     (B : Fin p → Fin n → ℝ) (j : Fin n) :
     lseConstraintLinearMap B (Pi.single j (1 : ℝ) : Fin n → ℝ) =
@@ -9973,7 +9240,6 @@ private theorem lseConstraintLinearMap_basis {p n : ℕ}
     ring
   · intro hj
     simp at hj
-
 private theorem lseDotDual_basis {n : ℕ} (g : Fin n → ℝ) (j : Fin n) :
     lseDotDual g (Pi.single j (1 : ℝ) : Fin n → ℝ) = g j := by
   classical
@@ -9986,7 +9252,6 @@ private theorem lseDotDual_basis {n : ℕ} (g : Fin n → ℝ) (j : Fin n) :
     ring
   · intro hj
     simp at hj
-
 private theorem lseDual_eval_eq_sum {p : ℕ}
     (psi : Module.Dual ℝ (Fin p → ℝ)) (y : Fin p → ℝ) :
     psi y = ∑ r : Fin p, y r *
@@ -10011,7 +9276,6 @@ private theorem lseDual_eval_eq_sum {p : ℕ}
         · simp [Pi.single_eq_of_ne hsr]
       rw [hsingle, map_smul]
       rfl
-
 private noncomputable def lseKernelFactorDual {p n : ℕ}
     (B : Fin p → Fin n → ℝ) (hB : LSEFullRowRank B)
     (g : Fin n → ℝ)
@@ -10080,7 +9344,6 @@ private noncomputable def lseKernelFactorDual {p n : ℕ}
       _ = a • lseDotDual g xy := by rw [map_smul]
       _ = a •
           lseDotDual g (Classical.choose (hB y)) := rfl
-
 private theorem lseKernelFactorDual_apply_constraint {p n : ℕ}
     (B : Fin p → Fin n → ℝ) (hB : LSEFullRowRank B)
     (g : Fin n → ℝ)
@@ -10111,7 +9374,6 @@ private theorem lseKernelFactorDual_apply_constraint {p n : ℕ}
     lseKernelFactorDual B hB g hker (rectMatMulVec B v)
         = lseDotDual g x := rfl
     _ = lseDotDual g v := hx_eq
-
 /-- An exact equality-constrained least-squares minimizer has zero objective
     first variation along every feasible direction `v` satisfying `B v = 0`. -/
 theorem IsLSEMinimizer.feasible_direction_stationarity {m n p : ℕ}
@@ -10149,7 +9411,6 @@ theorem IsLSEMinimizer.feasible_direction_stationarity {m n p : ℕ}
     rw [hexp, hcross, hnorm] at hobj
     nlinarith
   exact lse_linear_term_eq_zero_of_quadratic_nonneg ha hquad
-
 /-- Higham, 2nd ed., Chapter 20, Problem 20.10, sufficiency direction:
     feasibility together with a Lagrange multiplier satisfying
     `A^T (b - A*x) = B^T lambda` implies that `x` solves the LSE problem
@@ -10244,7 +9505,6 @@ theorem IsLSEMinimizer.of_lagrange_normal_equations {m n p : ℕ}
   have hnonneg : 0 ≤ vecNorm2Sq (rectMatMulVec A v) :=
     vecNorm2Sq_nonneg (rectMatMulVec A v)
   nlinarith
-
 /-- Higham, 2nd ed., Chapter 20, Problem 20.10, necessity direction under
     the source full-row-rank constraint qualification: an LSE minimizer admits
     Lagrange multipliers satisfying the normal equations
@@ -10322,7 +9582,6 @@ theorem IsLSEMinimizer.exists_lagrange_normal_equations_of_fullRowRank
         = -g j := hhigham
     _ = -psi (fun r : Fin p => B r j) := by rw [hpsi_j]
     _ = ∑ r : Fin p, B r j * lambda r := hsum_lambda.symm
-
 /-- Higham, 2nd ed., Chapter 20, Problem 20.10: under full row rank of the
     constraint matrix, solving the equality-constrained least-squares problem
     (20.23) is equivalent to feasibility plus the Lagrange-multiplier normal
@@ -10345,14 +9604,12 @@ theorem isLSEMinimizer_iff_exists_lagrange_normal_equations_of_fullRowRank
   · rintro ⟨lambda, hfeas, hnormal⟩
     exact IsLSEMinimizer.of_lagrange_normal_equations
       (lambda := lambda) hfeas hnormal
-
 /-- Matrix of a finite-dimensional real linear map in the standard coordinate
     basis.  The row index is the output coordinate and the column index is the
     input coordinate. -/
 noncomputable def linearMapBasisMatrix {m n : ℕ}
     (L : (Fin n → ℝ) →ₗ[ℝ] (Fin m → ℝ)) : Fin m → Fin n → ℝ :=
   fun i j => L (finiteBasisVec j) i
-
 /-- A finite-dimensional real linear map acts as multiplication by its
     standard-basis matrix. -/
 theorem linearMap_apply_eq_rectMatMulVec_basisMatrix {m n : ℕ}
@@ -10377,7 +9634,6 @@ theorem linearMap_apply_eq_rectMatMulVec_basisMatrix {m n : ℕ}
         ring
     _ = rectMatMulVec (linearMapBasisMatrix L) v i := by
         simp [rectMatMulVec, linearMapBasisMatrix]
-
 /-- Euclidean operator-2 bound for a finite-dimensional real linear map,
     using the repository's `complexMatrixOp2` model on its standard-basis
     matrix. -/
@@ -10389,7 +9645,6 @@ theorem linearMap_vecNorm2_le_complexMatrixOp2_basisMatrix {m n : ℕ}
   rw [linearMap_apply_eq_rectMatMulVec_basisMatrix L v]
   exact rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le
     (linearMapBasisMatrix L) le_rfl v
-
 /-- Higham, 2nd ed., Chapter 20, Section 20.9:
     the second condition in (20.24), `null(A) ∩ null(B) = {0}`, guarantees
     uniqueness of an equality-constrained least-squares minimizer once
@@ -10435,7 +9690,6 @@ theorem IsLSEMinimizer.eq_of_nullIntersectionTrivial {m n p : ℕ}
     simpa using congrFun hvzero j
   dsimp [v] at hvj
   linarith
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24), uniqueness bridge:
     once an equality-constrained least-squares minimizer exists, uniqueness is
     equivalent to the null-intersection condition `null(A) ∩ null(B) = {0}`.
@@ -10516,7 +9770,6 @@ theorem exists_unique_isLSEMinimizer_iff_nullIntersectionTrivial_of_exists
     refine ⟨x, hx, ?_⟩
     intro y hy
     exact IsLSEMinimizer.eq_of_nullIntersectionTrivial hnull hy hx
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24), stacked-rank uniqueness
     bridge:
     once an equality-constrained least-squares minimizer exists, uniqueness is
@@ -10535,7 +9788,6 @@ theorem exists_unique_isLSEMinimizer_iff_lseStackedFullColumnRank_of_exists
   (exists_unique_isLSEMinimizer_iff_nullIntersectionTrivial_of_exists
     (A := A) (b := b) (B := B) (d := d) hex).trans
     (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B)
-
 /-- Higham, 2nd ed., Chapter 20, equation (20.24), direct stacked-rank
     uniqueness consequence:
     the local full-column-rank condition for `[A^T, B^T]^T`, represented by
@@ -10555,7 +9807,6 @@ theorem IsLSEMinimizer.eq_of_lseStackedFullColumnRank
   IsLSEMinimizer.eq_of_nullIntersectionTrivial
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
     hx hy
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     Householder `gamma_tilde_mn` coefficient for the `A` and `b` perturbation
     bounds, using the Chapter 19 Householder QR coefficient with the local
@@ -10563,7 +9814,6 @@ theorem IsLSEMinimizer.eq_of_lseStackedFullColumnRank
 noncomputable def theorem20_10_householder_gammaA
     (fp : FPModel) (r p q : ℕ) : ℝ :=
   H19.Theorem19_4.gamma_tilde fp (r + q) (p + q)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     Householder `gamma_tilde_np` coefficient for the `B`, `Delta x`, and
     `Delta d` bounds.  The GQR method first triangularizes `Bᵀ`, whose local
@@ -10571,7 +9821,6 @@ noncomputable def theorem20_10_householder_gammaA
 noncomputable def theorem20_10_householder_gammaB
     (fp : FPModel) (_r p q : ℕ) : ℝ :=
   H19.Theorem19_4.gamma_tilde fp (p + q) p
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     conservative scalar coefficient currently proved for the rounded
     Householder RHS transform in the `A Q₂` panel. -/
@@ -10581,7 +9830,6 @@ noncomputable def theorem20_10_householder_rhs_conservative_gamma
     ((2 : ℝ) *
       (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ) *
       gamma fp (q * householderConstructApplyGammaIndex (r + q)))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     conservative `A`/`b` coefficient for the rounded-Householder-RHS Part A
     route.  It preserves the printed Householder `A`-matrix coefficient while
@@ -10590,7 +9838,6 @@ noncomputable def theorem20_10_householder_gammaA_conservativeRhs
     (fp : FPModel) (r p q : ℕ) : ℝ :=
   max (theorem20_10_householder_gammaA fp r p q)
     (theorem20_10_householder_rhs_conservative_gamma fp r p q)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     conservative composed `A`/`b` coefficient for the constructed rounded
     Householder GQR Part A certificate.
@@ -10605,7 +9852,6 @@ noncomputable def theorem20_10_householder_composed_partA_gammaA
     (theorem20_10_householder_rhs_conservative_gamma fp r p q +
       gamma fp q *
         (1 + theorem20_10_householder_rhs_conservative_gamma fp r p q))
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     conservative composed `B`/`DeltaX` coefficient for the constructed rounded
     Householder GQR Part A certificate. -/
@@ -10613,7 +9859,6 @@ noncomputable def theorem20_10_householder_composed_partA_gammaB
     (fp : FPModel) (r p q : ℕ) : ℝ :=
   theorem20_10_householder_gammaB fp r p q +
     gamma fp p * (1 + theorem20_10_householder_gammaB fp r p q)
-
 /-- Nonnegativity of the conservative `A` coefficient used by the
     Theorem 20.10(b) concrete Householder component branch. -/
 theorem theorem20_10_householder_gammaA_conservativeRhs_nonneg
@@ -10626,7 +9871,6 @@ theorem theorem20_10_householder_gammaA_conservativeRhs_nonneg
     simpa [theorem20_10_householder_gammaA] using
       H19.Theorem19_4.gamma_tilde_nonneg fp hvalidA
   exact le_trans hgammaA_nonneg (le_max_left _ _)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     dimension-only linear unit-roundoff coefficient that dominates the
     conservative Householder component max-gamma coefficient under the usual
@@ -10646,7 +9890,6 @@ noncomputable def theorem20_10_householder_componentUnitRoundoffCoefficient
         ((q * householderConstructApplyGammaIndex (r + q) : ℕ) : ℝ)))
     ((2 : ℝ) *
       (((p * householderConstructApplyGammaIndex (p + q) : ℕ) : ℝ)))
-
 /-- Nonnegativity of the dimension-only coefficient used by the
     Theorem 20.10(b) conservative unit-roundoff threshold wrapper. -/
 theorem theorem20_10_householder_componentUnitRoundoffCoefficient_nonneg
@@ -10654,7 +9897,6 @@ theorem theorem20_10_householder_componentUnitRoundoffCoefficient_nonneg
     0 ≤ theorem20_10_householder_componentUnitRoundoffCoefficient r p q := by
   dsimp [theorem20_10_householder_componentUnitRoundoffCoefficient]
   positivity
-
 /-- Positivity of the dimension-only unit-roundoff coefficient in the
     Theorem 20.10(b) component source-rank branch.  The `Bᵀ` Householder
     component is already positive when the constraint block has at least one
@@ -10677,7 +9919,6 @@ theorem theorem20_10_householder_componentUnitRoundoffCoefficient_pos
     mul_pos (by norm_num) hidx
   dsimp [theorem20_10_householder_componentUnitRoundoffCoefficient]
   exact lt_of_lt_of_le hcapB (le_max_right _ _)
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     linear unit-roundoff cap for the printed `A` Householder coefficient under
     the standard half-radius smallness condition. -/
@@ -10692,7 +9933,6 @@ theorem theorem20_10_householder_gammaA_le_linear_unit_roundoff_of_small
   simpa [theorem20_10_householder_gammaA] using
     H19.Theorem19_4.gamma_tilde_le_two_index_mul_unit_roundoff_of_small
       fp (r + q) (p + q) hsmallA
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     linear unit-roundoff cap for the `Bᵀ` Householder coefficient under the
     standard half-radius smallness condition. -/
@@ -10707,7 +9947,6 @@ theorem theorem20_10_householder_gammaB_le_linear_unit_roundoff_of_small
   simpa [theorem20_10_householder_gammaB] using
     H19.Theorem19_4.gamma_tilde_le_two_index_mul_unit_roundoff_of_small
       fp (p + q) p hsmallB
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     linear unit-roundoff cap for the verified conservative RHS coefficient
     used by the rounded Householder `A Q₂` path. -/
@@ -10758,7 +9997,6 @@ theorem theorem20_10_householder_rhs_conservative_gamma_le_linear_unit_roundoff_
         mul_le_mul_of_nonneg_left hgamma hscale_nonneg
     _ = ((4 : ℝ) * Real.sqrt (r + q : ℝ) * F *
           ((q * K : ℕ) : ℝ)) * fp.u := by ring
-
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
     the conservative component max-gamma coefficient is bounded by the
     dimension-only unit-roundoff coefficient under explicit half-radius guards
