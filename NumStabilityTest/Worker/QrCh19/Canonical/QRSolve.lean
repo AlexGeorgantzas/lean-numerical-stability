@@ -1,0 +1,3 @@
+import NumStability.Algorithms.LinearSystems.QR.QRSolve
+
+#check NumStability.HouseholderAppError.exists_residual_vector
