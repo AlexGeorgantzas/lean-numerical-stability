@@ -4,7 +4,7 @@
 -- Corollary 14.7 family from the corollary's own source-domain assumptions.
 
 import NumStability.Algorithms.Ch14Cor147FinalDivisionFamilyClosure
-import NumStability.Algorithms.HighamChapter9Theorem99Closure
+import NumStability.Source.Higham.Chapter09.Theorem99Closure
 import NumStability.Algorithms.Cholesky.CholeskyPerturbation
 
 namespace NumStability.Ch14Ext

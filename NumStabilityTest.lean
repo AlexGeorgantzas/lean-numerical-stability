@@ -519,6 +519,13 @@ import NumStabilityTest.Import.SummationTreeChain
 import NumStabilityTest.Import.Sylvester
 import NumStabilityTest.Import.TriangularCanonical
 import NumStabilityTest.Import.TriangularMigration
+import NumStabilityTest.Worker.Ch09.Layers1To5
+import NumStabilityTest.Worker.Ch09.WaveA
+import NumStabilityTest.Worker.Ch09.WaveB
+import NumStabilityTest.Worker.Ch09.WaveC
+import NumStabilityTest.Worker.Ch09.WaveD1
+import NumStabilityTest.Worker.Ch09.WaveD2
+import NumStabilityTest.Worker.Ch09.WaveE
 import NumStabilityTest.Worker.ClassificationAudit.Chapter09Historical
 import NumStabilityTest.Worker.ClassificationAudit.Chapter11CanonicalExisting
 import NumStabilityTest.Worker.ClassificationAudit.Chapter11Historical

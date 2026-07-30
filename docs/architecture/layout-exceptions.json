@@ -214,9 +214,9 @@
   },
   "direct_import_ceilings": {
     "NumStability.Algorithms": {
-      "NumStability.": 437,
+      "NumStability.": 446,
       "NumStability.Analysis.": 43,
-      "NumStability.Source.": 16
+      "NumStability.Source.": 36
     }
   },
   "legacy": {
@@ -284,8 +284,6 @@
       "NumStability.Algorithms.HighamChapter15BoydSourceSecondDerivative",
       "NumStability.Algorithms.HighamChapter15BoydUniqueness",
       "NumStability.Algorithms.HighamChapter8FanInClosure",
-      "NumStability.Algorithms.HighamChapter9CompletePivotSharpClosure",
-      "NumStability.Algorithms.HighamChapter9DoolittleClosure",
       "NumStability.Algorithms.HighamLemma88Entrywise",
       "NumStability.Algorithms.IterativeRefinement",
       "NumStability.Algorithms.LU.Doolittle",
@@ -578,17 +576,6 @@
       "NumStability.Algorithms.HighamChapter5ComplexAlgorithm51",
       "NumStability.Algorithms.HighamChapter8",
       "NumStability.Algorithms.HighamChapter8FanInClosure",
-      "NumStability.Algorithms.HighamChapter9",
-      "NumStability.Algorithms.HighamChapter9CompletePivotSharpClosure",
-      "NumStability.Algorithms.HighamChapter9ComplexClosure",
-      "NumStability.Algorithms.HighamChapter9ComputedCorrection",
-      "NumStability.Algorithms.HighamChapter9DoolittleClosure",
-      "NumStability.Algorithms.HighamChapter9Theorem914Actual",
-      "NumStability.Algorithms.HighamChapter9Theorem914DiagDominant",
-      "NumStability.Algorithms.HighamChapter9Theorem914Primitive",
-      "NumStability.Algorithms.HighamChapter9Theorem97Classification",
-      "NumStability.Algorithms.HighamChapter9Theorem99Closure",
-      "NumStability.Algorithms.HighamChapter9Theorem99ComplexClosure",
       "NumStability.Algorithms.HighamChapters1To9SourceClosure",
       "NumStability.Algorithms.LU.Higham15Problem15_4",
       "NumStability.Algorithms.LU.Higham15Problem15_6",
@@ -827,7 +814,10 @@
       "NumStability.Analysis.Problem2_27",
       "NumStability.Analysis.Problem2_3",
       "NumStability.Analysis.Problem2_5",
-      "NumStability.Analysis.Problem2_6"
+      "NumStability.Analysis.Problem2_6",
+      "NumStability.Source.Higham.Chapter09.Theorem914Actual",
+      "NumStability.Source.Higham.Chapter09.Theorem914DiagDominant",
+      "NumStability.Source.Higham.Chapter09.Theorem914Primitive"
     ],
     "unclassified_modules": [
       "NumStability.Algorithms.AitkenDenominator",
@@ -996,17 +986,6 @@
       "NumStability.Algorithms.HighamChapter5ComplexAlgorithm51",
       "NumStability.Algorithms.HighamChapter8",
       "NumStability.Algorithms.HighamChapter8FanInClosure",
-      "NumStability.Algorithms.HighamChapter9",
-      "NumStability.Algorithms.HighamChapter9CompletePivotSharpClosure",
-      "NumStability.Algorithms.HighamChapter9ComplexClosure",
-      "NumStability.Algorithms.HighamChapter9ComputedCorrection",
-      "NumStability.Algorithms.HighamChapter9DoolittleClosure",
-      "NumStability.Algorithms.HighamChapter9Theorem914Actual",
-      "NumStability.Algorithms.HighamChapter9Theorem914DiagDominant",
-      "NumStability.Algorithms.HighamChapter9Theorem914Primitive",
-      "NumStability.Algorithms.HighamChapter9Theorem97Classification",
-      "NumStability.Algorithms.HighamChapter9Theorem99Closure",
-      "NumStability.Algorithms.HighamChapter9Theorem99ComplexClosure",
       "NumStability.Algorithms.HighamChapters1To9SourceClosure",
       "NumStability.Algorithms.HighamLemma88Entrywise",
       "NumStability.Algorithms.Horner",

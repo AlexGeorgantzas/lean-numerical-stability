@@ -6,7 +6,7 @@
 -- to the literal second-stage/final-division family.
 
 import NumStability.Algorithms.Ch14GJEFinalDivisionClosure
-import NumStability.Algorithms.HighamChapter9DoolittleClosure
+import NumStability.Source.Higham.Chapter09.DoolittleClosure
 
 namespace NumStability.Ch14Ext
 

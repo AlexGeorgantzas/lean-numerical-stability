@@ -1,5 +1,5 @@
 import NumStability.Algorithms.Cholesky.Higham1014SourceSuccess
-import NumStability.Algorithms.HighamChapter9DoolittleClosure
+import NumStability.Source.Higham.Chapter09.DoolittleClosure
 
 namespace NumStability
 

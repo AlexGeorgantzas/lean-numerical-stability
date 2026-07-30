@@ -5,7 +5,7 @@ See LICENSES/Apache-2.0.txt.
 -/
 
 import NumStability.Source.Higham.Chapter12.IterativeRefinement
-import NumStability.Algorithms.HighamChapter9DoolittleClosure
+import NumStability.Source.Higham.Chapter09.DoolittleClosure
 
 /-!
 # LU-factorization solver weights

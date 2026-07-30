@@ -9,7 +9,16 @@ import NumStability.Algorithms.TestMatrices.Higham28Probability
 import NumStability.Algorithms.TestMatrices.Higham28RandsvdNorm
 import NumStability.Algorithms.TestMatrices.Higham28Asymptotics
 import NumStability.Algorithms.TestMatrices.Higham28Pascal
-import NumStability.Algorithms.HighamChapter9
+import NumStability.Source.Higham.Chapter09.Problems
+import NumStability.Source.Higham.Chapter09.Section01
+import NumStability.Source.Higham.Chapter09.Section02
+import NumStability.Source.Higham.Chapter09.Section03
+import NumStability.Source.Higham.Chapter09.Section04
+import NumStability.Source.Higham.Chapter09.Section05
+import NumStability.Source.Higham.Chapter09.Section06
+import NumStability.Source.Higham.Chapter09.Section08
+import NumStability.Source.Higham.Chapter09.Section10
+import NumStability.Source.Higham.Chapter09.Section11
 import Mathlib.LinearAlgebra.Matrix.Charpoly.Coeff
 import Mathlib.LinearAlgebra.Matrix.Rank
 import Mathlib.LinearAlgebra.Matrix.Block

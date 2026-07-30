@@ -11,7 +11,7 @@ import NumStability.Algorithms.Summation.Compensated.FiniteFormat
 import NumStability.Analysis.FirstOrder.AsymptoticFamilies
 import NumStability.Analysis.HighamChapter7
 import NumStability.Algorithms.HighamChapter8FanInClosure
-import NumStability.Algorithms.HighamChapter9DoolittleClosure
+import NumStability.Source.Higham.Chapter09.DoolittleClosure
 import NumStability.Algorithms.HighamChapter10
 import NumStability.Algorithms.QR.Higham19Thm6ColPivot
 

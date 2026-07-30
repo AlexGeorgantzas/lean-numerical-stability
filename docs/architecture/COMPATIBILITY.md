@@ -52,6 +52,17 @@ the table remains an import-only forwarding module.
 | `NumStability.Analysis.Problem2_21` | `NumStability.Source.Higham.Chapter02.Problem22` |
 | `NumStability.Analysis.Problem2_22` | `NumStability.Source.Higham.Chapter02.Problem23` |
 | `NumStability.Algorithms.HighamChapter8Lemma88SourceDiscrepancy` | `NumStability.Source.Higham.Chapter08.Lemma08Discrepancy` |
+| `NumStability.Algorithms.HighamChapter9` | `NumStability.Source.Higham.Chapter09.Problems`, `NumStability.Source.Higham.Chapter09.Section01`, `NumStability.Source.Higham.Chapter09.Section02`, `NumStability.Source.Higham.Chapter09.Section03`, `NumStability.Source.Higham.Chapter09.Section04`, `NumStability.Source.Higham.Chapter09.Section05`, `NumStability.Source.Higham.Chapter09.Section06`, `NumStability.Source.Higham.Chapter09.Section08`, `NumStability.Source.Higham.Chapter09.Section10`, and `NumStability.Source.Higham.Chapter09.Section11` |
+| `NumStability.Algorithms.HighamChapter9CompletePivotSharpClosure` | `NumStability.Source.Higham.Chapter09.CompletePivotSharpClosure` |
+| `NumStability.Algorithms.HighamChapter9ComplexClosure` | `NumStability.Source.Higham.Chapter09.ComplexClosure` |
+| `NumStability.Algorithms.HighamChapter9ComputedCorrection` | `NumStability.Source.Higham.Chapter09.ComputedCorrection` |
+| `NumStability.Algorithms.HighamChapter9DoolittleClosure` | `NumStability.Source.Higham.Chapter09.DoolittleClosure` |
+| `NumStability.Algorithms.HighamChapter9Theorem914Actual` | `NumStability.Source.Higham.Chapter09.Theorem914Actual` |
+| `NumStability.Algorithms.HighamChapter9Theorem914DiagDominant` | `NumStability.Source.Higham.Chapter09.Theorem914DiagDominant` |
+| `NumStability.Algorithms.HighamChapter9Theorem914Primitive` | `NumStability.Source.Higham.Chapter09.Theorem914Primitive` |
+| `NumStability.Algorithms.HighamChapter9Theorem97Classification` | `NumStability.Source.Higham.Chapter09.Theorem97Classification` |
+| `NumStability.Algorithms.HighamChapter9Theorem99Closure` | `NumStability.Source.Higham.Chapter09.Theorem99Closure` |
+| `NumStability.Algorithms.HighamChapter9Theorem99ComplexClosure` | `NumStability.Source.Higham.Chapter09.Theorem99ComplexClosure` |
 | `NumStability.Algorithms.Cholesky.Higham10Theorem10_7Source` | `NumStability.Source.Higham.Chapter10.Theorem07` |
 | `NumStability.Algorithms.Cholesky.BunchTridiagonalCapstoneCh11Closure` | `NumStability.Source.Higham.Chapter11.Theorem07` |
 | `NumStability.Algorithms.HighamChapter12` | `NumStability.Source.Higham.Chapter12.IterativeRefinement` |
@@ -169,7 +180,7 @@ also declaration-free and is audited as a reusable entry point for its former
 reusable subset; numbered Chapter 6 results are intentionally exposed through
 the source aggregate and the broader historical `Analysis.Norms` facade.
 
-The compatibility inventory now contains 136 wrappers with 246 direct canonical
+The compatibility inventory now contains 147 wrappers with 266 direct canonical
 targets.
 
 Phase 12 completes the cutover of the historical
@@ -201,7 +212,8 @@ Phase 11B1 retained 104 wrappers with 204 direct targets. The four Phase 11B2
 wrappers produced 108/208; the Phase 12 two-target `Algorithms.LU.BlockLU`
 facade produced 109/210, and the ten sibling wrappers produced 119/228. The
 first two QR waves add 17 exact historical wrappers and 18 direct targets,
-producing the current 136/246 totals.
+producing 136/246. The completed Chapter 9 split adds 11 historical facades
+and 20 direct targets, producing the current 147/266 totals.
 
 `NumStability.Source.Higham.Chapter02.Problem22` has one temporary
 canonical-side compatibility exception: in addition to locating the reusable

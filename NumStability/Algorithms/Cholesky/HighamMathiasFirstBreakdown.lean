@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 See LICENSES/Apache-2.0.txt.
 Authors: QED94 contributors
 -/
-import NumStability.Algorithms.HighamChapter9DoolittleClosure
+import NumStability.Source.Higham.Chapter09.DoolittleClosure
 import NumStability.Algorithms.Cholesky.Higham1029Source
 
 /-!
