@@ -1,0 +1,8 @@
+import NumStabilityTest.Worker.Ch09.Canonical.CompletePivotSharpClosure
+import NumStabilityTest.Worker.Ch09.Canonical.ComplexClosure
+import NumStabilityTest.Worker.Ch09.Canonical.Theorem97Classification
+import NumStabilityTest.Worker.Ch09.Canonical.Theorem99Closure
+import NumStabilityTest.Worker.Ch09.Compatibility.HighamChapter9CompletePivotSharpClosure
+import NumStabilityTest.Worker.Ch09.Compatibility.HighamChapter9ComplexClosure
+import NumStabilityTest.Worker.Ch09.Compatibility.HighamChapter9Theorem97Classification
+import NumStabilityTest.Worker.Ch09.Compatibility.HighamChapter9Theorem99Closure

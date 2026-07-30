@@ -1,0 +1,3 @@
+import NumStability.Algorithms.HighamChapter9Theorem99Closure
+
+#check NumStability.Higham9Theorem99Direct.eliminatedTailBudget
