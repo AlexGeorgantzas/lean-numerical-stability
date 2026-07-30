@@ -1,6 +1,6 @@
 import NumStability.Algorithms.TestMatrices.Higham28GinibreMeasure
 import NumStability.Algorithms.TestMatrices.Higham28OrthogonalHaar
-import NumStability.Algorithms.QR.GramSchmidt
+import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
 import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
 
 /-!

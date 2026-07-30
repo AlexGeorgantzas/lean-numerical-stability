@@ -1,4 +1,4 @@
-import NumStability.Algorithms.QR.HouseholderMatrixStep
+import NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep
 
 /-!
 # Higham Problem 19.6: actual computed-reflector panel step

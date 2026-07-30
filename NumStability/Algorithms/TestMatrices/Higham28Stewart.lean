@@ -6,8 +6,8 @@ See LICENSES/Apache-2.0.txt.
 Authors: QED
 -/
 import NumStability.Algorithms.TestMatrices.Higham28
-import NumStability.Algorithms.QR.HouseholderReflector
-import NumStability.Algorithms.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
 import Mathlib.LinearAlgebra.UnitaryGroup
 import Mathlib.MeasureTheory.Constructions.Pi
 import Mathlib.MeasureTheory.Measure.Haar.Basic

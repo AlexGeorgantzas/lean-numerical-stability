@@ -10,7 +10,7 @@
 
 import Mathlib.LinearAlgebra.Matrix.Block
 import NumStability.Algorithms.Cholesky.CholeskyPerturbation
-import NumStability.Algorithms.QR.GramSchmidt
+import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
 
 namespace NumStability
 

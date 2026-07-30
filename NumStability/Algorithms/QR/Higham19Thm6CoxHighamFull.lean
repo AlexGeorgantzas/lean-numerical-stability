@@ -1,6 +1,6 @@
 import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
 import NumStability.Algorithms.QR.Higham19Thm6ElementwiseEntry
-import NumStability.Algorithms.QR.HouseholderMatrixStep
+import NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep
 import NumStability.Algorithms.QR.Higham19Problem6ActualStep
 
 /-!

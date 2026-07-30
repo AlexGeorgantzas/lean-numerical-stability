@@ -6,14 +6,14 @@
 -- audit.  Each wrapper is honest about the exact constant it proves versus
 -- the printed gamma-tilde class, and about which constructions are covered.
 
-import NumStability.Algorithms.QR.HouseholderReflector
-import NumStability.Algorithms.QR.HouseholderSpec
-import NumStability.Algorithms.QR.HouseholderApply
-import NumStability.Algorithms.QR.HouseholderOneStep
-import NumStability.Algorithms.QR.HouseholderQR
-import NumStability.Algorithms.QR.HouseholderQRSupport
-import NumStability.Algorithms.QR.GivensSpec
-import NumStability.Algorithms.QR.QRSolve
+import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
+import NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
+import NumStability.Algorithms.LinearSystems.QR.GivensSpec
+import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Analysis.Rounding
 
 namespace NumStability

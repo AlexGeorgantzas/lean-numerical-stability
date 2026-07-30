@@ -16,7 +16,7 @@ orthogonal specialization is provided at the end of the file.
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.LinearAlgebra.UnitaryGroup
 import NumStability.Analysis.VectorNorms.Basic
-import NumStability.Algorithms.QR.HouseholderSpec
+import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
 
 namespace NumStability
 

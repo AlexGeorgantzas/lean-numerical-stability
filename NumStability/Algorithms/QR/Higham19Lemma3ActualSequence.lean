@@ -1,4 +1,4 @@
-import NumStability.Algorithms.QR.HouseholderQRSupport
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
 
 /-!
 # Higham Lemma 19.3: actual rectangular stored-loop producers

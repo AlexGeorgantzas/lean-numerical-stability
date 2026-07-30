@@ -9,7 +9,7 @@ import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
-import NumStability.Algorithms.QR.HouseholderQR
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.SingularValues.Basic

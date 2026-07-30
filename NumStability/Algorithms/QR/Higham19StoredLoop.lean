@@ -58,7 +58,7 @@
 -- `MatrixAlgebra` (Frobenius plumbing).  It never edits them.
 
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Algorithms.QR.HouseholderQRSupport
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
 
 namespace NumStability
 

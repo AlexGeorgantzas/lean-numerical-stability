@@ -1,4 +1,4 @@
-import NumStability.Algorithms.QR.GramSchmidtPolar
+import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
 import NumStability.Algorithms.QR.Higham19Sensitivity
 
 namespace NumStability

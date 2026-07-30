@@ -62,7 +62,7 @@
 -- IMPORT-ONLY.
 
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Algorithms.QR.HouseholderQRSupport
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
 import NumStability.Algorithms.QR.Higham19StoredLoop
 import NumStability.Algorithms.QR.Higham19StoredLoopStrongModel
 

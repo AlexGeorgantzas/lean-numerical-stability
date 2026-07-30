@@ -7,10 +7,10 @@ import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
-import NumStability.Algorithms.QR.HouseholderQR
-import NumStability.Algorithms.QR.HouseholderQRSupport
-import NumStability.Algorithms.QR.HouseholderSpecSupport
-import NumStability.Algorithms.QR.QRSolve
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
+import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Algorithms.RandNLA.LowRankApprox
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixNorms.Basic

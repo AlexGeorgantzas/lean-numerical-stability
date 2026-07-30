@@ -1,5 +1,5 @@
 import NumStability.Algorithms.QR.Higham19Thm6RowSpecific
-import NumStability.Algorithms.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
 
 /-!
 # Higham, Theorem 19.6 = Cox–Higham (1998), Theorem 2.3 — the row-wise

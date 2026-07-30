@@ -27,9 +27,9 @@ import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Algorithms.QR.GivensSpec
-import NumStability.Algorithms.QR.GivensMatrixStep
-import NumStability.Algorithms.QR.GivensQR
+import NumStability.Algorithms.LinearSystems.QR.GivensSpec
+import NumStability.Algorithms.LinearSystems.QR.GivensMatrixStep
+import NumStability.Algorithms.LinearSystems.QR.GivensQR
 import NumStability.Algorithms.QR.Higham19Labels
 import NumStability.Algorithms.QR.Higham19Lemma7Gamma4
 

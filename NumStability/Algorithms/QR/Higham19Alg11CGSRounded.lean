@@ -1,4 +1,4 @@
-import NumStability.Algorithms.QR.GramSchmidt
+import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
 import NumStability.Algorithms.Norm2
 
 /-!

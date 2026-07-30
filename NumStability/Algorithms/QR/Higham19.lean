@@ -1,9 +1,9 @@
-import NumStability.Algorithms.QR.GivensQR
-import NumStability.Algorithms.QR.GramSchmidt
-import NumStability.Algorithms.QR.GramSchmidtPolar
-import NumStability.Algorithms.QR.HouseholderQR
-import NumStability.Algorithms.QR.HouseholderQRSupport
-import NumStability.Algorithms.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.GivensQR
+import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
+import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
 
 open NumStability
 

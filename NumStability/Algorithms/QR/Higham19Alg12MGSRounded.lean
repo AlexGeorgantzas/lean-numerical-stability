@@ -1,5 +1,5 @@
 import NumStability.Algorithms.QR.Higham19Alg11CGSRounded
-import NumStability.Algorithms.QR.GramSchmidtPolar
+import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
 
 /-!
 # Rounded modified Gram--Schmidt (Higham Algorithm 19.12)

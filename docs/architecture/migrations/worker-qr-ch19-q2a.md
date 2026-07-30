@@ -54,9 +54,11 @@ built canonical `GivensSpec.ilean` and added to
 Householder rewrites plus 7 Q2A rewrites.  Its SHA-256 is
 `0AF30AAAC0CD11B54F644999D364E015BBECE889AB6D1D9EE5C5BEDFB4866C84`.
 
-Q2A advances only one identity in the coordinator's 69-identity QR-to-LSQ
-handoff accounting.  The MGS source family is intentionally not included in
-this wave.
+Q2A is an essential compilation dependency for the QR-to-LSQ handoff, but it
+supplies no canonical source owner among the coordinator's 69 owner/carrier
+rows. The earlier one-row estimate conflated dependency unblocking with
+physical handoff ownership. The MGS source family is intentionally not
+included in this wave.
 
 ## Evidence
 

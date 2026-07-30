@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 See LICENSES/Apache-2.0.txt.
 Authors: QED
 -/
-import NumStability.Algorithms.QR.HouseholderQApply
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQApply
 import NumStability.Algorithms.Underdetermined.Higham21Attainability
 import NumStability.Algorithms.Underdetermined.Higham21Eq21_11Uniform
 import NumStability.Algorithms.Underdetermined.Higham21Eq21_8

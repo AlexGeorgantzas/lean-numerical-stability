@@ -11,7 +11,7 @@
   theorem derives (19.22); neither bound is a premise.
 -/
 
-import NumStability.Algorithms.QR.GramSchmidtPolar
+import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
 import NumStability.Analysis.FirstOrder.AsymptoticFamilies
 
 namespace NumStability

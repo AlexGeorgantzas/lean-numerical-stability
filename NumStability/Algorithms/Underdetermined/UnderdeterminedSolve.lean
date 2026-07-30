@@ -25,7 +25,7 @@ import NumStability.Analysis.HighamChapter7
 import NumStability.Algorithms.Cholesky.CholeskySpec
 import NumStability.Algorithms.Cholesky.CholeskySolve
 import NumStability.Algorithms.QR.Higham19
-import NumStability.Algorithms.QR.GramSchmidt
+import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
 import NumStability.Analysis.Perturbation.LeastSquares.Normwise

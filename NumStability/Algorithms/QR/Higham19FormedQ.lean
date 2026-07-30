@@ -33,7 +33,7 @@ import Mathlib.Data.Real.Sqrt
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Algorithms.QR.HouseholderQR
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 
 namespace NumStability
 

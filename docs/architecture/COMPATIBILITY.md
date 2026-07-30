@@ -78,6 +78,23 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.Ch14SourceCorrections` | `NumStability.Source.Higham.Chapter14.Discrepancies` |
 | `NumStability.Algorithms.Chapter14Problem1415Weyl` | `NumStability.Source.Higham.Chapter14.Problem15` |
 | `NumStability.Algorithms.Ch4KahanFiniteFamily` | `NumStability.Source.Higham.Chapter04.Equation08.FiniteFamily` |
+| `NumStability.Algorithms.QR.GivensMatrixStep` | `NumStability.Algorithms.LinearSystems.QR.GivensMatrixStep` |
+| `NumStability.Algorithms.QR.GivensQR` | `NumStability.Algorithms.LinearSystems.QR.GivensQR` |
+| `NumStability.Algorithms.QR.GivensSpec` | `NumStability.Algorithms.LinearSystems.QR.GivensSpec` |
+| `NumStability.Algorithms.QR.GramSchmidt` | `NumStability.Algorithms.LinearSystems.QR.GramSchmidt` |
+| `NumStability.Algorithms.QR.GramSchmidtPolar` | `NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar` |
+| `NumStability.Algorithms.QR.HouseholderApply` | `NumStability.Algorithms.LinearSystems.QR.HouseholderApply` |
+| `NumStability.Algorithms.QR.HouseholderApplySupport` | `NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport` |
+| `NumStability.Algorithms.QR.HouseholderConstruction2` | `NumStability.Algorithms.LinearSystems.QR.HouseholderConstruction2` and `NumStability.Source.Higham.Chapter19.Lemma01.Construction2` |
+| `NumStability.Algorithms.QR.HouseholderMatrixStep` | `NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep` |
+| `NumStability.Algorithms.QR.HouseholderOneStep` | `NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep` |
+| `NumStability.Algorithms.QR.HouseholderQApply` | `NumStability.Algorithms.LinearSystems.QR.HouseholderQApply` |
+| `NumStability.Algorithms.QR.HouseholderQR` | `NumStability.Algorithms.LinearSystems.QR.HouseholderQR` |
+| `NumStability.Algorithms.QR.HouseholderQRSupport` | `NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport` |
+| `NumStability.Algorithms.QR.HouseholderReflector` | `NumStability.Algorithms.LinearSystems.QR.HouseholderReflector` |
+| `NumStability.Algorithms.QR.HouseholderSpec` | `NumStability.Algorithms.LinearSystems.QR.HouseholderSpec` |
+| `NumStability.Algorithms.QR.HouseholderSpecSupport` | `NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport` |
+| `NumStability.Algorithms.QR.QRSolve` | `NumStability.Algorithms.LinearSystems.QR.QRSolve` |
 | `NumStability.Algorithms.LeastSquares.Higham20SourceAliases` | `NumStability.Source.Higham.Chapter20.Equation32`, `NumStability.Source.Higham.Chapter20.Lemma06`, and `NumStability.Source.Higham.Chapter20.Theorem01` |
 | `NumStability.Algorithms.Underdetermined.Higham21Condition` | `NumStability.Source.Higham.Chapter21.RowScalingInvariance` |
 | `NumStability.Algorithms.Underdetermined.Higham21RowwiseMeasure` | `NumStability.Source.Higham.Chapter21.Theorem04.RowwiseBackwardError` |
@@ -152,7 +169,7 @@ also declaration-free and is audited as a reusable entry point for its former
 reusable subset; numbered Chapter 6 results are intentionally exposed through
 the source aggregate and the broader historical `Analysis.Norms` facade.
 
-The compatibility inventory now contains 119 wrappers with 228 direct canonical
+The compatibility inventory now contains 136 wrappers with 246 direct canonical
 targets.
 
 Phase 12 completes the cutover of the historical
@@ -182,8 +199,9 @@ no declaration-bearing production module imports the historical facade or
 Core. Core is now classified as an aggregate and owns no declarations. This
 Phase 11B1 retained 104 wrappers with 204 direct targets. The four Phase 11B2
 wrappers produced 108/208; the Phase 12 two-target `Algorithms.LU.BlockLU`
-facade produced 109/210, and the ten sibling wrappers produce the current
-119/228 totals.
+facade produced 109/210, and the ten sibling wrappers produced 119/228. The
+first two QR waves add 17 exact historical wrappers and 18 direct targets,
+producing the current 136/246 totals.
 
 `NumStability.Source.Higham.Chapter02.Problem22` has one temporary
 canonical-side compatibility exception: in addition to locating the reusable

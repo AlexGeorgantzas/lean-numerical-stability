@@ -1,7 +1,7 @@
 import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
 import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
-import NumStability.Algorithms.QR.HouseholderApply
-import NumStability.Algorithms.QR.HouseholderQRSupport
+import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
 import NumStability.Algorithms.LeastSquares.LSQRSolve
 
 namespace NumStability

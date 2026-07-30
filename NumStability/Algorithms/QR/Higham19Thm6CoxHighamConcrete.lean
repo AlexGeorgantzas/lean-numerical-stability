@@ -1,6 +1,6 @@
 import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
 import NumStability.Algorithms.QR.Higham19Thm6Pivoted
-import NumStability.Algorithms.QR.HouseholderQR
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 
 /-!
 # Higham, Theorem 19.6 = Cox–Higham (1998) Theorem 2.3 — wiring the √m-free

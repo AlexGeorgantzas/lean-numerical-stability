@@ -8,7 +8,7 @@ import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve
-import NumStability.Algorithms.QR.GramSchmidtPolar
+import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
 import NumStability.Algorithms.QR.Higham19
 import NumStability.Algorithms.QR.Higham19Thm6ColPivot
 import NumStability.Algorithms.QR.Higham19Thm6CoxHigham

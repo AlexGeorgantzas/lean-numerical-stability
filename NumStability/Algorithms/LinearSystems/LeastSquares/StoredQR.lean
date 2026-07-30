@@ -10,9 +10,9 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
 import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
-import NumStability.Algorithms.QR.HouseholderApplySupport
-import NumStability.Algorithms.QR.HouseholderQRSupport
-import NumStability.Algorithms.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
+import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.FloatingPoint.Model
 

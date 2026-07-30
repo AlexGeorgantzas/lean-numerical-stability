@@ -37,7 +37,7 @@ import Mathlib.Tactic.FieldSimp
 import NumStability.FloatingPoint.Model
 import NumStability.Analysis.Rounding
 import NumStability.Algorithms.Norm2
-import NumStability.Algorithms.QR.GivensSpec
+import NumStability.Algorithms.LinearSystems.QR.GivensSpec
 
 namespace NumStability.Wave13
 
