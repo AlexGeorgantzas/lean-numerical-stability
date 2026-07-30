@@ -10,6 +10,7 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+import NumStability.Algorithms.LinearSystems.LeastSquares.Refinement
 import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
@@ -33,7 +34,7 @@ open scoped BigOperators Matrix.Norms.Frobenius
 /-!
 # Basic
 
-Canonical reusable module extracted without change from LSPerturbation, LSQRSolve.
+Canonical reusable module extracted without change from Higham20Algorithms, Higham20Equations, LSPerturbation, LSQRSolve.
 -/
 
 /-- **Augmented system for the LS problem** (Higham eq 20.3).
@@ -23217,5 +23218,87 @@ theorem gram_forward_error_normwise (n : ℕ)
           apply Finset.sum_le_sum; intro k _
           exact mul_le_mul_of_nonneg_right (hΔG_bound j k) (abs_nonneg _)
         linarith [hΔg_bound j]
+/-- Translating the correction problem by the current iterate preserves the
+least-squares residual exactly. -/
+theorem higham20_directLSRefinement_residual_translation {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (x d : Fin n → ℝ) :
+    lsResidual A (higham20DirectLSRefinementResidual A b x) d =
+      lsResidual A b (higham20DirectLSRefinementUpdate x d) := by
+  ext i
+  unfold lsResidual higham20DirectLSRefinementResidual
+    higham20DirectLSRefinementUpdate lsResidualHigham
+  rw [congrFun (rectMatMulVec_add A x d) i]
+  ring
+/-- The correction objective in step 2 is the original objective evaluated at
+the updated iterate. -/
+theorem higham20_directLSRefinement_objective_translation {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (x d : Fin n → ℝ) :
+    lsObjective A (higham20DirectLSRefinementResidual A b x) d =
+      lsObjective A b (higham20DirectLSRefinementUpdate x d) := by
+  unfold lsObjective
+  rw [higham20_directLSRefinement_residual_translation A b x d]
+/-- An exact solve of the correction least-squares problem makes the updated
+iterate an exact minimizer of the original problem. -/
+theorem higham20_directLSRefinement_update_isLeastSquaresMinimizer {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (x d : Fin n → ℝ)
+    (hd : IsLeastSquaresMinimizer
+      A (higham20DirectLSRefinementResidual A b x) d) :
+    IsLeastSquaresMinimizer A b (higham20DirectLSRefinementUpdate x d) := by
+  intro y
+  let e : Fin n → ℝ := fun j => y j - x j
+  have hupdate_e : higham20DirectLSRefinementUpdate x e = y := by
+    ext j
+    simp [higham20DirectLSRefinementUpdate, e]
+  calc
+    lsObjective A b (higham20DirectLSRefinementUpdate x d) =
+        lsObjective A (higham20DirectLSRefinementResidual A b x) d :=
+      (higham20_directLSRefinement_objective_translation A b x d).symm
+    _ ≤ lsObjective A (higham20DirectLSRefinementResidual A b x) e := hd e
+    _ = lsObjective A b (higham20DirectLSRefinementUpdate x e) :=
+      higham20_directLSRefinement_objective_translation A b x e
+    _ = lsObjective A b y := by rw [hupdate_e]
+theorem Higham20DirectLSRefinementStep.updated_isLeastSquaresMinimizer
+    {m n : ℕ} {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {x : Fin n → ℝ} {r : Fin m → ℝ} {d y : Fin n → ℝ}
+    (h : Higham20DirectLSRefinementStep A b x r d y) :
+    IsLeastSquaresMinimizer A b y := by
+  rw [h.update_eq]
+  apply higham20_directLSRefinement_update_isLeastSquaresMinimizer A b x d
+  simpa [h.residual_eq] using h.correction_minimizer
+theorem Higham20DirectLSRefinementRun.successor_isLeastSquaresMinimizer
+    {m n steps : ℕ} {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    (run : Higham20DirectLSRefinementRun A b steps) (k : Fin steps) :
+    IsLeastSquaresMinimizer A b (run.iterate k.succ) :=
+  (run.step k).updated_isLeastSquaresMinimizer
+
+/-! ## Section 20.5: augmented-system iterative refinement -/
+/-- The exact four-step CSNE update is an exact least-squares minimizer. -/
+theorem Higham20CorrectedSeminormalEquationsStep.updated_isLeastSquaresMinimizer
+    {m n : ℕ} {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {R : Fin n → Fin n → ℝ} {z x : Fin n → ℝ}
+    {r : Fin m → ℝ} {t w y : Fin n → ℝ}
+    (h : Higham20CorrectedSeminormalEquationsStep A b R z x r t w y)
+    (hGram : ∀ j k : Fin n,
+      rectLSGram A j k = ∑ i : Fin n, R i j * R i k) :
+    IsLeastSquaresMinimizer A b y := by
+  have hcorr : IsLeastSquaresMinimizer A r w :=
+    h.correction_sne.isLeastSquaresMinimizer hGram
+  rw [h.update_eq]
+  apply higham20_directLSRefinement_update_isLeastSquaresMinimizer A b x w
+  simpa [h.residual_eq] using hcorr
+/-- The exact quadratic-and-higher part of `gamma fp k`.
+
+This is a rational expression, not asymptotic notation.  Under
+`gammaValid fp k`, `gamma fp k = k*u + higham20GammaRemainder fp k`. -/
+noncomputable def higham20GammaRemainder (fp : FPModel) (k : ℕ) : ℝ :=
+  (((k : ℝ) * fp.u) ^ 2) / (1 - (k : ℝ) * fp.u)
+theorem higham20_gamma_eq_linear_add_remainder (fp : FPModel) (k : ℕ)
+    (hk : gammaValid fp k) :
+    gamma fp k = (k : ℝ) * fp.u + higham20GammaRemainder fp k := by
+  simpa [higham20GammaRemainder] using
+    gamma_eq_linear_plus_quadratic_remainder fp k hk
 
 end NumStability
