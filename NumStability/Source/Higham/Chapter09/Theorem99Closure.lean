@@ -42,6 +42,8 @@ open scoped BigOperators
 open ComplexConjugate
 open Matrix
 
+namespace Higham9Theorem99Direct
+
 /-- A first exact no-pivot Schur-complement step preserves row diagonal
 dominance. -/
 theorem rowDiagDominant_firstSchurComplement {m : ℕ}
@@ -585,6 +587,8 @@ theorem noPivotReducedGrowthFactor_le_two {n : ℕ} (hn : 0 < n)
   unfold higham_problem9_9_noPivotReducedGrowthFactor
   rw [div_le_iff₀ hAmax]
   simpa [mul_comm] using hentryMax
+
+end Higham9Theorem99Direct
 
 /-- Transposing an exact LU factorization and absorbing the upper pivots into
 the new upper factor preserves every equation-(9.5) reduced entry, up to

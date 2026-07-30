@@ -40,6 +40,8 @@ noncomputable def higham9_9_complexNoPivotReducedGrowthFactor {n : ℕ}
   higham9_9_complexNoPivotReducedEntryMax hn A L U /
     higham9_13_complexMaxEntryNorm hn A
 
+namespace Higham9Theorem99ComplexDirect
+
 private theorem rowDiagDominant_zero_diag_row_zero {n : ℕ}
     {A : Fin n → Fin n → ℂ} (hDD : higham9_ComplexRowDiagDominant A)
     {i : Fin n} (hdiag : A i i = 0) :
@@ -653,6 +655,8 @@ theorem noPivotReducedGrowthFactor_le_two {n : ℕ} (hn : 0 < n)
   unfold higham9_9_complexNoPivotReducedGrowthFactor
   rw [div_le_iff₀ hAmax]
   simpa [mul_comm] using hentryMax
+
+end Higham9Theorem99ComplexDirect
 
 /-- Complex max-entry modulus is invariant under the function-shaped
 transpose. -/
