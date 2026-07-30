@@ -6,3 +6,5 @@ import NumStability.Algorithms.HighamChapter9
 #check NumStability.higham9_11_alpha_block_eq
 #check NumStability.higham9_10_HessenbergGEPPTrace
 #check NumStability.higham9_11_matrix_tridiag_data_bohte_solve_tight
+#check NumStability.higham9_24_matrix_original_system_of_scaled_system
+#check NumStability.higham9_26_colPrefix

@@ -39,6 +39,8 @@ import NumStability.Source.Higham.Chapter09.Section03
 import NumStability.Source.Higham.Chapter09.Section04
 import NumStability.Source.Higham.Chapter09.Section05
 import NumStability.Source.Higham.Chapter09.Section06
+import NumStability.Source.Higham.Chapter09.Section08
+import NumStability.Source.Higham.Chapter09.Section10
 namespace NumStability
 
 open scoped BigOperators
@@ -3024,490 +3026,79 @@ combinatorial fact and is not asserted here. -/
 
 
 
-/-- **Equation (9.24)**: scaled right-hand side. -/
-noncomputable def higham9_24_scaledRhs {n : ℕ}
-    (D1 : Fin n → ℝ) (b : Fin n → ℝ) : Fin n → ℝ :=
-  fun i => D1 i * b i
 
-/-- **Equation (9.24)**: change of variables `y = D₂⁻¹ x`. -/
-noncomputable def higham9_24_scaledUnknown {n : ℕ}
-    (D2 : Fin n → ℝ) (x : Fin n → ℝ) : Fin n → ℝ :=
-  fun i => (D2 i)⁻¹ * x i
 
-/-- **Equation (9.24)**: inverse change of variables `x = D₂ y`. -/
-noncomputable def higham9_24_unscaledUnknown {n : ℕ}
-    (D2 : Fin n → ℝ) (y : Fin n → ℝ) : Fin n → ℝ :=
-  fun i => D2 i * y i
 
-/-- **Equation (9.24)**, `x = D₂(D₂⁻¹x)` for componentwise nonsingular
-right scaling. -/
-theorem higham9_24_unscaledUnknown_scaledUnknown {n : ℕ}
-    (D2 x : Fin n → ℝ) (hD2 : ∀ j : Fin n, D2 j ≠ 0) :
-    higham9_24_unscaledUnknown D2 (higham9_24_scaledUnknown D2 x) = x := by
-  funext j
-  unfold higham9_24_unscaledUnknown higham9_24_scaledUnknown
-  field_simp [hD2 j]
 
-/-- **Equation (9.24)**, `D₂⁻¹(D₂y) = y` for componentwise nonsingular
-right scaling. -/
-theorem higham9_24_scaledUnknown_unscaledUnknown {n : ℕ}
-    (D2 y : Fin n → ℝ) (hD2 : ∀ j : Fin n, D2 j ≠ 0) :
-    higham9_24_scaledUnknown D2 (higham9_24_unscaledUnknown D2 y) = y := by
-  funext j
-  unfold higham9_24_scaledUnknown higham9_24_unscaledUnknown
-  field_simp [hD2 j]
 
-/-- **Equation (9.24)**: scaling preserves exact solutions when `D₂` is
-nonsingular componentwise. -/
-theorem higham9_24_scaled_system_equiv {n : ℕ}
-    (A : Fin n → Fin n → ℝ) (b x D1 D2 : Fin n → ℝ)
-    (hD2 : ∀ j : Fin n, D2 j ≠ 0)
-    (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i) :
-    ∀ i, ∑ j : Fin n,
-        higham9_24_scaledMatrix D1 D2 A i j *
-          higham9_24_scaledUnknown D2 x j =
-        higham9_24_scaledRhs D1 b i := by
-  intro i
-  unfold higham9_24_scaledMatrix higham9_24_scaledUnknown higham9_24_scaledRhs
-  have hterm : ∀ j : Fin n,
-      (D1 i * A i j * D2 j) * ((D2 j)⁻¹ * x j) =
-        D1 i * (A i j * x j) := by
-    intro j
-    field_simp [hD2 j]
-  calc
-    ∑ j : Fin n, (D1 i * A i j * D2 j) * ((D2 j)⁻¹ * x j)
-        = ∑ j : Fin n, D1 i * (A i j * x j) := by
-          apply Finset.sum_congr rfl
-          intro j _
-          exact hterm j
-    _ = D1 i * ∑ j : Fin n, A i j * x j := by
-          rw [Finset.mul_sum]
-    _ = D1 i * b i := by
-          rw [hAx i]
 
-/-- **Equation (9.24)**: an exact solution of the scaled system gives an exact
-solution of the original system after the inverse change of variables
-`x = D₂ y`, when `D₁` is componentwise nonsingular. -/
-theorem higham9_24_original_system_of_scaled_system {n : ℕ}
-    (A : Fin n → Fin n → ℝ) (b y D1 D2 : Fin n → ℝ)
-    (hD1 : ∀ i : Fin n, D1 i ≠ 0)
-    (hscaled : ∀ i, ∑ j : Fin n,
-        higham9_24_scaledMatrix D1 D2 A i j * y j =
-        higham9_24_scaledRhs D1 b i) :
-    ∀ i, ∑ j : Fin n,
-        A i j * higham9_24_unscaledUnknown D2 y j = b i := by
-  intro i
-  unfold higham9_24_unscaledUnknown
-  have hscaled_i := hscaled i
-  unfold higham9_24_scaledMatrix higham9_24_scaledRhs at hscaled_i
-  have hsum :
-      (∑ j : Fin n, (D1 i * A i j * D2 j) * y j) =
-        D1 i * ∑ j : Fin n, A i j * (D2 j * y j) := by
-    rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro j _
-    ring
-  have hmul :
-      D1 i * (∑ j : Fin n, A i j * (D2 j * y j)) = D1 i * b i := by
-    simpa [hsum] using hscaled_i
-  exact mul_left_cancel₀ (hD1 i) hmul
 
-/-- **Equation (9.24)**: source-facing equivalence between the original system
-`Ax = b` and the two-sided diagonally scaled system
-`(D₁AD₂)(D₂⁻¹x) = D₁b`. -/
-theorem higham9_24_scaled_system_iff_original_system {n : ℕ}
-    (A : Fin n → Fin n → ℝ) (b x D1 D2 : Fin n → ℝ)
-    (hD1 : ∀ i : Fin n, D1 i ≠ 0)
-    (hD2 : ∀ j : Fin n, D2 j ≠ 0) :
-    (∀ i, ∑ j : Fin n, A i j * x j = b i) ↔
-      (∀ i, ∑ j : Fin n,
-          higham9_24_scaledMatrix D1 D2 A i j *
-            higham9_24_scaledUnknown D2 x j =
-          higham9_24_scaledRhs D1 b i) := by
-  constructor
-  · exact higham9_24_scaled_system_equiv A b x D1 D2 hD2
-  · intro hscaled
-    have horiginal :=
-      higham9_24_original_system_of_scaled_system
-        A b (higham9_24_scaledUnknown D2 x) D1 D2 hD1 hscaled
-    simpa [higham9_24_unscaledUnknown_scaledUnknown D2 x hD2] using horiginal
 
-/-- **Equation (9.24)**, Matrix-notation forward direction for two-sided
-diagonal scaling. -/
-theorem higham9_24_matrix_scaled_system_equiv {n : ℕ}
-    (A : Matrix (Fin n) (Fin n) ℝ) (b x D1 D2 : Fin n → ℝ)
-    (hD2 : ∀ j : Fin n, D2 j ≠ 0)
-    (hAx : Matrix.mulVec A x = b) :
-    Matrix.mulVec (higham9_24_scaledMatrix D1 D2 A)
-        (higham9_24_scaledUnknown D2 x) =
-      higham9_24_scaledRhs D1 b := by
-  funext i
-  have hAx_entries : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i := by
-    intro i
-    simpa [Matrix.mulVec, dotProduct] using congrFun hAx i
-  simpa [Matrix.mulVec, dotProduct] using
-    higham9_24_scaled_system_equiv
-      (A := A) (b := b) (x := x) (D1 := D1) (D2 := D2) hD2 hAx_entries i
 
-/-- **Equation (9.24)**, Matrix-notation reverse direction for two-sided
-diagonal scaling. -/
-theorem higham9_24_matrix_original_system_of_scaled_system {n : ℕ}
-    (A : Matrix (Fin n) (Fin n) ℝ) (b y D1 D2 : Fin n → ℝ)
-    (hD1 : ∀ i : Fin n, D1 i ≠ 0)
-    (hscaled :
-      Matrix.mulVec (higham9_24_scaledMatrix D1 D2 A) y =
-        higham9_24_scaledRhs D1 b) :
-    Matrix.mulVec A (higham9_24_unscaledUnknown D2 y) = b := by
-  funext i
-  have hscaled_entries : ∀ i : Fin n,
-      ∑ j : Fin n, higham9_24_scaledMatrix D1 D2 A i j * y j =
-        higham9_24_scaledRhs D1 b i := by
-    intro i
-    simpa [Matrix.mulVec, dotProduct] using congrFun hscaled i
-  simpa [Matrix.mulVec, dotProduct] using
-    higham9_24_original_system_of_scaled_system
-      (A := A) (b := b) (y := y) (D1 := D1) (D2 := D2) hD1 hscaled_entries i
 
-/-- **Equation (9.24)**, Matrix-notation source-facing equivalence between
-`A *ᵥ x = b` and the two-sided diagonally scaled system. -/
-theorem higham9_24_matrix_scaled_system_iff_original_system {n : ℕ}
-    (A : Matrix (Fin n) (Fin n) ℝ) (b x D1 D2 : Fin n → ℝ)
-    (hD1 : ∀ i : Fin n, D1 i ≠ 0)
-    (hD2 : ∀ j : Fin n, D2 j ≠ 0) :
-    Matrix.mulVec A x = b ↔
-      Matrix.mulVec (higham9_24_scaledMatrix D1 D2 A)
-          (higham9_24_scaledUnknown D2 x) =
-        higham9_24_scaledRhs D1 b := by
-  constructor
-  · exact higham9_24_matrix_scaled_system_equiv A b x D1 D2 hD2
-  · intro hscaled
-    have horiginal :=
-      higham9_24_matrix_original_system_of_scaled_system
-        A b (higham9_24_scaledUnknown D2 x) D1 D2 hD1 hscaled
-    simpa [higham9_24_unscaledUnknown_scaledUnknown D2 x hD2] using horiginal
 
-/-- **Equation (9.25)**: trailing row `∞`-norm used by implicit row scaling. -/
-noncomputable def higham9_25_trailingRowInf {n : ℕ}
-    (Astage : Fin n → Fin n → ℝ) (k i : Fin n) : ℝ :=
-  Finset.sup' (Finset.univ.filter (fun j : Fin n => k.val ≤ j.val))
-    ⟨k, by simp⟩ (fun j => |Astage i j|)
 
-/-- **Equation (9.25)**, the trailing row norm dominates the active pivot-column
-entry because column `k` belongs to the trailing index set. -/
-theorem higham9_25_abs_stage_entry_le_trailingRowInf {n : ℕ}
-    (Astage : Fin n → Fin n → ℝ) (k i : Fin n) :
-    |Astage i k| ≤ higham9_25_trailingRowInf Astage k i := by
-  unfold higham9_25_trailingRowInf
-  exact Finset.le_sup' (fun j : Fin n => |Astage i j|) (by simp)
 
-/-- **Equation (9.25)**, nonnegativity of the trailing row norm. -/
-theorem higham9_25_trailingRowInf_nonneg {n : ℕ}
-    (Astage : Fin n → Fin n → ℝ) (k i : Fin n) :
-    0 ≤ higham9_25_trailingRowInf Astage k i :=
-  le_trans (abs_nonneg (Astage i k))
-    (higham9_25_abs_stage_entry_le_trailingRowInf Astage k i)
 
-/-- **Equation (9.25)**, nonnegativity of the implicit row-scaling pivot ratio. -/
-theorem higham9_25_scaled_pivot_ratio_nonneg {n : ℕ}
-    (Astage : Fin n → Fin n → ℝ) (k i : Fin n) :
-    0 ≤ |Astage i k| / higham9_25_trailingRowInf Astage k i :=
-  div_nonneg (abs_nonneg (Astage i k))
-    (higham9_25_trailingRowInf_nonneg Astage k i)
 
-/-- **Equation (9.25)**, the implicit row-scaling pivot ratio is at most one
-whenever the trailing row norm is nonzero. -/
-theorem higham9_25_scaled_pivot_ratio_le_one {n : ℕ}
-    (Astage : Fin n → Fin n → ℝ) (k i : Fin n)
-    (hrow : higham9_25_trailingRowInf Astage k i ≠ 0) :
-    |Astage i k| / higham9_25_trailingRowInf Astage k i ≤ 1 := by
-  have hden_pos : 0 < higham9_25_trailingRowInf Astage k i :=
-    lt_of_le_of_ne
-      (higham9_25_trailingRowInf_nonneg Astage k i) (Ne.symm hrow)
-  rw [div_le_iff₀ hden_pos]
-  simpa using higham9_25_abs_stage_entry_le_trailingRowInf Astage k i
 
-/-- **Equation (9.25)**: implicit row-scaling pivot rule. -/
-def higham9_25_implicitRowScalingPivotRule {n : ℕ}
-    (Astage : Fin n → Fin n → ℝ) (k r : Fin n) : Prop :=
-  k.val ≤ r.val ∧
-  higham9_25_trailingRowInf Astage k r ≠ 0 ∧
-  ∀ i : Fin n, k.val ≤ i.val →
-    higham9_25_trailingRowInf Astage k i ≠ 0 →
-      |Astage i k| / higham9_25_trailingRowInf Astage k i ≤
-        |Astage r k| / higham9_25_trailingRowInf Astage k r
 
-/-- **Equation (9.25)**, the selected implicit row-scaling pivot ratio is
-nonnegative. -/
-theorem higham9_25_implicitRowScalingPivotRule_ratio_nonneg {n : ℕ}
-    (Astage : Fin n → Fin n → ℝ) (k r : Fin n)
-    (_hrule : higham9_25_implicitRowScalingPivotRule Astage k r) :
-    0 ≤ |Astage r k| / higham9_25_trailingRowInf Astage k r :=
-  higham9_25_scaled_pivot_ratio_nonneg Astage k r
 
-/-- **Equation (9.25)**, the selected implicit row-scaling pivot ratio is at
-most one. -/
-theorem higham9_25_implicitRowScalingPivotRule_ratio_le_one {n : ℕ}
-    (Astage : Fin n → Fin n → ℝ) (k r : Fin n)
-    (hrule : higham9_25_implicitRowScalingPivotRule Astage k r) :
-    |Astage r k| / higham9_25_trailingRowInf Astage k r ≤ 1 :=
-  higham9_25_scaled_pivot_ratio_le_one Astage k r hrule.2.1
 
-/-- **Equation (9.25)**, finite active-set existence for implicit row scaling.
 
-If some active row has nonzero trailing row norm, then a row maximizing the
-scaled pivot ratio in Higham's implicit row-scaling rule exists.  This is only
-the finite pivot-choice layer; it does not construct a rounded elimination
-trace from the rule. -/
-theorem higham9_25_exists_implicitRowScalingPivotRule {n : ℕ}
-    (Astage : Fin n → Fin n → ℝ) (k : Fin n)
-    (hactive :
-      ∃ i : Fin n,
-        k.val ≤ i.val ∧ higham9_25_trailingRowInf Astage k i ≠ 0) :
-    ∃ r : Fin n, higham9_25_implicitRowScalingPivotRule Astage k r := by
-  classical
-  let activeRows : Finset (Fin n) :=
-    Finset.univ.filter
-      (fun i : Fin n =>
-        k.val ≤ i.val ∧ higham9_25_trailingRowInf Astage k i ≠ 0)
-  have hactiveRows : activeRows.Nonempty := by
-    rcases hactive with ⟨i, hik, hiNorm⟩
-    have hikFin : k ≤ i := hik
-    refine ⟨i, ?_⟩
-    simp [activeRows, hikFin, hiNorm]
-  obtain ⟨r, hr, hmax⟩ :=
-    Finset.exists_max_image activeRows
-      (fun i : Fin n =>
-        |Astage i k| / higham9_25_trailingRowInf Astage k i)
-      hactiveRows
-  have hr_active :
-      k.val ≤ r.val ∧ higham9_25_trailingRowInf Astage k r ≠ 0 := by
-    simpa [activeRows] using hr
-  refine ⟨r, hr_active.1, hr_active.2, ?_⟩
-  intro i hik hiNorm
-  have hikFin : k ≤ i := hik
-  have hi_mem : i ∈ activeRows := by
-    simp [activeRows, hikFin, hiNorm]
-  exact hmax i hi_mem
 
-/-- **Equation (9.25)**, a nonzero active pivot-column entry makes the
-corresponding trailing row norm nonzero. -/
-theorem higham9_25_trailingRowInf_ne_zero_of_stage_entry_ne_zero {n : ℕ}
-    (Astage : Fin n → Fin n → ℝ) (k i : Fin n)
-    (hentry : Astage i k ≠ 0) :
-    higham9_25_trailingRowInf Astage k i ≠ 0 := by
-  have hentry_pos : 0 < |Astage i k| := abs_pos.mpr hentry
-  have hrow_pos : 0 < higham9_25_trailingRowInf Astage k i :=
-    lt_of_lt_of_le hentry_pos
-      (higham9_25_abs_stage_entry_le_trailingRowInf Astage k i)
-  exact ne_of_gt hrow_pos
 
-/-- **Equation (9.25)**, source-facing finite pivot-choice existence from a
-nonzero active pivot-column entry. -/
-theorem higham9_25_exists_implicitRowScalingPivotRule_of_active_column_nonzero
-    {n : ℕ}
-    (Astage : Fin n → Fin n → ℝ) (k : Fin n)
-    (hactive :
-      ∃ i : Fin n,
-        k.val ≤ i.val ∧ Astage i k ≠ 0) :
-    ∃ r : Fin n, higham9_25_implicitRowScalingPivotRule Astage k r := by
-  rcases hactive with ⟨i, hik, hentry⟩
-  exact higham9_25_exists_implicitRowScalingPivotRule Astage k
-    ⟨i, hik,
-      higham9_25_trailingRowInf_ne_zero_of_stage_entry_ne_zero
-        Astage k i hentry⟩
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-! ## §9.10 A posteriori stability tests -/
 
-/-- **Equation (9.26)**, finite real prefix `p`-norm, implemented through the
-shared complex `L^p` API. -/
-noncomputable def higham9_26_prefixLpNorm {k : ℕ} (p : ℝ)
-    (x : Fin k → ℝ) : ℝ :=
-  complexVecLpNorm (ENNReal.ofReal p) (fun r : Fin k => (x r : ℂ))
 
-/-- **Equation (9.26)**, Holder bound for the prefix dot product in the update
-formula. -/
-theorem higham9_26_holder_prefix_dot_abs_le {k : ℕ} {p q : ℝ}
-    (hpq : p.HolderConjugate q) (x y : Fin k → ℝ) :
-    |∑ r : Fin k, x r * y r| ≤
-      higham9_26_prefixLpNorm p x * higham9_26_prefixLpNorm q y := by
-  have hholder := complexVecLpNorm_holder hpq
-    (fun r : Fin k => (y r : ℂ)) (fun r : Fin k => (x r : ℂ))
-  have hholder' : ‖∑ r : Fin k, (x r : ℂ) * (y r : ℂ)‖ ≤
-      higham9_26_prefixLpNorm p x * higham9_26_prefixLpNorm q y := by
-    simpa [higham9_26_prefixLpNorm, mul_comm] using hholder
-  let S : ℝ := ∑ r : Fin k, x r * y r
-  have hcast : (S : ℂ) = ∑ r : Fin k, (x r : ℂ) * (y r : ℂ) := by
-    simp [S]
-  have habs_eq : |S| = ‖∑ r : Fin k, (x r : ℂ) * (y r : ℂ)‖ := by
-    calc
-      |S| = ‖S‖ := (Real.norm_eq_abs S).symm
-      _ = ‖(S : ℂ)‖ := (Complex.norm_real S).symm
-      _ = ‖∑ r : Fin k, (x r : ℂ) * (y r : ℂ)‖ := by rw [hcast]
-  simpa [S] using habs_eq.trans_le hholder'
 
-/-- **Equation (9.26)**, first displayed inequality for one stage-entry update:
-if `stage = a - l · u`, Holder controls the eliminated prefix contribution. -/
-theorem higham9_26_stage_entry_abs_le {k : ℕ} {p q : ℝ}
-    (hpq : p.HolderConjugate q)
-    (a stage : ℝ) (l u : Fin k → ℝ)
-    (hstage : stage = a - ∑ r : Fin k, l r * u r) :
-    |stage| ≤ |a| + higham9_26_prefixLpNorm p l * higham9_26_prefixLpNorm q u := by
-  let S : ℝ := ∑ r : Fin k, l r * u r
-  have hstage_abs : |stage| = |a - S| := by
-    simpa [S] using congrArg abs hstage
-  have htri : |a - S| ≤ |a| + |S| := by
-    have h := norm_add_le (a : ℝ) (-S)
-    simpa [Real.norm_eq_abs, sub_eq_add_neg, abs_neg] using h
-  have hholder := higham9_26_holder_prefix_dot_abs_le hpq l u
-  have hstep : |a| + |S| ≤
-      |a| + higham9_26_prefixLpNorm p l * higham9_26_prefixLpNorm q u := by
-    linarith
-  calc
-    |stage| = |a - S| := hstage_abs
-    _ ≤ |a| + |S| := htri
-    _ ≤ |a| + higham9_26_prefixLpNorm p l * higham9_26_prefixLpNorm q u := hstep
 
-/-- **Equation (9.26)**, Euclidean-prefix specialization of the stage-entry
-Holder bound. -/
-theorem higham9_26_stage_entry_abs_le_two_norm {k : ℕ}
-    (a stage : ℝ) (l u : Fin k → ℝ)
-    (hstage : stage = a - ∑ r : Fin k, l r * u r) :
-    |stage| ≤ |a| +
-      higham9_26_prefixLpNorm (2 : ℝ) l *
-        higham9_26_prefixLpNorm (2 : ℝ) u :=
-  higham9_26_stage_entry_abs_le
-    (p := (2 : ℝ)) (q := (2 : ℝ))
-    Real.HolderConjugate.two_two a stage l u hstage
 
-/-- **Equation (9.26)**, source-style second inequality with explicit uniform
-budgets for the original entry, row-prefix norm, and column-prefix norm. -/
-theorem higham9_26_stage_entry_abs_le_of_uniform_bounds {k : ℕ} {p q : ℝ}
-    (hpq : p.HolderConjugate q) (a stage Amax Lmax Umax : ℝ)
-    (l u : Fin k → ℝ)
-    (hstage : stage = a - ∑ r : Fin k, l r * u r)
-    (hA : |a| ≤ Amax)
-    (hL : higham9_26_prefixLpNorm p l ≤ Lmax)
-    (hU : higham9_26_prefixLpNorm q u ≤ Umax)
-    (hLmax : 0 ≤ Lmax) :
-    |stage| ≤ Amax + Lmax * Umax := by
-  have hbase := higham9_26_stage_entry_abs_le hpq a stage l u hstage
-  have hprod :
-      higham9_26_prefixLpNorm p l * higham9_26_prefixLpNorm q u ≤ Lmax * Umax := by
-    exact mul_le_mul hL hU (complexVecLpNorm_ofReal_nonneg hpq.symm.pos _) hLmax
-  exact hbase.trans (add_le_add hA hprod)
 
-/-- **Equation (9.26)**, Euclidean-prefix specialization of the source-style
-uniform-budget stage-entry bound. -/
-theorem higham9_26_stage_entry_abs_le_of_two_norm_uniform_bounds {k : ℕ}
-    (a stage Amax Lmax Umax : ℝ) (l u : Fin k → ℝ)
-    (hstage : stage = a - ∑ r : Fin k, l r * u r)
-    (hA : |a| ≤ Amax)
-    (hL : higham9_26_prefixLpNorm (2 : ℝ) l ≤ Lmax)
-    (hU : higham9_26_prefixLpNorm (2 : ℝ) u ≤ Umax)
-    (hLmax : 0 ≤ Lmax) :
-    |stage| ≤ Amax + Lmax * Umax :=
-  higham9_26_stage_entry_abs_le_of_uniform_bounds
-    (p := (2 : ℝ)) (q := (2 : ℝ))
-    Real.HolderConjugate.two_two a stage Amax Lmax Umax l u
-    hstage hA hL hU hLmax
 
-/-- **Equation (9.26)**, the eliminated row prefix `lᵢ,1:k` as a finite
-vector. -/
-def higham9_26_rowPrefix {n k : ℕ}
-    (L : Matrix (Fin n) (Fin k) ℝ) (i : Fin n) : Fin k → ℝ :=
-  fun r => L i r
 
-/-- **Equation (9.26)**, the eliminated column prefix `u₁:k,j` as a finite
-vector. -/
-def higham9_26_colPrefix {n k : ℕ}
-    (U : Matrix (Fin k) (Fin n) ℝ) (j : Fin n) : Fin k → ℝ :=
-  fun r => U r j
 
-/-- **Equation (9.26)**, Matrix-facing stage-entry Holder bound for the update
-`aᵢⱼ^(k) = aᵢⱼ - Σᵣ lᵢᵣ uᵣⱼ`. -/
-theorem higham9_26_matrix_stage_entry_abs_le {n k : ℕ} {p q : ℝ}
-    (hpq : p.HolderConjugate q)
-    (A Astage : Matrix (Fin n) (Fin n) ℝ)
-    (L : Matrix (Fin n) (Fin k) ℝ)
-    (U : Matrix (Fin k) (Fin n) ℝ)
-    (i j : Fin n)
-    (hstage :
-      Astage i j = A i j - ∑ r : Fin k, L i r * U r j) :
-    |Astage i j| ≤ |A i j| +
-      higham9_26_prefixLpNorm p (higham9_26_rowPrefix L i) *
-        higham9_26_prefixLpNorm q (higham9_26_colPrefix U j) := by
-  exact higham9_26_stage_entry_abs_le hpq
-    (A i j) (Astage i j)
-    (higham9_26_rowPrefix L i) (higham9_26_colPrefix U j)
-    (by simpa [higham9_26_rowPrefix, higham9_26_colPrefix] using hstage)
 
-/-- **Equation (9.26)**, Matrix-facing Euclidean-prefix specialization of the
-stage-entry Holder bound. -/
-theorem higham9_26_matrix_stage_entry_abs_le_two_norm {n k : ℕ}
-    (A Astage : Matrix (Fin n) (Fin n) ℝ)
-    (L : Matrix (Fin n) (Fin k) ℝ)
-    (U : Matrix (Fin k) (Fin n) ℝ)
-    (i j : Fin n)
-    (hstage :
-      Astage i j = A i j - ∑ r : Fin k, L i r * U r j) :
-    |Astage i j| ≤ |A i j| +
-      higham9_26_prefixLpNorm (2 : ℝ) (higham9_26_rowPrefix L i) *
-        higham9_26_prefixLpNorm (2 : ℝ) (higham9_26_colPrefix U j) :=
-  higham9_26_matrix_stage_entry_abs_le
-    (p := (2 : ℝ)) (q := (2 : ℝ))
-    Real.HolderConjugate.two_two A Astage L U i j hstage
 
-/-- **Equation (9.26)**, Matrix-facing source-style second inequality with
-explicit uniform bounds for the original entry, row prefix, and column prefix. -/
-theorem higham9_26_matrix_stage_entry_abs_le_of_uniform_bounds {n k : ℕ}
-    {p q : ℝ}
-    (hpq : p.HolderConjugate q)
-    (A Astage : Matrix (Fin n) (Fin n) ℝ)
-    (L : Matrix (Fin n) (Fin k) ℝ)
-    (U : Matrix (Fin k) (Fin n) ℝ)
-    (i j : Fin n) (Amax Lmax Umax : ℝ)
-    (hstage :
-      Astage i j = A i j - ∑ r : Fin k, L i r * U r j)
-    (hA : |A i j| ≤ Amax)
-    (hL : higham9_26_prefixLpNorm p (higham9_26_rowPrefix L i) ≤ Lmax)
-    (hU : higham9_26_prefixLpNorm q (higham9_26_colPrefix U j) ≤ Umax)
-    (hLmax : 0 ≤ Lmax) :
-    |Astage i j| ≤ Amax + Lmax * Umax := by
-  exact higham9_26_stage_entry_abs_le_of_uniform_bounds hpq
-    (A i j) (Astage i j) Amax Lmax Umax
-    (higham9_26_rowPrefix L i) (higham9_26_colPrefix U j)
-    (by simpa [higham9_26_rowPrefix, higham9_26_colPrefix] using hstage)
-    hA hL hU hLmax
 
-/-- **Equation (9.26)**, Matrix-facing Euclidean-prefix specialization of the
-source-style uniform-budget stage-entry bound. -/
-theorem higham9_26_matrix_stage_entry_abs_le_of_two_norm_uniform_bounds
-    {n k : ℕ}
-    (A Astage : Matrix (Fin n) (Fin n) ℝ)
-    (L : Matrix (Fin n) (Fin k) ℝ)
-    (U : Matrix (Fin k) (Fin n) ℝ)
-    (i j : Fin n) (Amax Lmax Umax : ℝ)
-    (hstage :
-      Astage i j = A i j - ∑ r : Fin k, L i r * U r j)
-    (hA : |A i j| ≤ Amax)
-    (hL :
-      higham9_26_prefixLpNorm (2 : ℝ) (higham9_26_rowPrefix L i) ≤ Lmax)
-    (hU :
-      higham9_26_prefixLpNorm (2 : ℝ) (higham9_26_colPrefix U j) ≤ Umax)
-    (hLmax : 0 ≤ Lmax) :
-    |Astage i j| ≤ Amax + Lmax * Umax :=
-  higham9_26_matrix_stage_entry_abs_le_of_uniform_bounds
-    (p := (2 : ℝ)) (q := (2 : ℝ))
-    Real.HolderConjugate.two_two A Astage L U i j Amax Lmax Umax
-    hstage hA hL hU hLmax
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-! ## §9.11 Sensitivity -/
 
-/-- **Equation (9.27)**, the perturbation matrix
-`G = L⁻¹ ΔA U⁻¹` in the normwise sensitivity theorem. -/
-noncomputable def higham9_27_GMatrix {n : ℕ}
-    (Linv ΔA Uinv : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  rectMatMul (rectMatMul Linv ΔA) Uinv
+
 
 /-- **Equation (9.27)**, native `Matrix` notation for
 `G = L⁻¹ ΔA U⁻¹`. -/
