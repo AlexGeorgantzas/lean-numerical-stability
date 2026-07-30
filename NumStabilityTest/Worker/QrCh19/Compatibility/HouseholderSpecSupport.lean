@@ -1,0 +1,3 @@
+import NumStability.Algorithms.QR.HouseholderSpecSupport
+
+#check NumStability.HouseholderAppError.of_forward_error

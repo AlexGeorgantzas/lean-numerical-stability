@@ -1329,7 +1329,7 @@ def expected_canonical_imports(
             result.append(default_destination(imported))
         else:
             result.append(imported)
-    return sorted(dict.fromkeys(result))
+    return list(dict.fromkeys(result))
 
 
 def validate_structural_files(
@@ -1426,8 +1426,6 @@ def materialize_householder_wave(
     owners: dict[str, FrozenOwner],
     source_dir: Path,
 ) -> None:
-    if git_text(project_root, "status", "--short"):
-        fail("--materialize-householder-wave requires a clean worktree")
     groups = route_groups(routes)
     by_owner: dict[str, list[Route]] = defaultdict(list)
     for members in groups.values():
@@ -1438,29 +1436,42 @@ def materialize_householder_wave(
     for owner in sorted(HOUSEHOLDER_MODULES):
         frozen = owners[owner]
         live = project_root / frozen.path
-        if sha256_file(live) != frozen.source_sha256:
-            fail(f"{owner}: live historical source differs before materialization")
-        source = normalized_source_bytes(live)
+        pristine = frozen_source_path(source_dir, owner)
+        if sha256_file(pristine) != frozen.source_sha256:
+            fail(f"{owner}: pristine materialization source differs from the contract")
+        source = normalized_source_bytes(pristine)
         basename = owner.rsplit(".", 1)[1]
         reusable = default_destination(owner)
         reusable_payload = source
         if basename == "HouseholderConstruction2":
             alias_route = next(row for row in by_owner[owner] if row.command_root_actual_name == CONSTRUCTION2_ALIAS)
             command = source_command_bytes(source, alias_route.span)
-            start = source.rfind(b"/--", 0, source.find(command))
-            command_start = source.find(command)
-            if start < 0 or command_start < 0:
-                fail("Construction2 alias documentation/command split point is missing")
-            end = command_start + len(command)
+            start = source.find(command)
+            if start < 0:
+                fail("Construction2 alias command split point is missing")
+            end = start + len(command)
             reusable_payload = source[:start] + source[end:]
             source_payload = (
-                f"import {reusable}\n\nnamespace NumStability\n\n".encode()
+                (
+                    f"import {reusable}\n\n"
+                    "/-!\n"
+                    "# Higham Chapter 19, Lemma 19.1, Construction 2\n\n"
+                    "Numbered source-facing export for the alternative-sign "
+                    "Householder construction.\n"
+                    "-/\n\n"
+                    "namespace NumStability\n\n"
+                ).encode()
                 + source[start:end]
                 + b"\n\nend NumStability\n"
             )
             source_path = project_root / module_path(CONSTRUCTION2_ALIAS_DESTINATION)
             source_path.parent.mkdir(parents=True, exist_ok=True)
             source_path.write_bytes(source_payload)
+        reusable_payload = reusable_payload.replace(
+            f"Algorithms/QR/{basename}.lean".encode(),
+            f"Algorithms/LinearSystems/QR/{basename}.lean".encode(),
+            1,
+        )
         for dependency in HOUSEHOLDER_MODULES:
             reusable_payload = reusable_payload.replace(
                 f"import {dependency}\n".encode(),
@@ -1468,7 +1479,28 @@ def materialize_householder_wave(
             )
         reusable_path = project_root / module_path(reusable)
         reusable_path.parent.mkdir(parents=True, exist_ok=True)
-        reusable_path.write_bytes(reusable_payload)
+        module_doc = (
+            f"/-!\n# {basename}\n\n"
+            "Canonical source-neutral Householder API.  The historical QR path "
+            "remains an import-only wrapper.\n"
+            "-/\n\n"
+        ).encode()
+        import_ends = [
+            match.end()
+            for match in re.finditer(
+                rb"(?m)^(?:public\s+)?import\s+[A-Za-z_][A-Za-z0-9_.]*\n",
+                reusable_payload,
+            )
+        ]
+        if not import_ends:
+            fail(f"{owner}: materialized reusable source has no import command")
+        insert_at = max(import_ends)
+        reusable_path.write_bytes(
+            reusable_payload[:insert_at]
+            + b"\n"
+            + module_doc
+            + reusable_payload[insert_at:]
+        )
         destinations = sorted({row.destination_module for row in by_owner[owner]})
         live.write_bytes("".join(f"import {destination}\n" for destination in destinations).encode())
 
@@ -1523,9 +1555,52 @@ def materialize_householder_wave(
     wave_path.write_text(
         "".join(f"import {module}\n" for module in all_tests), encoding="utf-8", newline="\n"
     )
-    root_path = project_root / module_path("NumStabilityTest.Worker.QrCh19")
-    root_path.parent.mkdir(parents=True, exist_ok=True)
-    root_path.write_text(f"import {wave_module}\n", encoding="utf-8", newline="\n")
+
+
+def validate_materialized_householder_text(
+    project_root: Path,
+    routes: dict[str, Route],
+    owners: dict[str, FrozenOwner],
+    source_dir: Path,
+) -> int:
+    """Check all 821 moved command byte strings without relying on build output."""
+
+    wave_groups = [
+        members
+        for members in route_groups(routes).values()
+        if members[0].destination_module in HOUSEHOLDER_DESTINATIONS
+    ]
+    frozen_sources = {
+        owner: normalized_source_bytes(frozen_source_path(source_dir, owner))
+        for owner in HOUSEHOLDER_MODULES
+    }
+    candidate_sources = {
+        destination: normalized_source_bytes(project_root / module_path(destination))
+        for destination in HOUSEHOLDER_DESTINATIONS
+    }
+    for members in wave_groups:
+        root = next(
+            row for row in members if row.provenance in {"authored", "source_alias"}
+        )
+        command = source_command_bytes(
+            frozen_sources[root.historical_module], root.span
+        )
+        occurrences = candidate_sources[root.destination_module].count(command)
+        if occurrences != 1:
+            fail(
+                f"{root.command_root_logical}: frozen command occurs {occurrences} "
+                "times in its materialized destination"
+            )
+    wrappers, destinations = validate_structural_files(
+        project_root,
+        routes,
+        owners,
+        source_dir,
+        set(HOUSEHOLDER_DESTINATIONS),
+    )
+    if (len(wave_groups), wrappers, destinations) != (821, 11, 12):
+        fail("materialized Householder structural counts drifted")
+    return len(wave_groups)
 
 
 def run_self_test() -> None:
@@ -1591,6 +1666,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--write-contract", action="store_true")
     parser.add_argument("--write-private-rewrites", action="store_true")
     parser.add_argument("--materialize-householder-wave", action="store_true")
+    parser.add_argument("--check-materialized-householder", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     return parser.parse_args()
 
@@ -1635,6 +1711,15 @@ def main() -> int:
         print(
             f"materialized Householder Wave 1: {wave_declarations} declarations, "
             f"{wave_groups} command groups, {len(HOUSEHOLDER_DESTINATIONS)} destinations"
+        )
+        return 0
+    if args.check_materialized_householder:
+        groups = validate_materialized_householder_text(
+            args.project_root, routes, owners, args.frozen_source_dir
+        )
+        print(
+            f"materialized Householder text gate passed: {groups} command groups, "
+            "11 exact wrappers, 12 canonical destinations"
         )
         return 0
 

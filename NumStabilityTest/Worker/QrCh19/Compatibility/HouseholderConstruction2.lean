@@ -1,0 +1,4 @@
+import NumStability.Algorithms.QR.HouseholderConstruction2
+
+#check NumStability.HouseholderConstruction2Error
+#check NumStability.H19_Lemma19_1_construction2_backward_error
