@@ -1,7 +1,7 @@
-import NumStability.Algorithms.QR.HouseholderApply
-import NumStability.Algorithms.QR.HouseholderMatrixStep
-import NumStability.Algorithms.QR.HouseholderReflector
-import NumStability.Algorithms.QR.HouseholderSpec
+import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
+import NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep
+import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model

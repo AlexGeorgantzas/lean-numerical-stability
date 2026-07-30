@@ -362,6 +362,7 @@
     "NumStability.Analysis.OperatorNorms.Basic": "reusable",
     "NumStability.Analysis.Perturbation": "aggregate",
     "NumStability.Analysis.Perturbation.LeastSquares": "aggregate",
+    "NumStability.Analysis.Perturbation.LeastSquares.Conditioning": "source",
     "NumStability.Analysis.PerturbationTheory": "reusable",
     "NumStability.Analysis.Probability": "aggregate",
     "NumStability.Analysis.Probability.Gaussian": "aggregate",

@@ -223,7 +223,14 @@
     "declaration_bearing_umbrellas": [
       "NumStability.Source.Higham.Chapter13.Equation23",
       "NumStability.Source.Higham.Chapter13.Equation25",
-      "NumStability.Source.Higham.Chapter13.Table01"
+      "NumStability.Source.Higham.Chapter13.Table01",
+      "NumStability.Source.Higham.Chapter20.Equations",
+      "NumStability.Source.Higham.Chapter20.Lemma11",
+      "NumStability.Source.Higham.Chapter20.Prose",
+      "NumStability.Source.Higham.Chapter20.Theorem03",
+      "NumStability.Source.Higham.Chapter20.Theorem04",
+      "NumStability.Source.Higham.Chapter20.Theorem07",
+      "NumStability.Source.Higham.Chapter20.Theorem08"
     ],
     "missing_module_docstrings": [
       "NumStability.Algorithms.Ch10Theorem107FailureVacuity",
@@ -300,12 +307,6 @@
       "NumStability.Algorithms.LU.TridiagonalCondCh15Closure",
       "NumStability.Algorithms.LU.TridiagonalCondCh15IkebeClosure",
       "NumStability.Algorithms.LU.TridiagonalRecurrence",
-      "NumStability.Algorithms.LeastSquares.Higham20AlternativeBound",
-      "NumStability.Algorithms.LeastSquares.Higham20CrossProductExample",
-      "NumStability.Algorithms.LeastSquares.Higham20ExampleCondition",
-      "NumStability.Algorithms.LeastSquares.Higham20Lemma20_12",
-      "NumStability.Algorithms.LeastSquares.Higham20NormalEquationsNorms",
-      "NumStability.Algorithms.LeastSquares.Higham20WeightedLimit",
       "NumStability.Algorithms.MMatrix",
       "NumStability.Algorithms.MatMul",
       "NumStability.Algorithms.MatVec",

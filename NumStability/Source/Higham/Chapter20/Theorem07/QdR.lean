@@ -2,8 +2,8 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
 import NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
 import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
 import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
-import NumStability.Algorithms.QR.HouseholderSpec
-import NumStability.Algorithms.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Contract
 import NumStability.Analysis.Rounding

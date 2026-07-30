@@ -9,7 +9,7 @@ import NumStability.Algorithms.LeastSquares.LSQRSolve
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT
-import NumStability.Algorithms.QR.GramSchmidtPolar
+import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
 import NumStability.Algorithms.QR.Higham19
 import NumStability.Algorithms.QR.Higham19Thm6ColPivot
 import NumStability.Algorithms.QR.Higham19Thm6CoxHigham

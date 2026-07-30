@@ -2,11 +2,11 @@ import NumStability.Algorithms.HighamChapter8
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.MGS
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
-import NumStability.Algorithms.QR.GramSchmidt
+import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
 import NumStability.Algorithms.QR.Higham19
 import NumStability.Algorithms.QR.Higham19Alg12MGSRepair
 import NumStability.Algorithms.QR.Higham19Alg12MGSRounded
-import NumStability.Algorithms.QR.HouseholderQR
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model

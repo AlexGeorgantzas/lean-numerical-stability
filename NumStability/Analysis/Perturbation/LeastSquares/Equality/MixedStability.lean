@@ -9,8 +9,8 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 import NumStability.Algorithms.QR.Higham19
-import NumStability.Algorithms.QR.HouseholderQR
-import NumStability.Algorithms.QR.QRSolve
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation
 import NumStability.Analysis.Rounding

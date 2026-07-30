@@ -18,8 +18,8 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
-import NumStability.Algorithms.QR.HouseholderQRSupport
-import NumStability.Algorithms.QR.QRSolve
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
+import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Algorithms.RandNLA.LowRankApprox
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.AugmentedSystem

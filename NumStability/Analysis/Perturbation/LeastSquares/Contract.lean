@@ -1,4 +1,4 @@
-import NumStability.Algorithms.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
 import NumStability.Analysis.MatrixAlgebra
 
 namespace NumStability

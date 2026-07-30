@@ -6,7 +6,7 @@ import Mathlib.LinearAlgebra.Matrix.Rank
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
-import NumStability.Algorithms.QR.HouseholderQR
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.SingularValues.Basic
 import NumStability.Analysis.SingularValues.Realification

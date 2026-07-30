@@ -7,10 +7,10 @@ import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
 import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
 import NumStability.Algorithms.QR.Higham19Thm6Pivoted
 import NumStability.Algorithms.QR.Higham19Thm6RowSpecific
-import NumStability.Algorithms.QR.HouseholderQR
-import NumStability.Algorithms.QR.HouseholderReflector
-import NumStability.Algorithms.QR.HouseholderSpec
-import NumStability.Algorithms.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Contract
 import NumStability.Analysis.Rounding

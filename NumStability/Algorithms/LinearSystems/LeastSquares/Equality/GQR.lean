@@ -12,9 +12,9 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT
 import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
-import NumStability.Algorithms.QR.GramSchmidt
-import NumStability.Algorithms.QR.HouseholderQR
-import NumStability.Algorithms.QR.QRSolve
+import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.SingularValues.Basic
