@@ -1,0 +1,70 @@
+{
+  "artifact_sha256": {
+    "ch09-wave-abc-destinations.tsv": "14F6F3DB49F54B07B623F28BBC76564119A49C5474E9652676FB39FC76D6E8FB",
+    "ch09-wave-abc-frozen-owners.tsv": "A88E3F9D9F4BD6BADE13E8C4F931EBFBC83B18D2A5947F55F39C706EF4D9C426",
+    "ch09-wave-abc-imports.tsv": "CC4E5B2FBFB7EFB1C8F7190C4F47C36E91457AE30F6F7DB34D7D7662333A28B6",
+    "ch09-wave-abc-ownership.tsv": "47CEBA1A194E5711B0CD7A8DE5BC1E740362B637AB485B6B0D680879BE13D7FC",
+    "ch09-wave-abc-private-rewrites.tsv": "3B51582AA5AB167938157B748D7B37C95585F278010C6F093635F5EC319E2FBE",
+    "ch09-wave-abc-routes.tsv": "FC43B793CADADDA67924E5D6691E6813A5C417BABE66D17D78CDBC1A89E15238"
+  },
+  "base_revision": "e931cbacebce8ce8bbb50273a67a4644448436e5",
+  "baseline_format2_sha256": "1C2538B428B8EC3610B3C09BBB6A4CF23ECA9F0DB17EE4AE5B63E4F371AECDED",
+  "chapter": "09",
+  "command_groups": 2304,
+  "declarations": 2387,
+  "destinations": 5,
+  "full_contract_artifacts_sha256": {
+    "acceptance.json": "BEB8009F5744F29AE6812A94A7D12FE4C14B0C1F5C3C1749869C03E270F15729",
+    "candidate-modules.tsv": "AC196DE5268D4E1FAEE4230AA1625B8A781D67990F6C2642A46647DA9047AD98",
+    "owner-dag.tsv": "FE0F6ABACC868142330670695C5FBA10454B3669D47CD37C437E4F39C6778294",
+    "ownership.tsv": "B3810D38E0735536407333F5FE74039DF80546008B4F37B9B2CF043748A96B00",
+    "private-rewrites.tsv": "363238DFA97E73473F750B1DC01C5AFC50FC799833C24D0F79216E1B89869389",
+    "routes.tsv": "B67EFE4E74799A2383F67241EA8E7623CC62F785F04EC741D2C99CE917A7F1C9"
+  },
+  "historical_owners": 2,
+  "import_rows": 151,
+  "packet_revision": "6487fc33088523b8f27ecde9ad613515b78f9977",
+  "prior_wave_acceptance_sha256": "4AC5B9A47A34E2A0AD0E63A2D5C55E65CEE9B82E6CD01BA2F54F2B7437C8BCB5",
+  "private_rewrites": 6,
+  "review_evidence_revision": "9e7c8e32437d6ea28bf297fc4f08756288df9b26",
+  "schema_version": 1,
+  "sequence": "destination_dag_waves_A_B_C",
+  "waves": {
+    "A": {
+      "command_groups": 55,
+      "command_payload_bytes": 60765,
+      "command_payload_lines": 1341,
+      "declarations": 66,
+      "destinations": 3,
+      "incident_body_edges": 999,
+      "incident_signature_edges": 963,
+      "internal_typed_edges": 169,
+      "normalized_incident_sha256": "CE5209AEF0A587FBBED2DE1CF20F78B24A9A82A8AB22AB510C8E8B4D457445C5",
+      "private_rewrites": 1
+    },
+    "B": {
+      "command_groups": 1109,
+      "command_payload_bytes": 1953693,
+      "command_payload_lines": 40069,
+      "declarations": 1109,
+      "destinations": 1,
+      "incident_body_edges": 6816,
+      "incident_signature_edges": 5458,
+      "internal_typed_edges": 3602,
+      "normalized_incident_sha256": "EA7B097EA96D43230726592D672714F58224A80EAAC56DDA6BAA261ED2070B96",
+      "private_rewrites": 0
+    },
+    "C": {
+      "command_groups": 1140,
+      "command_payload_bytes": 1519842,
+      "command_payload_lines": 31689,
+      "declarations": 1212,
+      "destinations": 1,
+      "incident_body_edges": 8510,
+      "incident_signature_edges": 6180,
+      "internal_typed_edges": 4695,
+      "normalized_incident_sha256": "C6C5041485BE4E94EF56F9AF1ED6F2CD4C3DE39111DF8AC8C91F918AEE06A13A",
+      "private_rewrites": 5
+    }
+  }
+}
