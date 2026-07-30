@@ -9,6 +9,7 @@ import NumStability.Source.Higham.Chapter12
 import NumStability.Source.Higham.Chapter13
 import NumStability.Source.Higham.Chapter14
 import NumStability.Source.Higham.Chapter17
+import NumStability.Source.Higham.Chapter19.Lemma01.Construction2
 import NumStability.Source.Higham.Chapter20
 import NumStability.Source.Higham.Chapter21
 import NumStability.Source.Higham.Chapter22
