@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter09.Section11
+
+#check NumStability.higham9_15_GMatrix_abs_infNormBound_of_row_sum_bound

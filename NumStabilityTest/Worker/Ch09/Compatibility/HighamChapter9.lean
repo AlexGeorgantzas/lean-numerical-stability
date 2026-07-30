@@ -8,3 +8,4 @@ import NumStability.Algorithms.HighamChapter9
 #check NumStability.higham9_11_matrix_tridiag_data_bohte_solve_tight
 #check NumStability.higham9_24_matrix_original_system_of_scaled_system
 #check NumStability.higham9_26_colPrefix
+#check NumStability.higham9_15_GMatrix_abs_infNormBound_of_row_sum_bound
