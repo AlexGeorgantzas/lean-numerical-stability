@@ -197,6 +197,23 @@ HOUSEHOLDER_DESTINATIONS = (
     HOUSEHOLDER_REUSABLE_DESTINATIONS | {CONSTRUCTION2_ALIAS_DESTINATION}
 )
 
+Q2A_BASENAMES = (
+    "GivensMatrixStep",
+    "GivensQR",
+    "GivensSpec",
+    "GramSchmidt",
+    "GramSchmidtPolar",
+    "QRSolve",
+)
+Q2A_MODULES = frozenset(
+    f"{HISTORICAL_ROOT}.{name}" for name in Q2A_BASENAMES
+)
+Q2A_DESTINATIONS = frozenset(
+    f"{REUSABLE_ROOT}.{name}" for name in Q2A_BASENAMES
+)
+HOUSEHOLDER_AND_Q2A_DESTINATIONS = HOUSEHOLDER_DESTINATIONS | Q2A_DESTINATIONS
+REUSABLE_MIGRATION_MODULES = HOUSEHOLDER_MODULES | Q2A_MODULES
+
 ALIAS_OWNER = f"{HISTORICAL_ROOT}.Higham19Theorem6ActualSource"
 ALIAS_DECLARATIONS = frozenset(
     {
@@ -1172,6 +1189,44 @@ def validate_householder_contract(
     return len(wave), len(groups), len(private), promotions
 
 
+def validate_q2a_contract(
+    baseline_tsv: Path,
+    baseline: dict[str, Declaration],
+    routes: dict[str, Route],
+) -> tuple[int, int, int, int]:
+    wave = {
+        logical: route
+        for logical, route in routes.items()
+        if route.destination_module in Q2A_DESTINATIONS
+    }
+    if len(wave) != 868:
+        fail(f"QR Q2A must own 868 declarations, found {len(wave)}")
+    if {row.historical_module for row in wave.values()} != Q2A_MODULES:
+        fail("QR Q2A does not cover exactly the six reviewed owners")
+    groups = route_groups(wave)
+    if len(groups) != 680:
+        fail(f"QR Q2A must contain 680 source commands, found {len(groups)}")
+    private = [logical for logical in wave if baseline[logical].visibility == "private"]
+    if len(private) != 7:
+        fail(f"QR Q2A must contain 7 private declarations, found {len(private)}")
+    if {row.destination_module for row in wave.values()} != Q2A_DESTINATIONS:
+        fail("QR Q2A destination set differs from the reviewed six leaves")
+    actual_to_logical = {row.name: logical for logical, row in baseline.items()}
+    promotions = 0
+    for edge in iter_stream_edges(baseline_tsv):
+        if edge.kind != "body":
+            continue
+        source = actual_to_logical.get(edge.source)
+        target = actual_to_logical.get(edge.target)
+        if source not in wave or target not in wave or baseline[target].visibility != "private":
+            continue
+        if wave[source].destination_module != wave[target].destination_module:
+            promotions += 1
+    if promotions:
+        fail(f"QR Q2A unexpectedly requires {promotions} private promotions")
+    return len(wave), len(groups), len(private), promotions
+
+
 def generate_private_rewrites(
     baseline: dict[str, Declaration],
     ownership: dict[str, OwnershipRow],
@@ -1325,7 +1380,7 @@ def expected_canonical_imports(
         return [f"{REUSABLE_ROOT}.HouseholderConstruction2"]
     result: list[str] = []
     for imported in original_imports:
-        if imported in HOUSEHOLDER_MODULES:
+        if imported in REUSABLE_MIGRATION_MODULES:
             result.append(default_destination(imported))
         else:
             result.append(imported)
@@ -1557,6 +1612,112 @@ def materialize_householder_wave(
     )
 
 
+def materialize_q2a(
+    project_root: Path,
+    routes: dict[str, Route],
+    owners: dict[str, FrozenOwner],
+    source_dir: Path,
+) -> None:
+    groups = route_groups(routes)
+    by_owner: dict[str, list[Route]] = defaultdict(list)
+    for members in groups.values():
+        by_owner[members[0].historical_module].append(
+            next(row for row in members if row.provenance in {"authored", "source_alias"})
+        )
+
+    for owner in sorted(Q2A_MODULES):
+        frozen = owners[owner]
+        live = project_root / frozen.path
+        pristine = frozen_source_path(source_dir, owner)
+        if sha256_file(pristine) != frozen.source_sha256:
+            fail(f"{owner}: pristine materialization source differs from the contract")
+        source = normalized_source_bytes(pristine)
+        basename = owner.rsplit(".", 1)[1]
+        reusable = default_destination(owner)
+        reusable_payload = source.replace(
+            f"Algorithms/QR/{basename}.lean".encode(),
+            f"Algorithms/LinearSystems/QR/{basename}.lean".encode(),
+            1,
+        )
+        for dependency in REUSABLE_MIGRATION_MODULES:
+            reusable_payload = reusable_payload.replace(
+                f"import {dependency}\n".encode(),
+                f"import {default_destination(dependency)}\n".encode(),
+            )
+        reusable_path = project_root / module_path(reusable)
+        reusable_path.parent.mkdir(parents=True, exist_ok=True)
+        module_doc = (
+            f"/-!\n# {basename}\n\n"
+            "Canonical source-neutral QR API.  The historical QR path "
+            "remains an import-only wrapper.\n"
+            "-/\n\n"
+        ).encode()
+        import_ends = [
+            match.end()
+            for match in re.finditer(
+                rb"(?m)^(?:public\s+)?import\s+[A-Za-z_][A-Za-z0-9_.]*\n",
+                reusable_payload,
+            )
+        ]
+        if not import_ends:
+            fail(f"{owner}: materialized reusable source has no import command")
+        insert_at = max(import_ends)
+        reusable_path.write_bytes(
+            reusable_payload[:insert_at]
+            + b"\n"
+            + module_doc
+            + reusable_payload[insert_at:]
+        )
+        live.write_bytes(f"import {reusable}\n".encode())
+
+    canonical_test_paths: list[str] = []
+    old_test_paths: list[str] = []
+    for destination in sorted(Q2A_DESTINATIONS):
+        roots = sorted(
+            {
+                row.command_root_actual_name
+                for members in groups.values()
+                for row in members
+                if row.destination_module == destination
+                and row.provenance in {"authored", "source_alias"}
+                and not row.command_root_actual_name.startswith("_private.")
+            }
+        )
+        if not roots:
+            fail(f"{destination}: no public command root for canonical smoke test")
+        label = destination.rsplit(".", 1)[1]
+        module = f"NumStabilityTest.Worker.QrCh19.Canonical.{label}"
+        path = project_root / module_path(module)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"import {destination}\n\n#check {roots[0]}\n", encoding="utf-8", newline="\n")
+        canonical_test_paths.append(module)
+
+    for owner in sorted(Q2A_MODULES):
+        roots = sorted(
+            row.command_root_actual_name
+            for row in by_owner[owner]
+            if not row.command_root_actual_name.startswith("_private.")
+        )
+        if not roots:
+            fail(f"{owner}: no public command root for compatibility smoke test")
+        label = owner.rsplit(".", 1)[1]
+        module = f"NumStabilityTest.Worker.QrCh19.Compatibility.{label}"
+        path = project_root / module_path(module)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            f"import {owner}\n\n#check {roots[0]}\n", encoding="utf-8", newline="\n"
+        )
+        old_test_paths.append(module)
+
+    wave_module = "NumStabilityTest.Worker.QrCh19.Q2A"
+    wave_path = project_root / module_path(wave_module)
+    wave_path.parent.mkdir(parents=True, exist_ok=True)
+    all_tests = sorted(canonical_test_paths + old_test_paths)
+    wave_path.write_text(
+        "".join(f"import {module}\n" for module in all_tests), encoding="utf-8", newline="\n"
+    )
+
+
 def validate_materialized_householder_text(
     project_root: Path,
     routes: dict[str, Route],
@@ -1600,6 +1761,52 @@ def validate_materialized_householder_text(
     )
     if (len(wave_groups), wrappers, destinations) != (821, 11, 12):
         fail("materialized Householder structural counts drifted")
+    return len(wave_groups)
+
+
+def validate_materialized_q2a_text(
+    project_root: Path,
+    routes: dict[str, Route],
+    owners: dict[str, FrozenOwner],
+    source_dir: Path,
+) -> int:
+    """Check all 680 Q2A command byte strings without relying on build output."""
+
+    wave_groups = [
+        members
+        for members in route_groups(routes).values()
+        if members[0].destination_module in Q2A_DESTINATIONS
+    ]
+    frozen_sources = {
+        owner: normalized_source_bytes(frozen_source_path(source_dir, owner))
+        for owner in Q2A_MODULES
+    }
+    candidate_sources = {
+        destination: normalized_source_bytes(project_root / module_path(destination))
+        for destination in Q2A_DESTINATIONS
+    }
+    for members in wave_groups:
+        root = next(
+            row for row in members if row.provenance in {"authored", "source_alias"}
+        )
+        command = source_command_bytes(
+            frozen_sources[root.historical_module], root.span
+        )
+        occurrences = candidate_sources[root.destination_module].count(command)
+        if occurrences != 1:
+            fail(
+                f"{root.command_root_logical}: frozen command occurs {occurrences} "
+                "times in its materialized destination"
+            )
+    wrappers, destinations = validate_structural_files(
+        project_root,
+        routes,
+        owners,
+        source_dir,
+        set(Q2A_DESTINATIONS),
+    )
+    if (len(wave_groups), wrappers, destinations) != (680, 6, 6):
+        fail("materialized QR Q2A structural counts drifted")
     return len(wave_groups)
 
 
@@ -1667,6 +1874,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--write-private-rewrites", action="store_true")
     parser.add_argument("--materialize-householder-wave", action="store_true")
     parser.add_argument("--check-materialized-householder", action="store_true")
+    parser.add_argument("--materialize-q2a", action="store_true")
+    parser.add_argument("--check-materialized-q2a", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     return parser.parse_args()
 
@@ -1702,6 +1911,9 @@ def main() -> int:
     wave_declarations, wave_groups, wave_private, promotions = validate_householder_contract(
         baseline_path, baseline, routes
     )
+    q2a_declarations, q2a_groups, q2a_private, q2a_promotions = validate_q2a_contract(
+        baseline_path, baseline, routes
+    )
     if args.materialize_householder_wave:
         if args.mode != "pre":
             fail("--materialize-householder-wave is valid only in pre mode")
@@ -1722,6 +1934,26 @@ def main() -> int:
             "11 exact wrappers, 12 canonical destinations"
         )
         return 0
+    if args.materialize_q2a:
+        if args.mode != "pre":
+            fail("--materialize-q2a is valid only in pre mode")
+        materialize_q2a(
+            args.project_root, routes, owners, args.frozen_source_dir
+        )
+        print(
+            f"materialized QR Q2A: {q2a_declarations} declarations, "
+            f"{q2a_groups} command groups, {len(Q2A_DESTINATIONS)} destinations"
+        )
+        return 0
+    if args.check_materialized_q2a:
+        groups = validate_materialized_q2a_text(
+            args.project_root, routes, owners, args.frozen_source_dir
+        )
+        print(
+            f"materialized QR Q2A text gate passed: {groups} command groups, "
+            "6 exact wrappers, 6 canonical destinations"
+        )
+        return 0
 
     if args.mode == "pre":
         rewrites = read_private_rewrites(args.project_root / args.private_rewrites)
@@ -1732,6 +1964,8 @@ def main() -> int:
             f"{command_groups} command groups, {len(set(r.destination_module for r in routes.values()))} "
             f"destinations; Householder Wave 1 = {wave_declarations} declarations / "
             f"{wave_groups} commands / {wave_private} private rewrites / {promotions} promotions; "
+            f"QR Q2A = {q2a_declarations} declarations / {q2a_groups} commands / "
+            f"{q2a_private} private rewrites / {q2a_promotions} promotions; "
             f"routes sha256 {sha256_file(args.project_root / args.routes)}"
         )
         return 0
@@ -1761,6 +1995,9 @@ def main() -> int:
     if completed == HOUSEHOLDER_DESTINATIONS:
         if len(rewrites) != 15 or fingerprint_groups != 821 or wrappers != 11 or destinations != 12:
             fail("Householder stage counts differ from the reviewed 15/821/11/12 contract")
+    if completed == HOUSEHOLDER_AND_Q2A_DESTINATIONS:
+        if len(rewrites) != 22 or fingerprint_groups != 1501 or wrappers != 17 or destinations != 18:
+            fail("Householder + QR Q2A stage counts differ from the reviewed 22/1501/17/18 contract")
     print(
         f"{args.mode} mode passed: {len(completed)} destinations, {wrappers} wrappers, "
         f"{fingerprint_groups} byte-identical command groups, {len(rewrites)} private rewrites, "
