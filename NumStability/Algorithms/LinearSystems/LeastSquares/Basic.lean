@@ -14,6 +14,8 @@ import NumStability.Algorithms.QR.HouseholderSpecSupport
 import NumStability.Algorithms.QR.QRSolve
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding
+import NumStability.Analysis.SingularValues.Realification
+import NumStability.Analysis.VectorNorms.Basic
 import NumStability.FloatingPoint.Model
 
 namespace NumStability
@@ -24,7 +26,7 @@ open scoped BigOperators Matrix.Norms.Frobenius
 /-!
 # Basic
 
-Canonical reusable module extracted without change from Higham20AlternativeBound, LSQRSolve.
+Canonical reusable module extracted without change from Higham20AlternativeBound, Higham20ResidualQuality, LSQRSolve.
 -/
 
 /-- Rectangular normal-equation Gram matrix `Aᵀ A`.  This duplicate of the
@@ -1431,5 +1433,27 @@ theorem higham20AlternativeCouplingMatrix_nonneg {m n : Nat}
   exact Finset.sum_nonneg (fun k _ => mul_nonneg
     (higham20AlternativeAbsInverseBlock_nonneg A Aplus gramInv i k)
     (higham20AlternativeOffDiagonalBlock_nonneg hE k j))
+/-- Euclidean norm is bounded by the sum of coordinate absolute values. -/
+theorem higham20_vecNorm2_le_sum_abs {d : Nat} (v : Fin d → Real) :
+    vecNorm2 v ≤ ∑ i : Fin d, |v i| := by
+  have hsq : vecNorm2 v ^ 2 ≤ (∑ i : Fin d, |v i|) ^ 2 := by
+    rw [vecNorm2_sq]
+    exact vecNorm2Sq_le_sum_abs_sq v
+  have hv : 0 ≤ vecNorm2 v := vecNorm2_nonneg v
+  have hs : 0 ≤ ∑ i : Fin d, |v i| :=
+    Finset.sum_nonneg (fun i _ => abs_nonneg (v i))
+  nlinarith
+/-- The repository's complex `L²` norm agrees with `vecNorm2` on embedded
+real vectors. -/
+theorem higham20_complexVecLpNorm_two_realVecToComplex_eq_vecNorm2
+    {d : Nat} (v : Fin d → Real) :
+    complexVecLpNorm (ENNReal.ofReal (2 : Real)) (realVecToComplex v) =
+      vecNorm2 v := by
+  calc
+    complexVecLpNorm (ENNReal.ofReal (2 : Real)) (realVecToComplex v) =
+        norm (WithLp.toLp (2 : ENNReal) (realVecToComplex v)) :=
+      complexVecLpNorm_two_eq_toLp (realVecToComplex v)
+    _ = norm (realVecToEuclidean v) := by rfl
+    _ = vecNorm2 v := realVecToEuclidean_norm v
 
 end NumStability

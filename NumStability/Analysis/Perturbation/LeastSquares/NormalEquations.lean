@@ -17,8 +17,12 @@ import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 import NumStability.Algorithms.MatMul
 import NumStability.Algorithms.MatVec
 import NumStability.Analysis.MatrixAlgebra
+import NumStability.Analysis.MatrixNorms.Basic
+import NumStability.Analysis.MatrixNorms.Comparisons
 import NumStability.Analysis.PerturbationTheory
 import NumStability.Analysis.Rounding
+import NumStability.Analysis.SingularValues.Basic
+import NumStability.Analysis.SingularValues.Realification
 import NumStability.FloatingPoint.Model
 
 namespace NumStability
@@ -29,7 +33,7 @@ open scoped BigOperators Matrix.Norms.Frobenius
 /-!
 # NormalEquations
 
-Canonical reusable module extracted without change from LSNormalEquations, LSQRSolve.
+Canonical reusable module extracted without change from Higham20NormalEquationsNorms, LSNormalEquations, LSQRSolve.
 -/
 
 /-- **Error in computing Ĉ = fl(AᵀA)** (Higham §20.4, eq before 20.11).
@@ -518,5 +522,147 @@ theorem rectLSGramPerturbation_frobNorm_le_normBudget {m n : ℕ}
   apply frobNorm_le_of_entry_abs_le
   · exact rectLSGramPerturbationNormBudget_nonneg A hcA
   · exact rectLSGramPerturbation_abs_le_normBudget A ΔA hΔA
+private theorem frobNormRect_sq_eq_complexMatrixFrobeniusSq_realRect
+    {m n : Nat} (A : Fin m -> Fin n -> Real) :
+    frobNormRect A ^ 2 =
+      complexMatrixFrobeniusSq (realRectToCMatrix A) := by
+  rw [frobNormRect_sq]
+  simp [frobNormSqRect, complexMatrixFrobeniusSq, realRectToCMatrix,
+    Real.norm_eq_abs, sq_abs]
+/-- Rectangular real Frobenius norm squared is bounded by the number of
+columns times the squared Euclidean operator norm. -/
+theorem frobNormRect_sq_le_card_mul_complexMatrixOp2_sq {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    frobNormRect A ^ 2 <=
+      (n : Real) * complexMatrixOp2 (realRectToCMatrix A) ^ 2 := by
+  rw [frobNormRect_sq_eq_complexMatrixFrobeniusSq_realRect]
+  exact complexMatrixFrobeniusSq_le_card_mul_complexMatrixOp2_sq
+    (realRectToCMatrix A)
+/-- The exact entrywise Gram majorant `|A^T||A|`. -/
+noncomputable def higham20NormalEqAbsGram {m n : Nat}
+    (A : Fin m -> Fin n -> Real) : Fin n -> Fin n -> Real :=
+  fun i j => Finset.univ.sum (fun k : Fin m => |A k i| * |A k j|)
+/-- The exact entrywise right-hand-side majorant `|A^T||b|`. -/
+noncomputable def higham20NormalEqAbsRhs {m n : Nat}
+    (A : Fin m -> Fin n -> Real) (b : Fin m -> Real) : Fin n -> Real :=
+  fun j => Finset.univ.sum (fun i : Fin m => |A i j| * |b i|)
+/-- The natural Gram majorant has the source envelope
+`|| |A^T||A| ||_F <= n ||A||_2^2`. -/
+theorem higham20NormalEqAbsGram_frobNormRect_le {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    frobNormRect (higham20NormalEqAbsGram A) <=
+      (n : Real) * complexMatrixOp2 (realRectToCMatrix A) ^ 2 := by
+  let Aabs : Fin m -> Fin n -> Real := absMatrixRect A
+  have hprod :
+      higham20NormalEqAbsGram A =
+        rectMatMul (finiteTranspose Aabs) Aabs := by
+    ext i j
+    simp [higham20NormalEqAbsGram, rectMatMul, finiteTranspose, Aabs,
+      absMatrixRect]
+  rw [hprod]
+  calc
+    frobNormRect (rectMatMul (finiteTranspose Aabs) Aabs) <=
+        frobNormRect (finiteTranspose Aabs) * frobNormRect Aabs :=
+      frobNormRect_rectMatMul_le _ _
+    _ = frobNormRect A ^ 2 := by
+      rw [frobNormRect_finiteTranspose]
+      have habs : frobNormRect Aabs = frobNormRect A := by
+        simpa [Aabs, absMatrixRect] using frobNormRect_abs A
+      rw [habs]
+      ring
+    _ <= (n : Real) * complexMatrixOp2 (realRectToCMatrix A) ^ 2 :=
+      frobNormRect_sq_le_card_mul_complexMatrixOp2_sq A
+private theorem higham20_realRectMatrixRank_finiteTranspose
+    {m n : Nat} (A : Fin m -> Fin n -> Real) :
+    realRectMatrixRank (finiteTranspose A) = realRectMatrixRank A := by
+  unfold realRectMatrixRank complexMatrixRank
+  have hmatrix :
+      (realRectToCMatrix (finiteTranspose A) :
+          Matrix (Fin n) (Fin m) Complex) =
+        Matrix.transpose
+          (realRectToCMatrix A : Matrix (Fin m) (Fin n) Complex) := by
+    ext i j
+    rfl
+  rw [hmatrix, Matrix.rank_transpose]
+private theorem higham20_realRectMatrixRank_le_width
+    {m n : Nat} (A : Fin m -> Fin n -> Real) :
+    realRectMatrixRank A <= n := by
+  simpa [realRectMatrixRank, complexMatrixRank] using
+    (Matrix.rank_le_width
+      (realRectToCMatrix A : Matrix (Fin m) (Fin n) Complex))
+/-- The natural RHS majorant has the source envelope
+`|| |A^T||b| ||_2 <= sqrt(n) ||A||_2 ||b||_2`. -/
+theorem higham20NormalEqAbsRhs_vecNorm2_le {m n : Nat}
+    (hn : 0 < n) (hmn : n <= m)
+    (A : Fin m -> Fin n -> Real) (b : Fin m -> Real) :
+    vecNorm2 (higham20NormalEqAbsRhs A b) <=
+      Real.sqrt (n : Real) * complexMatrixOp2 (realRectToCMatrix A) *
+        vecNorm2 b := by
+  let AT : Fin n -> Fin m -> Real := finiteTranspose A
+  have hm : 0 < m := lt_of_lt_of_le hn hmn
+  have hATbase :
+      rectOpNorm2Le AT (complexMatrixOp2 (realRectToCMatrix AT)) :=
+    rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le AT le_rfl
+  have hATabs0 :=
+    rectOpNorm2Le_absMatrixRect_sqrt_rank_mul_of_rectOpNorm2Le
+      hm AT (complexMatrixOp2_nonneg _) hATbase
+  have hrank : realRectMatrixRank AT <= n := by
+    rw [show AT = finiteTranspose A by rfl,
+      higham20_realRectMatrixRank_finiteTranspose]
+    exact higham20_realRectMatrixRank_le_width A
+  have hsqrt :
+      Real.sqrt (realRectMatrixRank AT : Real) <= Real.sqrt (n : Real) :=
+    Real.sqrt_le_sqrt (by exact_mod_cast hrank)
+  have hATnorm :
+      complexMatrixOp2 (realRectToCMatrix AT) =
+        complexMatrixOp2 (realRectToCMatrix A) := by
+    simpa [AT] using
+      complexMatrixOp2_realRectToCMatrix_finiteTranspose_eq A
+  have hATabs :
+      rectOpNorm2Le (absMatrixRect AT)
+        (Real.sqrt (n : Real) *
+          complexMatrixOp2 (realRectToCMatrix A)) := by
+    apply rectOpNorm2Le_mono _ hATabs0
+    rw [hATnorm]
+    exact mul_le_mul_of_nonneg_right hsqrt (complexMatrixOp2_nonneg _)
+  have haction :
+      higham20NormalEqAbsRhs A b =
+        rectMatMulVec (absMatrixRect AT) (absVec m b) := by
+    ext j
+    simp [higham20NormalEqAbsRhs, rectMatMulVec, absMatrixRect,
+      finiteTranspose, AT, absVec]
+  rw [haction]
+  calc
+    vecNorm2 (rectMatMulVec (absMatrixRect AT) (absVec m b)) <=
+        (Real.sqrt (n : Real) *
+          complexMatrixOp2 (realRectToCMatrix A)) *
+            vecNorm2 (absVec m b) := hATabs _
+    _ = Real.sqrt (n : Real) *
+        complexMatrixOp2 (realRectToCMatrix A) * vecNorm2 b := by
+      rw [show vecNorm2 (absVec m b) = vecNorm2 b by
+        simpa [absVec] using vecNorm2_abs b]
+/-- The absolute Gram majorant of a square factor is bounded by the square
+of its Frobenius norm. -/
+theorem higham20NormalEqAbsGram_frobNormRect_le_frobNormRect_sq {n : Nat}
+    (R : Fin n -> Fin n -> Real) :
+    frobNormRect (higham20NormalEqAbsGram R) <= frobNormRect R ^ 2 := by
+  let Rabs : Fin n -> Fin n -> Real := absMatrixRect R
+  have hprod :
+      higham20NormalEqAbsGram R =
+        rectMatMul (finiteTranspose Rabs) Rabs := by
+    ext i j
+    simp [higham20NormalEqAbsGram, rectMatMul, finiteTranspose, Rabs,
+      absMatrixRect]
+  rw [hprod]
+  calc
+    frobNormRect (rectMatMul (finiteTranspose Rabs) Rabs) <=
+        frobNormRect (finiteTranspose Rabs) * frobNormRect Rabs :=
+      frobNormRect_rectMatMul_le _ _
+    _ = frobNormRect R ^ 2 := by
+      rw [frobNormRect_finiteTranspose]
+      have habs : frobNormRect Rabs = frobNormRect R := by
+        simpa [Rabs, absMatrixRect] using frobNormRect_abs R
+      rw [habs]
+      ring
 
 end NumStability

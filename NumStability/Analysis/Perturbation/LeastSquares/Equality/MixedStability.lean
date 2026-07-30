@@ -19,11 +19,12 @@ import NumStability.FloatingPoint.Model
 namespace NumStability
 
 open scoped BigOperators
+open scoped BigOperators Matrix.Norms.Frobenius
 
 /-!
 # MixedStability
 
-Canonical reusable module extracted without change from LSE.
+Canonical reusable module extracted without change from Higham20Theorem20_10, LSE.
 -/
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, exact perturbed-data
@@ -11959,5 +11960,143 @@ theorem theorem20_10_partB_backward_error_of_nonempty_householder_gamma_certific
   exact
     ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, cert.Deltad,
       cert.hDeltaA, cert.hDeltaB, cert.hDeltab, cert.hDeltad, hmethod⟩
+namespace Theorem20_10
+
+/-- A single gamma horizon for the square constraint panel and its rounded
+forward solve. -/
+def fullConstraintGammaIndex (p : ℕ) : ℕ :=
+  max p (p * householderConstructApplyGammaIndex p)
+/-- The source rank radius used by the `q = 0` branch.  Retaining both source
+margins mirrors the two assumptions in (20.24), even though square full row
+rank alone already implies stacked full column rank. -/
+noncomputable def fullConstraintSourceRankRadius
+    {r p : ℕ} {A : Fin r → Fin p → ℝ} {B : Fin p → Fin p → ℝ}
+    (hB : LSEFullRowRank B) (hStack : LSEStackedFullColumnRank A B) : ℝ :=
+  min hB.transposeVecNorm2LowerMargin hStack.vecNorm2LowerMargin
+/-- Positive unit-roundoff threshold for the square constraint-only branch.
+The first cap validates the panel and solve gamma indices; the second keeps
+the composed constraint perturbation below both source rank margins. -/
+noncomputable def fullConstraintUnitRoundoffSmallnessThreshold
+    {r p : ℕ} {A : Fin r → Fin p → ℝ} {B : Fin p → Fin p → ℝ}
+    (hB : LSEFullRowRank B) (hStack : LSEStackedFullColumnRank A B) : ℝ :=
+  let N := fullConstraintGammaIndex p
+  min
+    (((1 : ℝ) / 2) / (N : ℝ))
+    (fullConstraintSourceRankRadius hB hStack /
+      ((6 : ℝ) * (N : ℝ) * (1 + frobNormRect B)))
+/-- Positivity of the full-constraint threshold for `p > 0`. -/
+theorem fullConstraintUnitRoundoffSmallnessThreshold_pos
+    {r p : ℕ} {A : Fin r → Fin p → ℝ} {B : Fin p → Fin p → ℝ}
+    (hp : 0 < p) (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B) :
+    0 < fullConstraintUnitRoundoffSmallnessThreshold hB hStack := by
+  let N := fullConstraintGammaIndex p
+  have hpN : p ≤ N := by simp [N, fullConstraintGammaIndex]
+  have hNnat : 0 < N := lt_of_lt_of_le hp hpN
+  have hN : (0 : ℝ) < N := by exact_mod_cast hNnat
+  have hradius : 0 < fullConstraintSourceRankRadius hB hStack := by
+    dsimp [fullConstraintSourceRankRadius]
+    exact lt_min hB.transposeVecNorm2LowerMargin_pos
+      hStack.vecNorm2LowerMargin_pos
+  have hden : 0 < (6 : ℝ) * (N : ℝ) * (1 + frobNormRect B) := by
+    have hnorm := frobNormRect_nonneg B
+    positivity
+  dsimp [fullConstraintUnitRoundoffSmallnessThreshold]
+  exact lt_min (div_pos (by norm_num) hN) (div_pos hradius hden)
+/-- The full-constraint threshold validates the literal panel/solve path and
+bounds the composed matrix perturbation strictly below both source margins. -/
+theorem fullConstraint_unit_roundoff_conditions_of_lt_smallnessThreshold
+    {r p : ℕ} (fp : FPModel)
+    {A : Fin r → Fin p → ℝ} {B : Fin p → Fin p → ℝ}
+    (hp : 0 < p) (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hu : fp.u < fullConstraintUnitRoundoffSmallnessThreshold hB hStack) :
+    gammaValid fp (p * householderConstructApplyGammaIndex p) ∧
+      gammaValid fp p ∧
+      theorem20_10_householder_composed_partA_gammaB fp r p 0 *
+          frobNormRect B < fullConstraintSourceRankRadius hB hStack := by
+  let N := fullConstraintGammaIndex p
+  let idx := p * householderConstructApplyGammaIndex p
+  have hpN : p ≤ N := by simp [N, fullConstraintGammaIndex]
+  have hidxN : idx ≤ N := by simp [N, idx, fullConstraintGammaIndex]
+  have hNnat : 0 < N := lt_of_lt_of_le hp hpN
+  have hN : (0 : ℝ) < N := by exact_mod_cast hNnat
+  have hnorm : 0 ≤ frobNormRect B := frobNormRect_nonneg B
+  have hden : 0 < (6 : ℝ) * (N : ℝ) * (1 + frobNormRect B) := by
+    positivity
+  have huHalf : fp.u < ((1 : ℝ) / 2) / (N : ℝ) :=
+    lt_of_lt_of_le hu (by
+      dsimp [fullConstraintUnitRoundoffSmallnessThreshold]
+      exact min_le_left _ _)
+  have huRank :
+      fp.u < fullConstraintSourceRankRadius hB hStack /
+        ((6 : ℝ) * (N : ℝ) * (1 + frobNormRect B)) :=
+    lt_of_lt_of_le hu (by
+      dsimp [fullConstraintUnitRoundoffSmallnessThreshold]
+      exact min_le_right _ _)
+  have hNu_lt : (N : ℝ) * fp.u < 1 / 2 := by
+    have := (lt_div_iff₀ hN).mp huHalf
+    nlinarith
+  have hhalfN : (N : ℝ) * fp.u ≤ 1 / 2 := le_of_lt hNu_lt
+  have hvalidN : gammaValid fp N := by
+    unfold gammaValid
+    linarith
+  have hvalidIdx : gammaValid fp idx := gammaValid_mono fp hidxN hvalidN
+  have hvalidp : gammaValid fp p := gammaValid_mono fp hpN hvalidN
+  have hhalfIdx : (idx : ℝ) * fp.u ≤ 1 / 2 := by
+    have hcast : (idx : ℝ) ≤ N := by exact_mod_cast hidxN
+    exact le_trans (mul_le_mul_of_nonneg_right hcast fp.u_nonneg) hhalfN
+  have hhalfp : (p : ℝ) * fp.u ≤ 1 / 2 := by
+    have hcast : (p : ℝ) ≤ N := by exact_mod_cast hpN
+    exact le_trans (mul_le_mul_of_nonneg_right hcast fp.u_nonneg) hhalfN
+  have hgammaPanel :
+      theorem20_10_householder_gammaB fp r p 0 ≤
+        2 * ((N : ℝ) * fp.u) := by
+    calc
+      theorem20_10_householder_gammaB fp r p 0
+          ≤ 2 * ((idx : ℝ) * fp.u) := by
+              simpa [idx, mul_assoc] using
+                theorem20_10_householder_gammaB_le_linear_unit_roundoff_of_small
+                  (r := r) (p := p) (q := 0) fp hhalfIdx
+      _ ≤ 2 * ((N : ℝ) * fp.u) := by
+              have hcast : (idx : ℝ) ≤ N := by exact_mod_cast hidxN
+              exact mul_le_mul_of_nonneg_left
+                (mul_le_mul_of_nonneg_right hcast fp.u_nonneg) (by norm_num)
+  have hgammap : gamma fp p ≤ 2 * ((N : ℝ) * fp.u) := by
+    calc
+      gamma fp p ≤ 2 * ((p : ℝ) * fp.u) :=
+        gamma_le_two_mul_n_u_of_nu_le_half fp p hhalfp
+      _ ≤ 2 * ((N : ℝ) * fp.u) := by
+        have hcast : (p : ℝ) ≤ N := by exact_mod_cast hpN
+        exact mul_le_mul_of_nonneg_left
+          (mul_le_mul_of_nonneg_right hcast fp.u_nonneg) (by norm_num)
+  have hpanelNonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p 0 := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidIdx
+  have hgammapNonneg : 0 ≤ gamma fp p := gamma_nonneg fp hvalidp
+  have ht : 0 ≤ 2 * ((N : ℝ) * fp.u) := by
+    exact mul_nonneg (by norm_num) (mul_nonneg (le_of_lt hN) fp.u_nonneg)
+  have ht_one : 2 * ((N : ℝ) * fp.u) ≤ 1 := by nlinarith
+  have hcomposed :
+      theorem20_10_householder_composed_partA_gammaB fp r p 0 ≤
+        6 * (N : ℝ) * fp.u := by
+    dsimp [theorem20_10_householder_composed_partA_gammaB]
+    nlinarith
+  have hRankProduct :
+      fp.u * ((6 : ℝ) * (N : ℝ) * (1 + frobNormRect B)) <
+        fullConstraintSourceRankRadius hB hStack :=
+    (lt_div_iff₀ hden).mp huRank
+  refine ⟨by simpa [idx] using hvalidIdx, hvalidp, ?_⟩
+  calc
+    theorem20_10_householder_composed_partA_gammaB fp r p 0 *
+          frobNormRect B
+        ≤ (6 * (N : ℝ) * fp.u) * frobNormRect B :=
+          mul_le_mul_of_nonneg_right hcomposed hnorm
+    _ ≤ fp.u * ((6 : ℝ) * (N : ℝ) * (1 + frobNormRect B)) := by
+          nlinarith [fp.u_nonneg, hN, hnorm]
+    _ < fullConstraintSourceRankRadius hB hStack := hRankProduct
+
+end Theorem20_10
 
 end NumStability

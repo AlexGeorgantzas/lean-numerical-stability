@@ -1063,6 +1063,47 @@ The two public names that *are* defined twice in the repository —
 Chapter 2 modules — are pre-existing at the frozen base and lie entirely outside
 this lane.
 
+## 18. Three defects only the compiler could find
+
+Byte-identical declaration spans are necessary and nowhere near sufficient. Each of
+these passed every span, graph, tier and visibility check and still failed to
+compile, because relocating a declaration also has to reconstruct the *elaboration
+context* around it. All three were found by building, and each fix is structural
+rather than a patch to the one file that broke.
+
+**A file-level `noncomputable section`.** `Higham20MGSStability` opens one at line
+11. The splitter carried `import` and `open` lines out of the header but not that
+directive, so six definitions arrived in a context that no longer matched and Lean
+answered `failed to compile definition, consider marking it as 'noncomputable'`.
+The directive is now tracked *per destination*: reproducing it in a destination that
+also holds an ordinary owner's spans would silently make those definitions
+noncomputable, so that combination is a hard error instead. Exactly one owner uses
+it and its only destination is pure, so the emission reproduces the original
+exactly — directive after the opens, matching bare `end` before `end NumStability`.
+
+**Cross-owner ordering.** A destination gathers spans from several owners, and the
+emitter grouped them in whatever order the caller listed. Waves 4 and 5 built green
+for the wrong reason: the owner lists happened to be dependency-compatible. Passing
+all 41 owners alphabetically put `lsAugmentedProjectionBlock` at line 605 of
+`LinearSystems.LeastSquares.Basic` and a use of it at line 41. Owners are now ranked
+by a topological sort of the declaration graph and spans sort by
+`(owner_rank, span_start)` — dependency order across owners, source order within
+one — so correctness no longer depends on how the emitter is invoked.
+
+**A span that opens its own namespace.** An `.ilean` declaration range can begin at
+the `namespace` command preceding the declaration. `Theorem03.ResidualQuality` then
+carried `namespace Theorem20_3` twice and closed it once, which Lean reported 250
+lines later as `Invalid name after 'end'`. Two changes: segments a span opens for
+itself are no longer duplicated, and — the part that generalises — the closing
+`end`s are now derived by re-scanning the emitted body comment-aware and closing
+exactly what is left open, instead of trusting what the namespace walk believes.
+
+A namespace-and-section balance check over every emitted file now runs before each
+build. A forward-reference checker was also written and then discarded: it located
+declarations by the first textual occurrence of a short name, which produced false
+positives such as "`mulVec_eq` uses `GQRAQTallCase`". A gate that cannot be trusted
+is worse than no gate, so the two real cases were confirmed directly instead.
+
 ### A note for the integrator on private promotions
 
 The review branch `codex/review-lsq-contract-repair` resolves the same defect

@@ -1,8 +1,15 @@
+import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LinearSystems.LeastSquares.AugmentedSystem
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
+import NumStability.Algorithms.QR.HouseholderQR
+import NumStability.Algorithms.QR.QRSolve
 import NumStability.Analysis.MatrixAlgebra
+import NumStability.FloatingPoint.Model
 
 namespace NumStability
 
@@ -11,7 +18,7 @@ open scoped BigOperators
 /-!
 # Refinement
 
-Canonical reusable module extracted without change from Higham20Algorithms.
+Canonical reusable module extracted without change from Higham20Algorithms, Higham20Refinement.
 -/
 
 /-- Step 1 of Higham's direct least-squares refinement: form `r = b - A*x`. -/
@@ -210,5 +217,29 @@ theorem Higham20CorrectedSeminormalEquationsStep.initial_isLeastSquaresMinimizer
       rectLSGram A j k = ∑ i : Fin n, R i j * R i k) :
     IsLeastSquaresMinimizer A b x :=
   h.initial_sne.isLeastSquaresMinimizer hGram
+noncomputable def higham20Eq20_4Q {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ) :
+    Fin (n + k) → Fin (n + k) → ℝ :=
+  fl_householderQRPanel_Q fp (n + k) n A
+noncomputable def higham20Eq20_4R {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => fl_householderQRPanel_R fp (n + k) n A (Fin.castAdd k i) j
+noncomputable def higham20Eq20_4TransformedRhs {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ) (f : Fin (n + k) → ℝ) :
+    Fin (n + k) → ℝ :=
+  fl_householderQRPanel_rhs fp (n + k) n A f
+noncomputable def higham20Eq20_4ForwardBlock {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ) (g : Fin n → ℝ) :
+    Fin n → ℝ :=
+  fl_forwardSub fp n (matTranspose (higham20Eq20_4R fp A)) g
+/-- The actual solution block returned by the Householder-QR augmented solve
+of Theorem 20.4. -/
+noncomputable def higham20Eq20_4CorrectionSolution {n k : ℕ} (fp : FPModel)
+    (A : Fin (n + k) → Fin n → ℝ)
+    (f : Fin (n + k) → ℝ) (g : Fin n → ℝ) : Fin n → ℝ :=
+  fl_backSub fp n (higham20Eq20_4R fp A)
+    (fun i : Fin n =>
+      higham20Eq20_4TransformedRhs fp A f (Fin.castAdd k i) -
+        higham20Eq20_4ForwardBlock fp A g i)
 
 end NumStability
