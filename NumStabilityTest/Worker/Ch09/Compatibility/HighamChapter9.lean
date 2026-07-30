@@ -1,5 +1,6 @@
 import NumStability.Algorithms.HighamChapter9
 
+#check NumStability.growthFactorEntry_ge_of_entry_ge
 #check NumStability.higham9_1_completePivotChoice
 #check NumStability.higham9_1_LUFactSpec_one_explicit
 #check NumStability.higham9_3_absBudgetCertificate_backward_error
