@@ -11,7 +11,7 @@ root. Private authored roots have explicit rewrites. `owner-dag.tsv` is
 acyclic; `direct-imports.tsv` records canonical dependencies plus the imports
 needed by historical wrappers; and downstream consumers are enumerated.
 
-Implementation status: `BLOCKED_ON_BLOCKLU_INTEGRATION`.
+Implementation status: `READY_AFTER_QR_INTEGRATION`.
 
 Run `check_ch09_contract.py --mode pre` before using the
 contract. Post/stage comparison requires a fresh candidate format-2 graph and

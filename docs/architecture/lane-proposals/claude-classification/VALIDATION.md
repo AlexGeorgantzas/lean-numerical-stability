@@ -1,5 +1,9 @@
 # Classification and Chapter 9/11 preparation validation
 
+This file records the worker's historical validation at `6ecc4d551`. Current
+integrator hashes, import refreshes, and rerun results are recorded in
+`INTEGRATOR_REFRESH_9E7C8E324.md` and its JSON companion.
+
 Static validation passes for the full 386-module proposal and both semantic
 contracts. The frozen inventory and exclusions are an exact disjoint
 partition of all 603 unclassified modules at the packet base.

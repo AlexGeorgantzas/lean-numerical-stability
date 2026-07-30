@@ -13,11 +13,11 @@ from generate_classification_proposal import FIELDS
 from lane_common import (
     CLASSIFICATION_ROOT,
     EVIDENCE_HEAD,
-    ROOT,
+    git_show_bytes,
     module_from_path,
     read_tsv,
     sha256_file,
-    source_analysis,
+    source_analysis_from_bytes,
 )
 
 
@@ -65,7 +65,9 @@ def check(root: Path) -> dict[str, object]:
         for required in FIELDS[4:]:
             if not row[required].strip():
                 raise ValueError(f"{module}: empty {required}")
-        analysis = source_analysis(ROOT / row["path"])
+        analysis = source_analysis_from_bytes(
+            git_show_bytes(EVIDENCE_HEAD, row["path"])
+        )
         actual_imports = ";".join(analysis["imports"]) or "NONE"
         if actual_imports != row["direct_project_imports"]:
             raise ValueError(f"{module}: direct imports drifted from proposal evidence")

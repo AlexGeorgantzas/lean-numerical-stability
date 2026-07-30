@@ -66,3 +66,25 @@
 - Chapter 11 remains `BLOCKED_ON_CH09_INTEGRATION`; its contract records 61 explicit Chapter 9 dependency rows. Chapter 9 and Chapter 11 must not be implemented in parallel.
 - The packet's 386/217 inventory is frozen at `6487fc33088523b8f27ecde9ad613515b78f9977`; source/import refresh evidence is deliberately based on published main `6ecc4d5513226e67594bb22985913f6a4a383e5c`.
 - No branch was pushed or merged. The parent integrator requested a local commit-only handoff and will decide publication.
+
+## Integrator refresh at `9e7c8e324`
+
+The original delivery evidence above remains the worker's historical record at
+`6ecc4d551`. Before integration, the coordinator refreshed the usable proposal
+against `9e7c8e32437d6ea28bf297fc4f08756288df9b26`:
+
+- `HighamChapter8` and `MatrixInversion` now reflect the CI source-graph repair.
+- The obsolete `MatrixInversion -> HighamChapter9` consumer row was removed.
+- Ten obsolete Chapter 9 BlockLU umbrella imports were replaced by forty exact
+  canonical imports; the contract now has 280 import rows and 28 downstream
+  consumers.
+- Chapter 9 pre-check passes with all 4,420 declaration routes unchanged.
+- Chapter 11 pre-check passes with all 6,385 routes unchanged and remains
+  blocked until Chapter 9 is integrated and its current imports are regenerated.
+- Acceptance hashes were normalized to the repository's committed LF byte form;
+  the worker's pre-commit Windows CRLF hashes were not reproducible in a clean
+  checkout even though Git-normalized TSV content was identical.
+
+Chapter 9 is no longer blocked on BlockLU: strict-source and the full local
+library/test build passed at `9e7c8e324`. It remains ordered after QR solely to
+serialize shared aggregate/manifest edits.

@@ -9,7 +9,7 @@ import json
 import re
 from pathlib import Path
 
-from generate_classification_proposal import MIXED, reviewed_tier
+from generate_classification_proposal import MIXED, reviewed_tier, source_analysis_from_bytes
 from lane_common import (
     BASE_SHA,
     EVIDENCE_HEAD,
@@ -199,7 +199,7 @@ def generate_one(packet_root: Path, chapter: str, declarations, edges) -> None:
             }
         )
 
-        analysis = source_analysis(ROOT / path)
+        analysis = source_analysis_from_bytes(git_show_bytes(EVIDENCE_HEAD, path))
         tier = reviewed_tier(module, analysis)
         root_destinations: dict[str, str] = {}
         for root in authored:
@@ -274,8 +274,12 @@ def generate_one(packet_root: Path, chapter: str, declarations, edges) -> None:
     for path, module in zip(paths, modules):
         for destination in module_destinations[module]:
             exact_imports.add((module, "compatibility_wrapper", destination, "preserve_historical_import"))
-        payload = git_show_bytes(BASE_SHA, path)
-        for dependency in source_imports(payload):
+        # Declaration commands remain frozen at BASE_SHA above, but the import
+        # contract must describe the reviewed evidence head. Reusing packet-base
+        # imports here silently resurrects compatibility umbrellas after their
+        # canonical cutover.
+        evidence_payload = git_show_bytes(EVIDENCE_HEAD, path)
+        for dependency in source_imports(evidence_payload):
             if dependency in module_set:
                 for owner in module_destinations[module]:
                     for target in module_destinations[dependency]:
@@ -286,11 +290,18 @@ def generate_one(packet_root: Path, chapter: str, declarations, edges) -> None:
                     exact_imports.add((owner, "canonical_destination", dependency, "frozen_direct_import"))
 
     downstream: set[tuple[str, str, str]] = set()
-    for relative in git("ls-files", "--", "*.lean").splitlines():
+    for relative in git("ls-tree", "-r", "--name-only", EVIDENCE_HEAD).splitlines():
+        if not relative.endswith(".lean"):
+            continue
         if relative in paths:
             continue
-        path = ROOT / relative
-        text = path.read_text(encoding="utf-8-sig", errors="replace")
+        if relative.startswith("NumStabilityTest/Worker/ClassificationAudit/"):
+            # Lane-local evidence is not a production downstream consumer and
+            # may be committed after the proposal is generated.
+            continue
+        text = git_show_bytes(EVIDENCE_HEAD, relative).decode(
+            "utf-8-sig", errors="replace"
+        )
         for dependency in IMPORT_RE.findall(remove_lean_comments(text)):
             if dependency in module_set:
                 downstream.add((module_from_path(relative), dependency, relative))
@@ -325,11 +336,7 @@ def generate_one(packet_root: Path, chapter: str, declarations, edges) -> None:
 
     public = sum(item.visibility == "public" for item in selected.values())
     private = len(selected) - public
-    status = (
-        "BLOCKED_ON_BLOCKLU_INTEGRATION"
-        if chapter == "09"
-        else "BLOCKED_ON_CH09_INTEGRATION"
-    )
+    status = "READY_AFTER_QR_INTEGRATION" if chapter == "09" else "BLOCKED_ON_CH09_INTEGRATION"
     artifacts = [
         "candidate-modules.tsv",
         "frozen-owners.tsv",
@@ -348,10 +355,10 @@ def generate_one(packet_root: Path, chapter: str, declarations, edges) -> None:
         "review_evidence_head": EVIDENCE_HEAD,
         "implementation_status": status,
         "integrated_main_refresh": (
-            f"BLOCKLU_IMPORT_CUTOVER_OBSERVED_AT_{EVIDENCE_HEAD};"
-            "INTEGRATOR_GLOBAL_VERIFICATION_STILL_REQUIRED"
+            f"BLOCKLU_GLOBAL_GATES_PASSED_AT_{EVIDENCE_HEAD};"
+            "QR_SHARED_INTEGRATION_PENDING"
             if chapter == "09"
-            else "CHAPTER09_NOT_IMPLEMENTED"
+            else "CHAPTER09_NOT_IMPLEMENTED;CURRENT_IMPORT_REFRESH_REQUIRED_BEFORE_IMPLEMENTATION"
         ),
         "candidate_modules": len(modules),
         "format2_declarations": len(selected),
@@ -369,15 +376,19 @@ def generate_one(packet_root: Path, chapter: str, declarations, edges) -> None:
         "artifact_sha256": {name: sha256_file(contract_root / name) for name in artifacts},
         "post_and_stage_status": "NOT_RUN_PROPOSAL_ONLY_NO_PRODUCTION_MOVES",
     }
-    (contract_root / "acceptance.json").write_text(stable_json(acceptance), encoding="utf-8")
-    (contract_root / "README.md").write_text(render_readme(acceptance), encoding="utf-8")
+    (contract_root / "acceptance.json").write_text(
+        stable_json(acceptance), encoding="utf-8", newline="\n"
+    )
+    (contract_root / "README.md").write_text(
+        render_readme(acceptance), encoding="utf-8", newline="\n"
+    )
 
 
 def write_format(path: Path, version: int, rows: list[list[object]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = [f"format\t{version}"]
     lines.extend("\t".join(str(cell) for cell in row) for row in rows)
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
 
 def render_readme(data: dict[str, object]) -> str:

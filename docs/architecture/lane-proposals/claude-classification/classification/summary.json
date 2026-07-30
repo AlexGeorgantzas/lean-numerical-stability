@@ -19,6 +19,31 @@
       "path": "NumStability/Algorithms/Ch14Problem142.lean"
     },
     {
+      "base_blob": "07f23a12a9d16abaef6c824a1a567b59a8bcf965",
+      "base_project_imports": [
+        "NumStability.Algorithms.LinearSystems.Triangular",
+        "NumStability.Algorithms.TriangularArbitraryOrder",
+        "NumStability.Algorithms.TriangularNoGuard",
+        "NumStability.Algorithms.MMatrix",
+        "NumStability.Algorithms.LU.GrowthFactor",
+        "NumStability.Algorithms.MatMul",
+        "NumStability.Analysis.HighamChapter7"
+      ],
+      "head_blob": "3d6edf244b0e98c08d1d2f7a8a47299de4b8d2af",
+      "head_project_imports": [
+        "NumStability.Algorithms.LinearSystems.Triangular",
+        "NumStability.Algorithms.TriangularArbitraryOrder",
+        "NumStability.Algorithms.TriangularNoGuard",
+        "NumStability.Algorithms.MMatrix",
+        "NumStability.Algorithms.LU.GrowthFactor",
+        "NumStability.Algorithms.MatMul",
+        "NumStability.Algorithms.TestMatrices.UpperTriangularStress",
+        "NumStability.Analysis.HighamChapter7"
+      ],
+      "module": "NumStability.Algorithms.HighamChapter8",
+      "path": "NumStability/Algorithms/HighamChapter8.lean"
+    },
+    {
       "base_blob": "714585c4069df967e465ce4e1efd08c9f2302e6b",
       "base_project_imports": [
         "NumStability.Algorithms.HighamChapter8",
@@ -70,7 +95,7 @@
         "NumStability.Algorithms.HighamChapter9",
         "NumStability.Algorithms.LeastSquares.LSPerturbation"
       ],
-      "head_blob": "91dd01ea7be2aa4ac7a69f728fd6b6c9e8ab5dfd",
+      "head_blob": "effe3f0f8fcc298c06e59001840eadf68a2010ca",
       "head_project_imports": [
         "NumStability.FloatingPoint.Model",
         "NumStability.Analysis.Rounding",
@@ -84,8 +109,8 @@
         "NumStability.Algorithms.LU.GaussianElimination",
         "NumStability.Algorithms.LU.LUSolve",
         "NumStability.Algorithms.LU.GrowthFactor",
-        "NumStability.Algorithms.HighamChapter8",
-        "NumStability.Algorithms.HighamChapter9",
+        "NumStability.Algorithms.TestMatrices.UpperTriangularStress",
+        "NumStability.Analysis.MatrixNorms.HadamardDeterminant",
         "NumStability.Analysis.Perturbation.LeastSquares.Wedin"
       ],
       "module": "NumStability.Algorithms.MatrixInversion",
@@ -172,6 +197,13 @@
   ],
   "current_declaration_drift": [
     {
+      "added_public": [],
+      "module": "NumStability.Algorithms.HighamChapter8",
+      "removed_public": [
+        "higham8_3_stressUpper"
+      ]
+    },
+    {
       "added_public": [
         "stationaryDrazin_matPow_vec_split",
         "stationaryDrazin_matPow_vec_tendsto_fixedProjector_of_range_tendsto_zero"
@@ -187,15 +219,15 @@
     "exclusions_sha256": "8CCBFA4191741B37BD3DD5748079A7505AF008A515077A25BABE9E23825B73C8",
     "format2_uncompressed_sha256": "32ADA469E27A971E9B0BB972F29C51E1DCBE99104A1492D4C69549C339825563",
     "input_modules_sha256": "C0B1C88F34461A44305D269C880F7581BDD7F1D9CC69CF9A144EA099C6A6DF54",
-    "modules_sha256": "C86D0C7D7A192CCE4FABA449BDDA76F303DBB3765FEEEF85C027DA5F9EDADAD5",
+    "modules_sha256": "7FE1EBD956B31B65B58BBFE7EC7C80EFEBC10C85AB796CF0E2F6B9A64D0A83F3",
     "packet_exclusions_sha256": "8CCBFA4191741B37BD3DD5748079A7505AF008A515077A25BABE9E23825B73C8",
     "packet_input_modules_sha256": "C0B1C88F34461A44305D269C880F7581BDD7F1D9CC69CF9A144EA099C6A6DF54"
   },
   "input_modules": 386,
   "missing_modules": [],
   "proposal_rows": 386,
-  "public_declaration_count_basis": "packet format-2 baseline adjusted by source-level public declaration additions/removals through 6ecc4d5513226e67594bb22985913f6a4a383e5c",
-  "review_evidence_head": "6ecc4d5513226e67594bb22985913f6a4a383e5c",
+  "public_declaration_count_basis": "packet format-2 baseline adjusted by source-level public declaration additions/removals through 9e7c8e32437d6ea28bf297fc4f08756288df9b26",
+  "review_evidence_head": "9e7c8e32437d6ea28bf297fc4f08756288df9b26",
   "schema_version": 1,
   "split_queue": [
     "NumStability.Algorithms.Ch14AsymptoticFamilies",

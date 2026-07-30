@@ -8,7 +8,7 @@ markers; filenames are evidence only when confirmed by the source body.
 The queue and the 217-row exclusion inventory are tracked byte-for-byte so the
 original 603-module partition remains reproducible after the external packet is
 removed. The frozen partition is at `6487fc33088523b8f27ecde9ad613515b78f9977`; source/import refresh evidence
-is taken from published main `6ecc4d5513226e67594bb22985913f6a4a383e5c`.
+is taken from published main `9e7c8e32437d6ea28bf297fc4f08756288df9b26`.
 
 | Proposed category | Modules |
 | --- | ---: |
@@ -25,19 +25,22 @@ has exactly one row per tracked input module.
 
 ## Post-packet refresh
 
-Six inventory blobs changed between the packet base and the reviewed main:
+Seven inventory blobs changed between the packet base and the reviewed main:
 
 - `NumStability.Algorithms.Ch14Problem142`: `16c55f505385983fc9b10e426dc1b4e1040cd099` -> `09680f5d1000524225c0329d574cf5e62e100545`
+- `NumStability.Algorithms.HighamChapter8`: `07f23a12a9d16abaef6c824a1a567b59a8bcf965` -> `3d6edf244b0e98c08d1d2f7a8a47299de4b8d2af`
 - `NumStability.Algorithms.HighamChapter9`: `714585c4069df967e465ce4e1efd08c9f2302e6b` -> `35f2078dcaed7444199e0cc6d23dfc5c59267470`
-- `NumStability.Algorithms.MatrixInversion`: `22575f92f7a266dfeb2c85c25303bf46be8260d3` -> `91dd01ea7be2aa4ac7a69f728fd6b6c9e8ab5dfd`
+- `NumStability.Algorithms.MatrixInversion`: `22575f92f7a266dfeb2c85c25303bf46be8260d3` -> `effe3f0f8fcc298c06e59001840eadf68a2010ca`
 - `NumStability.Algorithms.MatrixInversionMethod2BInstance`: `41754b827feb4c55fdfcec077ae05c97886e65ee` -> `826109bcaf98b9f4787fb16bf993732c3e7bc0b8`
 - `NumStability.Algorithms.RandNLA.LeastSquaresSketch`: `4c7a83beb97b26732db4951bd3b6f1aa853bc1f8` -> `eb25e270ace83b6515d0a9112928bf2be3e775b1`
 - `NumStability.Algorithms.StationaryIteration`: `446b8df875feea3c149c564a144a1e90b208f51b` -> `34c1d8e3a7511878e18449282e7928f467009272`
 
 The three BlockLU consumers were re-read after the Phase 12 integration. The
 least-squares consumers were re-read after their canonical import cutover.
-`StationaryIteration` gained two public Chapter 17 declarations, which are
-included in its current declaration count and mixed-file action.
+The CI repair then extracted `higham8_3_stressUpper` and the reusable Hadamard
+determinant results, so `HighamChapter8` and `MatrixInversion` were refreshed
+again. `StationaryIteration` gained two public Chapter 17 declarations, which
+are included in its current declaration count and mixed-file action.
 
 ## Applying the proposal
 

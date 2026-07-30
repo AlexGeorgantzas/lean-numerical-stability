@@ -1,5 +1,7 @@
 {
   "schema_version": 1,
+  "record_kind": "worker_historical_validation",
+  "superseded_by": "INTEGRATOR_REFRESH_9E7C8E324.json",
   "recorded_at": "2026-07-29T18:34:36.2247432-04:00",
   "packet_base_sha": "6487fc33088523b8f27ecde9ad613515b78f9977",
   "evidence_base_sha": "6ecc4d5513226e67594bb22985913f6a4a383e5c",

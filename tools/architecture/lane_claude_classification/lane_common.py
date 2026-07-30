@@ -16,7 +16,7 @@ from typing import Iterable
 
 ROOT = Path(__file__).resolve().parents[3]
 BASE_SHA = "6487fc33088523b8f27ecde9ad613515b78f9977"
-EVIDENCE_HEAD = "6ecc4d5513226e67594bb22985913f6a4a383e5c"
+EVIDENCE_HEAD = "9e7c8e32437d6ea28bf297fc4f08756288df9b26"
 PROPOSAL_ROOT = ROOT / "docs/architecture/lane-proposals/claude-classification"
 CLASSIFICATION_ROOT = PROPOSAL_ROOT / "classification"
 
@@ -161,8 +161,8 @@ def source_declarations(text: str) -> list[tuple[str, str, str]]:
     ]
 
 
-def source_analysis(path: Path) -> dict[str, object]:
-    text = path.read_text(encoding="utf-8-sig")
+def source_analysis_from_bytes(data: bytes) -> dict[str, object]:
+    text = data.decode("utf-8-sig")
     uncommented = remove_lean_comments(text)
     declarations = source_declarations(text)
     title_match = MODULE_DOC_RE.search(text)
@@ -179,8 +179,12 @@ def source_analysis(path: Path) -> dict[str, object]:
         "higham_tokens": len(re.findall(r"(?i)\bhigham\b", text)),
         "numbered_tokens": len(NUMBERED_TEXT_RE.findall(text)),
         "line_count": len(text.splitlines()),
-        "source_sha256": sha256_bytes(path.read_bytes()),
+        "source_sha256": sha256_bytes(data),
     }
+
+
+def source_analysis(path: Path) -> dict[str, object]:
+    return source_analysis_from_bytes(path.read_bytes())
 
 
 def read_format2_zip(path: Path) -> tuple[dict[str, Declaration], list[Edge], str, int]:

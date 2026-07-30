@@ -13,7 +13,6 @@ from lane_common import (
     BASE_SHA,
     CLASSIFICATION_ROOT,
     EVIDENCE_HEAD,
-    ROOT,
     SOURCE_NAME_RE,
     git,
     git_show_bytes,
@@ -23,7 +22,7 @@ from lane_common import (
     safe_cell,
     sha256_bytes,
     sha256_file,
-    source_analysis,
+    source_analysis_from_bytes,
     source_declarations,
     stable_json,
     write_tsv,
@@ -285,7 +284,7 @@ def cross_lane(module: str) -> str:
 
 def current_public_count(module: str, path: str, frozen_public: int) -> tuple[int, list[str], list[str]]:
     base_text = git_show_bytes(BASE_SHA, path).decode("utf-8-sig")
-    current_text = (ROOT / path).read_text(encoding="utf-8-sig")
+    current_text = git_show_bytes(EVIDENCE_HEAD, path).decode("utf-8-sig")
     base = {name: visibility for name, _, visibility in source_declarations(base_text)}
     current = {name: visibility for name, _, visibility in source_declarations(current_text)}
     added = sorted(name for name in current.keys() - base.keys() if current[name] == "public")
@@ -325,7 +324,7 @@ def generate(packet_root: Path) -> None:
         module, path = item["module"], item["path"]
         if module_from_path(path) != module:
             raise ValueError(f"module/path mismatch: {module} / {path}")
-        analysis = source_analysis(ROOT / path)
+        analysis = source_analysis_from_bytes(git_show_bytes(EVIDENCE_HEAD, path))
         tier = reviewed_tier(module, analysis)
         family = canonical_family(module, tier)
         public_count, added, removed = current_public_count(
@@ -421,7 +420,9 @@ def generate(packet_root: Path) -> None:
         base_blob = git("rev-parse", f"{BASE_SHA}:{item['path']}").strip()
         head_blob = git("rev-parse", f"{EVIDENCE_HEAD}:{item['path']}").strip()
         base_imports = list(source_analysis_from_bytes(git_show_bytes(BASE_SHA, item["path"]))["imports"])
-        head_imports = list(source_analysis(ROOT / item["path"])["imports"])
+        head_imports = list(
+            source_analysis_from_bytes(git_show_bytes(EVIDENCE_HEAD, item["path"]))["imports"]
+        )
         changed_inventory.append(
             {
                 "module": item["module"],
@@ -471,22 +472,12 @@ def generate(packet_root: Path) -> None:
             f"through {EVIDENCE_HEAD}"
         ),
     }
-    (CLASSIFICATION_ROOT / "summary.json").write_text(stable_json(summary), encoding="utf-8")
-    (CLASSIFICATION_ROOT / "README.md").write_text(render_readme(summary), encoding="utf-8")
-
-
-def source_analysis_from_bytes(data: bytes) -> dict[str, object]:
-    # Use a temporary in-memory equivalent of source_analysis for base blobs.
-    text = data.decode("utf-8-sig")
-    from lane_common import IMPORT_RE, remove_lean_comments
-
-    return {
-        "imports": [
-            item
-            for item in IMPORT_RE.findall(remove_lean_comments(text))
-            if item.startswith("NumStability")
-        ]
-    }
+    (CLASSIFICATION_ROOT / "summary.json").write_text(
+        stable_json(summary), encoding="utf-8", newline="\n"
+    )
+    (CLASSIFICATION_ROOT / "README.md").write_text(
+        render_readme(summary), encoding="utf-8", newline="\n"
+    )
 
 
 def render_readme(summary: dict[str, object]) -> str:
