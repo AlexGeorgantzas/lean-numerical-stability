@@ -12,6 +12,7 @@
   "baseline_incident_body_edges": 14167,
   "baseline_incident_signature_edges": 11393,
   "baseline_internal_typed_edges": 8966,
+  "baseline_normalized_incident_sha256": "1A2852BF745EBD6633E9F99B332ACA4F22401141CD3A08032497B3DA4C932E2A",
   "chapter": "09",
   "command_groups": 1494,
   "destinations": 8,

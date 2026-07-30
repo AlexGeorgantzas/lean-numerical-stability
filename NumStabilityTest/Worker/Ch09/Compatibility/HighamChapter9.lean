@@ -1,0 +1,8 @@
+import NumStability.Algorithms.HighamChapter9
+
+#check NumStability.higham9_1_completePivotChoice
+#check NumStability.higham9_1_LUFactSpec_one_explicit
+#check NumStability.higham9_3_absBudgetCertificate_backward_error
+#check NumStability.higham9_11_alpha_block_eq
+#check NumStability.higham9_10_HessenbergGEPPTrace
+#check NumStability.higham9_11_matrix_tridiag_data_bohte_solve_tight

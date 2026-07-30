@@ -338,8 +338,26 @@ def frozen_sources(revision: str = PACKET_REVISION) -> dict[str, bytes]:
     return {owner: git_show(revision, owner_path(owner)) for owner in HISTORICAL_OWNERS}
 
 
+_SOURCE_INDEX_CACHE: dict[tuple[str, str], SourceCommandIndex] = {}
+_COMMAND_CACHE: dict[tuple[str, str, tuple[int, ...]], bytes] = {}
+_SOURCE_DIGEST_CACHE: dict[int, str] = {}
+
+
 def command_bytes(route: Route, sources: dict[str, bytes]) -> bytes:
-    return SourceCommandIndex(sources[route.historical_module]).command(route.span)
+    payload = sources[route.historical_module]
+    digest = _SOURCE_DIGEST_CACHE.get(id(payload))
+    if digest is None:
+        digest = sha256_bytes(payload)
+        _SOURCE_DIGEST_CACHE[id(payload)] = digest
+    source_key = (route.historical_module, digest)
+    index = _SOURCE_INDEX_CACHE.get(source_key)
+    if index is None:
+        index = SourceCommandIndex(payload)
+        _SOURCE_INDEX_CACHE[source_key] = index
+    command_key = (*source_key, route.span)
+    if command_key not in _COMMAND_CACHE:
+        _COMMAND_CACHE[command_key] = index.command(route.span)
+    return _COMMAND_CACHE[command_key]
 
 
 def expected_imports() -> dict[str, list[str]]:
@@ -378,21 +396,42 @@ def normalized_incident_graph(
 ) -> collections.Counter[tuple[str, str, str]]:
     selected = set(actual_to_logical)
     result: collections.Counter[tuple[str, str, str]] = collections.Counter()
+    external_private_owners: dict[str, str] = {}
+
+    def normalize(name: str) -> str:
+        if name in selected:
+            return f"@CH09:{actual_to_logical[name]}"
+        if not name.startswith("_private."):
+            return name
+        marker = ".0."
+        if marker not in name:
+            fail(f"incident external private name lacks normalized owner index: {name}")
+        suffix = name.split(marker, 1)[1]
+        previous = external_private_owners.setdefault(suffix, name)
+        if previous != name:
+            fail(
+                "incident external private normalization collision: "
+                f"{previous} and {name}"
+            )
+        return f"@EXTERNAL_PRIVATE:{suffix}"
+
     for edge in edges:
         if edge.source not in selected and edge.target not in selected:
             continue
-        source = (
-            f"@CH09:{actual_to_logical[edge.source]}"
-            if edge.source in selected
-            else edge.source
-        )
-        target = (
-            f"@CH09:{actual_to_logical[edge.target]}"
-            if edge.target in selected
-            else edge.target
-        )
+        source = normalize(edge.source)
+        target = normalize(edge.target)
         result[(edge.kind, source, target)] += 1
     return result
+
+
+def graph_sha256(graph: collections.Counter[tuple[str, str, str]]) -> str:
+    payload = tsv_bytes(
+        (
+            ("edge", kind, source, target, count)
+            for (kind, source, target), count in sorted(graph.items())
+        )
+    )
+    return sha256_bytes(payload)
 
 
 def generated_artifacts(
@@ -529,6 +568,7 @@ def generated_artifacts(
         "baseline_incident_signature_edges": signature_edges,
         "baseline_incident_body_edges": body_edges,
         "baseline_internal_typed_edges": internal_edges,
+        "baseline_normalized_incident_sha256": graph_sha256(incident),
         "baseline_format2_sha256": sha256_file(baseline_path),
         "full_contract_artifacts_sha256": {
             name: sha256_file(FULL_CONTRACT / name)
@@ -631,25 +671,59 @@ def inject_imports(payload: bytes, modules: Iterable[str]) -> bytes:
     return payload[:offset] + addition + payload[offset:]
 
 
+def source_offset(index: SourceCommandIndex, line: int, column: int) -> int:
+    if line == len(index.lines) and column == 0:
+        return len(index.payload)
+    if line >= len(index.lines):
+        fail(f"source coordinate line {line} exceeds {len(index.lines)}")
+    content = index.lines[line].rstrip(b"\n").decode("utf-8")
+    if column > len(content):
+        fail(f"source coordinate column {column} exceeds line {line}")
+    return index.offsets[line] + len(content[:column].encode("utf-8"))
+
+
 def residual_giant_payload(
     routes: dict[str, Route], sources: dict[str, bytes]
 ) -> bytes:
-    live = git_show(BASE_REVISION, owner_path(HISTORICAL_GIANT))
+    base = git_show(BASE_REVISION, owner_path(HISTORICAL_GIANT))
+    frozen = sources[HISTORICAL_GIANT]
+    marker = b"namespace NumStability\n"
+    base_body = base.find(marker)
+    frozen_body = frozen.find(marker)
+    if min(base_body, frozen_body) < 0 or base[base_body:] != frozen[frozen_body:]:
+        fail("integration-base Chapter 9 body differs from the frozen routed body")
+    digest = sha256_bytes(frozen)
+    index = _SOURCE_INDEX_CACHE.get((HISTORICAL_GIANT, digest))
+    if index is None:
+        index = SourceCommandIndex(frozen)
+        _SOURCE_INDEX_CACHE[(HISTORICAL_GIANT, digest)] = index
     giant_groups = [
         members
         for (owner, _), members in route_groups(routes).items()
         if owner == HISTORICAL_GIANT
     ]
-    for members in sorted(giant_groups, key=lambda rows: rows[0].span, reverse=True):
+    ranges = []
+    for members in giant_groups:
         root = command_root(members)
         command = command_bytes(root, sources)
-        occurrences = live.count(command)
-        if occurrences != 1:
-            fail(
-                f"{root.command_root}: frozen command occurs {occurrences} times "
-                "in the integration-base owner"
-            )
-        live = live.replace(command, b"", 1)
+        start = source_offset(index, root.span[0], root.span[1])
+        end = source_offset(index, root.span[2], root.span[3])
+        if frozen[start:end] != command:
+            fail(f"{root.command_root}: route offsets disagree with command payload")
+        ranges.append((start, end, root.command_root))
+    ranges.sort()
+    for previous, current in zip(ranges, ranges[1:]):
+        if current[0] < previous[1]:
+            fail(f"overlapping command ranges: {previous[2]} and {current[2]}")
+    if ranges and ranges[0][0] < frozen_body:
+        fail("a routed Chapter 9 command precedes the namespace body")
+    pieces = []
+    cursor = frozen_body
+    for start, end, _ in ranges:
+        pieces.append(frozen[cursor:start])
+        cursor = end
+    pieces.append(frozen[cursor:])
+    live = base[:base_body] + b"".join(pieces)
     section_destinations = sorted(
         destination
         for destination in DESTINATION_LAYERS
@@ -726,10 +800,18 @@ def expected_materialization(
     }
     result[ROOT / owner_path(HISTORICAL_GIANT)] = residual_giant_payload(routes, sources)
     result[ROOT / owner_path(HISTORICAL_PRIMITIVE)] = (
-        f"import NumStability.Source.Higham.Chapter09.Theorem914Primitive\n"
+        "import NumStability.Source.Higham.Chapter09.Theorem914Primitive\n\n"
+        "/-!\n"
+        "# Historical Higham Chapter 9 Theorem 9.14 primitive import\n\n"
+        "Compatibility wrapper for the canonical source-correspondence module.\n"
+        "-/\n"
     ).encode()
     result[ROOT / owner_path(HISTORICAL_CORRECTION)] = (
-        f"import NumStability.Source.Higham.Chapter09.ComputedCorrection\n"
+        "import NumStability.Source.Higham.Chapter09.ComputedCorrection\n\n"
+        "/-!\n"
+        "# Historical Higham Chapter 9 computed-correction import\n\n"
+        "Compatibility wrapper for the canonical source-correspondence module.\n"
+        "-/\n"
     ).encode()
     result.update(test_payloads(routes, baseline))
     return result, baseline
@@ -754,21 +836,10 @@ def validate_materialized_text(baseline_path: Path) -> dict[str, int]:
         if not path.is_file() or path.read_bytes() != payload:
             fail(f"materialized source/test differs from deterministic output: {path}")
     routes = full_routes()
-    sources = frozen_sources()
     destinations = {
         destination: (ROOT / module_path(destination)).read_bytes()
         for destination in DESTINATION_LAYERS
     }
-    historical = {
-        owner: (ROOT / owner_path(owner)).read_bytes() for owner in HISTORICAL_OWNERS
-    }
-    for members in route_groups(routes).values():
-        root = command_root(members)
-        command = command_bytes(root, sources)
-        if destinations[root.destination].count(command) != 1:
-            fail(f"{root.command_root}: frozen command is not unique in destination")
-        if historical[root.historical_module].count(command) != 0:
-            fail(f"{root.command_root}: frozen command remains in historical owner")
     for destination, payload in destinations.items():
         imports = parse_imports(payload)
         if any(imported in HISTORICAL_OWNERS for imported in imports):
@@ -790,12 +861,14 @@ def read_private_map() -> dict[str, str]:
 def validate_candidate_command_hashes(routes: dict[str, Route]) -> int:
     private = read_private_map()
     sources: dict[str, bytes] = {}
+    source_indices: dict[str, SourceCommandIndex] = {}
     entries: dict[str, dict[str, tuple[int, ...]]] = {}
     by_destination = destination_routes(routes)
     for destination in DESTINATION_LAYERS:
         path = ROOT / module_path(destination)
         source = path.read_bytes()
         sources[destination] = source
+        source_indices[destination] = SourceCommandIndex(source)
         ilean = ROOT / ".lake/build/lib/lean" / module_path(destination, ".ilean")
         if not ilean.is_file():
             fail(f"missing compiled .ilean for {destination}")
@@ -818,7 +891,7 @@ def validate_candidate_command_hashes(routes: dict[str, Route]) -> int:
             span = entries[destination].get(actual_root)
             if span is None:
                 fail(f"{root.name}: candidate command root missing from .ilean")
-            payload = SourceCommandIndex(sources[destination]).command(span)
+            payload = source_indices[destination].command(span)
             if sha256_bytes(payload) != root.command_sha256:
                 fail(f"{root.name}: candidate command bytes differ from frozen route")
             checked += 1
@@ -877,6 +950,8 @@ def stage_check(baseline_path: Path, candidate_path: Path) -> dict[str, object]:
         fail("acceptance signature-edge count drift")
     if body != acceptance["baseline_incident_body_edges"]:
         fail("acceptance body-edge count drift")
+    if graph_sha256(frozen_graph) != acceptance["baseline_normalized_incident_sha256"]:
+        fail("acceptance normalized-incident graph hash drift")
     hashes = validate_candidate_command_hashes(routes)
     return {
         "status": "PASS",
