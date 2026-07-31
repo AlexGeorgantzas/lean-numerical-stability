@@ -1,0 +1,801 @@
+{
+  "artifacts": {
+    "REFRESH-APPENDIX.md": {
+      "bytes": 10199,
+      "present": true,
+      "sha256": "9AB4797E7024BCD9C2A0FB01E85A90D5C5C50D3ABA60249BA5ACC0992BA11E88"
+    },
+    "ch09/README.md": {
+      "bytes": 9657,
+      "present": true,
+      "sha256": "EE600E82E325867C9417FB2D5FFB0C72A9B40A4084B9FAAA7B4D80C53017229B"
+    },
+    "ch09/acceptance.json": {
+      "bytes": 10929,
+      "present": true,
+      "sha256": "CD7B566A2B51F24FD22BE9EE5E66135A7272A9E167FDCB8EDC94806EAA436A39"
+    },
+    "ch09/direct-imports.tsv": {
+      "bytes": 27166,
+      "present": true,
+      "rows": 252,
+      "sha256": "79D6994FF19A920D5187326F4479AF4EB5944965A431F1CAC8654D7AAC5147AA"
+    },
+    "ch09/downstream-consumers.tsv": {
+      "bytes": 3234,
+      "present": true,
+      "rows": 29,
+      "sha256": "08DE8BFBD838167FED898F2D569F24C12668DC41E9039413D02F05333275FBF3"
+    },
+    "ch09/owner-dag.tsv": {
+      "bytes": 51022,
+      "present": true,
+      "rows": 453,
+      "sha256": "85EFD2B8154B5B75DFBF812D082B97CBFF6EFB2412147182F8258C52C497FD72"
+    },
+    "ch09/ownership.tsv": {
+      "bytes": 826883,
+      "present": true,
+      "rows": 4420,
+      "sha256": "6B0B651EE31ADE0A9CD20AF9F69CB11C0E73B3FABC222D92B3DEE67001D05C60"
+    },
+    "ch09/private-rewrites.tsv": {
+      "bytes": 8138,
+      "present": true,
+      "rows": 28,
+      "sha256": "50309B25A798B824C3F1F911A8765DDE3F5AEC6E56B2AC435CEB598E9EECF36D"
+    },
+    "ch09/routes.tsv": {
+      "bytes": 4083,
+      "present": true,
+      "rows": 36,
+      "sha256": "B6EDF86550F96B63593499B132676EBEFBE07CDE746DE16951DA9F439CD002E4"
+    },
+    "ch11/README.md": {
+      "bytes": 10494,
+      "present": true,
+      "sha256": "D790F867B125B2A9797AE3776A59462C9A8C8919B86683E7569B2944653DBB3A"
+    },
+    "ch11/acceptance.json": {
+      "bytes": 45713,
+      "present": true,
+      "sha256": "91030A323838BA1EA11AD759D4AD3BD46716CB0A29CA0BCCBA9DC5BF98BFE706"
+    },
+    "ch11/direct-imports.tsv": {
+      "bytes": 79461,
+      "present": true,
+      "rows": 566,
+      "sha256": "3C768B648371326D098C973605F1B82867F69E27A80826B64A8D6284F8297A80"
+    },
+    "ch11/downstream-consumers.tsv": {
+      "bytes": 6717,
+      "present": true,
+      "rows": 60,
+      "sha256": "D230BD02809BE8E9DAE061DAE7A88372FE1B206184E30996B906FDB2DB2A72E2"
+    },
+    "ch11/owner-dag.tsv": {
+      "bytes": 143726,
+      "present": true,
+      "rows": 994,
+      "sha256": "BBE290DBFFD6A3E9F2AED18EE1A6532DB881DB5ED585FD28503F7BCBA59A428C"
+    },
+    "ch11/ownership.tsv": {
+      "bytes": 1656261,
+      "present": true,
+      "rows": 6385,
+      "sha256": "37CAF0E5C31B56FA100C20F5FEF73434440A6BBE32EC2F7E60552305DE9C7ED4"
+    },
+    "ch11/private-rewrites.tsv": {
+      "bytes": 48823,
+      "present": true,
+      "rows": 146,
+      "sha256": "55E1B4F1A58A0D58EE9BAE3E36ECEB6C07F6A431F829A980E5CE869D958181A4"
+    },
+    "ch11/routes.tsv": {
+      "bytes": 11841,
+      "present": true,
+      "rows": 78,
+      "sha256": "F9ACB3CD44FA98DD51122D7A81F5FBD9DDAC1A99F8467D0B7DE4E1C06D6E93AA"
+    },
+    "classification/README.md": {
+      "bytes": 13612,
+      "present": true,
+      "sha256": "B90622DC3DFDB24221C2AEB498D1FFD8E05A5902A67F25AB7B67F33C8030EC04"
+    },
+    "classification/input-modules.tsv": {
+      "bytes": 47693,
+      "present": true,
+      "rows": 386,
+      "sha256": "C0B1C88F34461A44305D269C880F7581BDD7F1D9CC69CF9A144EA099C6A6DF54"
+    },
+    "classification/modules.tsv": {
+      "bytes": 375998,
+      "present": true,
+      "rows": 386,
+      "sha256": "520B0EA66432BE6101C06F027F9D704187F0CEA0F729E8ADE1C8385CE3FCCDB1"
+    },
+    "classification/summary.json": {
+      "bytes": 4094,
+      "present": true,
+      "sha256": "6A721FEF1556216A7D7A7744DE3E5AA7A673D5D600EA75510AF0FCBAA70E11B2"
+    }
+  },
+  "counts": {
+    "ch09_destinations": 35,
+    "ch09_ownership_rows": 4420,
+    "ch09_private_rewrites": 28,
+    "ch11_destinations": 74,
+    "ch11_ownership_rows": 6385,
+    "ch11_private_rewrites": 146,
+    "classification_deferred_rows": 14,
+    "classification_rows": 386,
+    "classification_split_queue": 4,
+    "classification_tiers": {
+      "aggregate": 1,
+      "mixed_pending_split": 4,
+      "reusable": 68,
+      "source": 313
+    }
+  },
+  "engine": "Claude",
+  "gate_totals": {
+    "fail": 1,
+    "not_run": 0,
+    "pass": 34
+  },
+  "gates": [
+    {
+      "command": [
+        "/usr/bin/python3",
+        "tools/architecture/lane_claude_classification/check_read_only_inventory.py"
+      ],
+      "duration_seconds": 0.1,
+      "exit_code": 0,
+      "label": "lane inventory checker",
+      "output_tail": [
+        "Frozen inventory verified: 386 modules, SHA-256 C0B1C88F34461A44305D269C880F7581BDD7F1D9CC69CF9A144EA099C6A6DF54."
+      ],
+      "started_utc": "2026-07-31T15:44:31Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "tools/architecture/lane_claude_classification/check_classification_proposal.py",
+        "--self-test"
+      ],
+      "duration_seconds": 0.1,
+      "exit_code": 0,
+      "label": "proposal checker self-test",
+      "output_tail": [
+        "Checker self-test passed: every rejection case is detected."
+      ],
+      "started_utc": "2026-07-31T15:44:31Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "tools/architecture/lane_claude_classification/check_classification_proposal.py",
+        "--check"
+      ],
+      "duration_seconds": 21.2,
+      "exit_code": 0,
+      "label": "proposal checker",
+      "output_tail": [
+        "Proposal verified: 386 rows, aggregate=1, mixed_pending_split=4, reusable=68, source=313; deferred reusable rows=14; split queue=4."
+      ],
+      "started_utc": "2026-07-31T15:44:31Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "tools/architecture/lane_claude_classification/apply_tier_proposal.py",
+        "--self-test"
+      ],
+      "duration_seconds": 0.1,
+      "exit_code": 0,
+      "label": "apply-tool self-test",
+      "output_tail": [
+        "Apply-tool self-test passed: merge, refusals, and deferral policy verified."
+      ],
+      "started_utc": "2026-07-31T15:44:52Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "tools/architecture/lane_claude_classification/check_ch09_contract.py",
+        "--self-test"
+      ],
+      "duration_seconds": 0.1,
+      "exit_code": 0,
+      "label": "Chapter 9 checker self-test",
+      "output_tail": [
+        "Chapter 9 contract self-test passed: every rejection case is detected."
+      ],
+      "started_utc": "2026-07-31T15:44:52Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "tools/architecture/lane_claude_classification/check_ch09_contract.py",
+        "--mode",
+        "pre",
+        "--baseline-zip",
+        "../../baseline/parallel-base-declarations-v2.zip"
+      ],
+      "duration_seconds": 15.6,
+      "exit_code": 0,
+      "label": "Chapter 9 pre gate",
+      "output_tail": [
+        "Chapter 9 pre-migration contract verified: routes complete and non-overlapping, ownership exact against the frozen format-2 baseline, private rewrites complete, destination graphs acyclic, import allowlists exact. Implementation remains BLOCKED_ON_BLOCKLU_INTEGRATION."
+      ],
+      "started_utc": "2026-07-31T15:44:52Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "tools/architecture/lane_claude_classification/check_ch11_contract.py",
+        "--self-test"
+      ],
+      "duration_seconds": 0.1,
+      "exit_code": 0,
+      "label": "Chapter 11 checker self-test",
+      "output_tail": [
+        "Chapter 11 contract self-test passed: every rejection case is detected."
+      ],
+      "started_utc": "2026-07-31T15:45:08Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "tools/architecture/lane_claude_classification/check_ch11_contract.py",
+        "--mode",
+        "pre",
+        "--baseline-zip",
+        "../../baseline/parallel-base-declarations-v2.zip"
+      ],
+      "duration_seconds": 17.0,
+      "exit_code": 0,
+      "label": "Chapter 11 pre gate",
+      "output_tail": [
+        "Chapter 11 pre-migration contract verified: routes complete and non-overlapping, ownership exact against the frozen format-2 baseline, private rewrites complete, destination graphs acyclic, import allowlists exact, Chapter 9 dependency edges recorded. Implementation remains BLOCKED_ON_CH09_INTEGRATION."
+      ],
+      "started_utc": "2026-07-31T15:45:08Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "tools/architecture/check_compatibility.py"
+      ],
+      "duration_seconds": 12.2,
+      "exit_code": 0,
+      "label": "repository compatibility gate",
+      "output_tail": [
+        "compatibility contract passed: 108 forwarding modules, 208 canonical targets"
+      ],
+      "started_utc": "2026-07-31T15:45:25Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "tools/architecture/check_layout.py"
+      ],
+      "duration_seconds": 27.9,
+      "exit_code": 1,
+      "label": "repository layout gate",
+      "output_tail": [
+        "mixed modules: 0",
+        "modules missing module docs: 216",
+        "legacy naming exceptions: 399",
+        "declaration-bearing umbrellas: 0",
+        "unsorted aggregate imports: 0",
+        "error: NumStabilityTest does not reach 19 test module(s): NumStabilityTest.Worker.ClassificationAudit.AxiomProbe, NumStabilityTest.Worker.ClassificationAudit.Chapter09Historical, NumStabilityTest.Worker.ClassificationAudit.Chapter11CanonicalExisting, NumStabilityTest.Worker.ClassificationAudit.Chapter11Historical, NumStabilityTest.Worker.ClassificationAudit.ProposedFamilies.AlgorithmsLinearSystemsLU, NumStabilityTest.Worker.ClassificationAudit.ProposedFamilies.AlgorithmsLinearSystemsTriangular, NumStabilityTest.Worker.ClassificationAudit.ProposedFamilies.AlgorithmsRandNLA, NumStabilityTest.Worker.ClassificationAudit.ProposedFamilies.AnalysisAsymptotics, NumStabilityTest.Worker.ClassificationAudit.ProposedFamilies.AnalysisConditioning, NumStabilityTest.Worker.ClassificationAudit.ProposedFamilies.AnalysisFirstOrder, NumStabilityTest.Worker.ClassificationAudit.ProposedFamilies.AnalysisNormsCore, NumStabilityTest.Worker.ClassificationAudit.ProposedFamilies.SourceHighamChapter01, NumStabilityTest.Worker.ClassificationAudit.ProposedFamilies.SourceHighamChapter02, NumStabilityTest.Worker.ClassificationAudit.ProposedFamilies.SourceHighamChapter04, NumStabilityTest.Worker.ClassificationAudit.ProposedFamilies.SourceHighamChapter08, NumStabilityTest.Worker.ClassificationAudit.ProposedFamilies.SourceHighamChapter10, NumStabilityTest.Worker.ClassificationAudit.ProposedFamilies.SourceHighamChapter11, NumStabilityTest.Worker.ClassificationAudit.ProposedFamilies.SourceHighamChapter14, NumStabilityTest.Worker.ClassificationAudit.ProposedFamilies.SourceHighamChapter28"
+      ],
+      "started_utc": "2026-07-31T15:45:37Z",
+      "status": "fail"
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "tools/architecture/check_provenance.py"
+      ],
+      "duration_seconds": 0.2,
+      "exit_code": 0,
+      "label": "repository provenance gate",
+      "output_tail": [
+        "provenance contract passed: 207 Apache-marked production files and 5 evidenced upstream modules"
+      ],
+      "started_utc": "2026-07-31T15:46:05Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "duration_seconds": 0.0,
+      "exit_code": 0,
+      "label": "git diff --check",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:05Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "build",
+        "NumStability",
+        "NumStabilityTest"
+      ],
+      "duration_seconds": 2.4,
+      "exit_code": 0,
+      "label": "lake build NumStability NumStabilityTest",
+      "output_tail": [
+        "  have x_hat := NumStability.fl_backSub fp n U y_hat;",
+        "  \u2203 \u0394L \u0394U,",
+        "    (\u2200 (i j : Fin n), |\u0394L i j| \u2264 NumStability.gamma fp n * |L i j|) \u2227",
+        "      (\u2200 (i j : Fin n), |\u0394U i j| \u2264 NumStability.gamma fp n * |U i j|) \u2227",
+        "        \u2200 (i : Fin n), \u2211 k, (L i k + \u0394L i k) * \u2211 j, (U k j + \u0394U k j) * x_hat j = b i",
+        "Build completed successfully (5376 jobs)."
+      ],
+      "started_utc": "2026-07-31T15:46:05Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "build",
+        "NumStability.Algorithms.HighamChapter9",
+        "NumStability.Algorithms.HighamChapter9CompletePivotSharpClosure",
+        "NumStability.Algorithms.HighamChapter9ComplexClosure",
+        "NumStability.Algorithms.HighamChapter9ComputedCorrection",
+        "NumStability.Algorithms.HighamChapter9DoolittleClosure",
+        "NumStability.Algorithms.HighamChapter9Theorem914Actual",
+        "NumStability.Algorithms.HighamChapter9Theorem914DiagDominant",
+        "NumStability.Algorithms.HighamChapter9Theorem914Primitive",
+        "NumStability.Algorithms.HighamChapter9Theorem97Classification",
+        "NumStability.Algorithms.HighamChapter9Theorem99Closure",
+        "NumStability.Algorithms.HighamChapter9Theorem99ComplexClosure"
+      ],
+      "duration_seconds": 1.4,
+      "exit_code": 0,
+      "label": "focused Chapter 9 historical builds",
+      "output_tail": [
+        "  show i.val + 1 \u2260 j.val by omega",
+        "Hint: Omit it from the simp argument list.",
+        "  simp [tridiag_to_matrix, hsub, show j.val \u2260 i.val by o\u0335m\u0335e\u0335g\u0335a\u0335,\u0335",
+        "  \u0335 \u0335 \u0335 \u0335 \u0335 \u0335 \u0335 \u0335 \u0335 \u0335 \u0335 \u0335 \u0335s\u0335h\u0335o\u0335w\u0335 \u0335i\u0335.\u0335v\u0335a\u0335l\u0335 \u0335+\u0335 \u03351\u0335 \u0335\u2260\u0335 \u0335j\u0335.\u0335v\u0335a\u0335l\u0335 \u0335b\u0335y\u0335 \u0335omega]",
+        "Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+        "Build completed successfully (3082 jobs)."
+      ],
+      "started_utc": "2026-07-31T15:46:08Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "build",
+        "NumStability.Algorithms.HighamChapter11",
+        "NumStability.Source.Higham.Chapter11",
+        "NumStability.Source.Higham.Chapter11.Theorem07"
+      ],
+      "duration_seconds": 1.5,
+      "exit_code": 0,
+      "label": "focused Chapter 11 historical and canonical builds",
+      "output_tail": [
+        "warning: NumStability/Algorithms/Cholesky/BunchTridiagonalSparseSolveCh11Closure.lean:144:19: This simp argument is unused:",
+        "  Fin.mk.injEq",
+        "Hint: Omit it from the simp argument list.",
+        "  simp only \u0335[\u0335F\u0335i\u0335n\u0335.\u0335m\u0335k\u0335.\u0335i\u0335n\u0335j\u0335E\u0335q\u0335]\u0335",
+        "Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+        "Build completed successfully (3107 jobs)."
+      ],
+      "started_utc": "2026-07-31T15:46:09Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/Chapter09Historical.lean"
+      ],
+      "duration_seconds": 2.3,
+      "exit_code": 0,
+      "label": "isolated smoke module Chapter09Historical",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:11Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/Chapter11Historical.lean"
+      ],
+      "duration_seconds": 2.2,
+      "exit_code": 0,
+      "label": "isolated smoke module Chapter11Historical",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:13Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/Chapter11CanonicalExisting.lean"
+      ],
+      "duration_seconds": 2.2,
+      "exit_code": 0,
+      "label": "isolated smoke module Chapter11CanonicalExisting",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:15Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/AxiomProbe.lean"
+      ],
+      "duration_seconds": 3.3,
+      "exit_code": 0,
+      "label": "isolated smoke module AxiomProbe",
+      "output_tail": [
+        "'NumStability.higham9_1_exists_partialPivotChoice' depends on axioms: [propext, Classical.choice, Quot.sound]",
+        "'NumStability.higham11_3_oneByOne_step_factorization' depends on axioms: [propext, Classical.choice, Quot.sound]",
+        "'NumStability.dotProduct_factor_expansion_succ' depends on axioms: [propext, Classical.choice, Quot.sound]",
+        "'NumStability.Ch11Closure.TriGrowthInv.higham11_7_bunch_tridiagonal_actual_schedule_middle_solve' depends on axioms: [propext,",
+        " Classical.choice,",
+        " Quot.sound]"
+      ],
+      "started_utc": "2026-07-31T15:46:17Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/ProposedFamilies/AlgorithmsLinearSystemsLU.lean"
+      ],
+      "duration_seconds": 2.1,
+      "exit_code": 0,
+      "label": "isolated smoke module AlgorithmsLinearSystemsLU",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:21Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/ProposedFamilies/AlgorithmsLinearSystemsTriangular.lean"
+      ],
+      "duration_seconds": 2.0,
+      "exit_code": 0,
+      "label": "isolated smoke module AlgorithmsLinearSystemsTriangular",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:23Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/ProposedFamilies/AlgorithmsRandNLA.lean"
+      ],
+      "duration_seconds": 2.2,
+      "exit_code": 0,
+      "label": "isolated smoke module AlgorithmsRandNLA",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:25Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/ProposedFamilies/AnalysisAsymptotics.lean"
+      ],
+      "duration_seconds": 1.6,
+      "exit_code": 0,
+      "label": "isolated smoke module AnalysisAsymptotics",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:27Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/ProposedFamilies/AnalysisConditioning.lean"
+      ],
+      "duration_seconds": 2.2,
+      "exit_code": 0,
+      "label": "isolated smoke module AnalysisConditioning",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:29Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/ProposedFamilies/AnalysisFirstOrder.lean"
+      ],
+      "duration_seconds": 1.8,
+      "exit_code": 0,
+      "label": "isolated smoke module AnalysisFirstOrder",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:31Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/ProposedFamilies/AnalysisNormsCore.lean"
+      ],
+      "duration_seconds": 2.2,
+      "exit_code": 0,
+      "label": "isolated smoke module AnalysisNormsCore",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:32Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/ProposedFamilies/SourceHighamChapter01.lean"
+      ],
+      "duration_seconds": 1.6,
+      "exit_code": 0,
+      "label": "isolated smoke module SourceHighamChapter01",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:35Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/ProposedFamilies/SourceHighamChapter02.lean"
+      ],
+      "duration_seconds": 2.2,
+      "exit_code": 0,
+      "label": "isolated smoke module SourceHighamChapter02",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:36Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/ProposedFamilies/SourceHighamChapter04.lean"
+      ],
+      "duration_seconds": 2.3,
+      "exit_code": 0,
+      "label": "isolated smoke module SourceHighamChapter04",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:38Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/ProposedFamilies/SourceHighamChapter08.lean"
+      ],
+      "duration_seconds": 2.2,
+      "exit_code": 0,
+      "label": "isolated smoke module SourceHighamChapter08",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:41Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/ProposedFamilies/SourceHighamChapter10.lean"
+      ],
+      "duration_seconds": 2.2,
+      "exit_code": 0,
+      "label": "isolated smoke module SourceHighamChapter10",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:43Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/ProposedFamilies/SourceHighamChapter11.lean"
+      ],
+      "duration_seconds": 2.2,
+      "exit_code": 0,
+      "label": "isolated smoke module SourceHighamChapter11",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:45Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/ProposedFamilies/SourceHighamChapter14.lean"
+      ],
+      "duration_seconds": 2.2,
+      "exit_code": 0,
+      "label": "isolated smoke module SourceHighamChapter14",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:47Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "env",
+        "lean",
+        "NumStabilityTest/Worker/ClassificationAudit/ProposedFamilies/SourceHighamChapter28.lean"
+      ],
+      "duration_seconds": 2.1,
+      "exit_code": 0,
+      "label": "isolated smoke module SourceHighamChapter28",
+      "output_tail": [],
+      "started_utc": "2026-07-31T15:46:50Z",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "bash",
+        "/home/mymel/lean/reorg/claude-classification/scripts/with_lean_lock.sh",
+        "lake",
+        "test"
+      ],
+      "duration_seconds": 2.2,
+      "exit_code": 0,
+      "label": "lake test",
+      "output_tail": [
+        "  have y_hat := NumStability.fl_forwardSub fp n L b;",
+        "  have x_hat := NumStability.fl_backSub fp n U y_hat;",
+        "  \u2203 \u0394L \u0394U,",
+        "    (\u2200 (i j : Fin n), |\u0394L i j| \u2264 NumStability.gamma fp n * |L i j|) \u2227",
+        "      (\u2200 (i j : Fin n), |\u0394U i j| \u2264 NumStability.gamma fp n * |U i j|) \u2227",
+        "        \u2200 (i : Fin n), \u2211 k, (L i k + \u0394L i k) * \u2211 j, (U k j + \u0394U k j) * x_hat j = b i"
+      ],
+      "started_utc": "2026-07-31T15:46:52Z",
+      "status": "pass"
+    }
+  ],
+  "generated_utc": "2026-07-31T15:46:54Z",
+  "identity": {
+    "base_is_ancestor_of_head": true,
+    "branch": "codex/org-classification-prep",
+    "commits_since_base": 3,
+    "frozen_base_sha": "6487fc33088523b8f27ecde9ad613515b78f9977",
+    "head": "62256cf64d83d2a8064d8db05bb715c0a98fdbb1",
+    "status_porcelain_lines": 5,
+    "toolchain": "leanprover/lean4:v4.29.0-rc3"
+  },
+  "inputs": {
+    "baseline_stream_zip": "../../baseline/parallel-base-declarations-v2.zip",
+    "baseline_stream_zip_sha256": "1C2538B428B8EC3610B3C09BBB6A4CF23ECA9F0DB17EE4AE5B63E4F371AECDED",
+    "packet_read_only_modules_sha256": "C0B1C88F34461A44305D269C880F7581BDD7F1D9CC69CF9A144EA099C6A6DF54"
+  },
+  "lane": "classification-ch09-ch11",
+  "normalized_hashes": {
+    "ch09": {
+      "body_edges": {
+        "rows": 26737,
+        "sha256": "70055A704124A763F9CF1146D97A949804A940EB7390F3940B1B59F7E98E3143"
+      },
+      "declarations": {
+        "rows": 4420,
+        "sha256": "311844A5A4603D8F70831746F566D63E645F1AB37F002B8EB18861D10ACA58C5"
+      },
+      "signature_edges": {
+        "rows": 20081,
+        "sha256": "766C39099C4FBCC11D7F9365F5F43F85E5EDBABA31A626B6F35E5AC2825CB415"
+      }
+    },
+    "ch11": {
+      "body_edges": {
+        "rows": 69376,
+        "sha256": "F735C281C278BF9788FD5740E9D7F34B7333B3DDCE7F2D9FF045E9250EDC1010"
+      },
+      "declarations": {
+        "rows": 6385,
+        "sha256": "09641A56F129CD1871B51A9536C71F62B785F4E32B96403F130CF4197BCE20C9"
+      },
+      "signature_edges": {
+        "rows": 61653,
+        "sha256": "8C2F935B94B1A3EB57517312335D5FC7FCEEC173239970B06BCE680E2504D626"
+      }
+    }
+  },
+  "pristine_baseline": {
+    "candidate_modules": 77,
+    "directory": "/home/mymel/lean/reorg/claude-classification/runtime/pristine-baseline",
+    "external_to_repository": true,
+    "manifest": "SOURCE-HASHES.json",
+    "manifest_sha256": "8074D81614187939FD6886DE37F9A9D137F570CF7F2A676414EE909EC660321A",
+    "modules_with_ilean": 77,
+    "present": true
+  },
+  "schema_version": 1,
+  "subscription": "4"
+}
