@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter19.StoredLoop.AllPivots
+
+#check NumStability.AllPivotsSelfAnnihilatingReflectorModel

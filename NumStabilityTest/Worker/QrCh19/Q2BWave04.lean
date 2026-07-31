@@ -1,0 +1,6 @@
+import NumStabilityTest.Worker.QrCh19.Canonical.Algorithm12MGSClosure
+import NumStabilityTest.Worker.QrCh19.Canonical.Theorem06ElementwisePackaged
+import NumStabilityTest.Worker.QrCh19.Canonical.Theorem06RowSpecific
+import NumStabilityTest.Worker.QrCh19.Compatibility.Higham19Alg12MGSClosure
+import NumStabilityTest.Worker.QrCh19.Compatibility.Higham19Thm6ElementwisePackaged
+import NumStabilityTest.Worker.QrCh19.Compatibility.Higham19Thm6RowSpecific

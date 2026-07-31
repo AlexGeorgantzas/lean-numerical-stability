@@ -1,0 +1,3 @@
+import NumStability.Algorithms.QR.Higham19Alg12MGSPaddedClosure
+
+#check NumStability.LiteralMGSTheorem1913ExactCertificate

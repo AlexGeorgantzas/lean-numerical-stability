@@ -1,0 +1,3 @@
+import NumStability.Algorithms.QR.Higham19Thm6CoxHighamFull
+
+#check NumStability.Wave19.concrete_sigma_ordering_transport_note

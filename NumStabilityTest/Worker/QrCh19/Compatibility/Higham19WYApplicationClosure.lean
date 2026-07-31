@@ -1,0 +1,3 @@
+import NumStability.Algorithms.QR.Higham19WYApplicationClosure
+
+#check NumStability.Ch19Op2AdditionFamilySpec

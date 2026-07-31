@@ -1,0 +1,3 @@
+import NumStability.Algorithms.QR.Higham19Thm6Pivoted
+
+#check NumStability.Wave13.H19_Theorem19_6_pivoted_qr_rowwise_backward_error

@@ -1,0 +1,3 @@
+import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
+
+#check NumStability.Wave19.H19_Theorem19_6_rowwise_elementwise_backward_error

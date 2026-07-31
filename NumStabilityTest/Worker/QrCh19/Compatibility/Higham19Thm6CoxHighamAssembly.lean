@@ -1,0 +1,3 @@
+import NumStability.Algorithms.QR.Higham19Thm6CoxHighamAssembly
+
+#check NumStability.Wave19.concrete_perStage_sigma_ordering_obstruction

@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter19.Theorem06.RowSpecific
+
+#check NumStability.Wave18D.abs_entry_le_rowInftyGrowthFactor

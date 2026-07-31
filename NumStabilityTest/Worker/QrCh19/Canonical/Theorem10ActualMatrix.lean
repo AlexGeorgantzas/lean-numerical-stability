@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter19.Theorem10.ActualMatrix
+
+#check NumStability.Wave13.H19_Theorem19_10_actual_matrix_executor_gamma6
