@@ -1,1 +1,3 @@
 import NumStability.Source.Higham.Chapter19.Algorithm12.MGSSourceRate
+
+#check NumStability.LiteralMGSTheorem1913SourceRateCertificate
