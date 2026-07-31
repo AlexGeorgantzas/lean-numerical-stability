@@ -898,9 +898,15 @@ def validate_candidate_command_hashes(routes: dict[str, Route]) -> int:
     return checked
 
 
-def stage_check(baseline_path: Path, candidate_path: Path) -> dict[str, object]:
+def stage_check(
+    baseline_path: Path, candidate_path: Path, *, cumulative: bool = False
+) -> dict[str, object]:
     acceptance = validate_contract(baseline_path)
-    text = validate_materialized_text(baseline_path)
+    # Once later Chapter 9 waves are integrated, the historical giant owner
+    # is no longer a residual source file.  The first-layers stage still
+    # checks its routed declarations and incident graph against the full
+    # cumulative candidate, so skip only the obsolete residual-file check.
+    text = {} if cumulative else validate_materialized_text(baseline_path)
     routes = full_routes()
     baseline_declarations, baseline_edges = read_graph(baseline_path)
     candidate_declarations, candidate_edges = read_graph(candidate_path)
@@ -996,6 +1002,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mode", choices=("pre", "stage"), default="pre")
     parser.add_argument("--baseline-format2", type=Path)
     parser.add_argument("--candidate-format2", type=Path)
+    parser.add_argument(
+        "--cumulative",
+        action="store_true",
+        help="stage-check the first wave against an already cumulative tree",
+    )
     parser.add_argument("--write-contract", action="store_true")
     parser.add_argument("--materialize", action="store_true")
     parser.add_argument("--check-materialized", action="store_true")
@@ -1026,7 +1037,16 @@ def main() -> int:
     if args.mode == "stage":
         if args.candidate_format2 is None:
             fail("stage mode requires --candidate-format2")
-        print(json.dumps(stage_check(baseline, args.candidate_format2.resolve()), indent=2))
+        print(
+            json.dumps(
+                stage_check(
+                    baseline,
+                    args.candidate_format2.resolve(),
+                    cumulative=args.cumulative,
+                ),
+                indent=2,
+            )
+        )
         return 0
     result: dict[str, object] = {
         "status": "PASS",
