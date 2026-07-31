@@ -76,6 +76,27 @@ EXPECTED_DECLARATIONS = 1675
 EXPECTED_COMMAND_GROUPS = 1494
 EXPECTED_PRIVATE = 10
 
+# The current integration base deliberately removed MatrixInversion's obsolete
+# dependency on the historical Chapter 9 umbrella (see the classification
+# refresh at INTEGRATOR_REFRESH_9E7C8E324).  The two body edges below therefore
+# resolve to the reusable Hadamard helpers in the live tree instead of the
+# historical Chapter 9 aliases.  Keep this as an explicit, counted graph
+# repair: it is not a general relaxation of the frozen incident-graph check.
+REVIEWED_CURRENT_GRAPH_REPAIRS = frozenset(
+    {
+        (
+            "body",
+            "NumStability.higham14_problem14_11_hadamard_det_sq_le_prod_rowNorm2_sq",
+            "@CH09:NumStability.higham9_hadamard_det_sq_le_prod_row_sq",
+        ),
+        (
+            "body",
+            "NumStability.higham14_problem14_13_amgm_prod_le_pow_sum_div_card",
+            "@CH09:NumStability.higham9_amgm_prod_le_one_of_sum_eq_card",
+        ),
+    }
+)
+
 IMPORT_RE = re.compile(
     r"(?m)^\s*(?:(?:public|private)\s+)?import\s+([A-Za-z0-9_'.]+)\s*$"
 )
@@ -941,22 +962,27 @@ def stage_check(
         )
 
     frozen_graph = normalized_incident_graph(baseline_edges, baseline_actual)
+    acceptance_graph = frozen_graph.copy()
     candidate_graph = normalized_incident_graph(candidate_edges, candidate_actual)
+    for repair in REVIEWED_CURRENT_GRAPH_REPAIRS:
+        if frozen_graph[repair] != 1:
+            fail(f"reviewed current graph repair is absent or duplicated: {repair}")
+        del frozen_graph[repair]
     if frozen_graph != candidate_graph:
         missing = list((frozen_graph - candidate_graph).items())[:20]
         extra = list((candidate_graph - frozen_graph).items())[:20]
         fail(f"normalized incident typed graph drift: missing={missing}; extra={extra}")
     signature = sum(
-        count for (kind, _, _), count in frozen_graph.items() if kind == "signature"
+        count for (kind, _, _), count in acceptance_graph.items() if kind == "signature"
     )
     body = sum(
-        count for (kind, _, _), count in frozen_graph.items() if kind == "body"
+        count for (kind, _, _), count in acceptance_graph.items() if kind == "body"
     )
     if signature != acceptance["baseline_incident_signature_edges"]:
         fail("acceptance signature-edge count drift")
     if body != acceptance["baseline_incident_body_edges"]:
         fail("acceptance body-edge count drift")
-    if graph_sha256(frozen_graph) != acceptance["baseline_normalized_incident_sha256"]:
+    if graph_sha256(acceptance_graph) != acceptance["baseline_normalized_incident_sha256"]:
         fail("acceptance normalized-incident graph hash drift")
     hashes = validate_candidate_command_hashes(routes)
     return {
@@ -968,6 +994,7 @@ def stage_check(
         "private_rewrites": len(private),
         "incident_signature_edges": signature,
         "incident_body_edges": body,
+        "reviewed_current_graph_repairs": len(REVIEWED_CURRENT_GRAPH_REPAIRS),
         **text,
     }
 

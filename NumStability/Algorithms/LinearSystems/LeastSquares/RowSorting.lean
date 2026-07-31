@@ -1,9 +1,9 @@
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
-import NumStability.Algorithms.QR.Higham19Thm6Pivoted
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.QR.Higham19Thm6Pivoted
 import NumStability.Analysis.MatrixAlgebra
 
 namespace NumStability

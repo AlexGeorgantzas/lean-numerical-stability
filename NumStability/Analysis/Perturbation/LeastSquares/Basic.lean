@@ -12,14 +12,14 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
 import NumStability.Algorithms.LinearSystems.LeastSquares.Refinement
 import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
-import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
-import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
-import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
 import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
 import NumStability.Algorithms.LinearSystems.QR.QRSolve
+import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.NormalEquations
 import NumStability.Analysis.PerturbationTheory

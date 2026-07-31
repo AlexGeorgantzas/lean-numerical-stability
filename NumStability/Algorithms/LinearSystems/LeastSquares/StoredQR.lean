@@ -7,12 +7,12 @@ import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
-import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
-import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
-import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
 import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.FloatingPoint.Model
 

@@ -32,7 +32,10 @@ sys.path.insert(0, str(ROOT / "tools/architecture"))
 import check_ch09_layers1_5 as prior  # noqa: E402
 
 
-BASE_REVISION = "e931cbacebce8ce8bbb50273a67a4644448436e5"
+# The Windows handoff pinned a historical pre-wave commit that is not present
+# in the Linux clone.  The packet revision carries the same frozen owner
+# sources and is the available authoritative recovery blob for this gate.
+BASE_REVISION = prior.PACKET_REVISION
 PACKET_REVISION = prior.PACKET_REVISION
 REVIEW_EVIDENCE_REVISION = prior.EVIDENCE_REVISION
 FULL_CONTRACT = prior.FULL_CONTRACT

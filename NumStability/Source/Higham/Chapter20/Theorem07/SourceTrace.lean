@@ -1,12 +1,12 @@
 import NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
-import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
-import NumStability.Algorithms.QR.Higham19Thm6Pivoted
-import NumStability.Algorithms.QR.Higham19Thm6RowSpecific
 import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
 import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
+import NumStability.Algorithms.QR.Higham19Thm6Pivoted
+import NumStability.Algorithms.QR.Higham19Thm6RowSpecific
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model

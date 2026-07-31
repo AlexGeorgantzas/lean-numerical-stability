@@ -1,7 +1,7 @@
-import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
 import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
 import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.FloatingPoint.Model
 

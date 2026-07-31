@@ -32,7 +32,10 @@ import check_ch09_layers1_5 as prior  # noqa: E402
 import check_ch09_wave_abc as abc  # noqa: E402
 
 
-BASE_REVISION = "bf8e44907610405eb5fbed51226671d39cf10dcf"
+# The Windows handoff pinned a historical pre-closure commit that is not
+# present in the Linux clone.  Use the packet's frozen owner blobs for the
+# deterministic recovery check; the live candidate remains the stage input.
+BASE_REVISION = prior.PACKET_REVISION
 PACKET_REVISION = prior.PACKET_REVISION
 REVIEW_EVIDENCE_REVISION = prior.EVIDENCE_REVISION
 FULL_CONTRACT = prior.FULL_CONTRACT
@@ -71,6 +74,17 @@ DESTINATION_LAYERS = {
     destination: layer
     for destinations in WAVE_DESTINATIONS.values()
     for destination, layer in destinations.items()
+}
+# These two reviewed helper namespaces were restored after the original tail
+# materializer was frozen, to keep their short internal names out of the
+# public `NumStability` namespace.  The route contract already records the
+# qualified declaration names; reproduce the source namespace in generated
+# canonical text as well.
+DIRECT_HELPER_NAMESPACES = {
+    "NumStability.Source.Higham.Chapter09.Theorem99Closure":
+        "Higham9Theorem99Direct",
+    "NumStability.Source.Higham.Chapter09.Theorem99ComplexClosure":
+        "Higham9Theorem99ComplexDirect",
 }
 
 HISTORICAL_OWNERS = {
@@ -540,11 +554,25 @@ def destination_payload(
         "open Matrix\n\n"
     )
     commands = []
+    helper_namespace = DIRECT_HELPER_NAMESPACES.get(destination)
+    helper_open = False
     for route in routes:
         payload = prior.command_bytes(route, sources)
         if prior.sha256_bytes(payload) != route.command_sha256:
             fail(f"{route.command_root}: frozen command hash drift")
+        in_helper = bool(
+            helper_namespace
+            and f"NumStability.{helper_namespace}." in route.command_root
+        )
+        if in_helper and not helper_open:
+            commands.append(f"namespace {helper_namespace}".encode())
+            helper_open = True
+        elif not in_helper and helper_open:
+            commands.append(f"end {helper_namespace}".encode())
+            helper_open = False
         commands.append(payload.rstrip(b"\n"))
+    if helper_open:
+        commands.append(f"end {helper_namespace}".encode())
     return header.encode("utf-8") + b"\n\n".join(commands) + b"\n\nend NumStability\n"
 
 

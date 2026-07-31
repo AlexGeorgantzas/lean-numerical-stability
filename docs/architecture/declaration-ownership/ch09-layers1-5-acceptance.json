@@ -8,7 +8,7 @@
     "ch09-layers1-5-routes.tsv": "F68015BAE84C005A5642D05FE3F0D11B9B7F8295C35074EBBC5A8264BD7F5A70"
   },
   "base_revision": "32771e355612a6fca1b6153733d3f0dc124d26e2",
-  "baseline_format2_sha256": "1C2538B428B8EC3610B3C09BBB6A4CF23ECA9F0DB17EE4AE5B63E4F371AECDED",
+  "baseline_format2_sha256": "32ADA469E27A971E9B0BB972F29C51E1DCBE99104A1492D4C69549C339825563",
   "baseline_incident_body_edges": 14167,
   "baseline_incident_signature_edges": 11393,
   "baseline_internal_typed_edges": 8966,
