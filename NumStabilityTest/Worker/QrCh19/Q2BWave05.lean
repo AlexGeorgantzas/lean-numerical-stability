@@ -1,0 +1,4 @@
+import NumStabilityTest.Worker.QrCh19.Canonical.Algorithm12MGSPaddedClosure
+import NumStabilityTest.Worker.QrCh19.Canonical.Theorem06CoxHigham
+import NumStabilityTest.Worker.QrCh19.Compatibility.Higham19Alg12MGSPaddedClosure
+import NumStabilityTest.Worker.QrCh19.Compatibility.Higham19Thm6CoxHigham
