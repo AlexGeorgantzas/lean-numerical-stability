@@ -1,0 +1,919 @@
+{
+  "artifact_hashes": {
+    "direct-imports.tsv": "3C768B648371326D098C973605F1B82867F69E27A80826B64A8D6284F8297A80",
+    "downstream-consumers.tsv": "D230BD02809BE8E9DAE061DAE7A88372FE1B206184E30996B906FDB2DB2A72E2",
+    "owner-dag.tsv": "BBE290DBFFD6A3E9F2AED18EE1A6532DB881DB5ED585FD28503F7BCBA59A428C",
+    "ownership.tsv": "37CAF0E5C31B56FA100C20F5FEF73434440A6BBE32EC2F7E60552305DE9C7ED4",
+    "private-rewrites.tsv": "55E1B4F1A58A0D58EE9BAE3E36ECEB6C07F6A431F829A980E5CE869D958181A4",
+    "routes.tsv": "F9ACB3CD44FA98DD51122D7A81F5FBD9DDAC1A99F8467D0B7DE4E1C06D6E93AA"
+  },
+  "blocking_reason": "Chapter 11 has real Chapter 9 dependencies: the equation (11.7) forward-error bridge and the actual block-LDL^T executor bridge both build on Chapter 9 material, and the tridiagonal and Aasen closures consume Chapter 9 GEPP results. Chapter 11 may not be implemented until Chapter 9 is integrated and globally verified, and Chapter 9 itself is BLOCKED_ON_BLOCKLU_INTEGRATION. Chapter 9 and Chapter 11 are strictly sequential waves, never parallel ones.",
+  "candidate_modules": 66,
+  "chapter": "11",
+  "counts": {
+    "baseline_declarations": 6385,
+    "body_edges": 69376,
+    "downstream_consumer_rows": 60,
+    "external_body_targets": 0,
+    "external_signature_targets": 0,
+    "ownership_rows": 6385,
+    "planned_import_rows": 566,
+    "private_declarations": 146,
+    "signature_edges": 61653
+  },
+  "cross_chapter_dependencies": [
+    [
+      "NumStability.Source.Higham.Chapter11.Section01.Chapter09Bridge.ActualExecutor",
+      "NumStability.Algorithms.HighamChapter9"
+    ],
+    [
+      "NumStability.Source.Higham.Chapter11.Section01.Chapter09Bridge.ForwardError",
+      "NumStability.Algorithms.HighamChapter9"
+    ],
+    [
+      "NumStability.Source.Higham.Chapter11.Section01.CompletePivoting.ActualSharpGrowth",
+      "NumStability.Algorithms.HighamChapter9"
+    ],
+    [
+      "NumStability.Source.Higham.Chapter11.Section01.CompletePivoting.SharpGrowthBridge",
+      "NumStability.Algorithms.HighamChapter9"
+    ],
+    [
+      "NumStability.Source.Higham.Chapter11.Section01.CompletePivoting.TraceHadamard",
+      "NumStability.Algorithms.HighamChapter9"
+    ],
+    [
+      "NumStability.Source.Higham.Chapter11.Section02.Aasen.Core",
+      "NumStability.Algorithms.HighamChapter9"
+    ],
+    [
+      "NumStability.Source.Higham.Chapter11.Section02.Aasen.DirectBackwardError",
+      "NumStability.Algorithms.HighamChapter9"
+    ],
+    [
+      "NumStability.Source.Higham.Chapter11.Section02.Aasen.MiddleCounterexample",
+      "NumStability.Algorithms.HighamChapter9"
+    ],
+    [
+      "NumStability.Source.Higham.Chapter11.Section02.Aasen.OriginalCoordinate",
+      "NumStability.Algorithms.HighamChapter9"
+    ],
+    [
+      "NumStability.Source.Higham.Chapter11.Section02.Aasen.ReducedResidual",
+      "NumStability.Algorithms.HighamChapter9"
+    ],
+    [
+      "NumStability.Source.Higham.Chapter11.Section02.Aasen.TridiagonalGEPP",
+      "NumStability.Algorithms.HighamChapter9"
+    ]
+  ],
+  "cross_chapter_dependency_count": 11,
+  "destination_count": 74,
+  "destinations": [
+    "NumStability.Source.Higham.Chapter11.Problems.ProofCompletion",
+    "NumStability.Source.Higham.Chapter11.Problems.Statements",
+    "NumStability.Source.Higham.Chapter11.Section01.BlockFactorization",
+    "NumStability.Source.Higham.Chapter11.Section01.BlockLDLT.AllOneByOne",
+    "NumStability.Source.Higham.Chapter11.Section01.BlockLDLT.MixedPivot",
+    "NumStability.Source.Higham.Chapter11.Section01.BlockLDLT.SolveBackward",
+    "NumStability.Source.Higham.Chapter11.Section01.BlockLDLT.TwoByTwoSchurStep",
+    "NumStability.Source.Higham.Chapter11.Section01.Chapter09Bridge.ActualExecutor",
+    "NumStability.Source.Higham.Chapter11.Section01.Chapter09Bridge.ForwardError",
+    "NumStability.Source.Higham.Chapter11.Section01.CompletePivoting.ActualSharpGrowth",
+    "NumStability.Source.Higham.Chapter11.Section01.CompletePivoting.Core",
+    "NumStability.Source.Higham.Chapter11.Section01.CompletePivoting.ExactTrace",
+    "NumStability.Source.Higham.Chapter11.Section01.CompletePivoting.SharpGrowthBridge",
+    "NumStability.Source.Higham.Chapter11.Section01.CompletePivoting.TraceHadamard",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.ActualSelector",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.Core",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.ExactGrowth",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.ExactGrowthArithmetic",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.ExactTrace",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.ExplicitInverseSolve",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.ExplicitInverseTerminal",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.RoundedAccumulated",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.RoundedBridge",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.RoundedClosure",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.RoundedExecution",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.RoundedFactors",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.RoundedGlobal",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.RoundedGrowth",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.RoundedGrowthSolve",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.RoundedMiddleSolve",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.RoundedSolve",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.RoundedTerminal",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.RoundedTerminalClosedForm",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.SolveBackwardError",
+    "NumStability.Source.Higham.Chapter11.Section01.PartialPivoting.SourceCorrection",
+    "NumStability.Source.Higham.Chapter11.Section01.RookPivoting.Core",
+    "NumStability.Source.Higham.Chapter11.Section01.RookPivoting.ExactTrace",
+    "NumStability.Source.Higham.Chapter11.Section01.RookPivoting.ExecutorAdapter",
+    "NumStability.Source.Higham.Chapter11.Section01.RookPivoting.RoundedGap",
+    "NumStability.Source.Higham.Chapter11.Section01.RookPivoting.SourceClosure",
+    "NumStability.Source.Higham.Chapter11.Section01.Tridiagonal.ActualSolve",
+    "NumStability.Source.Higham.Chapter11.Section01.Tridiagonal.BlockLDLT",
+    "NumStability.Source.Higham.Chapter11.Section01.Tridiagonal.Core",
+    "NumStability.Source.Higham.Chapter11.Section01.Tridiagonal.FactorBound",
+    "NumStability.Source.Higham.Chapter11.Section01.Tridiagonal.Growth",
+    "NumStability.Source.Higham.Chapter11.Section01.Tridiagonal.GrowthInvariant",
+    "NumStability.Source.Higham.Chapter11.Section01.Tridiagonal.HFactor",
+    "NumStability.Source.Higham.Chapter11.Section01.Tridiagonal.SparseFactor",
+    "NumStability.Source.Higham.Chapter11.Section01.Tridiagonal.SparseSolve",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.AdjacentPivot.ForwardCounterexample",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.AdjacentPivot.OperationalMiddle",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.AdjacentPivot.ResidualDomain",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.AdjacentPivot.SourceResidual",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.AdjacentPivot.TridiagonalExecutor",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.Core",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.CoupledExecutor",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.DirectBackwardError",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.DirectTridiagonalSolve",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.FactorNorm",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.FactorResidual",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.Growth",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.MiddleCounterexample",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.OriginalCoordinate",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.PermutationCorrection",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.PrintedCoefficients",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.ReducedResidual",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.ScalarEdgeDiscrepancy",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.SharpFactorResidual",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.TridiagonalGEPP",
+    "NumStability.Source.Higham.Chapter11.Section02.Aasen.UnitOuterSolve",
+    "NumStability.Source.Higham.Chapter11.Section03.SkewSymmetric.ActualSelector",
+    "NumStability.Source.Higham.Chapter11.Section03.SkewSymmetric.Core",
+    "NumStability.Source.Higham.Chapter11.Section03.SkewSymmetric.ExactTrace",
+    "NumStability.Source.Higham.Chapter11.Section03.SkewSymmetric.SourceCorrection"
+  ],
+  "frozen_base_sha": "6487fc33088523b8f27ecde9ad613515b78f9977",
+  "historical_facades": [
+    "NumStability.Algorithms.Cholesky.Aasen118ReducedCh11Closure",
+    "NumStability.Algorithms.Cholesky.AasenAdjacentPivotOperationalMiddleCh11",
+    "NumStability.Algorithms.Cholesky.AasenAdjacentPivotResidualDomainCh11Discrepancy",
+    "NumStability.Algorithms.Cholesky.AasenAdjacentPivotSourceResidualCh11Closure",
+    "NumStability.Algorithms.Cholesky.AasenAdjacentPivotTridiagExecutorCh11Closure",
+    "NumStability.Algorithms.Cholesky.AasenAdjacentPivotTridiagForwardCounterexampleCh11",
+    "NumStability.Algorithms.Cholesky.AasenCoupledFpCh11Closure",
+    "NumStability.Algorithms.Cholesky.AasenDirect118Ch11Closure",
+    "NumStability.Algorithms.Cholesky.AasenDirectTridiagGEPPSolveCh11Closure",
+    "NumStability.Algorithms.Cholesky.AasenFactorNormCh11Closure",
+    "NumStability.Algorithms.Cholesky.AasenFactorResidualCh11Closure",
+    "NumStability.Algorithms.Cholesky.AasenGrowthCh11Closure",
+    "NumStability.Algorithms.Cholesky.AasenMiddleGEPPCh11Counterexample",
+    "NumStability.Algorithms.Cholesky.AasenOriginalCoordinateCorrectionCh11",
+    "NumStability.Algorithms.Cholesky.AasenPermutationSourceCorrectionCh11",
+    "NumStability.Algorithms.Cholesky.AasenPrintedCoefficientAlgebraCh11Closure",
+    "NumStability.Algorithms.Cholesky.AasenSourceSharpFactorResidualCh11Closure",
+    "NumStability.Algorithms.Cholesky.AasenTheorem118ScalarEdgeCh11Discrepancy",
+    "NumStability.Algorithms.Cholesky.AasenTridiagGEPPCh11Closure",
+    "NumStability.Algorithms.Cholesky.AasenUnitOuterSolveCh11Closure",
+    "NumStability.Algorithms.Cholesky.BlockLDLTAllOneByOnePrintedCh11Closure",
+    "NumStability.Algorithms.Cholesky.BlockLDLTBunchTridiagonalCh11Closure",
+    "NumStability.Algorithms.Cholesky.BlockLDLTMixedPivotCh11Closure",
+    "NumStability.Algorithms.Cholesky.BlockLDLTSolveBackwardCh11Closure",
+    "NumStability.Algorithms.Cholesky.BunchKaufmanSolveCh11Closure",
+    "NumStability.Algorithms.Cholesky.BunchTridiagonalActualSolveCh11Closure",
+    "NumStability.Algorithms.Cholesky.BunchTridiagonalFactorBoundCh11Closure",
+    "NumStability.Algorithms.Cholesky.BunchTridiagonalGrowthCh11Closure",
+    "NumStability.Algorithms.Cholesky.BunchTridiagonalGrowthInvariantCh11Closure",
+    "NumStability.Algorithms.Cholesky.BunchTridiagonalHFactorCh11Closure",
+    "NumStability.Algorithms.Cholesky.BunchTridiagonalSparseFactorCh11Closure",
+    "NumStability.Algorithms.Cholesky.BunchTridiagonalSparseSolveCh11Closure",
+    "NumStability.Algorithms.Cholesky.Higham11BunchActualSharpGrowthClosure",
+    "NumStability.Algorithms.Cholesky.Higham11BunchExactTrace",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanActualSelector",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExactGrowth",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExactGrowthArithmetic",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExactTrace",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExplicitInverseSolve",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExplicitInverseTerminalClosedForm",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedAccumulated",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedBridge",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedClosure",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedExecution",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedFactors",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedGlobal",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedGrowth",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedGrowthSolve",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedMiddleSolve",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedSolve",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedTerminal",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedTerminalClosedForm",
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanSourceCorrection",
+    "NumStability.Algorithms.Cholesky.Higham11BunchSharpGrowthBridge",
+    "NumStability.Algorithms.Cholesky.Higham11BunchTraceHadamard",
+    "NumStability.Algorithms.Cholesky.Higham11Chapter9ActualExecutorBridge",
+    "NumStability.Algorithms.Cholesky.Higham11Chapter9BridgeClosure",
+    "NumStability.Algorithms.Cholesky.Higham11RookExactTrace",
+    "NumStability.Algorithms.Cholesky.Higham11RookExecutorAdapter",
+    "NumStability.Algorithms.Cholesky.Higham11RookRoundedGap",
+    "NumStability.Algorithms.Cholesky.Higham11RookSourceClosure",
+    "NumStability.Algorithms.Cholesky.Higham11SkewActualSelector",
+    "NumStability.Algorithms.Cholesky.Higham11SkewExactTrace",
+    "NumStability.Algorithms.Cholesky.Higham11SkewSourceCorrection",
+    "NumStability.Algorithms.Cholesky.TwoByTwoSchurStepCh11Closure",
+    "NumStability.Algorithms.HighamChapter11"
+  ],
+  "implementation_status": "BLOCKED_ON_CH09_INTEGRATION",
+  "normalized_hashes": {
+    "body_edges": {
+      "rows": 69376,
+      "sha256": "F735C281C278BF9788FD5740E9D7F34B7333B3DDCE7F2D9FF045E9250EDC1010"
+    },
+    "declarations": {
+      "rows": 6385,
+      "sha256": "09641A56F129CD1871B51A9536C71F62B785F4E32B96403F130CF4197BCE20C9"
+    },
+    "signature_edges": {
+      "rows": 61653,
+      "sha256": "8C2F935B94B1A3EB57517312335D5FC7FCEEC173239970B06BCE680E2504D626"
+    }
+  },
+  "notes": [
+    "Preparation only: no canonical production module is created, no declaration is moved, no proof is rewritten, no import is edited, and no wrapper is added.",
+    "The candidate family is exactly the 66 candidate_production rows of CH11_PREP_PATHS.tsv, not all of NumStability/Algorithms/Cholesky/.",
+    "Cholesky.BunchTridiagonalCapstoneCh11Closure, Source.Higham.Chapter11.Theorem07 and Higham.Chapter11.Theorem11_7Capstone are read-only context and are never re-owned; no destination collides with the existing canonical Theorem07 slice.",
+    "Each destination owns one contiguous region of one historical module, and no declaration-owning destination is a prefix of another."
+  ],
+  "per_module": {
+    "NumStability.Algorithms.Cholesky.Aasen118ReducedCh11Closure": {
+      "authored_declaration_groups": 1,
+      "baseline_declarations": 1,
+      "command_groups": 2,
+      "lines": 263,
+      "path": "NumStability/Algorithms/Cholesky/Aasen118ReducedCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "BB42639ECA2D27B188A50A5986C36C45BE71CBCBF650E06769554FDB1BA88DE6"
+    },
+    "NumStability.Algorithms.Cholesky.AasenAdjacentPivotOperationalMiddleCh11": {
+      "authored_declaration_groups": 53,
+      "baseline_declarations": 53,
+      "command_groups": 60,
+      "lines": 1230,
+      "path": "NumStability/Algorithms/Cholesky/AasenAdjacentPivotOperationalMiddleCh11.lean",
+      "private_declarations": 2,
+      "section_seams": 6,
+      "source_sha256": "607411E314D0F635AE34AD0DED756BD287FD0727959085530820E738940028EA"
+    },
+    "NumStability.Algorithms.Cholesky.AasenAdjacentPivotResidualDomainCh11Discrepancy": {
+      "authored_declaration_groups": 10,
+      "baseline_declarations": 10,
+      "command_groups": 11,
+      "lines": 159,
+      "path": "NumStability/Algorithms/Cholesky/AasenAdjacentPivotResidualDomainCh11Discrepancy.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "B647CE8C7B5C35E153F82082FE2E518BCF5666B0BDDB94A829D7621211586CDB"
+    },
+    "NumStability.Algorithms.Cholesky.AasenAdjacentPivotSourceResidualCh11Closure": {
+      "authored_declaration_groups": 10,
+      "baseline_declarations": 10,
+      "command_groups": 11,
+      "lines": 433,
+      "path": "NumStability/Algorithms/Cholesky/AasenAdjacentPivotSourceResidualCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "42A05A4C875BA505C8D93BAE74241BC2E2BC96EDAAE6B8DA15220A31A64A7A4D"
+    },
+    "NumStability.Algorithms.Cholesky.AasenAdjacentPivotTridiagExecutorCh11Closure": {
+      "authored_declaration_groups": 56,
+      "baseline_declarations": 73,
+      "command_groups": 65,
+      "lines": 797,
+      "path": "NumStability/Algorithms/Cholesky/AasenAdjacentPivotTridiagExecutorCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 8,
+      "source_sha256": "7F99318308C99AC62CB077AC1AE791C56889852E90EBBE4FC16905C72E8FA488"
+    },
+    "NumStability.Algorithms.Cholesky.AasenAdjacentPivotTridiagForwardCounterexampleCh11": {
+      "authored_declaration_groups": 38,
+      "baseline_declarations": 38,
+      "command_groups": 39,
+      "lines": 266,
+      "path": "NumStability/Algorithms/Cholesky/AasenAdjacentPivotTridiagForwardCounterexampleCh11.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "67ABA643874BBFB570EEF16A852098D6EF9EBEF83EF804077AEC5AE950917BA8"
+    },
+    "NumStability.Algorithms.Cholesky.AasenCoupledFpCh11Closure": {
+      "authored_declaration_groups": 51,
+      "baseline_declarations": 65,
+      "command_groups": 58,
+      "lines": 666,
+      "path": "NumStability/Algorithms/Cholesky/AasenCoupledFpCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 6,
+      "source_sha256": "E8C4DCE03A010C3181106564617A56DEC8EE8C7D8AE0BFBE47BE07E9DBC1DC2E"
+    },
+    "NumStability.Algorithms.Cholesky.AasenDirect118Ch11Closure": {
+      "authored_declaration_groups": 4,
+      "baseline_declarations": 4,
+      "command_groups": 8,
+      "lines": 437,
+      "path": "NumStability/Algorithms/Cholesky/AasenDirect118Ch11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 3,
+      "source_sha256": "C6BD8D26FC1E5065D0CE143AD492E592C7EA8CD89CACD15F9ABF35422C0C47D4"
+    },
+    "NumStability.Algorithms.Cholesky.AasenDirectTridiagGEPPSolveCh11Closure": {
+      "authored_declaration_groups": 10,
+      "baseline_declarations": 10,
+      "command_groups": 15,
+      "lines": 476,
+      "path": "NumStability/Algorithms/Cholesky/AasenDirectTridiagGEPPSolveCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 4,
+      "source_sha256": "5D5290AE096405B4030AA7EC4A5FFE583EF7D606F387643C9D2F18A9793E7DDD"
+    },
+    "NumStability.Algorithms.Cholesky.AasenFactorNormCh11Closure": {
+      "authored_declaration_groups": 6,
+      "baseline_declarations": 6,
+      "command_groups": 7,
+      "lines": 171,
+      "path": "NumStability/Algorithms/Cholesky/AasenFactorNormCh11Closure.lean",
+      "private_declarations": 1,
+      "section_seams": 0,
+      "source_sha256": "A9E42280D7EF1D283EC13312CE345659A35BF64900A95461961FEC3F2A2E1D83"
+    },
+    "NumStability.Algorithms.Cholesky.AasenFactorResidualCh11Closure": {
+      "authored_declaration_groups": 19,
+      "baseline_declarations": 19,
+      "command_groups": 25,
+      "lines": 846,
+      "path": "NumStability/Algorithms/Cholesky/AasenFactorResidualCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 5,
+      "source_sha256": "0CA7075C1A46073C30065294570C610FBD4502A13B16CBB7B52149D7DFBB9685"
+    },
+    "NumStability.Algorithms.Cholesky.AasenGrowthCh11Closure": {
+      "authored_declaration_groups": 9,
+      "baseline_declarations": 9,
+      "command_groups": 10,
+      "lines": 384,
+      "path": "NumStability/Algorithms/Cholesky/AasenGrowthCh11Closure.lean",
+      "private_declarations": 3,
+      "section_seams": 0,
+      "source_sha256": "B7EFAEEFEDC5A29F26A6FD6C99ECDCD417A0E6440FA98AD1FDF76C72DDF8DEC9"
+    },
+    "NumStability.Algorithms.Cholesky.AasenMiddleGEPPCh11Counterexample": {
+      "authored_declaration_groups": 36,
+      "baseline_declarations": 36,
+      "command_groups": 38,
+      "lines": 579,
+      "path": "NumStability/Algorithms/Cholesky/AasenMiddleGEPPCh11Counterexample.lean",
+      "private_declarations": 0,
+      "section_seams": 1,
+      "source_sha256": "BD30F8733509375C9C62D9F1C1857DB534A62899026DF585850FD7D09181AB44"
+    },
+    "NumStability.Algorithms.Cholesky.AasenOriginalCoordinateCorrectionCh11": {
+      "authored_declaration_groups": 7,
+      "baseline_declarations": 7,
+      "command_groups": 8,
+      "lines": 200,
+      "path": "NumStability/Algorithms/Cholesky/AasenOriginalCoordinateCorrectionCh11.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "5DECD5AA97D04E5C96F209F21B8FEE761E06575C70351E0FC4D19AFAD35C4F4F"
+    },
+    "NumStability.Algorithms.Cholesky.AasenPermutationSourceCorrectionCh11": {
+      "authored_declaration_groups": 11,
+      "baseline_declarations": 11,
+      "command_groups": 13,
+      "lines": 158,
+      "path": "NumStability/Algorithms/Cholesky/AasenPermutationSourceCorrectionCh11.lean",
+      "private_declarations": 7,
+      "section_seams": 1,
+      "source_sha256": "C86BB59B7AEA9F41EC00D5C0E89FCBC36802F53706000DD54B9B97FDDBAD8243"
+    },
+    "NumStability.Algorithms.Cholesky.AasenPrintedCoefficientAlgebraCh11Closure": {
+      "authored_declaration_groups": 4,
+      "baseline_declarations": 4,
+      "command_groups": 5,
+      "lines": 186,
+      "path": "NumStability/Algorithms/Cholesky/AasenPrintedCoefficientAlgebraCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "D20ECC29C135BD0F34BAF24D9171285E337BF95E811268F660AFD78BE395B3FB"
+    },
+    "NumStability.Algorithms.Cholesky.AasenSourceSharpFactorResidualCh11Closure": {
+      "authored_declaration_groups": 24,
+      "baseline_declarations": 24,
+      "command_groups": 25,
+      "lines": 970,
+      "path": "NumStability/Algorithms/Cholesky/AasenSourceSharpFactorResidualCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "D8E148282571FC016F24C2EB70B9DC614CC63BC1F6AE965007A9809A2BE542C3"
+    },
+    "NumStability.Algorithms.Cholesky.AasenTheorem118ScalarEdgeCh11Discrepancy": {
+      "authored_declaration_groups": 10,
+      "baseline_declarations": 10,
+      "command_groups": 11,
+      "lines": 193,
+      "path": "NumStability/Algorithms/Cholesky/AasenTheorem118ScalarEdgeCh11Discrepancy.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "812E2ECF65C822AF0FE2ED49B338DC5F2E23C0F2414E2C8DD94A51210BAC9E0E"
+    },
+    "NumStability.Algorithms.Cholesky.AasenTridiagGEPPCh11Closure": {
+      "authored_declaration_groups": 10,
+      "baseline_declarations": 10,
+      "command_groups": 13,
+      "lines": 399,
+      "path": "NumStability/Algorithms/Cholesky/AasenTridiagGEPPCh11Closure.lean",
+      "private_declarations": 2,
+      "section_seams": 2,
+      "source_sha256": "09980D998E131BDDA82E55C11A3274C3FB9BBDECA518FDBCB3850F0A5F80ECF3"
+    },
+    "NumStability.Algorithms.Cholesky.AasenUnitOuterSolveCh11Closure": {
+      "authored_declaration_groups": 14,
+      "baseline_declarations": 14,
+      "command_groups": 19,
+      "lines": 279,
+      "path": "NumStability/Algorithms/Cholesky/AasenUnitOuterSolveCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 4,
+      "source_sha256": "F20E2CC8B985E445C93EAF5CAEBEEFA3C4423FFA93AB4B4060B58C6E152250E3"
+    },
+    "NumStability.Algorithms.Cholesky.BlockLDLTAllOneByOnePrintedCh11Closure": {
+      "authored_declaration_groups": 22,
+      "baseline_declarations": 22,
+      "command_groups": 27,
+      "lines": 472,
+      "path": "NumStability/Algorithms/Cholesky/BlockLDLTAllOneByOnePrintedCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 4,
+      "source_sha256": "876B8C252417969DA7C040D1A595D8F33DD6B3C6B2693431CDA1E776B3C397A6"
+    },
+    "NumStability.Algorithms.Cholesky.BlockLDLTBunchTridiagonalCh11Closure": {
+      "authored_declaration_groups": 15,
+      "baseline_declarations": 15,
+      "command_groups": 21,
+      "lines": 378,
+      "path": "NumStability/Algorithms/Cholesky/BlockLDLTBunchTridiagonalCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 5,
+      "source_sha256": "58E262A9DB377CF199854DB793073D474787FE5ECE793D105D8D67CD7F2D3AD6"
+    },
+    "NumStability.Algorithms.Cholesky.BlockLDLTMixedPivotCh11Closure": {
+      "authored_declaration_groups": 80,
+      "baseline_declarations": 107,
+      "command_groups": 92,
+      "lines": 1144,
+      "path": "NumStability/Algorithms/Cholesky/BlockLDLTMixedPivotCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 11,
+      "source_sha256": "88343EF77ED87B53669970A2FAE31A9828210A05F0B21582BEF386F8056C83F3"
+    },
+    "NumStability.Algorithms.Cholesky.BlockLDLTSolveBackwardCh11Closure": {
+      "authored_declaration_groups": 40,
+      "baseline_declarations": 40,
+      "command_groups": 50,
+      "lines": 1129,
+      "path": "NumStability/Algorithms/Cholesky/BlockLDLTSolveBackwardCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 9,
+      "source_sha256": "48B1E605FE58D52A8A38A3B77F9199B7A5BF055903EBC6A16EBECCC121A604BE"
+    },
+    "NumStability.Algorithms.Cholesky.BunchKaufmanSolveCh11Closure": {
+      "authored_declaration_groups": 3,
+      "baseline_declarations": 3,
+      "command_groups": 4,
+      "lines": 232,
+      "path": "NumStability/Algorithms/Cholesky/BunchKaufmanSolveCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "CAB367C161A3DB42605835D1D59074D7831A737A4DAC0A29A09BE37BB97F6B3D"
+    },
+    "NumStability.Algorithms.Cholesky.BunchTridiagonalActualSolveCh11Closure": {
+      "authored_declaration_groups": 8,
+      "baseline_declarations": 8,
+      "command_groups": 9,
+      "lines": 231,
+      "path": "NumStability/Algorithms/Cholesky/BunchTridiagonalActualSolveCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "1E05760294412E4B689E3009946D59329ADED233FCF79B2846CC090D3A98A99A"
+    },
+    "NumStability.Algorithms.Cholesky.BunchTridiagonalFactorBoundCh11Closure": {
+      "authored_declaration_groups": 10,
+      "baseline_declarations": 10,
+      "command_groups": 17,
+      "lines": 570,
+      "path": "NumStability/Algorithms/Cholesky/BunchTridiagonalFactorBoundCh11Closure.lean",
+      "private_declarations": 2,
+      "section_seams": 6,
+      "source_sha256": "781B72EB2DB48F7CA120AEDD62512E37DAAC8E48C29CE43CC4674FE8BDC76BC8"
+    },
+    "NumStability.Algorithms.Cholesky.BunchTridiagonalGrowthCh11Closure": {
+      "authored_declaration_groups": 7,
+      "baseline_declarations": 7,
+      "command_groups": 12,
+      "lines": 343,
+      "path": "NumStability/Algorithms/Cholesky/BunchTridiagonalGrowthCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 4,
+      "source_sha256": "A14C677E5228F36CC47634B896F758060E30535E710B01EFD9F8BFA7563A6A28"
+    },
+    "NumStability.Algorithms.Cholesky.BunchTridiagonalGrowthInvariantCh11Closure": {
+      "authored_declaration_groups": 63,
+      "baseline_declarations": 63,
+      "command_groups": 80,
+      "lines": 1767,
+      "path": "NumStability/Algorithms/Cholesky/BunchTridiagonalGrowthInvariantCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 16,
+      "source_sha256": "38F321C129817AFBE6BC746A22A25BC820C53F891A7013C1A2F1663B884ACF67"
+    },
+    "NumStability.Algorithms.Cholesky.BunchTridiagonalHFactorCh11Closure": {
+      "authored_declaration_groups": 30,
+      "baseline_declarations": 30,
+      "command_groups": 39,
+      "lines": 865,
+      "path": "NumStability/Algorithms/Cholesky/BunchTridiagonalHFactorCh11Closure.lean",
+      "private_declarations": 3,
+      "section_seams": 8,
+      "source_sha256": "4D21857FE48E1C179325AB9FB8D1DA48F7FD778205E3EC243766B26339BEA712"
+    },
+    "NumStability.Algorithms.Cholesky.BunchTridiagonalSparseFactorCh11Closure": {
+      "authored_declaration_groups": 30,
+      "baseline_declarations": 30,
+      "command_groups": 36,
+      "lines": 957,
+      "path": "NumStability/Algorithms/Cholesky/BunchTridiagonalSparseFactorCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 5,
+      "source_sha256": "5AB726CD6EB5ACA922B4F2DF0B6C6424E2C0691FB1D334A998151720696085F4"
+    },
+    "NumStability.Algorithms.Cholesky.BunchTridiagonalSparseSolveCh11Closure": {
+      "authored_declaration_groups": 14,
+      "baseline_declarations": 14,
+      "command_groups": 18,
+      "lines": 499,
+      "path": "NumStability/Algorithms/Cholesky/BunchTridiagonalSparseSolveCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 3,
+      "source_sha256": "708974E7061BE9CBE55DECE4CD88A55170C6F2586B81F6A6A9B9C0E3D88958ED"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchActualSharpGrowthClosure": {
+      "authored_declaration_groups": 24,
+      "baseline_declarations": 51,
+      "command_groups": 25,
+      "lines": 464,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchActualSharpGrowthClosure.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "7DF9FB8A10F21FAD0F354BDBB8E75F0B57549620AB77BD7FFF04538C4AA218DC"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchExactTrace": {
+      "authored_declaration_groups": 32,
+      "baseline_declarations": 60,
+      "command_groups": 33,
+      "lines": 455,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchExactTrace.lean",
+      "private_declarations": 1,
+      "section_seams": 0,
+      "source_sha256": "88CC5541D9B9E5C03FD49BEE70A42AFAF97DE9A43D9C42443F971ED8131DEE25"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanActualSelector": {
+      "authored_declaration_groups": 25,
+      "baseline_declarations": 25,
+      "command_groups": 27,
+      "lines": 369,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanActualSelector.lean",
+      "private_declarations": 0,
+      "section_seams": 1,
+      "source_sha256": "1C2E9341F9D41C58CD4F690100188E6E2EDE57C6249475E8BD2A47FAC0D7B9EA"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExactGrowth": {
+      "authored_declaration_groups": 21,
+      "baseline_declarations": 21,
+      "command_groups": 22,
+      "lines": 635,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanExactGrowth.lean",
+      "private_declarations": 13,
+      "section_seams": 0,
+      "source_sha256": "AEFD2FBB9E6669142470C6F061D3068EC849476DCD3BDBE5509C07EF7AA8F83B"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExactGrowthArithmetic": {
+      "authored_declaration_groups": 5,
+      "baseline_declarations": 5,
+      "command_groups": 6,
+      "lines": 99,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanExactGrowthArithmetic.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "6DF1B67A7FDB2AD319DA6D8819BC450F49950AA53F3E71D360C1C604F0D37804"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExactTrace": {
+      "authored_declaration_groups": 34,
+      "baseline_declarations": 80,
+      "command_groups": 35,
+      "lines": 613,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanExactTrace.lean",
+      "private_declarations": 1,
+      "section_seams": 0,
+      "source_sha256": "13A808B538BED2A5FD22523F9370F18CD0CAD31A8A0631D467FD2529BB8A4F6E"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExplicitInverseSolve": {
+      "authored_declaration_groups": 25,
+      "baseline_declarations": 25,
+      "command_groups": 33,
+      "lines": 1207,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanExplicitInverseSolve.lean",
+      "private_declarations": 5,
+      "section_seams": 7,
+      "source_sha256": "1DB8BA3E15EF2F0E4F990D4885CE6B65223C9109C1461C27496D1A5E568B149D"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExplicitInverseTerminalClosedForm": {
+      "authored_declaration_groups": 7,
+      "baseline_declarations": 7,
+      "command_groups": 8,
+      "lines": 357,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanExplicitInverseTerminalClosedForm.lean",
+      "private_declarations": 1,
+      "section_seams": 0,
+      "source_sha256": "C7B30BE4F4E02F340D731429CB2615F9D07ACADC3FC995404AC0347EA5785653"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedAccumulated": {
+      "authored_declaration_groups": 52,
+      "baseline_declarations": 52,
+      "command_groups": 56,
+      "lines": 577,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedAccumulated.lean",
+      "private_declarations": 0,
+      "section_seams": 3,
+      "source_sha256": "0AFD5B6C8DFC7FDC24AAC5E3EEE9E2AF092BA50377224CAA30EA837BBD2A0416"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedBridge": {
+      "authored_declaration_groups": 13,
+      "baseline_declarations": 13,
+      "command_groups": 17,
+      "lines": 379,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedBridge.lean",
+      "private_declarations": 0,
+      "section_seams": 3,
+      "source_sha256": "7C7F0FB4ADC994739F44961C593D5C7988105B6911B12A5D3976DAE211A4C59F"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedClosure": {
+      "authored_declaration_groups": 30,
+      "baseline_declarations": 30,
+      "command_groups": 35,
+      "lines": 820,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedClosure.lean",
+      "private_declarations": 0,
+      "section_seams": 4,
+      "source_sha256": "2D301C45B2A340E4E278CAAD612018693306887A8377B2B4A232216A67D76747"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedExecution": {
+      "authored_declaration_groups": 22,
+      "baseline_declarations": 93,
+      "command_groups": 26,
+      "lines": 532,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedExecution.lean",
+      "private_declarations": 0,
+      "section_seams": 3,
+      "source_sha256": "2D585CE394568BD41CF94DC3A4956AC77E84BE3DDCD7283B6E85E080C32F9AA0"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedFactors": {
+      "authored_declaration_groups": 13,
+      "baseline_declarations": 13,
+      "command_groups": 16,
+      "lines": 219,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedFactors.lean",
+      "private_declarations": 0,
+      "section_seams": 2,
+      "source_sha256": "D230DC9081FB7C8E0987F2A1C4EE93E1500269C3755566A88FBA2B6F4E8BA640"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedGlobal": {
+      "authored_declaration_groups": 92,
+      "baseline_declarations": 92,
+      "command_groups": 96,
+      "lines": 2316,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedGlobal.lean",
+      "private_declarations": 0,
+      "section_seams": 3,
+      "source_sha256": "761C6198B901BD8171CF0B72194A9B3E771E8BA87ED2265EEEFAC6E25B39170F"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedGrowth": {
+      "authored_declaration_groups": 48,
+      "baseline_declarations": 48,
+      "command_groups": 49,
+      "lines": 1717,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedGrowth.lean",
+      "private_declarations": 15,
+      "section_seams": 0,
+      "source_sha256": "94F97D61673E78E7CD6D865AB1D47EBF4EF70CB23E9EB4DF6B45C43C456F73DC"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedGrowthSolve": {
+      "authored_declaration_groups": 4,
+      "baseline_declarations": 4,
+      "command_groups": 5,
+      "lines": 180,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedGrowthSolve.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "C07171A26B6D57EB8EE6636E97F859BEB9ECAF0CD6838FF48CEAFFE84C493406"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedMiddleSolve": {
+      "authored_declaration_groups": 3,
+      "baseline_declarations": 3,
+      "command_groups": 4,
+      "lines": 262,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedMiddleSolve.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "D9D5121708C79F8DC232182B5241D8C987EDFDF41573540D28616FA278F7AAFD"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedSolve": {
+      "authored_declaration_groups": 12,
+      "baseline_declarations": 12,
+      "command_groups": 16,
+      "lines": 465,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedSolve.lean",
+      "private_declarations": 0,
+      "section_seams": 3,
+      "source_sha256": "305C80A39962AF1C1D59B03706FC3D94ACEF7F2A2E0D36ED274FBA144DCFC844"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedTerminal": {
+      "authored_declaration_groups": 2,
+      "baseline_declarations": 2,
+      "command_groups": 3,
+      "lines": 118,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedTerminal.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "B5C2F3E494FB4DC8DACA399E392D7576D56B32733207F0D19D6211FCFD84F3CE"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedTerminalClosedForm": {
+      "authored_declaration_groups": 12,
+      "baseline_declarations": 12,
+      "command_groups": 13,
+      "lines": 447,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedTerminalClosedForm.lean",
+      "private_declarations": 1,
+      "section_seams": 0,
+      "source_sha256": "53E051DCBFCA965EACDDD2428B98DCAAB0913931B7DFC2235A2B958C711EF969"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchKaufmanSourceCorrection": {
+      "authored_declaration_groups": 11,
+      "baseline_declarations": 11,
+      "command_groups": 15,
+      "lines": 284,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanSourceCorrection.lean",
+      "private_declarations": 2,
+      "section_seams": 3,
+      "source_sha256": "3F39A7686D98BE5252CC0E3F0F65A1C340EC438696A21D5BC37911A8ADBF2188"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchSharpGrowthBridge": {
+      "authored_declaration_groups": 74,
+      "baseline_declarations": 104,
+      "command_groups": 77,
+      "lines": 1594,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchSharpGrowthBridge.lean",
+      "private_declarations": 44,
+      "section_seams": 2,
+      "source_sha256": "D29878A54D6C27718DF3D710116C8C5220423C0AA4915DA81729798DFDC18819"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11BunchTraceHadamard": {
+      "authored_declaration_groups": 54,
+      "baseline_declarations": 68,
+      "command_groups": 55,
+      "lines": 803,
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchTraceHadamard.lean",
+      "private_declarations": 41,
+      "section_seams": 0,
+      "source_sha256": "059DB8D2098027FA1096D1C1DBDF7BD4784CA25A3AF1BE68B690DEFB94951435"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11Chapter9ActualExecutorBridge": {
+      "authored_declaration_groups": 7,
+      "baseline_declarations": 7,
+      "command_groups": 9,
+      "lines": 626,
+      "path": "NumStability/Algorithms/Cholesky/Higham11Chapter9ActualExecutorBridge.lean",
+      "private_declarations": 0,
+      "section_seams": 1,
+      "source_sha256": "D115E92F76B32CBFEDFF8E3F36C337A38C083AAA85ADDD649CE87E454B042A87"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11Chapter9BridgeClosure": {
+      "authored_declaration_groups": 46,
+      "baseline_declarations": 46,
+      "command_groups": 50,
+      "lines": 1331,
+      "path": "NumStability/Algorithms/Cholesky/Higham11Chapter9BridgeClosure.lean",
+      "private_declarations": 0,
+      "section_seams": 3,
+      "source_sha256": "73AEF4A3387D0EDD02AFF40956F0C5ADA29220029F036EF6B50CB327E40B0F8D"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11RookExactTrace": {
+      "authored_declaration_groups": 45,
+      "baseline_declarations": 73,
+      "command_groups": 46,
+      "lines": 971,
+      "path": "NumStability/Algorithms/Cholesky/Higham11RookExactTrace.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "293E5A7A176E3855A602419E32A9D523F985E88714CAAD5F127B5370D2B91AB1"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11RookExecutorAdapter": {
+      "authored_declaration_groups": 8,
+      "baseline_declarations": 8,
+      "command_groups": 9,
+      "lines": 139,
+      "path": "NumStability/Algorithms/Cholesky/Higham11RookExecutorAdapter.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "8938F272C7D553E2C9729DEA58110A83222204013EE8B06D47C80957233BA06F"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11RookRoundedGap": {
+      "authored_declaration_groups": 22,
+      "baseline_declarations": 22,
+      "command_groups": 23,
+      "lines": 232,
+      "path": "NumStability/Algorithms/Cholesky/Higham11RookRoundedGap.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "E815B4EB37F619E33D47FF58086D0D3C56B7870481360490EB5CCE36C9F062B1"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11RookSourceClosure": {
+      "authored_declaration_groups": 18,
+      "baseline_declarations": 18,
+      "command_groups": 19,
+      "lines": 593,
+      "path": "NumStability/Algorithms/Cholesky/Higham11RookSourceClosure.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "8E105EB415C822E29F63E14D3FF8B401640E9B86A4D81DE420C23432FC10E262"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11SkewActualSelector": {
+      "authored_declaration_groups": 18,
+      "baseline_declarations": 18,
+      "command_groups": 19,
+      "lines": 200,
+      "path": "NumStability/Algorithms/Cholesky/Higham11SkewActualSelector.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "2B04418BE3B289B73054DC8D74FE74D836054AF045A2956406E0CA0C2E0E69AE"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11SkewExactTrace": {
+      "authored_declaration_groups": 35,
+      "baseline_declarations": 67,
+      "command_groups": 37,
+      "lines": 662,
+      "path": "NumStability/Algorithms/Cholesky/Higham11SkewExactTrace.lean",
+      "private_declarations": 0,
+      "section_seams": 1,
+      "source_sha256": "BE8A32C8C6BE6D8A5E12D0D3BB9F51A5AEFE292E1E65061650F423B7FAD00449"
+    },
+    "NumStability.Algorithms.Cholesky.Higham11SkewSourceCorrection": {
+      "authored_declaration_groups": 12,
+      "baseline_declarations": 12,
+      "command_groups": 13,
+      "lines": 223,
+      "path": "NumStability/Algorithms/Cholesky/Higham11SkewSourceCorrection.lean",
+      "private_declarations": 2,
+      "section_seams": 0,
+      "source_sha256": "D2DD17AB295127ABE46DCE68EA495DBCBC46B9783C27125652A9C77DCC5F7712"
+    },
+    "NumStability.Algorithms.Cholesky.TwoByTwoSchurStepCh11Closure": {
+      "authored_declaration_groups": 8,
+      "baseline_declarations": 8,
+      "command_groups": 14,
+      "lines": 429,
+      "path": "NumStability/Algorithms/Cholesky/TwoByTwoSchurStepCh11Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 5,
+      "source_sha256": "49B95D6E4DA03E56A86B01422DB8522F110A8011B6B2B454FF001C3FC5F55BAD"
+    },
+    "NumStability.Algorithms.HighamChapter11": {
+      "authored_declaration_groups": 4478,
+      "baseline_declarations": 4512,
+      "command_groups": 4488,
+      "lines": 137120,
+      "path": "NumStability/Algorithms/HighamChapter11.lean",
+      "private_declarations": 0,
+      "section_seams": 9,
+      "source_sha256": "8C83570770A28CEE7CB5F55DFC93281E6205B2E52F8FEFFB440EB6D372F5251F"
+    }
+  },
+  "preparation_only": true,
+  "required_gates": [
+    "python tools/architecture/lane_claude_classification/check_ch11_contract.py --self-test",
+    "python tools/architecture/lane_claude_classification/check_ch11_contract.py --mode pre --baseline-zip <packet>/baseline/parallel-base-declarations-v2.zip",
+    "lake build NumStability.Algorithms.HighamChapter11 NumStability.Source.Higham.Chapter11 NumStability.Source.Higham.Chapter11.Theorem07",
+    "lake env lean NumStabilityTest/Worker/ClassificationAudit/Chapter11Historical.lean",
+    "lake env lean NumStabilityTest/Worker/ClassificationAudit/Chapter11CanonicalExisting.lean",
+    "python tools/architecture/check_layout.py",
+    "python tools/architecture/check_compatibility.py",
+    "python tools/architecture/check_provenance.py",
+    "lake build NumStability NumStabilityTest",
+    "lake test"
+  ],
+  "route_rows": {
+    "exact": 3,
+    "range": 75
+  },
+  "schema_version": 1,
+  "stream_format": 2
+}
