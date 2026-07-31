@@ -5,6 +5,8 @@ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
 
+/-! Canonical Higham Chapter 19 QR source module. -/
+
 open NumStability
 
 namespace H19

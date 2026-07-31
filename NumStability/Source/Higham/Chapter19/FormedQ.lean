@@ -35,6 +35,8 @@ import Mathlib.Tactic.Ring
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 
+/-! Canonical Higham Chapter 19 QR source module. -/
+
 namespace NumStability
 
 open scoped BigOperators Matrix.Norms.Frobenius

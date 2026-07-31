@@ -66,6 +66,8 @@ import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
 import NumStability.Source.Higham.Chapter19.StoredLoop
 import NumStability.Source.Higham.Chapter19.StoredLoop.StrongModel
 
+/-! Canonical Higham Chapter 19 QR stored-loop all-pivots closure. -/
+
 namespace NumStability
 
 open scoped BigOperators

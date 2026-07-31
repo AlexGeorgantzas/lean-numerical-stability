@@ -39,6 +39,8 @@ import NumStability.Analysis.Rounding
 import NumStability.Algorithms.Norm2
 import NumStability.Algorithms.LinearSystems.QR.GivensSpec
 
+/-! Canonical Higham Chapter 19 QR source module. -/
+
 namespace NumStability.Wave13
 
 open NumStability

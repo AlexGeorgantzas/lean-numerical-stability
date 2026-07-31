@@ -33,6 +33,8 @@ import NumStability.Algorithms.LinearSystems.QR.GivensQR
 import NumStability.Source.Higham.Chapter19.Labels
 import NumStability.Source.Higham.Chapter19.Lemma07.Gamma4
 
+/-! Canonical Higham Chapter 19 QR source module. -/
+
 namespace NumStability.Wave13
 
 open scoped BigOperators Matrix.Norms.Frobenius

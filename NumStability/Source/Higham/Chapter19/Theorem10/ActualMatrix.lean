@@ -10,6 +10,8 @@
 import NumStability.Source.Higham.Chapter19.Lemma09.DisjointSweep
 import NumStability.Source.Higham.Chapter19.Core
 
+/-! Canonical matrix-level executor bridge for Higham Theorem 19.10. -/
+
 namespace NumStability.Wave13
 
 open scoped BigOperators Matrix.Norms.Frobenius

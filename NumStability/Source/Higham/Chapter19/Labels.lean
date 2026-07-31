@@ -16,6 +16,8 @@ import NumStability.Algorithms.LinearSystems.QR.GivensSpec
 import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Analysis.Rounding
 
+/-! Canonical Higham Chapter 19 QR source module. -/
+
 namespace NumStability
 
 open scoped BigOperators

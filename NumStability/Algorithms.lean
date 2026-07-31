@@ -183,6 +183,7 @@ import NumStability.Algorithms.QR.Higham19Lemma9DisjointSweep
 import NumStability.Algorithms.QR.Higham19PolarNearest
 import NumStability.Algorithms.QR.Higham19Problem19_10
 import NumStability.Algorithms.QR.Higham19Problem19_9
+import NumStability.Algorithms.QR.Higham19Problem6ActualStep
 import NumStability.Algorithms.QR.Higham19Sensitivity
 import NumStability.Algorithms.QR.Higham19SensitivityClosure
 import NumStability.Algorithms.QR.Higham19StoredLoop

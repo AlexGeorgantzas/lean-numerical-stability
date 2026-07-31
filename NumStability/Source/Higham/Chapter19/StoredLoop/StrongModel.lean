@@ -77,6 +77,8 @@ import NumStability.Analysis.MatrixAlgebra
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
 import NumStability.Source.Higham.Chapter19.StoredLoop
 
+/-! Canonical Higham Chapter 19 QR stored-loop strong-model closure. -/
+
 namespace NumStability
 
 open scoped BigOperators

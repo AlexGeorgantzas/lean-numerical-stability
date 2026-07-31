@@ -1,5 +1,7 @@
 import NumStability.Source.Higham.Chapter19.Sensitivity
 
+/-! Canonical Higham Chapter 19 QR sensitivity closure. -/
+
 namespace NumStability
 
 open scoped BigOperators

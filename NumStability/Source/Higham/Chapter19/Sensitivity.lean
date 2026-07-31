@@ -12,6 +12,8 @@ import Mathlib.LinearAlgebra.Matrix.Block
 import NumStability.Algorithms.Cholesky.CholeskyPerturbation
 import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
 
+/-! Canonical Higham Chapter 19 QR sensitivity source module. -/
+
 namespace NumStability
 
 open scoped BigOperators

@@ -227,8 +227,23 @@ CONSTRUCTION2_ALIAS = "NumStability.H19_Lemma19_1_construction2_backward_error"
 WY_OWNER = f"{HISTORICAL_ROOT}.Higham19WYApplicationClosure"
 WY_PACKET_BLOB = "2cbed76cdf8be333bd5d6a0557511d9c66d77d4a"
 WY_INTEGRATED_BLOB = "9ad5dbe19017d2be7f166b237acd7b478cd02bcd"
-WY_OLD_IMPORT = "NumStability.Algorithms.LU.BlockLUFirstOrderFamilies"
+WY_PACKET_IMPORT = "NumStability.Algorithms.LU.BlockLUFirstOrderFamilies"
+WY_CANONICAL_IMPORT = "NumStability.Algorithms.LinearSystems.LU.BlockLU.FirstOrderFamilies"
 WY_CURRENT_IMPORT = "NumStability.Analysis.FirstOrder.AsymptoticFamilies"
+
+# These four QR source edges were reviewed by the LSQ/Chapter 20 coordinator
+# and are intentionally retargeted from historical LSQ carriers to the
+# canonical Chapter 20 source owners after that lane's integration.
+LSQ_CANONICAL_IMPORTS = {
+    "NumStability.Algorithms.LeastSquares.Higham20MPProse":
+        "NumStability.Source.Higham.Chapter20.Prose.MoorePenrose",
+    "NumStability.Algorithms.LeastSquares.Higham20CrossProductExample":
+        "NumStability.Source.Higham.Chapter20.Examples.CrossProduct",
+    "NumStability.Algorithms.LeastSquares.Higham20ZeroDeltaB":
+        "NumStability.Source.Higham.Chapter20.Theorem03.ZeroDeltaB",
+    "NumStability.Algorithms.LeastSquares.Higham20Theorem20_7ActualAssembly":
+        "NumStability.Source.Higham.Chapter20.Theorem07.ActualAssembly",
+}
 
 DEFAULT_FROZEN_OWNERS = Path(
     "docs/architecture/declaration-ownership/qr-ch19-frozen-owners.tsv"
@@ -1062,7 +1077,7 @@ def source_imports(source_dir: Path, owners: dict[str, FrozenOwner]) -> list[tup
             match = IMPORT_RE.fullmatch(line)
             if match:
                 imports.append((module, match.group(2), "public" if match.group(1) else "ordinary"))
-    if (WY_OWNER, WY_OLD_IMPORT, "ordinary") in imports:
+    if (WY_OWNER, WY_PACKET_IMPORT, "ordinary") in imports:
         fail("current main's WY import repair was replaced by the obsolete BlockLU wrapper")
     if (WY_OWNER, WY_CURRENT_IMPORT, "ordinary") not in imports:
         fail("current main's WY AsymptoticFamilies import is missing")
@@ -1450,7 +1465,7 @@ def expected_canonical_imports(
     # recorded the temporary AsymptoticFamilies repair.
     if owner == WY_OWNER:
         return [
-            WY_OLD_IMPORT,
+            WY_CANONICAL_IMPORT,
             f"{REUSABLE_ROOT}.GramSchmidtPolar",
         ]
     result: list[str] = []
@@ -1459,6 +1474,8 @@ def expected_canonical_imports(
             result.append(default_destination(imported))
         elif imported in REUSABLE_MIGRATION_MODULES:
             result.append(default_destination(imported))
+        elif imported in LSQ_CANONICAL_IMPORTS:
+            result.append(LSQ_CANONICAL_IMPORTS[imported])
         else:
             result.append(imported)
     return list(dict.fromkeys(result))
@@ -1939,7 +1956,7 @@ def run_self_test() -> None:
     if mapped != [f"{SOURCE_ROOT}.Algorithm12.MGSRepair"]:
         raise AssertionError("historical Chapter 19 import mapping self-test failed")
     if expected_canonical_imports(WY_OWNER, [], default_destination(WY_OWNER)) != [
-        WY_OLD_IMPORT,
+        WY_CANONICAL_IMPORT,
         f"{REUSABLE_ROOT}.GramSchmidtPolar",
     ]:
         raise AssertionError("late WY/BlockLU import self-test failed")

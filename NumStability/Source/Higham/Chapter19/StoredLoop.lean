@@ -60,6 +60,8 @@
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
 
+/-! Canonical Higham Chapter 19 QR stored-loop source module. -/
+
 namespace NumStability
 
 open scoped BigOperators

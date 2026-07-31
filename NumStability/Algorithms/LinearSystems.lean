@@ -7,6 +7,6 @@ import NumStability.Algorithms.LinearSystems.Triangular
 /-!
 # Linear systems
 
-Declaration-free aggregate for the canonical reusable linear-system
-algorithm families.
+Declaration-free aggregate for the canonical linear-system algorithm families,
+including the reviewed Chapter 11 source-backed symmetric-indefinite surface.
 -/

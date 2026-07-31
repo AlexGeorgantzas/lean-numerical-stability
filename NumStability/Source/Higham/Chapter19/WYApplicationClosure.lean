@@ -11,8 +11,10 @@
   theorem derives (19.22); neither bound is a premise.
 -/
 
-import NumStability.Algorithms.LU.BlockLUFirstOrderFamilies
+import NumStability.Algorithms.LinearSystems.LU.BlockLU.FirstOrderFamilies
 import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
+
+/-! Canonical source closure for Higham Chapter 19's compact WY application. -/
 
 namespace NumStability
 
