@@ -1,0 +1,2 @@
+import NumStabilityTest.Worker.QrCh19.Canonical.Theorem06ColumnPivot
+import NumStabilityTest.Worker.QrCh19.Compatibility.Higham19Thm6ColPivot
