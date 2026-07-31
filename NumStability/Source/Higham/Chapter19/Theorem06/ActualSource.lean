@@ -1,4 +1,4 @@
-import NumStability.Algorithms.LeastSquares.Higham20Theorem20_7ActualAssembly
+import NumStability.Source.Higham.Chapter20.Theorem07.ActualAssembly
 
 /-!
 # Higham Theorem 19.6: canonical actual-source exports

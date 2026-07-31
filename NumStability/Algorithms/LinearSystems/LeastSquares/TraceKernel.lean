@@ -1,9 +1,9 @@
 import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
 import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
-import NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.FloatingPoint.Model
+import NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham
 
 namespace NumStability
 

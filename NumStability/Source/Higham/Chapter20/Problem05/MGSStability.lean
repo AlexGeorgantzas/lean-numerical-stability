@@ -4,12 +4,12 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.MGS
 import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
-import NumStability.Source.Higham.Chapter19.Core
-import NumStability.Source.Higham.Chapter19.Algorithm12.MGSRepair
-import NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model
+import NumStability.Source.Higham.Chapter19.Algorithm12.MGSRepair
+import NumStability.Source.Higham.Chapter19.Algorithm12.MGSRounded
+import NumStability.Source.Higham.Chapter19.Core
 
 namespace NumStability
 

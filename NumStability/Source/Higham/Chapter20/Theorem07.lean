@@ -12,13 +12,13 @@ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
-import NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham
-import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete
-import NumStability.Source.Higham.Chapter19.Theorem06.Pivoted
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Contract
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model
+import NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham
+import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete
+import NumStability.Source.Higham.Chapter19.Theorem06.Pivoted
 
 namespace NumStability
 

@@ -17,11 +17,8 @@ import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
 import NumStability.Algorithms.LinearSystems.QR.QRSolve
-import NumStability.Source.Higham.Chapter19.Core
-import NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivot
-import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamAssembly
-import NumStability.Source.Higham.Chapter19.Theorem06.ElementwisePackaged
-import NumStability.Source.Higham.Chapter19.Theorem06.Pivoted
+import NumStability.Algorithms.QR.Higham19Thm6CoxHighamAssembly
+import NumStability.Algorithms.QR.Higham19Thm6Pivoted
 import NumStability.Algorithms.RandNLA.LowRankApprox
 import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
 import NumStability.Analysis.MatrixAlgebra
@@ -29,6 +26,9 @@ import NumStability.Analysis.Rounding
 import NumStability.Analysis.SingularValues.Basic
 import NumStability.Analysis.SingularValues.Realification
 import NumStability.FloatingPoint.Model
+import NumStability.Source.Higham.Chapter19.Core
+import NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivot
+import NumStability.Source.Higham.Chapter19.Theorem06.ElementwisePackaged
 
 namespace NumStability
 

@@ -360,6 +360,7 @@ import NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier
 import NumStability.Source.Higham.Chapter14
 import NumStability.Source.Higham.Chapter17
 import NumStability.Source.Higham.Chapter19
+import NumStability.Source.Higham.Chapter20
 import NumStability.Source.Higham.Chapter22
 import NumStability.Source.Higham.Chapter24
 import NumStability.Source.Higham.Chapter25

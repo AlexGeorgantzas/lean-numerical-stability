@@ -10,11 +10,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
-import NumStability.Source.Higham.Chapter19.Core
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model
+import NumStability.Source.Higham.Chapter19.Core
 
 namespace NumStability
 

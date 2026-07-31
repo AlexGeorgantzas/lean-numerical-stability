@@ -3,11 +3,11 @@ import NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep
 import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
-import NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham
-import NumStability.Source.Higham.Chapter19.Theorem06.RowSpecific
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model
+import NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham
+import NumStability.Source.Higham.Chapter19.Theorem06.RowSpecific
 import NumStability.Source.Higham.Chapter20.Theorem07
 import NumStability.Source.Higham.Chapter20.Theorem07.ActualTrace
 
