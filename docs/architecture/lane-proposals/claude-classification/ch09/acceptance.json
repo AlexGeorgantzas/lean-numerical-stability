@@ -1,0 +1,228 @@
+{
+  "artifact_hashes": {
+    "direct-imports.tsv": "79D6994FF19A920D5187326F4479AF4EB5944965A431F1CAC8654D7AAC5147AA",
+    "downstream-consumers.tsv": "08DE8BFBD838167FED898F2D569F24C12668DC41E9039413D02F05333275FBF3",
+    "owner-dag.tsv": "85EFD2B8154B5B75DFBF812D082B97CBFF6EFB2412147182F8258C52C497FD72",
+    "ownership.tsv": "6B0B651EE31ADE0A9CD20AF9F69CB11C0E73B3FABC222D92B3DEE67001D05C60",
+    "private-rewrites.tsv": "50309B25A798B824C3F1F911A8765DDE3F5AEC6E56B2AC435CEB598E9EECF36D",
+    "routes.tsv": "B6EDF86550F96B63593499B132676EBEFBE07CDE746DE16951DA9F439CD002E4"
+  },
+  "blocking_reason": "HighamChapter9.lean imports NumStability.Algorithms.LU.BlockLU and NumStability.Algorithms.LU.GrowthFactor, both owned by the integrator's BlockLU/Chapter 13 wave. The Chapter 9 direct-import contract is provisional until the integrator refreshes HighamChapter9.lean against the accepted BlockLU checkpoint, and Chapter 9 may not be released before BlockLU/Chapter 13 is merged and globally verified.",
+  "candidate_modules": 11,
+  "chapter": "09",
+  "counts": {
+    "baseline_declarations": 4420,
+    "body_edges": 26737,
+    "downstream_consumer_rows": 29,
+    "external_body_targets": 0,
+    "external_signature_targets": 0,
+    "ownership_rows": 4420,
+    "planned_import_rows": 252,
+    "private_declarations": 28,
+    "signature_edges": 20081
+  },
+  "cross_chapter_dependencies": [],
+  "cross_chapter_dependency_count": 0,
+  "destination_count": 35,
+  "destinations": [
+    "NumStability.Source.Higham.Chapter09.ComplexDomain",
+    "NumStability.Source.Higham.Chapter09.Equation12",
+    "NumStability.Source.Higham.Chapter09.Equation13",
+    "NumStability.Source.Higham.Chapter09.Equation14",
+    "NumStability.Source.Higham.Chapter09.Equation16",
+    "NumStability.Source.Higham.Chapter09.Problem02",
+    "NumStability.Source.Higham.Chapter09.Problem05",
+    "NumStability.Source.Higham.Chapter09.Problem06",
+    "NumStability.Source.Higham.Chapter09.Problem07",
+    "NumStability.Source.Higham.Chapter09.Problem08",
+    "NumStability.Source.Higham.Chapter09.Problem11",
+    "NumStability.Source.Higham.Chapter09.Problem13",
+    "NumStability.Source.Higham.Chapter09.Problem14.FirstMethod",
+    "NumStability.Source.Higham.Chapter09.Problem14.RowReversal",
+    "NumStability.Source.Higham.Chapter09.Section01",
+    "NumStability.Source.Higham.Chapter09.Section02",
+    "NumStability.Source.Higham.Chapter09.Section03",
+    "NumStability.Source.Higham.Chapter09.Section04",
+    "NumStability.Source.Higham.Chapter09.Section05",
+    "NumStability.Source.Higham.Chapter09.Section06.SpecialClasses",
+    "NumStability.Source.Higham.Chapter09.Section06.Tridiagonal",
+    "NumStability.Source.Higham.Chapter09.Section08",
+    "NumStability.Source.Higham.Chapter09.Section10",
+    "NumStability.Source.Higham.Chapter09.Section11",
+    "NumStability.Source.Higham.Chapter09.Theorem03.DoolittleClosure",
+    "NumStability.Source.Higham.Chapter09.Theorem05.ComputedCorrection",
+    "NumStability.Source.Higham.Chapter09.Theorem07.Classification",
+    "NumStability.Source.Higham.Chapter09.Theorem09.Closure",
+    "NumStability.Source.Higham.Chapter09.Theorem09.ComplexClosure",
+    "NumStability.Source.Higham.Chapter09.Theorem11.BohteBandOne",
+    "NumStability.Source.Higham.Chapter09.Theorem11.BohteGeneral",
+    "NumStability.Source.Higham.Chapter09.Theorem14.Actual",
+    "NumStability.Source.Higham.Chapter09.Theorem14.CompletePivotSharp",
+    "NumStability.Source.Higham.Chapter09.Theorem14.DiagonallyDominant",
+    "NumStability.Source.Higham.Chapter09.Theorem14.Primitive"
+  ],
+  "frozen_base_sha": "6487fc33088523b8f27ecde9ad613515b78f9977",
+  "historical_facades": [
+    "NumStability.Algorithms.HighamChapter9",
+    "NumStability.Algorithms.HighamChapter9CompletePivotSharpClosure",
+    "NumStability.Algorithms.HighamChapter9ComplexClosure",
+    "NumStability.Algorithms.HighamChapter9ComputedCorrection",
+    "NumStability.Algorithms.HighamChapter9DoolittleClosure",
+    "NumStability.Algorithms.HighamChapter9Theorem914Actual",
+    "NumStability.Algorithms.HighamChapter9Theorem914DiagDominant",
+    "NumStability.Algorithms.HighamChapter9Theorem914Primitive",
+    "NumStability.Algorithms.HighamChapter9Theorem97Classification",
+    "NumStability.Algorithms.HighamChapter9Theorem99Closure",
+    "NumStability.Algorithms.HighamChapter9Theorem99ComplexClosure"
+  ],
+  "implementation_status": "BLOCKED_ON_BLOCKLU_INTEGRATION",
+  "normalized_hashes": {
+    "body_edges": {
+      "rows": 26737,
+      "sha256": "70055A704124A763F9CF1146D97A949804A940EB7390F3940B1B59F7E98E3143"
+    },
+    "declarations": {
+      "rows": 4420,
+      "sha256": "311844A5A4603D8F70831746F566D63E645F1AB37F002B8EB18861D10ACA58C5"
+    },
+    "signature_edges": {
+      "rows": 20081,
+      "sha256": "766C39099C4FBCC11D7F9365F5F43F85E5EDBABA31A626B6F35E5AC2825CB415"
+    }
+  },
+  "notes": [
+    "Preparation only: no canonical production module is created, no declaration is moved, no proof is rewritten, no import is edited, and no wrapper is added.",
+    "Each destination owns one contiguous region of one historical module, so the destination dependency graph inherits Lean's forward-declaration discipline.",
+    "Section11 (Sensitivity) and Problem06 are the two largest destinations and are the natural candidates for a second-level split in a later wave; this contract routes at the granularity of the seams the file itself declares."
+  ],
+  "per_module": {
+    "NumStability.Algorithms.HighamChapter9": {
+      "authored_declaration_groups": 3745,
+      "baseline_declarations": 3998,
+      "command_groups": 3799,
+      "lines": 113809,
+      "path": "NumStability/Algorithms/HighamChapter9.lean",
+      "private_declarations": 10,
+      "section_seams": 53,
+      "source_sha256": "B53E40D3E61A236D543B0FDBFB7D31414B2A6F33E6F5CF42EC9175D245E7CA41"
+    },
+    "NumStability.Algorithms.HighamChapter9CompletePivotSharpClosure": {
+      "authored_declaration_groups": 14,
+      "baseline_declarations": 25,
+      "command_groups": 15,
+      "lines": 423,
+      "path": "NumStability/Algorithms/HighamChapter9CompletePivotSharpClosure.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "8A1A4D0D865E87986100F7AE26A82C7E175B82C4406F51CCF7E776EA21D64A9C"
+    },
+    "NumStability.Algorithms.HighamChapter9ComplexClosure": {
+      "authored_declaration_groups": 74,
+      "baseline_declarations": 100,
+      "command_groups": 81,
+      "lines": 1405,
+      "path": "NumStability/Algorithms/HighamChapter9ComplexClosure.lean",
+      "private_declarations": 0,
+      "section_seams": 6,
+      "source_sha256": "BD3DDFDE861CBFB502DCCCFF651A261986C822C4E1F752C4264FC54B7EEBC0EB"
+    },
+    "NumStability.Algorithms.HighamChapter9ComputedCorrection": {
+      "authored_declaration_groups": 6,
+      "baseline_declarations": 6,
+      "command_groups": 7,
+      "lines": 175,
+      "path": "NumStability/Algorithms/HighamChapter9ComputedCorrection.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "5B13C0A3DB21490EBDFFAA9FD4FBD42E8DC08417B03DD0FDE8FE40A6A8B30F9C"
+    },
+    "NumStability.Algorithms.HighamChapter9DoolittleClosure": {
+      "authored_declaration_groups": 20,
+      "baseline_declarations": 31,
+      "command_groups": 21,
+      "lines": 926,
+      "path": "NumStability/Algorithms/HighamChapter9DoolittleClosure.lean",
+      "private_declarations": 1,
+      "section_seams": 0,
+      "source_sha256": "AA3958ED90D2F71C9C0D6C4304B6225F02BA38B53D4BE3E3741ABA1AFF917899"
+    },
+    "NumStability.Algorithms.HighamChapter9Theorem914Actual": {
+      "authored_declaration_groups": 127,
+      "baseline_declarations": 127,
+      "command_groups": 132,
+      "lines": 3412,
+      "path": "NumStability/Algorithms/HighamChapter9Theorem914Actual.lean",
+      "private_declarations": 11,
+      "section_seams": 4,
+      "source_sha256": "269E045CBA36ED607AF51C84E96FCAAC0360107EFB1CA85F6CC97F50B5AD0CA6"
+    },
+    "NumStability.Algorithms.HighamChapter9Theorem914DiagDominant": {
+      "authored_declaration_groups": 2,
+      "baseline_declarations": 2,
+      "command_groups": 3,
+      "lines": 351,
+      "path": "NumStability/Algorithms/HighamChapter9Theorem914DiagDominant.lean",
+      "private_declarations": 0,
+      "section_seams": 0,
+      "source_sha256": "F875E06CC1D57407E0DCBB6C5B95BC137D12807646D9FEC2A2F7E7B84B78A7C1"
+    },
+    "NumStability.Algorithms.HighamChapter9Theorem914Primitive": {
+      "authored_declaration_groups": 27,
+      "baseline_declarations": 27,
+      "command_groups": 29,
+      "lines": 856,
+      "path": "NumStability/Algorithms/HighamChapter9Theorem914Primitive.lean",
+      "private_declarations": 5,
+      "section_seams": 1,
+      "source_sha256": "1F726BE0FF2BD6B0E42A7C73CF113548D3BCF27714E2D8F14F09A3B71A360BB6"
+    },
+    "NumStability.Algorithms.HighamChapter9Theorem97Classification": {
+      "authored_declaration_groups": 27,
+      "baseline_declarations": 38,
+      "command_groups": 32,
+      "lines": 942,
+      "path": "NumStability/Algorithms/HighamChapter9Theorem97Classification.lean",
+      "private_declarations": 0,
+      "section_seams": 4,
+      "source_sha256": "2AFA6518A8881CA17EFB490DC014674F94E974735F5F8738FA1B5CE762C1DF97"
+    },
+    "NumStability.Algorithms.HighamChapter9Theorem99Closure": {
+      "authored_declaration_groups": 26,
+      "baseline_declarations": 26,
+      "command_groups": 29,
+      "lines": 791,
+      "path": "NumStability/Algorithms/HighamChapter9Theorem99Closure.lean",
+      "private_declarations": 0,
+      "section_seams": 2,
+      "source_sha256": "7681BD2987F4DAF289519874AF302DB27BF86046A344C59DB75C6F46B647585A"
+    },
+    "NumStability.Algorithms.HighamChapter9Theorem99ComplexClosure": {
+      "authored_declaration_groups": 40,
+      "baseline_declarations": 40,
+      "command_groups": 46,
+      "lines": 1040,
+      "path": "NumStability/Algorithms/HighamChapter9Theorem99ComplexClosure.lean",
+      "private_declarations": 1,
+      "section_seams": 5,
+      "source_sha256": "D2C2EB8AAC1CB1A54619D7961DEA4EDEE83F501BB10876869894A3F050CB4B6F"
+    }
+  },
+  "preparation_only": true,
+  "required_gates": [
+    "python tools/architecture/lane_claude_classification/check_ch09_contract.py --self-test",
+    "python tools/architecture/lane_claude_classification/check_ch09_contract.py --mode pre --baseline-zip <packet>/baseline/parallel-base-declarations-v2.zip",
+    "lake build <the 11 historical Chapter 9 candidate modules>",
+    "lake env lean NumStabilityTest/Worker/ClassificationAudit/Chapter09Historical.lean",
+    "python tools/architecture/check_layout.py",
+    "python tools/architecture/check_compatibility.py",
+    "python tools/architecture/check_provenance.py",
+    "lake build NumStability NumStabilityTest",
+    "lake test"
+  ],
+  "route_rows": {
+    "exact": 0,
+    "range": 36
+  },
+  "schema_version": 1,
+  "stream_format": 2
+}
