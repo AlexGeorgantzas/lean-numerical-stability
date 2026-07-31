@@ -1,0 +1,3 @@
+import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
+
+#check NumStability.Wave19.ConcreteEntrywiseStageBound
