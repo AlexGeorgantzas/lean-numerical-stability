@@ -1,0 +1,102 @@
+{
+  "confidence_counts": {
+    "high": 183,
+    "low": 3,
+    "medium": 200
+  },
+  "cross_lane_dependency_counts": {
+    "BLOCKLU_REFRESH_REQUIRED": 3,
+    "CH09_BLOCKED_ON_BLOCKLU_INTEGRATION": 12,
+    "CH11_BLOCKED_ON_CH09_INTEGRATION": 66,
+    "NON_HIGHAM_SOURCE_REVIEW_REQUIRED": 18,
+    "REUSABLE_BLOCKED_BY": 14
+  },
+  "deferred_reusable_rows": [
+    "NumStability.Algorithms.Ch14ProductErrorNotation",
+    "NumStability.Algorithms.GaussJordan",
+    "NumStability.Algorithms.RandNLA.LeastSquaresSketch",
+    "NumStability.Algorithms.RandNLA.LowRankApprox",
+    "NumStability.Algorithms.StationaryIterationDrazin",
+    "NumStability.Algorithms.StationaryIterationRounded",
+    "NumStability.Algorithms.StationaryIterationSemiconvergent",
+    "NumStability.Algorithms.StationaryIterationSemiconvergentExistence",
+    "NumStability.Analysis.Monotonicity",
+    "NumStability.Analysis.SemiconvergentBlockFormExists",
+    "NumStability.Analysis.SemiconvergentExistenceComplete",
+    "NumStability.Analysis.SemiconvergentExistenceFull",
+    "NumStability.Analysis.SemiconvergentLimitGeneral",
+    "NumStability.Analysis.SemiconvergentRealSpectrumComplete"
+  ],
+  "extra_modules": [],
+  "frozen_base_sha": "6487fc33088523b8f27ecde9ad613515b78f9977",
+  "generated_from": "classification/modules.tsv",
+  "input_inventory": {
+    "path": "classification/input-modules.tsv",
+    "rows": 386,
+    "sha256": "C0B1C88F34461A44305D269C880F7581BDD7F1D9CC69CF9A144EA099C6A6DF54"
+  },
+  "missing_modules": [],
+  "proposed_canonical_families": {
+    "NumStability.Algorithms.Arithmetic.Complex": 1,
+    "NumStability.Algorithms.Arithmetic.DotProduct.Core": 2,
+    "NumStability.Algorithms.ConditionEstimation": 3,
+    "NumStability.Algorithms.LinearSystems.Cholesky": 9,
+    "NumStability.Algorithms.LinearSystems.GaussJordan": 1,
+    "NumStability.Algorithms.LinearSystems.IterativeRefinement": 1,
+    "NumStability.Algorithms.LinearSystems.LU": 8,
+    "NumStability.Algorithms.LinearSystems.StationaryIteration": 5,
+    "NumStability.Algorithms.LinearSystems.Triangular": 1,
+    "NumStability.Algorithms.MatrixInverse": 1,
+    "NumStability.Algorithms.MatrixProducts": 4,
+    "NumStability.Algorithms.Polynomials.Horner": 1,
+    "NumStability.Algorithms.RandNLA": 1,
+    "NumStability.Algorithms.Sketching.RandNLA": 17,
+    "NumStability.Analysis.Asymptotics": 1,
+    "NumStability.Analysis.Conditioning": 1,
+    "NumStability.Analysis.FirstOrder": 1,
+    "NumStability.Analysis.Norms.Core": 2,
+    "NumStability.Analysis.Probability.Concentration": 1,
+    "NumStability.Analysis.Probability.Finite": 1,
+    "NumStability.Analysis.Probability.Rounding": 1,
+    "NumStability.Analysis.Spectral": 1,
+    "NumStability.Analysis.Spectral.Semiconvergence": 7,
+    "NumStability.FloatingPoint.Format": 1,
+    "NumStability.FloatingPoint.Format.Rounding": 1,
+    "NumStability.Source.Higham.Chapter01": 14,
+    "NumStability.Source.Higham.Chapter02": 33,
+    "NumStability.Source.Higham.Chapter03": 12,
+    "NumStability.Source.Higham.Chapter04": 9,
+    "NumStability.Source.Higham.Chapter05": 7,
+    "NumStability.Source.Higham.Chapter07": 2,
+    "NumStability.Source.Higham.Chapter08": 5,
+    "NumStability.Source.Higham.Chapter09": 12,
+    "NumStability.Source.Higham.Chapter10": 17,
+    "NumStability.Source.Higham.Chapter11": 66,
+    "NumStability.Source.Higham.Chapter14": 39,
+    "NumStability.Source.Higham.Chapter15": 25,
+    "NumStability.Source.Higham.Chapter28": 72
+  },
+  "public_declaration_total": 28798,
+  "required_action_counts": {
+    "defer_pending_upstream_split": 14,
+    "plan_reusable_relocation": 54,
+    "plan_semantic_split:": 4,
+    "plan_source_extraction": 313,
+    "register_tier_only": 1
+  },
+  "rows": 386,
+  "schema_version": 1,
+  "split_queue": [
+    "NumStability.Algorithms.HighamChapter10",
+    "NumStability.Algorithms.MatrixInversion",
+    "NumStability.Algorithms.StationaryIteration",
+    "NumStability.Analysis.HighamChapter7"
+  ],
+  "split_queue_size": 4,
+  "tier_counts": {
+    "aggregate": 1,
+    "mixed_pending_split": 4,
+    "reusable": 68,
+    "source": 313
+  }
+}
