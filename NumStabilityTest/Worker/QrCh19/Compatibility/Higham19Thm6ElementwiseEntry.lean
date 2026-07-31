@@ -1,0 +1,3 @@
+import NumStability.Algorithms.QR.Higham19Thm6ElementwiseEntry
+
+#check NumStability.Wave18B.abs_dot_le_dim_mul_max

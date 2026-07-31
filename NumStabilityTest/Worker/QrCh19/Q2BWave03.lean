@@ -1,0 +1,10 @@
+import NumStabilityTest.Worker.QrCh19.Canonical.Algorithm12MGSRepair
+import NumStabilityTest.Worker.QrCh19.Canonical.StoredLoopAllPivots
+import NumStabilityTest.Worker.QrCh19.Canonical.Theorem06Elementwise
+import NumStabilityTest.Worker.QrCh19.Canonical.Theorem06ElementwiseEntry
+import NumStabilityTest.Worker.QrCh19.Canonical.Theorem10ActualMatrix
+import NumStabilityTest.Worker.QrCh19.Compatibility.Higham19Alg12MGSRepair
+import NumStabilityTest.Worker.QrCh19.Compatibility.Higham19StoredLoopAllPivots
+import NumStabilityTest.Worker.QrCh19.Compatibility.Higham19Theorem10ActualMatrix
+import NumStabilityTest.Worker.QrCh19.Compatibility.Higham19Thm6Elementwise
+import NumStabilityTest.Worker.QrCh19.Compatibility.Higham19Thm6ElementwiseEntry
