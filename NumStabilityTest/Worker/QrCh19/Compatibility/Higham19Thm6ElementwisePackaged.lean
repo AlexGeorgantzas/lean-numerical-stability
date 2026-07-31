@@ -1,0 +1,3 @@
+import NumStability.Algorithms.QR.Higham19Thm6ElementwisePackaged
+
+#check NumStability.Wave18C.orthogonal_row_sum_abs_le_sqrt_card
