@@ -1,0 +1,3 @@
+import NumStability.Algorithms.QR.Higham19Lemma7Gamma4
+
+#check NumStability.Wave13.abs_inv_sqrt_one_add_sub_one_le
