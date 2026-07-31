@@ -29,7 +29,13 @@ map for every selected private declaration::
     logical_name\thistorical_actual_name\tcandidate_actual_name
 
 Only those reviewed private-name rewrites are normalized during the exact
-full-graph comparison.
+full-graph comparison.  The later ``post-combined`` mode retains the same
+immutable input and ownership checks but compares the exact incident-edge
+projection of the selected BlockLU declarations.  It canonicalizes every
+declared endpoint through its module-encoded private identity, so unrelated
+QR, Chapter 9, or Chapter 20 moves compose without becoming false BlockLU
+graph changes.  This is a scoped semantic contract, not a graph-difference
+allowlist.
 """
 
 from __future__ import annotations
@@ -1369,6 +1375,22 @@ def reviewed_body_edge_drop_delta(
     )
 
 
+def reviewed_selected_body_edge_drop_delta(
+    reviewed_body_edge_drops: frozenset[ReviewedBodyEdgeDrop],
+) -> Counter[str]:
+    return Counter(
+        "\t".join(
+            (
+                "edge",
+                "body",
+                drop.source_logical_name,
+                drop.target_logical_name,
+            )
+        )
+        for drop in reviewed_body_edge_drops
+    )
+
+
 def validate_normalized_graph_delta(
     delta: Counter[str], expected_delta: Counter[str]
 ) -> None:
@@ -1415,6 +1437,61 @@ def compare_full_graph(
         baseline, reviewed_body_edge_drops
     )
     validate_normalized_graph_delta(delta, expected_delta)
+
+
+def normalized_selected_incident_graph(
+    dependency_tsv: Path,
+    declarations: list[Declaration],
+    selected_actual_names: set[str],
+) -> Counter[str]:
+    """Project a dependency stream onto selected declarations and normalize names."""
+
+    actual_to_logical = {
+        declaration.name: logical_name(declaration.name, declaration.module)
+        for declaration in declarations
+    }
+    projected: Counter[str] = Counter()
+    for edge in iter_dependency_edges(dependency_tsv):
+        if (
+            edge.source not in selected_actual_names
+            and edge.target not in selected_actual_names
+        ):
+            continue
+        source = actual_to_logical.get(edge.source, edge.source)
+        target = actual_to_logical.get(edge.target, edge.target)
+        projected["\t".join(("edge", edge.kind, source, target))] += 1
+    return projected
+
+
+def compare_selected_incident_graph(
+    baseline_tsv: Path,
+    candidate_tsv: Path,
+    baseline_declarations: list[Declaration],
+    candidate_declarations: list[Declaration],
+    baseline: dict[str, Declaration],
+    candidate_actual_to_logical: dict[str, str],
+    reviewed_body_edge_drops: frozenset[ReviewedBodyEdgeDrop],
+) -> tuple[int, int]:
+    """Require the exact selected BlockLU incident graph after normalization."""
+
+    if sha256_file(baseline_tsv) != BASELINE_TSV_SHA256:
+        raise ValueError("baseline TSV hash differs from frozen Phase 11B2 input")
+
+    baseline_selected = {declaration.name for declaration in baseline.values()}
+    candidate_selected = set(candidate_actual_to_logical)
+    baseline_graph = normalized_selected_incident_graph(
+        baseline_tsv, baseline_declarations, baseline_selected
+    )
+    candidate_graph = normalized_selected_incident_graph(
+        candidate_tsv, candidate_declarations, candidate_selected
+    )
+    delta = baseline_graph.copy()
+    delta.subtract(candidate_graph)
+    delta = Counter({row: count for row, count in delta.items() if count})
+    validate_normalized_graph_delta(
+        delta, reviewed_selected_body_edge_drop_delta(reviewed_body_edge_drops)
+    )
+    return sum(baseline_graph.values()), sum(candidate_graph.values())
 
 
 def validate_expected_manifest_digest(
@@ -1722,6 +1799,26 @@ def run_self_test() -> None:
             validate_normalized_graph_delta(delta, expected_delta)
 
         validate_candidate(retained_rows)
+        selected_actual_names = {declaration.name for declaration in test_baseline.values()}
+        selected_graph = normalized_selected_incident_graph(
+            baseline_path,
+            list(test_baseline.values()),
+            selected_actual_names,
+        )
+        candidate_graph = normalized_selected_incident_graph(
+            candidate_path,
+            list(test_baseline.values()),
+            selected_actual_names,
+        )
+        selected_delta = selected_graph.copy()
+        selected_delta.subtract(candidate_graph)
+        selected_delta = Counter(
+            {row: count for row, count in selected_delta.items() if count}
+        )
+        validate_normalized_graph_delta(
+            selected_delta,
+            reviewed_selected_body_edge_drop_delta(reviewed_drops),
+        )
         expect_value_error(
             lambda: validate_candidate(retained_rows + [reviewed_edge_rows[0]]),
             "candidate retaining one reviewed edge",
@@ -1751,13 +1848,15 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument("--mode", choices=("pre", "stage", "post"))
+    parser.add_argument(
+        "--mode", choices=("pre", "stage", "post", "post-combined")
+    )
     parser.add_argument(
         "--dependency-tsv",
         type=Path,
         help=(
             "frozen baseline TSV in pre mode; freshly generated TSV in "
-            "stage/post mode"
+            "stage/post/post-combined mode"
         ),
     )
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
@@ -1781,7 +1880,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--baseline-tsv",
         type=Path,
-        help="retained frozen Phase 11B2 TSV; required in stage/post mode",
+        help=(
+            "retained frozen Phase 11B2 TSV; required in stage/post/"
+            "post-combined mode"
+        ),
     )
     parser.add_argument(
         "--private-rewrites",
@@ -2036,15 +2138,30 @@ def main() -> int:
         structural_contract,
     )
 
-    compare_full_graph(
-        args.baseline_tsv,
-        args.dependency_tsv,
-        baseline,
-        candidate_map,
-        records,
-        reviewed_body_edge_drops,
-    )
-    graph_preservation = "exact normalized contracted graph preserved"
+    if args.mode == "post-combined":
+        baseline_edge_count, candidate_edge_count = compare_selected_incident_graph(
+            args.baseline_tsv,
+            args.dependency_tsv,
+            baseline_declarations,
+            candidate_declarations,
+            baseline,
+            candidate_map,
+            reviewed_body_edge_drops,
+        )
+        graph_preservation = (
+            "exact normalized selected BlockLU incident graph preserved "
+            f"({baseline_edge_count} baseline and {candidate_edge_count} candidate edges)"
+        )
+    else:
+        compare_full_graph(
+            args.baseline_tsv,
+            args.dependency_tsv,
+            baseline,
+            candidate_map,
+            records,
+            reviewed_body_edge_drops,
+        )
+        graph_preservation = "exact normalized contracted graph preserved"
     if reviewed_body_edge_drops:
         graph_preservation += (
             " except for exactly four reviewed inlined-private-helper body edges"
@@ -2058,12 +2175,20 @@ def main() -> int:
             f"with {cross_edges} cross-owner edges, and {graph_preservation}"
         )
         return 0
-    print(
-        "BlockLU Phase 12 post-migration ownership passed: "
-        f"{len(records)} declarations, canonical manifest {digest}, "
-        f"acyclic {destination_nodes}-destination graph with "
-        f"{cross_edges} cross-owner edges, and {graph_preservation}"
-    )
+    if args.mode == "post-combined":
+        print(
+            "BlockLU Phase 12 combined-tree ownership passed: "
+            f"{len(records)} selected declarations, canonical manifest {digest}, "
+            f"acyclic {destination_nodes}-destination graph with "
+            f"{cross_edges} cross-owner edges, and {graph_preservation}"
+        )
+    else:
+        print(
+            "BlockLU Phase 12 post-migration ownership passed: "
+            f"{len(records)} declarations, canonical manifest {digest}, "
+            f"acyclic {destination_nodes}-destination graph with "
+            f"{cross_edges} cross-owner edges, and {graph_preservation}"
+        )
     return 0
 
 
