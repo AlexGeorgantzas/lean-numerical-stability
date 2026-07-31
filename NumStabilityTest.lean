@@ -528,8 +528,7 @@ import NumStabilityTest.Worker.Ch09.WaveD2
 import NumStabilityTest.Worker.Ch09.WaveE
 import NumStabilityTest.Worker.ClassificationAudit
 import NumStabilityTest.Worker.LsqCh20
-import NumStabilityTest.Worker.QrCh19.HouseholderWave1
-import NumStabilityTest.Worker.QrCh19.Q2A
+import NumStabilityTest.Worker.QrCh19
 
 /-!
 # NumStability test suite
