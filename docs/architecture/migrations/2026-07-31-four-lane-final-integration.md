@@ -18,8 +18,9 @@ recovery branches.
   rewrites, 25,540 signature edges, and 35,878 body/proof edges.
 - Least squares / Chapter 20: 41 historical owners and 5,129 declarations are
   represented by 73 destinations. The post gate preserved 4,694 compiler
-  command groups and validated 43 lane compatibility wrappers and the resolved
-  QR handoff.
+  command groups and validated 43 physical lane compatibility wrappers (41
+  migrated declaration-bearing owner rows plus two pre-existing compatibility
+  wrappers) and the resolved QR handoff.
 - Classification / Chapters 9 and 11: Chapter 9 moved 4,420 declarations into
   20 canonical destinations. Chapter 11 moved 6,385 declarations from 66
   historical owners into 73 destinations after the Chapter 9 dependency
@@ -41,8 +42,16 @@ reachable pairs.
 
 ## Validation
 
-- GitHub Lean CI passed at `22bafeb75b37899b116e81b3f0e8d0b96655b74a`
-  before the documentation/tier-audit correction (6,134 jobs).
+- The immutable handoff packet verified all 62 manifest entries, all 189
+  recovered source-overlay files byte-for-byte, and the recovered Block LU
+  branch scope (two commits, 189 touched paths, and 155 new paths).
+- The Block LU ownership checker passed its negative self-test, pristine pre
+  gate, complete 1,990/1,990-declaration stage gate, clean source-wave post
+  gate, and final combined-tree post gate. The final graph differs from the
+  frozen graph only by the four reviewed private-helper body-edge drops.
+- The QR, least-squares, Chapter 9, and Chapter 11 post gates were rerun on the
+  final combined tree and passed with the declaration and typed-edge counts
+  recorded above.
 - `check_layout.py`: 1,390 modules, 457 unclassified, zero mixed, zero unsorted
   aggregates.
 - `check_compatibility.py`: 254 wrappers and 524 documented direct targets.
@@ -56,10 +65,16 @@ reachable pairs.
   edges, 56 destination-DAG edges, and 28 authored private rewrites passed.
 - Chapter 11 semantic post gate: 6,385 declarations, 81,069 typed internal
   edges, 289 destination-DAG edges, and 146 authored private rewrites passed.
+- Ten representative final-tree axiom probes spanning Block LU, QR,
+  least-squares, Chapter 9, and Chapter 11 reported exactly the accepted
+  `[propext, Classical.choice, Quot.sound]` set.
 - `lake build NumStability NumStabilityTest` passed on the exact integrated
   Lean source tree, and `lake test` passed after the source-neutral manifest,
-  checker, and README updates. The final GitHub run is the release gate for
-  this checkpoint.
+  checker, and README updates.
+- [GitHub Lean CI run 30651531223](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/30651531223)
+  passed both jobs at final integrated commit
+  `dfdeb3eb3f664d3ab7ae91f27267fa39de734b02` in 3 minutes 44 seconds. This is
+  the completed release gate for the integrated Lean source tree.
 
 The remaining 457 unclassified modules and other ratcheted queues are future
 repository-wide cleanup. They are not unfinished work from these four bounded
