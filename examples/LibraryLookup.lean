@@ -12,7 +12,7 @@ import NumStability.Algorithms.Horner
 import NumStability.Algorithms.HighamChapter8
 import NumStability.Algorithms.HighamChapter9
 import NumStability.Algorithms.HighamChapter10
-import NumStability.Algorithms.HighamChapter11
+import NumStability.Source.Higham.Chapter11
 import NumStability.Source.Higham.Chapter06
 import NumStability.Source.Higham.Chapter12.IterativeRefinement
 import NumStability.Algorithms.LinearSystems.LU.BlockLU

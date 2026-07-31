@@ -8,6 +8,7 @@ import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
 import NumStability.Algorithms.LinearSystems.QR.HouseholderConstruction2
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQApply
 import NumStability.Algorithms.LinearSystems.QR.QRSolve
+import NumStability.Algorithms.LinearSystems.SymmetricIndefinite
 import NumStability.Algorithms.LinearSystems.Triangular
 
 /-!

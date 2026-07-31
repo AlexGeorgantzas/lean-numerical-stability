@@ -8,7 +8,7 @@ Authors: QED
 import Mathlib.Tactic.FinCases
 import Mathlib.Tactic.NormNum
 import NumStability.Algorithms.QR.Higham19Alg12MGSRounded
-import NumStability.Algorithms.LeastSquares.Higham20CrossProductExample
+import NumStability.Source.Higham.Chapter20.Examples.CrossProduct
 
 namespace NumStability
 

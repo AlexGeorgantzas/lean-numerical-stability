@@ -1,5 +1,5 @@
 import NumStability.Algorithms.QR.Higham19Alg12MGSPaddedClosure
-import NumStability.Algorithms.LeastSquares.Higham20MPProse
+import NumStability.Source.Higham.Chapter20.Prose.MoorePenrose
 
 /-!
 # Higham Theorem 19.13: source-condition-number rate

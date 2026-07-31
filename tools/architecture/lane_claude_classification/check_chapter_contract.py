@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import collections
 import json
+import os
 import tempfile
 from pathlib import Path
 
@@ -83,15 +84,27 @@ def pre_check(contract_root: Path, baseline_zip: Path) -> dict[str, object]:
     candidate_by_module = {row["module"]: row for row in candidates}
     source_indices: dict[str, SourceCommandIndex] = {}
     entries_by_module: dict[str, dict[str, tuple[int, ...]]] = {}
+    frozen_route_entries: dict[str, dict[str, tuple[int, ...]]] = collections.defaultdict(dict)
+    if os.environ.get("NUMSTABILITY_USE_FROZEN_ROUTE_SPANS"):
+        for row in routes:
+            module, root = row[1], row[4]
+            span = tuple(int(value) for value in row[7:15])
+            prior = frozen_route_entries[module].get(root)
+            if prior is not None and prior != span:
+                raise ValueError(f"{root}: inconsistent frozen route spans")
+            frozen_route_entries[module][root] = span
     for module, item in candidate_by_module.items():
         payload = git_show_bytes(BASE_SHA, item["path"])
-        ilean = BUILD_ROOT / Path(item["path"]).with_suffix(".ilean")
-        entries_by_module[module] = augment_entries_from_source(
-            payload,
-            module,
-            (value.name for value in selected.values() if value.module == module),
-            read_ilean_entries(ilean, module),
-        )
+        if frozen_route_entries:
+            entries_by_module[module] = dict(frozen_route_entries[module])
+        else:
+            ilean = BUILD_ROOT / Path(item["path"]).with_suffix(".ilean")
+            entries_by_module[module] = augment_entries_from_source(
+                payload,
+                module,
+                (value.name for value in selected.values() if value.module == module),
+                read_ilean_entries(ilean, module),
+            )
         source_indices[module] = SourceCommandIndex(payload)
     for row in routes:
         if row[0] != "route":

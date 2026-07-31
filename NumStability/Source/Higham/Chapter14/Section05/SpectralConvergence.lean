@@ -1,4 +1,5 @@
 import NumStability.Algorithms.MatrixPowers
+import NumStability.Algorithms.LinearSystems.LeastSquares.GramBasis
 import NumStability.Source.Higham.Chapter20.Problem03
 import NumStability.Source.Higham.Chapter14.Section05.RectangularIteration
 

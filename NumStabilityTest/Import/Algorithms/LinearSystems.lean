@@ -1,4 +1,5 @@
 import NumStability.Algorithms.LinearSystems
+import NumStability.Algorithms.LinearSystems.SymmetricIndefinite
 
 /-!
 # Linear-systems aggregate import smoke test
@@ -20,3 +21,6 @@ canonical triangular-system family.
 #check NumStability.dhsBlockForwardConventionalSolution
 #check NumStability.fl_backSub
 #check NumStability.triangularSolve_backward_error
+#check NumStability.Ch11Closure.AasenDirect.flAasenInit
+#check NumStability.Ch11Closure.BunchTriFactor.alpha_pos
+#check NumStability.Ch11Closure.SparseSolve.bunchTriSparseSolveCoeff_nonneg

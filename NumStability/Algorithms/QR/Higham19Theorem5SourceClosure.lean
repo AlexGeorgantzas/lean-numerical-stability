@@ -1,6 +1,6 @@
 import NumStability.Algorithms.QR.Higham19Labels
 import NumStability.Source.Higham.Chapter06.Lemma06
-import NumStability.Algorithms.LeastSquares.Higham20ZeroDeltaB
+import NumStability.Source.Higham.Chapter20.Theorem03.ZeroDeltaB
 
 /-!
 # Higham Theorem 19.5 and equation (19.14): source closure

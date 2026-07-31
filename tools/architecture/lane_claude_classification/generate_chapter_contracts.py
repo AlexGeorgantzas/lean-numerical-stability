@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import collections
 import json
+import os
 import re
 from pathlib import Path
 
@@ -36,7 +37,12 @@ from lane_common import (
 )
 
 
-BUILD_ROOT = Path(r"C:\Users\qed_s\OneDrive\Documents\QED 94\.lake\build\lib\lean")
+BUILD_ROOT = Path(
+    os.environ.get(
+        "NUMSTABILITY_BUILD_ROOT",
+        str(ROOT / ".lake" / "build" / "lib" / "lean"),
+    )
+)
 
 CH09_SEAMS = [
     (344, "NumStability.Source.Higham.Chapter09.Section01"),

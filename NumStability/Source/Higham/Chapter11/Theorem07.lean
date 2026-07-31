@@ -1,6 +1,6 @@
-import NumStability.Algorithms.Cholesky.BunchTridiagonalGrowthInvariantCh11Closure
-import NumStability.Algorithms.Cholesky.BlockLDLTBunchTridiagonalCh11Closure
-import NumStability.Algorithms.Cholesky.BunchTridiagonalSparseFactorCh11Closure
+import NumStability.Algorithms.LinearSystems.SymmetricIndefinite.BlockLDLT.BunchTridiagonalGrowthInvariant
+import NumStability.Source.Higham.Chapter11.BlockLDLTBunchTridiagonal
+import NumStability.Algorithms.LinearSystems.SymmetricIndefinite.BlockLDLT.BunchTridiagonalSparseFactor
 
 /-!
 Copyright (c) 2026. Released under Apache 2.0.
