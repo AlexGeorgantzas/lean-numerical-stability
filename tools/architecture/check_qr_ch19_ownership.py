@@ -35,6 +35,7 @@ from typing import Iterable
 
 PACKET_BASE_SHA = "6487fc33088523b8f27ecde9ad613515b78f9977"
 INTEGRATION_BASE_SHA = "420e4f93e2a5d31b2bf5b73740ca4146de7b0921"
+LIVE_CHECKPOINT_SHA = "48242807d4149210926eccf90a326d287fc0860c"
 BASELINE_TSV_SHA256 = (
     "32ADA469E27A971E9B0BB972F29C51E1DCBE99104A1492D4C69549C339825563"
 )
@@ -1107,6 +1108,25 @@ def read_private_rewrites(path: Path) -> dict[str, PrivateRewrite]:
     return rewrites
 
 
+def matches_live_checkpoint_private_rewrites(
+    project_root: Path, relative_path: Path, current_path: Path
+) -> bool:
+    """Accept only the reviewed inherited Q2A manifest on a live-base resume."""
+    try:
+        expected = subprocess.check_output(
+            [
+                "git",
+                "-C",
+                str(project_root),
+                "show",
+                f"{LIVE_CHECKPOINT_SHA}:{relative_path.as_posix()}",
+            ]
+        )
+    except subprocess.CalledProcessError:
+        return False
+    return current_path.read_bytes() == expected
+
+
 def write_contract(
     args: argparse.Namespace,
     baseline: dict[str, Declaration],
@@ -1378,9 +1398,23 @@ def expected_canonical_imports(
 ) -> list[str]:
     if destination == CONSTRUCTION2_ALIAS_DESTINATION:
         return [f"{REUSABLE_ROOT}.HouseholderConstruction2"]
+    # The frozen source files are the integrated 420 snapshot, while this
+    # worker resumes from the later 482 checkpoint.  Once a Chapter 19 owner
+    # is moved, imports between historical Chapter 19 owners must follow the
+    # reviewed source destinations as well as the reusable QR destinations.
+    # Keep the WY -> BlockLU edge as the explicitly reviewed late handoff: the
+    # packet's pristine owner has that import, whereas the integrated snapshot
+    # recorded the temporary AsymptoticFamilies repair.
+    if owner == WY_OWNER:
+        return [
+            WY_OLD_IMPORT,
+            f"{REUSABLE_ROOT}.GramSchmidtPolar",
+        ]
     result: list[str] = []
     for imported in original_imports:
-        if imported in REUSABLE_MIGRATION_MODULES:
+        if imported in EXPECTED_HISTORICAL_COUNTS:
+            result.append(default_destination(imported))
+        elif imported in REUSABLE_MIGRATION_MODULES:
             result.append(default_destination(imported))
         else:
             result.append(imported)
@@ -1852,6 +1886,21 @@ def run_self_test() -> None:
     if frozen == candidate:
         raise AssertionError("typed-edge drift negative self-test failed")
 
+    source_owner = f"{HISTORICAL_ROOT}.Higham19Alg12MGSClosure"
+    source_destination = default_destination(source_owner)
+    mapped = expected_canonical_imports(
+        source_owner,
+        [f"{HISTORICAL_ROOT}.Higham19Alg12MGSRepair"],
+        source_destination,
+    )
+    if mapped != [f"{SOURCE_ROOT}.Algorithm12.MGSRepair"]:
+        raise AssertionError("historical Chapter 19 import mapping self-test failed")
+    if expected_canonical_imports(WY_OWNER, [], default_destination(WY_OWNER)) != [
+        WY_OLD_IMPORT,
+        f"{REUSABLE_ROOT}.GramSchmidtPolar",
+    ]:
+        raise AssertionError("late WY/BlockLU import self-test failed")
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -1956,9 +2005,13 @@ def main() -> int:
         return 0
 
     if args.mode == "pre":
-        rewrites = read_private_rewrites(args.project_root / args.private_rewrites)
-        if rewrites:
-            fail("pre-migration private rewrite manifest must be header-only")
+        private_path = args.project_root / args.private_rewrites
+        rewrites = read_private_rewrites(private_path)
+        inherited = bool(rewrites) and matches_live_checkpoint_private_rewrites(
+            args.project_root, args.private_rewrites, private_path
+        )
+        if rewrites and not inherited:
+            fail("pre-migration private rewrite manifest must be header-only or the exact live-base inherited manifest")
         print(
             f"pre mode passed: {len(owners)} owners, {len(routes)} declarations, "
             f"{command_groups} command groups, {len(set(r.destination_module for r in routes.values()))} "
@@ -1966,7 +2019,8 @@ def main() -> int:
             f"{wave_groups} commands / {wave_private} private rewrites / {promotions} promotions; "
             f"QR Q2A = {q2a_declarations} declarations / {q2a_groups} commands / "
             f"{q2a_private} private rewrites / {q2a_promotions} promotions; "
-            f"routes sha256 {sha256_file(args.project_root / args.routes)}"
+            f"routes sha256 {sha256_file(args.project_root / args.routes)}; "
+            f"inherited private rewrites={len(rewrites) if inherited else 0}"
         )
         return 0
 
