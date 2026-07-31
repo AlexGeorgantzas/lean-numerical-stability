@@ -111,7 +111,10 @@ def tier_assignments(modules: Iterable[SourceModule]) -> tuple[dict[str, str], s
         prefix, tier = rule.get("prefix"), rule.get("tier")
         if not isinstance(prefix, str) or tier not in allowed:
             raise LayoutError(f"invalid tier prefix rule: {rule!r}")
-        parsed_prefixes.append((prefix, tier))
+        # Coordinator patch manifests use a trailing dot to make the
+        # namespace boundary explicit; accept that spelling while keeping
+        # the matching rule below boundary-safe.
+        parsed_prefixes.append((prefix.rstrip("."), tier))
     parsed_prefixes.sort(key=lambda item: (-len(item[0]), item[0]))
 
     by_name = {module.name for module in modules}

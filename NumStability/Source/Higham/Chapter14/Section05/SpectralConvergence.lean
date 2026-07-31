@@ -1,5 +1,5 @@
-import NumStability.Algorithms.LeastSquares.Higham20Problem20_3
 import NumStability.Algorithms.MatrixPowers
+import NumStability.Source.Higham.Chapter20.Problem03
 import NumStability.Source.Higham.Chapter14.Section05.RectangularIteration
 
 /-!

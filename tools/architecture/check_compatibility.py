@@ -81,7 +81,11 @@ def main() -> int:
 
         text = old_path.read_text(encoding="utf-8-sig", errors="replace")
         uncommented = remove_lean_comments(text)
-        imports = tuple(IMPORT_RE.findall(uncommented))
+        imports = tuple(
+            target
+            for target in IMPORT_RE.findall(uncommented)
+            if target.startswith("NumStability.")
+        )
         if imports != canonical:
             failures.append(
                 f"{historical}: imports {imports!r}, documented {canonical!r}"

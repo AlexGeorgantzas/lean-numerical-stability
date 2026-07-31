@@ -124,7 +124,10 @@ cherry-picked from any of them, as the contract forbids importing another worker
 unintegrated branch. Which contract integrates is a coordinator decision.
 
 **Integrator patch set.** `lsq-ch20-coordinator-patches.tsv`, 325 rows, SHA-256
-prefix `75C2ACEC871EB699`. The three preserved Chapter 20 leaves
+`2CF720044F4CE496CCCAD0D5132A5073402E7AFDD4C0C5B365B96E4E7BEF5FE0`. Four
+QR import identities are retargeted to the canonical `LinearSystems.QR`
+paths already landed by Q2A; this is the only post-Q2A contract delta. The
+three preserved Chapter 20 leaves
 (`Equation32`, `Lemma06`, `Theorem01`) are lane-owned and were deliberately left
 importing the `LSQRSolve` wrapper: they are not manifest destinations, so the
 production-import gate does not apply to them, and the wrapper resolves them.

@@ -112,10 +112,10 @@ patch	compatibility_map	NumStability.Algorithms.LeastSquares.Higham20Theorem20_4
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.Higham20Theorem20_4Absorption	-	NumStability.Source.Higham.Chapter20.Theorem04
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.Higham20Theorem20_7	-	NumStability.Algorithms.LeastSquares.LSQRSolve
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.Higham20Theorem20_7	-	NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
+patch	compatibility_map	NumStability.Algorithms.LeastSquares.Higham20Theorem20_7	-	NumStability.Algorithms.LinearSystems.QR.HouseholderApply
+patch	compatibility_map	NumStability.Algorithms.LeastSquares.Higham20Theorem20_7	-	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.Higham20Theorem20_7	-	NumStability.Algorithms.QR.Higham19Thm6CoxHigham
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.Higham20Theorem20_7	-	NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
-patch	compatibility_map	NumStability.Algorithms.LeastSquares.Higham20Theorem20_7	-	NumStability.Algorithms.QR.HouseholderApply
-patch	compatibility_map	NumStability.Algorithms.LeastSquares.Higham20Theorem20_7	-	NumStability.Algorithms.QR.HouseholderQRSupport
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.Higham20Theorem20_7	-	NumStability.Analysis.Perturbation.LeastSquares.Contract
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.Higham20Theorem20_7	-	NumStability.Source.Higham.Chapter20.Theorem07
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.Higham20Theorem20_7ActualAssembly	-	NumStability.Algorithms.LeastSquares.Higham20Theorem20_7ActualRhs
@@ -165,7 +165,7 @@ patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSE	-	NumStability.
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSE	-	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSE	-	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSE	-	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT
-patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSE	-	NumStability.Algorithms.QR.GramSchmidtPolar
+patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSE	-	NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSE	-	NumStability.Algorithms.QR.Higham19
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSE	-	NumStability.Algorithms.QR.Higham19Thm6ColPivot
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSE	-	NumStability.Algorithms.QR.Higham19Thm6CoxHigham
@@ -218,11 +218,11 @@ patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSQRSolve	-	NumStab
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSQRSolve	-	NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSQRSolve	-	NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSQRSolve	-	NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSQRSolve	-	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
+patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSQRSolve	-	NumStability.Algorithms.LinearSystems.QR.QRSolve
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSQRSolve	-	NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSQRSolve	-	NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSQRSolve	-	NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
-patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSQRSolve	-	NumStability.Algorithms.QR.HouseholderQRSupport
-patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSQRSolve	-	NumStability.Algorithms.QR.QRSolve
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSQRSolve	-	NumStability.Algorithms.RandNLA.LowRankApprox
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSQRSolve	-	NumStability.Analysis.MatrixAlgebra
 patch	compatibility_map	NumStability.Algorithms.LeastSquares.LSQRSolve	-	NumStability.Analysis.Perturbation.LeastSquares.AugmentedSystem
