@@ -60,7 +60,12 @@ def self_test() -> None:
     print("check_chapter_contract self-test: PASS")
 
 
-def pre_check(contract_root: Path, baseline_zip: Path) -> dict[str, object]:
+def pre_check(
+    contract_root: Path,
+    baseline_zip: Path,
+    *,
+    use_frozen_route_spans: bool = False,
+) -> dict[str, object]:
     acceptance = json.loads((contract_root / "acceptance.json").read_text(encoding="utf-8"))
     candidates = read_tsv(contract_root / "candidate-modules.tsv")
     frozen = read_tsv(contract_root / "frozen-owners.tsv")
@@ -85,7 +90,7 @@ def pre_check(contract_root: Path, baseline_zip: Path) -> dict[str, object]:
     source_indices: dict[str, SourceCommandIndex] = {}
     entries_by_module: dict[str, dict[str, tuple[int, ...]]] = {}
     frozen_route_entries: dict[str, dict[str, tuple[int, ...]]] = collections.defaultdict(dict)
-    if os.environ.get("NUMSTABILITY_USE_FROZEN_ROUTE_SPANS"):
+    if use_frozen_route_spans or os.environ.get("NUMSTABILITY_USE_FROZEN_ROUTE_SPANS"):
         for row in routes:
             module, root = row[1], row[4]
             span = tuple(int(value) for value in row[7:15])
@@ -208,7 +213,11 @@ def migrated_name(name: str, route: list[str]) -> str:
 
 
 def post_check(contract_root: Path, baseline_zip: Path, candidate_zip: Path, mode: str) -> dict[str, object]:
-    pre = pre_check(contract_root, baseline_zip)
+    # A migrated historical owner is now an import-only wrapper, and its fresh
+    # `.ilean` no longer contains the pre-migration authored roots. The route
+    # contract already freezes every authoritative source span, so post/stage
+    # validation must use those spans rather than the current wrapper `.ilean`.
+    pre = pre_check(contract_root, baseline_zip, use_frozen_route_spans=True)
     base_declarations, base_edges, _, _ = read_format2_zip(baseline_zip)
     candidate_declarations, candidate_edges, _, _ = read_format2_zip(candidate_zip)
     routes = {row[2]: row for row in read_format(contract_root / "routes.tsv", 2, 17)}

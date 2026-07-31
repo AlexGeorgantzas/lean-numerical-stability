@@ -173,35 +173,35 @@ approximation, and least-squares preconditioning.
 
 ## Project statistics
 
-Current production-tree snapshot after the Phase 12 Block LU cutover, QR
-Chapter 19 Q2A, the complete Chapter 9 source split, and the LSQ/Chapter 20
-delivery:
+Current production-tree snapshot after the Phase 12 Block LU cutover and the
+completed four-lane integration of Chapters 9, 11, 19 (QR), and 20 (least
+squares):
 
 | Formalization size | Count |
 |---|---:|
-| Production Lean modules | **1,270** |
-| Physical Lean source lines (including comments and blanks) | **1,469,233** |
-| Nonblank Lean source lines | **1,406,570** |
+| Production Lean modules | **1,390** |
+| Physical Lean source lines (including comments and blanks) | **1,470,499** |
+| Nonblank Lean source lines | **1,407,547** |
 | Theorem and lemma commands | **40,091** (**37,907** `theorem` + **2,184** `lemma`) |
 | Definition commands | **9,275** `def` |
 | Abbreviation commands | **242** `abbrev` |
 | Structure commands | **388** `structure` |
 | Instance commands | **136** `instance` |
 | Inductive commands | **80** `inductive` |
-| Full library and smoke-test build graph | **5,908 jobs** |
+| Full library and smoke-test build graph | **6,134 jobs** |
 | Proof placeholders / top-level axiom or constant commands | **0** |
 
 | Organization state | Count |
 |---|---:|
 | Import cycles | **0** |
-| Classified modules | **706 (55.591%)** |
-| Unclassified modules | **564** |
-| Source / aggregate / compatibility modules | **293 / 107 / 147** |
-| Reusable / internal / upstream / mixed modules | **152 / 2 / 5 / 0** |
-| Compatibility wrappers / direct targets | **147 / 266** |
-| Modules with documentation / missing module docs | **1,071 / 199** |
-| Legacy naming exceptions | **384** |
-| Declaration-bearing umbrellas | **10** |
+| Classified modules | **933 (67.122%)** |
+| Unclassified modules | **457** |
+| Source / aggregate / compatibility modules | **419 / 110 / 254** |
+| Reusable / internal / upstream / mixed modules | **143 / 2 / 5 / 0** |
+| Compatibility wrappers / direct targets | **254 / 524** |
+| Modules with documentation / missing module docs | **1,184 / 206** |
+| Legacy naming exceptions | **318** |
+| Declaration-bearing umbrellas | **12** |
 | Provenance contract | **207 Apache files / 5 upstream modules** |
 
 The line, module, import-graph, documentation, and tier figures come from the
@@ -221,7 +221,8 @@ evidence includes the
 [`Phase 12 BlockLU semantic migration`](docs/architecture/migrations/2026-07-27-blocklu-semantic-phase12.md),
 the [`complete Chapter 9 reconciliation`](docs/architecture/migrations/worker-ch09-closure-tail-e-migration.md),
 the [`LSQ/Chapter 20 delivery`](docs/architecture/migrations/worker-lsq-ch20-delivery.md),
-and the [`current integration handoff`](docs/architecture/migrations/integrator-handoff-2026-07-29.md).
+the [`QR/Chapter 19 delivery`](docs/architecture/migrations/worker-qr-ch19-delivery.md),
+and the [`four-lane final integration`](docs/architecture/migrations/2026-07-31-four-lane-final-integration.md).
 Those records preserve the finer ownership, source-span, dependency, isolated
 import-test, and axiom-probe evidence behind the summary above.
 
@@ -268,6 +269,20 @@ Choose the narrowest entry point that matches the material you need:
   supported Chapter 4 source declarations.
 - `NumStability.Algorithms.LinearSystems.Triangular` is the reusable umbrella
   for forward/back substitution and triangular-system error bounds.
+- `NumStability.Algorithms.LinearSystems.QR` is the reusable QR umbrella;
+  numbered Chapter 19 correspondence is under
+  `NumStability.Source.Higham.Chapter19`. The former `Algorithms.QR.*` paths
+  remain import-only compatibility shims.
+- Least-squares algorithms and perturbation analysis are organized under
+  `NumStability.Algorithms.LinearSystems.LeastSquares` and
+  `NumStability.Analysis.Perturbation.LeastSquares`, with numbered Chapter 20
+  material under `NumStability.Source.Higham.Chapter20`. Eleven tightly
+  source-coupled leaves are explicitly classified as source rather than being
+  hidden behind a reusable-family exemption.
+- Symmetric-indefinite reusable structure is exposed through
+  `NumStability.Algorithms.LinearSystems.SymmetricIndefinite`; Chapter 11
+  correspondence is split under `NumStability.Source.Higham.Chapter11`. The
+  historical `Algorithms.HighamChapter11` owner is now an import-only facade.
 - `NumStability.Analysis.Summation` is the complete summation-analysis umbrella;
   `NumStability.Analysis.Summation.Signs` is its reusable sign/absolute-value
   leaf, while `ErrorBounds` contains the reusable conditioning and rounded-fold
@@ -393,11 +408,11 @@ the old-to-new path map and removal policy. The
 dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
-corpus is already Mathlib-style. The current ratchet records 564 unclassified
-modules, no fully classified mixed modules, 199 missing module docs, 384
-historical naming exceptions, and ten reviewed declaration-bearing umbrellas.
+corpus is already Mathlib-style. The current ratchet records 457 unclassified
+modules, no fully classified mixed modules, 206 missing module docs, 318
+historical naming exceptions, and twelve reviewed declaration-bearing umbrellas.
 The `NumStability.Algorithms` direct-import ceilings are 446 total imports,
-including 43 below `NumStability.Analysis` and 36 below
+including 44 below `NumStability.Analysis` and 38 below
 `NumStability.Source`. CI prevents those queues from growing while each
 dependency-contained family is migrated. In particular, the Chapter 14,
 Chapter 21, and Chapter 28 moves above establish only their documented
@@ -519,8 +534,14 @@ NumStability/
         Problem09.lean         -- Problem 6.9 source closure
         Problem10.lean         -- Problem 6.10 source closure
         Theorem04.lean         -- literal ambient-radius Theorem 6.4
-      Chapter08/, Chapter10/, Chapter11/
-      Chapter12/, Chapter13/, Chapter17/, Chapter20/
+      Chapter08/, Chapter10/
+      Chapter11.lean          -- declaration-free Chapter 11 aggregate
+      Chapter11/              -- symmetric-indefinite/skew source owners
+      Chapter12/, Chapter13/, Chapter17/
+      Chapter19.lean          -- declaration-free Chapter 19 QR aggregate
+      Chapter19/              -- numbered QR source owners
+      Chapter20.lean          -- declaration-free Chapter 20 LSQ aggregate
+      Chapter20/              -- numbered least-squares source owners
       Chapter14/
         Problem14.lean         -- Problem 14.14 Hyman determinant result
       Chapter21/
@@ -560,13 +581,16 @@ owner, and Phase 11B2 moved the remaining audited Chapter 6 source owners.
 Phase 12 has now split the historical 82k-line `Algorithms.LU.BlockLU`
 declaration owner into reusable and 68-owner Chapter 13 source surfaces, then
 migrated all ten declaration-bearing BlockLU siblings into 22 semantic owners
-while preserving every old import as a compatibility facade. The next
-checkpoint physically split all 4,420 Chapter 9 declarations into 20 canonical
-destinations, integrated QR Q2A, and migrated all 41 LSQ/Chapter 20 historical
-owners into 73 destinations. Subsequent batches finish the QR-to-LSQ ownership
-handoff, classify the remaining 564 unclassified modules, replace the 384
+while preserving every old import as a compatibility facade. The completed
+parallel checkpoint physically split all 4,420 Chapter 9 declarations into 20
+canonical destinations, all 6,385 Chapter 11 declarations from 66 historical
+owners into 73 destinations, all 3,991 QR declarations into 60 destinations,
+and all 5,129 LSQ/Chapter 20 declarations into 73 destinations. The QR-to-LSQ
+ownership handoff is resolved and the strict classified graph has no reusable-
+to-source or reusable-to-mixed path. Subsequent batches classify the remaining
+457 unclassified modules, replace the 318
 historical source/proof-stage names with semantic canonical paths plus
-compatibility shims, document the 199 remaining modules, and review the other
+compatibility shims, document the 206 remaining modules, and review the other
 giant-file outliers. The sequence and safety gates are tracked in
 [`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md).
 

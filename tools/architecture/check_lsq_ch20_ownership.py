@@ -82,36 +82,6 @@ REUSABLE_DESTINATION_PREFIXES = (
     REUSABLE_ANALYSIS_ROOT + ".",
 )
 SOURCE_DESTINATION_PREFIX = SOURCE_ROOT + "."
-QR_SOURCE_PREFIX = "NumStability.Source.Higham.Chapter19."
-QR_CANONICAL_RETARGETS = {
-    "NumStability.Algorithms.QR.HouseholderApply":
-        "NumStability.Algorithms.LinearSystems.QR.HouseholderApply",
-    "NumStability.Algorithms.QR.HouseholderQRSupport":
-        "NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport",
-    "NumStability.Algorithms.QR.GramSchmidtPolar":
-        "NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar",
-    "NumStability.Algorithms.QR.QRSolve":
-        "NumStability.Algorithms.LinearSystems.QR.QRSolve",
-}
-# Reviewed pre-reorganization dependencies of the canonical Conditioning
-# module.  These roots belong to the preserved Chapter 21 / Chapter 7 work;
-# they are deliberately exact rather than a general cross-chapter exemption.
-PRESERVED_LSQ_SOURCE_IMPORTS = frozenset(
-    {
-        (
-            "NumStability.Analysis.Perturbation.LeastSquares.Conditioning",
-            "NumStability.Analysis.HighamChapter7",
-        ),
-        (
-            "NumStability.Analysis.Perturbation.LeastSquares.Conditioning",
-            "NumStability.Source.Higham.Chapter20.Theorem03.QRSolve",
-        ),
-        (
-            "NumStability.Analysis.Perturbation.LeastSquares.Conditioning",
-            "NumStability.Source.Higham.Chapter21.RowScalingInvariance",
-        ),
-    }
-)
 
 # Frozen historical declaration counts at base
 # 6487fc33088523b8f27ecde9ad613515b78f9977.  Higham20SourceAliases is the
@@ -370,6 +340,29 @@ HEX_SHA256 = re.compile(r"^[0-9A-Fa-f]{64}$")
 MODULE_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*$")
 EDGE_KINDS = {"body", "signature"}
 TIERS = {"reusable", "source", "compatibility"}
+COORDINATOR_SOURCE_RECLASSIFICATIONS = {
+    "NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic",
+    "NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR",
+    "NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT",
+    "NumStability.Algorithms.LinearSystems.LeastSquares.RowSorting",
+    "NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel",
+    "NumStability.Analysis.Perturbation.LeastSquares.Conditioning",
+    "NumStability.Analysis.Perturbation.LeastSquares.Equality.KKTInverse",
+    "NumStability.Analysis.Perturbation.LeastSquares.Equality.MixedStability",
+    "NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation",
+    "NumStability.Analysis.Perturbation.LeastSquares.Equality.RowwiseBackwardError",
+    "NumStability.Analysis.Perturbation.LeastSquares.WeightedLimit",
+}
+QR_REUSABLE_RELOCATIONS = {
+    "NumStability.Algorithms.QR.GramSchmidtPolar":
+        "NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar",
+    "NumStability.Algorithms.QR.HouseholderApply":
+        "NumStability.Algorithms.LinearSystems.QR.HouseholderApply",
+    "NumStability.Algorithms.QR.HouseholderQRSupport":
+        "NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport",
+    "NumStability.Algorithms.QR.QRSolve":
+        "NumStability.Algorithms.LinearSystems.QR.QRSolve",
+}
 IMPORT_RE = re.compile(r"^\s*(?:public\s+)?import\s+([A-Za-z_][A-Za-z0-9_.]*)\s*$")
 COMMAND_PROVENANCE = {"authored", "compiler_generated"}
 CROSS_LANE_DIRECTIONS = {"LS_TO_QR", "QR_TO_LS"}
@@ -1289,7 +1282,12 @@ def validate_tier_coverage(
     for module, tier in sorted(tiers.items()):
         if module in destinations:
             role = destination_role(module)
-            if tier != role:
+            allowed_reclassification = (
+                module in COORDINATOR_SOURCE_RECLASSIFICATIONS
+                and role == "reusable"
+                and tier == "source"
+            )
+            if tier != role and not allowed_reclassification:
                 raise ValueError(
                     f"{module}: proposed tier {tier} contradicts destination role {role}"
                 )
@@ -1378,11 +1376,10 @@ def validate_destination_graph(
     declarations: list[Declaration],
     actual_to_logical: dict[str, str],
     records: dict[str, ManifestRow],
-    allowed_external_source_imports: set[tuple[str, str]] | None = None,
+    tiers: dict[str, str] | None = None,
 ) -> tuple[int, int]:
-    """Enforce the declaration DAG and the reviewed reusable/source boundary."""
+    """Enforce the selected declaration DAG and the reusable/source boundary."""
 
-    allowed_external_source_imports = allowed_external_source_imports or set()
     module_by_name = {
         declaration.name: declaration.module for declaration in declarations
     }
@@ -1396,12 +1393,20 @@ def validate_destination_graph(
         if source_logical is None:
             continue
         source_owner = records[source_logical].destination_module
-        source_role = destination_role(source_owner)
+        source_role = (
+            tiers.get(source_owner, destination_role(source_owner))
+            if tiers is not None
+            else destination_role(source_owner)
+        )
 
         target_logical = actual_to_logical.get(edge.target)
         if target_logical is not None:
             target_owner = records[target_logical].destination_module
-            target_role = destination_role(target_owner)
+            target_role = (
+                tiers.get(target_owner, destination_role(target_owner))
+                if tiers is not None
+                else destination_role(target_owner)
+            )
             if source_owner != target_owner:
                 graph[source_owner].add(target_owner)
                 witnesses.setdefault((source_owner, target_owner), edge)
@@ -1424,11 +1429,6 @@ def validate_destination_graph(
             or target_module == CHAPTER_SEVEN
             or target_module.startswith(LS_PREFIX)
         ):
-            if (
-                (source_owner, target_module) in allowed_external_source_imports
-                or target_module.startswith(QR_SOURCE_PREFIX)
-            ):
-                continue
             forbidden.append(
                 f"{source_owner} -> external {target_module} via {edge.kind} "
                 f"{edge.source} -> {edge.target}"
@@ -2649,17 +2649,21 @@ def validate_reusable_isolation(
     project_root: Path,
     records: dict[str, ManifestRow],
     import_graph: dict[str, list[str]] | None = None,
-    allowed_direct_imports: set[tuple[str, str]] | None = None,
+    tiers: dict[str, str] | None = None,
 ) -> int:
-    """Require isolation except for exact reviewed cross-lane source imports."""
+    """Require that no reusable destination transitively reaches forbidden roots."""
 
     graph = read_module_imports(project_root) if import_graph is None else import_graph
-    allowed_direct_imports = allowed_direct_imports or set()
     reusable = sorted(
         {
             row.destination_module
             for row in records.values()
-            if destination_role(row.destination_module) == "reusable"
+            if (
+                tiers.get(row.destination_module, destination_role(row.destination_module))
+                if tiers is not None
+                else destination_role(row.destination_module)
+            )
+            == "reusable"
         }
     )
     violations: list[str] = []
@@ -2672,19 +2676,6 @@ def validate_reusable_isolation(
             module, path = queue.popleft()
             for imported in graph.get(module, []):
                 if forbidden_for_reusable(imported):
-                    qr_carrier_path = any(
-                        part.startswith("NumStability.Algorithms.QR.")
-                        for part in path[1:]
-                    )
-                    if (
-                        (module, imported) in allowed_direct_imports
-                        or any(
-                            (part, imported) in allowed_direct_imports
-                            for part in path
-                        )
-                        or (imported.startswith(QR_SOURCE_PREFIX) and qr_carrier_path)
-                    ):
-                        continue
                     violations.append(" -> ".join(path + [imported]))
                     continue
                 if imported in seen or imported not in graph:
@@ -3139,7 +3130,7 @@ def validate_cross_lane_artifact_contract(
             )
 
         if frozen.status == "resolved":
-            expected_owner = QR_CANONICAL_RETARGETS.get(
+            expected_owner = QR_REUSABLE_RELOCATIONS.get(
                 frozen.qr_owner, frozen.qr_owner
             )
             if (actual.qr_owner, actual.status) != (
@@ -4065,15 +4056,6 @@ def run_self_test() -> None:
         expect_value_error(
             lambda: validate_reusable_isolation(project, records, bad_graph),
             "a reusable module importing a canonical source leaf",
-        )
-        assert (
-            validate_reusable_isolation(
-                project,
-                records,
-                bad_graph,
-                allowed_direct_imports={(SELF_REUSABLE, SELF_SOURCE)},
-            )
-            == 2
         )
         ch7_graph = dict(graph)
         ch7_graph[SELF_REUSABLE] = graph[SELF_REUSABLE] + [CHAPTER_SEVEN]
@@ -5075,12 +5057,6 @@ def main() -> int:
     dag = read_destination_dag(args.destination_dag, records)
     structural_contract = read_structural_import_contract(args.structural_imports)
     cross_contract = read_cross_lane_normalization(args.cross_lane, records)
-    reviewed_cross_lane_imports = {
-        (row.ls_destination, row.qr_owner)
-        for row in cross_contract
-        if row.direction == "LS_TO_QR" and row.status == "resolved"
-    }
-    reviewed_cross_lane_imports.update(PRESERVED_LSQ_SOURCE_IMPORTS)
     generated_cross = generate_cross_lane_normalization(
         args.baseline_tsv,
         baseline_declarations,
@@ -5175,12 +5151,10 @@ def main() -> int:
         for declaration in declarations
         if declaration.name in candidate_map
     }
+    tiers = read_tiers(args.tiers)
+    validate_tier_coverage(tiers, records, structural_modules)
     owners, owner_edges = validate_destination_graph(
-        args.dependency_tsv,
-        declarations,
-        actual_to_logical,
-        records,
-        allowed_external_source_imports=reviewed_cross_lane_imports,
+        args.dependency_tsv, declarations, actual_to_logical, records, tiers
     )
     validate_private_colocation(
         args.dependency_tsv, declarations, actual_to_logical, records
@@ -5188,8 +5162,6 @@ def main() -> int:
     validate_destination_dag_contract(
         args.dependency_tsv, actual_to_logical, records, dag
     )
-    tiers = read_tiers(args.tiers)
-    validate_tier_coverage(tiers, records, structural_modules)
     import_graph = read_module_imports(args.project_root)
     validate_destination_direct_imports(import_graph, records, dag, completed)
     owned_destinations = validate_no_orphaned_destinations(args.project_root, records)
@@ -5199,10 +5171,7 @@ def main() -> int:
         if qr_handoff is None:
             raise ValueError("post mode requires an authoritative QR handoff")
         reusable = validate_reusable_isolation(
-            args.project_root,
-            records,
-            import_graph,
-            allowed_direct_imports=reviewed_cross_lane_imports,
+            args.project_root, records, import_graph, tiers
         )
         normalized_imports, normalized_modules = validate_cross_lane_final_contract(
             cross_contract, declarations, import_graph, records, qr_handoff

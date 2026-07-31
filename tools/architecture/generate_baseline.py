@@ -365,7 +365,7 @@ def audit_tiers(root: Path, modules: Sequence[SourceModule]) -> dict[str, Any] |
             raise BaselineError("tier prefix rules require string `prefix` and `tier`")
         if tier not in allowed:
             raise BaselineError(f"unknown tier {tier!r} for prefix {prefix}")
-        parsed_prefixes.append((prefix, tier))
+        parsed_prefixes.append((prefix.rstrip("."), tier))
     parsed_prefixes.sort(key=lambda item: (-len(item[0]), item[0]))
 
     by_name = {module.name: module for module in modules}
