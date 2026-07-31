@@ -215,8 +215,8 @@
   "direct_import_ceilings": {
     "NumStability.Algorithms": {
       "NumStability.": 446,
-      "NumStability.Analysis.": 43,
-      "NumStability.Source.": 36
+      "NumStability.Analysis.": 44,
+      "NumStability.Source.": 37
     }
   },
   "legacy": {
