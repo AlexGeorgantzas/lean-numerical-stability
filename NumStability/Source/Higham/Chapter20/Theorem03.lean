@@ -2,7 +2,7 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
-import NumStability.Algorithms.QR.Higham19
+import NumStability.Source.Higham.Chapter19.Core
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Basic
 import NumStability.Analysis.Rounding

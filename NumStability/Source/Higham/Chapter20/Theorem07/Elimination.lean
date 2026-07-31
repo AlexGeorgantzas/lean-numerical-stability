@@ -6,8 +6,8 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RowSorting
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
-import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
-import NumStability.Algorithms.QR.Higham19Thm6Pivoted
+import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete
+import NumStability.Source.Higham.Chapter19.Theorem06.Pivoted
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Source.Higham.Chapter20.Theorem07
 

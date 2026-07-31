@@ -1,9 +1,9 @@
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
-import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
-import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
-import NumStability.Algorithms.QR.Higham19Thm6Pivoted
+import NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham
+import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete
+import NumStability.Source.Higham.Chapter19.Theorem06.Pivoted
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model

@@ -3,8 +3,8 @@ import NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep
 import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
-import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
-import NumStability.Algorithms.QR.Higham19Thm6RowSpecific
+import NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham
+import NumStability.Source.Higham.Chapter19.Theorem06.RowSpecific
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model

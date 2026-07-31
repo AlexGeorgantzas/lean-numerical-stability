@@ -1,7 +1,7 @@
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
 import NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
-import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
+import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Basic
 import NumStability.Analysis.Rounding
