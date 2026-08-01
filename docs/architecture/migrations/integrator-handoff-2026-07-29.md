@@ -1,5 +1,11 @@
 # Integrator handoff: 2026-07-29
 
+> **Status: superseded; no actions remain.** All resume gates below were
+> completed by the four-lane integration. This file is retained only as the
+> 2026-07-29 shutdown checkpoint. See
+> `2026-07-31-four-lane-final-integration.md` and completion-audit CI run
+> `30657426120`.
+
 This checkpoint was pushed because the current machine had to be shut down.
 It intentionally records both completed evidence and remaining integrator gates.
 

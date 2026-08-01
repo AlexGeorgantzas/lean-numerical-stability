@@ -1,5 +1,12 @@
 # Lane delivery report
 
+> **Integration resolution:** this is historical worker-delivery evidence.
+> Implementation `2d6739ee3870236cfc5342d8250ea825cf1cb026` and report
+> `ce5a2e153fa2fbf8da0536842ac164741f3b3e52` are ancestors of `main`.
+> The QR handoff, shared patches, candidate extraction, stage/post gates, and
+> branch choice were subsequently resolved. No integrator action described
+> below remains.
+
 ## Identity
 
 - Lane: `lsq-ch20`

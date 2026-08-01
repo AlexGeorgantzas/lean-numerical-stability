@@ -1,8 +1,13 @@
 # Classification and Chapter 9/11 preparation validation
 
-This file records the worker's historical validation at `6ecc4d551`. Current
-integrator hashes, import refreshes, and rerun results are recorded in
-`INTEGRATOR_REFRESH_9E7C8E324.md` and its JSON companion.
+> **Status: superseded historical validation.** The blocked and deferred states
+> below describe the pre-integration worker checkpoint, not the current tree.
+> Chapter 9 and Chapter 11 are integrated with passing post gates; see
+> `docs/architecture/migrations/2026-07-31-four-lane-final-integration.md`.
+
+This file records the worker's historical validation at `6ecc4d551`. The next
+historical integrator hashes, import refreshes, and rerun results were recorded
+in `INTEGRATOR_REFRESH_9E7C8E324.md` and its JSON companion.
 
 Static validation passes for the full 386-module proposal and both semantic
 contracts. The frozen inventory and exclusions are an exact disjoint

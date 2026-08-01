@@ -1,5 +1,12 @@
 # QR / Chapter 19 Q2B worker delivery
 
+> **Integration resolution:** implementation
+> `ee1686e374d03dc8df84adf700f2025830d5b2f0` and delivery report
+> `07288ac518ee399645038ea66e4fc23f2c2abe52` are ancestors of `main`.
+> Shared registrations, the BlockLU handoff, QR post mode, the 69-row LSQ
+> handoff check, repository gates, builds, tests, and CI all passed. The
+> instructions below describe the worker's pre-integration state only.
+
 This report records the completed Codex QR / Chapter 19 worker lane. The
 packet was frozen at `6487fc33088523b8f27ecde9ad613515b78f9977`; the live
 integration checkpoint used for this resumed run was

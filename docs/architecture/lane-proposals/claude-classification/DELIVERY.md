@@ -1,5 +1,13 @@
 # Lane delivery report
 
+> **Status: superseded delivery history.** The original reported implementation
+> head `7044bf66f0572b079bfff61131d395dc9edc999e` was not merged as the
+> production implementation and must not be cherry-picked. Its report history
+> was retained through `10ec7ce5a3281fd6bbcbd4a673416500342d7621`;
+> refreshed Chapter 9 and Chapter 11 implementations were integrated separately
+> and both have `INTEGRATED_POST_PASS` status. No request or blocker below is
+> current.
+
 ## Identity
 
 - Lane: `classification-ch09-ch11`

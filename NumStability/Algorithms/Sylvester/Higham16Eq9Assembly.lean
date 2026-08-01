@@ -38,7 +38,7 @@
 
 import NumStability.Algorithms.Sylvester.Higham16
 import NumStability.Analysis.Rounding
-import NumStability.Algorithms.QR.Higham19
+import NumStability.Source.Higham.Chapter19.Core
 
 namespace NumStability
 

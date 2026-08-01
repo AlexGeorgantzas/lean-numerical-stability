@@ -1,5 +1,11 @@
 # Worker lane `lsq-ch20` — baseline, route contract, and migration design
 
+> **Status: completed historical design and wave log.** The “blocked,”
+> “remaining work,” branch, hash, and integrator-request language below records
+> intermediate lane states and must not be applied to the current tree. The
+> lane, QR handoff, shared registrations, semantic post gate, builds, tests, and
+> CI are complete; see `2026-07-31-four-lane-final-integration.md`.
+
 Lane: least squares and Higham Chapter 20
 Engine: Claude (subscription 3, local-worktree mode)
 Frozen base: `6487fc33088523b8f27ecde9ad613515b78f9977`

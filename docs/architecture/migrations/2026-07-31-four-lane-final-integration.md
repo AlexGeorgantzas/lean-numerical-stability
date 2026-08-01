@@ -71,10 +71,12 @@ reachable pairs.
 - `lake build NumStability NumStabilityTest` passed on the exact integrated
   Lean source tree, and `lake test` passed after the source-neutral manifest,
   checker, and README updates.
-- [GitHub Lean CI run 30651531223](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/30651531223)
-  passed both jobs at final integrated commit
-  `dfdeb3eb3f664d3ab7ae91f27267fa39de734b02` in 3 minutes 44 seconds. This is
-  the completed release gate for the integrated Lean source tree.
+- [GitHub Lean CI run 30657426120](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/30657426120)
+  passed the architecture/source-graph checks and the Lean build at
+  completion-audit commit `298f57e88d4d83ace07151587dffebd1ac0637df` in 3 minutes
+  15 seconds. The integrated Lean source first passed at
+  `dfdeb3eb3f664d3ab7ae91f27267fa39de734b02`; the tree diff from that commit
+  through `298f57e88` changes only this migration report.
 
 The remaining 457 unclassified modules and other ratcheted queues are future
 repository-wide cleanup. They are not unfinished work from these four bounded

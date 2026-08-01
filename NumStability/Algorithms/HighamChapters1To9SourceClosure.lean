@@ -13,7 +13,7 @@ import NumStability.Analysis.HighamChapter7
 import NumStability.Algorithms.HighamChapter8FanInClosure
 import NumStability.Source.Higham.Chapter09.DoolittleClosure
 import NumStability.Algorithms.HighamChapter10
-import NumStability.Algorithms.QR.Higham19Thm6ColPivot
+import NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivot
 
 /-!
 # Higham Chapters 1--9: source-audit closure lemmas

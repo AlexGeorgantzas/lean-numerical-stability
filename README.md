@@ -194,13 +194,13 @@ squares):
 | Organization state | Count |
 |---|---:|
 | Import cycles | **0** |
-| Classified modules | **933 (67.122%)** |
-| Unclassified modules | **457** |
-| Source / aggregate / compatibility modules | **419 / 110 / 254** |
+| Classified modules | **975 (70.144%)** |
+| Unclassified modules | **415** |
+| Source / aggregate / compatibility modules | **419 / 110 / 296** |
 | Reusable / internal / upstream / mixed modules | **143 / 2 / 5 / 0** |
-| Compatibility wrappers / direct targets | **254 / 524** |
+| Compatibility wrappers / direct targets | **296 / 566** |
 | Modules with documentation / missing module docs | **1,184 / 206** |
-| Legacy naming exceptions | **318** |
+| Legacy naming exceptions | **276** |
 | Declaration-bearing umbrellas | **12** |
 | Provenance contract | **207 Apache files / 5 upstream modules** |
 
@@ -408,8 +408,8 @@ the old-to-new path map and removal policy. The
 dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
-corpus is already Mathlib-style. The current ratchet records 457 unclassified
-modules, no fully classified mixed modules, 206 missing module docs, 318
+corpus is already Mathlib-style. The current ratchet records 415 unclassified
+modules, no fully classified mixed modules, 206 missing module docs, 276
 historical naming exceptions, and twelve reviewed declaration-bearing umbrellas.
 The `NumStability.Algorithms` direct-import ceilings are 446 total imports,
 including 44 below `NumStability.Analysis` and 38 below
@@ -587,8 +587,10 @@ canonical destinations, all 6,385 Chapter 11 declarations from 66 historical
 owners into 73 destinations, all 3,991 QR declarations into 60 destinations,
 and all 5,129 LSQ/Chapter 20 declarations into 73 destinations. The QR-to-LSQ
 ownership handoff is resolved and the strict classified graph has no reusable-
-to-source or reusable-to-mixed path. Subsequent batches classify the remaining
-457 unclassified modules, replace the 318
+to-source or reusable-to-mixed path. The first post-integration cleanup also
+classified 42 declaration-free Chapter 19 facades and normalized all production
+consumers to their canonical imports. Subsequent batches classify the remaining
+415 unclassified modules, replace the 276
 historical source/proof-stage names with semantic canonical paths plus
 compatibility shims, document the 206 remaining modules, and review the other
 giant-file outliers. The sequence and safety gates are tracked in

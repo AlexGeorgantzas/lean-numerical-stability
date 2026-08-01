@@ -1,5 +1,10 @@
 # Integrator refresh at `9e7c8e324`
 
+> **Status: superseded historical refresh.** The Chapter 9 and Chapter 11
+> blockers below were resolved in dependency order, both post gates passed, and
+> no shared integrator action remains. See
+> `docs/architecture/migrations/2026-07-31-four-lane-final-integration.md`.
+
 The classification proposal and Chapter 9/11 contracts were re-audited after
 the CI source-graph repair. No declaration route, owner, private rewrite, or
 declaration-DAG edge changed.

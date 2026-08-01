@@ -13,7 +13,7 @@ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
-import NumStability.Algorithms.QR.Higham19Thm6Pivoted
+import NumStability.Source.Higham.Chapter19.Theorem06.Pivoted
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model

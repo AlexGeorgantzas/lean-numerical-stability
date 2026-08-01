@@ -1,18 +1,28 @@
 # Integrator request: least squares / Chapter 20
 
+Status: **APPLIED_AND_SUPERSEDED**.
+
+The shared patches, tier and compatibility registrations, root-test imports,
+and QR owner/carrier handoff were integrated and post-validated. The current
+coordinator artifact contains 336 `patch` rows and has SHA-256
+`AC9848C305C3A851A79312C761A4F8B7D0B2F43301941F681230086604F9483C`.
+The authoritative QR handoff contains 69 owner rows and has SHA-256
+`247DA93CE7A68D3325FD6C5C13A2E665E58213FC59B029E02B8E5B0DB9157195`.
+
+Everything below is the historical pre-integration request. Do not repeat its
+packet-copy, branch, or unresolved-gate instructions. Current completion
+evidence is in `2026-07-31-four-lane-final-integration.md`.
+
+## Historical request — retained for audit only
+
 Frozen base: `6487fc33088523b8f27ecde9ad613515b78f9977`
 
 Contract repair base: `7d876bc241d46e7192be2acaf46bb148aec76908`
 
 Repair branch: `codex/review-lsq-contract-repair` (local only; never push)
 
-Delivery status: **blocked**. This tracked request is not the active packet
-handoff until the coordinator copies it over the external
-`INTEGRATOR_REQUEST.md` and verifies identical SHA-256 values. The QR
-owner/carrier handoff described below also does not exist yet, so LSQ post mode
-must fail.
-
-This request supersedes the packet's earlier `INTEGRATOR_REQUEST.md`.  The
+At the repair base, this request superseded the packet's earlier
+`INTEGRATOR_REQUEST.md`. The
 authoritative patch set is the machine-readable file
 `docs/architecture/declaration-ownership/lsq-ch20-coordinator-patches.tsv`:
 
@@ -29,7 +39,7 @@ Its SHA-256 is
 The LSQ post gate reads this file and rejects an integration tree on which any
 import, root-test, tier, or compatibility mapping is missing or inexact.
 
-## Required packet replacement
+## Historical packet replacement — completed; do not repeat
 
 The packet's original `INTEGRATOR_REQUEST.md` is stale and
 `scripts/deliver_local.ps1` packages that external file. Before running the
@@ -137,7 +147,7 @@ import NumStabilityTest.Import.Compatibility.Algorithms.LeastSquares
 The source aggregate test `NumStabilityTest.Import.Source.Chapter20` is already
 root-imported and remains the lane-owned source test umbrella.
 
-## QR cross-lane normalization (mandatory unresolved gate)
+## Historical QR cross-lane normalization gate — resolved
 
 `lsq-ch20-cross-lane-normalization.tsv` freezes all 19 LS-to-QR and 4 QR-to-LS
 base imports, 4,221 typed declaration edges, and 3 import-only edges. It has
