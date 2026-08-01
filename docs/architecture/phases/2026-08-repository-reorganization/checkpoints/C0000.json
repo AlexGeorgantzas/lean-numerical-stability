@@ -21,7 +21,7 @@
       "commit_sha": "7930cca4f6c45ccbe0dc23e40480fabec4993f5b",
       "evidence": {
         "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0000-gates.md",
-        "sha256": "B627CE872390226FF6411A637F32668F8B361BF81B38A74FDAB83E886467F21A"
+        "sha256": "C210F4A3C01438249A7DCA1C33666386C66FE20939782C69F739850132252B5D"
       },
       "executor_id": "github-actions",
       "gate_id": "architecture",
@@ -34,7 +34,7 @@
       "commit_sha": "7930cca4f6c45ccbe0dc23e40480fabec4993f5b",
       "evidence": {
         "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0000-gates.md",
-        "sha256": "B627CE872390226FF6411A637F32668F8B361BF81B38A74FDAB83E886467F21A"
+        "sha256": "C210F4A3C01438249A7DCA1C33666386C66FE20939782C69F739850132252B5D"
       },
       "executor_id": "codex-local",
       "gate_id": "combined_baseline",
@@ -47,7 +47,7 @@
       "commit_sha": "7930cca4f6c45ccbe0dc23e40480fabec4993f5b",
       "evidence": {
         "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0000-gates.md",
-        "sha256": "B627CE872390226FF6411A637F32668F8B361BF81B38A74FDAB83E886467F21A"
+        "sha256": "C210F4A3C01438249A7DCA1C33666386C66FE20939782C69F739850132252B5D"
       },
       "executor_id": "codex-local",
       "gate_id": "compatibility",
@@ -60,7 +60,7 @@
       "commit_sha": "7930cca4f6c45ccbe0dc23e40480fabec4993f5b",
       "evidence": {
         "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0000-gates.md",
-        "sha256": "B627CE872390226FF6411A637F32668F8B361BF81B38A74FDAB83E886467F21A"
+        "sha256": "C210F4A3C01438249A7DCA1C33666386C66FE20939782C69F739850132252B5D"
       },
       "executor_id": "github-actions",
       "gate_id": "full_build",
@@ -73,7 +73,7 @@
       "commit_sha": "7930cca4f6c45ccbe0dc23e40480fabec4993f5b",
       "evidence": {
         "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0000-gates.md",
-        "sha256": "B627CE872390226FF6411A637F32668F8B361BF81B38A74FDAB83E886467F21A"
+        "sha256": "C210F4A3C01438249A7DCA1C33666386C66FE20939782C69F739850132252B5D"
       },
       "executor_id": "codex-local",
       "gate_id": "full_tests",
@@ -86,7 +86,7 @@
       "commit_sha": "7930cca4f6c45ccbe0dc23e40480fabec4993f5b",
       "evidence": {
         "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0000-gates.md",
-        "sha256": "B627CE872390226FF6411A637F32668F8B361BF81B38A74FDAB83E886467F21A"
+        "sha256": "C210F4A3C01438249A7DCA1C33666386C66FE20939782C69F739850132252B5D"
       },
       "executor_id": "codex-local",
       "gate_id": "layout",
@@ -99,7 +99,7 @@
       "commit_sha": "7930cca4f6c45ccbe0dc23e40480fabec4993f5b",
       "evidence": {
         "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0000-gates.md",
-        "sha256": "B627CE872390226FF6411A637F32668F8B361BF81B38A74FDAB83E886467F21A"
+        "sha256": "C210F4A3C01438249A7DCA1C33666386C66FE20939782C69F739850132252B5D"
       },
       "executor_id": "codex-local",
       "gate_id": "provenance",
@@ -112,7 +112,7 @@
       "commit_sha": "7930cca4f6c45ccbe0dc23e40480fabec4993f5b",
       "evidence": {
         "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0000-gates.md",
-        "sha256": "B627CE872390226FF6411A637F32668F8B361BF81B38A74FDAB83E886467F21A"
+        "sha256": "C210F4A3C01438249A7DCA1C33666386C66FE20939782C69F739850132252B5D"
       },
       "executor_id": "codex-local",
       "gate_id": "strict_source",

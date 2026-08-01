@@ -46,7 +46,9 @@ and 424,082 union edges. The source graph contains all 1,390 production
 modules, has zero import cycles, and has zero classified reusable-to-source or
 reusable-to-mixed reachable pairs.
 
-The temporary raw format-2 stream was retained only long enough to derive the
-W01 projection: 3,697 declarations, 16,646 signature edges, 29,337 body/proof
-edges, and 31,539 union edges across the four selected owners. The raw stream
-is reproducible from the generation command and is not tracked.
+The temporary raw format-2 stream was retained only long enough to size W01's
+outgoing ownership slice: 3,697 declarations, 16,646 outgoing signature edges,
+29,337 outgoing body/proof edges, and 31,539 outgoing union edges across the
+four selected owners. This was planning evidence, not the durable lane
+projection: P0001 later freezes both incoming and outgoing incident edges. The
+raw stream is reproducible from the generation command and is not tracked.

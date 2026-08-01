@@ -1,0 +1,49 @@
+{
+  "base_checkpoint_id": "C0001",
+  "checker": {
+    "arguments": [
+      "--allow-module=NumStability.Analysis.CancellationOfRoundingErrors",
+      "--allow-module=NumStability.Analysis.FloatingPointArithmetic",
+      "--allow-module=NumStability.Analysis.IncreasingPrecision",
+      "--allow-module=NumStability.Analysis.InstabilityWithoutCancellation",
+      "--allow-prefix=NumStability.Analysis.FloatingPointArithmetic.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter01.FloatingPointArithmetic.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter02.FloatingPointArithmetic.",
+      "--candidate=<candidate-format2.tsv>",
+      "--projection-sha256=6278CE1673465F9069A01A9D7FF5005223209E28533BC0F13DB4B90E82042352",
+      "--projection=docs/architecture/phases/2026-08-repository-reorganization/projections/P0001.tsv.gz"
+    ],
+    "artifact": {
+      "path": "tools/architecture/check_phase_projection.py",
+      "sha256": "29691CD63DB83A156247EA2C627407F4E90D127128A945B5AF97D014E11AB443"
+    }
+  },
+  "combined_baseline": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/baselines/C0001-combined.json",
+    "sha256": "52FEFD1990ECAFFF36487426DB6B0B369C47DE47C8CC87AD8F1C15B4B12329C4"
+  },
+  "expected_counts": {
+    "body_edges": 45433,
+    "declarations": 3697,
+    "signature_edges": 22706,
+    "union_edges": 48076
+  },
+  "phase_id": "repository-reorganization-2026-08",
+  "projection_graph": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/projections/P0001.tsv.gz",
+    "sha256": "6278CE1673465F9069A01A9D7FF5005223209E28533BC0F13DB4B90E82042352"
+  },
+  "projection_id": "P0001",
+  "record_kind": "baseline_projection",
+  "schema_version": 1,
+  "selector": {
+    "artifact": {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/selectors/W01.tsv",
+      "sha256": "0B6EAEC5D8F23B9227934D70ACDFC7D06D20D15FDFDE557E56C84FEFBCA96E01"
+    },
+    "kind": "module_path_tsv"
+  },
+  "status": "active",
+  "superseded_by": null,
+  "wave_id": "W01"
+}

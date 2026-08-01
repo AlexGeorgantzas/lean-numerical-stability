@@ -112,7 +112,7 @@
     }
   },
   "created_at": "2026-08-01T10:41:11Z",
-  "current_checkpoint_id": "C0000",
+  "current_checkpoint_id": "C0001",
   "milestones": [
     {
       "acceptance_gate_ids": [
@@ -609,7 +609,11 @@
     },
     {
       "match": "prefix",
-      "path": "NumStabilityTest/"
+      "path": "NumStabilityTest/Import/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStabilityTest/Worker/"
     },
     {
       "match": "prefix",

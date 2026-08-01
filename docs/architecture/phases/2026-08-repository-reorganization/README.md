@@ -1,7 +1,8 @@
 # Repository reorganization phase: August 2026
 
-Status: **ACTIVE**. Checkpoint C0000 is accepted and green; branch activation
-begins only after this control-plane contract itself is accepted on `main`.
+Status: **ACTIVE**. Checkpoint C0001 is accepted and green. Branch B0001 is
+planned from that exact checkpoint for W01; no production edit has yet been
+delivered or accepted.
 
 This is the current repository-wide operating contract. It supersedes the
 four-lane packets as an instruction source; those packets remain historical
@@ -19,11 +20,17 @@ evidence for the bounded work they completed.
 - [`C0000.json`](checkpoints/C0000.json), its
   [`gate evidence`](checkpoints/C0000-gates.md), and the
   [`combined baseline`](baselines/C0000-combined.json) define the accepted
-  origin checkpoint.
+  origin checkpoint. [`C0001.json`](checkpoints/C0001.json), its
+  [`green gates`](checkpoints/C0001-gates.md), and its
+  [`fresh combined baseline`](baselines/C0001-combined.json) define the current
+  checkpoint.
 - The [`branch`](branches/README.md),
   [`projection`](projections/README.md), and
   [`shared-request`](requests/README.md) registries define live transport and
-  handoffs. No prose packet overrides their JSON records.
+  handoffs. B0001's exact [`branch record`](branches/B0001.json),
+  [`selector`](selectors/W01.tsv), and
+  [`projection record`](projections/P0001.json) are the active W01 handoff. No
+  prose packet overrides these records.
 - [`check_phase.py`](../../../../tools/architecture/check_phase.py) validates
   the complete phase state;
   [`check_phase_projection.py`](../../../../tools/architecture/check_phase_projection.py)
@@ -137,11 +144,21 @@ exist.
    combined architecture/build/test gates, publishes the next checkpoint, and
    only then retires the remote branch.
 
-The first eligible wave is W01, but no branch is planned or active in the
-origin-control commit. Its branch record is created only after this contract
-has a green post-contract checkpoint and durable projection. Future records are
-created only when their prerequisites are accepted, because a future branch
-cannot honestly claim a base SHA or overlap review in advance.
+W01 is now planned by B0001 from green checkpoint C0001, commit
+`d6e643adf0f20b33f7faebce7e1b9b1f87122c58`. Its four existing files, three
+production destination prefixes, dedicated test/evidence prefixes, forbidden
+shared paths, operators, projection, and
+retirement rule are exact in the branch record. Future records are created
+only when their prerequisites are accepted, because a future branch cannot
+honestly claim a base SHA or overlap review in advance.
+
+The branch base necessarily predates the registry commit that names it. Keep a
+clean `main` control-plane checkout beside the worker worktree: read B0001 and
+run its hash-pinned projection from `main`, while all production commits stay
+on the exact worker branch rooted at C0001. Do not copy registry files into the
+worker commit. The projection registry contains the exact branch creation,
+candidate extraction, and cross-worktree check commands; the branch registry
+names the only allowed test and delivery-evidence paths.
 
 ## Classification warning
 
