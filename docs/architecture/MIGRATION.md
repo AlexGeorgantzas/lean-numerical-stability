@@ -3,6 +3,15 @@
 This is the executable migration sequence for NumStability.  A gate is complete
 only when its stated evidence is checked into the repository or recorded by CI.
 
+The active repository-wide operating contract is
+[`phases/2026-08-repository-reorganization/`](phases/2026-08-repository-reorganization/README.md).
+It freezes the complete 1,390-module inventory at accepted checkpoint C0000,
+assigns every current debt row to a lane and dependency wave, distinguishes
+bounded-phase from repository-wide completion, and records branch, baseline,
+shared-request, build-lock, and checkpoint lifecycle rules. Validate it with
+`python tools/architecture/check_phase.py`. Dated packets and migration reports
+are evidence, not current worker instructions.
+
 1. **Current baseline.** Regenerate and version the architecture and build
    report at the exact migration commit using tracked tooling.
 2. **Safety net.** Track CI, a test target, API/import smoke tests, and clean and

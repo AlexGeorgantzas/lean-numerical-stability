@@ -1,0 +1,20 @@
+module	frozen_suggestion	current_review_status	required_correction
+NumStability.Algorithms.Cholesky.CholeskyIndefinite	reusable	semantic_review_required	review 13 printed/source declarations before tiering or split source correspondence
+NumStability.Algorithms.Cholesky.CholeskyPSD	reusable	semantic_review_required	review source-numbered declarations before tiering or split source correspondence
+NumStability.Algorithms.GaussJordanPivoting	reusable	confirmed_source	map Higham Chapter 14 Algorithm 4 under Source.Higham.Chapter14
+NumStability.Algorithms.Higham726Rump	source_at_Chapter72	confirmed_bad_route	review canonical Chapter 7 Equation 26 destination; Chapter72 is invalid
+NumStability.Algorithms.IterativeRefinement	reusable	semantic_review_required	review source-numbered declarations before tiering or split source correspondence
+NumStability.Algorithms.LU.Doolittle	reusable	semantic_review_required	review source-numbered declarations before tiering or split source correspondence
+NumStability.Algorithms.NeumaierCompensatedFiniteFormat	reusable	semantic_review_required	review source-numbered declarations before tiering or split source correspondence
+NumStability.Algorithms.PriestFiniteFormat	reusable	semantic_review_required	review source-numbered declarations before tiering or split source correspondence
+NumStability.Algorithms.RandNLA.ElementwiseSpectral	reusable	semantic_review_required	review equation/source-named declarations before tiering or split source correspondence
+NumStability.Algorithms.RandNLA.LowRankApprox	reusable	semantic_review_required	review 193 equation/source-named declarations before tiering or split source correspondence
+NumStability.Analysis.CramersRule	reusable	semantic_review_required	review source-numbered declarations before tiering or split source correspondence
+NumStability.Analysis.DoubleRounding	reusable	semantic_review_required	review Problem 2.9 correspondence before tiering or split source correspondence
+NumStability.Analysis.Error	reusable	semantic_review_required	review problem_1_1 declarations before tiering or split source correspondence
+NumStability.Analysis.FusedMultiplyAdd	reusable	semantic_review_required	review source-numbered declarations before tiering or split source correspondence
+NumStability.Analysis.Midpoint	reusable	semantic_review_required	review source-numbered declarations before tiering or split source correspondence
+NumStability.Analysis.ProblemDependentStability	reusable	semantic_review_required	review source-numbered declarations before tiering or split source correspondence
+NumStability.Analysis.RoundingProductBounds	reusable	semantic_review_required	review source-numbered declarations before tiering or split source correspondence
+NumStability.Analysis.SampleVariance	reusable	semantic_review_required	review source-numbered declarations before tiering or split source correspondence
+NumStability.Analysis.TrigCancellation	reusable	semantic_review_required	review Problem 1.3 correspondence before tiering or split source correspondence

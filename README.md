@@ -594,7 +594,9 @@ consumers to their canonical imports. Subsequent batches classify the remaining
 historical source/proof-stage names with semantic canonical paths plus
 compatibility shims, document the 206 remaining modules, and review the other
 giant-file outliers. The sequence and safety gates are tracked in
-[`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md).
+[`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md), with exact
+ownership, checkpoints, and wave dependencies in the active
+[`August 2026 phase contract`](docs/architecture/phases/2026-08-repository-reorganization/README.md).
 
 ## License
 

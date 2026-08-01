@@ -4,7 +4,8 @@ Date: 2026-08-01
 
 Base: `298f57e88d4d83ace07151587dffebd1ac0637df`
 
-Status: **LOCAL_POST_PASS; remote CI pending at the delivery commit**.
+Status: **REMOTE_CI_PASS** at delivery commit
+`7930cca4f6c45ccbe0dc23e40480fabec4993f5b`.
 
 ## Scope
 
@@ -61,5 +62,8 @@ The following passed on the resulting local tree:
 - `lake build NumStability NumStabilityTest` (5,540 build targets); and
 - `lake test` (5,719 test targets).
 
-Existing linter warnings were non-fatal. The delivery commit must pass the
-tracked GitHub Lean CI workflow before it is accepted as the next phase base.
+Existing linter warnings were non-fatal.
+[GitHub Lean CI run 30695846088](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/30695846088)
+passed the architecture/source-graph step and the full Lean build, completing
+at `2026-08-01T10:41:11Z`. The delivery commit is therefore accepted as phase
+checkpoint C0000.
