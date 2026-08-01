@@ -1,259 +1,37 @@
--- Analysis/IncreasingPrecision.lean
---
--- Exact and modeled-rounding micro-examples from Higham Chapter 1, Section 1.13.
-
 import Mathlib.Analysis.SpecialFunctions.Exp
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
-import NumStability.Analysis.Error
-import NumStability.Analysis.FloatingPointArithmetic
 import NumStability.Analysis.BeneficialRounding
-
-namespace NumStability
+import NumStability.Analysis.Error
+import NumStability.Source.Higham.Chapter01.FloatingPointArithmetic.IncreasingPrecision
 
 /-!
-# Increasing Precision
+# Increasing precision (compatibility module)
 
-Higham Chapter 1, Section 1.13 gives examples where increasing precision does
-not monotonically improve the answer.  This file records a small exact branch
-calculation and the corresponding modeled-rounding failure for the contrived
-`z = f(x)` example.  It does not claim a full machine-format derivation of the
-Fortran 90 single- and double-precision results.
+Import-only module retained so existing imports of
+`NumStability.Analysis.IncreasingPrecision`
+keep resolving. Its declarations moved unchanged to the canonical
+modules imported above: source-neutral floating-point material under
+`NumStability.Analysis.FloatingPointArithmetic`, and Higham Chapter 1
+and Chapter 2 correspondence under the matching `Source.Higham`
+destinations. The module's own original imports are re-stated so that
+consumers reaching an identifier transitively through this path still
+see the same surface.
 -/
 
-/-! ## The `x + a sin(bx)` precision-plateau example -/
-
-/-- The exact function `x + a*sin(b*x)` from Higham §1.13. -/
-noncomputable def increasingPrecisionSinExample (x a b : ℝ) : ℝ :=
-  x + a * Real.sin (b * x)
-
-/-- The source amplitude `a = 10^{-8}` in Higham §1.13's sine example. -/
-noncomputable def increasingPrecisionSinExampleScale : ℝ :=
-  1 / (10 : ℝ) ^ 8
-
-/-- The source frequency `b = 2^{24}` in Higham §1.13's sine example. -/
-noncomputable def increasingPrecisionSinExampleFrequency : ℝ :=
-  (2 : ℝ) ^ 24
-
-/-- The source instance `x + 10^{-8} sin(2^{24} x)` from Higham §1.13. -/
-noncomputable def increasingPrecisionSinExampleSource (x : ℝ) : ℝ :=
-  increasingPrecisionSinExample x increasingPrecisionSinExampleScale
-    increasingPrecisionSinExampleFrequency
-
-/-- The sine-example perturbation has magnitude at most the amplitude. -/
-theorem increasingPrecisionSinExample_perturbation_abs_le
-    (x a b : ℝ) :
-    |increasingPrecisionSinExample x a b - x| ≤ |a| := by
-  rw [show increasingPrecisionSinExample x a b - x =
-      a * Real.sin (b * x) by
-    simp [increasingPrecisionSinExample]]
-  rw [abs_mul]
-  exact mul_le_of_le_one_right (abs_nonneg a) (Real.abs_sin_le_one (b * x))
-
-/-- In the source instance, the exact perturbation from `x` is at most
-`10^{-8}` in absolute value. -/
-theorem increasingPrecisionSinExampleSource_perturbation_abs_le
-    (x : ℝ) :
-    |increasingPrecisionSinExampleSource x - x| ≤ 1 / (10 : ℝ) ^ 8 := by
-  have h :=
-    increasingPrecisionSinExample_perturbation_abs_le x
-      increasingPrecisionSinExampleScale increasingPrecisionSinExampleFrequency
-  have hscale_nonneg : 0 ≤ 1 / (10 : ℝ) ^ 8 := by norm_num
-  simpa [increasingPrecisionSinExampleSource, increasingPrecisionSinExampleScale,
-    increasingPrecisionSinExampleFrequency, abs_of_nonneg hscale_nonneg] using h
-
-/-- If a finite value is strictly closer to the source than every other finite
-value, the finite round-to-even selector returns it.  This is a compact
-certificate interface for plateau-style examples. -/
-theorem finiteRoundToEven_eq_of_strict_closest
-    {fmt : FloatingPointFormat} {source base : ℝ}
-    (hbase : fmt.finiteSystem base)
-    (hstrict : ∀ z : ℝ, fmt.finiteSystem z → z ≠ base →
-      |source - base| < |source - z|) :
-    fmt.finiteRoundToEven source = base := by
-  have hround := fmt.finiteRoundToEven_nearestRoundingToFinite source
-  by_contra hne
-  have hfin : fmt.finiteSystem (fmt.finiteRoundToEven source) :=
-    FloatingPointFormat.nearestRoundingIn_mem hround
-  have hlt :=
-    hstrict (fmt.finiteRoundToEven source) hfin hne
-  have hle :=
-    FloatingPointFormat.nearestRoundingIn_minimal hround hbase
-  linarith
-
-/-- A spacing certificate for the §1.13 sine example.  If the base point `x`
-is finite and every other finite-format number is more than twice the amplitude
-away from `x`, then rounding `x + a*sin(b*x)` returns `x`. -/
-theorem increasingPrecisionSinExample_finiteRoundToEven_eq_base_of_two_abs_scale_lt_spacing
-    (fmt : FloatingPointFormat) {x a b : ℝ}
-    (hxfin : fmt.finiteSystem x)
-    (hspacing : ∀ z : ℝ, fmt.finiteSystem z → z ≠ x →
-      2 * |a| < |z - x|) :
-    fmt.finiteRoundToEven (increasingPrecisionSinExample x a b) = x := by
-  apply finiteRoundToEven_eq_of_strict_closest hxfin
-  intro z hz hzx
-  have hpert :=
-    increasingPrecisionSinExample_perturbation_abs_le x a b
-  have htri :
-      |z - x| ≤
-        |z - increasingPrecisionSinExample x a b| +
-          |increasingPrecisionSinExample x a b - x| := by
-    calc
-      |z - x| =
-          |(z - increasingPrecisionSinExample x a b) +
-            (increasingPrecisionSinExample x a b - x)| := by ring_nf
-      _ ≤ |z - increasingPrecisionSinExample x a b| +
-            |increasingPrecisionSinExample x a b - x| := abs_add_le _ _
-  have hsep := hspacing z hz hzx
-  have hsrcz_gt_z : |a| < |z - increasingPrecisionSinExample x a b| := by
-    linarith
-  have hsrcz_gt : |a| < |increasingPrecisionSinExample x a b - z| := by
-    simpa [abs_sub_comm] using hsrcz_gt_z
-  exact lt_of_le_of_lt hpert hsrcz_gt
-
-/-- Source-instance spacing certificate for Higham's
-`x + 10^{-8} sin(2^24*x)` example.  A point whose finite-format neighbors are
-all farther than `2*10^{-8}` rounds back to the unperturbed `x`; the remaining
-machine-specific plateau work is therefore the local spacing certificate, not
-an enumeration of inputs. -/
-theorem increasingPrecisionSinExampleSource_finiteRoundToEven_eq_base_of_spacing
-    (fmt : FloatingPointFormat) {x : ℝ}
-    (hxfin : fmt.finiteSystem x)
-    (hspacing : ∀ z : ℝ, fmt.finiteSystem z → z ≠ x →
-      2 / (10 : ℝ) ^ 8 < |z - x|) :
-    fmt.finiteRoundToEven (increasingPrecisionSinExampleSource x) = x := by
-  apply increasingPrecisionSinExample_finiteRoundToEven_eq_base_of_two_abs_scale_lt_spacing
-    fmt hxfin
-  intro z hz hzx
-  have h := hspacing z hz hzx
-  simpa [increasingPrecisionSinExampleSource, increasingPrecisionSinExampleScale,
-    increasingPrecisionSinExampleFrequency] using h
-
-/-- The branch variable
-`y = abs(3*(x-0.5)-0.5)/25` from Higham §1.13. -/
-noncomputable def increasingPrecisionExampleY (x : ℝ) : ℝ :=
-  |3 * (x - 1 / 2) - 1 / 2| / 25
-
-/-- The exact-arithmetic version of the §1.13 branch computation. -/
-noncomputable def increasingPrecisionExampleExactZ (x : ℝ) : ℝ :=
-  let y := increasingPrecisionExampleY x
-  if y = 0 then 1 else (Real.exp y - 1) / y
-
-/-- The else-branch result when the computed exponential value is supplied
-separately.  This isolates the modeled fact used in the text: a tiny nonzero
-`y` can have `exp(y)` rounded to `1`. -/
-noncomputable def increasingPrecisionExampleElseWithExpHat
-    (y expHat : ℝ) : ℝ :=
-  (expHat - 1) / y
-
-/-- In exact arithmetic, the branch variable is zero at `x = 2/3`. -/
-theorem increasingPrecisionExampleY_two_thirds_eq_zero :
-    increasingPrecisionExampleY (2 / 3) = 0 := by
-  unfold increasingPrecisionExampleY
-  norm_num
-
-/-- Away from the exact source input `x = 2/3`, the branch variable is nonzero.
-This is the exact condition that forces the contrived §1.13 computation into
-the else branch when the stored input is not exactly `2/3`. -/
-theorem increasingPrecisionExampleY_ne_zero_of_ne_two_thirds {x : ℝ}
-    (hx : x ≠ 2 / 3) :
-    increasingPrecisionExampleY x ≠ 0 := by
-  unfold increasingPrecisionExampleY
-  intro hzero
-  have harg : 3 * (x - 1 / 2) - 1 / 2 = 0 := by
-    have hmul := congrArg (fun t : ℝ => t * 25) hzero
-    norm_num [div_eq_mul_inv] at hmul
-    exact hmul
-  apply hx
-  linarith
-
-/-- Away from `x = 2/3`, the §1.13 branch variable is strictly positive. -/
-theorem increasingPrecisionExampleY_pos_of_ne_two_thirds {x : ℝ}
-    (hx : x ≠ 2 / 3) :
-    0 < increasingPrecisionExampleY x := by
-  have hnonneg : 0 ≤ increasingPrecisionExampleY x := by
-    unfold increasingPrecisionExampleY
-    exact div_nonneg (abs_nonneg _) (by norm_num)
-  have hne := increasingPrecisionExampleY_ne_zero_of_ne_two_thirds hx
-  exact lt_of_le_of_ne hnonneg (Ne.symm hne)
-
-/-- Hence the exact-arithmetic branch computation returns `1` at `x = 2/3`. -/
-theorem increasingPrecisionExampleExactZ_two_thirds_eq_one :
-    increasingPrecisionExampleExactZ (2 / 3) = 1 := by
-  unfold increasingPrecisionExampleExactZ
-  rw [increasingPrecisionExampleY_two_thirds_eq_zero]
-  simp
-
-/-- If the else branch is taken and the exponential evaluation rounds to `1`,
-the modeled returned value is `0`. -/
-theorem increasingPrecisionExampleElseWithExpHat_one_eq_zero (y : ℝ) :
-    increasingPrecisionExampleElseWithExpHat y 1 = 0 := by
-  simp [increasingPrecisionExampleElseWithExpHat]
-
-/-- Relative to the exact value `1`, the modeled else-branch value `0` has
-relative error `1`. -/
-theorem increasingPrecisionExampleElse_relError_one_of_expHat_one {y : ℝ}
-    (_hy : y ≠ 0) :
-    relError (increasingPrecisionExampleElseWithExpHat y 1) 1 = 1 := by
-  simp [increasingPrecisionExampleElseWithExpHat, relError]
-
-/-- Two modeled precision runs can both have no beneficial accuracy change in
-the contrived §1.13 example.  If each run enters the else branch with nonzero
-`y` and its supplied exponential evaluation is `1`, then both returned values
-are `0`, and both have relative error `1` against the exact value
-`f(2/3) = 1`.  This is the abstract bridge behind the source's single/double
-Fortran observation; it does not derive those supplied exponential values from
-a machine model. -/
-theorem increasingPrecisionExampleElse_two_precision_failure_of_expHat_one
-    {yLow yHigh : ℝ} (hLow : yLow ≠ 0) (hHigh : yHigh ≠ 0) :
-    increasingPrecisionExampleElseWithExpHat yLow 1 = 0 ∧
-    increasingPrecisionExampleElseWithExpHat yHigh 1 = 0 ∧
-    relError (increasingPrecisionExampleElseWithExpHat yLow 1)
-      (increasingPrecisionExampleExactZ (2 / 3)) = 1 ∧
-    relError (increasingPrecisionExampleElseWithExpHat yHigh 1)
-      (increasingPrecisionExampleExactZ (2 / 3)) = 1 := by
-  constructor
-  · exact increasingPrecisionExampleElseWithExpHat_one_eq_zero yLow
-  constructor
-  · exact increasingPrecisionExampleElseWithExpHat_one_eq_zero yHigh
-  constructor
-  · rw [increasingPrecisionExampleExactZ_two_thirds_eq_one]
-    exact increasingPrecisionExampleElse_relError_one_of_expHat_one hLow
-  · rw [increasingPrecisionExampleExactZ_two_thirds_eq_one]
-    exact increasingPrecisionExampleElse_relError_one_of_expHat_one hHigh
-
-/-- A source-shaped version of
-`increasingPrecisionExampleElse_two_precision_failure_of_expHat_one`: if two
-stored inputs both miss the exact value `2/3`, their branch variables are
-nonzero, so the supplied `exp(y)`-rounds-to-`1` model makes both precision runs
-return `0` with relative error `1` against the exact value `f(2/3)=1`. -/
-theorem increasingPrecisionExampleElse_two_precision_failure_of_stored_inputs_expHat_one
-    {xLow xHigh : ℝ} (hLow : xLow ≠ 2 / 3) (hHigh : xHigh ≠ 2 / 3) :
-    increasingPrecisionExampleElseWithExpHat (increasingPrecisionExampleY xLow) 1 = 0 ∧
-    increasingPrecisionExampleElseWithExpHat (increasingPrecisionExampleY xHigh) 1 = 0 ∧
-    relError
-      (increasingPrecisionExampleElseWithExpHat (increasingPrecisionExampleY xLow) 1)
-      (increasingPrecisionExampleExactZ (2 / 3)) = 1 ∧
-    relError
-      (increasingPrecisionExampleElseWithExpHat (increasingPrecisionExampleY xHigh) 1)
-      (increasingPrecisionExampleExactZ (2 / 3)) = 1 := by
-  exact increasingPrecisionExampleElse_two_precision_failure_of_expHat_one
-    (increasingPrecisionExampleY_ne_zero_of_ne_two_thirds hLow)
-    (increasingPrecisionExampleY_ne_zero_of_ne_two_thirds hHigh)
+namespace NumStability
 
 private theorem increasingPrecision_ieeeSingleFormat_minNormalMagnitude_le_two_thirds :
     FloatingPointFormat.ieeeSingleFormat.minNormalMagnitude ≤ (2 / 3 : ℝ) := by
   rw [FloatingPointFormat.minNormalMagnitude, FloatingPointFormat.ieeeSingleFormat,
     FloatingPointFormat.betaR]
   norm_num [zpow_neg]
-
 private theorem increasingPrecision_two_thirds_le_ieeeSingleFormat_maxFiniteMagnitude :
     (2 / 3 : ℝ) ≤ FloatingPointFormat.ieeeSingleFormat.maxFiniteMagnitude := by
   rw [FloatingPointFormat.maxFiniteMagnitude, FloatingPointFormat.ieeeSingleFormat,
     FloatingPointFormat.betaR]
   norm_num [zpow_neg]
-
 private theorem increasingPrecision_ieeeDoubleFormat_minNormalMagnitude_le_two_thirds :
     FloatingPointFormat.ieeeDoubleFormat.minNormalMagnitude ≤ (2 / 3 : ℝ) := by
   rw [FloatingPointFormat.minNormalMagnitude, FloatingPointFormat.ieeeDoubleFormat,
@@ -271,10 +49,6 @@ private theorem increasingPrecision_ieeeDoubleFormat_minNormalMagnitude_le_two_t
       (2 / 3 : ℝ) * 2 ≤ (2 / 3 : ℝ) * (2 : ℝ) ^ 1022 :=
     mul_le_mul_of_nonneg_left hpow (by norm_num)
   exact le_trans (by norm_num : (1 : ℝ) ≤ (2 / 3 : ℝ) * 2) hmul
-/-
-The following `2/3 <= maxFiniteMagnitude` proof deliberately uses only a tiny
-lower bound on the enormous finite maximum, avoiding any expansion of `2^1024`.
--/
 private theorem increasingPrecision_two_thirds_le_ieeeDoubleFormat_maxFiniteMagnitude :
     (2 / 3 : ℝ) ≤ FloatingPointFormat.ieeeDoubleFormat.maxFiniteMagnitude := by
   rw [FloatingPointFormat.maxFiniteMagnitude, FloatingPointFormat.ieeeDoubleFormat,
@@ -295,13 +69,11 @@ private theorem increasingPrecision_two_thirds_le_ieeeDoubleFormat_maxFiniteMagn
       2 * ((9007199254740991 : ℝ) / 9007199254740992) := by
     norm_num
   exact hsmall.trans hprod
-
 private theorem increasingPrecision_ieeeSingleFormat_minNormalMagnitude_le_one_seventh :
     FloatingPointFormat.ieeeSingleFormat.minNormalMagnitude ≤ (1 / 7 : ℝ) := by
   rw [FloatingPointFormat.minNormalMagnitude, FloatingPointFormat.ieeeSingleFormat,
     FloatingPointFormat.betaR]
   norm_num [zpow_neg]
-
 private theorem increasingPrecision_ieeeDoubleFormat_minNormalMagnitude_le_one_seventh :
     FloatingPointFormat.ieeeDoubleFormat.minNormalMagnitude ≤ (1 / 7 : ℝ) := by
   rw [FloatingPointFormat.minNormalMagnitude, FloatingPointFormat.ieeeDoubleFormat,
@@ -319,21 +91,18 @@ private theorem increasingPrecision_ieeeDoubleFormat_minNormalMagnitude_le_one_s
       (1 / 7 : ℝ) * 7 ≤ (1 / 7 : ℝ) * (2 : ℝ) ^ 1022 :=
     mul_le_mul_of_nonneg_left hpow (by norm_num)
   exact le_trans (by norm_num : (1 : ℝ) ≤ (1 / 7 : ℝ) * 7) hmul
-
 private theorem increasingPrecision_ieeeSingle_two_thirds_finiteNormalRange :
     FloatingPointFormat.ieeeSingleFormat.finiteNormalRange (2 / 3 : ℝ) := by
   rw [FloatingPointFormat.finiteNormalRange,
     abs_of_pos (by norm_num : (0 : ℝ) < 2 / 3)]
   exact ⟨increasingPrecision_ieeeSingleFormat_minNormalMagnitude_le_two_thirds,
     increasingPrecision_two_thirds_le_ieeeSingleFormat_maxFiniteMagnitude⟩
-
 private theorem increasingPrecision_ieeeDouble_two_thirds_finiteNormalRange :
     FloatingPointFormat.ieeeDoubleFormat.finiteNormalRange (2 / 3 : ℝ) := by
   rw [FloatingPointFormat.finiteNormalRange,
     abs_of_pos (by norm_num : (0 : ℝ) < 2 / 3)]
   exact ⟨increasingPrecision_ieeeDoubleFormat_minNormalMagnitude_le_two_thirds,
     increasingPrecision_two_thirds_le_ieeeDoubleFormat_maxFiniteMagnitude⟩
-
 private theorem increasingPrecision_ieeeSingle_one_seventh_finiteNormalRange :
     FloatingPointFormat.ieeeSingleFormat.finiteNormalRange (1 / 7 : ℝ) := by
   rw [FloatingPointFormat.finiteNormalRange,
@@ -341,7 +110,6 @@ private theorem increasingPrecision_ieeeSingle_one_seventh_finiteNormalRange :
   exact ⟨increasingPrecision_ieeeSingleFormat_minNormalMagnitude_le_one_seventh,
     (by norm_num : (1 / 7 : ℝ) ≤ 2 / 3).trans
       increasingPrecision_two_thirds_le_ieeeSingleFormat_maxFiniteMagnitude⟩
-
 private theorem increasingPrecision_ieeeDouble_one_seventh_finiteNormalRange :
     FloatingPointFormat.ieeeDoubleFormat.finiteNormalRange (1 / 7 : ℝ) := by
   rw [FloatingPointFormat.finiteNormalRange,
@@ -349,13 +117,11 @@ private theorem increasingPrecision_ieeeDouble_one_seventh_finiteNormalRange :
   exact ⟨increasingPrecision_ieeeDoubleFormat_minNormalMagnitude_le_one_seventh,
     (by norm_num : (1 / 7 : ℝ) ≤ 2 / 3).trans
       increasingPrecision_two_thirds_le_ieeeDoubleFormat_maxFiniteMagnitude⟩
-
 private theorem increasingPrecision_two_le_ieeeSingleFormat_maxFiniteMagnitude :
     (2 : ℝ) ≤ FloatingPointFormat.ieeeSingleFormat.maxFiniteMagnitude := by
   rw [FloatingPointFormat.maxFiniteMagnitude, FloatingPointFormat.ieeeSingleFormat,
     FloatingPointFormat.betaR]
   norm_num [zpow_neg]
-
 /-- A concrete local spacing instance for the §1.13 sine example.  At the
 binary32 finite point `x = 1`, the source perturbation `10^-8*sin(2^24*x)` is
 too small to reach either adjacent binary32 endpoint, so finite round-to-even
@@ -482,7 +248,6 @@ theorem increasingPrecisionSinExampleSource_ieeeSingle_roundToEven_one :
       FloatingPointFormat.sourceRoundToEvenEvidence_eq_left_of_realOrderAdjacent_strict_between_left_closer
         hpolicy hadj ⟨hone_lt_s, hs_lt_succ⟩ hleftCloser
     simpa [fmt, s] using hsel
-
 /-- Concrete IEEE-single round-to-even storage of the source input `1/7` in
 the §1.13 sine example.  The stored value is the upper adjacent binary32
 endpoint. -/
@@ -530,7 +295,6 @@ theorem increasingPrecision_ieeeSingle_roundToEven_one_seventh :
     fmt.sourceRoundToEvenEvidence_eq_right_of_realOrderAdjacent_strict_between_right_closer
       hpolicy hadj hstrict hrightCloser
   simpa [x, fmt, hb_value] using hround
-
 /-- Concrete IEEE-double round-to-even storage of the source input `1/7` in
 the §1.13 sine example.  The stored value is the lower adjacent binary64
 endpoint. -/
@@ -579,7 +343,6 @@ theorem increasingPrecision_ieeeDouble_roundToEven_one_seventh :
     fmt.sourceRoundToEvenEvidence_eq_left_of_realOrderAdjacent_strict_between_left_closer
       hpolicy hadj hstrict hleftCloser
   simpa [x, fmt, ha_value] using hround
-
 /-- Exact IEEE-single storage error for the §1.13 sine-example source input
 `x = 1/7`. -/
 theorem increasingPrecision_ieeeSingle_roundToEven_one_seventh_error :
@@ -588,7 +351,6 @@ theorem increasingPrecision_ieeeSingle_roundToEven_one_seventh_error :
       3 / (7 * (2 : ℝ) ^ 26) := by
   rw [increasingPrecision_ieeeSingle_roundToEven_one_seventh]
   norm_num [zpow_neg]
-
 /-- Exact IEEE-double storage error for the §1.13 sine-example source input
 `x = 1/7`. -/
 theorem increasingPrecision_ieeeDouble_roundToEven_one_seventh_error :
@@ -597,7 +359,6 @@ theorem increasingPrecision_ieeeDouble_roundToEven_one_seventh_error :
       -2 / (7 * (2 : ℝ) ^ 55) := by
   rw [increasingPrecision_ieeeDouble_roundToEven_one_seventh]
   norm_num [zpow_neg]
-
 /-- Any dyadic grid value `z/2^t` is separated from `1/7` by at least
 `1/(7*2^t)`.  This is the arithmetic core behind the §1.13 observation that
 coarse binary precision is dominated by the representation of `x = 1/7`. -/
@@ -629,7 +390,6 @@ theorem increasingPrecision_one_seventh_binary_grid_abs_error_ge
     ring
   rw [hrewrite, abs_div, abs_of_pos hden_pos]
   exact div_le_div_of_nonneg_right hnum_abs_real (le_of_lt hden_pos)
-
 /-- For every dyadic grid value with denominator `2^t`, `t <= 20`, the
 representation error for `1/7` is larger than the source sine amplitude
 `10^{-8}`.  This closes the non-enumerative arithmetic part of the §1.13
@@ -650,7 +410,6 @@ theorem increasingPrecision_one_seventh_binary_grid_abs_error_gt_scale_of_t_le_t
       increasingPrecisionSinExampleScale < 1 / (7 * (2 : ℝ) ^ 20) := by
     norm_num [increasingPrecisionSinExampleScale]
   exact lt_of_lt_of_le hscale (hgrid.trans' hlower)
-
 /-- The exact dyadic-amplitude threshold behind the §1.13 `x = 1/7`
 dominance statement: through denominator exponent `t = 23`, the universal
 grid-separation lower bound still exceeds the source sine amplitude `10^{-8}`.
@@ -671,14 +430,6 @@ theorem increasingPrecision_one_seventh_binary_grid_abs_error_gt_scale_of_t_le_t
       increasingPrecisionSinExampleScale < 1 / (7 * (2 : ℝ) ^ 23) := by
     norm_num [increasingPrecisionSinExampleScale]
   exact lt_of_lt_of_le hscale (hgrid.trans' hlower)
-
-/-- At the next dyadic exponent the universal `1/(7*2^t)` lower bound is already
-below the source amplitude.  This records the sharp arithmetic scale behind the
-source phrase "less than about 20". -/
-theorem increasingPrecision_one_seventh_binary_grid_lower_bound_lt_scale_at_twenty_four :
-    1 / (7 * (2 : ℝ) ^ 24) < increasingPrecisionSinExampleScale := by
-  norm_num [increasingPrecisionSinExampleScale]
-
 /-- For every dyadic stored input `z/2^t` with `t <= 20`, the sine perturbation
 in the source example is smaller than the input-representation error for
 `x = 1/7`.  This is the direct formal version of the §1.13 early-precision
@@ -693,7 +444,6 @@ theorem increasingPrecisionSinExampleSource_perturbation_lt_one_seventh_binary_g
       ((z : ℝ) / (2 : ℝ) ^ t))
     (increasingPrecision_one_seventh_binary_grid_abs_error_gt_scale_of_t_le_twenty
       z ht)
-
 /-- The sharper dyadic-threshold version of the source's early-precision
 dominance sentence: for every stored input `z/2^t` through `t = 23`, the sine
 perturbation is smaller than the representation error for `x = 1/7`. -/
@@ -707,7 +457,6 @@ theorem increasingPrecisionSinExampleSource_perturbation_lt_one_seventh_binary_g
       ((z : ℝ) / (2 : ℝ) ^ t))
     (increasingPrecision_one_seventh_binary_grid_abs_error_gt_scale_of_t_le_twenty_three
       z ht)
-
 /-- Concrete IEEE-single round-to-even storage of the source input `2/3`.
 The stored value is the upper adjacent binary32 endpoint. -/
 theorem increasingPrecision_ieeeSingle_roundToEven_two_thirds :
@@ -754,7 +503,6 @@ theorem increasingPrecision_ieeeSingle_roundToEven_two_thirds :
     fmt.sourceRoundToEvenEvidence_eq_right_of_realOrderAdjacent_strict_between_right_closer
       hpolicy hadj hstrict hrightCloser
   simpa [x, fmt, hb_value] using hround
-
 /-- Concrete IEEE-double round-to-even storage of the source input `2/3`.
 The stored value is the lower adjacent binary64 endpoint. -/
 theorem increasingPrecision_ieeeDouble_roundToEven_two_thirds :
@@ -802,7 +550,6 @@ theorem increasingPrecision_ieeeDouble_roundToEven_two_thirds :
     fmt.sourceRoundToEvenEvidence_eq_left_of_realOrderAdjacent_strict_between_left_closer
       hpolicy hadj hstrict hleftCloser
   simpa [x, fmt, ha_value] using hround
-
 /-- The branch variable produced by the concrete IEEE-single stored `2/3`. -/
 theorem increasingPrecisionExampleY_ieeeSingle_roundToEven_two_thirds :
     increasingPrecisionExampleY
@@ -810,7 +557,6 @@ theorem increasingPrecisionExampleY_ieeeSingle_roundToEven_two_thirds :
       (2 : ℝ) ^ (-24 : ℤ) / 25 := by
   rw [increasingPrecision_ieeeSingle_roundToEven_two_thirds]
   norm_num [increasingPrecisionExampleY, zpow_neg]
-
 /-- The branch variable produced by the concrete IEEE-double stored `2/3`. -/
 theorem increasingPrecisionExampleY_ieeeDouble_roundToEven_two_thirds :
     increasingPrecisionExampleY
@@ -818,7 +564,6 @@ theorem increasingPrecisionExampleY_ieeeDouble_roundToEven_two_thirds :
       (2 : ℝ) ^ (-53 : ℤ) / 25 := by
   rw [increasingPrecision_ieeeDouble_roundToEven_two_thirds]
   norm_num [increasingPrecisionExampleY, zpow_neg]
-
 private theorem increasingPrecision_ieeeSingle_exp_branch_y_finiteNormalRange :
     FloatingPointFormat.ieeeSingleFormat.finiteNormalRange
       (Real.exp ((2 : ℝ) ^ (-24 : ℤ) / 25)) := by
@@ -858,7 +603,6 @@ private theorem increasingPrecision_ieeeSingle_exp_branch_y_finiteNormalRange :
           FloatingPointFormat.ieeeSingleFormat, FloatingPointFormat.betaR]
         norm_num [zpow_neg] :
           (2 : ℝ) ≤ FloatingPointFormat.ieeeSingleFormat.maxFiniteMagnitude)
-
 private theorem increasingPrecision_ieeeDouble_exp_branch_y_finiteNormalRange :
     FloatingPointFormat.ieeeDoubleFormat.finiteNormalRange
       (Real.exp ((2 : ℝ) ^ (-53 : ℤ) / 25)) := by
@@ -921,7 +665,6 @@ private theorem increasingPrecision_ieeeDouble_exp_branch_y_finiteNormalRange :
           norm_num
         exact hsmall.trans hprod :
           (2 : ℝ) ≤ FloatingPointFormat.ieeeDoubleFormat.maxFiniteMagnitude)
-
 private theorem increasingPrecision_exp_single_branch_y_lt_half_ulp :
     Real.exp ((2 : ℝ) ^ (-24 : ℤ) / 25) < 1 + (2 : ℝ) ^ (-24 : ℤ) := by
   let y : ℝ := (2 : ℝ) ^ (-24 : ℤ) / 25
@@ -940,7 +683,6 @@ private theorem increasingPrecision_exp_single_branch_y_lt_half_ulp :
   have hlt : Real.exp y < 1 + (2 : ℝ) ^ (-24 : ℤ) := by
     linarith
   simpa [y] using hlt
-
 private theorem increasingPrecision_exp_double_branch_y_lt_half_ulp :
     Real.exp ((2 : ℝ) ^ (-53 : ℤ) / 25) < 1 + (2 : ℝ) ^ (-53 : ℤ) := by
   let y : ℝ := (2 : ℝ) ^ (-53 : ℤ) / 25
@@ -959,7 +701,6 @@ private theorem increasingPrecision_exp_double_branch_y_lt_half_ulp :
   have hlt : Real.exp y < 1 + (2 : ℝ) ^ (-53 : ℤ) := by
     linarith
   simpa [y] using hlt
-
 /-- The correctly rounded IEEE-single finite exponential of the concrete
 stored-input branch variable is `1`. -/
 theorem increasingPrecision_ieeeSingle_roundToEven_exp_branch_y_eq_one :
@@ -1023,7 +764,6 @@ theorem increasingPrecision_ieeeSingle_roundToEven_exp_branch_y_eq_one :
     fmt.sourceRoundToEvenEvidence_eq_left_of_realOrderAdjacent_strict_between_left_closer
       hpolicy hadj hstrict hleftCloser
   simpa [x, fmt, ha_value] using hround
-
 /-- The correctly rounded IEEE-double finite exponential of the concrete
 stored-input branch variable is `1`. -/
 theorem increasingPrecision_ieeeDouble_roundToEven_exp_branch_y_eq_one :
@@ -1088,7 +828,6 @@ theorem increasingPrecision_ieeeDouble_roundToEven_exp_branch_y_eq_one :
     fmt.sourceRoundToEvenEvidence_eq_left_of_realOrderAdjacent_strict_between_left_closer
       hpolicy hadj hstrict hleftCloser
   simpa [x, fmt, ha_value] using hround
-
 /-- Concrete correctly rounded IEEE-single/double finite-`exp` instance of the
 §1.13 branch example.  The stored source inputs give branch variables
 `2^-24/25` and `2^-53/25`; correctly rounded finite exponentials of both
@@ -1130,7 +869,6 @@ theorem increasingPrecisionExampleElse_two_precision_failure_of_ieee_roundToEven
   exact increasingPrecisionExampleElse_two_precision_failure_of_expHat_one
     (by norm_num [zpow_neg])
     (by norm_num [zpow_neg])
-
 /-- IEEE-single and IEEE-double finite stored inputs cannot be exactly `2/3`;
 therefore the §1.13 branch example enters the nonzero-`y` path for both stored
 inputs.  Under the still-supplied hypothesis that each exponential evaluation
@@ -1159,7 +897,6 @@ theorem increasingPrecisionExampleElse_two_precision_failure_of_ieee_finite_stor
     exact two_thirds_not_ieeeDoubleFiniteSystem (by simpa [hx] using hDouble)
   exact increasingPrecisionExampleElse_two_precision_failure_of_stored_inputs_expHat_one
     hSingle_ne hDouble_ne
-
 /-- Source-shaped finite round-to-even storage instance of the §1.13 branch
 example.  The IEEE-single and IEEE-double round-to-even stored versions of
 `2/3` are finite, hence not exactly `2/3`; if each subsequent exponential
