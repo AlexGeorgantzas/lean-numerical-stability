@@ -31,7 +31,7 @@ from typing import Iterable, Iterator, Sequence, TextIO
 
 FORMAT_ROW = ("format", "2")
 EDGE_KINDS = {"signature", "body"}
-VISIBILITIES = {"public", "private"}
+VISIBILITIES = {"public", "private", "internal"}
 MODULE_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_']*(?:\.[A-Za-z_][A-Za-z0-9_']*)*$")
 SHA256_RE = re.compile(r"^[0-9A-Fa-f]{64}$")
 GZIP_MAGIC = b"\x1f\x8b"
@@ -427,7 +427,7 @@ def candidate_fixture(*, extra_edge: bool = False, bad_owner: bool = False) -> b
         "format\t2",
         "declaration\tDemo.alpha\tCanonical.Exact\tdefinition\tpublic",
         f"declaration\tDemo.beta\t{owner}\ttheorem\tprivate",
-        "declaration\tExternal.gamma\tExternal.Library\ttheorem\tpublic",
+        "declaration\tExternal.gamma\tExternal.Library\ttheorem\tinternal",
         "edge\tsignature\tDemo.alpha\tExternal.gamma",
         "edge\tbody\tDemo.alpha\tDemo.beta",
         "edge\tbody\tExternal.gamma\tDemo.beta",
