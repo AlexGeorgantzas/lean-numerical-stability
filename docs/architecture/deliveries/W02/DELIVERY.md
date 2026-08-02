@@ -9,14 +9,15 @@
 | Base checkpoint | `C0002` |
 | Base SHA | `e6ef0107edb873f7a05ad8282df7efdf41a986d3` |
 | Control snapshot | `3a307fc9eb5792109c78a9cc7a9f55f8d1bcefba` |
-| Delivery tip | `PENDING_COMMIT` |
+| Implementation/evidence commit | `8e6c0cc3e125c57898e4bf487e38a3d1834d1f73` |
 | Projection | `P0002`, gzip SHA-256 `EA781015CD00CDC9EC152D71BE9D6F2993148294E8B3EBEF28B56E81C9C002DB` |
 | Final status | **worker delivery ready for integrator; integration acceptance pending** |
 
-This report describes the fully gated, uncommitted W02 worker tree. All
-worker-authorized build, test, projection, replay, and precommit-scope gates have
-completed. The delivery-tip SHA and clean committed-tip check remain
-`PENDING_COMMIT` until the coordinator creates the commit.
+This report describes the fully gated W02 worker implementation committed at
+`8e6c0cc3e125c57898e4bf487e38a3d1834d1f73`. All worker-authorized build, test,
+projection, replay, precommit-scope, and committed-tip gates completed. The branch's
+published delivery-record tip is reported by the remote ref rather than embedded in
+its own content.
 
 ## Scope and result
 
@@ -201,11 +202,13 @@ wires tests and descendants through the frozen shared aggregates.
 | Deterministic no-build graph replay | **passed** — all three candidate artifacts matched |
 | Migration dry run | **passed** — exact counts matched |
 | Precommit scope and diff check | **passed** — 386 paths, unowned/forbidden/shared 0 |
-| Clean committed-tip SHA and scope check | `PENDING_COMMIT` |
+| Clean committed implementation-tip SHA and scope check | **passed** at `8e6c0cc3e125c57898e4bf487e38a3d1834d1f73` — 386 paths, unowned/forbidden/shared 0, clean worktree |
 
-At this report snapshot, all 386 paths pass the precommit contract check with zero
-unowned, forbidden, or shared paths, and the diff check passes. Only the final tip SHA
-and clean committed-tree replay remain pending until the delivery commit exists.
+At implementation commit `8e6c0cc3e125c57898e4bf487e38a3d1834d1f73`, all 386
+paths pass the committed contract check with zero unowned, forbidden, or shared
+paths; the worktree is clean, the exact C0002 base is the merge base, and the committed
+diff check passes. The subsequent record-only commit changes this delivery report and
+is rechecked before publication.
 
 ## Integrator boundary
 
