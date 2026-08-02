@@ -47,7 +47,7 @@ rather than moving to a Chapter 1 destination:
 | Declaration | Retained in |
 | --- | --- |
 | `expm1Algorithm2_exp_sub_one_abs_le_of_abs_x_le` | `Analysis.CancellationOfRoundingErrors` |
-| `increasingPrecisionExampleElse_two_precision_failure_of_ieee_fin…` | `Analysis.IncreasingPrecision` |
+| `increasingPrecisionExampleElse_two_precision_failure_of_ieee_finite_stored_inputs_expHat_one` | `Analysis.IncreasingPrecision` |
 | `increasingPrecision_one_seventh_binary_grid_abs_error_ge` | `Analysis.IncreasingPrecision` |
 
 Retention is inside the projection contract, not a workaround of it: `P0001` lists
