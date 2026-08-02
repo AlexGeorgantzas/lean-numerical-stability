@@ -14,6 +14,7 @@ import NumStability.Source.Higham.Chapter09.Section06
 import NumStability.Source.Higham.Chapter09.Section08
 import NumStability.Source.Higham.Chapter09.Section10
 import NumStability.Source.Higham.Chapter09.Section11
+import NumStability.Source.Higham.Chapter08.Section03.TriangularSystems.InverseBoundsPrelude
 
 /-!
 # Corollary 14.7 — Row Diagonally Dominant Gauss–Jordan Elimination Stability

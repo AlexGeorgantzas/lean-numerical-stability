@@ -7,7 +7,8 @@ import Mathlib.Data.Real.Sqrt
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
-import NumStability.Algorithms.TriangularArbitraryOrder
+import NumStability.Algorithms.Summation.Tree.ArbitraryOrderError.PivotNormalized
+import NumStability.Source.Higham.Chapter08.Section03.TriangularSystems.ArbitraryOrder
 
 namespace NumStability
 

@@ -2,8 +2,8 @@
 --
 -- Problem-specific theorem surface for Higham Chapter 2, Problem 2.25.
 
-import NumStability.Analysis.CramersRule
-import NumStability.Analysis.FusedMultiplyAdd
+import NumStability.Algorithms.LinearSystems.CramersRule.Core
+import NumStability.FloatingPoint.FusedMultiplyAdd.Core
 
 namespace NumStability
 

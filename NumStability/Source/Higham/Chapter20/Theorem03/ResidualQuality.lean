@@ -4,7 +4,7 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
-import NumStability.Analysis.HighamChapter7
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.Part06
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixNorms.Basic
 import NumStability.Analysis.Perturbation.LeastSquares.Basic

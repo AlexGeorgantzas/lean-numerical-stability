@@ -2,7 +2,7 @@ import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.FloatingPoint.Model
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.ScalarDefinitions
 import NumStability.Analysis.Summation.ErrorBounds
 import NumStability.Analysis.Summation.Signs
 import NumStability.Algorithms.Summation.Compensated.Alternative.Core

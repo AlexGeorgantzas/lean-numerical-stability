@@ -1,5 +1,7 @@
 import Mathlib.Data.Real.Basic
-import NumStability.Analysis.HighamChapter7
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem10Bauer.Part01
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.Part01
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.Part06
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixNorms.Basic
 import NumStability.Analysis.MatrixSpectral

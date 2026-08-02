@@ -1,5 +1,8 @@
 import Mathlib.Algebra.BigOperators.Fin
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.ScalarDefinitions
+import NumStability.Analysis.FloatingPointArithmetic.ErrorModels.Additive
+import NumStability.Analysis.FloatingPointArithmetic.ErrorModels.NoGuardBasic
+import NumStability.Analysis.FloatingPointArithmetic.ErrorModels.NoGuardModel
 import NumStability.Algorithms.Summation.Compensated.Kahan.Core
 
 namespace NumStability

@@ -1,3 +1,4 @@
+import NumStability.Algorithms.Summation.Tree.ArbitraryOrderError.All
 import NumStability.Algorithms.Summation.Tree.Balanced
 import NumStability.Algorithms.Summation.Tree.Chain
 import NumStability.Algorithms.Summation.Tree.Core

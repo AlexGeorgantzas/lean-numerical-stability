@@ -525,8 +525,8 @@ import NumStabilityTest.Reorganization.W01.Canonical.IeeeExceptions
 import NumStabilityTest.Reorganization.W01.Canonical.IeeeOperations
 import NumStabilityTest.Reorganization.W01.Canonical.IeeeValue
 import NumStabilityTest.Reorganization.W01.Canonical.NearestRoundingError
-import NumStabilityTest.Reorganization.W01.Canonical.RoundToEvenLocalError
 import NumStabilityTest.Reorganization.W01.Canonical.Rounding
+import NumStabilityTest.Reorganization.W01.Canonical.RoundToEvenLocalError
 import NumStabilityTest.Reorganization.W01.Canonical.StandardModel
 import NumStabilityTest.Reorganization.W01.Chapter01.CancellationOfRoundingErrors
 import NumStabilityTest.Reorganization.W01.Chapter01.IncreasingPrecision
@@ -539,6 +539,7 @@ import NumStabilityTest.Reorganization.W01.Compatibility.CancellationOfRoundingE
 import NumStabilityTest.Reorganization.W01.Compatibility.FloatingPointArithmetic
 import NumStabilityTest.Reorganization.W01.Compatibility.IncreasingPrecision
 import NumStabilityTest.Reorganization.W01.Compatibility.InstabilityWithoutCancellation
+import NumStabilityTest.Reorganization.W02
 import NumStabilityTest.Worker.Ch09.Layers1To5
 import NumStabilityTest.Worker.Ch09.WaveA
 import NumStabilityTest.Worker.Ch09.WaveB

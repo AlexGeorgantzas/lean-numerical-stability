@@ -8,7 +8,7 @@ Authors: QED
 import NumStability.Source.Higham.Chapter19.Sensitivity
 import NumStability.Analysis.MatrixSpectral
 import NumStability.Analysis.SingularValues.Realification
-import NumStability.Analysis.HighamChapter7
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.Part01
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Cotangent
 
 namespace NumStability

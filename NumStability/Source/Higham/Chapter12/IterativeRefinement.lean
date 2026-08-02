@@ -6,7 +6,7 @@
 -- used in the book's Appendix A solution.
 
 import Mathlib.Tactic
-import NumStability.Algorithms.IterativeRefinement
+import NumStability.Source.Higham.Chapter12.IterativeRefinement.All
 
 namespace NumStability
 

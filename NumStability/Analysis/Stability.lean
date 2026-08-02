@@ -5,7 +5,7 @@ import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.Linarith
 import NumStability.FloatingPoint.Model
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.Componentwise
 
 namespace NumStability
 

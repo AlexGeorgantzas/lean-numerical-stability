@@ -7,7 +7,7 @@ Authors: QED
 -/
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Algorithms.IterativeRefinement
+import NumStability.Algorithms.LinearSystems.IterativeRefinement.Core
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.Calculus.ImplicitContDiff
 import Mathlib.Analysis.Normed.Operator.NNNorm

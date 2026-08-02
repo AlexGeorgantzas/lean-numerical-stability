@@ -1,6 +1,6 @@
 import NumStability.Algorithms.LinearSystems.SymmetricIndefinite.BlockLDLT.BunchTridiagonalGrowthInvariant
 import NumStability.Algorithms.Summation.Tree.Chain
-import NumStability.Algorithms.TriangularArbitraryOrder
+import NumStability.Source.Higham.Chapter08.Section03.TriangularSystems.ArbitraryOrder
 import NumStability.Source.Higham.Chapter11.BlockLDLTBunchTridiagonal
 import NumStability.Source.Higham.Chapter11.BlockLDLTMixedPivot
 import NumStability.Source.Higham.Chapter11.BlockLDLTSolveBackward

@@ -7,7 +7,7 @@ Authors: QED
 -/
 import NumStability.Algorithms.TestMatrices.Higham28Exact
 import NumStability.Algorithms.TestMatrices.Higham28Stewart
-import NumStability.Analysis.HighamChapter7
+import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
 import Mathlib.Probability.Distributions.Gaussian.Real
 import Mathlib.MeasureTheory.Constructions.Pi
 import Mathlib.MeasureTheory.Integral.Bochner.Basic

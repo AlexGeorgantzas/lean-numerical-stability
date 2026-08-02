@@ -1,4 +1,4 @@
-import NumStability.Analysis.FusedMultiplyAdd
+import NumStability.FloatingPoint.FusedMultiplyAdd.Core
 
 namespace NumStability
 

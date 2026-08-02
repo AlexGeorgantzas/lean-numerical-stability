@@ -3,6 +3,7 @@ import NumStability.Source.Higham.Chapter06.BlockAntidiagonalNorm
 import NumStability.Source.Higham.Chapter06.Equation02
 import NumStability.Source.Higham.Chapter06.Lemma06
 import NumStability.Source.Higham.Chapter06.Norms
+import NumStability.Source.Higham.Chapter06.Theorem05.DistanceToSingularity.All
 
 /-!
 # Higham Chapter 6 source correspondence

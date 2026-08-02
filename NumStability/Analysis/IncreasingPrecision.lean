@@ -3,7 +3,7 @@ import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
 import NumStability.Analysis.BeneficialRounding
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.ScalarDefinitions
 import NumStability.Source.Higham.Chapter01.FloatingPointArithmetic.IncreasingPrecision
 
 /-!

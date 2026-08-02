@@ -1,5 +1,5 @@
 import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
-import NumStability.Analysis.HighamChapter7
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem09Linearized
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.SingularValues.Basic
 import NumStability.Analysis.SingularValues.Realification

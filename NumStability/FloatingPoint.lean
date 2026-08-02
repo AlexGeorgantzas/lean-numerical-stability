@@ -1,3 +1,4 @@
+import NumStability.FloatingPoint.FusedMultiplyAdd.All
 import NumStability.FloatingPoint.IEEE
 import NumStability.FloatingPoint.Model
 import NumStability.FloatingPoint.OperationLaws

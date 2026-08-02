@@ -1,5 +1,4 @@
 import Mathlib.Data.Real.Basic
-import NumStability.Analysis.HighamChapter7
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixSpectral
 import NumStability.Analysis.Perturbation.LeastSquares.Basic

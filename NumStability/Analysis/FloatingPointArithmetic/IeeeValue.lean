@@ -2,7 +2,6 @@ import Mathlib.Data.Nat.Digits.Lemmas
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Ring
-import NumStability.Analysis.Error
 
 namespace NumStability
 

@@ -5,7 +5,7 @@ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.Underdetermined.UnderdeterminedSolve
-import NumStability.Analysis.HighamChapter7
+import NumStability.Analysis.Conditioning.LinearSystems.InversePerturbation
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model

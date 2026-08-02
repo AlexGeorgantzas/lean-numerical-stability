@@ -1,4 +1,5 @@
 import NumStability.Algorithms.LinearSystems.LU.BlockLU
+import NumStability.Algorithms.LinearSystems.LU.Doolittle.All
 
 /-!
 # LU algorithms

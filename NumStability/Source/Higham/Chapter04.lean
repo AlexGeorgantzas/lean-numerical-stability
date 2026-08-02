@@ -1,3 +1,5 @@
+import NumStability.Source.Higham.Chapter04.Algorithm03.Priest.All
+import NumStability.Source.Higham.Chapter04.Equation10
 import NumStability.Source.Higham.Chapter04.Problem03
 import NumStability.Source.Higham.Chapter04.Problem04
 import NumStability.Source.Higham.Chapter04.Problem10

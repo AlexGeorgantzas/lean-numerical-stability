@@ -8,7 +8,7 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Positivity
 import NumStability.Analysis.Accumulation
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.ScalarDefinitions
 import NumStability.Analysis.Rounding
 import NumStability.Source.Higham.Chapter01.FloatingPointArithmetic.CancellationOfRoundingErrors
 

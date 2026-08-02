@@ -15,7 +15,7 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Analysis.HighamChapter7
+import NumStability.Analysis.Conditioning.LinearSystems.SubordinatePerturbation
 import NumStability.Algorithms.MatrixPowers
 
 namespace NumStability

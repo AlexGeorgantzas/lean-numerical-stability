@@ -2,7 +2,7 @@ import Mathlib.Data.Nat.Digits.Lemmas
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Ring
-import NumStability.Analysis.Error
+import NumStability.Analysis.FloatingPointArithmetic.ErrorModels.AdditiveProperties
 import NumStability.Analysis.FloatingPointArithmetic.Format
 import NumStability.Analysis.FloatingPointArithmetic.IeeeOperations
 import NumStability.Analysis.FloatingPointArithmetic.IeeeValue

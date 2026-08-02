@@ -6,6 +6,8 @@ import Mathlib.Analysis.Matrix.PosDef
 import NumStability.Analysis.MatrixSpectral
 import NumStability.Algorithms.MatrixInversion
 import NumStability.Algorithms.LU.Doolittle
+import NumStability.Algorithms.LinearSystems.LU.Doolittle.Basic
+import NumStability.Algorithms.LinearSystems.LU.Doolittle.Certificates
 import NumStability.Algorithms.RandNLA.Preconditioning
 
 /-!

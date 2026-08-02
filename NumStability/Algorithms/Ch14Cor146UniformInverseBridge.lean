@@ -5,6 +5,7 @@
 
 import NumStability.Algorithms.Ch14GJEFinalDivisionClosure
 import NumStability.Algorithms.Ch14Corollary147SourceClosure
+import NumStability.Source.Higham.Chapter07.Corollary06.LinearSystemsConditioning.Results
 
 namespace NumStability.Ch14Ext
 

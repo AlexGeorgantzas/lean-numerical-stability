@@ -3,7 +3,7 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import NumStability.FloatingPoint.Model
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.ScalarDefinitions
 import NumStability.Algorithms.Summation.Recursive.Core
 
 namespace NumStability

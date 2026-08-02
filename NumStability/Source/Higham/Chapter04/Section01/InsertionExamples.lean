@@ -7,7 +7,7 @@ import Mathlib.Tactic.Ring
 import NumStability.Algorithms.Summation.Pairwise.Core
 import NumStability.Algorithms.Summation.Recursive.Core
 import NumStability.Algorithms.Summation.Tree.Balanced
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.ScalarDefinitions
 import NumStability.Analysis.Summation.Signs
 
 namespace NumStability

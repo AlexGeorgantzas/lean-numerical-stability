@@ -4,7 +4,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Tactic.Linarith
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.ScalarDefinitions
 import NumStability.FloatingPoint.Model
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.Summation.ErrorBounds

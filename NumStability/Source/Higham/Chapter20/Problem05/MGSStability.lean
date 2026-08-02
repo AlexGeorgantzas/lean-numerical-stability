@@ -1,4 +1,4 @@
-import NumStability.Algorithms.HighamChapter8
+import NumStability.Source.Higham.Chapter08.Section01.BackwardErrorAnalysis.Core
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.MGS
 import NumStability.Algorithms.LinearSystems.QR.GramSchmidt

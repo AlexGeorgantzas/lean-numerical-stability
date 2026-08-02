@@ -13,7 +13,7 @@ import NumStability.Algorithms.OuterProduct
 import NumStability.Analysis.CStarMatrixBridge
 import NumStability.Analysis.CStarMatrixExpectation
 import NumStability.Analysis.CStarMatrixTrace
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.ScalarDefinitions
 import NumStability.Analysis.FiniteProbability
 import NumStability.Analysis.FloatingPointArithmetic.ExactSubtraction
 import NumStability.Analysis.FloatingPointArithmetic.Format
@@ -25,7 +25,6 @@ import NumStability.Analysis.MatrixSpectral
 import NumStability.Analysis.OperatorLog
 import NumStability.Analysis.PerturbationTheory
 import NumStability.Analysis.Rounding
-import NumStability.Analysis.RoundingProductBounds
 import NumStability.Analysis.Stability
 import NumStability.Analysis.SubtractionFold
 import NumStability.Analysis.Summation.ErrorBounds

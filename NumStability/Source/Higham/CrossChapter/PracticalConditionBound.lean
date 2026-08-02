@@ -1,4 +1,4 @@
-import NumStability.Analysis.HighamChapter7
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.ComputedResidual
 import NumStability.Algorithms.CondEstimation
 
 namespace NumStability

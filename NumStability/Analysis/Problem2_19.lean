@@ -2,7 +2,7 @@
 --
 -- Problem-specific theorem surface for Higham Chapter 2, Problem 2.19.
 
-import NumStability.Analysis.Midpoint
+import NumStability.Analysis.FloatingPointArithmetic.MidpointRounding.DecimalTieExamples
 
 namespace NumStability
 

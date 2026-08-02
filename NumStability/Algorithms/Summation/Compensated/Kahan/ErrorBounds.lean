@@ -2,7 +2,7 @@
 
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.ScalarDefinitions
 import NumStability.Analysis.Summation.ErrorBounds
 import NumStability.Algorithms.Summation.Compensated.Kahan.Coefficients.Affine
 import NumStability.Algorithms.Summation.Compensated.Kahan.Coefficients.Coupled

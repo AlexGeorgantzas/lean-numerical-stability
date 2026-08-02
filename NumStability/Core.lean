@@ -1,5 +1,6 @@
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.All
 import NumStability.Analysis.FirstOrderFramework
+import NumStability.Analysis.FloatingPointArithmetic.ErrorModels.All
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.Stability
 import NumStability.FloatingPoint.Model

@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 See LICENSES/Apache-2.0.txt.
 Authors: QED
 -/
-import NumStability.Algorithms.IterativeRefinement
+import NumStability.Algorithms.LinearSystems.IterativeRefinement.Core
 import Mathlib.Analysis.SpecificLimits.Normed
 
 namespace NumStability

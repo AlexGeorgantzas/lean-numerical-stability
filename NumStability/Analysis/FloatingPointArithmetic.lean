@@ -2,18 +2,23 @@ import Mathlib.Data.Nat.Digits.Lemmas
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Ring
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.All
+import NumStability.Analysis.FloatingPointArithmetic.ErrorModels.All
 import NumStability.Analysis.FloatingPointArithmetic.ExactSubtraction
 import NumStability.Analysis.FloatingPointArithmetic.Format
 import NumStability.Analysis.FloatingPointArithmetic.IeeeExceptions
 import NumStability.Analysis.FloatingPointArithmetic.IeeeOperations
 import NumStability.Analysis.FloatingPointArithmetic.IeeeValue
 import NumStability.Analysis.FloatingPointArithmetic.NearestRoundingError
-import NumStability.Analysis.FloatingPointArithmetic.RoundToEvenLocalError
 import NumStability.Analysis.FloatingPointArithmetic.Rounding
+import NumStability.Analysis.FloatingPointArithmetic.RoundToEvenLocalError
 import NumStability.Analysis.FloatingPointArithmetic.StandardModel
+import NumStability.Source.Higham.Chapter01.Problem01.RelativeError.All
+import NumStability.Source.Higham.Chapter01.Section03.ErrorSources.All
+import NumStability.Source.Higham.Chapter01.Section07.Cancellation.All
 import NumStability.Source.Higham.Chapter02.FloatingPointArithmetic.AdditiveUnderflowModel
 import NumStability.Source.Higham.Chapter02.FloatingPointArithmetic.Environment
+import NumStability.Source.Higham.Chapter02.Section04.NoGuardModel.All
 
 /-!
 # Floating point arithmetic (compatibility module)

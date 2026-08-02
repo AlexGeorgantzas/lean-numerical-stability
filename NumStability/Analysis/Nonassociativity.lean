@@ -2,7 +2,10 @@
 --
 -- Concrete finite nonassociativity examples for Higham Chapter 2, §2.9.
 
-import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Analysis.FloatingPointArithmetic.Format
+import NumStability.Analysis.FloatingPointArithmetic.NearestRoundingError
+import NumStability.Analysis.FloatingPointArithmetic.RoundToEvenLocalError
+import NumStability.Analysis.FloatingPointArithmetic.Rounding
 
 namespace NumStability
 

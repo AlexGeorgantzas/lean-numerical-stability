@@ -1,7 +1,9 @@
 import NumStability.Source.Higham.Chapter01
 import NumStability.Source.Higham.Chapter02
+import NumStability.Source.Higham.Chapter03
 import NumStability.Source.Higham.Chapter04
 import NumStability.Source.Higham.Chapter06
+import NumStability.Source.Higham.Chapter07
 import NumStability.Source.Higham.Chapter08
 import NumStability.Source.Higham.Chapter09.CompletePivotSharpClosure
 import NumStability.Source.Higham.Chapter09.ComplexClosure

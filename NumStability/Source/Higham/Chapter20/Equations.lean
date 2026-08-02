@@ -1,7 +1,7 @@
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.Cholesky.CholeskySpec
-import NumStability.Algorithms.IterativeRefinement
+import NumStability.Algorithms.LinearSystems.IterativeRefinement.Core
 import NumStability.Algorithms.LinearSystems.LeastSquares.AugmentedSystem
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution

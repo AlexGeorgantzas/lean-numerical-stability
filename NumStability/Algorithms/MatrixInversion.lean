@@ -20,7 +20,7 @@ import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
 import NumStability.FloatingPoint.Model
 import NumStability.Analysis.Rounding
-import NumStability.Analysis.RoundingProductBounds
+import NumStability.Analysis.Error.RoundingProducts.Core
 import NumStability.Analysis.ForwardError
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Algorithms.MatVec

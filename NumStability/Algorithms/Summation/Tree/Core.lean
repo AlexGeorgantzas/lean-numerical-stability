@@ -7,7 +7,7 @@ import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.FloatingPoint.Model
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.ScalarDefinitions
 import NumStability.Analysis.FloatingPointArithmetic.StandardModel
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.StatisticalRounding

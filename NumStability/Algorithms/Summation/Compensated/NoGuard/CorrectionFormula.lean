@@ -1,4 +1,6 @@
-import NumStability.Analysis.Error
+import NumStability.Analysis.FloatingPointArithmetic.ErrorModels.Additive
+import NumStability.Analysis.FloatingPointArithmetic.ErrorModels.NoGuardBasic
+import NumStability.Analysis.FloatingPointArithmetic.ErrorModels.NoGuardModel
 import NumStability.Algorithms.Summation.Compensated.CorrectionFormula
 
 namespace NumStability

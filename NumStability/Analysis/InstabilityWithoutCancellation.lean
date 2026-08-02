@@ -5,7 +5,6 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LU.GaussianElimination
-import NumStability.Analysis.Error
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Source.Higham.Chapter01.FloatingPointArithmetic.InstabilityWithoutCancellation
 

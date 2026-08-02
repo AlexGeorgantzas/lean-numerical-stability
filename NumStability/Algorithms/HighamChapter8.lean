@@ -8,9 +8,13 @@ import NumStability.Algorithms.LinearSystems.Triangular
 import NumStability.Algorithms.MMatrix
 import NumStability.Algorithms.MatMul
 import NumStability.Algorithms.TestMatrices.UpperTriangularStress
-import NumStability.Algorithms.TriangularArbitraryOrder
-import NumStability.Algorithms.TriangularNoGuard
-import NumStability.Analysis.HighamChapter7
+import NumStability.Source.Higham.Chapter08.Section03.TriangularSystems.ArbitraryOrder
+import NumStability.Source.Higham.Chapter08.Equation15.GlobalEnvelopeCounterexample.All
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.ConditionNumbers
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.ForwardErrorKernels
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem05
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem09Exact
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem04
 import NumStability.Source.Higham.Chapter08.Equation14.FanInExecutor.Executor
 import NumStability.Source.Higham.Chapter08.Lemma08.CorrectedCondition.RowDominance
 import NumStability.Source.Higham.Chapter08.Problem01.NoGuardSubstitution.Aliases

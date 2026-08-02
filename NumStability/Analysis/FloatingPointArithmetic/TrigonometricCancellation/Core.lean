@@ -6,7 +6,6 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
 import NumStability.Analysis.Error.Measures.ScalarDefinitions
-import NumStability.Analysis.FloatingPointArithmetic
 import NumStability.Analysis.FloatingPointArithmetic.Format
 import NumStability.Analysis.FloatingPointArithmetic.NearestRoundingError
 

@@ -22,7 +22,7 @@ IMPORT-ONLY: reuses `higham8_8_rowDiagDominantUpper`,
 triangular-inverse machinery (`inv_upper_tri`, `inv_diag_entry`,
 `unitUpperTri_inv_entry_le_one_of_row_sum_le_one`, TriangularForwardBound).
 -/
-import NumStability.Algorithms.HighamChapter8
+import NumStability.Source.Higham.Chapter08.Lemma08.CorrectedCondition.RowDominance
 
 namespace NumStability
 

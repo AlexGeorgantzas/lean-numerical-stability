@@ -2,7 +2,7 @@
 
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.ScalarDefinitions
 import NumStability.Analysis.Summation.ErrorBounds
 
 namespace NumStability

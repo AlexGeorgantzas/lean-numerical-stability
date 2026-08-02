@@ -4,7 +4,7 @@
 
 import NumStability.Analysis.Accumulation
 import NumStability.Analysis.Nonassociativity
-import NumStability.Analysis.RoundingProductBounds
+import NumStability.Analysis.Error.RoundingProducts.Core
 import Mathlib.Analysis.Real.Pi.Bounds
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Analysis.SpecialFunctions.Pow.Real

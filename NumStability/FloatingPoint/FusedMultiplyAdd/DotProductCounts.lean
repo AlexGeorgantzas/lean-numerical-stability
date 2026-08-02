@@ -1,4 +1,3 @@
-import NumStability.Analysis.FloatingPointArithmetic
 import NumStability.Analysis.FloatingPointArithmetic.Format
 import NumStability.Analysis.FloatingPointArithmetic.NearestRoundingError
 import NumStability.FloatingPoint.FusedMultiplyAdd.Core

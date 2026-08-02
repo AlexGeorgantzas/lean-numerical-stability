@@ -12,10 +12,9 @@ import Mathlib.LinearAlgebra.Matrix.Charpoly.Coeff
 import Mathlib.LinearAlgebra.Matrix.SchurComplement
 import Mathlib.Order.Interval.Finset.Fin
 import Mathlib.Order.Interval.Finset.Nat
-import NumStability.Algorithms.HighamChapter8
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.BlockMatrices
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.PositiveDefinite
-import NumStability.Algorithms.LU.Doolittle
+import NumStability.Algorithms.LinearSystems.LU.Doolittle.RoundedEntries
 import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LU.GrowthFactor
 import NumStability.Algorithms.LU.LUSolve

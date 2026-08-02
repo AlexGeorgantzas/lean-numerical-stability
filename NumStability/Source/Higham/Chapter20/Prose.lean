@@ -1,5 +1,7 @@
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
-import NumStability.Analysis.HighamChapter7
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.Part01
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.Part02
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.Part04
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixNorms.Basic
 import NumStability.Analysis.Perturbation.LeastSquares.Basic

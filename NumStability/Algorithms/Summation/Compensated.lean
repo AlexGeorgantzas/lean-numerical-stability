@@ -3,7 +3,9 @@ import NumStability.Algorithms.Summation.Compensated.CorrectionFormula
 import NumStability.Algorithms.Summation.Compensated.FastTwoSum
 import NumStability.Algorithms.Summation.Compensated.FiniteFormat
 import NumStability.Algorithms.Summation.Compensated.Kahan
+import NumStability.Algorithms.Summation.Compensated.Neumaier.All
 import NumStability.Algorithms.Summation.Compensated.NoGuard
+import NumStability.Algorithms.Summation.Compensated.Priest.All
 import NumStability.Source.Higham.Chapter04.Algorithm02.InitializationModelLimitations
 import NumStability.Source.Higham.Chapter04.Equation07.AbstractModelCounterexample
 import NumStability.Source.Higham.Chapter04.Equation07.NoGuardCounterexample

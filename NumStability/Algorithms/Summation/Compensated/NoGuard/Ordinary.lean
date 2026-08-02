@@ -1,4 +1,4 @@
-import NumStability.Analysis.Error
+import NumStability.Analysis.FloatingPointArithmetic.ErrorModels.NoGuardModel
 import NumStability.Algorithms.Summation.Compensated.Kahan.Core
 
 namespace NumStability

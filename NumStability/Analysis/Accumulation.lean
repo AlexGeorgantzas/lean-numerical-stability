@@ -10,7 +10,7 @@ import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Topology.Basic
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.ScalarWitnesses
 import NumStability.Analysis.FloatingPointArithmetic.Format
 import NumStability.Analysis.FloatingPointArithmetic.NearestRoundingError
 import NumStability.Analysis.Rounding

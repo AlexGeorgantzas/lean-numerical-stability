@@ -98,11 +98,9 @@ import NumStability.Algorithms.HighamChapter15ConvergenceProse
 import NumStability.Algorithms.HighamChapter15RectTermination
 import NumStability.Algorithms.HighamChapter5ComplexAlgorithm51
 import NumStability.Algorithms.HighamChapter8
-import NumStability.Algorithms.HighamChapter8FanInClosure
 import NumStability.Algorithms.HighamChapters1To9SourceClosure
 import NumStability.Algorithms.HighamLemma88Entrywise
 import NumStability.Algorithms.Horner
-import NumStability.Algorithms.IterativeRefinement
 import NumStability.Algorithms.KahanAbsolute
 import NumStability.Algorithms.LinearSystems
 import NumStability.Algorithms.LinearSystems.LeastSquares
@@ -166,7 +164,6 @@ import NumStability.Algorithms.PNormPowerMethodGeneralP
 import NumStability.Algorithms.PNormPowerMethodRect
 import NumStability.Algorithms.PriestAccuracy
 import NumStability.Algorithms.PriestDefectBounded
-import NumStability.Algorithms.PriestFiniteFormat
 import NumStability.Algorithms.Quadrature
 import NumStability.Algorithms.RandNLA
 import NumStability.Algorithms.RankOneUpdate
@@ -238,8 +235,6 @@ import NumStability.Algorithms.TestMatrices.Higham28ToeplitzGeneral
 import NumStability.Algorithms.TestMatrices.Higham28ToeplitzSpectrum
 import NumStability.Algorithms.TestMatrices.UpperTriangularStress
 import NumStability.Algorithms.TreeDotProduct
-import NumStability.Algorithms.TriangularArbitraryOrder
-import NumStability.Algorithms.TriangularNoGuard
 import NumStability.Algorithms.Underdetermined.Higham21
 import NumStability.Algorithms.Underdetermined.UnderdeterminedSolve
 import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec

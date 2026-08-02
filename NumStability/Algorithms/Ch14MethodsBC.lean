@@ -22,6 +22,7 @@ certificates as hypotheses.
 import NumStability.Algorithms.Ch14MethodDUpperCertificate
 import NumStability.Algorithms.DotProduct
 import NumStability.Algorithms.LU.Doolittle
+import NumStability.Algorithms.LinearSystems.LU.Doolittle.Basic
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 
 namespace NumStability.Ch14Ext

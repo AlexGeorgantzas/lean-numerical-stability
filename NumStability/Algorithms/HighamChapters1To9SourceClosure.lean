@@ -6,11 +6,20 @@ See LICENSES/Apache-2.0.txt.
 Authors: QED94 contributors
 -/
 
-import NumStability.Algorithms.PriestFiniteFormat
+import NumStability.Algorithms.Summation.Compensated.Priest.FiniteFormat
+import NumStability.Source.Higham.Chapter04.Algorithm03.Priest.SourceAssumptions
 import NumStability.Algorithms.Summation.Compensated.FiniteFormat
 import NumStability.Analysis.FirstOrder.AsymptoticFamilies
-import NumStability.Analysis.HighamChapter7
-import NumStability.Algorithms.HighamChapter8FanInClosure
+import NumStability.Analysis.Conditioning.LinearSystems.InversePerturbation
+import NumStability.Source.Higham.Chapter07.Corollary06.LinearSystemsConditioning.Basic
+import NumStability.Source.Higham.Chapter07.Corollary06.LinearSystemsConditioning.Results
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem01
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem10Bauer.Part01
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem10Bauer.Part02
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.Part01
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.Part02
+import NumStability.Source.Higham.Chapter08.Section03.TriangularSystems.InverseBoundsUpper
+import NumStability.Source.Higham.Chapter08.Section04.FanInCore.ResidualForwardBounds
 import NumStability.Source.Higham.Chapter09.DoolittleClosure
 import NumStability.Algorithms.HighamChapter10
 import NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivot

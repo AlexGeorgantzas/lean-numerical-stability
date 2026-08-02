@@ -1,6 +1,6 @@
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
-import NumStability.Algorithms.IterativeRefinement
+import NumStability.Algorithms.LinearSystems.IterativeRefinement.Core
 import NumStability.Algorithms.LinearSystems.LeastSquares.AugmentedSystem
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
 import NumStability.Algorithms.LinearSystems.LeastSquares.Refinement

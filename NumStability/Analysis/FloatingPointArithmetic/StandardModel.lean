@@ -2,7 +2,8 @@ import Mathlib.Data.Nat.Digits.Lemmas
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Ring
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.ScalarProperties
+import NumStability.Analysis.Error.Measures.ScalarWitnesses
 import NumStability.Analysis.FloatingPointArithmetic.Format
 import NumStability.Analysis.FloatingPointArithmetic.NearestRoundingError
 import NumStability.Analysis.FloatingPointArithmetic.RoundToEvenLocalError

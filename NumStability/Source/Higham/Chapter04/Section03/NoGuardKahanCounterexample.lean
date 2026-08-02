@@ -1,7 +1,11 @@
 import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.ScalarDefinitions
+import NumStability.Analysis.FloatingPointArithmetic.ErrorModels.Additive
+import NumStability.Analysis.FloatingPointArithmetic.ErrorModels.NoGuardBasic
+import NumStability.Analysis.FloatingPointArithmetic.ErrorModels.NoGuardModel
+import NumStability.Source.Higham.Chapter02.Section04.NoGuardModel.BinaryT3Example
 import NumStability.Algorithms.Summation.Compensated.NoGuard.Ordinary
 
 namespace NumStability

@@ -7,7 +7,7 @@ import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
-import NumStability.Analysis.Error
+import NumStability.Analysis.Error.Measures.ScalarDefinitions
 import NumStability.FloatingPoint.Model
 import NumStability.Algorithms.Summation.Tree.Balanced
 import NumStability.Algorithms.Summation.Tree.Core

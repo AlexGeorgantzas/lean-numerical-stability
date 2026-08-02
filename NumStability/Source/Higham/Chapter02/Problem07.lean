@@ -1,4 +1,4 @@
-import NumStability.Analysis.Midpoint
+import NumStability.Source.Higham.Chapter02.Problem08.MidpointRounding.Counterexample
 import NumStability.FloatingPoint.OperationLaws
 
 namespace NumStability

@@ -1,5 +1,6 @@
 import NumStability.Source.Higham.Chapter04.Equation10.AbstractModel
 import NumStability.Source.Higham.Chapter04.Equation10.FiniteFormat
+import NumStability.Source.Higham.Chapter04.Equation10.Neumaier.All
 
 /-!
 # Higham Chapter 4, equation (4.10)

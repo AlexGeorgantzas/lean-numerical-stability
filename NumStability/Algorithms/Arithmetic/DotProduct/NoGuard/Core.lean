@@ -1,4 +1,5 @@
 import NumStability.Algorithms.DotProduct
+import NumStability.Analysis.FloatingPointArithmetic.ErrorModels.NoGuardModel
 
 /-!
 # No-guard dot-product arithmetic

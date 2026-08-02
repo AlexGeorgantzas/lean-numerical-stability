@@ -1,6 +1,5 @@
 import NumStability.Algorithms.TestMatrices.Higham28PascalTotalPositivity
 import NumStability.Algorithms.TestMatrices.Higham28PascalSpectral
-import NumStability.Analysis.HighamChapter7
 
 namespace NumStability
 

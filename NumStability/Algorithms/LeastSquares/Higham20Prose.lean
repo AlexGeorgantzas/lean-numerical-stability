@@ -1,6 +1,5 @@
 import NumStability.Algorithms.LeastSquares.LSQRSolve
 import NumStability.Algorithms.Underdetermined.Higham21ProjectorNorm
-import NumStability.Analysis.HighamChapter7
 import NumStability.Analysis.Perturbation.LeastSquares.Conditioning
 import NumStability.Source.Higham.Chapter20.Prose
 

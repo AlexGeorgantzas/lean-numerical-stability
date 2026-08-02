@@ -21,7 +21,7 @@ import NumStability.FloatingPoint.Model
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.PerturbationTheory
-import NumStability.Analysis.HighamChapter7
+import NumStability.Analysis.Conditioning.LinearSystems.InversePerturbation
 import NumStability.Algorithms.Cholesky.CholeskySpec
 import NumStability.Algorithms.Cholesky.CholeskySolve
 import NumStability.Source.Higham.Chapter19.Core

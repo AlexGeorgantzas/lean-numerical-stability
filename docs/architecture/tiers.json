@@ -130,6 +130,81 @@
     "NumStability.Source.Higham.Chapter28.Equation02.RatioDiscrepancy": "source",
     "NumStability.Source.Higham.CrossChapter": "aggregate",
     "NumStability.Source.Higham.CrossChapter.LUSolverWeights": "aggregate",
+    "NumStability.Algorithms.AitkenDenominator": "reusable",
+    "NumStability.Algorithms.BlockDotProduct": "reusable",
+    "NumStability.Algorithms.ComplexBackwardError": "reusable",
+    "NumStability.Algorithms.ContinuedFraction": "reusable",
+    "NumStability.Algorithms.DotProduct": "reusable",
+    "NumStability.Algorithms.ExtendedPrecisionDotProduct": "reusable",
+    "NumStability.Algorithms.GridPoints": "reusable",
+    "NumStability.Algorithms.HighamChapter8": "mixed",
+    "NumStability.Algorithms.HighamChapter8FanInClosure": "compatibility",
+    "NumStability.Algorithms.IterativeRefinement": "compatibility",
+    "NumStability.Algorithms.LogExpProduct": "reusable",
+    "NumStability.Algorithms.LU.Doolittle": "reusable",
+    "NumStability.Algorithms.LU.GaussianElimination": "reusable",
+    "NumStability.Algorithms.LU.GrowthFactor": "reusable",
+    "NumStability.Algorithms.LU.LUSolve": "reusable",
+    "NumStability.Algorithms.LU.SpecialMatrices": "reusable",
+    "NumStability.Algorithms.LU.Tridiagonal": "reusable",
+    "NumStability.Algorithms.LU.TridiagonalCond": "reusable",
+    "NumStability.Algorithms.LU.TridiagonalRecurrence": "reusable",
+    "NumStability.Algorithms.MatMul": "reusable",
+    "NumStability.Algorithms.MatMulBackwardError": "reusable",
+    "NumStability.Algorithms.MatSeqProduct": "reusable",
+    "NumStability.Algorithms.MatVec": "reusable",
+    "NumStability.Algorithms.MMatrix": "reusable",
+    "NumStability.Algorithms.NeumaierCompensatedFiniteFormat": "reusable",
+    "NumStability.Algorithms.Norm2": "reusable",
+    "NumStability.Algorithms.OuterProduct": "reusable",
+    "NumStability.Algorithms.PriestAccuracy": "reusable",
+    "NumStability.Algorithms.PriestDefectBounded": "reusable",
+    "NumStability.Algorithms.PriestFiniteFormat": "compatibility",
+    "NumStability.Algorithms.Quadrature": "reusable",
+    "NumStability.Algorithms.RankOneUpdate": "reusable",
+    "NumStability.Algorithms.SquareDifference": "reusable",
+    "NumStability.Algorithms.TreeDotProduct": "reusable",
+    "NumStability.Algorithms.TriangularArbitraryOrder": "compatibility",
+    "NumStability.Algorithms.TriangularNoGuard": "compatibility",
+    "NumStability.Analysis.AlternativeNumberSystems": "reusable",
+    "NumStability.Analysis.BeneficialRounding": "reusable",
+    "NumStability.Analysis.BrentBaseOptimality": "reusable",
+    "NumStability.Analysis.Chopping": "reusable",
+    "NumStability.Analysis.ComplexArithmetic": "reusable",
+    "NumStability.Analysis.ComplexSqrt": "reusable",
+    "NumStability.Analysis.ConditionEstimatorLowerBound": "reusable",
+    "NumStability.Analysis.CramersRule": "compatibility",
+    "NumStability.Analysis.DoubleRounding": "mixed",
+    "NumStability.Analysis.Error": "compatibility",
+    "NumStability.Analysis.FiniteProbability": "reusable",
+    "NumStability.Analysis.FirstOrderFramework": "reusable",
+    "NumStability.Analysis.FusedMultiplyAdd": "compatibility",
+    "NumStability.Analysis.Heron": "reusable",
+    "NumStability.Analysis.HighamChapter7": "mixed",
+    "NumStability.Analysis.HighamChapter7Rectangular": "mixed",
+    "NumStability.Analysis.MatrixConcentration": "reusable",
+    "NumStability.Analysis.MatrixSpectral": "reusable",
+    "NumStability.Analysis.Midpoint": "compatibility",
+    "NumStability.Analysis.Monotonicity": "reusable",
+    "NumStability.Analysis.Nonassociativity": "reusable",
+    "NumStability.Analysis.ProblemDependentStability": "compatibility",
+    "NumStability.Analysis.Quadratic": "reusable",
+    "NumStability.Analysis.RelativePrecision": "reusable",
+    "NumStability.Analysis.RoundingProductBounds": "compatibility",
+    "NumStability.Analysis.SampleVariance": "mixed",
+    "NumStability.Analysis.SemiconvergentBlockFormExists": "reusable",
+    "NumStability.Analysis.SemiconvergentExistenceComplete": "reusable",
+    "NumStability.Analysis.SemiconvergentExistenceFull": "reusable",
+    "NumStability.Analysis.SemiconvergentExistenceGaps": "reusable",
+    "NumStability.Analysis.SemiconvergentLimitGeneral": "reusable",
+    "NumStability.Analysis.SemiconvergentRealSpectrumComplete": "reusable",
+    "NumStability.Analysis.SemiconvergentSpectral": "reusable",
+    "NumStability.Analysis.Stability": "reusable",
+    "NumStability.Analysis.StatisticalRounding": "reusable",
+    "NumStability.Analysis.TieRules": "reusable",
+    "NumStability.Analysis.TrigCancellation": "compatibility",
+    "NumStability.Source.Higham.Chapter03": "aggregate",
+    "NumStability.Source.Higham.Chapter07": "aggregate",
     "NumStability.Algorithms.Arithmetic.DotProduct.NoGuard": "aggregate",
     "NumStability.Algorithms.Arithmetic.DotProduct.NoGuard.Core": "reusable",
     "NumStability.Algorithms.Arithmetic.DotProduct.NoGuard.Tree": "reusable",
@@ -580,6 +655,66 @@
     "NumStability.Analysis.Problem2_7": "compatibility"
   },
   "prefixes": [
+    {
+      "prefix": "NumStability.Algorithms.LinearSystems.CramersRule",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Algorithms.LinearSystems.IterativeRefinement",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Algorithms.LinearSystems.LU.Doolittle",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Algorithms.Summation.Compensated.Neumaier",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Algorithms.Summation.Compensated.Priest",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Algorithms.Summation.Tree.ArbitraryOrderError",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Analysis.Conditioning.LinearSystems",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Analysis.Error.Measures",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Analysis.Error.RoundingProducts",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Analysis.FloatingPointArithmetic.DoubleRounding",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Analysis.FloatingPointArithmetic.ErrorModels",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Analysis.FloatingPointArithmetic.MidpointRounding",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Analysis.FloatingPointArithmetic.TrigonometricCancellation",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Analysis.ProblemDependentStability",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Analysis.Statistics.SampleVariance",
+      "tier": "reusable"
+    },
     {
       "prefix": "NumStability.Source",
       "tier": "source"

@@ -2,7 +2,8 @@
 --
 -- Local tie-rule examples for Higham Chapter 2, §2.9.
 
-import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Analysis.FloatingPointArithmetic.Format
+import NumStability.Analysis.FloatingPointArithmetic.NearestRoundingError
 
 namespace NumStability
 

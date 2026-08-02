@@ -1,4 +1,3 @@
-import NumStability.Algorithms.HighamChapter8
 import NumStability.Algorithms.LeastSquares.LSQRSolve
 import NumStability.Algorithms.QR.Higham19
 import NumStability.Algorithms.QR.Higham19Alg12MGSRepair
