@@ -1,33 +1,27 @@
--- Analysis/Problem2_17.lean
---
--- Problem-specific theorem surface for Higham Chapter 2, Problem 2.17.
-
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
 import NumStability.Analysis.Nonassociativity
 import NumStability.FloatingPoint.Model
+import NumStability.Source.Higham.Chapter02.Section06.Discriminant.StandardModel.Basic
 
-namespace NumStability
+/-!
+# Problem2_17 (compatibility module)
+
+Historical path, retained so existing imports of `NumStability.Analysis.Problem2_17`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
 
 noncomputable section
 
-/-!
-# Higham Chapter 2, Problem 2.17
-
-Problem 2.17 asks whether, while solving `a*x^2 - 2*b*x + c = 0`, the true
-value of `b^2 - a*c` can be nonnegative while the computed value is negative.
-This file gives a small standard-model witness: two products round in opposite
-allowed directions before the final subtraction.
--/
-
-/-- The discriminant-like expression under the square root in
-`a*x^2 - 2*b*x + c = 0`. -/
-def problem2_17_discriminant (a b c : ℝ) : ℝ :=
-  b ^ 2 - a * c
-
-/-- The rounded product/subtraction path for `b^2 - a*c`. -/
-def problem2_17_computedDiscriminant (fp : FPModel) (a b c : ℝ) : ℝ :=
-  fp.fl_sub (fp.fl_mul b b) (fp.fl_mul a c)
+namespace NumStability
 
 private def problem2_17_flMul (x y : ℝ) : ℝ :=
   by
@@ -78,14 +72,6 @@ private def problem2_17_fp : FPModel where
     intro x _hx
     exact ⟨0, by norm_num, by ring⟩
 
-theorem problem2_17_true_discriminant_nonnegative :
-    0 ≤ problem2_17_discriminant 1 1 (9 / 10 : ℝ) := by
-  norm_num [problem2_17_discriminant]
-
-theorem problem2_17_true_discriminant_eq_one_tenth :
-    problem2_17_discriminant 1 1 (9 / 10 : ℝ) = 1 / 10 := by
-  norm_num [problem2_17_discriminant]
-
 theorem problem2_17_computed_discriminant_negative :
     problem2_17_computedDiscriminant problem2_17_fp 1 1 (9 / 10 : ℝ) < 0 := by
   norm_num [problem2_17_computedDiscriminant, problem2_17_fp,
@@ -114,28 +100,6 @@ theorem problem2_17_standard_model_counterexample :
       problem2_17_true_discriminant_nonnegative,
       problem2_17_computed_discriminant_negative⟩
 
-namespace FloatingPointFormat
-
-/-- The coefficient `0.9` used in the Problem 2.17 standard-model witness is a
-finite value of the repository's one-digit decimal format. -/
-theorem problem2_17_decimalOneDigitThreeExponentFormat_finiteSystem_nine_tenths :
-    decimalOneDigitThreeExponentFormat.finiteSystem (9 / 10 : ℝ) := by
-  refine Or.inr (Or.inl ?_)
-  have hrepr :
-      decimalOneDigitThreeExponentFormat.normalizedExponentRepresentation
-        (9 / 10 : ℝ) 0 := by
-    refine ⟨false, 9, ?_, ?_, ?_⟩
-    · norm_num [decimalOneDigitThreeExponentFormat, normalizedMantissa,
-        mantissaInRange, minNormalMantissa]
-    · norm_num [decimalOneDigitThreeExponentFormat, exponentInRange]
-    · norm_num [decimalOneDigitThreeExponentFormat, normalizedValue,
-        signValue, betaR]
-  exact
-    decimalOneDigitThreeExponentFormat.normalizedExponentRepresentation_normalizedSystem
-      hrepr
-
-end FloatingPointFormat
-
 /-- The standard-model Problem 2.17 witness can be chosen with inputs that are
 floating-point values of the concrete one-digit decimal finite format.  The
 rounded operations are still supplied by the abstract `FPModel`; a concrete
@@ -155,6 +119,6 @@ theorem problem2_17_standard_model_counterexample_with_decimal_finite_inputs :
   · exact
       FloatingPointFormat.problem2_17_decimalOneDigitThreeExponentFormat_finiteSystem_nine_tenths
 
-end
-
 end NumStability
+
+end

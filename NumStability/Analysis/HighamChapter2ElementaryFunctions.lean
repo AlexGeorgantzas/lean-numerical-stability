@@ -1,33 +1,29 @@
-import NumStability.Analysis.FloatingPointArithmetic
-import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.Analysis.Real.Pi.Bounds
+import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
+import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Source.Higham.Chapter02.Section10.ArctangentRange.Basic
 
-namespace NumStability
+/-!
+# HighamChapter2ElementaryFunctions (compatibility module)
+
+Historical path, retained so existing imports of `NumStability.Analysis.HighamChapter2ElementaryFunctions`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
 
 open Set MeasureTheory
 open scoped Interval
 
 noncomputable section
 
-/-!
-# Higham Chapter 2: a correctly rounded elementary-function range violation
-
-Higham observes in Section 2.10 that the IEEE-single number nearest to
-`arctan (2^30)` lies just above `pi / 2`.  Thus even a correctly rounded
-implementation need not preserve the mathematical range of `arctan`.
-
-The result below uses the repository's real-valued IEEE-single finite
-round-to-nearest/even selector.  It does not model IEEE exception flags, NaNs,
-infinities, or signed zero.
--/
-
-/-- The IEEE-single value immediately below the exact `arctan (2^30)`. -/
-def higham2ArctanSingleLower : ℝ :=
-  FloatingPointFormat.ieeeSingleFormat.normalizedValue false 13176794 (1 : ℤ)
-
-/-- The IEEE-single value immediately above the exact `arctan (2^30)`. -/
-def higham2ArctanSingleUpper : ℝ :=
-  FloatingPointFormat.ieeeSingleFormat.normalizedValue false 13176795 (1 : ℤ)
+namespace NumStability
 
 private theorem arctan_le_self_of_nonneg {t : ℝ} (ht : 0 ≤ t) :
     Real.arctan t ≤ t := by
@@ -45,29 +41,6 @@ private theorem arctan_le_self_of_nonneg {t : ℝ} (ht : 0 ≤ t) :
       have hden : 1 ≤ 1 + x ^ 2 := by nlinarith [sq_nonneg x]
       simpa using ((inv_le_one₀ (by positivity : (0 : ℝ) < 1 + x ^ 2)).2 hden))
   simpa using hmono
-
-theorem higham2ArctanSingleLower_value :
-    higham2ArctanSingleLower =
-      (13176794 : ℝ) * (2 : ℝ) ^ (-23 : ℤ) := by
-  norm_num [higham2ArctanSingleLower,
-    FloatingPointFormat.ieeeSingleFormat,
-    FloatingPointFormat.normalizedValue,
-    FloatingPointFormat.signValue,
-    FloatingPointFormat.betaR, zpow_neg]
-
-theorem higham2ArctanSingleUpper_value :
-    higham2ArctanSingleUpper =
-      (13176795 : ℝ) * (2 : ℝ) ^ (-23 : ℤ) := by
-  norm_num [higham2ArctanSingleUpper,
-    FloatingPointFormat.ieeeSingleFormat,
-    FloatingPointFormat.normalizedValue,
-    FloatingPointFormat.signValue,
-    FloatingPointFormat.betaR, zpow_neg]
-
-theorem higham2ArctanSingleUpper_gt_pi_div_two :
-    Real.pi / 2 < higham2ArctanSingleUpper := by
-  rw [higham2ArctanSingleUpper_value]
-  nlinarith [Real.pi_lt_d20]
 
 private theorem higham2_arctan_two_pow_thirty_identity :
     Real.arctan ((2 : ℝ) ^ (30 : ℕ)) =
@@ -195,6 +168,6 @@ theorem higham2_arctan_two_pow_thirty_correct_rounding_exceeds_pi_div_two :
   exact ⟨by simpa [fmt, x, b] using hround,
     higham2ArctanSingleUpper_gt_pi_div_two⟩
 
-end
-
 end NumStability
+
+end

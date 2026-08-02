@@ -1,24 +1,26 @@
--- Analysis/Problem2_14.lean
---
--- Problem-specific theorem surface for Higham Chapter 2, Problem 2.14.
-
 import NumStability.Analysis.Problem2_13
+import NumStability.Source.Higham.Chapter02.Problem14.UnitRoundoffProbe.Basic
 
-namespace NumStability
+/-!
+# Problem2_14 (compatibility module)
+
+Historical path, retained so existing imports of `NumStability.Analysis.Problem2_14`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
 
 noncomputable section
 
+namespace NumStability
+
 namespace FloatingPointFormat
-
-/-!
-# Higham Chapter 2, Problem 2.14
-
-Problem 2.14 asks the reader to test Kahan's probe
-`|3 * (4/3 - 1) - 1|`, with every arithmetic operation rounded, as an
-over-estimate of the unit roundoff.  This file records the finite IEEE-double
-round-to-even wrapper trace.  It is intentionally not a claim about every
-hardware environment or the full IEEE exception/special-value layer.
--/
 
 private theorem problem2_14_ieeeDoubleFormat_minNormalMagnitude_le_one :
     ieeeDoubleFormat.minNormalMagnitude ≤ (1 : ℝ) := by
@@ -228,13 +230,6 @@ theorem problem2_14_ieeeDouble_kahan_probe_error :
       (y := 1) hfin)
   simpa [BasicOp.exact, zpow_neg] using hround
 
-/-- Absolute-value form of Kahan's finite IEEE-double Problem 2.14 probe. -/
-def problem2_14_ieeeDoubleKahanEstimate : ℝ :=
-  |ieeeDoubleFormat.finiteRoundToEvenOp BasicOp.sub
-      (ieeeDoubleFormat.finiteRoundToEvenOp BasicOp.mul (3 : ℝ)
-        (ieeeDoubleFormat.finiteRoundToEvenOp BasicOp.sub
-          (ieeeDoubleFormat.finiteRoundToEvenOp BasicOp.div (4 : ℝ) 3) 1)) 1|
-
 theorem problem2_14_ieeeDoubleKahanEstimate_eq_machineEpsilon :
     problem2_14_ieeeDoubleKahanEstimate = (2 : ℝ) ^ (-52 : ℤ) := by
   rw [problem2_14_ieeeDoubleKahanEstimate,
@@ -386,13 +381,6 @@ theorem problem2_14_ieeeSingle_kahan_probe_error :
       (y := 1) hfin)
   simpa [BasicOp.exact, zpow_neg] using hround
 
-/-- Absolute-value form of Kahan's finite IEEE-single Problem 2.14 probe. -/
-def problem2_14_ieeeSingleKahanEstimate : ℝ :=
-  |ieeeSingleFormat.finiteRoundToEvenOp BasicOp.sub
-      (ieeeSingleFormat.finiteRoundToEvenOp BasicOp.mul (3 : ℝ)
-        (ieeeSingleFormat.finiteRoundToEvenOp BasicOp.sub
-          (ieeeSingleFormat.finiteRoundToEvenOp BasicOp.div (4 : ℝ) 3) 1)) 1|
-
 theorem problem2_14_ieeeSingleKahanEstimate_eq_machineEpsilon :
     problem2_14_ieeeSingleKahanEstimate = (2 : ℝ) ^ (-23 : ℤ) := by
   rw [problem2_14_ieeeSingleKahanEstimate,
@@ -407,7 +395,6 @@ theorem problem2_14_ieeeSingleKahanEstimate_eq_two_unitRoundoff :
   norm_num [zpow_neg]
 
 end FloatingPointFormat
+end NumStability
 
 end
-
-end NumStability

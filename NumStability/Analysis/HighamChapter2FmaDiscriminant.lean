@@ -1,56 +1,24 @@
 import NumStability.Analysis.FusedMultiplyAdd
+import NumStability.Source.Higham.Chapter02.Section06.Discriminant.FusedMultiplyAdd.Basic
 
-namespace NumStability
+/-!
+# HighamChapter2FmaDiscriminant (compatibility module)
+
+Historical path, retained so existing imports of `NumStability.Analysis.HighamChapter2FmaDiscriminant`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
 
 noncomputable section
 
-/-!
-# Higham Chapter 2: an FMA discriminant sign counterexample
-
-Section 2.6 contrasts separate correctly rounded products with an FMA
-evaluation of `fl(b^2) - a*c`.  The former preserves nonnegativity when
-`b^2 >= a*c`, whereas the latter can be negative because the FMA sees the
-unrounded second product.  This file supplies a concrete IEEE-single trace.
--/
-
-/-- The binary32 input `1 + 2^-23`. -/
-def higham2FmaDiscriminantInput : ℝ :=
-  FloatingPointFormat.ieeeSingleFormat.normalizedValue false 8388609 (1 : ℤ)
-
-/-- The binary32 value `1 + 2^-22`, immediately below the exact input square. -/
-def higham2FmaDiscriminantRoundedSquare : ℝ :=
-  FloatingPointFormat.ieeeSingleFormat.normalizedValue false 8388610 (1 : ℤ)
-
-/-- The next binary32 value above `higham2FmaDiscriminantRoundedSquare`. -/
-def higham2FmaDiscriminantSquareNext : ℝ :=
-  FloatingPointFormat.ieeeSingleFormat.normalizedValue false 8388611 (1 : ℤ)
-
-theorem higham2FmaDiscriminantInput_value :
-    higham2FmaDiscriminantInput =
-      (8388609 : ℝ) * (2 : ℝ) ^ (-23 : ℤ) := by
-  norm_num [higham2FmaDiscriminantInput,
-    FloatingPointFormat.ieeeSingleFormat,
-    FloatingPointFormat.normalizedValue,
-    FloatingPointFormat.signValue,
-    FloatingPointFormat.betaR, zpow_neg]
-
-theorem higham2FmaDiscriminantRoundedSquare_value :
-    higham2FmaDiscriminantRoundedSquare =
-      (8388610 : ℝ) * (2 : ℝ) ^ (-23 : ℤ) := by
-  norm_num [higham2FmaDiscriminantRoundedSquare,
-    FloatingPointFormat.ieeeSingleFormat,
-    FloatingPointFormat.normalizedValue,
-    FloatingPointFormat.signValue,
-    FloatingPointFormat.betaR, zpow_neg]
-
-theorem higham2FmaDiscriminantSquareNext_value :
-    higham2FmaDiscriminantSquareNext =
-      (8388611 : ℝ) * (2 : ℝ) ^ (-23 : ℤ) := by
-  norm_num [higham2FmaDiscriminantSquareNext,
-    FloatingPointFormat.ieeeSingleFormat,
-    FloatingPointFormat.normalizedValue,
-    FloatingPointFormat.signValue,
-    FloatingPointFormat.betaR, zpow_neg]
+namespace NumStability
 
 private theorem higham2FmaDiscriminantInput_normalizedSystem :
     FloatingPointFormat.ieeeSingleFormat.normalizedSystem
@@ -228,6 +196,6 @@ theorem higham2_fma_discriminant_source_counterexample_ieeeSingle :
     simpa only [higham2FmaDiscriminantFma_value] using
       (neg_lt_zero.mpr (by positivity : 0 < (2 : ℝ) ^ (-46 : ℤ)))⟩
 
-end
-
 end NumStability
+
+end
