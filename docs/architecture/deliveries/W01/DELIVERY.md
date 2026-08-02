@@ -10,6 +10,10 @@
 | Control `origin/main` | `21ae529c005b746e3f979997fa42c46224b6c4ae` (verified) |
 | Projection | `P0001`, gzip SHA-256 `6278CE16…` (verified before use) |
 
+This report describes the worker delivery tip. Integrator-owned semantic
+boundary refinements and shared wiring, if required by the global gates, are
+recorded separately at the acceptance checkpoint.
+
 ## What moved
 
 The four owned modules held 67,081 lines and 3,697 selected declarations in one
