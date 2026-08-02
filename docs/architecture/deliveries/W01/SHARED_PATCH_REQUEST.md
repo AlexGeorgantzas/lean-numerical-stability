@@ -63,10 +63,12 @@ and `InstabilityWithoutCancellation` still retains its separate
 `GaussianElimination`-dependent group. They therefore remain declaration-bearing
 compatibility facades rather than pure import shims.
 
-### Not requested
+### Separate integrator wiring
 
-No change to `docs/architecture/tiers.json`, `layout-exceptions.json`,
-`COMPATIBILITY.md`, any root aggregate (`NumStability/Analysis.lean`,
-`NumStability/Source.lean`, `NumStability.lean`), `NumStabilityTest.lean`, or CI. The
-four compatibility modules keep their original import surface, so every existing
-consumer of the old paths resolves unchanged and no aggregate needs a new member.
+This request is limited to the two import retargets above. W01 is not authorized
+to edit integrator-owned files, but acceptance separately requires the integrator
+to classify the new leaves and four residual facades in `tiers.json`, record the
+declaration-bearing `FloatingPointArithmetic` facade in
+`layout-exceptions.json`, add the Chapter 1 leaves to its aggregate, and wire the
+18 focused tests through `NumStabilityTest.lean`. No compatibility-table entry is
+appropriate because the four historical facades still contain declarations.
