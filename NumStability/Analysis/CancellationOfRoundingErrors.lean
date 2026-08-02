@@ -15,15 +15,13 @@ import NumStability.Source.Higham.Chapter01.FloatingPointArithmetic.Cancellation
 /-!
 # Cancellation of rounding errors (compatibility module)
 
-Import-only module retained so existing imports of
+Compatibility facade retained so existing imports of
 `NumStability.Analysis.CancellationOfRoundingErrors`
-keep resolving. Its declarations moved unchanged to the canonical
-modules imported above: source-neutral floating-point material under
-`NumStability.Analysis.FloatingPointArithmetic`, and Higham Chapter 1
-and Chapter 2 correspondence under the matching `Source.Higham`
-destinations. The module's own original imports are re-stated so that
-consumers reaching an identifier transitively through this path still
-see the same surface.
+keep resolving. Most declarations moved unchanged to the canonical Higham
+Chapter 1 module imported above. Twenty-seven declarations remain here because
+their private identities or dependencies on shared modules require the original
+module boundary. The module's original imports are re-stated so consumers
+reaching identifiers transitively through this path retain the same surface.
 -/
 
 namespace NumStability
