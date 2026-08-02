@@ -22,6 +22,13 @@ import NumStability.Algorithms.LU.TridiagonalRecurrence
 import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
 import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
 
+/-!
+# Conditioning of tridiagonal matrices
+
+Bidiagonal inverse formulas and condition-estimation results for tridiagonal
+matrices, including diagonal-dominance and inverse-structure bounds.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

@@ -1,0 +1,5 @@
+import NumStability.Analysis.CramersRule
+
+#check NumStability.cramer2x2ComputedFromNumerators
+#check NumStability.abs_det_mul_cramer2x2CondVec_inverse_one
+#check NumStability.cramerGeppExampleAccurateVector

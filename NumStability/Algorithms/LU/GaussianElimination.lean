@@ -17,6 +17,13 @@ import NumStability.Analysis.Rounding
 import NumStability.Algorithms.OuterProduct
 import NumStability.Algorithms.MatMul
 
+/-!
+# Gaussian elimination and LU backward error
+
+Specifications for LU factorization and componentwise backward-error results
+for Gaussian elimination, following Higham Section 9.3.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

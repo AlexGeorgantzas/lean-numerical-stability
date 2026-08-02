@@ -1,0 +1,3 @@
+import NumStability.Algorithms.LinearSystems.LU.Doolittle.Certificates
+
+#check NumStability.DoolittleDenseLoopAbsBudgetCertificate

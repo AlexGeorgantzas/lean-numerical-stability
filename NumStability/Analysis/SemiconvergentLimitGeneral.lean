@@ -49,6 +49,13 @@
 import NumStability.Analysis.SemiconvergentExistenceComplete
 import NumStability.Algorithms.MatrixPowersSpectral
 
+/-!
+# General limits of semiconvergent matrix powers
+
+Convergence of matrix powers to the eigenvalue-one projector, both directly
+from orbit convergence and through a spectral-radius bound on the complement.
+-/
+
 namespace NumStability
 
 open scoped BigOperators Topology Matrix

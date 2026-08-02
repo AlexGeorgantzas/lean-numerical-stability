@@ -19,6 +19,13 @@ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 import NumStability.Algorithms.LU.GaussianElimination
 
+/-!
+# Solving linear systems with LU factors
+
+Overall backward-error results obtained by combining an LU factorization with
+floating-point forward and backward substitution.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

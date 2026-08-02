@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem13SparseResidual
+
+#check NumStability.ch7RowSupport

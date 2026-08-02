@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter01.Section10.CramersRule.PrintedComparison
+
+#check NumStability.cramerGeppExampleAccurateVector

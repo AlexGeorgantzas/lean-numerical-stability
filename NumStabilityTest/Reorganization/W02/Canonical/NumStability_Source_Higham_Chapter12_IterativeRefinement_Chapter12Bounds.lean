@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter12.IterativeRefinement.Chapter12Bounds
+
+#check NumStability.correction_componentwise_of_infNorm

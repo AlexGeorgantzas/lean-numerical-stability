@@ -7,6 +7,13 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
 import NumStability.FloatingPoint.Model
 
+/-!
+# Floating-point outer products
+
+Entrywise outer-product computation, forward- and backward-error results, and
+a concrete obstruction to a single global backward perturbation.
+-/
+
 namespace NumStability
 
 /-- Floating-point outer product Â = fl(xyᵀ).

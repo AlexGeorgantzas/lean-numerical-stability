@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter01.Section16.ProblemDependentStability.Table13IeeeSingle
+
+#check NumStability.hessenbergDetExampleFirstMultiplier

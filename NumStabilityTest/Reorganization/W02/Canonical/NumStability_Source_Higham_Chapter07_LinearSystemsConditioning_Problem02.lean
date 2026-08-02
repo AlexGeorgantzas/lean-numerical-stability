@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem02
+
+#check NumStability.problem7_2_infNorm_residual_lower

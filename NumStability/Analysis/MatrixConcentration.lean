@@ -7,6 +7,13 @@ import NumStability.Analysis.FiniteProbability
 import NumStability.Analysis.MatrixSpectral
 import Mathlib.Analysis.SpecialFunctions.Log.Deriv
 
+/-!
+# Finite-dimensional matrix concentration tools
+
+Scalar probability-budget identities and finite trace-exponential estimates
+used to formulate Bernstein-, Bennett-, and Chernoff-style matrix tail bounds.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

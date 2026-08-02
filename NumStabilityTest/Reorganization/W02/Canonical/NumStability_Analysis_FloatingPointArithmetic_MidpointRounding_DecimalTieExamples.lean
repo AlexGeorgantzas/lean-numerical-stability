@@ -1,0 +1,3 @@
+import NumStability.Analysis.FloatingPointArithmetic.MidpointRounding.DecimalTieExamples
+
+#check NumStability.FloatingPointFormat.decimalOneDigitThreeExponentFormat_finiteSystem_one_half

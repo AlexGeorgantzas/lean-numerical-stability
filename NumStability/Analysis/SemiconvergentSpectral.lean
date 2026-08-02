@@ -59,6 +59,13 @@ import Mathlib.Analysis.SpecificLimits.Normed
 import Mathlib.Topology.Algebra.Module.Basic
 import Mathlib.Topology.Order.LiminfLimsup
 
+/-!
+# Spectral constraints imposed by semiconvergence
+
+Eigenvalue-modulus necessity, the semisimple collapse at eigenvalue one, and
+primary-decomposition infrastructure for semiconvergent matrix powers.
+-/
+
 namespace NumStability
 
 open scoped BigOperators Topology

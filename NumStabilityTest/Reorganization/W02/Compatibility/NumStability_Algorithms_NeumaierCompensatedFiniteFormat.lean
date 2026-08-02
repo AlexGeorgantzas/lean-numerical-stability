@@ -1,0 +1,6 @@
+import NumStability.Algorithms.NeumaierCompensatedFiniteFormat
+
+#check NumStability.fl_recursiveResidualCorrectedSum_backward_error_higham410
+#check NumStability.NeumaierFFStepTrace
+#check NumStability.fl_partialSums_localCorrections_abs_le_exactPrefix_add_runningError
+#check NumStability.NeumaierFiniteStepTrace

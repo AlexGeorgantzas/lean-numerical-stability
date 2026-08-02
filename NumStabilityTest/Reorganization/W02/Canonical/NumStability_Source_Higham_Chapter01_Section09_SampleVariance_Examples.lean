@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter01.Section09.SampleVariance.Examples
+
+#check NumStability.prefixCorrectedSumSquares_example_values_10000_10001_10002

@@ -1,0 +1,3 @@
+import NumStability.FloatingPoint.FusedMultiplyAdd.Core
+
+#check NumStability.FloatingPointFormat.finiteRoundToEvenFMA

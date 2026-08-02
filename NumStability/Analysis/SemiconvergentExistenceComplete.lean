@@ -43,6 +43,13 @@ import NumStability.Analysis.SemiconvergentExistenceFull
 import NumStability.Analysis.SemiconvergentBlockFormExists
 import Mathlib.RingTheory.Artinian.Module
 
+/-!
+# Coordinate construction for semiconvergent block forms
+
+An adapted-basis realization of the real primary decomposition, together with
+the sharp obstruction to infinity-norm contraction of complex spectral blocks.
+-/
+
 namespace NumStability
 
 open scoped BigOperators Topology Matrix

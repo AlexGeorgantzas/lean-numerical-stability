@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.ComputedResidual
+
+#check NumStability.ch7ComputedResidualImage

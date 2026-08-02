@@ -1,0 +1,3 @@
+import NumStability.Algorithms.Summation.Compensated.Priest.FiniteFormat
+
+#check NumStability.PriestFiniteAllOperations

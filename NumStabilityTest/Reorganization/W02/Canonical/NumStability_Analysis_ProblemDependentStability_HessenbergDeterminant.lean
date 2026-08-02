@@ -1,0 +1,3 @@
+import NumStability.Analysis.ProblemDependentStability.HessenbergDeterminant
+
+#check NumStability.HessenbergExactDiagTraceOnEntrywisePerturbation

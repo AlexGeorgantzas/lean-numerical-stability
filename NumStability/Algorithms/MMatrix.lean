@@ -24,6 +24,13 @@ import NumStability.Analysis.ForwardError
 import NumStability.Algorithms.LinearSystems.Triangular.ComparisonBounds
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 
+/-!
+# Forward substitution for triangular M-matrices
+
+Nonnegativity of exact and computed solutions and componentwise and relative
+error bounds for lower-triangular M-matrix systems.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

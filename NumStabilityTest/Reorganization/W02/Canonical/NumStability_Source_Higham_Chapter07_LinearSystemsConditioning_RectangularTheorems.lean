@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.RectangularTheorems
+
+#check NumStability.higham7RectResidual

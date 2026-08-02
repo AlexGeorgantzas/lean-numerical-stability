@@ -1,0 +1,3 @@
+import NumStability.Algorithms.Summation.Compensated.Neumaier.ExactResidual
+
+#check NumStability.fl_partialSums_localCorrections_abs_le_exactPrefix_add_runningError

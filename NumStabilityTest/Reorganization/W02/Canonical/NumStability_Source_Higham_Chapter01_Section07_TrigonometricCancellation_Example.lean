@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter01.Section07.TrigonometricCancellation.Example
+
+#check NumStability.trigCancellationDirectScaled

@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter02.Section03.DoubleRounding.Counterexample
+
+#check NumStability.FloatingPointFormat.binaryDoubleRounding_counterexample

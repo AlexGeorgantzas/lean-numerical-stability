@@ -64,6 +64,13 @@ import NumStability.Algorithms.StationaryIterationSemiconvergentExistence
 import NumStability.Analysis.SemiconvergentExistenceGaps
 import Mathlib.Topology.Algebra.Module.FiniteDimension
 
+/-!
+# Existence of a semiconvergent block form
+
+Semisimplicity at eigenvalue one and diagonal-scaling constructions that derive
+the contractive block form from a stable upper-triangular complement.
+-/
+
 namespace NumStability
 
 open scoped BigOperators Topology

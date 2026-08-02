@@ -79,6 +79,13 @@
 import NumStability.Analysis.SemiconvergentExistenceComplete
 import NumStability.Analysis.RealSchurTriangulation
 
+/-!
+# Complete semiconvergence for real spectrum
+
+Construction of the semiconvergent block form and limiting projector from orbit
+convergence when the iteration matrix has real spectrum.
+-/
+
 namespace NumStability
 
 open scoped BigOperators Topology Matrix

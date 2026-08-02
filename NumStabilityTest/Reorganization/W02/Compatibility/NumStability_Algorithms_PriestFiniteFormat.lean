@@ -1,0 +1,4 @@
+import NumStability.Algorithms.PriestFiniteFormat
+
+#check NumStability.PriestFiniteAllOperations
+#check NumStability.PriestFiniteExpansionStep
