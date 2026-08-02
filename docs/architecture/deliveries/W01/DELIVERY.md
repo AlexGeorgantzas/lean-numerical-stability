@@ -28,16 +28,16 @@ selectors and the local-error algebra — is source-neutral and reusable.
 
 | Destination | Family | Declarations |
 | --- | --- | --- |
-| `NumStability.Analysis.FloatingPointArithmetic.IeeeExceptions` | reusable | 587 |
-| `NumStability.Analysis.FloatingPointArithmetic.IeeeOperations` | reusable | 455 |
+| `NumStability.Analysis.FloatingPointArithmetic.IeeeExceptions` | reusable | 580 |
+| `NumStability.Analysis.FloatingPointArithmetic.IeeeOperations` | reusable | 228 |
 | `NumStability.Analysis.FloatingPointArithmetic.RoundToEvenLocalError` | reusable | 350 |
 | `NumStability.Analysis.FloatingPointArithmetic.NearestRoundingError` | reusable | 276 |
 | `NumStability.Analysis.FloatingPointArithmetic.Format` | reusable | 241 |
 | `NumStability.Analysis.FloatingPointArithmetic.Rounding` | reusable | 238 |
 | `NumStability.Analysis.FloatingPointArithmetic.IeeeValue` | reusable | 227 |
 | `NumStability.Source.Higham.Chapter01.FloatingPointArithmetic.InstabilityWithoutCancellation` | Chapter 1 | 872 |
-| `NumStability.Source.Higham.Chapter01.FloatingPointArithmetic.CancellationOfRoundingErrors` | Chapter 1 | 93 |
-| `NumStability.Source.Higham.Chapter01.FloatingPointArithmetic.IncreasingPrecision` | Chapter 1 | 48 |
+| `NumStability.Source.Higham.Chapter01.FloatingPointArithmetic.CancellationOfRoundingErrors` | Chapter 1 | 88 |
+| `NumStability.Source.Higham.Chapter01.FloatingPointArithmetic.IncreasingPrecision` | Chapter 1 | 21 |
 | `NumStability.Source.Higham.Chapter02.FloatingPointArithmetic.ExactSubtraction` | Chapter 2 | 179 |
 | `NumStability.Source.Higham.Chapter02.FloatingPointArithmetic.StandardModel` | Chapter 2 | 47 |
 | `NumStability.Source.Higham.Chapter02.FloatingPointArithmetic.AdditiveUnderflowModel` | Chapter 2 | 37 |
@@ -85,7 +85,7 @@ Lean and are not releasable by any integrator patch.
 | 3. `check_provenance.py` | passed — 207 Apache-marked files, 5 evidenced upstream modules |
 | 4. Locked candidate extraction and `P0001` comparison | **`phase projection contract passed`**, exit 0 — see `PROJECTION.md` |
 | 5. 3,697 declarations / 48,076 incident union edges | `selected_declarations: 3697`, `relocated_declarations: 3396`, signature 22,706 + body 45,433 (48,076 distinct pairs) — all preserved |
-| 6. `git diff` restricted to owned/destination paths | 39 changed files, **0 out of scope** — see `CHANGED_PATHS.md` |
+| 6. `git diff` restricted to owned/destination paths | 40 changed files, **0 out of scope** — see `CHANGED_PATHS.md` |
 
 Structural checks run before every build, on the emitted files:
 

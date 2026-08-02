@@ -46,4 +46,5 @@ one of its five `destination_prefixes`. No forbidden or shared path is touched.
 - `NumStabilityTest/Reorganization/W01/Compatibility/InstabilityWithoutCancellation.lean`
 - `docs/architecture/deliveries/W01/CHANGED_PATHS.md`
 - `docs/architecture/deliveries/W01/DELIVERY.md`
+- `docs/architecture/deliveries/W01/PROJECTION.md`
 - `docs/architecture/deliveries/W01/SHARED_PATCH_REQUEST.md`
