@@ -48,14 +48,14 @@ selectors and the local-error algebra — is source-neutral and reusable.
 | `NumStability.Analysis.FloatingPointArithmetic` | retained | 234 |
 | **Total** | | **3,697** |
 
-The four old paths remain as compatibility modules, re-stating their original imports
-so that the 46 modules importing them keep the transitive surface they had. Three of
-them also retain a small number of declarations; see below.
+The four old paths remain as declaration-bearing compatibility facades,
+re-stating their original imports so that the 46 modules importing them keep
+the transitive surface they had. All four retain declarations; see below.
 
 ## The 301 retained declarations
 
 `Analysis.BeneficialRounding`, `Analysis.Accumulation` and
-`Algorithms.LU.GaussianElimination` all import `Analysis.FloatingPointArithmetic`,
+`Algorithms.LU.GaussianElimination` all reach `Analysis.FloatingPointArithmetic`,
 which W01 turns into a compatibility module importing the new destinations. Any
 destination needing those three therefore closes a cycle, and `lake` refuses it.
 Since all three are shared and outside `B0001`'s write scope, W01 leaves the
@@ -80,7 +80,7 @@ Lean and are not releasable by any integrator patch.
 | --- | --- |
 | 1. Build affected canonical and compatibility modules | `Build completed successfully (4996 jobs)`, exit 0 |
 | 2. Isolated old-import and canonical-import tests | `Build completed successfully (3024 jobs)`, exit 0, 18 modules |
-| 3. `check_layout.py` | exit 0 — 0 unsorted aggregate imports |
+| 3. `check_layout.py` | worker delivery requires integrator wiring: direct run reports 18 unreachable W01 tests, 7 unclassified reusable leaves, 1 new declaration-bearing facade, and missing Chapter 1 aggregate reachability; resolved by the acceptance checkpoint |
 | 3. `check_compatibility.py` | passed — 296 forwarding modules, 566 canonical targets |
 | 3. `check_provenance.py` | passed — 207 Apache-marked files, 5 evidenced upstream modules |
 | 4. Locked candidate extraction and `P0001` comparison | **`phase projection contract passed`**, exit 0 — see `PROJECTION.md` |
