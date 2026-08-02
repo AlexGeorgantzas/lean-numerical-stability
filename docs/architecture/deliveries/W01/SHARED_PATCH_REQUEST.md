@@ -67,8 +67,9 @@ compatibility facades rather than pure import shims.
 
 This request is limited to the two import retargets above. W01 is not authorized
 to edit integrator-owned files, but acceptance separately requires the integrator
-to classify the new leaves and four residual facades in `tiers.json`, record the
-declaration-bearing `FloatingPointArithmetic` facade in
-`layout-exceptions.json`, add the Chapter 1 leaves to its aggregate, and wire the
-18 focused tests through `NumStabilityTest.lean`. No compatibility-table entry is
-appropriate because the four historical facades still contain declarations.
+to classify the new leaves in `tiers.json`, keep the four residual facades in the
+reviewed unclassified inventory, record the declaration-bearing
+`FloatingPointArithmetic` facade in `layout-exceptions.json`, add the Chapter 1
+leaves to its aggregate, and wire the 18 focused tests through
+`NumStabilityTest.lean`. No compatibility-table entry is appropriate because the
+four historical facades still contain declarations.
