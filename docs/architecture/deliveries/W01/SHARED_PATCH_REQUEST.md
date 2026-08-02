@@ -57,7 +57,11 @@ these three in place.
 
 Once the two imports are retargeted, a follow-up may move all three into
 `NumStability.Source.Higham.Chapter01.FloatingPointArithmetic.{CancellationOfRoundingErrors,IncreasingPrecision}`
-with no other change, at which point the four old paths become purely import-only.
+with no other change. This releases only the three declarations named above;
+the historical modules still retain private declarations and their user closures,
+and `InstabilityWithoutCancellation` still retains its separate
+`GaussianElimination`-dependent group. They therefore remain declaration-bearing
+compatibility facades rather than pure import shims.
 
 ### Not requested
 
