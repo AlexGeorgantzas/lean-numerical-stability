@@ -65,6 +65,13 @@
 import NumStability.Analysis.RealQuasiSchur
 import NumStability.Analysis.SemiconvergentBlockFormExists
 
+/-!
+# Semiconvergence from quasi-triangular complements
+
+Block-constant diagonal scaling for quasi-upper-triangular complements and the
+resulting block-form and power-convergence theorems.
+-/
+
 namespace NumStability
 
 open scoped BigOperators Topology

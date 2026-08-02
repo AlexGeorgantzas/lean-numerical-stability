@@ -11,6 +11,13 @@ import NumStability.Analysis.RoundingProductBounds
 import NumStability.Analysis.Summation.ErrorBounds
 import NumStability.Analysis.Stability
 
+/-!
+# Floating-point dot products
+
+Sequential dot-product algorithms together with local-factor expansions,
+forward- and backward-error bounds, and stability results.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

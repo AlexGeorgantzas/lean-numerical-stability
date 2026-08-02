@@ -18,6 +18,13 @@ import NumStability.Analysis.PerturbationTheory
 import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LU.LUSolve
 
+/-!
+# LU growth factors
+
+Growth-factor definitions and componentwise-to-normwise error bounds for LU
+factorization, including Wilkinson-style backward-error estimates.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

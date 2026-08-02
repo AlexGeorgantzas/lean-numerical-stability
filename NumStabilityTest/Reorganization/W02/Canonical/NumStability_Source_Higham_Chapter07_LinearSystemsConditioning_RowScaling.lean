@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.RowScaling
+
+#check NumStability.ch7InverseRowScale

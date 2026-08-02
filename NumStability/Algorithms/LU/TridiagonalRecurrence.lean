@@ -23,6 +23,13 @@ import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LU.Tridiagonal
 import NumStability.Algorithms.LU.GrowthFactor
 
+/-!
+# Tridiagonal LU recurrence
+
+Data structures, floating-point recurrences, and factor matrices for the
+specialized LU algorithm on tridiagonal systems.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

@@ -1,0 +1,3 @@
+import NumStability.FloatingPoint.FusedMultiplyAdd.DotProductCounts
+
+#check NumStability.FloatingPointFormat.finiteConventionalDotProductListTailLoop

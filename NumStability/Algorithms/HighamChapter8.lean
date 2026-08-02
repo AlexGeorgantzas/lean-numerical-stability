@@ -1,22 +1,57 @@
+import Mathlib.Data.Finset.Max
+import Mathlib.Data.Matrix.Basis
+import Mathlib.Data.Sign.Basic
+import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
+import Mathlib.Order.Interval.Finset.Fin
+import NumStability.Algorithms.LU.GrowthFactor
+import NumStability.Algorithms.LinearSystems.Triangular
+import NumStability.Algorithms.MMatrix
+import NumStability.Algorithms.MatMul
+import NumStability.Algorithms.TestMatrices.UpperTriangularStress
+import NumStability.Algorithms.TriangularArbitraryOrder
+import NumStability.Algorithms.TriangularNoGuard
+import NumStability.Analysis.HighamChapter7
+import NumStability.Source.Higham.Chapter08.Equation14.FanInExecutor.Executor
+import NumStability.Source.Higham.Chapter08.Lemma08.CorrectedCondition.RowDominance
+import NumStability.Source.Higham.Chapter08.Problem01.NoGuardSubstitution.Aliases
+import NumStability.Source.Higham.Chapter08.Problem02.ComparisonMatrixWitness.RatioWitness
+import NumStability.Source.Higham.Chapter08.Problem03.UnitTriangularSubstitution.Bound
+import NumStability.Source.Higham.Chapter08.Problem04.MMatrixSubstitution.Comparison
+import NumStability.Source.Higham.Chapter08.Problem05.InverseNormBounds.ZInverse
+import NumStability.Source.Higham.Chapter08.Problem06.ComparisonInverseBounds.VectorBounds
+import NumStability.Source.Higham.Chapter08.Problem07.DiagonalScaling.Bounds
+import NumStability.Source.Higham.Chapter08.Problem08.SingleEntrySingularity.RankOne
+import NumStability.Source.Higham.Chapter08.Problem09.KahanSingularValues.KahanMatrix
+import NumStability.Source.Higham.Chapter08.Section01.BackwardErrorAnalysis.Core
+import NumStability.Source.Higham.Chapter08.Section02.ForwardErrorAnalysis.ComparisonBounds
+import NumStability.Source.Higham.Chapter08.Section02.ForwardErrorAnalysis.ComparisonBoundsPrelude
+import NumStability.Source.Higham.Chapter08.Section02.ForwardErrorAnalysis.NormBounds
+import NumStability.Source.Higham.Chapter08.Section03.TriangularSystems.InverseBoundsLower
+import NumStability.Source.Higham.Chapter08.Section03.TriangularSystems.InverseBoundsPrelude
+import NumStability.Source.Higham.Chapter08.Section03.TriangularSystems.InverseBoundsUpper
+import NumStability.Source.Higham.Chapter08.Section04.FanInCore.AllOrdersEnvelope
+import NumStability.Source.Higham.Chapter08.Section04.FanInCore.Factors
+import NumStability.Source.Higham.Chapter08.Section04.FanInCore.ResidualForwardBounds
+
 -- Algorithms/HighamChapter8.lean
 --
 -- Source-facing entry points for Higham Chapter 8, "Triangular Systems".
 -- The detailed proofs remain in the focused triangular-system modules; this
 -- file provides stable chapter labels and light wrappers around those results.
 
-import NumStability.Algorithms.LinearSystems.Triangular
-import NumStability.Algorithms.TriangularArbitraryOrder
-import NumStability.Algorithms.TriangularNoGuard
-import NumStability.Algorithms.MMatrix
-import NumStability.Algorithms.LU.GrowthFactor
-import NumStability.Algorithms.MatMul
-import NumStability.Algorithms.TestMatrices.UpperTriangularStress
-import NumStability.Analysis.HighamChapter7
-import Mathlib.Data.Finset.Max
-import Mathlib.Data.Matrix.Basis
-import Mathlib.Data.Sign.Basic
-import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
-import Mathlib.Order.Interval.Finset.Fin
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 namespace NumStability
 
@@ -24,117 +59,117 @@ open scoped BigOperators
 
 /-! ## §8.1 Backward Error Analysis -/
 
-/-- **Algorithm 8.1**: the repository's floating-point back-substitution routine. -/
-noncomputable def higham8_1_backSub (fp : FPModel) (n : ℕ)
-    (U : Fin n → Fin n → ℝ) (b : Fin n → ℝ) : Fin n → ℝ :=
-  fl_backSub fp n U b
 
-/-- **Lemma 8.2 / Lemma 8.4, row-spec form** for Algorithm 8.1. -/
-theorem higham8_2_backSub_row_spec (fp : FPModel) (n : ℕ)
-    (U : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
-    (hU : ∀ i, U i i ≠ 0)
-    (hn : gammaValid fp n) :
-    BackSubRowSpec fp n U b (fl_backSub fp n U b) :=
-  fl_backSub_satisfies_spec fp n U b hU hn
 
-/-- **Lemma 8.2**, row-tight form used to prove Theorem 8.3. -/
-theorem higham8_2_backSub_row_tight (fp : FPModel) (n : ℕ)
-    (U : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
-    (hU : ∀ i, U i i ≠ 0)
-    (hn : gammaValid fp n)
-    (i : Fin n) :
-    ∃ (φ : Fin n → ℝ),
-      |φ i| ≤ gamma fp (n - i.val) ∧
-      (∀ j, i.val < j.val → |φ j| ≤ gamma fp (j.val - i.val)) ∧
-      b i = Finset.sum (Finset.filter (fun j : Fin n => i.val ≤ j.val) Finset.univ)
-              (fun j => U i j * (1 + φ j) * fl_backSub fp n U b j) :=
-  backSub_row_tight fp n U b hU hn i
 
-/-- **Theorem 8.3**: Algorithm 8.1 with Higham's row-specific constants. -/
-theorem higham8_3_backSub_backward_error (fp : FPModel) (n : ℕ)
-    (U : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
-    (hU : ∀ i, U i i ≠ 0)
-    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
-    (hn : gammaValid fp n) :
-    ∃ ΔU : Fin n → Fin n → ℝ,
-      (∀ i, |ΔU i i| ≤ gamma fp (n - i.val) * |U i i|) ∧
-      (∀ i j, i.val < j.val →
-        |ΔU i j| ≤ gamma fp (j.val - i.val) * |U i j|) ∧
-      (∀ i j, j.val < i.val → ΔU i j = 0) ∧
-      ∀ i, ∑ j : Fin n, (U i j + ΔU i j) * fl_backSub fp n U b j = b i :=
-  backSub_backward_error_algorithm_8_1 fp n U b hU hUT hn
 
-/-- **Lemma 8.4** (Higham, 2nd ed., §8.1): order-independent backward error of
-`ŷ = fl((∑ wᵢ)/bₖ)` when the `n`-term sum is evaluated in *any* order (encoded by
-an arbitrary summation tree `t`).  With the distinguished summand `w p`
-(Higham's `c`) kept unperturbed,
-`bₖ ŷ (1 + θ₀) = ∑ᵢ wᵢ (1 + θᵢ)` with every `|θ| ≤ γ_n` and `θ p = 0`.
 
-Unlike `higham8_5_backSub_backward_error`, which fixes the repository evaluation
-order, this is the sharp order-independent statement underlying Theorem 8.5.  It
-is proved from the pivot-normalised summation-tree backward error
-`SumTree.backward_error_pivot`. -/
-theorem higham8_4_anyOrder_backwardError (fp : FPModel) {n : ℕ} (t : SumTree n)
-    (ht : gammaValid fp n) (w : Fin n → ℝ) (p : Fin n)
-    (bk : ℝ) (hbk : bk ≠ 0) :
-    ∃ (θ₀ : ℝ) (θ : Fin n → ℝ),
-      |θ₀| ≤ gamma fp n ∧
-      θ p = 0 ∧
-      (∀ i, |θ i| ≤ gamma fp n) ∧
-      bk * fp.fl_div (t.eval fp w) bk * (1 + θ₀) = ∑ i : Fin n, w i * (1 + θ i) :=
-  higham8_4_anyOrder fp t ht w p bk hbk
 
-/-- **Theorem 8.5**, upper-triangular back-substitution specialization. -/
-theorem higham8_5_backSub_backward_error (fp : FPModel) (n : ℕ)
-    (U : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
-    (hU : ∀ i, U i i ≠ 0)
-    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
-    (hn : gammaValid fp n) :
-    ∃ ΔU : Fin n → Fin n → ℝ,
-      (∀ i j, |ΔU i j| ≤ gamma fp n * |U i j|) ∧
-      ∀ i, ∑ j : Fin n, (U i j + ΔU i j) * fl_backSub fp n U b j = b i :=
-  backSub_backward_error fp n U b hU hUT hn
 
-/-- **Theorem 8.5**, upper-triangular back-substitution with arbitrary row
-evaluation orders.  Each row supplies a summation tree for the standard
-`bᵢ - Σ Uᵢⱼ*x̂ⱼ` row terms; the resulting vector solves a componentwise
-perturbed upper-triangular system with Higham's `γ_n` envelope. -/
-theorem higham8_5_backSub_anyOrder_backward_error (fp : FPModel) (n : ℕ)
-    (U : Fin n → Fin n → ℝ) (b xhat : Fin n → ℝ)
-    (rowTree : (i : Fin n) → SumTree ((n - i.val - 1) + 1))
-    (hU : ∀ i, U i i ≠ 0)
-    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
-    (hn : gammaValid fp n)
-    (hrow : BackSubAnyOrderSpec fp n U b xhat rowTree) :
-    ∃ ΔU : Fin n → Fin n → ℝ,
-      (∀ i j, |ΔU i j| ≤ gamma fp n * |U i j|) ∧
-      ∀ i, ∑ j : Fin n, (U i j + ΔU i j) * xhat j = b i :=
-  backSub_backward_error_anyOrder fp n U b xhat rowTree hU hUT hn hrow
 
-/-- **Theorem 8.5**, lower-triangular forward-substitution specialization. -/
-theorem higham8_5_forwardSub_backward_error (fp : FPModel) (n : ℕ)
-    (L : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
-    (hL : ∀ i, L i i ≠ 0)
-    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
-    (hn : gammaValid fp n) :
-    ∃ ΔL : Fin n → Fin n → ℝ,
-      (∀ i j, |ΔL i j| ≤ gamma fp n * |L i j|) ∧
-      ∀ i, ∑ j : Fin n, (L i j + ΔL i j) * fl_forwardSub fp n L b j = b i :=
-  forwardSub_backward_error fp n L b hL hLT hn
 
-/-- **Theorem 8.5**, lower-triangular forward-substitution with arbitrary row
-evaluation orders. -/
-theorem higham8_5_forwardSub_anyOrder_backward_error (fp : FPModel) (n : ℕ)
-    (L : Fin n → Fin n → ℝ) (b xhat : Fin n → ℝ)
-    (rowTree : (i : Fin n) → SumTree (i.val + 1))
-    (hL : ∀ i, L i i ≠ 0)
-    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
-    (hn : gammaValid fp n)
-    (hrow : ForwardSubAnyOrderSpec fp n L b xhat rowTree) :
-    ∃ ΔL : Fin n → Fin n → ℝ,
-      (∀ i j, |ΔL i j| ≤ gamma fp n * |L i j|) ∧
-      ∀ i, ∑ j : Fin n, (L i j + ΔL i j) * xhat j = b i :=
-  forwardSub_backward_error_anyOrder fp n L b xhat rowTree hL hLT hn hrow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-! ## §8.2 Forward Error Analysis -/
 
@@ -305,358 +340,358 @@ theorem higham8_2_forwardSub_anyOrder_relative_infNorm_bound (fp : FPModel)
   · exact hγcond
   · exact hx
 
-/-- **Equation (8.4)**: the displayed inverse-entry formula for `U(α)`. -/
-noncomputable def higham8_4_stressUpperInvFormula (n : ℕ) (α : ℝ) :
-    Fin n → Fin n → ℝ :=
-  fun i j =>
-    if i = j then 1
-    else if i.val < j.val then α * (1 + α) ^ (j.val - i.val - 1)
-    else 0
 
-/-- Geometric helper for the closed-form tails in the stress-matrix inverse. -/
-lemma higham8_geom_one_add_mul_sum (α : ℝ) :
-    ∀ m : ℕ, 1 + α * ∑ r ∈ Finset.range m, (1 + α) ^ r = (1 + α) ^ m := by
-  intro m
-  induction m with
-  | zero =>
-      simp
-  | succ m ihm =>
-      rw [Finset.sum_range_succ]
-      calc
-        1 + α * (∑ r ∈ Finset.range m, (1 + α) ^ r + (1 + α) ^ m)
-            = (1 + α * ∑ r ∈ Finset.range m, (1 + α) ^ r) + α * (1 + α) ^ m := by
-                ring
-        _ = (1 + α) ^ m + α * (1 + α) ^ m := by
-                rw [ihm]
-        _ = (1 + α) ^ (m + 1) := by
-                rw [pow_succ']
-                ring
 
-/-- **Equation (8.4)** support: the explicit inverse formula has column sums
-`(1 + α)^j`. -/
-theorem higham8_4_stressUpperInvFormula_col_sum (n : ℕ) (α : ℝ) (j : Fin n) :
-    ∑ i : Fin n, higham8_4_stressUpperInvFormula n α i j = (1 + α) ^ j.val := by
-  induction n with
-  | zero =>
-      exact Fin.elim0 j
-  | succ n ih =>
-      cases j using Fin.cases with
-      | zero =>
-          rw [Fin.sum_univ_succ]
-          simp [higham8_4_stressUpperInvFormula]
-      | succ j =>
-          rw [Fin.sum_univ_succ]
-          have htail :
-              (∑ i : Fin n,
-                  higham8_4_stressUpperInvFormula (n + 1) α i.succ (Fin.succ j)) =
-                ∑ i : Fin n, higham8_4_stressUpperInvFormula n α i j := by
-            apply Finset.sum_congr rfl
-            intro i _hi
-            simp [higham8_4_stressUpperInvFormula]
-          have hhead :
-              higham8_4_stressUpperInvFormula (n + 1) α 0 (Fin.succ j) =
-                α * (1 + α) ^ j.val := by
-            have hzero : (0 : Fin (n + 1)) ≠ Fin.succ j := by
-              intro h
-              exact Fin.succ_ne_zero j h.symm
-            simp [higham8_4_stressUpperInvFormula, hzero]
-          calc
-            higham8_4_stressUpperInvFormula (n + 1) α 0 (Fin.succ j) +
-                ∑ i : Fin n,
-                  higham8_4_stressUpperInvFormula (n + 1) α i.succ (Fin.succ j)
-                =
-              α * (1 + α) ^ j.val +
-                ∑ i : Fin n, higham8_4_stressUpperInvFormula n α i j := by
-                  rw [hhead, htail]
-            _ = α * (1 + α) ^ j.val + (1 + α) ^ j.val := by
-                  rw [ih j]
-            _ = (1 + α) ^ (Fin.succ j).val := by
-                  rw [show (Fin.succ j).val = j.val + 1 by rfl, pow_succ']
-                  ring
 
-/-- **Equation (8.4)** support: the explicit inverse formula has row sums
-`(1 + α)^(n - 1 - i)`. -/
-theorem higham8_4_stressUpperInvFormula_row_sum (n : ℕ) (α : ℝ) (i : Fin n) :
-    ∑ j : Fin n, higham8_4_stressUpperInvFormula n α i j =
-      (1 + α) ^ (n - 1 - i.val) := by
-  induction n with
-  | zero =>
-      exact Fin.elim0 i
-  | succ n ih =>
-      cases i using Fin.cases with
-      | zero =>
-          rw [Fin.sum_univ_succ]
-          have htail :
-              (∑ j : Fin n,
-                  higham8_4_stressUpperInvFormula (n + 1) α 0 j.succ) =
-                α * ∑ j : Fin n, (1 + α) ^ j.val := by
-            rw [Finset.mul_sum]
-            apply Finset.sum_congr rfl
-            intro j _hj
-            have hzero : (0 : Fin (n + 1)) ≠ j.succ := by
-              intro h
-              exact Fin.succ_ne_zero j h.symm
-            simp [higham8_4_stressUpperInvFormula, hzero]
-          calc
-            higham8_4_stressUpperInvFormula (n + 1) α 0 0 +
-                ∑ j : Fin n, higham8_4_stressUpperInvFormula (n + 1) α 0 j.succ
-                =
-              1 + α * ∑ j : Fin n, (1 + α) ^ j.val := by
-                  rw [htail]
-                  simp [higham8_4_stressUpperInvFormula]
-            _ = 1 + α * ∑ r ∈ Finset.range n, (1 + α) ^ r := by
-                  rw [Fin.sum_univ_eq_sum_range]
-            _ = (1 + α) ^ n := higham8_geom_one_add_mul_sum α n
-            _ = (1 + α) ^ ((n + 1) - 1 - (0 : Fin (n + 1)).val) := by
-                  simp
-      | succ i =>
-          rw [Fin.sum_univ_succ]
-          have htail :
-              (∑ j : Fin n,
-                  higham8_4_stressUpperInvFormula (n + 1) α (Fin.succ i) j.succ) =
-                ∑ j : Fin n, higham8_4_stressUpperInvFormula n α i j := by
-            apply Finset.sum_congr rfl
-            intro j _hj
-            simp [higham8_4_stressUpperInvFormula]
-          calc
-            higham8_4_stressUpperInvFormula (n + 1) α (Fin.succ i) 0 +
-                ∑ j : Fin n,
-                  higham8_4_stressUpperInvFormula (n + 1) α (Fin.succ i) j.succ
-                =
-              ∑ j : Fin n, higham8_4_stressUpperInvFormula n α i j := by
-                  rw [htail]
-                  simp [higham8_4_stressUpperInvFormula]
-            _ = (1 + α) ^ (n - 1 - i.val) := ih i
-            _ = (1 + α) ^ ((n + 1) - 1 - (Fin.succ i).val) := by
-                  have hexp : n - 1 - i.val = n - (i.val + 1) := by
-                    have hi : i.val + 1 ≤ n := Nat.succ_le_of_lt i.isLt
-                    omega
-                  simpa using congrArg (fun m : Nat => (1 + α) ^ m) hexp
 
-/-- **Equation (8.4)**: the displayed inverse-entry formula is a genuine right
-inverse of the stress matrix `U(α)`. -/
-theorem higham8_4_stressUpperInvFormula_isRightInverse (n : ℕ) (α : ℝ) :
-    IsRightInverse n (higham8_3_stressUpper n α) (higham8_4_stressUpperInvFormula n α) := by
-  induction n with
-  | zero =>
-      intro i
-      exact Fin.elim0 i
-  | succ n ih =>
-      intro i j
-      cases i using Fin.cases with
-      | zero =>
-          cases j using Fin.cases with
-          | zero =>
-              rw [Fin.sum_univ_succ]
-              have htail :
-                  (∑ k : Fin n,
-                      higham8_3_stressUpper (n + 1) α 0 k.succ *
-                        higham8_4_stressUpperInvFormula (n + 1) α k.succ 0) = 0 := by
-                apply Finset.sum_eq_zero
-                intro k _hk
-                simp [higham8_3_stressUpper, higham8_4_stressUpperInvFormula]
-              rw [htail]
-              simp [higham8_3_stressUpper, higham8_4_stressUpperInvFormula]
-          | succ j =>
-              rw [Fin.sum_univ_succ]
-              have htail :
-                  (∑ k : Fin n,
-                      higham8_3_stressUpper (n + 1) α 0 k.succ *
-                        higham8_4_stressUpperInvFormula (n + 1) α k.succ (Fin.succ j)) =
-                    -α * ∑ k : Fin n, higham8_4_stressUpperInvFormula n α k j := by
-                rw [Finset.mul_sum]
-                apply Finset.sum_congr rfl
-                intro k _hk
-                have hzero : (0 : Fin (n + 1)) ≠ k.succ := by
-                  intro h
-                  exact Fin.succ_ne_zero k h.symm
-                simp [higham8_3_stressUpper, higham8_4_stressUpperInvFormula, hzero]
-              have hzeroj : (0 : Fin (n + 1)) ≠ Fin.succ j := by
-                intro h
-                exact Fin.succ_ne_zero j h.symm
-              calc
-                higham8_3_stressUpper (n + 1) α 0 0 *
-                    higham8_4_stressUpperInvFormula (n + 1) α 0 (Fin.succ j) +
-                    ∑ k : Fin n,
-                      higham8_3_stressUpper (n + 1) α 0 k.succ *
-                        higham8_4_stressUpperInvFormula (n + 1) α k.succ (Fin.succ j)
-                    =
-                  α * (1 + α) ^ j.val - α * ∑ k : Fin n,
-                    higham8_4_stressUpperInvFormula n α k j := by
-                      rw [htail]
-                      simp [higham8_3_stressUpper, higham8_4_stressUpperInvFormula, hzeroj]
-                      ring
-                _ = α * (1 + α) ^ j.val - α * (1 + α) ^ j.val := by
-                      rw [higham8_4_stressUpperInvFormula_col_sum n α j]
-                _ = 0 := by ring
-                _ = (if (0 : Fin (n + 1)) = Fin.succ j then 1 else 0) := by
-                      simp [hzeroj]
-      | succ i =>
-          cases j using Fin.cases with
-          | zero =>
-              rw [Fin.sum_univ_succ]
-              have htail :
-                  (∑ k : Fin n,
-                      higham8_3_stressUpper (n + 1) α (Fin.succ i) k.succ *
-                        higham8_4_stressUpperInvFormula (n + 1) α k.succ 0) = 0 := by
-                apply Finset.sum_eq_zero
-                intro k _hk
-                simp [higham8_3_stressUpper, higham8_4_stressUpperInvFormula]
-              rw [htail]
-              simp [higham8_3_stressUpper, higham8_4_stressUpperInvFormula]
-          | succ j =>
-              rw [Fin.sum_univ_succ]
-              have htail :
-                  (∑ k : Fin n,
-                      higham8_3_stressUpper (n + 1) α (Fin.succ i) k.succ *
-                        higham8_4_stressUpperInvFormula (n + 1) α k.succ (Fin.succ j)) =
-                    ∑ k : Fin n,
-                      higham8_3_stressUpper n α i k *
-                        higham8_4_stressUpperInvFormula n α k j := by
-                apply Finset.sum_congr rfl
-                intro k _hk
-                simp [higham8_3_stressUpper, higham8_4_stressUpperInvFormula]
-              calc
-                higham8_3_stressUpper (n + 1) α (Fin.succ i) 0 *
-                    higham8_4_stressUpperInvFormula (n + 1) α 0 (Fin.succ j) +
-                    ∑ k : Fin n,
-                      higham8_3_stressUpper (n + 1) α (Fin.succ i) k.succ *
-                        higham8_4_stressUpperInvFormula (n + 1) α k.succ (Fin.succ j)
-                    =
-                  ∑ k : Fin n,
-                    higham8_3_stressUpper n α i k *
-                      higham8_4_stressUpperInvFormula n α k j := by
-                      rw [htail]
-                      simp [higham8_3_stressUpper, higham8_4_stressUpperInvFormula]
-                _ = (if i = j then 1 else 0) := ih i j
-                _ = (if (Fin.succ i : Fin (n + 1)) = Fin.succ j then 1 else 0) := by
-                      simp
 
-/-- **Equation (8.4)**: the displayed inverse-entry formula is a genuine
-two-sided inverse of the stress matrix `U(α)`. -/
-theorem higham8_4_stressUpperInvFormula_isInverse (n : ℕ) (α : ℝ) :
-    IsInverse n (higham8_3_stressUpper n α) (higham8_4_stressUpperInvFormula n α) := by
-  have hRight := higham8_4_stressUpperInvFormula_isRightInverse n α
-  exact ⟨ch7_isLeftInverse_of_isRightInverse hRight, hRight⟩
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-! ## §8.3 Kahan's triangular example -/
 
-/-- **Equation (8.11)**: Kahan's row-scaled triangular matrix
-`U_n(θ)`, parameterized by `c = cos θ` and `s = sin θ`.
 
-The source writes this as
-`diag(1, s, ..., s^(n-1))` times a unit upper-triangular matrix with
-strict upper entries `-c`. -/
-noncomputable def higham8_11_kahanMatrix (n : ℕ) (c s : ℝ) :
-    Fin n → Fin n → ℝ :=
-  fun i j => s ^ i.val * higham8_3_stressUpper n c i j
 
-/-- **Problem 8.9** support: the leading principal block of the `(n+1) × (n+1)`
-Kahan matrix is the `n × n` Kahan matrix with the same parameters.  This is the
-matrix-family identity used by the Appendix A interlacing induction. -/
-theorem higham8_11_kahanMatrix_leadingBlock_succ
-    (n : ℕ) (c s : ℝ) (i j : Fin n) :
-    higham8_11_kahanMatrix (n + 1) c s i.castSucc j.castSucc =
-      higham8_11_kahanMatrix n c s i j := by
-  simp [higham8_11_kahanMatrix, higham8_3_stressUpper]
 
-/-- **Problem 8.9** support: the leading principal block of the Kahan Gram
-matrix for size `n+1` is the Kahan Gram matrix for size `n`.  This is the
-matrix-level input needed before applying Cauchy interlacing. -/
-theorem higham8_11_kahanGram_leadingBlock_succ
-    (n : ℕ) (c s : ℝ) (i j : Fin n) :
-    (∑ k : Fin (n + 1),
-        higham8_11_kahanMatrix (n + 1) c s k i.castSucc *
-          higham8_11_kahanMatrix (n + 1) c s k j.castSucc) =
-      ∑ k : Fin n,
-        higham8_11_kahanMatrix n c s k i *
-          higham8_11_kahanMatrix n c s k j := by
-  rw [Fin.sum_univ_castSucc]
-  have hsum :
-      (∑ k : Fin n,
-          higham8_11_kahanMatrix (n + 1) c s k.castSucc i.castSucc *
-            higham8_11_kahanMatrix (n + 1) c s k.castSucc j.castSucc) =
-        ∑ k : Fin n,
-          higham8_11_kahanMatrix n c s k i *
-            higham8_11_kahanMatrix n c s k j := by
-    apply Finset.sum_congr rfl
-    intro k _hk
-    rw [higham8_11_kahanMatrix_leadingBlock_succ n c s k i,
-      higham8_11_kahanMatrix_leadingBlock_succ n c s k j]
-  have hlast_i :
-      higham8_11_kahanMatrix (n + 1) c s (Fin.last n) i.castSucc = 0 := by
-    have hne : (Fin.last n : Fin (n + 1)) ≠ i.castSucc := by
-      intro h
-      have hval := congrArg Fin.val h
-      simp at hval
-      omega
-    have hnlt : ¬ (n : ℕ) < i.val := by omega
-    simp [higham8_11_kahanMatrix, higham8_3_stressUpper, hne, hnlt]
-  rw [hsum, hlast_i]
-  simp
 
-/-- The displayed inverse-entry formula following **Equation (8.11)**:
-the inverse of Kahan's matrix is the stress inverse with column `j` scaled by
-`s^(-j)` in zero-based indexing. -/
-noncomputable def higham8_11_kahanInvFormula (n : ℕ) (c s : ℝ) :
-    Fin n → Fin n → ℝ :=
-  fun i j => (1 / s ^ j.val) * higham8_4_stressUpperInvFormula n c i j
 
-/-- **Equation (8.11)** support: for `s ≠ 0`, the displayed Kahan inverse
-formula is a genuine right inverse. -/
-theorem higham8_11_kahanInvFormula_isRightInverse (n : ℕ) (c s : ℝ)
-    (hs : s ≠ 0) :
-    IsRightInverse n (higham8_11_kahanMatrix n c s)
-      (higham8_11_kahanInvFormula n c s) := by
-  intro i j
-  have hpowj : s ^ j.val ≠ 0 := pow_ne_zero _ hs
-  have hstress := higham8_4_stressUpperInvFormula_isRightInverse n c i j
-  calc
-    ∑ k : Fin n,
-        higham8_11_kahanMatrix n c s i k *
-          higham8_11_kahanInvFormula n c s k j
-        =
-      (s ^ i.val * (1 / s ^ j.val)) *
-        ∑ k : Fin n,
-          higham8_3_stressUpper n c i k *
-            higham8_4_stressUpperInvFormula n c k j := by
-          rw [Finset.mul_sum]
-          apply Finset.sum_congr rfl
-          intro k _hk
-          simp [higham8_11_kahanMatrix, higham8_11_kahanInvFormula]
-          ring_nf
-    _ = (s ^ i.val * (1 / s ^ j.val)) * (if i = j then 1 else 0) := by
-          rw [hstress]
-    _ = (if i = j then 1 else 0) := by
-          by_cases hij : i = j
-          · subst j
-            simp [hs]
-          · simp [hij]
 
-/-- **Equation (8.11)** support: for `s ≠ 0`, the displayed Kahan inverse
-formula is a genuine two-sided inverse. -/
-theorem higham8_11_kahanInvFormula_isInverse (n : ℕ) (c s : ℝ) (hs : s ≠ 0) :
-    IsInverse n (higham8_11_kahanMatrix n c s)
-      (higham8_11_kahanInvFormula n c s) := by
-  have hRight := higham8_11_kahanInvFormula_isRightInverse n c s hs
-  exact ⟨ch7_isLeftInverse_of_isRightInverse hRight, hRight⟩
 
-/-- **Problem 8.9** support: in the repository's descending singular-value
-order, the second-smallest singular value of an `n × n` matrix is at zero-based
-index `n - 2`. -/
-def higham8_problem8_9_secondSmallestIndex (n : ℕ) (h2 : 2 ≤ n) : Fin n :=
-  ⟨n - 2, by omega⟩
 
-/-- **Problem 8.9** support: in descending order, the third-smallest slot of an
-`n × n` matrix is at zero-based index `n - 3`.  This is the slot that appears
-in the one-step Cauchy-interlacing reduction for the Kahan induction. -/
-def higham8_problem8_9_thirdSmallestIndex (n : ℕ) (h3 : 3 ≤ n) : Fin n :=
-  ⟨n - 3, by omega⟩
 
-/-- **Problem 8.9** displayed scalar value for Kahan's matrix. -/
-noncomputable def higham8_problem8_9_kahanSecondSmallestValue
-    (n : ℕ) (c s : ℝ) : ℝ :=
-  s ^ (n - 2) * Real.sqrt (1 + c)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private noncomputable def higham8_problem8_9_svdTopSpan
     {n : ℕ} (A : CMatrix n n) (k : Fin n) :
@@ -1124,13 +1159,13 @@ private theorem higham8_complexMatrixGramEigenvalues_eq_of_gramLin_eq_smul_id
   apply Complex.ofReal_injective
   exact (sub_eq_zero.mp hscalar).symm
 
-theorem higham8_11_kahanMatrix_zero_one_eq_finiteId (n : ℕ) :
-    higham8_11_kahanMatrix n 0 1 = (finiteIdMatrix : Fin n → Fin n → ℝ) := by
-  ext i j
-  by_cases hij : i = j
-  · subst j
-    simp [higham8_11_kahanMatrix, higham8_3_stressUpper, finiteIdMatrix]
-  · simp [higham8_11_kahanMatrix, higham8_3_stressUpper, finiteIdMatrix, hij]
+
+
+
+
+
+
+
 
 theorem higham8_problem8_9_kahan_zero_one_gramEigenvalues_eq_one
     (n : ℕ) :
@@ -1167,29 +1202,29 @@ theorem higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_of_s_
       (higham8_problem8_9_secondSmallestIndex n h2)
   simpa using hgram
 
-/-- **Problem 8.9**, SVD/Gram reduction.
 
-The remaining hard step is the spectral statement that the Kahan Gram
-eigenvalue at index `n - 2` is `s^(2(n-2)) (1+c)`.  This theorem discharges the
-source's singular-value formula from exactly that Gram-eigenvalue certificate,
-including the scalar square-root algebra under `c, s ≥ 0`. -/
-theorem higham8_problem8_9_kahan_secondSmallestSingularValue_of_gramEigenvalue
-    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
-    (hc : 0 ≤ c) (hs : 0 ≤ s)
-    (hgram :
-      complexMatrixGramEigenvalues (realRectToCMatrix (higham8_11_kahanMatrix n c s))
-          (higham8_problem8_9_secondSmallestIndex n h2) =
-        (s ^ (n - 2)) ^ 2 * (1 + c)) :
-    complexMatrixSingularValue (realRectToCMatrix (higham8_11_kahanMatrix n c s))
-        (higham8_problem8_9_secondSmallestIndex n h2) =
-      higham8_problem8_9_kahanSecondSmallestValue n c s := by
-  apply (sq_eq_sq₀
-    (complexMatrixSingularValue_nonneg
-      (realRectToCMatrix (higham8_11_kahanMatrix n c s))
-      (higham8_problem8_9_secondSmallestIndex n h2))
-    (mul_nonneg (pow_nonneg hs _) (Real.sqrt_nonneg _))).mp
-  rw [complexMatrixSingularValue_sq, hgram]
-  rw [mul_pow, Real.sq_sqrt (by linarith)]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 theorem higham8_problem8_9_kahan_secondSmallestSingularValue_of_s_eq_one
     (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
@@ -1206,230 +1241,230 @@ theorem higham8_problem8_9_kahan_secondSmallestSingularValue_of_s_eq_one
       higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_of_s_eq_one
         n h2 c s hcs hs_one
 
-/-- **Problem 8.9** support: the last index of the `n × n` Kahan matrix. -/
-def higham8_problem8_9_lastIndex (n : ℕ) (hn : 0 < n) : Fin n :=
-  ⟨n - 1, by omega⟩
 
-/-- **Problem 8.9** support: the last ordered singular value is bounded above
-by any test-vector quotient.  This is the local minimum-singular-value half
-needed for Appendix A's line `σ_n(U_n(θ)) ≤ s^(n-1)`. -/
-theorem higham8_problem8_9_lastSingularValue_mul_norm_le_image_norm
-    {n : ℕ} (hn : 0 < n) (A : CMatrix n n)
-    (z : EuclideanSpace ℂ (Fin n)) :
-    complexMatrixSingularValue A (higham8_problem8_9_lastIndex n hn) * ‖z‖ ≤
-      ‖complexMatrixEuclideanLin A z‖ := by
-  classical
-  obtain ⟨b, hcontains⟩ :=
-    exists_complexMatrixLeftSingularVector_fin_orthonormalBasis_extension A
-  refine
-    problem7_5_sigmaMin_mul_norm_le_image_norm A b hcontains z
-      (complexMatrixSingularValue_nonneg A (higham8_problem8_9_lastIndex n hn))
-      ?_
-  intro i
-  exact complexMatrixSingularValue_antitone A
-    (Fin.le_iff_val_le_val.2 (by
-      simp [higham8_problem8_9_lastIndex]
-      omega))
 
-/-- **Problem 8.9** support: real square-matrix version of the test-vector
-upper bound for the smallest ordered singular value. -/
-theorem higham8_problem8_9_lastSingularValue_mul_vecNorm_le_matMulVec_norm
-    {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) (z : Fin n → ℝ) :
-    complexMatrixSingularValue (realRectToCMatrix A)
-        (higham8_problem8_9_lastIndex n hn) * vecNorm2 z ≤
-      vecNorm2 (matMulVec n A z) := by
-  have h :=
-    higham8_problem8_9_lastSingularValue_mul_norm_le_image_norm
-      (n := n) hn (A := realRectToCMatrix A) (z := realVecToEuclidean z)
-  rw [realVecToEuclidean_norm] at h
-  rw [realRectToCMatrix_euclideanLin_realVecToEuclidean_norm] at h
-  simpa [matMulVec, rectMatMulVec] using h
 
-/-- **Problem 8.9** support: the unscaled last column of the stress inverse is
-sent by Kahan's matrix to `s^(n-1)` times the last coordinate vector. -/
-theorem higham8_problem8_9_kahan_stressInvLastColumn_action
-    (n : ℕ) (hn : 0 < n) (c s : ℝ) :
-    matMulVec n (higham8_11_kahanMatrix n c s)
-        (fun k => higham8_4_stressUpperInvFormula n c k
-          (higham8_problem8_9_lastIndex n hn)) =
-      fun i => s ^ (n - 1) *
-        finiteBasisVec (higham8_problem8_9_lastIndex n hn) i := by
-  let q := higham8_problem8_9_lastIndex n hn
-  have hstress := higham8_4_stressUpperInvFormula_isRightInverse n c
-  ext i
-  unfold matMulVec
-  calc
-    (∑ k : Fin n,
-        higham8_11_kahanMatrix n c s i k *
-          higham8_4_stressUpperInvFormula n c k q)
-        =
-      s ^ i.val *
-        ∑ k : Fin n,
-          higham8_3_stressUpper n c i k *
-            higham8_4_stressUpperInvFormula n c k q := by
-          rw [Finset.mul_sum]
-          apply Finset.sum_congr rfl
-          intro k _hk
-          simp [higham8_11_kahanMatrix]
-          ring
-    _ = s ^ i.val * (if i = q then 1 else 0) := by
-          rw [hstress i q]
-    _ = s ^ (n - 1) * finiteBasisVec q i := by
-          by_cases hiq : i = q
-          · subst i
-            simp [q, higham8_problem8_9_lastIndex, finiteBasisVec]
-          · simp [finiteBasisVec, hiq]
 
-/-- **Problem 8.9** support: Appendix A's upper bound on the smallest singular
-value of Kahan's matrix, `σ_n(U_n(θ)) ≤ s^(n-1)`, in zero-based local order. -/
-theorem higham8_problem8_9_kahan_smallestSingularValue_le_pow
-    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ) (hs : 0 ≤ s) :
-    complexMatrixSingularValue
-        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
-        (higham8_problem8_9_lastIndex n (by omega)) ≤
-      s ^ (n - 1) := by
-  let q := higham8_problem8_9_lastIndex n (by omega : 0 < n)
-  let z : Fin n → ℝ := fun k => higham8_4_stressUpperInvFormula n c k q
-  have hz_norm_ge : 1 ≤ vecNorm2 z := by
-    have hcoord := abs_coord_le_vecNorm2 z q
-    simpa [z, q, higham8_4_stressUpperInvFormula] using hcoord
-  have haction :
-      matMulVec n (higham8_11_kahanMatrix n c s) z =
-        fun i => s ^ (n - 1) * finiteBasisVec q i := by
-    simpa [z, q] using
-      higham8_problem8_9_kahan_stressInvLastColumn_action
-        n (by omega : 0 < n) c s
-  have himage :
-      vecNorm2 (matMulVec n (higham8_11_kahanMatrix n c s) z) =
-        s ^ (n - 1) := by
-    rw [haction, vecNorm2_smul, ch7Problem79_vecNorm2_finiteBasisVec]
-    rw [abs_of_nonneg (pow_nonneg hs _), mul_one]
-  have htest :=
-    higham8_problem8_9_lastSingularValue_mul_vecNorm_le_matMulVec_norm
-      (n := n) (by omega : 0 < n) (higham8_11_kahanMatrix n c s) z
-  have hσ_nonneg :
-      0 ≤ complexMatrixSingularValue
-        (realRectToCMatrix (higham8_11_kahanMatrix n c s)) q :=
-    complexMatrixSingularValue_nonneg
-      (realRectToCMatrix (higham8_11_kahanMatrix n c s)) q
-  calc
-    complexMatrixSingularValue
-        (realRectToCMatrix (higham8_11_kahanMatrix n c s)) q
-        =
-      complexMatrixSingularValue
-        (realRectToCMatrix (higham8_11_kahanMatrix n c s)) q * 1 := by ring
-    _ ≤
-      complexMatrixSingularValue
-        (realRectToCMatrix (higham8_11_kahanMatrix n c s)) q * vecNorm2 z :=
-        mul_le_mul_of_nonneg_left hz_norm_ge hσ_nonneg
-    _ ≤ vecNorm2 (matMulVec n (higham8_11_kahanMatrix n c s) z) := htest
-    _ = s ^ (n - 1) := himage
 
-/-- **Problem 8.9** support: in Appendix A's `0 < s < 1` branch, the
-smallest singular value lies strictly below the displayed candidate.  The
-remaining source step is therefore only the interlacing induction that puts a
-larger singular value before the candidate. -/
-theorem higham8_problem8_9_kahan_smallestSingularValue_lt_candidate
-    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
-    (hc : 0 ≤ c) (hs_pos : 0 < s) (hs_lt : s < 1) :
-    complexMatrixSingularValue
-        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
-        (higham8_problem8_9_lastIndex n (by omega)) <
-      higham8_problem8_9_kahanSecondSmallestValue n c s := by
-  have hs_nonneg : 0 ≤ s := le_of_lt hs_pos
-  have hsmall :=
-    higham8_problem8_9_kahan_smallestSingularValue_le_pow n h2 c s hs_nonneg
-  have hsqrt_ge_one : 1 ≤ Real.sqrt (1 + c) := by
-    have hle : (1 : ℝ) ≤ 1 + c := by linarith
-    simpa using Real.sqrt_le_sqrt hle
-  have hs_lt_sqrt : s < Real.sqrt (1 + c) := lt_of_lt_of_le hs_lt hsqrt_ge_one
-  have hpow_pos : 0 < s ^ (n - 2) := pow_pos hs_pos _
-  have hidx : n - 1 = n - 2 + 1 := by omega
-  calc
-    complexMatrixSingularValue
-        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
-        (higham8_problem8_9_lastIndex n (by omega))
-        ≤ s ^ (n - 1) := hsmall
-    _ = s ^ (n - 2) * s := by rw [hidx, pow_succ]
-    _ < s ^ (n - 2) * Real.sqrt (1 + c) :=
-        mul_lt_mul_of_pos_left hs_lt_sqrt hpow_pos
-    _ = higham8_problem8_9_kahanSecondSmallestValue n c s := rfl
 
-/-- **Problem 8.9** support: in Appendix A's `0 < s < 1` branch, the
-smallest Gram eigenvalue lies strictly below the displayed Gram candidate. -/
-theorem higham8_problem8_9_kahan_smallestGramEigenvalue_lt_candidate
-    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
-    (hc : 0 ≤ c) (hs_pos : 0 < s) (hs_lt : s < 1) :
-    complexMatrixGramEigenvalues
-        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
-        (higham8_problem8_9_lastIndex n (by omega)) <
-      (s ^ (n - 2)) ^ 2 * (1 + c) := by
-  let A : CMatrix n n := realRectToCMatrix (higham8_11_kahanMatrix n c s)
-  let q := higham8_problem8_9_lastIndex n (by omega : 0 < n)
-  let σ := higham8_problem8_9_kahanSecondSmallestValue n c s
-  let lam : ℝ := (s ^ (n - 2)) ^ 2 * (1 + c)
-  have hσ_nonneg : 0 ≤ σ := by
-    exact mul_nonneg (pow_nonneg (le_of_lt hs_pos) _) (Real.sqrt_nonneg _)
-  have hsmall :
-      complexMatrixSingularValue A q < σ := by
-    simpa [A, q, σ] using
-      higham8_problem8_9_kahan_smallestSingularValue_lt_candidate
-        n h2 c s hc hs_pos hs_lt
-  have hsq :
-      complexMatrixSingularValue A q ^ 2 < σ ^ 2 :=
-    (sq_lt_sq₀ (complexMatrixSingularValue_nonneg A q) hσ_nonneg).2 hsmall
-  have hσ_sq : σ ^ 2 = lam := by
-    simp [σ, lam, higham8_problem8_9_kahanSecondSmallestValue, mul_pow,
-      Real.sq_sqrt (by linarith : 0 ≤ 1 + c)]
-  rw [complexMatrixSingularValue_sq, hσ_sq] at hsq
-  simpa [A, q, lam] using hsq
 
-/-- **Problem 8.9** support: a scaled right witness vector for Zha's
-Appendix A singular-vector calculation.  It is supported on the last two
-coordinates and is scaled by `sqrt (1+c)` to avoid denominator bookkeeping. -/
-noncomputable def higham8_problem8_9_kahanRightWitness
-    (n : ℕ) (h2 : 2 ≤ n) (c : ℝ) : Fin n → ℝ :=
-  let p := higham8_problem8_9_secondSmallestIndex n h2
-  let q := higham8_problem8_9_lastIndex n (by omega)
-  fun i =>
-    if i = p then Real.sqrt (1 + c)
-    else if i = q then -Real.sqrt (1 + c)
-    else 0
 
-/-- **Problem 8.9** support: the right Kahan witness is nonzero under the
-source-side assumption `0 ≤ c`. -/
-theorem higham8_problem8_9_kahanRightWitness_euclidean_ne_zero
-    (n : ℕ) (h2 : 2 ≤ n) (c : ℝ) (hc : 0 ≤ c) :
-    realVecToEuclidean (higham8_problem8_9_kahanRightWitness n h2 c) ≠ 0 := by
-  let p := higham8_problem8_9_secondSmallestIndex n h2
-  have hp :
-      higham8_problem8_9_kahanRightWitness n h2 c p =
-        Real.sqrt (1 + c) := by
-    simp [higham8_problem8_9_kahanRightWitness, p]
-  have hsqrt_pos : 0 < Real.sqrt (1 + c) :=
-    Real.sqrt_pos.2 (by linarith)
-  intro hzero
-  have hfun :
-      (fun j : Fin n =>
-          (higham8_problem8_9_kahanRightWitness n h2 c j : ℂ)) = 0 := by
-    have h := congrArg WithLp.ofLp hzero
-    simpa [realVecToEuclidean] using h
-  have hp_zero :
-      (higham8_problem8_9_kahanRightWitness n h2 c p : ℂ) = 0 := by
-    exact congrFun hfun p
-  rw [hp] at hp_zero
-  exact (Complex.ofReal_ne_zero.mpr hsqrt_pos.ne') hp_zero
 
-/-- **Problem 8.9** support: a scaled left witness vector for Zha's Appendix A
-singular-vector calculation. -/
-noncomputable def higham8_problem8_9_kahanLeftWitness
-    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ) : Fin n → ℝ :=
-  let p := higham8_problem8_9_secondSmallestIndex n h2
-  let q := higham8_problem8_9_lastIndex n (by omega)
-  fun i =>
-    if i = p then 1 + c
-    else if i = q then -s
-    else 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private theorem higham8_sum_two_support {n : ℕ}
     (p q : Fin n) (hpq : p ≠ q) (f : Fin n → ℝ) (a b : ℝ) :
@@ -2312,80 +2347,80 @@ theorem higham8_problem8_9_kahan_secondSmallestSingularValue
       n h2 c s hc hs hcs
       (higham8_problem8_9_kahanGram_interlacing c s)
 
-/-- **Problem 8.2**, Appendix A witness `T(λ)`. -/
-noncomputable def higham8_2_ratioWitness (lam : ℝ) : Fin 3 → Fin 3 → ℝ :=
-  fun i j =>
-    if i.val = 0 ∧ j.val = 0 then 1 / lam
-    else if i.val = 0 ∧ j.val = 1 then 1
-    else if i.val = 0 ∧ j.val = 2 then 1
-    else if i.val = 1 ∧ j.val = 1 then 1 / lam
-    else if i.val = 1 ∧ j.val = 2 then 1 / lam
-    else if i.val = 2 ∧ j.val = 2 then 1 / lam ^ 2
-    else 0
 
-/-- **Problem 8.2**, explicit inverse for the Appendix A witness `T(λ)`. -/
-noncomputable def higham8_2_ratioWitnessInv (lam : ℝ) : Fin 3 → Fin 3 → ℝ :=
-  fun i j =>
-    if i.val = 0 ∧ j.val = 0 then lam
-    else if i.val = 0 ∧ j.val = 1 then -(lam ^ 2)
-    else if i.val = 1 ∧ j.val = 1 then lam
-    else if i.val = 1 ∧ j.val = 2 then -(lam ^ 2)
-    else if i.val = 2 ∧ j.val = 2 then lam ^ 2
-    else 0
 
-/-- **Problem 8.2**, the explicit comparison matrix `M(T(λ))`. -/
-noncomputable def higham8_2_ratioWitnessComparison (lam : ℝ) : Fin 3 → Fin 3 → ℝ :=
-  fun i j =>
-    if i.val = 0 ∧ j.val = 0 then 1 / lam
-    else if i.val = 0 ∧ j.val = 1 then -1
-    else if i.val = 0 ∧ j.val = 2 then -1
-    else if i.val = 1 ∧ j.val = 1 then 1 / lam
-    else if i.val = 1 ∧ j.val = 2 then -(1 / lam)
-    else if i.val = 2 ∧ j.val = 2 then 1 / lam ^ 2
-    else 0
 
-/-- **Problem 8.2**, explicit inverse of `M(T(λ))`. -/
-noncomputable def higham8_2_ratioWitnessComparisonInv (lam : ℝ) : Fin 3 → Fin 3 → ℝ :=
-  fun i j =>
-    if i.val = 0 ∧ j.val = 0 then lam
-    else if i.val = 0 ∧ j.val = 1 then lam ^ 2
-    else if i.val = 0 ∧ j.val = 2 then 2 * lam ^ 3
-    else if i.val = 1 ∧ j.val = 1 then lam
-    else if i.val = 1 ∧ j.val = 2 then lam ^ 2
-    else if i.val = 2 ∧ j.val = 2 then lam ^ 2
-    else 0
 
-/-- The Appendix A witness is upper triangular. -/
-lemma higham8_2_ratioWitness_upper (lam : ℝ) :
-    ∀ i j : Fin 3, j.val < i.val → higham8_2_ratioWitness lam i j = 0 := by
-  intro i j hij
-  fin_cases i <;> fin_cases j <;> simp [higham8_2_ratioWitness] at hij ⊢
 
-/-- The Appendix A inverse formula is a genuine two-sided inverse of `T(λ)`. -/
-theorem higham8_2_ratioWitness_isInverse (lam : ℝ) (hlam : lam ≠ 0) :
-    IsInverse 3 (higham8_2_ratioWitness lam) (higham8_2_ratioWitnessInv lam) := by
-  refine ⟨?_, ?_⟩ <;> intro i j <;> fin_cases i <;> fin_cases j <;>
-    simp [Fin.sum_univ_three, higham8_2_ratioWitness, higham8_2_ratioWitnessInv, hlam] <;>
-    field_simp [hlam] <;> ring
 
-/-- The comparison matrix of the Appendix A witness is the expected signed
-upper-triangular matrix. -/
-theorem higham8_2_ratioWitness_comparison_eq (lam : ℝ) (hlam : 0 ≤ lam) :
-    comparisonMatrix 3 (higham8_2_ratioWitness lam) =
-      higham8_2_ratioWitnessComparison lam := by
-  funext i j
-  fin_cases i <;> fin_cases j <;>
-    simp [comparisonMatrix, higham8_2_ratioWitness, higham8_2_ratioWitnessComparison,
-      abs_of_nonneg hlam]
 
-/-- The explicit Appendix A formula is a genuine inverse of `M(T(λ))`. -/
-theorem higham8_2_ratioWitnessComparisonInv_isInverse (lam : ℝ) (hlam : lam ≠ 0) :
-    IsInverse 3 (higham8_2_ratioWitnessComparison lam)
-      (higham8_2_ratioWitnessComparisonInv lam) := by
-  refine ⟨?_, ?_⟩ <;> intro i j <;> fin_cases i <;> fin_cases j <;>
-    simp [Fin.sum_univ_three, higham8_2_ratioWitnessComparison,
-      higham8_2_ratioWitnessComparisonInv, hlam] <;>
-    field_simp [hlam] <;> ring
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private theorem higham8_2_ratioWitnessInv_row0_abs_sum (lam : ℝ) (hlam : 0 ≤ lam) :
     ∑ j : Fin 3, |higham8_2_ratioWitnessInv lam 0 j| = lam + lam ^ 2 := by
@@ -2534,230 +2569,230 @@ theorem higham8_2_comparisonInverseRatios_arbitrarily_large (R : ℝ) :
   · exact le_trans (le_max_right _ _) <|
       higham8_2_comparisonInverseOneNormRatio_ge_lambda (max 1 R) (le_max_left _ _)
 
-/-- **Lemma 8.6**: diagonal-dominance bound for `|U⁻¹||U|`. -/
-theorem higham8_6_inv_abs_mul_bound_diagDom (n : ℕ)
-    (U U_inv : Fin n → Fin n → ℝ)
-    (hDD : IsDiagDominantUpper n U)
-    (hInv : IsInverse n U U_inv) :
-    ∀ i j : Fin n, i.val ≤ j.val →
-      ∑ k : Fin n, |U_inv i k| * |U k j| ≤ 2 ^ (j.val - i.val) :=
-  inv_abs_mul_bound_diagDom n U U_inv hDD hInv
 
-/-- **Theorem 8.7**: componentwise forward error under condition (8.5). -/
-theorem higham8_7_backSub_forward_error_diagDom (fp : FPModel) (n : ℕ)
-    (U U_inv : Fin n → Fin n → ℝ)
-    (x b : Fin n → ℝ)
-    (hDD : IsDiagDominantUpper n U)
-    (hInv : IsInverse n U U_inv)
-    (hTx : ∀ i, ∑ j : Fin n, U i j * x j = b i)
-    (hn : gammaValid fp n) :
-    let x_hat := fl_backSub fp n U b
-    ∀ i : Fin n,
-      |x i - x_hat i| ≤
-      2 ^ (n - i.val) * gamma fp n *
-          Finset.sup' (Finset.univ.filter (fun j : Fin n => i.val ≤ j.val))
-            ⟨i, by simp [Finset.mem_filter]⟩ (fun j => |x_hat j|) :=
-  backSub_forward_error_diagDom fp n U U_inv x b hDD hInv hTx hn
 
-/-- **Equation (8.6)**: lower-triangular analogue of condition (8.5). -/
-def higham8_6_diagDominantLower (n : ℕ) (L : Fin n → Fin n → ℝ) : Prop :=
-  (∀ i j : Fin n, i.val < j.val → L i j = 0) ∧
-  (∀ i : Fin n, L i i ≠ 0) ∧
-  (∀ i j : Fin n, j.val < i.val → |L i j| ≤ |L i i|)
 
-/-- Source condition preceding **Lemma 8.8**, as printed in the PDF:
-`|u_ii| ≤ sum_{j=i+1}^n |u_ij|` for rows `i = 1:n-1`, together with upper
-triangular shape.  The inequality direction is intentionally the source text's
-direction. -/
-def higham8_rowDominantUpperSource (n : ℕ) (U : Fin n → Fin n → ℝ) : Prop :=
-  (∀ i j : Fin n, j.val < i.val → U i j = 0) ∧
-  ∀ i : Fin n, i.val + 1 < n →
-    |U i i| ≤
-      ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val), |U i j|
 
-/-- Corrected source-facing condition for **Lemma 8.8**: `U` is upper
-triangular with nonzero diagonal and the strict-upper absolute row sum is
-bounded by the diagonal magnitude in each row. -/
-def higham8_8_rowDiagDominantUpper (n : ℕ) (U : Fin n → Fin n → ℝ) : Prop :=
-  (∀ i j : Fin n, j.val < i.val → U i j = 0) ∧
-  (∀ i : Fin n, U i i ≠ 0) ∧
-  (∀ i : Fin n,
-    ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val), |U i j| ≤ |U i i|)
 
-/-- **Lemma 8.8**, corrected theorem surface after the source audit.
 
-If an upper-triangular matrix has nonzero diagonal and each strict-upper row
-sum is bounded by the diagonal magnitude, then its Skeel condition number is
-at most `2n - 1`. -/
-theorem higham8_8_rowDiagDominantUpper_condSkeel_bound (n : ℕ) (hn : 0 < n)
-    (U U_inv : Fin n → Fin n → ℝ)
-    (hRD : higham8_8_rowDiagDominantUpper n U)
-    (hInv : IsInverse n U U_inv) :
-    condSkeel n hn U U_inv ≤ 2 * (n : ℝ) - 1 := by
-  rcases hRD with ⟨hUT, hDiag, hRow⟩
-  rcases hInv with ⟨hLInv, hRInv⟩
-  have hInv_ut := inv_upper_tri n U U_inv hUT hDiag hLInv
-  let V : Fin n → Fin n → ℝ := fun a b => U a b / U a a
-  let V_inv : Fin n → Fin n → ℝ := fun a b => U_inv a b * U b b
-  have hVT : ∀ a b : Fin n, b.val < a.val → V a b = 0 := by
-    intro a b hab
-    simp [V, hUT a b hab]
-  have hV_unit : ∀ a : Fin n, V a a = 1 := by
-    intro a
-    simp [V, hDiag a]
-  have hV_row : ∀ a : Fin n,
-      ∑ j ∈ Finset.univ.filter (fun j : Fin n => a.val < j.val), |V a j| ≤ 1 := by
-    intro a
-    calc
-      ∑ j ∈ Finset.univ.filter (fun j : Fin n => a.val < j.val), |V a j|
-          = (1 / |U a a|) *
-              ∑ j ∈ Finset.univ.filter (fun j : Fin n => a.val < j.val), |U a j| := by
-              rw [Finset.mul_sum]
-              apply Finset.sum_congr rfl
-              intro j _
-              simp [V, div_eq_mul_inv, mul_comm]
-      _ ≤ (1 / |U a a|) * |U a a| := by
-            exact mul_le_mul_of_nonneg_left (hRow a) (one_div_nonneg.mpr (abs_nonneg _))
-      _ = 1 := by
-            rw [one_div, inv_mul_cancel₀]
-            exact abs_ne_zero.mpr (hDiag a)
-  have hVinv_ut : ∀ a b : Fin n, b.val < a.val → V_inv a b = 0 := by
-    intro a b hab
-    simp [V_inv, hInv_ut a b hab]
-  have hVinv_diag : ∀ a : Fin n, V_inv a a = 1 := by
-    intro a
-    simp [V_inv, inv_diag_entry n U U_inv hUT hDiag hLInv hInv_ut a, hDiag a]
-  have hVRInv : IsRightInverse n V V_inv := by
-    intro a b
-    unfold V V_inv
-    have hsimp :
-        ∑ k : Fin n, (U a k / U a a) * (U_inv k b * U b b) =
-          (U b b / U a a) * ∑ k : Fin n, U a k * U_inv k b := by
-      rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro k _
-      field_simp [hDiag a]
-    rw [hsimp, hRInv a b]
-    by_cases hab : a = b
-    · subst hab
-      simp [hDiag a]
-    · simp [hab]
-  have hVinv_le_one :=
-    unitUpperTri_inv_entry_le_one_of_row_sum_le_one
-      n V V_inv hVT hV_unit hV_row hVRInv hVinv_ut hVinv_diag
-  let rowMass : Fin n → ℝ := fun j => ∑ k : Fin n, |U j k|
-  have hrow_le_two_diag : ∀ j : Fin n, rowMass j ≤ 2 * |U j j| := by
-    intro j
-    unfold rowMass
-    rw [← Finset.add_sum_erase _ _ (Finset.mem_univ j)]
-    have hrest_eq :
-        ∑ k ∈ Finset.univ.erase j, |U j k| =
-          ∑ k ∈ Finset.univ.filter (fun k : Fin n => j.val < k.val), |U j k| := by
-      symm
-      apply Finset.sum_subset
-      · intro k hk
-        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
-        exact Finset.mem_erase.mpr ⟨Fin.ne_of_val_ne (by omega), Finset.mem_univ _⟩
-      · intro k hk hknot
-        rw [Finset.mem_erase] at hk
-        have hknot' : ¬ j.val < k.val := by
-          intro hlt
-          exact hknot (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hlt⟩)
-        have hlt : k.val < j.val := by
-          by_contra hge
-          push_neg at hge
-          exact hk.1 (Fin.ext (by omega))
-        rw [hUT j k hlt, abs_zero]
-    rw [hrest_eq]
-    linarith [hRow j]
-  let last : Fin n := ⟨n - 1, by omega⟩
-  have hrow_last : rowMass last = |U last last| := by
-    unfold rowMass
-    rw [← Finset.add_sum_erase _ _ (Finset.mem_univ last)]
-    suffices hrest : ∑ k ∈ Finset.univ.erase last, |U last k| = 0 by
-      linarith
-    apply Finset.sum_eq_zero
-    intro k hk
-    have hk_ne : k ≠ last := Finset.ne_of_mem_erase hk
-    have hlt : k.val < last.val := by
-      have hk_last : k.val ≠ n - 1 := by
-        intro hk_eq
-        apply hk_ne
-        exact Fin.ext (by simpa [last] using hk_eq)
-      show k.val < n - 1
-      omega
-    rw [hUT last k hlt, abs_zero]
-  have hsum_upper :
-      ∀ i : Fin n,
-      ∑ j : Fin n, |U_inv i j| * rowMass j =
-        ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val ≤ j.val),
-          |U_inv i j| * rowMass j := by
-    intro i
-    symm
-    apply Finset.sum_subset (Finset.filter_subset _ _)
-    intro j _ hj
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and, not_le] at hj
-    rw [hInv_ut i j hj, abs_zero, zero_mul]
-  unfold condSkeel
-  apply Finset.sup'_le
-  intro i _
-  change ∑ j : Fin n, |U_inv i j| * rowMass j ≤ 2 * (n : ℝ) - 1
-  let S : Finset (Fin n) := Finset.univ.filter (fun j : Fin n => i.val ≤ j.val)
-  have hlast_mem : last ∈ S := by
-    simp [S, last]
-    show i.val ≤ n - 1
-    omega
-  have hlast_term : |U_inv i last| * rowMass last ≤ 1 := by
-    rw [hrow_last]
-    calc
-      |U_inv i last| * |U last last| = |V_inv i last| := by
-        simp [V_inv, abs_mul, mul_comm]
-      _ ≤ 1 := hVinv_le_one i last (by
-        show i.val ≤ n - 1
-        omega)
-  have hrest_le :
-      ∑ j ∈ S.erase last, |U_inv i j| * rowMass j ≤
-        ∑ j ∈ S.erase last, (2 : ℝ) := by
-    apply Finset.sum_le_sum
-    intro j hj
-    have hjS : j ∈ S := (Finset.mem_erase.mp hj).2
-    have hij : i.val ≤ j.val := by
-      simp only [S, Finset.mem_filter, Finset.mem_univ, true_and] at hjS
-      exact hjS
-    calc
-      |U_inv i j| * rowMass j ≤ |U_inv i j| * (2 * |U j j|) := by
-        exact mul_le_mul_of_nonneg_left (hrow_le_two_diag j) (abs_nonneg _)
-      _ = 2 * |V_inv i j| := by
-        ring_nf
-        simp [V_inv, abs_mul, mul_comm]
-      _ ≤ 2 := by
-        have hle : |V_inv i j| ≤ 1 := hVinv_le_one i j hij
-        nlinarith
-  have hrest_subset :
-      ∑ j ∈ S.erase last, (2 : ℝ) ≤ ∑ j ∈ Finset.univ.erase last, (2 : ℝ) := by
-    exact Finset.sum_le_sum_of_subset_of_nonneg
-      (by
-        intro j hj
-        exact Finset.mem_erase.mpr ⟨(Finset.mem_erase.mp hj).1, Finset.mem_univ _⟩)
-      (by
-        intro j _ _
-        positivity)
-  calc
-    ∑ j : Fin n, |U_inv i j| * rowMass j
-        = ∑ j ∈ S, |U_inv i j| * rowMass j := by
-            simpa [S] using hsum_upper i
-    _ = |U_inv i last| * rowMass last +
-          ∑ j ∈ S.erase last, |U_inv i j| * rowMass j := by
-            rw [← Finset.add_sum_erase _ _ hlast_mem]
-    _ ≤ 1 + ∑ j ∈ S.erase last, (2 : ℝ) := by
-          exact add_le_add hlast_term hrest_le
-    _ ≤ 1 + ∑ j ∈ Finset.univ.erase last, (2 : ℝ) := by
-          simpa [add_comm] using add_le_add_left hrest_subset 1
-    _ = 2 * (n : ℝ) - 1 := by
-          rw [Finset.sum_const, Finset.card_erase_of_mem (Finset.mem_univ last),
-            Finset.card_univ, Fintype.card_fin, nsmul_eq_mul,
-            Nat.cast_sub (by omega : 1 ≤ n), Nat.cast_one]
-          ring
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- The absolute value of the comparison matrix agrees entrywise with `|T|`. -/
 private lemma comparisonMatrix_abs_apply (n : ℕ) (T : Fin n → Fin n → ℝ)
@@ -2779,11 +2814,11 @@ private lemma comparisonMatrix_abs_eq_two_diag_sub (n : ℕ) (T : Fin n → Fin 
     ring
   · simp [comparisonMatrix, diagMatrix, hij]
 
-/-- **Lemma 8.9**, explicit image vector
-`(2 M(T)⁻¹ diag(|t_ii|) - I)|x|`. -/
-noncomputable def higham8_9_comparisonImage (n : ℕ)
-    (T M_inv : Fin n → Fin n → ℝ) (x : Fin n → ℝ) : Fin n → ℝ :=
-  fun i => 2 * ∑ j : Fin n, M_inv i j * |T j j| * |x j| - |x i|
+
+
+
+
+
 
 /-- **Lemma 8.9**, equality part for the comparison matrix:
 `cond(M(T),x) = ‖(2M(T)⁻¹ diag(|t_ii|) - I)|x|‖∞ / ‖x‖∞`. -/
@@ -3044,168 +3079,168 @@ theorem higham8_9_lowerTriangular_condAtSolution_le_comparison_eq (n : ℕ) (hn 
         ≤ ch7SkeelCondAtSolutionInf n hn (comparisonMatrix n T) M_inv x := hle
     _ = infNormVec (higham8_9_comparisonImage n T M_inv x) / infNormVec x := heq
 
-/-- **Theorem 8.10**, formalized with Higham's exact `μ` recurrence rather
-than an informal `O(u^2)` abbreviation. -/
-theorem higham8_10_forwardSub_forward_error_mu_bound (fp : FPModel) (n : ℕ)
-    (L L_inv M_inv : Fin n → Fin n → ℝ)
-    (x b : Fin n → ℝ)
-    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
-    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
-    (hInv : IsInverse n L L_inv)
-    (hM_RInv : IsRightInverse n (comparisonMatrix n L) M_inv)
-    (hM_inv_lt : ∀ i j : Fin n, i.val < j.val → M_inv i j = 0)
-    (hTx : ∀ i, ∑ j : Fin n, L i j * x j = b i)
-    (hn : gammaValid fp n)
-    (hn1 : gammaValid fp (n + 1)) :
-    let x_hat := fl_forwardSub fp n L b
-    let y := fun i => ∑ j : Fin n, M_inv i j * |b j|
-    ∀ i : Fin n, |x i - x_hat i| ≤ mu fp n i.val * y i :=
-  forwardSub_forward_error_mu_bound fp n L L_inv M_inv x b hL_diag hLT hInv
-    hM_RInv hM_inv_lt hTx hn hn1
 
-/-- **Corollary 8.11**, μ-form for lower triangular M-matrices and `b ≥ 0`. -/
-theorem higham8_11_mmatrix_forwardSub_relative_error (fp : FPModel) (n : ℕ)
-    (L L_inv : Fin n → Fin n → ℝ)
-    (x b : Fin n → ℝ)
-    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
-    (hL_diag_pos : ∀ i : Fin n, 0 < L i i)
-    (hL_offdiag : ∀ i j : Fin n, j.val < i.val → L i j ≤ 0)
-    (hInv : IsInverse n L L_inv)
-    (hTx : ∀ i, ∑ j : Fin n, L i j * x j = b i)
-    (hb : ∀ i, 0 ≤ b i)
-    (hn : gammaValid fp n)
-    (hn1 : gammaValid fp (n + 1))
-    (h2n : gammaValid fp (2 * n)) :
-    let x_hat := fl_forwardSub fp n L b
-    (∀ i, 0 ≤ x i) ∧
-    (∀ i, 0 ≤ x_hat i) ∧
-    (∀ i, |x i - x_hat i| ≤ mu fp n i.val * |x i|) :=
-  mmatrix_forwardSub_relative_error fp n L L_inv x b hLT hL_diag_pos
-    hL_offdiag hInv hTx hb hn hn1 h2n
 
-/-- **Problem 8.3**, exact `μ`-form for unit upper-triangular substitution.
 
-If `U` is unit upper triangular with `|u_ij| ≤ 1` for `j > i`, then the
-comparison-matrix route behind **Theorem 8.10** yields the explicit componentwise
-bound
 
-`|x_i - x̂_i| ≤ μ_{n-1-i} 2^(n-1-i) ‖b‖∞`.
 
-This is slightly sharper than the printed source factor `2^(n-i)`, because the
-row sum of `M(U)⁻¹` is bounded here by the exact geometric sum
-`1 + ∑_{k=0}^{n-i-2} 2^k = 2^(n-1-i)`. -/
-theorem higham8_problem8_3_unitUpper_backSub_forward_error_mu_infNorm_bound
-    (fp : FPModel) (n : ℕ)
-    (U U_inv M_inv : Fin n → Fin n → ℝ)
-    (x b : Fin n → ℝ)
-    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
-    (hU_unit : ∀ i : Fin n, U i i = 1)
-    (hU_bound : ∀ i j : Fin n, i.val < j.val → |U i j| ≤ 1)
-    (hInv : IsInverse n U U_inv)
-    (hM_RInv : IsRightInverse n (comparisonMatrix n U) M_inv)
-    (hM_inv_ut : ∀ i j : Fin n, j.val < i.val → M_inv i j = 0)
-    (hTx : ∀ i, ∑ j : Fin n, U i j * x j = b i)
-    (hn : gammaValid fp n)
-    (hn1 : gammaValid fp (n + 1)) :
-    let x_hat := fl_backSub fp n U b
-    ∀ i : Fin n,
-      |x i - x_hat i| ≤
-        mu fp n (n - 1 - i.val) * 2 ^ (n - 1 - i.val) * infNormVec b := by
-  intro x_hat i
-  let y : Fin n → ℝ := fun k => ∑ j : Fin n, M_inv k j * |b j|
-  have herr_i :
-      |x i - x_hat i| ≤ mu fp n (n - 1 - i.val) * y i := by
-    simpa [x_hat, y] using
-      (backSub_forward_error_mu_bound fp n U U_inv M_inv x b
-        (fun k => by rw [hU_unit k]; norm_num)
-        hUT hInv hM_RInv hM_inv_ut hTx hn hn1 i)
-  have hM_diag_ne : ∀ k : Fin n, comparisonMatrix n U k k ≠ 0 := by
-    intro k
-    simp [comparisonMatrix, hU_unit k]
-  have hM_unit : ∀ k : Fin n, comparisonMatrix n U k k = 1 := by
-    intro k
-    simp [comparisonMatrix, hU_unit k]
-  have hM_bound : ∀ a b : Fin n, a.val < b.val → |comparisonMatrix n U a b| ≤ 1 := by
-    intro a b hab
-    unfold comparisonMatrix
-    simpa [show a ≠ b from Fin.ne_of_val_ne (by omega)] using hU_bound a b hab
-  have hM_ut : ∀ a b : Fin n, b.val < a.val → comparisonMatrix n U a b = 0 := by
-    intro a b hab
-    unfold comparisonMatrix
-    simp [show a ≠ b from Fin.ne_of_val_ne (by omega), hUT a b hab]
-  have hM_diag_pos : ∀ k : Fin n, 0 < comparisonMatrix n U k k := by
-    intro k
-    simp [comparisonMatrix, hU_unit k]
-  have hM_offdiag : ∀ a b : Fin n, a.val < b.val → comparisonMatrix n U a b ≤ 0 := by
-    intro a b hab
-    unfold comparisonMatrix
-    simp [show a ≠ b from Fin.ne_of_val_ne (by omega)]
-  have hM_nonneg :=
-    upper_tri_mmatrix_inv_nonneg n (comparisonMatrix n U) M_inv
-      hM_ut hM_diag_pos hM_offdiag hM_RInv hM_inv_ut
-  have hM_LInv := ch7_isLeftInverse_of_isRightInverse hM_RInv
-  have hM_inv_diag : ∀ k : Fin n, M_inv k k = 1 := by
-    intro k
-    have hM_inv_ut' :=
-      inv_upper_tri n (comparisonMatrix n U) M_inv hM_ut hM_diag_ne hM_LInv
-    simpa [comparisonMatrix, hU_unit k] using
-      inv_diag_entry n (comparisonMatrix n U) M_inv hM_ut hM_diag_ne hM_LInv hM_inv_ut' k
-  have hrow_sum : ∑ j : Fin n, M_inv i j ≤ 2 ^ (n - 1 - i.val) := by
-    have hsum_abs : ∑ j : Fin n, M_inv i j = ∑ j : Fin n, |M_inv i j| := by
-      apply Finset.sum_congr rfl
-      intro j _
-      exact (abs_of_nonneg (hM_nonneg i j)).symm
-    have hsplit :
-        ∑ j : Fin n, |M_inv i j| =
-          ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val ≤ j.val), |M_inv i j| := by
-      symm
-      apply Finset.sum_subset (Finset.filter_subset _ _)
-      intro j _ hj
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and, not_le] at hj
-      rw [hM_inv_ut i j hj, abs_zero]
-    have hn_pos : 0 < n := by
-      exact lt_of_le_of_lt (Nat.zero_le i.val) i.isLt
-    have hfilt_eq :
-        Finset.univ.filter (fun j : Fin n => i.val ≤ j.val) =
-          Finset.univ.filter (fun j : Fin n =>
-            i.val ≤ j.val ∧ j.val ≤ (⟨n - 1, by omega⟩ : Fin n).val) := by
-      ext k
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-      exact ⟨fun h => ⟨h, by omega⟩, fun h => h.1⟩
-    calc
-      ∑ j : Fin n, M_inv i j = ∑ j : Fin n, |M_inv i j| := hsum_abs
-      _ = ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val ≤ j.val), |M_inv i j| := hsplit
-      _ = ∑ j ∈ Finset.univ.filter
-            (fun j : Fin n => i.val ≤ j.val ∧
-              j.val ≤ (⟨n - 1, by omega⟩ : Fin n).val), |M_inv i j| := by
-            rw [hfilt_eq]
-      _ ≤ 2 ^ (n - 1 - i.val) := by
-            exact inv_row_sum_bound n (comparisonMatrix n U) M_inv
-              hM_ut hM_unit hM_bound hM_LInv hM_inv_ut hM_inv_diag
-              (n - 1 - i.val) i ⟨n - 1, by omega⟩ (by simp) (by simp; omega)
-  have hy_bound : y i ≤ 2 ^ (n - 1 - i.val) * infNormVec b := by
-    have hy_le :
-        y i ≤ (∑ j : Fin n, M_inv i j) * infNormVec b := by
-      unfold y
-      calc
-        ∑ j : Fin n, M_inv i j * |b j|
-            ≤ ∑ j : Fin n, M_inv i j * infNormVec b := by
-                  apply Finset.sum_le_sum
-                  intro j _
-                  exact mul_le_mul_of_nonneg_left (abs_le_infNormVec b j) (hM_nonneg i j)
-        _ = (∑ j : Fin n, M_inv i j) * infNormVec b := by
-              symm
-              exact Finset.sum_mul (Finset.univ) (fun j => M_inv i j) (infNormVec b)
-    calc
-      y i ≤ (∑ j : Fin n, M_inv i j) * infNormVec b := hy_le
-      _ ≤ 2 ^ (n - 1 - i.val) * infNormVec b := by
-            exact mul_le_mul_of_nonneg_right hrow_sum (infNormVec_nonneg b)
-  calc
-    |x i - x_hat i| ≤ mu fp n (n - 1 - i.val) * y i := herr_i
-    _ ≤ mu fp n (n - 1 - i.val) * (2 ^ (n - 1 - i.val) * infNormVec b) := by
-          exact mul_le_mul_of_nonneg_left hy_bound (mu_nonneg fp n hn1 _)
-    _ = mu fp n (n - 1 - i.val) * 2 ^ (n - 1 - i.val) * infNormVec b := by
-          ring
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- An upper-triangular row sum over `univ.erase i` only sees the strict-upper
 entries. -/
@@ -3638,245 +3673,245 @@ theorem higham8_4_upperTriangularMMatrix_condAtSolution_le (n : ℕ) (hn : 0 < n
 
 /-! ## §8.3 Bounds for the Inverse -/
 
-/-- **Equation (8.7)**: Higham's comparison matrix. -/
-noncomputable def higham8_7_comparisonMatrix (n : ℕ)
-    (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  comparisonMatrix n A
 
-/-- **Theorem 8.12**, first comparison-matrix inverse inequality. -/
-theorem higham8_12_abs_inv_le_comparison_inv (n : ℕ)
-    (U U_inv M_inv : Fin n → Fin n → ℝ)
-    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
-    (hU_diag : ∀ i : Fin n, U i i ≠ 0)
-    (hInv : IsInverse n U U_inv)
-    (hM_RInv : IsRightInverse n (comparisonMatrix n U) M_inv)
-    (hM_inv_ut : ∀ i j : Fin n, j.val < i.val → M_inv i j = 0) :
-    ∀ i j : Fin n, |U_inv i j| ≤ M_inv i j :=
-  abs_inv_le_compMatrix_inv n U U_inv M_inv hUT hU_diag hInv hM_RInv hM_inv_ut
 
-/-- **Theorem 8.12**: the strict-upper row maximum used to define `W(U)`. -/
-noncomputable def higham8_12_rowMaxStrictUpper (n : ℕ)
-    (U : Fin n → Fin n → ℝ) (i : Fin n) : ℝ :=
-  if h : i.val + 1 < n then
-    Finset.sup' (Finset.univ.filter (fun j : Fin n => i.val < j.val))
-      (by
-        refine ⟨⟨i.val + 1, h⟩, ?_⟩
-        simp [Finset.mem_filter]
-        exact Fin.lt_def.mpr (by simp))
-      (fun j => |U i j|)
-  else
-    0
 
-/-- The strict-upper row maximum is nonnegative. -/
-lemma higham8_12_rowMaxStrictUpper_nonneg (n : ℕ)
-    (U : Fin n → Fin n → ℝ) (i : Fin n) :
-    0 ≤ higham8_12_rowMaxStrictUpper n U i := by
-  by_cases h : i.val + 1 < n
-  · have hmem :
-        (⟨i.val + 1, h⟩ : Fin n) ∈
-          Finset.univ.filter (fun j : Fin n => i.val < j.val) := by
-      simp [Finset.mem_filter]
-      exact Fin.lt_def.mpr (by simp)
-    have hs :
-        |U i ⟨i.val + 1, h⟩| ≤
-          Finset.sup' (Finset.univ.filter (fun j : Fin n => i.val < j.val))
-            ⟨⟨i.val + 1, h⟩, hmem⟩ (fun j => |U i j|) :=
-      Finset.le_sup' (fun j => |U i j|) hmem
-    simpa [higham8_12_rowMaxStrictUpper, h] using
-      (le_trans (abs_nonneg _) hs)
-  · simp [higham8_12_rowMaxStrictUpper, h]
 
-/-- Any strict-upper entry is bounded by the corresponding row maximum. -/
-lemma higham8_12_abs_le_rowMaxStrictUpper (n : ℕ)
-    (U : Fin n → Fin n → ℝ) (i j : Fin n) (hij : i.val < j.val) :
-    |U i j| ≤ higham8_12_rowMaxStrictUpper n U i := by
-  have hsucc : i.val + 1 < n := by omega
-  have hs :
-      |U i j| ≤
-        Finset.sup' (Finset.univ.filter (fun k : Fin n => i.val < k.val))
-          (by
-            refine ⟨⟨i.val + 1, hsucc⟩, ?_⟩
-            simp [Finset.mem_filter]
-            exact Fin.lt_def.mpr (by simp))
-          (fun k => |U i k|) :=
-    Finset.le_sup' (fun k => |U i k|) (by
-      show j ∈ Finset.univ.filter (fun k : Fin n => i.val < k.val)
-      exact Finset.mem_filter.mpr ⟨by simp, hij⟩)
-  simpa [higham8_12_rowMaxStrictUpper, hsucc] using hs
 
-/-- **Theorem 8.12**: Higham's row-max minorant `W(U)`. -/
-noncomputable def higham8_12_WMatrix (n : ℕ)
-    (U : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  fun i j =>
-    if i = j then |U i i|
-    else if i.val < j.val then -(higham8_12_rowMaxStrictUpper n U i)
-    else 0
 
-/-- `W(U)` is upper triangular by construction. -/
-lemma higham8_12_WMatrix_upper (n : ℕ) (U : Fin n → Fin n → ℝ) :
-    ∀ i j : Fin n, j.val < i.val → higham8_12_WMatrix n U i j = 0 := by
-  intro i j hij
-  have hnotlt : ¬ i.val < j.val := by omega
-  simp [higham8_12_WMatrix, hnotlt,
-    show ¬ i = j from Fin.ne_of_val_ne (by omega)]
 
-/-- The diagonal of `W(U)` is the absolute diagonal of `U`. -/
-lemma higham8_12_WMatrix_diag (n : ℕ) (U : Fin n → Fin n → ℝ) (i : Fin n) :
-    higham8_12_WMatrix n U i i = |U i i| := by
-  simp [higham8_12_WMatrix]
 
-/-- Strict-upper entries of `W(U)` are the negated row maxima. -/
-lemma higham8_12_WMatrix_strictUpper (n : ℕ) (U : Fin n → Fin n → ℝ)
-    {i j : Fin n} (hij : i.val < j.val) :
-    higham8_12_WMatrix n U i j = -(higham8_12_rowMaxStrictUpper n U i) := by
-  simp [higham8_12_WMatrix, hij, show ¬ i = j from Fin.ne_of_val_ne (by omega)]
 
-/-- The comparison matrix dominates `W(U)` entrywise for upper-triangular `U`. -/
-lemma higham8_12_WMatrix_le_comparisonMatrix (n : ℕ)
-    (U : Fin n → Fin n → ℝ)
-    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0) :
-    ∀ i j : Fin n, higham8_12_WMatrix n U i j ≤ comparisonMatrix n U i j := by
-  intro i j
-  by_cases hij : i = j
-  · subst hij
-    simp [higham8_12_WMatrix, comparisonMatrix]
-  · by_cases hlt : i.val < j.val
-    · rw [higham8_12_WMatrix_strictUpper n U hlt]
-      simpa [comparisonMatrix, hij] using
-        (neg_le_neg (higham8_12_abs_le_rowMaxStrictUpper n U i j hlt))
-    · have hji : j.val < i.val := by omega
-      rw [higham8_12_WMatrix_upper n U i j hji]
-      simp [comparisonMatrix, hij, hUT i j hji]
 
-/-- The row maxima satisfy the source `β` bound when every strict-upper entry
-is bounded by `β |u_ii|`. -/
-lemma higham8_12_rowMaxStrictUpper_le_beta_mul_diag (n : ℕ)
-    (U : Fin n → Fin n → ℝ) {β : ℝ} (hβ : 0 ≤ β)
-    (hβ_bound : ∀ i j : Fin n, i.val < j.val → |U i j| ≤ β * |U i i|) :
-    ∀ i : Fin n, higham8_12_rowMaxStrictUpper n U i ≤ β * |U i i| := by
-  intro i
-  by_cases h : i.val + 1 < n
-  · have hs :
-        Finset.sup' (Finset.univ.filter (fun j : Fin n => i.val < j.val))
-          (by
-            refine ⟨⟨i.val + 1, h⟩, ?_⟩
-            simp [Finset.mem_filter]
-            exact Fin.lt_def.mpr (by simp))
-          (fun j => |U i j|) ≤ β * |U i i| := by
-      apply Finset.sup'_le
-      intro j hj
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj
-      exact hβ_bound i j hj
-    simpa [higham8_12_rowMaxStrictUpper, h] using hs
-  · simpa [higham8_12_rowMaxStrictUpper, h] using
-      (mul_nonneg hβ (abs_nonneg _))
 
-/-- Under `β ≤ 1`, Higham's `W(U)` satisfies the repository's diagonal-dominant
-upper-triangular condition (8.5). -/
-theorem higham8_12_WMatrix_isDiagDominantUpper (n : ℕ)
-    (U : Fin n → Fin n → ℝ) {β : ℝ}
-    (hU_diag : ∀ i : Fin n, U i i ≠ 0) (hβ : 0 ≤ β) (hβ1 : β ≤ 1)
-    (hβ_bound : ∀ i j : Fin n, i.val < j.val → |U i j| ≤ β * |U i i|) :
-    IsDiagDominantUpper n (higham8_12_WMatrix n U) := by
-  refine ⟨higham8_12_WMatrix_upper n U, ?_, ?_⟩
-  · intro i
-    rw [higham8_12_WMatrix_diag]
-    exact abs_ne_zero.mpr (hU_diag i)
-  · intro i j hij
-    rw [higham8_12_WMatrix_diag, higham8_12_WMatrix_strictUpper n U hij]
-    rw [abs_abs, abs_neg, abs_of_nonneg (higham8_12_rowMaxStrictUpper_nonneg n U i)]
-    calc
-      higham8_12_rowMaxStrictUpper n U i ≤ β * |U i i| :=
-        higham8_12_rowMaxStrictUpper_le_beta_mul_diag n U hβ hβ_bound i
-      _ ≤ |U i i| := by
-        have hdiag_nonneg : 0 ≤ |U i i| := abs_nonneg _
-        nlinarith
 
-/-- **Theorem 8.14 support**: once `W(U)` is known to satisfy the source
-`β ≤ 1` hypothesis, the existing diagonal-dominant inverse API gives the
-rightmost `∞`-norm upper bound for `W(U)⁻¹`. -/
-theorem higham8_14_WInv_infNorm_upperBound (n : ℕ)
-    (U W_inv : Fin n → Fin n → ℝ) (i0 : Fin n) {β : ℝ}
-    (hU_diag : ∀ i : Fin n, U i i ≠ 0) (hβ : 0 ≤ β) (hβ1 : β ≤ 1)
-    (hβ_bound : ∀ i j : Fin n, i.val < j.val → |U i j| ≤ β * |U i i|)
-    (hInv : IsInverse n (higham8_12_WMatrix n U) W_inv) :
-    infNorm W_inv ≤
-      2 ^ (n - 1) *
-        (1 / Finset.inf' Finset.univ ⟨i0, Finset.mem_univ i0⟩
-          (fun k => |U k k|)) := by
-  have hDD :=
-    higham8_12_WMatrix_isDiagDominantUpper n U hU_diag hβ hβ1 hβ_bound
-  simpa [higham8_12_WMatrix] using
-    triInv_infNorm_upperBound n (higham8_12_WMatrix n U) W_inv i0 hDD hInv
 
-/-- **Theorem 8.12**: the source `Z` minorant with diagonal `α` and strict
-upper entries `-αβ`. -/
-noncomputable def higham8_12_ZMatrix (n : ℕ) (α β : ℝ) :
-    Fin n → Fin n → ℝ :=
-  fun i j => α * higham8_3_stressUpper n β i j
 
-/-- Explicit inverse formula for the source `Z` matrix. -/
-noncomputable def higham8_12_ZInvFormula (n : ℕ) (α β : ℝ) :
-    Fin n → Fin n → ℝ :=
-  fun i j => (1 / α) * higham8_4_stressUpperInvFormula n β i j
 
-/-- The explicit `Z` inverse formula has the same scaled column sums as the
-stress-family inverse. -/
-theorem higham8_12_ZInvFormula_col_sum (n : ℕ) (α β : ℝ) (j : Fin n) :
-    ∑ i : Fin n, higham8_12_ZInvFormula n α β i j =
-      (1 / α) * (1 + β) ^ j.val := by
-  unfold higham8_12_ZInvFormula
-  rw [← Finset.mul_sum, higham8_4_stressUpperInvFormula_col_sum]
 
-/-- The explicit `Z` inverse formula has the same scaled row sums as the
-stress-family inverse. -/
-theorem higham8_12_ZInvFormula_row_sum (n : ℕ) (α β : ℝ) (i : Fin n) :
-    ∑ j : Fin n, higham8_12_ZInvFormula n α β i j =
-      (1 / α) * (1 + β) ^ (n - 1 - i.val) := by
-  unfold higham8_12_ZInvFormula
-  rw [← Finset.mul_sum, higham8_4_stressUpperInvFormula_row_sum]
 
-/-- The explicit inverse formula is a genuine right inverse of the source `Z`
-matrix. -/
-theorem higham8_12_ZInvFormula_isRightInverse (n : ℕ) (α β : ℝ) (hα : α ≠ 0) :
-    IsRightInverse n (higham8_12_ZMatrix n α β) (higham8_12_ZInvFormula n α β) := by
-  intro i j
-  calc
-    ∑ k : Fin n, higham8_12_ZMatrix n α β i k * higham8_12_ZInvFormula n α β k j
-        =
-      ∑ k : Fin n,
-        higham8_3_stressUpper n β i k * higham8_4_stressUpperInvFormula n β k j := by
-          apply Finset.sum_congr rfl
-          intro k _hk
-          unfold higham8_12_ZMatrix higham8_12_ZInvFormula
-          field_simp [hα]
-    _ = (if i = j then 1 else 0) :=
-      higham8_4_stressUpperInvFormula_isRightInverse n β i j
 
-/-- The explicit inverse formula is a genuine two-sided inverse of the source
-`Z` matrix. -/
-theorem higham8_12_ZInvFormula_isInverse (n : ℕ) (α β : ℝ) (hα : α ≠ 0) :
-    IsInverse n (higham8_12_ZMatrix n α β) (higham8_12_ZInvFormula n α β) := by
-  have hRight := higham8_12_ZInvFormula_isRightInverse n α β hα
-  exact ⟨ch7_isLeftInverse_of_isRightInverse hRight, hRight⟩
 
-/-- The explicit `Z` inverse formula is entrywise nonnegative for `α > 0` and
-`β ≥ 0`. -/
-lemma higham8_12_ZInvFormula_nonneg (n : ℕ) {α β : ℝ}
-    (hα : 0 < α) (hβ : 0 ≤ β) :
-    ∀ i j : Fin n, 0 ≤ higham8_12_ZInvFormula n α β i j := by
-  intro i j
-  unfold higham8_12_ZInvFormula
-  have hscale : 0 ≤ 1 / α := one_div_nonneg.mpr hα.le
-  by_cases hij : i = j
-  · simpa [higham8_4_stressUpperInvFormula, hij] using hscale
-  · by_cases hlt : i.val < j.val
-    · have hpow : 0 ≤ (1 + β) ^ (j.val - i.val - 1) := by
-        apply pow_nonneg
-        linarith
-      rw [higham8_4_stressUpperInvFormula, if_neg hij, if_pos hlt]
-      exact mul_nonneg hscale (mul_nonneg hβ hpow)
-    · simp [higham8_4_stressUpperInvFormula, hij, hlt]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private lemma higham8_12_WMatrix_offdiag_nonpos (n : ℕ)
     (U : Fin n → Fin n → ℝ) :
@@ -4615,141 +4650,141 @@ theorem higham8_12_absolute_norm_vector_chain (n : ℕ)
         hα_le_diag hβ_bound hW_RInv) z
   exact ⟨hUM, hMW, hWZ⟩
 
-/-- **Problem 8.5 / Theorem 8.14 support**: the scaled `Z` inverse has exact
-∞-norm `(1 + β)^(n-1) / α` when `α > 0` and `β ≥ 0`. -/
-theorem higham8_5_ZInvFormula_infNorm_eq (n : ℕ) (hn : 0 < n) {α β : ℝ}
-    (hα : 0 < α) (hβ : 0 ≤ β) :
-    infNorm (higham8_12_ZInvFormula n α β) =
-      (1 / α) * (1 + β) ^ (n - 1) := by
-  let i0 : Fin n := ⟨0, hn⟩
-  have hnonneg := higham8_12_ZInvFormula_nonneg n hα hβ
-  apply le_antisymm
-  · apply infNorm_le_of_row_sum_le
-    · intro i
-      have habs :
-          ∑ j : Fin n, |higham8_12_ZInvFormula n α β i j| =
-            ∑ j : Fin n, higham8_12_ZInvFormula n α β i j := by
-        apply Finset.sum_congr rfl
-        intro j _hj
-        exact abs_of_nonneg (hnonneg i j)
-      rw [habs, higham8_12_ZInvFormula_row_sum]
-      have hbase : 1 ≤ 1 + β := by linarith
-      have hpow :
-          (1 + β) ^ (n - 1 - i.val) ≤ (1 + β) ^ (n - 1) :=
-        pow_le_pow_right₀ hbase (Nat.sub_le _ _)
-      exact mul_le_mul_of_nonneg_left hpow (one_div_nonneg.mpr hα.le)
-    · exact mul_nonneg (one_div_nonneg.mpr hα.le) (pow_nonneg (by linarith) _)
-  · have hrow := row_sum_le_infNorm (higham8_12_ZInvFormula n α β) i0
-    have habs :
-        ∑ j : Fin n, |higham8_12_ZInvFormula n α β i0 j| =
-          ∑ j : Fin n, higham8_12_ZInvFormula n α β i0 j := by
-      apply Finset.sum_congr rfl
-      intro j _hj
-      exact abs_of_nonneg (hnonneg i0 j)
-    rw [habs, higham8_12_ZInvFormula_row_sum] at hrow
-    simpa [i0] using hrow
 
-/-- **Problem 8.5 / Theorem 8.14 support**: the scaled `Z` inverse has exact
-1-norm `(1 + β)^(n-1) / α` when `α > 0` and `β ≥ 0`. -/
-theorem higham8_5_ZInvFormula_oneNorm_eq (n : ℕ) (hn : 0 < n) {α β : ℝ}
-    (hα : 0 < α) (hβ : 0 ≤ β) :
-    oneNorm (higham8_12_ZInvFormula n α β) =
-      (1 / α) * (1 + β) ^ (n - 1) := by
-  let jLast : Fin n := ⟨n - 1, by omega⟩
-  have hnonneg := higham8_12_ZInvFormula_nonneg n hα hβ
-  apply le_antisymm
-  · apply oneNorm_le_of_col_sum_le
-    · intro j
-      have habs :
-          ∑ i : Fin n, |higham8_12_ZInvFormula n α β i j| =
-            ∑ i : Fin n, higham8_12_ZInvFormula n α β i j := by
-        apply Finset.sum_congr rfl
-        intro i _hi
-        exact abs_of_nonneg (hnonneg i j)
-      rw [habs, higham8_12_ZInvFormula_col_sum]
-      have hbase : 1 ≤ 1 + β := by linarith
-      have hpow : (1 + β) ^ j.val ≤ (1 + β) ^ (n - 1) := by
-        have hj : j.val ≤ n - 1 := by omega
-        exact pow_le_pow_right₀ hbase hj
-      exact mul_le_mul_of_nonneg_left hpow (one_div_nonneg.mpr hα.le)
-    · exact mul_nonneg (one_div_nonneg.mpr hα.le) (pow_nonneg (by linarith) _)
-  · have hcol := col_sum_le_oneNorm (higham8_12_ZInvFormula n α β) jLast
-    have habs :
-        ∑ i : Fin n, |higham8_12_ZInvFormula n α β i jLast| =
-          ∑ i : Fin n, higham8_12_ZInvFormula n α β i jLast := by
-      apply Finset.sum_congr rfl
-      intro i _hi
-      exact abs_of_nonneg (hnonneg i jLast)
-    rw [habs, higham8_12_ZInvFormula_col_sum] at hcol
-    simpa [jLast] using hcol
 
-/-- **Problem 8.5 / Theorem 8.14 support**: the Euclidean operator norm of the
-scaled `Z` inverse is bounded by the same explicit endpoint as the `1`- and
-`∞`-norms. -/
-theorem higham8_5_ZInvFormula_opNorm2_le (n : ℕ) (hn : 0 < n) {α β : ℝ}
-    (hα : 0 < α) (hβ : 0 ≤ β) :
-    complexMatrixOp2 (realRectToCMatrix (higham8_12_ZInvFormula n α β)) ≤
-      (1 / α) * (1 + β) ^ (n - 1) := by
-  let c : ℝ := (1 / α) * (1 + β) ^ (n - 1)
-  have hbound :=
-    problem7_10e_complexMatrixOp2_realRectToCMatrix_le_sqrt_one_mul_inf hn
-      (higham8_12_ZInvFormula n α β)
-  have hone := higham8_5_ZInvFormula_oneNorm_eq n hn hα hβ
-  have hinf := higham8_5_ZInvFormula_infNorm_eq n hn hα hβ
-  have hc_nonneg : 0 ≤ c := by
-    dsimp [c]
-    exact mul_nonneg (one_div_nonneg.mpr hα.le) (pow_nonneg (by linarith) _)
-  calc
-    complexMatrixOp2 (realRectToCMatrix (higham8_12_ZInvFormula n α β))
-        ≤ Real.sqrt
-            (oneNorm (higham8_12_ZInvFormula n α β) *
-              infNorm (higham8_12_ZInvFormula n α β)) := hbound
-    _ = Real.sqrt (c * c) := by rw [hone, hinf]
-    _ = c := by
-      rw [show c * c = c ^ 2 by ring]
-      simpa [abs_of_nonneg hc_nonneg] using (Real.sqrt_sq_eq_abs c)
 
-/-- **Theorem 8.14 support**: under `β ≤ 1`, the exact `1`-norm of the scaled
-`Z` inverse is bounded by `2^(n-1) / α`. -/
-theorem higham8_14_ZInvFormula_oneNorm_upperBound (n : ℕ) (hn : 0 < n)
-    {α β : ℝ} (hα : 0 < α) (hβ : 0 ≤ β) (hβ1 : β ≤ 1) :
-    oneNorm (higham8_12_ZInvFormula n α β) ≤
-      (1 / α) * (2 : ℝ) ^ (n - 1) := by
-  rw [higham8_5_ZInvFormula_oneNorm_eq n hn hα hβ]
-  have hpow : (1 + β) ^ (n - 1) ≤ (2 : ℝ) ^ (n - 1) := by
-    have honeβ_nonneg : 0 ≤ 1 + β := by linarith
-    have honeβ_le_two : 1 + β ≤ (2 : ℝ) := by linarith
-    exact pow_le_pow_left₀ honeβ_nonneg honeβ_le_two (n - 1)
-  exact mul_le_mul_of_nonneg_left hpow (one_div_nonneg.mpr hα.le)
 
-/-- **Theorem 8.14 support**: under `β ≤ 1`, the exact `∞`-norm of the scaled
-`Z` inverse is bounded by `2^(n-1) / α`. -/
-theorem higham8_14_ZInvFormula_infNorm_upperBound (n : ℕ) (hn : 0 < n)
-    {α β : ℝ} (hα : 0 < α) (hβ : 0 ≤ β) (hβ1 : β ≤ 1) :
-    infNorm (higham8_12_ZInvFormula n α β) ≤
-      (1 / α) * (2 : ℝ) ^ (n - 1) := by
-  rw [higham8_5_ZInvFormula_infNorm_eq n hn hα hβ]
-  have hpow : (1 + β) ^ (n - 1) ≤ (2 : ℝ) ^ (n - 1) := by
-    have honeβ_nonneg : 0 ≤ 1 + β := by linarith
-    have honeβ_le_two : 1 + β ≤ (2 : ℝ) := by linarith
-    exact pow_le_pow_left₀ honeβ_nonneg honeβ_le_two (n - 1)
-  exact mul_le_mul_of_nonneg_left hpow (one_div_nonneg.mpr hα.le)
 
-/-- **Theorem 8.14 support**: under `β ≤ 1`, the Euclidean operator norm of
-the scaled `Z` inverse is bounded by `2^(n-1) / α`. -/
-theorem higham8_14_ZInvFormula_opNorm2_upperBound (n : ℕ) (hn : 0 < n)
-    {α β : ℝ} (hα : 0 < α) (hβ : 0 ≤ β) (hβ1 : β ≤ 1) :
-    complexMatrixOp2 (realRectToCMatrix (higham8_12_ZInvFormula n α β)) ≤
-      (1 / α) * (2 : ℝ) ^ (n - 1) := by
-  have hendpoint := higham8_5_ZInvFormula_opNorm2_le n hn hα hβ
-  have hpow : (1 + β) ^ (n - 1) ≤ (2 : ℝ) ^ (n - 1) := by
-    have honeβ_nonneg : 0 ≤ 1 + β := by linarith
-    have honeβ_le_two : 1 + β ≤ (2 : ℝ) := by linarith
-    exact pow_le_pow_left₀ honeβ_nonneg honeβ_le_two (n - 1)
-  have hscale :
-      (1 / α) * (1 + β) ^ (n - 1) ≤ (1 / α) * (2 : ℝ) ^ (n - 1) :=
-    mul_le_mul_of_nonneg_left hpow (one_div_nonneg.mpr hα.le)
-  exact hendpoint.trans hscale
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- **Theorem 8.14 support**: under `β ≤ 1`, the source `1`-norm of `U⁻¹`
 is bounded by the same `Z(U)` endpoint. -/
@@ -4794,155 +4829,155 @@ theorem higham8_14_opNorm2_upperBound (n : ℕ) (hn : 0 < n)
       (hchain.2.2.trans
         (higham8_14_ZInvFormula_opNorm2_upperBound n hn hα hβ hβ1)))
 
-/-- **Algorithm 8.13**, output quantity: the comparison-inverse ∞-norm bound. -/
-noncomputable def higham8_13_mu {n : ℕ} (M_inv : Fin n → Fin n → ℝ) : ℝ :=
-  infNorm M_inv
 
-/-- **Algorithm 8.13**, exact vector computed by solving `M(U)y = e`. -/
-noncomputable def higham8_13_y {n : ℕ} (M_inv : Fin n → Fin n → ℝ) :
-    Fin n → ℝ :=
-  fun i => ∑ j : Fin n, M_inv i j
 
-/-- **Algorithm 8.13**, exact recurrence for `y = M(U)⁻¹e`. -/
-theorem higham8_13_comparison_inverse_row_recurrence (n : ℕ)
-    (U M_inv : Fin n → Fin n → ℝ)
-    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
-    (hU_diag : ∀ i : Fin n, U i i ≠ 0)
-    (hM_RInv : IsRightInverse n (comparisonMatrix n U) M_inv)
-    (i : Fin n) :
-    |U i i| * higham8_13_y M_inv i = 1 +
-      ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
-        |U i j| * higham8_13_y M_inv j :=
-  compMatrix_inv_upper_row_eq_ones n U M_inv hUT hU_diag hM_RInv i
 
-/-- **Algorithm 8.13**, certified upper-bound property.  If `M_inv` is the
-inverse of the comparison matrix and dominates `|U_inv|`, its displayed
-∞-norm is an upper bound for `‖U⁻¹‖∞`. -/
-theorem higham8_13_inverse_bound_from_comparison {n : ℕ}
-    (U_inv M_inv : Fin n → Fin n → ℝ)
-    (habs : ∀ i j : Fin n, |U_inv i j| ≤ M_inv i j) :
-    infNorm U_inv ≤ higham8_13_mu M_inv := by
-  unfold higham8_13_mu
-  apply infNorm_le_of_row_sum_le
-  · intro i
-    calc ∑ j : Fin n, |U_inv i j|
-        ≤ ∑ j : Fin n, M_inv i j := by
-          apply Finset.sum_le_sum
-          intro j _
-          exact habs i j
-      _ = ∑ j : Fin n, |M_inv i j| := by
-          apply Finset.sum_congr rfl
-          intro j _
-          exact (abs_of_nonneg ((abs_nonneg (U_inv i j)).trans (habs i j))).symm
-      _ ≤ infNorm M_inv := row_sum_le_infNorm M_inv i
-  · exact infNorm_nonneg M_inv
 
-/-- **Problem 8.6**, first exact vector quantity:
-`M(U)⁻¹ |z|`, represented once an inverse of `M(U)` has been supplied. -/
-noncomputable def higham8_6_comparisonInverseAbsVec {n : ℕ}
-    (M_inv : Fin n → Fin n → ℝ) (z : Fin n → ℝ) : Fin n → ℝ :=
-  fun i => ∑ j : Fin n, M_inv i j * |z j|
 
-/-- **Problem 8.6**, first displayed quantity `‖M(U)⁻¹ |z|‖∞`. -/
-noncomputable def higham8_6_comparisonInverseAbsVecInfNorm {n : ℕ}
-    (M_inv : Fin n → Fin n → ℝ) (z : Fin n → ℝ) : ℝ :=
-  infNormVec (higham8_6_comparisonInverseAbsVec M_inv z)
 
-/-- **Problem 8.6**, second exact vector quantity:
-`W(U)⁻¹ |z|`, represented once an inverse of `W(U)` has been supplied. -/
-noncomputable def higham8_6_WInverseAbsVec {n : ℕ}
-    (W_inv : Fin n → Fin n → ℝ) (z : Fin n → ℝ) : Fin n → ℝ :=
-  fun i => ∑ j : Fin n, W_inv i j * |z j|
 
-/-- **Problem 8.6**, second displayed quantity `‖W(U)⁻¹ |z|‖∞`. -/
-noncomputable def higham8_6_WInverseAbsVecInfNorm {n : ℕ}
-    (W_inv : Fin n → Fin n → ℝ) (z : Fin n → ℝ) : ℝ :=
-  infNormVec (higham8_6_WInverseAbsVec W_inv z)
 
-/-- **Problem 8.6**, backward-sweep recurrence for
-`M(U)⁻¹ |z|`: the vector is computed by solving an upper-triangular
-comparison-matrix system. -/
-theorem higham8_6_comparisonInverseAbsVec_recurrence (n : ℕ)
-    (U M_inv : Fin n → Fin n → ℝ) (z : Fin n → ℝ)
-    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
-    (hU_diag : ∀ i : Fin n, U i i ≠ 0)
-    (hM_RInv : IsRightInverse n (comparisonMatrix n U) M_inv)
-    (i : Fin n) :
-    |U i i| * higham8_6_comparisonInverseAbsVec M_inv z i =
-      |z i| +
-        ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
-          |U i j| * higham8_6_comparisonInverseAbsVec M_inv z j := by
-  have hM_ut : ∀ i j : Fin n, j.val < i.val → comparisonMatrix n U i j = 0 := by
-    intro i j hij
-    unfold comparisonMatrix
-    simp [show i ≠ j from Fin.ne_of_val_ne (by omega), hUT i j hij]
-  have hM_diag : ∀ i : Fin n, comparisonMatrix n U i i ≠ 0 := by
-    intro i
-    simp [comparisonMatrix, hU_diag i]
-  have hM_LInv := ch7_isLeftInverse_of_isRightInverse hM_RInv
-  have hM_inv_ut := inv_upper_tri n (comparisonMatrix n U) M_inv hM_ut hM_diag hM_LInv
-  simpa [higham8_6_comparisonInverseAbsVec] using
-    (compMatrix_inv_upper_row_eq n U M_inv z hUT hU_diag hM_RInv hM_inv_ut i)
 
-/-- **Problem 8.6**, backward-sweep recurrence for
-`W(U)⁻¹ |z|`: each row uses the strict-upper row maximum from `W(U)`. -/
-theorem higham8_6_WInverseAbsVec_recurrence (n : ℕ)
-    (U W_inv : Fin n → Fin n → ℝ) (z : Fin n → ℝ)
-    (hW_RInv : IsRightInverse n (higham8_12_WMatrix n U) W_inv)
-    (i : Fin n) :
-    |U i i| * higham8_6_WInverseAbsVec W_inv z i =
-      |z i| +
-        ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
-          higham8_12_rowMaxStrictUpper n U i *
-            higham8_6_WInverseAbsVec W_inv z j := by
-  let y : Fin n → ℝ := higham8_6_WInverseAbsVec W_inv z
-  have hWy : ∀ i' : Fin n,
-      ∑ k : Fin n, higham8_12_WMatrix n U i' k * y k = |z i'| := by
-    intro i'
-    simp only [y, higham8_6_WInverseAbsVec]
-    simp_rw [Finset.mul_sum]
-    rw [Finset.sum_comm]
-    simp_rw [← mul_assoc, ← Finset.sum_mul]
-    conv_rhs =>
-      rw [show |z i'| = ∑ j : Fin n, (if i' = j then 1 else 0) * |z j| by
-        simp [Finset.mem_univ]]
-    apply Finset.sum_congr rfl
-    intro j _
-    congr 1
-    exact hW_RInv i' j
-  have hrow := hWy i
-  rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)] at hrow
-  rw [higham8_12_WMatrix_diag] at hrow
-  have hrest :
-      ∑ k ∈ Finset.univ.erase i, higham8_12_WMatrix n U i k * y k =
-        -(∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
-          higham8_12_rowMaxStrictUpper n U i * y j) := by
-    have herase_eq :
-        ∑ k ∈ Finset.univ.erase i, higham8_12_WMatrix n U i k * y k =
-          ∑ k ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
-            higham8_12_WMatrix n U i k * y k := by
-      symm
-      apply Finset.sum_subset
-      · intro j hj
-        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj
-        exact Finset.mem_erase.mpr ⟨Fin.ne_of_val_ne (by omega), Finset.mem_univ _⟩
-      · intro k hk hknot
-        rw [Finset.mem_erase] at hk
-        have hknot' : ¬ i.val < k.val := by
-          intro hc
-          exact hknot (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hc⟩)
-        have hlt : k.val < i.val := by omega
-        rw [higham8_12_WMatrix_upper n U i k hlt, zero_mul]
-    rw [herase_eq, ← Finset.sum_neg_distrib]
-    apply Finset.sum_congr rfl
-    intro k hk
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
-    rw [higham8_12_WMatrix_strictUpper n U hk]
-    ring
-  rw [hrest] at hrow
-  simpa [y, higham8_6_WInverseAbsVec] using (by linarith : |U i i| * y i =
-    |z i| + ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
-      higham8_12_rowMaxStrictUpper n U i * y j)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private theorem higham8_6_comparisonInverseAbsVec_nonneg (n : ℕ)
     (U M_inv : Fin n → Fin n → ℝ) (z : Fin n → ℝ)
@@ -5018,105 +5053,105 @@ theorem higham8_6_comparisonInverseAbsVecInfNorm_le_WInverseAbsVecInfNorm (n : �
             abs_le_infNormVec (higham8_6_WInverseAbsVec W_inv z) i
   · exact infNormVec_nonneg (higham8_6_WInverseAbsVec W_inv z)
 
-/-- **Theorem 8.14**, ∞-norm lower-bound part of (8.9). -/
-theorem higham8_14_infNorm_lowerBound (n : ℕ)
-    (U U_inv : Fin n → Fin n → ℝ)
-    (i0 : Fin n)
-    (hDD : IsDiagDominantUpper n U)
-    (hInv : IsInverse n U U_inv) :
-    (1 / Finset.inf' Finset.univ ⟨i0, Finset.mem_univ i0⟩
-      (fun k => |U k k|)) ≤ infNorm U_inv := by
-  classical
-  let α : ℝ :=
-    Finset.inf' Finset.univ ⟨i0, Finset.mem_univ i0⟩ (fun k : Fin n => |U k k|)
-  rcases Finset.exists_mem_eq_inf'
-      (s := Finset.univ) ⟨i0, Finset.mem_univ i0⟩
-      (fun k : Fin n => |U k k|) with
-    ⟨k, _hk_mem, hα_eq⟩
-  have hrow :
-      1 / |U k k| ≤ ∑ j : Fin n, |U_inv k j| :=
-    triInv_row_sum_lowerBound n U U_inv hDD.1 hDD.2.1 hInv k
-  calc
-    1 / α = 1 / |U k k| := by
-      simpa [α] using congrArg (fun x : ℝ => 1 / x) hα_eq
-    _ ≤ ∑ j : Fin n, |U_inv k j| := hrow
-    _ ≤ infNorm U_inv := row_sum_le_infNorm U_inv k
 
-/-- **Theorem 8.14**, `1`-norm lower-bound part of (8.9) at a chosen
-diagonal index. -/
-theorem higham8_14_oneNorm_lowerBound (n : ℕ)
-    (U U_inv : Fin n → Fin n → ℝ)
-    (i0 : Fin n)
-    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
-    (hU_diag : ∀ i : Fin n, U i i ≠ 0)
-    (hInv : IsInverse n U U_inv) :
-    (1 / |U i0 i0|) ≤ oneNorm U_inv := by
-  have hInv_ut := inv_upper_tri n U U_inv hUT hU_diag hInv.1
-  have hdiag : U_inv i0 i0 = 1 / U i0 i0 :=
-    inv_diag_entry n U U_inv hUT hU_diag hInv.1 hInv_ut i0
-  have hterm : |U_inv i0 i0| ≤ ∑ i : Fin n, |U_inv i i0| := by
-    simpa using
-      (Finset.single_le_sum (fun i _hi => abs_nonneg (U_inv i i0))
-        (Finset.mem_univ i0))
-  have habs : |U_inv i0 i0| = 1 / |U i0 i0| := by
-    rw [hdiag, abs_div, abs_one]
-  calc
-    1 / |U i0 i0| = |U_inv i0 i0| := by rw [habs]
-    _ ≤ ∑ i : Fin n, |U_inv i i0| := hterm
-    _ ≤ oneNorm U_inv := col_sum_le_oneNorm U_inv i0
 
-/-- **Theorem 8.14**, `2`-norm lower-bound part of (8.9) at a chosen
-diagonal index. -/
-theorem higham8_14_opNorm2_lowerBound (n : ℕ)
-    (U U_inv : Fin n → Fin n → ℝ)
-    (i0 : Fin n)
-    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
-    (hU_diag : ∀ i : Fin n, U i i ≠ 0)
-    (hInv : IsInverse n U U_inv) :
-    (1 / |U i0 i0|) ≤ complexMatrixOp2 (realRectToCMatrix U_inv) := by
-  have hInv_ut := inv_upper_tri n U U_inv hUT hU_diag hInv.1
-  have hdiag : U_inv i0 i0 = 1 / U i0 i0 :=
-    inv_diag_entry n U U_inv hUT hU_diag hInv.1 hInv_ut i0
-  have hbound :=
-    hasComplexMatrixLpBound_apply
-      (complexMatrixOp2_hasComplexMatrixLpBound (realRectToCMatrix U_inv))
-      (standardBasisCVec i0)
-  letI : Fact (1 ≤ ENNReal.ofReal (2 : ℝ)) := ⟨by norm_num⟩
-  have hcol :
-      complexVecLpNorm (ENNReal.ofReal (2 : ℝ))
-          (fun i : Fin n => realRectToCMatrix U_inv i i0) ≤
-        complexMatrixOp2 (realRectToCMatrix U_inv) := by
-    rw [complexMatrixVecMul_standardBasisCVec,
-      complexVecLpNorm_standardBasisCVec (ENNReal.ofReal (2 : ℝ)) i0, mul_one] at hbound
-    exact hbound
-  have hcoord :
-      ‖realRectToCMatrix U_inv i0 i0‖ ≤
-        complexVecLpNorm (ENNReal.ofReal (2 : ℝ))
-          (fun i : Fin n => realRectToCMatrix U_inv i i0) := by
-    letI : Fact (1 ≤ ENNReal.ofReal (2 : ℝ)) := ⟨by norm_num⟩
-    simpa using
-      (complexVecLpNorm_coord_le (ENNReal.ofReal (2 : ℝ))
-        (fun i : Fin n => realRectToCMatrix U_inv i i0) i0)
-  calc
-    1 / |U i0 i0| = |U_inv i0 i0| := by
-      rw [hdiag, abs_div, abs_one]
-    _ = ‖realRectToCMatrix U_inv i0 i0‖ := by
-      simp [realRectToCMatrix]
-    _ ≤ complexVecLpNorm (ENNReal.ofReal (2 : ℝ))
-          (fun i : Fin n => realRectToCMatrix U_inv i i0) := hcoord
-    _ ≤ complexMatrixOp2 (realRectToCMatrix U_inv) := hcol
 
-/-- **Theorem 8.14**, ∞-norm part of the inverse-bound chain under (8.5). -/
-theorem higham8_14_infNorm_upperBound (n : ℕ)
-    (U U_inv : Fin n → Fin n → ℝ)
-    (i0 : Fin n)
-    (hDD : IsDiagDominantUpper n U)
-    (hInv : IsInverse n U U_inv) :
-    infNorm U_inv ≤
-      2 ^ (n - 1) *
-        (1 / Finset.inf' Finset.univ ⟨i0, Finset.mem_univ i0⟩
-          (fun k => |U k k|)) :=
-  triInv_infNorm_upperBound n U U_inv i0 hDD hInv
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- **Theorem 8.14**, packaged `∞/1/2` norm chains in the source notation
 using the minimum diagonal magnitude. -/
@@ -5222,1350 +5257,1350 @@ theorem higham8_14_full_norm_chain (n : ℕ) (hn : 0 < n)
 
 /-! ## §8.4 Parallel fan-in exact product surface -/
 
-/-- **Equation (8.12)**: the `k`th lower-triangular column factor `L_k`.
-It is the identity matrix except that column `k` is copied from `L`. -/
-noncomputable def higham8_12_lowerColumnFactor (n : ℕ)
-    (L : Fin n → Fin n → ℝ) (k : Fin n) : Fin n → Fin n → ℝ :=
-  fun i j =>
-    if j = k then L i k
-    else if i = j then 1 else 0
 
-/-- Prefix product of the first `r` factors in the exact factorization
-`L = L_1 ... L_n` from (8.12). -/
-noncomputable def higham8_12_lowerColumnProductPrefix (n : ℕ)
-    (L : Fin n → Fin n → ℝ) : (r : ℕ) → r ≤ n → Fin n → Fin n → ℝ
-  | 0, _ => idMatrix n
-  | r + 1, hr =>
-      matMul n (higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr))
-        (higham8_12_lowerColumnFactor n L ⟨r, hr⟩)
 
-/-- Full exact product of the column factors in (8.12). -/
-noncomputable def higham8_12_lowerColumnProduct (n : ℕ)
-    (L : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  higham8_12_lowerColumnProductPrefix n L n (le_refl n)
 
-/-- Prefix invariant for the exact column-factor product: after multiplying the
-first `r` factors, the first `r` columns agree with `L` and the remaining
-columns are still those of the identity. -/
-theorem higham8_12_lowerColumnProductPrefix_apply (n : ℕ)
-    (L : Fin n → Fin n → ℝ)
-    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0) :
-    ∀ (r : ℕ) (hr : r ≤ n) (i j : Fin n),
-      higham8_12_lowerColumnProductPrefix n L r hr i j =
-        if j.val < r then L i j else idMatrix n i j := by
-  intro r
-  induction r with
-  | zero =>
-      intro hr i j
-      simp [higham8_12_lowerColumnProductPrefix]
-  | succ r ih =>
-      intro hr i j
-      have hri : r < n := hr
-      unfold higham8_12_lowerColumnProductPrefix
-      unfold matMul
-      by_cases hjr : j.val = r
-      · have hj_eq_col : j = (⟨r, hr⟩ : Fin n) := Fin.ext hjr
-        have hsum :
-            (∑ k : Fin n,
-              higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i k *
-                higham8_12_lowerColumnFactor n L ⟨r, hr⟩ k j) =
-              higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i i *
-                higham8_12_lowerColumnFactor n L ⟨r, hr⟩ i j := by
-          apply Finset.sum_eq_single i
-          · intro k _ hk
-            by_cases hkr : k.val < r
-            · have hLkr : L k (⟨r, hr⟩ : Fin n) = 0 := hLT k ⟨r, hr⟩ hkr
-              rw [ih (Nat.le_of_succ_le hr) i k]
-              simp [higham8_12_lowerColumnFactor, hj_eq_col, hkr, hLkr]
-            · have hik : i ≠ k := by exact Ne.symm hk
-              rw [ih (Nat.le_of_succ_le hr) i k]
-              simp [higham8_12_lowerColumnFactor, hj_eq_col, hkr, hik, idMatrix]
-          · intro hi
-            exact (hi (Finset.mem_univ i)).elim
-        rw [hsum]
-        rw [ih (Nat.le_of_succ_le hr) i i]
-        by_cases hir : i.val < r
-        · have hLij : L i (⟨r, hr⟩ : Fin n) = 0 := hLT i ⟨r, hr⟩ hir
-          simp [higham8_12_lowerColumnFactor, hj_eq_col, hir, hLij]
-        · simp [higham8_12_lowerColumnFactor, hj_eq_col, hir, idMatrix]
-      · by_cases hjlt : j.val < r
-        ·
-          have hj_ne_col : j ≠ (⟨r, hr⟩ : Fin n) := by
-            intro h
-            exact hjr (congrArg Fin.val h)
-          have hfactor_j :
-              higham8_12_lowerColumnFactor n L ⟨r, hr⟩ j j = 1 := by
-            simp [higham8_12_lowerColumnFactor, hj_ne_col]
-          have hsum :
-            (∑ k : Fin n,
-              higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i k *
-                higham8_12_lowerColumnFactor n L ⟨r, hr⟩ k j) =
-              higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i j := by
-            calc
-              (∑ k : Fin n,
-                higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i k *
-                  higham8_12_lowerColumnFactor n L ⟨r, hr⟩ k j)
-                  =
-                higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i j *
-                  higham8_12_lowerColumnFactor n L ⟨r, hr⟩ j j := by
-                    apply Finset.sum_eq_single j
-                    · intro k _ hk
-                      have hkj : k ≠ j := hk
-                      rw [ih (Nat.le_of_succ_le hr) i k]
-                      by_cases hkr : k.val < r
-                      · simp [higham8_12_lowerColumnFactor, hj_ne_col, hkj, hkr]
-                      · simp [higham8_12_lowerColumnFactor, hj_ne_col, hkj, hkr]
-                    · intro hj
-                      exact (hj (Finset.mem_univ j)).elim
-              _ = higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i j := by
-                    rw [hfactor_j, mul_one]
-          rw [hsum, ih (Nat.le_of_succ_le hr) i j]
-          simp [hjlt, Nat.lt_trans hjlt (Nat.lt_succ_self r)]
-        ·
-          have hjgt : r < j.val := by omega
-          have hj_ne_col : j ≠ (⟨r, hr⟩ : Fin n) := by
-            intro h
-            exact hjr (congrArg Fin.val h)
-          have hfactor_j :
-              higham8_12_lowerColumnFactor n L ⟨r, hr⟩ j j = 1 := by
-            simp [higham8_12_lowerColumnFactor, hj_ne_col]
-          have hsum :
-            (∑ k : Fin n,
-              higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i k *
-                higham8_12_lowerColumnFactor n L ⟨r, hr⟩ k j) =
-              higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i j := by
-            calc
-              (∑ k : Fin n,
-                higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i k *
-                  higham8_12_lowerColumnFactor n L ⟨r, hr⟩ k j)
-                  =
-                higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i j *
-                  higham8_12_lowerColumnFactor n L ⟨r, hr⟩ j j := by
-                    apply Finset.sum_eq_single j
-                    · intro k _ hk
-                      have hkj : k ≠ j := hk
-                      rw [ih (Nat.le_of_succ_le hr) i k]
-                      by_cases hkr : k.val < r
-                      · simp [higham8_12_lowerColumnFactor, hj_ne_col, hkj, hkr]
-                      · simp [higham8_12_lowerColumnFactor, hj_ne_col, hkj, hkr]
-                    · intro hj
-                      exact (hj (Finset.mem_univ j)).elim
-              _ = higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i j := by
-                    rw [hfactor_j, mul_one]
-          rw [hsum, ih (Nat.le_of_succ_le hr) i j]
-          have hjnotr : ¬ j.val < r := by omega
-          have hjnotrs : ¬ j.val < r + 1 := by omega
-          simp [hjnotr, hjnotrs]
 
-/-- **Equation (8.12)** exact factorization: every lower-triangular matrix is the
-product of its column factors `L_1 ... L_n`. -/
-theorem higham8_12_lowerColumnProduct_eq (n : ℕ)
-    (L : Fin n → Fin n → ℝ)
-    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0) :
-    higham8_12_lowerColumnProduct n L = L := by
-  ext i j
-  unfold higham8_12_lowerColumnProduct
-  rw [higham8_12_lowerColumnProductPrefix_apply n L hLT n (le_refl n) i j]
-  have hj : j.val < n := j.isLt
-  simp [hj]
 
-/-- **Equation (8.13)**: the exact inverse `M_k = L_k⁻¹` of a lower-column
-factor.  Outside column `k` it is the identity; column `k` is divided by the
-diagonal pivot and its strict-lower entries change sign. -/
-noncomputable def higham8_13_lowerColumnInverseFactor (n : ℕ)
-    (L : Fin n → Fin n → ℝ) (k : Fin n) : Fin n → Fin n → ℝ :=
-  fun i j =>
-    if j = k then
-      if i = k then 1 / L k k else -(L i k) / L k k
-    else if i = j then 1 else 0
 
-/-- The displayed `M_k` is a right inverse of the source column factor `L_k`.
-This is the first exact bridge needed by the fan-in argument; no rounded or
-target-scale hypothesis is used. -/
-theorem higham8_13_lowerColumnFactor_mul_inverseFactor (n : ℕ)
-    (L : Fin n → Fin n → ℝ) (k : Fin n) (hkk : L k k ≠ 0) :
-    matMul n (higham8_12_lowerColumnFactor n L k)
-        (higham8_13_lowerColumnInverseFactor n L k) = idMatrix n := by
-  funext i j
-  unfold matMul
-  by_cases hj : j = k
-  · subst j
-    by_cases hi : i = k
-    · subst i
-      rw [Finset.sum_eq_single k]
-      · simp [higham8_12_lowerColumnFactor,
-          higham8_13_lowerColumnInverseFactor, hkk, idMatrix]
-      · intro r _ hr
-        simp [higham8_12_lowerColumnFactor,
-          higham8_13_lowerColumnInverseFactor, hr, Ne.symm hr]
-      · intro hk
-        exact (hk (Finset.mem_univ k)).elim
-    · rw [Finset.sum_eq_add_sum_diff_singleton (s := Finset.univ) k
-          (fun r : Fin n =>
-            higham8_12_lowerColumnFactor n L k i r *
-              higham8_13_lowerColumnInverseFactor n L k r k) (by simp)]
-      rw [Finset.sum_eq_single i]
-      · simp [higham8_12_lowerColumnFactor,
-          higham8_13_lowerColumnInverseFactor, hi, idMatrix]
-        field_simp
-        ring
-      · intro r hr hri
-        have hrk : r ≠ k := by simpa using hr
-        simp [higham8_12_lowerColumnFactor,
-          higham8_13_lowerColumnInverseFactor, hrk, Ne.symm hri]
-      · intro hi_mem
-        exact (hi_mem (by simp [hi])).elim
-  · rw [Finset.sum_eq_single j]
-    · simp [higham8_12_lowerColumnFactor,
-        higham8_13_lowerColumnInverseFactor, hj, idMatrix]
-    · intro r _ hr
-      simp [higham8_13_lowerColumnInverseFactor, hj, hr]
-    · intro hj_mem
-      exact (hj_mem (Finset.mem_univ j)).elim
 
-/-- The displayed `M_k` is also a left inverse of `L_k`; hence it is the
-genuine two-sided inverse used in (8.13). -/
-theorem higham8_13_inverseFactor_mul_lowerColumnFactor (n : ℕ)
-    (L : Fin n → Fin n → ℝ) (k : Fin n) (hkk : L k k ≠ 0) :
-    matMul n (higham8_13_lowerColumnInverseFactor n L k)
-        (higham8_12_lowerColumnFactor n L k) = idMatrix n := by
-  funext i j
-  unfold matMul
-  by_cases hj : j = k
-  · subst j
-    by_cases hi : i = k
-    · subst i
-      rw [Finset.sum_eq_single k]
-      · simp [higham8_12_lowerColumnFactor,
-          higham8_13_lowerColumnInverseFactor, hkk, idMatrix]
-      · intro r _ hr
-        simp [higham8_13_lowerColumnInverseFactor, hr, Ne.symm hr]
-      · intro hk
-        exact (hk (Finset.mem_univ k)).elim
-    · rw [Finset.sum_eq_add_sum_diff_singleton (s := Finset.univ) k
-          (fun r : Fin n =>
-            higham8_13_lowerColumnInverseFactor n L k i r *
-              higham8_12_lowerColumnFactor n L k r k) (by simp)]
-      rw [Finset.sum_eq_single i]
-      · simp [higham8_12_lowerColumnFactor,
-          higham8_13_lowerColumnInverseFactor, hi, hkk, idMatrix]
-      · intro r hr hri
-        have hrk : r ≠ k := by simpa using hr
-        simp [higham8_13_lowerColumnInverseFactor, hrk, Ne.symm hri]
-      · intro hi_mem
-        exact (hi_mem (by simp [hi])).elim
-  · rw [Finset.sum_eq_single j]
-    · simp [higham8_12_lowerColumnFactor,
-        higham8_13_lowerColumnInverseFactor, hj, idMatrix]
-    · intro r _ hr
-      simp [higham8_12_lowerColumnFactor, hj, hr]
-    · intro hj_mem
-      exact (hj_mem (Finset.mem_univ j)).elim
 
-/-- `L_k` and the explicit `M_k` form an exact two-sided inverse pair. -/
-theorem higham8_13_lowerColumnFactor_inverse (n : ℕ)
-    (L : Fin n → Fin n → ℝ) (k : Fin n) (hkk : L k k ≠ 0) :
-    IsInverse n (higham8_12_lowerColumnFactor n L k)
-      (higham8_13_lowerColumnInverseFactor n L k) := by
-  constructor
-  · intro i j
-    simpa [matMul, idMatrix] using congrFun₂
-      (higham8_13_inverseFactor_mul_lowerColumnFactor n L k hkk) i j
-  · intro i j
-    simpa [matMul, idMatrix] using congrFun₂
-      (higham8_13_lowerColumnFactor_mul_inverseFactor n L k hkk) i j
 
-/-- Taking entrywise absolute values of `M_k` is exactly the inverse column
-factor associated with the comparison matrix `M(L)`. -/
-theorem higham8_13_abs_lowerColumnInverseFactor (n : ℕ)
-    (L : Fin n → Fin n → ℝ) (k : Fin n) :
-    absMatrix n (higham8_13_lowerColumnInverseFactor n L k) =
-      higham8_13_lowerColumnInverseFactor n (comparisonMatrix n L) k := by
-  funext i j
-  by_cases hj : j = k
-  · subst j
-    by_cases hi : i = k
-    · subst i
-      simp [absMatrix, higham8_13_lowerColumnInverseFactor,
-        comparisonMatrix]
-    · simp [absMatrix, higham8_13_lowerColumnInverseFactor,
-        comparisonMatrix, hi, abs_div]
-  · by_cases hij : i = j
-    · subst i
-      simp [absMatrix, higham8_13_lowerColumnInverseFactor, hj]
-    · simp [absMatrix, higham8_13_lowerColumnInverseFactor, hj, hij]
 
-/-- Reverse prefix product `M_r ⋯ M_1` of the exact inverse column factors.
-This is the exact-arithmetic product evaluated by the fan-in tree. -/
-noncomputable def higham8_13_inverseColumnProductPrefix (n : ℕ)
-    (L : Fin n → Fin n → ℝ) :
-    (r : ℕ) → r ≤ n → Fin n → Fin n → ℝ
-  | 0, _ => idMatrix n
-  | r + 1, hr =>
-      matMul n (higham8_13_lowerColumnInverseFactor n L ⟨r, hr⟩)
-        (higham8_13_inverseColumnProductPrefix n L r (Nat.le_of_succ_le hr))
 
-/-- Full reverse product `M_n ⋯ M_1`. -/
-noncomputable def higham8_13_inverseColumnProduct (n : ℕ)
-    (L : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  higham8_13_inverseColumnProductPrefix n L n (le_refl n)
 
-/-- Every exact lower-column prefix times the matching reverse inverse prefix
-is the identity. -/
-theorem higham8_13_lowerColumnProductPrefix_mul_inversePrefix (n : ℕ)
-    (L : Fin n → Fin n → ℝ)
-    (hdiag : ∀ k : Fin n, L k k ≠ 0) :
-    ∀ (r : ℕ) (hr : r ≤ n),
-      matMul n (higham8_12_lowerColumnProductPrefix n L r hr)
-          (higham8_13_inverseColumnProductPrefix n L r hr) = idMatrix n := by
-  intro r
-  induction r with
-  | zero =>
-      intro hr
-      simp [higham8_12_lowerColumnProductPrefix,
-        higham8_13_inverseColumnProductPrefix, matMul_id_left]
-  | succ r ih =>
-      intro hr
-      unfold higham8_12_lowerColumnProductPrefix
-      unfold higham8_13_inverseColumnProductPrefix
-      rw [matMul_assoc]
-      rw [← matMul_assoc n
-        (higham8_12_lowerColumnFactor n L ⟨r, hr⟩)
-        (higham8_13_lowerColumnInverseFactor n L ⟨r, hr⟩)]
-      rw [higham8_13_lowerColumnFactor_mul_inverseFactor n L ⟨r, hr⟩
-        (hdiag ⟨r, hr⟩)]
-      rw [matMul_id_left]
-      exact ih (Nat.le_of_succ_le hr)
 
-/-- Conversely, each reverse inverse prefix times its lower-column prefix is
-the identity. -/
-theorem higham8_13_inversePrefix_mul_lowerColumnProductPrefix (n : ℕ)
-    (L : Fin n → Fin n → ℝ)
-    (hdiag : ∀ k : Fin n, L k k ≠ 0) :
-    ∀ (r : ℕ) (hr : r ≤ n),
-      matMul n (higham8_13_inverseColumnProductPrefix n L r hr)
-          (higham8_12_lowerColumnProductPrefix n L r hr) = idMatrix n := by
-  intro r
-  induction r with
-  | zero =>
-      intro hr
-      simp [higham8_12_lowerColumnProductPrefix,
-        higham8_13_inverseColumnProductPrefix, matMul_id_left]
-  | succ r ih =>
-      intro hr
-      unfold higham8_12_lowerColumnProductPrefix
-      unfold higham8_13_inverseColumnProductPrefix
-      rw [matMul_assoc]
-      rw [← matMul_assoc n
-        (higham8_13_inverseColumnProductPrefix n L r (Nat.le_of_succ_le hr))
-        (higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr))]
-      rw [ih (Nat.le_of_succ_le hr)]
-      rw [matMul_id_left]
-      exact higham8_13_inverseFactor_mul_lowerColumnFactor n L ⟨r, hr⟩
-        (hdiag ⟨r, hr⟩)
 
-/-- The reverse product of the `M_k` factors is a two-sided inverse of `L`.
-This discharges the exact `M_i=L_i⁻¹` producer/solve bridge in (8.13). -/
-theorem higham8_13_inverseColumnProduct_inverse (n : ℕ)
-    (L : Fin n → Fin n → ℝ)
-    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
-    (hdiag : ∀ k : Fin n, L k k ≠ 0) :
-    IsInverse n L (higham8_13_inverseColumnProduct n L) := by
-  have hprod : higham8_12_lowerColumnProduct n L = L :=
-    higham8_12_lowerColumnProduct_eq n L hLT
-  have hleft := higham8_13_inversePrefix_mul_lowerColumnProductPrefix
-    n L hdiag n (le_refl n)
-  have hright := higham8_13_lowerColumnProductPrefix_mul_inversePrefix
-    n L hdiag n (le_refl n)
-  change matMul n (higham8_13_inverseColumnProduct n L)
-    (higham8_12_lowerColumnProduct n L) = idMatrix n at hleft
-  change matMul n (higham8_12_lowerColumnProduct n L)
-    (higham8_13_inverseColumnProduct n L) = idMatrix n at hright
-  rw [hprod] at hleft hright
-  constructor
-  · intro i j
-    simpa [matMul, idMatrix] using congrFun₂ hleft i j
-  · intro i j
-    simpa [matMul, idMatrix] using congrFun₂ hright i j
 
-/-- A left inverse and a right inverse of the same finite square matrix agree.
-Kept local to the Chapter-8 surface so the inverse-column-factor bridge does
-not depend on a later chapter. -/
-theorem higham8_13_leftInverse_eq_rightInverse {n : ℕ}
-    (A X Y : Fin n → Fin n → ℝ)
-    (hX : IsLeftInverse n A X) (hY : IsRightInverse n A Y) : X = Y := by
-  have hXA : matMul n X A = idMatrix n := by
-    funext i j
-    exact hX i j
-  have hAY : matMul n A Y = idMatrix n := by
-    funext i j
-    exact hY i j
-  calc
-    X = matMul n X (idMatrix n) := (matMul_id_right n X).symm
-    _ = matMul n X (matMul n A Y) := by rw [hAY]
-    _ = matMul n (matMul n X A) Y := (matMul_assoc n X A Y).symm
-    _ = matMul n (idMatrix n) Y := by rw [hXA]
-    _ = Y := matMul_id_left n Y
 
-/-- **Equation (8.13)**, source's displayed `n = 7` fan-in matrix product
-shape before rounding errors are introduced. -/
-noncomputable def higham8_13_fanIn7Matrix (n : ℕ)
-    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ) :
-    Fin n → Fin n → ℝ :=
-  matMul n
-    (matMul n (matMul n M7 M6) (matMul n M5 M4))
-    (matMul n (matMul n M3 M2) M1)
 
-/-- **Equation (8.13)**, applying the displayed `n = 7` fan-in product to the
-right-hand side vector. -/
-noncomputable def higham8_13_fanIn7Apply (n : ℕ)
-    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ) (b : Fin n → ℝ) :
-    Fin n → ℝ :=
-  matMulVec n (higham8_13_fanIn7Matrix n M1 M2 M3 M4 M5 M6 M7) b
 
-/-- Left-associated reference product for the same seven matrices. -/
-noncomputable def higham8_13_sequential7Matrix (n : ℕ)
-    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ) :
-    Fin n → Fin n → ℝ :=
-  matMul n
-    (matMul n
-      (matMul n
-        (matMul n
-          (matMul n (matMul n M7 M6) M5) M4) M3) M2) M1
 
-/-- **Equation (8.13)** exact-arithmetic support: the displayed fan-in tree is
-only a parenthesization of the same exact matrix product.  The rounded fan-in
-expansion and residual bounds `(8.14)`--`(8.20)` remain separate rounding rows. -/
-theorem higham8_13_fanIn7Matrix_eq_sequential7Matrix (n : ℕ)
-    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ) :
-    higham8_13_fanIn7Matrix n M1 M2 M3 M4 M5 M6 M7 =
-      higham8_13_sequential7Matrix n M1 M2 M3 M4 M5 M6 M7 := by
-  unfold higham8_13_fanIn7Matrix higham8_13_sequential7Matrix
-  rw [← matMul_assoc n (matMul n (matMul n M7 M6) (matMul n M5 M4))
-    (matMul n M3 M2) M1]
-  rw [← matMul_assoc n (matMul n (matMul n M7 M6) (matMul n M5 M4)) M3 M2]
-  rw [← matMul_assoc n (matMul n M7 M6) M5 M4]
 
-/-- For seven source column factors, the balanced fan-in parenthesization is
-exactly the full reverse inverse-column product `M₇⋯M₁`. -/
-theorem higham8_13_fanIn7InverseMatrix_eq
-    (L : Fin 7 → Fin 7 → ℝ) :
-    higham8_13_fanIn7Matrix 7
-        (higham8_13_lowerColumnInverseFactor 7 L 0)
-        (higham8_13_lowerColumnInverseFactor 7 L 1)
-        (higham8_13_lowerColumnInverseFactor 7 L 2)
-        (higham8_13_lowerColumnInverseFactor 7 L 3)
-        (higham8_13_lowerColumnInverseFactor 7 L 4)
-        (higham8_13_lowerColumnInverseFactor 7 L 5)
-        (higham8_13_lowerColumnInverseFactor 7 L 6) =
-      higham8_13_inverseColumnProduct 7 L := by
-  simp [higham8_13_fanIn7Matrix, higham8_13_inverseColumnProduct,
-    higham8_13_inverseColumnProductPrefix, matMul_assoc, matMul_id_right]
 
-/-- The exact seven-factor fan-in application genuinely solves `Lx=b`; the
-former free `hsolve` premise is produced from the source lower-triangular and
-nonsingular-diagonal hypotheses. -/
-theorem higham8_13_fanIn7InverseApply_solves
-    (L : Fin 7 → Fin 7 → ℝ) (b : Fin 7 → ℝ)
-    (hLT : ∀ i j : Fin 7, i.val < j.val → L i j = 0)
-    (hdiag : ∀ k : Fin 7, L k k ≠ 0) :
-    matMulVec 7 L
-        (higham8_13_fanIn7Apply 7
-          (higham8_13_lowerColumnInverseFactor 7 L 0)
-          (higham8_13_lowerColumnInverseFactor 7 L 1)
-          (higham8_13_lowerColumnInverseFactor 7 L 2)
-          (higham8_13_lowerColumnInverseFactor 7 L 3)
-          (higham8_13_lowerColumnInverseFactor 7 L 4)
-          (higham8_13_lowerColumnInverseFactor 7 L 5)
-          (higham8_13_lowerColumnInverseFactor 7 L 6) b) = b := by
-  have hInv := higham8_13_inverseColumnProduct_inverse 7 L hLT hdiag
-  have hmat :
-      matMul 7 L
-          (higham8_13_fanIn7Matrix 7
-            (higham8_13_lowerColumnInverseFactor 7 L 0)
-            (higham8_13_lowerColumnInverseFactor 7 L 1)
-            (higham8_13_lowerColumnInverseFactor 7 L 2)
-            (higham8_13_lowerColumnInverseFactor 7 L 3)
-            (higham8_13_lowerColumnInverseFactor 7 L 4)
-            (higham8_13_lowerColumnInverseFactor 7 L 5)
-            (higham8_13_lowerColumnInverseFactor 7 L 6)) = idMatrix 7 := by
-    rw [higham8_13_fanIn7InverseMatrix_eq]
-    funext i j
-    exact hInv.2 i j
-  ext i
-  unfold higham8_13_fanIn7Apply
-  rw [← matMulVec_matMul 7 L
-    (higham8_13_fanIn7Matrix 7
-      (higham8_13_lowerColumnInverseFactor 7 L 0)
-      (higham8_13_lowerColumnInverseFactor 7 L 1)
-      (higham8_13_lowerColumnInverseFactor 7 L 2)
-      (higham8_13_lowerColumnInverseFactor 7 L 3)
-      (higham8_13_lowerColumnInverseFactor 7 L 4)
-      (higham8_13_lowerColumnInverseFactor 7 L 5)
-      (higham8_13_lowerColumnInverseFactor 7 L 6)) b i]
-  rw [hmat, matMulVec_id]
 
-/-- **Equation (8.14)**, rounded `n = 7` fan-in matrix expression.
 
-The displayed first-order analysis writes the computed tree in terms of
-perturbations of the local matrix products.  This definition records the exact
-algebraic expression before bounding the perturbation matrices. -/
-noncomputable def higham8_14_fanIn7RoundedMatrix (n : ℕ)
-    (M1 M2 M3 M4 M5 M6 M7 Δ1 Δ32 Δ54 Δ76 Δ7654 :
-      Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  matMul n
-    (fun i j =>
-      matMul n
-        (fun i j => matMul n M7 M6 i j + Δ76 i j)
-        (fun i j => matMul n M5 M4 i j + Δ54 i j) i j +
-        Δ7654 i j)
-    (matMul n
-      (fun i j => matMul n M3 M2 i j + Δ32 i j)
-      (fun i j => M1 i j + Δ1 i j))
 
-/-- **Equation (8.14)**, rounded `n = 7` fan-in expression applied to the
-right-hand side vector. -/
-noncomputable def higham8_14_fanIn7RoundedApply (n : ℕ)
-    (M1 M2 M3 M4 M5 M6 M7 Δ1 Δ32 Δ54 Δ76 Δ7654 :
-      Fin n → Fin n → ℝ) (b : Fin n → ℝ) : Fin n → ℝ :=
-  matMulVec n
-    (higham8_14_fanIn7RoundedMatrix n
-      M1 M2 M3 M4 M5 M6 M7 Δ1 Δ32 Δ54 Δ76 Δ7654)
-    b
 
-/-- The literal rounded fan-in executor underlying the source's displayed
-`n = 7` tree.  Matrix products at the four internal matrix nodes and all three
-matrix-vector actions are evaluated by the repository floating-point model. -/
-noncomputable def higham8_14_fanIn7Executor (fp : FPModel) (n : ℕ)
-    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ) (b : Fin n → ℝ) :
-    Fin n → ℝ :=
-  let C76 := fl_matMul fp n n n M7 M6
-  let C54 := fl_matMul fp n n n M5 M4
-  let C7654 := fl_matMul fp n n n C76 C54
-  let C32 := fl_matMul fp n n n M3 M2
-  let v1 := fl_matVec fp n n M1 b
-  let v321 := fl_matVec fp n n C32 v1
-  fl_matVec fp n n C7654 v321
 
-/-- **Equation (8.14), producer bridge.**  The literal rounded fan-in executor
-has exactly the source's perturbation-tree form.  In addition to constructing
-all five perturbations, the theorem exposes certified local envelopes.  The
-two composite envelopes retain the harmless higher-order terms explicitly:
-the matrix-product residual plus the backward error of the subsequent
-matrix-vector action.
 
-This theorem removes the former gap between the symbolic `(8.14)` expression
-and an actual sequence of `fl_matMul`/`fl_matVec` operations. -/
-theorem higham8_14_fanIn7Executor_eq_roundedApply (fp : FPModel) (n : ℕ)
-    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
-    (hn : gammaValid fp n) :
-    ∃ Δ1 Δ32 Δ54 Δ76 Δ7654 : Fin n → Fin n → ℝ,
-      higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b =
-        higham8_14_fanIn7RoundedApply n
-          M1 M2 M3 M4 M5 M6 M7 Δ1 Δ32 Δ54 Δ76 Δ7654 b ∧
-      (∀ i j, |Δ1 i j| ≤ gamma fp n * |M1 i j|) ∧
-      (∀ i j,
-        |Δ32 i j| ≤
-          gamma fp n * (∑ k : Fin n, |M3 i k| * |M2 k j|) +
-            gamma fp n * |fl_matMul fp n n n M3 M2 i j|) ∧
-      (∀ i j,
-        |Δ54 i j| ≤ gamma fp n * (∑ k : Fin n, |M5 i k| * |M4 k j|)) ∧
-      (∀ i j,
-        |Δ76 i j| ≤ gamma fp n * (∑ k : Fin n, |M7 i k| * |M6 k j|)) ∧
-      (∀ i j,
-        |Δ7654 i j| ≤
-          gamma fp n *
-              (∑ k : Fin n,
-                |fl_matMul fp n n n M7 M6 i k| *
-                  |fl_matMul fp n n n M5 M4 k j|) +
-            gamma fp n *
-              |fl_matMul fp n n n
-                (fl_matMul fp n n n M7 M6)
-                (fl_matMul fp n n n M5 M4) i j|) := by
-  let C76 : Fin n → Fin n → ℝ := fl_matMul fp n n n M7 M6
-  let C54 : Fin n → Fin n → ℝ := fl_matMul fp n n n M5 M4
-  let C7654 : Fin n → Fin n → ℝ := fl_matMul fp n n n C76 C54
-  let C32 : Fin n → Fin n → ℝ := fl_matMul fp n n n M3 M2
-  let v1 : Fin n → ℝ := fl_matVec fp n n M1 b
-  let v321 : Fin n → ℝ := fl_matVec fp n n C32 v1
-  let xhat : Fin n → ℝ := fl_matVec fp n n C7654 v321
-  obtain ⟨Δ1, hΔ1, hv1⟩ := matVec_backward_error fp n n M1 b hn
-  obtain ⟨E32, hE32, hv321⟩ := matVec_backward_error fp n n C32 v1 hn
-  obtain ⟨E7654, hE7654, hxhat⟩ :=
-    matVec_backward_error fp n n C7654 v321 hn
-  let Δ76 : Fin n → Fin n → ℝ := fun i j => C76 i j - matMul n M7 M6 i j
-  let Δ54 : Fin n → Fin n → ℝ := fun i j => C54 i j - matMul n M5 M4 i j
-  let Δ32 : Fin n → Fin n → ℝ :=
-    fun i j => C32 i j - matMul n M3 M2 i j + E32 i j
-  let Δ7654 : Fin n → Fin n → ℝ :=
-    fun i j => C7654 i j - matMul n C76 C54 i j + E7654 i j
-  have hv1' : v1 = matMulVec n (fun i j => M1 i j + Δ1 i j) b := by
-    ext i
-    simpa [v1, matMulVec] using hv1 i
-  have hv321' : v321 = matMulVec n (fun i j => C32 i j + E32 i j) v1 := by
-    ext i
-    simpa [v321, matMulVec] using hv321 i
-  have hxhat' : xhat = matMulVec n (fun i j => C7654 i j + E7654 i j) v321 := by
-    ext i
-    simpa [xhat, matMulVec] using hxhat i
-  have h76 : (fun i j => matMul n M7 M6 i j + Δ76 i j) = C76 := by
-    funext i j
-    simp [Δ76]
-  have h54 : (fun i j => matMul n M5 M4 i j + Δ54 i j) = C54 := by
-    funext i j
-    simp [Δ54]
-  have h32 :
-      (fun i j => matMul n M3 M2 i j + Δ32 i j) =
-        (fun i j => C32 i j + E32 i j) := by
-    funext i j
-    dsimp [Δ32]
-    ring
-  have h7654 :
-      (fun i j => matMul n C76 C54 i j + Δ7654 i j) =
-        (fun i j => C7654 i j + E7654 i j) := by
-    funext i j
-    dsimp [Δ7654]
-    ring
-  refine ⟨Δ1, Δ32, Δ54, Δ76, Δ7654, ?_, hΔ1, ?_, ?_, ?_, ?_⟩
-  · calc
-      higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b = xhat := rfl
-      _ = matMulVec n (fun i j => C7654 i j + E7654 i j) v321 := hxhat'
-      _ = matMulVec n (fun i j => matMul n C76 C54 i j + Δ7654 i j) v321 := by
-        rw [h7654]
-      _ = matMulVec n (fun i j => matMul n C76 C54 i j + Δ7654 i j)
-            (matMulVec n (fun i j => C32 i j + E32 i j) v1) := by
-        rw [hv321']
-      _ = matMulVec n (fun i j => matMul n C76 C54 i j + Δ7654 i j)
-            (matMulVec n (fun i j => matMul n M3 M2 i j + Δ32 i j) v1) := by
-        rw [h32]
-      _ = matMulVec n (fun i j => matMul n C76 C54 i j + Δ7654 i j)
-            (matMulVec n (fun i j => matMul n M3 M2 i j + Δ32 i j)
-              (matMulVec n (fun i j => M1 i j + Δ1 i j) b)) := by
-        rw [hv1']
-      _ = higham8_14_fanIn7RoundedApply n
-            M1 M2 M3 M4 M5 M6 M7 Δ1 Δ32 Δ54 Δ76 Δ7654 b := by
-        unfold higham8_14_fanIn7RoundedApply higham8_14_fanIn7RoundedMatrix
-        rw [h76, h54]
-        ext i
-        symm
-        calc
-          matMulVec n
-              (matMul n (fun i j => matMul n C76 C54 i j + Δ7654 i j)
-                (matMul n (fun i j => matMul n M3 M2 i j + Δ32 i j)
-                  (fun i j => M1 i j + Δ1 i j))) b i =
-              matMulVec n (fun i j => matMul n C76 C54 i j + Δ7654 i j)
-                (matMulVec n
-                  (matMul n (fun i j => matMul n M3 M2 i j + Δ32 i j)
-                    (fun i j => M1 i j + Δ1 i j)) b) i :=
-            matMulVec_matMul n
-              (fun i j => matMul n C76 C54 i j + Δ7654 i j)
-              (matMul n (fun i j => matMul n M3 M2 i j + Δ32 i j)
-                (fun i j => M1 i j + Δ1 i j)) b i
-          _ = matMulVec n (fun i j => matMul n C76 C54 i j + Δ7654 i j)
-                (matMulVec n (fun i j => matMul n M3 M2 i j + Δ32 i j)
-                  (matMulVec n (fun i j => M1 i j + Δ1 i j) b)) i := by
-            congr 1
-            funext j
-            exact matMulVec_matMul n
-              (fun i j => matMul n M3 M2 i j + Δ32 i j)
-              (fun i j => M1 i j + Δ1 i j) b j
-  · intro i j
-    calc
-      |Δ32 i j| = |(C32 i j - matMul n M3 M2 i j) + E32 i j| := by rfl
-      _ ≤ |C32 i j - matMul n M3 M2 i j| + |E32 i j| := abs_add_le _ _
-      _ ≤ gamma fp n * (∑ k : Fin n, |M3 i k| * |M2 k j|) +
-          gamma fp n * |C32 i j| := by
-        exact add_le_add
-          (by simpa [C32, matMul] using matMul_error_bound fp n n n M3 M2 hn i j)
-          (hE32 i j)
-      _ = gamma fp n * (∑ k : Fin n, |M3 i k| * |M2 k j|) +
-          gamma fp n * |fl_matMul fp n n n M3 M2 i j| := by rfl
-  · intro i j
-    simpa [Δ54, C54, matMul] using matMul_error_bound fp n n n M5 M4 hn i j
-  · intro i j
-    simpa [Δ76, C76, matMul] using matMul_error_bound fp n n n M7 M6 hn i j
-  · intro i j
-    calc
-      |Δ7654 i j| = |(C7654 i j - matMul n C76 C54 i j) + E7654 i j| := by rfl
-      _ ≤ |C7654 i j - matMul n C76 C54 i j| + |E7654 i j| := abs_add_le _ _
-      _ ≤ gamma fp n * (∑ k : Fin n, |C76 i k| * |C54 k j|) +
-          gamma fp n * |C7654 i j| := by
-        exact add_le_add
-          (by simpa [C7654, matMul] using matMul_error_bound fp n n n C76 C54 hn i j)
-          (hE7654 i j)
-      _ = gamma fp n *
-              (∑ k : Fin n,
-                |fl_matMul fp n n n M7 M6 i k| *
-                  |fl_matMul fp n n n M5 M4 k j|) +
-            gamma fp n *
-              |fl_matMul fp n n n
-                (fl_matMul fp n n n M7 M6)
-                (fl_matMul fp n n n M5 M4) i j| := by rfl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-! ### Exact all-orders envelope calculus for the literal fan-in tree -/
 
-/-- An entrywise matrix envelope with scale `s`.  It records a nonnegative
-majorant `E` for the exact matrix and an `(s-1)E` forward-error majorant for
-its approximation.  This form composes through actual matrix products without
-requiring a relative perturbation of a cancellation-prone intermediate. -/
-def higham8_18MatrixEnvelope (n : ℕ)
-    (Ahat A E : Fin n → Fin n → ℝ) (s : ℝ) : Prop :=
-  (∀ i j, 0 ≤ E i j) ∧
-    (∀ i j, |A i j| ≤ E i j) ∧
-    (∀ i j, |Ahat i j - A i j| ≤ (s - 1) * E i j) ∧
-    1 ≤ s
 
-/-- Vector analogue of `higham8_18MatrixEnvelope`. -/
-def higham8_18VectorEnvelope (n : ℕ)
-    (xhat x E : Fin n → ℝ) (s : ℝ) : Prop :=
-  (∀ i, 0 ≤ E i) ∧
-    (∀ i, |x i| ≤ E i) ∧
-    (∀ i, |xhat i - x i| ≤ (s - 1) * E i) ∧
-    1 ≤ s
 
-theorem higham8_18MatrixEnvelope_exact (n : ℕ)
-    (A : Fin n → Fin n → ℝ) :
-    higham8_18MatrixEnvelope n A A (absMatrix n A) 1 := by
-  refine ⟨?_, ?_, ?_, le_rfl⟩
-  · intro i j
-    simp [absMatrix]
-  · intro i j
-    simp [absMatrix]
-  · intro i j
-    simp
 
-theorem higham8_18VectorEnvelope_exact (n : ℕ) (x : Fin n → ℝ) :
-    higham8_18VectorEnvelope n x x (absVec n x) 1 := by
-  refine ⟨?_, ?_, ?_, le_rfl⟩
-  · intro i
-    simp [absVec]
-  · intro i
-    simp [absVec]
-  · intro i
-    simp
 
-theorem higham8_18MatrixEnvelope_abs_approx_le {n : ℕ}
-    {Ahat A E : Fin n → Fin n → ℝ} {s : ℝ}
-    (h : higham8_18MatrixEnvelope n Ahat A E s) :
-    ∀ i j, |Ahat i j| ≤ s * E i j := by
-  intro i j
-  calc
-    |Ahat i j| = |(Ahat i j - A i j) + A i j| := by ring_nf
-    _ ≤ |Ahat i j - A i j| + |A i j| := abs_add_le _ _
-    _ ≤ (s - 1) * E i j + E i j :=
-      add_le_add (h.2.2.1 i j) (h.2.1 i j)
-    _ = s * E i j := by ring
 
-theorem higham8_18VectorEnvelope_abs_approx_le {n : ℕ}
-    {xhat x E : Fin n → ℝ} {s : ℝ}
-    (h : higham8_18VectorEnvelope n xhat x E s) :
-    ∀ i, |xhat i| ≤ s * E i := by
-  intro i
-  calc
-    |xhat i| = |(xhat i - x i) + x i| := by ring_nf
-    _ ≤ |xhat i - x i| + |x i| := abs_add_le _ _
-    _ ≤ (s - 1) * E i + E i := add_le_add (h.2.2.1 i) (h.2.1 i)
-    _ = s * E i := by ring
 
-/-- Matrix envelopes compose through a literal rounded matrix product. -/
-theorem higham8_18MatrixEnvelope_fl_matMul (fp : FPModel) (n : ℕ)
-    (Ahat A EA Bhat B EB : Fin n → Fin n → ℝ) (sA sB : ℝ)
-    (hn : gammaValid fp n)
-    (hA : higham8_18MatrixEnvelope n Ahat A EA sA)
-    (hB : higham8_18MatrixEnvelope n Bhat B EB sB) :
-    higham8_18MatrixEnvelope n
-      (fl_matMul fp n n n Ahat Bhat)
-      (matMul n A B)
-      (matMul n EA EB)
-      ((1 + gamma fp n) * sA * sB) := by
-  let g := gamma fp n
-  have hg : 0 ≤ g := gamma_nonneg fp hn
-  have hsA : 0 ≤ sA := le_trans zero_le_one hA.2.2.2
-  have hsB : 0 ≤ sB := le_trans zero_le_one hB.2.2.2
-  have hAhat := higham8_18MatrixEnvelope_abs_approx_le hA
-  have hBhat := higham8_18MatrixEnvelope_abs_approx_le hB
-  refine ⟨?_, ?_, ?_, ?_⟩
-  · intro i j
-    exact Finset.sum_nonneg (fun k _ => mul_nonneg (hA.1 i k) (hB.1 k j))
-  · intro i j
-    unfold matMul
-    calc
-      |∑ k : Fin n, A i k * B k j| ≤
-          ∑ k : Fin n, |A i k * B k j| := Finset.abs_sum_le_sum_abs _ _
-      _ = ∑ k : Fin n, |A i k| * |B k j| := by
-        apply Finset.sum_congr rfl
-        intro k _
-        rw [abs_mul]
-      _ ≤ ∑ k : Fin n, EA i k * EB k j := by
-        apply Finset.sum_le_sum
-        intro k _
-        exact mul_le_mul (hA.2.1 i k) (hB.2.1 k j)
-          (abs_nonneg _) (hA.1 i k)
-  · intro i j
-    let Phat := matMul n Ahat Bhat
-    let P := matMul n A B
-    have hlocal :
-        |fl_matMul fp n n n Ahat Bhat i j - Phat i j| ≤
-          g * (sA * sB) * matMul n EA EB i j := by
-      have hraw := matMul_error_bound fp n n n Ahat Bhat hn i j
-      calc
-        |fl_matMul fp n n n Ahat Bhat i j - Phat i j| ≤
-            g * ∑ k : Fin n, |Ahat i k| * |Bhat k j| := by
-              simpa [Phat, matMul, g] using hraw
-        _ ≤ g * ∑ k : Fin n, (sA * EA i k) * (sB * EB k j) := by
-              apply mul_le_mul_of_nonneg_left _ hg
-              apply Finset.sum_le_sum
-              intro k _
-              exact mul_le_mul (hAhat i k) (hBhat k j)
-                (abs_nonneg _) (mul_nonneg hsA (hA.1 i k))
-        _ = g * (sA * sB) * matMul n EA EB i j := by
-              unfold matMul
-              rw [Finset.mul_sum, Finset.mul_sum]
-              apply Finset.sum_congr rfl
-              intro k _
-              ring
-    have hprop :
-        |Phat i j - P i j| ≤
-          (sA * sB - 1) * matMul n EA EB i j := by
-      unfold Phat P matMul
-      calc
-        |(∑ k : Fin n, Ahat i k * Bhat k j) -
-            ∑ k : Fin n, A i k * B k j| =
-            |∑ k : Fin n,
-              ((Ahat i k - A i k) * Bhat k j +
-                A i k * (Bhat k j - B k j))| := by
-                  congr 1
-                  rw [← Finset.sum_sub_distrib]
-                  apply Finset.sum_congr rfl
-                  intro k _
-                  ring
-        _ ≤ ∑ k : Fin n,
-            |(Ahat i k - A i k) * Bhat k j +
-              A i k * (Bhat k j - B k j)| :=
-                Finset.abs_sum_le_sum_abs _ _
-        _ ≤ ∑ k : Fin n,
-            (((sA - 1) * EA i k) * (sB * EB k j) +
-              EA i k * ((sB - 1) * EB k j)) := by
-                apply Finset.sum_le_sum
-                intro k _
-                calc
-                  |(Ahat i k - A i k) * Bhat k j +
-                      A i k * (Bhat k j - B k j)| ≤
-                      |Ahat i k - A i k| * |Bhat k j| +
-                        |A i k| * |Bhat k j - B k j| := by
-                          rw [← abs_mul, ← abs_mul]
-                          exact abs_add_le _ _
-                  _ ≤ ((sA - 1) * EA i k) * (sB * EB k j) +
-                        EA i k * ((sB - 1) * EB k j) := by
-                          exact add_le_add
-                            (mul_le_mul (hA.2.2.1 i k) (hBhat k j)
-                              (abs_nonneg _)
-                              (mul_nonneg (sub_nonneg.mpr hA.2.2.2) (hA.1 i k)))
-                            (mul_le_mul (hA.2.1 i k) (hB.2.2.1 k j)
-                              (abs_nonneg _) (hA.1 i k))
-        _ = (sA * sB - 1) * ∑ k : Fin n, EA i k * EB k j := by
-              rw [Finset.mul_sum]
-              apply Finset.sum_congr rfl
-              intro k _
-              ring
-    calc
-      |fl_matMul fp n n n Ahat Bhat i j - matMul n A B i j| =
-          |(fl_matMul fp n n n Ahat Bhat i j - Phat i j) +
-            (Phat i j - P i j)| := by
-              dsimp [P]
-              congr 1
-              ring
-      _ ≤ |fl_matMul fp n n n Ahat Bhat i j - Phat i j| +
-          |Phat i j - P i j| := abs_add_le _ _
-      _ ≤ g * (sA * sB) * matMul n EA EB i j +
-          (sA * sB - 1) * matMul n EA EB i j := add_le_add hlocal hprop
-      _ = ((1 + gamma fp n) * sA * sB - 1) * matMul n EA EB i j := by
-          dsimp [g]
-          ring
-  · have hone : 1 ≤ 1 + gamma fp n := by linarith
-    exact le_trans (by norm_num : (1 : ℝ) ≤ 1 * 1 * 1)
-      (mul_le_mul (mul_le_mul hone hA.2.2.2 zero_le_one (by linarith))
-        hB.2.2.2 zero_le_one (mul_nonneg (by linarith) hsA))
 
-/-- Matrix and vector envelopes compose through a literal rounded
-matrix-vector product. -/
-theorem higham8_18VectorEnvelope_fl_matVec (fp : FPModel) (n : ℕ)
-    (Ahat A EA : Fin n → Fin n → ℝ)
-    (xhat x Ex : Fin n → ℝ) (sA sx : ℝ)
-    (hn : gammaValid fp n)
-    (hA : higham8_18MatrixEnvelope n Ahat A EA sA)
-    (hx : higham8_18VectorEnvelope n xhat x Ex sx) :
-    higham8_18VectorEnvelope n
-      (fl_matVec fp n n Ahat xhat)
-      (matMulVec n A x)
-      (matMulVec n EA Ex)
-      ((1 + gamma fp n) * sA * sx) := by
-  let g := gamma fp n
-  have hg : 0 ≤ g := gamma_nonneg fp hn
-  have hsA : 0 ≤ sA := le_trans zero_le_one hA.2.2.2
-  have hsx : 0 ≤ sx := le_trans zero_le_one hx.2.2.2
-  have hAhat := higham8_18MatrixEnvelope_abs_approx_le hA
-  have hxhat := higham8_18VectorEnvelope_abs_approx_le hx
-  refine ⟨?_, ?_, ?_, ?_⟩
-  · intro i
-    exact Finset.sum_nonneg (fun k _ => mul_nonneg (hA.1 i k) (hx.1 k))
-  · intro i
-    unfold matMulVec
-    calc
-      |∑ k : Fin n, A i k * x k| ≤
-          ∑ k : Fin n, |A i k * x k| := Finset.abs_sum_le_sum_abs _ _
-      _ = ∑ k : Fin n, |A i k| * |x k| := by
-        apply Finset.sum_congr rfl
-        intro k _
-        rw [abs_mul]
-      _ ≤ ∑ k : Fin n, EA i k * Ex k := by
-        apply Finset.sum_le_sum
-        intro k _
-        exact mul_le_mul (hA.2.1 i k) (hx.2.1 k) (abs_nonneg _) (hA.1 i k)
-  · intro i
-    let phat := matMulVec n Ahat xhat
-    let p := matMulVec n A x
-    have hlocal :
-        |fl_matVec fp n n Ahat xhat i - phat i| ≤
-          g * (sA * sx) * matMulVec n EA Ex i := by
-      have hraw := matVec_error_bound fp n n Ahat xhat hn i
-      calc
-        |fl_matVec fp n n Ahat xhat i - phat i| ≤
-            g * ∑ k : Fin n, |Ahat i k| * |xhat k| := by
-              simpa [phat, matMulVec, g] using hraw
-        _ ≤ g * ∑ k : Fin n, (sA * EA i k) * (sx * Ex k) := by
-              apply mul_le_mul_of_nonneg_left _ hg
-              apply Finset.sum_le_sum
-              intro k _
-              exact mul_le_mul (hAhat i k) (hxhat k)
-                (abs_nonneg _) (mul_nonneg hsA (hA.1 i k))
-        _ = g * (sA * sx) * matMulVec n EA Ex i := by
-              unfold matMulVec
-              rw [Finset.mul_sum, Finset.mul_sum]
-              apply Finset.sum_congr rfl
-              intro k _
-              ring
-    have hprop :
-        |phat i - p i| ≤
-          (sA * sx - 1) * matMulVec n EA Ex i := by
-      unfold phat p matMulVec
-      calc
-        |(∑ k : Fin n, Ahat i k * xhat k) - ∑ k : Fin n, A i k * x k| =
-            |∑ k : Fin n,
-              ((Ahat i k - A i k) * xhat k + A i k * (xhat k - x k))| := by
-                congr 1
-                rw [← Finset.sum_sub_distrib]
-                apply Finset.sum_congr rfl
-                intro k _
-                ring
-        _ ≤ ∑ k : Fin n,
-            |(Ahat i k - A i k) * xhat k + A i k * (xhat k - x k)| :=
-              Finset.abs_sum_le_sum_abs _ _
-        _ ≤ ∑ k : Fin n,
-            (((sA - 1) * EA i k) * (sx * Ex k) +
-              EA i k * ((sx - 1) * Ex k)) := by
-                apply Finset.sum_le_sum
-                intro k _
-                calc
-                  |(Ahat i k - A i k) * xhat k + A i k * (xhat k - x k)| ≤
-                      |Ahat i k - A i k| * |xhat k| +
-                        |A i k| * |xhat k - x k| := by
-                          rw [← abs_mul, ← abs_mul]
-                          exact abs_add_le _ _
-                  _ ≤ ((sA - 1) * EA i k) * (sx * Ex k) +
-                        EA i k * ((sx - 1) * Ex k) := by
-                          exact add_le_add
-                            (mul_le_mul (hA.2.2.1 i k) (hxhat k)
-                              (abs_nonneg _)
-                              (mul_nonneg (sub_nonneg.mpr hA.2.2.2) (hA.1 i k)))
-                            (mul_le_mul (hA.2.1 i k) (hx.2.2.1 k)
-                              (abs_nonneg _) (hA.1 i k))
-        _ = (sA * sx - 1) * ∑ k : Fin n, EA i k * Ex k := by
-              rw [Finset.mul_sum]
-              apply Finset.sum_congr rfl
-              intro k _
-              ring
-    calc
-      |fl_matVec fp n n Ahat xhat i - matMulVec n A x i| =
-          |(fl_matVec fp n n Ahat xhat i - phat i) + (phat i - p i)| := by
-            dsimp [p]
-            congr 1
-            ring
-      _ ≤ |fl_matVec fp n n Ahat xhat i - phat i| + |phat i - p i| :=
-        abs_add_le _ _
-      _ ≤ g * (sA * sx) * matMulVec n EA Ex i +
-          (sA * sx - 1) * matMulVec n EA Ex i := add_le_add hlocal hprop
-      _ = ((1 + gamma fp n) * sA * sx - 1) * matMulVec n EA Ex i := by
-        dsimp [g]
-        ring
-  · have hone : 1 ≤ 1 + gamma fp n := by linarith
-    exact le_trans (by norm_num : (1 : ℝ) ≤ 1 * 1 * 1)
-      (mul_le_mul (mul_le_mul hone hA.2.2.2 zero_le_one (by linarith))
-        hx.2.2.2 zero_le_one (mul_nonneg (by linarith) hsA))
 
-/-- Product-of-absolute-matrices majorant in the parenthesization of the
-source's seven-factor fan-in tree. -/
-noncomputable def higham8_18_fanIn7AbsMatrix (n : ℕ)
-    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ) :
-    Fin n → Fin n → ℝ :=
-  matMul n
-    (matMul n
-      (matMul n (absMatrix n M7) (absMatrix n M6))
-      (matMul n (absMatrix n M5) (absMatrix n M4)))
-    (matMul n
-      (matMul n (absMatrix n M3) (absMatrix n M2))
-      (absMatrix n M1))
 
-/-- For the genuine inverse column factors, the `(8.18)` product of absolute
-matrices is exactly the inverse of the comparison matrix `M(L)`.  This is the
-source identity `|M₇|⋯|M₁| = M(L)⁻¹`, now derived from the literal
-`M_k=L_k⁻¹` producers. -/
-theorem higham8_18_fanIn7AbsMatrix_eq_comparisonInverse
-    (L C_inv : Fin 7 → Fin 7 → ℝ)
-    (hLT : ∀ i j : Fin 7, i.val < j.val → L i j = 0)
-    (hdiag : ∀ k : Fin 7, L k k ≠ 0)
-    (hCright : IsRightInverse 7 (comparisonMatrix 7 L) C_inv) :
-    higham8_18_fanIn7AbsMatrix 7
-        (higham8_13_lowerColumnInverseFactor 7 L 0)
-        (higham8_13_lowerColumnInverseFactor 7 L 1)
-        (higham8_13_lowerColumnInverseFactor 7 L 2)
-        (higham8_13_lowerColumnInverseFactor 7 L 3)
-        (higham8_13_lowerColumnInverseFactor 7 L 4)
-        (higham8_13_lowerColumnInverseFactor 7 L 5)
-        (higham8_13_lowerColumnInverseFactor 7 L 6) = C_inv := by
-  have hCLT : ∀ i j : Fin 7, i.val < j.val →
-      comparisonMatrix 7 L i j = 0 := by
-    intro i j hij
-    have hne : i ≠ j := by omega
-    simp [comparisonMatrix, hne, hLT i j hij]
-  have hCdiag : ∀ k : Fin 7, comparisonMatrix 7 L k k ≠ 0 := by
-    intro k
-    simp [comparisonMatrix, hdiag k]
-  have hCleft : IsLeftInverse 7 (comparisonMatrix 7 L)
-      (higham8_13_inverseColumnProduct 7 (comparisonMatrix 7 L)) :=
-    (higham8_13_inverseColumnProduct_inverse 7 (comparisonMatrix 7 L)
-      hCLT hCdiag).1
-  change higham8_13_fanIn7Matrix 7
-      (absMatrix 7 (higham8_13_lowerColumnInverseFactor 7 L 0))
-      (absMatrix 7 (higham8_13_lowerColumnInverseFactor 7 L 1))
-      (absMatrix 7 (higham8_13_lowerColumnInverseFactor 7 L 2))
-      (absMatrix 7 (higham8_13_lowerColumnInverseFactor 7 L 3))
-      (absMatrix 7 (higham8_13_lowerColumnInverseFactor 7 L 4))
-      (absMatrix 7 (higham8_13_lowerColumnInverseFactor 7 L 5))
-      (absMatrix 7 (higham8_13_lowerColumnInverseFactor 7 L 6)) = C_inv
-  rw [higham8_13_abs_lowerColumnInverseFactor,
-    higham8_13_abs_lowerColumnInverseFactor,
-    higham8_13_abs_lowerColumnInverseFactor,
-    higham8_13_abs_lowerColumnInverseFactor,
-    higham8_13_abs_lowerColumnInverseFactor,
-    higham8_13_abs_lowerColumnInverseFactor,
-    higham8_13_abs_lowerColumnInverseFactor]
-  rw [higham8_13_fanIn7InverseMatrix_eq]
-  exact higham8_13_leftInverse_eq_rightInverse
-    (comparisonMatrix 7 L)
-    (higham8_13_inverseColumnProduct 7 (comparisonMatrix 7 L)) C_inv
-    hCleft hCright
 
-/-- The `(8.18)` source majorant `|M7|⋯|M1||b|`, with the same harmless
-fan-in parenthesization as the literal executor. -/
-noncomputable def higham8_18_fanIn7AbsApply (n : ℕ)
-    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
-    (b : Fin n → ℝ) : Fin n → ℝ :=
-  matMulVec n (higham8_18_fanIn7AbsMatrix n M1 M2 M3 M4 M5 M6 M7)
-    (absVec n b)
 
-/-- Exact quadratic-and-higher coefficient hidden by the `O(u²)` in the
-seven-operation fan-in bound.  Writing `a = n*u` and `g = gamma_n`, this is
-`7*a²/(1-a)` (the higher-order part of `7*g`) plus the degree-two-through-seven
-terms of `(1+g)^7`. -/
-noncomputable def higham8_18_fanIn7CoefficientRemainder
-    (fp : FPModel) (n : ℕ) : ℝ :=
-  let a := (n : ℝ) * fp.u
-  let g := gamma fp n
-  7 * (a ^ 2 / (1 - a)) +
-    21 * g ^ 2 + 35 * g ^ 3 + 35 * g ^ 4 +
-      21 * g ^ 5 + 7 * g ^ 6 + g ^ 7
 
-theorem higham8_18_fanIn7Coefficient_eq_first_order_add_remainder
-    (fp : FPModel) (n : ℕ) (hn : gammaValid fp n) :
-    (1 + gamma fp n) ^ 7 - 1 =
-      7 * (n : ℝ) * fp.u +
-        higham8_18_fanIn7CoefficientRemainder fp n := by
-  have hg := gamma_eq_linear_plus_quadratic_remainder fp n hn
-  unfold higham8_18_fanIn7CoefficientRemainder
-  dsimp only
-  rw [hg]
-  ring
 
-theorem higham8_18_fanIn7CoefficientRemainder_nonneg
-    (fp : FPModel) (n : ℕ) (hn : gammaValid fp n) :
-    0 ≤ higham8_18_fanIn7CoefficientRemainder fp n := by
-  have hden : 0 < 1 - (n : ℝ) * fp.u := by
-    unfold gammaValid at hn
-    linarith
-  have hg : 0 ≤ gamma fp n := gamma_nonneg fp hn
-  unfold higham8_18_fanIn7CoefficientRemainder
-  dsimp only
-  positivity
 
-/-- **Equation (8.18), literal-executor all-orders form.**  The actual seven
-rounded operations satisfy the source's product-of-absolute-matrices forward
-envelope.  The exact coefficient `(1+γₙ)^7-1` retains all higher-order terms;
-its first-order term is `7γₙ`, matching the source's `d'ₙ u + O(u²)` form.
 
-No relative perturbation of an intermediate product is assumed, so exact
-cancellation in `M3*M2`, `M5*M4`, or `M7*M6` is allowed. -/
-theorem higham8_18_fanIn7Executor_forward_componentwise_bound
-    (fp : FPModel) (n : ℕ)
-    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
-    (b : Fin n → ℝ) (hn : gammaValid fp n) :
-    ∀ i : Fin n,
-      |higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b i -
-        higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b i| ≤
-      ((1 + gamma fp n) ^ 7 - 1) *
-        higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b i := by
-  let q : ℝ := 1 + gamma fp n
-  let P76 := matMul n M7 M6
-  let P54 := matMul n M5 M4
-  let P7654 := matMul n P76 P54
-  let P32 := matMul n M3 M2
-  let x1 := matMulVec n M1 b
-  let x321 := matMulVec n P32 x1
-  let x := matMulVec n P7654 x321
-  let E76 := matMul n (absMatrix n M7) (absMatrix n M6)
-  let E54 := matMul n (absMatrix n M5) (absMatrix n M4)
-  let E7654 := matMul n E76 E54
-  let E32 := matMul n (absMatrix n M3) (absMatrix n M2)
-  let e1 := matMulVec n (absMatrix n M1) (absVec n b)
-  let e321 := matMulVec n E32 e1
-  let e := matMulVec n E7654 e321
-  let C76 := fl_matMul fp n n n M7 M6
-  let C54 := fl_matMul fp n n n M5 M4
-  let C7654 := fl_matMul fp n n n C76 C54
-  let C32 := fl_matMul fp n n n M3 M2
-  let v1 := fl_matVec fp n n M1 b
-  let v321 := fl_matVec fp n n C32 v1
-  let xhat := fl_matVec fp n n C7654 v321
-  have hM1 := higham8_18MatrixEnvelope_exact n M1
-  have hM2 := higham8_18MatrixEnvelope_exact n M2
-  have hM3 := higham8_18MatrixEnvelope_exact n M3
-  have hM4 := higham8_18MatrixEnvelope_exact n M4
-  have hM5 := higham8_18MatrixEnvelope_exact n M5
-  have hM6 := higham8_18MatrixEnvelope_exact n M6
-  have hM7 := higham8_18MatrixEnvelope_exact n M7
-  have hb := higham8_18VectorEnvelope_exact n b
-  have h76 : higham8_18MatrixEnvelope n C76 P76 E76 q := by
-    simpa [C76, P76, E76, q] using
-      higham8_18MatrixEnvelope_fl_matMul fp n M7 M7 (absMatrix n M7)
-        M6 M6 (absMatrix n M6) 1 1 hn hM7 hM6
-  have h54 : higham8_18MatrixEnvelope n C54 P54 E54 q := by
-    simpa [C54, P54, E54, q] using
-      higham8_18MatrixEnvelope_fl_matMul fp n M5 M5 (absMatrix n M5)
-        M4 M4 (absMatrix n M4) 1 1 hn hM5 hM4
-  have h7654 :
-      higham8_18MatrixEnvelope n C7654 P7654 E7654 (q * q * q) := by
-    simpa [C7654, P7654, E7654, q] using
-      higham8_18MatrixEnvelope_fl_matMul fp n C76 P76 E76 C54 P54 E54
-        q q hn h76 h54
-  have h32 : higham8_18MatrixEnvelope n C32 P32 E32 q := by
-    simpa [C32, P32, E32, q] using
-      higham8_18MatrixEnvelope_fl_matMul fp n M3 M3 (absMatrix n M3)
-        M2 M2 (absMatrix n M2) 1 1 hn hM3 hM2
-  have hv1 : higham8_18VectorEnvelope n v1 x1 e1 q := by
-    simpa [v1, x1, e1, q] using
-      higham8_18VectorEnvelope_fl_matVec fp n M1 M1 (absMatrix n M1)
-        b b (absVec n b) 1 1 hn hM1 hb
-  have hv321 :
-      higham8_18VectorEnvelope n v321 x321 e321 (q * q * q) := by
-    simpa [v321, x321, e321, q] using
-      higham8_18VectorEnvelope_fl_matVec fp n C32 P32 E32 v1 x1 e1
-        q q hn h32 hv1
-  have hxhat0 :
-      higham8_18VectorEnvelope n xhat x e
-        (q * (q * q * q) * (q * q * q)) := by
-    simpa [xhat, x, e, q] using
-      higham8_18VectorEnvelope_fl_matVec fp n C7654 P7654 E7654
-        v321 x321 e321 (q * q * q) (q * q * q) hn h7654 hv321
-  have hscale : q * (q * q * q) * (q * q * q) = q ^ 7 := by ring
-  have hxhat : higham8_18VectorEnvelope n xhat x e (q ^ 7) := by
-    simpa [hscale] using hxhat0
-  have hmv (A B : Fin n → Fin n → ℝ) (v : Fin n → ℝ) :
-      matMulVec n (matMul n A B) v = matMulVec n A (matMulVec n B v) := by
-    funext i
-    exact matMulVec_matMul n A B v i
-  have hx : x = higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b := by
-    ext i
-    simp [x, x321, x1, P7654, P76, P54, P32,
-      higham8_13_fanIn7Apply, higham8_13_fanIn7Matrix, hmv]
-  have he : e = higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b := by
-    ext i
-    simp [e, e321, e1, E7654, E76, E54, E32,
-      higham8_18_fanIn7AbsApply, higham8_18_fanIn7AbsMatrix,
-      hmv]
-  intro i
-  have herr := hxhat.2.2.1 i
-  simpa [xhat, higham8_14_fanIn7Executor, hx, he, q] using herr
 
-/-- **Equation (8.18), literal first-order-plus-remainder form.**  The actual
-fan-in executor coefficient is split into the source's `7*n*u` first-order
-term and a named, nonnegative exact remainder.  No relative error of a
-cancellation-prone intermediate product is assumed. -/
-theorem higham8_18_fanIn7Executor_forward_first_order_remainder_bound
-    (fp : FPModel) (n : ℕ)
-    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
-    (b : Fin n → ℝ) (hn : gammaValid fp n) :
-    ∀ i : Fin n,
-      |higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b i -
-        higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b i| ≤
-      (7 * (n : ℝ) * fp.u) *
-          higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b i +
-        higham8_18_fanIn7CoefficientRemainder fp n *
-          higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b i := by
-  intro i
-  have h := higham8_18_fanIn7Executor_forward_componentwise_bound
-    fp n M1 M2 M3 M4 M5 M6 M7 b hn i
-  rw [higham8_18_fanIn7Coefficient_eq_first_order_add_remainder fp n hn] at h
-  nlinarith
 
-/-- **Equation (8.19), literal-executor relative `∞`-norm form.** -/
-theorem higham8_19_fanIn7Executor_forward_relative_infNorm_bound
-    (fp : FPModel) (n : ℕ)
-    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
-    (b : Fin n → ℝ) (hn : gammaValid fp n)
-    (hx : 0 < infNormVec
-      (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b)) :
-    infNormVec
-        (fun i =>
-          higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b i -
-            higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b i) /
-        infNormVec (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) ≤
-      infNormVec
-        (fun i =>
-          ((1 + gamma fp n) ^ 7 - 1) *
-            higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b i) /
-        infNormVec (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) := by
-  have hnorm :
-      infNormVec
-          (fun i =>
-            higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b i -
-              higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b i) ≤
-        infNormVec
-          (fun i =>
-            ((1 + gamma fp n) ^ 7 - 1) *
-              higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b i) := by
-    apply infNormVec_le_of_abs_le
-    · intro i
-      exact le_trans
-        (higham8_18_fanIn7Executor_forward_componentwise_bound
-          fp n M1 M2 M3 M4 M5 M6 M7 b hn i)
-        (le_trans (le_abs_self _)
-          (abs_le_infNormVec
-            (fun j =>
-              ((1 + gamma fp n) ^ 7 - 1) *
-                higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j)
-            i))
-    · exact infNormVec_nonneg _
-  exact div_le_div_of_nonneg_right hnorm (le_of_lt hx)
 
-/-- **Equation (8.18), finite-product form**: a componentwise perturbation
-bound for the fan-in product gives a componentwise forward-error bound after
-applying the product to `b`. -/
-theorem higham8_18_fanIn_forward_componentwise_bound (n m : ℕ)
-    (M ΔM : Fin m → Fin n → Fin n → ℝ) (δ : Fin m → ℝ)
-    (b : Fin n → ℝ)
-    (hδ : ∀ r, 0 ≤ δ r)
-    (hΔ : ∀ r i j, |ΔM r i j| ≤ δ r * |M r i j|) :
-    ∀ i : Fin n,
-      |matMulVec n (matSeqProd n m (fun r i j => M r i j + ΔM r i j)) b i -
-        matMulVec n (matSeqProd n m M) b i| ≤
-        matMulVec n
-          (fun i j =>
-            (scalarSeqProd m (fun r => 1 + δ r) - 1) *
-              matSeqProd n m (fun r => absMatrix n (M r)) i j)
-          (absVec n b) i := by
-  intro i
-  have hprod :=
-    matSeqProd_componentwise_perturbation_bound n m M ΔM δ hδ hΔ
-  unfold matMulVec
-  calc
-    |(∑ j : Fin n,
-        matSeqProd n m (fun r i j => M r i j + ΔM r i j) i j * b j) -
-        ∑ j : Fin n, matSeqProd n m M i j * b j|
-        =
-          |∑ j : Fin n,
-            (matSeqProd n m (fun r i j => M r i j + ΔM r i j) i j -
-              matSeqProd n m M i j) * b j| := by
-            congr 1
-            rw [← Finset.sum_sub_distrib]
-            apply Finset.sum_congr rfl
-            intro j _
-            ring
-    _ ≤
-        ∑ j : Fin n,
-          |(matSeqProd n m (fun r i j => M r i j + ΔM r i j) i j -
-            matSeqProd n m M i j) * b j| :=
-          Finset.abs_sum_le_sum_abs _ _
-    _ =
-        ∑ j : Fin n,
-          |matSeqProd n m (fun r i j => M r i j + ΔM r i j) i j -
-            matSeqProd n m M i j| * |b j| := by
-          apply Finset.sum_congr rfl
-          intro j _
-          exact abs_mul
-            (matSeqProd n m (fun r i j => M r i j + ΔM r i j) i j -
-              matSeqProd n m M i j) (b j)
-    _ ≤
-        ∑ j : Fin n,
-          ((scalarSeqProd m (fun r => 1 + δ r) - 1) *
-            matSeqProd n m (fun r => absMatrix n (M r)) i j) * |b j| := by
-          apply Finset.sum_le_sum
-          intro j _
-          exact mul_le_mul_of_nonneg_right (hprod i j) (abs_nonneg (b j))
-    _ =
-        ∑ j : Fin n,
-          ((scalarSeqProd m (fun r => 1 + δ r) - 1) *
-            matSeqProd n m (fun r => absMatrix n (M r)) i j) *
-              absVec n b j := by
-          simp [absVec]
 
-/-- **Equation (8.19)**: relative `∞`-norm forward-error form of the finite
-fan-in product perturbation bound. -/
-theorem higham8_19_fanIn_forward_relative_infNorm_bound (n m : ℕ)
-    (M ΔM : Fin m → Fin n → Fin n → ℝ) (δ : Fin m → ℝ)
-    (b : Fin n → ℝ)
-    (hδ : ∀ r, 0 ≤ δ r)
-    (hΔ : ∀ r i j, |ΔM r i j| ≤ δ r * |M r i j|)
-    (hx : 0 < infNormVec (matMulVec n (matSeqProd n m M) b)) :
-    infNormVec
-      (fun i =>
-        matMulVec n (matSeqProd n m (fun r i j => M r i j + ΔM r i j)) b i -
-          matMulVec n (matSeqProd n m M) b i) /
-        infNormVec (matMulVec n (matSeqProd n m M) b) ≤
-      infNormVec
-        (matMulVec n
-          (fun i j =>
-            (scalarSeqProd m (fun r => 1 + δ r) - 1) *
-              matSeqProd n m (fun r => absMatrix n (M r)) i j)
-          (absVec n b)) /
-        infNormVec (matMulVec n (matSeqProd n m M) b) := by
-  have hnorm :
-      infNormVec
-        (fun i =>
-          matMulVec n (matSeqProd n m (fun r i j => M r i j + ΔM r i j)) b i -
-            matMulVec n (matSeqProd n m M) b i) ≤
-        infNormVec
-          (matMulVec n
-            (fun i j =>
-              (scalarSeqProd m (fun r => 1 + δ r) - 1) *
-                matSeqProd n m (fun r => absMatrix n (M r)) i j)
-            (absVec n b)) := by
-    apply infNormVec_le_of_abs_le
-    · intro i
-      exact le_trans
-        (higham8_18_fanIn_forward_componentwise_bound n m M ΔM δ b hδ hΔ i)
-        (le_trans (le_abs_self _) (abs_le_infNormVec _ i))
-    · exact infNormVec_nonneg _
-  exact div_le_div_of_nonneg_right hnorm (le_of_lt hx)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-! ### Why the local `(8.14)` envelopes cannot be made relative to a
 cancelled intermediate product
@@ -6621,546 +6656,546 @@ theorem higham8_14_local_envelope_not_relative_after_cancellation :
       higham8_14_cancellationRight, higham8_14_cancellationDelta,
       Fin.sum_univ_two] at h
 
-/-- **Equation (8.15), residual transfer**: any componentwise forward-error
-envelope `E` gives a componentwise residual envelope after multiplying by
-`|L|`. -/
-theorem higham8_15_residual_componentwise_of_forward_error (n : ℕ)
-    (L : Fin n → Fin n → ℝ) (x xhat b E : Fin n → ℝ)
-    (hsolve : matMulVec n L x = b)
-    (hE : ∀ i : Fin n, |xhat i - x i| ≤ E i) :
-    ∀ i : Fin n,
-      |b i - matMulVec n L xhat i| ≤
-        matMulVec n (absMatrix n L) E i := by
-  intro i
-  have hb : b i = matMulVec n L x i := by
-    exact (congrFun hsolve i).symm
-  calc
-    |b i - matMulVec n L xhat i|
-        = |matMulVec n L x i - matMulVec n L xhat i| := by rw [hb]
-    _ =
-        |matMulVec n L (fun j => x j - xhat j) i| := by
-          congr 1
-          unfold matMulVec
-          rw [← Finset.sum_sub_distrib]
-          apply Finset.sum_congr rfl
-          intro j _
-          ring
-    _ ≤ ∑ j : Fin n, |L i j| * |x j - xhat j| :=
-        abs_matMulVec_le n L (fun j => x j - xhat j) i
-    _ ≤ ∑ j : Fin n, |L i j| * E j := by
-        apply Finset.sum_le_sum
-        intro j _
-        exact mul_le_mul_of_nonneg_left
-          (by simpa [abs_sub_comm] using hE j) (abs_nonneg (L i j))
-    _ = matMulVec n (absMatrix n L) E i := by
-        simp [matMulVec, absMatrix]
 
-/-- **Equation (8.15), literal-executor all-orders residual form.**  Composing
-the actual `(8.14)` executor with the exact `(8.18)` envelope gives the raw
-residual majorant `|L| (((1+γₙ)^7-1)|M₇|⋯|M₁||b|)`.  Rewriting its
-first-order part directly as the five-factor source cube is not valid in
-general; `HighamChapter8FanInClosure` gives an exact order-seven counterexample.
-The source obtains its displayed asymptotic cube from a local perturbation
-expansion before placing cross terms in `O(u²)`. -/
-theorem higham8_15_fanIn7Executor_residual_componentwise_bound
-    (fp : FPModel) (n : ℕ)
-    (L M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
-    (b : Fin n → ℝ) (hn : gammaValid fp n)
-    (hsolve :
-      matMulVec n L
-        (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) = b) :
-    ∀ i : Fin n,
-      |b i - matMulVec n L
-        (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) i| ≤
-        matMulVec n (absMatrix n L)
-          (fun j =>
-            ((1 + gamma fp n) ^ 7 - 1) *
-              higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j) i := by
-  exact higham8_15_residual_componentwise_of_forward_error n L
-    (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b)
-    (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) b
-    (fun j =>
-      ((1 + gamma fp n) ^ 7 - 1) *
-        higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j)
-    hsolve
-    (higham8_18_fanIn7Executor_forward_componentwise_bound
-      fp n M1 M2 M3 M4 M5 M6 M7 b hn)
 
-/-- **Equation (8.15), literal raw-envelope first-order split.**  This closes
-the scalar expansion for the exact all-orders substitute: the first-order raw
-residual is `7*n*u` times `|L| |M7|⋯|M1| |b|`, and the rest is the named
-exact nonnegative coefficient remainder applied to the same majorant.  This
-global raw split is not Higham's local first-order expansion and is not claimed
-to reduce pointwise to the printed five-factor cube. -/
-theorem higham8_15_fanIn7Executor_residual_first_order_remainder_bound
-    (fp : FPModel) (n : ℕ)
-    (L M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
-    (b : Fin n → ℝ) (hn : gammaValid fp n)
-    (hsolve :
-      matMulVec n L
-        (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) = b) :
-    ∀ i : Fin n,
-      |b i - matMulVec n L
-        (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) i| ≤
-        matMulVec n (absMatrix n L)
-          (fun j =>
-            (7 * (n : ℝ) * fp.u) *
-                higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j +
-              higham8_18_fanIn7CoefficientRemainder fp n *
-                higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j) i := by
-  exact higham8_15_residual_componentwise_of_forward_error n L
-    (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b)
-    (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) b
-    (fun j =>
-      (7 * (n : ℝ) * fp.u) *
-          higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j +
-        higham8_18_fanIn7CoefficientRemainder fp n *
-          higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j)
-    hsolve
-    (higham8_18_fanIn7Executor_forward_first_order_remainder_bound
-      fp n M1 M2 M3 M4 M5 M6 M7 b hn)
 
-/-- **Equation (8.16), literal-executor all-orders norm form.** -/
-theorem higham8_16_fanIn7Executor_residual_infNorm_bound
-    (fp : FPModel) (n : ℕ)
-    (L M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
-    (b : Fin n → ℝ) (hn : gammaValid fp n)
-    (hsolve :
-      matMulVec n L
-        (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) = b) :
-    infNormVec
-        (fun i => b i - matMulVec n L
-          (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) i) ≤
-      infNormVec
-        (matMulVec n (absMatrix n L)
-          (fun j =>
-            ((1 + gamma fp n) ^ 7 - 1) *
-              higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j)) := by
-  apply infNormVec_le_of_abs_le
-  · intro i
-    exact le_trans
-      (higham8_15_fanIn7Executor_residual_componentwise_bound
-        fp n L M1 M2 M3 M4 M5 M6 M7 b hn hsolve i)
-      (le_trans (le_abs_self _)
-        (abs_le_infNormVec
-          (matMulVec n (absMatrix n L)
-            (fun j =>
-              ((1 + gamma fp n) ^ 7 - 1) *
-                higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b j)) i))
-  · exact infNormVec_nonneg _
 
-/-- **Equations (8.15)--(8.16), fan-in residual bound**: applying the
-finite-product forward envelope from (8.18) to `L x = b` yields the
-componentwise residual bound used before taking norms. -/
-theorem higham8_15_fanIn_residual_componentwise_bound (n m : ℕ)
-    (L : Fin n → Fin n → ℝ)
-    (M ΔM : Fin m → Fin n → Fin n → ℝ) (δ : Fin m → ℝ)
-    (b : Fin n → ℝ)
-    (hδ : ∀ r, 0 ≤ δ r)
-    (hΔ : ∀ r i j, |ΔM r i j| ≤ δ r * |M r i j|)
-    (hsolve :
-      matMulVec n L (matMulVec n (matSeqProd n m M) b) = b) :
-    ∀ i : Fin n,
-      |b i -
-        matMulVec n L
-          (matMulVec n (matSeqProd n m (fun r i j => M r i j + ΔM r i j)) b) i| ≤
-        matMulVec n (absMatrix n L)
-          (matMulVec n
-            (fun i j =>
-              (scalarSeqProd m (fun r => 1 + δ r) - 1) *
-                matSeqProd n m (fun r => absMatrix n (M r)) i j)
-            (absVec n b)) i := by
-  let x : Fin n → ℝ := matMulVec n (matSeqProd n m M) b
-  let xhat : Fin n → ℝ :=
-    matMulVec n (matSeqProd n m (fun r i j => M r i j + ΔM r i j)) b
-  let E : Fin n → ℝ :=
-    matMulVec n
-      (fun i j =>
-        (scalarSeqProd m (fun r => 1 + δ r) - 1) *
-          matSeqProd n m (fun r => absMatrix n (M r)) i j)
-      (absVec n b)
-  have hE : ∀ i : Fin n, |xhat i - x i| ≤ E i := by
-    intro i
-    simpa [x, xhat, E, abs_sub_comm] using
-      higham8_18_fanIn_forward_componentwise_bound n m M ΔM δ b hδ hΔ i
-  simpa [x, xhat, E] using
-    higham8_15_residual_componentwise_of_forward_error n L x xhat b E hsolve hE
 
-/-- **Equation (8.16)**: the `∞`-norm form of the fan-in residual bound. -/
-theorem higham8_16_fanIn_residual_infNorm_bound (n m : ℕ)
-    (L : Fin n → Fin n → ℝ)
-    (M ΔM : Fin m → Fin n → Fin n → ℝ) (δ : Fin m → ℝ)
-    (b : Fin n → ℝ)
-    (hδ : ∀ r, 0 ≤ δ r)
-    (hΔ : ∀ r i j, |ΔM r i j| ≤ δ r * |M r i j|)
-    (hsolve :
-      matMulVec n L (matMulVec n (matSeqProd n m M) b) = b) :
-    infNormVec
-      (fun i =>
-        b i -
-          matMulVec n L
-            (matMulVec n (matSeqProd n m (fun r i j => M r i j + ΔM r i j)) b) i) ≤
-      infNormVec
-        (matMulVec n (absMatrix n L)
-          (matMulVec n
-            (fun i j =>
-              (scalarSeqProd m (fun r => 1 + δ r) - 1) *
-                matSeqProd n m (fun r => absMatrix n (M r)) i j)
-            (absVec n b))) := by
-  apply infNormVec_le_of_abs_le
-  · intro i
-    exact le_trans
-      (higham8_15_fanIn_residual_componentwise_bound n m L M ΔM δ b hδ hΔ hsolve i)
-      (le_trans (le_abs_self _)
-        (abs_le_infNormVec _ i))
-  · exact infNormVec_nonneg _
 
-/-- **Equation (8.17) support**: rank-one backward perturbation built from a
-residual vector and one nonzero component of the computed solution. -/
-noncomputable def higham8_17_rankOneBackwardDelta {n : ℕ}
-    (r xhat : Fin n → ℝ) (j0 : Fin n) : Fin n → Fin n → ℝ :=
-  fun i j => if j = j0 then r i / xhat j0 else 0
 
-/-- **Equation (8.17) support**: the rank-one correction maps `xhat` to the
-specified residual. -/
-theorem higham8_17_rankOneBackwardDelta_mulVec {n : ℕ}
-    (r xhat : Fin n → ℝ) (j0 : Fin n) (hxj0 : xhat j0 ≠ 0) :
-    matMulVec n (higham8_17_rankOneBackwardDelta r xhat j0) xhat = r := by
-  ext i
-  unfold matMulVec higham8_17_rankOneBackwardDelta
-  simp [hxj0]
 
-/-- **Equation (8.17) support**: infinity-norm size of the rank-one backward
-correction. -/
-theorem higham8_17_rankOneBackwardDelta_infNorm_le {n : ℕ}
-    (r xhat : Fin n → ℝ) (j0 : Fin n) :
-    infNorm (higham8_17_rankOneBackwardDelta r xhat j0) ≤
-      infNormVec r / |xhat j0| := by
-  apply infNorm_le_of_row_sum_le
-  · intro i
-    unfold higham8_17_rankOneBackwardDelta
-    calc
-      ∑ j : Fin n, |(if j = j0 then r i / xhat j0 else 0)|
-          = |r i / xhat j0| := by
-            rw [Finset.sum_eq_single j0]
-            · simp
-            · intro j _ hj
-              simp [hj]
-            · intro hj
-              exact (hj (Finset.mem_univ j0)).elim
-      _ = |r i| / |xhat j0| := by
-            rw [abs_div]
-      _ ≤ infNormVec r / |xhat j0| :=
-            div_le_div_of_nonneg_right (abs_le_infNormVec r i) (abs_nonneg _)
-  · exact div_nonneg (infNormVec_nonneg r) (abs_nonneg _)
 
-/-- **Equation (8.17)**: a residual bound gives a normwise backward-error
-perturbation `(L + ΔL) xhat = b`.  Choosing `j0` as a maximum component of
-`xhat` turns the denominator into `‖xhat‖∞`, matching the source's
-normwise-backward-error route. -/
-theorem higham8_17_backward_error_from_residual_infNorm_bound (n : ℕ)
-    (L : Fin n → Fin n → ℝ) (xhat b : Fin n → ℝ)
-    (j0 : Fin n) (hxj0 : xhat j0 ≠ 0) (ρ : ℝ)
-    (hρ :
-      infNormVec (fun i => b i - matMulVec n L xhat i) / |xhat j0| ≤ ρ) :
-    ∃ ΔL : Fin n → Fin n → ℝ,
-      matMulVec n (fun i j => L i j + ΔL i j) xhat = b ∧
-        infNorm ΔL ≤ ρ := by
-  let r : Fin n → ℝ := fun i => b i - matMulVec n L xhat i
-  let ΔL : Fin n → Fin n → ℝ := higham8_17_rankOneBackwardDelta r xhat j0
-  refine ⟨ΔL, ?_, ?_⟩
-  · ext i
-    have hdelta :=
-      congrFun (higham8_17_rankOneBackwardDelta_mulVec r xhat j0 hxj0) i
-    calc
-      matMulVec n (fun i j => L i j + ΔL i j) xhat i
-          = matMulVec n L xhat i + matMulVec n ΔL xhat i := by
-            exact congrFun (matMulVec_add_left n L ΔL xhat) i
-      _ = matMulVec n L xhat i + r i := by
-            rw [hdelta]
-      _ = b i := by
-            dsimp [r]
-            ring_nf
-  · exact le_trans (higham8_17_rankOneBackwardDelta_infNorm_le r xhat j0) hρ
 
-/-- **Equation (8.17), literal-executor all-orders backward-error form.**  The
-actual `(8.14)` executor and `(8.16)` residual norm bound construct a rank-one
-backward perturbation with the corresponding explicit raw envelope. -/
-theorem higham8_17_fanIn7Executor_backward_error_bound
-    (fp : FPModel) (n : ℕ)
-    (L M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
-    (b : Fin n → ℝ) (hn : gammaValid fp n)
-    (hsolve :
-      matMulVec n L
-        (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) = b)
-    (j0 : Fin n)
-    (hxj0 :
-      higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b j0 ≠ 0) :
-    ∃ ΔL : Fin n → Fin n → ℝ,
-      matMulVec n (fun i j => L i j + ΔL i j)
-          (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) = b ∧
-        infNorm ΔL ≤
-          infNormVec
-              (matMulVec n (absMatrix n L)
-                (fun k =>
-                  ((1 + gamma fp n) ^ 7 - 1) *
-                    higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b k)) /
-            |higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b j0| := by
-  apply higham8_17_backward_error_from_residual_infNorm_bound n L
-    (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) b j0 hxj0
-  exact div_le_div_of_nonneg_right
-    (higham8_16_fanIn7Executor_residual_infNorm_bound
-      fp n L M1 M2 M3 M4 M5 M6 M7 b hn hsolve)
-    (abs_nonneg _)
 
-/-- **Equation (8.20) support**: the source residual envelope before the final
-left multiplication by `|L⁻¹|`, namely `|L||L⁻¹||L||L⁻¹||L|`. -/
-noncomputable def higham8_15_residualCubeBase (n : ℕ)
-    (L L_inv : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  matMul n (absMatrix n L)
-    (matMul n (absMatrix n L_inv)
-      (matMul n (absMatrix n L)
-        (matMul n (absMatrix n L_inv) (absMatrix n L))))
 
-/-- **Equation (8.20) support**: the condition-cubing matrix
-`(|L⁻¹||L|)^3`. -/
-noncomputable def higham8_20_absCondCube (n : ℕ)
-    (L L_inv : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  matMul n (absMatrix n L_inv) (higham8_15_residualCubeBase n L L_inv)
 
-/-- **Equation (8.20) support**: a residual componentwise envelope transfers to
-a forward componentwise envelope by multiplying by `|L⁻¹|`. -/
-theorem higham8_20_forward_componentwise_of_residual_bound (n : ℕ)
-    (L L_inv : Fin n → Fin n → ℝ) (x xhat b Eres : Fin n → ℝ)
-    (hLeft : IsLeftInverse n L L_inv)
-    (hsolve : matMulVec n L x = b)
-    (hres : ∀ i : Fin n, |b i - matMulVec n L xhat i| ≤ Eres i) :
-    ∀ i : Fin n,
-      |x i - xhat i| ≤ matMulVec n (absMatrix n L_inv) Eres i := by
-  let r : Fin n → ℝ := fun k => b k - matMulVec n L xhat k
-  let d : Fin n → ℝ := fun j => x j - xhat j
-  have hr : r = matMulVec n L d := by
-    ext i
-    dsimp [r, d]
-    rw [← congrFun hsolve i]
-    unfold matMulVec
-    rw [← Finset.sum_sub_distrib]
-    apply Finset.sum_congr rfl
-    intro j _
-    ring
-  have hmat : matMul n L_inv L = idMatrix n := by
-    ext i j
-    exact hLeft i j
-  have hd : d = matMulVec n L_inv r := by
-    rw [hr]
-    ext i
-    rw [← matMulVec_matMul n L_inv L d i]
-    rw [hmat, matMulVec_id]
-  intro i
-  calc
-    |x i - xhat i| = |d i| := rfl
-    _ = |matMulVec n L_inv r i| := by rw [hd]
-    _ ≤ ∑ j : Fin n, |L_inv i j| * |r j| :=
-        abs_matMulVec_le n L_inv r i
-    _ ≤ ∑ j : Fin n, |L_inv i j| * Eres j := by
-        apply Finset.sum_le_sum
-        intro j _
-        exact mul_le_mul_of_nonneg_left (hres j) (abs_nonneg (L_inv i j))
-    _ = matMulVec n (absMatrix n L_inv) Eres i := by
-        simp [matMulVec, absMatrix]
 
-/-- **Equation (8.20) support**: normwise residual-to-forward transfer. -/
-theorem higham8_20_forward_relative_infNorm_of_residual_bound (n : ℕ)
-    (L L_inv : Fin n → Fin n → ℝ) (x xhat b Eres : Fin n → ℝ)
-    (hLeft : IsLeftInverse n L L_inv)
-    (hsolve : matMulVec n L x = b)
-    (hres : ∀ i : Fin n, |b i - matMulVec n L xhat i| ≤ Eres i)
-    (hx : 0 < infNormVec x) :
-    infNormVec (fun i => x i - xhat i) / infNormVec x ≤
-      infNormVec (matMulVec n (absMatrix n L_inv) Eres) / infNormVec x := by
-  have hnorm :
-      infNormVec (fun i => x i - xhat i) ≤
-        infNormVec (matMulVec n (absMatrix n L_inv) Eres) := by
-    apply infNormVec_le_of_abs_le
-    · intro i
-      exact le_trans
-        (higham8_20_forward_componentwise_of_residual_bound
-          n L L_inv x xhat b Eres hLeft hsolve hres i)
-        (le_trans (le_abs_self _) (abs_le_infNormVec _ i))
-    · exact infNormVec_nonneg _
-  exact div_le_div_of_nonneg_right hnorm (le_of_lt hx)
 
-/-- **Equation (8.20), literal-executor residual-transfer form.**  This is the
-fully connected all-orders conclusion obtained from the actual `(8.14)`
-executor: multiply the literal residual envelope by `|L⁻¹|`.  Its envelope is
-deliberately left unreduced.  The exact five-factor-to-condition-cube transfer
-is proved separately below; producing the source's five-factor asymptotic
-premise uses its local perturbation expansion, not a direct reduction of this
-global raw envelope. -/
-theorem higham8_20_fanIn7Executor_forward_from_residual_componentwise_bound
-    (fp : FPModel) (n : ℕ)
-    (L L_inv M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
-    (b : Fin n → ℝ) (hn : gammaValid fp n)
-    (hLeft : IsLeftInverse n L L_inv)
-    (hsolve :
-      matMulVec n L
-        (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) = b) :
-    ∀ i : Fin n,
-      |higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b i -
-        higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b i| ≤
-        matMulVec n (absMatrix n L_inv)
-          (matMulVec n (absMatrix n L)
-            (fun k =>
-              ((1 + gamma fp n) ^ 7 - 1) *
-                higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b k)) i := by
-  exact higham8_20_forward_componentwise_of_residual_bound n L L_inv
-    (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b)
-    (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) b
-    (matMulVec n (absMatrix n L)
-      (fun k =>
-        ((1 + gamma fp n) ^ 7 - 1) *
-          higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b k))
-    hLeft hsolve
-    (higham8_15_fanIn7Executor_residual_componentwise_bound
-      fp n L M1 M2 M3 M4 M5 M6 M7 b hn hsolve)
 
-/-- **Equation (8.20), literal-executor relative `∞`-norm transfer form.** -/
-theorem higham8_20_fanIn7Executor_forward_from_residual_relative_infNorm_bound
-    (fp : FPModel) (n : ℕ)
-    (L L_inv M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ)
-    (b : Fin n → ℝ) (hn : gammaValid fp n)
-    (hLeft : IsLeftInverse n L L_inv)
-    (hsolve :
-      matMulVec n L
-        (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) = b)
-    (hx : 0 < infNormVec
-      (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b)) :
-    infNormVec
-        (fun i =>
-          higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b i -
-            higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b i) /
-        infNormVec (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) ≤
-      infNormVec
-        (matMulVec n (absMatrix n L_inv)
-          (matMulVec n (absMatrix n L)
-            (fun k =>
-              ((1 + gamma fp n) ^ 7 - 1) *
-                higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b k))) /
-        infNormVec (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b) := by
-  exact higham8_20_forward_relative_infNorm_of_residual_bound n L L_inv
-    (higham8_13_fanIn7Apply n M1 M2 M3 M4 M5 M6 M7 b)
-    (higham8_14_fanIn7Executor fp n M1 M2 M3 M4 M5 M6 M7 b) b
-    (matMulVec n (absMatrix n L)
-      (fun k =>
-        ((1 + gamma fp n) ^ 7 - 1) *
-          higham8_18_fanIn7AbsApply n M1 M2 M3 M4 M5 M6 M7 b k))
-    hLeft hsolve
-    (higham8_15_fanIn7Executor_residual_componentwise_bound
-      fp n L M1 M2 M3 M4 M5 M6 M7 b hn hsolve) hx
 
-/-- **Equation (8.20) support**: moving the residual scalar through the final
-left multiplication exposes the explicit condition-cubing matrix. -/
-theorem higham8_20_condition_cube_envelope_eq (n : ℕ)
-    (L L_inv : Fin n → Fin n → ℝ) (ρ : ℝ) (x : Fin n → ℝ) :
-    matMulVec n (absMatrix n L_inv)
-      (fun k =>
-        ρ * matMulVec n (higham8_15_residualCubeBase n L L_inv) (absVec n x) k) =
-      fun i => ρ * matMulVec n (higham8_20_absCondCube n L L_inv) (absVec n x) i := by
-  ext i
-  calc
-    matMulVec n (absMatrix n L_inv)
-        (fun k =>
-          ρ * matMulVec n (higham8_15_residualCubeBase n L L_inv) (absVec n x) k) i
-        =
-          ρ * matMulVec n (absMatrix n L_inv)
-            (matMulVec n (higham8_15_residualCubeBase n L L_inv) (absVec n x)) i := by
-          unfold matMulVec
-          rw [Finset.mul_sum]
-          apply Finset.sum_congr rfl
-          intro j _
-          ring
-    _ =
-        ρ * matMulVec n
-          (matMul n (absMatrix n L_inv) (higham8_15_residualCubeBase n L L_inv))
-          (absVec n x) i := by
-        rw [matMulVec_matMul n (absMatrix n L_inv)
-          (higham8_15_residualCubeBase n L L_inv) (absVec n x) i]
-    _ =
-        ρ * matMulVec n (higham8_20_absCondCube n L L_inv) (absVec n x) i := rfl
 
-/-- **Equation (8.20)**: if the residual has the source componentwise envelope
-`ρ |L||L⁻¹||L||L⁻¹||L| |x|`, then the forward error has the condition-cubing
-envelope `ρ (|L⁻¹||L|)^3 |x|`. -/
-theorem higham8_20_condition_cubing_componentwise_bound (n : ℕ)
-    (L L_inv : Fin n → Fin n → ℝ) (x xhat b : Fin n → ℝ) (ρ : ℝ)
-    (hLeft : IsLeftInverse n L L_inv)
-    (hsolve : matMulVec n L x = b)
-    (hres : ∀ i : Fin n,
-      |b i - matMulVec n L xhat i| ≤
-        ρ * matMulVec n (higham8_15_residualCubeBase n L L_inv)
-          (absVec n x) i) :
-    ∀ i : Fin n,
-      |x i - xhat i| ≤
-        ρ * matMulVec n (higham8_20_absCondCube n L L_inv) (absVec n x) i := by
-  have hforward :=
-    higham8_20_forward_componentwise_of_residual_bound n L L_inv x xhat b
-      (fun i =>
-        ρ * matMulVec n (higham8_15_residualCubeBase n L L_inv) (absVec n x) i)
-      hLeft hsolve hres
-  intro i
-  calc
-    |x i - xhat i| ≤
-        matMulVec n (absMatrix n L_inv)
-          (fun k =>
-            ρ * matMulVec n (higham8_15_residualCubeBase n L L_inv) (absVec n x) k) i :=
-        hforward i
-    _ =
-        ρ * matMulVec n (higham8_20_absCondCube n L L_inv) (absVec n x) i := by
-        rw [higham8_20_condition_cube_envelope_eq]
 
-/-- **Equation (8.20)**, relative `∞`-norm condition-cubing form. -/
-theorem higham8_20_condition_cubing_relative_infNorm_bound (n : ℕ)
-    (L L_inv : Fin n → Fin n → ℝ) (x xhat b : Fin n → ℝ) (ρ : ℝ)
-    (hLeft : IsLeftInverse n L L_inv)
-    (hsolve : matMulVec n L x = b)
-    (hres : ∀ i : Fin n,
-      |b i - matMulVec n L xhat i| ≤
-        ρ * matMulVec n (higham8_15_residualCubeBase n L L_inv)
-          (absVec n x) i)
-    (hx : 0 < infNormVec x) :
-    infNormVec (fun i => x i - xhat i) / infNormVec x ≤
-      infNormVec
-        (fun i =>
-          ρ * matMulVec n (higham8_20_absCondCube n L L_inv) (absVec n x) i) /
-        infNormVec x := by
-  have hnorm :
-      infNormVec (fun i => x i - xhat i) ≤
-        infNormVec
-          (fun i =>
-            ρ * matMulVec n (higham8_20_absCondCube n L L_inv) (absVec n x) i) := by
-    apply infNormVec_le_of_abs_le
-    · intro i
-      exact le_trans
-        (higham8_20_condition_cubing_componentwise_bound
-          n L L_inv x xhat b ρ hLeft hsolve hres i)
-        (le_trans (le_abs_self _)
-          (abs_le_infNormVec
-            (fun i =>
-              ρ * matMulVec n (higham8_20_absCondCube n L L_inv) (absVec n x) i)
-            i))
-    · exact infNormVec_nonneg _
-  exact div_le_div_of_nonneg_right hnorm (le_of_lt hx)
 
-/-- **Problem 8.7(a)**: the strict row-diagonal-dominance margin of row `i`. -/
-noncomputable def higham8_7_rowDiagMargin {n : ℕ}
-    (A : Fin n → Fin n → ℝ) (i : Fin n) : ℝ :=
-  |A i i| - ∑ j ∈ Finset.univ.erase i, |A i j|
 
-/-- **Problem 8.7(b)**: the positively scaled strict row-diagonal-dominance
-margin of row `i`. -/
-noncomputable def higham8_7_scaledRowDiagMargin {n : ℕ}
-    (A : Fin n → Fin n → ℝ) (d : Fin n → ℝ) (i : Fin n) : ℝ :=
-  |A i i| * d i - ∑ j ∈ Finset.univ.erase i, |A i j| * d j
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private theorem higham8_7_nonneg_sup_eq_infNormVec {n : ℕ} (hn : 0 < n)
     (x : Fin n → ℝ) (hx_nonneg : ∀ i : Fin n, 0 ≤ x i) :
@@ -7514,61 +7549,61 @@ theorem higham8_7_comparisonInverseOnes_infNorm_ge_inverseInfNorm (n : ℕ) (hn 
 
 /-! ## Problems -/
 
-/-- **Problem 8.1 support**: no-guard subtraction-fold unroll with separate
-accumulator and subtrahend perturbations from Higham model (2.6).  This is the
-fold-level algebra needed for the modified Lemma 8.2 row proof. -/
-theorem higham8_problem8_1_noGuard_sub_fold_unroll (fp : NoGuardFPModel)
-    (m : ℕ) (a : Fin m → ℝ) (c : ℝ) :
-    ∃ (α β : Fin m → ℝ),
-      (∀ k, |α k| ≤ fp.u) ∧
-      (∀ k, |β k| ≤ fp.u) ∧
-      Fin.foldl m (fun acc t => fp.fl_sub acc (a t)) c =
-        c * ∏ k : Fin m, (1 + α k) -
-          ∑ t : Fin m, a t * (1 + β t) *
-            ∏ k : Fin m, if t.val < k.val then (1 + α k) else 1 :=
-  noGuard_sub_fold_unroll fp m a c
 
-/-- **Problem 8.1 / modified Lemma 8.2**, scalar row form under Higham's
-no-guard-digit model (2.6).  The right-hand-side term `c` is unperturbed; the
-diagonal factor is bounded by `γ_(m+1)` and the zero-based `t`th product term by
-`γ_(t+3)`, matching the source's one-based `θ_(i+2)` indexing. -/
-theorem higham8_problem8_1_noGuard_mulSub_div_row_tight (fp : NoGuardFPModel)
-    (m : ℕ) (a x : Fin m → ℝ) (c bk : ℝ) (hbk : bk ≠ 0)
-    (hγ : noGuardGammaValid fp (m + 2)) :
-    let fold :=
-      Fin.foldl m (fun acc t => fp.fl_sub acc (fp.fl_mul (a t) (x t))) c
-    ∃ (θdiag : ℝ) (η : Fin m → ℝ),
-      |θdiag| ≤ noGuardGamma fp (m + 1) ∧
-      (∀ t, |η t| ≤ noGuardGamma fp (t.val + 3)) ∧
-      bk * fp.fl_div fold bk * (1 + θdiag) =
-        c - ∑ t : Fin m, a t * x t * (1 + η t) :=
-  noGuard_mulSub_div_row_tight fp m a x c bk hbk hγ
 
-/-- **Problem 8.1 / modified Theorem 8.5**, upper-triangular no-guard
-substitution: `(U + ΔU)x̂ = b`, with `|ΔU| ≤ γ_(n+1)|U|`. -/
-theorem higham8_problem8_1_noGuard_backSub_backward_error (fp : NoGuardFPModel)
-    (n : ℕ) (U : Fin n → Fin n → ℝ) (b xhat : Fin n → ℝ)
-    (hU : ∀ i, U i i ≠ 0)
-    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
-    (hn : noGuardGammaValid fp (n + 1))
-    (hrow : NoGuardBackSubSpec fp n U b xhat) :
-    ∃ ΔU : Fin n → Fin n → ℝ,
-      (∀ i j, |ΔU i j| ≤ noGuardGamma fp (n + 1) * |U i j|) ∧
-      ∀ i, ∑ j : Fin n, (U i j + ΔU i j) * xhat j = b i :=
-  noGuard_backSub_backward_error fp n U b xhat hU hUT hn hrow
 
-/-- **Problem 8.1 / modified Theorem 8.5**, lower-triangular no-guard
-substitution: `(L + ΔL)x̂ = b`, with `|ΔL| ≤ γ_(n+1)|L|`. -/
-theorem higham8_problem8_1_noGuard_forwardSub_backward_error (fp : NoGuardFPModel)
-    (n : ℕ) (L : Fin n → Fin n → ℝ) (b xhat : Fin n → ℝ)
-    (hL : ∀ i, L i i ≠ 0)
-    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
-    (hn : noGuardGammaValid fp (n + 1))
-    (hrow : NoGuardForwardSubSpec fp n L b xhat) :
-    ∃ ΔL : Fin n → Fin n → ℝ,
-      (∀ i j, |ΔL i j| ≤ noGuardGamma fp (n + 1) * |L i j|) ∧
-      ∀ i, ∑ j : Fin n, (L i j + ΔL i j) * xhat j = b i :=
-  noGuard_forwardSub_backward_error fp n L b xhat hL hLT hn hrow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private theorem higham8_8_matMulVec_scaledBasis {n : ℕ}
     (A_inv : Fin n → Fin n → ℝ) (i : Fin n) (alpha xj : ℝ) :
@@ -7599,43 +7634,43 @@ private theorem higham8_8_maxEntryNorm_pos_of_inverse {n : ℕ} (hn : 0 < n)
   have h00 := hRInv ⟨0, hn⟩ ⟨0, hn⟩
   simp [hentry_zero] at h00
 
-/-- **Problem 8.8(a)**, constructive singular rank-one perturbation.
 
-    If `A_inv` is a right inverse of `A` and the `(j,i)` entry of `A_inv` is
-    nonzero, then adding `α e_i e_jᵀ` with `α = -(A_inv j i)⁻¹` makes `A`
-    singular.  This formalizes the source's possible case
-    `α_ij = -(e_jᵀ A⁻¹ e_i)⁻¹`. -/
-theorem higham8_8_rankOne_singular_update (n : ℕ)
-    (A A_inv : Fin n → Fin n → ℝ) (i j : Fin n)
-    (hRInv : IsRightInverse n A A_inv)
-    (hentry : A_inv j i ≠ 0) :
-    Matrix.det
-      (Matrix.of A +
-        Matrix.single i j (-(A_inv j i)⁻¹)) = 0 := by
-  classical
-  let x : Fin n → ℝ := fun k => A_inv k i
-  have hx_ne : x ≠ 0 := by
-    intro hx
-    exact hentry (congr_fun hx j)
-  have hAx : ∀ r : Fin n, Matrix.mulVec (Matrix.of A) x r =
-      if r = i then 1 else 0 := by
-    intro r
-    simpa [Matrix.mulVec, dotProduct, x] using hRInv r i
-  have hmul :
-      Matrix.mulVec
-        (Matrix.of A + Matrix.single i j (-(A_inv j i)⁻¹)) x = 0 := by
-    ext r
-    by_cases hri : r = i
-    · subst r
-      simp [Matrix.add_mulVec, Matrix.single_mulVec, hAx, x]
-      field_simp [hentry]
-      norm_num
-    · simp [Matrix.add_mulVec, Matrix.single_mulVec, hAx, x, hri]
-  exact
-    (Matrix.exists_mulVec_eq_zero_iff
-      (M := (Matrix.of A +
-        Matrix.single i j (-(A_inv j i)⁻¹)))).mp
-      ⟨x, hx_ne, hmul⟩
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- **Problem 8.8(a)**, converse singularity condition for a single-entry
 rank-one perturbation.
@@ -7805,38 +7840,38 @@ theorem higham8_8_bestRankOneSingularUpdate_exists (n : ℕ) (hn : 0 < n)
   exact (higham8_8_bestRankOneSingularUpdate_of_maxInverseEntry
     n hn A A_inv r s hInv hmax).2
 
-/-- **Problem 8.8(b)**: the stress matrix `T_n = U(1)` is made singular by a
-rank-one update in the `(n,1)` position with
-`α = -2^(2-n) = -((2^(n-2))⁻¹)`. -/
-theorem higham8_8b_stressUpper_lastFirst_singular_update (n : ℕ) (h2 : 1 < n) :
-    Matrix.det
-      (Matrix.of (higham8_3_stressUpper n 1) +
-        Matrix.single ⟨n - 1, by omega⟩ ⟨0, by omega⟩
-          (-((2 : ℝ) ^ (n - 2))⁻¹)) = 0 := by
-  let last : Fin n := ⟨n - 1, by omega⟩
-  let first : Fin n := ⟨0, by omega⟩
-  have hInv := higham8_4_stressUpperInvFormula_isInverse n 1
-  have hlt : first.val < last.val := by
-    dsimp [first, last]
-    omega
-  have hne : first ≠ last := Fin.ne_of_val_ne (by
-    dsimp [first, last]
-    omega)
-  have hsub : n - 1 - 1 = n - 2 := by
-    omega
-  have hpow_two : (1 + 1 : ℝ) ^ (n - 2) = (2 : ℝ) ^ (n - 2) := by
-    norm_num
-  have hentry_eq :
-      higham8_4_stressUpperInvFormula n 1 first last = (2 : ℝ) ^ (n - 2) := by
-    simp [higham8_4_stressUpperInvFormula, first, last, hlt, hne, hsub, hpow_two]
-  have hentry : higham8_4_stressUpperInvFormula n 1 first last ≠ 0 := by
-    rw [hentry_eq]
-    positivity
-  have hs :=
-    higham8_8_rankOne_singular_update n
-      (higham8_3_stressUpper n 1)
-      (higham8_4_stressUpperInvFormula n 1)
-      last first hInv.2 hentry
-  simpa [first, last, higham8_4_stressUpperInvFormula, hlt, hne, hsub, hpow_two] using hs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end NumStability

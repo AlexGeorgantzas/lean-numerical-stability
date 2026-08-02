@@ -1,0 +1,8 @@
+import NumStability.Algorithms.LU.Doolittle
+
+#check NumStability.DoolittleDenseLoopAbsBudgetCertificate.of_literal_doolittle_exact_target_gaps
+#check NumStability.doolittle_solve_backward_error
+#check NumStability.DoolittleLU
+#check NumStability.doolittleLAbsBudget
+#check NumStability.DoolittleDenseLoopAbsBudgetCertificate
+#check NumStability.finMaskedPrefixSum_eq_finSum

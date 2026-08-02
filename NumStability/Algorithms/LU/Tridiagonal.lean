@@ -21,6 +21,13 @@ import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LU.LUSolve
 
+/-!
+# Tridiagonal and banded systems
+
+Structural predicates for tridiagonal and banded matrices and the specialized
+LU and linear-solve error bounds enabled by their bandwidth and dominance.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

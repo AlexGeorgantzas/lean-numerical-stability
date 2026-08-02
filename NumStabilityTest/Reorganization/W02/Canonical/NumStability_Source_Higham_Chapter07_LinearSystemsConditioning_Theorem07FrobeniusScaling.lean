@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem07FrobeniusScaling
+
+#check NumStability.ch7ColumnNorm2

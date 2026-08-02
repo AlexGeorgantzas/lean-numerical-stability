@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem10Bauer.Part01
+
+#check NumStability.ch7CholeskyInverseGram

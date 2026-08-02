@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter08.Problem09.KahanSingularValues.KahanMatrix
+
+#check NumStability.higham8_11_kahanGram_leadingBlock_succ

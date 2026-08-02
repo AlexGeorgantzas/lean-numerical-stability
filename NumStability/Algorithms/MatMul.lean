@@ -11,6 +11,13 @@ import NumStability.Analysis.Rounding
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Algorithms.MatVec
 
+/-!
+# Floating-point matrix multiplication
+
+Column-wise floating-point matrix products with componentwise and normwise
+forward-error bounds and matrix-level backward-error formulations.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

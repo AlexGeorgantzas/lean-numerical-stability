@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.ForwardErrorKernels
+
+#check NumStability.ch7AmplifiedRhsEF

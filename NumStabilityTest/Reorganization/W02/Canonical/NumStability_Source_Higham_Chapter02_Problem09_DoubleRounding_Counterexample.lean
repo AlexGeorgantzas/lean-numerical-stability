@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample
+
+#check NumStability.FloatingPointFormat.binary64MantissaExtendedLocalFormat

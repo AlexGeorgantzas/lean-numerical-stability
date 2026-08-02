@@ -17,6 +17,13 @@ import NumStability.Analysis.Rounding
 import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LU.GrowthFactor
 
+/-!
+# LU bounds for special matrix classes
+
+Sharper LU growth and backward-error results for positive-definite matrices,
+M-matrices, and matrices related by diagonal sign scalings.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

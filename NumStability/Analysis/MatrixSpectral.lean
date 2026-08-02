@@ -13,6 +13,13 @@ import Mathlib.LinearAlgebra.Eigenspace.Charpoly
 import Mathlib.Analysis.SpecialFunctions.Exponential
 import Mathlib.Topology.Instances.Matrix
 
+/-!
+# Spectral tools for finite real matrices
+
+Bridges from repository-native finite matrices to Mathlib's Hermitian spectrum,
+trace, eigenvalue, and matrix-exponential APIs.
+-/
+
 namespace NumStability
 
 open scoped BigOperators ComplexOrder

@@ -53,6 +53,13 @@ import Mathlib.LinearAlgebra.Eigenspace.Triangularizable
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Algorithms.MatrixPowersJordan
 
+/-!
+# Spectral ingredients for semiconvergent existence
+
+Power-convergence dichotomies, Jordan-chain obstructions at eigenvalue one, and
+diagonal-similarity contraction for upper-triangular stable complements.
+-/
+
 namespace NumStability
 
 open scoped BigOperators Topology

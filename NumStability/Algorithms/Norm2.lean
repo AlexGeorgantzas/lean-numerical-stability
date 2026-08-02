@@ -14,6 +14,13 @@ import Mathlib.LinearAlgebra.Matrix.DotProduct
 import Mathlib.Tactic.FieldSimp
 import NumStability.Algorithms.DotProduct
 
+/-!
+# Floating-point Euclidean norms
+
+Squared and square-rooted 2-norm kernels built from the floating-point dot
+product, with supporting exact identities and rounding-error analysis.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

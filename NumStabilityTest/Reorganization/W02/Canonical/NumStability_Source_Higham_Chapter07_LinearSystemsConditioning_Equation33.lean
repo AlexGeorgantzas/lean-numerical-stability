@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Equation33
+
+#check NumStability.IsStochasticMatrix

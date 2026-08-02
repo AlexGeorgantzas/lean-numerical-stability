@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter01.Problem09.CramersRule.ForwardError
+
+#check NumStability.abs_det_mul_cramer2x2CondVec_inverse_one

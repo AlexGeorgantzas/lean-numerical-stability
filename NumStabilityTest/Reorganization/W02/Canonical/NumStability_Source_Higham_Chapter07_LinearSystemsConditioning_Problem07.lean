@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem07
+
+#check NumStability.problem7_7_componentwise_abs_rhs_to_zero_rhs_residual_bound

@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.Part02
+
+#check NumStability.ch7LpRightScaledCondNormalizedSetOfReal

@@ -1,0 +1,9 @@
+import NumStability.Analysis.SampleVariance
+
+#check NumStability.flPrefixCorrectedSumSquaresStep_abs_error_le
+#check NumStability.flSampleMean
+#check NumStability.exists_weightedRelativeErrorFactor_of_nonneg_sum
+#check NumStability.flPrefixCorrectedSumSquaresStep
+#check NumStability.sampleMean_add_scaled
+#check NumStability.flSampleVarianceTwoPassProblem110MeanQuadraticBound_eq_zero_of_u_eq_zero
+#check NumStability.prefixCorrectedSumSquares_example_values_10000_10001_10002

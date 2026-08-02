@@ -1,0 +1,3 @@
+import NumStability.Algorithms.Summation.Compensated.Neumaier.FiniteExecutor
+
+#check NumStability.NeumaierFiniteStepTrace

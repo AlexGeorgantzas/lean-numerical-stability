@@ -11,6 +11,13 @@ import NumStability.Analysis.Stability
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Algorithms.DotProduct
 
+/-!
+# Floating-point matrix-vector multiplication
+
+Row-dot-product and saxpy formulations of matrix-vector multiplication,
+together with their forward-, backward-, and normwise-error bounds.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

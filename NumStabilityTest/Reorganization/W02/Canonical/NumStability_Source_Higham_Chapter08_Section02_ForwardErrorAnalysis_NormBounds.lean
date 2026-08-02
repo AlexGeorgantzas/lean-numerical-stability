@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter08.Section02.ForwardErrorAnalysis.NormBounds
+
+#check NumStability.higham8_11_kahanMatrix

@@ -1,0 +1,5 @@
+import NumStability.Analysis.ProblemDependentStability
+
+#check NumStability.HessenbergExactDiagTraceOnEntrywisePerturbation
+#check NumStability.hessenbergDetExampleMatrix
+#check NumStability.hessenbergDetExampleFirstMultiplier

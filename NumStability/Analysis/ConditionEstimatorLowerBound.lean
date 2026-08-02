@@ -32,6 +32,13 @@ import Mathlib.Tactic.Positivity
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Algorithms.CondEstimation
 
+/-!
+# Lower bounds from one-norm condition estimators
+
+The true matrix one-norm condition number and proofs that the Hager/Higham and
+LAPACK-style estimators provide lower bounds when applied to an inverse.
+-/
+
 namespace NumStability
 
 open scoped BigOperators
