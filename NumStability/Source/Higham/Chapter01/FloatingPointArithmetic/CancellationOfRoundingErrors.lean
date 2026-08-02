@@ -15,6 +15,7 @@ import NumStability.Analysis.CStarMatrixExpectation
 import NumStability.Analysis.CStarMatrixTrace
 import NumStability.Analysis.Error
 import NumStability.Analysis.FiniteProbability
+import NumStability.Analysis.FloatingPointArithmetic.ExactSubtraction
 import NumStability.Analysis.FloatingPointArithmetic.Format
 import NumStability.Analysis.FloatingPointArithmetic.NearestRoundingError
 import NumStability.Analysis.ForwardError
@@ -30,7 +31,6 @@ import NumStability.Analysis.SubtractionFold
 import NumStability.Analysis.Summation.ErrorBounds
 import NumStability.Analysis.Summation.Signs
 import NumStability.FloatingPoint.Model
-import NumStability.Source.Higham.Chapter02.FloatingPointArithmetic.ExactSubtraction
 
 namespace NumStability
 

@@ -221,6 +221,7 @@
   },
   "legacy": {
     "declaration_bearing_umbrellas": [
+      "NumStability.Analysis.FloatingPointArithmetic",
       "NumStability.Source.Higham.Chapter13.Equation23",
       "NumStability.Source.Higham.Chapter13.Equation25",
       "NumStability.Source.Higham.Chapter13.Table01",
@@ -442,7 +443,12 @@
       "NumStability.Analysis.SylvesterSchurExistence",
       "NumStability.FloatingPoint.Model"
     ],
-    "mixed_modules": [],
+    "mixed_modules": [
+      "NumStability.Analysis.CancellationOfRoundingErrors",
+      "NumStability.Analysis.FloatingPointArithmetic",
+      "NumStability.Analysis.IncreasingPrecision",
+      "NumStability.Analysis.InstabilityWithoutCancellation"
+    ],
     "noncanonical_modules": [
       "NumStability.Algorithms.Ch10ActualSourceClosure",
       "NumStability.Algorithms.Ch10Ch14Lemma66Op2Bridge",
@@ -1039,7 +1045,6 @@
       "NumStability.Analysis.CStarMatrixExpectation",
       "NumStability.Analysis.CStarMatrixTrace",
       "NumStability.Analysis.CalculatorWords",
-      "NumStability.Analysis.CancellationOfRoundingErrors",
       "NumStability.Analysis.Chopping",
       "NumStability.Analysis.ComplexArithmetic",
       "NumStability.Analysis.ComplexSqrt",
@@ -1051,7 +1056,6 @@
       "NumStability.Analysis.Error",
       "NumStability.Analysis.FiniteProbability",
       "NumStability.Analysis.FirstOrderFramework",
-      "NumStability.Analysis.FloatingPointArithmetic",
       "NumStability.Analysis.FusedMultiplyAdd",
       "NumStability.Analysis.HenriciExtremal",
       "NumStability.Analysis.HenriciSharpConstant",
@@ -1064,8 +1068,6 @@
       "NumStability.Analysis.HighamChapter2Tablemaker",
       "NumStability.Analysis.HighamChapter7",
       "NumStability.Analysis.HighamChapter7Rectangular",
-      "NumStability.Analysis.IncreasingPrecision",
-      "NumStability.Analysis.InstabilityWithoutCancellation",
       "NumStability.Analysis.InverseOpNorm2",
       "NumStability.Analysis.JordanNormalForm",
       "NumStability.Analysis.LiebTrace",

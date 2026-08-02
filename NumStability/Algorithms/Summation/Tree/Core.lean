@@ -8,7 +8,7 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.FloatingPoint.Model
 import NumStability.Analysis.Error
-import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Analysis.FloatingPointArithmetic.StandardModel
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.StatisticalRounding
 import NumStability.Analysis.Summation.Signs

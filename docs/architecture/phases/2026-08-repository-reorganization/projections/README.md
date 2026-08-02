@@ -3,8 +3,11 @@
 Each live branch references one active projection tied to the current accepted
 checkpoint's combined format-2 baseline. A projection freezes the exact
 historical declarations and typed edges selected for that wave, together with
-its checker and expected counts. It is superseded whenever the checkpoint or
-selected ownership contract changes.
+its checker and expected counts. A live projection is superseded whenever the
+checkpoint or selected ownership contract changes. It is retired without a
+successor when its branch reaches an accepted, retired, superseded, or cancelled
+terminal state; terminal branches keep the retired projection as immutable
+baseline evidence, while only live branches may reference active projections.
 
 [`P0001`](P0001.json) is active for W01 at checkpoint C0001. Its deterministic
 gzip freezes 3,697 declarations and all 48,076 incident union edges across the

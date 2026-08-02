@@ -12,7 +12,10 @@ import Mathlib.Analysis.Calculus.Deriv.Pow
 import Mathlib.Analysis.SpecificLimits.Basic
 import Mathlib.Data.Nat.Prime.Basic
 import Mathlib.Topology.Order.IntermediateValue
-import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Analysis.FloatingPointArithmetic.Format
+import NumStability.Analysis.FloatingPointArithmetic.NearestRoundingError
+import NumStability.Analysis.FloatingPointArithmetic.RoundToEvenLocalError
+import NumStability.Analysis.FloatingPointArithmetic.Rounding
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.PerturbationTheory
 import NumStability.Algorithms.LU.LUSolve

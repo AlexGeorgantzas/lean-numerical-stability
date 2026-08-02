@@ -63,7 +63,7 @@ REQUEST_STATUSES = {
     "expired",
     "withdrawn",
 }
-PROJECTION_STATUSES = {"active", "superseded"}
+PROJECTION_STATUSES = {"active", "retired", "superseded"}
 GATE_STATUSES = {"PASS", "FAIL", "NOT_RUN", "NOT_APPLICABLE"}
 COMPLETION_STATUSES = {"incomplete", "complete"}
 PRINCIPAL_KINDS = {"human", "agent", "service"}
@@ -2091,6 +2091,7 @@ class PhaseValidator:
         scope_rows = self.scope_snapshot.rows if self.scope_snapshot is not None else []
         for branch_id, branch in sorted(self.branches.items()):
             context = branch.get("_context", f"branch {branch_id}")
+            status = branch.get("status")
             name = branch.get("branch_name")
             if isinstance(name, str):
                 if name in branch_names:
@@ -2132,8 +2133,10 @@ class PhaseValidator:
             if projection is None:
                 self.problems.violation(context, f"unknown baseline projection {projection_id}")
             else:
-                if projection.get("status") != "active":
-                    self.problems.violation(context, "branch must reference an active baseline projection")
+                if status in live_statuses and projection.get("status") != "active":
+                    self.problems.violation(context, "live branch must reference an active baseline projection")
+                if status not in live_statuses and projection.get("status") == "active":
+                    self.problems.violation(context, "terminal branch must not keep its baseline projection active")
                 if projection.get("wave_id") != branch.get("wave_id"):
                     self.problems.violation(context, "projection wave_id does not match branch wave_id")
             owned = branch.get("_owned_rules", [])
@@ -2189,7 +2192,6 @@ class PhaseValidator:
                         f"destination prefix {destination.path} overlaps existing paths outside the wave: "
                         + ", ".join(overlaps),
                     )
-            status = branch.get("status")
             refresh = branch.get("refresh", {})
             if status in live_statuses:
                 live.append((branch_id, branch))

@@ -1,6 +1,10 @@
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
-import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Analysis.FloatingPointArithmetic.ExactSubtraction
+import NumStability.Analysis.FloatingPointArithmetic.Format
+import NumStability.Analysis.FloatingPointArithmetic.NearestRoundingError
+import NumStability.Analysis.FloatingPointArithmetic.RoundToEvenLocalError
+import NumStability.Analysis.FloatingPointArithmetic.Rounding
 import NumStability.Algorithms.Summation.Compensated.CorrectionFormula
 
 namespace NumStability

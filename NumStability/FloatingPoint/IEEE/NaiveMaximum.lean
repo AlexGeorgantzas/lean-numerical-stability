@@ -2,7 +2,7 @@
 SPDX-License-Identifier: MIT
 -/
 
-import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Analysis.FloatingPointArithmetic.IeeeValue
 
 namespace NumStability
 

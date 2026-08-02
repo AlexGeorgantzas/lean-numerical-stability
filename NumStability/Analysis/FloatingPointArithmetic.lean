@@ -3,6 +3,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Ring
 import NumStability.Analysis.Error
+import NumStability.Analysis.FloatingPointArithmetic.ExactSubtraction
 import NumStability.Analysis.FloatingPointArithmetic.Format
 import NumStability.Analysis.FloatingPointArithmetic.IeeeExceptions
 import NumStability.Analysis.FloatingPointArithmetic.IeeeOperations
@@ -10,10 +11,9 @@ import NumStability.Analysis.FloatingPointArithmetic.IeeeValue
 import NumStability.Analysis.FloatingPointArithmetic.NearestRoundingError
 import NumStability.Analysis.FloatingPointArithmetic.RoundToEvenLocalError
 import NumStability.Analysis.FloatingPointArithmetic.Rounding
+import NumStability.Analysis.FloatingPointArithmetic.StandardModel
 import NumStability.Source.Higham.Chapter02.FloatingPointArithmetic.AdditiveUnderflowModel
 import NumStability.Source.Higham.Chapter02.FloatingPointArithmetic.Environment
-import NumStability.Source.Higham.Chapter02.FloatingPointArithmetic.ExactSubtraction
-import NumStability.Source.Higham.Chapter02.FloatingPointArithmetic.StandardModel
 
 /-!
 # Floating point arithmetic (compatibility module)

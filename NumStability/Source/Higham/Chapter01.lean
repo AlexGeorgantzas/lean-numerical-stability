@@ -1,9 +1,13 @@
+import NumStability.Source.Higham.Chapter01.FloatingPointArithmetic.CancellationOfRoundingErrors
+import NumStability.Source.Higham.Chapter01.FloatingPointArithmetic.IncreasingPrecision
+import NumStability.Source.Higham.Chapter01.FloatingPointArithmetic.InstabilityWithoutCancellation
 import NumStability.Source.Higham.Chapter01.Section17
 
 /-!
 # Higham Chapter 1
 
 Source correspondence for introductory principles of finite-precision
-computation. The current formalization covers the nonrandom-rounding example
-from Section 1.17.
+computation. The current formalization covers cancellation, increasing
+precision, instability without cancellation, and the nonrandom-rounding
+example from Section 1.17.
 -/
