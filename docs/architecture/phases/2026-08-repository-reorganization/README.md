@@ -1,8 +1,9 @@
 # Repository reorganization phase: August 2026
 
-Status: **ACTIVE**. Checkpoint C0001 is accepted and green. Branch B0001 is
-planned from that exact checkpoint for W01; no production edit has yet been
-delivered or accepted.
+Status: **ACTIVE**. Checkpoint C0002 at
+`e6ef0107edb873f7a05ad8282df7efdf41a986d3` is accepted and green. M01 is
+accepted, B0001/P0001 are retired, and the exact W02 and W12 handoffs are
+published as B0002/P0002 and B0003/P0003.
 
 This is the current repository-wide operating contract. It supersedes the
 four-lane packets as an instruction source; those packets remain historical
@@ -17,20 +18,20 @@ evidence for the bounded work they completed.
   implementation-wave partition, and
   [`semantic-review.tsv`](semantic-review.tsv) records suggestions that are not
   safe to apply mechanically.
-- [`C0000.json`](checkpoints/C0000.json), its
-  [`gate evidence`](checkpoints/C0000-gates.md), and the
-  [`combined baseline`](baselines/C0000-combined.json) define the accepted
-  origin checkpoint. [`C0001.json`](checkpoints/C0001.json), its
-  [`green gates`](checkpoints/C0001-gates.md), and its
-  [`fresh combined baseline`](baselines/C0001-combined.json) define the current
+- [`C0000.json`](checkpoints/C0000.json) defines the accepted origin;
+  [`C0001.json`](checkpoints/C0001.json) is the pre-W01 branch checkpoint; and
+  [`C0002.json`](checkpoints/C0002.json), its
+  [`green gates`](checkpoints/C0002-gates.md), and its
+  [`fresh combined baseline`](baselines/C0002-combined.json) define the current
   checkpoint.
 - The [`branch`](branches/README.md),
   [`projection`](projections/README.md), and
   [`shared-request`](requests/README.md) registries define live transport and
-  handoffs. B0001's exact [`branch record`](branches/B0001.json),
-  [`selector`](selectors/W01.tsv), and
-  [`projection record`](projections/P0001.json) are the active W01 handoff. No
-  prose packet overrides these records.
+  handoffs. The active records are [`B0002`](branches/B0002.json) with
+  [`W02`](selectors/W02.tsv)/[`P0002`](projections/P0002.json), and
+  [`B0003`](branches/B0003.json) with
+  [`W12`](selectors/W12.tsv)/[`P0003`](projections/P0003.json). No prose packet
+  overrides these records.
 - [`check_phase.py`](../../../../tools/architecture/check_phase.py) validates
   the complete phase state;
   [`check_phase_projection.py`](../../../../tools/architecture/check_phase_projection.py)
@@ -144,21 +145,17 @@ exist.
    combined architecture/build/test gates, publishes the next checkpoint, and
    only then retires the remote branch.
 
-W01 is now planned by B0001 from green checkpoint C0001, commit
-`d6e643adf0f20b33f7faebce7e1b9b1f87122c58`. Its four existing files, three
-production destination prefixes, dedicated test/evidence prefixes, forbidden
-shared paths, operators, projection, and
-retirement rule are exact in the branch record. Future records are created
-only when their prerequisites are accepted, because a future branch cannot
-honestly claim a base SHA or overlap review in advance.
+W01 delivery `d30fecc70a1d2066e2d147b79d9e6b9d743a21e5` is an ancestor of
+C0002. Its declaration-preserving integration is recorded by B0001, and its
+remote branch is retired under the ancestry rule.
 
-The branch base necessarily predates the registry commit that names it. Keep a
-clean `main` control-plane checkout beside the worker worktree: read B0001 and
-run its hash-pinned projection from `main`, while all production commits stay
-on the exact worker branch rooted at C0001. Do not copy registry files into the
-worker commit. The projection registry contains the exact branch creation,
-candidate extraction, and cross-worktree check commands; the branch registry
-names the only allowed test and delivery-evidence paths.
+W02 and W12 both start from the exact C0002 commit. They may be implemented in
+parallel, but acceptance is deliberately serial: integrate W02 first, then
+refresh W12 and apply the recorded 17-import integration delta before W12's
+canonical and strict-source gates. B0002 also records integrator-only closure
+for the 39 production importers of `Analysis.Error`, the existing Chapter 12
+Iterative Refinement umbrella, and the Chapter 8/Doolittle consumer fanouts.
+Workers must not copy or edit registry files on their delivery branches.
 
 ## Classification warning
 

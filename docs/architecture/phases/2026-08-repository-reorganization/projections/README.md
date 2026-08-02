@@ -2,63 +2,26 @@
 
 Each live branch references one active projection tied to the current accepted
 checkpoint's combined format-2 baseline. A projection freezes the exact
-historical declarations and typed edges selected for that wave, together with
-its checker and expected counts. A live projection is superseded whenever the
-checkpoint or selected ownership contract changes. It is retired without a
-successor when its branch reaches an accepted, retired, superseded, or cancelled
-terminal state; terminal branches keep the retired projection as immutable
-baseline evidence, while only live branches may reference active projections.
+historical declarations and every typed incident edge selected for that wave,
+together with its checker, allowed owner roots, and expected counts.
 
-[`P0001`](P0001.json) is active for W01 at checkpoint C0001. Its deterministic
-gzip freezes 3,697 declarations and all 48,076 incident union edges across the
-four selected owners. Workers compare a fresh full format-2 candidate against
-that hash-pinned graph with the recorded checker arguments.
+P0001 is retained as retired W01 evidence. The active projections are:
 
-From a clean `main` control checkout, this PowerShell sequence creates the
-recorded worker branch and runs the exact projection gate. Acquire the shared
-Lean lock first: the extractor performs `lake build NumStability` so a fresh
-machine has the complete olean closure, even if focused worker builds passed:
+- [`P0002`](P0002.json) for W02, selected by [`W02.tsv`](../selectors/W02.tsv);
+- [`P0003`](P0003.json) for W12, selected by [`W12.tsv`](../selectors/W12.tsv).
 
-```powershell
-$controlRoot = (Resolve-Path .).Path
-$workerRoot = Join-Path (Split-Path $controlRoot -Parent) 'reorg-w01-worker'
-git fetch origin main
-git worktree add -b codex/reorg-2026-08-w01-fp-boundary $workerRoot d6e643adf0f20b33f7faebce7e1b9b1f87122c58
+Both use the C0002 combined baseline and deterministic gzip streams. A worker
+generates one full format-2 candidate under the shared Lean mutex, then invokes
+`tools/architecture/check_phase_projection.py` with every sorted argument in
+its projection JSON. The candidate placeholder is replaced by the candidate
+TSV path; no other recorded argument is changed.
 
-$leanMutex = [System.Threading.Mutex]::new($false, 'Local\lean-reorganization-2026-08')
-$lockHeld = $false
-try {
-  try {
-    $lockHeld = $leanMutex.WaitOne([TimeSpan]::FromHours(3))
-  } catch [System.Threading.AbandonedMutexException] {
-    $lockHeld = $true
-  }
-  if (-not $lockHeld) { throw 'Timed out waiting for the Lean build lock.' }
-  Push-Location $workerRoot
-  try {
-    python tools/architecture/generate_baseline.py --output-dir benchmark-results/W01-candidate-summary --name W01-candidate --keep-dependency-tsv benchmark-results/W01-candidate.tsv
-    if ($LASTEXITCODE -ne 0) { throw "Candidate extraction failed with exit code $LASTEXITCODE." }
-  } finally {
-    Pop-Location
-  }
-} finally {
-  if ($lockHeld) { $leanMutex.ReleaseMutex() }
-  $leanMutex.Dispose()
-}
+P0002 and P0003 are independent baseline guards, not evidence that integration
+is commutative. W02 is accepted first. W12 is refreshed after that checkpoint,
+and the integrator rewrites its 17 direct dependencies on W02 owners before the
+W12 projection, canonical-import, strict-source, full-build, and full-test
+acceptance gates.
 
-python (Join-Path $controlRoot 'tools/architecture/check_phase_projection.py') `
-  --projection (Join-Path $controlRoot 'docs/architecture/phases/2026-08-repository-reorganization/projections/P0001.tsv.gz') `
-  --projection-sha256 6278CE1673465F9069A01A9D7FF5005223209E28533BC0F13DB4B90E82042352 `
-  --candidate (Join-Path $workerRoot 'benchmark-results/W01-candidate.tsv') `
-  --allow-module NumStability.Analysis.CancellationOfRoundingErrors `
-  --allow-module NumStability.Analysis.FloatingPointArithmetic `
-  --allow-module NumStability.Analysis.IncreasingPrecision `
-  --allow-module NumStability.Analysis.InstabilityWithoutCancellation `
-  --allow-prefix NumStability.Analysis.FloatingPointArithmetic. `
-  --allow-prefix NumStability.Source.Higham.Chapter01.FloatingPointArithmetic. `
-  --allow-prefix NumStability.Source.Higham.Chapter02.FloatingPointArithmetic.
-```
-
-If the branch already exists locally or remotely, do not create an auxiliary
-branch: fetch it into the recorded worktree after verifying that it descends
-from the recorded base SHA.
+Active projections are replaced whenever their base checkpoint or ownership
+contract changes. A terminal branch keeps its retired projection as immutable
+evidence; only live branches may reference active projections.
