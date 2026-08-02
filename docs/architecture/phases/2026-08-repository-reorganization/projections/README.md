@@ -5,22 +5,31 @@ checkpoint's combined format-2 baseline. A projection freezes the exact
 historical declarations and every typed incident edge selected for that wave,
 together with its checker, allowed owner roots, and expected counts.
 
-P0001 is retained as retired W01 evidence. The active projections are:
+The projection records are:
 
-- [`P0002`](P0002.json) for W02, selected by [`W02.tsv`](../selectors/W02.tsv);
-- [`P0003`](P0003.json) for W12, selected by [`W12.tsv`](../selectors/W12.tsv).
+- [`P0001`](P0001.json), retired W01 evidence;
+- [`P0002`](P0002.json), retired W02 evidence selected by
+  [`W02.tsv`](../selectors/W02.tsv);
+- [`P0003`](P0003.json), the superseded C0002 projection for W12; and
+- [`P0004`](P0004.json), the active W12 projection selected by
+  [`W12.tsv`](../selectors/W12.tsv).
 
-Both use the C0002 combined baseline and deterministic gzip streams. A worker
-generates one full format-2 candidate under the shared Lean mutex, then invokes
-`tools/architecture/check_phase_projection.py` with every sorted argument in
-its projection JSON. The candidate placeholder is replaced by the candidate
-TSV path; no other recorded argument is changed.
+P0004 is tied to the C0003 combined baseline generated at code commit
+`bb80c95a4625e07535dacdda12d246ee1a5795b3`. Its baseline JSON has SHA-256
+`9061CD6CFCA44F838339DE79A5245081951231D2B4F271018C6F460451F370DA`.
+The P0004 projection graph is byte-identical to P0003's deterministic gzip
+stream and has SHA-256
+`892C767A3A72F288283F95B89A06F48B7020C80C61BF9449948C6B4A34F81BFA`.
 
-P0002 and P0003 are independent baseline guards, not evidence that integration
-is commutative. W02 is accepted first. W12 is refreshed after that checkpoint,
-and the integrator rewrites its 17 direct dependencies on W02 owners before the
-W12 projection, canonical-import, strict-source, full-build, and full-test
-acceptance gates.
+A worker generates one full format-2 candidate under the shared Lean mutex,
+then invokes `tools/architecture/check_phase_projection.py` with every sorted
+argument in its projection JSON. The candidate placeholder is replaced by the
+candidate TSV path; no other recorded argument is changed.
+
+P0004 refreshes the W12 guard after W02 acceptance; it does not assert that the
+two integrations commute. The integrator still rewrites W12's 17 direct
+dependencies on W02 owners before running the W12 projection,
+canonical-import, strict-source, full-build, and full-test acceptance gates.
 
 Active projections are replaced whenever their base checkpoint or ownership
 contract changes. A terminal branch keeps its retired projection as immutable

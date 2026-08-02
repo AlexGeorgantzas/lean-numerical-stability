@@ -5,9 +5,15 @@
   "branch_id": "B0002",
   "branch_name": "codex/reorg-2026-08-w02-foundations",
   "delivery": {
-    "commit_sha": null,
-    "report": null,
-    "scope_evidence": null
+    "commit_sha": "799d781971eed851cd90152c0d9acb0e828f9341",
+    "report": {
+      "path": "docs/architecture/deliveries/W02/DELIVERY.md",
+      "sha256": "E2A23B7D45F9157CCE1FE60C91AA1523D219078981B6C065232AB3E2E31E5BE7"
+    },
+    "scope_evidence": {
+      "path": "docs/architecture/deliveries/W02/CHANGED_PATHS.md",
+      "sha256": "BD648B9D433AE9CEAF016A4F5589CA8E069EB62D90737D17DFF1CC895EDE4C65"
+    }
   },
   "destination_prefixes": [
     {
@@ -434,9 +440,9 @@
     }
   ],
   "integration": {
-    "accepted_checkpoint_id": null,
-    "accepted_sha": null,
-    "method": null
+    "accepted_checkpoint_id": "C0003",
+    "accepted_sha": "bb80c95a4625e07535dacdda12d246ee1a5795b3",
+    "method": "merge"
   },
   "lane_id": "remote-lane",
   "operator_ids": [
@@ -756,10 +762,10 @@
     "retired_at": null,
     "retired_by": null,
     "rule": "delivery_ancestor_of_green_checkpoint",
-    "status": "not_due"
+    "status": "due"
   },
   "schema_version": 1,
   "shared_request_ids": [],
-  "status": "planned",
+  "status": "accepted",
   "wave_id": "W02"
 }

@@ -1,9 +1,10 @@
 # Repository reorganization phase: August 2026
 
-Status: **ACTIVE**. Checkpoint C0002 at
-`e6ef0107edb873f7a05ad8282df7efdf41a986d3` is accepted and green. M01 is
-accepted, B0001/P0001 are retired, and the exact W02 and W12 handoffs are
-published as B0002/P0002 and B0003/P0003.
+Status: **ACTIVE**. Checkpoint C0003 at
+`bb80c95a4625e07535dacdda12d246ee1a5795b3` is accepted and green. M01 and
+M02 are accepted; B0001/P0001 are retired; B0002 is accepted with retirement
+due; and B0003/P0004 is the sole live delivered handoff. W03 and W05 are
+unblocked but do not yet have branch records.
 
 This is the current repository-wide operating contract. It supersedes the
 four-lane packets as an instruction source; those packets remain historical
@@ -20,17 +21,18 @@ evidence for the bounded work they completed.
   safe to apply mechanically.
 - [`C0000.json`](checkpoints/C0000.json) defines the accepted origin;
   [`C0001.json`](checkpoints/C0001.json) is the pre-W01 branch checkpoint; and
-  [`C0002.json`](checkpoints/C0002.json), its
-  [`green gates`](checkpoints/C0002-gates.md), and its
-  [`fresh combined baseline`](baselines/C0002-combined.json) define the current
-  checkpoint.
+  [`C0002.json`](checkpoints/C0002.json) records W01 acceptance; and
+  [`C0003.json`](checkpoints/C0003.json), its
+  [`green gates`](checkpoints/C0003-gates.md), and its
+  [`fresh combined baseline`](baselines/C0003-combined.json) define the current
+  W02-accepted checkpoint.
 - The [`branch`](branches/README.md),
   [`projection`](projections/README.md), and
   [`shared-request`](requests/README.md) registries define live transport and
-  handoffs. The active records are [`B0002`](branches/B0002.json) with
-  [`W02`](selectors/W02.tsv)/[`P0002`](projections/P0002.json), and
+  handoffs. [`B0002`](branches/B0002.json) records accepted W02 and retired
+  [`P0002`](projections/P0002.json). The sole live delivered record is
   [`B0003`](branches/B0003.json) with
-  [`W12`](selectors/W12.tsv)/[`P0003`](projections/P0003.json). No prose packet
+  [`W12`](selectors/W12.tsv)/[`P0004`](projections/P0004.json). No prose packet
   overrides these records.
 - [`check_phase.py`](../../../../tools/architecture/check_phase.py) validates
   the complete phase state;
@@ -149,13 +151,14 @@ W01 delivery `d30fecc70a1d2066e2d147b79d9e6b9d743a21e5` is an ancestor of
 C0002. Its declaration-preserving integration is recorded by B0001, and its
 remote branch is retired under the ancestry rule.
 
-W02 and W12 both start from the exact C0002 commit. They may be implemented in
-parallel, but acceptance is deliberately serial: integrate W02 first, then
-refresh W12 and apply the recorded 17-import integration delta before W12's
-canonical and strict-source gates. B0002 also records integrator-only closure
-for the 39 production importers of `Analysis.Error`, the existing Chapter 12
-Iterative Refinement umbrella, and the Chapter 8/Doolittle consumer fanouts.
-Workers must not copy or edit registry files on their delivery branches.
+W02 and W12 were both implemented from the exact C0002 commit. W02 delivery
+`799d781971eed851cd90152c0d9acb0e828f9341` is an ancestor of accepted C0003;
+B0002 records the integration and is due for remote-branch retirement. W12
+delivery `380d3cba83bb9e3704232720f371f28cbbc673da` remains based on C0002 but has
+been refreshed against C0003 through P0004. It must now be integrated with the
+recorded 17-import delta before W12's canonical, strict-source, full-build, and
+full-test gates. Workers must not copy or edit registry files on their delivery
+branches.
 
 ## Classification warning
 

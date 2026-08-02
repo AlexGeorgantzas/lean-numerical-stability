@@ -1,5 +1,5 @@
 {
-  "base_checkpoint_id": "C0002",
+  "base_checkpoint_id": "C0003",
   "checker": {
     "arguments": [
       "--allow-module=NumStability.Algorithms.Ch5DerivativeError",
@@ -109,7 +109,7 @@
       "--allow-prefix=NumStability.Source.Higham.Chapter09.Theorem15.Sun.",
       "--candidate=<candidate-format2.tsv>",
       "--projection-sha256=892C767A3A72F288283F95B89A06F48B7020C80C61BF9449948C6B4A34F81BFA",
-      "--projection=docs/architecture/phases/2026-08-repository-reorganization/projections/P0003.tsv.gz"
+      "--projection=docs/architecture/phases/2026-08-repository-reorganization/projections/P0004.tsv.gz"
     ],
     "artifact": {
       "path": "tools/architecture/check_phase_projection.py",
@@ -117,8 +117,8 @@
     }
   },
   "combined_baseline": {
-    "path": "docs/architecture/phases/2026-08-repository-reorganization/baselines/C0002-combined.json",
-    "sha256": "87BE0335612AFE546400AB46EA3EC85FABAFAC50A13854A2E40A2B51B3105F0E"
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/baselines/C0003-combined.json",
+    "sha256": "9061CD6CFCA44F838339DE79A5245081951231D2B4F271018C6F460451F370DA"
   },
   "expected_counts": {
     "body_edges": 23388,
@@ -128,10 +128,10 @@
   },
   "phase_id": "repository-reorganization-2026-08",
   "projection_graph": {
-    "path": "docs/architecture/phases/2026-08-repository-reorganization/projections/P0003.tsv.gz",
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/projections/P0004.tsv.gz",
     "sha256": "892C767A3A72F288283F95B89A06F48B7020C80C61BF9449948C6B4A34F81BFA"
   },
-  "projection_id": "P0003",
+  "projection_id": "P0004",
   "record_kind": "baseline_projection",
   "schema_version": 1,
   "selector": {
@@ -141,7 +141,7 @@
     },
     "kind": "module_path_tsv"
   },
-  "status": "superseded",
-  "superseded_by": "P0004",
+  "status": "active",
+  "superseded_by": null,
   "wave_id": "W12"
 }

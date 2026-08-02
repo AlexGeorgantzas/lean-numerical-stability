@@ -1,13 +1,19 @@
 {
   "base_checkpoint_id": "C0002",
   "base_sha": "e6ef0107edb873f7a05ad8282df7efdf41a986d3",
-  "baseline_projection_id": "P0003",
+  "baseline_projection_id": "P0004",
   "branch_id": "B0003",
   "branch_name": "codex/reorg-2026-08-w12-ch01-ch02-ch05",
   "delivery": {
-    "commit_sha": null,
-    "report": null,
-    "scope_evidence": null
+    "commit_sha": "380d3cba83bb9e3704232720f371f28cbbc673da",
+    "report": {
+      "path": "docs/architecture/deliveries/W12/DELIVERY.md",
+      "sha256": "3F5E2D750A9A2689988488AB2750F7997A66E17A1E6B44643169D7F56611194C"
+    },
+    "scope_evidence": {
+      "path": "docs/architecture/deliveries/W12/CHANGED_PATHS.md",
+      "sha256": "CBE965E17A38E564C0B070622496FA1DE67EBDF67CB771AFE26477FC6AE796CA"
+    }
   },
   "destination_prefixes": [
     {
@@ -609,14 +615,14 @@
   "phase_id": "repository-reorganization-2026-08",
   "record_kind": "phase_branch",
   "refresh": {
-    "decision": "current",
+    "decision": "validated_no_overlap",
     "evidence": [
       {
         "path": "docs/architecture/phases/2026-08-repository-reorganization/branches/B0003-overlap-review.md",
-        "sha256": "0A83839973381946C96209CAA6EF46B646DB6A4AB0572A75C8FD7B70E865401F"
+        "sha256": "39F24E34F9425E2A76F13F18DF8F211354098D3B0E46BD8F9B54832B2989AEE1"
       }
     ],
-    "reviewed_checkpoint_id": "C0002"
+    "reviewed_checkpoint_id": "C0003"
   },
   "retirement": {
     "ancestry_checkpoint_id": null,
@@ -628,6 +634,6 @@
   },
   "schema_version": 1,
   "shared_request_ids": [],
-  "status": "planned",
+  "status": "delivered",
   "wave_id": "W12"
 }
