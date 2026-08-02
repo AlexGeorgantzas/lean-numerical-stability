@@ -18,15 +18,14 @@ import NumStability.Source.Higham.Chapter02.FloatingPointArithmetic.StandardMode
 /-!
 # Floating point arithmetic (compatibility module)
 
-Import-only module retained so existing imports of
+Compatibility facade retained so existing imports of
 `NumStability.Analysis.FloatingPointArithmetic`
-keep resolving. Its declarations moved unchanged to the canonical
-modules imported above: source-neutral floating-point material under
-`NumStability.Analysis.FloatingPointArithmetic`, and Higham Chapter 1
-and Chapter 2 correspondence under the matching `Source.Higham`
-destinations. The module's own original imports are re-stated so that
-consumers reaching an identifier transitively through this path still
-see the same surface.
+keep resolving. Most declarations moved unchanged to the reusable and Higham
+Chapter 2 modules imported above. Two hundred thirty-four declarations remain
+here because private declarations and their user closures must preserve the
+original module identity. The module's original imports are re-stated so
+consumers reaching identifiers transitively through this path retain the same
+surface.
 -/
 
 namespace NumStability
