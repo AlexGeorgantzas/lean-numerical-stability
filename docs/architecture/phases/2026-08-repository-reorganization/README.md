@@ -3,9 +3,10 @@
 Status: **ACTIVE**. Checkpoint C0005 accepts green code commit
 `240c0d041781385a647fbec461d6863537e562cb`. M01, M02, M03, M05, and M12 are
 accepted; M04, M06, and M08 are ready; and repository-wide completion remains
-incomplete. B0006/W06 and B0007/W08 are planned from C0005 with active frozen
-projections P0007 and P0008; no worker ref exists until this planned control
-state passes Lean CI. M04/W04 is not activated. B0004/W03 and B0005/W05 were
+incomplete. B0006/W06 and B0007/W08 are active from C0005 with active frozen
+projections P0007 and P0008. Their remote refs were initialized at the exact
+C0005 code SHA; no local worker branch or worktree was created. M04/W04 is not
+activated. B0004/W03 and B0005/W05 were
 integrated by separate true merges, accepted at C0005, and retired after the
 acceptance-control state passed Lean CI. P0005 and P0006 are retired immutable projection evidence.
 Their independently C0004-based shared requests R0003 and R0004 are applied at
@@ -48,7 +49,7 @@ evidence for the bounded work they completed.
   [`P0006`](projections/P0006.json), and applied shared requests
   [`R0003`](requests/R0003.json) and [`R0004`](requests/R0004.json).
   [`B0006`](branches/B0006.json) and [`B0007`](branches/B0007.json) are the
-  planned, disjoint C0005 transports for W06 and W08. Their active frozen
+  active, disjoint C0005 transports for W06 and W08. Their active frozen
   projections are [`P0007`](projections/P0007.json) and
   [`P0008`](projections/P0008.json), selected by
   [`W06.tsv`](selectors/W06.tsv) and [`W08.tsv`](selectors/W08.tsv).
