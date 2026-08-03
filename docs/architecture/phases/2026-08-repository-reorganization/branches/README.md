@@ -12,9 +12,10 @@ C0002. [`B0002`](B0002.json) is retired after acceptance at C0003: W02 delivery
 `bb80c95a4625e07535dacdda12d246ee1a5795b3`, and its remote ref was deleted at
 `2026-08-02T23:32:59Z` after the C0003 control record was published green.
 
-Two phase branches were implemented from the exact C0004 code commit and are
-accepted at C0005 code commit `240c0d041781385a647fbec461d6863537e562cb`
-through separate true merges. The planned control commit
+Two phase branches were implemented from the exact C0004 code commit, accepted
+at C0005 code commit `240c0d041781385a647fbec461d6863537e562cb`
+through separate true merges, and retired after the C0005 acceptance-control
+commit passed CI. The planned control commit
 `50dcbbc9cf871b7b0aadf262140c0758c354d7fc` passed
 [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/30781486823)
 before either branch name or worktree was created:
@@ -39,9 +40,10 @@ hash-pinned reviews are [`B0004-overlap-review.md`](B0004-overlap-review.md)
 and [`B0005-overlap-review.md`](B0005-overlap-review.md). B0004 links applied
 R0003 and B0005 links applied R0004; both patches remain independently based
 on C0004. Their exact delivery tips are ancestors of C0005, P0005 and P0006
-passed against the same integrated candidate, and both records now have
-retirement due. The two remote refs remain present until this acceptance-control
-commit passes CI; local worktrees and branches are not retirement targets.
+passed against the same integrated candidate, and both records are retired.
+The two exact remote refs were deleted at `2026-08-03T15:23:25Z` by
+`primary-human`; local worktrees and branches were preserved and were never
+retirement targets.
 
 The final retired branch is:
 

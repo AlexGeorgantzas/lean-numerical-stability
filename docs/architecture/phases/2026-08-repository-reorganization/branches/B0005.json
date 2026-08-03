@@ -464,17 +464,17 @@
     "reviewed_checkpoint_id": "C0004"
   },
   "retirement": {
-    "ancestry_checkpoint_id": null,
+    "ancestry_checkpoint_id": "C0005",
     "remote_ref": "refs/heads/codex/reorg-2026-08-w05-ch16-ch18",
-    "retired_at": null,
-    "retired_by": null,
+    "retired_at": "2026-08-03T15:23:25Z",
+    "retired_by": "primary-human",
     "rule": "delivery_ancestor_of_green_checkpoint",
-    "status": "due"
+    "status": "retired"
   },
   "schema_version": 1,
   "shared_request_ids": [
     "R0004"
   ],
-  "status": "accepted",
+  "status": "retired",
   "wave_id": "W05"
 }

@@ -4,10 +4,11 @@ Status: **ACTIVE**. Checkpoint C0005 accepts green code commit
 `240c0d041781385a647fbec461d6863537e562cb`. M01, M02, M03, M05, and M12 are
 accepted; M04, M06, and M08 are ready but not activated; and repository-wide
 completion remains incomplete. B0004/W03 and B0005/W05 were integrated by
-separate true merges and are accepted at C0005 with retirement due after this
-acceptance-control state passes Lean CI. P0005 and P0006 are retired immutable
-projection evidence. Their independently C0004-based shared requests R0003
-and R0004 are applied at C0005.
+separate true merges, accepted at C0005, and retired after the acceptance-control
+state passed Lean CI. P0005 and P0006 are retired immutable projection evidence.
+Their independently C0004-based shared requests R0003 and R0004 are applied at
+C0005. The two remote delivery refs are absent; local branches and worktrees
+remain preserved.
 
 This is the current repository-wide operating contract. It supersedes the
 four-lane packets as an instruction source; those packets remain historical
@@ -40,7 +41,7 @@ evidence for the bounded work they completed.
   accepted at C0004 and retired, while
   [`P0004`](projections/P0004.json) is its retired immutable projection
   evidence. [`B0004`](branches/B0004.json) and
-  [`B0005`](branches/B0005.json) are accepted W03 and W05 transports at C0005,
+  [`B0005`](branches/B0005.json) are retired W03 and W05 transports accepted at C0005,
   with retired projections [`P0005`](projections/P0005.json) and
   [`P0006`](projections/P0006.json), and applied shared requests
   [`R0003`](requests/R0003.json) and [`R0004`](requests/R0004.json).
@@ -177,8 +178,10 @@ W03 delivery `a36ea332cb8e19ed4f6985d1a22e8e356c5dc9ce` and W05 delivery
 code commit `240c0d041781385a647fbec461d6863537e562cb` through separate true merges.
 The integrator applied hash-pinned R0003 and R0004, replayed P0005 and P0006
 against one full integrated graph, and passed every combined static, focused,
-full-build, full-test, and strict-source gate. Their remote refs remain
-recoverable only until the C0005 acceptance-control commit itself passes CI.
+full-build, full-test, and strict-source gate. After the C0005
+acceptance-control commit passed CI, both exact remote refs were deleted at
+`2026-08-03T15:23:25Z` by `primary-human`; local worktrees and branches were
+preserved.
 
 ## Classification warning
 
